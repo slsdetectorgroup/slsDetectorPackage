@@ -390,13 +390,11 @@ std::string multiSlsDetector::getUserDetails() {
  * exceptions are caught in calling function, shm unmapped and deleted
  */
 void multiSlsDetector::initSharedMemory(bool verify) {
-	size_t sz = sizeof(sharedMultiSlsDetector);
-
-
 	try {
 		// shared memory object with name
 		sharedMemory = new SharedMemory(detId, -1);
-
+		size_t sz = sizeof(sharedMultiSlsDetector);
+		
 		//create
 		if (!sharedMemory->IsExisting()) {
 			thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->CreateSharedMemory(sz);

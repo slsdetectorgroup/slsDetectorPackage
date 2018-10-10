@@ -107,17 +107,17 @@ std::vector<RT> multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...
 }
 
 
-std::string multiSlsDetector::concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos) {
-	if (pos >= 0 && pos < (int)detectors.size()) {
-		return (detectors[pos].get()->*somefunc)(pos);
-	} else {
-		std::string s;
-		for (auto& d : detectors) {
-			s += (d.get()->*somefunc)(pos) + "+";
-		}
-		return s;
-	}
-}
+// std::string multiSlsDetector::concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos) {
+// 	if (pos >= 0 && pos < (int)detectors.size()) {
+// 		return (detectors[pos].get()->*somefunc)(pos);
+// 	} else {
+// 		std::string s;
+// 		for (auto& d : detectors) {
+// 			s += (d.get()->*somefunc)(pos) + "+";
+// 		}
+// 		return s;
+// 	}
+// }
 
 
 int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int& channelX, int& channelY) {

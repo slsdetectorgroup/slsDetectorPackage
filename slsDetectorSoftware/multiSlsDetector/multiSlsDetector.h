@@ -163,7 +163,7 @@ public:
 	 * @param pos positin of detector in array (-1 is for all)
 	 * @returns result for detector at that position or concatenated string of all detectors
 	 */
-	std::string concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos);
+	// std::string concatResultOrPos(std::string (slsDetector::*somefunc)(int), int pos);
 
 	/**
 	 * Decodes which detector and the corresponding channel numbers for it

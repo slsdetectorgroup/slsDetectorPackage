@@ -102,7 +102,7 @@ std::vector<RT> multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...
 {
     std::vector<std::future<RT>> futures;
     for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        futures.push_back(std::async(somefunc, (*this)[idet], Args...));
+        futures.push_back(std::async(std::launch::async, somefunc, (*this)[idet], Args...));
         /*
          if ((*this)[idet]->getErrorMask())
 			setErrorMask(getErrorMask() | (1 << idet));

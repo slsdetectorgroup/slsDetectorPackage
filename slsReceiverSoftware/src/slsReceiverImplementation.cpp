@@ -1039,7 +1039,7 @@ int slsReceiverImplementation::startReceiver(char *c) {
 	//processor->writer
 	if (fileWriteEnable) {
 		if (SetupWriter() == FAIL) {
-			strcpy(c,"Could not create file.");
+			strcpy(c,"Could not create file.\n");
 			FILE_LOG(logERROR) << c;
 			return FAIL;
 		}

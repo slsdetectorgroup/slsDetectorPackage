@@ -30,6 +30,14 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 
+#zmq
+add_library(zmq STATIC IMPORTED GLOBAL)
+set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/slsSupportLib/include/libzmq.a)
+set_target_properties(zmq PROPERTIES
+    IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
+)
+
+
 if (USE_TEXTCLIENT)
        add_subdirectory(slsDetectorSoftware)
 endif (USE_TEXTCLIENT)
@@ -58,3 +66,6 @@ if (CALIBRATE)
         endif()
     endif()
 endif(CALIBRATE)
+
+install(FILES ${ZMQ_STATIC_ARCHIVE}
+DESTINATION lib) 

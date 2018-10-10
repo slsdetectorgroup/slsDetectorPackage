@@ -34,13 +34,6 @@ add_library(slsDetectorShared SHARED
     ${HEADERS}
 )
 
-add_library(zmq STATIC IMPORTED GLOBAL)
-
-set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../slsSupportLib/include/libzmq.a)
-set_target_properties(zmq PROPERTIES
-    IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
-)
-
 target_link_libraries(slsDetectorShared
 	zmq
 )
@@ -80,9 +73,6 @@ if(DOXYGEN_FOUND)
     )
 endif()
 
-
-install(FILES ${ZMQ_STATIC_ARCHIVE}
-DESTINATION lib) 
 
 install(TARGETS slsDetectorShared slsDetectorStatic
     LIBRARY DESTINATION lib

@@ -780,7 +780,7 @@ void slsReceiverImplementation::setSubPeriod(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	subPeriod = i;
-	FILE_LOG(logINFO) << "Sub Exposure Time: " <<  (double)subPeriod/(1E9) << "s";
+	FILE_LOG(logINFO) << "Sub Exposure Period: " <<  (double)subPeriod/(1E9) << "s";
 }
 
 int slsReceiverImplementation::setNumberOfFrames(const uint64_t i){

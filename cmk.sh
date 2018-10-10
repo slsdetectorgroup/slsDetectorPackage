@@ -116,7 +116,8 @@ done
 
 
 if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
-       CMAKE_POST+=" -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=ON "
+#       CMAKE_POST+=" -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=ON "
+		CMAKE_POST+=" -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON  "
        echo "Compile Option: TextClient, Receiver and GUI"
 else 
        if [ $TEXTCLIENT -eq 1 ]; then

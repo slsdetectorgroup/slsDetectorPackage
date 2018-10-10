@@ -39,12 +39,6 @@ include_directories(
     ../slsSupportLib/include
 )
 
-add_library(zmq STATIC IMPORTED GLOBAL)
-
-set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/../slsSupportLib/include/libzmq.a)
-set_target_properties(zmq PROPERTIES
-    IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
-)
 
 add_library(slsReceiverStatic STATIC
     ${SOURCES}
@@ -103,6 +97,4 @@ install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)
         
- 
-install(FILES ${ZMQ_STATIC_ARCHIVE}
-DESTINATION lib)       
+      

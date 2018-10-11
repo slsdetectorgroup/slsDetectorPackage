@@ -70,6 +70,7 @@ enum detFuncs{
 	F_SOFTWARE_TRIGGER,/** < software trigger */
 	NUM_DET_FUNCTIONS,
 
+	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
 	F_EXEC_RECEIVER_COMMAND,/**< command is executed */
 	F_EXIT_RECEIVER,/**< turn off receiver server */
 	F_LOCK_RECEIVER,/**< Locks/Unlocks server communication to the given client */

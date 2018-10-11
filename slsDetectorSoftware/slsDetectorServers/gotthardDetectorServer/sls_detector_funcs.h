@@ -1,1 +1,0 @@
-../../../slsSupportLib/include/sls_detector_funcs.h

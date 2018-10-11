@@ -5,8 +5,17 @@
 
 //#include "moench03T1ZmqData.h"
 #ifdef NEWRECEIVER
+#ifndef RECT
 #include "moench03T1ReceiverDataNew.h"
 #endif
+
+#ifdef RECT
+#include "moench03T1ReceiverDataNewRect.h"
+#endif
+
+#endif
+
+
 #ifdef CSAXS_FP
 #include "moench03T1ReceiverData.h"
 #endif 
@@ -48,7 +57,6 @@ int main(int argc, char *argv[]) {
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
   int csize=3;
-  int nx=400, ny=400;
   int save=1;
   int nsigma=5;
   int nped=1000;
@@ -56,9 +64,12 @@ int main(int argc, char *argv[]) {
   int ok;
   int iprog=0;
 
-
+  int cf=0;
 
 #ifdef NEWRECEIVER
+#ifdef RECT
+  cout << "Should be rectangular!" <<endl;
+#endif
   moench03T1ReceiverDataNew *decoder=new  moench03T1ReceiverDataNew();
   cout << "RECEIVER DATA WITH ONE HEADER!"<<endl;
 #endif
@@ -72,6 +83,10 @@ int main(int argc, char *argv[]) {
   moench03Ctb10GbT1Data *decoder=new  moench03Ctb10GbT1Data();
   cout << "OLD RECEIVER DATA!"<<endl;
 #endif
+
+  int nx=400, ny=400;
+
+  decoder->getDetectorSize(nx,ny);
 
   singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 200);
 
@@ -111,7 +126,7 @@ int main(int argc, char *argv[]) {
     pedfile=argv[6];
   }
   double thr=0;
-  double thr1=0;
+  double thr1=1;
 
   if (argc>=8) {
     thr=atoi(argv[7]);
@@ -123,7 +138,7 @@ int main(int argc, char *argv[]) {
   if (argc>=9) {
     nframes=atoi(argv[8]);
   }
-  int xmin=0, xmax=400, ymin=0, ymax=400;
+  int xmin=0, xmax=nx, ymin=0, ymax=ny;
   if (argc>=13) {
     xmin=atoi(argv[9]);
     xmax=atoi(argv[10]);
@@ -151,12 +166,13 @@ int main(int argc, char *argv[]) {
   cout << "runmax is " << runmax << endl;
   if (pedfile)
     cout << "pedestal file is " << pedfile << endl;
-#ifndef ANALOG
+  //#ifndef ANALOG
   if (thr>0) {
     cout << "threshold is " << thr << endl;
     filter->setThreshold(thr);
-  }
-#endif
+  } else
+    cf=1;
+  //#endif
 
 
   filter->setROI(xmin,xmax,ymin,ymax);
@@ -170,24 +186,27 @@ int main(int argc, char *argv[]) {
   char* buff;
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
 #ifndef ANALOG
-  if (thr>=0) {
     mt->setDetectorMode(ePhotonCounting);
     cout << "Counting!" << endl;
-  } else
+  if (thr>0) {
+    cf=0;
+  } 
 #endif
-    {
+//{
+#ifdef ANALOG
       mt->setDetectorMode(eAnalog);
       cout << "Analog!" << endl;
-#ifdef ANALOG
-      thr1=thr;
+      cf=0;
+// #ifdef ANALOG
+//       thr1=thr;
 #endif  
-    }
+      //  }
   
   mt->StartThreads();
   mt->popFree(buff);
 
 
-  cout << "mt " << endl;
+  //  cout << "mt " << endl;
 
   int ifr=0;
  
@@ -252,15 +271,17 @@ int main(int argc, char *argv[]) {
     ifile=0;
     if (filebin.is_open()){
       if (thr<=0) {
-	if (of==NULL) {
-	  of=fopen(cfname,"w");
-	  if (of) {
+	if (cf) {
+	  if (of==NULL) {
+	    of=fopen(cfname,"w");
+	    if (of) {
 	    mt->setFilePointer(of);
 	    cout << "file pointer set " << endl;
-	  } else {
-	    cout << "Could not open "<< cfname << " for writing " << endl;
-	    mt->setFilePointer(NULL);
-	    return 1;
+	    } else {
+	      cout << "Could not open "<< cfname << " for writing " << endl;
+	      mt->setFilePointer(NULL);
+	      return 1;
+	    }
 	  }
 	}
       }
@@ -284,7 +305,7 @@ int main(int argc, char *argv[]) {
 	    
 	    sprintf(ffname,"%s/%s_f%05d.tiff",outdir,fformat,ifile);
 	    sprintf(imgfname,ffname,irun);
-	    cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
+	    //cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
 	    mt->writeImage(imgfname, thr1);
 	    mt->clearImage();
 	    ifile++;

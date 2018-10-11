@@ -145,9 +145,9 @@ FILE *getFilePointer(){return det->getFilePointer();};
 
 
   virtual void prepareInterpolation(int &ok){
-      slsInterpolation *interp=((interpolatingDetector*)det)->getInterpolation();
-      if (interp) 
-       interp->prepareInterpolation(ok);
+       slsInterpolation *interp=det->getInterpolation(); 
+       if (interp)  
+        interp->prepareInterpolation(ok); 
    }
 
    virtual int *getFlatField(){

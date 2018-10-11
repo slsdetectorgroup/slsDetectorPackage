@@ -2,11 +2,19 @@
 #include <iostream>
 
 
-
 //#include "moench03T1ZmqData.h"
 #ifdef NEWRECEIVER
+#ifndef RECT
 #include "moench03T1ReceiverDataNew.h"
 #endif
+
+#ifdef RECT
+#include "moench03T1ReceiverDataNewRect.h"
+#endif
+
+#endif
+
+
 #ifdef CSAXS_FP
 #include "moench03T1ReceiverData.h"
 #endif 
@@ -58,6 +66,9 @@ int main(int argc, char *argv[]) {
 
 
 #ifdef NEWRECEIVER
+#ifdef RECT
+  cout << "Should be rectangular!" <<endl;
+#endif
   moench03T1ReceiverDataNew *decoder=new  moench03T1ReceiverDataNew();
   cout << "RECEIVER DATA WITH ONE HEADER!"<<endl;
 #endif
@@ -135,6 +146,7 @@ int main(int argc, char *argv[]) {
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
 
  
+  mt->setDetectorMode(ePhotonCounting);
   mt->setFrameMode(eFrame);
   mt->StartThreads();
   mt->popFree(buff);

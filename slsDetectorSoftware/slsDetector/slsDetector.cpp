@@ -882,7 +882,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 		} else {
 			char mess[MAX_STR_LENGTH];
 			mySocket->ReceiveDataOnly(mess,sizeof(mess));
-			std::cout<< "Detector returned error: " << m << std::endl;
+			std::cout<< "Detector returned error: " << mess << std::endl;
 		}
 		mySocket->Disconnect();
 	} else {
@@ -1245,7 +1245,6 @@ int slsDetector::setTCPSocket(std::string const name, int const control_port, in
 
 
 int slsDetector::setPort(portType index, int num) {
-
 	int fnum=F_SET_PORT, fnum2 = F_SET_RECEIVER_PORT;
 	int retval;
 	//  uint64_t ut;
@@ -3383,7 +3382,6 @@ std::string slsDetector::setNetworkParameter(networkParameter index, std::string
 
 
 std::string slsDetector::getNetworkParameter(networkParameter index) {
-	std::ostringstream ss;std::string s;
 	switch (index) {
 	case DETECTOR_MAC:
 		return getDetectorMAC();
@@ -3420,7 +3418,7 @@ std::string slsDetector::getNetworkParameter(networkParameter index) {
 		return getReceiverRealUDPSocketBufferSize();
 
 	default:
-		return (char*)("unknown network parameter");
+		return std::string("unknown network parameter");
 	}
 
 }
@@ -6435,7 +6433,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() {
 	int fnum=F_GET_RECEIVER_STATUS;
 	int ret = FAIL;
 	int retval=-1;
-	runStatus s=ERROR;
+	runStatus s = ERROR;
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 #ifdef VERBOSE
@@ -6448,9 +6446,8 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() {
 		if(retval!=-1)
 			s=(runStatus)retval;
 		if(ret==FORCE_UPDATE)
-			ret=updateReceiver();
+			updateReceiver();
 	}
-
 	return s;
 }
 

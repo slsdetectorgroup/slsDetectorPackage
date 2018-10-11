@@ -1,5 +1,5 @@
 #include "SharedMemory.h"
-#include "sls_receiver_exceptions.h"
+#include "sls_detector_exceptions.h"
 #include "ansi.h"
 
 #include <iostream>

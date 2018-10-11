@@ -177,7 +177,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 }
 
 
-const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
+const char* slsReceiverTCPIPInterface::getFunctionName(enum detFuncs func) {
 	switch (func) {
 	case F_EXEC_RECEIVER_COMMAND:		return "F_EXEC_RECEIVER_COMMAND";
 	case F_EXIT_RECEIVER: 				return "F_EXIT_RECEIVER";
@@ -282,9 +282,9 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
 	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
 
-	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
+	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
-				getFunctionName((enum recFuncs)i) << ") located at " << flist[i];
+				getFunctionName((enum detFuncs)i) << ") located at " << flist[i];
 	}
 
 	return OK;
@@ -301,26 +301,27 @@ int slsReceiverTCPIPInterface::decode_function(){
 	if (n <= 0) {
 		FILE_LOG(logDEBUG1) << "ERROR reading from socket. "
 				"Received " << n << " bytes," <<
-						"fnum:" << fnum << " "
-								"(" << getFunctionName((enum recFuncs)fnum) << ")";
+				"fnum:" << fnum << " "
+				"(" << getFunctionName((enum detFuncs)fnum) << ")";
 		return FAIL;
 	}
 	else
 		FILE_LOG(logDEBUG1) << "Received " << n << " bytes";
 
-	FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
-			"(" << getFunctionName((enum recFuncs)fnum) << ") "
-					"located at " << flist[fnum];
 
-	if (fnum < REC_FUNC_START_INDEX || fnum >= NUM_REC_FUNCTIONS) {
+	if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
 		FILE_LOG(logERROR) << "Unknown function enum " << fnum;
-		ret=(this->M_nofunc)();
+		ret = (this->M_nofunc)();
 	} else{
-		ret=(this->*flist[fnum])();
-	}
-	if (ret == FAIL) {
-		FILE_LOG(logERROR) << "Failed to execute function = " << fnum << " ("
-				<< getFunctionName((enum recFuncs)fnum) << ")";
+		FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
+				"(" << getFunctionName((enum detFuncs)fnum) << ") "
+				"located at " << flist[fnum];
+		ret = (this->*flist[fnum])();
+
+		if (ret == FAIL) {
+			FILE_LOG(logERROR) << "Failed to execute function = " << fnum << " ("
+					<< getFunctionName((enum detFuncs)fnum) << ")";
+		}
 	}
 	return ret;
 }
@@ -350,14 +351,14 @@ void slsReceiverTCPIPInterface::receiverlocked() {
 void slsReceiverTCPIPInterface::receiverNotIdle() {
 	ret = FAIL;
 	sprintf(mess,"Can not execute %s when receiver is not idle\n",
-			getFunctionName((enum recFuncs)fnum));
+			getFunctionName((enum detFuncs)fnum));
 	FILE_LOG(logERROR) << mess;
 }
 
 void slsReceiverTCPIPInterface::functionNotImplemented() {
 	ret = FAIL;
 	sprintf(mess, "Function (%s) is not implemented for this detector\n",
-			getFunctionName((enum recFuncs)fnum));
+			getFunctionName((enum detFuncs)fnum));
 	FILE_LOG(logERROR) << mess;
 }
 
@@ -1213,8 +1214,9 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-	if (retval != NULL)
+	if (retval != NULL) {
 		FILE_LOG(logDEBUG1) << "file path:" << retval;
+	}
 
 	clientInterface->Server_SendResult(mySock->differentClients,
 			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);

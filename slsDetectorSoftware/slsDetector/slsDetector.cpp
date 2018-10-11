@@ -1,6 +1,6 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
-#include "sls_receiver_exceptions.h"
+#include "sls_detector_exceptions.h"
 #include "SharedMemory.h"
 #include "ClientInterface.h"
 #include "gitInfoLib.h"

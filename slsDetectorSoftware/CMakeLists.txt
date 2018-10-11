@@ -41,7 +41,7 @@ set(PUBLICHEADERS
     ../slsSupportLib/include/sls_detector_funcs.h
     ../slsSupportLib/include/error_defs.h
     ../slsSupportLib/include/versionAPI.h
-    ../slsSupportLib/include/sls_receiver_exceptions.h
+    ../slsSupportLib/include/sls_detector_exceptions.h
     ../slsSupportLib/include/utilties.h
     ../slsSupportLib/include/container_utils.h
     sharedMemory/SharedMemory.h

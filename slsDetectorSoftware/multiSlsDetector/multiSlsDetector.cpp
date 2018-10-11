@@ -1,7 +1,7 @@
 #include "multiSlsDetector.h"
 #include "SharedMemory.h"
 #include "slsDetector.h"
-#include "sls_receiver_exceptions.h"
+#include "sls_detector_exceptions.h"
 #include "ZmqSocket.h"
 #include "multiSlsDetectorClient.h"
 #include "multiSlsDetectorCommand.h"
@@ -3515,8 +3515,6 @@ int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t, int detPos) {
 
 
 int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level){
-
-	slsDetectorCommand *cmd;
 
 	int skip=0;
 	std::string fname;

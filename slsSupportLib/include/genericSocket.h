@@ -9,7 +9,7 @@
  */
 
 #include "ansi.h"
-#include "sls_receiver_exceptions.h"
+#include "sls_detector_exceptions.h"
 
 #ifdef __CINT__
 //class  sockaddr_in;

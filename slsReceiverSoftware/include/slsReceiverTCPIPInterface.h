@@ -107,7 +107,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	void startTCPServer();
 
 	/** retuns function name with function index */
-	const char* getFunctionName(enum recFuncs func);
+	const char* getFunctionName(enum detFuncs func);
 
 	/** assigns functions to the fnum enum */
 	int function_table();

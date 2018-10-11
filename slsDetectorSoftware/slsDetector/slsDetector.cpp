@@ -826,48 +826,30 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 
 
 slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
-
-	detectorType type = GENERIC;
-	SharedMemory* shm = 0;
-
-	try {
-		// create
-		shm = new SharedMemory(multiId, detId);
-
-		// shm not created before
-		if (!shm->IsExisting()) {
-			cprintf(RED,"Shared memory %s does not exist.\n"
-					"Corrupted Multi Shared memory. Please free shared memory.\n",
-					shm->GetName().c_str());
-			throw SharedMemoryException();
-		}
-
-		// only basic size of structure (just version is required)
-		sharedSlsDetector* sdet = 0;
-		size_t sz = sizeof(sharedSlsDetector);
-
-		// open, map, verify version
-		sdet = (sharedSlsDetector*)shm->OpenSharedMemory(sz);
-		if (verify && sdet->shmversion != SLS_SHMVERSION) {
-			cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
-					"(expected 0x%x but got 0x%x)\n",
-					multiId, detId, SLS_SHMVERSION, sdet->shmversion);
-			// unmap and throw
-			sharedMemory->UnmapSharedMemory(thisDetector);
-			throw SharedMemoryException();
-		}
-
-		// get type, unmap
-		type = sdet->myDetectorType;
-		shm->UnmapSharedMemory(sdet);
-		delete shm;
-
-	} catch (...) {
-		if (shm)
-			delete shm;
-		throw;
+	auto shm = SharedMemory(multiId, detId);
+	if (!shm.IsExisting()) {
+		cprintf(RED,"Shared memory %s does not exist.\n"
+				"Corrupted Multi Shared memory. Please free shared memory.\n",
+				shm.GetName().c_str());
+		throw SharedMemoryException();
 	}
 
+	size_t sz = sizeof(sharedSlsDetector);
+
+	// open, map, verify version
+	auto sdet = (sharedSlsDetector*)shm.OpenSharedMemory(sz);
+	if (verify && sdet->shmversion != SLS_SHMVERSION) {
+		cprintf(RED, "Single shared memory (%d-%d:)version mismatch "
+				"(expected 0x%x but got 0x%x)\n",
+				multiId, detId, SLS_SHMVERSION, sdet->shmversion);
+		// unmap and throw
+		sharedMemory->UnmapSharedMemory(thisDetector);
+		throw SharedMemoryException();
+	}
+
+	// get type, unmap
+	auto type = sdet->myDetectorType;
+	shm.UnmapSharedMemory(sdet);
 	return type;
 }
 

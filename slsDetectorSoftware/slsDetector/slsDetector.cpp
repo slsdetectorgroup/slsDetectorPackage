@@ -41,13 +41,12 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
 	 * so sls shared memory will be created */
 
 	// ensure shared memory was not created before
-	SharedMemory* shm = new SharedMemory(multiId, id);
-	if (shm->IsExisting()) {
+	auto shm = SharedMemory(multiId, id);
+	if (shm.IsExisting()) {
 		cprintf(YELLOW BOLD,"Warning: Weird, this shared memory should have been "
-				"deleted before! %s. Freeing it again.\n", shm->GetName().c_str());
+				"deleted before! %s. Freeing it again.\n", shm.GetName().c_str());
 		freeSharedMemory(multiId, id);
 	}
-	delete shm;
 
 	initSharedMemory(true, type, multiId, verify);
 	initializeDetectorStructure(type);
@@ -262,9 +261,8 @@ int64_t slsDetector::getId( idMode mode) {
 
 
 void slsDetector::freeSharedMemory(int multiId, int slsId) {
-	SharedMemory* shm = new SharedMemory(multiId, slsId);
-	shm->RemoveSharedMemory();
-	delete shm;
+	auto shm = SharedMemory(multiId, slsId);
+	shm.RemoveSharedMemory();
 }
 
 void slsDetector::freeSharedMemory() {
@@ -1156,8 +1154,26 @@ int slsDetector::setTCPSocket(std::string const name, int const control_port, in
 	char thisName[MAX_STR_LENGTH];
 	int thisCP, thisSP;
 	int retval=OK;
+// 	if (strcmp(name.c_str(),"")!=0) {
+// #ifdef VERBOSE
+// 		std::cout<< "setting hostname" << std::endl;
+// #endif
+// 		strcpy(thisName,name.c_str());
+// 		strcpy(thisDetector->hostname,thisName);
+// 		if (controlSocket) {
+// 			delete controlSocket;
+// 			controlSocket=0;
+// 		}
+// 		if (stopSocket) {
+// 			delete stopSocket;
+// 			stopSocket=0;
+// 		}
+// 	} else
+// 		strcpy(thisName,thisDetector->hostname);
 
-	if (strcmp(name.c_str(),"")!=0) {
+	if (name.empty()){
+		strcpy(thisName,thisDetector->hostname);
+	}else{
 #ifdef VERBOSE
 		std::cout<< "setting hostname" << std::endl;
 #endif
@@ -1171,8 +1187,8 @@ int slsDetector::setTCPSocket(std::string const name, int const control_port, in
 			delete stopSocket;
 			stopSocket=0;
 		}
-	} else
-		strcpy(thisName,thisDetector->hostname);
+	}
+
 
 	if (control_port>0) {
 #ifdef VERBOSE

@@ -1254,7 +1254,7 @@ int slsDetector::setPort(portType index, int num) {
 	int fnum=F_SET_PORT, fnum2 = F_SET_RECEIVER_PORT;
 	int retval;
 	//  uint64_t ut;
-	char mess[MAX_STR_LENGTH]="";
+
 	int ret=FAIL;
 	bool online=false;
 	MySocketTCP *s = 0;
@@ -1362,6 +1362,7 @@ int slsDetector::setPort(portType index, int num) {
 					s->SendDataOnly(&num,sizeof(num));
 					s->ReceiveDataOnly(&ret,sizeof(ret));
 					if (ret==FAIL) {
+						char mess[MAX_STR_LENGTH]="";
 						s->ReceiveDataOnly(mess,sizeof(mess));
 						std::cout<< "Detector returned error: " << mess << std::endl;
 					} else {
@@ -2099,8 +2100,7 @@ int slsDetector::loadSettingsFile(std::string fname) {
 	int iodelay = -1;
 	int tau = -1;
 
-	std::string fn=fname;
-	fn=fname;
+	std::string fn = fname;
 
 	std::ostringstream ostfn;
 	ostfn << fname;
@@ -2233,8 +2233,7 @@ int slsDetector::startAcquisition() {
 
 	int fnum=F_START_ACQUISITION;
 	int ret=FAIL;
-	char mess[MAX_STR_LENGTH]="";
-
+	
 #ifdef VERBOSE
 	std::cout<< "Starting acquisition "<< std::endl;
 #endif
@@ -2244,6 +2243,7 @@ int slsDetector::startAcquisition() {
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret==FAIL) {
+				char mess[MAX_STR_LENGTH]="";
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
 			}
@@ -2778,12 +2778,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 
 
 int64_t slsDetector::getTimeLeft(timerIndex index) {
-
-
-	int fnum=F_GET_TIME_LEFT;
-	int64_t retval;
-	char mess[MAX_STR_LENGTH]="";
-	int ret=OK;
+	int fnum = F_GET_TIME_LEFT;
+	int64_t retval = -1;
+	int ret = OK;
 
 #ifdef VERBOSE
 	std::cout<< "Getting  timer  "<< index <<  std::endl;
@@ -2795,6 +2792,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index) {
 				stopSocket->SendDataOnly(&index,sizeof(index));
 				stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
 				if (ret==FAIL) {
+					char mess[MAX_STR_LENGTH]="";
 					stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 					std::cout<< "Detector returned error: " << mess << std::endl;
 				} else {
@@ -3023,16 +3021,10 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
 
 
 int slsDetector::getADC(dacIndex index) {
-
-	int retval;
+	int retval = -1;
 	int fnum=F_GET_ADC;
 	int ret=FAIL;
-	char mess[MAX_STR_LENGTH]="";
-
-	int arg;
-	arg=index;
-
-
+	int arg = index;
 
 #ifdef VERBOSE
 	std::cout<< std::endl;
@@ -3049,6 +3041,7 @@ int slsDetector::getADC(dacIndex index) {
 					*(adcs+index)=retval;
 				}
 			} else {
+				char mess[MAX_STR_LENGTH]="";
 				stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
 			}
@@ -3064,30 +3057,18 @@ int slsDetector::getADC(dacIndex index) {
 	if (ret==FAIL) {
 		std::cout<< "Get ADC failed " << std::endl;
 	}
-
 	return retval;
-
-
-
 }
 
 
 
 slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunicationMode(
 		externalCommunicationMode pol) {
-
-
-
-
-	int arg[1];
-	externalCommunicationMode  retval;
+	int arg = pol;
+	externalCommunicationMode retval = GET_EXTERNAL_COMMUNICATION_MODE;;
 	int fnum=F_SET_EXTERNAL_COMMUNICATION_MODE;
-	char mess[MAX_STR_LENGTH]="";
-
-	arg[0]=pol;
-
 	int ret=FAIL;
-	retval=GET_EXTERNAL_COMMUNICATION_MODE;
+
 
 #ifdef VERBOSE
 	std::cout<< std::endl;
@@ -3101,6 +3082,7 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
 			if (ret!=FAIL)
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 			else {
+				char mess[MAX_STR_LENGTH]="";
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
 			}
@@ -3119,7 +3101,6 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
 		std::cout<< "Setting communication mode failed" << std::endl;
 	}
 	return retval;
-
 }
 
 

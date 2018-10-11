@@ -940,7 +940,7 @@ int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 	freeSharedMemory();
 	setupMultiDetector();
 
-	std::string ans;
+	// std::string ans;
 	std::string str;
 	std::ifstream infile;
 	int iargval;

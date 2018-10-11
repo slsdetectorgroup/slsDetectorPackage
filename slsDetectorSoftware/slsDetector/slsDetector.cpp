@@ -868,7 +868,6 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 	}
 
 
-	char m[MAX_STR_LENGTH];
 #ifdef VERBOSE
 	std::cout << "Getting detector type " << std::endl;
 #endif
@@ -881,7 +880,8 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 			std::cout << "Detector type is "<< t << std::endl;
 #endif
 		} else {
-			mySocket->ReceiveDataOnly(m,sizeof(m));
+			char mess[MAX_STR_LENGTH];
+			mySocket->ReceiveDataOnly(mess,sizeof(mess));
 			std::cout<< "Detector returned error: " << m << std::endl;
 		}
 		mySocket->Disconnect();
@@ -894,13 +894,11 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 
 
 int slsDetector::setDetectorType(detectorType const type) {
-
 	int ret=FAIL;
 	int fnum=F_GET_DETECTOR_TYPE,fnum2=F_GET_RECEIVER_TYPE;
 	detectorType retval = type;
 	char mess[MAX_STR_LENGTH];
 	memset(mess, 0, MAX_STR_LENGTH);
-
 
 	if (type != GET_DETECTOR_TYPE) {
 #ifdef VERBOSE
@@ -930,7 +928,6 @@ int slsDetector::setDetectorType(detectorType const type) {
 	if((thisDetector->myDetectorType != GENERIC) &&
 			(thisDetector->receiverOnlineFlag==ONLINE_FLAG)) {
 		ret = FAIL;
-		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
 			std::cout << "Sending detector type to Receiver " <<
 					(int)thisDetector->myDetectorType << std::endl;
@@ -946,9 +943,7 @@ int slsDetector::setDetectorType(detectorType const type) {
 				std::cout << "ERROR: Could not send detector type to receiver" << std::endl;
 				setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTTYPE_NOT_SET));
 			}
-		}
 	}
-
 	return retval;
 }
 
@@ -4091,13 +4086,10 @@ int slsDetector::setUDPConnection() {
 
 
 int slsDetector::digitalTest( digitalTestMode mode, int ival) {
-
-
-	int retval;
-	int fnum=F_DIGITAL_TEST;
-	int ret=FAIL;
-	char mess[MAX_STR_LENGTH]="";
-
+	int retval = -1;
+	int fnum = F_DIGITAL_TEST;
+	int ret = FAIL;
+	
 #ifdef VERBOSE
 	std::cout<< std::endl;
 	std::cout<< "Getting id of "<< mode << std::endl;
@@ -4112,6 +4104,7 @@ int slsDetector::digitalTest( digitalTestMode mode, int ival) {
 			if (ret!=FAIL)
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 			else {
+				char mess[MAX_STR_LENGTH]="";
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
 			}
@@ -4192,30 +4185,22 @@ int slsDetector::sendImageToDetector(imageType index,short int imageVals[]) {
 
 
 int slsDetector::writeCounterBlockFile(std::string const fname,int startACQ) {
-
-	int ret=FAIL;
-	short int counterVals[thisDetector->nChans*thisDetector->nChips];
-
 #ifdef VERBOSE
 	std::cout<< std::endl<< "Reading Counter to \""<<fname;
 	if(startACQ==1)
 		std::cout<<"\" and Restarting Acquisition";
 	std::cout<<std::endl;
 #endif
-
-	ret=getCounterBlock(counterVals,startACQ);
+	short int counterVals[thisDetector->nChans*thisDetector->nChips];
+	int ret=getCounterBlock(counterVals,startACQ);
 	if(ret==OK)
 		ret=writeDataFile(fname, getTotalNumberOfChannels(), counterVals);
 	return ret;
 }
 
-
-
 int slsDetector::getCounterBlock(short int arg[],int startACQ) {
-
 	int ret=FAIL;
 	int fnum=F_READ_COUNTER_BLOCK;
-	char mess[MAX_STR_LENGTH]="";
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
@@ -4225,6 +4210,7 @@ int slsDetector::getCounterBlock(short int arg[],int startACQ) {
 			if (ret!=FAIL)
 				controlSocket->ReceiveDataOnly(arg,thisDetector->dataBytes);
 			else {
+				char mess[MAX_STR_LENGTH]="";
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
 			}
@@ -4233,11 +4219,8 @@ int slsDetector::getCounterBlock(short int arg[],int startACQ) {
 				updateDetector();
 		}
 	}
-
 	return ret;
 }
-
-
 
 
 int slsDetector::resetCounterBlock(int startACQ) {
@@ -4659,10 +4642,8 @@ int slsDetector::setFlippedData(dimension d, int value) {
 
 int slsDetector::setAllTrimbits(int val) {
 	int fnum=F_SET_ALL_TRIMBITS;
-	int retval;
-	char mess[MAX_STR_LENGTH]="";
+	int retval = -1;
 	int ret=OK;
-
 #ifdef VERBOSE
 	std::cout<< "Setting all trimbits to "<< val << std::endl;
 #endif
@@ -4672,6 +4653,7 @@ int slsDetector::setAllTrimbits(int val) {
 			controlSocket->SendDataOnly(&val,sizeof(val));
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret==FAIL) {
+				char mess[MAX_STR_LENGTH]="";
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
 				setErrorMask((getErrorMask())|(ALLTIMBITS_NOT_SET));
@@ -4683,7 +4665,6 @@ int slsDetector::setAllTrimbits(int val) {
 				updateDetector();
 		}
 	}
-
 #ifdef VERBOSE
 	std::cout<< "All trimbits were set to "<< retval   << std::endl;
 #endif
@@ -6320,16 +6301,12 @@ int slsDetector::setReceiverPartialFramesPadding(int f) {
 }
 
 slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
-
 	if (f == GET_FILE_FORMAT)
 		return getFileFormat();
-
 	int fnum=F_SET_RECEIVER_FILE_FORMAT;
 	int ret = FAIL;
-	int arg = -1;
+	int arg = f;
 	int retval = -1;
-
-	arg = (int)f;
 #ifdef VERBOSE
 	std::cout << "Sending file format to receiver " << arg << std::endl;
 #endif

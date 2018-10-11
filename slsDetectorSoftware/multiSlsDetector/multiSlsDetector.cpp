@@ -3516,8 +3516,6 @@ int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t, int detPos) {
 
 int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level){
 
-	slsDetectorCommand *cmd;
-
 	int skip=0;
 	std::string fname;
 	std::string str;

@@ -1213,8 +1213,9 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-	if (retval != NULL)
+	if (retval != NULL) {
 		FILE_LOG(logDEBUG1) << "file path:" << retval;
+	}
 
 	clientInterface->Server_SendResult(mySock->differentClients,
 			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);

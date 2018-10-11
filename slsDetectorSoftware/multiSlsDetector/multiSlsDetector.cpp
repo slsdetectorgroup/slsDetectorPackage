@@ -394,7 +394,7 @@ void multiSlsDetector::initSharedMemory(bool verify) {
 		// shared memory object with name
 		sharedMemory = new SharedMemory(detId, -1);
 		size_t sz = sizeof(sharedMultiSlsDetector);
-		
+
 		//create
 		if (!sharedMemory->IsExisting()) {
 			thisMultiDetector = (sharedMultiSlsDetector*)sharedMemory->CreateSharedMemory(sz);
@@ -940,8 +940,6 @@ int multiSlsDetector::readConfigurationFile(std::string const fname) {
 	freeSharedMemory();
 	setupMultiDetector();
 
-
-	multiSlsDetectorClient* cmd;
 	std::string ans;
 	std::string str;
 	std::ifstream infile;
@@ -995,8 +993,7 @@ int multiSlsDetector::readConfigurationFile(std::string const fname) {
 					std::cout << args[ia] << " ??????? ";
 				std::cout << std::endl;
 #endif
-				cmd = new multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
-				delete cmd;
+				multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
 			}
 			++iline;
 		}
@@ -1043,18 +1040,18 @@ int multiSlsDetector::writeConfigurationFile(std::string const fname) {
 	outfile.open(fname.c_str(), std::ios_base::out);
 	if (outfile.is_open()) {
 
-		slsDetectorCommand* cmd = new slsDetectorCommand(this);
+		auto cmd = slsDetectorCommand(this);
 
 		// complete size of detector
 		std::cout << iline << " " << names[iline] << std::endl;
 		strcpy(args[0], names[iline].c_str());
-		outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+		outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
 		++iline;
 
 		// hostname of the detectors
 		std::cout << iline << " " << names[iline] << std::endl;
 		strcpy(args[0], names[iline].c_str());
-		outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+		outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
 		++iline;
 
 		// single detector configuration
@@ -1072,11 +1069,9 @@ int multiSlsDetector::writeConfigurationFile(std::string const fname) {
 		while (iline < nvar) {
 			std::cout << iline << " " << names[iline] << std::endl;
 			strcpy(args[0], names[iline].c_str());
-			outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+			outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
 			++iline;
 		}
-
-		delete cmd;
 		outfile.close();
 #ifdef VERBOSE
 		std::cout << "wrote " << iline << " lines to configuration file " << std::endl;
@@ -3547,7 +3542,7 @@ int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level)
 
 	infile.open(fname.c_str(), std::ios_base::in);
 	if (infile.is_open()) {
-		cmd=new slsDetectorCommand(this);
+		auto cmd = slsDetectorCommand(this);
 		while (infile.good() and interrupt==0) {
 			sargname="none";
 			sargval="0";
@@ -3583,11 +3578,10 @@ int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level)
 						skip=1;
 				}
 				if (skip==0)
-					cmd->executeLine(iargval,args,PUT_ACTION);
+					cmd.executeLine(iargval,args,PUT_ACTION);
 			}
 			iline++;
 		}
-		delete cmd;
 		infile.close();
 
 	} else {
@@ -3606,8 +3600,6 @@ int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level)
 
 
 int multiSlsDetector::dumpDetectorSetup(std::string const fname, int level){
-
-	slsDetectorCommand *cmd;
 	detectorType type = getDetectorsType();
 	std::string names[100];
 	int nvar=0;
@@ -3709,14 +3701,11 @@ int multiSlsDetector::dumpDetectorSetup(std::string const fname, int level){
 
 	outfile.open(fname1.c_str(),std::ios_base::out);
 	if (outfile.is_open()) {
-		cmd=new slsDetectorCommand(this);
+		auto cmd = slsDetectorCommand(this);
 		for (iv=0; iv<nvar; iv++) {
 			strcpy(args[0],names[iv].c_str());
-			outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+			outfile << names[iv] << " " << cmd.executeLine(1,args,GET_ACTION) << std::endl;
 		}
-
-		delete cmd;
-
 		outfile.close();
 	}
 	else {

@@ -222,7 +222,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 #endif
 
 	// jungfrau
-	if (detType == slsReceiverDefs::JUNGFRAU) {
+	if (detType == slsDetectorDefs::JUNGFRAU) {
 	    lblNumStoragecells->setEnabled(true);
 	    spinNumStoragecells->setEnabled(true);
 	    spinNumStoragecells->setValue((int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER,-1));
@@ -327,7 +327,7 @@ void qTabAdvanced::Initialization(){
 		connect(btnSetRoi,			SIGNAL(clicked()),			this, SLOT(setROI()));
 	}
 
-	if(detType == slsReceiverDefs::JUNGFRAU) {
+	if(detType == slsDetectorDefs::JUNGFRAU) {
 	    connect(spinNumStoragecells, SIGNAL(valueChanged(int)),  this,  SLOT(SetNumStoragecells(int)));
 	} else if (detType == slsDetectorDefs::EIGER) {
 		//Exposure Time
@@ -1581,14 +1581,14 @@ void qTabAdvanced::Refresh(){
 		updateAllTrimbitsFromServer();
 
 	// storage cells
-	if (detType == slsReceiverDefs::JUNGFRAU) {
+	if (detType == slsDetectorDefs::JUNGFRAU) {
 	    disconnect(spinNumStoragecells,SIGNAL(valueChanged(int)),this,   SLOT(SetNumStoragecells(int)));
 	    spinNumStoragecells->setValue((int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER,-1));
 	    connect(spinNumStoragecells,SIGNAL(valueChanged(int)),   this,   SLOT(SetNumStoragecells(int)));
 	}
 
 	// sub exptime and sub period
-	else if (detType == slsReceiverDefs::EIGER) {
+	else if (detType == slsDetectorDefs::EIGER) {
 		disconnect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
 		disconnect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubExposureTime()));
 		disconnect(spinSubPeriod,SIGNAL(valueChanged(double)),		   this,	SLOT(SetSubPeriod()));

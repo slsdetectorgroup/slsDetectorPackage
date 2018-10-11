@@ -9,12 +9,14 @@
  * @author Anna Bergamaschi
  */
 
-#include "slsDetectorBase.h"
-#include "MySocketTCP.h"
+#include "sls_detector_defs.h"
+#include "error_defs.h"
+#include "math.h"
 
 class multiSlsDetector;
 class SharedMemory;
 class ClientInterface;
+class MySocketTCP;
 
 #define SLS_SHMVERSION	0x181005
 #define NCHIPSMAX 10
@@ -38,7 +40,7 @@ typedef  struct detParameterList {
 } detParameterList;
 
 
-class slsDetector : public slsDetectorBase {
+class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 
 private:
 	/**
@@ -388,7 +390,7 @@ public:
 	 */
 	void disconnectStop();
 
-	using slsDetectorBase::getDetectorType;
+	using slsDetectorDefs::getDetectorType;
 
 	/**
 	 * Get detector type by connecting to the detector without creating an object

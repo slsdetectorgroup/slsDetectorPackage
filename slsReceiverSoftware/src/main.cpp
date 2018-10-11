@@ -1,7 +1,7 @@
 /* A simple server in the internet domain using TCP
    The port number is passed as an argument */
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "slsReceiverUsers.h"
 
 #include <iostream>
@@ -40,8 +40,8 @@ void AcquisitionFinished(uint64_t frames, void*p){
 
 
 void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
-	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
-	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
+	slsDetectorDefs::sls_receiver_header* header = (slsDetectorDefs::sls_receiver_header*)metadata;
+	slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
 	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
 			"#### %d GetData: ####\n"
@@ -89,9 +89,9 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	int ret = slsReceiverDefs::OK;
+	int ret = slsDetectorDefs::OK;
 	slsReceiverUsers *receiver = new slsReceiverUsers(argc, argv, ret);
-	if(ret==slsReceiverDefs::FAIL){
+	if(ret==slsDetectorDefs::FAIL){
 		delete receiver;
 		cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 		exit(EXIT_FAILURE);
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
 
 
 	//start tcp server thread
-	if (receiver->start() == slsReceiverDefs::FAIL){
+	if (receiver->start() == slsDetectorDefs::FAIL){
 		delete receiver;
 		cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 		exit(EXIT_FAILURE);

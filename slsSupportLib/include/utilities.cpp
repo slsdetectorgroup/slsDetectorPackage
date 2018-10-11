@@ -13,7 +13,7 @@ int read_config_file(std::string fname, int *tcpip_port_no,
 	std::ifstream infile;
 	std::string sLine,sargname, sargvalue;
 	int iline = 0;
-	int success = slsReceiverDefs::OK;
+	int success = slsDetectorDefs::OK;
 
 
 	FILE_LOG(logINFO) << "config file name " << fname;
@@ -21,10 +21,10 @@ int read_config_file(std::string fname, int *tcpip_port_no,
 		infile.open(fname.c_str(), std::ios_base::in);
 	} catch(...) {
 		FILE_LOG(logERROR) << "Could not open configuration file " << fname ;
-		success = slsReceiverDefs::FAIL;
+		success = slsDetectorDefs::FAIL;
 	}
 
-	if (success == slsReceiverDefs::OK  && infile.is_open()) {
+	if (success == slsDetectorDefs::OK  && infile.is_open()) {
 		while(infile.good()){
 			getline(infile,sLine);
 			iline++;
@@ -58,7 +58,7 @@ int read_config_file(std::string fname, int *tcpip_port_no,
 							cprintf(RESET, "dataport: %d\n" , *tcpip_port_no);
 						else{
 							cprintf(RED, "could not decode port in config file. Exiting.\n");
-							success = slsReceiverDefs::FAIL;
+							success = slsDetectorDefs::FAIL;
 						}
 					}
 				}
@@ -120,25 +120,25 @@ int readDataFile(std::string fname, short int *data, int nch) {
 
 int writeDataFile(std::ofstream &outfile,int nch,  short int *data, int offset) {
 	if (data==NULL)
-		return slsReceiverDefs::FAIL;
+		return slsDetectorDefs::FAIL;
 	for (int ichan=0; ichan<nch; ichan++)
 		outfile << ichan+offset << " " << *(data+ichan) << std::endl;
-	return slsReceiverDefs::OK;
+	return slsDetectorDefs::OK;
 }
 
 
 int writeDataFile(std::string fname,int nch, short int *data) {
 	std::ofstream outfile;
 	if (data==NULL)
-		return slsReceiverDefs::FAIL;
+		return slsDetectorDefs::FAIL;
 	outfile.open (fname.c_str(),std::ios_base::out);
 	if (outfile.is_open())       {
 		writeDataFile(outfile, nch, data, 0);
 		outfile.close();
-		return slsReceiverDefs::OK;
+		return slsDetectorDefs::OK;
 	} else {
 		FILE_LOG(logERROR) << "Could not open file " << fname << "for writing";
-		return slsReceiverDefs::FAIL;
+		return slsDetectorDefs::FAIL;
 	}
 }
 

@@ -69,10 +69,6 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 	strcpy(mess,"dummy message");
 
 	function_table();
-#ifdef VERYVERBOSE
-	FILE_LOG(logINFO) << "Function table assigned.";
-#endif
-
 }
 
 
@@ -147,35 +143,16 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 void slsReceiverTCPIPInterface::startTCPServer(){
 	cprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
 	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << std::endl;
+	int ret = OK;
 
-#ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG5) << "Starting Receiver TCP Server";
-#endif
-	int v=OK;
-
-	while(1) {
-#ifdef VERYVERBOSE
-		FILE_LOG(logDEBUG5);
-#endif
-#ifdef VERY_VERBOSE
-		FILE_LOG(logDEBUG5) << "Waiting for client call";
-#endif
+	while(true) {
 		if(mySock->Connect() >= 0){
-#ifdef VERY_VERBOSE
-			FILE_LOG(logDEBUG5) << "Conenction accepted";
-#endif
-			v = decode_function();
-#ifdef VERY_VERBOSE
-			FILE_LOG(logDEBUG5) << "function executed";
-#endif
+			ret = decode_function();
 			mySock->Disconnect();
-#ifdef VERY_VERBOSE
-			FILE_LOG(logDEBUG5) << "connection closed";
-#endif
 		}
 
 		//if tcp command was to exit server
-		if(v==GOODBYE){
+		if(ret == GOODBYE){
 			FILE_LOG(logINFO) << "Shutting down UDP Socket";
 			if(receiverBase){
 				receiverBase->shutDownUDPSockets();
@@ -188,7 +165,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 
 		//if user entered exit
 		if(killTCPServerThread) {
-			if (v != GOODBYE) {
+			if (ret != GOODBYE) {
 				if(receiverBase){
 					receiverBase->shutDownUDPSockets();
 				}
@@ -196,7 +173,6 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 			cprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			pthread_exit(NULL);
 		}
-
 	}
 }
 
@@ -306,14 +282,12 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
 	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
 
-
-#ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
-		FILE_LOG(logINFO) << "function fnum: " << i << " (" << getFunctionName((enum recFuncs)i) << ") located at " << (unsigned int)flist[i];
+		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
+				getFunctionName((enum recFuncs)i) << ") located at " << flist[i];
 	}
-#endif
-	return OK;
 
+	return OK;
 }
 
 
@@ -321,9 +295,7 @@ int slsReceiverTCPIPInterface::function_table(){
 
 int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
-#ifdef VERYVERBOSE
-	cprintf(RESET,"\n");
-#endif
+
 	FILE_LOG(logDEBUG1) <<  "waiting to receive data";
 	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
@@ -347,7 +319,8 @@ int slsReceiverTCPIPInterface::decode_function(){
 		ret=(this->*flist[fnum])();
 	}
 	if (ret == FAIL) {
-		FILE_LOG(logERROR) << "Failed to execute function = " << fnum << " (" << getFunctionName((enum recFuncs)fnum) << ")";
+		FILE_LOG(logERROR) << "Failed to execute function = " << fnum << " ("
+				<< getFunctionName((enum recFuncs)fnum) << ")";
 	}
 	return ret;
 }
@@ -376,13 +349,15 @@ void slsReceiverTCPIPInterface::receiverlocked() {
 
 void slsReceiverTCPIPInterface::receiverNotIdle() {
 	ret = FAIL;
-	sprintf(mess,"Can not execute %s when receiver is not idle\n", getFunctionName((enum recFuncs)fnum));
+	sprintf(mess,"Can not execute %s when receiver is not idle\n",
+			getFunctionName((enum recFuncs)fnum));
 	FILE_LOG(logERROR) << mess;
 }
 
 void slsReceiverTCPIPInterface::functionNotImplemented() {
 	ret = FAIL;
-	sprintf(mess, "Function (%s) is not implemented for this detector\n",getFunctionName((enum recFuncs)fnum));
+	sprintf(mess, "Function (%s) is not implemented for this detector\n",
+			getFunctionName((enum recFuncs)fnum));
 	FILE_LOG(logERROR) << mess;
 }
 
@@ -399,11 +374,8 @@ int slsReceiverTCPIPInterface::M_nofunc(){printf("111 \n");
 	strcpy(mess,"Unrecognized Function. Please do not proceed.\n");
 	FILE_LOG(logERROR) << mess;
 
-	// send ok / fail
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	// send return argument
-	mySock->SendDataOnly(mess,sizeof(mess));
-	// return ok / fail
+	clientInterface->Server_SendResult(false, ret, NULL, 0, mess);
+
 	return ret;
 }
 
@@ -421,10 +393,6 @@ int slsReceiverTCPIPInterface::exec_command() {
 	if (mySock->ReceiveDataOnly(cmd,MAX_STR_LENGTH) < 0)
 		return printSocketReadError();
 
-	// execute action
-#ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG5) << "executing command " << cmd;
-#endif
 	if (mySock->differentClients && lockStatus)
 		receiverlocked();
 	else {
@@ -439,23 +407,20 @@ int slsReceiverTCPIPInterface::exec_command() {
 		}
 	}
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,MAX_STR_LENGTH);
+	clientInterface->Server_SendResult(false, ret, NULL, 0, mess);
 
-	// return ok/fail
 	return ret;
 }
 
 
 
 int slsReceiverTCPIPInterface::exit_server() {
+	cprintf(RED,"Closing receiver server\n");
+
+	ret = OK;
+	clientInterface->Server_SendResult(false, ret, NULL, 0);
+
 	ret = GOODBYE;
-	strcpy(mess,"closing server");
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	mySock->SendDataOnly(mess,sizeof(mess));
-	cprintf(RED,"%s\n",mess);
 	return ret;
 }
 
@@ -472,24 +437,19 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 
 	// execute action
 	if (lock >= 0) {
-		if (!lockStatus || (!strcmp(mySock->lastClientIP,mySock->thisClientIP)) || (!strcmp(mySock->lastClientIP,"none"))) {
+		if (!lockStatus || // if it was unlocked, anyone can lock
+				(!strcmp(mySock->lastClientIP,mySock->thisClientIP)) || // if it was locked, need same ip
+				(!strcmp(mySock->lastClientIP,"none"))) //if it was locked, must be by "none"
+			{
 			lockStatus = lock;
 			strcpy(mySock->lastClientIP,mySock->thisClientIP);
 		}   else
 			receiverlocked();
 	}
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &lockStatus,sizeof(lockStatus), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	else
-		mySock->SendDataOnly(&lockStatus,sizeof(lockStatus));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -497,11 +457,8 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 
 int slsReceiverTCPIPInterface::get_last_client_ip() {
 	ret = OK;
-
-	if (mySock->differentClients)
-		ret = FORCE_UPDATE;
-
-	clientInterface->Server_SendResult(ret,mySock->lastClientIP, INET_ADDRSTRLEN);
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret,mySock->lastClientIP, sizeof(mySock->lastClientIP));
 
 	return ret;
 }
@@ -553,24 +510,16 @@ int slsReceiverTCPIPInterface::set_port() {
 		}
 	}
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &p_number,sizeof(p_number), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	else {
-		mySock->SendDataOnly(&p_number,sizeof(p_number));
-		if(ret != FAIL){
-			mySock->Disconnect();
-			delete mySock;
-			mySock = mySocket;
-			clientInterface->SetSocket(mySock);
-		}
+	if(ret != FAIL){
+		mySock->Disconnect();
+		delete mySock;
+		mySock = mySocket;
+		clientInterface->SetSocket(mySock);
 	}
 
-	// return ok/fail
 	return ret;
 }
 
@@ -579,17 +528,14 @@ int slsReceiverTCPIPInterface::set_port() {
 int slsReceiverTCPIPInterface::update_client() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
+
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	//fail and force_update
-	if (ret != OK){
-		mySock->SendDataOnly(mess,sizeof(mess));
-		// return ok/fail
+	clientInterface->Server_SendResult(false, ret, NULL, 0, mess);
+
+	if (ret == FAIL)
 		return ret;
-	}
 
 	// update
 	return send_update();
@@ -607,9 +553,7 @@ int slsReceiverTCPIPInterface::send_update() {
 	n += mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
 
 	// filepath
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getFilePath();
-#endif
 	if (path == NULL)
 	    n += mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else {
@@ -618,9 +562,7 @@ int slsReceiverTCPIPInterface::send_update() {
 	}
 
 	// filename
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getFileName();
-#endif
 	if(path == NULL)
 	    n += mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else {
@@ -629,103 +571,71 @@ int slsReceiverTCPIPInterface::send_update() {
 	}
 
 	// index
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=receiverBase->getFileIndex();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//file format
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFileFormat();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//frames per file
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFramesPerFile();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//frame discard policy
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFrameDiscardPolicy();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//frame padding
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFramePaddingEnable();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// file write enable
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getFileWriteEnable();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// file overwrite enable
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getOverwriteEnable();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// gap pixels
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getGapPixelsEnable();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// streaming frequency
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getStreamingFrequency();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// streaming port
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getStreamingPort();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// streaming source ip
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	path = receiverBase->getStreamingSourceIP();
-#endif
 	mySock->SendDataOnly(path,MAX_STR_LENGTH);
 	if (path != NULL)
 		delete[] path;
 
     // additional json header
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
     path = receiverBase->getAdditionalJsonHeader();
-#endif
     mySock->SendDataOnly(path,MAX_STR_LENGTH);
     if (path != NULL)
         delete[] path;
 
 	// data streaming enable
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getDataStreamEnable();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// activate
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getActivate();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// deactivated padding enable
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getDeactivatedPadding();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// silent mode
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getSilentMode();
-#endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	if (!lockStatus)
@@ -740,10 +650,8 @@ int slsReceiverTCPIPInterface::get_id(){
 	ret = OK;
 	int64_t retval = getReceiverVersion();
 
-	if(mySock->differentClients)
-		ret = FORCE_UPDATE;
-
-	clientInterface->Server_SendResult(ret, &retval, sizeof(retval));
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval));
 
 	return ret;
 }
@@ -763,7 +671,6 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 	// execute action
 	if (dr == GET_DETECTOR_TYPE)
 		retval = myDetectorType;
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	else if (mySock->differentClients && lockStatus)
 		receiverlocked();
 	else if ((receiverBase) && (receiverBase->getStatus() != IDLE))
@@ -800,22 +707,13 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			retval = myDetectorType;
 		}
 	}
-#endif
 	// client has started updating receiver, update ip
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
 
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
-
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -827,17 +725,12 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 	char hostname[MAX_STR_LENGTH];
 	memset(hostname, 0, sizeof(hostname));
 	char* retval = NULL;
-	char defaultVal[MAX_STR_LENGTH];
-	memset(defaultVal, 0, sizeof(defaultVal));
-
 
 	// receive arguments
 	if (mySock->ReceiveDataOnly(hostname,MAX_STR_LENGTH) < 0 )
 		return printSocketReadError();
 
 	// execute action
-	// only a set, not a get
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (mySock->differentClients && lockStatus)
 		receiverlocked();
 	else if (receiverBase == NULL)
@@ -847,26 +740,19 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 	else {
 		receiverBase->setDetectorHostname(hostname);
 		retval = receiverBase->getDetectorHostname();
-		if(retval == NULL)
+		if(retval == NULL) {
 			ret = FAIL;
+			cprintf(RED, "Could not set hostname to %s\n", hostname);
+			FILE_LOG(logERROR) << mess;
+		}
 	}
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	if(retval == NULL)
-		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
-	else {
-		mySock->SendDataOnly(retval,MAX_STR_LENGTH);
+	if(retval != NULL)
 		delete[] retval;
-	}
 
-	// return ok/fail
 	return ret;
 }
 
@@ -894,10 +780,7 @@ int slsReceiverTCPIPInterface::set_roi() {
 	if (myDetectorType != GOTTHARD)
 		functionNotImplemented();
 
-	// execute action
-	// only a set, not a get
 	else {
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 		if (mySock->differentClients && lockStatus)
 			receiverlocked();
 		else if (receiverBase == NULL)
@@ -906,21 +789,14 @@ int slsReceiverTCPIPInterface::set_roi() {
 			receiverNotIdle();
 		else {
 			ret = receiverBase->setROI(roiLimits);
-			//retval = receiverBase->getROI();
 		}
-#endif
 	}
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, NULL, 0, mess);
 
 	roiLimits.clear();
 
-	// return ok/fail
 	return ret;
 }
 
@@ -939,8 +815,6 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		return printSocketReadError();
 
 	// execute action
-	// only a set, not a get
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (mySock->differentClients && lockStatus)
 		receiverlocked();
 	else if (receiverBase == NULL)
@@ -992,18 +866,10 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			}
 		}
 	}
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(retval,MAX_STR_LENGTH);
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1020,7 +886,6 @@ int slsReceiverTCPIPInterface::set_timer() {
 		return printSocketReadError();
 
 	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1106,21 +971,11 @@ int slsReceiverTCPIPInterface::set_timer() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << getTimerType(index[0]) << ":" << retval;
-#endif
+	FILE_LOG(logDEBUG1) << slsDetectorDefs::getTimerType((timerIndex)(index[0])) << ":" << retval;
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1158,7 +1013,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		FILE_LOG(logERROR) << mess;
 	}
 
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+
 	if (ret == OK){
 		if (receiverBase == NULL)
 			invalidReceiverObject();
@@ -1186,21 +1041,11 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			}
 		}
 	}
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
-#endif
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1216,8 +1061,6 @@ int slsReceiverTCPIPInterface::set_streaming_frequency(){
 	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1243,18 +1086,10 @@ int slsReceiverTCPIPInterface::set_streaming_frequency(){
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1262,23 +1097,19 @@ int slsReceiverTCPIPInterface::set_streaming_frequency(){
 
 int	slsReceiverTCPIPInterface::get_status(){
 	ret = OK;
+	memset(mess, 0, sizeof(mess));
 	enum runStatus retval = ERROR;
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else retval = receiverBase->getStatus();
-#endif
 
 	if (ret == OK && mySock->differentClients)
 		ret = FORCE_UPDATE;
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	mySock->SendDataOnly(&retval,sizeof(retval));
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// return ok/fail
 	return ret;
 }
 
@@ -1288,19 +1119,10 @@ int slsReceiverTCPIPInterface::start_receiver(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	// execute action
-	// only a set, not a get
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else if (mySock->differentClients && lockStatus)
 		receiverlocked();
-	/*
-	else if(!strlen(receiverBase->getFilePath())){
-		strcpy(mess,SET_RECEIVER_ERR_MESSAGE");
-		ret = FAIL;
-	}
-	 */
 	else {
 		enum runStatus s = receiverBase->getStatus();
 		if (s != IDLE) {
@@ -1315,17 +1137,10 @@ int slsReceiverTCPIPInterface::start_receiver(){
 			}
 		}
 	}
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, NULL, 0, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-
-	// return ok/fail
 	return ret;
 
 
@@ -1338,9 +1153,6 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 	memset(mess, 0, sizeof(mess));
 	enum runStatus s = ERROR;
 
-	// execute action
-	// only a set, not a get
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else if (mySock->differentClients && lockStatus)
@@ -1357,17 +1169,10 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, NULL, 0, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1382,15 +1187,11 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 	char fPath[MAX_STR_LENGTH];
 	memset(fPath, 0, sizeof(fPath));
 	char* retval=NULL;
-	char defaultVal[MAX_STR_LENGTH];
-	memset(defaultVal, 0, sizeof(defaultVal));
 
 	// receive arguments
 	if (mySock->ReceiveDataOnly(fPath,MAX_STR_LENGTH) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1412,27 +1213,15 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	if (retval != NULL)
 		FILE_LOG(logDEBUG1) << "file path:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	if(retval == NULL)
-		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
-	else{
-		mySock->SendDataOnly(retval,MAX_STR_LENGTH);
+	if(retval != NULL)
 		delete[] retval;
-	}
 
-	// return ok/fail
 	return ret;
 }
 
@@ -1444,15 +1233,11 @@ int slsReceiverTCPIPInterface::set_file_name() {
 	char fName[MAX_STR_LENGTH];
 	memset(fName, 0, sizeof(fName));
 	char* retval = NULL;
-	char defaultVal[MAX_STR_LENGTH];
-	memset(defaultVal, 0, sizeof(defaultVal));
 
 	// receive arguments
 	if (mySock->ReceiveDataOnly(fName,MAX_STR_LENGTH) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1474,26 +1259,14 @@ int slsReceiverTCPIPInterface::set_file_name() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "file name:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	if(retval == NULL)
-		mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
-	else{
-		mySock->SendDataOnly(retval,MAX_STR_LENGTH);
+	if(retval != NULL)
 		delete[] retval;
-	}
 
-	// return ok/fail
 	return ret;
 }
 
@@ -1509,8 +1282,6 @@ int slsReceiverTCPIPInterface::set_file_index() {
 	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1532,21 +1303,11 @@ int slsReceiverTCPIPInterface::set_file_index() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "file index:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval,sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1557,24 +1318,17 @@ int slsReceiverTCPIPInterface::set_file_index() {
 
 int	slsReceiverTCPIPInterface::get_frame_index(){
 	ret = OK;
+	memset(mess, 0, sizeof(mess));
 	int retval = -1;
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else
 		retval=receiverBase->getAcquisitionIndex();
-#endif
 
-	if (mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval,sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1582,23 +1336,16 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 
 int	slsReceiverTCPIPInterface::get_frames_caught(){
 	ret = OK;
+	memset(mess, 0, sizeof(mess));
 	int retval = -1;
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else retval=receiverBase->getTotalFramesCaught();
-#endif
 
-	if (mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval,sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1608,9 +1355,6 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	// execute action
-	// only a set, not a get
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else if (mySock->differentClients && lockStatus)
@@ -1619,17 +1363,10 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 		receiverNotIdle();
 	else
 		receiverBase->resetAcquisitionCount();
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, NULL, 0, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1645,8 +1382,6 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1668,21 +1403,11 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "file write enable:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1700,8 +1425,6 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1723,21 +1446,12 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
+
 	FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1756,10 +1470,6 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	// execute action
-
-
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	else {
 		if (receiverBase == NULL)
 			invalidReceiverObject();
@@ -1783,21 +1493,11 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 			}
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "10Gbe:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1814,8 +1514,6 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 	if (mySock->ReceiveDataOnly(&value,sizeof(value)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1841,21 +1539,12 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
+
 	FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1874,8 +1563,6 @@ int slsReceiverTCPIPInterface::set_activate() {
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	else {
 		if (receiverBase == NULL)
 			invalidReceiverObject();
@@ -1899,21 +1586,11 @@ int slsReceiverTCPIPInterface::set_activate() {
 			}
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Activate: " << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1929,8 +1606,6 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -1952,21 +1627,11 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "data streaming enable:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -1982,8 +1647,6 @@ int slsReceiverTCPIPInterface::set_streaming_timer(){
 	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2005,21 +1668,11 @@ int slsReceiverTCPIPInterface::set_streaming_timer(){
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Streaming timer:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2038,8 +1691,6 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	else {
 		if (receiverBase == NULL)
 			invalidReceiverObject();
@@ -2063,21 +1714,11 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 			}
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2094,8 +1735,6 @@ int slsReceiverTCPIPInterface::set_file_format() {
 	if (mySock->ReceiveDataOnly(&f,sizeof(f)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2117,21 +1756,11 @@ int slsReceiverTCPIPInterface::set_file_format() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "File Format: " << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2147,8 +1776,6 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 	if (mySock->ReceiveDataOnly(&arg,sizeof(arg)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2170,21 +1797,11 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Position Id:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2203,8 +1820,6 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 	if (mySock->ReceiveDataOnly(arg,sizeof(arg)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2227,21 +1842,11 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 				retval *= temp[i];
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2258,8 +1863,6 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 	if (mySock->ReceiveDataOnly(&port,sizeof(port)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2276,21 +1879,11 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 		//get
 		retval=receiverBase->getStreamingPort();
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "streaming port:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2309,8 +1902,6 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 	if (mySock->ReceiveDataOnly(arg,MAX_STR_LENGTH) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2320,28 +1911,20 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 		else if (receiverBase->getStatus() != IDLE)
 			receiverNotIdle();
 		else {
-				receiverBase->setStreamingSourceIP(arg);
+			receiverBase->setStreamingSourceIP(arg);
 		}
 
 		//get
 		retval = receiverBase->getStreamingSourceIP();
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "streaming source ip:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(retval,MAX_STR_LENGTH);
-	delete[] retval;
+	if(retval != NULL)
+		delete[] retval;
 
-	// return ok/fail
 	return ret;
 }
 
@@ -2361,8 +1944,6 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 	if (mySock->ReceiveDataOnly(&value,sizeof(value)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2379,21 +1960,11 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 		//get
 		retval = (int)receiverBase->getSilentMode(); // no check required
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "silent mode:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2412,9 +1983,6 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
 		return printSocketReadError();
 
-
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2439,21 +2007,11 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2464,9 +2022,6 @@ int slsReceiverTCPIPInterface::restream_stop(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	// execute action
-	// only a set, not a get
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else if (mySock->differentClients && lockStatus)
@@ -2484,17 +2039,10 @@ int slsReceiverTCPIPInterface::restream_stop(){
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, NULL, 0, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2511,8 +2059,6 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
     if (mySock->ReceiveDataOnly(arg,MAX_STR_LENGTH) < 0 )
         return printSocketReadError();
 
-    // execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
     if (receiverBase == NULL)
         invalidReceiverObject();
     else {
@@ -2528,23 +2074,15 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
         //get
         retval = receiverBase->getAdditionalJsonHeader();
     }
-#endif
-#ifdef VERYVERBOSE
     FILE_LOG(logDEBUG1) << "additional json header:" << retval;
-#endif
 
-    if (ret == OK && mySock->differentClients)
-        ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, retval, MAX_STR_LENGTH, mess);
 
-    // send answer
-    mySock->SendDataOnly(&ret,sizeof(ret));
-    if (ret == FAIL)
-        mySock->SendDataOnly(mess,sizeof(mess));
-    mySock->SendDataOnly(retval,MAX_STR_LENGTH);
-    delete[] retval;
+	if (retval != NULL)
+		delete[] retval;
 
-    // return ok/fail
-    return ret;
+     return ret;
 }
 
 
@@ -2559,8 +2097,6 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
     if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
         return printSocketReadError();
 
-    // execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
     if (receiverBase == NULL)
         invalidReceiverObject();
     else {
@@ -2586,21 +2122,11 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
             FILE_LOG(logERROR) << mess;
         }
     }
-#endif
-#ifdef VERYVERBOSE
     FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
-#endif
 
-    if (ret == OK && mySock->differentClients)
-        ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-    // send answer
-    mySock->SendDataOnly(&ret,sizeof(ret));
-    if (ret == FAIL)
-        mySock->SendDataOnly(mess,sizeof(mess));
-    mySock->SendDataOnly(&retval,sizeof(retval));
-
-    // return ok/fail
     return ret;
 }
 
@@ -2608,23 +2134,16 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 
 int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
     ret = OK;
+	memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-    // execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
     if (receiverBase == NULL)
         invalidReceiverObject();
     else retval = receiverBase->getActualUDPSocketBufferSize();
-#endif
 
-    if (ret == OK && mySock->differentClients)
-        ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-    // send answer
-    mySock->SendDataOnly(&ret,sizeof(ret));
-    mySock->SendDataOnly(&retval,sizeof(retval));
-
-    // return ok/fail
     return ret;
 }
 
@@ -2640,8 +2159,6 @@ int slsReceiverTCPIPInterface::set_frames_per_file() {
 	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2663,21 +2180,11 @@ int slsReceiverTCPIPInterface::set_frames_per_file() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "frames per file:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2690,7 +2197,6 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int64_t arg = -1;
-	int64_t retval = -1;
 
 	// receive arguments
 	if (mySock->ReceiveDataOnly(&arg,sizeof(arg)) < 0 )
@@ -2727,16 +2233,9 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 	}
 	else FILE_LOG(logINFO) << "Compatibility with Client: Successful";
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, NULL, 0, mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval)); // sending crap (because of thisReceiver interface)
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2753,8 +2252,6 @@ int slsReceiverTCPIPInterface::set_discard_policy() {
 	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2776,21 +2273,11 @@ int slsReceiverTCPIPInterface::set_discard_policy() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2807,8 +2294,6 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
 		return printSocketReadError();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	if (receiverBase == NULL)
 		invalidReceiverObject();
 	else {
@@ -2831,21 +2316,11 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 			FILE_LOG(logERROR) << mess;
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }
 
@@ -2865,8 +2340,6 @@ int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	// execute action
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	else {
 		if (receiverBase == NULL)
 			invalidReceiverObject();
@@ -2890,20 +2363,10 @@ int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
 			}
 		}
 	}
-#endif
-#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
-#endif
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	clientInterface->Server_SendResult(mySock->differentClients,
+			ret, &retval, sizeof(retval), mess);
 
-	// send answer
-	mySock->SendDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL)
-		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
-
-	// return ok/fail
 	return ret;
 }

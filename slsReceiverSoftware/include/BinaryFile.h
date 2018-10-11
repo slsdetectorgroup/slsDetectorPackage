@@ -14,7 +14,7 @@
 #include <string>
 
 
-class BinaryFile : private virtual slsReceiverDefs, public File, public BinaryFileStatic {
+class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFileStatic {
 	
  public:
 	/**

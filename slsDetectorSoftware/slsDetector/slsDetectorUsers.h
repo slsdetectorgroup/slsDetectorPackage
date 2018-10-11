@@ -127,7 +127,7 @@ public:
 	/**
 	 * Gets detector type
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns detector type (EIGER, JUNGFRAU, GOTTHARD) slsReceiverDefs
+	 * @returns detector type (EIGER, JUNGFRAU, GOTTHARD) slsDetectorDefs
 	 */
 	std::string getDetectorType(int detPos = -1);
 

@@ -2,12 +2,10 @@ CC			=	g++
 CLAGS		+=  -DVERBOSE #VERYBOSE
 LDLIBS		+= 	-lm  -lstdc++ -pthread 
 
-LDIR 		=	../../slsDetectorSoftware
-RDIR 		= 	../../slsReceiverSoftware
 DDIR		=	../../bin
-INCLUDES	= 	-I ../../slsSupportLib/include  -I $(LDIR)/slsDetector -I ../include -I $(RDIR)/include
+INCLUDES	= 	-I ../../slsSupportLib/include -I ../include 
 SRC_CLNT	= 	qClient.cpp 
-DEPSINCLUDES=   qClient.h $(RDIR)/include/MySocketTCP.h $(LDIR)/slsDetector/slsDetectorBase.h  ../../slsSupportLib/include/sls_detector_defs.h
+DEPSINCLUDES=   qClient.h ../../slsSupportLib/include/MySocketTCP.h  ../../slsSupportLib/include/sls_detector_defs.h
 
 
 all:	client

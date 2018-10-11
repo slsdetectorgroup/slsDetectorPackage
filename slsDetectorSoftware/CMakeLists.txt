@@ -46,7 +46,6 @@ set(PUBLICHEADERS
     ../slsSupportLib/include/container_utils.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetector.h
-    slsDetector/slsDetectorBase.h
     slsDetector/slsDetectorUsers.h
     slsDetector/detectorData.h
     multiSlsDetector/multiSlsDetector.h

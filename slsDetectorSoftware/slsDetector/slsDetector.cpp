@@ -7,6 +7,7 @@
 #include "versionAPI.h"
 #include "slsDetectorCommand.h"
 #include "utilities.h"
+#include "MySocketTCP.h"
 
 
 #include  <sys/types.h>
@@ -183,9 +184,7 @@ int slsDetector::checkVersionCompatibility(portType t) {
 		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 			// data port
 			if (connectData() == OK){
-				// ignoring retval
-				int64_t retval = -1;
-				ret=thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+				ret=thisReceiver->Client_Send(fnum, &arg, sizeof(arg), NULL, 0);
 				if (ret==FAIL){
 					setErrorMask((getErrorMask())|(VERSION_COMPATIBILITY));
 					if(strstr(mess,"Unrecognized Function")!=NULL)
@@ -828,7 +827,7 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 }
 
 
-slsReceiverDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
+slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
 
 	detectorType type = GENERIC;
 	SharedMemory* shm = 0;
@@ -3628,7 +3627,7 @@ std::string slsDetector::setReceiver(std::string receiverIP) {
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
 		std::cout << "Setting up receiver with" << std::endl;
-		std::cout << "detector type:" << slsDetectorBase::getDetectorType(
+		std::cout << "detector type:" << slsDetectorDefs::getDetectorType(
 				thisDetector->myDetectorType) << std::endl;
 		std::cout << "detector id:" << detId << std::endl;
 		std::cout << "detector hostname:" << thisDetector->hostname << std::endl;
@@ -5972,25 +5971,18 @@ std::string slsDetector::getReceiverLastClientIP() {
 
 
 int slsDetector::exitReceiver() {
-
-	int retval;
-	int fnum=F_EXIT_RECEIVER;
-
+	int fnum = F_EXIT_RECEIVER;
+	int ret = FAIL;
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-		if (dataSocket) {
-			dataSocket->Connect();
-			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-			dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+		if (connectData() == OK){
+			ret = thisReceiver->Client_Send(fnum, NULL, 0, NULL, 0);
 			disconnectData();
 		}
 	}
-	if (retval!=OK) {
-		std::cout<< std::endl;
-		std::cout<< "Shutting down the receiver" << std::endl;
-		std::cout<< std::endl;
+	if (ret == OK) {
+		std::cout << std::endl << "Shutting down the receiver" << std::endl << std::endl;
 	}
-	return retval;
-
+	return ret;
 }
 
 int slsDetector::execReceiverCommand(std::string cmd) {
@@ -6313,7 +6305,7 @@ int slsDetector::setReceiverFramesPerFile(int f) {
 }
 
 
-slsReceiverDefs::frameDiscardPolicy slsDetector::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
+slsDetectorDefs::frameDiscardPolicy slsDetector::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
 	int fnum = F_RECEIVER_DISCARD_POLICY;
 	int ret = FAIL;
 	int retval = -1;
@@ -6367,7 +6359,7 @@ int slsDetector::setReceiverPartialFramesPadding(int f) {
 	return thisDetector->receiver_framePadding;
 }
 
-slsReceiverDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
+slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
 
 	if (f == GET_FILE_FORMAT)
 		return getFileFormat();
@@ -6397,7 +6389,7 @@ slsReceiverDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
 
 
 
-slsReceiverDefs::fileFormat slsDetector::getFileFormat() {
+slsDetectorDefs::fileFormat slsDetector::getFileFormat() {
 	return thisDetector->receiver_fileFormatType;
 }
 

@@ -30,8 +30,24 @@ int ClientInterface::PrintSocketReadError() {
 }
 
 
-void ClientInterface::Server_SendResult(int ret, void* retval, int retvalSize) {
+void ClientInterface::Server_SendResult(bool diffClients, int ret,
+		void* retval, int retvalSize, char* mess) {
+
+	// update if different clients
+	if (diffClients)
+		ret = FORCE_UPDATE;
+
+	// send success of operation
 	mySocket->SendDataOnly(&ret,sizeof(ret));
+	if(ret == FAIL) {
+		// send error message
+		if (mess)
+			mySocket->SendDataOnly(mess, MAX_STR_LENGTH);
+		// debugging feature. should not happen.
+		else
+			FILE_LOG(logERROR) << "No error message provided for this failure. Will mess up TCP\n";
+	}
+	// send return value
 	mySocket->SendDataOnly(retval, retvalSize);
 }
 

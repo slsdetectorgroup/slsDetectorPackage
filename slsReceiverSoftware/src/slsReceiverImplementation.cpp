@@ -169,7 +169,7 @@ bool slsReceiverImplementation::getGapPixelsEnable() const {
 }
 
 /***file parameters***/
-slsReceiverDefs::fileFormat slsReceiverImplementation::getFileFormat() const{
+slsDetectorDefs::fileFormat slsReceiverImplementation::getFileFormat() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return fileFormatType;
 }
@@ -211,7 +211,7 @@ uint32_t slsReceiverImplementation::getFramesPerFile() const{
     return framesPerFile;
 }
 
-slsReceiverDefs::frameDiscardPolicy slsReceiverImplementation::getFrameDiscardPolicy() const{
+slsDetectorDefs::frameDiscardPolicy slsReceiverImplementation::getFrameDiscardPolicy() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return frameDiscardMode;
 }
@@ -305,7 +305,7 @@ char *slsReceiverImplementation::getEthernetInterface() const{
 
 
 /***acquisition parameters***/
-std::vector<slsReceiverDefs::ROI> slsReceiverImplementation::getROI() const{
+std::vector<slsDetectorDefs::ROI> slsReceiverImplementation::getROI() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return roi;
 }
@@ -370,7 +370,7 @@ uint32_t slsReceiverImplementation::getFifoDepth() const{
 }
 
 /***receiver status***/
-slsReceiverDefs::runStatus slsReceiverImplementation::getStatus() const{
+slsDetectorDefs::runStatus slsReceiverImplementation::getStatus() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return status;}
 
@@ -615,7 +615,7 @@ int slsReceiverImplementation::setUDPSocketBufferSize(const uint32_t s) {
 
 
 /***acquisition parameters***/
-int slsReceiverImplementation::setROI(const std::vector<slsReceiverDefs::ROI> i) {
+int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i) {
 	if (myDetectorType != GOTTHARD) {
 		cprintf(RED, "Error: Can not set ROI for this detector\n");
 		return FAIL;

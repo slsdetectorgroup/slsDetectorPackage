@@ -291,7 +291,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 		actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings");
 		break;
 	default:
-		string detName = myDet->slsDetectorBase::getDetectorType(detType);
+		string detName = myDet->slsDetectorDefs::getDetectorType(detType);
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
 		cout << "ERROR: " + host + " has unknown detector type \"" +  detName + "\". Exiting GUI." << endl;
 		string errorMess = host+string(" has unknown detector type \"")+
@@ -300,9 +300,9 @@ void qDetectorMain::SetUpDetector(const string fName){
 		exit(-1);
 	}
 	setWindowTitle("SLS Detector GUI : "+
-			QString(slsDetectorBase::getDetectorType(detType).c_str())+	" - "+QString(host.c_str()));
+			QString(slsDetectorDefs::getDetectorType(detType).c_str())+	" - "+QString(host.c_str()));
 //#ifdef VERBOSE
-	cout << endl << "Type : " << slsDetectorBase::getDetectorType(detType) << "\nDetector : " << host << endl;
+	cout << endl << "Type : " << slsDetectorDefs::getDetectorType(detType) << "\nDetector : " << host << endl;
 //#endif
 	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
 	if(detType != slsDetectorDefs::MYTHEN)

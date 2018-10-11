@@ -2,7 +2,7 @@
 #ifndef SLS_DETECTOR_FUNCTION_LIST_H
 #define SLS_DETECTOR_FUNCTION_LIST_H
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 
 #include <stdlib.h>

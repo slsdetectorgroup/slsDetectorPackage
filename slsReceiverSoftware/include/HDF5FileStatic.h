@@ -13,7 +13,7 @@
 #ifndef H5_NO_NAMESPACE
 using namespace H5;
 #endif
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "logger.h"
 
 #include <iostream>
@@ -24,7 +24,7 @@ using namespace H5;
 #include <sstream>
 #include <cstring>	//memset
 
-class HDF5FileStatic: public virtual slsReceiverDefs {
+class HDF5FileStatic: public virtual slsDetectorDefs {
 
 public:
 

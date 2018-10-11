@@ -94,11 +94,11 @@ int64_t slsDetectorUsers::getReceiverSoftwareVersion(int detPos){
 }
 
 bool slsDetectorUsers::isDetectorVersionCompatible(int detPos) {
-	return (myDetector->checkVersionCompatibility(slsDetectorDefs::CONTROL_PORT, detPos) == slsReceiverDefs::OK);
+	return (myDetector->checkVersionCompatibility(slsDetectorDefs::CONTROL_PORT, detPos) == slsDetectorDefs::OK);
 }
 
 bool slsDetectorUsers::isReceiverVersionCompatible(int detPos) {
-	return (myDetector->checkVersionCompatibility(slsDetectorDefs::DATA_PORT, detPos) == slsReceiverDefs::OK);
+	return (myDetector->checkVersionCompatibility(slsDetectorDefs::DATA_PORT, detPos) == slsDetectorDefs::OK);
 }
 
 int slsDetectorUsers::startMeasurement(){

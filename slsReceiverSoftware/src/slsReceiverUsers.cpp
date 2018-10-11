@@ -6,9 +6,9 @@ slsReceiverUsers::slsReceiverUsers(int argc, char *argv[], int &success) {
 	try {
 		slsReceiver* r = new slsReceiver(argc, argv);
 		receiver = r;
-		success = slsReceiverDefs::OK;
+		success = slsDetectorDefs::OK;
 	} catch (...) {
-		success = slsReceiverDefs::FAIL;
+		success = slsDetectorDefs::FAIL;
 	}
 }
 

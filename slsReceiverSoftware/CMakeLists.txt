@@ -56,7 +56,7 @@ add_library(slsReceiverShared SHARED
 )
 
 set(PUBLICHEADERS
-    ../slsSupportLib/include/sls_receiver_defs.h
+    ../slsSupportLib/include/sls_detector_defs.h
     ../slsSupportLib/include/ansi.h
     ../slsSupportLib/include/sls_receiver_funcs.h
     ../slsSupportLib/include/MySocketTCP.h

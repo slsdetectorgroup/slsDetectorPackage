@@ -8,7 +8,6 @@
 #include "qClient.h"
 // Project Class Headers
 #include "MySocketTCP.h"
-#include "slsDetectorBase.h"
 
 // C++ Include Headers
 #include <iostream>
@@ -166,7 +165,7 @@ string qClient::getStatus(){
 
 
 	sprintf(answer,"%d%% ",progress);
-	strcat(answer,slsDetectorBase::runStatusType((runStatus)retval).c_str());
+	strcat(answer,slsDetectorDefs::runStatusType((runStatus)retval).c_str());
 
 	return string(answer);
 }

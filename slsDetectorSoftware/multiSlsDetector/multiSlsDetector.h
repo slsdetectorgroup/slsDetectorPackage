@@ -7,7 +7,8 @@
  * @author Anna Bergamaschi
  */
 
-#include "slsDetectorBase.h"
+#include "sls_detector_defs.h"
+#include "error_defs.h"
 
 class slsDetector;
 class SharedMemory;
@@ -24,7 +25,7 @@ class detectorData;
 #define SHORT_STRING_LENGTH	50
 #define DATE_LENGTH			30
 
-class multiSlsDetector  : public slsDetectorBase {
+class multiSlsDetector  : public virtual slsDetectorDefs, public virtual errorDefs {
 
 private:
 
@@ -294,7 +295,7 @@ public:
 	 void addMultipleDetectors(const char* name);
 
 
-	using slsDetectorBase::getDetectorType;
+	using slsDetectorDefs::getDetectorType;
 	/**
 	 * Get Detector type for a particular sls detector or get the first one
 	 * @param detPos -1 for all detectors in  list or specific detector position

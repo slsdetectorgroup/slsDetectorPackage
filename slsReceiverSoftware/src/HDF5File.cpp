@@ -116,7 +116,7 @@ void HDF5File::SetNumberofPixels(uint32_t nx, uint32_t ny) {
 }
 
 
-slsReceiverDefs::fileFormat HDF5File::GetFileType() {
+slsDetectorDefs::fileFormat HDF5File::GetFileType() {
 	return HDF5;
 }
 

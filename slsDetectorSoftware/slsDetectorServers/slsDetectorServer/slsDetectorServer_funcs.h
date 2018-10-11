@@ -1,7 +1,7 @@
 #ifndef SERVER_FUNCS_H
 #define SERVER_FUNCS_H
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include <stdlib.h>
 
 // initialization functions

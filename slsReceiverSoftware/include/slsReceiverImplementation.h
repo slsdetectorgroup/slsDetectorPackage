@@ -6,7 +6,7 @@
 /**
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "receiver_defs.h"
 #include "logger.h"
 
@@ -19,7 +19,7 @@ class Fifo;
 #include <exception>
 #include <vector>
 
-class slsReceiverImplementation: private virtual slsReceiverDefs {
+class slsReceiverImplementation: private virtual slsDetectorDefs {
  public:
 
 
@@ -346,7 +346,7 @@ class slsReceiverImplementation: private virtual slsReceiverDefs {
 	 * Set File Format
 	 * @param f fileformat binary or hdf5
 	 */
-	void setFileFormat(slsReceiverDefs::fileFormat f);
+	void setFileFormat(slsDetectorDefs::fileFormat f);
 
 	/**
 	 * Set File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))

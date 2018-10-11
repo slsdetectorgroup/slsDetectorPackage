@@ -37,7 +37,7 @@ void BinaryFile::PrintMembers() {
 	FILE_LOG(logINFO) << "Number of Frames in File: " << numFramesInFile;
 }
 
-slsReceiverDefs::fileFormat BinaryFile::GetFileType() {
+slsDetectorDefs::fileFormat BinaryFile::GetFileType() {
 	return BINARY;
 }
 

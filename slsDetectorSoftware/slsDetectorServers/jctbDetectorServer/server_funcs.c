@@ -1,5 +1,4 @@
 #include "sls_detector_defs.h"
-#include "sls_receiver_defs.h"
 #include "server_funcs.h"
 #include "server_defs.h"
 #include "firmware_funcs.h"

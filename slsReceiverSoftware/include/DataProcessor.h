@@ -18,7 +18,7 @@ class DataStreamer;
 
 #include <vector>
 
-class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
+class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	
  public:
 	/**

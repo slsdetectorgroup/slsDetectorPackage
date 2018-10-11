@@ -165,7 +165,7 @@ void qTabDebugging::UpdateStatus(){
 	det = myDet->getSlsDetector(comboDetector->currentIndex());
 	qDefs::checkErrorMessage(myDet,"qTabDebugging::UpdateStatus");
 	int detStatus = (int)det->getRunStatus();
-	string status = slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detStatus));
+	string status = slsDetectorDefs::runStatusType(slsDetectorDefs::runStatus(detStatus));
 	lblStatus->setText(QString(status.c_str()).toUpper());
 
 	qDefs::checkErrorMessage(det,"qTabDebugging::UpdateStatus");

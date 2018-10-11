@@ -16,7 +16,7 @@ class ZmqSocket;
 
 #include <vector>
 
-class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
+class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	
  public:
 	/**

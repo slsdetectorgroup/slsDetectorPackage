@@ -7,7 +7,7 @@
  *@short abstract for setting/getting properties of detector data
  */
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "receiver_defs.h"
 
 #include <math.h>			//ceil
@@ -19,7 +19,7 @@ class GeneralData {
 public:
 
 	/** DetectorType */
-	slsReceiverDefs::detectorType myDetectorType;
+	slsDetectorDefs::detectorType myDetectorType;
 
 	/** Number of Pixels in x axis */
 	uint32_t nPixelsX;
@@ -92,7 +92,7 @@ public:
 
 	/** Cosntructor */
 	GeneralData():
-		myDetectorType(slsReceiverDefs::GENERIC),
+		myDetectorType(slsDetectorDefs::GENERIC),
 		nPixelsX(0),
 		nPixelsY(0),
 		emptyHeader(0),
@@ -160,7 +160,7 @@ public:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
+	virtual void SetROI(std::vector<slsDetectorDefs::ROI> i) {
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
@@ -170,7 +170,7 @@ public:
 	 * @param i pointer to a vector of ROI pointers
 	 * @returns adc configured
 	 */
-	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+	virtual const int GetAdcConfigured(int index, std::vector<slsDetectorDefs::ROI>* i)  const{
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 		return 0;
 	};
@@ -216,7 +216,7 @@ public:
 	 */
 	virtual void Print() const {
 		FILE_LOG(logDEBUG) << "\n\nDetector Data Variables:";
-		FILE_LOG(logDEBUG) << "myDetectorType: " << slsReceiverDefs::getDetectorType(myDetectorType);
+		FILE_LOG(logDEBUG) << "myDetectorType: " << slsDetectorDefs::getDetectorType(myDetectorType);
 		FILE_LOG(logDEBUG) << "Pixels X: " << nPixelsX;
 		FILE_LOG(logDEBUG) << "Pixels Y: " << nPixelsY;
 		FILE_LOG(logDEBUG) << "Empty Header: " << emptyHeader;
@@ -253,7 +253,7 @@ private:
 
 	/** Constructor */
 	GotthardData(){
-		myDetectorType		= slsReceiverDefs::GOTTHARD;
+		myDetectorType		= slsDetectorDefs::GOTTHARD;
 		nPixelsX 			= 1280;
 		nPixelsY 			= 1;
 		headerSizeinPacket  = 4;
@@ -265,7 +265,7 @@ private:
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 50000;
 	};
 
@@ -323,7 +323,7 @@ private:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
+	virtual void SetROI(std::vector<slsDetectorDefs::ROI> i) {
 		// all adcs
 		if(!i.size()) {
 			nPixelsX 			= 1280;
@@ -335,7 +335,7 @@ private:
 			frameIndexOffset 	= 1;
 			packetIndexMask 	= 1;
 			maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 			defaultFifoDepth 	= 50000;
 			nPixelsXComplete 	= 0;
 			nPixelsYComplete 	= 0;
@@ -353,7 +353,7 @@ private:
 			frameIndexOffset 	= 0;
 			packetIndexMask 	= 0;
 			maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
-			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 			defaultFifoDepth 	= 25000;
 			nPixelsXComplete 	= 1280;
 			nPixelsYComplete 	= 1;
@@ -367,7 +367,7 @@ private:
 	 * @param i pointer to a vector of ROI
 	 * @returns adc configured
 	 */
-	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+	virtual const int GetAdcConfigured(int index, std::vector<slsDetectorDefs::ROI>* i)  const{
 		int adc = -1;
 		// single adc
 		if(i->size())  {
@@ -407,7 +407,7 @@ class PropixData : public GeneralData {
 
 	/** Constructor */
 	PropixData(){
-		myDetectorType		= slsReceiverDefs::PROPIX;
+		myDetectorType		= slsDetectorDefs::PROPIX;
 		nPixelsX 			= 22;
 		nPixelsY 			= 22;
 		headerSizeinPacket  = 4;
@@ -419,7 +419,7 @@ class PropixData : public GeneralData {
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 50000;
 	};
 };
@@ -434,7 +434,7 @@ class Moench02Data : public GeneralData {
 
 	/** Constructor */
 	Moench02Data(){
-		myDetectorType		= slsReceiverDefs::MOENCH;
+		myDetectorType		= slsDetectorDefs::MOENCH;
 		nPixelsX 			= 160;
 		nPixelsY 			= 160;
 		headerSizeinPacket  = 4;
@@ -446,7 +446,7 @@ class Moench02Data : public GeneralData {
 		frameIndexOffset 	= 8;
 		packetIndexMask 	= 0xFF;
 		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -466,7 +466,7 @@ class Moench03Data : public GeneralData {
 
 	/** Constructor */
 	Moench03Data(){
-		myDetectorType		= slsReceiverDefs::MOENCH;
+		myDetectorType		= slsDetectorDefs::MOENCH;
 		nPixelsX 			= 400;
 		nPixelsY 			= 400;
 		headerSizeinPacket  = 22;
@@ -478,7 +478,7 @@ class Moench03Data : public GeneralData {
 		frameIndexOffset 	= (6+8);
 		packetIndexMask 	= 0xFFFFFFFF;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 	};
 };
@@ -506,7 +506,7 @@ private:
 
 	/** Constructor */
 	JCTBData(){
-		myDetectorType		= slsReceiverDefs::JUNGFRAUCTB;
+		myDetectorType		= slsDetectorDefs::JUNGFRAUCTB;
 		nPixelsX 			= 400;
 		nPixelsY 			= 400;
 		headerSizeinPacket  = 22;
@@ -516,7 +516,7 @@ private:
 		imageSize 			= nPixelsX * nPixelsY * 2;
 		frameIndexMask 		= 0xFFFFFF;
 		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 	};
 
@@ -578,17 +578,17 @@ class JungfrauData : public GeneralData {
 
 	/** Constructor */
 	JungfrauData(){
-		myDetectorType		= slsReceiverDefs::JUNGFRAU;
+		myDetectorType		= slsDetectorDefs::JUNGFRAU;
 		nPixelsX 			= (256*4);
 		nPixelsY 			= 512;
 		emptyHeader			= 6;
-		headerSizeinPacket  = emptyHeader + sizeof(slsReceiverDefs::sls_detector_header);
+		headerSizeinPacket  = emptyHeader + sizeof(slsDetectorDefs::sls_detector_header);
 		dataSize 			= 8192;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 128;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 		standardheader		= true;
 		defaultUdpSocketBufferSize = (2000 * 1024 * 1024);
@@ -603,16 +603,16 @@ class EigerData : public GeneralData {
 
 	/** Constructor */
 	EigerData(){
-		myDetectorType		= slsReceiverDefs::EIGER;
+		myDetectorType		= slsDetectorDefs::EIGER;
 		nPixelsX 			= (256*2);
 		nPixelsY 			= 256;
-		headerSizeinPacket  = sizeof(slsReceiverDefs::sls_detector_header);
+		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
 		dataSize 			= 1024;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 100;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 40;

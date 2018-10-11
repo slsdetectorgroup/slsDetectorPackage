@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "MySocketTCP.h"
 
 
@@ -10,7 +10,7 @@
  */
 // Do not overload to make it easier for manual comparison between client and server functions
 
-class ClientInterface: public virtual slsReceiverDefs{
+class ClientInterface: public virtual slsDetectorDefs{
 
 public:
 
@@ -39,12 +39,14 @@ public:
 	int PrintSocketReadError();
 
 	/**
-	 * Server sends result to client
+	 * Server sends result to client (also set ret to force_update if different clients)
+	 * @param diffClients true if different clients, else false
 	 * @param ret success of operation
 	 * @param retval pointer to result
 	 * @param retvalSize size of result
+	 * @param mess message
 	 */
-	void Server_SendResult(int ret, void* retval, int retvalSize);
+	void Server_SendResult(bool diffClients, int ret, void* retval, int retvalSize, char* mess = 0);
 
 	/**
 	 * Get message from server
@@ -54,7 +56,7 @@ public:
 	 * @param mess message
 	 * @returns FAIL if unrecognized function found in message, else OK
 	 */
-	int Client_GetMesage(char* mess=0);
+	int Client_GetMesage(char* mess = 0);
 
 	/**
 	 * Send Arguments to server and get result back

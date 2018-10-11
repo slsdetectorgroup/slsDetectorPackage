@@ -7,7 +7,6 @@
 * modified by the sls detetor group
 * */
 
-//#include "sls_receiver_defs.h"
 #include <semaphore.h>
 #include <vector>
 #include <iostream>

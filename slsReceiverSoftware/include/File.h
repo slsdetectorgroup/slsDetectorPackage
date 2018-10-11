@@ -8,13 +8,13 @@
  *@short sets/gets properties for the file, creates/closes the file and writes data to it
  */
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "logger.h"
 
 #include <string>
 
 
-class File : private virtual slsReceiverDefs {
+class File : private virtual slsDetectorDefs {
 	
  public:
 	/**

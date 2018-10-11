@@ -878,19 +878,19 @@ void qTabDataOutput::SetupFileFormat(){
 
 	//To be able to index items on a combo box
 	QStandardItemModel* model = qobject_cast<QStandardItemModel*>(comboFileFormat->model());
-	QModelIndex index[slsReceiverDefs::NUM_FILE_FORMATS];
-	QStandardItem* item[slsReceiverDefs::NUM_FILE_FORMATS];
+	QModelIndex index[slsDetectorDefs::NUM_FILE_FORMATS];
+	QStandardItem* item[slsDetectorDefs::NUM_FILE_FORMATS];
 	if (model) {
-		for(int i=0;i<slsReceiverDefs::NUM_FILE_FORMATS;i++){
+		for(int i=0;i<slsDetectorDefs::NUM_FILE_FORMATS;i++){
 			index[i] = model->index(i,	comboFileFormat->modelColumn(), comboFileFormat->rootModelIndex());
 			item[i] = model->itemFromIndex(index[i]);
 		}
 		//Enabling/Disabling depending on the detector type
 		switch(detType){
 		case slsDetectorDefs::MYTHEN:
-			item[(int)slsReceiverDefs::BINARY]->setEnabled(false);
-			item[(int)slsReceiverDefs::ASCII]->setEnabled(true);
-			item[(int)slsReceiverDefs::HDF5]->setEnabled(false);
+			item[(int)slsDetectorDefs::BINARY]->setEnabled(false);
+			item[(int)slsDetectorDefs::ASCII]->setEnabled(true);
+			item[(int)slsDetectorDefs::HDF5]->setEnabled(false);
 			break;
 		case slsDetectorDefs::EIGER:
 		case slsDetectorDefs::MOENCH:
@@ -898,9 +898,9 @@ void qTabDataOutput::SetupFileFormat(){
 		case slsDetectorDefs::GOTTHARD:
 		case slsDetectorDefs::JUNGFRAU:
 		case slsDetectorDefs::JUNGFRAUCTB:
-			item[(int)slsReceiverDefs::BINARY]->setEnabled(true);
-			item[(int)slsReceiverDefs::ASCII]->setEnabled(false);
-			item[(int)slsReceiverDefs::HDF5]->setEnabled(true);
+			item[(int)slsDetectorDefs::BINARY]->setEnabled(true);
+			item[(int)slsDetectorDefs::ASCII]->setEnabled(false);
+			item[(int)slsDetectorDefs::HDF5]->setEnabled(true);
 			break;
 		default:
 			cout << "Unknown detector type " << endl;
@@ -938,7 +938,7 @@ void qTabDataOutput::SetFileFormat(int format){
 #endif
 	disconnect(comboFileFormat,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFileFormat(int)));
 
-	int ret = (int)myDet->setFileFormat((slsReceiverDefs::fileFormat)comboFileFormat->currentIndex());
+	int ret = (int)myDet->setFileFormat((slsDetectorDefs::fileFormat)comboFileFormat->currentIndex());
 	if (ret != comboFileFormat->currentIndex()) {
 		qDefs::Message(qDefs::WARNING,"Could not set file format.","qTabDataOutput::SetFileFormat");
 		comboFileFormat->setCurrentIndex((int)ret);

@@ -8,14 +8,14 @@
 
 class slsReceiverTCPIPInterface;
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 
 
 /**
  *@short creates the UDP and TCP class objects
  */
 
-class slsReceiver : private virtual slsReceiverDefs {
+class slsReceiver : private virtual slsDetectorDefs {
 	
  public:
 	/**

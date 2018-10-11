@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 
 #include <string>
 #include <map>

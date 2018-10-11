@@ -5,7 +5,7 @@
  ***********************************************/
 
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "receiver_defs.h"
 
 class MySocketTCP;
@@ -18,7 +18,7 @@ class slsReceiverImplementation;
  *@short interface between receiver and client
  */
 
-class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
+class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	
  public:
 

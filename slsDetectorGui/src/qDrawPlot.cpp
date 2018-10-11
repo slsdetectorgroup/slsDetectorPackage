@@ -1300,7 +1300,7 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 #ifdef VERBOSE
 	cout << "\nEntering Acquisition Finished with status " ;
 #endif
-	QString status = QString(slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detectorStatus)).c_str());
+	QString status = QString(slsDetectorDefs::runStatusType(slsDetectorDefs::runStatus(detectorStatus)).c_str());
 #ifdef VERBOSE
   cout << status.toAscii().constData() << " and progress " << currentProgress << endl;
 #endif

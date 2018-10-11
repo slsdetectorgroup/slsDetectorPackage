@@ -15,7 +15,7 @@ class GeneralData;
 class Fifo;
 class genericSocket;
 
-class Listener : private virtual slsReceiverDefs, public ThreadObject {
+class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	
  public:
 	/**

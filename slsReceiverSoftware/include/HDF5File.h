@@ -19,7 +19,7 @@
 #endif
 
 
-class HDF5File : private virtual slsReceiverDefs, public File, public HDF5FileStatic {
+class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileStatic {
 	
  public:
 	/**

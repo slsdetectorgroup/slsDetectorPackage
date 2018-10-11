@@ -9,12 +9,12 @@
  *@short constructs the fifo structure
  */
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "logger.h"
 
 #include "circularFifo.h"
 
-class Fifo : private virtual slsReceiverDefs {
+class Fifo : private virtual slsDetectorDefs {
 	
  public:
 	/**

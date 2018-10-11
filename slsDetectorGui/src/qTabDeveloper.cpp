@@ -165,8 +165,8 @@ void qTabDeveloper::SetupWidgetWindow() {
 		break;
 
 	default:
-		cout << "ERROR: Unknown detector type: " + myDet->slsDetectorBase::getDetectorType(detType) << endl;
-		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"qTabDeveloper::SetupWidgetWindow");
+		cout << "ERROR: Unknown detector type: " + myDet->slsDetectorDefs::getDetectorType(detType) << endl;
+		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorDefs::getDetectorType(detType),"qTabDeveloper::SetupWidgetWindow");
 		exit(-1);
 		break;
 	}
@@ -493,8 +493,8 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 						}
 						break;
 						default:
-							cout << "Unknown detector type:" + myDet->slsDetectorBase::getDetectorType(detType) << endl;
-							qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"qTabDeveloper::getSLSIndex");
+							cout << "Unknown detector type:" + myDet->slsDetectorDefs::getDetectorType(detType) << endl;
+							qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorDefs::getDetectorType(detType),"qTabDeveloper::getSLSIndex");
 							qDefs::checkErrorMessage(myDet,"qTabDeveloper::getSLSIndex");
 							exit(-1);
 							break;

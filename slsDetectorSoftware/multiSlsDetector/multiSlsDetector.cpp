@@ -2766,7 +2766,7 @@ int multiSlsDetector::setReceiverFramesPerFile(int f, int detPos) {
 }
 
 
-slsReceiverDefs::frameDiscardPolicy multiSlsDetector::setReceiverFramesDiscardPolicy(
+slsDetectorDefs::frameDiscardPolicy multiSlsDetector::setReceiverFramesDiscardPolicy(
 		frameDiscardPolicy f, int detPos) {
 	// single
 	if (detPos >= 0) {
@@ -2791,7 +2791,7 @@ int multiSlsDetector::setReceiverPartialFramesPadding(int f, int detPos) {
 }
 
 
-slsReceiverDefs::fileFormat multiSlsDetector::getFileFormat(int detPos) {
+slsDetectorDefs::fileFormat multiSlsDetector::getFileFormat(int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->getFileFormat();
@@ -2803,7 +2803,7 @@ slsReceiverDefs::fileFormat multiSlsDetector::getFileFormat(int detPos) {
 }
 
 
-slsReceiverDefs::fileFormat multiSlsDetector::setFileFormat(fileFormat f, int detPos) {
+slsDetectorDefs::fileFormat multiSlsDetector::setFileFormat(fileFormat f, int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->setFileFormat(f);

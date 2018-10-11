@@ -16,7 +16,7 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
 
  */
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "slsReceiverUsers.h"
 
 #include <iostream>
@@ -96,8 +96,8 @@ void AcquisitionFinished(uint64_t frames, void*p){
  * @param p pointer to object
  */
 void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
-	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
-	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
+	slsDetectorDefs::sls_receiver_header* header = (slsDetectorDefs::sls_receiver_header*)metadata;
+	slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
 	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
 			"#### %d GetData: ####\n"
@@ -130,8 +130,8 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
  * @param p pointer to object
  */
 void GetData(char* metadata, char* datapointer, uint32_t &revDatasize, void* p){
-	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
-	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
+	slsDetectorDefs::sls_receiver_header* header = (slsDetectorDefs::sls_receiver_header*)metadata;
+	slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
 	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
 			"#### %d GetData: ####\n"
@@ -221,10 +221,10 @@ int main(int argc, char *argv[]) {
 			char temp[10];
 			sprintf(temp,"%d",startTCPPort + i);
 			char* args[] = {(char*)"ignored", (char*)"--rx_tcpport", temp};
-			int ret = slsReceiverDefs::OK;
+			int ret = slsDetectorDefs::OK;
 			/**	-  create slsReceiverUsers object with appropriate arguments */
 			slsReceiverUsers *receiver = new slsReceiverUsers(3, args, ret);
-			if(ret==slsReceiverDefs::FAIL){
+			if(ret==slsDetectorDefs::FAIL){
 				delete receiver;
 				exit(EXIT_FAILURE);
 			}
@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
 
 
 			/**	- start tcp server thread */
-			if (receiver->start() == slsReceiverDefs::FAIL){
+			if (receiver->start() == slsDetectorDefs::FAIL){
 				delete receiver;
 				cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 				exit(EXIT_FAILURE);

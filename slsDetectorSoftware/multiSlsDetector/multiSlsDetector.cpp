@@ -936,7 +936,7 @@ int multiSlsDetector::execCommand(std::string cmd, int detPos) {
 }
 
 
-int multiSlsDetector::readConfigurationFile(std::string const fname) {
+int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 	freeSharedMemory();
 	setupMultiDetector();
 
@@ -1902,7 +1902,7 @@ int multiSlsDetector::digitalTest(digitalTestMode mode, int ival, int detPos) {
 }
 
 
-int multiSlsDetector::loadImageToDetector(imageType index, std::string const fname, int detPos) {
+int multiSlsDetector::loadImageToDetector(imageType index, const std::string& fname, int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->loadImageToDetector(index, fname);
@@ -1930,7 +1930,7 @@ int multiSlsDetector::loadImageToDetector(imageType index, std::string const fna
 }
 
 
-int multiSlsDetector::writeCounterBlockFile(std::string const fname, int startACQ, int detPos) {
+int multiSlsDetector::writeCounterBlockFile(const std::string& fname, int startACQ, int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->writeCounterBlockFile(fname, startACQ);
@@ -3511,7 +3511,7 @@ int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t, int detPos) {
 }
 
 
-int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level){
+int multiSlsDetector::retrieveDetectorSetup(const std::string& fname1, int level){
 
 	int skip=0;
 	std::string fname;
@@ -3594,7 +3594,7 @@ int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level)
 }
 
 
-int multiSlsDetector::dumpDetectorSetup(std::string const fname, int level){
+int multiSlsDetector::dumpDetectorSetup(const std::string& fname, int level){
 	detectorType type = getDetectorsType();
 	std::string names[100];
 	int nvar=0;

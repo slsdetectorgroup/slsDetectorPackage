@@ -1154,22 +1154,6 @@ int slsDetector::setTCPSocket(std::string const name, int const control_port, in
 	char thisName[MAX_STR_LENGTH];
 	int thisCP, thisSP;
 	int retval=OK;
-// 	if (strcmp(name.c_str(),"")!=0) {
-// #ifdef VERBOSE
-// 		std::cout<< "setting hostname" << std::endl;
-// #endif
-// 		strcpy(thisName,name.c_str());
-// 		strcpy(thisDetector->hostname,thisName);
-// 		if (controlSocket) {
-// 			delete controlSocket;
-// 			controlSocket=0;
-// 		}
-// 		if (stopSocket) {
-// 			delete stopSocket;
-// 			stopSocket=0;
-// 		}
-// 	} else
-// 		strcpy(thisName,thisDetector->hostname);
 
 	if (name.empty()){
 		strcpy(thisName,thisDetector->hostname);
@@ -1721,8 +1705,7 @@ int slsDetector::writeConfigurationFile(std::string const fname, multiSlsDetecto
 
 
 int slsDetector::writeConfigurationFile(std::ofstream &outfile, multiSlsDetector* m) {
-	;
-	slsDetectorCommand *cmd=new slsDetectorCommand(m);
+	
 	detectorType type = thisDetector->myDetectorType;
 	std::string names[100];
 	int nvar=0;
@@ -1790,25 +1773,23 @@ int slsDetector::writeConfigurationFile(std::ofstream &outfile, multiSlsDetector
 		args[ia]=myargs[ia];
 	}
 
-
+	auto cmd = slsDetectorCommand(m);
 	for (iv=0; iv<nvar; ++iv) {
 		std::cout << iv << " " << names[iv] << std::endl;
 		if (names[iv]=="extsig") {
 			for (int is=0; is<nsig; ++is) {
 				sprintf(args[0],"%s:%d",names[iv].c_str(),is);
 				outfile << detId << ":";
-				outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION)
+				outfile << args[0] << " " << cmd.executeLine(1,args,GET_ACTION)
 								<< std::endl;
 			}
 		} else {
 			strcpy(args[0],names[iv].c_str());
 			outfile << detId << ":";
-			outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION)
+			outfile << names[iv] << " " << cmd.executeLine(1,args,GET_ACTION)
 							<< std::endl;
 		}
 	}
-
-	delete cmd;
 	return OK;
 }
 

@@ -138,7 +138,7 @@ int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int& channelX, in
 std::string multiSlsDetector::getErrorMessage(int& critical, int detPos) {
 	int64_t multiMask = 0, slsMask = 0;
 	std::string retval = "";
-	char sNumber[100];
+	// char sNumber[100];
 	critical = 0;
 	size_t posmin = 0, posmax = detectors.size();
 
@@ -184,15 +184,15 @@ std::string multiSlsDetector::getErrorMessage(int& critical, int detPos) {
 			if ((multiMask & (1 << idet)) || (detPos >= 0)) {
 
 				//append detector id
-				sprintf(sNumber, "%ld", idet);
-				retval.append("Detector " + std::string(sNumber) + std::string(":\n"));
+				// sprintf(sNumber, "%ld", idet);
+				retval.append("Detector " + std::to_string(idet) + std::string(":\n"));
 
 				//get sls det error mask
 				slsMask = detectors[idet]->getErrorMask();
 #ifdef VERYVERBOSE
 				//append sls det error mask
-				sprintf(sNumber, "0x%lx", slsMask);
-				retval.append("Error Mask " + std::string(sNumber) + std::string("\n"));
+				// sprintf(sNumber, "0x%lx", slsMask);
+				retval.append("Error Mask " + std::to_string(slsMask) + std::string("\n"));
 #endif
 
 				//get the error critical level
@@ -236,7 +236,7 @@ void multiSlsDetector::setAcquiringFlag(bool b) {
 }
 
 
-bool multiSlsDetector::getAcquiringFlag() {
+bool multiSlsDetector::getAcquiringFlag() const {
 	return thisMultiDetector->acquiringFlag;
 }
 
@@ -3969,7 +3969,6 @@ int multiSlsDetector::setThreadedProcessing(int enable) {
 
 
 void multiSlsDetector::startProcessingThread() {
-
 	setTotalProgress();
 #ifdef VERBOSE
 	std::cout << "start thread stuff"  << std::endl;
@@ -3988,19 +3987,14 @@ void multiSlsDetector::startProcessingThread() {
 	/* Initialize and set thread detached attribute */
 	pthread_attr_init(&tattr);
 	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
-
-	ret = pthread_setschedparam(pthread_self(), policy, &mparam);
-
-
+	pthread_setschedparam(pthread_self(), policy, &mparam);
 	ret = pthread_create(&dataProcessingThread, &tattr,startProcessData, (void*)this);
-
 	if (ret)
 		printf("ret %d\n", ret);
-
 	pthread_attr_destroy(&tattr);
 
 	// scheduling parameters of target thread
-	ret = pthread_setschedparam(dataProcessingThread, policy, &param);
+	pthread_setschedparam(dataProcessingThread, policy, &param);
 }
 
 

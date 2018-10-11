@@ -208,7 +208,7 @@ public:
 	 * Get acquiring flag from shared memory
 	 * @returns acquiring flag
 	 */
-	bool getAcquiringFlag();
+	bool getAcquiringFlag() const;
 
 	/**
 	 * Check if acquiring flag is set, set error if set

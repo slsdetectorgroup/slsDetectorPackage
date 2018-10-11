@@ -92,7 +92,8 @@ int decode_function(int file_des) {
 	n = receiveData(file_des,&fnum,sizeof(fnum),INT32);
 	if (n <= 0) {
 #ifdef VERBOSE
-		printf("ERROR reading from socket %d, %d %d (%s)\n", n, fnum, file_des, getFunctionName((enum detFuncs)fnum));
+		printf("ERROR reading from socket %d, %d %d (%s)\n",
+				n, fnum, file_des, getFunctionName((enum detFuncs)fnum));
 #endif
 		return FAIL;
 	}
@@ -101,24 +102,31 @@ int decode_function(int file_des) {
 		printf("size of data received %d\n",n);
 #endif
 
-#ifdef VERBOSE
-	printf(" calling function fnum=%d, (%s) located at 0x%x\n", fnum,  getFunctionName((enum detFuncs)fnum), (unsigned int)flist[fnum]);
-#endif
 #ifdef JUNGFRAUD
-	if ((debugflag == PROGRAMMING_MODE) &&
-			((fnum != F_PROGRAM_FPGA) && (fnum != F_GET_DETECTOR_TYPE) &&
-					(fnum != F_RESET_FPGA) && (fnum != F_UPDATE_CLIENT) && (fnum != F_CHECK_VERSION))) {
-		sprintf(mess,"This Function %s cannot be executed. ", getFunctionName((enum detFuncs)fnum));
+	if ((debugflag == PROGRAMMING_MODE) && (
+			(fnum != F_PROGRAM_FPGA) &&
+			(fnum != F_GET_DETECTOR_TYPE) &&
+			(fnum != F_RESET_FPGA) &&
+			(fnum != F_UPDATE_CLIENT) &&
+			(fnum != F_CHECK_VERSION))) {
+		sprintf(mess,"This Function %s cannot be executed. ",
+				getFunctionName((enum detFuncs)fnum));
 		ret=(M_nofuncMode)(file_des);
 	} else
 #endif
 	if (fnum<0 || fnum>=NUM_DET_FUNCTIONS) {
 		cprintf(BG_RED,"Unknown function enum %d\n", fnum);
 		ret=(M_nofunc)(file_des);
-	}else
+	}else {
+#ifdef VERBOSE
+	printf(" calling function fnum=%d, (%s) located at 0x%x\n",
+			fnum,  getFunctionName((enum detFuncs)fnum), (unsigned int)flist[fnum]);
+#endif
 		ret=(*flist[fnum])(file_des);
-	if (ret == FAIL)
-		cprintf(RED, "Error executing the function = %d (%s)\n", fnum, getFunctionName((enum detFuncs)fnum));
+		if (ret == FAIL)
+			cprintf(RED, "Error executing the function = %d (%s)\n",
+					fnum, getFunctionName((enum detFuncs)fnum));
+	}
 	return ret;
 }
 
@@ -251,7 +259,7 @@ void function_table() {
     flist[F_SOFTWARE_TRIGGER]                 	= &software_trigger;
 
 	// check
-	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
+	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
 		cprintf(BG_RED,"The last detector function enum has reached its limit\nGoodbye!\n");
 		exit(EXIT_FAILURE);
 	}
@@ -260,7 +268,8 @@ void function_table() {
 	{
 		int i=0;
 		for (i = 0; i < NUM_DET_FUNCTIONS ; i++) {
-			printf("function fnum=%d, (%s) located at 0x%x\n", i,  getFunctionName((enum detFuncs)i), (unsigned int)flist[i]);
+			printf("function fnum=%d, (%s) located at 0x%x\n", i,
+					getFunctionName((enum detFuncs)i), (unsigned int)flist[i]);
 		}
 	}
 #endif

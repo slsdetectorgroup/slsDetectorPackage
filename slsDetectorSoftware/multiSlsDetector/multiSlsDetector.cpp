@@ -1,7 +1,7 @@
 #include "multiSlsDetector.h"
 #include "SharedMemory.h"
 #include "slsDetector.h"
-#include "sls_receiver_exceptions.h"
+#include "sls_detector_exceptions.h"
 #include "ZmqSocket.h"
 #include "multiSlsDetectorClient.h"
 #include "multiSlsDetectorCommand.h"

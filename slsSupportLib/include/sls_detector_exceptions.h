@@ -1,6 +1,6 @@
 #pragma once
 /************************************************
- * @file sls_receiver_exceptions.h
+ * @file sls_detector_exceptions.h
  * @short exceptions defined
  ***********************************************/
 /**

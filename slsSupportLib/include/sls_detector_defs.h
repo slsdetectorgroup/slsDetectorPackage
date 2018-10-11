@@ -882,7 +882,6 @@ protected:
 
 #ifndef MYROOT
 #include "sls_detector_funcs.h"
-#include "sls_receiver_funcs.h"
 #endif
 
 #ifdef __cplusplus

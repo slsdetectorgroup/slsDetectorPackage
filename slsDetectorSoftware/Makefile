@@ -17,7 +17,7 @@ LIBZMQDIR = ../slsSupportLib/include
 LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 SRC_CLNT=  slsDetector/slsDetectorCommand.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp ../slsSupportLib/include/ReceiverInterface.cpp slsDetector/slsDetectorUsers.cpp  sharedMemory/SharedMemory.cpp ../slsSupportLib/include/utilities.cpp
-DEPSINCLUDES = ../slsSupportLib/include/sls_receiver_funcs.h ../slsSupportLib/include/ansi.h ../slsSupportLib/include/sls_detector_defs.h  ../slsSupportLib/include/sls_detector_funcs.h ../slsSupportLib/include/error_defs.h  slsDetector/detectorData.h   sharedMemory/SharedMemory.h ../slsSupportLib/include/sls_receiver_exceptions.h ../slsSupportLib/include/versionAPI.h ../slsSupportLib/include/utilities.h     ../slsSupportLib/include/container_utils.h
+DEPSINCLUDES = ../slsSupportLib/include/ansi.h ../slsSupportLib/include/sls_detector_defs.h  ../slsSupportLib/include/sls_detector_funcs.h ../slsSupportLib/include/error_defs.h  slsDetector/detectorData.h   sharedMemory/SharedMemory.h ../slsSupportLib/include/sls_detector_exceptions.h ../slsSupportLib/include/versionAPI.h ../slsSupportLib/include/utilities.h     ../slsSupportLib/include/container_utils.h
 
 
 

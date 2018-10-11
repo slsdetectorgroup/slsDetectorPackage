@@ -1,1 +1,1 @@
-../../slsSupportLib/include/communication_funcs.c
+../slsDetectorServer/communication_funcs.c

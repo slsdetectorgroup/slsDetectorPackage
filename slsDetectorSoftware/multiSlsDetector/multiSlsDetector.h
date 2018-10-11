@@ -475,7 +475,7 @@ public:
 	 * @param fname configuration file name
 	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(std::string const fname);
+	int writeConfigurationFile(const std::string&  fname);
 
 	/**
 	 * Returns the trimfile or settings file name (Useless??)

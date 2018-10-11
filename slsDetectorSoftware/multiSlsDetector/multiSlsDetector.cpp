@@ -1019,27 +1019,24 @@ int multiSlsDetector::readConfigurationFile(std::string const fname) {
 }
 
 
-int multiSlsDetector::writeConfigurationFile(std::string const fname) {
-	std::string names[] = {
+int multiSlsDetector::writeConfigurationFile(const std::string&  fname) {
+	const std::vector<std::string> names = {
 			"detsizechan",
 			"hostname",
 			"outdir",
 			"threaded"
 	};
 
-	int nvar = 15;
 	char* args[100];
 	for (int ia = 0; ia < 100; ++ia) {
 		args[ia] = new char[1000];
 	}
 	int ret = OK, ret1 = OK;
-
 	std::ofstream outfile;
 	int iline = 0;
 
 	outfile.open(fname.c_str(), std::ios_base::out);
 	if (outfile.is_open()) {
-
 		auto cmd = slsDetectorCommand(this);
 
 		// complete size of detector
@@ -1066,7 +1063,7 @@ int multiSlsDetector::writeConfigurationFile(std::string const fname) {
 
 		outfile << std::endl;
 		//other configurations
-		while (iline < nvar) {
+		while (iline < names.size()) {
 			std::cout << iline << " " << names[iline] << std::endl;
 			strcpy(args[0], names[iline].c_str());
 			outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;

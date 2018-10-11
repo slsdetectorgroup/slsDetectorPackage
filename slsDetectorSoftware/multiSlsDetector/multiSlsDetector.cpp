@@ -277,23 +277,6 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 }
 
 
-// slsDetector* multiSlsDetector::getSlsDetector(int detPos) {
-// 	return detectors[detPos].get();
-// }
-
-// slsDetector *multiSlsDetector::operator()(int detPos) const {
-// 	return detectors[detPos].get();
-// }
-
-// slsDetector* multiSlsDetector::operator[](int detPos) const {
-//     //Providing access to detectors with range checking
-//     //throw exception if out of range
-//     if (detPos >= 0 && detPos < (int)detectors.size())
-//         return detectors[detPos].get();
-//     else
-//         throw(std::range_error("Detector does not exist"));
-// }
-
 void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
 	// single
 	if (detPos >= 0) {
@@ -584,16 +567,10 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 		return;
 	}
 
-
-
 	int pos = (int)detectors.size();
 	detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
-
-
 	thisMultiDetector->numberOfDetectors = detectors.size();
-
 	detectors[pos]->setHostname(s.c_str()); // also updates client
-
 	thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
 	thisMultiDetector->dataBytesInclGapPixels += detectors[pos]->getDataBytesInclGapPixels();
 	thisMultiDetector->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
@@ -935,46 +912,31 @@ int multiSlsDetector::execCommand(std::string cmd, int detPos) {
 	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-
 int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 	freeSharedMemory();
 	setupMultiDetector();
 
-	// std::string ans;
-	std::string str;
-	std::ifstream infile;
-	int iargval;
-	int interrupt = 0;
-	char* args[1000];
+	char* args[100];
+	char myargs[100][1000];
 
-	char myargs[1000][1000];
-
-	std::string sargname, sargval;
-	int iline = 0;
 	std::cout << "config file name " << fname << std::endl;
+
+	std::ifstream infile;
 	infile.open(fname.c_str(), std::ios_base::in);
 	if (infile.is_open()) {
-
-		while (infile.good() and interrupt == 0) {
-			sargname = "none";
-			sargval  = "0";
-			getline(infile, str);
-			++iline;
-
+		std::string tmp_line;
+		while (infile.good()) {
+			getline(infile, tmp_line);
 			// remove comments that come after
-			if (str.find('#') != std::string::npos)
-				str.erase(str.find('#'));
+			if (tmp_line.find('#') != std::string::npos)
+				tmp_line.erase(tmp_line.find('#'));
 #ifdef VERBOSE
-			std::cout << "string:" << str << std::endl;
+			std::cout << "tmp_line after removing comments:" << tmp_line << std::endl;
 #endif
-			if (str.length() < 2) {
-#ifdef VERBOSE
-				std::cout << "Empty line or Comment " << std::endl;
-#endif
-				continue;
-			} else {
-				std::istringstream ssstr(str);
-				iargval = 0;
+			if (tmp_line.length() > 1) {
+				std::istringstream ssstr(tmp_line);
+				int iargval = 0;
+				std::string sargname;
 				while (ssstr.good()) {
 					ssstr >> sargname;
 #ifdef VERBOSE
@@ -982,6 +944,7 @@ int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 #endif
 					strcpy(myargs[iargval], sargname.c_str());
 					args[iargval] = myargs[iargval];
+
 #ifdef VERBOSE
 					std::cout << "--" << iargval << " " << args[iargval] << std::endl;
 #endif
@@ -995,18 +958,13 @@ int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 #endif
 				multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
 			}
-			++iline;
 		}
-
 		infile.close();
 	} else {
 		std::cout << "Error opening configuration file " << fname << " for reading" << std::endl;
 		setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
 		return FAIL;
 	}
-#ifdef VERBOSE
-	std::cout << "Read configuration file of " << iline << " lines" << std::endl;
-#endif
 
 	if (getErrorMask()) {
 		int c;
@@ -1014,7 +972,6 @@ int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 				getErrorMessage(c).c_str());
 		return FAIL;
 	}
-
 	return OK;
 }
 

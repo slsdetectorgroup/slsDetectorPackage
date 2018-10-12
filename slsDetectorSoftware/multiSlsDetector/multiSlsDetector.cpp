@@ -1422,16 +1422,13 @@ int64_t multiSlsDetector::setNumberOfFrames(int64_t t, int detPos){
 	return setTimer(FRAME_NUMBER, t, detPos);
 }
 
-
 int64_t multiSlsDetector::setNumberOfCycles(int64_t t, int detPos){
 	return setTimer(CYCLES_NUMBER, t, detPos);
 }
 
-
 int64_t multiSlsDetector::setNumberOfGates(int64_t t, int detPos){
 	return setTimer(GATES_NUMBER, t, detPos);
 }
-
 
 int64_t multiSlsDetector::setNumberOfStorageCells(int64_t t, int detPos) {
 	return setTimer(STORAGE_CELL_NUMBER, t, detPos);
@@ -1695,45 +1692,25 @@ uint32_t multiSlsDetector::clearBit(uint32_t addr, int n, int detPos) {
 
 
 
-std::string multiSlsDetector::setNetworkParameter(networkParameter p, std::string s, int detPos) {
+std::string multiSlsDetector::setNetworkParameter(networkParameter parameter, std::string value, int detPos) {
 	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->setNetworkParameter(p, s);
-	}
+	if (detPos >= 0)
+		return detectors[detPos]->setNetworkParameter(parameter, value);
 
 	// multi
-	// single argument for all
-	if (s.find('+') == std::string::npos) {
-
-		if (p != RECEIVER_STREAMING_PORT && p != CLIENT_STREAMING_PORT){
-			auto r = parallelCall(&slsDetector::setNetworkParameter, p, s);
-			return sls::concatenateIfDifferent(r);
-		}
-
-		// calculate ports individually
-		int firstPort = stoi(s);
-		int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
-
-		std::vector<std::string> r;
-		for (size_t idet = 0; idet < detectors.size(); ++idet) {
-			s = std::to_string(firstPort + (idet * numSockets));
-			r.push_back(detectors[idet]->setNetworkParameter(p,s));
-		}
+	if (parameter != RECEIVER_STREAMING_PORT && parameter != CLIENT_STREAMING_PORT){
+		auto r = parallelCall(&slsDetector::setNetworkParameter, parameter, value);
 		return sls::concatenateIfDifferent(r);
 	}
 
-	//concatenated argumements for all
+	// calculate ports individually
+	int firstPort = stoi(value);
+	int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
+
 	std::vector<std::string> r;
-	size_t p1 = 0;
-	size_t p2 = s.find('+', p1);
-	int id    = 0;
-	while (p2 != std::string::npos) {
-		r.push_back(detectors[id]->setNetworkParameter(p, s.substr(p1, p2 - p1)));
-		++id;
-		s  = s.substr(p2 + 1);
-		p2 = s.find('+');
-		if (id >= (int)detectors.size())
-			break;
+	for (size_t idet = 0; idet < detectors.size(); ++idet) {
+		auto port = std::to_string(firstPort + (idet * numSockets));
+		r.push_back(detectors[idet]->setNetworkParameter(parameter, port));
 	}
 	return sls::concatenateIfDifferent(r);
 }

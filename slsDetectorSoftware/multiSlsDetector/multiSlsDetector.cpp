@@ -918,48 +918,33 @@ int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 
 	char* args[100];
 	char myargs[100][1000];
+	std::cout << "Loading configuration file: " << fname << std::endl;
 
-	std::cout << "config file name " << fname << std::endl;
-
-	std::ifstream infile;
-	infile.open(fname.c_str(), std::ios_base::in);
-	if (infile.is_open()) {
-		std::string tmp_line;
-		while (infile.good()) {
-			getline(infile, tmp_line);
-			// remove comments that come after
-			if (tmp_line.find('#') != std::string::npos)
-				tmp_line.erase(tmp_line.find('#'));
+	std::ifstream input_file;
+	input_file.open(fname, std::ios_base::in);
+	if (input_file.is_open()) {
+		std::string current_line;
+		while (input_file.good()) {
+			getline(input_file, current_line);
+			if (current_line.find('#') != std::string::npos)
+				current_line.erase(current_line.find('#'));
 #ifdef VERBOSE
-			std::cout << "tmp_line after removing comments:" << tmp_line << std::endl;
+			std::cout << "current_line after removing comments:" << current_line << std::endl;
 #endif
-			if (tmp_line.length() > 1) {
-				std::istringstream ssstr(tmp_line);
-				int iargval = 0;
-				std::string sargname;
-				while (ssstr.good()) {
-					ssstr >> sargname;
-#ifdef VERBOSE
-					std::cout << iargval << " " << sargname << std::endl;
-#endif
-					strcpy(myargs[iargval], sargname.c_str());
-					args[iargval] = myargs[iargval];
-
-#ifdef VERBOSE
-					std::cout << "--" << iargval << " " << args[iargval] << std::endl;
-#endif
-					++iargval;
+			if (current_line.length() > 1) {
+				std::istringstream line_stream(current_line);
+				int n_arguments = 0;
+				std::string current_argument;
+				while (line_stream.good()) {
+					line_stream >> current_argument;
+					strcpy(myargs[n_arguments], current_argument.c_str());
+					args[n_arguments] = myargs[n_arguments];
+					++n_arguments;
 				}
-#ifdef VERBOSE
-				std::cout << std::endl;
-				for (int ia = 0; ia < iargval; ia++)
-					std::cout << args[ia] << " ??????? ";
-				std::cout << std::endl;
-#endif
-				multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
+				multiSlsDetectorClient(n_arguments, args, PUT_ACTION, this);
 			}
 		}
-		infile.close();
+		input_file.close();
 	} else {
 		std::cout << "Error opening configuration file " << fname << " for reading" << std::endl;
 		setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);

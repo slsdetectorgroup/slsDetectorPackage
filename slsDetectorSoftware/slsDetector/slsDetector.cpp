@@ -5101,12 +5101,16 @@ int slsDetector::programFPGA(std::string fname) {
 	if(fread(fpgasrc, sizeof(char), filesize, fp) != filesize){
 		std::cout << "Could not read rawbin file" << std::endl;
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		if(fpgasrc != NULL)
+			free(fpgasrc);
 		return FAIL;
 	}
 
 	if(fclose(fp)){
 		std::cout << "Could not close destination file after converting" << std::endl;
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
+		if(fpgasrc != NULL)
+			free(fpgasrc);
 		return FAIL;
 	}
 	unlink(destfname); // delete temporary file

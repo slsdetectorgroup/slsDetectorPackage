@@ -1,4 +1,5 @@
 #pragma once
+
 /************************************************
  * @file sls_detector_funcs.h
  * @short functions indices to call on server (detector/receiver)
@@ -121,7 +122,7 @@ enum detFuncs{
 	NUM_REC_FUNCTIONS
 };
 
-
+#ifdef __cplusplus
 static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	switch (func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
@@ -237,5 +238,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";
 	}
-}
+};
+#endif
 

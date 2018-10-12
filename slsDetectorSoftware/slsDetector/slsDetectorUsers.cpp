@@ -21,6 +21,8 @@ slsDetectorUsers::slsDetectorUsers(int& ret, int id) : myDetector(0), myCmd(0){
 slsDetectorUsers::~slsDetectorUsers() {
 	if (myDetector)
 		delete myDetector;
+	if (myCmd)
+		delete myCmd;
 }
 
 int slsDetectorUsers::getNumberOfDetectors() {

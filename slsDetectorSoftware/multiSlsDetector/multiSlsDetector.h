@@ -208,7 +208,7 @@ public:
 	 * Get acquiring flag from shared memory
 	 * @returns acquiring flag
 	 */
-	bool getAcquiringFlag();
+	bool getAcquiringFlag() const;
 
 	/**
 	 * Check if acquiring flag is set, set error if set
@@ -531,7 +531,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns the trimbit/settings directory
 	 */
-	std::string setSettingsDir(std::string s, int detPos = -1);
+	std::string setSettingsDir(std::string directory, int detPos = -1);
 
 	/**
 	 * Loads the modules settings/trimbits reading from a specific file
@@ -855,7 +855,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
-	std::string setNetworkParameter(networkParameter p, std::string s, int detPos = -1);
+	std::string setNetworkParameter(networkParameter parameter, std::string value, int detPos = -1);
 
 	/**
 	 * Get network parameter

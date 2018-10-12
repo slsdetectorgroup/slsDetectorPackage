@@ -138,7 +138,7 @@ int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int& channelX, in
 std::string multiSlsDetector::getErrorMessage(int& critical, int detPos) {
 	int64_t multiMask = 0, slsMask = 0;
 	std::string retval = "";
-	char sNumber[100];
+	// char sNumber[100];
 	critical = 0;
 	size_t posmin = 0, posmax = detectors.size();
 
@@ -184,15 +184,15 @@ std::string multiSlsDetector::getErrorMessage(int& critical, int detPos) {
 			if ((multiMask & (1 << idet)) || (detPos >= 0)) {
 
 				//append detector id
-				sprintf(sNumber, "%ld", idet);
-				retval.append("Detector " + std::string(sNumber) + std::string(":\n"));
+				// sprintf(sNumber, "%ld", idet);
+				retval.append("Detector " + std::to_string(idet) + std::string(":\n"));
 
 				//get sls det error mask
 				slsMask = detectors[idet]->getErrorMask();
 #ifdef VERYVERBOSE
 				//append sls det error mask
-				sprintf(sNumber, "0x%lx", slsMask);
-				retval.append("Error Mask " + std::string(sNumber) + std::string("\n"));
+				// sprintf(sNumber, "0x%lx", slsMask);
+				retval.append("Error Mask " + std::to_string(slsMask) + std::string("\n"));
 #endif
 
 				//get the error critical level
@@ -236,7 +236,7 @@ void multiSlsDetector::setAcquiringFlag(bool b) {
 }
 
 
-bool multiSlsDetector::getAcquiringFlag() {
+bool multiSlsDetector::getAcquiringFlag() const {
 	return thisMultiDetector->acquiringFlag;
 }
 
@@ -276,23 +276,6 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 	return sls::minusOneIfDifferent(r);
 }
 
-
-// slsDetector* multiSlsDetector::getSlsDetector(int detPos) {
-// 	return detectors[detPos].get();
-// }
-
-// slsDetector *multiSlsDetector::operator()(int detPos) const {
-// 	return detectors[detPos].get();
-// }
-
-// slsDetector* multiSlsDetector::operator[](int detPos) const {
-//     //Providing access to detectors with range checking
-//     //throw exception if out of range
-//     if (detPos >= 0 && detPos < (int)detectors.size())
-//         return detectors[detPos].get();
-//     else
-//         throw(std::range_error("Detector does not exist"));
-// }
 
 void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
 	// single
@@ -584,16 +567,10 @@ void multiSlsDetector::addSlsDetector (std::string s) {
 		return;
 	}
 
-
-
 	int pos = (int)detectors.size();
 	detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
-
-
 	thisMultiDetector->numberOfDetectors = detectors.size();
-
 	detectors[pos]->setHostname(s.c_str()); // also updates client
-
 	thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
 	thisMultiDetector->dataBytesInclGapPixels += detectors[pos]->getDataBytesInclGapPixels();
 	thisMultiDetector->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
@@ -935,78 +912,44 @@ int multiSlsDetector::execCommand(std::string cmd, int detPos) {
 	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-
 int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 	freeSharedMemory();
 	setupMultiDetector();
 
-	std::string ans;
-	std::string str;
-	std::ifstream infile;
-	int iargval;
-	int interrupt = 0;
-	char* args[1000];
+	char* args[100];
+	char myargs[100][1000];
+	std::cout << "Loading configuration file: " << fname << std::endl;
 
-	char myargs[1000][1000];
-
-	std::string sargname, sargval;
-	int iline = 0;
-	std::cout << "config file name " << fname << std::endl;
-	infile.open(fname.c_str(), std::ios_base::in);
-	if (infile.is_open()) {
-
-		while (infile.good() and interrupt == 0) {
-			sargname = "none";
-			sargval  = "0";
-			getline(infile, str);
-			++iline;
-
-			// remove comments that come after
-			if (str.find('#') != std::string::npos)
-				str.erase(str.find('#'));
+	std::ifstream input_file;
+	input_file.open(fname, std::ios_base::in);
+	if (input_file.is_open()) {
+		std::string current_line;
+		while (input_file.good()) {
+			getline(input_file, current_line);
+			if (current_line.find('#') != std::string::npos)
+				current_line.erase(current_line.find('#'));
 #ifdef VERBOSE
-			std::cout << "string:" << str << std::endl;
+			std::cout << "current_line after removing comments:" << current_line << std::endl;
 #endif
-			if (str.length() < 2) {
-#ifdef VERBOSE
-				std::cout << "Empty line or Comment " << std::endl;
-#endif
-				continue;
-			} else {
-				std::istringstream ssstr(str);
-				iargval = 0;
-				while (ssstr.good()) {
-					ssstr >> sargname;
-#ifdef VERBOSE
-					std::cout << iargval << " " << sargname << std::endl;
-#endif
-					strcpy(myargs[iargval], sargname.c_str());
-					args[iargval] = myargs[iargval];
-#ifdef VERBOSE
-					std::cout << "--" << iargval << " " << args[iargval] << std::endl;
-#endif
-					++iargval;
+			if (current_line.length() > 1) {
+				std::istringstream line_stream(current_line);
+				int n_arguments = 0;
+				std::string current_argument;
+				while (line_stream.good()) {
+					line_stream >> current_argument;
+					strcpy(myargs[n_arguments], current_argument.c_str());
+					args[n_arguments] = myargs[n_arguments];
+					++n_arguments;
 				}
-#ifdef VERBOSE
-				std::cout << std::endl;
-				for (int ia = 0; ia < iargval; ia++)
-					std::cout << args[ia] << " ??????? ";
-				std::cout << std::endl;
-#endif
-				multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
+				multiSlsDetectorClient(n_arguments, args, PUT_ACTION, this);
 			}
-			++iline;
 		}
-
-		infile.close();
+		input_file.close();
 	} else {
 		std::cout << "Error opening configuration file " << fname << " for reading" << std::endl;
 		setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
 		return FAIL;
 	}
-#ifdef VERBOSE
-	std::cout << "Read configuration file of " << iline << " lines" << std::endl;
-#endif
 
 	if (getErrorMask()) {
 		int c;
@@ -1014,7 +957,6 @@ int multiSlsDetector::readConfigurationFile(const std::string&  fname) {
 				getErrorMessage(c).c_str());
 		return FAIL;
 	}
-
 	return OK;
 }
 
@@ -1169,28 +1111,12 @@ std::string multiSlsDetector::getSettingsDir(int detPos) {
 }
 
 
-std::string multiSlsDetector::setSettingsDir(std::string s, int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->setSettingsDir(s);
-	}
+std::string multiSlsDetector::setSettingsDir(std::string directory, int detPos) {
+	if (detPos >= 0) 
+		return detectors[detPos]->setSettingsDir(directory);
 
-	// multi
-	size_t p1 = 0;
-	size_t p2 = s.find('+', p1);
-	int id = 0;
-	while (p2 != std::string::npos) {
-		detectors[id]->setSettingsDir(s.substr(p1, p2 - p1));
-		if (detectors[id]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << id));
-		++id;
-		s  = s.substr(p2 + 1);
-		p2 = s.find('+');
-		if (id >= (int)detectors.size())
-			break;
-	}
-
-	return getSettingsDir();
+	auto r = parallelCall(&slsDetector::setSettingsDir, directory);
+	return sls::concatenateIfDifferent(r);
 }
 
 
@@ -1496,16 +1422,13 @@ int64_t multiSlsDetector::setNumberOfFrames(int64_t t, int detPos){
 	return setTimer(FRAME_NUMBER, t, detPos);
 }
 
-
 int64_t multiSlsDetector::setNumberOfCycles(int64_t t, int detPos){
 	return setTimer(CYCLES_NUMBER, t, detPos);
 }
 
-
 int64_t multiSlsDetector::setNumberOfGates(int64_t t, int detPos){
 	return setTimer(GATES_NUMBER, t, detPos);
 }
-
 
 int64_t multiSlsDetector::setNumberOfStorageCells(int64_t t, int detPos) {
 	return setTimer(STORAGE_CELL_NUMBER, t, detPos);
@@ -1769,45 +1692,25 @@ uint32_t multiSlsDetector::clearBit(uint32_t addr, int n, int detPos) {
 
 
 
-std::string multiSlsDetector::setNetworkParameter(networkParameter p, std::string s, int detPos) {
+std::string multiSlsDetector::setNetworkParameter(networkParameter parameter, std::string value, int detPos) {
 	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->setNetworkParameter(p, s);
-	}
+	if (detPos >= 0)
+		return detectors[detPos]->setNetworkParameter(parameter, value);
 
 	// multi
-	// single argument for all
-	if (s.find('+') == std::string::npos) {
-
-		if (p != RECEIVER_STREAMING_PORT && p != CLIENT_STREAMING_PORT){
-			auto r = parallelCall(&slsDetector::setNetworkParameter, p, s);
-			return sls::concatenateIfDifferent(r);
-		}
-
-		// calculate ports individually
-		int firstPort = stoi(s);
-		int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
-
-		std::vector<std::string> r;
-		for (size_t idet = 0; idet < detectors.size(); ++idet) {
-			s = std::to_string(firstPort + (idet * numSockets));
-			r.push_back(detectors[idet]->setNetworkParameter(p,s));
-		}
+	if (parameter != RECEIVER_STREAMING_PORT && parameter != CLIENT_STREAMING_PORT){
+		auto r = parallelCall(&slsDetector::setNetworkParameter, parameter, value);
 		return sls::concatenateIfDifferent(r);
 	}
 
-	//concatenated argumements for all
+	// calculate ports individually
+	int firstPort = stoi(value);
+	int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
+
 	std::vector<std::string> r;
-	size_t p1 = 0;
-	size_t p2 = s.find('+', p1);
-	int id    = 0;
-	while (p2 != std::string::npos) {
-		r.push_back(detectors[id]->setNetworkParameter(p, s.substr(p1, p2 - p1)));
-		++id;
-		s  = s.substr(p2 + 1);
-		p2 = s.find('+');
-		if (id >= (int)detectors.size())
-			break;
+	for (size_t idet = 0; idet < detectors.size(); ++idet) {
+		auto port = std::to_string(firstPort + (idet * numSockets));
+		r.push_back(detectors[idet]->setNetworkParameter(parameter, port));
 	}
 	return sls::concatenateIfDifferent(r);
 }
@@ -3969,7 +3872,6 @@ int multiSlsDetector::setThreadedProcessing(int enable) {
 
 
 void multiSlsDetector::startProcessingThread() {
-
 	setTotalProgress();
 #ifdef VERBOSE
 	std::cout << "start thread stuff"  << std::endl;
@@ -3988,19 +3890,14 @@ void multiSlsDetector::startProcessingThread() {
 	/* Initialize and set thread detached attribute */
 	pthread_attr_init(&tattr);
 	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
-
-	ret = pthread_setschedparam(pthread_self(), policy, &mparam);
-
-
+	pthread_setschedparam(pthread_self(), policy, &mparam);
 	ret = pthread_create(&dataProcessingThread, &tattr,startProcessData, (void*)this);
-
 	if (ret)
 		printf("ret %d\n", ret);
-
 	pthread_attr_destroy(&tattr);
 
 	// scheduling parameters of target thread
-	ret = pthread_setschedparam(dataProcessingThread, policy, &param);
+	pthread_setschedparam(dataProcessingThread, policy, &param);
 }
 
 

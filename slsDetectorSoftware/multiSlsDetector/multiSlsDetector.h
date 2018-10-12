@@ -531,7 +531,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns the trimbit/settings directory
 	 */
-	std::string setSettingsDir(std::string s, int detPos = -1);
+	std::string setSettingsDir(std::string directory, int detPos = -1);
 
 	/**
 	 * Loads the modules settings/trimbits reading from a specific file

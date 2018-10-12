@@ -1111,28 +1111,12 @@ std::string multiSlsDetector::getSettingsDir(int detPos) {
 }
 
 
-std::string multiSlsDetector::setSettingsDir(std::string s, int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->setSettingsDir(s);
-	}
+std::string multiSlsDetector::setSettingsDir(std::string directory, int detPos) {
+	if (detPos >= 0) 
+		return detectors[detPos]->setSettingsDir(directory);
 
-	// multi
-	size_t p1 = 0;
-	size_t p2 = s.find('+', p1);
-	int id = 0;
-	while (p2 != std::string::npos) {
-		detectors[id]->setSettingsDir(s.substr(p1, p2 - p1));
-		if (detectors[id]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << id));
-		++id;
-		s  = s.substr(p2 + 1);
-		p2 = s.find('+');
-		if (id >= (int)detectors.size())
-			break;
-	}
-
-	return getSettingsDir();
+	auto r = parallelCall(&slsDetector::setSettingsDir, directory);
+	return sls::concatenateIfDifferent(r);
 }
 
 

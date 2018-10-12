@@ -372,11 +372,13 @@ uint32_t slsReceiverImplementation::getFifoDepth() const{
 /***receiver status***/
 slsDetectorDefs::runStatus slsReceiverImplementation::getStatus() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return status;}
+    return status;
+}
 
 bool slsReceiverImplementation::getSilentMode() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return silentMode;}
+    return silentMode;
+}
 
 bool slsReceiverImplementation::getActivate() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";

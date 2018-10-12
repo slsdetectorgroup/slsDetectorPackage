@@ -1033,7 +1033,7 @@ int multiSlsDetector::writeConfigurationFile(const std::string&  fname) {
 	}
 	int ret = OK, ret1 = OK;
 	std::ofstream outfile;
-	int iline = 0;
+	size_t iline = 0;
 
 	outfile.open(fname.c_str(), std::ios_base::out);
 	if (outfile.is_open()) {

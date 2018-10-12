@@ -106,26 +106,11 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	 */
 	void startTCPServer();
 
-	/** retuns function name with function index */
-	const char* getFunctionName(enum detFuncs func);
-
 	/** assigns functions to the fnum enum */
 	int function_table();
 
 	/** Decodes Function */
 	int decode_function();
-
-	/** print socket read error */
-	int printSocketReadError();
-
-	/** receiver object is null */
-	void invalidReceiverObject();
-
-	/** receiver already locked */
-	void receiverlocked();
-
-	/** receiver not idle */
-	void receiverNotIdle();
 
 	/** function not implemented for specific detector */
 	void functionNotImplemented();
@@ -287,7 +272,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	detectorType myDetectorType;
 
 	/** slsReceiverBase object */
-	slsReceiverImplementation *receiverBase;
+	slsReceiverImplementation *receiver;
 
 	/** Function List */
 	int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])();
@@ -371,5 +356,5 @@ protected:
 	MySocketTCP* mySock;
 
 	/** client interface */
-	ClientInterface* clientInterface;
+	ClientInterface* interface;
 };

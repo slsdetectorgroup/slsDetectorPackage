@@ -29,15 +29,15 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 		delete mySock;
 		mySock=NULL;
 	}
-	if (clientInterface)
-		delete clientInterface;
-	if(receiverBase)
-		delete receiverBase;
+	if (interface)
+		delete interface;
+	if(receiver)
+		delete receiver;
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 				myDetectorType(GOTTHARD),
-				receiverBase(0),
+				receiver(0),
 				ret(OK),
 				fnum(-1),
 				lockStatus(0),
@@ -45,7 +45,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 				tcpThreadCreated(false),
 				portNumber(DEFAULT_PORTNO+2),
 				mySock(0),
-				clientInterface(0)
+				interface(0)
 {
 	//***callback parameters***
 	startAcquisitionCallBack = NULL;
@@ -60,7 +60,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 	portNumber = (pn > 0 ? pn : DEFAULT_PORTNO + 2);
 	MySocketTCP* m = new MySocketTCP(portNumber);
 	mySock = m;
-	clientInterface = new ClientInterface(mySock);
+	interface = new ClientInterface(mySock, -1, "Receiver");
 
 	//initialize variables
 	strcpy(mySock->lastClientIP,"none");
@@ -154,8 +154,8 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 		//if tcp command was to exit server
 		if(ret == GOODBYE){
 			FILE_LOG(logINFO) << "Shutting down UDP Socket";
-			if(receiverBase){
-				receiverBase->shutDownUDPSockets();
+			if(receiver){
+				receiver->shutDownUDPSockets();
 			}
 
 			mySock->exitServer();
@@ -166,8 +166,8 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 		//if user entered exit
 		if(killTCPServerThread) {
 			if (ret != GOODBYE) {
-				if(receiverBase){
-					receiverBase->shutDownUDPSockets();
+				if(receiver){
+					receiver->shutDownUDPSockets();
 				}
 			}
 			cprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
@@ -176,60 +176,6 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 	}
 }
 
-
-const char* slsReceiverTCPIPInterface::getFunctionName(enum detFuncs func) {
-	switch (func) {
-	case F_EXEC_RECEIVER_COMMAND:		return "F_EXEC_RECEIVER_COMMAND";
-	case F_EXIT_RECEIVER: 				return "F_EXIT_RECEIVER";
-	case F_LOCK_RECEIVER: 				return "F_LOCK_RECEIVER";
-	case F_GET_LAST_RECEIVER_CLIENT_IP: return "F_GET_LAST_RECEIVER_CLIENT_IP";
-	case F_SET_RECEIVER_PORT: 			return "F_SET_RECEIVER_PORT";
-	case F_UPDATE_RECEIVER_CLIENT: 		return "F_UPDATE_RECEIVER_CLIENT";
-	case F_GET_RECEIVER_ID: 			return "F_GET_RECEIVER_ID";
-	case F_GET_RECEIVER_TYPE: 			return "F_GET_RECEIVER_TYPE";
-	case F_SEND_RECEIVER_DETHOSTNAME:	return "F_SEND_RECEIVER_DETHOSTNAME";
-	case F_RECEIVER_SET_ROI: 			return "F_RECEIVER_SET_ROI";
-	case F_SETUP_RECEIVER_UDP:			return "F_SETUP_RECEIVER_UDP";
-	case F_SET_RECEIVER_TIMER:  		return "F_SET_RECEIVER_TIMER";
-	case F_SET_RECEIVER_DYNAMIC_RANGE:  return "F_SET_RECEIVER_DYNAMIC_RANGE";
-	case F_RECEIVER_STREAMING_FREQUENCY:return "F_RECEIVER_STREAMING_FREQUENCY";
-	case F_GET_RECEIVER_STATUS:			return "F_GET_RECEIVER_STATUS";
-	case F_START_RECEIVER:				return "F_START_RECEIVER";
-	case F_STOP_RECEIVER:				return "F_STOP_RECEIVER";
-	case F_SET_RECEIVER_FILE_PATH: 		return "F_SET_RECEIVER_FILE_PATH";
-	case F_SET_RECEIVER_FILE_NAME: 		return "F_SET_RECEIVER_FILE_NAME";
-	case F_SET_RECEIVER_FILE_INDEX: 	return "F_SET_RECEIVER_FILE_INDEX";
-	case F_GET_RECEIVER_FRAME_INDEX:	return "F_GET_RECEIVER_FRAME_INDEX";
-	case F_GET_RECEIVER_FRAMES_CAUGHT:	return "F_GET_RECEIVER_FRAMES_CAUGHT";
-	case F_RESET_RECEIVER_FRAMES_CAUGHT:return "F_RESET_RECEIVER_FRAMES_CAUGHT";
-	case F_ENABLE_RECEIVER_FILE_WRITE:	return "F_ENABLE_RECEIVER_FILE_WRITE";
-	case F_ENABLE_RECEIVER_OVERWRITE:	return "F_ENABLE_RECEIVER_OVERWRITE";
-	case F_ENABLE_RECEIVER_TEN_GIGA:	return "F_ENABLE_RECEIVER_TEN_GIGA";
-	case F_SET_RECEIVER_FIFO_DEPTH:		return "F_SET_RECEIVER_FIFO_DEPTH";
-	case F_RECEIVER_ACTIVATE:			return "F_RECEIVER_ACTIVATE";
-	case F_STREAM_DATA_FROM_RECEIVER:	return "F_STREAM_DATA_FROM_RECEIVER";
-	case F_RECEIVER_STREAMING_TIMER:	return "F_RECEIVER_STREAMING_TIMER";
-	case F_SET_FLIPPED_DATA_RECEIVER:	return "F_SET_FLIPPED_DATA_RECEIVER";
-	case F_SET_RECEIVER_FILE_FORMAT:	return "F_SET_RECEIVER_FILE_FORMAT";
-	case F_SEND_RECEIVER_DETPOSID:		return "F_SEND_RECEIVER_DETPOSID";
-	case F_SEND_RECEIVER_MULTIDETSIZE:  return "F_SEND_RECEIVER_MULTIDETSIZE";
-	case F_SET_RECEIVER_STREAMING_PORT: return "F_SET_RECEIVER_STREAMING_PORT";
-	case F_RECEIVER_STREAMING_SRC_IP: 	return "F_RECEIVER_STREAMING_SRC_IP";
-	case F_SET_RECEIVER_SILENT_MODE:	return "F_SET_RECEIVER_SILENT_MODE";
-	case F_ENABLE_GAPPIXELS_IN_RECEIVER:return "F_ENABLE_GAPPIXELS_IN_RECEIVER";
-	case F_RESTREAM_STOP_FROM_RECEIVER:	return "F_RESTREAM_STOP_FROM_RECEIVER";
-    case F_ADDITIONAL_JSON_HEADER:      return "F_ADDITIONAL_JSON_HEADER";
-    case F_RECEIVER_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_UDP_SOCK_BUF_SIZE";
-    case F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE:  return "F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE";
-    case F_SET_RECEIVER_FRAMES_PER_FILE:return "F_SET_RECEIVER_FRAMES_PER_FILE";
-    case F_RECEIVER_CHECK_VERSION:		return "F_RECEIVER_CHECK_VERSION";
-    case F_RECEIVER_DISCARD_POLICY:		return "F_RECEIVER_DISCARD_POLICY";
-    case F_RECEIVER_PADDING_ENABLE:		return "F_RECEIVER_PADDING_ENABLE";
-    case F_RECEIVER_DEACTIVATED_PADDING_ENABLE: return "F_RECEIVER_DEACTIVATED_PADDING_ENABLE";
-
-	default:							return "Unknown Function";
-	}
-}
 
 
 
@@ -284,7 +230,7 @@ int slsReceiverTCPIPInterface::function_table(){
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
-				getFunctionName((enum detFuncs)i) << ") located at " << flist[i];
+				getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
 	}
 
 	return OK;
@@ -302,7 +248,7 @@ int slsReceiverTCPIPInterface::decode_function(){
 		FILE_LOG(logDEBUG1) << "ERROR reading from socket. "
 				"Received " << n << " bytes," <<
 				"fnum:" << fnum << " "
-				"(" << getFunctionName((enum detFuncs)fnum) << ")";
+				"(" << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
 		return FAIL;
 	}
 	else
@@ -314,51 +260,23 @@ int slsReceiverTCPIPInterface::decode_function(){
 		ret = (this->M_nofunc)();
 	} else{
 		FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
-				"(" << getFunctionName((enum detFuncs)fnum) << ") "
+				"(" << getFunctionNameFromEnum((enum detFuncs)fnum) << ") "
 				"located at " << flist[fnum];
 		ret = (this->*flist[fnum])();
 
 		if (ret == FAIL) {
 			FILE_LOG(logERROR) << "Failed to execute function = " << fnum << " ("
-					<< getFunctionName((enum detFuncs)fnum) << ")";
+					<< getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
 		}
 	}
 	return ret;
 }
 
 
-
-int slsReceiverTCPIPInterface::printSocketReadError() {
-	FILE_LOG(logERROR) << "Reading from socket failed. Possible socket crash";
-	return FAIL;
-}
-
-
-void slsReceiverTCPIPInterface::invalidReceiverObject() {
-	ret=FAIL;
-	strcpy(mess,"Receiver not set up. Please use rx_hostname first.\n");
-	FILE_LOG(logERROR) << mess;
-}
-
-
-void slsReceiverTCPIPInterface::receiverlocked() {
-	ret = FAIL;
-	sprintf(mess,"Receiver locked by %s\n",mySock->lastClientIP);
-	FILE_LOG(logERROR) << mess;
-}
-
-
-void slsReceiverTCPIPInterface::receiverNotIdle() {
-	ret = FAIL;
-	sprintf(mess,"Can not execute %s when receiver is not idle\n",
-			getFunctionName((enum detFuncs)fnum));
-	FILE_LOG(logERROR) << mess;
-}
-
 void slsReceiverTCPIPInterface::functionNotImplemented() {
 	ret = FAIL;
 	sprintf(mess, "Function (%s) is not implemented for this detector\n",
-			getFunctionName((enum detFuncs)fnum));
+			getFunctionNameFromEnum((enum detFuncs)fnum));
 	FILE_LOG(logERROR) << mess;
 }
 
@@ -375,7 +293,7 @@ int slsReceiverTCPIPInterface::M_nofunc(){printf("111 \n");
 	strcpy(mess,"Unrecognized Function. Please do not proceed.\n");
 	FILE_LOG(logERROR) << mess;
 
-	clientInterface->Server_SendResult(false, ret, NULL, 0, mess);
+	interface->Server_SendResult(false, ret, NULL, 0, mess);
 
 	return ret;
 }
@@ -384,31 +302,24 @@ int slsReceiverTCPIPInterface::M_nofunc(){printf("111 \n");
 
 
 int slsReceiverTCPIPInterface::exec_command() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char cmd[MAX_STR_LENGTH];
 	memset(cmd,0,sizeof(cmd));
-	int sysret = 0;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(cmd,MAX_STR_LENGTH) < 0)
-		return printSocketReadError();
+	// get args, return if socket crashed
+	if (interface->Server_ReceiveArg(ret, mess, cmd, MAX_STR_LENGTH) == FAIL)
+		return FAIL;
 
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else {
-		sysret=system(cmd);
-		//should be replaced by popen
-		if (sysret == 0) {
-			ret = OK;
-		} else {
-			ret = FAIL;
-			sprintf(mess,"Executing Command failed\n");
+	// verify if receiver is unlocked
+	if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
+		ret = (system(cmd) == 0) ? OK : FAIL;
+		if(ret == FAIL) {
+			strcpy(mess, "Executing Command failed\n");
 			FILE_LOG(logERROR) << mess;
 		}
 	}
 
-	clientInterface->Server_SendResult(false, ret, NULL, 0, mess);
+	interface->Server_SendResult(false, ret, NULL, 0, mess);
 
 	return ret;
 }
@@ -419,7 +330,7 @@ int slsReceiverTCPIPInterface::exit_server() {
 	cprintf(RED,"Closing receiver server\n");
 
 	ret = OK;
-	clientInterface->Server_SendResult(false, ret, NULL, 0);
+	interface->Server_SendResult(false, ret, NULL, 0);
 
 	ret = GOODBYE;
 	return ret;
@@ -432,9 +343,9 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 	memset(mess, 0, sizeof(mess));
 	int lock = 0;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&lock,sizeof(lock)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed
+	if (interface->Server_ReceiveArg(ret, mess, &lock, sizeof(lock)) == FAIL)
+		return FAIL;
 
 	// execute action
 	if (lock >= 0) {
@@ -445,11 +356,10 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 			lockStatus = lock;
 			strcpy(mySock->lastClientIP,mySock->thisClientIP);
 		}   else
-			receiverlocked();
+			 interface->Server_LockedError(ret, mess);
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &lockStatus,sizeof(lockStatus), mess);
+	interface->Server_SendResult(true, ret, &lockStatus,sizeof(lockStatus), mess);
 
 	return ret;
 }
@@ -458,8 +368,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 
 int slsReceiverTCPIPInterface::get_last_client_ip() {
 	ret = OK;
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret,mySock->lastClientIP, sizeof(mySock->lastClientIP));
+	interface->Server_SendResult(true, ret,mySock->lastClientIP, sizeof(mySock->lastClientIP));
 
 	return ret;
 }
@@ -477,17 +386,13 @@ int slsReceiverTCPIPInterface::set_port() {
 
 	// receive arguments
 	if (mySock->ReceiveDataOnly(&p_type,sizeof(p_type)) < 0 )
-		return printSocketReadError();
+		return interface->Server_SocketCrash();
 	if (mySock->ReceiveDataOnly(&p_number,sizeof(p_number)) < 0 )
-		return printSocketReadError();
+		return interface->Server_SocketCrash();
 
-	// execute action
-	if (mySock->differentClients && lockStatus) {
-		ret=FAIL;
-		sprintf(mess,"Detector locked by %s\n",mySock->lastClientIP);
-		FILE_LOG(logERROR) << mess;
-	}
-	else {
+	// verify if receiver is unlocked
+	if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
+		// port number too low
 		if (p_number < 1024) {
 			ret = FAIL;
 			sprintf(mess,"Port Number (%d) too low\n", p_number);
@@ -495,7 +400,7 @@ int slsReceiverTCPIPInterface::set_port() {
 		} else {
 			FILE_LOG(logINFO) << "set port to " << p_number <<std::endl;
 			strcpy(oldLastClientIP, mySock->lastClientIP);
-
+			// create new socket
 			try {
 				mySocket = new MySocketTCP(p_number);
 				strcpy(mySock->lastClientIP,oldLastClientIP);
@@ -511,14 +416,13 @@ int slsReceiverTCPIPInterface::set_port() {
 		}
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &p_number,sizeof(p_number), mess);
-
+	interface->Server_SendResult(true, ret, &p_number,sizeof(p_number), mess);
+	// delete old socket
 	if(ret != FAIL){
 		mySock->Disconnect();
 		delete mySock;
 		mySock = mySocket;
-		clientInterface->SetSocket(mySock);
+		interface->SetSocket(mySock);
 	}
 
 	return ret;
@@ -530,10 +434,10 @@ int slsReceiverTCPIPInterface::update_client() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
+	// no arg, check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
-	clientInterface->Server_SendResult(false, ret, NULL, 0, mess);
+	interface->Server_SendResult(false, ret, NULL, 0, mess);
 
 	if (ret == FAIL)
 		return ret;
@@ -554,7 +458,7 @@ int slsReceiverTCPIPInterface::send_update() {
 	n += mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
 
 	// filepath
-	path = receiverBase->getFilePath();
+	path = receiver->getFilePath();
 	if (path == NULL)
 	    n += mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else {
@@ -563,7 +467,7 @@ int slsReceiverTCPIPInterface::send_update() {
 	}
 
 	// filename
-	path = receiverBase->getFileName();
+	path = receiver->getFileName();
 	if(path == NULL)
 	    n += mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
 	else {
@@ -572,71 +476,71 @@ int slsReceiverTCPIPInterface::send_update() {
 	}
 
 	// index
-	ind=receiverBase->getFileIndex();
+	ind=receiver->getFileIndex();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//file format
-	ind=(int)receiverBase->getFileFormat();
+	ind=(int)receiver->getFileFormat();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//frames per file
-	ind=(int)receiverBase->getFramesPerFile();
+	ind=(int)receiver->getFramesPerFile();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//frame discard policy
-	ind=(int)receiverBase->getFrameDiscardPolicy();
+	ind=(int)receiver->getFrameDiscardPolicy();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	//frame padding
-	ind=(int)receiverBase->getFramePaddingEnable();
+	ind=(int)receiver->getFramePaddingEnable();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// file write enable
-	ind=(int)receiverBase->getFileWriteEnable();
+	ind=(int)receiver->getFileWriteEnable();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// file overwrite enable
-	ind=(int)receiverBase->getOverwriteEnable();
+	ind=(int)receiver->getOverwriteEnable();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// gap pixels
-	ind=(int)receiverBase->getGapPixelsEnable();
+	ind=(int)receiver->getGapPixelsEnable();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// streaming frequency
-	ind=(int)receiverBase->getStreamingFrequency();
+	ind=(int)receiver->getStreamingFrequency();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// streaming port
-	ind=(int)receiverBase->getStreamingPort();
+	ind=(int)receiver->getStreamingPort();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// streaming source ip
-	path = receiverBase->getStreamingSourceIP();
+	path = receiver->getStreamingSourceIP();
 	mySock->SendDataOnly(path,MAX_STR_LENGTH);
 	if (path != NULL)
 		delete[] path;
 
     // additional json header
-    path = receiverBase->getAdditionalJsonHeader();
+    path = receiver->getAdditionalJsonHeader();
     mySock->SendDataOnly(path,MAX_STR_LENGTH);
     if (path != NULL)
         delete[] path;
 
 	// data streaming enable
-	ind=(int)receiverBase->getDataStreamEnable();
+	ind=(int)receiver->getDataStreamEnable();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// activate
-	ind=(int)receiverBase->getActivate();
+	ind=(int)receiver->getActivate();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// deactivated padding enable
-	ind=(int)receiverBase->getDeactivatedPadding();
+	ind=(int)receiver->getDeactivatedPadding();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	// silent mode
-	ind=(int)receiverBase->getSilentMode();
+	ind=(int)receiver->getSilentMode();
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
 	if (!lockStatus)
@@ -651,8 +555,7 @@ int slsReceiverTCPIPInterface::get_id(){
 	ret = OK;
 	int64_t retval = getReceiverVersion();
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval));
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval));
 
 	return ret;
 }
@@ -660,60 +563,63 @@ int slsReceiverTCPIPInterface::get_id(){
 
 
 int slsReceiverTCPIPInterface::set_detector_type(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	detectorType dr = GENERIC;
 	detectorType retval = GENERIC;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&dr,sizeof(dr)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed
+	if (interface->Server_ReceiveArg(ret, mess, &dr, sizeof(dr)) == FAIL)
+		return FAIL;
 
-	// execute action
-	if (dr == GET_DETECTOR_TYPE)
-		retval = myDetectorType;
-	else if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if ((receiverBase) && (receiverBase->getStatus() != IDLE))
-		receiverNotIdle();
-	else {
-		switch(dr) {
-		case GOTTHARD:
-		case PROPIX:
-		case MOENCH:
-		case EIGER:
-		case JUNGFRAUCTB:
-		case JUNGFRAU:
-			break;
-		default:
-			ret = FAIL;
-			sprintf(mess,"Unknown detector type: %d\n", dr);
-			FILE_LOG(logERROR) << mess;
-			break;
-		}
-		if(ret == OK) {
-			if(receiverBase == NULL){
-				receiverBase = new slsReceiverImplementation();
-				if(startAcquisitionCallBack)
-					receiverBase->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
-				if(acquisitionFinishedCallBack)
-					receiverBase->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,pAcquisitionFinished);
-				if(rawDataReadyCallBack)
-					receiverBase->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
-                if(rawDataModifyReadyCallBack)
-                    receiverBase->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
+	// set
+	if (dr >= 0) {
+		// if object exists, verify unlocked and idle, else only verify lock (connecting first time)
+		if (receiver == NULL)
+			interface->Server_VerifyLock(ret, mess, lockStatus);
+		else
+			interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum);
+		if (ret == OK) {
+			switch(dr) {
+			case GOTTHARD:
+			case PROPIX:
+			case MOENCH:
+			case EIGER:
+			case JUNGFRAUCTB:
+			case JUNGFRAU:
+				break;
+			default:
+				ret = FAIL;
+				sprintf(mess,"Unknown detector type: %d\n", dr);
+				FILE_LOG(logERROR) << mess;
+				break;
 			}
-			myDetectorType = dr;
-			ret = receiverBase->setDetectorType(myDetectorType);
-			retval = myDetectorType;
+			if(ret == OK) {
+				if(receiver == NULL){
+					receiver = new slsReceiverImplementation();
+					if(startAcquisitionCallBack)
+						receiver->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
+					if(acquisitionFinishedCallBack)
+						receiver->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,pAcquisitionFinished);
+					if(rawDataReadyCallBack)
+						receiver->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
+					if(rawDataModifyReadyCallBack)
+						receiver->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
+				}
+				myDetectorType = dr;
+				ret = receiver->setDetectorType(myDetectorType);
+				retval = myDetectorType;
+
+				// client has started updating receiver, update ip
+				if (!lockStatus)
+					strcpy(mySock->lastClientIP,mySock->thisClientIP);
+			}
+
 		}
 	}
-	// client has started updating receiver, update ip
-	if (!lockStatus)
-		strcpy(mySock->lastClientIP,mySock->thisClientIP);
+	//get
+	retval = myDetectorType;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -721,26 +627,25 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 
 
 int slsReceiverTCPIPInterface::set_detector_hostname() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char hostname[MAX_STR_LENGTH];
 	memset(hostname, 0, sizeof(hostname));
 	char* retval = NULL;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(hostname,MAX_STR_LENGTH) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, hostname,MAX_STR_LENGTH, true, receiver) == FAIL)
+		return FAIL;
 
-	// execute action
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
-		invalidReceiverObject();
-	else if (receiverBase->getStatus() != IDLE)
-		receiverNotIdle();
-	else {
-		receiverBase->setDetectorHostname(hostname);
-		retval = receiverBase->getDetectorHostname();
+	// base object not null
+	if (ret == OK) {
+		// set
+		if (strlen(hostname)) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK)
+				receiver->setDetectorHostname(hostname);
+		}
+		// get
+		retval = receiver->getDetectorHostname();
 		if(retval == NULL) {
 			ret = FAIL;
 			cprintf(RED, "Could not set hostname to %s\n", hostname);
@@ -748,8 +653,8 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 		}
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
+	interface->Server_SendResult(true, ret,
+			retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
 
 	if(retval != NULL)
 		delete[] retval;
@@ -766,35 +671,32 @@ int slsReceiverTCPIPInterface::set_roi() {
 
 	// receive arguments
 	if (mySock->ReceiveDataOnly(&nroi,sizeof(nroi)) < 0 )
-		return printSocketReadError();
+		return interface->Server_SocketCrash();
 
 	std::vector <ROI> roiLimits;
 	int iloop = 0;
 	for (iloop = 0; iloop < nroi; iloop++) {
 		ROI temp;
 		if ( mySock->ReceiveDataOnly(&temp,sizeof(ROI)) < 0 )
-			return printSocketReadError();
+			return interface->Server_SocketCrash();
 		roiLimits.push_back(temp);
 	}
 
-	//does not exist
+	// only for gotthard
 	if (myDetectorType != GOTTHARD)
 		functionNotImplemented();
 
+	// base object not null
+	else if (receiver == NULL)
+		interface->Server_NullObjectError(ret, mess);
 	else {
-		if (mySock->differentClients && lockStatus)
-			receiverlocked();
-		else if (receiverBase == NULL)
-			invalidReceiverObject();
-		else if (receiverBase->getStatus() != IDLE)
-			receiverNotIdle();
-		else {
-			ret = receiverBase->setROI(roiLimits);
-		}
+		// only set
+		// verify if receiver is unlocked and idle
+		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK)
+			ret = receiver->setROI(roiLimits);
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, NULL, 0, mess);
+	interface->Server_SendResult(true, ret, NULL, 0, mess);
 
 	roiLimits.clear();
 
@@ -804,72 +706,67 @@ int slsReceiverTCPIPInterface::set_roi() {
 
 
 int slsReceiverTCPIPInterface::setup_udp(){
-	ret = OK;
 	char args[3][MAX_STR_LENGTH];
 	memset(args,0,sizeof(args));
 	char retval[MAX_STR_LENGTH];
 	memset(retval,0,sizeof(retval));
 
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, args, sizeof(args), true, receiver) == FAIL)
+		return FAIL;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(args,sizeof(args)) < 0 )
-		return printSocketReadError();
+	// base object not null
+	if (ret == OK) {
+		// only set
+		// verify if receiver is unlocked and idle
+		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+			//set up udp port
+			int udpport=-1,udpport2=-1;
+			sscanf(args[1],"%d",&udpport);
+			sscanf(args[2],"%d",&udpport2);
+			receiver->setUDPPortNumber(udpport);
+			if (myDetectorType == EIGER)
+				receiver->setUDPPortNumber2(udpport2);
 
-	// execute action
-	if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase == NULL)
-		invalidReceiverObject();
-	else if (receiverBase->getStatus() != IDLE)
-		receiverNotIdle();
-	else {
-		//set up udp port
-		int udpport=-1,udpport2=-1;
-		sscanf(args[1],"%d",&udpport);
-		sscanf(args[2],"%d",&udpport2);
-		receiverBase->setUDPPortNumber(udpport);
-		if (myDetectorType == EIGER)
-			receiverBase->setUDPPortNumber2(udpport2);
-
-		//setup udpip
-		//get ethernet interface or IP to listen to
-		FILE_LOG(logINFO) << "Receiver UDP IP: " << args[0];
-		std::string temp = genericSocket::ipToName(args[0]);
-		if (temp == "none"){
-			ret = FAIL;
-			strcpy(mess, "Failed to get ethernet interface or IP\n");
-			FILE_LOG(logERROR) << mess;
-		}
-		else {
-			char eth[MAX_STR_LENGTH];
-			memset(eth,0,sizeof(eth));
-			strcpy(eth,temp.c_str());
-			if (strchr(eth,'.') != NULL) {
-				strcpy(eth,"");
+			//setup udpip
+			//get ethernet interface or IP to listen to
+			FILE_LOG(logINFO) << "Receiver UDP IP: " << args[0];
+			std::string temp = genericSocket::ipToName(args[0]);
+			if (temp == "none"){
 				ret = FAIL;
-				strcpy(mess, "Failed to get ethernet interface\n");
-				FILE_LOG(logERROR) << mess;
-			}
-			receiverBase->setEthernetInterface(eth);
-
-			//get mac address from ethernet interface
-			if (ret != FAIL)
-				temp = genericSocket::nameToMac(eth);
-
-			if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
-				ret = FAIL;
-				strcpy(mess,"failed to get mac adddress to listen to\n");
+				strcpy(mess, "Failed to get ethernet interface or IP\n");
 				FILE_LOG(logERROR) << mess;
 			}
 			else {
-				strcpy(retval,temp.c_str());
-				FILE_LOG(logINFO) << "Reciever MAC Address: " << retval;
+				char eth[MAX_STR_LENGTH];
+				memset(eth,0,sizeof(eth));
+				strcpy(eth,temp.c_str());
+				if (strchr(eth,'.') != NULL) {
+					strcpy(eth,"");
+					ret = FAIL;
+					strcpy(mess, "Failed to get ethernet interface\n");
+					FILE_LOG(logERROR) << mess;
+				}
+				receiver->setEthernetInterface(eth);
+
+				//get mac address from ethernet interface
+				if (ret != FAIL)
+					temp = genericSocket::nameToMac(eth);
+
+				if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
+					ret = FAIL;
+					strcpy(mess,"failed to get mac adddress to listen to\n");
+					FILE_LOG(logERROR) << mess;
+				}
+				else {
+					strcpy(retval,temp.c_str());
+					FILE_LOG(logINFO) << "Reciever MAC Address: " << retval;
+				}
 			}
 		}
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -877,43 +774,37 @@ int slsReceiverTCPIPInterface::setup_udp(){
 
 
 int slsReceiverTCPIPInterface::set_timer() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int64_t index[2] = {-1, -1};
 	int64_t retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	// execute action
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
 		if (index[1] >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-		//	else if (receiverBase->getStatus() != IDLE)
-		//		receiverNotIdle();
-			else {
+			// verify if receiver is unlocked
+			if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
 				switch (index[0]) {
 				case ACQUISITION_TIME:
-					ret = receiverBase->setAcquisitionTime(index[1]);
+					ret = receiver->setAcquisitionTime(index[1]);
 					break;
 				case FRAME_PERIOD:
-					ret = receiverBase->setAcquisitionPeriod(index[1]);
+					ret = receiver->setAcquisitionPeriod(index[1]);
 					break;
 				case FRAME_NUMBER:
 				case CYCLES_NUMBER:
 				case STORAGE_CELL_NUMBER:
-					receiverBase->setNumberOfFrames(index[1]);
+					receiver->setNumberOfFrames(index[1]);
 					break;
 				case SUBFRAME_ACQUISITION_TIME:
-					receiverBase->setSubExpTime(index[1]);
+					receiver->setSubExpTime(index[1]);
 					break;
 				case SUBFRAME_DEADTIME:
-					receiverBase->setSubPeriod(index[1] + receiverBase->getSubExpTime());
+					receiver->setSubPeriod(index[1] + receiver->getSubExpTime());
 					break;
 				case SAMPLES_JCTB:
 					if (myDetectorType != JUNGFRAUCTB) {
@@ -922,7 +813,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 						FILE_LOG(logERROR) << "Warning: " << mess;
 						break;
 					}
-					receiverBase->setNumberofSamples(index[1]);
+					receiver->setNumberofSamples(index[1]);
 					break;
 				default:
 					ret = FAIL;
@@ -934,21 +825,21 @@ int slsReceiverTCPIPInterface::set_timer() {
 		// get
 		switch (index[0]) {
 		case ACQUISITION_TIME:
-			retval=receiverBase->getAcquisitionTime();
+			retval=receiver->getAcquisitionTime();
 			break;
 		case FRAME_PERIOD:
-			retval=receiverBase->getAcquisitionPeriod();
+			retval=receiver->getAcquisitionPeriod();
 			break;
 		case FRAME_NUMBER:
 		case CYCLES_NUMBER:
 		case STORAGE_CELL_NUMBER:
-			retval=receiverBase->getNumberOfFrames();
+			retval=receiver->getNumberOfFrames();
 			break;
 		case SUBFRAME_ACQUISITION_TIME:
-			retval=receiverBase->getSubExpTime();
+			retval=receiver->getSubExpTime();
 			break;
 		case SUBFRAME_DEADTIME:
-			retval=(receiverBase->getSubPeriod() - receiverBase->getSubExpTime());
+			retval=(receiver->getSubPeriod() - receiver->getSubExpTime());
 			break;
 		case SAMPLES_JCTB:
 			if (myDetectorType != JUNGFRAUCTB) {
@@ -957,7 +848,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 				FILE_LOG(logERROR) << "Warning: " << mess;
 				break;
 			}
-			retval=receiverBase->getNumberofSamples();
+			retval=receiver->getNumberofSamples();
 			break;
 		default:
 			ret = FAIL;
@@ -971,11 +862,10 @@ int slsReceiverTCPIPInterface::set_timer() {
 			strcpy(mess,"Could not set timer\n");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << slsDetectorDefs::getTimerType((timerIndex)(index[0])) << ":" << retval;
 	}
-	FILE_LOG(logDEBUG1) << slsDetectorDefs::getTimerType((timerIndex)(index[0])) << ":" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -983,69 +873,61 @@ int slsReceiverTCPIPInterface::set_timer() {
 
 
 int slsReceiverTCPIPInterface::set_dynamic_range() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int dr = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&dr,sizeof(dr)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &dr, sizeof(dr), true, receiver) == FAIL)
+		return FAIL;
 
-	// execute action
-	bool exists = false;
-	switch (dr) {
-	case -1:
-	case 16:
-		exists = true;
-		break;
-	case 4:
-	case 8:
-	case 32:
-		if (myDetectorType == EIGER)
-			exists = true;
-		break;
-	default:
-		break;
-	}
-	if (!exists) {
-		ret = FAIL;
-		sprintf(mess,"This dynamic range %d does not exist for this detector\n",dr);
-		FILE_LOG(logERROR) << mess;
-	}
-
-
-	if (ret == OK){
-		if (receiverBase == NULL)
-			invalidReceiverObject();
-		else {
-			// set
-			if (dr > 0) {
-				if (mySock->differentClients && lockStatus)
-					receiverlocked();
-				else if (receiverBase->getStatus() != IDLE)
-					receiverNotIdle();
+	// base object not null
+	if (ret == OK) {
+		// set
+		if (dr >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				bool exists = false;
+				switch (dr) {
+				case 16:
+					exists = true;
+					break;
+				case 4:
+				case 8:
+				case 32:
+					if (myDetectorType == EIGER)
+						exists = true;
+					break;
+				default:
+					break;
+				}
+				// invalid dr
+				if (!exists) {
+					ret = FAIL;
+					sprintf(mess,"This dynamic range %d does not exist for this detector\n",dr);
+					FILE_LOG(logERROR) << mess;
+				}
+				// valid dr
 				else {
-					ret = receiverBase->setDynamicRange(dr);
+					ret = receiver->setDynamicRange(dr);
 					if(ret == FAIL) {
 						strcpy(mess, "Could not allocate memory for fifo or could not start listening/writing threads\n");
 						FILE_LOG(logERROR) << mess;
 					}
 				}
 			}
-			//get
-			retval = receiverBase->getDynamicRange();
-			if(dr > 0 && retval != dr) {
-				ret = FAIL;
-				strcpy(mess, "Could not set dynamic range\n");
-				FILE_LOG(logERROR) << mess;
-			}
 		}
+		// get
+		retval = receiver->getDynamicRange();
+		if(dr > 0 && retval != dr) {
+			ret = FAIL;
+			strcpy(mess, "Could not set dynamic range\n");
+			FILE_LOG(logERROR) << mess;
+		}
+		FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
 	}
-	FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1053,43 +935,38 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 
 
 int slsReceiverTCPIPInterface::set_streaming_frequency(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
 		if (index >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				ret = receiverBase->setStreamingFrequency(index);
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				ret = receiver->setStreamingFrequency(index);
 				if(ret == FAIL) {
 					strcpy(mess, "Could not allocate memory for listening fifo\n");
 					FILE_LOG(logERROR) << mess;
 				}
 			}
 		}
-		//get
-		retval=receiverBase->getStreamingFrequency();
-		if(index >= 0 && retval != index){
+		// get
+		retval=receiver->getStreamingFrequency();
+		// check retval for failure
+		if(ret == OK && index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set streaming frequency");
 			FILE_LOG(logERROR) << mess;
 		}
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1101,15 +978,13 @@ int	slsReceiverTCPIPInterface::get_status(){
 	memset(mess, 0, sizeof(mess));
 	enum runStatus retval = ERROR;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else retval = receiverBase->getStatus();
+	// no arg, check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
-	if (ret == OK && mySock->differentClients)
-		ret = FORCE_UPDATE;
+	if (ret == OK)
+		retval = receiver->getStatus();
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1117,30 +992,32 @@ int	slsReceiverTCPIPInterface::get_status(){
 
 
 int slsReceiverTCPIPInterface::start_receiver(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else {
-		enum runStatus s = receiverBase->getStatus();
-		if (s != IDLE) {
-			ret=FAIL;
-			sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
-			FILE_LOG(logERROR) << mess;
-		}
-		else {
-			ret=receiverBase->startReceiver(mess);
-			if (ret == FAIL) {
+	// no arg, and check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+
+	// receiver is not null
+	if (ret == OK) {
+		// only set
+		// verify if receiver is unlocked
+		if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
+			// should not be idle
+			enum runStatus s = receiver->getStatus();
+			if (s != IDLE) {
+				ret=FAIL;
+				sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
 				FILE_LOG(logERROR) << mess;
+			}else {
+				ret=receiver->startReceiver(mess);
+				if (ret == FAIL) {
+					FILE_LOG(logERROR) << mess;
+				}
 			}
 		}
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, NULL, 0, mess);
+	interface->Server_SendResult(true, ret, NULL, 0, mess);
 
 	return ret;
 
@@ -1150,29 +1027,30 @@ int slsReceiverTCPIPInterface::start_receiver(){
 
 
 int slsReceiverTCPIPInterface::stop_receiver(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	enum runStatus s = ERROR;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else {
-		if(receiverBase->getStatus() != IDLE)
-			receiverBase->stopReceiver();
-		s = receiverBase->getStatus();
-		if (s == IDLE)
-			ret = OK;
-		else {
-			ret = FAIL;
-			sprintf(mess,"Could not stop receiver. It is in %s state\n",runStatusType(s).c_str());
-			FILE_LOG(logERROR) << mess;
+	// no arg, and check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+
+	// receiver is not null
+	if (ret == OK) {
+		// only set
+		// verify if receiver is unlocked
+		if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
+			if(receiver->getStatus() != IDLE)
+				receiver->stopReceiver();
+			enum runStatus s = receiver->getStatus();
+			if (s == IDLE)
+				ret = OK;
+			else {
+				ret = FAIL;
+				sprintf(mess,"Could not stop receiver. It is in %s state\n",runStatusType(s).c_str());
+				FILE_LOG(logERROR) << mess;
+			}
 		}
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, NULL, 0, mess);
+	interface->Server_SendResult(true, ret, NULL, 0, mess);
 
 	return ret;
 }
@@ -1183,43 +1061,34 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 
 
 int slsReceiverTCPIPInterface::set_file_dir() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char fPath[MAX_STR_LENGTH];
 	memset(fPath, 0, sizeof(fPath));
 	char* retval=NULL;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(fPath,MAX_STR_LENGTH) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, fPath, sizeof(fPath), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
 		if (strlen(fPath)) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setFilePath(fPath);
-			}
+			receiver->setFilePath(fPath);
 		}
-		//get
-		retval = receiverBase->getFilePath();
+		// get
+		retval = receiver->getFilePath();
 		if (retval == NULL || (strlen(fPath) && strcasecmp(fPath, retval))) {
 			ret = FAIL;
 			strcpy(mess,"receiver file path does not exist\n");
 			FILE_LOG(logERROR) << mess;
 		}
-	}
-	if (retval != NULL) {
-		FILE_LOG(logDEBUG1) << "file path:" << retval;
+		if (retval != NULL) {
+			FILE_LOG(logDEBUG1) << "file path:" << retval;
+		}
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
+	interface->Server_SendResult(true, ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
 
 	if(retval != NULL)
 		delete[] retval;
@@ -1230,41 +1099,34 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 
 
 int slsReceiverTCPIPInterface::set_file_name() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char fName[MAX_STR_LENGTH];
 	memset(fName, 0, sizeof(fName));
 	char* retval = NULL;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(fName,MAX_STR_LENGTH) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, fName, sizeof(fName), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
 		if (strlen(fName)) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setFileName(fName);
-			}
+			receiver->setFileName(fName);
 		}
-		//get
-		retval = receiverBase->getFileName();
+		// get
+		retval = receiver->getFileName();
 		if(retval == NULL) {
 			ret = FAIL;
 			strcpy(mess, "file name is empty\n");
 			FILE_LOG(logERROR) << mess;
 		}
+		if (retval != NULL) {
+			FILE_LOG(logDEBUG1) << "file name:" << retval;
+		}
 	}
-	FILE_LOG(logDEBUG1) << "file name:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
+	interface->Server_SendResult(true, ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
 
 	if(retval != NULL)
 		delete[] retval;
@@ -1275,40 +1137,34 @@ int slsReceiverTCPIPInterface::set_file_name() {
 
 
 int slsReceiverTCPIPInterface::set_file_index() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(index >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setFileIndex(index);
+		if (index >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setFileIndex(index);
 			}
 		}
-		//get
-		retval=receiverBase->getFileIndex();
+		// get
+		retval=receiver->getFileIndex();
 		if(index >= 0 && retval != index) {
 			ret = FAIL;
 			strcpy(mess, "Could not set file index\n");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "file index:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "file index:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval,sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 
 	return ret;
 }
@@ -1319,17 +1175,16 @@ int slsReceiverTCPIPInterface::set_file_index() {
 
 
 int	slsReceiverTCPIPInterface::get_frame_index(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int retval = -1;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else
-		retval=receiverBase->getAcquisitionIndex();
+	// no arg, check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval,sizeof(retval), mess);
+	if (ret == OK)
+		retval=receiver->getAcquisitionIndex();
+
+	interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 
 	return ret;
 }
@@ -1337,16 +1192,16 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 
 
 int	slsReceiverTCPIPInterface::get_frames_caught(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int retval = -1;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else retval=receiverBase->getTotalFramesCaught();
+	// no arg, check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval,sizeof(retval), mess);
+	if (ret == OK)
+		retval=receiver->getTotalFramesCaught();
+
+	interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 
 	return ret;
 }
@@ -1354,20 +1209,21 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 
 
 int	slsReceiverTCPIPInterface::reset_frames_caught(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase->getStatus() != IDLE)
-		receiverNotIdle();
-	else
-		receiverBase->resetAcquisitionCount();
+	// no arg, and check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, NULL, 0, mess);
+	// receiver is not null
+	if (ret == OK) {
+		// only set
+		// verify if receiver is unlocked
+		if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
+			receiver->resetAcquisitionCount();
+		}
+	}
+
+	interface->Server_SendResult(true, ret, NULL, 0, mess);
 
 	return ret;
 }
@@ -1375,40 +1231,34 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 
 
 int slsReceiverTCPIPInterface::enable_file_write(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &enable, sizeof(enable), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
 		if (enable >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setFileWriteEnable(enable);
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setFileWriteEnable(enable);
 			}
 		}
-		//get
-		retval=receiverBase->getFileWriteEnable();
+		// get
+		retval=receiver->getFileWriteEnable();
 		if(enable >= 0 && enable != retval) {
 			ret=FAIL;
 			strcpy(mess,"Could not set file write enable");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "file write enable:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "file write enable:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1418,41 +1268,34 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 
 
 int slsReceiverTCPIPInterface::enable_overwrite() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(index >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setOverwriteEnable(index);
+		if (index >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setOverwriteEnable(index);
 			}
 		}
-		//get
-		retval=receiverBase->getOverwriteEnable();
+		// get
+		retval=receiver->getOverwriteEnable();
 		if(index >=0 && retval != index) {
 			ret = FAIL;
 			strcpy(mess,"Could not set file over write enable\n");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
 	}
 
-	FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
-
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1460,45 +1303,37 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 
 
 int slsReceiverTCPIPInterface::enable_tengiga() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int val = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&val,sizeof(val)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &val, sizeof(val), true, receiver) == FAIL)
+		return FAIL;
 
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	else {
-		if (receiverBase == NULL)
-			invalidReceiverObject();
-		else {
-			// set
-			if (val >= 0) {
-				if (mySock->differentClients && lockStatus)
-					receiverlocked();
-				else if (receiverBase->getStatus() != IDLE)
-					receiverNotIdle();
-				else {
-					ret = receiverBase->setTenGigaEnable(val);
-				}
-			}
-			//get
-			retval=receiverBase->getTenGigaEnable();
-			if((val >= 0) && (val != retval)) {
-				ret = FAIL;
-				strcpy(mess,"Could not set ten giga enable");
-				FILE_LOG(logERROR) << mess;
+	// base object not null
+	else if (ret == OK) {
+		// set
+		if (val >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				ret = receiver->setTenGigaEnable(val);
 			}
 		}
+		// get
+		retval=receiver->getTenGigaEnable();
+		if((val >= 0) && (val != retval)) {
+			ret = FAIL;
+			strcpy(mess,"Could not set ten giga enable");
+			FILE_LOG(logERROR) << mess;
+		}
+		FILE_LOG(logDEBUG1) << "10Gbe:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "10Gbe:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1507,45 +1342,38 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 
 
 int slsReceiverTCPIPInterface::set_fifo_depth() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int value = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&value,sizeof(value)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &value, sizeof(value), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(value >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				ret = receiverBase->setFifoDepth(value);
+		if (value >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				ret = receiver->setFifoDepth(value);
 				if (ret == FAIL) {
 					strcpy(mess,"Could not set fifo depth");
 					FILE_LOG(logERROR) << mess;
 				}
 			}
 		}
-		//get
-		retval = receiverBase->getFifoDepth();
+		// get
+		retval = receiver->getFifoDepth();
 		if(value >= 0 && retval != value) {
 			ret = FAIL;
 			strcpy(mess, "Could not set fifo depth\n");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
 	}
 
-	FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
-
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1553,45 +1381,37 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 
 
 int slsReceiverTCPIPInterface::set_activate() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &enable, sizeof(enable), true, receiver) == FAIL)
+		return FAIL;
 
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	else {
-		if (receiverBase == NULL)
-			invalidReceiverObject();
-		else {
-			// set
-			if(enable >= 0) {
-				if (mySock->differentClients && lockStatus)
-					receiverlocked();
-				else if (receiverBase->getStatus() != IDLE)
-					receiverNotIdle();
-				else {
-					receiverBase->setActivate(enable > 0 ? true : false);
-				}
-			}
-			//get
-			retval = (int)receiverBase->getActivate();
-			if(enable >= 0 && retval != enable){
-				ret = FAIL;
-				sprintf(mess,"Could not set activate to %d, returned %d\n",enable,retval);
-				FILE_LOG(logERROR) << mess;
+	// base object not null
+	else if (ret == OK) {
+		// set
+		if (enable >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setActivate(enable > 0 ? true : false);
 			}
 		}
+		// get
+		retval = (int)receiver->getActivate();
+		if(enable >= 0 && retval != enable){
+			ret = FAIL;
+			sprintf(mess,"Could not set activate to %d, returned %d\n",enable,retval);
+			FILE_LOG(logERROR) << mess;
+		}
+		FILE_LOG(logDEBUG1) << "Activate: " << retval;
 	}
-	FILE_LOG(logDEBUG1) << "Activate: " << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1599,40 +1419,34 @@ int slsReceiverTCPIPInterface::set_activate() {
 
 
 int slsReceiverTCPIPInterface::set_data_stream_enable(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(index >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				ret = receiverBase->setDataStreamEnable(index);
+		if (index >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				ret = receiver->setDataStreamEnable(index);
 			}
 		}
-		//get
-		retval = receiverBase->getDataStreamEnable();
+		// get
+		retval = receiver->getDataStreamEnable();
 		if(index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set data stream enable");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "data streaming enable:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "data streaming enable:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1640,40 +1454,34 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 
 
 int slsReceiverTCPIPInterface::set_streaming_timer(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
-	// receive arguments
-	if(mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(index >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setStreamingTimer(index);
+		if (index >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setStreamingTimer(index);
 			}
 		}
-		//get
-		retval=receiverBase->getStreamingTimer();
+		// get
+		retval=receiver->getStreamingTimer();
 		if(index >= 0 && retval != index){
 			ret = FAIL;
 			strcpy(mess,"Could not set datastream timer");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "Streaming timer:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "Streaming timer:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1681,45 +1489,37 @@ int slsReceiverTCPIPInterface::set_streaming_timer(){
 
 
 int slsReceiverTCPIPInterface::set_flipped_data(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int args[2] = {0,-1};
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(args,sizeof(args)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, args, sizeof(args), true, receiver) == FAIL)
+		return FAIL;
 
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	else {
-		if (receiverBase == NULL)
-			invalidReceiverObject();
-		else {
-			// set
-			if(args[1] >= 0) {
-				if (mySock->differentClients && lockStatus)
-					receiverlocked();
-				else if (receiverBase->getStatus() != IDLE)
-					receiverNotIdle();
-				else {
-					receiverBase->setFlippedData(args[0],args[1]);
-				}
-			}
-			//get
-			retval=receiverBase->getFlippedData(args[0]);
-			if (args[1] > -1 && retval != args[1]) {
-				ret = FAIL;
-				strcpy(mess, "Could not set flipped data\n");
-				FILE_LOG(logERROR) << mess;
+	// base object not null
+	else if (ret == OK) {
+		// set
+		if (args[1] >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setFlippedData(args[0],args[1]);
 			}
 		}
+		// get
+		retval=receiver->getFlippedData(args[0]);
+		if (args[1] > -1 && retval != args[1]) {
+			ret = FAIL;
+			strcpy(mess, "Could not set flipped data\n");
+			FILE_LOG(logERROR) << mess;
+		}
+		FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1728,40 +1528,35 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 
 
 int slsReceiverTCPIPInterface::set_file_format() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	fileFormat retval = GET_FILE_FORMAT;
 	fileFormat f = GET_FILE_FORMAT;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&f,sizeof(f)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &f, sizeof(f), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(f >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setFileFormat(f);
+		if (f >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setFileFormat(f);
 			}
 		}
-		//get
-		retval = receiverBase->getFileFormat();
+		// get
+		retval = receiver->getFileFormat();
 		if(f >= 0 && retval != f){
 			ret = FAIL;
-			sprintf(mess,"Could not set file format to %s, returned %s\n",getFileFormatType(f).c_str(),getFileFormatType(retval).c_str());
+			sprintf(mess,"Could not set file format to %s, returned %s\n",
+					getFileFormatType(f).c_str(),getFileFormatType(retval).c_str());
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "File Format: " << retval;
 	}
-	FILE_LOG(logDEBUG1) << "File Format: " << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1769,40 +1564,34 @@ int slsReceiverTCPIPInterface::set_file_format() {
 
 
 int slsReceiverTCPIPInterface::set_detector_posid() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int arg = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&arg,sizeof(arg)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(arg >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setDetectorPositionId(arg);
+		if (arg >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setDetectorPositionId(arg);
 			}
 		}
-		//get
-		retval=receiverBase->getDetectorPositionId();
+		// get
+		retval=receiver->getDetectorPositionId();
 		if (arg >= 0 && retval != arg) {
 			ret = FAIL;
 			strcpy(mess,"Could not set detector position id");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "Position Id:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "Position Id:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1813,41 +1602,35 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 
 
 int slsReceiverTCPIPInterface::set_multi_detector_size() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int arg[2] = {-1, -1};
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(arg,sizeof(arg)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, arg, sizeof(arg), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
 		if((arg[0] > 0) && (arg[1] > 0)) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setMultiDetectorSize(arg);
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setMultiDetectorSize(arg);
 			}
 		}
-		//get
-		int* temp = receiverBase->getMultiDetectorSize();
+		// get
+		int* temp = receiver->getMultiDetectorSize();
 		for (int i = 0; i < MAX_DIMENSIONS; ++i) {
 			if (!i)
 				retval = temp[i];
 			else
 				retval *= temp[i];
 		}
+		FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1856,35 +1639,29 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 
 
 int slsReceiverTCPIPInterface::set_streaming_port() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int port = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&port,sizeof(port)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &port, sizeof(port), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(port >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setStreamingPort(port);
+		if (port >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setStreamingPort(port);
 			}
 		}
-		//get
-		retval=receiverBase->getStreamingPort();
+		// get
+		retval=receiver->getStreamingPort();
+		FILE_LOG(logDEBUG1) << "streaming port:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "streaming port:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1894,34 +1671,28 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 
 
 int slsReceiverTCPIPInterface::set_streaming_source_ip() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char arg[MAX_STR_LENGTH];
 	memset(arg, 0, sizeof(arg));
 	char* retval=NULL;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(arg,MAX_STR_LENGTH) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, arg, MAX_STR_LENGTH, true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
-		// set
-		if (mySock->differentClients && lockStatus)
-			receiverlocked();
-		else if (receiverBase->getStatus() != IDLE)
-			receiverNotIdle();
-		else {
-			receiverBase->setStreamingSourceIP(arg);
+	// base object not null
+	if (ret == OK) {
+		// only set
+		// verify if receiver is unlocked and idle
+		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+			receiver->setStreamingSourceIP(arg);
 		}
-
-		//get
-		retval = receiverBase->getStreamingSourceIP();
+		// get
+		retval = receiver->getStreamingSourceIP();
+		FILE_LOG(logDEBUG1) << "streaming source ip:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "streaming source ip:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
+	interface->Server_SendResult(true,
 			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
 
 	if(retval != NULL)
@@ -1937,35 +1708,29 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 
 
 int slsReceiverTCPIPInterface::set_silent_mode() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int value = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&value,sizeof(value)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &value, sizeof(value), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(value >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setSilentMode(value); // no check required
+		if (value >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setSilentMode(value);
 			}
 		}
-		//get
-		retval = (int)receiverBase->getSilentMode(); // no check required
+		// get
+		retval = (int)receiver->getSilentMode();
+		FILE_LOG(logDEBUG1) << "silent mode:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "silent mode:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -1976,43 +1741,37 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 
 
 int slsReceiverTCPIPInterface::enable_gap_pixels() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &enable, sizeof(enable), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	if (myDetectorType != EIGER)
+		functionNotImplemented();
+
+	// base object not null
+	else if (ret == OK) {
 		// set
-		if(enable >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				if ((myDetectorType != EIGER) && (enable > 0))
-					functionNotImplemented();
-				else
-					receiverBase->setGapPixelsEnable(enable);
+		if (enable >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setGapPixelsEnable(enable);
 			}
 		}
-		//get
-		retval = receiverBase->getGapPixelsEnable();
+		// get
+		retval = receiver->getGapPixelsEnable();
 		if(enable >= 0 && retval != enable){
 			ret = FAIL;
 			sprintf(mess,"Could not set gap pixels to %d, returned %d\n",enable,retval);
 			FILE_LOG(logERROR) << "Warning: " << mess;
 		}
+		FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
 	}
-	FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -2021,29 +1780,31 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 
 
 int slsReceiverTCPIPInterface::restream_stop(){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else if (mySock->differentClients && lockStatus)
-		receiverlocked();
-	else if (receiverBase->getStatus() != IDLE)
-		receiverNotIdle();
-	else if (receiverBase->getDataStreamEnable() == false) {
-			ret = FAIL;
-			sprintf(mess,"Could not restream stop packet as data Streaming is disabled.\n");
-			FILE_LOG(logERROR) << mess;
-	} else {
-		ret = receiverBase->restreamStop();
-		if (ret == FAIL) {
-			sprintf(mess,"Could not restream stop packet.\n");
-			FILE_LOG(logERROR) << mess;
+	// no arg, and check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+
+	// receiver is not null
+	if (ret == OK) {
+		// only set
+		// verify if receiver is unlocked and idle
+		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+			if (receiver->getDataStreamEnable() == false) {
+				ret = FAIL;
+				sprintf(mess,"Could not restream stop packet as data Streaming is disabled.\n");
+				FILE_LOG(logERROR) << mess;
+			} else {
+				ret = receiver->restreamStop();
+				if (ret == FAIL) {
+					sprintf(mess,"Could not restream stop packet.\n");
+					FILE_LOG(logERROR) << mess;
+				}
+			}
 		}
 	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, NULL, 0, mess);
+	interface->Server_SendResult(true, ret, NULL, 0, mess);
 
 	return ret;
 }
@@ -2051,35 +1812,28 @@ int slsReceiverTCPIPInterface::restream_stop(){
 
 
 int slsReceiverTCPIPInterface::set_additional_json_header() {
-    ret = OK;
     memset(mess, 0, sizeof(mess));
     char arg[MAX_STR_LENGTH];
     memset(arg, 0, sizeof(arg));
     char* retval=NULL;
 
-    // receive arguments
-    if (mySock->ReceiveDataOnly(arg,MAX_STR_LENGTH) < 0 )
-        return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, arg, sizeof(arg), true, receiver) == FAIL)
+		return FAIL;
 
-    if (receiverBase == NULL)
-        invalidReceiverObject();
-    else {
-        // set
-        if (mySock->differentClients && lockStatus)
-            receiverlocked();
-        else if (receiverBase->getStatus() != IDLE)
-            receiverNotIdle();
-        else {
-                receiverBase->setAdditionalJsonHeader(arg);
-        }
+	// base object not null
+	if (ret == OK) {
+		// only set
+		// verify if receiver is unlocked and idle
+		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+			receiver->setAdditionalJsonHeader(arg);
+		}
+		// get
+		retval = receiver->getAdditionalJsonHeader();
+		FILE_LOG(logDEBUG1) << "additional json header:" << retval;
+	}
 
-        //get
-        retval = receiverBase->getAdditionalJsonHeader();
-    }
-    FILE_LOG(logDEBUG1) << "additional json header:" << retval;
-
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, retval, MAX_STR_LENGTH, mess);
+	interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 
 	if (retval != NULL)
 		delete[] retval;
@@ -2090,44 +1844,38 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
 
 
 int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
-    ret = OK;
     memset(mess, 0, sizeof(mess));
     int index = -1;
     int retval = -1;
 
-    // receive arguments
-    if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-        return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-    if (receiverBase == NULL)
-        invalidReceiverObject();
-    else {
-        // set
-        if(index >= 0) {
-            if (mySock->differentClients && lockStatus)
-                receiverlocked();
-            else if (receiverBase->getStatus() != IDLE)
-                receiverNotIdle();
-            else {
-                if (receiverBase->setUDPSocketBufferSize(index) == FAIL) {
+	// base object not null
+	if (ret == OK) {
+		// set
+		if (index >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+                if (receiver->setUDPSocketBufferSize(index) == FAIL) {
                     ret = FAIL;
                     strcpy(mess, "Could not create dummy UDP Socket to test buffer size\n");
                     FILE_LOG(logERROR) << mess;
                 }
-            }
-        }
-        //get
-        retval=receiverBase->getUDPSocketBufferSize();
-        if(index >= 0 && ((retval != index) || ((int)receiverBase->getActualUDPSocketBufferSize() != (index*2)))) {
+			}
+		}
+		// get
+        retval=receiver->getUDPSocketBufferSize();
+        if(index >= 0 && ((retval != index) || ((int)receiver->getActualUDPSocketBufferSize() != (index*2)))) {
             ret = FAIL;
             strcpy(mess, "Could not set UDP Socket buffer size (No CAP_NET_ADMIN privileges?)\n");
             FILE_LOG(logERROR) << mess;
         }
-    }
-    FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
+        FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
+	}
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
     return ret;
 }
@@ -2135,16 +1883,16 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 
 
 int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
-    ret = OK;
 	memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-    if (receiverBase == NULL)
-        invalidReceiverObject();
-    else retval = receiverBase->getActualUDPSocketBufferSize();
+	// no arg, check receiver is null
+	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	if (ret == OK)
+		retval = receiver->getActualUDPSocketBufferSize();
+
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
     return ret;
 }
@@ -2157,35 +1905,30 @@ int slsReceiverTCPIPInterface::set_frames_per_file() {
 	int index = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(index >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setFramesPerFile(index);
+		if (index >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setFramesPerFile(index);
 			}
 		}
-		//get
-		retval=receiverBase->getFramesPerFile();
+		// get
+		retval=receiver->getFramesPerFile();
 		if(index >= 0 && retval != index) {
 			ret = FAIL;
 			strcpy(mess, "Could not set frames per file\n");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "frames per file:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "frames per file:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -2196,18 +1939,15 @@ int slsReceiverTCPIPInterface::set_frames_per_file() {
 
 
 int slsReceiverTCPIPInterface::check_version_compatibility() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int64_t arg = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&arg,sizeof(arg)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed
+	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg)) == FAIL)
+		return FAIL;
 
 
-	// execute action
 	FILE_LOG(logDEBUG1) << "Checking versioning compatibility with value " << arg;
-
 	int64_t client_requiredVersion = arg;
 	int64_t rx_apiVersion = APIRECEIVER;
 	int64_t rx_version = getReceiverVersion();
@@ -2235,8 +1975,7 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 	}
 	else FILE_LOG(logINFO) << "Compatibility with Client: Successful";
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, NULL, 0, mess);
+	interface->Server_SendResult(true, ret, NULL, 0, mess);
 
 	return ret;
 }
@@ -2245,40 +1984,34 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 
 
 int slsReceiverTCPIPInterface::set_discard_policy() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(index >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
-				receiverBase->setFrameDiscardPolicy((frameDiscardPolicy)index);
+		if (index >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setFrameDiscardPolicy((frameDiscardPolicy)index);
 			}
 		}
-		//get
-		retval=receiverBase->getFrameDiscardPolicy();
+		// get
+		retval=receiver->getFrameDiscardPolicy();
 		if(index >= 0 && retval != index) {
 			ret = FAIL;
 			strcpy(mess, "Could not set frame discard policy\n");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -2292,36 +2025,31 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 	int index = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
+		return FAIL;
 
-	if (receiverBase == NULL)
-		invalidReceiverObject();
-	else {
+	// base object not null
+	if (ret == OK) {
 		// set
-		if(index >= 0) {
-			if (mySock->differentClients && lockStatus)
-				receiverlocked();
-			else if (receiverBase->getStatus() != IDLE)
-				receiverNotIdle();
-			else {
+		if (index >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
 				index = (index == 0) ? 0 : 1;
-				receiverBase->setFramePaddingEnable(index);
+				receiver->setFramePaddingEnable(index);
 			}
 		}
-		//get
-		retval=(int)receiverBase->getFramePaddingEnable();
+		// get
+		retval=(int)receiver->getFramePaddingEnable();
 		if(index >= 0 && retval != index) {
 			ret = FAIL;
 			strcpy(mess, "Could not set frame padding enable\n");
 			FILE_LOG(logERROR) << mess;
 		}
+		FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
 	}
-	FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }
@@ -2330,45 +2058,37 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 
 
 int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
-		return printSocketReadError();
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &enable, sizeof(enable), true, receiver) == FAIL)
+		return FAIL;
 
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	else {
-		if (receiverBase == NULL)
-			invalidReceiverObject();
-		else {
-			// set
-			if(enable >= 0) {
-				if (mySock->differentClients && lockStatus)
-					receiverlocked();
-				else if (receiverBase->getStatus() != IDLE)
-					receiverNotIdle();
-				else {
-					receiverBase->setDeactivatedPadding(enable > 0 ? true : false);
-				}
-			}
-			//get
-			retval = (int)receiverBase->getDeactivatedPadding();
-			if(enable >= 0 && retval != enable){
-				ret = FAIL;
-				sprintf(mess,"Could not set deactivated padding enable to %d, returned %d\n",enable,retval);
-				FILE_LOG(logERROR) << mess;
+	// base object not null
+	else if (ret == OK) {
+		// set
+		if (enable >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				receiver->setDeactivatedPadding(enable > 0 ? true : false);
 			}
 		}
+		// get
+		retval = (int)receiver->getDeactivatedPadding();
+		if(enable >= 0 && retval != enable){
+			ret = FAIL;
+			sprintf(mess,"Could not set deactivated padding enable to %d, returned %d\n",enable,retval);
+			FILE_LOG(logERROR) << mess;
+		}
+		FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
 	}
-	FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
 
-	clientInterface->Server_SendResult(mySock->differentClients,
-			ret, &retval, sizeof(retval), mess);
+	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 
 	return ret;
 }

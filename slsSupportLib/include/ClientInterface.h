@@ -34,21 +34,6 @@ public:
 	void SetSocket(MySocketTCP *socket);
 
 	/**
-	 * Print socket read error in Server
-	 */
-	int PrintSocketReadError();
-
-	/**
-	 * Server sends result to client (also set ret to force_update if different clients)
-	 * @param diffClients true if different clients, else false
-	 * @param ret success of operation
-	 * @param retval pointer to result
-	 * @param retvalSize size of result
-	 * @param mess message
-	 */
-	void Server_SendResult(bool diffClients, int ret, void* retval, int retvalSize, char* mess = 0);
-
-	/**
 	 * Get message from server
 	 * Print appropriate message
 	 * Check for Unrecognized function in message and return fail if it does
@@ -89,6 +74,78 @@ public:
 			void* retval, int sizeOfRetval,
 			char* mess = 0);
 
+	/**
+	 * Server sends result to client (also set ret to force_update if different clients)
+	 * @param update true if one must update if different clients, else false
+	 * @param ret success of operation
+	 * @param retval pointer to result
+	 * @param retvalSize size of result
+	 * @param mess message
+	 */
+	void Server_SendResult(bool update, int ret, void* retval, int retvalSize, char* mess = 0);
+
+	/**
+	 * Server receives arguments and checks if base object is null (if checkbase is true)
+	 * checking base object is null (for reciever only when it has not been configured yet)
+	 * @param ret pointer to success of operation
+	 * @param mess message
+	 * @param arg pointer to argument
+	 * @param sizeofArg size of argument
+	 * @param checkbase if true, checks if base object is null and sets ret and mess accordingly
+	 * @param base pointer to base object
+	 * @returns fail if socket crashes while reading arguments, else fail
+	 */
+	int Server_ReceiveArg(int& ret, char* mess, void* arg, int sizeofArg,bool checkbase=false, void* base=NULL);
+
+	/**
+	 * Server verifies if it is locked, sets and prints appropriate message if it is
+	 * @param ret pointer to sucess
+	 * @param mess message
+	 * @param lockstatus status of lock
+	 * @returns success of operaton
+	 */
+	int Server_VerifyLock(int& ret, char* mess, int lockstatus);
+
+	/**
+	 * Server verifies if it is locked and idle, sets and prints appropriate message if it is
+	 * @param ret pointer to sucess
+	 * @param mess message
+	 * @param lockstatus status of lock
+	 * @param staus status of server
+	 * @param fnum function number for error message
+	 * @returns success of operaton
+	 */
+	int Server_VerifyLockAndIdle(int& ret, char* mess, int lockstatus, slsDetectorDefs::runStatus status, int fnum);
+
+	/**
+	 * Server sets and prints error message for null object error (receiver only)
+	 * @param ret pointer to sucess that will be set to FAIL
+	 * @param mess message
+	 */
+	void Server_NullObjectError(int& ret, char* mess);
+
+	/**
+	 * Servers prints error message for socket crash when reading
+	 * @returns always FAIL
+	 */
+	int Server_SocketCrash();
+
+	/**
+	 * Servers sets and prints error message for locked server
+	 * @param ret pointer to sucess that will be set to FAIL
+	 * @param mess message
+	 * @returns success of operaton
+	 */
+	int Server_LockedError(int& ret, char* mess);
+
+	/**
+	 * Servers sets and prints error message for server not being idle
+	 * @param ret pointer to sucess that will be set to FAIL
+	 * @param mess message
+	 * @param fnum function number for error message
+	 * @returns success of operaton
+	 */
+	int Server_NotIdleError(int& ret, char* mess, int fnum);
 
 private:
 

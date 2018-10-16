@@ -442,18 +442,18 @@ void slsReceiverImplementation::setDetectorHostname(const char *c){
 
 void slsReceiverImplementation::setMultiDetectorSize(const int* size) {
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-	std::string message = "Detector Size: (";
+	std::string log_message = "Detector Size: (";
 	for (int i = 0; i < MAX_DIMENSIONS; ++i) {
 		if (myDetectorType == EIGER && (!i))
 			numDet[i] = size[i]*2;
 		else
 			numDet[i] = size[i];
-		message += std::to_string(numDet[i]);
+		log_message += std::to_string(numDet[i]);
 		if (i < MAX_DIMENSIONS-1 )
-			message += ", ";
+			log_message += ", ";
 	}
-	message += ")";
-	FILE_LOG(logINFO)  << message;
+	log_message += ")";
+	FILE_LOG(logINFO)  << log_message;
 }
 
 

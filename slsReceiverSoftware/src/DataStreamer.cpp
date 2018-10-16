@@ -15,7 +15,7 @@
 const std::string DataStreamer::TypeName = "DataStreamer";
 
 
-DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
+DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 		uint64_t* fi, int* fd, char* ajh, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
@@ -70,7 +70,7 @@ void DataStreamer::StopRunning() {
     runningFlag = false;
 }
 
-void DataStreamer::SetFifo(Fifo*& f) {
+void DataStreamer::SetFifo(Fifo* f) {
 	fifo = f;
 }
 

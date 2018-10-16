@@ -39,20 +39,9 @@ void slsReceiverImplementation::DeleteMembers() {
 		generalData=0;
 	}
 
-	for (auto* it : listener)
-		delete it;
 	listener.clear();
-
-	for (auto* it : dataProcessor)
-		delete it;
 	dataProcessor.clear();
-
-	for (auto* it : dataStreamer)
-		delete it;
 	dataStreamer.clear();
-
-	for (auto* it : fifo)
-		delete it;
 	fifo.clear();
 }
 
@@ -472,8 +461,10 @@ int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
 		// side effects
 		generalData->SetGapPixelsEnable(b, dynamicRange);
 		// to update npixelsx, npixelsy in file writer
-		for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-			(*it)->SetPixelDimension();
+		// for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+		// 	(*it)->SetPixelDimension();
+		for (const auto& it : dataProcessor)
+			it->SetPixelDimension();
 
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
@@ -496,8 +487,10 @@ void slsReceiverImplementation::setFileFormat(const fileFormat f){
 		break;
 	}
 	//destroy file writer, set file format and create file writer
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-		(*it)->SetFileFormat(f);
+	// for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+	// 	(*it)->SetFileFormat(f);
+	for(const auto& it : dataProcessor)
+		it->SetFileFormat(f);
 
 	FILE_LOG(logINFO) << "File Format:" << getFileFormatType(fileFormatType);
 }
@@ -649,12 +642,13 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i)
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 
-		for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-			(*it)->SetGeneralData(generalData);
-		for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-			(*it)->SetGeneralData(generalData);
-		for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-			(*it)->SetGeneralData(generalData);
+
+		for (const auto& it : listener)
+			it->SetGeneralData(generalData);
+		for (const auto& it : dataProcessor)
+			it->SetGeneralData(generalData);
+		for (const auto& it : dataStreamer)
+			it->SetGeneralData(generalData);
 	}
 
 
@@ -699,22 +693,17 @@ int slsReceiverImplementation::setDataStreamEnable(const bool enable) {
 		dataStreamEnable = enable;
 
 		//data sockets have to be created again as the client ones are
-		for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-			delete(*it);
 		dataStreamer.clear();
 
 		if (enable) {
 		    for ( int i = 0; i < numThreads; ++i ) {
 		        try {
-		            DataStreamer* s = new DataStreamer(i, fifo[i], &dynamicRange,
-		                  &roi, &fileIndex, flippedData, additionalJsonHeader, &silentMode);
-		            dataStreamer.push_back(s);
+					dataStreamer.push_back(sls::make_unique<DataStreamer>(i, fifo[i].get(), &dynamicRange,
+		                  &roi, &fileIndex, flippedData, additionalJsonHeader, &silentMode));
 		            dataStreamer[i]->SetGeneralData(generalData);
 		            dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP);
 		        }
 		        catch(...) {
-		            for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-		                delete(*it);
 		            dataStreamer.clear();
 		            dataStreamEnable = false;
 		            return FAIL;
@@ -817,8 +806,10 @@ int slsReceiverImplementation::setDynamicRange(const uint32_t i) {
 		generalData->SetDynamicRange(i,tengigaEnable);
 		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange);
 		// to update npixelsx, npixelsy in file writer
-		for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-			(*it)->SetPixelDimension();
+		// for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+		// 	(*it)->SetPixelDimension();
+		for (const auto& it : dataProcessor)
+			it->SetPixelDimension();
 
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
@@ -937,37 +928,31 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	for ( int i = 0; i < numThreads; ++i ) {
 
 	    try {
-	        Listener* l = new Listener(i, myDetectorType, fifo[i], &status,
+			auto fifo_ptr = fifo[i].get();
+			listener.push_back(sls::make_unique<Listener>(i, myDetectorType, fifo_ptr, &status,
 	                &udpPortNum[i], eth, &numberOfFrames, &dynamicRange,
 	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile,
-					&frameDiscardMode, &activated, &deactivatedPaddingEnable, &silentMode);
-	        listener.push_back(l);
-
-	        DataProcessor* p = new DataProcessor(i, myDetectorType, fifo[i], &fileFormatType,
+					&frameDiscardMode, &activated, &deactivatedPaddingEnable, &silentMode));
+			dataProcessor.push_back(sls::make_unique<DataProcessor>(i, myDetectorType, fifo_ptr, &fileFormatType,
 	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &streamingFrequency, &streamingTimerInMs,
 					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
-	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
-	        dataProcessor.push_back(p);
+	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady));
 	    }
 	    catch (...) {
 	         FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
-	            for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-	                delete(*it);
 	            listener.clear();
-	            for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-	                delete(*it);
 	            dataProcessor.clear();
 	            return FAIL;
 	    }
 	}
 
 	//set up writer and callbacks
-	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-		(*it)->SetGeneralData(generalData);
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-		(*it)->SetGeneralData(generalData);
 
+	for (const auto& it : listener)
+		it->SetGeneralData(generalData);
+	for (const auto& it : dataProcessor)
+		it->SetGeneralData(generalData);
 	SetThreadPriorities();
 
     // check udp socket buffer size
@@ -1069,12 +1054,19 @@ void slsReceiverImplementation::stopReceiver(){
 	bool running = true;
 	while(running) {
 	    running = false;
-	    for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-	        if ((*it)->IsRunning())
-	            running = true;
-	    for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-            if ((*it)->IsRunning())
-                running = true;
+	    // for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+	    //     if ((*it)->IsRunning())
+	    //         running = true;
+		for (const auto& it : listener)
+			if (it->IsRunning())
+				running = true;
+
+	    // for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+        //     if ((*it)->IsRunning())
+        //         running = true;
+		for (const auto& it : dataProcessor)
+			if (it->IsRunning())
+				running = true;
 	    usleep(5000);
 	}
 
@@ -1083,9 +1075,14 @@ void slsReceiverImplementation::stopReceiver(){
 	if (fileWriteEnable && fileFormatType == HDF5) {
 		uint64_t maxIndexCaught = 0;
 		bool anycaught = false;
-		for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
-			maxIndexCaught = std::max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
-			if((*it)->GetMeasurementStartedFlag())
+		// for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
+		// 	maxIndexCaught = std::max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
+		// 	if((*it)->GetMeasurementStartedFlag())
+		// 		anycaught = true;
+		// }
+		for (const auto& it : dataProcessor) {
+			maxIndexCaught = std::max(maxIndexCaught, it->GetProcessedMeasurementIndex());
+			if(it->GetMeasurementStartedFlag())
 				anycaught = true;
 		}
 		//to create virtual file & set files/acquisition to 0 (only hdf5 at the moment)
@@ -1096,9 +1093,12 @@ void slsReceiverImplementation::stopReceiver(){
 	running = true;
     while(running) {
         running = false;
-        for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-            if ((*it)->IsRunning())
-                running = true;
+        // for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+        //     if ((*it)->IsRunning())
+        //         running = true;
+		for (const auto& it : dataStreamer)
+			if (it->IsRunning())
+				running = true;
         usleep(5000);
     }
 
@@ -1176,8 +1176,10 @@ void slsReceiverImplementation::startReadout(){
 
 
 void slsReceiverImplementation::shutDownUDPSockets() {
-	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-		(*it)->ShutDownUDPSocket();
+	// for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
+	// 	(*it)->ShutDownUDPSocket();
+	for (const auto& it : listener)
+		it->ShutDownUDPSocket();
 }
 
 
@@ -1185,10 +1187,16 @@ void slsReceiverImplementation::shutDownUDPSockets() {
 void slsReceiverImplementation::closeFiles() {
 	uint64_t maxIndexCaught = 0;
 	bool anycaught = false;
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
-		(*it)->CloseFiles();
-		maxIndexCaught = std::max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
-		if((*it)->GetMeasurementStartedFlag())
+	// for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
+	// 	(*it)->CloseFiles();
+	// 	maxIndexCaught = std::max(maxIndexCaught, (*it)->GetProcessedMeasurementIndex());
+	// 	if((*it)->GetMeasurementStartedFlag())
+	// 		anycaught = true;
+	// }
+	for (const auto& it : dataProcessor) {
+		it->CloseFiles();
+		maxIndexCaught = std::max(maxIndexCaught, it->GetProcessedMeasurementIndex());
+		if(it->GetMeasurementStartedFlag())
 			anycaught = true;
 	}
 	//to create virtual file & set files/acquisition to 0 (only hdf5 at the moment)
@@ -1198,11 +1206,14 @@ void slsReceiverImplementation::closeFiles() {
 
 int slsReceiverImplementation::restreamStop() {
 	bool ret = OK;
-	for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it) {
-		if ((*it)->RestreamStop() == FAIL)
+	// for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it) {
+	// 	if ((*it)->RestreamStop() == FAIL)
+	// 		ret = FAIL;
+	// }
+	for (const auto& it : dataStreamer){
+		if (it->RestreamStop() == FAIL)
 			ret = FAIL;
 	}
-
 	// if fail, prints in datastreamer
 	if (ret == OK) {
 		FILE_LOG(logINFO) << "Restreaming Dummy Header via ZMQ successful";
@@ -1266,8 +1277,14 @@ void slsReceiverImplementation::SetLocalNetworkParameters() {
 
 void slsReceiverImplementation::SetThreadPriorities() {
 
-	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it){
-		if ((*it)->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
+	// for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it){
+	// 	if ((*it)->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
+	// 		FILE_LOG(logWARNING) << "Could not prioritize listener threads. (No Root Privileges?)";
+	// 		return;
+	// 	}
+	// }
+	for (const auto& it : listener){
+		if (it->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
 			FILE_LOG(logWARNING) << "Could not prioritize listener threads. (No Root Privileges?)";
 			return;
 		}
@@ -1283,29 +1300,27 @@ void slsReceiverImplementation::SetThreadPriorities() {
 int slsReceiverImplementation::SetupFifoStructure() {
 		numberofJobs = 1;
 
-
-	for (std::vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
-		delete(*it);
 	fifo.clear();
 	for ( int i = 0; i < numThreads; ++i ) {
 
 		//create fifo structure
 	    try {
-	        Fifo* f = new Fifo (i,
+	        // Fifo* f = new Fifo (i,
+	        //         (generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
+	        //         fifoDepth);
+	        // fifo.push_back(f);
+			fifo.push_back(sls::make_unique<Fifo>(i,
 	                (generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
-	                fifoDepth);
-	        fifo.push_back(f);
+	                fifoDepth));
 	    } catch (...) {
             cprintf(RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
-            for (std::vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
-                delete(*it);
             fifo.clear();
             return FAIL;
 	    }
 		//set the listener & dataprocessor threads to point to the right fifo
-		if(listener.size())listener[i]->SetFifo(fifo[i]);
-		if(dataProcessor.size())dataProcessor[i]->SetFifo(fifo[i]);
-		if(dataStreamer.size())dataStreamer[i]->SetFifo(fifo[i]);
+		if(listener.size())listener[i]->SetFifo(fifo[i].get());
+		if(dataProcessor.size())dataProcessor[i]->SetFifo(fifo[i].get());
+		if(dataStreamer.size())dataStreamer[i]->SetFifo(fifo[i].get());
 	}
 
 	FILE_LOG(logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
@@ -1316,16 +1331,18 @@ int slsReceiverImplementation::SetupFifoStructure() {
 
 
 void slsReceiverImplementation::ResetParametersforNewMeasurement() {
-	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-		(*it)->ResetParametersforNewMeasurement();
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-		(*it)->ResetParametersforNewMeasurement();
+	for (const auto& it : listener)
+		it->ResetParametersforNewMeasurement();
+	for (const auto& it : dataProcessor)
+		it->ResetParametersforNewMeasurement();
 
 	if (dataStreamEnable) {
 		char fnametostream[MAX_STR_LENGTH];
 		snprintf(fnametostream, MAX_STR_LENGTH, "%s/%s", filePath, fileName);
-		for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-			(*it)->ResetParametersforNewMeasurement(fnametostream);
+		// for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
+		// 	(*it)->ResetParametersforNewMeasurement(fnametostream);
+		for (const auto& it : dataStreamer)
+			it->ResetParametersforNewMeasurement(fnametostream);
 	}
 }
 
@@ -1368,16 +1385,16 @@ int slsReceiverImplementation::SetupWriter() {
 
 void slsReceiverImplementation::StartRunning() {
 	//set running mask and post semaphore to start the inner loop in execution thread
-	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it) {
-		(*it)->StartRunning();
-		(*it)->Continue();
+	for (const auto& it : listener){
+		it->StartRunning();
+		it->Continue();
 	}
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it){
-		(*it)->StartRunning();
-		(*it)->Continue();
+	for (const auto& it : dataProcessor){
+		it->StartRunning();
+		it->Continue();
 	}
-	for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
-		(*it)->StartRunning();
-		(*it)->Continue();
+	for (const auto& it : dataStreamer){
+		it->StartRunning();
+		it->Continue();
 	}
 }

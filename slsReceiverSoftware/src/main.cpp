@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
 
 	delete receiver;
 	cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
-	FILE_LOG(logINFO) << "Goodbye!";
+	// FILE_LOG(logINFO) << "Goodbye!";
 	return 0;
 }
 

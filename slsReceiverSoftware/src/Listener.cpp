@@ -18,7 +18,7 @@
 const std::string Listener::TypeName = "Listener";
 
 
-Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
+Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
         uint32_t* us, uint32_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
@@ -108,7 +108,7 @@ void Listener::StopRunning() {
 }
 
 
-void Listener::SetFifo(Fifo*& f) {
+void Listener::SetFifo(Fifo* f) {
 	fifo = f;
 }
 

@@ -37,7 +37,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param depaden pointer to deactivated padding enable
 	 * @param sm pointer to silent mode
 	 */
-	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
+	Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
 	        uint32_t* us, uint32_t* as, uint32_t* fpf,
 			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
@@ -96,7 +96,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 * Set Fifo pointer to the one given
 	 * @param f address of Fifo pointer
 	 */
-	void SetFifo(Fifo*& f);
+	void SetFifo(Fifo* f);
 
 	/**
 	 * Reset parameters for new acquisition (including all scans)

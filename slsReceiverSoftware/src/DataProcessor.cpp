@@ -22,7 +22,7 @@
 const std::string DataProcessor::TypeName = "DataProcessor";
 
 
-DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
+DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		fileFormat* ftype, bool fwenable,
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
@@ -125,7 +125,7 @@ void DataProcessor::StopRunning() {
     runningFlag = false;
 }
 
-void DataProcessor::SetFifo(Fifo*& f) {
+void DataProcessor::SetFifo(Fifo* f) {
 	fifo = f;
 }
 

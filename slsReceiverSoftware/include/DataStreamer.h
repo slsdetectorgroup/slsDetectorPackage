@@ -31,7 +31,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param ajh additional json header
 	 * @param sm pointer to silent mode
 	 */
-	DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
+	DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 			uint64_t* fi, int* fd, char* ajh, bool* sm);
 
 	/**
@@ -63,7 +63,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * Set Fifo pointer to the one given
 	 * @param f address of Fifo pointer
 	 */
-	void SetFifo(Fifo*& f);
+	void SetFifo(Fifo* f);
 
 	/**
 	 * Reset parameters for new acquisition (including all scans)

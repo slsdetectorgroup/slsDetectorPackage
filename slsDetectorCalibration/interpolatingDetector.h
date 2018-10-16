@@ -127,7 +127,6 @@ class interpolatingDetector : public singlePhotonDetector {
      return interp->getInterpolatedImage();
    else 
      return analogDetector<uint16_t>::getImage();
-   //cout << "null " << endl;
  }
 
 #ifdef MYROOT1
@@ -179,7 +178,8 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
   double int_x, int_y;
   double eta_x, eta_y;
   if (interp) {
-    pthread_mutex_lock(fi); 
+  cout << "int" << endl;
+  pthread_mutex_lock(fi); 
     for (nph=0; nph<nphFrame; nph++) {
       if (ff) {
 	interp->addToFlatField((clusters+nph)->quadTot,(clusters+nph)->quad,(clusters+nph)->get_cluster(),eta_x, eta_y);
@@ -214,7 +214,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
 	      if (interp)
 		addFrame(data,val,1);
 	      else
-		  singlePhotonDetector::processData(data,val);
+		singlePhotonDetector::processData(data,val);
 	      break;
 	    default:
 	      if (interp)

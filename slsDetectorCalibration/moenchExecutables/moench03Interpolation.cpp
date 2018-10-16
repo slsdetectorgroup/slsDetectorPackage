@@ -143,10 +143,13 @@ int main(int argc, char *argv[]) {
 	    nframes++;
 	  }
 	  quad=interp->calcQuad(cl.get_cluster(), sum, totquad, sDum);
-	  if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && totquad<cmax && quad<cmax) {
+	  if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && sum<cmax ) {
 	    nph++;
 	    //  if (sum>200 && sum<580) {
 	    //  interp->getInterpolatedPosition(cl.x,cl.y, totquad,quad,cl.get_cluster(),int_x, int_y);
+#ifdef SOLEIL
+	    if (cl.x>210 && cl.x<240 && cl.y>210 && cl.y<240) {
+#endif
 #ifndef FF
 	    interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);
 	    interp->addToImage(int_x, int_y);
@@ -154,7 +157,9 @@ int main(int argc, char *argv[]) {
 #ifdef FF
 	    interp->addToFlatField(cl.get_cluster(), etax, etay);
 #endif
-	    
+#ifdef SOLEIL
+	    }
+#endif
 	    
 	    if (nph%1000000==0) cout << nph << endl;
 	    if (nph%100000000==0) { 

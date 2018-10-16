@@ -109,18 +109,25 @@ int main(int argc, char *argv[]) {
 
 
   //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
-  //  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
+#ifndef INTERP
+  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
+
+    multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
+
+    // multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
+#endif
+#ifdef INTERP
   eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(npx, npy, nSubPixels, etabins, etamin, etamax);
 
   if (etafname) interp->readFlatField(etafname);
 
   interpolatingDetector *filter=new interpolatingDetector(det,interp, 5, 1, 0, 1000, 10);
-  cout << " filter" <<endl;
+  multiThreadedInterpolatingDetector *mt=new multiThreadedInterpolatingDetector(filter,nthreads,fifosize);
+#endif
+
+
 
   char* buff;
-  //  multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
-  // multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
-    multiThreadedInterpolatingDetector *mt=new multiThreadedInterpolatingDetector(filter,nthreads,fifosize);
   mt->setFrameMode(eFrame);
   mt->StartThreads();
   mt->popFree(buff);
@@ -302,12 +309,15 @@ int main(int argc, char *argv[]) {
 	      sprintf(ofname,"%s_%d_ped.tiff",fname,fileindex);
 	      mt->writePedestal(ofname);
 	       cout << "Writing pedestal to " << ofname << endl;
-	    }  else if  (fMode==eFlat) {
-	       mt->prepareInterpolation(ok);
-	       sprintf(ofname,"%s_%d_eta.tiff",fname,fileindex);
-	       mt->writeFlatField(ofname);
+	    }
+#ifdef INTERP
+	    else if  (fMode==eFlat) {
+	      mt->prepareInterpolation(ok);
+	      sprintf(ofname,"%s_%d_eta.tiff",fname,fileindex);
+	      mt->writeFlatField(ofname);
 	       cout << "Writing eta to " << ofname << endl;
-	     }
+	    }
+#endif
 	    else {
 	      sprintf(ofname,"%s_%d.tiff",fname,fileindex);
 	      mt->writeImage(ofname);
@@ -334,7 +344,9 @@ int main(int argc, char *argv[]) {
 		  //   cout << ix << " " << ped[ix] << endl;
 	      }
 	      
-	    } else if  (fMode==eFlat) {
+	    }
+#ifdef INTERP
+	    else if  (fMode==eFlat) {
 	       int nb;
 	      double emi, ema;
 	       int *ff=mt->getFlatField(nb, emi, ema);
@@ -345,6 +357,7 @@ int main(int argc, char *argv[]) {
 	     	dout[ix]=ff[ix];
 	       }
 	     }
+#endif
 	    else {
 	      detimage=mt->getImage(nnx,nny,nns);
 	      cprintf(MAGENTA,"Get image!\n");
@@ -483,7 +496,9 @@ int main(int argc, char *argv[]) {
 		    // cprintf(MAGENTA, "Resetting pedestal\n");
 		    fMode=ePedestal;
 		    isPedestal=1;
-		  } else if (frameMode_s == "flatfield") {
+		  }
+#ifdef INTERP 
+		  else if (frameMode_s == "flatfield") {
 		     fMode=eFlat;
 		     isFlat=1;
 		   } else if (frameMode_s == "newFlatfield") {
@@ -492,6 +507,7 @@ int main(int argc, char *argv[]) {
 		     cprintf(MAGENTA, "Resetting flatfield\n");
 		     fMode=eFlat;
 		   }
+#endif
 		  else {
 		    fMode=eFrame;
 		    isPedestal=0;
@@ -553,15 +569,22 @@ int main(int argc, char *argv[]) {
 	      if (doc.HasMember("detectorMode")) {
 		if (doc["detectorMode"].IsString()) {
 		    detectorMode_s=doc["detectorMode"].GetString();
+#ifdef INTERP
 		    if (detectorMode_s == "interpolating"){
 		      dMode=eInterpolating;
 		      mt->setInterpolation(interp);
-		    } else if (detectorMode_s == "counting"){
+		    } else 
+#endif
+		      if (detectorMode_s == "counting"){
 		      dMode=ePhotonCounting;
+#ifdef INTERP
 		      mt->setInterpolation(NULL);
+#endif
 		    } else {
 		      dMode=eAnalog;
+#ifdef INTERP
 		      mt->setInterpolation(NULL);
+#endif
 		    }
 		  }
 		  

@@ -10,74 +10,6 @@
 using namespace std;
 
 
-/* class threadedInterpolatingDetector : public threadedCountingDetector */
-/* { */
-/* public: */
-/*  threadedInterpolatingDetector(interpolatingDetector *d, int fs=10000) : threadedCountingDetector(d,fs) {}; */
-    
-/*   virtual void prepareInterpolation(int &ok){ */
-/*       slsInterpolation *interp=((interpolatingDetector*)det)->getInterpolation(); */
-/*       if (interp)  */
-/*        interp->prepareInterpolation(ok); */
-/*    } */
-
-/*    virtual int *getFlatField(){ */
-/*      slsInterpolation *interp=((interpolatingDetector*)det)->getInterpolation(); */
-/*      if (interp)  */
-/*        return interp->getFlatField(); */
-/*      else */
-/*        return NULL; */
-/*    } */
-   
-/*    virtual int *setFlatField(int *ff, int nb, double emin, double emax){ */
-/*      slsInterpolation *interp=((interpolatingDetector*)det)->getInterpolation(); */
-/*      if (interp)  */
-/*        return interp->setFlatField(ff, nb, emin, emax); */
-/*      else */
-/*        return NULL; */
-/*    } */
-
-/*    void *writeFlatField(const char * imgname) { */
-
-/*      slsInterpolation *interp=((interpolatingDetector*)det)->getInterpolation(); */
-/*      if (interp)   */
-/*        interp->writeFlatField(imgname); */
-
-/*    } */
-/*    void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){ */
-/*      slsInterpolation *interp=((interpolatingDetector*)det)->getInterpolation(); */
-/*      if (interp)   */
-/*        interp->readFlatField(imgname, nb, emin, emax); */
-/*    } */
-
-/*    virtual int *getFlatField(int &nb, double emi, double ema){ */
-/*      slsInterpolation *interp=((interpolatingDetector*)det)->getInterpolation(); */
-/*      int *ff=NULL; */
-/*      if (interp) {  */
-/*        ff=interp->getFlatField(nb,emi,ema); */
-/*      }      */
-/*      return ff; */
-/*    } */
-   
-/*    virtual slsInterpolation *getInterpolation() { */
-/*      return ((interpolatingDetector*)det)->getInterpolation(); */
-/*    } */
-   
-/*    virtual void resetFlatField() { ((interpolatingDetector*)det)->resetFlatField();}; */
-
-
-/*    virtual int setNSubPixels(int ns)  { return ((interpolatingDetector*)det)->setNSubPixels(ns);}; */
-
-
-/*    virtual slsInterpolation *setInterpolation(slsInterpolation *f){ */
-/*      cout << "thr" << endl; */
-/*      return ((interpolatingDetector*)det)->setInterpolation(f); */
-/*    }; */
-/*  protected: */
-/*    interpolatingDetector *det; */
-/* }; */
-
-
 
 class multiThreadedInterpolatingDetector : public multiThreadedCountingDetector
 {
@@ -125,13 +57,9 @@ public:
 */
    virtual slsInterpolation *setInterpolation(slsInterpolation *f){
      int ok;
-     //  for (int i=0; i<nThreads; i++) {
-     cout << "mt" << endl;
-      return  (dets[0])->setInterpolation(f);
-       //dets[i]->setMutex(&fmutex);
-       // }
-     //dets[0]->prepareInterpolation(ok);
-     //return  (slsInterpolation*)((interpolatingDetector*)dets[0])->getInterpolation();
+     for (int i=0; i<nThreads; i++)  
+       (dets[i])->setInterpolation(f);
+     return  (dets[0])->getInterpolation();
    };
 
    virtual slsInterpolation *getInterpolation(){
@@ -140,6 +68,25 @@ public:
    };
 
 
+
+  virtual int *getImage(int &nnx, int &nny, int &ns) {
+    if (getInterpolation()==NULL) return multiThreadedAnalogDetector::getImage(nnx,nny,ns);
+    //if one interpolates, the whole image is stored in detector 0;
+    int *img;
+    // int nnx, nny, ns; 
+    // int nnx, nny, ns;
+    int nn=dets[0]->getImageSize(nnx, nny,ns);
+    if (image) {
+      delete image;
+      image=NULL;
+    }
+    image=new int[nn];    
+    img=dets[0]->getImage();
+    for (int i=0; i<nn; i++) {
+      image[i]=img[i];
+    }
+    return image;
+  };
 
 
 };

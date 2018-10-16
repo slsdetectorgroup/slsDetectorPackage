@@ -1003,14 +1003,12 @@ void slsReceiverImplementation::setDetectorPositionId(const int i){
 
 /***acquisition functions***/
 void slsReceiverImplementation::resetAcquisitionCount() {
-	for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-		(*it)->ResetParametersforNewAcquisition();
-
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
-		(*it)->ResetParametersforNewAcquisition();
-
-	for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it)
-		(*it)->ResetParametersforNewAcquisition();
+	for (const auto& it : listener)
+		it->ResetParametersforNewAcquisition();
+	for (const auto& it : dataProcessor)
+		it->ResetParametersforNewAcquisition();
+	for (const auto& it: dataStreamer)
+		it->ResetParametersforNewAcquisition();
 
 	FILE_LOG(logINFO) << "Acquisition Count has been reset";
 }

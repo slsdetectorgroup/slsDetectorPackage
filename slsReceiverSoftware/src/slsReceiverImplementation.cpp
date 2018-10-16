@@ -1144,43 +1144,35 @@ void slsReceiverImplementation::stopReceiver(){
 
 void slsReceiverImplementation::startReadout(){
 	if(status == RUNNING){
-
 		// wait for incoming delayed packets
-		//current packets caught
-		volatile int totalP = 0,prev=-1;
-		for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-			totalP += (*it)->GetPacketsCaught();
+		int totalPacketsReceived = 0;
+		int previousValue=-1;
+		for(const auto& it : listener)
+			totalPacketsReceived += it->GetPacketsCaught();
 
 		//wait for all packets
-		if((unsigned long long int)totalP!=numberOfFrames*generalData->packetsPerFrame*listener.size()){
-
-			//wait as long as there is change from prev totalP,
-			while(prev != totalP){
+		const auto numPacketsToReceive = numberOfFrames*generalData->packetsPerFrame*listener.size();
+		if(totalPacketsReceived != numPacketsToReceive){
+			while(totalPacketsReceived != previousValue){
 #ifdef VERY_VERBOSE
-				cprintf(MAGENTA,"waiting for all packets prevP:%d totalP:%d\n",
-						prev,totalP);
-
+				cprintf(MAGENTA,"waiting for all packets previousValue:%d totalPacketsReceived:%d\n",
+						previousValue,totalPacketsReceived);
 #endif
-				//usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);usleep(1*1000*1000);
-				usleep(5*1000);/* Need to find optimal time **/
+				usleep(5*1000);/* TODO! Need to find optimal time **/
+				previousValue = totalPacketsReceived;
+				totalPacketsReceived = 0;
+				for(const auto& it : listener)
+					totalPacketsReceived += it->GetPacketsCaught();
 
-				prev = totalP;
-				totalP = 0;
-
-				for (std::vector<Listener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-					totalP += (*it)->GetPacketsCaught();
 #ifdef VERY_VERBOSE
-				cprintf(MAGENTA,"\tupdated:  totalP:%d\n",totalP);
+				cprintf(MAGENTA,"\tupdated:  totalP:%d\n",totalPacketsReceived);
 #endif
 			}
 		}
-
-
-		//set status
 		status = TRANSMITTING;
 		FILE_LOG(logINFO) << "Status: Transmitting";
 	}
-	//shut down udp sockets so as to make listeners push dummy (end) packets for processors
+	//shut down udp sockets to make listeners push dummy (end) packets for processors
 	shutDownUDPSockets();
 }
 

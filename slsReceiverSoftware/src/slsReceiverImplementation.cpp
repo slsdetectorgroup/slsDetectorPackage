@@ -238,15 +238,14 @@ uint64_t slsReceiverImplementation::getTotalFramesCaught() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
-	std::vector<DataProcessor*>::const_iterator it;
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
-		flagsum += ((*it)->GetMeasurementStartedFlag() ? 1 : 0);
-		sum += (*it)->GetNumTotalFramesCaught();
+	for (const auto& it : dataProcessor){
+		flagsum += it->GetMeasurementStartedFlag();
+		sum += it->GetNumTotalFramesCaught();
 	}
-
 	//no data processed
-	if (flagsum != dataProcessor.size()) return 0;
-
+	if (flagsum != dataProcessor.size()) 
+		return 0;
+	
 	return (sum/dataProcessor.size());
 }
 
@@ -254,13 +253,13 @@ uint64_t slsReceiverImplementation::getFramesCaught() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it) {
-		flagsum += ((*it)->GetAcquisitionStartedFlag() ? 1 : 0);
-		sum += (*it)->GetNumFramesCaught();
+	for (const auto& it : dataProcessor){
+		flagsum += it->GetMeasurementStartedFlag();
+		sum += it->GetNumFramesCaught();
 	}
-
 	//no data processed
-	if (flagsum != dataProcessor.size()) return 0;
+	if (flagsum != dataProcessor.size()) 
+		return 0;
 
 	return (sum/dataProcessor.size());
 }
@@ -269,13 +268,13 @@ int64_t slsReceiverImplementation::getAcquisitionIndex() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
-	for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it){
-		flagsum += ((*it)->GetAcquisitionStartedFlag() ? 1 : 0);
-		sum += (*it)->GetActualProcessedAcquisitionIndex();
+	for (const auto& it : dataProcessor){
+		flagsum += it->GetMeasurementStartedFlag();
+		sum += it->GetActualProcessedAcquisitionIndex();
 	}
-
 	//no data processed
-	if (flagsum != dataProcessor.size()) return -1;
+	if (flagsum != dataProcessor.size()) 
+		return -1;
 
 	return (sum/dataProcessor.size());
 }

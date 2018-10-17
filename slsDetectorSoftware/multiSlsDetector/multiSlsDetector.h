@@ -1666,7 +1666,7 @@ private:
 	 * Check if processing thread is ready to join main thread
 	 * @returns true if ready, else false
 	 */
-	bool getJoinThreadFlag();
+	bool getJoinThreadFlag() const;
 
 	/**
 	 * Main thread sets if the processing thread should join it
@@ -1713,10 +1713,10 @@ private:
 	int progressIndex;
 
 	/** mutex to synchronize main and data processing threads */
-	std::mutex mp;
+	mutable std::mutex mp;
 
 	/** mutex to synchronizedata processing and plotting threads */
-	std::mutex mg;
+	mutable std::mutex mg;
 
 	/** sets when the acquisition is finished */
 	bool jointhread;

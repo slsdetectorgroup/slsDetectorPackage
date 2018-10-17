@@ -3823,7 +3823,7 @@ void multiSlsDetector::processData() {
 }
 
 
-bool multiSlsDetector::getJoinThreadFlag() {
+bool multiSlsDetector::getJoinThreadFlag() const {
 	std::lock_guard<std::mutex> lock(mp);
 	return jointhread;
 }

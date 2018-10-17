@@ -18,6 +18,8 @@ class detectorData;
 #include <memory>
 #include <vector>
 #include <string>
+#include <thread>
+#include <mutex>
 #include <semaphore.h>
 
 
@@ -1662,10 +1664,10 @@ private:
 	 */
 	void startProcessingThread();
 
-	/**
-	 * Static function to call processing thread
-	 */
-	static void* startProcessData(void *n);
+	// /**
+	//  * Static function to call processing thread
+	//  */
+	// static void* startProcessData(void *n);
 
 	/**
 	 * Check if processing thread is ready to join main thread
@@ -1718,10 +1720,10 @@ private:
 	int progressIndex;
 
 	/** mutex to synchronize main and data processing threads */
-	pthread_mutex_t mp;
+	std::mutex mp;
 
 	/** mutex to synchronizedata processing and plotting threads */
-	pthread_mutex_t mg;
+	std::mutex mg;
 
 	/** sets when the acquisition is finished */
 	int jointhread;
@@ -1730,7 +1732,8 @@ private:
 	int acquiringDone;
 
 	/** the data processing thread */
-	pthread_t dataProcessingThread;
+	// pthread_t dataProcessingThread;
+	std::thread dataProcessingThread;
 
 	/** gui data */
 	double *fdata;

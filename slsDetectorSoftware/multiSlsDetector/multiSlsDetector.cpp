@@ -406,7 +406,7 @@ void multiSlsDetector::initializeDetectorStructure() {
 	for (int i = 0; i < MAX_TIMERS; ++i) {
 		thisMultiDetector->timerValue[i] = 0;
 	}
-	thisMultiDetector->threadedProcessing = 1;
+
 	thisMultiDetector->acquiringFlag = false;
 	thisMultiDetector->receiverOnlineFlag = OFFLINE_FLAG;
 	thisMultiDetector->receiver_upstream = false;
@@ -3661,7 +3661,6 @@ void multiSlsDetector::setCurrentProgress(int i){
 
 
 int  multiSlsDetector::acquire(){
-
 	//ensure acquire isnt started multiple times by same client
 	if (isAcquireReady() ==  FAIL)
 		return FAIL;
@@ -3676,12 +3675,9 @@ int  multiSlsDetector::acquire(){
 	//in the real time acquistion loop, main thread will wait for processing thread to be done each time (which in turn waits for receiver/ext process)
 	sem_init(&sem_endRTAcquisition,1,0);
 
-
 	bool receiver = (setReceiverOnline()==ONLINE_FLAG);
-
 	progressIndex=0;
 	thisMultiDetector->stoppedFlag=0;
-	void *status;
 	setJoinThread(0);
 
 	int nm=thisMultiDetector->timerValue[MEASUREMENTS_NUMBER];
@@ -3696,9 +3692,7 @@ int  multiSlsDetector::acquire(){
 				thisMultiDetector->stoppedFlag=1;
 	}
 
-	// start processing thread
-	if (thisMultiDetector->threadedProcessing)
-		startProcessingThread();
+	startProcessingThread();
 
 	//resets frames caught in receiver
 	if(receiver){
@@ -3725,12 +3719,7 @@ int  multiSlsDetector::acquire(){
 			sem_post(&sem_newRTAcquisition);
 		}
 
-		// detector start
 		startAndReadAll();
-
-		if (thisMultiDetector->threadedProcessing==0){
-			processData();
-		}
 
 		// stop receiver
 		std::lock_guard<std::mutex> lock(mg);
@@ -3738,7 +3727,7 @@ int  multiSlsDetector::acquire(){
 			if (stopReceiver() == FAIL) {
 				thisMultiDetector->stoppedFlag = 1;
 			} else {
-				if (thisMultiDetector->threadedProcessing && dataReady)
+				if (dataReady)
 					sem_wait(&sem_endRTAcquisition); // waits for receiver's external process to be done sending data to gui
 			}
 		}
@@ -3754,17 +3743,10 @@ int  multiSlsDetector::acquire(){
 
 	}//end measurements loop im
 
-
 	// waiting for the data processing thread to finish!
-	if (thisMultiDetector->threadedProcessing) {
-		setJoinThread(1);
-
-		//let processing thread continue and checkjointhread
-		sem_post(&sem_newRTAcquisition);
-
-		// pthread_join(dataProcessingThread, &status);
-		dataProcessingThread.join();
-	}
+	setJoinThread(1);
+	sem_post(&sem_newRTAcquisition);
+	dataProcessingThread.join();
 
 
 	if(progress_call)
@@ -3788,13 +3770,6 @@ int  multiSlsDetector::acquire(){
 
 }
 
-
-
-int multiSlsDetector::setThreadedProcessing(int enable) {
-	if (enable>=0)
-		thisMultiDetector->threadedProcessing=enable;
-	return  thisMultiDetector->threadedProcessing;
-}
 
 
 void multiSlsDetector::startProcessingThread() {
@@ -3821,35 +3796,23 @@ void multiSlsDetector::processData() {
 		else{
 			int caught = -1;
 			while(true){
-
-				// set only in startThread
-				if (thisMultiDetector->threadedProcessing==0)
-					setTotalProgress();
-
 				// to exit acquire by typing q
 				if (kbhit()!=0){
-					char c = fgetc(stdin);
-					if (c=='q') {
+					if (fgetc(stdin) == 'q') {
 						std::cout<<"Caught the command to stop acquisition"<<std::endl;
 						stopAcquisition();
 					}
 				}
-
-
 				//get progress
 				if(setReceiverOnline() == ONLINE_FLAG){
 					std::lock_guard<std::mutex> lock(mg);
 					caught = getFramesCaughtByReceiver(0);
 				}
-
 				//updating progress
 				if(caught!= -1){
 					setCurrentProgress(caught);
 				}
-
 				// exiting loop
-				if (thisMultiDetector->threadedProcessing==0)
-					break;
 				if (checkJoinThread()){
 					break;
 				}

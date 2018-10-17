@@ -102,9 +102,6 @@ private:
 		/** timer values */
 		int64_t timerValue[MAX_TIMERS];
 
-		/** threaded processing flag (i.e. if data are processed and written to
-		 * file in a separate thread)  */
-		int threadedProcessing;
 
 		/** flag for acquiring */
 		bool acquiringFlag;
@@ -1573,11 +1570,7 @@ public:
 	 */
 	int acquire();
 
-	/**
-	 * Set/get if the data processing thread si enabled
-	 * @param enable 0 no data processing thread, 1 separate thread, -1 get
-	 */
-	int setThreadedProcessing(int enable=-1);
+
 
 	/**
 	 * Returns true if detector position is out of bounds

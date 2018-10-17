@@ -126,7 +126,7 @@ private:
 
 		/** threaded processing flag
 		 * (i.e. if data are processed in a separate thread)  */
-		int threadedProcessing;
+		// int threadedProcessing;
 
 		/** number of rois defined */
 		int nROI;

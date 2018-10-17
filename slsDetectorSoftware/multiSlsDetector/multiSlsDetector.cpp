@@ -208,16 +208,13 @@ void multiSlsDetector::setErrorMaskFromAllDetectors() {
 	}
 }
 
-
 void multiSlsDetector::setAcquiringFlag(bool b) {
 	thisMultiDetector->acquiringFlag = b;
 }
 
-
 bool multiSlsDetector::getAcquiringFlag() const {
 	return thisMultiDetector->acquiringFlag;
 }
-
 
 bool multiSlsDetector::isAcquireReady() {
 	if (thisMultiDetector->acquiringFlag) {
@@ -230,26 +227,19 @@ bool multiSlsDetector::isAcquireReady() {
 	return OK;
 }
 
-
 int multiSlsDetector::checkVersionCompatibility(portType t, int detPos) {
-	// single
-	if (detPos >= 0) {
+	if (detPos >= 0)
 		return detectors[detPos]->checkVersionCompatibility(t);
-	}
-
-	// multi
+	
 	auto r = parallelCall(&slsDetector::checkVersionCompatibility, t);
 	return sls::minusOneIfDifferent(r);
 }
 
 
 int64_t multiSlsDetector::getId(idMode mode, int detPos) {
-	// single
-	if (detPos >= 0) {
+	if (detPos >= 0)
 		return detectors[detPos]->getId(mode);
-	}
 
-	// multi
 	auto r = parallelCall(&slsDetector::getId, mode);
 	return sls::minusOneIfDifferent(r);
 }
@@ -292,13 +282,8 @@ void multiSlsDetector::freeSharedMemory(int detPos) {
 	}
 
 	// multi
-	// clear zmq vector
 	zmqSocket.clear();
-
-	// should be done before the detector list is deleted
 	clearAllErrorMask();
-
-	// clear sls detector vector shm
     for (auto& d : detectors) {
     	d->freeSharedMemory();
     }
@@ -321,29 +306,20 @@ void multiSlsDetector::freeSharedMemory(int detPos) {
 
 
 std::string multiSlsDetector::getUserDetails() {
-	std::ostringstream sstream;
-
-	if (!detectors.size()) {
+	if (detectors.empty())
 		return std::string("none");
-	}
-
-	//hostname
+	
+	std::ostringstream sstream;
 	sstream << "\nHostname: " << getHostname();
-
-	//type
 	sstream<< "\nType: ";
-    for (auto& d : detectors) {
+    for (auto& d : detectors)
     	sstream<< d->sgetDetectorsType() << "+";
-    }
-
-	//PID
+    
 	sstream << "\nPID: " << thisMultiDetector->lastPID
-			//user
 			<< "\nUser: " << thisMultiDetector->lastUser
 			<< "\nDate: " << thisMultiDetector->lastDate << std::endl;
 
-	std::string s = sstream.str();
-	return s;
+	return sstream.str();
 }
 
 /*
@@ -430,7 +406,6 @@ void multiSlsDetector::initializeMembers(bool verify) {
 	updateOffsets();
 }
 
-
 void multiSlsDetector::updateUserdetails() {
 	thisMultiDetector->lastPID = getpid();
 	memset(thisMultiDetector->lastUser, 0, SHORT_STRING_LENGTH);
@@ -445,7 +420,6 @@ void multiSlsDetector::updateUserdetails() {
 		strcpy(thisMultiDetector->lastDate, "errorreading");
 	}
 }
-
 
 std::string multiSlsDetector::exec(const char* cmd) {
 	int bufsize = 128;
@@ -467,7 +441,6 @@ std::string multiSlsDetector::exec(const char* cmd) {
 	return result;
 }
 
-
 void multiSlsDetector::setHostname(const char* name, int detPos) {
 	// single
 	if (detPos >= 0) {
@@ -486,7 +459,6 @@ void multiSlsDetector::setHostname(const char* name, int detPos) {
 	addMultipleDetectors(name);
 }
 
-
 std::string multiSlsDetector::getHostname(int detPos) {
 	// single
 	if (detPos >= 0) {
@@ -497,7 +469,6 @@ std::string multiSlsDetector::getHostname(int detPos) {
 	auto r = serialCall(&slsDetector::getHostname);
 	return sls::concatenateIfDifferent(r);
 }
-
 
 void multiSlsDetector::addMultipleDetectors(const char* name) {
 	size_t p1 = 0;

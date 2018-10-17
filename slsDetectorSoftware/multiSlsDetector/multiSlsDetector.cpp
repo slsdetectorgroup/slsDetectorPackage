@@ -2880,12 +2880,11 @@ void multiSlsDetector::readFrameFromReceiver() {
 	//wait for real time acquisition to start
 	bool running = true;
 	sem_wait(&sem_newRTAcquisition);
-	if (checkJoinThread())
+	if (getJoinThreadFlag())
 		running = false;
 
-	//exit when checkJoinThread() (all sockets done)
-	while (running) {
 
+	while (running) {
 		// reset data
 		data = false;
 		if (multiframe != NULL)
@@ -3034,7 +3033,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 			// wait for next scan/measurement, else join thread
 			sem_wait(&sem_newRTAcquisition);
 			//done with complete acquisition
-			if (checkJoinThread())
+			if (getJoinThreadFlag())
 				running = false;
 			else {
 				//starting a new scan/measurement (got dummy data)
@@ -3678,7 +3677,7 @@ int  multiSlsDetector::acquire(){
 	bool receiver = (setReceiverOnline()==ONLINE_FLAG);
 	progressIndex=0;
 	thisMultiDetector->stoppedFlag=0;
-	setJoinThread(0);
+	setJoinThreadFlag(false);
 
 	int nm=thisMultiDetector->timerValue[MEASUREMENTS_NUMBER];
 	if (nm<1)
@@ -3744,7 +3743,7 @@ int  multiSlsDetector::acquire(){
 	}//end measurements loop im
 
 	// waiting for the data processing thread to finish!
-	setJoinThread(1);
+	setJoinThreadFlag(true);
 	sem_post(&sem_newRTAcquisition);
 	dataProcessingThread.join();
 
@@ -3813,7 +3812,7 @@ void multiSlsDetector::processData() {
 					setCurrentProgress(caught);
 				}
 				// exiting loop
-				if (checkJoinThread()){
+				if (getJoinThreadFlag()){
 					break;
 				}
 				usleep(100 * 1000); //20ms need this else connecting error to receiver (too fast)
@@ -3824,16 +3823,15 @@ void multiSlsDetector::processData() {
 }
 
 
-int multiSlsDetector::checkJoinThread() {
+bool multiSlsDetector::getJoinThreadFlag() {
 	std::lock_guard<std::mutex> lock(mp);
 	return jointhread;
 }
 
-void multiSlsDetector::setJoinThread( int v) {
+void multiSlsDetector::setJoinThreadFlag( bool value) {
 	std::lock_guard<std::mutex> lock(mp);
-	jointhread=v;
+	jointhread=value;
 }
-
 
 int multiSlsDetector::kbhit() {
 	struct timeval tv;

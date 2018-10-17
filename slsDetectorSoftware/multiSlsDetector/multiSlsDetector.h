@@ -1666,13 +1666,13 @@ private:
 	 * Check if processing thread is ready to join main thread
 	 * @returns true if ready, else false
 	 */
-	int checkJoinThread();
+	bool getJoinThreadFlag();
 
 	/**
 	 * Main thread sets if the processing thread should join it
 	 * @param v true if it should join, else false
 	 */
-	void setJoinThread(int v);
+	void setJoinThreadFlag(bool value);
 
 	/**
 	 * Listen to key event to stop acquiring
@@ -1719,7 +1719,7 @@ private:
 	std::mutex mg;
 
 	/** sets when the acquisition is finished */
-	int jointhread;
+	bool jointhread;
 
 	/** set when detector finishes acquiring */
 	int acquiringDone;

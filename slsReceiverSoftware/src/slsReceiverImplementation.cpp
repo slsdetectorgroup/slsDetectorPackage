@@ -69,7 +69,6 @@ void slsReceiverImplementation::InitializeMembers() {
 
 	//*** receiver parameters ***
 	numThreads = 1;
-	numberofJobs = 1;
 	nroichannels = 0;
 	status = IDLE;
 	activated = true;
@@ -463,8 +462,6 @@ int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
 		generalData->SetGapPixelsEnable(b, dynamicRange);
 		for (const auto& it : dataProcessor)
 			it->SetPixelDimension();
-
-		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
@@ -633,11 +630,8 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i)
 
 		generalData->SetROI(i);
 		framesPerFile = generalData->maxFramesPerFile;
-
-		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
-
 
 		for (const auto& it : listener)
 			it->SetGeneralData(generalData);
@@ -784,7 +778,6 @@ int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 		numberOfSamples = i;
 
 		generalData->setNumberofSamples(i, nroichannels);
-		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
@@ -797,15 +790,11 @@ int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 int slsReceiverImplementation::setDynamicRange(const uint32_t i) {
 	if (dynamicRange != i) {
 		dynamicRange = i;
-
-		//side effects
 		generalData->SetDynamicRange(i,tengigaEnable);
 		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange);
 		// to update npixelsx, npixelsy in file writer
 		for (const auto& it : dataProcessor)
 			it->SetPixelDimension();
-
-		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
@@ -819,8 +808,6 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 		tengigaEnable = b;
 		//side effects
 		generalData->SetTenGigaEnable(b,dynamicRange);
-
-		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
@@ -832,8 +819,6 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 int slsReceiverImplementation::setFifoDepth(const uint32_t i) {
 	if (fifoDepth != i) {
 		fifoDepth = i;
-
-		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
@@ -908,11 +893,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
 	framesPerFile = generalData->maxFramesPerFile;
 
-	//local network parameters
 	SetLocalNetworkParameters();
-
-	//create fifo structure
-	numberofJobs = -1;
 	if (SetupFifoStructure() == FAIL) {
 		FILE_LOG(logERROR) << "Could not allocate memory for fifo structure";
 		return FAIL;
@@ -1007,7 +988,7 @@ int slsReceiverImplementation::startReceiver(char *c) {
 	//callbacks
 	if (startAcquisitionCallBack) {
 		startAcquisitionCallBack(filePath, fileName, fileIndex,
-				(generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize), pStartAcquisition);
+				(generalData->imageSize) + (generalData->fifoBufferHeaderSize), pStartAcquisition);
 		if (rawDataReadyCallBack != NULL) {
 			FILE_LOG(logINFO) << "Data Write has been defined externally";
 		}
@@ -1260,15 +1241,13 @@ void slsReceiverImplementation::SetThreadPriorities() {
 
 
 int slsReceiverImplementation::SetupFifoStructure() {
-		numberofJobs = 1;
-
 	fifo.clear();
 	for ( int i = 0; i < numThreads; ++i ) {
 
 		//create fifo structure
 	    try {
 			fifo.push_back(sls::make_unique<Fifo>(i,
-	                (generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize),
+	                (generalData->imageSize) + (generalData->fifoBufferHeaderSize),
 	                fifoDepth));
 	    } catch (...) {
             cprintf(RED,"Error: Could not allocate memory for fifo structure of index %d\n", i);
@@ -1281,7 +1260,7 @@ int slsReceiverImplementation::SetupFifoStructure() {
 		if(dataStreamer.size())dataStreamer[i]->SetFifo(fifo[i].get());
 	}
 
-	FILE_LOG(logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
+	FILE_LOG(logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
 	FILE_LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
 	return OK;
 }

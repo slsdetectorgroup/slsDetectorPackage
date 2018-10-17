@@ -3809,9 +3809,9 @@ void multiSlsDetector::startProcessingThread() {
 // }
 
 
-void* multiSlsDetector::processData() {
+void multiSlsDetector::processData() {
 	if(setReceiverOnline()==OFFLINE_FLAG){
-		return 0;
+		return;
 	} 
 	else{
 		if(dataReady) {
@@ -3857,7 +3857,7 @@ void* multiSlsDetector::processData() {
 			}
 		}
 	}
-	return 0;
+	return;
 }
 
 

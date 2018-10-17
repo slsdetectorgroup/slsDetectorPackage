@@ -1588,7 +1588,7 @@ public:
 	 * Combines data from all readouts and gives it to the gui
 	 * or just gives progress of acquisition by polling receivers
 	 */
-	void* processData();
+	void processData();
 
 private:
 	/**

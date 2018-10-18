@@ -27,6 +27,8 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
 : detId(id),
   sharedMemory(0),
   thisDetector(0),
+  thisDetectorControl(0),
+  thisDetectorStop(0),
   thisReceiver(0),
   controlSocket(0),
   stopSocket(0),
@@ -55,10 +57,13 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
 	initializeDetectorStructurePointers();
 }
 
+
 slsDetector::slsDetector(int multiId, int id, bool verify)
 : detId(id),
   sharedMemory(0),
   thisDetector(0),
+  thisDetectorControl(0),
+  thisDetectorStop(0),
   thisReceiver(0),
   controlSocket(0),
   stopSocket(0),
@@ -85,6 +90,10 @@ slsDetector::~slsDetector() {
 		sharedMemory->UnmapSharedMemory(thisDetector);
 		delete sharedMemory;
 	}
+	if(thisDetectorControl)
+		delete thisDetectorControl;
+	if(thisDetectorStop)
+		delete thisDetectorStop;
 	if(thisReceiver)
 		delete thisReceiver;
 	if(controlSocket)
@@ -107,8 +116,7 @@ int slsDetector::checkVersionCompatibility(portType t) {
 	if (t == DATA_PORT)
 		fnum = F_RECEIVER_CHECK_VERSION;
 	int ret = FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
+	char mess[MAX_STR_LENGTH] = {0};
 	int64_t arg = 0;
 
 	// detector
@@ -205,57 +213,56 @@ int slsDetector::checkVersionCompatibility(portType t) {
 
 
 int64_t slsDetector::getId( idMode mode) {
+	int fnum = F_GET_ID;
+	int ret = FAIL;
+	int arg = (int)mode;
+	int64_t retval = -1;
 
-	int64_t retval=-1;
-	int fnum=F_GET_ID,fnum2 = F_GET_RECEIVER_ID;
-	int ret=FAIL;
-	char mess[MAX_STR_LENGTH]="";
+	FILE_LOG(logDEBUG5) << "Getting id type " << mode;
 
-#ifdef VERBOSE
-	std::cout<< std::endl << "Getting id type "<< mode << std::endl;
-#endif
-	if (mode==THIS_SOFTWARE_VERSION) {
-		ret=OK;
-		retval=GITDATE;
-	} else if (mode==RECEIVER_VERSION) {
+	// client version
+	if (mode == THIS_SOFTWARE_VERSION) {
+		ret = OK;
+		retval = GITDATE;
+	}
+
+	// receiver version
+	else if (mode==RECEIVER_VERSION) {
+		fnum = F_GET_RECEIVER_ID;
 		if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 			if (connectData() == OK){
-				ret=thisReceiver->Client_Send(fnum2, NULL, 0, &retval, sizeof(retval));
+				ret=thisReceiver->Client_Send(fnum, NULL, 0, &retval, sizeof(retval));
 				disconnectData();
 			}
-			if(ret==FORCE_UPDATE)
-				ret=updateReceiver();
+			// handle ret
+			if (ret == FAIL)
+				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+			else if(ret == FORCE_UPDATE)
+				ret = updateReceiver();
 		}
-	} else {
+	}
+
+	// detector versions
+	else  {
 		if (thisDetector->onlineFlag==ONLINE_FLAG) {
-			if (connectControl() != OK)
-				ret = FAIL;
-			else{
-				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-				controlSocket->SendDataOnly(&mode,sizeof(mode));
-				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-				if (ret!=FAIL)
-					controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-				else {
-					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-					std::cout<< "Detector returned error: " << mess << std::endl;
-				}
+			if (connectControl() == OK){
+				ret = thisDetectorControl->Client_Send(fnum,
+						&arg, sizeof(arg), &retval, sizeof(retval));
 				disconnectControl();
-				if (ret==FORCE_UPDATE)
+				// handle ret
+				if (ret == FAIL)
+					setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+				else if (ret == FORCE_UPDATE)
 					updateDetector();
 			}
 		}
 	}
-	if (ret==FAIL) {
-		std::cout<< "Get id failed " << std::endl;
-		return ret;
-	} else {
-#ifdef VERBOSE
-		std::cout<< "Id "<< mode <<" is " << hex <<retval << std::setbase(10)
-					<< std::endl;
-#endif
-		return retval;
+
+	if (ret != FAIL) {
+		FILE_LOG(logDEBUG5) << "Id ("<< mode << "): 0x" << std::hex << retval << std::setbase(10);
 	}
+
+	return retval;
 }
 
 
@@ -583,10 +590,20 @@ void slsDetector::initializeMembers() {
 	chanregs = (int*)(goff + thisDetector->chanoff);
 	gain = (int*)(goff + thisDetector->gainoff);
 	offset = (int*)(goff + thisDetector->offsetoff);
+	if (thisDetectorControl) {
+		delete thisDetectorControl;
+		thisDetectorControl = 0;
+	}
+	if (thisDetectorStop) {
+		delete thisDetectorStop;
+		thisDetectorStop = 0;
+	}
 	if (thisReceiver) {
 		delete thisReceiver;
 		thisReceiver = 0;
 	}
+	thisDetectorControl = new ClientInterface(controlSocket, detId, "Detector (Control server)");
+	thisDetectorStop = new ClientInterface(stopSocket, detId, "Detector (Stop server)");
 	thisReceiver = new ClientInterface(dataSocket, detId, "Receiver");
 }
 
@@ -853,43 +870,32 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
 	return type;
 }
 
-
+// static function
 slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int cport) {
-	int fnum=F_GET_DETECTOR_TYPE;
-	int retval = FAIL;
-	detectorType t = GENERIC;
+	int fnum = F_GET_DETECTOR_TYPE;
+	detectorType retval = GENERIC;
 	MySocketTCP* mySocket = 0;
 
 	try {
 		mySocket = new MySocketTCP(name, cport);
 	} catch(...) {
-		std::cout << "Cannot create socket to server " << name << " over port " << cport << std::endl;
-		return t;
+		FILE_LOG(logERROR) << "Cannot create socket to control server " << name << " over port " << cport;
+		return retval;
 	}
 
-
-#ifdef VERBOSE
-	std::cout << "Getting detector type " << std::endl;
-#endif
+	FILE_LOG(logINFO) << "Getting detector type ";
 	if (mySocket->Connect() >= 0) {
 		mySocket->SendDataOnly(&fnum,sizeof(fnum));
+		int ret = FAIL; // not needed but is in protocol from server
+		mySocket->ReceiveDataOnly(&ret,sizeof(ret));
 		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
-		if (retval!=FAIL) {
-			mySocket->ReceiveDataOnly(&t,sizeof(t));
-#ifdef VERBOSE
-			std::cout << "Detector type is "<< t << std::endl;
-#endif
-		} else {
-			char mess[MAX_STR_LENGTH];
-			mySocket->ReceiveDataOnly(mess,sizeof(mess));
-			std::cout<< "Detector returned error: " << mess << std::endl;
-		}
+		FILE_LOG(logDEBUG5) << "Detector type is " << retval;
 		mySocket->Disconnect();
 	} else {
-		std::cout << "Cannot connect to server " << name << " over port " << cport << std::endl;
+		FILE_LOG(logERROR) << "Cannot connect to server " << name << " over port " << cport;
 	}
 	delete mySocket;
-	return t;
+	return retval;
 }
 
 
@@ -897,8 +903,6 @@ int slsDetector::setDetectorType(detectorType const type) {
 	int ret=FAIL;
 	int fnum=F_GET_DETECTOR_TYPE,fnum2=F_GET_RECEIVER_TYPE;
 	detectorType retval = type;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
 
 	if (type != GET_DETECTOR_TYPE) {
 #ifdef VERBOSE
@@ -1217,7 +1221,8 @@ int slsDetector::setTCPSocket(std::string const name, int const control_port, in
 
 	if (retval!=FAIL) {
 		checkOnline();
-
+		thisDetectorControl->SetSocket(controlSocket);
+		thisDetectorStop->SetSocket(stopSocket);
 		// check for version compatibility
 		switch (thisDetector->myDetectorType) {
 		case EIGER:
@@ -1352,16 +1357,15 @@ int slsDetector::setPort(portType index, int num) {
 					if(s==dataSocket)
 						fnum = fnum2;
 					s->SendDataOnly(&fnum,sizeof(fnum));
-					s->SendDataOnly(&index,sizeof(index));
 					s->SendDataOnly(&num,sizeof(num));
 					s->ReceiveDataOnly(&ret,sizeof(ret));
 					if (ret==FAIL) {
 						char mess[MAX_STR_LENGTH]="";
 						s->ReceiveDataOnly(mess,sizeof(mess));
 						std::cout<< "Detector returned error: " << mess << std::endl;
-					} else {
-						s->ReceiveDataOnly(&retval,sizeof(retval));
 					}
+						s->ReceiveDataOnly(&retval,sizeof(retval));
+
 					s->Disconnect();
 				}else{
 					if (index == CONTROL_PORT){
@@ -1539,24 +1543,23 @@ int slsDetector::exitServer() {
 
 
 int slsDetector::execCommand(std::string cmd) {
+	int fnum = F_EXEC_COMMAND;
+	int ret = FAIL;
+	char arg[MAX_STR_LENGTH] = {0};
+	char retval[MAX_STR_LENGTH] = {0};
 
-	char arg[MAX_STR_LENGTH]="", retval[MAX_STR_LENGTH]="";
-	int fnum=F_EXEC_COMMAND;
-	int ret=FAIL;
 	strcpy(arg,cmd.c_str());
+	FILE_LOG(logDEBUG5) << "Sending command to detector " << arg;
 
-#ifdef VERBOSE
-	std::cout<< std::endl;
-	std::cout<< "Sending command " << arg << std::endl;
-#endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->SendDataOnly(arg,MAX_STR_LENGTH);
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			controlSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
-			std::cout << "Detector returned:" << retval << std::endl;
+			ret = thisDetectorControl->Client_Send(fnum, arg, sizeof(arg), retval, sizeof(retval));
 			disconnectControl();
+			// handle ret
+			if (ret == FAIL)
+				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+			else
+				FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
 		}
 	}
 	return ret;
@@ -1840,8 +1843,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 slsDetectorDefs::detectorSettings slsDetector::sendSettingsOnly(detectorSettings isettings) {
 	int fnum = F_SET_SETTINGS;
 	int ret = FAIL;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
+	char mess[MAX_STR_LENGTH] = {0};
 	int retval = -1;
 	int arg = isettings;
 #ifdef VERBOSE
@@ -2417,7 +2419,7 @@ int slsDetector::configureMAC() {
 	int ret=FAIL;
 	int fnum=F_CONFIGURE_MAC;
 	char mess[MAX_STR_LENGTH]="";
-	char arg[6][50];memset(arg,0,sizeof(char)*6*50);
+	char arg[6][50] = {0};
 	int retval=-1;
 
 	// to send 3d positions to detector
@@ -2572,8 +2574,7 @@ int slsDetector::configureMAC() {
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 				if (thisDetector->myDetectorType == EIGER) {
 					//rewrite detectormac, detector ip
-					char arg[2][50];
-					memset(arg,0,sizeof(arg));
+					char arg[2][50] = {0};
 					uint64_t idetectormac = 0;
 					uint32_t idetectorip = 0;
 					controlSocket->ReceiveDataOnly(arg,sizeof(arg));
@@ -3058,41 +3059,23 @@ int slsDetector::getADC(dacIndex index) {
 
 slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunicationMode(
 		externalCommunicationMode pol) {
+	int fnum = F_SET_EXTERNAL_COMMUNICATION_MODE;
+	int ret = FAIL;
 	int arg = pol;
 	externalCommunicationMode retval = GET_EXTERNAL_COMMUNICATION_MODE;;
-	int fnum=F_SET_EXTERNAL_COMMUNICATION_MODE;
-	int ret=FAIL;
 
+	FILE_LOG(logDEBUG5) << "Setting communication to mode "<< pol;
 
-#ifdef VERBOSE
-	std::cout<< std::endl;
-	std::cout<< "Setting communication to mode " << pol << std::endl;
-#endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->SendDataOnly(&arg,sizeof(arg));
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret!=FAIL)
-				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-			else {
-				char mess[MAX_STR_LENGTH]="";
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-			}
+			ret = thisDetectorControl->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
 			disconnectControl();
-			if (ret==FORCE_UPDATE)
+			// handle ret
+			if (ret == FAIL)
+				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+			else if (ret == FORCE_UPDATE)
 				updateDetector();
 		}
-	} else {
-		retval=GET_EXTERNAL_COMMUNICATION_MODE;
-		ret=FAIL;
-	}
-#ifdef VERBOSE
-	std::cout<< "Communication mode "<<   " set to" << retval << std::endl;
-#endif
-	if (ret==FAIL) {
-		std::cout<< "Setting communication mode failed" << std::endl;
 	}
 	return retval;
 }
@@ -3101,57 +3084,25 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
 
 slsDetectorDefs::externalSignalFlag slsDetector::setExternalSignalFlags(
 		externalSignalFlag pol, int signalindex) {
+	int fnum = F_SET_EXTERNAL_SIGNAL_FLAG;
+	int ret = FAIL;
+	int arg[2] = {signalindex, pol};
+	externalSignalFlag retval = GET_EXTERNAL_SIGNAL_FLAG;
 
+	FILE_LOG(logDEBUG5) << "Setting signal "<< signalindex <<  " to flag" << pol;
 
-
-
-	int arg[2];
-	externalSignalFlag  retval;
-	int ret=FAIL;
-	int fnum=F_SET_EXTERNAL_SIGNAL_FLAG;
-	char mess[MAX_STR_LENGTH]="";
-
-	arg[0]=signalindex;
-	arg[1]=pol;
-
-	retval=GET_EXTERNAL_SIGNAL_FLAG;
-
-#ifdef VERBOSE
-	std::cout<< std::endl;
-	std::cout<< "Setting signal "<< signalindex <<  " to flag" << pol << std::endl;
-#endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->SendDataOnly(&arg,sizeof(arg));
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret!=FAIL)
-				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-			else {
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-			}
+			ret = thisDetectorControl->Client_Send(fnum, arg, sizeof(arg), &retval, sizeof(retval));
 			disconnectControl();
-			if (ret==FORCE_UPDATE)
+			// handle ret
+			if (ret == FAIL)
+				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+			else if (ret == FORCE_UPDATE)
 				updateDetector();
 		}
-	} else {
-		retval=GET_EXTERNAL_SIGNAL_FLAG;
-		ret=FAIL;
 	}
-#ifdef VERBOSE
-	std::cout<< "Signal "<< signalindex <<  " flag set to" << retval << std::endl;
-	if (ret==FAIL) {
-		std::cout<< "Set signal flag failed " << std::endl;
-	}
-#endif
 	return retval;
-
-
-
-
-
-
 }
 
 
@@ -3833,10 +3784,8 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 
 	int fnum=F_RECEIVER_STREAMING_SRC_IP;
 	int ret = FAIL;
-	char arg[MAX_STR_LENGTH];
-	memset(arg,0,sizeof(arg));
-	char retval[MAX_STR_LENGTH];
-	memset(retval,0, sizeof(retval));
+	char arg[MAX_STR_LENGTH] = {0};
+	char retval[MAX_STR_LENGTH] = {0};
 
 	// if empty, give rx_hostname
 	if (sourceIP.empty())  {
@@ -3861,7 +3810,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 		}
 		// on success put IP as std::string into arg
 		else {
-			dataSocket->ConvertInternetAddresstoIpString(result, arg, MAX_STR_LENGTH);
+			dataSocket->ConvertInternetAddresstoIpString(result, arg, sizeof(arg));
 		}
 	}
 
@@ -3881,7 +3830,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 				std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->Client_Send(fnum, arg, MAX_STR_LENGTH, retval, MAX_STR_LENGTH);
+			ret=thisReceiver->Client_Send(fnum, arg, sizeof(arg), retval, sizeof(retval));
 			disconnectData();
 		}
 		if(ret==FAIL) {
@@ -3901,10 +3850,8 @@ std::string slsDetector::setAdditionalJsonHeader(std::string jsonheader) {
 
 	int fnum=F_ADDITIONAL_JSON_HEADER;
 	int ret = FAIL;
-	char arg[MAX_STR_LENGTH];
-	memset(arg,0,sizeof(arg));
-	char retval[MAX_STR_LENGTH];
-	memset(retval,0, sizeof(retval));
+	char arg[MAX_STR_LENGTH] = {0};
+	char retval[MAX_STR_LENGTH] = {0};
 
 	strcpy(arg, jsonheader.c_str());
 
@@ -3913,7 +3860,7 @@ std::string slsDetector::setAdditionalJsonHeader(std::string jsonheader) {
 		std::cout << "Sending additional json header " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->Client_Send(fnum, arg, MAX_STR_LENGTH, retval, MAX_STR_LENGTH);
+			ret=thisReceiver->Client_Send(fnum, arg, sizeof(arg), retval, sizeof(retval));
 			disconnectData();
 		}
 		if(ret==FAIL) {
@@ -4003,10 +3950,8 @@ int slsDetector::setUDPConnection() {
 
 	int ret = FAIL;
 	int fnum = F_SETUP_RECEIVER_UDP;
-	char args[3][MAX_STR_LENGTH];
-	memset(args,0,sizeof(args));
-	char retval[MAX_STR_LENGTH];
-	memset(retval,0,sizeof(retval));
+	char args[3][MAX_STR_LENGTH] = {0};
+	char retval[MAX_STR_LENGTH] = {0};
 
 	//called before set up
 	if(!strcmp(thisDetector->receiver_hostname,"none")){
@@ -4961,8 +4906,7 @@ int slsDetector::setTemperatureEvent(int val) {
 int slsDetector::setStoragecellStart(int pos) {
 	int ret=FAIL;
 	int fnum=F_STORAGE_CELL_START;
-	char mess[MAX_STR_LENGTH];
-	memset(mess, 0, MAX_STR_LENGTH);
+	char mess[MAX_STR_LENGTH] = {0};
 	int retval=-1;
 
 #ifdef VERBOSE
@@ -5929,23 +5873,21 @@ int slsDetector::exitReceiver() {
 }
 
 int slsDetector::execReceiverCommand(std::string cmd) {
-
-	int fnum=F_EXEC_RECEIVER_COMMAND;
-	int ret=FAIL;
-	char arg[MAX_STR_LENGTH];
-	memset(arg,0,sizeof(arg));
-	char retval[MAX_STR_LENGTH];
-	memset(retval,0, sizeof(retval));
+	int fnum = F_EXEC_RECEIVER_COMMAND;
+	int ret = FAIL;
+	char arg[MAX_STR_LENGTH] = {0};
+	char retval[MAX_STR_LENGTH] = {0};
 
 	strcpy(arg,cmd.c_str());
+	FILE_LOG(logDEBUG5) << "Sending command to receiver " << arg;
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-#ifdef VERBOSE
-		std::cout << "Sending to receiver the command: " << arg << std::endl;
-#endif
 		if (connectData() == OK){
-			ret=thisReceiver->Client_Send(fnum, arg, MAX_STR_LENGTH, retval, MAX_STR_LENGTH);
+			ret=thisReceiver->Client_Send(fnum, arg, sizeof(arg), retval, sizeof(retval));
 			disconnectData();
+		}
+		if (ret != FAIL) {
+			FILE_LOG(logINFO) << "Receiver " << detId << " returned:\n" << retval;
 		}
 	}
 	return ret;
@@ -6157,26 +6099,27 @@ std::string slsDetector::setFilePath(std::string s) {
 	char retval[MAX_STR_LENGTH] = "";
 
 	strcpy(arg,s.c_str());
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
-	std::cout << "Sending file path to receiver " << arg << std::endl;
+		std::cout << "Sending file path to receiver " << arg << std::endl;
 #endif
-	if (connectData() == OK){
-		ret=thisReceiver->Client_Send(fnum, arg, MAX_STR_LENGTH, retval, MAX_STR_LENGTH);
-		disconnectData();
+		if (connectData() == OK){
+			ret=thisReceiver->Client_Send(fnum, arg, sizeof(arg), retval, sizeof(retval));
+			disconnectData();
+		}
+		if(ret!=FAIL){
+			strcpy(thisDetector->receiver_filePath,retval);
+		}
+		else {
+			if(!s.empty()){
+				std::cout << "file path does not exist" << std::endl;
+				setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
+			} else
+				setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
+		}
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
 	}
-	if(ret!=FAIL){
-		strcpy(thisDetector->receiver_filePath,retval);
-	}
-	else {
-		if(!s.empty()){
-			std::cout << "file path does not exist" << std::endl;
-			setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
-		} else
-			setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
-	}
-	if(ret==FORCE_UPDATE)
-		updateReceiver();
-
 	return getFilePath();
 }
 
@@ -6202,7 +6145,7 @@ std::string slsDetector::setFileName(std::string s) {
 		std::cout << "Sending file name to receiver " << arg << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->Client_Send(fnum, arg, MAX_STR_LENGTH, retval, MAX_STR_LENGTH);
+			ret=thisReceiver->Client_Send(fnum, arg, sizeof(arg), retval, sizeof(retval));
 			disconnectData();
 		}
 		if (ret == FAIL)
@@ -6309,20 +6252,21 @@ slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
 	int ret = FAIL;
 	int arg = f;
 	int retval = -1;
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 #ifdef VERBOSE
-	std::cout << "Sending file format to receiver " << arg << std::endl;
+		std::cout << "Sending file format to receiver " << arg << std::endl;
 #endif
-	if (connectData() == OK){
-		ret=thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-		disconnectData();
+		if (connectData() == OK){
+			ret=thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+			disconnectData();
+		}
+		if (ret == FAIL)
+			setErrorMask((getErrorMask())|(RECEIVER_FILE_FORMAT));
+		else
+			thisDetector->receiver_fileFormatType = (fileFormat)retval;
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
 	}
-	if (ret == FAIL)
-		setErrorMask((getErrorMask())|(RECEIVER_FILE_FORMAT));
-	else
-		thisDetector->receiver_fileFormatType = (fileFormat)retval;
-	if(ret==FORCE_UPDATE)
-		updateReceiver();
-
 	return getFileFormat();
 }
 
@@ -6346,21 +6290,21 @@ int slsDetector::setFileIndex(int i) {
 	int retval=-1;
 	int arg = i;
 
-
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
 #ifdef VERBOSE
-	std::cout << "Sending file index to receiver " << arg << std::endl;
+		std::cout << "Sending file index to receiver " << arg << std::endl;
 #endif
-	if (connectData() == OK){
-		ret=thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-		disconnectData();
+		if (connectData() == OK){
+			ret=thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+			disconnectData();
+		}
+		if (ret == FAIL)
+			setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
+		else
+			thisDetector->receiver_fileIndex = retval;
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
 	}
-	if (ret == FAIL)
-		setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
-	else
-		thisDetector->receiver_fileIndex = retval;
-	if(ret==FORCE_UPDATE)
-		updateReceiver();
-
 
 	return getFileIndex();
 }
@@ -7051,110 +6995,6 @@ int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 	return retval;
 
 
-}
-
-
-
-int slsDetector::readCalibrationFile(std::string fname, double &gain, double &offset) {
-
-	std::string str;
-	std::ifstream infile;
-#ifdef VERBOSE
-	std::cout<< "Opening file "<< fname << std::endl;
-#endif
-	infile.open(fname.c_str(), std::ios_base::in);
-	if (infile.is_open()) {
-		getline(infile,str);
-#ifdef VERBOSE
-		std::cout<< str << std::endl;
-#endif
-		std::istringstream ssstr(str);
-		ssstr >> offset >> gain;
-		infile.close();
-		std::cout << "Calibration file loaded: " << fname << std::endl;
-	} else {
-		std::cout<< "Could not open calibration file "<< fname << std::endl;
-		gain=0.;
-		offset=0.;
-		return FAIL;
-	}
-	return OK;
-}
-
-
-
-int slsDetector::writeCalibrationFile(std::string fname, double gain, double offset) {
-
-	std::ofstream outfile;
-	outfile.open (fname.c_str());
-
-	if (outfile.is_open()) {
-		outfile << offset << " " << gain << std::endl;
-	} else {
-		std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
-
-		return FAIL;
-	}
-
-	outfile.close();
-	return OK;
-}
-
-
-int slsDetector::readCalibrationFile(std::string fname, int *gain, int *offset) {
-
-	std::string str;
-	std::ifstream infile;
-	double o,g;
-	int ig=0;
-#ifdef VERBOSE
-	std::cout<< "Opening file "<< fname << std::endl;
-#endif
-	infile.open(fname.c_str(), std::ios_base::in);
-	if (infile.is_open()) {
-		//get gain and offset
-		for (ig=0; ig<4; ig++) {
-			//while ( (getline(infile,str)) > -1) {
-			getline(infile,str);
-#ifdef VERBOSE
-			std::cout<< str << std::endl;
-#endif
-			std::istringstream ssstr(str);
-			ssstr >> o >> g;
-			offset[ig]=(int)(o*1000);
-			gain[ig]=(int)(g*1000);
-			// ig++;
-			if (ig>=4)
-				break;
-		}
-		infile.close();
-		std::cout << "Calibration file loaded: " << fname << std::endl;
-	} else {
-		std::cout << "Could not open calibration file: "<< fname << std::endl;
-		gain[0]=0;
-		offset[0]=0;
-		return FAIL;
-	}
-
-	return OK;
-}
-
-
-int slsDetector::writeCalibrationFile(std::string fname, int *gain, int *offset){
-
-	std::ofstream outfile;
-	outfile.open (fname.c_str());
-
-	if (outfile.is_open()) {
-		for (int ig=0; ig<4; ig++)
-			outfile << ((double)offset[ig]/1000) << " " << ((double)gain[ig]/1000) << std::endl;
-	} else {
-		std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
-		return FAIL;
-	}
-
-	outfile.close();
-	return OK;
 }
 
 

@@ -20,8 +20,8 @@
 #include <stdlib.h>
 #include <syscall.h>
 #include <vector>
-
-
+#include <array>
+#include <memory>	//unique_ptr
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	stop();
@@ -241,31 +241,28 @@ int slsReceiverTCPIPInterface::function_table(){
 
 int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
-
-	FILE_LOG(logDEBUG1) <<  "waiting to receive data";
 	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
-		FILE_LOG(logDEBUG1) << "ERROR reading from socket. "
+		FILE_LOG(logDEBUG5) << "Could not read socket. "
 				"Received " << n << " bytes," <<
 				"fnum:" << fnum << " "
 				"(" << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
 		return FAIL;
 	}
 	else
-		FILE_LOG(logDEBUG1) << "Received " << n << " bytes";
-
+		FILE_LOG(logDEBUG5) << "Received " << n << " bytes";
 
 	if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
 		FILE_LOG(logERROR) << "Unknown function enum " << fnum;
 		ret = (this->M_nofunc)();
 	} else{
-		FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
+		FILE_LOG(logDEBUG5) <<  "calling function fnum: "<< fnum << " "
 				"(" << getFunctionNameFromEnum((enum detFuncs)fnum) << ") "
 				"located at " << flist[fnum];
 		ret = (this->*flist[fnum])();
 
 		if (ret == FAIL) {
-			FILE_LOG(logERROR) << "Failed to execute function = " << fnum << " ("
+			FILE_LOG(logDEBUG5) << "Failed to execute function = " << fnum << " ("
 					<< getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
 		}
 	}
@@ -281,7 +278,7 @@ void slsReceiverTCPIPInterface::functionNotImplemented() {
 }
 
 
-int slsReceiverTCPIPInterface::M_nofunc(){printf("111 \n");
+int slsReceiverTCPIPInterface::M_nofunc(){
 	ret = FAIL;
 	memset(mess, 0, sizeof(mess));
 	int n = 0;
@@ -302,9 +299,10 @@ int slsReceiverTCPIPInterface::M_nofunc(){printf("111 \n");
 
 
 int slsReceiverTCPIPInterface::exec_command() {
+	ret = FAIL;
 	memset(mess, 0, sizeof(mess));
-	char cmd[MAX_STR_LENGTH];
-	memset(cmd,0,sizeof(cmd));
+	char cmd[MAX_STR_LENGTH] = {0};
+	char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed
 	if (interface->Server_ReceiveArg(ret, mess, cmd, MAX_STR_LENGTH) == FAIL)
@@ -312,14 +310,26 @@ int slsReceiverTCPIPInterface::exec_command() {
 
 	// verify if receiver is unlocked
 	if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
-		ret = (system(cmd) == 0) ? OK : FAIL;
-		if(ret == FAIL) {
+
+		const size_t tempsize = 256;
+		std::array<char, tempsize> temp;
+		std::string sresult;
+		std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+		if (!pipe)  {
+			ret = FAIL;
 			strcpy(mess, "Executing Command failed\n");
 			FILE_LOG(logERROR) << mess;
+		} else  {
+			while (!feof(pipe.get())) {
+				if (fgets(temp.data(), tempsize, pipe.get()) != NULL)
+					sresult += temp.data();
+			}
+			strncpy(retval, sresult.c_str(), MAX_STR_LENGTH);
+			ret = OK;
 		}
 	}
 
-	interface->Server_SendResult(false, ret, NULL, 0, mess);
+	interface->Server_SendResult(false, ret, retval, MAX_STR_LENGTH, mess);
 
 	return ret;
 }
@@ -378,17 +388,13 @@ int slsReceiverTCPIPInterface::get_last_client_ip() {
 int slsReceiverTCPIPInterface::set_port() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int p_type = 0;
 	int p_number = -1;
 	MySocketTCP* mySocket = 0;
-	char oldLastClientIP[INET_ADDRSTRLEN];
-	memset(oldLastClientIP, 0, sizeof(oldLastClientIP));
+	char oldLastClientIP[INET_ADDRSTRLEN] = {0};
 
-	// receive arguments
-	if (mySock->ReceiveDataOnly(&p_type,sizeof(p_type)) < 0 )
-		return interface->Server_SocketCrash();
-	if (mySock->ReceiveDataOnly(&p_number,sizeof(p_number)) < 0 )
-		return interface->Server_SocketCrash();
+	// get args, return if socket crashed
+	if (interface->Server_ReceiveArg(ret, mess, &p_number, sizeof(p_number)) == FAIL)
+		return FAIL;
 
 	// verify if receiver is unlocked
 	if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
@@ -450,8 +456,7 @@ int slsReceiverTCPIPInterface::update_client() {
 
 int slsReceiverTCPIPInterface::send_update() {
 	int ind = -1;
-	char defaultVal[MAX_STR_LENGTH];
-	memset(defaultVal, 0, sizeof(defaultVal));
+	char defaultVal[MAX_STR_LENGTH] = {0};
 	char* path = NULL;
 	int n = 0;
 
@@ -581,8 +586,6 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 		if (ret == OK) {
 			switch(dr) {
 			case GOTTHARD:
-			case PROPIX:
-			case MOENCH:
 			case EIGER:
 			case JUNGFRAUCTB:
 			case JUNGFRAU:
@@ -628,8 +631,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 
 int slsReceiverTCPIPInterface::set_detector_hostname() {
 	memset(mess, 0, sizeof(mess));
-	char hostname[MAX_STR_LENGTH];
-	memset(hostname, 0, sizeof(hostname));
+	char hostname[MAX_STR_LENGTH] = {0};
 	char* retval = NULL;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
@@ -706,10 +708,8 @@ int slsReceiverTCPIPInterface::set_roi() {
 
 
 int slsReceiverTCPIPInterface::setup_udp(){
-	char args[3][MAX_STR_LENGTH];
-	memset(args,0,sizeof(args));
-	char retval[MAX_STR_LENGTH];
-	memset(retval,0,sizeof(retval));
+	char args[3][MAX_STR_LENGTH] = {0};
+	char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, args, sizeof(args), true, receiver) == FAIL)
@@ -1062,8 +1062,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 
 int slsReceiverTCPIPInterface::set_file_dir() {
 	memset(mess, 0, sizeof(mess));
-	char fPath[MAX_STR_LENGTH];
-	memset(fPath, 0, sizeof(fPath));
+	char fPath[MAX_STR_LENGTH] = {0};
 	char* retval=NULL;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
@@ -1100,8 +1099,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 
 int slsReceiverTCPIPInterface::set_file_name() {
 	memset(mess, 0, sizeof(mess));
-	char fName[MAX_STR_LENGTH];
-	memset(fName, 0, sizeof(fName));
+	char fName[MAX_STR_LENGTH] = {0};
 	char* retval = NULL;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
@@ -1672,8 +1670,7 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 
 int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 	memset(mess, 0, sizeof(mess));
-	char arg[MAX_STR_LENGTH];
-	memset(arg, 0, sizeof(arg));
+	char arg[MAX_STR_LENGTH] = {0};
 	char* retval=NULL;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
@@ -1813,8 +1810,7 @@ int slsReceiverTCPIPInterface::restream_stop(){
 
 int slsReceiverTCPIPInterface::set_additional_json_header() {
     memset(mess, 0, sizeof(mess));
-    char arg[MAX_STR_LENGTH];
-    memset(arg, 0, sizeof(arg));
+    char arg[MAX_STR_LENGTH] = {0};
     char* retval=NULL;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null

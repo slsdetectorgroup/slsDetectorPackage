@@ -1,7 +1,3 @@
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-#ifndef SLS_DETECTOR_FUNCTION_LIST_H
-#define SLS_DETECTOR_FUNCTION_LIST_H
-
 #include "sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 
@@ -22,7 +18,7 @@ int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
 #endif
 
-void 		checkFirmwareCompatibility(int flag);
+void 		checkFirmwareCompatibility();
 #if defined(MYTHEN3D) || defined(JUNGFRAUD)
 int 		checkType();
 u_int32_t 	testFpga(void);
@@ -166,7 +162,8 @@ int 		setHighVoltage(int val);
 
 
 // parameters - timing, extsig
-enum 		externalCommunicationMode setTiming( enum externalCommunicationMode arg);
+void 		setTiming( enum externalCommunicationMode arg);
+enum 		externalCommunicationMode getTiming();
 
 // configure mac
 #ifdef JUNGFRAUD
@@ -264,6 +261,3 @@ int 		getNumberOfOffsets();
 int 		getNumberOfChannelsPerChip();
 
 
-
-#endif
-#endif

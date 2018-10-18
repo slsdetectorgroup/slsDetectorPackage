@@ -1,5 +1,3 @@
-//#ifdef SLS_DETECTOR_FUNCTION_LIST
-
 
 #include <stdio.h>
 #include <unistd.h> //to gethostname
@@ -16,6 +14,9 @@
 #include "Beb.h"
 #include "versionAPI.h"
 #endif
+
+// Global variable from slsDetectorServer
+extern int debugflag;
 
 int default_tau_from_file= -1;
 
@@ -106,7 +107,7 @@ int getFirmwareCheckResult(char** mess) {
 	return firmware_compatibility;
 }
 
-void checkFirmwareCompatibility(int flag){
+void checkFirmwareCompatibility(){
 	firmware_compatibility = OK;
 	firmware_check_done = 0;
 	memset(firmware_message, 0, MAX_STR_LENGTH);
@@ -148,8 +149,8 @@ void checkFirmwareCompatibility(int flag){
 			REQUIRED_FIRMWARE_VERSION,
 			(long long int)client_sw_apiversion);
 
-	// return if flag is not zero, debug mode
-	if (flag) {
+	// return if debugflag is not zero, debug mode
+	if (debugflag) {
 		firmware_check_done = 1;
 	    return;
 	}
@@ -1100,7 +1101,7 @@ int setHighVoltage(int val){
 
 /* parameters - timing, extsig */
 
-enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
+void setTiming( enum externalCommunicationMode arg){
 	enum externalCommunicationMode ret=GET_EXTERNAL_COMMUNICATION_MODE;
 	if(arg != GET_EXTERNAL_COMMUNICATION_MODE){
 		switch((int)arg){
@@ -1115,7 +1116,11 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 #endif
 			eiger_triggermode = ret;
 	}
+}
 
+
+enum externalCommunicationMode getTiming() {
+	enum externalCommunicationMode ret = GET_EXTERNAL_COMMUNICATION_MODE;
 	ret = eiger_triggermode;
 	switch((int)ret){
 	case 0:		ret = AUTO_TIMING;		break;
@@ -1128,9 +1133,6 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 	}
 	return ret;
 }
-
-
-
 
 
 
@@ -1832,4 +1834,3 @@ int getNumberOfOffsets(){return  NOFFSET;}
 
 
 
-//#endif

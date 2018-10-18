@@ -1,6 +1,6 @@
 CC			=	powerpc-4xx-softfloat-gcc
 BLACKFIN_CC = 	bfin-uclinux-gcc
-CFLAGS		+=  -Wall   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST   -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE -DPCCOMPILE -DMARTIN
+CFLAGS		+=  -Wall   -DEIGERD   -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE -DPCCOMPILE -DMARTIN
 LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	eigerDetectorServer 
@@ -8,7 +8,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 
-SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c FebControl.c Beb.c HardwareIO.c LocalLinkInterface.c Feb.c  FebInterface.c 
+SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c FebControl.c Beb.c HardwareIO.c LocalLinkInterface.c  FebInterface.c 
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
  
 

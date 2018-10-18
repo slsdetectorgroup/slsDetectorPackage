@@ -81,11 +81,10 @@ public:
 		GENERIC,  /**< generic sls detector */
 		EIGER, /**< eiger */
 		GOTTHARD, /**< gotthard */
-		MOENCH, /**< moench */
 		JUNGFRAU, /**< jungfrau */
 		JUNGFRAUCTB, /**< jungfrauCTBversion */
-		PROPIX, /**< propix */
-		MYTHEN3 /**< mythen 3 */
+		MYTHEN3, /**< mythen 3 */
+		MOENCH	/**< moench */
 	};
 
 

@@ -897,8 +897,6 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	myDetectorType = d;
 	switch(myDetectorType) {
 	case GOTTHARD:
-	case PROPIX:
-	case MOENCH:
 	case EIGER:
 	case JUNGFRAUCTB:
 	case JUNGFRAU:
@@ -913,8 +911,6 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	//set detector specific variables
 	switch(myDetectorType) {
 	case GOTTHARD:		generalData = new GotthardData();	break;
-	case PROPIX:		generalData = new PropixData();		break;
-	case MOENCH:		generalData = new Moench02Data();	break;
 	case EIGER:			generalData = new EigerData();		break;
 	case JUNGFRAUCTB:	generalData = new JCTBData();		break;
 	case JUNGFRAU:		generalData = new JungfrauData();	break;

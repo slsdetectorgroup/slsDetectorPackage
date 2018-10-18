@@ -6,12 +6,12 @@
 
 // initialization functions
 int printSocketReadError();
-void setModeFlag(int);
 void basictests();
-void init_detector(int);
+void init_detector();
 int decode_function(int);
 const char* getFunctionName(enum detFuncs func);
 void function_table();
+void functionNotImplemented();
 int M_nofunc(int);
 int M_nofuncMode(int);
 

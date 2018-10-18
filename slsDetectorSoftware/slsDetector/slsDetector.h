@@ -1796,42 +1796,6 @@ private:
 	 */
 	int setUDPConnection();
 
-	/**
-	 * reads a calibration file
-	 * @param fname file to be read
-	 * @param gain reference to the gain variable
-	 * @param offset reference to the offset variable
-	 * @returns OK if successful, else FAIL or -1
-	 */
-	static int readCalibrationFile(std::string fname, double &gain, double &offset);
-
-	/**
-	 * writes a calibration file
-	 * @param fname file to be written
-	 * @param gain
-	 * @param offset
-	 * @returns OK if successful, else FAIL or -1
-	 */
-	static int writeCalibrationFile(std::string fname, double gain, double offset);
-
-	/**
-	 * reads a calibration file
-	 * @param fname file to be read
-	 * @param gain reference to the gain variable
-	 * @param offset reference to the offset variable
-	 * @returns OK if successful, else FAIL or -1
-	 */
-	static int readCalibrationFile(std::string fname, int *gain, int *offset);
-
-	/**
-	 * writes a calibration file
-	 * @param fname file to be written
-	 * @param gain reference to the gain variable
-	 * @param offset reference to the offset variable
-	 * @returns OK if successful, else FAIL or -1
-	 */
-	static int writeCalibrationFile(std::string fname, int *gain, int *offset);
-
 	/*
 	 * Template function to do linear interpolation between two points (Eiger only)
 	 */
@@ -1892,6 +1856,12 @@ private:
 
 	/** Shared memory structure */
 	sharedSlsDetector *thisDetector;
+
+	/** control socket interface */
+	ClientInterface *thisDetectorControl;
+
+	/** stop socket interface */
+	ClientInterface *thisDetectorStop;
 
 	/** receiver interface */
 	ClientInterface *thisReceiver;

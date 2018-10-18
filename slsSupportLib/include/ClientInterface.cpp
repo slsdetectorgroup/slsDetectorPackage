@@ -1,16 +1,6 @@
 #include "ClientInterface.h"
 
 
-#include  <sys/types.h>
-#include  <sys/shm.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <bitset>
-#include <cstdlib>
-#include <iostream>
-
-
-
 ClientInterface::ClientInterface(MySocketTCP *socket, int n, std::string t):
 mySocket(socket),
 index(n),
@@ -55,29 +45,7 @@ int ClientInterface::Client_Send(int fnum,
 	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret == FAIL) {
 		if (Client_GetMesage(mess) == FAIL)
-		return FAIL;
-	}
-	mySocket->ReceiveDataOnly(retval, sizeOfRetval);
-
-	return ret;
-}
-
-
-int ClientInterface::Client_Send(int fnum,
-		void* args, int sizeOfArgs,
-		void* args2, int sizeOfArgs2,
-		void* retval, int sizeOfRetval,
-		char* mess) {
-
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(args, sizeOfArgs);
-	mySocket->SendDataOnly(args2, sizeOfArgs2);
-
-	int ret = FAIL;
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL) {
-		if (Client_GetMesage(mess) == FAIL)
-		return FAIL;
+			return FAIL;
 	}
 	mySocket->ReceiveDataOnly(retval, sizeOfRetval);
 
@@ -89,7 +57,7 @@ void ClientInterface::Server_SendResult(bool update, int ret,
 		void* retval, int retvalSize, char* mess) {
 
 	// update if different clients
-	if (update && mySocket->differentClients)
+	if (update && ret == OK && mySocket->differentClients)
 		ret = FORCE_UPDATE;
 
 	// send success of operation
@@ -143,7 +111,6 @@ int ClientInterface::Server_VerifyLockAndIdle(int& ret, char* mess, int lockstat
 
 
 void ClientInterface::Server_NullObjectError(int& ret, char* mess) {
-	// only for receiver
 	ret=FAIL;
 	strcpy(mess,"Receiver not set up. Please use rx_hostname first.\n");
 	FILE_LOG(logERROR) << mess;
@@ -158,7 +125,7 @@ int ClientInterface::Server_SocketCrash() {
 
 int ClientInterface::Server_LockedError(int& ret, char* mess) {
 	ret = FAIL;
-	sprintf(mess,"%s locked by %s\n",type.c_str(), mySocket->lastClientIP);
+	sprintf(mess,"Receiver locked by %s\n", mySocket->lastClientIP);
 	FILE_LOG(logERROR) << mess;
 	return ret;
 }
@@ -166,8 +133,8 @@ int ClientInterface::Server_LockedError(int& ret, char* mess) {
 
 int ClientInterface::Server_NotIdleError(int& ret, char* mess, int fnum) {
 	ret = FAIL;
-	sprintf(mess,"Can not execute %s when %s is not idle\n",
-			getFunctionNameFromEnum((enum detFuncs)fnum), type.c_str());
+	sprintf(mess,"Can not execute %s when receiver is not idle\n",
+			getFunctionNameFromEnum((enum detFuncs)fnum));
 	FILE_LOG(logERROR) << mess;
 	return ret;
 }

@@ -396,33 +396,6 @@ private:
 };
 
 
-class PropixData : public GeneralData {
-
- private:
-
-	/**bytes per pixel for calculating image size */
-	const static uint32_t bytesPerPixel = 2;
-
- public:
-
-	/** Constructor */
-	PropixData(){
-		myDetectorType		= slsDetectorDefs::PROPIX;
-		nPixelsX 			= 22;
-		nPixelsY 			= 22;
-		headerSizeinPacket  = 4;
-		dataSize 			= 1280;
-		packetSize 			= 1286;
-		packetsPerFrame 	= 2; //not really
-		imageSize 			= nPixelsX*nPixelsY*bytesPerPixel;
-		frameIndexMask 		= 0xFFFFFFFE;
-		frameIndexOffset 	= 1;
-		packetIndexMask 	= 1;
-		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-		defaultFifoDepth 	= 50000;
-	};
-};
 
 
 class Moench02Data : public GeneralData {

@@ -870,9 +870,11 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
 	return type;
 }
 
+
 // static function
 slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int cport) {
 	int fnum = F_GET_DETECTOR_TYPE;
+	int ret = FAIL;
 	detectorType retval = GENERIC;
 	MySocketTCP* mySocket = 0;
 
@@ -883,17 +885,19 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 		return retval;
 	}
 
-	FILE_LOG(logINFO) << "Getting detector type ";
+	FILE_LOG(logDEBUG5) << "Getting detector type ";
 	if (mySocket->Connect() >= 0) {
 		mySocket->SendDataOnly(&fnum,sizeof(fnum));
-		int ret = FAIL; // not needed but is in protocol from server
 		mySocket->ReceiveDataOnly(&ret,sizeof(ret));
 		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
-		FILE_LOG(logDEBUG5) << "Detector type is " << retval;
 		mySocket->Disconnect();
 	} else {
 		FILE_LOG(logERROR) << "Cannot connect to server " << name << " over port " << cport;
 	}
+	if (ret != FAIL) {
+		FILE_LOG(logDEBUG5) << "Detector type is " << retval;
+	}
+
 	delete mySocket;
 	return retval;
 }
@@ -1558,9 +1562,10 @@ int slsDetector::execCommand(std::string cmd) {
 			// handle ret
 			if (ret == FAIL)
 				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
-			else
-				FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
 		}
+	}
+	if (ret != FAIL) {
+		FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
 	}
 	return ret;
 }
@@ -2953,58 +2958,31 @@ int slsDetector::getDataBytesInclGapPixels() {
 
 int slsDetector::setDAC(int val, dacIndex index, int mV) {
 
+	if ((index == HV_NEW) && (thisDetector->myDetectorType == GOTTHARD))
+		index = HV_POT;
 
-	int retval[2];
-	retval[0] = -1;
-	retval[1] = -1;
-	int fnum=F_SET_DAC;
-	int ret=FAIL;
-	char mess[MAX_STR_LENGTH]="";
-	int arg[2];
+	int fnum = F_SET_DAC;
+	int ret = FAIL;
+	int args[3] = {(int)index, mV, val};
+	int retval[2] = {-1, -1};
 
+	FILE_LOG(logDEBUG5) << "Setting DAC "<< index << " to " <<	val << (mV ? "mV" : "dac units");
 
-	if ( (index==HV_NEW) &&(thisDetector->myDetectorType == GOTTHARD))
-		index=HV_POT;
-
-	arg[0]=index;
-	arg[1]=mV;
-
-
-#ifdef VERBOSE
-	std::cout<< std::endl;
-	std::cout<< "Setting DAC "<< index << " to " <<	val << std::endl;
-#endif
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->SendDataOnly(arg,sizeof(arg));
-			controlSocket->SendDataOnly(&val,sizeof(val));
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret!=FAIL) {
-				controlSocket->ReceiveDataOnly(retval,sizeof(retval));
-				if (index <  thisDetector->nDacs){
-
-					if (dacs) {
-						*(dacs+index)=retval[0];
-
-					}
-				}
-			} else {
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-			}
+			ret = thisDetectorControl->Client_Send(fnum,
+					args, sizeof(args), retval, sizeof(retval));
 			disconnectControl();
-			if (ret==FORCE_UPDATE)
+			// handle ret
+			if (ret == FAIL)
+				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+			else if (ret == FORCE_UPDATE)
 				updateDetector();
-
 		}
 	}
-#ifdef VERBOSE
-	std::cout<< "Dac set to "<< retval[0] << " dac units (" << retval[1] << "mV)"
-			<< std::endl;
-#endif
-	if (ret==FAIL) {
-		std::cout<< "Set dac " << index << " to " << val << " failed." << std::endl;
+	if (ret != FAIL) {
+		FILE_LOG(logDEBUG5) << "Dac index " << index << ": "
+				<< retval[0] << " dac units (" << retval[1] << "mV)";
 	}
 	if(mV)
 		return retval[1];
@@ -3016,42 +2994,30 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
 
 
 int slsDetector::getADC(dacIndex index) {
+	int fnum = F_GET_ADC;
+	int ret = FAIL;
+	int arg = (int)index;
 	int retval = -1;
-	int fnum=F_GET_ADC;
-	int ret=FAIL;
-	int arg = index;
 
-#ifdef VERBOSE
-	std::cout<< std::endl;
-	std::cout<< "Getting ADC "<< index <<  std::endl;
-#endif
+	FILE_LOG(logDEBUG5) << "Getting ADC "<< index;
+
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
-		if (connectStop() == OK){
-			stopSocket->SendDataOnly(&fnum,sizeof(fnum));
-			stopSocket->SendDataOnly(&arg,sizeof(arg));
-			stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret!=FAIL) {
-				stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
-				if (adcs) {
-					*(adcs+index)=retval;
-				}
-			} else {
-				char mess[MAX_STR_LENGTH]="";
-				stopSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-			}
-			disconnectStop();
-			/*commented out to allow adc read during acquire, also not required
-      if (ret==FORCE_UPDATE)
-	updateDetector();*/
+		if (connectControl() == OK){
+			ret = thisDetectorControl->Client_Send(fnum,
+					&arg, sizeof(arg), &retval, sizeof(retval));
+			disconnectControl();
+			// handle ret
+			if (ret == FAIL)
+				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+			/*commented out to allow adc read during acquire
+			 else if (ret == FORCE_UPDATE)
+				updateDetector();*/
 		}
 	}
-#ifdef VERBOSE
-	std::cout<< "ADC returned "<< retval << std::endl;
-#endif
-	if (ret==FAIL) {
-		std::cout<< "Get ADC failed " << std::endl;
+	if (ret != FAIL) {
+		FILE_LOG(logDEBUG5) << "ADC (" << index << "): " << retval;
 	}
+
 	return retval;
 }
 
@@ -3077,6 +3043,9 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
 				updateDetector();
 		}
 	}
+	if (ret != FAIL) {
+		FILE_LOG(logDEBUG5) << "Timing Mode: " << retval;
+	}
 	return retval;
 }
 
@@ -3101,6 +3070,9 @@ slsDetectorDefs::externalSignalFlag slsDetector::setExternalSignalFlags(
 			else if (ret == FORCE_UPDATE)
 				updateDetector();
 		}
+	}
+	if (ret != FAIL) {
+		FILE_LOG(logDEBUG5) << "Ext Signal (" << signalindex << "): " << retval;
 	}
 	return retval;
 }
@@ -4029,43 +4001,30 @@ int slsDetector::setUDPConnection() {
 
 
 int slsDetector::digitalTest( digitalTestMode mode, int ival) {
-	int retval = -1;
 	int fnum = F_DIGITAL_TEST;
 	int ret = FAIL;
-	
-#ifdef VERBOSE
-	std::cout<< std::endl;
-	std::cout<< "Getting id of "<< mode << std::endl;
-#endif
+	int args[2] = {mode, ival};
+	int retval = -1;
 
+	FILE_LOG(logDEBUG5) << "Sending digital test of mode " << mode << ", ival " << ival;
+	
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
-			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-			controlSocket->SendDataOnly(&mode,sizeof(mode));
-			controlSocket->SendDataOnly(&ival,sizeof(ival));
-			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret!=FAIL)
-				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-			else {
-				char mess[MAX_STR_LENGTH]="";
-				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
-			}
+			ret = thisDetectorControl->Client_Send(fnum,
+					args, sizeof(args), &retval, sizeof(retval));
 			disconnectControl();
-			if (ret==FORCE_UPDATE)
+			// handle ret
+			if (ret == FAIL)
+				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+			else if (ret == FORCE_UPDATE)
 				updateDetector();
 		}
-	} else {
-		ret=FAIL;
 	}
-#ifdef VERBOSE
-	std::cout<< "Id "<< mode <<" is " << retval << std::endl;
-#endif
-	if (ret==FAIL) {
-		std::cout<< "Get id failed " << std::endl;
-		return ret;
-	} else
-		return retval;
+	if (ret != FAIL && mode == DIGITAL_BIT_TEST) {
+		FILE_LOG(logDEBUG5) << "Digital test bit: " << retval;
+	}
+
+	return retval;
 }
 
 
@@ -4352,19 +4311,29 @@ int slsDetector::sendROI(int n,ROI roiLimits[]) {
 	}
 
 	// update roi in receiver
-	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-		int fnum=F_RECEIVER_SET_ROI;
+	if(ret == OK && thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+		int fnum = F_RECEIVER_SET_ROI;
+		ret = FAIL;
 #ifdef VERBOSE
 		std::cout << "Sending ROI to receiver " << thisDetector->nROI << std::endl;
 #endif
 		if (connectData() == OK){
-			ret=thisReceiver->Client_Send(fnum,
-					&thisDetector->nROI, sizeof(thisDetector->nROI),
-					thisDetector->roiLimits, thisDetector->nROI * sizeof(ROI));
+			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+			dataSocket->SendDataOnly(&thisDetector->nROI, sizeof(thisDetector->nROI));
+			for(int i = 0; i < thisDetector->nROI; ++i){
+				dataSocket->SendDataOnly(&thisDetector->roiLimits[i].xmin, sizeof(int));
+				dataSocket->SendDataOnly(&thisDetector->roiLimits[i].xmax, sizeof(int));
+				dataSocket->SendDataOnly(&thisDetector->roiLimits[i].ymin, sizeof(int));
+				dataSocket->SendDataOnly(&thisDetector->roiLimits[i].ymax, sizeof(int));
+			}
+			dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret == FAIL) {
+				dataSocket->ReceiveDataOnly(mess,MAX_STR_LENGTH);
+				setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
+				cprintf(RED, "Receiver %d returned error: %s", detId, mess);
+			}
 			disconnectData();
 		}
-		if(ret==FAIL)
-			setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
 	}
 
 

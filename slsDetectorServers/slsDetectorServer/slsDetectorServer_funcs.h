@@ -12,6 +12,8 @@ int decode_function(int);
 const char* getFunctionName(enum detFuncs func);
 void function_table();
 void functionNotImplemented();
+void modeNotImplemented(char* modename, int mode);
+void validate(int arg, int retval, char* modename, int hex);
 int M_nofunc(int);
 int M_nofuncMode(int);
 

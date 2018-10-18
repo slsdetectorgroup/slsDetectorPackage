@@ -144,6 +144,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 	++i;
 
 	/*! \page test
+   - <b>firmwaretest</b> performs the firmware test.  Cannot set! Jungfrau only. Only get!
+	 */
+	descrToFuncMap[i].m_pFuncName="firmwaretest"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
+	++i;
+
+	/*! \page test
    - <b>reg [addr] [val]</b> ??? writes to an register \c addr with \c value in hexadecimal format.
 	 */
 	descrToFuncMap[i].m_pFuncName="reg"; //
@@ -3706,7 +3713,14 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int d
 	if (cmd=="bustest"){
 		if (action==PUT_ACTION)
 			return string("cannot set ")+cmd;
-		sprintf(answer,"0x%x",myDet->digitalTest(DETECTOR_BUS_TEST));
+		sprintf(answer,"%d",myDet->digitalTest(DETECTOR_BUS_TEST));
+		return string(answer);
+	}
+
+	else if (cmd=="firmwaretest"){
+		if (action==PUT_ACTION)
+			return string("cannot set ")+cmd;
+		sprintf(answer,"%d",myDet->digitalTest(DETECTOR_FIRMWARE_TEST));
 		return string(answer);
 	}
 
@@ -3716,7 +3730,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int d
 		int ival=-1;
 		if (sscanf(args[1],"%d",&ival)) {
 			if((ival==0)||(ival==1)){
-				sprintf(answer,"0x%x",myDet->digitalTest(DIGITAL_BIT_TEST,ival, detPos));
+				sprintf(answer,"%d",myDet->digitalTest(DIGITAL_BIT_TEST,ival, detPos));
 				return string(answer);
 			}
 			else
@@ -3737,6 +3751,7 @@ string slsDetectorCommand::helpDigiTest(int action) {
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "digibittest:i \t performs digital test of the module i. Returns 0 if succeeded, otherwise error mask.Gotthard only."<< std::endl;
 		os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Jungfrau only."<< std::endl;
+		os << "firmwaretest \t performs the firmware test. Jungfrau only." << std::endl;
 	}
 	return os.str();
 }

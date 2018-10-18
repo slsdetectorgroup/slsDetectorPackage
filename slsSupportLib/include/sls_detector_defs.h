@@ -365,8 +365,6 @@ public:
 	    detector IDs/versions
 	*/
 	enum idMode{
-	  MODULE_SERIAL_NUMBER, /**<return module serial number */
-	  MODULE_FIRMWARE_VERSION,  /**<return module firmware */
 	  DETECTOR_SERIAL_NUMBER,  /**<return detector system serial number */
 	  DETECTOR_FIRMWARE_VERSION,  /**<return detector system firmware version */
 	  DETECTOR_SOFTWARE_VERSION,   /**<return detector system software version */

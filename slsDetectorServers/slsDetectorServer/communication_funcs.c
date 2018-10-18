@@ -548,13 +548,13 @@ int Server_VerifyLock() {
 
 void Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize) {
 
-	// update if different clients
-	if (update && ret == OK && differentClients)
+	// update if different clients (ret can be ok or acquisition finished), not fail to not overwrite e message
+	if (update && ret != FAIL && differentClients)
 		ret = FORCE_UPDATE;
 
 	// send success of operation
 	int ret1 = ret;
-	sendData(fileDes, &ret1,sizeof(ret1), INT32);
+	sendData(fileDes, &ret1,sizeof(ret1), INT32);/* if < 0, return , socket crash*/
 	if(ret == FAIL) {
 		// send error message
 		if (strlen(mess))

@@ -40,7 +40,9 @@ int dataBytes = 10;
 #ifdef EIGERD
 uint32_t dhcpipad = 0;
 #endif
-
+#ifdef GOTTHARD
+int digitalTestBit = 0;
+#endif
 
 
 
@@ -266,6 +268,25 @@ void functionNotImplemented() {
 	FILE_LOG(logERROR, (mess));
 }
 
+void modeNotImplemented(char* modename, int mode) {
+	ret = FAIL;
+	sprintf(mess, "%s (%d) is not implemented for this detector\n", modename, mode);
+	FILE_LOG(logWARNING,(mess));
+}
+
+void validate(int arg, int retval, char* modename, int hex) {
+	if (ret == OK && arg != -1 && retval != arg) {
+		ret = FAIL;
+		if (hex)
+			sprintf(mess, "Could not set %s. Set 0x%x, but got 0x%x\n",
+				modename, arg, retval);
+		else
+			sprintf(mess, "Could not set %s. Set %d, but got %d\n",
+				modename, arg, retval);
+		FILE_LOG(logERROR,(mess));
+	}
+}
+
 
 int  M_nofunc(int file_des){
 	ret = FAIL;
@@ -316,9 +337,10 @@ int exec_command(int file_des) {
 	if (receiveData(file_des, cmd, MAX_STR_LENGTH, OTHER) < 0)
 		return printSocketReadError();
 
-	if (Server_VerifyLock() != FAIL) {
+	FILE_LOG(logINFO, ("Executing command (%s)\n", cmd));
 
-		FILE_LOG(logINFO, ("Executing command (%s)\n", cmd));
+	// set
+	if (Server_VerifyLock() != FAIL) {
 		FILE* sysFile = popen(cmd, "r");
 		const size_t tempsize = 256;
 		char temp[tempsize];
@@ -363,32 +385,28 @@ int get_detector_type(int file_des) {
 int set_external_signal_flag(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int arg[2] = {-1,-1};
+	int args[2] = {-1,-1};
 	enum externalSignalFlag retval= GET_EXTERNAL_SIGNAL_FLAG;
 
-	if (receiveData(file_des, arg, sizeof(arg), INT32) < 0)
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
 
 #ifndef GOTTHARDD
 	functionNotImplemented();
 #else
-	int signalindex = arg[0];
-	enum externalSignalFlag flag = arg[1];
+	int signalindex = args[0];
+	enum externalSignalFlag flag = args[1];
 
+	FILE_LOG(logDEBUG5, ("Setting external signal %d to flag %d\n", signalindex, flag));
 	// set
 	if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() != FAIL)) {
-		FILE_LOG(logDEBUG5, ("Setting external signal %d to flag %d\n", signalindex, flag));
 		setExtSignal(signalindex, flag);
 	}
 	// get
 	retval = getExtSignal(signalindex);
-	if (flag != GET_EXTERNAL_SIGNAL_FLAG && retval != flag) {
-		ret = FAIL;
-		sprintf(mess,"External signal %d flag should be 0x%04x but is 0x%04x\n",
-				signalindex, flag, retval);
-		FILE_LOG(logERROR,(mess));
-	}
+	validate((int)flag, (int)retval, "external signal flag", 1);
 	FILE_LOG(logDEBUG5, ("External Signal Flag: %d\n", retval));
+}
 #endif
 
 	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
@@ -408,6 +426,8 @@ int set_external_communication_mode(int file_des) {
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
 
+	FILE_LOG(logDEBUG5, ("Setting external communication mode to %d\n", arg));
+
 	// set
 	if ((arg != GET_EXTERNAL_COMMUNICATION_MODE) && (Server_VerifyLock() != FAIL)) {
 		switch (arg) {
@@ -417,19 +437,16 @@ int set_external_communication_mode(int file_des) {
 		case GATE_FIX_NUMBER:
 		case BURST_TRIGGER:
 #endif
-			FILE_LOG(logDEBUG5,("Setting external communication mode to %d\n", arg));
 			setTiming(arg);
 			break;
 		default:
-			ret = FAIL;
-			sprintf(mess, "Timing mode (%d) is not implemented for this detector\n", (int)arg);
-			FILE_LOG(logWARNING,(mess));
+			modeNotImplemented("Timing mode", (int)arg);
 			break;
 		}
 	}
-
 	// get
 	retval = getTiming();
+	validate((int)arg, (int)retval, "timing mode", 0);
 	FILE_LOG(logDEBUG5, ("Timing Mode: %d\n",retval));
 
 	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
@@ -449,6 +466,8 @@ int get_id(int file_des) {
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
 
+	FILE_LOG(logDEBUG5, ("Getting Id %d\n", arg));
+
 	// get
 	switch (arg) {
 #if defined(EIGERD) || defined(JUNGFRAUD)
@@ -461,9 +480,7 @@ int get_id(int file_des) {
 		FILE_LOG(logDEBUG5, ("Id(%d): %lld\n", retval));
 		break;
 	default:
-		ret = FAIL;
-		sprintf(mess,"ID Index (%d) is not implemented for this detector\n", (int) arg);
-		FILE_LOG(logWARNING,(mess));
+		modeNotImplemented("ID Index", (int)arg);
 		break;
 	}
 
@@ -477,376 +494,310 @@ int get_id(int file_des) {
 
 
 int digital_test(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	int retval=-1;
-	sprintf(mess,"get digital test failed\n");
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = {-1, -1};
+	int retval = -1;
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+		return printSocketReadError();
 
 #ifdef EIGERD
-	//to receive any arguments
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-	ret = FAIL;
-	sprintf(mess,"Function (Digital Test) is not implemented for this detector\n");
-	cprintf(RED, "%s", mess);
+	functionNotImplemented();
 #else
+	enum digitalTestMode mode = args[0];
+	int ival = args[1];
 
-	enum digitalTestMode arg=0;
-	int ival=-1;
+	FILE_LOG(logDEBUG5, ("Digital test, mode = %d\n", mode));
 
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-
-	if (arg == DIGITAL_BIT_TEST) {
-		n = receiveData(file_des,&ival,sizeof(ival),INT32);
-		if (n < 0) return printSocketReadError();
-	}
-
-	// execute action
-	if (differentClients && lockStatus) {
-		ret = FAIL;
-		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		cprintf(RED, "Warning: %s", mess);
-	} else {
-#ifdef VERBOSE
-		printf("Digital test mode %d\n",arg );
-#endif
-		switch (arg) {
-
-#ifdef GOTTHARD
+	// set
+	if (Server_VerifyLock() != FAIL) {
+		switch (mode) {
+#ifdef GOTTHARD:
 		case DIGITAL_BIT_TEST:
-			retval=0;
+			FILE_LOG(logDEBUG5, ("Setting digital test bit: %d\n", ival));
+			if (ival >= 0)
+				digitalTestBit = (ival > 0) ? 1 : 0;
+			retval = digitalTestBit;
 			break;
-
-#elif JUNGFRAUD
+#endif
 		case DETECTOR_FIRMWARE_TEST:
 		case DETECTOR_BUS_TEST:
-#endif
-			retval=detectorTest(arg);
+			retval = detectorTest(mode);
+			FILE_LOG(logDEBUG5, ("Digital Test (%d): %d\n", mode, retval));
 			break;
 		default:
-			ret = FAIL;
-			sprintf(mess,"Digital Test Mode (%d) is not implemented for this detector\n",(int)arg);
-			cprintf(RED, "Warning: %s", mess);
+			modeNotImplemented("Digital Test Mode", (int)mode);
 			break;
 		}
 	}
-#ifdef VERBOSE
-	printf("digital test result is 0x%x\n", retval);
 #endif
 
-	if (differentClients)
-		ret=FORCE_UPDATE;
-#endif
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// send ok / fail
-	// ret could be swapped during sendData
-	ret1 = ret;
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	if (ret!=FAIL) {
-		// send return argument
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
 	return ret;
-
 }
 
 
 
+
+
+
 int set_dac(int file_des) {
-    int ret=OK,ret1=OK;
-    int n=0;
-    int arg[2]={-1,-1};
-    int val=-1;
-    enum dacIndex ind=0;
-    int retval[2]={-1,-1};
-    int mV=0;
-    sprintf(mess,"set DAC failed\n");
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[3] = {-1, -1, -1};
+    int retval[2] = {-1, -1};
 
-    // receive arguments
-    n = receiveData(file_des,arg,sizeof(arg),INT32);
-    if (n < 0) return printSocketReadError();
-    ind=arg[0];
-    mV=arg[1];
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+		return printSocketReadError();
 
-    n = receiveData(file_des,&val,sizeof(val),INT32);
-    if (n < 0) return printSocketReadError();
+	enum dacIndex ind = args[0];
+	int mV = args[1];
+	int val = args[2];
+    enum DACINDEX serverDacIndex = 0;
 
     // check if dac exists for this detector
-    enum DACINDEX idac=0;
 #ifdef JUNGFRAUD
     if ((ind != HV_NEW) && (ind >= NDAC_OLDBOARD)) {	//for compatibility with old board
-        ret = FAIL;
-        sprintf(mess,"Dac Index (%d) is not implemented for this detector\n",(int)ind);
-        cprintf(RED, "Warning: %s", mess);
+    	modeNotImplemented("Dac Index", (int)ind);
     }else
-        idac = ind;
+    	serverDacIndex = ind;
 #else
     switch (ind) {
 #ifdef GOTTHARDD
     case G_VREF_DS :
-        break;
     case G_VCASCN_PB:
-        break;
     case G_VCASCP_PB:
-        break;
     case G_VOUT_CM:
-        break;
     case G_VCASC_OUT:
-        break;
     case G_VIN_CM:
-        break;
     case G_VREF_COMP:
-        break;
     case G_IB_TESTC:
-        break;
     case HV_POT:
-        break;
+    	break;
 #elif EIGERD
     case TRIMBIT_SIZE:
-        idac = VTR;
+    	serverDacIndex = VTR;
         break;
     case THRESHOLD:
-        idac = VTHRESHOLD;
+    	serverDacIndex = VTHRESHOLD;
         break;
     case E_SvP:
-        idac = SVP;
+    	serverDacIndex = SVP;
         break;
     case E_SvN:
-        idac = SVN;
+    	serverDacIndex = SVN;
         break;
     case E_Vtr:
-        idac = VTR;
+    	serverDacIndex = VTR;
         break;
     case E_Vrf:
-        idac = VRF;
+    	serverDacIndex = VRF;
         break;
     case E_Vrs:
-        idac = VRS;
+    	serverDacIndex = VRS;
         break;
     case E_Vtgstv:
-        idac = VTGSTV;
+    	serverDacIndex = VTGSTV;
         break;
     case E_Vcmp_ll:
-        idac = VCMP_LL;
+    	serverDacIndex = VCMP_LL;
         break;
     case E_Vcmp_lr:
-        idac = VCMP_LR;
+    	serverDacIndex = VCMP_LR;
         break;
     case E_cal:
-        idac = CAL;
+    	serverDacIndex = CAL;
         break;
     case E_Vcmp_rl:
-        idac = VCMP_RL;
+    	serverDacIndex = VCMP_RL;
         break;
     case E_Vcmp_rr:
-        idac = VCMP_RR;
+    	serverDacIndex = VCMP_RR;
         break;
     case E_rxb_rb:
-        idac = RXB_RB;
+    	serverDacIndex = RXB_RB;
         break;
     case E_rxb_lb:
-        idac = RXB_LB;
+    	serverDacIndex = RXB_LB;
         break;
     case E_Vcp:
-        idac = VCP;
+    	serverDacIndex = VCP;
         break;
     case E_Vcn:
-        idac = VCN;
+    	serverDacIndex = VCN;
         break;
     case E_Vis:
-        idac = VIS;
+    	serverDacIndex = VIS;
         break;
     case HV_NEW:
-        break;
     case IO_DELAY:
         break;
-        /*
-#elif JUNGFRAUD
-	case V_DAC0:
-		idac = VB_COMP;
-		break;
-	case V_DAC1:
-		idac = VDD_PROT;
-		break;
-	case V_DAC2:
-		idac = VIN_COM;
-		break;
-	case V_DAC3:
-		idac = VREF_PRECH;
-		break;
-	case V_DAC4:
-		idac = VB_PIXBUF;
-		break;
-	case V_DAC5:
-		idac = VB_DS;
-		break;
-	case V_DAC6:
-		idac = VREF_DS;
-		break;
-	case V_DAC7:
-		idac = VREF_COMP;
-		break;
-	case HV_POT:
-		break;
-         */
 #elif MYTHEN3D
     case M_vIpre:
-        idac = vIpre;
+    	serverDacIndex = vIpre;
         break;
     case M_vIbias:
-        idac = vIbias;
+    	serverDacIndex = vIbias;
         break;
     case PREAMP:
-        idac = Vrf;
+    	serverDacIndex = Vrf;
         break;
     case SHAPER1:
-        idac = VrfSh;
+    	serverDacIndex = VrfSh;
         break;
     case M_vIinSh:
-        idac = vIinSh;
+    	serverDacIndex = vIinSh;
         break;
     case M_VdcSh:
-        idac = VdcSh;
+    	serverDacIndex = VdcSh;
         break;
     case M_Vth2:
-        idac = Vth2;
+    	serverDacIndex = Vth2;
         break;
     case M_VPL:
-        idac = VPL;
+    	serverDacIndex = VPL;
         break;
     case THRESHOLD:
-        idac = Vth1;
+    	serverDacIndex = Vth1;
         break;
     case M_Vth3:
-        idac = Vth3;
+    	serverDacIndex = Vth3;
         break;
     case TRIMBIT_SIZE:
-        idac = Vtrim;
+    	serverDacIndex = Vtrim;
         break;
     case M_casSh:
-        idac = casSh;
+    	serverDacIndex = casSh;
         break;
     case M_cas:
-        idac = cas;
+    	serverDacIndex = cas;
         break;
     case M_vIbiasSh:
-        idac = vIbiasSh;
+    	serverDacIndex = vIbiasSh;
         break;
     case M_vIcin:
-        idac = vIcin;
+    	serverDacIndex = vIcin;
         break;
     case CALIBRATION_PULSE: // !!! pulse height + 1400 DACu
-        idac = VPH;
+    	serverDacIndex = VPH;
         break;
     case M_vIpreOut:
-        idac = vIpreOut;
+    	serverDacIndex = vIpreOut;
         break;
     case V_POWER_A:
-        idac = V_A;
+    	serverDacIndex = V_A;
         break;
     case V_POWER_B:
-        ipwr = V_B;
+    	serverDacIndex = V_B;
         break;
     case V_POWER_IO:
-        idac = V_IO;
+    	serverDacIndex = V_IO;
         break;
     case V_POWER_CHIP:
-        idac = V_CHIP;
+    	serverDacIndex = V_CHIP;
         break;
     case V_LIMIT:
-        idac = V_LIM;
+    	serverDacIndex = V_LIM;
         break;
 #endif
     default:
-        ret = FAIL;
-        sprintf(mess,"Dac Index (%d) is not implemented for this detector\n",(int)ind);
-        cprintf(RED, "Warning: %s", mess);
+    	modeNotImplemented("Dac Index", (int)ind);
         break;
     }
 #endif
 
-    // execute action
-#ifdef VERBOSE
-    printf("Setting DAC %d to %d \n", idac, val);
-#endif
-    int temp;
-    if (ret==OK) {
-        if (differentClients && lockStatus && val!=-1) {
-            ret = FAIL;
-            sprintf(mess,"Detector locked by %s\n",lastClientIP);
-            cprintf(RED, "Warning: %s", mess);
-        } else {
+    // index exists
+    if (ret == OK) {
+
+        FILE_LOG(logDEBUG5, ("Setting DAC %d to %d %s\n", serverDacIndex, val,
+        		(mV ? "mV" : "dac units")));
+
+    	// set & get
+    	if ((val == -1) || ((val != -1) && (Server_VerifyLock() != FAIL))) {
+    		switch(ind) {
+
+    		// io delay
 #ifdef EIGERD
-            //iodelay
-            if(ind == IO_DELAY)
-                retval[0] = setIODelay(val);
-            //high voltage
-            else
+    		case IO_DELAY:
+    			retval[0] = setIODelay(val);
+    			FILE_LOG(logDEBUG5, ("IODelay: %d\n", retval[0]));
+    			break;
 #endif
-                if((ind == HV_POT) || (ind == HV_NEW)) {
-                    retval[0] = setHighVoltage(val);
+
+    		// high voltage
+    		case HV_POT:
+    		case HV_NEW:
+    			retval[0] = setHighVoltage(val);
+    			FILE_LOG(logDEBUG5, ("High Voltage: %d\n", retval[0]));
 #ifdef EIGERD
-                    if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
-                        ret = FAIL;
-                        if(retval[0] == -1)
-                            sprintf(mess, "Setting high voltage failed.Bad value %d. The range is from 0 to 200 V.\n",val);
-                        else if(retval[0] == -2)
-                            strcpy(mess, "Setting high voltage failed. Serial/i2c communication failed.\n");
-                        else if(retval[0] == -3)
-                            strcpy(mess, "Getting high voltage failed. Serial/i2c communication failed.\n");
-                        cprintf(RED, "Warning: %s", mess);
-                    }
+    			if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
+    				ret = FAIL;
+    				if(retval[0] == -1)
+    					sprintf(mess, "Setting high voltage failed. Bad value %d. "
+    							"The range is from 0 to 200 V.\n",val);
+    				else if(retval[0] == -2)
+    					strcpy(mess, "Setting high voltage failed. "
+    							"Serial/i2c communication failed.\n");
+    				else if(retval[0] == -3)
+    					strcpy(mess, "Getting high voltage failed. "
+    							"Serial/i2c communication failed.\n");
+    				FILE_LOG(logWARNING,(mess));
+    			}
 #endif
-                }
+    			break;
+
+    		// power
 #ifdef MYTHEN3D
-                else if	((ind >= V_POWER_A  && ind <= V_POWER_CHIP) || ind == V_LIMIT) {
-                    printf("Setting a power %d to %d\n",ind, val);
-
-                    if (!mV) {
-                        ret = FAIL;
-                        strcpy(mess, "Power of index %d should be set in mV instead of DACu", idac);
-                        cprintf(RED, "Warning: %s", mess);
-                        val = -1;
-                    }
-
-                    int lim = getVLimit();
-                    if (ind != V_LIMIT && lim != -1 && val > lim) {
-                        ret = FAIL;
-                        strcpy(mess, "Power of index %d is %d, should be less than %dmV\n", idac, val, lim);
-                        cprintf(RED, "Warning: %s", mess);
-                        val = -1;
-                    }
-
-                    retval[1] = retval[0] = setPower(idac,val);
-                    if (val >= 0 && retval[1] != val) {
-                        ret = FAIL;
-                        sprintf(mess,"Setting power %d failed: wrote %d but read %d\n", idac, val, retval[1]);
-                        cprintf(RED, "Warning: %s", mess);
-                    }
+    		case V_POWER_A:
+    		case V_POWER_B:
+    		case V_POWER_C:
+    		case V_POWER_D:
+    		case V_POWER_IO:
+    		case V_POWER_CHIP:
+    		case V_LIMIT:
+    			FILE_LOG(logDEBUG5, ("Setting a power %d to %d\n",ind, val);
+                if (!mV) {
+                    ret = FAIL;
+                    strcpy(mess, "Power of index %d should be set in mV instead of DACu",
+                    		serverDacIndex);
+                    FILE_LOG(logWARNING,(mess));
+                    val = -1;
                 }
+
+                int lim = getVLimit();
+                if (ind != V_LIMIT && lim != -1 && val > lim) {
+                    ret = FAIL;
+                    strcpy(mess, "Power of index %d is %d, should be less than %dmV\n",
+                    		serverDacIndex, val, lim);
+                    FILE_LOG(logWARNING,(mess));
+                    val = -1;
+                }
+
+                retval[1] = retval[0] = setPower(serverDacIndex,val);
+                validate(val, retval[1], "power", 0);
+                FILE_LOG(logDEBUG5, ("Power (%d): %d\n", serverDacIndex, retval[1]));
+                break;
 #endif
-            //dac
-                else{
+
+                // dacs
+    			default:
 #ifdef MYTHEN3D
                     if( mV && val > MAX_DACVOLTVAL) {
                         ret = FAIL;
-                        strcpy(mess, "Dac of index %d should be less than %dmV\n", idac, val, MAX_DACVOLTVAL);
-                        cprintf(RED, "Warning: %s", mess);
+                        strcpy(mess, "Dac of index %d should be less than %dmV\n",
+                        		serverDacIndex, val, MAX_DACVOLTVAL);
+                        FILE_LOG(logWARNING,(mess));
                         val = -1;
                     }
                     else if( !mV && val >= MAX_DACVAL) {
                         ret = FAIL;
-                        strcpy(mess, "Dac of index %d should be less than %d (dac value)\n", idac, val, MAX_DACVAL);
-                        cprintf(RED, "Warning: %s", mess);
+                        strcpy(mess, "Dac of index %d should be less than %d (dac value)\n",
+                        		serverDacIndex, val, MAX_DACVAL);
+                        FILE_LOG(logWARNING,(mess));
                         val = -1;
                     }
-
                     if (val >= 0) {
                         // conver to mV
                         int v = val;
@@ -857,17 +808,18 @@ int set_dac(int file_des) {
                         int lim = getVLimit();
                         if (lim!= -1 && v > lim) {
                             ret = FAIL;
-                            strcpy(mess, "Dac of index %d should be less than %dmV (%d dac value)\n", idac, lim, voltageToDac(lim));
-                            cprintf(RED, "Warning: %s", mess);
+                            strcpy(mess, "Dac of index %d should be less than %dmV (%d dac value)\n",
+                            		serverDacIndex, lim, voltageToDac(lim));
+                            FILE_LOG(logWARNING,(mess));
                             val = -1;
                         }
                     }
 #endif
-                    setDAC(idac,val,mV,retval);
+                    setDAC(serverDacIndex, val, mV, retval);
 #ifdef EIGERD
                     if(val != -1) {
                         //changing dac changes settings to undefined
-                        switch(idac){
+                        switch(serverDacIndex){
                         case VCMP_LL:
                         case VCMP_LR:
                         case VCMP_RL:
@@ -875,7 +827,8 @@ int set_dac(int file_des) {
                         case VRF:
                         case VCP:
                             setSettings(UNDEFINED);
-                            cprintf(RED,"Settings has been changed to undefined (changed specific dacs)\n");
+                            FILE_LOG(logWARNING, ("Settings has been changed "
+                            		"to undefined (changed specific dacs)\n"));
                             break;
                         default:
                             break;
@@ -884,40 +837,27 @@ int set_dac(int file_des) {
 #endif
                     //check
                     if (ret == OK) {
+                    	int temp = 0;
                         if(mV)
                             temp = retval[1];
                         else
                             temp = retval[0];
-                        if ((abs(temp-val)<=5) || val==-1) {
+                        if ((abs(temp-val) <= 5) || val == -1) {
                             ret = OK;
                         } else {
                             ret = FAIL;
-                            sprintf(mess,"Setting dac %d : wrote %d but read %d\n", idac, val, temp);
-                            cprintf(RED, "Warning: %s", mess);
+                            sprintf(mess,"Setting dac %d : wrote %d but read %d\n", serverDacIndex, val, temp);
+                            FILE_LOG(logWARNING,(mess));
                         }
                     }
-                }
-        }
-    }
-#ifdef VERBOSE
-    printf("DAC set to %d in dac units and %d mV\n",  retval[0],retval[1]);
-#endif
-
-    if(ret == OK && differentClients)
-        ret=FORCE_UPDATE;
-
-    // ret could be swapped during sendData
-    ret1 = ret;
-    // send ok / fail
-    n = sendData(file_des,&ret1,sizeof(ret),INT32);
-    // send return argument
-    if (ret!=FAIL) {
-        n += sendData(file_des,&retval,sizeof(retval),INT32);
-    } else {
-        n += sendData(file_des,mess,sizeof(mess),OTHER);
+                    FILE_LOG(logDEBUG5, ("Dac (%d): %d dac units and %d mV\n", serverDacIndex, retval[0], retval[1]));
+    				break;
+    		}
+    	}
     }
 
-    // return ok / fail
+    Server_SendResult(file_des, INT32, 1, retval, sizeof(retval));
+
     return ret;
 }
 
@@ -927,95 +867,68 @@ int set_dac(int file_des) {
 
 
 int get_adc(int file_des) {
-	int ret=OK,ret1=OK;
-	int n=0;
-	int arg=-1;
-	int retval=-1;
-	enum dacIndex ind=0;
-	sprintf(mess,"get ADC failed\n");
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	enum dacIndex ind = 0;
+	int retval = -1;
+
+	if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
+		return printSocketReadError();
 
 #ifdef MYTHEN3D
-    //to receive any arguments
-    while (n > 0)
-        n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-    ret = FAIL;
-    sprintf(mess,"Function (Get ADC) is not implemented for this detector\n");
-    cprintf(RED, "Warning: %s", mess);
+	functionNotImplemented();
 #else
-
-	// receive arguments
-	n = receiveData(file_des,&arg,sizeof(arg),INT32);
-	if (n < 0) return printSocketReadError();
-	ind=arg;
-
-	enum ADCINDEX iadc=0;
+	enum ADCINDEX serverAdcIndex = 0;
+	// get
 	switch (ind) {
-#ifdef EIGERD
-	case TEMPERATURE_FPGAEXT:
-		iadc = TEMP_FPGAEXT;
-		break;
-	case TEMPERATURE_10GE:
-		iadc = TEMP_10GE;
-		break;
-	case TEMPERATURE_DCDC:
-		iadc = TEMP_DCDC;
-		break;
-	case TEMPERATURE_SODL:
-		iadc = TEMP_SODL;
-		break;
-	case TEMPERATURE_SODR:
-		iadc = TEMP_SODR;
-		break;
-	case TEMPERATURE_FPGA:
-		iadc = TEMP_FPGA;
-		break;
-	case TEMPERATURE_FPGA2:
-		iadc = TEMP_FPGAFEBL;
-		break;
-	case TEMPERATURE_FPGA3:
-		iadc = TEMP_FPGAFEBR;
-		break;
-#endif
 #if defined(GOTTHARD) || defined(JUNGFRAUD)
 	case TEMPERATURE_FPGA:
-		iadc = TEMP_FPGA;
+		serverAdcIndex = TEMP_FPGA;
 		break;
 	case TEMPERATURE_ADC:
-		iadc = TEMP_ADC;
+		serverAdcIndex = TEMP_ADC;
+		break;
+#elif EIGERD
+	case TEMPERATURE_FPGAEXT:
+		serverAdcIndex = TEMP_FPGAEXT;
+		break;
+	case TEMPERATURE_10GE:
+		serverAdcIndex = TEMP_10GE;
+		break;
+	case TEMPERATURE_DCDC:
+		serverAdcIndex = TEMP_DCDC;
+		break;
+	case TEMPERATURE_SODL:
+		serverAdcIndex = TEMP_SODL;
+		break;
+	case TEMPERATURE_SODR:
+		serverAdcIndex = TEMP_SODR;
+		break;
+	case TEMPERATURE_FPGA:
+		serverAdcIndex = TEMP_FPGA;
+		break;
+	case TEMPERATURE_FPGA2:
+		serverAdcIndex = TEMP_FPGAFEBL;
+		break;
+	case TEMPERATURE_FPGA3:
+		serverAdcIndex = TEMP_FPGAFEBR;
 		break;
 #endif
 	default:
-		ret = FAIL;
-		sprintf(mess,"Dac Index (%d) is not implemented for this detector\n",(int)ind);
-		cprintf(RED, "Warning: %s", mess);
+		modeNotImplemented("Adc Index", (int)ind);
 		break;
 	}
 
-#ifdef VERBOSE
-	printf("Getting ADC %d\n", iadc);
-#endif
-	if (ret==OK)
-		retval=getADC(iadc);
-#ifdef VERBOSE
-	printf("ADC is %f\n",  retval);
-#endif
-#endif
-
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	// valid index
+	if (ret == OK) {
+		FILE_LOG(logDEBUG5, ("Getting ADC %d\n", serverAdcIndex));
+		retval = getADC(serverAdcIndex);
+		FILE_LOG(logDEBUG5, ("ADC(%d): %d\n", retval));
 	}
+#endif
 
-	// return ok / fail
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+
 	return ret;
 }
 
@@ -1056,23 +969,10 @@ int write_register(int file_des) {
 #ifdef VERBOSE
 	printf("Data set to 0x%x\n",  retval);
 #endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
-
 }
 
 
@@ -1099,21 +999,9 @@ int read_register(int file_des) {
 #ifdef VERBOSE
 	printf("Returned value 0x%x\n",  retval);
 #endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -1309,22 +1197,10 @@ int set_module(int file_des) {
 			if(myDac != NULL) 	free(myDac);
 			if(myAdc != NULL) 	free(myAdc);
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -1409,34 +1285,19 @@ int get_module(int file_des) {
 		}
 	}
 #endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret!=FAIL) {
-		ret=sendModuleGeneral(file_des, &myModule,
-#ifdef JUNGFRAUD
-				0	//0 is to receive partially (without trimbits etc.)
-#else
-				1
-#endif
-		);
-	} else {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
+
+	// send module, 0 is to receive partially (without trimbits etc)
+	if (ret != FAIL) {
+		ret = sendModuleGeneral(file_des, &myModule, (myDetectorType == JUNGFRAU) ? 0 : 1);
 	}
-
 	if(myChip != NULL) 	free(myChip);
 	if(myChan != NULL) 	free(myChan);
 	if(myDac != NULL) 	free(myDac);
 	if(myAdc != NULL) 	free(myAdc);
 
-	// return ok / fail
 	return ret;
-
 }
 
 
@@ -1536,20 +1397,8 @@ int set_settings(int file_des) {
 #endif
 #endif
 
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
-
-	// return ok / fail
 	return ret;
 }
 
@@ -1580,21 +1429,10 @@ int get_threshold_energy(int file_des) {
 #ifdef VERBOSE
 	printf("Threshold is %d eV\n",  retval);
 #endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -1620,19 +1458,9 @@ int start_acquisition(int file_des) {
 		if (ret==FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -1655,19 +1483,9 @@ int stop_acquisition(int file_des) {
 		if (ret==FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -1701,20 +1519,10 @@ int start_readout(int file_des) {
 		if (ret==FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -1725,22 +1533,16 @@ int start_readout(int file_des) {
 
 int get_run_status(int file_des) {
 	int ret=OK,ret1=OK;
-	enum runStatus s=ERROR;
+	enum runStatus retval=ERROR;
 
 	// execute action
 #ifdef VERBOSE
 	printf("Getting status\n");
 #endif
-	s= getRunStatus();
-	if (differentClients)
-		ret=FORCE_UPDATE;
+	retval = getRunStatus();
 
-	// send ok / fail
-	sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	sendData(file_des,&s,sizeof(s),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -1749,71 +1551,55 @@ int get_run_status(int file_des) {
 
 
 int start_and_read_all(int file_des) {
-	int dataret1=FAIL, dataret=FAIL;
+	ret = FAIL;
 #ifdef VERBOSE
 	printf("Starting and reading all frames\n");
 #endif
 
 	// execute action
 	if (differentClients && lockStatus) {
-		dataret = FAIL;
+		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
-		// ret could be swapped during sendData
-		dataret1 = dataret;
-		// send fail
-		sendData(file_des,&dataret1,sizeof(dataret),INT32);
-		// send return argument
-		sendData(file_des,mess,sizeof(mess),OTHER);
-		// return fail
-		return dataret;
+
+
+		Server_SendResult(file_des, INT32, 1 , NULL, 0);
+
+		return ret;
 	}
 	startStateMachine();
 	read_all(file_des);
-	return OK;
+	return ret;
 }
 
 
 
 
 int read_all(int file_des) {
-	int dataret1=FAIL, dataret=FAIL;
+	ret = FAIL;
 	int n=0;
 	sprintf(mess, "read all frame failed\n");
 
 	// execute action
 	if (differentClients && lockStatus) {
-		dataret = FAIL;
+		ret = FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		cprintf(RED, "Warning: %s", mess);
-		// ret could be swapped during sendData
-		dataret1 = dataret;
-		// send fail
-		sendData(file_des,&dataret1,sizeof(dataret),INT32);
-		// send return argument
-		sendData(file_des,mess,sizeof(mess),OTHER);
-		// return fail
-		return dataret;
+
+		Server_SendResult(file_des, INT32, 1 , NULL, 0);
+
+		return ret;
 	}
-	readFrame(&dataret, mess);
-	if(dataret == FAIL)
+
+	readFrame(&ret, mess);
+	if(ret == FAIL)
 		cprintf(RED,"%s\n",mess);
 	else
 		cprintf(GREEN,"%s",mess);
 
-	if (differentClients)
-		dataret=FORCE_UPDATE;
+	Server_SendResult(file_des, INT32, 1 , NULL, 0);
 
-	//dataret could be swapped during sendData
-	dataret1 = dataret;
-	// send finished / fail
-	n=sendData(file_des,&dataret1,sizeof(dataret1),INT32);
-	if (n<0) return FAIL;	// if called from read_all, should fail to stop talking to a closed client socket
-	// send return argument
-	n=sendData(file_des,mess,sizeof(mess),OTHER);
-	if (n<0) return FAIL;	// if called from read_all, should fail to stop talking to a closed client socket
-	// return finished / fail
-	return dataret;
+	return ret;
 }
 
 
@@ -1904,20 +1690,9 @@ int set_timer(int file_des) {
 		}
 
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT64);
+	Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -1994,21 +1769,8 @@ int get_time_left(int file_des) {
 	}	// end of if (ind == DELAY_AFTER_TRIGGER)
 #endif
 
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
+	Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
 
-
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT64);
-
-	// return ok / fail
 	return ret;
 }
 
@@ -2018,6 +1780,7 @@ int get_time_left(int file_des) {
 
 
 int set_dynamic_range(int file_des) {
+	int retval[2];
 	int ret=OK,ret1=OK;
 	int rateret=OK,rateret1=OK;
 	int n=0;
@@ -2082,30 +1845,10 @@ int set_dynamic_range(int file_des) {
 		ret = FAIL;
 		cprintf(RED,"%s",mess);
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 
-	//rate correction ret
-	// ret could be swapped during sendData
-	rateret1 = rateret;
-	// send ok / fail
-	n = sendData(file_des,&rateret1,sizeof(rateret1),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -2168,23 +1911,11 @@ int set_readout_flags(int file_des) {
 			sprintf(mess,"Could not change readout flag: should be 0x%x but is 0x%x\n", arg, retval);
 			cprintf(RED, "Warning: %s", mess);
 		}
-
-		if (ret==OK && differentClients)
-			ret=FORCE_UPDATE;
 	}
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -2208,7 +1939,7 @@ int set_roi(int file_des) {
 #else
 
 	ROI* retval=0;
-	int retvalsize=0,retvalsize1=0;
+	int retvalsize=0;
 
 	// receive arguments
 	int nroi=-1;
@@ -2256,34 +1987,25 @@ int set_roi(int file_des) {
 			cprintf(RED, "%s",mess);
 		}
 	}
-	if(ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
+
 #ifdef GOTTHARDD
-	else {
+	if (ret != FAIL) {
 		//retvalsize could be swapped during sendData
-		retvalsize1=retvalsize;
-		sendData(file_des,&retvalsize1,sizeof(retvalsize),INT32);
-		int i=0;
-		for(i=0;i<retvalsize;i++){
-			n = sendData(file_des,&retval[i].xmin,sizeof(int),INT32);
-			n = sendData(file_des,&retval[i].xmax,sizeof(int),INT32);
-			n = sendData(file_des,&retval[i].ymin,sizeof(int),INT32);
-			n = sendData(file_des,&retval[i].ymax,sizeof(int),INT32);
+		int retvalsize1 = retvalsize;
+		sendData(file_des, &retvalsize1, sizeof(retvalsize1), INT32);
+		int i = 0;
+		for(i = 0; i < retvalsize; ++i){
+			n = sendData(file_des, &retval[i].xmin, sizeof(int), INT32);
+			n = sendData(file_des, &retval[i].xmax, sizeof(int), INT32);
+			n = sendData(file_des, &retval[i].ymin, sizeof(int), INT32);
+			n = sendData(file_des, &retval[i].ymax, sizeof(int), INT32);
 		}
-		//sendData(file_des,retval,retvalsize*sizeof(ROI));
 	}
 #endif
-	// return ok / fail
+
 	return ret;
 }
 
@@ -2349,20 +2071,9 @@ int set_speed(int file_des) {
 			break;
 		}
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -2372,13 +2083,9 @@ int set_speed(int file_des) {
 
 
 int exit_server(int file_des) {
-	int ret=OK;
-	sprintf(mess,"Closing Server\n");
-	cprintf(BG_RED,"Command: %s",mess);
-	// send ok / fail
-	sendData(file_des,&ret,sizeof(ret),INT32);
-	// send return argument
-	sendData(file_des,mess,sizeof(mess),OTHER);
+	ret = OK;
+	cprintf(BG_RED,"Closing Server\n");
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 	return GOODBYE;
 }
 
@@ -2406,20 +2113,8 @@ int lock_server(int file_des) {
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
+	Server_SendResult(file_des, INT32, 1, &lockStatus, sizeof(lockStatus));
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&lockStatus,sizeof(lockStatus),INT32);
-
-	// return ok / fail
 	return ret;
 }
 
@@ -2429,13 +2124,9 @@ int lock_server(int file_des) {
 
 int get_last_client_ip(int file_des) {
 	int ret=OK,ret1=OK;
-	if (differentClients)
-		ret=FORCE_UPDATE;
-	// send ok / fail
-	sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
-	// return ok / fail
+
+	Server_SendResult(file_des, INT32, 1, lastClientIP, sizeof(lastClientIP));
+
 	return ret;
 }
 
@@ -2488,8 +2179,8 @@ int set_port(int file_des) {
 
 
 int update_client(int file_des) {
-	int ret=OK;
-	sendData(file_des,&ret,sizeof(ret),INT32);
+	ret = OK;
+	Server_SendResult(file_des, INT32, 0, NULL, 0);
 	return send_update(file_des);
 }
 
@@ -2696,28 +2387,19 @@ int configure_mac(int file_des) {
 			}
 
 	}
-	if (differentClients)
-		ret=FORCE_UPDATE;
 
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else {
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
 #ifdef EIGERD
+	if (ret != FAIL) {
 		char arg[2][50];
 		memset(arg, 0, sizeof(arg));
 		sprintf(arg[0],"%llx",(long long unsigned int)idetectormacadd);
-        sprintf(arg[1],"%x",detipad);
-        n += sendData(file_des,arg,sizeof(arg),OTHER);
-#endif
+		sprintf(arg[1],"%x",detipad);
+		n += sendData(file_des,arg,sizeof(arg),OTHER);
 	}
-	// return ok / fail
+#endif
+
 	return ret;
 }
 
@@ -2778,21 +2460,10 @@ int load_image(int file_des) {
 			break;
 		}
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -2838,21 +2509,10 @@ int read_counter_block(int file_des) {
 			printf("%d:%d\t",i,CounterVals[i]);
 #endif
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,CounterVals,dataBytes,OTHER);
+	Server_SendResult(file_des, OTHER, 1, CounterVals, dataBytes);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -2890,21 +2550,10 @@ int reset_counter_block(int file_des) {
 		if (ret == FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
 	return ret;
 }
 
@@ -2945,21 +2594,10 @@ int calibrate_pedestal(int file_des){
 		if (ret == FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if(ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3006,22 +2644,11 @@ int enable_ten_giga(int file_des) {
 			ret=FAIL;
 			cprintf(RED, "Warning: %s", mess);
 		}
-		else if (differentClients)
-			ret=FORCE_UPDATE;
 	}
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-	n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3078,21 +2705,10 @@ int set_all_trimbits(int file_des){
 			}
 		}
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3111,12 +2727,7 @@ int set_ctb_pattern(int file_des) {
     sprintf(mess,"Function (Set CTB Pattern) is not implemented for this detector\n");
     cprintf(RED, "Error: %s", mess);
 
-    // ret could be swapped during sendData
-    ret1 = ret;
-    // send ok / fail
-    n = sendData(file_des,&ret1,sizeof(ret),INT32);
-    // send return argument
-    n += sendData(file_des,mess,sizeof(mess),OTHER);
+    Server_SendResult(file_des, INT32, 0, NULL, 0);// make sure client doesnt expect a retval if not jctb
 
     return ret;
 
@@ -3154,11 +2765,8 @@ int set_ctb_pattern(int file_des) {
         //@param addr address of the word, -1 is I/O control register,  -2 is clk control register
         //@param word 64bit word to be written, -1 gets
 
-        n = sendDataOnly(file_des,&ret,sizeof(ret));
-        if (ret==FAIL)
-            n += sendDataOnly(file_des,mess,sizeof(mess));
-        else
-            n += sendDataOnly(file_des,&retval64,sizeof(retval64));
+    	Server_SendResult(file_des, INT32, 0, &retval64, sizeof(retval64));
+
         break;
 
         case 1: //pattern loop
@@ -3180,14 +2788,11 @@ int set_ctb_pattern(int file_des) {
              */
             ret=setPatternLoop(level, &start, &stop, &nl);
 
-            n = sendDataOnly(file_des,&ret,sizeof(ret));
-            if (ret==FAIL)
-                n += sendDataOnly(file_des,mess,sizeof(mess));
-            else {
-                n += sendDataOnly(file_des,&start,sizeof(start));
+            Server_SendResult(file_des, INT32, 0, retval, sizeof(retval));
+/*                n += sendDataOnly(file_des,&start,sizeof(start));
                 n += sendDataOnly(file_des,&stop,sizeof(stop));
                 n += sendDataOnly(file_des,&nl,sizeof(nl));
-            }
+   */
             break;
 
 
@@ -3208,14 +2813,8 @@ int set_ctb_pattern(int file_des) {
             retval=setPatternWaitAddress(level,addr);
             printf("ret: wait addr %d %x\n",level, retval);
             ret=OK;
-            n = sendDataOnly(file_des,&ret,sizeof(ret));
-            if (ret==FAIL)
-                n += sendDataOnly(file_des,mess,sizeof(mess));
-            else {
-                n += sendDataOnly(file_des,&retval,sizeof(retval));
 
-            }
-
+            Server_SendResult(file_des, INT32, 0, &retval, sizeof(retval));
 
             break;
 
@@ -3236,12 +2835,7 @@ int set_ctb_pattern(int file_des) {
 
             retval64=setPatternWaitTime(level,t);
 
-            n = sendDataOnly(file_des,&ret,sizeof(ret));
-            if (ret==FAIL)
-                n += sendDataOnly(file_des,mess,sizeof(mess));
-            else
-                n += sendDataOnly(file_des,&retval64,sizeof(retval64));
-
+            Server_SendResult(file_des, INT32, 0, &retval64, sizeof(retval64));
             break;
 
 
@@ -3252,11 +2846,8 @@ int set_ctb_pattern(int file_des) {
                 writePatternWord(addr,word);
             ret=OK;
             retval=0;
-            n = sendDataOnly(file_des,&ret,sizeof(ret));
-            if (ret==FAIL)
-                n += sendDataOnly(file_des,mess,sizeof(mess));
-            else
-                n += sendDataOnly(file_des,&retval64,sizeof(retval64));
+
+            Server_SendResult(file_des, INT32, 0, &retval64, sizeof(retval64));
 
             break;
 
@@ -3266,12 +2857,11 @@ int set_ctb_pattern(int file_des) {
             ret=FAIL;
             printf(mess);
             sprintf(mess,"%s - wrong mode %d\n",mess, mode);
-            n = sendDataOnly(file_des,&ret,sizeof(ret));
-            n += sendDataOnly(file_des,mess,sizeof(mess));
+
+            Server_SendResult(file_des, INT32, 0, NULL, 0);
     }
 
 
-    // return ok / fail
     return ret;
 #endif
 }
@@ -3314,22 +2904,10 @@ int write_adc_register(int file_des) {
 #ifdef VERBOSE
 	printf("Data set to 0x%x\n",  retval);
 #endif
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
-	}
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3371,22 +2949,11 @@ int set_counter_bit(int file_des) {
 			ret=FAIL;
 			cprintf(RED, "Warning: %s", mess);
 		}
-		if (ret==OK && differentClients)
-			ret=FORCE_UPDATE;
 	}
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-	n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3423,20 +2990,10 @@ int pulse_pixel(int file_des) {
 		if (ret == FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3473,20 +3030,10 @@ int pulse_pixel_and_move(int file_des) {
 		if (ret == FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if(ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3525,20 +3072,10 @@ int pulse_chip(int file_des) {
 		if (ret == FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if(ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3597,20 +3134,10 @@ int set_rate_correct(int file_des) {
 			}
 		}
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n = sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3638,21 +3165,10 @@ int get_rate_correct(int file_des) {
 	retval = getCurrentTau();
 	printf("Getting rate correction %lld\n",(long long int)retval);
 
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT64);
+	Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3734,21 +3250,10 @@ int set_network_parameter(int file_des) {
 			}
 		}
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3889,21 +3394,11 @@ int program_fpga(int file_des) {
 				initControlServer();
 			}
 		}
-		if (ret==OK)
-			ret=FORCE_UPDATE;
 	}
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -3943,16 +3438,8 @@ int reset_fpga(int file_des) {
 	}
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1, NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -4004,21 +3491,10 @@ int power_chip(int file_des) {
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -4062,21 +3538,10 @@ int set_activate(int file_des) {
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	} else
-		n += sendData(file_des,&retval,sizeof(retval),INT32);
+	Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-	// return ok / fail
 	return ret;
 }
 
@@ -4108,20 +3573,10 @@ int prepare_acquisition(int file_des) {
 		if (ret == FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if(ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1 , NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 
@@ -4167,23 +3622,10 @@ int threshold_temp(int file_des) {
 #ifdef VERBOSE
     printf("Threshold temperature is %d\n",  retval);
 #endif
-
-    if (ret==OK && differentClients && val >= 0)
-        ret=FORCE_UPDATE;
 #endif
 
-    // ret could be swapped during sendData
-    ret1 = ret;
-    // send ok / fail
-    n = sendData(file_des,&ret1,sizeof(ret),INT32);
-    // send return argument
-    if (ret!=FAIL) {
-        n += sendData(file_des,&retval,sizeof(retval),INT32);
-    } else {
-        n += sendData(file_des,mess,sizeof(mess),OTHER);
-    }
+    Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-    // return ok / fail
     return ret;
 }
 
@@ -4220,22 +3662,10 @@ int temp_control(int file_des) {
 #ifdef VERBOSE
     printf("Temperature control is %d\n",  retval);
 #endif
-    if (ret==OK && differentClients && val >= 0)
-        ret=FORCE_UPDATE;
 #endif
 
-    // ret could be swapped during sendData
-    ret1 = ret;
-    // send ok / fail
-    n = sendData(file_des,&ret1,sizeof(ret),INT32);
-    // send return argument
-    if (ret!=FAIL) {
-        n += sendData(file_des,&retval,sizeof(retval),INT32);
-    } else {
-        n += sendData(file_des,mess,sizeof(mess),OTHER);
-    }
+    Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-    // return ok / fail
     return ret;
 }
 
@@ -4274,22 +3704,10 @@ int temp_event(int file_des) {
     printf("Temperature Event is %d\n",  retval);
 #endif
 
-    if (ret==OK && differentClients && val >= 0)
-        ret=FORCE_UPDATE;
 #endif
 
-    // ret could be swapped during sendData
-    ret1 = ret;
-    // send ok / fail
-    n = sendData(file_des,&ret1,sizeof(ret),INT32);
-    // send return argument
-    if (ret!=FAIL) {
-        n += sendData(file_des,&retval,sizeof(retval),INT32);
-    } else {
-        n += sendData(file_des,mess,sizeof(mess),OTHER);
-    }
+    Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-    // return ok / fail
     return ret;
 }
 
@@ -4347,21 +3765,10 @@ int auto_comp_disable(int file_des) {
             cprintf(RED, "Warning: %s", mess);
         }
     }
-    if (ret==OK && differentClients)
-        ret=FORCE_UPDATE;
 #endif
 
-    // ret could be swapped during sendData
-    ret1 = ret;
-    // send ok / fail
-    n = sendData(file_des,&ret1,sizeof(ret),INT32);
-    // send return argument
-    if (ret==FAIL) {
-        n += sendData(file_des,mess,sizeof(mess),OTHER);
-    } else
-        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-    // return ok / fail
     return ret;
 }
 
@@ -4415,21 +3822,10 @@ int storage_cell_start(int file_des) {
             cprintf(RED, "Warning: %s", mess);
         }
     }
-    if (ret==OK && differentClients)
-        ret=FORCE_UPDATE;
 #endif
 
-    // ret could be swapped during sendData
-    ret1 = ret;
-    // send ok / fail
-    n = sendData(file_des,&ret1,sizeof(ret),INT32);
-    // send return argument
-    if (ret==FAIL) {
-        n += sendData(file_des,mess,sizeof(mess),OTHER);
-    } else
-        n += sendData(file_des,&retval,sizeof(retval),INT32);
+    Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 
-    // return ok / fail
     return ret;
 }
 
@@ -4513,16 +3909,7 @@ int check_version(int file_des) {
 	}
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
-
-	// return ok / fail
+	Server_SendResult(file_des, INT32, 1 , NULL, 0);
 	return ret;
 }
 
@@ -4555,20 +3942,10 @@ int software_trigger(int file_des) {
 		if (ret==FAIL)
 			cprintf(RED, "Warning: %s", mess);
 	}
-	if (ret==OK && differentClients)
-		ret=FORCE_UPDATE;
 #endif
 
-	// ret could be swapped during sendData
-	ret1 = ret;
-	// send ok / fail
-	n = sendData(file_des,&ret1,sizeof(ret),INT32);
-	// send return argument
-	if (ret==FAIL) {
-		n += sendData(file_des,mess,sizeof(mess),OTHER);
-	}
+	Server_SendResult(file_des, INT32, 1 , NULL, 0);
 
-	// return ok / fail
 	return ret;
 }
 

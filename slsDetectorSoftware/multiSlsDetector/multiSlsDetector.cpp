@@ -462,23 +462,9 @@ std::string multiSlsDetector::getHostname(int detPos) {
 }
 
 void multiSlsDetector::addMultipleDetectors(const char *name) {
-    size_t p1 = 0;
-    std::string temp = std::string(name);
-    size_t p2 = temp.find('+', p1);
-    // single
-    if (p2 == std::string::npos) {
-        addSlsDetector(temp);
-    }
-    // multi
-    else {
-        while (p2 != std::string::npos) {
-            addSlsDetector(temp.substr(p1, p2 - p1));
-            temp = temp.substr(p2 + 1);
-            p2 = temp.find('+');
-        }
-    }
+    for (const auto &hostname : sls::split(name, '+'))
+        addSlsDetector(hostname);
 
-    // a get to update shared memory online flag
     setOnline();
     updateOffsets();
 }

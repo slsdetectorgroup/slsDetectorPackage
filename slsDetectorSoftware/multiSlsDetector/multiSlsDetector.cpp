@@ -22,6 +22,7 @@
 #include "container_utils.h"
 #include <future>
 #include <vector>
+#include <chrono>
 
 multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
     : detId(id), sharedMemory(0), thisMultiDetector(0),
@@ -3726,8 +3727,8 @@ void multiSlsDetector::processData() {
                 if (getJoinThreadFlag()) {
                     break;
                 }
-                usleep(100 * 1000); // 20ms need this else connecting error to
-                                    // receiver (too fast)
+                //otherwise error when connecting to the receiver too fast
+                std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
             }
         }
     }

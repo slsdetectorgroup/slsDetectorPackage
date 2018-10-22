@@ -6,7 +6,7 @@ option (USE_HDF5 "HDF5 File format" OFF)
 option (USE_TEXTCLIENT "Text Client" OFF)
 option (USE_RECEIVER "Receiver" OFF)
 option (USE_GUI "GUI" OFF)
-
+option (USE_TESTS "TESTS" ON)
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -Wno-misleading-indentation")
@@ -69,6 +69,10 @@ if (CALIBRATE)
         endif()
     endif()
 endif(CALIBRATE)
+
+if (USE_TESTS)
+    add_subdirectory(tests)
+endif(USE_TESTS)
 
 install(FILES ${ZMQ_STATIC_ARCHIVE}
 DESTINATION lib) 

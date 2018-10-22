@@ -20,9 +20,9 @@
 //#include <time.h> //clock()
 
 #include "container_utils.h"
+#include <chrono>
 #include <future>
 #include <vector>
-#include <chrono>
 
 multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
     : detId(id), sharedMemory(0), thisMultiDetector(0),
@@ -597,7 +597,8 @@ void multiSlsDetector::setDetectorOffset(dimension d, int off, int detPos) {
 void multiSlsDetector::updateOffsets() {
     // cannot paralllize due to slsdetector calling this via parentdet->
 #ifdef VERBOSE
-    std::cout << std::endl << "Updating Multi-Detector Offsets" << std::endl;
+    std::cout << std::endl
+              << "Updating Multi-Detector Offsets" << std::endl;
 #endif
     int offsetX = 0, offsetY = 0, numX = 0, numY = 0;
     int maxChanX = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
@@ -3727,8 +3728,8 @@ void multiSlsDetector::processData() {
                 if (getJoinThreadFlag()) {
                     break;
                 }
-                //otherwise error when connecting to the receiver too fast
-                std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
+                // otherwise error when connecting to the receiver too fast
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         }
     }

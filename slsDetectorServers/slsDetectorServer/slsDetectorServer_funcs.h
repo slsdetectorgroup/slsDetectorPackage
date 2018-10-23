@@ -1,6 +1,4 @@
-#ifndef SERVER_FUNCS_H
-#define SERVER_FUNCS_H
-
+#pragma once
 #include "sls_detector_defs.h"
 #include <stdlib.h>
 
@@ -14,6 +12,7 @@ void function_table();
 void functionNotImplemented();
 void modeNotImplemented(char* modename, int mode);
 void validate(int arg, int retval, char* modename, int hex);
+void validate64(int64_t arg, int64_t retval, char* modename, int hex);
 int M_nofunc(int);
 int M_nofuncMode(int);
 
@@ -79,4 +78,3 @@ int storage_cell_start(int);
 int check_version(int);
 int software_trigger(int);
 
-#endif

@@ -33,6 +33,7 @@ int main(int argc, char *argv[]){
 	// subsequent read/write to socket gives error - must handle locally
 	signal(SIGPIPE, SIG_IGN);
 
+
     // circumvent the basic tests
 	{
 		int i;
@@ -64,28 +65,20 @@ int main(int argc, char *argv[]){
 #endif
 	if (isControlServer) {
 		portno = DEFAULT_PORTNO;
-		FILE_LOG(logINFOBLUE,
-		("***************************************************\n"
-		"********* opening control server on port %d **********\n"
-		"********************************************************\n\n"
-		, portno));
+		FILE_LOG(logINFO, ("Opening control server on port %d \n", portno));
 #ifdef STOP_SERVER
 		{
 			int i;
 			for (i = 0; i < argc; ++i)
 				sprintf(cmd, "%s %s", cmd, argv[i]);
 			sprintf(cmd,"%s -stopserver&", cmd);
-			FILE_LOG(logINFO, ("Command to start stop server:%s\n", cmd));
+			FILE_LOG(logDEBUG5, ("Command to start stop server:%s\n", cmd));
 			system(cmd);
 		}
 #endif
 	} else {
 		portno = DEFAULT_PORTNO + 1;
-		FILE_LOG(logINFOBLUE,
-		("***************************************************\n"
-		"*********** opening stop server on port %d ***********\n"
-		"********************************************************\n\n"
-		, portno));
+		FILE_LOG(logINFO,("Opening stop server on port %d \n", portno));
 	}
 
 	init_detector();
@@ -100,7 +93,7 @@ int main(int argc, char *argv[]){
 	function_table();
 
 	if (isControlServer) {
-		FILE_LOG(logINFO, ("Control Server Ready...\n\n"));
+		FILE_LOG(logINFOBLUE, ("Control Server Ready...\n\n"));
 	} else {
 		FILE_LOG(logINFO, ("Stop Server Ready...\n\n"));
 	}

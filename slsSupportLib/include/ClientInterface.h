@@ -65,8 +65,9 @@ public:
 	 * @param retval pointer to result
 	 * @param retvalSize size of result
 	 * @param mess message
+	 * @returns success of operation
 	 */
-	void Server_SendResult(bool update, int ret, void* retval, int retvalSize, char* mess = 0);
+	int Server_SendResult(bool update, int ret, void* retval, int retvalSize, char* mess = 0);
 
 	/** only Receiver
 	 * Server receives arguments and checks if base object is null (if checkbase is true)

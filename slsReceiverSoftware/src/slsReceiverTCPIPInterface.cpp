@@ -290,9 +290,7 @@ int slsReceiverTCPIPInterface::M_nofunc(){
 	strcpy(mess,"Unrecognized Function. Please do not proceed.\n");
 	FILE_LOG(logERROR) << mess;
 
-	interface->Server_SendResult(false, ret, NULL, 0, mess);
-
-	return ret;
+	return interface->Server_SendResult(false, ret, NULL, 0, mess);
 }
 
 
@@ -329,21 +327,17 @@ int slsReceiverTCPIPInterface::exec_command() {
 		}
 	}
 
-	interface->Server_SendResult(false, ret, retval, MAX_STR_LENGTH, mess);
-
-	return ret;
+	return interface->Server_SendResult(false, ret, retval, MAX_STR_LENGTH, mess);
 }
 
 
 
 int slsReceiverTCPIPInterface::exit_server() {
-	cprintf(RED,"Closing receiver server\n");
+	cprintf(RED,"Closing server\n");
 
 	ret = OK;
 	interface->Server_SendResult(false, ret, NULL, 0);
-
-	ret = GOODBYE;
-	return ret;
+	return GOODBYE;
 }
 
 
@@ -361,7 +355,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 	if (lock >= 0) {
 		if (!lockStatus || // if it was unlocked, anyone can lock
 				(!strcmp(mySock->lastClientIP,mySock->thisClientIP)) || // if it was locked, need same ip
-				(!strcmp(mySock->lastClientIP,"none"))) //if it was locked, must be by "none"
+				(!strcmp(mySock->lastClientIP,"none"))) // if it was locked, must be by "none"
 			{
 			lockStatus = lock;
 			strcpy(mySock->lastClientIP,mySock->thisClientIP);
@@ -369,18 +363,14 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 			 interface->Server_LockedError(ret, mess);
 	}
 
-	interface->Server_SendResult(true, ret, &lockStatus,sizeof(lockStatus), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &lockStatus,sizeof(lockStatus), mess);
 }
 
 
 
 int slsReceiverTCPIPInterface::get_last_client_ip() {
 	ret = OK;
-	interface->Server_SendResult(true, ret,mySock->lastClientIP, sizeof(mySock->lastClientIP));
-
-	return ret;
+	return interface->Server_SendResult(true, ret,mySock->lastClientIP, sizeof(mySock->lastClientIP));
 }
 
 
@@ -560,9 +550,7 @@ int slsReceiverTCPIPInterface::get_id(){
 	ret = OK;
 	int64_t retval = getReceiverVersion();
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval));
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval));
 }
 
 
@@ -622,9 +610,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 	//get
 	retval = myDetectorType;
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -679,7 +665,13 @@ int slsReceiverTCPIPInterface::set_roi() {
 	int iloop = 0;
 	for (iloop = 0; iloop < nroi; iloop++) {
 		ROI temp;
-		if ( mySock->ReceiveDataOnly(&temp,sizeof(ROI)) < 0 )
+		if ( mySock->ReceiveDataOnly(&temp.xmin,sizeof(int)) < 0 )
+			return interface->Server_SocketCrash();
+		if ( mySock->ReceiveDataOnly(&temp.xmax,sizeof(int)) < 0 )
+			return interface->Server_SocketCrash();
+		if ( mySock->ReceiveDataOnly(&temp.ymin,sizeof(int)) < 0 )
+			return interface->Server_SocketCrash();
+		if ( mySock->ReceiveDataOnly(&temp.ymax,sizeof(int)) < 0 )
 			return interface->Server_SocketCrash();
 		roiLimits.push_back(temp);
 	}
@@ -766,9 +758,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		}
 	}
 
-	interface->Server_SendResult(true, ret, retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, retval, sizeof(retval), mess);
 }
 
 
@@ -865,9 +855,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 		FILE_LOG(logDEBUG1) << slsDetectorDefs::getTimerType((timerIndex)(index[0])) << ":" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -927,9 +915,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -966,9 +952,7 @@ int slsReceiverTCPIPInterface::set_streaming_frequency(){
 		}
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -984,9 +968,7 @@ int	slsReceiverTCPIPInterface::get_status(){
 	if (ret == OK)
 		retval = receiver->getStatus();
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1017,11 +999,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 		}
 	}
 
-	interface->Server_SendResult(true, ret, NULL, 0, mess);
-
-	return ret;
-
-
+	return interface->Server_SendResult(true, ret, NULL, 0, mess);
 }
 
 
@@ -1050,9 +1028,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		}
 	}
 
-	interface->Server_SendResult(true, ret, NULL, 0, mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, NULL, 0, mess);
 }
 
 
@@ -1162,9 +1138,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 		FILE_LOG(logDEBUG1) << "file index:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 }
 
 
@@ -1182,9 +1156,7 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 	if (ret == OK)
 		retval=receiver->getAcquisitionIndex();
 
-	interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 }
 
 
@@ -1199,9 +1171,7 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 	if (ret == OK)
 		retval=receiver->getTotalFramesCaught();
 
-	interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 }
 
 
@@ -1221,9 +1191,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 		}
 	}
 
-	interface->Server_SendResult(true, ret, NULL, 0, mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, NULL, 0, mess);
 }
 
 
@@ -1256,9 +1224,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 		FILE_LOG(logDEBUG1) << "file write enable:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1293,9 +1259,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 		FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1331,9 +1295,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 		FILE_LOG(logDEBUG1) << "10Gbe:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1371,9 +1333,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 		FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1409,9 +1369,7 @@ int slsReceiverTCPIPInterface::set_activate() {
 		FILE_LOG(logDEBUG1) << "Activate: " << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1444,9 +1402,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 		FILE_LOG(logDEBUG1) << "data streaming enable:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1479,9 +1435,7 @@ int slsReceiverTCPIPInterface::set_streaming_timer(){
 		FILE_LOG(logDEBUG1) << "Streaming timer:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1517,9 +1471,7 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 		FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1554,9 +1506,7 @@ int slsReceiverTCPIPInterface::set_file_format() {
 		FILE_LOG(logDEBUG1) << "File Format: " << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1589,9 +1539,7 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 		FILE_LOG(logDEBUG1) << "Position Id:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1628,9 +1576,7 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 		FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1659,9 +1605,7 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 		FILE_LOG(logDEBUG1) << "streaming port:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1727,9 +1671,7 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 		FILE_LOG(logDEBUG1) << "silent mode:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1768,9 +1710,7 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 		FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1801,9 +1741,7 @@ int slsReceiverTCPIPInterface::restream_stop(){
 		}
 	}
 
-	interface->Server_SendResult(true, ret, NULL, 0, mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, NULL, 0, mess);
 }
 
 
@@ -1871,9 +1809,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
         FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-    return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1888,9 +1824,7 @@ int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
 	if (ret == OK)
 		retval = receiver->getActualUDPSocketBufferSize();
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-    return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1924,9 +1858,7 @@ int slsReceiverTCPIPInterface::set_frames_per_file() {
 		FILE_LOG(logDEBUG1) << "frames per file:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -1971,9 +1903,7 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 	}
 	else FILE_LOG(logINFO) << "Compatibility with Client: Successful";
 
-	interface->Server_SendResult(true, ret, NULL, 0, mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, NULL, 0, mess);
 }
 
 
@@ -2007,9 +1937,7 @@ int slsReceiverTCPIPInterface::set_discard_policy() {
 		FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -2045,9 +1973,7 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 		FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -2084,7 +2010,5 @@ int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
 		FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
 	}
 
-	interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
-
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }

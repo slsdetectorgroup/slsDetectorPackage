@@ -95,7 +95,7 @@ int bindSocket(unsigned short int port_number) {
 					// success
 					myport = port_number;
 					ret = OK;
-					FILE_LOG(logINFO, (" %s socket bound: isock=%d port=%d fd=%d\n",
+					FILE_LOG(logDEBUG5, ("%s socket bound: isock=%d, port=%d, fd=%d\n",
 							(isControlServer ? "Control":"Stop"), isock, port_number, socketDescriptor));
 
 				}
@@ -356,25 +356,34 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 
 
 int sendModuleGeneral(int file_des, sls_detector_module *myMod, int sendAll) {
-	int ts = 0;
+	int ts = 0, n = 0;
 	int nChips = myMod->nchip;
 	int nChans = myMod->nchan;
 	int nAdcs = myMod->nadc;
 	int nDacs = myMod->ndac;
 
 	// send module structure
-	ts += sendData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
-	ts += sendData(file_des,&(myMod->nchan),sizeof(myMod->nchan),INT32);
-	ts += sendData(file_des,&(myMod->nchip),sizeof(myMod->nchip),INT32);
-	ts += sendData(file_des,&(myMod->ndac),sizeof(myMod->ndac),INT32);
-	ts += sendData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
-	ts += sendData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
-	ts += sendData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
-	ts += sendData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
+	n = sendData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
+	if (!n)	return -1; ts += n;
+	n = sendData(file_des,&(myMod->nchan),sizeof(myMod->nchan),INT32);
+	if (!n)	return -1; ts += n;
+	n = sendData(file_des,&(myMod->nchip),sizeof(myMod->nchip),INT32);
+	if (!n)	return -1; ts += n;
+	n = sendData(file_des,&(myMod->ndac),sizeof(myMod->ndac),INT32);
+	if (!n)	return -1; ts += n;
+	n = sendData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
+	if (!n)	return -1; ts += n;
+	n = sendData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
+	if (!n)	return -1; ts += n;
+	n = sendData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
+	if (!n)	return -1; ts += n;
+	n = sendData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
+	if (!n)	return -1; ts += n;
 	FILE_LOG(logDEBUG5, ("module of size %d sent\n",ts));
 
 	// send dac
-	ts += sendData(file_des,myMod->dacs,sizeof(int)*nDacs,INT32);
+	n = sendData(file_des,myMod->dacs,sizeof(int)*nDacs,INT32);
+	if (!n)	return -1; ts += n;
 	FILE_LOG(logDEBUG5, ("dacs of size %d sent\n",ts));
 	{
 		int idac;
@@ -383,18 +392,21 @@ int sendModuleGeneral(int file_des, sls_detector_module *myMod, int sendAll) {
 	}
 
 	// send adc
-	ts += sendData(file_des,myMod->adcs,sizeof(int)*nAdcs,INT32);
+	n = sendData(file_des,myMod->adcs,sizeof(int)*nAdcs,INT32);
+	if (!n)	return -1; ts += n;
 	FILE_LOG(logDEBUG5, ("adcs of size %d sent\n", ts));
 
 	// some detectors dont require sending all trimbits etc.
 	if(sendAll) {
 		// chips
-		ts += sendData(file_des,myMod->chipregs,sizeof(int)*nChips,INT32);
+		n = sendData(file_des,myMod->chipregs,sizeof(int)*nChips,INT32);
+		if (!n)	return -1; ts += n;
 		FILE_LOG(logDEBUG5, ("chips of size %d sent\n", ts));
 
 		// channels
-		ts += sendData(file_des,myMod->chanregs,sizeof(int)*nChans,INT32);
+		n = sendData(file_des,myMod->chanregs,sizeof(int)*nChans,INT32);
 		FILE_LOG(logDEBUG5, ("chans of size %d sent - %d\n", ts, myMod->nchan));
+		if (!n)	return -1; ts += n;
 	}
 
 	FILE_LOG(logDEBUG5, ("module of size %d sent register %x\n", ts, myMod->reg));
@@ -408,7 +420,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 }
 
 int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveAll) {
-	int ts = 0;
+	int ts = 0, n = 0;
 	int *dacptr = myMod->dacs;
 	int *adcptr = myMod->adcs;
 	int *chipptr = myMod->chipregs, *chanptr = myMod->chanregs;
@@ -416,14 +428,22 @@ int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveA
 	int nChans, nchanold = myMod->nchan, nchandiff;
 	int nDacs, ndold = myMod->ndac, ndacdiff;
 	int nAdcs, naold = myMod->nadc, nadcdiff;
-	ts += receiveData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
-	ts += receiveData(file_des,&(myMod->nchan),sizeof(myMod->nchan),INT32);
-	ts += receiveData(file_des,&(myMod->nchip),sizeof(myMod->nchip),INT32);
-	ts += receiveData(file_des,&(myMod->ndac),sizeof(myMod->ndac),INT32);
-	ts += receiveData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
-	ts += receiveData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
-	ts += receiveData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
-	ts += receiveData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
+	n = receiveData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->nchan),sizeof(myMod->nchan),INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->nchip),sizeof(myMod->nchip),INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->ndac),sizeof(myMod->ndac),INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
+	if (!n)	return -1; ts += n;
 
 	myMod->dacs = dacptr;
 	myMod->adcs = adcptr;
@@ -473,7 +493,8 @@ int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveA
 	else
 		FILE_LOG(logDEBUG5, ("received %d adcs\n",nAdcs));
 	if (ndacdiff <= 0) {
-		ts += receiveData(file_des,myMod->dacs, sizeof(int)*nDacs,INT32);
+		n = receiveData(file_des,myMod->dacs, sizeof(int)*nDacs,INT32);
+		if (!n)	return -1; ts += n;
 		FILE_LOG(logDEBUG5, ("dacs received\n"));
 		int id;
 		for (id = 0; id<nDacs; id++)
@@ -481,20 +502,25 @@ int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveA
 	} else {
 		dacptr = (int*)malloc(ndacdiff*sizeof(int));
 		myMod->ndac = ndold;
-		ts += receiveData(file_des,myMod->dacs, sizeof(int)*ndold,INT32);
-		ts += receiveData(file_des,dacptr, sizeof(int)*ndacdiff,INT32);
+		n = receiveData(file_des,myMod->dacs, sizeof(int)*ndold,INT32);
+		if (!n)	return -1; ts += n;
+		n = receiveData(file_des,dacptr, sizeof(int)*ndacdiff,INT32);
+		if (!n)	return -1; ts += n;
 		free(dacptr);
 		return FAIL;
 	}
 
 	if (nadcdiff <= 0) {
-		ts += receiveData(file_des,myMod->adcs, sizeof(int)*nAdcs,INT32);
+		n = receiveData(file_des,myMod->adcs, sizeof(int)*nAdcs,INT32);
+		if (!n)	return -1; ts += n;
 		FILE_LOG(logDEBUG5, ("adcs received\n"));
 	} else {
 		adcptr = (int*)malloc(nadcdiff*sizeof(int));
 		myMod->nadc = naold;
-		ts += receiveData(file_des,myMod->adcs, sizeof(int)*naold,INT32);
-		ts += receiveData(file_des,adcptr, sizeof(int)*nadcdiff,INT32);
+		n = receiveData(file_des,myMod->adcs, sizeof(int)*naold,INT32);
+		if (!n)	return -1; ts += n;
+		n = receiveData(file_des,adcptr, sizeof(int)*nadcdiff,INT32);
+		if (!n)	return -1; ts += n;
 		free(adcptr);
 		return FAIL;
 	}
@@ -504,25 +530,31 @@ int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveA
 	if(receiveAll){
 
 		if (nchipdiff <= 0) {
-			ts += receiveData(file_des,myMod->chipregs, sizeof(int)*nChips,INT32);
+			n = receiveData(file_des,myMod->chipregs, sizeof(int)*nChips,INT32);
+			if (!n)	return -1; ts += n;
 			FILE_LOG(logDEBUG5, ("chips received\n"));
 		} else {
 			chipptr = (int*)malloc(nchipdiff*sizeof(int));
 			myMod->nchip = nchipold;
-			ts += receiveData(file_des,myMod->chipregs, sizeof(int)*nchipold,INT32);
-			ts += receiveData(file_des,chipptr, sizeof(int)*nchipdiff,INT32);
+			n = receiveData(file_des,myMod->chipregs, sizeof(int)*nchipold,INT32);
+			if (!n)	return -1; ts += n;
+			n = receiveData(file_des,chipptr, sizeof(int)*nchipdiff,INT32);
+			if (!n)	return -1; ts += n;
 			free(chipptr);
 			return FAIL;
 		}
 
 		if (nchandiff <= 0) {
-			ts += receiveData(file_des,myMod->chanregs, sizeof(int)*nChans,INT32);
+			n = receiveData(file_des,myMod->chanregs, sizeof(int)*nChans,INT32);
+			if (!n)	return -1; ts += n;
 			FILE_LOG(logDEBUG5, ("chans received\n"));
 		} else {
 			chanptr = (int*)malloc(nchandiff*sizeof(int));
 			myMod->nchan = nchanold;
-			ts += receiveData(file_des,myMod->chanregs, sizeof(int)*nchanold,INT32);
-			ts += receiveData(file_des,chanptr, sizeof(int)*nchandiff,INT32);
+			n = receiveData(file_des,myMod->chanregs, sizeof(int)*nchanold,INT32);
+			if (!n)	return -1; ts += n;
+			n = receiveData(file_des,chanptr, sizeof(int)*nchandiff,INT32);
+			if (!n)	return -1; ts += n;
 			free(chanptr);
 			return FAIL;
 		}
@@ -546,7 +578,7 @@ int Server_VerifyLock() {
 }
 
 
-void Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize) {
+int Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize) {
 
 	// update if different clients (ret can be ok or acquisition finished), not fail to not overwrite e message
 	if (update && ret != FAIL && differentClients)
@@ -554,7 +586,7 @@ void Server_SendResult(int fileDes, intType itype, int update, void* retval, int
 
 	// send success of operation
 	int ret1 = ret;
-	sendData(fileDes, &ret1,sizeof(ret1), INT32);/* if < 0, return , socket crash*/
+	sendData(fileDes, &ret1,sizeof(ret1), INT32);
 	if(ret == FAIL) {
 		// send error message
 		if (strlen(mess))
@@ -567,4 +599,6 @@ void Server_SendResult(int fileDes, intType itype, int update, void* retval, int
 	}
 	// send return value
 	sendData(fileDes, retval, retvalSize, itype);
+
+	return ret;
 }

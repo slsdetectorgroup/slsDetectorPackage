@@ -64,7 +64,8 @@ int Server_VerifyLock();
  * @param update 1 if one must update if different clients, else 0
  * @param retval pointer to result
  * @param retvalSize size of result
+ * @returns result of operation
  */
-void Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize);
+int Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize);
 
 #endif

@@ -1,14 +1,3 @@
-
-//Class initially from Gerd and was called mmap_test.c 
-//return reversed 1 means good, 0 means failed
-
-
-//#include <stdio.h>
-//#include <unistd.h>
-//#include <string.h>
-//#include <sys/mman.h>
-//#include <fcntl.h>
-
 #include "HardwareIO.h"
 
 xfs_u8 HWIO_xfs_in8(xfs_u32 InAddress)

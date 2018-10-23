@@ -2867,27 +2867,21 @@ int slsDetector::setDynamicRange(int n) {
 		if (connectControl() == OK){
 			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 			controlSocket->SendDataOnly(&n,sizeof(n));
-			//rate correction is switched off if not 32 bit mode
-			if(thisDetector->myDetectorType == EIGER){
-				controlSocket->ReceiveDataOnly(&rateret,sizeof(rateret));
-				if (rateret==FAIL) {
-					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-					std::cout<< "Detector returned error: " << mess << std::endl;
-					if(strstr(mess,"Rate Correction")!=NULL){
-						if(strstr(mess,"32")!=NULL)
-							setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32or16BIT));
-						else
-							setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
-					}
-				}
-			}
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 			if (ret==FAIL) {
 				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned error: " << mess << std::endl;
-			} else {
-				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				if(strstr(mess,"Rate Correction")!=NULL){
+					// rate correction is switched off if not 32 bit mode
+					if(strstr(mess,"32")!=NULL)
+						setErrorMask((getErrorMask())|(RATE_CORRECTION_NOT_32or16BIT));
+					else
+						setErrorMask((getErrorMask())|(COULD_NOT_SET_RATE_CORRECTION));
+				}
+				else ret = OK;
 			}
+			controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
 				updateDetector();
@@ -4268,13 +4262,24 @@ int slsDetector::sendROI(int n,ROI roiLimits[]) {
 #ifdef VERBOSE
 				std::cout << "Sending ROI of size " << arg << " to detector" << std::endl;
 #endif
-				controlSocket->SendDataOnly(roiLimits,arg*sizeof(ROI));
+				for(int i = 0; i < n; ++i){
+				controlSocket->SendDataOnly(&roiLimits[i].xmin, sizeof(int));
+				controlSocket->SendDataOnly(&roiLimits[i].xmax, sizeof(int));
+				controlSocket->SendDataOnly(&roiLimits[i].ymin, sizeof(int));
+				controlSocket->SendDataOnly(&roiLimits[i].ymax, sizeof(int));
+				}
+				//controlSocket->SendDataOnly(roiLimits,arg*sizeof(ROI));
 			}
 			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 
 			if (ret!=FAIL){
 				controlSocket->ReceiveDataOnly(&retvalsize,sizeof(retvalsize));
-				nrec = controlSocket->ReceiveDataOnly(retval,retvalsize*sizeof(ROI));
+				nrec = 0;
+				nrec += controlSocket->ReceiveDataOnly(&retval[i].xmin, sizeof(int));
+				nrec += controlSocket->ReceiveDataOnly(&retval[i].xmax, sizeof(int));
+				nrec += controlSocket->ReceiveDataOnly(&retval[i].ymin, sizeof(int));
+				nrec += controlSocket->ReceiveDataOnly(&retval[i].ymax, sizeof(int));
+				//nrec = controlSocket->ReceiveDataOnly(retval,retvalsize*sizeof(ROI));
 				if(nrec!=(retvalsize*(int)sizeof(ROI))){
 					ret=FAIL;
 					std::cout << " wrong size received: received " << nrec <<

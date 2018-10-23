@@ -82,9 +82,7 @@ public:
 		EIGER, /**< eiger */
 		GOTTHARD, /**< gotthard */
 		JUNGFRAU, /**< jungfrau */
-		JUNGFRAUCTB, /**< jungfrauCTBversion */
-		MYTHEN3, /**< mythen 3 */
-		MOENCH	/**< moench */
+		JUNGFRAUCTB /**< jungfrauCTBversion */
 	};
 
 

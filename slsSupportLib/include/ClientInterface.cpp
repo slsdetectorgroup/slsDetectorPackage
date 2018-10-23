@@ -53,7 +53,7 @@ int ClientInterface::Client_Send(int fnum,
 }
 
 
-void ClientInterface::Server_SendResult(bool update, int ret,
+int ClientInterface::Server_SendResult(bool update, int ret,
 		void* retval, int retvalSize, char* mess) {
 
 	// update if different clients
@@ -72,6 +72,8 @@ void ClientInterface::Server_SendResult(bool update, int ret,
 	}
 	// send return value
 	mySocket->SendDataOnly(retval, retvalSize);
+
+	return ret;
 }
 
 

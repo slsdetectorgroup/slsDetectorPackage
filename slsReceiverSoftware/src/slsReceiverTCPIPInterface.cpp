@@ -334,7 +334,7 @@ int slsReceiverTCPIPInterface::exec_command() {
 
 int slsReceiverTCPIPInterface::exit_server() {
 	cprintf(RED,"Closing server\n");
-
+	memset(mess, 0, sizeof(mess));
 	ret = OK;
 	interface->Server_SendResult(false, ret, NULL, 0);
 	return GOODBYE;
@@ -350,6 +350,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 	// get args, return if socket crashed
 	if (interface->Server_ReceiveArg(ret, mess, &lock, sizeof(lock)) == FAIL)
 		return FAIL;
+	FILE_LOG(logDEBUG5) << "Locking Server to " << lock;
 
 	// execute action
 	if (lock >= 0) {
@@ -362,7 +363,6 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 		}   else
 			 interface->Server_LockedError(ret, mess);
 	}
-
 	return interface->Server_SendResult(true, ret, &lockStatus,sizeof(lockStatus), mess);
 }
 
@@ -548,8 +548,8 @@ int slsReceiverTCPIPInterface::send_update() {
 
 int slsReceiverTCPIPInterface::get_id(){
 	ret = OK;
+	memset(mess, 0, sizeof(mess));
 	int64_t retval = getReceiverVersion();
-
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval));
 }
 
@@ -609,8 +609,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 	}
 	//get
 	retval = myDetectorType;
-
-	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
+	return interface->Server_SendResult(false, ret, &retval, sizeof(retval), mess);
 }
 
 
@@ -700,6 +699,7 @@ int slsReceiverTCPIPInterface::set_roi() {
 
 
 int slsReceiverTCPIPInterface::setup_udp(){
+	memset(mess, 0, sizeof(mess));
 	char args[3][MAX_STR_LENGTH] = {0};
 	char retval[MAX_STR_LENGTH] = {0};
 
@@ -774,29 +774,38 @@ int slsReceiverTCPIPInterface::set_timer() {
 
 	// base object not null
 	if (ret == OK) {
+		FILE_LOG(logDEBUG5, ("Setting timer index %d to %lld ns\n", index[0], index[1]));
+		char timername[100] = {0};
+
 		// set
 		if (index[1] >= 0) {
 			// verify if receiver is unlocked
 			if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
 				switch (index[0]) {
 				case ACQUISITION_TIME:
+					strcpy(timername, "exptime");
 					ret = receiver->setAcquisitionTime(index[1]);
 					break;
 				case FRAME_PERIOD:
+					strcpy(timername, "period");
 					ret = receiver->setAcquisitionPeriod(index[1]);
 					break;
 				case FRAME_NUMBER:
 				case CYCLES_NUMBER:
 				case STORAGE_CELL_NUMBER:
+					strcpy(timername, "frames_cycles_storagecells");
 					receiver->setNumberOfFrames(index[1]);
 					break;
 				case SUBFRAME_ACQUISITION_TIME:
+					strcpy(timername, "subexptime");
 					receiver->setSubExpTime(index[1]);
 					break;
 				case SUBFRAME_DEADTIME:
+					strcpy(timername, "subdeadtime");
 					receiver->setSubPeriod(index[1] + receiver->getSubExpTime());
 					break;
 				case SAMPLES_JCTB:
+					strcpy(timername, "samples");
 					if (myDetectorType != JUNGFRAUCTB) {
 						ret = FAIL;
 						sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
@@ -806,6 +815,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 					receiver->setNumberofSamples(index[1]);
 					break;
 				default:
+					strcpy(timername, "unknown");
 					ret = FAIL;
 					sprintf(mess,"This timer mode (%lld) does not exist for receiver\n", (long long int)index[0]);
 					FILE_LOG(logERROR) << mess;
@@ -849,12 +859,11 @@ int slsReceiverTCPIPInterface::set_timer() {
 		// check
 		if (ret == OK && index[1] >= 0 && retval != index[1]) {
 			ret = FAIL;
-			strcpy(mess,"Could not set timer\n");
+			strcpy(mess,"Could not set timer %s\n", timername);
 			FILE_LOG(logERROR) << mess;
 		}
 		FILE_LOG(logDEBUG1) << slsDetectorDefs::getTimerType((timerIndex)(index[0])) << ":" << retval;
 	}
-
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
@@ -1873,8 +1882,6 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 	// get args, return if socket crashed
 	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg)) == FAIL)
 		return FAIL;
-
-
 	FILE_LOG(logDEBUG1) << "Checking versioning compatibility with value " << arg;
 	int64_t client_requiredVersion = arg;
 	int64_t rx_apiVersion = APIRECEIVER;
@@ -1902,7 +1909,6 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 		FILE_LOG(logERROR) << mess;
 	}
 	else FILE_LOG(logINFO) << "Compatibility with Client: Successful";
-
 	return interface->Server_SendResult(true, ret, NULL, 0, mess);
 }
 

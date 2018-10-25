@@ -398,64 +398,6 @@ private:
 
 
 
-class Moench02Data : public GeneralData {
-
- public:
-
-	/** Bytes Per Adc */
-	const static uint32_t bytesPerAdc = (40*2);
-
-	/** Constructor */
-	Moench02Data(){
-		myDetectorType		= slsDetectorDefs::MOENCH;
-		nPixelsX 			= 160;
-		nPixelsY 			= 160;
-		headerSizeinPacket  = 4;
-		dataSize 			= 1280;
-		packetSize 			= 1286;
-		packetsPerFrame 	= 40;
-		imageSize 			= dataSize*packetsPerFrame;
-		frameIndexMask 		= 0xFFFFFF00;
-		frameIndexOffset 	= 8;
-		packetIndexMask 	= 0xFF;
-		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-	};
-
-	/**
-	 * Print all variables
-	 */
-	void Print() const {
-		GeneralData::Print();
-		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
-	}
-};
-
-
-class Moench03Data : public GeneralData {
-
- public:
-
-	/** Constructor */
-	Moench03Data(){
-		myDetectorType		= slsDetectorDefs::MOENCH;
-		nPixelsX 			= 400;
-		nPixelsY 			= 400;
-		headerSizeinPacket  = 22;
-		dataSize 			= 8192;
-		packetSize 			= headerSizeinPacket + dataSize;
-		packetsPerFrame 	= 40;
-		imageSize 			= dataSize*packetsPerFrame;
-		frameIndexMask 		= 0xFFFFFFFF;
-		frameIndexOffset 	= (6+8);
-		packetIndexMask 	= 0xFFFFFFFF;
-		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-	};
-};
-
 
 class JCTBData : public GeneralData {
 

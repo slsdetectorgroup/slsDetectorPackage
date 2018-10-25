@@ -373,6 +373,7 @@ int exec_command(int file_des) {
 
 int get_detector_type(int file_des) {
 	ret = OK;
+	memset(mess, 0, sizeof(mess));
 	enum detectorType retval = myDetectorType;
 	FILE_LOG(logDEBUG5,("Returning detector type %d\n", retval));
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
@@ -784,7 +785,7 @@ int get_adc(int file_des) {
 int write_register(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1, -1};
+	uint32_t args[2] = {-1, -1};
 	uint32_t retval = -1;
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
@@ -1693,6 +1694,7 @@ int set_speed(int file_des) {
 int exit_server(int file_des) {
 	cprintf(BG_RED,"Closing Server\n");
 	ret = OK;
+	memset(mess, 0, sizeof(mess));
 	Server_SendResult(file_des, INT32, 0, NULL, 0);
 	return GOODBYE;
 }
@@ -1728,6 +1730,7 @@ int lock_server(int file_des) {
 
 int get_last_client_ip(int file_des) {
 	ret = OK;
+	memset(mess, 0, sizeof(mess));
 	return Server_SendResult(file_des, INT32, 1, lastClientIP, sizeof(lastClientIP));
 }
 
@@ -1738,6 +1741,7 @@ int set_port(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int p_number = -1;
+	char oldLastClientIP[INET_ADDRSTRLEN] = {0};
 
 	if (receiveData(file_des, &p_number, sizeof(p_number), INT32) < 0)
 		return printSocketReadError();
@@ -1754,6 +1758,7 @@ int set_port(int file_des) {
 		} else {
 			FILE_LOG(logINFO, ("Setting %s port to %d\n",
 					(isControlServer ? "control":"stop"), p_number));
+			strcpy(oldLastClientIP, lastClientIP);
 			sd = bindSocket(p_number);
 		}
 	}
@@ -1764,6 +1769,7 @@ int set_port(int file_des) {
 		closeConnection(file_des);
 		exitServer(sockfd);
 		sockfd = sd;
+		strcpy(lastClientIP, oldLastClientIP);
 	}
 	return ret;
 }

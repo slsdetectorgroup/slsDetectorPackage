@@ -1295,7 +1295,7 @@ public:
 	 * @param gainval pointer to extra gain values
 	 * @param offsetval pointer to extra offset values
 	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
-	 * @returns current register value
+	 * @returns ok or fail
 	 * \sa ::sls_detector_module
 	 */
 	int setModule(sls_detector_module module, int iodelay, int tau, int e_eV,

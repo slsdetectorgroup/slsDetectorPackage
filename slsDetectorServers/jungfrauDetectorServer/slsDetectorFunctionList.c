@@ -1599,8 +1599,6 @@ void readFrame(int *ret, char *mess){
 		//cprintf(RED,"Waiting for finished flag\n");
 		usleep(5000);
 	}
-	*ret = (int)FINISHED;
-	strcpy(mess,"acquisition successfully finished\n");
 	return;
 #endif
 	// wait for status to be done
@@ -1615,9 +1613,8 @@ void readFrame(int *ret, char *mess){
 		sprintf(mess,"no data and run stopped: %lld frames left\n",(long  long int)retval);
 		cprintf(RED,"%s\n",mess);
 	} else {
-		*ret = (int)FINISHED;
-		sprintf(mess,"acquisition successfully finished\n");
-		cprintf(GREEN, "%s",mess);
+		*ret = (int)OK;
+		cprintf(GREEN, "acquisition successfully finished\n");
 	}
 }
 

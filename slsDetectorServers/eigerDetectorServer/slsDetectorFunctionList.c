@@ -1686,9 +1686,7 @@ void readFrame(int *ret, char *mess) {
 		//FILE_LOG(logERROR ,"Waiting for finished flag\n"));
 		usleep(5000);
 	}
-	*ret = (int)FINISHED;
-	strcpy(mess,"acquisition successfully finished\n"));
-	FILE_LOG(logGREEN, "%s", mess));
+	FILE_LOG(logGREEN, ("acquisition successfully finished\n"));
 	return;
 #else
 
@@ -1714,9 +1712,7 @@ void readFrame(int *ret, char *mess) {
 
 
 	FILE_LOG(logINFO, ("*****Done Waiting...\n"));
-	*ret = (int)FINISHED;
-	strcpy(mess,"acquisition successfully finished\n");
-	FILE_LOG(logGREEN, (mess));
+	FILE_LOG(logGREEN, ("acquisition successfully finished\n"));
 #endif
 }
 

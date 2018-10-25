@@ -92,7 +92,6 @@ public:
 	enum  {
 		OK, /**< function succeeded */
 		FAIL, /**< function failed */
-		FINISHED, /**< acquisition finished */
 		FORCE_UPDATE
 	};
 

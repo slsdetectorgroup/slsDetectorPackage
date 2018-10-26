@@ -1153,21 +1153,10 @@ public:
 	/**
 	 * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
 	 * @param retval is the array with the trimbits
-	 * @param fromDetector is true if the trimbits shared memory have to be
-	 * uploaded from detector
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns total number of channels for the detector
 	 */
-	int getChanRegs(double* retval,bool fromDetector, int detPos = -1);
-
-	/**
-	 * Calibrate Pedestal (ChipTestBoard)
-	 * Starts acquisition, calibrates pedestal and writes to fpga
-	 * @param frames number of frames
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns number of frames
-	 */
-	int calibratePedestal(int frames = 0, int detPos = -1);
+	int getChanRegs(double* retval, int detPos = -1);
 
 	/**
 	 * Set Rate correction ( Eiger)
@@ -1177,21 +1166,20 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
-	int setRateCorrection(int t=0, int detPos = -1);
+	int setRateCorrection(int64_t t = 0, int detPos = -1);
 
 	/**
 	 * Get rate correction ( Eiger)
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns 0 if rate correction disabled, > 0 otherwise (ns)
 	 */
-	int getRateCorrection(int detPos = -1);
+	int64_t getRateCorrection(int detPos = -1);
 
 	/**
 	 * Prints receiver configuration
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns  OK or FAIL
 	 */
-	int printReceiverConfiguration(int detPos = -1);
+	void printReceiverConfiguration(int detPos = -1);
 
 	/**
 	 * Sets up receiver socket if online and sets the flag

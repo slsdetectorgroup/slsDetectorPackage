@@ -49,8 +49,6 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 #define NCHIP 						 		(4)
 #define NADC						 		(0)
 #define NDAC 						 		(16)
-#define NGAIN						 		(0)
-#define NOFFSET						 		(0)
 
 
 #define TEN_GIGA_BUFFER_SIZE 				(4112)

@@ -24,7 +24,6 @@ const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","V
 int default_tau_from_file= -1;
 enum detectorSettings thisSettings;
 sls_detector_module *detectorModules=NULL;
-int *detectorChips=NULL;
 int *detectorChans=NULL;
 int *detectorDacs=NULL;
 int *detectorAdcs=NULL;
@@ -383,26 +382,24 @@ void allocateDetectorStructureMemory() {
 
 	//Allocation of memory
 	detectorModules=malloc(sizeof(sls_detector_module));
-	detectorChips=malloc(NCHIP*sizeof(int));
 	detectorChans=malloc(NCHIP*NCHAN*sizeof(int));
 	detectorDacs=malloc(NDAC*sizeof(int));
 	detectorAdcs=malloc(NADC*sizeof(int));
 	FILE_LOG(logDEBUG5, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
-	FILE_LOG(logDEBUG5, ("chips from 0x%x to 0x%x\n",detectorChips, detectorChips));
 	FILE_LOG(logDEBUG5, ("chans from 0x%x to 0x%x\n",detectorChans, detectorChans));
 	FILE_LOG(logDEBUG5, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
 	FILE_LOG(logDEBUG5, ("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs));
 	(detectorModules)->dacs=detectorDacs;
 	(detectorModules)->adcs=detectorAdcs;
-	(detectorModules)->chipregs=detectorChips;
 	(detectorModules)->chanregs=detectorChans;
 	(detectorModules)->ndac=NDAC;
 	(detectorModules)->nadc=NADC;
 	(detectorModules)->nchip=NCHIP;
 	(detectorModules)->nchan=NCHIP*NCHAN;
-	(detectorModules)->gain=0;
-	(detectorModules)->offset=0;
 	(detectorModules)->reg=0;
+	(detectorModules)->iodelay=0;
+	(detectorModules)->tau=0;
+	(detectorModules)->eV=0;
 	thisSettings = UNINITIALIZED;
 
 	// if trimval requested, should return -1 to acknowledge unknown
@@ -805,63 +802,123 @@ int64_t getTimeLeft(enum timerIndex ind) {
 
 
 
-/* parameters - channel, chip, module, settings */
+/* parameters - channel, module, settings */
 
 
-int setModule(sls_detector_module myMod, int delay) {
-	int retval[2];
-	int i;
+int setModule(sls_detector_module myMod, char* mess) {
+
 
 	FILE_LOG(logINFO, ("Setting module with settings %d\n",myMod.reg));
-
-	//copy module locally (module number, serial number, gain offset,
-	//dacs (pointless), trimbit values(if needed)
-	if (detectorModules)
-		if (copyModule(detectorModules,&myMod) == FAIL)
-			return FAIL;
 
 	// settings
 	setSettings( (enum detectorSettings)myMod.reg);
 
+	//copy module locally (module number, serial number
+	//dacs (pointless), trimbit values(if needed)
+	if (detectorModules) {
+		if (copyModule(detectorModules,&myMod) == FAIL) {
+			sprintf(mess, "Could not copy module\n");
+			FILE_LOG(logERROR, (mess));
+			setSettings(UNDEFINED);
+			FILE_LOG(logERROR, ("Settings has been changed to undefined\n"));
+			return FAIL;
+		}
+	}
+
 	// iodelay
-	if (setIODelay(delay)!= delay) {
-		FILE_LOG(logERROR, ("Could not set iodelay %d\n", delay));
+	if (setIODelay(myMod.iodelay)!= myMod.iodelay) {
+		sprintf(mess, "Could not set module. Could not set iodelay %d\n", myMod.iodelay);
+		FILE_LOG(logERROR, (mess));
+		setSettings(UNDEFINED);
+		FILE_LOG(logERROR, ("Settings has been changed to undefined\n"));
 		return FAIL;
 	}
 
-	// dacs
-	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum DACINDEX)i,myMod.dacs[i],0,retval);
+	// threshold
+	if (myMod.eV >= 0)
+		setThresholdEnergy(myMod.eV);
+	else {
+		// (loading a random trim file) (dont return fail)
+		setSettings(UNDEFINED);
+		FILE_LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+	}
 
+	// dacs
+	{
+		int i = 0;
+		int retval[2] = {0, 0};
+		for(i = 0; i < myMod.ndac; ++i) {
+			setDAC((enum DACINDEX)i, myMod.dacs[i] , 0, retval);
+			if (myMod.dacs[i] != retval[0]) {
+				sprintf(mess, "Could not set module. Could not set dac %d\n", i);
+				FILE_LOG(logERROR, (mess));
+				setSettings(UNDEFINED);
+				FILE_LOG(logERROR, ("Settings has been changed to undefined\n"));
+				return FAIL;
+			}
+		}
+	}
 	// trimbits
 #ifndef VIRTUAL
-	if (myMod.nchan==0 && myMod.nchip == 0) {
+	if (myMod.nchan == 0) {
 		FILE_LOG(logINFO, ("Setting module without trimbits\n"));
 	} else {
 		FILE_LOG(logINFO, ("Setting module with trimbits\n"));
 		//includ gap pixels
 		unsigned int tt[263680];
-		int iy,ichip,ix,ip=0,ich=0;
-		for(iy=0;iy<256;iy++) {
-			for (ichip=0; ichip<4; ichip++) {
-				for(ix=0;ix<256;ix++) {
-					tt[ip++]=myMod.chanregs[ich++];
+		int iy, ichip, ix, ip = 0, ich = 0;
+		for (iy = 0; iy < 256; ++iy) {
+			for (ichip = 0; ichip < 4; ++ichip) {
+				for (ix = 0; ix < 256; ++ix) {
+					tt[ip++] = myMod.chanregs[ich++];
 				}
-				if (ichip<3) {
-					tt[ip++]=0;
-					tt[ip++]=0;
+				if (ichip < 3) {
+					tt[ip++] = 0;
+					tt[ip++] = 0;
 				}
 			}
 		}
 
 		//set trimbits
-		if (!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt)) {
-			FILE_LOG(logERROR, ("Could not set trimbits\n"));
+		if (!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(), tt)) {
+			sprintf(mess, "Could not set module. Could not set trimbits\n");
+			FILE_LOG(logERROR, (mess));
+			setSettings(UNDEFINED);
+			FILE_LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
 			return FAIL;
 		}
 	}
+
+
+	//rate correction
+	//switch off rate correction: no value read from load settings)
+	if (myMod.tau == -1) {
+		if (getRateCorrectionEnable()) {
+			setRateCorrection(0);
+			sprintf(mess,"Cannot set module. Cannot set Rate correction. "
+					"No default tau provided. Deactivating Rate Correction\n");
+			FILE_LOG(logERROR, (mess));
+			setSettings(UNDEFINED);
+			FILE_LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+			return FAIL;
+		}
+	}
+	//normal tau value (only if enabled)
+	else {
+		setDefaultSettingsTau_in_nsec(myMod.tau);
+		if (getRateCorrectionEnable()) {
+			int64_t retvalTau = setRateCorrection(myMod.tau);
+			if (myMod.tau != retvalTau) {
+				sprintf(mess, "Cannot set module. Could not set rate correction\n");
+				FILE_LOG(logERROR, (mess));
+				setSettings(UNDEFINED);
+				FILE_LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+				return FAIL;
+			}
+		}
+	}
 #endif
-	return thisSettings;
+	return OK;
 }
 
 
@@ -882,13 +939,13 @@ int getModule(sls_detector_module *myMod) {
 	tt = Feb_Control_GetTrimbits();
 
 	//exclude gap pixels
-	int iy,ichip,ix,ip=0,ich=0;
-	for(iy=0;iy<256;iy++) {
-		for (ichip=0; ichip<4; ichip++) {
-			for(ix=0;ix<256;ix++) {
-				myMod->chanregs[ich++]=tt[ip++];
+	int iy, ichip, ix, ip = 0, ich = 0;
+	for (iy = 0; iy < 256; ++iy) {
+		for (ichip = 0; ichip < 4; ++ichip) {
+			for (ix = 0; ix < 256; ++iy) {
+				myMod->chanregs[ich++] = tt[ip++];
 			}
-			if (ichip<3) {
+			if (ichip < 3) {
 				ip++;
 				ip++;
 			}
@@ -1728,7 +1785,7 @@ void readFrame(int *ret, char *mess) {
 
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
-	int ichip, idac,  ichan, iadc;
+	int idac,  ichan, iadc;
 	int ret=OK;
 
 	FILE_LOG(logDEBUG5, ("Copying module %x to module %x\n",srcMod,destMod));
@@ -1736,11 +1793,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 	if (srcMod->serialnumber>=0) {
 
 		destMod->serialnumber=srcMod->serialnumber;
-	}
-	//no trimbit feature
-	if (destMod->nchip && ((srcMod->nchip)>(destMod->nchip))) {
-		FILE_LOG(logINFO, ("Number of chip of source is larger than number of chips of destination\n"));
-		return FAIL;
 	}
 	//no trimbit feature
 	if (destMod->nchan && ((srcMod->nchan)>(destMod->nchan))) {
@@ -1758,7 +1810,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
 	FILE_LOG(logDEBUG5, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
 	FILE_LOG(logDEBUG5, ("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc));
-	FILE_LOG(logDEBUG5, ("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip));
 	FILE_LOG(logDEBUG5, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
 	destMod->ndac=srcMod->ndac;
 	destMod->nadc=srcMod->nadc;
@@ -1766,23 +1817,22 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 	destMod->nchan=srcMod->nchan;
 	if (srcMod->reg>=0)
 		destMod->reg=srcMod->reg;
+	if (srcMod->iodelay>=0)
+		destMod->iodelay=srcMod->iodelay;
+	if (srcMod->tau>=0)
+		destMod->tau=srcMod->tau;
+	if (srcMod->eV>=0)
+		destMod->eV=srcMod->eV;
 	FILE_LOG(logDEBUG5, ("Copying register %x (%x)\n",destMod->reg,srcMod->reg ));
-	if (srcMod->gain>=0)
-		destMod->gain=srcMod->gain;
-	if (srcMod->offset>=0)
-		destMod->offset=srcMod->offset;
 
-	if ((destMod->nchip!=0) || (destMod->nchan!=0)) {
-		for (ichip=0; ichip<(srcMod->nchip); ichip++) {
-			if (*((srcMod->chipregs)+ichip)>=0)
-				*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
-		}
+	if (destMod->nchan!=0) {
 		for (ichan=0; ichan<(srcMod->nchan); ichan++) {
 			if (*((srcMod->chanregs)+ichan)>=0)
 				*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
 		}
 	}
 	else FILE_LOG(logINFO, ("Not Copying trimbits\n"));
+
 	for (idac=0; idac<(srcMod->ndac); idac++) {
 		if (*((srcMod->dacs)+idac)>=0) {
 			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
@@ -1811,8 +1861,6 @@ int getNumberOfChips() {return  NCHIP;}
 int getNumberOfDACs() {return  NDAC;}
 int getNumberOfADCs() {return  NADC;}
 int getNumberOfChannelsPerChip() {return  NCHAN;}
-int getNumberOfGains() {return  NGAIN;}
-int getNumberOfOffsets() {return  NOFFSET;}
 
 
 

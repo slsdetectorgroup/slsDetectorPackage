@@ -924,14 +924,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	++i;
 
-	/*! \page settings
-   - <b>pedestal [i]</b> starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put! \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="pedestal"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
-	++i;
-
-
 
 	/* pots */
 	/*! \page settings
@@ -2725,16 +2717,16 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action, int d
 	if (action==HELP_ACTION) {
 		return helpRateCorr(action);
 	}
-	int fval;
+	int64_t ival;
 	char answer[1000];
 
 	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (action==PUT_ACTION) {
-		sscanf(args[1],"%d",&fval);
-		myDet->setRateCorrection(fval, detPos);
+		sscanf(args[1],"%lld",&ival);
+		myDet->setRateCorrection(ival, detPos);
 	}
-	sprintf(answer,"%d",myDet->getRateCorrection(detPos));
+	sprintf(answer,"%lld",myDet->getRateCorrection(detPos));
 	return string(answer);
 }
 
@@ -3549,15 +3541,6 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, int d
 	  }
 	  sprintf(ans,"%d",myDet->setAllTrimbits(-1, detPos));
 	  return ans;
-	} else if (cmd=="pedestal") {
-		if (action==GET_ACTION)
-			return string("cannot get");
-		if (sscanf(args[1],"%d",&val)){
-			sprintf(ans,"%d",myDet->calibratePedestal(val, detPos));
-			return string(ans);
-		}else
-			return string("cannot parse frame number")+cmd;
-
 	}
 	return string("unknown settings command ")+cmd;
 
@@ -3574,8 +3557,6 @@ string slsDetectorCommand::helpSettings(int action) {
 		os << "thresholdnotb eV [sett]\n sets the detector threshold in eV without loading trimbits. If sett is provided for eiger, uses settings sett"<< std::endl;
 		os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
 		os << "trimval i \n sets all the trimbits to i" << std::endl;
-		os << "pedestal i \n starts acquisition for i frames, calculates pedestal and writes back to fpga."<< std::endl;
-
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "settings \n gets the settings of the detector"<< std::endl;

@@ -240,16 +240,13 @@ public:
 	  int nchip; /**< is the number of chips on the module */
 	  int ndac; /**< is the number of dacs on the module */
 	  int nadc; /**< is the number of adcs on the module */
-	  int reg; /**< is the module register (e.g. dynamic range?)
-		      \see moduleRegisterBit */
+	  int reg; /**< is the module register settings (gain level) */
+	  int iodelay;	/**< iodelay */
+	  int tau;	/**< tau */
+	  int eV;	/**< threshold energy */
 	  int *dacs; /**< is the pointer to the array of the dac values (in V) */
-	  int *adcs;  /**< is the pointer to the array of the adc values (in V) FLAT_FIELD_CORRECTION*/
-	  int *chipregs; /**< is the pointer to the array of the chip registers
-			    \see ::chipRegisterBit */
-	  int *chanregs; /**< is the pointer to the array of the channel registers
-			    \see ::channelRegisterBit */
-	  double gain;  /**< is the module gain (V/keV) */
-	  double offset;  /**< is the module offset (V) */
+	  int *adcs;  /**< is the pointer to the array of the adc values (in V)  */
+	  int *chanregs; /**< is the pointer to the array of the channel registers */
 	} sls_detector_module;
 
 

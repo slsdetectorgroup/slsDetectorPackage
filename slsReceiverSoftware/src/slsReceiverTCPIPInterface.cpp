@@ -370,6 +370,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 
 int slsReceiverTCPIPInterface::get_last_client_ip() {
 	ret = OK;
+	memset(mess, 0, sizeof(mess));
 	return interface->Server_SendResult(true, ret,mySock->lastClientIP, sizeof(mySock->lastClientIP));
 }
 
@@ -446,97 +447,82 @@ int slsReceiverTCPIPInterface::update_client() {
 
 int slsReceiverTCPIPInterface::send_update() {
 	int ind = -1;
-	char defaultVal[MAX_STR_LENGTH] = {0};
-	char* path = NULL;
+	char path[MAX_STR_LENGTH] = {0};
 	int n = 0;
 
 	n += mySock->SendDataOnly(mySock->lastClientIP,sizeof(mySock->lastClientIP));
 
 	// filepath
 	path = receiver->getFilePath();
-	if (path == NULL)
-	    n += mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
-	else {
-	    n += mySock->SendDataOnly(path,MAX_STR_LENGTH);
-		delete[] path;
-	}
+    n += mySock->SendDataOnly(path, sizeof(path));
 
 	// filename
 	path = receiver->getFileName();
-	if(path == NULL)
-	    n += mySock->SendDataOnly(defaultVal,MAX_STR_LENGTH);
-	else {
-	    n += mySock->SendDataOnly(path,MAX_STR_LENGTH);
-		delete[] path;
-	}
+    n += mySock->SendDataOnly(path, sizeof(path));
 
 	// index
 	ind=receiver->getFileIndex();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	//file format
 	ind=(int)receiver->getFileFormat();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	//frames per file
 	ind=(int)receiver->getFramesPerFile();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	//frame discard policy
 	ind=(int)receiver->getFrameDiscardPolicy();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	//frame padding
 	ind=(int)receiver->getFramePaddingEnable();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// file write enable
 	ind=(int)receiver->getFileWriteEnable();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// file overwrite enable
 	ind=(int)receiver->getOverwriteEnable();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// gap pixels
 	ind=(int)receiver->getGapPixelsEnable();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// streaming frequency
 	ind=(int)receiver->getStreamingFrequency();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// streaming port
 	ind=(int)receiver->getStreamingPort();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// streaming source ip
 	path = receiver->getStreamingSourceIP();
-	mySock->SendDataOnly(path,MAX_STR_LENGTH);
-	if (path != NULL)
-		delete[] path;
+    n += mySock->SendDataOnly(path, sizeof(path));
 
     // additional json header
     path = receiver->getAdditionalJsonHeader();
-    mySock->SendDataOnly(path,MAX_STR_LENGTH);
-    if (path != NULL)
-        delete[] path;
+    n += mySock->SendDataOnly(path, sizeof(path));
 
 	// data streaming enable
 	ind=(int)receiver->getDataStreamEnable();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// activate
 	ind=(int)receiver->getActivate();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// deactivated padding enable
 	ind=(int)receiver->getDeactivatedPadding();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	// silent mode
 	ind=(int)receiver->getSilentMode();
-	n += mySock->SendDataOnly(&ind,sizeof(ind));
+	n += mySock->SendDataOnly(&ind, sizeof(ind));
 
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP,mySock->thisClientIP);
@@ -617,7 +603,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 int slsReceiverTCPIPInterface::set_detector_hostname() {
 	memset(mess, 0, sizeof(mess));
 	char hostname[MAX_STR_LENGTH] = {0};
-	char* retval = NULL;
+	char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, hostname,MAX_STR_LENGTH, true, receiver) == FAIL)
@@ -633,20 +619,14 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 		}
 		// get
 		retval = receiver->getDetectorHostname();
-		if(retval == NULL) {
+		if (strlen(retval)) {
 			ret = FAIL;
-			cprintf(RED, "Could not set hostname to %s\n", hostname);
+			sprintf(mess, "hostname not set\n");
 			FILE_LOG(logERROR) << mess;
 		}
 	}
 
-	interface->Server_SendResult(true, ret,
-			retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
-
-	if(retval != NULL)
-		delete[] retval;
-
-	return ret;
+	return interface->Server_SendResult(true, ret,	retval, MAX_STR_LENGTH, mess);
 }
 
 
@@ -1048,7 +1028,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 int slsReceiverTCPIPInterface::set_file_dir() {
 	memset(mess, 0, sizeof(mess));
 	char fPath[MAX_STR_LENGTH] = {0};
-	char* retval=NULL;
+    char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, fPath, sizeof(fPath), true, receiver) == FAIL)
@@ -1062,22 +1042,15 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 		}
 		// get
 		retval = receiver->getFilePath();
-		if (retval == NULL || (strlen(fPath) && strcasecmp(fPath, retval))) {
+		if ((!strlen(retval)) || (strlen(fPath) && strcasecmp(fPath, retval))) {
 			ret = FAIL;
 			strcpy(mess,"receiver file path does not exist\n");
 			FILE_LOG(logERROR) << mess;
-		}
-		if (retval != NULL) {
+		} else
 			FILE_LOG(logDEBUG1) << "file path:" << retval;
-		}
 	}
 
-	interface->Server_SendResult(true, ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
-
-	if(retval != NULL)
-		delete[] retval;
-
-	return ret;
+    return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 }
 
 
@@ -1085,7 +1058,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 int slsReceiverTCPIPInterface::set_file_name() {
 	memset(mess, 0, sizeof(mess));
 	char fName[MAX_STR_LENGTH] = {0};
-	char* retval = NULL;
+    char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, fName, sizeof(fName), true, receiver) == FAIL)
@@ -1099,22 +1072,15 @@ int slsReceiverTCPIPInterface::set_file_name() {
 		}
 		// get
 		retval = receiver->getFileName();
-		if(retval == NULL) {
+		if (strlen(retval)) {
 			ret = FAIL;
 			strcpy(mess, "file name is empty\n");
 			FILE_LOG(logERROR) << mess;
-		}
-		if (retval != NULL) {
+		} else
 			FILE_LOG(logDEBUG1) << "file name:" << retval;
-		}
 	}
 
-	interface->Server_SendResult(true, ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
-
-	if(retval != NULL)
-		delete[] retval;
-
-	return ret;
+	 return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 }
 
 
@@ -1624,7 +1590,7 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 	memset(mess, 0, sizeof(mess));
 	char arg[MAX_STR_LENGTH] = {0};
-	char* retval=NULL;
+    char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, arg, MAX_STR_LENGTH, true, receiver) == FAIL)
@@ -1642,13 +1608,7 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 		FILE_LOG(logDEBUG1) << "streaming source ip:" << retval;
 	}
 
-	interface->Server_SendResult(true,
-			ret, retval, (retval == NULL) ? 0 : MAX_STR_LENGTH, mess);
-
-	if(retval != NULL)
-		delete[] retval;
-
-	return ret;
+	return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 }
 
 
@@ -1758,7 +1718,7 @@ int slsReceiverTCPIPInterface::restream_stop(){
 int slsReceiverTCPIPInterface::set_additional_json_header() {
     memset(mess, 0, sizeof(mess));
     char arg[MAX_STR_LENGTH] = {0};
-    char* retval=NULL;
+    char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, arg, sizeof(arg), true, receiver) == FAIL)
@@ -1776,12 +1736,7 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
 		FILE_LOG(logDEBUG1) << "additional json header:" << retval;
 	}
 
-	interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
-
-	if (retval != NULL)
-		delete[] retval;
-
-     return ret;
+	 return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 }
 
 

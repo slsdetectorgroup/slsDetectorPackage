@@ -55,7 +55,7 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 
 	/*
 	 * Get detector hostname
-	 * @return NULL or hostname or NULL if uninitialized (max of 1000 characters)
+	 * @return hostname  (max of 1000 characters)
 	 */
 	char *getDetectorHostname() const;
 
@@ -80,13 +80,13 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	fileFormat getFileFormat() const;
 	/**
 	 * Get File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
-	 * @return NULL or file name prefix (max of 1000 characters)
+	 * @return file name prefix
 	 */
 	char *getFileName() const;
 
 	/**
 	 * Get File Path
-	 * @return NULL or file path (max of 1000 characters)
+	 * @return file path
 	 */
 	char *getFilePath() const;
 
@@ -162,7 +162,7 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 
 	/**
 	 * Get Ehernet Interface
-	 * @ethernet interface. eg. eth0 or "" if listening to all (max of 1000 characters)
+	 * @ethernet interface. eg. eth0 or "" if listening to all
 	 */
 	char *getEthernetInterface() const;
 

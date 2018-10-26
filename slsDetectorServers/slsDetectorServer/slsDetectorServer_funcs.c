@@ -156,7 +156,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_LOAD_IMAGE:						return "F_LOAD_IMAGE";
 	case F_READ_COUNTER_BLOCK:				return "F_READ_COUNTER_BLOCK";
 	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
-	case F_CALIBRATE_PEDESTAL:				return "F_CALIBRATE_PEDESTAL";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_CTB_PATTERN:					return "F_SET_CTB_PATTERN";
@@ -221,7 +220,6 @@ void function_table() {
 	flist[F_LOAD_IMAGE]							= &load_image;
 	flist[F_READ_COUNTER_BLOCK]					= &read_counter_block;
 	flist[F_RESET_COUNTER_BLOCK]				= &reset_counter_block;
-	flist[F_CALIBRATE_PEDESTAL]					= &calibrate_pedestal;
 	flist[F_ENABLE_TEN_GIGA]					= &enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]					= &set_all_trimbits;
 	flist[F_SET_CTB_PATTERN]					= &set_ctb_pattern;
@@ -304,7 +302,7 @@ int  M_nofunc(int file_des) {
 	memset(mess, 0, sizeof(mess));
 
 	// to receive any arguments
-	int n = 0;
+	int n = 1;
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
@@ -320,7 +318,7 @@ int  M_nofuncMode(int file_des) {
 	memset(mess, 0, sizeof(mess));
 
 	// to receive any arguments
-	int n = 0;
+	int n = 1;
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
@@ -836,111 +834,82 @@ int read_register(int file_des) {
 int set_module(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int retval = -1;
+	enum detectorSettings retval = -1;
 
 	sls_detector_module module;
 	int *myDac = NULL;
 	int *myAdc = NULL;
-	int *myChip = NULL;
 	int *myChan = NULL;
-#ifdef EIGERD
-	int ioDelay = -1;
-	int tau = -1;
-	int eV = -1;
-#endif
+	module.dacs = NULL;
+	module.adcs = NULL;
+	module.chanregs = NULL;
 
 	// allocate to receive arguments
-	// infinite loop to break out when FAIL or a final OK
-	while(1) {
-		// allocate dacs
-		myDac = (int*)malloc(getNumberOfDACs() * sizeof(int));
-		// error
-		if (getNumberOfDACs() > 0 && myDac == NULL) {
-			ret = FAIL;
-			sprintf(mess, "Could not allocate dacs\n");
-			FILE_LOG(logERROR,(mess));
-			break;
-		}
+	// allocate dacs
+	myDac = (int*)malloc(getNumberOfDACs() * sizeof(int));
+	// error
+	if (getNumberOfDACs() > 0 && myDac == NULL) {
+		ret = FAIL;
+		sprintf(mess, "Could not allocate dacs\n");
+		FILE_LOG(logERROR,(mess));
+	} else
 		module.dacs = myDac;
 
-		// allocate adcs
+	// allocate adcs
+	if (ret == OK) {
 		myAdc = (int*)malloc(getNumberOfADCs() * sizeof(int));
 		// error
 		if (getNumberOfADCs() > 0 && myAdc == NULL) {
 			ret = FAIL;
 			sprintf(mess,"Could not allocate adcs\n");
 			FILE_LOG(logERROR,(mess));
-			break;
-		}
-		module.adcs=myAdc;
+		} else
+			module.adcs = myAdc;
+	}
 
-		// no need to allocate chips and chans for jungfrau, too much memory
-#ifdef JUNGFRAUD
-		module.chipregs = NULL;
-		module.chanregs = NULL;
-#else
-		// allocate chips
-		myChip = (int*)malloc(getNumberOfChips() * sizeof(int));
-		if (getNumberOfChips() > 0 && myChip == NULL) {
-			ret = FAIL;
-			sprintf(mess,"Could not allocate chips\n");
-			FILE_LOG(logERROR,(mess));
-			break;
-		}
-		module.chipregs = myChip;
-
-		// allocate chans
+	// allocate chans
+#ifdef EIGERD
+	if (ret == OK) {
 		myChan = (int*)malloc(getTotalNumberOfChannels() * sizeof(int));
 		if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
 			ret = FAIL;
 			sprintf(mess,"Could not allocate chans\n");
 			FILE_LOG(logERROR,(mess));
-			break;
-		}
-		module.chanregs=myChan;
+		} else
+			module.chanregs = myChan;
+	}
 #endif
+	// receive arguments
+	if (ret == OK) {
 		module.nchip = getNumberOfChips();
 		module.nchan = getTotalNumberOfChannels();
 		module.ndac = getNumberOfDACs();
 		module.nadc = getNumberOfADCs();
-
-		// receive arguments (0 to partially receive module without trimbits
-		if (receiveModuleGeneral(file_des, &module, (myDetectorType == JUNGFRAU) ? 0 : 1) < 0) {
-			if (myChip != NULL) 	free(myChip);
-			if (myChan != NULL) 	free(myChan);
+		int ts = receiveModule(file_des, &module);
+		if (ts < 0) {
+			if (myChan != NULL) free(myChan);
 			if (myDac != NULL) 	free(myDac);
 			if (myAdc != NULL) 	free(myAdc);
 			return printSocketReadError();
 		}
 		FILE_LOG(logDEBUG5, ("module register is %d, nchan %d, nchip %d, "
-				"ndac %d, nadc %d, gain %f, offset %f\n",
+				"ndac %d, nadc %d, iodelay %d, tau %d, eV %d\n",
 				module.reg, module.nchan, module.nchip,
-				module.ndac,  module.nadc, module.gain,module.offset));
-
-#ifdef EIGERD
-			int args[3] = {-1, -1};
-			if (receiveData(file_des, args, sizeof(args), INT32) < 0) {
-				if (myChip != NULL) 	free(myChip);
-				if (myChan != NULL) 	free(myChan);
-				if (myDac != NULL) 	free(myDac);
-				if (myAdc != NULL) 	free(myAdc);
-				return printSocketReadError();
-			}
-			ioDelay = args[0];
-			tau = args[1];
-			eV = args[2];
-			FILE_LOG(logDEBUG5, ("ioDelay: %d, tau: d, ev:%d\n", ioDelay, tau, eV));
-#endif
+				module.ndac,  module.nadc, module.iodelay, module.tau, module.eV));
+		// should at least have a dac
+		if (ts <= sizeof(sls_detector_module)) {
+			ret = FAIL;
+			sprintf(mess, "Cannot set module. Received incorrect number of dacs or adcs or channels\n");
+			FILE_LOG(logERROR,(mess));
+		}
 	}
-
 
 	// receive all arguments
 	if (ret == FAIL) {
-		int n = 0;
+		int n = 1;
 		while (n > 0)
 			n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
 	}
-
 
 	// only set
 	else if (Server_VerifyLock() != FAIL) {
@@ -972,60 +941,16 @@ int set_module(int file_des) {
 			break;
 		}
 
-		// set
-#ifndef EIGERD
-		retval = setModule(module);
-		validate(module.reg, retval, "set module (settings)", 0);
-		// eiger
-#else
-		//set dacs, trimbits and iodelay
-		ret = setModule(module, ioDelay);
-		//set threshhold
-		if (eV >= 0)
-			setThresholdEnergy(eV);
-		else {
-			//changes settings to undefined (loading a random trim file)
-			setSettings(UNDEFINED);
-			FILE_LOG(logERROR, ("Settings has been changed to undefined "
-					"(random trim file)\n"));
-		}
-		//rate correction
-		//switch off rate correction: no value read from load calib/load settings)
-		if (tau == -1) {
-			if (getRateCorrectionEnable()) {
-				setRateCorrection(0);
-				ret = FAIL;
-				sprintf(mess,"Cannot set module. Cannot set Rate correction. "
-						"No default tau provided. Deactivating Rate Correction\n");
-				FILE_LOG(logERROR, (mess));
-			}
-		}
-		//normal tau value (only if enabled)
-		else {
-			setDefaultSettingsTau_in_nsec(tau);
-			if (getRateCorrectionEnable()) {
-				int64_t retvalTau = setRateCorrection(tau);
-				if (tau != retvalTau) {
-					ret = FAIL;
-					sprintf(mess, "Cannot set module. Could not set rate correction\n");
-					FILE_LOG(logERROR, (mess));
-				}
-			}
-		}
+		ret = setModule(module, mess);
 		retval = getSettings();
-#endif
+		validate(module.reg, (int)retval, "set module (settings)", 0);
 		FILE_LOG(logDEBUG5, ("Settings: %d\n", retval));
 	}
-	if (myChip != NULL) 	free(myChip);
-	if (myChan != NULL) 	free(myChan);
+	if (myChan != NULL) free(myChan);
 	if (myDac != NULL) 	free(myDac);
 	if (myAdc != NULL) 	free(myAdc);
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
-
-
-
-
 
 
 
@@ -1036,60 +961,49 @@ int get_module(int file_des) {
 	sls_detector_module module;
 	int *myDac = NULL;
 	int *myAdc = NULL;
-	int *myChip = NULL;
 	int *myChan = NULL;
+	module.dacs = NULL;
+	module.adcs = NULL;
+	module.chanregs = NULL;
 
 	// allocate to send arguments
-	// infinite loop to break out when FAIL or a final OK
-	while(1) {
-
-		// allocate dacs
-		myDac = (int*)malloc(getNumberOfDACs() * sizeof(int));
-		// error
-		if (getNumberOfDACs() > 0 && myDac == NULL) {
-			ret = FAIL;
-			sprintf(mess, "Could not allocate dacs\n");
-			FILE_LOG(logERROR,(mess));
-			break;
-		}
+	// allocate dacs
+	myDac = (int*)malloc(getNumberOfDACs() * sizeof(int));
+	// error
+	if (getNumberOfDACs() > 0 && myDac == NULL) {
+		ret = FAIL;
+		sprintf(mess, "Could not allocate dacs\n");
+		FILE_LOG(logERROR,(mess));
+	} else
 		module.dacs = myDac;
 
-		// allocate adcs
+	// allocate adcs
+	if (ret == OK) {
 		myAdc = (int*)malloc(getNumberOfADCs() * sizeof(int));
 		// error
 		if (getNumberOfADCs() > 0 && myAdc == NULL) {
 			ret = FAIL;
 			sprintf(mess,"Could not allocate adcs\n");
 			FILE_LOG(logERROR,(mess));
-			break;
-		}
-		module.adcs=myAdc;
+		} else
+			module.adcs=myAdc;
+	}
 
-		// no need to allocate chips and chans for jungfrau, too much memory
-#ifdef JUNGFRAUD
-		module.chipregs = NULL;
-		module.chanregs = NULL;
-#else
-		// allocate chips
-		myChip = (int*)malloc(getNumberOfChips() * sizeof(int));
-		if (getNumberOfChips() > 0 && myChip == NULL) {
-			ret = FAIL;
-			sprintf(mess,"Could not allocate chips\n");
-			FILE_LOG(logERROR,(mess));
-			break;
-		}
-		module.chipregs = myChip;
-
-		// allocate chans
+	// allocate chans
+#ifdef EIGERD
+	if (ret == OK) {
 		myChan = (int*)malloc(getTotalNumberOfChannels() * sizeof(int));
 		if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
 			ret = FAIL;
 			sprintf(mess,"Could not allocate chans\n");
 			FILE_LOG(logERROR,(mess));
-			break;
-		}
-		module.chanregs=myChan;
+		} else
+			module.chanregs=myChan;
+	}
 #endif
+
+	// get module
+	if (ret == OK) {
 		module.nchip = getNumberOfChips();
 		module.nchan = getTotalNumberOfChannels();
 		module.ndac = getNumberOfDACs();
@@ -1105,10 +1019,9 @@ int get_module(int file_des) {
 
 	// send module, 0 is to receive partially (without trimbits etc)
 	if (ret != FAIL) {
-		ret = sendModuleGeneral(file_des, &module, (myDetectorType == JUNGFRAU) ? 0 : 1);
+		ret = sendModule(file_des, &module);
 	}
-	if (myChip != NULL) 	free(myChip);
-	if (myChan != NULL) 	free(myChan);
+	if (myChan != NULL)	free(myChan);
 	if (myDac != NULL) 	free(myDac);
 	if (myAdc != NULL) 	free(myAdc);
 	return ret;
@@ -2014,7 +1927,6 @@ int load_image(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int args[2] = {-1, -1};
-	int retval = -1;
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
@@ -2039,10 +1951,9 @@ int load_image(int file_des) {
 		switch (index) {
 		case DARK_IMAGE :
 		case GAIN_IMAGE :
-			retval = loadImage(index, ImageVals);
-			FILE_LOG(logDEBUG5, ("Loading image retval: %d\n", retval));
-			if (retval == -1) {
-				ret = FAIL;
+			ret = loadImage(index, ImageVals);
+			FILE_LOG(logDEBUG5, ("Loading image ret: %d\n", ret));
+			if (ret == FAIL) {
 				sprintf(mess, "Could not load image\n");
 				FILE_LOG(logERROR,(mess));
 			}
@@ -2053,7 +1964,7 @@ int load_image(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, 1, NULL, 0);
 }
 
 
@@ -2096,8 +2007,6 @@ int reset_counter_block(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int startACQ = -1;
-	char retval[dataBytes];
-	memset(retval, 0, dataBytes);
 
 	if (receiveData(file_des, &startACQ, sizeof(startACQ), INT32) < 0)
 		return printSocketReadError();
@@ -2109,7 +2018,7 @@ int reset_counter_block(int file_des) {
 
 	// only set
 	if (Server_VerifyLock() != FAIL) {
-		ret = resetCounterBlock(startACQ, retval);
+		ret = resetCounterBlock(startACQ);
 		if (ret == FAIL) {
 			strcpy(mess, "Could not reset counter block\n");
 			FILE_LOG(logERROR, (mess));
@@ -2118,27 +2027,6 @@ int reset_counter_block(int file_des) {
 #endif
 	return Server_SendResult(file_des, INT32, 1, NULL, 0);
 }
-
-
-
-
-
-int calibrate_pedestal(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int frames = -1;
-	int retval = -1;
-
-	if (receiveData(file_des, &frames, sizeof(frames), INT32) < 0)
-		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Calibrate pedestal, frames: %d\n", frames));
-
-	functionNotImplemented();
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
-}
-
-
-
 
 
 
@@ -2215,12 +2103,12 @@ int set_ctb_pattern(int file_des) {
 int write_adc_register(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1, -1};
+	uint32_t args[2] = {-1, -1};
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
-	int addr = args[0];
-	int val = args[1];
+	uint32_t addr = args[0];
+	uint32_t val = args[1];
 	FILE_LOG(logDEBUG5, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
 
 #ifndef JUNGFRAUD
@@ -2484,7 +2372,7 @@ int program_fpga(int file_des) {
 	FILE_LOG(logDEBUG5, ("Programming FPGA\n"));
 #ifndef JUNGFRAUD
 	//to receive any arguments
-	int n = 0;
+	int n = 1;
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	functionNotImplemented();
@@ -2708,7 +2596,7 @@ int prepare_acquisition(int file_des) {
 
 
 
-
+// stop server
 int threshold_temp(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -2738,11 +2626,11 @@ int threshold_temp(int file_des) {
 	    }
 	}
 #endif
-    return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, 0, &retval, sizeof(retval));
 }
 
 
-
+// stop server
 int temp_control(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -2763,12 +2651,12 @@ int temp_control(int file_des) {
 		validate(arg, retval, "set temperature control", 0);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, 0, &retval, sizeof(retval));
 }
 
 
 
-
+// stop server
 int temp_event(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -2789,7 +2677,7 @@ int temp_event(int file_des) {
 		validate(arg, retval, "set temperature event", 0);
 	}
 #endif
-    return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, 0, &retval, sizeof(retval));
 }
 
 

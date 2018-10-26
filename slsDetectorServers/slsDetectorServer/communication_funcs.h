@@ -38,9 +38,7 @@ int sendDataOnly(int file_des, void* buf,int length);
 int receiveDataOnly(int file_des, void* buf,int length);
 
 int sendModule(int file_des, sls_detector_module *myMod);
-int sendModuleGeneral(int file_des, sls_detector_module *myMod, int sendAll);
 int receiveModule(int file_des, sls_detector_module* myMod);
-int receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveAll);
 
 /**
  * Servers sets and prints error message for locked server

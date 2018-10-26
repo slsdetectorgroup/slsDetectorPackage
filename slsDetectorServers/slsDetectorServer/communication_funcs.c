@@ -351,64 +351,36 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 
 
 int sendModule(int file_des, sls_detector_module *myMod) {
-	return sendModuleGeneral(file_des, myMod, 1);
-}
-
-
-int sendModuleGeneral(int file_des, sls_detector_module *myMod, int sendAll) {
 	int ts = 0, n = 0;
-	int nChips = myMod->nchip;
-	int nChans = myMod->nchan;
-	int nAdcs = myMod->nadc;
-	int nDacs = myMod->ndac;
-
-	// send module structure
 	n = sendData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
 	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->nchan),sizeof(myMod->nchan),INT32);
+	n = sendData(file_des,&(myMod->nchan), sizeof(myMod->nchan), INT32);
 	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->nchip),sizeof(myMod->nchip),INT32);
+	n = sendData(file_des,&(myMod->nchip), sizeof(myMod->nchip), INT32);
 	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->ndac),sizeof(myMod->ndac),INT32);
+	n = sendData(file_des,&(myMod->ndac), sizeof(myMod->ndac), INT32);
 	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
+	n = sendData(file_des,&(myMod->nadc), sizeof(myMod->nadc), INT32);
 	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
+	n = sendData(file_des,&(myMod->reg), sizeof(myMod->reg), INT32);
 	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
+	n = sendData(file_des,&(myMod->iodelay), sizeof(myMod->iodelay), INT32);
 	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
+	n = sendData(file_des,&(myMod->tau), sizeof(myMod->tau), INT32);
 	if (!n)	return -1; ts += n;
-	FILE_LOG(logDEBUG5, ("module of size %d sent\n",ts));
-
-	// send dac
-	n = sendData(file_des,myMod->dacs,sizeof(int)*nDacs,INT32);
+	n = sendData(file_des,&(myMod->eV), sizeof(myMod->eV), INT32);
 	if (!n)	return -1; ts += n;
-	FILE_LOG(logDEBUG5, ("dacs of size %d sent\n",ts));
-	{
-		int idac;
-		for (idac = 0; idac < nDacs; idac++)
-			FILE_LOG(logDEBUG5, ("dac %d is %d\n",idac,(int)myMod->dacs[idac]));
-	}
-
-	// send adc
-	n = sendData(file_des,myMod->adcs,sizeof(int)*nAdcs,INT32);
+	// dacs
+	n = sendData(file_des,myMod->dacs, sizeof(int)*(myMod->ndac), INT32);
 	if (!n)	return -1; ts += n;
-	FILE_LOG(logDEBUG5, ("adcs of size %d sent\n", ts));
-
-	// some detectors dont require sending all trimbits etc.
-	if(sendAll) {
-		// chips
-		n = sendData(file_des,myMod->chipregs,sizeof(int)*nChips,INT32);
-		if (!n)	return -1; ts += n;
-		FILE_LOG(logDEBUG5, ("chips of size %d sent\n", ts));
-
-		// channels
-		n = sendData(file_des,myMod->chanregs,sizeof(int)*nChans,INT32);
-		FILE_LOG(logDEBUG5, ("chans of size %d sent - %d\n", ts, myMod->nchan));
-		if (!n)	return -1; ts += n;
-	}
-
+	// adcs
+	n = sendData(file_des,myMod->adcs, sizeof(int)*(myMod->nadc), INT32);
+	if (!n)	return -1; ts += n;
+	// channels
+#ifdef EIGERD
+	n = sendData(file_des,myMod->chanregs, sizeof(int) * (myMod->nchan), INT32);
+	if (!n)	return -1; ts += n;
+#endif
 	FILE_LOG(logDEBUG5, ("module of size %d sent register %x\n", ts, myMod->reg));
 	return ts;
 }
@@ -416,149 +388,57 @@ int sendModuleGeneral(int file_des, sls_detector_module *myMod, int sendAll) {
 
 
 int  receiveModule(int file_des, sls_detector_module* myMod) {
-	return receiveModuleGeneral(file_des,myMod,1);
-}
-
-int  receiveModuleGeneral(int file_des, sls_detector_module* myMod, int receiveAll) {
 	int ts = 0, n = 0;
-	int *dacptr = myMod->dacs;
-	int *adcptr = myMod->adcs;
-	int *chipptr = myMod->chipregs, *chanptr = myMod->chanregs;
-	int nChips, nchipold = myMod->nchip, nchipdiff;
-	int nChans, nchanold = myMod->nchan, nchandiff;
-	int nDacs, ndold = myMod->ndac, ndacdiff;
-	int nAdcs, naold = myMod->nadc, nadcdiff;
-	n = receiveData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
-	if (!n)	return -1; ts += n;
-	n = receiveData(file_des,&(myMod->nchan),sizeof(myMod->nchan),INT32);
-	if (!n)	return -1; ts += n;
-	n = receiveData(file_des,&(myMod->nchip),sizeof(myMod->nchip),INT32);
-	if (!n)	return -1; ts += n;
-	n = receiveData(file_des,&(myMod->ndac),sizeof(myMod->ndac),INT32);
-	if (!n)	return -1; ts += n;
-	n = receiveData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
-	if (!n)	return -1; ts += n;
-	n = receiveData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
-	if (!n)	return -1; ts += n;
-	n = receiveData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
-	if (!n)	return -1; ts += n;
-	n = receiveData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
-	if (!n)	return -1; ts += n;
-
-	myMod->dacs = dacptr;
-	myMod->adcs = adcptr;
-	myMod->chipregs = chipptr;
-	myMod->chanregs = chanptr;
-
+	int nDacs = myMod->ndac;
+	int nAdcs = myMod->nadc;
 #ifdef EIGERD
-//exclude sending of trimbtis, nchips = 0,nchans = 0 in that case
-	if(myMod->nchip == 0 && myMod->nchan == 0) {
-		receiveAll = 0;
-		nchipold = 0;
-		nchanold = 0;
-	}
+	int nChans = myMod->nchan; // can be zero for no trimbits
 #endif
-
-
-	nChips = myMod->nchip;
-	nchipdiff = nChips-nchipold;
-	if (nchipold != nChips) {
-		FILE_LOG(logERROR, ("received wrong number of chips\n"));
+	n = receiveData(file_des,&(myMod->serialnumber), sizeof(myMod->serialnumber), INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->nchan), sizeof(myMod->nchan), INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->nchip), sizeof(myMod->nchip), INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->ndac), sizeof(myMod->ndac), INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->nadc), sizeof(myMod->nadc), INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->reg), sizeof(myMod->reg), INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->iodelay), sizeof(myMod->iodelay), INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->tau), sizeof(myMod->tau), INT32);
+	if (!n)	return -1; ts += n;
+	n = receiveData(file_des,&(myMod->eV), sizeof(myMod->eV), INT32);
+	if (!n)	return -1; ts += n;
+	// dacs
+	if (nDacs != (myMod->ndac)) {
+		FILE_LOG(logERROR, ("received wrong number of dacs. "
+				"Expected %d, got %d\n",	nDacs, myMod->ndac));
+		return 0;
 	}
-	else
-		FILE_LOG(logDEBUG5, ("received %d chips\n",nChips));
-
-	nChans = myMod->nchan;
-	nchandiff = nChans-nchanold;
-	if (nchanold != nChans) {
-		FILE_LOG(logERROR, ("received wrong number of channels\n"));
+	n = receiveData(file_des,&(myMod->dacs), sizeof(int) * (myMod->ndac), INT32);
+	if (!n)	return -1; ts += n;
+	// adcs
+	if (nAdcs != (myMod->nadc)) {
+		FILE_LOG(logERROR, ("received wrong number of adcs. "
+				"Expected %d, got %d\n",	nAdcs, myMod->nadc));
+		return 0;
 	}
-	else
-		FILE_LOG(logDEBUG5, ("received %d chans\n",nChans));
-
-
-	nDacs = myMod->ndac;
-	ndacdiff = nDacs-ndold;
-	if (ndold != nDacs) {
-		FILE_LOG(logERROR, ("received wrong number of dacs\n"));
+	n = receiveData(file_des,&(myMod->adcs), sizeof(int) * (myMod->nadc), INT32);
+	if (!n)	return -1; ts += n;
+	// channels
+#ifdef EIGERD
+	if (((myMod->nchan) != 0 ) ||  // no trimbits
+			(nChans != (myMod->nchan))) { // with trimbits
+		FILE_LOG(logERROR, ("received wrong number of channels. "
+				"Expected %d, got %d\n",	nChans, (myMod->nchan)));
+		return 0;
 	}
-	else
-		FILE_LOG(logDEBUG5, ("received %d dacs\n",nDacs));
-
-	nAdcs = myMod->nadc;
-	nadcdiff = nAdcs-naold;
-	if (naold != nAdcs) {
-		FILE_LOG(logERROR, ("received wrong number of adcs\n"));
-	}
-	else
-		FILE_LOG(logDEBUG5, ("received %d adcs\n",nAdcs));
-	if (ndacdiff <= 0) {
-		n = receiveData(file_des,myMod->dacs, sizeof(int)*nDacs,INT32);
-		if (!n)	return -1; ts += n;
-		FILE_LOG(logDEBUG5, ("dacs received\n"));
-		int id;
-		for (id = 0; id<nDacs; id++)
-			FILE_LOG(logDEBUG5, ("dac %d val %d\n",id,  (int)myMod->dacs[id]));
-	} else {
-		dacptr = (int*)malloc(ndacdiff*sizeof(int));
-		myMod->ndac = ndold;
-		n = receiveData(file_des,myMod->dacs, sizeof(int)*ndold,INT32);
-		if (!n)	return -1; ts += n;
-		n = receiveData(file_des,dacptr, sizeof(int)*ndacdiff,INT32);
-		if (!n)	return -1; ts += n;
-		free(dacptr);
-		return FAIL;
-	}
-
-	if (nadcdiff <= 0) {
-		n = receiveData(file_des,myMod->adcs, sizeof(int)*nAdcs,INT32);
-		if (!n)	return -1; ts += n;
-		FILE_LOG(logDEBUG5, ("adcs received\n"));
-	} else {
-		adcptr = (int*)malloc(nadcdiff*sizeof(int));
-		myMod->nadc = naold;
-		n = receiveData(file_des,myMod->adcs, sizeof(int)*naold,INT32);
-		if (!n)	return -1; ts += n;
-		n = receiveData(file_des,adcptr, sizeof(int)*nadcdiff,INT32);
-		if (!n)	return -1; ts += n;
-		free(adcptr);
-		return FAIL;
-	}
-
-
-	// some detectors dont require sending all trimbits etc.
-	if(receiveAll){
-
-		if (nchipdiff <= 0) {
-			n = receiveData(file_des,myMod->chipregs, sizeof(int)*nChips,INT32);
-			if (!n)	return -1; ts += n;
-			FILE_LOG(logDEBUG5, ("chips received\n"));
-		} else {
-			chipptr = (int*)malloc(nchipdiff*sizeof(int));
-			myMod->nchip = nchipold;
-			n = receiveData(file_des,myMod->chipregs, sizeof(int)*nchipold,INT32);
-			if (!n)	return -1; ts += n;
-			n = receiveData(file_des,chipptr, sizeof(int)*nchipdiff,INT32);
-			if (!n)	return -1; ts += n;
-			free(chipptr);
-			return FAIL;
-		}
-
-		if (nchandiff <= 0) {
-			n = receiveData(file_des,myMod->chanregs, sizeof(int)*nChans,INT32);
-			if (!n)	return -1; ts += n;
-			FILE_LOG(logDEBUG5, ("chans received\n"));
-		} else {
-			chanptr = (int*)malloc(nchandiff*sizeof(int));
-			myMod->nchan = nchanold;
-			n = receiveData(file_des,myMod->chanregs, sizeof(int)*nchanold,INT32);
-			if (!n)	return -1; ts += n;
-			n = receiveData(file_des,chanptr, sizeof(int)*nchandiff,INT32);
-			if (!n)	return -1; ts += n;
-			free(chanptr);
-			return FAIL;
-		}
-	}
+	n = receiveData(file_des,&(myMod->chanregs), sizeof(int) * (myMod->nchan), INT32);
+	if (!n)	return -1; ts += n;
+#endif
 	FILE_LOG(logDEBUG5, ("received module of size %d register %x\n",ts,myMod->reg));
 	return ts;
 }

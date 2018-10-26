@@ -2196,14 +2196,7 @@ int multiSlsDetector::writeAdcRegister(int addr, int val, int detPos) {
 
 	// multi
 	auto r = parallelCall(&slsDetector::writeAdcRegister, addr, val);
-	if (sls::allEqual(r))
-		return r.front();
-
-	// can't have different values
-	FILE_LOG(logERROR) << "Error: Different Values for function writeAdcRegister "
-			"(write 0x" << std::hex << val << " to addr 0x" << std::hex << addr << std::dec << ")";
-	setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
-	return -1;
+	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
 
@@ -2458,33 +2451,22 @@ int multiSlsDetector::setAutoComparatorDisableMode(int ival, int detPos) {
 }
 
 
-int multiSlsDetector::getChanRegs(double* retval, bool fromDetector, int detPos) {
+int multiSlsDetector::getChanRegs(double* retval, int detPos) {
 
 	int offset = 0;
 	std::vector<int> r;
 	for (auto& d : detectors) {
 		int nch = d->getTotalNumberOfChannels();
 		double result[nch];
-		r.push_back(d->getChanRegs(result, fromDetector));
+		r.push_back(d->getChanRegs(result));
 		memcpy(retval + offset, result, nch * sizeof(double));
 	}
 	return sls::minusOneIfDifferent(r);
 }
 
 
-int multiSlsDetector::calibratePedestal(int frames, int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->calibratePedestal(frames);
-	}
 
-	// multi
-	auto r = parallelCall(&slsDetector::calibratePedestal, frames);
-	return sls::minusOneIfDifferent(r);
-}
-
-
-int multiSlsDetector::setRateCorrection(int t, int detPos) {
+int multiSlsDetector::setRateCorrection(int64_t t, int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->setRateCorrection(t);
@@ -2496,7 +2478,7 @@ int multiSlsDetector::setRateCorrection(int t, int detPos) {
 }
 
 
-int multiSlsDetector::getRateCorrection(int detPos) {
+int64_t multiSlsDetector::getRateCorrection(int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->getRateCorrection();
@@ -2508,15 +2490,14 @@ int multiSlsDetector::getRateCorrection(int detPos) {
 }
 
 
-int multiSlsDetector::printReceiverConfiguration(int detPos) {
+void multiSlsDetector::printReceiverConfiguration(int detPos) {
 	// single
 	if (detPos >= 0) {
 		return detectors[detPos]->printReceiverConfiguration();
 	}
 
 	// multi
-	auto r = parallelCall(&slsDetector::printReceiverConfiguration);
-	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+	parallelCall(&slsDetector::printReceiverConfiguration);
 }
 
 

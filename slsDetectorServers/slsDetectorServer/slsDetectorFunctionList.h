@@ -102,12 +102,7 @@ int64_t 	getTimeLeft(enum timerIndex ind);
 
 
 // parameters - module, settings
-
-#ifdef EIGERD
-int 		setModule(sls_detector_module myMod, int delay);
-#else
-int 		setModule(sls_detector_module myMod);
-#endif
+int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 enum 		detectorSettings setSettings(enum detectorSettings sett);
 enum 		detectorSettings getSettings();
@@ -233,10 +228,6 @@ int 		getTotalNumberOfChannels();
 int 		getNumberOfChips();
 int 		getNumberOfDACs();
 int 		getNumberOfADCs();
-#ifdef EIGERD
-int 		getNumberOfGains();
-int 		getNumberOfOffsets();
-#endif
 int 		getNumberOfChannelsPerChip();
 
 

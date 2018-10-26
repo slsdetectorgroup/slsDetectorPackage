@@ -146,15 +146,7 @@ int slsReceiverImplementation::getDetectorPositionId() const{
 
 char *slsReceiverImplementation::getDetectorHostname() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	//not initialized
-	if(!strlen(detHostname))
-		return NULL;
-
-	char* output = new char[MAX_STR_LENGTH]();
-	strcpy(output,detHostname);
-	//freed by calling function
-	return output;
+	return detHostname;
 }
 
 int slsReceiverImplementation::getFlippedData(int axis) const{
@@ -177,28 +169,12 @@ slsDetectorDefs::fileFormat slsReceiverImplementation::getFileFormat() const{
 
 char *slsReceiverImplementation::getFileName() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	//not initialized
-	if(!strlen(fileName))
-		return NULL;
-
-	char* output = new char[MAX_STR_LENGTH]();
-	strcpy(output,fileName);
-	//freed by calling function
-	return output;
+	return fileName;
 }
 
 char *slsReceiverImplementation::getFilePath() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	//not initialized
-	if(!strlen(filePath))
-		return NULL;
-
-	char* output = new char[MAX_STR_LENGTH]();
-	strcpy(output,filePath);
-	//freed by calling function
-	return output;
+	return filePath;
 }
 
 uint64_t slsReceiverImplementation::getFileIndex() const{
@@ -296,11 +272,7 @@ uint32_t slsReceiverImplementation::getUDPPortNumber2() const{
 
 char *slsReceiverImplementation::getEthernetInterface() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	char* output = new char[MAX_STR_LENGTH]();
-	strcpy(output,eth);
-	//freed by calling function
-	return output;
+	return eth;
 }
 
 
@@ -397,21 +369,12 @@ uint32_t slsReceiverImplementation::getStreamingPort() const{
 
 char *slsReceiverImplementation::getStreamingSourceIP() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	char* output = new char[MAX_STR_LENGTH]();
-	strcpy(output,streamingSrcIP);
-	//freed by calling function
-	return output;
+	return streamingSrcIP;
 }
 
 char *slsReceiverImplementation::getAdditionalJsonHeader() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-    char* output = new char[MAX_STR_LENGTH]();
-    memset(output, 0, MAX_STR_LENGTH);
-    strcpy(output,additionalJsonHeader);
-    //freed by calling function
-    return output;
+    return additionalJsonHeader;
 }
 
 uint32_t slsReceiverImplementation::getUDPSocketBufferSize() const {

@@ -45,7 +45,6 @@ enum detFuncs{
 	F_LOAD_IMAGE, /**< Loads Dark/Gain image to the Gotthard detector */
 	F_READ_COUNTER_BLOCK, /**< reads the counter block memory for gotthard */
 	F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
-	F_CALIBRATE_PEDESTAL, /**< starts acquistion, calibrates pedestal and write back to fpga */
 	F_ENABLE_TEN_GIGA, /**< enable 10Gbe */
 	F_SET_ALL_TRIMBITS, /** < set all trimbits to this value */
 	F_SET_CTB_PATTERN, /** < loads a pattern in the CTB */
@@ -160,7 +159,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_LOAD_IMAGE:						return "F_LOAD_IMAGE";
 	case F_READ_COUNTER_BLOCK:				return "F_READ_COUNTER_BLOCK";
 	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
-	case F_CALIBRATE_PEDESTAL:				return "F_CALIBRATE_PEDESTAL";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_CTB_PATTERN:					return "F_SET_CTB_PATTERN";

@@ -82,7 +82,6 @@ int ClientInterface::Server_ReceiveArg(int& ret, char* mess, void* arg, int size
 	if (sizeofArg && mySocket->ReceiveDataOnly(arg, sizeofArg) < 0)
 		return Server_SocketCrash();
 
-	ret = OK;
 	// check if server object created
 	if (checkbase && base == NULL)
 		Server_NullObjectError(ret, mess);

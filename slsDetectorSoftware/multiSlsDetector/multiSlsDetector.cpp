@@ -7,7 +7,6 @@
 #include "multiSlsDetectorCommand.h"
 #include "utilities.h"
 #include "detectorData.h"
-#include "logger.h"
 
 #include <sys/types.h>
 #include <iostream>
@@ -2497,7 +2496,8 @@ void multiSlsDetector::printReceiverConfiguration(int detPos) {
 	}
 
 	// multi
-	parallelCall(&slsDetector::printReceiverConfiguration);
+	for (auto& d : detectors)
+		d->printReceiverConfiguration();
 }
 
 

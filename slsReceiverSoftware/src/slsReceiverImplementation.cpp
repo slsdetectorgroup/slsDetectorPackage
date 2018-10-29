@@ -144,9 +144,9 @@ int slsReceiverImplementation::getDetectorPositionId() const{
     return detID;
 }
 
-char *slsReceiverImplementation::getDetectorHostname() const{
+std::string slsReceiverImplementation::getDetectorHostname() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-	return detHostname;
+	return std::string(detHostname);
 }
 
 int slsReceiverImplementation::getFlippedData(int axis) const{
@@ -167,14 +167,14 @@ slsDetectorDefs::fileFormat slsReceiverImplementation::getFileFormat() const{
 }
 
 
-char *slsReceiverImplementation::getFileName() const{
+std::string slsReceiverImplementation::getFileName() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-	return fileName;
+	return std::string(fileName);
 }
 
-char *slsReceiverImplementation::getFilePath() const{
+std::string slsReceiverImplementation::getFilePath() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-	return filePath;
+	return std::string(filePath);
 }
 
 uint64_t slsReceiverImplementation::getFileIndex() const{
@@ -270,9 +270,9 @@ uint32_t slsReceiverImplementation::getUDPPortNumber2() const{
     return udpPortNum[1];
 }
 
-char *slsReceiverImplementation::getEthernetInterface() const{
+std::string slsReceiverImplementation::getEthernetInterface() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-	return eth;
+	return std::string(eth);
 }
 
 
@@ -367,14 +367,14 @@ uint32_t slsReceiverImplementation::getStreamingPort() const{
     return streamingPort;
 }
 
-char *slsReceiverImplementation::getStreamingSourceIP() const{
+std::string slsReceiverImplementation::getStreamingSourceIP() const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-	return streamingSrcIP;
+	return std::string(streamingSrcIP);
 }
 
-char *slsReceiverImplementation::getAdditionalJsonHeader() const{
+std::string slsReceiverImplementation::getAdditionalJsonHeader() const{
     FILE_LOG(logDEBUG) << __AT__ << " starting";
-    return additionalJsonHeader;
+    return std::string(additionalJsonHeader);
 }
 
 uint32_t slsReceiverImplementation::getUDPSocketBufferSize() const {

@@ -306,7 +306,7 @@ int  M_nofunc(int file_des) {
 	while (n > 0)
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 
-	strcpy(mess,"Unrecognized Function. Please do not proceed.\n");
+	sprintf(mess,"Unrecognized Function enum %d. Please do not proceed.\n", fnum);
 	FILE_LOG(logERROR, (mess));
 	return Server_SendResult(file_des, OTHER, 0, NULL, 0);
 }
@@ -344,7 +344,7 @@ int exec_command(int file_des) {
 	FILE_LOG(logINFO, ("Executing command (%s)\n", cmd));
 
 	// set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		FILE* sysFile = popen(cmd, "r");
 		const size_t tempsize = 256;
 		char temp[tempsize];
@@ -398,7 +398,7 @@ int set_external_signal_flag(int file_des) {
 	functionNotImplemented();
 #else
 	// set
-	if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() != FAIL)) {
+	if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() == OK)) {
 		setExtSignal(signalindex, flag);
 	}
 	// get
@@ -424,7 +424,7 @@ int set_external_communication_mode(int file_des) {
 	FILE_LOG(logDEBUG5, ("Setting external communication mode to %d\n", arg));
 
 	// set
-	if ((arg != GET_EXTERNAL_COMMUNICATION_MODE) && (Server_VerifyLock() != FAIL)) {
+	if ((arg != GET_EXTERNAL_COMMUNICATION_MODE) && (Server_VerifyLock() == OK)) {
 		switch (arg) {
 		case AUTO_TIMING:
 		case TRIGGER_EXPOSURE:
@@ -501,7 +501,7 @@ int digital_test(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		switch (mode) {
 #ifdef GOTTHARDD
 		case DIGITAL_BIT_TEST:
@@ -634,7 +634,7 @@ int set_dac(int file_des) {
         		(mV ? "mV" : "dac units")));
 
     	// set & get
-    	if ((val == -1) || ((val != -1) && (Server_VerifyLock() != FAIL))) {
+    	if ((val == -1) || ((val != -1) && (Server_VerifyLock() == OK))) {
     		switch(ind) {
 
     		// io delay
@@ -793,7 +793,7 @@ int write_register(int file_des) {
 		FILE_LOG(logDEBUG5, ("Writing to register 0x%x, data 0x%x\n", addr, val));
 
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		retval = writeRegister(addr, val);
 		// validate
 		if (retval != val) {
@@ -912,7 +912,7 @@ int set_module(int file_des) {
 	}
 
 	// only set
-	else if (Server_VerifyLock() != FAIL) {
+	else if (Server_VerifyLock() == OK) {
 		// check index
 		switch (module.reg) {
 #ifdef EIGERD
@@ -1043,7 +1043,7 @@ int set_settings(int file_des) {
 	FILE_LOG(logDEBUG5, ("Setting settings %d\n", isett));
 
 	//set & get
-	if ((isett == GET_SETTINGS) || ((isett != GET_SETTINGS) && (Server_VerifyLock() != FAIL))) {
+	if ((isett == GET_SETTINGS) || ((isett != GET_SETTINGS) && (Server_VerifyLock() == OK))) {
 
 		// check index
 		switch(isett) {
@@ -1123,7 +1123,7 @@ int start_acquisition(int file_des) {
 
 	FILE_LOG(logDEBUG5, ("Starting Acquisition\n"));
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = startStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start acquisition\n");
@@ -1142,7 +1142,7 @@ int stop_acquisition(int file_des) {
 
 	FILE_LOG(logDEBUG5, ("Stopping Acquisition\n"));
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = stopStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not stop acquisition\n");
@@ -1166,7 +1166,7 @@ int start_readout(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = startReadOut();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start readout\n");
@@ -1207,7 +1207,7 @@ int start_and_read_all(int file_des) {
 	// start state machine
 	FILE_LOG(logDEBUG5, ("Stopping Acquisition\n"));
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = startStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start acquisition\n");
@@ -1234,7 +1234,7 @@ int read_all(int file_des) {
 
 	FILE_LOG(logDEBUG5, ("Reading all frames\n"));
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		readFrame(&ret, mess);
 	}
 	return Server_SendResult(file_des, INT32, 1 , NULL, 0);
@@ -1261,7 +1261,7 @@ int set_timer(int file_des) {
 	FILE_LOG(logDEBUG5, ("Setting timer index %d to %lld ns\n", ind, tns));
 
 	// set & get
-	if ((tns == -1) || ((tns != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((tns == -1) || ((tns != -1) && (Server_VerifyLock() == OK))) {
 
 		// check index
 		switch (ind) {
@@ -1395,7 +1395,7 @@ int set_dynamic_range(int file_des) {
 	FILE_LOG(logDEBUG5, ("Setting dr to %d\n", dr));
 
 	// set & get
-	if ((dr == -1) || ((dr != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((dr == -1) || ((dr != -1) && (Server_VerifyLock() == OK))) {
 
 #ifdef EIGERD
 		int old_dr = setDynamicRange(-1);
@@ -1463,7 +1463,7 @@ int set_readout_flags(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == GET_READOUT_FLAGS) || ((arg != GET_READOUT_FLAGS) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == GET_READOUT_FLAGS) || ((arg != GET_READOUT_FLAGS) && (Server_VerifyLock() == OK))) {
 
 		switch(arg) {
 		case STORE_IN_RAM:
@@ -1516,7 +1516,7 @@ int set_roi(int file_des) {
 				return printSocketReadError();
 		}
 	}
-	FILE_LOG(logDEBUG5, ("Set ROI (nroi:%d)\n", narg));
+	FILE_LOG(logDEBUG5, ("Set ROI (narg:%d)\n", narg));
 	{
 		int iloop = 0;
 		for (iloop = 0; iloop < narg; ++iloop) {
@@ -1529,7 +1529,7 @@ int set_roi(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == GET_READOUT_FLAGS) || ((arg != GET_READOUT_FLAGS) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == GET_READOUT_FLAGS) || ((arg != GET_READOUT_FLAGS) && (Server_VerifyLock() == OK))) {
 		retval = setROI(narg, arg, &nretval, &ret);
 		if (ret == FAIL) {
 			sprintf(mess,"Could not set all roi. "
@@ -1574,7 +1574,7 @@ int set_speed(int file_des) {
 	FILE_LOG(logDEBUG5, ("Setting speed index %d to %d\n", ind, val));
 
 	// set & get
-	if ((val == -1) || ((val != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((val == -1) || ((val != -1) && (Server_VerifyLock() == OK))) {
 		// check index
 		switch(ind) {
 #ifdef JUNGFRAUD
@@ -1605,7 +1605,7 @@ int set_speed(int file_des) {
 
 
 int exit_server(int file_des) {
-	cprintf(BG_RED,"Closing Server\n");
+	cprintf(BG_RED, "Closing Server\n");
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	Server_SendResult(file_des, INT32, 0, NULL, 0);
@@ -1661,7 +1661,7 @@ int set_port(int file_des) {
 
 	// set only
 	int sd = -1;
-	if ((Server_VerifyLock() != FAIL)) {
+	if ((Server_VerifyLock() == OK)) {
 		// port number too low
 		 if (p_number < 1024) {
 			ret = FAIL;
@@ -1701,68 +1701,67 @@ int update_client(int file_des) {
 
 
 int send_update(int file_des) {
-	int n = 0;	// if (n<0) should fail to stop talking to a closed client socket
-	int nm = 0;
-	int64_t retval = 0;
+	int n = 0;
+	int i32 = -1;
+	int64_t i64 = -1;
 
 	n = sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
 	if (n < 0) return printSocketReadError();
 
-
-	nm = setDynamicRange(GET_FLAG);
-	n = sendData(file_des,&nm,sizeof(nm),INT32);
+	i32 = setDynamicRange(GET_FLAG);
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	dataBytes = calculateDataBytes();
 	n = sendData(file_des,&dataBytes,sizeof(dataBytes),INT32);
 	if (n < 0) return printSocketReadError();
 
-	nm = (int)setSettings(GET_SETTINGS);
-	n = sendData(file_des,&nm,sizeof(nm),INT32);
+	i32 = (int)setSettings(GET_SETTINGS);
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 #ifdef EIGERD
-	nm = getThresholdEnergy(GET_FLAG);
-	n = sendData(file_des,&nm,sizeof(nm),INT32);
+	i32 = getThresholdEnergy(GET_FLAG);
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 #endif
 
-	retval = setTimer(FRAME_NUMBER,GET_FLAG);
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	i64 = setTimer(FRAME_NUMBER,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-	retval = setTimer(ACQUISITION_TIME,GET_FLAG);
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	i64 = setTimer(ACQUISITION_TIME,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 #ifdef EIGERD
-	retval = setTimer(SUBFRAME_ACQUISITION_TIME,GET_FLAG);
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	i64 = setTimer(SUBFRAME_ACQUISITION_TIME,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-	retval = setTimer(SUBFRAME_DEADTIME,GET_FLAG);
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	i64 = setTimer(SUBFRAME_DEADTIME,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 #endif
 
-	retval = setTimer(FRAME_PERIOD,GET_FLAG);
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	i64 = setTimer(FRAME_PERIOD,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 #ifndef EIGERD
-	retval = setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	i64 = setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 #endif
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD)
-	retval = setTimer(GATES_NUMBER,GET_FLAG);
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	i64 = setTimer(GATES_NUMBER,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 #endif
 
-	retval = setTimer(CYCLES_NUMBER,GET_FLAG);
-	n = sendData(file_des,&retval,sizeof(int64_t),INT64);
+	i64 = setTimer(CYCLES_NUMBER,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	if (lockStatus == 0) {
@@ -1851,7 +1850,7 @@ int configure_mac(int file_des) {
 #endif
 
 	// set only
-	if ((Server_VerifyLock() != FAIL)) {
+	if ((Server_VerifyLock() == OK)) {
 
 		// stop detector if it was running
 		if (getRunStatus() != IDLE) {
@@ -1947,7 +1946,7 @@ int load_image(int file_des) {
 #else
 
 	// set only
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		switch (index) {
 		case DARK_IMAGE :
 		case GAIN_IMAGE :
@@ -1988,7 +1987,7 @@ int read_counter_block(int file_des) {
 #else
 
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = readCounterBlock(startACQ, retval);
 		if (ret == FAIL) {
 			strcpy(mess, "Could not read counter block\n");
@@ -2017,7 +2016,7 @@ int reset_counter_block(int file_des) {
 #else
 
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = resetCounterBlock(startACQ);
 		if (ret == FAIL) {
 			strcpy(mess, "Could not reset counter block\n");
@@ -2046,7 +2045,7 @@ int enable_ten_giga(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = enableTenGigabitEthernet(arg);
 		FILE_LOG(logDEBUG5, ("10GbE: %d\n", retval));
 		validate(arg, retval, "enable/disable 10GbE", 0);
@@ -2073,7 +2072,7 @@ int set_all_trimbits(int file_des) {
 #else
 
 	// set
-	if (arg >= 0 && Server_VerifyLock() != FAIL) {
+	if (arg >= 0 && Server_VerifyLock() == OK) {
 		ret = setAllTrimbits(arg);
 		//changes settings to undefined
 		setSettings(UNDEFINED);
@@ -2115,7 +2114,7 @@ int write_adc_register(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL)
+	if (Server_VerifyLock() == OK)
 		setAdc(addr, val);
 #endif
 	return Server_SendResult(file_des, INT32, 1, NULL, 0);
@@ -2139,7 +2138,7 @@ int set_counter_bit(int file_des) {
 #else
 
 	// set
-	if (arg >= 0 && Server_VerifyLock() != FAIL) {
+	if (arg >= 0 && Server_VerifyLock() == OK) {
 		setCounterBit(arg);
 	}
 	// get
@@ -2167,7 +2166,7 @@ int pulse_pixel(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = pulsePixel(args[0], args[1], args[2]);
 		if (ret == FAIL) {
 			strcpy(mess, "Could not pulse pixel\n");
@@ -2195,7 +2194,7 @@ int pulse_pixel_and_move(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = pulsePixelNMove(args[0], args[1], args[2]);
 		if (ret == FAIL) {
 			strcpy(mess, "Could not pulse pixel and move\n");
@@ -2224,7 +2223,7 @@ int pulse_chip(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = pulseChip(arg);
 		if (ret == FAIL) {
 			strcpy(mess, "Could not pulse chip\n");
@@ -2252,7 +2251,7 @@ int set_rate_correct(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 
 		int dr = setDynamicRange(-1);
 
@@ -2320,7 +2319,7 @@ int set_network_parameter(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((value == -1) || ((value != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((value == -1) || ((value != -1) && (Server_VerifyLock() == OK))) {
 		// check index
 		switch (mode) {
 #ifdef EIGERD
@@ -2378,7 +2377,7 @@ int program_fpga(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 
 		// not in programming mode
 		if (debugflag != PROGRAMMING_MODE) {
@@ -2499,7 +2498,7 @@ int reset_fpga(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		if (isControlServer) {
 			basictests(debugflag);	// mapping of control server at least
 			if (debugflag != PROGRAMMING_MODE)
@@ -2528,7 +2527,7 @@ int power_chip(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = powerChip(arg);
 		FILE_LOG(logDEBUG5, ("Power chip: %d\n", retval));
 		validate(arg, retval, "power on/off chip", 0);
@@ -2561,7 +2560,7 @@ int set_activate(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = activate(arg);
 		FILE_LOG(logDEBUG5, ("Activate: %d\n", retval));
 		validate(arg, retval, "set activate", 0);
@@ -2582,7 +2581,7 @@ int prepare_acquisition(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = prepareAcquisition();
 		if (ret == FAIL) {
 			strcpy(mess, "Could not prepare acquisition\n");
@@ -2611,7 +2610,7 @@ int threshold_temp(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 	    if (arg > MAX_THRESHOLD_TEMP_VAL)   {
 	        ret = FAIL;
 	        sprintf(mess,"Threshold Temp %d should be in range: 0 - %d\n",
@@ -2645,7 +2644,7 @@ int temp_control(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = setTemperatureControl(arg);
 		FILE_LOG(logDEBUG5, ("Temperature control: %d\n", retval));
 		validate(arg, retval, "set temperature control", 0);
@@ -2671,7 +2670,7 @@ int temp_event(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = setTemperatureEvent(arg);
 		FILE_LOG(logDEBUG5, ("Temperature event: %d\n", retval));
 		validate(arg, retval, "set temperature event", 0);
@@ -2698,7 +2697,7 @@ int auto_comp_disable(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = autoCompDisable(arg);
 		FILE_LOG(logDEBUG5, ("Auto comp disable: %d\n", retval));
 		validate(arg, retval, "set auto comp disable", 0);
@@ -2725,7 +2724,7 @@ int storage_cell_start(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() != FAIL))) {
+	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		if (arg > MAX_STORAGE_CELL_VAL) {
 			ret = FAIL;
 			strcpy(mess,"Max Storage cell number should not exceed 15\n");
@@ -2817,7 +2816,7 @@ int software_trigger(int file_des) {
 	functionNotImplemented();
 #else
 	// only set
-	if (Server_VerifyLock() != FAIL) {
+	if (Server_VerifyLock() == OK) {
 		ret = softwareTrigger();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not send software trigger\n");

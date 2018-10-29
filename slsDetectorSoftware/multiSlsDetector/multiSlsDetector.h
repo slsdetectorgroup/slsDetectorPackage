@@ -9,6 +9,7 @@
 
 #include "sls_detector_defs.h"
 #include "error_defs.h"
+#include "logger.h"
 
 class slsDetector;
 class SharedMemory;

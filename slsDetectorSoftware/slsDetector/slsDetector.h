@@ -11,6 +11,8 @@
 
 #include "sls_detector_defs.h"
 #include "error_defs.h"
+#include "logger.h"
+
 #include "math.h"
 
 class multiSlsDetector;
@@ -1261,7 +1263,7 @@ public:
 	 * @param retval is the array with the trimbits
 	 * @returns total number of channels for the detector
 	 */
-	int getChanRegs(double* retval,bool fromDetector);
+	int getChanRegs(double* retval);
 
 	/**
 	 * Configure Module (Eiger)
@@ -1300,7 +1302,7 @@ public:
 	 * Prints receiver configuration
 	 * #param level print level
 	 */
-	void printReceiverConfiguration(int level = logINFO);
+	void printReceiverConfiguration(TLogLevel level = logINFO);
 
 	/**
 	 * Checks if receiver is online and set flag
@@ -1487,12 +1489,6 @@ public:
 	int getFramesCaughtByReceiver();
 
 	/**
-	 * Gets the number of frames caught by any one receiver (to avoid using threadpool)
-	 * @returns number of frames caught by any one receiver (master receiver if exists)
-	 */
-	int getFramesCaughtByAnyReceiver();
-
-	/**
 	 * Gets the current frame index of receiver
 	 * @returns current frame index of receiver
 	 */
@@ -1537,13 +1533,6 @@ public:
 	 * @returns receiver streaming timer in ms
 	 */
 	int setReceiverStreamingTimer(int time_in_ms=500);
-
-	/**
-	 * Enable data streaming to client
-	 * @param enable 0 to disable, 1 to enable, -1 to get the value
-	 * @returns data streaming to client enable
-	 */
-	int enableDataStreamingToClient(int enable=-1);
 
 	/**
 	 * Enable or disable streaming data from receiver to client

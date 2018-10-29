@@ -2723,7 +2723,7 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action, int d
 	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (action==PUT_ACTION) {
-		sscanf(args[1],"%lld",&ival);
+		sscanf(args[1], "%ld",&ival);
 		myDet->setRateCorrection(ival, detPos);
 	}
 	sprintf(answer,"%lld",myDet->getRateCorrection(detPos));
@@ -4908,7 +4908,8 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action, 
 		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION)
 			return string("cannot put");
-		return string(""+myDet->printReceiverConfiguration(detPos));
+		myDet->printReceiverConfiguration(detPos);
+		return string("");
 	}else if (cmd=="parameters") {
 		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION) {

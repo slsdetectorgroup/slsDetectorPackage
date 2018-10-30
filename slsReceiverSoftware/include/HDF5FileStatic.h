@@ -112,7 +112,7 @@ public:
 				fd = 0;
 			}
 		} catch(Exception error) {
-			cprintf(RED,"Error in closing HDF5 handles of index %d\n", ind);
+			FILE_LOG(logERROR) << "Could not close HDF5 handles of index " << ind;
 			error.printErrorStack();
 		}
 	}
@@ -130,7 +130,7 @@ public:
 				fd = 0;
 			}
 		} catch(Exception error) {
-			cprintf(RED,"Error in closing master HDF5 handles\n");
+			FILE_LOG(logERROR) << "Could not close master HDF5 handles";
 			error.printErrorStack();
 		}
 	}
@@ -144,7 +144,7 @@ public:
 	{
 		if(fd) {
 			if (H5Fclose(fd) < 0 )
-				cprintf(RED,"Error in closing virtual HDF5 handles\n");
+				FILE_LOG(logERROR) << "Could not close virtual HDF5 handles";
 			fd = 0;
 		}
 	}
@@ -177,7 +177,7 @@ public:
 			memspace.close();
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in writing to file in object %d\n",ind);
+			FILE_LOG(logERROR) << "Could not write to file in object " << ind;
 			error.printErrorStack();
 			return 1;
 		}
@@ -239,7 +239,7 @@ public:
 			}i=14;
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in writing parameters (index:%d) to file in object %d\n", i, ind);
+			FILE_LOG(logERROR) << "Could not write parameters (index:" << i << ") to file in object " << ind;
 			error.printErrorStack();
 			return 1;
 		}
@@ -282,7 +282,7 @@ public:
 
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in extending dataset in object %d\n",ind);
+			FILE_LOG(logERROR) << "Could not extend dataset in object " << ind;
 			error.printError();
 			return 1;
 		}
@@ -417,7 +417,7 @@ public:
 			fd->close();
 
 		} catch(Exception error) {
-			cprintf(RED,"Error in creating master HDF5 handles\n");
+			FILE_LOG(logERROR) << "Could not create master HDF5 handles";
 			error.printErrorStack();
 			if (fd) fd->close();
 			return 1;
@@ -521,7 +521,7 @@ public:
 			}
 		}
 		catch(Exception error){
-			cprintf(RED,"Error in creating HDF5 handles in object %d\n",ind);
+			FILE_LOG(logERROR) << "Could not create HDF5 handles in object " << ind;
 			error.printErrorStack();
 			if (fd) fd->close();
 			return 1;
@@ -571,36 +571,36 @@ public:
 		hid_t dfal = H5Pcreate (H5P_FILE_ACCESS);
 		if (dfal < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating file access property for virtual file ")
+					std::string("Could not create file access property for virtual file ")
 					+ virtualFileName + std::string("\n"));
 		if (H5Pset_fclose_degree (dfal, H5F_CLOSE_STRONG) < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in setting strong file close degree for virtual file ")
+					std::string("Could not set strong file close degree for virtual file ")
 					+ virtualFileName + std::string("\n"));
 		fd = H5Fcreate( virtualFileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, dfal);
 		if (fd < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating virtual file ") + virtualFileName + std::string("\n"));
+					std::string("Could not create virtual file ") + virtualFileName + std::string("\n"));
 
 		//attributes - version
 		hid_t dataspace_attr = H5Screate (H5S_SCALAR);
 		if (dataspace_attr < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating dataspace for attribute in virtual file ")
+					std::string("Could not create dataspace for attribute in virtual file ")
 					+ virtualFileName + std::string("\n"));
 		hid_t attrid = H5Acreate2 (fd, "version", H5T_NATIVE_DOUBLE, dataspace_attr, H5P_DEFAULT, H5P_DEFAULT);
 		if (attrid < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating attribute in virtual file ")
+					std::string("Could not create attribute in virtual file ")
 					+ virtualFileName + std::string("\n"));
 		double attr_data = version;
 		if (H5Awrite (attrid, H5T_NATIVE_DOUBLE, &attr_data) < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in writing attribute in virtual file ")
+					std::string("Could not write attribute in virtual file ")
 					+ virtualFileName + std::string("\n"));
 		if (H5Aclose (attrid) < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in closing attribute in virtual file ")
+					std::string("Could not close attribute in virtual file ")
 					+ virtualFileName + std::string("\n"));
 
 
@@ -609,13 +609,13 @@ public:
 		hid_t vdsDataspace = H5Screate_simple(3, vdsdims ,NULL);
 		if (vdsDataspace < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating virtual dataspace in virtual file ")
+					std::string("Could not create virtual dataspace in virtual file ")
 					+ virtualFileName + std::string("\n"));
 		hsize_t vdsdims_para[2] = {numf, (unsigned int) numDety * numDetz};
 		hid_t vdsDataspace_para = H5Screate_simple(2, vdsdims_para, NULL);
 		if (vdsDataspace_para < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating virtual dataspace (parameters) in virtual file ")
+					std::string("Could not create virtual dataspace (parameters) in virtual file ")
 					+ virtualFileName + std::string("\n"));
 
 
@@ -623,23 +623,23 @@ public:
 		hid_t dcpl = H5Pcreate (H5P_DATASET_CREATE);
 		if (dcpl < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating file creation properties in virtual file ")
+					std::string("Could not create file creation properties in virtual file ")
 					+ virtualFileName + std::string("\n"));
 		int fill_value = -1;
 		if (H5Pset_fill_value (dcpl, GetDataTypeinC(dataType), &fill_value) < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating fill value in virtual file ")
+					std::string("Could not create fill value in virtual file ")
 					+ virtualFileName + std::string("\n"));
 		hid_t dcpl_para[parameterNames.size()];
 		for (unsigned int i = 0; i < parameterNames.size(); ++i) {
 			dcpl_para[i] = H5Pcreate (H5P_DATASET_CREATE);
 			if (dcpl_para[i] < 0)
 				return CloseFileOnError(fd,
-						std::string("Error in creating file creation properties (parameters) in virtual file ")
+						std::string("Could not create file creation properties (parameters) in virtual file ")
 						+ virtualFileName + std::string("\n"));
 			if (H5Pset_fill_value (dcpl_para[i], GetDataTypeinC(parameterDataTypes[i]), &fill_value) < 0)
 				return CloseFileOnError(fd,
-						std::string("Error in creating fill value (parameters) in virtual file ")
+						std::string("Could not create fill value (parameters) in virtual file ")
 						+ virtualFileName + std::string("\n"));
 		}
 
@@ -661,13 +661,13 @@ public:
 
 				//setect hyperslabs
 				if (H5Sselect_hyperslab (vdsDataspace, H5S_SELECT_SET, offset, NULL, count, NULL) < 0) {
-					cprintf(RED,"could not select hyperslab\n");
+					FILE_LOG(logERROR) << "Could not select hyperslab";
 					error = true;
 					break;
 				}
 				if (H5Sselect_hyperslab (vdsDataspace_para, H5S_SELECT_SET,
 						offset_para, NULL, count_para, NULL) < 0) {
-					cprintf(RED,"could not select hyperslab for parameters\n");
+					FILE_LOG(logERROR) << "Could not select hyperslab for parameters";
 					error = true;
 					break;
 				}
@@ -696,20 +696,20 @@ public:
 				hid_t srcDataspace = H5Screate_simple(3, srcdims, srcdimsmax);
 				if (srcDataspace < 0)
 					return CloseFileOnError(fd,
-							std::string("Error in creating source dataspace in virtual file ")
+							std::string("Could not create source dataspace in virtual file ")
 							+ virtualFileName + std::string("\n"));
 				hsize_t srcdims_para[1] = {nDimx};
 				hsize_t srcdimsmax_para[1] = {H5S_UNLIMITED};
 				hid_t srcDataspace_para = H5Screate_simple(1, srcdims_para, srcdimsmax_para);
 				if (srcDataspace_para < 0)
 					return CloseFileOnError(fd,
-							std::string("Error in creating source dataspace (parameters) in virtual file ")
+							std::string("Could not create source dataspace (parameters) in virtual file ")
 							+ virtualFileName + std::string("\n"));
 
 				//mapping
 				if (H5Pset_virtual(dcpl, vdsDataspace, relative_srcFileName.c_str(),
 						srcDatasetName.c_str(), srcDataspace) < 0) {
-					cprintf(RED,"could not set mapping for paramter 1\n");
+					FILE_LOG(logERROR) << "Could not set mapping for paramter 1";
 					error = true;
 					break;
 				}
@@ -717,7 +717,7 @@ public:
 				for (unsigned int k = 0; k < parameterNames.size(); ++k) {
 					if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para, relative_srcFileName.c_str(),
 							parameterNames[k], srcDataspace_para) < 0) {
-						cprintf(RED,"could not set mapping for paramter %d\n", k);
+						FILE_LOG(logERROR) << "Could not set mapping for paramter " << k;
 						error = true;
 						break;
 					}
@@ -736,7 +736,7 @@ public:
 		}
 		if (error)
 			return CloseFileOnError(fd,
-					std::string("Error in mapping files in virtual file ")
+					std::string("Could not map files in virtual file ")
 					+ virtualFileName + std::string("\n"));
 
 		//dataset
@@ -745,7 +745,7 @@ public:
 				GetDataTypeinC(dataType), vdsDataspace, H5P_DEFAULT, dcpl, H5P_DEFAULT);
 		if (vdsdataset < 0)
 			return CloseFileOnError(fd,
-					std::string("Error in creating virutal dataset in virtual file ")
+					std::string("Could not create virutal dataset in virtual file ")
 					+ virtualFileName + std::string("\n"));
 
 
@@ -757,7 +757,7 @@ public:
 					H5P_DEFAULT, dcpl_para[i], H5P_DEFAULT);
 			if (vdsdataset_para < 0)
 				return CloseFileOnError(fd,
-						std::string("Error in creating virutal dataset (parameters) in virtual file ")
+						std::string("Could not create virutal dataset (parameters) in virtual file ")
 						+ virtualFileName + std::string("\n"));
 		}
 
@@ -798,7 +798,7 @@ public:
 			data_out = (T*)malloc(sizeof(T)*(nDimx*nDimy*nDimz));
 			break;
 		default:
-			cprintf(RED,"invalid rank. Options: 2 or 3\n");
+			FILE_LOG(logERROR) << "Invalid rank. Options: 2 or 3";
 			return 0;
 		}
 		if (datatype == PredType::STD_U16LE) {
@@ -810,7 +810,7 @@ public:
 		} else if (datatype == PredType::STD_U8LE) {
 			FILE_LOG(logINFO) << "datatype:8";
 		} else {
-			FILE_LOG(logERROR) <<  "unknown datatype";
+			FILE_LOG(logERROR) <<  "Unknown datatype: " << datetype;
 			return 1;
 		}
 		FILE_LOG(logINFO) << "owenable:" << (owenable?1:0) << std::endl
@@ -861,7 +861,7 @@ public:
 			newfd->close();
 			oldfd->close();
 		} catch(Exception error){
-			cprintf(RED,"Error in copying virtual files\n");
+			FILE_LOG(logERROR) << "Could not copy virtual files";
 			error.printErrorStack();
 			free(data_out);
 			oldfd->close();
@@ -890,20 +890,20 @@ public:
 
 		hid_t dfal = H5Pcreate (H5P_FILE_ACCESS);
 		if (dfal < 0)
-			return CloseFileOnError( vfd, std::string("Error in creating file access property for link\n"));
+			return CloseFileOnError( vfd, std::string("Could not create file access property for link\n"));
 		if (H5Pset_fclose_degree (dfal, H5F_CLOSE_STRONG) < 0)
-			return CloseFileOnError( vfd, std::string("Error in setting strong file close degree for link\n"));
+			return CloseFileOnError( vfd, std::string("Could not set strong file close degree for link\n"));
 
 		//open master file
 		hid_t mfd = H5Fopen( masterFileName.c_str(), H5F_ACC_RDWR, dfal);
 		if (mfd < 0)
-			return CloseFileOnError( vfd, std::string("Error in opening master file\n"));
+			return CloseFileOnError( vfd, std::string("Could not open master file\n"));
 
 		//open virtual file
 		vfd = H5Fopen( virtualfname.c_str(), H5F_ACC_RDWR, dfal);
 		if (vfd < 0) {
 			H5Fclose(mfd); mfd = 0;
-			return CloseFileOnError( vfd, std::string("Error in opening virtual file\n"));
+			return CloseFileOnError( vfd, std::string("Could not open virtual file\n"));
 		}
 
 		// find relative path
@@ -918,13 +918,13 @@ public:
 		hid_t vdset = H5Dopen2( vfd, virtualDatasetname.c_str(), H5P_DEFAULT);
 		if (vdset < 0) {
 			H5Fclose(mfd);
-			return CloseFileOnError( vfd, std::string("Error in opening virtual data dataset\n"));
+			return CloseFileOnError( vfd, std::string("Could not open virtual data dataset\n"));
 		}
 		sprintf(linkname, "/entry/data/%s",virtualDatasetname.c_str());
 		if(H5Lcreate_external( relative_virtualfname.c_str(), virtualDatasetname.c_str(),
 										mfd, linkname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
 			H5Fclose(mfd); mfd = 0;
-			return CloseFileOnError( vfd, std::string("Error in creating link to data dataset\n"));
+			return CloseFileOnError( vfd, std::string("Could not create link to data dataset\n"));
 		}
 		H5Dclose(vdset);
 
@@ -933,14 +933,14 @@ public:
 			hid_t vdset_para = H5Dopen2( vfd, (std::string (parameterNames[i])).c_str(), H5P_DEFAULT);
 			if (vdset_para < 0) {
 				H5Fclose(mfd); mfd = 0;
-				return CloseFileOnError( vfd, std::string("Error in opening virtual parameter dataset to create link\n"));
+				return CloseFileOnError( vfd, std::string("Could not open virtual parameter dataset to create link\n"));
 			}
 			sprintf(linkname, "/entry/data/%s",(std::string (parameterNames[i])).c_str());
 
 			if(H5Lcreate_external( relative_virtualfname.c_str(), (std::string (parameterNames[i])).c_str(),
 					mfd, linkname, H5P_DEFAULT, H5P_DEFAULT) < 0) {
 				H5Fclose(mfd); mfd = 0;
-				return CloseFileOnError( vfd, std::string("Error in creating link to virtual parameter dataset\n"));
+				return CloseFileOnError( vfd, std::string("Could not create link to virtual parameter dataset\n"));
 			}
 		}
 
@@ -956,7 +956,7 @@ public:
 	 * @returns 1 for fail
 	 */
 	static int CloseFileOnError(hid_t& fd, const std::string msg) {
-		cprintf(RED, "%s", msg.c_str());
+		FILE_LOG(logERROR) << msg;
 		if(fd > 0)
 			H5Fclose(fd);
 		fd = 0;

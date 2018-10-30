@@ -24,18 +24,21 @@ void sigInterruptHandler(int p){
 	keeprunning = false;
 }
 
+/** Define Colors to print data call back in different colors for different recievers */
 /*
-int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*p){
-  printf("#### StartAcq:  filepath:%s  filename:%s fileindex:%llu  datasize:%u ####\n",
-	 filepath, filename, fileindex, datasize);
+#define PRINT_IN_COLOR(c,f, ...) 	printf ("\033[%dm" f RESET, 30 + c+1, ##__VA_ARGS__)
 
-  cprintf(BLUE, "--StartAcq: returning 0\n");
+int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*p){
+  FILE_LOG(logINFO) << "#### StartAcq:  "
+		  "filepath: " << filepath << "filename: " << filename <<
+		  "fileindex: " << fileindex << "datasize: " << datasize << " ####";
+  FILE_LOG(logINFO) << "--StartAcq: returning 0";
   return 0;
 }
 
 
 void AcquisitionFinished(uint64_t frames, void*p){
-  cprintf(BLUE, "#### AcquisitionFinished: frames:%llu ####\n",frames);
+	 FILE_LOG(logINFO) << "#### AcquisitionFinished: frames:" << frames << " ####";
 }
 
 
@@ -45,16 +48,16 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
 
 	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
 			"#### %d GetData: ####\n"
-			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu"
-			"\t\ttimestamp: %llu\t\tmodId: %u\t\t"
-			"xCrow%u\t\tcolumn: %u\t\tcolumn: %u\t\tdebug: %u"
+			"frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %lu"
+			"\t\ttimestamp: %lu\t\tmodId: %u\t\t"
+			"row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
 			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
 			//"\t\tpacketsMask:%s"
 			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-			detectorHeader.row, detectorHeader.frameNumber,
-			detectorHeader.expLength, detectorHeader.packetNumber, detectorHeader.bunchId,
-			detectorHeader.timestamp, detectorHeader.modId,
-			detectorHeader.row, detectorHeader.column, detectorHeader.column,
+			detectorHeader.row, (long unsigned int)detectorHeader.frameNumber,
+			detectorHeader.expLength, detectorHeader.packetNumber, (long unsigned int)detectorHeader.bunchId,
+			(long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
+			detectorHeader.row, detectorHeader.column, detectorHeader.reserved,
 			detectorHeader.debug, detectorHeader.roundRNumber,
 			detectorHeader.detType, detectorHeader.version,
 			//header->packetsMask.to_string().c_str(),
@@ -66,7 +69,7 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
 int main(int argc, char *argv[]) {
 
 	keeprunning = true;
-	cprintf(BLUE,"Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	FILE_LOG(logINFOBLUE) << "Created [ Tid: " << syscall(SYS_gettid) << " ]";
 
 	// Catch signal SIGINT to close files and call destructors properly
 	struct sigaction sa;
@@ -74,7 +77,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_handler=sigInterruptHandler;		// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGINT, &sa, NULL) == -1) {
-		cprintf(RED, "Could not set handler function for SIGINT\n");
+		FILE_LOG(logERROR) << "Could not set handler function for SIGINT";
 	}
 
 
@@ -85,7 +88,7 @@ int main(int argc, char *argv[]) {
 	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
-		cprintf(RED, "Could not set handler function for SIGPIPE\n");
+		FILE_LOG(logERROR) << "Could not set handler function for SIGPIPE";
 	}
 
 
@@ -93,7 +96,7 @@ int main(int argc, char *argv[]) {
 	slsReceiverUsers *receiver = new slsReceiverUsers(argc, argv, ret);
 	if(ret==slsDetectorDefs::FAIL){
 		delete receiver;
-		cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+		FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
 		exit(EXIT_FAILURE);
 	}
 
@@ -142,18 +145,18 @@ int main(int argc, char *argv[]) {
 	//start tcp server thread
 	if (receiver->start() == slsDetectorDefs::FAIL){
 		delete receiver;
-		cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
+		FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
 		exit(EXIT_FAILURE);
 	}
 
 	FILE_LOG(logINFO) << "Ready ... ";
-	cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
+	FILE_LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
 	while(keeprunning)
 		pause();
 
 	delete receiver;
-	cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
-	// FILE_LOG(logINFO) << "Goodbye!";
+	FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
+	FILE_LOG(logINFO) << "Exiting Receiver";
 	return 0;
 }
 

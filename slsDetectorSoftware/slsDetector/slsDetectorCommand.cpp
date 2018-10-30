@@ -144,6 +144,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 	++i;
 
 	/*! \page test
+   - <b>firmwaretest</b> performs the firmware test.  Cannot set! Jungfrau only. Only get!
+	 */
+	descrToFuncMap[i].m_pFuncName="firmwaretest"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
+	++i;
+
+	/*! \page test
    - <b>reg [addr] [val]</b> ??? writes to an register \c addr with \c value in hexadecimal format.
 	 */
 	descrToFuncMap[i].m_pFuncName="reg"; //
@@ -916,14 +923,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 	descrToFuncMap[i].m_pFuncName="trimval"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
 	++i;
-
-	/*! \page settings
-   - <b>pedestal [i]</b> starts acquisition for i frames, calculates pedestal and writes back to fpga. Used in GOTTHARD only. Only put! \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="pedestal"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
-	++i;
-
 
 
 	/* pots */
@@ -2155,7 +2154,7 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action, int detPo
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
-	int b;
+	//int b;
 	if (action==PUT_ACTION) {
 		return  string("cannot set");
 	} else if (action==HELP_ACTION) {
@@ -2718,16 +2717,16 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action, int d
 	if (action==HELP_ACTION) {
 		return helpRateCorr(action);
 	}
-	int fval;
+	int64_t ival;
 	char answer[1000];
 
 	myDet->setOnline(ONLINE_FLAG, detPos);
 
 	if (action==PUT_ACTION) {
-		sscanf(args[1],"%d",&fval);
-		myDet->setRateCorrection(fval, detPos);
+		sscanf(args[1], "%ld",&ival);
+		myDet->setRateCorrection(ival, detPos);
 	}
-	sprintf(answer,"%d",myDet->getRateCorrection(detPos));
+	sprintf(answer,"%ld",myDet->getRateCorrection(detPos));
 	return string(answer);
 }
 
@@ -3542,15 +3541,6 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, int d
 	  }
 	  sprintf(ans,"%d",myDet->setAllTrimbits(-1, detPos));
 	  return ans;
-	} else if (cmd=="pedestal") {
-		if (action==GET_ACTION)
-			return string("cannot get");
-		if (sscanf(args[1],"%d",&val)){
-			sprintf(ans,"%d",myDet->calibratePedestal(val, detPos));
-			return string(ans);
-		}else
-			return string("cannot parse frame number")+cmd;
-
 	}
 	return string("unknown settings command ")+cmd;
 
@@ -3567,8 +3557,6 @@ string slsDetectorCommand::helpSettings(int action) {
 		os << "thresholdnotb eV [sett]\n sets the detector threshold in eV without loading trimbits. If sett is provided for eiger, uses settings sett"<< std::endl;
 		os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
 		os << "trimval i \n sets all the trimbits to i" << std::endl;
-		os << "pedestal i \n starts acquisition for i frames, calculates pedestal and writes back to fpga."<< std::endl;
-
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "settings \n gets the settings of the detector"<< std::endl;
@@ -3706,7 +3694,14 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int d
 	if (cmd=="bustest"){
 		if (action==PUT_ACTION)
 			return string("cannot set ")+cmd;
-		sprintf(answer,"0x%x",myDet->digitalTest(DETECTOR_BUS_TEST));
+		sprintf(answer,"%d",myDet->digitalTest(DETECTOR_BUS_TEST));
+		return string(answer);
+	}
+
+	else if (cmd=="firmwaretest"){
+		if (action==PUT_ACTION)
+			return string("cannot set ")+cmd;
+		sprintf(answer,"%d",myDet->digitalTest(DETECTOR_FIRMWARE_TEST));
 		return string(answer);
 	}
 
@@ -3716,7 +3711,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int d
 		int ival=-1;
 		if (sscanf(args[1],"%d",&ival)) {
 			if((ival==0)||(ival==1)){
-				sprintf(answer,"0x%x",myDet->digitalTest(DIGITAL_BIT_TEST,ival, detPos));
+				sprintf(answer,"%d",myDet->digitalTest(DIGITAL_BIT_TEST,ival, detPos));
 				return string(answer);
 			}
 			else
@@ -3737,6 +3732,7 @@ string slsDetectorCommand::helpDigiTest(int action) {
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "digibittest:i \t performs digital test of the module i. Returns 0 if succeeded, otherwise error mask.Gotthard only."<< std::endl;
 		os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Jungfrau only."<< std::endl;
+		os << "firmwaretest \t performs the firmware test. Jungfrau only." << std::endl;
 	}
 	return os.str();
 }
@@ -4912,7 +4908,8 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action, 
 		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION)
 			return string("cannot put");
-		return string(""+myDet->printReceiverConfiguration(detPos));
+		myDet->printReceiverConfiguration(detPos);
+		return string("");
 	}else if (cmd=="parameters") {
 		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 		if (action==PUT_ACTION) {

@@ -7,9 +7,10 @@
  * @short This is the base class for multi detector system functionalities
  * @author Anna Bergamaschi
  */
-
-#include "error_defs.h"
 #include "sls_detector_defs.h"
+#include "error_defs.h"
+#include "logger.h"
+
 
 class slsDetector;
 class SharedMemory;
@@ -230,21 +231,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     int64_t getId(idMode mode, int detPos = -1);
 
-    /**
-     * Get sls detector object from position in detectors array
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns pointer to sls detector object
-     */
-    // slsDetector* getSlsDetector(int detPos = -1);
-
-    /**
-     * Accessing the sls detector from the multi list using position
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns slsDetector object
-     */
-    // slsDetector *operator()(int detPos = -1) const;
-
-    // slsDetector* operator[](int detPos) const;
     /**
      * Free shared memory from the command line
      * avoiding creating the constructor classes and mapping
@@ -1192,48 +1178,36 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     int setAutoComparatorDisableMode(int ival = -1, int detPos = -1);
 
-    /**
-     * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
-     * @param retval is the array with the trimbits
-     * @param fromDetector is true if the trimbits shared memory have to be
-     * uploaded from detector
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns total number of channels for the detector
-     */
-    int getChanRegs(double *retval, bool fromDetector, int detPos = -1);
+	/**
+	 * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
+	 * @param retval is the array with the trimbits
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns total number of channels for the detector
+	 */
+	int getChanRegs(double* retval, int detPos = -1);
 
-    /**
-     * Calibrate Pedestal (ChipTestBoard)
-     * Starts acquisition, calibrates pedestal and writes to fpga
-     * @param frames number of frames
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns number of frames
-     */
-    int calibratePedestal(int frames = 0, int detPos = -1);
+	/**
+	 * Set Rate correction ( Eiger)
+	 * @param t dead time in ns - if 0 disable correction,
+	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
+	 * for current settings
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns 0 if rate correction disabled, >0 otherwise
+	 */
+	int setRateCorrection(int64_t t = 0, int detPos = -1);
 
-    /**
-     * Set Rate correction ( Eiger)
-     * @param t dead time in ns - if 0 disable correction,
-     * if >0 set dead time to t, if < 0 set deadtime to default dead time
-     * for current settings
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns 0 if rate correction disabled, >0 otherwise
-     */
-    int setRateCorrection(int t = 0, int detPos = -1);
+	/**
+	 * Get rate correction ( Eiger)
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns 0 if rate correction disabled, > 0 otherwise (ns)
+	 */
+	int64_t getRateCorrection(int detPos = -1);
 
-    /**
-     * Get rate correction ( Eiger)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns 0 if rate correction disabled, > 0 otherwise (ns)
-     */
-    int getRateCorrection(int detPos = -1);
-
-    /**
-     * Prints receiver configuration
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns  OK or FAIL
-     */
-    int printReceiverConfiguration(int detPos = -1);
+	/**
+	 * Prints receiver configuration
+	 * @param detPos -1 for all detectors in  list or specific detector position
+	 */
+	void printReceiverConfiguration(int detPos = -1);
 
     /**
      * Sets up receiver socket if online and sets the flag

@@ -11,6 +11,8 @@
 
 #include "sls_detector_defs.h"
 #include "error_defs.h"
+#include "logger.h"
+
 #include "math.h"
 
 class multiSlsDetector;
@@ -32,8 +34,6 @@ typedef  struct detParameterList {
 	int nChipY;
 	int nDacs;
 	int nAdcs;
-	int nGain;
-	int nOffset;
 	int dynamicRange;
 	int nGappixelsX;
 	int nGappixelsY;
@@ -112,12 +112,6 @@ private:
 		/** number of adcs per module */
 		int nAdcs;
 
-		/**  number of extra gain values*/
-		int nGain;
-
-		/** number of extra offset values */
-		int nOffset;
-
 		/** dynamic range of the detector data */
 		int dynamicRange;
 
@@ -158,17 +152,8 @@ private:
 		/** memory offsets for the adc arrays */
 		int adcoff;
 
-		/** memory offsets for the chip register arrays */
-		int chipoff;
-
 		/** memory offsets for the channel register arrays  -trimbits*/
 		int chanoff;
-
-		/** memory offsets for the gain register arrays */
-		int gainoff;
-
-		/** memory offsets for the offset register arrays  -trimbits*/
-		int offsetoff;
 
 		/** ip address/hostname of the receiver for client control via TCP */
 		char receiver_hostname[MAX_STR_LENGTH];
@@ -622,12 +607,10 @@ public:
 	 * Writes a trim/settings file for module number
 	 * the values will be read from the current detector structure
 	 * @param fname name of the file to be written
-	 * @param iodelay io delay (detector specific)
-	 * @param tau tau (detector specific)
 	 * @returns OK or FAIL if the file could not be written
 	 * \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
 	 */
-	int writeSettingsFile(std::string fname, int iodelay, int tau);
+	int writeSettingsFile(std::string fname);
 
 	/**
 	 * Get detector settings
@@ -1073,11 +1056,11 @@ public:
 
 	/**
 	 * Gets counter memory block in detector (Gotthard)
-	 * @param arg counter memory block from detector
+	 * @param image counter memory block from detector
 	 * @param startACQ 1 to start acquisition afterwards, else 0
 	 * @returns OK or FAIL
 	 */
-	int getCounterBlock(short int arg[],int startACQ=0);
+	int getCounterBlock(short int image[],int startACQ=0);
 
 	/**
 	 * Resets counter in detector
@@ -1276,30 +1259,22 @@ public:
 
 
 	/**
-	 * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
+	 * Returns the trimbits from the detector's shared memmory (Eiger)
 	 * @param retval is the array with the trimbits
-	 * @param fromDetector is true if the trimbits shared memory have to be
-	 * uploaded from detector
 	 * @returns total number of channels for the detector
 	 */
-	int getChanRegs(double* retval,bool fromDetector);
+	int getChanRegs(double* retval);
 
 	/**
 	 * Configure Module (Eiger)
 	 * Called for loading trimbits and settings settings to the detector
 	 * @param module module to be set - must contain correct module number and
 	 * also channel and chip registers
-	 * @param iodelay iodelay (detector specific)
-	 * @param tau tau (detector specific)
-	 * @param e_eV threashold in eV (detector specific)
-	 * @param gainval pointer to extra gain values
-	 * @param offsetval pointer to extra offset values
 	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
-	 * @returns current register value
+	 * @returns ok or fail
 	 * \sa ::sls_detector_module
 	 */
-	int setModule(sls_detector_module module, int iodelay, int tau, int e_eV,
-			int* gainval=0, int* offsetval=0, int tb=1);
+	int setModule(sls_detector_module module, int tb = 1);
 
 
 	/**
@@ -1309,33 +1284,25 @@ public:
 	sls_detector_module *getModule();
 
 	/**
-	 * Calibrate Pedestal (ChipTestBoard)
-	 * Starts acquisition, calibrates pedestal and writes to fpga
-	 * @param frames number of frames
-	 * @returns number of frames
-	 */
-	int calibratePedestal(int frames = 0);
-
-	/**
 	 * Set Rate correction (Mythen, Eiger)
 	 * @param t dead time in ns - if 0 disable correction,
 	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
 	 * for current settings
 	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
-	int setRateCorrection(int t=0);
+	int setRateCorrection(int64_t t = 0);
 
 	/**
 	 * Get rate correction Eiger)
 	 * @returns 0 if rate correction disabled,  > 0 otherwise
 	 */
-	int getRateCorrection();
+	int64_t getRateCorrection();
 
 	/**
 	 * Prints receiver configuration
-	 * @returns OK or FAIL
+	 * #param level print level
 	 */
-	int printReceiverConfiguration();
+	void printReceiverConfiguration(TLogLevel level = logINFO);
 
 	/**
 	 * Checks if receiver is online and set flag
@@ -1522,12 +1489,6 @@ public:
 	int getFramesCaughtByReceiver();
 
 	/**
-	 * Gets the number of frames caught by any one receiver (to avoid using threadpool)
-	 * @returns number of frames caught by any one receiver (master receiver if exists)
-	 */
-	int getFramesCaughtByAnyReceiver();
-
-	/**
 	 * Gets the current frame index of receiver
 	 * @returns current frame index of receiver
 	 */
@@ -1572,13 +1533,6 @@ public:
 	 * @returns receiver streaming timer in ms
 	 */
 	int setReceiverStreamingTimer(int time_in_ms=500);
-
-	/**
-	 * Enable data streaming to client
-	 * @param enable 0 to disable, 1 to enable, -1 to get the value
-	 * @returns data streaming to client enable
-	 */
-	int enableDataStreamingToClient(int enable=-1);
 
 	/**
 	 * Enable or disable streaming data from receiver to client
@@ -1796,42 +1750,6 @@ private:
 	 */
 	int setUDPConnection();
 
-	/**
-	 * reads a calibration file
-	 * @param fname file to be read
-	 * @param gain reference to the gain variable
-	 * @param offset reference to the offset variable
-	 * @returns OK if successful, else FAIL or -1
-	 */
-	static int readCalibrationFile(std::string fname, double &gain, double &offset);
-
-	/**
-	 * writes a calibration file
-	 * @param fname file to be written
-	 * @param gain
-	 * @param offset
-	 * @returns OK if successful, else FAIL or -1
-	 */
-	static int writeCalibrationFile(std::string fname, double gain, double offset);
-
-	/**
-	 * reads a calibration file
-	 * @param fname file to be read
-	 * @param gain reference to the gain variable
-	 * @param offset reference to the offset variable
-	 * @returns OK if successful, else FAIL or -1
-	 */
-	static int readCalibrationFile(std::string fname, int *gain, int *offset);
-
-	/**
-	 * writes a calibration file
-	 * @param fname file to be written
-	 * @param gain reference to the gain variable
-	 * @param offset reference to the offset variable
-	 * @returns OK if successful, else FAIL or -1
-	 */
-	static int writeCalibrationFile(std::string fname, int *gain, int *offset);
-
 	/*
 	 * Template function to do linear interpolation between two points (Eiger only)
 	 */
@@ -1860,28 +1778,21 @@ private:
 	/**
 	 * reads a trim/settings file
 	 * @param fname name of the file to be read
-	 * @param iodelay io delay (detector specific)
-	 * @param tau tau (detector specific)
 	 * @param myMod pointer to the module structure which has to be set. <BR>
 	 * If it is NULL a new module structure will be created
 	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
 	 * @returns the pointer to myMod or NULL if reading the file failed
 	 */
 
-	sls_detector_module* readSettingsFile(std::string fname,
-			int& iodelay, int& tau,
-			sls_detector_module* myMod=NULL, int tb=1);
+	sls_detector_module* readSettingsFile(std::string fname, sls_detector_module* myMod=NULL, int tb=1);
 
 	/**
 	 * writes a trim/settings file
 	 * @param fname name of the file to be written
 	 * @param mod module structure which has to be written to file
-	 * @param iodelay io delay (detector specific)
-	 * @param tau tau (detector specific)
 	 * @returns OK or FAIL if the file could not be written
 	 */
-	int writeSettingsFile(std::string fname,
-			sls_detector_module mod, int iodelay, int tau);
+	int writeSettingsFile(std::string fname, sls_detector_module mod);
 
 
 	/** slsDetector Id or position in the detectors list */
@@ -1892,6 +1803,12 @@ private:
 
 	/** Shared memory structure */
 	sharedSlsDetector *thisDetector;
+
+	/** control socket interface */
+	ClientInterface *thisDetectorControl;
+
+	/** stop socket interface */
+	ClientInterface *thisDetectorStop;
 
 	/** receiver interface */
 	ClientInterface *thisReceiver;
@@ -1914,17 +1831,8 @@ private:
 	/** pointer to adc valuse in shared memory  */
 	int *adcs;
 
-	/** pointer to chip registers in shared memory */
-	int *chipregs;
-
 	/** pointer to channal registers  in shared memory */
 	int *chanregs;
-
-	/** pointer to gain values in shared memory  */
-	int *gain;
-
-	/** pointer to offset values in shared memory  */
-	int *offset;
 };
 
 #endif

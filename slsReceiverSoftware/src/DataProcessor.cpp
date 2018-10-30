@@ -166,18 +166,14 @@ void DataProcessor::RecordFirstIndices(uint64_t fnum) {
 		firstAcquisitionIndex = fnum;
 	}
 
-#ifdef VERBOSE
-	cprintf(BLUE,"%d First Acquisition Index:%lld\tFirst Measurement Index:%lld\n",
-			index, (long long int)firstAcquisitionIndex, (long long int)firstMeasurementIndex);
-#endif
+	FILE_LOG(logDEBUG1) << index << " First Acquisition Index:" << firstAcquisitionIndex <<
+			"\tFirst Measurement Index:" << firstMeasurementIndex;
 }
 
 
 void DataProcessor::SetGeneralData(GeneralData* g) {
 	generalData = g;
-#ifdef VERY_VERBOSE
 	generalData->Print();
-#endif
 	if (file) {
 		if (file->GetFileType() == HDF5) {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
@@ -278,16 +274,12 @@ void DataProcessor::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 void DataProcessor::ThreadExecution() {
 	char* buffer=0;
 	fifo->PopAddress(buffer);
-#ifdef FIFODEBUG
-	if (!index) cprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n",
-			index,(void*)(buffer),buffer);
-#endif
+	FILE_LOG(logDEBUG5) << "DataProcessor " << index << ", "
+			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;
 
 	//check dummy
 	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
-#ifdef VERBOSE
-	if (!index) cprintf(BLUE,"DataProcessor %d, Numbytes:%u\n", index,numBytes);
-#endif
+	FILE_LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
 		return;
@@ -304,10 +296,8 @@ void DataProcessor::ThreadExecution() {
 
 
 void DataProcessor::StopProcessing(char* buf) {
-#ifdef VERBOSE
-	if (!index)
-		cprintf(RED,"DataProcessing %d: Dummy\n", index);
-#endif
+	FILE_LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
+
 	//stream or free
 	if (*dataStreamEnable)
 		fifo->PushAddressToStream(buf);
@@ -317,9 +307,7 @@ void DataProcessor::StopProcessing(char* buf) {
 	if (file)
 		file->CloseCurrentFile();
 	StopRunning();
-#ifdef VERBOSE
-	FILE_LOG(logINFO) << index << ": Processing Completed";
-#endif
+	FILE_LOG(logDEBUG1) << index << ": Processing Completed";
 }
 
 
@@ -335,16 +323,9 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		numTotalFramesCaught++;
 	}
 
-
-#ifdef VERBOSE
-	if (!index)
-		cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
-#endif
+	FILE_LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
 
 	if (!measurementStartedFlag) {
-#ifdef VERBOSE
-		if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
-#endif
 		RecordFirstIndices(fnum);
 
 		if (*dataStreamEnable) {
@@ -418,11 +399,10 @@ bool DataProcessor::SendToStreamer() {
 bool DataProcessor::CheckTimer() {
 	struct timespec end;
 	clock_gettime(CLOCK_REALTIME, &end);
-#ifdef VERBOSE
-	cprintf(BLUE,"%d Timer elapsed time:%f seconds\n", index,
-			( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec )
-			/ 1000000000.0);
-#endif
+
+	FILE_LOG(logDEBUG1) << index << " Timer elapsed time:" <<
+			(( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0)
+			<< " seconds";
 	//still less than streaming timer, keep waiting
 	if((( end.tv_sec - timerBegin.tv_sec )	+ ( end.tv_nsec - timerBegin.tv_nsec )
 			/ 1000000000.0) < ((double)*streamingTimerInMs/1000.00))
@@ -464,9 +444,8 @@ void DataProcessor::PadMissingPackets(char* buf) {
 	uint32_t dsize = generalData->dataSize;
 	uint32_t fifohsize = generalData->fifoBufferHeaderSize;
 	uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - generalData->imageSize);
-#ifdef VERBOSE
-	cprintf(RED,"bitmask:%s\n", pmask.to_string().c_str());
-#endif
+	FILE_LOG(logDEBUG1) << "bitmask: " << pmask.to_string();
+
 	for (unsigned int pnum = 0; pnum < pperFrame; ++pnum) {
 
 		// not missing packet

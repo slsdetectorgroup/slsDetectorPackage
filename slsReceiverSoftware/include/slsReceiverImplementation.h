@@ -56,9 +56,9 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 
 	/*
 	 * Get detector hostname
-	 * @return NULL or hostname or NULL if uninitialized (max of 1000 characters)
+	 * @return hostname  (max of 1000 characters)
 	 */
-	char *getDetectorHostname() const;
+	std::string getDetectorHostname() const;
 
 	/*
 	 * Get flipped data across 'axis'
@@ -81,15 +81,15 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	fileFormat getFileFormat() const;
 	/**
 	 * Get File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
-	 * @return NULL or file name prefix (max of 1000 characters)
+	 * @return file name prefix
 	 */
-	char *getFileName() const;
+	std::string getFileName() const;
 
 	/**
 	 * Get File Path
-	 * @return NULL or file path (max of 1000 characters)
+	 * @return file path
 	 */
-	char *getFilePath() const;
+	std::string getFilePath() const;
 
 	/**
 	 * Get File Index
@@ -163,9 +163,9 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 
 	/**
 	 * Get Ehernet Interface
-	 * @ethernet interface. eg. eth0 or "" if listening to all (max of 1000 characters)
+	 * @ethernet interface. eg. eth0 or "" if listening to all
 	 */
-	char *getEthernetInterface() const;
+	std::string getEthernetInterface() const;
 
 
 	//***acquisition parameters***
@@ -289,13 +289,13 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 * Get streaming source ip
 	 * @return streaming source ip
 	 */
-	char *getStreamingSourceIP() const;
+	std::string getStreamingSourceIP() const;
 
     /**
      * Get additional json header
      * @return additional json header
      */
-    char *getAdditionalJsonHeader() const;
+	std::string getAdditionalJsonHeader() const;
 
     /** (not saved in client shared memory)
      * Get UDP Socket Buffer Size

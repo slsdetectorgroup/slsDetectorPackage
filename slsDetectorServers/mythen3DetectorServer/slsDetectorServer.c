@@ -1,1 +1,0 @@
-../slsDetectorServer/slsDetectorServer.c

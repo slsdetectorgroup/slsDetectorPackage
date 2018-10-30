@@ -106,8 +106,7 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 
 	// if write error
     if (ret != buffersize) {
-        cprintf(RED,"%d Error: Write to file failed for image number %lld\n",
-                index, (long long int)fnum);
+    	 FILE_LOG(logERROR) << index << " Error: Write to file failed for image number " << fnum;
         return FAIL;
     }
     return OK;

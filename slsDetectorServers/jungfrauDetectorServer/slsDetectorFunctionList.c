@@ -448,7 +448,7 @@ void setupDetector() {
 
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 
-	setSpeed(CLOCK_DIVIDER, HALF_SPEED);
+	setSpeed(HALF_SPEED);
 	cleanFifos();
 	resetCore();
 
@@ -465,7 +465,7 @@ void setupDetector() {
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTimer(STORAGE_CELL_NUMBER, DEFAULT_NUM_STRG_CLLS);
 	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
-	/*setSpeed(CLOCK_DIVIDER, HALF_SPEED); depends if all the previous stuff works*/
+	/*setSpeed(HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
@@ -611,10 +611,7 @@ int setDynamicRange(int dr){
 
 /* parameters - readout */
 
-int setSpeed(enum speedVariable arg, int val) {
-
-	if (arg != CLOCK_DIVIDER)
-		return -1;
+enum speedVariable setSpeed(int val) {
 
 	// setting
 	if(val >= 0) {
@@ -1602,8 +1599,6 @@ void readFrame(int *ret, char *mess){
 		//cprintf(RED,"Waiting for finished flag\n");
 		usleep(5000);
 	}
-	*ret = (int)FINISHED;
-	strcpy(mess,"acquisition successfully finished\n");
 	return;
 #endif
 	// wait for status to be done
@@ -1618,9 +1613,8 @@ void readFrame(int *ret, char *mess){
 		sprintf(mess,"no data and run stopped: %lld frames left\n",(long  long int)retval);
 		cprintf(RED,"%s\n",mess);
 	} else {
-		*ret = (int)FINISHED;
-		sprintf(mess,"acquisition successfully finished\n");
-		printf("%s",mess);
+		*ret = (int)OK;
+		cprintf(GREEN, "acquisition successfully finished\n");
 	}
 }
 

@@ -159,19 +159,18 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 	}
 
 	if(!(*silentMode)) {
-		if (!index) cprintf(BLUE,"%d First Acquisition Index:%lu\n"
-				"%d First Measurement Index:%lu\n",
-				index, firstAcquisitionIndex,
-				index, firstMeasurementIndex);
+		if (!index) {
+			FILE_LOG(logINFOBLUE) << index <<
+					" First Acquisition Index: " << firstAcquisitionIndex;
+			FILE_LOG(logDEBUG1) << index << " First Measurement Index: " << firstMeasurementIndex;
+		}
 	}
 }
 
 
 void Listener::SetGeneralData(GeneralData*& g) {
 	generalData = g;
-#ifdef VERY_VERBOSE
 	generalData->Print();
-#endif
 }
 
 
@@ -300,9 +299,8 @@ void Listener::ThreadExecution() {
 	int rc = 0;
 
 	fifo->GetNewAddress(buffer);
-#ifdef FIFODEBUG
-	cprintf(GREEN,"Listener %d, pop 0x%p buffer:%s\n", index,(void*)(buffer),buffer);
-#endif
+	FILE_LOG(logDEBUG5) << "Listener " << index << ", "
+			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;
 
 	//udpsocket doesnt exist
 	if (*activated && !udpSocketAlive && !carryOverFlag) {
@@ -320,7 +318,6 @@ void Listener::ThreadExecution() {
 
 	//error check, (should not be here) if not transmitting yet (previous if) rc should be > 0
 	if (rc == 0) {
-		//cprintf(RED,"%d Socket shut down while waiting for future packet. udpsocketalive:%d\n",index, udpSocketAlive );
 		if (!udpSocketAlive) {
 			(*((uint32_t*)buffer)) = 0;
 			StopListening(buffer);
@@ -362,10 +359,8 @@ void Listener::StopListening(char* buf) {
 	StopRunning();
 
 	 sem_post(&semaphore_socket);
-#ifdef VERBOSE
-	cprintf(GREEN,"%d: Listening Packets (%u) : %llu\n", index, *udpPortNumber, numPacketsCaught);
-	cprintf(GREEN,"%d: Listening Completed\n", index);
-#endif
+	 FILE_LOG(logDEBUG1) << index << ": Listening Packets (" << *udpPortNumber << ") : " << numPacketsCaught;
+	 FILE_LOG(logDEBUG1) << index << ": Listening Completed";
 }
 
 
@@ -418,7 +413,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 	//look for carry over
 	if (carryOverFlag) {
-		 //cprintf(RED,"%d carry flag\n",index);
+		FILE_LOG(logDEBUG3) << index << "carry flag";
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
@@ -434,7 +429,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
 			if (fnum < currentFrameIndex) {
-				cprintf(RED,"Error:(Weird), With carry flag: Frame number %lu less than current frame number %lu\n", fnum, currentFrameIndex);
+				FILE_LOG(logERROR) << "(Weird), With carry flag: Frame number " <<
+						fnum << " less than current frame number " << currentFrameIndex;
 				return 0;
 			}
 			switch(*frameDiscardMode) {
@@ -551,25 +547,22 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		// Eiger Firmware in a weird state
 		if (myDetectorType == EIGER && fnum == 0) {
-			cprintf(RED,"[%u]: Got Frame Number Zero from Firmware. Discarding Packet\n", *udpPortNumber);
+			FILE_LOG(logERROR) << "[" << *udpPortNumber << "]: Got Frame Number "
+					"Zero from Firmware. Discarding Packet";
 			numPacketsCaught--;
 			return 0;
 		}
 
 		lastCaughtFrameIndex = fnum;
 
+		FILE_LOG(logDEBUG5) << "Listening " << index << ": currentfindex:" << currentFrameIndex <<
+				", fnum:" << fnum << ", pnum:" << pnum << ", numpackets:" << numpackets;
 
-#ifdef VERBOSE
-		//if (!index)
-		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
-				index,currentFrameIndex, fnum, pnum, numpackets);
-#endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
 
 		//future packet	by looking at image number  (all other detectors)
 		if (fnum != currentFrameIndex) {
-			//cprintf(RED,"setting carry over flag to true num:%llu nump:%u\n",fnum, numpackets );
 			carryOverFlag = true;
 			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
 
@@ -641,19 +634,18 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 
 void Listener::PrintFifoStatistics() {
-#ifdef VERBOSE
-	cout << "numFramesStatistic:" << numFramesStatistic << " numPacketsStatistic:" << numPacketsStatistic << endl;
-#endif
+	FILE_LOG(logDEBUG1) << "numFramesStatistic:" << numFramesStatistic << " numPacketsStatistic:" << numPacketsStatistic;
+
 	//calculate packet loss
 	int64_t loss = -1;
 	loss = (numFramesStatistic*(generalData->packetsPerFrame)) - numPacketsStatistic;
 	numPacketsStatistic = 0;
 	numFramesStatistic = 0;
 
-	if (loss)
-		cprintf(RED,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d \tFree_Slots_Min_Level:%d \tCurrent_Frame#:%lu\n",
-				*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound() , fifo->GetMinLevelForFifoFree(), currentFrameIndex);
-	else
-		cprintf(GREEN,"[%u]:  Packet_Loss:%lu  Used_Fifo_Max_Level:%d  \tFree_Slots_Min_Level:%d \tCurrent_Frame#:%lu\n",
-				*udpPortNumber,loss, fifo->GetMaxLevelForFifoBound(), fifo->GetMinLevelForFifoFree(), currentFrameIndex);
+	FILE_LOG(loss ? logINFORED : logINFOGREEN) << "[" << *udpPortNumber << "]:  "
+			"Packet_Loss:" << loss <<
+			"  Used_Fifo_Max_Level:" << fifo->GetMaxLevelForFifoBound() <<
+			" \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree() <<
+			" \tCurrent_Frame#:" << currentFrameIndex;
+
 }

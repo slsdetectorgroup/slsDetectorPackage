@@ -42,15 +42,13 @@ enum DACINDEX					 			{SVP,VTR,VRF,VRS,SVN,VTGSTV,VCMP_LL,VCMP_LR,CAL,VCMP_RL,RX
 									 		};
 enum ADCINDEX						 		{TEMP_FPGAEXT, TEMP_10GE, TEMP_DCDC, TEMP_SODL, TEMP_SODR, TEMP_FPGA, TEMP_FPGAFEBL, TEMP_FPGAFEBR};
 enum NETWORKINDEX				 			{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
-
+enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 
 /* Hardware Definitions */
 #define NCHAN 						 		(256 * 256)
 #define NCHIP 						 		(4)
 #define NADC						 		(0)
 #define NDAC 						 		(16)
-#define NGAIN						 		(0)
-#define NOFFSET						 		(0)
 
 
 #define TEN_GIGA_BUFFER_SIZE 				(4112)

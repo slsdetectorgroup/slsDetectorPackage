@@ -81,11 +81,8 @@ public:
 		GENERIC,  /**< generic sls detector */
 		EIGER, /**< eiger */
 		GOTTHARD, /**< gotthard */
-		MOENCH, /**< moench */
 		JUNGFRAU, /**< jungfrau */
-		JUNGFRAUCTB, /**< jungfrauCTBversion */
-		PROPIX, /**< propix */
-		MYTHEN3 /**< mythen 3 */
+		JUNGFRAUCTB /**< jungfrauCTBversion */
 	};
 
 
@@ -95,7 +92,6 @@ public:
 	enum  {
 		OK, /**< function succeeded */
 		FAIL, /**< function failed */
-		FINISHED, /**< acquisition finished */
 		FORCE_UPDATE
 	};
 
@@ -244,16 +240,13 @@ public:
 	  int nchip; /**< is the number of chips on the module */
 	  int ndac; /**< is the number of dacs on the module */
 	  int nadc; /**< is the number of adcs on the module */
-	  int reg; /**< is the module register (e.g. dynamic range?)
-		      \see moduleRegisterBit */
+	  int reg; /**< is the module register settings (gain level) */
+	  int iodelay;	/**< iodelay */
+	  int tau;	/**< tau */
+	  int eV;	/**< threshold energy */
 	  int *dacs; /**< is the pointer to the array of the dac values (in V) */
-	  int *adcs;  /**< is the pointer to the array of the adc values (in V) FLAT_FIELD_CORRECTION*/
-	  int *chipregs; /**< is the pointer to the array of the chip registers
-			    \see ::chipRegisterBit */
-	  int *chanregs; /**< is the pointer to the array of the channel registers
-			    \see ::channelRegisterBit */
-	  double gain;  /**< is the module gain (V/keV) */
-	  double offset;  /**< is the module offset (V) */
+	  int *adcs;  /**< is the pointer to the array of the adc values (in V)  */
+	  int *chanregs; /**< is the pointer to the array of the channel registers */
 	} sls_detector_module;
 
 
@@ -366,8 +359,6 @@ public:
 	    detector IDs/versions
 	*/
 	enum idMode{
-	  MODULE_SERIAL_NUMBER, /**<return module serial number */
-	  MODULE_FIRMWARE_VERSION,  /**<return module firmware */
 	  DETECTOR_SERIAL_NUMBER,  /**<return detector system serial number */
 	  DETECTOR_FIRMWARE_VERSION,  /**<return detector system firmware version */
 	  DETECTOR_SOFTWARE_VERSION,   /**<return detector system software version */

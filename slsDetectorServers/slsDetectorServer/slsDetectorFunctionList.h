@@ -1,7 +1,3 @@
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-#ifndef SLS_DETECTOR_FUNCTION_LIST_H
-#define SLS_DETECTOR_FUNCTION_LIST_H
-
 #include "sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 
@@ -22,16 +18,13 @@ int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
 #endif
 
-void 		checkFirmwareCompatibility(int flag);
-#if defined(MYTHEN3D) || defined(JUNGFRAUD)
+void 		checkFirmwareCompatibility();
+#ifdef JUNGFRAUD
 int 		checkType();
 u_int32_t 	testFpga(void);
 int 		testBus(void);
 #endif
 
-#ifdef MYTHEN3D
-int 		moduleTest( enum digitalTestMode arg);
-#endif
 #ifdef JUNGFRAUD
 int 		detectorTest( enum digitalTestMode arg);
 #endif
@@ -44,7 +37,7 @@ u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
 #endif
-#if !defined(MYTHEN3D) || !defined(EIGERD)
+#ifdef EIGERD
 u_int32_t	getDetectorNumber();
 #endif
 u_int64_t  	getDetectorMAC();
@@ -77,17 +70,11 @@ uint32_t  	readRegister(uint32_t offset);
 
 
 // firmware functions (resets)
-#if defined(MYTHEN3D) || defined(JUNGFRAUD)
+#ifdef JUNGFRAUD
 int 		powerChip (int on);
 void 		cleanFifos();
 void 		resetCore();
 void 		resetPeripheral();
-#endif
-#ifdef MYTHEN3D
-int         getPhase(int i);
-int         configurePhase(int val, enum CLKINDEX i);
-int         configureFrequency(int val, int i);
-#elif JUNGFRAUD
 int         autoCompDisable(int on);
 int 		adcPhase(int st);
 int 		getPhase();
@@ -101,7 +88,7 @@ int 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
 // parameters - readout
-int 		setSpeed(enum speedVariable arg, int val);
+enum speedVariable 		setSpeed(int val);
 #ifdef EIGERD
 enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #endif
@@ -115,12 +102,7 @@ int64_t 	getTimeLeft(enum timerIndex ind);
 
 
 // parameters - module, settings
-
-#ifdef EIGERD
-int 		setModule(sls_detector_module myMod, int delay);
-#else
-int 		setModule(sls_detector_module myMod);
-#endif
+int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 enum 		detectorSettings setSettings(enum detectorSettings sett);
 enum 		detectorSettings getSettings();
@@ -133,16 +115,11 @@ int 		setThresholdEnergy(int ev);
 #endif
 
 // parameters - dac, adc, hv
-#if defined(MYTHEN3D) || defined(JUNGFRAUD)
+#ifdef JUNGFRAUD
 void 		serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset);
 void 		initDac(int dacnum);
 int         voltageToDac(int value);
 int         dacToVoltage(unsigned int digital);
-#endif
-#ifdef MYTHEN3D
-int         setPower(enum DACINDEX ind, int val);
-int         powerToDac(int value, int chip);
-int         dacToPower(int value, int chip);
 #endif
 
 #ifdef JUNGFRAUD
@@ -150,30 +127,24 @@ extern void	setAdc(int addr, int val);		// AD9257.h
 #endif
 
 void 		setDAC(enum DACINDEX ind, int val, int mV, int retval[]);
-#ifdef MYTHEN3D
-int         getVLimit();
-void        setDacRegister(int dacnum,int dacvalue);
-int         getDacRegister(int dacnum);
-#endif
-#ifndef MYTHEN3D
 int 		getADC(enum ADCINDEX ind);
-#endif
 
-#ifndef MYTHEN3D
 int 		setHighVoltage(int val);
-#endif
 
 
 
 // parameters - timing, extsig
-enum 		externalCommunicationMode setTiming( enum externalCommunicationMode arg);
+void 		setTiming( enum externalCommunicationMode arg);
+enum 		externalCommunicationMode getTiming();
 
 // configure mac
 #ifdef JUNGFRAUD
 long int 	calcChecksum(int sourceip, int destip);
 #endif
-#ifndef MYTHEN3D
+#ifdef GOTTHARDD
 int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival);
+#else
+int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2);
 #endif
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int 		setDetectorPosition(int pos[]);
@@ -190,7 +161,7 @@ int			resetCounterBlock(int startACQ);
 int 		calibratePedestal(int frames);
 
 // jungfrau specific - pll, flashing firmware
-#elif defined(JUNGFRAUD) || defined(MYTHEN3D)
+#elif JUNGFRAUD
 void 		resetPLL();
 u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void 		configurePll();
@@ -257,13 +228,6 @@ int 		getTotalNumberOfChannels();
 int 		getNumberOfChips();
 int 		getNumberOfDACs();
 int 		getNumberOfADCs();
-#ifdef EIGERD
-int 		getNumberOfGains();
-int 		getNumberOfOffsets();
-#endif
 int 		getNumberOfChannelsPerChip();
 
 
-
-#endif
-#endif

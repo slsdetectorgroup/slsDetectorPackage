@@ -123,12 +123,14 @@ class BinaryFileStatic {
 	{
 		if(!owenable){
 			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
-				cprintf(RED,"Error in creating binary master file (without overwrite enable) %s\n",fname.c_str());
+				FILE_LOG(logERROR) << "Could not create binary master file "
+						"(without overwrite enable) " << fname;
 				fd = 0;
 				return 1;
 			}
 		}else if (NULL == (fd = fopen((const char *) fname.c_str(), "w"))){
-			cprintf(RED,"Error in creating binary master file (with overwrite enable) %s\n",fname.c_str());
+			FILE_LOG(logERROR) << "Could not create binary master file "
+					"(with overwrite enable) " << fname;
 			fd = 0;
 			return 1;
 		}
@@ -179,8 +181,8 @@ class BinaryFileStatic {
 				(long long int)acquisitionPeriod,
 				ctime(&t));
 		if (strlen(message) > MAX_MASTER_FILE_LENGTH) {
-			cprintf(RED,"Master File Size %d is greater than max str size %d\n",
-					(int)strlen(message), MAX_MASTER_FILE_LENGTH);
+			FILE_LOG(logERROR) << "Master File Size " << strlen(message) <<
+					" is greater than max str size " << MAX_MASTER_FILE_LENGTH;
 			return 1;
 		}
 

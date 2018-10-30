@@ -1,6 +1,7 @@
 #include "SharedMemory.h"
 #include "sls_detector_exceptions.h"
 #include "ansi.h"
+#include "logger.h"
 
 #include <iostream>
 #include <stdio.h>      // printf
@@ -51,15 +52,13 @@ void* SharedMemory::CreateSharedMemory(size_t sz){
     // create
     fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
     if (fd < 0) {
-        cprintf(RED, "Error: Create shared memory %s failed: %s\n",
-        		name.c_str(), strerror(errno));
+        FILE_LOG(logERROR) << "Create shared memory " << name << " failed: " << strerror(errno);
         throw SharedMemoryException();
     }
 
     // resize
     if (ftruncate(fd, sz) < 0) {
-        cprintf(RED, "Error: Create shared memory %s failed at ftruncate: %s\n",
-        		name.c_str(), strerror(errno));
+    	FILE_LOG(logERROR) << "Create shared memory " << name << " failed at ftruncate: " << strerror(errno);
         close(fd);
         RemoveSharedMemory();
         throw SharedMemoryException();
@@ -67,7 +66,7 @@ void* SharedMemory::CreateSharedMemory(size_t sz){
 
     // map
     void* addr = MapSharedMemory(sz);
-    printf("Shared memory created %s \n", name.c_str());
+    FILE_LOG(logINFO) << "Shared memory created " << name;
     return addr;
 }
 
@@ -75,8 +74,7 @@ void* SharedMemory::OpenSharedMemory(size_t sz){
     // open
     fd = shm_open(name.c_str(), O_RDWR, 0);
     if (fd < 0) {
-    	cprintf(RED, "Error: Open existing shared memory %s failed: %s\n",
-    			name.c_str(), strerror(errno));
+    	FILE_LOG(logERROR) << "Open existing shared memory " << name << " failed: " << strerror(errno);
         throw SharedMemoryException();
     }
 
@@ -86,8 +84,7 @@ void* SharedMemory::OpenSharedMemory(size_t sz){
 
 void SharedMemory::UnmapSharedMemory(void* addr) {
     if (munmap(addr, shmSize) < 0) {
-        cprintf(RED, "Error: Unmapping shared memory %s failed: %s\n",
-        		name.c_str(), strerror(errno));
+    	FILE_LOG(logERROR) << "Unmapping shared memory " << name << " failed: " << strerror(errno);
         close(fd);
         throw SharedMemoryException();
     }
@@ -98,19 +95,17 @@ void SharedMemory::RemoveSharedMemory() {
         // silent exit if shm did not exist anyway
         if (errno == ENOENT)
             return;
-        cprintf(RED, "Error: Free Shared Memory %s Failed: %s\n",
-        		name.c_str(), strerror(errno));
+        FILE_LOG(logERROR) << "Free Shared Memory " << name << " Failed: " << strerror(errno);
         throw SharedMemoryException();
     }
-    printf("Shared memory deleted %s \n", name.c_str());
+    FILE_LOG(logINFO) << "Shared memory deleted " << name;
 }
 
 
 void* SharedMemory::MapSharedMemory(size_t sz) {
     void* addr = mmap(NULL, sz, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (addr == MAP_FAILED) {
-        cprintf(RED, "Error: Mapping shared memory %s failed: %s\n",
-        		name.c_str(), strerror(errno));
+    	FILE_LOG(logERROR) << "Mapping shared memory " << name << " failed: " << strerror(errno);
         close(fd);
         throw SharedMemoryException();
     }
@@ -138,10 +133,9 @@ std::string SharedMemory::ConstructSharedMemoryName(int multiId, int slsId) {
 
 	std::string temp = ss.str();
 	if (temp.length() > NAME_MAX) {
-		 cprintf(RED, "Error: Shared memory initialization failed. "
-				 "%s has %lu characters. \n"
-				 "Maximum is %d. Change the environment variable %s\n",
-				 temp.c_str(), temp.length(), NAME_MAX, SHM_ENV_NAME);
+		FILE_LOG(logERROR) << "Shared memory initialization failed. " <<
+				 temp << " has " << temp.length() << " characters. \n"
+				 "Maximum is " << NAME_MAX << ". Change the environment variable " << SHM_ENV_NAME;
 		 throw SharedMemoryException();
 	}
 	return temp;
@@ -152,8 +146,8 @@ int SharedMemory::VerifySizeMatch(size_t expectedSize) {
     struct stat sb;
     // could not fstat
     if (fstat(fd, &sb) < 0) {
-        cprintf(RED, "Error: Could not verify existing shared memory %s size match "
-        		"(could not fstat): %s\n", name.c_str(), strerror(errno));
+    	FILE_LOG(logERROR) << "Could not verify existing shared memory " << name << " size match "
+        		"(could not fstat): " << strerror(errno);
         close(fd);
         throw SharedMemoryException();
     }
@@ -161,11 +155,8 @@ int SharedMemory::VerifySizeMatch(size_t expectedSize) {
     //size does not match
     long unsigned int sz = (long unsigned int)sb.st_size;
     if (sz != expectedSize) {
-    	cprintf(RED, "Warning: Existing shared memory %s size does not match.\n",
-    			name.c_str());
-#ifdef VERBOSE
-    	cprintf(RED, " Expected %ld, found %ld\n", expectedSize, sz);
-#endif
+    	FILE_LOG(logERROR) << "Existing shared memory " << name << " size does not match";
+    	FILE_LOG(logDEBUG1) << "Expected " << expectedSize << ", found " << sz;
     	throw SharedMemoryException();
     	return 1;
     }

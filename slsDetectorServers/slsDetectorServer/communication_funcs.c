@@ -95,7 +95,7 @@ int bindSocket(unsigned short int port_number) {
 					// success
 					myport = port_number;
 					ret = OK;
-					FILE_LOG(logDEBUG5, ("%s socket bound: isock=%d, port=%d, fd=%d\n",
+					FILE_LOG(logDEBUG1, ("%s socket bound: isock=%d, port=%d, fd=%d\n",
 							(isControlServer ? "Control":"Stop"), isock, port_number, socketDescriptor));
 
 				}
@@ -136,7 +136,7 @@ int acceptConnection(int socketDescriptor) {
 
 	// timeout
 	if (result == 0) {
-		FILE_LOG(logDEBUG5, ("%s socket select() timed out!\n",
+		FILE_LOG(logDEBUG1, ("%s socket select() timed out!\n",
 				(isControlServer ? "control":"stop"), myport));
 	}
 
@@ -148,14 +148,14 @@ int acceptConnection(int socketDescriptor) {
 
 	// activity in descriptor set
 	else if (result > 0) {
-		FILE_LOG(logDEBUG5, ("%s select returned!\n", (isControlServer ? "control":"stop")));
+		FILE_LOG(logDEBUG1, ("%s select returned!\n", (isControlServer ? "control":"stop")));
 
 		// loop through the file descriptor set
 		for (j = 0; j < maxfd + 1; ++j) {
 
 			// checks if file descriptor part of set
 			if (FD_ISSET(j, &tempset)) {
-				FILE_LOG(logDEBUG5, ("fd %d is set\n",j));
+				FILE_LOG(logDEBUG1, ("fd %d is set\n",j));
 
 				// clear the temporary set
 				FD_CLR(j, &tempset);
@@ -216,7 +216,7 @@ int acceptConnection(int socketDescriptor) {
 				// accept success
 				else {
 					inet_ntop(AF_INET, &(addressC.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
-					FILE_LOG(logDEBUG5, ("%s socket accepted connection, fd= %d\n",
+					FILE_LOG(logDEBUG1, ("%s socket accepted connection, fd= %d\n",
 							(isControlServer ? "control":"stop"), file_des));
 					// add the file descriptor from accept
 					FD_SET(file_des, &readset);
@@ -244,7 +244,7 @@ void closeConnection(int file_des) {
 void exitServer(int socketDescriptor) {
 	if (socketDescriptor >= 0)
 		close(socketDescriptor);
-	FILE_LOG(logDEBUG5, ("Closing %s server\n", (isControlServer ? "control":"stop")));
+	FILE_LOG(logDEBUG1, ("Closing %s server\n", (isControlServer ? "control":"stop")));
 	FD_CLR(socketDescriptor, &readset);
 	isock--;
 }
@@ -320,7 +320,7 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 	int nreceiving;
 	int nreceived;
 	if (file_des<0) return -1;
-	FILE_LOG(logDEBUG5, ("want to receive %d Bytes to %s server\n",
+	FILE_LOG(logDEBUG1, ("want to receive %d Bytes to %s server\n",
 			length, (isControlServer ? "control":"stop")));
 
 	while(length > 0) {
@@ -381,7 +381,7 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 	n = sendData(file_des,myMod->chanregs, sizeof(int) * (myMod->nchan), INT32);
 	if (!n)	return -1; ts += n;
 #endif
-	FILE_LOG(logDEBUG5, ("module of size %d sent register %x\n", ts, myMod->reg));
+	FILE_LOG(logDEBUG1, ("module of size %d sent register %x\n", ts, myMod->reg));
 	return ts;
 }
 
@@ -439,7 +439,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 	n = receiveData(file_des,&(myMod->chanregs), sizeof(int) * (myMod->nchan), INT32);
 	if (!n)	return -1; ts += n;
 #endif
-	FILE_LOG(logDEBUG5, ("received module of size %d register %x\n",ts,myMod->reg));
+	FILE_LOG(logDEBUG1, ("received module of size %d register %x\n",ts,myMod->reg));
 	return ts;
 }
 

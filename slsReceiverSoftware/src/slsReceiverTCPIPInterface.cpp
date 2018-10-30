@@ -141,7 +141,7 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 
 
 void slsReceiverTCPIPInterface::startTCPServer(){
-	cprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
+	FILE_LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid) << "]";;
 	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << std::endl;
 	int ret = OK;
 
@@ -159,7 +159,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 			}
 
 			mySock->exitServer();
-			cprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
+			FILE_LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) <<"]";
 			pthread_exit(NULL);
 		}
 
@@ -170,7 +170,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 					receiver->shutDownUDPSockets();
 				}
 			}
-			cprintf(BLUE,"Exiting [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
+			FILE_LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) <<"]";
 			pthread_exit(NULL);
 		}
 	}
@@ -229,7 +229,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
-		FILE_LOG(logDEBUG5) << "function fnum: " << i << " (" <<
+		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
 				getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
 	}
 
@@ -243,28 +243,29 @@ int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
 	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
-		FILE_LOG(logDEBUG5) << "Could not read socket. "
+		FILE_LOG(logDEBUG3) << "Could not read socket. "
 				"Received " << n << " bytes," <<
 				"fnum:" << fnum << " "
 				"(" << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
 		return FAIL;
 	}
 	else
-		FILE_LOG(logDEBUG5) << "Received " << n << " bytes";
+		FILE_LOG(logDEBUG3) << "Received " << n << " bytes";
 
 	if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
 		FILE_LOG(logERROR) << "Unknown function enum " << fnum;
 		ret = (this->M_nofunc)();
 	} else{
-		FILE_LOG(logDEBUG5) <<  "calling function fnum: "<< fnum << " "
+		FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
 				"(" << getFunctionNameFromEnum((enum detFuncs)fnum) << ") "
 				"located at " << flist[fnum];
 		ret = (this->*flist[fnum])();
 
 		if (ret == FAIL) {
-			FILE_LOG(logDEBUG5) << "Failed to execute function = " << fnum << " ("
+			FILE_LOG(logDEBUG1) << "Failed to execute function = " << fnum << " ("
 					<< getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
-		}
+		} else FILE_LOG(logDEBUG1) << "Function " <<
+		getFunctionNameFromEnum((enum detFuncs)fnum) << " executed OK";
 	}
 	return ret;
 }
@@ -352,7 +353,7 @@ int slsReceiverTCPIPInterface::exec_command() {
 
 
 int slsReceiverTCPIPInterface::exit_server() {
-	cprintf(BG_RED, "Closing server\n");
+	FILE_LOG(logINFO) << "Closing server";
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	interface->Server_SendResult(false, ret, NULL, 0);
@@ -369,7 +370,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 	// get args, return if socket crashed
 	if (interface->Server_ReceiveArg(ret, mess, &lock, sizeof(lock)) == FAIL)
 		return FAIL;
-	FILE_LOG(logDEBUG5) << "Locking Server to " << lock;
+	FILE_LOG(logDEBUG1) << "Locking Server to " << lock;
 
 	// execute action
 	if (lock >= 0) {
@@ -642,7 +643,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 		// get
 		std::string s = receiver->getDetectorHostname();
 		strcpy(retval, s.c_str());
-		if (s.length()) {
+		if (!s.length()) {
 			ret = FAIL;
 			sprintf(mess, "hostname not set\n");
 			FILE_LOG(logERROR) << mess;
@@ -675,9 +676,9 @@ int slsReceiverTCPIPInterface::set_roi() {
 			return interface->Server_SocketCrash();
 		arg.push_back(temp);
 	}
-	FILE_LOG(logDEBUG5) << "Set ROI narg: " << narg;
+	FILE_LOG(logDEBUG1) << "Set ROI narg: " << narg;
 	for (int iloop = 0; iloop < narg; ++iloop) {
-		FILE_LOG(logDEBUG5) << "(" << arg[iloop].xmin << ", " <<
+		FILE_LOG(logDEBUG1) << "(" << arg[iloop].xmin << ", " <<
 				arg[iloop].xmax << ", " << arg[iloop].ymin << ", " <<
 				arg[iloop].ymax << ")";
 	}
@@ -705,7 +706,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char args[3][MAX_STR_LENGTH] = {0};
-	char retval[MAX_STR_LENGTH] = {0};
+	char retvals[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, args, sizeof(args), true, receiver) == FAIL)
@@ -755,13 +756,13 @@ int slsReceiverTCPIPInterface::setup_udp(){
 					FILE_LOG(logERROR) << mess;
 				}
 				else {
-					strcpy(retval,temp.c_str());
-					FILE_LOG(logINFO) << "Reciever MAC Address: " << retval;
+					strcpy(retvals,temp.c_str());
+					FILE_LOG(logINFO) << "Reciever MAC Address: " << retvals;
 				}
 			}
 		}
 	}
-	return interface->Server_SendResult(true, ret, retval, sizeof(retval), mess);
+	return interface->Server_SendResult(true, ret, retvals, sizeof(retvals), mess);
 }
 
 
@@ -778,7 +779,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 
 	// base object not null
 	if (ret == OK) {
-		FILE_LOG(logDEBUG5) << "Setting timer index " << index[0] << " to " << index[1];
+		FILE_LOG(logDEBUG1) << "Setting timer index " << index[0] << " to " << index[1];
 
 		// set
 		if (index[1] >= 0) {
@@ -848,7 +849,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 			break;
 		}
 		validate((int)index[1], (int)retval, std::string("set timer"), 0);
-		FILE_LOG(logDEBUG5) << slsDetectorDefs::getTimerType((timerIndex)(index[0])) << ":" << retval;
+		FILE_LOG(logDEBUG1) << slsDetectorDefs::getTimerType((timerIndex)(index[0])) << ":" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -871,7 +872,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		if (dr >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting dynamic range: " << dr;
+				FILE_LOG(logDEBUG1) << "Setting dynamic range: " << dr;
 				bool exists = false;
 				switch (dr) {
 				case 16:
@@ -903,7 +904,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		// get
 		retval = receiver->getDynamicRange();
 		validate(dr, retval, std::string("set dynamic range"), 0);
-		FILE_LOG(logDEBUG5) << "dynamic range: " << retval;
+		FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -926,7 +927,7 @@ int slsReceiverTCPIPInterface::set_streaming_frequency() {
 		if (index >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting streaming frequency: " << index;
+				FILE_LOG(logDEBUG1) << "Setting streaming frequency: " << index;
 				ret = receiver->setStreamingFrequency(index);
 				if(ret == FAIL) {
 					strcpy(mess, "Could not allocate memory for listening fifo\n");
@@ -952,9 +953,9 @@ int	slsReceiverTCPIPInterface::get_status(){
 	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
 	if (ret == OK) {
-		FILE_LOG(logDEBUG5) << "Getting Status";
+		FILE_LOG(logDEBUG1) << "Getting Status";
 		retval = receiver->getStatus();
-		FILE_LOG(logDEBUG5) << "Status:" << runStatusType(retval);
+		FILE_LOG(logDEBUG1) << "Status:" << runStatusType(retval);
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -980,7 +981,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 				sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
 				FILE_LOG(logERROR) << mess;
 			}else {
-				FILE_LOG(logDEBUG5) << "Starting Reciever";
+				FILE_LOG(logDEBUG1) << "Starting Reciever";
 				ret = receiver->startReceiver(mess);
 				if (ret == FAIL) {
 					FILE_LOG(logERROR) << mess;
@@ -1006,7 +1007,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		// verify if receiver is unlocked
 		if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
 			if(receiver->getStatus() != IDLE) {
-				FILE_LOG(logDEBUG5) << "Stopping Reciever";
+				FILE_LOG(logDEBUG1) << "Stopping Reciever";
 				receiver->stopReceiver();
 			}
 			enum runStatus s = receiver->getStatus();
@@ -1038,18 +1039,18 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 	if (ret == OK) {
 		// set
 		if (strlen(fPath)) {
-			FILE_LOG(logDEBUG5) << "Setting file path: " << fPath;
+			FILE_LOG(logDEBUG1) << "Setting file path: " << fPath;
 			receiver->setFilePath(fPath);
 		}
 		// get
 		std::string s = receiver->getFilePath();
 		strcpy(retval, s.c_str());
-		if ((s.length()) || (strlen(fPath) && strcasecmp(fPath, retval))) {
+		if ((!s.length()) || (strlen(fPath) && strcasecmp(fPath, retval))) {
 			ret = FAIL;
 			strcpy(mess,"receiver file path does not exist\n");
 			FILE_LOG(logERROR) << mess;
 		} else
-			FILE_LOG(logDEBUG5) << "file path:" << retval;
+			FILE_LOG(logDEBUG1) << "file path:" << retval;
 	}
     return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 }
@@ -1070,18 +1071,18 @@ int slsReceiverTCPIPInterface::set_file_name() {
 	if (ret == OK) {
 		// set
 		if (strlen(fName)) {
-			FILE_LOG(logDEBUG5) << "Setting file name: " << fName;
+			FILE_LOG(logDEBUG1) << "Setting file name: " << fName;
 			receiver->setFileName(fName);
 		}
 		// get
 		std::string s = receiver->getFileName();
 		strcpy(retval, s.c_str());
-		if (s.length()) {
+		if (!s.length()) {
 			ret = FAIL;
 			strcpy(mess, "file name is empty\n");
 			FILE_LOG(logERROR) << mess;
 		} else
-			FILE_LOG(logDEBUG5) << "file name:" << retval;
+			FILE_LOG(logDEBUG1) << "file name:" << retval;
 	}
 	 return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 }
@@ -1104,14 +1105,14 @@ int slsReceiverTCPIPInterface::set_file_index() {
 		if (index >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting file index: " << index;
+				FILE_LOG(logDEBUG1) << "Setting file index: " << index;
 				receiver->setFileIndex(index);
 			}
 		}
 		// get
 		retval=receiver->getFileIndex();
 		validate(index, retval, std::string("set file index"), 0);
-		FILE_LOG(logDEBUG5) << "file index:" << retval;
+		FILE_LOG(logDEBUG1) << "file index:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 }
@@ -1127,9 +1128,9 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
 	if (ret == OK) {
-		FILE_LOG(logDEBUG5) << "Getting frame index";
+		FILE_LOG(logDEBUG1) << "Getting frame index";
 		retval = receiver->getAcquisitionIndex();
-		FILE_LOG(logDEBUG5) << "frame index:" << retval;
+		FILE_LOG(logDEBUG1) << "frame index:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 }
@@ -1145,9 +1146,9 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
 	if (ret == OK) {
-		FILE_LOG(logDEBUG5) << "Getting frames caught";
+		FILE_LOG(logDEBUG1) << "Getting frames caught";
 		retval = receiver->getTotalFramesCaught();
-		FILE_LOG(logDEBUG5) << "frames caught:" << retval;
+		FILE_LOG(logDEBUG1) << "frames caught:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
 }
@@ -1166,7 +1167,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 		// only set
 		// verify if receiver is unlocked
 		if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
-			FILE_LOG(logDEBUG5) << "Reset frames caught";
+			FILE_LOG(logDEBUG1) << "Reset frames caught";
 			receiver->resetAcquisitionCount();
 		}
 	}
@@ -1191,14 +1192,14 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 		if (enable >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting File write enable:" << enable;
+				FILE_LOG(logDEBUG1) << "Setting File write enable:" << enable;
 				receiver->setFileWriteEnable(enable);
 			}
 		}
 		// get
 		retval = receiver->getFileWriteEnable();
 		validate(enable, retval, std::string("set file write enable"), 0);
-		FILE_LOG(logDEBUG5) << "file write enable:" << retval;
+		FILE_LOG(logDEBUG1) << "file write enable:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1221,14 +1222,14 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 		if (index >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting File overwrite enable:" << index;
+				FILE_LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
 				receiver->setOverwriteEnable(index);
 			}
 		}
 		// get
 		retval = receiver->getOverwriteEnable();
 		validate(index, retval, std::string("set file overwrite enable"), 0);
-		FILE_LOG(logDEBUG5) << "file overwrite enable:" << retval;
+		FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1254,14 +1255,14 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 		if (val >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting 10GbE:" << val;
+				FILE_LOG(logDEBUG1) << "Setting 10GbE:" << val;
 				ret = receiver->setTenGigaEnable(val);
 			}
 		}
 		// get
 		retval = receiver->getTenGigaEnable();
 		validate(val, retval, std::string("set 10GbE"), 0);
-		FILE_LOG(logDEBUG5) << "10Gbe:" << retval;
+		FILE_LOG(logDEBUG1) << "10Gbe:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1284,7 +1285,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 		if (value >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting fifo depth:" << value;
+				FILE_LOG(logDEBUG1) << "Setting fifo depth:" << value;
 				ret = receiver->setFifoDepth(value);
 				if (ret == FAIL) {
 					strcpy(mess,"Could not set fifo depth");
@@ -1295,7 +1296,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 		// get
 		retval = receiver->getFifoDepth();
 		validate(value, retval, std::string("set fifo depth"), 0);
-		FILE_LOG(logDEBUG5) << "fifo depth:" << retval;
+		FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1321,14 +1322,14 @@ int slsReceiverTCPIPInterface::set_activate() {
 		if (enable >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting activate:" << enable;
+				FILE_LOG(logDEBUG1) << "Setting activate:" << enable;
 				receiver->setActivate(enable > 0 ? true : false);
 			}
 		}
 		// get
 		retval = (int)receiver->getActivate();
 		validate(enable, retval, std::string("set activate"), 0);
-		FILE_LOG(logDEBUG5) << "Activate: " << retval;
+		FILE_LOG(logDEBUG1) << "Activate: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1351,14 +1352,14 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 		if (index >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting data stream enable:" << index;
+				FILE_LOG(logDEBUG1) << "Setting data stream enable:" << index;
 				ret = receiver->setDataStreamEnable(index);
 			}
 		}
 		// get
 		retval = receiver->getDataStreamEnable();
 		validate(index, retval, std::string("set data stream enable"), 0);
-		FILE_LOG(logDEBUG5) << "data streaming enable:" << retval;
+		FILE_LOG(logDEBUG1) << "data streaming enable:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1381,14 +1382,14 @@ int slsReceiverTCPIPInterface::set_streaming_timer(){
 		if (index >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting streaming timer:" << index;
+				FILE_LOG(logDEBUG1) << "Setting streaming timer:" << index;
 				receiver->setStreamingTimer(index);
 			}
 		}
 		// get
 		retval=receiver->getStreamingTimer();
 		validate(index, retval, std::string("set data stream timer"), 0);
-		FILE_LOG(logDEBUG5) << "Streaming timer:" << retval;
+		FILE_LOG(logDEBUG1) << "Streaming timer:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1414,14 +1415,14 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 		if (args[1] >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting flipped data:" << args[1];
+				FILE_LOG(logDEBUG1) << "Setting flipped data:" << args[1];
 				receiver->setFlippedData(args[0],args[1]);
 			}
 		}
 		// get
 		retval=receiver->getFlippedData(args[0]);
 		validate(args[1], retval, std::string("set flipped data"), 0);
-		FILE_LOG(logDEBUG5) << "Flipped Data:" << retval;
+		FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1444,14 +1445,14 @@ int slsReceiverTCPIPInterface::set_file_format() {
 		if (f >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting file format:" << f;
+				FILE_LOG(logDEBUG1) << "Setting file format:" << f;
 				receiver->setFileFormat(f);
 			}
 		}
 		// get
 		retval = receiver->getFileFormat();
 		validate(f, retval, std::string("set file format"), 0);
-		FILE_LOG(logDEBUG5) << "File Format: " << retval;
+		FILE_LOG(logDEBUG1) << "File Format: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1474,14 +1475,14 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 		if (arg >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting detector position id:" << arg;
+				FILE_LOG(logDEBUG1) << "Setting detector position id:" << arg;
 				receiver->setDetectorPositionId(arg);
 			}
 		}
 		// get
 		retval = receiver->getDetectorPositionId();
 		validate(arg, retval, std::string("set detector position id"), 0);
-		FILE_LOG(logDEBUG5) << "Position Id:" << retval;
+		FILE_LOG(logDEBUG1) << "Position Id:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1504,7 +1505,7 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 		if((arg[0] > 0) && (arg[1] > 0)) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting multi detector size:" << arg[0] << "," << arg[1];
+				FILE_LOG(logDEBUG1) << "Setting multi detector size:" << arg[0] << "," << arg[1];
 				receiver->setMultiDetectorSize(arg);
 			}
 		}
@@ -1516,7 +1517,7 @@ int slsReceiverTCPIPInterface::set_multi_detector_size() {
 			else
 				retval *= temp[i];
 		}
-		FILE_LOG(logDEBUG5) << "Multi Detector Size:" << retval;
+		FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1539,14 +1540,14 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 		if (port >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting streaming port:" << port;
+				FILE_LOG(logDEBUG1) << "Setting streaming port:" << port;
 				receiver->setStreamingPort(port);
 			}
 		}
 		// get
 		retval = receiver->getStreamingPort();
 		validate(port, retval, std::string("set streaming port"), 0);
-		FILE_LOG(logDEBUG5) << "streaming port:" << retval;
+		FILE_LOG(logDEBUG1) << "streaming port:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1568,12 +1569,12 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip() {
 		// only set
 		// verify if receiver is unlocked and idle
 		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-			FILE_LOG(logDEBUG5) << "Setting streaming source ip:" << arg;
+			FILE_LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
 			receiver->setStreamingSourceIP(arg);
 		}
 		// get
 		strcpy(retval, receiver->getStreamingSourceIP().c_str());
-		FILE_LOG(logDEBUG5) << "streaming source ip:" << retval;
+		FILE_LOG(logDEBUG1) << "streaming source ip:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 }
@@ -1596,14 +1597,14 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 		if (value >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting silent mode:" << value;
+				FILE_LOG(logDEBUG1) << "Setting silent mode:" << value;
 				receiver->setSilentMode(value);
 			}
 		}
 		// get
 		retval = (int)receiver->getSilentMode();
 		validate(value, retval, std::string("set silent mode"), 0);
-		FILE_LOG(logDEBUG5) << "silent mode:" << retval;
+		FILE_LOG(logDEBUG1) << "silent mode:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1629,14 +1630,14 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 		if (enable >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting gap pixels enable:" << enable;
+				FILE_LOG(logDEBUG1) << "Setting gap pixels enable:" << enable;
 				receiver->setGapPixelsEnable(enable);
 			}
 		}
 		// get
 		retval = receiver->getGapPixelsEnable();
 		validate(enable, retval, std::string("set gap pixels enable"), 0);
-		FILE_LOG(logDEBUG5) << "Gap Pixels Enable: " << retval;
+		FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1660,7 +1661,7 @@ int slsReceiverTCPIPInterface::restream_stop(){
 				sprintf(mess,"Could not restream stop packet as data Streaming is disabled.\n");
 				FILE_LOG(logERROR) << mess;
 			} else {
-				FILE_LOG(logDEBUG5) << "Restreaming stop";
+				FILE_LOG(logDEBUG1) << "Restreaming stop";
 				ret = receiver->restreamStop();
 				if (ret == FAIL) {
 					sprintf(mess,"Could not restream stop packet.\n");
@@ -1689,12 +1690,12 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
 		// only set
 		// verify if receiver is unlocked and idle
 		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-			FILE_LOG(logDEBUG5) << "Setting additional json header: " << arg;
+			FILE_LOG(logDEBUG1) << "Setting additional json header: " << arg;
 			receiver->setAdditionalJsonHeader(arg);
 		}
 		// get
 		strcpy(retval, receiver->getAdditionalJsonHeader().c_str());
-		FILE_LOG(logDEBUG5) << "additional json header:" << retval;
+		FILE_LOG(logDEBUG1) << "additional json header:" << retval;
 	}
 	 return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
 }
@@ -1717,7 +1718,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 		if (index >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting UDP Socket Buffer size: " << index;
+				FILE_LOG(logDEBUG1) << "Setting UDP Socket Buffer size: " << index;
 				if (receiver->setUDPSocketBufferSize(index) == FAIL) {
                     ret = FAIL;
                     strcpy(mess, "Could not create dummy UDP Socket to test buffer size\n");
@@ -1728,7 +1729,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 		// get
         retval = receiver->getUDPSocketBufferSize();
         validate(index, retval, std::string("set udp socket buffer size (No CAP_NET_ADMIN privileges?)"), 0);
-        FILE_LOG(logDEBUG5) << "UDP Socket Buffer Size:" << retval;
+        FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1744,7 +1745,7 @@ int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
 	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
 
 	if (ret == OK) {
-		FILE_LOG(logDEBUG5) << "Getting actual UDP buffer size";
+		FILE_LOG(logDEBUG1) << "Getting actual UDP buffer size";
 		retval = receiver->getActualUDPSocketBufferSize();
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1768,14 +1769,14 @@ int slsReceiverTCPIPInterface::set_frames_per_file() {
 		if (index >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting frames per file: " << index;
+				FILE_LOG(logDEBUG1) << "Setting frames per file: " << index;
 				receiver->setFramesPerFile(index);
 			}
 		}
 		// get
 		retval = receiver->getFramesPerFile();
 		validate(index, retval, std::string("set frames per file"), 0);
-		FILE_LOG(logDEBUG5) << "frames per file:" << retval;
+		FILE_LOG(logDEBUG1) << "frames per file:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1790,7 +1791,7 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 	// get args, return if socket crashed
 	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg)) == FAIL)
 		return FAIL;
-	FILE_LOG(logDEBUG5) << "Checking versioning compatibility with value " << arg;
+	FILE_LOG(logDEBUG1) << "Checking versioning compatibility with value " << arg;
 	int64_t client_requiredVersion = arg;
 	int64_t rx_apiVersion = APIRECEIVER;
 	int64_t rx_version = getReceiverVersion();
@@ -1838,14 +1839,14 @@ int slsReceiverTCPIPInterface::set_discard_policy() {
 		if (index >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting frames discard policy: " << index;
+				FILE_LOG(logDEBUG1) << "Setting frames discard policy: " << index;
 				receiver->setFrameDiscardPolicy((frameDiscardPolicy)index);
 			}
 		}
 		// get
 		retval = receiver->getFrameDiscardPolicy();
 		validate(index, retval, std::string("set discard policy"), 0);
-		FILE_LOG(logDEBUG5) << "frame discard policy:" << retval;
+		FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1869,14 +1870,14 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
 				index = (index == 0) ? 0 : 1;
-				FILE_LOG(logDEBUG5) << "Setting frames padding enable: " << index;
+				FILE_LOG(logDEBUG1) << "Setting frames padding enable: " << index;
 				receiver->setFramePaddingEnable(index);
 			}
 		}
 		// get
 		retval = (int)receiver->getFramePaddingEnable();
 		validate(index, retval, std::string("set frame padding enable"), 0);
-		FILE_LOG(logDEBUG5) << "Frame Padding Enable:" << retval;
+		FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1902,14 +1903,14 @@ int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
 		if (enable >= 0) {
 			// verify if receiver is unlocked and idle
 			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-				FILE_LOG(logDEBUG5) << "Setting deactivated padding enable: " << enable;
+				FILE_LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
 				receiver->setDeactivatedPadding(enable > 0 ? true : false);
 			}
 		}
 		// get
 		retval = (int)receiver->getDeactivatedPadding();
 		validate(enable, retval, std::string("set deactivated padding enable"), 0);
-		FILE_LOG(logDEBUG5) << "Deactivated Padding Enable: " << retval;
+		FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }

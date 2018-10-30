@@ -55,7 +55,7 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 	/**
 	 * Print all member values
 	 */
-	void PrintMembers();
+	void PrintMembers(TLogLevel level = logDEBUG1);
 
 	/**
 	 * Set Number of pixels

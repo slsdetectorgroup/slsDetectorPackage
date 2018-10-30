@@ -134,7 +134,7 @@ void Beb_Beb(int id) {
 
 	if (!Beb_InitBebInfos()) exit(1);
 
-	FILE_LOG(logDEBUG5, ("Printing Beb infos:\n"));
+	FILE_LOG(logDEBUG1, ("Printing Beb infos:\n"));
 	unsigned int i;
 	for(i=1;i<bebInfoSize;i++) BebInfo_Print(&beb_infos[i]);
 
@@ -162,8 +162,8 @@ void Beb_GetModuleConfiguration(int* master, int* top, int* normal) {
 	} else {
 		//read data
 		ret = Beb_Read32(csp0base, MODULE_CONFIGURATION_MASK);
-		FILE_LOG(logDEBUG5, ("Module Configuration OK\n"));
-		FILE_LOG(logDEBUG5, ("Beb: value =0x%x\n",ret));
+		FILE_LOG(logDEBUG1, ("Module Configuration OK\n"));
+		FILE_LOG(logDEBUG1, ("Beb: value =0x%x\n",ret));
 		if (ret&TOP_BIT_MASK) {
 			*top = 1;
 			Beb_top = 1;
@@ -228,7 +228,7 @@ void Beb_EndofDataSend(int tengiga) {
 		r_framepktMsbcounter = Beb_Read32(csp0base, addr_r_framepktMsbcounter);
 		r_txndelaycounter = Beb_Read32(csp0base, addr_r_txndelaycounter);
 		r_framedelaycounter = Beb_Read32(csp0base, addr_r_framedelaycounter);
-		FILE_LOG(logDEBUG5, ("\nLeft\n"
+		FILE_LOG(logDEBUG1, ("\nLeft\n"
 				"FramepacketLsbcounter: %d\n"
 				"FramepacketMsbcounter: %d\n"
 				"Txndelaycounter:%d\n"
@@ -258,7 +258,7 @@ void Beb_EndofDataSend(int tengiga) {
 			r_framepktMsbcounter_new = Beb_Read32(csp0base, addr_r_framepktMsbcounter);
 			r_txndelaycounter_new = Beb_Read32(csp0base, addr_r_txndelaycounter);
 			r_framedelaycounter_new = Beb_Read32(csp0base, addr_r_framedelaycounter);
-			FILE_LOG(logDEBUG5, ("\nLeft\n"
+			FILE_LOG(logDEBUG1, ("\nLeft\n"
 					"FramepacketLsbcounter: %d\n"
 					"FramepacketMsbcounter: %d\n"
 					"Txndelaycounter:%d\n"
@@ -706,10 +706,10 @@ unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb) {
 	unsigned int i;
 	for(i=1;i<bebInfoSize;i++)
 		if (beb_numb==BebInfo_GetBebNumber(&beb_infos[i])) {
-			FILE_LOG(logDEBUG5, ("*****found beb index:%d, for beb number:%d\n",i,beb_numb));
+			FILE_LOG(logDEBUG1, ("*****found beb index:%d, for beb number:%d\n",i,beb_numb));
 			return i;
 		}
-	FILE_LOG(logDEBUG5, ("*****Returning 0\n"));
+	FILE_LOG(logDEBUG1, ("*****Returning 0\n"));
 	return 0;
 }
 
@@ -930,11 +930,11 @@ int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right, i
 
 
 	Beb_send_data[1] = 0x62000000 | (!stop_read_when_fifo_empty) << 27 | (ten_gig==1) << 24 | packet_size << 14 | dst_number << 8 | npackets;
-	FILE_LOG(logDEBUG5, ("Beb_send_data[1]:%X\n",Beb_send_data[1]));
+	FILE_LOG(logDEBUG1, ("Beb_send_data[1]:%X\n",Beb_send_data[1]));
 	Beb_send_data[2] = 0;
 
 	Beb_SwapDataFun(0,2,&(Beb_send_data[1]));
-	FILE_LOG(logDEBUG5, ("Beb_send_data[1] Swapped:%X\n",Beb_send_data[1]));
+	FILE_LOG(logDEBUG1, ("Beb_send_data[1] Swapped:%X\n",Beb_send_data[1]));
 
 	if (Beb_activated) {
 		if (!Beb_WriteTo(i)) return 0;
@@ -1004,8 +1004,8 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 
 	if (in_two_requests) npackets/=2;
 
-	FILE_LOG(logDEBUG5, ("----Beb_RequestNImages Start----\n"));
-	FILE_LOG(logDEBUG5, ("beb_number:%X, ten_gig:%X,dst_number:%X, npackets:%X, "
+	FILE_LOG(logDEBUG1, ("----Beb_RequestNImages Start----\n"));
+	FILE_LOG(logDEBUG1, ("beb_number:%X, ten_gig:%X,dst_number:%X, npackets:%X, "
 			"Beb_bit_mode:%X, header_size:%X, nimages:%d, test_just_send_out_packets_no_wait:%X\n",
 			beb_number, ten_gig, dst_number, npackets, Beb_bit_mode, header_size,
 			nimages, test_just_send_out_packets_no_wait));
@@ -1051,7 +1051,7 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 		{
 			int i;
 			for (i=0; i < 10; i++)
-				FILE_LOG(logDEBUG5, ("%X\n",Beb_Read32(csp0base, (LEFT_OFFSET + i*4))));
+				FILE_LOG(logDEBUG1, ("%X\n",Beb_Read32(csp0base, (LEFT_OFFSET + i*4))));
 		}
 		// Generating commands
 		send_header_command = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | header_size << 14 |            0;
@@ -1059,8 +1059,8 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 		{
 			int i;
 			for (i=0; i < 10; i++)
-				FILE_LOG(logDEBUG5, ("%X\n",Beb_Read32(csp0base, (LEFT_OFFSET + i*4))));
-			FILE_LOG(logDEBUG5, ("%d\n",in_two_requests));
+				FILE_LOG(logDEBUG1, ("%X\n",Beb_Read32(csp0base, (LEFT_OFFSET + i*4))));
+			FILE_LOG(logDEBUG1, ("%d\n",in_two_requests));
 		}
 		//"0x20 << 8" is dst_number (0x00 for left, 0x20 for right)
 		//Left
@@ -1088,12 +1088,12 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 		{
 			int i;
 			for (i=0; i < 10; i++)
-				FILE_LOG(logDEBUG5, ("%X\n",Beb_Read32(csp0base, (LEFT_OFFSET + i*4)))); //*(ptrl+i));
-			FILE_LOG(logDEBUG5, ("%d\n",in_two_requests));
+				FILE_LOG(logDEBUG1, ("%X\n",Beb_Read32(csp0base, (LEFT_OFFSET + i*4)))); //*(ptrl+i));
+			FILE_LOG(logDEBUG1, ("%d\n",in_two_requests));
 		}
 		Beb_close(fd,csp0base);
 
-		FILE_LOG(logDEBUG5, ("----Beb_RequestNImages----\n"));
+		FILE_LOG(logDEBUG1, ("----Beb_RequestNImages----\n"));
 	}
 
 	return 1;
@@ -1268,8 +1268,8 @@ int Beb_SetDetectorPosition(int pos[]) {
 	}
 	if (ret == OK) {
 		FILE_LOG(logINFO, ("Position set to...\n"
-				"Left: [%d, %d, %d]\n"
-				"Right:[%d, %d, %d]\n",
+				"\tLeft: [%d, %d, %d]\n"
+				"\tRight:[%d, %d, %d]\n",
 				Beb_swap_uint16(pos[0]), Beb_top ? pos[1] : (pos[1]+1), Beb_swap_uint16(pos[2]),
 						Beb_swap_uint16(pos[0]), Beb_top ? (pos[1]+1) : pos[1], Beb_swap_uint16(pos[2])));
 	}
@@ -1288,13 +1288,13 @@ int Beb_open(u_int32_t** csp0base, u_int32_t offset) {
 	if (fd == -1) {
 		FILE_LOG(logERROR, ("\nCan't find /dev/mem!\n"));
 	} else {
-		FILE_LOG(logDEBUG5, ("/dev/mem opened\n"));
+		FILE_LOG(logDEBUG1, ("/dev/mem opened\n"));
 		*csp0base = (u_int32_t*)mmap(0, BEB_MMAP_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, offset);
 		if (*csp0base == MAP_FAILED) {
 			FILE_LOG(logERROR, ("\nCan't map memmory area!!\n"));
 			fd = -1;
 		}
-		else FILE_LOG(logDEBUG5, ("CSP0 mapped %p\n",(void*)*csp0base));
+		else FILE_LOG(logDEBUG1, ("CSP0 mapped %p\n",(void*)*csp0base));
 	}
 	return fd;
 }

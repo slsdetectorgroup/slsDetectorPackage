@@ -161,7 +161,7 @@ public:
 	 * @param i ROI
 	 */
 	virtual void SetROI(std::vector<slsDetectorDefs::ROI> i) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -171,7 +171,7 @@ public:
 	 * @returns adc configured
 	 */
 	virtual const int GetAdcConfigured(int index, std::vector<slsDetectorDefs::ROI>* i)  const{
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
 		return 0;
 	};
 
@@ -181,7 +181,7 @@ public:
 	 * @param tgEnable true if 10GbE is enabled, else false
 	 */
 	virtual void SetDynamicRange(int dr, bool tgEnable) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -190,7 +190,7 @@ public:
 	 * @param dr dynamic range
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -199,7 +199,7 @@ public:
 	 * @param nroich number of channels in roi
 	 */
 	virtual void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -207,38 +207,38 @@ public:
 	 * @param enable true if gap pixels enable, else false
 	 */
 	virtual void SetGapPixelsEnable(bool b, int dr) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
 	};
 
 
 	/**
 	 * Print all variables
 	 */
-	virtual void Print() const {
-		FILE_LOG(logDEBUG) << "\n\nDetector Data Variables:";
-		FILE_LOG(logDEBUG) << "myDetectorType: " << slsDetectorDefs::getDetectorType(myDetectorType);
-		FILE_LOG(logDEBUG) << "Pixels X: " << nPixelsX;
-		FILE_LOG(logDEBUG) << "Pixels Y: " << nPixelsY;
-		FILE_LOG(logDEBUG) << "Empty Header: " << emptyHeader;
-		FILE_LOG(logDEBUG) << "Header Size in Packet: " << headerSizeinPacket;
-		FILE_LOG(logDEBUG) << "Data Size: " << dataSize;
-		FILE_LOG(logDEBUG) << "Packet Size: " << packetSize;
-		FILE_LOG(logDEBUG) << "Packets per Frame: " << packetsPerFrame;
-		FILE_LOG(logDEBUG) << "Image Size: " << imageSize;
-		FILE_LOG(logDEBUG) << "Frame Index Mask: " << frameIndexMask;
-		FILE_LOG(logDEBUG) << "Frame Index Offset: " << frameIndexOffset;
-		FILE_LOG(logDEBUG) << "Packet Index Mask: " << packetIndexMask;
-		FILE_LOG(logDEBUG) << "Packet Index Offset: " << packetIndexOffset;
-		FILE_LOG(logDEBUG) << "Max Frames Per File: " << maxFramesPerFile;
-		FILE_LOG(logDEBUG) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
-		FILE_LOG(logDEBUG) << "Default Fifo Depth: " << defaultFifoDepth;
-		FILE_LOG(logDEBUG) << "Threads Per Receiver: " << threadsPerReceiver;
-		FILE_LOG(logDEBUG) << "Header Packet Size: " << headerPacketSize;
-		FILE_LOG(logDEBUG) << "Complete Pixels X: " << nPixelsXComplete;
-		FILE_LOG(logDEBUG) << "Complete Pixels Y: " << nPixelsYComplete;
-		FILE_LOG(logDEBUG) << "Complete Image Size: " << imageSizeComplete;
-		FILE_LOG(logDEBUG) << "Standard Header: " << standardheader;
-		FILE_LOG(logDEBUG) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
+	virtual void Print(TLogLevel level = logDEBUG1) const {
+		FILE_LOG(level) << "\n\nDetector Data Variables:";
+		FILE_LOG(level) << "myDetectorType: " << slsDetectorDefs::getDetectorType(myDetectorType);
+		FILE_LOG(level) << "Pixels X: " << nPixelsX;
+		FILE_LOG(level) << "Pixels Y: " << nPixelsY;
+		FILE_LOG(level) << "Empty Header: " << emptyHeader;
+		FILE_LOG(level) << "Header Size in Packet: " << headerSizeinPacket;
+		FILE_LOG(level) << "Data Size: " << dataSize;
+		FILE_LOG(level) << "Packet Size: " << packetSize;
+		FILE_LOG(level) << "Packets per Frame: " << packetsPerFrame;
+		FILE_LOG(level) << "Image Size: " << imageSize;
+		FILE_LOG(level) << "Frame Index Mask: " << frameIndexMask;
+		FILE_LOG(level) << "Frame Index Offset: " << frameIndexOffset;
+		FILE_LOG(level) << "Packet Index Mask: " << packetIndexMask;
+		FILE_LOG(level) << "Packet Index Offset: " << packetIndexOffset;
+		FILE_LOG(level) << "Max Frames Per File: " << maxFramesPerFile;
+		FILE_LOG(level) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
+		FILE_LOG(level) << "Default Fifo Depth: " << defaultFifoDepth;
+		FILE_LOG(level) << "Threads Per Receiver: " << threadsPerReceiver;
+		FILE_LOG(level) << "Header Packet Size: " << headerPacketSize;
+		FILE_LOG(level) << "Complete Pixels X: " << nPixelsXComplete;
+		FILE_LOG(level) << "Complete Pixels Y: " << nPixelsYComplete;
+		FILE_LOG(level) << "Complete Image Size: " << imageSizeComplete;
+		FILE_LOG(level) << "Standard Header: " << standardheader;
+		FILE_LOG(level) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
 	};
 };
 

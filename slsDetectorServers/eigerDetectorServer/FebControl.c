@@ -187,7 +187,7 @@ int Feb_Control_Init(int master, int top, int normal, int module_num) {
 	Feb_Control_module_number = (module_num & 0xFF);
 
 	int serial = !top;
-	FILE_LOG(logDEBUG5, ("serial: %d\n",serial));
+	FILE_LOG(logDEBUG1, ("serial: %d\n",serial));
 
 	Feb_Control_current_index = 1;
 
@@ -268,7 +268,7 @@ int Feb_Control_OpenSerialCommunication() {
 		FILE_LOG(logERROR, ("could not write to i2c bus\n"));
 		return 0;
 	}
-	FILE_LOG(logDEBUG5, ("Sent: %d bytes\n",n));
+	FILE_LOG(logDEBUG1, ("Sent: %d bytes\n",n));
 	return 1;
 }
 
@@ -280,9 +280,9 @@ void Feb_Control_CloseSerialCommunication() {
 
 void Feb_Control_PrintModuleList() {
 	unsigned int i;
-	FILE_LOG(logDEBUG5, ("Module list:\n"));
+	FILE_LOG(logDEBUG1, ("Module list:\n"));
 	for(i=0;i<moduleSize;i++) {
-		FILE_LOG(logDEBUG5, ("\t%d) %s modules: %d    0x%x %s\n", i,
+		FILE_LOG(logDEBUG1, ("\t%d) %s modules: %d    0x%x %s\n", i,
 				((i == 0) ? "All   " : ((i == 1) ? "Master" : "      ")),
 				Module_GetModuleNumber(&modules[i]),
 				(Module_TopAddressIsValid(&modules[i]) ?
@@ -362,19 +362,19 @@ int Feb_Control_AddModule1(unsigned int module_number, int top_enable, unsigned 
 
 
 	if (Module_TopAddressIsValid(m)&&Module_BottomAddressIsValid(m)) {
-		FILE_LOG(logDEBUG5, ("\tAdding full module number %d with top and bottom "
+		FILE_LOG(logDEBUG1, ("\tAdding full module number %d with top and bottom "
 				"base addresses: %d %d\n",Module_GetModuleNumber(m),
 				Module_GetTopBaseAddress(m),Module_GetBottomBaseAddress(m)));
 		modules[moduleSize] = mod;
 		moduleSize++;
 	} else if (Module_TopAddressIsValid(m)) {
-		FILE_LOG(logDEBUG5, ("\tAdding half module number %d with "
+		FILE_LOG(logDEBUG1, ("\tAdding half module number %d with "
 				"top base address: %d\n",Module_GetModuleNumber(m),
 				Module_GetTopBaseAddress(m)));
 		modules[moduleSize] = mod;
 		moduleSize++;
 	} else if (Module_BottomAddressIsValid(m)) {
-		FILE_LOG(logDEBUG5, ("\tAdding half module number %d with "
+		FILE_LOG(logDEBUG1, ("\tAdding half module number %d with "
 				"bottom base address: %d\n",Module_GetModuleNumber(m),
 				Module_GetBottomBaseAddress(m)));
 		modules[moduleSize] = mod;
@@ -389,7 +389,7 @@ int Feb_Control_AddModule1(unsigned int module_number, int top_enable, unsigned 
 
 
 int Feb_Control_CheckSetup(int master) {
-	FILE_LOG(logDEBUG5, ("Checking Set up\n"));
+	FILE_LOG(logDEBUG1, ("Checking Set up\n"));
 	unsigned int i,j;
 	int ok = 1;
 
@@ -422,7 +422,7 @@ int Feb_Control_CheckSetup(int master) {
 		}
 	}
 	/* }*/
-	FILE_LOG(logDEBUG5, ("Done Checking Set up\n"));
+	FILE_LOG(logDEBUG1, ("Done Checking Set up\n"));
 	return ok;
 }
 
@@ -526,7 +526,7 @@ int Feb_Control_SendIDelays(unsigned int dst_num, int chip_lr, unsigned int chan
 	unsigned int set_right_delay_channels = chip_lr ?        0:channels;
 
 
-	FILE_LOG(logDEBUG5, ("\tSetting delays of %s chips of dst_num %d, "
+	FILE_LOG(logDEBUG1, ("\tSetting delays of %s chips of dst_num %d, "
 			"tracks 0x%x to %d, %d clks and %d units.\n",
 			((set_left_delay_channels != 0) ? "left" : "right"),
 			dst_num, channels, (((15-delay_data_valid_nclks)<<6)|ndelay_units),
@@ -559,7 +559,7 @@ float Feb_Control_DACToVoltage(unsigned int digital,unsigned int nsteps,float vm
 
 //only master gets to call this function
 int Feb_Control_SetHighVoltage(int value) {
-	FILE_LOG(logDEBUG5, (" Setting High Voltage:\t"));
+	FILE_LOG(logDEBUG1, (" Setting High Voltage:\t"));
 	/*
 	 * maximum voltage of the hv dc/dc converter:
 	 * 300 for single module power distribution board
@@ -581,14 +581,14 @@ int Feb_Control_SetHighVoltage(int value) {
 		return -1;
 	}
 	FILE_LOG(logINFO, ("High Voltage set to %dV\n", value));
-	FILE_LOG(logDEBUG5, ("High Voltage set to (%d dac):\t%dV\n", dacval, value));
+	FILE_LOG(logDEBUG1, ("High Voltage set to (%d dac):\t%dV\n", dacval, value));
 
 	return Feb_Control_SendHighVoltage(dacval);
 }
 
 
 int Feb_Control_GetHighVoltage(int* value) {
-	FILE_LOG(logDEBUG5, (" Getting High Voltage:\t"));
+	FILE_LOG(logDEBUG1, (" Getting High Voltage:\t"));
 	unsigned int dacval = 0;
 
 	if (!Feb_Control_ReceiveHighVoltage(&dacval))
@@ -610,7 +610,7 @@ int Feb_Control_GetHighVoltage(int* value) {
 	unsigned int nsteps = ntotalsteps*vlimit/vmax;
 	*value = (int)(Feb_Control_DACToVoltage(dacval,nsteps,vmin,vlimit)+0.5);
 	FILE_LOG(logINFO, ("High Voltage read %dV\n", *value));
-	FILE_LOG(logDEBUG5, ("High Voltage read (%d dac)\t%dV\n", dacval, *value));
+	FILE_LOG(logDEBUG1, ("High Voltage read (%d dac)\t%dV\n", dacval, *value));
 	return 1;
 }
 
@@ -895,7 +895,7 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int
 	float voltage=Feb_Control_DACToVoltage(*value,4096,0,2048);
 
 	FILE_LOG(logINFO, ("%s set to %d (%.2fmV)\n", Module_dac_names[ch],*value,voltage));
-	FILE_LOG(logDEBUG5, ("Dac number %d (%s) of dst %d set to %d (%f mV)\n",ch,Module_dac_names[ch],dst_num,*value,voltage));
+	FILE_LOG(logDEBUG1, ("Dac number %d (%s) of dst %d set to %d (%f mV)\n",ch,Module_dac_names[ch],dst_num,*value,voltage));
 	return 1;
 }
 
@@ -1099,7 +1099,7 @@ int Feb_Control_AcquisitionInProgress() {
 
 	//running
 	if ((status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING) {
-		FILE_LOG(logDEBUG5, ("**runningggg\n"));
+		FILE_LOG(logDEBUG1, ("**runningggg\n"));
 		return STATUS_RUNNING;
 	}
 	//idle
@@ -1815,7 +1815,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
 
 				double x    = Feb_Control_rate_meas[next_i] - b*4;
 				double y    = next_i;
-				/*FILE_LOG(logDEBUG5, ("Start Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+				/*FILE_LOG(logDEBUG1, ("Start Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
 			    "next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
 			    x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]));*/
 
@@ -1826,7 +1826,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
 				sy  += y;
 				sxx += x*x;
 				sxy += x*y;
-				/*FILE_LOG(logDEBUG5, ("End   Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+				/*FILE_LOG(logDEBUG1, ("End   Loop  x: %f,\t y: %f,\t  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
 			    "next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
 						x, y, s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]));*/
 			}
@@ -1840,7 +1840,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
 				if (beforemax>ratemax) b0[b] = beforemax;
 				else b0[b] = ratemax;
 			}
-			/*FILE_LOG(logDEBUG5, ("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
+			/*FILE_LOG(logDEBUG1, ("After Loop  s: %f,\t  sx: %f,\t  sy: %f,\t  sxx: %f,\t  sxy: %f,\t  "
 			  "next_i: %d,\t  b: %d,\t  Feb_Control_rate_meas[next_i]: %f\n",
 			  s, sx, sy, sxx, sxy, next_i, b, Feb_Control_rate_meas[next_i]));*/
 			//	cout<<s<<"   "<<sx<<"   "<<sy<<"   "<<sxx<<"   "<<"   "<<sxy<<"   "<<delta<<"   "<<m[b]<<"    "<<b0[b]<<endl;
@@ -1850,7 +1850,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
 			m[b]  = 15;
 		}
 		Feb_Control_rate_correction_table[b]  = (((int)(m[b]+0.5)&0xf)<<14) | ((int)(b0[b]+0.5)&0x3fff);
-		/*FILE_LOG(logDEBUG5, ("After Loop  4*b: %d\tbase:%d\tslope:%d\n",4*b, (int)(b0[b]+0.5), (int)(m[b]+0.5) ));*/
+		/*FILE_LOG(logDEBUG1, ("After Loop  4*b: %d\tbase:%d\tslope:%d\n",4*b, (int)(b0[b]+0.5), (int)(m[b]+0.5) ));*/
 	}
 
 	if (Feb_Control_SetRateCorrectionTable(Feb_Control_rate_correction_table)) {
@@ -1936,7 +1936,7 @@ int Feb_Control_PrintCorrectedValues() {
 		corr  = delta+base;		
 		if (slope==15) corr= 3*slope+base;
 
-		FILE_LOG(logDEBUG5, ("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%lf\n",
+		FILE_LOG(logDEBUG1, ("Readout Input: %d,\tBase:%d,\tSlope:%d,\tLSB:%d,\tDelta:%d\tResult:%d\tReal:%lf\n",
 				i, base, slope, lsb, delta, corr, Feb_Control_rate_meas[i]));
 	}
 	return 1;
@@ -1999,13 +1999,13 @@ int Feb_Control_SoftwareTrigger() {
 
 	if (Feb_Control_activated) {
 		// set trigger bit
-		FILE_LOG(logDEBUG5, ("Setting Trigger, Register:0x%x\n",cmd));
+		FILE_LOG(logDEBUG1, ("Setting Trigger, Register:0x%x\n",cmd));
 		if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CHIP_CMDS,cmd,0,0)) {
 			FILE_LOG(logERROR, ("Could not give software trigger\n"));
 			return 0;
 		}
 		// unset trigger bit
-		FILE_LOG(logDEBUG5, ("Unsetting Trigger, Register:0x%x\n",orig_value));
+		FILE_LOG(logDEBUG1, ("Unsetting Trigger, Register:0x%x\n",orig_value));
 		if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),DAQ_REG_CHIP_CMDS,orig_value,0,0)) {
 			FILE_LOG(logERROR, ("Could not give software trigger\n"));
 			return 0;

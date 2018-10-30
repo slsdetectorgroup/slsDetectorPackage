@@ -10,18 +10,18 @@
 
 
 void Local_LocalLinkInterface1(struct LocalLinkInterface* ll,unsigned int ll_fifo_badr) {
-	FILE_LOG(logDEBUG5, ("Initialize PLB LL FIFOs\n"));
+	FILE_LOG(logDEBUG1, ("Initialize PLB LL FIFOs\n"));
 	ll->ll_fifo_base=0;
 	ll->ll_fifo_ctrl_reg=0;
 	if (Local_Init(ll,ll_fifo_badr)) {
 		Local_Reset(ll);
-		FILE_LOG(logDEBUG5, ("\tFIFO Status : 0x%08x\n\n\n", Local_StatusVector(ll)));
+		FILE_LOG(logDEBUG1, ("\tFIFO Status : 0x%08x\n\n\n", Local_StatusVector(ll)));
 	} else FILE_LOG(logERROR, ("\tCould not map LocalLink : 0x%08x\n\n\n", ll_fifo_badr));
 }
 
 
 void Local_LocalLinkInterface(struct LocalLinkInterface* ll) {
-	FILE_LOG(logDEBUG5, ("Initializing new memory\n"));
+	FILE_LOG(logDEBUG1, ("Initializing new memory\n"));
 }
 
 
@@ -57,7 +57,7 @@ int Local_Reset(struct LocalLinkInterface* ll) {
 
 int Local_Reset1(struct LocalLinkInterface* ll,unsigned int rst_mask) {
 	ll->ll_fifo_ctrl_reg |= rst_mask;
-	FILE_LOG(logDEBUG5, ("\tCTRL Register bits: 0x%08x\n",ll->ll_fifo_ctrl_reg));
+	FILE_LOG(logDEBUG1, ("\tCTRL Register bits: 0x%08x\n",ll->ll_fifo_ctrl_reg));
 
 	HWIO_xfs_out32(ll->ll_fifo_base+4*PLB_LL_FIFO_REG_CTRL,ll->ll_fifo_ctrl_reg);
 	HWIO_xfs_out32(ll->ll_fifo_base+4*PLB_LL_FIFO_REG_CTRL,ll->ll_fifo_ctrl_reg);
@@ -92,9 +92,9 @@ int Local_Write(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buf
 	last_word = (buffer_len-1)/4;
 	word_ptr = (unsigned int *)buffer;
 
-	FILE_LOG(logDEBUG5, ("LL Write - Len: %2d - If: %X - Data: ",buffer_len, ll->ll_fifo_base));
+	FILE_LOG(logDEBUG1, ("LL Write - Len: %2d - If: %X - Data: ",buffer_len, ll->ll_fifo_base));
 	for (i=0; i < buffer_len/4; i++)
-		FILE_LOG(logDEBUG5, ("%.8X ",*(((unsigned *) buffer)+i)));
+		FILE_LOG(logDEBUG1, ("%.8X ",*(((unsigned *) buffer)+i)));
 
 	while (words_send <= last_word)
 	{
@@ -138,7 +138,7 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 	volatile unsigned int fifo_val;
 	int sof = 0;
 
-	FILE_LOG(logDEBUG5, ("LL Read - If: %X - Data: ",ll->ll_fifo_base));
+	FILE_LOG(logDEBUG1, ("LL Read - If: %X - Data: ",ll->ll_fifo_base));
 
 	word_ptr = (unsigned int *)buffer;
 	do
@@ -164,7 +164,7 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 			{
 				if ( (buffer_len >> 2) > buffer_ptr)
 				{
-					FILE_LOG(logDEBUG5, ("%.8X ", fifo_val));
+					FILE_LOG(logDEBUG1, ("%.8X ", fifo_val));
 					word_ptr[buffer_ptr++] = fifo_val; //write to buffer
 				}
 				else
@@ -176,7 +176,7 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 				if (status & PLB_LL_FIFO_STATUS_LL_EOF)
 				{
 					len = (buffer_ptr << 2) -3 + ( (status & PLB_LL_FIFO_STATUS_LL_REM)>>PLB_LL_FIFO_STATUS_LL_REM_SHIFT );
-					FILE_LOG(logDEBUG5, ("Len: %d\n",len));
+					FILE_LOG(logDEBUG1, ("Len: %d\n",len));
 					buffer_ptr = 0;
 					return len;
 				}
@@ -209,7 +209,7 @@ int Local_Test(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 
 	do{
 		len = Local_Read(ll,rec_buff_len,rec_buffer);
-		FILE_LOG(logDEBUG5, ("receive length: %i\n",len));
+		FILE_LOG(logDEBUG1, ("receive length: %i\n",len));
 
 		if (len > 0) {
 			rec_buffer[len]=0;

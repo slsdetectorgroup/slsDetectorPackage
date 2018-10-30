@@ -2726,7 +2726,7 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action, int d
 		sscanf(args[1], "%ld",&ival);
 		myDet->setRateCorrection(ival, detPos);
 	}
-	sprintf(answer,"%lld",myDet->getRateCorrection(detPos));
+	sprintf(answer,"%ld",myDet->getRateCorrection(detPos));
 	return string(answer);
 }
 

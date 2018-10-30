@@ -21,22 +21,21 @@ Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):
 		fifoDepth(depth),
 		status_fifoBound(0),
 		status_fifoFree(depth){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	if(CreateFifos(fifoItemSize) == FAIL)
 	    throw std::exception();
 }
 
 
 Fifo::~Fifo() {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-	//cprintf(BLUE,"Fifo Object %d: Goodbye\n", index);
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	DestroyFifos();
 }
 
 
 
 int Fifo::CreateFifos(uint32_t fifoItemSize) {
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	//destroy if not already
 	DestroyFifos();
@@ -69,7 +68,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize) {
 
 
 void Fifo::DestroyFifos(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	if(memory) {
 		free(memory);

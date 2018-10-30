@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
 			for (i = 0; i < argc; ++i)
 				sprintf(cmd, "%s %s", cmd, argv[i]);
 			sprintf(cmd,"%s -stopserver&", cmd);
-			FILE_LOG(logDEBUG5, ("Command to start stop server:%s\n", cmd));
+			FILE_LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
 			system(cmd);
 		}
 #endif

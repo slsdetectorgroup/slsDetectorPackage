@@ -38,9 +38,7 @@ HDF5File::HDF5File(int ind, uint32_t* maxf,
 		dataspace_para(0),
 		extNumImages(0)
 {
-#ifdef VERBOSE
 	PrintMembers();
-#endif
 	dataset_para.clear();
 	parameterNames.clear();
 	parameterDataTypes.clear();
@@ -95,15 +93,15 @@ HDF5File::~HDF5File() {
 	CloseAllFiles();
 }
 
-void HDF5File::PrintMembers() {
+void HDF5File::PrintMembers(TLogLevel level) {
 	File::PrintMembers();
 	UpdateDataType();
 	if (datatype == PredType::STD_U8LE) {
-		FILE_LOG(logINFO) << "Data Type: 4 or 8";
+		FILE_LOG(level) << "Data Type: 4 or 8";
 	} else if (datatype == PredType::STD_U16LE) {
-		FILE_LOG(logINFO) << "Data Type: 16";
+		FILE_LOG(level) << "Data Type: 16";
 	} else if (datatype == PredType::STD_U32LE) {
-		FILE_LOG(logINFO) << "Data Type: 32";
+		FILE_LOG(level) << "Data Type: 32";
 	} else {
 		FILE_LOG(logERROR) << "unknown data type";
 	}
@@ -154,8 +152,6 @@ int HDF5File::CreateFile(uint64_t fnum) {
 		return FAIL;
 	}
 	pthread_mutex_unlock(&Mutex);
-	if (dataspace == NULL)
-		cprintf(RED,"Got nothing!\n");
 
 	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
@@ -214,9 +210,8 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 		if (HDF5FileStatic::ExtendDataset(index, dataspace, dataset,
 				dataspace_para, dataset_para, *numImages) == OK) {
 			if (!(*silentMode)) {
-				cprintf(BLUE,"%d Extending HDF5 dataset by %llu, Total x Dimension: %llu\n",
-					index, (long long unsigned int)extNumImages,
-					(long long unsigned int)(extNumImages + *numImages));
+				FILE_LOG(logINFO) << index << " Extending HDF5 dataset by " <<
+						extNumImages << ", Total x Dimension: " << (extNumImages + *numImages);
 			}
 			extNumImages += *numImages;
 		}
@@ -238,7 +233,7 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 		}
 	}
 	pthread_mutex_unlock(&Mutex);
-	cprintf(RED,"%d Error: Write to file failed\n", index);
+	FILE_LOG(logERROR) << index << "Write to file failed";
 	return FAIL;
 }
 

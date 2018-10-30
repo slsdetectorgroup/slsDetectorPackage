@@ -74,7 +74,8 @@ void* ThreadObject::StartThread(void* thisPointer) {
 
 
 void ThreadObject::RunningThread() {
-	cprintf(BLUE,"Created [ %s Thread %d, Tid: %ld ]\n", GetType().c_str(),index, (long)syscall(SYS_gettid));
+	FILE_LOG(logINFOBLUE) << "Created [ " << GetType() << "Thread " << index << ", "
+			"Tid: " << syscall(SYS_gettid) << "]";
 	while(true)	{
 
 		while(IsRunning()) {
@@ -88,7 +89,8 @@ void ThreadObject::RunningThread() {
 		sem_wait(&semaphore);
 
 		if(killThread)	{
-			cprintf(BLUE,"Exiting [ %s Thread %d, Tid: %ld ]\n", GetType().c_str(),index, (long)syscall(SYS_gettid));
+			FILE_LOG(logINFOBLUE) << "Exiting [ " << GetType() <<
+					" Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
 			pthread_exit(NULL);
 		}
 

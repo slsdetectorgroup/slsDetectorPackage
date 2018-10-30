@@ -84,11 +84,11 @@ int decode_function(int file_des) {
 
 	int n = receiveData(file_des,&fnum,sizeof(fnum),INT32);
 	if (n <= 0) {
-		FILE_LOG(logDEBUG5, ("ERROR reading from socket n=%d, fnum=%d, file_des=%d, fname=%s\n",
+		FILE_LOG(logDEBUG3, ("ERROR reading from socket n=%d, fnum=%d, file_des=%d, fname=%s\n",
 				n, fnum, file_des, getFunctionName((enum detFuncs)fnum)));
 		return FAIL;
 	} else
-		FILE_LOG(logDEBUG5, ("Received %d bytes\n", n ));
+		FILE_LOG(logDEBUG3, ("Received %d bytes\n", n ));
 
 	// jungfrau in programming mode
 #ifdef JUNGFRAUD
@@ -106,14 +106,15 @@ int decode_function(int file_des) {
 		FILE_LOG(logERROR, ("Unknown function enum %d\n", fnum));
 		ret=(M_nofunc)(file_des);
 	} else {
-		FILE_LOG(logDEBUG5, (" calling function fnum=%d, (%s)\n",
+		FILE_LOG(logDEBUG1, (" calling function fnum=%d, (%s)\n",
 				fnum,  getFunctionName((enum detFuncs)fnum)));
 		ret = (*flist[fnum])(file_des);
 
 		if (ret == FAIL) {
-			FILE_LOG(logDEBUG5, ("Error executing the function = %d (%s)\n",
+			FILE_LOG(logDEBUG1, ("Error executing the function = %d (%s)\n",
 					fnum, getFunctionName((enum detFuncs)fnum)));
-		}
+		} else FILE_LOG(logDEBUG1, ("Function (%s) executed ok\n",
+				getFunctionName((enum detFuncs)fnum)));
 	}
 	return ret;
 }
@@ -252,7 +253,7 @@ void function_table() {
 
 	int iloop = 0;
 	for (iloop = 0; iloop < NUM_DET_FUNCTIONS ; ++iloop) {
-		FILE_LOG(logDEBUG5, ("function fnum=%d, (%s) located at 0x%x\n", iloop,
+		FILE_LOG(logDEBUG1, ("function fnum=%d, (%s) located at 0x%x\n", iloop,
 				getFunctionName((enum detFuncs)iloop), (unsigned int)flist[iloop]));
 	}
 }
@@ -373,7 +374,7 @@ int get_detector_type(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	enum detectorType retval = myDetectorType;
-	FILE_LOG(logDEBUG5,("Returning detector type %d\n", retval));
+	FILE_LOG(logDEBUG1,("Returning detector type %d\n", retval));
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
 
@@ -392,7 +393,7 @@ int set_external_signal_flag(int file_des) {
 
 	int signalindex = args[0];
 	enum externalSignalFlag flag = args[1];
-	FILE_LOG(logDEBUG5, ("Setting external signal %d to flag %d\n", signalindex, flag));
+	FILE_LOG(logDEBUG1, ("Setting external signal %d to flag %d\n", signalindex, flag));
 
 #ifndef GOTTHARDD
 	functionNotImplemented();
@@ -404,7 +405,7 @@ int set_external_signal_flag(int file_des) {
 	// get
 	retval = getExtSignal(signalindex);
 	validate((int)flag, (int)retval, "set external signal flag", 1);
-	FILE_LOG(logDEBUG5, ("External Signal Flag: %d\n", retval));
+	FILE_LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
 }
 #endif
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
@@ -421,7 +422,7 @@ int set_external_communication_mode(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting external communication mode to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
 	// set
 	if ((arg != GET_EXTERNAL_COMMUNICATION_MODE) && (Server_VerifyLock() == OK)) {
@@ -442,7 +443,7 @@ int set_external_communication_mode(int file_des) {
 	// get
 	retval = getTiming();
 	validate((int)arg, (int)retval, "set timing mode", 0);
-	FILE_LOG(logDEBUG5, ("Timing Mode: %d\n",retval));
+	FILE_LOG(logDEBUG1, ("Timing Mode: %d\n",retval));
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
 
@@ -457,7 +458,7 @@ int get_id(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Getting Id %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Getting Id %d\n", arg));
 
 	// get
 	switch (arg) {
@@ -468,7 +469,7 @@ int get_id(int file_des) {
 	case DETECTOR_FIRMWARE_VERSION:
 	case DETECTOR_SOFTWARE_VERSION:
 		retval = getDetectorId(arg);
-		FILE_LOG(logDEBUG5, ("Id(%d): %lld\n", retval));
+		FILE_LOG(logDEBUG1, ("Id(%d): %lld\n", retval));
 		break;
 	default:
 		modeNotImplemented("ID Index", (int)arg);
@@ -492,9 +493,9 @@ int digital_test(int file_des) {
 	enum digitalTestMode mode = args[0];
 #ifdef GOTTHARDD
 	int ival = args[1];
-	FILE_LOG(logDEBUG5, ("Digital test, mode = %d, ival:%d\n", mode, ival));
+	FILE_LOG(logDEBUG1, ("Digital test, mode = %d, ival:%d\n", mode, ival));
 #else
-	FILE_LOG(logDEBUG5, ("Digital test, mode = %d\n", mode));
+	FILE_LOG(logDEBUG1, ("Digital test, mode = %d\n", mode));
 #endif
 
 #ifdef EIGERD
@@ -505,7 +506,7 @@ int digital_test(int file_des) {
 		switch (mode) {
 #ifdef GOTTHARDD
 		case DIGITAL_BIT_TEST:
-			FILE_LOG(logDEBUG5, ("Setting digital test bit: %d\n", ival));
+			FILE_LOG(logDEBUG1, ("Setting digital test bit: %d\n", ival));
 			if (ival >= 0)
 				digitalTestBit = (ival > 0) ? 1 : 0;
 			retval = digitalTestBit;
@@ -514,7 +515,7 @@ int digital_test(int file_des) {
 		case DETECTOR_FIRMWARE_TEST:
 		case DETECTOR_BUS_TEST:
 			retval = detectorTest(mode);
-			FILE_LOG(logDEBUG5, ("Digital Test (%d): %d\n", mode, retval));
+			FILE_LOG(logDEBUG1, ("Digital Test (%d): %d\n", mode, retval));
 			break;
 		default:
 			modeNotImplemented("Digital Test Mode", (int)mode);
@@ -630,7 +631,7 @@ int set_dac(int file_des) {
     // index exists
     if (ret == OK) {
 
-        FILE_LOG(logDEBUG5, ("Setting DAC %d to %d %s\n", serverDacIndex, val,
+        FILE_LOG(logDEBUG1, ("Setting DAC %d to %d %s\n", serverDacIndex, val,
         		(mV ? "mV" : "dac units")));
 
     	// set & get
@@ -641,7 +642,7 @@ int set_dac(int file_des) {
 #ifdef EIGERD
     		case IO_DELAY:
     			retval[0] = setIODelay(val);
-    			FILE_LOG(logDEBUG5, ("IODelay: %d\n", retval[0]));
+    			FILE_LOG(logDEBUG1, ("IODelay: %d\n", retval[0]));
     			break;
 #endif
 
@@ -649,7 +650,7 @@ int set_dac(int file_des) {
     		case HV_POT:
     		case HV_NEW:
     			retval[0] = setHighVoltage(val);
-    			FILE_LOG(logDEBUG5, ("High Voltage: %d\n", retval[0]));
+    			FILE_LOG(logDEBUG1, ("High Voltage: %d\n", retval[0]));
 #ifdef EIGERD
     			if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
     				ret = FAIL;
@@ -704,7 +705,7 @@ int set_dac(int file_des) {
                             FILE_LOG(logERROR,(mess));
                         }
                     }
-                    FILE_LOG(logDEBUG5, ("Dac (%d): %d dac units and %d mV\n", serverDacIndex, retval[0], retval[1]));
+                    FILE_LOG(logDEBUG1, ("Dac (%d): %d dac units and %d mV\n", serverDacIndex, retval[0], retval[1]));
     				break;
     		}
     	}
@@ -769,9 +770,9 @@ int get_adc(int file_des) {
 
 	// valid index
 	if (ret == OK) {
-		FILE_LOG(logDEBUG5, ("Getting ADC %d\n", serverAdcIndex));
+		FILE_LOG(logDEBUG1, ("Getting ADC %d\n", serverAdcIndex));
 		retval = getADC(serverAdcIndex);
-		FILE_LOG(logDEBUG5, ("ADC(%d): %d\n", retval));
+		FILE_LOG(logDEBUG1, ("ADC(%d): %d\n", retval));
 	}
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
@@ -790,7 +791,7 @@ int write_register(int file_des) {
 		return printSocketReadError();
 	uint32_t addr = args[0];
 	uint32_t val = args[1];
-		FILE_LOG(logDEBUG5, ("Writing to register 0x%x, data 0x%x\n", addr, val));
+		FILE_LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x\n", addr, val));
 
 	// only set
 	if (Server_VerifyLock() == OK) {
@@ -801,7 +802,7 @@ int write_register(int file_des) {
 			sprintf(mess,"Could not write to register 0x%x. Wrote 0x%x but read 0x%x\n", addr, val, retval);
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG5, ("Write register (0x%x): 0x%x\n", retval));
+		FILE_LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
 	}
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
@@ -819,11 +820,11 @@ int read_register(int file_des) {
 	if (receiveData(file_des, &addr, sizeof(addr), INT32) < 0)
 		return printSocketReadError();
 
-	FILE_LOG(logDEBUG5, ("Reading from register 0x%x\n", addr));
+	FILE_LOG(logDEBUG1, ("Reading from register 0x%x\n", addr));
 
 	// get
 	retval = readRegister(addr);
-	FILE_LOG(logDEBUG5, ("Read register (0x%x): 0x%x\n", retval));
+	FILE_LOG(logDEBUG1, ("Read register (0x%x): 0x%x\n", retval));
 
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
@@ -892,7 +893,7 @@ int set_module(int file_des) {
 			if (myAdc != NULL) 	free(myAdc);
 			return printSocketReadError();
 		}
-		FILE_LOG(logDEBUG5, ("module register is %d, nchan %d, nchip %d, "
+		FILE_LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
 				"ndac %d, nadc %d, iodelay %d, tau %d, eV %d\n",
 				module.reg, module.nchan, module.nchip,
 				module.ndac,  module.nadc, module.iodelay, module.tau, module.eV));
@@ -944,7 +945,7 @@ int set_module(int file_des) {
 		ret = setModule(module, mess);
 		retval = getSettings();
 		validate(module.reg, (int)retval, "set module (settings)", 0);
-		FILE_LOG(logDEBUG5, ("Settings: %d\n", retval));
+		FILE_LOG(logDEBUG1, ("Settings: %d\n", retval));
 	}
 	if (myChan != NULL) free(myChan);
 	if (myDac != NULL) 	free(myDac);
@@ -1010,9 +1011,9 @@ int get_module(int file_des) {
 		module.nadc = getNumberOfADCs();
 
 		// only get
-		FILE_LOG(logDEBUG5, ("Getting module\n"));
+		FILE_LOG(logDEBUG1, ("Getting module\n"));
 		getModule(&module);
-		FILE_LOG(logDEBUG5, ("Getting module. Settings:%d\n", module.reg));
+		FILE_LOG(logDEBUG1, ("Getting module. Settings:%d\n", module.reg));
 	}
 
 	Server_SendResult(file_des, INT32, 1, NULL, 0);
@@ -1040,7 +1041,7 @@ int set_settings(int file_des) {
 
 	if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting settings %d\n", isett));
+	FILE_LOG(logDEBUG1, ("Setting settings %d\n", isett));
 
 	//set & get
 	if ((isett == GET_SETTINGS) || ((isett != GET_SETTINGS) && (Server_VerifyLock() == OK))) {
@@ -1076,7 +1077,7 @@ int set_settings(int file_des) {
 		// if index is okay, set & get
 		if (ret == OK) {
 			retval = setSettings(isett);
-			FILE_LOG(logDEBUG5, ("Settings: %d\n", retval));
+			FILE_LOG(logDEBUG1, ("Settings: %d\n", retval));
 			validate((int)isett, (int)retval, "set settings", 0);
 #if defined(JUNGFRAUD) || defined (GOTTHARDD)
 			if (ret == OK && isett >= 0) {
@@ -1101,13 +1102,13 @@ int get_threshold_energy(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int retval = -1;
 
-	FILE_LOG(logDEBUG5, ("Getting Threshold energy\n"));
+	FILE_LOG(logDEBUG1, ("Getting Threshold energy\n"));
 #ifndef EIGERD
 	functionNotImplemented();
 #else
 	// only get
 	retval = getThresholdEnergy();
-	FILE_LOG(logDEBUG5, ("Threshold energy: %d eV\n", retval));
+	FILE_LOG(logDEBUG1, ("Threshold energy: %d eV\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
@@ -1121,7 +1122,7 @@ int start_acquisition(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Starting Acquisition\n"));
+	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
 		ret = startStateMachine();
@@ -1129,7 +1130,7 @@ int start_acquisition(int file_des) {
 			sprintf(mess, "Could not start acquisition\n");
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG5, ("Starting Acquisition ret: %d\n", ret));
+		FILE_LOG(logDEBUG1, ("Starting Acquisition ret: %d\n", ret));
 	}
 	return Server_SendResult(file_des, INT32, 1, NULL, 0);
 }
@@ -1140,7 +1141,7 @@ int stop_acquisition(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Stopping Acquisition\n"));
+	FILE_LOG(logDEBUG1, ("Stopping Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
 		ret = stopStateMachine();
@@ -1148,7 +1149,7 @@ int stop_acquisition(int file_des) {
 			sprintf(mess, "Could not stop acquisition\n");
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG5, ("Stopping Acquisition ret: %d\n", ret));
+		FILE_LOG(logDEBUG1, ("Stopping Acquisition ret: %d\n", ret));
 	}
 	return Server_SendResult(file_des, INT32, 1, NULL, 0);
 }
@@ -1161,7 +1162,7 @@ int start_readout(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Starting readout\n"));
+	FILE_LOG(logDEBUG1, ("Starting readout\n"));
 #ifdef JUNGFRAUD
 	functionNotImplemented();
 #else
@@ -1172,7 +1173,7 @@ int start_readout(int file_des) {
 			sprintf(mess, "Could not start readout\n");
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG5, ("Starting readout ret: %d\n", ret));
+		FILE_LOG(logDEBUG1, ("Starting readout ret: %d\n", ret));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, 1, NULL, 0);
@@ -1188,10 +1189,10 @@ int get_run_status(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	enum runStatus retval = ERROR;
 
-	FILE_LOG(logDEBUG5, ("Getting status\n"));
+	FILE_LOG(logDEBUG1, ("Getting status\n"));
 	// only get
 	retval = getRunStatus();
-	FILE_LOG(logDEBUG5, ("Status: %d\n", retval));
+	FILE_LOG(logDEBUG1, ("Status: %d\n", retval));
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
 
@@ -1203,9 +1204,9 @@ int start_and_read_all(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Starting Acquisition and read all frames\n"));
+	FILE_LOG(logDEBUG1, ("Starting Acquisition and read all frames\n"));
 	// start state machine
-	FILE_LOG(logDEBUG5, ("Stopping Acquisition\n"));
+	FILE_LOG(logDEBUG1, ("Stopping Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
 		ret = startStateMachine();
@@ -1213,7 +1214,7 @@ int start_and_read_all(int file_des) {
 			sprintf(mess, "Could not start acquisition\n");
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG5, ("Starting Acquisition ret: %d\n", ret));
+		FILE_LOG(logDEBUG1, ("Starting Acquisition ret: %d\n", ret));
 
 	}
 
@@ -1232,7 +1233,7 @@ int read_all(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Reading all frames\n"));
+	FILE_LOG(logDEBUG1, ("Reading all frames\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
 		readFrame(&ret, mess);
@@ -1258,7 +1259,7 @@ int set_timer(int file_des) {
 #ifdef EIGERD
 	int64_t subexptime = 0;
 #endif
-	FILE_LOG(logDEBUG5, ("Setting timer index %d to %lld ns\n", ind, tns));
+	FILE_LOG(logDEBUG1, ("Setting timer index %d to %lld ns\n", ind, tns));
 
 	// set & get
 	if ((tns == -1) || ((tns != -1) && (Server_VerifyLock() == OK))) {
@@ -1318,7 +1319,7 @@ int set_timer(int file_des) {
 		validate64(tns, retval, "set timer", 0);
 	}
 	if (ret != FAIL) {
-		FILE_LOG(logDEBUG5, ("Timer index %d: %lld\n", ind, retval));
+		FILE_LOG(logDEBUG1, ("Timer index %d: %lld\n", ind, retval));
 	}
 	return Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
 }
@@ -1337,7 +1338,7 @@ int get_time_left(int file_des) {
 
 	if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Getting timer left index %d\n", ind));
+	FILE_LOG(logDEBUG1, ("Getting timer left index %d\n", ind));
 
 	// only get
 	// check index
@@ -1362,7 +1363,7 @@ int get_time_left(int file_des) {
 		case MEASUREMENT_TIME:
 #endif
 			retval = getTimeLeft(ind);
-			FILE_LOG(logDEBUG5, ("Timer left index %d: %lld\n", ind, retval));
+			FILE_LOG(logDEBUG1, ("Timer left index %d: %lld\n", ind, retval));
 			break;
 #ifdef JUNGFRAUD
 		case DELAY_AFTER_TRIGGER:
@@ -1392,7 +1393,7 @@ int set_dynamic_range(int file_des) {
 
 	if (receiveData(file_des, &dr, sizeof(dr), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting dr to %d\n", dr));
+	FILE_LOG(logDEBUG1, ("Setting dr to %d\n", dr));
 
 	// set & get
 	if ((dr == -1) || ((dr != -1) && (Server_VerifyLock() == OK))) {
@@ -1408,7 +1409,7 @@ int set_dynamic_range(int file_des) {
 		case 4:	case 8:	case 32:
 #endif
 			retval = setDynamicRange(dr);
-			FILE_LOG(logDEBUG5, ("Dynamic range: %d\n", retval));
+			FILE_LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
 			validate(dr, retval, "set dynamic range", 0);
 			if (dr >= 0)
 				dataBytes=calculateDataBytes();
@@ -1457,7 +1458,7 @@ int set_readout_flags(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting readout flags to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting readout flags to %d\n", arg));
 
 #ifndef EIGERD
 	functionNotImplemented();
@@ -1474,8 +1475,8 @@ int set_readout_flags(int file_des) {
 		case SHOW_OVERFLOW:
 		case NOOVERFLOW:
 			retval = setReadOutFlags(arg);
-			FILE_LOG(logDEBUG5, ("Read out flags: %d\n", retval));
-			validate((int)arg, (int)retval, "set readout flag", 0);
+			FILE_LOG(logDEBUG1, ("Read out flags: 0x%x\n", retval));
+			validate((int)arg, (int)(retval & arg), "set readout flag", 1);
 			break;
 		default:
 			modeNotImplemented("Read out flag index", (int)arg);
@@ -1516,11 +1517,11 @@ int set_roi(int file_des) {
 				return printSocketReadError();
 		}
 	}
-	FILE_LOG(logDEBUG5, ("Set ROI (narg:%d)\n", narg));
+	FILE_LOG(logDEBUG1, ("Set ROI (narg:%d)\n", narg));
 	{
 		int iloop = 0;
 		for (iloop = 0; iloop < narg; ++iloop) {
-			FILE_LOG(logDEBUG5, ("%d: %d\t%d\t%d\t%d\n",
+			FILE_LOG(logDEBUG1, ("%d: %d\t%d\t%d\t%d\n",
 					arg[iloop].xmin, arg[iloop].xmax, arg[iloop].ymin, arg[iloop].ymax));
 		}
 	}
@@ -1536,7 +1537,7 @@ int set_roi(int file_des) {
 					"Set %d rois, but read %d rois\n", narg, nretval);
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG5, ("nRois: %d\n", nretval));
+		FILE_LOG(logDEBUG1, ("nRois: %d\n", nretval));
 	}
 #endif
 
@@ -1571,7 +1572,7 @@ int set_speed(int file_des) {
 		return printSocketReadError();
 	enum speedVariable ind = args[0];
 	int val = args[1];
-	FILE_LOG(logDEBUG5, ("Setting speed index %d to %d\n", ind, val));
+	FILE_LOG(logDEBUG1, ("Setting speed index %d to %d\n", ind, val));
 
 	// set & get
 	if ((val == -1) || ((val != -1) && (Server_VerifyLock() == OK))) {
@@ -1580,7 +1581,7 @@ int set_speed(int file_des) {
 #ifdef JUNGFRAUD
 		case ADC_PHASE:
 			retval = adcPhase(val);
-			FILE_LOG(logDEBUG5, ("ADc Phase: %d\n", retval));
+			FILE_LOG(logDEBUG1, ("ADc Phase: %d\n", retval));
 			if (val != 100000) {
 				validate(val, retval, "set adc phase ", 0);
 			}
@@ -1588,7 +1589,7 @@ int set_speed(int file_des) {
 #endif
 		case CLOCK_DIVIDER:
 			retval = setSpeed(val);
-			FILE_LOG(logDEBUG5, ("Clock: %d\n", retval));
+			FILE_LOG(logDEBUG1, ("Clock: %d\n", retval));
 			validate(val, retval, "set clock ", 0);
 			break;
 		default:
@@ -1622,7 +1623,7 @@ int lock_server(int file_des) {
 
 	if (receiveData(file_des, &lock, sizeof(lock), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Locking Server to %d\n", lock));
+	FILE_LOG(logDEBUG1, ("Locking Server to %d\n", lock));
 
 	// set
 	if (lock >= 0) {
@@ -1787,13 +1788,13 @@ int configure_mac(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("\n Configuring UDP Destination\n"));
+	FILE_LOG(logDEBUG1, ("\n Configuring UDP Destination\n"));
 #ifdef GOTTHARDD
-	FILE_LOG(logDEBUG5, ("Digital Test Bit %d\t", digitalTestBit);
+	FILE_LOG(logDEBUG1, ("Digital Test Bit %d\t", digitalTestBit);
 #endif
 	uint32_t dstIp = 0;
 	sscanf(args[0], "%x", 	&dstIp);
-	FILE_LOG(logDEBUG5, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
+	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
 			(dstIp >> 24) & 0xff, (dstIp >> 16) & 0xff, (dstIp >> 8) & 0xff, (dstIp) & 0xff,
 			dstIp));
 	uint64_t dstMac = 0;
@@ -1802,43 +1803,43 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[1], "%llx", 	&dstMac);
 #endif
-	FILE_LOG(logDEBUG5, ("Dst Mac Addr: (0x) "));
+	FILE_LOG(logDEBUG1, ("Dst Mac Addr: (0x) "));
 	{
 		int iloop = 5;
 		for (iloop = 5; iloop >= 0; --iloop) {
-			FILE_LOG(logDEBUG5, ("%x", (unsigned int)(((dstMac >> (8 * iloop)) & 0xFF))));
+			FILE_LOG(logDEBUG1, ("%x", (unsigned int)(((dstMac >> (8 * iloop)) & 0xFF))));
 			if (iloop > 0) {
-				FILE_LOG(logDEBUG5, (":"));
+				FILE_LOG(logDEBUG1, (":"));
 			}
 		}
 	}
-	FILE_LOG(logDEBUG5, (" = %llx\n", dstMac));
+	FILE_LOG(logDEBUG1, (" = %llx\n", dstMac));
 	uint32_t dstPort = 0;
 	sscanf(args[2], "%x", 	&dstPort);
-	FILE_LOG(logDEBUG5, ("Dst Port: %x\n", dstPort));
+	FILE_LOG(logDEBUG1, ("Dst Port: %x\n", dstPort));
 	uint32_t dstPort2 = 0;
 	sscanf(args[5], "%x", 	&dstPort2);
-	FILE_LOG(logDEBUG5, ("Dst Port2: %x\n", dstPort2));
+	FILE_LOG(logDEBUG1, ("Dst Port2: %x\n", dstPort2));
 	uint64_t srcMac = 0;
 #ifdef VIRTUAL
 	sscanf(args[3], "%lx",	&srcMac);
 #else
 	sscanf(args[3], "%llx",	&srcMac);
 #endif
-	FILE_LOG(logDEBUG5, ("Src Mac Addr: (0x) "));
+	FILE_LOG(logDEBUG1, ("Src Mac Addr: (0x) "));
 	{
 		int iloop = 5;
 		for (iloop = 5; iloop >= 0; --iloop) {
-			FILE_LOG(logDEBUG5, ("%x", (unsigned int)(((srcMac >> (8 * iloop)) & 0xFF))));
+			FILE_LOG(logDEBUG1, ("%x", (unsigned int)(((srcMac >> (8 * iloop)) & 0xFF))));
 			if (iloop > 0) {
-				FILE_LOG(logDEBUG5, (":"));
+				FILE_LOG(logDEBUG1, (":"));
 			}
 		}
 	}
-	FILE_LOG(logDEBUG5, (" = %llx\n", srcMac));
+	FILE_LOG(logDEBUG1, (" = %llx\n", srcMac));
 	uint32_t srcIp = 0;
 	sscanf(args[4], "%x",	&srcIp);
-	FILE_LOG(logDEBUG5, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
+	FILE_LOG(logDEBUG1, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
 			(srcIp >> 24) & 0xff, (srcIp >> 16) & 0xff, (srcIp >> 8) & 0xff, (srcIp) & 0xff,
 			srcIp));
 #if defined(JUNGFRAUD) || defined(EIGERD)
@@ -1846,7 +1847,7 @@ int configure_mac(int file_des) {
 	sscanf(args[6], "%x", 	&pos[0]);
 	sscanf(args[7], "%x", 	&pos[1]);
 	sscanf(args[8], "%x", 	&pos[2]);
-	FILE_LOG(logDEBUG5, ("Position: [%d, %d, %d]\n", pos[0], pos[1], pos[2]));
+	FILE_LOG(logDEBUG1, ("Position: [%d, %d, %d]\n", pos[0], pos[1], pos[2]));
 #endif
 
 	// set only
@@ -1863,12 +1864,12 @@ int configure_mac(int file_des) {
 #ifdef EIGERD
 			// change mac to hardware mac
 			if (srcMac != getDetectorMAC()) {
-				FILE_LOG(logERROR, ("actual detector mac address %llx does not match "
+				FILE_LOG(logWARNING, ("actual detector mac address %llx does not match "
 						"the one from client %llx\n",
 						(long long unsigned int)getDetectorMAC(),
 						(long long unsigned int)srcMac));
 				srcMac = getDetectorMAC();
-				FILE_LOG(logERROR,("matched detectormac to the hardware mac now\n"));
+				FILE_LOG(logWARNING,("matched detectormac to the hardware mac now\n"));
 			}
 
 			// always remember the ip sent from the client (could be for 10g(if not dhcp))
@@ -1877,7 +1878,7 @@ int configure_mac(int file_des) {
 
 			//only for 1Gbe, change ip to hardware ip
 			if (!enableTenGigabitEthernet(-1)) {
-				FILE_LOG(logERROR, ("using DHCP IP for Configuring MAC\n"));
+				FILE_LOG(logWARNING, ("Using DHCP IP for Configuring MAC\n"));
 				srcIp = getDetectorIP();
 			}
 			// 10 gbe (use ip given from client)
@@ -1887,11 +1888,11 @@ int configure_mac(int file_des) {
 #endif
 #ifdef GOTTHARDD
 			iretval = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2, digitalTestBit);
-			FILE_LOG(logDEBUG5, ("Configure mac retval: %d\n", iretval));
+			FILE_LOG(logDEBUG1, ("Configure mac retval: %d\n", iretval));
 			FILE_LOG(logINFO, ("Configure MAC successful: %d\n", iretval));
 #else
 			iretval = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2);
-			FILE_LOG(logDEBUG5, ("Configure mac retval: %d\n", iretval));
+			FILE_LOG(logDEBUG1, ("Configure mac retval: %d\n", iretval));
 
 			if (iretval == -1) {
 				ret = FAIL;
@@ -1938,7 +1939,7 @@ int load_image(int file_des) {
 			return printSocketReadError();
 		}
 	}
-	FILE_LOG(logDEBUG5, ("Loading %s image (ind:%d)\n", (index == DARK_IMAGE) ? "dark" :
+	FILE_LOG(logDEBUG1, ("Loading %s image (ind:%d)\n", (index == DARK_IMAGE) ? "dark" :
 			((index == GAIN_IMAGE) ? "gain" : "unknown"), index));
 
 #ifndef GOTTHARDD
@@ -1951,7 +1952,7 @@ int load_image(int file_des) {
 		case DARK_IMAGE :
 		case GAIN_IMAGE :
 			ret = loadImage(index, ImageVals);
-			FILE_LOG(logDEBUG5, ("Loading image ret: %d\n", ret));
+			FILE_LOG(logDEBUG1, ("Loading image ret: %d\n", ret));
 			if (ret == FAIL) {
 				sprintf(mess, "Could not load image\n");
 				FILE_LOG(logERROR,(mess));
@@ -1980,7 +1981,7 @@ int read_counter_block(int file_des) {
 
 	if (receiveData(file_des, &startACQ, sizeof(startACQ), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Read counter block with start acq bit: %d\n", startACQ));
+	FILE_LOG(logDEBUG1, ("Read counter block with start acq bit: %d\n", startACQ));
 
 #ifndef GOTTHARDD
 	functionNotImplemented();
@@ -2009,7 +2010,7 @@ int reset_counter_block(int file_des) {
 
 	if (receiveData(file_des, &startACQ, sizeof(startACQ), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Reset counter block with start acq bit: %d\n", startACQ));
+	FILE_LOG(logDEBUG1, ("Reset counter block with start acq bit: %d\n", startACQ));
 
 #ifndef GOTTHARDD
 	functionNotImplemented();
@@ -2039,7 +2040,7 @@ int enable_ten_giga(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Enable/ Disable 10GbE : %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Enable/ Disable 10GbE : %d\n", arg));
 
 #ifndef EIGERD
 	functionNotImplemented();
@@ -2047,7 +2048,7 @@ int enable_ten_giga(int file_des) {
 	// set & get
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = enableTenGigabitEthernet(arg);
-		FILE_LOG(logDEBUG5, ("10GbE: %d\n", retval));
+		FILE_LOG(logDEBUG1, ("10GbE: %d\n", retval));
 		validate(arg, retval, "enable/disable 10GbE", 0);
 	}
 #endif
@@ -2065,7 +2066,7 @@ int set_all_trimbits(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Set all trmbits to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Set all trmbits to %d\n", arg));
 
 #ifndef EIGERD
 	functionNotImplemented();
@@ -2080,7 +2081,7 @@ int set_all_trimbits(int file_des) {
 	}
 	// get
 	retval = getAllTrimbits();
-	FILE_LOG(logDEBUG5, ("All trimbits: %d\n", retval));
+	FILE_LOG(logDEBUG1, ("All trimbits: %d\n", retval));
 	validate(arg, retval, "set all trimbits", 0);
 #endif
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
@@ -2108,7 +2109,7 @@ int write_adc_register(int file_des) {
 		return printSocketReadError();
 	uint32_t addr = args[0];
 	uint32_t val = args[1];
-	FILE_LOG(logDEBUG5, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
+	FILE_LOG(logDEBUG1, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -2131,7 +2132,7 @@ int set_counter_bit(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Set counter bit with value: %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Set counter bit with value: %d\n", arg));
 
 #ifndef EIGERD
 	functionNotImplemented();
@@ -2143,7 +2144,7 @@ int set_counter_bit(int file_des) {
 	}
 	// get
 	retval = setCounterBit(-1);
-	FILE_LOG(logDEBUG5, ("Set counter bit retval: %d\n", retval));
+	FILE_LOG(logDEBUG1, ("Set counter bit retval: %d\n", retval));
 	validate(arg, retval, "set counter bit", 0);
 #endif
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
@@ -2160,7 +2161,7 @@ int pulse_pixel(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Pulse pixel, n: %d, x: %d, y: %d\n", args[0], args[1], args[2]));
+	FILE_LOG(logDEBUG1, ("Pulse pixel, n: %d, x: %d, y: %d\n", args[0], args[1], args[2]));
 
 #ifndef EIGERD
 	functionNotImplemented();
@@ -2187,7 +2188,7 @@ int pulse_pixel_and_move(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Pulse pixel and move, n: %d, x: %d, y: %d\n",
+	FILE_LOG(logDEBUG1, ("Pulse pixel and move, n: %d, x: %d, y: %d\n",
 			args[0], args[1], args[2]));
 
 #ifndef EIGERD
@@ -2217,7 +2218,7 @@ int pulse_chip(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Pulse chip: %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Pulse chip: %d\n", arg));
 
 #ifndef EIGERD
 	functionNotImplemented();
@@ -2245,7 +2246,7 @@ int set_rate_correct(int file_des) {
 
 	if (receiveData(file_des, &tau_ns, sizeof(tau_ns), INT64) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Set rate correct with tau %lld\n", (long long int)tau_ns));
+	FILE_LOG(logDEBUG1, ("Set rate correct with tau %lld\n", (long long int)tau_ns));
 
 #ifndef EIGERD
 	functionNotImplemented();
@@ -2288,12 +2289,12 @@ int get_rate_correct(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-	FILE_LOG(logDEBUG5, ("Getting rate correction\n"));
+	FILE_LOG(logDEBUG1, ("Getting rate correction\n"));
 #ifndef EIGERD
 	functionNotImplemented();
 #else
 	retval = getCurrentTau();
-	FILE_LOG(logDEBUG5, ("Tau: %lld\n", (long long int)retval));
+	FILE_LOG(logDEBUG1, ("Tau: %lld\n", (long long int)retval));
 #endif
 	return Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
 }
@@ -2313,7 +2314,7 @@ int set_network_parameter(int file_des) {
 	enum networkParameter mode = args[0];
 	int value = args[1];
 	enum NETWORKINDEX serverIndex = 0;
-	FILE_LOG(logDEBUG5, ("Set network parameter index %d to %d\n", mode, value));
+	FILE_LOG(logDEBUG1, ("Set network parameter index %d to %d\n", mode, value));
 
 #ifdef GOTTHARDD
 	functionNotImplemented();
@@ -2351,7 +2352,7 @@ int set_network_parameter(int file_des) {
 		// valid index
 		if (ret == OK) {
 			retval = setNetworkParameter(serverIndex, value);
-			FILE_LOG(logDEBUG5, ("Network Parameter index %d: %d\n", serverIndex, retval));
+			FILE_LOG(logDEBUG1, ("Network Parameter index %d: %d\n", serverIndex, retval));
 			validate(value, retval, "set network parameter", 0);
 		}
 	}
@@ -2368,7 +2369,7 @@ int program_fpga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Programming FPGA\n"));
+	FILE_LOG(logDEBUG1, ("Programming FPGA\n"));
 #ifndef JUNGFRAUD
 	//to receive any arguments
 	int n = 1;
@@ -2404,7 +2405,7 @@ int program_fpga(int file_des) {
 			if (receiveData(file_des,&filesize,sizeof(filesize),INT32) < 0)
 				return printSocketReadError();
 			totalsize = filesize;
-			FILE_LOG(logDEBUG5, ("Total program size is: %d\n", totalsize);
+			FILE_LOG(logDEBUG1, ("Total program size is: %d\n", totalsize);
 
 			// opening file pointer to flash and telling FPGA to not touch flash
 			if (startWritingFPGAprogram(&fp) != OK) {
@@ -2428,7 +2429,7 @@ int program_fpga(int file_des) {
 				unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
 				if (unitprogramsize > filesize) //less than 2mb
 					unitprogramsize = filesize;
-				FILE_LOG(logDEBUG5, ("unit size to receive is:%d\n"
+				FILE_LOG(logDEBUG1, ("unit size to receive is:%d\n"
 						"filesize:%d currentpointer:%d\n",
 						unitprogramsize, filesize, currentPointer));
 
@@ -2473,7 +2474,7 @@ int program_fpga(int file_des) {
 			if (fp != NULL)
 				fclose(fp);
 
-			FILE_LOG(logDEBUG5, ("Done with program receiving command\n"));
+			FILE_LOG(logDEBUG1, ("Done with program receiving command\n"));
 
 			if (isControlServer) {
 				basictests(debugflag);
@@ -2493,7 +2494,7 @@ int reset_fpga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Reset FPGA\n"));
+	FILE_LOG(logDEBUG1, ("Reset FPGA\n"));
 #ifndef JUNGFRAUD
 	functionNotImplemented();
 #else
@@ -2521,7 +2522,7 @@ int power_chip(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Powering chip to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -2529,7 +2530,7 @@ int power_chip(int file_des) {
 	// set & get
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = powerChip(arg);
-		FILE_LOG(logDEBUG5, ("Power chip: %d\n", retval));
+		FILE_LOG(logDEBUG1, ("Power chip: %d\n", retval));
 		validate(arg, retval, "power on/off chip", 0);
 		// narrow down error when powering on
 		if (ret == FAIL && arg > 0) {
@@ -2554,7 +2555,7 @@ int set_activate(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting activate mode to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting activate mode to %d\n", arg));
 
 #ifndef EIGERD
 	functionNotImplemented();
@@ -2562,7 +2563,7 @@ int set_activate(int file_des) {
 	// set & get
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = activate(arg);
-		FILE_LOG(logDEBUG5, ("Activate: %d\n", retval));
+		FILE_LOG(logDEBUG1, ("Activate: %d\n", retval));
 		validate(arg, retval, "set activate", 0);
 	}
 #endif
@@ -2576,7 +2577,7 @@ int prepare_acquisition(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Preparing Acquisition\n"));
+	FILE_LOG(logDEBUG1, ("Preparing Acquisition\n"));
 #ifndef EIGERD
 	functionNotImplemented();
 #else
@@ -2604,7 +2605,7 @@ int threshold_temp(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting threshold temperature to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting threshold temperature to %d\n", arg));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -2620,7 +2621,7 @@ int threshold_temp(int file_des) {
 		// valid temp
 	    else {
 			retval = setThresholdTemperature(arg);
-			FILE_LOG(logDEBUG5, ("Threshold temperature: %d\n", retval));
+			FILE_LOG(logDEBUG1, ("Threshold temperature: %d\n", retval));
 			validate(arg, retval, "set threshold temperature", 0);
 	    }
 	}
@@ -2638,7 +2639,7 @@ int temp_control(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting temperature control to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting temperature control to %d\n", arg));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -2646,7 +2647,7 @@ int temp_control(int file_des) {
 	// set & get
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = setTemperatureControl(arg);
-		FILE_LOG(logDEBUG5, ("Temperature control: %d\n", retval));
+		FILE_LOG(logDEBUG1, ("Temperature control: %d\n", retval));
 		validate(arg, retval, "set temperature control", 0);
 	}
 #endif
@@ -2664,7 +2665,7 @@ int temp_event(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting temperature event to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting temperature event to %d\n", arg));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -2672,7 +2673,7 @@ int temp_event(int file_des) {
 	// set & get
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = setTemperatureEvent(arg);
-		FILE_LOG(logDEBUG5, ("Temperature event: %d\n", retval));
+		FILE_LOG(logDEBUG1, ("Temperature event: %d\n", retval));
 		validate(arg, retval, "set temperature event", 0);
 	}
 #endif
@@ -2691,7 +2692,7 @@ int auto_comp_disable(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting  Auto comp disable to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting  Auto comp disable to %d\n", arg));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -2699,7 +2700,7 @@ int auto_comp_disable(int file_des) {
 	// set & get
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = autoCompDisable(arg);
-		FILE_LOG(logDEBUG5, ("Auto comp disable: %d\n", retval));
+		FILE_LOG(logDEBUG1, ("Auto comp disable: %d\n", retval));
 		validate(arg, retval, "set auto comp disable", 0);
 	}
 #endif
@@ -2718,7 +2719,7 @@ int storage_cell_start(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG5, ("Setting Storage cell start to %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting Storage cell start to %d\n", arg));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -2731,7 +2732,7 @@ int storage_cell_start(int file_des) {
 			FILE_LOG(logERROR, (mess));
 		} else {
 		retval = selectStoragecellStart(arg);
-		FILE_LOG(logDEBUG5, ("Storage cell start: %d\n", retval));
+		FILE_LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
 		validate(arg, retval, "set storage cell start", 0);
 	}
 #endif
@@ -2751,7 +2752,7 @@ int check_version(int file_des) {
 
 	// check software- firmware compatibility and basic tests
 	if (isControlServer) {
-		FILE_LOG(logDEBUG5, ("Checking software-firmware compatibility and basic test result\n"));
+		FILE_LOG(logDEBUG1, ("Checking software-firmware compatibility and basic test result\n"));
 
 		// check if firmware check is done
 		if (!isFirmwareCheckDone()) {
@@ -2775,7 +2776,7 @@ int check_version(int file_des) {
 	}
 
 	if (ret == OK) {
-		FILE_LOG(logDEBUG5, ("Checking versioning compatibility with value %d\n",arg));
+		FILE_LOG(logDEBUG1, ("Checking versioning compatibility with value %d\n",arg));
 
 		int64_t client_requiredVersion = arg;
 		int64_t det_apiVersion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
@@ -2811,7 +2812,7 @@ int software_trigger(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG5, ("Software Trigger\n"));
+	FILE_LOG(logDEBUG1, ("Software Trigger\n"));
 #ifndef EIGERD
 	functionNotImplemented();
 #else
@@ -2822,7 +2823,7 @@ int software_trigger(int file_des) {
 			sprintf(mess, "Could not send software trigger\n");
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG5, ("Software trigger ret: %d\n", ret));
+		FILE_LOG(logDEBUG1, ("Software trigger ret: %d\n", ret));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, 1 , NULL, 0);

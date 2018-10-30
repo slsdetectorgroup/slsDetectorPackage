@@ -57,7 +57,7 @@ void Feb_Interface_SendCompleteList(unsigned int n,unsigned int* list) {
 int Feb_Interface_WriteTo(unsigned int ch) {
 	if (ch>0xfff) return 0;
 
-	FILE_LOG(logDEBUG5, ("FIW ch %d\n", ch));
+	FILE_LOG(logDEBUG1, ("FIW ch %d\n", ch));
 
 Feb_Interface_send_data_raw[0] = 0x8fff0000;
 if (Local_Write(ll,4,Feb_Interface_send_data_raw)!=4) return 0;

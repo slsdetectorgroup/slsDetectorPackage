@@ -101,15 +101,15 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
 
 	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
 			"#### %d GetData: ####\n"
-			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu"
-			"\t\ttimestamp: %llu\t\tmodId: %u\t\t"
+			"frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %lu"
+			"\t\ttimestamp: %lu\t\tmodId: %u\t\t"
 			"row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
 			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
 			//"\t\tpacketsMask:%s"
 			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-			detectorHeader.row, (long long unsigned int)detectorHeader.frameNumber,
-			detectorHeader.expLength, detectorHeader.packetNumber, (long long unsigned int)detectorHeader.bunchId,
-			(long long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
+			detectorHeader.row, (long unsigned int)detectorHeader.frameNumber,
+			detectorHeader.expLength, detectorHeader.packetNumber, (long unsigned int)detectorHeader.bunchId,
+			(long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
 			detectorHeader.row, detectorHeader.column, detectorHeader.reserved,
 			detectorHeader.debug, detectorHeader.roundRNumber,
 			detectorHeader.detType, detectorHeader.version,

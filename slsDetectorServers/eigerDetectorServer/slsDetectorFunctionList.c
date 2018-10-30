@@ -306,10 +306,10 @@ void initControlServer() {
 		if (Feb_Control_OpenSerialCommunication())
 			;//	Feb_Control_CloseSerialCommunication();
 	}
-	FILE_LOG(logDEBUG5, ("Control server: FEB Initialization done\n"));
+	FILE_LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
 	Beb_Beb(detid);
 	Beb_SetDetectorNumber(getDetectorNumber());
-	FILE_LOG(logDEBUG5, ("Control server: BEB Initialization done\n"));
+	FILE_LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 
 
 	setupDetector();
@@ -325,7 +325,7 @@ void initStopServer() {
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
 	Feb_Control_Init(master,top,normal,getDetectorNumber());
-	FILE_LOG(logDEBUG5, ("Stop server: FEB Initialization done\n"));
+	FILE_LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
 #endif
 }
 
@@ -385,10 +385,10 @@ void allocateDetectorStructureMemory() {
 	detectorChans=malloc(NCHIP*NCHAN*sizeof(int));
 	detectorDacs=malloc(NDAC*sizeof(int));
 	detectorAdcs=malloc(NADC*sizeof(int));
-	FILE_LOG(logDEBUG5, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
-	FILE_LOG(logDEBUG5, ("chans from 0x%x to 0x%x\n",detectorChans, detectorChans));
-	FILE_LOG(logDEBUG5, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
-	FILE_LOG(logDEBUG5, ("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs));
+	FILE_LOG(logDEBUG1, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
+	FILE_LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n",detectorChans, detectorChans));
+	FILE_LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
+	FILE_LOG(logDEBUG1, ("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs));
 	(detectorModules)->dacs=detectorDacs;
 	(detectorModules)->adcs=detectorAdcs;
 	(detectorModules)->chanregs=detectorChans;
@@ -455,7 +455,7 @@ void setupDetector() {
 #ifndef VIRTUAL
 	Feb_Control_CheckSetup();
 #endif
-	FILE_LOG(logDEBUG5, ("Setup detector done\n\n"));
+	FILE_LOG(logDEBUG1, ("Setup detector done\n\n"));
 }
 
 
@@ -491,7 +491,7 @@ int setDynamicRange(int dr) {
 	return eiger_dynamicrange;
 #else
 	if (dr > 0) {
-		FILE_LOG(logDEBUG5, ("Setting dynamic range: %d\n", dr));
+		FILE_LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
 		if (Feb_Control_SetDynamicRange(dr)) {
 
 			//EigerSetBitMode(dr);
@@ -518,7 +518,7 @@ int setDynamicRange(int dr) {
 enum speedVariable setSpeed(int val) {
 
 	if (val != -1) {
-		FILE_LOG(logDEBUG5, ("Setting Read out Speed: %d\n", val));
+		FILE_LOG(logDEBUG1, ("Setting Read out Speed: %d\n", val));
 #ifndef VIRTUAL
 		if (Feb_Control_SetReadoutSpeed(val))
 #endif
@@ -538,15 +538,15 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val) {
 			switch(val) {
 			case PARALLEL:
 				val=E_PARALLEL;
-				FILE_LOG(logDEBUG5, ("Setting Read out Flag: Parallel\n"));
+				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Parallel\n"));
 				break;
 			case NONPARALLEL:
 				val=E_NON_PARALLEL;
-				FILE_LOG(logDEBUG5, ("Setting Read out Flag: Non Parallel\n"));
+				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Non Parallel\n"));
 				break;
 			case SAFE:
 				val=E_SAFE;
-				FILE_LOG(logDEBUG5, ("Setting Read out Flag: Safe\n"));
+				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Safe\n"));
 				break;
 
 			default:
@@ -567,11 +567,11 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val) {
 			switch(val) {
 			case SHOW_OVERFLOW:
 				val=1;
-				FILE_LOG(logDEBUG5, ("Setting Read out Flag: Overflow in 32 bit mode\n"));
+				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Overflow in 32 bit mode\n"));
 				break;
 			case NOOVERFLOW:
 				val=0;
-				FILE_LOG(logDEBUG5, ("Setting Read out Flag: No overflow in 32 bit mode\n"));
+				FILE_LOG(logDEBUG1, ("Setting Read out Flag: No overflow in 32 bit mode\n"));
 				break;
 			default:
 				FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
@@ -591,11 +591,11 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val) {
 			switch(val) {
 			case STORE_IN_RAM:
 				val=1;
-				FILE_LOG(logDEBUG5, ("Setting Read out Flag: Store in Ram\n"));
+				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Store in Ram\n"));
 				break;
 			case CONTINOUS_RO:
 				val=0;
-				FILE_LOG(logDEBUG5, ("Setting Read out Flag: Continuous Readout\n"));
+				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Continuous Readout\n"));
 				break;
 
 			default:
@@ -638,7 +638,7 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val) {
 		break;
 	}
 
-	FILE_LOG(logDEBUG5, ("Read out Flag: 0x%x\n", retval));
+	FILE_LOG(logDEBUG1, ("Read out Flag: 0x%x\n", retval));
 	return retval;
 }
 
@@ -659,7 +659,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	switch(ind) {
 	case FRAME_NUMBER:
 		if (val >= 0) {
-			FILE_LOG(logDEBUG5, ("Setting number of frames: %d * %d\n", (unsigned int)val, eiger_ncycles));
+			FILE_LOG(logDEBUG1, ("Setting number of frames: %d * %d\n", (unsigned int)val, eiger_ncycles));
 #ifndef VIRTUAL
 			if (Feb_Control_SetNExposures((unsigned int)val*eiger_ncycles)) {
 				eiger_nexposures = val;
@@ -678,7 +678,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case ACQUISITION_TIME:
 		if (val >= 0) {
-			FILE_LOG(logDEBUG5, ("Setting exp time: %fs\n", val/(1E9)));
+			FILE_LOG(logDEBUG1, ("Setting exp time: %fs\n", val/(1E9)));
 #ifndef VIRTUAL
 			Feb_Control_SetExposureTime(val/(1E9));
 #else
@@ -693,7 +693,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case SUBFRAME_ACQUISITION_TIME:
 		if (val >= 0) {
-			FILE_LOG(logDEBUG5, ("Setting sub exp time: %lldns\n", (long long int)val));
+			FILE_LOG(logDEBUG1, ("Setting sub exp time: %lldns\n", (long long int)val));
 #ifndef VIRTUAL
 			// calculate subdeadtime before settings subexptime
 			subdeadtime = Feb_Control_GetSubFramePeriod() -
@@ -743,7 +743,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case FRAME_PERIOD:
 		if (val >= 0) {
-			FILE_LOG(logDEBUG5, ("Setting acq period: %fs\n", val/(1E9)));
+			FILE_LOG(logDEBUG1, ("Setting acq period: %fs\n", val/(1E9)));
 #ifndef VIRTUAL
 			Feb_Control_SetExposurePeriod(val/(1E9));
 #else
@@ -758,7 +758,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case CYCLES_NUMBER:
 		if (val >= 0) {
-			FILE_LOG(logDEBUG5, ("Setting number of triggers: %d * %d\n",
+			FILE_LOG(logDEBUG1, ("Setting number of triggers: %d * %d\n",
 					(unsigned int)val,eiger_nexposures));
 #ifndef VIRTUAL
 			if (Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)) {
@@ -1005,7 +1005,7 @@ int setThresholdEnergy(int ev) {
 /* parameters - dac, adc, hv */
 
 void setDAC(enum DACINDEX ind, int val, int mV, int retval[]) {
-	FILE_LOG(logDEBUG5, ("Going to set dac %d to %d with mv mode %d \n", (int)ind, val, mV));
+	FILE_LOG(logDEBUG1, ("Going to set dac %d to %d with mv mode %d \n", (int)ind, val, mV));
 	if (ind == VTHRESHOLD) {
 		int ret[5];
 		setDAC(VCMP_LL,val,mV,retval);
@@ -1040,7 +1040,7 @@ void setDAC(enum DACINDEX ind, int val, int mV, int retval[]) {
 		FILE_LOG(logINFO, ("dac value outside range:%d\n",(int)ind));
 		strcpy(iname,dac_names[0]);
 	}
-	FILE_LOG(logDEBUG5, ("%s dac %d: %s to %d %s\n",
+	FILE_LOG(logDEBUG1, ("%s dac %d: %s to %d %s\n",
 			(val >= 0) ? "Setting" : "Getting",
 					ind, iname, val,
 					mV ? "mV" : "dac units"));
@@ -1166,7 +1166,7 @@ void setTiming( enum externalCommunicationMode arg) {
 		case BURST_TRIGGER:			ret = 1;	break;
 		case GATE_FIX_NUMBER:		ret = 3;	break;
 		}
-		FILE_LOG(logDEBUG5, ("Setting Triggering Mode: %d\n", (int)ret));
+		FILE_LOG(logDEBUG1, ("Setting Triggering Mode: %d\n", (int)ret));
 #ifndef VIRTUAL
 		if (Feb_Control_SetTriggerMode(ret,1))
 #endif
@@ -1216,10 +1216,10 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 
 	FILE_LOG(logINFO, ("src_port:%d\n"
-			"src_ip:%s\n"
-			"dst_ip:%s\n"
-			"src_mac:%s\n"
-			"dst_mac:%s\n",
+			"\tsrc_ip:%s\n"
+			"\tdst_ip:%s\n"
+			"\tsrc_mac:%s\n"
+			"\tdst_mac:%s\n",
 			src_port, src_ip, dst_ip, src_mac, dst_mac));
 
 
@@ -1229,7 +1229,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	if (!top)
 		dst_port = udpport2;
 
-	FILE_LOG(logINFO, ("dst_port:%d\n", dst_port));
+	FILE_LOG(logINFO, ("\tdst_port:%d\n", dst_port));
 
 	int i=0;
 	/* for(i=0;i<32;i++) { modified for Aldo*/
@@ -1282,7 +1282,7 @@ int	setDetectorPosition(int pos[]) {
 
 int setIODelay(int val) {
 	if (val!=-1) {
-		FILE_LOG(logDEBUG5, ("Setting IO Delay: %d\n",val));
+		FILE_LOG(logDEBUG1, ("Setting IO Delay: %d\n",val));
 #ifndef VIRTUAL
 		if (Feb_Control_SetIDelays(Feb_Control_GetModuleNumber(),val))
 #endif
@@ -1788,7 +1788,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 	int idac,  ichan, iadc;
 	int ret=OK;
 
-	FILE_LOG(logDEBUG5, ("Copying module %x to module %x\n",srcMod,destMod));
+	FILE_LOG(logDEBUG1, ("Copying module %x to module %x\n",srcMod,destMod));
 
 	if (srcMod->serialnumber>=0) {
 
@@ -1808,9 +1808,9 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 		return FAIL;
 	}
 
-	FILE_LOG(logDEBUG5, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
-	FILE_LOG(logDEBUG5, ("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc));
-	FILE_LOG(logDEBUG5, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
+	FILE_LOG(logDEBUG1, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
+	FILE_LOG(logDEBUG1, ("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc));
+	FILE_LOG(logDEBUG1, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
 	destMod->ndac=srcMod->ndac;
 	destMod->nadc=srcMod->nadc;
 	destMod->nchip=srcMod->nchip;
@@ -1823,7 +1823,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 		destMod->tau=srcMod->tau;
 	if (srcMod->eV>=0)
 		destMod->eV=srcMod->eV;
-	FILE_LOG(logDEBUG5, ("Copying register %x (%x)\n",destMod->reg,srcMod->reg ));
+	FILE_LOG(logDEBUG1, ("Copying register %x (%x)\n",destMod->reg,srcMod->reg ));
 
 	if (destMod->nchan!=0) {
 		for (ichan=0; ichan<(srcMod->nchan); ichan++) {

@@ -9,7 +9,7 @@
 #include "sls_detector_defs.h"
 #include "receiver_defs.h"
 #include "logger.h"
-
+#include "container_utils.h"
 class GeneralData;
 class Listener;
 class DataProcessor;
@@ -18,6 +18,7 @@ class Fifo;
 
 #include <exception>
 #include <vector>
+#include <memory>
 
 class slsReceiverImplementation: private virtual slsDetectorDefs {
  public:
@@ -767,8 +768,6 @@ private:
 	//*** receiver parameters ***
 	/** Number of Threads */
 	int numThreads;
-	/** Number of Jobs */
-	int numberofJobs;
 	/** Number of channels in roi for jungfrauctb */
 	uint32_t nroichannels;
 	/** Maximum Number of Listening Threads/ UDP Ports */
@@ -832,13 +831,13 @@ private:
 	/** General Data Properties */
 	GeneralData* generalData;
 	/** Listener Objects that listen to UDP and push into fifo */
-	std::vector <Listener*> listener;
+	std::vector<std::unique_ptr<Listener>> listener;
 	/** DataProcessor Objects that pull from fifo and process data */
-	std::vector <DataProcessor*> dataProcessor;
+	std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
 	/** DataStreamer Objects that stream data via ZMQ */
-	std::vector <DataStreamer*> dataStreamer;
+	std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
 	/** Fifo Structure to store addresses of memory writes */
-	std::vector <Fifo*> fifo;
+	std::vector<std::unique_ptr<Fifo>> fifo;
 
 	//***callback parameters***
 	/**

@@ -400,7 +400,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->nTrimEn = 0;
 	for(int i = 0; i < MAX_TRIMEN; ++i)
 		thisDetector->trimEnergies[i] = 0;
-	thisDetector->threadedProcessing = 1;
+	// thisDetector->threadedProcessing = 1;
 	thisDetector->nROI = 0;
 	memset(thisDetector->roiLimits, 0, MAX_ROIS * sizeof(ROI));
 	thisDetector->roFlags = NORMAL_READOUT;

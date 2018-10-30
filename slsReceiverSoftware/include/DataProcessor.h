@@ -42,7 +42,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param dataModifyReadycb pointer to data ready call back function with modified
 	 * @param pDataReadycb pointer to arguments of data ready call back function. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
 	 */
-	DataProcessor(int ind, detectorType dtype, Fifo*& f, fileFormat* ftype,
+	DataProcessor(int ind, detectorType dtype, Fifo* f, fileFormat* ftype,
 			bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
 						bool* fp, bool* act, bool* depaden, bool* sm,
@@ -121,7 +121,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * Set Fifo pointer to the one given
 	 * @param f address of Fifo pointer
 	 */
-	void SetFifo(Fifo*& f);
+	void SetFifo(Fifo* f);
 
 	/**
 	 * Reset parameters for new acquisition (including all scans)

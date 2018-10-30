@@ -819,12 +819,12 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRateCorr;
 	++i;
 
-	/*! \page data
-   - <b>threaded [i]</b> Sets/gets the data processing threaded flag. 1 is threaded, 0 unthreaded.
-	 */
-	descrToFuncMap[i].m_pFuncName="threaded"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdThreaded;
-	++i;
+// 	/*! \page data
+//    - <b>threaded [i]</b> Sets/gets the data processing threaded flag. 1 is threaded, 0 unthreaded.
+// 	 */
+// 	descrToFuncMap[i].m_pFuncName="threaded"; //
+// 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdThreaded;
+// 	++i;
 
 	/*! \page data
    - <b>darkimage fn</b> Loads the dark image to the detector from file fn (pedestal image). Cannot get. For Gotthard only.
@@ -2154,21 +2154,21 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action, int detPo
 #ifdef VERBOSE
 	cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
-	int b;
+	//int b;
 	if (action==PUT_ACTION) {
 		return  string("cannot set");
 	} else if (action==HELP_ACTION) {
 		return helpData(HELP_ACTION);
 	} else {
-		b=myDet->setThreadedProcessing(-1);
-		myDet->setThreadedProcessing(0);
-		myDet->setOnline(ONLINE_FLAG, detPos);
-		myDet->setReceiverOnline(ONLINE_FLAG, detPos);
-		myDet->readAll(detPos);
-		//processdata in receiver is useful only for gui purposes
-		if(myDet->setReceiverOnline(detPos)==OFFLINE_FLAG)
-			myDet->processData();
-		myDet->setThreadedProcessing(b);
+		// b=myDet->setThreadedProcessing(-1);
+		// myDet->setThreadedProcessing(0);
+		// myDet->setOnline(ONLINE_FLAG, detPos);
+		// myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+		// myDet->readAll(detPos);
+		// //processdata in receiver is useful only for gui purposes
+		// if(myDet->setReceiverOnline(detPos)==OFFLINE_FLAG)
+		// 	myDet->processData();
+		// myDet->setThreadedProcessing(b);
 		return string("");
 	}
 }
@@ -2743,21 +2743,21 @@ string slsDetectorCommand::helpRateCorr(int action){
 
 
 
-string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action, int detPos){
-	int ival;
-	char answer[1000];
+// string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action, int detPos){
+// 	int ival;
+// 	char answer[1000];
 
-	if (action==HELP_ACTION)
-		return helpThreaded(action);
+// 	if (action==HELP_ACTION)
+// 		return helpThreaded(action);
 
-	if (action==PUT_ACTION) {
-		if (sscanf(args[1],"%d",&ival))
-			myDet->setThreadedProcessing(ival);
-	}
-	sprintf(answer,"%d",myDet->setThreadedProcessing());
-	return string(answer);
+// 	if (action==PUT_ACTION) {
+// 		if (sscanf(args[1],"%d",&ival))
+// 			myDet->setThreadedProcessing(ival);
+// 	}
+// 	sprintf(answer,"%d",myDet->setThreadedProcessing());
+// 	return string(answer);
 
-} 
+// } 
 
 
 string slsDetectorCommand::helpThreaded(int action){

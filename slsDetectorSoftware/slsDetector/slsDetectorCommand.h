@@ -113,7 +113,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdFileName(int narg, char *args[], int action, int detPos = -1);
   std::string cmdFileIndex(int narg, char *args[], int action, int detPos = -1);
   std::string cmdRateCorr(int narg, char *args[], int action, int detPos = -1);
-  std::string cmdThreaded(int narg, char *args[], int action, int detPos = -1);
+  // std::string cmdThreaded(int narg, char *args[], int action, int detPos = -1);
   std::string cmdNetworkParameter(int narg, char *args[], int action, int detPos = -1);
   std::string cmdPort(int narg, char *args[], int action, int detPos = -1);
   std::string cmdLock(int narg, char *args[], int action, int detPos = -1);

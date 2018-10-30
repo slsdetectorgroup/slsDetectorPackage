@@ -8,8 +8,6 @@
 #include "slsDetector.h"
 #include "sls_detector_exceptions.h"
 #include "utilities.h"
-#include "detectorData.h"
-
 
 #include <iomanip>
 #include <iostream>
@@ -2109,9 +2107,9 @@ int multiSlsDetector::writeAdcRegister(int addr, int val, int detPos) {
         return detectors[detPos]->writeAdcRegister(addr, val);
     }
 
-	// multi
-	auto r = parallelCall(&slsDetector::writeAdcRegister, addr, val);
-	return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+    // multi
+    auto r = parallelCall(&slsDetector::writeAdcRegister, addr, val);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
 int multiSlsDetector::activate(int const enable, int detPos) {
@@ -2348,24 +2346,24 @@ int multiSlsDetector::setAutoComparatorDisableMode(int ival, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getChanRegs(double* retval, int detPos) {
+int multiSlsDetector::getChanRegs(double *retval, int detPos) {
 
-	int offset = 0;
-	std::vector<int> r;
-	for (auto& d : detectors) {
-		int nch = d->getTotalNumberOfChannels();
-		double result[nch];
-		r.push_back(d->getChanRegs(result));
-		memcpy(retval + offset, result, nch * sizeof(double));
-	}
-	return sls::minusOneIfDifferent(r);
+    int offset = 0;
+    std::vector<int> r;
+    for (auto &d : detectors) {
+        int nch = d->getTotalNumberOfChannels();
+        double result[nch];
+        r.push_back(d->getChanRegs(result));
+        memcpy(retval + offset, result, nch * sizeof(double));
+    }
+    return sls::minusOneIfDifferent(r);
 }
 
 int multiSlsDetector::setRateCorrection(int64_t t, int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->setRateCorrection(t);
-	}
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setRateCorrection(t);
+    }
 
     // multi
     auto r = parallelCall(&slsDetector::setRateCorrection, t);
@@ -2373,10 +2371,10 @@ int multiSlsDetector::setRateCorrection(int64_t t, int detPos) {
 }
 
 int64_t multiSlsDetector::getRateCorrection(int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->getRateCorrection();
-	}
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getRateCorrection();
+    }
 
     // multi
     auto r = parallelCall(&slsDetector::getRateCorrection);
@@ -2384,14 +2382,14 @@ int64_t multiSlsDetector::getRateCorrection(int detPos) {
 }
 
 void multiSlsDetector::printReceiverConfiguration(int detPos) {
-	// single
-	if (detPos >= 0) {
-		return detectors[detPos]->printReceiverConfiguration();
-	}
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->printReceiverConfiguration();
+    }
 
-	// multi
-	for (auto& d : detectors)
-		d->printReceiverConfiguration();
+    // multi
+    for (auto &d : detectors)
+        d->printReceiverConfiguration();
 }
 
 int multiSlsDetector::setReceiverOnline(int off, int detPos) {

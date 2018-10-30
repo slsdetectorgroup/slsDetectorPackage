@@ -7,10 +7,9 @@
  * @short This is the base class for multi detector system functionalities
  * @author Anna Bergamaschi
  */
-#include "sls_detector_defs.h"
 #include "error_defs.h"
 #include "logger.h"
-
+#include "sls_detector_defs.h"
 
 class slsDetector;
 class SharedMemory;
@@ -1178,15 +1177,15 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     int setAutoComparatorDisableMode(int ival = -1, int detPos = -1);
 
-	/**
+    /**
 	 * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
 	 * @param retval is the array with the trimbits
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns total number of channels for the detector
 	 */
-	int getChanRegs(double* retval, int detPos = -1);
+    int getChanRegs(double *retval, int detPos = -1);
 
-	/**
+    /**
 	 * Set Rate correction ( Eiger)
 	 * @param t dead time in ns - if 0 disable correction,
 	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
@@ -1194,20 +1193,20 @@ class multiSlsDetector : public virtual slsDetectorDefs,
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
-	int setRateCorrection(int64_t t = 0, int detPos = -1);
+    int setRateCorrection(int64_t t = 0, int detPos = -1);
 
-	/**
+    /**
 	 * Get rate correction ( Eiger)
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns 0 if rate correction disabled, > 0 otherwise (ns)
 	 */
-	int64_t getRateCorrection(int detPos = -1);
+    int64_t getRateCorrection(int detPos = -1);
 
-	/**
+    /**
 	 * Prints receiver configuration
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 */
-	void printReceiverConfiguration(int detPos = -1);
+    void printReceiverConfiguration(int detPos = -1);
 
     /**
      * Sets up receiver socket if online and sets the flag

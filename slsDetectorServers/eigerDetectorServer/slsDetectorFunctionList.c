@@ -1625,7 +1625,7 @@ int startStateMachine() {
 			FILE_LOG(logERROR, ("Acquisition did not FILE_LOG(logERROR ouble reading register\n"));
 			return FAIL;
 		}
-		FILE_LOG(logINFO, ("***Acquisition started\n"));
+		FILE_LOG(logINFOGREEN, ("Acquisition started\n"));
 	}
 
 	/*while(getRunStatus() == IDLE) {FILE_LOG(logINFO, ("waiting for being not idle anymore\n"));}*/
@@ -1743,7 +1743,7 @@ void readFrame(int *ret, char *mess) {
 		//FILE_LOG(logERROR ,"Waiting for finished flag\n"));
 		usleep(5000);
 	}
-	FILE_LOG(logGREEN, ("acquisition successfully finished\n"));
+	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #else
 
@@ -1752,7 +1752,7 @@ void readFrame(int *ret, char *mess) {
 		*ret = FAIL;
 		return;
 	}
-	FILE_LOG(logINFO, ("Acquisition finished***\n"));
+	FILE_LOG(logINFOGREEN, ("Acquisition finished\n"));
 
 	if (eiger_storeinmem) {
 		FILE_LOG(logINFO, ("requesting images after storing in memory\n"));
@@ -1766,10 +1766,7 @@ void readFrame(int *ret, char *mess) {
 
 	//wait for detector to send
 	Beb_EndofDataSend(send_to_ten_gig);
-
-
-	FILE_LOG(logINFO, ("*****Done Waiting...\n"));
-	FILE_LOG(logGREEN, ("acquisition successfully finished\n"));
+	FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 #endif
 }
 

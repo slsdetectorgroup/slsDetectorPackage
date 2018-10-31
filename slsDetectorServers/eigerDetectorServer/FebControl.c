@@ -1456,12 +1456,15 @@ void Feb_Control_PrintAcquisitionSetup() {
 	time(&rawtime);
 	struct tm *timeinfo = localtime(&rawtime);
 
-	FILE_LOG(logINFO, ("\nStarting an exposure: %s",asctime(timeinfo)));
-	FILE_LOG(logINFO, ("\t Dynamic range nbits: %d\n",Feb_Control_GetDynamicRange()));
-	FILE_LOG(logINFO, ("\t Trigger mode: 0x%x\n",Feb_Control_triggerMode));
-	FILE_LOG(logINFO, ("\t Number of exposures: %d\n",Feb_Control_GetNExposures()));
-	FILE_LOG(logINFO, ("\t Exsposure time (if used): %f seconds.\n",Feb_Control_exposure_time_in_sec));
-	FILE_LOG(logINFO, ("\t Exsposure period (if used): %f seconds.\n\n\n",Feb_Control_exposure_period_in_sec));
+	FILE_LOG(logINFO, ("Starting an exposure: (%s)"
+	        "\t Dynamic range nbits: %d\n"
+	        "\t Trigger mode: 0x%x\n"
+	        "\t Number of exposures: %d\n"
+	        "\t Exsposure time (if used): %f seconds.\n"
+	        "\t Exsposure period (if used): %f seconds.\n\n",
+	        asctime(timeinfo), Feb_Control_GetDynamicRange(), Feb_Control_triggerMode,
+	        Feb_Control_GetNExposures(), Feb_Control_exposure_time_in_sec,
+	        Feb_Control_exposure_period_in_sec));
 }
 
 int Feb_Control_SendBitModeToBebServer() {
@@ -1483,6 +1486,7 @@ int Feb_Control_SendBitModeToBebServer() {
 
 
 int Feb_Control_PrepareForAcquisition() {//return 1;
+    FILE_LOG(logINFO, ("Going to Prepare for Acquisition\n\n\n"));
 	static unsigned int reg_nums[20];
 	static unsigned int reg_vals[20];
 
@@ -1543,7 +1547,7 @@ int Feb_Control_PrepareForAcquisition() {//return 1;
 
 
 int Feb_Control_StartAcquisition() {
-	FILE_LOG(logINFO, ("****** starting acquisition********* \n"));
+	FILE_LOG(logINFOBLUE, ("Starting Acquisition\n"));
 
 	static unsigned int reg_nums[20];
 	static unsigned int reg_vals[20];

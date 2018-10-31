@@ -246,7 +246,7 @@ void Beb_EndofDataSend(int tengiga) {
 		while(1) {
 			maxtimer = MAX(MAX(l_txndelaycounter,l_framedelaycounter),MAX(r_txndelaycounter,r_framedelaycounter));
 			maxtimer /= 100;
-			FILE_LOG(logINFO, ("Will wait for %d us\n",maxtimer));
+			FILE_LOG(logDEBUG1, ("Will wait for %d us\n",maxtimer));
 			usleep(maxtimer);
 
 			//read new values
@@ -289,7 +289,7 @@ void Beb_EndofDataSend(int tengiga) {
 
 		}
 
-		FILE_LOG(logINFO, ("Detector has send all data\n"));
+		FILE_LOG(logINFO, ("Detector has sent all data\n"));
 		//close file pointer
 		Beb_close(fd,csp0base);
 	}

@@ -34,23 +34,23 @@ public:
 	void SetSocket(MySocketTCP *socket);
 
 	/**
-	 * Get message from server
-	 * Print appropriate message
-	 * Check for Unrecognized function in message and return fail if it does
-	 * to prevent getting retval from the server afterwards
-	 * @param mess message
-	 * @returns FAIL if unrecognized function found in message, else OK
+	 * Receive ret, mess or retval from Server
+	 * @param ret result of operation
+	 * @param mess pointer to message
+	 * @param retval poitner to retval
+	 * @param sizeOfRetval size of retval
 	 */
-	int Client_GetMesage(char* mess = 0);
+	void Client_Receive(int& ret, char* mess, void* retval, int sizeOfRetval);
 
 	/**
-	 * Send Arguments to server and get result back
+	 * Send Arguments to server and receives result back
 	 * @param fnum function enum to determine what parameter
 	 * @param args pointer to arguments
 	 * @param sizeOfArgs argument size
 	 * @param retval pointer to return value
 	 * @param sizeOfRetval return value size
 	 * @param mess pointer to message if message required externally
+	 * @returns sucess of operation
 	 */
 	int Client_Send(int fnum,
 			void* args, int sizeOfArgs,

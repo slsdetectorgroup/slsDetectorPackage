@@ -354,6 +354,11 @@ public:
 	void disconnectControl();
 
 	/**
+	 * Could not connect to receiver, log error
+	 */
+    void connectDataError();
+
+	/**
 	 * Connect to the data port
 	 * @returns OK, FAIL or undefined
 	 */

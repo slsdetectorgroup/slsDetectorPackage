@@ -150,7 +150,7 @@ public:
 		sockfd.fd = socket(AF_INET, getProtocol(),0); //tcp
 
 		if (sockfd.fd < 0) {
-			cprintf(RED, "Can not create socket\n");
+			FILE_LOG(logERROR) << "Can not create socket";
 			sockfd.fd =-1;
 			throw SocketException();
 		}
@@ -173,7 +173,7 @@ public:
 			int val=1;
 			if (setsockopt(sockfd.fd,SOL_SOCKET,SO_REUSEADDR,
 					&val,sizeof(int)) == -1) {
-				cprintf(RED, "setsockopt REUSEADDR failed\n");
+			    FILE_LOG(logERROR) << "setsockopt REUSEADDR failed";
 				sockfd.fd =-1;
 				throw SocketException();
 			}
@@ -192,10 +192,8 @@ public:
 						"Could not get rx socket receive buffer size";
 			} else if (ret_size >= real_size) {
 				actual_udp_socket_buffer_size = ret_size;
-#ifdef VEBOSE
-				FILE_LOG(logINFO) << "[Port " << port_number << "] "
+				FILE_LOG(logDEBUG1) << "[Port " << port_number << "] "
 						"UDP rx socket buffer size is sufficient (" << ret_size << ")";
-#endif
 			}
 
 			// not sufficient, enhance size
@@ -244,7 +242,7 @@ public:
 
 
 		if(bind(sockfd.fd,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
-			cprintf(RED, "Can not bind socket\n");
+            FILE_LOG(logERROR) << "Can not bind socket";
 			sockfd.fd =-1;
 			throw SocketException();
 		}
@@ -313,7 +311,7 @@ public:
 		case UDP:
 			return SOCK_DGRAM;
 		default:
-			cprintf(RED, "unknown protocol %d\n", p);
+		    FILE_LOG(logERROR) << "unknown protocol: " << p;
 			return -1;
 		}
 	};
@@ -365,74 +363,70 @@ public:
 		if(is_a_server && protocol==TCP){ //server tcp; the server will wait for the clients connection
 			if (sockfd.fd>0) {
 				if ((sockfd.newfd = accept(sockfd.fd,(struct sockaddr *) &clientAddress, &clientAddress_length)) < 0) {
-					cprintf(RED, "Error: with server accept, connection refused\n");
+				    FILE_LOG(logERROR) << "with server accept, connection refused";
 					switch(errno) {
 					case EWOULDBLOCK:
-						printf("ewouldblock eagain\n");
+					    FILE_LOG(logERROR) << "ewouldblock eagain";
 						break;
 					case EBADF:
-						printf("ebadf\n");
+						FILE_LOG(logERROR) << "ebadf";
 						break;
 					case ECONNABORTED:
-						printf("econnaborted\n");
+						FILE_LOG(logERROR) << "econnaborted";
 						break;
 					case EFAULT:
-						printf("efault\n");
+						FILE_LOG(logERROR) << "efault";
 						break;
 					case EINTR:
-						printf("eintr\n");
+						FILE_LOG(logERROR) << "eintr";
 						break;
 					case EINVAL:
-						printf("einval\n");
+						FILE_LOG(logERROR) << "einval";
 						break;
 					case EMFILE:
-						printf("emfile\n");
+						FILE_LOG(logERROR) << "emfile";
 						break;
 					case ENFILE:
-						printf("enfile\n");
+						FILE_LOG(logERROR) << "enfile";
 						break;
 					case ENOTSOCK:
-						printf("enotsock\n");
+						FILE_LOG(logERROR) << "enotsock";
 						break;
 					case EOPNOTSUPP:
-						printf("eOPNOTSUPP\n");
+						FILE_LOG(logERROR) << "eOPNOTSUPP";
 						break;
 					case ENOBUFS:
-						printf("ENOBUFS\n");
+						FILE_LOG(logERROR) << "ENOBUFS";
 						break;
 					case ENOMEM:
-						printf("ENOMEM\n");
+						FILE_LOG(logERROR) << "ENOMEM";
 						break;
 					case ENOSR:
-						printf("ENOSR\n");
+						FILE_LOG(logERROR) << "ENOSR";
 						break;
 					case EPROTO:
-						printf("EPROTO\n");
+						FILE_LOG(logERROR) << "EPROTO";
 						break;
 					default:
-						printf("unknown error\n");
+						FILE_LOG(logERROR) << "unknown error";
 					}
 				}
 				else{
 					inet_ntop(AF_INET, &(clientAddress.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
-#ifdef VERY_VERBOSE
-					cout << "client connected "<< sockfd.newfd << endl;
-#endif
+					FILE_LOG(logDEBUG1) << "client connected " << sockfd.newfd;
 				}
 			}
-#ifdef VERY_VERBOSE
-			cout << "fd " << sockfd.newfd  << endl;
-#endif
+			FILE_LOG(logDEBUG1) << "fd " << sockfd.newfd;
 			return sockfd.newfd;
 		} else {
 			if (sockfd.fd<=0)
 				sockfd.fd = socket(AF_INET, getProtocol(),0);
 			//    SetTimeOut(10);
 			if (sockfd.fd < 0){
-				cprintf(RED, "Can not create socket\n");
+			    FILE_LOG(logERROR) << "Can not create socket";
 			} else {
 				if(connect(sockfd.fd,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
-					cprintf(RED, "Can not connect to socket\n");
+				    FILE_LOG(logERROR) << "Can not connect to socket";
 					return -1;
 				}
 			}
@@ -470,13 +464,13 @@ public:
 		tout.tv_usec = 0;
 		if(::setsockopt(sockfd.fd, SOL_SOCKET, SO_RCVTIMEO,
 				&tout, sizeof(struct timeval)) <0) {
-			cprintf(RED, "Error in setsockopt SO_RCVTIMEO %d\n", 0);
+		    FILE_LOG(logERROR) << "setsockopt SO_RCVTIMEO " << 0;
 		}
 		tout.tv_sec  = ts;
 		tout.tv_usec = 0;
 		if(::setsockopt(sockfd.fd, SOL_SOCKET, SO_SNDTIMEO,
 				&tout, sizeof(struct timeval)) < 0)	{
-			cprintf(RED, "Error in setsockopt SO_SNDTIMEO %d\n", ts);
+		    FILE_LOG(logERROR) << "setsockopt SO_SNDTIMEO " << ts;
 		}
 		return 0;
 	};
@@ -508,7 +502,6 @@ public:
 				sa = (struct sockaddr_in *)(iap->ifa_addr);
 				inet_ntop(iap->ifa_addr->sa_family, (void *)&(sa->sin_addr), buf, buf_len);
 				if (ip==std::string(buf)) {
-					//printf("%s\n", iap->ifa_name);
 					strcpy(buf,iap->ifa_name);
 					break;
 				}
@@ -615,17 +608,17 @@ public:
 		// get host info into res
 		int errcode = getaddrinfo (hostname, NULL, &hints, res);
 		if (errcode != 0) {
-			cprintf (RED,"Error: Could not convert %s hostname to internet address (zmq):"
-					"%s\n", hostname, gai_strerror(errcode));
+		    FILE_LOG(logERROR) << "Could not convert hostname (" << hostname << ") to internet address (zmq):" <<
+					gai_strerror(errcode);
 		} else {
 			if (*res == NULL) {
-				cprintf (RED,"Error: Could not convert %s hostname to internet address (zmq): "
-						"gettaddrinfo returned null\n", hostname);
+			    FILE_LOG(logERROR) << "Could not converthostname (" << hostname << ") to internet address (zmq):"
+						"gettaddrinfo returned null";
 			} else{
 				return 0;
 			}
 		}
-		cprintf(RED, "Error: Could not convert hostname to internet address\n");
+		 FILE_LOG(logERROR) << "Could not convert hostname to internet address";
 		return 1;
 	};
 
@@ -643,7 +636,7 @@ public:
 			freeaddrinfo(res);
 			return 0;
 		}
-		cprintf(RED, "Error: Could not convert internet address to ip string\n");
+		 FILE_LOG(logERROR) << "Could not convert internet address to ip string";
 		return 1;
 	}
 
@@ -697,7 +690,7 @@ public:
 						continue;
 					if(nsent != nsending){
 						if(nsent && (nsent != -1))
-							cprintf(RED,"Incomplete Packet size %d\n",nsent);
+						    FILE_LOG(logERROR) << "Incomplete Packet size " << nsent;
 						break;
 					}
 					length-=nsent;
@@ -709,16 +702,13 @@ public:
 				//normal
 				nsending=packet_size;
 				while(1){
-#ifdef VERYVERBOSE
-					cprintf(BLUE,"%d gonna listen\n", portno); fflush(stdout);
-#endif
 					nsent = recvfrom(sockfd.fd,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
 					//break out of loop only if read one packets size or read didnt work (cuz of shutdown)
 					if(nsent<=0 || nsent == packet_size)
 						break;
 					//incomplete packets or header packets ignored and read buffer again
 					if(nsent != packet_size && nsent != header_packet_size)
-						cprintf(RED,"%d Incomplete Packet size %d\n", portno, nsent);
+					    FILE_LOG(logERROR) << portno << ": Incomplete Packet size " << nsent;
 				}
 				//nsent = 1040;
 				if(nsent > 0)total_sent+=nsent;
@@ -727,9 +717,7 @@ public:
 		default:
 			;
 		}
-#ifdef VERY_VERBOSE
-		cout << "sent "<< total_sent << " Bytes" << endl;
-#endif
+		FILE_LOG(logDEBUG1) << "sent " << total_sent << " Bytes";
 		return total_sent;
 	}
 
@@ -740,9 +728,7 @@ public:
 	 * @returns size of data sent
 	 */
 	int SendDataOnly(void *buf, int length) {
-#ifdef VERY_VERBOSE
-		cout << "want to send "<< length << " Bytes" << endl;
-#endif
+	    FILE_LOG(logDEBUG1) << "want to send " << length << " Bytes";
 		if (buf==NULL) return -1;
 
 		total_sent=0;
@@ -757,7 +743,7 @@ public:
 				nsending = (length>packet_size) ? packet_size:length;
 				nsent = write(tcpfd,(char*)buf+total_sent,nsending);
 				if(is_a_server && nsent < 0) {
-					cprintf(BG_RED, "Error writing to socket. Possible client socket crash\n");
+				    FILE_LOG(logERROR) << "Could not write to socket. Possible client socket crash";
 					break;
 				}
 				if(!nsent) break;
@@ -779,9 +765,7 @@ public:
 		default:
 			;
 		}
-#ifdef VERY_VERBOSE
-		cout << "sent "<< total_sent << " Bytes" << endl;
-#endif
+		FILE_LOG(logDEBUG1) << "sent "<< total_sent << " Bytes";
 		return total_sent;
 	}
 

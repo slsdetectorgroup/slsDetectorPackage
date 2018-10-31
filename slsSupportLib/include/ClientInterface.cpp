@@ -14,22 +14,33 @@ void ClientInterface::SetSocket(MySocketTCP *socket) {
 }
 
 
-int ClientInterface::Client_GetMesage(char* mess) {
-	bool created = false;
-	int ret = OK;
-	if (!mess){
-		created = true;
-		mess = new char[MAX_STR_LENGTH];
-		memset(mess, 0, MAX_STR_LENGTH);
-	}
-	mySocket->ReceiveDataOnly(mess,MAX_STR_LENGTH);
-	cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
-	if(strstr(mess,"Unrecognized Function")!=NULL)
-		ret = FAIL;
+void ClientInterface::Client_Receive(int& ret, char* mess, void* retval, int sizeOfRetval) {
+    // get result of operation
+    mySocket->ReceiveDataOnly(&ret,sizeof(ret));
 
-	if (created)
-		delete [] mess;
-	return ret;
+    bool unrecognizedFunction = false;
+    if (ret == FAIL) {
+        bool created = false;
+        // allocate mess if null
+        if (!mess){
+            created = true;
+            mess = new char[MAX_STR_LENGTH];
+            memset(mess, 0, MAX_STR_LENGTH);
+        }
+        // get error message
+        mySocket->ReceiveDataOnly(mess,MAX_STR_LENGTH);
+        cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
+
+        // unrecognized function, do not ask for retval
+        if(strstr(mess,"Unrecognized Function") != NULL)
+            unrecognizedFunction = true;
+        // delete allocated mess
+        if (created)
+            delete [] mess;
+    }
+    // get retval
+    if (!unrecognizedFunction)
+           mySocket->ReceiveDataOnly(retval, sizeOfRetval);
 }
 
 
@@ -37,18 +48,10 @@ int ClientInterface::Client_Send(int fnum,
 		void* args, int sizeOfArgs,
 		void* retval, int sizeOfRetval,
 		char* mess) {
-
-	mySocket->SendDataOnly(&fnum,sizeof(fnum));
-	mySocket->SendDataOnly(args, sizeOfArgs);
-
-	int ret = FAIL;
-	mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret == FAIL) {
-		if (Client_GetMesage(mess) == FAIL)
-			return FAIL;
-	}
-	mySocket->ReceiveDataOnly(retval, sizeOfRetval);
-
+    int ret = FAIL;
+    mySocket->SendDataOnly(&fnum,sizeof(fnum));
+    mySocket->SendDataOnly(args, sizeOfArgs);
+    Client_Receive(ret, mess, retval, sizeOfRetval);
 	return ret;
 }
 

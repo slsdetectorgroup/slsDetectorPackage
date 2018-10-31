@@ -648,16 +648,19 @@ void slsDetector::disconnectControl() {
 		controlSocket->Disconnect();
 }
 
-
+void slsDetector::connectDataError() {
+    FILE_LOG(logERROR) << "Cannot connect to receiver";
+    setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
+}
 
 int slsDetector::connectData() {
 	if (dataSocket) {
 		if (dataSocket->Connect() >= 0)
 			return OK;
 		else {
-			FILE_LOG(logERROR) << "Cannot connect to receiver";
-			setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
-			return FAIL;}
+		    connectDataError();
+			return FAIL;
+		}
 	}
 	return UNDEFINED;
 }

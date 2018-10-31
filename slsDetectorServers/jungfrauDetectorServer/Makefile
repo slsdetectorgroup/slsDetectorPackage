@@ -1,6 +1,6 @@
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DJUNGFRAUD -DSLS_DETECTOR_FUNCTION_LIST  -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
+CFLAGS		+=  -Wall -DJUNGFRAUD  -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
 LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	jungfrauDetectorServer 

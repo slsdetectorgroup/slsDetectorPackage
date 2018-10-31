@@ -1,8 +1,6 @@
-//#ifdef SLS_DETECTOR_FUNCTION_LIST
-
-
 #include "slsDetectorFunctionList.h"
 #include "gitInfoJungfrau.h"
+#ifndef VIRTUAL
 #include "AD9257.h"		// include "commonServerFunctions.h", which in turn includes "blackfin.h"
 #include "programfpga.h"
 #include "versionAPI.h"
@@ -1715,9 +1713,3 @@ int getNumberOfADCs(){return  NADC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}
 
 
-
-
-
-
-
-//#endif

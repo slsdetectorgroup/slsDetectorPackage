@@ -1,6 +1,6 @@
 #include "slsDetectorFunctionList.h"
-#ifndef VIRTUAL
 #include "gitInfoEiger.h"
+#ifndef VIRTUAL
 #include "FebControl.h"
 #include "Beb.h"
 #include "versionAPI.h"
@@ -1370,12 +1370,13 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 
 	//same setting
 	if ((tau_in_nsec == custom_tau_in_nsec) && (ratetable_period_in_nsec == actual_period)) {
-		if (eiger_dynamicrange == 32)
+		if (eiger_dynamicrange == 32) {
 			FILE_LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
 					(long long int)tau_in_nsec,(long long int)ratetable_period_in_nsec));
-		else
+		} else {
 			FILE_LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
 					(long long int)tau_in_nsec,(long long int)ratetable_period_in_nsec));
+		}
 	}
 	//different setting, calculate table
 	else {
@@ -1603,7 +1604,7 @@ int startStateMachine() {
 		eiger_virtual_status = 0;
 		return FAIL;
 	}
-	FILE_LOG(logINFO ,"***Virtual Acquisition started\n");
+	FILE_LOG(logINFO ,("Virtual Acquisition started\n"));
 	return OK;
 #else
 

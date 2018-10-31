@@ -253,8 +253,8 @@ void function_table() {
 
 	int iloop = 0;
 	for (iloop = 0; iloop < NUM_DET_FUNCTIONS ; ++iloop) {
-		FILE_LOG(logDEBUG1, ("function fnum=%d, (%s) located at 0x%x\n", iloop,
-				getFunctionName((enum detFuncs)iloop), (unsigned int)flist[iloop]));
+		FILE_LOG(logDEBUG1, ("function fnum=%d, (%s)\n", iloop,
+				getFunctionName((enum detFuncs)iloop)));
 	}
 }
 
@@ -289,10 +289,10 @@ void validate64(int64_t arg, int64_t retval, char* modename, int hex) {
 		ret = FAIL;
 		if (hex)
 			sprintf(mess, "Could not %s. Set 0x%llx, but read 0x%llx\n",
-				modename, arg, retval);
+				modename, (long long unsigned int)arg, (long long unsigned int)retval);
 		else
 			sprintf(mess, "Could not %s. Set %lld, but read %lld\n",
-				modename, arg, retval);
+				modename, (long long unsigned int)arg, (long long unsigned int)retval);
 		FILE_LOG(logERROR,(mess));
 	}
 }

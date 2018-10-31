@@ -25,13 +25,13 @@ int i2c_open(const char* file,unsigned int addr){
 	//device file
 	int fd = open( file, O_RDWR );
 	if (fd < 0)	{
-		cprintf(RED,"Warning: Unable to open file %s\n",file);
+		FILE_LOG(logERROR, ("Warning: Unable to open file %s\n",file));
 		return -1;
 	}
 
 	//device address
 	if( ioctl( fd, I2C_SLAVE, addr&0x7F ) < 0 )	{
-		cprintf(RED,"Warning: Unable to set slave address:0x%x \n",addr);
+		FILE_LOG(logERROR, ("Warning: Unable to set slave address:0x%x \n",addr));
 		return -2;
 	}
 	return fd;
@@ -45,17 +45,17 @@ int i2c_read(){
 
 	unsigned char buf = reg;
 	if (write(fd, &buf, 1)!= 1){
-		cprintf(RED,"Warning: Unable to write read request to register %d\n", reg);
+		FILE_LOG(logERROR, ("Warning: Unable to write read request to register %d\n", reg));
 		return -1;
 	}
 	//read and update value (but old value read out)
 	if(read(fd, &buf, 1) != 1){
-		cprintf(RED,"Warning: Unable to read register %d\n", reg);
+		FILE_LOG(logERROR, ("Warning: Unable to read register %d\n", reg));
 		return -2;
 	}
 	//read again to read the updated value
 	if(read(fd, &buf, 1) != 1){
-		cprintf(RED,"Warning: Unable to read register %d\n", reg);
+		FILE_LOG(logERROR, ("Warning: Unable to read register %d\n", reg));
 		return -2;
 	}
 	close(fd);
@@ -76,7 +76,7 @@ int i2c_write(unsigned int value){
 	buf[0] = reg;
 	buf[1] = val;
 	if (write(fd, buf, 2) != 2) {
-		cprintf(RED,"Warning: Unable to write %d to register %d\n",val, reg);
+		FILE_LOG(logERROR, ("Warning: Unable to write %d to register %d\n",val, reg));
 		return -1;
 	}
 
@@ -92,10 +92,10 @@ int main(int argc, char* argv[]) {
 
 	int fd = open(PORTNAME, O_RDWR | O_NOCTTY | O_SYNC);
 	if(fd < 0){
-		cprintf(RED,"Warning: Unable to open port %s\n", PORTNAME);
+		FILE_LOG(logERROR, ("Warning: Unable to open port %s\n", PORTNAME));
 		return -1;
 	}
-	cprintf(GREEN,"opened port at %s\n",PORTNAME);
+	FILE_LOG(logINFO, ("opened port at %s\n",PORTNAME));
 
 	struct termios serial_conf;
 	// reset structure
@@ -110,17 +110,17 @@ int main(int argc, char* argv[]) {
 	serial_conf.c_lflag = ICANON;
 	// flush input
 	if(tcflush(fd, TCIOFLUSH) < 0){
-		cprintf(RED,"Warning: error form tcflush %d\n", errno);
+		FILE_LOG(logERROR, ("Warning: error form tcflush %d\n", errno));
 		return 0;
 	}
 	// set new options for the port, TCSANOW:changes occur immediately without waiting for data to complete
 	if(tcsetattr(fd, TCSANOW, &serial_conf) < 0){
-		cprintf(RED,"Warning: error form tcsetattr %d\n", errno);
+		FILE_LOG(logERROR, ("Warning: error form tcsetattr %d\n", errno));
 		return 0;
 	}
 
 	if(tcsetattr(fd, TCSAFLUSH, &serial_conf) < 0){
-		cprintf(RED,"Warning: error form tcsetattr %d\n", errno);
+		FILE_LOG(logERROR, ("Warning: error form tcsetattr %d\n", errno));
 		return 0;
 	}
 
@@ -130,27 +130,25 @@ int main(int argc, char* argv[]) {
 	char buffer[BUFFERSIZE];
 	memset(buffer,0,BUFFERSIZE);
 	buffer[BUFFERSIZE-1] = '\n';
-	cprintf(GREEN,"Ready...\n");
+	FILE_LOG(logINFO, ("Ready...\n"));
 
 
 	while(ret != GOODBYE){
 		memset(buffer,0,BUFFERSIZE);
 		n = read(fd,buffer,BUFFERSIZE);
-#ifdef VERBOSE
-		cprintf(BLUE,"Received %d Bytes\n", n);
-#endif
-		cprintf(BLUE,"Got message: '%s'\n",buffer);
+		FILE_LOG(logDEBUG1, ("Received %d Bytes\n", n));
+		FILE_LOG(logINFO, ("Got message: '%s'\n",buffer));
 
 		switch(buffer[0]){
 		case '\0':
-			cprintf(GREEN,"Got Start (Detector restart)\n");
+			FILE_LOG(logINFO, ("Got Start (Detector restart)\n"));
 			break;
 		case 's':
-			cprintf(GREEN,"Got Start \n");
+			FILE_LOG(logINFO, ("Got Start \n"));
 			break;
 		case 'p':
 			if (!sscanf(&buffer[1],"%d",&ival)){
-				cprintf(RED,"Warning: cannot scan voltage value\n");
+				FILE_LOG(logERROR, ("Warning: cannot scan voltage value\n"));
 				break;
 			}
 			// ok/ fail
@@ -160,11 +158,9 @@ int main(int argc, char* argv[]) {
 				strcpy(buffer,"fail ");
 			else
 				strcpy(buffer,"success ");
-			cprintf(GREEN,"Sending: '%s'\n",buffer);
+			FILE_LOG(logINFO, ("Sending: '%s'\n",buffer));
 			n = write(fd, buffer, BUFFERSIZE);
-#ifdef VERBOSE
-			cprintf(GREEN,"Sent %d Bytes\n", n);
-#endif
+			FILE_LOG(logDEBUG1, ("Sent %d Bytes\n", n));
 			break;
 
 		case 'g':
@@ -177,21 +173,17 @@ int main(int argc, char* argv[]) {
 			else
 				strcpy(buffer,"success ");
 			n = write(fd, buffer, BUFFERSIZE);
-			cprintf(GREEN,"Sending: '%s'\n",buffer);
-#ifdef VERBOSE
-			cprintf(GREEN,"Sent %d Bytes\n", n);
-#endif
+			FILE_LOG(logINFO, ("Sending: '%s'\n",buffer));
+			FILE_LOG(logDEBUG1, ("Sent %d Bytes\n", n));
 			//value
 			memset(buffer,0,BUFFERSIZE);
 			buffer[BUFFERSIZE-1] = '\n';
 			if(ival >= 0){
-				cprintf(GREEN,"Sending: '%d'\n",ival);
+				FILE_LOG(logINFO, ("Sending: '%d'\n",ival));
 				sprintf(buffer,"%d ",ival);
 				n = write(fd, buffer, BUFFERSIZE);
-#ifdef VERBOSE
-				cprintf(GREEN,"Sent %d Bytes\n", n);
-#endif
-			}else cprintf(RED,"%s\n",buffer);
+				FILE_LOG(logINFO, ("Sent %d Bytes\n", n));
+			}else FILE_LOG(logERROR, ("%s\n",buffer));
 			break;
 
 		case 'e':
@@ -199,7 +191,7 @@ int main(int argc, char* argv[]) {
 			ret = GOODBYE;
 			break;
 		default:
-			cprintf(RED,"Unknown Command. buffer:'%s'\n",buffer);
+			FILE_LOG(logERROR, ("Unknown Command. buffer:'%s'\n",buffer));
 			break;
 		}
 	}

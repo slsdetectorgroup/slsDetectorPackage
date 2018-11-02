@@ -143,8 +143,9 @@ public:
 	static void CloseVirtualDataFile(hid_t& fd)
 	{
 		if(fd) {
-			if (H5Fclose(fd) < 0 )
+			if (H5Fclose(fd) < 0 ) {
 				FILE_LOG(logERROR) << "Could not close virtual HDF5 handles";
+			}
 			fd = 0;
 		}
 	}
@@ -810,7 +811,7 @@ public:
 		} else if (datatype == PredType::STD_U8LE) {
 			FILE_LOG(logINFO) << "datatype:8";
 		} else {
-			FILE_LOG(logERROR) <<  "Unknown datatype: " << datetype;
+			FILE_LOG(logERROR) <<  "Unknown datatype: " << datatype;
 			return 1;
 		}
 		FILE_LOG(logINFO) << "owenable:" << (owenable?1:0) << std::endl

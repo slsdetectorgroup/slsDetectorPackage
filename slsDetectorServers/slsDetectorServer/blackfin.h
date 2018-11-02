@@ -10,7 +10,6 @@
 u_int64_t CSP0BASE = 0;
 #define CSP0 0x20200000
 #define MEM_SIZE 0x100000
-#define MEM_MAP_SHIFT 1
 
 
 
@@ -129,7 +128,7 @@ int mapCSP0(void) {
 		    FILE_LOG(logERROR, ("Could not allocate virtual memory.\n"));
 		    return FAIL;
 		}
-		FILE_LOG(logINFO, (("memory allocated\n"));
+		FILE_LOG(logINFO, ("memory allocated\n"));
 #else
 		int fd;
 		fd = open("/dev/mem", O_RDWR | O_SYNC, 0);

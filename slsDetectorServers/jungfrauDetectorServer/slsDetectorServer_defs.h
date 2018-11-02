@@ -11,6 +11,7 @@
 
 #define PROGRAMMING_MODE            (0x2)
 #define BOARD_JUNGFRAU_TYPE         (8)
+#define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
 /* Struct Definitions */
 typedef struct ip_header_struct {

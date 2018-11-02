@@ -7,7 +7,6 @@
 
 
 /* global variables */
-#define CTRL_SRVR_INIT_TIME_US		(300 * 1000)
 #define MTDSIZE                     10
 
 int gpioDefined = 0;

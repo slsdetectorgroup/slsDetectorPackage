@@ -7,6 +7,9 @@
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "programfpga.h"
 #else
+#include "blackfin.h"
+#include <string.h>
+#include <unistd.h>     // usleep
 #include <pthread.h>
 #include <time.h>
 #endif
@@ -59,7 +62,7 @@ void checkFirmwareCompatibility() {
     }
     firmware_check_done = 1;
     return;
-#endif
+#else
 
 	defineGPIOpins();
 	resetFPGA();
@@ -162,6 +165,7 @@ void checkFirmwareCompatibility() {
 	}
 	FILE_LOG(logINFO, ("Compatibility - success\n"));
 	firmware_check_done = 1;
+#endif
 }
 
 

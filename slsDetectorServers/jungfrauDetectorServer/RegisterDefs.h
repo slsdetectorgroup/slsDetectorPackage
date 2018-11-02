@@ -2,6 +2,7 @@
 #define REGISTER_DEFS_H
 
 /* Definitions for FPGA*/
+#define MEM_MAP_SHIFT 1
 
 /* FPGA Version register */
 #define FPGA_VERSION_REG      			(0x00 << MEM_MAP_SHIFT)

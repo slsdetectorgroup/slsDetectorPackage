@@ -2123,9 +2123,11 @@ int write_adc_register(int file_des) {
 #ifndef JUNGFRAUD
 	functionNotImplemented();
 #else
+#ifndef VIRTUAL
 	// only set
 	if (Server_VerifyLock() == OK)
 		setAdc(addr, val);
+#endif
 #endif
 	return Server_SendResult(file_des, INT32, 1, NULL, 0);
 }
@@ -2385,6 +2387,7 @@ int program_fpga(int file_des) {
 		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
 	functionNotImplemented();
 #else
+#ifndef VIRTUAL
 	// only set
 	if (Server_VerifyLock() == OK) {
 
@@ -2489,6 +2492,7 @@ int program_fpga(int file_des) {
 			}
 		}
 	}
+#endif
 #endif
 	return Server_SendResult(file_des, INT32, 1, NULL, 0);
 }

@@ -2872,8 +2872,8 @@ std::string slsDetector::setDetectorMAC(std::string detectorMAC) {
 
 	// invalid format
 	if ((detectorMAC.length() != 17) ||
-			(detectorMAC[2] == ':') || (detectorMAC[5] == ':') || (detectorMAC[8] == ':') ||
-			(detectorMAC[11] == ':') ||(detectorMAC[14] == ':')) {
+			(detectorMAC[2] != ':') || (detectorMAC[5] != ':') || (detectorMAC[8] != ':') ||
+			(detectorMAC[11] != ':') ||(detectorMAC[14] != ':')) {
 		setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
 		FILE_LOG(logERROR) << "server MAC Address should be in xx:xx:xx:xx:xx:xx format";
 	}
@@ -3042,8 +3042,8 @@ std::string slsDetector::setReceiverUDPIP(std::string udpip) {
 std::string slsDetector::setReceiverUDPMAC(std::string udpmac) {
 	// invalid format
 	if ((udpmac.length() != 17) ||
-			(udpmac[2] == ':') || (udpmac[5] == ':') || (udpmac[8] == ':') ||
-			(udpmac[11] == ':') ||(udpmac[14] == ':')) {
+			(udpmac[2] != ':') || (udpmac[5] != ':') || (udpmac[8] != ':') ||
+			(udpmac[11] != ':') ||(udpmac[14] != ':')) {
 		setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
 		FILE_LOG(logERROR) << "receiver udp MAC Address should be in xx:xx:xx:xx:xx:xx format";
 	}

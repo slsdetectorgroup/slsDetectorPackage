@@ -2997,11 +2997,10 @@ std::string slsDetector::setReceiver(std::string receiverIP) {
 				setFlippedData(X,-1);
 				activate(-1);
 				setDeactivatedRxrPaddingMode(thisDetector->receiver_deactivatedPaddingEnable);
+                enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+                enableGapPixels(thisDetector->gappixels);
 			}
 			setReceiverSilentMode(thisDetector->receiver_silentMode);
-			if (thisDetector->myDetectorType == EIGER)
-				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
-			enableGapPixels(thisDetector->gappixels);
 			// data streaming
 			setReceiverStreamingFrequency(thisDetector->receiver_read_freq);
 			setReceiverStreamingPort(getReceiverStreamingPort());

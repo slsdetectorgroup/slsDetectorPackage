@@ -834,7 +834,7 @@ int slsDetector::setDetectorType(detectorType const type) {
 		ret = FAIL;
 		int arg = (int)thisDetector->myDetectorType;
 		retval = GENERIC;
-		FILE_LOG(logINFO) << "Sending detector type to Receiver " << (int)thisDetector->myDetectorType;
+		FILE_LOG(logDEBUG1) << "Sending detector type to Receiver: " << (int)thisDetector->myDetectorType;
 
 		if (connectData() == OK) {
 			ret = thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
@@ -2449,7 +2449,7 @@ int slsDetector::setDynamicRange(int n) {
 		ret = FAIL;
 		n = thisDetector->dynamicRange;
 		retval = -1;
-		FILE_LOG(logINFO) << "Sending dynamic range to receiver " << n;
+		FILE_LOG(logDEBUG1) << "Sending dynamic range to receiver: " << n;
 		if (connectData() == OK) {
 			ret=thisReceiver->Client_Send(fnum, &n, sizeof(n), &retval, sizeof(retval));
 			disconnectData();
@@ -3098,7 +3098,7 @@ std::string slsDetector::setReceiverStreamingPort(std::string port) {
 	int ret = FAIL;
 	int arg = thisDetector->receiver_zmqport;
 	int retval = -1;
-	FILE_LOG(logDEBUG1) << "Sending receiver streaming port to receiver " << arg;
+	FILE_LOG(logDEBUG1) << "Sending receiver streaming port to receiver: " << arg;
 
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
 		ret = thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
@@ -3138,7 +3138,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 	int ret = FAIL;
 	char args[MAX_STR_LENGTH] = {0};
 	char retvals[MAX_STR_LENGTH] = {0};
-	FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver " << sourceIP;
+	FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: " << sourceIP;
 
 	// if empty, give rx_hostname
 	if (sourceIP.empty())  {
@@ -3169,7 +3169,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 	// if zmqip is empty, update it
 	if (! strlen(thisDetector->zmqip))
 		strcpy(thisDetector->zmqip, args);
-	FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver " << args;
+	FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: " << args;
 
 	// send to receiver
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
@@ -3223,7 +3223,7 @@ std::string slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
 	int ret = FAIL;
 	int arg = udpsockbufsize;
 	int retval = -1;
-	FILE_LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver " << arg;
+	FILE_LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver: " << arg;
 
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
 		ret = thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
@@ -3579,7 +3579,7 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
 		ret = FAIL;
 		narg = thisDetector->nROI;
 		arg = thisDetector->roiLimits;
-		FILE_LOG(logDEBUG1) << "Sending ROI to receiver " << thisDetector->nROI;
+		FILE_LOG(logDEBUG1) << "Sending ROI to receiver: " << thisDetector->nROI;
 
 		if (connectData() == OK) {
 			dataSocket->SendDataOnly(&fnum, sizeof(fnum));
@@ -4681,7 +4681,7 @@ int slsDetector::execReceiverCommand(std::string cmd) {
 	char arg[MAX_STR_LENGTH] = {0};
 	char retval[MAX_STR_LENGTH] = {0};
 	strcpy(arg, cmd.c_str());
-	FILE_LOG(logDEBUG1) << "Sending command to receiver " << arg;
+	FILE_LOG(logDEBUG1) << "Sending command to receiver: " << arg;
 
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
 		ret = thisReceiver->Client_Send(fnum, arg, sizeof(arg), retval, sizeof(retval));
@@ -4811,7 +4811,7 @@ void slsDetector::sendMultiDetectorSize() {
 	int ret = FAIL;
 	int args[2] = {thisDetector->multiSize[0], thisDetector->multiSize[1]};
 	int retval = -1;
-	FILE_LOG(logDEBUG1) << "Sending multi detector size to Receiver (" <<
+	FILE_LOG(logDEBUG1) << "Sending multi detector size to receiver: (" <<
 			thisDetector->multiSize[0] << "," << thisDetector->multiSize[1] << ")";
 
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
@@ -4835,7 +4835,7 @@ void slsDetector::setDetectorId() {
 	int ret = FAIL;
 	int arg = detId;
 	int retval = -1;
-	FILE_LOG(logDEBUG1) << "Sending detector pos id to Receiver " << detId;
+	FILE_LOG(logDEBUG1) << "Sending detector pos id to receiver: " << detId;
 
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
 		ret = thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
@@ -4859,7 +4859,7 @@ void slsDetector::setDetectorHostname() {
 	char args[MAX_STR_LENGTH] = {0};
 	char retvals[MAX_STR_LENGTH] = {0};
 	strcpy(args, thisDetector->hostname);
-	FILE_LOG(logDEBUG1) << "Sending detector hostname to Receiver " << args;
+	FILE_LOG(logDEBUG1) << "Sending detector hostname to receiver: " << args;
 
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
 		ret = thisReceiver->Client_Send(fnum, args, sizeof(args), retvals, sizeof(retvals));
@@ -4889,7 +4889,7 @@ std::string slsDetector::setFilePath(std::string s) {
 		char args[MAX_STR_LENGTH] = {0};
 		char retvals[MAX_STR_LENGTH] = {0};
 		strcpy(args, s.c_str());
-		FILE_LOG(logDEBUG1) << "Sending file path to Receiver " << args;
+		FILE_LOG(logDEBUG1) << "Sending file path to receiver: " << args;
 
 		if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
 			ret = thisReceiver->Client_Send(fnum, args, sizeof(args), retvals, sizeof(retvals));
@@ -4926,7 +4926,7 @@ std::string slsDetector::setFileName(std::string s) {
 		char args[MAX_STR_LENGTH] = {0};
 		char retvals[MAX_STR_LENGTH] = {0};
 		strcpy(args, s.c_str());
-		FILE_LOG(logDEBUG1) << "Sending file name to Receiver " << args;
+		FILE_LOG(logDEBUG1) << "Sending file name to receiver: " << args;
 
 		if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
 			ret = thisReceiver->Client_Send(fnum, args, sizeof(args), retvals, sizeof(retvals));
@@ -5393,7 +5393,7 @@ int slsDetector::enableTenGigabitEthernet(int i) {
 		ret = FAIL;
 		arg = thisDetector->tenGigaEnable;
 		retval = -1;
-		FILE_LOG(logINFO) << "Sending 10Gbe enable to Receiver " << arg;
+		FILE_LOG(logINFO) << "Sending 10Gbe enable to receiver: " << arg;
 
 		if (connectData() == OK) {
 			ret = thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));

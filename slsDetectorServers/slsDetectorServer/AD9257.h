@@ -1,10 +1,7 @@
 #ifndef AD9257_H
 #define AD9257_H
 
-#include "ansi.h"
-
-#include "commonServerFunctions.h"
-#include <stdio.h>
+#include "commonServerFunctions.h" // blackfin.h, ansi.h
 
 /* AD9257 ADC DEFINES */
 #define AD9257_ADC_NUMBITS			(24)
@@ -81,36 +78,36 @@ void setAdc(int addr, int val) {
 
 	u_int32_t codata;
 	codata = val + (addr << 8);
-	printf(" Setting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr);
+	FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr));
 	serializeToSPI(ADC_SPI_REG, codata, ADC_SERIAL_CS_OUT_MSK, AD9257_ADC_NUMBITS,
 			ADC_SERIAL_CLK_OUT_MSK, ADC_SERIAL_DATA_OUT_MSK, ADC_SERIAL_DATA_OUT_OFST);
 }
 
 void prepareADC(){
-	printf("\n\nPreparing ADC ... \n");
+    FILE_LOG(logINFOBLUE, ("Preparing ADC:\n"));
 
 	//power mode reset
-	printf("power mode reset:\n");
+    FILE_LOG(logINFO, ("\tPower mode reset\n"));
 	setAdc(AD9257_POWER_MODE_REG,
 			(AD9257_INT_RESET_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
 
 	//power mode chip run
-	 printf("power mode chip run:\n");
+	FILE_LOG(logINFO, ("\tPower mode chip run\n"));
 	setAdc(AD9257_POWER_MODE_REG,
 			(AD9257_INT_CHIP_RUN_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
 
 	//output clock phase
-	 printf("output clock phase:\n");
+	FILE_LOG(logINFO, ("\tOutput clock phase\n"));
 	setAdc(AD9257_OUT_PHASE_REG,
 			(AD9257_OUT_CLK_60_VAL << AD9257_OUT_CLK_OFST) & AD9257_OUT_CLK_MSK);
 
 	// lvds-iee reduced , binary offset
-	 printf("lvds-iee reduced, binary offset:\n");
+	FILE_LOG(logINFO, ("\tLvds-iee reduced, binary offset\n"));
 	setAdc(AD9257_OUT_MODE_REG,
 			(AD9257_OUT_LVDS_IEEE_VAL << AD9257_OUT_LVDS_OPT_OFST) & AD9257_OUT_LVDS_OPT_MSK);
 
 	// all devices on chip to receive next command
-	 printf("all devices on chip to receive next command:\n");
+	FILE_LOG(logINFO, ("\tAll devices on chip to receive next command\n"));
 	setAdc(AD9257_DEV_IND_2_REG,
 			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
 	setAdc(AD9257_DEV_IND_1_REG,
@@ -118,21 +115,19 @@ void prepareADC(){
 			AD9257_CLK_CH_DCO_MSK | AD9257_CLK_CH_IFCO_MSK);
 
 	// vref 1.33
-	 printf("vref 1.33:\n");
+	FILE_LOG(logINFO, ("\tVref 1.33\n"));
 	setAdc(AD9257_VREF_REG,
 			(AD9257_VREF_1_33_VAL << AD9257_VREF_OFST) & AD9257_VREF_MSK);
 
 	// no test mode
-	 printf("no test mode:\n");
+	FILE_LOG(logINFO, ("\tNo test mode\n"));
 	setAdc(AD9257_TEST_MODE_REG,
 			(AD9257_NONE_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
 
 #ifdef TESTADC
-	printf("***************************************** *******\n");
-	printf("******* PUTTING ADC IN TEST MODE!!!!!!!!! *******\n");
-	printf("***************************************** *******\n");
+	FILE_LOG(logINFOBLUE, ("Putting ADC in Test Mode!\n");
 	// mixed bit frequency test mode
-	 printf("mixed bit frequency test mode:\n");
+	FILE_LOG(logINFO, ("\tMixed bit frequency test mode\n"));
 	setAdc(AD9257_TEST_MODE_REG,
 			(AD9257_MIXED_BIT_FREQ_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
 #endif

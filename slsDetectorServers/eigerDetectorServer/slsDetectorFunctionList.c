@@ -1,14 +1,13 @@
 #include "slsDetectorFunctionList.h"
 #include "gitInfoEiger.h"
+#include "versionAPI.h"
+#include "logger.h"
+
 #ifndef VIRTUAL
 #include "FebControl.h"
 #include "Beb.h"
-#include "versionAPI.h"
 #endif
-#include "logger.h"
 
-
-#include <stdio.h>
 #include <unistd.h> //to gethostname
 #include <string.h>
 #ifdef VIRTUAL
@@ -19,6 +18,11 @@
 // Global variable from slsDetectorServer
 extern int debugflag;
 extern int isControlServer;
+
+int firmware_compatibility = OK;
+int firmware_check_done = 0;
+char firmware_message[MAX_STR_LENGTH];
+
 
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
 int default_tau_from_file= -1;
@@ -42,12 +46,6 @@ int normal = 0;
 uint32_t detid = 0;
 #endif
 
-
-int firmware_compatibility = OK;
-int firmware_check_done = 0;
-char firmware_message[MAX_STR_LENGTH];
-
-
 int eiger_highvoltage = 0;
 int eiger_theo_highvoltage = 0;
 int eiger_iodelay = 0;
@@ -60,8 +58,6 @@ int eiger_readoutspeed = 0;
 int eiger_triggermode = 0;
 int eiger_extgating = 0;
 int eiger_extgatingpolarity = 0;
-
-
 int eiger_nexposures = 1;
 int eiger_ncycles = 1;
 
@@ -381,25 +377,25 @@ void allocateDetectorStructureMemory() {
 	FILE_LOG(logINFO, ("This Server is for 1 Eiger half module (250k)\n\n"));
 
 	//Allocation of memory
-	detectorModules=malloc(sizeof(sls_detector_module));
-	detectorChans=malloc(NCHIP*NCHAN*sizeof(int));
-	detectorDacs=malloc(NDAC*sizeof(int));
-	detectorAdcs=malloc(NADC*sizeof(int));
+	detectorModules = malloc(sizeof(sls_detector_module));
+	detectorChans = malloc(NCHIP*NCHAN*sizeof(int));
+	detectorDacs = malloc(NDAC*sizeof(int));
+	detectorAdcs = malloc(NADC*sizeof(int));
 	FILE_LOG(logDEBUG1, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
 	FILE_LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n",detectorChans, detectorChans));
 	FILE_LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
 	FILE_LOG(logDEBUG1, ("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs));
-	(detectorModules)->dacs=detectorDacs;
-	(detectorModules)->adcs=detectorAdcs;
-	(detectorModules)->chanregs=detectorChans;
-	(detectorModules)->ndac=NDAC;
-	(detectorModules)->nadc=NADC;
-	(detectorModules)->nchip=NCHIP;
-	(detectorModules)->nchan=NCHIP*NCHAN;
-	(detectorModules)->reg=0;
-	(detectorModules)->iodelay=0;
-	(detectorModules)->tau=0;
-	(detectorModules)->eV=0;
+	(detectorModules)->dacs = detectorDacs;
+	(detectorModules)->adcs = detectorAdcs;
+	(detectorModules)->chanregs = detectorChans;
+	(detectorModules)->ndac = NDAC;
+	(detectorModules)->nadc = NADC;
+	(detectorModules)->nchip = NCHIP;
+	(detectorModules)->nchan = NCHIP * NCHAN;
+	(detectorModules)->reg = 0;
+	(detectorModules)->iodelay = 0;
+	(detectorModules)->tau = 0;
+	(detectorModules)->eV = 0;
 	thisSettings = UNINITIALIZED;
 
 	// if trimval requested, should return -1 to acknowledge unknown
@@ -1196,6 +1192,7 @@ enum externalCommunicationMode getTiming() {
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2) {
 #ifndef VIRTUAL
+    FILE_LOG(logINFO, ("Configuring MAC\n"));
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;
 	sprintf(src_ip,"%d.%d.%d.%d",(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff);
@@ -1215,12 +1212,14 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 
 
-	FILE_LOG(logINFO, ("src_port:%d\n"
-			"\tsrc_ip:%s\n"
-			"\tdst_ip:%s\n"
-			"\tsrc_mac:%s\n"
-			"\tdst_mac:%s\n",
-			src_port, src_ip, dst_ip, src_mac, dst_mac));
+	FILE_LOG(logINFO, (
+	        "\tSource IP   : %s\n"
+	        "\tSource MAC  : %s\n"
+	        "\tSource Port : %d\n"
+	        "\tDest IP     : %s\n"
+	        "\tDest MAC    : %s\n",
+	        src_ip, src_mac, src_port,
+	        dst_ip, dst_mac));
 
 
 	int beb_num =  detid;
@@ -1229,13 +1228,13 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	if (!top)
 		dst_port = udpport2;
 
-	FILE_LOG(logINFO, ("\tdst_port:%d\n", dst_port));
+	FILE_LOG(logINFO, ("\tDest Port   : %d\n", dst_port));
 
 	int i=0;
 	/* for(i=0;i<32;i++) { modified for Aldo*/
 	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
-		FILE_LOG(logINFO, ("set up left ok\n"));
+		FILE_LOG(logDEBUG1, ("\tset up left ok\n"));
 	} else {
 		return -1;
 	}
@@ -1245,12 +1244,12 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	dst_port = udpport2;
 	if (!top)
 		dst_port = udpport;
-	FILE_LOG(logINFO, ("dst_port:%d\n",dst_port));
+	FILE_LOG(logINFO, ("\tDest Port   : %d\n",dst_port));
 
 	/*for(i=0;i<32;i++) {*//** modified for Aldo*/
 	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
-		FILE_LOG(logINFO, ("set up right ok\n"));
+		FILE_LOG(logDEBUG1, (" set up right ok\n"));
 	} else {
 		return -1;
 	}
@@ -1654,7 +1653,7 @@ void* start_timer(void* arg) {
 
 
 int stopStateMachine() {
-	FILE_LOG(logERROR, ("Going to stop acquisition\n"));
+	FILE_LOG(logINFORED, ("Going to stop acquisition\n"));
 #ifdef VIRTUAL
 	eiger_virtual_stop = 0;
 	return OK;
@@ -1722,13 +1721,13 @@ enum runStatus getRunStatus() {
 	int i = Feb_Control_AcquisitionInProgress();
 	switch (i) {
 	case STATUS_ERROR:
-		FILE_LOG(logINFO, ("Status: ERROR reading status register\n"));
+		FILE_LOG(logERROR, ("Status: ERROR reading status register\n"));
 		return ERROR;
 	case STATUS_IDLE:
-		FILE_LOG(logINFO, ("Status: IDLE\n"));
+		FILE_LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	default:
-		FILE_LOG(logINFO, ("Status: RUNNING...\n"));
+		FILE_LOG(logINFOBLUE, ("Status: RUNNING...\n"));
 		return RUNNING;
 	}
 

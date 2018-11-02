@@ -1,9 +1,7 @@
 #include "LocalLinkInterface.h"
 #include "HardwareMMappingDefs.h"
 #include "logger.h"
-#include "ansi.h"
 
-#include <stdio.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <fcntl.h>

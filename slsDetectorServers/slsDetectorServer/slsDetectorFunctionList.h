@@ -37,9 +37,7 @@ u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
 #endif
-#ifdef EIGERD
 u_int32_t	getDetectorNumber();
-#endif
 u_int64_t  	getDetectorMAC();
 u_int32_t  	getDetectorIP();
 

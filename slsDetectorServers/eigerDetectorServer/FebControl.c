@@ -1,18 +1,15 @@
-#include "FebRegisterDefs.h"
 #include "FebControl.h"
-#include "Beb.h"
+#include "FebRegisterDefs.h"
 #include "slsDetectorServer_defs.h"
 #include "logger.h"
+#include "Beb.h"
 
-#include <netdb.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <math.h>
 #include <string.h>
 #include <time.h>
 #include <termios.h>  // POSIX terminal control definitions(CS8, CREAD, CLOCAL..)
 #include <errno.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 
 

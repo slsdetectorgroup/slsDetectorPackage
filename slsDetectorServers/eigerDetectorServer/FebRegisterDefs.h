@@ -1,10 +1,4 @@
 
-/**
- * @author Ian Johnson
- * @version 1.0
- */
-
-
 //daq register definitions
 #define DAQ_REG_CTRL                  	1
 #define DAQ_REG_CHIP_CMDS             	2

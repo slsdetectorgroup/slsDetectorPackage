@@ -9,7 +9,6 @@
 #define SLSDETECTORSERVER_DEFS_H_
 
 #include "sls_detector_defs.h"
-#include <stdint.h>
 
 #define GOODBYE 					 		(-200)
 #define REQUIRED_FIRMWARE_VERSION 	 		(22)

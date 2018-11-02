@@ -20,7 +20,7 @@
 #endif
 
 typedef enum {
-logERROR, logWARNING, logINFOBLUE, logINFOGREEN, logINFO,
+logERROR, logWARNING, logINFOBLUE, logINFOGREEN, logINFORED, logINFO,
 logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5
 }TLogLevel;
 
@@ -36,6 +36,7 @@ static inline void FILELOG_PrintLog(TLogLevel level, char* m) {
 	case logWARNING:	cprintf(YELLOW BOLD, "WARNING: %s", m);	break;
 	case logINFOBLUE: 	cprintf(BLUE, "INFO: %s", m);			break;
 	case logINFOGREEN:	cprintf(GREEN, "INFO: %s", m);			break;
+    case logINFORED:    cprintf(RED, "INFO: %s", m);            break;
 	case logINFO: 		cprintf(RESET, "INFO: %s", m);			break;
 	case logDEBUG: 		cprintf(MAGENTA, "DEBUG: %s", m);		break;
 	case logDEBUG1: 	cprintf(MAGENTA, "DEBUG1: %s", m);		break;

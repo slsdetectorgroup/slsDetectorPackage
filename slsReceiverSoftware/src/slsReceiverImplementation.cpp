@@ -82,7 +82,7 @@ void slsReceiverImplementation::InitializeMembers() {
 
 	//***connection parameters***
 	strcpy(eth,"");
-	for(int i=0;i<MAX_NUMBER_OF_LISTENING_THREADS;i++){
+	for(int i=0;i<MAX_NUMBER_OF_LISTENING_THREADS;i++) {
 		udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
 	}
 	udpSocketBufferSize = 0;
@@ -205,7 +205,7 @@ uint64_t slsReceiverImplementation::getTotalFramesCaught() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
-	for (const auto& it : dataProcessor){
+	for (const auto& it : dataProcessor) {
 		flagsum += it->GetMeasurementStartedFlag();
 		sum += it->GetNumTotalFramesCaught();
 	}
@@ -220,7 +220,7 @@ uint64_t slsReceiverImplementation::getFramesCaught() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
-	for (const auto& it : dataProcessor){
+	for (const auto& it : dataProcessor) {
 		flagsum += it->GetMeasurementStartedFlag();
 		sum += it->GetNumFramesCaught();
 	}
@@ -235,7 +235,7 @@ int64_t slsReceiverImplementation::getAcquisitionIndex() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
-	for (const auto& it : dataProcessor){
+	for (const auto& it : dataProcessor) {
 		flagsum += it->GetMeasurementStartedFlag();
 		sum += it->GetActualProcessedAcquisitionIndex();
 	}
@@ -385,7 +385,7 @@ uint32_t slsReceiverImplementation::getActualUDPSocketBufferSize() const {
 
 /**initial parameters***/
 
-void slsReceiverImplementation::setDetectorHostname(const char *c){
+void slsReceiverImplementation::setDetectorHostname(const char *c) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	if(strlen(c))
@@ -411,7 +411,7 @@ void slsReceiverImplementation::setMultiDetectorSize(const int* size) {
 }
 
 
-void slsReceiverImplementation::setFlippedData(int axis, int enable){
+void slsReceiverImplementation::setFlippedData(int axis, int enable) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	if(axis<0 || axis>1) 
 		return;
@@ -436,8 +436,8 @@ int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
 }
 
 
-void slsReceiverImplementation::setFileFormat(const fileFormat f){
-	switch(f){
+void slsReceiverImplementation::setFileFormat(const fileFormat f) {
+	switch(f) {
 #ifdef HDF5C
 	case HDF5:
 		fileFormatType = HDF5;
@@ -455,7 +455,7 @@ void slsReceiverImplementation::setFileFormat(const fileFormat f){
 }
 
 
-void slsReceiverImplementation::setFileName(const char c[]){
+void slsReceiverImplementation::setFileName(const char c[]) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	if(strlen(c))
@@ -464,11 +464,11 @@ void slsReceiverImplementation::setFileName(const char c[]){
 }
 
 
-void slsReceiverImplementation::setFilePath(const char c[]){
+void slsReceiverImplementation::setFilePath(const char c[]) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 
-	if(strlen(c)){
+	if(strlen(c)) {
 		//check if filepath exists
 		struct stat st;
 		if(stat(c,&st) == 0)
@@ -480,7 +480,7 @@ void slsReceiverImplementation::setFilePath(const char c[]){
 }
 
 
-void slsReceiverImplementation::setFileIndex(const uint64_t i){
+void slsReceiverImplementation::setFileIndex(const uint64_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	fileIndex = i;
@@ -488,7 +488,7 @@ void slsReceiverImplementation::setFileIndex(const uint64_t i){
 }
 
 
-void slsReceiverImplementation::setFramesPerFile(const uint32_t i){
+void slsReceiverImplementation::setFramesPerFile(const uint32_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	framesPerFile = i;
@@ -496,7 +496,7 @@ void slsReceiverImplementation::setFramesPerFile(const uint32_t i){
 }
 
 
-void slsReceiverImplementation::setFrameDiscardPolicy(const frameDiscardPolicy i){
+void slsReceiverImplementation::setFrameDiscardPolicy(const frameDiscardPolicy i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	if (i >= 0 && i < NUM_DISCARD_POLICIES)
@@ -506,7 +506,7 @@ void slsReceiverImplementation::setFrameDiscardPolicy(const frameDiscardPolicy i
 }
 
 
-void slsReceiverImplementation::setFramePaddingEnable(const bool i){
+void slsReceiverImplementation::setFramePaddingEnable(const bool i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	framePadding = i;
@@ -514,8 +514,8 @@ void slsReceiverImplementation::setFramePaddingEnable(const bool i){
 }
 
 
-void slsReceiverImplementation::setFileWriteEnable(const bool b){
-	if (fileWriteEnable != b){
+void slsReceiverImplementation::setFileWriteEnable(const bool b) {
+	if (fileWriteEnable != b) {
 		fileWriteEnable = b;
 		for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
 			dataProcessor[i]->SetupFileWriter(fileWriteEnable, (int*)numDet,
@@ -529,7 +529,7 @@ void slsReceiverImplementation::setFileWriteEnable(const bool b){
 }
 
 
-void slsReceiverImplementation::setOverwriteEnable(const bool b){
+void slsReceiverImplementation::setOverwriteEnable(const bool b) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	overwriteEnable = b;
@@ -538,21 +538,21 @@ void slsReceiverImplementation::setOverwriteEnable(const bool b){
 
 
 /***connection parameters***/
-void slsReceiverImplementation::setUDPPortNumber(const uint32_t i){
+void slsReceiverImplementation::setUDPPortNumber(const uint32_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	udpPortNum[0] = i;
 	FILE_LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
 }
 
-void slsReceiverImplementation::setUDPPortNumber2(const uint32_t i){
+void slsReceiverImplementation::setUDPPortNumber2(const uint32_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	udpPortNum[1] = i;
 	FILE_LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
 
-void slsReceiverImplementation::setEthernetInterface(const char* c){
+void slsReceiverImplementation::setEthernetInterface(const char* c) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	strcpy(eth, c);
@@ -635,7 +635,7 @@ int slsReceiverImplementation::setStreamingFrequency(const uint32_t freq) {
 	return OK;
 }
 
-void slsReceiverImplementation::setStreamingTimer(const uint32_t time_in_ms){
+void slsReceiverImplementation::setStreamingTimer(const uint32_t time_in_ms) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	streamingTimerInMs = time_in_ms;
@@ -680,21 +680,21 @@ void slsReceiverImplementation::setStreamingPort(const uint32_t i) {
 }
 
 
-void slsReceiverImplementation::setStreamingSourceIP(const char c[]){
+void slsReceiverImplementation::setStreamingSourceIP(const char c[]) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	strcpy(streamingSrcIP, c);
 	FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
 
-void slsReceiverImplementation::setAdditionalJsonHeader(const char c[]){
+void slsReceiverImplementation::setAdditionalJsonHeader(const char c[]) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	strcpy(additionalJsonHeader, c);
 	FILE_LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
 }
 
 
-int slsReceiverImplementation::setAcquisitionPeriod(const uint64_t i){
+int slsReceiverImplementation::setAcquisitionPeriod(const uint64_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	acquisitionPeriod = i;
@@ -704,7 +704,7 @@ int slsReceiverImplementation::setAcquisitionPeriod(const uint64_t i){
 	return OK;
 }
 
-int slsReceiverImplementation::setAcquisitionTime(const uint64_t i){
+int slsReceiverImplementation::setAcquisitionTime(const uint64_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	acquisitionTime = i;
@@ -714,21 +714,21 @@ int slsReceiverImplementation::setAcquisitionTime(const uint64_t i){
 	return OK;
 }
 
-void slsReceiverImplementation::setSubExpTime(const uint64_t i){
+void slsReceiverImplementation::setSubExpTime(const uint64_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	subExpTime = i;
 	FILE_LOG(logINFO) << "Sub Exposure Time: " <<  (double)subExpTime/(1E9) << "s";
 }
 
-void slsReceiverImplementation::setSubPeriod(const uint64_t i){
+void slsReceiverImplementation::setSubPeriod(const uint64_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	subPeriod = i;
 	FILE_LOG(logINFO) << "Sub Exposure Period: " <<  (double)subPeriod/(1E9) << "s";
 }
 
-int slsReceiverImplementation::setNumberOfFrames(const uint64_t i){
+int slsReceiverImplementation::setNumberOfFrames(const uint64_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	numberOfFrames = i;
@@ -794,7 +794,7 @@ int slsReceiverImplementation::setFifoDepth(const uint32_t i) {
 
 
 /***receiver parameters***/
-bool slsReceiverImplementation::setActivate(bool enable){
+bool slsReceiverImplementation::setActivate(bool enable) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	activated = enable;
 	FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
@@ -802,14 +802,14 @@ bool slsReceiverImplementation::setActivate(bool enable){
 }
 
 
-bool slsReceiverImplementation::setDeactivatedPadding(bool enable){
+bool slsReceiverImplementation::setDeactivatedPadding(bool enable) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	deactivatedPaddingEnable = enable;
 	FILE_LOG(logINFO) << "Deactivated Padding Enable: " << stringEnable(deactivatedPaddingEnable);
 	return deactivatedPaddingEnable;
 }
 
-void slsReceiverImplementation::setSilentMode(const bool i){
+void slsReceiverImplementation::setSilentMode(const bool i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	silentMode = i;
@@ -902,7 +902,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 
 
 
-void slsReceiverImplementation::setDetectorPositionId(const int i){
+void slsReceiverImplementation::setDetectorPositionId(const int i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	detID = i;
 	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
@@ -983,7 +983,7 @@ int slsReceiverImplementation::startReceiver(char *c) {
 
 
 
-void slsReceiverImplementation::stopReceiver(){
+void slsReceiverImplementation::stopReceiver() {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	FILE_LOG(logINFO)  << "Stopping Receiver";
 
@@ -1061,9 +1061,9 @@ void slsReceiverImplementation::stopReceiver(){
 
 
 
-void slsReceiverImplementation::startReadout(){
+void slsReceiverImplementation::startReadout() {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-	if(status == RUNNING){
+	if(status == RUNNING) {
 		// wait for incoming delayed packets
 		int totalPacketsReceived = 0;
 		int previousValue=-1;
@@ -1071,9 +1071,9 @@ void slsReceiverImplementation::startReadout(){
 			totalPacketsReceived += it->GetPacketsCaught();
 
 		//wait for all packets
-		const auto numPacketsToReceive = numberOfFrames * generalData->packetsPerFrame * listener.size();
-		if(totalPacketsReceived != numPacketsToReceive){
-			while(totalPacketsReceived != previousValue){
+		const int numPacketsToReceive = numberOfFrames * generalData->packetsPerFrame * listener.size();
+		if(totalPacketsReceived != numPacketsToReceive) {
+			while(totalPacketsReceived != previousValue) {
 				FILE_LOG(logDEBUG3) << "waiting for all packets, previousValue:"  << previousValue <<
 								 " totalPacketsReceived: " << totalPacketsReceived;
 				usleep(5*1000);/* TODO! Need to find optimal time **/
@@ -1119,7 +1119,7 @@ void slsReceiverImplementation::closeFiles() {
 int slsReceiverImplementation::restreamStop() {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	bool ret = OK;
-	for (const auto& it : dataStreamer){
+	for (const auto& it : dataStreamer) {
 		if (it->RestreamStop() == FAIL)
 			ret = FAIL;
 	}
@@ -1134,24 +1134,24 @@ int slsReceiverImplementation::restreamStop() {
 
 
 /***callback functions***/
-void slsReceiverImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
+void slsReceiverImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg) {
 	startAcquisitionCallBack=func;
 	pStartAcquisition=arg;
 }
 
-void slsReceiverImplementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
+void slsReceiverImplementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg) {
 	acquisitionFinishedCallBack=func;
 	pAcquisitionFinished=arg;
 }
 
 void slsReceiverImplementation::registerCallBackRawDataReady(void (*func)(char* ,
-		char*, uint32_t, void*),void *arg){
+		char*, uint32_t, void*),void *arg) {
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }
 
 void slsReceiverImplementation::registerCallBackRawDataModifyReady(void (*func)(char* ,
-		char*, uint32_t&, void*),void *arg){
+		char*, uint32_t&, void*),void *arg) {
 	rawDataModifyReadyCallBack=func;
 	pRawDataReady=arg;
 }
@@ -1187,7 +1187,7 @@ void slsReceiverImplementation::SetLocalNetworkParameters() {
 void slsReceiverImplementation::SetThreadPriorities() {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
-	for (const auto& it : listener){
+	for (const auto& it : listener) {
 		if (it->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
 			FILE_LOG(logWARNING) << "Could not prioritize listener threads. (No Root Privileges?)";
 			return;
@@ -1288,15 +1288,15 @@ int slsReceiverImplementation::SetupWriter() {
 void slsReceiverImplementation::StartRunning() {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	//set running mask and post semaphore to start the inner loop in execution thread
-	for (const auto& it : listener){
+	for (const auto& it : listener) {
 		it->StartRunning();
 		it->Continue();
 	}
-	for (const auto& it : dataProcessor){
+	for (const auto& it : dataProcessor) {
 		it->StartRunning();
 		it->Continue();
 	}
-	for (const auto& it : dataStreamer){
+	for (const auto& it : dataStreamer) {
 		it->StartRunning();
 		it->Continue();
 	}

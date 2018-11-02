@@ -3,19 +3,19 @@
 #include "communication_funcs.h"
 #include "logger.h"
 
-#include <stdio.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 //defined in the detector specific Makefile
 #ifdef GOTTHARDD
-const enum detectorType myDetectorType=GOTTHARD;
+const enum detectorType myDetectorType = GOTTHARD;
 #elif EIGERD
-const enum detectorType myDetectorType=EIGER;
+const enum detectorType myDetectorType = EIGER;
 #elif JUNGFRAUD
-const enum detectorType myDetectorType=JUNGFRAU;
+const enum detectorType myDetectorType = JUNGFRAU;
 #else
-const enum detectorType myDetectorType=GENERIC;
+const enum detectorType myDetectorType = GENERIC;
 #endif
 
 // Global variables from communication_funcs
@@ -64,7 +64,7 @@ void init_detector() {
 	if (isControlServer) {
 	    basictests();
 #ifdef JUNGFRAUD
-	    if (debugflag == PROGRAMMING_MODE)
+	    if (debugflag != PROGRAMMING_MODE)
 #endif
 	    initControlServer();
 #ifdef EIGERD
@@ -1331,53 +1331,54 @@ int set_timer(int file_des) {
 
 
 int get_time_left(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	enum timerIndex ind = -1;
-	int64_t retval = -1;
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum timerIndex ind = -1;
+    int64_t retval = -1;
 
-	if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
-		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Getting timer left index %d\n", ind));
+    if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
+        return printSocketReadError();
+    FILE_LOG(logDEBUG1, ("Getting timer left index %d\n", ind));
 
-	// only get
-	// check index
-	switch(ind) {
+    // only get
+    // check index
+#ifdef JUNGFRAUD
+    if (ind == DELAY_AFTER_TRIGGER) {
+        ret = FAIL;
+        sprintf(mess,"Timer Left Index (%d) is not implemented for this release.\n", (int)ind);
+        FILE_LOG(logERROR,(mess));
+    }
+#endif
+    if (ret == OK) {
+        switch(ind) {
 #ifdef EIGERD
-		case MEASURED_PERIOD:
-		case MEASURED_SUBPERIOD:
+        case MEASURED_PERIOD:
+        case MEASURED_SUBPERIOD:
 #elif JUNGFRAUD
-		case FRAMES_FROM_START:
-		case FRAMES_FROM_START_PG:
+        case FRAMES_FROM_START:
+        case FRAMES_FROM_START_PG:
 #elif GOTTHARDD
-		case GATES_NUMBER:
+        case GATES_NUMBER:
 #endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)
-		case FRAME_NUMBER:
-		case ACQUISITION_TIME:
-		case FRAME_PERIOD:
-		case DELAY_AFTER_TRIGGER:
-		case CYCLES_NUMBER:
-		case PROGRESS:
-		case ACTUAL_TIME:
-		case MEASUREMENT_TIME:
+        case FRAME_NUMBER:
+        case ACQUISITION_TIME:
+        case FRAME_PERIOD:
+        case DELAY_AFTER_TRIGGER:
+        case CYCLES_NUMBER:
+        case PROGRESS:
+        case ACTUAL_TIME:
+        case MEASUREMENT_TIME:
 #endif
-			retval = getTimeLeft(ind);
-			FILE_LOG(logDEBUG1, ("Timer left index %d: %lld\n", ind, retval));
-			break;
-#ifdef JUNGFRAUD
-		case DELAY_AFTER_TRIGGER:
-			ret = FAIL;
-			sprintf(mess,"Timer Left Index (%d) is not implemented for this release.\n", (int)ind);
-			FILE_LOG(logERROR,(mess));
-			break;
-#endif
-
-		default:
-			modeNotImplemented("Timer left index", (int)ind);
-			break;
-	}
-	return Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
+            retval = getTimeLeft(ind);
+            FILE_LOG(logDEBUG1, ("Timer left index %d: %lld\n", ind, retval));
+            break;
+        default:
+            modeNotImplemented("Timer left index", (int)ind);
+            break;
+        }
+    }
+    return Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
 }
 
 
@@ -1692,9 +1693,16 @@ int set_port(int file_des) {
 
 
 int update_client(int file_des) {
-	ret = OK;
+	ret = FORCE_UPDATE;
 	memset(mess, 0, sizeof(mess));
+#ifdef JUNGFRAUD
+	if (debugflag == PROGRAMMING_MODE) {
+	    ret = OK;
+	}
+#endif
 	Server_SendResult(file_des, INT32, 0, NULL, 0);
+	if (ret == OK)
+	    return ret;
 	return send_update(file_des);
 }
 
@@ -1702,6 +1710,7 @@ int update_client(int file_des) {
 
 
 int send_update(int file_des) {
+    ret = OK;
 	int n = 0;
 	int i32 = -1;
 	int64_t i64 = -1;
@@ -1769,7 +1778,7 @@ int send_update(int file_des) {
 		strcpy(lastClientIP,thisClientIP);
 	}
 
-	return OK;
+	return ret;
 }
 
 
@@ -2369,7 +2378,6 @@ int program_fpga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	FILE_LOG(logDEBUG1, ("Programming FPGA\n"));
 #ifndef JUNGFRAUD
 	//to receive any arguments
 	int n = 1;
@@ -2405,7 +2413,7 @@ int program_fpga(int file_des) {
 			if (receiveData(file_des,&filesize,sizeof(filesize),INT32) < 0)
 				return printSocketReadError();
 			totalsize = filesize;
-			FILE_LOG(logDEBUG1, ("Total program size is: %d\n", totalsize);
+			FILE_LOG(logDEBUG1, ("Total program size is: %d\n", totalsize));
 
 			// opening file pointer to flash and telling FPGA to not touch flash
 			if (startWritingFPGAprogram(&fp) != OK) {
@@ -2430,8 +2438,7 @@ int program_fpga(int file_des) {
 				if (unitprogramsize > filesize) //less than 2mb
 					unitprogramsize = filesize;
 				FILE_LOG(logDEBUG1, ("unit size to receive is:%d\n"
-						"filesize:%d currentpointer:%d\n",
-						unitprogramsize, filesize, currentPointer));
+						"filesize:%d\n", unitprogramsize, filesize));
 
 
 				//receive part of program
@@ -2462,8 +2469,8 @@ int program_fpga(int file_des) {
 					fflush(stdout);
 				}
 			}
-
-			FILE_LOG(logINFO("\nDone copying program\n"));
+			printf("\n");
+			FILE_LOG(logINFO, ("Done copying program\n"));
 
 			// closing file pointer to flash and informing FPGA
 			stopWritingFPGAprogram(fp);
@@ -2712,29 +2719,30 @@ int auto_comp_disable(int file_des) {
 
 
 int storage_cell_start(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int arg = -1;
-	int retval = -1;
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+    int retval = -1;
 
-	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Setting Storage cell start to %d\n", arg));
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    FILE_LOG(logDEBUG1, ("Setting Storage cell start to %d\n", arg));
 
 #ifndef JUNGFRAUD
-	functionNotImplemented();
+    functionNotImplemented();
 #else
-	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
-		if (arg > MAX_STORAGE_CELL_VAL) {
-			ret = FAIL;
-			strcpy(mess,"Max Storage cell number should not exceed 15\n");
-			FILE_LOG(logERROR, (mess));
-		} else {
-		retval = selectStoragecellStart(arg);
-		FILE_LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
-		validate(arg, retval, "set storage cell start", 0);
-	}
+    // set & get
+    if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+        if (arg > MAX_STORAGE_CELL_VAL) {
+            ret = FAIL;
+            strcpy(mess,"Max Storage cell number should not exceed 15\n");
+            FILE_LOG(logERROR, (mess));
+        } else {
+            retval = selectStoragecellStart(arg);
+            FILE_LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
+            validate(arg, retval, "set storage cell start", 0);
+        }
+    }
 #endif
     return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }

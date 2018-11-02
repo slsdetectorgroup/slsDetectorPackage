@@ -31,9 +31,9 @@ if (USE_HDF5)
 endif (USE_HDF5)
 
 
-add_definitions(
-    -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS
-)
+#add_definitions(
+#    -DVERBOSE
+#)
 
 include_directories(
     include

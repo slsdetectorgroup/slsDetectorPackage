@@ -1,26 +1,26 @@
 #include "slsDetectorFunctionList.h"
 #include "gitInfoJungfrau.h"
-#ifndef VIRTUAL
-#include "AD9257.h"		// include "commonServerFunctions.h", which in turn includes "blackfin.h"
-#include "programfpga.h"
 #include "versionAPI.h"
+#include "logger.h"
 
-#ifdef VIRTUAL
+#ifndef VIRTUAL
+#include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
+#include "programfpga.h"
+#else
 #include <pthread.h>
 #include <time.h>
 #endif
-/* global variables */
-//jungfrau doesnt require chips and chans (save memory)
-sls_detector_module *detectorModules=NULL;
-int *detectorDacs=NULL;
-int *detectorAdcs=NULL;
 
-enum detectorSettings thisSettings;
-enum masterFlags masterMode = NO_MASTER;
+// Global variable from slsDetectorServer
+extern int debugflag;
 
-int highvoltage = 0;
-int dacValues[NDAC];
-int32_t clkPhase[2] = {0, 0};
+int firmware_compatibility = OK;
+int firmware_check_done = 0;
+char firmware_message[MAX_STR_LENGTH];
+
+sls_detector_module *detectorModules = NULL;
+int *detectorDacs = NULL;
+int *detectorAdcs =NULL;
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -28,12 +28,11 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
+enum detectorSettings thisSettings;
+int highvoltage = 0;
+int dacValues[NDAC] = {0};
+int32_t clkPhase[2] = {0, 0};
 
-/* basic tests */
-
-int firmware_compatibility = OK;
-int firmware_check_done = 0;
-char firmware_message[MAX_STR_LENGTH];
 
 int isFirmwareCheckDone() {
 	return firmware_check_done;
@@ -44,16 +43,16 @@ int getFirmwareCheckResult(char** mess) {
 	return firmware_compatibility;
 }
 
-void checkFirmwareCompatibility(int flag) {
+void checkFirmwareCompatibility() {
+    firmware_compatibility = OK;
+    firmware_check_done = 0;
+    memset(firmware_message, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    cprintf(BLUE,"\n\n"
-            "********************************************************\n"
-            "************** Jungfrau Virtual Server *****************\n"
-            "********************************************************\n\n");
+    FILE_LOG(logINFOBLUE, ("******** Jungfrau Virtual Server *****************\n"));
     if (mapCSP0() == FAIL) {
     	strcpy(firmware_message,
-				"FATAL ERROR: Could not map to memory. Dangerous to continue.\n");
-		cprintf(RED,"%s\n\n", firmware_message);
+				"Could not map to memory. Dangerous to continue.\n");
+		FILE_LOG(logERROR, (firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
 		return;
@@ -66,18 +65,18 @@ void checkFirmwareCompatibility(int flag) {
 	resetFPGA();
     if (mapCSP0() == FAIL) {
     	strcpy(firmware_message,
-				"FATAL ERROR: Could not map to memory. Dangerous to continue.\n");
-		cprintf(RED,"%s\n\n", firmware_message);
+				"Could not map to memory. Dangerous to continue.\n");
+		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
 		return;
     }
 
     // does check only if flag is 0 (by default), set by command line
-	if ((!flag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
+	if ((!debugflag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
 		strcpy(firmware_message,
-				"FATAL ERROR: Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
-		cprintf(RED,"%s\n\n", firmware_message);
+				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
+		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
 		return;
@@ -95,10 +94,7 @@ void checkFirmwareCompatibility(int flag) {
 
 	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
 	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
-	cprintf(BLUE,"\n\n"
-			"********************************************************\n"
-			"****************** Jungfrau Server *********************\n"
-			"********************************************************\n\n"
+	FILE_LOG(logINFOBLUE, ("************ Jungfrau Server *********************\n"
 			"Hardware Version:\t\t 0x%x\n"
 			"Hardware Serial Nr:\t\t 0x%x\n"
 
@@ -110,7 +106,6 @@ void checkFirmwareCompatibility(int flag) {
 			"F/w-S/w API Version:\t\t 0x%llx\n"
 			"Required Firmware Version:\t 0x%x\n"
 			"Client-Software API Version:\t 0x%llx\n"
-			"\n"
 			"********************************************************\n",
 			hversion, hsnumber,
 			ipadd,
@@ -120,21 +115,21 @@ void checkFirmwareCompatibility(int flag) {
 			(long  long int)sw_fw_apiversion,
 			REQRD_FRMWR_VRSN,
 			(long long int)client_sw_apiversion
-	);
+	));
 
 	// return if flag is not zero, debug mode
-	if (flag) {
+	if (debugflag) {
 		firmware_check_done = 1;
 		return;
 	}
 
 
 	//cant read versions
-    printf("Testing Firmware-software compatibility ...\n");
+    FILE_LOG(logINFO, ("Testing Firmware-software compatibility:\n"));
 	if(!fwversion || !sw_fw_apiversion){
 		strcpy(firmware_message,
-				"FATAL ERROR: Cant read versions from FPGA. Please update firmware.\n");
-		cprintf(RED,"%s\n\n", firmware_message);
+				"Cant read versions from FPGA. Please update firmware.\n");
+		FILE_LOG(logERROR, (firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
 		return;
@@ -143,29 +138,29 @@ void checkFirmwareCompatibility(int flag) {
 	//check for API compatibility - old server
 	if(sw_fw_apiversion > REQRD_FRMWR_VRSN){
 		sprintf(firmware_message,
-				"FATAL ERROR: This detector software software version (0x%llx) is incompatible.\n"
+				"This detector software software version (0x%llx) is incompatible.\n"
 				"Please update detector software (min. 0x%llx) to be compatible with this firmware.\n",
 				(long long int)sw_fw_apiversion,
 				(long long int)REQRD_FRMWR_VRSN);
-		cprintf(RED,"%s\n\n", firmware_message);
+		FILE_LOG(logERROR, (firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
 		return;
 	}
 
 	//check for firmware compatibility - old firmware
-	if( REQRD_FRMWR_VRSN > fwversion){
+	if( REQRD_FRMWR_VRSN > fwversion) {
 		sprintf(firmware_message,
-				"FATAL ERROR: This firmware version (0x%llx) is incompatible.\n"
+				"This firmware version (0x%llx) is incompatible.\n"
 				"Please update firmware (min. 0x%llx) to be compatible with this server.\n",
 				(long long int)fwversion,
 				(long long int)REQRD_FRMWR_VRSN);
-		cprintf(RED,"%s\n\n", firmware_message);
+		FILE_LOG(logERROR, (firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
 		return;
 	}
-	printf("Compatibility - success\n");
+	FILE_LOG(logINFO, ("Compatibility - success\n"));
 	firmware_check_done = 1;
 }
 
@@ -175,8 +170,8 @@ int checkType() {
     return OK;
 #endif
 	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
-	if (type != JUNGFRAU){
-			cprintf(BG_RED,"This is not a Jungfrau Server (read %d, expected %d)\n",type, JUNGFRAU);
+	if (type != BOARD_JUNGFRAU_TYPE){
+			FILE_LOG(logERROR, ("This is not a Jungfrau Server (read %d, expected %d)\n", type, BOARD_JUNGFRAU_TYPE));
 			return FAIL;
 		}
 
@@ -189,15 +184,15 @@ u_int32_t testFpga(void) {
 #ifdef VIRTUAL
     return OK;
 #endif
-	printf("\nTesting FPGA...\n");
+	FILE_LOG(logINFO, ("Testing FPGA:\n"));
 
 	//fixed pattern
 	int ret = OK;
 	volatile u_int32_t val = bus_r(FIX_PATT_REG);
 	if (val == FIX_PATT_VAL) {
-		printf("Fixed pattern: successful match 0x%08x\n",val);
+		FILE_LOG(logINFO, ("Fixed pattern: successful match 0x%08x\n",val));
 	} else {
-		cprintf(RED,"Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL);
+		FILE_LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
 		ret = FAIL;
 	}
 	return ret;
@@ -208,7 +203,7 @@ int testBus() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	printf("\nTesting Bus...\n");
+	FILE_LOG(logINFO, ("Testing Bus:\n"));
 
 	int ret = OK;
 	u_int32_t addr = SET_TRIGGER_DELAY_LSB_REG;
@@ -218,16 +213,17 @@ int testBus() {
 	for (i = 0; i < times; ++i) {
 		bus_w(addr, i * 100);
 		if (i * 100 != bus_r(addr)) {
-			cprintf(RED,"ERROR: Mismatch! Wrote 0x%x, read 0x%x\n",
-					i * 100, bus_r(addr));
+			FILE_LOG(logERROR, ("Mismatch! Wrote 0x%x, read 0x%x\n",
+					i * 100, bus_r(addr)));
 			ret = FAIL;
 		}
 	}
 
 	bus_w(addr, 0);
 
-	if (ret == OK)
-		printf("Successfully tested bus %d times\n", times);
+	if (ret == OK) {
+		FILE_LOG(logINFO, ("Successfully tested bus %d times\n", times));
+	}
 	return ret;
 }
 
@@ -243,7 +239,7 @@ int detectorTest( enum digitalTestMode arg){
 	//DETECTOR_MEMORY_TEST:testRAM
 	//DETECTOR_SOFTWARE_TEST:
 	default:
-		cprintf(RED,"Warning: Test not implemented for this detector %d\n", (int)arg);
+		FILE_LOG(logERROR, ("Test not implemented for this detector %d\n", (int)arg));
 		break;
 	}
 	return OK;
@@ -351,7 +347,7 @@ u_int32_t  getDetectorIP(){
 	}
 	strcpy(output,temp);
 	sscanf(output, "%x", 	&res);
-	//printf("ip:%x\n",res);
+	//FILE_LOG(logINFO, ("ip:%x\n",res);
 
 	return res;
 }
@@ -368,7 +364,6 @@ u_int32_t  getDetectorIP(){
 void initControlServer(){
     clkPhase[0] = 0; clkPhase[1] = 0;
 	setupDetector();
-	printf("\n");
 }
 
 
@@ -377,7 +372,7 @@ void initStopServer() {
 
 	usleep(CTRL_SRVR_INIT_TIME_US);
 	if (mapCSP0() == FAIL) {
-		cprintf(BG_RED, "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+		FILE_LOG(logERROR, ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
 		exit(EXIT_FAILURE);
 	}
 }
@@ -390,29 +385,28 @@ void initStopServer() {
 /* set up detector */
 
 void allocateDetectorStructureMemory(){
-	printf("This Server is for 1 Jungfrau module (500k)\n");
+	FILE_LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
 
 	//Allocation of memory
-	if (detectorModules!=NULL) free(detectorModules);
-	if (detectorDacs!=NULL) free(detectorDacs);
-	if (detectorAdcs!=NULL) free(detectorAdcs);
-	detectorModules=malloc(sizeof(sls_detector_module));
-	detectorDacs=malloc(NDAC*sizeof(int));
-	detectorAdcs=malloc(NADC*sizeof(int));
-#ifdef VERBOSE
-	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
-	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
-	printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
-#endif
-	(detectorModules)->dacs=detectorDacs;
-	(detectorModules)->adcs=detectorAdcs;
-	(detectorModules)->ndac=NDAC;
-	(detectorModules)->nadc=NADC;
-	(detectorModules)->nchip=NCHIP;
-	(detectorModules)->nchan=NCHIP*NCHAN;
-	(detectorModules)->gain=0;
-	(detectorModules)->offset=0;
-	(detectorModules)->reg=0;
+	if (detectorModules != NULL) free(detectorModules);
+	if (detectorDacs != NULL) free(detectorDacs);
+	if (detectorAdcs != NULL) free(detectorAdcs);
+	detectorModules = malloc(sizeof(sls_detector_module));
+	detectorDacs = malloc(NDAC*sizeof(int));
+	detectorAdcs = malloc(NADC*sizeof(int));
+    FILE_LOG(logDEBUG1, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
+    FILE_LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
+    FILE_LOG(logDEBUG1, ("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs));
+	(detectorModules)->dacs = detectorDacs;
+	(detectorModules)->adcs = detectorAdcs;
+	(detectorModules)->ndac = NDAC;
+	(detectorModules)->nadc = NADC;
+	(detectorModules)->nchip = NCHIP;
+	(detectorModules)->nchan = NCHIP * NCHAN;
+	(detectorModules)->reg = 0;
+    (detectorModules)->iodelay = 0;
+    (detectorModules)->tau = 0;
+    (detectorModules)->eV = 0;
 	thisSettings = UNINITIALIZED;
 
 	{ // initialize to -1
@@ -429,7 +423,6 @@ void setupDetector() {
 
 	allocateDetectorStructureMemory();
 
-	printf("Resetting PLL\n");
 	resetPLL();
 	resetCore();
 	resetPeripheral();
@@ -446,6 +439,7 @@ void setupDetector() {
 
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 
+	FILE_LOG(logINFOBLUE, ("Setting Default parameters\n"));
 	setSpeed(HALF_SPEED);
 	cleanFifos();
 	resetCore();
@@ -479,7 +473,7 @@ void setupDetector() {
 
 int setDefaultDacs() {
 	int ret = OK;
-	printf("Setting Default Dac values\n");
+	FILE_LOG(logINFOBLUE, ("Setting Default Dac values\n"));
 	{
 		int i = 0;
 		int retval[2]={-1,-1};
@@ -489,7 +483,7 @@ int setDefaultDacs() {
 			if (dacValues[i] != defaultvals[i]) {
 				setDAC((enum DACINDEX)i,defaultvals[i],0,retval);
 				if (retval[0] != defaultvals[i]) {
-					cprintf(RED, "Warning: Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]);
+					FILE_LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]));
 					ret = FAIL;
 				}
 			}
@@ -506,17 +500,15 @@ int setDefaultDacs() {
 int powerChip (int on){
 	if(on != -1){
 		if(on){
-			cprintf(BLUE, "\n*** Powering on the chip ***\n");
+			FILE_LOG(logINFO, ("Powering chip: on\n"));
 			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) | CHIP_POWER_ENABLE_MSK);
 		}
 		else{
-			cprintf(BLUE, "\n*** Powering off the chip*** \n");
+			FILE_LOG(logINFO, ("Powering chip: off\n"));
 			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
 		}
 	}
 
-	//return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
-	/**temporary fix until power reg status can be read */
 	return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
 
@@ -525,11 +517,11 @@ int powerChip (int on){
 int autoCompDisable(int on) {
     if(on != -1){
         if(on){
-            cprintf(BLUE, "\n*** Auto comp disable mode: enabling ***\n");
+            FILE_LOG(logINFO, ("Auto comp disable mode: on\n"));
             bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) | VREF_COMP_MOD_ENABLE_MSK);
         }
         else{
-            cprintf(BLUE, "\n*** Auto comp disable mode: disabling *** \n");
+            FILE_LOG(logINFO, ("Auto comp disable mode: off\n"));
             bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) & ~VREF_COMP_MOD_ENABLE_MSK);
         }
     }
@@ -542,7 +534,7 @@ void cleanFifos() {
 #ifdef VIRTUAL
     return;
 #endif
-	printf("\nClearing Acquisition Fifos\n");
+	FILE_LOG(logINFO, ("Clearing Acquisition Fifos\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_ACQ_FIFO_CLR_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_ACQ_FIFO_CLR_MSK);
 }
@@ -551,7 +543,7 @@ void resetCore() {
 #ifdef VIRTUAL
     return;
 #endif
-	printf("\nResetting Core\n");
+	FILE_LOG(logINFO, ("Resetting Core\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CORE_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_CORE_RST_MSK);
 }
@@ -560,13 +552,13 @@ void resetPeripheral() {
 #ifdef VIRTUAL
     return;
 #endif
-	printf("\nResetting Peripheral\n");
+	FILE_LOG(logINFO, ("Resetting Peripheral\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PERIPHERAL_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PERIPHERAL_RST_MSK);
 }
 
 int adcPhase(int st){ /**carlos needed clkphase 1 and 2?  cehck with Aldo */
-	printf("Setting ADC Phase to %d\n",st);
+	FILE_LOG(logINFO, ("Setting ADC Phase to %d\n", st));
 	if (st > 65535 || st < -65535)
 		return clkPhase[0];
 
@@ -584,7 +576,7 @@ int getPhase() {
 }
 
 void configureASICTimer() {
-    printf("\nConfiguring ASIC Timer\n");
+    FILE_LOG(logINFO, ("Configuring ASIC Timer\n"));
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
 }
@@ -624,58 +616,57 @@ enum speedVariable setSpeed(int val) {
 
 		// todo in firmware, for now setting half speed
 		case FULL_SPEED://40
-			printf("\nSetting Half Speed (20 MHz):\n");
+			FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
 
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);
+			FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED));
 			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
 
 	        txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk);
+			FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk));
 			bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
 
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);
+			FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL));
 			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
 
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);
+			FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
 			adcPhase(ADC_PHASE_HALF_SPEED);
 
 			break;
 		case HALF_SPEED:
-			printf("\nSetting Half Speed (20 MHz):\n");
+			FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
 
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED);
+			FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED));
 			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
 
 			txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-			printf("Setting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk);
+			FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk));
 			bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
 
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL);
+			FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL));
 			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
 
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED);
+			FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
 			adcPhase(ADC_PHASE_HALF_SPEED);
 
 			break;
 		case QUARTER_SPEED:
-			printf("\nSetting Half Speed (10 MHz):\n");
+			FILE_LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
 
-			printf("Setting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED);
+			FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED));
 			bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
 
 			txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-			printf("Setting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED | txndelay_msk);
+			FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED | txndelay_msk));
 			bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED | txndelay_msk);
 
-			printf("Setting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL);
+			FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL));
 			bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
 
-			printf("Setting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED);
+			FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED));
 			adcPhase(ADC_PHASE_QUARTER_SPEED);
 
 			break;
 		}
-		printf("\n");
 	}
 
 	//getting
@@ -700,6 +691,7 @@ enum speedVariable setSpeed(int val) {
 /* parameters - timer */
 int selectStoragecellStart(int pos) {
     if (pos >= 0) {
+        FILE_LOG(logINFO, ("Setting storage cell start: %d\n", pos));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_STRG_CELL_SLCT_MSK);
         bus_w(DAQ_REG, bus_r(DAQ_REG) | ((pos << DAQ_STRG_CELL_SLCT_OFST) & DAQ_STRG_CELL_SLCT_MSK));
     }
@@ -714,60 +706,62 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	switch(ind){
 
 	case FRAME_NUMBER:
-		if(val >= 0)
-			printf("\nSetting #frames: %lld\n",(long long int)val);
+		if(val >= 0) {
+			FILE_LOG(logINFO, ("Setting #frames: %lld\n",(long long int)val));
+		}
 		retval = set64BitReg(val,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-		printf("Getting #frames: %lld\n",(long long int)retval);
+		FILE_LOG(logDEBUG1, ("Getting #frames: %lld\n", (long long int)retval));
 		break;
 
 	case ACQUISITION_TIME:
 		if(val >= 0){
-			printf("\nSetting exptime: %lldns\n", (long long int)val);
+			FILE_LOG(logINFO, ("Setting exptime: %lldns\n", (long long int)val));
 			val *= (1E-3 * CLK_RUN);
 			val -= ACQ_TIME_MIN_CLOCK;
 			if(val < 0) val = 0;
 		}
 		retval = (set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) + ACQ_TIME_MIN_CLOCK) / (1E-3 * CLK_RUN);
-		printf("Getting exptime: %lldns\n", (long long int)retval);
+		FILE_LOG(logDEBUG1, ("Getting exptime: %lldns\n", (long long int)retval));
 		break;
 
 	case FRAME_PERIOD:
 		if(val >= 0){
-			printf("\nSetting period to %lldns\n",(long long int)val);
+			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
 			val *= (1E-3 * CLK_SYNC);
 		}
 		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * CLK_SYNC);
-		printf("Getting period: %lldns\n", (long long int)retval);
+		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
 		break;
 
 	case DELAY_AFTER_TRIGGER:
 		if(val >= 0){
-			printf("\nSetting delay to %lldns\n", (long long int)val);
+			FILE_LOG(logINFO, ("Setting delay: %lldns\n", (long long int)val));
 			val *= (1E-3 * CLK_SYNC);
 		}
 		retval = set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
-		printf("Getting delay: %lldns\n", (long long int)retval);
+		FILE_LOG(logDEBUG1, ("Getting delay: %lldns\n", (long long int)retval));
 		break;
 
 	case CYCLES_NUMBER:
-		if(val >= 0)
-			printf("\nSetting #cycles to %lld\n", (long long int)val);
+		if(val >= 0) {
+			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
+		}
 		retval = set64BitReg(val,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
-		printf("Getting #cycles: %lld\n", (long long int)retval);
+		FILE_LOG(logDEBUG1, ("Getting #cycles: %lld\n", (long long int)retval));
 		break;
 
 	case STORAGE_CELL_NUMBER:
         if(val >= 0) {
-            printf("\nSetting #storage cells to %lld\n", (long long int)val);
+            FILE_LOG(logINFO, ("Setting #storage cells: %lld\n", (long long int)val));
             bus_w(CONTROL_REG, (bus_r(CONTROL_REG) & ~CONTROL_STORAGE_CELL_NUM_MSK) |
                     ((val << CONTROL_STORAGE_CELL_NUM_OFST) & CONTROL_STORAGE_CELL_NUM_MSK));
         }
         retval = ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >> CONTROL_STORAGE_CELL_NUM_OFST);
-        printf("Getting #storage cells: %lld\n", (long long int)retval);
+        FILE_LOG(logDEBUG1, ("Getting #storage cells: %lld\n", (long long int)retval));
         break;
 
 	default:
-		cprintf(RED,"Warning: Timer Index not implemented for this detector: %d\n", ind);
+		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
 		break;
 	}
 
@@ -786,42 +780,42 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 	case FRAME_NUMBER:
 		retval = get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
-		printf("Getting number of frames left: %lld\n",(long long int)retval);
+		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
 		break;
 
 	case FRAME_PERIOD:
 		retval = get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-3 * CLK_SYNC);
-		printf("Getting period left: %lldns\n", (long long int)retval);
+		FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
 		break;
 /*
 	case DELAY_AFTER_TRIGGER:
 		retval = get64BitReg(xxx) / (1E-3 * CLK_SYNC);
-		printf("Getting delay left: %lldns\n", (long long int)retval);
+		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
 		break;
 */
 	case CYCLES_NUMBER:
 		retval = get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
-		printf("Getting number of cycles left: %lld\n", (long long int)retval);
+		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
 		break;
 
 	case ACTUAL_TIME:
 		retval = get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-9 * CLK_SYNC);
-		printf("Getting actual time (time from start): %lld\n", (long long int)retval);
+		FILE_LOG(logINFO, ("Getting actual time (time from start): %lld\n", (long long int)retval));
 		break;
 
 	case MEASUREMENT_TIME:
 		retval = get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-9 * CLK_SYNC);
-		printf("Getting measurement time (timestamp/ start frame time): %lld\n", (long long int)retval);
+		FILE_LOG(logINFO, ("Getting measurement time (timestamp/ start frame time): %lld\n", (long long int)retval));
 		break;
 
 	case FRAMES_FROM_START:
 	case FRAMES_FROM_START_PG:
 		retval = get64BitReg(FRAMES_FROM_START_PG_LSB_REG, FRAMES_FROM_START_PG_MSB_REG);
-		printf("Getting frames from start run control %lld\n", (long long int)retval);
+		FILE_LOG(logINFO, ("Getting frames from start run control %lld\n", (long long int)retval));
 		break;
 
 	default:
-		cprintf(RED, "Warning: Remaining Timer index not implemented for this detector: %d\n", ind);
+		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
 		break;
 	}
 
@@ -836,25 +830,29 @@ int64_t getTimeLeft(enum timerIndex ind){
 /* parameters - channel, chip, module, settings */
 
 
-int setModule(sls_detector_module myMod){
-	int retval[2];
-	int i;
+int setModule(sls_detector_module myMod, char* mess){
 
-	//#ifdef VERBOSE
-	printf("Setting module with settings %d\n",myMod.reg);
-	//#endif
+    FILE_LOG(logINFO, ("Setting module with settings %d\n",myMod.reg));
 
+    // settings
 	setSettings( (enum detectorSettings)myMod.reg);
 
 	//copy module locally
-	if (detectorModules)
-		copyModule(detectorModules,&myMod);
+	if (detectorModules) {
+	    if (copyModule(detectorModules, &myMod) == FAIL) {
+	          sprintf(mess, "Could not copy module\n");
+	            FILE_LOG(logERROR, (mess));
+	            return FAIL;
+	    }
+	}
 
-	//set dac values
-	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum DACINDEX)i,myMod.dacs[i],0,retval);
-
-	return thisSettings;
+    //set dac values
+	{
+	    int i = 0, retval[2] = {-1, -1};
+	    for(i = 0; i < myMod.ndac; ++i)
+	        setDAC((enum DACINDEX)i, myMod.dacs[i], 0, retval);
+	}
+	return OK;
 }
 
 
@@ -885,35 +883,35 @@ enum detectorSettings setSettings(enum detectorSettings sett){
 	    switch (sett) {
 	    case DYNAMICGAIN:
 	        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            printf("\nConfigured settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            FILE_LOG(logINFO, ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
 	        break;
 	    case DYNAMICHG0:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
             bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
-            printf("\nConfigured settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            FILE_LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
             break;
 	    case FIXGAIN1:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
             bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
-            printf("\nConfigured settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            FILE_LOG(logINFO, ("Set settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
             break;
 	    case FIXGAIN2:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
             bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_VAL);
-            printf("\nConfigured settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            FILE_LOG(logINFO, ("Set settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
             break;
 	    case FORCESWITCHG1:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
             bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_1_VAL);
-            printf("\nConfigured settings - Force Switch Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            FILE_LOG(logINFO, ("Set settings - Force Switch Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
             break;
 	    case FORCESWITCHG2:
             bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
             bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_2_VAL);
-            printf("\nConfigured settings - Force Switch Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG));
+            FILE_LOG(logINFO, ("Set settings - Force Switch Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
             break;
 	    default:
-	        cprintf(RED, "Error: This settings is not defined for this detector %d\n", (int)sett);
+	        FILE_LOG(logERROR, ("This settings is not defined for this detector %d\n", (int)sett));
 	        return -1;
 	    }
 
@@ -927,37 +925,38 @@ enum detectorSettings setSettings(enum detectorSettings sett){
 
 enum detectorSettings getSettings(){
 
-	uint32_t val = bus_r(DAQ_REG) & DAQ_SETTINGS_MSK;
-	printf("\nGetting Settings\n Reading DAQ Register :0x%x\n", val);
+	uint32_t regval = bus_r(DAQ_REG);
+	uint32_t val = regval & DAQ_SETTINGS_MSK;
+	FILE_LOG(logDEBUG1, ("Getting Settings\n Reading DAQ Register :0x%x\n", val));
 
 	switch(val) {
 	case DAQ_FIX_GAIN_DYNMC_VAL:
         thisSettings = DYNAMICGAIN;
-        printf("Settings read: DYNAMICGAIN\n");
+        FILE_LOG(logDEBUG1, ("Settings read: Dynamic Gain. DAQ Reg: 0x%x\n", regval));
         break;
     case DAQ_FIX_GAIN_HIGHGAIN_VAL:
         thisSettings = DYNAMICHG0;
-        printf("Settings read: DYNAMICHG0\n");
+        FILE_LOG(logDEBUG1, ("Settings read: Dynamig High Gain. DAQ Reg: 0x%x\n", regval));
         break;
     case DAQ_FIX_GAIN_STG_1_VAL:
         thisSettings = FIXGAIN1;
-        printf("Settings read: FIXGAIN1\n");
+        FILE_LOG(logDEBUG1, ("Settings read: Fix Gain 1. DAQ Reg: 0x%x\n", regval));
         break;
     case DAQ_FIX_GAIN_STG_2_VAL:
         thisSettings = FIXGAIN2;
-        printf("Settings read: FIXGAIN2\n");
+        FILE_LOG(logDEBUG1, ("Settings read: Fix Gain 2. DAQ Reg: 0x%x\n", regval));
         break;
     case DAQ_FRCE_GAIN_STG_1_VAL:
         thisSettings = FORCESWITCHG1;
-        printf("Settings read: FORCESWITCHG1\n");
+        FILE_LOG(logDEBUG1, ("Settings read: Force Switch Gain 1. DAQ Reg: 0x%x\n", regval));
         break;
     case DAQ_FRCE_GAIN_STG_2_VAL:
         thisSettings = FORCESWITCHG2;
-        printf("Settings read: FORCESWITCHG2\n");
+        FILE_LOG(logDEBUG1, ("Settings read: Force Switch Gain 2. DAQ Reg: 0x%x\n", regval));
         break;
     default:
         thisSettings = UNDEFINED;
-        printf("Settings read: Undefined. Value read:0x%x\n", val);
+        FILE_LOG(logERROR, ("Settings read: Undefined. DAQ Reg: 0x%x\n", regval));
 	}
 
 	return thisSettings;
@@ -978,17 +977,17 @@ void initDac(int dacnum) {
 #ifdef VIRTUAL
     return;
 #endif
-	printf("\nInitializing dac for %d to \n",dacnum);
+	FILE_LOG(logINFOBLUE, ("Initializing dac %d\n",dacnum));
 
 	u_int32_t codata;
 	int csdx 		= dacnum / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
 	int dacchannel 	= 0xf;										// all channels
 	int dacvalue	= 0x6; 										// can be any random value (just writing to power up)
-	printf(" Write to Input Register\n"
-			" Chip select bit:%d\n"
-			" Dac Channel:0x%x\n"
-			" Dac Value:0x%x\n",
-			csdx, dacchannel, dacvalue);
+	FILE_LOG(logINFO, ("\tWrite to Input Register\n"
+			"\tChip select bit: %d\n"
+			"\tDac Channel: 0x%x\n"
+			"\tDac Value: 0x%x\n",
+			csdx, dacchannel, dacvalue));
 
 	codata = LTC2620_DAC_CMD_WRITE +											// command to write to input register
 			((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +	// all channels
@@ -1010,7 +1009,7 @@ int voltageToDac(int value){
 	int vmax = 2500;
 	int nsteps = 4096;
 	if ((value < vmin) || (value > vmax)) {
-		cprintf(RED,"Voltage value (to convert to dac value) is outside bounds: %d\n", value);
+		FILE_LOG(logERROR, ("Voltage value (to convert to dac value) is outside bounds: %d\n", value));
 		return -1;
 	}
 	return (int)(((value - vmin) / (vmax - vmin)) * (nsteps - 1) + 0.5);
@@ -1022,7 +1021,7 @@ int dacToVoltage(unsigned int digital){
 	int nsteps = 4096;
 	int v = vmin + (vmax - vmin) * digital / (nsteps - 1);
 	if((v < 0) || (v > nsteps - 1)) {
-		cprintf(RED,"Voltage value (converted from dac value) is outside bounds: %d\n", v);
+		FILE_LOG(logERROR, ("Voltage value (converted from dac value) is outside bounds: %d\n", v));
 		return -1;
 	}
 	return v;
@@ -1046,21 +1045,21 @@ void setDAC(enum DACINDEX ind, int val, int mV, int retval[]){
 		int csdx 		= ind / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
 		int dacchannel 	= ind % NDAC;							// 0-8, dac channel number (also for dacnum 9-15 in old board)
 
-		printf("\nSetting of DAC %d : %d dac units (%d mV)\n",ind, dacval, val);
+		FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",ind, dacval, val));
 		// command
 		if (val >= 0) {
-			printf(" Write to Input Register and Update\n");
+			FILE_LOG(logDEBUG1,("\tWrite to Input Register and Update\n"));
 			codata = LTC2620_DAC_CMD_SET;
 
 		} else if (val == -100) {
-			printf(" POWER DOWN\n");
+			FILE_LOG(logDEBUG1, ("\tPOWER DOWN\n"));
 			codata = LTC2620_DAC_CMD_POWER_DOWN;
 		}
 		// address
-		printf(" Chip select bit:%d\n"
-				" Dac Channel:0x%x\n"
-				" Dac Value:0x%x\n",
-				csdx, dacchannel, val);
+		FILE_LOG(logDEBUG1, ("\tChip select bit:%d\n"
+				"\tDac Channel:0x%x\n"
+				"\tDac Value:0x%x\n",
+				csdx, dacchannel, val));
 		codata += ((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +
 				((val << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);
 		// to spi
@@ -1076,9 +1075,9 @@ void setDAC(enum DACINDEX ind, int val, int mV, int retval[]){
 #endif
 	}
 
-	printf("Getting DAC %d : ",ind);
-	retval[0] = dacValues[ind];		printf("%d dac units ", retval[0]);
-	retval[1] = dacToVoltage(retval[0]);printf("(%d mV)\n", retval[1]);
+	retval[0] = dacValues[ind];
+	retval[1] = dacToVoltage(retval[0]);
+	FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, retval[0], retval[1]));
 }
 
 
@@ -1087,7 +1086,7 @@ int getADC(enum ADCINDEX ind){
     return 0;
 #endif
 	char tempnames[2][40]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
-	printf("Getting Temperature for %s\n",tempnames[ind]);
+	FILE_LOG(logDEBUG1, ("Getting Temperature for %s\n", tempnames[ind]));
 	u_int32_t addr = GET_TEMPERATURE_TMP112_REG;
 	uint32_t regvalue = bus_r(addr);
 	uint32_t value = regvalue & TEMPERATURE_VALUE_MSK;
@@ -1104,7 +1103,7 @@ int getADC(enum ADCINDEX ind){
 
 	// conversion
 	retval *= 625.0/10.0;
-	printf("\nReal Temperature %s: %f °C\n",tempnames[ind],retval/1000.00);
+	FILE_LOG(logINFO, ("Temperature %s: %f °C\n",tempnames[ind],retval/1000.00));
 	return retval;
 }
 
@@ -1131,7 +1130,7 @@ int setHighVoltage(int val){
 			dacvalue = 1. + (200.-val) / alpha;
 			val=200.-(dacvalue-1)*alpha;
 		}
-		printf ("\nSetting High voltage to %d (dacval %d)\n",val, dacvalue);
+		FILE_LOG(logINFO, ("Setting High voltage: %d (dacval %d)\n",val, dacvalue));
 		dacvalue &= MAX1932_HV_DATA_MSK;
 		serializeToSPI(SPI_REG, dacvalue, HV_SERIAL_CS_OUT_MSK, MAX1932_HV_NUMBITS,
 				HV_SERIAL_CLK_OUT_MSK, HV_SERIAL_DIGITAL_OUT_MSK, HV_SERIAL_DIGITAL_OUT_OFST);
@@ -1148,23 +1147,31 @@ int setHighVoltage(int val){
 /* parameters - timing, extsig */
 
 
-enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
+void setTiming( enum externalCommunicationMode arg){
 
 	if(arg != GET_EXTERNAL_COMMUNICATION_MODE){
 		switch((int)arg){
-		case AUTO_TIMING:			bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);	break;
-		case TRIGGER_EXPOSURE:		bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);	break;
+		case AUTO_TIMING:
+		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+		    break;
+		case TRIGGER_EXPOSURE:
+		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+		    break;
 		default:
-			cprintf(RED,"Unknown timing mode %d\n", arg);
-			return GET_EXTERNAL_COMMUNICATION_MODE;
+			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+			return;
 		}
 	}
-	if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
-		return TRIGGER_EXPOSURE;
-	return AUTO_TIMING;
 }
 
 
+enum externalCommunicationMode getTiming() {
+    if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
+        return TRIGGER_EXPOSURE;
+    return AUTO_TIMING;
+}
 
 
 
@@ -1192,7 +1199,7 @@ long int calcChecksum(int sourceip, int destip) {
 	ip.ip_destip         = destip;
 
 	count = sizeof(ip);
-	addr =& (ip); /* warning: assignment from incompatible pointer type */
+	addr = (unsigned short*) &(ip); /* warning: assignment from incompatible pointer type */
 	while( count > 1 )  {
 		sum += *addr++;
 		count -= 2;
@@ -1201,90 +1208,73 @@ long int calcChecksum(int sourceip, int destip) {
 	while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
 	checksum = (~sum) & 0xffff;
 
-	printf("IP checksum is 0x%lx\n",checksum);
+	FILE_LOG(logINFO, ("IP checksum is 0x%lx\n",checksum));
 
 	return checksum;
 }
 
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival){
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2){
 #ifdef VIRTUAL
     return 0;
 #endif
-	cprintf(BLUE, "\n*** Configuring MAC ***\n");
+	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 
-	printf("Source IP   : %d.%d.%d.%d \t\t(0x%08x)\n",(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip);
-	printf("Source MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
+	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((sourcemac>>40)&0xFF),
 			(unsigned int)((sourcemac>>32)&0xFF),
 			(unsigned int)((sourcemac>>24)&0xFF),
 			(unsigned int)((sourcemac>>16)&0xFF),
 			(unsigned int)((sourcemac>>8)&0xFF),
 			(unsigned int)((sourcemac>>0)&0xFF),
-			(long  long unsigned int)sourcemac);
-	printf("Source Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport);
+			(long  long unsigned int)sourcemac));
+	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
 
-	printf("Dest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip);
-	printf("Dest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
+	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((destmac>>40)&0xFF),
 			(unsigned int)((destmac>>32)&0xFF),
 			(unsigned int)((destmac>>24)&0xFF),
 			(unsigned int)((destmac>>16)&0xFF),
 			(unsigned int)((destmac>>8)&0xFF),
 			(unsigned int)((destmac>>0)&0xFF),
-			(long  long unsigned int)destmac);
-	printf("Dest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport);
+			(long  long unsigned int)destmac));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
 
 	long int checksum=calcChecksum(sourceip, destip);
 	bus_w(TX_IP_REG, sourceip);
 	bus_w(RX_IP_REG, destip);
 
-/*
-	bus_w(TX_MAC_LSB_REG,(destmac>>32)&0xFFFFFFFF);//rx_udpmacH_AReg_c
-	bus_w(TX_MAC_MSB_REG,(destmac)&0xFFFFFFFF);//rx_udpmacL_AReg_c
-	bus_w(RX_MAC_MSB_REG,(sourcemac>>32)&0xFFFFFFFF);//detectormacH_AReg_c
-	bus_w(RX_MAC_LSB_REG,(sourcemac)&0xFFFFFFFF);//detectormacL_AReg_c
-	bus_w(UDP_PORT_REG,((sourceport&0xFFFF)<<16)+(udpport&0xFFFF));//udpports_AReg_c
-*/
 	uint32_t val = 0;
 
 	val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
 	bus_w(TX_MAC_LSB_REG, val);
-#ifdef VERBOSE
-	printf("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG));
-#endif
+	FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
 
 	val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
 	bus_w(TX_MAC_MSB_REG,val);
-#ifdef VERBOSE
-	printf("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG));
-#endif
+	FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
 
 	val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
 	bus_w(RX_MAC_LSB_REG, val);
-#ifdef VERBOSE
-	printf("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG));
-#endif
+	FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
 
 	val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
 	bus_w(RX_MAC_MSB_REG, val);
-#ifdef VERBOSE
-	printf("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG));
-#endif
+	FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
 
 	val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
 			((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
 	bus_w(UDP_PORT_REG, val);
-#ifdef VERBOSE
-	printf("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG));
-#endif
+	FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
 
 	bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
-#ifdef VERBOSE
-	printf("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG));
-#endif
+	FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
 	cleanFifos();
 	resetCore();
 
@@ -1295,7 +1285,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
-
+	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d), reserved: %d\n", pos[0], pos[1], pos[2]));
 	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK));
 	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK))
 		ret = FAIL;
@@ -1308,8 +1298,9 @@ int setDetectorPosition(int pos[]) {
 	if ((bus_r(COORD_1_REG) &  COORD_0_Z_MSK) != ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK))
 		ret = FAIL;
 
-	if (ret == OK)
-		printf("Position set to [%d, %d, %d]\n", pos[0], pos[1], pos[2]);
+	if (ret == OK) {
+		FILE_LOG(logINFO, ("Position set to [%d, %d, %d]\n", pos[0], pos[1], pos[2]));
+	}
 	return ret;
 }
 
@@ -1323,6 +1314,7 @@ void resetPLL() {
 #ifdef VIRTUAL
     return;
 #endif
+    FILE_LOG(logINFO, ("Resetting PLL\n"));
 	// reset PLL Reconfiguration and PLL
 	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) | PLL_CTRL_RECONFIG_RST_MSK | PLL_CTRL_RST_MSK);
 	usleep(100);
@@ -1334,6 +1326,7 @@ u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val) {
 #ifdef VIRTUAL
     return val;
 #endif
+    FILE_LOG(logINFO, ("Setting PLL Reconfig Reg\n"));
 	// set parameter
 	bus_w(PLL_PARAM_REG, val);
 
@@ -1363,7 +1356,7 @@ void configurePll() {
         return;
     }
 
-	printf("Configuring PLL with phase in %d\n", clkPhase[1]);
+	FILE_LOG(logINFO, ("\tConfiguring PLL with phase in %d\n", clkPhase[1]));
 	if (clkPhase[1]>0) {
 		inv=0;
 		phase=clkPhase[1];
@@ -1371,18 +1364,18 @@ void configurePll() {
 		inv=1;
 		phase=-1*clkPhase[1];
 	}
-	printf(" phase out %d (0x%08x)\n", phase, phase);
+	FILE_LOG(logDEBUG1, ("\tphase out %d (0x%08x)\n", phase, phase));
 
 	if (inv) {
 		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C1_VAL + PLL_SHIFT_UP_DOWN_NEG_VAL;
-		printf(" phase word 0x%08x\n", val);
+		FILE_LOG(logDEBUG1, ("\tphase word 0x%08x\n", val));
 		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 	} else {
 		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C0_VAL + PLL_SHIFT_UP_DOWN_NEG_VAL;
-		printf(" phase word 0x%08x\n", val);
+		FILE_LOG(logDEBUG1, ("\tphase word 0x%08x\n", val));
 		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 
-		printf(" phase word 0x%08x\n", val);
+		FILE_LOG(logDEBUG1, ("\tphase word 0x%08x\n", val));
 		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C2_VAL;
 		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
 	}
@@ -1394,23 +1387,21 @@ void configurePll() {
 int setThresholdTemperature(int val) {
 
     if (val >= 0) {
-        printf("\nThreshold Temperature: %d\n", val);
-
+        FILE_LOG(logINFO, ("Setting Threshold Temperature: %f °C\n", val/1000.00));
         val *= (10.0/625.0);
-#ifdef VERBOSE
-        printf("Converted Threshold Temperature: %d\n", val);
-#endif
+        FILE_LOG(logDEBUG1, ("Converted Threshold Temperature: %d\n", val));
         bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG) &~(TEMP_CTRL_PROTCT_THRSHLD_MSK) &~(TEMP_CTRL_OVR_TMP_EVNT_MSK))
                 | (((val  << TEMP_CTRL_PROTCT_THRSHLD_OFST) & TEMP_CTRL_PROTCT_THRSHLD_MSK)));
-#ifdef VERBOSE
-        printf("Converted Threshold Temperature set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_THRSHLD_MSK) >> TEMP_CTRL_PROTCT_THRSHLD_OFST));
-#endif
+        FILE_LOG(logDEBUG1, ("Converted Threshold Temperature set to %d\n",
+                ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_THRSHLD_MSK) >> TEMP_CTRL_PROTCT_THRSHLD_OFST)));
     }
     uint32_t temp = ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_THRSHLD_MSK) >> TEMP_CTRL_PROTCT_THRSHLD_OFST);
 
     // conversion
-    temp *= (625.0/10.0);
-    printf("Threshold Temperature  %f °C\n",(double)temp/1000.00);
+    temp = (temp * (625.0/10.0));
+
+    float ftemp = (double)temp/1000.00;
+    FILE_LOG(logDEBUG1, ("Threshold Temperature read %f °C\n",ftemp));
 
     return temp;
 
@@ -1421,12 +1412,11 @@ int setTemperatureControl(int val) {
     if (val >= 0) {
         // binary value
         if (val > 0 ) val = 1;
-        printf("\nTemperature control: %d\n", val);
+        FILE_LOG(logINFO, ("Setting Temperature control: %d\n", val));
         bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG)  &~(TEMP_CTRL_PROTCT_ENABLE_MSK) &~(TEMP_CTRL_OVR_TMP_EVNT_MSK))
                 | (((val  << TEMP_CTRL_PROTCT_ENABLE_OFST) & TEMP_CTRL_PROTCT_ENABLE_MSK)));
-#ifdef VERBOSE
-        printf("Temperature control set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_ENABLE_MSK) >> TEMP_CTRL_PROTCT_ENABLE_OFST));
-#endif
+        FILE_LOG(logDEBUG1, ("Temperature control read: %d\n",
+                ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_ENABLE_MSK) >> TEMP_CTRL_PROTCT_ENABLE_OFST)));
     }
     return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_PROTCT_ENABLE_MSK) >> TEMP_CTRL_PROTCT_ENABLE_OFST);
 }
@@ -1439,12 +1429,11 @@ int setTemperatureEvent(int val) {
     if (val >= 0) {
         // set bit to clear it
         val = 1;
-        printf("\nTemperature Event: %d\n", val);
+        FILE_LOG(logINFO, ("Setting Temperature Event (clearing): %d\n", val));
         bus_w(TEMP_CTRL_REG, (bus_r(TEMP_CTRL_REG)   &~TEMP_CTRL_OVR_TMP_EVNT_MSK)
                 | (((val  << TEMP_CTRL_OVR_TMP_EVNT_OFST) & TEMP_CTRL_OVR_TMP_EVNT_MSK)));
-#ifdef VERBOSE
-        printf("Temperature Event set to %d\n", ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST));
-#endif
+        FILE_LOG(logDEBUG1, ("Temperature Event read %d\n",
+                ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST)));
     }
     return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST);
 }
@@ -1456,16 +1445,15 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
         return -1;
 
     if (value >= 0) {
-        printf("\nSetting transmission delay: %d\n", value);
+        FILE_LOG(logINFO, ("Setting transmission delay: %d\n", value));
         bus_w(CONFIG_REG, (bus_r(CONFIG_REG) &~CONFIG_TDMA_TIMESLOT_MSK)
                 | (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
         if (value == 0)
             bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_TDMA_MSK);
         else
             bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_TDMA_MSK);
-#ifdef VERBOSE
-        printf("Transmission delay set to %d\n", ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST));
-#endif
+        FILE_LOG(logDEBUG1, ("Transmission delay read %d\n",
+                ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST)));
     }
 
     return ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST);
@@ -1483,13 +1471,13 @@ int startStateMachine(){
 	virtual_stop = 0;
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
 		virtual_status = 0;
-		cprintf(RED,"Could not start Virtual acquisition thread\n");
+		FILE_LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
 		return FAIL;
 	}
-	cprintf(GREEN,"***Virtual Acquisition started\n");
+	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
 	return OK;
 #endif
-	printf("*******Starting State Machine*******\n");
+	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
 
 	cleanFifos();
 
@@ -1497,7 +1485,7 @@ int startStateMachine(){
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
 
-	printf("Status Register: %08x\n",bus_r(STATUS_REG));
+	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
 	return OK;
 }
 
@@ -1508,12 +1496,12 @@ void* start_timer(void* arg) {
 						setTimer(CYCLES_NUMBER, -1) *
 						(setTimer(STORAGE_CELL_NUMBER, -1) + 1) *
 						(setTimer(FRAME_PERIOD, -1)/(1E9)));
-	cprintf(GREEN,"going to wait for %d s\n", wait_in_s);
+	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
 	while(!virtual_stop && (wait_in_s >= 0)) {
 		usleep(1000 * 1000);
 		wait_in_s--;
 	}
-	cprintf(GREEN,"Virtual Timer Done***\n");
+	FILE_LOG(logINFOGREEN, ("Virtual Timer Done\n"));
 
 	virtual_status = 0;
 	return NULL;
@@ -1521,7 +1509,7 @@ void* start_timer(void* arg) {
 #endif
 
 int stopStateMachine(){
-	cprintf(BG_RED,"*******Stopping State Machine*******\n");
+	FILE_LOG(logINFORED, ("Stopping State Machine\n"));
 #ifdef VIRTUAL
 	virtual_stop = 0;
 	return OK;
@@ -1531,7 +1519,7 @@ int stopStateMachine(){
 	usleep(100);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STOP_ACQ_MSK);
 
-	printf("Status Register: %08x\n",bus_r(STATUS_REG));
+	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
 	return OK;
 }
 
@@ -1542,47 +1530,45 @@ int stopStateMachine(){
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
 	if(virtual_status == 0){
-		printf("Status: IDLE\n");
+		FILE_LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	}else{
-		printf("Status: RUNNING...\n");
+		FILE_LOG(logINFOBLUE, ("Status: RUNNING\n"));
 		return RUNNING;
 	}
 #endif
-#ifdef VERBOSE
-	printf("Getting status\n");
-#endif
+	FILE_LOG(logDEBUG1, ("Getting status\n"));
 
 	enum runStatus s;
 	u_int32_t retval = bus_r(STATUS_REG);
-	printf("Status Register: %08x\n",retval);
+	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
 
 	//running
 	if(((retval & RUN_BUSY_MSK) >> RUN_BUSY_OFST)) {
 		if ((retval & WAITING_FOR_TRIGGER_MSK) >> WAITING_FOR_TRIGGER_OFST) {
-			printf("-----------------------------------WAITING-----------------------------------\n");
-			s=WAITING;
+			FILE_LOG(logINFOBLUE, ("Status: WAITING\n"));
+			s = WAITING;
 		}
 		else{
-			printf("-----------------------------------RUNNING-----------------------------------\n");
-			s=RUNNING;
+			FILE_LOG(logINFOBLUE, ("Status: RUNNING\n"));
+			s = RUNNING;
 		}
 	}
 
 	//not running
 	else {
 		if ((retval & STOPPED_MSK) >> STOPPED_OFST) {
-			printf("-----------------------------------STOPPED--------------------------\n");
-			s=STOPPED;
+			FILE_LOG(logINFOBLUE, ("Status: STOPPED\n"));
+			s = STOPPED;
 		} else if ((retval & RUNMACHINE_BUSY_MSK) >> RUNMACHINE_BUSY_OFST) {
-			printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
-			s=TRANSMITTING;
+			FILE_LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
+			s = TRANSMITTING;
 		} else if (!retval) {
-			printf("-----------------------------------IDLE--------------------------------------\n");
-			s=IDLE;
+			FILE_LOG(logINFOBLUE, ("Status: IDLE\n"));
+			s = IDLE;
 		} else {
-			printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
-			s=ERROR;
+			FILE_LOG(logERROR, ("Status: Unknown status %08x\n", retval));
+			s = ERROR;
 		}
 	}
 
@@ -1594,7 +1580,7 @@ enum runStatus getRunStatus(){
 void readFrame(int *ret, char *mess){
 #ifdef VIRTUAL
 	while(virtual_status) {
-		//cprintf(RED,"Waiting for finished flag\n");
+		//FILE_LOG(logERROR, ("Waiting for finished flag\n");
 		usleep(5000);
 	}
 	return;
@@ -1608,11 +1594,11 @@ void readFrame(int *ret, char *mess){
 	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
 	if ( retval > 0) {
 		*ret = (int)FAIL;
-		sprintf(mess,"no data and run stopped: %lld frames left\n",(long  long int)retval);
-		cprintf(RED,"%s\n",mess);
+		sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
+		FILE_LOG(logERROR, (mess));
 	} else {
 		*ret = (int)OK;
-		cprintf(GREEN, "acquisition successfully finished\n");
+		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 	}
 }
 
@@ -1623,9 +1609,7 @@ u_int32_t runBusy(void) {
     return virtual_status;
 #endif
 	u_int32_t s = ((bus_r(STATUS_REG) & RUN_BUSY_MSK) >> RUN_BUSY_OFST);
-#ifdef VERBOSE
-	printf("Status Register: %08x\n", s);
-#endif
+	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
 }
 
@@ -1644,51 +1628,40 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 	int idac, iadc;
 	int ret=OK;
 
-#ifdef VERBOSE
-	printf("Copying module %x to module %x\n",srcMod,destMod);
-#endif
+	FILE_LOG(logDEBUG1, ("Copying module\n"));
 
 	if (srcMod->serialnumber>=0){
 
 		destMod->serialnumber=srcMod->serialnumber;
 	}
 	if ((srcMod->nchip)>(destMod->nchip)) {
-		printf("Number of chip of source is larger than number of chips of destination\n");
+		FILE_LOG(logERROR, ("Number of chip of source is larger than number of chips of destination\n"));
 		return FAIL;
 	}
 	if ((srcMod->nchan)>(destMod->nchan)) {
-		printf("Number of channels of source is larger than number of channels of destination\n");
+		FILE_LOG(logERROR, ("Number of channels of source is larger than number of channels of destination\n"));
 		return FAIL;
 	}
 	if ((srcMod->ndac)>(destMod->ndac)) {
-		printf("Number of dacs of source is larger than number of dacs of destination\n");
+		FILE_LOG(logERROR, ("Number of dacs of source is larger than number of dacs of destination\n"));
 		return FAIL;
 	}
 	if ((srcMod->nadc)>(destMod->nadc)) {
-		printf("Number of dacs of source is larger than number of dacs of destination\n");
+		FILE_LOG(logERROR, ("Number of dacs of source is larger than number of dacs of destination\n"));
 		return FAIL;
 	}
 
-#ifdef VERBOSE
-	printf("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac);
-	printf("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc);
-	printf("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip);
-	printf("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan);
-
-#endif
+	FILE_LOG(logDEBUG1, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
+	FILE_LOG(logDEBUG1, ("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc));
+	FILE_LOG(logDEBUG1, ("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip));
+	FILE_LOG(logDEBUG1, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
 	destMod->ndac=srcMod->ndac;
 	destMod->nadc=srcMod->nadc;
 	destMod->nchip=srcMod->nchip;
 	destMod->nchan=srcMod->nchan;
 	if (srcMod->reg>=0)
 		destMod->reg=srcMod->reg;
-#ifdef VERBOSE
-	printf("Copying register %x (%x)\n",destMod->reg,srcMod->reg );
-#endif
-	if (srcMod->gain>=0)
-		destMod->gain=srcMod->gain;
-	if (srcMod->offset>=0)
-		destMod->offset=srcMod->offset;
+	FILE_LOG(logDEBUG1, ("Copying register %x (%x)\n",destMod->reg,srcMod->reg ));
 
 	for (idac=0; idac<(srcMod->ndac); idac++) {
 		if (*((srcMod->dacs)+idac)>=0)

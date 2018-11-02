@@ -1,20 +1,8 @@
 #ifndef COMMUNICATION_FUNCS_H
 #define COMMUNICATION_FUNCS_H
 
-#define SEND_REC_MAX_SIZE 4096
-#define DEFAULT_PORTNO    1952
-#include <sys/types.h>
-#include <sys/socket.h>
-
-
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <unistd.h>
 
 #include "sls_detector_defs.h"
-
-
 
 typedef enum{
 	INT16,

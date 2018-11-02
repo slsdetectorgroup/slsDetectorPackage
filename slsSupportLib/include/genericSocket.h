@@ -689,8 +689,9 @@ public:
 					if(nsent == header_packet_size)
 						continue;
 					if(nsent != nsending){
-						if(nsent && (nsent != -1))
+						if(nsent && (nsent != -1)) {
 						    FILE_LOG(logERROR) << "Incomplete Packet size " << nsent;
+						}
 						break;
 					}
 					length-=nsent;
@@ -707,8 +708,9 @@ public:
 					if(nsent<=0 || nsent == packet_size)
 						break;
 					//incomplete packets or header packets ignored and read buffer again
-					if(nsent != packet_size && nsent != header_packet_size)
+					if(nsent != packet_size && nsent != header_packet_size) {
 					    FILE_LOG(logERROR) << portno << ": Incomplete Packet size " << nsent;
+					}
 				}
 				//nsent = 1040;
 				if(nsent > 0)total_sent+=nsent;

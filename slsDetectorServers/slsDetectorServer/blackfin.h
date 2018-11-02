@@ -1,9 +1,7 @@
-#ifndef BLACKFIN_H
-#define BLACKFIN_H
+#pragma once
 
 #include "ansi.h"
 
-#include <stdio.h>
 #include <fcntl.h>		// open
 #include <sys/mman.h>	// mmap
 
@@ -73,7 +71,7 @@ int64_t get64BitReg(int aLSB, int aMSB){
 	vMSB=bus_r(aMSB);
 	v64=vMSB;
 	v64=(v64<<32) | vLSB;
-	printf(" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, (long long unsigned int)v64);
+	FILE_LOG(logDEBUG1, (" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, (long long unsigned int)v64));
 	return v64;
 }
 
@@ -124,39 +122,33 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
 int mapCSP0(void) {
 	// if not mapped
 	if (CSP0BASE == 0) {
-		printf("Mapping memory\n");
+	    FILE_LOG(logINFO, ("Mapping memory\n"));
 #ifdef VIRTUAL
 		CSP0BASE = malloc(MEM_SIZE);
 		if (CSP0BASE == NULL) {
-		    cprintf(BG_RED, "Error: Could not allocate virtual memory.\n");
+		    FILE_LOG(logERROR, ("Could not allocate virtual memory.\n"));
 		    return FAIL;
 		}
-		printf("memory allocated\n");
+		FILE_LOG(logINFO, (("memory allocated\n"));
 #else
 		int fd;
 		fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
 		if (fd == -1) {
-			cprintf(BG_RED, "Error: Can't find /dev/mem\n");
+		    FILE_LOG(logERROR, ("Can't find /dev/mem\n"));
 			return FAIL;
 		}
-#ifdef VERBOSE
-		printf("/dev/mem opened\n");
-#endif
+		FILE_LOG(logDEBUG1, ("/dev/mem opened\n"));
 		CSP0BASE = mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
 		if (CSP0BASE == MAP_FAILED) {
-			cprintf(BG_RED, "Error: Can't map memmory area\n");
+		    FILE_LOG(logERROR, ("Can't map memmory area\n"));
 			return FAIL;
 		}
 #endif
-		printf("CSPOBASE mapped from 0x%llx to 0x%llx\n",
+		FILE_LOG(logINFO, ("CSPOBASE mapped from 0x%llx to 0x%llx\n",
 				(long long unsigned int)CSP0BASE,
-				(long long unsigned int)(CSP0BASE+MEM_SIZE));
-		printf("Status Register: %08x\n",bus_r(STATUS_REG));
-
+				(long long unsigned int)(CSP0BASE+MEM_SIZE)));
+		FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
 	}else
-		printf("Memory already mapped before\n");
+	    FILE_LOG(logINFO, ("Memory already mapped before\n"));
 	return OK;
 }
-
-
-#endif	//BLACKFIN_H

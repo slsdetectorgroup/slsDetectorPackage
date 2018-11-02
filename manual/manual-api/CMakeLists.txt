@@ -18,13 +18,10 @@ target_link_libraries(slsMultiReceiver
     pthread
     zmq
     rt
-    ${HDF5_LIBRARIES}
 )
 
 if (HDF5_FOUND)
-    target_link_libraries(slsMultiReceiver 
-    ${HDF5_LIBRARIES}
-    )
+    target_link_libraries(slsMultiReceiver ${HDF5_LIBRARIES})
 endif ()
 
 

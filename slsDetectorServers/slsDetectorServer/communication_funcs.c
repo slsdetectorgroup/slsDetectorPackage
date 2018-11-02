@@ -1,14 +1,15 @@
-
-
 #include "communication_funcs.h" 
 #include "logger.h"
 
-//#include <netinet/tcp.h> /* for TCP_NODELAY */
-#include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <errno.h>
-#include <sys/time.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+#define SEND_REC_MAX_SIZE 4096
+#define DEFAULT_PORTNO    1952
+#define DEFAULT_BACKLOG 5
+
 
 // Global variables  from errno.h
 extern int errno;
@@ -25,7 +26,6 @@ char mess[MAX_STR_LENGTH];
 
 // Local variables
 char dummyClientIP[INET_ADDRSTRLEN] = "";
-const int send_rec_max_size = SEND_REC_MAX_SIZE;
 int myport = -1;
 // socket descriptor set
 fd_set readset, tempset;
@@ -35,10 +35,6 @@ int isock = 0;
 //becomes max value of socket descriptor (listen) and file descriptor (accept)
 int maxfd = 0;
 
-
-
-
-#define DEFAULT_BACKLOG 5
 
 int bindSocket(unsigned short int port_number) {
 	ret = FAIL;
@@ -324,7 +320,7 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 			length, (isControlServer ? "control":"stop")));
 
 	while(length > 0) {
-		nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length; // (condition) ? if_true : if_false
+		nreceiving = (length>SEND_REC_MAX_SIZE) ? SEND_REC_MAX_SIZE:length; // (condition) ? if_true : if_false
 		nreceived = read(file_des,(char*)buf+total_received,nreceiving);
 		if(!nreceived){
 			if(!total_received) {

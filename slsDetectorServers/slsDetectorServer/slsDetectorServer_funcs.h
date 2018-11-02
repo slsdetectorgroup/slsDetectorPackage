@@ -1,6 +1,5 @@
 #pragma once
 #include "sls_detector_defs.h"
-#include <stdlib.h>
 
 // initialization functions
 int printSocketReadError();

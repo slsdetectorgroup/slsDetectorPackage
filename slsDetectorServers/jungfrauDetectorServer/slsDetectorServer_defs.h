@@ -3,14 +3,14 @@
 
 #include "sls_detector_defs.h" 	//default dynamicgain in settings
 #include "RegisterDefs.h"
-#include <stdint.h>
-
 
 
 #define GOODBYE 					(-200)
 #define MIN_REQRD_VRSN_T_RD_API     0x171220
 #define REQRD_FRMWR_VRSN            0x180615
 
+#define PROGRAMMING_MODE            (0x2)
+#define BOARD_JUNGFRAU_TYPE         (8)
 
 /* Struct Definitions */
 typedef struct ip_header_struct {

@@ -1,13 +1,8 @@
-#include "xfs_types.h"
-#include "xparameters.h"
-#include "FebRegisterDefs.h"
 #include "logger.h"
 #include "Beb.h"
+#include "FebRegisterDefs.h"
+#include "xparameters.h"
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>

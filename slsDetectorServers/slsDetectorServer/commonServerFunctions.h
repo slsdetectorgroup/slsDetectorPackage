@@ -3,6 +3,8 @@
 
 #ifndef GOTTHARDD	//gotthard already had bus_w etc defined in its firmware_funcs.c (not yet made with common files)
 #include "blackfin.h"
+#else
+#include "ansi.h"
 #endif
 
 /* global variables */
@@ -54,13 +56,11 @@ void sendDataToSPI (u_int32_t* valw, u_int32_t addr, u_int32_t val, int numbitst
 
 
 void serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset) {
-#ifdef VERBOSE
-    if (numbitstosend == 16)
-        printf("Writing to SPI Register: 0x%04x\n",val);
-    else
-        printf("Writing to SPI Register: 0x%08x\n", val);
-#endif
-
+    if (numbitstosend == 16) {
+        FILE_LOG(logDEBUG1, ("Writing to SPI Register: 0x%04x\n", val));
+    } else {
+        FILE_LOG(logDEBUG1, ("Writing to SPI Register: 0x%08x\n", val));
+    }
     u_int32_t valw;
 
     SPIChipSelect (&valw, addr, csmask);

@@ -1430,8 +1430,9 @@ int slsDetector::updateDetector() {
 
 	if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
 		ret = thisDetectorControl->Client_Send(fnum, NULL, 0, NULL, 0);
-		// no ret handling as ret never fail
-		updateDetectorNoWait();
+		// if it returns ok (jungfrau in programming mode), dont update
+		if (ret == FORCE_UPDATE)
+		    ret = updateDetectorNoWait();
 		disconnectControl();
 	}
 	return ret;
@@ -4122,7 +4123,8 @@ int slsDetector::programFPGA(std::string fname) {
 			//erasing flash
 			if (ret != FAIL) {
 				FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
-				printf("Erasing Flash: %d%%\r", 0);
+				FILE_LOG(logINFO) << "Erasing Flash:";
+				printf("%d%%\r", 0);
 				std::cout << std::flush;
 				//erasing takes 65 seconds, printing here (otherwise need threads
 				//in server-unnecessary)
@@ -4131,12 +4133,13 @@ int slsDetector::programFPGA(std::string fname) {
 				while(count > 0) {
 					usleep(1 * 1000 * 1000);
 					--count;
-					printf("Erasing Flash:%d%%\r",
+					printf("%d%%\r",
 							(int) (((double)(ERASE_TIME - count) / ERASE_TIME) * 100));
 					std::cout << std::flush;
 				}
-				std::cout << std::endl;
-				printf("Writing to Flash:%d%%\r", 0);
+				printf("\n");
+				FILE_LOG(logINFO) << "Writing to Flash:";
+				printf("%d%%\r", 0);
 				std::cout << std::flush;
 			}
 
@@ -4160,16 +4163,17 @@ int slsDetector::programFPGA(std::string fname) {
 					currentPointer += unitprogramsize;
 
 					//print progress
-					printf("Writing to Flash:%d%%\r",
+					printf("%d%%\r",
 							(int) (((double)(totalsize - filesize) / totalsize) * 100));
 					std::cout << std::flush;
 				} else {
+				    printf("\n");
 					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 					FILE_LOG(logERROR) << "Detector returned error: " << mess;
 					setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 				}
 			}
-			std::cout << std::endl;
+			printf("\n");
 
 			//check ending error
 			if ((ret == FAIL) &&

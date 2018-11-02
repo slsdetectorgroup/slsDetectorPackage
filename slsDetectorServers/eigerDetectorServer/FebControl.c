@@ -1020,7 +1020,7 @@ unsigned int* Feb_Control_GetTrimbits() {
 
 
 unsigned int Feb_Control_AddressToAll() {
-	FILE_LOG(logINFO, ("in Feb_Control_AddressToAll()\n"));
+	FILE_LOG(logDEBUG1, ("in Feb_Control_AddressToAll()\n"));
 
 
 

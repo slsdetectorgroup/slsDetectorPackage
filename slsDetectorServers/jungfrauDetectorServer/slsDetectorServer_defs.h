@@ -1,6 +1,4 @@
-#ifndef SLSDETECTORSERVER_DEFS_H
-#define SLSDETECTORSERVER_DEFS_H
-
+#pragma once
 #include "sls_detector_defs.h" 	//default dynamicgain in settings
 #include "RegisterDefs.h"
 
@@ -48,7 +46,6 @@ enum NETWORKINDEX           { TXN_FRAME };
 /* Hardware Definitions */
 #define NCHAN 						(256 * 256)
 #define NCHIP 						(8)
-#define NADC						(0)
 #define NDAC 						(8)
 #define NDAC_OLDBOARD				(16)
 #define DYNAMIC_RANGE				(16)
@@ -171,6 +168,3 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define PLL_CHARGEPUMP_REG 			(0x09)
 #define PLL_VCO_DIV_REG 			(0x1c)
 #define PLL_MIF_REG 				(0x1f)
-
-
-#endif /* SLSDETECTORSERVER_DEFS_H */

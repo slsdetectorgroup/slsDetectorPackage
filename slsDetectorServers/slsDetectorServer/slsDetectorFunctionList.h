@@ -225,7 +225,6 @@ int 		calculateDataBytes();
 int 		getTotalNumberOfChannels();
 int 		getNumberOfChips();
 int 		getNumberOfDACs();
-int 		getNumberOfADCs();
 int 		getNumberOfChannelsPerChip();
 
 

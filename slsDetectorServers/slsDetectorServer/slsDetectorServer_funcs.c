@@ -839,10 +839,8 @@ int set_module(int file_des) {
 
 	sls_detector_module module;
 	int *myDac = NULL;
-	int *myAdc = NULL;
 	int *myChan = NULL;
 	module.dacs = NULL;
-	module.adcs = NULL;
 	module.chanregs = NULL;
 
 	// allocate to receive arguments
@@ -855,18 +853,6 @@ int set_module(int file_des) {
 		FILE_LOG(logERROR,(mess));
 	} else
 		module.dacs = myDac;
-
-	// allocate adcs
-	if (ret == OK) {
-		myAdc = (int*)malloc(getNumberOfADCs() * sizeof(int));
-		// error
-		if (getNumberOfADCs() > 0 && myAdc == NULL) {
-			ret = FAIL;
-			sprintf(mess,"Could not allocate adcs\n");
-			FILE_LOG(logERROR,(mess));
-		} else
-			module.adcs = myAdc;
-	}
 
 	// allocate chans
 #ifdef EIGERD
@@ -885,22 +871,20 @@ int set_module(int file_des) {
 		module.nchip = getNumberOfChips();
 		module.nchan = getTotalNumberOfChannels();
 		module.ndac = getNumberOfDACs();
-		module.nadc = getNumberOfADCs();
 		int ts = receiveModule(file_des, &module);
 		if (ts < 0) {
 			if (myChan != NULL) free(myChan);
 			if (myDac != NULL) 	free(myDac);
-			if (myAdc != NULL) 	free(myAdc);
 			return printSocketReadError();
 		}
 		FILE_LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
-				"ndac %d, nadc %d, iodelay %d, tau %d, eV %d\n",
+				"ndac %d, iodelay %d, tau %d, eV %d\n",
 				module.reg, module.nchan, module.nchip,
-				module.ndac,  module.nadc, module.iodelay, module.tau, module.eV));
+				module.ndac, module.iodelay, module.tau, module.eV));
 		// should at least have a dac
 		if (ts <= sizeof(sls_detector_module)) {
 			ret = FAIL;
-			sprintf(mess, "Cannot set module. Received incorrect number of dacs or adcs or channels\n");
+			sprintf(mess, "Cannot set module. Received incorrect number of dacs or channels\n");
 			FILE_LOG(logERROR,(mess));
 		}
 	}
@@ -923,6 +907,7 @@ int set_module(int file_des) {
 		case VERYHIGHGAIN:
 		case VERYLOWGAIN:
 #elif JUNGFRAUD
+		case GET_SETTINGS:
 		case DYNAMICGAIN:
 		case DYNAMICHG0:
 		case FIXGAIN1:
@@ -949,7 +934,6 @@ int set_module(int file_des) {
 	}
 	if (myChan != NULL) free(myChan);
 	if (myDac != NULL) 	free(myDac);
-	if (myAdc != NULL) 	free(myAdc);
 	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
 }
 
@@ -961,10 +945,8 @@ int get_module(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	sls_detector_module module;
 	int *myDac = NULL;
-	int *myAdc = NULL;
 	int *myChan = NULL;
 	module.dacs = NULL;
-	module.adcs = NULL;
 	module.chanregs = NULL;
 
 	// allocate to send arguments
@@ -977,18 +959,6 @@ int get_module(int file_des) {
 		FILE_LOG(logERROR,(mess));
 	} else
 		module.dacs = myDac;
-
-	// allocate adcs
-	if (ret == OK) {
-		myAdc = (int*)malloc(getNumberOfADCs() * sizeof(int));
-		// error
-		if (getNumberOfADCs() > 0 && myAdc == NULL) {
-			ret = FAIL;
-			sprintf(mess,"Could not allocate adcs\n");
-			FILE_LOG(logERROR,(mess));
-		} else
-			module.adcs=myAdc;
-	}
 
 	// allocate chans
 #ifdef EIGERD
@@ -1008,7 +978,6 @@ int get_module(int file_des) {
 		module.nchip = getNumberOfChips();
 		module.nchan = getTotalNumberOfChannels();
 		module.ndac = getNumberOfDACs();
-		module.nadc = getNumberOfADCs();
 
 		// only get
 		FILE_LOG(logDEBUG1, ("Getting module\n"));
@@ -1024,7 +993,6 @@ int get_module(int file_des) {
 	}
 	if (myChan != NULL)	free(myChan);
 	if (myDac != NULL) 	free(myDac);
-	if (myAdc != NULL) 	free(myAdc);
 	return ret;
 }
 

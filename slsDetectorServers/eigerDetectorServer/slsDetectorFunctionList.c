@@ -30,7 +30,6 @@ enum detectorSettings thisSettings;
 sls_detector_module *detectorModules=NULL;
 int *detectorChans=NULL;
 int *detectorDacs=NULL;
-int *detectorAdcs=NULL;
 
 int send_to_ten_gig = 0;
 int  ndsts_in_use=32;
@@ -380,16 +379,12 @@ void allocateDetectorStructureMemory() {
 	detectorModules = malloc(sizeof(sls_detector_module));
 	detectorChans = malloc(NCHIP*NCHAN*sizeof(int));
 	detectorDacs = malloc(NDAC*sizeof(int));
-	detectorAdcs = malloc(NADC*sizeof(int));
 	FILE_LOG(logDEBUG1, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
 	FILE_LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n",detectorChans, detectorChans));
 	FILE_LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
-	FILE_LOG(logDEBUG1, ("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs));
 	(detectorModules)->dacs = detectorDacs;
-	(detectorModules)->adcs = detectorAdcs;
 	(detectorModules)->chanregs = detectorChans;
 	(detectorModules)->ndac = NDAC;
-	(detectorModules)->nadc = NADC;
 	(detectorModules)->nchip = NCHIP;
 	(detectorModules)->nchan = NCHIP * NCHAN;
 	(detectorModules)->reg = 0;
@@ -1782,10 +1777,10 @@ void readFrame(int *ret, char *mess) {
 
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
-	int idac,  ichan, iadc;
+	int idac,  ichan;
 	int ret=OK;
 
-	FILE_LOG(logDEBUG1, ("Copying module %x to module %x\n",srcMod,destMod));
+	FILE_LOG(logDEBUG1, ("Copying module\n"));
 
 	if (srcMod->serialnumber>=0) {
 
@@ -1800,16 +1795,10 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 		FILE_LOG(logINFO, ("Number of dacs of source is larger than number of dacs of destination\n"));
 		return FAIL;
 	}
-	if ((srcMod->nadc)>(destMod->nadc)) {
-		FILE_LOG(logINFO, ("Number of dacs of source is larger than number of dacs of destination\n"));
-		return FAIL;
-	}
 
 	FILE_LOG(logDEBUG1, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
-	FILE_LOG(logDEBUG1, ("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc));
 	FILE_LOG(logDEBUG1, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
 	destMod->ndac=srcMod->ndac;
-	destMod->nadc=srcMod->nadc;
 	destMod->nchip=srcMod->nchip;
 	destMod->nchan=srcMod->nchan;
 	if (srcMod->reg>=0)
@@ -1835,10 +1824,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
 		}
 	}
-	for (iadc=0; iadc<(srcMod->nadc); iadc++) {
-		if (*((srcMod->adcs)+iadc)>=0)
-			*((destMod->adcs)+iadc)=*((srcMod->adcs)+iadc);
-	}
 	return ret;
 }
 
@@ -1856,7 +1841,6 @@ int calculateDataBytes() {
 int getTotalNumberOfChannels() {return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
 int getNumberOfChips() {return  NCHIP;}
 int getNumberOfDACs() {return  NDAC;}
-int getNumberOfADCs() {return  NADC;}
 int getNumberOfChannelsPerChip() {return  NCHAN;}
 
 

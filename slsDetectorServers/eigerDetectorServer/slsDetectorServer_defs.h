@@ -1,13 +1,4 @@
-/*
- * slsDetectorServer_defs.h
- *
- *  Created on: Jan 24, 2013
- *      Author: l_maliakal_d
- */
-
-#ifndef SLSDETECTORSERVER_DEFS_H_
-#define SLSDETECTORSERVER_DEFS_H_
-
+#pragma once
 #include "sls_detector_defs.h"
 
 #define GOODBYE 					 		(-200)
@@ -46,7 +37,6 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 /* Hardware Definitions */
 #define NCHAN 						 		(256 * 256)
 #define NCHIP 						 		(4)
-#define NADC						 		(0)
 #define NDAC 						 		(16)
 
 
@@ -90,5 +80,3 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 #define SLAVE_HIGH_VOLTAGE_READ_VAL			(-999)
 #define HIGH_VOLTAGE_TOLERANCE				(5)
 
-
-#endif /* SLSDETECTORSERVER_DEFS_H_ */

@@ -239,13 +239,11 @@ public:
 	  int nchan; /**< is the number of channels on the module*/
 	  int nchip; /**< is the number of chips on the module */
 	  int ndac; /**< is the number of dacs on the module */
-	  int nadc; /**< is the number of adcs on the module */
 	  int reg; /**< is the module register settings (gain level) */
 	  int iodelay;	/**< iodelay */
 	  int tau;	/**< tau */
 	  int eV;	/**< threshold energy */
 	  int *dacs; /**< is the pointer to the array of the dac values (in V) */
-	  int *adcs;  /**< is the pointer to the array of the adc values (in V)  */
 	  int *chanregs; /**< is the pointer to the array of the channel registers */
 	} sls_detector_module;
 

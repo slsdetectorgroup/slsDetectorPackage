@@ -17,7 +17,7 @@ all: clean versioning $(PROGS) #hv9m_blackfin_server
 	
 boot: $(OBJS) 
 
-versioning: 
+versioning:  
 	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 
 $(PROGS):  $(OBJS)

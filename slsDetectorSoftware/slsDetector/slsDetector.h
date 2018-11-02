@@ -33,7 +33,6 @@ typedef  struct detParameterList {
 	int nChipX;
 	int nChipY;
 	int nDacs;
-	int nAdcs;
 	int dynamicRange;
 	int nGappixelsX;
 	int nGappixelsY;
@@ -109,9 +108,6 @@ private:
 		/**  number of dacs per module*/
 		int nDacs;
 
-		/** number of adcs per module */
-		int nAdcs;
-
 		/** dynamic range of the detector data */
 		int dynamicRange;
 
@@ -148,9 +144,6 @@ private:
 
 		/** memory offsets for the dac arrays */
 		int dacoff;
-
-		/** memory offsets for the adc arrays */
-		int adcoff;
 
 		/** memory offsets for the channel register arrays  -trimbits*/
 		int chanoff;
@@ -1832,9 +1825,6 @@ private:
 
 	/** pointer to dac valuse in shared memory  */
 	int *dacs;
-
-	/** pointer to adc valuse in shared memory  */
-	int *adcs;
 
 	/** pointer to channal registers  in shared memory */
 	int *chanregs;

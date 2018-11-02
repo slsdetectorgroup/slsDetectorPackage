@@ -35,7 +35,6 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
   dataSocket(0),
   detectorModules(0),
   dacs(0),
-  adcs(0),
   chanregs(0) {
 	/* called from put hostname command,
 	 * so sls shared memory will be created */
@@ -67,7 +66,6 @@ slsDetector::slsDetector(int multiId, int id, bool verify)
   dataSocket(0),
   detectorModules(0),
   dacs(0),
-  adcs(0),
   chanregs(0) {
 	/* called from multi constructor to populate structure,
 	 * so sls shared memory will be opened, not created */
@@ -316,7 +314,6 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
 		list.nChipX = 10;
 		list.nChipY = 1;
 		list.nDacs = 8;
-		list.nAdcs = 5;
 		list.dynamicRange = 16;
 		list.nGappixelsX = 0;
 		list.nGappixelsY = 0;
@@ -326,8 +323,7 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
 		list.nChanY = 256;
 		list.nChipX = 4;
 		list.nChipY = 2;
-		list.nDacs = 16;
-		list.nAdcs = 0;
+		list.nDacs = 8;
 		list.dynamicRange = 16;
 		list.nGappixelsX = 0;
 		list.nGappixelsY = 0;
@@ -338,7 +334,6 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
 		list.nChipX = 1;
 		list.nChipY = 1;
 		list.nDacs = 16;
-		list.nAdcs = 9;//???? When calculating size, only d+a=16 how come?FIXME
 		list.dynamicRange =16;
 		list.nGappixelsX = 0;
 		list.nGappixelsY = 0;
@@ -349,7 +344,6 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
 		list.nChipX = 4;
 		list.nChipY = 1;
 		list.nDacs = 16;
-		list.nAdcs = 0;
 		list.dynamicRange = 16;
 		list.nGappixelsX = 6;
 		list.nGappixelsY = 1;
@@ -367,11 +361,11 @@ int slsDetector::calculateSharedMemorySize(detectorType type) {
 	setDetectorSpecificParameters(type, detlist);
 	int nch = detlist.nChanX * detlist.nChanY;
 	int nc = detlist.nChipX * detlist.nChipY;
-	int nd = detlist.nDacs + detlist.nAdcs;
+	int nd = detlist.nDacs;
 
 	/** The size of the shared memory is
 	 * size of shared structure +
-	 * ffcoefficents+fferrors+modules+dacs+adcs+chans */
+	 * ffcoefficents+fferrors+modules+dacs+chans */
 	int sz = sizeof(sharedSlsDetector) +
 			2 * nch * nc * sizeof(double) +
 			sizeof(sls_detector_module) +
@@ -486,7 +480,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->nChip[X] = detlist.nChipX;
 	thisDetector->nChip[Y] = detlist.nChipY;
 	thisDetector->nDacs = detlist.nDacs;
-	thisDetector->nAdcs = detlist.nAdcs;
 	thisDetector->dynamicRange = detlist.dynamicRange;
 	thisDetector->nGappixels[X] = detlist.nGappixelsX;
 	thisDetector->nGappixels[Y] = detlist.nGappixelsY;
@@ -513,13 +506,11 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 
 	/** calculates the memory offsets for
 	 * flat field coefficients and errors,
-	 * module structures, dacs, adcs, chips and channels */
+	 * module structures, dacs, channels */
 	thisDetector->modoff = sizeof(sharedSlsDetector);
 	thisDetector->dacoff = thisDetector->modoff +
 			sizeof(sls_detector_module);
-	thisDetector->adcoff = thisDetector->dacoff +
-			sizeof(int) * thisDetector->nDacs;
-	thisDetector->chanoff = thisDetector->adcoff +
+	thisDetector->chanoff = thisDetector->dacoff +
 			sizeof(int) * thisDetector->nChips;
 }
 
@@ -530,7 +521,6 @@ void slsDetector::initializeMembers() {
 	char *goff = (char*)thisDetector;
 	detectorModules = (sls_detector_module*)(goff + thisDetector->modoff);
 	dacs = (int*)(goff + thisDetector->dacoff);
-	adcs = (int*)(goff + thisDetector->adcoff);
 	chanregs = (int*)(goff + thisDetector->chanoff);
 	if (thisDetectorControl) {
 		delete thisDetectorControl;
@@ -562,22 +552,17 @@ void slsDetector::initializeDetectorStructurePointers() {
 	thisMod->nchan = thisDetector->nChans*thisDetector->nChips;
 	thisMod->nchip = thisDetector->nChips;
 	thisMod->ndac = thisDetector->nDacs;
-	thisMod->nadc = thisDetector->nAdcs;
 	thisMod->reg = 0;
 	thisMod->iodelay = 0;
 	thisMod->tau = 0;
 	thisMod->eV = 0;
-	// dacs, adcs and chanregs for thisMod is not allocated in
+	// dacs and chanregs for thisMod is not allocated in
 	// detectorModules in shared memory as they are already allocated separately
 	// in shared memory (below)
 
 	// initializes the dacs values to 0
 	for (int i = 0; i < thisDetector->nDacs; ++i) {
 		*(dacs + i) = 0;
-	}
-	// initializes the adc values to 0
-	for (int i = 0; i < thisDetector->nAdcs; ++i) {
-		*(adcs + i) = 0;
 	}
 	// initializes the channel registers to 0
 	for (int i = 0; i < thisDetector->nChans * thisDetector->nChips; ++i) {
@@ -594,27 +579,23 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule() {
 slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType type) {
 	// get the detector parameters based on type
 	detParameterList detlist;
-	int nch = 0, nc = 0, nd = 0, na = 0;
+	int nch = 0, nc = 0, nd = 0;
 	try {
 		setDetectorSpecificParameters(type, detlist);
 		nch = detlist.nChanX * detlist.nChanY;
 		nc = detlist.nChipX * detlist.nChipY;
 		nd = detlist.nDacs;
-		na = detlist.nAdcs;
 	} catch(...) {
 		return NULL;
 	}
 	int *dacs = new int[nd];
-	int *adcs = new int[na];
 	int *chanregs = new int[nch*nc];
 
 	sls_detector_module *myMod = (sls_detector_module*)malloc(sizeof(sls_detector_module));
 	myMod->ndac = nd;
-	myMod->nadc = na;
 	myMod->nchip = nc;
 	myMod->nchan = nch*nc;
 	myMod->dacs = dacs;
-	myMod->adcs = adcs;
 	myMod->chanregs = chanregs;
 	return myMod;
 }
@@ -622,7 +603,6 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType ty
 
 void  slsDetector::deleteModule(sls_detector_module *myMod) {
 	delete [] myMod->dacs;
-	delete [] myMod->adcs;
 	delete [] myMod->chanregs;
 	delete myMod;
 }
@@ -693,21 +673,51 @@ void slsDetector::disconnectStop() {
 
 
 int slsDetector::sendModule(sls_detector_module *myMod) {
+    TLogLevel level = logDEBUG1;
+    FILE_LOG(level) << "Sending Module";
 	int ts = 0;
-	ts += controlSocket->SendDataOnly(&(myMod->serialnumber), sizeof(myMod->serialnumber));
-	ts += controlSocket->SendDataOnly(&(myMod->nchan), sizeof(myMod->nchan));
-	ts += controlSocket->SendDataOnly(&(myMod->nchip), sizeof(myMod->nchip));
-	ts += controlSocket->SendDataOnly(&(myMod->ndac), sizeof(myMod->ndac));
-	ts += controlSocket->SendDataOnly(&(myMod->nadc), sizeof(myMod->nadc));
-	ts += controlSocket->SendDataOnly(&(myMod->reg), sizeof(myMod->reg));
-	ts += controlSocket->SendDataOnly(&(myMod->iodelay), sizeof(myMod->iodelay));
-	ts += controlSocket->SendDataOnly(&(myMod->tau), sizeof(myMod->tau));
-	ts += controlSocket->SendDataOnly(&(myMod->eV), sizeof(myMod->eV));
+	int n = 0;
 
-	ts += controlSocket->SendDataOnly(myMod->dacs, sizeof(int) * (myMod->ndac));
-	ts += controlSocket->SendDataOnly(myMod->adcs, sizeof(int) * (myMod->nadc));
+	n = controlSocket->SendDataOnly(&(myMod->serialnumber), sizeof(myMod->serialnumber));
+	ts += n;
+	FILE_LOG(level) << "Serial number sent. " << n << " bytes. serialno: " << myMod->serialnumber;
+
+	n = controlSocket->SendDataOnly(&(myMod->nchan), sizeof(myMod->nchan));
+    ts += n;
+    FILE_LOG(level) << "nchan sent. " << n << " bytes. serialno: " << myMod->nchan;
+
+	n = controlSocket->SendDataOnly(&(myMod->nchip), sizeof(myMod->nchip));
+    ts += n;
+    FILE_LOG(level) << "nchip sent. " << n << " bytes. serialno: " << myMod->nchip;
+
+	n = controlSocket->SendDataOnly(&(myMod->ndac), sizeof(myMod->ndac));
+    ts += n;
+    FILE_LOG(level) << "ndac sent. " << n << " bytes. serialno: " << myMod->ndac;
+
+	n = controlSocket->SendDataOnly(&(myMod->reg), sizeof(myMod->reg));
+    ts += n;
+    FILE_LOG(level) << "reg sent. " << n << " bytes. serialno: " << myMod->reg;
+
+	n = controlSocket->SendDataOnly(&(myMod->iodelay), sizeof(myMod->iodelay));
+    ts += n;
+    FILE_LOG(level) << "iodelay sent. " << n << " bytes. serialno: " << myMod->iodelay;
+
+	n = controlSocket->SendDataOnly(&(myMod->tau), sizeof(myMod->tau));
+    ts += n;
+    FILE_LOG(level) << "tau sent. " << n << " bytes. serialno: " << myMod->tau;
+
+	n = controlSocket->SendDataOnly(&(myMod->eV), sizeof(myMod->eV));
+    ts += n;
+    FILE_LOG(level) << "ev sent. " << n << " bytes. serialno: " << myMod->eV;
+
+	n = controlSocket->SendDataOnly(myMod->dacs, sizeof(int) * (myMod->ndac));
+    ts += n;
+    FILE_LOG(level) << "dacs sent. " << n << " bytes";
+
 	if (thisDetector->myDetectorType == EIGER) {
-		ts += controlSocket->SendDataOnly(myMod->chanregs, sizeof(int) * (myMod->nchan));
+		n = controlSocket->SendDataOnly(myMod->chanregs, sizeof(int) * (myMod->nchan));
+	    ts += n;
+	    FILE_LOG(level) << "channels sent. " << n << " bytes";
 	}
 	return ts;
 }
@@ -719,7 +729,6 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 	ts += controlSocket->ReceiveDataOnly(&(myMod->nchan), sizeof(myMod->nchan));
 	ts += controlSocket->ReceiveDataOnly(&(myMod->nchip), sizeof(myMod->nchip));
 	ts += controlSocket->ReceiveDataOnly(&(myMod->ndac), sizeof(myMod->ndac));
-	ts += controlSocket->ReceiveDataOnly(&(myMod->nadc), sizeof(myMod->nadc));
 	ts += controlSocket->ReceiveDataOnly(&(myMod->reg), sizeof(myMod->reg));
 	ts += controlSocket->ReceiveDataOnly(&(myMod->iodelay), sizeof(myMod->iodelay));
 	ts += controlSocket->ReceiveDataOnly(&(myMod->tau), sizeof(myMod->tau));
@@ -727,8 +736,6 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 
 	ts += controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(int)*(myMod->ndac));
 	FILE_LOG(logDEBUG1) << "received dacs of size "<< ts;
-	ts += controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(int)*(myMod->nadc));
-	FILE_LOG(logDEBUG1) << "received adc  of size "<< ts;
 	if (thisDetector->myDetectorType == EIGER) {
 		ts += controlSocket->ReceiveDataOnly(myMod->chanregs, sizeof(int)*(myMod->nchan));
 		FILE_LOG(logDEBUG1) << "nchans= " << thisDetector->nChans << " nchips= " << thisDetector->nChips
@@ -4342,30 +4349,26 @@ int slsDetector::setModule(sls_detector_module module, int tb) {
 
 	// update client structure
 	if (ret == OK) {
-		if (detectorModules) {
-			if (thisDetector->myDetectorType == EIGER && tb && chanregs) {
-				for (int ichip = 0; ichip < thisDetector->nChips; ++ichip) {
-					for (int i = 0; i < thisDetector->nChans; ++i) {
-						chanregs[i + ichip * thisDetector->nChans] =
-								module.chanregs[ichip * thisDetector->nChans + i];
-					}
-				}
-			}
-			if (adcs) {
-				for (int i = 0; i < thisDetector->nAdcs; ++i) {
-					adcs[i] = module.adcs[i];
-				}
-				if (dacs) {
-					for (int i = 0; i < thisDetector->nDacs; ++i)
-						dacs[i] = module.dacs[i];
-				}
-				(detectorModules)->serialnumber = module.serialnumber;
-				(detectorModules)->reg = module.reg;
-				(detectorModules)->iodelay = module.iodelay;
-				(detectorModules)->tau = module.tau;
-				(detectorModules)->eV = module.eV;
-			}
-		}
+	    if (detectorModules) {
+	        if (thisDetector->myDetectorType == EIGER && tb && chanregs) {
+	            for (int ichip = 0; ichip < thisDetector->nChips; ++ichip) {
+	                for (int i = 0; i < thisDetector->nChans; ++i) {
+	                    chanregs[i + ichip * thisDetector->nChans] =
+	                            module.chanregs[ichip * thisDetector->nChans + i];
+	                }
+	            }
+	        }
+	        if (dacs) {
+	            for (int i = 0; i < thisDetector->nDacs; ++i)
+	                dacs[i] = module.dacs[i];
+	        }
+	        (detectorModules)->serialnumber = module.serialnumber;
+	        (detectorModules)->reg = module.reg;
+	        (detectorModules)->iodelay = module.iodelay;
+	        (detectorModules)->tau = module.tau;
+	        (detectorModules)->eV = module.eV;
+
+	    }
 		if (module.eV != -1) {
 			thisDetector->currentThresholdEV = module.eV;
 		}
@@ -4411,10 +4414,6 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule() {
 								myMod->chanregs[ichip*thisDetector->nChans+i];
 					}
 				}
-			}
-			if (adcs) {
-				for (int i = 0; i < thisDetector->nAdcs; ++i)
-					adcs[i] = myMod->adcs[i];
 			}
 			if (dacs) {
 				for (int i = 0; i < thisDetector->nDacs; ++i) {
@@ -5708,14 +5707,6 @@ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string 
 		names.push_back("VDAC5");
 		names.push_back("VDAC6");
 		names.push_back("VDAC7");
-		names.push_back("VDAC8");
-		names.push_back("VDAC9");
-		names.push_back("VDAC10");
-		names.push_back("VDAC11");
-		names.push_back("VDAC12");
-		names.push_back("VDAC13");
-		names.push_back("VDAC14");
-		names.push_back("VDAC15");
 		break;
 	default:
 		FILE_LOG(logERROR) << "Unknown detector type - unknown format for settings file";
@@ -5762,6 +5753,7 @@ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string 
 			setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
 			if (modCreated)
 				deleteModule(myMod);
+		    infile.close();
 			return NULL;
 		}
 		for(int i = 0; i < myMod->ndac; ++i)
@@ -5776,6 +5768,8 @@ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string 
 		std::string str;
 		while(infile.good()) {
 			getline(infile,str);
+			if (!str.length())
+			    break;
 			FILE_LOG(logDEBUG1) << str;
 			std::string sargname;
 			int ival = 0;
@@ -5795,15 +5789,17 @@ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string 
 				setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
 				if (modCreated)
 					deleteModule(myMod);
+			    infile.close();
 				return NULL;
 			}
 		}
 		// not all read
 		if (idac != names.size()) {
-			FILE_LOG(logERROR) << "Could read only " << idac << " dacs. Expected " << names.size() << "dacs";
+			FILE_LOG(logERROR) << "Could read only " << idac << " dacs. Expected " << names.size() << " dacs";
 			setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
 			if (modCreated)
 				deleteModule(myMod);
+		    infile.close();
 			return NULL;
 		}
 	}

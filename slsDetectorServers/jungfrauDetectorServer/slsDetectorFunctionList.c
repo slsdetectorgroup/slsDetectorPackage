@@ -23,7 +23,6 @@ char firmware_message[MAX_STR_LENGTH];
 
 sls_detector_module *detectorModules = NULL;
 int *detectorDacs = NULL;
-int *detectorAdcs =NULL;
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -394,17 +393,12 @@ void allocateDetectorStructureMemory(){
 	//Allocation of memory
 	if (detectorModules != NULL) free(detectorModules);
 	if (detectorDacs != NULL) free(detectorDacs);
-	if (detectorAdcs != NULL) free(detectorAdcs);
 	detectorModules = malloc(sizeof(sls_detector_module));
 	detectorDacs = malloc(NDAC*sizeof(int));
-	detectorAdcs = malloc(NADC*sizeof(int));
     FILE_LOG(logDEBUG1, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
     FILE_LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
-    FILE_LOG(logDEBUG1, ("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs));
 	(detectorModules)->dacs = detectorDacs;
-	(detectorModules)->adcs = detectorAdcs;
 	(detectorModules)->ndac = NDAC;
-	(detectorModules)->nadc = NADC;
 	(detectorModules)->nchip = NCHIP;
 	(detectorModules)->nchan = NCHIP * NCHAN;
 	(detectorModules)->reg = 0;
@@ -1629,13 +1623,12 @@ u_int32_t runBusy(void) {
 //jungfrau doesnt require chips and chans (save memory)
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 
-	int idac, iadc;
+	int idac;
 	int ret=OK;
 
 	FILE_LOG(logDEBUG1, ("Copying module\n"));
 
 	if (srcMod->serialnumber>=0){
-
 		destMod->serialnumber=srcMod->serialnumber;
 	}
 	if ((srcMod->nchip)>(destMod->nchip)) {
@@ -1650,19 +1643,10 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 		FILE_LOG(logERROR, ("Number of dacs of source is larger than number of dacs of destination\n"));
 		return FAIL;
 	}
-	if ((srcMod->nadc)>(destMod->nadc)) {
-		FILE_LOG(logERROR, ("Number of dacs of source is larger than number of dacs of destination\n"));
-		return FAIL;
-	}
-
 	FILE_LOG(logDEBUG1, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
-	FILE_LOG(logDEBUG1, ("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc));
 	FILE_LOG(logDEBUG1, ("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip));
 	FILE_LOG(logDEBUG1, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
-	destMod->ndac=srcMod->ndac;
-	destMod->nadc=srcMod->nadc;
-	destMod->nchip=srcMod->nchip;
-	destMod->nchan=srcMod->nchan;
+
 	if (srcMod->reg>=0)
 		destMod->reg=srcMod->reg;
 	FILE_LOG(logDEBUG1, ("Copying register %x (%x)\n",destMod->reg,srcMod->reg ));
@@ -1670,10 +1654,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 	for (idac=0; idac<(srcMod->ndac); idac++) {
 		if (*((srcMod->dacs)+idac)>=0)
 			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
-	}
-	for (iadc=0; iadc<(srcMod->nadc); iadc++) {
-		if (*((srcMod->adcs)+iadc)>=0)
-			*((destMod->adcs)+iadc)=*((srcMod->adcs)+iadc);
 	}
 	return ret;
 }
@@ -1686,7 +1666,6 @@ int calculateDataBytes(){
 int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
 int getNumberOfChips(){return  NCHIP;}
 int getNumberOfDACs(){return  NDAC;}
-int getNumberOfADCs(){return  NADC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}
 
 

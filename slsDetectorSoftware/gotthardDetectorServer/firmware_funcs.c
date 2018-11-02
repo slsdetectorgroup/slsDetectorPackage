@@ -4,10 +4,6 @@
 #include "mcb_funcs.h"
 #include "registers_g.h"
 
-#ifdef SHAREDMEMORY
-#include "sharedmemory.h"
-#endif
-
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
@@ -34,9 +30,7 @@ int dataBytes=NMAXMOD*NCHIP*NCHAN*2;
 int storeInRAM=0;
 int ROI_flag=0;
 int adcConfigured=-1;
-u_int32_t *ram_values=NULL;
-volatile char *now_ptr=NULL;
-volatile  u_int16_t *values;
+
 int ram_size=0;
 
 int64_t totalTime=1;
@@ -63,6 +57,8 @@ int slavepatternphase = 0;
 int slaveadcphase = 0;
 int rsttosw1delay = 2;
 int startacqdelay = 1;
+
+int detectorFirstServer = 1;
 
 
 #ifdef MCB_FUNCS
@@ -187,9 +183,6 @@ int mapCSP0(void) {
   printf("CSPObase is 0x%llx \n",CSP0BASE);
   printf("CSPOBASE=from %llx to %llx\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
-  u_int32_t address;
-  address = FIFO_DATA_REG_OFF;
-  values=(u_int16_t*)(CSP0BASE+address*2);
   printf("statusreg=%08x\n",bus_r(STATUS_REG));
   printf("\n\n");
   return OK;
@@ -273,12 +266,20 @@ void setMasterSlaveConfiguration(){
 			}
 			else {
 				cprintf(RED,"could not scan masterflags %s value from config file\n",value);
+				fclose(fd);
 				exit(EXIT_FAILURE);
+			}
+
+			if (!detectorFirstServer) {
+				cprintf(BLUE, "Server has been started up before. Ignoring rest of config file\n");
+				fclose(fd);
+				return;
 			}
 		}
 		else {
 			if(sscanf(value,"%d",&ival)<=0) {
 				cprintf(RED,"could not scan patternphase %s value from config file\n",value);
+				fclose(fd);
 				exit(EXIT_FAILURE);
 			}
 
@@ -298,6 +299,7 @@ void setMasterSlaveConfiguration(){
                 startacqdelay = ival;
 			else {
 				cprintf(RED,"could not scan parameter name %s from config file\n",key);
+				fclose(fd);
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -384,6 +386,7 @@ int setPhaseShiftOnce(){
 	//bus_w(addr,0x0);   //clear the reg
 
 	if(reg==0){
+		detectorFirstServer = 1;
 		printf("\nImplementing phase shift of %d\n",phase_shift);
 		for (i=1;i<phase_shift;i++) {
 			bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
@@ -392,7 +395,7 @@ int setPhaseShiftOnce(){
 #ifdef VERBOSE
 		printf("Multipupose reg now:%x\n",bus_r(addr));
 #endif
-	}
+	} else detectorFirstServer = 0;
 
 	return OK;
 }
@@ -839,18 +842,6 @@ u_int32_t testFpga(void) {
 }
 
 
-// for fpga test 
-u_int32_t testRAM(void) {
-  int result=OK;
-  int i=0;
-  allocateRAM();
-  //  while(i<100000) {
-    memcpy((char*)ram_values, (char*)values, dataBytes);
-    printf ("Testing RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
-    // }
-  return result;
-}
-
 int getNModBoard() {
   return nModX;
 }
@@ -1261,7 +1252,6 @@ int setADC(int adc){
 
 int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
-
 #ifdef DDEBUG
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
 	printf("IP Packet Size:%d\n",ipPacketSize);
@@ -1492,11 +1482,7 @@ int startStateMachine(){
 //#endif
 	cleanFifo();
   // fifoReset();
-  now_ptr=(char*)ram_values;
-#ifdef SHAREDMEMORY
-  write_stop_sm(0);
-  write_status_sm("Started");
-#endif
+
   bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
   bus_w16(CONTROL_REG, 0x0);
   printf("statusreg=%08x\n",bus_r(STATUS_REG));
@@ -1572,31 +1558,12 @@ u_int32_t  fifo_full(void)
 }
 
 
-u_int32_t* fifo_read_event()
-{
-#ifdef VIRTUAL
-  return NULL;
-#endif
-
-#ifdef VERBOSE
-  printf("before looping\n");
-#endif
-  volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
-
+void waitForAcquisitionFinish(){
+	volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
 #ifdef VERBOSE
   printf("lookatmereg=x%x\n",t);
 #endif
-/*
-   while ((t&0x1)==0)
-     {
-       t = bus_r(LOOK_AT_ME_REG);
-       if (!runBusy()){
-    	   return NULL;
-       }
-     }
-*/
-
-   while((t&0x1)==0) {
+  while((t&0x1)==0) {
 	   if (runBusy()==0) {
 		   t = bus_r(LOOK_AT_ME_REG);
 		   if ((t&0x1)==0) {
@@ -1604,7 +1571,7 @@ u_int32_t* fifo_read_event()
 			   printf("no frame found - exiting ");
 			   printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
-			   return NULL;
+			   return;
 		   } else {
 #ifdef VERBOSE
 			   printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
@@ -1613,35 +1580,9 @@ u_int32_t* fifo_read_event()
 		   }
 	   }
 	   t = bus_r(LOOK_AT_ME_REG);
-   }
-
-
-#ifdef VERBOSE
-  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#endif
-
-  dma_memcpy(now_ptr,values ,dataBytes);
-
-
-#ifdef VERYVERBOSE
-  int a;
-  for (a=0;a<8; a=a+2)
-	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
-  for (a=2554;a<2560; a=a+2)
-	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
-  printf("********\n");
-  //memcpy(now_ptr, values, dataBytes);
-#endif
-#ifdef VERBOSE
-  printf("Copying to ptr %08x %d\n",(unsigned int)(now_ptr), dataBytes);
-  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#endif
-
-  if (storeInRAM>0) {
-    now_ptr+=dataBytes;
   }
-  return ram_values;
 }
+
 
 
 
@@ -1759,83 +1700,10 @@ int testBus() {
 
 
 int setStoreInRAM(int b) {
-  if (b>0)
-    storeInRAM=1;
-  else
-    storeInRAM=0;
-  return  allocateRAM();
+  return 0;
 }
 
 
-int allocateRAM() {
-  size_t size;
-  u_int32_t nt, nf;
-  nt=setTrains(-1);
-  nf=setFrames(-1);
-  if (nt==0) nt=1;
-  if (nf==0) nf=1;
-  // ret=clearRAM();
-  if (storeInRAM) {
-    size=dataBytes*nf*nt;
-    if (size<dataBytes)
-      size=dataBytes;
-  }  else
-    size=dataBytes;
-
-#ifdef VERBOSE
-  printf("\nnmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains=%d, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,(int)size );
-#endif
-
-    if (size==ram_size) {
-
-#ifdef VERBOSE
-      printf("RAM of size %d already allocated: nothing to be done\n",(int) size);
-#endif
-      return OK;
-    }
-
-
-
-#ifdef VERBOSE
-    printf("reallocating ram %x\n",(unsigned int)ram_values);
-#endif
-    //  clearRAM();
-    // ram_values=malloc(size);
-    //+2 was added since dma_memcpy would switch the 16 bit values and the mem is 32 bit
-    ram_values=realloc(ram_values,size)+2;
-
-  if (ram_values) {
-    now_ptr=(char*)ram_values;
-#ifdef VERBOSE
-    printf("ram allocated 0x%x of size %d to %x\n",(int)now_ptr,(unsigned int) size,(unsigned int)(now_ptr+size));
-#endif
-    ram_size=size;
-    return OK;
-  } else {
-    printf("could not allocate %d bytes\n",(int)size);
-    if (storeInRAM==1) {
-      printf("retrying\n");
-      storeInRAM=0;
-      size=dataBytes;
-      ram_values=realloc(ram_values,size)+2;
-      if (ram_values==NULL)
-	printf("Fatal error: there must be a memory leak somewhere! You can't allocate even one frame!\n");
-      else {
-	now_ptr=(char*)ram_values;
-	ram_size=size;
-#ifdef VERBOSE
-	printf("ram allocated 0x%x of size %d to %x\n",(int)now_ptr,(unsigned int) size,(unsigned int)(now_ptr+size));
-#endif
-      }
-    } else {
-      printf("Fatal error: there must be a memory leak somewhere! You can't allocate even one frame!\n");
-    }
-    return FAIL;
-  }
-
-
-
-}
 
 
 int configureADC(){
@@ -1857,7 +1725,7 @@ int configureADC(){
 
 
 		// start point
-		valw=0xff;
+		valw=0xffffffff;
 		bus_w(ADC_SPI_REG,(valw));
 
 		 //chip sel bar down
@@ -1868,102 +1736,38 @@ int configureADC(){
 			 //cldwn
 			valw=valw&(~(0x1<<cdx));
 			bus_w(ADC_SPI_REG,valw);
-			usleep(0);
+			//usleep(0);
 
 			//write data (i)
 			valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
 			bus_w(ADC_SPI_REG,valw);
-			usleep(0);
+			//usleep(0);
 
 			//clkup
 			valw=valw+(0x1<<cdx);
 			bus_w(ADC_SPI_REG,valw);
-			usleep(0);
+			//usleep(0);
 		}
+
+	    valw |= csmask;
+	    bus_w(ADC_SPI_REG,valw);
+		//usleep(0);
 
 		 // stop point =start point
 		valw=valw&(~(0x1<<cdx));
-		usleep(0);
-		valw=0xff;
 		bus_w(ADC_SPI_REG,(valw));
+
+	    valw = 0xffffffff;
+	    bus_w(ADC_SPI_REG,(valw));
 
 		//usleep in between
 		usleep(50000);
 	}
 
 	return OK;
-
-	/*
-	codata=0;
-	codata=(0x14<<8)+(0x0);  //command and value;
-	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
-	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
-
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
-
-		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
-
-	}
-
-	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
-
-
-
-	usleep(5000);
-
-	codata=0;
-	codata=(0x08<<8)+(0x3);  //command and value;Power modes(global) reset
-	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
-	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
-
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
-		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
-
-	}
-
-	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
-
-
-
-	usleep(50000);
-	codata=0;
-	codata=(0x08<<8)+(0x0);  //command and value;Power modes(global) reset
-	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // start point
-	valw=((0xffffffff&(~csmask)));bus_w(ADC_SPI_REG,valw); //chip sel bar down
-	for (i=0;i<24;i++) {
-		valw=valw&(~(0x1<<cdx));bus_w(ADC_SPI_REG,valw);usleep(0); //cldwn
-
-		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_SPI_REG,valw); usleep(0); //write data (i)
-		valw=valw+(0x1<<cdx);bus_w(ADC_SPI_REG,valw); usleep(0); //clkup
-
-	}
-
-	valw=valw&(~(0x1<<cdx));usleep(0);
-	valw=0xff; bus_w(ADC_SPI_REG,(valw)); // stop point =start point
-*/
 }
 
 
-int clearRAM() {
-  if (ram_values) {
-    //#ifdef VERBOSE
-    //printf("clearing RAM 0x%x\n", ram_values);
-    //#endif
-    free(ram_values);
-    ram_values=NULL;
-    now_ptr=NULL;
-  }
-  //#ifdef VERBOSE
-  //printf("done 0x%x\n", ram_values);
-  //#endif
-  return OK;
-}
 
 
 
@@ -2111,113 +1915,7 @@ int resetCounterBlock(int startACQ){
 
 
 int calibratePedestal(int frames){
-  printf("---------------------------\n");
-  printf("In Calibrate Pedestal\n");
-  int64_t framesBefore = getFrames();
-  int64_t periodBefore = getPeriod();
-  setFrames(frames);
-  setPeriod(1000000);
-  int dataret = OK;
-
-  double avg[1280];
-  int numberFrames = 0;
-
-  int adc = 3;
-  int adcCh = 3;
-  int Ch = 3;
- 
-
-  int i = 0;
-  for(i =0; i < 1280; i++){
-    
-    avg[i] = 0.0;
-  }
-
-  startReceiver(0);
-	
-  startStateMachine();
-
-  while(dataret==OK){
-    //got data
-    if (fifo_read_event()) {
-      dataret=OK;
-      //sendDataOnly(file_des,&dataret,sizeof(dataret));
-      //sendDataOnly(file_des,dataretval,dataBytes);
-      printf("received frame\n");
-	
-      unsigned short *frame = (unsigned short *)now_ptr;
-
-      int a;
-      for (a=0;a<1280; a++){
-	//unsigned short v = (frame[a] << 8) + (frame[a] >> 8);
-	//	  printf("%i: %i %i\n",a, frame[a],v);
-	avg[a] += ((double)frame[a])/(double)frames;
-	//if(frame[a] == 8191)
-	//  printf("ch %i: %u\n",a,frame[a]);
-      }
-      //      printf("********\n");
-      numberFrames++;
-    }  
-
-    //no more data or no data
-    else {
-      if(getFrames()>-2) {
-	dataret=FAIL;
-	printf("no data and run stopped: %d frames left\n",(int)(getFrames()+2));
-	     
-      } else {
-	dataret=FINISHED;
-	printf("acquisition successfully finished\n");
-
-      }
-      printf("dataret %d\n",dataret);
-    }
-  }
-
-  
-
-  //double nf = (double)numberFrames;
-  for(i =0; i < 1280; i++){
-    adc = i / 256;
-    adcCh = (i - adc * 256) / 32;
-    Ch = i - adc * 256 - adcCh * 32;
-    adc--;
-    double v2 = avg[i];
-    avg[i] = avg[i]/ ((double)numberFrames/(double)frames);
-    unsigned short v = (unsigned short)avg[i];
-    printf("setting avg for channel %i(%i,%i,%i): %i (double= %f (%f))\t", i,adc,adcCh,Ch, v,avg[i],v2);
-    v=i*100;
-    ram_w16(DARK_IMAGE_REG,adc,adcCh,Ch,v-4096);
-    if(ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch) !=  v-4096){
-        printf("value is wrong (%i,%i,%i): %i \n",adc,adcCh,Ch,  ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch));
-    }
-  }
-
-      /*for(adc = 1; adc < 5; adc++){
-    for(adcCh = 0; adcCh < 8; adcCh++){
-      for(Ch=0 ; Ch < 32; Ch++){
-	int channel = (adc+1) * 32 * 8  + adcCh * 32 + Ch;
-	double v2 = avg[channel];
-	avg[channel] = avg[channel]/ ((double)numberFrames/(double)frames);
-	unsigned short v = (unsigned short)avg[channel];
-	printf("setting avg for channel %i: %i (double= %f (%f))\t", channel, v,avg[channel],v2);
-	ram_w16(DARK_IMAGE_REG,adc,adcCh,Ch,v-4096);
-	if(ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch) !=  v-4096){
-	  printf("value is wrong (%i,%i,%i): %i \n",adc,adcCh,Ch,  ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch));
-	}
-      }
-    }
-    }*/
-
-
-
-  printf("frames: %i\n",numberFrames);	
-  printf("corrected avg by: %f\n",(double)numberFrames/(double)frames);
-  
-  printf("restoring previous condition\n");
-  setFrames(framesBefore);
-  setPeriod(periodBefore); 
-  
+	// removed this functionlity as it requires reading via cpu
   printf("---------------------------\n");
   return 0;
 }

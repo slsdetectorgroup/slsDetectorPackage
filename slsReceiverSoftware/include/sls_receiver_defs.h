@@ -37,8 +37,8 @@ typedef  int int32_t;
 #define DEFAULT_ZMQ_CL_PORTNO 	30001
 #define DEFAULT_ZMQ_RX_PORTNO 	30001
 
-#define SLS_DETECTOR_HEADER_VERSION         0x1
-#define SLS_DETECTOR_JSON_HEADER_VERSION    0x2
+#define SLS_DETECTOR_HEADER_VERSION         0x2
+#define SLS_DETECTOR_JSON_HEADER_VERSION    0x3
 
 /** 
     \file sls_receiver_defs.h
@@ -113,7 +113,9 @@ public:
 		SAMPLES_JCTB,
 		SUBFRAME_ACQUISITION_TIME, /**< subframe exposure time */
 		STORAGE_CELL_NUMBER, /**<number of storage cells */
-		SUBFRAME_PERIOD, /**< subframe period */
+		SUBFRAME_DEADTIME, /**< subframe deadtime */
+		MEASURED_PERIOD,	/**< measured period */
+		MEASURED_SUBPERIOD,	/**< measured subperiod */
 		MAX_TIMERS
 	};
 
@@ -141,9 +143,9 @@ public:
 	    @li bunchId is the bunch id from beamline
 	    @li timestamp is the time stamp with 10 MHz clock
 	    @li modId is the unique module id (unique even for left, right, top, bottom)
-	    @li xCoord is the x coordinate in the complete detector system
-	    @li yCoord is the y coordinate in the complete detector system
-	    @li zCoord is the z coordinate in the complete detector system
+	    @li row is the row index in the complete detector system
+	    @li column is the column index in the complete detector system
+	    @li reserved is reserved
 	    @li debug is for debugging purposes
 	    @li roundRNumber is the round robin set number
 	    @li detType is the detector type see :: detectorType
@@ -157,9 +159,9 @@ public:
 		uint64_t bunchId;				/**< is the bunch id from beamline */
 		uint64_t timestamp;				/**< is the time stamp with 10 MHz clock */
 		uint16_t modId;					/**< is the unique module id (unique even for left, right, top, bottom) */
-		uint16_t xCoord;				/**< is the x coordinate in the complete detector system */
-		uint16_t yCoord;				/**< is the y coordinate in the complete detector system */
-		uint16_t zCoord;				/**< is the z coordinate in the complete detector system */
+		uint16_t row;					/**< is the row index in the complete detector system */
+		uint16_t column;				/**< is the column index in the complete detector system */
+		uint16_t reserved;				/**< is reserved */
 		uint32_t debug;					/**< is for debugging purposes */
 		uint16_t roundRNumber;			/**< is the round robin set number */
 		uint8_t detType;				/**< is the detector type see :: detectorType */
@@ -201,6 +203,19 @@ public:
 		HDF5, /**< hdf5 format */
 		NUM_FILE_FORMATS
 	};
+
+
+	/**
+	    @short structure for a region of interest
+	    xmin,xmax,ymin,ymax define the limits of the region
+	*/
+	typedef struct {
+	  int xmin;  /**< is the roi xmin (in channel number) */
+	  int xmax;  /**< is the roi xmax  (in channel number)*/
+	  int ymin;  /**< is the roi ymin  (in channel number)*/
+	  int ymax;   /**< is the roi ymax  (in channel number)*/
+	} ROI ;
+
 
 
 #ifdef __cplusplus

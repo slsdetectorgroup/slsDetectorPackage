@@ -33,11 +33,14 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param as pointer to actual udp socket buffer size
 	 * @param fpf pointer to frames per file
 	 * @param fdp frame discard policy
+	 * @param act pointer to activated
+	 * @param depaden pointer to deactivated padding enable
+	 * @param sm pointer to silent mode
 	 */
 	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
 	        uint32_t* us, uint32_t* as, uint32_t* fpf,
-			frameDiscardPolicy* fdp);
+			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
 
 	/**
 	 * Destructor
@@ -130,18 +133,21 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	void ShutDownUDPSocket();
 
     /**
-     * Set Silent Mode
-     * @param mode 1 sets 0 unsets
-     */
-    void SetSilentMode(bool mode);
-
-    /**
      * Create & closes a dummy UDP socket
      * to set & get actual buffer size
      * @param s UDP socket buffer size to be set
      * @return OK or FAIL of dummy socket creation
      */
     int CreateDummySocketForUDPSocketBufferSize(uint32_t s);
+
+    /**
+     * Set hard coded (calculated but not from detector) row and column
+     * r is in row index if detector has not send them yet in firmware,
+     * c is in col index for jungfrau and eiger (for missing packets/deactivated eiger)
+     * c when used is in 2d
+     */
+    void SetHardCodedPosition(uint16_t r, uint16_t c);
+
 
 
  private:
@@ -236,6 +242,24 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** frame discard policy */
 	frameDiscardPolicy* frameDiscardMode;
 
+	/** Activated/Deactivated */
+	bool* activated;
+
+	/** Deactivated padding enable */
+	bool* deactivatedPaddingEnable;
+
+    /** Silent Mode */
+    bool* silentMode;
+
+	/** row hardcoded as 1D or 2d,
+	 * if detector does not send them yet or
+	 * missing packets/deactivated (eiger/jungfrau sends 2d pos) **/
+	uint16_t row;
+
+	/** column hardcoded as 2D,
+	 * deactivated eiger/missing packets (eiger/jungfrau sends 2d pos) **/
+	uint16_t column;
+
 
 	// acquisition start
 	/** Aquisition Started flag */
@@ -287,8 +311,5 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** number of images for statistic */
 	uint32_t numFramesStatistic;
-
-    /** Silent Mode */
-    bool silentMode;
 };
 

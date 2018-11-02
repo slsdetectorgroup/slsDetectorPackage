@@ -200,6 +200,11 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_GetLeftFPGATemp();
   int Feb_Control_GetRightFPGATemp();
 
+  int64_t Feb_Control_GetMeasuredPeriod();
+  int64_t Feb_Control_GetSubMeasuredPeriod();
+
+  int Feb_Control_SoftwareTrigger();
+
   uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data);
   uint32_t Feb_Control_ReadRegister(uint32_t offset);
 #endif

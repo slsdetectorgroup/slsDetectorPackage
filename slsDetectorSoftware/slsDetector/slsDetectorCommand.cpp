@@ -44,6 +44,12 @@ To address a specific controller i of detector j use:
 
 <b>sls_detector_clnt j-i:cmd</b>
 
+
+To use different shared memory segements for different detectors on the same
+client pc, one can use environment variable <b>SLSDETNAME</b> set to any string to
+different strings to make the shared memory segments unique. One can then use
+the same multi detector id for both detectors as they have a different shared memory names.
+
 For additional questions concerning the indexing of the detector, please refer to the SLS Detectors FAQ documentation.
 
 The commands are sudivided into different pages depending on their functionalities:
@@ -193,7 +199,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page acquisition
-   - <b> status [s] </b> starts or stops acquisition in detector in non blocking mode. When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). \c s: [\c start, \c stop]. \c Returns the detector status: [\c running, \c error, \c transmitting, \c finished, \c waiting, \c idle]. \c Returns \c (string)
+   - <b> status [s] </b> starts or stops acquisition in detector in non blocking mode. When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). Eiger can also provide an internal software trigger. \c s: [\c start, \c stop, \c trigger(EIGER only)]. \c Returns the detector status: [\c running, \c error, \c transmitting, \c finished, \c waiting, \c idle]. \c Returns \c (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="status"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdStatus;
@@ -324,7 +330,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
 	++i;
 	/*! \page config
-    - <b>activate</b> Activates/Deactivates the detector. Deactivated detector does not send data. Used for EIGER only. \c Returns \c (int)
+    - <b>activate [b] [p]</b> Activates/Deactivates the detector. \c b is 1 for activate, 0 for deactivate. Deactivated detector does not send data. \c p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Used for EIGER only. \c Returns \c (int) (string)
 	 */
 	descrToFuncMap[i].m_pFuncName="activate"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
@@ -501,7 +507,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	 */
 
 	/*! \page config
-   - <b>checkdetversion</b> Checks the version compatibility with detector software (if hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
+   - <b>checkdetversion</b> Checks the version compatibility with detector server (if hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
 	 */
 	descrToFuncMap[i].m_pFuncName="checkdetversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
@@ -509,7 +515,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
 
 	/*! \page config
-   - <b>checkrecversion</b> Checks the version compatibility with receiver software (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
+   - <b>checkrecversion</b> Checks the version compatibility with receiver server (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
 	 */
 	descrToFuncMap[i].m_pFuncName="checkrecversion"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
@@ -598,9 +604,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
     /*! \page timing
-   - <b>subperiod [i]</b> sets/gets sub frame period in s. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
+   - <b>subdeadtime [i]</b> sets/gets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
      */
-    descrToFuncMap[i].m_pFuncName="subperiod"; //
+    descrToFuncMap[i].m_pFuncName="subdeadtime"; //
     descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
     ++i;
 
@@ -654,14 +660,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
     /*! \page timing
-   - <b>storagecells [i]</b> sets/gets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells +1). \c Returns \c (long long int)
+   - <b>storagecells [i]</b> sets/gets number of additional storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells +1). \c Returns \c (long long int)
      */
     descrToFuncMap[i].m_pFuncName="storagecells"; //
     descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
-   - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 0. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
+   - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 15(0xf).. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
      */
     descrToFuncMap[i].m_pFuncName="storagecell_start"; //
     descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
@@ -742,6 +748,20 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncName="nframes"; //
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
 	++i;
+
+    /*! \page timing
+   - <b>measuredperiod</b> gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame. \c Returns \c  (double with 9 decimal digits)
+     */
+    descrToFuncMap[i].m_pFuncName="measuredperiod"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
+    ++i;
+
+    /*! \page timing
+   - <b>measuredsubperiod</b> gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode. \c Returns \c  (double with 9 decimal digits)
+     */
+    descrToFuncMap[i].m_pFuncName="measuredsubperiod"; //
+    descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
+    ++i;
 
 	/* speed */
 	/*! \page config
@@ -2243,21 +2263,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page receiver
-    - <b>r_framesperfile</b> sets/gets the frames per file in receiver. 0 means infinite or all frames in a single file. \c Returns \c (int)
+    - <b>r_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="r_framesperfile"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
 	++i;
 
 	/*! \page receiver
-    - <b>r_framesperfile</b> sets/gets the frames per file in receiver. 0 means infinite or all frames in a single file. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="r_framesperfile"; //OK
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
-	++i;
-
-	/*! \page receiver
-    - <b>r_discardpolicy</b> sets/gets the frame discard policy in the receiver. 0 - no discard (default), 1 - discard only empty frames, 2 - discard any partial frame(fastest). \c Returns \c (int)
+    - <b>r_discardpolicy</b> sets/gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="r_discardpolicy"; //OK
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
@@ -2652,8 +2665,11 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 			if (string(args[1])=="start")
 				myDet->startAcquisition();
 			else if (string(args[1])=="stop") {
-				myDet->setReceiverOnline(ONLINE_FLAG);
+				myDet->setReceiverOnline(ONLINE_FLAG);//restream stop
 				myDet->stopAcquisition();
+			}
+			else if (string(args[1])=="trigger") {
+				myDet->sendSoftwareTrigger();
 			}
 			else
 				return string("unknown action");
@@ -2686,7 +2702,7 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
 		os << string("busy \t gets the status of acquire- can be: 0 or 1. 0 for idle, 1 for running\n");
 	}
 	if (action==PUT_ACTION || action==HELP_ACTION) {
-		os << string("status \t controls the detector acquisition - can be start or stop.  When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). \n");
+		os << string("status \t controls the detector acquisition - can be start or stop or trigger(EIGER only).  When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). Eiger can also provide an internal software trigger\n");
 		os << string("busy i\t sets the status of acquire- can be: 0(idle) or 1(running).Command Acquire sets it to 1 at beignning of acquire and back to 0 at the end. Clear Flag for unexpected acquire terminations. \n");
 	}
 	return os.str();
@@ -4360,11 +4376,20 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
 		if (action==PUT_ACTION) {
 			if (!sscanf(args[1],"%d",&ival))
 				return string("Could not scan activate mode ")+string(args[1]);
-			/*  if(dynamic_cast<slsDetector*>(myDet) != NULL)
-			  return string("Can only set it from the multiDetector mode");*/
 			myDet->activate(ival);
+			bool padding = true;
+			if (narg > 2) {
+				if (string(args[2]) == "padding")
+					padding = true;
+				else if (string(args[2]) == "nopadding")
+					padding = false;
+				else
+					return string ("Could not scan activate mode's padding option " + string(args[2]));
+				myDet->setDeactivatedRxrPaddingMode(padding);
+			}
 		}
-		sprintf(ans,"%d",myDet->activate());
+		int ret = myDet->setDeactivatedRxrPaddingMode();
+		sprintf(ans,"%d %s", myDet->activate(), ret == 1 ? "padding" : (ret == 0 ? "nopadding" : "unknown"));
 	}
 	else if(cmd=="r_online"){
 		if (action==PUT_ACTION) {
@@ -4395,14 +4420,14 @@ string slsDetectorCommand::helpOnline(int narg, char *args[], int action) {
 	if (action==PUT_ACTION || action==HELP_ACTION) {
 		os << "online i \n sets the detector in online (1) or offline (0) mode"<< std::endl;
 		os << "r_online i \n sets the receiver in online (1) or offline (0) mode"<< std::endl;
-		os << "activate i \n sets the detector in  activated (1) or deactivated (0) mode (does not send data). Only for Eiger."<< std::endl;
+		os << "activate i [p]\n sets the detector in  activated (1) or deactivated (0) mode (does not send data).  p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Only for Eiger."<< std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION) {
 		os << "online \n gets the detector online (1) or offline (0) mode"<< std::endl;
 		os << "checkonline \n returns the hostnames of all detectors in offline mode"<< std::endl;
 		os << "r_online \n gets the receiver online (1) or offline (0) mode"<< std::endl;
 		os << "r_checkonline \n returns the hostnames of all receiver in offline mode"<< std::endl;
-		os << "activate \n gets the detector activated (1) or deactivated (0) mode. Only for Eiger."<< std::endl;
+		os << "activate \n gets the detector activated (1) or deactivated (0) mode. And padding or nonpadding for the deactivated receiver. Only for Eiger."<< std::endl;
 	}
 	return os.str();
 
@@ -4453,6 +4478,9 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 
 	myDet->setOnline(ONLINE_FLAG);
 
+	if (cmd == "roi")
+		myDet->setReceiverOnline(ONLINE_FLAG);
+
 	if (action==PUT_ACTION) {
 		if (cmd=="maxmod")
 			return string("cannot put!");
@@ -4468,13 +4496,13 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 			if ((val<0)	|| (narg!=((val*4)+2)) )
 				return helpDetectorSize(narg,args,action);
 			ROI allroi[val];
-			pos=1;
-			//	std::cout << val << std::endl;
-			for(i=0;i<val;i++){
-				if ((!sscanf(args[++pos],"%d",&allroi[i].xmin)) ||
-						(!sscanf(args[++pos],"%d",&allroi[i].xmax)) ||
-						(!sscanf(args[++pos],"%d",&allroi[i].ymin)) ||
-						(!sscanf(args[++pos],"%d",&allroi[i].ymax)) )
+			//	pos=1;
+			pos=2;
+			for(i=0;i<val;++i){
+				if ((!sscanf(args[pos++],"%d",&allroi[i].xmin)) ||
+						(!sscanf(args[pos++],"%d",&allroi[i].xmax)) ||
+						(!sscanf(args[pos++],"%d",&allroi[i].ymin)) ||
+						(!sscanf(args[pos++],"%d",&allroi[i].ymax)) )
 					return string("cannot parse arguments for roi");
 			}
 			myDet->setROI(val,allroi);
@@ -4520,7 +4548,9 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 		myDet->setReceiverOnline(ONLINE_FLAG);
 		ret=myDet->setDynamicRange(val);
 	} else if (cmd=="roi") {
-		myDet->getROI(ret);
+		ROI* r = myDet->getROI(ret);
+		if (myDet->isMultiSlsDetectorClass() && r != NULL)
+			delete [] r;
 	} else if (cmd=="detsizechan") {
 		sprintf(ans,"%d %d",myDet->getMaxNumberOfChannelsPerDetector(X),myDet->getMaxNumberOfChannelsPerDetector(Y));
 		return string(ans);
@@ -4874,8 +4904,8 @@ string slsDetectorCommand::helpSN(int narg, char *args[], int action) {
 
 	ostringstream os;
 	if (action==GET_ACTION || action==HELP_ACTION) {
-		os << "checkdetversion \n gets the version compatibility with detector software (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
-		os << "checkrecversion \n gets the version compatibility with receiver software (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
+		os << "checkdetversion \n gets the version compatibility with detector server (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
+		os << "checkrecversion \n gets the version compatibility with receiver server (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible."<< std::endl;
 		os << "moduleversion:i \n gets the firmwareversion of the module i"<< std::endl;
 		os << "modulenumber:i \n gets the serial number of the module i"<< std::endl;
 		os << "detectornumber \n gets the serial number of the detector (MAC)"<< std::endl;
@@ -5649,8 +5679,8 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 		index=SUBFRAME_ACQUISITION_TIME;
 	else if (cmd=="period")
 		index=FRAME_PERIOD;
-    else if (cmd=="subperiod")
-        index=SUBFRAME_PERIOD;
+    else if (cmd=="subdeadtime")
+        index=SUBFRAME_DEADTIME;
 	else if (cmd=="delay")
 		index=DELAY_AFTER_TRIGGER;
 	else if (cmd=="gates")
@@ -5689,7 +5719,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 			return string("cannot scan timer value ")+string(args[1]);
 		if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME ||
 		        index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER ||
-		        index == SUBFRAME_PERIOD) {
+		        index == SUBFRAME_DEADTIME) {
 			// 	+0.5 for precision of eg.0.0000325
 			t = ( val * 1E9 + 0.5);
 		}else t=(int64_t)val;
@@ -5703,7 +5733,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 
 	if ((ret!=-1) && (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME
 	        || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER ||
-	        index == SUBFRAME_PERIOD)) {
+	        index == SUBFRAME_DEADTIME)) {
 		rval=(double)ret*1E-9;
 		sprintf(answer,"%0.9f",rval);
 	}
@@ -5731,8 +5761,8 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "probes t \t sets the number of probes to accumulate (max 3! cycles should be set to 1, frames to the number of pump-probe events)" << std::endl;
 		os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
-		os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 0. For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
-		os << "subperiod t \t sets sub frame period in s. Used in EIGER only in 32 bit mode. " << std::endl;
+		os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 15(0xf). For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
+		os << "subdeadtime t \t sets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. " << std::endl;
 		os << std::endl;
 
 
@@ -5749,7 +5779,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 		os << "samples \t gets the number of samples expected from the jctb" << std::endl;
 		os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
 		os << "storagecell_start \t gets the storage cell that stores the first acquisition of the series." << std::endl;
-		os << "subperiod \t gets sub frame period in s. Used in EIGER in 32 bit only." << std::endl;
+		os << "subperiod \t gets sub frame dead time in s. Used in EIGER in 32 bit only." << std::endl;
 		os << std::endl;
 
 	}
@@ -5796,6 +5826,10 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 		index=MEASUREMENT_TIME;
 	else if (cmd=="nframes")
 		index=FRAMES_FROM_START;
+    else if (cmd=="measuredperiod")
+        index=MEASURED_PERIOD;
+    else if (cmd=="measuredsubperiod")
+        index=MEASURED_SUBPERIOD;
 	else
 		return string("could not decode timer ")+cmd;
 
@@ -5805,13 +5839,13 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 	}
 
 
-
-
 	myDet->setOnline(ONLINE_FLAG);
 
 	ret=myDet->getTimeLeft(index);
 
-	if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER || index==ACTUAL_TIME || index==MEASUREMENT_TIME)
+	if ((ret!=-1) && (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER
+			|| index==ACTUAL_TIME || index==MEASUREMENT_TIME ||
+			MEASURED_PERIOD || MEASURED_SUBPERIOD))
 		rval=(double)ret*1E-9;
 	else rval=ret;
 
@@ -5839,6 +5873,8 @@ string slsDetectorCommand::helpTimeLeft(int narg, char *args[], int action) {
 		os << "framesl  \t gets the number of frames left" << std::endl;
 		os << "cyclesl  \t gets the number of cycles left" << std::endl;
 		os << "probesl  \t gets the number of probes left" << std::endl;
+		os << "measuredperiod \t gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame." << std::endl;
+		os << "measuredsubperiod \t gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode." << std::endl;
 		os << std::endl;
 
 	}
@@ -6409,14 +6445,12 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
 	else if(cmd=="r_discardpolicy") {
 		if (action==PUT_ACTION){
-			if (sscanf(args[1],"%d",&ival) && (ival >= 0) && (ival < NUM_DISCARD_POLICIES)) {
-				myDet->setReceiverFramesDiscardPolicy((frameDiscardPolicy)ival);
-			} else return string("could not scan frames discard policy\n");
+			frameDiscardPolicy f = myDet->getReceiverFrameDiscardPolicy(string(args[1]));
+			if (f == GET_FRAME_DISCARD_POLICY)
+				return string("could not scan frame discard policy. Options: nodiscard, discardempty, discardpartial\n");
+			myDet->setReceiverFramesDiscardPolicy(f);
 		}
-		char answer[100];
-		memset(answer, 0, 100);
-		sprintf(answer,"%d",myDet->setReceiverFramesDiscardPolicy());
-		return string(answer);
+		return myDet->getReceiverFrameDiscardPolicy(myDet->setReceiverFramesDiscardPolicy());
 	}
 
 	else if(cmd=="r_padding") {
@@ -6450,7 +6484,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
 		os << "r_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
 		os << "r_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
-		os << "r_discardpolicy s\t sets the frame discard policy in the receiver. 0 - no discard (default), 1 - discard only empty frames, 2 - discard any partial frame(fastest)." << std::endl;
+		os << "r_discardpolicy s\t sets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
 		os << "r_padding s\t enables/disables partial frames to be padded in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
 	}
 	if (action==GET_ACTION || action==HELP_ACTION){
@@ -6462,7 +6496,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 		os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
 		os << "r_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
 		os << "r_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
-		os << "r_discardpolicy \t gets the frame discard policy in the receiver. 0 - no discard (default), 1 - discard only empty frames, 2 - discard any partial frame(fastest)." << std::endl;
+		os << "r_discardpolicy \t gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
 		os << "r_padding \t gets partial frames padding enable in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
 	}
 	return os.str();
@@ -7014,7 +7048,8 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 			}
 		}
 		os << hex << reg << dec;
-
+		if (myDet->isMultiSlsDetectorClass() && aa != NULL)
+			delete [] aa;
 
 		//os <<" "<< hex << myDet->readRegister(120) << dec;
 

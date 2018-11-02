@@ -6,25 +6,27 @@
 
 using namespace std;
 
-slsDetectorUsers::slsDetectorUsers(int id) : myDetector(NULL){
+slsDetectorUsers::slsDetectorUsers(int& ret, int id) : myDetector(0), myCmd(0){
+	try {
+		myDetector=new multiSlsDetector(id);
+	} catch(...) {
+		ret = 1;
+		return;
+	}
+	myCmd=new multiSlsDetectorCommand(myDetector);
+	ret = 0;
 
-  myDetector=new multiSlsDetector(id);
-  myCmd=new multiSlsDetectorCommand(myDetector);
-};
+}
 
 
 slsDetectorUsers::~slsDetectorUsers() {
   if (myDetector)
     delete myDetector;
-};
-
-
+}
 
 string slsDetectorUsers::getDetectorDeveloper(){
   return myDetector->getDetectorDeveloper();
 }
-
-
 
 int slsDetectorUsers::setOnline(int const online){
   return myDetector->setOnline(online);
@@ -42,7 +44,6 @@ int slsDetectorUsers::stopMeasurement(){
   return myDetector->stopAcquisition();
 }
  
-
 int slsDetectorUsers::getDetectorStatus(){
   return (int)myDetector->getRunStatus();
 }
@@ -51,11 +52,9 @@ string slsDetectorUsers::getFilePath(){
   return myDetector->getFilePath();
 }
 
-
 string slsDetectorUsers::setFilePath(string s){
   return myDetector->setFilePath(s);
 }  
-
 
 string slsDetectorUsers::getFileName(){
   return myDetector->getFileName();
@@ -83,7 +82,7 @@ string slsDetectorUsers::setFlatFieldCorrectionDir(string dir){
  
 string slsDetectorUsers::getFlatFieldCorrectionFile(){
   return myDetector->getFlatFieldCorrectionFile();
-};
+}
   
 int slsDetectorUsers::setFlatFieldCorrectionFile(string fname){
   return myDetector->setFlatFieldCorrectionFile(fname);
@@ -116,17 +115,37 @@ int slsDetectorUsers::getPositions(double *pos){
 }
 
 int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
-  if(myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y)>1)
-	return 1;
-  int nmod=nx/(myDetector->getChansPerMod(0));
-  cout << myDetector->getChansPerMod(0) << " " << nx << " " << nmod << endl;
-  return myDetector->setNumberOfModules(nmod)*myDetector->getChansPerMod(0);}
+	// only one roi
+	slsDetectorDefs::ROI roi[1];
+	roi[0].xmin = x0;
+	roi[0].ymin = y0;
+	roi[0].xmax = x0 + nx;
+	roi[0].ymax = y0 + ny;
+	return myDetector->setROI(1, roi);
+}
 
 int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
-  y0=0; 
-  x0=0; 
-  nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
-  ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
+	int n = 0;
+	slsDetectorDefs::ROI* roi = myDetector->getROI(n);
+
+	// roi
+	if (roi != NULL && n > 0) {
+		x0 = roi[0].xmin;
+		y0 = roi[0].ymin;
+		nx = roi[0].xmax - roi[0].xmin;
+		ny = roi[0].ymax - roi[0].ymin;
+	}
+	// no roi
+	else {
+		  y0=0;
+		  x0=0;
+		  nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
+		  ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
+	}
+
+	if (roi != NULL)
+		delete [] roi;
+
   return nx*ny;
 }
 
@@ -139,7 +158,6 @@ int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
 int slsDetectorUsers::setBitDepth(int i){
   return myDetector->setDynamicRange(i);
 }
-
 
 int slsDetectorUsers::setSettings(int isettings){
   return myDetector->slsDetectorBase::setSettings(isettings);
@@ -160,43 +178,40 @@ int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int id
 double slsDetectorUsers::setExposureTime(double t, bool inseconds, int imod){
 	if(!inseconds)
 		return myDetector->setExposureTime((int64_t)t,imod);
-	else {
-		// + 0.5 to round for precision lost from converting double to int64_t
-		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-		if (t < 0) tms = -1;
-		tms = myDetector->setExposureTime(tms,imod);
-		if (tms < 0)
-			return -1;
-		return  ((1E-9) * (double)tms);
-	}
+
+	// + 0.5 to round for precision lost from converting double to int64_t
+	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+	if (t < 0) tms = -1;
+	tms = myDetector->setExposureTime(tms,imod);
+	if (tms < 0)
+		return -1;
+	return  ((1E-9) * (double)tms);
 }
 
 double slsDetectorUsers::setExposurePeriod(double t, bool inseconds, int imod){
 	if(!inseconds)
 		return myDetector->setExposurePeriod((int64_t)t,imod);
-	else {
-		// + 0.5 to round for precision lost from converting double to int64_t
-		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-		if (t < 0) tms = -1;
-		tms = myDetector->setExposurePeriod(tms,imod);
-		if (tms < 0)
-			return -1;
-		return  ((1E-9) * (double)tms);
-	}
+
+	// + 0.5 to round for precision lost from converting double to int64_t
+	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+	if (t < 0) tms = -1;
+	tms = myDetector->setExposurePeriod(tms,imod);
+	if (tms < 0)
+		return -1;
+	return  ((1E-9) * (double)tms);
 }
 
 double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds, int imod){
 	if(!inseconds)
 		return myDetector->setDelayAfterTrigger((int64_t)t,imod);
-	else {
-		// + 0.5 to round for precision lost from converting double to int64_t
-		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-		if (t < 0) tms = -1;
-		tms = myDetector->setDelayAfterTrigger(tms,imod);
-		if (tms < 0)
-			return -1;
-		return  ((1E-9) * (double)tms);
-	}
+
+	// + 0.5 to round for precision lost from converting double to int64_t
+	int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+	if (t < 0) tms = -1;
+	tms = myDetector->setDelayAfterTrigger(tms,imod);
+	if (tms < 0)
+		return -1;
+	return  ((1E-9) * (double)tms);
 }
 
 int64_t slsDetectorUsers::setNumberOfGates(int64_t t, int imod){
@@ -300,6 +315,44 @@ int slsDetectorUsers::enableGapPixels(int enable) {
     return myDetector->enableGapPixels(enable);
 }
 
+std::string slsDetectorUsers::setReceiverFramesDiscardPolicy(std::string f) {
+	return myDetector->getReceiverFrameDiscardPolicy(
+			myDetector->setReceiverFramesDiscardPolicy(
+					myDetector->getReceiverFrameDiscardPolicy(f)));
+}
+
+int slsDetectorUsers::setReceiverPartialFramesPadding(int f) {
+	return myDetector->setReceiverPartialFramesPadding(f);
+}
+
+int slsDetectorUsers::setReceiverFramesPerFile(int f) {
+	return myDetector->setReceiverFramesPerFile(f);
+}
+
+int slsDetectorUsers::sendSoftwareTrigger() {
+	return myDetector->sendSoftwareTrigger();
+}
+
+double slsDetectorUsers::getMeasuredPeriod(bool inseconds, int imod) {
+	if(!inseconds)
+		return myDetector->getTimeLeft(slsReceiverDefs::MEASURED_PERIOD, imod);
+
+	int64_t tms = myDetector->getTimeLeft(slsReceiverDefs::MEASURED_PERIOD, imod);
+	if (tms < 0)
+		return -1;
+	return  ((1E-9) * (double)tms);
+}
+
+double slsDetectorUsers::getMeasuredSubFramePeriod(bool inseconds, int imod) {
+	if(!inseconds)
+		return myDetector->getTimeLeft(slsReceiverDefs::MEASURED_SUBPERIOD, imod);
+
+	int64_t tms = myDetector->getTimeLeft(slsReceiverDefs::MEASURED_SUBPERIOD, imod);
+	if (tms < 0)
+		return -1;
+	return  ((1E-9) * (double)tms);
+}
+
 void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*), void *pArg){
   myDetector->registerDataCallback(userCallback,pArg);
 }
@@ -337,8 +390,6 @@ void slsDetectorUsers::registerGetI0Callback( double (*func)(int,void*),void *ar
 }
 
 
-
-
 string slsDetectorUsers::putCommand(int narg, char *args[], int pos){
 	if(narg < 2)
 		return string("Error: Insufficient Parameters");
@@ -350,8 +401,6 @@ string slsDetectorUsers::getCommand(int narg, char *args[], int pos){
 		return string("Error: Insufficient Parameters");
 	return myCmd->getCommand(narg, args, pos);
 }
-
-
 
 
 int slsDetectorUsers::setClockDivider(int value) {
@@ -402,7 +451,6 @@ int slsDetectorUsers::stopAcquisition() {
 	return myDetector->stopAcquisition();
 }
 
-
 int slsDetectorUsers::setReceiverSilentMode(int i) {
 	return myDetector->setReceiverSilentMode(i);
 }
@@ -431,21 +479,38 @@ int slsDetectorUsers::getNMods() {
     return myDetector->getNMods();
 }
 
-double slsDetectorUsers::setSubFrameExposureTime(double t, bool inseconds){
-  int64_t tms = (int64_t)(t * (1E+9));
-  if (t < 0) tms = -1;
-  if(!inseconds)
-    return myDetector->setSubFrameExposureTime((int64_t)t);
-  else
-    return  ((1E-9) * (double)myDetector->setSubFrameExposureTime(tms));
+double slsDetectorUsers::setSubFrameExposureTime(double t, bool inseconds, int imod){
+	if(!inseconds)
+		return myDetector->setSubFrameExposureTime((int64_t)t,imod);
+	else {
+		// + 0.5 to round for precision lost from converting double to int64_t
+		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+		if (t < 0) tms = -1;
+		tms = myDetector->setSubFrameExposureTime(tms,imod);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
 }
 
-double slsDetectorUsers::setSubFrameExposurePeriod(double t, bool inseconds){
-  int64_t tms = (int64_t)(t * (1E+9));
-  if (t < 0) tms = -1;
-  if(!inseconds)
-    return myDetector->setSubFramePeriod((int64_t)t);
-  else
-    return  ((1E-9) * (double)myDetector->setSubFramePeriod(tms));
+double slsDetectorUsers::setSubFrameExposureDeadTime(double t, bool inseconds, int imod){
+	if(!inseconds)
+		return myDetector->setSubFrameDeadTime((int64_t)t,imod);
+	else {
+		// + 0.5 to round for precision lost from converting double to int64_t
+		int64_t tms = (int64_t)(t * (1E+9) + 0.5);
+		if (t < 0) tms = -1;
+		tms = myDetector->setSubFrameDeadTime(tms,imod);
+		if (tms < 0)
+			return -1;
+		return  ((1E-9) * (double)tms);
+	}
 }
 
+int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int imod) {
+	return myDetector->setTimer(slsReceiverDefs::STORAGE_CELL_NUMBER, t, imod);
+}
+
+int slsDetectorUsers::setStoragecellStart(int pos) {
+	return myDetector->setStoragecellStart(pos);
+}

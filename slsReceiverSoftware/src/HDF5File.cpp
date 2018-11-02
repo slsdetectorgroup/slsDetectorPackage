@@ -11,8 +11,6 @@
 #include <iomanip>
 #include <libgen.h>			//basename
 #include <string.h>
-using namespace std;
-
 
 
 pthread_mutex_t HDF5File::Mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -65,13 +63,13 @@ HDF5File::HDF5File(int ind, uint32_t* maxf,
 	parameterNames.push_back("mod id");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("x Coord");
+	parameterNames.push_back("row");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("y Coord");
+	parameterNames.push_back("column");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
-	parameterNames.push_back("z Coord");
+	parameterNames.push_back("reserved");
 	parameterDataTypes.push_back(PredType::STD_U16LE);
 
 	parameterNames.push_back("debug");
@@ -159,7 +157,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	if (dataspace == NULL)
 		cprintf(RED,"Got nothing!\n");
 
-	if(!silentMode) {
+	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
 	}
 	return OK;
@@ -170,6 +168,13 @@ void HDF5File::CloseCurrentFile() {
 	pthread_mutex_lock(&Mutex);
 	HDF5FileStatic::CloseDataFile(index, filefd);
 	pthread_mutex_unlock(&Mutex);
+	for (unsigned int i = 0; i < dataset_para.size(); ++i)
+		delete dataset_para[i];
+	dataset_para.clear();
+	if(dataspace_para) {delete dataspace_para;dataspace_para=0;}
+	if(dataset) {delete dataset;dataset=0;}
+	if(dataspace) {delete dataspace;dataspace=0;}
+	if(filefd) {delete filefd;filefd=0;}
 }
 
 
@@ -182,10 +187,19 @@ void HDF5File::CloseAllFiles() {
 		HDF5FileStatic::CloseVirtualDataFile(virtualfd);
 	}
 	pthread_mutex_unlock(&Mutex);
+
+	for (unsigned int i = 0; i < dataset_para.size(); ++i)
+		delete dataset_para[i];
+	dataset_para.clear();
+	if(dataspace_para) delete dataspace_para;
+	if(dataset) delete dataset;
+	if(dataspace) delete dataspace;
+	if(filefd) delete filefd;
 }
 
 
 int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
+
 	// check if maxframesperfile = 0 for infinite
 	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
 		CloseCurrentFile();
@@ -199,7 +213,7 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	if (fnum >= extNumImages) {
 		if (HDF5FileStatic::ExtendDataset(index, dataspace, dataset,
 				dataspace_para, dataset_para, *numImages) == OK) {
-			if (!silentMode) {
+			if (!(*silentMode)) {
 				cprintf(BLUE,"%d Extending HDF5 dataset by %llu, Total x Dimension: %llu\n",
 					index, (long long unsigned int)extNumImages,
 					(long long unsigned int)(extNumImages + *numImages));
@@ -213,12 +227,12 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 			((*maxFramesPerFile == 0) ? fnum : fnum%(*maxFramesPerFile)),
 			nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			dataspace, dataset, datatype) == OK) {
-		sls_receiver_header* header = (sls_receiver_header*) (buffer);
-		/*header->xCoord = ((*detIndex) * (*numUnitsPerDetector) + index); */
+
 		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
 				// infinite then no need for %maxframesperfile
 				((*maxFramesPerFile == 0) ? fnum : fnum%(*maxFramesPerFile)),
-				dataset_para, header, parameterDataTypes) == OK) {
+				dataset_para, (sls_receiver_header*) (buffer),
+				parameterDataTypes) == OK) {
 			pthread_mutex_unlock(&Mutex);
 			return OK;
 		}
@@ -242,7 +256,7 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 		virtualfd = 0;
 		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath,
 				fileNamePrefix, *fileIndex);
-		if(!silentMode) {
+		if(!(*silentMode)) {
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		}
 		pthread_mutex_lock(&Mutex);
@@ -262,43 +276,57 @@ void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 	//not created before
 	if (!virtualfd && anyPacketsCaught) {
 
-		//only one file and one sub image (link current file in master)
-		if (((numFilesinAcquisition == 1) && (numDetY*numDetX) == 1)) {
-			//dataset name
-			ostringstream osfn;
-			osfn << "/data";
-			if ((*numImages > 1)) osfn << "_f" << setfill('0') << setw(12) << 0;
-			string dsetname = osfn.str();
-			pthread_mutex_lock(&Mutex);
-			HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName,
-					dsetname, parameterNames);
-			pthread_mutex_unlock(&Mutex);
-		}
+		// called only by the one maser receiver
+		if (master && (*detIndex==0)) {
 
-		//create virutal file
-		else
-			CreateVirtualFile(numf);
+			//only one file and one sub image (link current file in master)
+			if (((numFilesinAcquisition == 1) && (numDetY*numDetX) == 1)) {
+				LinkVirtualFileinMasterFile();
+			}
+			//create virutal file
+			else{
+				CreateVirtualFile(numf);}
+		}
 	}
 	numFilesinAcquisition = 0;
 }
 
 
+// called only by the one maser receiver
 int HDF5File::CreateVirtualFile(uint64_t numf) {
-	if (master && (*detIndex==0)) {
-		pthread_mutex_lock(&Mutex);
-		int ret = HDF5FileStatic::CreateVirtualDataFile(
-				virtualfd, masterFileName,
-				filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
-				*detIndex, *numUnitsPerDetector,
-				// infinite images in 1 file, then maxfrperfile = numf
-				((*maxFramesPerFile == 0) ? numf+1 : *maxFramesPerFile),
-				numf+1,
-				"data",	datatype,
-				numDetY, numDetX, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
-				HDF5_WRITER_VERSION,
-				parameterNames, parameterDataTypes);
-		pthread_mutex_unlock(&Mutex);
-		return ret;
+	pthread_mutex_lock(&Mutex);
+
+	std::string vname = HDF5FileStatic::CreateVirtualFileName(filePath, fileNamePrefix, *fileIndex);
+	if(!(*silentMode)) {
+		FILE_LOG(logINFO) << "Virtual File: " << vname;
 	}
-	return OK;
+
+	int ret = HDF5FileStatic::CreateVirtualDataFile(vname,
+			virtualfd, masterFileName,
+			filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
+			*detIndex, *numUnitsPerDetector,
+			// infinite images in 1 file, then maxfrperfile = numf
+			((*maxFramesPerFile == 0) ? numf+1 : *maxFramesPerFile),
+			numf+1,
+			"data",	datatype,
+			numDetY, numDetX, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
+			HDF5_WRITER_VERSION,
+			parameterNames, parameterDataTypes);
+	pthread_mutex_unlock(&Mutex);
+	return ret;
+}
+
+// called only by the one maser receiver
+int HDF5File::LinkVirtualFileinMasterFile() {
+	//dataset name
+	std::ostringstream osfn;
+	osfn << "/data";
+	if ((*numImages > 1)) osfn << "_f" << std::setfill('0') << std::setw(12) << 0;
+	std::string dsetname = osfn.str();
+
+	pthread_mutex_lock(&Mutex);
+	int ret = HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName,
+			dsetname, parameterNames);
+	pthread_mutex_unlock(&Mutex);
+	return ret;
 }

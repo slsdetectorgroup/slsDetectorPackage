@@ -25,11 +25,11 @@ class slsReceiver : private virtual slsReceiverDefs {
 	 * Constructor
 	 * Starts up a Receiver server. Reads configuration file, options, and
 	 * assembles a Receiver using TCP and UDP detector interfaces
+	 * throws an exception in case of failure
 	 * @param argc from command line
 	 * @param argv from command line
-	 * @param succecc socket creation was successfull
 	 */
-	slsReceiver(int argc, char *argv[], int &success);
+	slsReceiver(int argc, char *argv[]);
 
 	/**
 	 * Destructor
@@ -99,6 +99,5 @@ class slsReceiver : private virtual slsReceiverDefs {
 
  private:
 	slsReceiverTCPIPInterface* tcpipInterface;
-	UDPInterface* udp_interface;
 };
 

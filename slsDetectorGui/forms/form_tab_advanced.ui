@@ -51,7 +51,7 @@
     <enum>QTabWidget::North</enum>
    </property>
    <property name="currentIndex">
-    <number>4</number>
+    <number>3</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
@@ -124,7 +124,7 @@
       <rect>
        <x>5</x>
        <y>10</y>
-       <width>467</width>
+       <width>495</width>
        <height>66</height>
       </rect>
      </property>
@@ -946,7 +946,7 @@ An extension given by the modules serial number will be attached.
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>135</y>
+       <y>132</y>
        <width>736</width>
        <height>171</height>
       </rect>
@@ -960,7 +960,7 @@ An extension given by the modules serial number will be attached.
         <x>420</x>
         <y>140</y>
         <width>291</width>
-        <height>25</height>
+        <height>29</height>
        </rect>
       </property>
       <property name="text">
@@ -975,9 +975,9 @@ An extension given by the modules serial number will be attached.
       <property name="geometry">
        <rect>
         <x>25</x>
-        <y>25</y>
+        <y>21</y>
         <width>686</width>
-        <height>148</height>
+        <height>119</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_8">
@@ -1355,9 +1355,9 @@ An extension given by the modules serial number will be attached.
      <property name="geometry">
       <rect>
        <x>35</x>
-       <y>15</y>
+       <y>10</y>
        <width>686</width>
-       <height>146</height>
+       <height>123</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
@@ -1949,15 +1949,15 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
         </property>
         <property name="toolTip">
          <string>&lt;nobr&gt;
-Period between sub frames. Only for Eiger in 32 bit mode.
+Dead time between sub frames. Only for Eiger in 32 bit mode.
 &lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
 Default value is 0. A value less than the required minimum is ignored.
 &lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #subperiod#
+ #subdeadtime#
 &lt;/nobr&gt;</string>
         </property>
         <property name="text">
-         <string>Sub Frame Period:</string>
+         <string>Sub Frame Dead Time:</string>
         </property>
        </widget>
       </item>

@@ -18,16 +18,15 @@
 #include <iostream>
 #include <errno.h>
 #include <cstring>
-using namespace std;
 
-const string DataProcessor::TypeName = "DataProcessor";
+const std::string DataProcessor::TypeName = "DataProcessor";
 
 
 DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		fileFormat* ftype, bool fwenable,
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
-		bool* fp,
+		bool* fp, bool* act, bool* depaden, bool* sm,
 		void (*dataReadycb)(char*, char*, uint32_t, void*),
 		void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
 		void *pDataReadycb) :
@@ -47,7 +46,10 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		streamingTimerInMs(timer),
 		currentFreqCount(0),
 		tempBuffer(0),
-		xcoordin1D(0),
+		activated(act),
+		deactivatedPaddingEnable(depaden),
+        silentMode(sm),
+		framePadding(fp),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -55,8 +57,6 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
 		currentFrameIndex(0),
-        silentMode(false),
-		framePadding(fp),
 		rawDataReadyCallBack(dataReadycb),
 		rawDataModifyReadyCallBack(dataModifyReadycb),
 		pRawDataReady(pDataReadycb)
@@ -77,7 +77,7 @@ DataProcessor::~DataProcessor() {
 }
 
 /** getters */
-string DataProcessor::GetType(){
+std::string DataProcessor::GetType(){
 	return TypeName;
 }
 
@@ -222,8 +222,6 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 	fileWriteEnable = fwe;
 	if (g)
 		generalData = g;
-	// fix xcoord as detector is not providing it right now
-	xcoordin1D =  ((*dindex) * (*nunits)) + index;
 
 
 	if (file) {
@@ -237,13 +235,13 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 		file = new HDF5File(index, maxf,
 				nd, fname, fpath, findex, owenable,
 				dindex, nunits, nf, dr, portno,
-				generalData->nPixelsX, generalData->nPixelsY, &silentMode);
+				generalData->nPixelsX, generalData->nPixelsY, silentMode);
 		break;
 #endif
 	default:
 		file = new BinaryFile(index, maxf,
 				nd, fname, fpath, findex, owenable,
-				dindex, nunits, nf, dr, portno, &silentMode);
+				dindex, nunits, nf, dr, portno, silentMode);
 		break;
 		}
 	}
@@ -364,18 +362,11 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		InsertGapPixels(buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
 				*dynamicRange);
 
-	// x coord is 0 for detector in pos [0,0,0]
-	if (xcoordin1D) {
-		// do nothing as detector has correctly send them
-		if (header.xCoord || header.yCoord || header.zCoord)
-			;
-		// detector has send all 0's when there should have been a value greater than 0 in some dimension
-		else
-			header.xCoord = xcoordin1D;
-	}
 
-	// frame padding
-	if (*framePadding && nump < generalData->packetsPerFrame)
+	// deactivated and padding enabled
+	if ((!(*activated) && *deactivatedPaddingEnable) ||
+			// frame padding
+			(*framePadding && nump < generalData->packetsPerFrame))
 		PadMissingPackets(buf);
 
 	// normal call back
@@ -398,10 +389,11 @@ void DataProcessor::ProcessAnImage(char* buf) {
         (*((uint32_t*)buf)) =  revsize;
     }
 
+
 	// write to file
 	if (file)
 		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES,
-				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)),
+				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)), //+ size of data (resizable from previous call back
 				fnum-firstMeasurementIndex, nump);
 
 
@@ -460,9 +452,6 @@ void DataProcessor::SetPixelDimension() {
 	}
 }
 
-void DataProcessor::SetSilentMode(bool mode) {
-    silentMode = mode;
-}
 
 void DataProcessor::PadMissingPackets(char* buf) {
 	FILE_LOG(logDEBUG) << index << ": Padding Missing Packets";
@@ -488,7 +477,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 		if (!nmissing)
 			break;
 
-		FILE_LOG(logDEBUG) << "padding for " << index << " for pnum: " << pnum << endl;
+		FILE_LOG(logDEBUG) << "padding for " << index << " for pnum: " << pnum << std::endl;
 
 		// missing packet
 		switch(myDetectorType) {

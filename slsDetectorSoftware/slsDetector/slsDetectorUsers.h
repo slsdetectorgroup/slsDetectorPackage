@@ -25,7 +25,6 @@ class multiSlsDetectorCommand;
 
 
 
-
 /*
    \mainpage 
 <CENTER><H1>API for SLS detectors data acquisition</H1></CENTER>
@@ -72,12 +71,11 @@ You can  find examples of how this classes can be instatiated in mainClient.cpp 
 
 
 */
-/**
 
-@libdoc The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
-*/
 /**
-  @short Class for detector functionalities to embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
+  @short The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
+
+  Class for detector functionalities to embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
 
 */
 
@@ -87,22 +85,21 @@ class slsDetectorUsers
 
  public:
 
-  /** @short default constructor */
-   slsDetectorUsers(int id=0);
-
+  /** @short default constructor
+   * @param ret address of return value. It will be set to 0 for success, else 1 for failure
+   * @param id multi detector id
+   * in creating multidetector object
+   */
+   slsDetectorUsers(int& ret, int id=0);
    
    /**  @short virtual destructor */
    virtual ~slsDetectorUsers();
-
-
 
    /**
        @short useful to define subset of working functions
       \returns "PSI" or "Dectris"
    */
    std::string getDetectorDeveloper();
-
-
 
   /**  @short sets the onlineFlag
       \param online can be: -1 returns wether the detector is in online (1) or offline (0) state; 0 detector in offline state; 1  detector in online state
@@ -250,7 +247,7 @@ class slsDetectorUsers
    int getPositions(double *pos=NULL);
   
   /**
-     @short sets the detector size
+     @short sets the detector size (only 1 ROI) (not Mythen supported anymore)
      \param x0 horizontal position origin in channel number (-1 unchanged)
      \param y0 vertical position origin in channel number (-1 unchanged)
      \param nx number of channels in horiziontal  (-1 unchanged)
@@ -261,18 +258,16 @@ class slsDetectorUsers
 
 
   /**
-     @short gets detector size
+     @short gets detector size (not Mythen supported anymore)
      \param x0 horizontal position origin in channel number 
      \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal
      \param  ny number of channels in vertical 
-     \returns OK/FAIL
+     \returns total number of channels
   */
    int getDetectorSize(int &x0, int &y0, int &nx, int &ny);
   /**
      @short gets the maximum detector size
-     \param x0 horizontal position origin in channel number 
-     \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal
      \param  ny number of channels in vertical 
      \returns OK/FAIL
@@ -372,7 +367,6 @@ class slsDetectorUsers
       \returns number of frames
   */
    int64_t setNumberOfCycles(int64_t t=-1, int imod = -1);
-  
 
  /** 
       @short set/get the external communication mode 
@@ -420,6 +414,7 @@ class slsDetectorUsers
   /**
      @short register calbback for accessing detector final data, also enables data streaming in client and receiver (if receiver exists)
      \param userCallback function for plotting/analyzing the data. Its arguments are  the data structure d and the frame number f, s is for subframe number for eiger for 32 bit mode
+     \param pArg argument
   */
 
    void registerDataCallback(int( *userCallback)(detectorData* d, int f, int s, void*), void *pArg);
@@ -427,6 +422,7 @@ class slsDetectorUsers
   /**
      @short register callback for accessing raw data - if the rawDataCallback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software
      \param userCallback function for postprocessing and saving the data -  p is the pointer to the data, n is the number of channels
+     \param pArg argument
   */
   
    void registerRawDataCallback(int( *userCallback)(double* p, int n, void*), void *pArg);
@@ -463,7 +459,7 @@ class slsDetectorUsers
 
 
   /** Enable or disable streaming data from receiver (creates transmitting sockets)
-   * @param enable 0 to disable 1 to enable -1 to only get the value
+   * @param i 0 to disable 1 to enable -1 to only get the value
    * @returns data streaming from receiver enable
   */
    int enableDataStreamingFromReceiver(int i=-1);
@@ -502,7 +498,7 @@ class slsDetectorUsers
    /** (for expert users)
     * Set/Get client streaming in ZMQ IP
     * By default, it is the IP of receiver hostname
-    * @param i sets, empty std::string gets
+    * @param ip sets, empty std::string gets
     * @returns client streaming in ZMQ IP
     */
    std::string setClientDataStreamingInIP(std::string ip="");
@@ -553,41 +549,91 @@ class slsDetectorUsers
   int enableGapPixels(int enable=-1);
 
   /**
+   * Sets the frames discard policy in receiver
+   * frame discard policy options:
+   * @param f nodiscard (default),discardempty, discardpartial (fastest), get to get the value
+   * @returns f nodiscard (default),discardempty, discardpartial (fastest)
+   */
+  std::string setReceiverFramesDiscardPolicy(std::string f="get");
+
+  /**
+   * Sets the frame padding in receiver
+   * @param f 0 does not partial frames, 1 pads partial frames (-1 gets)
+   * @returns partial frames padding enable
+   */
+  int setReceiverPartialFramesPadding(int f = -1);
+
+  /**
+   * Sets the frames per file in receiver
+   * @param f frames per file, 0 is infinite ie. every frame in same file (-1 gets)
+   * @returns frames per file
+   */
+  int setReceiverFramesPerFile(int f = -1);
+
+  /**
+   * Sends a software internal trigger (EIGER only)
+   * @returns 0 for success, 1 for fail
+   */
+  int sendSoftwareTrigger();
+
+  /**
+   * get measured period between previous two frames(EIGER only)
+   * @param inseconds true if the value is in s, else ns
+   * @param imod module number (-1 for all)
+   * @returns measured period
+  */
+  double getMeasuredPeriod(bool inseconds=false, int imod = -1);
+
+  /**
+   * get measured sub period between previous two sub frames in 32 bit mode (EIGER only)
+   * @param inseconds true if the value is in s, else ns
+   * @param imod module number (-1 for all)
+   * @returns measured sub period
+  */
+  double getMeasuredSubFramePeriod(bool inseconds=false, int imod = -1);
+
+  /**
      @short register calbback for accessing detector final data
      \param func function to be called at the end of the acquisition. gets detector status and progress index as arguments
+     \param pArg argument
   */
-
    void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg);
   
   /**
      @short register calbback for reading detector position
      \param func function for reading the detector position
+     \param arg argument
   */
   
    void registerGetPositionCallback( double (*func)(void*),void *arg);
   /**
      @short register callback for connecting to the epics channels
      \param func function for connecting to the epics channels
+     \param arg argument
   */
    void registerConnectChannelsCallback( int (*func)(void*),void *arg);
   /**
      @short register callback to disconnect the epics channels
      \param func function to disconnect the epics channels
+     \param arg argument
   */
    void registerDisconnectChannelsCallback( int (*func)(void*),void *arg);  
   /**
      @short register callback for moving the detector
      \param func function for moving the detector
+     \param arg argument
   */
    void registerGoToPositionCallback( int (*func)(double,void*),void *arg);
   /**
      @short register callback for moving the detector without waiting
      \param func function for moving the detector
+     \param arg argument
   */
    void registerGoToPositionNoWaitCallback( int (*func)(double,void*),void *arg);
   /**
      @short register calbback reading to I0
      \param func function for reading the I0 (called with parameter 0 before the acquisition, 1 after and the return value used as I0)
+     \param arg argument
   */
    void registerGetI0Callback( double (*func)(int,void*),void *arg);
 
@@ -662,13 +708,13 @@ class slsDetectorUsers
 
    /**
       @short start receiver listening mode
-      \param returns OK or FAIL
+      \returns returns OK or FAIL
     */
    int startReceiver();
 
    /**
       @short stop receiver listening mode
-      \param returns OK or FAIL
+      \returns returns OK or FAIL
     */
    int stopReceiver();
 
@@ -703,7 +749,7 @@ class slsDetectorUsers
    /**
     * reset frames caught in receiver
     * should be called before startReceiver()
-    * @retuns OK or FAIL
+    * @returns OK or FAIL
     */
    int resetFramesCaughtInReceiver();
 
@@ -736,19 +782,37 @@ class slsDetectorUsers
 
    /**
     * Set sub frame exposure time (only for Eiger)
-    * @param i sub frame exposure time (-1 gets)
+    * @param t sub frame exposure time (-1 gets)
     * @param inseconds true if the value is in s, else ns
+    * @param imod module number (-1 for all)
     * @returns sub frame exposure time in ns, or s if specified
     */
-   double setSubFrameExposureTime(double t=-1, bool inseconds=false);
+   double setSubFrameExposureTime(double t=-1, bool inseconds=false, int imod = -1);
 
    /**
-    * Set sub frame period (only for Eiger)
-    * @param i sub frame period (-1 gets)
+    * Set sub frame dead time (only for Eiger)
+    * Very advanced feature. Meant to be a constant in config file by an expert for each individual module
+    * @param t sub frame dead time (-1 gets)
     * @param inseconds true if the value is in s, else ns
-    * @returns sub frame period in ns, or s if specified
+    * @param imod module number (-1 for all)
+    * @returns sub frame dead time in ns, or s if specified
     */
-   double setSubFrameExposurePeriod(double t=-1, bool inseconds=false);
+   double setSubFrameExposureDeadTime(double t=-1, bool inseconds=false, int imod = -1);
+
+   /**
+    * set/get number of additional storage cells  (Jungfrau)
+    * @param t number of additional storage cells. Default is 0.  (-1 gets)
+    * @param imod module number (-1 for all)
+    * @returns number of additional storage cells
+   */
+    int64_t setNumberOfStorageCells(int64_t t=-1, int imod = -1);
+
+	/**
+	 * Set storage cell that stores first acquisition of the series (Jungfrau)
+	 * @param pos storage cell index. Value can be 0 to 15. Default is 15. (-1 gets)
+	 * @returns the storage cell that stores the first acquisition of the series
+	 */
+	int setStoragecellStart(int pos=-1);
 
   /************************************************************************
 
@@ -829,12 +893,12 @@ class slsDetectorUsers
      \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
   */
 
-  static int getTimingMode(std::string s){					\
+  static int getTimingMode(std::string s){			\
     if (s== "auto") return 0;						\
     if (s== "trigger") return 1;					\
     if (s== "ro_trigger") return 2;					\
     if (s== "gating") return 3;						\
-    if (s== "triggered_gating") return 4;				\
+    if (s== "triggered_gating") return 4;			\
     return -1;							};
 
 

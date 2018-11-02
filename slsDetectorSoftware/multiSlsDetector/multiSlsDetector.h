@@ -491,7 +491,7 @@ public:
 	 * @param pos position in the multi list
 	 * @returns slsDetector object
 	 */
-	slsDetector *operator()(int pos);
+	slsDetector *operator()(int pos) const;
 
 	/**
 	 * Free shared memory from the command line
@@ -946,6 +946,12 @@ public:
 	int stopAcquisition();
 
 	/**
+	 * Give an internal software trigger to the detector (Eiger only)
+	 * @return OK or FAIL
+	 */
+	int sendSoftwareTrigger();
+
+	/**
 	 * Start readout (without exposure or interrupting exposure) (Mythen)
 	 * @returns OK or FAIL
 	 */
@@ -1042,9 +1048,10 @@ public:
 	 * Set/get timer value left in acquisition (not all implemented for all detectors)
 	 * @param index timer index
 	 * @param t time in ns or number of...(e.g. frames, gates, probes)
+	 * @param imod module number
 	 * @returns timer set value in ns or number of...(e.g. frames, gates, probes)
 	 */
-	int64_t getTimeLeft(timerIndex index);
+	int64_t getTimeLeft(timerIndex index, int imod = -1);
 
 	/**
 	 * Set speed
@@ -1235,11 +1242,18 @@ public:
 	int writeAdcRegister(int addr, int val);
 
 	/**
-	 * Activates the detector (Eiger only)
+	 * Activates/Deactivates the detector (Eiger only)
 	 * @param enable active (1) or inactive (0), -1 gets
-	 * @returns 0 (inactive) or 1 (active)
+	 * @returns 0 (inactive) or 1 (active)for activate mode
 	 */
-	int activate(int const enable=GET_ONLINE_FLAG);
+	int activate(int const enable=-1);
+
+	/**
+	 * Set deactivated Receiver padding mode (Eiger only)
+	 * @param padding padding option for deactivated receiver. Can be 1 (padding), 0 (no padding), -1 (gets)
+	 * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for padding option
+	 */
+	int setDeactivatedRxrPaddingMode(int padding=-1);
 
 	/**
 	 * Returns the enable if data will be flipped across x or y axis (Eiger)

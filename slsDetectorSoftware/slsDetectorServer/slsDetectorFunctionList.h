@@ -118,9 +118,7 @@ int 		executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 int         selectStoragecellStart(int pos);
 #endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
-#ifndef EIGERD
 int64_t 	getTimeLeft(enum timerIndex ind);
-#endif
 
 
 // parameters - channel, chip, module, settings
@@ -255,6 +253,9 @@ int 		startStateMachine();
 void* start_timer(void* arg);
 #endif
 int 		stopStateMachine();
+#ifdef EIGERD
+int			softwareTrigger();
+#endif
 #ifndef JUNGFRAUD
 int 		startReadOut();
 #endif

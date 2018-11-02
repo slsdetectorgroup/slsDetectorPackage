@@ -14,15 +14,14 @@
 #include <iostream>
 #include <errno.h>
 #include <cstring>
-using namespace std;
 
-const string Listener::TypeName = "Listener";
+const std::string Listener::TypeName = "Listener";
 
 
 Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
         uint32_t* us, uint32_t* as, uint32_t* fpf,
-		frameDiscardPolicy* fdp) :
+		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -38,6 +37,11 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		actualUDPSocketBufferSize(as),
 		framesPerFile(fpf),
 		frameDiscardMode(fdp),
+		activated(act),
+		deactivatedPaddingEnable(depaden),
+		silentMode(sm),
+		row(0),
+		column(0),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -50,8 +54,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		listeningPacket(0),
 		udpSocketAlive(0),
 		numPacketsStatistic(0),
-		numFramesStatistic(0),
-		silentMode(false)
+		numFramesStatistic(0)
 {
 	if(ThreadObject::CreateThread() == FAIL)
 	    throw std::exception();
@@ -70,7 +73,7 @@ Listener::~Listener() {
 }
 
 /** getters */
-string Listener::GetType(){
+std::string Listener::GetType(){
 	return TypeName;
 }
 
@@ -155,7 +158,7 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 		firstAcquisitionIndex = fnum;
 	}
 
-	if(!silentMode) {
+	if(!(*silentMode)) {
 		if (!index) cprintf(BLUE,"%d First Acquisition Index:%lu\n"
 				"%d First Measurement Index:%lu\n",
 				index, firstAcquisitionIndex,
@@ -183,6 +186,10 @@ int Listener::SetThreadPriority(int priority) {
 
 int Listener::CreateUDPSockets() {
 
+    if (!(*activated)) {
+    	return OK;
+    }
+
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.') != NULL){
 	    memset(eth, 0, MAX_STR_LENGTH);
@@ -193,16 +200,16 @@ int Listener::CreateUDPSockets() {
 
 	ShutDownUDPSocket();
 
-    udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
-			generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
-			*udpSocketBufferSize);
-	int iret = udpSocket->getErrorStatus();
-	if(!iret){
+	try{
+		udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+				generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
+				*udpSocketBufferSize);
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
-	}else{
-		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber << " error: " << iret;
+	} catch (...) {
+		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber;
 		return FAIL;
 	}
+
 	udpSocketAlive = true;
     sem_init(&semaphore_socket,1,0);
 
@@ -229,13 +236,14 @@ void Listener::ShutDownUDPSocket() {
 }
 
 
-void Listener::SetSilentMode(bool mode) {
-    silentMode = mode;
-}
-
-
 int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     FILE_LOG(logINFO) << "Testing UDP Socket Buffer size with test port " << *udpPortNumber;
+
+    if (!(*activated)) {
+    	*actualUDPSocketBufferSize = (s*2);
+    	return OK;
+    }
+
     uint32_t temp = *udpSocketBufferSize;
     *udpSocketBufferSize = s;
 
@@ -248,17 +256,20 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     if(udpSocket){
         udpSocket->ShutDownSocket();
         delete udpSocket;
+        udpSocket = 0;
     }
 
     //create dummy socket
-    udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+    try {
+    	udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
             generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
             *udpSocketBufferSize);
-    int iret = udpSocket->getErrorStatus();
-    if (iret){
-        FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber << " error: " << iret;
+    } catch (...) {
+        FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber;
         return FAIL;
     }
+
+
     // doubled due to kernel bookkeeping (could also be less due to permissions)
     *actualUDPSocketBufferSize = udpSocket->getActualUDPSocketBufferSize();
     if (*actualUDPSocketBufferSize != (s*2)) {
@@ -277,6 +288,10 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     return OK;
 }
 
+void Listener::SetHardCodedPosition(uint16_t r, uint16_t c) {
+	row = r;
+	column = c;
+}
 
 void Listener::ThreadExecution() {
 	char* buffer;
@@ -288,7 +303,7 @@ void Listener::ThreadExecution() {
 #endif
 
 	//udpsocket doesnt exist
-	if (!udpSocketAlive && !carryOverFlag) {
+	if (*activated && !udpSocketAlive && !carryOverFlag) {
 		//FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
 		(*((uint32_t*)buffer)) = 0;
 		StopListening(buffer);
@@ -296,7 +311,7 @@ void Listener::ThreadExecution() {
 	}
 
 	//get data
-	if ((*status != TRANSMITTING && udpSocketAlive) || carryOverFlag) {
+	if ((*status != TRANSMITTING && (!(*activated) || udpSocketAlive)) || carryOverFlag) {
 		rc = ListenToAnImage(buffer);
 	}
 
@@ -328,7 +343,7 @@ void Listener::ThreadExecution() {
 	fifo->PushAddress(buffer);
 
 	//Statistics
-	if(!silentMode) {
+	if(!(*silentMode)) {
 		numFramesStatistic++;
 		if (numFramesStatistic >=
 				//second condition also for infinite #number of frames
@@ -354,6 +369,7 @@ void Listener::StopListening(char* buf) {
 
 /* buf includes the fifo header and packet header */
 uint32_t Listener::ListenToAnImage(char* buf) {
+
 	int rc = 0;
 	uint64_t fnum = 0, bid = 0;
 	uint32_t pnum = 0, snum = 0;
@@ -374,6 +390,27 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	memset(buf, 0, fifohsize);
 	/*memset(buf + fifohsize, 0xFF, generalData->imageSize);*/
 	new_header = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
+
+	// deactivated (eiger)
+	if (!(*activated)) {
+		// no padding
+		if (!(*deactivatedPaddingEnable))
+			return 0;
+		// padding without setting bitmask (all missing packets padded in dataProcessor)
+		if (currentFrameIndex >= *numImages)
+			return 0;
+
+		//(eiger) first fnum starts at 1
+		if (!currentFrameIndex) {
+			++currentFrameIndex;
+		}
+		new_header->detHeader.frameNumber = currentFrameIndex;
+		new_header->detHeader.row = row;
+		new_header->detHeader.column = column;
+		new_header->detHeader.detType = (uint8_t) generalData->myDetectorType;
+		new_header->detHeader.version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
+		return generalData->imageSize;
+	}
 
 
 
@@ -409,6 +446,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				break;
 			}
 			new_header->detHeader.packetNumber = numpackets;
+			if(isHeaderEmpty) {
+				new_header->detHeader.row = row;
+				new_header->detHeader.column = column;
+			}
 			return generalData->imageSize;
 		}
 
@@ -446,6 +487,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			// -------------------old header ------------------------------------------------------------------------------
 			else {
 				new_header->detHeader.frameNumber = fnum;
+				new_header->detHeader.row = row;
+				new_header->detHeader.column = column;
 				new_header->detHeader.detType = (uint8_t) generalData->myDetectorType;
 				new_header->detHeader.version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			}
@@ -480,6 +523,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				break;
 			}
 			new_header->detHeader.packetNumber = numpackets; 	//number of packets caught
+			if(isHeaderEmpty) {
+				new_header->detHeader.row = row;
+				new_header->detHeader.column = column;
+			}
 			return generalData->imageSize;	//empty packet now, but not empty image
 		}
 
@@ -535,6 +582,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				break;
 			}
 			new_header->detHeader.packetNumber = numpackets; 	//number of packets caught
+			if(isHeaderEmpty) {
+				new_header->detHeader.row = row;
+				new_header->detHeader.column = column;
+			}
 			return generalData->imageSize;
 		}
 
@@ -569,6 +620,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			// -------------------old header ------------------------------------------------------------------------------
 			else {
 				new_header->detHeader.frameNumber = fnum;
+				new_header->detHeader.row = row;
+				new_header->detHeader.column = column;
 				new_header->detHeader.detType = (uint8_t) generalData->myDetectorType;
 				new_header->detHeader.version = (uint8_t) SLS_DETECTOR_HEADER_VERSION;
 			}

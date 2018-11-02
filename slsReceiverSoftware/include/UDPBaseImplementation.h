@@ -182,10 +182,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//***acquisition parameters***
 	/**
-	 * Get Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
+	 * Get ROI
 	 * @return index of adc enabled, else -1 if all enabled
 	 */
-	int getShortFrameEnable() const;
+	std::vector<ROI> getROI() const;
 
 	/**
 	 * Get the Frequency of Frames Sent to GUI
@@ -273,15 +273,23 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Get Silent Mode
 	 * @return silent mode
 	 */
-	uint32_t getSilentMode() const;
+	bool getSilentMode() const;
 
 	/**
 	 * Get activate
-	 * If deactivated, receiver will write dummy packets 0xFF
+	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
-	 * @return 0 for deactivated, 1 for activated
+	 * @return false for deactivated, true for activated
 	 */
-	int getActivate() const;
+	bool getActivate() const;
+
+	/**
+	 * Get deactivated padding enable
+	 * If enabled, receiver will create dummy packets (0xFF), else it will create nothing
+	 * (as it will receive nothing from detector)
+	 * @return 0 for disabled, 1 for enabled
+	 */
+	bool getDeactivatedPadding() const;
 
 	/**
 	 * Get Streaming Port
@@ -324,7 +332,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Configure command line parameters
 	 * @param config_map mapping of config parameters passed from command line arguments
 	 */
-	void configure(map<string, string> config_map);
+	void configure(std::map<std::string, std::string> config_map);
 
 	/*
 	 * Set multi detector size
@@ -440,11 +448,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//***acquisition parameters***
 	/**
-	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
-	 * @param i index of adc enabled, else -1 if all enabled
+	 * Set ROI
+	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	int setShortFrameEnable(const int i);
+	int setROI(const std::vector<ROI> i);
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI
@@ -532,9 +540,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	//***receiver parameters***
 	/**
 	 * Set Silent Mode
-	 * @param i silent mode. 1 sets, 0 unsets
+	 * @param i silent mode. true sets, false unsets
 	 */
-	void setSilentMode(const uint32_t i);
+	void setSilentMode(const bool i);
 
 	/*************************************************************************
 	 * Behavioral functions***************************************************
@@ -605,10 +613,21 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	/**
 	 * Activate / Deactivate Receiver
-	 * If deactivated, receiver will write dummy packets 0xFF
+	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
+	 * @param enable enable
+	 * @return false for disabled, true for enabled
 	 */
-	int setActivate(int enable = -1);
+	bool setActivate(const bool enable);
+
+	/**
+	 * Set deactivated padding enable
+	 * If enabled, receiver will create dummy packets (0xFF), else it will create nothing
+	 * (as it will receive nothing from detector)
+	 * @param enable enable
+	 * @return false for disabled, true for enabled
+	 */
+	bool setDeactivatedPadding(const bool enable);
 
 	/**
 	 * Set streaming port
@@ -727,7 +746,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** Receiver Status */
 	runStatus status;
 	/** Activated/Deactivated */
-	int activated;
+	bool activated;
+	/** Deactivated padding enable */
+	bool deactivatedPaddingEnable;
 	/** frame discard policy */
 	frameDiscardPolicy frameDiscardMode;
 	/** frame padding */
@@ -764,8 +785,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	bool dataCompressionEnable;
 
 	//***acquisition parameters***
-	/* Short Frame Enable or index of adc enabled, else -1 if all enabled (gotthard specific) TODO: move to setROI */
-	int shortFrameEnable;
+	/* ROI */
+	std::vector<ROI> roi;
 	/** Frequency of Frames sent to GUI */
 	uint32_t frameToGuiFrequency;
 	/** Timer of Frames sent to GUI when frequency is 0 */
@@ -780,7 +801,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	char additionalJsonHeader[MAX_STR_LENGTH];
 
 	//***receiver parameters***
-	uint32_t silentMode;
+	bool silentMode;
 
 
 

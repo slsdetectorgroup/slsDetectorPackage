@@ -61,6 +61,11 @@ The \textit{data receiver}, which can be run on a different machine than the
 client, receives the data from the detector and processes it. The receiver can
 be configured, controlled and monitored by the client.
 
+\item \textcolor{blue}{slsMultiReceiver}: \\
+It is the same as the \textit{slsReceiver}, but that it is a single process 
+for many multiple slsReceiver child processes. One can configure the start TCP port,
+number of slsReceiver processes and if call back should be enabled or not.
+
 \item \textcolor{blue}{slsDetectorGUI}: \\
 The \textit{graphical user interface}, which provides a user friendly way
 of operating the detectors and data receivers with online data preview.
@@ -110,13 +115,13 @@ conda config --add channels conda-forge
 conda config --add channels slsdetectorgroup
 
 #Install latest version
-conda install sls_detector_software
+conda install sls_detector_lib
+conda install sls_detector_gui
 
-#Install specific release (GLIBC2.14)
-conda install sls_detector_software=3.1.0
+#Install specific release
+conda install sls_detector_lib=4.0.0
+conda install sls_detector_gui=4.0.0
 
-#Scientific Linux 6 version (GLIBC2.12)
-conda install sls_detector_software=SL6_3.1.0
 \end{verbatim}
  \item The package including Python interface
 \begin{verbatim}
@@ -127,11 +132,9 @@ conda config --add channels sls_detector
 #Install latest version
 conda install sls_detector
 
-#Install specific release (GLIBC2.14)
-conda install sls_detector=3.1.0
+#Install specific release 
+conda install sls_detector=4.0.0
 
-#Scientific Linux 6 version (GLIBC2.12)
-conda install sls_detector=SL6_3.1.0
 \end{verbatim}
 \end{itemize}
 
@@ -148,13 +151,13 @@ acquisition system, or if one wants to download the source code and compile.
 \begin{verbatim}
 #Clone source code with specific release
 git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch
-3.1.0
+4.0.0
 \end{verbatim}
  \item The package including Python interface
 \begin{verbatim}
 #Clone source code with specific release
 git clone https://github.com/slsdetectorgroup/sls_detector.git --branch
-3.1.0
+4.0.0
 \end{verbatim}
 \end{itemize}
 
@@ -437,14 +440,11 @@ the SLS Detector Package or a different detector type.
 One can use the \verb=cleansharedmemory.sh= script available under the
 slsDetector Package.
 
-One can also just use the following commands to clean the shared memory
-segments one by one.
-\begin{verbatim}
-#displays list of shared memeory segments 
-ipcs -m
-#remove segments that have nattach equal to zero. They key is the first column
-ipcrm -M [key]
-\end{verbatim}
+One can also just delete the files that are typically located under /dev/shm/ folder
+and starts with slsDetectorPackage.
+
+One no longer has to delete segments using ipcs.
+
 
 \section{Software Upgrade}
 
@@ -544,13 +544,13 @@ detector board the programming files and/or software package provided by
 the SLS Detectors group.
 
 \subsubsection{GOTTHARD Firmware}
-\textit{For SLS Detector Package v3.1.0} \\
+\textit{For SLS Detector Package v4.0.0} \\
 \indent Minimum compatible version: \\
 \indent \indent 11.01.2013 \\
 \indent Latest version:	\\
-\indent \indent 08.02.2018 (50um and 25um Master) \\
+\indent \indent 08.02.2018 (50um) \\
+\indent \indent 08.02.2018 (25 um Master) \\
 \indent \indent 09.02.2018 (25 um Slave) \\
-
 
 Normally, the firmware will be upgraded by us as it requires programming the
 FPGA via the USB-Blaster.
@@ -636,9 +636,9 @@ detector board the programming files and/or software package provided by
 the SLS Detectors group.
 
 \subsubsection{EIGER Firmware}
-\textit{For SLS Detector Package v3.1.0} \\
-\indent Minimum compatible version:  16 \\
-\indent Latest version:	20  \\
+\textit{For SLS Detector Package v4.0.0} \\
+\indent Minimum compatible version:  22 \\
+\indent Latest version:	22  \\
 
 
 \begin{enumerate}
@@ -647,6 +647,20 @@ Detector Group.
   \item If one does not have the bcp script, that should also be obtained from
 the SLS Detector Group. It is required to program the bit files and requires
 that tftp be installed on the pc.
+  \item Bring the detector into programmable mode by either of the following ways.
+Both ways end up in just the central LED blinking.
+  \begin{enumerate}
+    \item hard reset on the back panel boards resulting in blinking LEDS 
+    \item by having the following program running in the background. 
+    \begin{verbatim}
+    boot_recovery
+    \end{verbatim}
+\end{enumerate}
+  \item Start a terminal for each half module and run the following to see 
+progress.
+\begin{verbatim}
+	nc -p 3000 -u bebxxx 3000 
+\end{verbatim}
   \item Run the following to update firmware
 \begin{verbatim}
  #update back end fpga
@@ -715,9 +729,9 @@ detector board the programming files and/or software package provided by
 the SLS Detectors group.
 
 \subsubsection{JUNGFRAU Firmware}
-\textit{For SLS Detector Package v3.1.0} \\
-\indent Minimum compatible version: 13.11.2017 \\
-\indent Latest version: 13.11.2017 \\
+\textit{For SLS Detector Package v4.0.0} \\
+\indent Minimum compatible version: 15.06.2018 \\
+\indent Latest version: 15.06.2018 \\
 
 
 At times, one has to update the firmware, which then also requires updating the
@@ -733,7 +747,7 @@ Detector Group.
   \item Update the latest SLS Detector package installed.
   \item Update the on-board software as per the instructions in the next
 section.
-  \item Start the on-board server in debug mode:
+  \item Start the on-board server in update mode:
   \begin{enumerate}
     \item Connect to the blackfin on the detector\\ 
 \verb=telnet bchipxxx=
@@ -743,10 +757,10 @@ section.
       \item Comment out the line
 \verb=#ttyS0::respawn:/jungfrauDetectorServervxxx= 
       \item Reboot blackfin using \verb=reboot=
-      \item Run \verb=ps= to ensure no gotthardDetectorServers are running
+      \item Run \verb=ps= to ensure no jungfrauDetectorServers are running
     \end{enumerate}
-    \item Start the server in debug mode using: \\
-\verb=./jungfrauDetectorServerxxx -debug= \\
+    \item Start the server in update mode using: \\
+\verb=./jungfrauDetectorServerxxx -update= \\
     Leave this console on to come back to it later.
   \end{enumerate}
   \item From the command line of the pc, clear shared memory \\
@@ -759,7 +773,7 @@ script in \verb=slsDetectorPackage/cleansharedmemory.sh=
 \verb=./sls_detector_put programfpga xxx.pof= 
   \item Once the programming is done:
   \begin{enumerate}
-    \item Switch to the console that has the debug server running and kill it
+    \item Switch to the console that has the update server running and kill it
 using Ctrl+C and ensure no jungfrauDetectorServers are
 running
     \item Restart the new server to see if it runs with the new firmware \\

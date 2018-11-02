@@ -54,7 +54,12 @@ int main(int argc,  char **argv) {
 
 
 	/** - slsDetectorUsers Object is instantiated with appropriate ID */
-	slsDetectorUsers *pDetector = new  slsDetectorUsers (id);
+	int ret = 1;
+	slsDetectorUsers *pDetector = new slsDetectorUsers (ret, id);
+	if (ret == 1) {
+		std::cout << "Error: Could not instantiate slsDetectorUsers" << std::endl;
+		return EXIT_FAILURE;
+	}
 
 
 	/** - if specified, load configuration file (necessary at least the first time it is called to properly configure advanced settings in the shared memory) */
@@ -89,7 +94,7 @@ int main(int argc,  char **argv) {
 
 	/** - start measurement */
 	pDetector->startMeasurement();
-	std::cout << "measurement finished" << std::endl;	usleep(1*1000*1000);
+	std::cout << "measurement finished" << std::endl;
 
 	/** - returning when acquisition is finished or data are avilable */
 

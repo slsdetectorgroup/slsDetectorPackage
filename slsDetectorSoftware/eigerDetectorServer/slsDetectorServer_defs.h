@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #define GOODBYE 					 		(-200)
-#define REQUIRED_FIRMWARE_VERSION 	 		(21)
+#define REQUIRED_FIRMWARE_VERSION 	 		(22)
 #define IDFILECOMMAND						"more /home/root/executables/detid.txt"
 
 #define STATUS_IDLE		0
@@ -74,7 +74,7 @@ enum NETWORKINDEX				 			{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
 #define DEFAULT_HIGH_VOLTAGE				(0)
 #define DEFAULT_SETTINGS					(DYNAMICGAIN)
 #define DEFAULT_SUBFRAME_EXPOSURE 			(2621440) 		// 2.6ms
-#define DEFAULT_SUBFRAME_PERIOD				(0)
+#define DEFAULT_SUBFRAME_DEADTIME			(0)
 #define DEFAULT_DYNAMIC_RANGE				(16)
 
 #define DEFAULT_READOUT_MODE				(NONPARALLEL)

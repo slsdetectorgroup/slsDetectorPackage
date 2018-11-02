@@ -11,13 +11,13 @@
  * @short Base class with all the functions for the UDP inteface of the receiver
  */
 
-#include <exception>
-
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
 #include "utilities.h"
 #include "logger.h"
 
+#include <exception>
+#include <vector>
 
 class UDPInterface {
 
@@ -47,12 +47,15 @@ class UDPInterface {
 	 *	-setDynamicRange
 	 *	-setFlippedData (if eiger)
 	 *	-setActivate (if eiger)
+	 *	-setDeactivatedPadding (if eiger)
 	 *	-setTenGigaEnable (if eiger)
 	 *	-setGapPixelsEnable
 	 *	-setStreamingPort
 	 *	-setStreamingSourceIP
 	 *	-setAdditionalJsonHeader
 	 *	-setDataStreamEnable
+	 *	-setROI
+	 *
 	 *
 	 *
 	 *  supported sequence of method-calls:
@@ -113,7 +116,7 @@ class UDPInterface {
 	 * @param [in] receiver_type type can be standard or custom (must be derived from base class)
 	 * @return a UDPInterface reference to object depending on receiver type
 	 */
-	static UDPInterface *create(string receiver_type = "standard");
+	static UDPInterface *create(std::string receiver_type = "standard");
 
 	/**
 	 * Destructor
@@ -270,10 +273,10 @@ class UDPInterface {
 
 	//***acquisition parameters***
 	/**
-	 * Get Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
+	 * Get ROI
 	 * @return index of adc enabled, else -1 if all enabled
 	 */
-	virtual int getShortFrameEnable() const = 0;
+	virtual std::vector<slsReceiverDefs::ROI> getROI() const = 0;
 
 	/**
 	 * Get the Frequency of Frames Sent to GUI
@@ -360,15 +363,23 @@ class UDPInterface {
 	 * Get Silent Mode
 	 * @return silent mode
 	 */
-	virtual uint32_t getSilentMode() const = 0;
+	virtual bool getSilentMode() const = 0;
 
 	/**
 	 * Get activate
-	 * If deactivated, receiver will write dummy packets 0xFF
+	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
-	 * @return 0 for deactivated, 1 for activated
+	 * @return false for deactivated, true for activated
 	 */
-	virtual int getActivate() const = 0;
+	virtual bool getActivate() const = 0;
+
+	/**
+	 * Get deactivated padding enable
+	 * If enabled, receiver will create dummy packets (0xFF), else it will create nothing
+	 * (as it will receive nothing from detector)
+	 * @return false for disabled, true for enabled
+	 */
+	virtual bool getDeactivatedPadding() const = 0;
 
 	/**
 	 * Get Streaming Port
@@ -411,7 +422,7 @@ class UDPInterface {
 	 * Configure command line parameters
 	 * @param config_map mapping of config parameters passed from command line arguments
 	 */
-	virtual void configure(map<string, string> config_map) = 0;
+	virtual void configure(std::map<std::string, std::string> config_map) = 0;
 
 	/*
 	 * Set multi detector size
@@ -526,11 +537,11 @@ class UDPInterface {
 
 	//***acquisition parameters***
 	/**
-	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
-	 * @param i index of adc enabled, else -1 if all enabled
+	 * Set ROI
+	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	virtual int setShortFrameEnable(const int i) = 0;
+	virtual int setROI(const std::vector<slsReceiverDefs::ROI> i) = 0;
 
 	/**
 	 * Set the Frequency of Frames Sent to GUI
@@ -620,9 +631,9 @@ class UDPInterface {
 	//***receiver parameters***
 	/**
 	 * Set Silent Mode
-	 * @param i silent mode. 1 sets, 0 unsets
+	 * @param i silent mode. true sets, false unsets
 	 */
-	virtual void setSilentMode(const uint32_t i) = 0;
+	virtual void setSilentMode(const bool i) = 0;
 
 
 	/*************************************************************************
@@ -694,10 +705,21 @@ class UDPInterface {
 
 	/**
 	 * Activate / Deactivate Receiver
-	 * If deactivated, receiver will write dummy packets 0xFF
+	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
+	 * @param enable enable
+	 * @return false for disabled, true for enabled
 	 */
-	virtual int setActivate(int enable = -1) = 0;
+	virtual bool setActivate(const bool enable) = 0;
+
+	/**
+	 * Set deactivated padding enable
+	 * If enabled, receiver will create dummy packets (0xFF), else it will create nothing
+	 * (as it will receive nothing from detector)
+	 * @param enable enable
+	 * @return false for disabled, true for enabled
+	 */
+	virtual bool setDeactivatedPadding(const bool enable) = 0;
 
 	/**
 	 * Set streaming port

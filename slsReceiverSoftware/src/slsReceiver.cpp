@@ -14,20 +14,16 @@
 #include "slsReceiver.h"
 #include "gitInfoReceiver.h"
 
-using namespace std;
 
 
 
-slsReceiver::slsReceiver(int argc, char *argv[], int &success):
-		tcpipInterface (NULL),
-		udp_interface (NULL)
-{
-	success=OK;
+slsReceiver::slsReceiver(int argc, char *argv[]):
+		tcpipInterface (0) {
 
 	// options
-	map<string, string> configuration_map;
+	std::map<std::string, std::string> configuration_map;
 	int tcpip_port_no = 1954;
-	string fname = "";
+	std::string fname = "";
 	int64_t tempval = 0;
 
 	//parse command line for config
@@ -71,42 +67,33 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success):
 		case 'v':
 			tempval = GITREV;
 			tempval = (tempval <<32) | GITDATE;
-			cout << "SLS Receiver " << GITBRANCH << " (0x" << hex << tempval << ")" << endl;
-			success = FAIL; // to exit
-			break;
+			std::cout << "SLS Receiver " << GITBRANCH << " (0x" << std::hex << tempval << ")" << std::endl;
+			throw std::exception();
 
 		case 'h':
 		default:
-			string help_message = "\n"
-					+ string(argv[0]) + "\n"
-					+ "Usage: " + string(argv[0]) + " [arguments]\n"
+			std::string help_message = "\n"
+					+ std::string(argv[0]) + "\n"
+					+ "Usage: " + std::string(argv[0]) + " [arguments]\n"
 					+ "Possible arguments are:\n"
 					+ "\t-f, --config <fname>    : Loads config from file\n"
 					+ "\t-t, --rx_tcpport <port> : TCP Communication Port with client. \n"
 					+ "\t                          Default: 1954. Required for multiple \n"
 					+ "\t                          receivers\n\n";
 
-			FILE_LOG(logINFO) << help_message << endl;
-			break;
+			FILE_LOG(logINFO) << help_message << std::endl;
+			throw std::exception();
 
 		}
 	}
 
-	if( !fname.empty() ){
-		try{
-			FILE_LOG(logINFO) << "config file name " << fname;
-			success = read_config_file(fname, &tcpip_port_no, &configuration_map);
-			//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
-		}
-		catch(...){
-			FILE_LOG(logERROR) << "Coult not open configuration file " << fname ;
-			success = FAIL;
-		}
+	if( !fname.empty() && read_config_file(fname, &tcpip_port_no, &configuration_map) == FAIL) {
+		throw std::exception();
 	}
 
-	if (success==OK){
-		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
-	}
+	// might throw an exception
+	tcpipInterface = new slsReceiverTCPIPInterface(tcpip_port_no);
+
 }
 
 
@@ -131,40 +118,26 @@ int64_t slsReceiver::getReceiverVersion(){
 }
 
 
-void slsReceiver::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
-  //tcpipInterface
-	if(udp_interface)
-		udp_interface->registerCallBackStartAcquisition(func,arg);
-	else
-		tcpipInterface->registerCallBackStartAcquisition(func,arg);
+void slsReceiver::registerCallBackStartAcquisition(int (*func)(
+		char*, char*, uint64_t, uint32_t, void*),void *arg){
+	tcpipInterface->registerCallBackStartAcquisition(func,arg);
 }
 
 
 
-void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
-  //tcpipInterface
-	if(udp_interface)
-		udp_interface->registerCallBackAcquisitionFinished(func,arg);
-	else
-		tcpipInterface->registerCallBackAcquisitionFinished(func,arg);
+void slsReceiver::registerCallBackAcquisitionFinished(
+		void (*func)(uint64_t, void*),void *arg){
+	tcpipInterface->registerCallBackAcquisitionFinished(func,arg);
 }
 
 
 void slsReceiver::registerCallBackRawDataReady(void (*func)(char*,
 		char*, uint32_t, void*),void *arg){
-	//tcpipInterface
-	if(udp_interface)
-		udp_interface->registerCallBackRawDataReady(func,arg);
-	else
-		tcpipInterface->registerCallBackRawDataReady(func,arg);
+	tcpipInterface->registerCallBackRawDataReady(func,arg);
 }
 
 
 void slsReceiver::registerCallBackRawDataModifyReady(void (*func)(char*,
         char*, uint32_t &, void*),void *arg){
-    //tcpipInterface
-    if(udp_interface)
-        udp_interface->registerCallBackRawDataModifyReady(func,arg);
-    else
-        tcpipInterface->registerCallBackRawDataModifyReady(func,arg);
+	tcpipInterface->registerCallBackRawDataModifyReady(func,arg);
 }

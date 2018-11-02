@@ -373,7 +373,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual int64_t setTimer(timerIndex index, int64_t t=-1, int imod = -1)=0;
   int64_t setExposureTime(int64_t t=-1, int imod = -1){return setTimer(ACQUISITION_TIME,t,imod);};
   int64_t setSubFrameExposureTime(int64_t t=-1, int imod = -1){return setTimer(SUBFRAME_ACQUISITION_TIME,t,imod);};
-  int64_t setSubFramePeriod(int64_t t=-1, int imod = -1){return setTimer(SUBFRAME_PERIOD,t,imod);};
+  int64_t setSubFrameDeadTime(int64_t t=-1, int imod = -1){return setTimer(SUBFRAME_DEADTIME,t,imod);};
   int64_t setExposurePeriod(int64_t t=-1, int imod = -1){return setTimer(FRAME_PERIOD,t,imod);};
   int64_t setDelayAfterTrigger(int64_t t=-1, int imod = -1){return setTimer(DELAY_AFTER_TRIGGER,t,imod);};
   int64_t setNumberOfGates(int64_t t=-1, int imod = -1){return setTimer(GATES_NUMBER,t,imod);};
@@ -481,12 +481,19 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int setOnline(int const online=-1)=0;
 
-  /**  @short activates the detector (detector specific)
-       \param enable can be: -1 returns wether the detector is in active (1) or inactive (0) state
-       \returns 0 (inactive) or 1 (active)
-  */
-  virtual int activate(int const enable=GET_ONLINE_FLAG)=0;
+	/**
+	 * Activates/Deactivates the detector (Eiger only)
+	 * @param enable active (1) or inactive (0), -1 gets
+	 * @returns 0 (inactive) or 1 (active)for activate mode
+	 */
+  virtual int activate(int const enable=-1)=0;
 
+	/**
+	 * Set deactivated Receiver padding mode (Eiger only)
+	 * @param padding padding option for deactivated receiver.  Can be 1 (padding), 0 (no padding), -1 (gets)
+	 * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for padding option
+	 */
+  virtual int setDeactivatedRxrPaddingMode(int padding=-1)=0;
 
   /**
      @short set detector settings
@@ -855,8 +862,8 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     }};
 
   /** returns std::string from timer index
-      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER, SUBFRAME_PERIOD
-      \returns std::string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number, subframe_period
+      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER,PROBES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER, SUBFRAME_DEADTIME
+      \returns std::string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number,probes_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number, SUBFRAME_DEADTIME
   */
   static std::string getTimerType(timerIndex t){										\
     switch (t) {																\
@@ -875,7 +882,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     case FRAMES_FROM_START_PG: 		return std::string("frames_from_start_pg"); 		\
     case SAMPLES_JCTB: 				return std::string("samples_jctb"); 				\
     case SUBFRAME_ACQUISITION_TIME:	return std::string("subframe_acquisition_time");	\
-    case SUBFRAME_PERIOD:			return std::string("subframe_period");			\
+    case SUBFRAME_DEADTIME:			return std::string("subframe_deadtime");			\
     case STORAGE_CELL_NUMBER:       return std::string("storage_cell_number");       \
     default:       					return std::string("unknown");					\
     }};
@@ -887,17 +894,17 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
      \returns  TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC, TEMPERATURE_SODL,
      TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3, -1 when unknown mode
   */
-  static int getADCIndex(std::string s){
-	  if (s=="temp_fpga")	  	return TEMPERATURE_FPGA;
-	  if (s=="temp_fpgaext")	return TEMPERATURE_FPGAEXT;
-	  if (s=="temp_10ge")	  	return TEMPERATURE_10GE;
-	  if (s=="temp_dcdc")	  	return TEMPERATURE_DCDC;
-	  if (s=="temp_sodl")	  	return TEMPERATURE_SODL;
-	  if (s=="temp_sodr")	  	return TEMPERATURE_SODR;
-	  if (s=="temp_fpgafl")		return TEMPERATURE_FPGA2;
-	  if (s=="temp_fpgafr")		return TEMPERATURE_FPGA3;
-	  return -1;
-  };
+  static int getADCIndex(std::string s){					\
+	  if (s=="temp_fpga")	  	return TEMPERATURE_FPGA;	\
+	  if (s=="temp_fpgaext")	return TEMPERATURE_FPGAEXT;	\
+	  if (s=="temp_10ge")	  	return TEMPERATURE_10GE;	\
+	  if (s=="temp_dcdc")	  	return TEMPERATURE_DCDC;	\
+	  if (s=="temp_sodl")	  	return TEMPERATURE_SODL;	\
+	  if (s=="temp_sodr")	  	return TEMPERATURE_SODR;	\
+	  if (s=="temp_fpgafl")		return TEMPERATURE_FPGA2;	\
+	  if (s=="temp_fpgafr")		return TEMPERATURE_FPGA3;	\
+	  return -1;											\
+  };														\
 
 
   /**
@@ -905,19 +912,43 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
      \param s can be vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr, vthreshold, vrf, vrs, vtr, vcall, vcp
      \returns E_Vcmp_ll, E_Vcmp_lr, E_Vcmp_rl, E_Vcmp_rr, THRESHOLD, E_Vrf, E_Vrs, E_Vtr, E_cal, E_Vcp , -1 when unknown mode
   */
-  static int getDACIndex(std::string s){
-	  if (s=="vcmp_ll")	  	return E_Vcmp_ll;
-	  if (s=="vcmp_lr")	  	return E_Vcmp_lr;
-	  if (s=="vcmp_rl")		return E_Vcmp_rl;
-	  if (s=="vcmp_rr")	  	return E_Vcmp_rr;
-	  if (s=="vthreshold")	return THRESHOLD;
-	  if (s=="vrf")	  		return E_Vrf;
-	  if (s=="vrs")	  		return E_Vrs;
-	  if (s=="vtr")			return E_Vtr;
-	  if (s=="vcall")		return E_cal;
-	  if (s=="vcp")			return E_Vcp;
-	  return -1;
-  };
+  static int getDACIndex(std::string s){		\
+	  if (s=="vcmp_ll")	  	return E_Vcmp_ll;	\
+	  if (s=="vcmp_lr")	  	return E_Vcmp_lr;	\
+	  if (s=="vcmp_rl")		return E_Vcmp_rl;	\
+	  if (s=="vcmp_rr")	  	return E_Vcmp_rr;	\
+	  if (s=="vthreshold")	return THRESHOLD;	\
+	  if (s=="vrf")	  		return E_Vrf;		\
+	  if (s=="vrs")	  		return E_Vrs;		\
+	  if (s=="vtr")			return E_Vtr;		\
+	  if (s=="vcall")		return E_cal;		\
+	  if (s=="vcp")			return E_Vcp;		\
+	  return -1;								\
+  };											\
+
+  /**
+     @short returns receiver frame discard policy from std::string
+     \param s can be nodiscard, discardempty, discardpartial
+     \returns NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES, GET_FRAME_DISCARD_POLICY when unknown mode
+  */
+  static frameDiscardPolicy getReceiverFrameDiscardPolicy(std::string s){		\
+	  if (s=="nodiscard")	  	return NO_DISCARD;				\
+	  if (s=="discardempty")	return DISCARD_EMPTY_FRAMES;	\
+	  if (s=="discardpartial")	return DISCARD_PARTIAL_FRAMES;	\
+	  return GET_FRAME_DISCARD_POLICY;							\
+  };															\
+
+  /** returns std::string from frame discard policy
+      \param f can be NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
+      \returns std::string nodiscard, discardempty, discardpartial, unknown
+  */
+  static std::string getReceiverFrameDiscardPolicy(frameDiscardPolicy f){	\
+    switch (f) {															\
+    case NO_DISCARD: 				return std::string("nodiscard"); 		\
+    case DISCARD_EMPTY_FRAMES: 		return std::string("discardempty"); 	\
+    case DISCARD_PARTIAL_FRAMES: 	return std::string("discardpartial"); 	\
+    default:       					return std::string("unknown");			\
+    }};																		\
 
 
 };

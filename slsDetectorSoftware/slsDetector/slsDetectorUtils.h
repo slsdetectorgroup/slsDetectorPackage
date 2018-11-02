@@ -291,9 +291,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   /** 
       get current timer value
       \param index timer index
+      \param imod module number
       \returns elapsed time value in ns or number of...(e.g. frames, gates, probes)
   */
-  virtual int64_t getTimeLeft(timerIndex index)=0;
+  virtual int64_t getTimeLeft(timerIndex index, int imod = -1)=0;
 
   /**
    * set storage cell that stores first acquisition of the series (Jungfrau only)
@@ -474,6 +475,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
 
   int acquire(int delflag=1);
+
+  /**
+   * Give an internal software trigger to the detector (Eiger only)
+   * @return OK or FAIL
+   */
+  virtual int sendSoftwareTrigger()=0;
+
 
 
   //  double* convertAngles(){return convertAngles(currentPosition);};

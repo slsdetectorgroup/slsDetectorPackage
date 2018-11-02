@@ -18,12 +18,13 @@
 #include <rapidjson/document.h> //json header in zmq stream
 #include <string.h>
 #include <unistd.h> 			//usleep in some machines
+#include <vector>
 using namespace rapidjson;
 
 
 #define MAX_STR_LENGTH 1000
 
-//#define ZMQ_DETAIL
+// #define ZMQ_DETAIL
 #define ROIVERBOSITY
 
 class ZmqSocket {
@@ -36,8 +37,6 @@ public:
 	// eg. int value = -1;
 	// if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
 	//	Close();
-	// }
-
 	/**
 	 * Constructor for a client
 	 * Creates socket, context and connects to server
@@ -45,11 +44,8 @@ public:
 	 * @param portnumber port number
 	 */
 	ZmqSocket (const char* const hostname_or_ip, const uint32_t  portnumber):
-		portno (portnumber),
-		server (false),
-		contextDescriptor (NULL),
-		socketDescriptor (NULL),
-		headerMessage(0)
+		portno (portnumber)
+		// headerMessage(0)
 	{
 		char ip[MAX_STR_LENGTH] = "";
 		memset(ip, 0, MAX_STR_LENGTH);
@@ -61,19 +57,19 @@ public:
 		    throw std::exception();
 
 		// construct address
-		sprintf (serverAddress, "tcp://%s:%d", ip, portno);
+		sprintf (sockfd.serverAddress, "tcp://%s:%d", ip, portno);
 #ifdef VERBOSE
-		cprintf(BLUE,"address:%s\n",serverAddress);
+		cprintf(BLUE,"address:%s\n",sockfd.serverAddress);
 #endif
 
 		// create context
-		contextDescriptor = zmq_ctx_new();
-		if (contextDescriptor == NULL)
+		sockfd.contextDescriptor = zmq_ctx_new();
+		if (sockfd.contextDescriptor == 0)
 		    throw std::exception();
 
 		// create publisher
-		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_SUB);
-		if (socketDescriptor == NULL) {
+		sockfd.socketDescriptor = zmq_socket (sockfd.contextDescriptor, ZMQ_SUB);
+		if (sockfd.socketDescriptor == 0) {
 		    PrintError ();
 		    Close ();
 		    throw std::exception();
@@ -81,7 +77,7 @@ public:
 
 		//Socket Options provided above
 	    // an empty string implies receiving any messages
-		if ( zmq_setsockopt(socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
+		if ( zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
 		    PrintError ();
 		    Close();
 		    throw std::exception();
@@ -90,7 +86,7 @@ public:
 		//ZMQ_SNDHWM default is 0 means no limit. use this to optimize if optimizing required
 		// eg. int value = -1;
 		int value = 0;
-		if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
+		if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
 		    PrintError ();
 		    Close();
 		    throw std::exception();
@@ -105,19 +101,19 @@ public:
 	 * @param ethip is the ip of the ethernet interface to stream zmq from
 	 */
 	ZmqSocket (const uint32_t portnumber, const char *ethip):
-		portno (portnumber),
-		server (true),
-		contextDescriptor (NULL),
-		socketDescriptor (NULL),
-		headerMessage(0)
+
+		portno (portnumber)
+		// headerMessage(0)
 	{
+		sockfd.server = true;
+
 		// create context
-		contextDescriptor = zmq_ctx_new();
-		if (contextDescriptor == NULL)
+		sockfd.contextDescriptor = zmq_ctx_new();
+		if (sockfd.contextDescriptor == 0)
 		    throw std::exception();
 		// create publisher
-		socketDescriptor = zmq_socket (contextDescriptor, ZMQ_PUB);
-		if (socketDescriptor == NULL) {
+		sockfd.socketDescriptor = zmq_socket (sockfd.contextDescriptor, ZMQ_PUB);
+		if (sockfd.socketDescriptor == 0) {
 			PrintError ();
 			Close ();
 			throw std::exception();
@@ -126,12 +122,12 @@ public:
 		//Socket Options provided above
 
 		// construct addresss
-		sprintf (serverAddress,"tcp://%s:%d", ethip, portno);
+		sprintf (sockfd.serverAddress,"tcp://%s:%d", ethip, portno);
 #ifdef VERBOSE
-		cprintf(BLUE,"address:%s\n",serverAddress);
+		cprintf(BLUE,"address:%s\n",sockfd.serverAddress);
 #endif
 		// bind address
-		if (zmq_bind (socketDescriptor, serverAddress) < 0) {
+		if (zmq_bind (sockfd.socketDescriptor, sockfd.serverAddress) < 0) {
 			PrintError ();
 			Close ();
 			throw std::exception();
@@ -145,16 +141,8 @@ public:
 	 * Destructor
 	 */
 	~ZmqSocket () {
-		Disconnect();
-		Close();
+		//mySocketDescriptor destructor also gets called
 	};
-
-
-	/**
-	 * Returns Server Address
-	 * @returns Server Address
-	 */
-	char* GetZmqServerAddress () { return serverAddress; };
 
 	/**
 	 * Returns Port Number
@@ -163,51 +151,39 @@ public:
 	uint32_t GetPortNumber () { return portno; };
 
 	/**
+	 * Returns Server Address
+	 * @returns Server Address
+	 */
+	char* GetZmqServerAddress () { return sockfd.serverAddress; };
+
+	/**
 	 * Returns Socket Descriptor
 	 * @reutns Socket descriptor
 	 */
 
-	void* GetsocketDescriptor () { return socketDescriptor; };
+	void* GetsocketDescriptor () { return sockfd.socketDescriptor; };
 
 	/**
 	 * Connect client socket to server socket
 	 * @returns 1 for fail, 0 for success
 	 */
 	int Connect() {
-		if (zmq_connect(socketDescriptor, serverAddress) < 0) {
+		if (zmq_connect(sockfd.socketDescriptor, sockfd.serverAddress) < 0) {
 			PrintError ();
-			Close ();
 			return 1;
 		}
 		return 0;
 	}
 
-
 	/**
 	 * Unbinds the Socket
 	 */
-	void Disconnect () {
-		if (server)
-			zmq_unbind (socketDescriptor, serverAddress);
-		else
-			zmq_disconnect (socketDescriptor, serverAddress);
-	};
+	void Disconnect () {sockfd.Disconnect();};
 
 	/**
 	 * Close Socket and destroy Context
 	 */
-	void Close () {
-		if (socketDescriptor != NULL) {
-			zmq_close (socketDescriptor);
-			socketDescriptor = NULL;
-		}
-
-		if (contextDescriptor != NULL) {
-			zmq_ctx_destroy (contextDescriptor);
-			contextDescriptor = NULL;
-		}
-	};
-
+	void Close () {	sockfd.Close();	};
 
  	/**
  	 * Convert Hostname to Internet address info structure
@@ -272,7 +248,7 @@ public:
 			uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
 			uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
-			uint16_t modId = 0, uint16_t xCoord = 0, uint16_t yCoord = 0, uint16_t zCoord = 0,
+			uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
 			uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0,
 			char* additionalJsonHeader = 0) {
@@ -298,9 +274,9 @@ public:
 				"\"bunchId\":%llu, "
 				"\"timestamp\":%llu, "
 				"\"modId\":%u, "
-				"\"xCoord\":%u, "
-				"\"yCoord\":%u, "
-				"\"zCoord\":%u, "
+				"\"row\":%u, "
+				"\"column\":%u, "
+				"\"reserved\":%u, "
 				"\"debug\":%u, "
 				"\"roundRNumber\":%u, "
 				"\"detType\":%u, "
@@ -309,22 +285,22 @@ public:
 		        //additional stuff
 		        "\"flippedDataX\":%u"
 
-				;//"}\n\0";
+				;//"}\n";
 		int length = sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
 
 				        frameNumber, expLength, packetNumber, bunchId, timestamp,
-						modId, xCoord, yCoord, zCoord, debug, roundRNumber,
+						modId, row, column, reserved, debug, roundRNumber,
 						detType, version,
 
 						//additional stuff
 						((flippedData == 0 ) ? 0 :flippedData[0])
 		);
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
-		    length = sprintf(buf, "%s, %s}\n%c", buf, additionalJsonHeader, '\0');
+		    length = sprintf(buf, "%s, %s}\n", buf, additionalJsonHeader);
 		} else {
-		    length = sprintf(buf, "%s}\n%c", buf, '\0');
+		    length = sprintf(buf, "%s}\n", buf);
 		}
 
 #ifdef VERBOSE
@@ -332,7 +308,7 @@ public:
 			cprintf(BLUE,"%d : Streamer: buf: %s\n", index, buf);
 #endif
 
-		if(zmq_send (socketDescriptor, buf, length, dummy?0:ZMQ_SNDMORE) < 0) {
+		if(zmq_send (sockfd.socketDescriptor, buf, length, dummy?0:ZMQ_SNDMORE) < 0) {
 			PrintError ();
 			return 0;
 		}
@@ -349,7 +325,7 @@ public:
 	 * @returns 0 if error, else 1
 	 */
 	int SendData (char* buf, int length) {
-		if(zmq_send (socketDescriptor, buf, length, 0) < 0) {
+		if(zmq_send (sockfd.socketDescriptor, buf, length, 0) < 0) {
 			PrintError ();
 			return 0;
 		}
@@ -367,7 +343,7 @@ public:
 	 * @returns length of message, -1 if error
 	 */
 	int ReceiveMessage(const int index, zmq_msg_t& message) {
-		int length = zmq_msg_recv (&message, socketDescriptor, 0);
+		int length = zmq_msg_recv (&message, sockfd.socketDescriptor, 0);
 		if (length == -1) {
 			PrintError ();
 			cprintf (BG_RED,"Error: Could not read header for socket %d\n",index);
@@ -389,18 +365,16 @@ public:
 	 */
 	int ReceiveHeader(const int index, Document& document, uint32_t version)
 	{
-		zmq_msg_t message;
-        headerMessage= &message;
-		zmq_msg_init (&message);
-		int len = ReceiveMessage(index, message);
+		std::vector<char>buffer(MAX_STR_LENGTH);
+		int len = zmq_recv(sockfd.socketDescriptor, buffer.data(), buffer.size(),0);
 		if ( len > 0 ) {
 			bool dummy = false;
 #ifdef ZMQ_DETAIL
-				cprintf( BLUE,"Header %d [%d] Length: %d Header:%s \n", index, portno, len, (char*) zmq_msg_data (&message) );
+				cprintf( BLUE,"Header %d [%d] Length: %d Header:%s \n", index, portno, len, buffer.data());
 #endif
-			if ( ParseHeader (index, len, message, document, dummy, version)) {
+			if ( ParseHeader (index, len, buffer.data(), document, dummy, version)) {
 #ifdef ZMQ_DETAIL
-				cprintf( RED,"Parsed Header %d [%d] Length: %d Header:%s \n", index, portno, len, (char*) zmq_msg_data (&message) );
+				cprintf( RED,"Parsed Header %d [%d] Length: %d Header:%s \n", index, portno, len, buffer.data() );
 #endif
 				if (dummy) {
 #ifdef ZMQ_DETAIL
@@ -421,11 +395,11 @@ public:
     /**
      * Close Header Message. Call this function if ReceiveHeader returned 1
      */
-    void CloseHeaderMessage() {
-        if (headerMessage)
-            zmq_msg_close(headerMessage);
-        headerMessage = 0;
-    };
+    // void CloseHeaderMessage() {
+    //     if (headerMessage)
+    //         zmq_msg_close(headerMessage);
+    //     headerMessage = 0;
+    // };
     /**
      * Parse Header
      * @param index self index for debugging
@@ -436,15 +410,15 @@ public:
      * @param version version that has to match, -1 to not care
      * @returns true if successful else false
      */
-    int ParseHeader(const int index, int length, zmq_msg_t& message,
+    int ParseHeader(const int index, int length, char* buff,
             Document& document, bool& dummy, uint32_t version)
     {
-        if ( document.Parse( (char*) zmq_msg_data (&message), zmq_msg_size (&message)).HasParseError() ) {
-            cprintf( RED,"%d Could not parse. len:%d: Message:%s \n", index, length, (char*) zmq_msg_data (&message) );
+        if ( document.Parse( buff, length).HasParseError() ) {
+            cprintf( RED,"%d Could not parse. len:%d: Message:%s \n", index, length, buff );
             fflush ( stdout );
-            char* buf =  (char*) zmq_msg_data (&message);
+            // char* buf =  (char*) zmq_msg_data (&message);
             for ( int i= 0; i < length; ++i ) {
-                cprintf(RED,"%02x ",buf[i]);
+                cprintf(RED,"%02x ",buff[i]);
             }
             printf("\n");
             fflush( stdout );
@@ -461,29 +435,6 @@ public:
         dummy = temp ? false : true;
 
         return 1;
-        /*
-        int temp = d["data"].GetUint();
-        dummy = temp ? false : true;
-        if (!dummy) {
-            acqIndex        = d["acqIndex"].GetUint64();
-            frameIndex      = d["fIndex"].GetUint64();
-            fileIndex       = d["fileIndex"].GetUint64();
-            subframeIndex   = d["expLength"].GetUint();
-            filename        = d["fname"].GetString();
-        }
-#ifdef VERYVERBOSE
-        cprintf(BLUE,"%d Dummy:%d\n"
-                "\tAcqIndex:%lu\n"
-                "\tFrameIndex:%lu\n"
-                "\tSubIndex:%u\n"
-                "\tFileIndex:%lu\n"
-                "\tBitMode:%u\n"
-                "\tDetType:%u\n",
-                index, (int)dummy, acqIndex, frameIndex, subframeIndex, fileIndex,
-                d["bitmode"].GetUint(),d["detType"].GetUint());
-#endif
-        return 1;
-        */
     };
 
 
@@ -585,24 +536,57 @@ public:
 	};
 
 
+private:
+
+	/**
+	 * Class to close socket descriptors automatically
+	 * upon encountering exceptions in the ZmqSocket constructor
+	 */
+	class mySocketDescriptors {
+	public:
+		/** Constructor */
+		mySocketDescriptors():
+			server(false),
+			contextDescriptor(0),
+			socketDescriptor(0) {};
+		/** Destructor */
+		~mySocketDescriptors() {
+			Disconnect();
+			Close();
+		}
+		/** Unbinds the Socket */
+		void Disconnect () {
+			if (server)
+				zmq_unbind (socketDescriptor, serverAddress);
+			else
+				zmq_disconnect (socketDescriptor, serverAddress);
+		};
+		/** Close Socket and destroy Context */
+		void Close () {
+			if (socketDescriptor != NULL) {
+				zmq_close (socketDescriptor);
+				socketDescriptor = NULL;
+			}
+
+			if (contextDescriptor != NULL) {
+				zmq_ctx_destroy (contextDescriptor);
+				contextDescriptor = NULL;
+			}
+		};
+		/** true if server, else false */
+		bool server;
+		/** Server Address */
+		char serverAddress[1000];
+		/** Context Descriptor */
+		void* contextDescriptor;
+		/** Socket Descriptor */
+		void* socketDescriptor;
+	};
 
 private:
 	/** Port Number */
 	uint32_t portno;
 
-	/** true if server, else false */
-	bool server;
-
-	/** Context Descriptor */
-	void* contextDescriptor;
-
-	/** Socket Descriptor */
-	void* socketDescriptor;
-
-	/** Server Address */
-	char serverAddress[1000];
-
-	/** Header Message pointer */
-	zmq_msg_t* headerMessage;
-
+	/** Socket descriptor */
+	mySocketDescriptors sockfd;
 };

@@ -7,7 +7,6 @@
 #endif
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
-#include "trimming_funcs.h"
 #include "registers_g.h"
 #include "gitInfoGotthard.h"
 #include "AD9257.h"     // include "commonServerFunctions.h"
@@ -82,11 +81,11 @@ int init_detector( int b) {
 	printf("Initializing Detector\n");
 #endif
     testFpga();
-    testRAM();
 
     //gotthard specific
     setPhaseShiftOnce();
     configureADC();
+
     setADC(-1); //already does setdaqreg and clean fifo
     setSettings(DYNAMICGAIN,-1);
     setDefaultDacs();
@@ -101,7 +100,7 @@ int init_detector( int b) {
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);
-    startReceiver(0);
+    startReceiver(1);
     setMasterSlaveConfiguration();
   }
   strcpy(mess,"dummy message");
@@ -709,9 +708,9 @@ int digital_test(int file_des) {
   case DETECTOR_FIRMWARE_TEST:
     retval=testFpga();
     break;
-  case DETECTOR_MEMORY_TEST:
+  /*case DETECTOR_MEMORY_TEST:
     ret=testRAM();
-    break;
+    break;*/
   case DETECTOR_BUS_TEST:
     retval=testBus();
       break;
@@ -1918,93 +1917,44 @@ int get_run_status(int file_des) {
 }
 
 int read_frame(int file_des) {
+	dataret = FAIL;
+	strcpy(mess,"wait for read frame failed\n");
 
-  if (differentClients==1 && lockStatus==1) {
-    dataret=FAIL;
-    sprintf(mess,"Detector locked by %s\n",lastClientIP);  
-    sendDataOnly(file_des,&dataret,sizeof(dataret));
-    sendDataOnly(file_des,mess,sizeof(mess));
-#ifdef VERBOSE
-    printf("dataret %d\n",dataret);
-#endif
-    return dataret;
+	if (differentClients==1 && lockStatus==1) {
+		dataret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		cprintf(RED,"%s\n",mess);
+		sendDataOnly(file_des,&dataret,sizeof(dataret));
+		sendDataOnly(file_des,mess,sizeof(mess));
+		return dataret;
+	}
 
-  }
- 
-  if (storeInRAM==0) {
-    if ((dataretval=(char*)fifo_read_event())) {
-      dataret=OK;
-#ifdef VERYVERBOSE
-      printf("Sending ptr %x %d\n",(unsigned int)(dataretval), dataBytes);
+
+#ifdef VIRTUAL
+	dataret = FINISHED;
+	strcpy(mess,"acquisition successfully finished\n");
+#else
+	waitForAcquisitionFinish();
+
+	// set return value and message
+	if(getFrames()>-2) {
+		dataret = FAIL;
+		sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
+		cprintf(RED,"%s\n",mess);
+	} else {
+		dataret = FINISHED;
+		sprintf(mess,"acquisition successfully finished\n");
+		cprintf(GREEN,"%s",mess);
+
+	}
 #endif
-      sendDataOnly(file_des,&dataret,sizeof(dataret));
-      sendDataOnly(file_des,dataretval,dataBytes);
-#ifdef VERBOSE
-      printf("sent %d bytes \n",dataBytes);
-      printf("dataret OK\n");
-#endif
-      return OK;
-    }  else {
-      //might add delay????
-      if(getFrames()>-2) {
-	dataret=FAIL;
-	sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
-	printf("%s\n",mess);
-      } else {
-	dataret=FINISHED;
-	sprintf(mess,"acquisition successfully finished\n");
-	printf("%s\n",mess);
-      }
-#ifdef VERYVERBOSE
-      printf("%d %d %x %s\n",(int)(sizeof(mess)),(int)(strlen(mess)),(unsigned int)( mess),mess);
-#endif
-      sendDataOnly(file_des,&dataret,sizeof(dataret));
-      sendDataOnly(file_des,mess,sizeof(mess));
-#ifdef VERYVERBOSE
-      printf("message sent %s\n",mess);
-#endif
-      printf("dataret %d\n",dataret);
-      return dataret;
-    }
-  } else {
-    nframes=0;
-    while(fifo_read_event()) {
-      nframes++;
-    }
-    dataretval=(char*)ram_values;
-    dataret=OK;
-#ifdef VERBOSE
-    printf("sending data of %d frames\n",nframes);
-#endif
-    for (iframes=0; iframes<nframes; iframes++) {
-      sendDataOnly(file_des,&dataret,sizeof(dataret));
-#ifdef VERYVERBOSE
-      printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes);
-#endif
-      sendDataOnly(file_des,dataretval,dataBytes);
-      dataretval+=dataBytes;
-    }
-    if (getFrames()>-2) {
-      dataret=FAIL;
-      sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
-      printf("%s\n",mess);
-    } else {
-      dataret=FINISHED;
-      sprintf(mess,"acquisition successfully finished\n");
-      printf("%s\n",mess);
-      if (differentClients)
-	dataret=FORCE_UPDATE;
-    }
-#ifdef VERBOSE
-      printf("Frames left %d\n",(int)(getFrames()));
-#endif
-    sendDataOnly(file_des,&dataret,sizeof(dataret));
-    sendDataOnly(file_des,mess,sizeof(mess));
-    printf("dataret %d\n",dataret);
-    return dataret;
-  }
-  printf("dataret %d\n",dataret);
-  return dataret; 
+
+	if (differentClients)
+		dataret=FORCE_UPDATE;
+
+	sendDataOnly(file_des,&dataret,sizeof(dataret));
+	sendDataOnly(file_des,mess,sizeof(mess));
+	return dataret;
 }
 
 
@@ -2096,9 +2046,9 @@ int set_timer(int file_des) {
     printf(mess);
   }
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("setting timer %d to %lld ns\n",ind,tns);
-#endif 
+//#endif
   if (ret==OK) {
 
     if (differentClients==1 && lockStatus==1 && tns!=-1) { 
@@ -2149,10 +2099,6 @@ int set_timer(int file_des) {
   if (ret!=OK) {
     printf(mess);
     printf("set timer failed\n");
-  } else if (ind==FRAME_NUMBER) {
-    ret=allocateRAM();
-    if (ret!=OK) 
-      sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
   }
 
   n = sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2293,12 +2239,6 @@ int set_dynamic_range(int file_des) {
   //if (dr>=0 && retval!=dr)   ret=FAIL;
   if (ret!=OK) {
     sprintf(mess,"set dynamic range failed\n");
-  } else {
-    ret=allocateRAM();
-    if (ret!=OK)
-      sprintf(mess,"Could not allocate RAM for the dynamic range selected\n");
-    else  if (differentClients)
-      ret=FORCE_UPDATE;
   }
 
   n = sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2341,9 +2281,9 @@ int set_roi(int file_des) {
 			  ret=FAIL;
 		  }
 		  //#ifdef VERBOSE
-		  printf("Setting ROI to:");
+		  printf("\n\nSetting ROI: nroi=%d\n",nroi);
 		  for( i=0;i<nroi;i++)
-			  printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
+			  printf("\t%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
 		  //#endif
 	  }
 	  /* execute action if the arguments correctly arrived*/

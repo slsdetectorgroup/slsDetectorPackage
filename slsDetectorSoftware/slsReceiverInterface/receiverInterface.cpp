@@ -197,3 +197,21 @@ int receiverInterface::executeFunction(int fnum,char mess[]){
 }
 
 
+
+int receiverInterface::sendROI(int fnum, int n, slsReceiverDefs::ROI roiLimits[]) {
+	int ret = slsDetectorDefs::FAIL;
+	char mess[MAX_STR_LENGTH];
+	memset(mess, 0, MAX_STR_LENGTH);
+
+	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+	dataSocket->SendDataOnly(&n,sizeof(n));
+	dataSocket->SendDataOnly(roiLimits,n * sizeof(slsReceiverDefs::ROI));
+	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==slsDetectorDefs::FAIL){
+		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+	    cprintf(RED, "Receiver returned error: %s", mess);
+	}
+	return ret;
+}
+
+

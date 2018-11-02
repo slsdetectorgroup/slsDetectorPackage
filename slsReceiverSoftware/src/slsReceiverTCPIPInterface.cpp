@@ -17,7 +17,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <syscall.h>
-using namespace std;
+#include <vector>
 
 
 
@@ -31,16 +31,16 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 		delete receiverBase;
 }
 
-slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn):
+slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 				myDetectorType(GOTTHARD),
-				receiverBase(rbase),
+				receiverBase(0),
 				ret(OK),
 				fnum(-1),
 				lockStatus(0),
 				killTCPServerThread(0),
 				tcpThreadCreated(false),
 				portNumber(DEFAULT_PORTNO+2),
-				mySock(NULL)
+				mySock(0)
 {
 	//***callback parameters***
 	startAcquisitionCallBack = NULL;
@@ -51,81 +51,23 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 	rawDataModifyReadyCallBack = NULL;
 	pRawDataReady = NULL;
 
-	unsigned short int port_no=portNumber;
-	if(receiverBase == NULL)
-		receiverBase = 0;
+	// create socket
+	portNumber = (pn > 0 ? pn : DEFAULT_PORTNO + 2);
+	MySocketTCP* m = new MySocketTCP(portNumber);
+	mySock = m;
 
-	if (pn>0)
-		port_no = pn;
+	//initialize variables
+	strcpy(mySock->lastClientIP,"none");
+	strcpy(mySock->thisClientIP,"none1");
+	memset(mess,0,sizeof(mess));
+	strcpy(mess,"dummy message");
 
-	success=OK;
-
-	//create socket
-	if(success == OK){
-		mySock = new MySocketTCP(port_no);
-		if (mySock->getErrorStatus()) {
-			success = FAIL;
-			delete mySock;
-			mySock=NULL;
-		}	else {
-			portNumber=port_no;
-			//initialize variables
-			strcpy(mySock->lastClientIP,"none");
-			strcpy(mySock->thisClientIP,"none1");
-			memset(mess,0,sizeof(mess));
-			strcpy(mess,"dummy message");
-			function_table();
+	function_table();
 #ifdef VERYVERBOSE
-			FILE_LOG(logINFO) << "Function table assigned.";
+	FILE_LOG(logINFO) << "Function table assigned.";
 #endif
-		}
-	}
 
 }
-
-
-int slsReceiverTCPIPInterface::setPortNumber(int pn){
-	memset(mess, 0, sizeof(mess));
-	int p_number;
-
-	MySocketTCP *oldsocket = NULL;;
-	int sd = 0;
-
-	if (pn > 0) {
-		p_number = pn;
-
-		if (p_number < 1024) {
-			sprintf(mess,"Too low port number %d\n", p_number);
-			FILE_LOG(logERROR) << mess;
-		} else {
-
-			oldsocket=mySock;
-			mySock = new MySocketTCP(p_number);
-			if(mySock){
-				sd = mySock->getErrorStatus();
-				if (!sd){
-					portNumber=p_number;
-					strcpy(mySock->lastClientIP,oldsocket->lastClientIP);
-					delete oldsocket;
-				} else {
-					FILE_LOG(logERROR) <<  "Could not bind port " << p_number;
-					if (sd == -10) {
-						FILE_LOG(logINFO) << "Port "<< p_number << " already set";
-					} else {
-						delete mySock;
-						mySock=oldsocket;
-					}
-				}
-
-			} else {
-				mySock=oldsocket;
-			}
-		}
-	}
-
-	return portNumber;
-}
-
 
 
 int slsReceiverTCPIPInterface::start(){
@@ -198,7 +140,7 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 
 void slsReceiverTCPIPInterface::startTCPServer(){
 	cprintf(BLUE,"Created [ TCP server Tid: %ld ]\n", (long)syscall(SYS_gettid));
-	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << endl;
+	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << std::endl;
 
 #ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG5) << "Starting Receiver TCP Server";
@@ -265,7 +207,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
 	case F_GET_RECEIVER_ID: 			return "F_GET_RECEIVER_ID";
 	case F_GET_RECEIVER_TYPE: 			return "F_GET_RECEIVER_TYPE";
 	case F_SEND_RECEIVER_DETHOSTNAME:	return "F_SEND_RECEIVER_DETHOSTNAME";
-	case F_RECEIVER_SHORT_FRAME: 		return "F_RECEIVER_SHORT_FRAME";
+	case F_RECEIVER_SET_ROI: 			return "F_RECEIVER_SET_ROI";
 	case F_SETUP_RECEIVER_UDP:			return "F_SETUP_RECEIVER_UDP";
 	case F_SET_RECEIVER_TIMER:  		return "F_SET_RECEIVER_TIMER";
 	case F_SET_RECEIVER_DYNAMIC_RANGE:  return "F_SET_RECEIVER_DYNAMIC_RANGE";
@@ -304,6 +246,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
     case F_RECEIVER_CHECK_VERSION:		return "F_RECEIVER_CHECK_VERSION";
     case F_RECEIVER_DISCARD_POLICY:		return "F_RECEIVER_DISCARD_POLICY";
     case F_RECEIVER_PADDING_ENABLE:		return "F_RECEIVER_PADDING_ENABLE";
+    case F_RECEIVER_DEACTIVATED_PADDING_ENABLE: return "F_RECEIVER_DEACTIVATED_PADDING_ENABLE";
 
 	default:							return "Unknown Function";
 	}
@@ -321,7 +264,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_GET_RECEIVER_ID]				=	&slsReceiverTCPIPInterface::get_id;
 	flist[F_GET_RECEIVER_TYPE]				=	&slsReceiverTCPIPInterface::set_detector_type;
 	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&slsReceiverTCPIPInterface::set_detector_hostname;
-	flist[F_RECEIVER_SHORT_FRAME]			=	&slsReceiverTCPIPInterface::set_short_frame;
+	flist[F_RECEIVER_SET_ROI]				=	&slsReceiverTCPIPInterface::set_roi;
 	flist[F_SETUP_RECEIVER_UDP]				=	&slsReceiverTCPIPInterface::setup_udp;
 	flist[F_SET_RECEIVER_TIMER]				= 	&slsReceiverTCPIPInterface::set_timer;
 	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&slsReceiverTCPIPInterface::set_dynamic_range;
@@ -360,6 +303,8 @@ int slsReceiverTCPIPInterface::function_table(){
     flist[F_RECEIVER_CHECK_VERSION]			=   &slsReceiverTCPIPInterface::check_version_compatibility;
     flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
+	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
+
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -567,15 +512,14 @@ int slsReceiverTCPIPInterface::get_last_client_ip() {
 int slsReceiverTCPIPInterface::set_port() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int unused = 0;
+	int p_type = 0;
 	int p_number = -1;
-	MySocketTCP* mySocket = NULL;
+	MySocketTCP* mySocket = 0;
 	char oldLastClientIP[INET_ADDRSTRLEN];
 	memset(oldLastClientIP, 0, sizeof(oldLastClientIP));
-	int sd = -1;
 
 	// receive arguments
-	if (mySock->ReceiveDataOnly(&unused,sizeof(unused)) < 0 )
+	if (mySock->ReceiveDataOnly(&p_type,sizeof(p_type)) < 0 )
 		return printSocketReadError();
 	if (mySock->ReceiveDataOnly(&p_number,sizeof(p_number)) < 0 )
 		return printSocketReadError();
@@ -587,29 +531,26 @@ int slsReceiverTCPIPInterface::set_port() {
 		FILE_LOG(logERROR) << mess;
 	}
 	else {
-		if (p_number<1024) {
+		if (p_number < 1024) {
 			ret = FAIL;
 			sprintf(mess,"Port Number (%d) too low\n", p_number);
 			FILE_LOG(logERROR) << mess;
-		}
-		FILE_LOG(logINFO) << "set port to " << p_number <<endl;
-		strcpy(oldLastClientIP, mySock->lastClientIP);
-		mySocket = new MySocketTCP(p_number);
+		} else {
+			FILE_LOG(logINFO) << "set port to " << p_number <<std::endl;
+			strcpy(oldLastClientIP, mySock->lastClientIP);
 
-		if(mySocket){
-			sd = mySocket->getErrorStatus();
-			if (sd < 0) {
-				ret = FAIL;
-				sprintf(mess,"Could not bind port %d\n", p_number);
-				FILE_LOG(logERROR) << mess;
-				if (sd == -10) {
-					ret = FAIL;
-					sprintf(mess,"Port %d already set\n", p_number);
-					FILE_LOG(logERROR) << mess;
-				}
-			}
-			else
+			try {
+				mySocket = new MySocketTCP(p_number);
 				strcpy(mySock->lastClientIP,oldLastClientIP);
+			} catch(SamePortSocketException e) {
+				ret = FAIL;
+				sprintf(mess, "Could not bind port %d. It is already set\n", p_number);
+				FILE_LOG(logERROR) << mess;
+			} catch (...) {
+				ret = FAIL;
+				sprintf(mess, "Could not bind port %d.\n", p_number);
+				FILE_LOG(logERROR) << mess;
+			}
 		}
 	}
 
@@ -622,7 +563,7 @@ int slsReceiverTCPIPInterface::set_port() {
 		mySock->SendDataOnly(mess,sizeof(mess));
 	else {
 		mySock->SendDataOnly(&p_number,sizeof(p_number));
-		if(sd>=0){
+		if(ret != FAIL){
 			mySock->Disconnect();
 			delete mySock;
 			mySock = mySocket;
@@ -766,6 +707,24 @@ int slsReceiverTCPIPInterface::send_update() {
 	// data streaming enable
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 	ind=(int)receiverBase->getDataStreamEnable();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	// activate
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getActivate();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	// deactivated padding enable
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getDeactivatedPadding();
+#endif
+	n += mySock->SendDataOnly(&ind,sizeof(ind));
+
+	// silent mode
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	ind=(int)receiverBase->getSilentMode();
 #endif
 	n += mySock->SendDataOnly(&ind,sizeof(ind));
 
@@ -921,15 +880,23 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 
 
 
-int slsReceiverTCPIPInterface::set_short_frame() {
+int slsReceiverTCPIPInterface::set_roi() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int index = 0;
-	int retval = -100;
+	int nroi = 0;
 
 	// receive arguments
-	if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
+	if (mySock->ReceiveDataOnly(&nroi,sizeof(nroi)) < 0 )
 		return printSocketReadError();
+
+	std::vector <ROI> roiLimits;
+	int iloop = 0;
+	for (iloop = 0; iloop < nroi; iloop++) {
+		ROI temp;
+		if ( mySock->ReceiveDataOnly(&temp,sizeof(ROI)) < 0 )
+			return printSocketReadError();
+		roiLimits.push_back(temp);
+	}
 
 	//does not exist
 	if (myDetectorType != GOTTHARD)
@@ -946,8 +913,8 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 		else if (receiverBase->getStatus() != IDLE)
 			receiverNotIdle();
 		else {
-			receiverBase->setShortFrameEnable(index);
-			retval = receiverBase->getShortFrameEnable();
+			ret = receiverBase->setROI(roiLimits);
+			//retval = receiverBase->getROI();
 		}
 #endif
 	}
@@ -958,7 +925,8 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 	mySock->SendDataOnly(&ret,sizeof(ret));
 	if (ret == FAIL)
 		mySock->SendDataOnly(mess,sizeof(mess));
-	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	roiLimits.clear();
 
 	// return ok/fail
 	return ret;
@@ -999,7 +967,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		//setup udpip
 		//get ethernet interface or IP to listen to
 		FILE_LOG(logINFO) << "Receiver UDP IP: " << args[0];
-		string temp = genericSocket::ipToName(args[0]);
+		std::string temp = genericSocket::ipToName(args[0]);
 		if (temp == "none"){
 			ret = FAIL;
 			strcpy(mess, "Failed to get ethernet interface or IP\n");
@@ -1086,8 +1054,8 @@ int slsReceiverTCPIPInterface::set_timer() {
 				case SUBFRAME_ACQUISITION_TIME:
 					receiverBase->setSubExpTime(index[1]);
 					break;
-				case SUBFRAME_PERIOD:
-					receiverBase->setSubPeriod(index[1]);
+				case SUBFRAME_DEADTIME:
+					receiverBase->setSubPeriod(index[1] + receiverBase->getSubExpTime());
 					break;
 				case SAMPLES_JCTB:
 					if (myDetectorType != JUNGFRAUCTB) {
@@ -1121,8 +1089,8 @@ int slsReceiverTCPIPInterface::set_timer() {
 		case SUBFRAME_ACQUISITION_TIME:
 			retval=receiverBase->getSubExpTime();
 			break;
-		case SUBFRAME_PERIOD:
-			retval=receiverBase->getSubPeriod();
+		case SUBFRAME_DEADTIME:
+			retval=(receiverBase->getSubPeriod() - receiverBase->getSubExpTime());
 			break;
 		case SAMPLES_JCTB:
 			if (myDetectorType != JUNGFRAUCTB) {
@@ -1994,11 +1962,11 @@ int slsReceiverTCPIPInterface::set_activate() {
 				else if (receiverBase->getStatus() != IDLE)
 					receiverNotIdle();
 				else {
-					receiverBase->setActivate(enable);
+					receiverBase->setActivate(enable > 0 ? true : false);
 				}
 			}
 			//get
-			retval = receiverBase->getActivate();
+			retval = (int)receiverBase->getActivate();
 			if(enable >= 0 && retval != enable){
 				ret = FAIL;
 				sprintf(mess,"Could not set activate to %d, returned %d\n",enable,retval);
@@ -2484,7 +2452,7 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 			}
 		}
 		//get
-		retval = receiverBase->getSilentMode(); // no check required
+		retval = (int)receiverBase->getSilentMode(); // no check required
 	}
 #endif
 #ifdef VERYVERBOSE
@@ -2548,7 +2516,7 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 	}
 #endif
 #ifdef VERYVERBOSE
-	FILE_LOG(logDEBUG1) << "Activate: " << retval;
+	FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
 #endif
 
 	if (ret == OK && mySock->differentClients)
@@ -2959,3 +2927,59 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 
 
 
+
+int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int enable = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&enable,sizeof(enable)) < 0 )
+		return printSocketReadError();
+
+	if (myDetectorType != EIGER)
+		functionNotImplemented();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	else {
+		if (receiverBase == NULL)
+			invalidReceiverObject();
+		else {
+			// set
+			if(enable >= 0) {
+				if (mySock->differentClients && lockStatus)
+					receiverlocked();
+				else if (receiverBase->getStatus() != IDLE)
+					receiverNotIdle();
+				else {
+					receiverBase->setDeactivatedPadding(enable > 0 ? true : false);
+				}
+			}
+			//get
+			retval = (int)receiverBase->getDeactivatedPadding();
+			if(enable >= 0 && retval != enable){
+				ret = FAIL;
+				sprintf(mess,"Could not set deactivated padding enable to %d, returned %d\n",enable,retval);
+				FILE_LOG(logERROR) << mess;
+			}
+		}
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}

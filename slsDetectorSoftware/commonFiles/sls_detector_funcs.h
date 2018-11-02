@@ -121,6 +121,8 @@ enum detFuncs{
   F_STORAGE_CELL_START,     /** < storage cell start */
 
   F_CHECK_VERSION,			/** < check version compatibility */
+
+  F_SOFTWARE_TRIGGER,		/** < software trigger */
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */

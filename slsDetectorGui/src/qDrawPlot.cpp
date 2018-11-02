@@ -246,7 +246,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		this->setLayout(layout);
 
 		histFrameIndexTitle = new QLabel("");
-
+		histFrameIndexTitle->setFixedHeight(10);
 	boxPlot = new QGroupBox("");
 		layout->addWidget(boxPlot,1,0);
 		boxPlot->setAlignment(Qt::AlignHCenter);

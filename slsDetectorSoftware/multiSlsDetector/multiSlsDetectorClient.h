@@ -4,7 +4,7 @@
 
 #include "multiSlsDetector.h"
 #include "multiSlsDetectorCommand.h"
-#include "sls_detector_exceptions.h"
+#include "sls_receiver_exceptions.h"
 
 
 #include <stdlib.h>
@@ -19,7 +19,7 @@ class multiSlsDetectorClient  {
 
 public:
 	multiSlsDetectorClient(int argc, char *argv[], int action, multiSlsDetector *myDetector=NULL) {	\
-		string answer;					      									\
+		std::string answer;					      									\
 		multiSlsDetectorCommand *myCmd;					      					\
 		int id = -1, pos = -1, iv = 0;			      							\
 		bool verify = true, update = true;										\
@@ -90,7 +90,7 @@ public:
 				strcpy(cmd, argv[0]);											\
 			}																	\
 			// special commands
-			string scmd = cmd;													\
+			std::string scmd = cmd;													\
 			// free without calling multiSlsDetector constructor
 			if (scmd == "free") {												\
 				if (pos != -1)													\
@@ -113,9 +113,10 @@ public:
 		// create multiSlsDetector class if required
 		if (myDetector==NULL) {													\
 			try {																\
-				myDetector = new multiSlsDetector(id, verify, update);			\
-			} catch (const SharedMemoryException & e) {							\
-				cout << e.GetMessage() << endl;									\
+				multiSlsDetector* m = new multiSlsDetector(id, verify, update);			\
+				myDetector = m;													\
+			} catch (const SlsDetectorPackageExceptions & e) {							\
+				/*cout << e.GetMessage() << endl;*/									\
 				return;															\
 			} catch (...) {														\
 				cout << " caught exception" << endl;							\
@@ -128,8 +129,8 @@ public:
 		myCmd=new multiSlsDetectorCommand(myDetector);							\
 		try {																	\
 			answer=myCmd->executeLine(argc, argv, action, pos);					\
-		} catch (const SharedMemoryException & e) {								\
-			cout << e.GetMessage() << endl;										\
+		} catch (const SlsDetectorPackageExceptions & e) {								\
+			/*cout << e.GetMessage() << endl;	*/									\
 			delete myCmd;														\
 			if (del) delete myDetector;											\
 			return;																\

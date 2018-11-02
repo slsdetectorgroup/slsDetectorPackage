@@ -69,7 +69,7 @@ set(PUBLICHEADERS
     include/MySocketTCP.h
     include/genericSocket.h
     include/logger.h
-
+	include/sls_receiver_exceptions.h
 )
 
 

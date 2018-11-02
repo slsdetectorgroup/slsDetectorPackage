@@ -8,7 +8,7 @@ CFLAGS += -Wall  -DGOTTHARDD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DVIRTUAL
 PROGS= 		$(DESTDIR)/gotthardDetectorServer_virtual 
 
 
-SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c trimming_funcs.c  sharedmemory.c 
+SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c 
 OBJS = $(SRCS:%.c=%.o) 
 
 gotthardVirtualServer = $(PROGS)

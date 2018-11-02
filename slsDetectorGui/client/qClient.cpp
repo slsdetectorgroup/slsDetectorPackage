@@ -21,34 +21,40 @@ using namespace std;
 
 
 int main(int argc, char *argv[]){
-
-	qClient *cl =new qClient(argv[1]);
+	qClient* cl = 0;
+	try {
+		cl = new qClient(argv[1]);
+	} catch(...) {
+		return 0;
+	}
 	cl->executeLine(argc-2, argv+2);
-
 	delete cl;
+
+	return 0;
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qClient::qClient(char* hostname){
-	//create socket
-	mySocket = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO);
-	if (mySocket->getErrorStatus()){
-		cout << "Error: could not connect to host:" << hostname << " with port " << DEFAULT_GUI_PORTNO << endl;
-		delete mySocket;
-		exit(-1);
-	}
+qClient::qClient(char* hostname):
+	mySocket(0),
+	myStopSocket(0){
 
-	//create socket to connect to stop server
-	myStopSocket = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO+1);
-	if (myStopSocket->getErrorStatus()){
-		cout << "Error: could not connect to host:" << hostname << " with port " << DEFAULT_GUI_PORTNO + 1 << endl;
-		delete myStopSocket;
-		exit(-1);
+	try {
+		// control socket
+		mySocket = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO);
+		// stop socket
+		myStopSocket = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO+1);
+	} catch(...) {
+		if (mySocket == 0)
+			cout << "Error: could not connect to control server:" <<
+			hostname << " with port " << DEFAULT_GUI_PORTNO << endl;
+		else
+			cout << "Error: could not connect to stop server:" <<
+			hostname << " with port " << DEFAULT_GUI_PORTNO + 1 << endl;
+		throw;
 	}
-
 }
 
 
@@ -93,7 +99,7 @@ int qClient::executeLine(int narg, char *args[]){
 			else if (argument == "stop")
 				stopAcquisition();
 			else{
-				cout << "Error: could not parse arguments: " << argument << endl;
+				cprintf(RED,"Error: could not parse arguments: %s\n", argument.c_str());
 				printCommands();
 				return FAIL;
 			}

@@ -389,15 +389,18 @@ int set_external_signal_flag(int file_des) {
 #ifndef GOTTHARDD
 	functionNotImplemented();
 #else
-	// set
-	if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() == OK)) {
-		setExtSignal(signalindex, flag);
+	if (signalindex > 0)
+	    modeNotImplemented("Signal index", signalindex);
+	else {
+	    // set
+	    if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() == OK)) {
+	        setExtSignal(flag);
+	    }
+	    // get
+	    retval = getExtSignal();
+	    validate((int)flag, (int)retval, "set external signal flag", DEC);
+	    FILE_LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
 	}
-	// get
-	retval = getExtSignal(signalindex);
-	validate((int)flag, (int)retval, "set external signal flag", DEC);
-	FILE_LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
-}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -2319,12 +2322,13 @@ int set_network_parameter(int file_des) {
 		return printSocketReadError();
 	enum networkParameter mode = args[0];
 	int value = args[1];
-	enum NETWORKINDEX serverIndex = 0;
 	FILE_LOG(logDEBUG1, ("Set network parameter index %d to %d\n", mode, value));
 
 #ifdef GOTTHARDD
 	functionNotImplemented();
 #else
+    enum NETWORKINDEX serverIndex = 0;
+
 	// set & get
 	if ((value == -1) || ((value != -1) && (Server_VerifyLock() == OK))) {
 		// check index

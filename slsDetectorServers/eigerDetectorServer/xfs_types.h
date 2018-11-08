@@ -1,5 +1,4 @@
-#ifndef __XFS_TYPES_H__
-#define __XFS_TYPES_H__
+#pragma once
 
 //#include "types.h"
 #include <stdint.h>
@@ -45,8 +44,5 @@ struct udp_header_type
 
 };
 
-
-
-#endif // __XFS_TYPES_H__
 
 

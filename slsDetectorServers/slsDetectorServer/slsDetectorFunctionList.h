@@ -18,7 +18,7 @@ int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
 #endif
 void 		basictests();
-#ifdef JUNGFRAUD
+#if defined(GOTTHARDD) || defined(JUNGFRAUD)
 int 		checkType();
 u_int32_t 	testFpga(void);
 int 		testBus(void);
@@ -101,7 +101,7 @@ void        setMasterSlaveConfiguration();
 
 // parameters - dr, roi
 int 		setDynamicRange(int dr);
-#ifdef GOTTHARD
+#ifdef GOTTHARDD
 ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
@@ -187,7 +187,7 @@ int 		setDetectorPosition(int pos[]);
 // gotthard specific - image, pedestal
 #ifdef GOTTHARDD
 void 		loadImage(enum imageType index, short int imageVals[]);
-int 		readCounterBlock(int startACQ, char *counterVals);
+int 		readCounterBlock(int startACQ, short int counterVals[]);
 int			resetCounterBlock(int startACQ);
 
 // jungfrau specific - pll, flashing firmware

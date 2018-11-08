@@ -1,6 +1,5 @@
 CROSS  		= 	bfin-uclinux-
 CC    		= 	$(CROSS)gcc
-
 CFLAGS 		+=	-Wall  -DGOTTHARDD  -DSTOP_SERVER  # -DVERBOSE 
 LDLIBS		+= 	-lm  -lstdc++ 
 

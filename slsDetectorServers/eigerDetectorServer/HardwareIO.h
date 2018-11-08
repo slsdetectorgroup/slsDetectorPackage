@@ -1,9 +1,6 @@
- 
 
 //Class initially from Gerd and was called mmap_test.c 
-
-#ifndef HARDWAREIO_H
-#define HARDWAREIO_H
+#pragma once
 
 #include "xfs_types.h"
 
@@ -17,10 +14,3 @@
   void HWIO_xfs_out16(xfs_u32 OutAddress, xfs_u16 Value);
   void HWIO_xfs_out32(xfs_u32 OutAddress, xfs_u32 Value);
 
-
-
-
-
-
-
-#endif 

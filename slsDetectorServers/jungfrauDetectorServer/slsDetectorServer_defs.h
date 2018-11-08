@@ -1,5 +1,5 @@
 #pragma once
-#include "sls_detector_defs.h" 	//default dynamicgain in settings
+#include "sls_detector_defs.h"
 #include "RegisterDefs.h"
 
 

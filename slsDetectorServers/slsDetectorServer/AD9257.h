@@ -1,6 +1,9 @@
 #pragma once
 
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
+#ifdef GOTTHARDD
+#include <unistd.h>
+#endif
 
 /* AD9257 ADC DEFINES */
 #define AD9257_ADC_NUMBITS			(24)

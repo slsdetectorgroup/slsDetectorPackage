@@ -158,10 +158,10 @@
 /* Fix Pattern register */
 #define FIX_PATT_REG                    (0x23 << MEM_MAP_SHIFT)
 
-#define FIXED_PATT_VAL                  (0xACDC1980)
+#define FIX_PATT_VAL                    (0xACDC1980)
 
 /** Config register */
-#define Config_REG                      (0x26 << MEM_MAP_SHIFT)
+#define CONFIG_REG                      (0x26 << MEM_MAP_SHIFT)
 
 #define CONFIG_SLAVE_OFST               (0)                                     // Not used in FW & SW
 #define CONFIG_SLAVE_MSK                (0x00000001 << CONFIG_SLAVE_OFST)
@@ -266,7 +266,7 @@
 #define DETECTOR_TYPE_MOENCH_VAL        (2)
 
 /* 16 bit Fifo Data register */
-//#define FIFO_DATA_REG                   (0x50 << MEM_MAP_SHIFT)                 // Not used in FW and SW (16bit)
+#define FIFO_DATA_REG                   (0x50 << MEM_MAP_SHIFT)                 // Not used in FW and SW (16bit)
 
 /*
 #define MOD_DACS1_REG         0x65<<11

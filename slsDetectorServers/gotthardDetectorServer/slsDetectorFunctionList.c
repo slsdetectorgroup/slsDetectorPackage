@@ -2,6 +2,7 @@
 #include "gitInfoGotthard.h"
 #include "versionAPI.h"
 #include "logger.h"
+#include "RegisterDefs.h"
 
 #ifndef VIRTUAL
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
@@ -10,6 +11,8 @@
 #include <pthread.h>
 #include <time.h>
 #endif
+
+#include "string.h"
 
 // Variables that will be exported
 int phaseShift = DEFAULT_PHASE_SHIFT;
@@ -27,7 +30,7 @@ int highvoltage = 0;
 
 int detectorFirstServer = 1;
 int dacValues[NDAC] = {0};
-enum detectorSettings thisSettings = UNITIALIZED;
+enum detectorSettings thisSettings = UNINITIALIZED;
 enum externalSignalFlag signalMode = 0;
 int digitalTestBit = 0;
 
@@ -129,7 +132,7 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	volatile u_int32_t type = ((bus_r(BOARD_REVISION_REG) & DETECTOR_TYPE_MASK) >> DETECTOR_TYPE_OFFSET);
+	volatile u_int32_t type = ((bus_r(BOARD_REVISION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type == DETECTOR_TYPE_MOENCH_VAL){
 			FILE_LOG(logERROR, ("This is not a Gotthard Server (read %d, expected ?)\n", type));
 			return FAIL;
@@ -342,7 +345,7 @@ u_int32_t getBoardRevision() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    return ((bus_r(BOARD_REVISION_REG) & BOARD_REVISION_MASK) >> BOARD_REVISION_OFST);
+    return ((bus_r(BOARD_REVISION_REG) & BOARD_REVISION_MSK) >> BOARD_REVISION_OFST);
 }
 
 
@@ -425,7 +428,7 @@ uint32_t readRegister16And32(uint32_t offset) {
     if ((addr == CONTROL_REG) || (addr == FIFO_DATA_REG)) {
         return (u_int32_t)bus_r16(addr);
     } else
-        readRegister(offset);
+        return readRegister(offset);
 }
 
 /* firmware functions (resets) */
@@ -553,10 +556,13 @@ int readConfigFile() {
 
     // Initialization
     const size_t lineSize = 256;
-    char line[lineSize] = {0};
+    char line[lineSize];
+    memset(line, 0, lineSize);
     const size_t keySize = lineSize / 2;
-    char key[keySize] = {0};
-    char value[keySize] = {0};
+    char key[keySize];
+    memset(key, 0, keySize);
+    char value[keySize];
+    memset(value, 0, keySize);
     int scan = OK;
 
     // keep reading a line
@@ -655,10 +661,10 @@ void setMasterSlaveConfiguration() {
     // master configuration
     if (masterflags == IS_MASTER) {
         // master default delay set, so reset delay
-        setDelay(0);
+        setTimer(DELAY_AFTER_TRIGGER, 0);
 
         // Set pattern phase for the master module
-        val = (bus_r(MULTI_PURPOSE_REG) & (~(PLL_CLK_SL_MSK))); // unset mask
+        u_int32_t val = (bus_r(MULTI_PURPOSE_REG) & (~(PLL_CLK_SL_MSK))); // unset mask
         bus_w(MULTI_PURPOSE_REG, val | PLL_CLK_SL_MSTR_VAL);
         setPhaseShift(patternphase);
 
@@ -685,7 +691,7 @@ void setMasterSlaveConfiguration() {
     }
 
     // all configuration - Set RST to SW1 delay
-    val = (bus_r(MULTI_PURPOSE_REG) & (~(RST_TO_SW1_DLY_MSK))); // unset mask
+    u_int32_t val = (bus_r(MULTI_PURPOSE_REG) & (~(RST_TO_SW1_DLY_MSK))); // unset mask
     val = val | ((rsttosw1delay << RST_TO_SW1_DLY_OFST) & RST_TO_SW1_DLY_MSK); // set val
     bus_w(MULTI_PURPOSE_REG, val);
     FILE_LOG(logDEBUG1, ("\tMultipurpose reg: 0x%x\n", val));
@@ -833,8 +839,8 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting delay: %lldns\n", (long long int)val));
 			if (masterflags == IS_MASTER) {
-			    value += masterdefaultdelay;
-			    FILE_LOG(logINFO, ("\tActual delay (master): %lld\n", (long long int) value));
+			    val += masterdefaultdelay;
+			    FILE_LOG(logINFO, ("\tActual delay (master): %lld\n", (long long int) val));
 			}
 			val = (val * 1E-3 * CLK_FREQ) + 0.5;
 		}
@@ -987,7 +993,7 @@ enum detectorSettings setSettings(enum detectorSettings sett){
 	    // set conf gain
         bus_w(addr, bus_r(addr) & ~GAIN_CONFGAIN_MSK);
         bus_w(addr, bus_r(addr) | GAIN_CONFGAIN_DYNMC_GAIN_VAL);
-        FILE_LOG(logINFO, ("\Gain Reg: 0x%x\n", bus_r(addr)));
+        FILE_LOG(logINFO, ("\tGain Reg: 0x%x\n", bus_r(addr)));
 		thisSettings = sett;
 	}
 
@@ -995,10 +1001,7 @@ enum detectorSettings setSettings(enum detectorSettings sett){
 }
 
 enum detectorSettings getSettings(){
-
 	uint32_t regval = bus_r(GAIN_REG);
-    FILE_LOG(logDEBUG1, ("Getting Settings\n Read Gain Register :0x%x\n", val));
-
 	uint32_t val = regval & GAIN_CONFGAIN_MSK;
 	switch(val) {
     case GAIN_CONFGAIN_DYNMC_GAIN_VAL:
@@ -1302,7 +1305,6 @@ void setTiming( enum externalCommunicationMode arg){
 			FILE_LOG(logERROR, ("Unknown timing mode %d for this detector\n", (int)arg));
 			return;
 		}
-		timingMode = arg;
 	}
 }
 
@@ -1350,11 +1352,11 @@ void calcChecksum(mac_conf* mac, int sourceip, int destip) {
     mac->ip.ip_chksum    = 0x0000 ; // pseudo
     mac->ip.ip_sourceip  = sourceip;
     mac->ip.ip_destip    = destip;
-    FILE_log(logDEBUG1, ("\tIP TTL: 0x%x\n", mac_conf_regs->ip.ip_ttl));
+    FILE_LOG(logDEBUG1, ("\tIP TTL: 0x%x\n", mac->ip.ip_ttl));
 
-	int count = sizeof(ip);
+	int count = sizeof(mac->ip);
 	unsigned short *addr;
-	addr = (unsigned short*)(&ip); /* warning: assignment from incompatible pointer type */
+	addr = (unsigned short*)(&(mac->ip)); /* warning: assignment from incompatible pointer type */
 
 	long int sum = 0;
 	while( count > 1 )  {
@@ -1370,7 +1372,7 @@ void calcChecksum(mac_conf* mac, int sourceip, int destip) {
 	mac->ip.ip_chksum   =  checksum;
 }
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival) {
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2) {
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -1405,35 +1407,35 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
 
 	// set/ unset the digital test bit
-	if (ival)
+	if (digitalTestBit)
 	    bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
 	else
 	    bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
-    FILE_log(logDEBUG1, ("\tDigital Test Bit. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    FILE_LOG(logDEBUG1, ("\tDigital Test Bit. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
 	//reset mac
 	bus_w (addr, bus_r(addr) | RST_MSK);
-	FILE_log(logDEBUG1, ("\tReset Mac. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+	FILE_LOG(logDEBUG1, ("\tReset Mac. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
 	usleep(500000);
 
 	// release reset
 	bus_w(addr, bus_r(addr) &(~ RST_MSK));
-	FILE_log(logDEBUG1, ("\tReset released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+	FILE_LOG(logDEBUG1, ("\tReset released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
 	// write shadow regs
     bus_w(addr, bus_r(addr) | (ENT_RSTN_MSK | WRT_BCK_MSK));
-    FILE_log(logDEBUG1, ("\tWrite shadow regs. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    FILE_LOG(logDEBUG1, ("\tWrite shadow regs. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     // release write back
     bus_w(addr, bus_r(addr) &(~WRT_BCK_MSK));
-    FILE_log(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    FILE_LOG(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     // nreset phy /*FIXME: is this needed ?? */
     bus_w(addr, bus_r(addr) | ENT_RSTN_MSK);
-    FILE_log(logDEBUG1, ("\tNreset phy. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    FILE_LOG(logDEBUG1, ("\tNreset phy. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
-    FILE_log(logDEBUG1, ("\tConfiguring MAC CONF\n"));
+    FILE_LOG(logDEBUG1, ("\tConfiguring MAC CONF\n"));
     mac_conf *mac_conf_regs = (mac_conf*)(CSP0BASE + ENET_CONF_REG * 2);    // direct write
     mac_conf_regs->mac.mac_dest_mac1  = ((destmac >> (8 * 5)) & 0xFF);
     mac_conf_regs->mac.mac_dest_mac2  = ((destmac >> (8 * 4)) & 0xFF);
@@ -1441,7 +1443,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     mac_conf_regs->mac.mac_dest_mac4  = ((destmac >> (8 * 2)) & 0xFF);
     mac_conf_regs->mac.mac_dest_mac5  = ((destmac >> (8 * 1)) & 0xFF);
     mac_conf_regs->mac.mac_dest_mac6  = ((destmac >> (8 * 0)) & 0xFF);
-    FILE_log(logDEBUG1, ("\tDestination Mac: %llx %x:%x:%x:%x:%x:%x\n",
+    FILE_LOG(logDEBUG1, ("\tDestination Mac: %llx %x:%x:%x:%x:%x:%x\n",
             destmac,
             mac_conf_regs->mac.mac_dest_mac1,
             mac_conf_regs->mac.mac_dest_mac2,
@@ -1455,7 +1457,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     mac_conf_regs->mac.mac_src_mac4  = ((sourcemac >> (8 * 2)) & 0xFF);
     mac_conf_regs->mac.mac_src_mac5  = ((sourcemac >> (8 * 1)) & 0xFF);
     mac_conf_regs->mac.mac_src_mac6  = ((sourcemac >> (8 * 0)) & 0xFF);
-    FILE_log(logDEBUG1, ("\tSource Mac: %llx %x:%x:%x:%x:%x:%x\n",
+    FILE_LOG(logDEBUG1, ("\tSource Mac: %llx %x:%x:%x:%x:%x:%x\n",
             sourcemac,
             mac_conf_regs->mac.mac_src_mac1,
             mac_conf_regs->mac.mac_src_mac2,
@@ -1471,7 +1473,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     mac_conf_regs->udp.udp_len          = udpPacketSize;
     mac_conf_regs->udp.udp_chksum       = 0x0000;
 
-    FILE_log(logDEBUG1, ("\tConfiguring TSE\n"));
+    FILE_LOG(logDEBUG1, ("\tConfiguring TSE\n"));
     tse_conf *tse_conf_regs = (tse_conf*)(CSP0BASE + TSE_CONF_REG * 2);     // direct write
     tse_conf_regs->rev                 = 0xA00;
     tse_conf_regs->scratch             = 0xCCCCCCCC;
@@ -1491,22 +1493,22 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     tse_conf_regs->mdio_addr0          = 0x12;
     tse_conf_regs->mdio_addr1          = 0x0;
 
-    FILE_log(logDEBUG1, ("\tConfigure Mac Done"));
+    FILE_LOG(logDEBUG1, ("\tConfigure Mac Done"));
     mac_conf_regs->cdone               = 0xFFFFFFFF;
 
     // write shadow regs  /* FIXME: Only INT_RSTN_MSK | WRT_BCK_MSK */
     bus_w(addr, bus_r(addr) | (INT_RSTN_MSK | ENT_RSTN_MSK| WRT_BCK_MSK));
-    FILE_log(logDEBUG1, ("\tWrite shadow regs with int reset. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    FILE_LOG(logDEBUG1, ("\tWrite shadow regs with int reset. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     usleep(100000);
 
     // release write back
     bus_w(addr, bus_r(addr) &(~WRT_BCK_MSK));
-    FILE_log(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    FILE_LOG(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     // sw1 /* FIXME: Only SW1_MSK */
-    bus_w(addrr, bus_r(addrr) | (INT_RSTN_MSK | ENT_RSTN_MSK | SW1_MSK));
-    FILE_log(logDEBUG1, ("\tSw1. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    bus_w(addr, bus_r(addr) | (INT_RSTN_MSK | ENT_RSTN_MSK | SW1_MSK));
+    FILE_LOG(logDEBUG1, ("\tSw1. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     usleep(1000 * 1000);
     return OK;
@@ -1528,12 +1530,12 @@ void loadImage(enum imageType index, short int imageVals[]){
     volatile u_int16_t *ptr = (u_int16_t*)(CSP0BASE + addr * 2);
     memcpy((char*)ptr, (char*)imageVals, dataBytes);
 
-    FILE_log(logINFO, ("Loaded %s image at 0x%p\n",
+    FILE_LOG(logINFO, ("Loaded %s image at 0x%p\n",
             (index == GAIN_IMAGE) ? "Gain" : "Dark", (void*) ptr));
 }
 
 int readCounterBlock(int startACQ, short int counterVals[]){
-    FILE_log(logINFO, ("Reading Counter Block with start Acq :%d\n", startACQ));
+    FILE_LOG(logINFO, ("Reading Counter Block with start Acq :%d\n", startACQ));
 
     // stop any current acquisition
     if (runBusy()) {
@@ -1542,11 +1544,11 @@ int readCounterBlock(int startACQ, short int counterVals[]){
         // waiting for the last frame read to be done
         while(runBusy())
             usleep(500);
-        FILE_log(logDEBUG1, ("State machine stopped\n"));
+        FILE_LOG(logDEBUG1, ("State machine stopped\n"));
     }
 
     // copy memory
-    addr = COUNTER_MEMORY_REG;
+    u_int32_t addr = COUNTER_MEMORY_REG;
     volatile u_int16_t *ptr = (u_int16_t*)(CSP0BASE + addr * 2);
     int dataBytes = calculateDataBytes();
     memcpy((char*)counterVals, (char*)ptr, dataBytes);
@@ -1569,7 +1571,7 @@ int readCounterBlock(int startACQ, short int counterVals[]){
 }
 
 int resetCounterBlock(int startACQ){
-    FILE_log(logINFO, ("Resetting Counter Block with start Acq :%d\n", startACQ));
+    FILE_LOG(logINFO, ("Resetting Counter Block with start Acq :%d\n", startACQ));
 
     // stop any current acquisition
     if (runBusy()) {
@@ -1578,7 +1580,7 @@ int resetCounterBlock(int startACQ){
         // waiting for the last frame read to be done
         while(runBusy())
             usleep(500);
-        FILE_log(logDEBUG1, ("State machine stopped\n"));
+        FILE_LOG(logDEBUG1, ("State machine stopped\n"));
     }
 
     // reset counter

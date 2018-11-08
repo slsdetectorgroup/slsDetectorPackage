@@ -3416,7 +3416,6 @@ int slsDetector::writeCounterBlockFile(std::string const fname,int startACQ) {
 
 
 int slsDetector::getCounterBlock(short int image[],int startACQ) {
-    int nChan = getTotalNumberOfChannels();
     int fnum = F_READ_COUNTER_BLOCK;
 	int ret = FAIL;
 	int nChan = getTotalNumberOfChannels();

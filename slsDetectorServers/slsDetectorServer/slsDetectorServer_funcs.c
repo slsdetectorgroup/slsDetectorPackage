@@ -38,7 +38,6 @@ int (*flist[NUM_DET_FUNCTIONS])(int);
 uint32_t dhcpipad = 0;
 #endif
 
-enum numberMode {DEC, HEX};
 enum updateRet {NO_UPDATE, UPDATE};
 
 /* initialization functions */
@@ -1924,7 +1923,8 @@ int load_image(int file_des) {
 
 	enum imageType index = args[0];
 	int numChannels = args[1];
-	short int imageVals[numChannels] = {0};
+	short int imageVals[numChannels];
+	memset(imageVals, 0, numChannels * sizeof(short int));
 	if (numChannels > 0) {
 		if (receiveData(file_des, imageVals, numChannels * sizeof(short int), OTHER) < 0) {
 			return printSocketReadError();
@@ -1975,7 +1975,8 @@ int read_counter_block(int file_des) {
 		return printSocketReadError();
 	int startACQ = args[0];
     int numChannels = args[1];
-    short int retval[numChannels] = {0};
+    short int retval[numChannels];
+    memset(retval, 0, numChannels * sizeof(short int));
 	FILE_LOG(logDEBUG1, ("Read counter block with start acq bit: %d\n", startACQ));
 
 #ifndef GOTTHARDD

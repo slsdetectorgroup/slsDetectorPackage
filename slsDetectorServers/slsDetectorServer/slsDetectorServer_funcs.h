@@ -1,6 +1,8 @@
 #pragma once
 #include "sls_detector_defs.h"
 
+enum numberMode {DEC, HEX};
+
 // initialization functions
 int printSocketReadError();
 void init_detector();
@@ -9,8 +11,8 @@ const char* getFunctionName(enum detFuncs func);
 void function_table();
 void functionNotImplemented();
 void modeNotImplemented(char* modename, int mode);
-void validate(int arg, int retval, char* modename, int hex);
-void validate64(int64_t arg, int64_t retval, char* modename, int hex);
+void validate(int arg, int retval, char* modename, enum numberMode nummode);
+void validate64(int64_t arg, int64_t retval, char* modename, enum numberMode nummode);
 int M_nofunc(int);
 int M_nofuncMode(int);
 

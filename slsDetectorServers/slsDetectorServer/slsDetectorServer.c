@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
 			}
             else if(!strcasecmp(argv[i],"-devel")){
                 FILE_LOG(logINFO, ("Detected developer mode\n"));
-                debugflag = DEVELOPER_MODE;
+                debugflag = 1;
             }
 #ifdef GOTTHARDD
 			else if(!strcasecmp(argv[i],"-phaseshift")){

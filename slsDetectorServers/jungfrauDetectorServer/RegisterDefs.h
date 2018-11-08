@@ -1,5 +1,4 @@
-#ifndef REGISTER_DEFS_H
-#define REGISTER_DEFS_H
+#pragma once
 
 /* Definitions for FPGA*/
 #define MEM_MAP_SHIFT 1
@@ -397,8 +396,6 @@
 #define ASIC_CTRL_DS_TMR_MSK            (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
 #define ASIC_CTRL_DS_TMR_VAL            ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
 
-
-#endif  //REGISTERS_G_H
 
 
 

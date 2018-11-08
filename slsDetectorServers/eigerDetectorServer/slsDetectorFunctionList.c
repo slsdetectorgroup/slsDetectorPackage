@@ -15,8 +15,11 @@
 #include <time.h>
 #endif
 
-// Global variable from slsDetectorServer
+// Global variable from slsDetectorServer_funcs
 extern int debugflag;
+
+
+// Global variable from communication_funcs.c
 extern int isControlServer;
 
 int firmware_compatibility = OK;
@@ -93,7 +96,7 @@ int getFirmwareCheckResult(char** mess) {
 	return firmware_compatibility;
 }
 
-void checkFirmwareCompatibility() {
+void basictests() {
 	firmware_compatibility = OK;
 	firmware_check_done = 0;
 	memset(firmware_message, 0, MAX_STR_LENGTH);
@@ -1231,7 +1234,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
 		FILE_LOG(logDEBUG1, ("\tset up left ok\n"));
 	} else {
-		return -1;
+		return FAIL;
 	}
 	/*}*/
 
@@ -1246,7 +1249,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
 		FILE_LOG(logDEBUG1, (" set up right ok\n"));
 	} else {
-		return -1;
+		return FAIL;
 	}
 	/*}*/
 
@@ -1255,7 +1258,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
 	nimages_per_request=eiger_nexposures * eiger_ncycles;
 #endif
-	return 0;
+	return OK;
 }
 
 

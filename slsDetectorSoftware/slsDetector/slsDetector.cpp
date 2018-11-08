@@ -42,7 +42,7 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
 	// ensure shared memory was not created before
 	auto shm = SharedMemory(multiId, id);
 	if (shm.IsExisting()) {
-		FILE_LOG(logWARNING) << "Weird, this shared memory should have been "
+		FILE_LOG(logWARNING) << "This shared memory should have been "
 				"deleted before! " << shm.GetName() << ". Freeing it again";
 		freeSharedMemory(multiId, id);
 	}
@@ -1402,12 +1402,6 @@ int slsDetector::updateDetectorNoWait() {
 		thisDetector->timerValue[DELAY_AFTER_TRIGGER] = i64;
 	}
 
-	if ((thisDetector->myDetectorType != JUNGFRAU) &&
-			(thisDetector->myDetectorType != EIGER)) {
-		n += controlSocket->ReceiveDataOnly(&i64, sizeof(i64));
-		thisDetector->timerValue[GATES_NUMBER] = i64;
-	}
-
 	n += controlSocket->ReceiveDataOnly(&i64, sizeof(i64));
 	thisDetector->timerValue[CYCLES_NUMBER] = i64;
 
@@ -2060,7 +2054,7 @@ int slsDetector::configureMAC() {
 	int ret = FAIL;
 	char args[9][50];
 	memset(args, 0, sizeof(args));
-	char retvals[3][50];
+	char retvals[2][50];
 	memset(retvals, 0, sizeof(retvals));
 	FILE_LOG(logDEBUG1) << "Configuring MAC";
 
@@ -2186,30 +2180,30 @@ int slsDetector::configureMAC() {
 			// get detectormac, detector ip
 			uint64_t idetectormac = 0;
 			uint32_t idetectorip = 0;
-			sscanf(retvals[1], "%lx", &idetectormac);
-			sscanf(retvals[2], "%x", &idetectorip);
-			sprintf(retvals[1],"%02x:%02x:%02x:%02x:%02x:%02x",
+			sscanf(retvals[0], "%lx", &idetectormac);
+			sscanf(retvals[1], "%x", &idetectorip);
+			sprintf(retvals[0],"%02x:%02x:%02x:%02x:%02x:%02x",
 					(unsigned int)((idetectormac>>40)&0xFF),
 					(unsigned int)((idetectormac>>32)&0xFF),
 					(unsigned int)((idetectormac>>24)&0xFF),
 					(unsigned int)((idetectormac>>16)&0xFF),
 					(unsigned int)((idetectormac>>8)&0xFF),
 					(unsigned int)((idetectormac>>0)&0xFF));
-			sprintf(retvals[2],"%d.%d.%d.%d",
+			sprintf(retvals[1],"%d.%d.%d.%d",
 					(idetectorip>>24)&0xff,
 					(idetectorip>>16)&0xff,
 					(idetectorip>>8)&0xff,
 					(idetectorip)&0xff);
 			// update if different
-			if (strcasecmp(retvals[1],thisDetector->detectorMAC)) {
+			if (strcasecmp(retvals[0],thisDetector->detectorMAC)) {
 				memset(thisDetector->detectorMAC, 0, MAX_STR_LENGTH);
-				strcpy(thisDetector->detectorMAC, retvals[1]);
+				strcpy(thisDetector->detectorMAC, retvals[0]);
 				FILE_LOG(logINFO) << detId << ": Detector MAC updated to " <<
 						thisDetector->detectorMAC;
 			}
-			if (strcasecmp(retvals[2],thisDetector->detectorIP)) {
+			if (strcasecmp(retvals[1],thisDetector->detectorIP)) {
 				memset(thisDetector->detectorIP, 0, MAX_STR_LENGTH);
-				strcpy(thisDetector->detectorIP, retvals[2]);
+				strcpy(thisDetector->detectorIP, retvals[1]);
 				FILE_LOG(logINFO) << detId << ": Detector IP updated to " <<
 						thisDetector->detectorIP;
 			}
@@ -3364,11 +3358,12 @@ int slsDetector::digitalTest( digitalTestMode mode, int ival) {
 
 int slsDetector::loadImageToDetector(imageType index,std::string const fname) {
 	int ret = FAIL;
-	short int args[thisDetector->nChans * thisDetector->nChips];
+	int nChan = getTotalNumberOfChannels();
+	short int args[nChan];
 	FILE_LOG(logDEBUG1) << "Loading " << (!index ? "Dark" : "Gain") << "image from file " << fname;
 
-	if (readDataFile(fname, args, getTotalNumberOfChannels())) {
-		ret = sendImageToDetector(index,args);
+	if (readDataFile(fname, args, nChan)) {
+		ret = sendImageToDetector(index, args);
 		return ret;
 	}
 
@@ -3381,18 +3376,24 @@ int slsDetector::loadImageToDetector(imageType index,std::string const fname) {
 int slsDetector::sendImageToDetector(imageType index,short int imageVals[]) {
 	int fnum = F_LOAD_IMAGE;
 	int ret = FAIL;
+    int nChan = getTotalNumberOfChannels();
+	int args[2] = {(int)index, nChan};
 	FILE_LOG(logDEBUG1) << "Sending image to detector";
 
 	if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
-		ret = thisDetectorControl->Client_Send(fnum,
-				imageVals, thisDetector->dataBytes, NULL, 0);
-		disconnectControl();
-
-		// handle ret
-		if (ret == FAIL) {
-			setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
-		} else if (ret == FORCE_UPDATE)
-			ret = updateDetector();
+	    controlSocket->SendDataOnly(&fnum, sizeof(fnum));
+	    controlSocket->SendDataOnly(args, sizeof(args));
+        controlSocket->SendDataOnly(imageVals, nChan * sizeof(short int));
+        controlSocket->ReceiveDataOnly(&ret, sizeof(ret));
+        if (ret == FAIL) {
+            char mess[MAX_STR_LENGTH] = {0};
+            setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+            controlSocket->ReceiveDataOnly(mess, MAX_STR_LENGTH);
+            FILE_LOG(logERROR) << "Detector " << detId << " returned error: " << mess;
+        }
+        disconnectControl();
+        if (ret == FORCE_UPDATE)
+            ret = updateDetector();
 	}
 	return ret;
 }
@@ -3400,7 +3401,8 @@ int slsDetector::sendImageToDetector(imageType index,short int imageVals[]) {
 
 int slsDetector::writeCounterBlockFile(std::string const fname,int startACQ) {
 	int ret = FAIL;
-	short int retvals[thisDetector->nChans * thisDetector->nChips];
+    int nChan = getTotalNumberOfChannels();
+	short int retvals[nChan];
 	FILE_LOG(logDEBUG1) << "Reading Counter to " << fname <<
 			(startACQ ? " and Restarting Acquisition" : "\n");
 
@@ -3408,20 +3410,22 @@ int slsDetector::writeCounterBlockFile(std::string const fname,int startACQ) {
 	if (ret == FAIL)
 		setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
 	else
-		ret=writeDataFile(fname, getTotalNumberOfChannels(), retvals);
+		ret = writeDataFile(fname, nChan, retvals);
 	return ret;
 }
 
 
 int slsDetector::getCounterBlock(short int image[],int startACQ) {
-	int fnum = F_READ_COUNTER_BLOCK;
+    int nChan = getTotalNumberOfChannels();
+    int fnum = F_READ_COUNTER_BLOCK;
 	int ret = FAIL;
-	int arg = startACQ;
+	int nChan = getTotalNumberOfChannels();
+	int args[2] = {startACQ, nChan};
 	FILE_LOG(logDEBUG1) << "Reading Counter block with startacq: " << startACQ;
 
 	if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
 		ret = thisDetectorControl->Client_Send(fnum,
-				&arg, sizeof(arg), image, thisDetector->dataBytes);
+				args, sizeof(args), image, nChan * sizeof(short int));
 		disconnectControl();
 
 		// handle ret

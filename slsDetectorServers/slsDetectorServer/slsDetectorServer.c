@@ -19,6 +19,11 @@ extern int ret;
 extern int sockfd;
 extern int debugflag;
 
+// Global variables from slsDetectorFunctionList
+#ifdef GOTTHARDD
+extern int phaseShift;
+#endif
+
 void error(char *msg){
 	perror(msg);
 }
@@ -41,10 +46,23 @@ int main(int argc, char *argv[]){
 				FILE_LOG(logINFO, ("Detected stop server\n"));
 				isControlServer = 0;
 			}
-			else if(!strcasecmp(argv[i],"-devel")){
-				FILE_LOG(logINFO, ("Detected developer mode\n"));
-				debugflag = 1;
+            else if(!strcasecmp(argv[i],"-devel")){
+                FILE_LOG(logINFO, ("Detected developer mode\n"));
+                debugflag = DEVELOPER_MODE;
+            }
+#ifdef GOTTHARDD
+			else if(!strcasecmp(argv[i],"-phaseshift")){
+			    if ((i + 1) >= argc) {
+			        FILE_LOG(logERROR, ("no phase shift value given. Exiting.\n"));
+			        return -1;
+			    }
+			    if (sscanf(argv[i + 1], "%d", &phaseShift) == 0) {
+			        FILE_LOG(logERROR, ("cannot decode phase shift value %s. Exiting.\n", argv[i + 1]));
+			        return -1;
+			    }
+				FILE_LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));
 			}
+#endif
 #ifdef JUNGFRAUD
 			else if(!strcasecmp(argv[i],"-update")){
 				FILE_LOG(logINFO, ("Detected update mode\n"));

@@ -34,26 +34,18 @@ int debugflag = 0;
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
-int dataBytes = 10;
 #ifdef EIGERD
 uint32_t dhcpipad = 0;
 #endif
-#ifdef GOTTHARDD
-int digitalTestBit = 0;
-#endif
 
-
+enum numberMode {DEC, HEX};
+enum updateRet {NO_UPDATE, UPDATE};
 
 /* initialization functions */
 
 int printSocketReadError() {
 	FILE_LOG(logERROR, ("Error reading from socket. Possible socket crash.\n"));
 	return FAIL;
-}
-
-
-void basictests() {
-	checkFirmwareCompatibility();
 }
 
 
@@ -271,10 +263,10 @@ void modeNotImplemented(char* modename, int mode) {
 	FILE_LOG(logERROR,(mess));
 }
 
-void validate(int arg, int retval, char* modename, int hex) {
+void validate(int arg, int retval, char* modename, enum numberMode nummode) {
 	if (ret == OK && arg != -1 && retval != arg) {
 		ret = FAIL;
-		if (hex)
+		if (nummode == HEX)
 			sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n",
 				modename, arg, retval);
 		else
@@ -284,10 +276,10 @@ void validate(int arg, int retval, char* modename, int hex) {
 	}
 }
 
-void validate64(int64_t arg, int64_t retval, char* modename, int hex) {
+void validate64(int64_t arg, int64_t retval, char* modename, enum numberMode nummode) {
 	if (ret == OK && arg != -1 && retval != arg) {
 		ret = FAIL;
-		if (hex)
+		if (nummode == HEX)
 			sprintf(mess, "Could not %s. Set 0x%llx, but read 0x%llx\n",
 				modename, (long long unsigned int)arg, (long long unsigned int)retval);
 		else
@@ -309,7 +301,7 @@ int  M_nofunc(int file_des) {
 
 	sprintf(mess,"Unrecognized Function enum %d. Please do not proceed.\n", fnum);
 	FILE_LOG(logERROR, (mess));
-	return Server_SendResult(file_des, OTHER, 0, NULL, 0);
+	return Server_SendResult(file_des, OTHER, NO_UPDATE, NULL, 0);
 }
 
 
@@ -328,7 +320,7 @@ int  M_nofuncMode(int file_des) {
 			"Restart detector server in normal mode (without any arguments) to continue.\n",
 			getFunctionName((enum detFuncs)fnum));
 	FILE_LOG(logERROR, (mess));
-	return Server_SendResult(file_des, OTHER, 0, NULL, 0);
+	return Server_SendResult(file_des, OTHER, NO_UPDATE, NULL, 0);
 }
 
 
@@ -364,7 +356,7 @@ int exec_command(int file_des) {
 		pclose(sysFile);
 		FILE_LOG(logINFO, ("Result of cmd (%s):\n%s\n", cmd, retval));
 	}
-	return Server_SendResult(file_des, OTHER, 0, retval, sizeof(retval));
+	return Server_SendResult(file_des, OTHER, NO_UPDATE, retval, sizeof(retval));
 }
 
 
@@ -375,7 +367,7 @@ int get_detector_type(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	enum detectorType retval = myDetectorType;
 	FILE_LOG(logDEBUG1,("Returning detector type %d\n", retval));
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -404,11 +396,11 @@ int set_external_signal_flag(int file_des) {
 	}
 	// get
 	retval = getExtSignal(signalindex);
-	validate((int)flag, (int)retval, "set external signal flag", 1);
+	validate((int)flag, (int)retval, "set external signal flag", DEC);
 	FILE_LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
 }
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -442,9 +434,9 @@ int set_external_communication_mode(int file_des) {
 	}
 	// get
 	retval = getTiming();
-	validate((int)arg, (int)retval, "set timing mode", 0);
+	validate((int)arg, (int)retval, "set timing mode", DEC);
 	FILE_LOG(logDEBUG1, ("Timing Mode: %d\n",retval));
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -464,8 +456,8 @@ int get_id(int file_des) {
 	switch (arg) {
 #if defined(EIGERD) || defined(JUNGFRAUD)
 	case SOFTWARE_FIRMWARE_API_VERSION:
-#endif
 	case DETECTOR_SERIAL_NUMBER:
+#endif
 	case DETECTOR_FIRMWARE_VERSION:
 	case DETECTOR_SOFTWARE_VERSION:
 		retval = getDetectorId(arg);
@@ -475,7 +467,7 @@ int get_id(int file_des) {
 		modeNotImplemented("ID Index", (int)arg);
 		break;
 	}
-	return Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -504,17 +496,16 @@ int digital_test(int file_des) {
 	// only set
 	if (Server_VerifyLock() == OK) {
 		switch (mode) {
-#ifdef GOTTHARDD
-		case DIGITAL_BIT_TEST:
-			FILE_LOG(logDEBUG1, ("Setting digital test bit: %d\n", ival));
-			if (ival >= 0)
-				digitalTestBit = (ival > 0) ? 1 : 0;
-			retval = digitalTestBit;
-			break;
-#endif
+
 		case DETECTOR_FIRMWARE_TEST:
 		case DETECTOR_BUS_TEST:
-			retval = detectorTest(mode);
+#ifdef GOTTHARDD
+        case DIGITAL_BIT_TEST:
+            retval = detectorTest(mode, ival);
+            break;
+#else
+            retval = detectorTest(mode);
+#endif
 			FILE_LOG(logDEBUG1, ("Digital Test (%d): %d\n", mode, retval));
 			break;
 		default:
@@ -523,7 +514,7 @@ int digital_test(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -554,13 +545,29 @@ int set_dac(int file_des) {
     switch (ind) {
 #ifdef GOTTHARDD
     case G_VREF_DS :
+        serverDacIndex = VREF_DS;
+        break;
     case G_VCASCN_PB:
+        serverDacIndex = VCASCN_PB;
+        break;
     case G_VCASCP_PB:
+        serverDacIndex = VCASCP_PB;
+        break;
     case G_VOUT_CM:
+        serverDacIndex = VOUT_CM;
+        break;
     case G_VCASC_OUT:
+        serverDacIndex = VCASC_OUT;
+        break;
     case G_VIN_CM:
+        serverDacIndex = VIN_CM;
+        break;
     case G_VREF_COMP:
+        serverDacIndex = VREF_COMP;
+        break;
     case G_IB_TESTC:
+        serverDacIndex = IB_TESTC;
+        break;
     case HV_POT:
     	break;
 #elif EIGERD
@@ -643,6 +650,7 @@ int set_dac(int file_des) {
     		case IO_DELAY:
     			retval[0] = setIODelay(val);
     			FILE_LOG(logDEBUG1, ("IODelay: %d\n", retval[0]));
+    		    validate(val, retval[0], "set iodelay", DEC);
     			break;
 #endif
 
@@ -651,7 +659,14 @@ int set_dac(int file_des) {
     		case HV_NEW:
     			retval[0] = setHighVoltage(val);
     			FILE_LOG(logDEBUG1, ("High Voltage: %d\n", retval[0]));
-#ifdef EIGERD
+#ifdef GOTTHARDD
+    			if (retval[0] == -1) {
+    			    ret = FAIL;
+    			    strcpy(mess,"Invalid Voltage. Valid values are 0, 90, 110, 120, 150, 180, 200\n");
+    			    FILE_LOG(logERROR,(mess));
+    			} else
+    			    validate(val, retval[0], "set high voltage", DEC);
+#elif EIGERD
     			if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
     				ret = FAIL;
     				if (retval[0] == -1)
@@ -710,7 +725,7 @@ int set_dac(int file_des) {
     		}
     	}
     }
-    return Server_SendResult(file_des, INT32, 1, retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, UPDATE, retval, sizeof(retval));
 }
 
 
@@ -774,7 +789,7 @@ int get_adc(int file_des) {
 		retval = getADC(serverAdcIndex);
 		FILE_LOG(logDEBUG1, ("ADC(%d): %d\n", retval));
 	}
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -782,29 +797,33 @@ int get_adc(int file_des) {
 
 
 int write_register(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint32_t args[2] = {-1, -1};
-	uint32_t retval = -1;
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t args[2] = {-1, -1};
+    uint32_t retval = -1;
 
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-		return printSocketReadError();
-	uint32_t addr = args[0];
-	uint32_t val = args[1];
-		FILE_LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x\n", addr, val));
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    uint32_t addr = args[0];
+    uint32_t val = args[1];
+    FILE_LOG(logDEBUG1, ("Writing to register 0x%x, data 0x%x\n", addr, val));
 
-	// only set
-	if (Server_VerifyLock() == OK) {
-		retval = writeRegister(addr, val);
-		// validate
-		if (retval != val) {
-			ret = FAIL;
-			sprintf(mess,"Could not write to register 0x%x. Wrote 0x%x but read 0x%x\n", addr, val, retval);
-			FILE_LOG(logERROR,(mess));
-		}
-		FILE_LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
-	}
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+    // only set
+    if (Server_VerifyLock() == OK) {
+#ifdef GOTTHARDD
+        retval = writeRegister16And32(addr, val);
+#else
+        retval = writeRegister(addr, val);
+#endif
+        // validate
+        if (retval != val) {
+            ret = FAIL;
+            sprintf(mess,"Could not write to register 0x%x. Wrote 0x%x but read 0x%x\n", addr, val, retval);
+            FILE_LOG(logERROR,(mess));
+        }
+        FILE_LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
+    }
+    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -823,10 +842,14 @@ int read_register(int file_des) {
 	FILE_LOG(logDEBUG1, ("Reading from register 0x%x\n", addr));
 
 	// get
+#ifdef GOTTHARDD
+	retval = readRegister16And32(addr);
+#else
 	retval = readRegister(addr);
+#endif
 	FILE_LOG(logDEBUG1, ("Read register (0x%x): 0x%x\n", retval));
 
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -854,8 +877,8 @@ int set_module(int file_des) {
 	} else
 		module.dacs = myDac;
 
-	// allocate chans
 #ifdef EIGERD
+	// allocate chans
 	if (ret == OK) {
 		myChan = (int*)malloc(getTotalNumberOfChannels() * sizeof(int));
 		if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
@@ -929,12 +952,12 @@ int set_module(int file_des) {
 
 		ret = setModule(module, mess);
 		retval = getSettings();
-		validate(module.reg, (int)retval, "set module (settings)", 0);
+		validate(module.reg, (int)retval, "set module (settings)", DEC);
 		FILE_LOG(logDEBUG1, ("Settings: %d\n", retval));
 	}
 	if (myChan != NULL) free(myChan);
 	if (myDac != NULL) 	free(myDac);
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -960,8 +983,8 @@ int get_module(int file_des) {
 	} else
 		module.dacs = myDac;
 
-	// allocate chans
 #ifdef EIGERD
+    // allocate chans
 	if (ret == OK) {
 		myChan = (int*)malloc(getTotalNumberOfChannels() * sizeof(int));
 		if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
@@ -985,7 +1008,7 @@ int get_module(int file_des) {
 		FILE_LOG(logDEBUG1, ("Getting module. Settings:%d\n", module.reg));
 	}
 
-	Server_SendResult(file_des, INT32, 1, NULL, 0);
+	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 
 	// send module, 0 is to receive partially (without trimbits etc)
 	if (ret != FAIL) {
@@ -1046,7 +1069,7 @@ int set_settings(int file_des) {
 		if (ret == OK) {
 			retval = setSettings(isett);
 			FILE_LOG(logDEBUG1, ("Settings: %d\n", retval));
-			validate((int)isett, (int)retval, "set settings", 0);
+			validate((int)isett, (int)retval, "set settings", DEC);
 #if defined(JUNGFRAUD) || defined (GOTTHARDD)
 			if (ret == OK && isett >= 0) {
 				ret = setDefaultDacs();
@@ -1058,7 +1081,7 @@ int set_settings(int file_des) {
 #endif
 		}
 	}
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -1078,7 +1101,7 @@ int get_threshold_energy(int file_des) {
 	retval = getThresholdEnergy();
 	FILE_LOG(logDEBUG1, ("Threshold energy: %d eV\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -1100,7 +1123,7 @@ int start_acquisition(int file_des) {
 		}
 		FILE_LOG(logDEBUG1, ("Starting Acquisition ret: %d\n", ret));
 	}
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -1119,7 +1142,7 @@ int stop_acquisition(int file_des) {
 		}
 		FILE_LOG(logDEBUG1, ("Stopping Acquisition ret: %d\n", ret));
 	}
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -1131,7 +1154,7 @@ int start_readout(int file_des) {
 	memset(mess, 0, sizeof(mess));
 
 	FILE_LOG(logDEBUG1, ("Starting readout\n"));
-#ifdef JUNGFRAUD
+#ifndef EIGERD
 	functionNotImplemented();
 #else
 	// only set
@@ -1144,7 +1167,7 @@ int start_readout(int file_des) {
 		FILE_LOG(logDEBUG1, ("Starting readout ret: %d\n", ret));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -1161,7 +1184,7 @@ int get_run_status(int file_des) {
 	// only get
 	retval = getRunStatus();
 	FILE_LOG(logDEBUG1, ("Status: %d\n", retval));
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -1188,7 +1211,7 @@ int start_and_read_all(int file_des) {
 
 	// lock or acquisition start error
 	if (ret == FAIL)
-		return Server_SendResult(file_des, INT32, 1 , NULL, 0);
+		return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 
 	// read all (again validate lock, but should pass and not fail)
 	return read_all(file_des);
@@ -1206,7 +1229,7 @@ int read_all(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		readFrame(&ret, mess);
 	}
-	return Server_SendResult(file_des, INT32, 1 , NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -1238,7 +1261,7 @@ int set_timer(int file_des) {
 		case ACQUISITION_TIME:
 		case FRAME_PERIOD:
 		case CYCLES_NUMBER:
-#ifdef JUNGFRAUD
+#if defined(GOTTHARDD) || defined(JUNGFRAUD)
 		case DELAY_AFTER_TRIGGER:
 #endif
 			retval = setTimer(ind, tns);
@@ -1284,12 +1307,12 @@ int set_timer(int file_des) {
 			break;
 		}
 		// validate
-		validate64(tns, retval, "set timer", 0);
+		validate64(tns, retval, "set timer", DEC);
 	}
 	if (ret != FAIL) {
 		FILE_LOG(logDEBUG1, ("Timer index %d: %lld\n", ind, retval));
 	}
-	return Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -1325,18 +1348,16 @@ int get_time_left(int file_des) {
 #elif JUNGFRAUD
         case FRAMES_FROM_START:
         case FRAMES_FROM_START_PG:
+        case ACTUAL_TIME:
+        case MEASUREMENT_TIME:
 #elif GOTTHARDD
-        case GATES_NUMBER:
+        case ACQUISITION_TIME:
 #endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)
         case FRAME_NUMBER:
-        case ACQUISITION_TIME:
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
         case CYCLES_NUMBER:
-        case PROGRESS:
-        case ACTUAL_TIME:
-        case MEASUREMENT_TIME:
 #endif
             retval = getTimeLeft(ind);
             FILE_LOG(logDEBUG1, ("Timer left index %d: %lld\n", ind, retval));
@@ -1346,7 +1367,7 @@ int get_time_left(int file_des) {
             break;
         }
     }
-    return Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -1379,9 +1400,7 @@ int set_dynamic_range(int file_des) {
 #endif
 			retval = setDynamicRange(dr);
 			FILE_LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
-			validate(dr, retval, "set dynamic range", 0);
-			if (dr >= 0)
-				dataBytes=calculateDataBytes();
+			validate(dr, retval, "set dynamic range", DEC);
 			break;
 		default:
 			modeNotImplemented("Dynamic range", dr);
@@ -1411,7 +1430,7 @@ int set_dynamic_range(int file_des) {
 		}
 #endif
 	}
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -1445,7 +1464,7 @@ int set_readout_flags(int file_des) {
 		case NOOVERFLOW:
 			retval = setReadOutFlags(arg);
 			FILE_LOG(logDEBUG1, ("Read out flags: 0x%x\n", retval));
-			validate((int)arg, (int)(retval & arg), "set readout flag", 1);
+			validate((int)arg, (int)(retval & arg), "set readout flag", HEX);
 			break;
 		default:
 			modeNotImplemented("Read out flag index", (int)arg);
@@ -1453,7 +1472,7 @@ int set_readout_flags(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -1499,18 +1518,24 @@ int set_roi(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == GET_READOUT_FLAGS) || ((arg != GET_READOUT_FLAGS) && (Server_VerifyLock() == OK))) {
-		retval = setROI(narg, arg, &nretval, &ret);
-		if (ret == FAIL) {
-			sprintf(mess,"Could not set all roi. "
-					"Set %d rois, but read %d rois\n", narg, nretval);
-			FILE_LOG(logERROR,(mess));
-		}
-		FILE_LOG(logDEBUG1, ("nRois: %d\n", nretval));
+	if ((narg == GET_READOUT_FLAGS) || ((narg != GET_READOUT_FLAGS) && (Server_VerifyLock() == OK))) {
+	    if (narg > 1) {
+	        ret = FAIL;
+            strcpy(mess,"Can not set more than one ROI per module.\n");
+            FILE_LOG(logERROR,(mess));
+	    } else {
+	        retval = setROI(narg, arg, &nretval, &ret);
+	        if (ret == FAIL) {
+	            sprintf(mess,"Could not set all roi. "
+	                    "Set %d rois, but read %d rois\n", narg, nretval);
+	            FILE_LOG(logERROR,(mess));
+	        }
+	        FILE_LOG(logDEBUG1, ("nRois: %d\n", nretval));
+	    }
 	}
 #endif
 
-	Server_SendResult(file_des, INT32, 1, NULL, 0);
+	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 
 	if (ret != FAIL) {
 		//retvalsize could be swapped during sendData
@@ -1539,6 +1564,10 @@ int set_speed(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
+
+#ifdef GOTTHARDD
+    functionNotImplemented();
+#else
 	enum speedVariable ind = args[0];
 	int val = args[1];
 	FILE_LOG(logDEBUG1, ("Setting speed index %d to %d\n", ind, val));
@@ -1552,21 +1581,23 @@ int set_speed(int file_des) {
 			retval = adcPhase(val);
 			FILE_LOG(logDEBUG1, ("ADc Phase: %d\n", retval));
 			if (val != 100000) {
-				validate(val, retval, "set adc phase ", 0);
+				validate(val, retval, "set adc phase ", DEC);
 			}
 			break;
 #endif
 		case CLOCK_DIVIDER:
 			retval = setSpeed(val);
 			FILE_LOG(logDEBUG1, ("Clock: %d\n", retval));
-			validate(val, retval, "set clock ", 0);
+			validate(val, retval, "set clock ", DEC);
 			break;
 		default:
 			modeNotImplemented("Speed index", (int)ind);
 			break;
 		}
 	}
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+#endif
+
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -1578,7 +1609,7 @@ int exit_server(int file_des) {
 	cprintf(BG_RED, "Closing Server\n");
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	Server_SendResult(file_des, INT32, 0, NULL, 0);
+	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
 	return GOODBYE;
 }
 
@@ -1605,7 +1636,7 @@ int lock_server(int file_des) {
 			Server_LockedError();
 		}
 	}
-	return Server_SendResult(file_des, INT32, 1, &lockStatus, sizeof(lockStatus));
+	return Server_SendResult(file_des, INT32, UPDATE, &lockStatus, sizeof(lockStatus));
 }
 
 
@@ -1614,7 +1645,7 @@ int lock_server(int file_des) {
 int get_last_client_ip(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	return Server_SendResult(file_des, INT32, 1, lastClientIP, sizeof(lastClientIP));
+	return Server_SendResult(file_des, INT32, UPDATE, lastClientIP, sizeof(lastClientIP));
 }
 
 
@@ -1646,7 +1677,7 @@ int set_port(int file_des) {
 		}
 	}
 
-	Server_SendResult(file_des, INT32, 1, &p_number, sizeof(p_number));
+	Server_SendResult(file_des, INT32, UPDATE, &p_number, sizeof(p_number));
 	// delete old socket
 	if (ret != FAIL) {
 		closeConnection(file_des);
@@ -1668,7 +1699,7 @@ int update_client(int file_des) {
 	    ret = OK;
 	}
 #endif
-	Server_SendResult(file_des, INT32, 0, NULL, 0);
+	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
 	if (ret == OK)
 	    return ret;
 	return send_update(file_des);
@@ -1690,8 +1721,8 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
-	dataBytes = calculateDataBytes();
-	n = sendData(file_des,&dataBytes,sizeof(dataBytes),INT32);
+	i32 = calculateDataBytes();
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	i32 = (int)setSettings(GET_SETTINGS);
@@ -1732,12 +1763,6 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 #endif
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
-	i64 = setTimer(GATES_NUMBER,GET_FLAG);
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
 	i64 = setTimer(CYCLES_NUMBER,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
@@ -1759,16 +1784,12 @@ int configure_mac(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	char args[9][50];
 	memset(args, 0, sizeof(args));
-	char retvals[3][50];
+	char retvals[2][50];
 	memset(retvals, 0, sizeof(retvals));
-	int iretval = -1;
 
 	if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("\n Configuring UDP Destination\n"));
-#ifdef GOTTHARDD
-	FILE_LOG(logDEBUG1, ("Digital Test Bit %d\t", digitalTestBit);
-#endif
 	uint32_t dstIp = 0;
 	sscanf(args[0], "%x", 	&dstIp);
 	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
@@ -1863,20 +1884,14 @@ int configure_mac(int file_des) {
 				srcIp = dhcpipad;
 
 #endif
-#ifdef GOTTHARDD
-			iretval = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2, digitalTestBit);
-			FILE_LOG(logDEBUG1, ("Configure mac retval: %d\n", iretval));
-			FILE_LOG(logINFO, ("Configure MAC successful: %d\n", iretval));
-#else
-			iretval = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2);
-			FILE_LOG(logDEBUG1, ("Configure mac retval: %d\n", iretval));
-
-			if (iretval == -1) {
-				ret = FAIL;
+            ret = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2);
+			if (ret == FAIL) {
 				sprintf(mess,"Configure Mac failed\n");
 				FILE_LOG(logERROR,(mess));
-			} else {
-				FILE_LOG(logINFO, ("Configure MAC successful\n"));
+			}
+#if defined(EIGERD) || defined (JUNGFRAUD)
+			else {
+				FILE_LOG(logINFO, ("Configure MAC successful: %d\n", ret));
 				ret = setDetectorPosition(pos);
 				if (ret == FAIL) {
 					sprintf(mess, "Could not set detector position\n");
@@ -1886,14 +1901,13 @@ int configure_mac(int file_des) {
 #endif
 			// set retval vals
 			if (ret != FAIL) {
-				sprintf(retvals[0],"%x", iretval);
-				sprintf(retvals[1],"%llx", (long long unsigned int)srcMac);
-				sprintf(retvals[2],"%x", srcIp);
+				sprintf(retvals[0],"%llx", (long long unsigned int)srcMac);
+				sprintf(retvals[1],"%x", srcIp);
 			}
 		}
 	}
 
-	return Server_SendResult(file_des, OTHER, 1, retvals, sizeof(retvals));
+	return Server_SendResult(file_des, OTHER, UPDATE, retvals, sizeof(retvals));
 }
 
 
@@ -1907,12 +1921,12 @@ int load_image(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
+
 	enum imageType index = args[0];
-	char* ImageVals = NULL;
-	if (args[1] > 0) {
-		ImageVals = (char*)malloc(args[1]);
-		if (receiveData(file_des, ImageVals, args[1], OTHER) < 0) {
-			free(ImageVals);
+	int numChannels = args[1];
+	short int imageVals[numChannels] = {0};
+	if (numChannels > 0) {
+		if (receiveData(file_des, imageVals, numChannels * sizeof(short int), OTHER) < 0) {
 			return printSocketReadError();
 		}
 	}
@@ -1928,12 +1942,15 @@ int load_image(int file_des) {
 		switch (index) {
 		case DARK_IMAGE :
 		case GAIN_IMAGE :
-			ret = loadImage(index, ImageVals);
-			FILE_LOG(logDEBUG1, ("Loading image ret: %d\n", ret));
-			if (ret == FAIL) {
-				sprintf(mess, "Could not load image\n");
-				FILE_LOG(logERROR,(mess));
-			}
+		    // size of image does not match expected size
+		    if (numChannels != (calculateDataBytes()/sizeof(short int))) {
+		        ret = FAIL;
+                sprintf(mess, "Could not load image. "
+                        "Number of Channels do not match. Expected %d, got %d\n",
+                        calculateDataBytes(), numChannels);
+                FILE_LOG(logERROR,(mess));
+		    } else
+		        loadImage(index, imageVals);
 			break;
 		default:
 			modeNotImplemented("Image index", (int)index);
@@ -1941,7 +1958,7 @@ int load_image(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -1952,12 +1969,13 @@ int load_image(int file_des) {
 int read_counter_block(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int startACQ = -1;
-	char retval[dataBytes];
-	memset(retval, 0, dataBytes);
+	int args[2] = {-1, -1};
 
-	if (receiveData(file_des, &startACQ, sizeof(startACQ), INT32) < 0)
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
+	int startACQ = args[0];
+    int numChannels = args[1];
+    short int retval[numChannels] = {0};
 	FILE_LOG(logDEBUG1, ("Read counter block with start acq bit: %d\n", startACQ));
 
 #ifndef GOTTHARDD
@@ -1966,14 +1984,23 @@ int read_counter_block(int file_des) {
 
 	// only set
 	if (Server_VerifyLock() == OK) {
-		ret = readCounterBlock(startACQ, retval);
-		if (ret == FAIL) {
-			strcpy(mess, "Could not read counter block\n");
-			FILE_LOG(logERROR,(mess));
-		}
+	    // size of image does not match expected size
+	    if (numChannels != (calculateDataBytes()/sizeof(short int))) {
+	        ret = FAIL;
+	        sprintf(mess, "Could not load image. "
+	                "Number of Channels do not match. Expected %d, got %d\n",
+	                calculateDataBytes(), numChannels);
+	        FILE_LOG(logERROR,(mess));
+	    } else {
+	        ret = readCounterBlock(startACQ, retval);
+	        if (ret == FAIL) {
+	            strcpy(mess, "Could not read counter block\n");
+	            FILE_LOG(logERROR,(mess));
+	        }
+	    }
 	}
 #endif
-	return Server_SendResult(file_des, OTHER, 1, retval, dataBytes);
+	return Server_SendResult(file_des, OTHER, UPDATE, retval, numChannels * sizeof(short int));
 }
 
 
@@ -1992,7 +2019,6 @@ int reset_counter_block(int file_des) {
 #ifndef GOTTHARDD
 	functionNotImplemented();
 #else
-
 	// only set
 	if (Server_VerifyLock() == OK) {
 		ret = resetCounterBlock(startACQ);
@@ -2002,7 +2028,7 @@ int reset_counter_block(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2026,10 +2052,10 @@ int enable_ten_giga(int file_des) {
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = enableTenGigabitEthernet(arg);
 		FILE_LOG(logDEBUG1, ("10GbE: %d\n", retval));
-		validate(arg, retval, "enable/disable 10GbE", 0);
+		validate(arg, retval, "enable/disable 10GbE", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2059,9 +2085,9 @@ int set_all_trimbits(int file_des) {
 	// get
 	retval = getAllTrimbits();
 	FILE_LOG(logDEBUG1, ("All trimbits: %d\n", retval));
-	validate(arg, retval, "set all trimbits", 0);
+	validate(arg, retval, "set all trimbits", DEC);
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2071,7 +2097,7 @@ int set_ctb_pattern(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	functionNotImplemented();
-    return Server_SendResult(file_des, INT32, 1, NULL, 0);
+    return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2088,7 +2114,7 @@ int write_adc_register(int file_des) {
 	uint32_t val = args[1];
 	FILE_LOG(logDEBUG1, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
 
-#ifndef JUNGFRAUD
+#if defined(GOTTHARDD) || defined(JUNGFRAUD)
 	functionNotImplemented();
 #else
 #ifndef VIRTUAL
@@ -2097,7 +2123,7 @@ int write_adc_register(int file_des) {
 		setAdc(addr, val);
 #endif
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2124,9 +2150,9 @@ int set_counter_bit(int file_des) {
 	// get
 	retval = setCounterBit(-1);
 	FILE_LOG(logDEBUG1, ("Set counter bit retval: %d\n", retval));
-	validate(arg, retval, "set counter bit", 0);
+	validate(arg, retval, "set counter bit", DEC);
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2154,7 +2180,7 @@ int pulse_pixel(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2182,7 +2208,7 @@ int pulse_pixel_and_move(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2211,7 +2237,7 @@ int pulse_chip(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2252,11 +2278,11 @@ int set_rate_correct(int file_des) {
 				FILE_LOG(logERROR, ("Settings has been changed to undefined (tau changed)\n"));
 			}
 			int64_t retval = setRateCorrection(tau_ns);
-			validate64(tau_ns, retval, "set rate correction", 0);
+			validate64(tau_ns, retval, "set rate correction", DEC);
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2275,7 +2301,7 @@ int get_rate_correct(int file_des) {
 	retval = getCurrentTau();
 	FILE_LOG(logDEBUG1, ("Tau: %lld\n", (long long int)retval));
 #endif
-	return Server_SendResult(file_des, INT64, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2332,11 +2358,11 @@ int set_network_parameter(int file_des) {
 		if (ret == OK) {
 			retval = setNetworkParameter(serverIndex, value);
 			FILE_LOG(logDEBUG1, ("Network Parameter index %d: %d\n", serverIndex, retval));
-			validate(value, retval, "set network parameter", 0);
+			validate(value, retval, "set network parameter", DEC);
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2394,7 +2420,7 @@ int program_fpga(int file_des) {
 			}
 
 			//---------------- first ret ----------------
-			Server_SendResult(file_des, INT32, 0, NULL, 0);
+			Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
 
 			if (ret != FAIL) {
 				//erasing flash
@@ -2427,7 +2453,7 @@ int program_fpga(int file_des) {
 				ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
 
 				//---------------- middle rets ----------------
-				Server_SendResult(file_des, INT32, 0, NULL, 0);
+				Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
 
 
 
@@ -2455,14 +2481,14 @@ int program_fpga(int file_des) {
 			FILE_LOG(logDEBUG1, ("Done with program receiving command\n"));
 
 			if (isControlServer) {
-				basictests(debugflag);
+				basictests();
 				initControlServer();
 			}
 		}
 	}
 #endif
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2480,7 +2506,7 @@ int reset_fpga(int file_des) {
 	// only set
 	if (Server_VerifyLock() == OK) {
 		if (isControlServer) {
-			basictests(debugflag);	// mapping of control server at least
+			basictests();	// mapping of control server at least
 			if (debugflag != PROGRAMMING_MODE)
 				initControlServer();
 		}
@@ -2488,7 +2514,7 @@ int reset_fpga(int file_des) {
 		ret = FORCE_UPDATE;
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2510,7 +2536,7 @@ int power_chip(int file_des) {
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = powerChip(arg);
 		FILE_LOG(logDEBUG1, ("Power chip: %d\n", retval));
-		validate(arg, retval, "power on/off chip", 0);
+		validate(arg, retval, "power on/off chip", DEC);
 		// narrow down error when powering on
 		if (ret == FAIL && arg > 0) {
 			if (setTemperatureEvent(-1) == 1)
@@ -2520,7 +2546,7 @@ int power_chip(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2543,10 +2569,10 @@ int set_activate(int file_des) {
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = activate(arg);
 		FILE_LOG(logDEBUG1, ("Activate: %d\n", retval));
-		validate(arg, retval, "set activate", 0);
+		validate(arg, retval, "set activate", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2569,7 +2595,7 @@ int prepare_acquisition(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1 , NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2601,11 +2627,11 @@ int threshold_temp(int file_des) {
 	    else {
 			retval = setThresholdTemperature(arg);
 			FILE_LOG(logDEBUG1, ("Threshold temperature: %d\n", retval));
-			validate(arg, retval, "set threshold temperature", 0);
+			validate(arg, retval, "set threshold temperature", DEC);
 	    }
 	}
 #endif
-    return Server_SendResult(file_des, INT32, 0, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NO_UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2627,10 +2653,10 @@ int temp_control(int file_des) {
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = setTemperatureControl(arg);
 		FILE_LOG(logDEBUG1, ("Temperature control: %d\n", retval));
-		validate(arg, retval, "set temperature control", 0);
+		validate(arg, retval, "set temperature control", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 0, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, NO_UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2653,10 +2679,10 @@ int temp_event(int file_des) {
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = setTemperatureEvent(arg);
 		FILE_LOG(logDEBUG1, ("Temperature event: %d\n", retval));
-		validate(arg, retval, "set temperature event", 0);
+		validate(arg, retval, "set temperature event", DEC);
 	}
 #endif
-    return Server_SendResult(file_des, INT32, 0, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NO_UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2680,10 +2706,10 @@ int auto_comp_disable(int file_des) {
 	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
 		retval = autoCompDisable(arg);
 		FILE_LOG(logDEBUG1, ("Auto comp disable: %d\n", retval));
-		validate(arg, retval, "set auto comp disable", 0);
+		validate(arg, retval, "set auto comp disable", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2712,11 +2738,11 @@ int storage_cell_start(int file_des) {
         } else {
             retval = selectStoragecellStart(arg);
             FILE_LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
-            validate(arg, retval, "set storage cell start", 0);
+            validate(arg, retval, "set storage cell start", DEC);
         }
     }
 #endif
-    return Server_SendResult(file_des, INT32, 1, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2782,7 +2808,7 @@ int check_version(int file_des) {
 			FILE_LOG(logERROR,(mess));
 		}
 	}
-	return Server_SendResult(file_des, INT32, 1 , NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
 
@@ -2806,6 +2832,6 @@ int software_trigger(int file_des) {
 		FILE_LOG(logDEBUG1, ("Software trigger ret: %d\n", ret));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, 1 , NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 

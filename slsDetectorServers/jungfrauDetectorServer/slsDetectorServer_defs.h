@@ -38,10 +38,7 @@ enum DACINDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF
 								480,	/* VREF_DS */		\
 								420		/* VREF_COMP */		\
 							};
-
 enum NETWORKINDEX           { TXN_FRAME };
-
-
 
 /* Hardware Definitions */
 #define NCHAN 						(256 * 256)
@@ -54,7 +51,6 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define IP_PACKETSIZE				(0x2052)
 #define CLK_RUN						(40)	/* MHz */
 #define CLK_SYNC					(20)	/* MHz */
-
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES			(100*1000*1000)
@@ -78,7 +74,6 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define MAX_STORAGE_CELL_VAL        (15) //0xF
 #define ACQ_TIME_MIN_CLOCK          (2)
 
-
 #define SAMPLE_ADC_HALF_SPEED	 	(SAMPLE_DECMT_FACTOR_2_VAL + SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x1000 */
 #define SAMPLE_ADC_QUARTER_SPEED 	(SAMPLE_DECMT_FACTOR_4_VAL + SAMPLE_DGTL_SAMPLE_8_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x2810 */
 #define CONFIG_HALF_SPEED			(CONFIG_TDMA_DISABLE_VAL + CONFIG_HALF_SPEED_20MHZ_VAL + CONFIG_MODE_1_X_10GBE_VAL)
@@ -88,15 +83,6 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define ADC_PHASE_HALF_SPEED 		(0x2D) //45
 #define ADC_PHASE_QUARTER_SPEED 	(0x2D) //45
 #define ADC_PORT_INVERT_VAL         (0x453b2a9c)
-
-/* Maybe not required for jungfrau */
-#define NTRIMBITS 					(6)
-#define NCOUNTBITS 					(24)
-#define NCHIPS_PER_ADC				(2)
-#define TRIM_DR 					(((int)pow(2,NTRIMBITS))-1)
-#define COUNT_DR 					(((int)pow(2,NCOUNTBITS))-1)
-#define ALLMOD 						(0xffff)
-#define ALLFIFO 					(0xffff)
 
 /* MSB & LSB DEFINES */
 #define MSB_OF_64_BIT_REG_OFST		(32)
@@ -116,13 +102,10 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define LTC2620_DAC_CMD_POWER_DOWN	(0x00000004 << LTC2620_DAC_CMD_OFST)
 #define LTC2620_DAC_NUMBITS			(24)
 
-
 /* MAX1932 HV DEFINES */
 #define MAX1932_HV_NUMBITS			(8)
 #define MAX1932_HV_DATA_OFST		(0)
 #define MAX1932_HV_DATA_MSK			(0x000000FF << MAX1932_HV_DATA_OFST)
-
-
 
 /** PLL Reconfiguration Registers */
 //https://www.altera.com/documentation/mcn1424769382940.html

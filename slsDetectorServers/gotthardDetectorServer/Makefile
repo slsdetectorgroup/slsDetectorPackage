@@ -1,19 +1,18 @@
-CROSS  = bfin-uclinux-
-CC    = $(CROSS)gcc
+CROSS  		= 	bfin-uclinux-
+CC    		= 	$(CROSS)gcc
 
-CFLAGS += -Wall  -DGOTTHARDD   -DDEBUG   # -DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL
+CFLAGS 		+=	-Wall  -DGOTTHARDD  -DSTOP_SERVER  # -DVERBOSE 
+LDLIBS		+= 	-lm  -lstdc++ 
 
-PROGS= 		gotthardDetectorServer 
-INSTDIR= 	/tftpboot
-INSTMODE= 	0777
+PROGS		= 	gotthardDetectorServer 
+DESTDIR		?= 	bin
+INSTMODE	= 	0777
+
+SRCS 		= 	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+OBJS 		= 	$(SRCS:%.c=%.o)
 
 
-BINS = testlib_sharedlibc
-SRCS = server.c firmware_funcs.c  server_funcs.c communication_funcs.c
-OBJS = $(SRCS:%.c=%.o)
-
-
-all:	clean versioning $(PROGS) 
+all: clean versioning $(PROGS) 
 
 boot: $(OBJS)
 
@@ -21,21 +20,14 @@ versioning:
 	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 	
 $(PROGS): $(OBJS) 
-	echo $(OBJS)
-	$(CC) $(CFLAGS)  -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@) 
-	rm gotthardDetectorServer.gdb
-
-
-install:	$(PROGS)
-	$(INSTALL) -d $(INSTDIR)
-	$(INSTALL) -m $(INSTMODE) $(PROGS) $(INSTDIR)
-
-
-romfs:
-	$(ROMFSINST)	/bin/$(PROGS) 
+#	echo $(OBJS)
+	mkdir -p $(DESTDIR) 
+	$(CC) -o $@ $^ $(CFLAGS)   $(LDLIBS)
+	mv $(PROGS) $(DESTDIR)
+	rm *.gdb
 
 clean:
-	rm -rf $(PROGS)  *.o *.gdb
+	rm -rf $(DESTDIR)/$(PROGS) *.o *.gdb
 
 
 

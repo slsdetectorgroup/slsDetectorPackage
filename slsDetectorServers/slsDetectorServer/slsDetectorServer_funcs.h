@@ -3,7 +3,6 @@
 
 // initialization functions
 int printSocketReadError();
-void basictests();
 void init_detector();
 int decode_function(int);
 const char* getFunctionName(enum detFuncs func);

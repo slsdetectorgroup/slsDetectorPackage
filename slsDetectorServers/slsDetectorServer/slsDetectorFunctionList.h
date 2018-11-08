@@ -13,20 +13,21 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 // basic tests
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
 int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
 #endif
-
-void 		checkFirmwareCompatibility();
+void 		basictests();
 #ifdef JUNGFRAUD
 int 		checkType();
 u_int32_t 	testFpga(void);
 int 		testBus(void);
 #endif
 
-#ifdef JUNGFRAUD
-int 		detectorTest( enum digitalTestMode arg);
+#ifdef GOTTHARDD
+int         detectorTest(enum digitalTestMode arg,  int ival);
+#elif JUNGFRAUD
+int 		detectorTest(enum digitalTestMode arg);
 #endif
 
 // Ids
@@ -40,6 +41,9 @@ u_int16_t 	getHardwareSerialNumber();
 u_int32_t	getDetectorNumber();
 u_int64_t  	getDetectorMAC();
 u_int32_t  	getDetectorIP();
+#ifdef GOTTHARDD
+u_int32_t   getBoardRevision();
+#endif
 
 
 // initialization
@@ -50,9 +54,11 @@ void 		getModuleConfiguration();
 #endif
 
 // set up detector
+#ifdef EIGERD
 void		allocateDetectorStructureMemory();
+#endif
 void 		setupDetector();
-#ifdef JUNGFRAUD
+#if defined(GOTTHARDD) || defined(JUNGFRAUD)
 int			setDefaultDacs();
 #endif
 
@@ -61,9 +67,12 @@ int			setDefaultDacs();
 #ifndef EIGERD
 extern u_int32_t	writeRegister(u_int32_t offset, u_int32_t data);	// blackfin.h
 extern u_int32_t  	readRegister(u_int32_t offset);						// blackfin.h
-#else
+#elif JUNGFRAUD
 uint32_t	writeRegister(uint32_t offset, uint32_t data);
 uint32_t  	readRegister(uint32_t offset);
+#else
+uint32_t    writeRegister16And32(uint32_t offset, uint32_t data);
+uint32_t    readRegister16And32(uint32_t offset);
 #endif
 
 
@@ -77,16 +86,29 @@ int         autoCompDisable(int on);
 int 		adcPhase(int st);
 int 		getPhase();
 void        configureASICTimer();
+#elif GOTTHARDD
+void        setPhaseShiftOnce();
+void        setPhaseShift(int numphaseshift);
+void        cleanFifos();
+void        setADCSyncRegister();
+void        setDAQRegister();
+void        setChipOfInterestRegister(int adc);
+void        setROIADC(int adc);
+void        setGbitReadout();
+int         readConfigFile();
+void        setMasterSlaveConfiguration();
 #endif
 
 // parameters - dr, roi
 int 		setDynamicRange(int dr);
 #ifdef GOTTHARD
-int 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
+ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
 // parameters - readout
+#ifndef GOTTHARDD
 enum speedVariable 		setSpeed(int val);
+#endif
 #ifdef EIGERD
 enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #endif
@@ -114,17 +136,23 @@ int 		setThresholdEnergy(int ev);
 
 // parameters - dac, adc, hv
 #ifdef JUNGFRAUD
-void 		serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset);
+void 		serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset); //commonServerFunction.h
 void 		initDac(int dacnum);
+#endif
+#if defined(GOTTHARDD) || defined(JUNGFRAUD)
 int         voltageToDac(int value);
 int         dacToVoltage(unsigned int digital);
-#endif
-
-#ifdef JUNGFRAUD
 extern void	setAdc(int addr, int val);		// AD9257.h
 #endif
 
 void 		setDAC(enum DACINDEX ind, int val, int mV, int retval[]);
+#ifdef GOTTHARDD
+void        initDAC(int dac_addr, int value);
+void        clearDACSregister();
+void        nextDAC();
+void        program_one_dac(int addr, int value);
+u_int32_t   putout(char *s);
+#endif
 int 		getADC(enum ADCINDEX ind);
 
 int 		setHighVoltage(int val);
@@ -134,16 +162,21 @@ int 		setHighVoltage(int val);
 // parameters - timing, extsig
 void 		setTiming( enum externalCommunicationMode arg);
 enum 		externalCommunicationMode getTiming();
+#ifdef GOTTHARDD
+void        setExtSignal(enum externalSignalFlag  mode);
+int         getExtSignal();
+#endif
 
 // configure mac
-#ifdef JUNGFRAUD
+#ifdef GOTTHARDD
+void        calcChecksum(mac_conf* mac, int sourceip, int destip);
+#elif JUNGFRAUD
 long int 	calcChecksum(int sourceip, int destip);
 #endif
 #ifdef GOTTHARDD
-int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2, int ival);
-#else
-int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2);
+int         getAdcConfigured();
 #endif
+int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2);
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int 		setDetectorPosition(int pos[]);
 #endif
@@ -153,10 +186,9 @@ int 		setDetectorPosition(int pos[]);
 
 // gotthard specific - image, pedestal
 #ifdef GOTTHARDD
-int 		loadImage(enum imageType index, char *imageVals);
+void 		loadImage(enum imageType index, short int imageVals[]);
 int 		readCounterBlock(int startACQ, char *counterVals);
 int			resetCounterBlock(int startACQ);
-int 		calibratePedestal(int frames);
 
 // jungfrau specific - pll, flashing firmware
 #elif JUNGFRAUD
@@ -198,7 +230,7 @@ int         setNetworkParameter(enum NETWORKINDEX mode, int value);
 
 
 // aquisition
-#if defined(EIGERD) || defined(GOTTHARD)
+#ifdef EIGERD
 int 		prepareAcquisition();
 #endif
 int 		startStateMachine();
@@ -209,18 +241,23 @@ int 		stopStateMachine();
 #ifdef EIGERD
 int			softwareTrigger();
 #endif
-#ifndef JUNGFRAUD
+#ifdef EIGERD
 int 		startReadOut();
 #endif
 enum 		runStatus getRunStatus();
 void 		readFrame(int *ret, char *mess);
-#ifdef JUNGFRAUD
-u_int32_t 	runBusy(void);
+#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+u_int32_t 	runBusy();
+#endif
+#ifdef GOTTHARDD
+u_int32_t   runState();
 #endif
 
 
 //common
+#ifdef EIGERD
 int 		copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
+#endif
 int 		calculateDataBytes();
 int 		getTotalNumberOfChannels();
 int 		getNumberOfChips();

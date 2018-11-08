@@ -1,5 +1,4 @@
-#ifndef AD9257_H
-#define AD9257_H
+#pragma once
 
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
 
@@ -90,12 +89,24 @@ void prepareADC(){
     FILE_LOG(logINFO, ("\tPower mode reset\n"));
 	setAdc(AD9257_POWER_MODE_REG,
 			(AD9257_INT_RESET_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
+#ifdef GOTTHARDD
+	usleep(50000);
+#endif
 
 	//power mode chip run
 	FILE_LOG(logINFO, ("\tPower mode chip run\n"));
 	setAdc(AD9257_POWER_MODE_REG,
 			(AD9257_INT_CHIP_RUN_VAL << AD9257_POWER_INTERNAL_OFST) & AD9257_POWER_INTERNAL_MSK);
+#ifdef GOTTHARDD
+	usleep(50000);
 
+	// binary offset
+    FILE_LOG(logINFO, ("\tBinary offset\n"));
+    setAdc(AD9257_OUT_MODE_REG,
+            (AD9257_OUT_BINARY_OFST_VAL << AD9257_OUT_FORMAT_OFST) & AD9257_OUT_FORMAT_MSK);
+    usleep(50000);
+	return;
+#endif
 	//output clock phase
 	FILE_LOG(logINFO, ("\tOutput clock phase\n"));
 	setAdc(AD9257_OUT_PHASE_REG,
@@ -132,5 +143,3 @@ void prepareADC(){
 			(AD9257_MIXED_BIT_FREQ_VAL << AD9257_OUT_TEST_OFST) & AD9257_OUT_TEST_MSK);
 #endif
 }
-
-#endif	//AD9257_H

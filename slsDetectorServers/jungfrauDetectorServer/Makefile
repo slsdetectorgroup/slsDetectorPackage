@@ -25,7 +25,7 @@ $(PROGS): $(OBJS)
 	rm *.gdb
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o
+	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb
 	
 
 	

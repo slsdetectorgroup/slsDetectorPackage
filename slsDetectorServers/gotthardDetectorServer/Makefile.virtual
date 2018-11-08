@@ -1,30 +1,27 @@
+CC          =   gcc
+CFLAGS      +=  -Wall -DGOTTHARDD -DVIRTUAL -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
+LDLIBS      +=  -lm  -lstdc++  -pthread
 
-DESTDIR ?= ./
+PROGS       =   gotthardDetectorServer_virtual 
+DESTDIR     ?=  bin
+INSTMODE    =   0777
 
-CC    = gcc
-CFLAGS += -Wall  -DGOTTHARDD  -DVIRTUAL 
+SRC_CLNT    =   communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+OBJS        =   $(SRC_CLNT:.c=.o) 
+ 
+all: clean versioning $(PROGS)
 
+boot: $(OBJS) 
 
-PROGS= 		$(DESTDIR)/gotthardDetectorServer_virtual 
-
-
-SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c
-OBJS = $(SRCS:%.c=%.o) 
-
-gotthardVirtualServer = $(PROGS)
-
-all:	clean $(PROGS) 
-
-
+versioning: 
+    @echo `tput setaf 6;    ./updateGitVersion.sh; tput sgr0;`
+    
 $(PROGS): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
-
+#   echo $(OBJS) 
+    mkdir -p $(DESTDIR) 
+    $(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
+    mv $(PROGS) $(DESTDIR)
 
 clean:
-	rm -rf $(PROGS)  *.o *.gdb
-
-
-
-
-
-
+    rm -rf $(DESTDIR)/$(PROGS)  *.o
+   

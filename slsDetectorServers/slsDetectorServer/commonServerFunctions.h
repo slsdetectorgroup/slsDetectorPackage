@@ -1,13 +1,6 @@
-#ifndef COMMON_SERVER_FUNCTIONS_H
-#define COMMON_SERVER_FUNCTIONS_H
+#pragma once
 
-#ifndef GOTTHARDD	//gotthard already had bus_w etc defined in its firmware_funcs.c (not yet made with common files)
 #include "blackfin.h"
-#else
-#include "ansi.h"
-#endif
-
-/* global variables */
 
 void SPIChipSelect (u_int32_t* valw, u_int32_t addr,  u_int32_t csmask) {
 
@@ -69,5 +62,3 @@ void serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbits
 
     SPIChipDeselect(&valw, addr, csmask, clkmask);
 }
-
-#endif	//COMMON_SERVER_FUNCTIONS_H

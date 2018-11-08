@@ -14,15 +14,12 @@
 #include <time.h>
 #endif
 
-// Global variable from slsDetectorServer
+// Global variable from slsDetectorServer_funcs
 extern int debugflag;
 
 int firmware_compatibility = OK;
 int firmware_check_done = 0;
 char firmware_message[MAX_STR_LENGTH];
-
-sls_detector_module *detectorModules = NULL;
-int *detectorDacs = NULL;
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -30,7 +27,7 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
-enum detectorSettings thisSettings;
+enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
 int32_t clkPhase[2] = {0, 0};
@@ -45,7 +42,7 @@ int getFirmwareCheckResult(char** mess) {
 	return firmware_compatibility;
 }
 
-void checkFirmwareCompatibility() {
+void basictests() {
     firmware_compatibility = OK;
     firmware_check_done = 0;
     memset(firmware_message, 0, MAX_STR_LENGTH);
@@ -242,7 +239,7 @@ int detectorTest( enum digitalTestMode arg){
 	//DETECTOR_MEMORY_TEST:testRAM
 	//DETECTOR_SOFTWARE_TEST:
 	default:
-		FILE_LOG(logERROR, ("Test not implemented for this detector %d\n", (int)arg));
+		FILE_LOG(logERROR, ("Test %s not implemented for this detector\n", (int)arg));
 		break;
 	}
 	return OK;
@@ -387,39 +384,11 @@ void initStopServer() {
 
 /* set up detector */
 
-void allocateDetectorStructureMemory(){
-	FILE_LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
-
-	//Allocation of memory
-	if (detectorModules != NULL) free(detectorModules);
-	if (detectorDacs != NULL) free(detectorDacs);
-	detectorModules = malloc(sizeof(sls_detector_module));
-	detectorDacs = malloc(NDAC*sizeof(int));
-    FILE_LOG(logDEBUG1, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
-    FILE_LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
-	(detectorModules)->dacs = detectorDacs;
-	(detectorModules)->ndac = NDAC;
-	(detectorModules)->nchip = NCHIP;
-	(detectorModules)->nchan = NCHIP * NCHAN;
-	(detectorModules)->reg = 0;
-    (detectorModules)->iodelay = 0;
-    (detectorModules)->tau = 0;
-    (detectorModules)->eV = 0;
-	thisSettings = UNINITIALIZED;
-
-	{ // initialize to -1
-		int i = 0;
-		for (i = 0; i < NDAC; ++i) {
-			dacValues[i] = -1;
-		}
-	}
-}
 
 
 
 void setupDetector() {
-
-	allocateDetectorStructureMemory();
+    FILE_LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
 
 	resetPLL();
 	resetCore();
@@ -797,12 +766,12 @@ int64_t getTimeLeft(enum timerIndex ind){
 		break;
 
 	case ACTUAL_TIME:
-		retval = get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-9 * CLK_SYNC);
+		retval = get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-3 * CLK_SYNC);
 		FILE_LOG(logINFO, ("Getting actual time (time from start): %lld\n", (long long int)retval));
 		break;
 
 	case MEASUREMENT_TIME:
-		retval = get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-9 * CLK_SYNC);
+		retval = get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-3 * CLK_SYNC);
 		FILE_LOG(logINFO, ("Getting measurement time (timestamp/ start frame time): %lld\n", (long long int)retval));
 		break;
 
@@ -835,19 +804,10 @@ int setModule(sls_detector_module myMod, char* mess){
     // settings
 	setSettings( (enum detectorSettings)myMod.reg);
 
-	//copy module locally
-	if (detectorModules) {
-	    if (copyModule(detectorModules, &myMod) == FAIL) {
-	          sprintf(mess, "Could not copy module\n");
-	            FILE_LOG(logERROR, (mess));
-	            return FAIL;
-	    }
-	}
-
     //set dac values
 	{
 	    int i = 0, retval[2] = {-1, -1};
-	    for(i = 0; i < myMod.ndac; ++i)
+	    for(i = 0; i < NDAC; ++i)
 	        setDAC((enum DACINDEX)i, myMod.dacs[i], 0, retval);
 	}
 	return OK;
@@ -855,19 +815,20 @@ int setModule(sls_detector_module myMod, char* mess){
 
 
 int getModule(sls_detector_module *myMod){
-	int i;
-	int retval[2];
-
-	//dacs
-	for(i=0;i<NDAC;i++)
-		setDAC((enum DACINDEX)i,-1,0,retval);
-
-	//copy from local copy
-	if (detectorModules)
-		copyModule(myMod,detectorModules);
-	else
-		return FAIL;
-	return OK;
+    int idac = 0;
+    for (idac = 0; idac < NDAC; ++idac) {
+        if (dacValues[idac] >= 0)
+            *((myMod->dacs) + idac) = dacValues[idac];
+    }
+    // check if all of them are not initialized
+    int initialized = 0;
+    for (idac = 0; idac < NDAC; ++idac) {
+        if (dacValues[idac] >= 0)
+            initialized = 1;
+    }
+    if (initialized)
+        return OK;
+	return FAIL;
 }
 
 
@@ -1028,22 +989,25 @@ int dacToVoltage(unsigned int digital){
 
 
 void setDAC(enum DACINDEX ind, int val, int mV, int retval[]){
-	int dacval = val;
+	int dacmV = val;
 
-	//if set and mv, convert to dac
-	if (val > 0 && mV) {
-		val = voltageToDac(val); //gives -1 on error
-	}
+    //if set and mv, convert to dac
+    if (val > 0) {
+        if (mV)
+            val = voltageToDac(val); //gives -1 on error
+        else
+            dacmV = dacToVoltage(val); //gives -1 on error
+    }
 
 	if ( (val >= 0) || (val == -100)) {
 #ifdef VIRTUAL
-	    dacValues[ind] = dacval;
+	    dacValues[ind] = val;
 #else
 		u_int32_t codata;
 		int csdx 		= ind / NDAC + DAC_SERIAL_CS_OUT_OFST; 	// old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
 		int dacchannel 	= ind % NDAC;							// 0-8, dac channel number (also for dacnum 9-15 in old board)
 
-		FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",ind, dacval, val));
+		FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",ind, val, dacmV));
 		// command
 		if (val >= 0) {
 			FILE_LOG(logDEBUG1,("\tWrite to Input Register and Update\n"));
@@ -1064,7 +1028,7 @@ void setDAC(enum DACINDEX ind, int val, int mV, int retval[]){
 		serializeToSPI(SPI_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
 				DAC_SERIAL_CLK_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_MSK, DAC_SERIAL_DIGITAL_OUT_OFST);
 
-		dacValues[ind] = dacval;
+		dacValues[ind] = val;
 
 		if (ind == VREF_COMP) {
 		    bus_w (VREF_COMP_MOD_REG, (bus_r(VREF_COMP_MOD_REG) &~ (VREF_COMP_MOD_MSK))   // reset
@@ -1177,12 +1141,7 @@ enum externalCommunicationMode getTiming() {
 
 
 long int calcChecksum(int sourceip, int destip) {
-
 	ip_header ip;
-	int count;
-	unsigned short *addr;
-	long int sum = 0;
-	long int checksum;
 	ip.ip_ver            = 0x4;
 	ip.ip_ihl            = 0x5;
 	ip.ip_tos            = 0x0;
@@ -1196,18 +1155,22 @@ long int calcChecksum(int sourceip, int destip) {
 	ip.ip_sourceip       = sourceip;
 	ip.ip_destip         = destip;
 
-	count = sizeof(ip);
-	addr = (unsigned short*) &(ip); /* warning: assignment from incompatible pointer type */
-	while( count > 1 )  {
+	int count = sizeof(ip);
+
+	unsigned short *addr;
+    addr = (unsigned short*) &(ip); /* warning: assignment from incompatible pointer type */
+
+	long int sum = 0;
+    while( count > 1 )  {
 		sum += *addr++;
 		count -= 2;
 	}
-	if (count > 0)  sum += *addr;                     // Add left-over byte, if any
-	while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
-	checksum = (~sum) & 0xffff;
-
+	if (count > 0)
+	    sum += *addr;                     // Add left-over byte, if any
+	while (sum>>16)
+	    sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
+	long int checksum = (~sum) & 0xffff;
 	FILE_LOG(logINFO, ("IP checksum is 0x%lx\n",checksum));
-
 	return checksum;
 }
 
@@ -1215,7 +1178,7 @@ long int calcChecksum(int sourceip, int destip) {
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2){
 #ifdef VIRTUAL
-    return 0;
+    return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
@@ -1277,7 +1240,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	resetCore();
 
 	usleep(500 * 1000); /* todo maybe without */
-	return 0;
+	return OK;
 }
 
 
@@ -1602,11 +1565,11 @@ void readFrame(int *ret, char *mess){
 
 
 
-u_int32_t runBusy(void) {
+u_int32_t runBusy() {
 #ifdef VIRTUAL
     return virtual_status;
 #endif
-	u_int32_t s = ((bus_r(STATUS_REG) & RUN_BUSY_MSK) >> RUN_BUSY_OFST);
+	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);
 	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
 }
@@ -1619,45 +1582,6 @@ u_int32_t runBusy(void) {
 
 
 /* common */
-
-//jungfrau doesnt require chips and chans (save memory)
-int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
-
-	int idac;
-	int ret=OK;
-
-	FILE_LOG(logDEBUG1, ("Copying module\n"));
-
-	if (srcMod->serialnumber>=0){
-		destMod->serialnumber=srcMod->serialnumber;
-	}
-	if ((srcMod->nchip)>(destMod->nchip)) {
-		FILE_LOG(logERROR, ("Number of chip of source is larger than number of chips of destination\n"));
-		return FAIL;
-	}
-	if ((srcMod->nchan)>(destMod->nchan)) {
-		FILE_LOG(logERROR, ("Number of channels of source is larger than number of channels of destination\n"));
-		return FAIL;
-	}
-	if ((srcMod->ndac)>(destMod->ndac)) {
-		FILE_LOG(logERROR, ("Number of dacs of source is larger than number of dacs of destination\n"));
-		return FAIL;
-	}
-	FILE_LOG(logDEBUG1, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
-	FILE_LOG(logDEBUG1, ("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip));
-	FILE_LOG(logDEBUG1, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
-
-	if (srcMod->reg>=0)
-		destMod->reg=srcMod->reg;
-	FILE_LOG(logDEBUG1, ("Copying register %x (%x)\n",destMod->reg,srcMod->reg ));
-
-	for (idac=0; idac<(srcMod->ndac); idac++) {
-		if (*((srcMod->dacs)+idac)>=0)
-			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
-	}
-	return ret;
-}
-
 
 int calculateDataBytes(){
 	return DATA_BYTES;

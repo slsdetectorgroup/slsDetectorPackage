@@ -2115,7 +2115,7 @@ int write_adc_register(int file_des) {
 	uint32_t val = args[1];
 	FILE_LOG(logDEBUG1, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
 
-#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+#ifdef EIGERD
 	functionNotImplemented();
 #else
 #ifndef VIRTUAL

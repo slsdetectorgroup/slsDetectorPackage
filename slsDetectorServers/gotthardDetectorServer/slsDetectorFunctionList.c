@@ -150,7 +150,7 @@ u_int32_t testFpga(void) {
 	int ret = OK;
 	u_int32_t val = bus_r(FIX_PATT_REG);
 	if (val == FIX_PATT_VAL) {
-		FILE_LOG(logINFO, ("Fixed pattern: successful match 0x%08x\n",val));
+		FILE_LOG(logINFO, ("Fixed pattern: successful match (0x%08x)\n",val));
 	} else {
 		FILE_LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
 		ret = FAIL;
@@ -168,7 +168,7 @@ u_int32_t testFpga(void) {
 	        bus_w(addr, val);
 	        readval = bus_r(addr);
 	        if (readval != val) {
-	            FILE_LOG(logERROR, ("Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+	            FILE_LOG(logERROR, ("1:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
 	                    i, val, readval));
 	            ret = FAIL;
 	            break;
@@ -177,7 +177,7 @@ u_int32_t testFpga(void) {
 	        bus_w(addr, val);
 	        readval = bus_r(addr);
 	        if (readval != val) {
-	            FILE_LOG(logERROR, ("Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+	            FILE_LOG(logERROR, ("2:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
 	                    i, val, readval));
 	            ret = FAIL;
 	            break;
@@ -186,15 +186,16 @@ u_int32_t testFpga(void) {
 	        bus_w(addr, val);
 	        readval = bus_r(addr);
 	        if (readval != val) {
-	            FILE_LOG(logERROR, ("Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+	            FILE_LOG(logERROR, ("3:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
 	                    i, val, readval));
 	            ret = FAIL;
 	            break;
 	        }
 	        val = 0xF0F0F0F0;
 	        bus_w(addr, val);
+	        readval = bus_r(addr);
 	        if (readval != val) {
-	            FILE_LOG(logERROR, ("Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+	            FILE_LOG(logERROR, ("4:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
 	                    i, val, readval));
 	            ret = FAIL;
 	            break;
@@ -370,7 +371,8 @@ void setupDetector() {
 
     // Initialization
     setPhaseShiftOnce();
-    prepareADC(); /* TODO: check if need to replace with configureADC from firmwarE_funcs.c? */
+    //prepareADC(); /* TODO: check if need to replace with configureADC from firmwarE_funcs.c? */
+    configureADC();
     setROIADC(-1); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
     //initDac(0); /*FIXME: if it doesnt work, switch to the old dac*/
@@ -414,19 +416,18 @@ int setDefaultDacs() {
 }
 
 uint32_t writeRegister16And32(uint32_t offset, uint32_t data) {
-   u_int32_t addr = offset << MEM_MAP_SHIFT;
-   if ((addr == CONTROL_REG) || (addr == FIFO_DATA_REG)) {
-       bus_w16(addr, (u_int16_t)data);
-       return (u_int32_t)bus_r16(addr);
+   if (((offset << MEM_MAP_SHIFT) == CONTROL_REG) ||
+           ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
+       return writeRegister16(offset, data);
    } else
        return writeRegister(offset, data);
 
 }
 
 uint32_t readRegister16And32(uint32_t offset) {
-    u_int32_t addr = offset << MEM_MAP_SHIFT;
-    if ((addr == CONTROL_REG) || (addr == FIFO_DATA_REG)) {
-        return (u_int32_t)bus_r16(addr);
+    if (((offset << MEM_MAP_SHIFT) == CONTROL_REG) ||
+            ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
+        return readRegister16(offset);
     } else
         return readRegister(offset);
 }
@@ -464,6 +465,65 @@ void setPhaseShift(int numphaseshift) {
         bus_w(addr, val & (~PHS_STP_MSK));
     }
     FILE_LOG(logDEBUG1, ("Multipurpose reg: 0x%x\n", val));
+}
+
+void configureADC() {
+    printf("Preparing ADC\n");
+    u_int32_t valw,codata,csmask;
+    int i,j,cdx,ddx;
+    cdx=0; ddx=1;
+    csmask=0x7c; //  1111100
+
+    for(j=0;j<3;j++){
+        //command and value;
+        codata = 0;
+        if(j==0)
+            codata=(0x08<<8)+(0x3);//Power modes(global) //reset
+        else if(j==1)
+            codata=(0x08<<8)+(0x0);//Power modes(global) //chip run
+        else
+            codata = (0x14<<8)+(0x0);//Output mode //offset binary
+
+
+        // start point
+        valw=0xffffffff;
+        bus_w(ADC_SPI_REG,(valw));
+
+         //chip sel bar down
+        valw=((0xffffffff&(~csmask)));
+        bus_w(ADC_SPI_REG,valw);
+
+        for (i=0;i<24;i++) {
+             //cldwn
+            valw=valw&(~(0x1<<cdx));
+            bus_w(ADC_SPI_REG,valw);
+            //usleep(0);
+
+            //write data (i)
+            valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
+            bus_w(ADC_SPI_REG,valw);
+            //usleep(0);
+
+            //clkup
+            valw=valw+(0x1<<cdx);
+            bus_w(ADC_SPI_REG,valw);
+            //usleep(0);
+        }
+
+        valw |= csmask;
+        bus_w(ADC_SPI_REG,valw);
+        //usleep(0);
+
+         // stop point =start point
+        valw=valw&(~(0x1<<cdx));
+        bus_w(ADC_SPI_REG,(valw));
+
+        valw = 0xffffffff;
+        bus_w(ADC_SPI_REG,(valw));
+
+        //usleep in between
+        usleep(50000);
+    }
 }
 
 void cleanFifos() {
@@ -516,7 +576,8 @@ void setChipOfInterestRegister(int adc) {
             (((1 << adc) << CHIP_OF_INTRST_ADC_SEL_OFST) & CHIP_OF_INTRST_ADC_SEL_MSK));
 
     // 0x0500(no roi), 0x0100(roi)
-    u_int32_t numChannels = ((adcConfigured == -1) ? NCHIP : NCHIPS_PER_ADC) * NCHAN;
+    u_int32_t numChannels = (adcConfigured == -1) ? (NCHIP * NCHAN) : (NCHIPS_PER_ADC * NCHAN);
+    numChannels = ((numChannels << CHIP_OF_INTRST_NUM_CHNNLS_OFST) & CHIP_OF_INTRST_NUM_CHNNLS_MSK);
 
     // 0x500001f(no roi), 0x10000xx(roi) MSB:num channels, LSB: selected ADC
     u_int32_t val =  (numChannels | adcSelect);
@@ -781,16 +842,16 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
 
         //set adc of interest
         setROIADC(adc);
-    }
+    } else FILE_LOG(logINFO, ("Getting ROI:\n"));
 
     // print
     if (!nROI) {
-        FILE_LOG(logINFO, ("\tROI: None\n\n"));
+        FILE_LOG(logINFO, ("\tROI: None\n"));
     } else {
         FILE_LOG(logINFO, ("ROI:\n"));
         int i = 0;
         for (i = 0; i < nROI; ++i) {
-            FILE_LOG(logINFO, ("\t(%d, %d)\n\n", rois[i].xmin, rois[i].xmax));
+            FILE_LOG(logINFO, ("\t(%d, %d)\n", rois[i].xmin, rois[i].xmax));
 
         }
     }
@@ -809,56 +870,56 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case FRAME_NUMBER:
 		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #frames: %lld\n",(long long int)val));
+			FILE_LOG(logINFO, ("Setting Frames: %lld\n",(long long int)val));
 		}
 		retval = set64BitReg(val,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("\tGetting #frames: %lld\n", (long long int)retval));
+		FILE_LOG(logDEBUG1, ("\tGetting Frames: %lld\n", (long long int)retval));
 		break;
 
 	case ACQUISITION_TIME:
 		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting exptime: %lldns\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting Exptime: %lld ns\n", (long long int)val));
 			val = (val * 1E-3 * CLK_FREQ) + 0.5;
 		}
 		retval = (set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) /
 		        (1E-3 * CLK_FREQ)) + 0.5;
-		FILE_LOG(logDEBUG1, ("\tGetting exptime: %lldns\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting Exptime: %lld ns\n", (long long int)retval));
 		break;
 
 	case FRAME_PERIOD:
 		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
+			FILE_LOG(logINFO, ("Setting Period: %lld ns\n",(long long int)val));
 			val = (val * 1E-3 * CLK_FREQ) + 0.5;
 		}
 		retval = (set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
 		        (1E-3 * CLK_FREQ)) + 0.5;
-		FILE_LOG(logDEBUG1, ("\tGetting period: %lldns\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting Period: %lld ns\n", (long long int)retval));
 		break;
 
 	case DELAY_AFTER_TRIGGER:
 		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting delay: %lldns\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting Delay: %lld ns\n", (long long int)val));
 			if (masterflags == IS_MASTER) {
 			    val += masterdefaultdelay;
-			    FILE_LOG(logINFO, ("\tActual delay (master): %lld\n", (long long int) val));
+			    FILE_LOG(logINFO, ("\tActual Delay (master): %lld\n", (long long int) val));
 			}
 			val = (val * 1E-3 * CLK_FREQ) + 0.5;
 		}
 		retval = (set64BitReg(val, SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) /
 		        (1E-3 * CLK_FREQ)) + 0.5;
-		FILE_LOG(logDEBUG1, ("\tGetting delay: %lldns\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting Delay: %lld ns\n", (long long int)retval));
 	    if (masterflags == IS_MASTER) {
-	        FILE_LOG(logDEBUG1, ("\tActual delay read (master): %lld\n", (long long int) retval));
+	        FILE_LOG(logDEBUG1, ("\tActual Delay read (master): %lld\n", (long long int) retval));
 	        retval -= masterdefaultdelay;
 	    }
 		break;
 
 	case CYCLES_NUMBER:
 		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting Cycles: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  SET_TRAINS_LSB_REG, SET_TRAINS_MSB_REG);
-		FILE_LOG(logDEBUG1, ("\tGetting #cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logDEBUG1, ("\tGetting Cycles: %lld\n", (long long int)retval));
 		break;
 
 	default:
@@ -917,6 +978,33 @@ int64_t getTimeLeft(enum timerIndex ind){
 	}
 
 	return retval;
+}
+
+int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
+    if (val < 0)
+        return OK;
+    switch(ind) {
+    case ACQUISITION_TIME:
+    case FRAME_PERIOD:
+        val = (val * 1E-3 * CLK_FREQ) + 0.5;    // convert to freq
+        val = (val / (1E-3 * CLK_FREQ)) + 0.5;  // convert back to timer
+        if (val != retval)
+            return FAIL;
+    case DELAY_AFTER_TRIGGER:
+        if (masterflags == IS_MASTER) {
+            val += masterdefaultdelay;
+        }
+        val = (val * 1E-3 * CLK_FREQ) + 0.5;    // convert to freq
+        val = (val / (1E-3 * CLK_FREQ)) + 0.5;  // convert back to timer
+        if (masterflags == IS_MASTER) {
+            val -= masterdefaultdelay;
+        }
+        if (val != retval)
+            return FAIL;
+    default:
+        break;
+    }
+    return OK;
 }
 
 
@@ -1005,23 +1093,23 @@ enum detectorSettings getSettings(){
 	uint32_t val = regval & GAIN_CONFGAIN_MSK;
 	switch(val) {
     case GAIN_CONFGAIN_DYNMC_GAIN_VAL:
-        FILE_LOG(logINFO, ("Settings read: Dyanmic Gain. Gain Reg: 0x%x\n", regval));
+        FILE_LOG(logDEBUG1, ("Settings read: Dynamic Gain. Gain Reg: 0x%x\n", regval));
         thisSettings = DYNAMICGAIN;
         break;
     case GAIN_CONFGAIN_HGH_GAIN_VAL:
-        FILE_LOG(logINFO, ("Settings read: High Gain. Gain Reg: 0x%x\n", regval));
+        FILE_LOG(logDEBUG1, ("Settings read: High Gain. Gain Reg: 0x%x\n", regval));
         thisSettings = HIGHGAIN;
         break;
     case GAIN_CONFGAIN_LW_GAIN_VAL:
-        FILE_LOG(logINFO, ("Settings read: Low Gain. Gain Reg: 0x%x\n", regval));
+        FILE_LOG(logDEBUG1, ("Settings read: Low Gain. Gain Reg: 0x%x\n", regval));
         thisSettings = LOWGAIN;
         break;
     case GAIN_CONFGAIN_MDM_GAIN_VAL:
-        FILE_LOG(logINFO, ("Settings read: Medium Gain. Gain Reg: 0x%x\n", regval));
+        FILE_LOG(logDEBUG1, ("Settings read: Medium Gain. Gain Reg: 0x%x\n", regval));
         thisSettings = MEDIUMGAIN;
         break;
     case GAIN_CONFGAIN_VRY_HGH_GAIN_VAL:
-        FILE_LOG(logINFO, ("Settings read: Very High Gain. Gain Reg: 0x%x\n", regval));
+        FILE_LOG(logDEBUG1, ("Settings read: Very High Gain. Gain Reg: 0x%x\n", regval));
         thisSettings = VERYHIGHGAIN;
         break;
     default:
@@ -1070,7 +1158,7 @@ void setDAC(enum DACINDEX ind, int val, int mV, int retval[]){
 	}
 
 	if (val >= 0) {
-	    FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",ind, val, mV));
+	    FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",ind, val, dacmV));
 #ifndef VIRTUAL
 	    initDAC(ind,val);
 	    clearDACSregister();
@@ -1322,14 +1410,17 @@ enum externalCommunicationMode getTiming() {
 void setExtSignal(enum externalSignalFlag  mode) {
     switch (mode) {
     case TRIGGER_IN_RISING_EDGE:
+        FILE_LOG(logINFO, ("Setting External Signal flag: Trigger in Rising Edge\n"));
+        break;
     case TRIGGER_IN_FALLING_EDGE:
-        signalMode = mode;
-        setTiming(getTiming());
+        FILE_LOG(logINFO, ("Setting External Signal flag: Trigger in Falling Edge\n"));
         break;
     default:
         FILE_LOG(logERROR, ("Extsig (signal mode) %d not defined for this detector\n", mode));
-        break;
+        return;
     }
+    signalMode = mode;
+    setTiming(getTiming());
 }
 
 int getExtSignal() {
@@ -1368,7 +1459,7 @@ void calcChecksum(mac_conf* mac, int sourceip, int destip) {
 	while (sum>>16)
 	    sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
 	long int checksum = (~sum) & 0xffff;
-	FILE_LOG(logINFO, ("\tIP checksum is 0x%lx\n", checksum));
+	FILE_LOG(logINFO, ("\tIP checksum : 0x%lx\n", checksum));
 	mac->ip.ip_chksum   =  checksum;
 }
 
@@ -1383,9 +1474,9 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	        adcConfigured, ipPacketSize, udpPacketSize));
 
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
-	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
+	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d (0x%08x)\n",
 	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
-	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x (0x%010llx)\n",
 			(unsigned int)((sourcemac>>40)&0xFF),
 			(unsigned int)((sourcemac>>32)&0xFF),
 			(unsigned int)((sourcemac>>24)&0xFF),
@@ -1393,10 +1484,10 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((sourcemac>>8)&0xFF),
 			(unsigned int)((sourcemac>>0)&0xFF),
 			(long  long unsigned int)sourcemac));
-	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
-	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+	FILE_LOG(logINFO, ("\tSource Port : %d (0x%08x)\n",sourceport, sourceport));
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d (0x%08x)\n",
 	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
-	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x (0x%010llx)\n",
 			(unsigned int)((destmac>>40)&0xFF),
 			(unsigned int)((destmac>>32)&0xFF),
 			(unsigned int)((destmac>>24)&0xFF),
@@ -1404,7 +1495,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((destmac>>8)&0xFF),
 			(unsigned int)((destmac>>0)&0xFF),
 			(long  long unsigned int)destmac));
-	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d (0x%08x)\n",udpport, udpport));
 
 	// set/ unset the digital test bit
 	if (digitalTestBit)
@@ -1492,8 +1583,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     tse_conf_regs->tx_almost_full      = 0x3;
     tse_conf_regs->mdio_addr0          = 0x12;
     tse_conf_regs->mdio_addr1          = 0x0;
-
-    FILE_LOG(logDEBUG1, ("\tConfigure Mac Done"));
     mac_conf_regs->cdone               = 0xFFFFFFFF;
 
     // write shadow regs  /* FIXME: Only INT_RSTN_MSK | WRT_BCK_MSK */
@@ -1511,6 +1600,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     FILE_LOG(logDEBUG1, ("\tSw1. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     usleep(1000 * 1000);
+    FILE_LOG(logDEBUG1, ("\tConfigure Mac Done\n"));
     return OK;
 }
 
@@ -1639,9 +1729,9 @@ int startStateMachine(){
 	cleanFifos();
 
 	//start state machine
-	bus_w16(CONTROL_REG, CONTROL_STRT_ACQ_MSK);
+	bus_w16(CONTROL_REG, CONTROL_STRT_ACQ_MSK | CONTROL_STRT_EXPSR_MSK);
 	bus_w16(CONTROL_REG, 0x0);
-	FILE_LOG(logINFO, ("Status Register: %08x\n", runState()));
+	runState(logINFO);
 	return OK;
 }
 
@@ -1670,17 +1760,18 @@ int stopStateMachine(){
 #endif
 	//stop state machine
 	bus_w16(CONTROL_REG, CONTROL_STP_ACQ_MSK);
-	usleep(100);/**FIXME:Needed? not there earlier*/
+	//usleep(100);/**FIXME:Needed? not there earlier*/
 	bus_w16(CONTROL_REG, 0x0);
 
 	// check
 	usleep(500);
-    if ((runState() & STATUS_RN_MSHN_BSY_MSK)) {
-        FILE_LOG(logERROR, ("\tFailed to stop state machine\n"));
+    if ((runState(logDEBUG1) & STATUS_RN_MSHN_BSY_MSK)) {
+        FILE_LOG(logERROR, ("\tFailed to stop state machine.\n"));
+        runState(logINFORED);
         return FAIL;
     }
 
-	FILE_LOG(logINFO, ("Status Register: %08x\n", runState()));
+    runState(logINFO);
 	return OK;
 }
 
@@ -1697,8 +1788,7 @@ enum runStatus getRunStatus(){
 	FILE_LOG(logDEBUG1, ("Getting status\n"));
 
 	enum runStatus s = IDLE;
-	u_int32_t retval = runState();
-	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
+	u_int32_t retval = runState(logINFO);
 
 	// finished (external stop or fifo full)
 	if (retval & STATUS_RN_FNSHD_MSK) {
@@ -1706,10 +1796,11 @@ enum runStatus getRunStatus(){
 	    s = STOPPED;
 
 	    FILE_LOG(logINFO, ("\t Reading status reg again\n"));
-        retval = runState();
+        retval = runState(logINFO);
         // fifo full
-        if (runState() & STATUS_RN_FNSHD_MSK) {
+        if (runState(logDEBUG1) & STATUS_RN_FNSHD_MSK) {
             FILE_LOG(logINFORED, ("Status: Error\n"));
+            runState(logINFORED);
             s = ERROR;
         }
 	}
@@ -1721,7 +1812,7 @@ enum runStatus getRunStatus(){
 	}
 
 	// not running
-	else if (!(retval & STATUS_RN_MSHN_BSY_MSK)) {
+	else if (!(retval & STATUS_RN_BSY_MSK)) {
 	    // read last frames
 	    if (retval & STATUS_RD_MSHN_BSY_MSK) {
 	        FILE_LOG(logINFOBLUE, ("Status: Read Machine Busy\n"));
@@ -1737,8 +1828,14 @@ enum runStatus getRunStatus(){
             FILE_LOG(logINFOBLUE, ("Status: IDLE\n"));
             s = IDLE;
 	    } else {
-            FILE_LOG(logINFORED, ("Status: Unknown Status: 0x%x\n", retval));
-            s = ERROR;
+            FILE_LOG(logINFORED, ("Status: Unknown Status: 0x%x. Trying again.\n", retval));
+            int iloop = 0;
+            for (iloop = 0; iloop < 10; ++iloop) {
+                usleep(1000 * 1000);
+                if (runState(logDEBUG1) != retval)
+                    return getRunStatus();
+            }
+           s = ERROR;
 	    }
 	}
 
@@ -1786,15 +1883,15 @@ u_int32_t runBusy() {
 #ifdef VIRTUAL
     return virtual_status;
 #endif
-	return runState() & STATUS_RN_BSY_MSK;
+	return runState(logDEBUG1) & STATUS_RN_BSY_MSK;
 }
 
-u_int32_t runState() {
+u_int32_t runState(enum TLogLevel lev) {
 #ifdef VIRTUAL
     return virtual_status;
 #endif
     u_int32_t s = bus_r(STATUS_REG);
-    FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+    FILE_LOG(lev, ("Status Register: 0x%08x\n", s));
     return s;
 }
 

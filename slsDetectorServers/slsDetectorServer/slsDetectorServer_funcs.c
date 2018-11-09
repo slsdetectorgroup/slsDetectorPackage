@@ -104,8 +104,8 @@ int decode_function(int file_des) {
 		if (ret == FAIL) {
 			FILE_LOG(logDEBUG1, ("Error executing the function = %d (%s)\n",
 					fnum, getFunctionName((enum detFuncs)fnum)));
-		} else FILE_LOG(logDEBUG1, ("Function (%s) executed ok\n",
-				getFunctionName((enum detFuncs)fnum)));
+		} else FILE_LOG(logDEBUG1, ("Function (%s) executed %s\n",
+				getFunctionName((enum detFuncs)fnum), (ret == OK)?"OK":"FORCE_UPDATE"));
 	}
 	return ret;
 }
@@ -366,7 +366,7 @@ int get_detector_type(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	enum detectorType retval = myDetectorType;
 	FILE_LOG(logDEBUG1,("Returning detector type %d\n", retval));
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, NO_UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -849,7 +849,7 @@ int read_register(int file_des) {
 #else
 	retval = readRegister(addr);
 #endif
-	FILE_LOG(logDEBUG1, ("Read register (0x%x): 0x%x\n", retval));
+	FILE_LOG(logINFO, ("Read register (0x%x): 0x%x\n", addr, retval));
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -1308,8 +1308,34 @@ int set_timer(int file_des) {
 			modeNotImplemented("Timer index", (int)ind);
 			break;
 		}
+
 		// validate
-		validate64(tns, retval, "set timer", DEC);
+#ifdef EIGERD
+		validate64(tns, retval, "set timer", DEC); // copied to server, not read from detector register
+#else
+		switch(ind) {
+        case FRAME_NUMBER:
+        case CYCLES_NUMBER:
+        case STORAGE_CELL_NUMBER:
+		    validate64(tns, retval, "set timer", DEC); // no conversion, so all good
+		    break;
+        case ACQUISITION_TIME:
+        case FRAME_PERIOD:
+        case DELAY_AFTER_TRIGGER:
+        case SUBFRAME_ACQUISITION_TIME:
+        case SUBFRAME_DEADTIME:
+            // losing precision due to conversion to clock (also gotthard master delay is different)
+            if (validateTimer(ind, tns, retval) == FAIL) {
+                ret = FAIL;
+                sprintf(mess, "Could not set timer. Set %lld, but read %lld\n",
+                    (long long unsigned int)tns, (long long unsigned int)retval);
+                FILE_LOG(logERROR,(mess));
+            }
+            break;
+        default:
+            break;
+		}
+#endif
 	}
 	if (ret != FAIL) {
 		FILE_LOG(logDEBUG1, ("Timer index %d: %lld\n", ind, retval));
@@ -1608,7 +1634,7 @@ int set_speed(int file_des) {
 
 
 int exit_server(int file_des) {
-	cprintf(BG_RED, "Closing Server\n");
+	FILE_LOG(logINFORED, ("Closing Server\n"));
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
@@ -1791,7 +1817,7 @@ int configure_mac(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("\n Configuring UDP Destination\n"));
+	FILE_LOG(logDEBUG1, ("\n Configuring MAC\n"));
 	uint32_t dstIp = 0;
 	sscanf(args[0], "%x", 	&dstIp);
 	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
@@ -1890,10 +1916,11 @@ int configure_mac(int file_des) {
 			if (ret == FAIL) {
 				sprintf(mess,"Configure Mac failed\n");
 				FILE_LOG(logERROR,(mess));
+			} else {
+			    FILE_LOG(logINFO, ("\tConfigure MAC successful\n"));
 			}
 #if defined(EIGERD) || defined (JUNGFRAUD)
-			else {
-				FILE_LOG(logINFO, ("Configure MAC successful: %d\n", ret));
+			if (ret != FAIL) {
 				ret = setDetectorPosition(pos);
 				if (ret == FAIL) {
 					sprintf(mess, "Could not set detector position\n");
@@ -2463,7 +2490,7 @@ int program_fpga(int file_des) {
 
 
 				if (ret == FAIL) {
-					cprintf(RED,"Failure: Breaking out of program receiving\n");
+				    FILE_LOG(logERROR, ("Failure: Breaking out of program receiving\n"));
 				} else {
 					//print progress
 					FILE_LOG(logINFO, ("Writing to Flash:%d%%\r",
@@ -2787,7 +2814,7 @@ int check_version(int file_des) {
 	}
 
 	if (ret == OK) {
-		FILE_LOG(logDEBUG1, ("Checking versioning compatibility with value %d\n",arg));
+		FILE_LOG(logDEBUG1, ("Checking versioning compatibility with value 0x%llx\n",arg));
 
 		int64_t client_requiredVersion = arg;
 		int64_t det_apiVersion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
@@ -2813,7 +2840,7 @@ int check_version(int file_des) {
 			FILE_LOG(logERROR,(mess));
 		}
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
 }
 
 

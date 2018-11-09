@@ -790,7 +790,32 @@ int64_t getTimeLeft(enum timerIndex ind){
 }
 
 
-
+int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
+    if (val < 0)
+        return OK;
+    switch(ind) {
+    case ACQUISITION_TIME:
+        // convert to freq
+        val *= (1E-3 * CLK_RUN);
+        val -= ACQ_TIME_MIN_CLOCK;
+        if(val < 0) val = 0;
+        // convert back to timer
+        val = (val + ACQ_TIME_MIN_CLOCK) / (1E-3 * CLK_RUN);
+        if (val != retval)
+            return FAIL;
+    case FRAME_PERIOD:
+    case DELAY_AFTER_TRIGGER:
+        // convert to freq
+        val *= (1E-3 * CLK_SYNC);
+        // convert back to timer
+        val = (val) / (1E-3 * CLK_SYNC);
+        if (val != retval)
+            return FAIL;
+    default:
+        break;
+    }
+    return OK;
+}
 
 
 

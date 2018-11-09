@@ -1,7 +1,7 @@
 #pragma once
 
 /* Definitions for FPGA*/
-#define MEM_MAP_SHIFT 11
+#define MEM_MAP_SHIFT                   (11)
 
 /** Gain register */
 #define GAIN_REG                        (0x10 << MEM_MAP_SHIFT)

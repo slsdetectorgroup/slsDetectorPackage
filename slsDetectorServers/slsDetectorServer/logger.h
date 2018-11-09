@@ -19,10 +19,10 @@
 #define FILELOG_MAX_LEVEL logINFO
 #endif
 
-typedef enum {
+enum TLogLevel{
 logERROR, logWARNING, logINFOBLUE, logINFOGREEN, logINFORED, logINFO,
 logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5
-}TLogLevel;
+};
 
 #define ERROR_MSG_LENGTH 1000
 
@@ -30,7 +30,7 @@ logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5
 	if (lvl > FILELOG_MAX_LEVEL);				\
 	else {char* temp = FILELOG_BuildLog fmt; FILELOG_PrintLog(lvl, temp);free(temp);}
 
-static inline void FILELOG_PrintLog(TLogLevel level, char* m) {
+static inline void FILELOG_PrintLog(enum TLogLevel level, char* m) {
 	switch(level) {
 	case logERROR: 		cprintf(RED BOLD, "ERROR: %s", m);		break;
 	case logWARNING:	cprintf(YELLOW BOLD, "WARNING: %s", m);	break;

@@ -2637,7 +2637,7 @@ uint32_t slsDetector::writeRegister(uint32_t addr, uint32_t val) {
 uint32_t slsDetector::readRegister(uint32_t addr) {
 	int fnum = F_READ_REGISTER;
 	int ret = FAIL;
-	uint32_t arg = -1;
+	uint32_t arg = addr;
 	uint32_t retval = -1;
 	FILE_LOG(logDEBUG1) << "Reading register 0x" << std::hex <<	addr << std::dec;
 

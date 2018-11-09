@@ -114,6 +114,25 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
 	return readRegister(offset);
 }
 
+/**
+ * Read from a 16 bit register (literal register value provided by client)
+ * @param offset address offset
+ * @retuns 16 bit data read
+ */
+u_int32_t readRegister16(u_int32_t offset) {
+    return (u_int32_t)bus_r16(offset << MEM_MAP_SHIFT);
+}
+
+/**
+ * Write into a 16 bit register (literal register value provided by client)
+ * @param offset address offset
+ * @param data 16 bit data
+ */
+u_int32_t writeRegister16(u_int32_t offset, u_int32_t data) {
+    bus_w16(offset << MEM_MAP_SHIFT, (u_int16_t)data);
+    return readRegister16(offset);
+}
+
 
 /**
  * Map FPGA

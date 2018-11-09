@@ -132,7 +132,7 @@ int acceptConnection(int socketDescriptor) {
 
 	// timeout
 	if (result == 0) {
-		FILE_LOG(logDEBUG1, ("%s socket select() timed out!\n",
+		FILE_LOG(logDEBUG3, ("%s socket select() timed out!\n",
 				(isControlServer ? "control":"stop"), myport));
 	}
 
@@ -144,14 +144,14 @@ int acceptConnection(int socketDescriptor) {
 
 	// activity in descriptor set
 	else if (result > 0) {
-		FILE_LOG(logDEBUG1, ("%s select returned!\n", (isControlServer ? "control":"stop")));
+		FILE_LOG(logDEBUG3, ("%s select returned!\n", (isControlServer ? "control":"stop")));
 
 		// loop through the file descriptor set
 		for (j = 0; j < maxfd + 1; ++j) {
 
 			// checks if file descriptor part of set
 			if (FD_ISSET(j, &tempset)) {
-				FILE_LOG(logDEBUG1, ("fd %d is set\n",j));
+				FILE_LOG(logDEBUG3, ("fd %d is set\n",j));
 
 				// clear the temporary set
 				FD_CLR(j, &tempset);
@@ -212,7 +212,7 @@ int acceptConnection(int socketDescriptor) {
 				// accept success
 				else {
 					inet_ntop(AF_INET, &(addressC.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
-					FILE_LOG(logDEBUG1, ("%s socket accepted connection, fd= %d\n",
+					FILE_LOG(logDEBUG3, ("%s socket accepted connection, fd= %d\n",
 							(isControlServer ? "control":"stop"), file_des));
 					// add the file descriptor from accept
 					FD_SET(file_des, &readset);
@@ -240,7 +240,7 @@ void closeConnection(int file_des) {
 void exitServer(int socketDescriptor) {
 	if (socketDescriptor >= 0)
 		close(socketDescriptor);
-	FILE_LOG(logDEBUG1, ("Closing %s server\n", (isControlServer ? "control":"stop")));
+	FILE_LOG(logDEBUG3, ("Closing %s server\n", (isControlServer ? "control":"stop")));
 	FD_CLR(socketDescriptor, &readset);
 	isock--;
 }
@@ -316,7 +316,7 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 	int nreceiving;
 	int nreceived;
 	if (file_des<0) return -1;
-	FILE_LOG(logDEBUG1, ("want to receive %d Bytes to %s server\n",
+	FILE_LOG(logDEBUG3, ("want to receive %d Bytes to %s server\n",
 			length, (isControlServer ? "control":"stop")));
 
 	while(length > 0) {
@@ -335,8 +335,9 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 	if (total_received>0)
 		strcpy(thisClientIP,dummyClientIP);
 
-	if (strcmp(lastClientIP,thisClientIP))
+	if (strcmp(lastClientIP,thisClientIP)) {
 		differentClients = 1;
+	}
 	else
 		differentClients = 0;
 
@@ -379,7 +380,7 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 
 
 int  receiveModule(int file_des, sls_detector_module* myMod) {
-    TLogLevel level = logDEBUG1;
+    enum TLogLevel level = logDEBUG1;
     FILE_LOG(level, ("Receiving Module\n"));
 	int ts = 0, n = 0;
 	int nDacs = myMod->ndac;
@@ -454,7 +455,7 @@ int Server_VerifyLock() {
 int Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize) {
 
 	// update if different clients (ret can be ok or acquisition finished), not fail to not overwrite e message
-	if (update && ret != FAIL && differentClients)
+	if (update && isControlServer && ret != FAIL && differentClients)
 		ret = FORCE_UPDATE;
 
 	// send success of operation

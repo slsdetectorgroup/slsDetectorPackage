@@ -1,6 +1,8 @@
 #include "sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
-
+#ifdef GOTTHARDD
+#include "logger.h"                 // runState(enum TLogLevel)
+#endif
 #include <stdlib.h>
 #include <stdio.h>					// FILE
 
@@ -89,6 +91,7 @@ void        configureASICTimer();
 #elif GOTTHARDD
 void        setPhaseShiftOnce();
 void        setPhaseShift(int numphaseshift);
+void        configureADC();
 void        cleanFifos();
 void        setADCSyncRegister();
 void        setDAQRegister();
@@ -119,7 +122,9 @@ int         selectStoragecellStart(int pos);
 #endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 int64_t 	getTimeLeft(enum timerIndex ind);
-
+#if defined(JUNGFRAUD) || (GOTTHARDD)
+int         validateTimer(enum timerIndex ind, int64_t val, int64_t retval);
+#endif
 
 // parameters - module, settings
 int 		setModule(sls_detector_module myMod, char* mess);
@@ -250,7 +255,7 @@ void 		readFrame(int *ret, char *mess);
 u_int32_t 	runBusy();
 #endif
 #ifdef GOTTHARDD
-u_int32_t   runState();
+u_int32_t   runState(enum TLogLevel lev);
 #endif
 
 

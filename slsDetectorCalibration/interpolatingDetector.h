@@ -178,7 +178,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
   double int_x, int_y;
   double eta_x, eta_y;
   if (interp) {
-  cout << "int" << endl;
+    // cout << "int" << endl;
   pthread_mutex_lock(fi); 
     for (nph=0; nph<nphFrame; nph++) {
       if (ff) {
@@ -239,7 +239,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
       if (interp)
 	interp->prepareInterpolation(ok);
 	pthread_mutex_unlock(fi);  */
-      cout << "det" << endl;
+      // cout << "det" << endl;
       return interp;
     };
   

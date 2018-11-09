@@ -221,8 +221,8 @@ template <class dataType> class analogDetector {
     if (gm) {
       if (gmap) delete [] gmap; 
       gmap=new double[nnx*nny];
-      for (int ix=0; ix<nnx; ix++) {
 	for (int iy=0; iy<nny; iy++) {
+      for (int ix=0; ix<nnx; ix++) {
 	  gmap[iy*nnx+ix]=gm[iy*nnx+ix];
 	}
       }
@@ -240,8 +240,8 @@ template <class dataType> class analogDetector {
     void *ret;
     if (gmap)  {
       gm=new float[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	  gm[iy*nx+ix]=gmap[iy*nx+ix];
 	}
       }
@@ -325,8 +325,8 @@ template <class dataType> class analogDetector {
 
     virtual void addToCommonMode(char *data){ 
       if (cmSub) {
-	for (int ix=xmin; ix<xmax; ix++) {
 	  for (int iy=ymin; iy<ymax; iy++) { 
+	for (int ix=xmin; ix<xmax; ix++) {
 	    // if (getNumpedestals(ix,iy)>0) 
 	    if (det->isGood(ix,iy))
 	      addToCommonMode(data, ix, iy);
@@ -387,8 +387,8 @@ template <class dataType> class analogDetector {
     virtual double* getPedestal(double *ped){
       if (ped==NULL)
 	ped=new double[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
 	  //cout << ped[iy*nx+ix] << " " ;
 	}
@@ -405,8 +405,8 @@ template <class dataType> class analogDetector {
     virtual double* getPedestalRMS(double *ped=NULL){
       if (ped==NULL)
 	ped=new double[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
 	}
       }
@@ -445,8 +445,8 @@ template <class dataType> class analogDetector {
     */
     virtual void setPedestal(double *ped, double *rms=NULL, int m=-1){
       double rr=0;
-      for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
 	  if (rms) rr=rms[iy*nx+ix];
 	  stat[iy][ix].setPedestal(ped[iy*nx+ix],rr, m);
 	};
@@ -474,8 +474,8 @@ template <class dataType> class analogDetector {
        \param rms pointer to array of pedestal rms
     */
  virtual void setPedestalRMS(double *rms){
-      for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
 	  stat[iy][ix].setPedestalRMS(rms[iy*nx+ix]);
 	};
       };
@@ -498,8 +498,8 @@ template <class dataType> class analogDetector {
 
 #endif
       gm=new float[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	    gm[iy*nx+ix]=image[iy*nx+ix];
 #ifdef ROOTSPECTRUM
 	    hmap->SetBinContent(ix+1, iy+1,image[iy*nx+ix]);
@@ -546,8 +546,8 @@ template <class dataType> class analogDetector {
       TH2F *hmap=new TH2F("hmap","hmap",nx, -0.5,nx-0.5, ny, -0.5, ny-0.5);
 
 #endif
-    for (int ix=0; ix<nx; ix++) {
       for (int iy=0; iy<ny; iy++) {
+    for (int ix=0; ix<nx; ix++) {
 	/* if (cmSub)  */
 	/*     gm[iy*nx+ix]=stat[iy][ix].getPedestal()-cmSub->getCommonMode(); */
 	/* else */
@@ -593,8 +593,8 @@ template <class dataType> class analogDetector {
 
 
     if (gm) {
-      for (int ix=0; ix<nnx; ix++) {
 	for (int iy=0; iy<nny; iy++) {
+      for (int ix=0; ix<nnx; ix++) {
 	  stat[iy][ix].setPedestal(gm[iy*nx+ix],-1,-1);
 	}
       }
@@ -618,8 +618,8 @@ template <class dataType> class analogDetector {
 
 
     if (gm) {
-      for (int ix=0; ix<nnx; ix++) {
 	for (int iy=0; iy<nny; iy++) {
+      for (int ix=0; ix<nnx; ix++) {
 	  image[iy*nx+ix]=gm[iy*nx+ix];
 	}
       }
@@ -644,8 +644,8 @@ template <class dataType> class analogDetector {
     float *gm=NULL;
     void *ret;
       gm=new float[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	    gm[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
 	}
       }
@@ -666,8 +666,8 @@ template <class dataType> class analogDetector {
     if (nnx>nx) nnx=nx;
     if (nny>ny) nny=ny;
     if (gm) {
-      for (int ix=0; ix<nnx; ix++) {
 	for (int iy=0; iy<nny; iy++) {
+      for (int ix=0; ix<nnx; ix++) {
 	  stat[iy][ix].setPedestalRMS(gm[iy*nx+ix]);
 	}
       }
@@ -699,8 +699,8 @@ template <class dataType> class analogDetector {
             
       //cout << xmin << " " << xmax << endl;
       // cout << ymin << " " << ymax << endl;
-      for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
 	  if (det->isGood(ix,iy)) {
 	    addToPedestal(data,ix,iy,1);
 	  //if (ix==10 && iy==10) 
@@ -823,8 +823,8 @@ template <class dataType> class analogDetector {
       if (val==NULL)
 	val=image;//new double[nx*ny];
       
-      for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
 	    if (det->isGood(ix,iy))
 	      val[iy*nx+ix]+=subtractPedestal(data, ix, iy,cm);
 	}
@@ -951,8 +951,8 @@ template <class dataType> class analogDetector {
 
        addToCommonMode(data);
 
-       for (int ix=xmin; ix<xmax; ix++) {
 	 for (int iy=ymin; iy<ymax; iy++) {
+       for (int ix=xmin; ix<xmax; ix++) {
 	   if (det->isGood(ix,iy))
 	     nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
 	 }
@@ -966,8 +966,8 @@ template <class dataType> class analogDetector {
      
     */
    virtual void clearImage(){  
-     for (int ix=0; ix<nx; ix++) {
        for (int iy=0; iy<ny; iy++) { 
+     for (int ix=0; ix<nx; ix++) {
 	 image[iy*nx+ix]=0;
        }
      }
@@ -997,8 +997,8 @@ template <class dataType> class analogDetector {
     int SetNPedestals(int i=-1) {
       int ix=0, iy=0; 
       if (i>0) 
-	for (ix=0; ix<nx; ix++) 
 	  for (iy=0; iy<ny; iy++) 
+	for (ix=0; ix<nx; ix++) 
 	    stat[iy][ix].SetNPedestals(i); 
       return stat[0][0].SetNPedestals();
     };
@@ -1030,8 +1030,8 @@ template <class dataType> class analogDetector {
       if (ymi<0) ymi=ymin;
       if (yma<0) yma=ymax;
       
-      for (int ix=xmi; ix<xma; ix++)
 	for (int iy=ymi; iy<yma; iy++)
+      for (int ix=xmi; ix<xma; ix++)
 	  if (det->isGood(ix,iy)) {
 	    if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
 	      val+=getNPhotons(data, ix, iy);

@@ -1,7 +1,7 @@
 
 ZMQLIB=../../slsReceiverSoftware/include
 INCDIR= -I$(ZMQLIB)  -I. -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/
-LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff -L$(ZMQLIB)  -O3 
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff -L$(ZMQLIB)  -O3 -g
 #-L../../bin -lhdf5  -L.
 
 #DESTDIR?=../bin

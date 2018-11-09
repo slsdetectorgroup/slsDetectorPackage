@@ -27,6 +27,7 @@
 using namespace std;
 
 
+
 class threadedAnalogDetector
 {
 public:
@@ -35,12 +36,25 @@ public:
     det=d;
     fifoFree=new CircularFifo<char>(fs);
     fifoData=new CircularFifo<char>(fs);
-    mem=(char*)malloc(fs*det->getDataSize());
-    // cout << "data size is " << det->getDataSize()*fs << endl;
-    for (int i=0; i<fs; i++) {
-      mm=mem+i*det->getDataSize();
-      fifoFree->push(mm);
+   
+    /* mem=(char*)calloc(fs, det->getDataSize()); */
+    /* if (mem) */
+    /*   memset(mem,0, fs*det->getDataSize()); */
+    int i;
+    for (i=0; i<fs; i++) { 
+      //
+      //  mm=mem+i*det->getDataSize();
+      // cout << i << endl;
+      mm=(char*)calloc(1, det->getDataSize());
+      if (mm) { 
+	//memset(mm,0, det->getDataSize());
+	fifoFree->push(mm);
+      } else
+	break;
     }  
+    if (i<fs) cout << "Could allocate only "<< i <<" frames";
+    
+
     busy=0;
     stop=1;
     fMode=eFrame;
@@ -264,6 +278,7 @@ public:
     }
     
     for (int i=0; i<nThreads; i++) {
+      cout << "**" << i << endl;
       dets[i]=new threadedAnalogDetector(dd[i], fs);
     }
     

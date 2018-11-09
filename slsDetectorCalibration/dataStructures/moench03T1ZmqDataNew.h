@@ -3,16 +3,16 @@
 #include "slsDetectorData.h"
 
 
-
 class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
  
  private:
   
-  int iframe;
+  // int iframe;
   int nadc;
   int sc_width;
   int sc_height;
   const int nSamples;
+  const int offset;
 
  public:
 
@@ -25,7 +25,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
- moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2), nSamples(ns) {
+ moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(sizeof(int)) {
 
     int nadc=32;
     int sc_width=25;
@@ -37,7 +37,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     		    0,25,50,75,0,25,50,75};
 
     int row, col;
-
+    
     int isample;
     int iadc;
     int ix, iy;
@@ -60,50 +60,48 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 	    } else {
 	      row=200+i/sc_width;
 	    }
-	    dataMap[row][col]=(nadc*i+iadc)*2;//+16*(ip+1);
-	    if (dataMap[row][col]<0 || dataMap[row][col]>=nSamples*2*32)
+	    dataMap[row][col]=(nadc*i+iadc)*2+offset;//+16*(ip+1);
+	    if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize)
 	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  }
 	}
       }
     }
 
-    int ipacket;
-    int ibyte;
+    
     int ii=0;
-    for (int ipacket=0; ipacket<npackets; ipacket++) {
-      for (int ibyte=0;  ibyte< 8192/2; ibyte++) {
-	i=ipacket*8208/2+ibyte;
-	/* if (ibyte<8) { */
-	/* //header! */
-	/*   xmap[i]=-1; */
-	/*   ymap[i]=-1; */
-	/* } else { */
-	  // ii=ibyte+128*32*ipacket;
-	  isample=ii/nadc;
-	  if (isample<nSamples) {
-	  iadc=ii%nadc;
-	  adc4 = (int)iadc/4;
-	  ix=isample%sc_width;
-	  iy=isample/sc_width;
-	  if (adc4%2==0) {
-	    xmap[i]=adc_nr[iadc]+ix;
-	    ymap[i]=ny/2-1-iy;
-	  } else {
-	    xmap[i]=adc_nr[iadc]+ix;
-	    ymap[i]=ny/2+iy;
-	  }
-	  }
+    
+    for (i=0; i<  dataSize; i++) {
+      if (i<offset) {
+    	//header! */
+    	xmap[i]=-1;
+    	ymap[i]=-1;
+      } else {
+    	  // ii=ibyte+128*32*ipacket;
+    	isample=ii/nadc;
+    	if (isample<nSamples) {
+    	  iadc=ii%nadc;
+    	  adc4 = (int)iadc/4;
+    	  ix=isample%sc_width;
+    	  iy=isample/sc_width;
+    	  if (adc4%2==0) {
+    	    xmap[i]=adc_nr[iadc]+ix;
+    	    ymap[i]=ny/2-1-iy;
+    	  } else {
+    	    xmap[i]=adc_nr[iadc]+ix;
+    	    ymap[i]=ny/2+iy;
+    	  }
+    	}
 	  
-	ii++;
-	//	}
+    	ii++;
       }
+  
     }
     
 
     
     
-    iframe=0;
+    // iframe=0;
     //  cout << "data struct created" << endl;
   };
     
@@ -127,7 +125,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
 
-  int getFrameNumber(char *buff){return iframe;};//*((int*)(buff+5))&0xffffff;};   
+  int getFrameNumber(char *buff){return *((int*)buff);};//*((int*)(buff+5))&0xffffff;};   
 
   /**
 
@@ -215,8 +213,8 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 	  if (filebin.is_open()) {
 	    if (filebin.read(data, 32*2*nSamples) ){
-	      iframe++;
-	      ff=iframe;
+	      // iframe++;
+	      //ff=iframe;
 	      return data;
 	    }
 	  }
@@ -248,6 +246,8 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
 
+
+  // virtual int setFrameNumber(int ff){iframe=ff};
 
 
 

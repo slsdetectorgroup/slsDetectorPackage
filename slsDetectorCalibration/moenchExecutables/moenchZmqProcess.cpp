@@ -1,3 +1,5 @@
+#define WRITE_QUAD
+
 #include "sls_receiver_defs.h"
 #include "ZmqSocket.h"
 #include "moench03T1ZmqDataNew.h"
@@ -7,7 +9,6 @@
 #include <iomanip> 
 #include <fstream> 
 #include "tiffIO.h"
-
 
 //#define NEWZMQ
 #ifdef NEWZMQ
@@ -25,10 +26,15 @@
 #include "etaInterpolationPosXY.h"
 #include "ansi.h"
 #include <iostream>
+
+//#include <chrono>
+#include <ctime> // time_t
+#include <cstdio>
+
 using namespace std;
+//using namespace std::chrono;
 
-
-#define SLS_DETECTOR_JSON_HEADER_VERSION 0x2
+//#define SLS_DETECTOR_JSON_HEADER_VERSION 0x2
 
 	//	myDet->setNetworkParameter(ADDITIONAL_JSON_HEADER, " \"what\":\"nothing\" ");
 
@@ -38,7 +44,7 @@ int main(int argc, char *argv[]) {
  *
  */
   FILE *of=NULL;
-  int fifosize=1000;
+  int fifosize=5000;
   int etabins=1000;//nsubpix*2*100;
   double etamin=-1, etamax=2;
 	// help
@@ -58,7 +64,9 @@ int main(int argc, char *argv[]) {
 
   int ok;
 
-
+  // high_resolution_clock::time_point t1;
+  // high_resolution_clock::time_point t2 ;
+  time_t begin,end,finished;
 
 
 
@@ -283,13 +291,13 @@ int main(int argc, char *argv[]) {
 #ifdef NEWZMQ	
 	    rapidjson::Document doc;
 	    if (!zmqsocket->ReceiveHeader(0, doc, SLS_DETECTOR_JSON_HEADER_VERSION)) {
-	      zmqsocket->CloseHeaderMessage();
+	      /* zmqsocket->CloseHeaderMessage();*/
 
 #endif
 	    //	  if (!zmqsocket->ReceiveHeader(0, acqIndex, frameIndex, subframeIndex, filename, fileindex)) {
-	    cprintf(RED, "Got Dummy\n");
-
-
+	      //  cprintf(RED, "Got Dummy\n");
+	      //   t1=high_resolution_clock::now();
+	      time(&end);
 
 
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
@@ -413,6 +421,14 @@ int main(int argc, char *argv[]) {
 	    mt->clearImage();
 	    
 	    newFrame=1;
+	    //t2 = high_resolution_clock::now();
+	    
+	      time(&finished);
+	      //   auto meas_duration = duration_cast<microseconds>( t2 - t0 ).count();
+	      //   auto real_duration = duration_cast<microseconds>( t2 - t1 ).count();
+	    
+	    cout << "Measurement lasted " << difftime(end,begin) << endl;
+	    cout << "Processing lasted " << difftime(finished,begin) << endl;
 	    continue; //continue to not get out
 
 
@@ -420,31 +436,29 @@ int main(int argc, char *argv[]) {
 
 #ifdef NEWZMQ
 	    if (newFrame) {
-
+	      time(&begin);
+	      // t0 = high_resolution_clock::now();
+	      //cout <<"new frame" << endl;
 
 	      //  acqIndex, frameIndex, subframeIndex, filename, fileindex
 	      size       = doc["size"].GetUint();
-	      multisize  = size;// * zmqsocket->size();
+	      // multisize  = size;// * zmqsocket->size();
 	      dynamicRange  = doc["bitmode"].GetUint();
-	      nPixelsX = doc["shape"][0].GetUint();
-	      nPixelsY = doc["shape"][1].GetUint();
+	      //  nPixelsX = doc["shape"][0].GetUint();
+	      // nPixelsY = doc["shape"][1].GetUint();
 	      filename        = doc["fname"].GetString();
-	      acqIndex = doc["acqIndex"].GetUint64();
-	      frameIndex       = doc["fIndex"].GetUint64();
+	      //acqIndex = doc["acqIndex"].GetUint64();
+	      //frameIndex       = doc["fIndex"].GetUint64();
 	      fileindex        = doc["fileIndex"].GetUint64();
-	      subFrameIndex    = doc["expLength"].GetUint();
-	      xCoord                  = doc["xCoord"].GetUint();
-	      yCoord                  = doc["yCoord"].GetUint();
-	      zCoord                  = doc["zCoord"].GetUint();
-	      flippedDataX=doc["flippedDataX"].GetUint();
-	      packetNumber=doc["packetNumber"].GetUint();
-	      bunchId=doc["bunchId"].GetUint();
-	      timestamp=doc["timestamp"].GetUint();
-	      modId=doc["modId"].GetUint();
-	      debug=doc["debug"].GetUint();
-	      roundRNumber=doc["roundRNumber"].GetUint();
-	      detType=doc["detType"].GetUint();
-	      version=doc["version"].GetUint();
+	      //subFrameIndex    = doc["expLength"].GetUint();
+	      //packetNumber=doc["packetNumber"].GetUint();
+	      //bunchId=doc["bunchId"].GetUint();
+	      //timestamp=doc["timestamp"].GetUint();
+	      //modId=doc["modId"].GetUint();
+	      //debug=doc["debug"].GetUint();
+	      //roundRNumber=doc["roundRNumber"].GetUint();
+	      //detType=doc["detType"].GetUint();
+	      //version=doc["version"].GetUint();
 
 	      dataSize=size;
 
@@ -636,7 +650,7 @@ int main(int argc, char *argv[]) {
 	      
 	      
 	      newFrame=0;
-	      zmqsocket->CloseHeaderMessage();
+	      /* zmqsocket->CloseHeaderMessage();*/
 	    }
 #endif
 
@@ -656,11 +670,22 @@ int main(int argc, char *argv[]) {
 
 	  // cout << "data" << endl;
 	  // get data
-	  length = zmqsocket->ReceiveData(0, buff, size);
-	  mt->pushData(buff);
-	  mt->nextThread();
-	  mt->popFree(buff);
-	  
+	  // acqIndex = doc["acqIndex"].GetUint64();
+	  frameIndex       = doc["fIndex"].GetUint64();
+	  // subFrameIndex    = doc["expLength"].GetUint();
+
+	  //  bunchId=doc["bunchId"].GetUint();
+	  //  timestamp=doc["timestamp"].GetUint();
+	      packetNumber=doc["packetNumber"].GetUint();
+	      // cout << acqIndex << " " << frameIndex << " " << subFrameIndex << " "<< bunchId << " " << timestamp << " " << packetNumber << endl;
+	      if (packetNumber>=40) {
+		//*((int*)buff)=frameIndex;
+		memcpy(buff,&frameIndex,sizeof(int));
+		length = zmqsocket->ReceiveData(0, buff+sizeof(int), size);
+		mt->pushData(buff);
+		mt->nextThread();
+		mt->popFree(buff);
+	      }
 	
 	  
 	  

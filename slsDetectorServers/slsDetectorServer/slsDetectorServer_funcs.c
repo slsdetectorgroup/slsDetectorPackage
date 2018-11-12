@@ -2151,7 +2151,14 @@ int write_adc_register(int file_des) {
 #ifndef VIRTUAL
 	// only set
 	if (Server_VerifyLock() == OK)
-		setAdc(addr, val);
+#ifdef JUNGFRAUD
+		setAdc9257(addr, val);
+#elif GOTTHARDD
+	if (getBoardRevision() == 1)
+	    setAdc9252(addr, val);
+	else
+	    setAdc9257(addr, val);
+#endif
 #endif
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);

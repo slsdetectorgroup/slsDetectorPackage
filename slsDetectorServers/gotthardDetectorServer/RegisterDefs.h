@@ -14,6 +14,15 @@
 #define GAIN_CONFGAIN_MDM_GAIN_VAL      ((0x2 << GAIN_CONFGAIN_OFST) & GAIN_CONFGAIN_MSK)
 #define GAIN_CONFGAIN_VRY_HGH_GAIN_VAL  ((0x1 << GAIN_CONFGAIN_OFST) & GAIN_CONFGAIN_MSK)
 
+/** Flow Control register */
+//#define FLOW_CONTROL_REG                (0x11 << MEM_MAP_SHIFT)
+
+/** Flow Status register */
+//#define FLOW_STATUS_REG                 (0x12 << MEM_MAP_SHIFT)
+
+/** Frame register */
+//#define FRAME_REG                       (0x13 << MEM_MAP_SHIFT)
+
 /** Multi Purpose register */
 #define MULTI_PURPOSE_REG               (0x14 << MEM_MAP_SHIFT)
 
@@ -57,6 +66,9 @@
 #define DAQ_PCKT_LNGTH_MSK              (0x0000FFFF << DAQ_PCKT_LNGTH_OFST)
 #define DAQ_PCKT_LNGTH_NO_ROI_VAL       ((0x0013f << DAQ_PCKT_LNGTH_OFST) & DAQ_PCKT_LNGTH_MSK)
 #define DAQ_PCKT_LNGTH_ROI_VAL          ((0x0007f << DAQ_PCKT_LNGTH_OFST) & DAQ_PCKT_LNGTH_MSK)
+
+/** Time From Start register */
+//#define TIME_FROM_START_REG             (0x16 << MEM_MAP_SHIFT)
 
 /** DAC Control register */
 #define DAC_CNTRL_REG                   (0x17 << MEM_MAP_SHIFT)
@@ -106,6 +118,9 @@
 #define ADC_SYNC_ENET_DELAY_ROI_VAL     ((0x1b << ADC_SYNC_ENET_DELAY_OFST) & ADC_SYNC_ENET_DELAY_MSK)
 //FIXME: try with just 0x8 and 0x1.. it is anded with 0000 in firmware anyway
 
+/** Time From Start register */
+//#define MU_TIME_REG                     (0x1a << MEM_MAP_SHIFT)
+
 /** Temperatre SPI In register */
 #define TEMP_SPI_IN_REG                 (0x1b << MEM_MAP_SHIFT)
 
@@ -131,6 +146,9 @@
 
 /** SPI Configure register */
 #define ENET_CONF_REG                   (0x1e << MEM_MAP_SHIFT)
+
+/** Write TSE Shadow register */
+//#define WRITE_TSE_SHADOW_REG            (0x1f << MEM_MAP_SHIFT)
 
 /** High Voltage register */
 #define HV_REG                          (0x20 << MEM_MAP_SHIFT)
@@ -159,22 +177,6 @@
 #define FIX_PATT_REG                    (0x23 << MEM_MAP_SHIFT)
 
 #define FIX_PATT_VAL                    (0xACDC1980)
-
-/** Config register */
-#define CONFIG_REG                      (0x26 << MEM_MAP_SHIFT)
-
-#define CONFIG_SLAVE_OFST               (0)                                     // Not used in FW & SW
-#define CONFIG_SLAVE_MSK                (0x00000001 << CONFIG_SLAVE_OFST)
-#define CONFIG_MASTER_OFST              (1)                                     // Not used in FW & SW
-#define CONFIG_MASTER_MSK               (0x00000001 << CONFIG_MASTER_OFST)
-#define CONFIG_TM_GT_ENBL_OFST          (2)                                     // Not used in FW & SW
-#define CONFIG_TM_GT_ENBL_MSK           (0x00000001 << CONFIG_TM_GT_ENBL_OFST)
-#define CONFIG_CPU_RDT_OFST             (12)
-#define CONFIG_CPU_RDT_MSK              (0x00000001 << CONFIG_CPU_RDT_OFST)
-#define CONFIG_CNTNS_RDT_OFST           (23)                                    // Not used in FW & SW
-#define CONFIG_CNTNS_RDT_MSK            (0x00000001 << CONFIG_CNTNS_RDT_OFST)
-#define CONFIG_ACCMLT_CNTS_OFST         (24)                                    // Not used in FW & SW
-#define CONFIG_ACCMLT_CNTS_MSK          (0x00000001 << CONFIG_ACCMLT_CNTS_OFST)
 
 /** 16 bit Control register */
 #define CONTROL_REG                     (0x24 << MEM_MAP_SHIFT)
@@ -235,6 +237,22 @@
 #define STATUS_RN_FNSHD_MSK             (0x00000001 << STATUS_RN_FNSHD_OFST)
 #define STATUS_IDLE_MSK                 (0x0000FFFF << 0)
 
+/** Config register */
+#define CONFIG_REG                      (0x26 << MEM_MAP_SHIFT)
+
+#define CONFIG_SLAVE_OFST               (0)                                     // Not used in FW & SW
+#define CONFIG_SLAVE_MSK                (0x00000001 << CONFIG_SLAVE_OFST)
+#define CONFIG_MASTER_OFST              (1)                                     // Not used in FW & SW
+#define CONFIG_MASTER_MSK               (0x00000001 << CONFIG_MASTER_OFST)
+#define CONFIG_TM_GT_ENBL_OFST          (2)                                     // Not used in FW & SW
+#define CONFIG_TM_GT_ENBL_MSK           (0x00000001 << CONFIG_TM_GT_ENBL_OFST)
+#define CONFIG_CPU_RDT_OFST             (12)
+#define CONFIG_CPU_RDT_MSK              (0x00000001 << CONFIG_CPU_RDT_OFST)
+#define CONFIG_CNTNS_RDT_OFST           (23)                                    // Not used in FW & SW
+#define CONFIG_CNTNS_RDT_MSK            (0x00000001 << CONFIG_CNTNS_RDT_OFST)
+#define CONFIG_ACCMLT_CNTS_OFST         (24)                                    // Not used in FW & SW
+#define CONFIG_ACCMLT_CNTS_MSK          (0x00000001 << CONFIG_ACCMLT_CNTS_OFST)
+
 /** External Signal register */
 #define EXT_SIGNAL_REG                  (0x27 << MEM_MAP_SHIFT)
 
@@ -243,10 +261,13 @@
 #define EXT_SIGNAL_OFF_VAL              ((0x0 << EXT_SIGNAL_OFST) & EXT_SIGNAL_MSK)
 #define EXT_SIGNAL_TRGGR_IN_RSNG_VAL    ((0x3 << EXT_SIGNAL_OFST) & EXT_SIGNAL_MSK)
 #define EXT_SIGNAL_TRGGR_IN_FLLNG_VAL   ((0x4 << EXT_SIGNAL_OFST) & EXT_SIGNAL_MSK)
-/*
-#define FPGA_SVN_REG          0x29<<11
-#define LOOK_AT_ME_REG        0x28<<11
-*/
+
+/** Look at me register */
+//#define LOOK_AT_ME_REG                  (0x28 << MEM_MAP_SHIFT)
+
+/** FPGA SVN register */
+//#define FPGA_SVN_REG                    (0x29 << MEM_MAP_SHIFT)
+
 /** Chip of Interest register */
 #define CHIP_OF_INTRST_REG              (0x2a << MEM_MAP_SHIFT)
 
@@ -254,6 +275,9 @@
 #define CHIP_OF_INTRST_ADC_SEL_MSK      (0x0000001F << CHIP_OF_INTRST_ADC_SEL_OFST)
 #define CHIP_OF_INTRST_NUM_CHNNLS_OFST  (16)
 #define CHIP_OF_INTRST_NUM_CHNNLS_MSK   (0x0000FFFF << CHIP_OF_INTRST_NUM_CHNNLS_OFST)
+
+/** Out MUX register */
+//#define OUT_MUX_REG                     (0x2b << MEM_MAP_SHIFT)
 
 /** Board Version register */
 #define BOARD_REVISION_REG              (0x2c << MEM_MAP_SHIFT)
@@ -265,14 +289,27 @@
 //#define DETECTOR_TYPE_GOTTHARD_VAL          (??)
 #define DETECTOR_TYPE_MOENCH_VAL        (2)
 
+/** Memory Test register */
+//#define MEMORY_TEST_REG                 (0x2d << MEM_MAP_SHIFT)
+
+/** Hit Threshold register */
+//#define HIT_THRESHOLD_REG               (0x2e << MEM_MAP_SHIFT)
+
+/** Hit Count register */
+//#define HIT_COUNT_REG                   (0x2f << MEM_MAP_SHIFT)
+
 /* 16 bit Fifo Data register */
 #define FIFO_DATA_REG                   (0x50 << MEM_MAP_SHIFT)                 // Not used in FW and SW (16bit)
 
-/*
-#define MOD_DACS1_REG         0x65<<11
-#define MOD_DACS2_REG         0x66<<11
-#define MOD_DACS3_REG         0x67<<11
-*/
+/** Dacs Set 1 register */
+//#define DACS_SET_1_REG                  (0x65 << MEM_MAP_SHIFT)
+
+/** Dacs Set 2 register */
+//#define DACS_SET_2_REG                  (0x66 << MEM_MAP_SHIFT)
+
+/** Dacs Set 3 register */
+//#define DACS_SET_3_REG                  (0x67 << MEM_MAP_SHIFT)
+
 /* Set Delay 64 bit register */
 #define SET_DELAY_LSB_REG               (0x68 << MEM_MAP_SHIFT)
 #define SET_DELAY_MSB_REG               (0x69 << MEM_MAP_SHIFT)
@@ -314,8 +351,12 @@
 #define GET_EXPTIME_MSB_REG             (0x7b << MEM_MAP_SHIFT)
 
 /* Set Gates 64 bit register */
-//#define SET_GATES_LSB_REG               (0x7c << MEM_MAP_SHIFT)      // Not used in SW and FW
-//#define SET_GATES_MSB_REG               (0x7d << MEM_MAP_SHIFT)      // Not used in SW and FW
+//#define SET_GATES_LSB_REG               (0x7c << MEM_MAP_SHIFT)
+//#define SET_GATES_MSB_REG               (0x7d << MEM_MAP_SHIFT)
+
+/* Set Gates 64 bit register */
+//#define GET_GATES_LSB_REG               (0x7e << MEM_MAP_SHIFT)
+//#define GET_GATES_MSB_REG               (0x7f << MEM_MAP_SHIFT)
 
 /* Dark Image starting address */
 #define DARK_IMAGE_REG                  (0x81 << MEM_MAP_SHIFT)

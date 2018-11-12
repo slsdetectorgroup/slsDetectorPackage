@@ -140,24 +140,27 @@ int 		setThresholdEnergy(int ev);
 #endif
 
 // parameters - dac, adc, hv
-#ifdef JUNGFRAUD
-void 		serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset); //commonServerFunction.h
-void 		initDac(int dacnum);
-#endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)
+void        serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset); //commonServerFunction.h
+void        initDac(int dacnum);
 int         voltageToDac(int value);
 int         dacToVoltage(unsigned int digital);
-extern void	setAdc(int addr, int val);		// AD9257.h
+#endif
+#ifdef GOTTHARDD
+extern void setAdc9257(int addr, int val);      // AD9257.h
+extern void setAdc9252(int addr, int val);      // AD9252.h (old board)
+#elif JUNGFRAUD
+extern void setAdc9257(int addr, int val);      // AD9257.h
 #endif
 
 void 		setDAC(enum DACINDEX ind, int val, int mV, int retval[]);
-#ifdef GOTTHARDD
+/*#ifdef GOTTHARDD
 void        initDAC(int dac_addr, int value);
 void        clearDACSregister();
 void        nextDAC();
 void        program_one_dac(int addr, int value);
 u_int32_t   putout(char *s);
-#endif
+#endif*/
 int 		getADC(enum ADCINDEX ind);
 
 int 		setHighVoltage(int val);

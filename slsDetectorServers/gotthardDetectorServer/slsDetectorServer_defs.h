@@ -51,6 +51,19 @@ enum DACINDEX				        {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN
 #define DEFAULT_PHASE_SHIFT         (120)
 #define DEFAULT_TX_UDP_PORT         (0xE185)
 
+/* LTC2620 DAC DEFINES *///FIXME: if neeeded
+#define LTC2620_DAC_CMD_OFST        (20)
+#define LTC2620_DAC_CMD_MSK         (0x0000000F << LTC2620_DAC_CMD_OFST)
+#define LTC2620_DAC_ADDR_OFST       (16)
+#define LTC2620_DAC_ADDR_MSK        (0x0000000F << LTC2620_DAC_ADDR_OFST)
+#define LTC2620_DAC_DATA_OFST       (4)
+#define LTC2620_DAC_DATA_MSK        (0x00000FFF << LTC2620_DAC_DATA_OFST)
+
+#define LTC2620_DAC_CMD_WRITE       (0x00000000 << LTC2620_DAC_CMD_OFST)
+#define LTC2620_DAC_CMD_SET         (0x00000003 << LTC2620_DAC_CMD_OFST)
+#define LTC2620_DAC_CMD_POWER_DOWN  (0x00000004 << LTC2620_DAC_CMD_OFST)
+#define LTC2620_DAC_NUMBITS         (24)
+
 /** ENEt conf structs */
 typedef struct mac_header_struct{
     u_int8_t    mac_dest_mac2;

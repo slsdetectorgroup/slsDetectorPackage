@@ -395,7 +395,7 @@ void setupDetector() {
 	resetPeripheral();
 	cleanFifos();
 #ifndef VIRTUAL
-	prepareADC();
+	prepareADC9257();
 #endif
 	// initialize dac series
 	initDac(0);		/* todo might work without */

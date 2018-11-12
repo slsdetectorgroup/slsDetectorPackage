@@ -3788,7 +3788,8 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action, int d
 				;
 			else
 				return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
-			sprintf(answer,"0x%x",myDet->writeAdcRegister(addr,val, detPos));
+		    sprintf(answer,"%s", (myDet->writeAdcRegister(addr,val, detPos) == OK)
+		            ? "successful" : "failed");
 		} else {
 
 			if (sscanf(args[2],"%d",&n))

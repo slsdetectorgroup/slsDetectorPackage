@@ -31,9 +31,9 @@ int myport=-1;
 //struct sockaddr_in address;
 //#define VERBOSE
 
-#define BLACKFIN_DRVR_SND_LMT	30000 // rough limit
-#define BLACKFIN_RSND_PCKT_LOOP	10
-#define BLACKFIN_RSND_WAIT_US	(10 * 1000)
+#define BLACKFIN_DRVR_SND_LMT	(30000) // rough limit
+#define BLACKFIN_RSND_PCKT_LOOP	(10)
+#define BLACKFIN_RSND_WAIT_US	(1)
 
 int bindSocket(unsigned short int port_number) {
   int i;
@@ -332,7 +332,7 @@ int sendDataOnly(int file_des, void* buf,int length) {
 			  bytesToSend = BLACKFIN_DRVR_SND_LMT;
 
 		  // send
-		  int rc = write(file_des, (char*)buf + bytesSent, bytesToSend);
+		  int rc = write(file_des, (char*)((char*)buf + bytesSent), bytesToSend);
 		  // error
 		  if (rc < 0) {
 			  cprintf(BG_RED, "Error writing to socket. Possible socket crash\n");

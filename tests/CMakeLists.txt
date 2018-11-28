@@ -7,6 +7,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/catch
     ${PROJECT_SOURCE_DIR}/slsSupportLib/include
     ${PROJECT_SOURCE_DIR}/slsDetectorSoftware/multiSlsDetector
+    ${PROJECT_SOURCE_DIR}/slsDetectorSoftware/sharedMemory
 )
 
 
@@ -15,7 +16,8 @@ if(USE_TESTS)
     set(LOCAL_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
     set(TEST_SOURCES
         ${LOCAL_TEST_DIR}/test-container_utils.cpp
-        ${LOCAL_TEST_DIR}/test-multiDetector.cpp
+        ${LOCAL_TEST_DIR}/test-MySocketTCP.cpp
+        #${LOCAL_TEST_DIR}/test-multiDetector.cpp
         ${LOCAL_TEST_DIR}/test.cpp
         # PARENT_SCOPE
     )
@@ -23,6 +25,7 @@ if(USE_TESTS)
     target_link_libraries(test 
         slsDetectorShared
         pthread
+        rt
     )  
     set_target_properties(test PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

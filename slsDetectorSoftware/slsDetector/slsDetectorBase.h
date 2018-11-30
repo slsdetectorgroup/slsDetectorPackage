@@ -817,6 +817,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     case RUNNING:      return string("running");\
     case TRANSMITTING:      return string("data");	\
     case  RUN_FINISHED:      return string("finished");	\
+    case STOPPED:           return string("stopped");\
     default:       return string("idle");		\
     }};
 

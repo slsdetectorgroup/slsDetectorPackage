@@ -45,6 +45,9 @@ typedef  int int32_t;
 /** maximum unit size of program sent to detector */
 #define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
 
+/** maximum pattern length */
+#define MAX_PATTERN_LENGTH  65535
+
 /** get flag form most functions */
 #define GET_FLAG -1
 
@@ -62,6 +65,7 @@ typedef  int int32_t;
 
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
+
 
 
 typedef char mystring[MAX_STR_LENGTH];
@@ -82,7 +86,7 @@ public:
 		EIGER, /**< eiger */
 		GOTTHARD, /**< gotthard */
 		JUNGFRAU, /**< jungfrau */
-		JUNGFRAUCTB /**< jungfrauCTBversion */
+		CHIPTESTBOARD /**< CTB */
 	};
 
 
@@ -394,7 +398,6 @@ public:
 	  VDD_POT,      /**< chiptest board power supply vdd */
 	  VSH_POT,      /**< chiptest board power supply vsh */
 	  VIO_POT,      /**< chiptest board power supply va */
-	  HV_POT,       /**< gotthard, chiptest board high voltage */
 	  G_VREF_DS,    /**< gotthard */
 	  G_VCASCN_PB,  /**< gotthard */
 	  G_VCASCP_PB,  /**< gotthard */
@@ -421,7 +424,7 @@ public:
 	  E_Vis,		/**< eiger */
 	  IO_DELAY,		/**< eiger io delay */
 	  ADC_VPP,		/**< adc vpp for jctb */
-	  HV_NEW,             /**< new hv index for jungfrau & c */
+	  HIGH_VOLTAGE,             /**< high voltage */
 	  TEMPERATURE_FPGAEXT,	/**< temperature sensor (close to fpga) */
 	  TEMPERATURE_10GE,		/**< temperature sensor (close to 10GE) */
 	  TEMPERATURE_DCDC,		/**< temperature sensor (close to DCDC) */
@@ -556,7 +559,7 @@ public:
 	  };
 
 	  /** returns detector type string from detector type index
-	      \param t string can be EIGER, GOTTHARD, JUNGFRAU, JUNGFRAUCTB
+	      \param t string can be EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD
 	      \returns Eiger, Gotthard, Jungfrau, JungfrauCTB, Unknown
 	  */
 	  static std::string getDetectorType(detectorType t){	\
@@ -564,19 +567,19 @@ public:
 	    case EIGER:    		return std::string("Eiger");	\
 	    case GOTTHARD:    	return std::string("Gotthard");	\
 	    case JUNGFRAU:    	return std::string("Jungfrau");	\
-	    case JUNGFRAUCTB:   return std::string("JungfrauCTB");	\
+	    case CHIPTESTBOARD:   return std::string("JungfrauCTB");	\
 	    default:    		return std::string("Unknown");	\
 	    }};
 
 	  /** returns detector type index from detector type string
 	      \param type can be Eiger, Gotthard, Jungfrau, JungfrauCTB
-	      \returns  EIGER, GOTTHARD, JUNGFRAU, JUNGFRAUCTB, GENERIC
+	      \returns  EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, GENERIC
 	  */
 	  static detectorType getDetectorType(std::string const type){\
 	    if (type=="Eiger")    		return EIGER;		\
 	    if (type=="Gotthard")    	return GOTTHARD;	\
 	    if (type=="Jungfrau")    	return JUNGFRAU;	\
-	    if (type=="JungfrauCTB") 	return JUNGFRAUCTB;	\
+	    if (type=="JungfrauCTB") 	return CHIPTESTBOARD;	\
 	    							return GENERIC;		\
 	  };
 

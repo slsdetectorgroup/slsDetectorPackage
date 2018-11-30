@@ -421,7 +421,7 @@ private:
 
 	/** Constructor */
 	JCTBData(){
-		myDetectorType		= slsDetectorDefs::JUNGFRAUCTB;
+		myDetectorType		= slsDetectorDefs::CHIPTESTBOARD;
 		nPixelsX 			= 400;
 		nPixelsY 			= 400;
 		headerSizeinPacket  = 22;

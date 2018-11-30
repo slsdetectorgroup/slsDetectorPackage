@@ -2,7 +2,7 @@
 
 #include "blackfin.h"
 
-void SPIChipSelect (u_int32_t* valw, u_int32_t addr,  u_int32_t csmask) {
+void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask) {
 
     // start point
     (*valw) = 0xffffffff;          // old board compatibility (not using specific bits)
@@ -14,7 +14,7 @@ void SPIChipSelect (u_int32_t* valw, u_int32_t addr,  u_int32_t csmask) {
 }
 
 
-void SPIChipDeselect (u_int32_t* valw, u_int32_t addr,  u_int32_t csmask, u_int32_t clkmask) {
+void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask) {
     // chip sel bar up
     (*valw) |= csmask; /* todo with test: not done for spi */
     bus_w (addr, (*valw));
@@ -28,7 +28,7 @@ void SPIChipDeselect (u_int32_t* valw, u_int32_t addr,  u_int32_t csmask, u_int3
     bus_w (addr, (*valw));
 }
 
-void sendDataToSPI (u_int32_t* valw, u_int32_t addr, u_int32_t val, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset) {
+void sendDataToSPI (uint32_t* valw, uint32_t addr, uint32_t val, int numbitstosend, uint32_t clkmask, uint32_t digoutmask, int digofset) {
     int i = 0;
     for (i = 0; i < numbitstosend; ++i) {
 
@@ -48,13 +48,13 @@ void sendDataToSPI (u_int32_t* valw, u_int32_t addr, u_int32_t val, int numbitst
 }
 
 
-void serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset) {
+void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstosend, uint32_t clkmask, uint32_t digoutmask, int digofset) {
     if (numbitstosend == 16) {
         FILE_LOG(logDEBUG1, ("Writing to SPI Register: 0x%04x\n", val));
     } else {
         FILE_LOG(logDEBUG1, ("Writing to SPI Register: 0x%08x\n", val));
     }
-    u_int32_t valw;
+    uint32_t valw;
 
     SPIChipSelect (&valw, addr, csmask);
 

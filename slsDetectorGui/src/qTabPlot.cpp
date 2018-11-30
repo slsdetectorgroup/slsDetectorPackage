@@ -183,7 +183,7 @@ void qTabPlot::SetupWidgetWindow(){
 		isOriginallyOneD = false;
 		break;
 	case slsDetectorDefs::JUNGFRAU:
-	case slsDetectorDefs::JUNGFRAUCTB:
+	case slsDetectorDefs::CHIPTESTBOARD:
 		isOriginallyOneD = false;
 		chkGainPlot->setEnabled(true);
 		break;
@@ -1120,7 +1120,7 @@ void qTabPlot::EnableScanBox(){
 	if((myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) ||
 			(myDet->getDetectorsType() == slsDetectorDefs::PROPIX) ||
 			(myDet->getDetectorsType() == slsDetectorDefs::JUNGFRAU) ||
-			(myDet->getDetectorsType() == slsDetectorDefs::JUNGFRAUCTB) ||
+			(myDet->getDetectorsType() == slsDetectorDefs::CHIPTESTBOARD) ||
 			(myDet->getDetectorsType() == slsDetectorDefs::MOENCH)){
 		pagePedestal->setEnabled(true);
 		pagePedestal_2->setEnabled(true);

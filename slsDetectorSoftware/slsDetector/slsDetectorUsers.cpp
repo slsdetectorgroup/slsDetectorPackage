@@ -246,7 +246,7 @@ int slsDetectorUsers::setStoragecellStart(int pos, int detPos) {
 }
 
 int slsDetectorUsers::setHighVoltage(int i, int detPos) {
-	return myDetector->setDAC(i, slsDetectorDefs::HV_NEW, 0, detPos);
+	return myDetector->setDAC(i, slsDetectorDefs::HIGH_VOLTAGE, 0, detPos);
 }
 
 int slsDetectorUsers::setFlowControl10G(int i, int detPos) {

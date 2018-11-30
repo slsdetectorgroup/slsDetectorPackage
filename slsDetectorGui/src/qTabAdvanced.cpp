@@ -125,7 +125,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 		boxRxr->setEnabled(true);
 		break;
 	case slsDetectorDefs::JUNGFRAU:
-	case slsDetectorDefs::JUNGFRAUCTB:
+	case slsDetectorDefs::CHIPTESTBOARD:
 		isEnergy = false;
 		isAngular = false;
 		lblIP->setEnabled(true);

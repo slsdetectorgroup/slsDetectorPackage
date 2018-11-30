@@ -328,7 +328,7 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
 		list.nGappixelsX = 0;
 		list.nGappixelsY = 0;
 		break;
-	case JUNGFRAUCTB:
+	case CHIPTESTBOARD:
 		list.nChanX = 36;
 		list.nChanY = 1;
 		list.nChipX = 1;
@@ -463,7 +463,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	case JUNGFRAU:
 		thisDetector->receiver_framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
 		break;
-	case JUNGFRAUCTB:
+	case CHIPTESTBOARD:
 		thisDetector->receiver_framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
 		break;
 	default:
@@ -500,7 +500,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 							thisDetector->dynamicRange/8;
 
 	// special for jctb
-	if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+	if (thisDetector->myDetectorType==CHIPTESTBOARD) {
 		getTotalNumberOfChannels();
 	}
 
@@ -885,7 +885,7 @@ std::string slsDetector::getDetectorType() {
 int slsDetector::getTotalNumberOfChannels() {
 	FILE_LOG(logDEBUG1) << "Get total number of channels";
 
-	if (thisDetector->myDetectorType == JUNGFRAUCTB) {
+	if (thisDetector->myDetectorType == CHIPTESTBOARD) {
 		if (thisDetector->roFlags & DIGITAL_ONLY)
 			thisDetector->nChan[X] = 4;
 		else if (thisDetector->roFlags & ANALOG_AND_DIGITAL)
@@ -1405,7 +1405,7 @@ int slsDetector::updateDetectorNoWait() {
 	n += controlSocket->ReceiveDataOnly(&i64, sizeof(i64));
 	thisDetector->timerValue[CYCLES_NUMBER] = i64;
 
-	if (thisDetector->myDetectorType == JUNGFRAUCTB) {
+	if (thisDetector->myDetectorType == CHIPTESTBOARD) {
 		n += controlSocket->ReceiveDataOnly(&i64, sizeof(i64));
 		if (i64 >= 0)
 			thisDetector->timerValue[SAMPLES_JCTB] = i64;
@@ -1501,7 +1501,7 @@ int slsDetector::writeConfigurationFile(std::ofstream &outfile, multiSlsDetector
 		names.push_back("powerchip");
 		names.push_back("vhighvoltage");
 		break;
-	case JUNGFRAUCTB:
+	case CHIPTESTBOARD:
 		names.push_back("powerchip");
 		names.push_back("vhighvoltage");
 		break;
@@ -2252,7 +2252,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 	// (a get can also change timer value, hence check difference)
 	if (oldtimer != thisDetector->timerValue[index]) {
 		// jctb: change samples, change databytes
-		if (thisDetector->myDetectorType == JUNGFRAUCTB) {
+		if (thisDetector->myDetectorType == CHIPTESTBOARD) {
 			if (index == SAMPLES_JCTB) {
 				setDynamicRange();
 				FILE_LOG(logINFO) << "Changing samples: data size = " << thisDetector->dataBytes;
@@ -2438,7 +2438,7 @@ int slsDetector::setDynamicRange(int n) {
 						(thisDetector->nChip[Y] * thisDetector->nChan[Y] +
 								thisDetector->gappixels * thisDetector->nGappixels[Y]) *
 								retval / 8;
-		if (thisDetector->myDetectorType == JUNGFRAUCTB)
+		if (thisDetector->myDetectorType == CHIPTESTBOARD)
 			getTotalNumberOfChannels();
 		FILE_LOG(logDEBUG1) << "Data bytes " << thisDetector->dataBytes;
 		FILE_LOG(logDEBUG1) << "Data bytes including gap pixels" << thisDetector->dataBytesInclGapPixels;
@@ -2480,9 +2480,6 @@ int slsDetector::getDataBytesInclGapPixels() {
 
 
 int slsDetector::setDAC(int val, dacIndex index, int mV) {
-	if ((index == HV_NEW) && (thisDetector->myDetectorType == GOTTHARD))
-		index = HV_POT;
-
 	int fnum = F_SET_DAC;
 	int ret = FAIL;
 	int args[3] = {(int)index, mV, val};
@@ -2991,7 +2988,7 @@ std::string slsDetector::setReceiver(std::string receiverIP) {
 						thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
 				setTimer(SUBFRAME_DEADTIME,thisDetector->timerValue[SUBFRAME_DEADTIME]);
 			}
-			if (thisDetector->myDetectorType == JUNGFRAUCTB)
+			if (thisDetector->myDetectorType == CHIPTESTBOARD)
 				setTimer(SAMPLES_JCTB,thisDetector->timerValue[SAMPLES_JCTB]);
 			setDynamicRange(thisDetector->dynamicRange);
 			if (thisDetector->myDetectorType == EIGER) {
@@ -3503,7 +3500,7 @@ int slsDetector::setROI(int n,ROI roiLimits[]) {
 	}
 
 	int ret = sendROI(n,roiLimits);
-	if (thisDetector->myDetectorType == JUNGFRAUCTB)
+	if (thisDetector->myDetectorType == CHIPTESTBOARD)
 		getTotalNumberOfChannels();
 	return ret;
 }
@@ -3512,7 +3509,7 @@ int slsDetector::setROI(int n,ROI roiLimits[]) {
 slsDetectorDefs::ROI* slsDetector::getROI(int &n) {
 	sendROI(-1,NULL);
 	n = thisDetector->nROI;
-	if (thisDetector->myDetectorType == JUNGFRAUCTB)
+	if (thisDetector->myDetectorType == CHIPTESTBOARD)
 		getTotalNumberOfChannels();
 	return thisDetector->roiLimits;
 }
@@ -3988,7 +3985,7 @@ int slsDetector::setStoragecellStart(int pos) {
 
 int slsDetector::programFPGA(std::string fname) {
 	// only jungfrau implemented (client processing, so check now)
-	if (thisDetector->myDetectorType != JUNGFRAU &&	thisDetector->myDetectorType != JUNGFRAUCTB) {
+	if (thisDetector->myDetectorType != JUNGFRAU &&	thisDetector->myDetectorType != CHIPTESTBOARD) {
 		FILE_LOG(logERROR) << "Not implemented for this detector";
 		setErrorMask((getErrorMask())|(PROGRAMMING_ERROR));
 		return FAIL;

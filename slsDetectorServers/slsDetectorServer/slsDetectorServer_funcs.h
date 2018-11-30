@@ -7,6 +7,8 @@ enum numberMode {DEC, HEX};
 int printSocketReadError();
 void init_detector();
 int decode_function(int);
+const char* getTimerName(enum timerIndex ind);
+const char* getSpeedName(enum speedVariable ind);
 const char* getFunctionName(enum detFuncs func);
 void function_table();
 void functionNotImplemented();

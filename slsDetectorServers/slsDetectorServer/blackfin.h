@@ -11,7 +11,8 @@ u_int64_t CSP0BASE = 0;
 #define CSP0 0x20200000
 #define MEM_SIZE 0x100000
 
-
+/** I2C defines */
+#define I2C_CLOCK_MHZ   (131.25)
 
 /**
  * Write into a 16 bit register

@@ -51,6 +51,9 @@ enum DACINDEX				        {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN
 #define DEFAULT_PHASE_SHIFT         (120)
 #define DEFAULT_TX_UDP_PORT         (0xE185)
 
+#define MAX_DAC_VOLTAGE_VALUE       (2500)
+#define MAX_DAC_UNIT_VALUE          (4096)
+
 /* LTC2620 DAC DEFINES *///FIXME: if neeeded
 #define LTC2620_DAC_CMD_OFST        (20)
 #define LTC2620_DAC_CMD_MSK         (0x0000000F << LTC2620_DAC_CMD_OFST)

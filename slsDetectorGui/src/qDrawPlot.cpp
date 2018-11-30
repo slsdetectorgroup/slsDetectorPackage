@@ -75,7 +75,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::JUNGFRAU:
-	case slsDetectorDefs::JUNGFRAUCTB:
+	case slsDetectorDefs::CHIPTESTBOARD:
 		originally2D = true;
 		break;
 	default:
@@ -121,7 +121,7 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-	if (detType == slsDetectorDefs::JUNGFRAUCTB) {
+	if (detType == slsDetectorDefs::CHIPTESTBOARD) {
 		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;// for moench 03
 		nPixelsX = npixelsx_jctb;
 		nPixelsY = npixelsy_jctb;
@@ -585,7 +585,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	minPixelsY = 0;
 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-	if (detType == slsDetectorDefs::JUNGFRAUCTB) {
+	if (detType == slsDetectorDefs::CHIPTESTBOARD) {
 		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25; // for moench 03
 		nPixelsX = npixelsx_jctb;
 		nPixelsY = npixelsy_jctb;
@@ -2216,7 +2216,7 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 		break;
 
 	case 16:
-		if (detType == slsDetectorDefs::JUNGFRAU || detType == slsDetectorDefs::JUNGFRAUCTB) {
+		if (detType == slsDetectorDefs::JUNGFRAU || detType == slsDetectorDefs::CHIPTESTBOARD) {
 
 			// show gain plot
 			if(gaindest!=NULL) {

@@ -3903,7 +3903,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int detPos
 	else if (cmd=="vshaper2")
 		dac=SHAPER2;
 	else if (cmd=="vhighvoltage")
-		dac=HV_NEW;
+		dac=HIGH_VOLTAGE;
 	else if (cmd=="vapower")
 		dac=VA_POT;
 	else if (cmd=="vddpower")

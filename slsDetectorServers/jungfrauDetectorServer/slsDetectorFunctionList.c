@@ -407,7 +407,7 @@ void setupDetector() {
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 
 	FILE_LOG(logINFOBLUE, ("Setting Default parameters\n"));
-	setSpeed(HALF_SPEED);
+	setClockDivider(HALF_SPEED);
 	cleanFifos();
 	resetCore();
 
@@ -424,7 +424,7 @@ void setupDetector() {
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTimer(STORAGE_CELL_NUMBER, DEFAULT_NUM_STRG_CLLS);
 	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
-	/*setSpeed(HALF_SPEED); depends if all the previous stuff works*/
+	/*setClockDivider(HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
 	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
@@ -464,38 +464,6 @@ int setDefaultDacs() {
 
 /* firmware functions (resets) */
 
-int powerChip (int on){
-	if(on != -1){
-		if(on){
-			FILE_LOG(logINFO, ("Powering chip: on\n"));
-			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) | CHIP_POWER_ENABLE_MSK);
-		}
-		else{
-			FILE_LOG(logINFO, ("Powering chip: off\n"));
-			bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
-		}
-	}
-
-	return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
-}
-
-
-
-int autoCompDisable(int on) {
-    if(on != -1){
-        if(on){
-            FILE_LOG(logINFO, ("Auto comp disable mode: on\n"));
-            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) | VREF_COMP_MOD_ENABLE_MSK);
-        }
-        else{
-            FILE_LOG(logINFO, ("Auto comp disable mode: off\n"));
-            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) & ~VREF_COMP_MOD_ENABLE_MSK);
-        }
-    }
-
-    return (bus_r(VREF_COMP_MOD_REG) & VREF_COMP_MOD_ENABLE_MSK);
-}
-
 
 void cleanFifos() {
 #ifdef VIRTUAL
@@ -524,33 +492,6 @@ void resetPeripheral() {
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PERIPHERAL_RST_MSK);
 }
 
-int adcPhase(int st){ /**carlos needed clkphase 1 and 2?  cehck with Aldo */
-	FILE_LOG(logINFO, ("Setting ADC Phase to %d\n", st));
-	if (st > 65535 || st < -65535)
-		return clkPhase[0];
-
-	clkPhase[1] = st - clkPhase[0];
-	if (clkPhase[1] == 0)
-	    return clkPhase[0];
-
-	configurePll();
-	clkPhase[0] = st;
-	return clkPhase[0];
-}
-
-int getPhase() {
-	return clkPhase[0];
-}
-
-void configureASICTimer() {
-    FILE_LOG(logINFO, ("Configuring ASIC Timer\n"));
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
-}
-
-
-
-
 
 
 
@@ -566,91 +507,29 @@ int setDynamicRange(int dr){
 
 
 
-/* parameters - readout */
+/* parameters - speed, readout */
 
-enum speedVariable setSpeed(int val) {
-
-	// setting
-	if(val >= 0) {
-
-        // stop state machine if running
-        if(runBusy())
-            stopStateMachine();
-
-        uint32_t txndelay_msk = 0;
-
-		switch(val){
-
-		// todo in firmware, for now setting half speed
-		case FULL_SPEED://40
-			FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
-
-			FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED));
-			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-
-	        txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-			FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk));
-			bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
-
-			FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL));
-			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-
-			FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
-			adcPhase(ADC_PHASE_HALF_SPEED);
-
-			break;
-		case HALF_SPEED:
-			FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
-
-			FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED));
-			bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-
-			txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-			FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk));
-			bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
-
-			FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL));
-			bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-
-			FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
-			adcPhase(ADC_PHASE_HALF_SPEED);
-
-			break;
-		case QUARTER_SPEED:
-			FILE_LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
-
-			FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED));
-			bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
-
-			txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-			FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED | txndelay_msk));
-			bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED | txndelay_msk);
-
-			FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL));
-			bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
-
-			FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED));
-			adcPhase(ADC_PHASE_QUARTER_SPEED);
-
-			break;
-		}
-	}
-
-	//getting
-	u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
-	switch(speed){
-	case CONFIG_FULL_SPEED_40MHZ_VAL:
-		return FULL_SPEED;
-	case CONFIG_HALF_SPEED_20MHZ_VAL:
-		return HALF_SPEED;
-	case CONFIG_QUARTER_SPEED_10MHZ_VAL:
-		return QUARTER_SPEED;
-	default:
-		return -1;
-	}
+void setSpeed(enum speedVariable ind, int val) {
+    switch(ind) {
+    case CLOCK_DIVIDER:
+        setClockDivider(val);
+    case ADC_PHASE:
+        setAdcPhase(val);
+    default:
+        return;
+    }
 }
 
-
+int getSpeed(enum speedVariable ind) {
+    switch(ind) {
+    case CLOCK_DIVIDER:
+        return getClockDivider();
+    case ADC_PHASE:
+        return getPhase();
+    default:
+        return -1;
+    }
+}
 
 
 
@@ -1292,8 +1171,147 @@ int setDetectorPosition(int pos[]) {
 
 
 
-/* jungfrau specific - pll, flashing fpga */
+/* jungfrau specific - powerchip, autocompdisable, asictimer, clockdiv, pll, flashing fpga */
 
+
+
+int powerChip (int on){
+    if(on != -1){
+        if(on){
+            FILE_LOG(logINFO, ("Powering chip: on\n"));
+            bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) | CHIP_POWER_ENABLE_MSK);
+        }
+        else{
+            FILE_LOG(logINFO, ("Powering chip: off\n"));
+            bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
+        }
+    }
+
+    return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
+}
+
+
+
+int autoCompDisable(int on) {
+    if(on != -1){
+        if(on){
+            FILE_LOG(logINFO, ("Auto comp disable mode: on\n"));
+            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) | VREF_COMP_MOD_ENABLE_MSK);
+        }
+        else{
+            FILE_LOG(logINFO, ("Auto comp disable mode: off\n"));
+            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) & ~VREF_COMP_MOD_ENABLE_MSK);
+        }
+    }
+
+    return (bus_r(VREF_COMP_MOD_REG) & VREF_COMP_MOD_ENABLE_MSK);
+}
+
+void configureASICTimer() {
+    FILE_LOG(logINFO, ("Configuring ASIC Timer\n"));
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) | ASIC_CTRL_PRCHRG_TMR_VAL);
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
+}
+
+int setClockDivider(int val) {
+    // setting
+    if(val >= 0) {
+
+        // stop state machine if running
+        if(runBusy())
+            stopStateMachine();
+
+        uint32_t txndelay_msk = 0;
+
+        switch(val){
+
+        // todo in firmware, for now setting half speed
+        case FULL_SPEED://40
+            FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
+
+            FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED));
+            bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+
+            txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+            FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk));
+            bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
+
+            FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL));
+            bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+
+            FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
+            setAdcPhase(ADC_PHASE_HALF_SPEED);
+
+            break;
+        case HALF_SPEED:
+            FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
+
+            FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED));
+            bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+
+            txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+            FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk));
+            bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
+
+            FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL));
+            bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+
+            FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
+            setAdcPhase(ADC_PHASE_HALF_SPEED);
+
+            break;
+        case QUARTER_SPEED:
+            FILE_LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
+
+            FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED));
+            bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
+
+            txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
+            FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED | txndelay_msk));
+            bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED | txndelay_msk);
+
+            FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL));
+            bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
+
+            FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED));
+            setAdcPhase(ADC_PHASE_QUARTER_SPEED);
+
+            break;
+        }
+    }
+}
+
+int getClockDivider() {
+    u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
+    switch(speed){
+    case CONFIG_FULL_SPEED_40MHZ_VAL:
+        return FULL_SPEED;
+    case CONFIG_HALF_SPEED_20MHZ_VAL:
+        return HALF_SPEED;
+    case CONFIG_QUARTER_SPEED_10MHZ_VAL:
+        return QUARTER_SPEED;
+    default:
+        return -1;
+    }
+}
+
+int setAdcPhase(int st){ /**carlos needed clkphase 1 and 2?  cehck with Aldo */
+    FILE_LOG(logINFO, ("Setting ADC Phase to %d\n", st));
+    if (st > 65535 || st < -65535)
+        return clkPhase[0];
+
+    clkPhase[1] = st - clkPhase[0];
+    if (clkPhase[1] == 0)
+        return clkPhase[0];
+
+    configurePll();
+    clkPhase[0] = st;
+    return clkPhase[0];
+}
+
+int getPhase() {
+    return clkPhase[0];
+}
 
 
 void resetPLL() {
@@ -1530,8 +1548,8 @@ enum runStatus getRunStatus(){
 	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
 
 	//running
-	if(((retval & RUN_BUSY_MSK) >> RUN_BUSY_OFST)) {
-		if ((retval & WAITING_FOR_TRIGGER_MSK) >> WAITING_FOR_TRIGGER_OFST) {
+	if (retval & RUN_BUSY_MSK) {
+		if (retval & WAITING_FOR_TRIGGER_MSK) {
 			FILE_LOG(logINFOBLUE, ("Status: WAITING\n"));
 			s = WAITING;
 		}
@@ -1543,10 +1561,10 @@ enum runStatus getRunStatus(){
 
 	//not running
 	else {
-		if ((retval & STOPPED_MSK) >> STOPPED_OFST) {
+		if (retval & STOPPED_MSK) {
 			FILE_LOG(logINFOBLUE, ("Status: STOPPED\n"));
 			s = STOPPED;
-		} else if ((retval & RUNMACHINE_BUSY_MSK) >> RUNMACHINE_BUSY_OFST) {
+		} else if (retval & RUNMACHINE_BUSY_MSK) {
 			FILE_LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
 			s = TRANSMITTING;
 		} else if (!retval) {

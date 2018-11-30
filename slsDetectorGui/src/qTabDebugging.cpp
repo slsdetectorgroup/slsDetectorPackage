@@ -74,7 +74,7 @@ void qTabDebugging::SetupWidgetWindow(){
 		chkModuleFirmware->setEnabled(false);
 		break;
 	case slsDetectorDefs::JUNGFRAU:
-	case slsDetectorDefs::JUNGFRAUCTB:
+	case slsDetectorDefs::CHIPTESTBOARD:
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:
 		lblDetector->setText("Module:");
@@ -344,7 +344,7 @@ void qTabDebugging::GetInfo(){
 
 
 	case slsDetectorDefs::JUNGFRAU:
-	case slsDetectorDefs::JUNGFRAUCTB:
+	case slsDetectorDefs::CHIPTESTBOARD:
 		//display widget
 		formLayout->addWidget(new QLabel("Module:"),0,0);
 		formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
@@ -474,7 +474,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 
 
 	case slsDetectorDefs::JUNGFRAU:
-	case slsDetectorDefs::JUNGFRAUCTB:
+	case slsDetectorDefs::CHIPTESTBOARD:
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::GOTTHARD:
@@ -524,7 +524,7 @@ void qTabDebugging::TestDetector(){
 		break;
 	case slsDetectorDefs::EIGER:	 Detector =  "Half Module";	break;
 	case slsDetectorDefs::JUNGFRAU:
-	case slsDetectorDefs::JUNGFRAUCTB:
+	case slsDetectorDefs::CHIPTESTBOARD:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:	 Detector =  "Module";	break;

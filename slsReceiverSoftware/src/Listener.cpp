@@ -461,7 +461,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			else
 				memcpy(buf + fifohsize + dsize - 2, carryOverPacket + hsize, dsize+2);
 			break;
-		case JUNGFRAUCTB:
+		case CHIPTESTBOARD:
 			if (pnum == (pperFrame-1))
 				memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize, corrected_dsize);
 			else
@@ -594,7 +594,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			else
 				memcpy(buf + fifohsize + (pnum * dsize) - 2, listeningPacket + hsize, dsize+2);
 			break;
-		case JUNGFRAUCTB:
+		case CHIPTESTBOARD:
 			if (pnum == (pperFrame-1))
 				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, corrected_dsize);
 			else

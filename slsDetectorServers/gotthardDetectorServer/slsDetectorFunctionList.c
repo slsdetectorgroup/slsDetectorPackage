@@ -783,7 +783,6 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
             int i = 0;
             for (i = 0; i < n; ++i) {
                 FILE_LOG(logINFO, ("\t(%d, %d)\n", arg[i].xmin, arg[i].xmax));
-
             }
         }
         // only one ROI allowed per module

@@ -116,7 +116,6 @@
 #define ADC_SYNC_ENET_DELAY_MSK         (0x000000FF << ADC_SYNC_ENET_DELAY_OFST)
 #define ADC_SYNC_ENET_DELAY_NO_ROI_VAL  ((0x88 << ADC_SYNC_ENET_DELAY_OFST) & ADC_SYNC_ENET_DELAY_MSK)
 #define ADC_SYNC_ENET_DELAY_ROI_VAL     ((0x1b << ADC_SYNC_ENET_DELAY_OFST) & ADC_SYNC_ENET_DELAY_MSK)
-//FIXME: try with just 0x8 and 0x1.. it is anded with 0000 in firmware anyway
 
 /** Time From Start register */
 //#define MU_TIME_REG                     (0x1a << MEM_MAP_SHIFT)

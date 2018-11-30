@@ -364,7 +364,7 @@
 #define SET_PERIOD_LSB_REG    			(0x66 << MEM_MAP_SHIFT)
 #define SET_PERIOD_MSB_REG    			(0x67 << MEM_MAP_SHIFT)
 
-/* Set Period 64 bit register */
+/* Set Exptime 64 bit register */
 #define SET_EXPTIME_LSB_REG    			(0x68 << MEM_MAP_SHIFT)
 #define SET_EXPTIME_MSB_REG    			(0x69 << MEM_MAP_SHIFT)
 

@@ -435,7 +435,7 @@ void setupDetector() {
 	setReadOutFlags(DEFAULT_READOUT_MODE);
 	setReadOutFlags(DEFAULT_READOUT_STOREINRAM_MODE);
 	setReadOutFlags(DEFAULT_READOUT_OVERFLOW32_MODE);
-	setSpeed(DEFAULT_CLK_SPEED);//clk_devider,half speed
+	setSpeed(CLOCK_DIVIDER, DEFAULT_CLK_SPEED);//clk_devider,half speed
 	setIODelay(DEFAULT_IO_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
@@ -509,7 +509,9 @@ int setDynamicRange(int dr) {
 
 /* parameters - readout */
 
-enum speedVariable setSpeed(int val) {
+void setSpeed(enum speedVariable ind, int val) {
+    if (ind != CLOCK_DIVIDER)
+        return;
 
 	if (val != -1) {
 		FILE_LOG(logDEBUG1, ("Setting Read out Speed: %d\n", val));
@@ -518,7 +520,12 @@ enum speedVariable setSpeed(int val) {
 #endif
 			eiger_readoutspeed = val;
 	}
-	return 	eiger_readoutspeed;
+}
+
+int getSpeed(enum speedVariable ind) {
+    if (ind != CLOCK_DIVIDER)
+        return -1;
+    return  eiger_readoutspeed;
 }
 
 

@@ -832,7 +832,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	switch(myDetectorType) {
 	case GOTTHARD:
 	case EIGER:
-	case JUNGFRAUCTB:
+	case CHIPTESTBOARD:
 	case JUNGFRAU:
 		FILE_LOG(logINFO) << " ***** " << getDetectorType(d) << " Receiver *****";
 		break;
@@ -846,7 +846,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	switch(myDetectorType) {
 	case GOTTHARD:		generalData = new GotthardData();	break;
 	case EIGER:			generalData = new EigerData();		break;
-	case JUNGFRAUCTB:	generalData = new JCTBData();		break;
+	case CHIPTESTBOARD:	generalData = new JCTBData();		break;
 	case JUNGFRAU:		generalData = new JungfrauData();	break;
 	default: break;
 	}

@@ -582,7 +582,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			switch(arg) {
 			case GOTTHARD:
 			case EIGER:
-			case JUNGFRAUCTB:
+			case CHIPTESTBOARD:
 			case JUNGFRAU:
 				break;
 			default:
@@ -804,7 +804,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 					receiver->setSubPeriod(index[1] + receiver->getSubExpTime());
 					break;
 				case SAMPLES_JCTB:
-					if (myDetectorType != JUNGFRAUCTB) {
+					if (myDetectorType != CHIPTESTBOARD) {
 						modeNotImplemented("(Samples) Timer index", (int)index[0]);
 						break;
 					}
@@ -836,7 +836,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 			retval=(receiver->getSubPeriod() - receiver->getSubExpTime());
 			break;
 		case SAMPLES_JCTB:
-			if (myDetectorType != JUNGFRAUCTB) {
+			if (myDetectorType != CHIPTESTBOARD) {
 				ret = FAIL;
 				sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
 				FILE_LOG(logERROR) << "Warning: " << mess;

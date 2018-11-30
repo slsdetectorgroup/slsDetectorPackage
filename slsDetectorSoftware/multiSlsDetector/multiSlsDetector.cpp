@@ -1404,7 +1404,7 @@ int multiSlsDetector::setDAC(int val, dacIndex idac, int mV, int detPos) {
 
     // multi
     auto r = parallelCall(&slsDetector::setDAC, val, idac, mV);
-    if (idac != HV_NEW)
+    if (getDetectorsType() != EIGER || idac != HIGH_VOLTAGE)
         return sls::minusOneIfDifferent(r);
 
     // ignore slave values for hv (-999)
@@ -3286,7 +3286,7 @@ int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
         names[nvar++] = "delay";
         names[nvar++] = "clkdivider";
         break;
-    case JUNGFRAUCTB:
+    case CHIPTESTBOARD:
         names[nvar++] = "dac:0";
         names[nvar++] = "dac:1";
         names[nvar++] = "dac:2";

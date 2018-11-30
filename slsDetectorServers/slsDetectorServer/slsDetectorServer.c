@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
 				FILE_LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));
 			}
 #endif
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 			else if(!strcasecmp(argv[i],"-update")){
 				FILE_LOG(logINFO, ("Detected update mode\n"));
 				debugflag = PROGRAMMING_MODE;

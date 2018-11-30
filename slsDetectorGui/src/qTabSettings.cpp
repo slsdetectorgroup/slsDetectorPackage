@@ -38,7 +38,7 @@ void qTabSettings::SetupWidgetWindow(){
 	detType=myDet->getDetectorsType();
 
 	// Settings
-	if (detType != slsDetectorDefs::JUNGFRAUCTB) {
+	if (detType != slsDetectorDefs::CHIPTESTBOARD) {
 		SetupDetectorSettings();
 	} else
 		comboSettings->setEnabled(false);
@@ -210,7 +210,7 @@ void qTabSettings::SetupDetectorSettings(){
 
 void qTabSettings::Initialization(){
 	// Settings
-	if (detType != slsDetectorDefs::JUNGFRAUCTB)
+	if (detType != slsDetectorDefs::CHIPTESTBOARD)
 		connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	// Number of Modules
 	connect(spinNumModules, 	SIGNAL(valueChanged(int)), 			this, SLOT(SetNumberOfModules(int)));
@@ -322,7 +322,7 @@ void qTabSettings::Refresh(){
 	cout  << endl << "**Updating Settings Tab" << endl;
 #endif
 
-	if (detType != slsDetectorDefs::JUNGFRAUCTB)
+	if (detType != slsDetectorDefs::CHIPTESTBOARD)
 		disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	disconnect(spinNumModules, 	SIGNAL(valueChanged(int)), 			this, SLOT(SetNumberOfModules(int)));
 	disconnect(spinThreshold,		SIGNAL(valueChanged(int)),			this, SLOT(SetEnergy()));
@@ -342,7 +342,7 @@ void qTabSettings::Refresh(){
 	GetDynamicRange();
 
 	// Settings
-	if (detType != slsDetectorDefs::JUNGFRAUCTB)  {
+	if (detType != slsDetectorDefs::CHIPTESTBOARD)  {
 #ifdef VERBOSE
 		cout  << "Getting settings" << endl;
 #endif
@@ -369,7 +369,7 @@ void qTabSettings::Refresh(){
 		}
 }
 
-	if (detType != slsDetectorDefs::JUNGFRAUCTB)
+	if (detType != slsDetectorDefs::CHIPTESTBOARD)
 		connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	connect(spinNumModules, 	SIGNAL(valueChanged(int)), 			this, SLOT(SetNumberOfModules(int)));
 	connect(spinThreshold,		SIGNAL(valueChanged(int)),			this, SLOT(SetEnergy()));

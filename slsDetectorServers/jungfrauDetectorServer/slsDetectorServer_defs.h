@@ -46,8 +46,8 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define NDAC 						(8)
 #define NDAC_OLDBOARD				(16)
 #define DYNAMIC_RANGE				(16)
-#define NUM_BITS_PER_PIXEL			(DYNAMIC_RANGE / 8)
-#define DATA_BYTES					(NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
+#define NUM_BYTES_PER_PIXEL			(DYNAMIC_RANGE / 8)
+#define DATA_BYTES					(NCHIP * NCHAN * NUM_BYTES_PER_PIXEL)
 #define IP_PACKETSIZE				(0x2052)
 #define CLK_RUN						(40)	/* MHz */
 #define CLK_SYNC					(20)	/* MHz */
@@ -65,6 +65,9 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define DEFAULT_TMP_THRSHLD         (65*1000) //milli degree Celsius
 #define DEFAULT_NUM_STRG_CLLS       (0)
 #define DEFAULT_STRG_CLL_STRT       (0xf)
+
+#define MAX_DAC_VOLTAGE_VALUE       (2500)
+#define MAX_DAC_UNIT_VALUE          (4096)
 
 /* Defines in the Firmware */
 #define FIX_PATT_VAL    			(0xACDC2014)

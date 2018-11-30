@@ -299,14 +299,52 @@ int receiveData(int file_des, void* buf,int length, intType itype){
 
 
 int sendDataOnly(int file_des, void* buf,int length) {
-	if (!length)
-		return 0;
-	int lret =  write(file_des, buf, length); //value of -1 is other end socket crash as sigpipe is ignored
-	if (lret < 0) {
-		FILE_LOG(logERROR, ("Could not write to %s socket. Possible socket crash\n",
-				(isControlServer ? "control":"stop")));
-	}
-	return lret;
+     if (!length)
+         return 0;
+
+
+      int bytesSent = 0;
+      int retry = 0; // retry index when buffer is blocked (write returns 0)
+      while (bytesSent < length) {
+
+          // setting a max packet size for blackfin driver (and network driver does not do a check if packets sent)
+          int bytesToSend = length - bytesSent;
+          if (bytesToSend > BLACKFIN_DRVR_SND_LMT)
+              bytesToSend = BLACKFIN_DRVR_SND_LMT;
+
+          // send
+          int rc = write(file_des, (char*)((char*)buf + bytesSent), bytesToSend);
+          // error
+          if (rc < 0) {
+              FILE_LOG(logERROR, ("Could not write to %s socket. Possible socket crash\n",
+                              (isControlServer ? "control":"stop")));
+              return bytesSent;
+          }
+          // also error, wrote nothing, buffer blocked up, too fast sending for client
+          if (rc == 0) {
+              FILE_LOG(logERROR, ("Could not write to %s socket. Buffer full. Retry: %d\n",
+                              (isControlServer ? "control":"stop"), retry));
+              ++retry;
+              // wrote nothing for many loops
+              if (retry >= BLACKFIN_RSND_PCKT_LOOP) {
+                  FILE_LOG(logERROR, ("Could not write to %s socket. Buffer full! Too fast! No more.\n",
+                                  (isControlServer ? "control":"stop")));
+                  return bytesSent;
+              }
+              usleep(BLACKFIN_RSND_WAIT_US);
+          }
+          // wrote something, reset retry
+          else  {
+              retry = 0;
+              if (rc != bytesToSend) {
+                  FILE_LOG(logWARNING, ("Only partial write to %s socket. Expected to write %d bytes, wrote %d\n",
+                                                (isControlServer ? "control":"stop"), bytesToSend, rc));
+              }
+          }
+          bytesSent += rc;
+      }
+
+      return bytesSent;
 }
 
 

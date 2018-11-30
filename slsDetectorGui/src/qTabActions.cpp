@@ -185,7 +185,7 @@ void qTabActions::SetupWidgetWindow(){
 			(detType == slsDetectorDefs::AGIPD) ||
 			(detType == slsDetectorDefs::PROPIX) ||
 			(detType == slsDetectorDefs::JUNGFRAU) ||
-			(detType == slsDetectorDefs::JUNGFRAUCTB) ||
+			(detType == slsDetectorDefs::CHIPTESTBOARD) ||
 			(detType == slsDetectorDefs::MOENCH)) {
 		lblName[NumPositions]->setEnabled(false);
 		btnExpand[NumPositions]->setEnabled(false);

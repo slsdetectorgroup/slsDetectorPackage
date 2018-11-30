@@ -14,6 +14,8 @@ const enum detectorType myDetectorType = GOTTHARD;
 const enum detectorType myDetectorType = EIGER;
 #elif JUNGFRAUD
 const enum detectorType myDetectorType = JUNGFRAU;
+#elif CHIPTESTBOARDD
+const enum detectorType myDetectorType = CHIPTESTBOARD;
 #else
 const enum detectorType myDetectorType = GENERIC;
 #endif
@@ -31,6 +33,11 @@ extern char mess[MAX_STR_LENGTH];
 // Variables that will be exported
 int sockfd = 0;
 int debugflag = 0;
+#ifdef CHIPTESTBOARDD
+int dataBytes = 0;
+uint16_t *ramValues = 0;
+int nframes = 0;
+#endif
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
@@ -110,6 +117,42 @@ int decode_function(int file_des) {
 	return ret;
 }
 
+const char* getTimerName(enum timerIndex ind) {
+    switch (ind) {
+    case FRAME_NUMBER:              return "frame_number";
+    case ACQUISITION_TIME:          return "acquisition_time";
+    case FRAME_PERIOD:              return "frame_period";
+    case DELAY_AFTER_TRIGGER:       return "delay_after_trigger";
+    case GATES_NUMBER:              return "gates_number";
+    case CYCLES_NUMBER:             return "cycles_number";
+    case ACTUAL_TIME:               return "actual_time";
+    case MEASUREMENT_TIME:          return "measurement_time";
+    case PROGRESS:                  return "progress";
+    case MEASUREMENTS_NUMBER:       return "measurements_number";
+    case FRAMES_FROM_START:         return "frames_from_start";
+    case FRAMES_FROM_START_PG:      return "frames_from_start_pg";
+    case SAMPLES_JCTB:              return "samples_jctb";
+    case SUBFRAME_ACQUISITION_TIME: return "subframe_acquisition_time";
+    case SUBFRAME_DEADTIME:         return "subframe_deadtime";
+    case STORAGE_CELL_NUMBER:       return "storage_cell_number";
+    default:                        return "unknown_timer";
+    }
+}
+
+const char* getSpeedName(enum speedVariable ind) {
+    switch (ind) {
+    case CLOCK_DIVIDER:  return "clock_divider";
+    case PHASE_SHIFT:    return "phase_shift";
+    case OVERSAMPLING:   return "oversampling";
+    case ADC_CLOCK:      return "adc_clock";
+    case ADC_PHASE:      return "adc_phase";
+    case ADC_PIPELINE:   return "adc_pipeline";
+    case DBIT_CLOCK:     return "dbit_clock";
+    case DBIT_PHASE:     return "dbit_phase";
+    case DBIT_PIPELINE:  return "dbit_pipeline";
+    default:             return "unknown_speed";
+    }
+}
 
 const char* getFunctionName(enum detFuncs func) {
 	switch (func) {
@@ -538,12 +581,6 @@ int set_dac(int file_des) {
     enum DACINDEX serverDacIndex = 0;
 
     // check if dac exists for this detector
-#ifdef JUNGFRAUD
-    if ((ind != HV_NEW) && (ind >= NDAC_OLDBOARD)) {	//for compatibility with old board
-    	modeNotImplemented("Dac Index", (int)ind);
-    } else
-    	serverDacIndex = ind;
-#else
     switch (ind) {
 #ifdef GOTTHARDD
     case G_VREF_DS :
@@ -570,72 +607,104 @@ int set_dac(int file_des) {
     case G_IB_TESTC:
         serverDacIndex = IB_TESTC;
         break;
-    case HV_POT:
-    	break;
+    case HIGH_VOLTAGE:
+        break;
 #elif EIGERD
     case TRIMBIT_SIZE:
-    	serverDacIndex = VTR;
+        serverDacIndex = VTR;
         break;
     case THRESHOLD:
-    	serverDacIndex = VTHRESHOLD;
+        serverDacIndex = VTHRESHOLD;
         break;
     case E_SvP:
-    	serverDacIndex = SVP;
+        serverDacIndex = SVP;
         break;
     case E_SvN:
-    	serverDacIndex = SVN;
+        serverDacIndex = SVN;
         break;
     case E_Vtr:
-    	serverDacIndex = VTR;
+        serverDacIndex = VTR;
         break;
     case E_Vrf:
-    	serverDacIndex = VRF;
+        serverDacIndex = VRF;
         break;
     case E_Vrs:
-    	serverDacIndex = VRS;
+        serverDacIndex = VRS;
         break;
     case E_Vtgstv:
-    	serverDacIndex = VTGSTV;
+        serverDacIndex = VTGSTV;
         break;
     case E_Vcmp_ll:
-    	serverDacIndex = VCMP_LL;
+        serverDacIndex = VCMP_LL;
         break;
     case E_Vcmp_lr:
-    	serverDacIndex = VCMP_LR;
+        serverDacIndex = VCMP_LR;
         break;
     case E_cal:
-    	serverDacIndex = CAL;
+        serverDacIndex = CAL;
         break;
     case E_Vcmp_rl:
-    	serverDacIndex = VCMP_RL;
+        serverDacIndex = VCMP_RL;
         break;
     case E_Vcmp_rr:
-    	serverDacIndex = VCMP_RR;
+        serverDacIndex = VCMP_RR;
         break;
     case E_rxb_rb:
-    	serverDacIndex = RXB_RB;
+        serverDacIndex = RXB_RB;
         break;
     case E_rxb_lb:
-    	serverDacIndex = RXB_LB;
+        serverDacIndex = RXB_LB;
         break;
     case E_Vcp:
-    	serverDacIndex = VCP;
+        serverDacIndex = VCP;
         break;
     case E_Vcn:
-    	serverDacIndex = VCN;
+        serverDacIndex = VCN;
         break;
     case E_Vis:
-    	serverDacIndex = VIS;
+        serverDacIndex = VIS;
         break;
-    case HV_NEW:
+    case HIGH_VOLTAGE:
     case IO_DELAY:
+        break;
+#elif CHIPTESTBOARDD
+    case ADC_VPP:
+    case HIGH_VOLTAGE:
+        break;
+    case V_POWER_A:
+        serverDacIndex = D_PWR_A;
+        break;
+    case V_POWER_B:
+        serverDacIndex = D_PWR_B;
+        break;
+    case V_POWER_C:
+        serverDacIndex = D_PWR_C;
+        break;
+    case V_POWER_D:
+        serverDacIndex = D_PWR_D;
+        break;
+    case V_POWER_IO:
+        serverDacIndex = D_PWR_IO;
+        break;
+    case V_POWER_CHIP:
+        serverDacIndex = D_PWR_CHIP;
         break;
 #endif
     default:
-    	modeNotImplemented("Dac Index", (int)ind);
+#ifdef JUNGFRAUD
+        if ((ind == HIGH_VOLTAGE) || (ind < NDAC_OLDBOARD)) {  //for compatibility with old board
+            serverDacIndex = ind;
+            break;
+        }
+#elif CHIPTESTBOARDD
+        if (ind < NDAC_ONLY) {
+            serverDacIndex = ind;
+            break;
+        }
+#endif
+        modeNotImplemented("Dac Index", (int)ind);
         break;
     }
-#endif
 
     // index exists
     if (ret == OK) {
@@ -644,8 +713,22 @@ int set_dac(int file_des) {
         		(mV ? "mV" : "dac units")));
 
     	// set & get
-    	if ((val == -1) || ((val != -1) && (Server_VerifyLock() == OK))) {
+    	if ((val == -1) || (Server_VerifyLock() == OK)) {
     		switch(ind) {
+
+    		// adc vpp
+#ifdef CHIPTESTBOARDD
+    		case ADC_VPP:
+    		if (val < 0 || val > getMaxValidVref())  {
+    		    ret = FAIL;
+                strcpy(mess,"Could not set dac. Adc Vpp value should be between 0 and %d\n", maxValidVref());
+                FILE_LOG(logERROR,(mess));
+    		} else {
+    		    setVrefVoltage(val);
+    		    retval = val; // cannot read
+    		}
+    		break;
+#endif
 
     		// io delay
 #ifdef EIGERD
@@ -657,10 +740,12 @@ int set_dac(int file_des) {
 #endif
 
     		// high voltage
-    		case HV_POT:
-    		case HV_NEW:
+    		case HIGH_VOLTAGE:
     			retval[0] = setHighVoltage(val);
     			FILE_LOG(logDEBUG1, ("High Voltage: %d\n", retval[0]));
+#if defined(JUNGFRAUD) || defined (CHIPTESTBOARDD)
+    			validate(val, retval[0], "set high voltage", DEC);
+#endif
 #ifdef GOTTHARDD
     			if (retval[0] == -1) {
     			    ret = FAIL;
@@ -685,9 +770,90 @@ int set_dac(int file_des) {
 #endif
     			break;
 
+    			// power, vlimit
+#ifdef CHIPTESTBOARDD
+            case V_POWER_A:
+            case V_POWER_B:
+            case V_POWER_C:
+            case V_POWER_D:
+            case V_POWER_IO:
+                if (!mV) {
+                    ret = FAIL;
+                    sprintf(mess,"Could not set power. Power regulator %d should be in mV and not dac units.\n", ind);
+                    FILE_LOG(logERROR,(mess));
+                } else if (checkVLimitCompliant() == FAIL) {
+                    ret = FAIL;
+                    sprintf(mess,"Could not set power. Power regulator %d exceeds voltage limit %d.\n", ind, getVLimit());
+                    FILE_LOG(logERROR,(mess));
+                } else if (!isPowerValid(val)) {
+                    ret = FAIL;
+                    sprintf(mess,"Could not set power. Power regulator %d should be between %d and %d mV\n", POWER_RGLTR_MIN, POWER_RGLTR_MAX);
+                    FILE_LOG(logERROR,(mess));
+                } else {
+                    if (val != -1)
+                        setPower(serverDacIndex, val);
+                    retval[0] = getPower(serverDacIndex);
+                    FILE_LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval[0]));
+                    validate(val, retval[0], "set power regulator", DEC);
+                }
+    			break;
+
+            case V_POWER_CHIP:
+                if (!mV) {
+                    ret = FAIL;
+                    sprintf(mess,"Could not set Vchip. Should be in mV and not dac units.\n");
+                    FILE_LOG(logERROR,(mess));
+                } else if (!isVchipValid(val)) {
+                    ret = FAIL;
+                    sprintf(mess,"Could not set Vchip. Should be between %d and %d mV\n", VCHIP_MIN_MV, VCHIP_MAX_MV);
+                    FILE_LOG(logERROR,(mess));
+                } else {
+                    if (val >= 0) // not letting user set to -100, it will affect setting
+                        setVchip(val);
+                    retval[0] = getVchip();
+                    FILE_LOG(logDEBUG1, ("Vchip: %d\n", retval[0]));
+                    validate(val, retval[0], "set vchip", DEC);
+                }
+                break;
+
+            case VLIMIT:
+                if (!mV) {
+                    ret = FAIL;
+                    strcpy(mess,"Could not set power. VLimit should be in mV and not dac units.\n");
+                    FILE_LOG(logERROR,(mess));
+                } else {
+                    if (val >= 0)
+                        setVLimit(val);
+                    retval[0] = getVLimit();
+                    FILE_LOG(logDEBUG1, ("VLimit: %d\n", retval[0]));
+                    validate(val, retval[0], "set vlimit", DEC);
+                }
+                break;
+#endif
+
                 // dacs
     			default:
-                    setDAC(serverDacIndex, val, mV, retval);
+    			    if (mV && val > MAX_DAC_VOLTAGE_VALUE) {
+                        ret = FAIL;
+                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d mV).\n", ind, val, MAX_DAC_VOLTAGE_VALUE);
+                        FILE_LOG(logERROR,(mess));
+    			    } else if (!mV && val > MAX_DAC_UNIT_VALUE ) {
+                        ret = FAIL;
+                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d dac units).\n", ind, val, MAX_DAC_UNIT_VALUE);
+                        FILE_LOG(logERROR,(mess));
+    			    } else {
+#ifdef CHIPTESTBOARDD
+    			        if ((mV && checkVLimitCompliant() == FAIL) ||
+    			                (!mv && checkVLimitCompliant(dacToVoltage(val)) == FAIL)) {
+                            ret = FAIL;
+                            sprintf(mess,"Could not set dac %d to value %d. "
+                                    "Exceeds voltage limit %d.\n",
+                                    ind, (mV ? val : dacToVoltage(val)), getVLimit());
+                            FILE_LOG(logERROR,(mess));
+    			        } else
+#endif
+    			        setDAC(serverDacIndex, val, mV, retval);
+    			    }
 #ifdef EIGERD
                     if (val != -1) {
                         //changing dac changes settings to undefined
@@ -779,8 +945,44 @@ int get_adc(int file_des) {
 	case TEMPERATURE_FPGA3:
 		serverAdcIndex = TEMP_FPGAFEBR;
 		break;
+#elif CHIPTESTBOARDD
+    case V_POWER_A:
+        serverAdcIndex = V_PWR_A;
+        break;
+    case V_POWER_B:
+        serverAdcIndex = V_PWR_B;
+        break;
+    case V_POWER_C:
+        serverAdcIndex = V_PWR_C;
+        break;
+    case V_POWER_D:
+        serverAdcIndex = V_PWR_D;
+        break;
+    case V_POWER_IO:
+        serverAdcIndex = V_PWR_IO;
+        break;
+    case I_POWER_A:
+        serverAdcIndex = I_PWR_A;
+        break;
+    case I_POWER_B:
+        serverAdcIndex = I_PWR_B;
+        break;
+    case I_POWER_C:
+        serverAdcIndex = I_PWR_C;
+        break;
+    case I_POWER_D:
+        serverAdcIndex = I_PWR_D;
+        break;
+    case I_POWER_IO:
+        serverAdcIndex = I_PWR_IO;
+        break;
 #endif
 	default:
+#ifdef CHIPTESTBOARDD
+        if (ind >= SLOW_ADC_START_INDEX && ind <= SLOW_ADC_END_INDEX) {
+            break;
+        }
+#endif
 		modeNotImplemented("Adc Index", (int)ind);
 		break;
 	}
@@ -861,6 +1063,10 @@ int set_module(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	enum detectorSettings retval = -1;
+
+#ifdef CHIPTESTBOARDD
+    functionNotImplemented();
+#else
 
 	sls_detector_module module;
 	int *myDac = NULL;
@@ -959,6 +1165,8 @@ int set_module(int file_des) {
 	}
 	if (myChan != NULL) free(myChan);
 	if (myDac != NULL) 	free(myDac);
+#endif
+
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
@@ -984,6 +1192,10 @@ int get_module(int file_des) {
 		FILE_LOG(logERROR,(mess));
 	} else
 		module.dacs = myDac;
+
+#ifdef CHIPTESTBOARDD
+    functionNotImplemented();
+#endif
 
 #ifdef EIGERD
     // allocate chans
@@ -1034,10 +1246,14 @@ int set_settings(int file_des) {
 
 	if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
 		return printSocketReadError();
+
+#ifdef CHIPTESTBOARDD
+    functionNotImplemented();
+#else
 	FILE_LOG(logDEBUG1, ("Setting settings %d\n", isett));
 
 	//set & get
-	if ((isett == GET_SETTINGS) || ((isett != GET_SETTINGS) && (Server_VerifyLock() == OK))) {
+	if ((isett == GET_SETTINGS) || (Server_VerifyLock() == OK)) {
 
 		// check index
 		switch(isett) {
@@ -1083,6 +1299,8 @@ int set_settings(int file_des) {
 #endif
 		}
 	}
+#endif
+
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
@@ -1229,6 +1447,35 @@ int read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Reading all frames\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
+#ifdef CHIPTESTBOARDD
+	    // read from fifo enabled
+      if (!sendUDP(-1)) {
+          nframes = 0;
+
+          // keep reading frames
+          while(readFrameFromFifo() == OK) {
+              // (to the receiver)
+              Server_SendResult(file_des, INT32, NO_UPDATE, ramValues, dataBytes);// (or get as arg first)send number of bytes (dataBytes) first //FIXME
+              FILE_LOG(logDEBUG1, "Frame %d sent\n", nframes);
+              ++nframes;
+          }
+
+          // finished readng frames
+          // frames left to give status
+          int64_t retval = getTimeLeft(FRAME_NUMBER) + 2;
+          if ( retval > 1) {
+              ret = FAIL;
+              sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
+              FILE_LOG(logERROR, (mess));
+          } else {
+              ret = OK; // send number of bytes (8)  first to acknowledge finish of acquisition //FIXME
+              FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+          }
+            Server_SendResult(file_des, INT32, UPDATE, NULL, 0); // to the client
+      }
+      // read from receiver
+      else
+#endif
 		readFrame(&ret, mess);
 	}
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
@@ -1249,21 +1496,26 @@ int set_timer(int file_des) {
 		return printSocketReadError();
 	enum timerIndex ind = (int)args[0];
 	int64_t tns = args[1];
+	char timerName[20] = {0};
+	strcpy(timerName, getTimerName(ind));
 #ifdef EIGERD
 	int64_t subexptime = 0;
 #endif
-	FILE_LOG(logDEBUG1, ("Setting timer index %d to %lld ns\n", ind, tns));
+	FILE_LOG(logDEBUG1, ("Setting timer %s(%d) to %lld ns\n", ind, timerName, tns));
 
 	// set & get
-	if ((tns == -1) || ((tns != -1) && (Server_VerifyLock() == OK))) {
+	if ((tns == -1) || (Server_VerifyLock() == OK)) {
 
 		// check index
 		switch (ind) {
 		case FRAME_NUMBER:
+#ifndef CHIPTESTBOARDD
 		case ACQUISITION_TIME:
+#endif
 		case FRAME_PERIOD:
 		case CYCLES_NUMBER:
-#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+		case SAMPLES_JCTB:
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 		case DELAY_AFTER_TRIGGER:
 #endif
 			retval = setTimer(ind, tns);
@@ -1305,20 +1557,30 @@ int set_timer(int file_des) {
 			break;
 #endif
 		default:
-			modeNotImplemented("Timer index", (int)ind);
+			modeNotImplemented(timerName, (int)ind);
 			break;
 		}
 
 		// validate
+		sprintf(timerName, "set %s", timerName);
 #ifdef EIGERD
-		validate64(tns, retval, "set timer", DEC); // copied to server, not read from detector register
+		validate64(tns, retval, timerName, DEC); // copied to server, not read from detector register
 #else
 		switch(ind) {
         case FRAME_NUMBER:
         case CYCLES_NUMBER:
         case STORAGE_CELL_NUMBER:
-		    validate64(tns, retval, "set timer", DEC); // no conversion, so all good
+		    validate64(tns, retval, timerName, DEC); // no conversion, so all good
 		    break;
+        case SAMPLES_JCTB:
+            if (retval == -1) {
+                ret = FAIL;
+                retval = setTimer(ind, -1);
+                sprintf(mess, "Could not set samples to %lld. Could not allocate RAM\n",
+                    (long long unsigned int)tns);
+                FILE_LOG(logERROR,(mess));
+            } else
+                validate64(tns, retval, timerName, DEC); // no conversion, so all good
         case ACQUISITION_TIME:
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
@@ -1327,11 +1589,12 @@ int set_timer(int file_des) {
             // losing precision due to conversion to clock (also gotthard master delay is different)
             if (validateTimer(ind, tns, retval) == FAIL) {
                 ret = FAIL;
-                sprintf(mess, "Could not set timer. Set %lld, but read %lld\n",
+                sprintf(mess, "Could not %s. Set %lld, but read %lld\n", timerName,
                     (long long unsigned int)tns, (long long unsigned int)retval);
                 FILE_LOG(logERROR,(mess));
             }
             break;
+
         default:
             break;
 		}
@@ -1378,10 +1641,21 @@ int get_time_left(int file_des) {
         case FRAMES_FROM_START_PG:
         case ACTUAL_TIME:
         case MEASUREMENT_TIME:
+        case FRAME_NUMBER:
+        case FRAME_PERIOD:
+        case DELAY_AFTER_TRIGGER:
+        case CYCLES_NUMBER:
 #elif GOTTHARDD
         case ACQUISITION_TIME:
-#endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+        case FRAME_NUMBER:
+        case FRAME_PERIOD:
+        case DELAY_AFTER_TRIGGER:
+        case CYCLES_NUMBER:
+#elif CHIPTESTBOARDD
+        case FRAMES_FROM_START:
+        case FRAMES_FROM_START_PG:
+        case ACTUAL_TIME:
+        case MEASUREMENT_TIME:
         case FRAME_NUMBER:
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
@@ -1414,7 +1688,7 @@ int set_dynamic_range(int file_des) {
 	FILE_LOG(logDEBUG1, ("Setting dr to %d\n", dr));
 
 	// set & get
-	if ((dr == -1) || ((dr != -1) && (Server_VerifyLock() == OK))) {
+	if ((dr == -1) || (Server_VerifyLock() == OK)) {
 
 #ifdef EIGERD
 		int old_dr = setDynamicRange(-1);
@@ -1480,7 +1754,7 @@ int set_readout_flags(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == GET_READOUT_FLAGS) || ((arg != GET_READOUT_FLAGS) && (Server_VerifyLock() == OK))) {
+	if ((arg == GET_READOUT_FLAGS) || (Server_VerifyLock() == OK)) {
 
 		switch(arg) {
 		case STORE_IN_RAM:
@@ -1493,6 +1767,13 @@ int set_readout_flags(int file_des) {
 			retval = setReadOutFlags(arg);
 			FILE_LOG(logDEBUG1, ("Read out flags: 0x%x\n", retval));
 			validate((int)arg, (int)(retval & arg), "set readout flag", HEX);
+#ifdef CHIPTESTBOARDD
+            if (retval == -2) {
+                ret = FAIL;
+                sprintf(mess, "Readout Flags failed. Cannot allocate RAM\n");
+                FILE_LOG(logERROR,(mess));
+            }
+#endif
 			break;
 		default:
 			modeNotImplemented("Read out flag index", (int)arg);
@@ -1542,20 +1823,26 @@ int set_roi(int file_des) {
 		}
 	}
 
-#ifndef GOTTHARDD
+#if !defined(GOTTHARDD) || !defined(CHIPTESTBOARDD)
 	functionNotImplemented();
 #else
 	// set & get
-	if ((narg == GET_READOUT_FLAGS) || ((narg != GET_READOUT_FLAGS) && (Server_VerifyLock() == OK))) {
-	    if (narg > 1) {
+	if ((narg == GET_READOUT_FLAGS) || (Server_VerifyLock() == OK)) {
+	    if (myDetectorType == GOTTHARDD && narg > 1) {
 	        ret = FAIL;
             strcpy(mess,"Can not set more than one ROI per module.\n");
             FILE_LOG(logERROR,(mess));
 	    } else {
 	        retval = setROI(narg, arg, &nretval, &ret);
 	        if (ret == FAIL) {
-	            sprintf(mess,"Could not set all roi. "
-	                    "Set %d rois, but read %d rois\n", narg, nretval);
+	            if (nretval == -1) // chip test board
+	                sprintf(mess,"Could not set ROI. Max ROI level (100) reached!\n");
+	            else if (nretval == -2)
+	                sprintf(mess, "Could not set ROI. Could not allocate RAM\n",
+	                    (long long unsigned int)tns);
+	            else
+	                sprintf(mess,"Could not set all roi. "
+	                        "Set %d rois, but read %d rois\n", narg, nretval);
 	            FILE_LOG(logERROR,(mess));
 	        }
 	        FILE_LOG(logDEBUG1, ("nRois: %d\n", nretval));
@@ -1598,31 +1885,52 @@ int set_speed(int file_des) {
 #else
 	enum speedVariable ind = args[0];
 	int val = args[1];
-	FILE_LOG(logDEBUG1, ("Setting speed index %d to %d\n", ind, val));
+    int GET_VAL = -1;
+    if ((ind == PHASESHIFT) || (val == ADC_PHASE) || (val == DBIT_PHASE))
+        GET_VAL = 100000;
 
-	// set & get
-	if ((val == -1) || ((val != -1) && (Server_VerifyLock() == OK))) {
-		// check index
-		switch(ind) {
+    char speedName[20] = {0};
+    strcpy(speedName, getSpeedName(ind));
+    FILE_LOG(logDEBUG1, ("Setting speed index %s (%d) to %d\n", speedName, ind, val));
+
+    // check index
+    switch(ind) {
 #ifdef JUNGFRAUD
-		case ADC_PHASE:
-			retval = adcPhase(val);
-			FILE_LOG(logDEBUG1, ("ADc Phase: %d\n", retval));
-			if (val != 100000) {
-				validate(val, retval, "set adc phase ", DEC);
-			}
-			break;
+        case ADC_PHASE:
+#elif CHIPTESTBOARDD
+        case ADC_PHASE:
+        case PHASE_SHIFT:
+        case DBIT_PHASE:
+        case ADC_CLOCK:
+        case DBIT_CLOCK:
+        case ADC_PIPELINE:
+        case DBIT_PIPELINE:
 #endif
-		case CLOCK_DIVIDER:
-			retval = setSpeed(val);
-			FILE_LOG(logDEBUG1, ("Clock: %d\n", retval));
-			validate(val, retval, "set clock ", DEC);
-			break;
-		default:
-			modeNotImplemented("Speed index", (int)ind);
-			break;
-		}
-	}
+        case CLOCK_DIVIDER:
+            break;
+        default:
+            modeNotImplemented(speedName, (int)ind);
+            break;
+    }
+
+    if (ret == OK) {
+        // set
+        if ((val != GET_VAL) && (Server_VerifyLock() == OK))
+            setSpeed(ind, val);
+        // get
+        retval = getSpeed(ind);
+        FILE_LOG(logDEBUG1, ("%s: %d\n", speedName, retval));
+        // validate
+        if (GET_VAL == -1) {
+            char validateName[20] = {0};
+            sprintf(validateName, "set %s", speedName);
+            validate(val, retval, validateName, DEC);
+        } else if (ret == OK && val != GET_VAL && retval != val ) {
+            ret = FAIL;
+            sprintf(mess, "Could not set %s. Set %d, but read %d\n", speedName, val, retval);
+            FILE_LOG(logERROR,(mess));
+        }
+    }
 #endif
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
@@ -2080,7 +2388,7 @@ int enable_ten_giga(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
 		retval = enableTenGigabitEthernet(arg);
 		FILE_LOG(logDEBUG1, ("10GbE: %d\n", retval));
 		validate(arg, retval, "enable/disable 10GbE", DEC);
@@ -2127,7 +2435,208 @@ int set_all_trimbits(int file_des) {
 int set_ctb_pattern(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
+	int retval32 = -1;
+	int64_t retval64 = -1;
+	int retvals[3] = {-1, -1, -1};
+
+	int mode = -1;
+	// mode 0: control or word
+	int addr = -1;
+	uint64_t word = -1;
+	// mode 1: pattern loop
+    int loopLevel = -1;
+    int startAddr = -1;
+    int stopAddr = -1;
+    int numLoops = -1;
+    // mode 2: wait address
+    // mode 3: wait time
+    uint64_t timeval = -1;
+    // mode 4: set word
+    uint64_t pattern[MAX_PATTERN_LENGTH] = {0};
+
+    if (receiveData(file_des, &mode, sizeof(mode), INT32) < 0)
+        return printSocketReadError();
+    switch (mode) {
+    case 0:// control or word
+        if (receiveData(file_des, &addr, sizeof(addr), INT32) < 0)
+            return printSocketReadError();
+        if (receiveData(file_des, &word, sizeof(word), INT64) < 0)
+            return printSocketReadError();
+        break;
+    case 1:// pattern loop
+        if (receiveData(file_des, &loopLevel, sizeof(loopLevel), INT32) < 0)
+            return printSocketReadError();
+        if (receiveData(file_des, &startAddr, sizeof(startAddr), INT32) < 0)
+            return printSocketReadError();
+        if (receiveData(file_des, &stopAddr, sizeof(stopAddr), INT32) < 0)
+            return printSocketReadError();
+        if (receiveData(file_des, &numLoops, sizeof(numLoops), INT32) < 0)
+            return printSocketReadError();
+        break;
+    case 2: // wait address
+        if (receiveData(file_des, &loopLevel, sizeof(loopLevel), INT32) < 0)
+            return printSocketReadError();
+        if (receiveData(file_des, &addr, sizeof(addr), INT32) < 0)
+            return printSocketReadError();
+        break;
+    case 3:// wait time
+        if (receiveData(file_des, &loopLevel, sizeof(loopLevel), INT32) < 0)
+            return printSocketReadError();
+        if (receiveData(file_des, &t, sizeof(t), INT32) < 0)
+            return printSocketReadError();
+    case 4:// set word
+        if (receiveData(file_des, &pattern, sizeof(pattern), INT64) < 0)
+            return printSocketReadError();
+        break;
+    default:
+        break;
+    }
+
+#ifndef CHIPTESTBOARDD
 	functionNotImplemented();
+#else
+        FILE_LOG(logDEBUG1, ("Setting Pattern: mode %d\n", mode));
+        char tempName[100];
+        memset(tempName, 0, 100);
+        int failCount = 0;
+
+        switch (mode) {
+
+        case 0:
+            // control or word
+            if ((word == -1) || (Server_VerifyLock() == OK)) {
+
+                // address for set word should be valid (if not -1 or -2,  it goes to setword)
+                if (addr < -2 || addr > MAX_PATTERN_LENGTH) {
+                    ret = FAIL;
+                    sprintf(mess, "Cannot set Pattern (Word, addr:%d). Addr must be less than %d\n",
+                            addr, MAX_PATTERN_LENGTH);
+                    FILE_LOG(logERROR, (mess));
+                } else {
+                    switch (addr) {
+                    case -1:
+                        strcpy(tempName, "Pattern (I/O Control Register)");
+                        FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                        retval64 = writePatternIOControl(word);
+                        break;
+                    case -2:
+                        strcpy(tempName, "Pattern (Clock Control Register)");
+                        FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                        retval64 = writePatternClkControl(word);
+                        break;
+                    default:
+                        sprintf(tempName, "Pattern (Word, addr:0x%x)", addr);
+                        FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                        retval64 = writePatternWord(word);
+                        break;
+                    }
+                    FILE_LOG(logDEBUG1, ("%s: 0x%llx\n", tempName, (long long int)retval64));
+                    validate64(word, retval64, tempName, HEX);
+                }
+            }
+            return Server_SendResult(file_des, INT64, UPDATE, retval64, sizeof(retval64);
+
+
+            // pattern loop
+        case 1:
+            if (loopLevel < -1 || loopLevel > 2) { // -1 complete pattern
+                modeNotImplemented("Pattern (Pattern Loop) Level", loopLevel);
+            }
+
+            // level 0-2, addr upto patternlength + 1
+            else if ((level != -1) && (startAddr > (MAX_PATTERN_LENGTH + 1) || stopAddr > (MAX_PATTERN_LENGTH + 1))) {
+                ret = FAIL;
+                sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, addr:%d). Addr must be less than %d\n",
+                        level, addr, MAX_PATTERN_LENGTH + 1);
+                FILE_LOG(logERROR, (mess));
+            }
+
+            //level -1, addr upto patternlength
+            else if ((level == -1) && (startAddr > MAX_PATTERN_LENGTH || stopAddr > MAX_PATTERN_LENGTH)) {
+                ret = FAIL;
+                sprintf(mess, "Cannot set Pattern (Pattern Loop, complete pattern, addr:%d). Addr must be less than %d\n",
+                        addr, MAX_PATTERN_LENGTH);
+                FILE_LOG(logERROR, (mess));
+            }
+
+            else if ((startAddr == -1 && stopAddr == -1 && numLoops == -1)  ||  (Server_VerifyLock() == OK)) {
+                setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
+            }
+            retval[0] = startAddr;
+            retval[1] = stopAddr;
+            retval[2] = numLoops;
+            return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals);
+
+
+        case 2:
+            // wait address
+            if ((addr == -1) ||  (Server_VerifyLock() == OK)) {
+                if (loopLevel < 0 || loopLevel > 2) {
+                    modeNotImplemented("Pattern (Wait Address) Level", loopLevel);
+                } else if (addr > (MAX_PATTERN_LENGTH + 1)) {
+                    ret = FAIL;
+                    sprintf(mess, "Cannot set Pattern (Wait Address, addr:%d). Addr must be less than %d\n",
+                            addr, MAX_PATTERN_LENGTH + 1);
+                    FILE_LOG(logERROR, (mess));
+                } else {
+                    sprintf(tempName, "Pattern (Wait Address, Level:%d)", loopLevel);
+                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%x\n", tempName, addr));
+                    retval32 = setPatternWaitAddress(loopLevel, addr);
+                    FILE_LOG(logDEBUG1, ("%s: 0x%x\n", tempName, retval32));
+                    validate(addr, retval32, tempName, HEX);
+                }
+            }
+            return Server_SendResult(file_des, INT32, UPDATE, retval32, sizeof(retval32);
+
+
+        case 3:
+            // wait time
+            if ((timeval == -1) ||  (Server_VerifyLock() == OK)) {
+                if (loopLevel < 0 || loopLevel > 2) {
+                    modeNotImplemented("Pattern (Wait Time) Level", loopLevel);
+                } else {
+                    sprintf(tempName, "Pattern (Wait Time, Level:%d)", loopLevel);
+                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int)timeval));
+                    retval64 = setPatternWaitTime(loopLevel, timeval);
+                    FILE_LOG(logDEBUG1, ("%s: 0x%llx\n", tempName, (long long int)retval64));
+                    validate64(timeval, retval64, tempName, HEX);
+                }
+            }
+            return Server_SendResult(file_des, INT64, UPDATE, retval64, sizeof(retval64);
+
+
+        case 4:
+            // set word array(set only)
+            if (Server_VerifyLock() == OK) {
+                FILE_LOG(logDEBUG1, ("Setting Pattern (Word Array)\n"));
+                failCount = 0;
+                int iaddr = 0; // if warning change to addr // FIXME
+                for (iaddr = 0; iaddr < MAX_PATTERN_LENGTH; ++iaddr) {
+                    sprintf(tempName, "Pattern (Word Array, addr:%d)", iaddr);
+                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) pattern[iaddr]));
+                    retval64 = writePatternWord(iaddr, pattern[iaddr]);//FIXME: earlier was word, but makes no sense (random value)
+                    FILE_LOG(logDEBUG1, ("%s: 0x%llx\n", tempName, (long long int)retval64));
+                    validate64(pattern[iaddr], retval64, tempName, HEX);
+                    if (ret == FAIL) {
+                        ++failCount;
+                        ret = OK;
+                    }
+                }
+                if (failCount) {
+                    ret = FAIL;
+                    sprintf(mess, "Could not set Pattern (Word Array) %d addresses.\n", failCount);
+                    FILE_LOG(logERROR,(mess));
+                }
+            }
+            return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+
+
+        default:
+            modeNotImplemented("Pattern mode index", mode);
+            break;
+        }
+
+#endif
     return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
@@ -2364,7 +2873,7 @@ int set_network_parameter(int file_des) {
     enum NETWORKINDEX serverIndex = 0;
 
 	// set & get
-	if ((value == -1) || ((value != -1) && (Server_VerifyLock() == OK))) {
+	if ((value == -1) || (Server_VerifyLock() == OK)) {
 		// check index
 		switch (mode) {
 #ifdef EIGERD
@@ -2572,7 +3081,7 @@ int power_chip(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
 		retval = powerChip(arg);
 		FILE_LOG(logDEBUG1, ("Power chip: %d\n", retval));
 		validate(arg, retval, "power on/off chip", DEC);
@@ -2605,7 +3114,7 @@ int set_activate(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
 		retval = activate(arg);
 		FILE_LOG(logDEBUG1, ("Activate: %d\n", retval));
 		validate(arg, retval, "set activate", DEC);
@@ -2655,7 +3164,7 @@ int threshold_temp(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
 	    if (arg > MAX_THRESHOLD_TEMP_VAL)   {
 	        ret = FAIL;
 	        sprintf(mess,"Threshold Temp %d should be in range: 0 - %d\n",
@@ -2689,7 +3198,7 @@ int temp_control(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
 		retval = setTemperatureControl(arg);
 		FILE_LOG(logDEBUG1, ("Temperature control: %d\n", retval));
 		validate(arg, retval, "set temperature control", DEC);
@@ -2715,7 +3224,7 @@ int temp_event(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
 		retval = setTemperatureEvent(arg);
 		FILE_LOG(logDEBUG1, ("Temperature event: %d\n", retval));
 		validate(arg, retval, "set temperature event", DEC);
@@ -2742,7 +3251,7 @@ int auto_comp_disable(int file_des) {
 	functionNotImplemented();
 #else
 	// set & get
-	if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
 		retval = autoCompDisable(arg);
 		FILE_LOG(logDEBUG1, ("Auto comp disable: %d\n", retval));
 		validate(arg, retval, "set auto comp disable", DEC);
@@ -2769,7 +3278,7 @@ int storage_cell_start(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || ((arg != -1) && (Server_VerifyLock() == OK))) {
+    if ((arg == -1) || (Server_VerifyLock() == OK)) {
         if (arg > MAX_STORAGE_CELL_VAL) {
             ret = FAIL;
             strcpy(mess,"Max Storage cell number should not exceed 15\n");

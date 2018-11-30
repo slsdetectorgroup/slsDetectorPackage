@@ -468,7 +468,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 			else
 				memset(buf + fifohsize + (pnum * dsize), 0xFF, dsize+2);
 			break;
-		case JUNGFRAUCTB:
+		case CHIPTESTBOARD:
 			if (pnum == (pperFrame-1))
 				memset(buf + fifohsize + (pnum * dsize), 0xFF, corrected_dsize);
 			else

@@ -477,9 +477,9 @@ public:
 	 * @param val value (in V) (-1 gets)
 	 * @param index DAC index
 	 * Options: slsDetectorDefs::dacIndex
-	 * (Eiger: E_SvP up to IO_DELAY, THRESHOLD, HV_NEW)
+	 * (Eiger: E_SvP up to IO_DELAY, THRESHOLD, HIGH_VOLTAGE)
 	 * (Jungfrau: 0-7)
-	 * (Gotthard: G_VREF_DS up to G_IB_TESTC, HV_NEW)
+	 * (Gotthard: G_VREF_DS up to G_IB_TESTC, HIGH_VOLTAGE)
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns current DAC value
 	 */

@@ -15,12 +15,10 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 // basic tests
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
 int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
-#endif
 void 		basictests();
-#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 int 		checkType();
 u_int32_t 	testFpga(void);
 int 		testBus(void);
@@ -28,14 +26,14 @@ int 		testBus(void);
 
 #ifdef GOTTHARDD
 int         detectorTest(enum digitalTestMode arg,  int ival);
-#elif JUNGFRAUD
+#elif defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 int 		detectorTest(enum digitalTestMode arg);
 #endif
 
 // Ids
 int64_t 	getDetectorId(enum idMode arg);
 u_int64_t  	getFirmwareVersion();
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
@@ -60,6 +58,11 @@ void 		getModuleConfiguration();
 void		allocateDetectorStructureMemory();
 #endif
 void 		setupDetector();
+#ifdef CHIPTESTBOARDD
+int         allocateRAM();
+void        updateDataBytes();
+int         getChannels();
+#endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)
 int			setDefaultDacs();
 #endif
@@ -80,14 +83,9 @@ uint32_t    readRegister16And32(uint32_t offset);
 
 // firmware functions (resets)
 #ifdef JUNGFRAUD
-int 		powerChip (int on);
 void 		cleanFifos();
 void 		resetCore();
 void 		resetPeripheral();
-int         autoCompDisable(int on);
-int 		adcPhase(int st);
-int 		getPhase();
-void        configureASICTimer();
 #elif GOTTHARDD
 void        setPhaseShiftOnce();
 void        setPhaseShift(int numphaseshift);
@@ -100,19 +98,24 @@ void        setROIADC(int adc);
 void        setGbitReadout();
 int         readConfigFile();
 void        setMasterSlaveConfiguration();
+#elif CHIPTESTBOARDD
+void        cleanFifos();
+void        resetCore();
+void        resetPeripheral();
 #endif
 
 // parameters - dr, roi
 int 		setDynamicRange(int dr);
-#ifdef GOTTHARDD
+#if defined(GOTTHARDD) || defined(CHIPTESTBOARDD)
 ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
 // parameters - readout
 #ifndef GOTTHARDD
-enum speedVariable 		setSpeed(int val);
+void 		setSpeed(enum speedVariable ind, int val);
+int         getSpeed(enum speedVariable ind);
 #endif
-#ifdef EIGERD
+#if defined(EIGERD) || defined(CHIPTESTBOARDD)
 enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #endif
 
@@ -122,16 +125,17 @@ int         selectStoragecellStart(int pos);
 #endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 int64_t 	getTimeLeft(enum timerIndex ind);
-#if defined(JUNGFRAUD) || (GOTTHARDD)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD)
 int         validateTimer(enum timerIndex ind, int64_t val, int64_t retval);
 #endif
 
 // parameters - module, settings
+#ifndef CHIPTESTBOARDD
 int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 enum 		detectorSettings setSettings(enum detectorSettings sett);
 enum 		detectorSettings getSettings();
-
+#endif
 
 // parameters - threshold
 #ifdef EIGERD
@@ -140,20 +144,42 @@ int 		setThresholdEnergy(int ev);
 #endif
 
 // parameters - dac, adc, hv
-#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined (CHIPTESTBOARDD)
 void        serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset); //commonServerFunction.h
 void        initDac(int dacnum);
 int         voltageToDac(int value);
 int         dacToVoltage(unsigned int digital);
 #endif
+#ifdef CHIPTESTBOARDD
+int         generalVoltageToDac(int value, int vmin, int vmax, int check);
+int         generalDacToVoltage(unsigned int digital, int vmin, int vmax, int check);
+#endif
 #ifdef GOTTHARDD
-extern void setAdc9257(int addr, int val);      // AD9257.h
 extern void setAdc9252(int addr, int val);      // AD9252.h (old board)
-#elif JUNGFRAUD
+#endif
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 extern void setAdc9257(int addr, int val);      // AD9257.h
+#endif
+#ifdef CHIPTESTBOARDD
+extern int getMaxValidVref();                   // AD9257.h
+extern void setVrefVoltage(int val)             // AD9257.h
 #endif
 
 void 		setDAC(enum DACINDEX ind, int val, int mV, int retval[]);
+#ifdef CHIPTESTBOARDD
+int         isVLimitCompliant(int mV);
+int         getVLimit();
+void        setVLimit(int l);
+int         isVchipValid(int val);
+int         getVchip();
+void        setVchip(int val);
+int         getVChipToSet(enum DACINDEX ind, int val);
+int         getDACIndexFromADCIndex(enum ADCINDEX ind);
+int         getADCIndexFromDACIndex(enum DACINDEX ind);
+int         isPowerValid(int val);
+int         getPower();
+void        setPower(DACINDEX ind, int val);
+#endif
 /*#ifdef GOTTHARDD
 void        initDAC(int dac_addr, int value);
 void        clearDACSregister();
@@ -162,6 +188,10 @@ void        program_one_dac(int addr, int value);
 u_int32_t   putout(char *s);
 #endif*/
 int 		getADC(enum ADCINDEX ind);
+#ifdef CHIPTESTBOARDD
+int         getVoltage(int idac);
+int         getCurrent(int idac);
+#endif
 
 int 		setHighVoltage(int val);
 
@@ -198,8 +228,41 @@ void 		loadImage(enum imageType index, short int imageVals[]);
 int 		readCounterBlock(int startACQ, short int counterVals[]);
 int			resetCounterBlock(int startACQ);
 
-// jungfrau specific - pll, flashing firmware
+// chip test board specific - powerchip, sendudp, pll, flashing firmware
+#elif CHIPTESTBOARDD
+int         powerChip (int on);
+int         sendUDP(int enable);
+void        resetPLL();
+void        setPllReconfigReg(u_int32_t reg, u_int32_t val);
+void        configurePhase(CLKINDEX ind, int val);
+int         getPhase(CLKINDEX ind);
+void        configureFrequency(CLKINDEX ind, int val);
+int         getFrequency(CLKINDEX ind);
+void        configureSyncFrequency(CLKINDEX ind);
+void        setAdcOffsetRegister(int adc, int val);
+void        getAdcOffsetRegister(int adc);
+extern void eraseFlash();                                                   // programfpga.h
+extern int  startWritingFPGAprogram(FILE** filefp);                         // programfpga.h
+extern void stopWritingFPGAprogram(FILE* filefp);                           // programfpga.h
+extern int  writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);    // programfpga.h
+// ctb patterns
+uint64_t    writePatternIOControl(uint64_t word);
+uint64_t    writePatternClkControl(uint64_t word);
+uint64_t    readPatternWord(int addr);
+uint64_t    writePatternWord(int addr, uint64_t word);
+int         setPatternWaitAddress(int level, int addr);
+uint64_t    setPatternWaitTime(int level, uint64_t t);
+void         setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+
+// jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware
 #elif JUNGFRAUD
+int         powerChip (int on);
+int         autoCompDisable(int on);
+void        configureASICTimer();
+int         setClockDivider(int val);
+int         getClockDivider();
+int         setAdcPhase(int st);
+int         getPhase();
 void 		resetPLL();
 u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
 void 		configurePll();
@@ -230,6 +293,7 @@ int 		getAllTrimbits();
 int 		getBebFPGATemp();
 int 		activate(int enable);
 #endif
+
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int         setNetworkParameter(enum NETWORKINDEX mode, int value);
 #endif
@@ -254,6 +318,12 @@ int 		startReadOut();
 #endif
 enum 		runStatus getRunStatus();
 void 		readFrame(int *ret, char *mess);
+#ifdef CHIPTESTBOARDD
+void        unsetFifoReadStrobes();
+void        readSample();
+int         checkDataPresent();
+int         readFrameFromFifo();
+#endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)
 u_int32_t 	runBusy();
 #endif

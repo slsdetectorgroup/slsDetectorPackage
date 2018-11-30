@@ -74,6 +74,9 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 #define DEFAULT_TEST_MODE					(0)
 #define DEFAULT_HIGH_VOLTAGE				(0)
 
+#define MAX_DAC_VOLTAGE_VALUE               (2048)
+#define MAX_DAC_UNIT_VALUE                  (4096)
+
 
 #define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS	(0x1FFFFFFF) /** 29 bit register for max subframe exposure value */
 

@@ -125,6 +125,13 @@
 #define AD9257_VREF_1_6_VAL         ((0x3 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
 #define AD9257_VREF_2_0_VAL         ((0x4 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
 
+int getMaxValidVref() {
+    return 0x4;
+}
+
+void setVrefVoltage(int val) {
+    setAdc9257(AD9257_VREF_REG, val);
+}
 
 void setAdc9257(int addr, int val) {
 

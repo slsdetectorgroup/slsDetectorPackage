@@ -42,7 +42,7 @@
 #define TOKEN_RESTART_DELAY		0x88000000
 #define TOKEN_RESTART_DELAY_ROI         0x1b000000
 #define TOKEN_TIMING_REV1               0x1f16
-#define TOKEN_TIMING_REV2               0x1f0f
+#define TOKEN_TIMING_REV2               0x1f10
 
 #define DEFAULT_PHASE_SHIFT			120
 #define DEFAULT_IP_PACKETSIZE		0x0522

@@ -832,6 +832,7 @@ class slsDetectorUsers
     case 3:      return std::string("finished");				\
     case 4:      return std::string("data");					\
     case 5:      return std::string("running");				\
+    case 6:     return std::string("stoppped");             \
     default:       return std::string("unknown");				\
     }};
 

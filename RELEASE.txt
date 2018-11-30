@@ -10,7 +10,7 @@ This document describes the differences between 3.1.5 into 3.1.4 releases.
 
 Topics Concerning
 ==================
-    - gotthard adc channel shifted by one
+    - Gotthard adc channel shifted by one
     - users class: get version, status, resetframescaught
 
 

@@ -267,24 +267,24 @@ string slsDetectorUsers::setClientDataStreamingInIP(string ip){
 	return myDetector->setClientDataStreamingInIP(ip);
 }
 
-int64_t slsDetectorUsers::getModuleFirmwareVersion(){
-	return myDetector->getModuleFirmwareVersion();
+int64_t slsDetectorUsers::getModuleFirmwareVersion(int imod){
+	return myDetector->getModuleFirmwareVersion(imod);
 }
 
 int64_t slsDetectorUsers::getModuleSerialNumber(int imod){
 	return myDetector->getModuleSerialNumber(imod);
 }
 
-int64_t slsDetectorUsers::getDetectorFirmwareVersion(){
-	return myDetector->getDetectorFirmwareVersion();
+int64_t slsDetectorUsers::getDetectorFirmwareVersion(int imod){
+	return myDetector->getDetectorFirmwareVersion(imod);
 }
 
-int64_t slsDetectorUsers::getDetectorSerialNumber(){
-	return myDetector->getDetectorSerialNumber();
+int64_t slsDetectorUsers::getDetectorSerialNumber(int imod){
+	return myDetector->getDetectorSerialNumber(imod);
 }
 
-int64_t slsDetectorUsers::getDetectorSoftwareVersion(){
-	return myDetector->getDetectorSoftwareVersion();
+int64_t slsDetectorUsers::getDetectorSoftwareVersion(int imod){
+	return myDetector->getDetectorSoftwareVersion(imod);
 }
 
 int64_t slsDetectorUsers::getThisSoftwareVersion(){

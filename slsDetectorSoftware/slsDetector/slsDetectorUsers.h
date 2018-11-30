@@ -505,12 +505,13 @@ class slsDetectorUsers
 
   /**
      get get Module Firmware Version
+     @param imod module number
      \returns id
   */
-  int64_t getModuleFirmwareVersion();
+  int64_t getModuleFirmwareVersion(int imod=-1);
 
   /**
-     get get Module Serial Number
+     get get Module Serial Number (only mythen)
      @param imod module number
      \returns id
   */
@@ -518,21 +519,24 @@ class slsDetectorUsers
 
   /**
      get get Detector Firmware Version
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorFirmwareVersion();
+  int64_t getDetectorFirmwareVersion(int imod=-1);
 
   /**
      get get Detector Serial Number
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorSerialNumber();
+  int64_t getDetectorSerialNumber(int imod=-1);
 
   /**
      get get Detector Software Version
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorSoftwareVersion();
+  int64_t getDetectorSoftwareVersion(int imod=-1);
 
   /**
      get this Software Version

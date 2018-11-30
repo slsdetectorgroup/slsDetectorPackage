@@ -25,7 +25,7 @@ Resolved Issues
 
     Client
     ------
-    1.  Users class get versions gave -1. Has been fixed for single and multi modules.
+    1.  Users class: Get versions gave -1. Has been fixed for single and multi modules.
     	
 	
 New Features

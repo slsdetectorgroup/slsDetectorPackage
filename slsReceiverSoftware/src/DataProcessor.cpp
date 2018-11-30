@@ -363,10 +363,12 @@ void DataProcessor::ProcessAnImage(char* buf) {
 				*dynamicRange);
 
 
+    // frame padding
+    if (*activated && *framePadding && nump < generalData->packetsPerFrame)
+        PadMissingPackets(buf);
+
 	// deactivated and padding enabled
-	if ((!(*activated) && *deactivatedPaddingEnable) ||
-			// frame padding
-			(*framePadding && nump < generalData->packetsPerFrame))
+    else if (!(*activated) && *deactivatedPaddingEnable)
 		PadMissingPackets(buf);
 
 	// normal call back

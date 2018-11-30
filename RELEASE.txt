@@ -5,7 +5,7 @@ SLS Detector Package 3.1.5 released on 2018-11-30
 
 INTRODUCTION
 
-This document describes the differences between 3.1.5 into 3.1.4 releases.
+This document describes the differences between 3.1.5 and 3.1.4 releases.
 
 
 Topics Concerning

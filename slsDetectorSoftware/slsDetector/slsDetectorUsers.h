@@ -483,12 +483,13 @@ class slsDetectorUsers
 
   /**
      get get Module Firmware Version
+     @param imod module number
      \returns id
   */
-  int64_t getModuleFirmwareVersion();
+  int64_t getModuleFirmwareVersion(int imod=-1);
 
   /**
-     get get Module Serial Number
+     get get Module Serial Number (mythen only)
      @param imod module number
      \returns id
   */
@@ -496,21 +497,24 @@ class slsDetectorUsers
 
   /**
      get get Detector Firmware Version
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorFirmwareVersion();
+  int64_t getDetectorFirmwareVersion(int imod=-1);
 
   /**
      get get Detector Serial Number
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorSerialNumber();
+  int64_t getDetectorSerialNumber(int imod=-1);
 
   /**
      get get Detector Software Version
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorSoftwareVersion();
+  int64_t getDetectorSoftwareVersion(int imod=-1);
 
   /**
      get this Software Version
@@ -659,6 +663,13 @@ class slsDetectorUsers
     */
    int setHighVoltage(int i);
 
+   /**
+    * reset frames caught in receiver
+    * should be called before startReceiver()
+    * @returns OK or FAIL
+    */
+int resetFramesCaughtInReceiver();
+
   /************************************************************************
 
                            STATIC FUNCTIONS
@@ -677,6 +688,7 @@ class slsDetectorUsers
     case 3:      return string("finished");				\
     case 4:      return string("data");					\
     case 5:      return string("running");				\
+    case 6:      return string("stopped");             \
     default:       return string("unknown");				\
     }};
 

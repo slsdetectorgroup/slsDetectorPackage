@@ -2224,7 +2224,7 @@ void readframe(int *ret, char *mess){
 }
 
 void unsetFifoReadStrobes() {
-    bus_w(DUMMY_REG, bus_r(addr) & (~DUMMY_ALL_FIFO_RD_STRBE_MSK) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+    bus_w(DUMMY_REG, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
 }
 
 void readSample() {
@@ -2234,9 +2234,9 @@ void readSample() {
     // read adcs
     if (analogEnable) {
 
-        // read strobe to all adc fifos
-        bus_w(addr, bus_r(addr) | DUMMY_ALL_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_ALL_FIFO_RD_STRBE_MSK));
+        // read strobe to all analog fifos
+        bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
+        bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
 
         // loop through all channels
         int ich = 0;

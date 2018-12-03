@@ -202,7 +202,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	bool runningFlag;
 
 	/** GeneralData (Detector Data) object */
-	const GeneralData* generalData;
+	GeneralData* generalData;
 
 	/** Fifo structure */
 	Fifo* fifo;

@@ -544,6 +544,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		}
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
+		    // set first packet to be odd or even (check required when switching from roi to no roi)
+		    if (myDetectorType == GOTTHARD && !measurementStartedFlag)
+		        generalData->SetOddStartingPacket(listeningPacket + esize);
+
 			generalData->GetHeaderInfo(index, listeningPacket + esize,
 					*dynamicRange, fnum, pnum, snum, bid);
 		}

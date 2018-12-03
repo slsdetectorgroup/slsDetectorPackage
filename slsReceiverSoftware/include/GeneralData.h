@@ -89,7 +89,6 @@ public:
 
 
 
-
 	/** Cosntructor */
 	GeneralData():
 		myDetectorType(slsReceiverDefs::GENERIC),
@@ -210,6 +209,14 @@ public:
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 	};
 
+	/**
+	 * Set odd starting packet (gotthard)
+	 * @param packetData pointer to data
+	 */
+	virtual void SetOddStartingPacket(char* packetData) {
+	    cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	};
+
 
 	/**
 	 * Print all variables
@@ -249,6 +256,7 @@ private:
 	const static int nChip = 10;
 	const static int nChan = 128;
 	const static int nChipsPerAdc = 2;
+    bool oddStartingPacket;
  public:
 
 	/** Constructor */
@@ -267,6 +275,7 @@ private:
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
 		defaultFifoDepth 	= 50000;
+		oddStartingPacket   = true;
 	};
 
 
@@ -277,11 +286,12 @@ private:
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 */
-	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
+	void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
 	{
 		if (nPixelsX == 1280) {
 			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			frameNumber++;
+			if (oddStartingPacket)
+			    frameNumber++;
 			packetNumber = frameNumber&packetIndexMask;
 			frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
 		} else  {
@@ -300,14 +310,15 @@ private:
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
 	{
 		if (nPixelsX == 1280) {
 			subFrameNumber = -1;
 			bunchId = -1;
 			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			frameNumber++;
+			if (oddStartingPacket)
+			    frameNumber++;
 			packetNumber = frameNumber&packetIndexMask;
 			frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
 		} else  {
@@ -323,7 +334,7 @@ private:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
+	void SetROI(std::vector<slsReceiverDefs::ROI> i) {
 		// all adcs
 		if(!i.size()) {
 			nPixelsX 			= 1280;
@@ -367,7 +378,7 @@ private:
 	 * @param i pointer to a vector of ROI
 	 * @returns adc configured
 	 */
-	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+	const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
 		int adc = -1;
 		// single adc
 		if(i->size())  {
@@ -391,6 +402,36 @@ private:
 		FILE_LOG(logINFO) << "Adc Configured: " << adc;
 		return adc;
 	};
+
+    /**
+     * Set odd starting packet (gotthard)
+     * @param packetData pointer to data
+     */
+    void SetOddStartingPacket(char* packetData) {
+        // care only if no roi
+        if  (nPixelsX == 1280) {
+            uint32_t pnum = ((uint32_t)(*((uint32_t*)(packetData))));
+            uint32_t FirstData = ((uint32_t)(*((uint32_t*)(packetData + 4))));
+            // first packet
+            if (FirstData != 0xCACACACA) {
+                // packet number should be 0, but is 1 => so odd starting packet
+                if (pnum & packetIndexMask) {
+                    oddStartingPacket = true;
+                } else {
+                    oddStartingPacket = false;
+                }
+            }
+            // second packet
+            else {
+                // packet number should be 1, but is 0 => so odd starting packet
+                if (!(pnum & packetIndexMask)) {
+                    oddStartingPacket = true;
+                } else {
+                    oddStartingPacket = false;
+                }
+            }
+        }
+    };
 
 
 };
@@ -527,7 +568,7 @@ private:
  	 * @param frameNumber frame number
  	 * @param packetNumber packet number
  	 */
-	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const 	{
+	void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const 	{
 		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);
 		frameNumber = (uint64_t)((*( (uint32_t*) header->frameNumber)) & frameIndexMask);
 		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));

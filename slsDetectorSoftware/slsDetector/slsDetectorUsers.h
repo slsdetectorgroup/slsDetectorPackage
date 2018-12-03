@@ -247,7 +247,7 @@ class slsDetectorUsers
    int getPositions(double *pos=NULL);
   
   /**
-     @short sets the detector size
+     @short sets the detector size (only 1 ROI)
      \param x0 horizontal position origin in channel number (-1 unchanged)
      \param y0 vertical position origin in channel number (-1 unchanged)
      \param nx number of channels in horiziontal  (-1 unchanged)
@@ -263,7 +263,7 @@ class slsDetectorUsers
      \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal
      \param  ny number of channels in vertical 
-     \returns OK/FAIL
+     \returns total number of channels
   */
    int getDetectorSize(int &x0, int &y0, int &nx, int &ny);
   /**

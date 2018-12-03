@@ -115,18 +115,37 @@ int slsDetectorUsers::getPositions(double *pos){
 }
 
 int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
-  if(myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y)>1)
-	return 1;
-  int nmod=nx/(myDetector->getChansPerMod(0));
-  cout << myDetector->getChansPerMod(0) << " " << nx << " " << nmod << endl;
-  return myDetector->setNumberOfModules(nmod)*myDetector->getChansPerMod(0);}
+    // only one roi
+    slsDetectorDefs::ROI roi[1];
+    roi[0].xmin = x0;
+    roi[0].ymin = y0;
+    roi[0].xmax = x0 + nx;
+    roi[0].ymax = y0 + ny;
+    return myDetector->setROI(1, roi);
+}
 
 int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
-  y0=0; 
-  x0=0; 
-  nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
-  ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
-  return nx*ny;
+    // default (no roi)
+    y0=0;
+    x0=0;
+    nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
+    ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
+
+    int n = 0;
+    slsDetectorDefs::ROI* roi = myDetector->getROI(n);
+
+    // roi
+    if (roi != NULL && n > 0) {
+        x0 = roi[0].xmin;
+        y0 = roi[0].ymin;
+        nx = roi[0].xmax - roi[0].xmin;
+        ny = roi[0].ymax - roi[0].ymin;
+    }
+
+    if (roi != NULL)
+        delete [] roi;
+
+    return nx*ny;
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){

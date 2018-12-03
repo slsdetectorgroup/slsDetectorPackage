@@ -5732,8 +5732,10 @@ int slsDetector::setUDPConnection() {
 				std::cout << "could not configure mac" << endl;
 			}
 		}
-	}else
+	}else {
 		ret=FAIL;
+		setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+	}
 #ifdef VERBOSE
 	printReceiverConfiguration();
 #endif

@@ -3261,7 +3261,10 @@ void multiSlsDetector::verifyMinMaxROI(int n, ROI r[]) {
 	}
 }
 
-int multiSlsDetector::setROI(int n, ROI roiLimits[]) {
+int multiSlsDetector::setROI(int n, ROI roiLimits[], int imod) {
+    if (imod > 0 && imod < (int)detectors.size()) {
+        return detectors[imod]->setROI(n, roiLimits, imod);
+    }
 	int ret1 = -100, ret;
 	int i, xmin, xmax, ymin, ymax, channelX, channelY, idet, lastChannelX,
 	lastChannelY, index, offsetX, offsetY;
@@ -3393,8 +3396,10 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[]) {
 }
 
 
-slsDetectorDefs::ROI* multiSlsDetector::getROI(int& n) {
-
+slsDetectorDefs::ROI* multiSlsDetector::getROI(int& n, int imod) {
+    if (imod > 0 && imod < (int)detectors.size()) {
+        return detectors[imod]->getROI(n, imod);
+    }
 	n          = 0;
 	int num    = 0, i, j;
 	int ndet   = detectors.size();

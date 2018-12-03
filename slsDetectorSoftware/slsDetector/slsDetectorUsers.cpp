@@ -135,7 +135,7 @@ int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){
     slsDetectorDefs::ROI* roi = myDetector->getROI(n);
 
     // roi
-    if (roi != NULL && n > 0) {
+    if (roi != NULL && n == 1) {
         x0 = roi[0].xmin;
         y0 = roi[0].ymin;
         nx = roi[0].xmax - roi[0].xmin;
@@ -512,4 +512,12 @@ int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int imod) {
 
 int slsDetectorUsers::setStoragecellStart(int pos) {
 	return myDetector->setStoragecellStart(pos);
+}
+
+int slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int imod) {
+    return myDetector->setROI(n, roiLimits, imod);
+}
+
+slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int imod) {
+    return myDetector->getROI(n, imod);
 }

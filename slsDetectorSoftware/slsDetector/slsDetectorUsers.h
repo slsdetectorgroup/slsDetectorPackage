@@ -17,6 +17,8 @@ class detectorData;
 class multiSlsDetector;
 class multiSlsDetectorCommand;
 
+#include "sls_detector_defs.h"
+
 
 #include <stdint.h>
 #include <string>
@@ -256,9 +258,8 @@ class slsDetectorUsers
   */
    int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1);
 
-
   /**
-     @short gets detector size
+     @short gets detector size (roi size if only one roi)
      \param x0 horizontal position origin in channel number 
      \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal
@@ -817,6 +818,25 @@ class slsDetectorUsers
 	 * @returns the storage cell that stores the first acquisition of the series
 	 */
 	int setStoragecellStart(int pos=-1);
+
+	/**
+     * Set ROI (Gotthard) (>= 1 roi, but max 1 roi per module)
+     * At the moment only one set allowed
+     * @param n number of rois
+     * @param roiLimits array of roi
+     * @param imod module number (-1 for all)
+     * @returns OK or FAIL
+     */
+    int setROI(int n=-1, slsDetectorDefs::ROI roiLimits[]=NULL, int imod = -1);
+
+    /**
+     * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
+     * >= 1 roi, but max 1 roi per module
+     * @param n number of rois
+     * @param imod module number (ignored)
+     * @returns pointer to array of ROI structure
+     */
+    slsDetectorDefs::ROI* getROI(int &n, int imod = -1);
 
   /************************************************************************
 

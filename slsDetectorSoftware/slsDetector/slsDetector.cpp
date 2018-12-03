@@ -6017,7 +6017,7 @@ int slsDetector::setCounterBit(int i) {
 
 
 
-int slsDetector::setROI(int n,ROI roiLimits[]) {
+int slsDetector::setROI(int n,ROI roiLimits[], int imod) {
 	int ret = FAIL;
 	//sort ascending order
 	int temp;
@@ -6053,7 +6053,7 @@ int slsDetector::setROI(int n,ROI roiLimits[]) {
 }
 
 
-slsDetectorDefs::ROI* slsDetector::getROI(int &n) {
+slsDetectorDefs::ROI* slsDetector::getROI(int &n, int imod) {
 	sendROI(-1,NULL);
 	n=thisDetector->nROI;
 	if(thisDetector->myDetectorType==JUNGFRAUCTB) getTotalNumberOfChannels();

@@ -1222,16 +1222,18 @@ public:
 	 * At the moment only one set allowed
 	 * @param n number of rois
 	 * @param roiLimits array of roi
+	 * @param imod module number (-1 for all)
 	 * @returns OK or FAIL
 	 */
-	int setROI(int n=-1,ROI roiLimits[]=NULL);
+	int setROI(int n=-1,ROI roiLimits[]=NULL, int imod = -1);
 
 	/**
 	 * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
 	 * @param n number of rois
-	 * @returns OK or FAIL
+	 * @param imod module number (-1 for all)
+	 * @returns pointer to array of ROI structure
 	 */
-	ROI* getROI(int &n);
+	ROI* getROI(int &n, int imod = -1);
 
 	/**
 	 * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert users

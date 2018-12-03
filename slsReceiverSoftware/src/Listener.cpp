@@ -227,8 +227,10 @@ void Listener::ShutDownUDPSocket() {
 		udpSocket->ShutDownSocket();
 		FILE_LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
 		fflush(stdout);
-		//delete socket at stoplistening
-	    sem_wait(&semaphore_socket);
+		// wait only if the threads have started as it is the threads that
+		//give a post to semaphore(at stopListening)
+		if (runningFlag)
+		    sem_wait(&semaphore_socket);
         delete udpSocket;
         udpSocket = 0;
 	    sem_destroy(&semaphore_socket);

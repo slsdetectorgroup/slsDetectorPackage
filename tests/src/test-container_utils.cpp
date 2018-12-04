@@ -7,7 +7,6 @@
 using sls::allEqual;
 using sls::allEqualTo;
 using sls::anyEqualTo;
-
 using sls::allEqualToWithTol;
 using sls::allEqualWithTol;
 using sls::anyEqualToWithTol;

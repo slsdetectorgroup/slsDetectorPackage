@@ -2435,9 +2435,12 @@ int set_all_trimbits(int file_des) {
 int set_ctb_pattern(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
+
+#ifdef CHIPTESTBOARDD
 	int retval32 = -1;
 	int64_t retval64 = -1;
 	int retvals[3] = {-1, -1, -1};
+#endif
 
 	int mode = -1;
 	// mode 0: control or word
@@ -2482,7 +2485,7 @@ int set_ctb_pattern(int file_des) {
     case 3:// wait time
         if (receiveData(file_des, &loopLevel, sizeof(loopLevel), INT32) < 0)
             return printSocketReadError();
-        if (receiveData(file_des, &t, sizeof(t), INT32) < 0)
+        if (receiveData(file_des, &timeval, sizeof(timeval), INT64) < 0)
             return printSocketReadError();
     case 4:// set word
         if (receiveData(file_des, &pattern, sizeof(pattern), INT64) < 0)
@@ -2562,9 +2565,9 @@ int set_ctb_pattern(int file_des) {
             else if ((startAddr == -1 && stopAddr == -1 && numLoops == -1)  ||  (Server_VerifyLock() == OK)) {
                 setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
             }
-            retval[0] = startAddr;
-            retval[1] = stopAddr;
-            retval[2] = numLoops;
+            retvals[0] = startAddr;
+            retvals[1] = stopAddr;
+            retvals[2] = numLoops;
             return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals);
 
 
@@ -2659,15 +2662,17 @@ int write_adc_register(int file_des) {
 #else
 #ifndef VIRTUAL
 	// only set
-	if (Server_VerifyLock() == OK)
+	if (Server_VerifyLock() == OK) {
 #ifdef JUNGFRAUD
 		setAdc9257(addr, val);
 #elif GOTTHARDD
-	if (getBoardRevision() == 1)
+	if (getBoardRevision() == 1) {
 	    setAdc9252(addr, val);
-	else
+	} else {
 	    setAdc9257(addr, val);
+	}
 #endif
+	}
 #endif
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);

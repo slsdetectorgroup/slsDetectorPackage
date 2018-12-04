@@ -1213,11 +1213,6 @@ void setDAC(enum DACINDEX ind, int val, int mV, int retval[]) {
                 DAC_CNTRL_CLK_MSK, DAQ_CNTRL_DGTL_MSK, DAQ_CNTRL_DGTL_OFST);
 
         dacValues[ind] = val;
-
-       /* if (ind == VREF_COMP) { // FIXME:??
-            bus_w (VREF_COMP_MOD_REG, (bus_r(VREF_COMP_MOD_REG) &~ (VREF_COMP_MOD_MSK))   // reset
-                    | ((val << VREF_COMP_MOD_OFST) & VREF_COMP_MOD_MSK));   // or it with value
-        }*/
 #endif
     }
 

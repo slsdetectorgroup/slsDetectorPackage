@@ -10,6 +10,11 @@
 #define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG 5
 
+//  blackfin limits
+#define CPU_DRVR_SND_LMT   (30000) // rough limit
+#define CPU_RSND_PCKT_LOOP (10)
+#define CPU_RSND_WAIT_US   (1)
+
 
 // Global variables  from errno.h
 extern int errno;
@@ -309,8 +314,8 @@ int sendDataOnly(int file_des, void* buf,int length) {
 
           // setting a max packet size for blackfin driver (and network driver does not do a check if packets sent)
           int bytesToSend = length - bytesSent;
-          if (bytesToSend > BLACKFIN_DRVR_SND_LMT)
-              bytesToSend = BLACKFIN_DRVR_SND_LMT;
+          if (bytesToSend > CPU_DRVR_SND_LMT)
+              bytesToSend = CPU_DRVR_SND_LMT;
 
           // send
           int rc = write(file_des, (char*)((char*)buf + bytesSent), bytesToSend);
@@ -326,12 +331,12 @@ int sendDataOnly(int file_des, void* buf,int length) {
                               (isControlServer ? "control":"stop"), retry));
               ++retry;
               // wrote nothing for many loops
-              if (retry >= BLACKFIN_RSND_PCKT_LOOP) {
+              if (retry >= CPU_RSND_PCKT_LOOP) {
                   FILE_LOG(logERROR, ("Could not write to %s socket. Buffer full! Too fast! No more.\n",
                                   (isControlServer ? "control":"stop")));
                   return bytesSent;
               }
-              usleep(BLACKFIN_RSND_WAIT_US);
+              usleep(CPU_RSND_WAIT_US);
           }
           // wrote something, reset retry
           else  {

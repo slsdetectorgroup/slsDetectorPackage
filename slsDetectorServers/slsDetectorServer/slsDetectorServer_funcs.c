@@ -1496,7 +1496,7 @@ int set_timer(int file_des) {
 		return printSocketReadError();
 	enum timerIndex ind = (int)args[0];
 	int64_t tns = args[1];
-	char timerName[20] = {0};
+	char timerName[50] = {0};
 	strcpy(timerName, getTimerName(ind));
 #ifdef EIGERD
 	int64_t subexptime = 0;
@@ -1562,15 +1562,16 @@ int set_timer(int file_des) {
 		}
 
 		// validate
-		sprintf(timerName, "set %s", timerName);
+		char vtimerName[50] = {0};
+		sprintf(vtimerName, "set %s", timerName);
 #ifdef EIGERD
-		validate64(tns, retval, timerName, DEC); // copied to server, not read from detector register
+		validate64(tns, retval, vtimerName, DEC); // copied to server, not read from detector register
 #else
 		switch(ind) {
         case FRAME_NUMBER:
         case CYCLES_NUMBER:
         case STORAGE_CELL_NUMBER:
-		    validate64(tns, retval, timerName, DEC); // no conversion, so all good
+		    validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
 		    break;
         case SAMPLES_JCTB:
             if (retval == -1) {
@@ -1580,7 +1581,7 @@ int set_timer(int file_des) {
                     (long long unsigned int)tns);
                 FILE_LOG(logERROR,(mess));
             } else
-                validate64(tns, retval, timerName, DEC); // no conversion, so all good
+                validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
         case ACQUISITION_TIME:
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
@@ -1589,7 +1590,7 @@ int set_timer(int file_des) {
             // losing precision due to conversion to clock (also gotthard master delay is different)
             if (validateTimer(ind, tns, retval) == FAIL) {
                 ret = FAIL;
-                sprintf(mess, "Could not %s. Set %lld, but read %lld\n", timerName,
+                sprintf(mess, "Could not %s. Set %lld, but read %lld\n", vtimerName,
                     (long long unsigned int)tns, (long long unsigned int)retval);
                 FILE_LOG(logERROR,(mess));
             }
@@ -1823,7 +1824,7 @@ int set_roi(int file_des) {
 		}
 	}
 
-#if !defined(GOTTHARDD) || !defined(CHIPTESTBOARDD)
+#if !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD)
 	functionNotImplemented();
 #else
 	// set & get
@@ -1838,8 +1839,7 @@ int set_roi(int file_des) {
 	            if (nretval == -1) // chip test board
 	                sprintf(mess,"Could not set ROI. Max ROI level (100) reached!\n");
 	            else if (nretval == -2)
-	                sprintf(mess, "Could not set ROI. Could not allocate RAM\n",
-	                    (long long unsigned int)tns);
+	                sprintf(mess, "Could not set ROI. Could not allocate RAM\n");
 	            else
 	                sprintf(mess,"Could not set all roi. "
 	                        "Set %d rois, but read %d rois\n", narg, nretval);

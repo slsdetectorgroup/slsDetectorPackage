@@ -105,16 +105,16 @@ void basictests() {
 	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
 
 	FILE_LOG(logINFOBLUE, ("************ Gotthard Server *********************\n"
-	        "Board Revision:\t\t 0x%x\n"
+	        "Board Revision         : 0x%x\n"
 
-			"Detector IP Addr:\t\t 0x%x\n"
-			"Detector MAC Addr:\t\t 0x%llx\n\n"
+			"Detector IP Addr       : 0x%x\n"
+			"Detector MAC Addr      : 0x%llx\n\n"
 
-			"Firmware Version:\t\t 0x%llx\n"
-			"Software Version:\t\t 0x%llx\n"
-			"F/w-S/w API Version:\t\t 0x%llx\n"
-			"Required Firmware Version:\t 0x%x\n"
-			"Client-Software API Version:\t 0x%llx\n"
+			"Firmware Version       : 0x%llx\n"
+			"Software Version       : 0x%llx\n"
+			"F/w-S/w API Version    : 0x%llx\n"
+			"Required F/w Version   : 0x%x\n"
+			"Client-S/w API Version : 0x%llx\n"
 			"********************************************************\n",
 			boardrev,
 			ipadd,
@@ -372,11 +372,12 @@ void setupDetector() {
 
     // Initialization
     setPhaseShiftOnce();
+    /* FIXME: (also check with commenting out #define GOTTHARDD in ad9257.h), check if need to replace with configureADC from firmwarE_funcs.c? */
     if (getBoardRevision() == 1)
-        prepareADC9252(); /* FIXME: (also check with commenting out #define GOTTHARDD in ad9257.h), check if need to replace with configureADC from firmwarE_funcs.c? */
+        prepareADC9252();
     else
         prepareADC9257();
-    configureADC();
+    //configureADC();
     setROIADC(-1); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
     initDac(0); /*FIXME: if it doesnt work, switch to the old dac*/

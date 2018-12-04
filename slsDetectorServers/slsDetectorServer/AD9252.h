@@ -112,7 +112,7 @@ void setAdc9252(int addr, int val) {
 }
 
 void prepareADC9252(){
-    FILE_LOG(logINFOBLUE, ("Preparing ADC:\n"));
+    FILE_LOG(logINFOBLUE, ("Preparing ADC9252:\n"));
 
 	//power mode reset
     FILE_LOG(logINFO, ("\tPower mode reset\n"));

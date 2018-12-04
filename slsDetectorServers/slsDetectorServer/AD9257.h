@@ -143,7 +143,7 @@ void setAdc9257(int addr, int val) {
 }
 
 void prepareADC9257(){
-    FILE_LOG(logINFOBLUE, ("Preparing ADC:\n"));
+    FILE_LOG(logINFOBLUE, ("Preparing ADC9257:\n"));
 
 	//power mode reset
     FILE_LOG(logINFO, ("\tPower mode reset\n"));
@@ -192,4 +192,5 @@ void prepareADC9257(){
 	FILE_LOG(logINFO, ("\tMixed bit frequency test mode\n"));
 	setAdc9257(AD9257_TEST_MODE_REG, AD9257_TST_MXD_BT_FRQ_VAL);
 #endif
+
 }

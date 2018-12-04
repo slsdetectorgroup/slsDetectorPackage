@@ -88,7 +88,7 @@
 #define ADC_SERIAL_DATA_OUT_OFST        (1)
 #define ADC_SERIAL_DATA_OUT_MSK         (0x00000001 << ADC_SERIAL_DATA_OUT_OFST)
 #define ADC_SERIAL_CS_OUT_OFST          (2)
-#define ADC_SERIAL_CS_OUT_MSK           (0x0000000F << ADC_SERIAL_CS_OUT_OFST)
+#define ADC_SERIAL_CS_OUT_MSK           (0x0000001F << ADC_SERIAL_CS_OUT_OFST)
 
 /** ADC Sync register */
 #define ADC_SYNC_REG                    (0x19 << MEM_MAP_SHIFT)

@@ -311,5 +311,11 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 
 	/** number of images for statistic */
 	uint32_t numFramesStatistic;
+
+	/**
+	 * starting packet number is odd or evern, accordingly increment frame number
+	 * to get first packet number as 0
+	 * (pecific to gotthard, can vary between modules, hence defined here) */
+	bool oddStartingPacket;
 };
 

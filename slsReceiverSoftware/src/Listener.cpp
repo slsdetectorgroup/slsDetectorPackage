@@ -54,7 +54,8 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		listeningPacket(0),
 		udpSocketAlive(0),
 		numPacketsStatistic(0),
-		numFramesStatistic(0)
+		numFramesStatistic(0),
+		oddStartingPacket(true)
 {
 	if(ThreadObject::CreateThread() == FAIL)
 	    throw std::exception();
@@ -429,7 +430,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
 			generalData->GetHeaderInfo(index, carryOverPacket + esize,
-					*dynamicRange, fnum, pnum, snum, bid);
+					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
@@ -545,11 +546,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
 		    // set first packet to be odd or even (check required when switching from roi to no roi)
-		    if (myDetectorType == GOTTHARD && !measurementStartedFlag)
-		        generalData->SetOddStartingPacket(listeningPacket + esize);
+		    if (myDetectorType == GOTTHARD && !measurementStartedFlag) {
+		        oddStartingPacket = generalData->SetOddStartingPacket(index, listeningPacket + esize);
+		        cprintf(GREEN,"oddstartingpacket: %d\n", (int)oddStartingPacket);
+		    }
 
 			generalData->GetHeaderInfo(index, listeningPacket + esize,
-					*dynamicRange, fnum, pnum, snum, bid);
+					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
 
@@ -563,11 +566,11 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		lastCaughtFrameIndex = fnum;
 
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 		//if (!index)
 		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
 				index,currentFrameIndex, fnum, pnum, numpackets);
-#endif
+//#endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
 

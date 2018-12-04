@@ -6128,7 +6128,7 @@ int slsDetector::sendROI(int n,ROI roiLimits[]) {
 #endif
 
 	// old firmware requires configuremac after setting roi
-	if (thisDetector->myDetectorType == GOTTHARD) {
+	if (thisDetector->myDetectorType == GOTTHARD && n != -1) {
 		configureMAC();
 	}
 

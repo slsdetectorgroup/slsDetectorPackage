@@ -1438,6 +1438,31 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 
     usleep(1000 * 1000);
 
+    /** send out first image as first packet does not give 0xcacacaca (needed to know if first image
+     * when switching back and forth between roi and no roi
+     */
+    // remember old parameters
+    uint64_t oldtiming = setTiming(-1);
+    uint64_t oldframes = setFrames(-1);
+    uint64_t oldPeriod = setPeriod(-1);
+    uint64_t oldExptime = setExposureTime(-1);
+
+    // set to basic parameters
+    setTiming(AUTO_TIMING);
+    setFrames(1);
+    setPeriod(1e6);
+    setExposureTime(1e5);
+
+    // take an image
+    startStateMachine();
+    waitForAcquisitionFinish();
+
+    // set to previous parameters
+    setTiming(oldtiming);
+    setFrames(oldframes);
+    setPeriod(oldPeriod);
+    setExposureTime(oldExptime);
+
 	return adcConfigured;
 }
 

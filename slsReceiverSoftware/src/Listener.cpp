@@ -548,7 +548,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		    // set first packet to be odd or even (check required when switching from roi to no roi)
 		    if (myDetectorType == GOTTHARD && !measurementStartedFlag) {
 		        oddStartingPacket = generalData->SetOddStartingPacket(index, listeningPacket + esize);
-		        cprintf(GREEN,"oddstartingpacket: %d\n", (int)oddStartingPacket);
 		    }
 
 			generalData->GetHeaderInfo(index, listeningPacket + esize,
@@ -566,11 +565,11 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		lastCaughtFrameIndex = fnum;
 
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		//if (!index)
 		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
 				index,currentFrameIndex, fnum, pnum, numpackets);
-//#endif
+#endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
 

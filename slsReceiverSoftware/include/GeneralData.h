@@ -284,7 +284,6 @@ private:
 			subFrameNumber = -1;
 			bunchId = -1;
 			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			cprintf(BLUE,"Listening %d: first fnum:%lu\n", index, frameNumber);
 			if (oddStartingPacket)
 			    frameNumber++;
 			packetNumber = frameNumber&packetIndexMask;
@@ -383,9 +382,8 @@ private:
         if  (nPixelsX == 1280) {
             uint32_t fnum = ((uint32_t)(*((uint32_t*)(packetData))));
             uint32_t firstData = ((uint32_t)(*((uint32_t*)(packetData + 4))));
-            cprintf(BLUE,"Listening %d: (setoff)fnum:0x%x, firstdata:0x%x\n", index, fnum, firstData);
             // first packet
-            if (firstData != 0xCACACACA) { cprintf(BLUE,"Listening %d: (setoff) first packet\n", index);
+            if (firstData == 0xCACACACA) {
                 // packet number should be 0, but is 1 => so odd starting packet
                 if (fnum & packetIndexMask) {
                     oddStartingPacket = true;
@@ -394,7 +392,7 @@ private:
                 }
             }
             // second packet
-            else {cprintf(BLUE,"Listening %d: (setoff) second packet\n", index);
+            else {
                 // packet number should be 1, but is 0 => so odd starting packet
                 if (!(fnum & packetIndexMask)) {
                     oddStartingPacket = true;

@@ -1084,7 +1084,7 @@ enum detectorSettings setSettings(enum detectorSettings sett){
 	    }
 	    // set conf gain
         bus_w(addr, bus_r(addr) & ~GAIN_CONFGAIN_MSK);
-        bus_w(addr, bus_r(addr) | GAIN_CONFGAIN_DYNMC_GAIN_VAL);
+        bus_w(addr, bus_r(addr) | confgain);
         FILE_LOG(logINFO, ("\tGain Reg: 0x%x\n", bus_r(addr)));
 		thisSettings = sett;
 	}

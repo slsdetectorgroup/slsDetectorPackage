@@ -666,9 +666,9 @@ public:
 			if (tcpfd<0) return -1;
 			while(length>0){
 				nsending = (length>packet_size) ? packet_size:length;
-				std::cout << "*"<<nsending << std::endl;
+				//	std::cout << "*"<<nsending << std::endl;
 				nsent = read(tcpfd,(char*)buf+total_sent,nsending);
-				std::cout << "+"<<nsent << std::endl;
+				//	std::cout << "+"<<nsent << std::endl;
 				if(!nsent) {
 					if(!total_sent) {
 						return -1; //to handle it
@@ -677,7 +677,7 @@ public:
 				}
 				length-=nsent;
 				total_sent+=nsent;
-				std::cout << "+"<< length << " " << total_sent << std::endl;
+				// std::cout << "+"<< length << " " << total_sent << std::endl;
 			}
 
 			if (total_sent>0)

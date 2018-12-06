@@ -145,7 +145,7 @@ double* slsDetector::decodeData(int *datain, int &nn, double *fdata) {
 				dataout[ichan]=*((u_int16_t*)ptr);
 				ptr+=2;
 			}
-			std::cout<< "decoded "<< ichan << " channels" << std::endl;
+			//std::cout<< "decoded "<< ichan << " channels" << std::endl;
 		} else {
 			switch (nbits) {
 			case 1:
@@ -3821,8 +3821,8 @@ int* slsDetector::startAndReadAll() {
 	//#ifdef VERBOSE
 #ifdef VERBOSE
 	int i=0;
-#endif
 	//#endif
+#endif
 	if(thisDetector->myDetectorType == EIGER) {
 		if (prepareAcquisition() == FAIL)
 			return NULL;
@@ -3832,15 +3832,15 @@ int* slsDetector::startAndReadAll() {
 	// std::cout<< "started" << std::endl;
 	//#endif
 	while ((retval=getDataFromDetector())){
-#ifdef VERBOSE
+	#ifdef VERBOSE
 		++i;
-		std::cout<< i << std::endl;
+		//	std::cout<< i << std::endl;
 		//#else
 		//std::cout<< "-" << flush;
-#endif
+	#endif
 		dataQueue.push(retval);
 
-		//std::cout<< "pushed" << std::endl;
+		//	std::cout<< "pushed" << retval << std::endl;
 	}
 	disconnectControl();
 
@@ -3848,7 +3848,7 @@ int* slsDetector::startAndReadAll() {
 	std::cout<< "received "<< i<< " frames" << std::endl;
 	//#else
 	// std::cout << std::endl;
-#endif
+	#endif
 	return dataQueue.front(); // check what we return!
 	/* while ((retval=getDataFromDetectorNoWait()))
      ++i;
@@ -3892,10 +3892,13 @@ int* slsDetector::getDataFromDetector(int *retval) {
 
 	int nodatadetectortype = false;
 	detectorType types = getDetectorsType();
-	if(types == EIGER || types == JUNGFRAU || GOTTHARD || PROPIX){
+	//	cout << types << endl;
+	
+	if(types == EIGER || types == JUNGFRAU || types == GOTTHARD || types == PROPIX){
 		nodatadetectortype = true;
 	}
 
+	//cout << "nodata det" << nodatadetectortype << endl;
 
 	if (!nodatadetectortype && retval==NULL)
 		retval=new int[nel];
@@ -3917,22 +3920,22 @@ int* slsDetector::getDataFromDetector(int *retval) {
 			std::cout<< "Detector returned: " << mess << " " << n << std::endl;
 		} else {
 			;
-#ifdef VERBOSE
+			#ifdef VERBOSE
 			std::cout<< "Detector successfully returned: " << mess << " " << n
 					<< std::endl;
-#endif
+		#endif
 		}
 		if ((!nodatadetectortype) && (r==NULL)){
 			delete [] retval;
 		}
 		return NULL;
 	} else 	if (!nodatadetectortype){
+	  // cout <<"??" << endl;
+	  n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 
-		n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
-
-#ifdef VERBOSE
+	#ifdef VERBOSE
 		std::cout<< "Received "<< n << " data bytes" << std::endl;
-#endif
+	#endif
 		if (n!=thisDetector->dataBytes) {
 			std::cout<< "wrong data size received from detector: received " <<
 					n << " but expected " << thisDetector->dataBytes << std::endl;
@@ -3948,7 +3951,8 @@ int* slsDetector::getDataFromDetector(int *retval) {
 
 
 	}
-	//	cout << "get data returning " << endl;
+	
+	//	cout << "get data returning " << retval << endl;
 	//	cout << endl;
 	return retval;
 

@@ -2380,7 +2380,7 @@ int* multiSlsDetector::startAndReadAll() {
 		while ((retval = getDataFromDetector())) {
 			++i;
 #ifdef VERBOSE
-			std::cout << i << std::endl;
+			  std::cout << i << " " retval << std::endl;
 #endif
 			dataQueue.push(retval);
 		}
@@ -2458,7 +2458,7 @@ int* multiSlsDetector::getDataFromDetector() {
 	int nodatadet          = -1;
 	int nodatadetectortype = false;
 	detectorType types     = getDetectorsType();
-	if (types == EIGER || types == JUNGFRAU || GOTTHARD || PROPIX) {
+	if (types == EIGER || types == JUNGFRAU || types == GOTTHARD || types == PROPIX) {
 		nodatadetectortype = true;
 	}
 

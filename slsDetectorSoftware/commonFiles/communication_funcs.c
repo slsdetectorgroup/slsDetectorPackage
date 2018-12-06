@@ -335,7 +335,7 @@ int sendDataOnly(int file_des, void* buf,int length) {
 		  int rc = write(file_des, (char*)((char*)buf + bytesSent), bytesToSend);
 		  // error
 		  if (rc < 0) {
-			  cprintf(BG_RED, "Error writing to socket. Possible socket crash\n");
+		    cprintf(BG_RED, "Error writing to socket. Possible socket crash: left=%d rc=%d length=%d sent=%d\n", bytesToSend, rc, length, bytesSent);
 			  return bytesSent;
 		  }
 		  // also error, wrote nothing, buffer blocked up, too fast sending for client

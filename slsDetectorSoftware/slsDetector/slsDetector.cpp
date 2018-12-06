@@ -4962,9 +4962,9 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
 	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
-#ifdef VERBOSE
-	std::cout<< "Setting readout flags to "<< flag << std::endl;
-#endif
+	//#ifdef VERBOSE
+	std::cout<< "Setting readout flags to "<< hex << flag << dec << std::endl;
+	//#endif
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
@@ -4980,7 +4980,8 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
 				thisDetector->roFlags=(readOutFlags)retval;
 				if (thisDetector->myDetectorType==JUNGFRAUCTB) {
 
-					getTotalNumberOfChannels();
+					int nn=getTotalNumberOfChannels();
+					cout << "Total number of channels is " << nn << endl;
 					//thisDetector->dataBytes=getTotalNumberOfChannels()*
 					//thisDetector->dynamicRange/8*thisDetector->timerValue[SAMPLES_JCTB];
 				}
@@ -5033,27 +5034,27 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
 	  char h[1000];
 	  switch (flag) {
 	  case PEDESTAL:
-	    retval=PEDESTAL;
+	    retval|=PEDESTAL;
 	    strcpy(h,"\"frameMode\":\"pedestal\"");
 	    break;
 	  case NEWPEDESTAL:
-	    retval=NEWPEDESTAL;
+	    retval|=NEWPEDESTAL;
 	    strcpy(h,"\"frameMode\":\"newPedestal\"");
 	    break;
 	  case FLAT:
-	    retval=FLAT;
+	    retval|=FLAT;
 	    strcpy(h,"\"frameMode\":\"flatfield\"");
 	    break;
 	  case NEWFLAT:
-	    retval=NEWFLAT;
+	    retval|=NEWFLAT;
 	    strcpy(h,"\"frameMode\":\"newFlatfield\"");
 	    break;
 	  default:
-	    retval=FRAME;
+	    retval|=FRAME;
 	    strcpy(h,"\"frameMode\":\"frame\"");
 	  }
 	  if (flag!=GET_READOUT_FLAGS) {
-	  if (header.length()>0) {
+	    if (header.length()>0) {
 	    if (header.at(0)==',')
 	      header.erase(0,1);
 	    if (header.length()>0)
@@ -5103,14 +5104,14 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
 	  switch (flag) {
 	  case COUNTING:
 	    strcpy(h,"\"detectorMode\":\"counting\"");
-	    retval=COUNTING;
+	    retval|=COUNTING;
 	    break;
 	  case INTERPOLATING:
-	    retval=INTERPOLATING;
+	    retval|=INTERPOLATING;
 	    strcpy(h,"\"detectorMode\":\"interpolating\"");
 	    break;
 	  default:
-	    retval=ANALOG;
+	    retval|=ANALOG;
 	    strcpy(h,"\"detectorMode\":\"analog\"");
 	  }
 	  if (flag!=GET_READOUT_FLAGS) {

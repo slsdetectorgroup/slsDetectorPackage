@@ -35,7 +35,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
 
     
     int adc_off[4]={40,0,120,80};
-    int adc_nr[4]={8,10,20,23};
+    int adc_nr[4]={8,10,20,22};
     int row, col;
 
     int isample;

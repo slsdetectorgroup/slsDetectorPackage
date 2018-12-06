@@ -75,7 +75,8 @@ typedef struct ip_header_struct {
 
 struct timeval tss,tse,tsss; //for timing
 
-
+#define MAXDAC 32
+u_int32_t dac[MAXDAC];
 
 FILE *debugfp, *datafp;
 
@@ -1671,22 +1672,28 @@ int initHighVoltage(int val, int imod){
        codata=((dacvalue)&0xff);
      
     
-       valw=bus_r(offw)&0x7fff; //switch off HV 
+       valw=(bus_r(offw) & 0x7fff) | 0x00ff;
+
        bus_w(offw,(valw)); // start point
        valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
+       
        for (i=0;i<8;i++) {
-	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-	valw=((valw&(~(0x1<<ddx)))+(((codata>>(7-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
-	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+	 valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+	 valw=((valw&(~(0x1<<ddx)))+(((codata>>(7-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
+	 valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
        }
        valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
        
        valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+
+
        
-       if (dacvalue>=0) {
-	 valw=bus_r(offw)|0xff00;; //switch on HV
+       if (val>=0) {
+	 valw=bus_r(offw) | 0x8000;; //switch on HV
+	 printf("switch on HV in CTB4 %x\n");
        } else {
-	 valw=bus_r(offw)&0x7fff;//switch off HV
+	 valw=bus_r(offw) & 0x7fff;//switch off HV
+	 printf("switch off HV in CTB4\n");
        }
 
 
@@ -1695,6 +1702,22 @@ int initHighVoltage(int val, int imod){
        
        bus_w(HV_REG,val);
        
+
+       //added for CTB5!
+
+       // valw=bus_r(POWER_ON_REG);
+       if (val>=0) {
+	 i=bus_r(POWER_ON_REG) | 0x80000000;; //switch on HV
+	 printf("switch on HV in CTB5 %08x\n", i);
+       } else {
+	 i=bus_r(POWER_ON_REG)  & 0x7fffffff;//switch off HV
+	 printf("switch off HV in CTB5 %08x\n", i);
+       }
+       
+       bus_w(POWER_ON_REG,i);
+
+
+
 	 // } 
   }
 
@@ -3212,12 +3235,22 @@ int setDacRegister(int dacnum,int dacvalue) {
 /*   printf("Dac register %x wrote %08x\n",(DAC_REG_OFF+dacnum/2)<<11,val); */
 /*     bus_w((DAC_REG_OFF+dacnum/2)<<11, val); */
     
-
+#ifdef CTB4
   bus_w(DAC_NUM_REG, dacnum);
   bus_w(DAC_VAL_REG, dacvalue);
   bus_w(DAC_NUM_REG, dacnum | (1<<16));
   bus_w(DAC_NUM_REG, dacnum);
   printf("Wrote dac register value %d address %d\n",bus_r(DAC_VAL_REG),bus_r(DAC_NUM_REG)) ;
+#endif
+  
+#ifndef CTB4
+  
+  if (dacnum<MAXDAC) {
+    printf("dac variable %d set to  value %d\n",dacnum, dacvalue) ;
+    dac[dacnum]=dacvalue;
+  } else
+    printf("Bad dac index %d\n", dacnum);
+#endif
   return getDacRegister(dacnum);
   
 
@@ -3225,9 +3258,22 @@ int setDacRegister(int dacnum,int dacvalue) {
 int getDacRegister(int dacnum) {
 
   
+#ifdef CTB4
   bus_w(DAC_NUM_REG, dacnum);
   printf("READ dac register value %d address %d\n",(int16_t)bus_r(DAC_VAL_OUT_REG),bus_r(DAC_NUM_REG)) ;
   return (int16_t)bus_r(DAC_VAL_OUT_REG);
+#endif
+
+#ifndef CTB4
+  if (dacnum<MAXDAC) {
+    printf("dac variable %d is %d\n",dacnum,dac[dacnum]) ;
+    return dac[dacnum];
+  }else
+    printf("Bad dac index %d\n", dacnum);
+#endif
+
+  return -1;
+
 /* #define DAC_VAL_REG 121<<11 */
 /* #define DAC_NUM_REG 122<<11 */
 /* #define DAC_VAL_OUT_REG 42<<11 */
@@ -3533,6 +3579,7 @@ int powerChip(int arg) {
   
   u_int32_t preg=bus_r(POWER_ON_REG); 
   if (myDetectorType!=JUNGFRAUCTB) {
+    printf("This is not a JCTB!\n");
     if (arg>=0) {
       if (arg)
 	bus_w(POWER_ON_REG,preg|0xffff0000);

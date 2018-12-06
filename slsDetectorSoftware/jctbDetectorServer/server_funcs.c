@@ -1877,6 +1877,7 @@ int start_acquisition(int file_des) {
     ret=FAIL;
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
   } else {
+	  nframes = 0;
     ret=startStateMachine();
   }
   if (ret==FAIL)
@@ -2057,7 +2058,7 @@ int read_frame(int file_des) {
 	  printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes);
 	 #endif
 	  n=sendDataOnly(file_des,dataretval,dataBytes);
-	  printf("Sent %d bytes\n",n);
+	  printf("Frame %d, Sent %d bytes\n", nframes, n);
   } else  {
       if (getFrames()>-1) {
 	dataret=FAIL;
@@ -2122,7 +2123,7 @@ int start_and_read_all(int file_des) {
     return dataret;
 
   }
-
+  nframes = 0;
   startStateMachine();
 
   /*  ret=startStateMachine();  

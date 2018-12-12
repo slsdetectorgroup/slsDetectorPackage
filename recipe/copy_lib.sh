@@ -2,6 +2,7 @@
 mkdir $PREFIX/lib
 mkdir $PREFIX/bin
 mkdir $PREFIX/include
+mkdir $PREFIX/include/slsDetectorPackage
 
 #Shared and static libraries
 cp build/bin/libSlsDetector.so $PREFIX/lib/.
@@ -18,5 +19,5 @@ cp build/bin/slsReceiver $PREFIX/bin/.
 cp build/bin/slsMultiReceiver $PREFIX/bin/.
 
 #Which headers do we need for development??
-
+cp build/install/include/* $PREFIX/include/slsDetectorPackage/
 # cp include/some_lib.h $PREFIX/include/.

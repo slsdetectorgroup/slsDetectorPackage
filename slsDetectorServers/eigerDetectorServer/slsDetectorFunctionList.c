@@ -1005,66 +1005,75 @@ int setThresholdEnergy(int ev) {
 
 /* parameters - dac, adc, hv */
 
-void setDAC(enum DACINDEX ind, int val, int mV, int retval[]) {
-	FILE_LOG(logDEBUG1, ("Going to set dac %d to %d with mv mode %d \n", (int)ind, val, mV));
+void setDAC(enum DACINDEX ind, int val, int mV) {
+    if (val < 0)
+        return;
+
+    FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+
 	if (ind == VTHRESHOLD) {
-		int ret[5];
-		setDAC(VCMP_LL,val,mV,retval);
-		ret[0] = retval[mV];
-		setDAC(VCMP_LR,val,mV,retval);
-		ret[1] = retval[mV];
-		setDAC(VCMP_RL,val,mV,retval);
-		ret[2] = retval[mV];
-		setDAC(VCMP_RR,val,mV,retval);
-		ret[3] = retval[mV];
-		setDAC(VCP,val,mV,retval);
-		ret[4] = retval[mV];
-
-
-		if ((ret[0]== ret[1])&&
-				(ret[1]==ret[2])&&
-				(ret[2]==ret[3]) && 
-				(ret[3]==ret[4])) {
-			FILE_LOG(logINFO, ("vthreshold match\n"));
-		} else {
-			retval[0] = -1;retval[1] = -1;
-			FILE_LOG(logERROR, ("vthreshold mismatch 0:%d 1:%d 2:%d 3:%d\n",
-					ret[0],ret[1],ret[2],ret[3]));
-		}
+		setDAC(VCMP_LL, val, mV);
+        setDAC(VCMP_LR, val, mV);
+        setDAC(VCMP_RL, val, mV);
+        setDAC(VCMP_RR, val, mV);
+        setDAC(VCP, val, mV);
 		return;
 	}
-	char iname[10];
 
-	if (((int)ind>=0)&&((int)ind<NDAC)) {
-		strcpy(iname,dac_names[(int)ind]);
-	} else {
-		FILE_LOG(logINFO, ("dac value outside range:%d\n",(int)ind));
-		strcpy(iname,dac_names[0]);
-	}
-	FILE_LOG(logDEBUG1, ("%s dac %d: %s to %d %s\n",
-			(val >= 0) ? "Setting" : "Getting",
-					ind, iname, val,
-					mV ? "mV" : "dac units"));
+    // validate index
+    if (ind < 0 || ind >= NDAC) {
+        FILE_LOG(logERROR, ("\tDac index %d is out of bounds (0 to %d)\n", ind, NDAC - 1));
+        return;
+    }
+
 #ifdef VIRTUAL
-	if (mV) {
-		retval[0] = (int)(((val-0)/(2048-0))*(4096-1) + 0.5);
-		retval[1] = val;
-	} else
-		retval[0] = val;
-
+    if (mV && Common_VoltageToDac(val, &dacval, 0, MAX_DAC_VOLTAGE_VALUE, MAX_DAC_UNIT_VALUE) == OK)
+        (detectorModules)->dacs[ind] = val;
 #else
-	if (val >= 0)
-		Feb_Control_SetDAC(iname,val,mV);
-	int k;
-	Feb_Control_GetDAC(iname, &k,0);
-	retval[0] = k;
-	Feb_Control_GetDAC(iname,&k,1);
-	retval[1] = k;
+    char iname[10];
+    strcpy(iname,dac_names[(int)ind]);
+    if (Feb_Control_SetDAC(iname, val, mV)) {
+        int dacval = 0;
+        Feb_Control_GetDAC(iname, &dacval, 0);
+        (detectorModules)->dacs[ind] = dacval;
+    }
 #endif
-	(detectorModules)->dacs[ind] = retval[0];
-
 }
 
+int getDAC(enum DACINDEX ind, int mV) {
+    if (ind == VTHRESHOLD) {
+        int ret[5] = {0};
+        ret[0] = getDAC(VCMP_LL, mV);
+        ret[1] = getDAC(VCMP_LR, mV);
+        ret[2] = getDAC(VCMP_RL, mV);
+        ret[3] = getDAC(VCMP_RR, mV);
+        ret[4] = getDAC(VCP, mV);
+
+        if ((ret[0]== ret[1])&&
+                (ret[1]==ret[2])&&
+                (ret[2]==ret[3]) &&
+                (ret[3]==ret[4])) {
+            FILE_LOG(logINFO, ("\tvthreshold match\n"));
+        } else {
+            FILE_LOG(logERROR, ("\tvthreshold mismatch vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d vcmp_rr:%d vcp:%d\n",
+                    ret[0],ret[1],ret[2],ret[3], ret[4]));
+        }
+        return;
+    }
+
+    if (!mV) {
+        FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, (detectorModules)->dacs[ind]));
+        return dacValues[ind];
+    }
+    int voltage = -1;
+    Common_DacToVoltage((detectorModules)->dacs[ind], &voltage, 0, MAX_DAC_VOLTAGE_VALUE, MAX_DAC_UNIT_VALUE);
+    FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, (detectorModules)->dacs[ind], voltage));
+    return voltage;
+}
+
+int getMAXDACUnits() {
+    return MAX_DAC_UNIT_VALUE;
+}
 
 
 int getADC(enum ADCINDEX ind) {

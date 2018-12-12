@@ -144,30 +144,23 @@ int 		setThresholdEnergy(int ev);
 #endif
 
 // parameters - dac, adc, hv
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined (CHIPTESTBOARDD)
-void        serializeToSPI(u_int32_t addr, u_int32_t val, u_int32_t csmask, int numbitstosend, u_int32_t clkmask, u_int32_t digoutmask, int digofset); //commonServerFunction.h
-void        initDac(int dacnum);
-int         voltageToDac(int value);
-int         dacToVoltage(unsigned int digital);
-#endif
-#ifdef CHIPTESTBOARDD
-int         generalVoltageToDac(int value, int vmin, int vmax, int check);
-int         generalDacToVoltage(unsigned int digital, int vmin, int vmax, int check);
-#endif
 #ifdef GOTTHARDD
-extern void setAdc9252(int addr, int val);      // AD9252.h (old board)
+extern void AD9252_Set(int addr, int val);      // AD9252.h (old board)
 #endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
-extern void setAdc9257(int addr, int val);      // AD9257.h
+extern void AD9257_Set(int addr, int val);      // AD9257.h
 #endif
 #ifdef CHIPTESTBOARDD
-extern int getMaxValidVref();                   // AD9257.h
-extern void setVrefVoltage(int val)             // AD9257.h
+extern int AD9257_GetMaxValidVref();                   // AD9257.h
+extern void AD9257_SetVrefVoltage(int val)             // AD9257.h
 #endif
 
-void 		setDAC(enum DACINDEX ind, int val, int mV, int retval[]);
+void 		setDAC(enum DACINDEX ind, int val, int mV);
+int         getDAC(enum DACINDEX ind, int mV);
+int         getMAXDACUnits();
 #ifdef CHIPTESTBOARDD
-int         isVLimitCompliant(int mV);
+int         checkVLimitCompliant(int mV);
+int         checkVLimitDacCompliant(int dac);
 int         getVLimit();
 void        setVLimit(int l);
 int         isVchipValid(int val);
@@ -189,8 +182,10 @@ u_int32_t   putout(char *s);
 #endif*/
 int 		getADC(enum ADCINDEX ind);
 #ifdef CHIPTESTBOARDD
-int         getVoltage(int idac);
-int         getCurrent(int idac);
+extern int INA226_ReadVoltage(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t deviceId); // INA226.h
+extern int INA226_ReadCurrent(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t deviceId); // INA226.h
+extern int AD7689_GetTemperature(); // AD7689.h
+extern int AD7689_GetChannel(int ichan); // AD7689.h
 #endif
 
 int 		setHighVoltage(int val);

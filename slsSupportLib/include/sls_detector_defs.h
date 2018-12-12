@@ -455,7 +455,16 @@ public:
 	  I_POWER_C=108 , /**new chiptest board */
 	  I_POWER_D=109 , /**new chiptest board */
 	  I_POWER_IO=110 , /**new chiptest board */
-	  V_LIMIT=111 /**new chiptest board */
+	  V_LIMIT=111, /**new chiptest board */
+	  SLOW_ADC0=1000,
+	  SLOW_ADC1,
+	  SLOW_ADC2,
+	  SLOW_ADC3,
+	  SLOW_ADC4,
+	  SLOW_ADC5,
+	  SLOW_ADC6,
+	  SLOW_ADC7,
+	  SLOW_ADC_TEMP
 	};
 
 	/**

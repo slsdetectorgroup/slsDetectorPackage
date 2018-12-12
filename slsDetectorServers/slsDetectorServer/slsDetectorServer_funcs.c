@@ -571,7 +571,7 @@ int set_dac(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int args[3] = {-1, -1, -1};
-    int retval[2] = {-1, -1};
+    int retval = -1;
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
@@ -719,12 +719,12 @@ int set_dac(int file_des) {
     		// adc vpp
 #ifdef CHIPTESTBOARDD
     		case ADC_VPP:
-    		if (val < 0 || val > getMaxValidVref())  {
+    		if (val < 0 || val > AD9257_GetMaxValidVref())  {
     		    ret = FAIL;
                 strcpy(mess,"Could not set dac. Adc Vpp value should be between 0 and %d\n", maxValidVref());
                 FILE_LOG(logERROR,(mess));
     		} else {
-    		    setVrefVoltage(val);
+    		    AD9257_AD9257_SetVrefVoltage(val);
     		    retval = val; // cannot read
     		}
     		break;
@@ -733,36 +733,36 @@ int set_dac(int file_des) {
     		// io delay
 #ifdef EIGERD
     		case IO_DELAY:
-    			retval[0] = setIODelay(val);
-    			FILE_LOG(logDEBUG1, ("IODelay: %d\n", retval[0]));
-    		    validate(val, retval[0], "set iodelay", DEC);
+    			retval = setIODelay(val);
+    			FILE_LOG(logDEBUG1, ("IODelay: %d\n", retval));
+    		    validate(val, retval, "set iodelay", DEC);
     			break;
 #endif
 
     		// high voltage
     		case HIGH_VOLTAGE:
-    			retval[0] = setHighVoltage(val);
-    			FILE_LOG(logDEBUG1, ("High Voltage: %d\n", retval[0]));
+    			retval = setHighVoltage(val);
+    			FILE_LOG(logDEBUG1, ("High Voltage: %d\n", retval));
 #if defined(JUNGFRAUD) || defined (CHIPTESTBOARDD)
-    			validate(val, retval[0], "set high voltage", DEC);
+    			validate(val, retval, "set high voltage", DEC);
 #endif
 #ifdef GOTTHARDD
-    			if (retval[0] == -1) {
+    			if (retval == -1) {
     			    ret = FAIL;
     			    strcpy(mess,"Invalid Voltage. Valid values are 0, 90, 110, 120, 150, 180, 200\n");
     			    FILE_LOG(logERROR,(mess));
     			} else
-    			    validate(val, retval[0], "set high voltage", DEC);
+    			    validate(val, retval, "set high voltage", DEC);
 #elif EIGERD
-    			if ((retval[0] != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval[0] < 0)) {
+    			if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
     				ret = FAIL;
-    				if (retval[0] == -1)
+    				if (retval == -1)
     					sprintf(mess, "Setting high voltage failed. Bad value %d. "
     							"The range is from 0 to 200 V.\n",val);
-    				else if (retval[0] == -2)
+    				else if (retval == -2)
     					strcpy(mess, "Setting high voltage failed. "
     							"Serial/i2c communication failed.\n");
-    				else if (retval[0] == -3)
+    				else if (retval == -3)
     					strcpy(mess, "Getting high voltage failed. "
     							"Serial/i2c communication failed.\n");
     				FILE_LOG(logERROR,(mess));
@@ -781,7 +781,7 @@ int set_dac(int file_des) {
                     ret = FAIL;
                     sprintf(mess,"Could not set power. Power regulator %d should be in mV and not dac units.\n", ind);
                     FILE_LOG(logERROR,(mess));
-                } else if (checkVLimitCompliant() == FAIL) {
+                } else if (checkVLimitCompliant(val) == FAIL) {
                     ret = FAIL;
                     sprintf(mess,"Could not set power. Power regulator %d exceeds voltage limit %d.\n", ind, getVLimit());
                     FILE_LOG(logERROR,(mess));
@@ -792,9 +792,9 @@ int set_dac(int file_des) {
                 } else {
                     if (val != -1)
                         setPower(serverDacIndex, val);
-                    retval[0] = getPower(serverDacIndex);
-                    FILE_LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval[0]));
-                    validate(val, retval[0], "set power regulator", DEC);
+                    retval = getPower(serverDacIndex);
+                    FILE_LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
+                    validate(val, retval, "set power regulator", DEC);
                 }
     			break;
 
@@ -810,9 +810,9 @@ int set_dac(int file_des) {
                 } else {
                     if (val >= 0) // not letting user set to -100, it will affect setting
                         setVchip(val);
-                    retval[0] = getVchip();
-                    FILE_LOG(logDEBUG1, ("Vchip: %d\n", retval[0]));
-                    validate(val, retval[0], "set vchip", DEC);
+                    retval = getVchip();
+                    FILE_LOG(logDEBUG1, ("Vchip: %d\n", retval));
+                    validate(val, retval, "set vchip", DEC);
                 }
                 break;
 
@@ -824,9 +824,9 @@ int set_dac(int file_des) {
                 } else {
                     if (val >= 0)
                         setVLimit(val);
-                    retval[0] = getVLimit();
-                    FILE_LOG(logDEBUG1, ("VLimit: %d\n", retval[0]));
-                    validate(val, retval[0], "set vlimit", DEC);
+                    retval = getVLimit();
+                    FILE_LOG(logDEBUG1, ("VLimit: %d\n", retval));
+                    validate(val, retval, "set vlimit", DEC);
                 }
                 break;
 #endif
@@ -837,14 +837,14 @@ int set_dac(int file_des) {
                         ret = FAIL;
                         sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d mV).\n", ind, val, MAX_DAC_VOLTAGE_VALUE);
                         FILE_LOG(logERROR,(mess));
-    			    } else if (!mV && val > MAX_DAC_UNIT_VALUE ) {
+    			    } else if (!mV && val > LTC2620_MAX_STEPS ) {
                         ret = FAIL;
-                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d dac units).\n", ind, val, MAX_DAC_UNIT_VALUE);
+                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d dac units).\n", ind, val, LTC2620_MAX_STEPS);
                         FILE_LOG(logERROR,(mess));
     			    } else {
 #ifdef CHIPTESTBOARDD
-    			        if ((mV && checkVLimitCompliant() == FAIL) ||
-    			                (!mv && checkVLimitCompliant(dacToVoltage(val)) == FAIL)) {
+    			        if ((mV && checkVLimitCompliant(val) == FAIL) ||
+    			                (!mv && checkVLimitDacCompliant(val) == FAIL)) {
                             ret = FAIL;
                             sprintf(mess,"Could not set dac %d to value %d. "
                                     "Exceeds voltage limit %d.\n",
@@ -875,25 +875,20 @@ int set_dac(int file_des) {
 #endif
                     //check
                     if (ret == OK) {
-                    	int temp = 0;
-                        if (mV)
-                            temp = retval[1];
-                        else
-                            temp = retval[0];
-                        if ((abs(temp-val) <= 5) || val == -1) {
+                        if ((abs(retval - val) <= 5) || val == -1) {
                             ret = OK;
                         } else {
                             ret = FAIL;
-                            sprintf(mess,"Setting dac %d : wrote %d but read %d\n", serverDacIndex, val, temp);
+                            sprintf(mess,"Setting dac %d : wrote %d but read %d\n", serverDacIndex, val, retval);
                             FILE_LOG(logERROR,(mess));
                         }
                     }
-                    FILE_LOG(logDEBUG1, ("Dac (%d): %d dac units and %d mV\n", serverDacIndex, retval[0], retval[1]));
+                    FILE_LOG(logDEBUG1, ("Dac (%d): %d %s\n", serverDacIndex, retval, (mv ? "mV" : "dac units")));
     				break;
     		}
     	}
     }
-    return Server_SendResult(file_des, INT32, UPDATE, retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2664,12 +2659,12 @@ int write_adc_register(int file_des) {
 	// only set
 	if (Server_VerifyLock() == OK) {
 #ifdef JUNGFRAUD
-		setAdc9257(addr, val);
+		AD9257_Set(addr, val);
 #elif GOTTHARDD
 	if (getBoardRevision() == 1) {
-	    setAdc9252(addr, val);
+	    AD9252_Set(addr, val);
 	} else {
-	    setAdc9257(addr, val);
+	    AD9257_Set(addr, val);
 	}
 #endif
 	}

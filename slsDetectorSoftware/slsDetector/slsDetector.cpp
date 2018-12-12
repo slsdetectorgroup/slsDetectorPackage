@@ -2483,11 +2483,11 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
 	int fnum = F_SET_DAC;
 	int ret = FAIL;
 	int args[3] = {(int)index, mV, val};
-	int retvals[2] = {-1, -1};
+	int retval = -1;
 	FILE_LOG(logDEBUG1) << "Setting DAC " << index << " to " <<	val << (mV ? "mV" : "dac units");
 
 	if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
-		ret = thisDetectorControl->Client_Send(fnum, args, sizeof(args), retvals, sizeof(retvals));
+		ret = thisDetectorControl->Client_Send(fnum, args, sizeof(args), &retval, sizeof(retval));
 		disconnectControl();
 
 		// handle ret
@@ -2495,14 +2495,12 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
 			setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
 		else {
 			FILE_LOG(logDEBUG1) << "Dac index " << index << ": "
-					<< retvals[0] << " dac units (" << retvals[1] << "mV)";
+					<< retval << (mV ? "mV" : "dac units");
 			if (ret == FORCE_UPDATE)
 				ret = updateDetector();
 		}
 	}
-	if (mV)
-		return retvals[1];
-	return retvals[0];
+	return retval;
 }
 
 

@@ -6,6 +6,8 @@
 #ifndef VIRTUAL
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "AD7689.h"     // slow adcs
+#include "LTC2620.h"    // dacs
+#include "MAX1932.h"    // hv
 #include "INA226.h"     // i2c
 #include "programfpga.h"
 #else
@@ -480,38 +482,41 @@ void setupDetector() {
 	resetPeripheral();
 	cleanFifos();
 
+	// set defines
+	AD7689_SetDefines(ADC_SPI_REG, ADC_SPI_SLOW_VAL_REG, ADC_SPI_SLOW_SRL_CNV_MSK, ADC_SPI_SLOW_SRL_CLK_MSK, ADC_SPI_SLOW_SRL_DT_MSK, ADC_SPI_SLOW_SRL_DT_OFST);
+	AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, MAX_DAC_VOLTAGE_VALUE);
+    MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST);
+
     // disable spi
-    bus_w(SPI_REG, SPI_IDLE_MSK);
-    bus_w(ADC_SPI_REG, ADC_SPI_IDLE_MSK);
+	AD7689_Disable();
+	AD9257_Disable();
+	LTC2620_Disable();
+	MAX1932_Disable();
 
-	// prepare ADCs
 #ifndef VIRTUAL
-	prepareADC9257();
-	// slow ADCs
-	prepareAD7689();
+    //  adcs
+	AD9257_Configure();
+	// slow adcs
+	AD7689_Configure();
 	// I2C
-	I2C_ConfigureI2CCore(I2C_SCL_LOW_COUNT_REG, I2C_SCL_HIGH_COUNT_REG, I2C_SDA_HOLD_REG, I2C_CONTROL_REG);
-	INA226_CalibrateCurrentRegister(I2C_SHUNT_RESISTER_OHMS, I2C_TRANSFER_COMMAND_FIFO_REG, I2C_POWER_VIO_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_SHUNT_RESISTER_OHMS, I2C_TRANSFER_COMMAND_FIFO_REG, I2C_POWER_VA_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_SHUNT_RESISTER_OHMS, I2C_TRANSFER_COMMAND_FIFO_REG, I2C_POWER_VB_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_SHUNT_RESISTER_OHMS, I2C_TRANSFER_COMMAND_FIFO_REG, I2C_POWER_VC_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_SHUNT_RESISTER_OHMS, I2C_TRANSFER_COMMAND_FIFO_REG, I2C_POWER_VD_DEVICE_ID);
+	INA226_ConfigureI2CCore();
+	INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
+    // dacs
+    LTC2620_Configure();
 #endif
-
-	// initialize dac series
-	initDac(0);
-	initDac(8);
-	initDac(16);
-
     // switch off power regulators
     powerChip(0);
     //FIXME:
 	// switch off dacs (power regulators most likely only sets to minimum (if power enable on))
 	{
 	    int idac = 0;
-	    int retval[2] = {0, 0};
 	    for (idac = 0; idac < NDAC; ++idac) {
-	        setDac(idac, -100, 0, retval);
+	        setDac(idac, LTC2620_PWR_DOWN_VAL, 0);
 	    }
 	}
 
@@ -1030,121 +1035,48 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
 
 /* parameters - dac, adc, hv */
 
-void initDac(int dacnum) {
+void setDAC(enum DACINDEX ind, int val, int mV) {
+    FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+    int dacval = val;
 #ifdef VIRTUAL
-    return;
-#endif
-	FILE_LOG(logINFOBLUE, ("Initializing dac %d\n",dacnum));
-
-	uint32_t codata;
-	int csdx 		= dacnum / NDAC + SPI_DAC_SRL_CS_OTPT_MSK;
-	int dacchannel 	= 0xf;										// all channels
-	int dacvalue	= 0x6; 										// (low value) can be any random value (just writing to power up)
-	FILE_LOG(logINFO, ("\tWrite to Input Register\n"
-			"\tChip select bit: %d\n"
-			"\tDac Channel: 0x%x\n"
-			"\tDac Value: 0x%x\n",
-			csdx, dacchannel, dacvalue));
-
-	codata = LTC2620_DAC_CMD_WRITE +											// command to write to input register
-			((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +	// all channels
-			((dacvalue << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);		// any random value
-	serializeToSPI(SPI_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
-	        SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST);
-}
-
-
-int voltageToDac(int value){
-	return generalVoltageToDac(value, 0, DAC_MAX_VOLTAGE_MV, 1);
-}
-
-int dacToVoltage(unsigned int digital){
-	return generalDacToVoltage(digital, 0, DAC_MAX_VOLTAGE_MV, 1);
-}
-
-int generalVoltageToDac(int value, int vmin, int vmax, int check) {
-    int nsteps = MAX_DAC_UNIT_VALUE;
-    if (check && ((value < vmin) || (value > vmax))) {
-        FILE_LOG(logERROR, ("Voltage value (to convert to dac value) is outside bounds: %d\n", value));
-        return -1;
-    }
-    return (int)(((value - vmin) / (vmax - vmin)) * (nsteps - 1) + 0.5);
-}
-
-int generalDacToVoltage(unsigned int digital, int vmin, int vmax, int check) {
-    int nsteps = MAX_DAC_UNIT_VALUE;
-    int v = vmin + (vmax - vmin) * digital / (nsteps - 1);
-    if (check && ((v < 0) || (v > vmax))) {
-        FILE_LOG(logERROR, ("Voltage value (converted from dac value) is outside bounds: %d\n", v));
-        return -1;
-    }
-    return v;
-}
-
-void setDAC(enum DACINDEX ind, int val, int mV, int retval[]) {
-    // validate index
-    if (ind < 0 || ind >= NDAC) {
-        FILE_LOG(logERROR, ("Dac index %d is not defined\n", ind));
-        retval[0] = -1;
-        return;
-    }
-
-	int dacmV = val;
-
-    //if set and mv, convert to dac
-    if (val > 0) {
-        if (mV)
-            val = voltageToDac(val);
-        else
-            dacmV = dacToVoltage(val);
-        // conversion out of bounds
-        if (val == -1 || dacmV == -1) {
-            FILE_LOG(logERROR, ("Setting Dac %d %s is out of bounds\n", ind, (mV ? "mV" : "dac units"));)
-            return;
-        }
-    }
-
-	if ( (val >= 0) || (val == -100)) {
-#ifdef VIRTUAL
-	    dacValues[ind] = val;
+    if (mV && LTC2620_VoltageToDac(val, &dacval) == OK)
+        dacValues[ind] = val;
 #else
-		uint32_t codata;
-		int csdx 		= ind / NDAC + SPI_DAC_SRL_CS_OTPT_MSK;
-		int dacchannel 	= ind % NDAC;
-
-		FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",ind, val, dacmV));
-		// command
-		if (val >= 0) {
-			FILE_LOG(logDEBUG1,("\tWrite to Input Register and Update\n"));
-			codata = LTC2620_DAC_CMD_SET;
-
-		} else if (val == -100) {
-			FILE_LOG(logDEBUG1, ("\tPOWER DOWN\n"));
-			codata = LTC2620_DAC_CMD_POWER_DOWN;
-		}
-		// address
-		FILE_LOG(logDEBUG1, ("\tChip select bit:%d\n"
-				"\tDac Channel:0x%x\n"
-				"\tDac Value:0x%x\n",
-				csdx, dacchannel, val));
-		codata += ((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +
-				((val << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);
-		// to spi
-		serializeToSPI(SPI_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
-		        SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST);
-
-		dacValues[ind] = val;
+    if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
+        dacValues[ind] = dacval;
 #endif
-	}
+}
 
-	retval[0] = dacValues[ind];
-	retval[1] = dacToVoltage(retval[0]);
-	FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, retval[0], retval[1]));
+int getDAC(enum DACINDEX ind, int mV) {
+    if (!mV) {
+        FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, dacValues[ind]));
+        return dacValues[ind];
+    }
+    int voltage = -1;
+	LTC2620_DacToVoltage(dacValues[ind], &voltage);
+	FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, dacValues[ind], voltage));
+	return voltage;
+}
+
+int getMAXDACUnits() {
+    return LTC2620_MAX_STEPS;
 }
 
 int checkVLimitCompliant(int mV) {
     if (vLimit > 0 && mv > vLimit)
         return FAIL;
+    return OK;
+}
+
+int checkVLimitDacCompliant(int dac) {
+    if (vLimit > 0) {
+        int mv = 0;
+        // could not convert
+        if (LTC2620_DacToVoltage(dac, &mv) == FAIL)
+            return FAIL;
+        if (mv > vLimit)
+            return FAIL;
+    }
     return OK;
 }
 
@@ -1166,9 +1098,11 @@ int isVchipValid(int val) {
 
 int getVchip() {
     // not set yet
-    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == -100)
+    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_PWR_DOWN_VAL)
         return dacValues[D_PWR_CHIP];
-    return generalDacToVoltage(dacValues[D_PWR_CHIP], VCHIP_MIN_MV, VCHIP_MAX_MV, 1);
+    int voltage = -1;
+    Common_DacToVoltage(dacValues[D_PWR_CHIP], &voltage, VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MAX_STEPS);
+    return voltage;
 }
 
 void setVchip(int val) {
@@ -1176,23 +1110,19 @@ void setVchip(int val) {
     if (val != -1) {
         FILE_LOG(logINFO, ("Setting Vchip to %d mV\n", val));
 
-        int dacval = -100;
+        int dacval = LTC2620_PWR_DOWN_VAL;
 
         // validate & convert it to dac
-        if (val != -100) {
+        if (val != LTC2620_PWR_DOWN_VAL) {
             // convert it to dac
-            dacval = generalVoltageToDac(val, VCHIP_MIN_MV, VCHIP_MAX_MV, 1);
-
-            // validity (already checked at tcp)
-            if (dacval == -1) {
+            if (Common_VoltageToDac(val, &dacval, VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MAX_STEPS) == FAIL) {
                 FILE_LOG(logERROR, ("\tVChip %d mV invalid. Is not between %d and %d mV\n", val, VCHIP_MIN_MV, VCHIP_MAX_MV));
                 return;
             }
         }
 
         // set
-        int retval[2] = {0, 0};
-        setDAC(D_PWR_CHIP, dacval, 0, retval);
+        setDAC(D_PWR_CHIP, dacval, 0);
     }
 }
 
@@ -1300,22 +1230,22 @@ int getPower(enum DACINDEX ind) {
     }
 
     // dac powered off
-    if (dacValues[ind] == -100) {
-        FILE_LOG(logWARNING, ("Power %d enabled, dac value -100, voltage at minimum or 0\n", ind));
-        return -100;
+    if (dacValues[ind] == LTC2620_PWR_DOWN_VAL) {
+        FILE_LOG(logWARNING, ("Power %d enabled, dac value %d, voltage at minimum or 0\n", ind, LTC2620_PWR_DOWN_VAL));
+        return LTC2620_PWR_DOWN_VAL;
     }
 
     // vchip not set, weird error, should not happen (as vchip set to max in the beginning)
-    // unless user set vchip to -100  and then tried to get a power regulator value
-    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == -100) {
+    // unless user set vchip to LTC2620_PWR_DOWN_VAL  and then tried to get a power regulator value
+    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_PWR_DOWN_VAL) {
         FILE_LOG(logERROR, ("Cannot read power regulator %d (vchip not set)."
                 "Set a power regulator, which will also set vchip.\n"));
         return -1;
     }
 
     // voltage value
-    int retval = generalDacToVoltage(dacValues[ind], POWER_RGLTR_MIN, (getVchip() - VCHIP_POWER_INCRMNT), 1);
-
+    Common_DacToVoltage(dacValues[ind], &retval, POWER_RGLTR_MIN, (getVchip() - VCHIP_POWER_INCRMNT), LTC2620_MAX_STEPS);
+    return retval;
 }
 
 void setPower(enum DACINDEX ind, int val) {
@@ -1339,8 +1269,6 @@ void setPower(enum DACINDEX ind, int val) {
             return;
         }
 
-        // dummy variable to set dac
-        int retval[2] = {0, 0};
         // get vchip to set vchip (calculated now before switching off power enable)
         int vchip = getVChipToSet(ind, val);
 
@@ -1348,7 +1276,7 @@ void setPower(enum DACINDEX ind, int val) {
         bus_w(addr, bus_r(addr) & ~(mask));
 
         // power down dac
-        setDac(ind, -100, 0, retval);
+        setDac(ind, LTC2620_PWR_DOWN_VAL, 0);
 
         // set vchip
         setVchip(vchip);
@@ -1358,12 +1286,15 @@ void setPower(enum DACINDEX ind, int val) {
         }
 
         // convert it to dac
-        if (val != -100) {
+        if (val != LTC2620_PWR_DOWN_VAL) {
             // convert it to dac
-            int dacval = generalVoltageToDac(val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT, 1);
+            if (Common_VoltageToDac(val, &dacval, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT, LTC2620_MAX_STEPS) == FAIL) {
+                FILE_LOG(logERROR, ("\tPower index %d of value %d mV invalid. Is not between %d and %d mV\n", ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
+                return;
+            }
 
             // set and power on/ update dac
-            setDAC(ind, dacval, 0, retval);
+            setDAC(ind, dacval, 0);
 
             // to be sure of valid conversion
             if (dacval >= 0)
@@ -1392,24 +1323,25 @@ int getADC(enum ADCINDEX ind){
     case I_PWR_D:
         return INA226_ReadCurrent(I2C_TRANSFER_COMMAND_FIFO_REG, I2C_RX_DATA_FIFO_LEVEL_REG,
                 I2C_POWER_VIO_DEVICE_ID + (int)(ind - I_PWR_IO));
+
+        // slow adcs
+    case SLOW_ADC_TEMP:
+        return AD7689_GetTemperature();
+    case SLOW_ADC0:
+    case SLOW_ADC1:
+    case SLOW_ADC2:
+    case SLOW_ADC3:
+    case SLOW_ADC4:
+    case SLOW_ADC5:
+    case SLOW_ADC6:
+    case SLOW_ADC7:
+        return AD7689_GetChannel(ind - SLOW_ADC0);
     default:
-        if (ind >= SLOW_ADC_START_INDEX && ind <= SLOW_ADC_END_INDEX) {
-            return getAD7689(ind - SLOW_ADC_START_INDEX);
-        }
         FILE_LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
         return -1;
     }
 }
 
-int getVoltage(int idac) {
-// FIXME: to be implemented
-    return 0;//ina226
-}
-
-int getCurrent(int idac) {
-    // FIXME: to be implemented
-    return 0;
-}
 
 int setHighVoltage(int val){
 #ifdef VIRTUAL

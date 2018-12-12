@@ -1,6 +1,22 @@
 #pragma once
 
-#include "blackfin.h" /** I2C_CLOCK_MHZ should be defined */
+#include "blackfin.h"
+
+/**
+ * To be defined
+ *
+ * (in blackfin.h)
+ * I2C_CLOCK_MHZ
+ *
+ * (RegisterDefs.h)
+ * I2C_SCL_LOW_COUNT_REG
+ * I2C_SCL_HIGH_COUNT_REG
+ * I2C_SDA_HOLD_REG
+ * I2C_CONTROL_REG
+ * I2C_TRANSFER_COMMAND_FIFO_REG
+ * I2C_RX_DATA_FIFO_LEVEL_REG
+ */
+
 
 #define I2C_DATA_RATE_KBPS              (200)
 #define I2C_SCL_PERIOD_NS               ((1000 * 1000) / I2C_DATA_RATE_KBPS)
@@ -51,86 +67,81 @@
  * Configure the I2C core,
  * Enable core and
  * Calibrate the calibration register for current readout
- * @param sclLowCountReg register to set low count of the serial clock
- * @param sclHighCountReg register to set high count of the serial clock
- * @param sdaHoldTimeReg register to set hold time of the serial data
- * @oaram controlReg register to set control reg (bus speed and enabling core)
  */
-void I2C_ConfigureI2CCore(uint32_t sclLowCountReg, uint32_t sclHighCountReg, uint32_t sdaHoldTimeReg, uint32_t controlReg) {
-    FILE_LOG(logINFOBLUE, ("Configuring I2C Core for %d kbps:\n", I2C_DATA_RATE_KBPS));
+void I2C_ConfigureI2CCore() {
+    FILE_LOG(logINFOBLUE, ("\tConfiguring I2C Core for %d kbps:\n", I2C_DATA_RATE_KBPS));
 
     FILE_LOG(logINFOBLUE, ("\tSetting SCL Low Period: %d ns (0x%x clocks)\n", I2C_SCL_LOW_PERIOD_NS, I2C_SCL_LOW_COUNT));
-    bus_w(sclLowPeriodReg, (uint32_t)I2C_SCL_LOW_COUNT);
+    bus_w(I2C_SCL_LOW_COUNT_REG, (uint32_t)I2C_SCL_LOW_COUNT);
 
     FILE_LOG(logINFOBLUE, ("\tSetting SCL High Period: %d ns (0x%x clocks)\n", I2C_SCL_HIGH_PERIOD_NS, I2C_SCL_LOW_COUNT));
-    bus_w(sclHighPeriodReg, (uint32_t)I2C_SCL_LOW_COUNT);
+    bus_w(I2C_SCL_HIGH_COUNT_REG, (uint32_t)I2C_SCL_LOW_COUNT);
 
     FILE_LOG(logINFOBLUE, ("\tSetting SDA Hold Time: %d ns (0x%x clocks)\n", I2C_SDA_DATA_HOLD_TIME_NS, I2C_SDA_DATA_HOLD_COUNT));
-    bus_w(sdaHoldTimeReg, (uint32_t)I2C_SDA_DATA_HOLD_COUNT);
+    bus_w(I2C_SDA_HOLD_REG, (uint32_t)I2C_SDA_DATA_HOLD_COUNT);
 
     FILE_LOG(logINFOBLUE, ("\tEnabling core\n"));
-    bus_w(controlReg, I2C_CNTRL_ENBLE_CORE_MSK | I2C_CTRL_BUS_SPEED_FAST_400_VAL);// fixme: (works?)
+    bus_w(I2C_CONTROL_REG, I2C_CTRL_ENBLE_CORE_MSK | I2C_CTRL_BUS_SPEED_FAST_400_VAL);// fixme: (works?)
 }
 
 /**
  * Read register
- * @param transferCommandReg transfer command fifo register
- * @param rxDataFifoLevelReg receive data fifo level register
  * @param deviceId device Id
  * @param addr register address
  * @returns value read from register
  */
-uint32_t I2C_Read(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t devId, uint32_t addr) {
+uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
+    FILE_LOG(logDEBUG1, ("\tReading from I2C device 0x%x and reg 0x%x\n", devId, addr));
     // device Id mask
     uint32_t devIdMask =  ((devId << I2C_TFR_CMD_ADDR_OFST) & I2C_TFR_CMD_ADDR_MSK);
 
     // write I2C ID
-    bus_w(transferCommandReg, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
 
     // write register addr
-    bus_w(transferCommandReg, addr);
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, addr);
 
     // repeated start with read
-    bus_w(transferCommandReg, (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK | I2C_TFR_CMD_RW_READ_VAL));
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK | I2C_TFR_CMD_RW_READ_VAL));
 
     // continue reading
-    bus_w(transferCommandReg, 0x0);
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, 0x0);
 
     // stop reading
-    bus_w(transferCommandReg, I2C_TFR_CMD_STOP_MSK);
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, I2C_TFR_CMD_STOP_MSK);
 
     // read value
-    return bus_r(rxDataFifoLevelReg);
+    return bus_r(I2C_RX_DATA_FIFO_LEVEL_REG);
 }
 
 /**
  * Write register (16 bit value)
- * @param transferCommandReg transfer command fifo register
  * @param deviceId device Id
  * @param addr register address
  * @param data data to be written (16 bit)
  */
-void I2C_Write(uint32_t transferCommandReg, uint32_t devId, uint32_t addr, uint16_t data) {
+void I2C_Write(uint32_t devId, uint32_t addr, uint16_t data) {
+    FILE_LOG(logDEBUG1, ("\tWriting data %d to I2C device 0x%x and reg 0x%x\n", data, devId, addr));
     // device Id mask
     uint32_t devIdMask =  ((devId << I2C_TFR_CMD_ADDR_OFST) & I2C_TFR_CMD_ADDR_MSK);
 
     // write I2C ID
-    bus_w(transferCommandReg, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
 
     // write register addr
-    bus_w(transferCommandReg, addr);
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, addr);
 
     // repeated start with write
-    bus_w(transferCommandReg, (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK & ~(I2C_TFR_CMD_RW_MSK)));
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK & ~(I2C_TFR_CMD_RW_MSK)));
 
     uint8_t msb = data & 0xFF00;
     uint8_t lsb = data & 0x00FF;
 
     // writing data MSB
-    bus_w(transferCommandReg, ((msb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK));
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, ((msb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK));
 
     // writing data LSB and stop writing bit
-    bus_w(transferCommandReg,  ((lsb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK) | I2C_TFR_CMD_STOP_MSK);
+    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG,  ((lsb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK) | I2C_TFR_CMD_STOP_MSK);
 }
 
 

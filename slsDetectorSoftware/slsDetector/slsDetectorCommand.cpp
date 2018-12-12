@@ -4174,6 +4174,9 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int detPos
 	if (sscanf(args[0],"adc:%d",&idac)==1) {
 		//  printf("chiptestboard!\n");
 		adc=(dacIndex)(idac+1000);
+        if (idac < SLOW_ADC0 || idac > SLOW_ADC_TEMP)
+            return (string ("cannot set adc, must be between ") + (SLOW_ADC0 - 1000) +
+                    string (" and ") + (SLOW_ADC_TEMP - 1000));
 	} else if (cmd=="temp_adc")
 		adc=TEMPERATURE_ADC;
 	else if (cmd=="temp_fpga")

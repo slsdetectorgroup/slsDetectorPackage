@@ -71,24 +71,24 @@
 //#define TIME_FROM_START_REG             (0x16 << MEM_MAP_SHIFT)
 
 /** DAC Control register */
-#define DAC_CNTRL_REG                   (0x17 << MEM_MAP_SHIFT)
+#define SPI_REG                         (0x17 << MEM_MAP_SHIFT)
 
-#define DAC_CNTRL_CS_OFST               (0)
-#define DAC_CNTRL_CS_MSK                (0x00000001 << DAC_CNTRL_CS_OFST)
-#define DAC_CNTRL_CLK_OFST              (1)
-#define DAC_CNTRL_CLK_MSK               (0x00000001 << DAC_CNTRL_CLK_OFST)
-#define DAQ_CNTRL_DGTL_OFST             (2)
-#define DAQ_CNTRL_DGTL_MSK              (0x00000001 << DAQ_CNTRL_DGTL_OFST)
+#define SPI_DAC_SRL_CS_OTPT_OFST        (0)
+#define SPI_DAC_SRL_CS_OTPT_MSK         (0x00000001 << SPI_DAC_SRL_CS_OTPT_OFST)
+#define SPI_DAC_SRL_CLK_OTPT_OFST       (1)
+#define SPI_DAC_SRL_CLK_OTPT_MSK        (0x00000001 << SPI_DAC_SRL_CLK_OTPT_OFST)
+#define SPI_DAC_SRL_DGTL_OTPT_OFST      (2)
+#define SPI_DAC_SRL_DGTL_OTPT_MSK       (0x00000001 << SPI_DAC_SRL_DGTL_OTPT_OFST)
 
 /** ADC SPI register */
 #define ADC_SPI_REG                     (0x18 << MEM_MAP_SHIFT)
 
-#define ADC_SERIAL_CLK_OUT_OFST         (0)
-#define ADC_SERIAL_CLK_OUT_MSK          (0x00000001 << ADC_SERIAL_CLK_OUT_OFST)
-#define ADC_SERIAL_DATA_OUT_OFST        (1)
-#define ADC_SERIAL_DATA_OUT_MSK         (0x00000001 << ADC_SERIAL_DATA_OUT_OFST)
-#define ADC_SERIAL_CS_OUT_OFST          (2)
-#define ADC_SERIAL_CS_OUT_MSK           (0x0000001F << ADC_SERIAL_CS_OUT_OFST)
+#define ADC_SPI_SRL_CLK_OTPT_OFST       (0)
+#define ADC_SPI_SRL_CLK_OTPT_MSK        (0x00000001 << ADC_SPI_SRL_CLK_OTPT_OFST)
+#define ADC_SPI_SRL_DT_OTPT_OFST        (1)
+#define ADC_SPI_SRL_DT_OTPT_MSK         (0x00000001 << ADC_SPI_SRL_DT_OTPT_OFST)
+#define ADC_SPI_SRL_CS_OTPT_OFST        (2)
+#define ADC_SPI_SRL_CS_OTPT_MSK         (0x0000001F << ADC_SPI_SRL_CS_OTPT_OFST)
 
 /** ADC Sync register */
 #define ADC_SYNC_REG                    (0x19 << MEM_MAP_SHIFT)
@@ -131,6 +131,7 @@
 #define TEMP_SPI_IN_T2_CLK_MSK          (0x00000001 << TEMP_SPI_IN_T2_CLK_OFST)
 #define TEMP_SPI_IN_T2_CS_OFST          (3)
 #define TEMP_SPI_IN_T2_CS_MSK           (0x00000001 << TEMP_SPI_IN_T2_CS_OFST)
+#define TEMP_SPI_IDLE_MSK               (TEMP_SPI_IN_T1_CS_MSK | TEMP_SPI_IN_T2_CS_MSK)
 
 /** Temperatre SPI Out register */
 #define TEMP_SPI_OUT_REG                (0x1c << MEM_MAP_SHIFT)

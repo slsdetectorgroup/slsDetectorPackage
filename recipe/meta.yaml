@@ -1,0 +1,64 @@
+
+package:
+  name: sls_detector_software
+  version: "developer"
+
+source:
+  - path: ..
+
+build:
+  number: 0
+  rpaths:
+    - lib/
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{compiler('cxx')}}
+    - cmake
+    - qwt 6.*
+    - qt=4.8.7=7
+    - zeromq=4.2.5=hfc679d8_5
+    - pyzmq
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libxext
+    - xorg-libsm
+    - xorg-libxau
+    - xorg-libxrender
+    - xorg-libxfixes
+    - {{ cdt('mesa-libgl-devel') }}      # [linux]
+    - {{ cdt('mesa-libegl-devel') }}     # [linux]
+    - {{ cdt('mesa-dri-drivers') }}      # [linux]
+    - {{ cdt('libselinux') }}      # [linux]
+    - {{ cdt('libxdamage') }}            # [linux]
+    - {{ cdt('libxxf86vm') }}            # [linux]
+
+  host:
+    - libstdcxx-ng
+    - libgcc-ng
+    - libpng >=1.6.32,<1.6.35
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libxext
+    - xorg-libsm
+    - xorg-libxau
+    - xorg-libxrender
+    - xorg-libxfixes
+
+  run:
+    - libstdcxx-ng
+    - libgcc-ng 
+
+outputs:
+  - name: sls_detector_lib
+    version: "developer"
+    script: copy_lib.sh
+  - name: sls_detector_gui
+    version: "developer"
+    script: copy_gui.sh
+    requirements:
+      run:
+        - sls_detector_lib=developer
+        - qwt 6.*
+        - qt=4.8.7=7

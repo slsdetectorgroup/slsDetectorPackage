@@ -1,12 +1,6 @@
 #ifndef SLS_INTERPOLATION_H
 #define SLS_INTERPOLATION_H
 
-#ifdef MYROOT1
-#include <TObject.h>
-#include <TTree.h>
-#include <TH2F.h>
-#endif
-
 #include <cstdlib> 
 #ifndef MY_TIFF_IO_H
 #include "tiffIO.h"
@@ -37,13 +31,7 @@ class slsInterpolation
  public:
  slsInterpolation(int nx=400, int ny=400, int ns=25) :nPixelsX(nx), nPixelsY(ny),  nSubPixels(ns), id(0) {
    
-#ifdef MYROOT1
-hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
-#endif
-   
-#ifndef MYROOT1
  hint=new int[ns*nx*ns*ny];
-#endif
 
 };
   
@@ -51,14 +39,9 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
    nPixelsX=orig->nPixelsX;
    nPixelsY=orig->nPixelsY;
    nSubPixels=orig->nSubPixels;
-#ifdef MYROOT1
-   hint=(TH2F*)(orig->hint)->Clone("hint");
-#endif
    
-#ifndef MYROOT1
    hint=new int[nSubPixels*nPixelsX*nSubPixels*nPixelsY];
    memcpy(hint, orig->hint,nSubPixels*nPixelsX*nSubPixels*nPixelsY*sizeof(int));
-#endif
  
  };
 
@@ -94,11 +77,6 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
   //create interpolated image
   //returns interpolated image
-#ifdef MYROOT1
-  virtual TH2F *getInterpolatedImage(){return hint;};
-#endif
-
-#ifndef MYROOT1
   virtual int *getInterpolatedImage(){
     //  cout << "return interpolated image " << endl;
     /* for (int i=0; i<nSubPixels*  nSubPixels* nPixelsX*nPixelsY; i++) { */
@@ -106,7 +84,6 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     /* } */
     return hint;
   };
-#endif
 
 
 
@@ -114,11 +91,12 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   void *writeInterpolatedImage(const char * imgname) {
     //cout << "!" <<endl;
     float *gm=NULL;
+    int *dummy=getInterpolatedImage();
     gm=new float[ nSubPixels*  nSubPixels* nPixelsX*nPixelsY];
     if (gm) {
       for (int ix=0; ix<nPixelsX*nSubPixels; ix++) {
 	for (int iy=0; iy<nPixelsY*nSubPixels; iy++) {
-	  gm[iy*nPixelsX*nSubPixels+ix]=hint[iy*nPixelsX*nSubPixels+ix];
+	  gm[iy*nPixelsX*nSubPixels+ix]=dummy[iy*nPixelsX*nSubPixels+ix];
 	}
       }
       WriteToTiff(gm, imgname,nSubPixels* nPixelsX ,nSubPixels* nPixelsY); 
@@ -142,16 +120,11 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   virtual void clearInterpolatedImage() {
 
 
-#ifdef MYROOT1
-    hint->Reset();
-#endif
-#ifndef MYROOT1
       for (int ix=0; ix<nPixelsX*nSubPixels; ix++) {
 	for (int iy=0; iy<nPixelsY*nSubPixels; iy++) {
 	  hint[iy*nPixelsX*nSubPixels+ix]=0;
 	}
       }
-#endif
 
 
   };
@@ -159,11 +132,6 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
 
 
-#ifdef MYROOT1
-  TH2F *addToImage(double int_x, double int_y){hint->Fill(int_x, int_y); return hint;};
-#endif
-
-#ifndef MYROOT1
   virtual int *addToImage(double int_x, double int_y){ 
     int iy=((double)nSubPixels)*int_y; 
     int ix=((double)nSubPixels)*int_x; 
@@ -176,7 +144,6 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
        
     return hint;
   };
-#endif
 
 
   virtual int addToFlatField(double *cluster, double &etax, double &etay)=0;
@@ -185,19 +152,11 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   virtual int  addToFlatField(double totquad,int quad,double *cluster,double &etax, double &etay)=0;
   virtual int addToFlatField(double etax, double etay)=0;
 
-#ifdef MYROOT1
-  virtual TH2D *getFlatField(){return NULL;};
-  virtual TH2D *setFlatField(TH2D *h, int nb=-1, double emin=-1, double emax=-1){return NULL;};
- virtual TH2D *getFlatField(int &nb, double &emin, double &emax){nb=0; emin=0; emax=0; return getFlatField();}; 
-#endif
-  
-#ifndef MYROOT1
   virtual int *getFlatField(){return NULL;};
   virtual int *setFlatField(int *h, int nb=-1, double emin=-1, double emax=-1){return NULL;}; 
   virtual void *writeFlatField(const char * imgname){return NULL;};
   virtual void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){return NULL;};
  virtual int *getFlatField(int &nb, double &emin, double &emax){nb=0; emin=0; emax=0; return getFlatField();}; 
-#endif
 
  virtual void resetFlatField()=0;
 
@@ -215,10 +174,10 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   static int calcQuad(double *cl, double &sum, double &totquad, double sDum[2][2]){
     
     int corner = UNDEFINED_QUADRANT;
-    double *cluster[3];
-    cluster[0]=cl;
-    cluster[1]=cl+3;
-    cluster[2]=cl+6;
+    /* double *cluster[3]; */
+    /* cluster[0]=cl; */
+    /* cluster[1]=cl+3; */
+    /* cluster[2]=cl+6; */
     
     sum=0;
     double sumBL=0;
@@ -228,11 +187,11 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     int xoff=0, yoff=0;
     for (int ix=0; ix<3; ix++) {
       for (int iy=0; iy<3; iy++) {
-	sum+=cluster[iy][ix];
-	 if (ix<=1 && iy<=1) sumBL+=cluster[iy][ix];
-	 if (ix<=1 && iy>=1) sumTL+=cluster[iy][ix];
-	 if (ix>=1 && iy<=1) sumBR+=cluster[iy][ix];
-	 if (ix>=1 && iy>=1) sumTR+=cluster[iy][ix];
+	sum+=cl[ix+3*iy];
+	 if (ix<=1 && iy<=1) sumBL+=cl[ix+iy*3];
+	 if (ix<=1 && iy>=1) sumTL+=cl[ix+iy*3];
+	 if (ix>=1 && iy<=1) sumBR+=cl[ix+iy*3];
+	 if (ix>=1 && iy>=1) sumTR+=cl[ix+iy*3];
       }
     }
 
@@ -240,6 +199,8 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     /* sDum[0][1] = cluster[0][1]; sDum[1][1] = cluster[1][1]; */
     corner = BOTTOM_LEFT;
     totquad=sumBL;
+    xoff=0;
+    yoff=0;
 
     
     if(sumTL  >= totquad){
@@ -274,7 +235,7 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
     for (int ix=0; ix<2; ix++) {
       for (int iy=0; iy<2; iy++) {
-	sDum[iy][ix] = cluster[iy+yoff][ix+xoff]; 
+	sDum[iy][ix] = cl[ix+xoff+(iy+yoff)*3]; 
       }
     }
   
@@ -396,7 +357,7 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
     //  int quad;
     for (int ix=0; ix<3; ix++) {
       for (int iy=0; iy<3; iy++) {
-	val=cl[iy+3*ix];
+	val=cl[ix+3*iy];
 	sum+=val;
 	if (iy==0) l+=val;
 	if (iy==2) r+=val;
@@ -440,92 +401,92 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
   }
 
 
-  static int calcMyEta(double totquad, int quad, double *cl, double &etax, double &etay) {
-    double l,r,t,b, sum;
-    int yoff;
-    switch (quad) {
-     case BOTTOM_LEFT:
-     case BOTTOM_RIGHT:
-       yoff=0;
-       break;
-     case TOP_LEFT:
-     case TOP_RIGHT:
-       yoff=1;
-       break;
-     default:
-       ;
-     } 
-      l=cl[0+yoff*3]+cl[0+yoff*3+3];
-      r=cl[2+yoff*3]+cl[2+yoff*3+3];
-      b=cl[0+yoff*3]+cl[1+yoff*3]*cl[2+yoff*3];
-      t=cl[0+yoff*3+3]+cl[1+yoff*3+3]*cl[0+yoff*3+3];
-      sum=t+b;
-    if (sum>0) {
-      etax=(-l+r)/sum;
-      etay=(+t)/sum;
-    }
+  /* static int calcMyEta(double totquad, int quad, double *cl, double &etax, double &etay) { */
+  /*   double l,r,t,b, sum; */
+  /*   int yoff; */
+  /*   switch (quad) { */
+  /*    case BOTTOM_LEFT: */
+  /*    case BOTTOM_RIGHT: */
+  /*      yoff=0; */
+  /*      break; */
+  /*    case TOP_LEFT: */
+  /*    case TOP_RIGHT: */
+  /*      yoff=1; */
+  /*      break; */
+  /*    default: */
+  /*      ; */
+  /*    }  */
+  /*     l=cl[0+yoff*3]+cl[0+yoff*3+3]; */
+  /*     r=cl[2+yoff*3]+cl[2+yoff*3+3]; */
+  /*     b=cl[0+yoff*3]+cl[1+yoff*3]*cl[2+yoff*3]; */
+  /*     t=cl[0+yoff*3+3]+cl[1+yoff*3+3]*cl[0+yoff*3+3]; */
+  /*     sum=t+b; */
+  /*   if (sum>0) { */
+  /*     etax=(-l+r)/sum; */
+  /*     etay=(+t)/sum; */
+  /*   } */
     
-    return -1;
-  }
+  /*   return -1; */
+  /* } */
 
-  static int calcMyEta(double totquad, int quad, int *cl, double &etax, double &etay) {
-    double l,r,t,b, sum;
-    int yoff;
-    switch (quad) {
-     case BOTTOM_LEFT:
-     case BOTTOM_RIGHT:
-       yoff=0;
-       break;
-     case TOP_LEFT:
-     case TOP_RIGHT:
-       yoff=1;
-       break;
-     default:
-       ;
-     } 
-      l=cl[0+yoff*3]+cl[0+yoff*3+3];
-      r=cl[2+yoff*3]+cl[2+yoff*3+3];
-      b=cl[0+yoff*3]+cl[1+yoff*3]*cl[2+yoff*3];
-      t=cl[0+yoff*3+3]+cl[1+yoff*3+3]*cl[0+yoff*3+3];
-      sum=t+b;
-    if (sum>0) {
-      etax=(-l+r)/sum;
-      etay=(+t)/sum;
-    }
+  /* static int calcMyEta(double totquad, int quad, int *cl, double &etax, double &etay) { */
+  /*   double l,r,t,b, sum; */
+  /*   int yoff; */
+  /*   switch (quad) { */
+  /*    case BOTTOM_LEFT: */
+  /*    case BOTTOM_RIGHT: */
+  /*      yoff=0; */
+  /*      break; */
+  /*    case TOP_LEFT: */
+  /*    case TOP_RIGHT: */
+  /*      yoff=1; */
+  /*      break; */
+  /*    default: */
+  /*      ; */
+  /*    }  */
+  /*     l=cl[0+yoff*3]+cl[0+yoff*3+3]; */
+  /*     r=cl[2+yoff*3]+cl[2+yoff*3+3]; */
+  /*     b=cl[0+yoff*3]+cl[1+yoff*3]*cl[2+yoff*3]; */
+  /*     t=cl[0+yoff*3+3]+cl[1+yoff*3+3]*cl[0+yoff*3+3]; */
+  /*     sum=t+b; */
+  /*   if (sum>0) { */
+  /*     etax=(-l+r)/sum; */
+  /*     etay=(+t)/sum; */
+  /*   } */
     
-    return -1;
-  }
+  /*   return -1; */
+  /* } */
 
 
 
-  static int calcEta3X(double *cl, double &etax, double &etay, double &sum) {
-    double l,r,t,b;
-    sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8];
-    if (sum>0) {
-      l=cl[3];
-      r=cl[5];
-      b=cl[1];
-      t=cl[7];
-      etax=(-l+r)/sum;
-      etay=(-b+t)/sum;
-    }
-    return -1;
-  }
+  /* static int calcEta3X(double *cl, double &etax, double &etay, double &sum) { */
+  /*   double l,r,t,b; */
+  /*   sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8]; */
+  /*   if (sum>0) { */
+  /*     l=cl[3]; */
+  /*     r=cl[5]; */
+  /*     b=cl[1]; */
+  /*     t=cl[7]; */
+  /*     etax=(-l+r)/sum; */
+  /*     etay=(-b+t)/sum; */
+  /*   } */
+  /*   return -1; */
+  /* } */
 
 
-  static int calcEta3X(int *cl, double &etax, double &etay, double &sum) {
-    double l,r,t,b;
-    sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8];
-    if (sum>0) {
-      l=cl[3];
-      r=cl[5];
-      b=cl[1];
-      t=cl[7];
-      etax=(-l+r)/sum;
-      etay=(-b+t)/sum;
-    }
-    return -1;
-  }
+  /* static int calcEta3X(int *cl, double &etax, double &etay, double &sum) { */
+  /*   double l,r,t,b; */
+  /*   sum=cl[0]+cl[1]+cl[2]+cl[3]+cl[4]+cl[5]+cl[6]+cl[7]+cl[8]; */
+  /*   if (sum>0) { */
+  /*     l=cl[3]; */
+  /*     r=cl[5]; */
+  /*     b=cl[1]; */
+  /*     t=cl[7]; */
+  /*     etax=(-l+r)/sum; */
+  /*     etay=(-b+t)/sum; */
+  /*   } */
+  /*   return -1; */
+  /* } */
 
 
 
@@ -534,15 +495,9 @@ hint=new TH2F("hint","hint",ns*nx, 0, nx, ns*ny, 0, ny);
 
  protected:
   int nPixelsX, nPixelsY;
-  int nSubPixels; 
-#ifdef MYROOT1
-  TH2F *hint;
-#endif
-#ifndef MYROOT1
-  int *hint;
-#endif
+  int nSubPixels;
   int id;
-
+  int *hint;
 };
 
 #endif

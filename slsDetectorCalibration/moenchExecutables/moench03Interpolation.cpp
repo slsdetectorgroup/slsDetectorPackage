@@ -14,14 +14,14 @@
 #include "single_photon_hit.h"
 #endif
 
-#include "etaInterpolationPosXY.h"
+//#include "etaInterpolationPosXY.h"
 #include "noInterpolation.h"
-//#include "etaInterpolationAdaptiveBins.h"
+#include "etaInterpolationCleverAdaptiveBins.h"
 //#include "etaInterpolationRandomBins.h"
 using namespace std;
 #define NC 400
 #define NR 400
-
+#define MAX_ITERATIONS (nSubPixels*100)
 
 #define XTALK
 
@@ -65,9 +65,10 @@ int main(int argc, char *argv[]) {
   float cmax=atof(argv[iarg++]);
   cout << "Energy min: " << cmin << endl;
   cout << "Energy max: " << cmax << endl;
-  
+  //int etabins=500;
   int etabins=1000;//nsubpix*2*100;
   double etamin=-1, etamax=2;
+  //double etamin=-0.1, etamax=1.1;
   double eta3min=-2, eta3max=2;
   int quad;
   double sum, totquad;
@@ -90,15 +91,18 @@ int main(int argc, char *argv[]) {
     single_photon_hit cl(3,3);
 #endif
 
+    int nSubPixels=nsubpix;
+    //eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
+    eta2InterpolationCleverAdaptiveBins *interp=new eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin, etamax);
+  
 
-    eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
-   
+ 
 #ifndef FF
     cout << "read ff " << argv[2] << endl;
     sprintf(fname,"%s",argv[2]);
     interp->readFlatField(fname);
-    interp->prepareInterpolation(ok);
-
+    interp->prepareInterpolation(ok, MAX_ITERATIONS);
+    // return 0;
 #endif
 #ifdef FF
     cout << "Will write eta file " << argv[2] << endl;
@@ -147,22 +151,27 @@ int main(int argc, char *argv[]) {
 	    nph++;
 	    //  if (sum>200 && sum<580) {
 	    //  interp->getInterpolatedPosition(cl.x,cl.y, totquad,quad,cl.get_cluster(),int_x, int_y);
-#ifdef SOLEIL
-	    if (cl.x>210 && cl.x<240 && cl.y>210 && cl.y<240) {
-#endif
+// #ifdef SOLEIL
+// 	    if (cl.x>210 && cl.x<240 && cl.y>210 && cl.y<240) {
+// #endif
 #ifndef FF
-	    interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);
-	    interp->addToImage(int_x, int_y);
+	      interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);
+	      // cout <<"**************"<< endl;
+	      // cout << cl.x << " " << cl.y << " " << sum << endl;
+	      // cl.print();
+	      // cout << int_x << " " << int_y << endl;
+	      // cout <<"**************"<< endl;
+	      interp->addToImage(int_x, int_y);
 #endif
 #ifdef FF
 	    interp->addToFlatField(cl.get_cluster(), etax, etay);
 #endif
-#ifdef SOLEIL
-	    }
-#endif
+// #ifdef SOLEIL
+// 	    }
+// #endif
 	    
 	    if (nph%1000000==0) cout << nph << endl;
-	    if (nph%100000000==0) { 
+	    if (nph%10000000==0) { 
 #ifndef FF
 		interp->writeInterpolatedImage(outfname);
 #endif

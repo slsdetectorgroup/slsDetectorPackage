@@ -18,7 +18,7 @@ void *WriteToTiff(float * imgData, const char * imgname, int nrow, int ncol){
   int sampleperpixel=1;
   // unsigned char * buff=NULL;
   tsize_t linebytes;
- cout << "--" <<endl;
+  // cout << "--" <<endl;
   TIFF * tif = TIFFOpen(imgname,"w");
   if (tif) {
     TIFFSetField(tif,TIFFTAG_IMAGEWIDTH,ncol);

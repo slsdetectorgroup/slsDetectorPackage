@@ -182,6 +182,21 @@ class single_photon_hit {
     return 0;
   };
 
+  void print() {
+
+    int ix, iy;
+    
+    for (int iy=0; iy<dy; iy++) {
+      for (int ix=0; ix<dx; ix++) {
+	printf("%d \t",data[ix+iy*dx]);
+
+      }
+    printf("\n");
+    }
+
+  }
+
+
     /** 
 	assign the value to the element of the cluster matrix, with relative coordinates where the center of the cluster is (0,0)
 	\param v value to be set

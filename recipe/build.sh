@@ -6,7 +6,7 @@ cmake .. \
       -DCMAKE_INSTALL_PREFIX=install \
       -DUSE_TEXTCLIENT=ON \
       -DUSE_RECEIVER=ON \
-      -DUSE_GUI=ON \
+      -DUSE_GUI=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -DUSE_HDF5=OFF\
      

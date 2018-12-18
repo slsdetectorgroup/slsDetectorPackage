@@ -36,20 +36,22 @@ target_link_libraries(slsDetectorShared
 	zmq
 )
 
+
+
 set(PUBLICHEADERS
-    ../slsSupportLib/include/sls_detector_defs.h
-    ../slsSupportLib/include/sls_detector_funcs.h
-    ../slsSupportLib/include/error_defs.h
-    ../slsSupportLib/include/versionAPI.h
-    ../slsSupportLib/include/sls_detector_exceptions.h
-    ../slsSupportLib/include/utilties.h
-    ../slsSupportLib/include/container_utils.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/sls_detector_defs.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/sls_detector_funcs.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/error_defs.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/versionAPI.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/sls_detector_exceptions.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/utilities.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/container_utils.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetector.h
     slsDetector/slsDetectorUsers.h
     slsDetector/detectorData.h
     multiSlsDetector/multiSlsDetector.h
-    ../slsSupportLib/include/ClientInterface.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/ClientInterface.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

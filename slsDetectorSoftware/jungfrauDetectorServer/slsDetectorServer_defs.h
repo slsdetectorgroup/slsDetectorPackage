@@ -76,7 +76,6 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define DEFAULT_STRG_CLL_STRT       (0xf)
 
 /* Defines in the Firmware */
-#define FIX_PATT_VAL    			(0xACDC2014)
 #define ADC_PORT_INVERT_VAL   		(0x453b2a9c)
 #define MAX_TIMESLOT_VAL            (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL      (127999) //millidegrees

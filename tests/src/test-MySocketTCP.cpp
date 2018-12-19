@@ -52,35 +52,36 @@ TEST_CASE("Open two sockets on the same port fails and throws") {
 
 // }
 
-TEST_CASE("Have two clients connect to the same server") {
-    const int port_number{1966};
+// TEST_CASE("Have two clients connect to the same server") {
+//     const int port_number{1966};
 
-    auto server = MySocketTCP(port_number);
+//     auto server = MySocketTCP(port_number);
 
-    auto client1 = MySocketTCP("localhost", port_number);
-    auto client2 = MySocketTCP("localhost", port_number);
-    client1.SetTimeOut(1);
-    client2.SetTimeOut(1);
-    server.SetTimeOut(1);
-    auto fd1 = client1.Connect();
+//     auto client1 = MySocketTCP("localhost", port_number);
+//     auto client2 = MySocketTCP("localhost", port_number);
+//     client1.SetTimeOut(1);
+//     client2.SetTimeOut(1);
+//     server.SetTimeOut(1);
 
-    auto fd2 = client2.Connect();
-    server.Connect();
+//     auto fd1 = client1.Connect();
+//     auto fd2 = client2.Connect();
 
-    REQUIRE(fd1 > 0);
-    REQUIRE(fd2 > 0);
+//     server.Connect();
 
-    std::cout << "fd1 " << fd1 << '\n';
-    std::cout << "fd2 " << fd2 << '\n';
+//     REQUIRE(fd1 > 0);
+//     REQUIRE(fd2 > 0);
 
-    std::vector<char> message_to_send{'H', 'e', 'l', 'l', 'o'};
-    std::vector<char> received_message(message_to_send.size());
+//     std::cout << "fd1 " << fd1 << '\n';
+//     std::cout << "fd2 " << fd2 << '\n';
 
-    client1.SendDataOnly(message_to_send.data(), message_to_send.size());
-    auto n1 = server.ReceiveDataOnly(received_message.data(), received_message.size());
-    std::cout << "n1 " << n1 << '\n';
+//     std::vector<char> message_to_send{'H', 'e', 'l', 'l', 'o'};
+//     std::vector<char> received_message(message_to_send.size());
 
-    client2.SendDataOnly(message_to_send.data(), message_to_send.size());
-    auto n2 = server.ReceiveDataOnly(received_message.data(), received_message.size());
-    std::cout << "n2 " << n2 << '\n';
-}
+//     client1.SendDataOnly(message_to_send.data(), message_to_send.size());
+//     auto n1 = server.ReceiveDataOnly(received_message.data(), received_message.size());
+//     std::cout << "n1 " << n1 << '\n';
+
+//     client2.SendDataOnly(message_to_send.data(), message_to_send.size());
+//     auto n2 = server.ReceiveDataOnly(received_message.data(), received_message.size());
+//     std::cout << "n2 " << n2 << '\n';
+// }

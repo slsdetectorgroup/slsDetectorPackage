@@ -4022,8 +4022,8 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 		//  printf("chiptestboard!\n");
 		adc=(dacIndex)(idac+1000);
         if (idac < SLOW_ADC0 || idac > SLOW_ADC_TEMP)
-            return (string ("cannot set adc, must be between ") + (SLOW_ADC0 - 1000) +
-                    string (" and ") + (SLOW_ADC_TEMP - 1000));
+            return (std::string ("cannot set adc, must be between ") + std::to_string(SLOW_ADC0 - 1000) +
+                    std::string (" and ") + std::to_string(SLOW_ADC_TEMP - 1000));
 	} else if (cmd=="temp_adc")
 		adc=TEMPERATURE_ADC;
 	else if (cmd=="temp_fpga")
@@ -4063,7 +4063,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 	else if (cmd=="i_io")
 		adc=I_POWER_IO;
 	else
-		return string("cannot decode adc ")+cmd;
+		return std::string("cannot decode adc ")+cmd;
 
 	myDet->setOnline(ONLINE_FLAG, detPos);
 	if (myDet->getDetectorsType(detPos) == EIGER || myDet->getDetectorsType(detPos) == JUNGFRAU){
@@ -4081,7 +4081,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 	else
 		strcat(answer,"mV");
 
-	return string(answer);
+	return std::string(answer);
 
 }
 

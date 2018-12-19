@@ -86,7 +86,8 @@ public:
 		EIGER, /**< eiger */
 		GOTTHARD, /**< gotthard */
 		JUNGFRAU, /**< jungfrau */
-		CHIPTESTBOARD /**< CTB */
+		CHIPTESTBOARD, /**< CTB */
+		MOENCH /**< moench */
 	};
 
 
@@ -117,7 +118,7 @@ public:
 		MEASUREMENTS_NUMBER,
 		FRAMES_FROM_START,
 		FRAMES_FROM_START_PG,
-		SAMPLES_JCTB,
+		SAMPLES,
 		SUBFRAME_ACQUISITION_TIME, /**< subframe exposure time */
 		STORAGE_CELL_NUMBER, /**<number of storage cells */
 		SUBFRAME_DEADTIME, /**< subframe deadtime */
@@ -787,8 +788,8 @@ public:
 		    }};
 
 		  /** returns std::string from timer index
-		      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES_JCTB,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER, SUBFRAME_DEADTIME
-		      \returns std::string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples_jctb,subframe_acquisition_time,storage_cell_number, SUBFRAME_DEADTIME
+		      \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD, DELAY_AFTER_TRIGGER,GATES_NUMBER, CYCLES_NUMBER, ACTUAL_TIME,MEASUREMENT_TIME, PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER, SUBFRAME_DEADTIME
+		      \returns std::string frame_number,acquisition_time,frame_period, delay_after_trigger,gates_number, cycles_number, actual_time,measurement_time, progress,measurements_number,frames_from_start,frames_from_start_pg,samples,subframe_acquisition_time,storage_cell_number, SUBFRAME_DEADTIME
 		  */
 		  static std::string getTimerType(timerIndex t){										\
 		    switch (t) {																\
@@ -804,7 +805,7 @@ public:
 		    case MEASUREMENTS_NUMBER: 		return std::string("measurements_number"); 		\
 		    case FRAMES_FROM_START: 		return std::string("frames_from_start"); 		\
 		    case FRAMES_FROM_START_PG: 		return std::string("frames_from_start_pg"); 		\
-		    case SAMPLES_JCTB: 				return std::string("samples_jctb"); 				\
+		    case SAMPLES: 				return std::string("samples"); 				\
 		    case SUBFRAME_ACQUISITION_TIME:	return std::string("subframe_acquisition_time");	\
 		    case SUBFRAME_DEADTIME:			return std::string("subframe_deadtime");			\
 		    case STORAGE_CELL_NUMBER:       return std::string("storage_cell_number");       \

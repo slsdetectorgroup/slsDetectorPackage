@@ -64,7 +64,7 @@ void basictests() {
     firmware_check_done = 0;
     memset(firmware_message, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    FILE_LOG(logINFOBLUE, ("******** %s Virtual Server *****************\n", DETNAME));
+    FILE_LOG(logINFOBLUE, ("******** Chip Test Board Virtual Server *****************\n"));
     if (mapCSP0() == FAIL) {
     	strcpy(firmware_message,
 				"Could not map to memory. Dangerous to continue.\n");
@@ -110,7 +110,7 @@ void basictests() {
 
 	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
 	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
-	FILE_LOG(logINFOBLUE, ("************ %s Server *********************\n"
+	FILE_LOG(logINFOBLUE, ("************ Chip Test Board Server *********************\n"
 			"Hardware Version:\t\t 0x%x\n"
 			"Hardware Serial Nr:\t\t 0x%x\n"
 
@@ -123,7 +123,6 @@ void basictests() {
 			"Required Firmware Version:\t 0x%x\n"
 			"Client-Software API Version:\t 0x%llx\n"
 			"********************************************************\n",
-			DETNAME,
 			hversion, hsnumber,
 			ipadd,
 			(long  long unsigned int)macadd,
@@ -189,13 +188,10 @@ int checkType() {
 	uint32_t type = ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
 
 	uint32_t expectedType = FPGA_VERSION_DTCTR_TYP_CTB_VAL;
-#ifdef JCTB
-	expectedType = FPGA_VERSION_DTCTR_TYP_JCTB_VAL;
-#endif
 
 	if (type != expectedType) {
-        FILE_LOG(logERROR, ("This is not a %s Server (read %d, expected %d)\n",
-                DETNAME, type, expectedType));
+        FILE_LOG(logERROR, ("This is not a Chip Test Board Server (read %d, expected %d)\n",
+                type, expectedType));
         return FAIL;
 	}
 	return OK;
@@ -529,7 +525,7 @@ void setupDetector() {
 	resetCore();
 
 	//Initialization of acquistion parameters
-    setTimer(SAMPLES_JCTB, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
+    setTimer(SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
@@ -937,7 +933,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logDEBUG1, ("Getting #cycles: %lld\n", (long long int)retval));
 		break;
 
-	case SAMPLES_JCTB:
+	case SAMPLES:
 	    if(val >= 0) {
 	        FILE_LOG(logINFO, ("Setting #samples: %lld\n", (long long int)val));
 	        nSamples = val;

@@ -4253,7 +4253,7 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
     else if (cmd == "measurements")
         index = MEASUREMENTS_NUMBER;
     else if (cmd == "samples")
-        index = SAMPLES_JCTB;
+        index = SAMPLES;
     else if (cmd == "storagecells")
         index = STORAGE_CELL_NUMBER;
     else if (cmd == "storagecell_start") {

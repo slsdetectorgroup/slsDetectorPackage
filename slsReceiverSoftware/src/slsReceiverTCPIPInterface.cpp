@@ -803,7 +803,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 				case SUBFRAME_DEADTIME:
 					receiver->setSubPeriod(index[1] + receiver->getSubExpTime());
 					break;
-				case SAMPLES_JCTB:
+				case SAMPLES:
 					if (myDetectorType != CHIPTESTBOARD) {
 						modeNotImplemented("(Samples) Timer index", (int)index[0]);
 						break;
@@ -835,7 +835,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 		case SUBFRAME_DEADTIME:
 			retval=(receiver->getSubPeriod() - receiver->getSubExpTime());
 			break;
-		case SAMPLES_JCTB:
+		case SAMPLES:
 			if (myDetectorType != CHIPTESTBOARD) {
 				ret = FAIL;
 				sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);

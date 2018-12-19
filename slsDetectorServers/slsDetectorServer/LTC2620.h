@@ -123,7 +123,7 @@ int LTC2620_VoltageToDac(int voltage, int* dacval) {
  * @returns FAIL when voltage outside limits, OK if conversion successful
  */
 int LTC2620_DacToVoltage(int dacval, int* voltage) {
-    return Common_VoltageToDac(dacval, voltage, LTC2620_MIN_MV, LTC2620_MaxMV, LTC2620_MAX_STEPS);
+    return Common_DacToVoltage(dacval, voltage, LTC2620_MIN_MV, LTC2620_MaxMV, LTC2620_MAX_STEPS);
 }
 
 /**
@@ -147,11 +147,11 @@ void LTC2620_Configure(){
 
 
 /**
- * Set Dac value (obtains dacaddr, command and ichip and calls LTC2620_Set)
+ * Set Dac (obtains dacaddr, command and ichip and calls LTC2620_Set)
  * @param dacnum dac number
  * @param data dac value to set
  */
-void LTC2620_SetDACValue (int dacnum, int data) {
+void LTC2620_SetDAC (int dacnum, int data) {
     FILE_LOG(logDEBUG1, ("\tSetting dac %d to %d\n", dacnum, data));
     // LTC2620 index
     int ichip =  dacnum / LTC2620_NUMCHANNELS;

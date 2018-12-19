@@ -1176,7 +1176,7 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
     auto r = parallelCall(&slsDetector::setTimer, index, t);
     int64_t ret = sls::minusOneIfDifferent(r);
 
-    if (index == SAMPLES_JCTB)
+    if (index == SAMPLES)
         setDynamicRange();
 
     // set progress

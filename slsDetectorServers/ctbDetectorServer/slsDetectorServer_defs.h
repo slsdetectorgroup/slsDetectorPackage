@@ -10,12 +10,6 @@
 #define PROGRAMMING_MODE            (0x2)
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
-#ifdef JCTB
-#define DETNAME = "Jungfrau Chip Test Board";
-#else
-#define DETNAME = "Chip Test Board";
-#endif
-
 /* Struct Definitions */
 typedef struct ip_header_struct {
 	uint16_t     ip_len;
@@ -86,11 +80,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define VCHIP_POWER_INCRMNT         (200)
 
 #define IP_PACKETSIZE               (0x2032)
-#ifndef JCTB
-#define ADC_PORT_INVERT_VAL         (0x453b2593)
-#else
 #define ADC_PORT_INVERT_VAL   		(0x453b2593)
-#endif
 #define MAXIMUM_ADC_CLK             (40)
 #define PLL_VCO_FREQ_MHZ            (400)
 

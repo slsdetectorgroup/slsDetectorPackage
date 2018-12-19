@@ -16,6 +16,8 @@ const enum detectorType myDetectorType = EIGER;
 const enum detectorType myDetectorType = JUNGFRAU;
 #elif CHIPTESTBOARDD
 const enum detectorType myDetectorType = CHIPTESTBOARD;
+#elif MOENCHD
+const enum detectorType myDetectorType = MOENCH;
 #else
 const enum detectorType myDetectorType = GENERIC;
 #endif
@@ -33,7 +35,7 @@ extern char mess[MAX_STR_LENGTH];
 // Variables that will be exported
 int sockfd = 0;
 int debugflag = 0;
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int dataBytes = 0;
 uint16_t *ramValues = 0;
 int nframes = 0;
@@ -131,7 +133,7 @@ const char* getTimerName(enum timerIndex ind) {
     case MEASUREMENTS_NUMBER:       return "measurements_number";
     case FRAMES_FROM_START:         return "frames_from_start";
     case FRAMES_FROM_START_PG:      return "frames_from_start_pg";
-    case SAMPLES_JCTB:              return "samples_jctb";
+    case SAMPLES:              return "samples";
     case SUBFRAME_ACQUISITION_TIME: return "subframe_acquisition_time";
     case SUBFRAME_DEADTIME:         return "subframe_deadtime";
     case STORAGE_CELL_NUMBER:       return "storage_cell_number";
@@ -1509,7 +1511,7 @@ int set_timer(int file_des) {
 #endif
 		case FRAME_PERIOD:
 		case CYCLES_NUMBER:
-		case SAMPLES_JCTB:
+		case SAMPLES:
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 		case DELAY_AFTER_TRIGGER:
 #endif
@@ -1568,7 +1570,7 @@ int set_timer(int file_des) {
         case STORAGE_CELL_NUMBER:
 		    validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
 		    break;
-        case SAMPLES_JCTB:
+        case SAMPLES:
             if (retval == -1) {
                 ret = FAIL;
                 retval = setTimer(ind, -1);

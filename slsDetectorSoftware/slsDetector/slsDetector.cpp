@@ -413,7 +413,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->timerValue[MEASUREMENTS_NUMBER] = 1;
 	thisDetector->timerValue[FRAMES_FROM_START] = 0;
 	thisDetector->timerValue[FRAMES_FROM_START_PG] = 0;
-	thisDetector->timerValue[SAMPLES_JCTB] = 1;
+	thisDetector->timerValue[SAMPLES] = 1;
 	thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME] = 0;
 	thisDetector->timerValue[STORAGE_CELL_NUMBER] = 0;
 	thisDetector->timerValue[SUBFRAME_DEADTIME] = 0;
@@ -903,7 +903,7 @@ int slsDetector::getTotalNumberOfChannels() {
 		}
 		thisDetector->nChans = thisDetector->nChan[X];
 		thisDetector->dataBytes = thisDetector->nChans * thisDetector->nChips * 2
-				* thisDetector->timerValue[SAMPLES_JCTB];
+				* thisDetector->timerValue[SAMPLES];
 	}
 
 	FILE_LOG(logDEBUG1) << "Total number of channels: " <<
@@ -1408,7 +1408,7 @@ int slsDetector::updateDetectorNoWait() {
 	if (thisDetector->myDetectorType == CHIPTESTBOARD) {
 		n += controlSocket->ReceiveDataOnly(&i64, sizeof(i64));
 		if (i64 >= 0)
-			thisDetector->timerValue[SAMPLES_JCTB] = i64;
+			thisDetector->timerValue[SAMPLES] = i64;
 
 		n += controlSocket->ReceiveDataOnly(&i32, sizeof(i32));
 		thisDetector->roFlags = (readOutFlags)i32;
@@ -2253,7 +2253,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 	if (oldtimer != thisDetector->timerValue[index]) {
 		// jctb: change samples, change databytes
 		if (thisDetector->myDetectorType == CHIPTESTBOARD) {
-			if (index == SAMPLES_JCTB) {
+			if (index == SAMPLES) {
 				setDynamicRange();
 				FILE_LOG(logINFO) << "Changing samples: data size = " << thisDetector->dataBytes;
 			}
@@ -2279,7 +2279,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 		case ACQUISITION_TIME:
 		case SUBFRAME_ACQUISITION_TIME:
 		case SUBFRAME_DEADTIME:
-		case SAMPLES_JCTB:
+		case SAMPLES:
 		case STORAGE_CELL_NUMBER:
 			// send
 			fnum = F_SET_RECEIVER_TIMER;
@@ -2318,7 +2318,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 						break;
 					case SUBFRAME_ACQUISITION_TIME:
 					case SUBFRAME_DEADTIME:
-					case SAMPLES_JCTB:
+					case SAMPLES:
 						setErrorMask((getErrorMask())|(RECEIVER_TIMER_NOT_SET));
 						break;
 					case FRAME_NUMBER:
@@ -2950,7 +2950,7 @@ std::string slsDetector::setReceiver(std::string receiverIP) {
 				"\nframe number:" << (thisDetector->timerValue[FRAME_NUMBER]) <<
 				"\nsub exp time:" << (thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]) <<
 				"\nsub dead time:" << (thisDetector->timerValue[SUBFRAME_DEADTIME]) <<
-				"\nsamples:" << (thisDetector->timerValue[SAMPLES_JCTB]) <<
+				"\nsamples:" << (thisDetector->timerValue[SAMPLES]) <<
 				"\ndynamic range:" << thisDetector->dynamicRange <<
 				"\nflippeddatax:" << (thisDetector->flippedData[X]) <<
 				"\nactivated: " << thisDetector->activated <<
@@ -2987,7 +2987,7 @@ std::string slsDetector::setReceiver(std::string receiverIP) {
 				setTimer(SUBFRAME_DEADTIME,thisDetector->timerValue[SUBFRAME_DEADTIME]);
 			}
 			if (thisDetector->myDetectorType == CHIPTESTBOARD)
-				setTimer(SAMPLES_JCTB,thisDetector->timerValue[SAMPLES_JCTB]);
+				setTimer(SAMPLES,thisDetector->timerValue[SAMPLES]);
 			setDynamicRange(thisDetector->dynamicRange);
 			if (thisDetector->myDetectorType == EIGER) {
 				setFlippedData(X,-1);

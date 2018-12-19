@@ -1,11 +1,7 @@
 #pragma once
 
 /* Definitions for FPGA */
-#ifdef JCTB
-#define MEM_MAP_SHIFT 11
-#else
 #define MEM_MAP_SHIFT 1
-#endif
 
 /* FPGA Version RO register */
 #define FPGA_VERSION_REG      			    (0x00 << MEM_MAP_SHIFT)
@@ -14,7 +10,6 @@
 #define FPGA_VERSION_BRD_RVSN_MSK			(0x00FFFFFF << FPGA_VERSION_BRD_RVSN_OFST)
 #define FPGA_VERSION_DTCTR_TYP_OFST		    (24)
 #define FPGA_VERSION_DTCTR_TYP_MSK   	    (0x000000FF << FPGA_VERSION_DTCTR_TYP_OFST)
-#define FPGA_VERSION_DTCTR_TYP_JCTB_VAL     ((0x2 << FPGA_VERSION_DTCTR_TYP_OFST) & FPGA_VERSION_DTCTR_TYP_MSK)
 #define FPGA_VERSION_DTCTR_TYP_CTB_VAL      ((0x3 << FPGA_VERSION_DTCTR_TYP_OFST) & FPGA_VERSION_DTCTR_TYP_MSK)
 
 /* Fix pattern RO register */

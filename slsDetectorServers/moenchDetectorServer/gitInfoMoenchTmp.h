@@ -1,0 +1,6 @@
+#define GITURL ""
+#define GITREPUUID ""
+#define GITAUTH ""
+#define GITREV ""
+#define GITDATE ""
+#define GITBRANCH ""

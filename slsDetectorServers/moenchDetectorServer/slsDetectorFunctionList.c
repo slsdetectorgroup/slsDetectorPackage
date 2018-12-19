@@ -1,14 +1,12 @@
 #include "slsDetectorFunctionList.h"
-#include "gitInfoCtb.h"
+#include "gitInfoMoench.h"
 #include "versionAPI.h"
 #include "logger.h"
 
 #ifndef VIRTUAL
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
-#include "AD7689.h"     // slow adcs
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
-#include "INA226.h"     // i2c
 #include "programfpga.h"
 #else
 #include "blackfin.h"
@@ -64,7 +62,7 @@ void basictests() {
     firmware_check_done = 0;
     memset(firmware_message, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    FILE_LOG(logINFOBLUE, ("******** Chip Test Board Virtual Server *****************\n"));
+    FILE_LOG(logINFOBLUE, ("******** Moench Detector Virtual Server *****************\n"));
     if (mapCSP0() == FAIL) {
     	strcpy(firmware_message,
 				"Could not map to memory. Dangerous to continue.\n");
@@ -110,7 +108,7 @@ void basictests() {
 
 	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
 	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
-	FILE_LOG(logINFOBLUE, ("************ Chip Test Board Server *********************\n"
+	FILE_LOG(logINFOBLUE, ("************ Moench Detector Server *********************\n"
 			"Hardware Version:\t\t 0x%x\n"
 			"Hardware Serial Nr:\t\t 0x%x\n"
 
@@ -187,10 +185,10 @@ int checkType() {
 #endif
 	uint32_t type = ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
 
-	uint32_t expectedType = FPGA_VERSION_DTCTR_TYP_CTB_VAL;
+	uint32_t expectedType = FPGA_VERSION_DTCTR_TYP_MOENCH_VAL;
 
 	if (type != expectedType) {
-        FILE_LOG(logERROR, ("This is not a Chip Test Board Server (read %d, expected %d)\n",
+        FILE_LOG(logERROR, ("This is not a Moench Detector Server (read %d, expected %d)\n",
                 type, expectedType));
         return FAIL;
 	}
@@ -338,7 +336,7 @@ int64_t getDetectorId(enum idMode arg){
 	case DETECTOR_SOFTWARE_VERSION:
 		return  (GITDATE & 0xFFFFFF);
 	case CLIENT_SOFTWARE_API_VERSION:
-		return APICTB;
+		return APIMOENCH;
 	default:
 		return retval;
 	}
@@ -479,13 +477,11 @@ void setupDetector() {
 	cleanFifos();
 
 	// set spi defines
-	AD7689_SetDefines(ADC_SPI_REG, ADC_SPI_SLOW_VAL_REG, ADC_SPI_SLOW_SRL_CNV_MSK, ADC_SPI_SLOW_SRL_CLK_MSK, ADC_SPI_SLOW_SRL_DT_MSK, ADC_SPI_SLOW_SRL_DT_OFST);
 	AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
     LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, MAX_DAC_VOLTAGE_VALUE);
     MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST);
 
     // disable spi
-	AD7689_Disable();
 	AD9257_Disable();
 	LTC2620_Disable();
 	MAX1932_Disable();
@@ -493,15 +489,6 @@ void setupDetector() {
 #ifndef VIRTUAL
     //  adcs
 	AD9257_Configure();
-	// slow adcs
-	AD7689_Configure();
-	// I2C
-	INA226_ConfigureI2CCore();
-	INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
     // dacs
     LTC2620_Configure();
 #endif
@@ -1304,34 +1291,7 @@ int getADC(enum ADCINDEX ind){
     return 0;
 #endif
     int idac = (int)ind;
-    switch(ind) {
-    case V_PWR_IO:
-    case V_PWR_A:
-    case V_PWR_B:
-    case V_PWR_C:
-    case V_PWR_D:
-        return INA226_ReadVoltage(I2C_TRANSFER_COMMAND_FIFO_REG, I2C_RX_DATA_FIFO_LEVEL_REG,
-                I2C_POWER_VIO_DEVICE_ID + (int)ind);
-    case I_PWR_IO:
-    case I_PWR_A:
-    case I_PWR_B:
-    case I_PWR_C:
-    case I_PWR_D:
-        return INA226_ReadCurrent(I2C_TRANSFER_COMMAND_FIFO_REG, I2C_RX_DATA_FIFO_LEVEL_REG,
-                I2C_POWER_VIO_DEVICE_ID + (int)(ind - I_PWR_IO));
-
-        // slow adcs
-    case SLOW_ADC_TEMP:
-        return AD7689_GetTemperature();
-    case SLOW_ADC0:
-    case SLOW_ADC1:
-    case SLOW_ADC2:
-    case SLOW_ADC3:
-    case SLOW_ADC4:
-    case SLOW_ADC5:
-    case SLOW_ADC6:
-    case SLOW_ADC7:
-        return AD7689_GetChannel(ind - SLOW_ADC0);
+ //FIXME: temperature??
     default:
         FILE_LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
         return -1;

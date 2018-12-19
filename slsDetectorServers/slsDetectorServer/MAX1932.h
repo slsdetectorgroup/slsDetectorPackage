@@ -52,13 +52,13 @@ void MAX1932_Configure(){
 
 
 /**
- * Set
- * @param dacnum dac number
- * @param data dac value to set
+ * Set value
+ * @param val value to set
  */
-void MAX1932_Set (int dacnum, int data) {
-    FILE_LOG(logDEBUG1, ("\tSetting dac %d to %d\n", dacnum, data));
+void MAX1932_Set (int val) {
+    FILE_LOG(logDEBUG1, ("\tSetting high voltage to %d\n", val));
 
 }
+
 
 

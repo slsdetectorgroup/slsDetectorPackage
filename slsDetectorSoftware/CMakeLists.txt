@@ -6,6 +6,7 @@ set(SOURCES
     slsDetector/slsDetector.cpp 
     ../slsSupportLib/include/ClientInterface.cpp
     ../slsSupportLib/include/utilities.cpp
+    ../slsSupportLib/src/string_utils.cpp
 )
 
 set(HEADERS
@@ -46,6 +47,7 @@ set(PUBLICHEADERS
     ${PROJECT_SOURCE_DIR}/slsSupportLib/include/sls_detector_exceptions.h
     ${PROJECT_SOURCE_DIR}/slsSupportLib/include/utilities.h
     ${PROJECT_SOURCE_DIR}/slsSupportLib/include/container_utils.h
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/string_utils.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetector.h
     slsDetector/slsDetectorUsers.h

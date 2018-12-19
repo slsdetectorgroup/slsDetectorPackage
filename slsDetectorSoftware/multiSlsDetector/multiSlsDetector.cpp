@@ -9,11 +9,13 @@
 #include "sls_detector_exceptions.h"
 #include "utilities.h"
 
+#include "string_utils.h"
+
 #include <iomanip>
 #include <iostream>
 #include <rapidjson/document.h> //json header in zmq stream
 #include <sstream>
-#include <string.h>
+#include <cstring> 
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
@@ -391,15 +393,11 @@ void multiSlsDetector::updateUserdetails() {
     memset(thisMultiDetector->lastUser, 0, SHORT_STRING_LENGTH);
     memset(thisMultiDetector->lastDate, 0, SHORT_STRING_LENGTH);
     try {
-        strncpy(thisMultiDetector->lastUser, exec("whoami").c_str(),
-                SHORT_STRING_LENGTH - 1);
-        thisMultiDetector->lastUser[SHORT_STRING_LENGTH - 1] = 0;
-        strncpy(thisMultiDetector->lastDate, exec("date").c_str(),
-                DATE_LENGTH - 1);
-        thisMultiDetector->lastDate[DATE_LENGTH - 1] = 0;
+        sls::strcpy_safe(thisMultiDetector->lastUser, exec("whoami").c_str());
+        sls::strcpy_safe(thisMultiDetector->lastDate, exec("date").c_str());
     } catch (...) {
-        strcpy(thisMultiDetector->lastUser, "errorreading");
-        strcpy(thisMultiDetector->lastDate, "errorreading");
+        sls::strcpy_safe(thisMultiDetector->lastUser, "errorreading");
+        sls::strcpy_safe(thisMultiDetector->lastDate, "errorreading");
     }
 }
 
@@ -828,7 +826,7 @@ int multiSlsDetector::readConfigurationFile(const std::string &fname) {
                 std::string current_argument;
                 while (line_stream.good()) {
                     line_stream >> current_argument;
-                    strcpy(myargs[n_arguments], current_argument.c_str());
+                    sls::strcpy_safe(myargs[n_arguments], current_argument.c_str());
                     args[n_arguments] = myargs[n_arguments];
                     ++n_arguments;
                 }
@@ -3116,7 +3114,7 @@ int multiSlsDetector::setCTBPattern(std::string fname, int detPos) {
     int addr = 0;
 
     FILE *fd = fopen(fname.c_str(), "r");
-    if (fd <= 0) {
+    if (fd == nullptr) {
         FILE_LOG(logERROR) << "Could not open file";
         setErrorMask(getErrorMask() | MULTI_OTHER_ERROR);
         return -1;
@@ -3254,114 +3252,112 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
 
 int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
     detectorType type = getDetectorsType();
-    std::string names[100];
-    int nvar = 0;
+    // std::string names[100];
+    std::vector<std::string> names;
+    // int nvar = 0;
 
     // common config
-    names[nvar++] = "fname";
-    names[nvar++] = "index";
-    names[nvar++] = "enablefwrite";
-    names[nvar++] = "overwrite";
-    names[nvar++] = "dr";
-    names[nvar++] = "settings";
-    names[nvar++] = "exptime";
-    names[nvar++] = "period";
-    names[nvar++] = "frames";
-    names[nvar++] = "cycles";
-    names[nvar++] = "measurements";
-    names[nvar++] = "timing";
+    names.emplace_back("fname");
+    names.emplace_back("index");
+    names.emplace_back("enablefwrite");
+    names.emplace_back("overwrite");
+    names.emplace_back("dr");
+    names.emplace_back("settings");
+    names.emplace_back("exptime");
+    names.emplace_back("period");
+    names.emplace_back("frames");
+    names.emplace_back("cycles");
+    names.emplace_back("measurements");
+    names.emplace_back("timing");
 
     switch (type) {
     case EIGER:
-        names[nvar++] = "flags";
-        names[nvar++] = "clkdivider";
-        names[nvar++] = "threshold";
-        names[nvar++] = "ratecorr";
-        names[nvar++] = "trimbits";
+        names.emplace_back("flags");
+        names.emplace_back("clkdivider");
+        names.emplace_back("threshold");
+        names.emplace_back("ratecorr");
+        names.emplace_back("trimbits");
         break;
     case GOTTHARD:
-        names[nvar++] = "delay";
+        names.emplace_back("delay");
         break;
     case JUNGFRAU:
-        names[nvar++] = "delay";
-        names[nvar++] = "clkdivider";
+        names.emplace_back("delay");
+        names.emplace_back("clkdivider");
         break;
     case CHIPTESTBOARD:
-        names[nvar++] = "dac:0";
-        names[nvar++] = "dac:1";
-        names[nvar++] = "dac:2";
-        names[nvar++] = "dac:3";
-        names[nvar++] = "dac:4";
-        names[nvar++] = "dac:5";
-        names[nvar++] = "dac:6";
-        names[nvar++] = "dac:7";
-        names[nvar++] = "dac:8";
-        names[nvar++] = "dac:9";
-        names[nvar++] = "dac:10";
-        names[nvar++] = "dac:11";
-        names[nvar++] = "dac:12";
-        names[nvar++] = "dac:13";
-        names[nvar++] = "dac:14";
-        names[nvar++] = "dac:15";
-        names[nvar++] = "adcvpp";
+        names.emplace_back("dac:0");
+        names.emplace_back("dac:1");
+        names.emplace_back("dac:2");
+        names.emplace_back("dac:3");
+        names.emplace_back("dac:4");
+        names.emplace_back("dac:5");
+        names.emplace_back("dac:6");
+        names.emplace_back("dac:7");
+        names.emplace_back("dac:8");
+        names.emplace_back("dac:9");
+        names.emplace_back("dac:10");
+        names.emplace_back("dac:11");
+        names.emplace_back("dac:12");
+        names.emplace_back("dac:13");
+        names.emplace_back("dac:14");
+        names.emplace_back("dac:15");
+        names.emplace_back("adcvpp");
 
-        names[nvar++] = "adcclk";
-        names[nvar++] = "clkdivider";
-        names[nvar++] = "adcphase";
-        names[nvar++] = "adcpipeline";
-        names[nvar++] = "adcinvert"; //
-        names[nvar++] = "adcdisable";
-        names[nvar++] = "patioctrl";
-        names[nvar++] = "patclkctrl";
-        names[nvar++] = "patlimits";
-        names[nvar++] = "patloop0";
-        names[nvar++] = "patnloop0";
-        names[nvar++] = "patwait0";
-        names[nvar++] = "patwaittime0";
-        names[nvar++] = "patloop1";
-        names[nvar++] = "patnloop1";
-        names[nvar++] = "patwait1";
-        names[nvar++] = "patwaittime1";
-        names[nvar++] = "patloop2";
-        names[nvar++] = "patnloop2";
-        names[nvar++] = "patwait2";
-        names[nvar++] = "patwaittime2";
+        names.emplace_back("adcclk");
+        names.emplace_back("clkdivider");
+        names.emplace_back("adcphase");
+        names.emplace_back("adcpipeline");
+        names.emplace_back("adcinvert"); //
+        names.emplace_back("adcdisable");
+        names.emplace_back("patioctrl");
+        names.emplace_back("patclkctrl");
+        names.emplace_back("patlimits");
+        names.emplace_back("patloop0");
+        names.emplace_back("patnloop0");
+        names.emplace_back("patwait0");
+        names.emplace_back("patwaittime0");
+        names.emplace_back("patloop1");
+        names.emplace_back("patnloop1");
+        names.emplace_back("patwait1");
+        names.emplace_back("patwaittime1");
+        names.emplace_back("patloop2");
+        names.emplace_back("patnloop2");
+        names.emplace_back("patwait2");
+        names.emplace_back("patwaittime2");
         break;
     default:
         break;
     }
 
-    int iv = 0;
-    std::string fname1;
-    std::ofstream outfile;
-    char *args[4];
-    for (int ia = 0; ia < 4; ia++) {
-        args[ia] = new char[1000];
-    }
+    //Workaround to bo able to suplly ecexuteLine with char**
+    const int n_arguments = 1;
+    char buffer[1000]; //TODO! this should not be hardcoded!
+    char *args[n_arguments] = { buffer };
 
+    std::string outfname;
     if (level == 2) {
-        fname1 = fname + std::string(".config");
-        writeConfigurationFile(fname1);
-        fname1 = fname + std::string(".det");
+        writeConfigurationFile(fname + ".config");
+        outfname = fname + ".det";
     } else
-        fname1 = fname;
+        outfname = fname;
 
-    outfile.open(fname1.c_str(), std::ios_base::out);
+    std::ofstream outfile;
+    outfile.open(outfname.c_str(), std::ios_base::out);
     if (outfile.is_open()) {
         auto cmd = slsDetectorCommand(this);
-        for (iv = 0; iv < nvar; iv++) {
-            strcpy(args[0], names[iv].c_str());
-            outfile << names[iv] << " " << cmd.executeLine(1, args, GET_ACTION)
+        for (int iv = 0; iv < names.size(); ++iv) {
+            sls::strcpy_safe(buffer, names[iv].c_str()); //this is...
+            outfile << names[iv] << " " << cmd.executeLine(n_arguments, args, GET_ACTION)
                     << std::endl;
         }
         outfile.close();
     } else {
-        FILE_LOG(logERROR) << "Could not open parameters file " << fname1 << " for writing";
+        FILE_LOG(logERROR) << "Could not open parameters file " << outfname << " for writing";
         return FAIL;
     }
 
-    FILE_LOG(logDEBUG1) << "wrote " << iv << " lines to  " << fname1;
-
+    FILE_LOG(logDEBUG1) << "wrote " << names.size() << " lines to  " << outfname;
     return OK;
 }
 

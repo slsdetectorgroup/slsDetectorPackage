@@ -16,7 +16,9 @@ if(USE_TESTS)
     set(LOCAL_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
     set(TEST_SOURCES
         ${LOCAL_TEST_DIR}/test-container_utils.cpp
+        ${LOCAL_TEST_DIR}/test-string_utils.cpp
         ${LOCAL_TEST_DIR}/test-MySocketTCP.cpp
+
         #${LOCAL_TEST_DIR}/test-multiDetector.cpp
         ${LOCAL_TEST_DIR}/test.cpp
         # PARENT_SCOPE

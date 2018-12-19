@@ -98,6 +98,8 @@ T minusOneIfDifferent(const std::vector<T>& container)
     }
 }
 
+
+
 //TODO!(Erik)Should try to move away from using this in the slsDetectorPackage
 inline
 std::string concatenateIfDifferent(std::vector<std::string> container)

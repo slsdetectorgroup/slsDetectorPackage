@@ -9,11 +9,13 @@
 #include "sls_detector_exceptions.h"
 #include "utilities.h"
 
+#include "string_utils.h"
+
 #include <iomanip>
 #include <iostream>
 #include <rapidjson/document.h> //json header in zmq stream
 #include <sstream>
-#include <string.h>
+#include <cstring> 
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
@@ -391,15 +393,11 @@ void multiSlsDetector::updateUserdetails() {
     memset(thisMultiDetector->lastUser, 0, SHORT_STRING_LENGTH);
     memset(thisMultiDetector->lastDate, 0, SHORT_STRING_LENGTH);
     try {
-        strncpy(thisMultiDetector->lastUser, exec("whoami").c_str(),
-                SHORT_STRING_LENGTH - 1);
-        thisMultiDetector->lastUser[SHORT_STRING_LENGTH - 1] = 0;
-        strncpy(thisMultiDetector->lastDate, exec("date").c_str(),
-                DATE_LENGTH - 1);
-        thisMultiDetector->lastDate[DATE_LENGTH - 1] = 0;
+        sls::strcpy_safe(thisMultiDetector->lastUser, exec("whoami").c_str());
+        sls::strcpy_safe(thisMultiDetector->lastDate, exec("date").c_str());
     } catch (...) {
-        strcpy(thisMultiDetector->lastUser, "errorreading");
-        strcpy(thisMultiDetector->lastDate, "errorreading");
+        sls::strcpy_safe(thisMultiDetector->lastUser, "errorreading");
+        sls::strcpy_safe(thisMultiDetector->lastDate, "errorreading");
     }
 }
 
@@ -3116,7 +3114,7 @@ int multiSlsDetector::setCTBPattern(std::string fname, int detPos) {
     int addr = 0;
 
     FILE *fd = fopen(fname.c_str(), "r");
-    if (fd <= 0) {
+    if (fd == nullptr) {
         FILE_LOG(logERROR) << "Could not open file";
         setErrorMask(getErrorMask() | MULTI_OTHER_ERROR);
         return -1;

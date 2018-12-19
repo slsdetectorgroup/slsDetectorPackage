@@ -7,6 +7,7 @@
 #ifndef VIRTUAL
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "AD9252.h"     // old board compatibility
+#include "LTC2620.h"    // dacs
 #else
 #include "blackfin.h"
 #include <pthread.h>
@@ -372,15 +373,35 @@ void setupDetector() {
 
     // Initialization
     setPhaseShiftOnce();
-    /* FIXME: (also check with commenting out #define GOTTHARDD in ad9257.h), check if need to replace with configureADC from firmwarE_funcs.c? */
+
+    // set defines
     if (getBoardRevision() == 1)
-        prepareADC9252();
+        AD9252_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
     else
-        prepareADC9257();
+        AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, MAX_DAC_VOLTAGE_VALUE);
+
+    // disable spi
+    if (getBoardRevision() == 1)
+        AD9252_Disable();
+    else
+        AD9257_Disable();
+    LTC2620_Disable();
+
+    bus_w(DAC_CNTRL_REG, DAC_CNTRL_SPI_IDLE_MSK);
+    bus_w(ADC_SPI_REG, ADC_SERIAL_CS_OUT_MSK);
+    bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IDLE_MSK);
+
+#ifndef VIRTUAL
+    if (getBoardRevision() == 1)
+        AD9252_Configure();
+    else
+        AD9257_Configure();
+#endif
     //configureADC();
     setROIADC(-1); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
-    initDac(0); /*FIXME: if it doesnt work, switch to the old dac*/
+    LTC2620_Configure(); /*FIXME: if it doesnt work, switch to the old dac*/
 
     // master, slave (25um)
     setMasterSlaveConfiguration();
@@ -404,16 +425,11 @@ int setDefaultDacs() {
     FILE_LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     {
         int i = 0;
-        int retval[2]={-1,-1};
         const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
         for(i = 0; i < NDAC; ++i) {
             // if not already default, set it to default
             if (dacValues[i] != defaultvals[i]) {
-                setDAC((enum DACINDEX)i,defaultvals[i],0,retval);
-                if (retval[0] != defaultvals[i]) {
-                    FILE_LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]));
-                    ret = FAIL;
-                }
+                setDAC((enum DACINDEX)i, defaultvals[i], 0);
             }
         }
     }
@@ -1023,9 +1039,9 @@ int setModule(sls_detector_module myMod, char* mess){
 
     //set dac values
 	{
-	    int i = 0, retval[2] = {-1, -1};
+	    int i = 0;
 	    for(i = 0; i < NDAC; ++i)
-	        setDAC((enum DACINDEX)i, myMod.dacs[i], 0, retval);
+	        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
 	}
 	return OK;
 }
@@ -1084,7 +1100,7 @@ enum detectorSettings setSettings(enum detectorSettings sett){
 	    }
 	    // set conf gain
         bus_w(addr, bus_r(addr) & ~GAIN_CONFGAIN_MSK);
-        bus_w(addr, bus_r(addr) | GAIN_CONFGAIN_DYNMC_GAIN_VAL);
+        bus_w(addr, bus_r(addr) | confgain);
         FILE_LOG(logINFO, ("\tGain Reg: 0x%x\n", bus_r(addr)));
 		thisSettings = sett;
 	}
@@ -1127,99 +1143,31 @@ enum detectorSettings getSettings(){
 
 /* parameters - dac, adc, hv */
 
-void initDac(int dacnum) { // FIXME: if needed
+void setDAC(enum DACINDEX ind, int val, int mV) {
+    FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+    int dacval = val;
 #ifdef VIRTUAL
-    return;
-#endif
-    FILE_LOG(logINFOBLUE, ("Initializing dac %d\n",dacnum));
-
-    u_int32_t codata;
-    int csdx        = dacnum / NDAC + DAC_CNTRL_CS_OFST;   // old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
-    int dacchannel  = 0xf;                                      // all channels
-    int dacvalue    = 0x6;                                      // can be any random value (just writing to power up)
-    FILE_LOG(logINFO, ("\tWrite to Input Register\n"
-            "\tChip select bit: %d\n"
-            "\tDac Channel: 0x%x\n"
-            "\tDac Value: 0x%x\n",
-            csdx, dacchannel, dacvalue));
-
-    codata = LTC2620_DAC_CMD_WRITE +                                            // command to write to input register
-            ((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +    // all channels
-            ((dacvalue << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);       // any random value
-    serializeToSPI(DAC_CNTRL_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
-            DAC_CNTRL_CLK_MSK, DAQ_CNTRL_DGTL_MSK, DAQ_CNTRL_DGTL_OFST);
-}
-
-int voltageToDac(int value){
-	int vmin = 0;
-	int vmax = 2500;
-	int nsteps = 4096;
-	if ((value < vmin) || (value > vmax)) {
-		FILE_LOG(logERROR, ("Voltage value (to convert to dac value) is outside bounds: %d\n", value));
-		return -1;
-	}
-	return (int)(((value - vmin) / (vmax - vmin)) * (nsteps - 1) + 0.5);
-}
-
-int dacToVoltage(unsigned int digital){
-	int vmin = 0;
-	int vmax = 2500;
-	int nsteps = 4096;
-	int v = vmin + (vmax - vmin) * digital / (nsteps - 1);
-	if((v < 0) || (v > nsteps - 1)) {
-		FILE_LOG(logERROR, ("Voltage value (converted from dac value) is outside bounds: %d\n", v));
-		return -1;
-	}
-	return v;
-}
-
-void setDAC(enum DACINDEX ind, int val, int mV, int retval[]) {
-    int dacmV = val;
-
-    //if set and mv, convert to dac
-    if (val > 0) {
-        if (mV)
-            val = voltageToDac(val); //gives -1 on error
-        else
-            dacmV = dacToVoltage(val); //gives -1 on error
-    }
-
-    if ( (val >= 0) || (val == -100)) {
-#ifdef VIRTUAL
+    if (mV && LTC2620_VoltageToDac(val, &dacval) == OK)
         dacValues[ind] = val;
 #else
-        u_int32_t codata;
-        int csdx        = ind / NDAC + DAC_CNTRL_CS_MSK;  // old board (16 dacs),so can be DAC_SERIAL_CS_OUT_OFST or +1
-        int dacchannel  = ind % NDAC;                           // 0-8, dac channel number (also for dacnum 9-15 in old board)
-
-        FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",ind, val, dacmV));
-        // command
-        if (val >= 0) {
-            FILE_LOG(logDEBUG1,("\tWrite to Input Register and Update\n"));
-            codata = LTC2620_DAC_CMD_SET;
-
-        } else if (val == -100) {
-            FILE_LOG(logDEBUG1, ("\tPOWER DOWN\n"));
-            codata = LTC2620_DAC_CMD_POWER_DOWN;
-        }
-        // address
-        FILE_LOG(logDEBUG1, ("\tChip select bit:%d\n"
-                "\tDac Channel:0x%x\n"
-                "\tDac Value:0x%x\n",
-                csdx, dacchannel, val));
-        codata += ((dacchannel << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) +
-                ((val << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK);
-        // to spi
-        serializeToSPI(DAC_CNTRL_REG, codata, (0x1 << csdx), LTC2620_DAC_NUMBITS,
-                DAC_CNTRL_CLK_MSK, DAQ_CNTRL_DGTL_MSK, DAQ_CNTRL_DGTL_OFST);
-
-        dacValues[ind] = val;
+    if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
+        dacValues[ind] = dacval;
 #endif
-    }
+}
 
-    retval[0] = dacValues[ind];
-    retval[1] = dacToVoltage(retval[0]);
-    FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, retval[0], retval[1]));
+int getDAC(enum DACINDEX ind, int mV) {
+    if (!mV) {
+        FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, dacValues[ind]));
+        return dacValues[ind];
+    }
+    int voltage = -1;
+    LTC2620_DacToVoltage(dacValues[ind], &voltage);
+    FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, dacValues[ind], voltage));
+    return voltage;
+}
+
+int getMAXDACUnits() {
+    return LTC2620_MAX_STEPS;
 }
 
 /*

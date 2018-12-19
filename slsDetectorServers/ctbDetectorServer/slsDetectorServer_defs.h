@@ -77,11 +77,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define WAIT_TIME_US_STP_ACQ        (100)
 #define WAIT_TIME_CONFIGURE_MAC     (500 * 1000)
 
-#define SLOW_ADC_START_INDEX        (1000)
-#define SLOW_ADC_END_INDEX          (1008)
-
 #define MAX_DAC_VOLTAGE_VALUE       (2500)
-#define MAX_DAC_UNIT_VALUE          (4096)
 #define DAC_MAX_VOLTAGE_MV          (2500)
 #define VCHIP_MAX_MV                (2700)
 #define VCHIP_MIN_MV                (1700)
@@ -102,24 +98,6 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define MSB_OF_64_BIT_REG_OFST		(32)
 #define LSB_OF_64_BIT_REG_OFST		(0)
 #define BIT_32_MSK					(0xFFFFFFFF)
-
-/* LTC2620 DAC DEFINES */
-#define LTC2620_DAC_CMD_OFST		(20)
-#define LTC2620_DAC_CMD_MSK			(0x0000000F << LTC2620_DAC_CMD_OFST)
-#define LTC2620_DAC_ADDR_OFST		(16)
-#define LTC2620_DAC_ADDR_MSK		(0x0000000F << LTC2620_DAC_ADDR_OFST)
-#define LTC2620_DAC_DATA_OFST		(4)
-#define LTC2620_DAC_DATA_MSK		(0x00000FFF << LTC2620_DAC_DATA_OFST)
-
-#define LTC2620_DAC_CMD_WRITE		(0x00000000 << LTC2620_DAC_CMD_OFST)
-#define LTC2620_DAC_CMD_SET			(0x00000003 << LTC2620_DAC_CMD_OFST)
-#define LTC2620_DAC_CMD_POWER_DOWN	(0x00000004 << LTC2620_DAC_CMD_OFST)
-#define LTC2620_DAC_NUMBITS			(24)
-
-/* MAX1932 HV DEFINES */
-#define MAX1932_HV_NUMBITS			(8)
-#define MAX1932_HV_DATA_OFST		(0)
-#define MAX1932_HV_DATA_MSK			(0x000000FF << MAX1932_HV_DATA_OFST)
 
 /** PLL Reconfiguration Registers */
 //https://www.altera.com/documentation/mcn1424769382940.html

@@ -2,6 +2,14 @@
 
 #include "I2C.h"
 
+/**
+ * To be defined in
+ *
+ * (slsDetectorServer_defs.h)
+ * I2C_SHUNT_RESISTER_OHMS
+ * device ids that are passed as arguments
+ */
+
 /** INA226 defines */
 
 /** Register set */
@@ -37,13 +45,10 @@
 
 /**
  * Configure the I2C core and Enable core
- * @param sclLowCountReg register to set low count of the serial clock (defined in Registerdefs.h)
- * @param sclHighCountReg register to set high count of the serial clock (defined in Registerdefs.h)
- * @param sdaHoldTimeReg register to set hold time of the serial data (defined in Registerdefs.h)
- * @param controlReg register to set control reg (bus speed and enabling core) (defined in Registerdefs.h)
  */
-void INA226_ConfigureI2CCore(uint32_t sclLowCountReg, uint32_t sclHighCountReg, uint32_t sdaHoldTimeReg, uint32_t controlReg) {
-    I2C_ConfigureI2CCore(sclLowCountReg, sclHighCountReg, sdaHoldTimeReg, controlReg);
+void INA226_ConfigureI2CCore() {
+    FILE_LOG(logINFO, ("Configuring INA226\n"));
+    I2C_ConfigureI2CCore();
 }
 
 /**
@@ -52,26 +57,24 @@ void INA226_ConfigureI2CCore(uint32_t sclLowCountReg, uint32_t sclHighCountReg, 
  * @param transferCommandReg transfer command fifo register (defined in RegisterDefs.h)
  * @param deviceId device Id (defined in slsDetectorServer_defs.h)
  */
-void INA226_CalibrateCurrentRegister(uint32_t shuntResisterOhm, uint32_t transferCommandReg, uint32_t deviceId) {
+void INA226_CalibrateCurrentRegister(uint32_t deviceId) {
 
     // get calibration value based on shunt resistor
-    uint16_t calVal = INA226_getCalibrationValue(shuntResisterOhm) & INA226_CALIBRATION_MSK;
+    uint16_t calVal = INA226_getCalibrationValue(I2C_SHUNT_RESISTER_OHMS) & INA226_CALIBRATION_MSK;
     FILE_LOG(logINFO, ("\tWriting to Calibration reg: 0x%0x\n", calVal));
 
     // calibrate current register
-    I2C_Write(transferCommandReg, deviceId, INA226_CALIBRATION_REG, calVal);
+    I2C_Write(INA226_TRANSFER_COMMAND_FIFO_REG, deviceId, INA226_CALIBRATION_REG, calVal);
 }
 
 /**
  * Read voltage of device
- * @param transferCommandReg transfer command fifo register (defined in RegisterDefs.h)
- * @param rxDataFifoLevelReg receive data fifo level register (defined in RegisterDefs.h)
- * @param deviceId device Id (defined in slsDetectorServer_defs.h)
+ * @param deviceId device Id
  * @returns voltage in mV
  */
-int INA226_ReadVoltage(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t deviceId) {
+int INA226_ReadVoltage(uint32_t deviceId) {
     FILE_LOG(logDEBUG1, ("\tReading voltage\n"));
-    uint32_t regval = I2C_Read(transferCommandReg, rxDataFifoLevelReg, deviceId, INA226_BUS_VOLTAGE_REG);
+    uint32_t regval = I2C_Read(deviceId, INA226_BUS_VOLTAGE_REG);
     FILE_LOG(logDEBUG1, ("\tvoltage read: 0x%08x\n", regval));
 
     // value converted in mv
@@ -92,22 +95,20 @@ int INA226_ReadVoltage(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg,
 
 /**
  * Read current
- * @param transferCommandReg transfer command fifo register (defined in RegisterDefs.h)
- * @param rxDataFifoLevelReg receive data fifo level register (defined in RegisterDefs.h)
- * @param deviceId device Id (should be defined in slsDetectorServer_defs.h)
+ * @param deviceId device Id
  * @returns current in mA
  */
-int INA226_ReadCurrent(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t deviceId) {
+int INA226_ReadCurrent(uint32_t deviceId) {
     FILE_LOG(logDEBUG1, ("\tReading current\n"));
 
     // read shunt voltage register
     FILE_LOG(logDEBUG1, ("\tReading shunt voltage reg\n"));
-    uint32_t shuntVoltageRegVal = I2C_Read(transferCommandReg, rxDataFifoLevelReg, deviceId, INA226_SHUNT_VOLTAGE_REG);
+    uint32_t shuntVoltageRegVal = I2C_Read(deviceId, INA226_SHUNT_VOLTAGE_REG);
     FILE_LOG(logDEBUG1, ("\tshunt voltage reg: 0x%08x\n", regval));
 
     // read calibration register
     FILE_LOG(logDEBUG1, ("\tReading calibration reg\n"));
-    uint32_t calibrationRegVal = I2C_Read(transferCommandReg, rxDataFifoLevelReg, deviceId, INA226_CALIBRATION_REG);
+    uint32_t calibrationRegVal = I2C_Read(deviceId, INA226_CALIBRATION_REG);
     FILE_LOG(logDEBUG1, ("\tcalibration reg: 0x%08x\n", regval));
 
     // value for current

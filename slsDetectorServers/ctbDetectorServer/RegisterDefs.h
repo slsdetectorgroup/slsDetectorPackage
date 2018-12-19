@@ -175,8 +175,8 @@
 /* DAC Value Out RO register */
 //#define DAC_VAL_OUT_REG                     (0x2A << MEM_MAP_SHIFT)
 
-/* ADC Value RO register */
-#define ADC_VAL_REG                         (0x2B << MEM_MAP_SHIFT)
+/* Slow ADC SPI Value RO register */
+#define ADC_SPI_SLOW_VAL_REG                (0x2B << MEM_MAP_SHIFT)
 
 /* FIFO Digital In Status RO register */
 #define FIFO_DIN_STATUS_REG                 (0x3B << MEM_MAP_SHIFT)
@@ -200,7 +200,6 @@
 #define SPI_HV_SRL_CLK_OTPT_MSK			    (0x00000001 << SPI_HV_SRL_CLK_OTPT_OFST)
 #define SPI_HV_SRL_CS_OTPT_OFST			    (10)
 #define SPI_HV_SRL_CS_OTPT_MSK			    (0x00000001 << SPI_HV_SRL_CS_OTPT_OFST)
-#define SPI_IDLE_MSK                        (SPI_DAC_SRL_DGTL_OTPT_MSK | SPI_DAC_SRL_CLK_OTPT_MSK | SPI_DAC_SRL_CS_OTPT_MSK | SPI_HV_SRL_DGTL_OTPT_MSK | SPI_HV_SRL_CLK_OTPT_MSK | SPI_HV_SRL_CS_OTPT_MSK)
 
 /* ADC SPI (Serial Peripheral Interface) RW register */
 #define ADC_SPI_REG   					    (0x41 << MEM_MAP_SHIFT)
@@ -211,14 +210,12 @@
 #define ADC_SPI_SRL_DT_OTPT_MSK			    (0x00000001 << ADC_SPI_SRL_DT_OTPT_OFST)
 #define ADC_SPI_SRL_CS_OTPT_OFST			(2)
 #define ADC_SPI_SRL_CS_OTPT_MSK			    (0x0000000F << ADC_SPI_SRL_CS_OTPT_OFST)
-#define ADC_SPI_SLOW_SRL_DT_OTPT_OFST       (8)
-#define ADC_SPI_SLOW_SRL_DT_OTPT_MSK        (0x00000001 << ADC_SPI_SLOW_SRL_DT_OTPT_OFST)
-#define ADC_SPI_SLOW_SRL_CLK_OTPT_OFST      (9)
-#define ADC_SPI_SLOW_SRL_CLK_OTPT_MSK       (0x00000001 << ADC_SPI_SLOW_SRL_CLK_OTPT_OFST)
-#define ADC_SPI_SLOW_SRL_CS_OTPT_OFST       (10)
-#define ADC_SPI_SLOW_SRL_CS_OTPT_MSK        (0x0000000F << ADC_SPI_SLOW_SRL_CS_OTPT_OFST)
-#define ADC_SPI_IDLE_MSK                    (ADC_SPI_SRL_CLK_OTPT_MSK | ADC_SPI_SRL_DT_OTPT_MSK | ADC_SPI_SRL_CS_OTPT_MSK | ADC_SPI_SLOW_SRL_DT_OTPT_MSK | ADC_SPI_SLOW_SRL_CLK_OTPT_MSK | ADC_SPI_SLOW_SRL_CS_OTPT_MSK)
-
+#define ADC_SPI_SLOW_SRL_DT_OFST            (8)
+#define ADC_SPI_SLOW_SRL_DT_MSK             (0x00000001 << ADC_SPI_SLOW_SRL_DT_OFST)
+#define ADC_SPI_SLOW_SRL_CLK_OFST           (9)
+#define ADC_SPI_SLOW_SRL_CLK_MSK            (0x00000001 << ADC_SPI_SLOW_SRL_CLK_OFST)
+#define ADC_SPI_SLOW_SRL_CNV_OFST           (10)
+#define ADC_SPI_SLOW_SRL_CNV_MSK            (0x00000001 << ADC_SPI_SLOW_SRL_CNV_OFST)
 
 /* ADC Offset RW register */
 #define ADC_OFFSET_REG 					    (0x42 << MEM_MAP_SHIFT)

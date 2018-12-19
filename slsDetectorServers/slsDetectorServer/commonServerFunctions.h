@@ -2,21 +2,21 @@
 
 #include "blackfin.h"
 
-void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask) {
+void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask, uint32_t digoutmask) {
 
     // start point
-    (*valw) = 0xffffffff;          // old board compatibility (not using specific bits)
+    (*valw) = (bus_r(addr) | csmask | clkmask &~(digoutmask));
     bus_w (addr, (*valw));
 
     // chip sel bar down
-    (*valw) &= ~csmask;            /* todo with test: done a bit different, not with previous value */
+    (*valw) &= ~csmask;
     bus_w (addr, (*valw));
 }
 
 
 void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask) {
     // chip sel bar up
-    (*valw) |= csmask; /* todo with test: not done for spi */
+    (*valw) |= csmask;
     bus_w (addr, (*valw));
 
     //clk down
@@ -24,8 +24,8 @@ void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t 
     bus_w (addr, (*valw));
 
     // stop point = start point of course
-    (*valw) = 0xffffffff;              // old board compatibility (not using specific bits)
-    bus_w (addr, (*valw));
+    (*valw) |= csmask;
+    bus_w (addr, (*valw)); //FIXME: for ctb slow adcs, might need to set it to low again
 }
 
 void sendDataToSPI (uint32_t* valw, uint32_t addr, uint32_t val, int numbitstosend, uint32_t clkmask, uint32_t digoutmask, int digofset) {
@@ -47,6 +47,24 @@ void sendDataToSPI (uint32_t* valw, uint32_t addr, uint32_t val, int numbitstose
     }
 }
 
+uint32_t receiveDataFromSPI (uint32_t* valw, uint32_t addr, int numbitstoreceive, uint32_t clkmask, uint32_t readaddr) {
+    uint32_t retval = 0;
+    int i = 0;
+    for (i = 0; i < numbitstoreceive; ++i) {
+
+        // clk down
+        (*valw) &= ~clkmask;
+        bus_w (addr, (*valw));
+
+        // read data (i)
+        retval |= ((bus_r(readaddr) & 0x1) << (numbitstoreceive - 1 - i));
+
+        // clk up
+        (*valw) |= clkmask ;
+        bus_w (addr, (*valw));
+    }
+    return retval;
+}
 
 void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstosend, uint32_t clkmask, uint32_t digoutmask, int digofset) {
     if (numbitstosend == 16) {
@@ -61,4 +79,22 @@ void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstos
     sendDataToSPI(&valw, addr, val, numbitstosend, clkmask, digoutmask, digofset);
 
     SPIChipDeselect(&valw, addr, csmask, clkmask);
+}
+
+uint32_t serializeFromSPI(uint32_t addr, uint32_t csmask, int numbitstoreceive, uint32_t clkmask, uint32_t digoutmask, uint32_t readaddr) {
+
+    uint32_t valw;
+
+    SPIChipSelect (&valw, addr, csmask, clkmask, digoutmask);
+
+    uint32_t retval = receiveDataFromSPI(&valw, addr, numbitstoreceive, clkmask, readaddr);
+
+    SPIChipDeselect(&valw, addr, csmask, clkmask);
+
+    if (numbitstoreceive == 16) {
+        FILE_LOG(logDEBUG1, ("Read From SPI Register: 0x%04x\n", retval));
+    } else {
+        FILE_LOG(logDEBUG1, ("Read From SPI Register: 0x%08x\n", retval));
+    }
+    return retval;
 }

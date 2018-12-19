@@ -125,72 +125,119 @@
 #define AD9257_VREF_1_6_VAL         ((0x3 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
 #define AD9257_VREF_2_0_VAL         ((0x4 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
 
-int getMaxValidVref() {
+uint32_t AD9257_Reg = 0x0;
+uint32_t AD9257_CsMask = 0x0;
+uint32_t AD9257_ClkMask = 0x0;
+uint32_t AD9257_DigMask = 0x0;
+int AD9257_DigOffset = 0x0;
+
+/**
+ * Set Defines
+ * @param reg spi register
+ * @param cmsk chip select mask
+ * @param clkmsk clock output mask
+ * @param dmsk digital output mask
+ * @param dofst digital output offset
+ */
+void AD9257_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst) {
+    AD9257_Reg = reg;
+    AD9257_CsMask = cmsk;
+    AD9257_ClkMask = clkmsk;
+    AD9257_DigMask = dmsk;
+    AD9257_DigOffset = dofst;
+}
+
+/**
+ * Disable SPI
+ */
+void AD9257_Disable() {
+    bus_w(AD9257_Reg, bus_r(AD9257_Reg)
+            | AD9257_CsMask
+            | AD9257_ClkMask
+            &~(AD9257_DigMask));
+}
+
+/**
+ * Get max valid vref value
+ * @param get max vref voltage unit (4 for 2.0V)
+ */
+int AD9257_GetMaxValidVref() {
     return 0x4;
 }
 
-void setVrefVoltage(int val) {
-    setAdc9257(AD9257_VREF_REG, val);
+/**
+ * Set vref voltage
+ * @param val voltage to be set (0 for 1.0V, 1 for 1.14V, 2 for 1.33V, 3 for 1.6V, 4 for 2.0V
+ */
+void AD9257_SetVrefVoltage(int val) {
+    AD9257_Set(AD9257_VREF_REG, val);
 }
 
-void setAdc9257(int addr, int val) {
+/**
+ * Set SPI reg value
+ * @param codata value to be set
+ */
+void AD9257_Set(int addr, int val) {
 
 	u_int32_t codata;
 	codata = val + (addr << 8);
 	FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr));
-	serializeToSPI(ADC_SPI_REG, codata, ADC_SERIAL_CS_OUT_MSK, AD9257_ADC_NUMBITS,
-			ADC_SERIAL_CLK_OUT_MSK, ADC_SERIAL_DATA_OUT_MSK, ADC_SERIAL_DATA_OUT_OFST);
+	serializeToSPI(AD9257_Reg, codata, AD9257_CsMask, AD9257_ADC_NUMBITS,
+	        AD9257_ClkMask, AD9257_DigMask, AD9257_DigOffset);
 }
 
-void prepareADC9257(){
-    FILE_LOG(logINFOBLUE, ("Preparing ADC9257:\n"));
+/**
+ * Configure
+ */
+void AD9257_Configure(){
+    FILE_LOG(logINFOBLUE, ("Configuring ADC9257:\n"));
 
 	//power mode reset
     FILE_LOG(logINFO, ("\tPower mode reset\n"));
-    setAdc9257(AD9257_POWER_MODE_REG, AD9257_INT_RESET_VAL);
+    AD9257_Set(AD9257_POWER_MODE_REG, AD9257_INT_RESET_VAL);
 
 	//power mode chip run
 	FILE_LOG(logINFO, ("\tPower mode chip run\n"));
-	setAdc9257(AD9257_POWER_MODE_REG, AD9257_INT_CHIP_RUN_VAL);
+	AD9257_Set(AD9257_POWER_MODE_REG, AD9257_INT_CHIP_RUN_VAL);
 
 	// binary offset
     FILE_LOG(logINFO, ("\tBinary offset\n"));
-    setAdc9257(AD9257_OUT_MODE_REG, AD9257_OUT_BINARY_OFST_VAL);
+    AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_BINARY_OFST_VAL);
 
 	//output clock phase
 	FILE_LOG(logINFO, ("\tOutput clock phase\n")); //FIXME:??
-	setAdc9257(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_60_VAL);
+	AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_60_VAL);
 
 	// lvds-iee reduced , binary offset
 	FILE_LOG(logINFO, ("\tLvds-iee reduced, binary offset\n"));
-	setAdc9257(AD9257_OUT_MODE_REG, AD9257_OUT_LVDS_IEEE_VAL);
+	AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_LVDS_IEEE_VAL);
 
 	// all devices on chip to receive next command
 	FILE_LOG(logINFO, ("\tAll devices on chip to receive next command\n"));
-	setAdc9257(AD9257_DEV_IND_2_REG,
+	AD9257_Set(AD9257_DEV_IND_2_REG,
 			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
 #ifdef GOTTHARDD
-    setAdc9257(AD9257_DEV_IND_1_REG,
+    AD9257_Set(AD9257_DEV_IND_1_REG,
             AD9257_CHAN_D_MSK | AD9257_CHAN_C_MSK | AD9257_CHAN_B_MSK | AD9257_CHAN_A_MSK );// FIXME: gotthard setting dco and ifco to off??
 #else
-	setAdc9257(AD9257_DEV_IND_1_REG,
+	AD9257_Set(AD9257_DEV_IND_1_REG,
 	        AD9257_CHAN_D_MSK | AD9257_CHAN_C_MSK | AD9257_CHAN_B_MSK | AD9257_CHAN_A_MSK |
 	        AD9257_CLK_CH_DCO_MSK | AD9257_CLK_CH_IFCO_MSK);
 #endif
 
 	// vref 1.33
 	FILE_LOG(logINFO, ("\tVref 1.33\n"));// FIXME: needed for Gottthard? earlier not set (default 3.0 v)
-	setAdc9257(AD9257_VREF_REG, AD9257_VREF_1_33_VAL);
+	AD9257_Set(AD9257_VREF_REG, AD9257_VREF_1_33_VAL);
 
 	// no test mode
 	FILE_LOG(logINFO, ("\tNo test mode\n"));
-	setAdc9257(AD9257_TEST_MODE_REG, AD9257_TST_OFF_VAL);
+	AD9257_Set(AD9257_TEST_MODE_REG, AD9257_TST_OFF_VAL);
 
 #ifdef TESTADC
 	FILE_LOG(logINFOBLUE, ("Putting ADC in Test Mode!\n");
 	// mixed bit frequency test mode
 	FILE_LOG(logINFO, ("\tMixed bit frequency test mode\n"));
-	setAdc9257(AD9257_TEST_MODE_REG, AD9257_TST_MXD_BT_FRQ_VAL);
+	AD9257_Set(AD9257_TEST_MODE_REG, AD9257_TST_MXD_BT_FRQ_VAL);
 #endif
 
 }

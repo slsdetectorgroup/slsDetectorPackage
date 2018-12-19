@@ -1,0 +1,1 @@
+../slsDetectorServer/LTC2620.h

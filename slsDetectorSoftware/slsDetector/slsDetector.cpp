@@ -5079,7 +5079,7 @@ int slsDetector::setFileIndex(int i) {
 				FILE_LOG(logDEBUG1) << "Receiver file index: " << retval;
 				thisDetector->receiver_fileIndex = retval;
 				if (ret == FORCE_UPDATE)
-					ret = updateReceiver();
+					updateReceiver(); // Do we need to handle this ret? 
 			}
 		}
 	}
@@ -5154,7 +5154,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() {
 		} else {
 			FILE_LOG(logDEBUG1) << "Receiver Status: " << runStatusType(retval);
 			if (ret == FORCE_UPDATE)
-				ret = updateReceiver();
+				updateReceiver();  //Do we need to handle this ret?
 		}
 	}
 	return retval;
@@ -5177,7 +5177,7 @@ int slsDetector::getFramesCaughtByReceiver() {
 		} else {
 			FILE_LOG(logDEBUG1) << "Frames Caught by Receiver: " << retval;
 			if (ret == FORCE_UPDATE)
-				ret = updateReceiver();
+				updateReceiver();  //Do we need to handle this ret?
 		}
 	}
 	return retval;
@@ -5200,7 +5200,7 @@ int slsDetector::getReceiverCurrentFrameIndex() {
 		} else {
 			FILE_LOG(logDEBUG1) << "Current Frame Index of Receiver: " << retval;
 			if (ret == FORCE_UPDATE)
-				ret = updateReceiver();
+				updateReceiver();  //Do we need to handle this ret?
 		}
 	}
 	return retval;
@@ -5402,7 +5402,7 @@ int slsDetector::enableTenGigabitEthernet(int i) {
 			} else {
 				FILE_LOG(logDEBUG1) << "Receiver 10Gbe enable: " << retval;
 				if (ret == FORCE_UPDATE)
-					ret = updateReceiver();
+					updateReceiver(); //Do we need to handle this ret?
 			}
 		}
 	}
@@ -5427,7 +5427,7 @@ int slsDetector::setReceiverFifoDepth(int i) {
 		} else {
 			FILE_LOG(logDEBUG1) << "Receiver Fifo Depth: " << retval;
 			if (ret == FORCE_UPDATE)
-				ret = updateReceiver();
+				updateReceiver(); //Do we need to handle this ret?
 		}
 	}
 	return retval;
@@ -5486,7 +5486,7 @@ int slsDetector::setCTBPattern(std::string fname) {
 	uint64_t word;
 	int addr = 0;
 	FILE *fd = fopen(fname.c_str(),"r");
-	if (fd > 0) {
+	if (fd != nullptr) {
 		while (fread(&word, sizeof(word), 1, fd)) {
 			setCTBWord(addr, word);
 			++addr;

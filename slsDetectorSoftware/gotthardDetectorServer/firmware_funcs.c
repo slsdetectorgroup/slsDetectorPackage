@@ -1503,7 +1503,7 @@ u_int32_t runState(void) {
 int startStateMachine(){
 
 //#ifdef VERBOSE
-	  printf("*******Starting State Machine*******\n");
+	  cprintf(GREEN,"*******Starting State Machine*******\n");
 //#endif
 	cleanFifo();
   // fifoReset();

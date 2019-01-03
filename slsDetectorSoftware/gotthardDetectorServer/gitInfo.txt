@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware/gotthardDetectorServer 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: 6b4a9be870588436dea0576060b2b8f3675ef062 
-Revision: 244 
+Repsitory UUID: d9551fa07f98641452b3c08f08893e79d3d06ae1 
+Revision: 245 
 Branch: 4.0.1-rc 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 4039 
-Last Changed Date: 2018-12-04 11:37:14.000000002 +0100 ./firmware_funcs.c
+Last Changed Rev: 4045 
+Last Changed Date: 2019-01-03 11:11:08.000000002 +0100 ./server_funcs.h

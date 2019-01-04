@@ -51,7 +51,7 @@ enum DACINDEX				        {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN
 #define DEFAULT_PHASE_SHIFT         (120)
 #define DEFAULT_TX_UDP_PORT         (0xE185)
 
-#define MAX_DAC_VOLTAGE_VALUE       (2500)
+#define DAC_MAX_VOLTAGE_MV          (2500)
 
 /** ENEt conf structs */
 typedef struct mac_header_struct{

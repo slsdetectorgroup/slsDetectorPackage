@@ -481,7 +481,7 @@ void setupDetector() {
 	// set spi defines
 	AD7689_SetDefines(ADC_SPI_REG, ADC_SPI_SLOW_VAL_REG, ADC_SPI_SLOW_SRL_CNV_MSK, ADC_SPI_SLOW_SRL_CLK_MSK, ADC_SPI_SLOW_SRL_DT_MSK, ADC_SPI_SLOW_SRL_DT_OFST);
 	AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
-    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, MAX_DAC_VOLTAGE_VALUE);
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MAX_VOLTAGE_MV);
     MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST);
 
     // disable spi
@@ -1031,7 +1031,14 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
 
 /* parameters - dac, adc, hv */
 
+int getMaxDacSteps() {
+
+}
+
 void setDAC(enum DACINDEX ind, int val, int mV) {
+    if (val < 0)
+        return;
+
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
@@ -1054,7 +1061,7 @@ int getDAC(enum DACINDEX ind, int mV) {
 	return voltage;
 }
 
-int getMAXDACUnits() {
+int getMaxDacSteps() {
     return LTC2620_MAX_STEPS;
 }
 

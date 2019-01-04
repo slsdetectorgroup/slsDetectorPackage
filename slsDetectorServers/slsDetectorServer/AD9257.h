@@ -151,10 +151,10 @@ void AD9257_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dm
  * Disable SPI
  */
 void AD9257_Disable() {
-    bus_w(AD9257_Reg, bus_r(AD9257_Reg)
+    bus_w(AD9257_Reg, (bus_r(AD9257_Reg)
             | AD9257_CsMask
-            | AD9257_ClkMask
-            &~(AD9257_DigMask));
+            | AD9257_ClkMask)
+            & ~(AD9257_DigMask));
 }
 
 /**

@@ -415,9 +415,9 @@ void setupDetector() {
 		int retval[2]={-1,-1};
 		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
 		for(i = 0; i < NDAC; ++i) {
-			setDAC((enum DACINDEX)i,defaultvals[i],0,retval);
-			if (retval[0] != defaultvals[i]) {
-				FILE_LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], retval[0]));
+			setDAC((enum DACINDEX)i,defaultvals[i],0);
+			if ((detectorModules)->dacs[i] != defaultvals[i]) {
+				FILE_LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], (detectorModules)->dacs[i]));
 			}
 		}
 	}
@@ -847,10 +847,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 	// dacs
 	{
 		int i = 0;
-		int retval[2] = {0, 0};
-		for(i = 0; i < myMod.ndac; ++i) {
-			setDAC((enum DACINDEX)i, myMod.dacs[i] , 0, retval);
-			if (myMod.dacs[i] != retval[0]) {
+		for(i = 0; i < NDAC; ++i) {
+			setDAC((enum DACINDEX)i, myMod.dacs[i] , 0);
+			if (myMod.dacs[i] != (detectorModules)->dacs[i]) {
 				sprintf(mess, "Could not set module. Could not set dac %d\n", i);
 				FILE_LOG(logERROR, (mess));
 				setSettings(UNDEFINED);
@@ -928,12 +927,6 @@ int getModule(sls_detector_module *myMod) {
 #ifndef VIRTUAL
 	int i;
 	int retval[2];
-
-	//dacs
-	for(i=0;i<NDAC;i++) {
-		setDAC((enum DACINDEX)i,-1,0,retval);
-		//FILE_LOG(logINFO,"dac%d:%d\n",i, *((detectorModules->dacs)+i));
-	}
 
 	//trimbits
 	unsigned int* tt;
@@ -1027,7 +1020,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     }
 
 #ifdef VIRTUAL
-    if (mV && Common_VoltageToDac(val, &dacval, 0, MAX_DAC_VOLTAGE_VALUE, MAX_DAC_UNIT_VALUE) == OK)
+    if (mV && Common_VoltageToDac(val, &dacval, 0, DAC_MAX_VOLTAGE_MV, MAX_DAC_UNIT_VALUE) == OK)
         (detectorModules)->dacs[ind] = val;
 #else
     char iname[10];
@@ -1063,16 +1056,16 @@ int getDAC(enum DACINDEX ind, int mV) {
 
     if (!mV) {
         FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, (detectorModules)->dacs[ind]));
-        return dacValues[ind];
+        return (detectorModules)->dacs[ind];
     }
     int voltage = -1;
-    Common_DacToVoltage((detectorModules)->dacs[ind], &voltage, 0, MAX_DAC_VOLTAGE_VALUE, MAX_DAC_UNIT_VALUE);
+    Common_DacToVoltage((detectorModules)->dacs[ind], &voltage, 0, DAC_MAX_VOLTAGE_MV, MAX_DAC_UNIT_VALUE);
     FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, (detectorModules)->dacs[ind], voltage));
     return voltage;
 }
 
-int getMAXDACUnits() {
-    return MAX_DAC_UNIT_VALUE;
+int getMaxDacSteps() {
+    return DAC_MAX_STEPS;
 }
 
 

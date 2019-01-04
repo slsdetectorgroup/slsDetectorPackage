@@ -157,7 +157,7 @@ extern void AD9257_SetVrefVoltage(int val)             // AD9257.h
 
 void 		setDAC(enum DACINDEX ind, int val, int mV);
 int         getDAC(enum DACINDEX ind, int mV);
-int         getMAXDACUnits();
+int         getMaxDacSteps();
 #ifdef CHIPTESTBOARDD
 int         checkVLimitCompliant(int mV);
 int         checkVLimitDacCompliant(int dac);

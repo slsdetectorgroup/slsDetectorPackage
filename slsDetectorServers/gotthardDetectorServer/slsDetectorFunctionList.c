@@ -113,13 +113,13 @@ void basictests() {
 
 			"Firmware Version       : 0x%llx\n"
 			"Software Version       : 0x%llx\n"
-			"F/w-S/w API Version    : 0x%llx\n"
-			"Required F/w Version   : 0x%x\n"
 			"Client-S/w API Version : 0x%llx\n"
 			"********************************************************\n",
 			boardrev,
+
 			ipadd,
 			(long  long unsigned int)macadd,
+
 			(long  long int)fwversion,
 			(long  long int)swversion,
 			(long long int)client_sw_apiversion
@@ -379,7 +379,7 @@ void setupDetector() {
         AD9252_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
     else
         AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
-    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, MAX_DAC_VOLTAGE_VALUE);
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MAX_VOLTAGE_MV);
 
     // disable spi
     if (getBoardRevision() == 1)
@@ -388,9 +388,8 @@ void setupDetector() {
         AD9257_Disable();
     LTC2620_Disable();
 
-    bus_w(DAC_CNTRL_REG, DAC_CNTRL_SPI_IDLE_MSK);
-    bus_w(ADC_SPI_REG, ADC_SERIAL_CS_OUT_MSK);
-    bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IDLE_MSK);
+    bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IN_IDLE_MSK);
+    bus_w(TEMP_SPI_OUT_REG, 0x0);
 
 #ifndef VIRTUAL
     if (getBoardRevision() == 1)
@@ -1144,6 +1143,9 @@ enum detectorSettings getSettings(){
 /* parameters - dac, adc, hv */
 
 void setDAC(enum DACINDEX ind, int val, int mV) {
+    if (val < 0)
+        return;
+
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
@@ -1166,7 +1168,7 @@ int getDAC(enum DACINDEX ind, int mV) {
     return voltage;
 }
 
-int getMAXDACUnits() {
+int getMaxDacSteps() {
     return LTC2620_MAX_STEPS;
 }
 

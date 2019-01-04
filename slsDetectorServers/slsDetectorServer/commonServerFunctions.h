@@ -5,7 +5,7 @@
 void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask, uint32_t digoutmask) {
 
     // start point
-    (*valw) = (bus_r(addr) | csmask | clkmask &~(digoutmask));
+    (*valw) = ((bus_r(addr) | csmask | clkmask) &(~digoutmask));
     bus_w (addr, (*valw));
 
     // chip sel bar down
@@ -74,7 +74,7 @@ void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstos
     }
     uint32_t valw;
 
-    SPIChipSelect (&valw, addr, csmask);
+    SPIChipSelect (&valw, addr, csmask, clkmask, digoutmask);
 
     sendDataToSPI(&valw, addr, val, numbitstosend, clkmask, digoutmask, digofset);
 

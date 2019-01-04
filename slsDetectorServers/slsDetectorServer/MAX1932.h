@@ -36,10 +36,10 @@ void MAX1932_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t d
  * Disable SPI
  */
 void MAX1932_Disable() {
-    bus_w(MAX1932_Reg, bus_r(MAX1932_Reg)
+    bus_w(MAX1932_Reg, (bus_r(MAX1932_Reg)
             | MAX1932_CsMask
-            | MAX1932_ClkMask
-            &~(MAX1932_DigMask));
+            | MAX1932_ClkMask)
+            & ~(MAX1932_DigMask));
 }
 
 /**

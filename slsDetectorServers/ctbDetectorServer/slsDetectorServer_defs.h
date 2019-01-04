@@ -71,7 +71,6 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define WAIT_TIME_US_STP_ACQ        (100)
 #define WAIT_TIME_CONFIGURE_MAC     (500 * 1000)
 
-#define MAX_DAC_VOLTAGE_VALUE       (2500)
 #define DAC_MAX_VOLTAGE_MV          (2500)
 #define VCHIP_MAX_MV                (2700)
 #define VCHIP_MIN_MV                (1700)

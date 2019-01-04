@@ -126,10 +126,10 @@ void AD9252_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dm
  * Disable SPI
  */
 void AD9252_Disable() {
-    bus_w(AD9252_REG, bus_r(AD9252_REG)
-            | AD9252_CS_MSK
-            | AD9252_CLK_MSK
-            &~(AD9252_DT_MSK));
+    bus_w(AD9252_Reg, (bus_r(AD9252_Reg)
+            | AD9252_CsMask
+            | AD9252_ClkMask)
+            &~(AD9252_DigMask));
 }
 
 /**
@@ -141,8 +141,8 @@ void AD9252_Set(int addr, int val) {
     u_int32_t codata;
     codata = val + (addr << 8);
     FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr));
-    serializeToSPI(AD9252_REG, codata, AD9252_CS_MSK, AD9252_ADC_NUMBITS,
-            AD9252_CLK_MSK, AD9252_DT_MSK, AD9252_DT_OFST);
+    serializeToSPI(AD9252_Reg, codata, AD9252_CsMask, AD9252_ADC_NUMBITS,
+            AD9252_ClkMask, AD9252_DigMask, AD9252_DigOffset);
 }
 
 /**

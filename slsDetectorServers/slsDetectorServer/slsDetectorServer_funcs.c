@@ -835,13 +835,13 @@ int set_dac(int file_des) {
 
                 // dacs
     			default:
-    			    if (mV && val > MAX_DAC_VOLTAGE_VALUE) {
+    			    if (mV && val > DAC_MAX_VOLTAGE_MV) {
                         ret = FAIL;
-                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d mV).\n", ind, val, MAX_DAC_VOLTAGE_VALUE);
+                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d mV).\n", ind, val, DAC_MAX_VOLTAGE_MV);
                         FILE_LOG(logERROR,(mess));
-    			    } else if (!mV && val > LTC2620_MAX_STEPS ) {
+    			    } else if (!mV && val > getMaxDacSteps() ) {
                         ret = FAIL;
-                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d dac units).\n", ind, val, LTC2620_MAX_STEPS);
+                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d dac units).\n", ind, val, getMaxDacSteps());
                         FILE_LOG(logERROR,(mess));
     			    } else {
 #ifdef CHIPTESTBOARDD
@@ -854,7 +854,8 @@ int set_dac(int file_des) {
                             FILE_LOG(logERROR,(mess));
     			        } else
 #endif
-    			        setDAC(serverDacIndex, val, mV, retval);
+    			        setDAC(serverDacIndex, val, mV);
+    			        retval = getDAC(serverDacIndex, mV);
     			    }
 #ifdef EIGERD
                     if (val != -1) {
@@ -885,7 +886,7 @@ int set_dac(int file_des) {
                             FILE_LOG(logERROR,(mess));
                         }
                     }
-                    FILE_LOG(logDEBUG1, ("Dac (%d): %d %s\n", serverDacIndex, retval, (mv ? "mV" : "dac units")));
+                    FILE_LOG(logDEBUG1, ("Dac (%d): %d %s\n", serverDacIndex, retval, (mV ? "mV" : "dac units")));
     				break;
     		}
     	}

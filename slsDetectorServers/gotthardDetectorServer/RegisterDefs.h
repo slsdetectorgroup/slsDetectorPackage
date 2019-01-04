@@ -131,7 +131,7 @@
 #define TEMP_SPI_IN_T2_CLK_MSK          (0x00000001 << TEMP_SPI_IN_T2_CLK_OFST)
 #define TEMP_SPI_IN_T2_CS_OFST          (3)
 #define TEMP_SPI_IN_T2_CS_MSK           (0x00000001 << TEMP_SPI_IN_T2_CS_OFST)
-#define TEMP_SPI_IDLE_MSK               (TEMP_SPI_IN_T1_CS_MSK | TEMP_SPI_IN_T2_CS_MSK)
+#define TEMP_SPI_IN_IDLE_MSK            (TEMP_SPI_IN_T1_CS_MSK | TEMP_SPI_IN_T2_CS_MSK | TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T2_CLK_MSK)
 
 /** Temperatre SPI Out register */
 #define TEMP_SPI_OUT_REG                (0x1c << MEM_MAP_SHIFT)

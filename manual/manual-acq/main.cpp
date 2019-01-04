@@ -20,8 +20,9 @@
 #include "sls_detector_defs.h"
 #include "slsDetectorUsers.h"
 
-#define GOTTHARD_TEST
+//#define GOTTHARD_25_TEST
 //#define JUNGFRAU_TEST
+#define GOTTHARD_TEST
 
 //======================================================================================================
 // test configuration
@@ -29,13 +30,14 @@
 int      acquisition_nb    = 1; // number of acquisition to make
 int      acquisition_nb_ok = 0; // number of correct acquisition
 uint64_t last_acquisition_received_frames; // number of received frames during the last acquisition
+std::vector <int> acquisition_nb_list;
 
 bool use_trace = false; // activate the acquisition log
 
 //------------------------------------------------------------------------------------------------------
-// GOTTHARD
+// GOTTHARD 25um
 //------------------------------------------------------------------------------------------------------
-#ifdef GOTTHARD_TEST
+#ifdef GOTTHARD_25_TEST
     const int receivers_nb = 2; // number of receivers
     const int receivers_rx_tcpport[receivers_nb] = {1954, 1955}; // tcp port for each receiver
 
@@ -49,9 +51,27 @@ bool use_trace = false; // activate the acquisition log
     const std::string detector_trig_mode                  = "auto"; // "auto" or "trigger"
     int64_t           detector_nb_frames_per_cycle        = 10;
     const int64_t     detector_nb_cycles                  = 1;
-    const int         detector_clock_divider              = 1;
     int               detector_module_index[receivers_nb] = {0, 1};
-#else 
+#else
+//------------------------------------------------------------------------------------------------------
+// GOTTHARD
+//------------------------------------------------------------------------------------------------------
+#ifdef GOTTHARD_TEST
+    const int receivers_nb = 1; // number of receivers
+    const int receivers_rx_tcpport[receivers_nb] = {1954}; // tcp port for each receiver
+
+    const int detector_id = 0; // detector identifier for slsDetectorUsers constructor
+    const std::string detector_config_file_name = "gotthard25.config"; // configuration file name (must be present in the same folder of this application)
+
+    const long        detector_receiver_fifo_depth        = 2500;
+    double            detector_exposure_time_sec          = 0.005;
+    double            detector_exposure_period_sec        = 0.1;
+    const double      detector_delay_after_trigger_sec    = 0.0;
+    const std::string detector_trig_mode                  = "auto"; // "auto" or "trigger"
+    int64_t           detector_nb_frames_per_cycle        = 10;
+    const int64_t     detector_nb_cycles                  = 1;
+    int               detector_module_index[receivers_nb] = {0};
+#else
 //------------------------------------------------------------------------------------------------------
 // JUNGFRAU
 //------------------------------------------------------------------------------------------------------
@@ -71,6 +91,7 @@ bool use_trace = false; // activate the acquisition log
     const int64_t     detector_nb_cycles                  = 1;
     const int         detector_clock_divider              = 1;
     int               detector_module_index[receivers_nb] = {0};
+#endif
 #endif
 #endif
 
@@ -279,8 +300,7 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p)
         slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
         const slsReceiverDefs::sls_detector_header & detectorHeader = header->detHeader;
 
-        PRINT_IN_COLOR (//*(static_cast<int *>(p)),
-                detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
+        PRINT_IN_COLOR (*(static_cast<int *>(p)),
 			        "#### %d GetData: ####\n"
 			        "frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu"
 			        "\t\ttimestamp: %llu\t\tmodId: %u\t\t"
@@ -288,8 +308,7 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p)
 			        "\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
 			        //"\t\tpacketsMask:%s"
 			        "\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-                               //*(static_cast<int *>(p)),
-			        detectorHeader.row,
+                               *(static_cast<int *>(p)),
                                 (long long unsigned int)detectorHeader.frameNumber,
                                 detectorHeader.expLength, 
                                 detectorHeader.packetNumber, 
@@ -457,7 +476,7 @@ void ReleaseDetector(void)
 //------------------------------------------------------------------------------------------------------
 // RunAcquisition
 //------------------------------------------------------------------------------------------------------
-void RunAcquisition(void)
+int RunAcquisition(void)
 {
     std::string trig_mode_label;
 
@@ -468,9 +487,9 @@ void RunAcquisition(void)
     int64_t nb_frames_per_cycle;
     int64_t nb_cycles;
     int64_t nb_frames;
-
+#ifdef JUNGFRAU_TEST
     int clock_divider;
-
+#endif
     //----------------------------------------------------------------------------------------------------
     // setting the receiver fifo depth (number of frames in the receiver memory)
     detector->setReceiverFifoDepth(detector_receiver_fifo_depth);
@@ -513,10 +532,11 @@ void RunAcquisition(void)
     nb_frames = nb_cycles * nb_frames_per_cycle;
 
     //----------------------------------------------------------------------------------------------------
+#ifdef JUNGFRAU_TEST
     // clock divider
     detector->setClockDivider(detector_clock_divider);
     clock_divider = detector->setClockDivider(-1);
-
+#endif
     //----------------------------------------------------------------------------------------------------
     std::cout << "receiver fifo depth : " << detector_receiver_fifo_depth << std::endl;
     std::cout << "Exposure time in seconds : " << exposure_time << std::endl;
@@ -526,7 +546,9 @@ void RunAcquisition(void)
     std::cout << "Nb frames per cycle : " << nb_frames_per_cycle << std::endl;
     std::cout << "Nb cycles : " << nb_cycles << std::endl;
     std::cout << "Nb frames : " << nb_frames << std::endl;
+#ifdef JUNGFRAU_TEST
     std::cout << "Clock divider : " << clock_divider << std::endl;
+#endif
     std::cout << "Estimated frame rate : " << (1.0 / exposure_period) << std::endl;
 
     //----------------------------------------------------------------------------------------------------
@@ -540,7 +562,7 @@ void RunAcquisition(void)
     if(detector->startReceiver() == slsDetectorDefs::FAIL)
     {
         std::cout << "Could not start the receiver listening mode!" << std::endl;
-        return;
+        return slsDetectorDefs::FAIL;
     }
 
     // starting real time acquisition in non blocking mode
@@ -549,7 +571,7 @@ void RunAcquisition(void)
     {
         detector->stopReceiver();
         std::cout << "Could not start real time acquisition!" << std::endl;
-        return;
+        return slsDetectorDefs::FAIL;
     }
 
     for(;;)
@@ -575,7 +597,7 @@ void RunAcquisition(void)
     if(detector->stopReceiver() == slsDetectorDefs::FAIL)
     {
         std::cout << "Could not stop real time acquisition!" << std::endl;
-        return;
+        return slsDetectorDefs::FAIL;
     }
     
     //----------------------------------------------------------------------------------------------------
@@ -588,13 +610,19 @@ void RunAcquisition(void)
     std::cout << "Nb frames per cycle : " << nb_frames_per_cycle << std::endl;
     std::cout << "Nb cyles : " << nb_cycles << std::endl;
     std::cout << "Nb frames : " << nb_frames << std::endl;
+#ifdef JUNGFRAU_TEST
     std::cout << "Clock divider : " << clock_divider << std::endl;
+#endif
     std::cout << "Estimated frame rate : " << (1.0 / exposure_period) << std::endl;
 
     if(last_acquisition_received_frames == nb_frames)
     {
         acquisition_nb_ok++;
+        return slsDetectorDefs::OK;
     }
+
+    PRINT_SEPARATOR();
+    return slsDetectorDefs::FAIL;
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -622,7 +650,10 @@ void Test(void)
 
         for(int acquisition_index = 0 ; acquisition_index < acquisition_nb ; acquisition_index++)
         {
-            RunAcquisition();
+            cprintf(MAGENTA, "Acquisition number : %d\n", acquisition_index);
+            if (RunAcquisition() == slsDetectorDefs::FAIL) {
+                acquisition_nb_list.push_back(acquisition_index);
+            }
         }
         
         PRINT_SEPARATOR();
@@ -639,6 +670,12 @@ void Test(void)
 
         PRINT_SEPARATOR();
         std::cout << "Correct acquisition(s) " << acquisition_nb_ok << "/" << acquisition_nb << std::endl;
+        if (acquisition_nb - acquisition_nb_ok) {
+            std::cout << "Acquisition(s) gone wrong :" << std::endl;
+            for (int list_index = 0; list_index < acquisition_nb_list.size(); ++list_index) {
+                std::cout << acquisition_nb_list[list_index] << std::endl;
+            }
+        }
         PRINT_SEPARATOR();
     }
     catch (...)

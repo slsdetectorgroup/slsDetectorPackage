@@ -4,13 +4,8 @@ LIBDIR		= 	../../bin
 ZLIBDIR		= 	../../slsReceiverSoftware/include
 
 LBITS := $(shell getconf LONG_BIT)
-ifeq ($(LBITS),64)
-	SERVER_TYPE = "64 bits compile server detected..."
-	LDFLAG_DET 	=	-I. -L$(LIBDIR) -L$(ZLIBDIR) -lSlsReceiver -lSlsDetector -L/usr/lib64/ -pthread -lrt -L. -lzmq
-else
-	SERVER_TYPE = "32 bits compile server detected..."
-	LDFLAG_DET 	=	-I. -L$(LIBDIR) -L$(ZLIBDIR) -lSlsReceiver -lSlsDetector -pthread -lrt -L. -lzmq32
-endif
+SERVER_TYPE = "64 bits compile server detected..."
+LDFLAG_DET 	=	-I. -L$(LIBDIR) -L$(ZLIBDIR) -lSlsReceiver -lSlsDetector -L/usr/lib64/ -pthread -lrt -L. -lzmq
 
 all: manual-acq 
 	

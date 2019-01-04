@@ -1,1 +1,1 @@
-#include "../../slsDetectorSoftware/slsDetector/slsDetectorUsers.h"
+../../slsDetectorSoftware/slsDetector/slsDetectorUsers.h

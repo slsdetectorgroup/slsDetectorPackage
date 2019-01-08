@@ -387,7 +387,6 @@ void setupDetector() {
     else
         AD9257_Disable();
     LTC2620_Disable();
-
     bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IN_IDLE_MSK);
     bus_w(TEMP_SPI_OUT_REG, 0x0);
 

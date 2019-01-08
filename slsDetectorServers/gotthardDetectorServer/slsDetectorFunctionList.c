@@ -401,7 +401,7 @@ void setupDetector() {
 
     setROIADC(-1); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
-    LTC2620_Configure(); /*FIXME: if it doesnt work, switch to the old dac*/
+    LTC2620_Configure();
 
     // master, slave (25um)
     setMasterSlaveConfiguration();
@@ -1403,10 +1403,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     bus_w(addr, bus_r(addr) &(~WRT_BCK_MSK));
     FILE_LOG(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
-    // nreset phy /*FIXME: is this needed ?? */
-   /* bus_w(addr, bus_r(addr) | ENT_RSTN_MSK);
-    FILE_LOG(logDEBUG1, ("\tNreset phy. MultiPurpose reg: 0x%x\n", bus_r(addr)));*/
-
     FILE_LOG(logDEBUG1, ("\tConfiguring MAC CONF\n"));
     mac_conf *mac_conf_regs = (mac_conf*)(CSP0BASE + ENET_CONF_REG * 2);    // direct write
     mac_conf_regs->mac.mac_dest_mac1  = ((destmac >> (8 * 5)) & 0xFF);
@@ -1466,8 +1462,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     tse_conf_regs->mdio_addr1          = 0x0;
     mac_conf_regs->cdone               = 0xFFFFFFFF;
 
-    // write shadow regs  /* FIXME: Only INT_RSTN_MSK | WRT_BCK_MSK */
-    /*bus_w(addr, bus_r(addr) | (INT_RSTN_MSK | ENT_RSTN_MSK| WRT_BCK_MSK));*/
     bus_w(addr, bus_r(addr) | (INT_RSTN_MSK | WRT_BCK_MSK));
     FILE_LOG(logDEBUG1, ("\tWrite shadow regs with int reset. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
@@ -1477,8 +1471,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     bus_w(addr, bus_r(addr) &(~WRT_BCK_MSK));
     FILE_LOG(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
-    // sw1 /* FIXME: Only SW1_MSK */
-    /*bus_w(addr, bus_r(addr) | (INT_RSTN_MSK | ENT_RSTN_MSK | SW1_MSK));*/
     bus_w(addr, bus_r(addr) | SW1_MSK);
     FILE_LOG(logDEBUG1, ("\tSw1. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
@@ -1643,7 +1635,7 @@ int stopStateMachine(){
 #endif
 	//stop state machine
 	bus_w16(CONTROL_REG, CONTROL_STP_ACQ_MSK);
-	//usleep(100);/**FIXME:Needed? not there earlier*/
+	usleep(100);
 	bus_w16(CONTROL_REG, 0x0);
 
 	// check

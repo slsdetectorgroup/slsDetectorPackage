@@ -89,7 +89,6 @@ void 		resetPeripheral();
 #elif GOTTHARDD
 void        setPhaseShiftOnce();
 void        setPhaseShift(int numphaseshift);
-void        configureADC();
 void        cleanFifos();
 void        setADCSyncRegister();
 void        setDAQRegister();

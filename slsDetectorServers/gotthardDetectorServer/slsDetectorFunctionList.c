@@ -391,13 +391,14 @@ void setupDetector() {
     bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IN_IDLE_MSK);
     bus_w(TEMP_SPI_OUT_REG, 0x0);
 
+
 #ifndef VIRTUAL
     if (getBoardRevision() == 1)
         AD9252_Configure();
     else
         AD9257_Configure();
 #endif
-    //configureADC();
+
     setROIADC(-1); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
     LTC2620_Configure(); /*FIXME: if it doesnt work, switch to the old dac*/
@@ -485,65 +486,6 @@ void setPhaseShift(int numphaseshift) {
         bus_w(addr, val & (~PHS_STP_MSK));
     }
     FILE_LOG(logDEBUG1, ("Multipurpose reg: 0x%x\n", val));
-}
-
-void configureADC() {
-    printf("Preparing ADC\n");
-    u_int32_t valw,codata,csmask;
-    int i,j,cdx,ddx;
-    cdx=0; ddx=1;
-    csmask=0x7c; //  1111100
-
-    for(j=0;j<3;j++){
-        //command and value;
-        codata = 0;
-        if(j==0)
-            codata=(0x08<<8)+(0x3);//Power modes(global) //reset
-        else if(j==1)
-            codata=(0x08<<8)+(0x0);//Power modes(global) //chip run
-        else
-            codata = (0x14<<8)+(0x0);//Output mode //offset binary
-
-
-        // start point
-        valw=0xffffffff;
-        bus_w(ADC_SPI_REG,(valw));
-
-         //chip sel bar down
-        valw=((0xffffffff&(~csmask)));
-        bus_w(ADC_SPI_REG,valw);
-
-        for (i=0;i<24;i++) {
-             //cldwn
-            valw=valw&(~(0x1<<cdx));
-            bus_w(ADC_SPI_REG,valw);
-            //usleep(0);
-
-            //write data (i)
-            valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
-            bus_w(ADC_SPI_REG,valw);
-            //usleep(0);
-
-            //clkup
-            valw=valw+(0x1<<cdx);
-            bus_w(ADC_SPI_REG,valw);
-            //usleep(0);
-        }
-
-        valw |= csmask;
-        bus_w(ADC_SPI_REG,valw);
-        //usleep(0);
-
-         // stop point =start point
-        valw=valw&(~(0x1<<cdx));
-        bus_w(ADC_SPI_REG,(valw));
-
-        valw = 0xffffffff;
-        bus_w(ADC_SPI_REG,(valw));
-
-        //usleep in between
-        usleep(50000);
-    }
 }
 
 void cleanFifos() {
@@ -1172,97 +1114,6 @@ int getMaxDacSteps() {
     return LTC2620_MAX_STEPS;
 }
 
-/*
-void setDAC(enum DACINDEX ind, int val, int mV, int retval[]) {
-	int dacmV = val;
-
-	//if set and mv, convert to dac
-	if (val > 0) {
-	    if (mV)
-	        val = voltageToDac(val); //gives -1 on error
-	    else
-	        dacmV = dacToVoltage(val); //gives -1 on error
-	}
-
-	if (val >= 0) {
-	    FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",ind, val, dacmV));
-#ifndef VIRTUAL
-	    initDAC(ind,val);
-	    clearDACSregister();
-#else
-	    dacValues[ind] = val;
-#endif
-	}
-
-	retval[0] = dacValues[ind];
-	retval[1] = dacToVoltage(retval[0]);
-	FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, retval[0], retval[1]));
-}
-
-void initDAC(int dac_addr, int value) {
-    FILE_LOG(logDEBUG1, ("Programming dac %d with value %d\n", dac_addr, value));
-    clearDACSregister();
-    if (value >= 0)
-        program_one_dac(dac_addr,value);
-    nextDAC();
-}
-
-void clearDACSregister() {
-    putout("1111111111111111");//reset
-    putout("1111111111111110");//cs down
-}
-
-void nextDAC() {
-    putout("1111111111111011");//cs up
-    putout("1111111111111001");//clk down
-    putout("1111111111111111");//reset
-}
-
-void program_one_dac(int addr, int value) {
-    FILE_LOG(logDEBUG1, ("Programming dac %d with value %d\n", addr, value));
-    int origValue = value;
-    int control = 32 + addr;
-    value = (value << 4) |  (control << 16);
-
-    {
-        int i = 0;
-        for (i = 0; i < 24; ++i) {
-            int bit = value & (1 << (23 - i));
-            if (bit) {
-                putout("1111111111111100");//clk down
-                putout("1111111111111100");//write data
-                putout("1111111111111110");//clk up
-            }
-            else
-            {
-                putout("1111111111111000");//clk down
-                putout("1111111111111000");//write data
-                putout("1111111111111010");//clk up
-            }
-        }
-    }
-    dacValues[addr] = origValue;
-    FILE_LOG(logDEBUG1, ("\tDac %d set to %dn", addr, origValue));
-}
-
-// direct pattern output
-u_int32_t putout(char *s) {
-    if (strlen(s)<16) {
-        FILE_LOG(logERROR, ("putout: incorrect pattern length\n"));
-        return FAIL;
-    }
-
-    u_int32_t pat=0;
-    {int i = 0;
-        for (i = 0; i < 16; ++i) {
-            if (s[i]=='1')
-                pat = pat + (1 << (15 - i));
-        }
-    }
-    bus_w(DAC_CNTRL_REG, pat);
-    return OK;
-}
-*/
 
 int getADC(enum ADCINDEX ind){
 #ifdef VIRTUAL
@@ -1354,8 +1205,11 @@ int setHighVoltage(int val){
         }
         FILE_LOG(logDEBUG1, ("\tHigh voltage value to be sent: 0x%x\n", sel));
 
-        // switch off high voltage and set value
-        bus_w(addr, (bus_r(addr) & ~HV_ENBL_MSK) | sel);
+        // switch off high voltage
+        bus_w(addr, (bus_r(addr) & ~HV_ENBL_MSK));
+
+        // unset mask and set value
+        bus_w(addr, (bus_r(addr) & ~HV_SEL_MSK) | sel);
 
         // switch on high voltage
         if (val > 0)

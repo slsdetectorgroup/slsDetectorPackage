@@ -4,6 +4,7 @@
 #include "common.h"
 
 #include "math.h"
+#include <string.h>
 
 /* LTC2620 DAC DEFINES */
 // first 4 bits are 0 as this is a 12 bit dac
@@ -190,6 +191,7 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex)  {
  * @param chipIndex the chip to be set
  */
 void LTC2620_Set(int cmd, int data, int dacaddr, int chipIndex)  {
+    FILE_LOG(logDEBUG1, ("\tcmd:%d data:%d dacaddr:%d chipIndex:%d\n", cmd, data, dacaddr, chipIndex));
     // ctb
     if (LTC2620_Ndac > LTC2620_NUMCHANNELS)
         LTC2620_SetDaisy(cmd, data, dacaddr, chipIndex);
@@ -243,9 +245,8 @@ void LTC2620_SetDAC (int dacnum, int data) {
         FILE_LOG(logDEBUG1,("\tWrite to Input Register and Update\n"));
     }
 
-    LTC2620_Set(data, addr, cmd, ichip);
+    LTC2620_Set(cmd, data, addr, ichip);
 }
-
 
 /**
  * Set dac in dac units or mV
@@ -256,6 +257,7 @@ void LTC2620_SetDAC (int dacnum, int data) {
  * @returns OK or FAIL for success of operation
  */
 int LTC2620_SetDACValue (int dacnum, int val, int mV, int* dacval) {
+    FILE_LOG(logDEBUG1, ("\tdacnum:%d, val:%d, mV:%d\n", dacnum, val, mV));
     // validate index
     if (dacnum < 0 || dacnum >= LTC2620_Ndac) {
         FILE_LOG(logERROR, ("Dac index %d is out of bounds (0 to %d)\n", dacnum, LTC2620_Ndac - 1));
@@ -289,5 +291,3 @@ int LTC2620_SetDACValue (int dacnum, int val, int mV, int* dacval) {
     }
     return OK;
 }
-
-

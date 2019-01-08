@@ -204,9 +204,13 @@ void AD9257_Configure(){
     FILE_LOG(logINFO, ("\tBinary offset\n"));
     AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_BINARY_OFST_VAL);
 
-	//output clock phase
-	FILE_LOG(logINFO, ("\tOutput clock phase\n")); //FIXME:??
+    //output clock phase
+#ifdef GOTTHARDD
+    FILE_LOG(logINFO, ("\tOutput clock phase is at default: 180\n"));
+#else
+	FILE_LOG(logINFO, ("\tOutput clock phase: 60\n"));
 	AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_60_VAL);
+#endif
 
 	// lvds-iee reduced , binary offset
 	FILE_LOG(logINFO, ("\tLvds-iee reduced, binary offset\n"));
@@ -216,18 +220,18 @@ void AD9257_Configure(){
 	FILE_LOG(logINFO, ("\tAll devices on chip to receive next command\n"));
 	AD9257_Set(AD9257_DEV_IND_2_REG,
 			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
-#ifdef GOTTHARDD
-    AD9257_Set(AD9257_DEV_IND_1_REG,
-            AD9257_CHAN_D_MSK | AD9257_CHAN_C_MSK | AD9257_CHAN_B_MSK | AD9257_CHAN_A_MSK );// FIXME: gotthard setting dco and ifco to off??
-#else
+
 	AD9257_Set(AD9257_DEV_IND_1_REG,
 	        AD9257_CHAN_D_MSK | AD9257_CHAN_C_MSK | AD9257_CHAN_B_MSK | AD9257_CHAN_A_MSK |
 	        AD9257_CLK_CH_DCO_MSK | AD9257_CLK_CH_IFCO_MSK);
-#endif
 
-	// vref 1.33
-	FILE_LOG(logINFO, ("\tVref 1.33\n"));// FIXME: needed for Gottthard? earlier not set (default 3.0 v)
+	// vref
+#ifdef GOTTHARDD
+	FILE_LOG(logINFO, ("\tVref default at 2.0\n"));
+#else
+	FILE_LOG(logINFO, ("\tVref 1.33\n"));
 	AD9257_Set(AD9257_VREF_REG, AD9257_VREF_1_33_VAL);
+#endif
 
 	// no test mode
 	FILE_LOG(logINFO, ("\tNo test mode\n"));

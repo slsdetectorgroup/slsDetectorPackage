@@ -154,25 +154,22 @@ void AD9252_Configure(){
     //power mode reset
     FILE_LOG(logINFO, ("\tPower mode reset\n"));
     AD9252_Set(AD9252_POWER_MODE_REG, AD9252_INT_RESET_VAL);
-/*#ifdef GOTTHARDD //FIXME:?
-    usleep(50000);
-#endif*/
 
     //power mode chip run
     FILE_LOG(logINFO, ("\tPower mode chip run\n"));
     AD9252_Set(AD9252_POWER_MODE_REG, AD9252_INT_CHIP_RUN_VAL);
-#ifdef GOTTHARDD
-    /*usleep(50000);*///FIXME:?
 
     // binary offset
     FILE_LOG(logINFO, ("\tBinary offset\n"));
     AD9252_Set(AD9252_OUT_MODE_REG, AD9252_OUT_BINARY_OFST_VAL);
-    /*usleep(50000);*///FIXME:?
-#endif
 
     //output clock phase
-    FILE_LOG(logINFO, ("\tOutput clock phase\n"));
-    AD9252_Set(AD9252_OUT_PHASE_REG, AD9252_OUT_CLK_60_VAL);
+#ifdef GOTTHARDD
+    FILE_LOG(logINFO, ("\tOutput clock phase is at default: 180\n"));
+#else
+    FILE_LOG(logINFO, ("\tOutput clock phase: 60\n"));
+    AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_60_VAL);
+#endif
 
     // lvds-iee reduced , binary offset
     FILE_LOG(logINFO, ("\tLvds-iee reduced, binary offset\n"));
@@ -184,7 +181,7 @@ void AD9252_Configure(){
             AD9252_CHAN_H_MSK | AD9252_CHAN_G_MSK | AD9252_CHAN_F_MSK | AD9252_CHAN_E_MSK);
     AD9252_Set(AD9252_DEV_IND_1_REG,
             AD9252_CHAN_D_MSK | AD9252_CHAN_C_MSK | AD9252_CHAN_B_MSK | AD9252_CHAN_A_MSK |
-            AD9252_CLK_CH_DCO_MSK | AD9252_CLK_CH_IFCO_MSK); // unlike 9257, by default ad9252 has this (dco and ifco)off
+            AD9252_CLK_CH_DCO_MSK | AD9252_CLK_CH_IFCO_MSK);
 
     // no test mode
     FILE_LOG(logINFO, ("\tNo test mode\n"));

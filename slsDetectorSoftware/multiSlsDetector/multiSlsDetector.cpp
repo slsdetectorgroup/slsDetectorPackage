@@ -360,8 +360,8 @@ void multiSlsDetector::initializeDetectorStructure() {
     thisMultiDetector->numberOfChannelInclGapPixels[Y] = 0;
     thisMultiDetector->maxNumberOfChannelsPerDetector[X] = 0;
     thisMultiDetector->maxNumberOfChannelsPerDetector[Y] = 0;
-    for (int i = 0; i < MAX_TIMERS; ++i) {
-        thisMultiDetector->timerValue[i] = 0;
+    for (long & i : thisMultiDetector->timerValue) {
+        i = 0;
     }
 
     thisMultiDetector->acquiringFlag = false;
@@ -854,8 +854,8 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
                                             "threaded"};
 
     char *args[100];
-    for (int ia = 0; ia < 100; ++ia) {
-        args[ia] = new char[1000];
+    for (auto & arg : args) {
+        arg = new char[1000];
     }
     int ret = OK, ret1 = OK;
     std::ofstream outfile;
@@ -906,8 +906,8 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
         ret = FAIL;
     }
 
-    for (int ia = 0; ia < 100; ++ia) {
-        delete[] args[ia];
+    for (auto & arg : args) {
+        delete[] arg;
     }
 
     return ret;
@@ -3345,9 +3345,9 @@ int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
     outfile.open(outfname.c_str(), std::ios_base::out);
     if (outfile.is_open()) {
         auto cmd = slsDetectorCommand(this);
-        for (int iv = 0; iv < names.size(); ++iv) {
-            sls::strcpy_safe(buffer, names[iv].c_str()); //this is...
-            outfile << names[iv] << " " << cmd.executeLine(n_arguments, args, GET_ACTION)
+        for (auto & name : names) {
+            sls::strcpy_safe(buffer, name.c_str()); //this is...
+            outfile << name << " " << cmd.executeLine(n_arguments, args, GET_ACTION)
                     << std::endl;
         }
         outfile.close();

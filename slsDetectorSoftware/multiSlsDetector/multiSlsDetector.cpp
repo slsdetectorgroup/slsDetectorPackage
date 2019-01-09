@@ -27,12 +27,12 @@
 #include <vector>
 
 multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
-    : detId(id), sharedMemory(0), thisMultiDetector(0),
+    : detId(id), sharedMemory(nullptr), thisMultiDetector(nullptr),
       client_downstream(false), totalProgress(0), progressIndex(0),
-      jointhread(0), acquiringDone(0), fdata(0), thisData(0),
-      acquisition_finished(0), acqFinished_p(0), measurement_finished(0),
-      measFinished_p(0), progress_call(0), pProgressCallArg(0), dataReady(0),
-      pCallbackArg(0) {
+      jointhread(0), acquiringDone(0), fdata(nullptr), thisData(nullptr),
+      acquisition_finished(nullptr), acqFinished_p(nullptr), measurement_finished(nullptr),
+      measFinished_p(nullptr), progress_call(nullptr), pProgressCallArg(nullptr), dataReady(nullptr),
+      pCallbackArg(nullptr) {
     setupMultiDetector(verify, update);
 }
 
@@ -274,11 +274,11 @@ void multiSlsDetector::freeSharedMemory(int detPos) {
     if (sharedMemory) {
         if (thisMultiDetector) {
             sharedMemory->UnmapSharedMemory(thisMultiDetector);
-            thisMultiDetector = 0;
+            thisMultiDetector = nullptr;
         }
         sharedMemory->RemoveSharedMemory();
         delete sharedMemory;
-        sharedMemory = 0;
+        sharedMemory = nullptr;
     }
 
     // zmq
@@ -334,11 +334,11 @@ void multiSlsDetector::initSharedMemory(bool verify) {
             // unmap
             if (thisMultiDetector) {
                 sharedMemory->UnmapSharedMemory(thisMultiDetector);
-                thisMultiDetector = 0;
+                thisMultiDetector = nullptr;
             }
             // delete
             delete sharedMemory;
-            sharedMemory = 0;
+            sharedMemory = nullptr;
         }
         throw;
     }
@@ -360,8 +360,8 @@ void multiSlsDetector::initializeDetectorStructure() {
     thisMultiDetector->numberOfChannelInclGapPixels[Y] = 0;
     thisMultiDetector->maxNumberOfChannelsPerDetector[X] = 0;
     thisMultiDetector->maxNumberOfChannelsPerDetector[Y] = 0;
-    for (int i = 0; i < MAX_TIMERS; ++i) {
-        thisMultiDetector->timerValue[i] = 0;
+    for (long & i : thisMultiDetector->timerValue) {
+        i = 0;
     }
 
     thisMultiDetector->acquiringFlag = false;
@@ -410,7 +410,7 @@ std::string multiSlsDetector::exec(const char *cmd) {
         throw std::exception();
     try {
         while (!feof(pipe)) {
-            if (fgets(buffer, bufsize, pipe) != NULL)
+            if (fgets(buffer, bufsize, pipe) != nullptr)
                 result += buffer;
         }
     } catch (...) {
@@ -854,8 +854,8 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
                                             "threaded"};
 
     char *args[100];
-    for (int ia = 0; ia < 100; ++ia) {
-        args[ia] = new char[1000];
+    for (auto & arg : args) {
+        arg = new char[1000];
     }
     int ret = OK, ret1 = OK;
     std::ofstream outfile;
@@ -906,8 +906,8 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
         ret = FAIL;
     }
 
-    for (int ia = 0; ia < 100; ++ia) {
-        delete[] args[ia];
+    for (auto & arg : args) {
+        delete[] arg;
     }
 
     return ret;
@@ -1775,7 +1775,7 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
     for (int i = 0; i < ndet; ++i)
         nroi[i] = 0;
 
-    if ((n < 0) || (roiLimits == NULL))
+    if ((n < 0) || (roiLimits == nullptr))
         return FAIL;
 
     // ensures min < max
@@ -1893,7 +1893,7 @@ slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
     ROI temproi;
     ROI roiLimits[maxroi];
     ROI *retval = new ROI[maxroi];
-    ROI *temp = 0;
+    ROI *temp = nullptr;
     int index = 0;
 
     // get each detector's roi array
@@ -1919,7 +1919,7 @@ slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
 
     // empty roi
     if (!n)
-        return NULL;
+        return nullptr;
 
     FILE_LOG(logDEBUG1) << "ROI :" << std::endl;
     for (int j = 0; j < n; ++j) {
@@ -2684,9 +2684,9 @@ void multiSlsDetector::readFrameFromReceiver() {
     }
     int numConnected = numRunning;
     bool data = false;
-    char *image = NULL;
-    char *multiframe = NULL;
-    char *multigappixels = NULL;
+    char *image = nullptr;
+    char *multiframe = nullptr;
+    char *multigappixels = nullptr;
     int multisize = 0;
     // only first message header
     uint32_t size = 0, nPixelsX = 0, nPixelsY = 0, dynamicRange = 0;
@@ -2707,7 +2707,7 @@ void multiSlsDetector::readFrameFromReceiver() {
     while (running) {
         // reset data
         data = false;
-        if (multiframe != NULL)
+        if (multiframe != nullptr)
             memset(multiframe, 0xFF, multisize);
 
         // get each frame
@@ -2729,7 +2729,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                     }
 
                     // if first message, allocate (all one time stuff)
-                    if (image == NULL) {
+                    if (image == nullptr) {
                         // allocate
                         size = doc["size"].GetUint();
                         multisize = size * zmqSocket.size();
@@ -2865,11 +2865,11 @@ void multiSlsDetector::readFrameFromReceiver() {
             zmqSocket[i]->Disconnect();
 
     // free resources
-    if (image != NULL)
+    if (image != nullptr)
         delete[] image;
-    if (multiframe != NULL)
+    if (multiframe != nullptr)
         delete[] multiframe;
-    if (multigappixels != NULL)
+    if (multigappixels != nullptr)
         delete[] multigappixels;
 }
 
@@ -2883,15 +2883,15 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {
     int nychip = thisMultiDetector->numberOfDetector[Y] * 1;
 
     // allocate
-    if (gpImage == NULL)
+    if (gpImage == nullptr)
         gpImage = new char[gapdatabytes];
     // fill value
     memset(gpImage, 0xFF, gapdatabytes);
 
     const int b1chipx = 128;
     const int b1chipy = 256;
-    char *src = 0;
-    char *dst = 0;
+    char *src = nullptr;
+    char *dst = nullptr;
 
     // copying line by line
     src = image;
@@ -2951,7 +2951,7 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {
     // horizontal filling
     {
         uint8_t temp, g1, g2;
-        char *dst_prevline = 0;
+        char *dst_prevline = nullptr;
         dst = gpImage;
         for (int row = 0; row < nychip; ++row) { // for each chip in a row
             dst += (b1chipy * nxb);
@@ -3190,7 +3190,6 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
     char *args[10];
 
     char myargs[10][1000];
-    ;
 
     std::string sargname, sargval;
     int iline = 0;
@@ -3219,7 +3218,7 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
                 while (ssstr.good()) {
                     ssstr >> sargname;
                     //  if (ssstr.good()) {
-                    strcpy(myargs[iargval], sargname.c_str());
+                    sls::strcpy_safe(myargs[iargval], sargname.c_str());
                     args[iargval] = myargs[iargval];
                     FILE_LOG(logDEBUG1) << args[iargval];
                     iargval++;
@@ -3346,9 +3345,9 @@ int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
     outfile.open(outfname.c_str(), std::ios_base::out);
     if (outfile.is_open()) {
         auto cmd = slsDetectorCommand(this);
-        for (int iv = 0; iv < names.size(); ++iv) {
-            sls::strcpy_safe(buffer, names[iv].c_str()); //this is...
-            outfile << names[iv] << " " << cmd.executeLine(n_arguments, args, GET_ACTION)
+        for (auto & name : names) {
+            sls::strcpy_safe(buffer, name.c_str()); //this is...
+            outfile << name << " " << cmd.executeLine(n_arguments, args, GET_ACTION)
                     << std::endl;
         }
         outfile.close();
@@ -3613,7 +3612,7 @@ int multiSlsDetector::kbhit() {
     tv.tv_usec = 0;
     FD_ZERO(&fds);
     FD_SET(STDIN_FILENO, &fds); // STDIN_FILENO is 0
-    select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
+    select(STDIN_FILENO + 1, &fds, nullptr, nullptr, &tv);
     return FD_ISSET(STDIN_FILENO, &fds);
 }
 

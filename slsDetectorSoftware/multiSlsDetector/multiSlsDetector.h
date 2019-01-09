@@ -994,7 +994,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int setROI(int n = -1, ROI roiLimits[] = NULL, int detPos = -1);
+    int setROI(int n = -1, ROI roiLimits[] = nullptr, int detPos = -1);
 
     /**
      * Get ROI from each detector and convert it to the multi detector scale
@@ -1075,7 +1075,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of trim energies
      */
-    int setTrimEn(int nen, int *en = NULL, int detPos = -1);
+    int setTrimEn(int nen, int *en = nullptr, int detPos = -1);
 
     /**
      * Returns the number of trim energies and their value  (Eiger)
@@ -1084,7 +1084,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of trim energies
      */
-    int getTrimEn(int *en = NULL, int detPos = -1);
+    int getTrimEn(int *en = nullptr, int detPos = -1);
 
     /**
      * Pulse Pixel (Eiger)

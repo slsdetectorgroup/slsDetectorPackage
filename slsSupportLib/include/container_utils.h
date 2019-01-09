@@ -100,40 +100,6 @@ T minusOneIfDifferent(const std::vector<T>& container)
 
 
 
-//TODO!(Erik)Should try to move away from using this in the slsDetectorPackage
-inline
-std::string concatenateIfDifferent(std::vector<std::string> container)
-{
-    if (allEqual(container)) {
-        return container.front();
-    } else {
-        std::string result;
-        for (const auto& s : container)
-            result += s + "+";
-        return result;
-    }
-}
-inline
-std::vector<std::string> split(const std::string& strToSplit, char delimeter)
-{
-    std::stringstream ss(strToSplit);
-    std::string item;
-    std::vector<std::string> splittedStrings;
-    while (std::getline(ss, item, delimeter)) {
-        splittedStrings.push_back(item);
-    }
-    return splittedStrings;
-}
-
-inline
-std::string concatenateNonEmptyStrings(const std::vector<std::string>& vec){
-    std::string ret;
-    for (const auto& s : vec)
-        if (!s.empty())
-            ret += s + "+";
-    return ret;
-}
-
 } // namespace sls
 
 #endif // CONTAINER_UTILS_H

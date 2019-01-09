@@ -998,6 +998,7 @@ int setThresholdEnergy(int ev) {
 
 /* parameters - dac, adc, hv */
 
+// uses LTC2620 with 2.048V (implementation different to others not bit banging)
 void setDAC(enum DACINDEX ind, int val, int mV) {
     if (val < 0)
         return;
@@ -1020,8 +1021,14 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     }
 
 #ifdef VIRTUAL
-    if (mV && Common_VoltageToDac(val, &dacval, 0, DAC_MAX_VOLTAGE_MV, MAX_DAC_UNIT_VALUE) == OK)
+    if (!mV) {
         (detectorModules)->dacs[ind] = val;
+    }
+    // convert to dac units
+    else if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+            val, &dacval) == OK) {
+        (detectorModules)->dacs[ind] = dacval;
+    }
 #else
     char iname[10];
     strcpy(iname,dac_names[(int)ind]);
@@ -1059,7 +1066,9 @@ int getDAC(enum DACINDEX ind, int mV) {
         return (detectorModules)->dacs[ind];
     }
     int voltage = -1;
-    Common_DacToVoltage((detectorModules)->dacs[ind], &voltage, 0, DAC_MAX_VOLTAGE_MV, MAX_DAC_UNIT_VALUE);
+    // dac units to voltage
+    ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+            (detectorModules)->dacs[ind], &voltage);
     FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, (detectorModules)->dacs[ind], voltage));
     return voltage;
 }

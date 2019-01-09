@@ -66,7 +66,10 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define DEFAULT_NUM_STRG_CLLS       (0)
 #define DEFAULT_STRG_CLL_STRT       (0xf)
 
-#define DAC_MAX_VOLTAGE_MV          (2500)
+#define HIGHVOLTAGE_MIN             (60)
+#define HIGHVOLTAGE_MAX             (200)
+#define DAC_MIN_MV                  (0)
+#define DAC_MAX_MV                  (2500)
 
 /* Defines in the Firmware */
 #define FIX_PATT_VAL    			(0xACDC2014)

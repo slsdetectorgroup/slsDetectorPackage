@@ -397,23 +397,20 @@ void setupDetector() {
 	resetPeripheral();
 	cleanFifos();
 
-	// set spi defines
-	AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
-	LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MAX_VOLTAGE_MV);
-	MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST);
+	// hv
+    MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST, HIGHVOLTAGE_MIN, HIGHVOLTAGE_MAX);
+    MAX1932_Disable();
+    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-	// disable spi
-	AD9257_Disable();
-	LTC2620_Disable();
-	MAX1932_Disable();
+	// adc
+    AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
+    AD9257_Disable();
+    AD9257_Configure();
 
-#ifndef VIRTUAL
-	AD9257_Configure();
-#endif
-	// initialize dac series
-	LTC2620_Configure();
-
-	//set dacs
+    //dac
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);
+    LTC2620_Disable();
+    LTC2620_Configure();
 	setDefaultDacs();
 
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
@@ -438,15 +435,11 @@ void setupDetector() {
 	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
 	/*setClockDivider(HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
-	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-	/* temporary set up until new firmware fixes bug */
-	// set temperature threshold
+
+	// temp threshold and reset event
 	setThresholdTemperature(DEFAULT_TMP_THRSHLD);
-	// reset temp event
 	setTemperatureEvent(0);
-
-
 }
 
 
@@ -844,8 +837,13 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
-    if (mV && LTC2620_VoltageToDac(val, &dacval) == OK)
+    if (!mV) {
         dacValues[ind] = val;
+    }
+    // convert to dac units
+    else if (LTC2620_VoltageToDac(val, &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
 #else
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK) {
         dacValues[ind] = dacval;
@@ -906,26 +904,12 @@ int setHighVoltage(int val){
         highvoltage = val;
     return highvoltage;
 #endif
-	u_int32_t dacvalue;
-	float alpha		= 0.55;
+
 	// setting hv
 	if (val >= 0) {
-		// limit values
-		if (val < 60) {
-			dacvalue = 0;
-			val = 0;
-		} else if (val >= 200) {
-			dacvalue = 0x1;
-			val = 200;
-		} else {
-			dacvalue = 1. + (200.-val) / alpha;
-			val=200.-(dacvalue-1)*alpha;
-		}
-		FILE_LOG(logINFO, ("Setting High voltage: %d (dacval %d)\n",val, dacvalue));
-		dacvalue &= MAX1932_HV_DATA_MSK;
-		serializeToSPI(SPI_REG, dacvalue, HV_SERIAL_CS_OUT_MSK, MAX1932_HV_NUMBITS,
-				HV_SERIAL_CLK_OUT_MSK, HV_SERIAL_DIGITAL_OUT_MSK, HV_SERIAL_DIGITAL_OUT_OFST);
-		highvoltage = val;
+	    FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+	    MAX1932_Set(val);
+	    highvoltage = val;
 	}
 	return highvoltage;
 }

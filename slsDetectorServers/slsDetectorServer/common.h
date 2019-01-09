@@ -1,44 +1,42 @@
 #pragma once
 
 /**
- * Convert voltage to dac units
- * @param voltage value in mv
- * @param dacval pointer to value converted to dac units
- * @param vmin minimum voltage in mV
- * @param vmax maximum voltage in mV
- * @param maximum number of steps
- * @returns FAIL when voltage outside limits, OK if conversion successful
+ * Convert a value from a range to a different range (eg voltage to dac or vice versa)
+ * @param inputMin input minimum
+ * @param inputMax input maximum
+ * @param outputMin output minimum
+ * @param outputMax output maximum
+ * @param inputValue input value
+ * @param outputValue pointer to output value
+ * @returns FAIL if input value is out of bounds, else OK
  */
-int Common_VoltageToDac(int voltage, int* dacval, int vmin, int vmax, int nsteps) {
+int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outputMax,
+        int inputValue, int* outputValue) {
+    FILE_LOG(logDEBUG1, ("\tInput Value: %d\n", inputValue));
 
-    // validate
-    if ((voltage < vmin) || (voltage > vmax)) {
-        FILE_LOG(logERROR, ("Voltage value (to convert to dac value) is outside bounds (%d to %d mV): %d\n", vmin, vmax, voltage));
+    // validate within bounds
+    // eg. MAX1932 range is v(60 - 200) to dac(255 - 1), here inputMin > inputMax (when dac to voltage)
+    int smaller = inputMin;
+    int bigger = inputMax;
+    if (smaller > bigger) {
+        smaller = inputMax;
+        bigger = inputMin;
+    }
+    if ((inputValue < smaller) || (inputValue > bigger)) {
+        FILE_LOG(logERROR, ("Input Value is outside bounds (%d to %d): %d\n", inputValue, smaller, bigger));
+        *outputValue = -1;
         return FAIL;
     }
 
-    // convert
-    *dacval = (int)(((voltage - vmin) / (vmax - vmin)) * (nsteps - 1) + 0.5);
-    return OK;
-}
-/**
- * Convert dac units to voltage
- * @param dacval dac units
- * @param voltage pointer to value converted to mV
- * @param vmin minimum voltage in mV
- * @param vmax maximum voltage in mV
- * @param maximum number of steps
- * @returns FAIL when voltage outside limits, OK if conversion successful
- */
-int Common_DacToVoltage(int dacval, int* voltage, int vmin, int vmax, int nsteps) {
+    double value = double((inputValue - inputMin) * (outputMax - outputMin))
+            / double(inputMax - inputMin) + outputMin;
 
-    // validate
-    if ((dacval < 0) || (dacval >= nsteps)) {
-        FILE_LOG(logERROR, ("Dac units (to convert to voltage) is outside bounds (0 to %d): %d\n", nsteps - 1, dacval));
-        return FAIL;
+    // double to integer conversion (if decimal places, round to integer)
+    if ((value - (int)value) > 0.0001) {
+        value += 0.5;
     }
+    *outputValue = value;
 
-    // convert
-    *voltage = vmin + (vmax - vmin) * dacval / (nsteps - 1);
+    FILE_LOG(logDEBUG1, ("\tConverted Ouput Value: %d\n", *outputValue));
     return OK;
 }

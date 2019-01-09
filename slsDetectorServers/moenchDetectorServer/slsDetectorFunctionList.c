@@ -476,25 +476,22 @@ void setupDetector() {
 	resetPeripheral();
 	cleanFifos();
 
-	// set spi defines
-	AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
-    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MAX_VOLTAGE_MV);
-    MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST);
+    // hv
+    MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST, HIGHVOLTAGE_MIN, HIGHVOLTAGE_MAX);
+    MAX1932_Disable();
+    //FIXME: power regulators??
+    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-    // disable spi
-	AD9257_Disable();
-	LTC2620_Disable();
-	MAX1932_Disable();
+    // adc
+    AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
+    AD9257_Disable();
+    AD9257_Configure();
 
-#ifndef VIRTUAL
-    //  adcs
-	AD9257_Configure();
-    // dacs
+    //dac
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);
+    LTC2620_Disable();
     LTC2620_Configure();
-#endif
-    // switch off power regulators
-    powerChip(0);
-    //FIXME:
+   //FIXME:
 	// switch off dacs (power regulators most likely only sets to minimum (if power enable on))
 	{
 	    int idac = 0;
@@ -503,9 +500,8 @@ void setupDetector() {
 	    }
 	}
 
+
     bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);//FIXME:  got from moench config file
-	setvchip(VCHIP_MIN_MV);
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
 	FILE_LOG(logINFOBLUE, ("Setting Default parameters\n"));
 	cleanFifos(); // FIXME: why twice?
@@ -1025,8 +1021,13 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
-    if (mV && LTC2620_VoltageToDac(val, &dacval) == OK)
+    if (!mV) {
         dacValues[ind] = val;
+    }
+    // convert to dac units
+    else if (LTC2620_VoltageToDac(val, &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
 #else
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
         dacValues[ind] = dacval;
@@ -1075,219 +1076,6 @@ void setVLimit(int l) {
         vLimit = l;
 }
 
-int isVchipValid(int val) {
-    if (val < VCHIP_MIN_MV || val > VCHIP_MAX_MV) {
-        return 0;
-    }
-    return 1;
-}
-
-int getVchip() {
-    // not set yet
-    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_PWR_DOWN_VAL)
-        return dacValues[D_PWR_CHIP];
-    int voltage = -1;
-    Common_DacToVoltage(dacValues[D_PWR_CHIP], &voltage, VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MAX_STEPS);
-    return voltage;
-}
-
-void setVchip(int val) {
-    // set vchip
-    if (val != -1) {
-        FILE_LOG(logINFO, ("Setting Vchip to %d mV\n", val));
-
-        int dacval = LTC2620_PWR_DOWN_VAL;
-
-        // validate & convert it to dac
-        if (val != LTC2620_PWR_DOWN_VAL) {
-            // convert it to dac
-            if (Common_VoltageToDac(val, &dacval, VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MAX_STEPS) == FAIL) {
-                FILE_LOG(logERROR, ("\tVChip %d mV invalid. Is not between %d and %d mV\n", val, VCHIP_MIN_MV, VCHIP_MAX_MV));
-                return;
-            }
-        }
-
-        // set
-        setDAC(D_PWR_CHIP, dacval, 0);
-    }
-}
-
-int getVChipToSet(enum DACINDEX ind, int val) {
-    // validate index & get adc index
-    int adcIndex = getADCIndexFromDACIndex(ind);
-    if (adcIndex == -1) {
-        return -1;
-    }
-
-    // get maximum value of the adc values (minimum is 0)
-    int max = 0;
-
-    int ipwr = 0;
-    // loop through the adcs
-    for (ipwr = 0; ipwr < PWR -1; ++ipwr) {
-
-        // get the dac values for each adc
-        int dacVal = dacValues[getDACIndexFromADCIndex(i)];
-
-        // if current index, replace with value to be set
-        if (ipwr == adcIndex)
-            dacVal = val;
-
-        // if power enable off for that adc, dont take the value
-        if (!(bus_r(POWER_REG) & (1 << (POWER_ENBL_VLTG_RGLTR_OFST + ipwr))))
-            dacVal = 0;
-
-        // update max
-        max = (dacVal > max) ? dacVal : max;
-    }
-
-    // increment to get vchip value
-    max += VCHIP_POWER_INCRMNT;
-
-    // validate with vchip minimum value
-    if (max < VCHIP_MIN_MV)
-        max = VCHIP_MIN_MV;
-    return max;
-}
-
-int getDACIndexFromADCIndex(enum ADCINDEX ind) {
-    switch (ind) {
-    case V_PWR_IO:
-        return D_PWR_IO;
-    case V_PWR_A:
-        return D_PWR_A;
-    case V_PWR_B:
-        return D_PWR_B;
-    case V_PWR_C:
-        return D_PWR_C;
-    case V_PWR_D:
-        return D_PWR_D;
-    default:
-        FILE_LOG(logERROR, ("ADC index %d is not defined to get DAC index\n", ind));
-        return -1;
-    }
-}
-
-int getADCIndexFromDACIndex(enum DACINDEX ind) {
-    switch (ind) {
-    case D_PWR_IO:
-        return V_PWR_IO;
-    case D_PWR_A:
-        return V_PWR_A;
-    case D_PWR_B:
-        return V_PWR_B;
-    case D_PWR_C:
-        return V_PWR_C;
-    case D_PWR_D:
-        return V_PWR_D;
-    default:
-        FILE_LOG(logERROR, ("DAC index %d is not defined to get ADC index\n", ind));
-        return -1;
-    }
-}
-
-int isPowerValid(int val) {
-    if (val < POWER_RGLTR_MIN || val > POWER_RGLTR_MAX) {
-        return 0;
-    }
-    return 1;
-}
-
-int getPower(enum DACINDEX ind) {
-    // validate index & get adc index
-    int adcIndex = getADCIndexFromDACIndex(ind);
-    if (adcIndex == -1) {
-        return -1;
-    }
-
-    // powered enable off
-    {
-        uint32_t addr = POWER_REG;
-        uint32_t offset = POWER_ENBL_VLTG_RGLTR_OFST + adcIndex;
-        uint32_t mask = (1 << offset);
-        if (!(bus_r(addr) & mask))
-            return 0;
-    }
-
-    // not set yet
-    if (dacValues[ind] == -1) {
-        FILE_LOG(logERROR, ("Power enabled, but unknown dac value for power index %d!", ind));
-        return -1;
-    }
-
-    // dac powered off
-    if (dacValues[ind] == LTC2620_PWR_DOWN_VAL) {
-        FILE_LOG(logWARNING, ("Power %d enabled, dac value %d, voltage at minimum or 0\n", ind, LTC2620_PWR_DOWN_VAL));
-        return LTC2620_PWR_DOWN_VAL;
-    }
-
-    // vchip not set, weird error, should not happen (as vchip set to max in the beginning)
-    // unless user set vchip to LTC2620_PWR_DOWN_VAL  and then tried to get a power regulator value
-    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_PWR_DOWN_VAL) {
-        FILE_LOG(logERROR, ("Cannot read power regulator %d (vchip not set)."
-                "Set a power regulator, which will also set vchip.\n"));
-        return -1;
-    }
-
-    // voltage value
-    Common_DacToVoltage(dacValues[ind], &retval, POWER_RGLTR_MIN, (getVchip() - VCHIP_POWER_INCRMNT), LTC2620_MAX_STEPS);
-    return retval;
-}
-
-void setPower(enum DACINDEX ind, int val) {
-    // validate index & get adc index
-    int adcIndex = getADCIndexFromDACIndex(ind);
-    if (adcIndex == -1) {
-        return -1;
-    }
-
-    uint32_t addr = POWER_REG;
-    uint32_t offset = POWER_ENBL_VLTG_RGLTR_OFST + adcIndex;
-    uint32_t mask = (1 << offset);
-
-    // set power
-    if (val != -1) {
-        FILE_LOG(logINFO, ("Setting Power to %d mV\n", val));
-
-        // validate value (already checked at tcp)
-        if (!isPowerValid(val)) {
-            FILE_LOG(logERROR, ("\Invalid value of %d mV for Power %d. Is not between %d and %d mV\n", val, ind, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
-            return;
-        }
-
-        // get vchip to set vchip (calculated now before switching off power enable)
-        int vchip = getVChipToSet(ind, val);
-
-        // Switch off power enable
-        bus_w(addr, bus_r(addr) & ~(mask));
-
-        // power down dac
-        setDac(ind, LTC2620_PWR_DOWN_VAL, 0);
-
-        // set vchip
-        setVchip(vchip);
-        if (getvchip() != vchip) {
-            FILE_LOG(logERROR, ("Weird, Could not set vchip. Set %d, read %d\n.", vchip, getvchip()));
-            return;
-        }
-
-        // convert it to dac
-        if (val != LTC2620_PWR_DOWN_VAL) {
-            // convert it to dac
-            if (Common_VoltageToDac(val, &dacval, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT, LTC2620_MAX_STEPS) == FAIL) {
-                FILE_LOG(logERROR, ("\tPower index %d of value %d mV invalid. Is not between %d and %d mV\n", ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
-                return;
-            }
-
-            // set and power on/ update dac
-            setDAC(ind, dacval, 0);
-
-            // to be sure of valid conversion
-            if (dacval >= 0)
-                bus_w(addr, bus_r(addr) | mask);
-        }
-    }
-}
 
 int getADC(enum ADCINDEX ind){
 #ifdef VIRTUAL
@@ -1308,37 +1096,14 @@ int setHighVoltage(int val){
         highvoltage = val;
     return highvoltage;
 #endif
-	uint32_t dacvalue;
-	float alpha		= 0.55;
-	// setting hv
-	if (val >= 0) {
-		// limit values
-		if (val < 60) {
-			dacvalue = 0;
-			val = 0;
-		} else if (val >= 200) {
-			dacvalue = 0x1;
-			val = 200;
-		} else {
-			dacvalue = 1. + (200.-val) / alpha;
-			val = 200.-(dacvalue-1)*alpha;
-		}
-		FILE_LOG(logINFO, ("Setting High voltage: %d (dacval %d)\n",val, dacvalue));
-		dacvalue &= MAX1932_HV_DATA_MSK;
-		uint32_t addr = POWER_REG;
+    // setting hv
+    if (val >= 0) {
+        FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+        MAX1932_Set(val);
+        highvoltage = val;
+        //FIXME: might have to set the power_reg to set it?
+    }
 
-		// switch off high voltage
-		bus_w(addr, bus_r(addr) & (~POWER_HV_SLCT_MSK));
-
-		serializeToSPI(SPI_REG, dacvalue, HV_SERIAL_CS_OUT_MSK, MAX1932_HV_NUMBITS,
-				HV_SERIAL_CLK_OUT_MSK, HV_SERIAL_DIGITAL_OUT_MSK, HV_SERIAL_DIGITAL_OUT_OFST);
-
-		// switch on high voltage if val > 0
-		if (val > 0)
-		    bus_w(addr, bus_r(addr) | POWER_HV_SLCT_MSK);
-
-		highvoltage = val;
-	}
 	return highvoltage;
 }
 

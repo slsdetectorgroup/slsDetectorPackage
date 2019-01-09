@@ -473,40 +473,42 @@ void setupDetector() {
     now_ptr = 0;
 
 
-	resetPLL();
-	resetCore();
-	resetPeripheral();
-	cleanFifos();
+    resetPLL();
+    resetCore();
+    resetPeripheral();
+    cleanFifos();
 
-	// set spi defines
-	AD7689_SetDefines(ADC_SPI_REG, ADC_SPI_SLOW_VAL_REG, ADC_SPI_SLOW_SRL_CNV_MSK, ADC_SPI_SLOW_SRL_CLK_MSK, ADC_SPI_SLOW_SRL_DT_MSK, ADC_SPI_SLOW_SRL_DT_OFST);
-	AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
-    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MAX_VOLTAGE_MV);
-    MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST);
+    // hv
+    MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST, HIGHVOLTAGE_MIN, HIGHVOLTAGE_MAX);
+    MAX1932_Disable();
+    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-    // disable spi
-	AD7689_Disable();
-	AD9257_Disable();
-	LTC2620_Disable();
-	MAX1932_Disable();
-
-#ifndef VIRTUAL
-    //  adcs
-	AD9257_Configure();
-	// slow adcs
-	AD7689_Configure();
-	// I2C
-	INA226_ConfigureI2CCore();
-	INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
+    // power regulators
+    // I2C
+    INA226_ConfigureI2CCore();
+    INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
-    // dacs
-    LTC2620_Configure();
-#endif
-    // switch off power regulators
+    // switch off
     powerChip(0);
+    setvchip(VCHIP_MIN_MV);
+
+    // adcs
+    AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
+    AD9257_Disable();
+    AD9257_Configure();
+
+    // slow adcs
+    AD7689_SetDefines(ADC_SPI_REG, ADC_SPI_SLOW_VAL_REG, ADC_SPI_SLOW_SRL_CNV_MSK, ADC_SPI_SLOW_SRL_CLK_MSK, ADC_SPI_SLOW_SRL_DT_MSK, ADC_SPI_SLOW_SRL_DT_OFST);
+    AD7689_Disable();
+    AD7689_Configure();
+
+    // dacs
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);
+    LTC2620_Disable();
+    LTC2620_Configure();
     //FIXME:
 	// switch off dacs (power regulators most likely only sets to minimum (if power enable on))
 	{
@@ -517,8 +519,6 @@ void setupDetector() {
 	}
 
     bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);//FIXME:  got from moench config file
-	setvchip(VCHIP_MIN_MV);
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
 	FILE_LOG(logINFOBLUE, ("Setting Default parameters\n"));
 	cleanFifos(); // FIXME: why twice?
@@ -1031,9 +1031,6 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
 
 /* parameters - dac, adc, hv */
 
-int getMaxDacSteps() {
-
-}
 
 void setDAC(enum DACINDEX ind, int val, int mV) {
     if (val < 0)
@@ -1042,8 +1039,13 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
-    if (mV && LTC2620_VoltageToDac(val, &dacval) == OK)
+    if (!mV) {
         dacValues[ind] = val;
+    }
+    // convert to dac units
+    else if (LTC2620_VoltageToDac(val, &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
 #else
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
         dacValues[ind] = dacval;
@@ -1104,7 +1106,9 @@ int getVchip() {
     if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_PWR_DOWN_VAL)
         return dacValues[D_PWR_CHIP];
     int voltage = -1;
-    Common_DacToVoltage(dacValues[D_PWR_CHIP], &voltage, VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MAX_STEPS);
+    // dac to voltage
+    ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, VCHIP_MIN_MV, VCHIP_MAX_MV,
+            dacValues[D_PWR_CHIP], &voltage);
     return voltage;
 }
 
@@ -1117,8 +1121,9 @@ void setVchip(int val) {
 
         // validate & convert it to dac
         if (val != LTC2620_PWR_DOWN_VAL) {
-            // convert it to dac
-            if (Common_VoltageToDac(val, &dacval, VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MAX_STEPS) == FAIL) {
+            // convert voltage to dac
+            if (ConvertToDifferentRange(VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+                    val, &dacval) == FAIL) {
                 FILE_LOG(logERROR, ("\tVChip %d mV invalid. Is not between %d and %d mV\n", val, VCHIP_MIN_MV, VCHIP_MAX_MV));
                 return;
             }
@@ -1246,8 +1251,9 @@ int getPower(enum DACINDEX ind) {
         return -1;
     }
 
-    // voltage value
-    Common_DacToVoltage(dacValues[ind], &retval, POWER_RGLTR_MIN, (getVchip() - VCHIP_POWER_INCRMNT), LTC2620_MAX_STEPS);
+    // convert dac to voltage
+    ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, POWER_RGLTR_MIN, (getVchip() - VCHIP_POWER_INCRMNT),
+            dacValues[ind], &retval);
     return retval;
 }
 
@@ -1290,9 +1296,11 @@ void setPower(enum DACINDEX ind, int val) {
 
         // convert it to dac
         if (val != LTC2620_PWR_DOWN_VAL) {
-            // convert it to dac
-            if (Common_VoltageToDac(val, &dacval, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT, LTC2620_MAX_STEPS) == FAIL) {
-                FILE_LOG(logERROR, ("\tPower index %d of value %d mV invalid. Is not between %d and %d mV\n", ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
+            // convert voltage to dac
+            if (ConvertToDifferentRange(POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT, LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+                    val, &dacval) == FAIL) {
+                FILE_LOG(logERROR, ("\tPower index %d of value %d mV invalid. Is not between %d and %d mV\n",
+                        ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
                 return;
             }
 
@@ -1352,30 +1360,16 @@ int setHighVoltage(int val){
         highvoltage = val;
     return highvoltage;
 #endif
-	uint32_t dacvalue;
-	float alpha		= 0.55;
+
 	// setting hv
 	if (val >= 0) {
-		// limit values
-		if (val < 60) {
-			dacvalue = 0;
-			val = 0;
-		} else if (val >= 200) {
-			dacvalue = 0x1;
-			val = 200;
-		} else {
-			dacvalue = 1. + (200.-val) / alpha;
-			val = 200.-(dacvalue-1)*alpha;
-		}
-		FILE_LOG(logINFO, ("Setting High voltage: %d (dacval %d)\n",val, dacvalue));
-		dacvalue &= MAX1932_HV_DATA_MSK;
+	    FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
 		uint32_t addr = POWER_REG;
 
 		// switch off high voltage
 		bus_w(addr, bus_r(addr) & (~POWER_HV_SLCT_MSK));
 
-		serializeToSPI(SPI_REG, dacvalue, HV_SERIAL_CS_OUT_MSK, MAX1932_HV_NUMBITS,
-				HV_SERIAL_CLK_OUT_MSK, HV_SERIAL_DIGITAL_OUT_MSK, HV_SERIAL_DIGITAL_OUT_OFST);
+		MAX1932_Set(val);
 
 		// switch on high voltage if val > 0
 		if (val > 0)

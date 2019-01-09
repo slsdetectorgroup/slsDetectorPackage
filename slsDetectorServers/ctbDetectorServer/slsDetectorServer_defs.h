@@ -39,10 +39,6 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define NDAC 						(24)
 #define NPWR                        (6)
 #define NDAC_ONLY                   (NDAC - NPWR)
-//#define N_DAC                     (24)
-//#define N_PWR                      (5)
-//#define NADC                        (9)
-//#define DAC_CMD_OFF 20
 #define DYNAMIC_RANGE               (16)
 #define NUM_BYTES_PER_PIXEL         (DYNAMIC_RANGE / 8)
 #define CLK_FREQ					(156.25)	/* MHz */
@@ -65,28 +61,31 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
 
-/* Defines in the Firmware */
-#define WAIT_TME_US_FR_LK_AT_ME_REG (100) // wait time in us after acquisition done to ensure there is no data in fifo
-#define WAIT_TIME_US_PLL            (10 * 1000)
-#define WAIT_TIME_US_STP_ACQ        (100)
-#define WAIT_TIME_CONFIGURE_MAC     (500 * 1000)
-
-#define DAC_MAX_VOLTAGE_MV          (2500)
+#define HIGHVOLTAGE_MIN             (60)
+#define HIGHVOLTAGE_MAX             (200)
+#define DAC_MIN_MV                  (0)
+#define DAC_MAX_MV                  (2500)
 #define VCHIP_MAX_MV                (2700)
 #define VCHIP_MIN_MV                (1700)
 #define POWER_RGLTR_MAX             (2500)
 #define POWER_RGLTR_MIN             (600)
 #define VCHIP_POWER_INCRMNT         (200)
 
-#define IP_PACKETSIZE               (0x2032)
-#define ADC_PORT_INVERT_VAL   		(0x453b2593)
-#define MAXIMUM_ADC_CLK             (40)
-#define PLL_VCO_FREQ_MHZ            (400)
+/* Defines in the Firmware */
+#define WAIT_TME_US_FR_LK_AT_ME_REG (100) // wait time in us after acquisition done to ensure there is no data in fifo
+#define WAIT_TIME_US_PLL            (10 * 1000)
+#define WAIT_TIME_US_STP_ACQ        (100)
+#define WAIT_TIME_CONFIGURE_MAC     (500 * 1000)
 
 /* MSB & LSB DEFINES */
 #define MSB_OF_64_BIT_REG_OFST		(32)
 #define LSB_OF_64_BIT_REG_OFST		(0)
 #define BIT_32_MSK					(0xFFFFFFFF)
+
+#define IP_PACKETSIZE               (0x2032)
+#define ADC_PORT_INVERT_VAL         (0x453b2593)
+#define MAXIMUM_ADC_CLK             (40)
+#define PLL_VCO_FREQ_MHZ            (400)
 
 /** PLL Reconfiguration Registers */
 //https://www.altera.com/documentation/mcn1424769382940.html

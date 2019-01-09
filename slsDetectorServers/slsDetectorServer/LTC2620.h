@@ -3,7 +3,6 @@
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
 #include "common.h"
 
-#include "math.h"
 #include <string.h>
 
 /* LTC2620 DAC DEFINES */
@@ -25,9 +24,9 @@
 #define LTC2620_NUMBITS                     (24)
 #define LTC2620_DAISY_CHAIN_NUMBITS         (32) // due to shift register FIXME: was 33 earlier
 #define LTC2620_NUMCHANNELS                 (8)
-#define LTC2620_MIN_MV                      (0)
-#define LTC2620_MAX_STEPS                   (pow(2,12)) // 4096
 #define LTC2620_PWR_DOWN_VAL                (-100)
+#define LTC2620_MIN_VAL                     (0)
+#define LTC2620_MAX_VAL                     (4095) // 12 bits
 
 uint32_t LTC2620_Reg = 0x0;
 uint32_t LTC2620_CsMask = 0x0;
@@ -35,7 +34,8 @@ uint32_t LTC2620_ClkMask = 0x0;
 uint32_t LTC2620_DigMask = 0x0;
 int LTC2620_DigOffset = 0x0;
 int LTC2620_Ndac = 0;
-int LTC2620_MaxMV = 0;
+int LTC2620_MinVoltage = 0;
+int LTC2620_MaxVoltage = 0;
 
 /**
  * Set Defines
@@ -45,16 +45,18 @@ int LTC2620_MaxMV = 0;
  * @param dmsk digital output mask
  * @param dofst digital output offset
  * @param nd total number of dacs for this board (for dac channel and daisy chain chip id)
- * @param mv maximum voltage in mV
+ * @param minMV minimum voltage determined by hardware
+ * @param maxMV maximum voltage determined by hardware
  */
-void LTC2620_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst, int nd, int mv) {
+void LTC2620_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst, int nd, int minMV, int maxMV) {
     LTC2620_Reg = reg;
     LTC2620_CsMask = cmsk;
     LTC2620_ClkMask = clkmsk;
     LTC2620_DigMask = dmsk;
     LTC2620_DigOffset = dofst;
     LTC2620_Ndac = nd;
-    LTC2620_MaxMV = mv;
+    LTC2620_MinVoltage = minMV;
+    LTC2620_MaxVoltage = maxMV;
 }
 
 
@@ -76,7 +78,9 @@ void LTC2620_Disable() {
  * @returns FAIL when voltage outside limits, OK if conversion successful
  */
 int LTC2620_VoltageToDac(int voltage, int* dacval) {
-    return Common_VoltageToDac(voltage, dacval, LTC2620_MIN_MV, LTC2620_MaxMV, LTC2620_MAX_STEPS);
+    return ConvertToDifferentRange(LTC2620_MinVoltage, LTC2620_MaxVoltage,
+            LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+            voltage, dacval);
 }
 
 
@@ -87,7 +91,9 @@ int LTC2620_VoltageToDac(int voltage, int* dacval) {
  * @returns FAIL when voltage outside limits, OK if conversion successful
  */
 int LTC2620_DacToVoltage(int dacval, int* voltage) {
-    return Common_DacToVoltage(dacval, voltage, LTC2620_MIN_MV, LTC2620_MaxMV, LTC2620_MAX_STEPS);
+    return ConvertToDifferentRange(  LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+            LTC2620_MinVoltage, LTC2620_MaxVoltage,
+            dacval, voltage);
 }
 
 

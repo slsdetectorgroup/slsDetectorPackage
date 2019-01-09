@@ -374,40 +374,40 @@ void setupDetector() {
     // Initialization
     setPhaseShiftOnce();
 
-    // set defines
-    if (getBoardRevision() == 1)
-        AD9252_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
-    else
-        AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
-    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MAX_VOLTAGE_MV);
+    // hv
+    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-    // disable spi
-    if (getBoardRevision() == 1)
+    // adc
+    if (getBoardRevision() == 1) {
+        AD9252_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
         AD9252_Disable();
-    else
+        AD9252_Configure();
+    } else {
+        AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
         AD9257_Disable();
+        AD9257_Configure();
+    }
+
+    // dac
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);
     LTC2620_Disable();
+    LTC2620_Configure();
+    setDefaultDacs();
+
+    // temp
     bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IN_IDLE_MSK);
     bus_w(TEMP_SPI_OUT_REG, 0x0);
 
-
-#ifndef VIRTUAL
-    if (getBoardRevision() == 1)
-        AD9252_Configure();
-    else
-        AD9257_Configure();
-#endif
-
+    // roi, gbit readout
     setROIADC(-1); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
-    LTC2620_Configure();
 
     // master, slave (25um)
     setMasterSlaveConfiguration();
 
     // Default Parameters
     FILE_LOG(logINFOBLUE, ("Setting Default parameters\n"));
-	setDefaultDacs();
+
     setSettings(DEFAULT_SETTINGS);
     setExtSignal(DEFAULT_TRIGGER_MODE);
     setTiming(DEFAULT_TIMING_MODE);
@@ -416,7 +416,7 @@ void setupDetector() {
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+
 }
 
 int setDefaultDacs() {
@@ -1090,8 +1090,13 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
-    if (mV && LTC2620_VoltageToDac(val, &dacval) == OK)
+    if (!mV) {
         dacValues[ind] = val;
+    }
+    // convert to dac units
+    else if (LTC2620_VoltageToDac(val, &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
 #else
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK)
         dacValues[ind] = dacval;

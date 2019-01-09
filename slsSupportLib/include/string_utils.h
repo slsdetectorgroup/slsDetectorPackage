@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace sls {
 
@@ -23,12 +23,12 @@ Split a string using the specified delimeter and return a vector of strings.
 TODO! Look into switching to absl or a string_view based implementation. Current
 implementation should not be used in a performance critical place.
 */
-std::vector<std::string> split(const std::string& strToSplit, char delimeter);
+std::vector<std::string> split(const std::string &strToSplit, char delimeter);
 
 /*
 Concatenate the non empty strings in the vector using +
 */
-std::string concatenateNonEmptyStrings(const std::vector<std::string>& vec);
+std::string concatenateNonEmptyStrings(const std::vector<std::string> &vec);
 
 /*
 Concatenate strings using + if the strings are different

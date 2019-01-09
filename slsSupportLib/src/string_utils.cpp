@@ -1,7 +1,7 @@
 
-#include <sstream>
 #include "string_utils.h"
 #include "container_utils.h"
+#include <sstream>
 namespace sls{
 
 
@@ -38,4 +38,4 @@ std::string concatenateIfDifferent(std::vector<std::string> container)
 }
 
 
-};
+}; // namespace sls

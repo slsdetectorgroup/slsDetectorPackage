@@ -45,7 +45,7 @@ TEST_CASE("Concat") {
   REQUIRE(v == v2);
 
   SECTION("add a different value"){
-      v.push_back("two");
+      v.emplace_back("two");
       REQUIRE(v!=v2);
       REQUIRE( sls::concatenateIfDifferent(v) == "one+one+one+two+");
   }

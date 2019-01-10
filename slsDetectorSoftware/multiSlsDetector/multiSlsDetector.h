@@ -1702,22 +1702,22 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * Listen to key event to stop acquiring
      * when using acquire command
      */
-    int kbhit(void);
+    int kbhit();
 
     /** Multi detector Id */
     int detId;
 
     /** Shared Memory object */
-    SharedMemory *sharedMemory;
+    SharedMemory *sharedMemory {nullptr};
 
     /** Shared memory structure */
-    sharedMultiSlsDetector *thisMultiDetector;
+    sharedMultiSlsDetector *thisMultiDetector {nullptr};
 
     /** pointers to the slsDetector structures */
     std::vector<std::unique_ptr<slsDetector>> detectors;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
-    bool client_downstream;
+    bool client_downstream {false};
 
     /** ZMQ Socket - Receiver to Client */
     std::vector<std::unique_ptr<ZmqSocket>> zmqSocket;
@@ -1731,10 +1731,10 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     sem_t sem_endRTAcquisition;
 
     /** Total number of frames/images for next acquisition */
-    int totalProgress;
+    int totalProgress {0};
 
     /** Current progress or frames/images processed in current acquisition */
-    int progressIndex;
+    int progressIndex {0};
 
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;
@@ -1743,32 +1743,32 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     mutable std::mutex mg;
 
     /** sets when the acquisition is finished */
-    bool jointhread;
+    bool jointhread {false};
 
     /** set when detector finishes acquiring */
-    int acquiringDone;
+    int acquiringDone {0};
 
     /** the data processing thread */
     // pthread_t dataProcessingThread;
     std::thread dataProcessingThread;
 
     /** gui data */
-    double *fdata;
+    double *fdata {nullptr};
 
     /** detector data packed for the gui */
-    detectorData *thisData;
+    detectorData *thisData {nullptr};
 
-    int (*acquisition_finished)(double, int, void *);
-    void *acqFinished_p;
+    int (*acquisition_finished)(double, int, void *) {nullptr};
+    void *acqFinished_p {nullptr};
 
-    int (*measurement_finished)(int, int, void *);
-    void *measFinished_p;
+    int (*measurement_finished)(int, int, void *) {nullptr};
+    void *measFinished_p {nullptr};
 
     int (*progress_call)(double, void *);
-    void *pProgressCallArg;
+    void *pProgressCallArg {nullptr};
 
-    int (*dataReady)(detectorData *, int, int, void *);
-    void *pCallbackArg;
+    int (*dataReady)(detectorData *, int, int, void *){nullptr};
+    void *pCallbackArg {nullptr};
 };
 
 #endif

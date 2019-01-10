@@ -27,12 +27,7 @@
 #include <vector>
 
 multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
-    : detId(id), sharedMemory(nullptr), thisMultiDetector(nullptr),
-      client_downstream(false), totalProgress(0), progressIndex(0),
-      jointhread(0), acquiringDone(0), fdata(nullptr), thisData(nullptr),
-      acquisition_finished(nullptr), acqFinished_p(nullptr), measurement_finished(nullptr),
-      measFinished_p(nullptr), progress_call(nullptr), pProgressCallArg(nullptr), dataReady(nullptr),
-      pCallbackArg(nullptr) {
+    : detId(id){
     setupMultiDetector(verify, update);
 }
 

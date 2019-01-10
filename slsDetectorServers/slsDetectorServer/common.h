@@ -28,8 +28,8 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
         return FAIL;
     }
 
-    double value = double((inputValue - inputMin) * (outputMax - outputMin))
-            / double(inputMax - inputMin) + outputMin;
+    double value = (double)((inputValue - inputMin) * (outputMax - outputMin))
+            / (double)(inputMax - inputMin) + outputMin;
 
     // double to integer conversion (if decimal places, round to integer)
     if ((value - (int)value) > 0.0001) {
@@ -40,3 +40,4 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
     FILE_LOG(logDEBUG1, ("\tConverted Ouput Value: %d\n", *outputValue));
     return OK;
 }
+

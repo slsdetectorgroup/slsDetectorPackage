@@ -835,9 +835,9 @@ int set_dac(int file_des) {
 
                 // dacs
     			default:
-    			    if (mV && val > DAC_MAX_VOLTAGE_MV) {
+    			    if (mV && val > DAC_MAX_MV) {
                         ret = FAIL;
-                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d mV).\n", ind, val, DAC_MAX_VOLTAGE_MV);
+                        sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d mV).\n", ind, val, DAC_MAX_MV);
                         FILE_LOG(logERROR,(mess));
     			    } else if (!mV && val > getMaxDacSteps() ) {
                         ret = FAIL;

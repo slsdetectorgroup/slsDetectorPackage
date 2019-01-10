@@ -27,6 +27,7 @@
 #define LTC2620_PWR_DOWN_VAL                (-100)
 #define LTC2620_MIN_VAL                     (0)
 #define LTC2620_MAX_VAL                     (4095) // 12 bits
+#define LTC2620_MAX_STEPS                   (LTC2620_MAX_VAL + 1)
 
 uint32_t LTC2620_Reg = 0x0;
 uint32_t LTC2620_CsMask = 0x0;

@@ -1081,7 +1081,7 @@ public:
 	 * @param roiLimits array of roi
 	 * @returns OK or FAIL
 	 */
-	int setROI(int n=-1,ROI roiLimits[]=NULL);
+	int setROI(int n=-1,ROI roiLimits[]=nullptr);
 
 	/**
 	 * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
@@ -1103,7 +1103,7 @@ public:
 	 * @param roiLimits ROI
 	 * @returns OK or FAIL
 	 */
-	int sendROI(int n=-1,ROI roiLimits[]=NULL);
+	int sendROI(int n=-1,ROI roiLimits[]=nullptr);
 
 	/**
 	 * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert users
@@ -1165,7 +1165,7 @@ public:
 	 * @param en array of energies
 	 * @returns number of trim energies
 	 */
-	int setTrimEn(int nen, int *en=NULL);
+	int setTrimEn(int nen, int *en=nullptr);
 
 	/**
 	 * Returns the number of trim energies and their value  (Eiger)
@@ -1173,7 +1173,7 @@ public:
 	 * @param en array of energies
 	 * @returns number of trim energies
 	 */
-	int getTrimEn(int *en=NULL);
+	int getTrimEn(int *en=nullptr);
 
 	/**
 	 * Pulse Pixel (Eiger)
@@ -1782,7 +1782,7 @@ private:
 	 * @returns the pointer to myMod or NULL if reading the file failed
 	 */
 
-	sls_detector_module* readSettingsFile(std::string fname, sls_detector_module* myMod=NULL, int tb=1);
+	sls_detector_module* readSettingsFile(std::string fname, sls_detector_module* myMod=nullptr, int tb=1);
 
 	/**
 	 * writes a trim/settings file

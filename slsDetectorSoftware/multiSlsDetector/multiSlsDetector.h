@@ -453,7 +453,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int execCommand(std::string cmd, int detPos);
+    int execCommand(const std::string& cmd, int detPos);
 
     /**
      * Load configuration from a configuration File
@@ -524,7 +524,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the trimbit/settings directory
      */
-    std::string setSettingsDir(std::string directory, int detPos = -1);
+    std::string setSettingsDir(const std::string& directory, int detPos = -1);
 
     /**
      * Loads the modules settings/trimbits reading from a specific file
@@ -533,7 +533,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * returns OK or FAIL
      */
-    int loadSettingsFile(std::string fname, int detPos = -1);
+    int loadSettingsFile(const std::string& fname, int detPos = -1);
 
     /**
      * Saves the modules settings/trimbits to a specific file
@@ -542,7 +542,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * returns OK or FAIL
      */
-    int saveSettingsFile(std::string fname, int detPos = -1);
+    int saveSettingsFile(const std::string& fname, int detPos = -1);
 
     /**
      * Get Detector run status
@@ -869,7 +869,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns network parameter value set (from getNetworkParameter)
      */
     std::string setNetworkParameter(networkParameter parameter,
-                                    std::string value, int detPos = -1);
+                                    const std::string& value, int detPos = -1);
 
     /**
      * Get network parameter
@@ -911,7 +911,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns receiver streaming out ZMQ IP
      */
-    std::string setReceiverDataStreamingOutIP(std::string ip = "",
+    std::string setReceiverDataStreamingOutIP(const std::string& ip = "",
                                               int detPos = -1);
 
     /**
@@ -922,7 +922,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns client streaming in ZMQ IP
      */
-    std::string setClientDataStreamingInIP(std::string ip = "",
+    std::string setClientDataStreamingInIP(const std::string& ip = "",
                                            int detPos = -1);
 
     /**
@@ -1152,7 +1152,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int programFPGA(std::string fname, int detPos = -1);
+    int programFPGA(const std::string& fname, int detPos = -1);
 
     /**
      * Resets FPGA (Jungfrau)
@@ -1253,7 +1253,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int execReceiverCommand(std::string cmd, int detPos = -1);
+    int execReceiverCommand(const std::string& cmd, int detPos = -1);
 
     /**
      * Returns output file directory
@@ -1268,7 +1268,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param s file directory
      * @returns file dir
      */
-    std::string setFilePath(std::string s, int detPos = -1);
+    std::string setFilePath(const std::string& path, int detPos = -1);
 
     /**
      * Returns file name prefix
@@ -1283,7 +1283,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param s file name prefix
      * @returns file name prefix
      */
-    std::string setFileName(std::string s, int detPos = -1);
+    std::string setFileName(const std::string& fname, int detPos = -1);
 
     /**
      * Sets the max frames per file in receiver
@@ -1485,7 +1485,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK/FAIL
      */
-    int setCTBPattern(std::string fname, int detPos = -1);
+    int setCTBPattern(const std::string& fname, int detPos = -1);
 
     /**
      * Writes a pattern word to the CTB
@@ -1642,7 +1642,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * Add sls detector
      * @param s hostname of the single detector
      */
-    void addSlsDetector(std::string s);
+    void addSlsDetector(const std::string& hostname);
 
     /**
      * add gap pixels to the image (only for Eiger in 4 bit mode)

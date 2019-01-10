@@ -49,6 +49,7 @@ template <typename RT, typename... CT>
 std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...),
                                              CT... Args) {
     std::vector<RT> result;
+    result.reserve(detectors.size());
     for (auto &d : detectors)
         result.push_back((d.get()->*somefunc)(Args...));
     return result;
@@ -62,6 +63,7 @@ multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), CT... Args) {
         futures.push_back(
             std::async(std::launch::async, somefunc, d.get(), Args...));
     std::vector<RT> result;
+    result.reserve(detectors.size());
     for (auto &i : futures)
         result.push_back(i.get());
     return result;
@@ -454,12 +456,12 @@ void multiSlsDetector::addMultipleDetectors(const char *name) {
     updateOffsets();
 }
 
-void multiSlsDetector::addSlsDetector(std::string s) {
-    FILE_LOG(logDEBUG1) << "Adding detector " << s;
+void multiSlsDetector::addSlsDetector(const std::string& hostname) {
+    FILE_LOG(logDEBUG1) << "Adding detector " << hostname;
 
     for (auto &d : detectors) {
-        if (d->getHostname() == s) {
-            FILE_LOG(logWARNING) << "Detector " << s
+        if (d->getHostname() == hostname) {
+            FILE_LOG(logWARNING) << "Detector " << hostname
                       << "already part of the multiDetector!" << std::endl
                       << "Remove it before adding it back in a new position!";
             return;
@@ -471,19 +473,19 @@ void multiSlsDetector::addSlsDetector(std::string s) {
     // slsdetector in initsharedmemory
 
     // get type by connecting
-    detectorType type = slsDetector::getDetectorType(s.c_str(), DEFAULT_PORTNO);
+    detectorType type = slsDetector::getDetectorType(hostname.c_str(), DEFAULT_PORTNO);
     if (type == GENERIC) {
-        FILE_LOG(logERROR) << "Could not connect to Detector " << s
+        FILE_LOG(logERROR) << "Could not connect to Detector " << hostname
                   << " to determine the type!";
         setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
-        appendNotAddedList(s.c_str());
+        appendNotAddedList(hostname.c_str());
         return;
     }
 
     int pos = (int)detectors.size();
     detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
     thisMultiDetector->numberOfDetectors = detectors.size();
-    detectors[pos]->setHostname(s.c_str()); // also updates client
+    detectors[pos]->setHostname(hostname.c_str()); // also updates client
     thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
     thisMultiDetector->dataBytesInclGapPixels +=
         detectors[pos]->getDataBytesInclGapPixels();
@@ -787,7 +789,7 @@ int multiSlsDetector::exitServer(int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-int multiSlsDetector::execCommand(std::string cmd, int detPos) {
+int multiSlsDetector::execCommand(const std::string& cmd, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->execCommand(cmd);
@@ -981,7 +983,7 @@ std::string multiSlsDetector::getSettingsDir(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setSettingsDir(std::string directory,
+std::string multiSlsDetector::setSettingsDir(const std::string& directory,
                                              int detPos) {
     if (detPos >= 0)
         return detectors[detPos]->setSettingsDir(directory);
@@ -990,7 +992,7 @@ std::string multiSlsDetector::setSettingsDir(std::string directory,
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::loadSettingsFile(std::string fname, int detPos) {
+int multiSlsDetector::loadSettingsFile(const std::string& fname, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->loadSettingsFile(fname);
@@ -1001,7 +1003,7 @@ int multiSlsDetector::loadSettingsFile(std::string fname, int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-int multiSlsDetector::saveSettingsFile(std::string fname, int detPos) {
+int multiSlsDetector::saveSettingsFile(const std::string& fname, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->saveSettingsFile(fname);
@@ -1540,7 +1542,7 @@ uint32_t multiSlsDetector::clearBit(uint32_t addr, int n, int detPos) {
 }
 
 std::string multiSlsDetector::setNetworkParameter(networkParameter parameter,
-                                                  std::string value,
+                                                  const std::string& value,
                                                   int detPos) {
     // single
     if (detPos >= 0)
@@ -1604,7 +1606,7 @@ int multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
     return stoi(getNetworkParameter(CLIENT_STREAMING_PORT, detPos));
 }
 
-std::string multiSlsDetector::setReceiverDataStreamingOutIP(std::string ip,
+std::string multiSlsDetector::setReceiverDataStreamingOutIP(const std::string& ip,
                                                             int detPos) {
     if (ip.length()) {
         int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
@@ -1617,7 +1619,7 @@ std::string multiSlsDetector::setReceiverDataStreamingOutIP(std::string ip,
     return getNetworkParameter(RECEIVER_STREAMING_SRC_IP, detPos);
 }
 
-std::string multiSlsDetector::setClientDataStreamingInIP(std::string ip,
+std::string multiSlsDetector::setClientDataStreamingInIP(const std::string& ip,
                                                          int detPos) {
     if (ip.length()) {
         int prev_streaming = enableDataStreamingToClient(-1);
@@ -2220,7 +2222,7 @@ int multiSlsDetector::setStoragecellStart(int pos, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::programFPGA(std::string fname, int detPos) {
+int multiSlsDetector::programFPGA(const std::string& fname, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->programFPGA(fname);
@@ -2368,7 +2370,7 @@ int multiSlsDetector::exitReceiver(int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-int multiSlsDetector::execReceiverCommand(std::string cmd, int detPos) {
+int multiSlsDetector::execReceiverCommand(const std::string& cmd, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->execReceiverCommand(cmd);
@@ -2390,17 +2392,17 @@ std::string multiSlsDetector::getFilePath(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setFilePath(std::string s, int detPos) {
-    if (s.empty())
+std::string multiSlsDetector::setFilePath(const std::string& path, int detPos) {
+    if (path.empty())
         return getFilePath(detPos);
 
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setFilePath(s);
+        return detectors[detPos]->setFilePath(path);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setFilePath, s);
+    auto r = parallelCall(&slsDetector::setFilePath, path);
     return sls::concatenateIfDifferent(r);
 }
 
@@ -2415,17 +2417,17 @@ std::string multiSlsDetector::getFileName(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setFileName(std::string s, int detPos) {
-    if (s.empty())
+std::string multiSlsDetector::setFileName(const std::string& fname, int detPos) {
+    if (fname.empty())
         return getFileName(detPos);
 
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setFileName(s);
+        return detectors[detPos]->setFileName(fname);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setFileName, s);
+    auto r = parallelCall(&slsDetector::setFileName, fname);
     return sls::concatenateIfDifferent(r);
 }
 
@@ -3099,7 +3101,7 @@ int multiSlsDetector::setReceiverSilentMode(int i, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setCTBPattern(std::string fname, int detPos) {
+int multiSlsDetector::setCTBPattern(const std::string& fname, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setCTBPattern(fname);

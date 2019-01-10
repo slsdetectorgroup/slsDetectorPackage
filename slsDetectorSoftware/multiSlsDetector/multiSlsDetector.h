@@ -1745,9 +1745,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     /** sets when the acquisition is finished */
     bool jointhread {false};
 
-    /** set when detector finishes acquiring */
-    int acquiringDone {0};
-
     /** the data processing thread */
     // pthread_t dataProcessingThread;
     std::thread dataProcessingThread;

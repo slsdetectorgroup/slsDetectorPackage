@@ -360,7 +360,7 @@ void multiSlsDetector::initializeDetectorStructure() {
     thisMultiDetector->numberOfChannelInclGapPixels[Y] = 0;
     thisMultiDetector->maxNumberOfChannelsPerDetector[X] = 0;
     thisMultiDetector->maxNumberOfChannelsPerDetector[Y] = 0;
-    for (long & i : thisMultiDetector->timerValue) {
+    for (int64_t & i : thisMultiDetector->timerValue) {
         i = 0;
     }
 

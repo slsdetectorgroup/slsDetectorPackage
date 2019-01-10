@@ -253,7 +253,7 @@ void         setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop
 int         powerChip (int on);
 int         autoCompDisable(int on);
 void        configureASICTimer();
-int         setClockDivider(int val);
+void        setClockDivider(int val);
 int         getClockDivider();
 int         setAdcPhase(int st);
 int         getPhase();

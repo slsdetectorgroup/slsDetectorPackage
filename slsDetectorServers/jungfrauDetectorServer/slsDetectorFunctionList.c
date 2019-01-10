@@ -1122,7 +1122,7 @@ void configureASICTimer() {
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
 }
 
-int setClockDivider(int val) {
+void setClockDivider(int val) {
     // setting
     if(val >= 0) {
 
@@ -1470,6 +1470,7 @@ enum runStatus getRunStatus(){
 
 	//not running
 	else {
+	    // stopped or error
 		if (retval & STOPPED_MSK) {
 			FILE_LOG(logINFOBLUE, ("Status: STOPPED\n"));
 			s = STOPPED;

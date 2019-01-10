@@ -57,13 +57,14 @@ void MAX1932_Disable() {
 /**
  * Set value
  * @param val value to set
+ * @return OK or FAIL
  */
-void MAX1932_Set (int val) {
+int MAX1932_Set (int val) {
     FILE_LOG(logDEBUG1, ("\tSetting high voltage to %d\n", val));
     if (val < 0)
         return FAIL;
 
-    uint32_t dacvalue = 0;
+    int dacvalue = 0;
 
     // limit values (normally < 60 => 0 (off))
     if (val < MAX1932_MinVoltage) {
@@ -87,6 +88,7 @@ void MAX1932_Set (int val) {
     FILE_LOG(logINFO, ("\t%dV (dacval %d)\n", val, dacvalue));
     serializeToSPI(MAX1932_Reg, dacvalue, MAX1932_CsMask, MAX1932_HV_NUMBITS,
             MAX1932_ClkMask, MAX1932_DigMask, MAX1932_DigOffset);
+    return OK;
 }
 
 

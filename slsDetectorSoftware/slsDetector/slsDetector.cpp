@@ -24,18 +24,7 @@
 
 
 slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
-: detId(id),
-  sharedMemory(nullptr),
-  thisDetector(nullptr),
-  thisDetectorControl(nullptr),
-  thisDetectorStop(nullptr),
-  thisReceiver(nullptr),
-  controlSocket(nullptr),
-  stopSocket(nullptr),
-  dataSocket(nullptr),
-  detectorModules(nullptr),
-  dacs(nullptr),
-  chanregs(nullptr) {
+: detId(id){
 	/* called from put hostname command,
 	 * so sls shared memory will be created */
 
@@ -55,18 +44,7 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
 
 
 slsDetector::slsDetector(int multiId, int id, bool verify)
-: detId(id),
-  sharedMemory(nullptr),
-  thisDetector(nullptr),
-  thisDetectorControl(nullptr),
-  thisDetectorStop(nullptr),
-  thisReceiver(nullptr),
-  controlSocket(nullptr),
-  stopSocket(nullptr),
-  dataSocket(nullptr),
-  detectorModules(nullptr),
-  dacs(nullptr),
-  chanregs(nullptr) {
+: detId(id){
 	/* called from multi constructor to populate structure,
 	 * so sls shared memory will be opened, not created */
 

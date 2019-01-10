@@ -1797,37 +1797,37 @@ private:
 	int detId;
 
 	/** Shared Memory object */
-	SharedMemory* sharedMemory;
+	SharedMemory* sharedMemory {nullptr};
 
 	/** Shared memory structure */
-	sharedSlsDetector *thisDetector;
+	sharedSlsDetector *thisDetector {nullptr};
 
 	/** control socket interface */
-	ClientInterface *thisDetectorControl;
+	ClientInterface *thisDetectorControl {nullptr};
 
 	/** stop socket interface */
-	ClientInterface *thisDetectorStop;
+	ClientInterface *thisDetectorStop {nullptr};
 
 	/** receiver interface */
-	ClientInterface *thisReceiver;
+	ClientInterface *thisReceiver {nullptr};
 
 	/** socket for control commands	 */
-	MySocketTCP *controlSocket;
+	MySocketTCP *controlSocket {nullptr};
 
 	/** socket for emergency stop	 */
-	MySocketTCP *stopSocket;
+	MySocketTCP *stopSocket {nullptr};
 
 	/** socket for data acquisition	 */
-	MySocketTCP *dataSocket;
+	MySocketTCP *dataSocket {nullptr};
 
 	/** pointer to detector module structures in shared memory */
-	sls_detector_module *detectorModules;
+	sls_detector_module *detectorModules {nullptr};
 
 	/** pointer to dac valuse in shared memory  */
-	int *dacs;
+	int *dacs {nullptr};
 
 	/** pointer to channal registers  in shared memory */
-	int *chanregs;
+	int *chanregs {nullptr};
 };
 
 #endif

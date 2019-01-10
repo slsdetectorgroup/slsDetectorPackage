@@ -370,8 +370,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	strncpy(thisDetector->settingsDir, getenv("HOME"),  MAX_STR_LENGTH-1);
 	thisDetector->settingsDir[MAX_STR_LENGTH-1] = 0;
 	thisDetector->nTrimEn = 0;
-	for(int i = 0; i < MAX_TRIMEN; ++i)
-		thisDetector->trimEnergies[i] = 0;
+	for(int & trimEnergie : thisDetector->trimEnergies)
+		trimEnergie = 0;
 	// thisDetector->threadedProcessing = 1;
 	thisDetector->nROI = 0;
 	memset(thisDetector->roiLimits, 0, MAX_ROIS * sizeof(ROI));
@@ -423,7 +423,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->detectorStopAPIVersion = 0;
 	thisDetector->receiverAPIVersion = 0;
 	thisDetector->receiver_frameDiscardMode = NO_DISCARD;
-	thisDetector->receiver_framePadding = 1;
+	thisDetector->receiver_framePadding = true;
 	thisDetector->activated = true;
 	thisDetector->receiver_deactivatedPaddingEnable = true;
 	thisDetector->receiver_silentMode = false;
@@ -447,8 +447,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	default:
 		break;
 	}
-	thisDetector->receiver_fileWriteEnable = 1;
-	thisDetector->receiver_overWriteEnable = 1;
+	thisDetector->receiver_fileWriteEnable = true;
+	thisDetector->receiver_overWriteEnable = true;
 
 	// get the detector parameters based on type
 	detParameterList detlist;
@@ -1490,10 +1490,10 @@ int slsDetector::writeConfigurationFile(std::ofstream &outfile, multiSlsDetector
 	}
 
 	auto cmd = slsDetectorCommand(m);
-	for (unsigned int iline = 0; iline < names.size(); ++iline) {
-		char* args[] = {(char*)names[iline].c_str()};
+	for (auto & name : names) {
+		char* args[] = {(char*)name.c_str()};
 		outfile << detId << ":";
-		outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
+		outfile << name << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
 	}
 	return OK;
 }

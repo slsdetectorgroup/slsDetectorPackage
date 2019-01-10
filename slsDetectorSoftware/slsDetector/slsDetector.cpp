@@ -1465,45 +1465,45 @@ int slsDetector::writeConfigurationFile(std::ofstream &outfile, multiSlsDetector
 
 	std::vector<std::string> names;
 	// common config
-	names.push_back("hostname");
-	names.push_back("port");
-	names.push_back("stopport");
-	names.push_back("settingsdir");
-	names.push_back("ffdir");
-	names.push_back("outdir");
-	names.push_back("lock");
+	names.emplace_back("hostname");
+	names.emplace_back("port");
+	names.emplace_back("stopport");
+	names.emplace_back("settingsdir");
+	names.emplace_back("ffdir");
+	names.emplace_back("outdir");
+	names.emplace_back("lock");
 	// receiver config
-	names.push_back("detectormac");
-	names.push_back("detectorip");
-	names.push_back("zmqport");
-	names.push_back("rx_zmqport");
-	names.push_back("zmqip");
-	names.push_back("rx_zmqip");
-	names.push_back("rx_tcpport");
-	names.push_back("rx_udpport");
-	names.push_back("rx_udpport2");
-	names.push_back("rx_udpip");
-	names.push_back("rx_hostname");
-	names.push_back("r_readfreq");
+	names.emplace_back("detectormac");
+	names.emplace_back("detectorip");
+	names.emplace_back("zmqport");
+	names.emplace_back("rx_zmqport");
+	names.emplace_back("zmqip");
+	names.emplace_back("rx_zmqip");
+	names.emplace_back("rx_tcpport");
+	names.emplace_back("rx_udpport");
+	names.emplace_back("rx_udpport2");
+	names.emplace_back("rx_udpip");
+	names.emplace_back("rx_hostname");
+	names.emplace_back("r_readfreq");
 	// detector specific config
 	switch (thisDetector->myDetectorType) {
 	case GOTTHARD:
-		names.push_back("extsig:0");
-		names.push_back("vhighvoltage");
+		names.emplace_back("extsig:0");
+		names.emplace_back("vhighvoltage");
 		break;
 	case EIGER:
-		names.push_back("vhighvoltage");
-		names.push_back("trimen");
-		names.push_back("iodelay");
-		names.push_back("tengiga");
+		names.emplace_back("vhighvoltage");
+		names.emplace_back("trimen");
+		names.emplace_back("iodelay");
+		names.emplace_back("tengiga");
 		break;
 	case JUNGFRAU:
-		names.push_back("powerchip");
-		names.push_back("vhighvoltage");
+		names.emplace_back("powerchip");
+		names.emplace_back("vhighvoltage");
 		break;
 	case CHIPTESTBOARD:
-		names.push_back("powerchip");
-		names.push_back("vhighvoltage");
+		names.emplace_back("powerchip");
+		names.emplace_back("vhighvoltage");
 		break;
 	default:
 		FILE_LOG(logERROR) << "Unknown detector type " << thisDetector->myDetectorType;
@@ -5685,26 +5685,26 @@ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string 
 	std::vector<std::string> names;
 	switch (thisDetector->myDetectorType) {
 	case GOTTHARD:
-		names.push_back("Vref");
-		names.push_back("VcascN");
-		names.push_back("VcascP");
-		names.push_back("Vout");
-		names.push_back("Vcasc");
-		names.push_back("Vin");
-		names.push_back("Vref_comp");
-		names.push_back("Vib_test");
+		names.emplace_back("Vref");
+		names.emplace_back("VcascN");
+		names.emplace_back("VcascP");
+		names.emplace_back("Vout");
+		names.emplace_back("Vcasc");
+		names.emplace_back("Vin");
+		names.emplace_back("Vref_comp");
+		names.emplace_back("Vib_test");
 		break;
 	case EIGER:
 		break;
 	case JUNGFRAU:
-		names.push_back("VDAC0");
-		names.push_back("VDAC1");
-		names.push_back("VDAC2");
-		names.push_back("VDAC3");
-		names.push_back("VDAC4");
-		names.push_back("VDAC5");
-		names.push_back("VDAC6");
-		names.push_back("VDAC7");
+		names.emplace_back("VDAC0");
+		names.emplace_back("VDAC1");
+		names.emplace_back("VDAC2");
+		names.emplace_back("VDAC3");
+		names.emplace_back("VDAC4");
+		names.emplace_back("VDAC5");
+		names.emplace_back("VDAC6");
+		names.emplace_back("VDAC7");
 		break;
 	default:
 		FILE_LOG(logERROR) << "Unknown detector type - unknown format for settings file";
@@ -5816,34 +5816,34 @@ int slsDetector::writeSettingsFile(std::string fname,  sls_detector_module mod) 
 	std::vector<std::string> names;
 	switch (thisDetector->myDetectorType) {
 	case GOTTHARD:
-		names.push_back("Vref");
-		names.push_back("VcascN");
-		names.push_back("VcascP");
-		names.push_back("Vout");
-		names.push_back("Vcasc");
-		names.push_back("Vin");
-		names.push_back("Vref_comp");
-		names.push_back("Vib_test");
+		names.emplace_back("Vref");
+		names.emplace_back("VcascN");
+		names.emplace_back("VcascP");
+		names.emplace_back("Vout");
+		names.emplace_back("Vcasc");
+		names.emplace_back("Vin");
+		names.emplace_back("Vref_comp");
+		names.emplace_back("Vib_test");
 		break;
 	case EIGER:
 		break;
 	case JUNGFRAU:
-		names.push_back("VDAC0");
-		names.push_back("VDAC1");
-		names.push_back("VDAC2");
-		names.push_back("VDAC3");
-		names.push_back("VDAC4");
-		names.push_back("VDAC5");
-		names.push_back("VDAC6");
-		names.push_back("VDAC7");
-		names.push_back("VDAC8");
-		names.push_back("VDAC9");
-		names.push_back("VDAC10");
-		names.push_back("VDAC11");
-		names.push_back("VDAC12");
-		names.push_back("VDAC13");
-		names.push_back("VDAC14");
-		names.push_back("VDAC15");
+		names.emplace_back("VDAC0");
+		names.emplace_back("VDAC1");
+		names.emplace_back("VDAC2");
+		names.emplace_back("VDAC3");
+		names.emplace_back("VDAC4");
+		names.emplace_back("VDAC5");
+		names.emplace_back("VDAC6");
+		names.emplace_back("VDAC7");
+		names.emplace_back("VDAC8");
+		names.emplace_back("VDAC9");
+		names.emplace_back("VDAC10");
+		names.emplace_back("VDAC11");
+		names.emplace_back("VDAC12");
+		names.emplace_back("VDAC13");
+		names.emplace_back("VDAC14");
+		names.emplace_back("VDAC15");
 		break;
 	default:
 		FILE_LOG(logERROR) << "Unknown detector type - unknown format for settings file";

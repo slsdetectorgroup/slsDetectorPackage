@@ -74,7 +74,10 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 #define DEFAULT_TEST_MODE					(0)
 #define DEFAULT_HIGH_VOLTAGE				(0)
 
-#define DAC_MAX_VOLTAGE_MV                  (2048)
+#define DAC_MIN_MV                          (0)
+#define DAC_MAX_MV                          (2048)
+#define LTC2620_MIN_VAL                     (0)     // including LTC defines instead of LTC262.h (includes bit banging and blackfin read and write)
+#define LTC2620_MAX_VAL                     (4095) // 12 bits
 #define DAC_MAX_STEPS                       (4096)
 
 #define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS	(0x1FFFFFFF) /** 29 bit register for max subframe exposure value */

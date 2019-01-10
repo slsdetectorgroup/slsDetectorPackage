@@ -2,6 +2,7 @@
 #include "gitInfoEiger.h"
 #include "versionAPI.h"
 #include "logger.h"
+#include "common.h"
 
 #ifndef VIRTUAL
 #include "FebControl.h"
@@ -117,7 +118,7 @@ void basictests() {
 			"Detector MAC Addr:\t\t 0x%llx\n"
 
 			"Firmware Version:\t\t %lld\n"
-			"Software Version:\t\t %llx\n"
+			"Software Version:\t\t 0x%llx\n"
 			"F/w-S/w API Version:\t\t %lld\n"
 			"Required Firmware Version:\t %d\n"
 			"Client-Software API Version:\t 0x%llx\n"
@@ -412,7 +413,6 @@ void setupDetector() {
 	FILE_LOG(logINFOBLUE, ("Setting Default Dac values\n"));
 	{
 		int i = 0;
-		int retval[2]={-1,-1};
 		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
 		for(i = 0; i < NDAC; ++i) {
 			setDAC((enum DACINDEX)i,defaultvals[i],0);
@@ -925,9 +925,6 @@ int setModule(sls_detector_module myMod, char* mess) {
 int getModule(sls_detector_module *myMod) {
 
 #ifndef VIRTUAL
-	int i;
-	int retval[2];
-
 	//trimbits
 	unsigned int* tt;
 	tt = Feb_Control_GetTrimbits();
@@ -1054,11 +1051,12 @@ int getDAC(enum DACINDEX ind, int mV) {
                 (ret[2]==ret[3]) &&
                 (ret[3]==ret[4])) {
             FILE_LOG(logINFO, ("\tvthreshold match\n"));
+            return ret[0];
         } else {
             FILE_LOG(logERROR, ("\tvthreshold mismatch vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d vcmp_rr:%d vcp:%d\n",
                     ret[0],ret[1],ret[2],ret[3], ret[4]));
+            return -1;
         }
-        return;
     }
 
     if (!mV) {

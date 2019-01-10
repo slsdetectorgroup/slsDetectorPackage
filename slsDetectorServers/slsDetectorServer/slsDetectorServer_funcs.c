@@ -1884,7 +1884,7 @@ int set_speed(int file_des) {
 	enum speedVariable ind = args[0];
 	int val = args[1];
     int GET_VAL = -1;
-    if ((ind == PHASESHIFT) || (val == ADC_PHASE) || (val == DBIT_PHASE))
+    if ((ind == PHASE_SHIFT) || (val == ADC_PHASE) || (val == DBIT_PHASE))
         GET_VAL = 100000;
 
     char speedName[20] = {0};

@@ -2349,11 +2349,12 @@ int64_t slsDetector::getTimeLeft(timerIndex index) {
 int slsDetector::setSpeed(speedVariable sp, int value) {
 	int fnum = F_SET_SPEED;
 	int ret = FAIL;
+	int args[2] = {(int)sp, value};
 	int retval = -1;
 	FILE_LOG(logDEBUG1) << "Setting speed index " << sp << " to " << value;
 
 	if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
-		ret = thisDetectorControl->Client_Send(fnum, &value, sizeof(value), &retval, sizeof(retval));
+		ret = thisDetectorControl->Client_Send(fnum, args, sizeof(args), &retval, sizeof(retval));
 		disconnectControl();
 
 		// handle ret

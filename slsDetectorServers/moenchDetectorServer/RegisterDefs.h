@@ -86,8 +86,8 @@
 
 #define FIFO_DATA_HRDWR_SRL_NMBR_OFST       (0)
 #define FIFO_DATA_HRDWR_SRL_NMBR_MSK        (0x0000FFFF << FIFO_DATA_HRDWR_SRL_NMBR_OFST)
-//0xCACA#define FIFO_DATA_WRD_OFST                  (16)
-//0xCACA#define FIFO_DATA_WRD_MSK                   (0x0000FFFF << FIFO_DATA_WRD_OFST)
+//#define FIFO_DATA_WRD_OFST                  (16)
+//#define FIFO_DATA_WRD_MSK                   (0x0000FFFF << FIFO_DATA_WRD_OFST)
 
 /* FIFO Status RO register TODO */
 #define FIFO_STATUS_REG                     (0x07 << MEM_MAP_SHIFT)
@@ -515,13 +515,13 @@
 #define PIN_DELAY_1_REG                     (0x7D << MEM_MAP_SHIFT)
 
 /** I2C Control register */
-#define I2C_TRANSFER_COMMAND_FIFO_REG       (0x100 << MEM_MAP_SHIFT)
-#define I2C_CONTROL_REG                     (0x102 << MEM_MAP_SHIFT)
-#define I2C_RX_DATA_FIFO_LEVEL_REG          (0x107 << MEM_MAP_SHIFT)
-#define I2C_SCL_LOW_COUNT_REG               (0x108 << MEM_MAP_SHIFT)
-#define I2C_SCL_HIGH_COUNT_REG              (0x109 << MEM_MAP_SHIFT)
-#define I2C_SDA_HOLD_REG                    (0x10A << MEM_MAP_SHIFT)
-//fixme: upto 0x10f
+//#define I2C_TRANSFER_COMMAND_FIFO_REG       (0x100 << MEM_MAP_SHIFT) // in FW, but not used anywhere
+//#define I2C_CONTROL_REG                     (0x102 << MEM_MAP_SHIFT) // in FW, but not used anywhere
+//#define I2C_RX_DATA_FIFO_LEVEL_REG          (0x107 << MEM_MAP_SHIFT) // in FW, but not used anywhere
+//#define I2C_SCL_LOW_COUNT_REG               (0x108 << MEM_MAP_SHIFT) // in FW, but not used anywhere
+//#define I2C_SCL_HIGH_COUNT_REG              (0x109 << MEM_MAP_SHIFT) // in FW, but not used anywhere
+//#define I2C_SDA_HOLD_REG                    (0x10A << MEM_MAP_SHIFT) // in FW, but not used anywhere
+
 
 
 

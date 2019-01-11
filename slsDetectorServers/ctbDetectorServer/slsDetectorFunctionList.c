@@ -535,7 +535,6 @@ void setupDetector() {
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
-	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
 	setTiming(DEFAULT_TIMING_MODE);
 
 	// send via tcp (moench via udp with configuremac)
@@ -879,17 +878,6 @@ enum  readOutFlags setReadOutFlags(enum readOutFlags val) {
 
 
 /* parameters - timer */
-int selectStoragecellStart(int pos) {
-    if (pos >= 0) {
-        FILE_LOG(logINFO, ("Setting storage cell start: %d\n", pos));
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_STRG_CELL_SLCT_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | ((pos << DAQ_STRG_CELL_SLCT_OFST) & DAQ_STRG_CELL_SLCT_MSK));
-    }
-    return ((bus_r(DAQ_REG) & DAQ_STRG_CELL_SLCT_MSK) >> DAQ_STRG_CELL_SLCT_OFST);
-}
-
-
-
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	int64_t retval = -1;

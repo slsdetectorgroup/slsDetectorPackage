@@ -703,6 +703,11 @@ int set_dac(int file_des) {
             serverDacIndex = ind;
             break;
         }
+#elif MOENCHD
+        if (ind < NDAC) {
+            serverDacIndex = ind;
+            break;
+        }
 #endif
         modeNotImplemented("Dac Index", (int)ind);
         break;
@@ -719,14 +724,14 @@ int set_dac(int file_des) {
     		switch(ind) {
 
     		// adc vpp
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     		case ADC_VPP:
     		if (val < 0 || val > AD9257_GetMaxValidVref())  {
     		    ret = FAIL;
                 strcpy(mess,"Could not set dac. Adc Vpp value should be between 0 and %d\n", maxValidVref());
                 FILE_LOG(logERROR,(mess));
     		} else {
-    		    AD9257_AD9257_SetVrefVoltage(val);
+    		    AD9257_SetVrefVoltage(val);
     		    retval = val; // cannot read
     		}
     		break;
@@ -745,7 +750,7 @@ int set_dac(int file_des) {
     		case HIGH_VOLTAGE:
     			retval = setHighVoltage(val);
     			FILE_LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-#if defined(JUNGFRAUD) || defined (CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined (CHIPTESTBOARDD) || defined(MOENCHD)
     			validate(val, retval, "set high voltage", DEC);
 #endif
 #ifdef GOTTHARDD
@@ -800,6 +805,7 @@ int set_dac(int file_des) {
                 }
     			break;
 
+
             case V_POWER_CHIP:
                 if (!mV) {
                     ret = FAIL;
@@ -817,7 +823,9 @@ int set_dac(int file_des) {
                     validate(val, retval, "set vchip", DEC);
                 }
                 break;
+#endif
 
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
             case VLIMIT:
                 if (!mV) {
                     ret = FAIL;
@@ -844,7 +852,7 @@ int set_dac(int file_des) {
                         sprintf(mess,"Could not set dac %d to value %d. Allowed limits (0 - %d dac units).\n", ind, val, getMaxDacSteps());
                         FILE_LOG(logERROR,(mess));
     			    } else {
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     			        if ((mV && checkVLimitCompliant(val) == FAIL) ||
     			                (!mv && checkVLimitDacCompliant(val) == FAIL)) {
                             ret = FAIL;
@@ -907,6 +915,10 @@ int get_adc(int file_des) {
 
 	if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
 		return printSocketReadError();
+
+#ifndef MOENCHD
+    functionNotImplemented();
+#else
 	enum ADCINDEX serverAdcIndex = 0;
 
 	// get
@@ -991,6 +1003,8 @@ int get_adc(int file_des) {
 		retval = getADC(serverAdcIndex);
 		FILE_LOG(logDEBUG1, ("ADC(%d): %d\n", retval));
 	}
+#endif
+
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
@@ -1062,7 +1076,7 @@ int set_module(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	enum detectorSettings retval = -1;
 
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     functionNotImplemented();
 #else
 
@@ -1191,7 +1205,7 @@ int get_module(int file_des) {
 	} else
 		module.dacs = myDac;
 
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     functionNotImplemented();
 #endif
 
@@ -1245,7 +1259,7 @@ int set_settings(int file_des) {
 	if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
 		return printSocketReadError();
 
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1507,13 +1521,13 @@ int set_timer(int file_des) {
 		// check index
 		switch (ind) {
 		case FRAME_NUMBER:
-#ifndef CHIPTESTBOARDD
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
 		case ACQUISITION_TIME:
 #endif
 		case FRAME_PERIOD:
 		case CYCLES_NUMBER:
 		case SAMPLES:
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 		case DELAY_AFTER_TRIGGER:
 #endif
 			retval = setTimer(ind, tns);
@@ -1659,6 +1673,15 @@ int get_time_left(int file_des) {
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
         case CYCLES_NUMBER:
+#elif MOENCHD
+        case FRAMES_FROM_START:
+        case FRAMES_FROM_START_PG:
+        case ACTUAL_TIME:
+        case MEASUREMENT_TIME:
+        case FRAME_NUMBER:
+        case FRAME_PERIOD:
+        case DELAY_AFTER_TRIGGER:
+        case CYCLES_NUMBER:
 #endif
             retval = getTimeLeft(ind);
             FILE_LOG(logDEBUG1, ("Timer left index %d: %lld\n", ind, retval));
@@ -1766,7 +1789,7 @@ int set_readout_flags(int file_des) {
 			retval = setReadOutFlags(arg);
 			FILE_LOG(logDEBUG1, ("Read out flags: 0x%x\n", retval));
 			validate((int)arg, (int)(retval & arg), "set readout flag", HEX);
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
             if (retval == -2) {
                 ret = FAIL;
                 sprintf(mess, "Readout Flags failed. Cannot allocate RAM\n");
@@ -1822,7 +1845,7 @@ int set_roi(int file_des) {
 		}
 	}
 
-#if !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD)
+#if !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
 	functionNotImplemented();
 #else
 	// set & get
@@ -1896,6 +1919,14 @@ int set_speed(int file_des) {
 #ifdef JUNGFRAUD
         case ADC_PHASE:
 #elif CHIPTESTBOARDD
+        case ADC_PHASE:
+        case PHASE_SHIFT:
+        case DBIT_PHASE:
+        case ADC_CLOCK:
+        case DBIT_CLOCK:
+        case ADC_PIPELINE:
+        case DBIT_PIPELINE:
+#elif MOENCHD
         case ADC_PHASE:
         case PHASE_SHIFT:
         case DBIT_PHASE:
@@ -2434,7 +2465,7 @@ int set_ctb_pattern(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	int retval32 = -1;
 	int64_t retval64 = -1;
 	int retvals[3] = {-1, -1, -1};
@@ -2493,7 +2524,7 @@ int set_ctb_pattern(int file_des) {
         break;
     }
 
-#ifndef CHIPTESTBOARDD
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
 	functionNotImplemented();
 #else
         FILE_LOG(logDEBUG1, ("Setting Pattern: mode %d\n", mode));

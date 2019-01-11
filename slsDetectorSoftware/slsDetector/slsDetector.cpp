@@ -1511,7 +1511,7 @@ std::string slsDetector::getSettingsFile() {
 }
 
 
-int slsDetector::writeSettingsFile(std::string fname) {
+int slsDetector::writeSettingsFile(const std::string& fname) {
 	return writeSettingsFile(fname, detectorModules[0]);
 }
 
@@ -3066,7 +3066,7 @@ std::string slsDetector::setClientStreamingPort(std::string port) {
 }
 
 
-std::string slsDetector::setReceiverStreamingPort(std::string port) {
+std::string slsDetector::setReceiverStreamingPort(const std::string& port) {
 	// copy now else it is lost if rx_hostname not set yet
 	thisDetector->receiver_zmqport = stoi(port);
 
@@ -3094,7 +3094,7 @@ std::string slsDetector::setReceiverStreamingPort(std::string port) {
 }
 
 
-std::string slsDetector::setClientStreamingIP(std::string sourceIP) {
+std::string slsDetector::setClientStreamingIP(const std::string& sourceIP) {
 	struct addrinfo *result;
 	// on failure to convert to a valid ip
 	if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
@@ -3167,7 +3167,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 }
 
 
-std::string slsDetector::setAdditionalJsonHeader(std::string jsonheader) {
+std::string slsDetector::setAdditionalJsonHeader(const std::string& jsonheader) {
 	int fnum = F_ADDITIONAL_JSON_HEADER;
 	int ret = FAIL;
 	char args[MAX_STR_LENGTH] = {0};
@@ -3331,7 +3331,7 @@ int slsDetector::digitalTest( digitalTestMode mode, int ival) {
 }
 
 
-int slsDetector::loadImageToDetector(imageType index,std::string const fname) {
+int slsDetector::loadImageToDetector(imageType index, const std::string& fname) {
 	int ret = FAIL;
 	int nChan = getTotalNumberOfChannels();
 	short int args[nChan];
@@ -3374,7 +3374,7 @@ int slsDetector::sendImageToDetector(imageType index,short int imageVals[]) {
 }
 
 
-int slsDetector::writeCounterBlockFile(std::string const fname,int startACQ) {
+int slsDetector::writeCounterBlockFile(const std::string& fname,int startACQ) {
 	int ret = FAIL;
     int nChan = getTotalNumberOfChannels();
 	short int retvals[nChan];
@@ -3961,7 +3961,7 @@ int slsDetector::setStoragecellStart(int pos) {
 }
 
 
-int slsDetector::programFPGA(std::string fname) {
+int slsDetector::programFPGA(const std::string& fname) {
 	// only jungfrau implemented (client processing, so check now)
 	if (thisDetector->myDetectorType != JUNGFRAU &&	thisDetector->myDetectorType != CHIPTESTBOARD) {
 		FILE_LOG(logERROR) << "Not implemented for this detector";
@@ -4524,7 +4524,7 @@ std::string slsDetector::checkReceiverOnline() {
 }
 
 
-int slsDetector::setReceiverTCPSocket(std::string const name, int const receiver_port) {
+int slsDetector::setReceiverTCPSocket(const std::string&  name, int const receiver_port) {
 	char thisName[MAX_STR_LENGTH] = {0};
 	int thisRP = 0;
 	int ret = OK;
@@ -4652,7 +4652,7 @@ int slsDetector::exitReceiver() {
 }
 
 
-int slsDetector::execReceiverCommand(std::string cmd) {
+int slsDetector::execReceiverCommand(const std::string& cmd) {
 	int fnum = F_EXEC_RECEIVER_COMMAND;
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH] = {0};
@@ -4859,13 +4859,13 @@ std::string slsDetector::getFilePath() {
 }
 
 
-std::string slsDetector::setFilePath(std::string s) {
-	if (!s.empty()) {
+std::string slsDetector::setFilePath(const std::string& path) {
+	if (!path.empty()) {
 		int fnum = F_SET_RECEIVER_FILE_PATH;
 		int ret = FAIL;
 		char args[MAX_STR_LENGTH] = {0};
 		char retvals[MAX_STR_LENGTH] = {0};
-		strcpy(args, s.c_str());
+		strcpy(args, path.c_str());
 		FILE_LOG(logDEBUG1) << "Sending file path to receiver: " << args;
 
 		if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
@@ -4874,7 +4874,7 @@ std::string slsDetector::setFilePath(std::string s) {
 
 			// handle ret
 			if (ret == FAIL) {
-				if (!s.empty()) {
+				if (!path.empty()) {
 					FILE_LOG(logERROR) << "file path does not exist";
 					setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
 				} else
@@ -4896,13 +4896,13 @@ std::string slsDetector::getFileName() {
 }
 
 
-std::string slsDetector::setFileName(std::string s) {
-	if (!s.empty()) {
+std::string slsDetector::setFileName(const std::string& fname) {
+	if (!fname.empty()) {
 		int fnum = F_SET_RECEIVER_FILE_NAME;
 		int ret = FAIL;
-		char args[MAX_STR_LENGTH] = {0};
-		char retvals[MAX_STR_LENGTH] = {0};
-		strcpy(args, s.c_str());
+		char args[MAX_STR_LENGTH] = {""};
+		char retvals[MAX_STR_LENGTH] = {""};
+		strcpy(args, fname.c_str());
 		FILE_LOG(logDEBUG1) << "Sending file name to receiver: " << args;
 
 		if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
@@ -5462,7 +5462,7 @@ int slsDetector::restreamStopFromReceiver() {
 
 
 
-int slsDetector::setCTBPattern(std::string fname) {
+int slsDetector::setCTBPattern(const std::string& fname) {
 	uint64_t word;
 	int addr = 0;
 	FILE *fd = fopen(fname.c_str(),"r");
@@ -5644,7 +5644,7 @@ slsDetectorDefs::sls_detector_module* slsDetector::interpolateTrim(
 }
 
 
-slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string fname,
+slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(const std::string& fname,
 		sls_detector_module* myMod, int tb) {
 
 	FILE_LOG(logDEBUG1) << "Read settings file " << fname;
@@ -5789,7 +5789,7 @@ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string 
 }
 
 
-int slsDetector::writeSettingsFile(std::string fname,  sls_detector_module mod) {
+int slsDetector::writeSettingsFile(const std::string& fname,  sls_detector_module mod) {
 
 	FILE_LOG(logDEBUG1) << "Write settings file " << fname;
 

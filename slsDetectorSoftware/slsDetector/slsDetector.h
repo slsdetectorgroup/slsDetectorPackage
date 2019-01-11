@@ -608,7 +608,7 @@ public:
 	 * @returns OK or FAIL if the file could not be written
 	 * \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
 	 */
-	int writeSettingsFile(std::string fname);
+	int writeSettingsFile(const std::string& fname);
 
 	/**
 	 * Get detector settings
@@ -1004,14 +1004,14 @@ public:
 	 * calculate individual ports)
 	 * @returns the receiver zmq port
 	 */
-	std::string setReceiverStreamingPort(std::string port);
+	std::string setReceiverStreamingPort(const std::string& port);
 
 	/**
 	 * Sets the client zmq ip\sa sharedSlsDetector
 	 * @param sourceIP client zmq ip
 	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
 	 */
-	std::string setClientStreamingIP(std::string sourceIP);
+	std::string setClientStreamingIP(const std::string& sourceIP);
 
 	/**
 	 * Sets the receiver zmq ip\sa sharedSlsDetector
@@ -1034,7 +1034,7 @@ public:
 	 * @param fname file name from which to load image
 	 * @returns OK or FAIL
 	 */
-	int loadImageToDetector(imageType index,std::string const fname);
+	int loadImageToDetector(imageType index, const std::string& fname);
 
 	/**
 	 * Called from loadImageToDetector to send the image to detector
@@ -1050,7 +1050,7 @@ public:
 	 * @param startACQ is 1 to start acquisition after reading counter
 	 * @returns OK or FAIL
 	 */
-	int writeCounterBlockFile(std::string const fname,int startACQ=0);
+	int writeCounterBlockFile(const std::string&  fname,int startACQ=0);
 
 	/**
 	 * Gets counter memory block in detector (Gotthard)
@@ -1233,7 +1233,7 @@ public:
 	 * @param fname file name
 	 * @returns OK or FAIL
 	 */
-	int programFPGA(std::string fname);
+	int programFPGA(const std::string& fname);
 
 	/**
 	 * Resets FPGA (Jungfrau)
@@ -1323,7 +1323,7 @@ public:
 	 * @returns OK is connection succeded, FAIL otherwise
 	 * \sa sharedSlsDetector
 	 */
-	int setReceiverTCPSocket(std::string const name="", int const receiver_port=-1);
+	int setReceiverTCPSocket(const std::string&  name="", int const receiver_port=-1);
 
 	/**
 	 * Locks/Unlocks the connection to the receiver
@@ -1350,7 +1350,7 @@ public:
 	 * @param cmd command to be executed
 	 * @returns OK or FAIL
 	 */
-	int execReceiverCommand(std::string cmd);
+	int execReceiverCommand(const std::string& cmd);
 
 	/**
      updates the shared memory receiving the data from the detector (without asking and closing the connection
@@ -1394,7 +1394,7 @@ public:
 	 * @param s file directory
 	 * @returns file dir
 	 */
-	std::string setFilePath(std::string s);
+	std::string setFilePath(const std::string& path);
 
 	/**
 	 * Returns file name prefix
@@ -1407,7 +1407,7 @@ public:
 	 * @param s file name prefix
 	 * @returns file name prefix
 	 */
-	std::string setFileName(std::string s);
+	std::string setFileName(const std::string& fname);
 
 	/**
 	 * Sets the max frames per file in receiver
@@ -1574,7 +1574,7 @@ public:
 	 * @param fname pattern file to open
 	 * @returns OK/FAIL
 	 */
-	int setCTBPattern(std::string fname);
+	int setCTBPattern(const std::string& fname);
 
 	/**
 	 * Writes a pattern word to the CTB
@@ -1723,7 +1723,7 @@ private:
 	 * @param jsonheader additional json header
 	 * @returns additional json header, returns "none" if default setting and no custom ip set
 	 */
-	std::string setAdditionalJsonHeader(std::string jsonheader);
+	std::string setAdditionalJsonHeader(const std::string& jsonheader);
 
 	/**
 	 * Sets the receiver UDP socket buffer size
@@ -1782,7 +1782,7 @@ private:
 	 * @returns the pointer to myMod or NULL if reading the file failed
 	 */
 
-	sls_detector_module* readSettingsFile(std::string fname, sls_detector_module* myMod=nullptr, int tb=1);
+	sls_detector_module* readSettingsFile(const std::string& fname, sls_detector_module* myMod=nullptr, int tb=1);
 
 	/**
 	 * writes a trim/settings file
@@ -1790,7 +1790,7 @@ private:
 	 * @param mod module structure which has to be written to file
 	 * @returns OK or FAIL if the file could not be written
 	 */
-	int writeSettingsFile(std::string fname, sls_detector_module mod);
+	int writeSettingsFile(const std::string& fname, sls_detector_module mod);
 
 
 	/** slsDetector Id or position in the detectors list */

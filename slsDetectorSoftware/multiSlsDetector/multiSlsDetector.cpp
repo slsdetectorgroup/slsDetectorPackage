@@ -45,9 +45,11 @@ void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
         updateUserdetails();
 }
 
+
+
 template <typename RT, typename... CT>
 std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...),
-                                             CT... Args) {
+                                             typename NonDeduced<CT>::type... Args) {
     std::vector<RT> result;
     result.reserve(detectors.size());
     for (auto &d : detectors)
@@ -57,7 +59,7 @@ std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...),
 
 template <typename RT, typename... CT>
 std::vector<RT>
-multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), CT... Args) {
+multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<RT>> futures;
     for (auto &d : detectors)
         futures.push_back(

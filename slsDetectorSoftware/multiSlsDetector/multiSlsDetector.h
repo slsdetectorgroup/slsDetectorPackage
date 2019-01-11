@@ -141,8 +141,10 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * Loop through the detectors serially
      * and return a vector of results
      */
+    template <class CT>
+    struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...), CT... Args);
+    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args);
 
     /**
      * Loop through the detectors in parallel threads
@@ -150,7 +152,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     template <typename RT, typename... CT>
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
-                                 CT... Args);
+                                 typename NonDeduced<CT>::type... Args);
 
     /**
      * If specific position, then provide result with that detector at position

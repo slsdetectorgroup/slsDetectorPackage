@@ -7,6 +7,7 @@
 #include "versionAPI.h"
 #include "slsDetectorCommand.h"
 #include "utilities.h"
+#include "string_utils.h"
 #include "MySocketTCP.h"
 
 
@@ -1770,7 +1771,7 @@ std::string slsDetector::getSettingsDir() {
 
 
 std::string slsDetector::setSettingsDir(std::string s) {
-	sprintf(thisDetector->settingsDir, s.c_str());
+	sls::strcpy_safe(thisDetector->settingsDir, s.c_str());
 	return thisDetector->settingsDir;
 }
 
@@ -3244,8 +3245,8 @@ std::string slsDetector::setDetectorNetworkParameter(networkParameter index, int
 int slsDetector::setUDPConnection() {
 	int fnum = F_SETUP_RECEIVER_UDP;
 	int ret = FAIL;
-	char args[3][MAX_STR_LENGTH] = {0};
-	char retvals[MAX_STR_LENGTH] = {0};
+	char args[3][MAX_STR_LENGTH] = {{""}, {""}, {""}};;
+	char retvals[MAX_STR_LENGTH] = {""};
 	FILE_LOG(logDEBUG1) << "Setting UDP Connection";
 
 	// called before set up

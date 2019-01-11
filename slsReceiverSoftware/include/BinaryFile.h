@@ -47,7 +47,7 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	/**
 	 * Print all member values
 	 */
-	void PrintMembers();
+	void PrintMembers(TLogLevel level = logDEBUG1);
 
 	/**
 	 * Create file

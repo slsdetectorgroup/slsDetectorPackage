@@ -480,8 +480,8 @@ private:
 	/**
 	 * Print all variables
 	 */
-	void Print() const {
-		GeneralData::Print();
+	void Print(TLogLevel level = logDEBUG1) const {
+		GeneralData::Print(level);
 		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
 	}
 };

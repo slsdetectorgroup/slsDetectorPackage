@@ -31,8 +31,8 @@ BinaryFile::~BinaryFile() {
 	CloseAllFiles();
 }
 
-void BinaryFile::PrintMembers() {
-	File::PrintMembers();
+void BinaryFile::PrintMembers(TLogLevel level) {
+	File::PrintMembers(level);
 	FILE_LOG(logINFO) << "Max Frames Per File: " << *maxFramesPerFile;
 	FILE_LOG(logINFO) << "Number of Frames in File: " << numFramesInFile;
 }

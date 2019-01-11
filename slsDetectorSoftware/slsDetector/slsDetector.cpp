@@ -1003,18 +1003,14 @@ std::string slsDetector::checkOnline() {
 }
 
 
-int slsDetector::setTCPSocket(std::string const name, int const control_port, int const stop_port) {
-	char thisName[MAX_STR_LENGTH] = {0};
+int slsDetector::setTCPSocket(const std::string& hostname, int control_port, int stop_port) {
 	int thisCP = 0, thisSP = 0;
 	int ret = OK;
 
 	// hostname
-	if (name.empty()) {
-		strcpy(thisName,thisDetector->hostname);
-	} else {
+	if (!hostname.empty()) {
 		FILE_LOG(logDEBUG1) << "Setting hostname";
-		strcpy(thisName, name.c_str());
-		strcpy(thisDetector->hostname, thisName);
+		sls::strcpy_safe(thisDetector->hostname, hostname.c_str());
 		if (controlSocket) {
 			delete controlSocket;
 			controlSocket = nullptr;
@@ -1054,10 +1050,10 @@ int slsDetector::setTCPSocket(std::string const name, int const control_port, in
 	// create control socket
 	if (!controlSocket) {
 		try {
-			controlSocket = new MySocketTCP(thisName, thisCP);
-			FILE_LOG(logDEBUG1) << "Control socket connected " << thisName  << " " << thisCP;
+			controlSocket = new MySocketTCP(thisDetector->hostname, thisCP);
+			FILE_LOG(logDEBUG1) << "Control socket connected " << thisDetector->hostname  << " " << thisCP;
 		} catch(...) {
-			FILE_LOG(logERROR) << "Could not connect control socket " << thisName  << " " << thisCP;
+			FILE_LOG(logERROR) << "Could not connect control socket " << thisDetector->hostname  << " " << thisCP;
 			controlSocket = nullptr;
 			ret = FAIL;
 		}
@@ -1067,10 +1063,10 @@ int slsDetector::setTCPSocket(std::string const name, int const control_port, in
 	// create stop socket
 	if (!stopSocket) {
 		try {
-			stopSocket = new MySocketTCP(thisName, thisSP);
-			FILE_LOG(logDEBUG1) << "Stop socket connected " << thisName  << " " << thisSP;
+			stopSocket = new MySocketTCP(thisDetector->hostname, thisSP);
+			FILE_LOG(logDEBUG1) << "Stop socket connected " << thisDetector->hostname  << " " << thisSP;
 		} catch(...) {
-			FILE_LOG(logERROR) << "Could not connect Stop socket " << thisName  << " " << thisSP;
+			FILE_LOG(logERROR) << "Could not connect Stop socket " << thisDetector->hostname  << " " << thisSP;
 			stopSocket = nullptr;
 			ret = FAIL;
 		}
@@ -1312,12 +1308,12 @@ int slsDetector::exitServer() {
 }
 
 
-int slsDetector::execCommand(std::string cmd) {
+int slsDetector::execCommand(const std::string& cmd) {
 	int fnum = F_EXEC_COMMAND;
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH] = {0};
 	char retval[MAX_STR_LENGTH] = {0};
-	strcpy(arg, cmd.c_str());
+	sls::strcpy_safe(arg, cmd.c_str());
 	FILE_LOG(logDEBUG1) << "Sending command to detector " << arg;
 
 	if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
@@ -1419,7 +1415,7 @@ int slsDetector::updateDetector() {
 }
 
 
-int slsDetector::writeConfigurationFile(std::string const fname, multiSlsDetector* m) {
+int slsDetector::writeConfigurationFile(const std::string& fname, multiSlsDetector* m) {
 	int iline = 0;
 	std::ofstream outfile;
 	outfile.open(fname.c_str(),std::ios_base::out);
@@ -1511,7 +1507,7 @@ std::string slsDetector::getSettingsFile() {
 }
 
 
-int slsDetector::writeSettingsFile(std::string fname) {
+int slsDetector::writeSettingsFile(const std::string& fname) {
 	return writeSettingsFile(fname, detectorModules[0]);
 }
 
@@ -1770,13 +1766,13 @@ std::string slsDetector::getSettingsDir() {
 }
 
 
-std::string slsDetector::setSettingsDir(std::string s) {
-	sls::strcpy_safe(thisDetector->settingsDir, s.c_str());
+std::string slsDetector::setSettingsDir(const std::string& dir) {
+	sls::strcpy_safe(thisDetector->settingsDir, dir.c_str());
 	return thisDetector->settingsDir;
 }
 
 
-int slsDetector::loadSettingsFile(std::string fname) {
+int slsDetector::loadSettingsFile(const std::string& fname) {
 	std::string fn = fname;
 	std::ostringstream ostfn;
 	ostfn << fname;
@@ -1807,7 +1803,7 @@ int slsDetector::loadSettingsFile(std::string fname) {
 }
 
 
-int slsDetector::saveSettingsFile(std::string fname) {
+int slsDetector::saveSettingsFile(const std::string& fname) {
 	std::string fn = fname;
 	std::ostringstream ostfn;
 	ostfn << fname;
@@ -2666,7 +2662,7 @@ uint32_t slsDetector::clearBit(uint32_t addr, int n) {
 }
 
 
-std::string slsDetector::setNetworkParameter(networkParameter index, std::string value) {
+std::string slsDetector::setNetworkParameter(networkParameter index, const std::string& value) {
 	switch (index) {
 	case DETECTOR_MAC:
 		return setDetectorMAC(value);
@@ -2844,7 +2840,7 @@ std::string slsDetector::getReceiverRealUDPSocketBufferSize() {
 }
 
 
-std::string slsDetector::setDetectorMAC(std::string detectorMAC) {
+std::string slsDetector::setDetectorMAC(const std::string& detectorMAC) {
 
 	// invalid format
 	if ((detectorMAC.length() != 17) ||
@@ -2866,7 +2862,7 @@ std::string slsDetector::setDetectorMAC(std::string detectorMAC) {
 }
 
 
-std::string slsDetector::setDetectorIP(std::string detectorIP) {
+std::string slsDetector::setDetectorIP(const std::string& detectorIP) {
 	struct sockaddr_in sa;
 	if (detectorIP.length() && detectorIP.length() < 16) {
 		int result = inet_pton(AF_INET, detectorIP.c_str(), &(sa.sin_addr));
@@ -2890,12 +2886,12 @@ std::string slsDetector::setDetectorIP(std::string detectorIP) {
 }
 
 
-std::string slsDetector::setReceiver(std::string receiverIP) {
+std::string slsDetector::setReceiver(const std::string& receiverIP) {
 	FILE_LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
 	// recieverIP is none
 	if (receiverIP == "none") {
 		memset(thisDetector->receiver_hostname, 0, MAX_STR_LENGTH);
-		strcpy(thisDetector->receiver_hostname, "none");
+		sls::strcpy_safe(thisDetector->receiver_hostname, "none");
 		thisDetector->receiverOnlineFlag = OFFLINE_FLAG;
 		return std::string(thisDetector->receiver_hostname);
 	}
@@ -2991,7 +2987,7 @@ std::string slsDetector::setReceiver(std::string receiverIP) {
 }
 
 
-std::string slsDetector::setReceiverUDPIP(std::string udpip) {
+std::string slsDetector::setReceiverUDPIP(const std::string& udpip) {
 	struct sockaddr_in sa;
 	if (udpip.length() && udpip.length() < 16) {
 		int result = inet_pton(AF_INET, udpip.c_str(), &(sa.sin_addr));
@@ -3003,7 +2999,7 @@ std::string slsDetector::setReceiverUDPIP(std::string udpip) {
 		}
 		// valid format
 		else {
-			strcpy(thisDetector->receiverUDPIP,udpip.c_str());
+			sls::strcpy_safe(thisDetector->receiverUDPIP,udpip.c_str());
 			if (!strcmp(thisDetector->receiver_hostname, "none")) {
 				FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
 			} else if (setUDPConnection() == FAIL) {
@@ -3015,7 +3011,7 @@ std::string slsDetector::setReceiverUDPIP(std::string udpip) {
 }
 
 
-std::string slsDetector::setReceiverUDPMAC(std::string udpmac) {
+std::string slsDetector::setReceiverUDPMAC(const std::string& udpmac) {
 	// invalid format
 	if ((udpmac.length() != 17) ||
 			(udpmac[2] != ':') || (udpmac[5] != ':') || (udpmac[8] != ':') ||
@@ -3060,13 +3056,13 @@ int slsDetector::setReceiverUDPPort2(int udpport) {
 }
 
 
-std::string slsDetector::setClientStreamingPort(std::string port) {
+std::string slsDetector::setClientStreamingPort(const std::string& port) {
 	thisDetector->zmqport = stoi(port);
 	return getClientStreamingPort();
 }
 
 
-std::string slsDetector::setReceiverStreamingPort(std::string port) {
+std::string slsDetector::setReceiverStreamingPort(const std::string& port) {
 	// copy now else it is lost if rx_hostname not set yet
 	thisDetector->receiver_zmqport = stoi(port);
 
@@ -3094,7 +3090,7 @@ std::string slsDetector::setReceiverStreamingPort(std::string port) {
 }
 
 
-std::string slsDetector::setClientStreamingIP(std::string sourceIP) {
+std::string slsDetector::setClientStreamingIP(const std::string& sourceIP) {
 	struct addrinfo *result;
 	// on failure to convert to a valid ip
 	if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
@@ -3167,7 +3163,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 }
 
 
-std::string slsDetector::setAdditionalJsonHeader(std::string jsonheader) {
+std::string slsDetector::setAdditionalJsonHeader(const std::string& jsonheader) {
 	int fnum = F_ADDITIONAL_JSON_HEADER;
 	int ret = FAIL;
 	char args[MAX_STR_LENGTH] = {0};
@@ -3331,7 +3327,7 @@ int slsDetector::digitalTest( digitalTestMode mode, int ival) {
 }
 
 
-int slsDetector::loadImageToDetector(imageType index,std::string const fname) {
+int slsDetector::loadImageToDetector(imageType index, const std::string& fname) {
 	int ret = FAIL;
 	int nChan = getTotalNumberOfChannels();
 	short int args[nChan];
@@ -3374,7 +3370,7 @@ int slsDetector::sendImageToDetector(imageType index,short int imageVals[]) {
 }
 
 
-int slsDetector::writeCounterBlockFile(std::string const fname,int startACQ) {
+int slsDetector::writeCounterBlockFile(const std::string& fname,int startACQ) {
 	int ret = FAIL;
     int nChan = getTotalNumberOfChannels();
 	short int retvals[nChan];
@@ -3961,7 +3957,7 @@ int slsDetector::setStoragecellStart(int pos) {
 }
 
 
-int slsDetector::programFPGA(std::string fname) {
+int slsDetector::programFPGA(const std::string& fname) {
 	// only jungfrau implemented (client processing, so check now)
 	if (thisDetector->myDetectorType != JUNGFRAU &&	thisDetector->myDetectorType != CHIPTESTBOARD) {
 		FILE_LOG(logERROR) << "Not implemented for this detector";
@@ -4524,7 +4520,7 @@ std::string slsDetector::checkReceiverOnline() {
 }
 
 
-int slsDetector::setReceiverTCPSocket(std::string const name, int const receiver_port) {
+int slsDetector::setReceiverTCPSocket(const std::string&  name, int const receiver_port) {
 	char thisName[MAX_STR_LENGTH] = {0};
 	int thisRP = 0;
 	int ret = OK;
@@ -4652,7 +4648,7 @@ int slsDetector::exitReceiver() {
 }
 
 
-int slsDetector::execReceiverCommand(std::string cmd) {
+int slsDetector::execReceiverCommand(const std::string& cmd) {
 	int fnum = F_EXEC_RECEIVER_COMMAND;
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH] = {0};
@@ -4859,13 +4855,13 @@ std::string slsDetector::getFilePath() {
 }
 
 
-std::string slsDetector::setFilePath(std::string s) {
-	if (!s.empty()) {
+std::string slsDetector::setFilePath(const std::string& path) {
+	if (!path.empty()) {
 		int fnum = F_SET_RECEIVER_FILE_PATH;
 		int ret = FAIL;
 		char args[MAX_STR_LENGTH] = {0};
 		char retvals[MAX_STR_LENGTH] = {0};
-		strcpy(args, s.c_str());
+		strcpy(args, path.c_str());
 		FILE_LOG(logDEBUG1) << "Sending file path to receiver: " << args;
 
 		if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
@@ -4874,7 +4870,7 @@ std::string slsDetector::setFilePath(std::string s) {
 
 			// handle ret
 			if (ret == FAIL) {
-				if (!s.empty()) {
+				if (!path.empty()) {
 					FILE_LOG(logERROR) << "file path does not exist";
 					setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
 				} else
@@ -4896,13 +4892,13 @@ std::string slsDetector::getFileName() {
 }
 
 
-std::string slsDetector::setFileName(std::string s) {
-	if (!s.empty()) {
+std::string slsDetector::setFileName(const std::string& fname) {
+	if (!fname.empty()) {
 		int fnum = F_SET_RECEIVER_FILE_NAME;
 		int ret = FAIL;
-		char args[MAX_STR_LENGTH] = {0};
-		char retvals[MAX_STR_LENGTH] = {0};
-		strcpy(args, s.c_str());
+		char args[MAX_STR_LENGTH] = {""};
+		char retvals[MAX_STR_LENGTH] = {""};
+		strcpy(args, fname.c_str());
 		FILE_LOG(logDEBUG1) << "Sending file name to receiver: " << args;
 
 		if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
@@ -5462,7 +5458,7 @@ int slsDetector::restreamStopFromReceiver() {
 
 
 
-int slsDetector::setCTBPattern(std::string fname) {
+int slsDetector::setCTBPattern(const std::string& fname) {
 	uint64_t word;
 	int addr = 0;
 	FILE *fd = fopen(fname.c_str(),"r");
@@ -5644,7 +5640,7 @@ slsDetectorDefs::sls_detector_module* slsDetector::interpolateTrim(
 }
 
 
-slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string fname,
+slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(const std::string& fname,
 		sls_detector_module* myMod, int tb) {
 
 	FILE_LOG(logDEBUG1) << "Read settings file " << fname;
@@ -5789,7 +5785,7 @@ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(std::string 
 }
 
 
-int slsDetector::writeSettingsFile(std::string fname,  sls_detector_module mod) {
+int slsDetector::writeSettingsFile(const std::string& fname,  sls_detector_module mod) {
 
 	FILE_LOG(logDEBUG1) << "Write settings file " << fname;
 

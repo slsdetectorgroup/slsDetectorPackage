@@ -2606,7 +2606,7 @@ std::string slsDetectorCommand::helpThreaded(int action) {
 
 std::string slsDetectorCommand::cmdImage(int narg, char *args[], int action, int detPos) {
     std::string sval;
-    int retval;
+    int retval = FAIL;
     if (action == HELP_ACTION)
         return helpImage(HELP_ACTION);
     else if (action == GET_ACTION)
@@ -2643,7 +2643,7 @@ std::string slsDetectorCommand::cmdCounter(int narg, char *args[], int action, i
     int ival;
     char answer[100];
     std::string sval;
-    int retval;
+    int retval = FAIL;
     if (action == HELP_ACTION)
         return helpCounter(HELP_ACTION);
     else if (action == PUT_ACTION)

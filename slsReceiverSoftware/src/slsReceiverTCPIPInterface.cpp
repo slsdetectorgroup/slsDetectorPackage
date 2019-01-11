@@ -705,8 +705,8 @@ int slsReceiverTCPIPInterface::set_roi() {
 int slsReceiverTCPIPInterface::setup_udp(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	char args[3][MAX_STR_LENGTH] = {0};
-	char retvals[MAX_STR_LENGTH] = {0};
+	char args[3][MAX_STR_LENGTH] = {{""}, {""}, {""}};
+	char retvals[MAX_STR_LENGTH] = {""};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, args, sizeof(args), true, receiver) == FAIL)

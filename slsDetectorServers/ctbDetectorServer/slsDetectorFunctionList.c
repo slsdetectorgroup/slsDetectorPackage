@@ -3,12 +3,14 @@
 #include "versionAPI.h"
 #include "logger.h"
 
-#ifndef VIRTUAL
+
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "AD7689.h"     // slow adcs
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "INA226.h"     // i2c
+#include "ALTERA_PLL.h" // pll
+#ifndef VIRTUAL
 #include "programfpga.h"
 #else
 #include "blackfin.h"
@@ -473,7 +475,7 @@ void setupDetector() {
     now_ptr = 0;
 
 
-    resetPLL();
+    ALTERA_PLL_ResetPLLAndReconfiguration();
     resetCore();
     resetPeripheral();
     cleanFifos();
@@ -517,6 +519,9 @@ void setupDetector() {
 	        setDac(idac, LTC2620_PWR_DOWN_VAL, 0);
 	    }
 	}
+
+	// altera pll
+	ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK, PLL_CNTRL_ADDR_OFST);
 
     bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);//FIXME:  got from moench config file
 
@@ -1561,35 +1566,6 @@ int sendUDP(int enable) {
     return ((bus_r(addr) & CONFIG_GB10_SND_UDP_MSK) >> CONFIG_GB10_SND_UDP_OFST);
 }
 
-void resetPLL() {
-#ifdef VIRTUAL
-    return;
-#endif
-    FILE_LOG(logINFO, ("Resetting PLL\n"));
-	// reset PLL Reconfiguration and PLL
-	bus_w(PLL_CNTRL_REG, bus_r(PLL_CNTRL_REG) | PLL_CNTRL_RCNFG_PRMTR_RST_MSK | PLL_CNTRL_PLL_RST_MSK);
-	usleep(WAIT_TIME_US_PLL);
-	bus_w(PLL_CNTRL_REG, bus_r(PLL_CNTRL_REG) & ~PLL_CNTRL_RCNFG_PRMTR_RST_MSK & ~PLL_CNTRL_PLL_RST_MSK);
-}
-
-void setPllReconfigReg(uint32_t reg, uint32_t val) {
-#ifdef VIRTUAL
-    return val;
-#endif
-    FILE_LOG(logINFO, ("Setting PLL Reconfig Reg\n"));
-	// set parameter
-	bus_w(PLL_PARAM_REG, val);
-
-	// set address
-	bus_w(PLL_CNTRL_REG, (reg << PLL_CNTRL_ADDR_OFST) & PLL_CNTRL_ADDR_MSK);
-	usleep(WAIT_TIME_US_PLL);
-
-	//write parameter
-	bus_w(PLL_CNTRL_REG, bus_r(PLL_CNTRL_REG) | PLL_CNTRL_WR_PRMTR_MSK);
-	bus_w(PLL_CNTRL_REG, bus_r(PLL_CNTRL_REG) & ~PLL_CNTRL_WR_PRMTR_MSK);
-	usleep(WAIT_TIME_US_PLL);
-}
-
 // ind can only be ADC_CLK or DBIT_CLK
 void configurePhase(CLKINDEX ind, int val) {
     if (st > 65535 || st < -65535) {
@@ -1600,12 +1576,10 @@ void configurePhase(CLKINDEX ind, int val) {
     FILE_LOG(logINFO, ("Configuring Phase of C%d to %d\n", ind, val));
 
     // reset only pll
-    bus_w(PLL_CNTRL_REG, bus_r(PLL_CNTRL_REG) | PLL_CNTRL_PLL_RST_MSK);
-    usleep(WAIT_TIME_US_PLL);
-    bus_w(PLL_CNTRL_REG, bus_r(PLL_CNTRL_REG) & ~PLL_CNTRL_PLL_RST_MSK);
+    ALTERA_PLL_ResetPLL();
 
     // set mode register to polling mode
-    setPllReconfigReg(PLL_MODE_REG, PLL_MODE_PLLNG_MD_VAL);
+    ALTERA_PLL_SetModePolling();
 
     int phase = 0, inv = 0;
     if (val > 0) {
@@ -1618,13 +1592,7 @@ void configurePhase(CLKINDEX ind, int val) {
     }
     FILE_LOG(logINFO, ("\tphase out %d (0x%08x), inv:%d\n", phase, phase, inv));
 
-    uint32_t value = (((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) |
-             (((int)ind << PLL_SHIFT_CNT_SELECT_OFST) & PLL_SHIFT_CNT_SELECT_MSK));
-    FILE_LOG(logDEBUG1, ("\tC%d phase word:0x%08x\n", ind, value));
-
-    // write phase shift
-    setPllReconfigReg(PLL_PHASE_SHIFT_REG, value);
-    usleep(WAIT_TIME_US_PLL);
+    ALTERA_PLL_SetPhaseShift(phase, (int)ind, 0);
 
     clkPhase[ind] = val;
 }
@@ -1645,35 +1613,8 @@ void configureFrequency(CLKINDEX ind, int val) {
         return getPhase(ind);
     }
 
-    // calculate output frequency
-    uint32_t total_div =  PLL_VCO_FREQ_MHZ / val;
-
-    // assume 50% duty cycle
-    uint32_t low_count = total_div / 2;
-    uint32_t high_count = low_count;
-    uint32_t odd_division = 0;
-
-    // odd division
-    if (total_div > (2 * low_count)) {
-        ++high_count;
-        odd_division = 1;
-    }
-    FILE_LOG(logINFO, ("\tC%d: Low:%d, High:%d, Odd:%d\n", ind, low_count, high_count, odd_division));
-
-    uint32_t val = (((low_count << PLL_C_COUNTER_LW_CNT_OFST) & PLL_C_COUNTER_LW_CNT_MSK) |
-            ((high_count << PLL_C_COUNTER_HGH_CNT_OFST) & PLL_C_COUNTER_HGH_CNT_MSK) |
-        ((odd_division << PLL_C_COUNTER_ODD_DVSN_OFST) & PLL_C_COUNTER_ODD_DVSN_MSK) |
-        (((int)ind << PLL_C_COUNTER_SLCT_OFST) & PLL_C_COUNTER_SLCT_MSK));
-    FILE_LOG(logDEBUG1, ("\tC%d word:0x%08x\n", ind, val));
-
-    // write frequency (post-scale output counter C)
-    setPllReconfigReg(PLL_C_COUNTER_REG, val);
-    usleep(WAIT_TIME_US_PLL);
-
-    // reset only PLL
-    bus_w(PLL_CNTRL_REG, bus_r(PLL_CNTRL_REG) | PLL_CNTRL_PLL_RST_MSK);
-    usleep(WAIT_TIME_US_PLL);
-    bus_w(PLL_CNTRL_REG, bus_r(PLL_CNTRL_REG) & ~PLL_CNTRL_PLL_RST_MSK);
+    // Calculate and set output frequency
+    ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ);
 
     clkDivider[ind] = PLL_VCO_FREQ_MHZ / (low_count + high_count);
     FILE_LOG(logINFO, ("\tC%d: Frequency set to %d MHz\n", ind, clkDivider[ind]));

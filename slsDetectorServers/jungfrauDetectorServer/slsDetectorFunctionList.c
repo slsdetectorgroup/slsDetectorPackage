@@ -3,10 +3,11 @@
 #include "versionAPI.h"
 #include "logger.h"
 
-#ifndef VIRTUAL
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
+#include "ALTERA_PLL.h" // pll
+#ifndef VIRTUAL
 #include "programfpga.h"
 #else
 #include "blackfin.h"
@@ -392,7 +393,7 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
 
-	resetPLL();
+    ALTERA_PLL_ResetPLL();
 	resetCore();
 	resetPeripheral();
 	cleanFifos();
@@ -412,6 +413,9 @@ void setupDetector() {
     LTC2620_Disable();
     LTC2620_Configure();
 	setDefaultDacs();
+
+    // altera pll
+    ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK, PLL_CNTRL_ADDR_OFST);
 
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 
@@ -1223,41 +1227,6 @@ int getPhase() {
 }
 
 
-void resetPLL() {
-#ifdef VIRTUAL
-    return;
-#endif
-    FILE_LOG(logINFO, ("Resetting PLL\n"));
-	// reset PLL Reconfiguration and PLL
-	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) | PLL_CTRL_RECONFIG_RST_MSK | PLL_CTRL_RST_MSK);
-	usleep(100);
-	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) & ~PLL_CTRL_RECONFIG_RST_MSK & ~PLL_CTRL_RST_MSK);
-}
-
-
-u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val) {
-#ifdef VIRTUAL
-    return val;
-#endif
-    FILE_LOG(logINFO, ("Setting PLL Reconfig Reg\n"));
-	// set parameter
-	bus_w(PLL_PARAM_REG, val);
-
-	// set address
-	bus_w(PLL_CONTROL_REG, (reg << PLL_CTRL_ADDR_OFST) & PLL_CTRL_ADDR_MSK);
-	usleep(10*1000);
-
-	//write parameter
-	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) | PLL_CTRL_WR_PARAMETER_MSK);
-	bus_w(PLL_CONTROL_REG, bus_r(PLL_CONTROL_REG) & ~PLL_CTRL_WR_PARAMETER_MSK);
-	usleep(10*1000);
-
-	return val;
-}
-
-
-
-
 void configurePll() {
 #ifdef VIRTUAL
     return;
@@ -1280,17 +1249,11 @@ void configurePll() {
 	FILE_LOG(logDEBUG1, ("\tphase out %d (0x%08x)\n", phase, phase));
 
 	if (inv) {
-		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C1_VAL + PLL_SHIFT_UP_DOWN_NEG_VAL;
-		FILE_LOG(logDEBUG1, ("\tphase word 0x%08x\n", val));
-		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
+	    ALTERA_PLL_SetPhaseShift(phase, 1, 0);
 	} else {
-		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C0_VAL + PLL_SHIFT_UP_DOWN_NEG_VAL;
-		FILE_LOG(logDEBUG1, ("\tphase word 0x%08x\n", val));
-		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
+        ALTERA_PLL_SetPhaseShift(phase, 0, 0);
 
-		FILE_LOG(logDEBUG1, ("\tphase word 0x%08x\n", val));
-		val = ((phase << PLL_SHIFT_NUM_SHIFTS_OFST) & PLL_SHIFT_NUM_SHIFTS_MSK) + PLL_SHIFT_CNT_SLCT_C2_VAL;
-		setPllReconfigReg(PLL_PHASE_SHIFT_REG, val);
+        ALTERA_PLL_SetPhaseShift(phase, 2, 0);
 	}
 	usleep(10000);
 }

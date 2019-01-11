@@ -146,7 +146,7 @@ void DataProcessor::ResetParametersforNewMeasurement(){
 		delete [] tempBuffer;
 		tempBuffer = 0;
 	}
-	if (*gapPixelsEnable >= 0) {
+	if (*gapPixelsEnable) {
 		tempBuffer = new char[generalData->imageSize];
 		memset(tempBuffer, 0, generalData->imageSize);
 	}

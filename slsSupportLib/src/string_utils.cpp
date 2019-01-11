@@ -2,6 +2,7 @@
 #include "string_utils.h"
 #include "container_utils.h"
 #include <sstream>
+#include <iomanip>
 namespace sls{
 
 
@@ -35,6 +36,18 @@ std::string concatenateIfDifferent(std::vector<std::string> container)
             result += s + '+';
         return result;
     }
+}
+
+std::string stringIpToHex(const std::string& ip)
+{
+    std::istringstream iss(ip);
+    std::ostringstream oss;
+    std::string item;
+    while (std::getline(iss, item, '.'))
+    {
+        oss << std::setw(2) << std::setfill('0') << std::hex << std::stoi(item);
+    }
+    return oss.str();
 }
 
 

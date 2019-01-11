@@ -35,4 +35,9 @@ Concatenate strings using + if the strings are different
 */
 std::string concatenateIfDifferent(std::vector<std::string> container);
 
+/*
+Convert an ip address string to a string in hex format. (removing dots)
+*/
+std::string stringIpToHex(const std::string& ip);
+
 }; // namespace sls

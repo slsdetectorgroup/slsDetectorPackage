@@ -842,8 +842,8 @@ int slsDetector::setDetectorType(detectorType const type) {
 
 
 
-int slsDetector::setDetectorType(std::string const stype) {
-	return setDetectorType(getDetectorType(stype));
+int slsDetector::setDetectorType(const std::string& detector_type) {
+	return setDetectorType(getDetectorType(detector_type));
 }
 
 
@@ -2027,18 +2027,18 @@ int slsDetector::readAll() {
 int slsDetector::configureMAC() {
 	int fnum = F_CONFIGURE_MAC;
 	int ret = FAIL;
-	char args[9][50];
-	memset(args, 0, sizeof(args));
-	char retvals[2][50];
-	memset(retvals, 0, sizeof(retvals));
+	const size_t array_size = 50;
+	const size_t n_args = 9;
+	const size_t n_retvals = 2;
+	char args[n_args][array_size] = {};
+	char retvals[n_retvals][array_size] = {};
 	FILE_LOG(logDEBUG1) << "Configuring MAC";
-
 
 	// if rx_udpip is none
 	if (!(strcmp(thisDetector->receiverUDPIP,"none"))) {
 		//hostname is an ip address
 		if (strchr(thisDetector->receiver_hostname,'.') != nullptr)
-			strcpy(thisDetector->receiverUDPIP, thisDetector->receiver_hostname);
+			sls::strcpy_safe(thisDetector->receiverUDPIP, thisDetector->receiver_hostname);
 		//if hostname not ip, convert it to ip
 		else {
 			struct addrinfo *result;
@@ -2049,7 +2049,7 @@ int slsDetector::configureMAC() {
 				// on failure, back to none
 				if (dataSocket->ConvertInternetAddresstoIpString(result,
 						thisDetector->receiverUDPIP, MAX_STR_LENGTH)) {
-					strcpy(thisDetector->receiverUDPIP, "none");
+					sls::strcpy_safe(thisDetector->receiverUDPIP, "none");
 				}
 			}
 		}
@@ -2064,12 +2064,12 @@ int slsDetector::configureMAC() {
 	FILE_LOG(logDEBUG1) << "rx_hostname and rx_udpip is valid ";
 
 	// copy to args
-	strcpy(args[0],thisDetector->receiverUDPIP);
-	strcpy(args[1],thisDetector->receiverUDPMAC);
-	sprintf(args[2],"%x",thisDetector->receiverUDPPort);
-	strcpy(args[3],thisDetector->detectorMAC);
-	strcpy(args[4],thisDetector->detectorIP);
-	sprintf(args[5],"%x",thisDetector->receiverUDPPort2);
+	sls::strcpy_safe(args[0],thisDetector->receiverUDPIP);
+	sls::strcpy_safe(args[1],thisDetector->receiverUDPMAC);
+	snprintf(args[2],array_size, "%x",thisDetector->receiverUDPPort);
+	sls::strcpy_safe(args[3],thisDetector->detectorMAC);
+	sls::strcpy_safe(args[4],thisDetector->detectorIP);
+	snprintf(args[5], array_size, "%x",thisDetector->receiverUDPPort2);
 	// 2d positions to detector to put into udp header
 	{
 		int pos[3] = {0, 0, 0};
@@ -2081,60 +2081,47 @@ int slsDetector::configureMAC() {
 		// pos[2] (z is reserved)
 		FILE_LOG(logDEBUG1) << "Detector [" << detId << "] - ("
 				<< pos[0] << "," << pos[1] << ")";
-		sprintf(args[6], "%x", pos[0]);
-		sprintf(args[7], "%x", pos[1]);
-		sprintf(args[8], "%x", pos[2]);
+		snprintf(args[6], array_size, "%x", pos[0]);
+		snprintf(args[7], array_size, "%x", pos[1]);
+		snprintf(args[8], array_size, "%x", pos[2]);
 	}
 	{
 		//converting IPaddress to std::hex
-		std::stringstream ss(args[0]);
-		char cword[50]="";
-		bzero(cword, 50);
-		std::string s;
-		while (getline(ss, s, '.')) {
-			sprintf(cword,"%s%02x",cword,atoi(s.c_str()));
-		}
-		bzero(args[0], 50);
-		strcpy(args[0],cword);
+		const std::string cword = sls::stringIpToHex(args[0]);
+		sls::strcpy_safe(args[0],cword.c_str());
 		FILE_LOG(logDEBUG1) << "receiver udp ip:" << args[0] << "-";
 	}
 	{
 		//converting MACaddress to std::hex
 		std::stringstream ss(args[1]);
-		char cword[50]="";
-		bzero(cword, 50);
+		char cword[array_size] = {};
 		std::string s;
 		while (getline(ss, s, ':')) {
 			sprintf(cword,"%s%s",cword,s.c_str());
 		}
-		bzero(args[1], 50);
-		strcpy(args[1],cword);
+		sls::strcpy_safe(args[1],cword);
 		FILE_LOG(logDEBUG1) << "receiver udp mac:" << args[1] << "-";
 	}
 	FILE_LOG(logDEBUG1) << "receiver udp port:" << args[2] << "-";
 	{
 		std::stringstream ss(args[3]);
-		char cword[50]="";
-		bzero(cword, 50);
+		char cword[array_size] = {};
 		std::string s;
 		while (getline(ss, s, ':')) {
 			sprintf(cword,"%s%s",cword,s.c_str());
 		}
-		bzero(args[3], 50);
-		strcpy(args[3],cword);
-		FILE_LOG(logDEBUG1) << "detecotor udp mac:" << args[3] << "-";
+		sls::strcpy_safe(args[3],cword);
+		FILE_LOG(logDEBUG1) << "detector udp mac:" << args[3] << "-";
 	}
 	{
 		//converting IPaddress to std::hex
 		std::stringstream ss(args[4]);
-		char cword[50]="";
-		bzero(cword, 50);
+		char cword[50] = {};
 		std::string s;
 		while (getline(ss, s, '.')) {
 			sprintf(cword,"%s%02x",cword,atoi(s.c_str()));
 		}
-		bzero(args[4], 50);
-		strcpy(args[4],cword);
+		sls::strcpy_safe(args[4],cword);
 		FILE_LOG(logDEBUG1) << "detecotor udp ip:" << args[4] << "-";
 	}
 	FILE_LOG(logDEBUG1) << "receiver udp port2:" << args[5] << "-";
@@ -2171,14 +2158,14 @@ int slsDetector::configureMAC() {
 					(idetectorip)&0xff);
 			// update if different
 			if (strcasecmp(retvals[0],thisDetector->detectorMAC)) {
-				memset(thisDetector->detectorMAC, 0, MAX_STR_LENGTH);
-				strcpy(thisDetector->detectorMAC, retvals[0]);
+				// memset(thisDetector->detectorMAC, 0, MAX_STR_LENGTH);
+				sls::strcpy_safe(thisDetector->detectorMAC, retvals[0]);
 				FILE_LOG(logINFO) << detId << ": Detector MAC updated to " <<
 						thisDetector->detectorMAC;
 			}
 			if (strcasecmp(retvals[1],thisDetector->detectorIP)) {
-				memset(thisDetector->detectorIP, 0, MAX_STR_LENGTH);
-				strcpy(thisDetector->detectorIP, retvals[1]);
+				// memset(thisDetector->detectorIP, 0, MAX_STR_LENGTH);
+				sls::strcpy_safe(thisDetector->detectorIP, retvals[1]);
 				FILE_LOG(logINFO) << detId << ": Detector IP updated to " <<
 						thisDetector->detectorIP;
 			}

@@ -88,3 +88,9 @@ TEST_CASE("concatenate non empty strings with one element"){
   auto ret = sls::concatenateNonEmptyStrings(vec);
   REQUIRE(ret=="hej+");
 }
+
+TEST_CASE("Convert ip address"){
+  std::string address = "101.255.103.1";
+  REQUIRE(sls::stringIpToHex(address) == "65ff6701");
+
+}

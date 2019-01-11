@@ -510,7 +510,7 @@ public:
 	 * @returns OK or FAIL
 	 * \sa sharedSlsDetector
 	 */
-	int setTCPSocket(std::string const name="", int const control_port=-1, int const stop_port=-1);
+	int setTCPSocket(const std::string& hostname="", int control_port=-1, int stop_port=-1);
 
 	/**
 	 * Set/Gets TCP Port of detector or receiver
@@ -563,7 +563,7 @@ public:
 	 * @param cmd command to be executed
 	 * @returns OK or FAIL
 	 */
-	int execCommand(std::string cmd);
+	int execCommand(const std::string& cmd);
 
 	/**
 	 * Updates some of the shared memory receiving the data from the detector
@@ -585,7 +585,7 @@ public:
 	 * @param m multiSlsDetector reference to parse commands
 	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(std::string const fname, multiSlsDetector* m);
+	int writeConfigurationFile(const std::string& fname, multiSlsDetector* m);
 
 	/**
 	 * Write current configuration to a stream
@@ -672,7 +672,7 @@ public:
 	 * @param s trimbits/settings directory
 	 * @returns the trimbit/settings directory
 	 */
-	std::string setSettingsDir(std::string s);
+	std::string setSettingsDir(const std::string& dir);
 
 	/**
 	 * Loads the modules settings/trimbits reading from a specific file
@@ -680,7 +680,7 @@ public:
 	 * @param fname specific settings/trimbits file
 	 * returns OK or FAIL
 	 */
-	int loadSettingsFile(std::string fname);
+	int loadSettingsFile(const std::string& fname);
 
 	/**
 	 * Saves the modules settings/trimbits to a specific file
@@ -688,7 +688,7 @@ public:
 	 * @param fname specific settings/trimbits file
 	 * returns OK or FAIL
 	 */
-	int saveSettingsFile(std::string fname);
+	int saveSettingsFile(const std::string& fname);
 
 	/**
 	 * Get run status of the detector
@@ -864,7 +864,7 @@ public:
 	 * @param value network parameter value
 	 * @returns network parameter value set (from getNetworkParameter)
 	 */
-	std::string setNetworkParameter(networkParameter index, std::string value);
+	std::string setNetworkParameter(networkParameter index, const std::string& value);
 
 	/**
 	 * Get network parameter
@@ -944,14 +944,14 @@ public:
 	 * @param detectorMAC detector MAC address
 	 * @returns the detector MAC address
 	 */
-	std::string setDetectorMAC(std::string detectorMAC);
+	std::string setDetectorMAC(const std::string& detectorMAC);
 
 	/**
 	 * Validates the format of the detector IP address and sets it \sa sharedSlsDetector
 	 * @param detectorIP detector IP address
 	 * @returns the detector IP address
 	 */
-	std::string setDetectorIP(std::string detectorIP);
+	std::string setDetectorIP(const std::string& detectorIP);
 
 	/**
 	 * Validates and sets the receiver.
@@ -960,21 +960,21 @@ public:
 	 * @param receiver receiver hostname or IP address
 	 * @returns the receiver IP address from shared memory
 	 */
-	std::string setReceiver(std::string receiver);
+	std::string setReceiver(const std::string& receiver);
 
 	/**
 	 * Validates the format of the receiver UDP IP address and sets it \sa sharedSlsDetector
 	 * @param udpip receiver UDP IP address
 	 * @returns the receiver UDP IP address
 	 */
-	std::string setReceiverUDPIP(std::string udpip);
+	std::string setReceiverUDPIP(const std::string& udpip);
 
 	/**
 	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
 	 * @param udpmac receiver UDP MAC address
 	 * @returns the receiver UDP MAC address
 	 */
-	std::string setReceiverUDPMAC(std::string udpmac);
+	std::string setReceiverUDPMAC(const std::string& udpmac);
 
 	/**
 	 * Sets the receiver UDP port\sa sharedSlsDetector
@@ -996,7 +996,7 @@ public:
 	 * calculate individual ports)
 	 * @returns the client zmq port
 	 */
-	std::string setClientStreamingPort(std::string port);
+	std::string setClientStreamingPort(const std::string& port);
 
 	/**
 	 * Sets the receiver zmq port\sa sharedSlsDetector

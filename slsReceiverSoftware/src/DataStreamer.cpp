@@ -16,7 +16,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 
 DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
-		uint64_t* fi, int* fd, char* ajh, bool* sm) :
+		uint64_t* fi, int* fd, char* ajh) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -28,7 +28,6 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 		fileIndex(fi),
 		flippedData(fd),
 		additionJsonHeader(ajh),
-        silentMode(sm),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),

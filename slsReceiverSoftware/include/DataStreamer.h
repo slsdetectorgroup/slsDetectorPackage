@@ -29,10 +29,9 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param fi pointer to file index
 	 * @param fd flipped data enable for x and y dimensions
 	 * @param ajh additional json header
-	 * @param sm pointer to silent mode
 	 */
 	DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
-			uint64_t* fi, int* fd, char* ajh, bool* sm);
+			uint64_t* fi, int* fd, char* ajh);
 
 	/**
 	 * Destructor
@@ -188,9 +187,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
 	/** additional json header */
 	char* additionJsonHeader;
-
-    /** Silent Mode */
-    bool* silentMode;
 
 
 	/** Aquisition Started flag */

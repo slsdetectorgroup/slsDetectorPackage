@@ -655,7 +655,7 @@ int slsReceiverImplementation::setDataStreamEnable(const bool enable) {
 		    for ( int i = 0; i < numThreads; ++i ) {
 		        try {
 					dataStreamer.push_back(sls::make_unique<DataStreamer>(i, fifo[i].get(), &dynamicRange,
-		                  &roi, &fileIndex, flippedData, additionalJsonHeader, &silentMode));
+		                  &roi, &fileIndex, flippedData, additionalJsonHeader));
 		            dataStreamer[i]->SetGeneralData(generalData);
 		            dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP);
 		        }

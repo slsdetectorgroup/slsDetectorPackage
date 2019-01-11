@@ -40,12 +40,6 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define DYNAMIC_RANGE               (16)
 #define NUM_BYTES_PER_PIXEL         (DYNAMIC_RANGE / 8)
 #define CLK_FREQ					(156.25)	/* MHz */
-#define I2C_POWER_VIO_DEVICE_ID     (0x40)
-#define I2C_POWER_VA_DEVICE_ID      (0x41)
-#define I2C_POWER_VB_DEVICE_ID      (0x42)
-#define I2C_POWER_VC_DEVICE_ID      (0x43)
-#define I2C_POWER_VD_DEVICE_ID      (0x44)
-#define I2C_SHUNT_RESISTER_OHMS     (0.005)
 
 /** Default Parameters */
 #define DEFAULT_DATA_BYTES          (NCHIP * NCHAN * NUM_BITS_PER_PIXEL)

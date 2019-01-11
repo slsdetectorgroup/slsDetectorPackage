@@ -239,16 +239,16 @@
 #define PLL_PARAM_REG					(0x50 << MEM_MAP_SHIFT)
 
 /* Reconfiguratble PLL Control Regiser */
-#define PLL_CONTROL_REG					(0x51 << MEM_MAP_SHIFT)
+#define PLL_CNTRL_REG					(0x51 << MEM_MAP_SHIFT)
 
-#define PLL_CTRL_RECONFIG_RST_OFST		(0)											//parameter reset
-#define PLL_CTRL_RECONFIG_RST_MSK		(0x00000001 << PLL_CTRL_RECONFIG_RST_OFST)	//parameter reset
-#define PLL_CTRL_WR_PARAMETER_OFST		(2)
-#define PLL_CTRL_WR_PARAMETER_MSK		(0x00000001 << PLL_CTRL_WR_PARAMETER_OFST)
-#define PLL_CTRL_RST_OFST				(3)
-#define PLL_CTRL_RST_MSK				(0x00000001 << PLL_CTRL_RST_OFST)
-#define PLL_CTRL_ADDR_OFST				(16)
-#define PLL_CTRL_ADDR_MSK				(0x0000003F << PLL_CTRL_ADDR_OFST)
+#define PLL_CNTRL_RCNFG_PRMTR_RST_OFST	(0)											//parameter reset
+#define PLL_CNTRL_RCNFG_PRMTR_RST_MSK	(0x00000001 << PLL_CNTRL_RCNFG_PRMTR_RST_OFST)	//parameter reset
+#define PLL_CNTRL_WR_PRMTR_OFST		    (2)
+#define PLL_CNTRL_WR_PRMTR_MSK		    (0x00000001 << PLL_CNTRL_WR_PRMTR_OFST)
+#define PLL_CNTRL_PLL_RST_OFST			(3)
+#define PLL_CNTRL_PLL_RST_MSK			(0x00000001 << PLL_CNTRL_PLL_RST_OFST)
+#define PLL_CNTRL_ADDR_OFST				(16)
+#define PLL_CNTRL_ADDR_MSK				(0x0000003F << PLL_CNTRL_ADDR_OFST)
 
 /* Sample Register (Obsolete) */
 #define SAMPLE_REG 						(0x59 << MEM_MAP_SHIFT)

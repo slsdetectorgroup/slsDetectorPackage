@@ -514,14 +514,14 @@ class multiSlsDetector : public virtual slsDetectorDefs,
                            int tb = 1, int detPos = -1);
 
     /**
-     * Returns the detector trimbit/settings directory  \sa sharedSlsDetector
+     * Returns the detector trimbit/settings directory
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the trimbit/settings directory
      */
     std::string getSettingsDir(int detPos = -1);
 
     /**
-     * Sets the detector trimbit/settings directory  \sa sharedSlsDetector
+     * Sets the detector trimbit/settings directory
      * @param s trimbits/settings directory
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the trimbit/settings directory
@@ -752,7 +752,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param i dynamic range (-1 get)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current dynamic range
-     * \sa sharedSlsDetector
      */
     int setDynamicRange(int i = -1, int detPos = -1);
 
@@ -928,6 +927,161 @@ class multiSlsDetector : public virtual slsDetectorDefs,
                                            int detPos = -1);
 
     /**
+     * Validates the format of the detector MAC address and sets it
+     * @param detectorMAC detector MAC address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the detector MAC address
+     */
+    std::string setDetectorMAC(const std::string& detectorMAC, int detPos = -1);
+
+    /**
+     * Returns the detector MAC address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the detector MAC address
+     */
+    std::string getDetectorMAC(int detPos = -1);
+
+    /**
+     * Validates the format of the detector IP address and sets it
+     * @param detectorIP detector IP address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the detector IP address
+     */
+    std::string setDetectorIP(const std::string& detectorIP, int detPos = -1);
+
+    /**
+     * Returns the detector IP address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the detector IP address
+     */
+    std::string getDetectorIP(int detPos = -1);
+
+    /**
+     * Validates and sets the receiver.
+     * Also updates the receiver with all the shared memory parameters significant for the receiver
+     * Also configures the detector to the receiver as UDP destination
+     * @param receiver receiver hostname or IP address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver IP address from shared memory
+     */
+    std::string setReceiverHostname(const std::string& receiver, int detPos = -1);
+
+    /**
+     * Returns the receiver IP address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver IP address
+     */
+    std::string getReceiverHostname(int detPos = -1);
+
+    /**
+     * Validates the format of the receiver UDP IP address and sets it
+     * @param udpip receiver UDP IP address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP IP address
+     */
+    std::string setReceiverUDPIP(const std::string& udpip, int detPos = -1);
+
+    /**
+     * Returns the receiver UDP IP address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP IP address
+     */
+    std::string getReceiverUDPIP(int detPos = -1);
+
+    /**
+     * Validates the format of the receiver UDP MAC address and sets it
+     * @param udpmac receiver UDP MAC address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP MAC address
+     */
+    std::string setReceiverUDPMAC(const std::string& udpmac, int detPos = -1);
+
+    /**
+     * Returns the receiver UDP MAC address
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP MAC address
+     */
+    std::string getReceiverUDPMAC(int detPos = -1);
+
+    /**
+     * Sets the receiver UDP port
+     * @param udpport receiver UDP port
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP port
+     */
+    int setReceiverUDPPort(int udpport, int detPos = -1);
+
+
+    /**
+     * Returns the receiver UDP port
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP port
+     */
+    std::string getReceiverUDPPort(int detPos = -1);
+
+    /**
+     * Sets the receiver UDP port 2
+     * @param udpport receiver UDP port 2
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP port 2
+     */
+    int setReceiverUDPPort2(int udpport, int detPos = -1);
+
+    /**
+     * Returns the receiver UDP port 2 of same interface
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP port 2 of same interface
+     */
+    std::string getReceiverUDPPort2(int detPos = -1);
+
+    /**
+     * Sets the transmission delay for left, right or entire frame
+     * (Eiger, Jungfrau(only entire frame))
+     * @param index type of delay
+     * @param delay delay
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns transmission delay
+     */
+    std::string setDetectorNetworkParameter(networkParameter index, int delay, int detPos = -1);
+
+    /**
+     * Sets the additional json header
+     * @param jsonheader additional json header
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns additional json header, returns "none" if default setting and no custom ip set
+     */
+    std::string setAdditionalJsonHeader(const std::string& jsonheader, int detPos = -1);
+
+    /**
+     * Returns the additional json header
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the additional json header, returns "none" if default setting and no custom ip set
+     */
+    std::string getAdditionalJsonHeader(int detPos = -1);
+
+    /**
+     * Sets the receiver UDP socket buffer size
+     * @param udpsockbufsize additional json header
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns receiver udp socket buffer size
+     */
+    std::string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1, int detPos = -1);
+
+    /**
+     * Returns the receiver UDP socket buffer size
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP socket buffer size
+     */
+    std::string getReceiverUDPSocketBufferSize(int detPos = -1) ;
+
+    /**
+     * Returns the receiver real UDP socket buffer size
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver real UDP socket buffer size
+     */
+    std::string getReceiverRealUDPSocketBufferSize(int detPos = -1);
+
+    /** (users only)
      * Set 10GbE Flow Control (Eiger)
      * @param enable 1 to set, 0 to unset, -1 gets
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -1071,7 +1225,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
 
     /**
      * Sets the number of trim energies and their value  (Eiger)
-     * \sa sharedSlsDetector
+     *
      * @param nen number of energies
      * @param en array of energies
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -1081,7 +1235,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
 
     /**
      * Returns the number of trim energies and their value  (Eiger)
-     * \sa sharedSlsDetector
+     *
      * @param en array of energies
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of trim energies

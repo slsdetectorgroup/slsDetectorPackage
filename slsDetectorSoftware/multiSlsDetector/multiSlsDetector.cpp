@@ -1634,6 +1634,204 @@ std::string multiSlsDetector::setClientDataStreamingInIP(const std::string& ip,
     return getNetworkParameter(CLIENT_STREAMING_SRC_IP, detPos);
 }
 
+std::string multiSlsDetector::setDetectorMAC(const std::string& detectorMAC, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setDetectorMAC(detectorMAC);
+
+    // multi
+    auto r = parallelCall(&slsDetector::setDetectorMAC, detectorMAC);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getDetectorMAC(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getDetectorMAC();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getDetectorMAC);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setDetectorIP(const std::string& detectorIP, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setDetectorIP(detectorIP);
+
+    // multi
+    auto r = parallelCall(&slsDetector::setDetectorIP, detectorIP);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getDetectorIP(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getDetectorIP();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getDetectorIP);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setReceiverHostname(const std::string& receiver, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setReceiverHostname(receiver);
+
+    // multi
+    auto r = parallelCall(&slsDetector::setReceiverHostname, receiver);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getReceiverHostname(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverHostname();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverHostname);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setReceiverUDPIP(const std::string& udpip, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setReceiverUDPIP(udpip);
+
+    // multi
+    auto r = parallelCall(&slsDetector::setReceiverUDPIP, udpip);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getReceiverUDPIP(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverUDPIP();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverUDPIP);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setReceiverUDPMAC(const std::string& udpmac, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setReceiverUDPMAC(udpmac);
+
+    // multi
+    auto r = parallelCall(&slsDetector::setReceiverUDPMAC, udpmac);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getReceiverUDPMAC(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverUDPMAC();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverUDPMAC);
+    return sls::concatenateIfDifferent(r);
+}
+
+int multiSlsDetector::setReceiverUDPPort(int udpport, int detPos) {
+
+}
+
+std::string multiSlsDetector::getReceiverUDPPort(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverUDPPort();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverUDPPort);
+    return sls::concatenateIfDifferent(r);
+}
+
+int multiSlsDetector::setReceiverUDPPort2(int udpport, int detPos) {
+
+}
+
+std::string multiSlsDetector::getReceiverUDPPort2(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverUDPPort2();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverUDPPort2);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setDetectorNetworkParameter(networkParameter index, int delay, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setDetectorNetworkParameter(index, delay);
+
+    // multi
+    auto r = parallelCall(&slsDetector::setDetectorNetworkParameter, index, delay);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setAdditionalJsonHeader(const std::string& jsonheader, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setAdditionalJsonHeader(jsonheader);
+
+    // multi
+    auto r = parallelCall(&slsDetector::setAdditionalJsonHeader, jsonheader);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getAdditionalJsonHeader(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getAdditionalJsonHeader();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getAdditionalJsonHeader);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize=-1, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setReceiverUDPSocketBufferSize(udpsockbufsize);
+
+    // multi
+    auto r = parallelCall(&slsDetector::setReceiverUDPSocketBufferSize, udpsockbufsize);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverUDPSocketBufferSize();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverUDPSocketBufferSize);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverRealUDPSocketBufferSize();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverRealUDPSocketBufferSize);
+    return sls::concatenateIfDifferent(r);
+}
+
 int multiSlsDetector::setFlowControl10G(int enable, int detPos) {
     std::string s;
     if (enable != -1) {

@@ -3,6 +3,7 @@
 #include "container_utils.h"
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 namespace sls{
 
 
@@ -26,7 +27,7 @@ std::string concatenateNonEmptyStrings(const std::vector<std::string>& vec){
     return ret;
 }
 
-std::string concatenateIfDifferent(std::vector<std::string> container)
+std::string concatenateIfDifferent(const std::vector<std::string>& container)
 {
     if (allEqual(container)) {
         return container.front();
@@ -49,6 +50,7 @@ std::string stringIpToHex(const std::string& ip)
     }
     return oss.str();
 }
+
 
 
 }; // namespace sls

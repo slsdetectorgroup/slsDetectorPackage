@@ -94,3 +94,21 @@ TEST_CASE("Convert ip address"){
   REQUIRE(sls::stringIpToHex(address) == "65ff6701");
 
 }
+
+TEST_CASE("Remove char from string"){
+  char str[] = "sometest"; 
+  sls::removeChar(str, 'e');
+  REQUIRE(std::string(str) == "somtst");
+}
+
+TEST_CASE("Remove char from empty string"){
+  char str[50] = {}; 
+  sls::removeChar(str, 'e');
+  REQUIRE(std::string(str) == "");
+}
+
+TEST_CASE("Many characters in a row"){
+  char str[] = "someeequitellll::ongstring"; 
+  sls::removeChar(str, 'l');
+  REQUIRE(std::string(str) == "someeequite::ongstring");
+}

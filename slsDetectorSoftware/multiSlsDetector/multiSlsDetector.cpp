@@ -1543,45 +1543,6 @@ uint32_t multiSlsDetector::clearBit(uint32_t addr, int n, int detPos) {
     return -1;
 }
 
-std::string multiSlsDetector::setNetworkParameter(networkParameter parameter,
-                                                  const std::string& value,
-                                                  int detPos) {
-    // single
-    if (detPos >= 0)
-        return detectors[detPos]->setNetworkParameter(parameter, value);
-
-    // multi
-    if (parameter != RECEIVER_STREAMING_PORT &&
-        parameter != CLIENT_STREAMING_PORT) {
-        auto r =
-            parallelCall(&slsDetector::setNetworkParameter, parameter, value);
-        return sls::concatenateIfDifferent(r);
-    }
-
-    // calculate ports individually
-    int firstPort = stoi(value);
-    int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
-
-    std::vector<std::string> r;
-    for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        auto port = std::to_string(firstPort + (idet * numSockets));
-        r.push_back(detectors[idet]->setNetworkParameter(parameter, port));
-    }
-    return sls::concatenateIfDifferent(r);
-}
-
-std::string multiSlsDetector::getNetworkParameter(networkParameter p,
-                                                  int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getNetworkParameter(p);
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getNetworkParameter, p);
-    return sls::concatenateIfDifferent(r);
-}
-
 std::string multiSlsDetector::setDetectorMAC(const std::string& detectorMAC, int detPos) {
     // single
     if (detPos >= 0)
@@ -1624,24 +1585,24 @@ std::string multiSlsDetector::getDetectorIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setReceiverHostname(const std::string& receiver, int detPos) {
+std::string multiSlsDetector::setReceiver(const std::string& receiver, int detPos) {
     // single
     if (detPos >= 0)
-        return detectors[detPos]->setReceiverHostname(receiver);
+        return detectors[detPos]->setReceiver(receiver);
 
     // multi
-    auto r = parallelCall(&slsDetector::setReceiverHostname, receiver);
+    auto r = parallelCall(&slsDetector::setReceiver, receiver);
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverHostname(int detPos) {
+std::string multiSlsDetector::getReceiver(int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getReceiverHostname();
+        return detectors[detPos]->getReceiver();
     }
 
     // multi
-    auto r = serialCall(&slsDetector::getReceiverHostname);
+    auto r = serialCall(&slsDetector::getReceiver);
     return sls::concatenateIfDifferent(r);
 }
 
@@ -1740,11 +1701,11 @@ void multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
         // multi
         else {
             // calculate ports individually
-            int firstPort = stoi(value);
+            int firstPort = i;
             int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
 
             for (size_t idet = 0; idet < detectors.size(); ++idet) {
-                auto port = std::to_string(firstPort + (idet * numSockets));
+                auto port = firstPort + (idet * numSockets);
                 detectors[idet]->setClientStreamingPort(port);
             }
         }
@@ -1773,17 +1734,17 @@ void multiSlsDetector::setReceiverDataStreamingOutPort(int i, int detPos) {
 
         // single
         if (detPos >= 0) {
-        	detectors[detPos]->setReceiverDataStreamingOutPort(i);
+        	detectors[detPos]->setReceiverStreamingPort(i);
         }
         // multi
         else {
             // calculate ports individually
-            int firstPort = stoi(value);
+            int firstPort = i;
             int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
 
             for (size_t idet = 0; idet < detectors.size(); ++idet) {
-                auto port = std::to_string(firstPort + (idet * numSockets));
-                detectors[idet]->setReceiverDataStreamingOutPort(port);
+                auto port = firstPort + (idet * numSockets);
+                detectors[idet]->setReceiverStreamingPort(port);
             }
         }
 
@@ -1805,7 +1766,7 @@ int multiSlsDetector::getReceiverStreamingPort(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-void multiSlsDetector::setClientDataStreamingInIP(const std::string& ip,
+void multiSlsDetector::setClientDataStreamingInIP(std::string ip,
                                                          int detPos) {
     if (ip.length()) {
         int prev_streaming = enableDataStreamingToClient(-1);
@@ -1839,7 +1800,7 @@ std::string multiSlsDetector::getClientStreamingIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setReceiverDataStreamingOutIP(const std::string& ip,
+void multiSlsDetector::setReceiverDataStreamingOutIP(std::string ip,
                                                             int detPos) {
     if (ip.length()) {
         int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
@@ -1860,7 +1821,6 @@ std::string multiSlsDetector::setReceiverDataStreamingOutIP(const std::string& i
             enableDataStreamingFromReceiver(1, detPos);
         }
     }
-    return getNetworkParameter(RECEIVER_STREAMING_SRC_IP, detPos);
 }
 
 std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
@@ -1874,14 +1834,14 @@ std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setDetectorNetworkParameter(networkParameter index, int delay, int detPos) {
+int multiSlsDetector::setDetectorNetworkParameter(networkParameter index, int delay, int detPos) {
     // single
     if (detPos >= 0)
         return detectors[detPos]->setDetectorNetworkParameter(index, delay);
 
     // multi
     auto r = parallelCall(&slsDetector::setDetectorNetworkParameter, index, delay);
-    return sls::concatenateIfDifferent(r);
+    return sls::minusOneIfDifferent(r);
 }
 
 std::string multiSlsDetector::setAdditionalJsonHeader(const std::string& jsonheader, int detPos) {
@@ -1905,7 +1865,7 @@ std::string multiSlsDetector::getAdditionalJsonHeader(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize=-1, int detPos) {
+int multiSlsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize, int detPos) {
     // single
     if (detPos >= 0)
         return detectors[detPos]->setReceiverUDPSocketBufferSize(udpsockbufsize);
@@ -1938,13 +1898,10 @@ int multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
 }
 
 int multiSlsDetector::setFlowControl10G(int enable, int detPos) {
-    std::string s;
     if (enable != -1) {
-        s = std::to_string((enable >= 1) ? 1 : 0);
-        s = setNetworkParameter(FLOW_CONTROL_10G, s);
-    } else
-        s = getNetworkParameter(FLOW_CONTROL_10G);
-    return stoi(s);
+        enable = ((enable >= 1) ? 1 : 0);
+    }
+    return setDetectorNetworkParameter(FLOW_CONTROL_10G, enable, detPos);
 }
 
 int multiSlsDetector::digitalTest(digitalTestMode mode, int ival, int detPos) {
@@ -2933,7 +2890,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
     numSockets *= numSocketsPerDetector;
 
     for (size_t iSocket = 0; iSocket < numSockets; ++iSocket) {
-        uint32_t portnum = stoi(detectors[iSocket / numSocketsPerDetector]
+        uint32_t portnum = (detectors[iSocket / numSocketsPerDetector]
                                     ->getClientStreamingPort());
         portnum += (iSocket % numSocketsPerDetector);
         try {

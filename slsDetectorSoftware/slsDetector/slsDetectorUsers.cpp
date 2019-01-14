@@ -330,19 +330,31 @@ int slsDetectorUsers::enableDataStreamingFromReceiver(int i, int detPos){
 }
 
 int slsDetectorUsers::setReceiverDataStreamingOutPort(int i, int detPos){
-	return myDetector->setReceiverDataStreamingOutPort(i, detPos);
+	  if (i >= 0) {
+		  myDetector->setReceiverDataStreamingOutPort(i, detPos);
+	  }
+	return myDetector->getReceiverStreamingPort(detPos);
 }
 
 int slsDetectorUsers::setClientDataStreamingInPort(int i, int detPos){
-	return myDetector->setClientDataStreamingInPort(i, detPos);
+	  if (i >= 0) {
+		  myDetector->setClientDataStreamingInPort(i, detPos);
+	  }
+	return myDetector->getClientStreamingPort(detPos);
 }
 
 string slsDetectorUsers::setReceiverDataStreamingOutIP(string ip, int detPos){
-	return myDetector->setReceiverDataStreamingOutIP(ip, detPos);
+	  if (ip.length()) {
+		  myDetector->setReceiverDataStreamingOutIP(ip, detPos);
+	  }
+	return myDetector->getReceiverStreamingIP(detPos);
 }
 
 string slsDetectorUsers::setClientDataStreamingInIP(string ip, int detPos){
-	return myDetector->setClientDataStreamingInIP(ip, detPos);
+	  if (ip.length()) {
+		  myDetector->setClientDataStreamingInIP(ip, detPos);
+	  }
+	return myDetector->getClientStreamingIP(detPos);
 }
 
 int slsDetectorUsers::enableGapPixels(int enable, int detPos) {

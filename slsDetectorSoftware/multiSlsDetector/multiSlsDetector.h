@@ -848,21 +848,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     uint32_t clearBit(uint32_t addr, int n, int detPos = -1);
 
     /**
-     * Set up Receiver and update it from shm
-     * @param s hostname
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns hostname
-     */
-    std::string setReceiverHostname(std::string s, int detPos = -1);
-
-    /**
-     * Get receiver hostname
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns hostname
-     */
-    std::string getReceiverHostname(int detPos = -1);
-
-    /**
      * Validates the format of the detector MAC address and sets it
      * @param detectorMAC detector MAC address
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -1013,7 +998,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * By default, it is the IP of receiver hostname
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-   void setClientDataStreamingInIP(const std::string& ip = "",
+   void setClientDataStreamingInIP(std::string ip = "",
                                            int detPos = -1);
 
     /**
@@ -1031,7 +1016,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * By default, it is the IP of receiver hostname
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReceiverDataStreamingOutIP(const std::string& ip = "",
+    void setReceiverDataStreamingOutIP(std::string ip = "",
                                               int detPos = -1);
 
     /**
@@ -1050,7 +1035,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns transmission delay
      */
-    std::string setDetectorNetworkParameter(networkParameter index, int delay, int detPos = -1);
+    int setDetectorNetworkParameter(networkParameter index, int delay, int detPos = -1);
 
     /**
      * Sets the additional json header

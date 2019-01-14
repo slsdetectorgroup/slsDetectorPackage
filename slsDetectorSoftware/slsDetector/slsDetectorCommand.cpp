@@ -2702,9 +2702,8 @@ std::string slsDetectorCommand::helpCounter(int action) {
 
 std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int action, int detPos) {
 
-    networkParameter t;
+	char ans[100] = {0};
     int i;
-    int prev_streaming = 0;
     if (action == HELP_ACTION)
         return helpNetworkParameter(action);
 
@@ -2712,99 +2711,139 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
     myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
     if (cmd == "detectormac") {
-        t = DETECTOR_MAC;
+    	  if (action == PUT_ACTION) {
+    		  myDet->setDetectorMAC(args[1], detPos);
+    	  }
+    	  return myDet->getDetectorMAC(detPos);
     } else if (cmd == "detectorip") {
-        t = DETECTOR_IP;
+  	  if (action == PUT_ACTION) {
+  		myDet->setDetectorIP(args[1], detPos);
+  	  }
+  	  return myDet->getDetectorIP(detPos);
     } else if (cmd == "rx_hostname") {
-        t = RECEIVER_HOSTNAME;
+    	  if (action == PUT_ACTION) {
+    		  myDet->setReceiver(args[1], detPos);
+    	  }
+    	  return myDet->getReceiver(detPos);
     } else if (cmd == "rx_udpip") {
-        t = RECEIVER_UDP_IP;
+    	  if (action == PUT_ACTION) {
+    		  myDet->setReceiverUDPIP(args[1], detPos);
+    	  }
+    	  return myDet->getReceiverUDPIP(detPos);
     } else if (cmd == "rx_udpmac") {
-        t = RECEIVER_UDP_MAC;
+    	  if (action == PUT_ACTION) {
+    		  myDet->setReceiverUDPMAC(args[1], detPos);
+    	  }
+    	  return myDet->getReceiverUDPMAC(detPos);
     } else if (cmd == "rx_udpport") {
-        t = RECEIVER_UDP_PORT;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setReceiverUDPPort(i, detPos);
         }
+        sprintf(ans, "%d", myDet->getReceiverUDPPort(detPos));
+        return ans;
     } else if (cmd == "rx_udpport2") {
-        t = RECEIVER_UDP_PORT2;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setReceiverUDPPort(i, detPos);
         }
+        sprintf(ans, "%d", myDet->getReceiverUDPPort(detPos));
+        return ans;
     } else if (cmd == "rx_udpsocksize") {
-        t = RECEIVER_UDP_SCKT_BUF_SIZE;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setReceiverUDPSocketBufferSize(i, detPos);
         }
+        sprintf(ans, "%d", myDet->getReceiverUDPSocketBufferSize(detPos));
+        return ans;
     } else if (cmd == "rx_realudpsocksize") {
-        t = RECEIVER_REAL_UDP_SCKT_BUF_SIZE;
         if (action == PUT_ACTION) {
             return ("cannot put!");
         }
+        sprintf(ans, "%d", myDet->getReceiverRealUDPSocketBufferSize(detPos));
+        return ans;
     } else if (cmd == "txndelay_left") {
-        t = DETECTOR_TXN_DELAY_LEFT;
+    	networkParameter t = DETECTOR_TXN_DELAY_LEFT;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setDetectorNetworkParameter(t, i, detPos);
         }
+        sprintf(ans, "%d", myDet->setDetectorNetworkParameter(t, -1, detPos));
+        return ans;
     } else if (cmd == "txndelay_right") {
-        t = DETECTOR_TXN_DELAY_RIGHT;
+    	networkParameter t = DETECTOR_TXN_DELAY_RIGHT;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setDetectorNetworkParameter(t, i, detPos);
         }
+        sprintf(ans, "%d", myDet->setDetectorNetworkParameter(t, -1, detPos));
+        return ans;
     } else if (cmd == "txndelay_frame") {
-        t = DETECTOR_TXN_DELAY_FRAME;
+    	networkParameter t = DETECTOR_TXN_DELAY_FRAME;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setDetectorNetworkParameter(t, i, detPos);
         }
+        sprintf(ans, "%d", myDet->setDetectorNetworkParameter(t, -1, detPos));
+        return ans;
     } else if (cmd == "flowcontrol_10g") {
-        t = FLOW_CONTROL_10G;
+    	networkParameter t = FLOW_CONTROL_10G;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setDetectorNetworkParameter(t, i, detPos);
         }
+        sprintf(ans, "%d", myDet->setDetectorNetworkParameter(t, -1, detPos));
+        return ans;
     } else if (cmd == "zmqport") {
-        t = CLIENT_STREAMING_PORT;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setClientDataStreamingInPort(i, detPos);
         }
+        sprintf(ans, "%d", myDet->getClientStreamingPort(detPos));
+        return ans;
     } else if (cmd == "rx_zmqport") {
-        t = RECEIVER_STREAMING_PORT;
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i)))
+            if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
-            // if streaming, switch it off
-            prev_streaming = myDet->enableDataStreamingFromReceiver(-1, detPos);
-            if (prev_streaming)
-                myDet->enableDataStreamingFromReceiver(0, detPos);
+            }
+            myDet->setReceiverDataStreamingOutPort(i, detPos);
         }
+        sprintf(ans, "%d", myDet->getReceiverStreamingPort(detPos));
+        return ans;
     } else if (cmd == "zmqip") {
-        t = CLIENT_STREAMING_SRC_IP;
+    	  if (action == PUT_ACTION) {
+    		  myDet->setClientDataStreamingInIP(args[1], detPos);
+    	  }
+    	  return myDet->getClientStreamingIP(detPos);
     } else if (cmd == "rx_zmqip") {
-        t = RECEIVER_STREAMING_SRC_IP;
-        // if streaming, switch it off
-        prev_streaming = myDet->enableDataStreamingFromReceiver(-1, detPos);
-        if (prev_streaming)
-            myDet->enableDataStreamingFromReceiver(0, detPos);
+  	  if (action == PUT_ACTION) {
+  		myDet->setReceiverDataStreamingOutIP(args[1], detPos);
+  	  }
+  	  return myDet->getReceiverStreamingIP(detPos);
     } else if (cmd == "rx_jsonaddheader") {
-        t = ADDITIONAL_JSON_HEADER;
-    } else
-        return ("unknown network parameter") + cmd;
-
-    if (action == PUT_ACTION) {
-        myDet->setNetworkParameter(t, args[1], detPos);
-        // switch it back on, if it had been switched on
-        if (prev_streaming && (t == RECEIVER_STREAMING_PORT || t == RECEIVER_STREAMING_SRC_IP))
-            myDet->enableDataStreamingFromReceiver(1, detPos);
+    	  if (action == PUT_ACTION) {
+    		  myDet->setAdditionalJsonHeader(args[1], detPos);
+    	  }
+    	  return myDet->getAdditionalJsonHeader(detPos);
     }
 
-    return myDet->getNetworkParameter(t, detPos);
+    return ("unknown network parameter") + cmd;
 }
 
 std::string slsDetectorCommand::helpNetworkParameter(int action) {

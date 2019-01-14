@@ -2662,95 +2662,6 @@ uint32_t slsDetector::clearBit(uint32_t addr, int n) {
 }
 
 
-std::string slsDetector::setNetworkParameter(networkParameter index, const std::string& value) {
-	switch (index) {
-	case DETECTOR_MAC:
-		return setDetectorMAC(value);
-	case DETECTOR_IP:
-		return setDetectorIP(value);
-	case RECEIVER_HOSTNAME:
-		return setReceiver(value);
-	case RECEIVER_UDP_IP:
-		return setReceiverUDPIP(value);
-	case RECEIVER_UDP_MAC:
-		return setReceiverUDPMAC(value);
-	case RECEIVER_UDP_PORT:
-		setReceiverUDPPort(stoi(value));
-		return getReceiverUDPPort();
-	case RECEIVER_UDP_PORT2:
-		if (thisDetector->myDetectorType == EIGER) {
-			setReceiverUDPPort2(stoi(value));
-			return getReceiverUDPPort2();
-		} else {
-			setReceiverUDPPort(stoi(value));
-			return getReceiverUDPPort();
-		}
-	case DETECTOR_TXN_DELAY_LEFT:
-	case DETECTOR_TXN_DELAY_RIGHT:
-	case DETECTOR_TXN_DELAY_FRAME:
-	case FLOW_CONTROL_10G:
-		return setDetectorNetworkParameter(index, stoi(value));
-	case CLIENT_STREAMING_PORT:
-		return setClientStreamingPort(value);
-	case RECEIVER_STREAMING_PORT:
-		return setReceiverStreamingPort(value);
-	case CLIENT_STREAMING_SRC_IP:
-		return setClientStreamingIP(value);
-	case RECEIVER_STREAMING_SRC_IP:
-		return setReceiverStreamingIP(value);
-	case ADDITIONAL_JSON_HEADER:
-		return setAdditionalJsonHeader(value);
-	case RECEIVER_UDP_SCKT_BUF_SIZE:
-		setReceiverUDPSocketBufferSize(stoi(value));
-		return getReceiverUDPSocketBufferSize();
-	default:
-		return (char*)("unknown network parameter");
-	}
-}
-
-
-std::string slsDetector::getNetworkParameter(networkParameter index) {
-	switch (index) {
-	case DETECTOR_MAC:
-		return getDetectorMAC();
-	case DETECTOR_IP:
-		return getDetectorIP();
-	case RECEIVER_HOSTNAME:
-		return getReceiver();
-	case RECEIVER_UDP_IP:
-		return getReceiverUDPIP();
-	case RECEIVER_UDP_MAC:
-		return getReceiverUDPMAC();
-	case RECEIVER_UDP_PORT:
-		return getReceiverUDPPort();
-	case RECEIVER_UDP_PORT2:
-		return getReceiverUDPPort2();
-	case DETECTOR_TXN_DELAY_LEFT:
-	case DETECTOR_TXN_DELAY_RIGHT:
-	case DETECTOR_TXN_DELAY_FRAME:
-	case FLOW_CONTROL_10G:
-		return setDetectorNetworkParameter(index, -1);
-	case CLIENT_STREAMING_PORT:
-		return getClientStreamingPort();
-	case RECEIVER_STREAMING_PORT:
-		return getReceiverStreamingPort();
-	case CLIENT_STREAMING_SRC_IP:
-		return getClientStreamingIP();
-	case RECEIVER_STREAMING_SRC_IP:
-		return getReceiverStreamingIP();
-	case ADDITIONAL_JSON_HEADER:
-		return getAdditionalJsonHeader();
-	case RECEIVER_UDP_SCKT_BUF_SIZE:
-		return getReceiverUDPSocketBufferSize();
-	case RECEIVER_REAL_UDP_SCKT_BUF_SIZE:
-		return getReceiverRealUDPSocketBufferSize();
-
-	default:
-		return std::string("unknown network parameter");
-	}
-
-}
-
 std::string slsDetector::setDetectorMAC(const std::string& detectorMAC) {
 
 	// invalid format
@@ -2975,6 +2886,9 @@ int slsDetector::getReceiverUDPPort() {
 }
 
 int slsDetector::setReceiverUDPPort2(int udpport) {
+	if (thisDetector->myDetectorType != EIGER) {
+		return setReceiverUDPPort(udpport);
+	}
 	thisDetector->receiverUDPPort2 = udpport;
 	if (!strcmp(thisDetector->receiver_hostname, "none")) {
 		FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
@@ -2989,18 +2903,17 @@ int slsDetector::getReceiverUDPPort2() {
 	return thisDetector->receiverUDPPort2;
 }
 
-int slsDetector::setClientStreamingPort(int port) {
-	thisDetector->zmqport = stoi(port);
-	return getClientStreamingPort();
+void slsDetector::setClientStreamingPort(int port) {
+	thisDetector->zmqport = port;
 }
 
 int slsDetector::getClientStreamingPort() {
 	return thisDetector->zmqport;
 }
 
-int slsDetector::setReceiverStreamingPort(int port) {
+void slsDetector::setReceiverStreamingPort(int port) {
 	// copy now else it is lost if rx_hostname not set yet
-	thisDetector->receiver_zmqport = stoi(port);
+	thisDetector->receiver_zmqport = port;
 
 	int fnum = F_SET_RECEIVER_STREAMING_PORT;
 	int ret = FAIL;
@@ -3022,32 +2935,30 @@ int slsDetector::setReceiverStreamingPort(int port) {
 				ret = updateReceiver();
 		}
 	}
-	return getReceiverStreamingPort();
 }
 
 int slsDetector::getReceiverStreamingPort() {
 	return thisDetector->receiver_zmqport;
 }
 
-int slsDetector::setClientStreamingIP(int sourceIP) {
+void slsDetector::setClientStreamingIP(std::string sourceIP) {
 	struct addrinfo *result;
 	// on failure to convert to a valid ip
 	if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
 		FILE_LOG(logWARNING) << "Could not convert zmqip into a valid IP" << sourceIP;
 		setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-		return getClientStreamingIP();
+		return;
 	}
 	// on success put IP as std::string into arg
 	memset(thisDetector->zmqip, 0, MAX_STR_LENGTH);
 	dataSocket->ConvertInternetAddresstoIpString(result, thisDetector->zmqip, MAX_STR_LENGTH);
-	return getClientStreamingIP();
 }
 
-int slsDetector::getClientStreamingIP() {
+std::string slsDetector::getClientStreamingIP() {
 	return thisDetector->zmqip;
 }
 
-std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
+void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 	int fnum = F_RECEIVER_STREAMING_SRC_IP;
 	int ret = FAIL;
 	char args[MAX_STR_LENGTH] = {0};
@@ -3059,7 +2970,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 		if (!strcmp(thisDetector->receiver_hostname, "none")) {
 			FILE_LOG(logWARNING) << "Receiver hostname not set yet. Cannot create rx_zmqip from none";
 			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-			return getReceiverStreamingIP();
+			return;
 		}
 		sourceIP.assign(thisDetector->receiver_hostname);
 	}
@@ -3071,7 +2982,7 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 		if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
 			FILE_LOG(logWARNING) << "Could not convert rx_zmqip into a valid IP" << sourceIP;
 			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-			return getReceiverStreamingIP();
+			return;
 		}
 		// on success put IP as std::string into arg
 		dataSocket->ConvertInternetAddresstoIpString(result, args, sizeof(args));
@@ -3101,7 +3012,6 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 				ret = updateReceiver();
 		}
 	}
-	return getReceiverStreamingIP();
 }
 
 std::string slsDetector::getReceiverStreamingIP() {
@@ -3109,7 +3019,7 @@ std::string slsDetector::getReceiverStreamingIP() {
 }
 
 
-std::string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay) {
+int slsDetector::setDetectorNetworkParameter(networkParameter index, int delay) {
 	int fnum = F_SET_NETWORK_PARAMETER;
 	int ret = FAIL;
 	int args[2] = {(int)index, delay};
@@ -3129,7 +3039,7 @@ std::string slsDetector::setDetectorNetworkParameter(networkParameter index, int
 				ret = updateDetector();
 		}
 	}
-	return std::to_string(retval);
+	return retval;
 }
 
 std::string slsDetector::setAdditionalJsonHeader(const std::string& jsonheader) {
@@ -4435,13 +4345,13 @@ int64_t slsDetector::getRateCorrection() {
 
 void slsDetector::printReceiverConfiguration(TLogLevel level) {
 	FILE_LOG(level) << "#Detector " << detId << ":\n" <<
-			"Receiver Hostname:\t" << getNetworkParameter(RECEIVER_HOSTNAME) <<
-			"\nDetector UDP IP (Source):\t\t" << getNetworkParameter(DETECTOR_IP) <<
-			"\nDetector UDP MAC:\t\t" << getNetworkParameter(DETECTOR_MAC) <<
-			"\nReceiver UDP IP:\t" << getNetworkParameter(RECEIVER_UDP_IP) <<
-			"\nReceiver UDP MAC:\t" << getNetworkParameter(RECEIVER_UDP_MAC) <<
-			"\nReceiver UDP Port:\t" << getNetworkParameter(RECEIVER_UDP_PORT) <<
-			"\nReceiver UDP Port2:\t" <<  getNetworkParameter(RECEIVER_UDP_PORT2);
+			"Receiver Hostname:\t" << getReceiver() <<
+			"\nDetector UDP IP (Source):\t\t" << getDetectorIP() <<
+			"\nDetector UDP MAC:\t\t" << getDetectorMAC() <<
+			"\nReceiver UDP IP:\t" << getReceiverUDPIP() <<
+			"\nReceiver UDP MAC:\t" << getReceiverUDPMAC() <<
+			"\nReceiver UDP Port:\t" << getReceiverUDPPort() <<
+			"\nReceiver UDP Port2:\t" <<  getReceiverUDPPort2();
 }
 
 

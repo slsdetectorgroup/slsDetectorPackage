@@ -979,7 +979,7 @@ public:
 	 * Sets the client zmq ip\sa sharedSlsDetector
 	 * @param sourceIP client zmq ip
 	 */
-	void setClientStreamingIP(const std::string& sourceIP);
+	void setClientStreamingIP(std::string sourceIP);
 
 	/**
 	 * Returns the client zmq ip \sa sharedSlsDetector
@@ -1006,7 +1006,7 @@ public:
 	 * @param delay delay
 	 * @returns transmission delay
 	 */
-	std::string setDetectorNetworkParameter(networkParameter index, int delay);
+	int setDetectorNetworkParameter(networkParameter index, int delay);
 
 	/**
 	 * Sets the additional json header\sa sharedSlsDetector

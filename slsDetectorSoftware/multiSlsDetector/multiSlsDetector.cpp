@@ -1582,58 +1582,6 @@ std::string multiSlsDetector::getNetworkParameter(networkParameter p,
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::setReceiverDataStreamingOutPort(int i, int detPos) {
-    if (i >= 0) {
-        std::string s = std::to_string(i);
-        int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
-        setNetworkParameter(RECEIVER_STREAMING_PORT, s, detPos);
-        if (prev_streaming) {
-            enableDataStreamingFromReceiver(0, detPos);
-            enableDataStreamingFromReceiver(1, detPos);
-        }
-    }
-    return stoi(getNetworkParameter(RECEIVER_STREAMING_PORT, detPos));
-}
-
-int multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
-    if (i >= 0) {
-        std::string s = std::to_string(i);
-        int prev_streaming = enableDataStreamingToClient();
-        setNetworkParameter(CLIENT_STREAMING_PORT, s, detPos);
-        if (prev_streaming) {
-            enableDataStreamingToClient(0);
-            enableDataStreamingToClient(1);
-        }
-    }
-    return stoi(getNetworkParameter(CLIENT_STREAMING_PORT, detPos));
-}
-
-std::string multiSlsDetector::setReceiverDataStreamingOutIP(const std::string& ip,
-                                                            int detPos) {
-    if (ip.length()) {
-        int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
-        setNetworkParameter(RECEIVER_STREAMING_SRC_IP, ip, detPos);
-        if (prev_streaming) {
-            enableDataStreamingFromReceiver(0, detPos);
-            enableDataStreamingFromReceiver(1, detPos);
-        }
-    }
-    return getNetworkParameter(RECEIVER_STREAMING_SRC_IP, detPos);
-}
-
-std::string multiSlsDetector::setClientDataStreamingInIP(const std::string& ip,
-                                                         int detPos) {
-    if (ip.length()) {
-        int prev_streaming = enableDataStreamingToClient(-1);
-        setNetworkParameter(CLIENT_STREAMING_SRC_IP, ip, detPos);
-        if (prev_streaming) {
-            enableDataStreamingToClient(0);
-            enableDataStreamingToClient(1);
-        }
-    }
-    return getNetworkParameter(CLIENT_STREAMING_SRC_IP, detPos);
-}
-
 std::string multiSlsDetector::setDetectorMAC(const std::string& detectorMAC, int detPos) {
     // single
     if (detPos >= 0)
@@ -1740,10 +1688,16 @@ std::string multiSlsDetector::getReceiverUDPMAC(int detPos) {
 }
 
 int multiSlsDetector::setReceiverUDPPort(int udpport, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setReceiverUDPPort(udpport);
 
+    // multi
+    auto r = parallelCall(&slsDetector::setReceiverUDPPort, udpport);
+    return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverUDPPort(int detPos) {
+int multiSlsDetector::getReceiverUDPPort(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPPort();
@@ -1751,14 +1705,20 @@ std::string multiSlsDetector::getReceiverUDPPort(int detPos) {
 
     // multi
     auto r = serialCall(&slsDetector::getReceiverUDPPort);
-    return sls::concatenateIfDifferent(r);
+    return sls::minusOneIfDifferent(r);
 }
 
 int multiSlsDetector::setReceiverUDPPort2(int udpport, int detPos) {
+    // single
+    if (detPos >= 0)
+        return detectors[detPos]->setReceiverUDPPort2(udpport);
 
+    // multi
+    auto r = parallelCall(&slsDetector::setReceiverUDPPort2, udpport);
+    return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverUDPPort2(int detPos) {
+int multiSlsDetector::getReceiverUDPPort2(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPPort2();
@@ -1766,6 +1726,151 @@ std::string multiSlsDetector::getReceiverUDPPort2(int detPos) {
 
     // multi
     auto r = serialCall(&slsDetector::getReceiverUDPPort2);
+    return sls::minusOneIfDifferent(r);
+}
+
+void multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
+    if (i >= 0) {
+        int prev_streaming = enableDataStreamingToClient();
+
+        // single
+        if (detPos >= 0) {
+        	detectors[detPos]->setClientStreamingPort(i);
+        }
+        // multi
+        else {
+            // calculate ports individually
+            int firstPort = stoi(value);
+            int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
+
+            for (size_t idet = 0; idet < detectors.size(); ++idet) {
+                auto port = std::to_string(firstPort + (idet * numSockets));
+                detectors[idet]->setClientStreamingPort(port);
+            }
+        }
+
+        if (prev_streaming) {
+            enableDataStreamingToClient(0);
+            enableDataStreamingToClient(1);
+        }
+    }
+}
+
+int multiSlsDetector::getClientStreamingPort(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getClientStreamingPort();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getClientStreamingPort);
+    return sls::minusOneIfDifferent(r);
+}
+
+void multiSlsDetector::setReceiverDataStreamingOutPort(int i, int detPos) {
+    if (i >= 0) {
+        int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
+
+        // single
+        if (detPos >= 0) {
+        	detectors[detPos]->setReceiverDataStreamingOutPort(i);
+        }
+        // multi
+        else {
+            // calculate ports individually
+            int firstPort = stoi(value);
+            int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
+
+            for (size_t idet = 0; idet < detectors.size(); ++idet) {
+                auto port = std::to_string(firstPort + (idet * numSockets));
+                detectors[idet]->setReceiverDataStreamingOutPort(port);
+            }
+        }
+
+        if (prev_streaming) {
+            enableDataStreamingFromReceiver(0, detPos);
+            enableDataStreamingFromReceiver(1, detPos);
+        }
+    }
+}
+
+int multiSlsDetector::getReceiverStreamingPort(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverStreamingPort();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverStreamingPort);
+    return sls::minusOneIfDifferent(r);
+}
+
+void multiSlsDetector::setClientDataStreamingInIP(const std::string& ip,
+                                                         int detPos) {
+    if (ip.length()) {
+        int prev_streaming = enableDataStreamingToClient(-1);
+
+        // single
+        if (detPos >= 0) {
+        	detectors[detPos]->setClientStreamingIP(ip);
+        }
+        // multi
+        else {
+        	for (auto &d : detectors) {
+        		d->setClientStreamingIP(ip);
+        	}
+        }
+
+        if (prev_streaming) {
+            enableDataStreamingToClient(0);
+            enableDataStreamingToClient(1);
+        }
+    }
+}
+
+std::string multiSlsDetector::getClientStreamingIP(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getClientStreamingIP();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getClientStreamingIP);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setReceiverDataStreamingOutIP(const std::string& ip,
+                                                            int detPos) {
+    if (ip.length()) {
+        int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
+
+        // single
+        if (detPos >= 0) {
+        	detectors[detPos]->setReceiverStreamingIP(ip);
+        }
+        // multi
+        else {
+        	 for (auto &d : detectors) {
+        		 d->setReceiverStreamingIP(ip);
+            }
+        }
+
+        if (prev_streaming) {
+            enableDataStreamingFromReceiver(0, detPos);
+            enableDataStreamingFromReceiver(1, detPos);
+        }
+    }
+    return getNetworkParameter(RECEIVER_STREAMING_SRC_IP, detPos);
+}
+
+std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverStreamingIP();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverStreamingIP);
     return sls::concatenateIfDifferent(r);
 }
 
@@ -1800,17 +1905,17 @@ std::string multiSlsDetector::getAdditionalJsonHeader(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize=-1, int detPos) {
+int multiSlsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize=-1, int detPos) {
     // single
     if (detPos >= 0)
         return detectors[detPos]->setReceiverUDPSocketBufferSize(udpsockbufsize);
 
     // multi
     auto r = parallelCall(&slsDetector::setReceiverUDPSocketBufferSize, udpsockbufsize);
-    return sls::concatenateIfDifferent(r);
+    return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
+int multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPSocketBufferSize();
@@ -1818,10 +1923,10 @@ std::string multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
 
     // multi
     auto r = serialCall(&slsDetector::getReceiverUDPSocketBufferSize);
-    return sls::concatenateIfDifferent(r);
+    return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
+int multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverRealUDPSocketBufferSize();
@@ -1829,7 +1934,7 @@ std::string multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
 
     // multi
     auto r = serialCall(&slsDetector::getReceiverRealUDPSocketBufferSize);
-    return sls::concatenateIfDifferent(r);
+    return sls::minusOneIfDifferent(r);
 }
 
 int multiSlsDetector::setFlowControl10G(int enable, int detPos) {

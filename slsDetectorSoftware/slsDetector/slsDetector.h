@@ -859,19 +859,11 @@ public:
 	uint32_t clearBit(uint32_t addr, int n);
 
 	/**
-	 * Set network parameter
-	 * @param p network parameter type
-	 * @param value network parameter value
-	 * @returns network parameter value set (from getNetworkParameter)
+	 * Validates the format of the detector MAC address and sets it \sa sharedSlsDetector
+	 * @param detectorMAC detector MAC address
+	 * @returns the detector MAC address
 	 */
-	std::string setNetworkParameter(networkParameter index, const std::string& value);
-
-	/**
-	 * Get network parameter
-	 * @param index network parameter type
-	 * @returns network parameter value set (from getNetworkParameter)
-	 */
-	std::string getNetworkParameter(networkParameter index);
+	std::string setDetectorMAC(const std::string& detectorMAC);
 
 	/**
 	 * Returns the detector MAC address\sa sharedSlsDetector
@@ -880,78 +872,17 @@ public:
 	std::string getDetectorMAC();
 
 	/**
-	 * Returns the detector IP address\sa sharedSlsDetector
-	 * @returns the detector IP address
-	 */
-	std::string getDetectorIP();
-
-	/**
-	 * Returns the receiver IP address\sa sharedSlsDetector
-	 * @returns the receiver IP address
-	 */
-	std::string getReceiver();
-
-	/**
-	 * Returns the receiver UDP IP address\sa sharedSlsDetector
-	 * @returns the receiver UDP IP address
-	 */
-	std::string getReceiverUDPIP();
-
-	/**
-	 * Returns the receiver UDP MAC address\sa sharedSlsDetector
-	 * @returns the receiver UDP MAC address
-	 */
-	std::string getReceiverUDPMAC();
-
-	/**
-	 * Returns the receiver UDP port\sa sharedSlsDetector
-	 * @returns the receiver UDP port
-	 */
-	std::string getReceiverUDPPort();
-
-	/**
-	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
-	 * @returns the receiver UDP port 2 of same interface
-	 */
-	std::string getReceiverUDPPort2();
-
-	/**
-	 * Returns the client zmq port \sa sharedSlsDetector
-	 * @returns the client zmq port
-	 */
-	std::string getClientStreamingPort();
-
-	/**
-	 * Returns the receiver zmq port \sa sharedSlsDetector
-	 * @returns the receiver zmq port
-	 */
-	std::string getReceiverStreamingPort();
-
-	/**
-	 * Returns the client zmq ip \sa sharedSlsDetector
-	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
-	 */
-	std::string getClientStreamingIP();
-
-	/**
-	 * Returns the receiver zmq ip \sa sharedSlsDetector
-	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
-	 */
-	std::string getReceiverStreamingIP();
-
-	/**
-	 * Validates the format of the detector MAC address and sets it \sa sharedSlsDetector
-	 * @param detectorMAC detector MAC address
-	 * @returns the detector MAC address
-	 */
-	std::string setDetectorMAC(const std::string& detectorMAC);
-
-	/**
 	 * Validates the format of the detector IP address and sets it \sa sharedSlsDetector
 	 * @param detectorIP detector IP address
 	 * @returns the detector IP address
 	 */
 	std::string setDetectorIP(const std::string& detectorIP);
+
+	/**
+	 * Returns the detector IP address\sa sharedSlsDetector
+	 * @returns the detector IP address
+	 */
+	std::string getDetectorIP();
 
 	/**
 	 * Validates and sets the receiver.
@@ -963,11 +894,23 @@ public:
 	std::string setReceiver(const std::string& receiver);
 
 	/**
+	 * Returns the receiver IP address\sa sharedSlsDetector
+	 * @returns the receiver IP address
+	 */
+	std::string getReceiver();
+
+	/**
 	 * Validates the format of the receiver UDP IP address and sets it \sa sharedSlsDetector
 	 * @param udpip receiver UDP IP address
 	 * @returns the receiver UDP IP address
 	 */
 	std::string setReceiverUDPIP(const std::string& udpip);
+
+	/**
+	 * Returns the receiver UDP IP address\sa sharedSlsDetector
+	 * @returns the receiver UDP IP address
+	 */
+	std::string getReceiverUDPIP();
 
 	/**
 	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
@@ -977,11 +920,23 @@ public:
 	std::string setReceiverUDPMAC(const std::string& udpmac);
 
 	/**
+	 * Returns the receiver UDP MAC address\sa sharedSlsDetector
+	 * @returns the receiver UDP MAC address
+	 */
+	std::string getReceiverUDPMAC();
+
+	/**
 	 * Sets the receiver UDP port\sa sharedSlsDetector
 	 * @param udpport receiver UDP port
 	 * @returns the receiver UDP port
 	 */
 	int setReceiverUDPPort(int udpport);
+
+	/**
+	 * Returns the receiver UDP port\sa sharedSlsDetector
+	 * @returns the receiver UDP port
+	 */
+	int getReceiverUDPPort();
 
 	/**
 	 * Sets the receiver UDP port 2\sa sharedSlsDetector
@@ -991,34 +946,99 @@ public:
 	int setReceiverUDPPort2(int udpport);
 
 	/**
+	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
+	 * @returns the receiver UDP port 2 of same interface
+	 */
+	int getReceiverUDPPort2();
+
+	/**
 	 * Sets the client zmq port\sa sharedSlsDetector
-	 * @param port client zmq port (includes "multi" at the end if it should
-	 * calculate individual ports)
+	 * @param port client zmq port
+	 */
+	void setClientStreamingPort(int port);
+
+	/**
+	 * Returns the client zmq port \sa sharedSlsDetector
 	 * @returns the client zmq port
 	 */
-	std::string setClientStreamingPort(const std::string& port);
+	int getClientStreamingPort();
 
 	/**
 	 * Sets the receiver zmq port\sa sharedSlsDetector
-	 * @param port receiver zmq port (includes "multi" at the end if it should
-	 * calculate individual ports)
+	 * @param port receiver zmq port
+	 */
+	void setReceiverStreamingPort(int port);
+
+	/**
+	 * Returns the receiver zmq port \sa sharedSlsDetector
 	 * @returns the receiver zmq port
 	 */
-	std::string setReceiverStreamingPort(const std::string& port);
+	int getReceiverStreamingPort();
 
 	/**
 	 * Sets the client zmq ip\sa sharedSlsDetector
 	 * @param sourceIP client zmq ip
+	 */
+	void setClientStreamingIP(const std::string& sourceIP);
+
+	/**
+	 * Returns the client zmq ip \sa sharedSlsDetector
 	 * @returns the client zmq ip, returns "none" if default setting and no custom ip set
 	 */
-	std::string setClientStreamingIP(const std::string& sourceIP);
+	std::string getClientStreamingIP();
 
 	/**
 	 * Sets the receiver zmq ip\sa sharedSlsDetector
 	 * @param sourceIP receiver zmq ip. If empty, uses rx_hostname
+	 */
+	void setReceiverStreamingIP(std::string sourceIP);
+
+	/**
+	 * Returns the receiver zmq ip \sa sharedSlsDetector
 	 * @returns the receiver zmq ip, returns "none" if default setting and no custom ip set
 	 */
-	std::string setReceiverStreamingIP(std::string sourceIP);
+	std::string getReceiverStreamingIP();
+
+	/**
+	 * Sets the transmission delay for left, right or entire frame
+	 * (Eiger, Jungfrau(only entire frame))
+	 * @param index type of delay
+	 * @param delay delay
+	 * @returns transmission delay
+	 */
+	std::string setDetectorNetworkParameter(networkParameter index, int delay);
+
+	/**
+	 * Sets the additional json header\sa sharedSlsDetector
+	 * @param jsonheader additional json header
+	 * @returns additional json header, returns "none" if default setting and no custom ip set
+	 */
+	std::string setAdditionalJsonHeader(const std::string& jsonheader);
+
+	/**
+	 * Returns the additional json header \sa sharedSlsDetector
+	 * @returns the additional json header, returns "none" if default setting and no custom ip set
+	 */
+	std::string getAdditionalJsonHeader();
+
+	/**
+	 * Sets the receiver UDP socket buffer size
+	 * @param udpsockbufsize additional json header
+	 * @returns receiver udp socket buffer size
+	 */
+	int setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
+
+	/**
+	 * Returns the receiver UDP socket buffer size\sa sharedSlsDetector
+	 * @returns the receiver UDP socket buffer size
+	 */
+	int getReceiverUDPSocketBufferSize() ;
+
+	/**
+	 * Returns the receiver real UDP socket buffer size\sa sharedSlsDetector
+	 * @returns the receiver real UDP socket buffer size
+	 */
+	int getReceiverRealUDPSocketBufferSize();
 
 	/**
 	 * Execute a digital test (Gotthard, Mythen)
@@ -1699,47 +1719,6 @@ private:
 	 * @returns number of bytes received from the detector
 	 */
 	int receiveModule(sls_detector_module* myMod);
-
-	/**
-	 * Returns the additional json header \sa sharedSlsDetector
-	 * @returns the additional json header, returns "none" if default setting and no custom ip set
-	 */
-	std::string getAdditionalJsonHeader();
-
-	/**
-	 * Returns the receiver UDP socket buffer size\sa sharedSlsDetector
-	 * @returns the receiver UDP socket buffer size
-	 */
-	std::string getReceiverUDPSocketBufferSize() ;
-
-	/**
-	 * Returns the receiver real UDP socket buffer size\sa sharedSlsDetector
-	 * @returns the receiver real UDP socket buffer size
-	 */
-	std::string getReceiverRealUDPSocketBufferSize();
-
-	/**
-	 * Sets the additional json header\sa sharedSlsDetector
-	 * @param jsonheader additional json header
-	 * @returns additional json header, returns "none" if default setting and no custom ip set
-	 */
-	std::string setAdditionalJsonHeader(const std::string& jsonheader);
-
-	/**
-	 * Sets the receiver UDP socket buffer size
-	 * @param udpsockbufsize additional json header
-	 * @returns receiver udp socket buffer size
-	 */
-	std::string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
-
-	/**
-	 * Sets the transmission delay for left, right or entire frame
-	 * (Eiger, Jungfrau(only entire frame))
-	 * @param index type of delay
-	 * @param delay delay
-	 * @returns transmission delay
-	 */
-	std::string setDetectorNetworkParameter(networkParameter index, int delay);
 
 	/**
 	 * Get MAC from the receiver using udpip and

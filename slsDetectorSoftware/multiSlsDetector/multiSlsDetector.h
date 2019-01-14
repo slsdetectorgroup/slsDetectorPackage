@@ -863,70 +863,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     std::string getReceiverHostname(int detPos = -1);
 
     /**
-     * Set network parameter
-     * @param p network parameter type
-     * @param s network parameter value
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns network parameter value set (from getNetworkParameter)
-     */
-    std::string setNetworkParameter(networkParameter parameter,
-                                    const std::string& value, int detPos = -1);
-
-    /**
-     * Get network parameter
-     * @param p network parameter type
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns network parameter value set (from getNetworkParameter)
-     */
-    std::string getNetworkParameter(networkParameter p, int detPos = -1);
-
-    /**
-     * (advanced users)
-     * Set/Get receiver streaming out ZMQ port and restarts receiver sockets
-     * @param i sets, -1 gets
-     * If detPos is -1(multi module), port calculated (increments) for all the
-     * individual detectors using i
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns receiver streaming out ZMQ port (if multiple, of first receiver
-     * socket)
-     */
-    int setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
-
-    /**
-     * (advanced users)
-     * Set/Get client streaming in  ZMQ port and restarts client sockets
-     * @param i sets, -1 gets
-     * If detPos is -1(multi module), port calculated (increments) for all the
-     * individual detectors using i
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns receiver streaming out ZMQ port (if multiple, of first receiver
-     * socket)
-     */
-    int setClientDataStreamingInPort(int i = -1, int detPos = -1);
-
-    /**
-     * (advanced users)
-     * Set/Get receiver streaming out ZMQ IP and restarts receiver sockets
-     * @param i sets, empty string gets
-     * By default, it is the IP of receiver hostname
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns receiver streaming out ZMQ IP
-     */
-    std::string setReceiverDataStreamingOutIP(const std::string& ip = "",
-                                              int detPos = -1);
-
-    /**
-     * (advanced users)
-     * Set/Get client streaming in ZMQ IP and restarts client sockets
-     * @param i sets, empty string gets
-     * By default, it is the IP of receiver hostname
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns client streaming in ZMQ IP
-     */
-    std::string setClientDataStreamingInIP(const std::string& ip = "",
-                                           int detPos = -1);
-
-    /**
      * Validates the format of the detector MAC address and sets it
      * @param detectorMAC detector MAC address
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -964,14 +900,14 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address from shared memory
      */
-    std::string setReceiverHostname(const std::string& receiver, int detPos = -1);
+    std::string setReceiver(const std::string& receiver, int detPos = -1);
 
     /**
      * Returns the receiver IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address
      */
-    std::string getReceiverHostname(int detPos = -1);
+    std::string getReceiver(int detPos = -1);
 
     /**
      * Validates the format of the receiver UDP IP address and sets it
@@ -1017,7 +953,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port
      */
-    std::string getReceiverUDPPort(int detPos = -1);
+    int getReceiverUDPPort(int detPos = -1);
 
     /**
      * Sets the receiver UDP port 2
@@ -1032,7 +968,79 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2 of same interface
      */
-    std::string getReceiverUDPPort2(int detPos = -1);
+    int getReceiverUDPPort2(int detPos = -1);
+
+    /**
+     * (advanced users)
+     * Set/Get client streaming in  ZMQ port and restarts client sockets
+     * @param i sets, -1 gets
+     * If detPos is -1(multi module), port calculated (increments) for all the
+     * individual detectors using i
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setClientDataStreamingInPort(int i = -1, int detPos = -1);
+
+	/**
+	 * Returns the client zmq port
+	 * If detPos is -1(multi module), port returns client streaming port of first module
+     * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns the client zmq port
+	 */
+	int getClientStreamingPort(int detPos = -1);
+
+    /**
+     * (advanced users)
+     * Set/Get receiver streaming out ZMQ port and restarts receiver sockets
+     * @param i sets, -1 gets
+     * If detPos is -1(multi module), port calculated (increments) for all the
+     * individual detectors using i
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
+
+	/**
+	 * Returns the receiver zmq port
+	 * If detPos is -1(multi module), port returns receiver streaming port of first module
+     * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns the receiver zmq port
+	 */
+	int getReceiverStreamingPort(int detPos = -1);
+
+    /**
+     * (advanced users)
+     * Set/Get client streaming in ZMQ IP and restarts client sockets
+     * @param i sets, empty string gets
+     * By default, it is the IP of receiver hostname
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+   void setClientDataStreamingInIP(const std::string& ip = "",
+                                           int detPos = -1);
+
+    /**
+	 * Returns the client zmq ip
+	 * If detPos is -1(multi module), ip returns concatenation of all client streaming ip
+     * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns the client zmq ip
+	 */
+	std::string getClientStreamingIP(int detPos = -1);
+
+    /**
+     * (advanced users)
+     * Set/Get receiver streaming out ZMQ IP and restarts receiver sockets
+     * @param i sets, empty string gets
+     * By default, it is the IP of receiver hostname
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setReceiverDataStreamingOutIP(const std::string& ip = "",
+                                              int detPos = -1);
+
+    /**
+  	 * Returns the receiver zmq ip
+  	 * If detPos is -1(multi module), ip returns concatenation of all receiver streaming ip
+       * @param detPos -1 for all detectors in  list or specific detector position
+  	 * @returns the receiver zmq ip
+  	 */
+  	std::string getReceiverStreamingIP(int detPos = -1);
 
     /**
      * Sets the transmission delay for left, right or entire frame
@@ -1065,21 +1073,21 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns receiver udp socket buffer size
      */
-    std::string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1, int detPos = -1);
+    int setReceiverUDPSocketBufferSize(int udpsockbufsize=-1, int detPos = -1);
 
     /**
      * Returns the receiver UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP socket buffer size
      */
-    std::string getReceiverUDPSocketBufferSize(int detPos = -1) ;
+    int getReceiverUDPSocketBufferSize(int detPos = -1) ;
 
     /**
      * Returns the receiver real UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver real UDP socket buffer size
      */
-    std::string getReceiverRealUDPSocketBufferSize(int detPos = -1);
+    int getReceiverRealUDPSocketBufferSize(int detPos = -1);
 
     /** (users only)
      * Set 10GbE Flow Control (Eiger)

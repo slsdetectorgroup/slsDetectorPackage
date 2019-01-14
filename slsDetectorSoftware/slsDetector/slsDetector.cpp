@@ -2751,95 +2751,6 @@ std::string slsDetector::getNetworkParameter(networkParameter index) {
 
 }
 
-
-std::string slsDetector::getDetectorMAC() {
-	return std::string(thisDetector->detectorMAC);
-}
-
-
-std::string slsDetector::getDetectorIP() {
-	return std::string(thisDetector->detectorIP);
-}
-
-
-std::string slsDetector::getReceiver() {
-	return std::string(thisDetector->receiver_hostname);
-}
-
-
-std::string slsDetector::getReceiverUDPIP() {
-	return std::string(thisDetector->receiverUDPIP);
-}
-
-
-std::string slsDetector::getReceiverUDPMAC() {
-	return std::string(thisDetector->receiverUDPMAC);
-}
-
-
-std::string slsDetector::getReceiverUDPPort() {
-	return std::to_string(thisDetector->receiverUDPPort);
-}
-
-
-std::string slsDetector::getReceiverUDPPort2() {
-	return std::to_string(thisDetector->receiverUDPPort2);
-}
-
-
-std::string slsDetector::getClientStreamingPort() {
-	return std::to_string(thisDetector->zmqport);
-}
-
-
-std::string slsDetector::getReceiverStreamingPort() {
-	return std::to_string(thisDetector->receiver_zmqport);
-}
-
-
-std::string slsDetector::getClientStreamingIP() {
-	return std::string(thisDetector->zmqip);
-}
-
-
-std::string slsDetector::getReceiverStreamingIP() {
-	return std::string(thisDetector->receiver_zmqip);
-}
-
-
-std::string slsDetector::getAdditionalJsonHeader() {
-	return std::string(thisDetector->receiver_additionalJsonHeader);
-}
-
-
-std::string slsDetector::getReceiverUDPSocketBufferSize() {
-	return setReceiverUDPSocketBufferSize();
-}
-
-
-std::string slsDetector::getReceiverRealUDPSocketBufferSize() {
-	int fnum = F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE;
-	int ret = FAIL;
-	int retval = -1;
-	FILE_LOG(logDEBUG1) << "Getting real UDP Socket Buffer size to receiver";
-
-	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
-		ret = thisReceiver->Client_Send(fnum, nullptr, 0, &retval, sizeof(retval));
-		disconnectData();
-
-		// handle ret
-		if (ret == FAIL) {
-			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
-		} else {
-			FILE_LOG(logDEBUG1) << "Real Receiver UDP Socket Buffer size: " << retval;
-			if (ret == FORCE_UPDATE)
-				ret = updateReceiver();
-		}
-	}
-	return std::to_string(retval);
-}
-
-
 std::string slsDetector::setDetectorMAC(const std::string& detectorMAC) {
 
 	// invalid format
@@ -2861,6 +2772,9 @@ std::string slsDetector::setDetectorMAC(const std::string& detectorMAC) {
 	return std::string(thisDetector->detectorMAC);
 }
 
+std::string slsDetector::getDetectorMAC() {
+	return std::string(thisDetector->detectorMAC);
+}
 
 std::string slsDetector::setDetectorIP(const std::string& detectorIP) {
 	struct sockaddr_in sa;
@@ -2885,6 +2799,9 @@ std::string slsDetector::setDetectorIP(const std::string& detectorIP) {
 	return std::string(thisDetector->detectorIP);
 }
 
+std::string slsDetector::getDetectorIP() {
+	return std::string(thisDetector->detectorIP);
+}
 
 std::string slsDetector::setReceiver(const std::string& receiverIP) {
 	FILE_LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
@@ -2987,6 +2904,10 @@ std::string slsDetector::setReceiver(const std::string& receiverIP) {
 }
 
 
+std::string slsDetector::getReceiver() {
+	return std::string(thisDetector->receiver_hostname);
+}
+
 std::string slsDetector::setReceiverUDPIP(const std::string& udpip) {
 	struct sockaddr_in sa;
 	if (udpip.length() && udpip.length() < 16) {
@@ -3010,6 +2931,9 @@ std::string slsDetector::setReceiverUDPIP(const std::string& udpip) {
 	return std::string(thisDetector->receiverUDPIP);
 }
 
+std::string slsDetector::getReceiverUDPIP() {
+	return std::string(thisDetector->receiverUDPIP);
+}
 
 std::string slsDetector::setReceiverUDPMAC(const std::string& udpmac) {
 	// invalid format
@@ -3031,6 +2955,9 @@ std::string slsDetector::setReceiverUDPMAC(const std::string& udpmac) {
 	return std::string(thisDetector->receiverUDPMAC);
 }
 
+std::string slsDetector::getReceiverUDPMAC() {
+	return std::string(thisDetector->receiverUDPMAC);
+}
 
 int slsDetector::setReceiverUDPPort(int udpport) {
 	thisDetector->receiverUDPPort = udpport;
@@ -3043,6 +2970,9 @@ int slsDetector::setReceiverUDPPort(int udpport) {
 	return thisDetector->receiverUDPPort;
 }
 
+int slsDetector::getReceiverUDPPort() {
+	return thisDetector->receiverUDPPort;
+}
 
 int slsDetector::setReceiverUDPPort2(int udpport) {
 	thisDetector->receiverUDPPort2 = udpport;
@@ -3055,14 +2985,20 @@ int slsDetector::setReceiverUDPPort2(int udpport) {
 	return thisDetector->receiverUDPPort2;
 }
 
+int slsDetector::getReceiverUDPPort2() {
+	return thisDetector->receiverUDPPort2;
+}
 
-std::string slsDetector::setClientStreamingPort(const std::string& port) {
+int slsDetector::setClientStreamingPort(int port) {
 	thisDetector->zmqport = stoi(port);
 	return getClientStreamingPort();
 }
 
+int slsDetector::getClientStreamingPort() {
+	return thisDetector->zmqport;
+}
 
-std::string slsDetector::setReceiverStreamingPort(const std::string& port) {
+int slsDetector::setReceiverStreamingPort(int port) {
 	// copy now else it is lost if rx_hostname not set yet
 	thisDetector->receiver_zmqport = stoi(port);
 
@@ -3089,8 +3025,11 @@ std::string slsDetector::setReceiverStreamingPort(const std::string& port) {
 	return getReceiverStreamingPort();
 }
 
+int slsDetector::getReceiverStreamingPort() {
+	return thisDetector->receiver_zmqport;
+}
 
-std::string slsDetector::setClientStreamingIP(const std::string& sourceIP) {
+int slsDetector::setClientStreamingIP(int sourceIP) {
 	struct addrinfo *result;
 	// on failure to convert to a valid ip
 	if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
@@ -3104,6 +3043,9 @@ std::string slsDetector::setClientStreamingIP(const std::string& sourceIP) {
 	return getClientStreamingIP();
 }
 
+int slsDetector::getClientStreamingIP() {
+	return thisDetector->zmqip;
+}
 
 std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 	int fnum = F_RECEIVER_STREAMING_SRC_IP;
@@ -3162,6 +3104,33 @@ std::string slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 	return getReceiverStreamingIP();
 }
 
+std::string slsDetector::getReceiverStreamingIP() {
+	return std::string(thisDetector->receiver_zmqip);
+}
+
+
+std::string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay) {
+	int fnum = F_SET_NETWORK_PARAMETER;
+	int ret = FAIL;
+	int args[2] = {(int)index, delay};
+	int retval = -1;
+	FILE_LOG(logDEBUG1) << "Setting network parameter index " << index << " to " <<  delay;
+
+	if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
+		ret = thisDetectorControl->Client_Send(fnum, args, sizeof(args), &retval, sizeof(retval));
+		disconnectControl();
+
+		// handle ret
+		if (ret == FAIL) {
+			setErrorMask((getErrorMask())|(DETECTOR_NETWORK_PARAMETER));
+		} else {
+			FILE_LOG(logDEBUG1) << "Network Parameter (" << index << "): " << retval;
+			if (ret == FORCE_UPDATE)
+				ret = updateDetector();
+		}
+	}
+	return std::to_string(retval);
+}
 
 std::string slsDetector::setAdditionalJsonHeader(const std::string& jsonheader) {
 	int fnum = F_ADDITIONAL_JSON_HEADER;
@@ -3189,8 +3158,12 @@ std::string slsDetector::setAdditionalJsonHeader(const std::string& jsonheader) 
 	return getAdditionalJsonHeader();
 }
 
+std::string slsDetector::getAdditionalJsonHeader() {
+	return std::string(thisDetector->receiver_additionalJsonHeader);
+}
 
-std::string slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
+
+int slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
 	int fnum = F_RECEIVER_UDP_SOCK_BUF_SIZE;
 	int ret = FAIL;
 	int arg = udpsockbufsize;
@@ -3210,31 +3183,34 @@ std::string slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
 				ret = updateReceiver();
 		}
 	}
-	return std::to_string(retval);
+	return retval;
+}
+
+int slsDetector::getReceiverUDPSocketBufferSize() {
+	return setReceiverUDPSocketBufferSize();
 }
 
 
-std::string slsDetector::setDetectorNetworkParameter(networkParameter index, int delay) {
-	int fnum = F_SET_NETWORK_PARAMETER;
+int slsDetector::getReceiverRealUDPSocketBufferSize() {
+	int fnum = F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE;
 	int ret = FAIL;
-	int args[2] = {(int)index, delay};
 	int retval = -1;
-	FILE_LOG(logDEBUG1) << "Setting network parameter index " << index << " to " <<  delay;
+	FILE_LOG(logDEBUG1) << "Getting real UDP Socket Buffer size to receiver";
 
-	if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
-		ret = thisDetectorControl->Client_Send(fnum, args, sizeof(args), &retval, sizeof(retval));
-		disconnectControl();
+	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
+		ret = thisReceiver->Client_Send(fnum, nullptr, 0, &retval, sizeof(retval));
+		disconnectData();
 
 		// handle ret
 		if (ret == FAIL) {
-			setErrorMask((getErrorMask())|(DETECTOR_NETWORK_PARAMETER));
+			setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
 		} else {
-			FILE_LOG(logDEBUG1) << "Network Parameter (" << index << "): " << retval;
+			FILE_LOG(logDEBUG1) << "Real Receiver UDP Socket Buffer size: " << retval;
 			if (ret == FORCE_UPDATE)
-				ret = updateDetector();
+				ret = updateReceiver();
 		}
 	}
-	return std::to_string(retval);
+	return retval;
 }
 
 

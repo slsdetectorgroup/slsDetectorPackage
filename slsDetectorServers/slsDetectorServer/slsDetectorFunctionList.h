@@ -18,7 +18,7 @@ Here are the definitions, but the actual implementation should be done for each 
 int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
 void 		basictests();
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		checkType();
 u_int32_t 	testFpga(void);
 int 		testBus(void);
@@ -26,14 +26,14 @@ int 		testBus(void);
 
 #ifdef GOTTHARDD
 int         detectorTest(enum digitalTestMode arg,  int ival);
-#elif defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
+#elif defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		detectorTest(enum digitalTestMode arg);
 #endif
 
 // Ids
 int64_t 	getDetectorId(enum idMode arg);
 u_int64_t  	getFirmwareVersion();
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
@@ -76,7 +76,7 @@ extern u_int32_t  	readRegister(u_int32_t offset);						// blackfin.h
 uint32_t	writeRegister(uint32_t offset, uint32_t data);
 uint32_t  	readRegister(uint32_t offset);
 #else
-uint32_t    writeRegister16And32(uint32_t offset, uint32_t data);
+uint32_t    writeRegister16And32(uint32_t offset, uint32_t data); //FIXME its not there in ctb or moench?
 uint32_t    readRegister16And32(uint32_t offset);
 #endif
 
@@ -101,11 +101,15 @@ void        setMasterSlaveConfiguration();
 void        cleanFifos();
 void        resetCore();
 void        resetPeripheral();
+#elif MOENCHD
+void        cleanFifos();
+void        resetCore();
+void        resetPeripheral();
 #endif
 
 // parameters - dr, roi
 int 		setDynamicRange(int dr);
-#if defined(GOTTHARDD) || defined(CHIPTESTBOARDD)
+#if defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
@@ -114,7 +118,7 @@ ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 void 		setSpeed(enum speedVariable ind, int val);
 int         getSpeed(enum speedVariable ind);
 #endif
-#if defined(EIGERD) || defined(CHIPTESTBOARDD)
+#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #endif
 
@@ -129,7 +133,7 @@ int         validateTimer(enum timerIndex ind, int64_t val, int64_t retval);
 #endif
 
 // parameters - module, settings
-#ifndef CHIPTESTBOARDD
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
 int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 enum 		detectorSettings setSettings(enum detectorSettings sett);
@@ -146,10 +150,10 @@ int 		setThresholdEnergy(int ev);
 #ifdef GOTTHARDD
 extern void AD9252_Set(int addr, int val);      // AD9252.h (old board)
 #endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 extern void AD9257_Set(int addr, int val);      // AD9257.h
 #endif
-#ifdef CHIPTESTBOARDD
+#ifdef CHIPTESTBOARDD || defined(MOENCHD)
 extern int AD9257_GetMaxValidVref();                   // AD9257.h
 extern void AD9257_SetVrefVoltage(int val)             // AD9257.h
 #endif
@@ -157,11 +161,12 @@ extern void AD9257_SetVrefVoltage(int val)             // AD9257.h
 void 		setDAC(enum DACINDEX ind, int val, int mV);
 int         getDAC(enum DACINDEX ind, int mV);
 int         getMaxDacSteps();
-#ifdef CHIPTESTBOARDD
+#if  defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int         checkVLimitCompliant(int mV);
 int         checkVLimitDacCompliant(int dac);
 int         getVLimit();
 void        setVLimit(int l);
+#ifdef CHIPTESTBOARDD
 int         isVchipValid(int val);
 int         getVchip();
 void        setVchip(int val);
@@ -202,7 +207,8 @@ int         getExtSignal();
 // configure mac
 #ifdef GOTTHARDD
 void        calcChecksum(mac_conf* mac, int sourceip, int destip);
-#elif JUNGFRAUD
+#endif
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 long int 	calcChecksum(int sourceip, int destip);
 #endif
 #ifdef GOTTHARDD
@@ -216,14 +222,9 @@ int 		setDetectorPosition(int pos[]);
 
 // very detector specific
 
-// gotthard specific - image, pedestal
-#ifdef GOTTHARDD
-void 		loadImage(enum imageType index, short int imageVals[]);
-int 		readCounterBlock(int startACQ, short int counterVals[]);
-int			resetCounterBlock(int startACQ);
 
 // chip test board specific - powerchip, sendudp, pll, flashing firmware
-#elif CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int         powerChip (int on);
 int         sendUDP(int enable);
 void        resetPLL();
@@ -247,6 +248,13 @@ uint64_t    writePatternWord(int addr, uint64_t word);
 int         setPatternWaitAddress(int level, int addr);
 uint64_t    setPatternWaitTime(int level, uint64_t t);
 void         setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+#endif
+
+// gotthard specific - image, pedestal
+#ifdef GOTTHARDD
+void 		loadImage(enum imageType index, short int imageVals[]);
+int 		readCounterBlock(int startACQ, short int counterVals[]);
+int			resetCounterBlock(int startACQ);
 
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware
 #elif JUNGFRAUD
@@ -312,7 +320,7 @@ int 		startReadOut();
 #endif
 enum 		runStatus getRunStatus();
 void 		readFrame(int *ret, char *mess);
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)#ifdef CHIPTESTBOARDD
 void        unsetFifoReadStrobes();
 void        readSample();
 int         checkDataPresent();

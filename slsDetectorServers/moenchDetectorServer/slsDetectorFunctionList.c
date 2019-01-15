@@ -445,7 +445,7 @@ void initStopServer() {
 /* set up detector */
 
 void setupDetector() {
-    FILE_LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
+    FILE_LOG(logINFO, ("This Server is for 1 moench board\n"));
 
     // default variables
     dataBytes = 0;
@@ -1247,7 +1247,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 /* jungfrau specific - pll, flashing fpga */
 
 // only for moench
-int powerChip(int on) {
+int powerChip(int on) { //FIXME only for moench? or only for ctb?
     uint32_t addr = POWER_REG;
     if (on >= 0) {
         FILE_LOG(logINFO, ("Powering %s\n", (on > 0 ? "on" : "off")));

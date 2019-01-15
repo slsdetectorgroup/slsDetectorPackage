@@ -2955,7 +2955,7 @@ void slsDetector::setClientStreamingIP(std::string sourceIP) {
 }
 
 std::string slsDetector::getClientStreamingIP() {
-	return thisDetector->zmqip;
+	return std::string(thisDetector->zmqip);
 }
 
 void slsDetector::setReceiverStreamingIP(std::string sourceIP) {

@@ -2749,9 +2749,9 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
             if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
             }
-            myDet->setReceiverUDPPort(i, detPos);
+            myDet->setReceiverUDPPort2(i, detPos);
         }
-        sprintf(ans, "%d", myDet->getReceiverUDPPort(detPos));
+        sprintf(ans, "%d", myDet->getReceiverUDPPort2(detPos));
         return ans;
     } else if (cmd == "rx_udpsocksize") {
         if (action == PUT_ACTION) {

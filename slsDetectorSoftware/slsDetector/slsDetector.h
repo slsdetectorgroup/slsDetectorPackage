@@ -979,7 +979,7 @@ public:
 	 * Sets the client zmq ip\sa sharedSlsDetector
 	 * @param sourceIP client zmq ip
 	 */
-	void setClientStreamingIP(std::string sourceIP);
+	void setClientStreamingIP(const std::string& sourceIP);
 
 	/**
 	 * Returns the client zmq ip \sa sharedSlsDetector

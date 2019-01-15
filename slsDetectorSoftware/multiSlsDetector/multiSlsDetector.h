@@ -998,7 +998,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * By default, it is the IP of receiver hostname
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-   void setClientDataStreamingInIP(std::string ip = "",
+   void setClientDataStreamingInIP(const std::string& ip = "",
                                            int detPos = -1);
 
     /**
@@ -1016,7 +1016,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * By default, it is the IP of receiver hostname
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReceiverDataStreamingOutIP(std::string ip = "",
+    void setReceiverDataStreamingOutIP(const std::string& ip = "",
                                               int detPos = -1);
 
     /**

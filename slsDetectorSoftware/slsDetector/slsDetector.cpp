@@ -2902,7 +2902,7 @@ int slsDetector::getReceiverStreamingPort() {
 	return thisDetector->receiver_zmqport;
 }
 
-void slsDetector::setClientStreamingIP(std::string sourceIP) {
+void slsDetector::setClientStreamingIP(const std::string& sourceIP) {
 	struct addrinfo *result;
 	// on failure to convert to a valid ip
 	if (dataSocket->ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {

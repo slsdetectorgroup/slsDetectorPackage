@@ -1766,7 +1766,7 @@ int multiSlsDetector::getReceiverStreamingPort(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-void multiSlsDetector::setClientDataStreamingInIP(std::string ip,
+void multiSlsDetector::setClientDataStreamingInIP(const std::string& ip,
                                                          int detPos) {
     if (ip.length()) {
         int prev_streaming = enableDataStreamingToClient(-1);
@@ -1800,7 +1800,7 @@ std::string multiSlsDetector::getClientStreamingIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-void multiSlsDetector::setReceiverDataStreamingOutIP(std::string ip,
+void multiSlsDetector::setReceiverDataStreamingOutIP(const std::string& ip,
                                                             int detPos) {
     if (ip.length()) {
         int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);

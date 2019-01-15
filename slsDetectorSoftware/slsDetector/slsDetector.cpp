@@ -5213,7 +5213,7 @@ int slsDetector::enableTenGigabitEthernet(int i) {
 		ret = FAIL;
 		arg = thisDetector->tenGigaEnable;
 		retval = -1;
-		FILE_LOG(logINFO) << "Sending 10Gbe enable to receiver: " << arg;
+		FILE_LOG(logDEBUG1) << "Sending 10Gbe enable to receiver: " << arg;
 
 		if (connectData() == OK) {
 			ret = thisReceiver->Client_Send(fnum, &arg, sizeof(arg), &retval, sizeof(retval));

@@ -2,6 +2,8 @@
 #include "string_utils.h"
 #include "container_utils.h"
 #include <sstream>
+#include <iomanip>
+#include <algorithm>
 namespace sls{
 
 
@@ -25,7 +27,7 @@ std::string concatenateNonEmptyStrings(const std::vector<std::string>& vec){
     return ret;
 }
 
-std::string concatenateIfDifferent(std::vector<std::string> container)
+std::string concatenateIfDifferent(const std::vector<std::string>& container)
 {
     if (allEqual(container)) {
         return container.front();
@@ -36,6 +38,19 @@ std::string concatenateIfDifferent(std::vector<std::string> container)
         return result;
     }
 }
+
+std::string stringIpToHex(const std::string& ip)
+{
+    std::istringstream iss(ip);
+    std::ostringstream oss;
+    std::string item;
+    while (std::getline(iss, item, '.'))
+    {
+        oss << std::setw(2) << std::setfill('0') << std::hex << std::stoi(item);
+    }
+    return oss.str();
+}
+
 
 
 }; // namespace sls

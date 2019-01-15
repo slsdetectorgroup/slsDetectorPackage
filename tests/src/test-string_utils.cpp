@@ -88,3 +88,27 @@ TEST_CASE("concatenate non empty strings with one element"){
   auto ret = sls::concatenateNonEmptyStrings(vec);
   REQUIRE(ret=="hej+");
 }
+
+TEST_CASE("Convert ip address"){
+  std::string address = "101.255.103.1";
+  REQUIRE(sls::stringIpToHex(address) == "65ff6701");
+
+}
+
+TEST_CASE("Remove char from string"){
+  char str[] = "sometest"; 
+  sls::removeChar(str, 'e');
+  REQUIRE(std::string(str) == "somtst");
+}
+
+TEST_CASE("Remove char from empty string"){
+  char str[50] = {}; 
+  sls::removeChar(str, 'e');
+  REQUIRE(std::string(str) == "");
+}
+
+TEST_CASE("Many characters in a row"){
+  char str[] = "someeequitellll::ongstring"; 
+  sls::removeChar(str, 'l');
+  REQUIRE(std::string(str) == "someeequite::ongstring");
+}

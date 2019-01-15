@@ -395,7 +395,7 @@ public:
 	 * @param type string of detector type
 	 * @returns detector type in receiver
  	 */
-	int setDetectorType(std::string stype);
+	int setDetectorType(const std::string& detector_type);
 
 	/**
 	 * Get Detector type from shared memory variable

@@ -12,7 +12,7 @@ namespace sls {
 
 
 
-// C++11 make_unique implementation for exeption safety
+// C++11 make_unique implementation for exception safety
 // already available as std::make_unique in C++14
 template <typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args &&... args) {

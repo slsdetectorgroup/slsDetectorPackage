@@ -18,6 +18,22 @@ void strcpy_safe(char (&destination)[array_size], const char *source) {
     destination[array_size - 1] = '\0';
 }
 
+/*
+Removes all occurrences of the specified char from a c string
+Templated on array size to ensure no access after buffer limits.
+*/
+template <size_t array_size>
+void removeChar(char (&str)[array_size], char ch) {
+    int count = 0;
+    for (int i = 0; str[i]; i++) {
+        if (str[i] != ch)
+            str[count++] = str[i];
+        if (i == array_size - 1)
+            break;
+    }
+    str[count] = '\0';
+}
+
 /* 
 Split a string using the specified delimeter and return a vector of strings.
 TODO! Look into switching to absl or a string_view based implementation. Current
@@ -33,6 +49,11 @@ std::string concatenateNonEmptyStrings(const std::vector<std::string> &vec);
 /*
 Concatenate strings using + if the strings are different
 */
-std::string concatenateIfDifferent(std::vector<std::string> container);
+std::string concatenateIfDifferent(const std::vector<std::string> &container);
+
+/*
+Convert an ip address string to a string in hex format. (removing dots)
+*/
+std::string stringIpToHex(const std::string &ip);
 
 }; // namespace sls

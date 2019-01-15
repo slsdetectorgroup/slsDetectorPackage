@@ -1231,7 +1231,6 @@ void configurePll() {
 #ifdef VIRTUAL
     return;
 #endif
-	u_int32_t val;
 	int32_t phase=0, inv=0;
 	// ensuring PLL is never configured with same phase
     if (clkPhase[1] == 0) {

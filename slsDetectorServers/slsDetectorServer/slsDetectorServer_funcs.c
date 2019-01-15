@@ -728,7 +728,7 @@ int set_dac(int file_des) {
     		case ADC_VPP:
     		if (val < 0 || val > AD9257_GetMaxValidVref())  {
     		    ret = FAIL;
-                strcpy(mess,"Could not set dac. Adc Vpp value should be between 0 and %d\n", maxValidVref());
+                sprintf(mess,"Could not set dac. Adc Vpp value should be between 0 and %d\n", AD9257_GetMaxValidVref());
                 FILE_LOG(logERROR,(mess));
     		} else {
     		    AD9257_SetVrefVoltage(val);
@@ -826,7 +826,7 @@ int set_dac(int file_des) {
 #endif
 
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            case VLIMIT:
+            case V_LIMIT:
                 if (!mV) {
                     ret = FAIL;
                     strcpy(mess,"Could not set power. VLimit should be in mV and not dac units.\n");
@@ -854,7 +854,7 @@ int set_dac(int file_des) {
     			    } else {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     			        if ((mV && checkVLimitCompliant(val) == FAIL) ||
-    			                (!mv && checkVLimitDacCompliant(val) == FAIL)) {
+    			                (!mV && checkVLimitDacCompliant(val) == FAIL)) {
                             ret = FAIL;
                             sprintf(mess,"Could not set dac %d to value %d. "
                                     "Exceeds voltage limit %d.\n",
@@ -916,7 +916,7 @@ int get_adc(int file_des) {
 	if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
 		return printSocketReadError();
 
-#ifndef MOENCHD
+#ifdef MOENCHD
     functionNotImplemented();
 #else
 	enum ADCINDEX serverAdcIndex = 0;
@@ -1230,7 +1230,9 @@ int get_module(int file_des) {
 
 		// only get
 		FILE_LOG(logDEBUG1, ("Getting module\n"));
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
 		getModule(&module);
+#endif
 		FILE_LOG(logDEBUG1, ("Getting module. Settings:%d\n", module.reg));
 	}
 
@@ -1459,7 +1461,7 @@ int read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Reading all frames\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	    // read from fifo enabled
       if (!sendUDP(-1)) {
           nframes = 0;
@@ -1468,7 +1470,7 @@ int read_all(int file_des) {
           while(readFrameFromFifo() == OK) {
               // (to the receiver)
               Server_SendResult(file_des, INT32, NO_UPDATE, ramValues, dataBytes);// (or get as arg first)send number of bytes (dataBytes) first //FIXME
-              FILE_LOG(logDEBUG1, "Frame %d sent\n", nframes);
+              FILE_LOG(logDEBUG1, ("Frame %d sent\n", nframes));
               ++nframes;
           }
 
@@ -1670,7 +1672,6 @@ int get_time_left(int file_des) {
         case ACTUAL_TIME:
         case MEASUREMENT_TIME:
         case FRAME_NUMBER:
-        case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
         case CYCLES_NUMBER:
 #elif MOENCHD
@@ -1679,7 +1680,6 @@ int get_time_left(int file_des) {
         case ACTUAL_TIME:
         case MEASUREMENT_TIME:
         case FRAME_NUMBER:
-        case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
         case CYCLES_NUMBER:
 #endif
@@ -1850,7 +1850,7 @@ int set_roi(int file_des) {
 #else
 	// set & get
 	if ((narg == GET_READOUT_FLAGS) || (Server_VerifyLock() == OK)) {
-	    if (myDetectorType == GOTTHARDD && narg > 1) {
+	    if (myDetectorType == GOTTHARD && narg > 1) {
 	        ret = FAIL;
             strcpy(mess,"Can not set more than one ROI per module.\n");
             FILE_LOG(logERROR,(mess));
@@ -2090,7 +2090,7 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
-	i32 = (int)setSettings(GET_SETTINGS);
+	i32 = (int)getSettings();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
@@ -2559,14 +2559,14 @@ int set_ctb_pattern(int file_des) {
                     default:
                         sprintf(tempName, "Pattern (Word, addr:0x%x)", addr);
                         FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
-                        retval64 = writePatternWord(word);
+                        retval64 = writePatternWord(addr, word);
                         break;
                     }
                     FILE_LOG(logDEBUG1, ("%s: 0x%llx\n", tempName, (long long int)retval64));
                     validate64(word, retval64, tempName, HEX);
                 }
             }
-            return Server_SendResult(file_des, INT64, UPDATE, retval64, sizeof(retval64);
+            return Server_SendResult(file_des, INT64, UPDATE, &retval64, sizeof(retval64));
 
 
             // pattern loop
@@ -2576,18 +2576,20 @@ int set_ctb_pattern(int file_des) {
             }
 
             // level 0-2, addr upto patternlength + 1
-            else if ((level != -1) && (startAddr > (MAX_PATTERN_LENGTH + 1) || stopAddr > (MAX_PATTERN_LENGTH + 1))) {
+            else if ((loopLevel != -1) && (startAddr > (MAX_PATTERN_LENGTH + 1) || stopAddr > (MAX_PATTERN_LENGTH + 1))) {
                 ret = FAIL;
-                sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, addr:%d). Addr must be less than %d\n",
-                        level, addr, MAX_PATTERN_LENGTH + 1);
+                sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, startaddr:%d, stopaddr:%d). "
+                        "Addr must be less than %d\n",
+                        loopLevel, startAddr, stopAddr, MAX_PATTERN_LENGTH + 1);
                 FILE_LOG(logERROR, (mess));
             }
 
             //level -1, addr upto patternlength
-            else if ((level == -1) && (startAddr > MAX_PATTERN_LENGTH || stopAddr > MAX_PATTERN_LENGTH)) {
+            else if ((loopLevel == -1) && (startAddr > MAX_PATTERN_LENGTH || stopAddr > MAX_PATTERN_LENGTH)) {
                 ret = FAIL;
-                sprintf(mess, "Cannot set Pattern (Pattern Loop, complete pattern, addr:%d). Addr must be less than %d\n",
-                        addr, MAX_PATTERN_LENGTH);
+                sprintf(mess, "Cannot set Pattern (Pattern Loop, complete pattern, startaddr:%d, stopaddr:%d). "
+                        "Addr must be less than %d\n",
+                        startAddr, stopAddr, MAX_PATTERN_LENGTH);
                 FILE_LOG(logERROR, (mess));
             }
 
@@ -2597,7 +2599,7 @@ int set_ctb_pattern(int file_des) {
             retvals[0] = startAddr;
             retvals[1] = stopAddr;
             retvals[2] = numLoops;
-            return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals);
+            return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
 
 
         case 2:
@@ -2618,7 +2620,7 @@ int set_ctb_pattern(int file_des) {
                     validate(addr, retval32, tempName, HEX);
                 }
             }
-            return Server_SendResult(file_des, INT32, UPDATE, retval32, sizeof(retval32);
+            return Server_SendResult(file_des, INT32, UPDATE, &retval32, sizeof(retval32));
 
 
         case 3:
@@ -2634,7 +2636,7 @@ int set_ctb_pattern(int file_des) {
                     validate64(timeval, retval64, tempName, HEX);
                 }
             }
-            return Server_SendResult(file_des, INT64, UPDATE, retval64, sizeof(retval64);
+            return Server_SendResult(file_des, INT64, UPDATE, &retval64, sizeof(retval64));
 
 
         case 4:
@@ -2901,7 +2903,7 @@ int set_network_parameter(int file_des) {
 	int value = args[1];
 	FILE_LOG(logDEBUG1, ("Set network parameter index %d to %d\n", mode, value));
 
-#ifdef GOTTHARDD
+#if defined(GOTTHARDD) || defined (CHIPTESTBOARDD) || defined(MOENCHD)
 	functionNotImplemented();
 #else
     enum NETWORKINDEX serverIndex = 0;

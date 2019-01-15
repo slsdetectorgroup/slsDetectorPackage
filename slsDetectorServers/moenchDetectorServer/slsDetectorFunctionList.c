@@ -497,7 +497,7 @@ void setupDetector() {
 	{
 	    int idac = 0;
 	    for (idac = 0; idac < NDAC; ++idac) {
-	        setDac(idac, LTC2620_PWR_DOWN_VAL, 0);
+	        setDAC(idac, LTC2620_PWR_DOWN_VAL, 0);
 	    }
 	}
 
@@ -532,7 +532,7 @@ int allocateRAM() {
     updateDataBytes();
 
     // update only if change in databytes
-    if (dataBytes == dataBytes) {
+    if (dataBytes == oldDataBytes) {
         FILE_LOG(logDEBUG1, ("RAM of size %d already allocated. Nothing to be done.\n", dataBytes));
         return OK;
     }
@@ -561,8 +561,9 @@ int allocateRAM() {
 void updateDataBytes() {
     int oldDataBytes = dataBytes;
     dataBytes = NCHIP * getChannels() * NUM_BYTES_PER_PIXEL * nSamples;
-    if (dataBytes != dataBytes)
+    if (oldDataBytes != dataBytes) {
         FILE_LOG(logINFO, ("Updating Databytes: %d\n", dataBytes));
+    }
 }
 
 int getChannels() {
@@ -578,8 +579,8 @@ int getChannels() {
         }
     }
     if (digitalEnable)
-        nchan += NCHAN_DIGITAL;
-    return nchan;
+        nchans += NCHAN_DIGITAL;
+    return nchans;
 }
 
 
@@ -639,9 +640,9 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
                 FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", arg[iroi].xmin, arg[iroi].xmax));
                 // swap if xmin > xmax
                 if (arg[iroi].xmin > arg[iroi].xmax) {
-                    int temp = xmin;
+                    int temp = arg[iroi].xmin;
                     arg[iroi].xmin = arg[iroi].xmax;
-                    arg[iroi].xmax = arg[iroi].temp;
+                    arg[iroi].xmax = temp;
                     FILE_LOG(logINFORED, ("\tCorrected %d: (%d, %d)\n", arg[iroi].xmin, arg[iroi].xmax));
                 }
                 int ich = 0;
@@ -810,15 +811,15 @@ enum  readOutFlags setReadOutFlags(enum readOutFlags val) {
         switch(val) {
         case NORMAL_READOUT:
             FILE_LOG(logINFO, ("Setting Normal Readout\n"));
-            bus_w(bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
+            bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
             break;
         case DIGITAL_ONLY:
             FILE_LOG(logINFO, ("Setting Digital Only Readout\n"));
-            bus_w(bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
+            bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
             break;
         case ANALOG_AND_DIGITAL:
             FILE_LOG(logINFO, ("Setting Analog & Digital Readout\n"));
-            bus_w(bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) | CONFIG_ENBLE_DGTL_OTPT_MSK);
+            bus_w(addr, (bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK)) | CONFIG_ENBLE_DGTL_OTPT_MSK);
             break;
         default:
             FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
@@ -944,11 +945,6 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
 		break;
 
-	case FRAME_PERIOD:
-		retval = get64BitReg(GET_PERIOD_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
-		FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
-		break;
-
 	case DELAY_AFTER_TRIGGER:
 		retval = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
 		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
@@ -991,9 +987,9 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
     case FRAME_PERIOD:
     case DELAY_AFTER_TRIGGER:
         // convert to freq
-        val *= (1E-3 * CLK_SYNC);
+        val *= (1E-3 * ADC_CLK);
         // convert back to timer
-        val = (val) / (1E-3 * CLK_SYNC);
+        val = (val) / (1E-3 * ADC_CLK);
         if (val != retval)
             return FAIL;
     default:
@@ -1002,6 +998,11 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
     return OK;
 }
 
+
+/* parameters - settings */
+enum detectorSettings getSettings() {
+    return UNDEFINED;
+}
 
 /* parameters - dac, adc, hv */
 
@@ -1040,8 +1041,14 @@ int getMaxDacSteps() {
     return LTC2620_MAX_STEPS;
 }
 
+int dacToVoltage(int dac) {
+    int val;
+    LTC2620_DacToVoltage(dac, &val);
+    return val;
+}
+
 int checkVLimitCompliant(int mV) {
-    if (vLimit > 0 && mv > vLimit)
+    if (vLimit > 0 && mV > vLimit)
         return FAIL;
     return OK;
 }
@@ -1065,19 +1072,6 @@ int getVLimit() {
 void setVLimit(int l) {
     if (l >= 0)
         vLimit = l;
-}
-
-
-int getADC(enum ADCINDEX ind){
-#ifdef VIRTUAL
-    return 0;
-#endif
-    int idac = (int)ind;
- //FIXME: temperature??
-    default:
-        FILE_LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
-        return -1;
-    }
 }
 
 
@@ -1235,7 +1229,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
 
 	cleanFifos();//FIXME: resetPerpheral() for ctb?
-	resetPerpheral();
+	resetPeripheral();
 	usleep(WAIT_TIME_CONFIGURE_MAC); /* todo maybe without */
 	sendUDP(1);
 
@@ -1281,8 +1275,8 @@ int sendUDP(int enable) {
 
 
 // ind can only be ADC_CLK or DBIT_CLK
-void configurePhase(CLKINDEX ind, int val) {
-    if (st > 65535 || st < -65535) {
+void configurePhase(enum CLKINDEX ind, int val) {
+    if (val > 65535 || val < -65535) {
         FILE_LOG(logERROR, ("\tPhase provided outside limits\n"));
         return;
     }
@@ -1311,11 +1305,11 @@ void configurePhase(CLKINDEX ind, int val) {
     clkPhase[ind] = val;
 }
 
-int getPhase(CLKINDEX ind) {
+int getPhase(enum CLKINDEX ind) {
     return clkPhase[ind];
 }
 
-void configureFrequency(CLKINDEX ind, int val) {
+void configureFrequency(enum CLKINDEX ind, int val) {
     if (val < 0)
         return;
 
@@ -1324,21 +1318,19 @@ void configureFrequency(CLKINDEX ind, int val) {
     // check adc clk too high
     if (ind == ADC_CLK && val > MAXIMUM_ADC_CLK) {
         FILE_LOG(logERROR, ("Frequency %d MHz too high for ADC\n", val));
-        return getPhase(ind);
+        return;
     }
 
     // Calculate and set output frequency
-    ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ, val);
-
-    clkDivider[ind] = PLL_VCO_FREQ_MHZ / (low_count + high_count);
+    clkDivider[ind] = ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ, val);
     FILE_LOG(logINFO, ("\tC%d: Frequency set to %d MHz\n", ind, clkDivider[ind]));
 }
 
-int getFrequency(CLKINDEX ind) {
+int getFrequency(enum CLKINDEX ind) {
     return clkDivider[ind];
 }
 
-void configureSyncFrequency(CLKINDEX ind) {
+void configureSyncFrequency(enum CLKINDEX ind) {
     int clka = 0, clkb = 0;
     switch(ind) {
     case ADC_CLOCK:
@@ -1392,13 +1384,13 @@ void setAdcOffsetRegister(int adc, int val) {
 
     uint32_t addr = ADC_OFFSET_REG;
     // reset value
-    bus_w(bus_r(addr) & ~ mask);
+    bus_w(addr, bus_r(addr) & ~ mask);
     // set value
-    bus_w(bus_r(addr) | ((val << offset) & mask));
+    bus_w(addr, bus_r(addr) | ((val << offset) & mask));
     FILE_LOG(logDEBUG1, ("\t %s Offset: 0x%8x\n", (adc ? "ADC" : "Dbit"), bus_r(addr)));
 }
 
-void getAdcOffsetRegister(int adc) {
+int getAdcOffsetRegister(int adc) {
     if (adc)
         return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_ADC_PPLN_MSK) >> ADC_OFFSET_ADC_PPLN_OFST);
     return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_DBT_PPLN_MSK) >> ADC_OFFSET_DBT_PPLN_OFST);
@@ -1433,20 +1425,20 @@ uint64_t readPatternWord(int addr) {
     }
 
     FILE_LOG(logDEBUG1, ("Reading Pattern - Word (addr:%d)\n", addr));
-    uint32_t addr = PATTERN_CNTRL_REG;
+    uint32_t reg = PATTERN_CNTRL_REG;
 
     // overwrite with  only addr
-    bus_w(addr, ((addr << PATTERN_CNTRL_ADDR_OFST) & PATTERN_CNTRL_ADDR_MSK));
+    bus_w(reg, ((addr << PATTERN_CNTRL_ADDR_OFST) & PATTERN_CNTRL_ADDR_MSK));
 
     // set read strobe
-    bus_w(addr, bus_r(addr) | PATTERN_CNTRL_RD_MSK);
+    bus_w(reg, bus_r(reg) | PATTERN_CNTRL_RD_MSK);
 
     // read value
     uint64_t retval = get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
     FILE_LOG(logDEBUG1, ("\tWord(addr:%d): 0x%llx\n", addr, (long long int) retval));
 
     // unset read strobe
-    bus_w(addr, bus_r(addr) & (~PATTERN_CNTRL_RD_MSK));
+    bus_w(reg, bus_r(reg) & (~PATTERN_CNTRL_RD_MSK));
 
     return retval;
 }
@@ -1464,19 +1456,19 @@ uint64_t writePatternWord(int addr, uint64_t word) {
     }
 
     FILE_LOG(logINFO, ("Setting Pattern - Word (addr:%d, word:0x%llx)\n", addr, (long long int) word));
-    uint32_t addr = PATTERN_CNTRL_REG;
+    uint32_t reg = PATTERN_CNTRL_REG;
 
     // write word
     set64BitReg(word, PATTERN_IN_LSB_REG, PATTERN_IN_MSB_REG);
 
     // overwrite with  only addr
-    bus_w(addr, ((addr << PATTERN_CNTRL_ADDR_OFST) & PATTERN_CNTRL_ADDR_MSK));
+    bus_w(reg, ((addr << PATTERN_CNTRL_ADDR_OFST) & PATTERN_CNTRL_ADDR_MSK));
 
     // set write strobe
-    bus_w(addr, bus_r(addr) | PATTERN_CNTRL_WR_MSK);
+    bus_w(reg, bus_r(reg) | PATTERN_CNTRL_WR_MSK);
 
     // unset write strobe
-    bus_w(addr, bus_r(addr) & (~PATTERN_CNTRL_WR_MSK));
+    bus_w(reg, bus_r(reg) & (~PATTERN_CNTRL_WR_MSK));
 
     return readPatternWord(addr);
 }
@@ -1566,15 +1558,19 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
 void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
 
     // level 0-2, addr upto patternlength + 1 (checked at tcp)
-    if ((level != -1) && (*startAddr > (MAX_PATTERN_LENGTH + 1) || *stopAddr > (MAX_PATTERN_LENGTH + 1))) {
-        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, addr:%d). Addr must be less than %d\n",
-                level, addr, MAX_PATTERN_LENGTH + 1));
+    if ((level != -1) &&
+            (*startAddr >= 0 || *stopAddr > (MAX_PATTERN_LENGTH + 1))) {
+        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, startaddr:%d, stopaddr:%d). "
+                "Addr must be less than %d\n",
+                level, *startAddr, *stopAddr, MAX_PATTERN_LENGTH + 1));
     }
 
     //level -1, addr upto patternlength (checked at tcp)
-    else if ((level == -1) && (*startAddr > MAX_PATTERN_LENGTH || *stopAddr > MAX_PATTERN_LENGTH)) {
-        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, addr:%d). Addr must be less than %d\n",
-                addr, MAX_PATTERN_LENGTH));
+    else if ((level == -1) &&
+            (*startAddr >= 0 || *stopAddr > MAX_PATTERN_LENGTH)) {
+        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, stopaddr:%d). "
+                "Addr must be less than %d\n",
+                *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
     }
 
     uint32_t addr = 0;
@@ -1673,7 +1669,7 @@ int startStateMachine(){
 	unsetFifoReadStrobes(); // FIXME: unnecessary to write bus_w(dumm, 0) as it is 0 in the beginnig and the strobes are always unset if set
 
 	// point the data pointer to the starting position of data
-	now_ptr = (char*)ram_values;
+	now_ptr = (char*)ramValues;
 
 	//start state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK | CONTROL_STRT_EXPSR_MSK);
@@ -1782,7 +1778,7 @@ enum runStatus getRunStatus(){
 
 
 
-void readframe(int *ret, char *mess){
+void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
 	while(virtual_status) {
 		//FILE_LOG(logERROR, ("Waiting for finished flag\n");
@@ -1808,7 +1804,7 @@ void readframe(int *ret, char *mess){
 }
 
 void unsetFifoReadStrobes() {
-    bus_w(DUMMY_REG, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+    bus_w(DUMMY_REG, bus_r(DUMMY_REG) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
 }
 
 void readSample() {
@@ -1875,7 +1871,7 @@ int checkDataPresent() {
             // still no data
             if (!dataPresent) {
                 FILE_LOG(logERROR, ("Acquisition Finished (State: 0x%08x), "
-                        "but no frame found (Look_at_me: 0x%08x).\n", retval));
+                        "but no frame found (Look_at_me: 0x%08x).\n", dataPresent));
                 return FAIL;
             }
             // got data, exit
@@ -1926,7 +1922,7 @@ uint32_t runBusy() {
 /* common */
 
 int calculateDataBytes(){
-	return DATA_BYTES;
+	return dataBytes;
 }
 
 int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}

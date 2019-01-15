@@ -179,8 +179,9 @@ void ALTERA_PLL_SetModePolling() {
  * @param clkIndex clock index
  * @param pllVCOFreqMhz PLL VCO Frequency in Mhz
  * @param value frequency to set to
+ * @param frequency set
  */
-void ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
+int ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
     FILE_LOG(logINFO, ("\tC%d: Setting output frequency\n"));
 
     // calculate output frequency
@@ -213,6 +214,8 @@ void ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
     bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) | ALTERA_PLL_Cntrl_PLLRstMask);
     usleep(ALTERA_PLL_WAIT_TIME_US);
     bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) & ~ALTERA_PLL_Cntrl_PLLRstMask);
+
+    return (pllVCOFreqMhz / (low_count + high_count));
 }
 
 

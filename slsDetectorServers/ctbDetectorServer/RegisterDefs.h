@@ -316,7 +316,7 @@
 //#define CONTROL_STP_RDT_OFST                (5)
 //#define CONTROL_STP_RDT_MSK                 (0x00000001 << CONTROL_STP_RDT_OFST)
 #define CONTROL_STRT_EXPSR_OFST             (6)
-#define CONTROL_STRT_EXPSR_MSK              (0x00000001 << CONTROL_STRT_RDT_OFST)
+#define CONTROL_STRT_EXPSR_MSK              (0x00000001 << CONTROL_STRT_EXPSR_OFST)
 //#define CONTROL_STP_EXPSR_OFST              (7)
 //#define CONTROL_STP_EXPSR_MSK               (0x00000001 << CONTROL_STP_RDT_OFST)
 //#define CONTROL_STRT_TRN_OFST               (8)

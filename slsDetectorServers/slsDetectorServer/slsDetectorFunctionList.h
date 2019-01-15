@@ -58,26 +58,27 @@ void 		getModuleConfiguration();
 void		allocateDetectorStructureMemory();
 #endif
 void 		setupDetector();
-#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int         allocateRAM();
 void        updateDataBytes();
 int         getChannels();
 #endif
+
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)
 int			setDefaultDacs();
 #endif
 
 
 // advanced read/write reg
-#ifdef JUNGFRAUD
-extern u_int32_t	writeRegister(u_int32_t offset, u_int32_t data);	// blackfin.h
-extern u_int32_t  	readRegister(u_int32_t offset);						// blackfin.h
-#elif EIGERD
+#ifdef EIGERD
 uint32_t	writeRegister(uint32_t offset, uint32_t data);
 uint32_t  	readRegister(uint32_t offset);
-#else
+#elif GOTTHARDD
 uint32_t    writeRegister16And32(uint32_t offset, uint32_t data); //FIXME its not there in ctb or moench?
 uint32_t    readRegister16And32(uint32_t offset);
+#else
+extern u_int32_t    writeRegister(u_int32_t offset, u_int32_t data);    // blackfin.h
+extern u_int32_t    readRegister(u_int32_t offset);                     // blackfin.h
 #endif
 
 
@@ -118,6 +119,7 @@ ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 void 		setSpeed(enum speedVariable ind, int val);
 int         getSpeed(enum speedVariable ind);
 #endif
+
 #if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #endif
@@ -128,17 +130,17 @@ int         selectStoragecellStart(int pos);
 #endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 int64_t 	getTimeLeft(enum timerIndex ind);
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int         validateTimer(enum timerIndex ind, int64_t val, int64_t retval);
 #endif
 
 // parameters - module, settings
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD))
 int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 enum 		detectorSettings setSettings(enum detectorSettings sett);
-enum 		detectorSettings getSettings();
 #endif
+enum 		detectorSettings getSettings();
 
 // parameters - threshold
 #ifdef EIGERD
@@ -153,19 +155,22 @@ extern void AD9252_Set(int addr, int val);      // AD9252.h (old board)
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 extern void AD9257_Set(int addr, int val);      // AD9257.h
 #endif
-#ifdef CHIPTESTBOARDD || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 extern int AD9257_GetMaxValidVref();                   // AD9257.h
-extern void AD9257_SetVrefVoltage(int val)             // AD9257.h
+extern void AD9257_SetVrefVoltage(int val);             // AD9257.h
 #endif
 
 void 		setDAC(enum DACINDEX ind, int val, int mV);
 int         getDAC(enum DACINDEX ind, int mV);
 int         getMaxDacSteps();
-#if  defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+int         dacToVoltage(int dac);
 int         checkVLimitCompliant(int mV);
 int         checkVLimitDacCompliant(int dac);
 int         getVLimit();
 void        setVLimit(int l);
+#endif
+
 #ifdef CHIPTESTBOARDD
 int         isVchipValid(int val);
 int         getVchip();
@@ -184,7 +189,9 @@ void        nextDAC();
 void        program_one_dac(int addr, int value);
 u_int32_t   putout(char *s);
 #endif*/
+#ifndef MOENCHD
 int 		getADC(enum ADCINDEX ind);
+#endif
 #ifdef CHIPTESTBOARDD
 extern int INA226_ReadVoltage(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t deviceId); // INA226.h
 extern int INA226_ReadCurrent(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t deviceId); // INA226.h
@@ -227,15 +234,13 @@ int 		setDetectorPosition(int pos[]);
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int         powerChip (int on);
 int         sendUDP(int enable);
-void        resetPLL();
-void        setPllReconfigReg(u_int32_t reg, u_int32_t val);
-void        configurePhase(CLKINDEX ind, int val);
-int         getPhase(CLKINDEX ind);
-void        configureFrequency(CLKINDEX ind, int val);
-int         getFrequency(CLKINDEX ind);
-void        configureSyncFrequency(CLKINDEX ind);
+void        configurePhase(enum CLKINDEX ind, int val);
+int         getPhase(enum CLKINDEX ind);
+void        configureFrequency(enum CLKINDEX ind, int val);
+int         getFrequency(enum CLKINDEX ind);
+void        configureSyncFrequency(enum CLKINDEX ind);
 void        setAdcOffsetRegister(int adc, int val);
-void        getAdcOffsetRegister(int adc);
+int         getAdcOffsetRegister(int adc);
 extern void eraseFlash();                                                   // programfpga.h
 extern int  startWritingFPGAprogram(FILE** filefp);                         // programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);                           // programfpga.h
@@ -315,20 +320,23 @@ int 		stopStateMachine();
 #ifdef EIGERD
 int			softwareTrigger();
 #endif
+
 #ifdef EIGERD
 int 		startReadOut();
 #endif
 enum 		runStatus getRunStatus();
 void 		readFrame(int *ret, char *mess);
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)#ifdef CHIPTESTBOARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 void        unsetFifoReadStrobes();
 void        readSample();
 int         checkDataPresent();
 int         readFrameFromFifo();
 #endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 u_int32_t 	runBusy();
 #endif
+
 #ifdef GOTTHARDD
 u_int32_t   runState(enum TLogLevel lev);
 #endif

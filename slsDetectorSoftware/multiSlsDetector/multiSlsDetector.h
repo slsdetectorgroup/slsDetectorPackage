@@ -1898,9 +1898,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     // pthread_t dataProcessingThread;
     std::thread dataProcessingThread;
 
-    /** gui data */
-    double *fdata {nullptr};
-
     /** detector data packed for the gui */
     detectorData *thisData {nullptr};
 

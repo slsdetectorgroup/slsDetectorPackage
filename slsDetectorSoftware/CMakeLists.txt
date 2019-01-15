@@ -4,28 +4,19 @@ set(SOURCES
     slsDetector/slsDetectorUsers.cpp 
     slsDetector/slsDetectorCommand.cpp
     slsDetector/slsDetector.cpp 
-    ../slsSupportLib/include/ClientInterface.cpp
-    ../slsSupportLib/include/utilities.cpp
-    ../slsSupportLib/src/string_utils.cpp
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/ClientInterface.cpp
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/utilities.cpp
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/src/string_utils.cpp
 )
 
 set(HEADERS
 )
 
 include_directories(
-../slsSupportLib/include
-multiSlsDetector 
-sharedMemory
-slsDetector 
-)
-
-add_library(slsDetectorStatic STATIC
-    ${SOURCES}
-    ${HEADERS}
-)
-set_target_properties(slsDetectorStatic PROPERTIES
-    ARCHIVE_OUTPUT_NAME SlsDetector
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/include
+    multiSlsDetector 
+    sharedMemory
+    slsDetector 
 )
 
 add_library(slsDetectorShared SHARED
@@ -36,7 +27,6 @@ add_library(slsDetectorShared SHARED
 target_link_libraries(slsDetectorShared
 	zmq
 )
-
 
 
 set(PUBLICHEADERS
@@ -61,8 +51,6 @@ set_target_properties(slsDetectorShared PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-
-
 add_subdirectory(slsDetectorClient)
 
 if(DOXYGEN_FOUND)
@@ -75,7 +63,8 @@ if(DOXYGEN_FOUND)
 endif()
 
 
-install(TARGETS slsDetectorShared slsDetectorStatic
+install(TARGETS slsDetectorShared
     LIBRARY DESTINATION lib
     PUBLIC_HEADER DESTINATION include
-    ARCHIVE DESTINATION lib)
+    ARCHIVE DESTINATION lib
+)

@@ -3008,7 +3008,7 @@ std::string slsDetector::setAdditionalJsonHeader(const std::string& jsonheader) 
 	int ret = FAIL;
 	char args[MAX_STR_LENGTH] = {0};
 	char retvals[MAX_STR_LENGTH] = {0};
-	strcpy(args, jsonheader.c_str());
+	sls::strcpy_safe(args, jsonheader.c_str());
 	FILE_LOG(logDEBUG1) << "Sending additional json header " << args;
 
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
@@ -4757,7 +4757,7 @@ std::string slsDetector::setFileName(const std::string& fname) {
 				setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
 			} else {
 				FILE_LOG(logDEBUG1) << "Receiver file name: " << retvals;
-				strcpy(thisDetector->receiver_fileName, retvals);
+				sls::strcpy_safe(thisDetector->receiver_fileName, retvals);
 				if (ret == FORCE_UPDATE)
 					ret = updateReceiver();
 			}

@@ -11,11 +11,16 @@ option (USE_RECEIVER "Receiver" OFF)
 option (USE_GUI "GUI" OFF)
 option (USE_TESTS "TESTS" ON)
 
-if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -Wno-misleading-indentation")
-else ()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 ")
-endif ()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 ")
+
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  # clang does not support -Wno-misleading-indentation 
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation")
+endif()
+
 
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")

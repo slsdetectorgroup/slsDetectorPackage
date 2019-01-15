@@ -41,15 +41,6 @@ include_directories(
 )
 
 
-add_library(slsReceiverStatic STATIC
-    ${SOURCES}
-    ${HEADERS}
-)
-set_target_properties(slsReceiverStatic PROPERTIES
-    ARCHIVE_OUTPUT_NAME SlsReceiver
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
 add_library(slsReceiverShared SHARED
     ${SOURCES}
     ${HEADERS}
@@ -79,6 +70,7 @@ add_executable(slsReceiver
 set_target_properties(slsReceiver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
 target_link_libraries(slsReceiver
     slsReceiverShared
     pthread
@@ -92,10 +84,11 @@ endif ()
 
 
 
-install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
+install(TARGETS slsReceiverShared slsReceiver
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
-        PUBLIC_HEADER DESTINATION include)
+        PUBLIC_HEADER DESTINATION include
+)
         
       

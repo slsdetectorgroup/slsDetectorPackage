@@ -41,15 +41,6 @@ add_definitions(
     -DDACS_INT
 )
 
-add_library(slsDetectorStatic STATIC
-    ${SOURCES}
-    ${HEADERS}
-)
-set_target_properties(slsDetectorStatic PROPERTIES
-    ARCHIVE_OUTPUT_NAME SlsDetector
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
 add_library(slsDetectorShared SHARED
     ${SOURCES}
     ${HEADERS}
@@ -98,7 +89,7 @@ if(DOXYGEN_FOUND)
     )
 endif()
 
-install(TARGETS slsDetectorShared slsDetectorStatic
+install(TARGETS slsDetectorShared
     LIBRARY DESTINATION lib
     PUBLIC_HEADER DESTINATION include
     ARCHIVE DESTINATION lib)

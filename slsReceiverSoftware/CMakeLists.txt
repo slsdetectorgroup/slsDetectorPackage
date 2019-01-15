@@ -48,15 +48,6 @@ set_target_properties(zmq PROPERTIES
     IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
 )
 
-add_library(slsReceiverStatic STATIC
-    ${SOURCES}
-    ${HEADERS}
-)
-set_target_properties(slsReceiverStatic PROPERTIES
-    ARCHIVE_OUTPUT_NAME SlsReceiver
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
 add_library(slsReceiverShared SHARED
     ${SOURCES}
     ${HEADERS}
@@ -98,7 +89,7 @@ endif ()
 
 
 
-install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
+install(TARGETS slsReceiverShared slsReceiver
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib

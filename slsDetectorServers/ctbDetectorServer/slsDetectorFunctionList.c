@@ -487,7 +487,7 @@ void setupDetector() {
 
     // power regulators
     // I2C
-    INA226_ConfigureI2CCore();
+    INA226_ConfigureI2CCore(I2C_SHUNT_RESISTER_OHMS, I2C_CONTROL_REG, I2C_RX_DATA_FIFO_LEVEL_REG, I2C_SCL_LOW_COUNT_REG, I2C_SCL_HIGH_COUNT_REG, I2C_SDA_HOLD_REG, I2C_TRANSFER_COMMAND_FIFO_REG);
     INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
@@ -495,7 +495,7 @@ void setupDetector() {
     INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
     // switch off
     powerChip(0);
-    setvchip(VCHIP_MIN_MV);
+    setVchip(VCHIP_MIN_MV);
 
     // adcs
     AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
@@ -1146,10 +1146,10 @@ int getVChipToSet(enum DACINDEX ind, int val) {
 
     int ipwr = 0;
     // loop through the adcs
-    for (ipwr = 0; ipwr < PWR -1; ++ipwr) {
+    for (ipwr = 0; ipwr < NPWR -1; ++ipwr) {
 
         // get the dac values for each adc
-        int dacVal = dacValues[getDACIndexFromADCIndex(i)];
+        int dacVal = dacValues[getDACIndexFromADCIndex(ipwr)];
 
         // if current index, replace with value to be set
         if (ipwr == adcIndex)
@@ -1252,6 +1252,7 @@ int getPower(enum DACINDEX ind) {
     }
 
     // convert dac to voltage
+    int retval = -1;
     ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, POWER_RGLTR_MIN, (getVchip() - VCHIP_POWER_INCRMNT),
             dacValues[ind], &retval);
     return retval;
@@ -1261,7 +1262,7 @@ void setPower(enum DACINDEX ind, int val) {
     // validate index & get adc index
     int adcIndex = getADCIndexFromDACIndex(ind);
     if (adcIndex == -1) {
-        return -1;
+        return;
     }
 
     uint32_t addr = POWER_REG;
@@ -1274,7 +1275,7 @@ void setPower(enum DACINDEX ind, int val) {
 
         // validate value (already checked at tcp)
         if (!isPowerValid(val)) {
-            FILE_LOG(logERROR, ("\Invalid value of %d mV for Power %d. Is not between %d and %d mV\n", val, ind, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
+            FILE_LOG(logERROR, ("Invalid value of %d mV for Power %d. Is not between %d and %d mV\n", val, ind, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
             return;
         }
 
@@ -1289,13 +1290,14 @@ void setPower(enum DACINDEX ind, int val) {
 
         // set vchip
         setVchip(vchip);
-        if (getvchip() != vchip) {
-            FILE_LOG(logERROR, ("Weird, Could not set vchip. Set %d, read %d\n.", vchip, getvchip()));
+        if (getVchip() != vchip) {
+            FILE_LOG(logERROR, ("Weird, Could not set vchip. Set %d, read %d\n.", vchip, getVchip()));
             return;
         }
 
         // convert it to dac
         if (val != LTC2620_PWR_DOWN_VAL) {
+            int dacval = -1;
             // convert voltage to dac
             if (ConvertToDifferentRange(POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT, LTC2620_MIN_VAL, LTC2620_MAX_VAL,
                     val, &dacval) == FAIL) {
@@ -1318,22 +1320,19 @@ int getADC(enum ADCINDEX ind){
 #ifdef VIRTUAL
     return 0;
 #endif
-    int idac = (int)ind;
     switch(ind) {
     case V_PWR_IO:
     case V_PWR_A:
     case V_PWR_B:
     case V_PWR_C:
     case V_PWR_D:
-        return INA226_ReadVoltage(I2C_TRANSFER_COMMAND_FIFO_REG, I2C_RX_DATA_FIFO_LEVEL_REG,
-                I2C_POWER_VIO_DEVICE_ID + (int)ind);
+        return INA226_ReadVoltage(I2C_POWER_VIO_DEVICE_ID + (int)ind);
     case I_PWR_IO:
     case I_PWR_A:
     case I_PWR_B:
     case I_PWR_C:
     case I_PWR_D:
-        return INA226_ReadCurrent(I2C_TRANSFER_COMMAND_FIFO_REG, I2C_RX_DATA_FIFO_LEVEL_REG,
-                I2C_POWER_VIO_DEVICE_ID + (int)(ind - I_PWR_IO));
+        return INA226_ReadCurrent(I2C_POWER_VIO_DEVICE_ID + (int)(ind - I_PWR_IO));
 
         // slow adcs
     case SLOW_ADC_TEMP:
@@ -1346,7 +1345,7 @@ int getADC(enum ADCINDEX ind){
     case SLOW_ADC5:
     case SLOW_ADC6:
     case SLOW_ADC7:
-        return AD7689_GetChannel(ind - SLOW_ADC0);
+        return AD7689_GetChannel((int)ind - SLOW_ADC0);
     default:
         FILE_LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
         return -1;
@@ -1845,15 +1844,19 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
 void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
 
     // level 0-2, addr upto patternlength + 1 (checked at tcp)
-    if ((level != -1) && (*startAddr > (MAX_PATTERN_LENGTH + 1) || *stopAddr > (MAX_PATTERN_LENGTH + 1))) {
-        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, addr:%d). Addr must be less than %d\n",
-                level, addr, MAX_PATTERN_LENGTH + 1));
+    if ((level != -1) &&
+            (*startAddr >= 0 || *stopAddr > (MAX_PATTERN_LENGTH + 1))) {
+        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, startaddr:%d, stopaddr:%d). "
+                "Addr must be less than %d\n",
+                level, *startAddr, *stopAddr, MAX_PATTERN_LENGTH + 1));
     }
 
     //level -1, addr upto patternlength (checked at tcp)
-    else if ((level == -1) && (*startAddr > MAX_PATTERN_LENGTH || *stopAddr > MAX_PATTERN_LENGTH)) {
-        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, addr:%d). Addr must be less than %d\n",
-                addr, MAX_PATTERN_LENGTH));
+    else if ((level == -1) &&
+            (*startAddr >= 0 || *stopAddr > MAX_PATTERN_LENGTH)) {
+        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, stopaddr:%d). "
+                "Addr must be less than %d\n",
+                *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
     }
 
     uint32_t addr = 0;

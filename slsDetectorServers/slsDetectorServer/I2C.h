@@ -21,6 +21,7 @@
 #define I2C_DATA_RATE_KBPS              (200)
 #define I2C_SCL_PERIOD_NS               ((1000 * 1000) / I2C_DATA_RATE_KBPS)
 #define I2C_SCL_LOW_PERIOD_NS           (I2C_SCL_PERIOD_NS / 2)
+#define I2C_SCL_HIGH_PERIOD_NS          (I2C_SCL_PERIOD_NS / 2)
 #define I2C_SDA_DATA_HOLD_TIME_NS       (I2C_SCL_HIGH_PERIOD_NS / 2)
 #define I2C_SCL_LOW_COUNT               ((I2C_SCL_LOW_PERIOD_NS / 1000) * I2C_CLOCK_MHZ) // convert to us, then to clock (defined in blackfin.h)
 #define I2C_SDA_DATA_HOLD_COUNT         ((I2C_SDA_DATA_HOLD_TIME_NS / 1000) * I2C_CLOCK_MHZ) // convert to us, then to clock (defined in blackfin.h)
@@ -63,25 +64,45 @@
 #define I2C_TFR_CMD_RPTD_STRT_MSK           (0x00000001 << I2C_TFR_CMD_RPTD_STRT_OFST)
 
 
+uint32_t I2C_Control_Reg = 0x0;
+uint32_t I2C_Rx_Data_Fifo_Level_Reg = 0x0;
+uint32_t I2C_Scl_Low_Count_Reg = 0x0;
+uint32_t I2C_Scl_High_Count_Reg = 0x0;
+uint32_t I2C_Sda_Hold_Reg = 0x0;
+uint32_t I2C_Transfer_Command_Fifo_Reg = 0x0;
+
 /**
  * Configure the I2C core,
  * Enable core and
  * Calibrate the calibration register for current readout
+ * @param creg control register (defined in RegisterDefs.h)
+ * @param rreg rx data fifo level register (defined in RegisterDefs.h)
+ * @param slreg scl low count register (defined in RegisterDefs.h)
+ * @param shreg scl high count register (defined in RegisterDefs.h)
+ * @param sdreg sda hold register (defined in RegisterDefs.h)
+ * @param treg transfer command fifo register (defined in RegisterDefs.h)
  */
-void I2C_ConfigureI2CCore() {
+void I2C_ConfigureI2CCore(uint32_t creg, uint32_t rreg, uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg) {
     FILE_LOG(logINFOBLUE, ("\tConfiguring I2C Core for %d kbps:\n", I2C_DATA_RATE_KBPS));
 
+    I2C_Control_Reg = creg;
+    I2C_Rx_Data_Fifo_Level_Reg = rreg;
+    I2C_Scl_Low_Count_Reg = slreg;
+    I2C_Scl_High_Count_Reg = shreg;
+    I2C_Sda_Hold_Reg = sdreg;
+    I2C_Transfer_Command_Fifo_Reg = treg;
+
     FILE_LOG(logINFOBLUE, ("\tSetting SCL Low Period: %d ns (0x%x clocks)\n", I2C_SCL_LOW_PERIOD_NS, I2C_SCL_LOW_COUNT));
-    bus_w(I2C_SCL_LOW_COUNT_REG, (uint32_t)I2C_SCL_LOW_COUNT);
+    bus_w(I2C_Scl_Low_Count_Reg, (uint32_t)I2C_SCL_LOW_COUNT);
 
     FILE_LOG(logINFOBLUE, ("\tSetting SCL High Period: %d ns (0x%x clocks)\n", I2C_SCL_HIGH_PERIOD_NS, I2C_SCL_LOW_COUNT));
-    bus_w(I2C_SCL_HIGH_COUNT_REG, (uint32_t)I2C_SCL_LOW_COUNT);
+    bus_w(I2C_Scl_High_Count_Reg, (uint32_t)I2C_SCL_LOW_COUNT);
 
     FILE_LOG(logINFOBLUE, ("\tSetting SDA Hold Time: %d ns (0x%x clocks)\n", I2C_SDA_DATA_HOLD_TIME_NS, I2C_SDA_DATA_HOLD_COUNT));
-    bus_w(I2C_SDA_HOLD_REG, (uint32_t)I2C_SDA_DATA_HOLD_COUNT);
+    bus_w(I2C_Sda_Hold_Reg, (uint32_t)I2C_SDA_DATA_HOLD_COUNT);
 
     FILE_LOG(logINFOBLUE, ("\tEnabling core\n"));
-    bus_w(I2C_CONTROL_REG, I2C_CTRL_ENBLE_CORE_MSK | I2C_CTRL_BUS_SPEED_FAST_400_VAL);// fixme: (works?)
+    bus_w(I2C_Control_Reg, I2C_CTRL_ENBLE_CORE_MSK | I2C_CTRL_BUS_SPEED_FAST_400_VAL);// fixme: (works?)
 }
 
 /**
@@ -96,22 +117,22 @@ uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
     uint32_t devIdMask =  ((devId << I2C_TFR_CMD_ADDR_OFST) & I2C_TFR_CMD_ADDR_MSK);
 
     // write I2C ID
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
+    bus_w(I2C_Transfer_Command_Fifo_Reg, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
 
     // write register addr
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, addr);
+    bus_w(I2C_Transfer_Command_Fifo_Reg, addr);
 
     // repeated start with read
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK | I2C_TFR_CMD_RW_READ_VAL));
+    bus_w(I2C_Transfer_Command_Fifo_Reg, (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK | I2C_TFR_CMD_RW_READ_VAL));
 
     // continue reading
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, 0x0);
+    bus_w(I2C_Transfer_Command_Fifo_Reg, 0x0);
 
     // stop reading
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, I2C_TFR_CMD_STOP_MSK);
+    bus_w(I2C_Transfer_Command_Fifo_Reg, I2C_TFR_CMD_STOP_MSK);
 
     // read value
-    return bus_r(I2C_RX_DATA_FIFO_LEVEL_REG);
+    return bus_r(I2C_Rx_Data_Fifo_Level_Reg);
 }
 
 /**
@@ -126,22 +147,22 @@ void I2C_Write(uint32_t devId, uint32_t addr, uint16_t data) {
     uint32_t devIdMask =  ((devId << I2C_TFR_CMD_ADDR_OFST) & I2C_TFR_CMD_ADDR_MSK);
 
     // write I2C ID
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
+    bus_w(I2C_Transfer_Command_Fifo_Reg, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
 
     // write register addr
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, addr);
+    bus_w(I2C_Transfer_Command_Fifo_Reg, addr);
 
     // repeated start with write
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK & ~(I2C_TFR_CMD_RW_MSK)));
+    bus_w(I2C_Transfer_Command_Fifo_Reg, ((devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK) & ~(I2C_TFR_CMD_RW_MSK)));
 
-    uint8_t msb = data & 0xFF00;
-    uint8_t lsb = data & 0x00FF;
+    uint8_t msb = (uint8_t)((data & 0xFF00) >> 8);
+    uint8_t lsb = (uint8_t)(data & 0x00FF);
 
     // writing data MSB
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG, ((msb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK));
+    bus_w(I2C_Transfer_Command_Fifo_Reg, ((msb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK));
 
     // writing data LSB and stop writing bit
-    bus_w(I2C_TRANSFER_COMMAND_FIFO_REG,  ((lsb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK) | I2C_TFR_CMD_STOP_MSK);
+    bus_w(I2C_Transfer_Command_Fifo_Reg,  ((lsb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK) | I2C_TFR_CMD_STOP_MSK);
 }
 
 

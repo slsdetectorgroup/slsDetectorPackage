@@ -65,9 +65,11 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 
 
 Listener::~Listener() {
-	if (udpSocket) delete udpSocket;
-	sem_post(&semaphore_socket);
-    sem_destroy(&semaphore_socket);
+	if (udpSocket){
+		delete udpSocket;
+		sem_post(&semaphore_socket);
+    	sem_destroy(&semaphore_socket);
+	} 
 	if (carryOverPacket) delete [] carryOverPacket;
 	if (listeningPacket) delete [] listeningPacket;
 	ThreadObject::DestroyThread();

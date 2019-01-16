@@ -15,11 +15,7 @@
 class multiSlsDetectorCommand : public slsDetectorCommand { 
 
 public:
-
-
-	multiSlsDetectorCommand(multiSlsDetector *det) : slsDetectorCommand(det) {myDet=det;};
-
-
+	explicit multiSlsDetectorCommand(multiSlsDetector *det) : slsDetectorCommand(det) {myDet=det;};
 	/*   /\** */
 	/*      executes a set of string arguments according to a given format. It is used to read/write configuration file, dump and retrieve detector settings and for the command line interface command parsing */
 	/*      \param narg number of arguments */
@@ -28,10 +24,8 @@ public:
 	/*      \returns answer string  */
 	/*   *\/ */
 
-	std::string executeLine(int narg, char *args[], int action, int id=-1) { \
-		std::string s;								\
-		s=slsDetectorCommand::executeLine(narg,args,action, id);	\
-		return s;
+	std::string executeLine(int narg, char *args[], int action, int id=-1) override {
+		return slsDetectorCommand::executeLine(narg,args,action, id);
 	};
 
 	/**
@@ -48,11 +42,7 @@ public:
 	};
 
 private:
-
-
 	multiSlsDetector *myDet;
-
-
 };
 
 

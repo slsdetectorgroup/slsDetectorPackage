@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <string>
 
@@ -9,7 +10,7 @@
 #include <cstdlib>
 #include <memory>
 
-int dummyCallback(detectorData *d, int p, void *) {
+inline int dummyCallback(detectorData *d, int p, void *) {
     std::cout << "got data " << p << std::endl;
     return 0;
 };
@@ -17,8 +18,6 @@ int dummyCallback(detectorData *d, int p, void *) {
 class multiSlsDetectorClient {
   public:
     multiSlsDetectorClient(int argc, char *argv[], int action, multiSlsDetector *myDetector = nullptr) {
-        std::string answer;
-
         int id = -1, pos = -1, iv = 0;
         bool verify = true, update = true;
         char cmd[100] = "";
@@ -71,9 +70,11 @@ class multiSlsDetectorClient {
             if (iv != 2) {
                 pos = -1;
             } // remove the %d- and %d:
-            if (!strlen(cmd)) {
+            if (strlen(cmd) == 0u) {
                 strcpy(cmd, argv[0]);
-            }                       // special commands
+            }                       
+			
+			// special commands
             std::string scmd = cmd; // free without calling multiSlsDetector constructor
             if (scmd == "free") {
                 multiSlsDetector::freeSharedMemory(id, pos);
@@ -106,11 +107,11 @@ class multiSlsDetectorClient {
 
         // call multi detector command line
         multiSlsDetectorCommand myCmd(myDetector);
-        answer = myCmd.executeLine(argc, argv, action, pos);
+        std::string answer = myCmd.executeLine(argc, argv, action, pos);
 
         if (action != slsDetectorDefs::READOUT_ACTION) {
             std::cout << argv[0] << " ";
         }
         std::cout << answer << std::endl;
-    };
+    }
 };

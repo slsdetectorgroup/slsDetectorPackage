@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_flags=0;							// no flags
 	sa.sa_handler=sigInterruptHandler;		// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGINT, &sa, NULL) == -1) {
+	if (sigaction(SIGINT, &sa, nullptr) == -1) {
 		cprintf(RED, "Could not set handler function for SIGINT\n");
 	}
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[]) {
 	asa.sa_flags=0;							// no flags
 	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
+	if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
 		cprintf(RED, "Could not set handler function for SIGPIPE\n");
 	}
 
@@ -236,16 +236,16 @@ int main(int argc, char *argv[]) {
 
 				/** - Call back for start acquisition */
 				cprintf(BLUE, "Registering 	StartAcq()\n");
-				receiver->registerCallBackStartAcquisition(StartAcq, NULL);
+				receiver->registerCallBackStartAcquisition(StartAcq, nullptr);
 
 				/** - Call back for acquisition finished */
 				cprintf(BLUE, "Registering 	AcquisitionFinished()\n");
-				receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, NULL);
+				receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, nullptr);
 
 				/* 	- Call back for raw data */
 				cprintf(BLUE, "Registering     GetData() \n");
-				if (withCallback == 1) receiver->registerCallBackRawDataReady(GetData,NULL);
-				else if (withCallback == 2) receiver->registerCallBackRawDataModifyReady(GetData,NULL);
+				if (withCallback == 1) receiver->registerCallBackRawDataReady(GetData,nullptr);
+				else if (withCallback == 2) receiver->registerCallBackRawDataModifyReady(GetData,nullptr);
 			}
 
 
@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_flags=0;							// no flags
 	sa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGINT, &sa, NULL) == -1) {
+	if (sigaction(SIGINT, &sa, nullptr) == -1) {
 		cprintf(RED, "Could not set handler function for SIGINT\n");
 	}
 
@@ -283,7 +283,7 @@ int main(int argc, char *argv[]) {
 
 	/** - Parent process waits for all child processes to exit */
 	for(;;) {
-		pid_t childPid = waitpid (-1, NULL, 0);
+		pid_t childPid = waitpid (-1, nullptr, 0);
 
 		// no child closed
 		if (childPid == -1) {

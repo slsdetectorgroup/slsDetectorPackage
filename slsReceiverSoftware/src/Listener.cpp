@@ -24,11 +24,11 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
-		generalData(0),
+		generalData(nullptr),
 		fifo(f),
 		myDetectorType(dtype),
 		status(s),
-		udpSocket(0),
+		udpSocket(nullptr),
 		udpPortNumber(portno),
 		eth(e),
 		numImages(nf),
@@ -50,8 +50,8 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 		lastCaughtFrameIndex(0),
 		currentFrameIndex(0),
 		carryOverFlag(0),
-		carryOverPacket(0),
-		listeningPacket(0),
+		carryOverPacket(nullptr),
+		listeningPacket(nullptr),
 		udpSocketAlive(0),
 		numPacketsStatistic(0),
 		numFramesStatistic(0)
@@ -193,7 +193,7 @@ int Listener::CreateUDPSockets() {
     }
 
 	//if eth is mistaken with ip address
-	if (strchr(eth,'.') != NULL){
+	if (strchr(eth,'.') != nullptr){
 	    memset(eth, 0, MAX_STR_LENGTH);
 	}
 	if(!strlen(eth)){
@@ -204,7 +204,7 @@ int Listener::CreateUDPSockets() {
 
 	try{
 	    genericSocket* g = new genericSocket(*udpPortNumber, genericSocket::UDP,
-				generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
+				generalData->packetSize, (strlen(eth)?eth:nullptr), generalData->headerPacketSize,
 				*udpSocketBufferSize);
 	    udpSocket = g;
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
@@ -235,7 +235,7 @@ void Listener::ShutDownUDPSocket() {
 		if (runningFlag)
 			sem_wait(&semaphore_socket);
         delete udpSocket;
-        udpSocket = 0;
+        udpSocket = nullptr;
 	    sem_destroy(&semaphore_socket);
 	}
 }
@@ -253,7 +253,7 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     *udpSocketBufferSize = s;
 
     //if eth is mistaken with ip address
-    if (strchr(eth,'.') != NULL){
+    if (strchr(eth,'.') != nullptr){
         memset(eth, 0, MAX_STR_LENGTH);
     }
 
@@ -261,13 +261,13 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     if(udpSocket){
         udpSocket->ShutDownSocket();
         delete udpSocket;
-        udpSocket = 0;
+        udpSocket = nullptr;
     }
 
     //create dummy socket
     try {
     	udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
-            generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
+            generalData->packetSize, (strlen(eth)?eth:nullptr), generalData->headerPacketSize,
             *udpSocketBufferSize);
     } catch (...) {
         FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber;
@@ -287,7 +287,7 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
         udpSocketAlive = false;
         udpSocket->ShutDownSocket();
         delete udpSocket;
-        udpSocket = 0;
+        udpSocket = nullptr;
     }
 
     return OK;
@@ -381,8 +381,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t fifohsize = generalData->fifoBufferHeaderSize;
 	uint32_t pperFrame = generalData->packetsPerFrame;
 	bool isHeaderEmpty = true;
-	sls_detector_header* old_header = 0;
-	sls_receiver_header* new_header = 0;
+	sls_detector_header* old_header = nullptr;
+	sls_receiver_header* new_header = nullptr;
 	bool standardheader = generalData->standardheader;
 	uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - generalData->imageSize);
 

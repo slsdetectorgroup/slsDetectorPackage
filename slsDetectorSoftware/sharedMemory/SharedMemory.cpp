@@ -103,7 +103,7 @@ void SharedMemory::RemoveSharedMemory() {
 
 
 void* SharedMemory::MapSharedMemory(size_t sz) {
-    void* addr = mmap(NULL, sz, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    void* addr = mmap(nullptr, sz, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (addr == MAP_FAILED) {
     	FILE_LOG(logERROR) << "Mapping shared memory " << name << " failed: " << strerror(errno);
         close(fd);
@@ -120,7 +120,7 @@ std::string SharedMemory::ConstructSharedMemoryName(int multiId, int slsId) {
 	// using environment path
 	std::string sEnvPath = "";
 	char* envpath = getenv(SHM_ENV_NAME);
-	if (envpath != NULL) {
+	if (envpath != nullptr) {
 		sEnvPath.assign(envpath);
 		sEnvPath.insert(0,"_");
 	}

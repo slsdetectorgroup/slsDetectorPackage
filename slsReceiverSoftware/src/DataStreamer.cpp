@@ -19,9 +19,9 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 		uint64_t* fi, int* fd, char* ajh) :
 		ThreadObject(ind),
 		runningFlag(0),
-		generalData(0),
+		generalData(nullptr),
 		fifo(f),
-		zmqSocket(0),
+		zmqSocket(nullptr),
 		dynamicRange(dr),
 		roi(r),
 		adcConfigured(-1),
@@ -32,7 +32,7 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0),
-		completeBuffer(0)
+		completeBuffer(nullptr)
 {
     if(ThreadObject::CreateThread() == FAIL)
         throw std::exception();
@@ -85,7 +85,7 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
 	strcpy(fileNametoStream, fname);
 	if (completeBuffer) {
 		delete [] completeBuffer;
-		completeBuffer = 0;
+		completeBuffer = nullptr;
 	}
 	if (roi->size()) {
 		if (generalData->myDetectorType == GOTTHARD) {
@@ -131,7 +131,7 @@ void DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const char* srci
 	uint32_t portnum = port + index;
 
 	try {
-		zmqSocket = new ZmqSocket(portnum, (strlen(srcip)?srcip:NULL));
+		zmqSocket = new ZmqSocket(portnum, (strlen(srcip)?srcip:nullptr));
 	} catch (...) {
 		FILE_LOG(logERROR) << "Could not create Zmq socket on port " << portnum << " for Streamer " << index;
 		throw;
@@ -143,13 +143,13 @@ void DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const char* srci
 void DataStreamer::CloseZmqSocket() {
 	if (zmqSocket) {
 		delete zmqSocket;
-		zmqSocket = 0;
+		zmqSocket = nullptr;
 	}
 }
 
 
 void DataStreamer::ThreadExecution() {
-	char* buffer=0;
+	char* buffer=nullptr;
 	fifo->PopAddressToStream(buffer);
 	FILE_LOG(logDEBUG5) << "DataStreamer " << index << ", "
 			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;

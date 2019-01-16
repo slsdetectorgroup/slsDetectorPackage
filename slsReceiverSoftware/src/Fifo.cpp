@@ -14,10 +14,10 @@
 
 Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):
 		index(ind),
-		memory(0),
-		fifoBound(0),
-		fifoFree(0),
-		fifoStream(0),
+		memory(nullptr),
+		fifoBound(nullptr),
+		fifoFree(nullptr),
+		fifoStream(nullptr),
 		fifoDepth(depth),
 		status_fifoBound(0),
 		status_fifoFree(depth){
@@ -47,7 +47,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize) {
 	//allocate memory
 	size_t mem_len = fifoItemSize * fifoDepth * sizeof(char);
 	memory = (char*) malloc (mem_len);
-	if (memory == NULL){
+	if (memory == nullptr){
 		FILE_LOG(logERROR) << "Could not allocate memory for fifos";
 		return FAIL;
 	}
@@ -72,19 +72,19 @@ void Fifo::DestroyFifos(){
 
 	if(memory) {
 		free(memory);
-		memory = 0;
+		memory = nullptr;
 	}
 	if (fifoBound) {
 		delete fifoBound;
-		fifoBound = 0;
+		fifoBound = nullptr;
 	}
 	if (fifoFree) {
 		delete fifoFree;
-		fifoFree = 0;
+		fifoFree = nullptr;
 	}
 	if (fifoStream) {
 		delete fifoStream;
-		fifoStream = 0;
+		fifoStream = nullptr;
 	}
 }
 

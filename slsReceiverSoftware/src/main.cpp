@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_flags=0;							// no flags
 	sa.sa_handler=sigInterruptHandler;		// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGINT, &sa, NULL) == -1) {
+	if (sigaction(SIGINT, &sa, nullptr) == -1) {
 		FILE_LOG(logERROR) << "Could not set handler function for SIGINT";
 	}
 
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 	asa.sa_flags=0;							// no flags
 	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
+	if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
 		FILE_LOG(logERROR) << "Could not set handler function for SIGPIPE";
 	}
 

@@ -19,7 +19,7 @@
 #include "utilities.h"
 
 slsReceiver::slsReceiver(int argc, char *argv[]):
-		tcpipInterface (0) {
+		tcpipInterface (nullptr) {
 
 	// options
 	std::map<std::string, std::string> configuration_map;
@@ -32,11 +32,11 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 			// These options set a flag.
 			//{"verbose", no_argument,       &verbose_flag, 1},
 			// These options don’t set a flag. We distinguish them by their indices.
-			{"config",     	required_argument,  0, 'f'},
-			{"rx_tcpport",  required_argument,  0, 't'},
-			{"version",  	no_argument,  		0, 'v'},
-			{"help",  		no_argument,       	0, 'h'},
-			{0, 			0, 					0, 	0}
+			{"config",     	required_argument,  nullptr, 'f'},
+			{"rx_tcpport",  required_argument,  nullptr, 't'},
+			{"version",  	no_argument,  		nullptr, 'v'},
+			{"help",  		no_argument,       	nullptr, 'h'},
+			{nullptr, 			0, 					nullptr, 	0}
 	};
 
 	//initialize global optind variable (required when instantiating multiple receivers in the same process)

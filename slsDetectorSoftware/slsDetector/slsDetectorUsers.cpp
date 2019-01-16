@@ -6,7 +6,7 @@
 
 using namespace std;
 
-slsDetectorUsers::slsDetectorUsers(int& ret, int id) : myDetector(0), myCmd(0){
+slsDetectorUsers::slsDetectorUsers(int& ret, int id) : myDetector(nullptr), myCmd(nullptr){
 	try {
 		myDetector=new multiSlsDetector(id);
 	} catch(...) {

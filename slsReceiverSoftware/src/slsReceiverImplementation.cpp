@@ -39,7 +39,7 @@ void slsReceiverImplementation::DeleteMembers() {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	if (generalData) {
 		delete generalData;
-		generalData=0;
+		generalData=nullptr;
 	}
 
 	listener.clear();
@@ -107,16 +107,16 @@ void slsReceiverImplementation::InitializeMembers() {
 	memset(additionalJsonHeader, 0, sizeof(additionalJsonHeader));
 
 	//** class objects ***
-	generalData = 0;
+	generalData = nullptr;
 
 	//***callback parameters***
-	startAcquisitionCallBack = NULL;
-	pStartAcquisition = NULL;
-	acquisitionFinishedCallBack = NULL;
-	pAcquisitionFinished = NULL;
-	rawDataReadyCallBack = NULL;
-	rawDataModifyReadyCallBack = NULL;
-	pRawDataReady = NULL;
+	startAcquisitionCallBack = nullptr;
+	pStartAcquisition = nullptr;
+	acquisitionFinishedCallBack = nullptr;
+	pAcquisitionFinished = nullptr;
+	rawDataReadyCallBack = nullptr;
+	rawDataModifyReadyCallBack = nullptr;
+	pRawDataReady = nullptr;
 }
 
 /*************************************************************************
@@ -953,7 +953,7 @@ int slsReceiverImplementation::startReceiver(char *c) {
 	if (startAcquisitionCallBack) {
 		startAcquisitionCallBack(filePath, fileName, fileIndex,
 				(generalData->imageSize) + (generalData->fifoBufferHeaderSize), pStartAcquisition);
-		if (rawDataReadyCallBack != NULL) {
+		if (rawDataReadyCallBack != nullptr) {
 			FILE_LOG(logINFO) << "Data Write has been defined externally";
 		}
 	}

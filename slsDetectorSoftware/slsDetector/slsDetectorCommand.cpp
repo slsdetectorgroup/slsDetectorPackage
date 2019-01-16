@@ -2389,7 +2389,7 @@ std::string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action, in
             myDet->setTrimEn(ip, pos, detPos);
         }
     }
-    int npos = myDet->getTrimEn(NULL, detPos);
+    int npos = myDet->getTrimEn(nullptr, detPos);
     if (npos != -1) {
         sprintf(answer, "%d", npos);
         int opos[npos];
@@ -4601,7 +4601,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, 
     } else if (cmd == "programfpga") {
         if (action == GET_ACTION)
             return std::string("cannot get");
-        if (strstr(args[1], ".pof") == NULL)
+        if (strstr(args[1], ".pof") == nullptr)
             return std::string("wrong usage: programming file should have .pof extension");
         std::string sval = std::string(args[1]);
 #ifdef VERBOSE

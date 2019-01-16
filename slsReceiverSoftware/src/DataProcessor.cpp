@@ -33,10 +33,10 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 
 		ThreadObject(ind),
 		runningFlag(0),
-		generalData(0),
+		generalData(nullptr),
 		fifo(f),
 		myDetectorType(dtype),
-		file(0),
+		file(nullptr),
 		dataStreamEnable(dsEnable),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
@@ -45,7 +45,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		streamingFrequency(freq),
 		streamingTimerInMs(timer),
 		currentFreqCount(0),
-		tempBuffer(0),
+		tempBuffer(nullptr),
 		activated(act),
 		deactivatedPaddingEnable(depaden),
         silentMode(sm),
@@ -144,7 +144,7 @@ void DataProcessor::ResetParametersforNewMeasurement(){
 
 	if (tempBuffer) {
 		delete [] tempBuffer;
-		tempBuffer = 0;
+		tempBuffer = nullptr;
 	}
 	if (*gapPixelsEnable) {
 		tempBuffer = new char[generalData->imageSize];
@@ -196,10 +196,10 @@ void DataProcessor::SetFileFormat(const fileFormat f) {
 	if (file && file->GetFileType() != f) {
 		//remember the pointer values before they are destroyed
 		int nd[MAX_DIMENSIONS];nd[0] = 0; nd[1] = 0;
-		uint32_t* maxf = 0;
-		char* fname=0; char* fpath=0; uint64_t* findex=0;
-		bool* owenable=0; int* dindex=0; int* nunits=0; uint64_t* nf = 0;
-		uint32_t* dr = 0; uint32_t* port = 0;
+		uint32_t* maxf = nullptr;
+		char* fname=nullptr; char* fpath=nullptr; uint64_t* findex=nullptr;
+		bool* owenable=nullptr; int* dindex=nullptr; int* nunits=nullptr; uint64_t* nf = nullptr;
+		uint32_t* dr = nullptr; uint32_t* port = nullptr;
 		file->GetMemberPointerValues(nd, maxf, fname, fpath, findex,
 				owenable, dindex, nunits, nf, dr, port);
 		//create file writer with same pointers
@@ -221,7 +221,7 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 
 
 	if (file) {
-		delete file; file = 0;
+		delete file; file = nullptr;
 	}
 
 	if (fileWriteEnable) {
@@ -246,7 +246,7 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 // only the first file
 int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st,
 		uint64_t sp, uint64_t ap) {
-	if (file == NULL)
+	if (file == nullptr)
 		return FAIL;
 	file->CloseAllFiles();
 	if (file->CreateMasterFile(en,	generalData->imageSize,
@@ -272,7 +272,7 @@ void DataProcessor::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 
 
 void DataProcessor::ThreadExecution() {
-	char* buffer=0;
+	char* buffer=nullptr;
 	fifo->PopAddress(buffer);
 	FILE_LOG(logDEBUG5) << "DataProcessor " << index << ", "
 			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;
@@ -492,8 +492,8 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 	const uint32_t ny = generalData->nPixelsY;
 	const uint32_t npx = nx * ny;
 
-	char* srcptr = 0;
-	char* dstptr = 0;
+	char* srcptr = nullptr;
+	char* dstptr = nullptr;
 
 	const uint32_t b1px = generalData->imageSize / (npx); // not double as not dealing with 4 bit mode
 	const uint32_t b2px = 2 * b1px;
@@ -515,8 +515,8 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 
 	// vertical filling of values
 	{
-		char* srcgp1 = 0; char* srcgp2 = 0; char* srcgp3 = 0;
-		char* dstgp1 = 0; char* dstgp2 = 0; char* dstgp3 = 0;
+		char* srcgp1 = nullptr; char* srcgp2 = nullptr; char* srcgp3 = nullptr;
+		char* dstgp1 = nullptr; char* dstgp2 = nullptr; char* dstgp3 = nullptr;
 		const uint32_t b3px = 3 * b1px;
 
 		srcptr = tempBuffer + b1line;

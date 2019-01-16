@@ -27,7 +27,7 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	stop();
 	if(mySock) {
 		delete mySock;
-		mySock=NULL;
+		mySock=nullptr;
 	}
 	if (interface)
 		delete interface;
@@ -37,24 +37,24 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 				myDetectorType(GOTTHARD),
-				receiver(0),
+				receiver(nullptr),
 				ret(OK),
 				fnum(-1),
 				lockStatus(0),
 				killTCPServerThread(0),
 				tcpThreadCreated(false),
 				portNumber(DEFAULT_PORTNO+2),
-				mySock(0),
-				interface(0)
+				mySock(nullptr),
+				interface(nullptr)
 {
 	//***callback parameters***
-	startAcquisitionCallBack = NULL;
-	pStartAcquisition = NULL;
-	acquisitionFinishedCallBack = NULL;
-	pAcquisitionFinished = NULL;
-	rawDataReadyCallBack = NULL;
-	rawDataModifyReadyCallBack = NULL;
-	pRawDataReady = NULL;
+	startAcquisitionCallBack = nullptr;
+	pStartAcquisition = nullptr;
+	acquisitionFinishedCallBack = nullptr;
+	pAcquisitionFinished = nullptr;
+	rawDataReadyCallBack = nullptr;
+	rawDataModifyReadyCallBack = nullptr;
+	pRawDataReady = nullptr;
 
 	// create socket
 	portNumber = (pn > 0 ? pn : DEFAULT_PORTNO + 2);
@@ -75,7 +75,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 int slsReceiverTCPIPInterface::start(){
 	FILE_LOG(logDEBUG) << "Creating TCP Server Thread";
 	killTCPServerThread = 0;
-	if(pthread_create(&TCPServer_thread, NULL,startTCPServerThread, (void*) this)){
+	if(pthread_create(&TCPServer_thread, nullptr,startTCPServerThread, (void*) this)){
 		FILE_LOG(logERROR) << "Could not create TCP Server thread";
 		return FAIL;
 	}
@@ -93,7 +93,7 @@ void slsReceiverTCPIPInterface::stop(){
 		killTCPServerThread = 1;
 		if(mySock)	mySock->ShutDownSocket();
 		FILE_LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
-		pthread_join(TCPServer_thread, NULL);
+		pthread_join(TCPServer_thread, nullptr);
 		tcpThreadCreated = false;
 		killTCPServerThread = 0;
 		FILE_LOG(logDEBUG) << "Exiting TCP Server Thread on port " << portNumber;
@@ -160,7 +160,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 
 			mySock->exitServer();
 			FILE_LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) <<"]";
-			pthread_exit(NULL);
+			pthread_exit(nullptr);
 		}
 
 		//if user entered exit
@@ -171,7 +171,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 				}
 			}
 			FILE_LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) <<"]";
-			pthread_exit(NULL);
+			pthread_exit(nullptr);
 		}
 	}
 }
@@ -309,7 +309,7 @@ int slsReceiverTCPIPInterface::M_nofunc(){
 
 	sprintf(mess,"Unrecognized Function enum %d. Please do not proceed.\n", fnum);
 	FILE_LOG(logERROR) << mess;
-	return interface->Server_SendResult(false, ret, NULL, 0, mess);
+	return interface->Server_SendResult(false, ret, nullptr, 0, mess);
 }
 
 
@@ -339,7 +339,7 @@ int slsReceiverTCPIPInterface::exec_command() {
 			FILE_LOG(logERROR) << mess;
 		} else  {
 			while (!feof(pipe.get())) {
-				if (fgets(temp.data(), tempsize, pipe.get()) != NULL)
+				if (fgets(temp.data(), tempsize, pipe.get()) != nullptr)
 					sresult += temp.data();
 			}
 			strncpy(retval, sresult.c_str(), MAX_STR_LENGTH);
@@ -356,7 +356,7 @@ int slsReceiverTCPIPInterface::exit_server() {
 	FILE_LOG(logINFO) << "Closing server";
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	interface->Server_SendResult(false, ret, NULL, 0);
+	interface->Server_SendResult(false, ret, nullptr, 0);
 	return GOODBYE;
 }
 
@@ -400,7 +400,7 @@ int slsReceiverTCPIPInterface::set_port() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int p_number = -1;
-	MySocketTCP* mySocket = 0;
+	MySocketTCP* mySocket = nullptr;
 	char oldLastClientIP[INET_ADDRSTRLEN] = {0};
 
 	// get args, return if socket crashed
@@ -451,9 +451,9 @@ int slsReceiverTCPIPInterface::update_client() {
 	memset(mess, 0, sizeof(mess));
 
 	// no arg, check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
-	interface->Server_SendResult(false, ret, NULL, 0, mess);
+	interface->Server_SendResult(false, ret, nullptr, 0, mess);
 
 	if (ret == FAIL)
 		return ret;
@@ -574,7 +574,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 	// set
 	if (arg >= 0) {
 		// if object exists, verify unlocked and idle, else only verify lock (connecting first time)
-		if (receiver == NULL)
+		if (receiver == nullptr)
 			interface->Server_VerifyLock(ret, mess, lockStatus);
 		else
 			interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum);
@@ -592,7 +592,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 				break;
 			}
 			if(ret == OK) {
-				if(receiver == NULL){
+				if(receiver == nullptr){
 					receiver = new slsReceiverImplementation();
 					if(startAcquisitionCallBack)
 						receiver->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
@@ -688,7 +688,7 @@ int slsReceiverTCPIPInterface::set_roi() {
 		functionNotImplemented();
 
 	// base object not null
-	else if (receiver == NULL)
+	else if (receiver == nullptr)
 		interface->Server_NullObjectError(ret, mess);
 	else {
 		// only set
@@ -697,7 +697,7 @@ int slsReceiverTCPIPInterface::set_roi() {
 			ret = receiver->setROI(arg);
 	}
 	arg.clear();
-	return interface->Server_SendResult(true, ret, NULL, 0, mess);
+	return interface->Server_SendResult(true, ret, nullptr, 0, mess);
 }
 
 
@@ -738,7 +738,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 				char eth[MAX_STR_LENGTH];
 				memset(eth,0,sizeof(eth));
 				strcpy(eth,temp.c_str());
-				if (strchr(eth,'.') != NULL) {
+				if (strchr(eth,'.') != nullptr) {
 					strcpy(eth,"");
 					ret = FAIL;
 					strcpy(mess, "Failed to get ethernet interface\n");
@@ -950,7 +950,7 @@ int	slsReceiverTCPIPInterface::get_status(){
 	enum runStatus retval = ERROR;
 
 	// no arg, check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
 	if (ret == OK) {
 		FILE_LOG(logDEBUG1) << "Getting Status";
@@ -967,7 +967,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 	memset(mess, 0, sizeof(mess));
 
 	// no arg, and check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
 	// receiver is not null
 	if (ret == OK) {
@@ -989,7 +989,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 			}
 		}
 	}
-	return interface->Server_SendResult(true, ret, NULL, 0, mess);
+	return interface->Server_SendResult(true, ret, nullptr, 0, mess);
 }
 
 
@@ -999,7 +999,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 	memset(mess, 0, sizeof(mess));
 
 	// no arg, and check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
 	// receiver is not null
 	if (ret == OK) {
@@ -1020,7 +1020,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 			}
 		}
 	}
-	return interface->Server_SendResult(true, ret, NULL, 0, mess);
+	return interface->Server_SendResult(true, ret, nullptr, 0, mess);
 }
 
 
@@ -1125,7 +1125,7 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 	int retval = -1;
 
 	// no arg, check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
 	if (ret == OK) {
 		FILE_LOG(logDEBUG1) << "Getting frame index";
@@ -1143,7 +1143,7 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 	int retval = -1;
 
 	// no arg, check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
 	if (ret == OK) {
 		FILE_LOG(logDEBUG1) << "Getting frames caught";
@@ -1160,7 +1160,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 	memset(mess, 0, sizeof(mess));
 
 	// no arg, and check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
 	// receiver is not null
 	if (ret == OK) {
@@ -1171,7 +1171,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 			receiver->resetAcquisitionCount();
 		}
 	}
-	return interface->Server_SendResult(true, ret, NULL, 0, mess);
+	return interface->Server_SendResult(true, ret, nullptr, 0, mess);
 }
 
 
@@ -1649,7 +1649,7 @@ int slsReceiverTCPIPInterface::restream_stop(){
 	memset(mess, 0, sizeof(mess));
 
 	// no arg, and check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
 	// receiver is not null
 	if (ret == OK) {
@@ -1670,7 +1670,7 @@ int slsReceiverTCPIPInterface::restream_stop(){
 			}
 		}
 	}
-	return interface->Server_SendResult(true, ret, NULL, 0, mess);
+	return interface->Server_SendResult(true, ret, nullptr, 0, mess);
 }
 
 
@@ -1742,7 +1742,7 @@ int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
     int retval = -1;
 
 	// no arg, check receiver is null
-	interface->Server_ReceiveArg(ret, mess, NULL, 0, true, receiver);
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
 
 	if (ret == OK) {
 		FILE_LOG(logDEBUG1) << "Getting actual UDP buffer size";
@@ -1818,7 +1818,7 @@ int slsReceiverTCPIPInterface::check_version_compatibility() {
 		FILE_LOG(logERROR) << mess;
 	}
 	else FILE_LOG(logINFO) << "Compatibility with Client: Successful";
-	return interface->Server_SendResult(true, ret, NULL, 0, mess);
+	return interface->Server_SendResult(true, ret, nullptr, 0, mess);
 }
 
 

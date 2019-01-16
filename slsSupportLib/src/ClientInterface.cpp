@@ -1,9 +1,8 @@
 #include "ClientInterface.h"
 
-ClientInterface::ClientInterface(MySocketTCP *socket, int n, std::string t):
-mySocket(socket),
-index(n),
-type(t){}
+ClientInterface::ClientInterface(MySocketTCP *socket, int n, std::string t): mySocket(socket),
+																			 index(n),
+																			 type(t){}
 
 void ClientInterface::SetSocket(MySocketTCP *socket) {
 	mySocket = socket;

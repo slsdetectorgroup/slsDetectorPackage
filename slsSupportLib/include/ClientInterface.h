@@ -37,7 +37,7 @@ public:
 	 * Receive ret, mess or retval from Server
 	 * @param ret result of operation
 	 * @param mess pointer to message
-	 * @param retval poitner to retval
+	 * @param retval pointer to retval
 	 * @param sizeOfRetval size of retval
 	 */
 	void Client_Receive(int& ret, char* mess, void* retval, int sizeOfRetval);
@@ -50,7 +50,7 @@ public:
 	 * @param retval pointer to return value
 	 * @param sizeOfRetval return value size
 	 * @param mess pointer to message if message required externally
-	 * @returns sucess of operation
+	 * @returns success of operation
 	 */
 	int Client_Send(int fnum,
 			void* args, int sizeOfArgs,
@@ -71,7 +71,7 @@ public:
 
 	/** only Receiver
 	 * Server receives arguments and checks if base object is null (if checkbase is true)
-	 * checking base object is null (for reciever only when it has not been configured yet)
+	 * checking base object is null (for receiver only when it has not been configured yet)
 	 * @param ret pointer to success of operation
 	 * @param mess message
 	 * @param arg pointer to argument
@@ -85,7 +85,7 @@ public:
 	/** only Receiver
 	 * Server verifies if it is unlocked,
 	 * sets and prints appropriate message if it is locked and different clients
-	 * @param ret pointer to sucess
+	 * @param ret pointer to success
 	 * @param mess message
 	 * @param lockstatus status of lock
 	 * @returns success of operaton
@@ -95,10 +95,10 @@ public:
 	/** only Receiver
 	 * Server verifies if it is unlocked and idle,
 	 * sets and prints appropriate message if it is locked and different clients
-	 * @param ret pointer to sucess
+	 * @param ret pointer to success
 	 * @param mess message
 	 * @param lockstatus status of lock
-	 * @param staus status of server
+	 * @param status status of server
 	 * @param fnum function number for error message
 	 * @returns success of operaton
 	 */
@@ -106,7 +106,7 @@ public:
 
 	/** only Receiver
 	 * Server sets and prints error message for null object error (receiver only)
-	 * @param ret pointer to sucess that will be set to FAIL
+	 * @param ret pointer to success that will be set to FAIL
 	 * @param mess message
 	 */
 	void Server_NullObjectError(int& ret, char* mess);
@@ -119,7 +119,7 @@ public:
 
 	/** only Receiver
 	 * Servers sets and prints error message for locked server
-	 * @param ret pointer to sucess that will be set to FAIL
+	 * @param ret pointer to success that will be set to FAIL
 	 * @param mess message
 	 * @returns success of operaton
 	 */
@@ -127,7 +127,7 @@ public:
 
 	/** only Receiver
 	 * Servers sets and prints error message for server not being idle
-	 * @param ret pointer to sucess that will be set to FAIL
+	 * @param ret pointer to success that will be set to FAIL
 	 * @param mess message
 	 * @param fnum function number for error message
 	 * @returns success of operaton

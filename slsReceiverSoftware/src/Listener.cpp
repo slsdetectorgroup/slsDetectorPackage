@@ -204,9 +204,10 @@ int Listener::CreateUDPSockets() {
 	ShutDownUDPSocket();
 
 	try{
-		udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+		genericSocket* g = new genericSocket(*udpPortNumber, genericSocket::UDP,
 				generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
 				*udpSocketBufferSize);
+		udpSocket = g;
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
 	} catch (...) {
 		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber;

@@ -805,9 +805,6 @@ int multiSlsDetector::execCommand(const std::string& cmd, int detPos) {
 int multiSlsDetector::readConfigurationFile(const std::string &fname) {
     freeSharedMemory();
     setupMultiDetector();
-
-    char *args[100];
-    char myargs[100][1000];
     FILE_LOG(logINFO) << "Loading configuration file: " << fname;
 
     std::ifstream input_file;
@@ -820,16 +817,7 @@ int multiSlsDetector::readConfigurationFile(const std::string &fname) {
                 current_line.erase(current_line.find('#'));
             FILE_LOG(logDEBUG1) << "current_line after removing comments:\n\t" << current_line;
             if (current_line.length() > 1) {
-                std::istringstream line_stream(current_line);
-                int n_arguments = 0;
-                std::string current_argument;
-                while (line_stream.good()) {
-                    line_stream >> current_argument;
-                    sls::strcpy_safe(myargs[n_arguments], current_argument.c_str());
-                    args[n_arguments] = myargs[n_arguments];
-                    ++n_arguments;
-                }
-                multiSlsDetectorClient(n_arguments, args, PUT_ACTION, this);
+                multiSlsDetectorClient(current_line, PUT_ACTION, this);
             }
         }
         input_file.close();

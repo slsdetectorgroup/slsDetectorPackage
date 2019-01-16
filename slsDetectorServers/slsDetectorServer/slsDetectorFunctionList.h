@@ -180,7 +180,7 @@ int         getDACIndexFromADCIndex(enum ADCINDEX ind);
 int         getADCIndexFromDACIndex(enum DACINDEX ind);
 int         isPowerValid(int val);
 int         getPower();
-void        setPower(DACINDEX ind, int val);
+void        setPower(enum DACINDEX ind, int val);
 #endif
 /*#ifdef GOTTHARDD
 void        initDAC(int dac_addr, int value);
@@ -191,12 +191,6 @@ u_int32_t   putout(char *s);
 #endif*/
 #ifndef MOENCHD
 int 		getADC(enum ADCINDEX ind);
-#endif
-#ifdef CHIPTESTBOARDD
-extern int INA226_ReadVoltage(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t deviceId); // INA226.h
-extern int INA226_ReadCurrent(uint32_t transferCommandReg, uint32_t rxDataFifoLevelReg, uint32_t deviceId); // INA226.h
-extern int AD7689_GetTemperature(); // AD7689.h
-extern int AD7689_GetChannel(int ichan); // AD7689.h
 #endif
 
 int 		setHighVoltage(int val);

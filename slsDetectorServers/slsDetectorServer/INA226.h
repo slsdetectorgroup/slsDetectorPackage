@@ -38,33 +38,44 @@
 #define INA226_CALIBRATION_MSK      (0x7FFF)
 
 /** get calibration register value to be set */
-#define INA226_getCalibrationValue(rOhm) (0.00512 /(INA226_CURRENT_IMIN_UA * 1e-6 * rohm))
+#define INA226_getCalibrationValue(rOhm) (0.00512 /(INA226_CURRENT_IMIN_UA * 1e-6 * rOhm))
 
 /** get current unit */
 #define INA226_getConvertedCurrentUnits(shuntVReg, calibReg) (shuntVReg * calibReg / 2048)
 
+double INA226_Shunt_Resistor_Ohm = 0.0;
+
+
 /**
  * Configure the I2C core and Enable core
+ * @param rOhm shunt resister value in Ohms (defined in slsDetectorServer_defs.h)
+ * @param creg control register (defined in RegisterDefs.h)
+ * @param rreg rx data fifo level register (defined in RegisterDefs.h)
+ * @param slreg scl low count register (defined in RegisterDefs.h)
+ * @param shreg scl high count register (defined in RegisterDefs.h)
+ * @param sdreg sda hold register (defined in RegisterDefs.h)
+ * @param treg transfer command fifo register (defined in RegisterDefs.h)
  */
-void INA226_ConfigureI2CCore() {
+void INA226_ConfigureI2CCore(double rOhm, uint32_t creg, uint32_t rreg, uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg) {
     FILE_LOG(logINFO, ("Configuring INA226\n"));
-    I2C_ConfigureI2CCore();
+
+    INA226_Shunt_Resistor_Ohm = rOhm;
+
+    I2C_ConfigureI2CCore(creg, rreg, slreg, shreg, sdreg, treg);
 }
 
 /**
  * Calibrate resolution of current register
- * @param shuntResisterOhm shunt resister value in Ohms
- * @param transferCommandReg transfer command fifo register (defined in RegisterDefs.h)
  * @param deviceId device Id (defined in slsDetectorServer_defs.h)
  */
 void INA226_CalibrateCurrentRegister(uint32_t deviceId) {
 
     // get calibration value based on shunt resistor
-    uint16_t calVal = INA226_getCalibrationValue(I2C_SHUNT_RESISTER_OHMS) & INA226_CALIBRATION_MSK;
+    uint16_t calVal = ((uint16_t)INA226_getCalibrationValue(INA226_Shunt_Resistor_Ohm)) & INA226_CALIBRATION_MSK;
     FILE_LOG(logINFO, ("\tWriting to Calibration reg: 0x%0x\n", calVal));
 
     // calibrate current register
-    I2C_Write(INA226_TRANSFER_COMMAND_FIFO_REG, deviceId, INA226_CALIBRATION_REG, calVal);
+    I2C_Write(deviceId, INA226_CALIBRATION_REG, calVal);
 }
 
 /**
@@ -104,12 +115,12 @@ int INA226_ReadCurrent(uint32_t deviceId) {
     // read shunt voltage register
     FILE_LOG(logDEBUG1, ("\tReading shunt voltage reg\n"));
     uint32_t shuntVoltageRegVal = I2C_Read(deviceId, INA226_SHUNT_VOLTAGE_REG);
-    FILE_LOG(logDEBUG1, ("\tshunt voltage reg: 0x%08x\n", regval));
+    FILE_LOG(logDEBUG1, ("\tshunt voltage reg: 0x%08x\n", shuntVoltageRegVal));
 
     // read calibration register
     FILE_LOG(logDEBUG1, ("\tReading calibration reg\n"));
     uint32_t calibrationRegVal = I2C_Read(deviceId, INA226_CALIBRATION_REG);
-    FILE_LOG(logDEBUG1, ("\tcalibration reg: 0x%08x\n", regval));
+    FILE_LOG(logDEBUG1, ("\tcalibration reg: 0x%08x\n", calibrationRegVal));
 
     // value for current
     uint32_t retval = INA226_getConvertedCurrentUnits(shuntVoltageRegVal, calibrationRegVal);

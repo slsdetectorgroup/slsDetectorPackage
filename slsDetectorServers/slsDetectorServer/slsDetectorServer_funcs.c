@@ -794,7 +794,7 @@ int set_dac(int file_des) {
                     FILE_LOG(logERROR,(mess));
                 } else if (!isPowerValid(val)) {
                     ret = FAIL;
-                    sprintf(mess,"Could not set power. Power regulator %d should be between %d and %d mV\n", POWER_RGLTR_MIN, POWER_RGLTR_MAX);
+                    sprintf(mess,"Could not set power. Power regulator %d should be between %d and %d mV\n", ind, POWER_RGLTR_MIN, POWER_RGLTR_MAX);
                     FILE_LOG(logERROR,(mess));
                 } else {
                     if (val != -1)
@@ -989,7 +989,7 @@ int get_adc(int file_des) {
 #endif
 	default:
 #ifdef CHIPTESTBOARDD
-        if (ind >= SLOW_ADC_START_INDEX && ind <= SLOW_ADC_END_INDEX) {
+        if (ind >= SLOW_ADC0 && ind <= SLOW_ADC_TEMP) {
             break;
         }
 #endif

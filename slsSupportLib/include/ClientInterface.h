@@ -25,7 +25,7 @@ public:
 	/**
 	 * destructor
 	 */
-	virtual ~ClientInterface();
+	virtual ~ClientInterface() = default;
 
 	/**
 	 * Set the datasocket

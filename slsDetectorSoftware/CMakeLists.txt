@@ -4,8 +4,8 @@ set(SOURCES
     slsDetector/slsDetectorUsers.cpp 
     slsDetector/slsDetectorCommand.cpp
     slsDetector/slsDetector.cpp 
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/ClientInterface.cpp
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/utilities.cpp
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/src/ClientInterface.cpp
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/src/utilities.cpp
     ${PROJECT_SOURCE_DIR}/slsSupportLib/src/string_utils.cpp
 )
 

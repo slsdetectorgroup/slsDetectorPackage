@@ -10,8 +10,8 @@ set(SOURCES
     src/DataProcessor.cpp
     src/DataStreamer.cpp
     src/Fifo.cpp
-    ../slsSupportLib/include/utilities.cpp
-    ../slsSupportLib/include/ClientInterface.cpp
+    ../slsSupportLib/src/utilities.cpp
+    ../slsSupportLib/src/ClientInterface.cpp
 )
 
 

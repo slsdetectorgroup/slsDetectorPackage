@@ -20,7 +20,7 @@ class multiSlsDetectorClient  {
 public:
 	multiSlsDetectorClient(int argc, char *argv[], int action, multiSlsDetector *myDetector=NULL) {	\
 		std::string answer;					      									\
-		multiSlsDetectorCommand *myCmd;					      					\
+		// multiSlsDetectorCommand *myCmd;					      					
 		int id = -1, pos = -1, iv = 0;			      							\
 		bool verify = true, update = true;										\
 		int del = 0;					      									\
@@ -122,18 +122,19 @@ public:
 			std::cout << "position is out of bounds." << std::endl;				\
 			return;																\
 		}																		\
-		// call multi detector command line
-		myCmd=new multiSlsDetectorCommand(myDetector);							\
-		try {																	\
-			answer=myCmd->executeLine(argc, argv, action, pos);					\
+					
+		try {			
+			// call multi detector command line
+			multiSlsDetectorCommand myCmd(myDetector);																\
+			answer=myCmd.executeLine(argc, argv, action, pos);					\
 		} catch (const SlsDetectorPackageExceptions & e) {								\
 			/*std::cout << e.GetMessage() << std::endl;	*/									\
-			delete myCmd;														\
+
 			if (del) delete myDetector;											\
 			return;																\
 		} catch (...) {															\
 			std::cout << " caught exception" << std::endl;								\
-			delete myCmd;														\
+											\
 			if (del) delete myDetector;											\
 			return;																\
 		}																		\
@@ -141,7 +142,7 @@ public:
 			std::cout << argv[0] << " " ;											\
 		}																		\
 		std::cout << answer<< std::endl;													\
-		delete myCmd;															\
+													\
 		if (del) delete myDetector;												\
 	};
 

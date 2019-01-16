@@ -1,5 +1,6 @@
 #include "slsDetectorCommand.h"
 #include "multiSlsDetector.h"
+#include "string_utils.h"
 
 #include <cstdlib>
 #include <fstream>

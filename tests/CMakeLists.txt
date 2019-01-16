@@ -18,7 +18,7 @@ if(USE_TESTS)
         ${LOCAL_TEST_DIR}/test-container_utils.cpp
         ${LOCAL_TEST_DIR}/test-string_utils.cpp
         ${LOCAL_TEST_DIR}/test-MySocketTCP.cpp
-
+        ${LOCAL_TEST_DIR}/test-CmdLineParser.cpp
         #${LOCAL_TEST_DIR}/test-multiDetector.cpp
         ${LOCAL_TEST_DIR}/test.cpp
         # PARENT_SCOPE

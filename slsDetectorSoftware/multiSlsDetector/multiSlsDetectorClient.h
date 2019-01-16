@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 
+#include "CmdLineParser.h"
 #include "container_utils.h"
 #include "multiSlsDetector.h"
 #include "multiSlsDetectorCommand.h"

@@ -7,6 +7,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/slsSupportLib/src/ClientInterface.cpp
     ${PROJECT_SOURCE_DIR}/slsSupportLib/src/utilities.cpp
     ${PROJECT_SOURCE_DIR}/slsSupportLib/src/string_utils.cpp
+    ${PROJECT_SOURCE_DIR}/slsSupportLib/src/CmdLineParser.cpp
 )
 
 set(HEADERS

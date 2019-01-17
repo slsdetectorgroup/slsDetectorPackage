@@ -1,12 +1,8 @@
 #include "slsDetectorUsers.h"
 #include "detectorData.h"
 
-#include "multiSlsDetectorCommand.h"
+
 #include "multiSlsDetectorClient.h"
-
-using namespace std;
-
-
 
 
 
@@ -33,7 +29,7 @@ int slsDetectorUsers::getDetectorSize(int &x, int &y, int &nx, int &ny, int detP
 	return nx*ny;
 }
 
-string slsDetectorUsers::getDetectorType(int detPos){
+std::string slsDetectorUsers::getDetectorType(int detPos){
 	return detector.sgetDetectorsType(detPos);
 }
 int slsDetectorUsers::setOnline(int const online, int detPos){
@@ -44,19 +40,19 @@ int slsDetectorUsers::setReceiverOnline(int const online, int detPos){
 	return detector.setReceiverOnline(online, detPos);
 }
 
-int slsDetectorUsers::readConfigurationFile(string const fname){
+int slsDetectorUsers::readConfigurationFile(const std::string& fname){
 	return detector.readConfigurationFile(fname);
 }
 
-int slsDetectorUsers::writeConfigurationFile(string const fname){
+int slsDetectorUsers::writeConfigurationFile(const std::string& fname){
 	return detector.writeConfigurationFile(fname);
 }
 
-int slsDetectorUsers::retrieveDetectorSetup(string const fname){
+int slsDetectorUsers::retrieveDetectorSetup(const std::string& fname){
 	return detector.retrieveDetectorSetup(fname);
 }
 
-int slsDetectorUsers::dumpDetectorSetup(string const fname){
+int slsDetectorUsers::dumpDetectorSetup(const std::string& fname){
 	return detector.dumpDetectorSetup(fname);
 }
 
@@ -266,19 +262,19 @@ int slsDetectorUsers::setReceiverFifoDepth(int i, int detPos) {
 	return detector.setReceiverFifoDepth(i, detPos);
 }
 
-string slsDetectorUsers::getFilePath(int detPos){
+std::string slsDetectorUsers::getFilePath(int detPos){
 	return detector.getFilePath(detPos);
 }
 
-string slsDetectorUsers::setFilePath(string s, int detPos){
+std::string slsDetectorUsers::setFilePath(const std::string& s, int detPos){
 	return detector.setFilePath(s, detPos);
 }
 
-string slsDetectorUsers::getFileName(int detPos){
+std::string slsDetectorUsers::getFileName(int detPos){
 	return detector.getFileName(detPos);
 }
 
-string slsDetectorUsers::setFileName(string s, int detPos){
+std::string slsDetectorUsers::setFileName(const std::string& s, int detPos){
 	return detector.setFileName(s, detPos);
 }
 
@@ -328,14 +324,14 @@ int slsDetectorUsers::setClientDataStreamingInPort(int i, int detPos){
 	return detector.getClientStreamingPort(detPos);
 }
 
-string slsDetectorUsers::setReceiverDataStreamingOutIP(string ip, int detPos){
+std::string slsDetectorUsers::setReceiverDataStreamingOutIP(const std::string& ip, int detPos){
 	  if (ip.length()) {
 		  detector.setReceiverDataStreamingOutIP(ip, detPos);
 	  }
 	return detector.getReceiverStreamingIP(detPos);
 }
 
-string slsDetectorUsers::setClientDataStreamingInIP(string ip, int detPos){
+std::string slsDetectorUsers::setClientDataStreamingInIP(const std::string& ip, int detPos){
 	  if (ip.length()) {
 		  detector.setClientDataStreamingInIP(ip, detPos);
 	  }

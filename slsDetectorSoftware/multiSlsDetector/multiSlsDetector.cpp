@@ -4,7 +4,7 @@
 #include "detectorData.h"
 #include "logger.h"
 #include "multiSlsDetectorClient.h"
-#include "multiSlsDetectorCommand.h"
+#include "slsDetectorCommand.h"
 #include "slsDetector.h"
 #include "sls_detector_exceptions.h"
 #include "utilities.h"

@@ -14,7 +14,7 @@
 
 
 class detectorData;
-class multiSlsDetectorCommand;
+
 
 #include "multiSlsDetector.h"
 #include <cstdint>
@@ -153,28 +153,28 @@ public:
 	 * @param fname configuration file name
 	 * @return OK or FAIL
 	 */
-	int readConfigurationFile(std::string const fname);
+	int readConfigurationFile(const std::string& fname);
 
 	/**
 	 * Write current configuration to a file (for one time detector setup)
 	 * @param fname configuration file name
 	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(std::string const fname);
+	int writeConfigurationFile(const std::string& fname);
 
 	/**
 	 * Loads the detector setup from file (current measurement setup)
 	 * @param fname file to read from
 	 * @returns OK or FAIL
 	 */
-	int retrieveDetectorSetup(std::string const fname);
+	int retrieveDetectorSetup(const std::string& fname);
 
 	/**
 	 * Saves the detector setup to file (currentmeasurement setup)
 	 * @param fname file to write to
 	 * @returns OK or FAIL
 	 */
-	int dumpDetectorSetup(std::string const fname);
+	int dumpDetectorSetup(const std::string& fname);
 
 	/**
 	 * Get detector firmware version
@@ -594,7 +594,7 @@ public:
 	 * @param s file directory
 	 * @returns file dir
 	 */
-	std::string setFilePath(std::string s, int detPos = -1);
+	std::string setFilePath(const std::string& s, int detPos = -1);
 
 	/**
 	 * Returns file name prefix
@@ -609,7 +609,7 @@ public:
 	 * @param s file name prefix
 	 * @returns file name prefix
 	 */
-	std::string setFileName(std::string s, int detPos = -1);
+	std::string setFileName(const std::string& s, int detPos = -1);
 
 	/**
 	 * Returns file index
@@ -705,7 +705,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns receiver streaming out ZMQ IP
 	 */
-	std::string setReceiverDataStreamingOutIP(std::string ip="", int detPos = -1);
+	std::string setReceiverDataStreamingOutIP(const std::string& ip="", int detPos = -1);
 
 	/**
 	 * (advanced users)
@@ -715,7 +715,7 @@ public:
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns client streaming in ZMQ IP
 	 */
-	std::string setClientDataStreamingInIP(std::string ip="", int detPos = -1);
+	std::string setClientDataStreamingInIP(const std::string& ip = "", int detPos = -1);
 
 	/**
 	 * Enable gap pixels in receiver (Eiger for 8,16 and 32 bit mode)

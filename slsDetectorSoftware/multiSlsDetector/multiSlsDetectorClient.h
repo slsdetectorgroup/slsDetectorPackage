@@ -6,7 +6,7 @@
 #include "container_utils.h"
 #include "string_utils.h"
 #include "multiSlsDetector.h"
-#include "multiSlsDetectorCommand.h"
+#include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
 
 #include <cstdlib>
@@ -87,7 +87,7 @@ class multiSlsDetectorClient {
         }
 
         // call multi detector command line
-        multiSlsDetectorCommand myCmd(detPtr);
+        slsDetectorCommand myCmd(detPtr);
         std::string answer = myCmd.executeLine(parser.n_arguments()+1, parser.argv().data(), action_, parser.detector_id());
 
         if (parser.multi_id()!=0)

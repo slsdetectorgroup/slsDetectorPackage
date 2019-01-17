@@ -10,7 +10,6 @@ set(SOURCES
     src/DataProcessor.cpp
     src/DataStreamer.cpp
     src/Fifo.cpp
-    ../slsSupportLib/src/utilities.cpp
     ../slsSupportLib/src/ClientInterface.cpp
 )
 
@@ -54,7 +53,6 @@ set(PUBLICHEADERS
     ../slsSupportLib/include/genericSocket.h
     ../slsSupportLib/include/logger.h
 	../slsSupportLib/include/sls_detector_exceptions.h
-	../slsSupportLib/include/utilities.h
 )
 
 

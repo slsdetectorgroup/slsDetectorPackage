@@ -4,20 +4,8 @@
 #include "sls_detector_defs.h"
 
 #include <string>
-#include <map>
 #include <fstream>
 #include <stdio.h>
-
-
-/**
- * Read config file for receiver
- * @param fname config file name
- * @param tcpip_port_no pointer to tcp port number
- * @param map map
- * @returns OK or FAIL
- */
-int read_config_file(std::string fname, int *tcpip_port_no,
-		std::map<std::string, std::string> * configuration_map);
 
 
 /** (used by multi and sls)

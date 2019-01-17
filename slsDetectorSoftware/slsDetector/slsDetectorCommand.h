@@ -18,7 +18,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
 
 
   slsDetectorCommand(multiSlsDetector *det);
-  virtual ~slsDetectorCommand(){};
+
 
   /*
    * Executes a set of string arguments according to a given format.
@@ -29,7 +29,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
    * @param action can be PUT_ACTION or GET_ACTION(from text client even READOUT_ACTION for acquisition)
    * @param detPos -1 for all detectors in multi detector list or position of a specific detector in list
    */
-  virtual std::string executeLine(int narg, char *args[], int action, int detPos = -1);
+  std::string executeLine(int narg, char *args[], int action, int detPos = -1);
   
   /*   /\** */
   /*      returns the help for the executeLine command  */

@@ -1,37 +1,22 @@
 #include "slsDetectorUsers.h"
 #include "detectorData.h"
-#include "multiSlsDetector.h"
-#include "multiSlsDetectorCommand.h"
 
+#include "multiSlsDetectorCommand.h"
+#include "multiSlsDetectorClient.h"
 
 using namespace std;
 
-slsDetectorUsers::slsDetectorUsers(int& ret, int id) : myDetector(nullptr), myCmd(nullptr){
-	try {
-		myDetector=new multiSlsDetector(id);
-	} catch(...) {
-		ret = 1;
-		return;
-	}
-	myCmd=new multiSlsDetectorCommand(myDetector);
-	ret = 0;
 
-}
 
-slsDetectorUsers::~slsDetectorUsers() {
-	if (myDetector)
-		delete myDetector;
-	if (myCmd)
-		delete myCmd;
-}
+
 
 int slsDetectorUsers::getNumberOfDetectors() {
-	return myDetector->getNumberOfDetectors();
+	return detector.getNumberOfDetectors();
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
-	nx=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
-	ny=myDetector->getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
+	nx=detector.getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
+	ny=detector.getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
 	return nx*ny;
 }
 
@@ -40,217 +25,217 @@ int slsDetectorUsers::getDetectorSize(int &x, int &y, int &nx, int &ny, int detP
 		x = 0;
 		y = 0;
 	} else {
-		x = myDetector->getDetectorOffset(slsDetectorDefs::X, detPos);
-		y = myDetector->getDetectorOffset(slsDetectorDefs::Y, detPos);
+		x = detector.getDetectorOffset(slsDetectorDefs::X, detPos);
+		y = detector.getDetectorOffset(slsDetectorDefs::Y, detPos);
 	}
-	nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X, detPos);
-	ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y, detPos);
+	nx=detector.getTotalNumberOfChannels(slsDetectorDefs::X, detPos);
+	ny=detector.getTotalNumberOfChannels(slsDetectorDefs::Y, detPos);
 	return nx*ny;
 }
 
 string slsDetectorUsers::getDetectorType(int detPos){
-	return myDetector->sgetDetectorsType(detPos);
+	return detector.sgetDetectorsType(detPos);
 }
 int slsDetectorUsers::setOnline(int const online, int detPos){
-	return myDetector->setOnline(online, detPos);
+	return detector.setOnline(online, detPos);
 }
 
 int slsDetectorUsers::setReceiverOnline(int const online, int detPos){
-	return myDetector->setReceiverOnline(online, detPos);
+	return detector.setReceiverOnline(online, detPos);
 }
 
 int slsDetectorUsers::readConfigurationFile(string const fname){
-	return myDetector->readConfigurationFile(fname);
+	return detector.readConfigurationFile(fname);
 }
 
 int slsDetectorUsers::writeConfigurationFile(string const fname){
-	return myDetector->writeConfigurationFile(fname);
+	return detector.writeConfigurationFile(fname);
 }
 
 int slsDetectorUsers::retrieveDetectorSetup(string const fname){
-	return myDetector->retrieveDetectorSetup(fname);
+	return detector.retrieveDetectorSetup(fname);
 }
 
 int slsDetectorUsers::dumpDetectorSetup(string const fname){
-	return myDetector->dumpDetectorSetup(fname);
+	return detector.dumpDetectorSetup(fname);
 }
 
 int64_t slsDetectorUsers::getDetectorFirmwareVersion(int detPos){
-	return myDetector->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION);
+	return detector.getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION);
 }
 
 int64_t slsDetectorUsers::getDetectorSerialNumber(int detPos){
-	return myDetector->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER, detPos);
+	return detector.getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER, detPos);
 }
 
 int64_t slsDetectorUsers::getDetectorSoftwareVersion(int detPos){
-	return myDetector->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, detPos);
+	return detector.getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, detPos);
 }
 
 int64_t slsDetectorUsers::getClientSoftwareVersion(int detPos){
-	return myDetector->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION, detPos);
+	return detector.getId(slsDetectorDefs::THIS_SOFTWARE_VERSION, detPos);
 }
 
 int64_t slsDetectorUsers::getReceiverSoftwareVersion(int detPos){
-	return myDetector->getId(slsDetectorDefs::RECEIVER_VERSION, detPos);
+	return detector.getId(slsDetectorDefs::RECEIVER_VERSION, detPos);
 }
 
 bool slsDetectorUsers::isDetectorVersionCompatible(int detPos) {
-	return (myDetector->checkVersionCompatibility(slsDetectorDefs::CONTROL_PORT, detPos) == slsDetectorDefs::OK);
+	return (detector.checkVersionCompatibility(slsDetectorDefs::CONTROL_PORT, detPos) == slsDetectorDefs::OK);
 }
 
 bool slsDetectorUsers::isReceiverVersionCompatible(int detPos) {
-	return (myDetector->checkVersionCompatibility(slsDetectorDefs::DATA_PORT, detPos) == slsDetectorDefs::OK);
+	return (detector.checkVersionCompatibility(slsDetectorDefs::DATA_PORT, detPos) == slsDetectorDefs::OK);
 }
 
 int slsDetectorUsers::startMeasurement(){
-	return myDetector->acquire();
+	return detector.acquire();
 }
 
 int slsDetectorUsers::stopMeasurement(int detPos){
-	return myDetector->stopAcquisition(detPos);
+	return detector.stopAcquisition(detPos);
 }
 
 int slsDetectorUsers::getDetectorStatus(int detPos){
-	return (int)myDetector->getRunStatus(detPos);
+	return (int)detector.getRunStatus(detPos);
 }
 
 int slsDetectorUsers::startAcquisition(int detPos) {
-	return myDetector->startAcquisition(detPos);
+	return detector.startAcquisition(detPos);
 }
 
 int slsDetectorUsers::stopAcquisition(int detPos) {
-	return myDetector->stopAcquisition(detPos);
+	return detector.stopAcquisition(detPos);
 }
 
 int slsDetectorUsers::sendSoftwareTrigger(int detPos) {
-	return myDetector->sendSoftwareTrigger(detPos);
+	return detector.sendSoftwareTrigger(detPos);
 }
 
 int slsDetectorUsers::enableCountRateCorrection(int i, int detPos){
 	if (i == 0)
-		myDetector->setRateCorrection(0, detPos);
+		detector.setRateCorrection(0, detPos);
 	else
-		myDetector->setRateCorrection(-1, detPos);
+		detector.setRateCorrection(-1, detPos);
 
-	return myDetector->getRateCorrection(detPos);
+	return detector.getRateCorrection(detPos);
 }
 
 int slsDetectorUsers::setBitDepth(int i, int detPos){
-	return myDetector->setDynamicRange(i, detPos);
+	return detector.setDynamicRange(i, detPos);
 }
 
 int slsDetectorUsers::setSettings(int isettings, int detPos){
-	return myDetector->setSettings((slsDetectorDefs::detectorSettings)isettings, detPos);
+	return detector.setSettings((slsDetectorDefs::detectorSettings)isettings, detPos);
 }
 
 int slsDetectorUsers::getThresholdEnergy(int detPos){
-	return myDetector->getThresholdEnergy(detPos);
+	return detector.getThresholdEnergy(detPos);
 }  
 
 int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int detPos) {
-	return myDetector->setThresholdEnergy(e_ev,
+	return detector.setThresholdEnergy(e_ev,
 			(isettings == -1) ?  slsDetectorDefs::GET_SETTINGS : (slsDetectorDefs::detectorSettings)isettings,
 					tb, detPos);
 }
 
 double slsDetectorUsers::setExposureTime(double t, bool inseconds, int detPos){
-	return myDetector->setExposureTime(t, inseconds, detPos);
+	return detector.setExposureTime(t, inseconds, detPos);
 }
 
 double slsDetectorUsers::setExposurePeriod(double t, bool inseconds, int detPos){
-	return myDetector->setExposurePeriod(t, inseconds, detPos);
+	return detector.setExposurePeriod(t, inseconds, detPos);
 }
 
 double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds, int detPos){
-	return myDetector->setDelayAfterTrigger(t, inseconds, detPos);
+	return detector.setDelayAfterTrigger(t, inseconds, detPos);
 }
 
 double slsDetectorUsers::setSubFrameExposureTime(double t, bool inseconds, int detPos){
-	return myDetector->setSubFrameExposureTime(t, inseconds, detPos);
+	return detector.setSubFrameExposureTime(t, inseconds, detPos);
 }
 
 double slsDetectorUsers::setSubFrameExposureDeadTime(double t, bool inseconds, int detPos){
-	return myDetector->setSubFrameExposureDeadTime(t, inseconds, detPos);
+	return detector.setSubFrameExposureDeadTime(t, inseconds, detPos);
 }
 
 int64_t slsDetectorUsers::setNumberOfFrames(int64_t t, int detPos){
-	return myDetector->setNumberOfFrames(t, detPos);
+	return detector.setNumberOfFrames(t, detPos);
 }
 
 int64_t slsDetectorUsers::setNumberOfCycles(int64_t t, int detPos){
-	return myDetector->setNumberOfCycles(t, detPos);
+	return detector.setNumberOfCycles(t, detPos);
 }
 
 int64_t slsDetectorUsers::setNumberOfGates(int64_t t, int detPos){
-	return myDetector->setNumberOfGates(t, detPos);
+	return detector.setNumberOfGates(t, detPos);
 } 
 
 int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int detPos) {
-	return myDetector->setNumberOfStorageCells(t, detPos);
+	return detector.setNumberOfStorageCells(t, detPos);
 }
 
 double slsDetectorUsers::getMeasuredPeriod(bool inseconds, int detPos) {
-	return myDetector->getMeasuredPeriod(inseconds, detPos);
+	return detector.getMeasuredPeriod(inseconds, detPos);
 }
 
 double slsDetectorUsers::getMeasuredSubFramePeriod(bool inseconds, int detPos) {
-	return myDetector->getMeasuredSubFramePeriod(inseconds, detPos);
+	return detector.getMeasuredSubFramePeriod(inseconds, detPos);
 }
 
 int slsDetectorUsers::setTimingMode(int pol, int detPos){
-	return myDetector->setExternalCommunicationMode(slsDetectorDefs::externalCommunicationMode(pol), detPos);
+	return detector.setExternalCommunicationMode(slsDetectorDefs::externalCommunicationMode(pol), detPos);
 }
 
 int slsDetectorUsers::setClockDivider(int value, int detPos) {
-	return myDetector->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, value, detPos);
+	return detector.setSpeed(slsDetectorDefs::CLOCK_DIVIDER, value, detPos);
 }
 
 int slsDetectorUsers::setParallelMode(int value, int detPos) {
 	if(value >= 0)
-		myDetector->setReadOutFlags(slsDetectorDefs::readOutFlags(value), detPos);
-	return myDetector->setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS, detPos);
+		detector.setReadOutFlags(slsDetectorDefs::readOutFlags(value), detPos);
+	return detector.setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS, detPos);
 }
 
 int slsDetectorUsers::setOverflowMode(int value, int detPos) {
 	if(value >= 0) {
 		if (value == 1)
-			myDetector->setReadOutFlags(slsDetectorDefs::SHOW_OVERFLOW, detPos);
+			detector.setReadOutFlags(slsDetectorDefs::SHOW_OVERFLOW, detPos);
 		else
-			myDetector->setReadOutFlags(slsDetectorDefs::NOOVERFLOW, detPos);
+			detector.setReadOutFlags(slsDetectorDefs::NOOVERFLOW, detPos);
 	}
-	int ret = myDetector->setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS, detPos);
+	int ret = detector.setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS, detPos);
 	if (ret == -1)
 		return -1;
 	return ((ret & slsDetectorDefs::SHOW_OVERFLOW) ? 1 : 0);
 }
 
 int slsDetectorUsers::setAllTrimbits(int val, int detPos) {
-	return myDetector->setAllTrimbits(val, detPos);
+	return detector.setAllTrimbits(val, detPos);
 }
 
 int slsDetectorUsers::setDAC(int val, int index , int detPos) {
-	return myDetector->setDAC(val, slsDetectorDefs::dacIndex(index), 0, detPos);
+	return detector.setDAC(val, slsDetectorDefs::dacIndex(index), 0, detPos);
 }
 
 int slsDetectorUsers::getADC(int index, int detPos) {
-	return myDetector->getADC(slsDetectorDefs::dacIndex(index),detPos);
+	return detector.getADC(slsDetectorDefs::dacIndex(index),detPos);
 }
 
 int slsDetectorUsers::setTenGigabitEthernet(int i, int detPos) {
-	return myDetector->enableTenGigabitEthernet(i, detPos);
+	return detector.enableTenGigabitEthernet(i, detPos);
 }
 
 int slsDetectorUsers::setStoragecellStart(int pos, int detPos) {
-	return myDetector->setStoragecellStart(pos, detPos);
+	return detector.setStoragecellStart(pos, detPos);
 }
 
 int slsDetectorUsers::setHighVoltage(int i, int detPos) {
-	return myDetector->setDAC(i, slsDetectorDefs::HIGH_VOLTAGE, 0, detPos);
+	return detector.setDAC(i, slsDetectorDefs::HIGH_VOLTAGE, 0, detPos);
 }
 
 int slsDetectorUsers::setFlowControl10G(int i, int detPos) {
-	return myDetector->setFlowControl10G(i, detPos);
+	return detector.setFlowControl10G(i, detPos);
 }
 
 
@@ -262,115 +247,115 @@ int slsDetectorUsers::setFlowControl10G(int i, int detPos) {
 
 
 int slsDetectorUsers::startReceiver(int detPos) {
-	return myDetector->startReceiver(detPos);
+	return detector.startReceiver(detPos);
 }
 
 int slsDetectorUsers::stopReceiver(int detPos) {
-	return myDetector->stopReceiver(detPos);
+	return detector.stopReceiver(detPos);
 }
 
 int slsDetectorUsers::setReceiverSilentMode(int i, int detPos) {
-	return myDetector->setReceiverSilentMode(i, detPos);
+	return detector.setReceiverSilentMode(i, detPos);
 }
 
 int slsDetectorUsers::resetFramesCaughtInReceiver(int detPos) {
-	return myDetector->resetFramesCaught(detPos);
+	return detector.resetFramesCaught(detPos);
 }
 
 int slsDetectorUsers::setReceiverFifoDepth(int i, int detPos) {
-	return myDetector->setReceiverFifoDepth(i, detPos);
+	return detector.setReceiverFifoDepth(i, detPos);
 }
 
 string slsDetectorUsers::getFilePath(int detPos){
-	return myDetector->getFilePath(detPos);
+	return detector.getFilePath(detPos);
 }
 
 string slsDetectorUsers::setFilePath(string s, int detPos){
-	return myDetector->setFilePath(s, detPos);
+	return detector.setFilePath(s, detPos);
 }
 
 string slsDetectorUsers::getFileName(int detPos){
-	return myDetector->getFileName(detPos);
+	return detector.getFileName(detPos);
 }
 
 string slsDetectorUsers::setFileName(string s, int detPos){
-	return myDetector->setFileName(s, detPos);
+	return detector.setFileName(s, detPos);
 }
 
 int slsDetectorUsers::getFileIndex(int detPos){
-	return (int)myDetector->getFileIndex(detPos);
+	return (int)detector.getFileIndex(detPos);
 }
 
 int slsDetectorUsers::setFileIndex(int i, int detPos){
-	return (int)myDetector->setFileIndex(i, detPos);
+	return (int)detector.setFileIndex(i, detPos);
 }
 
 int slsDetectorUsers::enableWriteToFile(int enable, int detPos){
-	return myDetector->enableWriteToFile(enable, detPos);
+	return detector.enableWriteToFile(enable, detPos);
 }
 
 int slsDetectorUsers::enableOverwriteFile(int enable, int detPos){
-	return myDetector->overwriteFile(enable, detPos);
+	return detector.overwriteFile(enable, detPos);
 }
 
 int slsDetectorUsers::setReceiverStreamingFrequency(int freq, int detPos){
-	return myDetector->setReceiverStreamingFrequency(freq, detPos);
+	return detector.setReceiverStreamingFrequency(freq, detPos);
 }
 
 int slsDetectorUsers::setReceiverStreamingTimer(int time_in_ms, int detPos){
-	return myDetector->setReceiverStreamingTimer(time_in_ms, detPos);
+	return detector.setReceiverStreamingTimer(time_in_ms, detPos);
 }
 
 int slsDetectorUsers::enableDataStreamingToClient(int i){
-	return myDetector->enableDataStreamingToClient(i);
+	return detector.enableDataStreamingToClient(i);
 }
 
 int slsDetectorUsers::enableDataStreamingFromReceiver(int i, int detPos){
-	return myDetector->enableDataStreamingFromReceiver(i, detPos);
+	return detector.enableDataStreamingFromReceiver(i, detPos);
 }
 
 int slsDetectorUsers::setReceiverDataStreamingOutPort(int i, int detPos){
 	  if (i >= 0) {
-		  myDetector->setReceiverDataStreamingOutPort(i, detPos);
+		  detector.setReceiverDataStreamingOutPort(i, detPos);
 	  }
-	return myDetector->getReceiverStreamingPort(detPos);
+	return detector.getReceiverStreamingPort(detPos);
 }
 
 int slsDetectorUsers::setClientDataStreamingInPort(int i, int detPos){
 	  if (i >= 0) {
-		  myDetector->setClientDataStreamingInPort(i, detPos);
+		  detector.setClientDataStreamingInPort(i, detPos);
 	  }
-	return myDetector->getClientStreamingPort(detPos);
+	return detector.getClientStreamingPort(detPos);
 }
 
 string slsDetectorUsers::setReceiverDataStreamingOutIP(string ip, int detPos){
 	  if (ip.length()) {
-		  myDetector->setReceiverDataStreamingOutIP(ip, detPos);
+		  detector.setReceiverDataStreamingOutIP(ip, detPos);
 	  }
-	return myDetector->getReceiverStreamingIP(detPos);
+	return detector.getReceiverStreamingIP(detPos);
 }
 
 string slsDetectorUsers::setClientDataStreamingInIP(string ip, int detPos){
 	  if (ip.length()) {
-		  myDetector->setClientDataStreamingInIP(ip, detPos);
+		  detector.setClientDataStreamingInIP(ip, detPos);
 	  }
-	return myDetector->getClientStreamingIP(detPos);
+	return detector.getClientStreamingIP(detPos);
 }
 
 int slsDetectorUsers::enableGapPixels(int enable, int detPos) {
-	return myDetector->enableGapPixels(enable, detPos);
+	return detector.enableGapPixels(enable, detPos);
 }
 
 int slsDetectorUsers::setReceiverFramesDiscardPolicy(int f, int detPos) {
-	return myDetector->setReceiverFramesDiscardPolicy(slsDetectorDefs::frameDiscardPolicy(f), detPos);
+	return detector.setReceiverFramesDiscardPolicy(slsDetectorDefs::frameDiscardPolicy(f), detPos);
 }
 
 int slsDetectorUsers::setReceiverPartialFramesPadding(int f, int detPos) {
-	return myDetector->setReceiverPartialFramesPadding(f, detPos);
+	return detector.setReceiverPartialFramesPadding(f, detPos);
 }
 
 int slsDetectorUsers::setReceiverFramesPerFile(int f, int detPos) {
-	return myDetector->setReceiverFramesPerFile(f, detPos);
+	return detector.setReceiverFramesPerFile(f, detPos);
 }
 
 
@@ -382,32 +367,25 @@ int slsDetectorUsers::setReceiverFramesPerFile(int f, int detPos) {
  *********************************************************************/
 
 void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*), void *pArg) {
-	myDetector->registerDataCallback(userCallback,pArg);
+	detector.registerDataCallback(userCallback,pArg);
 }
 
 void slsDetectorUsers::registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg) {
-	myDetector->registerAcquisitionFinishedCallback(func,pArg);
+	detector.registerAcquisitionFinishedCallback(func,pArg);
 }
 
 void slsDetectorUsers::registerMeasurementFinishedCallback(int( *func)(int,int, void*), void *pArg) {
-	myDetector->registerMeasurementFinishedCallback(func,pArg);
+	detector.registerMeasurementFinishedCallback(func,pArg);
 }
 
 void slsDetectorUsers::registerProgressCallback(int( *func)(double,void*), void *pArg) {
-	myDetector->registerProgressCallback(func,pArg);
+	detector.registerProgressCallback(func,pArg);
 }
 
-string slsDetectorUsers::putCommand(int narg, char *args[], int pos){
-	if(narg < 2)
-		return string("Error: Insufficient Parameters");
-	return myCmd->putCommand(narg, args, pos);
+void slsDetectorUsers::putCommand(const std::string& command){
+	multiSlsDetectorClient(command, slsDetectorDefs::PUT_ACTION, &detector);
 }
 
-string slsDetectorUsers::getCommand(int narg, char *args[], int pos){
-	if(narg < 1)
-		return string("Error: Insufficient Parameters");
-	return myCmd->getCommand(narg, args, pos);
-}
 
 
 

@@ -14,11 +14,10 @@
 
 
 class detectorData;
-class multiSlsDetector;
 class multiSlsDetectorCommand;
 
-
-#include <stdint.h>
+#include "multiSlsDetector.h"
+#include <cstdint>
 #include <string>
 
 
@@ -90,12 +89,12 @@ public:
 	 * @param ret address of return value. 0 for success or 1 for failure
 	 * @param id multi detector id
 	 */
-	slsDetectorUsers(int& ret, int id = 0);
+	slsDetectorUsers(int multi_id):detector(multi_id){};
 
 	/**
 	 * Destructor
 	 */
-	virtual ~slsDetectorUsers();
+	virtual ~slsDetectorUsers() = default;
 
 	/**
 	 * Returns the number of detectors in the multidetector structure
@@ -798,22 +797,13 @@ public:
 	void registerProgressCallback(int( *func)(double,void*), void *pArg);
 
 	/**
-     @short sets parameters in command interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
-     \param narg value to be set
-     \param args value to be set
-     \param pos position of detector in multislsdetector list
-     \returns answer std::string
+     @short [usage strongly discouraged] sets parameters trough command line interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
+     \param command string as it would be written on the command line
+     \returns void
 	 */
-	std::string putCommand(int narg, char *args[], int pos=-1);
+	void putCommand(const std::string& command);
 
-	/**
-     @short gets parameters in command interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
-     \param narg value to be set
-     \param args value to be set
-     \param pos position of detector in multislsdetector list
-     \returns answer std::string
-	 */
-	std::string getCommand(int narg, char *args[], int pos=-1);
+
 
 
 
@@ -906,8 +896,7 @@ public:
 
 
 private:
-	multiSlsDetector *myDetector;
-	multiSlsDetectorCommand *myCmd;
+	multiSlsDetector detector;
 };
 
 #endif

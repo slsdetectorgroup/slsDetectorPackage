@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 
+namespace sls{
+
 class Timer {
     using clock = std::chrono::high_resolution_clock;
     using time_point = std::chrono::time_point<clock>;
@@ -31,4 +33,6 @@ class Timer {
     std::string name_;
 };
 
+
+}; //namespace sls
 #endif // TIMER_H

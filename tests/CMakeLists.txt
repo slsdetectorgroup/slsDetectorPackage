@@ -21,7 +21,6 @@ if(USE_TESTS)
         ${LOCAL_TEST_DIR}/test-CmdLineParser.cpp
         #${LOCAL_TEST_DIR}/test-multiDetector.cpp
         ${LOCAL_TEST_DIR}/test.cpp
-        # PARENT_SCOPE
     )
     add_executable(test ${TEST_SOURCES})
     target_link_libraries(test 

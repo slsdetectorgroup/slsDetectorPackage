@@ -26,8 +26,8 @@ LIBZMQ =  -L$(LIBZMQDIR) -Wl,-rpath=$(LIBZMQDIR) -lzmq
 
 
 
-SRC_CLNT =   ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp  slsReceiverImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp $(COMMONDIR)/utilities.cpp
-DEPSINCLUDES = $(COMMONDIR)/ansi.h $(COMMONDIR)/sls_detector_defs.h $(COMMONDIR)/sls_detector_funcs.h $(COMMONDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(COMMONDIR)/genericSocket.h  $(COMMONDIR)/logger.h $(INCDIR)/receiver_defs.h  $(COMMONDIR)/utilities.h $(COMMONDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h $(COMMONDIR)/sls_detector_exceptions.h
+SRC_CLNT =   ThreadObject.cpp Listener.cpp DataProcessor.cpp DataStreamer.cpp Fifo.cpp File.cpp BinaryFile.cpp  slsReceiverImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp 
+DEPSINCLUDES = $(COMMONDIR)/ansi.h $(COMMONDIR)/sls_detector_defs.h $(COMMONDIR)/sls_detector_funcs.h $(COMMONDIR)/GeneralData.h  $(INCDIR)/circularFifo.h $(COMMONDIR)/genericSocket.h  $(COMMONDIR)/logger.h $(INCDIR)/receiver_defs.h  $(COMMONDIR)/ZmqSocket.h $(INCDIR)/BinaryFileStatic.h $(INCDIR)/HDF5FileStatic.h $(COMMONDIR)/sls_detector_exceptions.h
 
 
 ifeq ($(HDF5),yes)

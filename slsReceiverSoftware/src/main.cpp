@@ -3,15 +3,12 @@
 
 #include "sls_detector_defs.h"
 #include "slsReceiverUsers.h"
+#include "logger.h"
 
 #include <iostream>
 #include <string.h>
 #include <signal.h>	//SIGINT
 #include <cstdlib>		//system
-
-#include "utilities.h"
-#include "logger.h"
-
 #include <sys/types.h>	//wait
 #include <sys/wait.h>	//wait
 #include <unistd.h> 	//usleep

@@ -566,7 +566,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType ty
 	int *dacs = new int[nd];
 	int *chanregs = new int[nch*nc];
 
-	sls_detector_module *myMod = (sls_detector_module*)malloc(sizeof(sls_detector_module));
+	sls_detector_module *myMod = new sls_detector_module;
 	myMod->ndac = nd;
 	myMod->nchip = nc;
 	myMod->nchan = nch*nc;

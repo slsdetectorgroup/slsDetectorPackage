@@ -6,7 +6,7 @@
 /**
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
-#include "sls_detector_defs.h"
+// #include "sls_detector_defs.h"
 #include "receiver_defs.h"
 #include "logger.h"
 #include "container_utils.h"
@@ -15,6 +15,7 @@ class Listener;
 class DataProcessor;
 class DataStreamer;
 class Fifo;
+class slsDetectorDefs;
 
 #include <exception>
 #include <vector>

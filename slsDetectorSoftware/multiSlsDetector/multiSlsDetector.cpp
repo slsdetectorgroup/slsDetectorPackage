@@ -7,7 +7,7 @@
 #include "slsDetectorCommand.h"
 #include "slsDetector.h"
 #include "sls_detector_exceptions.h"
-#include "utilities.h"
+#include "file_utils.h"
 
 #include "string_utils.h"
 

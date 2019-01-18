@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-
-#project(slsDetectorPackage LANGUAGES CXX)
+# cmake_minimum_required(VERSION 3.5)
+project(slsDetectorPackage)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set (CALIBRATE OFF)
@@ -38,6 +38,14 @@ find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
 
+if (USE_TESTS)
+    enable_testing()
+endif(USE_TESTS)
+
+# Support library containing functionallity common to 
+# detector and receiver
+add_subdirectory(slsSupportLib)
+
 if (USE_HDF5)
 	find_package(HDF5 1.10 COMPONENTS CXX)
 endif (USE_HDF5)
@@ -69,9 +77,9 @@ if (USE_GUI)
        endif()
 endif (USE_GUI)
 
-if (USE_SUPPORT_LIB)
-    add_subdirectory(slsSupportLib)
-endif(USE_SUPPORT_LIB)
+
+
+
 
 if (CALIBRATE)
     if (DEFINED ENV{ROOTSYS})
@@ -82,9 +90,6 @@ if (CALIBRATE)
     endif()
 endif(CALIBRATE)
 
-if (USE_TESTS)
-    add_subdirectory(tests)
-endif(USE_TESTS)
 
 install(FILES ${ZMQ_STATIC_ARCHIVE}
 DESTINATION lib) 

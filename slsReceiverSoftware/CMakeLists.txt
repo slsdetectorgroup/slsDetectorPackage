@@ -10,7 +10,6 @@ set(SOURCES
     src/DataProcessor.cpp
     src/DataStreamer.cpp
     src/Fifo.cpp
-    ../slsSupportLib/src/ClientInterface.cpp
 )
 
 
@@ -30,30 +29,22 @@ if (USE_HDF5)
 endif (USE_HDF5)
 
 
-#add_definitions(
-#    -DVERBOSE
-#)
-
-include_directories(
-    include
-    ../slsSupportLib/include
-)
-
+# include_directories(
+#     ${SLS_SUPPORT_LIB_INCLUDE_DIRS}
+# )
 
 add_library(slsReceiverShared SHARED
     ${SOURCES}
     ${HEADERS}
 )
 
-set(PUBLICHEADERS
-    ../slsSupportLib/include/sls_detector_defs.h
-    ../slsSupportLib/include/ansi.h
-    ../slsSupportLib/include/sls_detector_funcs.h
-    ../slsSupportLib/include/MySocketTCP.h
-    ../slsSupportLib/include/genericSocket.h
-    ../slsSupportLib/include/logger.h
-	../slsSupportLib/include/sls_detector_exceptions.h
-)
+target_link_libraries(slsReceiverShared slsSupportLib)
+target_include_directories(slsReceiverShared PUBLIC include)
+
+#What is included in slsReceiverLib?
+# set(PUBLICHEADERS
+
+# )
 
 
 set_target_properties(slsReceiverShared PROPERTIES
@@ -70,6 +61,7 @@ set_target_properties(slsReceiver PROPERTIES
 )
 
 target_link_libraries(slsReceiver
+    slsSupportLib
     slsReceiverShared
     pthread
     zmq

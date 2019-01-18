@@ -6,7 +6,7 @@
 #include "gitInfoLib.h"
 #include "versionAPI.h"
 #include "slsDetectorCommand.h"
-#include "utilities.h"
+#include "file_utils.h"
 #include "string_utils.h"
 #include "MySocketTCP.h"
 

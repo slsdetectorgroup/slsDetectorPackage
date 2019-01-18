@@ -7,7 +7,6 @@
 
 #include "string_utils.h"
 
-#define VERBOSE
 
 TEST_CASE("copy a string") {
 

@@ -4,17 +4,12 @@ set(SOURCES
     slsDetector/slsDetectorUsers.cpp 
     slsDetector/slsDetectorCommand.cpp
     slsDetector/slsDetector.cpp 
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/src/ClientInterface.cpp
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/src/utilities.cpp
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/src/string_utils.cpp
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/src/CmdLineParser.cpp
 )
 
 set(HEADERS
 )
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include
     multiSlsDetector 
     sharedMemory
     slsDetector 
@@ -26,25 +21,16 @@ add_library(slsDetectorShared SHARED
 )
 
 target_link_libraries(slsDetectorShared
+    slsSupportLib
 	zmq
 )
 
-
 set(PUBLICHEADERS
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/sls_detector_defs.h
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/sls_detector_funcs.h
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/error_defs.h
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/versionAPI.h
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/sls_detector_exceptions.h
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/utilities.h
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/container_utils.h
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/string_utils.h
     sharedMemory/SharedMemory.h
     slsDetector/slsDetector.h
     slsDetector/slsDetectorUsers.h
     slsDetector/detectorData.h
     multiSlsDetector/multiSlsDetector.h
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include/ClientInterface.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

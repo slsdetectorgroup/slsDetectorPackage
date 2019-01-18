@@ -280,14 +280,13 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     void addMultipleDetectors(const char *name);
 
-    using slsDetectorDefs::getDetectorType;
     /**
      * Get Detector type for a particular sls detector or get the first one
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns detector type of sls detector in position pos, if -1, returns
      * the first det type
      */
-    detectorType getDetectorsType(int detPos = -1);
+    detectorType getDetectorTypeAsEnum(int detPos = -1);
 
     /**
      * Concatenates string types of all sls detectors or
@@ -296,35 +295,27 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns detector type of sls detector in position pos, if -1,
      * concatenates
      */
-    std::string sgetDetectorsType(int detPos = -1);
-
-    /**
-     * Gets Detector type (concatenates if different)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns detector type of sls detector in position pos, if -1,
-     * concatenates
-     */
-    std::string getDetectorType(int detPos = -1);
+    std::string getDetectorTypeAsString(int detPos = -1);
 
     /**
      * Returns the number of detectors in the multidetector structure
      * @returns number of detectors
      */
-    int getNumberOfDetectors();
+    int getNumberOfDetectors() const;
 
     /**
      * Returns number of detectors in dimension d
      * @param d dimension d
      * @returns number of detectors in dimension d
      */
-    int getNumberOfDetectors(dimension d);
+    int getNumberOfDetectors(dimension d) const;
 
     /**
      * Returns the number of detectors in each direction
        @param nx number of detectors in x direction
        @param ny number of detectors in y direction
      */
-    void getNumberOfDetectors(int &nx, int &ny);
+    void getNumberOfDetectors(int &nx, int &ny) const;
 
     /**
      * Returns the total number of channels of all sls detectors from shared

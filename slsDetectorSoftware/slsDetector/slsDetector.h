@@ -373,7 +373,6 @@ public:
 	 */
 	void disconnectStop();
 
-	using slsDetectorDefs::getDetectorType;
 
 	/**
 	 * Get detector type by connecting to the detector without creating an object
@@ -381,7 +380,19 @@ public:
 	 * @param cport TCP control port
 	 * @returns detector tpe or GENERIC if failed
 	 */
-	static detectorType getDetectorType(const char *name, int cport=DEFAULT_PORTNO);
+	static detectorType getDetectorTypeAsEnum(const std::string& hostname, int cport=DEFAULT_PORTNO);
+
+	/**
+	 * Get Detector type from shared memory variable
+	 * @returns detector type from shared memory variable
+	 */
+	detectorType getDetectorTypeAsEnum();
+
+	/**
+	 * Gets string version of detector type from shared memory variable
+	 * @returns string version of detector type from shared memory variable
+	 */
+	std::string getDetectorTypeAsString();
 
 	/**
 	 * Gets detector type from detector and set it in receiver
@@ -394,27 +405,8 @@ public:
 	 * Gets detector type (string) from detector and set it in receiver
 	 * @param type string of detector type
 	 * @returns detector type in receiver
- 	 */
-	int setDetectorType(const std::string& detector_type);
-
-	/**
-	 * Get Detector type from shared memory variable
-	 * @returns detector type from shared memory variable
-	 */
-	detectorType getDetectorsType();
-
-	/**
-	 * Gets string version of detector type from shared memory variable
-	 * @returns string version of detector type from shared memory variable
-	 */
-	std::string sgetDetectorsType();
-
-	/**
-	 * Just to overload getDetectorType from users
-	 * Gets string version of detector type from shared memory variable
-	 * @returns gets string version of detector type from shared memory variable
-	 */
-	std::string getDetectorType();
+ 	//  */
+	// int setDetectorType(const std::string& detector_type);
 
 	/**
 	 * Returns the total number of channels from shared memory
@@ -1805,7 +1797,7 @@ private:
 	/** pointer to dac valuse in shared memory  */
 	int *dacs {nullptr};
 
-	/** pointer to channal registers  in shared memory */
+	/** pointer to channel registers  in shared memory */
 	int *chanregs {nullptr};
 };
 

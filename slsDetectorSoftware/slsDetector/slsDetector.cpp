@@ -49,7 +49,7 @@ slsDetector::slsDetector(int multiId, int id, bool verify)
 	/* called from multi constructor to populate structure,
 	 * so sls shared memory will be opened, not created */
 
-	// getDetectorType Froom shm will check if it was already existing
+	// getDetectorType From shm will check if it was already existing
 	detectorType type = getDetectorTypeFromShm(multiId, verify);
 
 	initSharedMemory(false, type, multiId, verify);
@@ -752,16 +752,16 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
 
 
 // static function
-slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int cport) {
+slsDetectorDefs::detectorType slsDetector::getDetectorTypeAsEnum(const std::string& hostname, int cport) {
 	int fnum = F_GET_DETECTOR_TYPE;
 	int ret = FAIL;
 	detectorType retval = GENERIC;
 	MySocketTCP* mySocket = nullptr;
 
 	try {
-		mySocket = new MySocketTCP(name, cport);
+		mySocket = new MySocketTCP(hostname.c_str(), cport);
 	} catch(...) {
-		FILE_LOG(logERROR) << "Cannot create socket to control server " << name
+		FILE_LOG(logERROR) << "Cannot create socket to control server " << hostname
 				<< " over port " << cport;
 		return retval;
 	}
@@ -773,7 +773,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
 		mySocket->Disconnect();
 	} else {
-		FILE_LOG(logERROR) << "Cannot connect to server " << name << " over port " << cport;
+		FILE_LOG(logERROR) << "Cannot connect to server " << hostname << " over port " << cport;
 	}
 	if (ret != FAIL) {
 		FILE_LOG(logDEBUG1) << "Detector type is " << retval;
@@ -838,23 +838,20 @@ int slsDetector::setDetectorType(detectorType const type) {
 
 
 
-int slsDetector::setDetectorType(const std::string& detector_type) {
-	return setDetectorType(getDetectorType(detector_type));
-}
+// int slsDetector::setDetectorType(const std::string& detector_type) {
+// 	return setDetectorType(getDetectorType(detector_type));
+// }
 
 
-slsDetectorDefs::detectorType slsDetector::getDetectorsType() {
+slsDetectorDefs::detectorType slsDetector::getDetectorTypeAsEnum() {
 	return thisDetector->myDetectorType;
 }
 
-std::string slsDetector::sgetDetectorsType() {
-	return getDetectorType(getDetectorsType());
+std::string slsDetector::getDetectorTypeAsString() {
+	return slsDetectorDefs::detectorTypeToString(getDetectorTypeAsEnum());
 }
 
 
-std::string slsDetector::getDetectorType() {
-	return sgetDetectorsType();
-}
 
 
 int slsDetector::getTotalNumberOfChannels() {
@@ -2697,7 +2694,7 @@ std::string slsDetector::setReceiver(const std::string& receiverIP) {
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 		FILE_LOG(logDEBUG1) <<
-				"detector type:" << (slsDetectorDefs::getDetectorType(thisDetector->myDetectorType)) <<
+				"detector type:" << (slsDetectorDefs::detectorTypeToString(thisDetector->myDetectorType)) <<
 				"\ndetector id:" << detId <<
 				"\ndetector hostname:" << thisDetector->hostname <<
 				"\nfile path:" << thisDetector->receiver_filePath <<

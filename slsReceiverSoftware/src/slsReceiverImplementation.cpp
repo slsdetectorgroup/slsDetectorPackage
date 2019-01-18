@@ -834,7 +834,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	case EIGER:
 	case CHIPTESTBOARD:
 	case JUNGFRAU:
-		FILE_LOG(logINFO) << " ***** " << getDetectorType(d) << " Receiver *****";
+		FILE_LOG(logINFO) << " ***** " << detectorTypeToString(d) << " Receiver *****";
 		break;
 	default:
 		FILE_LOG(logERROR) << "This is an unknown receiver type " << (int)d;
@@ -895,7 +895,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	// check udp socket buffer size
 	setUDPSocketBufferSize(udpSocketBufferSize);
 
-	FILE_LOG(logDEBUG) << " Detector type set to " << getDetectorType(d);
+	FILE_LOG(logDEBUG) << " Detector type set to " << detectorTypeToString(d);
 	return OK;
 }
 

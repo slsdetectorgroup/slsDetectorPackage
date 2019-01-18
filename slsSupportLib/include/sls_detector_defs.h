@@ -572,7 +572,7 @@ public:
 	      \param t string can be EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD
 	      \returns Eiger, Gotthard, Jungfrau, JungfrauCTB, Unknown
 	  */
-	  static std::string getDetectorType(detectorType t){	\
+	  static std::string detectorTypeToString(detectorType t){	\
 	    switch (t) {										\
 	    case EIGER:    		return std::string("Eiger");	\
 	    case GOTTHARD:    	return std::string("Gotthard");	\
@@ -585,7 +585,7 @@ public:
 	      \param type can be Eiger, Gotthard, Jungfrau, JungfrauCTB
 	      \returns  EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, GENERIC
 	  */
-	  static detectorType getDetectorType(std::string const type){\
+	  static detectorType detectorTypeToEnum(const std::string& type){\
 	    if (type=="Eiger")    		return EIGER;		\
 	    if (type=="Gotthard")    	return GOTTHARD;	\
 	    if (type=="Jungfrau")    	return JUNGFRAU;	\

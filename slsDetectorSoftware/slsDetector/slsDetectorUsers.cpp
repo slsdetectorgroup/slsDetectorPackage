@@ -6,7 +6,7 @@
 
 
 
-int slsDetectorUsers::getNumberOfDetectors() {
+int slsDetectorUsers::getNumberOfDetectors() const {
 	return detector.getNumberOfDetectors();
 }
 
@@ -30,7 +30,7 @@ int slsDetectorUsers::getDetectorSize(int &x, int &y, int &nx, int &ny, int detP
 }
 
 std::string slsDetectorUsers::getDetectorType(int detPos){
-	return detector.sgetDetectorsType(detPos);
+	return detector.getDetectorTypeAsString(detPos);
 }
 int slsDetectorUsers::setOnline(int const online, int detPos){
 	return detector.setOnline(online, detPos);

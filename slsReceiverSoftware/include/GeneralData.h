@@ -216,7 +216,7 @@ public:
 	 */
 	virtual void Print(TLogLevel level = logDEBUG1) const {
 		FILE_LOG(level) << "\n\nDetector Data Variables:";
-		FILE_LOG(level) << "myDetectorType: " << slsDetectorDefs::getDetectorType(myDetectorType);
+		FILE_LOG(level) << "myDetectorType: " << slsDetectorDefs::detectorTypeToString(myDetectorType);
 		FILE_LOG(level) << "Pixels X: " << nPixelsX;
 		FILE_LOG(level) << "Pixels Y: " << nPixelsY;
 		FILE_LOG(level) << "Empty Header: " << emptyHeader;

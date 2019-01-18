@@ -100,7 +100,7 @@ public:
 	 * Returns the number of detectors in the multidetector structure
 	 * @returns number of detectors
 	 */
-	int getNumberOfDetectors();
+	int getNumberOfDetectors() const;
 
 	/**
 	 * Returns the maximum number of channels of all detectors
@@ -215,14 +215,14 @@ public:
 	/**
 	 * Check Detector Version Compatibility
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns true if compatibile, else false
+	 * @returns true if compatible, else false
 	 */
 	bool isDetectorVersionCompatible(int detPos = -1);
 
 	/**
 	 * Check Receiver Version Compatibility
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns  true if compatibile, else false
+	 * @returns  true if compatible, else false
 	 */
 	bool isReceiverVersionCompatible(int detPos = -1);
 
@@ -761,7 +761,7 @@ public:
 	 *********************************************************************/
 
 	/**
-	 * register calbback for accessing detector final data in client,
+	 * register callback for accessing detector final data in client,
 	 * also enables data streaming in client and receiver
 	 * @param userCallback function for plotting/analyzing the data.
 	 * Its arguments are

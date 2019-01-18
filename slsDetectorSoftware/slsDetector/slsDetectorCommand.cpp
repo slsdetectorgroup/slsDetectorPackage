@@ -3295,7 +3295,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, 
             if (sett == -1)
                 return std::string("unknown settings scanned " + std::string(args[1]));
             sett = myDet->setSettings(sett, detPos);
-            if (myDet->getDetectorsType(detPos) == EIGER) {
+            if (myDet->getDetectorTypeAsEnum(detPos) == EIGER) {
                 return myDet->getDetectorSettings(sett);
             }
         }
@@ -3305,7 +3305,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, 
             if (!sscanf(args[1], "%d", &val)) {
                 return std::string("invalid threshold value");
             }
-            detectorType type = myDet->getDetectorsType(detPos);
+            detectorType type = myDet->getDetectorTypeAsEnum(detPos);
             if (type != EIGER || (type == EIGER && narg <= 2)) {
                 myDet->setThresholdEnergy(val, GET_SETTINGS, 1, detPos);
             } else {
@@ -3322,7 +3322,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, 
             if (!sscanf(args[1], "%d", &val)) {
                 return std::string("invalid threshold value");
             }
-            detectorType type = myDet->getDetectorsType(detPos);
+            detectorType type = myDet->getDetectorTypeAsEnum(detPos);
             if (type != EIGER)
                 return std::string("not implemented for this detector");
             if (narg <= 2) {
@@ -4049,7 +4049,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
         return std::string("cannot decode adc ") + cmd;
 
     myDet->setOnline(ONLINE_FLAG, detPos);
-    if (myDet->getDetectorsType(detPos) == EIGER || myDet->getDetectorsType(detPos) == JUNGFRAU) {
+    if (myDet->getDetectorTypeAsEnum(detPos) == EIGER || myDet->getDetectorTypeAsEnum(detPos) == JUNGFRAU) {
         int val = myDet->getADC(adc, detPos);
         if (val == -1)
             sprintf(answer, "%d", val);
@@ -4106,7 +4106,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 		return std::string("cannot decode adc ")+cmd;
 
 	myDet->setOnline(ONLINE_FLAG, detPos);
-	if (myDet->getDetectorsType(detPos) == EIGER || myDet->getDetectorsType(detPos) == JUNGFRAU){
+	if (myDet->getDetectorTypeAsEnum(detPos) == EIGER || myDet->getDetectorTypeAsEnum(detPos) == JUNGFRAU){
 		int val = myDet->getADC(adc, detPos);
 		if (val == -1)
 			sprintf(answer,"%d",val);

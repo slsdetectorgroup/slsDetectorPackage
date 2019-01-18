@@ -292,7 +292,7 @@ std::string multiSlsDetector::getUserDetails() {
     sstream << "\nHostname: " << getHostname();
     sstream << "\nType: ";
     for (auto &d : detectors)
-        sstream << d->sgetDetectorsType() << "+";
+        sstream << d->getDetectorTypeAsString() << "+";
 
     sstream << "\nPID: " << thisMultiDetector->lastPID
             << "\nUser: " << thisMultiDetector->lastUser
@@ -475,7 +475,7 @@ void multiSlsDetector::addSlsDetector(const std::string& hostname) {
     // slsdetector in initsharedmemory
 
     // get type by connecting
-    detectorType type = slsDetector::getDetectorType(hostname.c_str(), DEFAULT_PORTNO);
+    detectorType type = slsDetector::getDetectorTypeAsEnum(hostname.c_str(), DEFAULT_PORTNO);
     if (type == GENERIC) {
         FILE_LOG(logERROR) << "Could not connect to Detector " << hostname
                   << " to determine the type!";
@@ -495,39 +495,38 @@ void multiSlsDetector::addSlsDetector(const std::string& hostname) {
         detectors[pos]->getTotalNumberOfChannels();
 }
 
-slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int detPos) {
+slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum(int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getDetectorsType();
+        return detectors[detPos]->getDetectorTypeAsEnum();
     }
 
     // multi
-    auto r = serialCall(&slsDetector::getDetectorsType);
+    auto r = serialCall(&slsDetector::getDetectorTypeAsEnum);
     return (detectorType)sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::sgetDetectorsType(int detPos) {
+std::string multiSlsDetector::getDetectorTypeAsString(int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->sgetDetectorsType();
+        return detectors[detPos]->getDetectorTypeAsString();
     }
 
     // multi
-    auto r = serialCall(&slsDetector::sgetDetectorsType);
+    auto r = serialCall(&slsDetector::getDetectorTypeAsString);
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::getDetectorType(int detPos) {
-    return sgetDetectorsType(detPos);
+
+int multiSlsDetector::getNumberOfDetectors() const { 
+    return detectors.size(); 
 }
 
-int multiSlsDetector::getNumberOfDetectors() { return detectors.size(); }
-
-int multiSlsDetector::getNumberOfDetectors(dimension d) {
+int multiSlsDetector::getNumberOfDetectors(dimension d) const {
     return thisMultiDetector->numberOfDetector[d];
 }
 
-void multiSlsDetector::getNumberOfDetectors(int &nx, int &ny) {
+void multiSlsDetector::getNumberOfDetectors(int &nx, int &ny) const {
     nx = thisMultiDetector->numberOfDetector[X];
     ny = thisMultiDetector->numberOfDetector[Y];
 }
@@ -1036,7 +1035,7 @@ int multiSlsDetector::prepareAcquisition(int detPos) {
 int multiSlsDetector::startAcquisition(int detPos) {
     // single
     if (detPos >= 0) {
-        if (detectors[detPos]->getDetectorsType() == EIGER) {
+        if (detectors[detPos]->getDetectorTypeAsEnum() == EIGER) {
             if (detectors[detPos]->prepareAcquisition() == FAIL)
                 return FAIL;
         }
@@ -1044,7 +1043,7 @@ int multiSlsDetector::startAcquisition(int detPos) {
     }
 
     // multi
-    if (getDetectorsType() == EIGER) {
+    if (getDetectorTypeAsEnum() == EIGER) {
         if (prepareAcquisition() == FAIL)
             return FAIL;
     }
@@ -1083,7 +1082,7 @@ int multiSlsDetector::sendSoftwareTrigger(int detPos) {
 int multiSlsDetector::startAndReadAll(int detPos) {
     // single
     if (detPos >= 0) {
-        if (detectors[detPos]->getDetectorsType() == EIGER) {
+        if (detectors[detPos]->getDetectorTypeAsEnum() == EIGER) {
             if (detectors[detPos]->prepareAcquisition() == FAIL)
                 return FAIL;
         }
@@ -1091,7 +1090,7 @@ int multiSlsDetector::startAndReadAll(int detPos) {
     }
 
     // multi
-    if (getDetectorsType() == EIGER) {
+    if (getDetectorTypeAsEnum() == EIGER) {
         if (prepareAcquisition() == FAIL)
             return FAIL;
     }
@@ -1344,7 +1343,7 @@ int multiSlsDetector::setDynamicRange(int p, int detPos) {
     }
 
     // for usability
-    if (getDetectorsType() == EIGER) {
+    if (getDetectorTypeAsEnum() == EIGER) {
         switch (p) {
         case 32:
             FILE_LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
@@ -1389,7 +1388,7 @@ int multiSlsDetector::setDAC(int val, dacIndex idac, int mV, int detPos) {
 
     // multi
     auto r = parallelCall(&slsDetector::setDAC, val, idac, mV);
-    if (getDetectorsType() != EIGER || idac != HIGH_VOLTAGE)
+    if (getDetectorTypeAsEnum() != EIGER || idac != HIGH_VOLTAGE)
         return sls::minusOneIfDifferent(r);
 
     // ignore slave values for hv (-999)
@@ -1690,7 +1689,7 @@ void multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
         else {
             // calculate ports individually
             int firstPort = i;
-            int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
+            int numSockets = (getDetectorTypeAsEnum() == EIGER) ? 2 : 1;
 
             for (size_t idet = 0; idet < detectors.size(); ++idet) {
                 auto port = firstPort + (idet * numSockets);
@@ -1728,7 +1727,7 @@ void multiSlsDetector::setReceiverDataStreamingOutPort(int i, int detPos) {
         else {
             // calculate ports individually
             int firstPort = i;
-            int numSockets = (getDetectorsType() == EIGER) ? 2 : 1;
+            int numSockets = (getDetectorTypeAsEnum() == EIGER) ? 2 : 1;
 
             for (size_t idet = 0; idet < detectors.size(); ++idet) {
                 auto port = firstPort + (idet * numSockets);
@@ -2338,7 +2337,7 @@ int multiSlsDetector::setAllTrimbits(int val, int detPos) {
 }
 
 int multiSlsDetector::enableGapPixels(int val, int detPos) {
-    if (getDetectorsType() != EIGER) {
+    if (getDetectorTypeAsEnum() != EIGER) {
         if (val >= 0) {
             FILE_LOG(logERROR) << "Function (enableGapPixels) not implemented "
                                   "for this detector";
@@ -2872,7 +2871,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 
     size_t numSockets = detectors.size();
     size_t numSocketsPerDetector = 1;
-    if (getDetectorsType() == EIGER) {
+    if (getDetectorTypeAsEnum() == EIGER) {
         numSocketsPerDetector = 2;
     }
     numSockets *= numSocketsPerDetector;
@@ -2909,7 +2908,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                  ->numberOfDetector[Y]; // for eiger, to reverse the data
     bool gappixelsenable = false;
     bool eiger = false;
-    if (getDetectorsType() == EIGER) {
+    if (getDetectorTypeAsEnum() == EIGER) {
         eiger = true;
         nX *= 2;
         gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true : false;
@@ -3497,7 +3496,7 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
 }
 
 int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
-    detectorType type = getDetectorsType();
+    detectorType type = getDetectorTypeAsEnum();
     // std::string names[100];
     std::vector<std::string> names;
     // int nvar = 0;

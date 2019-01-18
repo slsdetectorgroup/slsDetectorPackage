@@ -13,7 +13,7 @@
 #include "error_defs.h"
 #include "logger.h"
 
-#include "math.h"
+#include <cmath>
 
 class multiSlsDetector;
 class SharedMemory;

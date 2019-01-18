@@ -11,15 +11,15 @@
 #include "MySocketTCP.h"
 
 
-#include  <sys/types.h>
-#include  <sys/shm.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <bitset>
+#include <cmath>
 #include <cstdlib>
-#include <math.h>
 #include <iomanip>
+#include  <sys/shm.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
+#include  <sys/types.h>
 
 #define DEFAULT_HOSTNAME  "localhost"
 
@@ -566,7 +566,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType ty
 	int *dacs = new int[nd];
 	int *chanregs = new int[nch*nc];
 
-	sls_detector_module *myMod = new sls_detector_module;
+	auto *myMod = new sls_detector_module;
 	myMod->ndac = nd;
 	myMod->nchip = nc;
 	myMod->nchan = nch*nc;
@@ -4795,7 +4795,7 @@ slsDetectorDefs::frameDiscardPolicy slsDetector::setReceiverFramesDiscardPolicy(
 	int fnum = F_RECEIVER_DISCARD_POLICY;
 	int ret = FAIL;
 	int arg = (int)f;
-	frameDiscardPolicy retval = (frameDiscardPolicy)-1;
+	auto retval = (frameDiscardPolicy)-1;
 	FILE_LOG(logDEBUG1) << "Setting receiver frames discard policy to " << arg;
 
 	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {
@@ -4848,7 +4848,7 @@ slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
 		int fnum = F_SET_RECEIVER_FILE_FORMAT;
 		int ret = FAIL;
 		int arg = f;
-		fileFormat retval = (fileFormat)-1;
+		auto retval = (fileFormat)-1;
 		FILE_LOG(logDEBUG1) << "Setting receiver file format to " << arg;
 
 		if (thisDetector->receiverOnlineFlag == ONLINE_FLAG && connectData() == OK) {

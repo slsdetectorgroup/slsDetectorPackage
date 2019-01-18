@@ -5529,6 +5529,11 @@ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(const std::s
 	default:
 		FILE_LOG(logERROR) << "Unknown detector type - unknown format for settings file";
 		setErrorMask((getErrorMask())|(OTHER_ERROR_CODE));
+		if (modCreated){
+			if (myMod){
+				deleteModule(myMod);
+			}
+		}
 		return nullptr;
 	}
 

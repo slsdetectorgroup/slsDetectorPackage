@@ -485,7 +485,7 @@ public:
 	 * if ONLINE_FLAG, detector in online state (i.e. communication to the detector updating the local structure)
 	 * @returns online/offline status
 	 */
-	int setOnline(int const online=GET_ONLINE_FLAG);
+	int setOnline(int value=GET_ONLINE_FLAG);
 
 	/**
 	 * Checks if each of the detector is online/offline
@@ -510,7 +510,7 @@ public:
 	 * @param num port number (-1 gets)
 	 * @returns port number
 	 */
-	int setPort(portType type, int num=-1);
+	int setPort(portType index, int num=-1);
 
 	/**
 	 * Returns the detector TCP control port  \sa sharedSlsDetector
@@ -1054,7 +1054,7 @@ public:
 	 * @param imageVals image
 	 * @returns OK or FAIL
 	 */
-	int sendImageToDetector(imageType index,short int imageVals[]);
+	int sendImageToDetector(imageType index, int16_t imageVals[]);
 
 	/**
 	 * Writes the counter memory block from the detector (Gotthard)
@@ -1070,7 +1070,7 @@ public:
 	 * @param startACQ 1 to start acquisition afterwards, else 0
 	 * @returns OK or FAIL
 	 */
-	int getCounterBlock(short int image[],int startACQ=0);
+	int getCounterBlock(int16_t image[],int startACQ=0);
 
 	/**
 	 * Resets counter in detector
@@ -1320,7 +1320,7 @@ public:
 	 * @param online 1 to set online, 0 to set offline, -1 gets
 	 * @returns online, offline (from shared memory)
 	 */
-	int setReceiverOnline(int const online=GET_ONLINE_FLAG);
+	int setReceiverOnline(int value=GET_ONLINE_FLAG);
 
 	/**
 	 * Checks if the receiver is really online

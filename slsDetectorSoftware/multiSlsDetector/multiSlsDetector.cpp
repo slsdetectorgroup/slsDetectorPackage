@@ -727,15 +727,15 @@ void multiSlsDetector::updateOffsets() {
     }
 }
 
-int multiSlsDetector::setOnline(int off, int detPos) {
+int multiSlsDetector::setOnline(int value, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setOnline(off);
+        return detectors[detPos]->setOnline(value);
     }
 
     // multi
-    if (off != GET_ONLINE_FLAG) {
-        auto r = parallelCall(&slsDetector::setOnline, off);
+    if (value != GET_ONLINE_FLAG) {
+        auto r = parallelCall(&slsDetector::setOnline, value);
         thisMultiDetector->onlineFlag = sls::minusOneIfDifferent(r);
     }
     return thisMultiDetector->onlineFlag;
@@ -1317,7 +1317,7 @@ int multiSlsDetector::setSpeed(speedVariable index, int value, int detPos) {
     return (sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL);
 }
 
-int multiSlsDetector::setDynamicRange(int p, int detPos) {
+int multiSlsDetector::setDynamicRange(int dr, int detPos) {
     // single
     if (detPos >= 0) {
         FILE_LOG(logERROR) << "Dynamic Range cannot be set individually";
@@ -1326,7 +1326,7 @@ int multiSlsDetector::setDynamicRange(int p, int detPos) {
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setDynamicRange, p);
+    auto r = parallelCall(&slsDetector::setDynamicRange, dr);
     int ret = sls::minusOneIfDifferent(r);
 
     // update shm
@@ -1344,7 +1344,7 @@ int multiSlsDetector::setDynamicRange(int p, int detPos) {
 
     // for usability
     if (getDetectorTypeAsEnum() == EIGER) {
-        switch (p) {
+        switch (dr) {
         case 32:
             FILE_LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
                                  "Dynamic Range of 32";
@@ -1380,15 +1380,15 @@ int multiSlsDetector::getDataBytes(int detPos) {
     return sls::sum(r);
 }
 
-int multiSlsDetector::setDAC(int val, dacIndex idac, int mV, int detPos) {
+int multiSlsDetector::setDAC(int val, dacIndex index, int mV, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setDAC(val, idac, mV);
+        return detectors[detPos]->setDAC(val, index, mV);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setDAC, val, idac, mV);
-    if (getDetectorTypeAsEnum() != EIGER || idac != HIGH_VOLTAGE)
+    auto r = parallelCall(&slsDetector::setDAC, val, index, mV);
+    if (getDetectorTypeAsEnum() != EIGER || index != HIGH_VOLTAGE)
         return sls::minusOneIfDifferent(r);
 
     // ignore slave values for hv (-999)
@@ -1401,14 +1401,14 @@ int multiSlsDetector::setDAC(int val, dacIndex idac, int mV, int detPos) {
     return firstValue;
 }
 
-int multiSlsDetector::getADC(dacIndex idac, int detPos) {
+int multiSlsDetector::getADC(dacIndex index, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getADC(idac);
+        return detectors[detPos]->getADC(index);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::getADC, idac);
+    auto r = parallelCall(&slsDetector::getADC, index);
     return sls::minusOneIfDifferent(r);
 }
 
@@ -2561,15 +2561,15 @@ void multiSlsDetector::printReceiverConfiguration(int detPos) {
         d->printReceiverConfiguration();
 }
 
-int multiSlsDetector::setReceiverOnline(int off, int detPos) {
+int multiSlsDetector::setReceiverOnline(int value, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setReceiverOnline(off);
+        return detectors[detPos]->setReceiverOnline(value);
     }
 
     // multi
-    if (off != GET_ONLINE_FLAG) {
-        auto r = parallelCall(&slsDetector::setReceiverOnline, off);
+    if (value != GET_ONLINE_FLAG) {
+        auto r = parallelCall(&slsDetector::setReceiverOnline, value);
         thisMultiDetector->receiverOnlineFlag = sls::minusOneIfDifferent(r);
     }
     return thisMultiDetector->receiverOnlineFlag;
@@ -3864,7 +3864,7 @@ int multiSlsDetector::kbhit() {
 
 bool multiSlsDetector::isDetectorIndexOutOfBounds(int detPos) {
     // position exceeds multi list size
-    if (detPos >= (int)detectors.size()) {
+    if (detPos >= static_cast<int>(detectors.size())) {
         FILE_LOG(logERROR) << "Position " << detPos
                            << " is out of bounds with "
                               "a detector list of "

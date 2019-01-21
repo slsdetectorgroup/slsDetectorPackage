@@ -121,7 +121,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * one
      * @param update true to update last user pid, date etc
      */
-    multiSlsDetector(int id = 0, bool verify = true, bool update = true);
+    explicit multiSlsDetector(int id = 0, bool verify = true, bool update = true);
 
     /**
      * Destructor
@@ -399,7 +399,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns online/offline status
      */
-    int setOnline(int const online = GET_ONLINE_FLAG, int detPos = -1);
+    int setOnline(int value = GET_ONLINE_FLAG, int detPos = -1);
 
     /**
      * Checks if each of the detectors are online/offline
@@ -734,7 +734,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value of speed set
      */
-    int setSpeed(speedVariable sp, int value = -1, int detPos = -1);
+    int setSpeed(speedVariable index, int value = -1, int detPos = -1);
 
     /**
      * Set/get dynamic range and updates the number of dataBytes
@@ -744,7 +744,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current dynamic range
      */
-    int setDynamicRange(int i = -1, int detPos = -1);
+    int setDynamicRange(int dr = -1, int detPos = -1);
 
     /**
      * Recalculated number of data bytes for multi detector
@@ -1354,7 +1354,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns online/offline flag
      */
-    int setReceiverOnline(int const online = GET_ONLINE_FLAG, int detPos = -1);
+    int setReceiverOnline(int value = GET_ONLINE_FLAG, int detPos = -1);
 
     /**
      * Checks if the receiver is really online

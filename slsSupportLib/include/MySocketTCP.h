@@ -29,7 +29,7 @@
 class MySocketTCP : public genericSocket {
   public:
     // sender (client): where to? ip
-    MySocketTCP(const char *const host_ip_or_name, uint64_t port_number)
+    MySocketTCP(const char *const host_ip_or_name, uint16_t port_number)
         : genericSocket(host_ip_or_name, port_number, TCP) {
         setPacketSize(TCP_PACKET_SIZE);
     }

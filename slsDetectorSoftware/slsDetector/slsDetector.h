@@ -1612,7 +1612,7 @@ public:
 	 * @param addr wait address, -1 gets
 	 * @returns actual value
 	 */
-	int setCTBPatWaitAddr(int level, int addr=-1);
+	uint64_t setCTBPatWaitAddr(uint64_t level, uint64_t addr=-1);
 
 	/**
 	 * Sets the wait time in the CTB
@@ -1620,7 +1620,7 @@ public:
 	 * @param t wait time, -1 gets
 	 * @returns actual value
 	 */
-	int setCTBPatWaitTime(int level, uint64_t t=-1);
+	uint64_t setCTBPatWaitTime(uint64_t level, uint64_t t=-1);
 
 private:
 

@@ -11,6 +11,7 @@
 #include "versionAPI.h"
 
 #include <arpa/inet.h>
+#include <array>
 #include <bitset>
 #include <cmath>
 #include <cstdlib>
@@ -5258,18 +5259,18 @@ int slsDetector::setCTBPatLoops(int level, int &start, int &stop, int &n) {
     return ret;
 }
 
-int slsDetector::setCTBPatWaitAddr(int level, int addr) {
+uint64_t slsDetector::setCTBPatWaitAddr(uint64_t level, uint64_t addr) {
     int fnum = F_SET_CTB_PATTERN;
     int ret = FAIL;
-    int mode = 2; // sets loop
-    uint64_t args[3] = {(uint64_t)mode, (uint64_t)level, (uint64_t)addr};
-    uint64_t retval = -1;
+    uint64_t mode = 2; // sets loop
+	uint64_t retval = -1;
+	std::array<uint64_t, 3> args{mode, level, addr};
     FILE_LOG(logDEBUG1) << "Setting CTB Wait Addr, "
                            "level: "
                         << level << ", addr: 0x" << std::hex << addr << std::dec;
 
     if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
-        ret = thisDetectorControl->Client_Send(fnum, args, sizeof(args), &retval, sizeof(retval));
+        ret = thisDetectorControl->Client_Send(fnum, args.data(), sizeof(args), &retval, sizeof(retval));
         disconnectControl();
 
         // handle ret
@@ -5285,16 +5286,16 @@ int slsDetector::setCTBPatWaitAddr(int level, int addr) {
     return retval;
 }
 
-int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
+uint64_t slsDetector::setCTBPatWaitTime(uint64_t level, uint64_t t) {
     int fnum = F_SET_CTB_PATTERN;
     int ret = FAIL;
-    int mode = 3; // sets loop
-    uint64_t args[3] = {(uint64_t)mode, (uint64_t)level, t};
-    uint64_t retval = -1;
+    uint64_t mode = 3; // sets loop
+	uint64_t retval = -1; //TODO! is this what we want?
+	std::array<uint64_t,3> args{mode, level, t};
     FILE_LOG(logDEBUG1) << "Setting CTB Wait Time, level: " << level << ", t: " << t;
 
     if (thisDetector->onlineFlag == ONLINE_FLAG && connectControl() == OK) {
-        ret = thisDetectorControl->Client_Send(fnum, args, sizeof(args), &retval, sizeof(retval));
+        ret = thisDetectorControl->Client_Send(fnum, args.data(), sizeof(args), &retval, sizeof(retval));
         disconnectControl();
 
         // handle ret

@@ -273,7 +273,7 @@ public:
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
 	 */
-	slsDetector(detectorType type, int multiId = 0, int id = 0, bool verify = true);
+	explicit slsDetector(detectorType type, int multiId = 0, int id = 0, bool verify = true);
 
 	/**
 	 * Constructor called when opening existing shared memory
@@ -281,7 +281,7 @@ public:
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
 	 */
-	slsDetector(int multiId = 0, int id = 0, bool verify = true);
+	explicit slsDetector(int multiId = 0, int id = 0, bool verify = true);
 
 	/**
 	 * Destructor

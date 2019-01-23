@@ -3,6 +3,9 @@ set(SOURCES
     src/CmdLineParser.cpp
     src/string_utils.cpp
     src/file_utils.cpp
+    src/ClientSocket.cpp
+    src/DataSocket.cpp
+    src/ServerSocket.cpp
 )
 
 set(HEADERS
@@ -22,6 +25,9 @@ set(PUBLICHEADERS
     include/MySocketTCP.h
     include/genericSocket.h
     include/logger.h
+    include/ClientSocket.h
+    include/DataSocket.h
+    include/ServerSocket.h
 )
 
 add_library(slsSupportLib SHARED

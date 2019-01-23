@@ -7,6 +7,7 @@ include_directories(
 
 set(SOURCES
     test.cpp
+    test-ClientInterface.cpp
     test-CmdLineParser.cpp
     test-container_utils.cpp
     test-string_utils.cpp

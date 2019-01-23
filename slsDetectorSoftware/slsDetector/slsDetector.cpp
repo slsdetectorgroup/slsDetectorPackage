@@ -1,5 +1,6 @@
 #include "slsDetector.h"
 #include "ClientInterface.h"
+#include "ClientSocket.h"
 #include "MySocketTCP.h"
 #include "SharedMemory.h"
 #include "file_utils.h"
@@ -736,30 +737,17 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeAsEnum(const std::stri
     int fnum = F_GET_DETECTOR_TYPE;
     int ret = FAIL;
     detectorType retval = GENERIC;
-    MySocketTCP *mySocket = nullptr;
-
-    try {
-        mySocket = new MySocketTCP(hostname.c_str(), cport);
-    } catch (...) {
-        FILE_LOG(logERROR) << "Cannot create socket to control server " << hostname
-                           << " over port " << cport;
-        return retval;
-    }
-
     FILE_LOG(logDEBUG1) << "Getting detector type ";
-    if (mySocket->Connect() >= 0) {
-        mySocket->SendDataOnly(&fnum, sizeof(fnum));
-        mySocket->ReceiveDataOnly(&ret, sizeof(ret));
-        mySocket->ReceiveDataOnly(&retval, sizeof(retval));
-        mySocket->Disconnect();
-    } else {
+    try{
+        sls::ClientSocket cs(hostname, cport);
+        cs.sendData(reinterpret_cast<char *>(&fnum), sizeof(fnum));
+        cs.receiveData(reinterpret_cast<char *>(&ret), sizeof(ret));
+        cs.receiveData(reinterpret_cast<char *>(&retval), sizeof(retval));
+    }catch(...){
+        //TODO! (Erik) Do not swallow exception but let the caller handle it
         FILE_LOG(logERROR) << "Cannot connect to server " << hostname << " over port " << cport;
     }
-    if (ret != FAIL) {
-        FILE_LOG(logDEBUG1) << "Detector type is " << retval;
-    }
-
-    delete mySocket;
+    FILE_LOG(logDEBUG1) << "Detector type is " << retval;
     return retval;
 }
 

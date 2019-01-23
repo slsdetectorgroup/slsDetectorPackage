@@ -9,7 +9,7 @@
 #include "receiver_defs.h"
 
 class MySocketTCP;
-class ClientInterface;
+class ServerInterface;
 class slsReceiverImplementation;
 
 
@@ -363,5 +363,5 @@ protected:
 	MySocketTCP* mySock;
 
 	/** client interface */
-	ClientInterface* interface;
+	ServerInterface* interface;
 };

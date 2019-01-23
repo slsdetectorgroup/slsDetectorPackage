@@ -6,6 +6,7 @@ set(SOURCES
     src/ClientSocket.cpp
     src/DataSocket.cpp
     src/ServerSocket.cpp
+    src/ServerInterface.cpp
 )
 
 set(HEADERS
@@ -28,6 +29,7 @@ set(PUBLICHEADERS
     include/ClientSocket.h
     include/DataSocket.h
     include/ServerSocket.h
+    include/ServerInterface.h
 )
 
 add_library(slsSupportLib SHARED

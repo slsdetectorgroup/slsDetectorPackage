@@ -6,7 +6,7 @@
 #include "slsReceiverTCPIPInterface.h"
 #include "slsReceiverImplementation.h"
 #include "MySocketTCP.h"
-#include "ClientInterface.h"
+#include "ServerInterface.h"
 #include "gitInfoReceiver.h"
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
@@ -60,7 +60,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 	portNumber = (pn > 0 ? pn : DEFAULT_PORTNO + 2);
 	MySocketTCP* m = new MySocketTCP(portNumber);
 	mySock = m;
-	interface = new ClientInterface(mySock, -1, "Receiver");
+	interface = new ServerInterface(mySock, -1, "Receiver");
 
 	//initialize variables
 	strcpy(mySock->lastClientIP,"none");

@@ -17,7 +17,7 @@
 
 class multiSlsDetector;
 class SharedMemory;
-class ClientInterface;
+class ServerInterface;
 class MySocketTCP;
 
 #define SLS_SHMVERSION	0x181005
@@ -273,7 +273,10 @@ public:
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
 	 */
-	explicit slsDetector(detectorType type, int multiId = 0, int id = 0, bool verify = true);
+	explicit slsDetector(const std::string& hostname, 
+						 int multiId = 0, 
+						 int id = 0, 
+						 bool verify = true);
 
 	/**
 	 * Constructor called when opening existing shared memory
@@ -326,7 +329,7 @@ public:
 	 * Connects to them to set up online flag
 	 * @param name hostname
 	 */
-	void setHostname(const char *name);
+	void setHostname(const std::string& hostname);
 
 	/**
 	 * Gets the hostname of detector
@@ -1774,13 +1777,13 @@ private:
 	sharedSlsDetector *thisDetector {nullptr};
 
 	/** control socket interface */
-	ClientInterface *thisDetectorControl {nullptr};
+	ServerInterface *thisDetectorControl {nullptr};
 
 	/** stop socket interface */
-	ClientInterface *thisDetectorStop {nullptr};
+	ServerInterface *thisDetectorStop {nullptr};
 
 	/** receiver interface */
-	ClientInterface *thisReceiver {nullptr};
+	ServerInterface *thisReceiver {nullptr};
 
 	/** socket for control commands	 */
 	MySocketTCP *controlSocket {nullptr};

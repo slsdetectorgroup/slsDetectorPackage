@@ -19,17 +19,22 @@ ClientSocket::ClientSocket(const std::string &host, uint16_t port) : DataSocket(
     }
 
     //TODO! Erik, results could have multiple entries do we need to loop through them?
-    struct sockaddr_in serverAddr {};
+    // struct sockaddr_in serverAddr {};
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(port);
     memcpy((char *)&serverAddr.sin_addr.s_addr,
                 &((struct sockaddr_in *)result->ai_addr)->sin_addr, sizeof(in_addr_t));
 
-    if (connect(getSocketId(), (struct sockaddr *)&serverAddr, sizeof(serverAddr)) != 0){
+    if (::connect(getSocketId(), (struct sockaddr *)&serverAddr, sizeof(serverAddr)) != 0){
         freeaddrinfo(result);
         throw std::runtime_error("ClientSocket ERROR: cannot connect to host\n");
     }
     freeaddrinfo(result);
+}
+
+int ClientSocket::connect(){
+    //used to reconnect after closing may be removed
+    return ::connect(getSocketId(), (struct sockaddr *)&serverAddr, sizeof(serverAddr));
 }
 
 }; //namespace sls

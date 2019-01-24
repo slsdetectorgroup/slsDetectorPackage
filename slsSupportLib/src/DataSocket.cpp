@@ -4,10 +4,22 @@
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
-
+#include <algorithm>
 namespace sls {
 
 DataSocket::DataSocket(int socketId) : socketId_(socketId) {}
+
+void DataSocket::swap(DataSocket& other) noexcept{
+    std::swap(socketId_, other.socketId_);
+}
+
+DataSocket::DataSocket(DataSocket&& move) noexcept{
+    move.swap(*this);
+}
+DataSocket& DataSocket::operator=(DataSocket&& move)noexcept{
+    move.swap(*this);
+    return *this;
+}
 
 size_t DataSocket::receiveData(char *buffer, size_t size) {
     std::cout << "Sending\n";

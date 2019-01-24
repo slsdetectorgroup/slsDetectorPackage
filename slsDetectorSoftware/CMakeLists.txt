@@ -9,15 +9,20 @@ set(SOURCES
 set(HEADERS
 )
 
-include_directories(
-    multiSlsDetector 
-    sharedMemory
-    slsDetector 
-)
+# include_directories(
+#     multiSlsDetector 
+#     sharedMemory
+#     slsDetector 
+# )
 
 add_library(slsDetectorShared SHARED
     ${SOURCES}
     ${HEADERS}
+)
+target_include_directories(slsDetectorShared PUBLIC 
+    multiSlsDetector 
+    sharedMemory
+    slsDetector 
 )
 
 target_link_libraries(slsDetectorShared

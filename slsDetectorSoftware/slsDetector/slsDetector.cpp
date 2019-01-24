@@ -1,5 +1,5 @@
 #include "slsDetector.h"
-#include "ClientInterface.h"
+#include "ServerInterface.h"
 #include "ClientSocket.h"
 #include "MySocketTCP.h"
 #include "SharedMemory.h"
@@ -24,7 +24,7 @@
 
 #define DEFAULT_HOSTNAME "localhost"
 
-slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
+slsDetector::slsDetector(const std::string& hostname, int multiId, int id, bool verify)
     : detId(id) {
     /* called from put hostname command,
 	 * so sls shared memory will be created */
@@ -37,11 +37,17 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
                              << shm.GetName() << ". Freeing it again";
         freeSharedMemory(multiId, id);
     }
-
+    auto type = getDetectorTypeAsEnum(hostname);
+    if (type == GENERIC) {
+        FILE_LOG(logERROR) << "Could not connect to Detector " << hostname
+                           << " to determine the type!";
+        throw std::runtime_error("Cannot connect");
+    }
     initSharedMemory(true, type, multiId, verify);
     initializeDetectorStructure(type);
     initializeMembers();
     initializeDetectorStructurePointers();
+    setHostname(hostname.c_str());
 }
 
 slsDetector::slsDetector(int multiId, int id, bool verify)
@@ -225,15 +231,15 @@ void slsDetector::freeSharedMemory() {
     thisDetector = nullptr;
 }
 
-void slsDetector::setHostname(const char *name) {
-    setTCPSocket(std::string(name));
+void slsDetector::setHostname(const std::string& hostname) {
+    setTCPSocket(hostname);
     if (thisDetector->onlineFlag == ONLINE_FLAG) {
         updateDetector();
     }
 }
 
 std::string slsDetector::getHostname() {
-    return std::string(thisDetector->hostname);
+    return thisDetector->hostname;
 }
 
 /*
@@ -502,9 +508,9 @@ void slsDetector::initializeMembers() {
         delete thisReceiver;
         thisReceiver = nullptr;
     }
-    thisDetectorControl = new ClientInterface(controlSocket, detId, "Detector (Control server)");
-    thisDetectorStop = new ClientInterface(stopSocket, detId, "Detector (Stop server)");
-    thisReceiver = new ClientInterface(dataSocket, detId, "Receiver");
+    thisDetectorControl = new ServerInterface(controlSocket, detId, "Detector (Control server)");
+    thisDetectorStop = new ServerInterface(stopSocket, detId, "Detector (Stop server)");
+    thisReceiver = new ServerInterface(dataSocket, detId, "Receiver");
 }
 
 void slsDetector::initializeDetectorStructurePointers() {

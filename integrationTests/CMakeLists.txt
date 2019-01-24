@@ -5,30 +5,23 @@ MESSAGE( STATUS "PROJECT_SOURCE_DIR: " ${PROJECT_SOURCE_DIR} )
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/catch
-    ${PROJECT_SOURCE_DIR}/slsSupportLib/include
-    ${PROJECT_SOURCE_DIR}/slsDetectorSoftware/multiSlsDetector
-    ${PROJECT_SOURCE_DIR}/slsDetectorSoftware/sharedMemory
 )
 
 
-
 if(USE_TESTS)
-    set(LOCAL_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
     set(TEST_SOURCES
-        ${LOCAL_TEST_DIR}/test-container_utils.cpp
-        ${LOCAL_TEST_DIR}/test-string_utils.cpp
-        ${LOCAL_TEST_DIR}/test-MySocketTCP.cpp
-        ${LOCAL_TEST_DIR}/test-CmdLineParser.cpp
-        #${LOCAL_TEST_DIR}/test-multiDetector.cpp
-        ${LOCAL_TEST_DIR}/test.cpp
+        src/test-slsDetector.cpp
+        # src/test.cpp
     )
-    add_executable(test ${TEST_SOURCES})
-    target_link_libraries(test 
+    add_executable(a ${TEST_SOURCES})
+    target_link_libraries(a 
         slsDetectorShared
+        slsSupportLib
         pthread
         rt
     )  
-    set_target_properties(test PROPERTIES
+    set_target_properties(a PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         )
 endif()

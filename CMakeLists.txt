@@ -79,7 +79,7 @@ endif (USE_GUI)
 
 
 
-
+add_subdirectory(integrationTests)
 
 if (CALIBRATE)
     if (DEFINED ENV{ROOTSYS})

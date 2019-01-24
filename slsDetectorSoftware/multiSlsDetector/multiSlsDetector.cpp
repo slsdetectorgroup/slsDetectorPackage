@@ -482,24 +482,9 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
         }
     }
 
-    // check entire shared memory if it doesnt exist?? needed?
-    // could be that detectors not loaded completely cuz of crash in new
-    // slsdetector in initsharedmemory
-
-    // get type by connecting
-    detectorType type = slsDetector::getDetectorTypeAsEnum(hostname.c_str(), DEFAULT_PORTNO);
-    if (type == GENERIC) {
-        FILE_LOG(logERROR) << "Could not connect to Detector " << hostname
-                           << " to determine the type!";
-        setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
-        appendNotAddedList(hostname.c_str());
-        return;
-    }
-
     int pos = (int)detectors.size();
-    detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
+    detectors.push_back(sls::make_unique<slsDetector>(hostname, detId, pos, false));
     thisMultiDetector->numberOfDetectors = detectors.size();
-    detectors[pos]->setHostname(hostname.c_str()); // also updates client
     thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
     thisMultiDetector->dataBytesInclGapPixels +=
         detectors[pos]->getDataBytesInclGapPixels();

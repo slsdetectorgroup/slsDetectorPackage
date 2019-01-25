@@ -17,7 +17,7 @@
 #endif
 
 #ifndef FILELOG_MAX_LEVEL
-#define FILELOG_MAX_LEVEL logDEBUG5
+#define FILELOG_MAX_LEVEL logINFO
 #endif
 
 

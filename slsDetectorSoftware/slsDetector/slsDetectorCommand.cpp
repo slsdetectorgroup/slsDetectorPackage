@@ -1947,7 +1947,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 //-----------------------------------------------------------
 
 std::string slsDetectorCommand::executeLine(int narg, char *args[], int action, int detPos) {
-std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 984651654\n";
+
     if (action == READOUT_ACTION)
         return cmdAcquire(narg, args, action, detPos);
 

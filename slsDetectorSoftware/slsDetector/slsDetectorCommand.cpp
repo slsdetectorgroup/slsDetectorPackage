@@ -2009,11 +2009,10 @@ std::string slsDetectorCommand::helpLine(int narg, char *args[], int action, int
 }
 
 std::string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, int detPos) {
-// #ifdef VERBOSE
-//     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-// #endif
+#ifdef VERBOSE
+    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
+#endif
 
-    std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 0\n";
     if (action == HELP_ACTION) {
         return helpAcquire(HELP_ACTION);
     }
@@ -2021,16 +2020,15 @@ std::string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, i
         cprintf(RED, "Error: This shared memory has no detectors added. Aborting.\n");
         return std::string("acquire unsuccessful");
     }
-    std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 1\n";
     if (detPos >= 0) {
         cprintf(RED, "Error: Individual detectors not allowed for readout. Aborting.\n");
         return std::string("acquire unsuccessful");
     }
-    std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 2\n";
+
     myDet->setOnline(ONLINE_FLAG, detPos);
     int r_online = myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
-std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 3\n";
+
 
     if (myDet->acquire() == FAIL)
         return std::string("acquire unsuccessful");
@@ -2039,8 +2037,8 @@ std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 3\n";
         sprintf(answer, "\nAcquired %d", myDet->getFramesCaughtByReceiver(detPos));
         return std::string(answer);
     }
-    std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 4\n";
-    return std::string("");
+
+    return std::string();
 }
 
 std::string slsDetectorCommand::helpAcquire(int action) {

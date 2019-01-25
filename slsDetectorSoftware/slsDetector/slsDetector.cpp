@@ -901,28 +901,31 @@ int slsDetector::setReceiverPort(int port_number) {
     int fnum = F_SET_PORT;
     int ret = FAIL;
     int retval = -1;
-    FILE_LOG(logDEBUG1) << "Setting receiver port "
-                        << " to " << port_number;
+    if (port_number > 0)
+        thisDetector->receiverTCPPort = port_number;
+    //TODO! How do I update the receiver port? 
+    // FILE_LOG(logDEBUG1) << "Setting receiver port "
+    //                     << " to " << port_number;
 
-    // same port
-    if (port_number == thisDetector->receiverTCPPort) {
-        return thisDetector->receiverTCPPort;
-    }
+    // // same port
+    // if (port_number == thisDetector->receiverTCPPort) {
+    //     return thisDetector->receiverTCPPort;
+    // }
 
-    // set port
-    if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
-        auto receiver = sls::ClientSocket(thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
-        ret = receiver.sendCommandThenRead(fnum, &port_number, sizeof(port_number), &retval, sizeof(retval));
-        if (ret == FAIL) {
-            setErrorMask((getErrorMask()) | (COULDNOT_SET_DATA_PORT));
-        } else {
-            thisDetector->receiverTCPPort = retval;
-            FILE_LOG(logDEBUG1) << "Receiver port: " << retval;
-        }
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
-    }
+    // // set port
+    // if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
+    //     auto receiver = sls::ClientSocket(thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
+    //     ret = receiver.sendCommandThenRead(fnum, &port_number, sizeof(port_number), &retval, sizeof(retval));
+    //     if (ret == FAIL) {
+    //         setErrorMask((getErrorMask()) | (COULDNOT_SET_DATA_PORT));
+    //     } else {
+    //         thisDetector->receiverTCPPort = retval;
+    //         FILE_LOG(logDEBUG1) << "Receiver port: " << retval;
+    //     }
+    // }
+    // if (ret == FORCE_UPDATE) {
+    //     ret = updateReceiver();
+    // }
     return thisDetector->receiverTCPPort;
 }
 
@@ -4412,7 +4415,7 @@ int slsDetector::startReceiver() {
         // }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        updateReceiver();
     }
     return ret;
 }

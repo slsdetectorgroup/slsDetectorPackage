@@ -763,12 +763,30 @@ std::string multiSlsDetector::checkOnline(int detPos) {
     return sls::concatenateNonEmptyStrings(r);
 }
 
-int multiSlsDetector::setPort(portType t, int num, int detPos) {
+int multiSlsDetector::setControlPort(int port_number, int detPos) {
     if (detPos >= 0) {
-        return detectors[detPos]->setPort(t, num);
+        return detectors[detPos]->setControlPort(port_number);
     }
 
-    auto r = serialCall(&slsDetector::setPort, t, num);
+    auto r = serialCall(&slsDetector::setControlPort, port_number);
+    return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::setStopPort(int port_number, int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->setStopPort(port_number);
+    }
+
+    auto r = serialCall(&slsDetector::setStopPort, port_number);
+    return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::setReceiverPort(int port_number, int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->setReceiverPort(port_number);
+    }
+
+    auto r = serialCall(&slsDetector::setReceiverPort, port_number);
     return sls::minusOneIfDifferent(r);
 }
 

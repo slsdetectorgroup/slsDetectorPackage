@@ -418,13 +418,30 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     std::string checkOnline(int detPos = -1);
 
     /**
-     * Set/Gets TCP Port of detector or receiver
-     * @param t port type
-     * @param num port number (-1 gets)
+     * Set/Gets TCP Port of the detector
+     * @param port_number (-1 gets)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns port number
      */
-    int setPort(portType t, int num = -1, int detPos = -1);
+    int setControlPort(int port_number = -1, int detPos = -1);
+
+    /**
+     * Set/Gets TCP STOP Port of the detector
+     * @param port_number (-1 gets)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns port number
+     */
+    int setStopPort(int port_number = -1, int detPos = -1);
+
+        /**
+     * Set/Gets TCP Port of the receiver
+     * @param port_number (-1 gets)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns port number
+     */
+    int setReceiverPort(int port_number = -1, int detPos = -1);
+    
+
 
     /**
      * Lock server for this client IP

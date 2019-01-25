@@ -2919,9 +2919,7 @@ std::string slsDetectorCommand::cmdPort(int narg, char *args[], int action, int 
     if (action == HELP_ACTION)
         return helpPort(action);
     int val; //ret,
-    char ans[1000];
-    portType index;
-
+    char ans[MAX_STR_LENGTH];
     if (action == PUT_ACTION) {
         if (sscanf(args[1], "%d", &val))
             ;
@@ -2929,20 +2927,22 @@ std::string slsDetectorCommand::cmdPort(int narg, char *args[], int action, int 
             return std::string("could not scan port number") + std::string(args[1]);
     }
 
+    myDet->setOnline(ONLINE_FLAG, detPos);
     if (cmd == "port") {
-        index = CONTROL_PORT;
+        if (action == PUT_ACTION)
+            myDet->setControlPort(val, detPos);
+        sprintf(ans, "%d", myDet->setControlPort(-1, detPos));
     } else if (cmd == "rx_tcpport") {
-        index = DATA_PORT;
+        if (action == PUT_ACTION)
+            myDet->setReceiverPort(val, detPos);
+        sprintf(ans, "%d", myDet->setReceiverPort(-1, detPos));
     } else if (cmd == "stopport") {
-        index = STOP_PORT;
+        if (action == PUT_ACTION)
+            myDet->setStopPort(val, detPos);
+        sprintf(ans, "%d", myDet->setStopPort(-1, detPos));
     } else
         return std::string("unknown port type ") + cmd;
 
-    myDet->setOnline(ONLINE_FLAG, detPos);
-    if (action == PUT_ACTION)
-        myDet->setPort(index, val, detPos);
-
-    sprintf(ans, "%d", myDet->setPort(index, -1, detPos));
     return std::string(ans);
 }
 

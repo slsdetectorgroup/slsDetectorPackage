@@ -470,16 +470,6 @@ public:
 	 */
 	std::string checkOnline();
 
-
-	/**
-	 * Set/Gets TCP Port of detector or receiver
-	 * @param t port type
-	 * @param num port number (-1 gets)
-	 * @returns port number
-	 */
-	int setPort(portType index, int num=-1);
-
-
 	int setControlPort(int port_number);
 
 	/**
@@ -495,6 +485,8 @@ public:
 	 * @returns the detector TCP stop port
 	 */
 	int getStopPort() const;
+
+	int setReceiverPort(int port_number);
 
 	/**
 	 * Returns the receiver TCP 	port  \sa sharedSlsDetector

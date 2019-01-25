@@ -215,12 +215,21 @@ bool multiSlsDetector::isAcquireReady() {
     return OK;
 }
 
-int multiSlsDetector::checkVersionCompatibility(portType t, int detPos) {
+int multiSlsDetector::checkDetectorVersionCompatibility(int detPos) {
     if (detPos >= 0) {
-        return detectors[detPos]->checkVersionCompatibility(t);
+        return detectors[detPos]->checkDetectorVersionCompatibility();
     }
 
-    auto r = parallelCall(&slsDetector::checkVersionCompatibility, t);
+    auto r = parallelCall(&slsDetector::checkDetectorVersionCompatibility);
+    return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::checkReceiverVersionCompatibility(int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->checkReceiverVersionCompatibility();
+    }
+
+    auto r = parallelCall(&slsDetector::checkReceiverVersionCompatibility);
     return sls::minusOneIfDifferent(r);
 }
 
@@ -482,14 +491,28 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
         }
     }
 
+    // get type by connecting
+    detectorType type = slsDetector::getTypeFromDetector(hostname.c_str(), DEFAULT_PORTNO);
+    if (type == GENERIC) {
+        FILE_LOG(logERROR) << "Could not connect to Detector " << hostname
+                           << " to determine the type!";
+        setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
+        appendNotAddedList(hostname.c_str());
+        return;
+    }
+
     int pos = (int)detectors.size();
-    detectors.push_back(sls::make_unique<slsDetector>(hostname, detId, pos, false));
+    detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
     thisMultiDetector->numberOfDetectors = detectors.size();
     thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
     thisMultiDetector->dataBytesInclGapPixels +=
         detectors[pos]->getDataBytesInclGapPixels();
     thisMultiDetector->numberOfChannels +=
         detectors[pos]->getTotalNumberOfChannels();
+
+    detectors[pos]->setHostname(hostname);
+    detectors[pos]->setOnline(true);
+
 }
 
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum(int detPos) {

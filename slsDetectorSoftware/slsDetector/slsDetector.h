@@ -12,6 +12,9 @@
 #include "sls_detector_defs.h"
 #include "error_defs.h"
 #include "logger.h"
+#include "ClientSocket.h"
+
+class ClientInterface;
 
 #include <cmath>
 
@@ -273,7 +276,7 @@ public:
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
 	 */
-	explicit slsDetector(const std::string& hostname, 
+	explicit slsDetector(detectorType type, 
 						 int multiId = 0, 
 						 int id = 0, 
 						 bool verify = true);
@@ -284,7 +287,9 @@ public:
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
 	 */
-	explicit slsDetector(int multiId = 0, int id = 0, bool verify = true);
+	explicit slsDetector(int multiId = 0, 
+						 int id = 0, 
+						 bool verify = true);
 
 	/**
 	 * Destructor
@@ -292,12 +297,18 @@ public:
 	virtual ~slsDetector();
 
 	/**
-	 * Check version compatibility with detector/receiver software
+	 * Check version compatibility with receiver software
 	 * (if hostname/rx_hostname has been set/ sockets created)
 	 * @param p port type control port or receiver port
 	 * @returns FAIL for incompatibility, OK for compatibility
 	 */
-	int checkVersionCompatibility(portType t);
+	int checkReceiverVersionCompatibility();
+
+	/**
+	 * Check version compatibility with detector software
+	 * @returns FAIL for incompatibility, OK for compatibility
+	 */
+	int checkDetectorVersionCompatibility();
 
 	/**
 	 * Get ID or version numbers
@@ -325,29 +336,16 @@ public:
 	void freeSharedMemory();
 
 	/**
-	 * Sets the hostname of all sls detectors in shared memory
-	 * Connects to them to set up online flag
+	 * Sets the hostname, if online flag is set connects to update the detector
 	 * @param name hostname
 	 */
 	void setHostname(const std::string& hostname);
 
 	/**
 	 * Gets the hostname of detector
-	 * @param pos insignificant
 	 * @returns hostname
 	 */
 	std::string getHostname();
-
-	/**
-	 * Connect to the control port
-	 * @returns OK, FAIL or undefined
-	 */
-	int connectControl();
-
-	/**
-	 * Disconnect the control port
-	 */
-	void disconnectControl();
 
 	/**
 	 * Could not connect to receiver, log error
@@ -355,35 +353,10 @@ public:
     void connectDataError();
 
 	/**
-	 * Connect to the data port
-	 * @returns OK, FAIL or undefined
-	 */
-	int connectData();
-
-	/**
-	 * Disconnect the data port
-	 */
-	void disconnectData();
-
-	/**
-	 * Connect to the stop port
-	 * @returns OK, FAIL or undefined
-	 */
-	int connectStop();
-
-	/**
-	 * Disconnect the stop port
-	 */
-	void disconnectStop();
-
-
-	/**
-	 * Get detector type by connecting to the detector without creating an object
-	 * @param name hostname of detector
-	 * @param cport TCP control port
+	 * Get detector type by connecting to the detector 
 	 * @returns detector tpe or GENERIC if failed
 	 */
-	static detectorType getDetectorTypeAsEnum(const std::string& hostname, int cport=DEFAULT_PORTNO);
+	static detectorType getTypeFromDetector(const std::string& hostname, int cport=DEFAULT_PORTNO);
 
 	/**
 	 * Get Detector type from shared memory variable
@@ -404,12 +377,6 @@ public:
 	 */
 	int setDetectorType(detectorType type=GET_DETECTOR_TYPE);
 
-	/**
-	 * Gets detector type (string) from detector and set it in receiver
-	 * @param type string of detector type
-	 * @returns detector type in receiver
- 	//  */
-	// int setDetectorType(const std::string& detector_type);
 
 	/**
 	 * Returns the total number of channels from shared memory
@@ -490,22 +457,19 @@ public:
 	 */
 	int setOnline(int value=GET_ONLINE_FLAG);
 
+
+	/**
+	 * Returns the online flag
+	 */
+	int getOnlineFlag() const;
+
 	/**
 	 * Checks if each of the detector is online/offline
 	 * @returns empty string if it is online
-	 * else returns hostnameif it is offline
+	 * else returns hostname if it is offline
 	 */
 	std::string checkOnline();
 
-	/**
-	 * Configure the TCP socket communciation and initializes the socket instances
-	 * @param name hostname, empty if current hostname
-	 * @param control_port TCP port for control commands, -1 if current is used
-	 * @param stop_port TCP port for data commands, -1 if current is used
-	 * @returns OK or FAIL
-	 * \sa sharedSlsDetector
-	 */
-	int setTCPSocket(const std::string& hostname="", int control_port=-1, int stop_port=-1);
 
 	/**
 	 * Set/Gets TCP Port of detector or receiver
@@ -515,23 +479,28 @@ public:
 	 */
 	int setPort(portType index, int num=-1);
 
+
+	int setControlPort(int port_number);
+
 	/**
 	 * Returns the detector TCP control port  \sa sharedSlsDetector
 	 * @returns the detector TCP control port
 	 */
-	int getControlPort();
+	int getControlPort() const;
+
+	int setStopPort(int port_number);
 
 	/**
 	 * Returns the detector TCP stop port  \sa sharedSlsDetector
 	 * @returns the detector TCP stop port
 	 */
-	int getStopPort();
+	int getStopPort() const;
 
 	/**
 	 * Returns the receiver TCP 	port  \sa sharedSlsDetector
 	 * @returns the receiver TCP port
 	 */
-	int getReceiverPort();
+	int getReceiverPort() const ;
 
 	/**
 	 * Lock server for this client IP
@@ -564,10 +533,10 @@ public:
 	 * Updates some of the shared memory receiving the data from the detector
 	 * @returns OK
 	 */
-	int updateDetectorNoWait();
+	int updateDetectorNoWait( sls::ClientSocket &client);
 
 	/**
-	 * Updates soem of the shared memory receiving the data from the detector
+	 * Updates some of the shared memory receiving the data from the detector
 	 * calls updateDetectorNoWait
 	 * @returns OK or FAIL or FORCE_RET
 	 */
@@ -1325,20 +1294,13 @@ public:
 	 */
 	int setReceiverOnline(int value=GET_ONLINE_FLAG);
 
+	int getReceiverOnline() const;
+
 	/**
 	 * Checks if the receiver is really online
 	 * @returns empty string if online, else returns receiver hostname
 	 */
 	std::string checkReceiverOnline();
-
-	/**
-	 * Configure the socket communication and initializes the socket instances
-	 * @param name receiver ip - if "" the current receiver hostname is used
-	 * @param receiver_port port for receiving data - if -1 the current is used
-	 * @returns OK is connection succeded, FAIL otherwise
-	 * \sa sharedSlsDetector
-	 */
-	int setReceiverTCPSocket(const std::string&  name="", int const receiver_port=-1);
 
 	/**
 	 * Locks/Unlocks the connection to the receiver
@@ -1371,7 +1333,7 @@ public:
      updates the shared memory receiving the data from the detector (without asking and closing the connection
      /returns OK
 	 */
-	int updateReceiverNoWait();
+	int updateReceiverNoWait(sls::ClientSocket& receiver);
 
 	/**
 	 * Updates the shared memory receiving the data from the detector
@@ -1775,24 +1737,6 @@ private:
 
 	/** Shared memory structure */
 	sharedSlsDetector *thisDetector {nullptr};
-
-	/** control socket interface */
-	ServerInterface *thisDetectorControl {nullptr};
-
-	/** stop socket interface */
-	ServerInterface *thisDetectorStop {nullptr};
-
-	/** receiver interface */
-	ServerInterface *thisReceiver {nullptr};
-
-	/** socket for control commands	 */
-	MySocketTCP *controlSocket {nullptr};
-
-	/** socket for emergency stop	 */
-	MySocketTCP *stopSocket {nullptr};
-
-	/** socket for data acquisition	 */
-	MySocketTCP *dataSocket {nullptr};
 
 	/** pointer to detector module structures in shared memory */
 	sls_detector_module *detectorModules {nullptr};

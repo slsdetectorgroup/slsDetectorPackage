@@ -21,13 +21,16 @@ public:
 	 * @param n for debugging purposes (useful only for client side)
 	 * @param t string to identify type (Detector, Receiver) for printouts (useful only for client side)
 	 */
-	ClientInterface(int n, sls::ClientSocket&& s);
+	ClientInterface(sls::ClientSocket* socket, int n);
 
 	/**
 	 * destructor
 	 */
 	virtual ~ClientInterface() = default;
 
+	void SetSocket(sls::ClientSocket *socket){
+		socket_ = socket;
+	}
 
 	/**
 	 * Receive ret, mess or retval from Server
@@ -61,7 +64,7 @@ private:
 	/**
 	 * socket for data acquisition
 	 */
-	sls::ClientSocket socket_;
+	sls::ClientSocket* socket_;
 
 	/** index for client debugging purposes */
 	int index;

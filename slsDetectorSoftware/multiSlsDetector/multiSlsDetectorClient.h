@@ -88,8 +88,14 @@ class multiSlsDetectorClient {
 
         // call multi detector command line
         slsDetectorCommand myCmd(detPtr);
+        std::cout << "narg: " << parser.n_arguments()+1 << '\n';
+        std::cout << "narg: " << parser.argv().data() << '\n';
+        std::cout << "narg: " << parser.detector_id() << '\n';
+ 
+        std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 55555\n";
+        
         std::string answer = myCmd.executeLine(parser.n_arguments()+1, parser.argv().data(), action_, parser.detector_id());
-
+std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 9999\n";
         if (parser.multi_id()!=0)
             std::cout << parser.multi_id() << '-';
         if (parser.detector_id() != -1)

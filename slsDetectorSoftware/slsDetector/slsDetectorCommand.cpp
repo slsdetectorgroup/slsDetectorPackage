@@ -1947,7 +1947,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 //-----------------------------------------------------------
 
 std::string slsDetectorCommand::executeLine(int narg, char *args[], int action, int detPos) {
-
+std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 984651654\n";
     if (action == READOUT_ACTION)
         return cmdAcquire(narg, args, action, detPos);
 
@@ -2009,10 +2009,11 @@ std::string slsDetectorCommand::helpLine(int narg, char *args[], int action, int
 }
 
 std::string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, int detPos) {
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
+// #ifdef VERBOSE
+//     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
+// #endif
 
+    std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 0\n";
     if (action == HELP_ACTION) {
         return helpAcquire(HELP_ACTION);
     }
@@ -2020,13 +2021,16 @@ std::string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, i
         cprintf(RED, "Error: This shared memory has no detectors added. Aborting.\n");
         return std::string("acquire unsuccessful");
     }
+    std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 1\n";
     if (detPos >= 0) {
         cprintf(RED, "Error: Individual detectors not allowed for readout. Aborting.\n");
         return std::string("acquire unsuccessful");
     }
-
+    std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 2\n";
     myDet->setOnline(ONLINE_FLAG, detPos);
     int r_online = myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+
+std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 3\n";
 
     if (myDet->acquire() == FAIL)
         return std::string("acquire unsuccessful");
@@ -2035,7 +2039,7 @@ std::string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, i
         sprintf(answer, "\nAcquired %d", myDet->getFramesCaughtByReceiver(detPos));
         return std::string(answer);
     }
-
+    std::cout << "HEY!!!!!!!!!!!!!!!!!!!!!!! 4\n";
     return std::string("");
 }
 
@@ -3449,7 +3453,7 @@ std::string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int de
     }
 
     if (cmd == "checkdetversion") {
-        int retval = myDet->checkVersionCompatibility(CONTROL_PORT, detPos);
+        int retval = myDet->checkDetectorVersionCompatibility(detPos);
         if (retval < 0)
             sprintf(answer, "%d", -1);
         sprintf(answer, "%s", retval == OK ? "compatible" : "incompatible");
@@ -3458,7 +3462,7 @@ std::string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int de
 
     if (cmd == "checkrecversion") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
-        int retval = myDet->checkVersionCompatibility(DATA_PORT, detPos);
+        int retval = myDet->checkReceiverVersionCompatibility(detPos);
         if (retval < 0)
             sprintf(answer, "%d", -1);
         sprintf(answer, "%s", retval == OK ? "compatible" : "incompatible");

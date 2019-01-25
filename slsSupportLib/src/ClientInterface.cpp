@@ -1,12 +1,12 @@
 #include "ClientInterface.h"
 #include "ClientSocket.h"
 
-ClientInterface::ClientInterface(int n, sls::ClientSocket&& s): socket_(std::move(s)),
+ClientInterface::ClientInterface(sls::ClientSocket* socket, int n): socket_(socket),
 														index(n){}
 
 void ClientInterface::Client_Receive(int& ret, char* mess, void* retval, int sizeOfRetval) {
     // get result of operation
-    socket_.receiveData(reinterpret_cast<char *>(&ret), sizeof(ret));
+    socket_->receiveData(reinterpret_cast<char *>(&ret), sizeof(ret));
 
     bool unrecognizedFunction = false;
     if (ret == FAIL) {
@@ -18,7 +18,7 @@ void ClientInterface::Client_Receive(int& ret, char* mess, void* retval, int siz
             memset(mess, 0, MAX_STR_LENGTH);
         }
         // get error message
-        socket_.receiveData(mess,MAX_STR_LENGTH);
+        socket_->receiveData(mess,MAX_STR_LENGTH);
         // cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
 
         // unrecognized function, do not ask for retval
@@ -30,7 +30,7 @@ void ClientInterface::Client_Receive(int& ret, char* mess, void* retval, int siz
     }
     // get retval
     if (!unrecognizedFunction)
-           socket_.receiveData( reinterpret_cast<char *>(retval), sizeOfRetval);
+           socket_->receiveData( reinterpret_cast<char *>(retval), sizeOfRetval);
 }
 
 
@@ -39,8 +39,8 @@ int ClientInterface::Client_Send(int fnum,
 		void* retval, int sizeOfRetval,
 		char* mess) {
     int ret = FAIL;
-    socket_.sendData(reinterpret_cast<char *>(&fnum),sizeof(fnum));
-    socket_.sendData(reinterpret_cast<char *>(args), sizeOfArgs);
+    socket_->sendData(reinterpret_cast<char *>(&fnum),sizeof(fnum));
+    socket_->sendData(reinterpret_cast<char *>(args), sizeOfArgs);
     Client_Receive(ret, mess, retval, sizeOfRetval);
 	return ret;
 }

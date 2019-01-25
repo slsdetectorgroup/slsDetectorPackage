@@ -73,7 +73,10 @@ void CmdLineParser::DecodeIdAndPosition(const char *c) {
 
 std::vector<char *> CmdLineParser::argv() {
     std::vector<char *> vec;
-    vec.push_back(&command_.front());
+    if (command_.empty()!=true){
+        vec.push_back(&command_.front());
+    }
+    
     for (auto &arg : arguments_) {
         vec.push_back(&arg.front());
     }

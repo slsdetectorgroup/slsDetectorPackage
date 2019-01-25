@@ -216,14 +216,22 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     bool isAcquireReady();
 
     /**
-     * Check version compatibility with detector/receiver software
+     * Check version compatibility with detector software
      * (if hostname/rx_hostname has been set/ sockets created)
      * @param p port type control port or receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns FAIL for incompatibility, OK for compatibility
      */
-    int checkVersionCompatibility(portType t, int detPos = -1);
-
+    int checkDetectorVersionCompatibility(int detPos = -1);
+    /**
+     * Check version compatibility with receiver software
+     * (if hostname/rx_hostname has been set/ sockets created)
+     * @param p port type control port or receiver port
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns FAIL for incompatibility, OK for compatibility
+     */
+    int checkReceiverVersionCompatibility(int detPos = -1);
+    
     /**
      * Get ID or version numbers
      * @param mode version type

@@ -251,3 +251,16 @@ TEST_CASE("Parses string with two arguments") {
     REQUIRE("4000" == p.arguments()[1]);
     REQUIRE(p.arguments().size() == 2);
 }
+
+TEST_CASE("Build up argv"){
+    CmdLineParser p;
+    // p.argv();
+    REQUIRE(p.argv().empty());
+    REQUIRE(p.argv().data() == nullptr);
+
+    std::string s = "trimen 3000 4000\n";
+    p.Parse(s);
+    REQUIRE(p.argv().data() != nullptr);
+    REQUIRE(p.argv().size() == 3);
+
+}

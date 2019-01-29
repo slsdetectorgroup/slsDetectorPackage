@@ -20,9 +20,9 @@
 #include "sls_detector_defs.h"
 #include "slsDetectorUsers.h"
 
-//#define GOTTHARD_25_TEST
+#define GOTTHARD_25_TEST
 //#define JUNGFRAU_TEST
-#define GOTTHARD_TEST
+//#define GOTTHARD_TEST
 
 //======================================================================================================
 // test configuration
@@ -526,8 +526,11 @@ int RunAcquisition(void)
 
     // setting the gain mode
     detector->setSettings(slsDetectorUsers::getDetectorSettings("dynamicgain"));
+#ifndef JUNGFRAU_TEST
     detector->setSettings(slsDetectorUsers::getDetectorSettings("mediumgain"));
-
+#else
+    detector->setSettings(slsDetectorUsers::getDetectorSettings("dynamichg0"));
+#endif
     // computing the number of frames
     nb_frames = nb_cycles * nb_frames_per_cycle;
 

@@ -1442,14 +1442,17 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
      * when switching back and forth between roi and no roi
      */
     // remember old parameters
-    uint64_t oldtiming = setTiming(-1);
+    int oldtiming = setTiming(-1);
     uint64_t oldframes = setFrames(-1);
+    uint64_t oldcycles = setTrains(-1);
     uint64_t oldPeriod = setPeriod(-1);
     uint64_t oldExptime = setExposureTime(-1);
 
     // set to basic parameters
+    printf("Setting basic parameters\n");
     setTiming(AUTO_TIMING);
     setFrames(1);
+    setTrains(1);
     setPeriod(1e6);
     setExposureTime(1e5);
 
@@ -1458,8 +1461,16 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
     waitForAcquisitionFinish();
 
     // set to previous parameters
+    printf("Setting previous parameters: "
+            "Timing: %d, "
+            "frames: %lld, "
+            "cycles: %lld, "
+            "period: %lld ns, "
+            "exptime:%lld ns\n",
+            oldtiming, oldframes, oldcycles, oldPeriod, oldExptime);
     setTiming(oldtiming);
     setFrames(oldframes);
+    setTrains(oldcycles);
     setPeriod(oldPeriod);
     setExposureTime(oldExptime);
 

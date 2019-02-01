@@ -1235,10 +1235,10 @@ void multiSlsDetector::setDetectorOffset(dimension d, int off, int pos) {
 
 void multiSlsDetector::updateOffsets() {
 	//cannot paralllize due to slsdetector calling this via parentdet->
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	cout << endl
 			<< "Updating Multi-Detector Offsets" << endl;
-#endif
+//#endif
 	int offsetX = 0, offsetY = 0, numX = 0, numY = 0, maxX = 0, maxY = 0;
 	int maxChanX   = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
 	int maxChanY   = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
@@ -1298,9 +1298,9 @@ void multiSlsDetector::updateOffsets() {
 			maxY_gp += detectors[idet]->getMaxNumberOfChannelsInclGapPixels(Y);
 			++thisMultiDetector->numberOfDetector[X];
 			++thisMultiDetector->numberOfDetector[Y];
-#ifdef VERBOSE
+//#ifdef VERBOSE
 			cout << "incrementing in both direction" << endl;
-#endif
+//#endif
 		}
 
 		//incrementing in y direction
@@ -1315,10 +1315,12 @@ void multiSlsDetector::updateOffsets() {
 			numY_gp += detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
 			maxY += detectors[idet]->getMaxNumberOfChannels(Y);
 			maxY_gp += detectors[idet]->getMaxNumberOfChannelsInclGapPixels(Y);
-			++thisMultiDetector->numberOfDetector[Y];
-#ifdef VERBOSE
+			// increment in y again only in the first column (else you double increment)
+			if (thisMultiDetector->numberOfDetector[X] == 1)
+			    ++thisMultiDetector->numberOfDetector[Y];
+//#ifdef VERBOSE
 			cout << "incrementing in y direction" << endl;
-#endif
+//#endif
 		}
 
 		//incrementing in x direction
@@ -1346,9 +1348,9 @@ void multiSlsDetector::updateOffsets() {
 			maxX += detectors[idet]->getMaxNumberOfChannels(X);
 			maxX_gp += detectors[idet]->getMaxNumberOfChannelsInclGapPixels(X);
 			++thisMultiDetector->numberOfDetector[X];
-#ifdef VERBOSE
+//#ifdef VERBOSE
 			cout << "incrementing in x direction" << endl;
-#endif
+//#endif
 		}
 
 		double bytesperchannel = (double)detectors[idet]->getDataBytes() /
@@ -1381,7 +1383,7 @@ void multiSlsDetector::updateOffsets() {
 		if (maxY_gp > thisMultiDetector->maxNumberOfChannelInclGapPixels[Y])
 			thisMultiDetector->maxNumberOfChannelInclGapPixels[Y] = maxY_gp;
 	}
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	cout << "Number of Channels in X direction:" << thisMultiDetector->numberOfChannel[X] << endl;
 	cout << "Number of Channels in Y direction:" << thisMultiDetector->numberOfChannel[Y] << endl
 			<< endl;
@@ -1390,7 +1392,7 @@ void multiSlsDetector::updateOffsets() {
 	cout << "Number of Channels in Y direction with Gap Pixels:" <<
 			thisMultiDetector->numberOfChannelInclGapPixels[Y] << endl
 			<< endl;
-#endif
+//#endif
 }
 
 
@@ -5065,7 +5067,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 						nPixelsX = doc["shape"][0].GetUint();
 						nPixelsY = doc["shape"][1].GetUint();
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 						cprintf(BLUE, "(Debug) One Time Header Info:\n"
 								"size: %u\n"
 								"multisize: %u\n"
@@ -5075,7 +5077,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 								"nPixelsY: %u\n",
 								size, multisize, dynamicRange, bytesPerPixel,
 								nPixelsX, nPixelsY);
-#endif
+//#endif
 					}
 					// each time, parse rest of header
 					currentFileName         = doc["fname"].GetString();
@@ -5084,12 +5086,12 @@ void multiSlsDetector::readFrameFromReceiver() {
 					currentFileIndex        = doc["fileIndex"].GetUint64();
 					currentSubFrameIndex    = doc["expLength"].GetUint();
 					coordY                  = doc["row"].GetUint();
-					coordX                  = doc["column"].GetUint();
+					coordX                  = doc["column"].GetUint();cprintf(BLUE, "row:%d, col:%d,ny:%d\n", coordY, coordX, nY);
 					if (eiger)
 						coordY = (nY - 1) - coordY;
 						//cout << "X:" << doc["row"].GetUint() <<" Y:"<<doc["column"].GetUint();
 					flippedDataX = doc["flippedDataX"].GetUint();
-#ifdef VERBOSE
+//#ifdef VERBOSE
 					cprintf(BLUE, "(Debug) Header Info:\n"
 							"currentFileName: %s\n"
 							"currentAcquisitionIndex: %lu\n"
@@ -5103,7 +5105,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 							currentFrameIndex, currentFileIndex, currentSubFrameIndex,
 							coordX, coordY,
 							flippedDataX);
-#endif
+//#endif
 				}
 
 				// DATA
@@ -5116,14 +5118,14 @@ void multiSlsDetector::readFrameFromReceiver() {
 					uint32_t yoffset            = coordY * nPixelsY;
 					uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
 					uint32_t rowoffset          = nX * singledetrowoffset;
-#ifdef VERBOSE
+//#ifdef VERBOSE
 					cprintf(BLUE, "(Debug) Multi Image Info:\n"
 							"xoffset: %u\n"
 							"yoffset: %u\n"
 							"singledetrowoffset: %u\n"
 							"rowoffset: %u\n",
 							xoffset, yoffset, singledetrowoffset, rowoffset);
-#endif
+//#endif
 					if (eiger && flippedDataX) {
 						for (uint32_t i = 0; i < nPixelsY; ++i) {
 							memcpy(((char*)multiframe) +

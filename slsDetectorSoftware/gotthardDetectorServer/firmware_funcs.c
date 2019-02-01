@@ -887,7 +887,7 @@ int64_t get64BitReg(int aLSB, int aMSB){
   return v64;
 }
 
-int64_t setFrames(int64_t value){
+int64_t setFrames(int64_t value){printf("setting frames to %lld\n", (long long int)value);
   return set64BitReg(value,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
 }
 
@@ -895,7 +895,7 @@ int64_t getFrames(){
   return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
 }
 
-int64_t setExposureTime(int64_t value){
+int64_t setExposureTime(int64_t value){printf("setting exptime to %lld ns\n", (long long int)value);
   /* time is in ns */
   if (value!=-1) {
 	  value = (value * 1E-3 * CLK_FREQ ) + 0.5;
@@ -909,7 +909,7 @@ int64_t getExposureTime(){
 		  (1E-3 * CLK_FREQ)) + 0.5;
 }
 
-int64_t setGates(int64_t value){
+int64_t setGates(int64_t value){printf("setting gates to %lld\n", (long long int)value);
   return set64BitReg(value, SET_GATES_LSB_REG, SET_GATES_MSB_REG);
 }
 
@@ -917,7 +917,7 @@ int64_t getGates(){
   return get64BitReg(GET_GATES_LSB_REG, GET_GATES_MSB_REG);
 }
 
-int64_t setPeriod(int64_t value){
+int64_t setPeriod(int64_t value){printf("setting period to %lld ns\n", (long long int)value);
   /* time is in ns */
   if (value!=-1) {
 	  value = (value * 1E-3 * CLK_FREQ ) + 0.5;
@@ -931,7 +931,7 @@ int64_t getPeriod(){
 		  (1E-3 * CLK_FREQ)) + 0.5;
 }
 
-int64_t setDelay(int64_t value){
+int64_t setDelay(int64_t value){printf("setting delay to %lld ns\n", (long long int)value);
   /* time is in ns */
   if (value!=-1) {
 	  if (masterflags == IS_MASTER) {
@@ -955,7 +955,7 @@ int64_t getDelay(){
 		  (1E-3 * CLK_FREQ)) + 0.5;
 }
 
-int64_t setTrains(int64_t value){
+int64_t setTrains(int64_t value){printf("setting cycles to %lld\n", (long long int)value);
   return set64BitReg(value,  SET_TRAINS_LSB_REG, SET_TRAINS_MSB_REG);
 }
 
@@ -1449,20 +1449,34 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
     uint64_t oldExptime = setExposureTime(-1);
 
     // set to basic parameters
-    printf("Setting basic parameters\n");
+    cprintf(BLUE,"Setting basic parameters\n"
+            "\tTiming: auto, frames: 1, cycles: 1, period: 1s, exptime: 900ms\n");
     setTiming(AUTO_TIMING);
     setFrames(1);
     setTrains(1);
-    setPeriod(1e6);
-    setExposureTime(1e5);
+    setPeriod(1e9); // important to keep this until we have to wait for acquisition to start
+    setExposureTime(900 * 1000);
 
     // take an image
+    if (masterflags == IS_MASTER)
+        usleep(1 * 1000 * 1000); // required to ensure master starts acquisition only after slave has changed to basic parameters and is waiting
+
+    int loop = 0;
     startStateMachine();
+    // wait for acquisition to start (trigger from master)
+    printf("  Waiting for acquisition to start\n");
+    while(!runBusy()) {
+        usleep(0);
+        ++loop;
+    }
+
+    cprintf(MAGENTA, "waited %d loops to start\n", loop);
+    cprintf(BLUE, "  Waiting for acquisition to end (frames left: %lld)\n", (long long int)getFrames());
     waitForAcquisitionFinish();
 
     // set to previous parameters
-    printf("Setting previous parameters: "
-            "Timing: %d, "
+    cprintf(BLUE,"Setting previous parameters:\n"
+            "\tTiming: %d, "
             "frames: %lld, "
             "cycles: %lld, "
             "period: %lld ns, "
@@ -1484,6 +1498,7 @@ int getAdcConfigured(){
 
 u_int32_t runBusy(void) {
 	u_int32_t s = bus_r(STATUS_REG) & RUN_BUSY_BIT;
+	//printf("runBusy: 0x%08x\n", s);
   return s;
 }
 
@@ -1515,6 +1530,7 @@ int startStateMachine(){
 
 //#ifdef VERBOSE
 	  cprintf(GREEN,"*******Starting State Machine*******\n");
+	  cprintf(GREEN,"Number of frames to acquire:%lld\n", (long long int)setFrames(-1));
 //#endif
 	cleanFifo();
   // fifoReset();
@@ -1595,28 +1611,29 @@ u_int32_t  fifo_full(void)
 
 
 void waitForAcquisitionFinish(){
-	volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
+    volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
 #ifdef VERBOSE
-  printf("lookatmereg=x%x\n",t);
+    printf("lookatmereg=x%x\n",t);
 #endif
-  while((t&0x1)==0) {
-	   if (runBusy()==0) {
-		   t = bus_r(LOOK_AT_ME_REG);
-		   if ((t&0x1)==0) {
+    while((t&0x1)==0) {
+        if (runBusy() == 0) {
+            t = bus_r(LOOK_AT_ME_REG);
+            if ((t&0x1)==0) {
 #ifdef VERBOSE
-			   printf("no frame found - exiting ");
-			   printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+                printf("no frame found - exiting ");
+                printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
-			   return;
-		   } else {
+                return;
+            } else {
 #ifdef VERBOSE
-			   printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
+                printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
 #endif
-			   break;
-		   }
-	   }
-	   t = bus_r(LOOK_AT_ME_REG);
-  }
+                break;
+            }
+        }
+
+        t = bus_r(LOOK_AT_ME_REG);
+    }
 }
 
 

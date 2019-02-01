@@ -1829,7 +1829,7 @@ int get_run_status(int file_des) {
 #endif 
 
   retval= runState();
-  printf("\n\nSTATUS=%08x\n",retval);
+  printf("STATUS=%08x\n",retval);
 
 
   //stopped (external stop, also maybe fifo full)
@@ -2046,9 +2046,9 @@ int set_timer(int file_des) {
     printf(mess);
   }
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
   printf("setting timer %d to %lld ns\n",ind,tns);
-//#endif
+#endif
   if (ret==OK) {
 
     if (differentClients==1 && lockStatus==1 && tns!=-1) { 

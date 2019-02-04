@@ -425,13 +425,13 @@ void CreateDetector(void)
     }
 
     // configuration file is used to properly configure advanced settings in the shared memory
-    /*result = detector->readConfigurationFile(detector_config_file_name);
+    result = detector->readConfigurationFile(detector_config_file_name);
 
     if(result == slsDetectorDefs::FAIL)
     {
 		std::cout << "readConfigurationFile failed! Could not initialize the camera!" << std::endl;
 		exit(EXIT_FAILURE);
-    }*/
+    }
 
 	// set detector in shared memory online (in case no config file was used) */
 	detector->setOnline(slsDetectorDefs::ONLINE_FLAG);

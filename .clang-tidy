@@ -1,0 +1,7 @@
+---
+Checks:          '*, -google-runtime-references, -hicpp-no-array-decay, -cppcoreguidelines-pro-bounds-array-to-pointer-decay, -cppcoreguidelines-pro-bounds-pointer-arithmetic, -fuchsia*,-readability-else-after-return,-readability-avoid-const-params-in-decls,-hicpp-signed-bitwise,-cppcoreguidelines-pro-bounds-constant-array-index,-llvm-header-guard,-readability-static-accessed-through-instance,-google-readability-todo'
+WarningsAsErrors: '*'
+HeaderFilterRegex: '.*'
+AnalyzeTemporaryDtors: false
+FormatStyle:     none
+...

@@ -107,7 +107,7 @@ slsDetectorUsers * detector = NULL;
 /** Define Colors to print data call back in different colors for different recievers */
 #define PRINT_IN_COLOR(c,f, ...) 	printf ("\033[%dm" f RESET, 30 + c+1, ##__VA_ARGS__)
 
-#define PRINT_SEPARATOR()  	cprintf(RED, "============================================\n")
+#define PRINT_SEPARATOR()  	cprintf(MAGENTA, "============================================\n")
 
 /************************************************************************
  * \brief cleans the shared memory used by the camera
@@ -425,13 +425,13 @@ void CreateDetector(void)
     }
 
     // configuration file is used to properly configure advanced settings in the shared memory
-    result = detector->readConfigurationFile(detector_config_file_name);
+    /*result = detector->readConfigurationFile(detector_config_file_name);
 
     if(result == slsDetectorDefs::FAIL)
     {
 		std::cout << "readConfigurationFile failed! Could not initialize the camera!" << std::endl;
 		exit(EXIT_FAILURE);
-    }
+    }*/
 
 	// set detector in shared memory online (in case no config file was used) */
 	detector->setOnline(slsDetectorDefs::ONLINE_FLAG);
@@ -581,7 +581,6 @@ int RunAcquisition(void)
     {
         // checking if the hardware acquisition is running
         int status = detector->getDetectorStatus();
-
         if((status == slsDetectorDefs::IDLE   ) || 
            (status == slsDetectorDefs::STOPPED) ||
            (status == slsDetectorDefs::ERROR  ))
@@ -672,11 +671,14 @@ void Test(void)
         ReleaseReceivers();
 
         PRINT_SEPARATOR();
-        std::cout << "Correct acquisition(s) " << acquisition_nb_ok << "/" << acquisition_nb << std::endl;
+	if (acquisition_nb - acquisition_nb_ok)
+		cprintf(BOLD RED, "Correct acquisition(s) %d/%d\n", acquisition_nb_ok, acquisition_nb);
+	else
+		cprintf(BOLD GREEN, "Correct acquisition(s) %d/%d\n", acquisition_nb_ok, acquisition_nb);
         if (acquisition_nb - acquisition_nb_ok) {
-            std::cout << "Acquisition(s) gone wrong :" << std::endl;
+            cprintf(RED, "Acquisition(s) gone wrong :\n");
             for (int list_index = 0; list_index < acquisition_nb_list.size(); ++list_index) {
-                std::cout << acquisition_nb_list[list_index] << std::endl;
+		cprintf(RED, "%d\n", acquisition_nb_list[list_index]);
             }
         }
         PRINT_SEPARATOR();

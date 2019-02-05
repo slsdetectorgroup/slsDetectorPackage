@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
+#include <stdexcept>
 #include "sls_detector_defs.h"
 namespace sls {
 

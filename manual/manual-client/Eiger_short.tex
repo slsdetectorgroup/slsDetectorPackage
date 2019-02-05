@@ -28,8 +28,6 @@ Figure ~\ref{boards} show the readout board basic components on an Eiger half mo
 \label{boards}
 \end{figure}
 
-
-
 \subsection{Mandatory setup - Hardware}
 An EIGER single module (500~kpixels) needs:
 \begin{itemize}
@@ -66,7 +64,8 @@ The directory contains some executables that are needed to make your detector to
  \begin{verbatim}
 ./on #to switch modules on
 ./off #to switch modules off
-./hvget #gets the current HV value
+./state #tells you if is ON or OFF
+cat /var/log/pcu.log #displays the log if there are problem
 ./waterflow #returns the current waterflow returned by the flowmeter
 ./temp #returns the water temperature returned by the flowmeter
  \end{verbatim}
@@ -93,10 +92,14 @@ The receiver is a process run on a PC closely connected to the detector. Open on
 where xxxx, yyyy are the tcp port numbers. Use 1955 and 1956 for example. The receiver for the bottom is open without arguments but still in the configuration file one needs to write {\tt{n:flippeddatax 1}}, where {\tt{2n+1}} indicated the half module number, 1 if it is a module.
 \\ Open as many receiver as half module boards. A single module has two half module boards.
 
-From the software version 3.0.1, one can decide weather start a zmq callback from the receiver to the client (for example to visualize data in the slsDetectorGui or another gui). If the zmq steam is not required (cased of the command line for example, one can switch off the streaming with {\tt{./sls\_detector\_put rx\_datastream 0}}, enable it with {\tt{./sls\_detector\_put rx\_datastream 1}}. In the case of inizialising the stream to use the slsDetectorGui, nothing needs to be taken care of by the user. If instead you want to stream the streaming on different channels, the zmq port of the client can be set stealing from the slsDetectorGui stream having {\tt{./sls\_detector\_put zmqport 300y}}. Note that if this is done globally (not for every half module n independently, then the client automatically takes into account that for every half module, there are 2 zmq stream. The receiver stream {\tt{./sls\_detector\_put rx\_zmqport 300y}} has to match such that the GUI can work. 
+From the software version 3.0.1, one can decide weather start a zmq callback from the receiver to the client (for example to visualize data in the slsDetectorGui or another gui). If the zmq steam is not required (cased of the command line for example, one can switch off the streaming with {\tt{./sls\_detector\_put rx\_datastream 0}}, enable it with {\tt{./sls\_detector\_put rx\_datastream 1}}. In the case of initializing the stream to use the slsDetectorGui, nothing needs to be taken care of by the user. If instead you want to stream the streaming on different channels, the zmq port of the client can be set stealing from the slsDetectorGui stream having {\tt{./sls\_detector\_put zmqport 300y}}. Note that if this is done globally (not for every half module n independently, then the client automatically takes into account that for every half module, there are 2 zmq stream. The receiver stream {\tt{./sls\_detector\_put rx\_zmqport 300y}} has to match such that the GUI can work. 
 If one desires to set the zmqport manually, he offset has to be taken into account: {\tt{./sls\_detector\_put 0:rx\_zmqport 300y}}, {\tt{./sls\_detector\_put 1:rx\_zmqport 300y+2}} and so on..
 
-There is an example code that can be compiled in {\tt{manual/manual-api/mainReceiver.cpp}} and gives the executable {\tt{./detReceiver}}, use it with two or more receivers to open all receivers in one single terminal: {\tt{./detReceiver startTCPPort numReceivers withCallback}}, where startTCPPort assumes the other ports are consecutively increased.
+
+{\tt{slsMultiReceiver}} uses two or more receivers in one single terminal: {\tt{./slsMultiReceiver startTCPPort numReceivers withCallback}}, where startTCPPort assumes the other ports are consecutively increased.
+
+The command {\tt{r\_framesperfile}} sets the number of frames written in the same file. By default now it is 10000. It can be changes. It needs to be lowered particularly if one wants to parallelize the following conversion of the files. 
+
 
 \subsection{Mandatory setup - Client}
 
@@ -282,6 +285,39 @@ The detector will not accept other commands while acquiring. If an acquisition w
 \end{itemize}
 this same command can be used after a non proper abortion of the acquisition to reset to normal status the detector.
 
+\section{Gap pixels inside a module}
+A module is composed of 2$\times$4 chips. Each chip is of dimension 256$\times$256 pixels. There is no dead area in a module, as a single sensor covers the 8 chips. The physical pixels at the border of the chips in the sensor are double in size, to allow not to loose photons in the gaps between the chip alignment. They count double what the other normal pixels would count. In the corner between chips, the pixels are 4-times the normal size. See figure~\ref{fgappix} to check the geometry.
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{GapPixels}
+\end{center}
+\caption{Geometry of gap pixels between a module.}
+\label{fgappix}
+\end{figure}
+
+It is possible to interpolated the value on the larger pixels by splitting the events (or properly interpolating) introducing a virtual pixel for every double pixel, or 3 virtual pixels for every corner. In this way the counts of a single large pixel can be shared among the correct amount of pixels of the normal dimension.     
+
+The gap pixels can be added for the slsDetectorGui, from the datacall back or stealing the zmq port from the GUI (see later). The detector size can be added in the configuration file as first thing. 
+
+Putting the long side of the module first always as a convection for the code, WITHOUT GAP PIXELS an EIGER module is:
+\begin{verbatim}
+detsizechan 1024 512 
+\end{verbatim}
+and the client needs to be set {\tt{sls\_detector\_put  gappixels 0}}, which is the default behavior.\\
+If you want to have GAP PIXELS included: 
+\begin{verbatim}
+detsizechan 1030 514 
+\end{verbatim}
+and the client needs to be set {\tt{sls\_detector\_put  gappixels 1}}.
+
+The size of the gap pixels between modules to insert is 
+\begin{verbatim}
+   GapPixelsBetweenModules_x = 8
+   GapPixelsBetweenModules_y = 36
+\end{verbatim}
+where the {\tt{GapPixelsBetweenModules\_x}} are the one on the short side of the module, while {\tt{GapPixelsBetweenModules\_y}} are the ones on the long side of the module (where the wirebonds take physical space).
+  
 \section{Readout timing- maximum frame rate}\label{timing}
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
 The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
@@ -369,48 +405,50 @@ where the 'minimum time between frames' and the minimum period will be discussed
 \begin{tiny}
 \begin{table}
 \begin{flushleft}
-\begin{tabular}{|c|c|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
 \hline
-\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{t between frames($\mu$s) } &  \tiny{max frame rate (kHz)} & \tiny{min period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
+\tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{$\Delta$t frames($\mu$s) } &  \tiny{max FR (kHz)} & \tiny{min period ($\mu$s)} & \tiny{meas. period ($\mu$s)} & \tiny{max imgs (nominal/our network)}\\
 \hline
-4 & 0 & parallel & 3.4 & 22  & 44 & 30k/50k\\
+4 & 0 & \tiny {parallel} & 3.4 & 22  & 44 & 44.01 & 30k/50k\\
 \hline
-4 & 1 & parallel & 6 & 10.5 & 92 & 30k/100k\\
+4 & 1 & \tiny {parallel} & 6 & 10.5 & 92 & 92.02 & 30k/100k\\
 \hline
-4 & 2 & parallel & 11.2 & 5.4 & 197 & infinite\\
-\hline
-\hline
-8 & 0 & parallel & 3.4 & 11.1 & 89 & 15k/24k\\
-\hline
-8 & 1 & parallel & 6.1 & 5.7 & 181 & 15k/52k\\
-\hline
-8 & 2 & parallel & 11.2 &  2.9 &  342 & infinite\\
+4 & 2 & \tiny {parallel} & 11.2 & 5.4 & 197& 197.01 & infinite\\
 \hline
 \hline
-16 & 0 & parallel & 3.4 & 6.1 & (126+38)* =164 & 8k/12k\\
+8 & 0 & \tiny {parallel} & 3.4 & 11.1 & 89 & 89.01 & 15k/24k\\
 \hline
-16 & 0 & nonparallel &  126 & 5.6 & (126+52)*= 179 & 8k/23k\\
+8 & 1 & \tiny {parallel} & 6.1 & 5.7 & 181 & 181.01 & 15k/52k\\
 \hline
-16 & 1 & parallel &  6.1 & 3.9 &  257 & 8k/28k\\
+8 & 2 & \tiny {parallel} & 11.2 &  2.9 &  342 & 342.01 & infinite\\
 \hline
-16 & 1 & nonparallel & 255 & 3.3 &  303 & infinite\\
 \hline
-16 & 2 & parallel &  11 & 1.9 & 526 & infinite \\
+16 & 0 & \tiny {parallel} & 3.4 & 6.1 & (126+38)* =164 & 164.02 & 8k/12k\\
 \hline
-16 & 2 & nonparallel & 504 & 1.8  & 555 & infinite\\
+16 & 0 & \tiny {nonparallel} &  127 & 5.6 & (126+52)*= 179 & 179.01& 8k/23k\\
+\hline
+16 & 1 & \tiny {parallel} &  6.1 & 3.9 &  257 & 257.01 & 8k/28k\\
+\hline
+16 & 1 & \tiny {nonparallel} & 255 & 3.3 &  303 & 303.01 & infinite\\
+\hline
+16 & 2 & \tiny {parallel} &  11.2 & 1.9 & 526 & 526.2 & infinite \\
+\hline
+16 & 2 & \tiny {nonparallel} & 505 & 1.8  & 555 & 555.01& infinite\\
 \hline
 %32 & 2 & parallel &  11 & 2&  & &\\
 %\hline
 %32 & 2 & nonparallel & 504 & $<2$&  & &\\
 %\hline
 \end{tabular}
-\caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip. The time between frames has been measured with the oscilloscope and the maximum frames rate has been tested with an external gating from a pulse generator at known frequence. The minimum period is obtained as 1/$\textrm{max frame rate}$.}
+\caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip. The time between frames ($\Delta$t) has been measured with the oscilloscope and the maximum frames rate (max FR) has been tested with an external gating from a pulse generator at known frequency. The minimum period is obtained as 1/$\textrm{max frame rate}$.}
 \label{tframes}
 \end{flushleft}
 \end{table}
 \end{tiny}
 
-\textbf{As if you run too fast, the detector could become noisier, it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that with low energy settings could not reach 6~kHz and no noise.
+\textbf{From software version 4.0.0, there is a very useful function {\tt{sls\_detector\_get measuredperiod}} which return the measured period AFTER the acquisition. This is important to check that the settings to obtain the targeted frame rate was correct.} 
+
+\textbf{If you run too fast, the detector could become noisier (see problem shooting), it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that with low energy settings could not reach 6~kHz and no noise.
 
 In 16 bit mode, it could make sense, in case of noise and low threshold to either reduce the frame rate:
 \begin{equation} 
@@ -482,6 +520,12 @@ The number of subframes composing a single 32bit acquisition can be calculated a
 \end{equation}
 This also means that {\tt{exptime}}$<${\tt{subexptime}} will be rounded to{\tt{subexptime}}. If you want shorter acquisitions, either reduce the {\tt{subexptime}} or switch two 16-bit mode (you can always sum offline if needed).   
 
+From release 4.0.0, an extra {\tt{flag overflow/nooverflow}} is added, with {\tt{nooverflow}} default:
+\begin{itemize}
+\item {\tt{nooverflow}}: the internal 12-bit result is summed, even if there was saturation of the 12-bit counter (4095) in any of the subframes. Note that if there is saturation for every subframe, you might get as a result a value of the counter equal to (4095$\times$~number~of~subframes), which you need to correctly identify. On the other hand if the saturation occurred only one time, you will get something "close'' to the real number.
+\item {\tt{overflow}}: In this case, even if a pixel saturate only 1 time in a subframe, you will be returned as a value of the counter for that pixel: $2^{32}-1$, i.e. 4294967295.  
+\end{itemize}
+
 The UDP header will contain, after you receive the data, the effective number of subframe per image (see section~\ref{UDP}) as  "SubFrame Num or Exp Time", i.e. the number of subframes recorded  (32 bit eiger).
 The effective time the detector has recorded data can be computed as:
 \begin{equation}
@@ -489,7 +533,9 @@ The effective time the detector has recorded data can be computed as:
 %\label{esubframes}
 \end{equation}
 
-In the future release, a configurable extra time difference between subframes will be introduced for the parallel mode, so that some noise appearing in detectors at low threshold can be removed. This will enlarge the time difference between frames form the default 12~$\mu$s to something configurable, expected to be 15-40~$\mu$s (for the 9M it is currently 200~$\mu$s due to a noisier module).
+ From release 4.0.0, a configurable extra time difference between subframes can be introduced for the parallel mode, so that some noise appearing in detectors at low threshold can be removed. This is obtained through the {\tt{subdeadtime}}. You need to add values specific for your detector (ask the detector group). Typically, values between 15-40~$\mu$s should be used (for the 9M it is currently 200~$\mu$s due to a noisier module).
+
+
 
 \section{External triggering options}\label{triggering}
 The detector can be setup such to receive external triggers. Connect a LEMO signal to the TRIGGER IN connector in the Power Distribution Board (see Fig.). The logic 0 for the board is passed by low level 0$-$0.7~V, the logic 1 is passed to the board with a signal between 1.2$-$5~V. Eiger is 50~$\Omega$ terminated. By default the positive polarity is used (negative should not be passed to the board).
@@ -515,12 +561,23 @@ Here are the implemented options so far:
 \item {\tt{auto}} is the software controlled acquisition (does not use triggers), where {\tt{exptime}} and {\tt{period}} have to be set. Set number of cycles (i.e. triggers) to 1 using {\tt{cycles}}. Set number of frames using {\tt{frames}}.
 \item {\tt{trigger}} 1 frame taken for 1 trigger. Your {\tt{frames}} needs to be  1 always, {\tt{cycles}} can be changed and defines how many triggers are considered.  {\tt{exptime}} needs to be set. In the GUI this is called trigger exposure series.  
 \item {\tt{burst\_trigger}} gets only 1 trigger, but allows to take many frames. With {\tt{frames}} one can change the number of frames. {\tt{cycles}} needs to be 1.  {\tt{exptime}} and {\tt{period}} have to be set. In the gui it is called trigger readout.
-\item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider.  Set number of frames to 1 using {\tt{frames}}.
+\item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider.  Set number of frames to 1 using {\tt{frames}}. ATTENTION: if you are in 16 bit mode and you are applying online rate corrections, as now the exptime is generated by the trigger, you might not have correct rate corrections. If you know what the exposure time is in the gating signal, then you can set the {\tt{exptime}} once and the rate corrections will be correct. If the exposure time is unknow, it is recommended that you switch off the rate corrections. In 32 bit mode, it does not matter as the rate corrections depends on the {\tt{subexptime}} which is software set independently from the gate exptime.
+
 \end{itemize}
 
 Hardware-wise, the ENABLE OUT signal outputs when the chips are really acquiring. This means that the single subframes will be output in 32 bit mode. The TRIGGER OUT outputs the sum-up-signal at the moment (which is useless). This will be changed in the future to output the envelop of the enable signal. 
 
-We are planning to change some functionality, i.e. unify the {\tt{trigger}} and {\tt{burst}} trigger modes and make both {\tt{frames}} and {\tt{cycles}} configurable at the same time.
+We are planning to change some functionality, i.e. unify the {\tt{trigger}} and {\tt{burst\_trigger}} trigger modes and make both {\tt{frames}} and {\tt{cycles}} configurable at the same time.
+
+There is the possibility to use {\tt{timing trigger/burst\_trigger}} and send software single commands to fake the trigger. This is done with:
+\begin{verbatim}
+sls_detector_put 0-timing [trigger/burst_trigger]
+sls_detector_put 0-frames x
+sls_detector_put 0-cycles y
+sls_detector_status trigger
+\end{verbatim}
+ Note that this functionality is very (!) useful if you need to do something between and acquisition and the next. This can be used to do a fast threshold scan for example. See section~\ref{Sec:fastthresholdscan}.
+
 
 \section{Autosumming and rate corrections} \label{advanced}
 
@@ -718,44 +775,53 @@ white the option {\tt{n:flippeddatax 1}}, which flips in vertical the content of
 \subsection{``raw'' files}
 If you use the option of writing raw files, you will have a raw file for each UDP port (meaning most likely 2 chips), 4 files per module. In addition to the raw files, you will get also a ``master'' file, containing in ascii some detector general parameters and the explanation of how to interpret the data from the raw files.
    
-The master file is named: {\tt{filename\_master\_0.raw}} and for version ``3.0'' of the slsDetectorSoftware looks like:
+The master file is named: {\tt{filename\_master\_0.raw}} and for version ``4.0.0'' of the slsDetectorSoftware looks like:
  
 \begin{verbatim}
-Version            : 1.0
-Dynamic Range      : 16
-Ten Giga           : 1
-Image Size         : 262144 bytes
-x                  : 512 pixels
-y                  : 256 pixels
-Total Frames       : 1
-Exptime (ns)       : 1000000000
-SubExptime (ns)    : 2621440
-Period (ns)        : 1000000000
-Timestamp          : Thu Aug 17 10:55:19 2017
+Version                    : 2.0
+Dynamic Range              : 32
+Ten Giga                   : 1
+Image Size                 : 524288 bytes
+x                          : 512 pixels
+y                          : 256 pixels
+Max. Frames Per File       : 10000
+Total Frames               : 1
+Exptime (ns)               : 1000000000
+SubExptime (ns)            : 2621440
+SubPeriod(ns)              : 2621440
+Period (ns)                : 1000000000
+Timestamp                  : Mon Sep  3 09:07:05 2018
 
 
 #Frame Header
-Frame Number       : 8 bytes
-SubFrame Number    : 4 bytes
-Packet Number      : 4 bytes
-Bunch ID           : 8 bytes
-Timestamp          : 8 bytes
-Module Id          : 2 bytes
-X Coordinate       : 2 bytes
-Y Coordinate       : 2 bytes
-Z Coordinate       : 2 bytes
-Debug              : 4 bytes
-Round Robin Number : 2 bytes
-Detector Type      : 1 byte
-Header Version     : 1 byte
+Frame Number               : 8 bytes
+SubFrame Number/ExpLength  : 4 bytes
+Packet Number              : 4 bytes
+Bunch ID                   : 8 bytes
+Timestamp                  : 8 bytes
+Module Id                  : 2 bytes
+X Coordinate               : 2 bytes
+Y Coordinate               : 2 bytes
+Z Coordinate               : 2 bytes
+Debug                      : 4 bytes
+Round Robin Number         : 2 bytes
+Detector Type              : 1 byte
+Header Version             : 1 byte
+Packets Caught Mask        : 64 bytes
 \end{verbatim}
 
 Note that if one wants to  reconstruct the real time the detector was acquiring in 32 bit (autosumming mode), one would have to multiply the SubExptime (ns) for the SubFrame Number. 
 
 \subsection{Offline image reconstruction}
-The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore.
+The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. The code is still available doing \\
+{\tt{git clone git@git.psi.ch:sls\_detectors\_software/sls\_image\_reconstruction.git slsImageReconstruction}}.
+Checkout the {\tt{developer}} branch if in a 3.1.X release or the {\tt{v4.0.0}} branch if in 4.0.X release of the {\tt{slsDetector}} code.
 
-The detector writes 2 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce cbf files. The executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).\\
+Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5} and \textbf{root} format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
+
+
+\subsubsection{cbf}
+The cbf executable executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).Edit the Makefile to correclty point at it.\\
 \underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
 
 To use it for a single module:
@@ -765,29 +831,90 @@ cbfMaker [filename with dir]
 eg.
 {\tt{cbfMaker /scratch/run\_63\_d1\_f000000000000\_3.raw}}\\
 
-To use it for a 1.5 multi modules:
-\begin{verbatim}
-cbfMaker [filename] [pixels x] [pixels y] ([singlemodulelongside_x] [start det])
-\end{verbatim}
+To use it any geometry:\\
+{\tt{cbfMaker [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
 eg.
-{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 0}.\\
-The {\tt{[singlemodulelongside\_x]}} {\tt{[option to interpolate gap pixels]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and start to reconstruct from module 0. 
+{\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
+
+The {\tt{[singlemodulelongside\_x]}} {\tt{[option to interpolate gap pixels]}} param are optional. Defaults are ``1'', the detector long side is on the x coordinate and to start to reconstruct from module 0.
+The interpolation scheme fro the gap pixels between chips is by default ``interpolate large big pixels'', =2;
+If you want to change interpolation scheme, use:\\
+\begin{tabular}{|c|c|}
+\hline
+interpolation scheme & argument\\
+\hline
+insert gap pixels and assign value only to the first one  & 0\\
+\hline
+equally divide the value of the counter bettern the two pixels & 1\\
+\hline
+interpolate large pixel value & 2\\
+\hline
+mask the value of the two gap pixels & 3\\
+\hline
+\end{tabular}
+\ \\
+\ \\ 
 The executables: 
 \begin{verbatim}
-bcfMaker1.5M [file_name_with_dir]
-bcfMaker9M [file_name_with_dir]
+cbfMaker1.5M [file_name_with_dir]
+cbfMakerOMNY [file_name_with_dir]
+cbfMaker9M [file_name_with_dir]
 \end{verbatim}
-contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
+contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side), the 1.5M OMNY geometry (3 modules next to each other on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
 Missing packets in a frame and border pixels ($\times 2$ and $\times 4$ are given with value $-1$ at the present time.
 
-It is important to know, that the pixels at the edge between 2 chips count more as double size. We can virtually introduced 1 virtual pixel per double larger pixel, so to have an even number of counts everywhere. Virtual pixels (not filled ) between module gaps are also inserted.
+Make sure the following options are uncommented in the {\tt{slsImageReconstruction/src/main\_csaxs.cpp}} file. 
+\begin{verbatim}
+#define MYCBF
+##following line only if you need to process with 
+##BUBBLE (Material Science / uXAS beamlines).
+#define MSHeader 
+\end{verbatim}
+Compile it with: 
+\begin{verbatim}
+make cbfMaker; make cbfMakerOMNY;
+\end{verbatim}
 
- \begin{verbatim}
-   GapPixelsBetweenChips_x = 2;
-   GapPixelsBetweenChips_y = 2;
-   GapPixelsBetweenModules_x = 8;
-   GapPixelsBetweenModules_y = 36;
- \end{verbatim}
+\subsubsection{hdf5}
+In case of HDF5 output file, we rely on having the HDF5 1.10.1 library installed. Edit the Makefile to correclty point at it. Different compression methods are being tried so different external filters might be to be installed. This work is not finished yet.
+
+To choose HDF5, with ZLIB implementation, open {\tt{slsImageReconstruction/src/main\_csaxs.cpp}} and make sure that 
+\begin{verbatim}
+#define HDF5f
+#define ZLIB
+\end{verbatim}
+are not commented out. All other options need to be commented out. Copile the code with 
+\begin{verbatim}
+make hdf5Maker; make hdf5MakerOMNY;
+\end{verbatim}
+
+If you are at cSAXS. all images collected will be written in a single file. If you are not at CSAXS, most likely you want to have all the images written in a single raw file into an HDF5 file. The multiple HDF5 files are then linked in a master file, with many subdatasets (can be read by albula) or by a virtual file with a single dataset. If you want a mster o virtual file, uncomment this option:
+\begin{verbatim}
+#define MASTERVIRTUAL
+\end{verbatim}
+and recompile.
+To use it for a single module:
+\begin{verbatim}
+hdf5Maker [filename with dir]
+\end{verbatim}
+eg.
+{\tt{hdf5Maker /scratch/run\_63\_d1\_f000000000000\_3.raw}}\\
+
+To use it any geometry:\\
+{\tt{hdf5Maker [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
+eg.
+{\tt hdf5Maker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
+
+\subsubsection{root}
+The data will be written as TH2D in root format. Edit the {\tt{Makefile}} to point to the correct ROOT library location. Compile the executable as:
+\begin{verbatim}
+make image 
+\end{verbatim}
+There is no program other executable that alredy keeps into account the geometry for it.
+To use it any geometry:\\
+{\tt{image [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
+eg.
+{\tt image /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
 
 \subsection{Read temperatures/HV from boards}
 
@@ -851,6 +978,16 @@ ssh root@$i sync; done
 
 \section{Loading firmware bitfiles}
 
+\textbf{As a new procedure, the first thing to do is to kill the server on the boards, copy the new one there without starting it.} Note taht failure to do this step before may cause the linux on the baords to crash and not being able to ping it (this if the registers between the old and new firmware change).
+
+This is teh procedure from a terminal;
+\begin{verbatim}
+for i in beb111 beb070; 
+do ssh root@$i killall eigerDetectorServer; 
+scp eigerDetectorServer root@$i:~/executables/eigerDetectorServer ; 
+ssh root@$i sync; done
+\end{verbatim}
+
 A \textbf{bcp} executable (which needs \textbf{tftp} installed on the PC, is needed. 
 \begin{enumerate}
 \item Manual way: you need to press something on the detector. To program bitfiles (firmware files), do a hard reset with a pin/thin stuff in the holes at the very back of the module. They are between the top 7 LED and the bottom 1 and opposite for the other side. Push hard till all LEDs are alternating green and red.
@@ -909,7 +1046,7 @@ for j in $(seq 0 255) ; do
 sls_detector_put pulsenmove N 0 1;
 done;
 done;
-sls_detector_p resmat 0
+sls_detector_put resmat 0
 sls_detector_acquire
 \end{verbatim}
 You read {\tt{N}} in every pixel if you are setup correctly. 
@@ -921,6 +1058,12 @@ To load the special noise file look at {\tt{settingsdir/eiger/standard/eigernois
 \begin{verbatim}
 sls_detector_put trimbits ../settingsdir/eiger/standard/eigernoise
 \end{verbatim}
+To exit from this pattern noise, just set the theshold to something known. 
+\begin{verbatim}
+\item sls_detector_put threshold 50000 standard
+\end{verbatim}
+where 5000 would be a value in eV and {/tt{standard}} is important in this case.
+
 
 \section{Troubleshooting}
 \subsection{Cannot successfully finish an acquisition}
@@ -1017,6 +1160,10 @@ Note that occasionally if there is a shared memory of a different size (from an 
 \end{verbatim}
 This needs to be cleaned with {\tt{ipcs -m}} and then {\tt{ipcrm -M xxx}}, where xxx are the keys with nattch 0. Alternative in the main slsDetectorFolder there is a script that can be used as {\tt{sh cleansharedmemory.sh}}. Note that you need to run the script with the account of the client user, as the shared memory belongs to the client. It is good procedure to implement an automatic cleanup of the shared memory if the client user changes often.   
 
+\subsection{Client has shared memory iusses}
+The shared memory from software version 4.0.0 creates shared memory segments in /dev/shm/. You can look at them and cancel them directly. Note that this is still user dependent.
+Environment variable SLSDETNAME can be set for using 2 different detectors from the same client pc. One needs a different multi detector id if the SLSDETNAME is different for both consoles.
+
 \subsection{Measure the HV}
 For every system: 
 \begin{itemize}
@@ -1037,6 +1184,13 @@ If you see strange lines in vertical occurring at period patterns, it is a memor
 
 \subsection{ssh to the boards takes long}
 Depending on your network setup,  to speed up the ssh to the boards from a pc with internal dhcp server running: \textbf{iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE; echo "1" > /proc/sys/net/ipv4/ip\_forward}, where eth1 has to be the 1Gb network device on the pc
+
+\subsection{Generate keys on the boards not to have to type the password}
+\begin{verbatim}
+export AFSDIRS64=/afs/psi.ch/intranet/Controls/Software/Trolltech/SL6-x86_64
+ssh-copy-id -i /afs/psi.ch/user/t/tinti_g/.ssh/id_rsa.pub  root@beb100
+ssh-keygen
+\end{verbatim}
 
 \subsection{Check firmware version installed on BEB}
 You can either ask in the client as described in section~\ref{api}, or login to the boards directly. Follow some steps described in Section~\ref{server}. 
@@ -1061,6 +1215,13 @@ Scroll up in the terminal till you find:\\
 *************** MASTER/SLAVE ***************\\
 *************** NORMAL/SPECIAL ***************\\
 
+There is also an easier way, that is that only the master module will reaturn the real value of the HV. If you have more than 1 detector system, then you will have more than 1 physical master, as the HV needs to be applied to all the systems.
+
+\begin{verbatim}
+for i in $(seq 0 36); do sls_detector_put $i:vhighvoltage; done
+\end{verbatim}
+ Only the master will return to you a sensible number (150 normally). the others will return -999.
+
 \subsection{'Cannot connect to socket'}
 This error is typically due to the detector server not running. For why, see section~\ref{servernot}.
 
@@ -1078,15 +1239,14 @@ If you see the client returning the following error message:\\
 \end{verbatim}
 
 \subsection{There is noise running the detector in 32-bit}
-Short story (for now): You are running in {\tt{parallel}} mode, switch {\tt{flags}} to non {\tt{nonparallel}} mode.
-Long story: If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower thereshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the redout time. At the present moment it is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will giveenough time for teh signals to settle.  For future realeas we are planning to introduce some configurable delay, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames in the range 12$-$504~$\mu$s. 
+If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower thereshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the readout time. It is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will give enough time for the signals to settle. From release 4.0.0, there is a configurable delay that can be set through the {\tt{subdeadtime}} variable, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames. Ask the SLS detector group for an appropriate dead time for your detector, but typically a dead time of 20-50~$\mu$s should be enough. Note that this {\tt{subdeadtime}} need to include the 12~$\mu$s minimum readout time, so it has to be larger than 12~$\mu$s to do anything.  
  
 \subsection{There is noise running the detector at high frame rate(4,8,16 bit)}
-If are running in {\tt{parallel}} mode, in particular at low thereshold energies, you might encounter some noise. The reason is that the analog part of the chips require some latency time to settle which is larger than the redout time. 
+If are running in {\tt{parallel}} mode, in particular at low thereshold energies, you might encounter some noise. The reason is that the analog part of the chips require some latency time to settle which is larger than the readout time. 
 \begin{enumerate}
 \item You can lower the frame rate and relax requirements on period: 
 At low frame rate, you normally leave enough time between the end of the acquisition and the starting of the next, so you should not see this effect. In any case setting a {\tt{period}}={\tt{exptime}}+readout time from Table~\ref{tchipro} +extra 20$\mu$s cures the problem. The 20$\mu$s could also be 10~$\mu$s, they are very hardware dependent.
-\item The frame rate requirement are stingent (as for time resolved measurements): the only option here is to reduce the {\tt{exptime}} to let the extra 20~$\mu$s (or 10)~$\mu$s. The {\tt{period}} remains the same.
+\item The frame rate requirement are stringent (as for time resolved measurements): the only option here is to reduce the {\tt{exptime}} to let the extra 20~$\mu$s (or 10)~$\mu$s. The {\tt{period}} remains the same.
 \end{enumerate} 
  
 \section{Client checks - command line}
@@ -1289,7 +1449,7 @@ In table~\ref{tframescomplete} is a list of all the readout times in the differe
 \end{table}
 \end{tiny}
 
-Table~\ref{tx} shows the bandwidth of data trasnferring between the FEB and BEB and of the DDR2 memory access. the GTX lanes are only capable of 25.6~Gbit/s. This limits the 12/16 bit frame rate. The 2$\times$DDR2 memories have a bandwidth or 2$\cdot$25.6~Gb/s=51.2~Gb/s. Due to this memory access bandwidth, the 32 bit autosumming mode can only run in {\tt{clkdivider}} 2.   
+Table~\ref{tx} shows the bandwidth of data transferring between the FEB and BEB and of the DDR2 memory access. the GTX lanes are only capable of 25.6~Gbit/s. This limits the 12/16 bit frame rate. The 2$\times$DDR2 memories have a bandwidth or 2$\cdot$25.6~Gb/s=51.2~Gb/s. Due to this memory access bandwidth, the 32 bit autosumming mode can only run in {\tt{clkdivider}} 2.   
 \begin{figure}[t]
 \begin{center}
 \includegraphics[width=1.\textwidth]{TansmissionRates}

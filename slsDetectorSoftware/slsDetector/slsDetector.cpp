@@ -81,6 +81,9 @@ int slsDetector::checkDetectorVersionCompatibility() {
     case GOTTHARD:
         arg = APIGOTTHARD;
         break;
+    case CHIPTESTBOARD:
+        arg = APICTB;
+        break;
     default:
         FILE_LOG(logERROR) << "Check version compatibility is not implemented for this detector";
         setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));

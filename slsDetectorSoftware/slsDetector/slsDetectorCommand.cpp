@@ -4063,7 +4063,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 	if (sscanf(args[0],"adc:%d",&idac)==1) {
 		//  printf("chiptestboard!\n");
 		adc=(dacIndex)(idac+1000);
-        if (idac < SLOW_ADC0 || idac > SLOW_ADC_TEMP)
+        if (idac < (SLOW_ADC0 - 1000) || idac > (SLOW_ADC_TEMP - 1000))
             return (std::string ("cannot set adc, must be between ") + std::to_string(SLOW_ADC0 - 1000) +
                     std::string (" and ") + std::to_string(SLOW_ADC_TEMP - 1000));
 	} else if (cmd=="temp_adc")

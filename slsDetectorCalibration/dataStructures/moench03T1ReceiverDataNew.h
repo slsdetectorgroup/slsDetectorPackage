@@ -2,6 +2,7 @@
 #define  MOENCH03T1RECDATANEW_H
 #include "slsDetectorData.h"
 
+#define VERSION_V2
     /**
         @short  structure for a Detector Packet or Image Header
         @li frameNumber is the frame number
@@ -32,6 +33,10 @@
         uint16_t roundRNumber;    /**< is the round robin set number */
         uint8_t detType;        /**< is the detector type see :: detectorType */
         uint8_t version;        /**< is the version number of this structure format */
+#ifdef VERSION_V2
+      uint64_t packetCaught[8];        /**< is the version number of this structure format */
+#endif
+
     } sls_detector_header;
 
 

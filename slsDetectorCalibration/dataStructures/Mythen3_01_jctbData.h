@@ -74,7 +74,7 @@ class mythen3_01_jctbData : public slsDetectorData<short unsigned int> {
 	  for (ib=0; ib<nb; ib++) {
 	    if (word&(1<<bit[ib]))  {
 	      cout << "+" ;
-	      val[iw+nch*(ib/nb)]|=(1<<idr);
+	      val[iw+nch/nb*(ib)]|=(1<<idr);
 	    }  else { 
 	      	cout << "-" ; 
 	       } 
@@ -96,8 +96,8 @@ class mythen3_01_jctbData : public slsDetectorData<short unsigned int> {
       ii++;
     }//end for
     
-    cout << "Decoded "<<ii << " samples"<< endl;
-    cout << "Should be "<< nch/nb*dr+off << " samples"<< endl;
+    cout << "M3.01 Decoded "<<ii << " samples"<< endl;
+    cout << "M3.01 Should be "<< nch/nb*dr+off << " samples"<< endl;
   
     return val;
  }

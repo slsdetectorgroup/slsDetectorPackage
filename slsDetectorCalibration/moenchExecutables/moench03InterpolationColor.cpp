@@ -22,7 +22,7 @@ using namespace std;
 #define NC 400
 #define NR 400
 #define MAX_ITERATIONS (nSubPixels*100)
-
+#define MAX_EBINS 100
 #define XTALK
 
 int main(int argc, char *argv[]) {
@@ -65,6 +65,9 @@ int main(int argc, char *argv[]) {
   float cmax=atof(argv[iarg++]);
   cout << "Energy min: " << cmin << endl;
   cout << "Energy max: " << cmax << endl;
+  int n_ebins=1;
+  if (argc>iarg)
+    n_ebins=atoi(argv[iarg++]);
   //int etabins=500;
   int etabins=1000;//nsubpix*2*100;
   double etamin=-1, etamax=2;
@@ -92,9 +95,16 @@ int main(int argc, char *argv[]) {
 #endif
 
     int nSubPixels=nsubpix;
+
+    int iebin=0;
+    double eb_size=(cmax-cmin)/n_ebins;
 #ifndef NOINTERPOLATION
-   eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
-   //eta2InterpolationCleverAdaptiveBins *interp=new eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin, etamax);  
+    //  eta2InterpolationPosXY *interp[MAX_EBINS];
+    eta2InterpolationCleverAdaptiveBins *interp[MAX_EBINS];
+    for (int i=0; i< n_ebins; i++) {
+      //interp[i]=new eta2InterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
+      interp[i]=new eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin, etamax);  
+    }
 #endif
 #ifdef NOINTERPOLATION
     noInterpolation *interp=new noInterpolation(NC, NR, nsubpix);  
@@ -104,10 +114,12 @@ int main(int argc, char *argv[]) {
  
 #ifndef FF
 #ifndef NOINTERPOLATION
-    cout << "read ff " << argv[2] << endl;
-    sprintf(fname,"%s",argv[2]);
-    interp->readFlatField(fname);
-    interp->prepareInterpolation(ok);//, MAX_ITERATIONS);
+    cout << "read ff " << argv[2] << endl; 
+    for (int i=0; i< n_ebins; i++) {
+      sprintf(fname,argv[2],i);
+      interp[i]->readFlatField(fname);
+      interp[i]->prepareInterpolation(ok);//, MAX_ITERATIONS);
+    }
 #endif
     // return 0;
 #endif
@@ -154,9 +166,11 @@ int main(int argc, char *argv[]) {
 	    nframes++;
 	  }
 	  //quad=interp->calcQuad(cl.get_cluster(), sum, totquad, sDum);
-	  quad=interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
-	    if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && sum<cmax ) {
+	  quad=interp[0]->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
+	  if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && sum<cmax ) {
 	    nph++;
+	    iebin=(sum-cmin)/eb_size;
+	    if (iebin>=0 && iebin<n_ebins) {
 	    //  if (sum>200 && sum<580) {
 	    //  interp->getInterpolatedPosition(cl.x,cl.y, totquad,quad,cl.get_cluster(),int_x, int_y);
 // #ifdef SOLEIL
@@ -164,29 +178,22 @@ int main(int argc, char *argv[]) {
 // #endif
 #ifndef FF
 	    // interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);  
-	    interp->getInterpolatedPosition(cl.x,cl.y, etax, etay, quad,int_x, int_y);
+	    interp[iebin]->getInterpolatedPosition(cl.x,cl.y, etax, etay, quad,int_x, int_y);
 	      // cout <<"**************"<< endl;
 	      // cout << cl.x << " " << cl.y << " " << sum << endl;
 	      // cl.print();
 	      // cout << int_x << " " << int_y << endl;
 	      // cout <<"**************"<< endl;
-	    //  if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
-	    interp->addToImage(int_x, int_y);
-	    if (int_x<0 || int_y<0 || int_x>400 || int_y>400) {
-	      cout <<"**************"<< endl;
-	      cout << cl.x << " " << cl.y << " " << sum << endl;
-	      cl.print();
-	      cout << int_x << " " << int_y << endl;
-	      cout <<"**************"<< endl;
-	    }
+	    if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
+	      interp[iebin]->addToImage(int_x, int_y);
 #endif
 #ifdef FF
 	    //	interp->addToFlatField(cl.get_cluster(), etax, etay);
-// #ifdef UCL
-// 	    if (cl.x>50)
-// #endif
-// 	    if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
-	      interp->addToFlatField(etax, etay);
+#ifdef UCL
+	    if (cl.x>50)
+#endif
+	      if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
+		interp[iebin]->addToFlatField(etax, etay);
 	    //  if (etax==0 || etay==0) cout << cl.x << " " << cl.y << endl;
 	     
 #endif
@@ -197,50 +204,63 @@ int main(int argc, char *argv[]) {
 	    if (nph%1000000==0) cout << nph << endl;
 	    if (nph%10000000==0) { 
 #ifndef FF
-		interp->writeInterpolatedImage(outfname);
+	      for (int i=0; i<n_ebins; i++) {
+		sprintf(outfname,argv[3],i);
+		interp[i]->writeInterpolatedImage(outfname);
+	      }
 #endif
 #ifdef FF 
-		interp->writeFlatField(outfname);
+	      for (int i=0; i<n_ebins; i++) {
+		sprintf(outfname,argv[2],i);
+		cout << outfname << " " << argv[2] << " " << i << endl;
+		interp[i]->writeFlatField(outfname);
+	      }
 #endif
-		
-		}
-	  }
+	      
+	    }
+	    }
 	    
-	} 
+	  } 
 	  
-	  
+	}
 	fclose(f);
 #ifdef FF
-	interp->writeFlatField(outfname);
+	for (int i=0; i<n_ebins; i++) {
+	  sprintf(outfname,argv[2],i);
+	  cout << outfname << " " << argv[2] << " " << i << endl;
+	  interp[i]->writeFlatField(outfname);
+	}
 #endif
 	
-#ifndef FF
-	interp->writeInterpolatedImage(outfname); 
-
-	img=interp->getInterpolatedImage();
-	for (ix=0; ix<NC; ix++) {
-	  for (iy=0; iy<NR; iy++) {
-	    for (isx=0; isx<nsubpix; isx++) {
-	      for (isy=0; isy<nsubpix; isy++) {
-		totimg[ix*nsubpix+isx+(iy*nsubpix+isy)*(NC*nsubpix)]+=img[ix*nsubpix+isx+(iy*nsubpix+isy)*(NC*nsubpix)];
+#ifndef FF 
+	      for (int i=0; i<n_ebins; i++) {
+		sprintf(outfname,argv[3],i,irun);
+		interp[i]->writeInterpolatedImage(outfname);
+		img=interp[i]->getInterpolatedImage();
+		for (ix=0; ix<NC; ix++) {
+		  for (iy=0; iy<NR; iy++) {
+		    for (isx=0; isx<nsubpix; isx++) {
+		      for (isy=0; isy<nsubpix; isy++) {
+			totimg[ix*nsubpix+isx+(iy*nsubpix+isy)*(NC*nsubpix)]+=img[ix*nsubpix+isx+(iy*nsubpix+isy)*(NC*nsubpix)];
+		      }
+		    }
+		  }
 		}
-	    }
-	  }
-	}
-	cout << "Read " << nframes << " frames (first frame: " << f0 << " last frame: " << lastframe << " delta:" << lastframe-f0 << ") nph="<< nph <<endl;
-	interp->clearInterpolatedImage();
+		//interp[i]->clearInterpolatedImage();
+	      }
+	      cout << "Read " << nframes << " frames (first frame: " << f0 << " last frame: " << lastframe << " delta:" << lastframe-f0 << ")"<<endl;
 #endif
 	
       } else
 	cout << "could not open file " << infname << endl;
     }
 #ifndef FF
-    sprintf(outfname,argv[3],11111);
+    sprintf(outfname,argv[3], 11111);
     WriteToTiff(totimg, outfname,NC*nsubpix,NR*nsubpix);
 #endif 
     
 #ifdef FF
-	interp->writeFlatField(outfname);
+	interp[iebin]->writeFlatField(outfname);
 #endif
 
     cout << "Filled " << nph << " (/"<< totph <<") " << endl; 

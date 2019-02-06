@@ -39,14 +39,16 @@ class single_photon_hit {
     //fwrite((void*)this, 1, 3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); 
     
     // if (fwrite((void*)this, 1, sizeof(int)+2*sizeof(int16_t), myFile))
-#ifdef OLDFORMAT 
-    if (fwrite((void*)&iframe, 1,  sizeof(int), myFile)) 
-#endif  
+    //#ifdef OLDFORMAT 
+    if (fwrite((void*)&iframe, 1,  sizeof(int), myFile)) {};
+      //#endif  
 #ifndef WRITE_QUAD
+      //printf("no quad ");
     if (fwrite((void*)&x, 2,  sizeof(int16_t), myFile)) 
       return fwrite((void*)data, 1, dx*dy*sizeof(int), myFile);
 #endif 
 #ifdef WRITE_QUAD
+    // printf("quad ");
     int qq[4];
     switch(quad) {
     case TOP_LEFT:
@@ -102,17 +104,42 @@ class single_photon_hit {
   size_t read(FILE *myFile) {
     //fread((void*)this, 1,  3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); 
     
-#ifdef OLDFORMAT 
-    if (fread((void*)&iframe, 1,  sizeof(int), myFile))  
-#endif   
+    //#ifdef OLDFORMAT 
+    if (fread((void*)&iframe, 1,  sizeof(int), myFile))  {}
+      //#endif   
 #ifndef WRITE_QUAD
+      // printf( "no quad \n");
     if (fread((void*)&x, 2,  sizeof(int16_t), myFile))  
       return fread((void*)data, 1, dx*dy*sizeof(int), myFile);
 #endif 
 #ifdef WRITE_QUAD
     int qq[4];
+    // printf( "quad \n");
     if (fread((void*)&x, 2,  sizeof(int16_t), myFile))  
       if (fread((void*)qq, 1, 4*sizeof(int), myFile)) {
+
+	quad=TOP_RIGHT;
+	int mm=qq[0];
+	for (int i=1; i<4; i++) {
+	  if (qq[i]<mm) {
+	    switch (i) {
+	    case 1: 
+	      quad=TOP_LEFT;
+	      break;
+	    case 2:
+	      quad=BOTTOM_RIGHT;
+	      break;
+	    case 3:
+	      quad=BOTTOM_LEFT;
+	      break;
+	    default:
+	      ;
+	    }
+
+	  }
+
+	}
+
 
     switch(quad) {
     case TOP_LEFT:

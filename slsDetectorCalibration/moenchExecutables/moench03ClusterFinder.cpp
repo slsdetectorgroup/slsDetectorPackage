@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   }
   int p=10000;
   int fifosize=1000;
-  int nthreads=1;
+  int nthreads=24;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;

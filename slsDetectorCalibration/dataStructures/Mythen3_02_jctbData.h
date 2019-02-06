@@ -57,8 +57,9 @@ class mythen3_02_jctbData : public mythen3_01_jctbData {
     int ioff=0;
     int idr=0;
     int ib=0;
-    int iw=0;
+    int ich=0;
     int ii=0;
+    int iw=0;
     bit[0]=17;//19;
     bit[1]=6;//8;
     idr=0;
@@ -68,7 +69,8 @@ class mythen3_02_jctbData : public mythen3_01_jctbData {
     wp=(int64_t*)ptr;
     
     for (iw=0; iw<nch/nb; iw) {
-      word=*wp;;
+      word=*wp;
+
       if (ioff<off) {
 	ioff++;
 	 cout <<"*";
@@ -78,10 +80,11 @@ class mythen3_02_jctbData : public mythen3_01_jctbData {
 	  for (ib=0; ib<nb; ib++) {
 	    if (word&(1<<bit[ib]))  {
 	      cout << "+" ;
-	      val[iw+nch*(ib/nb)]|=(1<<idr);
+	      val[iw+nch/nb*(ib)]|=(1<<idr);
 	    }  else { 
 	      	cout << "-" ; 
-	       } 
+	    } 
+	    //    cout <<  iw+nch/nb*(ib)<< " " ;
 	  }//end for()
 	}
 	
@@ -94,14 +97,14 @@ class mythen3_02_jctbData : public mythen3_01_jctbData {
 	  cout <<dec << iw<<endl;
 	  iw++;
 	}//end if()
-
+	
       }//end else()
       wp+=1;
       ii++;
     }//end for
     
-    cout << "Decoded "<<ii << " samples"<< endl;
-    cout << "Should be "<< nch/nb*dr+off << " samples"<< endl;
+    cout << "M3.02 Decoded "<<ii << " samples"<< endl;
+    cout << "M3.02 Should be "<< nch/nb*dr+off << " samples"<< endl;
   
     return val;
  }

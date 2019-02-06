@@ -125,7 +125,11 @@ class etaInterpolationAdaptiveBins : public etaInterpolationPosXY {
 
 
 
-  virtual void prepareInterpolation(int &ok, int nint=1000)
+  virtual void prepareInterpolation(int &ok) {
+    prepareInterpolation(ok, 1000);
+  }
+
+  virtual void prepareInterpolation(int &ok, int nint)
   {
    ok=1;  
 

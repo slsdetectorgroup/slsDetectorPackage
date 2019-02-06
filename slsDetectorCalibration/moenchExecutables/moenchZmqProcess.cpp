@@ -69,7 +69,6 @@ int main(int argc, char *argv[]) {
   time_t begin,end,finished;
 
 
-
   if (argc > 4) {
 	  socketip2 = argv[3];
 	  portnum2 = atoi(argv[4]);
@@ -113,6 +112,7 @@ int main(int argc, char *argv[]) {
   int multisize=size;
   int dataSize=size;
 
+  char dummybuff[size];
 
 
 
@@ -685,6 +685,10 @@ int main(int argc, char *argv[]) {
 		mt->pushData(buff);
 		mt->nextThread();
 		mt->popFree(buff);
+	      } else {
+		cprintf(RED, "Incomplete frame: received only %d packet\n", packetNumber);
+		length = zmqsocket->ReceiveData(0, dummybuff, size);
+
 	      }
 	
 	  

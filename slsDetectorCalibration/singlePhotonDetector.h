@@ -562,10 +562,10 @@ int *getClusters(char *data,  int *ph=NULL) {
 
     static void writeClusters(FILE *f, single_photon_hit *cl, int nph, int fn=0){
   
-#ifndef OLDFORMAT  
-      if (fwrite((void*)&fn, 1,  sizeof(int), f)) 
-	if (fwrite((void*)&nph, 1,  sizeof(int), f)) 
-#endif   
+/* #ifndef OLDFORMAT   */
+/*       if (fwrite((void*)&fn, 1,  sizeof(int), f))  */
+/* 	if (fwrite((void*)&nph, 1,  sizeof(int), f))  */
+/* #endif    */
 	  for (int i=0; i<nph; i++) (cl+i)->write(f);
 };
  void writeClusters(FILE *f, int fn=0){

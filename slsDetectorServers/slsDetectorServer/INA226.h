@@ -57,7 +57,7 @@ double INA226_Shunt_Resistor_Ohm = 0.0;
  * @param treg transfer command fifo register (defined in RegisterDefs.h)
  */
 void INA226_ConfigureI2CCore(double rOhm, uint32_t creg, uint32_t rreg, uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg) {
-    FILE_LOG(logINFO, ("Configuring INA226\n"));
+    FILE_LOG(logINFOBLUE, ("Configuring INA226\n"));
 
     INA226_Shunt_Resistor_Ohm = rOhm;
 
@@ -69,7 +69,7 @@ void INA226_ConfigureI2CCore(double rOhm, uint32_t creg, uint32_t rreg, uint32_t
  * @param deviceId device Id (defined in slsDetectorServer_defs.h)
  */
 void INA226_CalibrateCurrentRegister(uint32_t deviceId) {
-
+    FILE_LOG(logINFO, ("Calibrating Current Register for Device ID: 0x%x\n", deviceId));
     // get calibration value based on shunt resistor
     uint16_t calVal = ((uint16_t)INA226_getCalibrationValue(INA226_Shunt_Resistor_Ohm)) & INA226_CALIBRATION_MSK;
     FILE_LOG(logINFO, ("\tWriting to Calibration reg: 0x%0x\n", calVal));

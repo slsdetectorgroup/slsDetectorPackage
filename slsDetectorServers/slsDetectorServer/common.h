@@ -12,7 +12,8 @@
  */
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outputMax,
         int inputValue, int* outputValue) {
-    FILE_LOG(logDEBUG1, ("\tInput Value: %d\n", inputValue));
+    FILE_LOG(logDEBUG1, ("Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
+            inputValue, inputMin, inputMax, outputMin, outputMax));
 
     // validate within bounds
     // eg. MAX1932 range is v(60 - 200) to dac(255 - 1), here inputMin > inputMax (when dac to voltage)
@@ -37,7 +38,7 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
     }
     *outputValue = value;
 
-    FILE_LOG(logDEBUG1, ("\tConverted Ouput Value: %d\n", *outputValue));
+    FILE_LOG(logDEBUG1, ("Converted Ouput Value: %d\n", *outputValue));
     return OK;
 }
 

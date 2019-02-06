@@ -4,11 +4,11 @@
 
 
 #define GOODBYE 					(-200)
-#define MIN_REQRD_VRSN_T_RD_API     0x180314
-#define REQRD_FRMWR_VRSN            0x180314
+#define MIN_REQRD_VRSN_T_RD_API     0x181130
+#define REQRD_FRMWR_VRSN            0x181130
 
 #define PROGRAMMING_MODE            (0x2)
-#define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
+#define CTRL_SRVR_INIT_TIME_US      (1000 * 1000)
 
 /* Struct Definitions */
 typedef struct ip_header_struct {
@@ -60,6 +60,10 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define DEFAULT_VLIMIT              (-100)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
+#define DEFAULT_RUN_CLK             (40)
+#define DEFAULT_ADC_CLK             (20)
+#define DEFAULT_SYNC_CLK            (20)
+#define DEFAULT_DBIT_CLK            (200)
 
 #define HIGHVOLTAGE_MIN             (60)
 #define HIGHVOLTAGE_MAX             (200)

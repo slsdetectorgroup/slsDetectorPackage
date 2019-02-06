@@ -15,7 +15,7 @@
 /* Fix pattern RO register */
 #define FIX_PATT_REG          			    (0x01 << MEM_MAP_SHIFT)
 
-#define FIX_PATT_VAL                        (0xACDC2014)
+#define FIX_PATT_VAL                        (0xACDC2016)
 
 /* Status RO register */
 #define STATUS_REG            			    (0x02 << MEM_MAP_SHIFT)

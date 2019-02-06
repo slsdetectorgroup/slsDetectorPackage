@@ -181,6 +181,7 @@ int         getADCIndexFromDACIndex(enum DACINDEX ind);
 int         isPowerValid(int val);
 int         getPower();
 void        setPower(enum DACINDEX ind, int val);
+void        powerOff();
 #endif
 /*#ifdef GOTTHARDD
 void        initDAC(int dac_addr, int value);
@@ -223,10 +224,13 @@ int 		setDetectorPosition(int pos[]);
 
 // very detector specific
 
-
-// chip test board specific - powerchip, sendudp, pll, flashing firmware
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+// moench specific - powerchip
+#ifdef MOENCHD
 int         powerChip (int on);
+#endif
+
+// chip test board specific - sendudp, pll, flashing firmware
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int         sendUDP(int enable);
 void        configurePhase(enum CLKINDEX ind, int val);
 int         getPhase(enum CLKINDEX ind);

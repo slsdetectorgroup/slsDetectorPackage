@@ -97,7 +97,7 @@ void basictests() {
 		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
-		return;
+		cprintf(RED,"exiting for now!\n");exit(-1); return;
 	}
 
 	uint16_t hversion			= getHardwareVersionNumber();
@@ -178,7 +178,7 @@ void basictests() {
 		firmware_check_done = 1;
 		return;
 	}
-	FILE_LOG(logINFO, ("Compatibility - success\n"));
+	FILE_LOG(logINFO, ("\tCompatibility - success\n"));
 	firmware_check_done = 1;
 #endif
 }
@@ -187,12 +187,11 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	uint32_t type = ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
-
-	uint32_t expectedType = FPGA_VERSION_DTCTR_TYP_CTB_VAL;
+    uint32_t type = ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
+	uint32_t expectedType = (((FPGA_VERSION_DTCTR_TYP_CTB_VAL) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
 
 	if (type != expectedType) {
-        FILE_LOG(logERROR, ("This is not a Chip Test Board Server (read %d, expected %d)\n",
+        FILE_LOG(logERROR, ("(Type Fail) - This is not a Chip Test Board Server (read %d, expected %d)\n",
                 type, expectedType));
         return FAIL;
 	}
@@ -209,7 +208,7 @@ uint32_t testFpga(void) {
     int ret = OK;
     uint32_t val = bus_r(FIX_PATT_REG);
     if (val == FIX_PATT_VAL) {
-        FILE_LOG(logINFO, ("Fixed pattern: successful match (0x%08x)\n",val));
+        FILE_LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n",val));
     } else {
         FILE_LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
         ret = FAIL;
@@ -267,7 +266,7 @@ uint32_t testFpga(void) {
         // write back previous value
         bus_w(addr, previousValue);
         if (ret == OK) {
-            FILE_LOG(logINFO, ("Successfully tested FPGA Delay LSB Register %d times\n", times));
+            FILE_LOG(logINFO, ("\tSuccessfully tested FPGA Delay LSB Register %d times\n", times));
         }
     }
 
@@ -305,7 +304,7 @@ int testBus() {
     bus_w(addr, previousValue);
 
     if (ret == OK) {
-        FILE_LOG(logINFO, ("Successfully tested bus %d times\n", times));
+        FILE_LOG(logINFO, ("\tSuccessfully tested bus %d times\n", times));
     }
     return ret;
 }
@@ -448,7 +447,7 @@ void initStopServer() {
 /* set up detector */
 
 void setupDetector() {
-    FILE_LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
+    FILE_LOG(logINFO, ("This Server is for 1 Chip Test Board module\n"));
 
     // default variables
     dataBytes = 0;
@@ -460,8 +459,11 @@ void setupDetector() {
         int i = 0;
         for (i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
-            clkDivider[i] = 0;
         }
+        clkDivider[RUN_CLK] = DEFAULT_RUN_CLK;
+        clkDivider[ADC_CLK] = DEFAULT_ADC_CLK;
+        clkDivider[SYNC_CLK] = DEFAULT_SYNC_CLK;
+        clkDivider[DBIT_CLK] = DEFAULT_DBIT_CLK;
         for (i = 0; i < NDAC; ++i)
             dacValues[i] = -1;
     }
@@ -480,6 +482,9 @@ void setupDetector() {
     resetPeripheral();
     cleanFifos();
 
+    // dac defines here as it is used earlier
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);
+
     // hv
     MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST, HIGHVOLTAGE_MIN, HIGHVOLTAGE_MAX);
     MAX1932_Disable();
@@ -493,8 +498,7 @@ void setupDetector() {
     INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
-    // switch off
-    powerChip(0);
+    powerOff();
     setVchip(VCHIP_MIN_MV);
 
     // adcs
@@ -508,11 +512,12 @@ void setupDetector() {
     AD7689_Configure();
 
     // dacs
-    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);
+    // defined earlier as power regulators (above) require them
     LTC2620_Disable();
     LTC2620_Configure();
     //FIXME:
 	// switch off dacs (power regulators most likely only sets to minimum (if power enable on))
+    FILE_LOG(logINFOBLUE, ("Powering down all dacs\n"));
 	{
 	    int idac = 0;
 	    for (idac = 0; idac < NDAC; ++idac) {
@@ -573,7 +578,7 @@ int allocateRAM() {
                 "Probably cause: Memory Leak.\n"));
         return FAIL;
     }
-    FILE_LOG(logINFO, ("RAM allocated to %d bytes\n", dataBytes));
+    FILE_LOG(logINFO, ("\tRAM allocated to %d bytes\n", dataBytes));
     return OK;
 }
 
@@ -581,7 +586,7 @@ void updateDataBytes() {
     int oldDataBytes = dataBytes;
     dataBytes = NCHIP * getChannels() * NUM_BYTES_PER_PIXEL * nSamples;
     if (dataBytes != oldDataBytes) {
-        FILE_LOG(logINFO, ("Updating Databytes: %d\n", dataBytes));
+        FILE_LOG(logINFO, ("\tUpdating Databytes: %d\n", dataBytes));
     }
 }
 
@@ -671,7 +676,7 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
                     if (ich >= 0 && ich < NCHAN_ANALOG)
                         adcDisableMask &= ~(1 << ich);
 
-                    FILE_LOG(logDEBUG1, ("\t%d: ich:%d adcDisableMask:0x%08x\n",
+                    FILE_LOG(logDEBUG1, ("%d: ich:%d adcDisableMask:0x%08x\n",
                             iroi, ich, adcDisableMask));
                 }
             }
@@ -682,7 +687,7 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
 
     // get roi
     adcDisableMask = bus_r(addr);
-    FILE_LOG(logDEBUG1, ("\tGetting adcDisableMask: 0x%08x\n", adcDisableMask));
+    FILE_LOG(logDEBUG1, ("Getting adcDisableMask: 0x%08x\n", adcDisableMask));
 
     nROI = 0;
     if (adcDisableMask) {
@@ -854,13 +859,13 @@ enum  readOutFlags setReadOutFlags(enum readOutFlags val) {
     digitalEnable = ((regval & CONFIG_ENBLE_DGTL_OTPT_MSK) >> CONFIG_ENBLE_DGTL_OTPT_OFST);
 
     if (analogEnable && digitalEnable) {
-        FILE_LOG(logDEBUG1, ("\tGetting readout: Analog & Digital\n"));
+        FILE_LOG(logDEBUG1, ("Getting readout: Analog & Digital\n"));
         retval = ANALOG_AND_DIGITAL;
     } else if (analogEnable && !digitalEnable) {
-        FILE_LOG(logDEBUG1, ("\tGetting readout: Normal\n"));
+        FILE_LOG(logDEBUG1, ("Getting readout: Normal\n"));
         retval = NORMAL_READOUT;
     } else if (!analogEnable && digitalEnable) {
-        FILE_LOG(logDEBUG1, ("\tGetting readout: Digital Only\n"));
+        FILE_LOG(logDEBUG1, ("Getting readout: Digital Only\n"));
         retval = DIGITAL_ONLY;
     } else {
         FILE_LOG(logERROR, ("Read unknown readout (Both digital and analog are disabled). "
@@ -889,7 +894,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			FILE_LOG(logINFO, ("Setting #frames: %lld\n",(long long int)val));
 		}
 		retval = set64BitReg(val,  FRAMES_LSB_REG, FRAMES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("Getting #frames: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting #frames: %lld\n", (long long int)retval));
 		break;
 
 	case FRAME_PERIOD:
@@ -907,7 +912,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			}*/
 		}
 		retval = set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG )/ (1E-3 * clkDivider[ADC_CLK]);
-		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting period: %lldns\n", (long long int)retval));
 		break;
 
 	case DELAY_AFTER_TRIGGER:
@@ -916,7 +921,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			val *= (1E-3 * clkDivider[ADC_CLK]);
 		}
 		retval = set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
-		FILE_LOG(logDEBUG1, ("Getting delay: %lldns\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting delay: %lldns\n", (long long int)retval));
 		break;
 
 	case CYCLES_NUMBER:
@@ -924,7 +929,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  CYCLES_LSB_REG, CYCLES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("Getting #cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting #cycles: %lld\n", (long long int)retval));
 		break;
 
 	case SAMPLES:
@@ -937,7 +942,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	        }
 	    }
         retval = nSamples;
-        FILE_LOG(logDEBUG1, ("Getting #samples: %lld\n", (long long int)retval));
+        FILE_LOG(logINFO, ("\tGetting #samples: %lld\n", (long long int)retval));
 
         break;
 
@@ -1027,7 +1032,7 @@ enum detectorSettings getSettings() {
 
 
 void setDAC(enum DACINDEX ind, int val, int mV) {
-    if (val < 0)
+    if (val < 0 && val != LTC2620_PWR_DOWN_VAL)
         return;
 
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
@@ -1115,7 +1120,7 @@ int getVchip() {
 void setVchip(int val) {
     // set vchip
     if (val != -1) {
-        FILE_LOG(logINFO, ("Setting Vchip to %d mV\n", val));
+        FILE_LOG(logINFOBLUE, ("Setting Vchip to %d mV\n", val));
 
         int dacval = LTC2620_PWR_DOWN_VAL;
 
@@ -1316,6 +1321,14 @@ void setPower(enum DACINDEX ind, int val) {
     }
 }
 
+void powerOff() {
+    uint32_t addr = POWER_REG;
+    FILE_LOG(logINFO, ("Powering off all voltage regulators\n"));
+    bus_w(addr, bus_r(addr) & (~POWER_ENBL_VLTG_RGLTR_MSK));
+    FILE_LOG(logDEBUG1, ("Power Register: 0x%08x\n", bus_r(addr)));
+}
+
+
 int getADC(enum ADCINDEX ind){
 #ifdef VIRTUAL
     return 0;
@@ -1362,7 +1375,7 @@ int setHighVoltage(int val){
 
 	// setting hv
 	if (val >= 0) {
-	    FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+	    FILE_LOG(logINFO, ("Setting High voltage: %d V\n", val));
 		uint32_t addr = POWER_REG;
 
 		// switch off high voltage
@@ -1525,27 +1538,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 
 
-/* jungfrau specific - pll, flashing fpga */
-
-// only for moench
-int powerChip(int on) {
-    uint32_t addr = POWER_REG;
-    if (on >= 0) {
-        FILE_LOG(logINFO, ("Powering %s\n", (on > 0 ? "on" : "off")));
-        if (on)
-            bus_w(addr, bus_r(addr) | POWER_ENBL_VLTG_RGLTR_MSK);
-        else
-            bus_w(addr, bus_r(addr) & (~POWER_ENBL_VLTG_RGLTR_MSK));
-    }
-
-    uint32_t regval = bus_r(addr);
-    FILE_LOG(logDEBUG1, ("\tPower Register: 0x%08x\n", regval));
-
-    if (regval & POWER_ENBL_VLTG_RGLTR_MSK)
-        return 1;
-    return 0;
-}
-
+/* ctb specific - pll, flashing fpga */
 
 int sendUDP(int enable) {
     FILE_LOG(logINFO, ("Sending via %s\n", (enable ? "Receiver" : "CPU")));
@@ -1673,7 +1666,7 @@ void setAdcOffsetRegister(int adc, int val) {
     bus_w(addr, bus_r(addr) & ~ mask);
     // set value
     bus_w(addr, bus_r(addr) | ((val << offset) & mask));
-    FILE_LOG(logDEBUG1, ("\t %s Offset: 0x%8x\n", (adc ? "ADC" : "Dbit"), bus_r(addr)));
+    FILE_LOG(logDEBUG1, (" %s Offset: 0x%8x\n", (adc ? "ADC" : "Dbit"), bus_r(addr)));
 }
 
 int getAdcOffsetRegister(int adc) {
@@ -1688,7 +1681,7 @@ uint64_t writePatternIOControl(uint64_t word) {
         set64BitReg(word, PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
     }
     uint64_t retval = get64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
-    FILE_LOG(logDEBUG1, ("\tI/O Control: 0x%llx\n", (long long int) retval));
+    FILE_LOG(logDEBUG1, ("I/O Control: 0x%llx\n", (long long int) retval));
     return retval;
 }
 
@@ -1698,7 +1691,7 @@ uint64_t writePatternClkControl(uint64_t word) {
         set64BitReg(word, PATTERN_IO_CLK_CNTRL_LSB_REG, PATTERN_IO_CLK_CNTRL_MSB_REG);
     }
     uint64_t retval = get64BitReg(PATTERN_IO_CLK_CNTRL_LSB_REG, PATTERN_IO_CLK_CNTRL_MSB_REG);
-    FILE_LOG(logDEBUG1, ("\tClock Control: 0x%llx\n", (long long int) retval));
+    FILE_LOG(logDEBUG1, ("Clock Control: 0x%llx\n", (long long int) retval));
     return retval;
 }
 
@@ -1721,7 +1714,7 @@ uint64_t readPatternWord(int addr) {
 
     // read value
     uint64_t retval = get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
-    FILE_LOG(logDEBUG1, ("\tWord(addr:%d): 0x%llx\n", addr, (long long int) retval));
+    FILE_LOG(logDEBUG1, ("Word(addr:%d): 0x%llx\n", addr, (long long int) retval));
 
     // unset read strobe
     bus_w(reg, bus_r(reg) & (~PATTERN_CNTRL_RD_MSK));
@@ -1802,7 +1795,7 @@ int setPatternWaitAddress(int level, int addr) {
 
     // get
     uint32_t regval = bus_r((reg & mask) >> offset);
-    FILE_LOG(logDEBUG1, ("\tWait Address (level:%d, addr:%d)\n", level, regval));
+    FILE_LOG(logDEBUG1, ("Wait Address (level:%d, addr:%d)\n", level, regval));
     return regval;
 }
 
@@ -1837,7 +1830,7 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
 
     // get
     uint32_t regval = get64BitReg(regl, regm);
-    FILE_LOG(logDEBUG1, ("\tWait Time (level:%d, t:%lld)\n", level, (long long int)regval));
+    FILE_LOG(logDEBUG1, ("Wait Time (level:%d, t:%lld)\n", level, (long long int)regval));
     return regval;
 }
 

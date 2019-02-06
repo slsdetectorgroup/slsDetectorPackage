@@ -3113,7 +3113,7 @@ int power_chip(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if (!defined(JUNGFRAUD)) && (!defined(MOENCHD))
 	functionNotImplemented();
 #else
 	// set & get

@@ -13,6 +13,8 @@
 #define FILELOG_MAX_LEVEL logDEBUG4
 #elif VERBOSE
 #define FILELOG_MAX_LEVEL logDEBUG
+#elif DEBUG1
+#define FILELOG_MAX_LEVEL logDEBUG1
 #endif
 
 #ifndef FILELOG_MAX_LEVEL

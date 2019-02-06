@@ -33,6 +33,7 @@ int MAX1932_MaxVoltage = 0;
  */
 void MAX1932_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst,
         int minMV, int maxMV) {
+    FILE_LOG(logINFOBLUE, ("Configuring High Voltage\n"));
     MAX1932_Reg = reg;
     MAX1932_CsMask = cmsk;
     MAX1932_ClkMask = clkmsk;
@@ -60,7 +61,7 @@ void MAX1932_Disable() {
  * @return OK or FAIL
  */
 int MAX1932_Set (int val) {
-    FILE_LOG(logDEBUG1, ("\tSetting high voltage to %d\n", val));
+    FILE_LOG(logDEBUG1, ("Setting high voltage to %d\n", val));
     if (val < 0)
         return FAIL;
 

@@ -18,13 +18,7 @@
  */
 
 
-#define I2C_DATA_RATE_KBPS              (200)
-#define I2C_SCL_PERIOD_NS               ((1000 * 1000) / I2C_DATA_RATE_KBPS)
-#define I2C_SCL_LOW_PERIOD_NS           (I2C_SCL_PERIOD_NS / 2)
-#define I2C_SCL_HIGH_PERIOD_NS          (I2C_SCL_PERIOD_NS / 2)
-#define I2C_SDA_DATA_HOLD_TIME_NS       (I2C_SCL_HIGH_PERIOD_NS / 2)
-#define I2C_SCL_LOW_COUNT               ((I2C_SCL_LOW_PERIOD_NS / 1000) * I2C_CLOCK_MHZ) // convert to us, then to clock (defined in blackfin.h)
-#define I2C_SDA_DATA_HOLD_COUNT         ((I2C_SDA_DATA_HOLD_TIME_NS / 1000) * I2C_CLOCK_MHZ) // convert to us, then to clock (defined in blackfin.h)
+#define I2C_DATA_RATE_KBPS                  (200)
 
 /** Control Register */
 #define I2C_CTRL_ENBLE_CORE_OFST            (0)
@@ -83,7 +77,7 @@ uint32_t I2C_Transfer_Command_Fifo_Reg = 0x0;
  * @param treg transfer command fifo register (defined in RegisterDefs.h)
  */
 void I2C_ConfigureI2CCore(uint32_t creg, uint32_t rreg, uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg) {
-    FILE_LOG(logINFOBLUE, ("\tConfiguring I2C Core for %d kbps:\n", I2C_DATA_RATE_KBPS));
+    FILE_LOG(logINFO, ("\tConfiguring I2C Core for %d kbps:\n", I2C_DATA_RATE_KBPS));
 
     I2C_Control_Reg = creg;
     I2C_Rx_Data_Fifo_Level_Reg = rreg;
@@ -92,16 +86,28 @@ void I2C_ConfigureI2CCore(uint32_t creg, uint32_t rreg, uint32_t slreg, uint32_t
     I2C_Sda_Hold_Reg = sdreg;
     I2C_Transfer_Command_Fifo_Reg = treg;
 
-    FILE_LOG(logINFOBLUE, ("\tSetting SCL Low Period: %d ns (0x%x clocks)\n", I2C_SCL_LOW_PERIOD_NS, I2C_SCL_LOW_COUNT));
-    bus_w(I2C_Scl_Low_Count_Reg, (uint32_t)I2C_SCL_LOW_COUNT);
+    // calculate scl low and high period count
+    uint32_t sclPeriodNs = ((1000.00 * 1000.00) / (double)I2C_DATA_RATE_KBPS);
+    // scl low period same as high period
+    uint32_t sclLowPeriodNs = sclPeriodNs / 2;
+    // convert to us, then to clock (defined in blackfin.h)
+    uint32_t sclLowPeriodCount = (sclLowPeriodNs / 1000.00) * I2C_CLOCK_MHZ;
 
-    FILE_LOG(logINFOBLUE, ("\tSetting SCL High Period: %d ns (0x%x clocks)\n", I2C_SCL_HIGH_PERIOD_NS, I2C_SCL_LOW_COUNT));
-    bus_w(I2C_Scl_High_Count_Reg, (uint32_t)I2C_SCL_LOW_COUNT);
+    // calculate sda hold data count
+    uint32_t sdaDataHoldTimeNs =  (sclLowPeriodNs / 2); //  scl low period same as high period
+    // convert to us, then to clock (defined in blackfin.h)
+    uint32_t sdaDataHoldCount = ((sdaDataHoldTimeNs / 1000.00) * I2C_CLOCK_MHZ);
 
-    FILE_LOG(logINFOBLUE, ("\tSetting SDA Hold Time: %d ns (0x%x clocks)\n", I2C_SDA_DATA_HOLD_TIME_NS, I2C_SDA_DATA_HOLD_COUNT));
-    bus_w(I2C_Sda_Hold_Reg, (uint32_t)I2C_SDA_DATA_HOLD_COUNT);
+    FILE_LOG(logINFO, ("\tSetting SCL Low Period: %d ns (%d clocks)\n", sclLowPeriodNs, sclLowPeriodCount));
+    bus_w(I2C_Scl_Low_Count_Reg, sclLowPeriodCount);
 
-    FILE_LOG(logINFOBLUE, ("\tEnabling core\n"));
+    FILE_LOG(logINFO, ("\tSetting SCL High Period: %d ns (%d clocks)\n", sclLowPeriodNs, sclLowPeriodCount));
+    bus_w(I2C_Scl_High_Count_Reg, sclLowPeriodCount);
+
+    FILE_LOG(logINFO, ("\tSetting SDA Hold Time: %d ns (%d clocks)\n", sdaDataHoldTimeNs, sdaDataHoldCount));
+    bus_w(I2C_Sda_Hold_Reg, (uint32_t)sdaDataHoldCount);
+
+    FILE_LOG(logINFO, ("\tEnabling core\n"));
     bus_w(I2C_Control_Reg, I2C_CTRL_ENBLE_CORE_MSK | I2C_CTRL_BUS_SPEED_FAST_400_VAL);// fixme: (works?)
 }
 
@@ -142,7 +148,7 @@ uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
  * @param data data to be written (16 bit)
  */
 void I2C_Write(uint32_t devId, uint32_t addr, uint16_t data) {
-    FILE_LOG(logDEBUG1, ("\tWriting data %d to I2C device 0x%x and reg 0x%x\n", data, devId, addr));
+    FILE_LOG(logDEBUG1, ("Writing to I2C (Device:0x%x, reg:0x%x, data:%d)\n", devId, addr, data));
     // device Id mask
     uint32_t devIdMask =  ((devId << I2C_TFR_CMD_ADDR_OFST) & I2C_TFR_CMD_ADDR_MSK);
 

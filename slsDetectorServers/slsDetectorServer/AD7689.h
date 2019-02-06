@@ -207,9 +207,10 @@ int AD7689_GetChannel(int ichan) {
  * Configure
  */
 void AD7689_Configure(){
-    FILE_LOG(logINFOBLUE, ("Configuring AD7689 (Slow ADCs):\n"));
+    FILE_LOG(logINFOBLUE, ("Configuring AD7689 (Slow ADCs): \n"));
 
     // from power up, 3 invalid conversions
+    FILE_LOG(logINFO, ("3 times due to invalid conversions from power up\n"));
     int i = 0;
     for (i = 0; i < AD7689_NUM_INVALID_CONVERSIONS; ++i) {
         AD7689_Set(

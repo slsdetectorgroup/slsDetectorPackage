@@ -1910,7 +1910,7 @@ int set_speed(int file_des) {
 	enum speedVariable ind = args[0];
 	int val = args[1];
     int GET_VAL = -1;
-    if ((ind == PHASE_SHIFT) || (val == ADC_PHASE) || (val == DBIT_PHASE))
+    if ((ind == PHASE_SHIFT) || (ind == ADC_PHASE) || (ind == DBIT_PHASE))
         GET_VAL = 100000;
 
     char speedName[20] = {0};
@@ -1947,8 +1947,9 @@ int set_speed(int file_des) {
 
     if (ret == OK) {
         // set
-        if ((val != GET_VAL) && (Server_VerifyLock() == OK))
+        if ((val != GET_VAL) && (Server_VerifyLock() == OK)) {
             setSpeed(ind, val);
+        }
         // get
         retval = getSpeed(ind);
         FILE_LOG(logDEBUG1, ("%s: %d\n", speedName, retval));

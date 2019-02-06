@@ -1966,7 +1966,7 @@ int64_t Feb_Control_GetMeasuredPeriod() {
 
 	unsigned int  value = 0;
 	Feb_Interface_ReadRegister(sub_num,MEAS_PERIOD_REG, &value);
-	return value*10;
+	return (int64_t)value*10;
 }
 
 int64_t Feb_Control_GetSubMeasuredPeriod() {
@@ -1976,7 +1976,7 @@ int64_t Feb_Control_GetSubMeasuredPeriod() {
 
 	unsigned int value = 0;
 	Feb_Interface_ReadRegister(sub_num,MEAS_SUBPERIOD_REG, &value);
-	return value*10;
+	return (int64_t)value*10;
 }
 
 

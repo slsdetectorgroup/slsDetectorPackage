@@ -2132,6 +2132,16 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
+#ifdef CHIPTESTBOARDD
+    i64 = setTimer(SAMPLES,GET_FLAG);
+    n = sendData(file_des,&i64,sizeof(i64),INT64);
+    if (n < 0) return printSocketReadError();
+
+    i32 = setReadOutFlags(GET_READOUT_FLAGS);
+    n = sendData(file_des,&i32,sizeof(i32),INT32);
+    if (n < 0) return printSocketReadError();
+#endif
+
 	if (lockStatus == 0) {
 		strcpy(lastClientIP,thisClientIP);
 	}

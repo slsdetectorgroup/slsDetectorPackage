@@ -1848,18 +1848,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
         }
     }
 
-    // setting timers consequences (eiger (ratecorr) and jctb (databytes))
+    // setting timers consequences (eiger (ratecorr) )
     // (a get can also change timer value, hence check difference)
     if (oldtimer != thisDetector->timerValue[index]) {
-        // jctb: change samples, change databytes
-        if (thisDetector->myDetectorType == CHIPTESTBOARD) {
-            if (index == SAMPLES) {
-                setDynamicRange();
-                FILE_LOG(logINFO) << "Changing samples: data size = " << thisDetector->dataBytes;
-            }
-        }
         // eiger: change exptime/subexptime, set rate correction to update table
-        else if (thisDetector->myDetectorType == EIGER) {
+        if (thisDetector->myDetectorType == EIGER) {
             int dr = thisDetector->dynamicRange;
             if ((dr == 32 && index == SUBFRAME_ACQUISITION_TIME) ||
                 (dr == 16 && index == ACQUISITION_TIME)) {

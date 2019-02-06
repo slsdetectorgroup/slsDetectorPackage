@@ -990,6 +990,7 @@ int get_adc(int file_des) {
 	default:
 #ifdef CHIPTESTBOARDD
         if (ind >= SLOW_ADC0 && ind <= SLOW_ADC_TEMP) {
+            serverAdcIndex = ind;
             break;
         }
 #endif
@@ -1001,7 +1002,7 @@ int get_adc(int file_des) {
 	if (ret == OK) {
 		FILE_LOG(logDEBUG1, ("Getting ADC %d\n", serverAdcIndex));
 		retval = getADC(serverAdcIndex);
-		FILE_LOG(logDEBUG1, ("ADC(%d): %d\n", retval));
+		FILE_LOG(logDEBUG1, ("ADC(%d): %d\n", serverAdcIndex, retval));
 	}
 #endif
 
@@ -1515,105 +1516,107 @@ int set_timer(int file_des) {
 #ifdef EIGERD
 	int64_t subexptime = 0;
 #endif
-	FILE_LOG(logDEBUG1, ("Setting timer %s(%d) to %lld ns\n", ind, timerName, tns));
+	FILE_LOG(logDEBUG1, ("Setting timer %s(%d) to %lld ns\n", timerName, (int)ind, tns));
 
 	// set & get
 	if ((tns == -1) || (Server_VerifyLock() == OK)) {
 
-		// check index
-		switch (ind) {
-		case FRAME_NUMBER:
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-		case ACQUISITION_TIME:
+	    // check index
+	    switch (ind) {
+	    case FRAME_NUMBER:
+#if ((!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)))
+	    case ACQUISITION_TIME:
 #endif
-		case FRAME_PERIOD:
-		case CYCLES_NUMBER:
-		case SAMPLES:
+	    case FRAME_PERIOD:
+	    case CYCLES_NUMBER:
+	    case SAMPLES:
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-		case DELAY_AFTER_TRIGGER:
+	    case DELAY_AFTER_TRIGGER:
 #endif
-			retval = setTimer(ind, tns);
-			break;
+	        retval = setTimer(ind, tns);
+	        break;
 #ifdef JUNGFRAUD
-        case STORAGE_CELL_NUMBER:
-            if (tns > MAX_STORAGE_CELL_VAL) {
-                ret = FAIL;
-                strcpy(mess,"Max Storage cell number should not exceed 15\n");
-                FILE_LOG(logERROR,(mess));
-                break;
-            }
-            retval = setTimer(ind,tns);
-            break;
+	    case STORAGE_CELL_NUMBER:
+	        if (tns > MAX_STORAGE_CELL_VAL) {
+	            ret = FAIL;
+	            strcpy(mess,"Max Storage cell number should not exceed 15\n");
+	            FILE_LOG(logERROR,(mess));
+	            break;
+	        }
+	        retval = setTimer(ind,tns);
+	        break;
 #endif
 #ifdef EIGERD
-		case SUBFRAME_ACQUISITION_TIME:
-			if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ) {
-				ret = FAIL;
-				strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
-				FILE_LOG(logERROR,(mess));
-				break;
-			}
-			retval = setTimer(ind,tns);
-			break;
-		case SUBFRAME_DEADTIME:
-			subexptime = setTimer(SUBFRAME_ACQUISITION_TIME, -1);
-			if ((tns + subexptime) > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ) {
-				ret = FAIL;
-				sprintf(mess,"Sub Frame Period should not exceed 5.368 seconds. "
-						"So sub frame dead time should not exceed %lfu seconds "
-						"(subexptime = %lf seconds)\n",
-						((((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) - subexptime)/1E9),
-						(subexptime/1E9));
-				FILE_LOG(logERROR,(mess));
-				break;
-			}
-			retval = setTimer(ind,tns);
-			break;
+	    case SUBFRAME_ACQUISITION_TIME:
+	        if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ) {
+	            ret = FAIL;
+	            strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
+	            FILE_LOG(logERROR,(mess));
+	            break;
+	        }
+	        retval = setTimer(ind,tns);
+	        break;
+	    case SUBFRAME_DEADTIME:
+	        subexptime = setTimer(SUBFRAME_ACQUISITION_TIME, -1);
+	        if ((tns + subexptime) > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ) {
+	            ret = FAIL;
+	            sprintf(mess,"Sub Frame Period should not exceed 5.368 seconds. "
+	                    "So sub frame dead time should not exceed %lfu seconds "
+	                    "(subexptime = %lf seconds)\n",
+	                    ((((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) - subexptime)/1E9),
+	                    (subexptime/1E9));
+	            FILE_LOG(logERROR,(mess));
+	            break;
+	        }
+	        retval = setTimer(ind,tns);
+	        break;
 #endif
-		default:
-			modeNotImplemented(timerName, (int)ind);
-			break;
-		}
+	    default:
+	        modeNotImplemented(timerName, (int)ind);
+	        break;
+	    }
 
-		// validate
-		char vtimerName[50] = {0};
-		sprintf(vtimerName, "set %s", timerName);
+	    // validate
+	    if (ret != FAIL) {
+	        char vtimerName[50] = {0};
+	        sprintf(vtimerName, "set %s", timerName);
 #ifdef EIGERD
-		validate64(tns, retval, vtimerName, DEC); // copied to server, not read from detector register
+	        validate64(tns, retval, vtimerName, DEC); // copied to server, not read from detector register
 #else
-		switch(ind) {
-        case FRAME_NUMBER:
-        case CYCLES_NUMBER:
-        case STORAGE_CELL_NUMBER:
-		    validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
-		    break;
-        case SAMPLES:
-            if (retval == -1) {
-                ret = FAIL;
-                retval = setTimer(ind, -1);
-                sprintf(mess, "Could not set samples to %lld. Could not allocate RAM\n",
-                    (long long unsigned int)tns);
-                FILE_LOG(logERROR,(mess));
-            } else
-                validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
-        case ACQUISITION_TIME:
-        case FRAME_PERIOD:
-        case DELAY_AFTER_TRIGGER:
-        case SUBFRAME_ACQUISITION_TIME:
-        case SUBFRAME_DEADTIME:
-            // losing precision due to conversion to clock (also gotthard master delay is different)
-            if (validateTimer(ind, tns, retval) == FAIL) {
-                ret = FAIL;
-                sprintf(mess, "Could not %s. Set %lld, but read %lld\n", vtimerName,
-                    (long long unsigned int)tns, (long long unsigned int)retval);
-                FILE_LOG(logERROR,(mess));
-            }
-            break;
+	        switch(ind) {
+	        case FRAME_NUMBER:
+	        case CYCLES_NUMBER:
+	        case STORAGE_CELL_NUMBER:
+	            validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
+	            break;
+	        case SAMPLES:
+	            if (retval == -1) {
+	                ret = FAIL;
+	                retval = setTimer(ind, -1);
+	                sprintf(mess, "Could not set samples to %lld. Could not allocate RAM\n",
+	                        (long long unsigned int)tns);
+	                FILE_LOG(logERROR,(mess));
+	            } else
+	                validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
+	        case ACQUISITION_TIME:
+	        case FRAME_PERIOD:
+	        case DELAY_AFTER_TRIGGER:
+	        case SUBFRAME_ACQUISITION_TIME:
+	        case SUBFRAME_DEADTIME:
+	            // losing precision due to conversion to clock (also gotthard master delay is different)
+	            if (validateTimer(ind, tns, retval) == FAIL) {
+	                ret = FAIL;
+	                sprintf(mess, "Could not %s. Set %lld, but read %lld\n", vtimerName,
+	                        (long long unsigned int)tns, (long long unsigned int)retval);
+	                FILE_LOG(logERROR,(mess));
+	            }
+	            break;
 
-        default:
-            break;
-		}
+	        default:
+	            break;
+	        }
 #endif
+	    }
 	}
 	if (ret != FAIL) {
 		FILE_LOG(logDEBUG1, ("Timer index %d: %lld\n", ind, retval));
@@ -2104,9 +2107,11 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
+#ifndef CHIPTESTBOARDD
 	i64 = setTimer(ACQUISITION_TIME,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
+#endif
 
 #ifdef EIGERD
 	i64 = setTimer(SUBFRAME_ACQUISITION_TIME,GET_FLAG);

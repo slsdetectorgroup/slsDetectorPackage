@@ -51,6 +51,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         //get error message
         receiveData(mess, sizeof(mess));
         // cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
+        cprintf(RED, "returned error: %s",  mess);
 
         // unrecognized function, do not ask for retval
         if (strstr(mess, "Unrecognized Function") != nullptr)

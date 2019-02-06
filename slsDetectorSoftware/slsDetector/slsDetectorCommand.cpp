@@ -4006,66 +4006,12 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
     else if (action == PUT_ACTION)
         return std::string("cannot set ") + cmd;
 
-    if (sscanf(args[0], "adc:%d", &idac) == 1) {
-        //  printf("chiptestboard!\n");
-        adc = (dacIndex)(idac + 1000);
-    } else if (cmd == "temp_adc")
-        adc = TEMPERATURE_ADC;
-    else if (cmd == "temp_fpga")
-        adc = TEMPERATURE_FPGA;
-    else if (cmd == "temp_fpgaext")
-        adc = TEMPERATURE_FPGAEXT;
-    else if (cmd == "temp_10ge")
-        adc = TEMPERATURE_10GE;
-    else if (cmd == "temp_dcdc")
-        adc = TEMPERATURE_DCDC;
-    else if (cmd == "temp_sodl")
-        adc = TEMPERATURE_SODL;
-    else if (cmd == "temp_sodr")
-        adc = TEMPERATURE_SODR;
-    else if (cmd == "temp_fpgafl")
-        adc = TEMPERATURE_FPGA2;
-    else if (cmd == "temp_fpgafr")
-        adc = TEMPERATURE_FPGA3;
-    else if (cmd == "i_a")
-        adc = I_POWER_A;
-    else if (cmd == "i_b")
-        adc = I_POWER_B;
-    else if (cmd == "i_c")
-        adc = I_POWER_C;
-    else if (cmd == "i_d")
-        adc = I_POWER_D;
-    else if (cmd == "vm_a")
-        adc = V_POWER_A;
-    else if (cmd == "vm_b")
-        adc = V_POWER_B;
-    else if (cmd == "vm_c")
-        adc = V_POWER_C;
-    else if (cmd == "vm_d")
-        adc = V_POWER_D;
-    else if (cmd == "vm_io")
-        adc = V_POWER_IO;
-    else if (cmd == "i_io")
-        adc = I_POWER_IO;
-    else
-        return std::string("cannot decode adc ") + cmd;
-
-    myDet->setOnline(ONLINE_FLAG, detPos);
-    if (myDet->getDetectorTypeAsEnum(detPos) == EIGER || myDet->getDetectorTypeAsEnum(detPos) == JUNGFRAU) {
-        int val = myDet->getADC(adc, detPos);
-        if (val == -1)
-            sprintf(answer, "%d", val);
-        else
-            sprintf(answer, "%.2f", (double)val / 1000.000);
-    } else
-        sprintf(answer, "%d", myDet->getADC(adc, detPos));
-
 	if (sscanf(args[0],"adc:%d",&idac)==1) {
 		//  printf("chiptestboard!\n");
-		adc=(dacIndex)(idac+1000);
-        if (idac < (SLOW_ADC0 - 1000) || idac > (SLOW_ADC_TEMP - 1000))
-            return (std::string ("cannot set adc, must be between ") + std::to_string(SLOW_ADC0 - 1000) +
-                    std::string (" and ") + std::to_string(SLOW_ADC_TEMP - 1000));
+		adc=(dacIndex)(idac+SLOW_ADC0);
+        if (idac < 0 || idac > SLOW_ADC_TEMP - SLOW_ADC0)
+            return (std::string ("cannot set adc, must be between ") + std::to_string(0) +
+                    std::string (" and ") + std::to_string(SLOW_ADC_TEMP - SLOW_ADC0));
 	} else if (cmd=="temp_adc")
 		adc=TEMPERATURE_ADC;
 	else if (cmd=="temp_fpga")
@@ -4118,7 +4064,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 	else sprintf(answer,"%d",myDet->getADC(adc, detPos));
 
 	//if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
-	if (adc<=100)
+	if (adc<=100 || adc == SLOW_ADC_TEMP)
 		strcat(answer,"°C");
 	else
 		strcat(answer,"mV");

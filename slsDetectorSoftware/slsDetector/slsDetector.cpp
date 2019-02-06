@@ -1050,8 +1050,10 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
     n += client.receiveData(&i64, sizeof(i64));
     thisDetector->timerValue[FRAME_NUMBER] = i64;
 
-    n += client.receiveData(&i64, sizeof(i64));
-    thisDetector->timerValue[ACQUISITION_TIME] = i64;
+    if (thisDetector->myDetectorType != CHIPTESTBOARD) {
+        n += client.receiveData(&i64, sizeof(i64));
+        thisDetector->timerValue[ACQUISITION_TIME] = i64;
+    }
 
     if (thisDetector->myDetectorType == EIGER) {
         n += client.receiveData(&i64, sizeof(i64));

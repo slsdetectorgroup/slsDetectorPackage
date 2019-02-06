@@ -1339,16 +1339,19 @@ int getADC(enum ADCINDEX ind){
     case V_PWR_B:
     case V_PWR_C:
     case V_PWR_D:
+        FILE_LOG(logDEBUG1, ("Reading I2C Voltage for device Id: %d\n", (int)ind));
         return INA226_ReadVoltage(I2C_POWER_VIO_DEVICE_ID + (int)ind);
     case I_PWR_IO:
     case I_PWR_A:
     case I_PWR_B:
     case I_PWR_C:
     case I_PWR_D:
+        FILE_LOG(logDEBUG1, ("Reading I2C Current for device Id: %d\n", (int)ind));
         return INA226_ReadCurrent(I2C_POWER_VIO_DEVICE_ID + (int)(ind - I_PWR_IO));
 
         // slow adcs
     case SLOW_ADC_TEMP:
+        FILE_LOG(logDEBUG1, ("Reading Slow ADC Temperature\n"));
         return AD7689_GetTemperature();
     case SLOW_ADC0:
     case SLOW_ADC1:
@@ -1358,6 +1361,7 @@ int getADC(enum ADCINDEX ind){
     case SLOW_ADC5:
     case SLOW_ADC6:
     case SLOW_ADC7:
+        FILE_LOG(logDEBUG1, ("Reading Slow ADC Channel %d\n", (int)ind - SLOW_ADC0));
         return AD7689_GetChannel((int)ind - SLOW_ADC0);
     default:
         FILE_LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));

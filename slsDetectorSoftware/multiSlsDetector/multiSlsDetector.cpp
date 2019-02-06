@@ -1453,7 +1453,7 @@ int multiSlsDetector::setDAC(int val, dacIndex index, int mV, int detPos) {
 
     // multi
     auto r = parallelCall(&slsDetector::setDAC, val, index, mV);
-    if (getDetectorTypeAsEnum() != EIGER || index != HIGH_VOLTAGE) {
+    if (getDetectorTypeAsEnum() != EIGER && index != HIGH_VOLTAGE) {
         return sls::minusOneIfDifferent(r);
     }
 
@@ -3642,8 +3642,15 @@ int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
         names.emplace_back("dac:13");
         names.emplace_back("dac:14");
         names.emplace_back("dac:15");
+        names.emplace_back("dac:16");
+        names.emplace_back("dac:17");
+        names.emplace_back("dac:18");
+        names.emplace_back("dac:19");
+        names.emplace_back("dac:20");
+        names.emplace_back("dac:21");
+        names.emplace_back("dac:22");
+        names.emplace_back("dac:23");
         names.emplace_back("adcvpp");
-
         names.emplace_back("adcclk");
         names.emplace_back("clkdivider");
         names.emplace_back("adcphase");

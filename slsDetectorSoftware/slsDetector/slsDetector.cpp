@@ -291,7 +291,7 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
         list.nChanY = 1;
         list.nChipX = 1;
         list.nChipY = 1;
-        list.nDacs = 16;
+        list.nDacs = 24;
         list.dynamicRange = 16;
         list.nGappixelsX = 0;
         list.nGappixelsY = 0;
@@ -1163,7 +1163,6 @@ int slsDetector::writeConfigurationFile(std::ofstream &outfile, multiSlsDetector
         names.emplace_back("vhighvoltage");
         break;
     case CHIPTESTBOARD:
-        names.emplace_back("powerchip");
         names.emplace_back("vhighvoltage");
         break;
     default:

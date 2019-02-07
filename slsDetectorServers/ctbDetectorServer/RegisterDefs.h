@@ -513,6 +513,14 @@
  * Each bit configured as enable for dynamic output delay configuration */
 #define PIN_DELAY_1_REG                     (0x7D << MEM_MAP_SHIFT)
 
+/** Pattern Mask 64 bit RW regiser */
+#define PATTERN_MASK_LSB_REG                (0x80 << MEM_MAP_SHIFT)
+#define PATTERN_MASK_MSB_REG                (0x81 << MEM_MAP_SHIFT)
+
+/** Pattern Set 64 bit RW regiser */
+#define PATTERN_SET_LSB_REG                 (0x82 << MEM_MAP_SHIFT)
+#define PATTERN_SET_MSB_REG                 (0x83 << MEM_MAP_SHIFT)
+
 /** I2C Control register */
 #define I2C_TRANSFER_COMMAND_FIFO_REG       (0x100 << MEM_MAP_SHIFT)
 #define I2C_CONTROL_REG                     (0x102 << MEM_MAP_SHIFT)

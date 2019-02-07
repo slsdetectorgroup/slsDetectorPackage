@@ -482,24 +482,13 @@ void setupDetector() {
     resetPeripheral();
     cleanFifos();
 
-    // dac defines here as it is used earlier
-    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);
-
     // hv
     MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST, HIGHVOLTAGE_MIN, HIGHVOLTAGE_MAX);
     MAX1932_Disable();
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-    // power regulators
-    // I2C
-    INA226_ConfigureI2CCore(I2C_SHUNT_RESISTER_OHMS, I2C_CONTROL_REG, I2C_RX_DATA_FIFO_LEVEL_REG, I2C_SCL_LOW_COUNT_REG, I2C_SCL_HIGH_COUNT_REG, I2C_SDA_HOLD_REG, I2C_TRANSFER_COMMAND_FIFO_REG);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
-    INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
+    // power off voltage regulators
     powerOff();
-    setVchip(VCHIP_MIN_MV);
 
     // adcs
     AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
@@ -512,7 +501,7 @@ void setupDetector() {
     AD7689_Configure();
 
     // dacs
-    // defined earlier as power regulators (above) require them
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);  //has to be before setvchip
     LTC2620_Disable();
     LTC2620_Configure();
     //FIXME:
@@ -521,14 +510,24 @@ void setupDetector() {
 	{
 	    int idac = 0;
 	    for (idac = 0; idac < NDAC; ++idac) {
-	        setDAC(idac, LTC2620_PWR_DOWN_VAL, 0);
+	        setDAC(idac, LTC2620_PWR_DOWN_VAL, 0); //has to be before setvchip
 	    }
 	}
+
+    // power regulators
+    // I2C
+    INA226_ConfigureI2CCore(I2C_SHUNT_RESISTER_OHMS, I2C_CONTROL_REG, I2C_RX_DATA_FIFO_LEVEL_REG, I2C_SCL_LOW_COUNT_REG, I2C_SCL_HIGH_COUNT_REG, I2C_SDA_HOLD_REG, I2C_TRANSFER_COMMAND_FIFO_REG);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
+    INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
+    setVchip(VCHIP_MIN_MV);
 
 	// altera pll
 	ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK, PLL_CNTRL_ADDR_OFST);
 
-    bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);//FIXME:  got from moench config file
+    bus_w(ADC_PORT_INVERT_REG, 0);// depends on chip
 
 	FILE_LOG(logINFOBLUE, ("Setting Default parameters\n"));
 	cleanFifos(); // FIXME: why twice?
@@ -1728,7 +1727,7 @@ uint64_t readPatternWord(int addr) {
 
 uint64_t writePatternWord(int addr, uint64_t word) {
     // get
-    if (word != -1)
+    if (word == -1)
         return readPatternWord(addr);
 
     // error (handled in tcp)
@@ -1833,7 +1832,7 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
     }
 
     // get
-    uint32_t regval = get64BitReg(regl, regm);
+    uint64_t regval = get64BitReg(regl, regm);
     FILE_LOG(logDEBUG1, ("Wait Time (level:%d, t:%lld)\n", level, (long long int)regval));
     return regval;
 }

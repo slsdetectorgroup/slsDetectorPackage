@@ -1690,7 +1690,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    int setCTBPatWaitTime(int level, uint64_t t = -1, int detPos = -1);
+    uint64_t setCTBPatWaitTime(int level, uint64_t t = -1, int detPos = -1);
 
     /**
      * Loads the detector setup from file

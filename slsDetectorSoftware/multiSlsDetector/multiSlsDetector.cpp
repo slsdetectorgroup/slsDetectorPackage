@@ -3503,7 +3503,7 @@ int multiSlsDetector::setCTBPatWaitAddr(int level, int addr, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t, int detPos) {
+uint64_t multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setCTBPatWaitTime(level, t);

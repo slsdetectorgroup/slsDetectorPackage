@@ -4776,7 +4776,7 @@ uint64_t slsDetector::setCTBWord(int addr, uint64_t word) {
     int mode = 0; // sets word
     uint64_t args[3] = {(uint64_t)mode, (uint64_t)addr, word};
     uint64_t retval = -1;
-    FILE_LOG(logDEBUG1) << "Setting CTB word, addr: 0x" << std::hex << addr << ", word: 0x" << word << std::dec;
+    FILE_LOG(logINFO) << "Setting CTB word, addr: 0x" << std::hex << addr << ", word: 0x" << word << std::dec;
 
     if (thisDetector->onlineFlag == ONLINE_FLAG) {
         auto client = sls::ClientSocket(thisDetector->hostname, thisDetector->controlPort);
@@ -4798,7 +4798,7 @@ int slsDetector::setCTBPatLoops(int level, int &start, int &stop, int &n) {
     int ret = FAIL;
     int mode = 1; // sets loop
     uint64_t args[5] = {(uint64_t)mode, (uint64_t)level, (uint64_t)start, (uint64_t)stop, (uint64_t)n};
-    uint64_t retvals[3] = {0, 0, 0};
+    int retvals[3] = {0, 0, 0};
     FILE_LOG(logDEBUG1) << "Setting CTB Pat Loops, "
                            "level: "
                         << level << ", start: " << start << ", stop: " << stop << ", n: " << n;
@@ -4823,11 +4823,11 @@ int slsDetector::setCTBPatLoops(int level, int &start, int &stop, int &n) {
     return ret;
 }
 
-uint64_t slsDetector::setCTBPatWaitAddr(uint64_t level, uint64_t addr) {
+int slsDetector::setCTBPatWaitAddr(uint64_t level, uint64_t addr) {
     int fnum = F_SET_CTB_PATTERN;
     int ret = FAIL;
     uint64_t mode = 2; // sets loop
-    uint64_t retval = -1;
+    int retval = -1;
     std::array<uint64_t, 3> args{mode, level, addr};
     FILE_LOG(logDEBUG1) << "Setting CTB Wait Addr, "
                            "level: "

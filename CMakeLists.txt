@@ -8,10 +8,10 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	set(SLS_MASTER_PROJECT ON)
 endif()
 
-option (USE_HDF5 "HDF5 File format" OFF)
-option (USE_TEXTCLIENT "Text Client" OFF)
-option (USE_RECEIVER "Receiver" OFF)
-option (USE_GUI "GUI" OFF)
+option (SLS_USE_HDF5 "HDF5 File format" OFF)
+option (SLS_USE_TEXTCLIENT "Text Client" OFF)
+option (SLS_USE_RECEIVER "Receiver" OFF)
+option (SLS_USE_GUI "GUI" OFF)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # clang does not support -Wno-misleading-indentation 
@@ -29,9 +29,9 @@ find_package(CBF)
 find_package(Doxygen)
 # find_package(PNG REQUIRED)
 
-if (USE_HDF5)
+if (SLS_USE_HDF5)
 	find_package(HDF5 1.10 COMPONENTS CXX)
-endif (USE_HDF5)
+endif (SLS_USE_HDF5)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -39,21 +39,21 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 
-if (USE_TEXTCLIENT)
+if (SLS_USE_TEXTCLIENT)
        add_subdirectory(slsDetectorSoftware)
-endif (USE_TEXTCLIENT)
+endif (SLS_USE_TEXTCLIENT)
 
-if (USE_RECEIVER)
+if (SLS_USE_RECEIVER)
        add_subdirectory(slsReceiverSoftware)
        add_subdirectory(manual/manual-api)    
-endif (USE_RECEIVER)
+endif (SLS_USE_RECEIVER)
                
                
-if (USE_GUI)   
+if (SLS_USE_GUI)   
        if (QT4_FOUND AND QWT_FOUND)
        add_subdirectory(slsDetectorGui)
        endif()
-endif (USE_GUI)
+endif (SLS_USE_GUI)
 
 if (SLS_MASTER_PROJECT)
 	# Set targets export name (otherwise set by upstream project)

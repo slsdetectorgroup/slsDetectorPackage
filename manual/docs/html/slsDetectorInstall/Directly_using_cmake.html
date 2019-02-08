@@ -33,7 +33,7 @@ source directory.
  $ cd ..
  $ mkdir slsDetectorPackage-build
  $ cd slsDetectorPackage-build
- $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=OFF 
+ $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=OFF 
  $ make
 </PRE>
 
@@ -42,7 +42,7 @@ Use the following as an example to compile statically and using specific hdf5
 folder 
 <PRE>
  $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage
--DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=ON
+-DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=ON
 </PRE>
 
 <P>

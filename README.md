@@ -75,13 +75,13 @@ Use cmake to create out-of-source builds, by creating a build folder parallel to
     $ cd ..
     $ mkdir slsDetectorPackage-build
     $ cd slsDetectorPackage-build
-    $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=OFF 
+    $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=OFF 
     $ make
 ```
 
 Use the following as an example to compile statically and using specific hdf5 folder
 ```
-    $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=ON
+    $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=ON
  ```  
 After compiling, the libraries and executables will be found at `bin` directory
 ```

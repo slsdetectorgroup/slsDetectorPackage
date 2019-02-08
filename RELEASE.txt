@@ -20,7 +20,7 @@ This document describes the differences between 4.0.1 and 4.0.0 releases.
     - Jungfrau server (new firmware mapped)
     - Eiger server (measuredPeriod, reg)
     - Gotthard server(ADC channel shift, ROI, 25um slave packets)
-    - Receiver (padding, releasing resources segfault)
+    - Receiver (padding, releasing resources segfault, gappixels)
     - Users class (detectorSize, ROI, versions, status)
     - API (config error, ROI)
     - Compile (static libraries, Makefile for API)
@@ -57,6 +57,8 @@ This document describes the differences between 4.0.1 and 4.0.0 releases.
         Receiver padding enable and receiver deactivated padding enable are independent now.
         
     2.  Starting and stopping receiver without listening resulted in seg faults.
+    
+    3.  Gappixels in receiver bug fix.
         
         
     Client

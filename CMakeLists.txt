@@ -13,16 +13,22 @@ option (SLS_USE_TEXTCLIENT "Text Client" OFF)
 option (SLS_USE_RECEIVER "Receiver" OFF)
 option (SLS_USE_GUI "GUI" OFF)
 
+
+#Flags to always be used
+# -Wno-unused-parameter should eventually be removes
+# -Wno-overloaded-virtual TODO! remove warnings in refactor
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-overloaded-virtual -Wno-unused-parameter -std=c++98")
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # clang does not support -Wno-misleading-indentation 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98")
+    # add any special clang flags
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-        set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -std=c++98 -Wno-misleading-indentation")
-    else ()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++98")
+        set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation")
     endif ()
 endif()
+
+
 find_package(Qt4)
 find_package(Qwt 6)
 find_package(CBF)

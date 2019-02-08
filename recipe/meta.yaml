@@ -1,7 +1,7 @@
 
 package:
   name: sls_detector_software
-  version: 4.0.1rc
+  version: 4.0.1
 
 source:
   - path: ..
@@ -52,14 +52,14 @@ requirements:
 
 outputs:
   - name: sls_detector_lib
-    version: 4.0.1rc
+    version: 4.0.1
     script: copy_lib.sh
     requirements:
       build:
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
   - name: sls_detector_gui
-    version: 4.0.1rc
+    version: 4.0.1
     script: copy_gui.sh
     requirements:
       build:
@@ -84,6 +84,6 @@ outputs:
       - {{ cdt('libxdamage') }}            # [linux]
       - {{ cdt('libxxf86vm') }}            # [linux]
       run:
-        - sls_detector_lib=4.0.1rc
+        - sls_detector_lib=4.0.1
         - qwt 6.*
         - qt=4.8.7=7

@@ -2213,7 +2213,7 @@ string slsDetector::getLastClientIP() {
 
 int slsDetector::exitServer() {
 
-	int retval;
+	int retval = FAIL;
 	int fnum=F_EXIT_SERVER;
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
@@ -3158,13 +3158,15 @@ string slsDetector::getSettingsDir() {
 	return std::string(thisDetector->settingsDir);
 }
 string slsDetector::setSettingsDir(string s) {
-	sprintf(thisDetector->settingsDir, s.c_str()); return thisDetector->settingsDir;
+	sprintf(thisDetector->settingsDir, "%s", s.c_str()); 
+	return thisDetector->settingsDir;
 }
 string slsDetector::getCalDir() {
 	return thisDetector->calDir;
 }
 string slsDetector::setCalDir(string s) {
-	sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;
+	sprintf(thisDetector->calDir, "%s", s.c_str()); 
+	return thisDetector->calDir;
 }
 
 
@@ -4338,7 +4340,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index, int imod) {
 
 
 	int fnum=F_GET_TIME_LEFT;
-	int64_t retval;
+	int64_t retval = FAIL;
 	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
@@ -4627,7 +4629,7 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod) {
 
 dacs_t slsDetector::getADC(dacIndex index, int imod) {
 
-	dacs_t retval;
+	dacs_t retval = 0;
 	int fnum=F_GET_ADC;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
@@ -6364,7 +6366,7 @@ int slsDetector::setFlippedData(dimension d, int value) {
 
 int slsDetector::setAllTrimbits(int val, int imod) {
 	int fnum=F_SET_ALL_TRIMBITS;
-	int retval;
+	int retval = FAIL;
 	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
@@ -7665,16 +7667,12 @@ int slsDetector::setChip(int reg, int ichip, int imod) {
 int slsDetector::setChip(sls_detector_chip chip) {
 
 	int fnum=F_SET_CHIP;
-	int retval;
+	int retval = FAIL;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 
 	int ichi=chip.chip;
 	int im=chip.module;
-
-
-
-
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
@@ -8492,7 +8490,7 @@ string slsDetector::getReceiverLastClientIP() {
 
 int slsDetector::exitReceiver() {
 
-	int retval;
+	int retval = FAIL;
 	int fnum=F_EXIT_RECEIVER;
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
@@ -8664,7 +8662,7 @@ void slsDetector::sendMultiDetectorSize() {
 			ret=thisReceiver->sendIntArray(fnum,retval,arg);
 			disconnectData();
 		}
-		if((ret==FAIL)){
+		if(ret==FAIL){
 			std::cout << "Could not set position Id" << std::endl;
 			setErrorMask((getErrorMask())|(RECEIVER_MULTI_DET_SIZE_NOT_SET));
 		}

@@ -93,7 +93,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   */
   virtual std::string setFilePath(std::string s) {
     pthread_mutex_lock(&mf);
-    sprintf(filePath, s.c_str()); 
+    sprintf(filePath, "%s", s.c_str()); 
     pthread_mutex_unlock(&mf); 
     return std::string(filePath);
   };
@@ -105,7 +105,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   */
   virtual  std::string setFileName(std::string s) {
     pthread_mutex_lock(&mf);
-    sprintf(fileName, s.c_str()); 
+    sprintf(fileName, "%s", s.c_str()); 
     pthread_mutex_unlock(&mf); 
     return std::string(fileName);};
 

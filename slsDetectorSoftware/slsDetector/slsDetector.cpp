@@ -9563,7 +9563,7 @@ int slsDetector::setCTBPattern(string fname) {
 	int addr=0;
 
 	FILE *fd=fopen(fname.c_str(),"r");
-	if (fd>0) {
+	if (fd) {
 		while (fread(&word, sizeof(word), 1,fd)) {
 			setCTBWord(addr,word);
 			// cout << hex << addr << " " << word << dec << endl;

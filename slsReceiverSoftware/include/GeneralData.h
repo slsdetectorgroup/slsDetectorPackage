@@ -155,7 +155,7 @@ public:
 	 * @param i pointer to a vector of ROI pointers
 	 * @returns adc configured
 	 */
-	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+	virtual int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 		return 0;
 	};
@@ -345,7 +345,7 @@ private:
 	 * @param i pointer to a vector of ROI
 	 * @returns adc configured
 	 */
-	const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+	int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
 		int adc = -1;
 		// single adc
 		if(i->size())  {

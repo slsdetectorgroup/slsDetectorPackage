@@ -115,7 +115,7 @@ inline std::string NowTime()
     const int buffer_len = sizeof(buffer);
     time_t t;
     time(&t);
-    tm r = {};
+    tm r;
     strftime(buffer, buffer_len, "%X", localtime_r(&t, &r));
     buffer[buffer_len - 1] = 0;
     struct timeval tv;

@@ -604,7 +604,7 @@ int64_t multiSlsDetector::getId(idMode mode, int imod) {
 
 
 slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos) {
-	if (pos >= 0 && pos < detectors.size()) {
+	if (pos < detectors.size()) {
 		return detectors[pos];
 	}
 	return 0;
@@ -2343,7 +2343,7 @@ int multiSlsDetector::sendSoftwareTrigger() {
 
 
 int multiSlsDetector::startReadOut() {
-	unsigned int i   = 0;
+	int i   = 0;
 	int ret = OK, ret1 = OK;
 	i = thisMultiDetector->masterPosition;
 	if (i >= 0) {
@@ -2353,7 +2353,7 @@ int multiSlsDetector::startReadOut() {
 		if (ret != OK)
 			ret1 = FAIL;
 	}
-	for (i = 0; i < detectors.size(); ++i) {
+	for (i = 0; i < (int)detectors.size(); ++i) {
 		ret = detectors[i]->startReadOut();
 		if (detectors[i]->getErrorMask())
 			setErrorMask(getErrorMask() | (1 << i));

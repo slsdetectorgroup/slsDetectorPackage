@@ -5355,12 +5355,13 @@ string slsDetector::setReceiverUDPMAC(string udpmac) {
 		if((udpmac[2]==':')&&(udpmac[5]==':')&&(udpmac[8]==':')&&
 				(udpmac[11]==':')&&(udpmac[14]==':')){
 			strcpy(thisDetector->receiverUDPMAC,udpmac.c_str());
-			if(!strcmp(thisDetector->receiver_hostname,"none"))
+			if(!strcmp(thisDetector->receiver_hostname,"none")) {
 #ifdef VERBOSE
 				std::cout << "Warning: Receiver hostname not set yet." << endl;
 #else
 			;
 #endif
+		}
 			/* else  if(setUDPConnection()==FAIL){ commented out to be replaced by user
 			 * defined udpmac
     	  std::cout<< "Warning: UDP connection set up failed" << std::endl;

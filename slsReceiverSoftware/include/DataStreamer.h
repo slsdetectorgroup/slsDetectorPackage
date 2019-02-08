@@ -189,10 +189,6 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/** additional json header */
 	char* additionJsonHeader;
 
-    /** Silent Mode */
-    bool* silentMode;
-
-
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;
 

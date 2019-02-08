@@ -103,7 +103,7 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
 
 
 
-  if (I0>0) {
+  if (I0 != NULL) {
     i0=*I0; 
     totalI0+=i0;
   } else

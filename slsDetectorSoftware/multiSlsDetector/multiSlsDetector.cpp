@@ -5386,7 +5386,7 @@ int multiSlsDetector::setCTBPattern(std::string fname) {
 	uint64_t word;
 	int addr = 0;
 	FILE* fd = fopen(fname.c_str(), "r");
-	if (fd > 0) {
+	if (fd) {
 		while (fread(&word, sizeof(word), 1, fd)) {
 			for (unsigned int idet = 0; idet < detectors.size(); ++idet)
 				detectors[idet]->setCTBWord(addr, word);

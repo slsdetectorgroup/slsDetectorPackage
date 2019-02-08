@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set (CALIBRATE OFF)
 
+# Check if project is being used directly or via add_subdirectory
+set(SLS_MASTER_PROJECT OFF)
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+	set(SLS_MASTER_PROJECT ON)
+endif()
+
 option (USE_HDF5 "HDF5 File format" OFF)
 option (USE_TEXTCLIENT "Text Client" OFF)
 option (USE_RECEIVER "Receiver" OFF)
@@ -49,6 +55,10 @@ if (USE_GUI)
        endif()
 endif (USE_GUI)
 
+if (SLS_MASTER_PROJECT)
+	# Set targets export name (otherwise set by upstream project)
+	set(TARGETS_EXPORT_NAME "slsdetector-targets")
+endif (SLS_MASTER_PROJECT)
 
 if (CALIBRATE)
     if (DEFINED ENV{ROOTSYS})

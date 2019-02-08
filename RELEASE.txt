@@ -23,7 +23,7 @@ This document describes the differences between 4.0.1 and 4.0.0 releases.
     - Receiver (padding, releasing resources segfault, gappixels)
     - Users class (detectorSize, ROI, versions, status)
     - API (config error, ROI)
-    - Compile (static libraries, Makefile for API)
+    - Compile (Options prefix, static libraries, Makefile for API)
     - Gui (multi module)
 
 
@@ -82,7 +82,9 @@ This document describes the differences between 4.0.1 and 4.0.0 releases.
     Compile
     -------
     
-    1.  Static libraries removed.
+    1.	CMake options now have a prefix 'SLS_'.
+
+    2.  Static libraries removed.
     
     2.  slsDetectorPackage/manual/manual-api/Makefile modified to use libraries
         from slsDetectorPackage/bin as the main Makefile copies the libraries there. 

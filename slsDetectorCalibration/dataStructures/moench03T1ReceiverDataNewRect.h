@@ -1,18 +1,54 @@
-#ifndef MOENCH03T1ZMQDATANEW_H
-#define  MOENCH03T1ZMQDATANEW_H
+#ifndef MOENCH03T1RECDATANEWRECT_H
+#define  MOENCH03T1RECDATANEWRECT_H
 #include "slsDetectorData.h"
 
+#define VERT 1
 
-class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
+    /**
+        @short  structure for a Detector Packet or Image Header
+        @li frameNumber is the frame number
+        @li expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
+        @li packetNumber is the packet number
+        @li bunchId is the bunch id from beamline
+        @li timestamp is the time stamp with 10 MHz clock
+        @li modId is the unique module id (unique even for left, right, top, bottom)
+        @li xCoord is the x coordinate in the complete detector system
+        @li yCoord is the y coordinate in the complete detector system
+        @li zCoord is the z coordinate in the complete detector system
+        @li debug is for debugging purposes
+        @li roundRNumber is the round robin set number
+        @li detType is the detector type see :: detectorType
+        @li version is the version number of this structure format
+    */
+    typedef struct {
+        uint64_t frameNumber;    /**< is the frame number */
+        uint32_t expLength;        /**< is the subframe number (32 bit eiger) or real time exposure time in 100ns (others) */
+        uint32_t packetNumber;    /**< is the packet number */
+        uint64_t bunchId;        /**< is the bunch id from beamline */
+        uint64_t timestamp;        /**< is the time stamp with 10 MHz clock */
+        uint16_t modId;            /**< is the unique module id (unique even for left, right, top, bottom) */
+        uint16_t xCoord;        /**< is the x coordinate in the complete detector system */
+        uint16_t yCoord;        /**< is the y coordinate in the complete detector system */
+        uint16_t zCoord;        /**< is the z coordinate in the complete detector system */
+        uint32_t debug;            /**< is for debugging purposes */
+        uint16_t roundRNumber;    /**< is the round robin set number */
+        uint8_t detType;        /**< is the detector type see :: detectorType */
+        uint8_t version;        /**< is the version number of this structure format */
+    } sls_detector_header;
+
+
+
+
+class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
  
  private:
   
-  // int iframe;
+  int iframe;
   int nadc;
   int sc_width;
   int sc_height;
   const int nSamples;
-  const int offset;
+
 
  public:
 
@@ -25,8 +61,12 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
- moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(sizeof(int)) {
-
+#ifdef HOR
+    moench03T1ReceiverDataNew(int ns=5000): slsDetectorData<uint16_t>(800, 200, ns*2*32+sizeof(sls_detector_header)), nSamples(ns) {
+#endif
+#ifdef VERT
+    moench03T1ReceiverDataNew(int ns=5000): slsDetectorData<uint16_t>(200, 800, ns*2*32+sizeof(sls_detector_header)), nSamples(ns) {
+#endif
     int nadc=32;
     int sc_width=25;
     int sc_height=200;
@@ -37,7 +77,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     		    0,25,50,75,0,25,50,75};
 
     int row, col;
-    
+
     int isample;
     int iadc;
     int ix, iy;
@@ -45,7 +85,15 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
      int npackets=40;
     int i;
     int adc4(0);
-  
+    int pix;
+
+
+    int off=0;
+#ifdef OFF_1
+    off=1;
+#endif
+    cout << "This is a MOENCH with rectangular pixels!" << endl;
+
     for (int ip=0; ip<npackets; ip++) {
       for (int is=0; is<128; is++) {
 
@@ -60,48 +108,67 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 	    } else {
 	      row=200+i/sc_width;
 	    }
-	    dataMap[row][col]=(nadc*i+iadc)*2+offset;//+16*(ip+1);
-	    if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize)
+	    pix=sizeof(sls_detector_header)+(nadc*i+iadc)*2;//+16*(ip+1);
+	    if (pix<0 || pix>=nSamples*2*32+sizeof(sls_detector_header))
 	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
+	    ix=col;
+	    iy=row;
+#ifdef HOR
+	    if (row%2==off) {
+	      ix=2*col;
+	      iy=row/2;
+	    } else {
+	      ix=2*col+1;
+	      iy=row/2;
+	    }
+#endif
+
+#ifdef VERT
+	    if (col%2==off) {
+	      ix=col/2;
+	      iy=row*2+1;
+	    } else {
+	      ix=col/2;
+	      iy=row*2;
+	    }
+#endif
+	    dataMap[iy][ix]=pix;
 	  }
 	}
       }
     }
 
+    /* int ipacket; */
+    /* int ibyte; */
+    /* int ii=0; */
+    /* for (ibyte=0; ibyte<sizeof(sls_detector_header)/2; ibyte++){ */
+    /*   xmap[ibyte]=-1; */
+    /*   ymap[ibyte]=-1; */
+    /* } */
+    /* int off=sizeof(sls_detector_header)/2; */
+    /* for (ipacket=0; ipacket<npackets; ipacket++) { */
+    /*   for (ibyte=0;  ibyte< 8192/2; ibyte++) { */
+    /* 	i=ipacket*8208/2+ibyte; */
+    /* 	  isample=ii/nadc; */
+    /* 	  if (isample<nSamples) { */
+    /* 	  iadc=ii%nadc; */
+    /* 	  adc4 = (int)iadc/4; */
+    /* 	  ix=isample%sc_width; */
+    /* 	  iy=isample/sc_width; */
+    /* 	  if (adc4%2==0) { */
+    /* 	    xmap[i+off]=adc_nr[iadc]+ix; */
+    /* 	    ymap[i+off]=ny/2-1-iy; */
+    /* 	  } else { */
+    /* 	    xmap[i+off]=adc_nr[iadc]+ix; */
+    /* 	    ymap[i+off]=ny/2+iy; */
+    /* 	  } */
+    /* 	  } */
+    /* 	ii++; */
+    /* 	//	} */
+    /*   } */
+    /* } */
     
-    int ii=0;
-    
-    for (i=0; i<  dataSize; i++) {
-      if (i<offset) {
-    	//header! */
-    	xmap[i]=-1;
-    	ymap[i]=-1;
-      } else {
-    	  // ii=ibyte+128*32*ipacket;
-    	isample=ii/nadc;
-    	if (isample<nSamples) {
-    	  iadc=ii%nadc;
-    	  adc4 = (int)iadc/4;
-    	  ix=isample%sc_width;
-    	  iy=isample/sc_width;
-    	  if (adc4%2==0) {
-    	    xmap[i]=adc_nr[iadc]+ix;
-    	    ymap[i]=ny/2-1-iy;
-    	  } else {
-    	    xmap[i]=adc_nr[iadc]+ix;
-    	    ymap[i]=ny/2+iy;
-    	  }
-    	}
-	  
-    	ii++;
-      }
-  
-    }
-    
-
-    
-    
-    // iframe=0;
+    iframe=0;
     //  cout << "data struct created" << endl;
   };
     
@@ -125,7 +192,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
 
-  int getFrameNumber(char *buff){return *((int*)buff);};//*((int*)(buff+5))&0xffffff;};   
+  int getFrameNumber(char *buff){return ((sls_detector_header*)buff)->frameNumber;};//*((int*)(buff+5))&0xffffff;};   
 
   /**
 
@@ -136,7 +203,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
   */
-  int getPacketNumber(char *buff){return 0;}//((*(((int*)(buff+4))))&0xff)+1;};   
+  int getPacketNumber(char *buff){return ((sls_detector_header*)buff)->packetNumber;}//((*(((int*)(buff+4))))&0xff)+1;};   
 
 /*    /\** */
 
@@ -191,7 +258,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
   };
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np) {
-	  char *data=new char[32*2*nSamples];
+	  char *data=new char[dataSize];
 	  char *d=readNextFrame(filebin, ff, np, data);
 	  if (d==NULL) {delete [] data; data=NULL;}
 	  return data;
@@ -207,14 +274,14 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 	  np=0;
 	  int  pn;
 	  
-
+	  //  cout << dataSize << endl;
 	  if (ff>=0)
 	    fnum=ff;
 
 	  if (filebin.is_open()) {
-	    if (filebin.read(data, 32*2*nSamples) ){
-	      // iframe++;
-	      //ff=iframe;
+	    if (filebin.read(data, dataSize) ){
+	      ff=getFrameNumber(data);
+	      np=getPacketNumber(data);
 	      return data;
 	    }
 	  }
@@ -236,29 +303,15 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
      
   */
   virtual  char *findNextFrame(char *data, int &ndata, int dsize){
-    if (dsize<32*2*nSamples) ndata=dsize;
-    else ndata=32*2*nSamples;
+    if (dsize<dataSize) ndata=dsize;
+    else ndata=dataSize;
     return data;
 
   }
-  
 
 
 
-
-
-  // virtual int setFrameNumber(int ff){iframe=ff};
-
-
-
-
-
-
-
-
-
-
-int getPacketNumber(int x, int y) {return 0;};
+  //int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
 
 };
 

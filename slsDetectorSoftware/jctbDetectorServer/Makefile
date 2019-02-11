@@ -6,7 +6,7 @@
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 
-CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 -DCTB -DOLDVERSION #-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
+CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 -DCTB 
 
 
 PROGS= 	 jctbDetectorServer 
@@ -24,22 +24,18 @@ OBJS = $(SRCS:%.c=%.o)
 
 all:	clean versioning $(PROGS) 
 
-test: 	clean jungfrauADCTEst
+test: 	clean jungfrauADCTest
 
 boot: $(OBJS)
 
 versioning: 
 	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
 
-jctbDetectorServerNew: $(OBJS)
+jctbDetectorServer: $(OBJS)
 	echo $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
 
-jctbDetectorServer: $(OBJS)
-	echo $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@) -DOLDVERSION 
-
-jungfrauADCTEst: $(OBJS)
+jungfrauADCTest: $(OBJS)
 	echo $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@) -DTESTADC 
 

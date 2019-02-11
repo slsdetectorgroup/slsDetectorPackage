@@ -31,6 +31,9 @@ int myport=-1;
 //struct sockaddr_in address;
 //#define VERBOSE
 
+#define BLACKFIN_DRVR_SND_LMT	(30000) // rough limit
+#define BLACKFIN_RSND_PCKT_LOOP	(10)
+#define BLACKFIN_RSND_WAIT_US	(1)
 
 int bindSocket(unsigned short int port_number) {
   int i;
@@ -314,13 +317,46 @@ int receiveData(int file_des, void* buf,int length, intType itype){
 	return ret;
 }
 
-
- int sendDataOnly(int file_des, void* buf,int length) {
+int sendDataOnly(int file_des, void* buf,int length) {
      if (!length)
          return 0;
-	 int ret =  write(file_des, buf, length); //value of -1 is other end socket crash as sigpipe is ignored
-	 if (ret < 0) cprintf(BG_RED, "Error writing to socket. Possible socket crash\n");
-	 return ret;
+
+
+	  int bytesSent = 0;
+	  int retry = 0; // retry index when buffer is blocked (write returns 0)
+	  while (bytesSent < length) {
+
+		  // setting a max packet size for blackfin driver (and network driver does not do a check if packets sent)
+		  int bytesToSend = length - bytesSent;
+		  if (bytesToSend > BLACKFIN_DRVR_SND_LMT)
+			  bytesToSend = BLACKFIN_DRVR_SND_LMT;
+
+		  // send
+		  int rc = write(file_des, (char*)((char*)buf + bytesSent), bytesToSend);
+		  // error
+		  if (rc < 0) {
+		    cprintf(BG_RED, "Error writing to socket. Possible socket crash: left=%d rc=%d length=%d sent=%d\n", bytesToSend, rc, length, bytesSent);
+			  return bytesSent;
+		  }
+		  // also error, wrote nothing, buffer blocked up, too fast sending for client
+		  if (rc == 0) {
+			  cprintf(RED, "Error writing to socket. Buffer full. Retry: %d\n", retry);
+			  ++retry;
+			  // wrote nothing for many loops
+			  if (retry >= BLACKFIN_RSND_PCKT_LOOP) {
+				  cprintf(BG_RED, "Error writing to socket. Buffer full! Too fast! No more.\n");
+				  return bytesSent;
+			  }
+			  usleep(BLACKFIN_RSND_WAIT_US);
+		  }
+		  // wrote something, reset retry
+		  else  {
+			  retry = 0;
+		  }
+		  bytesSent += rc;
+	  }
+
+	  return bytesSent;
 }
 
 

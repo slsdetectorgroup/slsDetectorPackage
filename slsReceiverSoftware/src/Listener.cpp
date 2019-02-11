@@ -568,13 +568,19 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		lastCaughtFrameIndex = fnum;
 
 
-#ifdef VERBOSE
+		//#ifdef VERBOSE
 		//if (!index)
 		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
 				index,currentFrameIndex, fnum, pnum, numpackets);
-#endif
+		//#endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
+
+		  if (pnum >= pperFrame ) {
+			cprintf(RED,"bad packet, throwing away. packets caught so far: %d\n", numpackets);
+
+			return 0;	// bad packet
+		  }
 
 		//future packet	by looking at image number  (all other detectors)
 		if (fnum != currentFrameIndex) {
@@ -611,6 +617,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				memcpy(buf + fifohsize + (pnum * dsize) - 2, listeningPacket + hsize, dsize+2);
 			break;
 		case JUNGFRAUCTB:
+
 			if (pnum == (pperFrame-1))
 				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, corrected_dsize);
 			else

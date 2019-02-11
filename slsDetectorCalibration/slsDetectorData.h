@@ -331,8 +331,6 @@ class slsDetectorData {
    */
   virtual char *readNextFrame(ifstream &filebin)=0;
   
-  
-
 };
 
 

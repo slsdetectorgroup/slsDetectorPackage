@@ -176,31 +176,33 @@ int slsDetectorActions::setScan(int iscan, string script, int nvalues, double *v
     if (par!="")
       strcpy(scanParameter[iscan],par.c_str());
       
-      if (nvalues>=0) {    
-	if (nvalues==0)
-	  scanMode[iscan]=noScan;
-	else {
-	  nScanSteps[iscan]=nvalues;
+    if (nvalues>=0) {
+      //  cout << "nvalues " << nvalues << endl;
+      if (nvalues==0)
+	scanMode[iscan]=noScan;
+      else {
+	nScanSteps[iscan]=nvalues;
 	  if (nvalues>MAX_SCAN_STEPS)
 	    nScanSteps[iscan]=MAX_SCAN_STEPS;
-	}
+      }
       }
       
-      if (values && 	scanMode[iscan]>0 ) {
-	for (int iv=0; iv<nScanSteps[iscan]; iv++) {
-	  scanSteps[iscan][iv]=values[iv];
-	}
+    if (values && 	scanMode[iscan]>0 ) {
+      for (int iv=0; iv<nScanSteps[iscan]; iv++) {
+	scanSteps[iscan][iv]=values[iv];
+	//	cout << values[iv] << endl;
       }
+    }
 
-      if (precision>=0)
-	scanPrecision[iscan]=precision;
-      
-      if (scanMode[iscan]>0){
+    if (precision>=0)
+      scanPrecision[iscan]=precision;
+    
+    if (scanMode[iscan]>0){
 	*actionMask |= 1<< (iscan+MAX_ACTIONS);
-      } else {
-	*actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
-      }
-
+    } else {
+      *actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
+    }
+    
 
 
       setTotalProgress();

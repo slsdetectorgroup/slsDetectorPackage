@@ -70,6 +70,8 @@ int N_CHANS=NCHANS;
 int init_detector(int b, int checkType) {
   
   int i;
+  int ret;
+  int ii;
   if (mapCSP0()==FAIL) { printf("Could not map memory\n");
     exit(1);  
   }
@@ -81,8 +83,18 @@ int init_detector(int b, int checkType) {
     for (i=0; i<1000000; i++) {
       bus_w(SET_DELAY_LSB_REG, i*100);
       bus_r(FPGA_VERSION_REG);
-      if (i*100!=bus_r(SET_DELAY_LSB_REG))
-	printf("ERROR: wrote 0x%x, read 0x%x\n",i*100,bus_r(SET_DELAY_LSB_REG));
+      //usleep(100);
+      ii=0;
+      //    usleep(100);
+      //usleep(100);
+      
+      // ret=bus_r(SET_DELAY_LSB_REG);
+      ret=bus_r(SET_DELAY_LSB_REG);
+      while (ret!=i*100 && ii<100) {
+	//if (i*100!=ret)
+	printf("ERROR %d: wrote 0x%x, read 0x%x\n",i, i*100,ret);
+	ret=bus_r(SET_DELAY_LSB_REG);
+      }
     }
     printf("Finished\n");
   }else
@@ -1865,6 +1877,7 @@ int start_acquisition(int file_des) {
     ret=FAIL;
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
   } else {
+	  nframes = 0;
     ret=startStateMachine();
   }
   if (ret==FAIL)
@@ -2045,7 +2058,7 @@ int read_frame(int file_des) {
 	  printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes);
 	 #endif
 	  n=sendDataOnly(file_des,dataretval,dataBytes);
-	  printf("Sent %d bytes\n",n);
+	  printf("Frame %d, Sent %d bytes\n", nframes, n);
   } else  {
       if (getFrames()>-1) {
 	dataret=FAIL;
@@ -2110,7 +2123,7 @@ int start_and_read_all(int file_des) {
     return dataret;
 
   }
-
+  nframes = 0;
   startStateMachine();
 
   /*  ret=startStateMachine();  

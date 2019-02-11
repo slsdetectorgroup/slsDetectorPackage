@@ -1,5 +1,5 @@
-#ifndef MOENCH02CTBDATA_H
-#define  MOENCH02CTBDATA_H
+#ifndef MOENCH02CTBDATADGS_H
+#define  MOENCH02CTBDATADGS_H
 #include "slsDetectorData.h"
 
 
@@ -10,7 +10,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
   
   int iframe;
   // int *xmap, *ymap;
-  int nadc;
+  //int nadc;
   int sc_width;
   int sc_height;
 
@@ -31,11 +31,11 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
   */
   
 
- moench02CtbData(int ns=6400): slsDetectorData<uint16_t>(160, 160, ns*2*32, NULL, NULL) , nadc(32), sc_width(40), sc_height(160) {
+ moench02CtbDataDGS(int ns=6400): slsDetectorData<uint16_t>(160, 160, ns*(2*32+8), NULL, NULL) ,  sc_width(40), sc_height(160) {
 
     
     int adc_off[4]={40,0,120,80};
-    int adc_nr[4]={8,10,20,22};
+    int adc_nr[4]={8,10,20,23};
     int row, col;
 
     int isample;
@@ -49,7 +49,6 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
       iadc=adc_nr[iiadc];
       //cout << iiadc << endl;
       for (int i=0; i<sc_width*sc_height; i++) {
-	
 	col=adc_off[iiadc]+(i%sc_width);
 	row=i/sc_width;
 	dataMap[row][col]=(32*i+iadc)*2;
@@ -93,6 +92,25 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
 
   };
   
+  /**
+     Returns the gain for the selected pixel (at the moemnt only 3rd supercolumn)
+     \param buff pointer to the dataset
+     \param ix x coordinate 
+     \param iy y coordinate
+     \returns gain value
+   */
+
+  int getGain(char *buff, int ix, int iy) {
+    int isample=iy*sc_width+iy;
+    if (ix<sc_width) return 0; //first supercolumn no gain switching - could return the static gain if wished
+    if (ix<2*sc_width) return 0; //second supercolumn no gain switching  - could return the static gain if wished
+    if (ix<3*sc_width){ 
+      if(*((long*)(buff+(32*2*isample+8*(isample-1)))&(1>>31)) return 1;
+      return 0;
+    }
+    return 0; //not yet implemented for 4th supercolumn
+  }
+
 
      /**
 

@@ -1011,9 +1011,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdImage;
 	++i;
 
-
-
-
+	/*! \page data
+   - <b>gainimage fn</b> Loads the gain image to the detector from file fn (gain map for translation into number of photons of an analog detector). Cannot get.
+	 */
+	descrToFuncMap[i].m_pFuncName="flatimage"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdImage;
+	++i;
 
 
 
@@ -1123,7 +1126,19 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 		\section settingsdacs DACs
    commands to configure DACs of detector
 	 */
+	/*! \page settings
+   - <b>emin [i] </b> Sets/gets detector minimum energy threshold for the CTB (soft setting)
+	 */
+	descrToFuncMap[i].m_pFuncName="emin"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
 
+	/*! \page settings
+   - <b>emax [i] </b> Sets/gets detector maximum energy threshold for the CTB (soft setting)
+	 */
+	descrToFuncMap[i].m_pFuncName="emax"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+	++i;
 	/*! \page settings
    - <b>vthreshold [i] [mv]</b> Sets/gets detector threshold voltage for single photon counters. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
@@ -4098,7 +4113,6 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 	    t=ADDITIONAL_JSON_HEADER;
 	}
 	else return ("unknown network parameter")+cmd;
-
 	if (action==PUT_ACTION) {
 		myDet->setNetworkParameter(t, args[1]);
 		// switch it back on, if it had been switched on
@@ -4475,6 +4489,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 			if ((val<0)	|| (narg!=((val*4)+2)) )
 				return helpDetectorSize(narg,args,action);
 			ROI allroi[val];
+			//	pos=1;
 			pos=2;
 			for(i=0;i<val;++i){
 				if ((!sscanf(args[pos++],"%d",&allroi[i].xmin)) ||
@@ -5248,6 +5263,10 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 		dac=M_vIbiasSh;
 	else if (cmd== "vIpreOut")
 		dac=M_vIpreOut;
+	else if (cmd== "emin")
+		dac=ZMQ_emin;
+	else if (cmd== "emax")
+		dac=ZMQ_emax;
 
 	else
 		return string("cannot decode dac ")+cmd;
@@ -5985,29 +6004,45 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 		if (action==PUT_ACTION) {
 			string sval=string(args[1]);
 			if (sval=="none")
-				flag=NORMAL_READOUT;
+			  flag=NORMAL_READOUT;
 			else if (sval=="storeinram")
-				flag=STORE_IN_RAM;
+			  flag=STORE_IN_RAM;
 			else if (sval=="tot")
-				flag=TOT_MODE;
+			  flag=TOT_MODE;
 			else if (sval=="continous")
-				flag=CONTINOUS_RO;
+			  flag=CONTINOUS_RO;
 			else if (sval=="parallel")
-				flag=PARALLEL;
+			  flag=PARALLEL;
 			else if (sval=="nonparallel")
-				flag=NONPARALLEL;
+			  flag=NONPARALLEL;
 			else if (sval=="safe")
-				flag=SAFE;
+			  flag=SAFE;
 			else if (sval=="digital")
-				flag=DIGITAL_ONLY;
+			  flag=DIGITAL_ONLY;
 			else if  (sval=="analog_digital")
-				flag=ANALOG_AND_DIGITAL;
+			  flag=ANALOG_AND_DIGITAL;
 			else if  (sval=="overflow")
-				flag=SHOW_OVERFLOW;
+			  flag=SHOW_OVERFLOW;
 			else if  (sval=="nooverflow")
-				flag=NOOVERFLOW;
+			  flag=NOOVERFLOW;
+			else if  (sval=="pedestal")
+			  flag=PEDESTAL;
+			else if  (sval=="flatfield")
+			  flag=FLAT;
+			else if  (sval=="newpedestal")
+			  flag=NEWPEDESTAL;
+			else if  (sval=="newflatfield")
+			  flag=NEWFLAT;
+			else if  (sval=="frame")
+			  flag=FRAME;
+			else if  (sval=="analog")
+			  flag=ANALOG;
+			else if  (sval=="counting")
+			  flag=COUNTING;
+			else if  (sval=="interpolating")
+			  flag=INTERPOLATING;
 			else
-				return string("could not scan flag ")+string(args[1]);
+			  return string("could not scan flag ")+string(args[1]);
 		}
 
 		myDet->setOnline(ONLINE_FLAG);
@@ -6038,6 +6073,22 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 			strcat(answer,"overflow ");
 		if  (retval & NOOVERFLOW)
 			strcat(answer,"nooverflow ");
+		if  (retval & PEDESTAL)
+			strcat(answer,"pedestal ");
+		if  (retval & NEWPEDESTAL)
+			strcat(answer,"newpedestal ");
+		if  (retval & NEWFLAT)
+			strcat(answer,"newflat ");
+		if  (retval & FLAT)
+			strcat(answer,"flatfield ");
+		if  (retval & FRAME)
+			strcat(answer,"frame ");
+		if  (retval & ANALOG)
+			strcat(answer,"analog ");
+		if  (retval & COUNTING)
+			strcat(answer,"counting ");
+		if  (retval & INTERPOLATING)
+			strcat(answer,"interpolating ");
 		if(strlen(answer))
 			return string(answer);
 
@@ -6992,8 +7043,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 		}
 		os << hex << reg << dec;
 		if (myDet->isMultiSlsDetectorClass() && aa != NULL)
-		    delete [] aa;
-
+			delete [] aa;
 
 		//os <<" "<< hex << myDet->readRegister(120) << dec;
 

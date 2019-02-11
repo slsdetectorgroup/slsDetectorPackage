@@ -249,7 +249,7 @@ class slsDetectorUsers
    int getPositions(double *pos=NULL);
   
   /**
-     @short sets the detector size (only 1 ROI)
+     @short sets the detector size (only 1 ROI) (not Mythen supported anymore)
      \param x0 horizontal position origin in channel number (-1 unchanged)
      \param y0 vertical position origin in channel number (-1 unchanged)
      \param nx number of channels in horiziontal  (-1 unchanged)
@@ -259,7 +259,7 @@ class slsDetectorUsers
    int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1);
 
   /**
-     @short gets detector size (roi size if only one roi)
+     @short gets detector size (roi size if only one roi) (not Mythen supported anymore)
      \param x0 horizontal position origin in channel number 
      \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal

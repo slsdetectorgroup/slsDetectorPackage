@@ -75,7 +75,8 @@ typedef struct ip_header_struct {
 
 struct timeval tss,tse,tsss; //for timing
 
-
+#define MAXDAC 32
+u_int32_t dac[MAXDAC];
 
 FILE *debugfp, *datafp;
 
@@ -890,107 +891,33 @@ int setTiming(int ti) {
 
 
   int ret=GET_EXTERNAL_COMMUNICATION_MODE;
-
+  int val;
   int g=-1, t=-1, rot=-1;
 
   int i;
 
+  val=bus_r(EXT_SIGNAL_REG); 
   switch (ti) {
   case AUTO_TIMING:
-    timingMode=ti;
-    // disable all gates/triggers in except if used for master/slave synchronization
-    for (i=0; i<4; i++) {
-      if (getFPGASignal(i)>0 && getFPGASignal(i)<GATE_OUT_ACTIVE_HIGH && signals[i]!=MASTER_SLAVE_SYNCHRONIZATION)
-	setFPGASignal(i,SIGNAL_OFF);
-    }
+    bus_w(EXT_SIGNAL_REG,val&~(0x1));
     break;
 
   case   TRIGGER_EXPOSURE:
-    timingMode=ti;
-    // if one of the signals is configured to be trigger, set it and unset possible gates
-    for (i=0; i<4; i++) {
-      if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,signals[i]);
-      else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-	setFPGASignal(i,SIGNAL_OFF);
-      else if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-
-    }
+    bus_w(EXT_SIGNAL_REG,val|(0x1));
     break;
 
-
-
-  case  TRIGGER_READOUT:
-    timingMode=ti;
-    // if one of the signals is configured to be trigger, set it and unset possible gates
-    for (i=0; i<4; i++) {
-      if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,signals[i]);
-      else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-	setFPGASignal(i,SIGNAL_OFF);
-      else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-    }
-    break;
-
-  case GATE_FIX_NUMBER:
-    timingMode=ti;
-    // if one of the signals is configured to be trigger, set it and unset possible gates
-    for (i=0; i<4; i++) {
-      if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-      else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-	setFPGASignal(i,signals[i]);
-      else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-    }
-    break;
-
-
-
-  case GATE_WITH_START_TRIGGER:
-    timingMode=ti;
-    for (i=0; i<4; i++) {
-      if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,SIGNAL_OFF);
-      else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-	setFPGASignal(i,signals[i]);
-      else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-	setFPGASignal(i,signals[i]);
-    }
-    break;
 
   default:
 	  break;
 
   }
 
-
-
-  for (i=0; i<4; i++) {
-    if (signals[i]!=MASTER_SLAVE_SYNCHRONIZATION) {
-      if (getFPGASignal(i)==RO_TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==RO_TRIGGER_IN_FALLING_EDGE)
-	rot=i;
-      else if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH || getFPGASignal(i)==GATE_IN_ACTIVE_LOW)
-	g=i;
-      else if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==TRIGGER_IN_FALLING_EDGE)
-	t=i;
-    }
-  }
-
-
-  if (g>=0 && t>=0 && rot<0) {
-    ret=GATE_WITH_START_TRIGGER;
-  } else if (g<0 && t>=0 && rot<0) {
+  if (bus_r(EXT_SIGNAL_REG)&0x1)
     ret=TRIGGER_EXPOSURE;
-  } else if (g>=0 && t<0 && rot<0) {
-    ret=GATE_FIX_NUMBER;
-  } else if (g<0 && t<0 && rot>0) {
-    ret=TRIGGER_READOUT;
-  } else if (g<0 && t<0 && rot<0) {
+  else
     ret=AUTO_TIMING;
-  }
+
+
 
   // timingMode=ret;
 
@@ -1671,22 +1598,28 @@ int initHighVoltage(int val, int imod){
        codata=((dacvalue)&0xff);
      
     
-       valw=bus_r(offw)&0x7fff; //switch off HV 
+       valw=(bus_r(offw) & 0x7fff) | 0x00ff;
+
        bus_w(offw,(valw)); // start point
        valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
+       
        for (i=0;i<8;i++) {
-	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-	valw=((valw&(~(0x1<<ddx)))+(((codata>>(7-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
-	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+	 valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+	 valw=((valw&(~(0x1<<ddx)))+(((codata>>(7-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
+	 valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
        }
        valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
        
        valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+
+
        
-       if (dacvalue>=0) {
-	 valw=bus_r(offw)|0xff00;; //switch on HV
+       if (val>=0) {
+	 valw=bus_r(offw) | 0x8000;; //switch on HV
+	 printf("switch on HV in CTB4 %x\n");
        } else {
-	 valw=bus_r(offw)&0x7fff;//switch off HV
+	 valw=bus_r(offw) & 0x7fff;//switch off HV
+	 printf("switch off HV in CTB4\n");
        }
 
 
@@ -1695,6 +1628,22 @@ int initHighVoltage(int val, int imod){
        
        bus_w(HV_REG,val);
        
+
+       //added for CTB5!
+
+       // valw=bus_r(POWER_ON_REG);
+       if (val>=0) {
+	 i=bus_r(POWER_ON_REG) | 0x80000000;; //switch on HV
+	 printf("switch on HV in CTB5 %08x\n", i);
+       } else {
+	 i=bus_r(POWER_ON_REG)  & 0x7fffffff;//switch off HV
+	 printf("switch off HV in CTB5 %08x\n", i);
+       }
+       
+       bus_w(POWER_ON_REG,i);
+
+
+
 	 // } 
   }
 
@@ -2003,7 +1952,7 @@ int startStateMachine(){
     bus_w16(CONTROL_REG, FIFO_RESET_BIT);
     bus_w16(CONTROL_REG, 0x0);
     bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
-    //  usleep(20);
+    usleep(20);
     bus_w16(CONTROL_REG, 0x0);
 	  //verify
   /*   if(bus_r(STATUS_REG) & RUN_BUSY_BIT) */
@@ -2128,48 +2077,42 @@ u_int16_t* fifo_read_event(int ns)
     a=bus_r16(LOOK_AT_ME_REG);
     while(a==0) {
       if (runBusy()==0) {
+	usleep(100);
 	a = bus_r(LOOK_AT_ME_REG);
 	if (a==0) {
-	printf("no frame found and acquisition finished - exiting\n");
-	printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-	return NULL;
+	  printf("no frame found and acquisition finished - exiting\n");
+	  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+	  return NULL;
 	} else {
 	  break;
 	}
       }
-      a = bus_r(LOOK_AT_ME_REG);
-      //#ifdef VERBOSE
-      //printf(".");
-      //#endif
+      a = bus_r16(LOOK_AT_ME_REG);
     }
-/* #ifdef TIMEDBG  */
-/*     //    tsss=tss; */
-/*     gettimeofday(&tss,NULL); */
-/*     printf("look for data  = %ld usec\n", (tss.tv_usec) - (tse.tv_usec));  */
 
-/*   #endif  */
-
-    //   printf("LAM: %08x\n",a);
   }
-
-  // printf(".");
-  a = bus_r(LOOK_AT_ME_REG);
+  //a = bus_r16(LOOK_AT_ME_REG);
 
   if (analogEnable) {
-  printf("*");
+    // printf("*");
     bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
     bus_w16(DUMMY_REG,0);
     for (i=0; i<32; i++) {
       if (~(mask&adcDisableMask)) {
-	*((u_int16_t*)now_ptr)=*values;//bus_r16(FIFO_DATA_REG);
-	if (i!=0 || ns!=0) { 
-	  a=0;
-	      while (*((u_int16_t*)now_ptr)==*((u_int16_t*)(now_ptr)-1) && a++<10) {
-	    	*((u_int16_t*)now_ptr)=*values;				
-	      }
-	    }
+	*((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);
+	/* if (i!=0 || ns!=0) {  */
+	/*   a=0; */
+	/*   while (*((u_int16_t*)now_ptr)==*((u_int16_t*)(now_ptr)-1) && a++<10 && *((u_int16_t*)now_ptr)!=0 && *((u_int16_t*)now_ptr)!=0x3ff) { */
+	/*     printf("%d .",i); */
+	/*     *((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);//\*values;				 */
+	/*   } */
+	/* } */
+	while (*((u_int16_t*)now_ptr)!=bus_r16(FIFO_DATA_REG)) {
+	  printf("%d ,",i);
+	  *((u_int16_t*)now_ptr)=bus_r16(FIFO_DATA_REG);
+	}
 	now_ptr+=2;
-      } 
+      }
       mask=mask<<1;
       //   if (~(mask&adcDisableMask)
       bus_w16(DUMMY_REG,i+1);
@@ -2177,7 +2120,7 @@ u_int16_t* fifo_read_event(int ns)
   }
   if (digitalEnable) {
      printf("+");
-    
+     
      bus_w16(DUMMY_REG,1<<9); // read strobe to digital fifo
      bus_w16(DUMMY_REG,0<<9); // read strobe to digital fifo
      *((u_int64_t*)now_ptr)=get64BitReg(FIFO_DIGITAL_DATA_LSB_REG,FIFO_DIGITAL_DATA_MSB_REG);
@@ -2186,17 +2129,17 @@ u_int16_t* fifo_read_event(int ns)
      now_ptr+=8;
      
   } 
-    //  bus_w16(DUMMY_REG,0); //
-/* #ifdef TIMEDBG  */
-
-/*   gettimeofday(&tss,NULL); */
-/*   printf("read data loop  = %ld usec\n",(tss.tv_usec) - (tse.tv_usec));  */
-
+  //  bus_w16(DUMMY_REG,0); //
+  /* #ifdef TIMEDBG  */
+  
+  /*   gettimeofday(&tss,NULL); */
+  /*   printf("read data loop  = %ld usec\n",(tss.tv_usec) - (tse.tv_usec));  */
+  
 /* #endif  */
 //#ifdef VERBOSE
-      // printf("*");
+  // printf("*");
   //#endif
-    //    printf("\n"); 
+  //    printf("\n"); 
   return ram_values;
 }
 
@@ -2213,8 +2156,10 @@ u_int16_t* fifo_read_frame()
   now_ptr=(char*)ram_values;
   while(ns<nSamples && fifo_read_event(ns)) {
     // now_ptr+=dataBytes;
+    // printf("%d %x\n",ns,bus_r16(LOOK_AT_ME_REG));
       ns++;
   }
+  // printf("Data in fifo %x\n",bus_r16(LOOK_AT_ME_REG));
 #ifdef TIMEDBG 
   // usleep(10);
   gettimeofday(&tss,NULL);
@@ -3216,12 +3161,22 @@ int setDacRegister(int dacnum,int dacvalue) {
 /*   printf("Dac register %x wrote %08x\n",(DAC_REG_OFF+dacnum/2)<<11,val); */
 /*     bus_w((DAC_REG_OFF+dacnum/2)<<11, val); */
     
-
+#ifdef CTB4
   bus_w(DAC_NUM_REG, dacnum);
   bus_w(DAC_VAL_REG, dacvalue);
   bus_w(DAC_NUM_REG, dacnum | (1<<16));
   bus_w(DAC_NUM_REG, dacnum);
   printf("Wrote dac register value %d address %d\n",bus_r(DAC_VAL_REG),bus_r(DAC_NUM_REG)) ;
+#endif
+  
+#ifndef CTB4
+  
+  if (dacnum<MAXDAC) {
+    printf("dac variable %d set to  value %d\n",dacnum, dacvalue) ;
+    dac[dacnum]=dacvalue;
+  } else
+    printf("Bad dac index %d\n", dacnum);
+#endif
   return getDacRegister(dacnum);
   
 
@@ -3229,9 +3184,22 @@ int setDacRegister(int dacnum,int dacvalue) {
 int getDacRegister(int dacnum) {
 
   
+#ifdef CTB4
   bus_w(DAC_NUM_REG, dacnum);
   printf("READ dac register value %d address %d\n",(int16_t)bus_r(DAC_VAL_OUT_REG),bus_r(DAC_NUM_REG)) ;
   return (int16_t)bus_r(DAC_VAL_OUT_REG);
+#endif
+
+#ifndef CTB4
+  if (dacnum<MAXDAC) {
+    printf("dac variable %d is %d\n",dacnum,dac[dacnum]) ;
+    return dac[dacnum];
+  }else
+    printf("Bad dac index %d\n", dacnum);
+#endif
+
+  return -1;
+
 /* #define DAC_VAL_REG 121<<11 */
 /* #define DAC_NUM_REG 122<<11 */
 /* #define DAC_VAL_OUT_REG 42<<11 */
@@ -3537,6 +3505,7 @@ int powerChip(int arg) {
   
   u_int32_t preg=bus_r(POWER_ON_REG); 
   if (myDetectorType!=JUNGFRAUCTB) {
+    printf("This is not a JCTB!\n");
     if (arg>=0) {
       if (arg)
 	bus_w(POWER_ON_REG,preg|0xffff0000);

@@ -2382,7 +2382,7 @@ int* multiSlsDetector::startAndReadAll() {
 		while ((retval = getDataFromDetector())) {
 			++i;
 #ifdef VERBOSE
-			std::cout << i << std::endl;
+			  std::cout << i << " " retval << std::endl;
 #endif
 			dataQueue.push(retval);
 		}
@@ -2460,7 +2460,7 @@ int* multiSlsDetector::getDataFromDetector() {
 	int nodatadet          = -1;
 	int nodatadetectortype = false;
 	detectorType types     = getDetectorsType();
-	if (types == EIGER || types == JUNGFRAU || GOTTHARD || PROPIX) {
+	if (types == EIGER || types == JUNGFRAU || types == GOTTHARD || types == PROPIX) {
 		nodatadetectortype = true;
 	}
 
@@ -3280,6 +3280,7 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int imod) {
 	if ((n < 0) || (roiLimits == NULL))
 		return FAIL;
 
+	//	cout << "Setting ROI for " << n << "rois:" << endl;
 	//ensures min < max
 	verifyMinMaxROI(n, roiLimits);
 #ifdef VERBOSE
@@ -3294,7 +3295,7 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int imod) {
 		xmax = roiLimits[i].xmax;
 		ymin = roiLimits[i].ymin;
 		ymax = roiLimits[i].ymax;
-
+		if (getDetectorsType() != JUNGFRAUCTB) {
 		//check roi max values
 		idet = decodeNChannel(xmax, ymax, channelX, channelY);
 #ifdef VERBOSE
@@ -3302,7 +3303,8 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int imod) {
 		cout << "det:" << idet << "\t" << xmax << "\t" << ymax << "\t"
 				<< channelX << "\t" << channelY << endl;
 #endif
-		if (idet == -1) {
+		//std::cout << getDetectorsType() << endl;
+		if (idet == -1  ) {
 			cout << "invalid roi" << endl;
 			continue;
 		}
@@ -3367,6 +3369,17 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int imod) {
 			if ((lastChannelX + offsetX) == xmax)
 				xmin = xmax + 1;
 		}
+		}else {
+		  idet=0;
+		  nroi[idet]=n;
+		  index                    = 0;
+		  allroi[idet][index].xmin = xmin;
+		  allroi[idet][index].xmax = xmax;
+		  allroi[idet][index].ymin = ymin;
+		  allroi[idet][index].ymax = ymax;
+		  // nroi[idet]               = nroi[idet] + 1;
+		  
+		}
 	}
 
 #ifdef VERBOSE
@@ -3415,6 +3428,7 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int& n, int imod) {
 	//get each detector's roi array
 	for (unsigned i = 0; i < detectors.size(); ++i) {
 		temp = detectors[i]->getROI(index);
+		//	cout << index << endl;
 		if (detectors[i]->getErrorMask())
 			setErrorMask(getErrorMask() | (1 << i));
 

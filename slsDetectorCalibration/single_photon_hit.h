@@ -38,8 +38,62 @@ class single_photon_hit {
   size_t write(FILE *myFile) {
     //fwrite((void*)this, 1, 3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); 
     
-    if (fwrite((void*)this, 1, sizeof(int)+2*sizeof(int16_t), myFile)) 
+    // if (fwrite((void*)this, 1, sizeof(int)+2*sizeof(int16_t), myFile))
+    //#ifdef OLDFORMAT 
+    if (fwrite((void*)&iframe, 1,  sizeof(int), myFile)) {};
+      //#endif  
+#ifndef WRITE_QUAD
+      //printf("no quad ");
+    if (fwrite((void*)&x, 2,  sizeof(int16_t), myFile)) 
       return fwrite((void*)data, 1, dx*dy*sizeof(int), myFile);
+#endif 
+#ifdef WRITE_QUAD
+    // printf("quad ");
+    int qq[4];
+    switch(quad) {
+    case TOP_LEFT:
+      qq[0]=data[3];
+      qq[1]=data[4];
+      qq[2]=data[6];
+      qq[3]=data[7];
+      x=x-1;
+      y=y;
+      break;
+      
+    case TOP_RIGHT:
+      qq[0]=data[4];
+      qq[1]=data[5];
+      qq[2]=data[7];
+      qq[3]=data[8];
+      x=x;
+      y=y;
+      break;
+
+
+    case BOTTOM_LEFT:
+      qq[0]=data[0];
+      qq[1]=data[1];
+      qq[2]=data[3];
+      qq[3]=data[4];
+      x=x-1;
+      y=y-1;
+      break;
+    case BOTTOM_RIGHT:
+      qq[0]=data[1];
+      qq[1]=data[2];
+      qq[2]=data[4];
+      qq[3]=data[5];
+      x=x;
+      y=y-1;
+      break;
+
+
+    default:
+      ;
+    }
+    if (fwrite((void*)&x, 2,  sizeof(int16_t), myFile)) 
+      return fwrite((void*)qq, 1, 4*sizeof(int), myFile);
+#endif
     return 0;
   };   
   
@@ -50,10 +104,125 @@ class single_photon_hit {
   size_t read(FILE *myFile) {
     //fread((void*)this, 1,  3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); 
     
-    if (fread((void*)this, 1,  sizeof(int)+2*sizeof(int16_t), myFile))  
+    //#ifdef OLDFORMAT 
+    if (fread((void*)&iframe, 1,  sizeof(int), myFile))  {}
+      //#endif   
+#ifndef WRITE_QUAD
+      // printf( "no quad \n");
+    if (fread((void*)&x, 2,  sizeof(int16_t), myFile))  
       return fread((void*)data, 1, dx*dy*sizeof(int), myFile);
+#endif 
+#ifdef WRITE_QUAD
+    int qq[4];
+    // printf( "quad \n");
+    if (fread((void*)&x, 2,  sizeof(int16_t), myFile))  
+      if (fread((void*)qq, 1, 4*sizeof(int), myFile)) {
+
+	quad=TOP_RIGHT;
+	int mm=qq[0];
+	for (int i=1; i<4; i++) {
+	  if (qq[i]<mm) {
+	    switch (i) {
+	    case 1: 
+	      quad=TOP_LEFT;
+	      break;
+	    case 2:
+	      quad=BOTTOM_RIGHT;
+	      break;
+	    case 3:
+	      quad=BOTTOM_LEFT;
+	      break;
+	    default:
+	      ;
+	    }
+
+	  }
+
+	}
+
+
+    switch(quad) {
+    case TOP_LEFT:
+      data[0]=0;
+      data[1]=0;
+      data[2]=0;
+      data[3]=qq[0];
+      data[4]=qq[1];
+      data[5]=0;
+      data[6]=qq[2];
+      data[7]=qq[3];
+      data[8]=0;
+      x=x+1;
+      y=y;
+      break;
+      
+    case TOP_RIGHT:
+      data[0]=0;
+      data[1]=0;
+      data[2]=0;
+      data[3]=0;
+      data[4]=qq[0];
+      data[5]=qq[1];
+      data[6]=0;
+      data[7]=qq[2];
+      data[8]=qq[3];
+      x=x;
+      y=y;
+      break;
+
+
+    case BOTTOM_LEFT:
+      data[0]=qq[0];
+      data[1]=qq[1];
+      data[2]=0;
+      data[3]=qq[2];
+      data[4]=qq[3];
+      data[5]=0;
+      data[6]=0;
+      data[7]=0;
+      data[8]=0;
+      x=x+1;
+      y=y+1;
+      break;
+    case BOTTOM_RIGHT:
+      data[0]=0;
+      data[1]=qq[0];
+      data[2]=qq[1];
+      data[3]=0;
+      data[4]=qq[2];
+      data[5]=qq[3];
+      data[6]=0;
+      data[7]=0;
+      data[8]=0;
+      x=x;
+      y=y+1;
+      break;
+
+
+    default:
+      ;
+    }
+    return 1;
+      }
+#endif
+
     return 0;
   };
+
+  void print() {
+
+    int ix, iy;
+    
+    for (int iy=0; iy<dy; iy++) {
+      for (int ix=0; ix<dx; ix++) {
+	printf("%d \t",data[ix+iy*dx]);
+
+      }
+    printf("\n");
+    }
+
+  }
+
 
     /** 
 	assign the value to the element of the cluster matrix, with relative coordinates where the center of the cluster is (0,0)

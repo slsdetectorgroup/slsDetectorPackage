@@ -1,0 +1,34 @@
+#module add CBFlib/0.9.5
+INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures -I../../slsReceiverSoftware/include 
+
+LDFLAG= ../tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff -O3
+
+MAIN=moench03ClusterFinder.cpp
+
+
+all: moenchClusterFinder moenchMakeEta moenchInterpolation moenchNoInterpolation moenchPhotonCounter moenchAnalog
+
+
+
+moenchClusterFinder:  moench03ClusterFinder.cpp  $(INCS) clean
+			 g++ -o moenchClusterFinder  moench03ClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DNEWRECEIVER 
+
+moenchMakeEta:  moench03Interpolation.cpp  $(INCS) clean
+			 g++ -o moenchMakeEta moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF
+
+moenchInterpolation:  moench03Interpolation.cpp  $(INCS) clean
+			 g++ -o moenchInterpolation moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  
+
+moenchNoInterpolation:  moench03NoInterpolation.cpp  $(INCS) clean
+			 g++ -o moenchNoInterpolation moench03NoInterpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) 
+
+moenchPhotonCounter: moenchPhotonCounter.cpp   $(INCS) clean
+			 g++ -o moenchPhotonCounter  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER
+
+moenchAnalog: moenchPhotonCounter.cpp  $(INCS) clean
+			 g++ -o moenchAnalog  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER -DANALOG
+
+clean: 	
+	rm -f  moenchClusterFinder moenchMakeEta moenchInterpolation moenchNoInterpolation moenchPhotonCounter moenchAnalog
+
+

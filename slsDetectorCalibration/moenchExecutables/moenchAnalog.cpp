@@ -2,19 +2,11 @@
 #include <iostream>
 
 
+
 //#include "moench03T1ZmqData.h"
 #ifdef NEWRECEIVER
-#ifndef RECT
 #include "moench03T1ReceiverDataNew.h"
 #endif
-
-#ifdef RECT
-#include "moench03T1ReceiverDataNewRect.h"
-#endif
-
-#endif
-
-
 #ifdef CSAXS_FP
 #include "moench03T1ReceiverData.h"
 #endif 
@@ -42,13 +34,13 @@ using namespace std;
 int main(int argc, char *argv[]) {
 
 
-  if (argc<6) {
-    cout << "Usage is " << argv[0] << "indir outdir fname runmin runmax " << endl;
+  if (argc<4) {
+    cout << "Usage is " << argv[0] << "indir outdir fname [pedfile] [threshold]" << endl;
     return 1;
   }
   int p=10000;
   int fifosize=1000;
-  int nthreads=24;
+  int nthreads=8;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
@@ -63,12 +55,7 @@ int main(int argc, char *argv[]) {
 
 
 
-
-
 #ifdef NEWRECEIVER
-#ifdef RECT
-  cout << "Should be rectangular!" <<endl;
-#endif
   moench03T1ReceiverDataNew *decoder=new  moench03T1ReceiverDataNew();
   cout << "RECEIVER DATA WITH ONE HEADER!"<<endl;
 #endif
@@ -83,11 +70,19 @@ int main(int argc, char *argv[]) {
   cout << "OLD RECEIVER DATA!"<<endl;
 #endif
 
-
+#ifndef ANALOG
   //moench03T1ZmqData *decoder=new  moench03T1ZmqData();
   singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 200);
   //  char tit[10000];
   cout << "filter " << endl;
+#endif
+
+#ifdef ANALOG
+  //moench03T1ZmqData *decoder=new  moench03T1ZmqData();
+  analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(decoder, 1, 0, nped);
+  //  char tit[10000];
+  cout << "filter " << endl;
+#endif
 
 
 
@@ -114,13 +109,18 @@ int main(int argc, char *argv[]) {
   char *indir=argv[1];
   char *outdir=argv[2];
   char *fformat=argv[3];
-  int runmin=atoi(argv[4]);
-  int runmax=atoi(argv[5]);
+  char *pedfile=NULL;
+  if (argc>=5) {
+    pedfile=argv[4];
+  }
+  double thr=0;
+  if (argc>=6) {
+    thr=atoi(argv[5]);
+  }
   
+
   char fname[10000];
-  char outfname[10000];
   char imgfname[10000];
-  char pedfname[10000];
   //  strcpy(pedfname,argv[6]);
   char fn[10000];
   
@@ -129,8 +129,15 @@ int main(int argc, char *argv[]) {
   FILE *of=NULL;
   cout << "input directory is " << indir << endl;
   cout << "output directory is " << outdir << endl;
-  cout << "fileformat is " << fformat << endl;
-  
+  cout << "input file is " << fformat << endl;
+  if (pedfile)
+    cout << "pedestal file is " << pedfile << endl;
+  if (thr>0) {
+    cout << "threshold is " << thr << endl;
+    filter->setThreshold(thr);
+  }
+
+  filter->setROI(0,150,0,150);
 
   std::time(&end_time);
   cout << std::ctime(&end_time) <<   endl;
@@ -146,8 +153,6 @@ int main(int argc, char *argv[]) {
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
 
  
-  mt->setDetectorMode(ePhotonCounting);
-  mt->setFrameMode(eFrame);
   mt->StartThreads();
   mt->popFree(buff);
 
@@ -157,26 +162,44 @@ int main(int argc, char *argv[]) {
   int ifr=0;
  
 
-  for (int irun=runmin; irun<runmax; irun++) {
-    sprintf(fn,fformat,irun);
-    sprintf(fname,"%s/%s.raw",indir,fn);
-    sprintf(outfname,"%s/%s.clust",outdir,fn);
-    sprintf(imgfname,"%s/%s.tiff",outdir,fn);
+
+
+
+
+
+
+
+
+  for (int irun=0; irun<2; irun++) {
+    if (irun>0) {
+      mt->setFrameMode(eFrame);
+      // sprintf(fn,fformat,irun);
+      sprintf(fname,"%s/%s.raw",indir,fformat);
+    //  sprintf(outfname,"%s/%s.clust",outdir,fn);
+      sprintf(imgfname,"%s/%s.tiff",outdir,fformat);
+    } else {
+      mt->setFrameMode(ePedestal);
+      // sprintf(fn,fformat,irun);
+      sprintf(fname,"%s/%s.raw",indir,pedfile);
+    //  sprintf(outfname,"%s/%s.clust",outdir,fn);
+      // sprintf(imgfname,"%s/%s.tiff",outdir,fn);
+    }
+    cout << fname << endl;
     std::time(&end_time);
     cout << std::ctime(&end_time) <<    endl;
-    cout <<  fname << " " << outfname << " " << imgfname <<  endl;
+    //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
     filebin.open((const char *)(fname), ios::in | ios::binary);
     //      //open file
     if (filebin.is_open()){
-      of=fopen(outfname,"w");
-      if (of) {
-  	mt->setFilePointer(of);
-	//	cout << "file pointer set " << endl;
-      } else {
-  	cout << "Could not open "<< outfname << " for writing " << endl;
-  	mt->setFilePointer(NULL);
-  	return 1;
-      }
+      // of=fopen(outfname,"w");
+      // if (of) {
+      // 	mt->setFilePointer(of);
+      // 	//	cout << "file pointer set " << endl;
+      // } else {
+      // 	cout << "Could not open "<< outfname << " for writing " << endl;
+      // 	mt->setFilePointer(NULL);
+      // 	return 1;
+      // }
       //     //while read frame 
       ff=-1;
       while (decoder->readNextFrame(filebin, ff, np,buff)) {
@@ -192,17 +215,18 @@ int main(int argc, char *argv[]) {
 	if (ifr%10000==0) cout << ifr << " " << ff << endl;
 	ff=-1;
       }
-        cout << "--" << endl;
+      cout << "--" << endl;
       filebin.close();	 
       //      //close file 
       //     //join threads
       while (mt->isBusy()) {;}//wait until all data are processed from the queues
-      if (of)
-  	fclose(of);
-      
-      mt->writeImage(imgfname);
-      mt->clearImage();
-   
+      // if (of)
+      // 	fclose(of);
+      if (irun>0) {
+	cout << "Writing tiff to " << imgfname << endl;
+	mt->writeImage(imgfname);
+	//	mt->clearImage();
+      }
       std::time(&end_time);
       cout << std::ctime(&end_time) <<   endl;
 
@@ -210,7 +234,7 @@ int main(int argc, char *argv[]) {
      cout << "Could not open "<< fname << " for reading " << endl;
       
     
-  }
+   }
     
 
   return 0;

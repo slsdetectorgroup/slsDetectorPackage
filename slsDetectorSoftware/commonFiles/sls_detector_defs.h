@@ -378,6 +378,8 @@ enum dacIndex {
   M_vIbiasSh,   /**< mythen 3 >*/
   M_vIcin,      /**< mythen 3 >*/
   M_vIpreOut,    /**< mythen 3 >*/
+  ZMQ_emin, /**< ZMQ */
+  ZMQ_emax,/**< ZMQ */
   V_POWER_A = 100, /**new chiptest board */
   V_POWER_B = 101, /**new chiptest board */
   V_POWER_C = 102, /**new chiptest board */
@@ -473,13 +475,28 @@ enum readOutFlags {
   READ_HITS=0x2, /**< return only the number of the channel which counted ate least one */
   ZERO_COMPRESSION=0x4,/**< returned data are 0-compressed */
   PUMP_PROBE_MODE=0x8,/**<pump-probe mode */
+
+  PEDESTAL=0x10,/**< frame mode set to pedestal */
+  FLAT=0x20,/**< frame mode set to flat */
+  NEWPEDESTAL=0x40,/**< frame mode set to pedestal and reset */
+  NEWFLAT=0x80,/**< frame mode set to flat and reset */
+  
+  FRAME=0x100, /**< frame mode set to normal frame */
+  ANALOG=0x200, /**<detector working in analog mode */
+  COUNTING=0x400, /**<detector working in counting mode */
+  INTERPOLATING=0x800, /**<detector working in interpolating mode */
+  
+  
+
   BACKGROUND_CORRECTIONS=0x1000, /**<background corrections */
   TOT_MODE=0x2000,/**< pump-probe mode */
   CONTINOUS_RO=0x4000,/**< pump-probe mode */
+
   PARALLEL=0x10000,/**< eiger parallel mode */
   NONPARALLEL=0x20000,/**< eiger serial mode */
   SAFE=0x40000/**< eiger safe mode */,
   DIGITAL_ONLY=0x80000, /** chiptest board read only digital bits (not adc values)*/
+
   ANALOG_AND_DIGITAL=0x100000, /** chiptest board read adc values and digital bits digital bits */
   DUT_CLK=0x200000, /** chiptest board fifo clock comes from device under test */
   SHOW_OVERFLOW=0x400000, /** eiger 32 bit mode, show saturated for overflow of single subframes */

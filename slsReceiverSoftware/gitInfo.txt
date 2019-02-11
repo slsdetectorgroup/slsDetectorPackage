@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsReceiverSoftware 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: 3c774478681813e451df683e2bc8403b37490323 
-Revision: 858 
-Branch: 4.0.1 
+Repsitory UUID: 907d1655d1f6cf2bb8cf6ccd7e91e82f479dd2ca 
+Revision: 859 
+Branch: developer 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 4084 
-Last Changed Date: 2019-02-08 16:44:46.000000002 +0100 ./src/Listener.cpp
+Last Changed Rev: 4101 
+Last Changed Date: 2019-02-11 14:04:47.000000002 +0100 ./src/slsReceiverTCPIPInterface.cpp

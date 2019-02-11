@@ -8,6 +8,7 @@
 #include "pedestalSubtraction.h"
 #include "commonModeSubtraction.h"
 #include "tiffIO.h"
+#include "slsInterpolation.h"
 
 
 #ifdef ROOTSPECTRUM
@@ -29,6 +30,10 @@ using namespace std;
 enum to define the flags of the data set, which are needed to seect the type of processing it should undergo: frame, pedestal, flat
 */
  enum frameMode { eFrame, ePedestal, eFlat };
+/** 
+enum to define the detector mode
+*/
+ enum detectorMode { eAnalog, ePhotonCounting, eInterpolating };
 #endif
 
 
@@ -76,7 +81,6 @@ template <class dataType> class analogDetector {
     fMode=ePedestal;
     thr=0;
     myFile=NULL;
-    fm=new pthread_mutex_t ;
 #ifdef ROOTSPECTRUM
     hs=new TH2F("hs","hs",2000,-100,10000,nx*ny,-0.5,nx*ny-0.5);
 #ifdef ROOTCLUST
@@ -124,7 +128,6 @@ template <class dataType> class analogDetector {
     // nSigma=orig->nSigma;
     fMode=orig->fMode;
     myFile=orig->myFile;
-    fm=orig->fm;
     
 
     stat=new pedestalSubtraction*[ny];
@@ -218,8 +221,8 @@ template <class dataType> class analogDetector {
     if (gm) {
       if (gmap) delete [] gmap; 
       gmap=new double[nnx*nny];
-      for (int ix=0; ix<nnx; ix++) {
 	for (int iy=0; iy<nny; iy++) {
+      for (int ix=0; ix<nnx; ix++) {
 	  gmap[iy*nnx+ix]=gm[iy*nnx+ix];
 	}
       }
@@ -237,8 +240,8 @@ template <class dataType> class analogDetector {
     void *ret;
     if (gmap)  {
       gm=new float[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	  gm[iy*nx+ix]=gmap[iy*nx+ix];
 	}
       }
@@ -322,10 +325,11 @@ template <class dataType> class analogDetector {
 
     virtual void addToCommonMode(char *data){ 
       if (cmSub) {
-	for (int ix=xmin; ix<xmax; ix++) {
 	  for (int iy=ymin; iy<ymax; iy++) { 
+	for (int ix=xmin; ix<xmax; ix++) {
 	    // if (getNumpedestals(ix,iy)>0) 
-	    addToCommonMode(data, ix, iy);
+	    if (det->isGood(ix,iy))
+	      addToCommonMode(data, ix, iy);
 	  }
 	}
 	//cout << "cm " << getCommonMode(0,0) << " " << getCommonMode(1,0) << endl;
@@ -383,9 +387,10 @@ template <class dataType> class analogDetector {
     virtual double* getPedestal(double *ped){
       if (ped==NULL)
 	ped=new double[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
+	  //cout << ped[iy*nx+ix] << " " ;
 	}
       }
       return ped;
@@ -400,8 +405,8 @@ template <class dataType> class analogDetector {
     virtual double* getPedestalRMS(double *ped=NULL){
       if (ped==NULL)
 	ped=new double[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
 	}
       }
@@ -440,8 +445,8 @@ template <class dataType> class analogDetector {
     */
     virtual void setPedestal(double *ped, double *rms=NULL, int m=-1){
       double rr=0;
-      for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
 	  if (rms) rr=rms[iy*nx+ix];
 	  stat[iy][ix].setPedestal(ped[iy*nx+ix],rr, m);
 	};
@@ -469,8 +474,8 @@ template <class dataType> class analogDetector {
        \param rms pointer to array of pedestal rms
     */
  virtual void setPedestalRMS(double *rms){
-      for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
+      for (int ix=xmin; ix<xmax; ix++) {
 	  stat[iy][ix].setPedestalRMS(rms[iy*nx+ix]);
 	};
       };
@@ -493,8 +498,8 @@ template <class dataType> class analogDetector {
 
 #endif
       gm=new float[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	    gm[iy*nx+ix]=image[iy*nx+ix];
 #ifdef ROOTSPECTRUM
 	    hmap->SetBinContent(ix+1, iy+1,image[iy*nx+ix]);
@@ -541,8 +546,8 @@ template <class dataType> class analogDetector {
       TH2F *hmap=new TH2F("hmap","hmap",nx, -0.5,nx-0.5, ny, -0.5, ny-0.5);
 
 #endif
-    for (int ix=0; ix<nx; ix++) {
       for (int iy=0; iy<ny; iy++) {
+    for (int ix=0; ix<nx; ix++) {
 	/* if (cmSub)  */
 	/*     gm[iy*nx+ix]=stat[iy][ix].getPedestal()-cmSub->getCommonMode(); */
 	/* else */
@@ -588,8 +593,8 @@ template <class dataType> class analogDetector {
 
 
     if (gm) {
-      for (int ix=0; ix<nnx; ix++) {
 	for (int iy=0; iy<nny; iy++) {
+      for (int ix=0; ix<nnx; ix++) {
 	  stat[iy][ix].setPedestal(gm[iy*nx+ix],-1,-1);
 	}
       }
@@ -613,8 +618,8 @@ template <class dataType> class analogDetector {
 
 
     if (gm) {
-      for (int ix=0; ix<nnx; ix++) {
 	for (int iy=0; iy<nny; iy++) {
+      for (int ix=0; ix<nnx; ix++) {
 	  image[iy*nx+ix]=gm[iy*nx+ix];
 	}
       }
@@ -639,8 +644,8 @@ template <class dataType> class analogDetector {
     float *gm=NULL;
     void *ret;
       gm=new float[nx*ny];
-      for (int ix=0; ix<nx; ix++) {
 	for (int iy=0; iy<ny; iy++) {
+      for (int ix=0; ix<nx; ix++) {
 	    gm[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
 	}
       }
@@ -661,8 +666,8 @@ template <class dataType> class analogDetector {
     if (nnx>nx) nnx=nx;
     if (nny>ny) nny=ny;
     if (gm) {
-      for (int ix=0; ix<nnx; ix++) {
 	for (int iy=0; iy<nny; iy++) {
+      for (int ix=0; ix<nnx; ix++) {
 	  stat[iy][ix].setPedestalRMS(gm[iy*nx+ix]);
 	}
       }
@@ -681,25 +686,29 @@ template <class dataType> class analogDetector {
       Adds all the data for each pixels in the selected region of interest to the pedestal
        \param data pointer to the data
     */
+
     
     virtual void addToPedestal(char *data, int cm=0) {
       
-      
+      //    cout << "add to pedestal " << endl;
       newFrame();
       
       if (cmSub) {
 	addToCommonMode(data);
       }
             
-      // cout << xmin << " " << xmax << endl;
+      //cout << xmin << " " << xmax << endl;
       // cout << ymin << " " << ymax << endl;
-      for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
-	  addToPedestal(data,ix,iy,1);
-	  
- #ifdef ROOTSPECTRUM 
-	  subtractPedestal(data,ix,iy,cm); 
+      for (int ix=xmin; ix<xmax; ix++) {
+	  if (det->isGood(ix,iy)) {
+	    addToPedestal(data,ix,iy,1);
+	  //if (ix==10 && iy==10) 
+	  // cout <<ix << " " << iy << " " << getPedestal(ix,iy)<< endl;
+#ifdef ROOTSPECTRUM 
+	    subtractPedestal(data,ix,iy,cm); 
  #endif 
+	  }
 	  
 	}
       }
@@ -784,12 +793,12 @@ template <class dataType> class analogDetector {
 	else
 	  val=((double*)data)[iy*nx+ix];
 	
-	  /* if (ix==10 && iy==10) */
-	  /*   cout << ix << " " << iy << " " << val ; */
+	 /* if (ix==10 && iy==10)  */
+	 /*     cout << ix << " " << iy << " " << val ;  */
 	  /* if (ix==100 && iy==100) */
 	  /*   cout << ix << " " << iy << " " << val; */
 	addToPedestal(val,ix,iy);
-	  /* if (ix==10 && iy==10) */
+	  /* if (ix==10 && iy==10)  */
 	  /*   cout <<" " << getPedestal(ix,iy)<< endl; */
 	  /* if (ix==100 && iy==100) */
 	  /*   cout << " " << getPedestal(ix,iy)<< endl; */
@@ -814,9 +823,10 @@ template <class dataType> class analogDetector {
       if (val==NULL)
 	val=image;//new double[nx*ny];
       
-      for (int ix=xmin; ix<xmax; ix++) {
 	for (int iy=ymin; iy<ymax; iy++) {
-	  val[iy*nx+ix]+=subtractPedestal(data, ix, iy,cm);
+      for (int ix=xmin; ix<xmax; ix++) {
+	    if (det->isGood(ix,iy))
+	      val[iy*nx+ix]+=subtractPedestal(data, ix, iy,cm);
 	}
       }
       return  val;
@@ -941,9 +951,10 @@ template <class dataType> class analogDetector {
 
        addToCommonMode(data);
 
-       for (int ix=xmin; ix<xmax; ix++) {
 	 for (int iy=ymin; iy<ymax; iy++) {
-	   nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
+       for (int ix=xmin; ix<xmax; ix++) {
+	   if (det->isGood(ix,iy))
+	     nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
 	 }
        }
        return nph;
@@ -955,8 +966,8 @@ template <class dataType> class analogDetector {
      
     */
    virtual void clearImage(){  
-     for (int ix=0; ix<nx; ix++) {
        for (int iy=0; iy<ny; iy++) { 
+     for (int ix=0; ix<nx; ix++) {
 	 image[iy*nx+ix]=0;
        }
      }
@@ -986,8 +997,8 @@ template <class dataType> class analogDetector {
     int SetNPedestals(int i=-1) {
       int ix=0, iy=0; 
       if (i>0) 
-	for (ix=0; ix<nx; ix++) 
 	  for (iy=0; iy<ny; iy++) 
+	for (ix=0; ix<nx; ix++) 
 	    stat[iy][ix].SetNPedestals(i); 
       return stat[0][0].SetNPedestals();
     };
@@ -1019,10 +1030,13 @@ template <class dataType> class analogDetector {
       if (ymi<0) ymi=ymin;
       if (yma<0) yma=ymax;
       
-      for (int ix=xmi; ix<xma; ix++)
 	for (int iy=ymi; iy<yma; iy++)
-	  if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
-	    val+=getNPhotons(data, ix, iy);
+      for (int ix=xmi; ix<xma; ix++)
+	  if (det->isGood(ix,iy)) {
+	    if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
+	      val+=getNPhotons(data, ix, iy);
+	  }
+
       return val;
       
     };
@@ -1039,16 +1053,17 @@ template <class dataType> class analogDetector {
     virtual void processData(char *data,int *val=NULL) {
       switch(fMode) {
       case ePedestal:
-	//	cout << "ped " << endl;
+	//cout << "analog ped " << endl;
 	addToPedestal(data);
 	break;
       default:
+	//	cout << "analog " << endl;
 	//subtractPedestal(data);
 	getNPhotons(data);
       }
     };
 
-    virtual char *getInterpolation(){return NULL;};
+    //  virtual char *getInterpolation(){return NULL;};
 
  /** sets the current frame mode for the detector
      \param f frame mode to be set
@@ -1062,6 +1077,21 @@ template <class dataType> class analogDetector {
     */
     frameMode getFrameMode() {return fMode;};
     
+
+
+    //enum detectorMode { eAnalog, ePhotonCounting, eInterpolating };
+ /** sets the current detector mode for the detector
+     \param f detector mode to be set
+     \returns current detector mode
+    */
+    detectorMode setDetectorMode(detectorMode f) {dMode=f; return dMode;};
+    
+ /** gets the current detector mode for the detector
+     \returns current detector mode
+    */
+    detectorMode getDetectorMode() {return dMode;};
+  
+
 /** sets file pointer where to write the clusters to 
     \param f file pointer
     \returns current file pointer
@@ -1072,7 +1102,32 @@ FILE *setFilePointer(FILE *f){myFile=f; return myFile;};
     \returns current file pointer
 */
 FILE *getFilePointer(){return myFile;};
- void setMutex(pthread_mutex_t *m){fm=m;};
+
+
+
+
+
+
+
+    virtual slsInterpolation *getInterpolation(){
+      return NULL;
+    };
+    
+    virtual slsInterpolation *setInterpolation(slsInterpolation *ii){return NULL;}
+
+
+
+    
+  virtual double setNSigma(double n) {return 0;};
+  virtual void setEnergyRange(double emi, double ema) {;};
+
+
+
+
+
+
+
+
  protected:
   
     slsDetectorData<dataType> *det; /**< slsDetectorData to be used */
@@ -1093,6 +1148,7 @@ FILE *getFilePointer(){return myFile;};
     double thr; /**< threshold to be used for conversion into number of photons */
     //  int nSigma; /**< number of sigma to be used for conversion into number of photons if threshold is undefined */
     frameMode fMode; /**< current detector frame mode */
+    detectorMode dMode; /**< current detector frame mode */
     FILE *myFile; /**< file pointer to write to */
 #ifdef ROOTSPECTRUM
     TH2F *hs;
@@ -1103,7 +1159,6 @@ FILE *getFilePointer(){return myFile;};
     TH2F *hs9;
 #endif
 #endif
-    pthread_mutex_t *fm;
 };
 
 #endif

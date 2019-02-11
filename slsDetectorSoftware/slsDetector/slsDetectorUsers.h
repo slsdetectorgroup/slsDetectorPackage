@@ -17,6 +17,8 @@ class detectorData;
 class multiSlsDetector;
 class multiSlsDetectorCommand;
 
+#include "sls_detector_defs.h"
+
 
 #include <stdint.h>
 #include <string>
@@ -247,7 +249,7 @@ class slsDetectorUsers
    int getPositions(double *pos=NULL);
   
   /**
-     @short sets the detector size
+     @short sets the detector size (only 1 ROI)
      \param x0 horizontal position origin in channel number (-1 unchanged)
      \param y0 vertical position origin in channel number (-1 unchanged)
      \param nx number of channels in horiziontal  (-1 unchanged)
@@ -256,14 +258,13 @@ class slsDetectorUsers
   */
    int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1);
 
-
   /**
-     @short gets detector size
+     @short gets detector size (roi size if only one roi)
      \param x0 horizontal position origin in channel number 
      \param y0 vertical position origin in channel number 
      \param nx number of channels in horiziontal
      \param  ny number of channels in vertical 
-     \returns OK/FAIL
+     \returns total number of channels
   */
    int getDetectorSize(int &x0, int &y0, int &nx, int &ny);
   /**
@@ -505,12 +506,13 @@ class slsDetectorUsers
 
   /**
      get get Module Firmware Version
+     @param imod module number
      \returns id
   */
-  int64_t getModuleFirmwareVersion();
+  int64_t getModuleFirmwareVersion(int imod=-1);
 
   /**
-     get get Module Serial Number
+     get get Module Serial Number (only mythen)
      @param imod module number
      \returns id
   */
@@ -518,21 +520,24 @@ class slsDetectorUsers
 
   /**
      get get Detector Firmware Version
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorFirmwareVersion();
+  int64_t getDetectorFirmwareVersion(int imod=-1);
 
   /**
      get get Detector Serial Number
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorSerialNumber();
+  int64_t getDetectorSerialNumber(int imod=-1);
 
   /**
      get get Detector Software Version
+     @param imod module number
      \returns id
   */
-  int64_t getDetectorSoftwareVersion();
+  int64_t getDetectorSoftwareVersion(int imod=-1);
 
   /**
      get this Software Version
@@ -814,6 +819,25 @@ class slsDetectorUsers
 	 */
 	int setStoragecellStart(int pos=-1);
 
+	/**
+     * Set ROI (Gotthard) (>= 1 roi, but max 1 roi per module)
+     * At the moment only one set allowed
+     * @param n number of rois
+     * @param roiLimits array of roi
+     * @param imod module number (-1 for all)
+     * @returns OK or FAIL
+     */
+    int setROI(int n=-1, slsDetectorDefs::ROI roiLimits[]=NULL, int imod = -1);
+
+    /**
+     * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
+     * >= 1 roi, but max 1 roi per module
+     * @param n number of rois
+     * @param imod module number (ignored)
+     * @returns pointer to array of ROI structure
+     */
+    slsDetectorDefs::ROI* getROI(int &n, int imod = -1);
+
   /************************************************************************
 
                            STATIC FUNCTIONS
@@ -832,6 +856,7 @@ class slsDetectorUsers
     case 3:      return std::string("finished");				\
     case 4:      return std::string("data");					\
     case 5:      return std::string("running");				\
+    case 6:     return std::string("stoppped");             \
     default:       return std::string("unknown");				\
     }};
 

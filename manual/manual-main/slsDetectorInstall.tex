@@ -369,7 +369,7 @@ source directory.
  $ cd ..
  $ mkdir slsDetectorPackage-build
  $ cd slsDetectorPackage-build
- $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=OFF 
+ $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=OFF 
  $ make
 \end{verbatim}
 
@@ -377,7 +377,7 @@ Use the following as an example to compile statically and using specific hdf5
 folder 
 \begin{verbatim}
  $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage
--DCMAKE_BUILD_TYPE=Debug -DUSE_HDF5=ON
+-DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=ON
 \end{verbatim}
 
 After compiling, the libraries and executables will be found at `bin` directory 

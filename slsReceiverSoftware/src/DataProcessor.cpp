@@ -146,7 +146,7 @@ void DataProcessor::ResetParametersforNewMeasurement(){
 		delete [] tempBuffer;
 		tempBuffer = 0;
 	}
-	if (*gapPixelsEnable >= 0) {
+	if (*gapPixelsEnable) {
 		tempBuffer = new char[generalData->imageSize];
 		memset(tempBuffer, 0, generalData->imageSize);
 	}
@@ -363,10 +363,12 @@ void DataProcessor::ProcessAnImage(char* buf) {
 				*dynamicRange);
 
 
+    // frame padding
+    if (*activated && *framePadding && nump < generalData->packetsPerFrame)
+        PadMissingPackets(buf);
+
 	// deactivated and padding enabled
-	if ((!(*activated) && *deactivatedPaddingEnable) ||
-			// frame padding
-			(*framePadding && nump < generalData->packetsPerFrame))
+    else if (!(*activated) && *deactivatedPaddingEnable)
 		PadMissingPackets(buf);
 
 	// normal call back

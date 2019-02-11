@@ -96,7 +96,7 @@ double angularConversionStatic::convertAngle(double pos, int ich, angleConversio
   //     cout << "no ang conv " << endl;
 
   double enc=0, trans=0;
-  double  ang;
+  double  ang=0;
 
   switch (mF) {
   case 0:

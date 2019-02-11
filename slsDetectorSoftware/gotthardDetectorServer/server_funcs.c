@@ -1829,7 +1829,7 @@ int get_run_status(int file_des) {
 #endif 
 
   retval= runState();
-  printf("\n\nSTATUS=%08x\n",retval);
+  printf("STATUS=%08x\n",retval);
 
 
   //stopped (external stop, also maybe fifo full)
@@ -2046,9 +2046,9 @@ int set_timer(int file_des) {
     printf(mess);
   }
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
   printf("setting timer %d to %lld ns\n",ind,tns);
-//#endif
+#endif
   if (ret==OK) {
 
     if (differentClients==1 && lockStatus==1 && tns!=-1) { 
@@ -2593,7 +2593,7 @@ int configure_mac(int file_des) {
 	sscanf(arg[3], "%llx",	&idetectormacadd);
 	sscanf(arg[4], "%x",		&detipad);
 	//arg[5] is udpport2 for eiger
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	int i;
 	printf("\ndigital_test_bit in server %d\t",digitalTestBit);
 	printf("\nipadd %x\t",ipad);
@@ -2606,8 +2606,9 @@ int configure_mac(int file_des) {
 	for (i=0;i<6;i++)
 		printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
 	printf("detipad %x\n",detipad);
+	printf("destination ip is %d.%d.%d.%d = 0x%x \n",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff,detipad);
 	printf("\n");
-#endif
+//#endif
 
 
 

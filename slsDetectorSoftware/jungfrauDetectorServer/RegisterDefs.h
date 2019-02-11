@@ -11,10 +11,10 @@
 #define DETECTOR_TYPE_OFST   			(24)
 #define DETECTOR_TYPE_MSK   			(0x000000FF << DETECTOR_TYPE_OFST)
 
-
-
 /* Fix pattern register */
 #define FIX_PATT_REG          			(0x01 << MEM_MAP_SHIFT)
+
+#define FIX_PATT_VAL                    (0xACDC2014)
 
 /* Status register */
 #define STATUS_REG            			(0x02 << MEM_MAP_SHIFT)
@@ -31,7 +31,6 @@
 #define STOPPED_MSK  					(0x00000001 << STOPPED_OFST)
 #define RUNMACHINE_BUSY_OFST  			(17)
 #define RUNMACHINE_BUSY_MSK  			(0x00000001 << RUNMACHINE_BUSY_OFST)
-
 
 /* Look at me register */
 #define LOOK_AT_ME_REG          		(0x03 << MEM_MAP_SHIFT)								//Not used in firmware or software
@@ -86,20 +85,19 @@
 #define GET_FRAMES_LSB_REG   			(0x16 << MEM_MAP_SHIFT)
 #define GET_FRAMES_MSB_REG    			(0x17 << MEM_MAP_SHIFT)
 
-/* Get Period 64 bit register */
+/* Get Period 64 bit register tT = T x 50 ns */
 #define GET_PERIOD_LSB_REG    			(0x18 << MEM_MAP_SHIFT)
 #define GET_PERIOD_MSB_REG    			(0x19 << MEM_MAP_SHIFT)
 
 /** Get Temperature Carlos, incorrectl as get gates */
 #define GET_TEMPERATURE_TMP112_REG		(0x1c << MEM_MAP_SHIFT)							// (after multiplying by 625) in 10ths of millidegrees of TMP112
 
-#define TEMPERATURE_POLARITY_BIT		(15)
-#define TEMPERATURE_POLARITY_MSK		(0x00000001 << TEMPERATURE_POLARITY_BIT)
 #define TEMPERATURE_VALUE_BIT			(0)
-#define TEMPERATURE_VALUE_MSK			(0x00007FFF << TEMPERATURE_VALUE_BIT)
+#define TEMPERATURE_VALUE_MSK			(0x000007FF << TEMPERATURE_VALUE_BIT)
+#define TEMPERATURE_POLARITY_BIT        (11)
+#define TEMPERATURE_POLARITY_MSK        (0x00000001 << TEMPERATURE_POLARITY_BIT)
 
-
-/* Get Frames from Start 64 bit register (frames from start Run Control) */
+/* Get Frames from Start 64 bit register (frames from  last reset using CONTROL_CRST) */
 #define FRAMES_FROM_START_PG_LSB_REG	(0x24 << MEM_MAP_SHIFT)
 #define FRAMES_FROM_START_PG_MSB_REG 	(0x25 << MEM_MAP_SHIFT)
 
@@ -139,6 +137,15 @@
 
 /* ADC Port Invert Register */
 #define ADC_PORT_INVERT_REG   			(0x43 << MEM_MAP_SHIFT)
+
+#define ADC_PORT_INVERT_ADC_0_OFST      (0)
+#define ADC_PORT_INVERT_ADC_0_MSK       (0x000000FF << ADC_PORT_INVERT_ADC_0_OFST)
+#define ADC_PORT_INVERT_ADC_1_OFST      (8)
+#define ADC_PORT_INVERT_ADC_1_MSK       (0x000000FF << ADC_PORT_INVERT_ADC_1_OFST)
+#define ADC_PORT_INVERT_ADC_2_OFST      (16)
+#define ADC_PORT_INVERT_ADC_2_MSK       (0x000000FF << ADC_PORT_INVERT_ADC_2_OFST)
+#define ADC_PORT_INVERT_ADC_3_OFST      (24)
+#define ADC_PORT_INVERT_ADC_3_MSK       (0x000000FF << ADC_PORT_INVERT_ADC_3_OFST)
 
 /* Receiver IP Address Register */
 #define RX_IP_REG    					(0x45 << MEM_MAP_SHIFT)
@@ -181,10 +188,12 @@
 /* Configuration Register */
 #define CONFIG_REG            			(0x4D << MEM_MAP_SHIFT)
 
-#define CONFIG_OPERATION_MODE_OFST		(16)
-#define CONFIG_OPERATION_MODE_MSK		(0x00000001 << CONFIG_OPERATION_MODE_OFST)
-#define CONFIG_MODE_1_X_10GBE_VAL		((0x0 << CONFIG_OPERATION_MODE_OFST) & CONFIG_OPERATION_MODE_MSK)
-#define CONFIG_MODE_2_X_10GBE_VAL		((0x1 << CONFIG_OPERATION_MODE_OFST) & CONFIG_OPERATION_MODE_MSK)
+// readout timer (from chip) to stabilize (esp in burst acquisition mode) tRDT = (RDT + 1) * 25ns
+#define CONFIG_RDT_TMR_OFST             (0)
+#define CONFIG_RDT_TMR_MSK              (0x0000FFFF << CONFIG_RDT_TMR_OFST)
+#define CONFIG_OPRTN_MDE_2_X_10GbE_OFST	(16)
+#define CONFIG_OPRTN_MDE_2_X_10GbE_MSK	(0x00000001 << CONFIG_OPRTN_MDE_2_X_10GbE_OFST)
+#define CONFIG_OPRTN_MDE_1_X_10GBE_VAL  ((0x0 << CONFIG_OPRTN_MDE_2_X_10GbE_OFST) & CONFIG_OPRTN_MDE_2_X_10GbE_MSK)
 #define CONFIG_READOUT_SPEED_OFST		(20)
 #define CONFIG_READOUT_SPEED_MSK		(0x00000003 << CONFIG_READOUT_SPEED_OFST)
 #define CONFIG_QUARTER_SPEED_10MHZ_VAL	((0x0 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
@@ -192,17 +201,17 @@
 #define CONFIG_FULL_SPEED_40MHZ_VAL		((0x2 << CONFIG_READOUT_SPEED_OFST) & CONFIG_READOUT_SPEED_MSK)
 #define CONFIG_TDMA_OFST				(24)
 #define CONFIG_TDMA_MSK					(0x00000001 << CONFIG_TDMA_OFST)
-#define CONFIG_TDMA_DISABLE_VAL			((0x0 << CONFIG_TDMA_OFST) & CONFIG_TDMA_MSK)
-#define CONFIG_TDMA_ENABLE_VAL			((0x1 << CONFIG_TDMA_OFST) & CONFIG_TDMA_MSK)
-#define CONFIG_TDMA_TIMESLOT_OFST		(25)
+#define CONFIG_TDMA_DISABLE_VAL         ((0x0 << CONFIG_TDMA_OFST) & CONFIG_TDMA_MSK)
+#define CONFIG_TDMA_TIMESLOT_OFST		(25) // 1ms
 #define CONFIG_TDMA_TIMESLOT_MSK		(0x0000001F << CONFIG_TDMA_TIMESLOT_OFST)
-
+#define CONFIG_ETHRNT_FLW_CNTRL_OFST    (31)
+#define CONFIG_ETHRNT_FLW_CNTRL_MSK     (0x00000001 << CONFIG_ETHRNT_FLW_CNTRL_OFST)
 
 /* External Signal Register */
 #define EXT_SIGNAL_REG        			(0x4E << MEM_MAP_SHIFT)
 
 #define EXT_SIGNAL_OFST					(0)
-#define EXT_SIGNAL_MSK					(0x00000003 << EXT_SIGNAL_OFST)				//enabled when both bits high
+#define EXT_SIGNAL_MSK					(0x00000001 << EXT_SIGNAL_OFST)
 
 /* Control Register */
 #define CONTROL_REG           			(0x4F << MEM_MAP_SHIFT)
@@ -250,7 +259,7 @@
 #define SAMPLE_ADC_SAMPLE_5_VAL			((0x5 << SAMPLE_ADC_SAMPLE_SEL_OFST) & SAMPLE_ADC_SAMPLE_SEL_MSK)
 #define SAMPLE_ADC_SAMPLE_6_VAL			((0x6 << SAMPLE_ADC_SAMPLE_SEL_OFST) & SAMPLE_ADC_SAMPLE_SEL_MSK)
 #define SAMPLE_ADC_SAMPLE_7_VAL			((0x7 << SAMPLE_ADC_SAMPLE_SEL_OFST) & SAMPLE_ADC_SAMPLE_SEL_MSK)
-
+// Decimation = ADF + 1
 #define SAMPLE_ADC_DECMT_FACTOR_OFST	(4)
 #define SAMPLE_ADC_DECMT_FACTOR_MSK		(0x00000007 << SAMPLE_ADC_DECMT_FACTOR_OFST)
 #define SAMPLE_ADC_DECMT_FACTOR_0_VAL	((0x0 << SAMPLE_ADC_DECMT_FACTOR_OFST) & SAMPLE_ADC_DECMT_FACTOR_MSK)
@@ -283,6 +292,7 @@
 
 #define SAMPLE_DGTL_DECMT_FACTOR_OFST	(12)
 #define SAMPLE_DGTL_DECMT_FACTOR_MSK	(0x00000003 << SAMPLE_DGTL_DECMT_FACTOR_OFST)
+// 1 = full speed, 2 = half speed, 4 = quarter speed
 #define SAMPLE_DECMT_FACTOR_1_VAL		((0x0 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 #define SAMPLE_DECMT_FACTOR_2_VAL		((0x1 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 #define SAMPLE_DECMT_FACTOR_4_VAL		((0x2 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
@@ -293,7 +303,7 @@
 #define VREF_COMP_MOD_OFST              (0)
 #define VREF_COMP_MOD_MSK               (0x00000FFF << VREF_COMP_MOD_OFST)
 #define VREF_COMP_MOD_ENABLE_OFST       (31)
-#define VREF_COMP_MOD_ENABLE_MSK        (0x00000FFF << VREF_COMP_MOD_ENABLE_OFST)
+#define VREF_COMP_MOD_ENABLE_MSK        (0x00000001 << VREF_COMP_MOD_ENABLE_OFST)
 
 
 /** DAQ Register */
@@ -343,10 +353,9 @@
 #define TEMP_CTRL_PROTCT_THRSHLD_MSK    (0x000007FF << TEMP_CTRL_PROTCT_THRSHLD_OFST)
 #define TEMP_CTRL_PROTCT_ENABLE_OFST    (16)
 #define TEMP_CTRL_PROTCT_ENABLE_MSK     (0x00000001 << TEMP_CTRL_PROTCT_ENABLE_OFST)
+// set when temp higher than over threshold, write 1 to clear it
 #define TEMP_CTRL_OVR_TMP_EVNT_OFST     (31)
 #define TEMP_CTRL_OVR_TMP_EVNT_MSK      (0x00000001 << TEMP_CTRL_OVR_TMP_EVNT_OFST)
-#define TEMP_CTRL_CLR_OVR_TMP_EVNT_VAL  ((0x1 << TEMP_CTRL_OVR_TMP_EVNT_OFST) & TEMP_CTRL_OVR_TMP_EVNT_MSK)
-
 
 /* Set Delay 64 bit register */
 #define SET_DELAY_LSB_REG     			(0x60 << MEM_MAP_SHIFT)					// different kind of delay
@@ -360,11 +369,11 @@
 #define SET_FRAMES_LSB_REG   			(0x64 << MEM_MAP_SHIFT)
 #define SET_FRAMES_MSB_REG    			(0x65 << MEM_MAP_SHIFT)
 
-/* Set Period 64 bit register */
+/* Set Period 64 bit register tT = T x 50 ns */
 #define SET_PERIOD_LSB_REG    			(0x66 << MEM_MAP_SHIFT)
 #define SET_PERIOD_MSB_REG    			(0x67 << MEM_MAP_SHIFT)
 
-/* Set Period 64 bit register */
+/* Set Exposure Time  64 bit register eEXP = Exp x 25 ns */
 #define SET_EXPTIME_LSB_REG    			(0x68 << MEM_MAP_SHIFT)
 #define SET_EXPTIME_MSB_REG    			(0x69 << MEM_MAP_SHIFT)
 
@@ -388,13 +397,17 @@
 
 /* ASIC Control Register */
 #define ASIC_CTRL_REG                   (0x7F << MEM_MAP_SHIFT)
-
+// tPC = (PCT + 1) * 25ns
 #define ASIC_CTRL_PRCHRG_TMR_OFST       (0)
 #define ASIC_CTRL_PRCHRG_TMR_MSK        (0x000000FF << ASIC_CTRL_PRCHRG_TMR_OFST)
 #define ASIC_CTRL_PRCHRG_TMR_VAL        ((0x1F << ASIC_CTRL_PRCHRG_TMR_OFST) & ASIC_CTRL_PRCHRG_TMR_MSK)
+// tDS = (DST + 1) * 25ns
 #define ASIC_CTRL_DS_TMR_OFST           (8)
 #define ASIC_CTRL_DS_TMR_MSK            (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
 #define ASIC_CTRL_DS_TMR_VAL            ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
+// tET = (ET + 1) * 25ns (increase timeout range between 2 consecutive storage cells)
+#define ASIC_CTRL_EXPSRE_TMR_OFST       (16)
+#define ASIC_CTRL_EXPSRE_TMR_MSK        (0x0000FFFF << ASIC_CTRL_EXPSRE_TMR_OFST)
 
 
 #endif  //REGISTERS_G_H

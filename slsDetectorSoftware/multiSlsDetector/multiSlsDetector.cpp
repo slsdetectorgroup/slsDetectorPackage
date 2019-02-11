@@ -604,7 +604,7 @@ int64_t multiSlsDetector::getId(idMode mode, int imod) {
 
 
 slsDetector* multiSlsDetector::getSlsDetector(unsigned int pos) {
-	if (pos >= 0 && pos < detectors.size()) {
+	if (pos < detectors.size()) {
 		return detectors[pos];
 	}
 	return 0;
@@ -1315,7 +1315,9 @@ void multiSlsDetector::updateOffsets() {
 			numY_gp += detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
 			maxY += detectors[idet]->getMaxNumberOfChannels(Y);
 			maxY_gp += detectors[idet]->getMaxNumberOfChannelsInclGapPixels(Y);
-			++thisMultiDetector->numberOfDetector[Y];
+			// increment in y again only in the first column (else you double increment)
+			if (thisMultiDetector->numberOfDetector[X] == 1)
+			    ++thisMultiDetector->numberOfDetector[Y];
 #ifdef VERBOSE
 			cout << "incrementing in y direction" << endl;
 #endif
@@ -2341,7 +2343,7 @@ int multiSlsDetector::sendSoftwareTrigger() {
 
 
 int multiSlsDetector::startReadOut() {
-	unsigned int i   = 0;
+	int i   = 0;
 	int ret = OK, ret1 = OK;
 	i = thisMultiDetector->masterPosition;
 	if (i >= 0) {
@@ -2351,7 +2353,7 @@ int multiSlsDetector::startReadOut() {
 		if (ret != OK)
 			ret1 = FAIL;
 	}
-	for (i = 0; i < detectors.size(); ++i) {
+	for (i = 0; i < (int)detectors.size(); ++i) {
 		ret = detectors[i]->startReadOut();
 		if (detectors[i]->getErrorMask())
 			setErrorMask(getErrorMask() | (1 << i));
@@ -3261,7 +3263,10 @@ void multiSlsDetector::verifyMinMaxROI(int n, ROI r[]) {
 	}
 }
 
-int multiSlsDetector::setROI(int n, ROI roiLimits[]) {
+int multiSlsDetector::setROI(int n, ROI roiLimits[], int imod) {
+    if (imod > 0 && imod < (int)detectors.size()) {
+        return detectors[imod]->setROI(n, roiLimits, imod);
+    }
 	int ret1 = -100, ret;
 	int i, xmin, xmax, ymin, ymax, channelX, channelY, idet, lastChannelX,
 	lastChannelY, index, offsetX, offsetY;
@@ -3393,8 +3398,10 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[]) {
 }
 
 
-slsDetectorDefs::ROI* multiSlsDetector::getROI(int& n) {
-
+slsDetectorDefs::ROI* multiSlsDetector::getROI(int& n, int imod) {
+    if (imod > 0 && imod < (int)detectors.size()) {
+        return detectors[imod]->getROI(n, imod);
+    }
 	n          = 0;
 	int num    = 0, i, j;
 	int ndet   = detectors.size();
@@ -5379,7 +5386,7 @@ int multiSlsDetector::setCTBPattern(std::string fname) {
 	uint64_t word;
 	int addr = 0;
 	FILE* fd = fopen(fname.c_str(), "r");
-	if (fd > 0) {
+	if (fd) {
 		while (fread(&word, sizeof(word), 1, fd)) {
 			for (unsigned int idet = 0; idet < detectors.size(); ++idet)
 				detectors[idet]->setCTBWord(addr, word);

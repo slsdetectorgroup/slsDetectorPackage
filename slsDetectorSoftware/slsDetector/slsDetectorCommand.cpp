@@ -3434,34 +3434,27 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
 			} else {
 				return string("none");
 			}
+		}else{
+			return "unknown action";
 		}
 	} else if  (string(args[0])==string("globaloff")) {
 		c=GLOBAL_OFFSET;
-
-
 	} else if  (string(args[0])==string("fineoff")) {
 		c=FINE_OFFSET;
-
-
 	} else if  (string(args[0])==string("binsize")) {
 		c=BIN_SIZE;
-
 	} else if  (string(args[0])==string("angdir")) {
 		c=ANGULAR_DIRECTION;
-
 	} else if  (string(args[0])==string("moveflag")) {
 		c=MOVE_FLAG;
 	} else if  (string(args[0])==string("samplex")) {
 		c=SAMPLE_X;
 	} else if  (string(args[0])==string("sampley")) {
 		c=SAMPLE_Y;
-	}
-
-
-	else
+	}else{
 		return string("could not decode angular conversion parameter ")+cmd;
-
-
+	}
+		
 
 	if (action==PUT_ACTION) {
 		if (sscanf(args[1],"%lf",&fval))
@@ -3568,7 +3561,7 @@ string slsDetectorCommand::helpThreaded(int narg, char *args[], int action){
 
 string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
 	string sval;
-	int retval;
+	int retval = FAIL;
 	if (action==HELP_ACTION)
 		return helpImage(narg,args,HELP_ACTION);
 	else if (action==GET_ACTION)
@@ -3609,7 +3602,7 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
 	int ival;
 	char answer[100];
 	string sval;
-	int retval;
+	int retval = FAIL;
 	if (action==HELP_ACTION)
 		return helpCounter(narg,args,HELP_ACTION);
 	else if (action==PUT_ACTION)
@@ -4533,7 +4526,9 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 		myDet->setReceiverOnline(ONLINE_FLAG);
 		ret=myDet->setDynamicRange(val);
 	} else if (cmd=="roi") {
-		myDet->getROI(ret);
+	    ROI* r = myDet->getROI(ret);
+        if (myDet->isMultiSlsDetectorClass() && r != NULL)
+            delete [] r;
 	} else if (cmd=="detsizechan") {
 		sprintf(ans,"%d %d",myDet->getMaxNumberOfChannelsPerDetector(X),myDet->getMaxNumberOfChannelsPerDetector(Y));
 		return string(ans);
@@ -6207,7 +6202,8 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
 		myDet->setReceiverOnline(ONLINE_FLAG);
 		if (action==PUT_ACTION)
 			return string("cannot put");
-		return string(""+myDet->printReceiverConfiguration());
+		myDet->printReceiverConfiguration();
+		return string("");
 	}else if (cmd=="parameters") {
 		myDet->setReceiverOnline(ONLINE_FLAG);
 		if (action==PUT_ACTION) {
@@ -6995,6 +6991,8 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 			}
 		}
 		os << hex << reg << dec;
+		if (myDet->isMultiSlsDetectorClass() && aa != NULL)
+		    delete [] aa;
 
 
 		//os <<" "<< hex << myDet->readRegister(120) << dec;

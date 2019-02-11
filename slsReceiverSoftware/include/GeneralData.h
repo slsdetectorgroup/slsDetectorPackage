@@ -89,7 +89,6 @@ public:
 
 
 
-
 	/** Cosntructor */
 	GeneralData():
 		myDetectorType(slsReceiverDefs::GENERIC),
@@ -124,28 +123,14 @@ public:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
-	 * @param frameNumber frame number
-	 * @param packetNumber packet number
-	 */
-	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
-	{
-		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-		frameNumber++;
-		packetNumber = frameNumber&packetIndexMask;
-		frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
-	}
-
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
 	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param oddStartingPacket odd starting packet (gotthard)
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
 	{
 		subFrameNumber = -1;
@@ -170,7 +155,7 @@ public:
 	 * @param i pointer to a vector of ROI pointers
 	 * @returns adc configured
 	 */
-	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+	virtual int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
 		return 0;
 	};
@@ -208,6 +193,17 @@ public:
 	 */
 	virtual void SetGapPixelsEnable(bool b, int dr) {
 		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	};
+
+	/**
+	 * Set odd starting packet (gotthard)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @returns true or false for odd starting packet number
+	 */
+	virtual bool SetOddStartingPacket(int index, char* packetData) {
+	    cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	    return false;
 	};
 
 
@@ -274,40 +270,22 @@ private:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
-	 * @param frameNumber frame number
-	 * @param packetNumber packet number
-	 */
-	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const
-	{
-		if (nPixelsX == 1280) {
-			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			frameNumber++;
-			packetNumber = frameNumber&packetIndexMask;
-			frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
-		} else  {
-			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			packetNumber = 0;
-		}
-	}
-
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
 	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param oddStartingPacket odd starting packet (gotthard)
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
 	{
 		if (nPixelsX == 1280) {
 			subFrameNumber = -1;
 			bunchId = -1;
 			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			frameNumber++;
+			if (oddStartingPacket)
+			    frameNumber++;
 			packetNumber = frameNumber&packetIndexMask;
 			frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
 		} else  {
@@ -323,7 +301,7 @@ private:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
+	void SetROI(std::vector<slsReceiverDefs::ROI> i) {
 		// all adcs
 		if(!i.size()) {
 			nPixelsX 			= 1280;
@@ -367,7 +345,7 @@ private:
 	 * @param i pointer to a vector of ROI
 	 * @returns adc configured
 	 */
-	virtual const int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+	int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
 		int adc = -1;
 		// single adc
 		if(i->size())  {
@@ -391,6 +369,40 @@ private:
 		FILE_LOG(logINFO) << "Adc Configured: " << adc;
 		return adc;
 	};
+
+    /**
+     * Set odd starting packet (gotthard)
+     * @param index thread index for debugging purposes
+     * @param packetData pointer to data
+     * @returns true or false for odd starting packet number
+     */
+	bool SetOddStartingPacket(int index, char* packetData) {
+	    bool oddStartingPacket = true;
+        // care only if no roi
+        if  (nPixelsX == 1280) {
+            uint32_t fnum = ((uint32_t)(*((uint32_t*)(packetData))));
+            uint32_t firstData = ((uint32_t)(*((uint32_t*)(packetData + 4))));
+            // first packet
+            if (firstData == 0xCACACACA) {
+                // packet number should be 0, but is 1 => so odd starting packet
+                if (fnum & packetIndexMask) {
+                    oddStartingPacket = true;
+                } else {
+                    oddStartingPacket = false;
+                }
+            }
+            // second packet
+            else {
+                // packet number should be 1, but is 0 => so odd starting packet
+                if (!(fnum & packetIndexMask)) {
+                    oddStartingPacket = true;
+                } else {
+                    oddStartingPacket = false;
+                }
+            }
+        }
+        return oddStartingPacket;
+    };
 
 
 };
@@ -520,29 +532,18 @@ private:
 		defaultFifoDepth 	= 2500;
 	};
 
- 	/**
- 	 * Get Header Infomation (frame number, packet number)
- 	 * @param index thread index for debugging purposes
- 	 * @param packetData pointer to data
- 	 * @param frameNumber frame number
- 	 * @param packetNumber packet number
- 	 */
-	virtual void GetHeaderInfo(int index, char* packetData,	uint64_t& frameNumber, uint32_t& packetNumber) const 	{
-		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);
-		frameNumber = (uint64_t)((*( (uint32_t*) header->frameNumber)) & frameIndexMask);
-		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
-	}
 
 	/**
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
 	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param oddStartingPacket odd starting packet (gotthard)
 	 * @param frameNumber frame number 	 * @param packetNumber packet number
 	 * @param subFrameNumber sub frame number if applicable
 	 * @param bunchId bunch id
 	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange,
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
 		subFrameNumber = -1;
 		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);

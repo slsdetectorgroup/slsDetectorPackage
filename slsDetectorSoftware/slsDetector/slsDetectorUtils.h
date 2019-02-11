@@ -869,16 +869,18 @@ virtual int calibratePedestal(int frames = 0)=0;
     set roi
      \param n number of rois
      \param roiLimits array of roi
+     \param imod module number (-1 for all)
      \returns success or failure
 */
-virtual int setROI(int n=-1,ROI roiLimits[]=NULL)=0;
+virtual int setROI(int n=-1,ROI roiLimits[]=NULL, int imod = -1)=0;
 
 /**
  	get roi from each detector and convert it to the multi detector scale
  	\param n number of rois
- 	\returns an array of multidetector's rois
+ 	\param imod module number (-1 for all)
+ 	\returns pointer to array of ROI structure
 */
-virtual ROI* getROI(int &n)=0;
+virtual ROI* getROI(int &n, int imod = -1)=0;
 
 /** Sets the read receiver frequency
  	  if data required from receiver randomly readRxrFrequency=0,

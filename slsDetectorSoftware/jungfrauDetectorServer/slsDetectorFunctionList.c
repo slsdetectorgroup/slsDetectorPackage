@@ -1588,6 +1588,7 @@ enum runStatus getRunStatus(){
 
 	//not running
 	else {
+	    // stopped or error
 		if ((retval & STOPPED_MSK) >> STOPPED_OFST) {
 			printf("-----------------------------------STOPPED--------------------------\n");
 			s=STOPPED;

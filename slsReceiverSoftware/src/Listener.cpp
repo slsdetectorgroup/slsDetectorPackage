@@ -54,7 +54,8 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 		listeningPacket(0),
 		udpSocketAlive(0),
 		numPacketsStatistic(0),
-		numFramesStatistic(0)
+		numFramesStatistic(0),
+		oddStartingPacket(true)
 {
 	if(ThreadObject::CreateThread() == FAIL)
 	    throw std::exception();
@@ -64,9 +65,11 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 
 
 Listener::~Listener() {
-	if (udpSocket) delete udpSocket;
-	sem_post(&semaphore_socket);
-    sem_destroy(&semaphore_socket);
+	if (udpSocket){
+		delete udpSocket;
+		sem_post(&semaphore_socket);
+    	sem_destroy(&semaphore_socket);
+	} 
 	if (carryOverPacket) delete [] carryOverPacket;
 	if (listeningPacket) delete [] listeningPacket;
 	ThreadObject::DestroyThread();
@@ -201,9 +204,10 @@ int Listener::CreateUDPSockets() {
 	ShutDownUDPSocket();
 
 	try{
-		udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+		genericSocket* g = new genericSocket(*udpPortNumber, genericSocket::UDP,
 				generalData->packetSize, (strlen(eth)?eth:NULL), generalData->headerPacketSize,
 				*udpSocketBufferSize);
+		udpSocket = g;
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
 	} catch (...) {
 		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber;
@@ -227,8 +231,10 @@ void Listener::ShutDownUDPSocket() {
 		udpSocket->ShutDownSocket();
 		FILE_LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
 		fflush(stdout);
-		//delete socket at stoplistening
-	    sem_wait(&semaphore_socket);
+		// wait only if the threads have started as it is the threads that
+		//give a post to semaphore(at stopListening)
+		if (runningFlag)
+		    sem_wait(&semaphore_socket);
         delete udpSocket;
         udpSocket = 0;
 	    sem_destroy(&semaphore_socket);
@@ -427,7 +433,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
 			generalData->GetHeaderInfo(index, carryOverPacket + esize,
-					*dynamicRange, fnum, pnum, snum, bid);
+					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
@@ -542,8 +548,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		}
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
+		    // set first packet to be odd or even (check required when switching from roi to no roi)
+		    if (myDetectorType == GOTTHARD && !measurementStartedFlag) {
+		        oddStartingPacket = generalData->SetOddStartingPacket(index, listeningPacket + esize);
+		    }
+
 			generalData->GetHeaderInfo(index, listeningPacket + esize,
-					*dynamicRange, fnum, pnum, snum, bid);
+					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
 

@@ -343,11 +343,11 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \returns id
   */
   virtual int64_t getId(idMode mode, int imod=0)=0;
-  int64_t getModuleFirmwareVersion(){return getId(MODULE_FIRMWARE_VERSION,-1);};
+  int64_t getModuleFirmwareVersion(int imod=-1){return getId(MODULE_FIRMWARE_VERSION,imod);};
   int64_t getModuleSerialNumber(int imod=-1){return getId(MODULE_SERIAL_NUMBER,imod);};
-  int64_t getDetectorFirmwareVersion(){return getId(DETECTOR_FIRMWARE_VERSION,-1);};
-  int64_t getDetectorSerialNumber(){return getId(DETECTOR_SERIAL_NUMBER,-1);};
-  int64_t getDetectorSoftwareVersion(){return getId(DETECTOR_SOFTWARE_VERSION,-1);};
+  int64_t getDetectorFirmwareVersion(int imod=-1){return getId(DETECTOR_FIRMWARE_VERSION,imod);};
+  int64_t getDetectorSerialNumber(int imod=-1){return getId(DETECTOR_SERIAL_NUMBER,imod);};
+  int64_t getDetectorSoftwareVersion(int imod=-1){return getId(DETECTOR_SOFTWARE_VERSION,imod);};
   int64_t getThisSoftwareVersion(){return getId(THIS_SOFTWARE_VERSION,-1);};
 
   /**
@@ -846,6 +846,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     case RUNNING:      return std::string("running");\
     case TRANSMITTING:      return std::string("data");	\
     case  RUN_FINISHED:      return std::string("finished");	\
+    case STOPPED:           return std::string("stopped");  \
     default:       return std::string("idle");		\
     }};
 

@@ -18,7 +18,7 @@ set(SOURCES
 
 
 # HDF5
-if (USE_HDF5)
+if (SLS_USE_HDF5)
 	if (HDF5_FOUND)
 	    include_directories( 
 	        ${HDF5_INCLUDE_DIRS}
@@ -30,7 +30,7 @@ if (USE_HDF5)
 	        src/HDF5File.cpp 
 	    )
 	endif ()
-endif (USE_HDF5)
+endif (SLS_USE_HDF5)
 
 
 add_definitions(
@@ -46,15 +46,6 @@ add_library(zmq STATIC IMPORTED GLOBAL)
 set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/include/libzmq.a)
 set_target_properties(zmq PROPERTIES
     IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
-)
-
-add_library(slsReceiverStatic STATIC
-    ${SOURCES}
-    ${HEADERS}
-)
-set_target_properties(slsReceiverStatic PROPERTIES
-    ARCHIVE_OUTPUT_NAME SlsReceiver
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 add_library(slsReceiverShared SHARED
@@ -98,12 +89,12 @@ endif ()
 
 
 
-install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
+install(TARGETS slsReceiverShared slsReceiver
+        EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)
-        
- 
+
 install(FILES ${ZMQ_STATIC_ARCHIVE}
 DESTINATION lib)       

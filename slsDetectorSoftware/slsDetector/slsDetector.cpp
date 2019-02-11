@@ -2213,7 +2213,7 @@ string slsDetector::getLastClientIP() {
 
 int slsDetector::exitServer() {
 
-	int retval;
+	int retval = FAIL;
 	int fnum=F_EXIT_SERVER;
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
@@ -3158,13 +3158,15 @@ string slsDetector::getSettingsDir() {
 	return std::string(thisDetector->settingsDir);
 }
 string slsDetector::setSettingsDir(string s) {
-	sprintf(thisDetector->settingsDir, s.c_str()); return thisDetector->settingsDir;
+	sprintf(thisDetector->settingsDir, "%s", s.c_str()); 
+	return thisDetector->settingsDir;
 }
 string slsDetector::getCalDir() {
 	return thisDetector->calDir;
 }
 string slsDetector::setCalDir(string s) {
-	sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;
+	sprintf(thisDetector->calDir, "%s", s.c_str()); 
+	return thisDetector->calDir;
 }
 
 
@@ -4338,7 +4340,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index, int imod) {
 
 
 	int fnum=F_GET_TIME_LEFT;
-	int64_t retval;
+	int64_t retval = FAIL;
 	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
@@ -4627,7 +4629,7 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod) {
 
 dacs_t slsDetector::getADC(dacIndex index, int imod) {
 
-	dacs_t retval;
+	dacs_t retval = 0;
 	int fnum=F_GET_ADC;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
@@ -5353,12 +5355,13 @@ string slsDetector::setReceiverUDPMAC(string udpmac) {
 		if((udpmac[2]==':')&&(udpmac[5]==':')&&(udpmac[8]==':')&&
 				(udpmac[11]==':')&&(udpmac[14]==':')){
 			strcpy(thisDetector->receiverUDPMAC,udpmac.c_str());
-			if(!strcmp(thisDetector->receiver_hostname,"none"))
+			if(!strcmp(thisDetector->receiver_hostname,"none")) {
 #ifdef VERBOSE
 				std::cout << "Warning: Receiver hostname not set yet." << endl;
 #else
 			;
 #endif
+		}
 			/* else  if(setUDPConnection()==FAIL){ commented out to be replaced by user
 			 * defined udpmac
     	  std::cout<< "Warning: UDP connection set up failed" << std::endl;
@@ -5732,8 +5735,10 @@ int slsDetector::setUDPConnection() {
 				std::cout << "could not configure mac" << endl;
 			}
 		}
-	}else
+	}else {
 		ret=FAIL;
+		setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+	}
 #ifdef VERBOSE
 	printReceiverConfiguration();
 #endif
@@ -6017,7 +6022,7 @@ int slsDetector::setCounterBit(int i) {
 
 
 
-int slsDetector::setROI(int n,ROI roiLimits[]) {
+int slsDetector::setROI(int n,ROI roiLimits[], int imod) {
 	int ret = FAIL;
 	//sort ascending order
 	int temp;
@@ -6053,7 +6058,7 @@ int slsDetector::setROI(int n,ROI roiLimits[]) {
 }
 
 
-slsDetectorDefs::ROI* slsDetector::getROI(int &n) {
+slsDetectorDefs::ROI* slsDetector::getROI(int &n, int imod) {
 	sendROI(-1,NULL);
 	n=thisDetector->nROI;
 	if(thisDetector->myDetectorType==JUNGFRAUCTB) getTotalNumberOfChannels();
@@ -6126,7 +6131,7 @@ int slsDetector::sendROI(int n,ROI roiLimits[]) {
 #endif
 
 	// old firmware requires configuremac after setting roi
-	if (thisDetector->myDetectorType == GOTTHARD) {
+	if (thisDetector->myDetectorType == GOTTHARD && n != -1) {
 		configureMAC();
 	}
 
@@ -6362,7 +6367,7 @@ int slsDetector::setFlippedData(dimension d, int value) {
 
 int slsDetector::setAllTrimbits(int val, int imod) {
 	int fnum=F_SET_ALL_TRIMBITS;
-	int retval;
+	int retval = FAIL;
 	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
@@ -7663,16 +7668,12 @@ int slsDetector::setChip(int reg, int ichip, int imod) {
 int slsDetector::setChip(sls_detector_chip chip) {
 
 	int fnum=F_SET_CHIP;
-	int retval;
+	int retval = FAIL;
 	int ret=FAIL;
 	char mess[MAX_STR_LENGTH]="";
 
 	int ichi=chip.chip;
 	int im=chip.module;
-
-
-
-
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 		if (connectControl() == OK){
@@ -8490,7 +8491,7 @@ string slsDetector::getReceiverLastClientIP() {
 
 int slsDetector::exitReceiver() {
 
-	int retval;
+	int retval = FAIL;
 	int fnum=F_EXIT_RECEIVER;
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
@@ -8662,7 +8663,7 @@ void slsDetector::sendMultiDetectorSize() {
 			ret=thisReceiver->sendIntArray(fnum,retval,arg);
 			disconnectData();
 		}
-		if((ret==FAIL)){
+		if(ret==FAIL){
 			std::cout << "Could not set position Id" << std::endl;
 			setErrorMask((getErrorMask())|(RECEIVER_MULTI_DET_SIZE_NOT_SET));
 		}
@@ -9561,7 +9562,7 @@ int slsDetector::setCTBPattern(string fname) {
 	int addr=0;
 
 	FILE *fd=fopen(fname.c_str(),"r");
-	if (fd>0) {
+	if (fd) {
 		while (fread(&word, sizeof(word), 1,fd)) {
 			setCTBWord(addr,word);
 			// cout << hex << addr << " " << word << dec << endl;

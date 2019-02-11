@@ -1,5 +1,5 @@
 #ifndef POSTPROCESSINGFUNCS_H
-#define POSTPROCESSINGFUNC_H
+#define POSTPROCESSINGFUNCS_H
 
 
 
@@ -77,4 +77,4 @@ class postProcessingFuncs : public virtual angularConversionStatic
 }; 
 
 
-#endif
+#endif //POSTPROCESSINGFUNCS_H

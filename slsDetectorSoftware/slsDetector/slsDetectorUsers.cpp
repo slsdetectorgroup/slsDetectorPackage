@@ -115,18 +115,37 @@ int slsDetectorUsers::getPositions(double *pos){
 }
 
 int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
-  if(myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y)>1)
-	return 1;
-  int nmod=nx/(myDetector->getChansPerMod(0));
-  cout << myDetector->getChansPerMod(0) << " " << nx << " " << nmod << endl;
-  return myDetector->setNumberOfModules(nmod)*myDetector->getChansPerMod(0);}
+    // only one roi
+    slsDetectorDefs::ROI roi[1];
+    roi[0].xmin = x0;
+    roi[0].ymin = y0;
+    roi[0].xmax = x0 + nx;
+    roi[0].ymax = y0 + ny;
+    return myDetector->setROI(1, roi);
+}
 
 int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
-  y0=0; 
-  x0=0; 
-  nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
-  ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
-  return nx*ny;
+    // default (no roi)
+    y0=0;
+    x0=0;
+    nx=myDetector->getTotalNumberOfChannels(slsDetectorDefs::X);
+    ny=myDetector->getTotalNumberOfChannels(slsDetectorDefs::Y);
+
+    int n = 0;
+    slsDetectorDefs::ROI* roi = myDetector->getROI(n);
+
+    // roi
+    if (roi != NULL && n == 1) {
+        x0 = roi[0].xmin;
+        y0 = roi[0].ymin;
+        nx = roi[0].xmax - roi[0].xmin;
+        ny = roi[0].ymax - roi[0].ymin;
+    }
+
+    if (roi != NULL)
+        delete [] roi;
+
+    return nx*ny;
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
@@ -267,24 +286,24 @@ string slsDetectorUsers::setClientDataStreamingInIP(string ip){
 	return myDetector->setClientDataStreamingInIP(ip);
 }
 
-int64_t slsDetectorUsers::getModuleFirmwareVersion(){
-	return myDetector->getModuleFirmwareVersion();
+int64_t slsDetectorUsers::getModuleFirmwareVersion(int imod){
+	return myDetector->getModuleFirmwareVersion(imod);
 }
 
 int64_t slsDetectorUsers::getModuleSerialNumber(int imod){
 	return myDetector->getModuleSerialNumber(imod);
 }
 
-int64_t slsDetectorUsers::getDetectorFirmwareVersion(){
-	return myDetector->getDetectorFirmwareVersion();
+int64_t slsDetectorUsers::getDetectorFirmwareVersion(int imod){
+	return myDetector->getDetectorFirmwareVersion(imod);
 }
 
-int64_t slsDetectorUsers::getDetectorSerialNumber(){
-	return myDetector->getDetectorSerialNumber();
+int64_t slsDetectorUsers::getDetectorSerialNumber(int imod){
+	return myDetector->getDetectorSerialNumber(imod);
 }
 
-int64_t slsDetectorUsers::getDetectorSoftwareVersion(){
-	return myDetector->getDetectorSoftwareVersion();
+int64_t slsDetectorUsers::getDetectorSoftwareVersion(int imod){
+	return myDetector->getDetectorSoftwareVersion(imod);
 }
 
 int64_t slsDetectorUsers::getThisSoftwareVersion(){
@@ -493,4 +512,12 @@ int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int imod) {
 
 int slsDetectorUsers::setStoragecellStart(int pos) {
 	return myDetector->setStoragecellStart(pos);
+}
+
+int slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int imod) {
+    return myDetector->setROI(n, roiLimits, imod);
+}
+
+slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int imod) {
+    return myDetector->getROI(n, imod);
 }

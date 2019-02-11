@@ -38,8 +38,13 @@ add_library(slsReceiverShared SHARED
     ${HEADERS}
 )
 
-target_link_libraries(slsReceiverShared slsSupportLib)
-target_include_directories(slsReceiverShared PUBLIC include)
+target_link_libraries(slsReceiverShared PUBLIC
+    slsSupportLib
+)
+
+target_include_directories(slsReceiverShared PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 #What is included in slsReceiverLib?
 set(PUBLICHEADERS
@@ -60,7 +65,7 @@ set_target_properties(slsReceiver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-target_link_libraries(slsReceiver
+target_link_libraries(slsReceiver PUBLIC
     slsSupportLib
     slsReceiverShared
     pthread
@@ -69,17 +74,17 @@ target_link_libraries(slsReceiver
 )
 
 if (HDF5_FOUND)
-    target_link_libraries(slsReceiver ${HDF5_LIBRARIES})
+    target_link_libraries(slsReceiver PUBLIC ${HDF5_LIBRARIES})
 endif ()
 
 
 
-install(TARGETS slsReceiverShared slsReceiver
+install(TARGETS slsReceiverShared
         EXPORT "${TARGETS_EXPORT_NAME}"
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        PUBLIC_HEADER DESTINATION include)
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(FILES ${ZMQ_STATIC_ARCHIVE}
-DESTINATION lib)       
+DESTINATION lib)

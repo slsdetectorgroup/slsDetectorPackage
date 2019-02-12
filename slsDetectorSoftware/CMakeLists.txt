@@ -69,6 +69,9 @@ set(PUBLICHEADERS
     multiSlsDetector/multiSlsDetector.h
     slsReceiverInterface/receiverInterface.h
     ../slsReceiverSoftware/include/sls_receiver_exceptions.h
+    include/slsReceiverUsers.h
+    include/slsDetectorUsers.h
+    include/detectorData.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

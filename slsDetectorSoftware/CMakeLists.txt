@@ -23,18 +23,18 @@ set(HEADERS
 )
 
 include_directories(
-commonFiles
-multiSlsDetector 
-sharedMemory
-slsDetector 
-slsDetectorUtils 
-slsDetectorCommand 
-slsDetectorAnalysis 
-slsReceiverInterface 
-threadFiles
-usersFunctions 
-../slsReceiverSoftware/include 
-../slsReceiverSoftware/MySocketTCP 
+    commonFiles
+    multiSlsDetector 
+    sharedMemory
+    slsDetector 
+    slsDetectorUtils 
+    slsDetectorCommand 
+    slsDetectorAnalysis 
+    slsReceiverInterface 
+    threadFiles
+    usersFunctions 
+    ../slsReceiverSoftware/include 
+    ../slsReceiverSoftware/MySocketTCP 
 )
 
 add_definitions(
@@ -69,9 +69,8 @@ set(PUBLICHEADERS
     multiSlsDetector/multiSlsDetector.h
     slsReceiverInterface/receiverInterface.h
     ../slsReceiverSoftware/include/sls_receiver_exceptions.h
-    include/slsReceiverUsers.h
-    include/slsDetectorUsers.h
-    include/detectorData.h
+    slsDetector/slsDetectorUsers.h
+    ../slsReceiverSoftware/include/slsReceiverUsers.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

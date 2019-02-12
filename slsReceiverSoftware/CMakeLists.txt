@@ -42,9 +42,9 @@ target_link_libraries(slsReceiverShared slsSupportLib)
 target_include_directories(slsReceiverShared PUBLIC include)
 
 #What is included in slsReceiverLib?
-# set(PUBLICHEADERS
-
-# )
+set(PUBLICHEADERS
+    include/slsReceiverUsers.h
+)
 
 
 set_target_properties(slsReceiverShared PROPERTIES

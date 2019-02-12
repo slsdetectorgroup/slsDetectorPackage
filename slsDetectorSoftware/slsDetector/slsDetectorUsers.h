@@ -14,7 +14,7 @@
 
 
 class detectorData;
-class multiSlsDetector;
+#include "multiSlsDetector.h"
 
 #include <cstdint>
 #include <string>

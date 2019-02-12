@@ -1,7 +1,5 @@
 #include "slsDetectorUsers.h"
 #include "detectorData.h"
-
-#include "multiSlsDetector.h"
 #include "multiSlsDetectorClient.h"
 
 
@@ -235,11 +233,11 @@ int slsDetectorUsers::setFlowControl10G(int i, int detPos) {
 }
 
 int slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int detPos) {
-    return myDetector->setROI(n, roiLimits, detPos);
+    return detector.setROI(n, roiLimits, detPos);
 }
 
 slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int detPos) {
-    return myDetector->getROI(n, detPos);
+    return detector.getROI(n, detPos);
 }
 
 /************************************************************************

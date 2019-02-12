@@ -2123,7 +2123,7 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
         ymin = roiLimits[i].ymin;
         ymax = roiLimits[i].ymax;
 
-        if (getDetectorsType() != JUNGFRAUCTB || getNumberOfDetectors() > 1) {
+        if (getNumberOfDetectors() > 1) {
             // check roi max values
             idet = decodeNChannel(xmax, ymax, channelX, channelY);
             FILE_LOG(logDEBUG1) << "Decoded Channel max vals: " << std::endl

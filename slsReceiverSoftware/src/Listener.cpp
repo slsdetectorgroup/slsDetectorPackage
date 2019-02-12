@@ -572,9 +572,9 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			RecordFirstIndices(fnum);
 
         if (pnum >= pperFrame ) {
-            FILE_LOG(logERROR, ("Bad packet %d (fnum:%lld), throwing away. "
-                    "Packets caught so far: %d\n",
-                    pnum, (long long int)fnum, numpackets));
+            FILE_LOG(logERROR) << "Bad packet " << pnum <<
+                    "(fnum: " << fnum << "), throwing away. "
+                    "Packets caught so far: " << numpackets;
           return 0;   // bad packet
         }
 

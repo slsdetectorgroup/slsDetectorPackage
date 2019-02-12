@@ -1569,7 +1569,7 @@ public:
 	 * @param addr wait address, -1 gets
 	 * @returns actual value
 	 */
-	uint64_t setCTBPatWaitAddr(uint64_t level, uint64_t addr=-1);
+	int setCTBPatWaitAddr(uint64_t level, uint64_t addr=-1);
 
 	/**
 	 * Sets the wait time in the CTB

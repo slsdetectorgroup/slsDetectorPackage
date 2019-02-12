@@ -78,14 +78,17 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 	}
 
 	// might throw an exception
-	tcpipInterface = new slsReceiverTCPIPInterface(tcpip_port_no);
+	//tcpipInterface = std::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
+	tcpipInterface = std::unique_ptr<slsReceiverTCPIPInterface>(new slsReceiverTCPIPInterface(tcpip_port_no));
 
 }
 
 
-slsReceiver::~slsReceiver() {
-	if(tcpipInterface)
-		delete tcpipInterface;
+slsReceiver::slsReceiver(int tcpip_port_no)
+{
+	// might throw an exception
+	//tcpipInterface = std::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
+	tcpipInterface = std::unique_ptr<slsReceiverTCPIPInterface>(new slsReceiverTCPIPInterface(tcpip_port_no));
 }
 
 

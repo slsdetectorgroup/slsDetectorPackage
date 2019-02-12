@@ -4,11 +4,11 @@ cd build
 cmake .. \
       -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
       -DCMAKE_INSTALL_PREFIX=install \
-      -DUSE_TEXTCLIENT=ON \
-      -DUSE_RECEIVER=ON \
-      -DUSE_GUI=OFF \
+      -DSLS_USE_TEXTCLIENT=ON \
+      -DSLS_USE_RECEIVER=ON \
+      -DSLS_USE_GUI=OFF \
       -DCMAKE_BUILD_TYPE=Release \
-      -DUSE_HDF5=OFF\
+      -DSLS_USE_HDF5=OFF\
      
 
 cmake --build . -- -j10

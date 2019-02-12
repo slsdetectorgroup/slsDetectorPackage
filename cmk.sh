@@ -116,21 +116,21 @@ done
 
 
 if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
-#       CMAKE_POST+=" -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON -DUSE_GUI=ON "
-		CMAKE_POST+=" -DUSE_TEXTCLIENT=ON -DUSE_RECEIVER=ON  "
+#       CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
+		CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON  "
        echo "Compile Option: TextClient, Receiver and GUI"
 else 
        if [ $TEXTCLIENT -eq 1 ]; then
-              CMAKE_POST+=" -DUSE_TEXTCLIENT=ON "
+              CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON "
                echo "Compile Option: TextClient"
        fi
        if [ $RECEIVER -eq 1 ]; then
-               CMAKE_POST+=" -DUSE_RECEIVER=ON "
+               CMAKE_POST+=" -DSLS_USE_RECEIVER=ON "
                echo "Compile Option: Receiver"
        fi
                                
        if [ $GUI -eq 1 ]; then
-               CMAKE_POST+=" -DUSE_GUI=ON "
+               CMAKE_POST+=" -DSLS_USE_GUI=ON "
                echo "Compile Option: GUI"
        fi
 fi
@@ -162,10 +162,10 @@ fi
 #hdf5 rebuild
 if [ $HDF5 -eq 1 ]; then
 	CMAKE_PRE+="HDF5_ROOT="$HDF5DIR
-	CMAKE_POST+=" -DUSE_HDF5=ON "
+	CMAKE_POST+=" -DSLS_USE_HDF5=ON "
 #normal mode rebuild
 else
-	CMAKE_POST+=" -DUSE_HDF5=OFF "
+	CMAKE_POST+=" -DSLS_USE_HDF5=OFF "
 fi
 
 

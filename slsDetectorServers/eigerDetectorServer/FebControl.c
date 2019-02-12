@@ -1978,7 +1978,7 @@ int64_t Feb_Control_GetMeasuredPeriod() {
 
 	unsigned int  value = 0;
 	Feb_Interface_ReadRegister(sub_num,MEAS_PERIOD_REG, &value);
-	return value*10;
+	return (int64_t)value*10;
 }
 
 int64_t Feb_Control_GetSubMeasuredPeriod() {
@@ -1988,7 +1988,7 @@ int64_t Feb_Control_GetSubMeasuredPeriod() {
 
 	unsigned int value = 0;
 	Feb_Interface_ReadRegister(sub_num,MEAS_SUBPERIOD_REG, &value);
-	return value*10;
+	return (int64_t)value*10;
 }
 
 
@@ -2022,14 +2022,22 @@ uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 	uint32_t value=0;
 	if (Module_TopAddressIsValid(&modules[1])) {
 		if (!Feb_Interface_WriteRegister(Module_GetTopRightAddress (&modules[1]),offset, data,0, 0)) {
-			FILE_LOG(logERROR, ("Could not read value. Value read:%d\n", value));
+			FILE_LOG(logERROR, ("Could not read tr value. Value read:%d\n", value));
 			value = 0;
 		}
+        if(!Feb_Interface_WriteRegister(Module_GetTopLeftAddress (&modules[1]),offset, data,0, 0)) {
+            cprintf(RED,"Could not read tl value. Value read:%d\n", value);
+            value = 0;
+        }
 	} else {
 		if (!Feb_Interface_WriteRegister(Module_GetBottomRightAddress (&modules[1]),offset, data,0, 0)) {
-			FILE_LOG(logERROR, ("Could not read value. Value read:%d\n", value));
+			FILE_LOG(logERROR, ("Could not read br value. Value read:%d\n", value));
 			value = 0;
 		}
+        if(!Feb_Interface_WriteRegister(Module_GetBottomLeftAddress (&modules[1]),offset, data,0, 0)) {
+            cprintf(RED,"Could not read bl value. Value read:%d\n", value);
+            value = 0;
+        }
 	}
 	return Feb_Control_ReadRegister(offset);
 }
@@ -2037,16 +2045,33 @@ uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 
 uint32_t Feb_Control_ReadRegister(uint32_t offset) {
 	uint32_t value=0;
+	uint32_t value1=0;
 	if (Module_TopAddressIsValid(&modules[1])) {
 		if (!Feb_Interface_ReadRegister(Module_GetTopRightAddress (&modules[1]),offset, &value)) {
 			FILE_LOG(logERROR, ("Could not read value. Value read:%d\n", value));
 			value = 0;
 		}
+        printf("Read top right addr: 0x%08x\n", value);
+        if(!Feb_Interface_ReadRegister(Module_GetTopLeftAddress (&modules[1]),offset, &value1)) {
+            cprintf(RED,"Could not read value. Value read:%d\n", value1);
+            value1 = 0;
+        }
+        printf("Read top left addr: 0x%08x\n", value1);
+        if (value != value1)
+            value = -1;
 	} else {
 		if (!Feb_Interface_ReadRegister(Module_GetBottomRightAddress (&modules[1]),offset, &value)) {
 			FILE_LOG(logERROR, ("Could not read value. Value read:%d\n", value));
 			value = 0;
 		}
+        printf("Read bottom right addr: 0x%08x\n", value);
+        if(!Feb_Interface_ReadRegister(Module_GetBottomLeftAddress (&modules[1]),offset, &value1)) {
+            cprintf(RED,"Could not read value. Value read:%d\n", value1);
+            value1 = 0;
+        }
+        printf("Read bottom left addr: 0x%08x\n", value1);
+        if (value != value1)
+            value = -1;
 	}
 	return value;
 }

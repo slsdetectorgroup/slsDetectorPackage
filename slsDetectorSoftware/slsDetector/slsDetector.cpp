@@ -2753,7 +2753,11 @@ int slsDetector::setUDPConnection() {
                 setReceiverOnline(OFFLINE_FLAG); //FIXME: Needed??
             }
         }
+    } else {
+        ret=FAIL;
+        setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
     }
+
     printReceiverConfiguration(logDEBUG1);
     return ret;
 }
@@ -2926,6 +2930,8 @@ int slsDetector::setROI(int n, ROI roiLimits[]) {
     }
 
     int ret = sendROI(n, roiLimits);
+    if(ret==FAIL)
+        setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
     if (thisDetector->myDetectorType == CHIPTESTBOARD) {
         getTotalNumberOfChannels();
     }
@@ -2996,7 +3002,7 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
         ret = updateDetector();
     }
     // old firmware requires configuremac after setting roi
-    if (thisDetector->myDetectorType == GOTTHARD) {
+    if (thisDetector->myDetectorType == GOTTHARD && n != -1) {
         ret = configureMAC();
     }
 

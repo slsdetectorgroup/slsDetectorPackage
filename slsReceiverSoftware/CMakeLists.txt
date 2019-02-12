@@ -14,7 +14,7 @@ set(SOURCES
 
 
 # HDF5
-if (USE_HDF5)
+if (SLS_USE_HDF5)
 	if (HDF5_FOUND)
 	    include_directories( 
 	        ${HDF5_INCLUDE_DIRS}
@@ -26,7 +26,7 @@ if (USE_HDF5)
 	        src/HDF5File.cpp 
 	    )
 	endif ()
-endif (USE_HDF5)
+endif (SLS_USE_HDF5)
 
 
 # include_directories(
@@ -75,6 +75,7 @@ endif ()
 
 
 install(TARGETS slsReceiverShared slsReceiver
+        EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib

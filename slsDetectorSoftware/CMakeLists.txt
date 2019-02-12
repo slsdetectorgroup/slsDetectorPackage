@@ -56,6 +56,7 @@ endif()
 
 
 install(TARGETS slsDetectorShared
+    EXPORT "${TARGETS_EXPORT_NAME}"
     LIBRARY DESTINATION lib
     PUBLIC_HEADER DESTINATION include
     ARCHIVE DESTINATION lib

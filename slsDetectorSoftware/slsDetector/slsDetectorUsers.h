@@ -14,9 +14,8 @@
 
 
 class detectorData;
+class multiSlsDetector;
 
-
-#include "multiSlsDetector.h"
 #include <cstdint>
 #include <string>
 
@@ -530,6 +529,24 @@ public:
 	 */
 	int setFlowControl10G(int enable = -1, int detPos = -1);
 
+    /**
+     * Set ROI (Gotthard) (>= 1 roi, but max 1 roi per module)
+     * At the moment only one set allowed
+     * @param n number of rois
+     * @param roiLimits array of roi
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns OK or FAIL
+     */
+    int setROI(int n=-1, slsDetectorDefs::ROI roiLimits[]=NULL, int detPos = -1);
+
+    /**
+     * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
+     * >= 1 roi, but max 1 roi per module
+     * @param n number of rois
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns pointer to array of ROI structure
+     */
+    slsDetectorDefs::ROI* getROI(int &n, int detPos = -1);
 
 
 
@@ -825,6 +842,7 @@ public:
 		case 3:      return std::string("finished");				\
 		case 4:      return std::string("data");					\
 		case 5:      return std::string("running");				\
+        case 6:      return std::string("stopped");             \
 		default:       return std::string("unknown");				\
 		}};
 

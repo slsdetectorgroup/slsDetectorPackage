@@ -188,7 +188,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	/** additional json header */
 	char* additionJsonHeader;
 
-
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;
 

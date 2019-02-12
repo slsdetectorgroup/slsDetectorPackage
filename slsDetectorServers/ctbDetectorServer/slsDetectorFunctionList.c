@@ -2118,8 +2118,8 @@ void readSample() {
 
                 // keep reading till the value is the same
                 while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
+                    FILE_LOG(logDEBUG1, ("%d ", ich));
                     *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
-                    FILE_LOG(logDEBUG1, (""))
                 }
 
                 // increment pointer to data out destination

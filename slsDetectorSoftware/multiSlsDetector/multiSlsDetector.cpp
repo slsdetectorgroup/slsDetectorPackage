@@ -668,7 +668,9 @@ void multiSlsDetector::updateOffsets() {
             numY += detectors[idet]->getTotalNumberOfChannels(Y);
             numY_gp +=
                 detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
-            ++thisMultiDetector->numberOfDetector[Y];
+            // increment in y again only in the first column (else you double increment)
+            if (thisMultiDetector->numberOfDetector[X] == 1)
+                ++thisMultiDetector->numberOfDetector[Y];
             FILE_LOG(logDEBUG1) << "incrementing in y direction";
         }
 
@@ -2121,77 +2123,89 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
         ymin = roiLimits[i].ymin;
         ymax = roiLimits[i].ymax;
 
-        // check roi max values
-        idet = decodeNChannel(xmax, ymax, channelX, channelY);
-        FILE_LOG(logDEBUG1) << "Decoded Channel max vals: " << std::endl
-                            << "det:" << idet << "\t" << xmax << "\t" << ymax << "\t" << channelX << "\t" << channelY;
-        if (idet == -1) {
-            FILE_LOG(logERROR) << "invalid roi";
-            continue;
-        }
+        if (getDetectorsType() != JUNGFRAUCTB || getNumberOfDetectors() > 1) {
+            // check roi max values
+            idet = decodeNChannel(xmax, ymax, channelX, channelY);
+            FILE_LOG(logDEBUG1) << "Decoded Channel max vals: " << std::endl
+                    << "det:" << idet << "\t" << xmax << "\t" << ymax << "\t" << channelX << "\t" << channelY;
+            if (idet == -1) {
+                FILE_LOG(logERROR) << "invalid roi";
+                continue;
+            }
 
-        // split in x dir
-        while (xmin <= xmax) {
-            invalidroi = false;
-            ymin = roiLimits[i].ymin;
-            // split in y dir
-            while (ymin <= ymax) {
-                // get offset for each detector
-                idet = decodeNChannel(xmin, ymin, channelX, channelY);
-                FILE_LOG(logDEBUG1) << "Decoded Channel min vals: " << std::endl
-                                    << "det:" << idet << "\t" << xmin << "\t" << ymin << "\t" << channelX << "\t" << channelY;
-                if (idet < 0 || idet >= (int)detectors.size()) {
-                    FILE_LOG(logDEBUG1) << "invalid roi";
-                    invalidroi = true;
+            // split in x dir
+            while (xmin <= xmax) {
+                invalidroi = false;
+                ymin = roiLimits[i].ymin;
+                // split in y dir
+                while (ymin <= ymax) {
+                    // get offset for each detector
+                    idet = decodeNChannel(xmin, ymin, channelX, channelY);
+                    FILE_LOG(logDEBUG1) << "Decoded Channel min vals: " << std::endl
+                            << "det:" << idet << "\t" << xmin << "\t" << ymin << "\t" << channelX << "\t" << channelY;
+                    if (idet < 0 || idet >= (int)detectors.size()) {
+                        FILE_LOG(logDEBUG1) << "invalid roi";
+                        invalidroi = true;
+                        break;
+                    }
+                    // get last channel for each det in x and y dir
+                    lastChannelX =
+                            (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
+                                    X)) -
+                                    1;
+                    lastChannelY =
+                            (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
+                                    Y)) -
+                                    1;
+
+                    offsetX = detectors[idet]->getDetectorOffset(X);
+                    offsetY = detectors[idet]->getDetectorOffset(Y);
+                    // at the end in x dir
+                    if ((offsetX + lastChannelX) >= xmax) {
+                        lastChannelX = xmax - offsetX;
+                    }
+                    // at the end in y dir
+                    if ((offsetY + lastChannelY) >= ymax) {
+                        lastChannelY = ymax - offsetY;
+                    }
+
+                    FILE_LOG(logDEBUG1) << "lastChannelX:" << lastChannelX << "\t"
+                            << "lastChannelY:" << lastChannelY;
+
+                    // creating the list of roi for corresponding detector
+                    index = nroi[idet];
+                    allroi[idet][index].xmin = channelX;
+                    allroi[idet][index].xmax = lastChannelX;
+                    allroi[idet][index].ymin = channelY;
+                    allroi[idet][index].ymax = lastChannelY;
+                    nroi[idet] = nroi[idet] + 1;
+
+                    ymin = lastChannelY + offsetY + 1;
+                    if ((lastChannelY + offsetY) == ymax) {
+                        ymin = ymax + 1;
+                    }
+
+                    FILE_LOG(logDEBUG1) << "nroi[idet]:" << nroi[idet] << "\tymin:" << ymin;
+                }
+                if (invalidroi) {
                     break;
                 }
-                // get last channel for each det in x and y dir
-                lastChannelX =
-                    (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
-                        X)) -
-                    1;
-                lastChannelY =
-                    (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
-                        Y)) -
-                    1;
 
-                offsetX = detectors[idet]->getDetectorOffset(X);
-                offsetY = detectors[idet]->getDetectorOffset(Y);
-                // at the end in x dir
-                if ((offsetX + lastChannelX) >= xmax) {
-                    lastChannelX = xmax - offsetX;
+                xmin = lastChannelX + offsetX + 1;
+                if ((lastChannelX + offsetX) == xmax) {
+                    xmin = xmax + 1;
                 }
-                // at the end in y dir
-                if ((offsetY + lastChannelY) >= ymax) {
-                    lastChannelY = ymax - offsetY;
-                }
-
-                FILE_LOG(logDEBUG1) << "lastChannelX:" << lastChannelX << "\t"
-                                    << "lastChannelY:" << lastChannelY;
-
-                // creating the list of roi for corresponding detector
-                index = nroi[idet];
-                allroi[idet][index].xmin = channelX;
-                allroi[idet][index].xmax = lastChannelX;
-                allroi[idet][index].ymin = channelY;
-                allroi[idet][index].ymax = lastChannelY;
-                nroi[idet] = nroi[idet] + 1;
-
-                ymin = lastChannelY + offsetY + 1;
-                if ((lastChannelY + offsetY) == ymax) {
-                    ymin = ymax + 1;
-                }
-
-                FILE_LOG(logDEBUG1) << "nroi[idet]:" << nroi[idet] << "\tymin:" << ymin;
             }
-            if (invalidroi) {
-                break;
-            }
+        } else {// FIXME: check if xmax is greater? or reduce logic above?
+            idet=0;
+            nroi[idet]=n;
+            index                    = 0;
+            allroi[idet][index].xmin = xmin;
+            allroi[idet][index].xmax = xmax;
+            allroi[idet][index].ymin = ymin;
+            allroi[idet][index].ymax = ymax;
+            // nroi[idet]               = nroi[idet] + 1;
 
-            xmin = lastChannelX + offsetX + 1;
-            if ((lastChannelX + offsetX) == xmax) {
-                xmin = xmax + 1;
-            }
         }
     }
 

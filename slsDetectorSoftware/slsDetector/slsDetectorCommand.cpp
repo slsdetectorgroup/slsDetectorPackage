@@ -3226,7 +3226,9 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int acti
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
         ret = myDet->setDynamicRange(val, detPos);
     } else if (cmd == "roi") {
-        myDet->getROI(ret, detPos);
+        ROI* r = myDet->getROI(ret, detPos);
+        if (r != NULL)
+            delete [] r;
     } else if (cmd == "detsizechan") {
         sprintf(ans, "%d %d", myDet->getMaxNumberOfChannelsPerDetector(X), myDet->getMaxNumberOfChannelsPerDetector(Y));
         return std::string(ans);
@@ -5341,7 +5343,8 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             }
         }
         os << std::hex << reg << std::dec ;
-
+        if (aa != NULL)
+            delete [] aa;
         //os <<" "<< std::hex << myDet->readRegister(120, detPos) << std::dec ;
 
     }

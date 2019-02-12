@@ -1,7 +1,7 @@
 #include "slsDetectorUsers.h"
 #include "detectorData.h"
 
-
+#include "multiSlsDetector.h"
 #include "multiSlsDetectorClient.h"
 
 
@@ -57,7 +57,7 @@ int slsDetectorUsers::dumpDetectorSetup(const std::string& fname){
 }
 
 int64_t slsDetectorUsers::getDetectorFirmwareVersion(int detPos){
-	return detector.getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION);
+	return detector.getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION, detPos);
 }
 
 int64_t slsDetectorUsers::getDetectorSerialNumber(int detPos){
@@ -234,6 +234,13 @@ int slsDetectorUsers::setFlowControl10G(int i, int detPos) {
 	return detector.setFlowControl10G(i, detPos);
 }
 
+int slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int detPos) {
+    return myDetector->setROI(n, roiLimits, detPos);
+}
+
+slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int detPos) {
+    return myDetector->getROI(n, detPos);
+}
 
 /************************************************************************
 

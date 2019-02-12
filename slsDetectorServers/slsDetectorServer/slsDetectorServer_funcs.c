@@ -1359,6 +1359,7 @@ int start_acquisition(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
+        nframes = 0;
 		ret = startStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start acquisition\n");
@@ -1443,6 +1444,7 @@ int start_and_read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Stopping Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
+        nframes = 0;
 		ret = startStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start acquisition\n");
@@ -1473,7 +1475,6 @@ int read_all(int file_des) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	    // read from fifo enabled
       if (!sendUDP(-1)) {
-          nframes = 0;
 
           // keep reading frames
           while(readFrameFromFifo() == OK) {

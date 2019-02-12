@@ -1,5 +1,5 @@
 PKGDIR		=	../..
-LIBDIR		=   $(PKGDIR)/build/bin
+LIBDIR		=   $(PKGDIR)/bin
 INCLUDES	=   -I . -I$(PKGDIR)/slsSupportLib/include -I$(LIBDIR) -I$(PKGDIR)/slsDetectorSoftware/slsDetector  -I$(PKGDIR)/slsReceiversoftware/include
 SRC_DET		= 	mainClient.cpp 	
 SRC_REC		=   mainReceiver.cpp

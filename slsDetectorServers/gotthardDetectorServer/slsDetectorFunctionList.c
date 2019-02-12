@@ -1480,6 +1480,64 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
     usleep(1000 * 1000);
     FILE_LOG(logDEBUG1, ("\tConfigure Mac Done\n"));
+    {
+        /** send out first image as first packet does not give 0xcacacaca (needed to know if first image
+         * when switching back and forth between roi and no roi
+         */
+        FILE_LOG(logINFOBLUE, ("Sending an image to counter the packet numbers\n"));
+        // remember old parameters
+        enum externalCommunicationMode oldtiming = getTiming();
+        uint64_t oldframes = setTimer(FRAME_NUMBER, -1);
+        uint64_t oldcycles = setTimer(CYCLES_NUMBER, -1);
+        uint64_t oldPeriod = setTimer(FRAME_PERIOD, -1);
+        uint64_t oldExptime = setTimer(ACQUISITION_TIME, -1);
+
+        // set to basic parameters
+        FILE_LOG(logINFO, ("\tSetting basic parameters\n"
+                "\tTiming: auto\n"
+                "\tframes: 1\n"
+                "\tcycles: 1\n"
+                "\tperiod: 1s\n"
+                "\texptime: 900ms\n"));
+        setTiming(AUTO_TIMING);
+        setTimer(FRAME_NUMBER, 1);
+        setTimer(CYCLES_NUMBER, 1);
+        setTimer(FRAME_PERIOD, 1e9); // important to keep this until we have to wait for acquisition to start
+        setTimer(ACQUISITION_TIME, 900 * 1000);
+
+        // take an image
+        if (masterflags == IS_MASTER)
+            usleep(1 * 1000 * 1000); // required to ensure master starts acquisition only after slave has changed to basic parameters and is waiting
+
+        int loop = 0;
+        startStateMachine();
+        // wait for acquisition to start (trigger from master)
+        FILE_LOG(logINFO, ("\tWaiting for acquisition to start\n"));
+        while(!runBusy()) {
+            usleep(0);
+            ++loop;
+        }
+
+        FILE_LOG(logINFO, ("\twaited %d loops to start\n", loop));
+        FILE_LOG(logINFO, ("\tWaiting for acquisition to end (frames left: %lld)\n", (long long int)getTimeLeft(FRAME_NUMBER)));
+        waitForAcquisitionFinish();
+
+        // set to previous parameters
+        FILE_LOG(logINFO, ("\tSetting previous parameters:\n"
+                "\tTiming: %d\n"
+                "\tframes: %lld\n"
+                "\tcycles: %lld\n"
+                "\tperiod: %lld ns\n"
+                "\texptime:%lld ns\n",
+                (int)oldtiming, (long long int)oldframes, (long long int)oldcycles,
+                (long long int)oldPeriod, (long long int)oldExptime));
+        setTiming(oldtiming);
+        setTimer(FRAME_NUMBER, oldframes);
+        setTimer(CYCLES_NUMBER, oldcycles);
+        setTimer(FRAME_PERIOD, oldPeriod);
+        setTimer(ACQUISITION_TIME, oldExptime);
+        FILE_LOG(logINFOBLUE, ("Done sending a frame at configuration\n"));
+    }
     return OK;
 }
 
@@ -1604,6 +1662,7 @@ int startStateMachine(){
 	return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
+	FILE_LOG(logINFO, ("#frames to acquire:%lld\n", (long long int)setTimer(FRAME_NUMBER, -1)));
 
 	cleanFifos();
 

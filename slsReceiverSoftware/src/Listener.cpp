@@ -54,7 +54,8 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 		listeningPacket(nullptr),
 		udpSocketAlive(0),
 		numPacketsStatistic(0),
-		numFramesStatistic(0)
+		numFramesStatistic(0),
+		oddStartingPacket(true)
 {
 	if(ThreadObject::CreateThread() == FAIL)
 	    throw std::exception();
@@ -428,7 +429,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
 			generalData->GetHeaderInfo(index, carryOverPacket + esize,
-					*dynamicRange, fnum, pnum, snum, bid);
+					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
@@ -544,8 +545,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		}
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
+            // set first packet to be odd or even (check required when switching from roi to no roi)
+            if (myDetectorType == GOTTHARD && !measurementStartedFlag) {
+                oddStartingPacket = generalData->SetOddStartingPacket(index, listeningPacket + esize);
+            }
+
 			generalData->GetHeaderInfo(index, listeningPacket + esize,
-					*dynamicRange, fnum, pnum, snum, bid);
+					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
 
@@ -564,6 +570,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
+
+        if (pnum >= pperFrame ) {
+            FILE_LOG(logERROR, ("Bad packet %d (fnum:%lld), throwing away. "
+                    "Packets caught so far: %d\n",
+                    pnum, (long long int)fnum, numpackets));
+          return 0;   // bad packet
+        }
 
 		//future packet	by looking at image number  (all other detectors)
 		if (fnum != currentFrameIndex) {

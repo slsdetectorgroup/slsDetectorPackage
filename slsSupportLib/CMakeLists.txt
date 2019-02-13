@@ -37,7 +37,10 @@ add_library(slsSupportLib SHARED
     ${HEADERS}
 )
 
-target_include_directories(slsSupportLib PUBLIC include)
+target_include_directories(slsSupportLib PUBLIC
+    include
+    ${ZeroMQ_INCLUDE_DIRS}
+ )
 
 set_target_properties(slsSupportLib PROPERTIES
     LIBRARY_OUTPUT_NAME SlsSupport

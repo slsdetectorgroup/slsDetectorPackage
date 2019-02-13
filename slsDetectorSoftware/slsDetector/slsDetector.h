@@ -977,6 +977,23 @@ public:
 	 */
 	std::string getAdditionalJsonHeader();
 
+   /**
+    * Sets the value for the additional json header parameter if found, else append it
+    * @param key additional json header parameter
+    * @param value additional json header parameter value (cannot be empty)
+    * @returns the additional json header parameter value,
+    * empty if no parameter found in additional json header
+    */
+	std::string setAdditionalJsonParameter(const std::string& key, const std::string& value);
+
+   /**
+    * Returns the additional json header parameter value
+    * @param key additional json header parameter
+    * @returns the additional json header parameter value,
+    * empty if no parameter found in additional json header
+    */
+   std::string getAdditionalJsonParameter(const std::string& key);
+
 	/**
 	 * Sets the receiver UDP socket buffer size
 	 * @param udpsockbufsize additional json header

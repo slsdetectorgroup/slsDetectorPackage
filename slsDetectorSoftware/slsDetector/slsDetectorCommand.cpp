@@ -1641,6 +1641,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     i++;
 
     /*! \page network
+   - <b>rx_jsonpara [k] [v]</b> sets/gets  value v for additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
+     */
+    descrToFuncMap[i].m_pFuncName = "rx_jsonpara"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    i++;
+
+    /*! \page network
    - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). This command is already included in \c rx_hsotname. Only put!. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "configuremac"; //
@@ -2844,6 +2851,11 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
     		  myDet->setAdditionalJsonHeader(args[1], detPos);
     	  }
     	  return myDet->getAdditionalJsonHeader(detPos);
+    } else if (cmd == "rx_jsonpara") {
+        if (action == PUT_ACTION) {
+            myDet->setAdditionalJsonParameter(args[1], args[2], detPos);
+        }
+        return myDet->getAdditionalJsonParameter(args[1]);
     }
 
     return ("unknown network parameter") + cmd;
@@ -2884,6 +2896,7 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
               "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
               "Use only if it needs to be processed by an intermediate process."
            << std::endl;
+        os << "rx_jsonpara [k v]\n sets value to v for additional json header parameter k to be streamed out with the zmq from receiver. Use only if it needs to be processed by an intermediate process." << std::endl;
         os << "rx_udpsocksize [t]\n sets the UDP socket buffer size. Different defaults for Jungfrau. "
               "Does not remember in client shared memory, "
               "so must be initialized each time after setting receiver "
@@ -2908,6 +2921,7 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
         os << "rx_jsonaddheader \n gets additional json header to be streamed "
               "out with the zmq from receiver."
            << std::endl;
+        os << "rx_jsonpara [k] \n gets value of additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found. Use only if it needs to be processed by an intermediate process." << std::endl;
         os << "rx_udpsocksize \n gets the UDP socket buffer size." << std::endl;
         os << "rx_realudpsocksize \n gets the actual UDP socket buffer size. Usually double the set udp socket buffer size due to kernel bookkeeping." << std::endl;
     }

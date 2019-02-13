@@ -1359,7 +1359,9 @@ int start_acquisition(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
         nframes = 0;
+#endif
 		ret = startStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start acquisition\n");
@@ -1444,7 +1446,9 @@ int start_and_read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Stopping Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
         nframes = 0;
+#endif
 		ret = startStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start acquisition\n");
@@ -2505,14 +2509,15 @@ int set_ctb_pattern(int file_des) {
         uint64_t args[2] = {-1, -1};
         if (receiveData(file_des, args, sizeof(args), INT64) < 0)
             return printSocketReadError();
-        int addr = (int)args[0];
-        uint64_t word = args[1];
         int64_t retval64 = -1;
 
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
         functionNotImplemented();
         return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 #else
+        int addr = (int)args[0];
+        uint64_t word = args[1];
+
         if ((word == -1) || (Server_VerifyLock() == OK)) {
 
             // address for set word should be valid (if not -1 or -2,  it goes to setword)
@@ -2558,16 +2563,17 @@ int set_ctb_pattern(int file_des) {
         uint64_t args[4] = {-1, -1, -1, -1};
         if (receiveData(file_des, args, sizeof(args), INT64) < 0)
             return printSocketReadError();
-        int loopLevel = (int)args[0];
-        int startAddr = (int)args[1];
-        int stopAddr = (int)args[2];
-        int numLoops = (int)args[3];
         int retvals[3] = {-1, -1, -1};
 
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
         functionNotImplemented();
         return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 #else
+        int loopLevel = (int)args[0];
+        int startAddr = (int)args[1];
+        int stopAddr = (int)args[2];
+        int numLoops = (int)args[3];
+
         if (loopLevel < -1 || loopLevel > 2) { // -1 complete pattern
             ret = FAIL;
             sprintf(mess, "Pattern (Pattern Loop) Level (%d) is not implemented for this detector\n", loopLevel);
@@ -2610,14 +2616,15 @@ int set_ctb_pattern(int file_des) {
         uint64_t args[2] = {-1, -1};
         if (receiveData(file_des, args, sizeof(args), INT64) < 0)
             return printSocketReadError();
-        int loopLevel = (int)args[0];
-        int addr = (int)args[1];
         int retval32 = -1;
 
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
         functionNotImplemented();
         return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 #else
+        int loopLevel = (int)args[0];
+        int addr = (int)args[1];
+
         if ((addr == -1) ||  (Server_VerifyLock() == OK)) {
             if (loopLevel < 0 || loopLevel > 2) {
                 ret = FAIL;
@@ -2651,14 +2658,15 @@ int set_ctb_pattern(int file_des) {
         uint64_t args[2] = {-1, -1};
         if (receiveData(file_des, args, sizeof(args), INT64) < 0)
             return printSocketReadError();
-        int loopLevel = (int)args[1];
-        uint64_t timeval = (int)args[2];
         int64_t retval64 = -1;
 
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
         functionNotImplemented();
         return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 #else
+        int loopLevel = (int)args[1];
+        uint64_t timeval = (int)args[2];
+
         if ((timeval == -1) ||  (Server_VerifyLock() == OK)) {
             if (loopLevel < 0 || loopLevel > 2) {
                 ret = FAIL;

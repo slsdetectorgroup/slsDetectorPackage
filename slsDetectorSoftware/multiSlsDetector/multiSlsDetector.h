@@ -1057,16 +1057,35 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * Sets the additional json header
      * @param jsonheader additional json header
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns additional json header, returns "none" if default setting and no custom ip set
+     * @returns additional json header, default is empty
      */
     std::string setAdditionalJsonHeader(const std::string& jsonheader, int detPos = -1);
 
     /**
      * Returns the additional json header
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the additional json header, returns "none" if default setting and no custom ip set
+     * @returns the additional json header, default is empty
      */
     std::string getAdditionalJsonHeader(int detPos = -1);
+
+    /**
+     * Sets the value for the additional json header parameter if found, else append it
+     * @param key additional json header parameter
+     * @param value additional json header parameter value (cannot be empty)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the additional json header parameter value,
+     * empty if no parameter found in additional json header
+     */
+    std::string setAdditionalJsonParameter(const std::string& key, const std::string& value, int detPos = -1);
+
+    /**
+     * Returns the additional json header parameter value
+     * @param key additional json header parameter
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the additional json header parameter value,
+     * empty if no parameter found in additional json header
+     */
+    std::string getAdditionalJsonParameter(const std::string& key, int detPos = -1);
 
     /**
      * Sets the receiver UDP socket buffer size

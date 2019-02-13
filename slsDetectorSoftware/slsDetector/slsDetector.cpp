@@ -310,7 +310,7 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
         list.nGappixelsY = 1;
         break;
     default:
-        FILE_LOG(logERROR) << "Unknown detector type!";
+        FILE_LOG(logERROR) << "Unknown detector type! " << type;
         throw std::exception();
     }
 }
@@ -2625,7 +2625,7 @@ std::string slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) 
     sls::strcpy_safe(args, jsonheader.c_str());
     FILE_LOG(logDEBUG1) << "Sending additional json header " << args;
 
-    if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
+   if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
         auto receiver = sls::ClientSocket(thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, args, sizeof(args), retvals, sizeof(retvals));
         if (ret == FAIL) {
@@ -2644,6 +2644,65 @@ std::string slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) 
 
 std::string slsDetector::getAdditionalJsonHeader() {
     return std::string(thisDetector->receiver_additionalJsonHeader);
+}
+
+std::string slsDetector::setAdditionalJsonParameter(const std::string& key, const std::string& value) {
+
+     // validation (ignore if key or value has , : ")
+    if (key.find_first_of(",\":") != std::string::npos || value.find_first_of(",\":") != std::string::npos) {
+        FILE_LOG(logERROR) << "Could not set additional json header parameter as the key or value has illegal characters (,\":)";
+       return getAdditionalJsonParameter(key);
+    }
+
+    std::string header(thisDetector->receiver_additionalJsonHeader);
+    size_t keyPos = header.find(std::string("\"") + key + std::string("\":") );
+
+    // if key found, replace value
+    if (keyPos != std::string::npos) {
+        size_t valuePosStart = header.find (std::string(":\""), keyPos) + 2;
+        size_t valuePosEnd = header.find (std::string("\""), valuePosStart) - 1;
+        header.replace(valuePosStart, valuePosEnd - valuePosStart + 1, value);
+    }
+
+    // key not found, append key value pair
+    else {
+        if (header.length()) {
+            header.append(",");
+        }
+        // put it in formula \"key\":\"value\"
+        header.append(std::string("\"") + key + std::string("\"") + std::string(":")
+        + std::string("\"") + value + std::string("\""));
+    }
+
+    // update additional json header
+    setAdditionalJsonHeader(header);
+    return getAdditionalJsonParameter(key);
+}
+
+std::string slsDetector::getAdditionalJsonParameter(const std::string& key) {
+    // additional json header is empty
+    if (!strlen(thisDetector->receiver_additionalJsonHeader))
+        return std::string("");
+
+    // add quotations before and after the key value
+    std::string keyLiteral = key;
+    keyLiteral.insert(0, "\"");
+    keyLiteral.append("\"");
+
+    // loop through the parameters
+    for (const auto &parameter : sls::split(thisDetector->receiver_additionalJsonHeader, ',')) {
+        // get a vector of key value pair for each parameter
+        const auto &pairs = sls::split(parameter, ':');
+        // match for key
+        if (pairs[0] == keyLiteral) {
+            // return value without quotations
+            return pairs[1].substr(1, pairs[1].length() - 2);
+        }
+    }
+
+    // return empty string as no match found with key
+    return std::string("");
+
 }
 
 int slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {

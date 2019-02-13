@@ -1934,6 +1934,29 @@ std::string multiSlsDetector::getAdditionalJsonHeader(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
+std::string multiSlsDetector::setAdditionalJsonParameter(const std::string& key, const std::string& value, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setAdditionalJsonParameter(key, value);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setAdditionalJsonParameter, key, value);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getAdditionalJsonParameter(const std::string& key, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getAdditionalJsonParameter(key);
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getAdditionalJsonParameter, key);
+    return sls::concatenateIfDifferent(r);
+}
+
+
 int multiSlsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize, int detPos) {
     // single
     if (detPos >= 0) {

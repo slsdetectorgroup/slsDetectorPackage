@@ -1279,6 +1279,7 @@ int slsDetector::getThresholdEnergy() {
     if (ret == FORCE_UPDATE) {
         ret = updateDetector();
     }
+
     return thisDetector->currentThresholdEV;
 }
 
@@ -2647,21 +2648,44 @@ std::string slsDetector::getAdditionalJsonHeader() {
 }
 
 std::string slsDetector::setAdditionalJsonParameter(const std::string& key, const std::string& value) {
+    // validation (value or key is empty)
+    if (!key.length() || !value.length()) {
+        FILE_LOG(logERROR) << "Could not set additional json header parameter as the key or value is empty";
+        setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
+        return getAdditionalJsonParameter(key);
+    }
+
 
      // validation (ignore if key or value has , : ")
     if (key.find_first_of(",\":") != std::string::npos || value.find_first_of(",\":") != std::string::npos) {
         FILE_LOG(logERROR) << "Could not set additional json header parameter as the key or value has illegal characters (,\":)";
-       return getAdditionalJsonParameter(key);
+        setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
+        return getAdditionalJsonParameter(key);
     }
 
+
+    // create actual key to search for and actual value to put, (key has additional ':' as value could exist the same way)
+    std::string keyLiteral(std::string("\"") + key + std::string("\":"));
+    std::string valueLiteral(value);
+    // add quotations to value only if it is a string
+    try{
+        stoi(valueLiteral);
+    } catch(...) {
+        // add quotations if it failed to convert to integer, otherwise nothing
+        valueLiteral.insert(0, "\"");
+        valueLiteral.append("\"");
+    }
+
+
     std::string header(thisDetector->receiver_additionalJsonHeader);
-    size_t keyPos = header.find(std::string("\"") + key + std::string("\":") );
+    size_t keyPos = header.find(keyLiteral);
 
     // if key found, replace value
     if (keyPos != std::string::npos) {
-        size_t valuePosStart = header.find (std::string(":\""), keyPos) + 2;
-        size_t valuePosEnd = header.find (std::string("\""), valuePosStart) - 1;
-        header.replace(valuePosStart, valuePosEnd - valuePosStart + 1, value);
+        size_t valueStartPos = header.find (std::string(":"), keyPos) + 1;
+        size_t valueEndPos = header.find (std::string(","), valueStartPos) - 1;
+        // if valueEndPos doesnt find comma (end of string), it goes anyway to end of line
+        header.replace(valueStartPos, valueEndPos - valueStartPos + 1, valueLiteral);
     }
 
     // key not found, append key value pair
@@ -2669,9 +2693,7 @@ std::string slsDetector::setAdditionalJsonParameter(const std::string& key, cons
         if (header.length()) {
             header.append(",");
         }
-        // put it in formula \"key\":\"value\"
-        header.append(std::string("\"") + key + std::string("\"") + std::string(":")
-        + std::string("\"") + value + std::string("\""));
+        header.append(keyLiteral + valueLiteral);
     }
 
     // update additional json header
@@ -2695,14 +2717,16 @@ std::string slsDetector::getAdditionalJsonParameter(const std::string& key) {
         const auto &pairs = sls::split(parameter, ':');
         // match for key
         if (pairs[0] == keyLiteral) {
-            // return value without quotations
-            return pairs[1].substr(1, pairs[1].length() - 2);
+            // return value without quotations (if it has any)
+            if ( pairs[1][0] == '\"')
+                return pairs[1].substr(1, pairs[1].length() - 2);
+            else
+                return pairs[1];
         }
     }
 
     // return empty string as no match found with key
     return std::string("");
-
 }
 
 int slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {

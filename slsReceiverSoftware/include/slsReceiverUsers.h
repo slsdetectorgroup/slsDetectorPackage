@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <memory>
 
-class slsReceiver;
+#include "slsReceiver.h"
 
   /** 
 @short Class for implementing the SLS data receiver in the users application. Callbacks can be defined for processing and/or saving data
@@ -23,10 +24,14 @@ public:
 	 * @param success socket creation was successfull
 	 */
 	slsReceiverUsers(int argc, char *argv[], int &success);
-
-
-	/** Destructor */
-	~slsReceiverUsers();
+	
+	/**
+	 * Constructor
+	 * reads config file, creates socket, assigns function table
+	 * @param tcpip_port_no TCP/IP port
+	 * @throws 
+	 */
+	slsReceiverUsers(int tcpip_port_no = 1954);
 
 	/**
 	 * starts listening on the TCP port for client comminication
@@ -83,6 +88,5 @@ public:
             char* datapointer, uint32_t &revDatasize, void*),void *arg);
 
 	//receiver object
-	slsReceiver* receiver;
+	std::unique_ptr<slsReceiver> receiver;
 };
-

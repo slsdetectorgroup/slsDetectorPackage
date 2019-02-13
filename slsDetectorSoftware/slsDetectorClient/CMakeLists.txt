@@ -15,7 +15,7 @@ add_executable(sls_detector_get
 target_link_libraries(sls_detector_get
    slsDetectorShared
    pthread
-   zmq
+   ${ZeroMQ_LIBRARIES}
    rt
 )
 set_target_properties(sls_detector_get PROPERTIES 
@@ -29,7 +29,7 @@ add_executable(sls_detector_put
 target_link_libraries(sls_detector_put
    slsDetectorShared
    pthread
-   zmq
+   ${ZeroMQ_LIBRARIES}
    rt
 )
 set_target_properties(sls_detector_put PROPERTIES 
@@ -43,7 +43,7 @@ add_executable(sls_detector_acquire
 target_link_libraries(sls_detector_acquire
    slsDetectorShared
    pthread
-   zmq
+   ${ZeroMQ_LIBRARIES}
    rt
 )
 set_target_properties(sls_detector_acquire PROPERTIES 
@@ -57,7 +57,7 @@ add_executable(sls_detector_help
 target_link_libraries(sls_detector_help
    slsDetectorShared
    pthread
-   zmq
+   ${ZeroMQ_LIBRARIES}
    rt
 )
 set_target_properties(sls_detector_help PROPERTIES 

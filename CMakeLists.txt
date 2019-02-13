@@ -47,8 +47,6 @@ find_package(Doxygen)
 find_package(ZeroMQ 4 REQUIRED)
 
 
-message("zeromq found: ${ZeroMQ_VERSION_MAJOR} ${ZeroMQ_VERSION_MINOR}")
-
 if (USE_TESTS)
     enable_testing()
 endif(USE_TESTS)

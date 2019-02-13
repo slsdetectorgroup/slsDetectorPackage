@@ -112,7 +112,7 @@ target_link_libraries(slsDetectorGui
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
     pthread
-    zmq
+    ${ZeroMQ_LIBRARIES}
     rt
     png
     z

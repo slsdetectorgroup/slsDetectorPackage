@@ -44,12 +44,8 @@ find_package(Qt4)
 find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
-find_package(ZeroMQ 4 )
-if (ZeroMQ_FOUND)
-    message("yes we have zmq")
-else()
-message("no zmw")
-    endif()
+find_package(ZeroMQ 4 REQUIRED)
+
 
 message("zeromq found: ${ZeroMQ_VERSION_MAJOR} ${ZeroMQ_VERSION_MINOR}")
 

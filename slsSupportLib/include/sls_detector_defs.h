@@ -556,6 +556,23 @@ public:
 	  GAIN_IMAGE   /**< gain image */
 	};
 
+	enum jsonHeaderParameterType {
+	    JSON_EMIN,   /**< minimum energy threshold for the processor */
+	    JSON_EMAX,  /**< maximum energy threshold  for the processor*/
+	    JSON_FRAME_MODE,     /**< frame mode for the processor*/
+	    JSON_DETECTOR_MODE   /**< detector mode  for the processor*/
+	};
+
+	enum jsonHeaderParameterValuesType {
+	    JSON_PEDESTAL,      /**< pedestal mode for the processor */
+	    JSON_N_PEDESTAL,    /**< new pedestal mode for the processor */
+	    JSON_FLATFIELD,     /**< flatfield mode for the processor */
+	    JSON_N_FLATFIELD,   /**< new flatfield mode for the processor */
+	    JSON_FRAME,          /**< frame for the processor */
+	    JSON_ANALOG,        /**< analog mode for the processor */
+	    JSON_COUNTING,      /**< counting mode for the processor */
+	    JSON_INTERPOLATING  /**< interpolating mode for the processor */
+	};
 
 
 #ifdef __cplusplus
@@ -874,6 +891,67 @@ public:
 		    case DISCARD_PARTIAL_FRAMES: 	return std::string("discardpartial"); 	\
 		    default:       					return std::string("unknown");			\
 		    }};																		\
+
+
+		    /** returns std::string from jsonHeaderParameterType
+		     * @param h can be JSON_EMIN, JSON_EMAX, JSON_FRAME_MODE, JSON_DETECTOR_MODE
+		     * @returns json_emin, json_emax, json_framemode, json_detectormode, unknown
+		     */
+		    static std::string getJsonHeaderParameterTypeAsString(jsonHeaderParameterType h)  {   \
+		        switch(h) {                                                                     \
+		        case JSON_EMIN:             return std::string("json_emin");                    \
+		        case JSON_EMAX:             return std::string("json_emax");                    \
+		        case JSON_FRAME_MODE:       return std::string("json_framemode");               \
+		        case JSON_DETECTOR_MODE:    return std::string("json_detectormode");            \
+		        default:                    return std::string("unknown");                      \
+		        }                                                                               \
+		    };                                                                                  \
+
+            /** returns std::string from jsonHeaderParameterType
+             * @param h can be json_emin, json_emax, json_framemode, json_detectormode
+             * @returns JSON_EMIN, JSON_EMAX, JSON_FRAME_MODE, JSON_DETECTOR_MODE, -1
+             */
+            static int getJsonHeaderParameterTypeAsEnum(std::string h)  {   \
+                if (h == "json_emin")           return JSON_EMIN;           \
+                if (h == "json_emax")           return JSON_EMAX;           \
+                if (h == "json_framemode")      return JSON_FRAME_MODE;     \
+                if (h == "json_detectormode")   return JSON_DETECTOR_MODE;  \
+                return -1;                                                  \
+            };                                                              \
+
+            /** returns std::string from jsonHeaderParameterTyp
+             * @param h can be JSON_PEDESTAL, JSON_N_PEDESTAL, JSON_FLATFIELD, JSON_N_FLATFIELD, JSON_FRAME, JSON_ANALOG, JSON_COUNTING, JSON_INTERPOLATING
+             * @returns json_pedestal, json_newpedestal, json_flatfield, json_newflatfield, json_frame, json_analog, json_counting, json_interpolating, unknown
+             */
+            static std::string getJsonHeaderParameterValueAsString(jsonHeaderParameterValuesType h)  {  \
+                switch(h) {                                                                         \
+                case JSON_PEDESTAL:         return std::string("json_pedestal");                    \
+                case JSON_N_PEDESTAL:       return std::string("json_newpedestal");                 \
+                case JSON_FLATFIELD:        return std::string("json_flatfield");                   \
+                case JSON_N_FLATFIELD:      return std::string("json_newflatfield");                \
+                case JSON_FRAME:            return std::string("json_frame");                       \
+                case JSON_ANALOG:           return std::string("json_analog");                      \
+                case JSON_COUNTING:         return std::string("json_counting");                    \
+                case JSON_INTERPOLATING:    return std::string("json_interpolating");               \
+                default:                    return std::string("unknown");                          \
+                }                                                                                   \
+            };                                                                                      \
+
+            /** returns std::string from jsonHeaderParameterTyp
+             * @param h can be json_emin, json_emax, json_framemode, json_detectormode
+             * @returns JSON_EMIN, JSON_EMAX, JSON_FRAME_MODE, JSON_DETECTOR_MODE, -1
+             */
+            static int getJsonHeaderParameterValuesAsEnum(std::string h)  { \
+                if (h == "json_pedestal")       return JSON_PEDESTAL;       \
+                if (h == "json_newpedestal")    return JSON_N_PEDESTAL;     \
+                if (h == "json_flatfield")      return JSON_FLATFIELD;      \
+                if (h == "json_newflatfield")   return JSON_N_FLATFIELD;    \
+                if (h == "json_frame")          return JSON_FRAME;          \
+                if (h == "json_analog")         return JSON_ANALOG;         \
+                if (h == "json_counting")       return JSON_COUNTING;       \
+                if (h == "json_interpolating")  return JSON_INTERPOLATING;  \
+                return -1;                                                  \
+            };                                                              \
 
 
 #endif

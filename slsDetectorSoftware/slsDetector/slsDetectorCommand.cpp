@@ -63,7 +63,7 @@ The commands are sudivided into different pages depending on their functionaliti
  - \ref output "Output": commands to define output file destination and format
  - \ref network "Network": commands to setup the network between client, detector and receiver
  - \ref receiver "Receiver": commands to configure the receiver
- - \ref ctb "Chiptest board": commands specific for the new chiptest board as pattern generator
+ - \ref prototype "Prototype (Chip Test Board / Moench)": commands specific for the chiptest board or moench
  - \ref test "Developer": commands to be used only for software debugging. Avoid using them!
  
  */
@@ -1634,20 +1634,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     i++;
 
     /*! \page network
-   - <b>rx_jsonaddheader [t]</b> sets/gets additional json header to be streamed out with the zmq from receiver. Default is empty. \c t must be in the format "\"label1\":\"value1\",\"label2\":\"value2\"" etc. Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
-     */
-    descrToFuncMap[i].m_pFuncName = "rx_jsonaddheader"; //
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    i++;
-
-    /*! \page network
-   - <b>rx_jsonpara [k] [v]</b> sets/gets  value v for additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
-     */
-    descrToFuncMap[i].m_pFuncName = "rx_jsonpara"; //
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    i++;
-
-    /*! \page network
    - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). This command is already included in \c rx_hsotname. Only put!. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "configuremac"; //
@@ -1793,146 +1779,190 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
+    /*! \page receiver
+    - <b>rx_jsonaddheader [t]</b> sets/gets additional json header to be streamed out with the zmq from receiver. Default is empty. \c t must be in the format "\"label1\":\"value1\",\"label2\":\"value2\"" etc. Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
+     */
+    descrToFuncMap[i].m_pFuncName = "rx_jsonaddheader"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
+    i++;
+
+    /*! \page receiver
+    - <b>rx_jsonpara [k] [v]</b> sets/gets  value v for additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
+     */
+    descrToFuncMap[i].m_pFuncName = "rx_jsonpara"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
+    i++;
+
+
     /* pattern generator */
 
-    /*! \page ctb Chiptest board
-	  Commands specific for the new chiptest board as pattern generator
+    /*! \page prototype Protoype (Chip Test Board / Moench)
+	  Commands specific for the chiptest board or moench
 	 */
 
-    /*! \page ctb
+
+    /*! \page prototype
    - <b>adcinvert [mask]</b> Sets/gets ADC inversion mask (8 digits hex format)
 	 */
     descrToFuncMap[i].m_pFuncName = "adcinvert"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>adcdisable [mask]</b> Sets/gets ADC disable mask (8 digits hex format)
 	 */
     descrToFuncMap[i].m_pFuncName = "adcdisable"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
+   - <b>json_emin [i] </b> Sets/gets detector minimum energy threshold for the  Moench (soft setting). It is only set in the json header for the processor. \c Returns string
+     */
+    descrToFuncMap[i].m_pFuncName = "json_emin"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
+    ++i;
+
+    /*! \page prototype
+   - <b>json_emax [i] </b> Sets/gets detector maximum energy threshold for the Moench (soft setting). It is only set in the json header for the processor. \c Returns string
+     */
+    descrToFuncMap[i].m_pFuncName = "json_emax"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
+    ++i;
+
+    /*! \page prototype
+   - <b>json_framemode [i] </b> Sets/gets readoutmode for the Moench (soft setting). It is only set in the json header for the processor. Options: pedestal, newpedestal, flatfield, newflatfield, frame. \c Returns string
+     */
+    descrToFuncMap[i].m_pFuncName = "json_framemode"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
+    ++i;
+
+    /*! \page prototype
+   - <b>json_detectormode [i] </b> Sets/gets detector mode for the Moench (soft setting). It is only set in the json header for the processor.Options: analog, counting, interpolating. \c Returns string
+     */
+    descrToFuncMap[i].m_pFuncName = "json_detectormode"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
+    ++i;
+
+    /*! \page prototype
    - <b>pattern fn</b> loads binary pattern file fn
 	 */
     descrToFuncMap[i].m_pFuncName = "pattern"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patword addr [word]</b> sets/gets 64 bit word at address addr of pattern memory. Both address and word in hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patword"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patioctrl [word]</b> sets/gets 64 bit mask defining input (0) and output (1) signals. hex format.
 	 */
     descrToFuncMap[i].m_pFuncName = "patioctrl"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patclkctrl [word]</b> sets/gets 64 bit mask defining if output signal is a clock and runs. hex format. Unused at the moment.
 	 */
     descrToFuncMap[i].m_pFuncName = "patclkctrl"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patlimits [addr1 addr2]</b> sets/gets the start and stop limits of the pattern to be executed. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patlimits"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patloop0 [addr1 addr2]</b> sets/gets the start and stop limits of the level 0 loop. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patloop0"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patnloop0 [n]</b> sets/gets the number of cyclesof the  level 0 loop (int).
 	 */
     descrToFuncMap[i].m_pFuncName = "patnloop0"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patwait0 [addr]</b> sets/gets the address of the level 0 wait point. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patwait0"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patwaittime0 [n]</b> sets/gets the duration of the witing of the 0 waiting point in clock cycles (int).
 	 */
     descrToFuncMap[i].m_pFuncName = "patwaittime0"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patloop1 [addr1 addr2]</b> sets/gets the start and stop limits of the level 1 loop. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patloop1"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patnloop1 [n]</b> sets/gets the number of cyclesof the  level 1 loop (int).
 	 */
     descrToFuncMap[i].m_pFuncName = "patnloop1"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patwait1 [addr]</b> sets/gets the address of the level 1 wait point. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patwait1"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patwaittime1 [n]</b> sets/gets the duration of the witing of the 1 waiting point in clock cycles (int).
 	 */
     descrToFuncMap[i].m_pFuncName = "patwaittime1"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patloop2 [addr1 addr2]</b> sets/gets the start and stop limits of the level 2 loop. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patloop2"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patnloop2 [n]</b> sets/gets the number of cyclesof the  level 2 loop (int).
 	 */
     descrToFuncMap[i].m_pFuncName = "patnloop2"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patwait2 [addr]</b> sets/gets the address of the level 2 wait point. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patwait2"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>patwaittime2 [n]</b> sets/gets the duration of the waiting of the 2 waiting point in clock cycles (int).
 	 */
     descrToFuncMap[i].m_pFuncName = "patwaittime2"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page ctb
+    /*! \page prototype
    - <b>dut_clk [i]</b> sets/gets the signal to be used as a clock for the digital data coming from the device under test. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "dut_clk"; //
@@ -2846,16 +2876,6 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
   		myDet->setReceiverDataStreamingOutIP(args[1], detPos);
   	  }
   	  return myDet->getReceiverStreamingIP(detPos);
-    } else if (cmd == "rx_jsonaddheader") {
-    	  if (action == PUT_ACTION) {
-    		  myDet->setAdditionalJsonHeader(args[1], detPos);
-    	  }
-    	  return myDet->getAdditionalJsonHeader(detPos);
-    } else if (cmd == "rx_jsonpara") {
-        if (action == PUT_ACTION) {
-            myDet->setAdditionalJsonParameter(args[1], args[2], detPos);
-        }
-        return myDet->getAdditionalJsonParameter(args[1]);
     }
 
     return ("unknown network parameter") + cmd;
@@ -2892,11 +2912,6 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
               "Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing."
               "restarts streaming in receiver with new port"
            << std::endl;
-        os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
-              "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
-              "Use only if it needs to be processed by an intermediate process."
-           << std::endl;
-        os << "rx_jsonpara [k v]\n sets value to v for additional json header parameter k to be streamed out with the zmq from receiver. Use only if it needs to be processed by an intermediate process." << std::endl;
         os << "rx_udpsocksize [t]\n sets the UDP socket buffer size. Different defaults for Jungfrau. "
               "Does not remember in client shared memory, "
               "so must be initialized each time after setting receiver "
@@ -2918,10 +2933,6 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
         os << "rx_zmqport \n gets the 0MQ (TCP) port of the receiver from where data is streamed from" << std::endl;
         os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
         os << "rx_zmqip \n gets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from. If no custom ip, empty until first time connect to receiver" << std::endl;
-        os << "rx_jsonaddheader \n gets additional json header to be streamed "
-              "out with the zmq from receiver."
-           << std::endl;
-        os << "rx_jsonpara [k] \n gets value of additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found. Use only if it needs to be processed by an intermediate process." << std::endl;
         os << "rx_udpsocksize \n gets the UDP socket buffer size." << std::endl;
         os << "rx_realudpsocksize \n gets the actual UDP socket buffer size. Usually double the set udp socket buffer size due to kernel bookkeeping." << std::endl;
     }
@@ -4863,6 +4874,20 @@ std::string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, 
         return std::string(answer);
     }
 
+    else if (cmd == "rx_jsonaddheader") {
+        if (action == PUT_ACTION) {
+            myDet->setAdditionalJsonHeader(args[1], detPos);
+        }
+        return myDet->getAdditionalJsonHeader(detPos);
+    }
+
+    else if (cmd == "rx_jsonpara") {
+        if (action == PUT_ACTION) {
+            myDet->setAdditionalJsonParameter(args[1], args[2], detPos);
+        }
+        return myDet->getAdditionalJsonParameter(args[1], detPos);
+    }
+
     return std::string("could not decode command");
 }
 
@@ -4879,6 +4904,11 @@ std::string slsDetectorCommand::helpReceiver(int action) {
         os << "r_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
         os << "r_discardpolicy s\t sets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
         os << "r_padding s\t enables/disables partial frames to be padded in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
+        os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
+              "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
+              "Use only if it needs to be processed by an intermediate process." << std::endl;
+        os << "rx_jsonpara [k] [v]\n sets value to v for additional json header parameter k to be streamed out with the zmq from receiver." << std::endl;
+
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
@@ -4891,6 +4921,10 @@ std::string slsDetectorCommand::helpReceiver(int action) {
         os << "r_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
         os << "r_discardpolicy \t gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
         os << "r_padding \t gets partial frames padding enable in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
+        os << "rx_jsonaddheader \n gets additional json header to be streamed "
+              "out with the zmq from receiver." << std::endl;
+        os << "rx_jsonpara [k] \n gets value of additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found." << std::endl;
+
     }
     return os.str();
 }
@@ -5427,3 +5461,60 @@ std::string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int
     else
         return std::string(" unsuccessful");
 }
+
+
+std::string slsDetectorCommand::helpProcessor(int action) {
+    std::ostringstream os;
+    if (action == PUT_ACTION || action == HELP_ACTION) {
+        os << "json_emin [t]\n sets value to t for minimum threshold (emin) in additional json header to be streamed out with the zmq from receiver. For Moench." << std::endl;
+        os << "json_emax [t]\n sets value to t for maximum threshold (emax) in additional json header to be streamed out with the zmq from receiver. For Moench." << std::endl;
+        os << "json_framemode [s]\n sets readoutmode for the Moench (soft setting). It is only set in the json header for the processor. Options: pedestal, newpedestal, flatfield, newflatfield, frame. " << std::endl;
+        os << "json_detectormode [s]\n sets detector mode for the Moench (soft setting). It is only set in the json header for the processor.Options: analog, counting, interpolating. " << std::endl;
+    }
+    if (action == GET_ACTION || action == HELP_ACTION) {
+        os << "json_emin \n gets value of minimum threshold (emin) in additional json header to be streamed out with the zmq from receiver. If no parameter found, it returns empty string. For Moench." << std::endl;
+        os << "json_emin \n gets value of maximum threshold (emax) in additional json header to be streamed out with the zmq from receiver. If no parameter found, it returns empty string. For Moench." << std::endl;
+        os << "json_framemode [s]\n gets readoutmode for the Moench (soft setting). It is only set in the json header for the processor. Options: pedestal, newpedestal, flatfield, newflatfield, frame. " << std::endl;
+        os << "json_detectormode [s]\n gets detector mode for the Moench (soft setting). It is only set in the json header for the processor.Options: analog, counting, interpolating. " << std::endl;
+    }
+    return os.str();
+}
+
+std::string slsDetectorCommand::cmdProcessor(int narg, char *args[], int action, int detPos) {
+    if (action == HELP_ACTION)
+        return helpProcessor(action);
+
+    myDet->setOnline(ONLINE_FLAG, detPos);
+    myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+
+    int imode = getJsonHeaderParameterTypeAsEnum(cmd);
+    jsonHeaderParameterType mode = JSON_EMIN;
+    if (imode != -1)
+        mode = (jsonHeaderParameterType)imode;
+    int ival = -1;
+
+    if (cmd == "json_emin" || cmd == "json_emax") {
+        if (action == PUT_ACTION) {
+            if (!sscanf(args[1],"%d", &ival))
+                return std::string("cannot scan value ") + std::string(args[1]) + std::string(" for command ") + cmd;
+            myDet->setAdditionalJsonSpecificParameter(mode, ival);
+        }
+        return std::to_string(myDet->getAdditionalJsonSpecificParameter(mode));
+    }
+
+    else if (cmd == "json_framemode" || cmd == "json_detectormode") {
+        if (action == PUT_ACTION) {
+            ival = getJsonHeaderParameterValuesAsEnum(args[1]);
+            if (ival == -1)
+                return std::string("cannot scan value ") + std::string(args[1]) + std::string(" for command ") + cmd;
+            myDet->setAdditionalJsonSpecificParameter(mode, ival);
+        }
+        int retval = myDet->getAdditionalJsonSpecificParameter(mode);
+        if (retval == -1)
+            return std::string("unknown");
+        return getJsonHeaderParameterValueAsString((jsonHeaderParameterValuesType)retval);
+    }
+
+   return std::string("could not decode command");
+}
+

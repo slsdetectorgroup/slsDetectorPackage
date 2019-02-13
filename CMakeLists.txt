@@ -44,6 +44,14 @@ find_package(Qt4)
 find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
+find_package(ZeroMQ 4 )
+if (ZeroMQ_FOUND)
+    message("yes we have zmq")
+else()
+message("no zmw")
+    endif()
+
+message("zeromq found: ${ZeroMQ_VERSION_MAJOR} ${ZeroMQ_VERSION_MINOR}")
 
 if (USE_TESTS)
     enable_testing()
@@ -63,11 +71,11 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 #zmq
-add_library(zmq STATIC IMPORTED GLOBAL)
-set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/slsSupportLib/include/libzmq.a)
-set_target_properties(zmq PROPERTIES
-    IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
-)
+# add_library(zmq STATIC IMPORTED GLOBAL)
+# set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/slsSupportLib/include/libzmq.a)
+# set_target_properties(zmq PROPERTIES
+    # IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
+# )
 
 if (SLS_USE_TEXTCLIENT)
        add_subdirectory(slsDetectorSoftware)
@@ -101,5 +109,5 @@ if (CALIBRATE)
 endif(CALIBRATE)
 
 
-install(FILES ${ZMQ_STATIC_ARCHIVE}
-DESTINATION lib) 
+# install(FILES ${ZMQ_STATIC_ARCHIVE}
+# DESTINATION lib) 

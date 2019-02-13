@@ -11,6 +11,7 @@
 #include <map>
 #include <getopt.h>
 
+#include "container_utils.h" // For sls::make_unique<>
 
 #include "slsReceiver.h"
 #include "slsReceiverTCPIPInterface.h"
@@ -78,14 +79,14 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 	}
 
 	// might throw an exception
-	tcpipInterface = new slsReceiverTCPIPInterface(tcpip_port_no);
-
+	tcpipInterface = sls::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
 }
 
 
-slsReceiver::~slsReceiver() {
-	if(tcpipInterface)
-		delete tcpipInterface;
+slsReceiver::slsReceiver(int tcpip_port_no)
+{
+	// might throw an exception
+	tcpipInterface = sls::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
 }
 
 

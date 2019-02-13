@@ -4,10 +4,9 @@
  * @short creates the UDP and TCP class objects
  ***********************************************/
 
+#include <memory>
 
-
-class slsReceiverTCPIPInterface;
-
+#include "slsReceiverTCPIPInterface.h"
 #include "sls_detector_defs.h"
 
 
@@ -27,11 +26,15 @@ class slsReceiver : private virtual slsDetectorDefs {
 	 * @param argv from command line
 	 */
 	slsReceiver(int argc, char *argv[]);
-
+	
 	/**
-	 * Destructor
+	 * Constructor
+	 * Starts up a Receiver server. Reads configuration file, options, and
+	 * assembles a Receiver using TCP and UDP detector interfaces
+	 * throws an exception in case of failure
+	 * @param tcpip_port_no TCP/IP port number
 	 */
-	~slsReceiver();
+	slsReceiver(int tcpip_port_no = 1954);
 
 	/**
 	 * starts listening on the TCP port for client comminication
@@ -95,6 +98,5 @@ class slsReceiver : private virtual slsDetectorDefs {
 
 
  private:
-	slsReceiverTCPIPInterface* tcpipInterface;
+	std::unique_ptr<slsReceiverTCPIPInterface> tcpipInterface;
 };
-

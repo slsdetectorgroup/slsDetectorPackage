@@ -6,9 +6,8 @@ mkdir $PREFIX/include/slsDetectorPackage
 
 #Shared and static libraries
 cp build/bin/libSlsDetector.so $PREFIX/lib/.
-cp build/bin/libSlsDetector.a $PREFIX/lib/.
 cp build/bin/libSlsReceiver.so $PREFIX/lib/.
-cp build/bin/libSlsReceiver.a $PREFIX/lib/.
+cp build/bin/libSlsSupport.so $PREFIX/lib/.
 
 #Binaries
 cp build/bin/sls_detector_acquire $PREFIX/bin/.

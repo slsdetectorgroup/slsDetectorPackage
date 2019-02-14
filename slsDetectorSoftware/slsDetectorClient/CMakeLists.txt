@@ -2,18 +2,12 @@ set(SOURCES
     sls_detector_client.cpp
 )
 
-include_directories(
-    ../../slsSupportLib/include
-    ../multiSlsDetector 
-    ../slsDetector 
-    ../slsReceiverInterface 
-)
-
 add_executable(sls_detector_get
     ${SOURCES}
 )
 target_link_libraries(sls_detector_get
    slsDetectorShared
+   slsSupportLib
    pthread
    ${ZeroMQ_LIBRARIES}
    rt

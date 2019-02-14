@@ -8,7 +8,7 @@ include_directories(
 )
 
 
-if(USE_TESTS)
+if(SLS_USE_TESTS)
     set(TEST_SOURCES
         src/test-slsDetector.cpp
         src/test.cpp
@@ -38,8 +38,8 @@ endif()
 
 
 
-#option(USE_TESTS "Determines whether to build tests." OFF)
-# if(USE_TESTS)
+#option(SLS_USE_TESTS "Determines whether to build tests." OFF)
+# if(SLS_USE_TESTS)
 #     # Prepare "Catch" library for other executables
 #     set(CATCH_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/catch)
 #     add_library(Catch INTERFACE)

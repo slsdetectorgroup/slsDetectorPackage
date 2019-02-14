@@ -9,25 +9,21 @@ set(SOURCES
 set(HEADERS
 )
 
-# include_directories(
-#     multiSlsDetector 
-#     sharedMemory
-#     slsDetector 
-# )
-
 add_library(slsDetectorShared SHARED
     ${SOURCES}
     ${HEADERS}
 )
-target_include_directories(slsDetectorShared PUBLIC 
-    multiSlsDetector 
-    sharedMemory
-    slsDetector 
+target_include_directories(slsDetectorShared PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/multiSlsDetector>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/sharedMemory>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/slsDetector>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(slsDetectorShared
+target_link_libraries(slsDetectorShared PUBLIC
     slsSupportLib
 	${ZeroMQ_LIBRARIES}
+    zmq
 )
 
 set(PUBLICHEADERS
@@ -57,7 +53,8 @@ endif()
 
 install(TARGETS slsDetectorShared
     EXPORT "${TARGETS_EXPORT_NAME}"
-    LIBRARY DESTINATION lib
-    PUBLIC_HEADER DESTINATION include
-    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

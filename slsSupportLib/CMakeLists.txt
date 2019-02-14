@@ -38,9 +38,10 @@ add_library(slsSupportLib SHARED
 )
 
 target_include_directories(slsSupportLib PUBLIC
-    include
     ${ZeroMQ_INCLUDE_DIRS}
- )
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
 
 set_target_properties(slsSupportLib PROPERTIES
     LIBRARY_OUTPUT_NAME SlsSupport
@@ -48,12 +49,14 @@ set_target_properties(slsSupportLib PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-if (USE_TESTS)
+if (SLS_USE_TESTS)
     add_subdirectory(tests)
-endif(USE_TESTS)
+endif(SLS_USE_TESTS)
 
+# Install the library
 install(TARGETS slsSupportLib
-    LIBRARY DESTINATION lib
-    PUBLIC_HEADER DESTINATION include
-    ARCHIVE DESTINATION lib
+    EXPORT "${TARGETS_EXPORT_NAME}"
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

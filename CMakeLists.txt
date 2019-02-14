@@ -28,12 +28,16 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     set(SLS_MASTER_PROJECT ON)
 endif()
 
+
+
 option (SLS_USE_HDF5 "HDF5 File format" OFF)
 option (SLS_USE_TEXTCLIENT "Text Client" OFF)
 option (SLS_USE_RECEIVER "Receiver" OFF)
 option (SLS_USE_GUI "GUI" OFF)
 option (SLS_USE_TESTS "TESTS" ON)
 option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
+
+
 
 #Testing for minimum version for compilers
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -48,6 +52,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation")
 endif()
 
+
+
 #set (CMAKE_CXX_STANDARD 11)
 #set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 ")
@@ -59,21 +65,19 @@ set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-point
 
 
 
-# Support library containing functionallity common to 
-# detector and receiver
-add_subdirectory(slsSupportLib)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
-#zmq
-add_library(zmq STATIC IMPORTED GLOBAL)
-set(ZMQ_STATIC_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/slsSupportLib/include/libzmq.a)
-set_target_properties(zmq PROPERTIES
-    IMPORTED_LOCATION ${ZMQ_STATIC_ARCHIVE}
-)
+
+
+find_package(Doxygen)
+find_package(ZeroMQ 4 REQUIRED)
+
+
+# Support library containing functionallity common to 
+# detector and receiver
+add_subdirectory(slsSupportLib)
 
 if (SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
@@ -103,10 +107,8 @@ if (SLS_USE_INTEGRATION_TESTS)
     add_subdirectory(integrationTests)
 endif (SLS_USE_INTEGRATION_TESTS)
 
-find_package(Doxygen)
 
-install(FILES ${ZMQ_STATIC_ARCHIVE}
-DESTINATION lib) 
+
 
 if(SLS_MASTER_PROJECT)
     # Set install dir CMake packages
@@ -116,3 +118,4 @@ if(SLS_MASTER_PROJECT)
     # Generate and install package config file and version
     include(cmake/package_config.cmake)
 endif()
+

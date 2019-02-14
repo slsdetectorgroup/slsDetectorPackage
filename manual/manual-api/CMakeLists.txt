@@ -16,7 +16,7 @@ add_executable(slsMultiReceiver
 target_link_libraries(slsMultiReceiver
     slsReceiverShared
     pthread
-    zmq
+    ${ZeroMQ_LIBRARIES}
     rt
 )
 

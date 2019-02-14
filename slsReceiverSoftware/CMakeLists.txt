@@ -69,7 +69,7 @@ target_link_libraries(slsReceiver PUBLIC
     slsSupportLib
     slsReceiverShared
     pthread
-    zmq
+    ${ZeroMQ_LIBRARIES}
     rt
 )
 

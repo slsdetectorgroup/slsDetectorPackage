@@ -38,6 +38,7 @@ add_library(slsSupportLib SHARED
 )
 
 target_include_directories(slsSupportLib PUBLIC
+    ${ZeroMQ_INCLUDE_DIRS}
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )

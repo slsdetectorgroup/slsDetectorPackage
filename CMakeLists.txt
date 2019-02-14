@@ -1,6 +1,23 @@
 cmake_minimum_required(VERSION 2.8)
 # cmake_minimum_required(VERSION 3.5)
 project(slsDetectorPackage)
+include(cmake/project_version.cmake)
+
+# Include additional modules that are used unconditionally
+include(GNUInstallDirs)
+
+# If conda build, always set lib dir to 'lib'
+if($ENV{CONDA_BUILD})
+  set(CMAKE_INSTALL_LIBDIR "lib")
+endif()
+
+# Set lower / upper case project names
+string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
+string(TOLOWER "${PROJECT_NAME}" PROJECT_NAME_LOWER)
+
+# Set targets export name (used by slsDetectorPackage and dependencies)
+set(TARGETS_EXPORT_NAME "${PROJECT_NAME_LOWER}-targets")
+#set(namespace "${PROJECT_NAME}::")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set (CALIBRATE OFF)
@@ -17,6 +34,7 @@ option (SLS_USE_TEXTCLIENT "Text Client" OFF)
 option (SLS_USE_RECEIVER "Receiver" OFF)
 option (SLS_USE_GUI "GUI" OFF)
 option (SLS_USE_TESTS "TESTS" ON)
+option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
 
 #Testing for minimum version for compilers
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -31,6 +49,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation")
 endif()
 
+#set (CMAKE_CXX_STANDARD 11)
+#set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 ")
 
 # set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")
@@ -45,16 +65,16 @@ find_package(Qwt 6)
 find_package(CBF)
 find_package(Doxygen)
 
-if (USE_TESTS)
+if (SLS_USE_TESTS)
     enable_testing()
-endif(USE_TESTS)
+endif(SLS_USE_TESTS)
 
 # Support library containing functionallity common to 
 # detector and receiver
 add_subdirectory(slsSupportLib)
 
 if (SLS_USE_HDF5)
-	find_package(HDF5 1.10 COMPONENTS CXX)
+    find_package(HDF5 1.10 COMPONENTS CXX)
 endif (SLS_USE_HDF5)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -70,26 +90,23 @@ set_target_properties(zmq PROPERTIES
 )
 
 if (SLS_USE_TEXTCLIENT)
-       add_subdirectory(slsDetectorSoftware)
+    add_subdirectory(slsDetectorSoftware)
 endif (SLS_USE_TEXTCLIENT)
 
 if (SLS_USE_RECEIVER)
-       add_subdirectory(slsReceiverSoftware)
-       add_subdirectory(manual/manual-api)    
+    add_subdirectory(slsReceiverSoftware)
+    add_subdirectory(manual/manual-api)    
 endif (SLS_USE_RECEIVER)
-                    
+
 if (SLS_USE_GUI)   
-       if (QT4_FOUND AND QWT_FOUND)
-       add_subdirectory(slsDetectorGui)
-       endif()
+    if (QT4_FOUND AND QWT_FOUND)
+        add_subdirectory(slsDetectorGui)
+    endif()
 endif (SLS_USE_GUI)
 
-if (SLS_MASTER_PROJECT)
-    # Set targets export name (otherwise set by upstream project)
-    set(TARGETS_EXPORT_NAME "slsdetector-targets")
-endif (SLS_MASTER_PROJECT)
-
-add_subdirectory(integrationTests)
+if (SLS_USE_INTEGRATION_TESTS)
+    add_subdirectory(integrationTests)
+endif (SLS_USE_INTEGRATION_TESTS)
 
 if (CALIBRATE)
     if (DEFINED ENV{ROOTSYS})
@@ -103,3 +120,12 @@ endif(CALIBRATE)
 
 install(FILES ${ZMQ_STATIC_ARCHIVE}
 DESTINATION lib) 
+
+if(SLS_MASTER_PROJECT)
+    # Set install dir CMake packages
+    set(CMAKE_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/cmake/sls)
+    # Set the list of exported targets
+    set(PROJECT_LIBRARIES slsSupportLib slsDetectorShared slsReceiverShared)
+    # Generate and install package config file and version
+    include(cmake/package_config.cmake)
+endif()

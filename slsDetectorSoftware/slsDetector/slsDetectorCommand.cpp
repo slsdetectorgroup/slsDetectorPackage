@@ -1816,34 +1816,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page prototype
-   - <b>json_emin [i] </b> Sets/gets detector minimum energy threshold for the  Moench (soft setting). It is only set in the json header for the processor. \c Returns string
-     */
-    descrToFuncMap[i].m_pFuncName = "json_emin"; //
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
-    ++i;
-
-    /*! \page prototype
-   - <b>json_emax [i] </b> Sets/gets detector maximum energy threshold for the Moench (soft setting). It is only set in the json header for the processor. \c Returns string
-     */
-    descrToFuncMap[i].m_pFuncName = "json_emax"; //
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
-    ++i;
-
-    /*! \page prototype
-   - <b>json_framemode [i] </b> Sets/gets readoutmode for the Moench (soft setting). It is only set in the json header for the processor. Options: pedestal, newpedestal, flatfield, newflatfield, frame. \c Returns string
-     */
-    descrToFuncMap[i].m_pFuncName = "json_framemode"; //
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
-    ++i;
-
-    /*! \page prototype
-   - <b>json_detectormode [i] </b> Sets/gets detector mode for the Moench (soft setting). It is only set in the json header for the processor.Options: analog, counting, interpolating. \c Returns string
-     */
-    descrToFuncMap[i].m_pFuncName = "json_detectormode"; //
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
-    ++i;
-
-    /*! \page prototype
    - <b>pattern fn</b> loads binary pattern file fn
 	 */
     descrToFuncMap[i].m_pFuncName = "pattern"; //
@@ -5462,59 +5434,4 @@ std::string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int
         return std::string(" unsuccessful");
 }
 
-
-std::string slsDetectorCommand::helpProcessor(int action) {
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "json_emin [t]\n sets value to t for minimum threshold (emin) in additional json header to be streamed out with the zmq from receiver. For Moench." << std::endl;
-        os << "json_emax [t]\n sets value to t for maximum threshold (emax) in additional json header to be streamed out with the zmq from receiver. For Moench." << std::endl;
-        os << "json_framemode [s]\n sets readoutmode for the Moench (soft setting). It is only set in the json header for the processor. Options: pedestal, newpedestal, flatfield, newflatfield, frame. " << std::endl;
-        os << "json_detectormode [s]\n sets detector mode for the Moench (soft setting). It is only set in the json header for the processor.Options: analog, counting, interpolating. " << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "json_emin \n gets value of minimum threshold (emin) in additional json header to be streamed out with the zmq from receiver. If no parameter found, it returns empty string. For Moench." << std::endl;
-        os << "json_emin \n gets value of maximum threshold (emax) in additional json header to be streamed out with the zmq from receiver. If no parameter found, it returns empty string. For Moench." << std::endl;
-        os << "json_framemode [s]\n gets readoutmode for the Moench (soft setting). It is only set in the json header for the processor. Options: pedestal, newpedestal, flatfield, newflatfield, frame. " << std::endl;
-        os << "json_detectormode [s]\n gets detector mode for the Moench (soft setting). It is only set in the json header for the processor.Options: analog, counting, interpolating. " << std::endl;
-    }
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdProcessor(int narg, char *args[], int action, int detPos) {
-    if (action == HELP_ACTION)
-        return helpProcessor(action);
-
-    myDet->setOnline(ONLINE_FLAG, detPos);
-    myDet->setReceiverOnline(ONLINE_FLAG, detPos);
-
-    int imode = getJsonHeaderParameterTypeAsEnum(cmd);
-    jsonHeaderParameterType mode = JSON_EMIN;
-    if (imode != -1)
-        mode = (jsonHeaderParameterType)imode;
-    int ival = -1;
-
-    if (cmd == "json_emin" || cmd == "json_emax") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1],"%d", &ival))
-                return std::string("cannot scan value ") + std::string(args[1]) + std::string(" for command ") + cmd;
-            myDet->setAdditionalJsonSpecificParameter(mode, ival);
-        }
-        return std::to_string(myDet->getAdditionalJsonSpecificParameter(mode));
-    }
-
-    else if (cmd == "json_framemode" || cmd == "json_detectormode") {
-        if (action == PUT_ACTION) {
-            ival = getJsonHeaderParameterValuesAsEnum(args[1]);
-            if (ival == -1)
-                return std::string("cannot scan value ") + std::string(args[1]) + std::string(" for command ") + cmd;
-            myDet->setAdditionalJsonSpecificParameter(mode, ival);
-        }
-        int retval = myDet->getAdditionalJsonSpecificParameter(mode);
-        if (retval == -1)
-            return std::string("unknown");
-        return getJsonHeaderParameterValueAsString((jsonHeaderParameterValuesType)retval);
-    }
-
-   return std::string("could not decode command");
-}
 

@@ -1956,28 +1956,6 @@ std::string multiSlsDetector::getAdditionalJsonParameter(const std::string& key,
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::setAdditionalJsonSpecificParameter(jsonHeaderParameterType mode, int value, int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->setAdditionalJsonSpecificParameter(mode, value);
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::setAdditionalJsonSpecificParameter, mode, value);
-    return sls::minusOneIfDifferent(r);
-}
-
-int multiSlsDetector::getAdditionalJsonSpecificParameter(jsonHeaderParameterType mode, int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getAdditionalJsonSpecificParameter(mode);
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getAdditionalJsonSpecificParameter, mode);
-    return sls::minusOneIfDifferent(r);
-}
-
 int multiSlsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize, int detPos) {
     // single
     if (detPos >= 0) {

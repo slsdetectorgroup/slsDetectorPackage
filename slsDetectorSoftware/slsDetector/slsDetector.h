@@ -994,28 +994,6 @@ public:
     */
    std::string getAdditionalJsonParameter(const std::string& key);
 
-   /**
-    * Validates the value parsed for the corresponding parameter type
-    * @param mode specific parameter type
-    * @value value enum of the value
-    */
-   int validateSpecificJsonParameterValue(jsonHeaderParameterType mode, int value);
-
-   /**
-     * Sets the value for a specific additional json header parameter
-     * @param mode specific json header parameter (JSON_EMIN, JSON_EMAX, JSON_READOUT_MODE, JSON_DETECTOR_MODE)
-     * @param value to set the parameter to, json_readout_mode and json_detector_mode can have only have values from jsonReadoutModeType or jsonDetectorModeType
-     * @returns the specific  additional json header parameter value or enum
-     */
-    int setAdditionalJsonSpecificParameter(jsonHeaderParameterType mode, int value);
-
-    /**
-     * Returns the specific additional json header parameter value
-     * @param mode specific json header parameter (JSON_EMIN, JSON_EMAX, JSON_READOUT_MODE, JSON_DETECTOR_MODE)
-     * @returns the specific additional json header parameter value or enum
-     */
-    int getAdditionalJsonSpecificParameter(jsonHeaderParameterType mode);
-
 	/**
 	 * Sets the receiver UDP socket buffer size
 	 * @param udpsockbufsize additional json header

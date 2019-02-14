@@ -1088,23 +1088,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     std::string getAdditionalJsonParameter(const std::string& key, int detPos = -1);
 
     /**
-      * Sets the value for a specific additional json header parameter
-      * @param mode specific json header parameter (JSON_EMIN, JSON_EMAX, JSON_READOUT_MODE, JSON_DETECTOR_MODE)
-      * @param value to set the parameter to, json_readout_mode and json_detector_mode can have only have values from jsonReadoutModeType or jsonDetectorModeType
-      * @param detPos -1 for all detectors in  list or specific detector position
-      * @returns the specific  additional json header parameter value or enum
-      */
-     int setAdditionalJsonSpecificParameter(jsonHeaderParameterType mode, int value, int detPos = -1);
-
-     /**
-      * Returns the specific additional json header parameter value
-      * @param mode specific json header parameter (JSON_EMIN, JSON_EMAX, JSON_READOUT_MODE, JSON_DETECTOR_MODE)
-      * @param detPos -1 for all detectors in  list or specific detector position
-      * @returns the specific additional json header parameter value or enum
-      */
-     int getAdditionalJsonSpecificParameter(jsonHeaderParameterType mode, int detPos = -1);
-
-    /**
      * Sets the receiver UDP socket buffer size
      * @param udpsockbufsize additional json header
      * @param detPos -1 for all detectors in  list or specific detector position

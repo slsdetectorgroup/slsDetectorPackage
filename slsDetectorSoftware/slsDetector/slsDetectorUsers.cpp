@@ -356,10 +356,16 @@ int slsDetectorUsers::setReceiverPartialFramesPadding(int f, int detPos) {
 }
 
 int slsDetectorUsers::setReceiverFramesPerFile(int f, int detPos) {
-	return detector.setReceiverFramesPerFile(f, detPos);
+    return detector.setReceiverFramesPerFile(f, detPos);
 }
 
+std::string slsDetectorUsers::setAdditionalJsonParameter(const std::string& key, const std::string& value, int detPos) {
+    return detector.setAdditionalJsonParameter(key, value, detPos);
+}
 
+std::string slsDetectorUsers::getAdditionalJsonParameter(const std::string& key, int detPos) {
+    return detector.getAdditionalJsonParameter(key, detPos);
+}
 
 /************************************************************************
 

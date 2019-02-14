@@ -4063,7 +4063,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 	else sprintf(answer,"%d",myDet->getADC(adc, detPos));
 
 	//if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
-	if (adc<=100 || adc == SLOW_ADC_TEMP)
+	if (adc < 100 || adc == SLOW_ADC_TEMP)
 		strcat(answer,"°C");
 	else
 		strcat(answer,"mV");

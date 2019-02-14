@@ -691,6 +691,13 @@ int set_dac(int file_des) {
     case V_POWER_CHIP:
         serverDacIndex = D_PWR_CHIP;
         break;
+    case V_LIMIT:
+        break;
+#elif MOENCHD
+    case ADC_VPP:
+    case HIGH_VOLTAGE:
+    case V_LIMIT:
+        break;
 #endif
     default:
 #ifdef JUNGFRAUD

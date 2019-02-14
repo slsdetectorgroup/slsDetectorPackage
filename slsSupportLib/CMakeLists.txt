@@ -48,9 +48,9 @@ set_target_properties(slsSupportLib PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-if (USE_TESTS)
+if (SLS_USE_TESTS)
     add_subdirectory(tests)
-endif(USE_TESTS)
+endif(SLS_USE_TESTS)
 
 # Install the library
 install(TARGETS slsSupportLib

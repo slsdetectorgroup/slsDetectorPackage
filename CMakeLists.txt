@@ -20,7 +20,6 @@ set(TARGETS_EXPORT_NAME "${PROJECT_NAME_LOWER}-targets")
 #set(namespace "${PROJECT_NAME}::")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-set (CALIBRATE OFF)
 
 
 # Check if project is being used directly or via add_subdirectory
@@ -60,22 +59,9 @@ set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-point
 
 
 
-find_package(Qt4)
-find_package(Qwt 6)
-find_package(CBF)
-find_package(Doxygen)
-
-if (SLS_USE_TESTS)
-    enable_testing()
-endif(SLS_USE_TESTS)
-
 # Support library containing functionallity common to 
 # detector and receiver
 add_subdirectory(slsSupportLib)
-
-if (SLS_USE_HDF5)
-    find_package(HDF5 1.10 COMPONENTS CXX)
-endif (SLS_USE_HDF5)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -94,29 +80,30 @@ if (SLS_USE_TEXTCLIENT)
 endif (SLS_USE_TEXTCLIENT)
 
 if (SLS_USE_RECEIVER)
+    if (SLS_USE_HDF5)
+        find_package(HDF5 1.10 COMPONENTS CXX REQUIRED)
+    endif (SLS_USE_HDF5)
     add_subdirectory(slsReceiverSoftware)
     add_subdirectory(manual/manual-api)    
 endif (SLS_USE_RECEIVER)
 
 if (SLS_USE_GUI)   
+    find_package(Qt4 REQUIRED)
+    find_package(Qwt 6 REQUIRED)
     if (QT4_FOUND AND QWT_FOUND)
         add_subdirectory(slsDetectorGui)
     endif()
 endif (SLS_USE_GUI)
 
+if (SLS_USE_TESTS)
+    enable_testing()
+endif(SLS_USE_TESTS)
+
 if (SLS_USE_INTEGRATION_TESTS)
     add_subdirectory(integrationTests)
 endif (SLS_USE_INTEGRATION_TESTS)
 
-if (CALIBRATE)
-    if (DEFINED ENV{ROOTSYS})
-        find_package(ROOT)
-        if (ROOT_FOUND)
-            add_subdirectory(calibrationWizards)
-        endif()
-    endif()
-endif(CALIBRATE)
-
+find_package(Doxygen)
 
 install(FILES ${ZMQ_STATIC_ARCHIVE}
 DESTINATION lib) 

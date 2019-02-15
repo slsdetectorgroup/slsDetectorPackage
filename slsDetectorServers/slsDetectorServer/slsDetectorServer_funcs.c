@@ -909,7 +909,7 @@ int set_dac(int file_des) {
                             FILE_LOG(logERROR,(mess));
                         }
                     }
-                    FILE_LOG(logDEBUG1, ("Dac (%d): %d %s\n", serverDacIndex, retval, (mV ? "mV" : "dac units")));
+                    FILE_LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval, (mV ? "mV" : "dac units")));
     				break;
     		}
     	}

@@ -504,7 +504,6 @@ void setupDetector() {
     LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);  //has to be before setvchip
     LTC2620_Disable();
     LTC2620_Configure();
-    //FIXME:
 	// switch off dacs (power regulators most likely only sets to minimum (if power enable on))
     FILE_LOG(logINFOBLUE, ("Powering down all dacs\n"));
 	{
@@ -1111,7 +1110,7 @@ int getVchip() {
         return dacValues[D_PWR_CHIP];
     int voltage = -1;
     // dac to voltage
-    ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, VCHIP_MIN_MV, VCHIP_MAX_MV,
+    ConvertToDifferentRange(LTC2620_MAX_VAL, LTC2620_MIN_VAL, VCHIP_MIN_MV, VCHIP_MAX_MV,
             dacValues[D_PWR_CHIP], &voltage);
     return voltage;
 }
@@ -1126,13 +1125,13 @@ void setVchip(int val) {
         // validate & convert it to dac
         if (val != LTC2620_PWR_DOWN_VAL) {
             // convert voltage to dac
-            if (ConvertToDifferentRange(VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+            if (ConvertToDifferentRange(VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MAX_VAL, LTC2620_MIN_VAL, //min val is max V
                     val, &dacval) == FAIL) {
                 FILE_LOG(logERROR, ("\tVChip %d mV invalid. Is not between %d and %d mV\n", val, VCHIP_MIN_MV, VCHIP_MAX_MV));
                 return;
             }
         }
-
+        FILE_LOG(logINFO, ("Setting Vchip (DAC %d): %d dac (%d mV)\n",D_PWR_CHIP, dacval, val));
         // set
         setDAC(D_PWR_CHIP, dacval, 0);
     }
@@ -1153,18 +1152,15 @@ int getVChipToSet(enum DACINDEX ind, int val) {
     for (ipwr = 0; ipwr < NPWR -1; ++ipwr) {
 
         // get the dac values for each adc
-        int dacVal = dacValues[getDACIndexFromADCIndex(ipwr)];
+        int dacmV = getPower(getDACIndexFromADCIndex(ipwr));
 
         // if current index, replace with value to be set
-        if (ipwr == adcIndex)
-            dacVal = val;
-
-        // if power enable off for that adc, dont take the value
-        if (!(bus_r(POWER_REG) & (1 << (POWER_ENBL_VLTG_RGLTR_OFST + ipwr))))
-            dacVal = 0;
+        if (ipwr == adcIndex) {
+            dacmV = val;
+        }
 
         // update max
-        max = (dacVal > max) ? dacVal : max;
+        max = (dacmV > max) ? dacmV : max;
     }
 
     // increment to get vchip value
@@ -1173,6 +1169,11 @@ int getVChipToSet(enum DACINDEX ind, int val) {
     // validate with vchip minimum value
     if (max < VCHIP_MIN_MV)
         max = VCHIP_MIN_MV;
+    // with correct calulations, vchip val should never be greater than vchipmax
+    if (max > VCHIP_MAX_MV) {
+        FILE_LOG(logERROR, ("Vchip value to set %d is beyond its maximum (WEIRD)\n",  max));
+        return -1;
+    }
     return max;
 }
 
@@ -1213,7 +1214,7 @@ int getADCIndexFromDACIndex(enum DACINDEX ind) {
 }
 
 int isPowerValid(int val) {
-    if (val < POWER_RGLTR_MIN || val > POWER_RGLTR_MAX) {
+    if (val != 0 && (val < POWER_RGLTR_MIN || val > POWER_RGLTR_MAX)) {
         return 0;
     }
     return 1;
@@ -1257,7 +1258,7 @@ int getPower(enum DACINDEX ind) {
 
     // convert dac to voltage
     int retval = -1;
-    ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, POWER_RGLTR_MIN, (getVchip() - VCHIP_POWER_INCRMNT),
+    ConvertToDifferentRange(LTC2620_MAX_VAL, LTC2620_MIN_VAL, POWER_RGLTR_MIN, POWER_RGLTR_MAX,
             dacValues[ind], &retval);
     return retval;
 }
@@ -1285,11 +1286,15 @@ void setPower(enum DACINDEX ind, int val) {
 
         // get vchip to set vchip (calculated now before switching off power enable)
         int vchip = getVChipToSet(ind, val);
+        // index problem of vchip calculation problem
+        if (vchip == -1)
+            return;
 
         // Switch off power enable
         bus_w(addr, bus_r(addr) & ~(mask));
 
         // power down dac
+        FILE_LOG(logINFO, ("Powering off P%d (DAC %d)\n", adcIndex, ind));
         setDAC(ind, LTC2620_PWR_DOWN_VAL, 0);
 
         // set vchip
@@ -1299,11 +1304,15 @@ void setPower(enum DACINDEX ind, int val) {
             return;
         }
 
-        // convert it to dac
+        //(power off is anyway done with power enable)
+        if (val == 0)
+            val = LTC2620_PWR_DOWN_VAL;
+
+        // convert it to dac (power off is anyway done with power enable)
         if (val != LTC2620_PWR_DOWN_VAL) {
             int dacval = -1;
             // convert voltage to dac
-            if (ConvertToDifferentRange(POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT, LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+            if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_MAX_VAL, LTC2620_MIN_VAL,
                     val, &dacval) == FAIL) {
                 FILE_LOG(logERROR, ("\tPower index %d of value %d mV invalid. Is not between %d and %d mV\n",
                         ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
@@ -1311,6 +1320,7 @@ void setPower(enum DACINDEX ind, int val) {
             }
 
             // set and power on/ update dac
+            FILE_LOG(logINFO, ("Setting P%d (DAC %d): %d dac (%d mV)\n", adcIndex, ind, dacval, val));
             setDAC(ind, dacval, 0);
 
             // to be sure of valid conversion

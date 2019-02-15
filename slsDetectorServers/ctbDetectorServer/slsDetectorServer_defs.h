@@ -66,13 +66,13 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define DEFAULT_DBIT_CLK            (200)
 
 #define HIGHVOLTAGE_MIN             (60)
-#define HIGHVOLTAGE_MAX             (200)
+#define HIGHVOLTAGE_MAX             (200) // min dac val
 #define DAC_MIN_MV                  (0)
 #define DAC_MAX_MV                  (2500)
-#define VCHIP_MAX_MV                (2700)
 #define VCHIP_MIN_MV                (1700)
-#define POWER_RGLTR_MAX             (2500)
+#define VCHIP_MAX_MV                (2700) // min dac val
 #define POWER_RGLTR_MIN             (600)
+#define POWER_RGLTR_MAX             (2500) // min dac val
 #define VCHIP_POWER_INCRMNT         (200)
 
 /* Defines in the Firmware */

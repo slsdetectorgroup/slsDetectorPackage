@@ -49,10 +49,13 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
             message(FATAL_ERROR "GCC version must be at least 4.8!")
     endif()
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation -Wno-stringop-truncation -Wno-class-memaccess")
 endif()
 
-
+# Suppressed warnings in GCC
+# -Wno-stringop-truncation happens when we do sls::strcpy_safe truncates string instead of overwrite buffer
+# -Wno-class-memaccess - on memcpy in rapidjson should be investigated upgrade implementation?
+# -Wno-misleading-indentation - until clang format
 
 #set (CMAKE_CXX_STANDARD 11)
 #set (CMAKE_CXX_STANDARD_REQUIRED ON)

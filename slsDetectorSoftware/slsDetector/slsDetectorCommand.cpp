@@ -3742,19 +3742,25 @@ std::string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int d
         dac = E_Vis;
     else if (cmd == "iodelay")
         dac = IO_DELAY;
-    else if (cmd == "v_a")
+    else if (cmd == "v_a") {
         dac = V_POWER_A;
-    else if (cmd == "v_b")
+        mode = 1;
+    } else if (cmd == "v_b") {
         dac = V_POWER_B;
-    else if (cmd == "v_c")
+        mode = 1;
+    } else if (cmd == "v_c") {
         dac = V_POWER_C;
-    else if (cmd == "v_d")
+        mode = 1;
+    } else if (cmd == "v_d") {
         dac = V_POWER_D;
-    else if (cmd == "v_io")
+        mode = 1;
+    } else if (cmd == "v_io") {
         dac = V_POWER_IO;
-    else if (cmd == "v_chip")
+        mode = 1;
+   } else if (cmd == "v_chip") {
         dac = V_POWER_CHIP;
-    else if (cmd == "v_limit")
+        mode = 1;
+    } else if (cmd == "v_limit")
         dac = V_LIMIT;
     else if (cmd == "vIpre")
         dac = M_vIpre;
@@ -3803,10 +3809,10 @@ std::string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int d
 
         myDet->setDAC(val, dac, mode, detPos);
     }
-
-    else if (narg >= 2)
-        if (!strcasecmp(args[1], "mv"))
-            mode = 1;
+    // get (dacs in dac units or mV)
+    else if ((narg >= 2) && (!strcasecmp(args[1], "mv"))) {
+             mode = 1;
+    }
 
     sprintf(answer, "%d", myDet->setDAC(-1, dac, mode, detPos));
     if (mode)
@@ -4064,9 +4070,11 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 
 	//if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
 	if (adc < 100 || adc == SLOW_ADC_TEMP)
-		strcat(answer,"°C");
+		strcat(answer," °C");
+	else if (adc == I_POWER_A || adc == I_POWER_B || adc == I_POWER_C || adc == I_POWER_D || adc == I_POWER_IO)
+	    strcat(answer," mA");
 	else
-		strcat(answer,"mV");
+		strcat(answer," mV");
 
 	return std::string(answer);
 

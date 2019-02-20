@@ -12,7 +12,7 @@
  */
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outputMax,
         int inputValue, int* outputValue) {
-    FILE_LOG(logDEBUG1, ("Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
+    FILE_LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
             inputValue, inputMin, inputMax, outputMin, outputMax));
 
     // validate within bounds
@@ -29,7 +29,7 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
         return FAIL;
     }
 
-    double value = (double)((inputValue - inputMin) * (outputMax - outputMin))
+    double value = ((double)(inputValue - inputMin) * (double)(outputMax - outputMin))
             / (double)(inputMax - inputMin) + outputMin;
 
     // double to integer conversion (if decimal places, round to integer)
@@ -38,7 +38,7 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
     }
     *outputValue = value;
 
-    FILE_LOG(logDEBUG1, ("Converted Ouput Value: %d\n", *outputValue));
+    FILE_LOG(logDEBUG1, (" Converted Ouput Value: %d\n", *outputValue));
     return OK;
 }
 

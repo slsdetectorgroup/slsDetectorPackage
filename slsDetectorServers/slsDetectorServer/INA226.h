@@ -13,35 +13,43 @@
 /** INA226 defines */
 
 /** Register set */
-#define INA226_CONFIGURATION_REG    (0x00)  //R/W
-#define INA226_SHUNT_VOLTAGE_REG    (0x01)  //R
-#define INA226_BUS_VOLTAGE_REG      (0x02)  //R
-#define INA226_POWER_REG            (0x03)  //R
-#define INA226_CURRENT_REG          (0x04)  //R
-#define INA226_CALIBRATION_REG      (0x05)  //R/W
-#define INA226_MASK_ENABLE_REG      (0x06)  //R/W
-#define INA226_ALERT_LIMIT_REG      (0x07)  //R/W
-#define INA226_MANUFACTURER_ID_REG  (0xFE)  //R
-#define INA226_DIE_ID_REG           (0xFF)  //R
+#define INA226_CONFIGURATION_REG        (0x00)  //R/W
+#define INA226_SHUNT_VOLTAGE_REG        (0x01)  //R
+#define INA226_BUS_VOLTAGE_REG          (0x02)  //R
+#define INA226_POWER_REG                (0x03)  //R
+#define INA226_CURRENT_REG              (0x04)  //R
+#define INA226_CALIBRATION_REG          (0x05)  //R/W
+#define INA226_MASK_ENABLE_REG          (0x06)  //R/W
+#define INA226_ALERT_LIMIT_REG          (0x07)  //R/W
+#define INA226_MANUFACTURER_ID_REG      (0xFE)  //R
+#define INA226_DIE_ID_REG               (0xFF)  //R
 
 /** bus voltage register */
-#define INA226_BUS_VOLTAGE_VMIN_UV  (1250)     // 1.25mV
-#define INA226_BUS_VOLTAGE_MX_STPS  (0x7FFF + 1)
-#define INA226_BUS_VOLTAGE_VMAX_UV  (INA226_BUS_VOLTAGE_VMIN_UV * INA226_BUS_VOLTAGE_MX_STPS) // 40960000uV, 40.96V
+#define INA226_BUS_VOLTAGE_VMIN_UV      (1250)     // 1.25mV
+#define INA226_BUS_VOLTAGE_MX_STPS      (0x7FFF + 1)
+#define INA226_BUS_VOLTAGE_VMAX_UV      (INA226_BUS_VOLTAGE_VMIN_UV * INA226_BUS_VOLTAGE_MX_STPS) // 40960000uV, 40.96V
 
-/** current register */
-#define INA226_CURRENT_IMIN_UA      (100) //100uA can be changed
-#define INA226_CURRENT_MX_STPS      (0x7FFF + 1)
-#define INA226_CURRENT_IMAX_UA      (INA226_CURRENT_IMIN_UA * INA226_CURRENT_MX_STPS)
+
+/** shunt voltage register */
+#define INA226_SHUNT_VOLTAGE_VMIN_NV    (2500)     // 2.5uV
+#define INA226_SHUNT_VOLTAGE_MX_STPS    (0x7FFF + 1)
+#define INA226_SHUNT_VOLTAGE_VMAX_NV    (INA226_SHUNT_VOLTAGE_VMIN_NV * INA226_SHUNT_VOLTAGE_MX_STPS) // 81920000nV, 81.92mV
+#define INA226_SHUNT_NEGATIVE_MSK       (1 << 15)
+#define INA226_SHUNT_ABS_VALUE_MSK      (0x7FFF)
+
+
+
+/** current precision for calibration register */
+#define INA226_CURRENT_IMIN_UA          (100) //100uA can be changed
 
 /** calibration register */
-#define INA226_CALIBRATION_MSK      (0x7FFF)
+#define INA226_CALIBRATION_MSK          (0x7FFF)
 
 /** get calibration register value to be set */
-#define INA226_getCalibrationValue(rOhm) (0.00512 /(INA226_CURRENT_IMIN_UA * 1e-6 * rOhm))
+#define INA226_getCalibrationValue(rOhm)    (0.00512 /(INA226_CURRENT_IMIN_UA * 1e-6 * rOhm))
 
 /** get current unit */
-#define INA226_getConvertedCurrentUnits(shuntVReg, calibReg) (shuntVReg * calibReg / 2048)
+#define INA226_getConvertedCurrentUnits(shuntV, calibReg) ((double)shuntV * (double)calibReg / (double)2048)
 
 double INA226_Shunt_Resistor_Ohm = 0.0;
 
@@ -50,18 +58,22 @@ double INA226_Shunt_Resistor_Ohm = 0.0;
  * Configure the I2C core and Enable core
  * @param rOhm shunt resister value in Ohms (defined in slsDetectorServer_defs.h)
  * @param creg control register (defined in RegisterDefs.h)
- * @param rreg rx data fifo level register (defined in RegisterDefs.h)
+ * @param sreg status register (defined in RegisterDefs.h)
+ * @param rreg rx data fifo register (defined in RegisterDefs.h)
+ * @param rlvlreg rx data fifo level register (defined in RegisterDefs.h)
  * @param slreg scl low count register (defined in RegisterDefs.h)
  * @param shreg scl high count register (defined in RegisterDefs.h)
  * @param sdreg sda hold register (defined in RegisterDefs.h)
  * @param treg transfer command fifo register (defined in RegisterDefs.h)
  */
-void INA226_ConfigureI2CCore(double rOhm, uint32_t creg, uint32_t rreg, uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg) {
+void INA226_ConfigureI2CCore(double rOhm, uint32_t creg, uint32_t sreg,
+        uint32_t rreg, uint32_t rlvlreg,
+        uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg) {
     FILE_LOG(logINFOBLUE, ("Configuring INA226\n"));
-
+    FILE_LOG(logDEBUG1, ("Shunt ohm resistor: %f\n", rOhm));
     INA226_Shunt_Resistor_Ohm = rOhm;
 
-    I2C_ConfigureI2CCore(creg, rreg, slreg, shreg, sdreg, treg);
+    I2C_ConfigureI2CCore(creg, sreg, rreg, rlvlreg, slreg, shreg, sdreg, treg);
 }
 
 /**
@@ -76,6 +88,12 @@ void INA226_CalibrateCurrentRegister(uint32_t deviceId) {
 
     // calibrate current register
     I2C_Write(deviceId, INA226_CALIBRATION_REG, calVal);
+
+    // read back calibration register
+    int retval = I2C_Read(deviceId, INA226_CALIBRATION_REG);
+    if (retval != calVal) {
+        FILE_LOG(logERROR, ("Cannot set calibration register for I2C. Set 0x%x, read 0x%x\n", calVal, retval));
+    }
 }
 
 /**
@@ -84,24 +102,23 @@ void INA226_CalibrateCurrentRegister(uint32_t deviceId) {
  * @returns voltage in mV
  */
 int INA226_ReadVoltage(uint32_t deviceId) {
-    FILE_LOG(logDEBUG1, ("\tReading voltage\n"));
+    FILE_LOG(logDEBUG1, (" Reading voltage\n"));
     uint32_t regval = I2C_Read(deviceId, INA226_BUS_VOLTAGE_REG);
-    FILE_LOG(logDEBUG1, ("\tvoltage read: 0x%08x\n", regval));
-
-    // value converted in mv
-    uint32_t vmin = INA226_BUS_VOLTAGE_VMIN_UV;
-    uint32_t vmax = INA226_BUS_VOLTAGE_VMAX_UV;
-    uint32_t nsteps = INA226_BUS_VOLTAGE_MX_STPS;
+    FILE_LOG(logDEBUG1, (" bus voltage reg: 0x%08x\n", regval));
 
     // value in uV
-    int retval = (vmin + (vmax - vmin) * regval / (nsteps - 1));
-    FILE_LOG(logDEBUG1, ("\tvoltage read: 0x%d uV\n", retval));
+    int voltageuV = 0;
+    ConvertToDifferentRange(0, INA226_BUS_VOLTAGE_MX_STPS,
+            INA226_BUS_VOLTAGE_VMIN_UV, INA226_BUS_VOLTAGE_VMAX_UV,
+            regval, &voltageuV);
+    FILE_LOG(logDEBUG1, (" voltage: 0x%d uV\n", voltageuV));
 
     // value in mV
-    retval /= 1000;
-    FILE_LOG(logDEBUG1, ("\tvoltage read: %d mV\n", retval));
+    int voltagemV =  voltageuV / 1000;
+    FILE_LOG(logDEBUG1, (" voltage: %d mV\n", voltagemV));
+    FILE_LOG(logINFO, ("Voltage via I2C (Device: 0x%x): %d mV\n", deviceId, voltagemV));
 
-    return retval;
+    return voltagemV;
 }
 
 /**
@@ -110,29 +127,79 @@ int INA226_ReadVoltage(uint32_t deviceId) {
  * @returns current in mA
  */
 int INA226_ReadCurrent(uint32_t deviceId) {
-    FILE_LOG(logDEBUG1, ("\tReading current\n"));
+    FILE_LOG(logDEBUG1, (" Reading current\n"));
 
     // read shunt voltage register
-    FILE_LOG(logDEBUG1, ("\tReading shunt voltage reg\n"));
+    FILE_LOG(logDEBUG1, (" Reading shunt voltage reg\n"));
     uint32_t shuntVoltageRegVal = I2C_Read(deviceId, INA226_SHUNT_VOLTAGE_REG);
-    FILE_LOG(logDEBUG1, ("\tshunt voltage reg: 0x%08x\n", shuntVoltageRegVal));
+    FILE_LOG(logDEBUG1, (" shunt voltage reg: 0x%x\n", shuntVoltageRegVal));
+
+    // read it once more as this error has occured once
+    if (shuntVoltageRegVal == 0xFFFF) {
+        FILE_LOG(logDEBUG1, (" Reading shunt voltage reg again\n"));
+        shuntVoltageRegVal = I2C_Read(deviceId, INA226_SHUNT_VOLTAGE_REG);
+            FILE_LOG(logDEBUG1, (" shunt voltage reg: 0x%x\n", shuntVoltageRegVal));
+    }
+
+    // get absolute value and if negative
+    int negative = (shuntVoltageRegVal & INA226_SHUNT_NEGATIVE_MSK) ? 1: 0;
+    int shuntabsnV = shuntVoltageRegVal & INA226_SHUNT_ABS_VALUE_MSK;
+    FILE_LOG(logDEBUG1, (" negative: %d, absolute: 0x%x\n", negative, shuntabsnV));
+
+    // negative, convert absolute to 2s complement
+    if (negative) {
+        shuntabsnV = ((~shuntabsnV) + 1);
+        FILE_LOG(logDEBUG1, (" new absolute for negative (2's comple): 0x%x\n", shuntabsnV));
+    }
+
+    // calculate shunt voltage
+    int shuntVoltagenV = 0;
+    ConvertToDifferentRange(0, INA226_SHUNT_VOLTAGE_MX_STPS,
+            INA226_SHUNT_VOLTAGE_VMIN_NV, INA226_SHUNT_VOLTAGE_VMAX_NV,
+            shuntabsnV, &shuntVoltagenV);
+    // if negative, put the sign
+    if (negative)
+        shuntVoltagenV = -(shuntVoltagenV);
+    FILE_LOG(logDEBUG1, (" shunt voltage: %d nV\n", shuntVoltagenV));
+    int shuntVoltageUV = shuntVoltagenV / 1000;
+    FILE_LOG(logDEBUG1, (" shunt voltage: %d uV\n\n", shuntVoltageUV));
 
     // read calibration register
-    FILE_LOG(logDEBUG1, ("\tReading calibration reg\n"));
+    FILE_LOG(logDEBUG1, (" Reading calibration reg\n"));
     uint32_t calibrationRegVal = I2C_Read(deviceId, INA226_CALIBRATION_REG);
-    FILE_LOG(logDEBUG1, ("\tcalibration reg: 0x%08x\n", calibrationRegVal));
+    FILE_LOG(logDEBUG1, (" calibration reg: 0x%08x\n\n", calibrationRegVal));
+
+    // read it once more as this error has occured once
+    if (calibrationRegVal == 0xFFFF) {
+        FILE_LOG(logDEBUG1, (" Reading calibration reg again\n"));
+        calibrationRegVal = I2C_Read(deviceId, INA226_CALIBRATION_REG);
+            FILE_LOG(logDEBUG1, (" calibration reg: 0x%x\n", calibrationRegVal));
+    }
 
     // value for current
-    uint32_t retval = INA226_getConvertedCurrentUnits(shuntVoltageRegVal, calibrationRegVal);
-    FILE_LOG(logDEBUG1, ("\tcurrent unit value: %d\n", retval));
+    int retval = INA226_getConvertedCurrentUnits(shuntVoltageUV, calibrationRegVal);
+    FILE_LOG(logDEBUG1, (" current unit value: %d\n", retval));
+
+    FILE_LOG(logDEBUG1, (" To TEST: should be same as curent unit value\n"
+            " Reading current reg\n"));
+    int cuurentRegVal = I2C_Read(deviceId, INA226_CURRENT_REG);
+    FILE_LOG(logDEBUG1, (" current reg: 0x%x\n", cuurentRegVal));
+    // read it once more as this error has occured once
+    if (cuurentRegVal >= 0xFFF0) {
+        FILE_LOG(logDEBUG1, (" Reading current reg again\n"));
+        cuurentRegVal = I2C_Read(deviceId, INA226_CURRENT_REG);
+            FILE_LOG(logDEBUG1, (" current reg: 0x%x\n", cuurentRegVal));
+    }
 
     // current in uA
-    retval *= INA226_CURRENT_IMIN_UA;
-    FILE_LOG(logDEBUG1, ("\tcurrent: %d uA\n", retval));
+    int currentuA = retval * INA226_CURRENT_IMIN_UA;
+    FILE_LOG(logDEBUG1, (" current: %d uA\n", currentuA));
 
     // current in mA
-    retval /= 1000;
-    FILE_LOG(logDEBUG1, ("\tcurrent: %d mA\n", retval));
+    int currentmA =  currentuA / 1000;
+    FILE_LOG(logDEBUG1, (" current: %d mA\n", currentmA));
 
-    return retval;
+    FILE_LOG(logINFO, ("Current via I2C (Device: 0x%x): %d mA\n", deviceId, currentmA));
+
+    return currentmA;
 }

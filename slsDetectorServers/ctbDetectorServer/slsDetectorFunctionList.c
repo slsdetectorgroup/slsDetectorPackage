@@ -515,7 +515,7 @@ void setupDetector() {
 
     // power regulators
     // I2C
-    INA226_ConfigureI2CCore(I2C_SHUNT_RESISTER_OHMS, I2C_CONTROL_REG, I2C_RX_DATA_FIFO_LEVEL_REG, I2C_SCL_LOW_COUNT_REG, I2C_SCL_HIGH_COUNT_REG, I2C_SDA_HOLD_REG, I2C_TRANSFER_COMMAND_FIFO_REG);
+    INA226_ConfigureI2CCore(I2C_SHUNT_RESISTER_OHMS, I2C_CONTROL_REG, I2C_STATUS_REG, I2C_RX_DATA_FIFO_REG, I2C_RX_DATA_FIFO_LEVEL_REG, I2C_SCL_LOW_COUNT_REG, I2C_SCL_HIGH_COUNT_REG, I2C_SDA_HOLD_REG, I2C_TRANSFER_COMMAND_FIFO_REG);
     INA226_CalibrateCurrentRegister(I2C_POWER_VIO_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VA_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VB_DEVICE_ID);
@@ -1138,6 +1138,7 @@ void setVchip(int val) {
 }
 
 int getVChipToSet(enum DACINDEX ind, int val) {
+    FILE_LOG(logDEBUG1, ("Calculating vchip to set\n"));
     // validate index & get adc index
     int adcIndex = getADCIndexFromDACIndex(ind);
     if (adcIndex == -1) {
@@ -1286,15 +1287,17 @@ void setPower(enum DACINDEX ind, int val) {
 
         // get vchip to set vchip (calculated now before switching off power enable)
         int vchip = getVChipToSet(ind, val);
+        FILE_LOG(logDEBUG1, ("Vchip to set: %d\n", vchip));
         // index problem of vchip calculation problem
         if (vchip == -1)
             return;
 
         // Switch off power enable
+        FILE_LOG(logDEBUG1, ("Switching off power enable\n"));
         bus_w(addr, bus_r(addr) & ~(mask));
 
         // power down dac
-        FILE_LOG(logINFO, ("Powering off P%d (DAC %d)\n", adcIndex, ind));
+        FILE_LOG(logDEBUG1, ("Powering off P%d (DAC %d)\n", adcIndex, ind));
         setDAC(ind, LTC2620_PWR_DOWN_VAL, 0);
 
         // set vchip
@@ -1310,6 +1313,11 @@ void setPower(enum DACINDEX ind, int val) {
 
         // convert it to dac (power off is anyway done with power enable)
         if (val != LTC2620_PWR_DOWN_VAL) {
+            FILE_LOG(logDEBUG1, ("Convert Power of %d mV to dac units\n", val));
+/*
+            val = (double)val * 0.95;
+            FILE_LOG(logDEBUG1, ("Convert new Power of %d mV to dac units\n", val));
+*/
             int dacval = -1;
             // convert voltage to dac
             if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_MAX_VAL, LTC2620_MIN_VAL,
@@ -1318,14 +1326,20 @@ void setPower(enum DACINDEX ind, int val) {
                         ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
                 return;
             }
-
+/*
+            if (dacval > LTC2620_MAX_VAL)
+                dacval = LTC2620_MAX_VAL;
+            FILE_LOG(logDEBUG1, ("Converted new dac val: %d\n", dacval));
+*/
             // set and power on/ update dac
             FILE_LOG(logINFO, ("Setting P%d (DAC %d): %d dac (%d mV)\n", adcIndex, ind, dacval, val));
             setDAC(ind, dacval, 0);
 
             // to be sure of valid conversion
-            if (dacval >= 0)
+            if (dacval >= 0) {
+                FILE_LOG(logDEBUG1, ("Switching on power enable\n"));
                 bus_w(addr, bus_r(addr) | mask);
+            }
         }
     }
 }

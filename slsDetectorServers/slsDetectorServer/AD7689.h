@@ -1,6 +1,7 @@
 #pragma once
 
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
+#include "common.h"
 
 /* AD7689 ADC DEFINES */
 
@@ -62,8 +63,10 @@
 #define AD7689_ADC_DATA_NUMBITS             (16)
 #define AD7689_NUM_CHANNELS                 (7)
 #define AD7689_NUM_INVALID_CONVERSIONS      (3)
+
 #define AD7689_INT_REF_MAX_MV               (2500) // chosen using reference buffer selection in config reg
 #define AD7689_INT_REF_MIN_MV               (0)
+#define AD7689_INT_MAX_STEPS                (0xFFFF + 1)
 #define AD7689_TMP_C_FOR_1_MV               (25.00 / 283)
 
 
@@ -144,17 +147,17 @@ int AD7689_GetTemperature() {
             AD7689_CFG_CFG_OVRWRTE_VAL);
 
     // FIXME: do we have to read it 8 times?? (sequencer is disabled anyway) or are we sequencing, then we read only last channel
-    uint16_t regval = AD7689_Get();
+    int regval = AD7689_Get();
 
     // value in mV FIXME: page 17? reference voltage temperature coefficient or t do with -40 to 85 °C
-    uint16_t vmin = AD7689_INT_REF_MIN_MV;
-    uint16_t vmax = AD7689_INT_REF_MAX_MV;
-    uint16_t nsteps = (2 ^ AD7689_ADC_DATA_NUMBITS);
-    uint16_t retval = (vmin + (vmax - vmin) * regval / (nsteps - 1));
+    int retval = 0;
+    ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS,
+            AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
+            regval, &retval);
     FILE_LOG(logDEBUG1, ("\tvoltage read for temp: 0x%d mV\n", retval));
 
     // value in °C
-    uint16_t temp = AD7689_TMP_C_FOR_1_MV * retval;
+    int temp = AD7689_TMP_C_FOR_1_MV * retval;
     FILE_LOG(logDEBUG1, ("\ttemp read: 0x%d °C\n", temp));
 
     return temp;
@@ -191,13 +194,13 @@ int AD7689_GetChannel(int ichan) {
            AD7689_CFG_CFG_OVRWRTE_VAL);
 
    // FIXME: do we have to read it 8 times?? (sequencer is disabled anyway) or are we sequencing, then we read only last channel
-   uint16_t regval = AD7689_Get();
+   int regval = AD7689_Get();
 
    // value in mV
-   uint16_t vmin = AD7689_INT_REF_MIN_MV;
-   uint16_t vmax = AD7689_INT_REF_MAX_MV;
-   uint16_t nsteps = (2 ^ AD7689_ADC_DATA_NUMBITS);
-   uint16_t retval = (vmin + (vmax - vmin) * regval / (nsteps - 1));
+   int retval = 0;
+   ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS,
+           AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
+           regval, &retval);
    FILE_LOG(logINFO, ("\tvoltage read for chan %d: 0x%d mV\n", retval));
 
    return retval;
@@ -210,7 +213,7 @@ void AD7689_Configure(){
     FILE_LOG(logINFOBLUE, ("Configuring AD7689 (Slow ADCs): \n"));
 
     // from power up, 3 invalid conversions
-    FILE_LOG(logINFO, ("3 times due to invalid conversions from power up\n"));
+    FILE_LOG(logINFO, ("\tConfiguring %d x due to invalid conversions from power up\n", AD7689_NUM_INVALID_CONVERSIONS));
     int i = 0;
     for (i = 0; i < AD7689_NUM_INVALID_CONVERSIONS; ++i) {
         AD7689_Set(

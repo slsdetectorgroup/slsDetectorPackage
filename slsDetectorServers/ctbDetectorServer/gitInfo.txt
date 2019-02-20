@@ -1,9 +1,9 @@
 Path: slsDetectorPackage/slsDetectorServers/ctbDetectorServer 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: 501c579f6b5d63ceee66cd10285890bf65e44e8e 
-Revision: 17 
+Repsitory UUID: c93f88b7e5afe231ec43c47d60278c6acdb520af 
+Revision: 19 
 Branch: refactor 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 4331 
-Last Changed Date: 2019-02-14 09:37:20.000000002 +0100 ./RegisterDefs.h
+Last Changed Rev: 4333 
+Last Changed Date: 2019-02-20 08:12:50.000000002 +0100 ./RegisterDefs.h

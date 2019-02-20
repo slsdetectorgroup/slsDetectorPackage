@@ -4370,7 +4370,7 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action, 
     ret = myDet->getTimeLeft(index, detPos);
 
     if ((ret != -1) && (index == ACQUISITION_TIME || index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER || index == ACTUAL_TIME || index == MEASUREMENT_TIME ||
-                        MEASURED_PERIOD || MEASURED_SUBPERIOD))
+                        index == MEASURED_PERIOD || index == MEASURED_SUBPERIOD))
         rval = (double)ret * 1E-9;
     else
         rval = ret;

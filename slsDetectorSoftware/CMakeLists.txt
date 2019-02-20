@@ -23,7 +23,6 @@ target_include_directories(slsDetectorShared PUBLIC
 target_link_libraries(slsDetectorShared PUBLIC
     slsSupportLib
 	${ZeroMQ_LIBRARIES}
-    zmq
 )
 
 set(PUBLICHEADERS

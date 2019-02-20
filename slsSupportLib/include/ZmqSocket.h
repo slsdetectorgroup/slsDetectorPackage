@@ -254,7 +254,7 @@ public:
 			char* additionalJsonHeader = 0) {
 
 
-		char buf[MAX_STR_LENGTH] = "";
+		
 		/** Json Header Format */
 		const char* jsonHeaderFormat =
 				"{"
@@ -286,7 +286,8 @@ public:
 		        "\"flippedDataX\":%u"
 
 				;//"}\n";
-		int length = sprintf(buf, jsonHeaderFormat,
+		char buf[MAX_STR_LENGTH] = "";
+		sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
 
@@ -297,11 +298,13 @@ public:
 						//additional stuff
 						((flippedData == 0 ) ? 0 :flippedData[0])
 		);
+		
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
-		    length = sprintf(buf, "%s, %s}\n", buf, additionalJsonHeader);
-		} else {
-		    length = sprintf(buf, "%s}\n", buf);
-		}
+            strcat(buf, ", ");
+            strcat(buf, additionalJsonHeader);
+        }
+        strcat(buf, "}\n");
+        int length = strlen(buf);
 
 #ifdef VERBOSE
 		//if(!index)

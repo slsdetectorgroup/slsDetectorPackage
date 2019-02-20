@@ -512,7 +512,6 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
 
     detectors[pos]->setHostname(hostname);
     detectors[pos]->setOnline(true);
-
 }
 
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum(int detPos) {
@@ -1934,7 +1933,7 @@ std::string multiSlsDetector::getAdditionalJsonHeader(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setAdditionalJsonParameter(const std::string& key, const std::string& value, int detPos) {
+std::string multiSlsDetector::setAdditionalJsonParameter(const std::string &key, const std::string &value, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setAdditionalJsonParameter(key, value);
@@ -1945,7 +1944,7 @@ std::string multiSlsDetector::setAdditionalJsonParameter(const std::string& key,
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::getAdditionalJsonParameter(const std::string& key, int detPos) {
+std::string multiSlsDetector::getAdditionalJsonParameter(const std::string &key, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getAdditionalJsonParameter(key);
@@ -2116,8 +2115,8 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
     }
 
     // multi
-    int xmin, xmax, ymin, ymax, channelX, channelY, idet, lastChannelX,
-        lastChannelY, index, offsetX, offsetY;
+    int xmin = 0, xmax = 0, ymin = 0, ymax = 0, channelX = 0, channelY = 0, idet = 0, lastChannelX = 0,
+        lastChannelY = 0, index = 0, offsetX = 0, offsetY = 0;
 
     bool invalidroi = false;
     int ndet = detectors.size();
@@ -2149,7 +2148,7 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
             // check roi max values
             idet = decodeNChannel(xmax, ymax, channelX, channelY);
             FILE_LOG(logDEBUG1) << "Decoded Channel max vals: " << std::endl
-                    << "det:" << idet << "\t" << xmax << "\t" << ymax << "\t" << channelX << "\t" << channelY;
+                                << "det:" << idet << "\t" << xmax << "\t" << ymax << "\t" << channelX << "\t" << channelY;
             if (idet == -1) {
                 FILE_LOG(logERROR) << "invalid roi";
                 continue;
@@ -2164,7 +2163,7 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
                     // get offset for each detector
                     idet = decodeNChannel(xmin, ymin, channelX, channelY);
                     FILE_LOG(logDEBUG1) << "Decoded Channel min vals: " << std::endl
-                            << "det:" << idet << "\t" << xmin << "\t" << ymin << "\t" << channelX << "\t" << channelY;
+                                        << "det:" << idet << "\t" << xmin << "\t" << ymin << "\t" << channelX << "\t" << channelY;
                     if (idet < 0 || idet >= (int)detectors.size()) {
                         FILE_LOG(logDEBUG1) << "invalid roi";
                         invalidroi = true;
@@ -2172,13 +2171,13 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
                     }
                     // get last channel for each det in x and y dir
                     lastChannelX =
-                            (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
-                                    X)) -
-                                    1;
+                        (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
+                            X)) -
+                        1;
                     lastChannelY =
-                            (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
-                                    Y)) -
-                                    1;
+                        (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
+                            Y)) -
+                        1;
 
                     offsetX = detectors[idet]->getDetectorOffset(X);
                     offsetY = detectors[idet]->getDetectorOffset(Y);
@@ -2192,7 +2191,7 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
                     }
 
                     FILE_LOG(logDEBUG1) << "lastChannelX:" << lastChannelX << "\t"
-                            << "lastChannelY:" << lastChannelY;
+                                        << "lastChannelY:" << lastChannelY;
 
                     // creating the list of roi for corresponding detector
                     index = nroi[idet];
@@ -2218,16 +2217,15 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
                     xmin = xmax + 1;
                 }
             }
-        } else {// FIXME: check if xmax is greater? or reduce logic above?
-            idet=0;
-            nroi[idet]=n;
-            index                    = 0;
+        } else { // FIXME: check if xmax is greater? or reduce logic above?
+            idet = 0;
+            nroi[idet] = n;
+            index = 0;
             allroi[idet][index].xmin = xmin;
             allroi[idet][index].xmax = xmax;
             allroi[idet][index].ymin = ymin;
             allroi[idet][index].ymax = ymax;
             // nroi[idet]               = nroi[idet] + 1;
-
         }
     }
 

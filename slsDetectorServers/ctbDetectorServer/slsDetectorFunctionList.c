@@ -1215,7 +1215,8 @@ int getADCIndexFromDACIndex(enum DACINDEX ind) {
 }
 
 int isPowerValid(int val) {
-    if (val != 0 && (val < POWER_RGLTR_MIN || val > POWER_RGLTR_MAX)) {
+    // not power_rgltr_max because it is allowed only upto vchip max - 200
+    if (val != 0 && (val != LTC2620_PWR_DOWN_VAL) && (val < POWER_RGLTR_MIN || val > (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT))) {//POWER_RGLTR_MAX)) {
         return 0;
     }
     return 1;
@@ -1314,10 +1315,7 @@ void setPower(enum DACINDEX ind, int val) {
         // convert it to dac (power off is anyway done with power enable)
         if (val != LTC2620_PWR_DOWN_VAL) {
             FILE_LOG(logDEBUG1, ("Convert Power of %d mV to dac units\n", val));
-/*
-            val = (double)val * 0.95;
-            FILE_LOG(logDEBUG1, ("Convert new Power of %d mV to dac units\n", val));
-*/
+
             int dacval = -1;
             // convert voltage to dac
             if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_MAX_VAL, LTC2620_MIN_VAL,
@@ -1326,11 +1324,13 @@ void setPower(enum DACINDEX ind, int val) {
                         ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
                 return;
             }
-/*
+
             if (dacval > LTC2620_MAX_VAL)
                 dacval = LTC2620_MAX_VAL;
-            FILE_LOG(logDEBUG1, ("Converted new dac val: %d\n", dacval));
-*/
+            if (dacval < LTC2620_MIN_VAL)
+                dacval = LTC2620_MIN_VAL;
+            FILE_LOG(logDEBUG1, ("Adjusted for tolerance, hence within limits, new dac val: %d\n", dacval));
+
             // set and power on/ update dac
             FILE_LOG(logINFO, ("Setting P%d (DAC %d): %d dac (%d mV)\n", adcIndex, ind, dacval, val));
             setDAC(ind, dacval, 0);

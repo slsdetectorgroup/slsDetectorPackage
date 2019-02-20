@@ -802,7 +802,7 @@ int set_dac(int file_des) {
                         FILE_LOG(logERROR,(mess));
                     } else if (!isPowerValid(val)) {
                         ret = FAIL;
-                        sprintf(mess,"Could not set power. Power regulator %d should be between %d and %d mV\n", ind, POWER_RGLTR_MIN, POWER_RGLTR_MAX);
+                        sprintf(mess,"Could not set power. Power regulator %d should be between %d and %d mV\n", ind, POWER_RGLTR_MIN, (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
                         FILE_LOG(logERROR,(mess));
                     } else {
                         setPower(serverDacIndex, val);

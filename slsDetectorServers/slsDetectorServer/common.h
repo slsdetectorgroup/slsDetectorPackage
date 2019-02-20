@@ -38,7 +38,7 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
     }
     *outputValue = value;
 
-    FILE_LOG(logDEBUG1, (" Converted Ouput Value: %d\n", *outputValue));
+    FILE_LOG(logDEBUG1, (" Converted Output Value: %d\n", *outputValue));
     return OK;
 }
 

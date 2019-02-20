@@ -1196,7 +1196,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>v_io [i] mv</b> Sets/gets value for Vio on the new chiptest board. Must be in mV. It should be the first power regulator to be set after server start up (fpga reset). To change again, reset fpga first. \c Returns \c (int ["mV"])
+   - <b>v_io [i] mv</b> Sets/gets value for Vio on the new chiptest board. Must be in mV. It should be minimum 1200 mV and must be the first power regulator to be set after server start up (fpga reset). To change again, reset fpga first. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "v_io"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;

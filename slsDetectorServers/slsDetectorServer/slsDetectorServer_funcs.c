@@ -800,9 +800,10 @@ int set_dac(int file_des) {
                         ret = FAIL;
                         sprintf(mess,"Could not set power. Power regulator %d exceeds voltage limit %d.\n", ind, getVLimit());
                         FILE_LOG(logERROR,(mess));
-                    } else if (!isPowerValid(val)) {
+                    } else if (!isPowerValid(serverDacIndex, val)) {
                         ret = FAIL;
-                        sprintf(mess,"Could not set power. Power regulator %d should be between %d and %d mV\n", ind, POWER_RGLTR_MIN, (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
+                        sprintf(mess,"Could not set power. Power regulator %d should be between %d and %d mV\n",
+                                ind, (serverDacIndex == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN), (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
                         FILE_LOG(logERROR,(mess));
                     } else {
                         setPower(serverDacIndex, val);
@@ -1795,7 +1796,7 @@ int set_readout_flags(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting readout flags to %d\n", arg));
 
-#ifndef EIGERD
+#if (!defined(EIGERD)) && (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD))
 	functionNotImplemented();
 #else
 	// set & get
@@ -1809,6 +1810,11 @@ int set_readout_flags(int file_des) {
 		case SAFE:
 		case SHOW_OVERFLOW:
 		case NOOVERFLOW:
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+		case NORMAL_READOUT:
+		case DIGITAL_ONLY:
+		case ANALOG_AND_DIGITAL:
+#endif
 			retval = setReadOutFlags(arg);
 			FILE_LOG(logDEBUG1, ("Read out flags: 0x%x\n", retval));
 			validate((int)arg, (int)(retval & arg), "set readout flag", HEX);
@@ -2524,13 +2530,14 @@ int set_ctb_pattern(int file_des) {
 #else
         int addr = (int)args[0];
         uint64_t word = args[1];
+        FILE_LOG(logDEBUG1, ("addr:0x%x  word:0x%llx\n", addr, word));
 
         if ((word == -1) || (Server_VerifyLock() == OK)) {
 
             // address for set word should be valid (if not -1 or -2,  it goes to setword)
             if (addr < -2 || addr > MAX_PATTERN_LENGTH) {
                 ret = FAIL;
-                sprintf(mess, "Cannot set Pattern (Word, addr:%d). Addr must be less than %d\n",
+                sprintf(mess, "Cannot set Pattern (Word, addr:0x%x). Addr must be less than 0x%x\n",
                         addr, MAX_PATTERN_LENGTH);
                 FILE_LOG(logERROR, (mess));
             } else {
@@ -2580,6 +2587,7 @@ int set_ctb_pattern(int file_des) {
         int startAddr = (int)args[1];
         int stopAddr = (int)args[2];
         int numLoops = (int)args[3];
+        FILE_LOG(logDEBUG1, ("loopLevel:%d startAddr:0x%x stopAddr:0x%x numLoops:%d word:0x%llx\n", loopLevel, startAddr, stopAddr, numLoops));
 
         if (loopLevel < -1 || loopLevel > 2) { // -1 complete pattern
             ret = FAIL;
@@ -2590,8 +2598,8 @@ int set_ctb_pattern(int file_des) {
         // level 0-2, addr upto patternlength + 1
         else if ((loopLevel != -1) && (startAddr > (MAX_PATTERN_LENGTH + 1) || stopAddr > (MAX_PATTERN_LENGTH + 1))) {
             ret = FAIL;
-            sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, startaddr:%d, stopaddr:%d). "
-                    "Addr must be less than %d\n",
+            sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, startaddr:0x%x, stopaddr:0x%x). "
+                    "Addr must be less than 0x%x\n",
                     loopLevel, startAddr, stopAddr, MAX_PATTERN_LENGTH + 1);
             FILE_LOG(logERROR, (mess));
         }
@@ -2599,8 +2607,8 @@ int set_ctb_pattern(int file_des) {
         //level -1, addr upto patternlength
         else if ((loopLevel == -1) && (startAddr > MAX_PATTERN_LENGTH || stopAddr > MAX_PATTERN_LENGTH)) {
             ret = FAIL;
-            sprintf(mess, "Cannot set Pattern (Pattern Loop, complete pattern, startaddr:%d, stopaddr:%d). "
-                    "Addr must be less than %d\n",
+            sprintf(mess, "Cannot set Pattern (Pattern Loop, complete pattern, startaddr:0x%x, stopaddr:0x%x). "
+                    "Addr must be less than 0x%x\n",
                     startAddr, stopAddr, MAX_PATTERN_LENGTH);
             FILE_LOG(logERROR, (mess));
         }
@@ -2618,7 +2626,7 @@ int set_ctb_pattern(int file_des) {
 
 
     // mode 2: wait address
-    else if (mode == 1) {
+    else if (mode == 2) {
         // receive arguments
         uint64_t args[2] = {-1, -1};
         if (receiveData(file_des, args, sizeof(args), INT64) < 0)
@@ -2631,15 +2639,16 @@ int set_ctb_pattern(int file_des) {
 #else
         int loopLevel = (int)args[0];
         int addr = (int)args[1];
+        FILE_LOG(logDEBUG1, ("loopLevel:%d  addr:0x%x\n", loopLevel, addr));
 
         if ((addr == -1) ||  (Server_VerifyLock() == OK)) {
             if (loopLevel < 0 || loopLevel > 2) {
                 ret = FAIL;
-                sprintf(mess, "Pattern (Wait Address) Level (%d) is not implemented for this detector\n", loopLevel);
+                sprintf(mess, "Pattern (Wait Address) Level (0x%x) is not implemented for this detector\n", loopLevel);
                 FILE_LOG(logERROR,(mess));
             } else if (addr > (MAX_PATTERN_LENGTH + 1)) {
                 ret = FAIL;
-                sprintf(mess, "Cannot set Pattern (Wait Address, addr:%d). Addr must be less than %d\n",
+                sprintf(mess, "Cannot set Pattern (Wait Address, addr:0x%x). Addr must be less than 0x%x\n",
                         addr, MAX_PATTERN_LENGTH + 1);
                 FILE_LOG(logERROR, (mess));
             } else {
@@ -2660,7 +2669,7 @@ int set_ctb_pattern(int file_des) {
 
 
     // mode 3: wait time
-    else if (mode == 1) {
+    else if (mode == 3) {
         // receive arguments
         uint64_t args[2] = {-1, -1};
         if (receiveData(file_des, args, sizeof(args), INT64) < 0)
@@ -2671,8 +2680,9 @@ int set_ctb_pattern(int file_des) {
         functionNotImplemented();
         return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 #else
-        int loopLevel = (int)args[1];
-        uint64_t timeval = (int)args[2];
+        int loopLevel = (int)args[0];
+        uint64_t timeval = args[1];
+        FILE_LOG(logDEBUG1, ("loopLevel:%d  timeval:0x%lld\n", loopLevel, timeval));
 
         if ((timeval == -1) ||  (Server_VerifyLock() == OK)) {
             if (loopLevel < 0 || loopLevel > 2) {
@@ -2684,9 +2694,9 @@ int set_ctb_pattern(int file_des) {
                 memset(tempName, 0, 100);
                 sprintf(tempName, "Pattern (Wait Time, Level:%d)", loopLevel);
 
-                FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int)timeval));
+                FILE_LOG(logDEBUG1, ("Setting %s to 0x%lld\n", tempName, (long long int)timeval));
                 retval64 = setPatternWaitTime(loopLevel, timeval);
-                FILE_LOG(logDEBUG1, ("%s: 0x%llx\n", tempName, (long long int)retval64));
+                FILE_LOG(logDEBUG1, ("%s: 0x%lld\n", tempName, (long long int)retval64));
                 validate64(timeval, retval64, tempName, HEX);
             }
         }
@@ -2985,7 +2995,7 @@ int program_fpga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-#ifndef JUNGFRAUD
+#if (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
 	//to receive any arguments
 	int n = 1;
 	while (n > 0)
@@ -3111,7 +3121,7 @@ int reset_fpga(int file_des) {
 	memset(mess, 0, sizeof(mess));
 
 	FILE_LOG(logDEBUG1, ("Reset FPGA\n"));
-#ifndef JUNGFRAUD
+#if (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
 	functionNotImplemented();
 #else
 	// only set

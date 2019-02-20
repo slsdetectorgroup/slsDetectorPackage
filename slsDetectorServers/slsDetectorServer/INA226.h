@@ -1,6 +1,7 @@
 #pragma once
 
 #include "I2C.h"
+#include "math.h"
 
 /**
  * To be defined in
@@ -52,6 +53,9 @@
 #define INA226_getConvertedCurrentUnits(shuntV, calibReg) ((double)shuntV * (double)calibReg / (double)2048)
 
 double INA226_Shunt_Resistor_Ohm = 0.0;
+int INA226_Calibration_Register_Value = 0;
+
+#define INA226_CALIBRATION_CURRENT_TOLERANCE (1.2268)
 
 
 /**
@@ -84,7 +88,11 @@ void INA226_CalibrateCurrentRegister(uint32_t deviceId) {
     FILE_LOG(logINFO, ("Calibrating Current Register for Device ID: 0x%x\n", deviceId));
     // get calibration value based on shunt resistor
     uint16_t calVal = ((uint16_t)INA226_getCalibrationValue(INA226_Shunt_Resistor_Ohm)) & INA226_CALIBRATION_MSK;
-    FILE_LOG(logINFO, ("\tWriting to Calibration reg: 0x%0x\n", calVal));
+    FILE_LOG(logINFO, ("\tCalculated calibration reg value: 0x%0x (%d)\n", calVal, calVal));
+
+    calVal = ((double)calVal / INA226_CALIBRATION_CURRENT_TOLERANCE) + 0.5;
+    FILE_LOG(logINFO, ("\tRealculated (for tolerance) calibration reg value: 0x%0x (%d)\n", calVal, calVal));
+    INA226_Calibration_Register_Value = calVal;
 
     // calibrate current register
     I2C_Write(deviceId, INA226_CALIBRATION_REG, calVal);
@@ -132,71 +140,38 @@ int INA226_ReadCurrent(uint32_t deviceId) {
     // read shunt voltage register
     FILE_LOG(logDEBUG1, (" Reading shunt voltage reg\n"));
     uint32_t shuntVoltageRegVal = I2C_Read(deviceId, INA226_SHUNT_VOLTAGE_REG);
-    FILE_LOG(logDEBUG1, (" shunt voltage reg: 0x%x\n", shuntVoltageRegVal));
+    FILE_LOG(logDEBUG1, (" shunt voltage reg: %d\n", shuntVoltageRegVal));
 
     // read it once more as this error has occured once
     if (shuntVoltageRegVal == 0xFFFF) {
         FILE_LOG(logDEBUG1, (" Reading shunt voltage reg again\n"));
         shuntVoltageRegVal = I2C_Read(deviceId, INA226_SHUNT_VOLTAGE_REG);
-            FILE_LOG(logDEBUG1, (" shunt voltage reg: 0x%x\n", shuntVoltageRegVal));
+            FILE_LOG(logDEBUG1, (" shunt voltage reg: %d\n", shuntVoltageRegVal));
     }
-
-    // get absolute value and if negative
-    int negative = (shuntVoltageRegVal & INA226_SHUNT_NEGATIVE_MSK) ? 1: 0;
-    int shuntabsnV = shuntVoltageRegVal & INA226_SHUNT_ABS_VALUE_MSK;
-    FILE_LOG(logDEBUG1, (" negative: %d, absolute: 0x%x\n", negative, shuntabsnV));
-
-    // negative, convert absolute to 2s complement
-    if (negative) {
-        shuntabsnV = ((~shuntabsnV) + 1);
-        FILE_LOG(logDEBUG1, (" new absolute for negative (2's comple): 0x%x\n", shuntabsnV));
-    }
-
-    // calculate shunt voltage
-    int shuntVoltagenV = 0;
-    ConvertToDifferentRange(0, INA226_SHUNT_VOLTAGE_MX_STPS,
-            INA226_SHUNT_VOLTAGE_VMIN_NV, INA226_SHUNT_VOLTAGE_VMAX_NV,
-            shuntabsnV, &shuntVoltagenV);
-    // if negative, put the sign
-    if (negative)
-        shuntVoltagenV = -(shuntVoltagenV);
-    FILE_LOG(logDEBUG1, (" shunt voltage: %d nV\n", shuntVoltagenV));
-    int shuntVoltageUV = shuntVoltagenV / 1000;
-    FILE_LOG(logDEBUG1, (" shunt voltage: %d uV\n\n", shuntVoltageUV));
-
-    // read calibration register
-    FILE_LOG(logDEBUG1, (" Reading calibration reg\n"));
-    uint32_t calibrationRegVal = I2C_Read(deviceId, INA226_CALIBRATION_REG);
-    FILE_LOG(logDEBUG1, (" calibration reg: 0x%08x\n\n", calibrationRegVal));
-
-    // read it once more as this error has occured once
-    if (calibrationRegVal == 0xFFFF) {
-        FILE_LOG(logDEBUG1, (" Reading calibration reg again\n"));
-        calibrationRegVal = I2C_Read(deviceId, INA226_CALIBRATION_REG);
-            FILE_LOG(logDEBUG1, (" calibration reg: 0x%x\n", calibrationRegVal));
-    }
-
     // value for current
-    int retval = INA226_getConvertedCurrentUnits(shuntVoltageUV, calibrationRegVal);
+    int retval = INA226_getConvertedCurrentUnits(shuntVoltageRegVal, INA226_Calibration_Register_Value);
     FILE_LOG(logDEBUG1, (" current unit value: %d\n", retval));
 
-    FILE_LOG(logDEBUG1, (" To TEST: should be same as curent unit value\n"
-            " Reading current reg\n"));
+
+    // reading directly the current reg
+    FILE_LOG(logDEBUG1, (" Reading current reg\n"));
     int cuurentRegVal = I2C_Read(deviceId, INA226_CURRENT_REG);
-    FILE_LOG(logDEBUG1, (" current reg: 0x%x\n", cuurentRegVal));
+    FILE_LOG(logDEBUG1, (" current reg: %d\n", cuurentRegVal));
     // read it once more as this error has occured once
     if (cuurentRegVal >= 0xFFF0) {
         FILE_LOG(logDEBUG1, (" Reading current reg again\n"));
         cuurentRegVal = I2C_Read(deviceId, INA226_CURRENT_REG);
-            FILE_LOG(logDEBUG1, (" current reg: 0x%x\n", cuurentRegVal));
+            FILE_LOG(logDEBUG1, (" current reg: %d\n", cuurentRegVal));
     }
 
+    // should be the same
+    FILE_LOG(logDEBUG1, (" ===============current reg: %d, current unit cal:%d=================================\n", cuurentRegVal, retval));
     // current in uA
-    int currentuA = retval * INA226_CURRENT_IMIN_UA;
+    int currentuA = cuurentRegVal * INA226_CURRENT_IMIN_UA;
     FILE_LOG(logDEBUG1, (" current: %d uA\n", currentuA));
 
     // current in mA
-    int currentmA =  currentuA / 1000;
+    int currentmA =  (currentuA / 1000.00) + 0.5;
     FILE_LOG(logDEBUG1, (" current: %d mA\n", currentmA));
 
     FILE_LOG(logINFO, ("Current via I2C (Device: 0x%x): %d mA\n", deviceId, currentmA));

@@ -4865,7 +4865,7 @@ uint64_t slsDetector::setCTBWord(int addr, uint64_t word) {
     int mode = 0; // sets word
     uint64_t args[3] = {(uint64_t)mode, (uint64_t)addr, word};
     uint64_t retval = -1;
-    FILE_LOG(logINFO) << "Setting CTB word, addr: 0x" << std::hex << addr << ", word: 0x" << word << std::dec;
+    FILE_LOG(logDEBUG1) << "Setting CTB word, addr: 0x" << std::hex << addr << ", word: 0x" << word << std::dec;
 
     if (thisDetector->onlineFlag == ONLINE_FLAG) {
         auto client = sls::ClientSocket(thisDetector->hostname, thisDetector->controlPort);

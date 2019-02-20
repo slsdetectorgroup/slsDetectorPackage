@@ -178,7 +178,7 @@ void        setVchip(int val);
 int         getVChipToSet(enum DACINDEX ind, int val);
 int         getDACIndexFromADCIndex(enum ADCINDEX ind);
 int         getADCIndexFromDACIndex(enum DACINDEX ind);
-int         isPowerValid(int val);
+int         isPowerValid(enum DACINDEX ind, int val);
 int         getPower();
 void        setPower(enum DACINDEX ind, int val);
 void        powerOff();

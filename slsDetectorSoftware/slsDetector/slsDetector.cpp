@@ -84,6 +84,9 @@ int slsDetector::checkDetectorVersionCompatibility() {
     case CHIPTESTBOARD:
         arg = APICTB;
         break;
+    case MOENCH:
+        arg = APIMOENCH;
+        break;
     default:
         FILE_LOG(logERROR) << "Check version compatibility is not implemented for this detector";
         setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));
@@ -290,6 +293,7 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
         list.nGappixelsY = 0;
         break;
     case CHIPTESTBOARD:
+    case MOENCH:
         list.nChanX = 36;
         list.nChanY = 1;
         list.nChipX = 1;
@@ -420,6 +424,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
         thisDetector->receiver_framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
         break;
     case CHIPTESTBOARD:
+    case MOENCH:
         thisDetector->receiver_framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
         break;
     default:
@@ -455,7 +460,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
         thisDetector->dynamicRange / 8;
 
     // special for jctb
-    if (thisDetector->myDetectorType == CHIPTESTBOARD) {
+    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
         getTotalNumberOfChannels();
     }
 
@@ -735,7 +740,7 @@ std::string slsDetector::getDetectorTypeAsString() {
 int slsDetector::getTotalNumberOfChannels() {
     FILE_LOG(logDEBUG1) << "Get total number of channels";
 
-    if (thisDetector->myDetectorType == CHIPTESTBOARD) {
+    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
         if (thisDetector->roFlags & DIGITAL_ONLY) {
             thisDetector->nChan[X] = 4;
         } else if (thisDetector->roFlags & ANALOG_AND_DIGITAL) {
@@ -1185,6 +1190,10 @@ int slsDetector::writeConfigurationFile(std::ofstream &outfile, multiSlsDetector
         names.emplace_back("vhighvoltage");
         break;
     case CHIPTESTBOARD:
+        names.emplace_back("vhighvoltage");
+        break;
+    case MOENCH:
+        names.emplace_back("powerchip");
         names.emplace_back("vhighvoltage");
         break;
     default:
@@ -2049,7 +2058,7 @@ int slsDetector::setDynamicRange(int n) {
             (thisDetector->nChip[Y] * thisDetector->nChan[Y] +
              thisDetector->gappixels * thisDetector->nGappixels[Y]) *
             retval / 8;
-        if (thisDetector->myDetectorType == CHIPTESTBOARD) {
+        if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
             getTotalNumberOfChannels();
         }
         FILE_LOG(logDEBUG1) << "Data bytes " << thisDetector->dataBytes;
@@ -2383,7 +2392,7 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
                          thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
                 setTimer(SUBFRAME_DEADTIME, thisDetector->timerValue[SUBFRAME_DEADTIME]);
             }
-            if (thisDetector->myDetectorType == CHIPTESTBOARD) {
+            if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
                 setTimer(SAMPLES, thisDetector->timerValue[SAMPLES]);
             }
             setDynamicRange(thisDetector->dynamicRange);
@@ -3032,7 +3041,7 @@ int slsDetector::setROI(int n, ROI roiLimits[]) {
     int ret = sendROI(n, roiLimits);
     if(ret==FAIL)
         setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
-    if (thisDetector->myDetectorType == CHIPTESTBOARD) {
+    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
         getTotalNumberOfChannels();
     }
     return ret;
@@ -3041,7 +3050,7 @@ int slsDetector::setROI(int n, ROI roiLimits[]) {
 slsDetectorDefs::ROI *slsDetector::getROI(int &n) {
     sendROI(-1, nullptr);
     n = thisDetector->nROI;
-    if (thisDetector->myDetectorType == CHIPTESTBOARD) {
+    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
         getTotalNumberOfChannels();
     }
     return thisDetector->roiLimits;
@@ -3499,7 +3508,8 @@ int slsDetector::setStoragecellStart(int pos) {
 
 int slsDetector::programFPGA(const std::string &fname) {
     // only jungfrau implemented (client processing, so check now)
-    if (thisDetector->myDetectorType != JUNGFRAU && thisDetector->myDetectorType != CHIPTESTBOARD) {
+    if (thisDetector->myDetectorType != JUNGFRAU &&
+            thisDetector->myDetectorType != CHIPTESTBOARD && thisDetector->myDetectorType != MOENCH) {
         FILE_LOG(logERROR) << "Not implemented for this detector";
         setErrorMask((getErrorMask()) | (PROGRAMMING_ERROR));
         return FAIL;
@@ -3528,7 +3538,7 @@ int slsDetector::programFPGA(const std::string &fname) {
         }
 
         // create temp destination file
-        char destfname[] = "/tmp/Jungfrau_MCB.XXXXXX";
+        char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
         int dst = mkstemp(destfname); // create temporary file and open it in r/w
         if (dst == -1) {
             FILE_LOG(logERROR) << "Could not create destination file in /tmp for programming: " << destfname;

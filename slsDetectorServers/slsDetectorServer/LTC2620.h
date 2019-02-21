@@ -200,12 +200,14 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex)  {
  */
 void LTC2620_Set(int cmd, int data, int dacaddr, int chipIndex)  {
     FILE_LOG(logDEBUG1, ("cmd:0x%x, data:%d, dacaddr:%d, chipIndex:%d\n", cmd, data, dacaddr, chipIndex));
+    FILE_LOG(logDEBUG1, (" ================================================\n"));
     // ctb
     if (LTC2620_Ndac > LTC2620_NUMCHANNELS)
         LTC2620_SetDaisy(cmd, data, dacaddr, chipIndex);
     // others
     else
         LTC2620_SetSingle(cmd, data, dacaddr);
+    FILE_LOG(logDEBUG1, (" ================================================\n"));
 }
 
 

@@ -523,6 +523,9 @@ void setupDetector() {
     INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
     setVchip(VCHIP_MIN_MV);
 
+    // set vio to minimum for fpga to function
+    setPower(D_PWR_IO, VIO_MIN_MV);
+
 	// altera pll
 	ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK, PLL_CNTRL_ADDR_OFST);
 
@@ -967,6 +970,11 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
 		break;
 
+    case FRAME_PERIOD:
+        retval = get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
+        FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
+        break;
+
 	case DELAY_AFTER_TRIGGER:
 		retval = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
 		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
@@ -1214,8 +1222,11 @@ int getADCIndexFromDACIndex(enum DACINDEX ind) {
     }
 }
 
-int isPowerValid(int val) {
-    if (val != 0 && (val < POWER_RGLTR_MIN || val > POWER_RGLTR_MAX)) {
+int isPowerValid(enum DACINDEX ind, int val) {
+    int min = (ind == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
+
+    // not power_rgltr_max because it is allowed only upto vchip max - 200
+    if (val != 0 && (val != LTC2620_PWR_DOWN_VAL) && (val < min || val > (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT))) {
         return 0;
     }
     return 1;
@@ -1280,8 +1291,9 @@ void setPower(enum DACINDEX ind, int val) {
         FILE_LOG(logINFO, ("Setting Power to %d mV\n", val));
 
         // validate value (already checked at tcp)
-        if (!isPowerValid(val)) {
-            FILE_LOG(logERROR, ("Invalid value of %d mV for Power %d. Is not between %d and %d mV\n", val, ind, POWER_RGLTR_MIN, POWER_RGLTR_MAX));
+        if (!isPowerValid(ind, val)) {
+            FILE_LOG(logERROR, ("Invalid value of %d mV for Power %d. Is not between %d and %d mV\n",
+                    val, ind, (ind == D_PWR_IO ? VIO_MIN_MV : POWER_RGLTR_MIN), POWER_RGLTR_MAX));
             return;
         }
 
@@ -1314,10 +1326,7 @@ void setPower(enum DACINDEX ind, int val) {
         // convert it to dac (power off is anyway done with power enable)
         if (val != LTC2620_PWR_DOWN_VAL) {
             FILE_LOG(logDEBUG1, ("Convert Power of %d mV to dac units\n", val));
-/*
-            val = (double)val * 0.95;
-            FILE_LOG(logDEBUG1, ("Convert new Power of %d mV to dac units\n", val));
-*/
+
             int dacval = -1;
             // convert voltage to dac
             if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_MAX_VAL, LTC2620_MIN_VAL,
@@ -1326,11 +1335,7 @@ void setPower(enum DACINDEX ind, int val) {
                         ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));
                 return;
             }
-/*
-            if (dacval > LTC2620_MAX_VAL)
-                dacval = LTC2620_MAX_VAL;
-            FILE_LOG(logDEBUG1, ("Converted new dac val: %d\n", dacval));
-*/
+
             // set and power on/ update dac
             FILE_LOG(logINFO, ("Setting P%d (DAC %d): %d dac (%d mV)\n", adcIndex, ind, dacval, val));
             setDAC(ind, dacval, 0);
@@ -1725,12 +1730,12 @@ uint64_t writePatternClkControl(uint64_t word) {
 uint64_t readPatternWord(int addr) {
     // error (handled in tcp)
     if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
-        FILE_LOG(logERROR, ("Cannot get Pattern - Word. Invalid addr %d. "
-                "Should be within %d\n", addr, MAX_PATTERN_LENGTH));
+        FILE_LOG(logERROR, ("Cannot get Pattern - Word. Invalid addr 0x%x. "
+                "Should be within 0x%x\n", addr, MAX_PATTERN_LENGTH));
         return -1;
     }
 
-    FILE_LOG(logDEBUG1, ("Reading Pattern - Word (addr:%d)\n", addr));
+    FILE_LOG(logDEBUG1, ("Reading Pattern - Word (addr:0x%x)\n", addr));
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // overwrite with  only addr
@@ -1739,12 +1744,12 @@ uint64_t readPatternWord(int addr) {
     // set read strobe
     bus_w(reg, bus_r(reg) | PATTERN_CNTRL_RD_MSK);
 
-    // read value
-    uint64_t retval = get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
-    FILE_LOG(logDEBUG1, ("Word(addr:%d): 0x%llx\n", addr, (long long int) retval));
-
     // unset read strobe
     bus_w(reg, bus_r(reg) & (~PATTERN_CNTRL_RD_MSK));
+
+    // read value
+    uint64_t retval = get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
+    FILE_LOG(logDEBUG1, ("Word(addr:0x%x): 0x%llx\n", addr, (long long int) retval));
 
     return retval;
 }
@@ -1756,16 +1761,17 @@ uint64_t writePatternWord(int addr, uint64_t word) {
 
     // error (handled in tcp)
     if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
-        FILE_LOG(logERROR, ("Cannot set Pattern - Word. Invalid addr %d. "
-                "Should be within %d\n", addr, MAX_PATTERN_LENGTH));
+        FILE_LOG(logERROR, ("Cannot set Pattern - Word. Invalid addr 0x%x. "
+                "Should be within 0x%x\n", addr, MAX_PATTERN_LENGTH));
         return -1;
     }
 
-    FILE_LOG(logINFO, ("Setting Pattern - Word (addr:%d, word:0x%llx)\n", addr, (long long int) word));
+    FILE_LOG(logINFO, ("Setting Pattern - Word (addr:0x%x, word:0x%llx)\n", addr, (long long int) word));
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // write word
     set64BitReg(word, PATTERN_IN_LSB_REG, PATTERN_IN_MSB_REG);
+    FILE_LOG(logDEBUG1, ("Wrote word. PatternIn Reg: 0x%llx\n", get64BitReg(PATTERN_IN_LSB_REG, PATTERN_IN_MSB_REG)));
 
     // overwrite with  only addr
     bus_w(reg, ((addr << PATTERN_CNTRL_ADDR_OFST) & PATTERN_CNTRL_ADDR_MSK));
@@ -1783,8 +1789,8 @@ int setPatternWaitAddress(int level, int addr) {
 
     // error (handled in tcp)
     if (addr >= (MAX_PATTERN_LENGTH + 1)) {
-        FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid addr %d. "
-                "Should be within %d\n", addr, MAX_PATTERN_LENGTH + 1));
+        FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid addr 0x%x. "
+                "Should be within 0x%x\n", addr, MAX_PATTERN_LENGTH + 1));
         return -1;
     }
 
@@ -1809,20 +1815,20 @@ int setPatternWaitAddress(int level, int addr) {
         mask = PATTERN_WAIT_2_ADDR_MSK;
         break;
     default:
-        FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid level %d. "
+        FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid level 0x%x. "
                 "Should be between 0 and 2.\n", level));
         return -1;
     }
 
     // set
     if (addr >= 0) {
-        FILE_LOG(logINFO, ("Setting Pattern - Wait Address (level:%d, addr:%d)\n", level, addr));
+        FILE_LOG(logINFO, ("Setting Pattern - Wait Address (level:%d, addr:0x%x)\n", level, addr));
         bus_w(reg, ((addr << offset) & mask));
     }
 
     // get
     uint32_t regval = bus_r((reg & mask) >> offset);
-    FILE_LOG(logDEBUG1, ("Wait Address (level:%d, addr:%d)\n", level, regval));
+    FILE_LOG(logDEBUG1, ("Wait Address (level:%d, addr:0x%x)\n", level, regval));
     return regval;
 }
 
@@ -1866,16 +1872,16 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     // level 0-2, addr upto patternlength + 1 (checked at tcp)
     if ((level != -1) &&
             (*startAddr >= 0 || *stopAddr > (MAX_PATTERN_LENGTH + 1))) {
-        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, startaddr:%d, stopaddr:%d). "
-                "Addr must be less than %d\n",
+        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, startaddr:0x%x, stopaddr:0x%x). "
+                "Addr must be less than 0x%x\n",
                 level, *startAddr, *stopAddr, MAX_PATTERN_LENGTH + 1));
     }
 
     //level -1, addr upto patternlength (checked at tcp)
     else if ((level == -1) &&
             (*startAddr >= 0 || *stopAddr > MAX_PATTERN_LENGTH)) {
-        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, stopaddr:%d). "
-                "Addr must be less than %d\n",
+        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, stopaddr:0x%x). "
+                "Addr must be less than 0x%x\n",
                 *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
     }
 
@@ -1939,17 +1945,17 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     // set start and stop addr
     if (*startAddr == -1) {
         *startAddr = ((bus_r(addr) >> startOffset) & startMask);
-        FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop Start Address (level:%d, startAddr:%d was -1)\n",
+        FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop Start Address (level:%d, startAddr:0x%x was -1)\n",
                             level, *startAddr));
     }
     if (*stopAddr == -1) {
         *stopAddr = ((bus_r(addr) >> stopOffset) & stopMask);
-        FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop Stop Address (level:%d, stopAddr:%d, was -1)\n",
+        FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop Stop Address (level:%d, stopAddr:0x%x, was -1)\n",
                             level, *stopAddr));
     }
 
     // writing start and stop addr
-    FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop (level:%d, startaddr:%d, stopaddr:%d)\n",
+    FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop (level:%d, startaddr:0x%x, stopaddr:0x%x)\n",
               level, *startAddr, *stopAddr));
     bus_w(addr, ((*startAddr << startOffset) & startMask) | ((*stopAddr << stopOffset) & stopMask));
 }

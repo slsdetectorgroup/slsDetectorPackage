@@ -69,11 +69,12 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define HIGHVOLTAGE_MAX             (200) // min dac val
 #define DAC_MIN_MV                  (0)
 #define DAC_MAX_MV                  (2500)
-#define VCHIP_MIN_MV                (1700)
-#define VCHIP_MAX_MV                (2700) // min dac val
-#define POWER_RGLTR_MIN             (600)
-#define POWER_RGLTR_MAX             (2500) // min dac val
+#define VCHIP_MIN_MV                (1673)
+#define VCHIP_MAX_MV                (2668) // min dac val
+#define POWER_RGLTR_MIN             (636)
+#define POWER_RGLTR_MAX             (2638) // min dac val (not vchip-max) because of dac conversions
 #define VCHIP_POWER_INCRMNT         (200)
+#define VIO_MIN_MV                  (1200) // for fpga to function
 
 /* Defines in the Firmware */
 #define WAIT_TME_US_FR_LK_AT_ME_REG (100) // wait time in us after acquisition done to ensure there is no data in fifo

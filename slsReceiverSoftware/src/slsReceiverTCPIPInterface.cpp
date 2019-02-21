@@ -421,7 +421,7 @@ int slsReceiverTCPIPInterface::set_port() {
 			try {
 				mySocket = new MySocketTCP(p_number);
 				strcpy(mySock->lastClientIP,oldLastClientIP);
-			} catch(SamePortSocketException e) {
+			} catch(SamePortSocketException &e) {
 				ret = FAIL;
 				sprintf(mess, "Could not bind port %d. It is already set\n", p_number);
 				FILE_LOG(logERROR) << mess;

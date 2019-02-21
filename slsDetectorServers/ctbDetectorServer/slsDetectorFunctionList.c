@@ -970,6 +970,11 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
 		break;
 
+    case FRAME_PERIOD:
+        retval = get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
+        FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
+        break;
+
 	case DELAY_AFTER_TRIGGER:
 		retval = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
 		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));

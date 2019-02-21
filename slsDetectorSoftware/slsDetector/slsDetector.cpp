@@ -1033,28 +1033,37 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
     n += client.receiveData(lastClientIP, sizeof(lastClientIP));
     FILE_LOG(logDEBUG1) << "Updating detector last modified by " << lastClientIP;
 
+    // dr
     n += client.receiveData(&i32, sizeof(i32));
     thisDetector->dynamicRange = i32;
 
+    // databytes
     n += client.receiveData(&i32, sizeof(i32));
     thisDetector->dataBytes = i32;
 
-    n += client.receiveData(&i32, sizeof(i32));
-    thisDetector->currentSettings = (detectorSettings)i32;
+    // settings
+    if ((thisDetector->myDetectorType != CHIPTESTBOARD) && (thisDetector->myDetectorType != MOENCH)) {
+        n += client.receiveData(&i32, sizeof(i32));
+        thisDetector->currentSettings = (detectorSettings)i32;
+    }
 
+    // threshold
     if (thisDetector->myDetectorType == EIGER) {
         n += client.receiveData(&i32, sizeof(i32));
         thisDetector->currentThresholdEV = i32;
     }
 
+    // frame number
     n += client.receiveData(&i64, sizeof(i64));
     thisDetector->timerValue[FRAME_NUMBER] = i64;
 
-    if (thisDetector->myDetectorType != CHIPTESTBOARD) {
+    // exptime
+    if ((thisDetector->myDetectorType != CHIPTESTBOARD) && (thisDetector->myDetectorType != MOENCH)) {
         n += client.receiveData(&i64, sizeof(i64));
         thisDetector->timerValue[ACQUISITION_TIME] = i64;
     }
 
+    // subexptime, subdeadtime
     if (thisDetector->myDetectorType == EIGER) {
         n += client.receiveData(&i64, sizeof(i64));
         thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME] = i64;
@@ -1063,28 +1072,36 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
         thisDetector->timerValue[SUBFRAME_DEADTIME] = i64;
     }
 
+    // period
     n += client.receiveData(&i64, sizeof(i64));
     thisDetector->timerValue[FRAME_PERIOD] = i64;
 
+    // delay
     if (thisDetector->myDetectorType != EIGER) {
         n += client.receiveData(&i64, sizeof(i64));
         thisDetector->timerValue[DELAY_AFTER_TRIGGER] = i64;
     }
 
+    // cycles
     n += client.receiveData(&i64, sizeof(i64));
     thisDetector->timerValue[CYCLES_NUMBER] = i64;
 
-    if (thisDetector->myDetectorType == CHIPTESTBOARD) {
+    // readout flags
+    if (thisDetector->myDetectorType == EIGER ||
+            thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
+        n += client.receiveData(&i32, sizeof(i32));
+        thisDetector->roFlags = (readOutFlags)i32;
+    }
+
+    // samples
+    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
         n += client.receiveData(&i64, sizeof(i64));
         if (i64 >= 0) {
             thisDetector->timerValue[SAMPLES] = i64;
         }
-
-        n += client.receiveData(&i32, sizeof(i32));
-        thisDetector->roFlags = (readOutFlags)i32;
-
         getTotalNumberOfChannels();
     }
+
 
     if (!n) {
         FILE_LOG(logERROR) << "Could not update detector, received 0 bytes";

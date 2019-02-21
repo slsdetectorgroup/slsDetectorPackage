@@ -501,7 +501,7 @@ int get_id(int file_des) {
 
 	// get
 	switch (arg) {
-#if defined(EIGERD) || defined(JUNGFRAUD)
+#ifndef GOTTHARDD
 	case SOFTWARE_FIRMWARE_API_VERSION:
 	case DETECTOR_SERIAL_NUMBER:
 #endif
@@ -818,6 +818,10 @@ int set_dac(int file_des) {
 
             case V_POWER_CHIP:
                 if (val >= 0) {
+                    ret = FAIL;
+                    sprintf(mess,"Can not set Vchip. Can only be set automatically in the background (+200mV from highest power regulator voltage).\n");
+                    FILE_LOG(logERROR,(mess));
+                    /* restrict users from setting vchip
                     if (!mV) {
                         ret = FAIL;
                         sprintf(mess,"Could not set Vchip. Should be in mV and not dac units.\n");
@@ -829,6 +833,7 @@ int set_dac(int file_des) {
                     } else {
                         setVchip(val);
                     }
+                    */
                 }
                 retval = getVchip();
                 FILE_LOG(logDEBUG1, ("Vchip: %d\n", retval));
@@ -1551,7 +1556,7 @@ int set_timer(int file_des) {
 	    case FRAME_PERIOD:
 	    case CYCLES_NUMBER:
 	    case SAMPLES:
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#ifndef EIGERD
 	    case DELAY_AFTER_TRIGGER:
 #endif
 	        retval = setTimer(ind, tns);
@@ -1696,6 +1701,7 @@ int get_time_left(int file_des) {
         case ACTUAL_TIME:
         case MEASUREMENT_TIME:
         case FRAME_NUMBER:
+        case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
         case CYCLES_NUMBER:
 #elif MOENCHD
@@ -1704,6 +1710,7 @@ int get_time_left(int file_des) {
         case ACTUAL_TIME:
         case MEASUREMENT_TIME:
         case FRAME_NUMBER:
+        case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
         case CYCLES_NUMBER:
 #endif
@@ -1796,7 +1803,7 @@ int set_readout_flags(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting readout flags to %d\n", arg));
 
-#if (!defined(EIGERD)) && (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD))
+#if defined(JUNGFRAUD) || defined(GOTTHARDD)
 	functionNotImplemented();
 #else
 	// set & get
@@ -1874,7 +1881,7 @@ int set_roi(int file_des) {
 		}
 	}
 
-#if !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(EIGERD)
 	functionNotImplemented();
 #else
 	// set & get
@@ -2120,9 +2127,11 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
 	i32 = (int)getSettings();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
+#endif
 
 #ifdef EIGERD
 	i32 = getThresholdEnergy(GET_FLAG);
@@ -2134,7 +2143,7 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-#ifndef CHIPTESTBOARDD
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
 	i64 = setTimer(ACQUISITION_TIME,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
@@ -2164,13 +2173,15 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-#ifdef CHIPTESTBOARDD
-    i64 = setTimer(SAMPLES,GET_FLAG);
-    n = sendData(file_des,&i64,sizeof(i64),INT64);
-    if (n < 0) return printSocketReadError();
-
+#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
     i32 = setReadOutFlags(GET_READOUT_FLAGS);
     n = sendData(file_des,&i32,sizeof(i32),INT32);
+    if (n < 0) return printSocketReadError();
+#endif
+
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+    i64 = setTimer(SAMPLES,GET_FLAG);
+    n = sendData(file_des,&i64,sizeof(i64),INT64);
     if (n < 0) return printSocketReadError();
 #endif
 
@@ -2731,7 +2742,7 @@ int write_adc_register(int file_des) {
 #ifndef VIRTUAL
 	// only set
 	if (Server_VerifyLock() == OK) {
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 		AD9257_Set(addr, val);
 #elif GOTTHARDD
 	if (getBoardRevision() == 1) {
@@ -2995,7 +3006,7 @@ int program_fpga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-#if (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if defined(EIGERD) || defined(GOTTHARDD)
 	//to receive any arguments
 	int n = 1;
 	while (n > 0)
@@ -3121,7 +3132,7 @@ int reset_fpga(int file_des) {
 	memset(mess, 0, sizeof(mess));
 
 	FILE_LOG(logDEBUG1, ("Reset FPGA\n"));
-#if (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if defined(EIGERD) || defined(GOTTHARDD)
 	functionNotImplemented();
 #else
 	// only set

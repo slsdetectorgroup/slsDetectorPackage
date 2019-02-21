@@ -63,7 +63,7 @@ void init_detector() {
 #endif
 	if (isControlServer) {
 	    basictests();
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	    if (debugflag != PROGRAMMING_MODE)
 #endif
 	    initControlServer();
@@ -91,7 +91,7 @@ int decode_function(int file_des) {
 		FILE_LOG(logDEBUG3, ("Received %d bytes\n", n ));
 
 	// jungfrau in programming mode
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	if ((debugflag == PROGRAMMING_MODE) &&
 			(fnum != F_PROGRAM_FPGA) &&
 			(fnum != F_GET_DETECTOR_TYPE) &&
@@ -2096,7 +2096,7 @@ int set_port(int file_des) {
 int update_client(int file_des) {
 	ret = FORCE_UPDATE;
 	memset(mess, 0, sizeof(mess));
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	if (debugflag == PROGRAMMING_MODE) {
 	    ret = OK;
 	}
@@ -3099,7 +3099,7 @@ int program_fpga(int file_des) {
 				}
 			}
 			printf("\n");
-			FILE_LOG(logINFO, ("Done copying program\n"));
+			FILE_LOG(logINFO, ("Done copying program or due to failure earlier\n"));
 
 			// closing file pointer to flash and informing FPGA
 			stopWritingFPGAprogram(fp);
@@ -3112,7 +3112,7 @@ int program_fpga(int file_des) {
 
 			FILE_LOG(logDEBUG1, ("Done with program receiving command\n"));
 
-			if (isControlServer) {
+			if (ret != FAIL && isControlServer) {
 				basictests();
 				initControlServer();
 			}

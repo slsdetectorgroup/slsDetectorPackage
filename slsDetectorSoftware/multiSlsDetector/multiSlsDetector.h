@@ -1088,6 +1088,30 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     std::string getAdditionalJsonParameter(const std::string& key, int detPos = -1);
 
     /**
+     * Sets the detector minimum/maximum energy threshold in processor (for Moench only)
+     * @param index 0 for emin, antyhing else for emax
+     * @param v value to set (-1 gets)
+     * @returns detector minimum/maximum energy threshold (-1 for not found or error in computing json parameter value)
+     */
+    int setDetectorMinMaxEnergyThreshold(const int index, int value, int detPos = -1);
+
+    /**
+     * Sets the frame mode in processor (Moench only)
+     * @param value frameModeType (-1 gets)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns frame mode (-1 for not found or error in computing json parameter value)
+     */
+    int setFrameMode(frameModeType value, int detPos = -1);
+
+    /**
+     * Sets the detector mode in processor (Moench only)
+     * @param value detectorModetype (-1 gets)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns detector mode (-1 for not found or error in computing json parameter value)
+     */
+    int setDetectorMode(detectorModeType value, int detPos = -1);
+
+    /**
      * Sets the receiver UDP socket buffer size
      * @param udpsockbufsize additional json header
      * @param detPos -1 for all detectors in  list or specific detector position

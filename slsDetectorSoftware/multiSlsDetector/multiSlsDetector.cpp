@@ -1955,6 +1955,53 @@ std::string multiSlsDetector::getAdditionalJsonParameter(const std::string &key,
     return sls::concatenateIfDifferent(r);
 }
 
+
+int multiSlsDetector::setDetectorMinMaxEnergyThreshold(const int index, int value, int detPos) {
+    std::string parameter = (index ? "emax" : "emin");
+
+    std::string result;
+    if (value < 0) {
+        result = getAdditionalJsonParameter(parameter, detPos);
+    } else {
+        result = setAdditionalJsonParameter(parameter, std::to_string(value), detPos);
+    }
+
+    // convert to integer
+    try {
+        return stoi(result);
+    }
+    // not found or cannot scan integer
+    catch(...) {
+        return -1;
+    }
+}
+
+int multiSlsDetector::setFrameMode(frameModeType value, int detPos) {
+    std::string parameter = "frameMode";
+    std::string result;
+
+    if (value == GET_FRAME_MODE) {
+        result = getAdditionalJsonParameter(parameter, detPos);
+    } else {
+        result = setAdditionalJsonParameter(parameter, getFrameModeType(value), detPos);
+    }
+
+    return getFrameModeType(result);
+}
+
+int multiSlsDetector::setDetectorMode(detectorModeType value, int detPos) {
+    std::string parameter = "detectorMode";
+    std::string result;
+
+    if (value == GET_DETECTOR_MODE) {
+        result = getAdditionalJsonParameter(parameter, detPos);
+    } else {
+        result = setAdditionalJsonParameter(parameter, getDetectorModeType(value), detPos);
+    }
+
+    return getDetectorModeType(result);
+}
+
 int multiSlsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize, int detPos) {
     // single
     if (detPos >= 0) {

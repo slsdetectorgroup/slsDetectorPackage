@@ -63,7 +63,7 @@ The commands are sudivided into different pages depending on their functionaliti
  - \ref output "Output": commands to define output file destination and format
  - \ref network "Network": commands to setup the network between client, detector and receiver
  - \ref receiver "Receiver": commands to configure the receiver
- - \ref prototype "Prototype (Chip Test Board / Moench)": commands specific for the chiptest board or moench
+ - \ref prototype "Chip Test Board / Moench": commands specific for the chiptest board or moench
  - \ref test "Developer": commands to be used only for software debugging. Avoid using them!
  
  */
@@ -1796,10 +1796,37 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /* pattern generator */
 
-    /*! \page prototype Protoype (Chip Test Board / Moench)
+    /*! \page prototype Chip Test Board / Moench
 	  Commands specific for the chiptest board or moench
 	 */
 
+    /*! \page prototype
+  - <b>emin [i] </b> Sets/gets detector minimum energy threshold for Moench (soft setting in processor)
+     */
+    descrToFuncMap[i].m_pFuncName = "emin"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
+    ++i;
+
+    /*! \page prototype
+  - <b>emax [i] </b> Sets/gets detector maximum energy threshold for Moench (soft setting in processor)
+     */
+    descrToFuncMap[i].m_pFuncName = "emax"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
+    ++i;
+
+    /*! \page prototype
+  - <b>framemode [i] </b> Sets/gets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield
+     */
+    descrToFuncMap[i].m_pFuncName = "framemode"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
+    ++i;
+
+    /*! \page prototype
+  - <b>detectormode [i] </b> Sets/gets detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog
+     */
+    descrToFuncMap[i].m_pFuncName = "detectormode"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
+    ++i;
 
     /*! \page prototype
    - <b>adcinvert [mask]</b> Sets/gets ADC inversion mask (8 digits hex format)
@@ -5441,5 +5468,64 @@ std::string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int
     else
         return std::string(" unsuccessful");
 }
+
+
+std::string slsDetectorCommand::helpProcessor(int action) {
+
+    std::ostringstream os;
+    if (action == PUT_ACTION || action == HELP_ACTION) {
+        os << "emin [n] \t Sets detector minimum energy threshold to x for Moench (soft setting in processor)" << std::endl;
+        os << "emax [n] \t Sets detector maximum energy threshold to x for Moench (soft setting in processor)" << std::endl;
+        os << "framemode [n] \t Sets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield" << std::endl;
+        os << "detectormode [n] \t Sets  detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog" << std::endl;
+    }
+    if (action == GET_ACTION || action == HELP_ACTION) {
+        os << "emin [n] \t Gets detector minimum energy threshold to x for Moench (soft setting in processor)" << std::endl;
+        os << "emax [n] \t Gets detector maximum energy threshold to x for Moench (soft setting in processor)" << std::endl;
+        os << "framemode [n] \t Gets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield" << std::endl;
+        os << "detectormode [n] \t Gets  detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog" << std::endl;
+    }
+    return os.str();
+}
+
+std::string slsDetectorCommand::cmdProcessor(int narg, char *args[], int action, int detPos) {
+    if (action == HELP_ACTION)
+        return helpProcessor(action);
+
+    myDet->setOnline(ONLINE_FLAG, detPos);
+    myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+
+    if (cmd == "emin" || cmd == "emax") {
+        if (action == PUT_ACTION) {
+            int ival = -1;
+            if(!sscanf(args[1],"%d",&ival))
+                return std::string("cannot parse emin/emax value");
+            myDet->setDetectorMinMaxEnergyThreshold((cmd == "emin" ? 0 : 1), ival, detPos);
+        }
+        return std::to_string(myDet->setDetectorMinMaxEnergyThreshold(0, -1, detPos));
+    }
+
+    else if (cmd == "framemode") {
+        if (action == PUT_ACTION) {
+            frameModeType ival = getFrameModeType(args[1]);
+            if (ival == GET_FRAME_MODE)
+                return std::string("cannot parse frame mode value");
+            myDet->setFrameMode(ival, detPos);
+        }
+        return getFrameModeType(frameModeType(myDet->setFrameMode(GET_FRAME_MODE, detPos)));
+    }
+
+    else if (cmd == "detectorMode") {
+        if (action == PUT_ACTION) {
+            detectorModeType ival = getDetectorModeType(args[1]);
+            if (ival == GET_DETECTOR_MODE)
+                return std::string("cannot parse detector mode value");
+            myDet->setDetectorMode(ival, detPos);
+        }
+        return getDetectorModeType(detectorModeType(myDet->setDetectorMode(GET_DETECTOR_MODE, detPos)));
+    }
+    return std::string("unknown action");
+}
+
 
 

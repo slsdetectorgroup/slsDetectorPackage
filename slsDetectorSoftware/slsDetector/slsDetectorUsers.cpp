@@ -359,13 +359,18 @@ int slsDetectorUsers::setReceiverFramesPerFile(int f, int detPos) {
     return detector.setReceiverFramesPerFile(f, detPos);
 }
 
-std::string slsDetectorUsers::setAdditionalJsonParameter(const std::string& key, const std::string& value, int detPos) {
-    return detector.setAdditionalJsonParameter(key, value, detPos);
+int slsDetectorUsers::setDetectorMinMaxEnergyThreshold(const int index, int v, int detPos) {
+    return detector.setDetectorMinMaxEnergyThreshold(index, v, detPos);
 }
 
-std::string slsDetectorUsers::getAdditionalJsonParameter(const std::string& key, int detPos) {
-    return detector.getAdditionalJsonParameter(key, detPos);
+int slsDetectorUsers::setFrameMode(int value, int detPos) {
+    return detector.setFrameMode(slsDetectorDefs::frameModeType(value), detPos);
 }
+
+int slsDetectorUsers::setDetectorMode(int value, int detPos) {
+    return detector.setDetectorMode(slsDetectorDefs::detectorModeType(value), detPos);
+}
+
 
 /************************************************************************
 

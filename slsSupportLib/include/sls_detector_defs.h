@@ -557,6 +557,28 @@ public:
 	};
 
 
+	/**
+	 * frame mode for processor
+	 */
+	enum frameModeType {
+	    GET_FRAME_MODE = -1,
+	    PEDESTAL,       /** < pedestal */
+	    NEW_PEDESTAL,   /** < new pedestal */
+	    FLATFIELD,      /** < flatfield */
+	    NEW_FLATFIELD   /** < new flatfield */
+	};
+
+    /**
+     * detector mode for processor
+     */
+    enum detectorModeType {
+        GET_DETECTOR_MODE = -1,
+        COUNTING,       /** < counting */
+        INTERPOLATING,  /** < interpolating */
+        ANALOG          /** < analog */
+    };
+
+
 #ifdef __cplusplus
 	  /** returns string from enabled/disabled
 	      \param b true or false
@@ -874,6 +896,64 @@ public:
 		    default:       					return std::string("unknown");			\
 		    }};																		\
 
+
+		    /**
+		     * returns frameModeType as enum
+		     * @param s pedestal, newpedestal, flatfield, newflatfield
+		     * @returns PEDESTAL, NEW_PEDESTAL, FLATFIELD, NEW_FLATFIELD, GET_FRAME_MODE (if unknown)
+		     */
+		    static frameModeType getFrameModeType(std::string s) {  \
+		        for (auto &c: s)                                    \
+		            c = std::tolower(c);                           \
+		        if (s == "pedestal")    return PEDESTAL;            \
+		        if (s == "newpedestal") return NEW_PEDESTAL;        \
+		        if (s == "flatfield")   return FLATFIELD;           \
+		        if (s == "newflatfield")return NEW_FLATFIELD;       \
+		        return GET_FRAME_MODE;                              \
+		    }                                                       \
+
+            /**
+             * returns frameModeType as string
+             * @param f PEDESTAL, NEW_PEDESTAL, FLATFIELD, NEW_FLATFIELD
+             * @return string pedestal, newpedestal, flatfield, newflatfield, unknown
+             */
+		    static std::string getFrameModeType(frameModeType f) {      \
+		        switch(f) {                                             \
+		        case PEDESTAL:      return std::string("pedestal");     \
+		        case NEW_PEDESTAL:  return std::string("newPedestal");  \
+		        case FLATFIELD:     return std::string("flatfield");    \
+		        case NEW_FLATFIELD: return std::string("newFlatfield"); \
+		        default:            return std::string("unknown");      \
+		        }                                                       \
+		    }                                                           \
+
+            /**
+             * returns detectorModeType as enum
+             * @param s counting, interpolating, analog
+             * @returns COUNTING, INTERPOLATING, ANALOG, GET_DETECTOR_MODE (if unknown)
+             */
+            static detectorModeType getDetectorModeType(std::string s) {    \
+                for (auto &c: s)                                            \
+                    c = std::tolower(c);                                   \
+                if (s == "counting")        return COUNTING;                \
+                if (s == "interpolating")   return INTERPOLATING;           \
+                if (s == "analog")          return ANALOG;                  \
+                return GET_DETECTOR_MODE;                                   \
+            }                                                               \
+
+            /**
+             * returns frameModeType as string
+             * @param f COUNTING, INTERPOLATING, ANALOG
+             * @return string counting, interpolating, analog, unknown
+             */
+            static std::string getDetectorModeType(detectorModeType f) {    \
+                switch(f) {                                                 \
+                case COUNTING:      return std::string("counting");         \
+                case INTERPOLATING: return std::string("interpolating");    \
+                case ANALOG:        return std::string("analog");           \
+                default:            return std::string("unknown");          \
+                }                                                           \
+            }                                                               \
 
 #endif
 

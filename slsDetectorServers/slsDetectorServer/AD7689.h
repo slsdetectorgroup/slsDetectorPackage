@@ -61,13 +61,13 @@
 
 #define AD7689_ADC_CFG_NUMBITS              (14)
 #define AD7689_ADC_DATA_NUMBITS             (16)
-#define AD7689_NUM_CHANNELS                 (7)
+#define AD7689_NUM_CHANNELS                 (8)
 #define AD7689_NUM_INVALID_CONVERSIONS      (3)
 
 #define AD7689_INT_REF_MAX_MV               (2500) // chosen using reference buffer selection in config reg
 #define AD7689_INT_REF_MIN_MV               (0)
 #define AD7689_INT_MAX_STEPS                (0xFFFF + 1)
-#define AD7689_TMP_C_FOR_1_MV               (25.00 / 283)
+#define AD7689_TMP_C_FOR_1_MV               (25.00 / 283.00)
 
 
 uint32_t AD7689_Reg = 0x0;
@@ -87,6 +87,8 @@ int AD7689_DigOffset = 0x0;
  * @param dofst digital output offset
  */
 void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst) {
+	FILE_LOG(logDEBUG, ("AD7689: reg:0x%x roreg:0x%x cmsk:0x%x  clkmsk:0x%x  dmsk:0x%x  dofst:%d\n",
+			reg, roreg, cmsk, clkmsk, dmsk, dofst));
     AD7689_Reg = reg;
     AD7689_ROReg = roreg;
     AD7689_CnvMask = cmsk;
@@ -100,9 +102,9 @@ void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk, uint32_t clk
  */
 void AD7689_Disable() {
     bus_w(AD7689_Reg, (bus_r(AD7689_Reg)
-            | AD7689_CnvMask
-            | AD7689_ClkMask)
-            &~(AD7689_DigMask));
+            &~(AD7689_CnvMask)
+            | AD7689_ClkMask
+            &~(AD7689_DigMask)));
 }
 
 /**
@@ -112,7 +114,7 @@ void AD7689_Disable() {
 void AD7689_Set(u_int32_t codata) {
     FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Writing 0x%08x to Config Reg\n", codata));
     serializeToSPI(AD7689_Reg, codata, AD7689_CnvMask, AD7689_ADC_CFG_NUMBITS,
-            AD7689_ClkMask, AD7689_DigMask, AD7689_DigOffset);
+            AD7689_ClkMask, AD7689_DigMask, AD7689_DigOffset, 1);
 }
 
 /**
@@ -121,8 +123,8 @@ void AD7689_Set(u_int32_t codata) {
  */
 uint16_t AD7689_Get() {
     FILE_LOG(logINFO, ("\tGetting ADC SPI Register.\n"));
-    return (uint16_t)serializeFromSPI(AD7689_ROReg, AD7689_Reg, AD7689_CnvMask, AD7689_ADC_DATA_NUMBITS,
-            AD7689_ClkMask, AD7689_DigMask);
+    return (uint16_t)serializeFromSPI(AD7689_Reg, AD7689_CnvMask, AD7689_ADC_DATA_NUMBITS,
+            AD7689_ClkMask, AD7689_DigMask, AD7689_ROReg, 1);
 }
 
 /**
@@ -154,13 +156,14 @@ int AD7689_GetTemperature() {
     ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS,
             AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
             regval, &retval);
-    FILE_LOG(logDEBUG1, ("\tvoltage read for temp: 0x%d mV\n", retval));
+    FILE_LOG(logDEBUG1, ("voltage read for temp: %d mV\n", retval));
 
     // value in °C
-    int temp = AD7689_TMP_C_FOR_1_MV * retval;
-    FILE_LOG(logDEBUG1, ("\ttemp read: 0x%d °C\n", temp));
+    double tempValue = AD7689_TMP_C_FOR_1_MV * (double)retval;
 
-    return temp;
+    FILE_LOG(logINFO, ("\ttemp read : %f °C\n", tempValue));
+
+    return tempValue;
 
 }
 
@@ -201,7 +204,7 @@ int AD7689_GetChannel(int ichan) {
    ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS,
            AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
            regval, &retval);
-   FILE_LOG(logINFO, ("\tvoltage read for chan %d: 0x%d mV\n", retval));
+   FILE_LOG(logINFO, ("\tvoltage read for chan %d: %d mV\n", ichan, retval));
 
    return retval;
 }

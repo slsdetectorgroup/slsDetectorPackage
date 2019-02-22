@@ -18,8 +18,8 @@ void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t cl
 }
 
 
-void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask) {
-    FILE_LOG(logDEBUG2, ("SPI chip deselect. valw:0x%08x addr:0x%x csmask:0x%x, clkmask:0x%x\n",
+void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask, uint32_t digoutmask, int convBit) {
+    FILE_LOG(logDEBUG2, ("SPI chip deselect. valw:0x%08x addr:0x%x csmask:0x%x, clkmask:0x%x digmask:0x%x\n",
             *valw, addr, csmask, clkmask));
 
     // chip sel bar up
@@ -33,7 +33,12 @@ void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t 
     FILE_LOG(logDEBUG2, ("clk down. valw:0x%08x\n", *valw));
 
     // stop point = start point of course
-    (*valw) |= csmask;
+    (*valw) &= ~digoutmask;
+    if (convBit) {
+    	(*valw) &= ~csmask;
+    } else {
+    	 (*valw) |= csmask;
+    }
     bus_w (addr, (*valw)); //FIXME: for ctb slow adcs, might need to set it to low again
     FILE_LOG(logDEBUG2, ("stop point. valw:0x%08x\n", *valw));
 }
@@ -88,7 +93,7 @@ uint32_t receiveDataFromSPI (uint32_t* valw, uint32_t addr, int numbitstoreceive
     return retval;
 }
 
-void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstosend, uint32_t clkmask, uint32_t digoutmask, int digofset) {
+void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstosend, uint32_t clkmask, uint32_t digoutmask, int digofset, int convBit) {
     if (numbitstosend == 16) {
         FILE_LOG(logDEBUG2, ("Writing to SPI Register: 0x%04x\n", val));
     } else {
@@ -100,10 +105,10 @@ void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstos
 
     sendDataToSPI(&valw, addr, val, numbitstosend, clkmask, digoutmask, digofset);
 
-    SPIChipDeselect(&valw, addr, csmask, clkmask);
+    SPIChipDeselect(&valw, addr, csmask, clkmask, digoutmask, convBit);
 }
 
-uint32_t serializeFromSPI(uint32_t addr, uint32_t csmask, int numbitstoreceive, uint32_t clkmask, uint32_t digoutmask, uint32_t readaddr) {
+uint32_t serializeFromSPI(uint32_t addr, uint32_t csmask, int numbitstoreceive, uint32_t clkmask, uint32_t digoutmask, uint32_t readaddr, int convBit) {
 
     uint32_t valw;
 
@@ -111,7 +116,7 @@ uint32_t serializeFromSPI(uint32_t addr, uint32_t csmask, int numbitstoreceive, 
 
     uint32_t retval = receiveDataFromSPI(&valw, addr, numbitstoreceive, clkmask, readaddr);
 
-    SPIChipDeselect(&valw, addr, csmask, clkmask);
+    SPIChipDeselect(&valw, addr, csmask, clkmask, digoutmask, convBit); // moving this before bringin up earlier changes temp of slow adc
 
     if (numbitstoreceive == 16) {
         FILE_LOG(logDEBUG2, ("Read From SPI Register: 0x%04x\n", retval));

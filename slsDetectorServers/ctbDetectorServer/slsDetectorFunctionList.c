@@ -523,9 +523,6 @@ void setupDetector() {
     INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
     setVchip(VCHIP_MIN_MV);
 
-    // set vio to minimum for fpga to function
-    setPower(D_PWR_IO, VIO_MIN_MV);
-
 	// altera pll
 	ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK, PLL_CNTRL_ADDR_OFST);
 

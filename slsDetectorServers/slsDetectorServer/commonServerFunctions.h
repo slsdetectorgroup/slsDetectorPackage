@@ -1,15 +1,24 @@
 #pragma once
 
 #include "blackfin.h"
+#include <unistd.h>     // usleep
 
-void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask, uint32_t digoutmask) {
-    FILE_LOG(logDEBUG2, ("SPI chip select. valw:0x%08x addr:0x%x csmask:0x%x, clkmask:0x%x digmask:0x%x\n",
-            *valw, addr, csmask, clkmask, digoutmask));
+void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask, uint32_t digoutmask, int convBit) {
+    FILE_LOG(logDEBUG2, ("SPI chip select. valw:0x%08x addr:0x%x csmask:0x%x, clkmask:0x%x digmask:0x%x convbit:%d\n",
+            *valw, addr, csmask, clkmask, digoutmask, convBit));
+
+    // needed for the slow adcs for apprx 20 ns before and after rising of convbit (usleep val is vague assumption)
+    if (convBit)
+    	usleep(20);
 
     // start point
     (*valw) = ((bus_r(addr) | csmask | clkmask) &(~digoutmask));
     bus_w (addr, (*valw));
     FILE_LOG(logDEBUG2, ("startpoint. valw:0x%08x\n", *valw));
+
+    // needed for the slow adcs for apprx 10 ns  before and after rising of convbit (usleep val is vague assumption)
+    if (convBit)
+    	usleep(10);
 
     // chip sel bar down
     (*valw) &= ~csmask;
@@ -18,14 +27,22 @@ void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t cl
 }
 
 
-void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask) {
-    FILE_LOG(logDEBUG2, ("SPI chip deselect. valw:0x%08x addr:0x%x csmask:0x%x, clkmask:0x%x\n",
-            *valw, addr, csmask, clkmask));
+void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask, uint32_t digoutmask, int convBit) {
+    FILE_LOG(logDEBUG2, ("SPI chip deselect. valw:0x%08x addr:0x%x csmask:0x%x, clkmask:0x%x digmask:0x%x convbit:%d\n",
+            *valw, addr, csmask, clkmask, digoutmask, convBit));
+
+    // needed for the slow adcs for apprx 20 ns before and after rising of convbit (usleep val is vague assumption)
+    if (convBit)
+    	usleep(20);
 
     // chip sel bar up
     (*valw) |= csmask;
     bus_w (addr, (*valw));
     FILE_LOG(logDEBUG2, ("chip sel bar up. valw:0x%08x\n", *valw));
+
+    // needed for the slow adcs for apprx 10 ns  before and after rising of convbit (usleep val is vague assumption)
+    if (convBit)
+    	usleep(10);
 
     //clk down
     (*valw) &= ~clkmask;
@@ -33,7 +50,13 @@ void SPIChipDeselect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t 
     FILE_LOG(logDEBUG2, ("clk down. valw:0x%08x\n", *valw));
 
     // stop point = start point of course
-    (*valw) |= csmask;
+    (*valw) &= ~digoutmask;
+    // slow adcs use convBit (has to go high and then low) instead of csmask
+    if (convBit) {
+    	(*valw) &= ~csmask;
+    } else {
+    	 (*valw) |= csmask;
+    }
     bus_w (addr, (*valw)); //FIXME: for ctb slow adcs, might need to set it to low again
     FILE_LOG(logDEBUG2, ("stop point. valw:0x%08x\n", *valw));
 }
@@ -88,7 +111,7 @@ uint32_t receiveDataFromSPI (uint32_t* valw, uint32_t addr, int numbitstoreceive
     return retval;
 }
 
-void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstosend, uint32_t clkmask, uint32_t digoutmask, int digofset) {
+void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstosend, uint32_t clkmask, uint32_t digoutmask, int digofset, int convBit) {
     if (numbitstosend == 16) {
         FILE_LOG(logDEBUG2, ("Writing to SPI Register: 0x%04x\n", val));
     } else {
@@ -96,22 +119,22 @@ void serializeToSPI(uint32_t addr, uint32_t val, uint32_t csmask, int numbitstos
     }
     uint32_t valw;
 
-    SPIChipSelect (&valw, addr, csmask, clkmask, digoutmask);
+    SPIChipSelect (&valw, addr, csmask, clkmask, digoutmask, convBit);
 
     sendDataToSPI(&valw, addr, val, numbitstosend, clkmask, digoutmask, digofset);
 
-    SPIChipDeselect(&valw, addr, csmask, clkmask);
+    SPIChipDeselect(&valw, addr, csmask, clkmask, digoutmask, convBit);
 }
 
-uint32_t serializeFromSPI(uint32_t addr, uint32_t csmask, int numbitstoreceive, uint32_t clkmask, uint32_t digoutmask, uint32_t readaddr) {
+uint32_t serializeFromSPI(uint32_t addr, uint32_t csmask, int numbitstoreceive, uint32_t clkmask, uint32_t digoutmask, uint32_t readaddr, int convBit) {
 
     uint32_t valw;
 
-    SPIChipSelect (&valw, addr, csmask, clkmask, digoutmask);
+    SPIChipSelect (&valw, addr, csmask, clkmask, digoutmask, convBit);
 
     uint32_t retval = receiveDataFromSPI(&valw, addr, numbitstoreceive, clkmask, readaddr);
 
-    SPIChipDeselect(&valw, addr, csmask, clkmask);
+    SPIChipDeselect(&valw, addr, csmask, clkmask, digoutmask, convBit); // moving this before bringin up earlier changes temp of slow adc
 
     if (numbitstoreceive == 16) {
         FILE_LOG(logDEBUG2, ("Read From SPI Register: 0x%04x\n", retval));

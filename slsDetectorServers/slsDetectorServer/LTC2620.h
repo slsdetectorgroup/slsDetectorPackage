@@ -106,15 +106,15 @@ int LTC2620_DacToVoltage(int dacval, int* voltage) {
  * @param dacaddr dac channel number in chip
  */
 void LTC2620_SetSingle(int cmd, int data, int dacaddr)  {
-    FILE_LOG(logDEBUG1, ("(Single) dac addr:%d, dac value:%d, cmd:%d\n", dacaddr, data, cmd));
+    FILE_LOG(logDEBUG2, ("(Single) dac addr:%d, dac value:%d, cmd:%d\n", dacaddr, data, cmd));
 
     uint32_t codata = (((data << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK) |
             ((dacaddr << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) |
             cmd);
-    FILE_LOG(logDEBUG1, ("codata: 0x%x\n", codata));
+    FILE_LOG(logDEBUG2, ("codata: 0x%x\n", codata));
 
     serializeToSPI (LTC2620_Reg, codata, LTC2620_CsMask, LTC2620_NUMBITS,
-            LTC2620_ClkMask, LTC2620_DigMask, LTC2620_DigOffset);
+            LTC2620_ClkMask, LTC2620_DigMask, LTC2620_DigOffset, 0);
 }
 
 
@@ -143,24 +143,24 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex)  {
     uint32_t valw = 0;
     int ichip = 0;
 
-    FILE_LOG(logDEBUG1, ("(Daisy) desired chip index:%d, nchip:%d, dac ch:%d, val:%d, cmd:0x%x \n",
+    FILE_LOG(logDEBUG2, ("(Daisy) desired chip index:%d, nchip:%d, dac ch:%d, val:%d, cmd:0x%x \n",
             chipIndex, nchip, dacaddr, data, cmd));
 
     // data to be bit banged
     uint32_t codata = (((data << LTC2620_DAC_DATA_OFST) & LTC2620_DAC_DATA_MSK) |
             ((dacaddr << LTC2620_DAC_ADDR_OFST) & LTC2620_DAC_ADDR_MSK) |
             cmd);
-    FILE_LOG(logDEBUG1, ("codata: 0x%x\n", codata));
+    FILE_LOG(logDEBUG2, ("codata: 0x%x\n", codata));
 
     // select all chips (ctb daisy chain; others 1 chip)
-    FILE_LOG(logDEBUG1, ("Selecting LTC2620\n"));
-    SPIChipSelect (&valw, LTC2620_Reg, LTC2620_CsMask, LTC2620_ClkMask, LTC2620_DigMask);
+    FILE_LOG(logDEBUG2, ("Selecting LTC2620\n"));
+    SPIChipSelect (&valw, LTC2620_Reg, LTC2620_CsMask, LTC2620_ClkMask, LTC2620_DigMask, 0);
 
     // send same data to all
     if (chipIndex < 0) {
-        FILE_LOG(logDEBUG1, ("Send same data to all\n"));
+        FILE_LOG(logDEBUG2, ("Send same data to all\n"));
         for (ichip = 0; ichip < nchip; ++ichip) {
-            FILE_LOG(logDEBUG1, ("Send data  (0x%x) to ichip %d\n", codata, ichip));
+            FILE_LOG(logDEBUG2, ("Send data  (0x%x) to ichip %d\n", codata, ichip));
             LTC2620_SendDaisyData(&valw, codata);
         }
     }
@@ -169,24 +169,24 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex)  {
     else {
         // send nothing to subsequent ichips (daisy chain) (if any chips after desired chip)
         for (ichip = chipIndex + 1; ichip < nchip; ++ichip) {
-            FILE_LOG(logDEBUG1, ("Send nothing to ichip %d\n", ichip));
+            FILE_LOG(logDEBUG2, ("Send nothing to ichip %d\n", ichip));
             LTC2620_SendDaisyData(&valw, LTC2620_DAC_CMD_NO_OPRTN_VAL);
         }
 
         // send data to desired chip
-        FILE_LOG(logDEBUG1, ("Send data  (0x%x) to ichip %d\n", codata, chipIndex));
+        FILE_LOG(logDEBUG2, ("Send data  (0x%x) to ichip %d\n", codata, chipIndex));
         LTC2620_SendDaisyData(&valw, codata);
 
         // send nothing to preceding ichips (daisy chain) (if any chips in front of desired chip)
         for (ichip = 0; ichip < chipIndex; ++ichip) {
-            FILE_LOG(logDEBUG1, ("Send nothing to ichip %d\n", ichip));
+            FILE_LOG(logDEBUG2, ("Send nothing to ichip %d\n", ichip));
             LTC2620_SendDaisyData(&valw, LTC2620_DAC_CMD_NO_OPRTN_VAL);
         }
     }
 
     // deselect all chips (ctb daisy chain; others 1 chip)
-    FILE_LOG(logDEBUG1, ("Deselecting LTC2620\n"));
-    SPIChipDeselect(&valw, LTC2620_Reg, LTC2620_CsMask, LTC2620_ClkMask);
+    FILE_LOG(logDEBUG2, ("Deselecting LTC2620\n"));
+    SPIChipDeselect(&valw, LTC2620_Reg, LTC2620_CsMask, LTC2620_ClkMask, LTC2620_DigMask, 0);
 }
 
 
@@ -200,14 +200,14 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex)  {
  */
 void LTC2620_Set(int cmd, int data, int dacaddr, int chipIndex)  {
     FILE_LOG(logDEBUG1, ("cmd:0x%x, data:%d, dacaddr:%d, chipIndex:%d\n", cmd, data, dacaddr, chipIndex));
-    FILE_LOG(logDEBUG1, (" ================================================\n"));
+    FILE_LOG(logDEBUG2, (" ================================================\n"));
     // ctb
     if (LTC2620_Ndac > LTC2620_NUMCHANNELS)
         LTC2620_SetDaisy(cmd, data, dacaddr, chipIndex);
     // others
     else
         LTC2620_SetSingle(cmd, data, dacaddr);
-    FILE_LOG(logDEBUG1, (" ================================================\n"));
+    FILE_LOG(logDEBUG2, (" ================================================\n"));
 }
 
 

@@ -1203,7 +1203,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>v_chip [i] mv</b> Sets/gets value for Vchip on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"]). Normally don't use it!
+   - <b>v_chip [i] mv</b> Sets/gets value for Vchip on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"]). Do NOT use it, unless you are completely sure you won't fry the board!
 	 */
     descrToFuncMap[i].m_pFuncName = "v_chip"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
@@ -4097,7 +4097,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 
 	//if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
 	if (adc < 100 || adc == SLOW_ADC_TEMP)
-		strcat(answer," °C");
+		strcat(answer,"°C");
 	else if (adc == I_POWER_A || adc == I_POWER_B || adc == I_POWER_C || adc == I_POWER_D || adc == I_POWER_IO)
 	    strcat(answer," mA");
 	else

@@ -88,7 +88,7 @@ int MAX1932_Set (int val) {
 
     FILE_LOG(logINFO, ("\t%dV (dacval %d)\n", val, dacvalue));
     serializeToSPI(MAX1932_Reg, dacvalue, MAX1932_CsMask, MAX1932_HV_NUMBITS,
-            MAX1932_ClkMask, MAX1932_DigMask, MAX1932_DigOffset);
+            MAX1932_ClkMask, MAX1932_DigMask, MAX1932_DigOffset, 0);
     return OK;
 }
 

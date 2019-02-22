@@ -167,31 +167,31 @@ void I2C_ConfigureI2CCore(uint32_t creg, uint32_t sreg,
  * @returns value read from register
  */
 uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
-    FILE_LOG(logDEBUG1, (" ================================================\n"));
-    FILE_LOG(logDEBUG1, (" Reading from I2C device 0x%x and reg 0x%x\n", devId, addr));
+    FILE_LOG(logDEBUG2, (" ================================================\n"));
+    FILE_LOG(logDEBUG2, (" Reading from I2C device 0x%x and reg 0x%x\n", devId, addr));
     // device Id mask
     uint32_t devIdMask =  ((devId << I2C_TFR_CMD_ADDR_OFST) & I2C_TFR_CMD_ADDR_MSK);
-    FILE_LOG(logDEBUG1, (" devId:0x%x\n", devIdMask));
+    FILE_LOG(logDEBUG2, (" devId:0x%x\n", devIdMask));
 
     // write I2C ID
     bus_w(I2C_Transfer_Command_Fifo_Reg, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
-    FILE_LOG(logDEBUG1, (" write devID and R/-W:0x%x\n", (devIdMask & ~(I2C_TFR_CMD_RW_MSK))));
+    FILE_LOG(logDEBUG2, (" write devID and R/-W:0x%x\n", (devIdMask & ~(I2C_TFR_CMD_RW_MSK))));
 
     // write register addr
     bus_w(I2C_Transfer_Command_Fifo_Reg, addr);
-    FILE_LOG(logDEBUG1, (" write addr:0x%x\n", addr));
+    FILE_LOG(logDEBUG2, (" write addr:0x%x\n", addr));
 
     // repeated start with read (repeated start needed here because it was in write operation mode earlier, for the device ID)
     bus_w(I2C_Transfer_Command_Fifo_Reg, (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK | I2C_TFR_CMD_RW_READ_VAL));
-    FILE_LOG(logDEBUG1, (" repeated start:0x%x\n", (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK | I2C_TFR_CMD_RW_READ_VAL)));
+    FILE_LOG(logDEBUG2, (" repeated start:0x%x\n", (devIdMask | I2C_TFR_CMD_RPTD_STRT_MSK | I2C_TFR_CMD_RW_READ_VAL)));
 
     // continue reading
     bus_w(I2C_Transfer_Command_Fifo_Reg, 0x0);
-    FILE_LOG(logDEBUG1, (" continue reading:0x%x\n", 0x0));
+    FILE_LOG(logDEBUG2, (" continue reading:0x%x\n", 0x0));
 
     // stop reading
     bus_w(I2C_Transfer_Command_Fifo_Reg, I2C_TFR_CMD_STOP_MSK);
-    FILE_LOG(logDEBUG1, (" stop reading:0x%x\n", I2C_TFR_CMD_STOP_MSK));
+    FILE_LOG(logDEBUG2, (" stop reading:0x%x\n", I2C_TFR_CMD_STOP_MSK));
 
     // read value
     uint32_t retval = 0;
@@ -201,24 +201,24 @@ uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
     int status = 1;
     while(status) {
         status = bus_r(I2C_Status_Reg) & I2C_STATUS_BUSY_MSK;
-        FILE_LOG(logDEBUG1, (" status:%d\n", status));
+        FILE_LOG(logDEBUG2, (" status:%d\n", status));
         usleep(0);
     }
     // get rx fifo level (get number of bytes to be received)
     int level = bus_r(I2C_Rx_Data_Fifo_Level_Reg);
-    FILE_LOG(logDEBUG1, (" level:%d\n", level));
+    FILE_LOG(logDEBUG2, (" level:%d\n", level));
 
     int iloop = level - 1;
 
     // level bytes to read, read 1 byte at a time
     for (iloop = level - 1; iloop >= 0; --iloop) {
         u_int16_t byte = bus_r(I2C_Rx_Data_Fifo_Reg) & I2C_RX_DATA_FIFO_RXDATA_MSK;
-        FILE_LOG(logDEBUG1, (" byte nr %d:0x%x\n", iloop, byte));
+        FILE_LOG(logDEBUG2, (" byte nr %d:0x%x\n", iloop, byte));
         // push by 1 byte at a time
         retval |= (byte << (8 * iloop));
     }
-    FILE_LOG(logDEBUG1, (" retval:0x%x\n", retval));
-    FILE_LOG(logDEBUG1, (" ================================================\n"));
+    FILE_LOG(logDEBUG2, (" retval:0x%x\n", retval));
+    FILE_LOG(logDEBUG2, (" ================================================\n"));
     return retval;
 }
 
@@ -229,34 +229,34 @@ uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
  * @param data data to be written (16 bit)
  */
 void I2C_Write(uint32_t devId, uint32_t addr, uint16_t data) {
-    FILE_LOG(logDEBUG1, (" ================================================\n"));
-    FILE_LOG(logDEBUG1, (" Writing to I2C (Device:0x%x, reg:0x%x, data:%d)\n", devId, addr, data));
+    FILE_LOG(logDEBUG2, (" ================================================\n"));
+    FILE_LOG(logDEBUG2, (" Writing to I2C (Device:0x%x, reg:0x%x, data:%d)\n", devId, addr, data));
     // device Id mask
     uint32_t devIdMask =  ((devId << I2C_TFR_CMD_ADDR_OFST) & I2C_TFR_CMD_ADDR_MSK);
-    FILE_LOG(logDEBUG1, (" devId:0x%x\n", devId));
+    FILE_LOG(logDEBUG2, (" devId:0x%x\n", devId));
 
     // write I2C ID
     bus_w(I2C_Transfer_Command_Fifo_Reg, (devIdMask & ~(I2C_TFR_CMD_RW_MSK)));
-    FILE_LOG(logDEBUG1, (" write devID and R/-W:0x%x\n", (devIdMask & ~(I2C_TFR_CMD_RW_MSK))));
+    FILE_LOG(logDEBUG2, (" write devID and R/-W:0x%x\n", (devIdMask & ~(I2C_TFR_CMD_RW_MSK))));
 
     // write register addr
     bus_w(I2C_Transfer_Command_Fifo_Reg, addr);
-    FILE_LOG(logDEBUG1, (" write addr:0x%x\n", addr));
+    FILE_LOG(logDEBUG2, (" write addr:0x%x\n", addr));
 
     // do not do the repeated start as it is already in write operation mode (else it wont work)
 
     uint8_t msb = (uint8_t)((data & 0xFF00) >> 8);
     uint8_t lsb = (uint8_t)(data & 0x00FF);
-    FILE_LOG(logDEBUG1, (" msb:0x%02x, lsb:0x%02x\n", msb, lsb));
+    FILE_LOG(logDEBUG2, (" msb:0x%02x, lsb:0x%02x\n", msb, lsb));
 
     // writing data MSB
     bus_w(I2C_Transfer_Command_Fifo_Reg, ((msb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK));
-    FILE_LOG(logDEBUG1, (" write msb:0x%02x\n", ((msb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK)));
+    FILE_LOG(logDEBUG2, (" write msb:0x%02x\n", ((msb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK)));
 
     // writing data LSB and stop writing bit
     bus_w(I2C_Transfer_Command_Fifo_Reg,  ((lsb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK) | I2C_TFR_CMD_STOP_MSK);
-    FILE_LOG(logDEBUG1, (" write lsb and stop writing:0x%x\n", ((lsb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK) | I2C_TFR_CMD_STOP_MSK));
-    FILE_LOG(logDEBUG1, (" ================================================\n"));
+    FILE_LOG(logDEBUG2, (" write lsb and stop writing:0x%x\n", ((lsb << I2C_TFR_CMD_DATA_FR_WR_OFST) & I2C_TFR_CMD_DATA_FR_WR_MSK) | I2C_TFR_CMD_STOP_MSK));
+    FILE_LOG(logDEBUG2, (" ================================================\n"));
 }
 
 

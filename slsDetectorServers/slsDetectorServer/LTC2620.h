@@ -154,7 +154,7 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex)  {
 
     // select all chips (ctb daisy chain; others 1 chip)
     FILE_LOG(logDEBUG2, ("Selecting LTC2620\n"));
-    SPIChipSelect (&valw, LTC2620_Reg, LTC2620_CsMask, LTC2620_ClkMask, LTC2620_DigMask);
+    SPIChipSelect (&valw, LTC2620_Reg, LTC2620_CsMask, LTC2620_ClkMask, LTC2620_DigMask, 0);
 
     // send same data to all
     if (chipIndex < 0) {

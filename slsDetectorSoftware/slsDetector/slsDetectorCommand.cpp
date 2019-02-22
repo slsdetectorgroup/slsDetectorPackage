@@ -4097,7 +4097,7 @@ std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int d
 
 	//if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
 	if (adc < 100 || adc == SLOW_ADC_TEMP)
-		strcat(answer," °C");
+		strcat(answer,"°C");
 	else if (adc == I_POWER_A || adc == I_POWER_B || adc == I_POWER_C || adc == I_POWER_D || adc == I_POWER_IO)
 	    strcat(answer," mA");
 	else

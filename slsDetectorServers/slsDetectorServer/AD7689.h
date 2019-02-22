@@ -103,7 +103,7 @@ void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk, uint32_t clk
 void AD7689_Disable() {
     bus_w(AD7689_Reg, (bus_r(AD7689_Reg)
             &~(AD7689_CnvMask)
-            | AD7689_ClkMask
+			&~AD7689_ClkMask
             &~(AD7689_DigMask)));
 }
 

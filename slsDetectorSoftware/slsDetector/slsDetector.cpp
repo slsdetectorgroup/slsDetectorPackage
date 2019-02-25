@@ -906,34 +906,30 @@ int slsDetector::setStopPort(int port_number) {
 }
 
 int slsDetector::setReceiverPort(int port_number) {
-    int fnum = F_SET_PORT;
+    int fnum = F_SET_RECEIVER_PORT;
     int ret = FAIL;
     int retval = -1;
-    if (port_number > 0)
-        thisDetector->receiverTCPPort = port_number;
-    //TODO! How do I update the receiver port? 
-    // FILE_LOG(logDEBUG1) << "Setting receiver port "
-    //                     << " to " << port_number;
 
-    // // same port
-    // if (port_number == thisDetector->receiverTCPPort) {
-    //     return thisDetector->receiverTCPPort;
-    // }
+    FILE_LOG(logDEBUG1) << "Setting reciever port "
+                        << " to " << port_number;
 
-    // // set port
-    // if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
-    //     auto receiver = sls::ClientSocket(true, thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
-    //     ret = receiver.sendCommandThenRead(fnum, &port_number, sizeof(port_number), &retval, sizeof(retval));
-    //     if (ret == FAIL) {
-    //         setErrorMask((getErrorMask()) | (COULDNOT_SET_DATA_PORT));
-    //     } else {
-    //         thisDetector->receiverTCPPort = retval;
-    //         FILE_LOG(logDEBUG1) << "Receiver port: " << retval;
-    //     }
-    // }
-    // if (ret == FORCE_UPDATE) {
-    //     ret = updateReceiver();
-    // }
+    if (port_number >= 0 && port_number != thisDetector->receiverTCPPort) {
+        if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
+            auto stop = sls::ClientSocket(true, thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
+            ret = stop.sendCommandThenRead(fnum, &port_number, sizeof(port_number), &retval, sizeof(retval));
+            if (ret == FAIL) {
+                setErrorMask((getErrorMask()) | (COULDNOT_SET_DATA_PORT));
+            } else {
+                thisDetector->receiverTCPPort = retval;
+                FILE_LOG(logDEBUG1) << "Receiver port: " << retval;
+            }
+            if (ret == FORCE_UPDATE) {
+                ret = updateReceiver();
+            }
+        } else {
+            thisDetector->receiverTCPPort = port_number;
+        }
+    }
     return thisDetector->receiverTCPPort;
 }
 

@@ -868,12 +868,12 @@ int slsDetector::setControlPort(int port_number) {
 				thisDetector->controlPort = retval;
 				FILE_LOG(logDEBUG1) << "Control port: " << retval;
 			}
-			if (ret == FORCE_UPDATE) {
-				ret = updateDetector();
-			}
 		} else {
 			thisDetector->controlPort = port_number;
 		}
+	}
+	if (ret == FORCE_UPDATE) {
+		ret = updateDetector();
 	}
 	return thisDetector->controlPort;
 }
@@ -895,12 +895,12 @@ int slsDetector::setStopPort(int port_number) {
                 thisDetector->stopPort = retval;
                 FILE_LOG(logDEBUG1) << "Stop port: " << retval;
             }
-            if (ret == FORCE_UPDATE) {
-                ret = updateDetector();
-            }
         } else {
             thisDetector->stopPort = port_number;
         }
+    }
+    if (ret == FORCE_UPDATE) {
+        ret = updateDetector();
     }
     return thisDetector->stopPort;
 }
@@ -923,12 +923,13 @@ int slsDetector::setReceiverPort(int port_number) {
                 thisDetector->receiverTCPPort = retval;
                 FILE_LOG(logDEBUG1) << "Receiver port: " << retval;
             }
-            if (ret == FORCE_UPDATE) {
-                ret = updateReceiver();
-            }
+
         } else {
             thisDetector->receiverTCPPort = port_number;
         }
+    }
+    if (ret == FORCE_UPDATE) {
+        ret = updateReceiver();
     }
     return thisDetector->receiverTCPPort;
 }

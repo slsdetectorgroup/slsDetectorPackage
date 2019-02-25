@@ -8,7 +8,7 @@
 #include "sls_detector_defs.h"
 namespace sls {
 
-ClientSocket::ClientSocket(const std::string &host, uint16_t port) : DataSocket(socket(AF_INET, SOCK_STREAM, 0)) {
+ClientSocket::ClientSocket(const bool isRx, const std::string &host, uint16_t port) : DataSocket(socket(AF_INET, SOCK_STREAM, 0)), isReceiver(isRx) {
 
     struct addrinfo hints, *result;
     memset(&hints, 0, sizeof(hints));
@@ -51,7 +51,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         //get error message
         receiveData(mess, sizeof(mess));
         // cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
-        cprintf(RED, "returned error: %s",  mess);
+        cprintf(RED, "%s returned error: %s", (isReceiver ? "Receiver" : "Detector"), mess);
 
         // unrecognized function, do not ask for retval
         if (strstr(mess, "Unrecognized Function") != nullptr)

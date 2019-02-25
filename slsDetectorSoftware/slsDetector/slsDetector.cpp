@@ -1313,6 +1313,14 @@ int slsDetector::setThresholdEnergy(int e_eV, detectorSettings isettings, int tb
         return thisDetector->currentThresholdEV;
     }
 
+    // moench - send threshold energy to processor
+    else if (thisDetector->myDetectorType == MOENCH) {
+    	std::string result =  setAdditionalJsonParameter("threshold", std::to_string(e_eV));
+    	if (result == std::to_string(e_eV))
+    		return e_eV;
+    	return -1;
+    }
+
     FILE_LOG(logERROR) << "Set threshold energy not implemented for this detector";
     setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
     return -1;
@@ -3039,6 +3047,18 @@ int slsDetector::setROI(int n, ROI roiLimits[]) {
         setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
     if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
         getTotalNumberOfChannels();
+
+        // moench (send to processor)
+        if (thisDetector->myDetectorType == MOENCH) {
+        	std::ostringstream os;
+        	os << "[" << roiLimits[0].xmin << ", " << roiLimits[0].xmax << ", " <<
+        			roiLimits[0].ymin << ", " << roiLimits[0].ymax << "]";
+        	std::string sroi = os.str();
+        	std::string result =  setAdditionalJsonParameter("roi", sroi);
+        	if (result == sroi)
+        		return OK;
+        	return FAIL;
+        }
     }
     return ret;
 }

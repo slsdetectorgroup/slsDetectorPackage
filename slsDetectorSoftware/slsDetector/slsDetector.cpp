@@ -851,31 +851,31 @@ std::string slsDetector::checkOnline() {
 }
 
 int slsDetector::setControlPort(int port_number) {
-    int fnum = F_SET_PORT;
-    int ret = FAIL;
-    int retval = -1;
+	int fnum = F_SET_PORT;
+	int ret = FAIL;
+	int retval = -1;
 
-    FILE_LOG(logDEBUG1) << "Setting control port "
-                        << " to " << port_number;
+	FILE_LOG(logDEBUG1) << "Setting control port "
+			<< " to " << port_number;
 
-    if (port_number != thisDetector->controlPort) {
-        if (thisDetector->onlineFlag == ONLINE_FLAG) {
-            auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
-            ret = client.sendCommandThenRead(fnum, &port_number, sizeof(port_number), &retval, sizeof(retval));
-            if (ret == FAIL) {
-                setErrorMask((getErrorMask()) | (COULDNOT_SET_CONTROL_PORT));
-            } else {
-                thisDetector->controlPort = retval;
-                FILE_LOG(logDEBUG1) << "Control port: " << retval;
-            }
-        } else {
-            thisDetector->controlPort = port_number;
-        }
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
-    }
-    return thisDetector->controlPort;
+	if (port_number >= 0 && port_number != thisDetector->controlPort) {
+		if (thisDetector->onlineFlag == ONLINE_FLAG) {
+			auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
+			ret = client.sendCommandThenRead(fnum, &port_number, sizeof(port_number), &retval, sizeof(retval));
+			if (ret == FAIL) {
+				setErrorMask((getErrorMask()) | (COULDNOT_SET_CONTROL_PORT));
+			} else {
+				thisDetector->controlPort = retval;
+				FILE_LOG(logDEBUG1) << "Control port: " << retval;
+			}
+			if (ret == FORCE_UPDATE) {
+				ret = updateDetector();
+			}
+		} else {
+			thisDetector->controlPort = port_number;
+		}
+	}
+	return thisDetector->controlPort;
 }
 
 int slsDetector::setStopPort(int port_number) {
@@ -885,7 +885,7 @@ int slsDetector::setStopPort(int port_number) {
     FILE_LOG(logDEBUG1) << "Setting stop port "
                         << " to " << port_number;
 
-    if (port_number != thisDetector->stopPort) {
+    if (port_number >= 0 && port_number != thisDetector->stopPort) {
         if (thisDetector->onlineFlag == ONLINE_FLAG) {
             auto stop = sls::ClientSocket(false, thisDetector->hostname, thisDetector->stopPort);
             ret = stop.sendCommandThenRead(fnum, &port_number, sizeof(port_number), &retval, sizeof(retval));
@@ -895,12 +895,12 @@ int slsDetector::setStopPort(int port_number) {
                 thisDetector->stopPort = retval;
                 FILE_LOG(logDEBUG1) << "Stop port: " << retval;
             }
+            if (ret == FORCE_UPDATE) {
+                ret = updateDetector();
+            }
         } else {
             thisDetector->stopPort = port_number;
         }
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
     }
     return thisDetector->stopPort;
 }

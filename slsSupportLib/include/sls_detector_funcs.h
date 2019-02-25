@@ -111,6 +111,7 @@ enum detFuncs{
 	F_ENABLE_GAPPIXELS_IN_RECEIVER, /** < sets gap pixels in the receiver */
 	F_RESTREAM_STOP_FROM_RECEIVER, /** < restream stop from receiver */
 	F_ADDITIONAL_JSON_HEADER, /** < additional json header */
+	F_GET_ADDITIONAL_JSON_HEADER,/** < get additional json header */
 	F_RECEIVER_UDP_SOCK_BUF_SIZE, /** < UDP socket buffer size */
 	F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE, /** < real UDP socket buffer size */
 	F_SET_RECEIVER_FRAMES_PER_FILE, /** < receiver frames per file */
@@ -226,6 +227,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_ENABLE_GAPPIXELS_IN_RECEIVER:	return "F_ENABLE_GAPPIXELS_IN_RECEIVER";
 	case F_RESTREAM_STOP_FROM_RECEIVER:		return "F_RESTREAM_STOP_FROM_RECEIVER";
     case F_ADDITIONAL_JSON_HEADER:      	return "F_ADDITIONAL_JSON_HEADER";
+    case F_GET_ADDITIONAL_JSON_HEADER:      return "F_GET_ADDITIONAL_JSON_HEADER";
     case F_RECEIVER_UDP_SOCK_BUF_SIZE:  	return "F_RECEIVER_UDP_SOCK_BUF_SIZE";
     case F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE: return "F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE";
     case F_SET_RECEIVER_FRAMES_PER_FILE:	return "F_SET_RECEIVER_FRAMES_PER_FILE";

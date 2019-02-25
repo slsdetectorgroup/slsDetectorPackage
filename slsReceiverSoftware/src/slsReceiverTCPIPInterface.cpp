@@ -220,6 +220,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&slsReceiverTCPIPInterface::enable_gap_pixels;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&slsReceiverTCPIPInterface::restream_stop;
 	flist[F_ADDITIONAL_JSON_HEADER]         =   &slsReceiverTCPIPInterface::set_additional_json_header;
+	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &slsReceiverTCPIPInterface::get_additional_json_header;
     flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &slsReceiverTCPIPInterface::set_udp_socket_buffer_size;
     flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size;
     flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &slsReceiverTCPIPInterface::set_frames_per_file;
@@ -1693,6 +1694,25 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
 			FILE_LOG(logDEBUG1) << "Setting additional json header: " << arg;
 			receiver->setAdditionalJsonHeader(arg);
 		}
+		// get
+		strcpy(retval, receiver->getAdditionalJsonHeader().c_str());
+		FILE_LOG(logDEBUG1) << "additional json header:" << retval;
+	}
+	 return interface->Server_SendResult(true, ret, retval, MAX_STR_LENGTH, mess);
+}
+
+
+
+int slsReceiverTCPIPInterface::get_additional_json_header() {
+	ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char retval[MAX_STR_LENGTH] = {0};
+
+	// no arg, check receiver is null
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
+
+	// base object not null
+	if (ret == OK) {
 		// get
 		strcpy(retval, receiver->getAdditionalJsonHeader().c_str());
 		FILE_LOG(logDEBUG1) << "additional json header:" << retval;

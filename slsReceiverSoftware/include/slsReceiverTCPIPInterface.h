@@ -253,6 +253,9 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** set additional json header */
     int set_additional_json_header();
 
+    /** get additional json header */
+    int get_additional_json_header();
+
     /** set udp socket buffer size */
     int set_udp_socket_buffer_size();
 

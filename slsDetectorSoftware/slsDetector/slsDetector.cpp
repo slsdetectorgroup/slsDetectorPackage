@@ -1281,6 +1281,24 @@ slsDetectorDefs::detectorSettings slsDetector::sendSettingsOnly(detectorSettings
 }
 
 int slsDetector::getThresholdEnergy() {
+    // moench - get threshold energy from processor (due to different clients, diff shm)
+    if (thisDetector->myDetectorType == MOENCH) {
+    	// get json from rxr, parse for threshold and update shm
+    	getAdditionalJsonHeader();
+    	std::string result =  getAdditionalJsonParameter("threshold");
+        // convert to integer
+        try {
+        	// udpate shm
+        	thisDetector->currentThresholdEV = stoi(result);
+        	return thisDetector->currentThresholdEV;
+
+        }
+        // not found or cannot scan integer
+        catch(...) {
+            return -1;
+        }
+    }
+
     int fnum = F_GET_THRESHOLD_ENERGY;
     int ret = FAIL;
     int retval = -1;
@@ -1316,8 +1334,11 @@ int slsDetector::setThresholdEnergy(int e_eV, detectorSettings isettings, int tb
     // moench - send threshold energy to processor
     else if (thisDetector->myDetectorType == MOENCH) {
     	std::string result =  setAdditionalJsonParameter("threshold", std::to_string(e_eV));
-    	if (result == std::to_string(e_eV))
-    		return e_eV;
+    	if (result == std::to_string(e_eV)) {
+    		// update shm
+    		thisDetector->currentThresholdEV = e_eV;
+    		return thisDetector->currentThresholdEV;
+    	}
     	return -1;
     }
 
@@ -2412,7 +2433,7 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
             setReceiverStreamingFrequency(thisDetector->receiver_read_freq);
             setReceiverStreamingPort(getReceiverStreamingPort());
             setReceiverStreamingIP(getReceiverStreamingIP());
-            setAdditionalJsonHeader(getAdditionalJsonHeader());
+            setAdditionalJsonHeader(thisDetector->receiver_additionalJsonHeader);
             enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
             if (thisDetector->myDetectorType == GOTTHARD) {
                 sendROI(-1, nullptr);
@@ -2670,10 +2691,29 @@ std::string slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) 
     if (ret == FORCE_UPDATE) {
         ret = updateReceiver();
     }
-    return getAdditionalJsonHeader();
+    return std::string(thisDetector->receiver_additionalJsonHeader);
 }
 
 std::string slsDetector::getAdditionalJsonHeader() {
+    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    char retvals[MAX_STR_LENGTH] = {0};
+    FILE_LOG(logDEBUG1) << "Getting additional json header ";
+
+   if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
+        auto receiver = sls::ClientSocket(true, thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
+        ret = receiver.sendCommandThenRead(fnum, nullptr, 0, retvals, sizeof(retvals));
+        if (ret == FAIL) {
+            setErrorMask((getErrorMask()) | (COULDNOT_SET_NETWORK_PARAMETER));
+        } else {
+            FILE_LOG(logDEBUG1) << "Additional json header: " << retvals;
+            memset(thisDetector->receiver_additionalJsonHeader, 0, MAX_STR_LENGTH);
+            sls::strcpy_safe(thisDetector->receiver_additionalJsonHeader, retvals);
+        }
+    }
+    if (ret == FORCE_UPDATE) {
+        ret = updateReceiver();
+    }
     return std::string(thisDetector->receiver_additionalJsonHeader);
 }
 
@@ -3068,6 +3108,10 @@ slsDetectorDefs::ROI *slsDetector::getROI(int &n) {
     n = thisDetector->nROI;
     if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
         getTotalNumberOfChannels();
+        // moench - get json header(due to different clients, diff shm) (get roi is from detector: updated anyway)
+        if (thisDetector->myDetectorType == MOENCH) {
+        	getAdditionalJsonHeader();
+        }
     }
     return thisDetector->roiLimits;
 }

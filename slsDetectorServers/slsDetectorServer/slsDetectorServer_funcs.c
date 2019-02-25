@@ -874,8 +874,8 @@ int set_dac(int file_des) {
                         FILE_LOG(logERROR,(mess));
     			    } else {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-    			        if ((mV && checkVLimitCompliant(val) == FAIL) ||
-    			                (!mV && checkVLimitDacCompliant(val) == FAIL)) {
+    			        if ((val != -1 && mV && checkVLimitCompliant(val) == FAIL) ||
+    			                (val != -1 && !mV && checkVLimitDacCompliant(val) == FAIL)) {
                             ret = FAIL;
                             sprintf(mess,"Could not set dac %d to value %d. "
                                     "Exceeds voltage limit %d.\n",

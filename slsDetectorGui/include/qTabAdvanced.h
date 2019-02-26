@@ -238,8 +238,8 @@ private:
 	// static const int TRIMMING_TRIGGER_NUMBER 	= 1;
 	// static const int TRIMMING_PROBE_NUMBER 		= 0;
 
-	// bool isEnergy;
-	// bool isAngular;
+	bool isEnergy;
+	bool isAngular;
 
 	/** ROI */
 	vector <QLabel*> 	lblFromX;

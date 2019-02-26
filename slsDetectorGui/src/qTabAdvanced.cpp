@@ -80,16 +80,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 
 
-	detType = myDet->getDetectorsType();
+	detType = myDet->getDetectorTypeAsEnum();
 	switch(detType){
-	case slsDetectorDefs::MYTHEN:
-		isEnergy = true;
-		isAngular = true;
-		spinZmqPort->setEnabled(false);
-		spinZmqPort2->setEnabled(false);
-		dispZMQIP->setEnabled(false);
-		dispZMQIP2->setEnabled(false);
-		break;
 	case slsDetectorDefs::EIGER:
 		isEnergy = true;
 		isAngular = false;
@@ -139,23 +131,23 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 
 	//logs and trimming
-	if(!isAngular && !isEnergy) boxLogs->setEnabled(false);
-	else{
-		if(!isAngular) 	chkAngularLog->setEnabled(false);
-		if(!isEnergy){
-			chkEnergyLog->setEnabled(false);
-			boxPlot->setEnabled(false);
-			boxTrimming->setEnabled(false);
-		}else{
-			boxTrimming->setChecked(false);
-			SetOptimize(false);
+	// if(!isAngular && !isEnergy) boxLogs->setEnabled(false);
+	// else{
+	// 	if(!isAngular) 	chkAngularLog->setEnabled(false);
+	// 	if(!isEnergy){
+	// 		chkEnergyLog->setEnabled(false);
+	// 		boxPlot->setEnabled(false);
+	// 		boxTrimming->setEnabled(false);
+	// 	}else{
+	// 		boxTrimming->setChecked(false);
+	// 		SetOptimize(false);
 
-			btnGroup = new QButtonGroup(this);
-			btnGroup->addButton(btnRefresh,0);
-			btnGroup->addButton(btnGetTrimbits,1);
-		}
-	}
-	trimmingMode = slsDetectorDefs::NOISE_TRIMMING;
+	// 		btnGroup = new QButtonGroup(this);
+	// 		btnGroup->addButton(btnRefresh,0);
+	// 		btnGroup->addButton(btnGetTrimbits,1);
+	// 	}
+	// }
+	// trimmingMode = slsDetectorDefs::NOISE_TRIMMING;
 
 	//network
 
@@ -164,37 +156,37 @@ void qTabAdvanced::SetupWidgetWindow(){
 		comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
 
 	comboDetector->setCurrentIndex(0);
-
-	det = myDet->getSlsDetector(comboDetector->currentIndex());
+	int module_id = comboDetector->currentIndex()-1;
+	// det = myDet->getSlsDetector(comboDetector->currentIndex());
 
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetupWidgetWindow");
 	cout << "Getting ports" << endl;
-	spinControlPort->setValue(det->getControlPort());
-	spinStopPort->setValue(det->getStopPort());
-	spinTCPPort->setValue(det->getReceiverPort());
-	spinUDPPort->setValue(atoi(det->getReceiverUDPPort().c_str()));
-	spinZmqPort->setValue(atoi(det->getClientStreamingPort().c_str()));
-	spinZmqPort2->setValue(atoi(det->getReceiverStreamingPort().c_str()));
+	spinControlPort->setValue(myDet->setControlPort(-1, module_id));
+	spinStopPort->setValue(myDet->setStopPort(-1, module_id));
+	spinTCPPort->setValue(myDet->setReceiverPort(-1, module_id));
+	spinUDPPort->setValue(myDet->getReceiverUDPPort(module_id));
+	spinZmqPort->setValue(myDet->getClientStreamingPort(module_id));
+	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(module_id));
 
 	cout << "Getting network information" << endl;
-	dispIP->setText(det->getDetectorIP().c_str());
-	dispMAC->setText(det->getDetectorMAC().c_str());
-	dispRxrHostname->setText(det->getReceiver().c_str());
-	dispUDPIP->setText(det->getReceiverUDPIP().c_str());
-	dispUDPMAC->setText(det->getReceiverUDPMAC().c_str());
-	dispZMQIP->setText(det->getClientStreamingIP().c_str());
-	dispZMQIP2->setText(det->getReceiverStreamingIP().c_str());
+	dispIP->setText(myDet->getDetectorIP(module_id).c_str());
+	dispMAC->setText(myDet->getDetectorMAC(module_id).c_str());
+	dispRxrHostname->setText(myDet->getReceiver(module_id).c_str());
+	dispUDPIP->setText(myDet->getReceiverUDPIP(module_id).c_str());
+	dispUDPMAC->setText(myDet->getReceiverUDPMAC(module_id).c_str());
+	dispZMQIP->setText(myDet->getClientStreamingIP(module_id).c_str());
+	dispZMQIP2->setText(myDet->getReceiverStreamingIP(module_id).c_str());
 
 	//check if its online and set it to red if offline
 #ifdef VERYVERBOSE
 	cout << "online" << endl;
 #endif
-	if(det->setOnline()==slsDetectorDefs::ONLINE_FLAG)
-		det->checkOnline();
-	if(det->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
-		det->checkReceiverOnline();
-	comboOnline->setCurrentIndex(det->setOnline());
-	comboRxrOnline->setCurrentIndex(det->setReceiverOnline());
+	if(myDet->setOnline(module_id)==slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkOnline(module_id);
+	if(myDet->setReceiverOnline(module_id)==slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkReceiverOnline(module_id);
+	comboOnline->setCurrentIndex(myDet->setOnline(module_id));
+	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(module_id));
 	if(!comboOnline->currentIndex()){
 		comboOnline->setToolTip(detOnlineTip + errOnlineTip);
 		lblOnline->setToolTip(detOnlineTip + errOnlineTip);
@@ -215,10 +207,10 @@ void qTabAdvanced::SetupWidgetWindow(){
 		updateROIList();
 #ifdef VERYVERBOSE
 	//  print receiver configurations
-	if(detType != slsDetectorDefs::MYTHEN){
+	// if(detType != slsDetectorDefs::MYTHEN){
 		cout << endl;
 		myDet->printReceiverConfiguration();
-	}
+	// }
 #endif
 
 	// jungfrau
@@ -298,25 +290,25 @@ void qTabAdvanced::Initialization(){
 	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
-	if(detType!=slsDetectorDefs::MYTHEN){
+	// if(detType!=slsDetectorDefs::MYTHEN){
 
-		//network
-		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
-		connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
-		connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
-		connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
-		connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+	// 	//network
+	// 	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+	// 	connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+	// 	connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+	// 	connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
+	// 	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
 
-		connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-		connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-		connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-		connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	// 	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	// 	connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	// 	connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	// 	connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 
-		connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
-		connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
+	// 	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+	// 	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 
-		connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
-	}
+	// 	connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
+	// }
 
 
 	//roi
@@ -345,25 +337,25 @@ void qTabAdvanced::Initialization(){
 
 
 void qTabAdvanced::SetLogs(){
-	QCheckBox *checkedBox = qobject_cast<QCheckBox *>(sender());
-	int index = ((!checkedBox->text().compare("Energy Calibration"))?slsDetectorDefs::enCalLog:slsDetectorDefs::angCalLog);
-	bool enable = checkedBox->isChecked();
-#ifdef VERBOSE
-	if(index==slsDetectorDefs::enCalLog)
-		cout << "Setting Energy Calibration Logs to " << enable << endl;
-	else
-		cout << "Setting Angular Calibration Logs to " << enable << endl;
-#endif
-	//set/unset the log
-	myDet->setAction(index,(enable?"set":"none"));
-	//verify
-	if(myDet->getActionMode(index)!=(enable)){
-#ifdef VERBOSE
-	cout << "Could not set/reset Log." << endl;
-#endif
-		qDefs::Message(qDefs::WARNING,"Could not set/reset Log.","qTabAdvanced::SetLogs");
-		checkedBox->setChecked(!enable);
-	}
+// 	QCheckBox *checkedBox = qobject_cast<QCheckBox *>(sender());
+// 	int index = ((!checkedBox->text().compare("Energy Calibration"))?slsDetectorDefs::enCalLog:slsDetectorDefs::angCalLog);
+// 	bool enable = checkedBox->isChecked();
+// #ifdef VERBOSE
+// 	if(index==slsDetectorDefs::enCalLog)
+// 		cout << "Setting Energy Calibration Logs to " << enable << endl;
+// 	else
+// 		cout << "Setting Angular Calibration Logs to " << enable << endl;
+// #endif
+// 	//set/unset the log
+// 	myDet->setAction(index,(enable?"set":"none"));
+// 	//verify
+// 	if(myDet->getActionMode(index)!=(enable)){
+// #ifdef VERBOSE
+// 	cout << "Could not set/reset Log." << endl;
+// #endif
+// 		qDefs::Message(qDefs::WARNING,"Could not set/reset Log.","qTabAdvanced::SetLogs");
+// 		checkedBox->setChecked(!enable);
+// 	}
 
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetLogs");
 }

@@ -12,8 +12,10 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 //C++ Include Headers
-#include<iostream>
-using namespace std;
+
+
+#include <iostream>
+
 
 
 
@@ -46,7 +48,7 @@ qTabMeasurement::~qTabMeasurement(){
 
 void qTabMeasurement::SetupWidgetWindow(){
 
-	detType = myDet->getDetectorsType();
+	detType = myDet->getDetectorTypeAsEnum();
 
 	//Number of measurements
 	spinNumMeasurements->setValue((int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1));
@@ -80,8 +82,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 	} else
 		spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
 	//probes
-	if(detType == slsDetectorDefs::MYTHEN)
-		spinNumProbes->setValue((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1));
+
 	//File Name
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
 	//File Index
@@ -136,13 +137,7 @@ void qTabMeasurement::SetupTimingMode(){
 		}
 		//Enabling/Disabling depending on the detector type
 		switch(detType){
-		case slsDetectorDefs::MYTHEN:
-			item[(int)Trigger_Exp_Series]->setEnabled(true);
-			item[(int)Trigger_Readout]->setEnabled(true);
-			item[(int)Gated]->setEnabled(true);
-			item[(int)Gated_Start]->setEnabled(true);
-			item[(int)Burst_Trigger]->setEnabled(false);
-			break;
+
 		case slsDetectorDefs::EIGER:
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
 			item[(int)Trigger_Readout]->setEnabled(false);
@@ -151,7 +146,6 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Burst_Trigger]->setEnabled(true);
 			break;
 		case slsDetectorDefs::MOENCH:
-		case slsDetectorDefs::PROPIX:
 		case slsDetectorDefs::GOTTHARD:
 		case slsDetectorDefs::JUNGFRAU:
 		case slsDetectorDefs::CHIPTESTBOARD:
@@ -582,33 +576,33 @@ void qTabMeasurement::setNumGates(int val){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabMeasurement::setNumProbes(int val){
-#ifdef VERBOSE
-	cout << "Setting number of probes to " << val << endl;
-#endif
-	disconnect(spinNumTriggers,SIGNAL(valueChanged(int)),		this,	SLOT(setNumTriggers(int)));
-	disconnect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
+// void qTabMeasurement::setNumProbes(int val){
+// #ifdef VERBOSE
+// 	cout << "Setting number of probes to " << val << endl;
+// #endif
+// 	disconnect(spinNumTriggers,SIGNAL(valueChanged(int)),		this,	SLOT(setNumTriggers(int)));
+// 	disconnect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
 
-	//set probes
-	int ret = myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,val);
-	if(ret != val)
-		ret = myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1);
-	spinNumProbes->setValue(ret);
-	qDefs::checkErrorMessage(myDet,"qTabMeasurement::setNumProbes");
+// 	//set probes
+// 	int ret = myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,val);
+// 	if(ret != val)
+// 		ret = myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1);
+// 	spinNumProbes->setValue(ret);
+// 	qDefs::checkErrorMessage(myDet,"qTabMeasurement::setNumProbes");
 
 
-	//Setting number of probes should reset number of triggers to 1, need to check if enabled, cuz its updated when refresh
-	if((spinNumProbes->isEnabled()) && (ret > 0) && (spinNumTriggers->value() != 1)){
-		qDefs::Message(qDefs::INFORMATION,"<nobr>Number of Triggers has been reset to 1.</nobr><br>"
-				"<nobr>This is mandatory to use probes.</nobr>","qTabMeasurement::setNumProbes");
-		cout << "Resetting Number of triggers to 1" << endl;
-		spinNumTriggers->setValue(1);
-	}
-	qDefs::checkErrorMessage(myDet,"qTabMeasurement::setNumProbes");
+// 	//Setting number of probes should reset number of triggers to 1, need to check if enabled, cuz its updated when refresh
+// 	if((spinNumProbes->isEnabled()) && (ret > 0) && (spinNumTriggers->value() != 1)){
+// 		qDefs::Message(qDefs::INFORMATION,"<nobr>Number of Triggers has been reset to 1.</nobr><br>"
+// 				"<nobr>This is mandatory to use probes.</nobr>","qTabMeasurement::setNumProbes");
+// 		cout << "Resetting Number of triggers to 1" << endl;
+// 		spinNumTriggers->setValue(1);
+// 	}
+// 	qDefs::checkErrorMessage(myDet,"qTabMeasurement::setNumProbes");
 
-	connect(spinNumTriggers,SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
-	connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
-}
+// 	connect(spinNumTriggers,SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
+// 	connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
+// }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -842,10 +836,10 @@ void qTabMeasurement::Refresh(){
 		chkFile->setChecked(myDet->enableWriteToFile());
 
 		//progress label index
-		if(myDet->getFrameIndex()==-1)
-			lblProgressIndex->setText("0");
-		else
-			lblProgressIndex->setText(QString::number(myDet->getFrameIndex()));
+		// if(myDet->getFrameIndex()==-1)
+		// 	lblProgressIndex->setText("0");
+		// else
+		// 	lblProgressIndex->setText(QString::number(myDet->getFrameIndex()));
 
 		connect(spinNumMeasurements,SIGNAL(valueChanged(int)),			this,	SLOT(setNumMeasurements(int)));
 		connect(dispFileName,		SIGNAL(editingFinished()),			this,	SLOT(setFileName()));
@@ -885,25 +879,14 @@ void qTabMeasurement::Refresh(){
 
 
 void qTabMeasurement::EnableProbes(){
-
-	//disconnect(spinNumProbes,SIGNAL(valueChanged(int)),		this,	SLOT(setNumProbes(int)));
 	disconnect(spinNumTriggers,SIGNAL(valueChanged(int)),	this,	SLOT(setNumTriggers(int)));
 
-
-	//enabled only in expert mode and if #Frames > 1
-	if((expertMode)&&(detType==slsDetectorDefs::MYTHEN)&&(spinNumFrames->value()>1)){
-		lblNumProbes->setEnabled(true);
-		spinNumProbes->setEnabled(true);
-		spinNumProbes->setValue((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1));
-#ifdef VERBOSE
-		cout << "Getting number of probes : " << spinNumProbes->value() << endl;
-#endif
 
 		//Setting number of probes should reset number of triggers to 1, need to check if enabled, cuz its updated when refresh
 		if((spinNumProbes->isEnabled()) && (spinNumProbes->value() > 0) && (spinNumTriggers->value() != 1)){
 			qDefs::Message(qDefs::INFORMATION,"<nobr>Number of Triggers has been reset to 1.</nobr><br>"
 					"<nobr>This is mandatory to use probes.</nobr>","qTabMeasurement::EnableProbes");
-			cout << "Resetting Number of triggers to 1" << endl;
+			std::cout << "Resetting Number of triggers to 1" << endl;
 			spinNumTriggers->setValue(1);
 		}
 		qDefs::checkErrorMessage(myDet,"qTabMeasurement::EnableProbes");
@@ -911,14 +894,11 @@ void qTabMeasurement::EnableProbes(){
 		connect(spinNumProbes,		SIGNAL(valueChanged(int)),	this,	SLOT(setNumProbes(int)));
 		connect(spinNumTriggers,	SIGNAL(valueChanged(int)),	this,	SLOT(setNumTriggers(int)));
 		return;
-	}
-	cout << "Probes not enabled" << endl;
-	if(detType==slsDetectorDefs::MYTHEN)
-		spinNumProbes->setValue(0);
+	
+	std::cout << "Probes not enabled" << endl;
 	lblNumProbes->setEnabled(false);
 	spinNumProbes->setEnabled(false);
 
-	//connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
 	connect(spinNumTriggers,SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
 }
 

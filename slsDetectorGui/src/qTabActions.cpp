@@ -179,25 +179,23 @@ void qTabActions::SetupWidgetWindow(){
 	}
 
 
-	//Number of positions is only for mythen or gotthard
-	detType = myDet->getDetectorsType();
-	if((detType == slsDetectorDefs::EIGER) ||
-			(detType == slsDetectorDefs::AGIPD) ||
-			(detType == slsDetectorDefs::PROPIX) ||
-			(detType == slsDetectorDefs::JUNGFRAU) ||
-			(detType == slsDetectorDefs::CHIPTESTBOARD) ||
-			(detType == slsDetectorDefs::MOENCH)) {
-		lblName[NumPositions]->setEnabled(false);
-		btnExpand[NumPositions]->setEnabled(false);
-	}else{
-		//disable positions if angular conversion is enabled
-		int ang;
-		if(!myDet->getAngularConversion(ang)){
-			lblName[NumPositions]->setEnabled(false);
-			btnExpand[NumPositions]->setEnabled(false);
-		}
+	// //Number of positions is only for mythen or gotthard
+	// detType = myDet->getDetectorTypeAsEnum();
+	// if((detType == slsDetectorDefs::EIGER) ||
+	// 		(detType == slsDetectorDefs::JUNGFRAU) ||
+	// 		(detType == slsDetectorDefs::CHIPTESTBOARD) ||
+	// 		(detType == slsDetectorDefs::MOENCH)) {
+	// 	lblName[NumPositions]->setEnabled(false);
+	// 	btnExpand[NumPositions]->setEnabled(false);
+	// }else{
+	// 	//disable positions if angular conversion is enabled
+	// 	int ang;
+	// 	if(!myDet->getAngularConversion(ang)){
+	// 		lblName[NumPositions]->setEnabled(false);
+	// 		btnExpand[NumPositions]->setEnabled(false);
+	// 	}
 
-	}
+	// }
 
 	//load positions
 	if(lblName[NumPositions]->isEnabled()){

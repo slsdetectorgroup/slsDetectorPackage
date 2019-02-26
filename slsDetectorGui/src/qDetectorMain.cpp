@@ -26,6 +26,8 @@
 #include<iostream>
 #include <string>
 #include <getopt.h>
+
+#include <sys/stat.h> 
 using namespace std;
 
 
@@ -276,22 +278,19 @@ void qDetectorMain::SetUpDetector(const string fName){
 	}
 
 	// Check if type valid. If not, exit
-	slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
+	slsDetectorDefs::detectorType detType = myDet->getDetectorTypeAsEnum();
 	qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
 
 	switch(detType){
-	case slsDetectorDefs::MYTHEN:	break;
 	case slsDetectorDefs::EIGER:	break;
 	case slsDetectorDefs::GOTTHARD:
-	case slsDetectorDefs::AGIPD:
-	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::JUNGFRAU:
 	case slsDetectorDefs::CHIPTESTBOARD:
 		actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings");
 		break;
 	default:
-		string detName = myDet->slsDetectorDefs::getDetectorType(detType);
+		string detName = myDet->getDetectorTypeAsString();
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
 		cout << "ERROR: " + host + " has unknown detector type \"" +  detName + "\". Exiting GUI." << endl;
 		string errorMess = host+string(" has unknown detector type \"")+
@@ -299,14 +298,14 @@ void qDetectorMain::SetUpDetector(const string fName){
 		qDefs::Message(qDefs::CRITICAL,errorMess,"qDetectorMain::SetUpDetector");
 		exit(-1);
 	}
+
 	setWindowTitle("SLS Detector GUI : "+
-			QString(slsDetectorDefs::getDetectorType(detType).c_str())+	" - "+QString(host.c_str()));
+			QString(myDet->getDetectorTypeAsString().c_str())+	" - "+QString(host.c_str()));
 //#ifdef VERBOSE
-	cout << endl << "Type : " << slsDetectorDefs::getDetectorType(detType) << "\nDetector : " << host << endl;
+	cout << endl << "Type : " << myDet->getDetectorTypeAsString() << "\nDetector : " << host << endl;
 //#endif
 	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
-	if(detType != slsDetectorDefs::MYTHEN)
-	    myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
+	myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
 	qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
 }
 
@@ -603,41 +602,42 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #ifdef VERBOSE
 		cout << "Loading Calibration Data" << endl;
 #endif
-		QString fName = QString( (myDet->getCalDir()).c_str() );
-		qDefs::checkErrorMessage(myDet);
+		// QString fName = QString( (myDet->getCalDir()).c_str() );
+		// do we have a caldir?
+		// qDefs::checkErrorMessage(myDet);
 
-		//so that even nonexisting files can be selected
-		QFileDialog	*fileDialog = new QFileDialog(this,
-				tr("Load Detector Calibration Data"),fName,
-				tr("Calibration files (*.cal calibration.sn*);;All Files(*)"));
-		fileDialog->setFileMode(QFileDialog::AnyFile );
-	    if ( fileDialog->exec() == QDialog::Accepted )
-	    	fName = fileDialog->selectedFiles()[0];
+		// //so that even nonexisting files can be selected
+		// QFileDialog	*fileDialog = new QFileDialog(this,
+		// 		tr("Load Detector Calibration Data"),fName,
+		// 		tr("Calibration files (*.cal calibration.sn*);;All Files(*)"));
+		// fileDialog->setFileMode(QFileDialog::AnyFile );
+	    // if ( fileDialog->exec() == QDialog::Accepted )
+	    // 	fName = fileDialog->selectedFiles()[0];
 
-		// Gets called when cancelled as well
-		if (!fName.isEmpty()){
-			if(myDet->loadCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
-				qDefs::Message(qDefs::INFORMATION,"The Calibration Data have been loaded successfully.","qDetectorMain::ExecuteUtilities");
-			else qDefs::Message(qDefs::WARNING,string("Could not load the Calibration data from file:\n")+ fName.toAscii().constData(),"qDetectorMain::ExecuteUtilities");
-			qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
-		}
+		// // Gets called when cancelled as well
+		// if (!fName.isEmpty()){
+		// 	if(myDet->loadCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+		// 		qDefs::Message(qDefs::INFORMATION,"The Calibration Data have been loaded successfully.","qDetectorMain::ExecuteUtilities");
+		// 	else qDefs::Message(qDefs::WARNING,string("Could not load the Calibration data from file:\n")+ fName.toAscii().constData(),"qDetectorMain::ExecuteUtilities");
+		// 	qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
+		// }
 	}
 	else if(action==actionSaveCalibration){
 #ifdef VERBOSE
 		cout << "Saving Calibration Data" << endl;
 #endif//different output directory so as not to overwrite
-		QString fName = QString( (myDet->getCalDir()).c_str()  );
-		qDefs::checkErrorMessage(myDet);
-		fName = QFileDialog::getSaveFileName(this,
-				tr("Save Current Detector Calibration Data"),fName,
-				tr("Calibration files (*.cal calibration.sn*);;All Files(*) "));
-		// Gets called when cancelled as well
-		if (!fName.isEmpty()){
-			if(myDet->saveCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
-				qDefs::Message(qDefs::INFORMATION,"The Calibration Data have been saved successfully.","qDetectorMain::ExecuteUtilities");
-			else qDefs::Message(qDefs::WARNING,string("Could not save the Calibration data to file:\n")+fName.toAscii().constData(),"qDetectorMain::ExecuteUtilities");
-			qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
-		}
+		// QString fName = QString( (myDet->getCalDir()).c_str()  );
+		// qDefs::checkErrorMessage(myDet);
+		// fName = QFileDialog::getSaveFileName(this,
+		// 		tr("Save Current Detector Calibration Data"),fName,
+		// 		tr("Calibration files (*.cal calibration.sn*);;All Files(*) "));
+		// // Gets called when cancelled as well
+		// if (!fName.isEmpty()){
+		// 	if(myDet->saveCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+		// 		qDefs::Message(qDefs::INFORMATION,"The Calibration Data have been saved successfully.","qDetectorMain::ExecuteUtilities");
+		// 	else qDefs::Message(qDefs::WARNING,string("Could not save the Calibration data to file:\n")+fName.toAscii().constData(),"qDetectorMain::ExecuteUtilities");
+		// 	qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
+		// }
 	}
 
 	Refresh(tabs->currentIndex());

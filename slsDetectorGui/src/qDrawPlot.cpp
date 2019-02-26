@@ -8,11 +8,11 @@
 #include "qDrawPlot.h"
 #include "qCloneWidget.h"
 #include "slsDetector.h"
-#include"fileIOStatic.h"
+
 // Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
-#include "postProcessing.h"
+// #include "postProcessing.h"
 // Qt Include Headers
 #include <QFont>
 #include <QImage>
@@ -24,6 +24,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <iomanip>
+
 using namespace std;
 
 
@@ -65,14 +67,12 @@ void qDrawPlot::SetupWidgetWindow(){
 #endif
 
 	// Depending on whether the detector is 1d or 2d
-	detType = myDet->getDetectorsType();
+	detType = myDet->getDetectorTypeAsEnum();
 	switch(detType){
-	case slsDetectorDefs::MYTHEN:
 	case slsDetectorDefs::GOTTHARD:
 		originally2D = false;
 		break;
 	case slsDetectorDefs::EIGER:
-	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::JUNGFRAU:
 	case slsDetectorDefs::CHIPTESTBOARD:
@@ -549,131 +549,131 @@ bool qDrawPlot::StartOrStopThread(bool start){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qDrawPlot::SetScanArgument(int scanArg){
-#ifdef VERYVERBOSE
-	cout << "SetScanArgument function:" << scanArg << " running:" << running << endl;
-#endif
-	scanArgument = scanArg;
+// void qDrawPlot::SetScanArgument(int scanArg){
+// #ifdef VERYVERBOSE
+// 	cout << "SetScanArgument function:" << scanArg << " running:" << running << endl;
+// #endif
+// 	scanArgument = scanArg;
 
-	LockLastImageArray();
+// 	LockLastImageArray();
 
-	if(plot_in_scope==1) Clear1DPlot();
-
-
-	// Number of Exposures - must be calculated here to get npixelsy for allframes/frameindex scans
-	int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
-	int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
-	int numStoragecells = 0;
-	if (detType == slsDetectorDefs::JUNGFRAU)
-	    numStoragecells = (int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
-	numFrames = ((numFrames==0)?1:numFrames);
-	numTriggers = ((numTriggers==0)?1:numTriggers);
-	numStoragecells = ((numStoragecells<=0)?1:numStoragecells+1);
-	number_of_frames = numFrames * numTriggers * numStoragecells;
-	cout << "\tNumber of Frames per Scan/Measurement:" << number_of_frames << endl;
-	//get #scansets for level 0 and level 1
-	int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
-	int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
-	//int numPos=myDet->getPositions();
-
-	number_of_exposures = number_of_frames * numScan0 * numScan1;
-	if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
-	cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures << endl;
+// 	if(plot_in_scope==1) Clear1DPlot();
 
 
-	maxPixelsY = 0;
-	minPixelsY = 0;
-	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
-	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-	if (detType == slsDetectorDefs::CHIPTESTBOARD) {
-		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES, -1) * 2)/25; // for moench 03
-		nPixelsX = npixelsx_jctb;
-		nPixelsY = npixelsy_jctb;
-	}
+// 	// Number of Exposures - must be calculated here to get npixelsy for allframes/frameindex scans
+// 	int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
+// 	int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
+// 	int numStoragecells = 0;
+// 	if (detType == slsDetectorDefs::JUNGFRAU)
+// 	    numStoragecells = (int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
+// 	numFrames = ((numFrames==0)?1:numFrames);
+// 	numTriggers = ((numTriggers==0)?1:numTriggers);
+// 	numStoragecells = ((numStoragecells<=0)?1:numStoragecells+1);
+// 	number_of_frames = numFrames * numTriggers * numStoragecells;
+// 	cout << "\tNumber of Frames per Scan/Measurement:" << number_of_frames << endl;
+// 	//get #scansets for level 0 and level 1
+// 	int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
+// 	int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
+// 	//int numPos=myDet->getPositions();
 
-	//cannot do this in between measurements , so update instantly
-	if(scanArgument==qDefs::Level0){
-		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
-		int numSteps = myDet->getScanSteps(0);
-		double *values = new double[numSteps];
-		myDet->getScanSteps(0,values);
-
-		maxPixelsY = values[numSteps-1];
-		minPixelsY = values[0];
-		nPixelsY = numSteps;
-	}else if(scanArgument==qDefs::Level1) {
-		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
-		int numSteps = myDet->getScanSteps(1);
-		double *values = new double[numSteps];
-		myDet->getScanSteps(1,values);
-
-		maxPixelsY = values[numSteps-1];
-		minPixelsY = values[0];
-		nPixelsY = numSteps;
-	}else if(scanArgument==qDefs::AllFrames)
-		nPixelsY = number_of_exposures;
-	else if(scanArgument==qDefs::FileIndex)
-		nPixelsY = number_of_frames;
+// 	number_of_exposures = number_of_frames * numScan0 * numScan1;
+// 	if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
+// 	cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures << endl;
 
 
-	if(minPixelsY>maxPixelsY){
-		double temp = minPixelsY;
-		minPixelsY = maxPixelsY;
-		maxPixelsY = temp;
-		backwardScanPlot = true;
-	}else backwardScanPlot = false;
+// 	maxPixelsY = 0;
+// 	minPixelsY = 0;
+// 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
+// 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
+// 	if (detType == slsDetectorDefs::CHIPTESTBOARD) {
+// 		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES, -1) * 2)/25; // for moench 03
+// 		nPixelsX = npixelsx_jctb;
+// 		nPixelsY = npixelsy_jctb;
+// 	}
+
+// 	//cannot do this in between measurements , so update instantly
+// 	if(scanArgument==qDefs::Level0){
+// 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
+// 		int numSteps = myDet->getScanSteps(0);
+// 		double *values = new double[numSteps];
+// 		myDet->getScanSteps(0,values);
+
+// 		maxPixelsY = values[numSteps-1];
+// 		minPixelsY = values[0];
+// 		nPixelsY = numSteps;
+// 	}else if(scanArgument==qDefs::Level1) {
+// 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
+// 		int numSteps = myDet->getScanSteps(1);
+// 		double *values = new double[numSteps];
+// 		myDet->getScanSteps(1,values);
+
+// 		maxPixelsY = values[numSteps-1];
+// 		minPixelsY = values[0];
+// 		nPixelsY = numSteps;
+// 	}else if(scanArgument==qDefs::AllFrames)
+// 		nPixelsY = number_of_exposures;
+// 	else if(scanArgument==qDefs::FileIndex)
+// 		nPixelsY = number_of_frames;
 
 
-	//1d
-	if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
+// 	if(minPixelsY>maxPixelsY){
+// 		double temp = minPixelsY;
+// 		minPixelsY = maxPixelsY;
+// 		maxPixelsY = temp;
+// 		backwardScanPlot = true;
+// 	}else backwardScanPlot = false;
 
-	if(histYAxis[0]) delete [] histYAxis[0]; histYAxis[0] = new double [nPixelsX];
 
-	//2d
-	if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
-	if(gainImageArray) delete [] gainImageArray; gainImageArray = new double[nPixelsY*nPixelsX];
+// 	//1d
+// 	if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
 
-	//initializing 1d x axis
-	for(unsigned int px=0;px<nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
+// 	if(histYAxis[0]) delete [] histYAxis[0]; histYAxis[0] = new double [nPixelsX];
 
-	//initializing 2d array
+// 	//2d
+// 	if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
+// 	if(gainImageArray) delete [] gainImageArray; gainImageArray = new double[nPixelsY*nPixelsX];
 
-	memset(lastImageArray,0,nPixelsY *nPixelsX * sizeof(double));
-	memset(gainImageArray,0,nPixelsY *nPixelsX * sizeof(double));
-	/*for(int py=0;py<(int)nPixelsY;py++)
-		for(int px=0;px<(int)nPixelsX;px++) {
-			lastImageArray[py*nPixelsX+px] = 0;
-			gainImageArray[py*nPixelsX+px] = 0;
-		}
-	 */
+// 	//initializing 1d x axis
+// 	for(unsigned int px=0;px<nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
 
-	//histogram
-	if(histogram){
-		int iloop = 0;
-		int numSteps = ((histTo-histFrom)/(histSize)) + 1;cout<<"numSteps:"<<numSteps<<" histFrom:"<<histFrom<<" histTo:"<<histTo<<" histSize:"<<histSize<<endl;
-		histogramSamples.resize(numSteps);
-		startPixel = histFrom -(histSize/2);cout<<"startpixel:"<<startPixel<<endl;
-		endPixel = histTo + (histSize/2);cout<<"endpixel:"<<endPixel<<endl;
-		while(startPixel < endPixel){
-			histogramSamples[iloop].interval.setInterval(startPixel,startPixel+histSize,QwtInterval::ExcludeMaximum);
-			histogramSamples[iloop].value = 0;
-			startPixel += histSize;
-			iloop++;
-		}
+// 	//initializing 2d array
 
-		//print values
-		cout << "Histogram Intervals:" << endl;
-		for(int j=0;j<histogramSamples.size();j++){
-			cout<<j<<":\tmin:"<<histogramSamples[j].interval.minValue()<<""
-					"\t\tmax:"<<histogramSamples[j].interval.maxValue()<<"\t\tvalue:"<<histogramSamples[j].value<<endl;
-		}
-	}
+// 	memset(lastImageArray,0,nPixelsY *nPixelsX * sizeof(double));
+// 	memset(gainImageArray,0,nPixelsY *nPixelsX * sizeof(double));
+// 	/*for(int py=0;py<(int)nPixelsY;py++)
+// 		for(int px=0;px<(int)nPixelsX;px++) {
+// 			lastImageArray[py*nPixelsX+px] = 0;
+// 			gainImageArray[py*nPixelsX+px] = 0;
+// 		}
+// 	 */
 
-	UnlockLastImageArray();
+// 	//histogram
+// 	if(histogram){
+// 		int iloop = 0;
+// 		int numSteps = ((histTo-histFrom)/(histSize)) + 1;cout<<"numSteps:"<<numSteps<<" histFrom:"<<histFrom<<" histTo:"<<histTo<<" histSize:"<<histSize<<endl;
+// 		histogramSamples.resize(numSteps);
+// 		startPixel = histFrom -(histSize/2);cout<<"startpixel:"<<startPixel<<endl;
+// 		endPixel = histTo + (histSize/2);cout<<"endpixel:"<<endPixel<<endl;
+// 		while(startPixel < endPixel){
+// 			histogramSamples[iloop].interval.setInterval(startPixel,startPixel+histSize,QwtInterval::ExcludeMaximum);
+// 			histogramSamples[iloop].value = 0;
+// 			startPixel += histSize;
+// 			iloop++;
+// 		}
 
-	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetScanArgument");
+// 		//print values
+// 		cout << "Histogram Intervals:" << endl;
+// 		for(int j=0;j<histogramSamples.size();j++){
+// 			cout<<j<<":\tmin:"<<histogramSamples[j].interval.minValue()<<""
+// 					"\t\tmax:"<<histogramSamples[j].interval.maxValue()<<"\t\tvalue:"<<histogramSamples[j].value<<endl;
+// 		}
+// 	}
 
-}
+// 	UnlockLastImageArray();
+
+// 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetScanArgument");
+
+// }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -803,7 +803,7 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 	if (((qDrawPlot*)this_pointer)->myDet->getAcquiringFlag() == true) {
 		((qDrawPlot*)this_pointer)->myDet->setAcquiringFlag(false);
 	}
-	((qDrawPlot*)this_pointer)->myDet->acquire(1);
+	((qDrawPlot*)this_pointer)->myDet->acquire();
 
 	return this_pointer;
 }
@@ -837,446 +837,362 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 	cout << "dynamicRange " << data->dynamicRange << endl;
 	cout << "fileIndex " << data->fileIndex << endl;
 #endif
-	if(!stop_signal){
+// 	if(!stop_signal){
 
-		//set progress
-		progress=(int)data->progressIndex;
-		currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
-		currentFileIndex = data->fileIndex;
-		//happens if receiver sends a null and empty file name
-		/*if(string(data->fileName).empty()){
-			cout << "Received empty file name. Exiting function without updating data for plot." << endl;
-			return -1;
-		}*/
-#ifdef VERYVERBOSE
-		cout << "progress:" << progress << endl;
-#endif
-		// secondary title necessary to differentiate between frames when not saving data
-		char temp_title[2000];
-		//findex is the frame index given by receiver, cannot be derived from file name
-		if(fIndex!=-1){
-			currentFrameIndex=fIndex;
-			sprintf(temp_title,"#%d",fIndex);
-			if((detType==slsDetectorDefs::EIGER) && (subIndex != -1))
-				sprintf(temp_title,"#%d  %d",fIndex,subIndex);
-		}else{
-			if(fileSaveEnable)	strcpy(temp_title,"#%d");
-			else		sprintf(temp_title,"#%d",currentFrame);
-		}
-		if(subIndex != -1)
-			sprintf(temp_title,"#%d  %d",fIndex,subIndex);
+// 		//set progress
+// 		progress=(int)data->progressIndex;
+// 		//TODO!
+// 		// currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
+// 		currentFileIndex = data->fileIndex;
+// 		//happens if receiver sends a null and empty file name
+// 		/*if(string(data->fileName).empty()){
+// 			cout << "Received empty file name. Exiting function without updating data for plot." << endl;
+// 			return -1;
+// 		}*/
+// #ifdef VERYVERBOSE
+// 		cout << "progress:" << progress << endl;
+// #endif
+// 		// secondary title necessary to differentiate between frames when not saving data
+// 		char temp_title[2000];
+// 		//findex is the frame index given by receiver, cannot be derived from file name
+// 		if(fIndex!=-1){
+// 			currentFrameIndex=fIndex;
+// 			sprintf(temp_title,"#%d",fIndex);
+// 			if((detType==slsDetectorDefs::EIGER) && (subIndex != -1))
+// 				sprintf(temp_title,"#%d  %d",fIndex,subIndex);
+// 		}else{
+// 			if(fileSaveEnable)	strcpy(temp_title,"#%d");
+// 			else		sprintf(temp_title,"#%d",currentFrame);
+// 		}
+// 		if(subIndex != -1)
+// 			sprintf(temp_title,"#%d  %d",fIndex,subIndex);
 
-		//Plot Disabled
-		if(!plotEnable)
-			return 0;
-
-
-
-		//angle plotting
-		if(anglePlot){
-
-			// convert char* to double
-			if(data->values==NULL) {
-				data->values = new double[nPixelsX*nPixelsY];
-				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dynamicRange);
-			}
-
-			LockLastImageArray();
-			//set title
-			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-			// Title
-			histTitle[0] = temp_title;
-
-			if(data->angles==NULL){
-				cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
-				lastImageNumber= currentFrame+1;
-				nAnglePixelsX = nPixelsX;
-				histNBins = nAnglePixelsX;
-				nHists=1;
-				memcpy(histXAngleAxis,histXAxis,nAnglePixelsX*sizeof(double));
-				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
-				SetHistXAxisTitle("Channel Number");
-
-			}
-			else{
-				lastImageNumber= currentFrame+1;
-				nAnglePixelsX = data->npoints;
-				histNBins = nAnglePixelsX;
-				nHists=1;
-				if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
-				if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
-#ifdef CHECKINFERROR
-				int k = 0;
-				for(int i = 0; i < data->npoints; i++){
-					if(isinf(data->values[i])){
-						//cout << "*** ERROR: value at " << i << " infinity" << endl;
-						k++;
-						data->values[i] = -1;
-					}
-				}
-				if (k>0) {
-					cout << "*** ERROR: value at " << k << " places have infinity values!" <<  endl;
-					double m1,m2,s1;
-					GetStatistics(m1,m2,s1,data->angles,nAnglePixelsX);
-					cout << "angle min:" << m1 << endl;
-					cout << "angle max:" << m2 << endl;
-					cout << "angle sum:" << s1 << endl;
-					GetStatistics(m1,m2,s1,data->values,nAnglePixelsX);
-					cout << "value min:" << m1 << endl;
-					cout << "value max:" << m2 << endl;
-					cout << "value sum:" << s1 << endl;
-				}
-#endif
-				memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
-				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
-				SetHistXAxisTitle("Angles");
-			}
-			plotRequired = true;
-			UnlockLastImageArray();
-			currentFrame++;
-#ifdef VERYVERBOSE
-			cout << "Exiting GetData Function " << endl;
-#endif
-			emit UpdatePlotSignal();
-			return 0;
-		}
-
-
-		//nth frame or delay decision (data copied later on)
-		if (detType == slsDetectorDefs::MYTHEN){
-			//Nth Frame
-			if(frameFactor){
-				//plots if numfactor becomes 0
-				if(!numFactor) numFactor=frameFactor-1;
-				//return if not
-				else{
-					numFactor--;
-					return 0;
-				}
-			}
-
-			//Not Nth Frame, to check time out(NOT for Scans and angle plots)
-			else{
-				if (scanArgument == qDefs::None) {
-					//if the time is not over, RETURN
-					if(!data_pause_over){
-						return 0;
-					}
-					data_pause_over=false;
-					data_pause_timer->start((int)(timerValue));
-				}
-			}
-		}
-
-		// convert char* to double
-		if(data->values == NULL) {
-			data->values = new double[nPixelsX*nPixelsY];
-			if (gainDataEnable) {
-				data->dgainvalues = new double[nPixelsX*nPixelsY];
-				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dynamicRange, data->dgainvalues);
-			}
-			else
-				toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dynamicRange);
-		}
-
-		//if scan
-		//alframes
-		if(scanArgument==qDefs::AllFrames){
-			LockLastImageArray();
-			//set title
-			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-			//variables
-			lastImageNumber= currentFrame+1;
-			//title
-			imageTitle = temp_title;
-			//copy data
-			memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
-			plotRequired = true;
-			UnlockLastImageArray();
-			currentFrame++;
-			currentScanDivLevel++;
-			emit UpdatePlotSignal();
-			return 0;
-		}
-		//file index
-		if(scanArgument==qDefs::FileIndex){
-			LockLastImageArray();
-			//set title
-			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-			//variables
-			if(currentFrameIndex == 0) currentScanDivLevel = 0;
-			lastImageNumber= currentFrame+1;
-			//title
-			imageTitle = temp_title;
-			//copy data
-			for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-			plotRequired = true;
-			UnlockLastImageArray();
-			currentFrame++;
-			currentScanDivLevel++;
-			emit UpdatePlotSignal();
-			return 0;
-		}
-		//level0
-		if(scanArgument==qDefs::Level0){
-			LockLastImageArray();
-			//set title
-			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-			//get scanvariable0
-			int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
-			fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
-			//variables
-			if(cs0!=currentScanValue) {
-				if(backwardScanPlot)	currentScanDivLevel--;
-				else					currentScanDivLevel++;
-			}
-			currentScanValue = cs0;
-			lastImageNumber= currentFrame+1;
-			//title
-			imageTitle = temp_title;
-			//copy data
-			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-			plotRequired = true;
-			UnlockLastImageArray();
-			currentFrame++;
-			emit UpdatePlotSignal();
-			return 0;
-		}
-		//level1
-		if(scanArgument==qDefs::Level1){
-			LockLastImageArray();
-			//set title
-			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-			//get scanvariable1
-			int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
-			fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
-			//variables
-			if(cs1!=currentScanValue){
-				if(backwardScanPlot)	currentScanDivLevel--;
-				else					currentScanDivLevel++;
-			}
-			currentScanValue = cs1;
-			lastImageNumber= currentFrame+1;
-			//title
-			imageTitle = temp_title;
-			//copy data
-			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-			plotRequired = true;
-			UnlockLastImageArray();
-			currentFrame++;
-			emit UpdatePlotSignal();
-			return 0;
-		}
+// 		//Plot Disabled
+// 		if(!plotEnable)
+// 			return 0;
 
 
 
-		//normal measurement or 1d scans
-		LockLastImageArray();
-		/*if(!pthread_mutex_trylock(&(last_image_complete_mutex))){*/
-		//set title
-		plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-		// only if you got the lock, do u need to remember lastimagenumber to plot
-		lastImageNumber= currentFrame+1;
-		//cout<<"got last imagenumber:"<<lastImageNumber<<endl;
-		//1d
-		if(plot_in_scope==1){
-			// Titles
-			histTitle[0] = temp_title;
+// 		if (scanArgument == qDefs::None) {
+// 			//if the time is not over, RETURN
+// 			if(!data_pause_over){
+// 				return 0;
+// 			}
+// 			data_pause_over=false;
+// 			data_pause_timer->start((int)(timerValue));
+// 		}
+			
+		
 
-			//histogram
-			if(histogram){
-				resetAccumulate = false;
-				lastImageNumber= currentFrame+1;
+// 		// convert char* to double
+// 		// if(data->values == NULL) {
+// 		// 	data->values = new double[nPixelsX*nPixelsY];
+// 		// 	if (gainDataEnable) {
+// 		// 		data->dgainvalues = new double[nPixelsX*nPixelsY];
+// 		// 		toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dynamicRange, data->dgainvalues);
+// 		// 	}
+// 		// 	else
+// 		// 		toDoublePixelData(data->values, data->cvalues, nPixelsX*nPixelsY, data->databytes, data->dynamicRange);
+// 		// }
 
-				int numValues = nPixelsX;
-				if(originally2D)
-					numValues = nPixelsX*nPixelsY;
-
-				//clean up graph
-				if(histogramArgument == qDefs::Intensity){
-					for(int j=0;j<histogramSamples.size();j++){
-						histogramSamples[j].value = 0;
-
-					}
-				}
-
-				int val = 0 ;
-				for(int i=0;i<numValues;i++){
-					//frequency of intensity
-					if(histogramArgument == qDefs::Intensity){
-						//ignore outside limits
-						if ((data->values[i] <  histFrom) || (data->values[i] > histTo))
-							continue;
-						//check for intervals, increment if validates
-						for(int j=0;j<histogramSamples.size();j++){
-							if(histogramSamples[j].interval.contains(data->values[i]))
-								histogramSamples[j].value += 1;
-
-						}
-					}
-					//get sum of data pixels
-					else
-						val += data->values[i];
-
-				}
-
-
-				if(histogramArgument != qDefs::Intensity){
-					val /= numValues;
-
-					//find scan value
-					int ci = 0, fi = 0; double cs0 = 0 , cs1 = 0;
-					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi,  cs0, cs1);
-
-					int scanval=-1;
-					if(cs0 != -1)
-						scanval = cs0;
-					else scanval = cs1;
-
-					//ignore outside limits
-					if ((scanval <  histFrom) || (scanval > histTo) || (scanval == -1))
-						scanval = -1;
-					//check for intervals, increment if validates
-					for(int j=0;j<histogramSamples.size();j++){
-						if(histogramSamples[j].interval.contains(scanval)){
-							histogramSamples[j].value = val;
-							cout << "j:"<<j<<" scanval:"<<scanval<<" val:"<<val<<endl;
-						}
-					}
-				}
-
-			}
-			//not histogram
-			else{
-				// Persistency
-				if(currentPersistency < persistency)currentPersistency++;
-				else currentPersistency=persistency;
-				nHists = currentPersistency+1;
-				histNBins = nPixelsX;
-
-				// copy data
-				for(int i=currentPersistency;i>0;i--)
-					memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
-
-				//recalculating pedestal
-				if(startPedestalCal){
-					//start adding frames to get to the pedestal value
-					if(pedestalCount<NUM_PEDESTAL_FRAMES){
-						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] += data->values[px];
-						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
-						pedestalCount++;
-					}
-					//calculate the pedestal value
-					if(pedestalCount==NUM_PEDESTAL_FRAMES){
-						cout << "Pedestal Calculated" << endl;
-						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
-						memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));
-						startPedestalCal = 0;
-					}
-				}
-
-				//normal data
-				if(((!pedestal)&(!accumulate)&(!binary))	|| (resetAccumulate)){
-					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
-					resetAccumulate = false;
-				}
-				//pedestal or accumulate
-				else{
-					double temp;//cannot overwrite cuz of accumulate
-					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
-						temp = data->values[px];
-						if(pedestal)
-							temp = data->values[px] - (pedestalVals[px]);
-						if(binary) {
-							if ((temp >= binaryFrom) && (temp <= binaryTo))
-								temp = 1;
-							else
-								temp = 0;
-						}
-						if(accumulate)
-							temp += histYAxis[0][px];
-						//after all processing
-						histYAxis[0][px] = temp;
-					}
-				}
-			}
-		}
-		//2d
-		else{
-			// Titles
-			imageTitle = temp_title;
-
-			//jungfrau mask gain
-			if(data->dgainvalues != NULL) {
-				memcpy(gainImageArray, data->dgainvalues, nPixelsX*nPixelsY*sizeof(double));
-				gainPlotEnable = true;
-			}else
-				gainPlotEnable = false;
+// 		//if scan
+// 		//alframes
+// 		if(scanArgument==qDefs::AllFrames){
+// 			// LockLastImageArray();
+// 			// //set title
+// 			// plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+// 			// //variables
+// 			// lastImageNumber= currentFrame+1;
+// 			// //title
+// 			// imageTitle = temp_title;
+// 			// //copy data
+// 			// memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
+// 			// plotRequired = true;
+// 			// UnlockLastImageArray();
+// 			// currentFrame++;
+// 			// currentScanDivLevel++;
+// 			// emit UpdatePlotSignal();
+// 			return 0;
+// 		}
+// 		//file index
+// 		if(scanArgument==qDefs::FileIndex){
+// 			// LockLastImageArray();
+// 			// //set title
+// 			// plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+// 			// //variables
+// 			// if(currentFrameIndex == 0) currentScanDivLevel = 0;
+// 			// lastImageNumber= currentFrame+1;
+// 			// //title
+// 			// imageTitle = temp_title;
+// 			// //copy data
+// 			// for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+// 			// plotRequired = true;
+// 			// UnlockLastImageArray();
+// 			// currentFrame++;
+// 			// currentScanDivLevel++;
+// 			// emit UpdatePlotSignal();
+// 			return 0;
+// 		}
+// 		//level0
+// 		// if(scanArgument==qDefs::Level0){
+// 		// 	LockLastImageArray();
+// 		// 	//set title
+// 		// 	plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+// 		// 	//get scanvariable0
+// 		// 	int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
+// 		// 	fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
+// 		// 	//variables
+// 		// 	if(cs0!=currentScanValue) {
+// 		// 		if(backwardScanPlot)	currentScanDivLevel--;
+// 		// 		else					currentScanDivLevel++;
+// 		// 	}
+// 		// 	currentScanValue = cs0;
+// 		// 	lastImageNumber= currentFrame+1;
+// 		// 	//title
+// 		// 	imageTitle = temp_title;
+// 		// 	//copy data
+// 		// 	for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+// 		// 	plotRequired = true;
+// 		// 	UnlockLastImageArray();
+// 		// 	currentFrame++;
+// 		// 	emit UpdatePlotSignal();
+// 		// 	return 0;
+// 		// }
+// 		//level1
+// 		// if(scanArgument==qDefs::Level1){
+// 		// 	LockLastImageArray();
+// 		// 	//set title
+// 		// 	plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+// 		// 	//get scanvariable1
+// 		// 	int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
+// 		// 	fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
+// 		// 	//variables
+// 		// 	if(cs1!=currentScanValue){
+// 		// 		if(backwardScanPlot)	currentScanDivLevel--;
+// 		// 		else					currentScanDivLevel++;
+// 		// 	}
+// 		// 	currentScanValue = cs1;
+// 		// 	lastImageNumber= currentFrame+1;
+// 		// 	//title
+// 		// 	imageTitle = temp_title;
+// 		// 	//copy data
+// 		// 	for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+// 		// 	plotRequired = true;
+// 		// 	UnlockLastImageArray();
+// 		// 	currentFrame++;
+// 		// 	emit UpdatePlotSignal();
+// 		// 	return 0;
+// 		// }
 
 
-			//recalculating pedestal
-			if(startPedestalCal){
-				//start adding frames to get to the pedestal value
-				if(pedestalCount<NUM_PEDESTAL_FRAMES){
-					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-						tempPedestalVals[px] += data->values[px];
-					memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
-					pedestalCount++;
-				}
-				//calculate the pedestal value
-				if(pedestalCount==NUM_PEDESTAL_FRAMES){
-					cout << "Pedestal Calculated" << endl;
-					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-						tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
-					memcpy(pedestalVals,tempPedestalVals,nPixelsX*nPixelsY*sizeof(double));
-					startPedestalCal = 0;
-				}
-			}
 
-			//normal data
-			if(((!pedestal)&(!accumulate)&(!binary))	|| (resetAccumulate)){
-				memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
-				resetAccumulate = false;
-			}
-			//pedestal or accumulate or binary
-			else{
-				double temp;
-				for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
-					temp = data->values[px];
-					if(pedestal)
-						temp = data->values[px] - (pedestalVals[px]);
-					if(binary) {
-						if ((temp >= binaryFrom) && (temp <= binaryTo))
-							temp = 1;
-						else
-							temp = 0;
-					}
-					if(accumulate)
-						temp += lastImageArray[px];
-					//after all processing
-					lastImageArray[px] = temp;
-				}
-			}
+// 		//normal measurement or 1d scans
+// 		LockLastImageArray();
+// 		/*if(!pthread_mutex_trylock(&(last_image_complete_mutex))){*/
+// 		//set title
+// 		plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+// 		// only if you got the lock, do u need to remember lastimagenumber to plot
+// 		lastImageNumber= currentFrame+1;
+// 		//cout<<"got last imagenumber:"<<lastImageNumber<<endl;
+// 		//1d
+// 		if(plot_in_scope==1){
+// 			// Titles
+// 			histTitle[0] = temp_title;
 
-		}
-		/*	pthread_mutex_unlock(&(last_image_complete_mutex));
-		}*/
-		plotRequired = true;
-		UnlockLastImageArray();
+// 			//histogram
+// 			if(histogram){
+// 				resetAccumulate = false;
+// 				lastImageNumber= currentFrame+1;
 
-#ifdef VERYVERBOSE
-		cprintf(BLUE,"currentframe:%d \tcurrentframeindex:%d\n",currentFrame,currentFrameIndex);
-#endif
-		currentFrame++;
-		emit UpdatePlotSignal();
-	}
+// 				int numValues = nPixelsX;
+// 				if(originally2D)
+// 					numValues = nPixelsX*nPixelsY;
+
+// 				//clean up graph
+// 				if(histogramArgument == qDefs::Intensity){
+// 					for(int j=0;j<histogramSamples.size();j++){
+// 						histogramSamples[j].value = 0;
+
+// 					}
+// 				}
+
+// 				int val = 0 ;
+// 				for(int i=0;i<numValues;i++){
+// 					//frequency of intensity
+// 					if(histogramArgument == qDefs::Intensity){
+// 						//ignore outside limits
+// 						if ((data->values[i] <  histFrom) || (data->values[i] > histTo))
+// 							continue;
+// 						//check for intervals, increment if validates
+// 						for(int j=0;j<histogramSamples.size();j++){
+// 							if(histogramSamples[j].interval.contains(data->values[i]))
+// 								histogramSamples[j].value += 1;
+
+// 						}
+// 					}
+// 					//get sum of data pixels
+// 					else
+// 						val += data->values[i];
+
+// 				}
 
 
-#ifdef VERYVERBOSE
-	cout << "Exiting GetData function" << endl;
-#endif
+// 				if(histogramArgument != qDefs::Intensity){
+// 					val /= numValues;
+
+// 					//find scan value
+// 					int ci = 0, fi = 0; double cs0 = 0 , cs1 = 0;
+// 					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi,  cs0, cs1);
+
+// 					int scanval=-1;
+// 					if(cs0 != -1)
+// 						scanval = cs0;
+// 					else scanval = cs1;
+
+// 					//ignore outside limits
+// 					if ((scanval <  histFrom) || (scanval > histTo) || (scanval == -1))
+// 						scanval = -1;
+// 					//check for intervals, increment if validates
+// 					for(int j=0;j<histogramSamples.size();j++){
+// 						if(histogramSamples[j].interval.contains(scanval)){
+// 							histogramSamples[j].value = val;
+// 							cout << "j:"<<j<<" scanval:"<<scanval<<" val:"<<val<<endl;
+// 						}
+// 					}
+// 				}
+
+// 			}
+// 			//not histogram
+// 			else{
+// 				// Persistency
+// 				if(currentPersistency < persistency)currentPersistency++;
+// 				else currentPersistency=persistency;
+// 				nHists = currentPersistency+1;
+// 				histNBins = nPixelsX;
+
+// 				// copy data
+// 				for(int i=currentPersistency;i>0;i--)
+// 					memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
+
+// 				//recalculating pedestal
+// 				if(startPedestalCal){
+// 					//start adding frames to get to the pedestal value
+// 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
+// 						for(unsigned int px=0;px<nPixelsX;px++)
+// 							tempPedestalVals[px] += data->values[px];
+// 						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+// 						pedestalCount++;
+// 					}
+// 					//calculate the pedestal value
+// 					if(pedestalCount==NUM_PEDESTAL_FRAMES){
+// 						cout << "Pedestal Calculated" << endl;
+// 						for(unsigned int px=0;px<nPixelsX;px++)
+// 							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
+// 						memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));
+// 						startPedestalCal = 0;
+// 					}
+// 				}
+
+// 				//normal data
+// 				if(((!pedestal)&(!accumulate)&(!binary))	|| (resetAccumulate)){
+// 					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+// 					resetAccumulate = false;
+// 				}
+// 				//pedestal or accumulate
+// 				else{
+// 					double temp;//cannot overwrite cuz of accumulate
+// 					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
+// 						temp = data->values[px];
+// 						if(pedestal)
+// 							temp = data->values[px] - (pedestalVals[px]);
+// 						if(binary) {
+// 							if ((temp >= binaryFrom) && (temp <= binaryTo))
+// 								temp = 1;
+// 							else
+// 								temp = 0;
+// 						}
+// 						if(accumulate)
+// 							temp += histYAxis[0][px];
+// 						//after all processing
+// 						histYAxis[0][px] = temp;
+// 					}
+// 				}
+// 			}
+// 		}
+// 		//2d
+// 		else{
+// 			// Titles
+// 			imageTitle = temp_title;
+
+// 			//jungfrau mask gain
+// 			if(data->dgainvalues != NULL) {
+// 				memcpy(gainImageArray, data->dgainvalues, nPixelsX*nPixelsY*sizeof(double));
+// 				gainPlotEnable = true;
+// 			}else
+// 				gainPlotEnable = false;
+
+
+// 			//recalculating pedestal
+// 			if(startPedestalCal){
+// 				//start adding frames to get to the pedestal value
+// 				if(pedestalCount<NUM_PEDESTAL_FRAMES){
+// 					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+// 						tempPedestalVals[px] += data->values[px];
+// 					memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+// 					pedestalCount++;
+// 				}
+// 				//calculate the pedestal value
+// 				if(pedestalCount==NUM_PEDESTAL_FRAMES){
+// 					cout << "Pedestal Calculated" << endl;
+// 					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+// 						tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
+// 					memcpy(pedestalVals,tempPedestalVals,nPixelsX*nPixelsY*sizeof(double));
+// 					startPedestalCal = 0;
+// 				}
+// 			}
+
+// 			//normal data
+// 			if(((!pedestal)&(!accumulate)&(!binary))	|| (resetAccumulate)){
+// 				memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+// 				resetAccumulate = false;
+// 			}
+// 			//pedestal or accumulate or binary
+// 			else{
+// 				double temp;
+// 				for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
+// 					temp = data->values[px];
+// 					if(pedestal)
+// 						temp = data->values[px] - (pedestalVals[px]);
+// 					if(binary) {
+// 						if ((temp >= binaryFrom) && (temp <= binaryTo))
+// 							temp = 1;
+// 						else
+// 							temp = 0;
+// 					}
+// 					if(accumulate)
+// 						temp += lastImageArray[px];
+// 					//after all processing
+// 					lastImageArray[px] = temp;
+// 				}
+// 			}
+
+// 		}
+// 		/*	pthread_mutex_unlock(&(last_image_complete_mutex));
+// 		}*/
+// 		plotRequired = true;
+// 		UnlockLastImageArray();
+
+// #ifdef VERYVERBOSE
+// 		cprintf(BLUE,"currentframe:%d \tcurrentframeindex:%d\n",currentFrame,currentFrameIndex);
+// #endif
+// 		currentFrame++;
+// 		emit UpdatePlotSignal();
+// 	}
+
+
+// #ifdef VERYVERBOSE
+// 	cout << "Exiting GetData function" << endl;
+// #endif
 	return 0;
 }
 
@@ -1841,168 +1757,168 @@ void qDrawPlot::DisableZoom(bool disable){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
-	int ret,actualPixelsX;
-	double min=0,max=0,sum=0;
-#ifdef VERBOSE
-	if(fromDetector)	cout << "Geting Trimbits from Detector" << endl;
-	else				cout << "Getting Trimbits from Shared Memory" << endl;
-#endif
+// int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
+// 	int ret,actualPixelsX;
+// 	double min=0,max=0,sum=0;
+// #ifdef VERBOSE
+// 	if(fromDetector)	cout << "Geting Trimbits from Detector" << endl;
+// 	else				cout << "Getting Trimbits from Shared Memory" << endl;
+// #endif
 
-	LockLastImageArray();
+// 	LockLastImageArray();
 
-	if(detType == slsDetectorDefs::MYTHEN){
+// 	if(detType == slsDetectorDefs::MYTHEN){
 
-		//get trimbits
-		actualPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
-		if(histTrimbits) delete [] histTrimbits; histTrimbits = new double[actualPixelsX];
-		ret = myDet->getChanRegs(histTrimbits,fromDetector);
-		//	cout << "got it!" << endl;
-		if(!ret){
-			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
-			UnlockLastImageArray();
-			return qDefs::FAIL;
-		}
-#ifdef VERBOSE
-		cout << "Got Trimbits" << endl;
-#endif
+// 		//get trimbits
+// 		actualPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
+// 		if(histTrimbits) delete [] histTrimbits; histTrimbits = new double[actualPixelsX];
+// 		ret = myDet->getChanRegs(histTrimbits,fromDetector);
+// 		//	cout << "got it!" << endl;
+// 		if(!ret){
+// 			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
+// 			UnlockLastImageArray();
+// 			return qDefs::FAIL;
+// 		}
+// #ifdef VERBOSE
+// 		cout << "Got Trimbits" << endl;
+// #endif
 
-		qDefs::checkErrorMessage(myDet,"qDrawPlot::UpdateTrimbitPlot");
+// 		qDefs::checkErrorMessage(myDet,"qDrawPlot::UpdateTrimbitPlot");
 
-		//clear/select plot and set titles
-		Select1DPlot();
-		Clear1DPlot();
+// 		//clear/select plot and set titles
+// 		Select1DPlot();
+// 		Clear1DPlot();
 
-		//Display Statistics
-		if(displayStatistics){
-			GetStatistics(min,max,sum,histTrimbits,actualPixelsX);
-			lblMinDisp->setText(QString("%1").arg(min));
-			lblMaxDisp->setText(QString("%1").arg(max));
-			lblSumDisp->setText(QString("%1").arg(sum));
-		}
-
-
-		if(!Histogram){
-			cout << "Data Graph:" << nPixelsX << endl;
-
-			//initialize
-			nPixelsX = actualPixelsX;
-			if(histXAxis)		delete [] histXAxis;	histXAxis 	= new double [nPixelsX];
-			if(histYAxis[0])	delete [] histYAxis[0]; histYAxis[0]= new double [nPixelsX];
-			//initializing
-			for(unsigned int px=0;px<nPixelsX;px++)			histXAxis[px] = px;
-			for(unsigned int i=0;i<nPixelsX;i++)			histYAxis[0][i]  = 0;
-
-			//data
-			memcpy(histYAxis[0],histTrimbits,nPixelsX*sizeof(double));
-			//title
-			boxPlot->setTitle("Trimbits_Plot_Data Graph");
-			plot1D->SetXTitle("Channel Number");
-			plot1D->SetYTitle("Trimbits");
-			//set plot parameters
-			plot1D->SetXMinMax(0,nPixelsX);
-			/*plot1D->SetYMinMax(0,plotHistogram->boundingRect().height()); plot1D->SetZoomBase(0,0,nPixelsX,plot1D->GetYMaximum());*/
-			//for some reason this plothistogram works as well.
-			plot1D->SetZoomBase(0,0,nPixelsX,plotHistogram->boundingRect().height());
-			SlsQtH1D*  h;
-			plot1D_hists.append(h=new SlsQtH1D("",nPixelsX,histXAxis,histYAxis[0]));
-			h->SetLineColor(0);
-			histFrameIndexTitle->setText(GetHistTitle(0));
-			//attach plot
-			h->Attach(plot1D);
-			//refixing all the zooming
-			/*plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
-			plot1D->SetYMinMax(h->minYValue(),h->maxYValue());
-			plot1D->SetZoomBase(h->minXValue(),h->minYValue(),
-					h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());*/
-		}
-
-		else{
-			cout << "Histogram: " << TRIM_HISTOGRAM_XMAX << endl;
-
-			//create intervals
-			histogramSamples.resize(TRIM_HISTOGRAM_XMAX+1);
-			for(unsigned int i=0; i<TRIM_HISTOGRAM_XMAX+1; i++){
-				histogramSamples[i].interval.setInterval(i,i+1);
-				histogramSamples[i].value = 0;
-			}
-
-			//fill histogram values
-			int value = 0;
-			for(int i=0;i<actualPixelsX;i++){
-				if( (histTrimbits[i] <= TRIM_HISTOGRAM_XMAX) && (histTrimbits[i] >= 0)){//if(histogramSamples[j].interval.contains(data->values[i]))
-					value = (int) histTrimbits[i];
-					histogramSamples[value].value += 1;
-				}
-				else cout<<"OUT OF BOUNDS:"<<i<<"-"<<histTrimbits[i]<<endl;
-			}
-
-			//plot
-			boxPlot->setTitle("Trimbits_Plot_Histogram");
-			plot1D->SetXTitle("Trimbits");
-			plot1D->SetYTitle("Frequency");
-			plotHistogram->setData(new QwtIntervalSeriesData(histogramSamples));
-			plotHistogram->setPen(QPen(Qt::red));
-			plotHistogram->setBrush(QBrush(Qt::red,Qt::Dense4Pattern));//Qt::SolidPattern
-			histFrameIndexTitle->setText(GetHistTitle(0));
-			plotHistogram->attach(plot1D);
-			//refixing all the zooming
-			plot1D->SetXMinMax(0,TRIM_HISTOGRAM_XMAX+1);
-			plot1D->SetYMinMax(0,plotHistogram->boundingRect().height());
-			plot1D->SetZoomBase(0,0,actualPixelsX,plotHistogram->boundingRect().height());
-		}
-	}
+// 		//Display Statistics
+// 		if(displayStatistics){
+// 			GetStatistics(min,max,sum,histTrimbits,actualPixelsX);
+// 			lblMinDisp->setText(QString("%1").arg(min));
+// 			lblMaxDisp->setText(QString("%1").arg(max));
+// 			lblSumDisp->setText(QString("%1").arg(sum));
+// 		}
 
 
-	/**needs to be changed */
-	else if(detType == slsDetectorDefs::EIGER){
+// 		if(!Histogram){
+// 			cout << "Data Graph:" << nPixelsX << endl;
 
-		//defining axes
-		nPixelsX = 100;/**??*/
-		nPixelsY = 100;
-		if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
-		//initializing 2d array
-		memset(lastImageArray, 0 ,nPixelsY * nPixelsX * sizeof(double));
-		/*
-		for(int py=0;py<(int)nPixelsY;py++)
-			for(int px=0;px<(int)nPixelsX;px++)
-				lastImageArray[py*nPixelsX+px] = 0;
-				*/
-		//get trimbits
-		ret = 1;/*myDet->getChanRegs(lastImageArray,fromDetector);*/
-		if(!ret){
-			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
-			UnlockLastImageArray();
-			return qDefs::FAIL;
-		}
-		//clear/select plot and set titles
-		Select2DPlot();
-		plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
-		plot2D->setTitle("Image");
-		plot2D->SetXTitle("Pixel");
-		plot2D->SetYTitle("Pixel");
-		plot2D->SetZTitle("Trimbits");
-		plot2D->UpdateNKeepSetRangeIfSet();
-#ifdef VERBOSE
-		cout << "Trimbits Plot updated" << endl;
-#endif
+// 			//initialize
+// 			nPixelsX = actualPixelsX;
+// 			if(histXAxis)		delete [] histXAxis;	histXAxis 	= new double [nPixelsX];
+// 			if(histYAxis[0])	delete [] histYAxis[0]; histYAxis[0]= new double [nPixelsX];
+// 			//initializing
+// 			for(unsigned int px=0;px<nPixelsX;px++)			histXAxis[px] = px;
+// 			for(unsigned int i=0;i<nPixelsX;i++)			histYAxis[0][i]  = 0;
 
-		//Display Statistics
-		if(displayStatistics){
-			GetStatistics(min,max,sum,lastImageArray,nPixelsX*nPixelsY);
-			lblMinDisp->setText(QString("%1").arg(min));
-			lblMaxDisp->setText(QString("%1").arg(max));
-			lblSumDisp->setText(QString("%1").arg(sum));
-		}
+// 			//data
+// 			memcpy(histYAxis[0],histTrimbits,nPixelsX*sizeof(double));
+// 			//title
+// 			boxPlot->setTitle("Trimbits_Plot_Data Graph");
+// 			plot1D->SetXTitle("Channel Number");
+// 			plot1D->SetYTitle("Trimbits");
+// 			//set plot parameters
+// 			plot1D->SetXMinMax(0,nPixelsX);
+// 			/*plot1D->SetYMinMax(0,plotHistogram->boundingRect().height()); plot1D->SetZoomBase(0,0,nPixelsX,plot1D->GetYMaximum());*/
+// 			//for some reason this plothistogram works as well.
+// 			plot1D->SetZoomBase(0,0,nPixelsX,plotHistogram->boundingRect().height());
+// 			SlsQtH1D*  h;
+// 			plot1D_hists.append(h=new SlsQtH1D("",nPixelsX,histXAxis,histYAxis[0]));
+// 			h->SetLineColor(0);
+// 			histFrameIndexTitle->setText(GetHistTitle(0));
+// 			//attach plot
+// 			h->Attach(plot1D);
+// 			//refixing all the zooming
+// 			/*plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
+// 			plot1D->SetYMinMax(h->minYValue(),h->maxYValue());
+// 			plot1D->SetZoomBase(h->minXValue(),h->minYValue(),
+// 					h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());*/
+// 		}
 
-	}
+// 		else{
+// 			cout << "Histogram: " << TRIM_HISTOGRAM_XMAX << endl;
 
-	UnlockLastImageArray();
-#ifdef VERBOSE
-		cout << "Trimbits Plot updated" << endl;
-#endif
-	return qDefs::OK;
-}
+// 			//create intervals
+// 			histogramSamples.resize(TRIM_HISTOGRAM_XMAX+1);
+// 			for(unsigned int i=0; i<TRIM_HISTOGRAM_XMAX+1; i++){
+// 				histogramSamples[i].interval.setInterval(i,i+1);
+// 				histogramSamples[i].value = 0;
+// 			}
+
+// 			//fill histogram values
+// 			int value = 0;
+// 			for(int i=0;i<actualPixelsX;i++){
+// 				if( (histTrimbits[i] <= TRIM_HISTOGRAM_XMAX) && (histTrimbits[i] >= 0)){//if(histogramSamples[j].interval.contains(data->values[i]))
+// 					value = (int) histTrimbits[i];
+// 					histogramSamples[value].value += 1;
+// 				}
+// 				else cout<<"OUT OF BOUNDS:"<<i<<"-"<<histTrimbits[i]<<endl;
+// 			}
+
+// 			//plot
+// 			boxPlot->setTitle("Trimbits_Plot_Histogram");
+// 			plot1D->SetXTitle("Trimbits");
+// 			plot1D->SetYTitle("Frequency");
+// 			plotHistogram->setData(new QwtIntervalSeriesData(histogramSamples));
+// 			plotHistogram->setPen(QPen(Qt::red));
+// 			plotHistogram->setBrush(QBrush(Qt::red,Qt::Dense4Pattern));//Qt::SolidPattern
+// 			histFrameIndexTitle->setText(GetHistTitle(0));
+// 			plotHistogram->attach(plot1D);
+// 			//refixing all the zooming
+// 			plot1D->SetXMinMax(0,TRIM_HISTOGRAM_XMAX+1);
+// 			plot1D->SetYMinMax(0,plotHistogram->boundingRect().height());
+// 			plot1D->SetZoomBase(0,0,actualPixelsX,plotHistogram->boundingRect().height());
+// 		}
+// 	}
+
+
+// 	/**needs to be changed */
+// 	else if(detType == slsDetectorDefs::EIGER){
+
+// 		//defining axes
+// 		nPixelsX = 100;/**??*/
+// 		nPixelsY = 100;
+// 		if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
+// 		//initializing 2d array
+// 		memset(lastImageArray, 0 ,nPixelsY * nPixelsX * sizeof(double));
+// 		/*
+// 		for(int py=0;py<(int)nPixelsY;py++)
+// 			for(int px=0;px<(int)nPixelsX;px++)
+// 				lastImageArray[py*nPixelsX+px] = 0;
+// 				*/
+// 		//get trimbits
+// 		ret = 1;/*myDet->getChanRegs(lastImageArray,fromDetector);*/
+// 		if(!ret){
+// 			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
+// 			UnlockLastImageArray();
+// 			return qDefs::FAIL;
+// 		}
+// 		//clear/select plot and set titles
+// 		Select2DPlot();
+// 		plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
+// 		plot2D->setTitle("Image");
+// 		plot2D->SetXTitle("Pixel");
+// 		plot2D->SetYTitle("Pixel");
+// 		plot2D->SetZTitle("Trimbits");
+// 		plot2D->UpdateNKeepSetRangeIfSet();
+// #ifdef VERBOSE
+// 		cout << "Trimbits Plot updated" << endl;
+// #endif
+
+// 		//Display Statistics
+// 		if(displayStatistics){
+// 			GetStatistics(min,max,sum,lastImageArray,nPixelsX*nPixelsY);
+// 			lblMinDisp->setText(QString("%1").arg(min));
+// 			lblMaxDisp->setText(QString("%1").arg(max));
+// 			lblSumDisp->setText(QString("%1").arg(sum));
+// 		}
+
+// 	}
+
+// 	UnlockLastImageArray();
+// #ifdef VERBOSE
+// 		cout << "Trimbits Plot updated" << endl;
+// #endif
+// 	return qDefs::OK;
+// }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2072,27 +1988,27 @@ void qDrawPlot::ResetAccumulate(){
 
 
 void qDrawPlot::SetPlotTimer(double time){
-	timerValue = time;
-	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
-		time = myDet->setReceiverReadTimer(timerValue);
-#ifdef VERBOSE
-		cout << "Receiver read timer set to : " << time << endl;
-#endif
-		qDefs::checkErrorMessage(myDet,"qDrawPlot::SetPlotTimer");
-	}
+// 	timerValue = time;
+// 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
+// 		time = myDet->setReceiverReadTimer(timerValue);
+// #ifdef VERBOSE
+// 		cout << "Receiver read timer set to : " << time << endl;
+// #endif
+// 		qDefs::checkErrorMessage(myDet,"qDrawPlot::SetPlotTimer");
+// 	}
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qDrawPlot::SetFrameFactor(int frame){
-	frameFactor = frame;
-	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
-		frame = myDet->setReadReceiverFrequency(frame);
-#ifdef VERBOSE
-		cout << "Receiver read frequency set to : " << frame << endl;
-#endif
-	}
+// 	frameFactor = frame;
+// 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
+// 		frame = myDet->setReadReceiverFrequency(frame);
+// #ifdef VERBOSE
+// 		cout << "Receiver read frequency set to : " << frame << endl;
+// #endif
+// 	}
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2255,15 +2171,6 @@ void qDrawPlot::toDoublePixelData(double* dest, char* source,int size, int datab
 		break;
 
 	default:
-		if (detType == slsDetectorDefs::MYTHEN) {
-			for (ichan = 0; ichan < size; ++ichan) {
-				dest[ichan] = (*((u_int32_t*)source) & mask);
-				source += 4;
-			}
-			break;
-		}
-
-		// other detectors
 		for (ichan = 0; ichan < size; ++ichan) {
 			dest[ichan] = *((u_int32_t*)source);
 			source += 4;

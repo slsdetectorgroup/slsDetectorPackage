@@ -45,14 +45,10 @@ qTabDataOutput::~qTabDataOutput(){
 
 void qTabDataOutput::SetupWidgetWindow(){
 	// Detector Type
-	detType=myDet->getDetectorsType();
+	detType=myDet->getDetectorTypeAsEnum();
 	widgetEiger->setVisible(false);
 
-	//rate correction  - not for charge integrating detectors
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER))
-		chkRate->setEnabled(true);
-
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD))
+	if(detType == slsDetectorDefs::GOTTHARD)
 		chkAngular->setEnabled(true);
 
 	if(detType == slsDetectorDefs::EIGER){
@@ -100,7 +96,7 @@ void qTabDataOutput::SetupWidgetWindow(){
 
 
 	//rate correction - not for charge integrating detectors
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER)){
+	if(detType == slsDetectorDefs::EIGER){
 #ifdef VERBOSE
 		cout  << "Getting rate correction" << endl;
 #endif
@@ -108,34 +104,7 @@ void qTabDataOutput::SetupWidgetWindow(){
 	}
 
 
-	//update angular conversion from server
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD)){
-#ifdef VERBOSE
-		cout  << "Getting angular conversion" << endl;
-#endif
-		int ang;
-		if(myDet->getAngularConversion(ang))
-			chkAngular->setChecked(true);
-		emit AngularConversionSignal(chkAngular->isChecked());
-	}
 
-
-	//discard bad channels from server
-#ifdef VERBOSE
-	cout  << "Getting bad channel correction:" << myDet->getBadChannelCorrection() << endl;
-#endif
-	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
-	if(myDet->getBadChannelCorrection())
-		chkDiscardBad->setChecked(true);
-	else
-		chkDiscardBad->setChecked(false);
-	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
-
-/*
-	if(detType == slsDetectorDefs::MYTHEN){
-		comboDetector->hide();
-	}
-*/
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetupWidgetWindow");
 }
 
@@ -196,126 +165,126 @@ void qTabDataOutput::BrowseOutputDir()
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::SetFlatField(){
-#ifdef VERYVERBOSE
-	cout << "Entering Set Flat Field Correction Function" << endl;
-#endif
-	// so that it doesnt call it twice
-	disconnect(dispFlatField,		SIGNAL(editingFinished()),	this, 			SLOT(SetFlatField()));
+// void qTabDataOutput::SetFlatField(){
+// #ifdef VERYVERBOSE
+// 	cout << "Entering Set Flat Field Correction Function" << endl;
+// #endif
+// 	// so that it doesnt call it twice
+// 	disconnect(dispFlatField,		SIGNAL(editingFinished()),	this, 			SLOT(SetFlatField()));
 
-	//enable/disable
-	dispFlatField->setEnabled(chkFlatField->isChecked());
-	btnFlatField->setEnabled(chkFlatField->isChecked());
+// 	//enable/disable
+// 	dispFlatField->setEnabled(chkFlatField->isChecked());
+// 	btnFlatField->setEnabled(chkFlatField->isChecked());
 
-	if(chkFlatField->isChecked()){
-		if(dispFlatField->text().isEmpty()){
-			chkFlatField->setToolTip(errFlatFieldTip);
-			dispFlatField->setToolTip(errFlatFieldTip);
-			chkFlatField->setPalette(red);
-			chkFlatField->setText("Flat Field File:*");
-#ifdef VERBOSE
-		cout << "Flat Field File is not set." << endl;
-#endif
-		}else{
-			QString fName = dispFlatField->text();
-			QString file = fName.section('/',-1);
-			QString dir = fName.section('/',0,-2,QString::SectionIncludeLeadingSep);
+// 	if(chkFlatField->isChecked()){
+// 		if(dispFlatField->text().isEmpty()){
+// 			chkFlatField->setToolTip(errFlatFieldTip);
+// 			dispFlatField->setToolTip(errFlatFieldTip);
+// 			chkFlatField->setPalette(red);
+// 			chkFlatField->setText("Flat Field File:*");
+// #ifdef VERBOSE
+// 		cout << "Flat Field File is not set." << endl;
+// #endif
+// 		}else{
+// 			QString fName = dispFlatField->text();
+// 			QString file = fName.section('/',-1);
+// 			QString dir = fName.section('/',0,-2,QString::SectionIncludeLeadingSep);
 
-			chkFlatField->setToolTip(flatFieldTip);
-			dispFlatField->setToolTip(flatFieldTip);
-			chkFlatField->setPalette(chkDiscardBad->palette());
-			chkFlatField->setText("Flat Field File:");
-			//set ff dir
-			myDet->setFlatFieldCorrectionDir(dir.toAscii().constData());
-			//set ff file and catch error if -1
-			if(myDet->setFlatFieldCorrectionFile(file.toAscii().constData())<0){
-				string sDir = dir.toAscii().constData(),sFile = file.toAscii().constData();
-				if(sDir.length()<1) {sDir = string(QDir::current().absolutePath().toAscii().constData()); /*"/home/";*/}
-				qDefs::Message(qDefs::WARNING,"Invalid Flat Field file: "+sDir+"/"+sFile+
-						".\nUnsetting Flat Field.","qTabDataOutput::SetFlatField");
+// 			chkFlatField->setToolTip(flatFieldTip);
+// 			dispFlatField->setToolTip(flatFieldTip);
+// 			chkFlatField->setPalette(chkDiscardBad->palette());
+// 			chkFlatField->setText("Flat Field File:");
+// 			//set ff dir
+// 			myDet->setFlatFieldCorrectionDir(dir.toAscii().constData());
+// 			//set ff file and catch error if -1
+// 			if(myDet->setFlatFieldCorrectionFile(file.toAscii().constData())<0){
+// 				string sDir = dir.toAscii().constData(),sFile = file.toAscii().constData();
+// 				if(sDir.length()<1) {sDir = string(QDir::current().absolutePath().toAscii().constData()); /*"/home/";*/}
+// 				qDefs::Message(qDefs::WARNING,"Invalid Flat Field file: "+sDir+"/"+sFile+
+// 						".\nUnsetting Flat Field.","qTabDataOutput::SetFlatField");
 
-				//Unsetting flat field
-				myDet->setFlatFieldCorrectionFile("");
-				dispFlatField->setText("");
-				chkFlatField->setToolTip(errFlatFieldTip);
-				dispFlatField->setToolTip(errFlatFieldTip);
-				chkFlatField->setPalette(red);
-				chkFlatField->setText("Flat Field File:*");
-#ifdef VERBOSE
-		cout << "Invalid Flat Field File - "<< sDir << sFile << ". Unsetting Flat Field." << endl;
-#endif
-			}
-			else{
-#ifdef VERBOSE
-		cout << "Setting flat field file to "<< dispFlatField->text().toAscii().constData() << endl;
-#endif
-			}
-		}
-	}else{
-		chkFlatField->setToolTip(flatFieldTip);
-		dispFlatField->setToolTip(flatFieldTip);
-		chkFlatField->setPalette(chkDiscardBad->palette());
-		chkFlatField->setText("Flat Field File:");
-		//Unsetting flat field
-		myDet->setFlatFieldCorrectionFile("");
-		dispFlatField->setText("");
-#ifdef VERBOSE
-		cout << "Unsetting flat field correction file" << endl;
-#endif
-	}
+// 				//Unsetting flat field
+// 				myDet->setFlatFieldCorrectionFile("");
+// 				dispFlatField->setText("");
+// 				chkFlatField->setToolTip(errFlatFieldTip);
+// 				dispFlatField->setToolTip(errFlatFieldTip);
+// 				chkFlatField->setPalette(red);
+// 				chkFlatField->setText("Flat Field File:*");
+// #ifdef VERBOSE
+// 		cout << "Invalid Flat Field File - "<< sDir << sFile << ". Unsetting Flat Field." << endl;
+// #endif
+// 			}
+// 			else{
+// #ifdef VERBOSE
+// 		cout << "Setting flat field file to "<< dispFlatField->text().toAscii().constData() << endl;
+// #endif
+// 			}
+// 		}
+// 	}else{
+// 		chkFlatField->setToolTip(flatFieldTip);
+// 		dispFlatField->setToolTip(flatFieldTip);
+// 		chkFlatField->setPalette(chkDiscardBad->palette());
+// 		chkFlatField->setText("Flat Field File:");
+// 		//Unsetting flat field
+// 		myDet->setFlatFieldCorrectionFile("");
+// 		dispFlatField->setText("");
+// #ifdef VERBOSE
+// 		cout << "Unsetting flat field correction file" << endl;
+// #endif
+// 	}
 
-	connect(dispFlatField,SIGNAL(editingFinished()),this,SLOT(SetFlatField()));
+// 	connect(dispFlatField,SIGNAL(editingFinished()),this,SLOT(SetFlatField()));
 
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetFlatField");
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qTabDataOutput::UpdateFlatFieldFromServer(){
-	disconnect(dispFlatField,	SIGNAL(editingFinished()),	this, 	SLOT(SetFlatField()));
-
-	dispFlatField->setText(QString(myDet->getFlatFieldCorrectionDir().c_str())+"/"+QString(myDet->getFlatFieldCorrectionFile().c_str()));
-#ifdef VERBOSE
-	cout << "Getting flat field correction file" << dispFlatField->text().toAscii().constData() << endl;
-#endif
-	//calls setflatfield to ensure the file still exists or disable it
-	if(!QString(myDet->getFlatFieldCorrectionFile().c_str()).compare("none")){
-		dispFlatField->setText("");
-		chkFlatField->setChecked(false);
-#ifdef VERBOSE
-		cout << "Flat Field is not set." << endl;
-#endif
-	}
-	else
-		chkFlatField->setChecked(true);
-
-	chkFlatField->setToolTip(flatFieldTip);
-	dispFlatField->setToolTip(flatFieldTip);
-	chkFlatField->setPalette(chkDiscardBad->palette());
-	chkFlatField->setText("Flat Field File:");
-
-	connect(dispFlatField,		SIGNAL(editingFinished()),	this,	SLOT(SetFlatField()));
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::UpdateFlatFieldFromServer");
-}
+// 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetFlatField");
+// }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qTabDataOutput::BrowseFlatFieldPath(){
-	QString fName = dispFlatField->text();
-	QString dir = fName.section('/',0,-2,QString::SectionIncludeLeadingSep);
-	if(dir.isEmpty()) dir =  QString(myDet->getFlatFieldCorrectionDir().c_str());/*"/home/";*/
-	fName = QFileDialog::getOpenFileName(this,
-			tr("Load Flat Field Correction File"),dir,
-					     tr("Data Files(*.raw *.dat);; All Files (*.*)"),0,QFileDialog::ShowDirsOnly);
-	if (!fName.isEmpty()){
-		dispFlatField->setText(fName);
-		SetFlatField();
-	}
+// void qTabDataOutput::UpdateFlatFieldFromServer(){
+// 	disconnect(dispFlatField,	SIGNAL(editingFinished()),	this, 	SLOT(SetFlatField()));
 
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::BrowseFlatFieldPath");
+// 	dispFlatField->setText(QString(myDet->getFlatFieldCorrectionDir().c_str())+"/"+QString(myDet->getFlatFieldCorrectionFile().c_str()));
+// #ifdef VERBOSE
+// 	cout << "Getting flat field correction file" << dispFlatField->text().toAscii().constData() << endl;
+// #endif
+// 	//calls setflatfield to ensure the file still exists or disable it
+// 	if(!QString(myDet->getFlatFieldCorrectionFile().c_str()).compare("none")){
+// 		dispFlatField->setText("");
+// 		chkFlatField->setChecked(false);
+// #ifdef VERBOSE
+// 		cout << "Flat Field is not set." << endl;
+// #endif
+// 	}
+// 	else
+// 		chkFlatField->setChecked(true);
 
-}
+// 	chkFlatField->setToolTip(flatFieldTip);
+// 	dispFlatField->setToolTip(flatFieldTip);
+// 	chkFlatField->setPalette(chkDiscardBad->palette());
+// 	chkFlatField->setText("Flat Field File:");
+
+// 	connect(dispFlatField,		SIGNAL(editingFinished()),	this,	SLOT(SetFlatField()));
+
+// 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::UpdateFlatFieldFromServer");
+// }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+// void qTabDataOutput::BrowseFlatFieldPath(){
+// 	QString fName = dispFlatField->text();
+// 	QString dir = fName.section('/',0,-2,QString::SectionIncludeLeadingSep);
+// 	if(dir.isEmpty()) dir =  QString(myDet->getFlatFieldCorrectionDir().c_str());/*"/home/";*/
+// 	fName = QFileDialog::getOpenFileName(this,
+// 			tr("Load Flat Field Correction File"),dir,
+// 					     tr("Data Files(*.raw *.dat);; All Files (*.*)"),0,QFileDialog::ShowDirsOnly);
+// 	if (!fName.isEmpty()){
+// 		dispFlatField->setText(fName);
+// 		SetFlatField();
+// 	}
+
+// 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::BrowseFlatFieldPath");
+
+// }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -360,7 +329,7 @@ void qTabDataOutput::SetRateCorrection(int deadtime){
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetRateCorrection");
 
 	//update just the value
-	double rate = (double)myDet->getRateCorrectionTau();
+	double rate = (double)myDet->getRateCorrection();
 	spinDeadTime->setValue((double)rate);
 	if(rate == -1){
 		qDefs::Message(qDefs::WARNING,"Dead time is inconsistent for all detectors. Returned Value: -1.","qTabDataOutput::UpdateRateCorrectionFromServer");
@@ -404,7 +373,7 @@ void qTabDataOutput::UpdateRateCorrectionFromServer(){
 	disconnect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
 
 	double rate;
-	rate = (double)myDet->getRateCorrectionTau();
+	rate = (double)myDet->getRateCorrection();
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::UpdateRateCorrectionFromServer");
 #ifdef VERBOSE
 	cout << "Getting rate correction from server: " << rate << endl;
@@ -452,54 +421,54 @@ void qTabDataOutput::UpdateRateCorrectionFromServer(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::SetAngularCorrection(){
-	disconnect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
-#ifdef VERYVERBOSE
-	cout << "Entering Set Angular Correction function" << endl;
-#endif
-	bool enabled = chkAngular->isChecked();
-	//set
-	if(myDet->setAngularCorrectionMask(enabled) == enabled){
-#ifdef VERBOSE
-		cout << "Angular Conversion mask:"  << enabled << endl;
-#endif
-	}
-	//error
-	else{
-#ifdef VERBOSE
-		cout << "Could not set angular conversion to default"  << endl;
-#endif
-		qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set/reset. Please set the default file name using the command line, if you want to set it.","qTabDataOutput::SetAngularCorrection");
-		chkAngular->setChecked(!enabled);
-	}
+// void qTabDataOutput::SetAngularCorrection(){
+// 	disconnect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
+// #ifdef VERYVERBOSE
+// 	cout << "Entering Set Angular Correction function" << endl;
+// #endif
+// 	bool enabled = chkAngular->isChecked();
+// 	//set
+// 	if(myDet->setAngularCorrectionMask(enabled) == enabled){
+// #ifdef VERBOSE
+// 		cout << "Angular Conversion mask:"  << enabled << endl;
+// #endif
+// 	}
+// 	//error
+// 	else{
+// #ifdef VERBOSE
+// 		cout << "Could not set angular conversion to default"  << endl;
+// #endif
+// 		qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set/reset. Please set the default file name using the command line, if you want to set it.","qTabDataOutput::SetAngularCorrection");
+// 		chkAngular->setChecked(!enabled);
+// 	}
 
-	emit AngularConversionSignal(chkAngular->isChecked());
-	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetAngularCorrection");
-}
+// 	emit AngularConversionSignal(chkAngular->isChecked());
+// 	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
+// 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetAngularCorrection");
+// }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::DiscardBadChannels(){
-#ifdef VERBOSE
-	cout << "Entering Discard bad channels function" << endl;
-#endif
-	if(chkDiscardBad->isChecked()){
-#ifdef VERBOSE
-		cout << "Setting bad channel correction to default"  << endl;
-#endif
-		myDet->setBadChannelCorrection("default");
-	}else{
-#ifdef VERBOSE
-		cout << "Unsetting bad channel correction" << endl;
-#endif
-		myDet->setBadChannelCorrection("");
-	}
+// void qTabDataOutput::DiscardBadChannels(){
+// #ifdef VERBOSE
+// 	cout << "Entering Discard bad channels function" << endl;
+// #endif
+// 	if(chkDiscardBad->isChecked()){
+// #ifdef VERBOSE
+// 		cout << "Setting bad channel correction to default"  << endl;
+// #endif
+// 		myDet->setBadChannelCorrection("default");
+// 	}else{
+// #ifdef VERBOSE
+// 		cout << "Unsetting bad channel correction" << endl;
+// #endif
+// 		myDet->setBadChannelCorrection("");
+// 	}
 
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::DiscardBadChannels");
-}
+// 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::DiscardBadChannels");
+// }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -562,9 +531,9 @@ void qTabDataOutput::GetOutputDir(){
 
 	//specific
 	else{
-		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex()-1);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::GetOutputDir");
-		dispOutputDir->setText(QString(det->getFilePath().c_str()));
+		// slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex()-1);
+		// qDefs::checkErrorMessage(myDet,"qTabDataOutput::GetOutputDir");
+		dispOutputDir->setText(QString(myDet->getFilePath(comboDetector->currentIndex()-1).c_str()));
 	}
 
 	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
@@ -592,14 +561,15 @@ int qTabDataOutput::VerifyOutputDirectory(){
 
 	//for each detector
 	for(int i=0;i<myDet->getNumberOfDetectors();i++){
-		slsDetector *det = 	myDet->getSlsDetector(i);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::VerifyOutputDirectory");
-		detName = string("\n - ") + string(comboDetector->itemText(i+1).toAscii().constData());
-		det->setFilePath(det->getFilePath());
-		if(!qDefs::checkErrorMessage(det,"qTabDataOutput::VerifyOutputDirectory").empty()) {
-			mess. append(detName);
-			error = true;
-		}
+		//TODO! fix!
+		// slsDetector *det = 	myDet->getSlsDetector(i);
+		// qDefs::checkErrorMessage(myDet,"qTabDataOutput::VerifyOutputDirectory");
+		// detName = string("\n - ") + string(comboDetector->itemText(i+1).toAscii().constData());
+		// det->setFilePath(det->getFilePath());
+		// if(!qDefs::checkErrorMessage(det,"qTabDataOutput::VerifyOutputDirectory").empty()) {
+		// 	mess. append(detName);
+		// 	error = true;
+		// }
 	}
 
 	//invalid
@@ -676,10 +646,10 @@ void qTabDataOutput::SetOutputDir(){
 
 	//specific
 	if(comboDetector->currentIndex()){
-		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex()-1);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
-		det->setFilePath(string(dispOutputDir->text().toAscii().constData()));
-		if(!qDefs::checkErrorMessage(det,"qTabDataOutput::SetOutputDir").empty())
+		// slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex()-1);
+		// qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
+		myDet->setFilePath(string(dispOutputDir->text().toAscii().constData()), comboDetector->currentIndex()-1);
+		if(!qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir").empty())
 			error = true;
 	}
 
@@ -887,14 +857,8 @@ void qTabDataOutput::SetupFileFormat(){
 		}
 		//Enabling/Disabling depending on the detector type
 		switch(detType){
-		case slsDetectorDefs::MYTHEN:
-			item[(int)slsDetectorDefs::BINARY]->setEnabled(false);
-			item[(int)slsDetectorDefs::ASCII]->setEnabled(true);
-			item[(int)slsDetectorDefs::HDF5]->setEnabled(false);
-			break;
 		case slsDetectorDefs::EIGER:
 		case slsDetectorDefs::MOENCH:
-		case slsDetectorDefs::PROPIX:
 		case slsDetectorDefs::GOTTHARD:
 		case slsDetectorDefs::JUNGFRAU:
 		case slsDetectorDefs::CHIPTESTBOARD:
@@ -1021,7 +985,7 @@ void qTabDataOutput::Refresh(){
 
 
 	//rate correction - not for charge integrating detectors
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER)){
+	if(detType == slsDetectorDefs::EIGER){
 #ifdef VERBOSE
 		cout  << "Getting rate correction" << endl;
 #endif
@@ -1030,29 +994,29 @@ void qTabDataOutput::Refresh(){
 
 
 	//update angular conversion from server
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD)){
-#ifdef VERBOSE
-		cout  << "Getting angular conversion" << endl;
-#endif
-		int ang;
-		if(myDet->getAngularConversion(ang))
-			chkAngular->setChecked(true);
-		emit AngularConversionSignal(chkAngular->isChecked());
-	}
+// 	if(detType == slsDetectorDefs::GOTTHARD){
+// #ifdef VERBOSE
+// 		cout  << "Getting angular conversion" << endl;
+// #endif
+// 		int ang;
+// 		if(myDet->getAngularConversion(ang))
+// 			chkAngular->setChecked(true);
+// 		emit AngularConversionSignal(chkAngular->isChecked());
+// 	}
 
 
-	//discard bad channels from server
-#ifdef VERBOSE
-	cout  << "Getting bad channel correction" << endl;//cout << "ff " << myDet->getBadChannelCorrection() << endl;
-#endif
+// 	//discard bad channels from server
+// #ifdef VERBOSE
+// 	cout  << "Getting bad channel correction" << endl;//cout << "ff " << myDet->getBadChannelCorrection() << endl;
+// #endif
 
 
-	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
-	if(myDet->getBadChannelCorrection())
-		chkDiscardBad->setChecked(true);
-	else
-		chkDiscardBad->setChecked(false);
-	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
+// 	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
+// 	if(myDet->getBadChannelCorrection())
+// 		chkDiscardBad->setChecked(true);
+// 	else
+// 		chkDiscardBad->setChecked(false);
+// 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 
 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
 		btnOutputBrowse->setEnabled(false);

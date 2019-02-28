@@ -168,6 +168,7 @@ int mapCSP0(void) {
 				(long long unsigned int)CSP0BASE,
 				(long long unsigned int)(CSP0BASE+MEM_SIZE)));
 		FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+		FILE_LOG(logINFO, ("looka t me Register: %08x\n", bus_r(LOOK_AT_ME_REG)));
 	}else
 	    FILE_LOG(logINFO, ("Memory already mapped before\n"));
 	return OK;

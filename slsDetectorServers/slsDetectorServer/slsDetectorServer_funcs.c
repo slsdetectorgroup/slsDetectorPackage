@@ -3,6 +3,13 @@
 #include "communication_funcs.h"
 #include "logger.h"
 
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#include "communication_funcs_UDP.h"
+#include "UDPPacketHeaderGenerator.h"
+extern uint64_t udpFrameNumber;
+extern uint32_t udpPacketNumber;
+#endif
+
 #include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -37,8 +44,7 @@ int sockfd = 0;
 int debugflag = 0;
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int dataBytes = 0;
-uint16_t *ramValues = 0;
-int nframes = 0;
+char* ramValues = 0;
 #endif
 
 // Local variables
@@ -1372,9 +1378,6 @@ int start_acquisition(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-        nframes = 0;
-#endif
 		ret = startStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start acquisition\n");
@@ -1456,12 +1459,9 @@ int start_and_read_all(int file_des) {
 
 	FILE_LOG(logDEBUG1, ("Starting Acquisition and read all frames\n"));
 	// start state machine
-	FILE_LOG(logDEBUG1, ("Stopping Acquisition\n"));
+	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-        nframes = 0;
-#endif
 		ret = startStateMachine();
 		if (ret == FAIL) {
 			sprintf(mess, "Could not start acquisition\n");
@@ -1492,14 +1492,34 @@ int read_all(int file_des) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	    // read from fifo enabled
       if (!sendUDP(-1)) {
+    	  FILE_LOG(logDEBUG1, ("Reading from 1G UDP\n"));
 
-          // keep reading frames
-          while(readFrameFromFifo() == OK) {
-              // (to the receiver)
-              Server_SendResult(file_des, INT32, NO_UPDATE, ramValues, dataBytes);// (or get as arg first)send number of bytes (dataBytes) first //FIXME
-              FILE_LOG(logDEBUG1, ("Frame %d sent\n", nframes));
-              ++nframes;
-          }
+    	  if (setUDPDestinationDetails("129.129.205.171", 50001) == OK) { // 10g,1 g
+
+    		  if (createUDPSocket() == OK) {
+
+    			  char buffer[UDP_PACKET_MAX_DATA_BYTES + sizeof(sls_detector_header)];
+    			  createUDPPacketHeader(buffer, getHardwareSerialNumber());
+    			  calculateDataBytesPerSample();
+
+    	          // keep reading frames
+    	          while(readFrameFromFifo() == OK) {
+
+    	        	  int bytesToSend = 0;
+    	        	  int n = 0;
+    	        	  // fill packet with pnum, nsamples per packet and data
+    		          while((bytesToSend = fillUDPPacket(buffer))) {
+    	        		  n += sendUDPPacket(buffer, bytesToSend);
+    	        	  }
+    		          if (n >= dataBytes)
+    		        	  FILE_LOG(logINFO, (" Frame %lld sent (%d packets, %d databytes, n:%d bytes sent)\n",
+    		        			  udpFrameNumber, udpPacketNumber + 1, dataBytes, n));
+    	          }
+
+    			  closeUDPSocket();
+    		  }
+    	  }
+
 
           // finished readng frames
           // frames left to give status
@@ -1515,9 +1535,13 @@ int read_all(int file_des) {
             Server_SendResult(file_des, INT32, UPDATE, NULL, 0); // to the client
       }
       // read from receiver
-      else
-#endif
+      else {
+    	  FILE_LOG(logDEBUG1, ("Reading via UDP\n"));
+    	  readFrame(&ret, mess);
+      }
+#else
 		readFrame(&ret, mess);
+#endif
 	}
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
@@ -2541,7 +2565,7 @@ int set_ctb_pattern(int file_des) {
 #else
         int addr = (int)args[0];
         uint64_t word = args[1];
-        FILE_LOG(logDEBUG1, ("addr:0x%x  word:0x%llx\n", addr, word));
+        FILE_LOG(logDEBUG1, (" addr:0x%x  word:0x%llx\n", addr, word));
 
         if ((word == -1) || (Server_VerifyLock() == OK)) {
 
@@ -2558,21 +2582,21 @@ int set_ctb_pattern(int file_des) {
                 switch (addr) {
                 case -1:
                     strcpy(tempName, "Pattern (I/O Control Register)");
-                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternIOControl(word);
                     break;
                 case -2:
                     strcpy(tempName, "Pattern (Clock Control Register)");
-                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternClkControl(word);
                     break;
                 default:
                     sprintf(tempName, "Pattern (Word, addr:0x%x)", addr);
-                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternWord(addr, word);
                     break;
                 }
-                FILE_LOG(logDEBUG1, ("%s: 0x%llx\n", tempName, (long long int)retval64));
+                FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
                 validate64(word, retval64, tempName, HEX);
             }
         }
@@ -2598,7 +2622,7 @@ int set_ctb_pattern(int file_des) {
         int startAddr = (int)args[1];
         int stopAddr = (int)args[2];
         int numLoops = (int)args[3];
-        FILE_LOG(logDEBUG1, ("loopLevel:%d startAddr:0x%x stopAddr:0x%x numLoops:%d word:0x%llx\n", loopLevel, startAddr, stopAddr, numLoops));
+        FILE_LOG(logDEBUG1, (" loopLevel:%d startAddr:0x%x stopAddr:0x%x numLoops:%d\n", loopLevel, startAddr, stopAddr, numLoops));
 
         if (loopLevel < -1 || loopLevel > 2) { // -1 complete pattern
             ret = FAIL;
@@ -2607,11 +2631,11 @@ int set_ctb_pattern(int file_des) {
         }
 
         // level 0-2, addr upto patternlength + 1
-        else if ((loopLevel != -1) && (startAddr > (MAX_PATTERN_LENGTH + 1) || stopAddr > (MAX_PATTERN_LENGTH + 1))) {
+        else if ((loopLevel != -1) && (startAddr > MAX_PATTERN_LENGTH  || stopAddr > MAX_PATTERN_LENGTH )) {
             ret = FAIL;
             sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, startaddr:0x%x, stopaddr:0x%x). "
                     "Addr must be less than 0x%x\n",
-                    loopLevel, startAddr, stopAddr, MAX_PATTERN_LENGTH + 1);
+                    loopLevel, startAddr, stopAddr, MAX_PATTERN_LENGTH);
             FILE_LOG(logERROR, (mess));
         }
 
@@ -2650,26 +2674,26 @@ int set_ctb_pattern(int file_des) {
 #else
         int loopLevel = (int)args[0];
         int addr = (int)args[1];
-        FILE_LOG(logDEBUG1, ("loopLevel:%d  addr:0x%x\n", loopLevel, addr));
+        FILE_LOG(logDEBUG1, (" loopLevel:%d  addr:0x%x\n", loopLevel, addr));
 
         if ((addr == -1) ||  (Server_VerifyLock() == OK)) {
             if (loopLevel < 0 || loopLevel > 2) {
                 ret = FAIL;
                 sprintf(mess, "Pattern (Wait Address) Level (0x%x) is not implemented for this detector\n", loopLevel);
                 FILE_LOG(logERROR,(mess));
-            } else if (addr > (MAX_PATTERN_LENGTH + 1)) {
+            } else if (addr > MAX_PATTERN_LENGTH) {
                 ret = FAIL;
                 sprintf(mess, "Cannot set Pattern (Wait Address, addr:0x%x). Addr must be less than 0x%x\n",
-                        addr, MAX_PATTERN_LENGTH + 1);
+                        addr, MAX_PATTERN_LENGTH);
                 FILE_LOG(logERROR, (mess));
             } else {
                 char tempName[100];
                 memset(tempName, 0, 100);
                 sprintf(tempName, "Pattern (Wait Address, Level:%d)", loopLevel);
 
-                FILE_LOG(logDEBUG1, ("Setting %s to 0x%x\n", tempName, addr));
+                FILE_LOG(logDEBUG1, (" Setting %s to 0x%x\n", tempName, addr));
                 retval32 = setPatternWaitAddress(loopLevel, addr);
-                FILE_LOG(logDEBUG1, ("%s: 0x%x\n", tempName, retval32));
+                FILE_LOG(logDEBUG1, (" %s: 0x%x\n", tempName, retval32));
                 validate(addr, retval32, tempName, HEX);
             }
         }
@@ -2693,7 +2717,7 @@ int set_ctb_pattern(int file_des) {
 #else
         int loopLevel = (int)args[0];
         uint64_t timeval = args[1];
-        FILE_LOG(logDEBUG1, ("loopLevel:%d  timeval:0x%lld\n", loopLevel, timeval));
+        FILE_LOG(logDEBUG1, (" loopLevel:%d  timeval:0x%lld\n", loopLevel, timeval));
 
         if ((timeval == -1) ||  (Server_VerifyLock() == OK)) {
             if (loopLevel < 0 || loopLevel > 2) {
@@ -2705,9 +2729,9 @@ int set_ctb_pattern(int file_des) {
                 memset(tempName, 0, 100);
                 sprintf(tempName, "Pattern (Wait Time, Level:%d)", loopLevel);
 
-                FILE_LOG(logDEBUG1, ("Setting %s to 0x%lld\n", tempName, (long long int)timeval));
+                FILE_LOG(logDEBUG1, (" Setting %s to 0x%lld\n", tempName, (long long int)timeval));
                 retval64 = setPatternWaitTime(loopLevel, timeval);
-                FILE_LOG(logDEBUG1, ("%s: 0x%lld\n", tempName, (long long int)retval64));
+                FILE_LOG(logDEBUG1, (" %s: 0x%lld\n", tempName, (long long int)retval64));
                 validate64(timeval, retval64, tempName, HEX);
             }
         }

@@ -326,7 +326,7 @@ enum 		runStatus getRunStatus();
 void 		readFrame(int *ret, char *mess);
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 void        unsetFifoReadStrobes();
-void        readSample();
+void        readSample(int ns);
 int         checkDataPresent();
 int         readFrameFromFifo();
 #endif

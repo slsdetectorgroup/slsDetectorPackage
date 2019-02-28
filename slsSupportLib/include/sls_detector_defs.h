@@ -45,9 +45,6 @@ typedef  int int32_t;
 /** maximum unit size of program sent to detector */
 #define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
 
-/** maximum pattern length */
-#define MAX_PATTERN_LENGTH  65535
-
 /** get flag form most functions */
 #define GET_FLAG -1
 

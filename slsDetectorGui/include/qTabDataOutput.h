@@ -102,13 +102,13 @@ private slots:
 void BrowseOutputDir();
 
 /**set flat field file*/
-void SetFlatField();
+// void SetFlatField();
 
 /** update flat field correction from server */
-void UpdateFlatFieldFromServer();
+// void UpdateFlatFieldFromServer();
 
 /**browse flat field*/
-void BrowseFlatFieldPath();
+// void BrowseFlatFieldPath();
 
 /**rate correction*/
 void SetRateCorrection(int deadtime=0);
@@ -120,10 +120,10 @@ void SetDefaultRateCorrection();
 void UpdateRateCorrectionFromServer();
 
 /**angular correction*/
-void SetAngularCorrection();
+// void SetAngularCorrection();
 
 /**discard bad channels*/
-void DiscardBadChannels();
+// void DiscardBadChannels();
 
 /** set output directory*/
 void SetOutputDir();

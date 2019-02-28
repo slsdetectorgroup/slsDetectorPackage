@@ -79,7 +79,7 @@ private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 	/** The sls detector object */
-	slsDetector *det;
+	// slsDetector *det;
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
 	/**number of dac widgets*/

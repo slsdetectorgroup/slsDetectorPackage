@@ -121,7 +121,7 @@ private:
 	/**Plot tab */
 	qTabPlot		 	*tab_plot;
 	/**Actions tab */
-	qTabActions 		*tab_actions;
+	// qTabActions 		*tab_actions;
 	/**Settings tab */
 	qTabSettings 		*tab_settings;
 	/**Advanced tab */

@@ -185,7 +185,7 @@ void qTabPlot::SetupWidgetWindow(){
 	Select1DPlot(isOriginallyOneD);
 
 	//to check if this should be enabled
-	EnableScanBox();
+	// EnableScanBox();
 
 	//disable histogram initially
 	boxHistogram->hide();
@@ -291,7 +291,7 @@ void qTabPlot::Initialization(){
 // Histogram arguments box
 	connect(btnGroupHistogram,SIGNAL(buttonClicked(int)),this, SLOT(SetHistogramOptions()));
 // Scan box
-	connect(boxScan,	  SIGNAL(toggled(bool)),  this, SLOT(EnableScanBox()));
+	// connect(boxScan,	  SIGNAL(toggled(bool)),  this, SLOT(EnableScanBox()));
 // Snapshot box
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
@@ -898,8 +898,8 @@ void qTabPlot::SetPlot(){
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
-		if(!myPlot->isRunning())
-			EnableScanBox();
+		// if(!myPlot->isRunning())
+		// 	EnableScanBox();
 		//  To remind the updateplot in qdrawplot to set range after updating plot
 		myPlot->SetXYRange(true);
 	}
@@ -931,8 +931,8 @@ void qTabPlot::SetPlot(){
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
-		if(!myPlot->isRunning())
-			EnableScanBox();
+		// if(!myPlot->isRunning())
+		// 	EnableScanBox();
 
 		//qDefs::Message(qDefs::INFORMATION,"<nobr>Please check the <b>Plot Histogram Options</b> below "
 		//		"before <b>Starting Acquitision</b></nobr>","qTabPlot::SetPlot");
@@ -1497,8 +1497,8 @@ void qTabPlot::Refresh(){
 	if(!myPlot->isRunning()){
 		if (!radioNoPlot->isChecked())
 			boxFrequency->setEnabled(true);
-		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
-		EnableScanBox();
+		// connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
+		// EnableScanBox();
 		/*if(myDet->getDetectorsType() == slsDetectorDefs::EIGER)
 			comboFrequency->setCurrentIndex(1);*/
 		SetFrequency();

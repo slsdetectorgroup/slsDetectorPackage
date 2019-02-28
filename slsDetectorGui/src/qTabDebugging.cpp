@@ -58,7 +58,7 @@ void qTabDebugging::SetupWidgetWindow(){
 
 
 	// Detector Type
-	detType=myDet->getDetectorsType();
+	detType=myDet->getDetectorTypeAsEnum();
 	///change module label
 	switch(detType){
 	case slsDetectorDefs::EIGER:
@@ -75,7 +75,6 @@ void qTabDebugging::SetupWidgetWindow(){
 		break;
 	case slsDetectorDefs::JUNGFRAU:
 	case slsDetectorDefs::CHIPTESTBOARD:
-	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:
 		lblDetector->setText("Module:");
 		chkDetectorFirmware->setText("Module Firmware:");
@@ -100,10 +99,7 @@ void qTabDebugging::SetupWidgetWindow(){
 		chkChip->setEnabled(false);
 		chkModuleFirmware->setEnabled(false);
 		break;
-	case slsDetectorDefs::MYTHEN:
-		break;
 	default:
-		//leave everything as it is(mythen is default)
 		break;
 	}
 
@@ -115,7 +111,7 @@ void qTabDebugging::SetupWidgetWindow(){
 
 
 	//add modules  and status for current detector
-	if(detType==slsDetectorDefs::MYTHEN) UpdateModuleList();
+	// if(detType==slsDetectorDefs::MYTHEN) UpdateModuleList();
 	UpdateStatus();
 
 	qDefs::checkErrorMessage(myDet,"qTabDebugging::SetupWidgetWindow");
@@ -125,8 +121,8 @@ void qTabDebugging::SetupWidgetWindow(){
 
 
 void qTabDebugging::Initialization(){
-	if(detType==slsDetectorDefs::MYTHEN)
-		connect(comboDetector,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(UpdateModuleList()));
+	// if(detType==slsDetectorDefs::MYTHEN)
+	// 	connect(comboDetector,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(UpdateModuleList()));
 
 	connect(comboDetector,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(UpdateStatus()));
 	connect(btnGetInfo,		SIGNAL(clicked()),					this,	SLOT(GetInfo()));
@@ -142,16 +138,17 @@ void qTabDebugging::UpdateModuleList(){
 #ifdef VERBOSE
 		cout  << "Getting Module List" << endl;
 #endif
-	det = myDet->getSlsDetector(comboDetector->currentIndex());
+	// det = myDet->getSlsDetector(comboDetector->currentIndex());
+	// auto module_id = comboDetector->currentIndex();
 	qDefs::checkErrorMessage(myDet,"qTabDebugging::UpdateModuleList");
 	//deletes all modules except "all modules"
 	for(int i=0;i<comboModule->count()-1;i++)
 		comboModule->removeItem(i);
-	for(int i=0;i<det->getNMods();i++){
+	for(int i=0;i<myDet->getNumberOfDetectors();i++){
 		comboModule->addItem(QString("Module %1").arg(i));
 	}
 
-	qDefs::checkErrorMessage(det,"qTabDebugging::UpdateModuleList");
+	// qDefs::checkErrorMessage(det,"qTabDebugging::UpdateModuleList");
 }
 
 
@@ -162,13 +159,14 @@ void qTabDebugging::UpdateStatus(){
 #ifdef VERBOSE
 		cout  << "Getting Status" << endl;
 #endif
-	det = myDet->getSlsDetector(comboDetector->currentIndex());
+	// det = myDet->getSlsDetector(comboDetector->currentIndex());
+	auto module_id = comboDetector->currentIndex();
 	qDefs::checkErrorMessage(myDet,"qTabDebugging::UpdateStatus");
-	int detStatus = (int)det->getRunStatus();
+	int detStatus = (int)myDet->getRunStatus(module_id);
 	string status = slsDetectorDefs::runStatusType(slsDetectorDefs::runStatus(detStatus));
 	lblStatus->setText(QString(status.c_str()).toUpper());
 
-	qDefs::checkErrorMessage(det,"qTabDebugging::UpdateStatus");
+	// qDefs::checkErrorMessage(det,"qTabDebugging::UpdateStatus");
 }
 
 
@@ -206,43 +204,43 @@ void qTabDebugging::GetInfo(){
 
 	switch(detType){
 
-	case slsDetectorDefs::MYTHEN:
-		//display widget
-		formLayout->addWidget(new QLabel("Readout:"),0,0);
-		formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
-		formLayout->addWidget(lblDetectorId,0,2);
-		formLayout->addWidget(new QLabel("Readout MAC Address:"),1,0);
-		formLayout->addWidget(lblDetectorSerial,1,2);
-		formLayout->addWidget(new QLabel("Readout Firmware Version:"),2,0);
-		formLayout->addWidget(lblDetectorFirmware,2,2);
-		formLayout->addWidget(new QLabel("Readout Software Version:"),3,0);
-		formLayout->addWidget(lblDetectorSoftware,3,2);
-		formLayout->addWidget(new QLabel("Module:"),4,0);
-		formLayout->addWidget(lblModuleId,4,2);
-		formLayout->addWidget(new QLabel("Module Serial Number:"),5,0);
-		formLayout->addWidget(lblModuleSerial,5,2);
-		formLayout->addWidget(new QLabel("Module Firmware Version:"),6,0);
-		formLayout->addWidget(lblModuleFirmware,6,2);
+	// case slsDetectorDefs::MYTHEN:
+	// 	//display widget
+	// 	formLayout->addWidget(new QLabel("Readout:"),0,0);
+	// 	formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
+	// 	formLayout->addWidget(lblDetectorId,0,2);
+	// 	formLayout->addWidget(new QLabel("Readout MAC Address:"),1,0);
+	// 	formLayout->addWidget(lblDetectorSerial,1,2);
+	// 	formLayout->addWidget(new QLabel("Readout Firmware Version:"),2,0);
+	// 	formLayout->addWidget(lblDetectorFirmware,2,2);
+	// 	formLayout->addWidget(new QLabel("Readout Software Version:"),3,0);
+	// 	formLayout->addWidget(lblDetectorSoftware,3,2);
+	// 	formLayout->addWidget(new QLabel("Module:"),4,0);
+	// 	formLayout->addWidget(lblModuleId,4,2);
+	// 	formLayout->addWidget(new QLabel("Module Serial Number:"),5,0);
+	// 	formLayout->addWidget(lblModuleSerial,5,2);
+	// 	formLayout->addWidget(new QLabel("Module Firmware Version:"),6,0);
+	// 	formLayout->addWidget(lblModuleFirmware,6,2);
 
 
-		//tree widget
-		treeDet->setHeaderLabel("Mythen Detector");
-		//gets det names
-		for (int i=0;i<comboDetector->count();i++)
-			items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Readout (%1)").arg(comboDetector->itemText(i)))));
-		treeDet->insertTopLevelItems(0, items);
-		//gets module names
-		for (int i=0;i<comboDetector->count();i++){
-			QList<QTreeWidgetItem *> childItems;
-			det = myDet->getSlsDetector(i);
-			qDefs::checkErrorMessage(myDet,"qTabDebugging::GetInfo");
-			for(int j=0;j<det->getNMods();j++)
-				childItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Module %1").arg(j))));
-			treeDet->topLevelItem(i)->insertChildren(0,childItems);
-			qDefs::checkErrorMessage(det,"qTabDebugging::GetInfo");
-		}
+	// 	//tree widget
+	// 	treeDet->setHeaderLabel("Mythen Detector");
+	// 	//gets det names
+	// 	for (int i=0;i<comboDetector->count();i++)
+	// 		items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Readout (%1)").arg(comboDetector->itemText(i)))));
+	// 	treeDet->insertTopLevelItems(0, items);
+	// 	//gets module names
+	// 	for (int i=0;i<comboDetector->count();i++){
+	// 		QList<QTreeWidgetItem *> childItems;
+	// 		det = myDet->getSlsDetector(i);
+	// 		qDefs::checkErrorMessage(myDet,"qTabDebugging::GetInfo");
+	// 		for(int j=0;j<det->getNMods();j++)
+	// 			childItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Module %1").arg(j))));
+	// 		treeDet->topLevelItem(i)->insertChildren(0,childItems);
+	// 		qDefs::checkErrorMessage(det,"qTabDebugging::GetInfo");
+	// 	}
 
-		break;
+	// 	break;
 
 
 
@@ -298,26 +296,26 @@ void qTabDebugging::GetInfo(){
 
 
 
-	case slsDetectorDefs::PROPIX:
+	// case slsDetectorDefs::PROPIX:
 
-		//display widget
-		formLayout->addWidget(new QLabel("Module:"),0,0);
-		formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
-		formLayout->addWidget(lblDetectorId,0,2);
-		formLayout->addWidget(new QLabel("Module MAC Address:"),1,0);
-		formLayout->addWidget(lblDetectorSerial,1,2);
-		formLayout->addWidget(new QLabel("Module Firmware Version:"),2,0);
-		formLayout->addWidget(lblDetectorFirmware,2,2);
-		formLayout->addWidget(new QLabel("Module Software Version:"),3,0);
-		formLayout->addWidget(lblDetectorSoftware,3,2);
-		//tree widget
-		treeDet->setHeaderLabel("Propix Detector");
-		//gets det names
-		for (int i=0;i<comboDetector->count();i++)
-			items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Module (%1)").arg(comboDetector->itemText(i)))));
-		treeDet->insertTopLevelItems(0, items);
+	// 	//display widget
+	// 	formLayout->addWidget(new QLabel("Module:"),0,0);
+	// 	formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
+	// 	formLayout->addWidget(lblDetectorId,0,2);
+	// 	formLayout->addWidget(new QLabel("Module MAC Address:"),1,0);
+	// 	formLayout->addWidget(lblDetectorSerial,1,2);
+	// 	formLayout->addWidget(new QLabel("Module Firmware Version:"),2,0);
+	// 	formLayout->addWidget(lblDetectorFirmware,2,2);
+	// 	formLayout->addWidget(new QLabel("Module Software Version:"),3,0);
+	// 	formLayout->addWidget(lblDetectorSoftware,3,2);
+	// 	//tree widget
+	// 	treeDet->setHeaderLabel("Propix Detector");
+	// 	//gets det names
+	// 	for (int i=0;i<comboDetector->count();i++)
+	// 		items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Module (%1)").arg(comboDetector->itemText(i)))));
+	// 	treeDet->insertTopLevelItems(0, items);
 
-		break;
+	// 	break;
 
 
 
@@ -395,56 +393,56 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 	char value[200];
 	int i;
 
-
+	auto module_id = comboDetector->currentIndex();
 	switch(detType){
 
-	case slsDetectorDefs::MYTHEN:
-		if(item->text(0).contains("Readout")){
-			//find index
-			for(i=0;i<comboDetector->count();i++)
-				if(item== treeDet->topLevelItem(i))
-					break;
+	// case slsDetectorDefs::MYTHEN:
+	// 	if(item->text(0).contains("Readout")){
+	// 		//find index
+	// 		for(i=0;i<comboDetector->count();i++)
+	// 			if(item== treeDet->topLevelItem(i))
+	// 				break;
 
-			det = myDet->getSlsDetector(i);
-			qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
-			lblDetectorId->setText(comboDetector->itemText(i));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
-			lblDetectorSerial->setText(QString(value));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
-			lblDetectorFirmware	->setText(QString(value));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
-			lblDetectorSoftware->setText(QString(value));
-			qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
+	// 		det = myDet->getSlsDetector(i);
+	// 		qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
+	// 		lblDetectorId->setText(comboDetector->itemText(i));
+	// 		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
+	// 		lblDetectorSerial->setText(QString(value));
+	// 		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
+	// 		lblDetectorFirmware	->setText(QString(value));
+	// 		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
+	// 		lblDetectorSoftware->setText(QString(value));
+	// 		qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
 
-			lblModuleId->setText("");
-			lblModuleSerial->setText("");
-			lblModuleFirmware->setText("");
-		}else{
-			//find index
-			for(i=0;i<comboDetector->count();i++)
-				if(item->parent() == treeDet->topLevelItem(i))
-					break;
-			int im = item->parent()->indexOfChild(item);
+	// 		lblModuleId->setText("");
+	// 		lblModuleSerial->setText("");
+	// 		lblModuleFirmware->setText("");
+	// 	}else{
+	// 		//find index
+	// 		for(i=0;i<comboDetector->count();i++)
+	// 			if(item->parent() == treeDet->topLevelItem(i))
+	// 				break;
+	// 		int im = item->parent()->indexOfChild(item);
 
-			det = myDet->getSlsDetector(i);
-			qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
-			lblDetectorId->setText(comboDetector->itemText(i));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
-			lblDetectorSerial->setText(QString(value));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
-			lblDetectorFirmware	->setText(QString(value));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
-			lblDetectorSoftware->setText(QString(value));
+	// 		det = myDet->getSlsDetector(i);
+	// 		qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
+	// 		lblDetectorId->setText(comboDetector->itemText(i));
+	// 		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
+	// 		lblDetectorSerial->setText(QString(value));
+	// 		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
+	// 		lblDetectorFirmware	->setText(QString(value));
+	// 		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
+	// 		lblDetectorSoftware->setText(QString(value));
 
-			lblModuleId->setText(QString("%1").arg(im));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::MODULE_SERIAL_NUMBER,im));
-			lblModuleSerial->setText(QString(value));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::MODULE_FIRMWARE_VERSION,im));
-			lblModuleFirmware->setText(QString(value));
+	// 		lblModuleId->setText(QString("%1").arg(im));
+	// 		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::MODULE_SERIAL_NUMBER,im));
+	// 		lblModuleSerial->setText(QString(value));
+	// 		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::MODULE_FIRMWARE_VERSION,im));
+	// 		lblModuleFirmware->setText(QString(value));
 
-			qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
-		}
-		break;
+	// 		qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
+	// 	}
+	// 	break;
 
 
 
@@ -458,14 +456,15 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 				if(item== treeDet->topLevelItem(i))
 					break;
 
-			det = myDet->getSlsDetector(i);
+			// det = myDet->getSlsDetector(i);
+			// auto module_id = comboDetector->currentIndex();
 			qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
 			lblDetectorId->setText(comboDetector->itemText(i));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
+			sprintf(value,"%llx",(long long unsigned int)myDet->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER, module_id));
 			lblDetectorSerial->setText(QString(value));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
+			sprintf(value,"%llx",(long long unsigned int)myDet->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION, module_id));
 			lblDetectorFirmware	->setText(QString(value));
-			sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
+			sprintf(value,"%llx",(long long unsigned int)myDet->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, module_id));
 			lblDetectorSoftware->setText(QString(value));
 
 			qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
@@ -475,7 +474,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 
 	case slsDetectorDefs::JUNGFRAU:
 	case slsDetectorDefs::CHIPTESTBOARD:
-	case slsDetectorDefs::PROPIX:
+	// case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::GOTTHARD:
 		//find index
@@ -483,20 +482,19 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 			if(item== treeDet->topLevelItem(i))
 				break;
 
-		det = myDet->getSlsDetector(i);
+		// det = myDet->getSlsDetector(i);
+		
 		qDefs::checkErrorMessage(myDet,"qTabDebugging::SetParameters");
 		lblDetectorId->setText(comboDetector->itemText(i));
-		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER));
+		sprintf(value,"%llx",(long long unsigned int)myDet->getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER, module_id));
 		lblDetectorSerial->setText(QString(value));
-		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION));
+		sprintf(value,"%llx",(long long unsigned int)myDet->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION, module_id));
 		lblDetectorFirmware	->setText(QString(value));
-		sprintf(value,"%llx",(long long unsigned int)det->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION));
+		sprintf(value,"%llx",(long long unsigned int)myDet->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, module_id));
 		lblDetectorSoftware->setText(QString(value));
 
 		qDefs::checkErrorMessage(det,"qTabDebugging::SetParameters");
 		break;
-
-
 
 
 	default:
@@ -519,48 +517,49 @@ void qTabDebugging::TestDetector(){
 
 	//main messagebox title
 	switch(detType){
-	case slsDetectorDefs::MYTHEN:
-		message = QString("<nobr>Test Results for %1 and %2:</nobr><br><br>").arg(comboDetector->currentText(),comboModule->currentText());
-		break;
+	// case slsDetectorDefs::MYTHEN:
+	// 	message = QString("<nobr>Test Results for %1 and %2:</nobr><br><br>").arg(comboDetector->currentText(),comboModule->currentText());
+	// 	break;
 	case slsDetectorDefs::EIGER:	 Detector =  "Half Module";	break;
 	case slsDetectorDefs::JUNGFRAU:
 	case slsDetectorDefs::CHIPTESTBOARD:
 	case slsDetectorDefs::MOENCH:
-	case slsDetectorDefs::PROPIX:
+	// case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:	 Detector =  "Module";	break;
 	default: break;
 	}
 
 
-	if(detType==slsDetectorDefs::MYTHEN)
-		message = QString("<nobr>Test Results for %1 and %2:</nobr><br><br>").arg(comboDetector->currentText(),comboModule->currentText());
-	else message = QString("<nobr>Test Results for %1:</nobr><br><br>").arg(comboDetector->currentText());
+	// if(detType==slsDetectorDefs::MYTHEN)
+	// 	message = QString("<nobr>Test Results for %1 and %2:</nobr><br><br>").arg(comboDetector->currentText(),comboModule->currentText());
+	message = QString("<nobr>Test Results for %1:</nobr><br><br>").arg(comboDetector->currentText());
 
 	//get sls det object
-	det = myDet->getSlsDetector(comboDetector->currentIndex());
+	auto module_id = comboDetector->currentIndex();
+	// det = myDet->getSlsDetector(comboDetector->currentIndex());
 	qDefs::checkErrorMessage(myDet,"qTabDebugging::TestDetector");
 
 	//detector firmware
 	if(chkDetectorFirmware->isChecked()){
-		retval = det->digitalTest(slsDetectorDefs::DETECTOR_FIRMWARE_TEST);
+		retval = myDet->digitalTest(slsDetectorDefs::DETECTOR_FIRMWARE_TEST, module_id);
 		if(retval== slsDetectorDefs::FAIL)	message.append(QString("<nobr>%1 Firmware: FAIL</nobr><br>").arg(Detector));
 		else								message.append(QString("<nobr>%1 Firmware: %2</nobr><br>").arg(Detector,QString::number(retval)));
 #ifdef VERBOSE
 		cout<<"Detector Firmware: "<<retval<<endl;
 #endif
 	}
-	//detector software
-	if(chkDetectorSoftware->isChecked()){
-		retval = det->digitalTest(slsDetectorDefs::DETECTOR_SOFTWARE_TEST);
-		if(retval== slsDetectorDefs::FAIL)	message.append(QString("<nobr>%1 Software: FAIL</nobr><br>").arg(Detector));
-		else								message.append(QString("<nobr>%1 Software: %2</nobr><br>").arg(Detector,QString::number(retval)));
-#ifdef VERBOSE
-		cout<<"Detector Software: "<<retval<<endl;
-#endif
-	}
+// 	//detector software
+// 	if(chkDetectorSoftware->isChecked()){
+// 		retval = myDet->digitalTest(slsDetectorDefs::DETECTOR_SOFTWARE_TEST, module_id);
+// 		if(retval== slsDetectorDefs::FAIL)	message.append(QString("<nobr>%1 Software: FAIL</nobr><br>").arg(Detector));
+// 		else								message.append(QString("<nobr>%1 Software: %2</nobr><br>").arg(Detector,QString::number(retval)));
+// #ifdef VERBOSE
+// 		cout<<"Detector Software: "<<retval<<endl;
+// #endif
+// 	}
 	//detector CPU-FPGA bus
 	if(chkDetectorBus->isChecked()){
-		retval = det->digitalTest(slsDetectorDefs::DETECTOR_BUS_TEST);
+		retval = myDet->digitalTest(slsDetectorDefs::DETECTOR_BUS_TEST, module_id);
 		if(retval== slsDetectorDefs::FAIL)	message.append(QString("<nobr>%1 Bus: &nbsp;&nbsp;&nbsp;&nbsp;FAIL</nobr><br>").arg(Detector));
 		else								message.append(QString("<nobr>%1 Bus: &nbsp;&nbsp;&nbsp;&nbsp;%2</nobr><br>").arg(Detector,QString::number(retval)));
 #ifdef VERBOSE
@@ -568,36 +567,36 @@ void qTabDebugging::TestDetector(){
 #endif
 	}
 	//detector Memory
-	if(chkDetectorMemory->isChecked()){
-		retval = det->digitalTest(slsDetectorDefs::DETECTOR_MEMORY_TEST);
-		if(retval== slsDetectorDefs::FAIL)	message.append(QString("<nobr>%1 Memory: &nbsp;FAIL</nobr><br>").arg(Detector));
-		else								message.append(QString("<nobr>%1 Memory: &nbsp;%2</nobr><br>").arg(Detector,QString::number(retval)));
-#ifdef VERBOSE
-		cout<<"Detector Memory: "<<retval<<endl;
-#endif
-	}
+// 	if(chkDetectorMemory->isChecked()){
+// 		retval = myDet->digitalTest(slsDetectorDefs::DETECTOR_MEMORY_TEST, module_id);
+// 		if(retval== slsDetectorDefs::FAIL)	message.append(QString("<nobr>%1 Memory: &nbsp;FAIL</nobr><br>").arg(Detector));
+// 		else								message.append(QString("<nobr>%1 Memory: &nbsp;%2</nobr><br>").arg(Detector,QString::number(retval)));
+// #ifdef VERBOSE
+// 		cout<<"Detector Memory: "<<retval<<endl;
+// #endif
+// 	}
 	//chip
-	if(chkChip->isChecked()){
-		retval = det->digitalTest(slsDetectorDefs::CHIP_TEST,comboModule->currentIndex());
-		if(retval== slsDetectorDefs::FAIL)	message.append("<br><nobr>Chip: FAIL</nobr><br>");
-		else								message.append(QString("<nobr>Chip: %1</nobr><br>").arg(retval));
-#ifdef VERBOSE
-		cout<<"Chip: "<<retval<<endl;
-#endif
-	}
+// 	if(chkChip->isChecked()){
+// 		retval = myDet->digitalTest(slsDetectorDefs::CHIP_TEST,comboModule->currentIndex(), module_id);
+// 		if(retval== slsDetectorDefs::FAIL)	message.append("<br><nobr>Chip: FAIL</nobr><br>");
+// 		else								message.append(QString("<nobr>Chip: %1</nobr><br>").arg(retval));
+// #ifdef VERBOSE
+// 		cout<<"Chip: "<<retval<<endl;
+// #endif
+// 	}
 	//module firmware
-	if(chkModuleFirmware->isChecked()){
-		retval = det->digitalTest(slsDetectorDefs::MODULE_FIRMWARE_TEST,comboModule->currentIndex());
-		if(retval== slsDetectorDefs::FAIL)	message.append("<nobr>Module Firmware: FAIL</nobr><br>");
-		else								message.append(QString("<nobr>Module Firmware: %1</nobr><br>").arg(retval));
-#ifdef VERBOSE
-		cout<<"Module Firmware: "<<retval<<endl;
-#endif
-	}
+// 	if(chkModuleFirmware->isChecked()){
+// 		retval = myDet->digitalTest(slsDetectorDefs::MODULE_FIRMWARE_TEST,module_id);
+// 		if(retval== slsDetectorDefs::FAIL)	message.append("<nobr>Module Firmware: FAIL</nobr><br>");
+// 		else								message.append(QString("<nobr>Module Firmware: %1</nobr><br>").arg(retval));
+// #ifdef VERBOSE
+// 		cout<<"Module Firmware: "<<retval<<endl;
+// #endif
+// 	}
 	//display message
 	qDefs::Message(qDefs::INFORMATION,message.toAscii().constData(),"qTabDebugging::TestDetector");
 
-	qDefs::checkErrorMessage(det,"qTabDebugging::TestDetector");
+	// qDefs::checkErrorMessage(det,"qTabDebugging::TestDetector");
 }
 
 

@@ -14,9 +14,9 @@ set(SOURCES
     src/qTabMeasurement.cpp
     src/qTabDataOutput.cpp
     src/qTabPlot.cpp
-    src/qTabActions.cpp
-    src/qActionsWidget.cpp
-    src/qScanWidget.cpp
+    # src/qTabActions.cpp
+    # src/qActionsWidget.cpp
+    # src/qScanWidget.cpp
     src/qTabAdvanced.cpp
     src/qTabSettings.cpp
     src/qTabDebugging.cpp
@@ -56,9 +56,9 @@ set(HEADERS
     include/qTabMeasurement.h
     include/qTabDataOutput.h
     include/qTabPlot.h
-    include/qTabActions.h
-    include/qActionsWidget.h
-    include/qScanWidget.h
+    # include/qTabActions.h
+    # include/qActionsWidget.h
+    # include/qScanWidget.h
     include/qTabAdvanced.h
     include/qTabSettings.h
     include/qTabDebugging.h

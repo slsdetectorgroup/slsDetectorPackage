@@ -35,7 +35,7 @@ qTabSettings::~qTabSettings(){
 
 void qTabSettings::SetupWidgetWindow(){
 	// Detector Type
-	detType=myDet->getDetectorsType();
+	detType=myDet->getDetectorTypeAsEnum();
 
 	// Settings
 	if (detType != slsDetectorDefs::CHIPTESTBOARD) {
@@ -44,16 +44,18 @@ void qTabSettings::SetupWidgetWindow(){
 		comboSettings->setEnabled(false);
 
 	//threshold
-	if((detType == slsDetectorDefs::MYTHEN) || (detType == slsDetectorDefs::EIGER))
+	if(detType == slsDetectorDefs::EIGER){
 		spinThreshold->setValue(myDet->getThresholdEnergy());
+	}
+		
 
 	//expert mode is not enabled initially
 	lblThreshold->setEnabled(false);
 	spinThreshold->setEnabled(false);
 
 	// Number of Modules
-	spinNumModules->setMaximum(myDet->getMaxNumberOfModules());
-	spinNumModules->setValue(myDet->setNumberOfModules());
+	spinNumModules->setMaximum(myDet->getNumberOfDetectors());
+	spinNumModules->setValue(myDet->getNumberOfDetectors());
 
 	Initialization();
 
@@ -72,12 +74,12 @@ void qTabSettings::GetDynamicRange(int setvalue){
 	cout  << "Getting dynamic range" << endl;
 #endif
 	int ret = myDet->setDynamicRange(-1);
-	if(detType == slsDetectorDefs::MYTHEN) {
-		if(ret==24)
-			ret=32;
-		else if(ret==24)
-			cout<<"ret:"<<ret<<endl;
-	}
+	// if(detType == slsDetectorDefs::MYTHEN) {
+	// 	if(ret==24)
+	// 		ret=32;
+	// 	else if(ret==24)
+	// 		cout<<"ret:"<<ret<<endl;
+	// }
 	//check if the set value is equal to return value
 	if((setvalue!=-1) && (setvalue!=ret)){
 			qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","qTabSettings::SetDynamicRange");
@@ -118,22 +120,22 @@ void qTabSettings::SetupDetectorSettings(){
 		}
 
 		switch(detType){
-		case slsDetectorDefs::MYTHEN:
-			item[(int)Standard]->setEnabled(true);
-			item[(int)Fast]->setEnabled(true);
-			item[(int)HighGain]->setEnabled(true);
-			item[(int)DynamicGain]->setEnabled(false);
-			item[(int)LowGain]->setEnabled(false);
-			item[(int)MediumGain]->setEnabled(false);
-			item[(int)VeryHighGain]->setEnabled(false);
-			item[(int)LowNoise]->setEnabled(false);
-			item[(int)DynamicHG0]->setEnabled(false);
-			item[(int)FixGain1]->setEnabled(false);
-			item[(int)FixGain2]->setEnabled(false);
-			item[(int)ForceSwitchG1]->setEnabled(false);
-			item[(int)ForceSwitchG2]->setEnabled(false);
-			item[(int)VeryLowGain]->setEnabled(false);
-			break;
+		// case slsDetectorDefs::MYTHEN:
+		// 	item[(int)Standard]->setEnabled(true);
+		// 	item[(int)Fast]->setEnabled(true);
+		// 	item[(int)HighGain]->setEnabled(true);
+		// 	item[(int)DynamicGain]->setEnabled(false);
+		// 	item[(int)LowGain]->setEnabled(false);
+		// 	item[(int)MediumGain]->setEnabled(false);
+		// 	item[(int)VeryHighGain]->setEnabled(false);
+		// 	item[(int)LowNoise]->setEnabled(false);
+		// 	item[(int)DynamicHG0]->setEnabled(false);
+		// 	item[(int)FixGain1]->setEnabled(false);
+		// 	item[(int)FixGain2]->setEnabled(false);
+		// 	item[(int)ForceSwitchG1]->setEnabled(false);
+		// 	item[(int)ForceSwitchG2]->setEnabled(false);
+		// 	item[(int)VeryLowGain]->setEnabled(false);
+		// 	break;
 		case slsDetectorDefs::EIGER:
 			item[(int)Standard]->setEnabled(true);
 			item[(int)Fast]->setEnabled(false);
@@ -151,7 +153,6 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)VeryLowGain]->setEnabled(true);
 			break;
 		case slsDetectorDefs::MOENCH:
-		case slsDetectorDefs::PROPIX:
 		case slsDetectorDefs::GOTTHARD:
 			item[(int)Standard]->setEnabled(false);
 			item[(int)Fast]->setEnabled(false);
@@ -242,7 +243,7 @@ void qTabSettings::setSettings(int index){
 	#endif
 
 		//threshold
-		if((detType==slsDetectorDefs::MYTHEN)||(detType==slsDetectorDefs::EIGER)){
+		if(detType==slsDetectorDefs::EIGER){
 			lblThreshold->setEnabled(true);
 			spinThreshold->setEnabled(true);
 			SetEnergy();
@@ -256,20 +257,20 @@ void qTabSettings::setSettings(int index){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qTabSettings::SetNumberOfModules(int index){
-#ifdef VERBOSE
-	cout << "Setting number of modules to "<< index << endl;
-#endif
-	int i = myDet->setNumberOfModules(index);
-	if(index!=i)
-		qDefs::Message(qDefs::WARNING,"Number of modules cannot be set for this value.","qTabSettings::SetNumberOfModules");
-#ifdef VERBOSE
-	cout << "ERROR: Setting number of modules to "<< i << endl;
-#endif
-	spinNumModules->setValue(i);
+// void qTabSettings::SetNumberOfModules(int index){
+// #ifdef VERBOSE
+// 	cout << "Setting number of modules to "<< index << endl;
+// #endif
+// 	int i = myDet->setNumberOfModules(index);
+// 	if(index!=i)
+// 		qDefs::Message(qDefs::WARNING,"Number of modules cannot be set for this value.","qTabSettings::SetNumberOfModules");
+// #ifdef VERBOSE
+// 	cout << "ERROR: Setting number of modules to "<< i << endl;
+// #endif
+// 	spinNumModules->setValue(i);
 
-	qDefs::checkErrorMessage(myDet,"qTabSettings::SetNumberOfModules");
-}
+// 	qDefs::checkErrorMessage(myDet,"qTabSettings::SetNumberOfModules");
+// }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -332,7 +333,7 @@ void qTabSettings::Refresh(){
 #ifdef VERBOSE
 	cout  << "Getting number of modules:" ;
 #endif
-	int numMod = myDet->setNumberOfModules();
+	int numMod = myDet->getNumberOfDetectors();
 #ifdef VERBOSE
 	cout << numMod << endl;
 #endif
@@ -354,7 +355,7 @@ void qTabSettings::Refresh(){
 
 		//threshold
 		sett = comboSettings->currentIndex();
-		if((detType==slsDetectorDefs::MYTHEN)||(detType==slsDetectorDefs::EIGER)){
+		if(detType==slsDetectorDefs::EIGER){
 			if((sett==Undefined)||(sett==Uninitialized)){
 				lblThreshold->setEnabled(false);
 				spinThreshold->setEnabled(false);

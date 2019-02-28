@@ -161,7 +161,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);		cout<<"Measurement ready"<<endl;
 	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);				cout<<"DataOutput ready"<<endl;
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);		cout<<"Plot ready"<<endl;
-	tab_actions			=  new qTabActions		(this,	myDet);				cout<<"Actions ready"<<endl;
+	// tab_actions			=  new qTabActions		(this,	myDet);				cout<<"Actions ready"<<endl;
 	tab_settings 		=  new qTabSettings		(this,	myDet);				cout<<"Settings ready"<<endl;
 	tab_advanced 		=  new qTabAdvanced		(this,	myDet,myPlot);		cout<<"Advanced ready"<<endl;
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
@@ -178,7 +178,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	scroll[Measurement]	->setWidget(tab_measurement);
 	scroll[DataOutput]	->setWidget(tab_dataoutput);
 	scroll[Plot]		->setWidget(tab_plot);
-	scroll[Actions]		->setWidget(tab_actions);
+	// scroll[Actions]		->setWidget(tab_actions);
 	scroll[Settings]	->setWidget(tab_settings);
 	scroll[Advanced]	->setWidget(tab_advanced);
 	scroll[Debugging]	->setWidget(tab_debugging);
@@ -200,7 +200,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs->tabBar()->moveTab(tabs->indexOf(tab_settings),	Settings);
 	tabs->tabBar()->moveTab(tabs->indexOf(tab_dataoutput),	DataOutput);
 	tabs->tabBar()->moveTab(tabs->indexOf(tab_plot),		Plot);
-	tabs->tabBar()->moveTab(tabs->indexOf(tab_actions),		Actions);
+	// tabs->tabBar()->moveTab(tabs->indexOf(tab_actions),		Actions);
 	tabs->tabBar()->moveTab(tabs->indexOf(tab_advanced),	Advanced);
 	tabs->tabBar()->moveTab(tabs->indexOf(tab_debugging),	Debugging);
 	tabs->tabBar()->moveTab(tabs->indexOf(tab_developer),	Developer);
@@ -323,13 +323,13 @@ void qDetectorMain::Initialization(){
 		connect(tab_measurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
 		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
 		// Data Output Tab
-		connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_actions,SLOT(EnablePositions(bool)));
+		// connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_actions,SLOT(EnablePositions(bool)));
 		//enable scanbox( for angles)
 		connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_plot,SLOT(EnableScanBox()));
 		// Plot tab
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
 		// Actions tab (only for scan)
-		connect(tab_actions,		SIGNAL(EnableScanBox()),			tab_plot,SLOT(EnableScanBox()));
+		// connect(tab_actions,		SIGNAL(EnableScanBox()),			tab_plot,SLOT(EnableScanBox()));
 		//settings to advanced tab(int is always 0 to only refresh)
 		connect(tab_settings,		SIGNAL(UpdateTrimbitSignal(int)),		tab_advanced,SLOT(UpdateTrimbitPlot(int)));
 // Plotting
@@ -642,7 +642,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 
 	Refresh(tabs->currentIndex());
 	if(refreshTabs){
-		tab_actions->Refresh();
+		// tab_actions->Refresh();
 		tab_measurement->Refresh();
 		tab_settings->Refresh();
 		tab_dataoutput->Refresh();
@@ -701,7 +701,7 @@ void qDetectorMain::Refresh(int index){
 		case Settings:		tab_settings->Refresh();	break;
 		case DataOutput:	tab_dataoutput->Refresh();	break;
 		case Plot:			tab_plot->Refresh();		break;
-		case Actions:		tab_actions->Refresh();		break;
+		// case Actions:		tab_actions->Refresh();		break;
 		case Advanced:		tab_advanced->Refresh();	break;
 		case Debugging:		tab_debugging->Refresh();	break;
 		case Developer:		tab_developer->Refresh();	break;
@@ -810,7 +810,7 @@ void qDetectorMain::EnableTabs(){
 		myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::EnableTabs");
 		//refresh all the required tabs
-		tab_actions->Refresh();// angular, positions,
+		// tab_actions->Refresh();// angular, positions,
 
 		//too slow to refresh
 		/*tab_measurement->Refresh();*/
@@ -827,7 +827,7 @@ void qDetectorMain::EnableTabs(){
 		if(isDeveloper)
 			tab_developer->StopADCTimer();
 		//set the plot type first(acccss shared memory)
-		tab_plot->SetScanArgument();
+		// tab_plot->SetScanArgument();
 		//sets running to true
 		myPlot->StartStopDaqToggle();
 	}

@@ -165,7 +165,7 @@ private slots:
 	/** Set number of probes
 	 *  @param val number of probes to be set
 	 */
-	void setNumProbes(int val);
+	// void setNumProbes(int val);
 
 	/** Update progress*/
 	void UpdateProgress();

@@ -92,7 +92,7 @@ void qTabDataOutput::SetupWidgetWindow(){
 #ifdef VERBOSE
 	cout  << "Getting flat field" << endl;
 #endif
-	UpdateFlatFieldFromServer();
+	// UpdateFlatFieldFromServer();
 
 
 	//rate correction - not for charge integrating detectors
@@ -981,7 +981,7 @@ void qTabDataOutput::Refresh(){
 #ifdef VERBOSE
 	cout  << "Getting flat field" << endl;
 #endif
-	UpdateFlatFieldFromServer();
+	// UpdateFlatFieldFromServer();
 
 
 	//rate correction - not for charge integrating detectors

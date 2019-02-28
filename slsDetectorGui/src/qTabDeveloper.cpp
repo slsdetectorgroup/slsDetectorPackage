@@ -29,7 +29,6 @@ int qTabDeveloper::NUM_ADC_WIDGETS(0);
 qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector):
 								thisParent(parent),
 								myDet(detector),
-								det(0),
 								boxDacs(0),
 								boxAdcs(0),
 								lblHV(0),
@@ -53,7 +52,7 @@ qTabDeveloper::qTabDeveloper(qDetectorMain *parent,multiSlsDetector*& detector):
 
 qTabDeveloper::~qTabDeveloper() {
 	delete myDet;
-	if(det) delete det;
+	// if(det) delete det;
 	if(thisParent) delete thisParent;
 }
 
@@ -63,7 +62,7 @@ qTabDeveloper::~qTabDeveloper() {
 
 void qTabDeveloper::SetupWidgetWindow() {
 	//Detector Type
-	detType=myDet->getDetectorsType();
+	detType=myDet->getDetectorTypeAsEnum();
 
 	//palette
 	red = QPalette();
@@ -72,16 +71,16 @@ void qTabDeveloper::SetupWidgetWindow() {
 
 	//the number of dacs and adcs
 	switch(detType){
-	case slsDetectorDefs::MYTHEN:
-		NUM_DAC_WIDGETS = 6;
-		NUM_ADC_WIDGETS = 0;
-		dacNames.push_back("v Trimbit:");
-		dacNames.push_back("v Threshold:");
-		dacNames.push_back("v Shaper1:");
-		dacNames.push_back("v Shaper2:");
-		dacNames.push_back("v Calibration:");
-		dacNames.push_back("v Preamp:");
-		break;
+	// case slsDetectorDefs::MYTHEN:
+	// 	NUM_DAC_WIDGETS = 6;
+	// 	NUM_ADC_WIDGETS = 0;
+	// 	dacNames.push_back("v Trimbit:");
+	// 	dacNames.push_back("v Threshold:");
+	// 	dacNames.push_back("v Shaper1:");
+	// 	dacNames.push_back("v Shaper2:");
+	// 	dacNames.push_back("v Calibration:");
+	// 	dacNames.push_back("v Preamp:");
+	// 	break;
 	case slsDetectorDefs::EIGER:
 		NUM_DAC_WIDGETS = 17;
 		NUM_ADC_WIDGETS = 6;
@@ -112,7 +111,7 @@ void qTabDeveloper::SetupWidgetWindow() {
 		adcNames.push_back("Temperature FPGA:");
 
 		break;
-	case slsDetectorDefs::PROPIX:
+	// case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:
 		NUM_DAC_WIDGETS = 8;
 		NUM_ADC_WIDGETS = 2;
@@ -165,8 +164,8 @@ void qTabDeveloper::SetupWidgetWindow() {
 		break;
 
 	default:
-		cout << "ERROR: Unknown detector type: " + myDet->slsDetectorDefs::getDetectorType(detType) << endl;
-		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorDefs::getDetectorType(detType),"qTabDeveloper::SetupWidgetWindow");
+		cout << "ERROR: Unknown detector type: " + myDet->getDetectorTypeAsString() << endl;
+		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->getDetectorTypeAsString(),"qTabDeveloper::SetupWidgetWindow");
 		exit(-1);
 		break;
 	}
@@ -202,8 +201,8 @@ void qTabDeveloper::SetupWidgetWindow() {
 	CreateDACWidgets();
 
 	//HV for gotthard
+			// (detType==slsDetectorDefs::PROPIX) ||
 	if ((detType==slsDetectorDefs::GOTTHARD) ||
-			(detType==slsDetectorDefs::PROPIX) ||
 			(detType==slsDetectorDefs::MOENCH)){
 		boxDacs->setFixedHeight(boxDacs->height()+35);
 
@@ -318,22 +317,22 @@ void qTabDeveloper::SetDacValues(int id){
 	cout << "Setting dac:" << dacNames[id] << " : " << spinDacs[id]->value() << endl;
 #endif
 
-	int detid = comboDetector->currentIndex();
-	if(detid)
-		det = myDet->getSlsDetector(detid-1);
+	int module_id = comboDetector->currentIndex();
+	if(module_id)
+		module_id--;
 
 	//all detectors
-	if(!detid){
-		myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id),0);
-		lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(id),1),-10));
-		qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetDacValues");
-	}
+	// if(!detid){
+	myDet->setDAC((int)spinDacs[id]->value(),getSLSIndex(id),0, module_id);
+	lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(id),1, module_id),-10));
+	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetDacValues");
+	// }
 	//specific detector
-	else{
-		det->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id),0);
-		lblDacsmV[id]->setText(QString("%1mV").arg(det->setDAC(-1,getSLSIndex(id),1),-10));
-		qDefs::checkErrorMessage(det,"qTabDeveloper::SetDacValues");
-	}
+	// else{
+	// 	myDet->setDAC((int)spinDacs[id]->value(),getSLSIndex(id),0, module_id);
+	// 	lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(id),1),-10));
+	// 	qDefs::checkErrorMessage(det,"qTabDeveloper::SetDacValues");
+	// }
 
 }
 
@@ -346,23 +345,23 @@ void qTabDeveloper::SetHighVoltage(){
 	cout << "Setting high voltage:" << comboHV->currentText().toAscii().constData() << endl;
 #endif
 
-	int detid = comboDetector->currentIndex();
-	if(detid)
-		det = myDet->getSlsDetector(detid-1);
+	auto module_id = comboDetector->currentIndex();
+	if(module_id)
+		module_id--;
 
 	int highvoltage = comboHV->currentText().toInt();
 	int ret;
 
 	//all detectors
-	if(!detid){
-		ret = myDet->setDAC(highvoltage,slsDetectorDefs::HV_POT,0);
-		qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetHighVoltage");
-	}
-	//specific detector
-	else{
-		ret = det->setDAC(highvoltage,slsDetectorDefs::HV_POT,0);
-		qDefs::checkErrorMessage(det,"qTabDeveloper::SetHighVoltage");
-	}
+	// if(!detid){
+	ret = myDet->setDAC(highvoltage,slsDetectorDefs::HIGH_VOLTAGE,0, module_id);
+	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetHighVoltage");
+	// }
+	// //specific detector
+	// else{
+	// 	ret = det->setDAC(highvoltage,slsDetectorDefs::HV_POT,0);
+	// 	qDefs::checkErrorMessage(det,"qTabDeveloper::SetHighVoltage");
+	// }
 
 
 	//error
@@ -388,21 +387,21 @@ void qTabDeveloper::SetHighVoltage(){
 
 slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 	switch(detType){
-	case slsDetectorDefs::MYTHEN:
-		switch(index){
-		case 0:	return slsDetectorDefs::TRIMBIT_SIZE;
-		case 1:	return slsDetectorDefs::THRESHOLD;
-		case 2:	return slsDetectorDefs::SHAPER1;
-		case 3:	return slsDetectorDefs::SHAPER2;
-		case 4:	return slsDetectorDefs::CALIBRATION_PULSE;
-		case 5:	return slsDetectorDefs::PREAMP;
-		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
-			Refresh();
-			break;
-		}
-		break;
-		case slsDetectorDefs::EIGER:
+	// case slsDetectorDefs::MYTHEN:
+	// 	switch(index){
+	// 	case 0:	return slsDetectorDefs::TRIMBIT_SIZE;
+	// 	case 1:	return slsDetectorDefs::THRESHOLD;
+	// 	case 2:	return slsDetectorDefs::SHAPER1;
+	// 	case 3:	return slsDetectorDefs::SHAPER2;
+	// 	case 4:	return slsDetectorDefs::CALIBRATION_PULSE;
+	// 	case 5:	return slsDetectorDefs::PREAMP;
+	// 	default:
+	// 		qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
+	// 		Refresh();
+	// 		break;
+	// 	}
+	// 	break;
+	case slsDetectorDefs::EIGER:
 			switch(index){
 			case 0:	return slsDetectorDefs::E_SvP;
 			case 1:	return slsDetectorDefs::E_SvN;
@@ -435,16 +434,17 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 			break;
 			case slsDetectorDefs::MOENCH:
 				switch(index){
-				case 0:	return slsDetectorDefs::V_DAC0;
-				case 1:	return slsDetectorDefs::V_DAC1;
-				case 2:	return slsDetectorDefs::V_DAC2;
-				case 3:	return slsDetectorDefs::V_DAC3;
-				case 4:	return slsDetectorDefs::V_DAC4;
-				case 5:	return slsDetectorDefs::V_DAC5;
-				case 6:	return slsDetectorDefs::V_DAC6;
-				case 7:	return slsDetectorDefs::V_DAC7;
-				case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
-				case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
+				//TODO! Moench DACS
+				// case 0:	return slsDetectorDefs::V_DAC0;
+				// case 1:	return slsDetectorDefs::V_DAC1;
+				// case 2:	return slsDetectorDefs::V_DAC2;
+				// case 3:	return slsDetectorDefs::V_DAC3;
+				// case 4:	return slsDetectorDefs::V_DAC4;
+				// case 5:	return slsDetectorDefs::V_DAC5;
+				// case 6:	return slsDetectorDefs::V_DAC6;
+				// case 7:	return slsDetectorDefs::V_DAC7;
+				// case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
+				// case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
 
 				default:
 					qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error. Index:"+ index,"qTabDeveloper::getSLSIndex");
@@ -452,7 +452,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 					break;
 				}
 				break;
-				case slsDetectorDefs::PROPIX:
+				// case slsDetectorDefs::PROPIX:
 				case slsDetectorDefs::GOTTHARD:
 					switch(index){
 					case 0:	return slsDetectorDefs::G_VREF_DS;
@@ -493,8 +493,8 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 						}
 						break;
 						default:
-							cout << "Unknown detector type:" + myDet->slsDetectorDefs::getDetectorType(detType) << endl;
-							qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorDefs::getDetectorType(detType),"qTabDeveloper::getSLSIndex");
+							cout << "Unknown detector type:" + myDet->getDetectorTypeAsString() << endl;
+							qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->getDetectorTypeAsString() ,"qTabDeveloper::getSLSIndex");
 							qDefs::checkErrorMessage(myDet,"qTabDeveloper::getSLSIndex");
 							exit(-1);
 							break;
@@ -515,13 +515,13 @@ void qTabDeveloper::RefreshAdcs(){
 #endif
 	/*adcTimer->stop();*/
 
-	int detid = comboDetector->currentIndex();
-	if(detid)
-		det = myDet->getSlsDetector(detid-1);
+	auto module_id = comboDetector->currentIndex();
+	if(module_id)
+		module_id--;
 
 	for(int i=0;i<NUM_ADC_WIDGETS;i++){
 		//all detectors
-		if(!detid){
+		if(module_id==-1){
 			double value = (double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS),-1);
 
 			if(value == -1)
@@ -534,7 +534,7 @@ void qTabDeveloper::RefreshAdcs(){
 		}
 		//specific detector
 		else{
-			double value = (double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS));
+			double value = (double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS), module_id);
 
 			if(detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU || detType == slsDetectorDefs::CHIPTESTBOARD)
 				value/=1000.00;
@@ -557,9 +557,9 @@ void qTabDeveloper::Refresh(){
 #endif
 
 
-	int detid = comboDetector->currentIndex();
-	if(detid)
-		det = myDet->getSlsDetector(detid-1);
+	auto module_id = comboDetector->currentIndex();
+	if(module_id)
+		module_id--;
 
 
 	//dacs
@@ -568,14 +568,14 @@ void qTabDeveloper::Refresh(){
 #endif
 	for(int i=0;i<NUM_DAC_WIDGETS;i++){
 		//all detectors
-		if(!detid){
+		if(module_id== -1){
 			spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i),0));
 			lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(i),1),-10));
 		}
 		//specific detector
 		else{
-			spinDacs[i]->setValue((double)det->setDAC(-1,getSLSIndex(i),0));
-			lblDacsmV[i]->setText(QString("%1mV").arg(det->setDAC(-1,getSLSIndex(i),1),-10));
+			spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i),0, module_id));
+			lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(i),1, module_id),-10));
 		}
 	}
 
@@ -585,7 +585,7 @@ void qTabDeveloper::Refresh(){
 
 	//gotthard -high voltage
 	if((detType == slsDetectorDefs::GOTTHARD) ||
-			(detType == slsDetectorDefs::PROPIX) ||
+			// (detType == slsDetectorDefs::PROPIX) ||
 			(detType == slsDetectorDefs::MOENCH)){
 		disconnect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
 
@@ -596,8 +596,8 @@ void qTabDeveloper::Refresh(){
 		comboHV->setToolTip(tipHV);
 		//getting hv value
 		int ret;
-		if(!detid) 	ret = (int)myDet->setDAC(-1,slsDetectorDefs::HV_POT,0);
-		else 		ret = (int)det->setDAC(-1,slsDetectorDefs::HV_POT,0);
+		// if(!detid) 	ret = (int)myDet->setDAC(-1,slsDetectorDefs::HV_POT,0);
+		ret = myDet->setDAC(-1,slsDetectorDefs::HIGH_VOLTAGE,0, module_id);
 
 		switch(ret){
 		case 0: 	comboHV->setCurrentIndex(0);break;

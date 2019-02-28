@@ -142,7 +142,7 @@ private slots:
 
 
 signals:
-	void EnableScanBox();
+	// void EnableScanBox();
 
 };
 

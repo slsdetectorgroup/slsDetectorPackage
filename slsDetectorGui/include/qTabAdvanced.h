@@ -93,7 +93,7 @@ private slots:
 	/** Enables trimming method and calls SetTrimmingMethod if enabled
 	 * @param enable to enable trimming
 	 */
-	void EnableTrimming(bool enable);
+	// void EnableTrimming(bool enable);
 
 	/** Enabling resolution and Counts if this is enabled
 	 * @param enable to enable
@@ -103,15 +103,15 @@ private slots:
 	/** Sets the trimming method
 	 * @param mode trimming method
 	 */
-	void SetTrimmingMethod(int mode);
+	// void SetTrimmingMethod(int mode);
 
 	/** Ensures the right trimming mode and Executes Trimming
 	 */
-	void StartTrimming();
+	// void StartTrimming();
 
 	/** Updates the plot with trimbits from detector/shared memory
 	 */
-	void UpdateTrimbitPlot(int id);
+	// void UpdateTrimbitPlot(int id);
 
 	/** Sets control port
 	 * @param port control port

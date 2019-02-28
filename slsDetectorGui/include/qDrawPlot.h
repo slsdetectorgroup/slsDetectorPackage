@@ -181,7 +181,7 @@ void SetLines(bool enable){lines = enable;};
 /**	sets markers */
 void SetMarkers(bool enable){markers = enable;};
 /** sets the scan argument to prepare the plot*/
-void SetScanArgument(int scanArg);
+// void SetScanArgument(int scanArg);
 /** sets stop_signal to true */
 void StopAcquisition(){	stop_signal = true; };
 /** Set/unset pedestal */

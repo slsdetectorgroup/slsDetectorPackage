@@ -19,6 +19,8 @@ class slsReceiverImplementation;
  */
 
 class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
+ private:
+	enum numberMode {DEC, HEX};
 	
  public:
 
@@ -120,7 +122,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 
 	/** validate and set error */
 	template <typename T>
-	void validate(T arg, T retval, std::string modename, bool hex);
+	void validate(T arg, T retval, std::string modename, numberMode hex);
 
 	/** Unrecognized Function */
 	int M_nofunc();
@@ -276,6 +278,9 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 
     /** set deactivated receiver padding enable */
     int set_deactivated_receiver_padding_enable();
+
+    /** set readout flags */
+    int set_readout_flags();
 
 
 	/** detector type */

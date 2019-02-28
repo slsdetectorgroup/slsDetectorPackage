@@ -22,7 +22,6 @@ extern int nframes;
 extern char* ramValues;
 
 #define UDP_PACKET_HEADER_VERSION 	(0x1)
-#define UDP_PACKET_DATA_BYTES		(1344)
 
 
 uint32_t udpPacketNumber = 0;
@@ -89,7 +88,6 @@ int fillUDPPacket(char* buffer) {
 	// calculate number of bytes to copy
 	int numBytesToCopy = ((udpHeaderOffset + UDP_PACKET_DATA_BYTES) <= dataBytes) ?
 			UDP_PACKET_DATA_BYTES : (dataBytes - udpHeaderOffset);
-	header->reserved = numBytesToCopy;
 
 	// copy data
 	memcpy(buffer + sizeof(sls_detector_header), ramValues + udpHeaderOffset, numBytesToCopy);

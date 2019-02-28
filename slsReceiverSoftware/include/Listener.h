@@ -112,7 +112,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 * Set GeneralData pointer to the one given
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
-	void SetGeneralData(GeneralData*& g);
+	void SetGeneralData(GeneralData* g);
 
 	/**
 	 * Set thread priority

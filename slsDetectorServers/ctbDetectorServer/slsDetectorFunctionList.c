@@ -556,35 +556,40 @@ void setupDetector() {
 }
 
 int allocateRAM() {
-    int oldDataBytes = dataBytes;
-    updateDataBytes();
+	int oldDataBytes = dataBytes;
+	updateDataBytes();
 
-    // update only if change in databytes
-    if (dataBytes == oldDataBytes) {
-        FILE_LOG(logDEBUG1, ("RAM of size %d already allocated. Nothing to be done.\n", dataBytes));
-        return OK;
-    }
-    // Zero databytes
-    if (dataBytes <= 0) {
-        FILE_LOG(logERROR, ("Can not allocate RAM for 0 bytes (databytes: 0).\n"));
-        return FAIL;
-    }
-    // clear RAM
-    if (ramValues) {
-        free(ramValues);
-        ramValues = 0;
-    }
-    // allocate RAM
-    ramValues = malloc(dataBytes);
-    // cannot malloc
-    if (ramValues == NULL) {
-        FILE_LOG(logERROR, ("Can not allocate RAM for even 1 frame. "
-                "Probably cause: Memory Leak.\n"));
-        return FAIL;
-    }
+	// only allcoate RAM for 1 giga udp (if 10G, return)
+	if (enableTenGigabitEthernet(-1))
+		return OK;
 
-    FILE_LOG(logINFO, ("\tRAM allocated to %d bytes\n", dataBytes));
-    return OK;
+
+	// update only if change in databytes
+	if (dataBytes == oldDataBytes) {
+		FILE_LOG(logDEBUG1, ("RAM of size %d already allocated. Nothing to be done.\n", dataBytes));
+		return OK;
+	}
+	// Zero databytes
+	if (dataBytes <= 0) {
+		FILE_LOG(logERROR, ("Can not allocate RAM for 0 bytes (databytes: 0).\n"));
+		return FAIL;
+	}
+	// clear RAM
+	if (ramValues) {
+		free(ramValues);
+		ramValues = 0;
+	}
+	// allocate RAM
+	ramValues = malloc(dataBytes);
+	// cannot malloc
+	if (ramValues == NULL) {
+		FILE_LOG(logERROR, ("Can not allocate RAM for even 1 frame. "
+				"Probably cause: Memory Leak.\n"));
+		return FAIL;
+	}
+
+	FILE_LOG(logINFO, ("\tRAM allocated to %d bytes\n", dataBytes));
+	return OK;
 }
 
 void updateDataBytes() {
@@ -1510,6 +1515,9 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
 	// 1 giga udp
 	if (!enableTenGigabitEthernet(-1)) {
+		// if it was in 10G mode, it was not allocating RAM
+		if (allocateRAM() == FAIL)
+			return -1;
 		char cDestIp[MAX_STR_LENGTH];
 		memset(cDestIp, 0, MAX_STR_LENGTH);
 		sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);

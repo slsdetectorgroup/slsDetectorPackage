@@ -158,7 +158,7 @@ void ALTERA_PLL_SetPhaseShift(int32_t phase, int clkIndex, int pos) {
              ((clkIndex << ALTERA_PLL_SHIFT_CNT_SELECT_OFST) & ALTERA_PLL_SHIFT_CNT_SELECT_MSK) |
              (pos ? ALTERA_PLL_SHIFT_UP_DOWN_POS_VAL : ALTERA_PLL_SHIFT_UP_DOWN_NEG_VAL));
 
-    FILE_LOG(logDEBUG1, ("\tC%d phase word:0x%08x\n", clkIndex, value));
+    FILE_LOG(logDEBUG1, ("C%d phase word:0x%08x\n", clkIndex, value));
 
     // write phase shift
     ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_PHASE_SHIFT_REG, value);
@@ -204,7 +204,7 @@ int ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
             ((high_count << ALTERA_PLL_C_COUNTER_HGH_CNT_OFST) & ALTERA_PLL_C_COUNTER_HGH_CNT_MSK) |
             ((odd_division << ALTERA_PLL_C_COUNTER_ODD_DVSN_OFST) & ALTERA_PLL_C_COUNTER_ODD_DVSN_MSK) |
             ((clkIndex << ALTERA_PLL_C_COUNTER_SLCT_OFST) & ALTERA_PLL_C_COUNTER_SLCT_MSK));
-    FILE_LOG(logDEBUG1, ("\tC%d word:0x%08x\n", clkIndex, val));
+    FILE_LOG(logDEBUG1, ("C%d word:0x%08x\n", clkIndex, val));
 
     // write frequency (post-scale output counter C)
     ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_C_COUNTER_REG, val);

@@ -1288,23 +1288,6 @@ int	setDetectorPosition(int pos[]) {
 }
 
 
-
-
-
-/* eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter */
-
-int setIODelay(int val) {
-	if (val!=-1) {
-		FILE_LOG(logDEBUG1, ("Setting IO Delay: %d\n",val));
-#ifndef VIRTUAL
-		if (Feb_Control_SetIDelays(Feb_Control_GetModuleNumber(),val))
-#endif
-			eiger_iodelay = val;
-	}
-	return eiger_iodelay;
-}
-
-
 int enableTenGigabitEthernet(int val) {
 	if (val!=-1) {
 		FILE_LOG(logINFO, ("Setting 10Gbe: %d\n", (val > 0) ? 1 : 0));
@@ -1315,6 +1298,21 @@ int enableTenGigabitEthernet(int val) {
 		//configuremac called from client
 	}
 	return send_to_ten_gig;
+}
+
+
+
+/* eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter */
+
+int setIODelay(int val) {
+	if (val!=-1) {
+		FILE_LOG(logDEBUG1, ("Setting IO Delay: %d\n",val));
+#ifndef VIRTUAL
+		if (Feb_Control_SetIDelays(Feb_Control_GetModuleNumber(),val))
+#endif
+			eiger_iodelay = val;
+	}
+	return eiger_iodelay;
 }
 
 

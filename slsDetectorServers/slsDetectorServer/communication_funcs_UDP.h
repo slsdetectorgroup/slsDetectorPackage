@@ -21,6 +21,9 @@ unsigned short int udpDestinationPort = 0;
 char udpDestinationIp[MAX_STR_LENGTH] = "";
 
 //DEFAULT_TX_UDP_PORT;// src port
+int getUdPSocketDescriptor() {
+	return udpSockfd;
+}
 
 int setUDPDestinationDetails(const char* ip, unsigned short int port) {
 	udpDestinationPort = port;

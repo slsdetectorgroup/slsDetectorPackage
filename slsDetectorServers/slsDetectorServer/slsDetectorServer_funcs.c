@@ -3,13 +3,6 @@
 #include "communication_funcs.h"
 #include "logger.h"
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-#include "communication_funcs_UDP.h"
-#include "UDPPacketHeaderGenerator.h"
-extern uint64_t udpFrameNumber;
-extern uint32_t udpPacketNumber;
-#endif
-
 #include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -42,10 +35,6 @@ extern char mess[MAX_STR_LENGTH];
 // Variables that will be exported
 int sockfd = 0;
 int debugflag = 0;
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-int dataBytes = 0;
-char* ramValues = 0;
-#endif
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
@@ -1380,10 +1369,14 @@ int start_acquisition(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		ret = startStateMachine();
 		if (ret == FAIL) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+			sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
+#else
 			sprintf(mess, "Could not start acquisition\n");
+#endif
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG1, ("Starting Acquisition ret: %d\n", ret));
+		FILE_LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
 	}
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
@@ -1464,10 +1457,14 @@ int start_and_read_all(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		ret = startStateMachine();
 		if (ret == FAIL) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+			sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
+#else
 			sprintf(mess, "Could not start acquisition\n");
+#endif
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG1, ("Starting Acquisition ret: %d\n", ret));
+		FILE_LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
 
 	}
 
@@ -1489,58 +1486,7 @@ int read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Reading all frames\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	    // read from fifo enabled
-      if (!sendUDP(-1)) {
-    	  FILE_LOG(logDEBUG1, ("Reading from 1G UDP\n"));
-
-    	  if (setUDPDestinationDetails("129.129.205.171", 50001) == OK) { // 10g,1 g
-
-    		  if (createUDPSocket() == OK) {
-
-    			  char buffer[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
-    			  createUDPPacketHeader(buffer, getHardwareSerialNumber());
-
-    	          // keep reading frames
-    	          while(readFrameFromFifo() == OK) {
-
-    	        	  int bytesToSend = 0;
-    	        	  int n = 0;
-    	        	  // fill packet with pnum, nsamples per packet and data
-    		          while((bytesToSend = fillUDPPacket(buffer))) {
-    	        		  n += sendUDPPacket(buffer, bytesToSend);
-    	        	  }
-    		          if (n >= dataBytes)
-    		        	  FILE_LOG(logINFO, (" Frame %lld sent (%d packets, %d databytes, n:%d bytes sent)\n",
-    		        			  udpFrameNumber, udpPacketNumber + 1, dataBytes, n));
-    	          }
-
-    			  closeUDPSocket();
-    		  }
-    	  }
-
-
-          // finished readng frames
-          // frames left to give status
-          int64_t retval = getTimeLeft(FRAME_NUMBER) + 2;
-          if ( retval > 1) {
-              ret = FAIL;
-              sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
-              FILE_LOG(logERROR, (mess));
-          } else {
-              ret = OK; // send number of bytes (8)  first to acknowledge finish of acquisition //FIXME
-              FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
-          }
-            Server_SendResult(file_des, INT32, UPDATE, NULL, 0); // to the client
-      }
-      // read from receiver
-      else {
-    	  FILE_LOG(logDEBUG1, ("Reading via UDP\n"));
-    	  readFrame(&ret, mess);
-      }
-#else
 		readFrame(&ret, mess);
-#endif
 	}
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
@@ -2246,9 +2192,9 @@ int configure_mac(int file_des) {
 	{
 		int iloop = 5;
 		for (iloop = 5; iloop >= 0; --iloop) {
-			FILE_LOG(logDEBUG1, ("%x", (unsigned int)(((dstMac >> (8 * iloop)) & 0xFF))));
+			printf ("%x", (unsigned int)(((dstMac >> (8 * iloop)) & 0xFF)));
 			if (iloop > 0) {
-				FILE_LOG(logDEBUG1, (":"));
+				printf(":");
 			}
 		}
 	}
@@ -2269,9 +2215,9 @@ int configure_mac(int file_des) {
 	{
 		int iloop = 5;
 		for (iloop = 5; iloop >= 0; --iloop) {
-			FILE_LOG(logDEBUG1, ("%x", (unsigned int)(((srcMac >> (8 * iloop)) & 0xFF))));
+			printf("%x", (unsigned int)(((srcMac >> (8 * iloop)) & 0xFF)));
 			if (iloop > 0) {
-				FILE_LOG(logDEBUG1, (":"));
+				printf(":");
 			}
 		}
 	}
@@ -2489,7 +2435,7 @@ int enable_ten_giga(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Enable/ Disable 10GbE : %d\n", arg));
 
-#ifndef EIGERD
+#if defined(JUNGFRAUD) || defined(GOTTHARDD)
 	functionNotImplemented();
 #else
 	// set & get

@@ -844,10 +844,11 @@ std::string slsDetector::checkOnline() {
         //Need both control and stop socket to work!
         auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
         auto stop = sls::ClientSocket(false, thisDetector->hostname, thisDetector->stopPort);
-        retval = thisDetector->hostname;
+        //TODO! (Erik) do we need to do something else here?
     } catch (...) {
         //try catch should not be used for control but we should also not call this function
         thisDetector->onlineFlag = OFFLINE_FLAG;
+        retval = thisDetector->hostname;
     }
     return retval;
 }

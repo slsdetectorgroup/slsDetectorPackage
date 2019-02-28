@@ -4,6 +4,7 @@
 #include "ClientSocket.h"
 #include "logger.h"
 #include "slsDetector.h"
+#include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
 
 #include "Timer.h"
@@ -13,11 +14,15 @@
 #define VERBOSE
 
 int main() {
-    const std::string hostname = "beb083";
-    auto d = slsDetector(hostname);
-    
+    // const std::string hostname = "beb083";
+    multiSlsDetector d;
     d.setOnline(1);
-    std::cout << "type: " << d.getDetectorTypeAsString() << '\n';
+    auto s = d.checkOnline();
+    std::cout << "s: " << s << "\n";
+    // auto d = slsDetector(hostname);
+    
+    // d.setOnline(1);
+    // std::cout << "type: " << d.getDetectorTypeAsString() << '\n';
     // std::cout << "hostname: " << d.getHostname() << '\n';
     // std::cout << "receiver: " << d.getReceiverOnline() << '\n';
    

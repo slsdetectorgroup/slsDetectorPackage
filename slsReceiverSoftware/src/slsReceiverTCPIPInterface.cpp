@@ -228,6 +228,7 @@ int slsReceiverTCPIPInterface::function_table(){
     flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
 	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
+	flist[F_RECEIVER_SET_READOUT_FLAGS] 	= 	&slsReceiverTCPIPInterface::set_readout_flags;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -286,7 +287,7 @@ void slsReceiverTCPIPInterface::modeNotImplemented(std::string modename, int mod
 }
 
 template <typename T>
-void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename, bool hex) {
+void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename, numberMode hex) {
 	if (ret == OK && arg != -1 && retval != arg) {
 		ret = FAIL;
 		if (hex)
@@ -584,6 +585,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			case GOTTHARD:
 			case EIGER:
 			case CHIPTESTBOARD:
+			case MOENCH:
 			case JUNGFRAU:
 				break;
 			default:
@@ -617,7 +619,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 	}
 	//get
 	retval = myDetectorType;
-	validate((int)arg, (int)retval, std::string("set detector type"), 0);
+	validate((int)arg, (int)retval, std::string("set detector type"), DEC);
 	return interface->Server_SendResult(false, ret, &retval, sizeof(retval), mess);
 }
 
@@ -684,8 +686,7 @@ int slsReceiverTCPIPInterface::set_roi() {
 				arg[iloop].ymax << ")";
 	}
 
-	// only for gotthard
-	if (myDetectorType != GOTTHARD)
+	if (myDetectorType == EIGER || myDetectorType == JUNGFRAU)
 		functionNotImplemented();
 
 	// base object not null
@@ -805,7 +806,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 					receiver->setSubPeriod(index[1] + receiver->getSubExpTime());
 					break;
 				case SAMPLES:
-					if (myDetectorType != CHIPTESTBOARD) {
+					if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
 						modeNotImplemented("(Samples) Timer index", (int)index[0]);
 						break;
 					}
@@ -837,7 +838,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 			retval=(receiver->getSubPeriod() - receiver->getSubExpTime());
 			break;
 		case SAMPLES:
-			if (myDetectorType != CHIPTESTBOARD) {
+			if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
 				ret = FAIL;
 				sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
 				FILE_LOG(logERROR) << "Warning: " << mess;
@@ -849,7 +850,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 			modeNotImplemented("Timer index", (int)index[0]);
 			break;
 		}
-		validate((int)index[1], (int)retval, std::string("set timer"), 0);
+		validate((int)index[1], (int)retval, std::string("set timer"), DEC);
 		FILE_LOG(logDEBUG1) << slsDetectorDefs::getTimerType((timerIndex)(index[0])) << ":" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -904,7 +905,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		}
 		// get
 		retval = receiver->getDynamicRange();
-		validate(dr, retval, std::string("set dynamic range"), 0);
+		validate(dr, retval, std::string("set dynamic range"), DEC);
 		FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -938,7 +939,7 @@ int slsReceiverTCPIPInterface::set_streaming_frequency() {
 		}
 		// get
 		retval = receiver->getStreamingFrequency();
-		validate(index, retval, std::string("set streaming frequency"), 0);
+		validate(index, retval, std::string("set streaming frequency"), DEC);
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
@@ -1112,7 +1113,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 		}
 		// get
 		retval=receiver->getFileIndex();
-		validate(index, retval, std::string("set file index"), 0);
+		validate(index, retval, std::string("set file index"), DEC);
 		FILE_LOG(logDEBUG1) << "file index:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval,sizeof(retval), mess);
@@ -1199,7 +1200,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 		}
 		// get
 		retval = receiver->getFileWriteEnable();
-		validate(enable, retval, std::string("set file write enable"), 0);
+		validate(enable, retval, std::string("set file write enable"), DEC);
 		FILE_LOG(logDEBUG1) << "file write enable:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1229,7 +1230,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 		}
 		// get
 		retval = receiver->getOverwriteEnable();
-		validate(index, retval, std::string("set file overwrite enable"), 0);
+		validate(index, retval, std::string("set file overwrite enable"), DEC);
 		FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1262,7 +1263,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 		}
 		// get
 		retval = receiver->getTenGigaEnable();
-		validate(val, retval, std::string("set 10GbE"), 0);
+		validate(val, retval, std::string("set 10GbE"), DEC);
 		FILE_LOG(logDEBUG1) << "10Gbe:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1296,7 +1297,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 		}
 		// get
 		retval = receiver->getFifoDepth();
-		validate(value, retval, std::string("set fifo depth"), 0);
+		validate(value, retval, std::string("set fifo depth"), DEC);
 		FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1329,7 +1330,7 @@ int slsReceiverTCPIPInterface::set_activate() {
 		}
 		// get
 		retval = (int)receiver->getActivate();
-		validate(enable, retval, std::string("set activate"), 0);
+		validate(enable, retval, std::string("set activate"), DEC);
 		FILE_LOG(logDEBUG1) << "Activate: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1359,7 +1360,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(){
 		}
 		// get
 		retval = receiver->getDataStreamEnable();
-		validate(index, retval, std::string("set data stream enable"), 0);
+		validate(index, retval, std::string("set data stream enable"), DEC);
 		FILE_LOG(logDEBUG1) << "data streaming enable:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1389,7 +1390,7 @@ int slsReceiverTCPIPInterface::set_streaming_timer(){
 		}
 		// get
 		retval=receiver->getStreamingTimer();
-		validate(index, retval, std::string("set data stream timer"), 0);
+		validate(index, retval, std::string("set data stream timer"), DEC);
 		FILE_LOG(logDEBUG1) << "Streaming timer:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1422,7 +1423,7 @@ int slsReceiverTCPIPInterface::set_flipped_data(){
 		}
 		// get
 		retval=receiver->getFlippedData(args[0]);
-		validate(args[1], retval, std::string("set flipped data"), 0);
+		validate(args[1], retval, std::string("set flipped data"), DEC);
 		FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1452,7 +1453,7 @@ int slsReceiverTCPIPInterface::set_file_format() {
 		}
 		// get
 		retval = receiver->getFileFormat();
-		validate(f, retval, std::string("set file format"), 0);
+		validate(f, retval, std::string("set file format"), DEC);
 		FILE_LOG(logDEBUG1) << "File Format: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1482,7 +1483,7 @@ int slsReceiverTCPIPInterface::set_detector_posid() {
 		}
 		// get
 		retval = receiver->getDetectorPositionId();
-		validate(arg, retval, std::string("set detector position id"), 0);
+		validate(arg, retval, std::string("set detector position id"), DEC);
 		FILE_LOG(logDEBUG1) << "Position Id:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1547,7 +1548,7 @@ int slsReceiverTCPIPInterface::set_streaming_port() {
 		}
 		// get
 		retval = receiver->getStreamingPort();
-		validate(port, retval, std::string("set streaming port"), 0);
+		validate(port, retval, std::string("set streaming port"), DEC);
 		FILE_LOG(logDEBUG1) << "streaming port:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1604,7 +1605,7 @@ int slsReceiverTCPIPInterface::set_silent_mode() {
 		}
 		// get
 		retval = (int)receiver->getSilentMode();
-		validate(value, retval, std::string("set silent mode"), 0);
+		validate(value, retval, std::string("set silent mode"), DEC);
 		FILE_LOG(logDEBUG1) << "silent mode:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1637,7 +1638,7 @@ int slsReceiverTCPIPInterface::enable_gap_pixels() {
 		}
 		// get
 		retval = receiver->getGapPixelsEnable();
-		validate(enable, retval, std::string("set gap pixels enable"), 0);
+		validate(enable, retval, std::string("set gap pixels enable"), DEC);
 		FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1748,7 +1749,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 		}
 		// get
         retval = receiver->getUDPSocketBufferSize();
-        validate(index, retval, std::string("set udp socket buffer size (No CAP_NET_ADMIN privileges?)"), 0);
+        validate(index, retval, std::string("set udp socket buffer size (No CAP_NET_ADMIN privileges?)"), DEC);
         FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1795,7 +1796,7 @@ int slsReceiverTCPIPInterface::set_frames_per_file() {
 		}
 		// get
 		retval = receiver->getFramesPerFile();
-		validate(index, retval, std::string("set frames per file"), 0);
+		validate(index, retval, std::string("set frames per file"), DEC);
 		FILE_LOG(logDEBUG1) << "frames per file:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1865,7 +1866,7 @@ int slsReceiverTCPIPInterface::set_discard_policy() {
 		}
 		// get
 		retval = receiver->getFrameDiscardPolicy();
-		validate(index, retval, std::string("set discard policy"), 0);
+		validate(index, retval, std::string("set discard policy"), DEC);
 		FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1896,7 +1897,7 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 		}
 		// get
 		retval = (int)receiver->getFramePaddingEnable();
-		validate(index, retval, std::string("set frame padding enable"), 0);
+		validate(index, retval, std::string("set frame padding enable"), DEC);
 		FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1929,8 +1930,40 @@ int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
 		}
 		// get
 		retval = (int)receiver->getDeactivatedPadding();
-		validate(enable, retval, std::string("set deactivated padding enable"), 0);
+		validate(enable, retval, std::string("set deactivated padding enable"), DEC);
 		FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
+	}
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
+}
+
+
+int slsReceiverTCPIPInterface::set_readout_flags() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	readOutFlags arg = GET_READOUT_FLAGS;
+	readOutFlags retval = GET_READOUT_FLAGS;
+
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg), true, receiver) == FAIL)
+		return FAIL;
+
+	if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD)
+		functionNotImplemented();
+
+	// base object not null
+	else if (ret == OK) {
+		// set
+		if (arg >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				FILE_LOG(logDEBUG1) << "Setting readout flag: " << arg;
+				ret = receiver->setReadOutFlags(arg);
+			}
+		}
+		// get
+		retval = receiver->getReadOutFlags();
+		validate((int)arg, (int)(retval & arg), std::string("set readout flags"), HEX);
+		FILE_LOG(logDEBUG1) << "Readout flags: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }

@@ -73,6 +73,12 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 */
 	bool getGapPixelsEnable() const;
 
+	/**
+	 * Get readout flags (Eiger, chiptestboard, moench)
+	 * @return readout flags
+	 */
+	readOutFlags getReadOutFlags() const;
+
 
 	//***file parameters***
 	/**
@@ -341,6 +347,13 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 * @return OK or FAIL
 	 */
 	int setGapPixelsEnable(const bool b);
+
+	/**
+	 * Set readout flags (eiger, chiptestboard, moench)
+	 * @param f readout flag
+	 * @return OK or FAIL
+	 */
+	int setReadOutFlags(const readOutFlags f);
 
 
 	//***file parameters***
@@ -765,12 +778,12 @@ private:
 	int flippedData[2];
 	/** gap pixels enable */
 	bool gapPixelsEnable;
+	/** readout flags*/
+	readOutFlags readoutFlags;
 
 	//*** receiver parameters ***
 	/** Number of Threads */
 	int numThreads;
-	/** Number of channels in roi for jungfrauctb */
-	uint32_t nroichannels;
 	/** Maximum Number of Listening Threads/ UDP Ports */
 	const static int MAX_NUMBER_OF_LISTENING_THREADS = 2;
 	/** Receiver Status */

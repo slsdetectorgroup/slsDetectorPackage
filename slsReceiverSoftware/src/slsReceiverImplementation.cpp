@@ -69,10 +69,10 @@ void slsReceiverImplementation::InitializeMembers() {
 	flippedData[0] = 0;
 	flippedData[1] = 0;
 	gapPixelsEnable = false;
+	readoutFlags = NORMAL_READOUT;
 
 	//*** receiver parameters ***
 	numThreads = 1;
-	nroichannels = 0;
 	status = IDLE;
 	activated = true;
 	deactivatedPaddingEnable = true;
@@ -150,6 +150,12 @@ bool slsReceiverImplementation::getGapPixelsEnable() const {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	return gapPixelsEnable;
 }
+
+slsDetectorDefs::readOutFlags slsReceiverImplementation::getReadOutFlags() const {
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	return readoutFlags;
+}
+
 
 /***file parameters***/
 slsDetectorDefs::fileFormat slsReceiverImplementation::getFileFormat() const{
@@ -436,6 +442,46 @@ int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
 }
 
 
+int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
+	if (readoutFlags != f) {
+		readoutFlags = f;
+
+		// side effects
+		generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
+		for (const auto& it : dataProcessor)
+			it->SetPixelDimension();
+		if (SetupFifoStructure() == FAIL)
+			return FAIL;
+	}
+	std::string flag;
+	if (f == NORMAL_READOUT)
+		flag = "none";
+	else if (f & STORE_IN_RAM)
+		flag.append("storeinram ");
+	if (f & TOT_MODE)
+		flag.append("tot ");
+	if (f & CONTINOUS_RO)
+		flag.append("continous ");
+	if (f & PARALLEL)
+		flag.append("parallel ");
+	if (f & NONPARALLEL)
+		flag.append("nonparallel ");
+	if (f & SAFE)
+		flag.append("safe ");
+	if (f & DIGITAL_ONLY)
+		flag.append("digital ");
+	if (f & ANALOG_AND_DIGITAL)
+		flag.append("analog_digital ");
+	if (f & SHOW_OVERFLOW)
+		flag.append("overflow ");
+	if (f & NOOVERFLOW)
+		flag.append("nooverflow ");
+
+	FILE_LOG(logINFO)  << "ReadoutFlags: " << flag;
+	return OK;
+}
+
+
 void slsReceiverImplementation::setFileFormat(const fileFormat f) {
 	switch(f) {
 #ifdef HDF5C
@@ -568,12 +614,6 @@ int slsReceiverImplementation::setUDPSocketBufferSize(const uint32_t s) {
 
 /***acquisition parameters***/
 int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i) {
-	if (myDetectorType != GOTTHARD) {
-		FILE_LOG(logERROR) << "Can not set ROI for this detector";
-		return FAIL;
-	}
-
-
 	bool change = false;
 	if (roi.size() != i.size())
 		change = true;
@@ -594,17 +634,24 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i)
 
 		roi = i;
 
-		generalData->SetROI(i);
-		framesPerFile = generalData->maxFramesPerFile;
+		switch(myDetectorType) {
+		case GOTTHARD:
+			generalData->SetROI(i);
+			framesPerFile = generalData->maxFramesPerFile;
+			break;
+		case MOENCH:
+			generalData->SetROI(i);
+			break;
+		case CHIPTESTBOARD:
+			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
+			break;
+		default:
+			break;
+		}
+		for (const auto& it : dataProcessor)
+			it->SetPixelDimension();
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
-
-		for (const auto& it : listener)
-			it->SetGeneralData(generalData);
-		for (const auto& it : dataProcessor)
-			it->SetGeneralData(generalData);
-		for (const auto& it : dataStreamer)
-			it->SetGeneralData(generalData);
 	}
 
 
@@ -700,7 +747,6 @@ int slsReceiverImplementation::setAcquisitionPeriod(const uint64_t i) {
 	acquisitionPeriod = i;
 	FILE_LOG(logINFO) << "Acquisition Period: " <<  (double)acquisitionPeriod/(1E9) << "s";
 
-	//overrridden child classes might return FAIL
 	return OK;
 }
 
@@ -710,7 +756,6 @@ int slsReceiverImplementation::setAcquisitionTime(const uint64_t i) {
 	acquisitionTime = i;
 	FILE_LOG(logINFO) << "Acquisition Time: " <<  (double)acquisitionTime/(1E9) << "s";
 
-	//overrridden child classes might return FAIL
 	return OK;
 }
 
@@ -734,7 +779,6 @@ int slsReceiverImplementation::setNumberOfFrames(const uint64_t i) {
 	numberOfFrames = i;
 	FILE_LOG(logINFO) << "Number of Frames: " << numberOfFrames;
 
-	//overrridden child classes might return FAIL
 	return OK;
 }
 
@@ -743,7 +787,18 @@ int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 	if (numberOfSamples != i) {
 		numberOfSamples = i;
 
-		generalData->setNumberofSamples(i, nroichannels);
+		switch(myDetectorType) {
+		case MOENCH:
+			generalData->setNumberofSamples(i);
+			break;
+		case CHIPTESTBOARD:
+			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
+			for (const auto& it : dataProcessor)
+				it->SetPixelDimension();
+			break;
+		default:
+			break;
+		}
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
@@ -832,8 +887,9 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	switch(myDetectorType) {
 	case GOTTHARD:
 	case EIGER:
-	case CHIPTESTBOARD:
 	case JUNGFRAU:
+	case CHIPTESTBOARD:
+	case MOENCH:
 		FILE_LOG(logINFO) << " ***** " << detectorTypeToString(d) << " Receiver *****";
 		break;
 	default:

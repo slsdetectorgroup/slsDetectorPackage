@@ -2272,10 +2272,21 @@ int configure_mac(int file_des) {
 
 #endif
             ret = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2);
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+            if (ret != OK) {
+            	if (ret == FAIL)
+            		sprintf(mess,"Could not configure mac because of incorrect udp 1G destination IP and port\n");
+            	else if (ret == -1)
+            		sprintf(mess, "Could not allocate RAM\n");
+            	FILE_LOG(logERROR,(mess));
+            }
+#else
 			if (ret == FAIL) {
 				sprintf(mess,"Configure Mac failed\n");
 				FILE_LOG(logERROR,(mess));
-			} else {
+			}
+#endif
+			else {
 			    FILE_LOG(logINFO, ("\tConfigure MAC successful\n"));
 			}
 #if defined(EIGERD) || defined (JUNGFRAUD)

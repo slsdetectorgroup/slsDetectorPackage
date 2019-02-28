@@ -62,6 +62,7 @@ int setUDPDestinationDetails(const char* ip, unsigned short int port) {
 }
 
 int createUDPSocket() {
+	FILE_LOG(logDEBUG2, ("Creating UDP Socket\n"));
 	if (!strlen(udpDestinationIp)) {
 		FILE_LOG(logERROR, ("No destination UDP ip specified.\n"));
 		return FAIL;
@@ -107,10 +108,9 @@ int sendUDPPacket(const char* buf, int length) {
 }
 
 void closeUDPSocket() {
-	close(udpSockfd);
-	udpSockfd = -1;
-	if (udpServerAddrInfo) {
-		freeaddrinfo(udpServerAddrInfo);
-		udpServerAddrInfo = 0;
+	if (udpSockfd != -1) {
+		FILE_LOG(logINFO, ("Udp client socket closed\n"));
+		close(udpSockfd);
+		udpSockfd = -1;
 	}
 }

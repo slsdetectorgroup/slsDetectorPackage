@@ -2245,6 +2245,31 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
     if (ret == FORCE_UPDATE) {
         ret = updateDetector();
     }
+
+    // sending to receiver
+    if (ret != FAIL) {
+    	fnum = F_RECEIVER_SET_READOUT_FLAGS;
+    	ret = FAIL;
+    	arg = thisDetector->roFlags;
+    	retval = (readOutFlags) -1;
+    	FILE_LOG(logDEBUG1) << "Setting receiver readout flags to " << arg;
+
+    	if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
+    		auto receiver = sls::ClientSocket(true, thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
+    		ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+
+    		// handle ret
+    		if (ret == FAIL) {
+    			setErrorMask((getErrorMask()) | (COULD_NOT_SET_READOUT_FLAGS));
+    		} else {
+    			FILE_LOG(logDEBUG1) << "Receiver readout flag: " << retval;
+    		}
+    	}
+    	if (ret == FORCE_UPDATE) {
+    		ret = updateReceiver();
+    	}
+    }
+
     return thisDetector->roFlags;
 }
 
@@ -2425,14 +2450,16 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
             setDynamicRange(thisDetector->dynamicRange);
             if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
                 setTimer(SAMPLES, thisDetector->timerValue[SAMPLES]);
-                enableTenGigabitEthernet(thisDetector->tenGigaEnable);
             }
             if (thisDetector->myDetectorType == EIGER) {
                 setFlippedData(X, -1);
                 activate(-1);
                 setDeactivatedRxrPaddingMode(thisDetector->receiver_deactivatedPaddingEnable);
-                enableTenGigabitEthernet(thisDetector->tenGigaEnable);
                 enableGapPixels(thisDetector->gappixels);
+            }
+            if (thisDetector->myDetectorType == EIGER || thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
+                enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+                setReadOutFlags(thisDetector->roFlags);
             }
             setReceiverSilentMode(thisDetector->receiver_silentMode);
             // data streaming

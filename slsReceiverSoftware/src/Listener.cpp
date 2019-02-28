@@ -172,7 +172,7 @@ void Listener::RecordFirstIndices(uint64_t fnum) {
 }
 
 
-void Listener::SetGeneralData(GeneralData*& g) {
+void Listener::SetGeneralData(GeneralData* g) {
 	generalData = g;
 	generalData->Print();
 }
@@ -467,6 +467,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				memcpy(buf + fifohsize + dsize - 2, carryOverPacket + hsize, dsize+2);
 			break;
 		case CHIPTESTBOARD:
+		case MOENCH:
 			if (pnum == (pperFrame-1))
 				memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize, corrected_dsize);
 			else
@@ -479,7 +480,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		carryOverFlag = false;
 		++numpackets;					//number of packets in this image (each time its copied to buf)
-		new_header->packetsMask[pnum] = 1;
+		new_header->packetsMask[((pnum < MAX_NUM_PACKETS) ? pnum : MAX_NUM_PACKETS)] = 1;
 
 		//writer header
 		if(isHeaderEmpty) {
@@ -612,6 +613,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 				memcpy(buf + fifohsize + (pnum * dsize) - 2, listeningPacket + hsize, dsize+2);
 			break;
 		case CHIPTESTBOARD:
+		case MOENCH:
 			if (pnum == (pperFrame-1))
 				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, corrected_dsize);
 			else
@@ -622,7 +624,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			break;
 		}
 		++numpackets;			//number of packets in this image (each time its copied to buf)
-		new_header->packetsMask[pnum] = 1;
+		new_header->packetsMask[((pnum < MAX_NUM_PACKETS) ? pnum : MAX_NUM_PACKETS)] = 1;
 
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------

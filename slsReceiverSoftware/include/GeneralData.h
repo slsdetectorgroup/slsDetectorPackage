@@ -182,9 +182,8 @@ public:
 	/**
 	 * Setting packets per frame changes member variables
 	 * @param ns number of samples
-	 * @param nroich number of channels in roi
 	 */
-	virtual void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
+	virtual void setNumberofSamples(const uint64_t ns) {
 		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
 	};
 
@@ -205,6 +204,17 @@ public:
     virtual bool SetOddStartingPacket(int index, char* packetData) {
         cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
         return false;
+    };
+
+    /**
+     * Set databytes (ctb, moench)
+     * @param f readout flags
+     * @param r roi
+     * @param s number of samples
+     * @param t tengiga enable
+     */
+    virtual void setImageSize(slsDetectorDefs::readOutFlags f, std::vector<slsDetectorDefs::ROI> i, int s, bool t) {
+        cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
     };
 
 	/**
@@ -242,9 +252,9 @@ public:
 class GotthardData : public GeneralData {
 
 private:
-	const static int nChip = 10;
-	const static int nChan = 128;
-	const static int nChipsPerAdc = 2;
+	const int nChip = 10;
+	const int nChan = 128;
+	const int nChipsPerAdc = 2;
  public:
 
 	/** Constructor */
@@ -511,20 +521,26 @@ class JungfrauData : public GeneralData {
 
 
 class ChipTestBoardData : public GeneralData {
-
- public:
+private:
+	/** Number of analog channels */
+	const int NCHAN_ANALOG = 32;
+	/** Number of digital channels */
+	const int NCHAN_DIGITAL = 4;
+	/** Number of bytes per pixel */
+	const int NUM_BYTES_PER_PIXEL = 2;
+public:
 
 
 	/** Constructor */
 	ChipTestBoardData(){
 		myDetectorType		= slsDetectorDefs::CHIPTESTBOARD;
-		nPixelsX 			= 36;
-		nPixelsY 			= 1;
+		nPixelsX 			= 36; // total number of channels
+		nPixelsY 			= 1; // numberofsamples
 		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
-		dataSize 			= 0; // to be calculatedd
+		dataSize 			= UDP_PACKET_DATA_BYTES;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 0; // to be calculated
-		imageSize 			= nPixelsX * nPixelsY * 2;
+		imageSize 			= 0; // to be calculated
 		maxFramesPerFile 	= CTB_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
@@ -532,27 +548,43 @@ class ChipTestBoardData : public GeneralData {
 	};
 
 	/**
-	 * Setting packets per frame changes member variables
-	 * @param ns number of samples
-	 * @param nroich number of channels in roi
+	 * Set databytes (ctb, moench)
+	 * @param f readout flags
+	 * @param r roi
+	 * @param s number of samples
+	 * @param t tengiga enable
 	 */
-	void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
-		packetsPerFrame = ceil(double(2 * (nroich ? nroich : 32) * ns) / dataSize);
-		nPixelsY		= (ns * 2) / 25;/* depends on nroich also?? */
-		imageSize 		= nPixelsX * nPixelsY * 2;
-	};
+	void setImageSize(slsDetectorDefs::readOutFlags f, std::vector<slsDetectorDefs::ROI> i, int s, bool t) {
+		int nchans = 0;
+	    if (f & slsDetectorDefs::NORMAL_READOUT || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+	        nchans += NCHAN_ANALOG;
 
-	/**
-	 * Setting ten giga enable changes member variables
-	 * @param tgEnable true if 10GbE is enabled, else false
-	 * @param dr dynamic range
-	 */
-	void SetTenGigaEnable(bool tgEnable, int dr) {
-		dataSize 		= (tgEnable ? 4096 : 1024);
-		packetSize 		= headerSizeinPacket + dataSize;
-		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
-		imageSize 		= dataSize*packetsPerFrame;
-	};
+	        // if roi
+	        if (i.size()) {
+	        	nchans = abs(i[0].xmax - i[0].xmin);
+	        }
+	    }
+	    if (f & slsDetectorDefs::DIGITAL_ONLY || f & slsDetectorDefs::ANALOG_AND_DIGITAL)
+	        nchans += NCHAN_DIGITAL;
+
+	    nPixelsX = nchans;
+	    nPixelsY = s;
+	    // 10G
+	    if (t) {
+	    	// fixed values
+	    	dataSize = 0; // FIXME: fix when firmware written
+	    	packetSize = headerSizeinPacket + dataSize;
+			packetsPerFrame = 0; // FIXME: fix when firmware written
+			imageSize = dataSize*packetsPerFrame; // FIXME: OR fix when firmware written
+	    }
+	    // 1g udp (via fifo readout)
+	    else {
+			dataSize = UDP_PACKET_DATA_BYTES;
+			packetSize = headerSizeinPacket + dataSize;
+	    	imageSize = nchans * NUM_BYTES_PER_PIXEL * s;
+	    	packetsPerFrame = ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+	    }
+	}
 
 };
 
@@ -572,10 +604,8 @@ private:
 
  public:
 
-
-
 	/** Bytes Per Adc */
-	const static uint32_t bytesPerAdc = 2;
+	const uint32_t bytesPerAdc = 2;
 
 	/** Constructor */
 	MoenchData(){
@@ -615,10 +645,9 @@ private:
 	/**
 	 * Setting packets per frame changes member variables
 	 * @param ns number of samples
-	 * @param nroich number of channels in roi
 	 */
-	void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
-		packetsPerFrame = ceil(double(2 * (nroich ? nroich : 32) * ns) / dataSize);
+	void setNumberofSamples(const uint64_t ns) {
+		packetsPerFrame = ceil(double(2 * 32 * ns) / dataSize);
 		nPixelsY		= (ns * 2) / 25;/* depends on nroich also?? */
 		imageSize 		= nPixelsX * nPixelsY * 2;
 	};

@@ -36,6 +36,9 @@ typedef  int int32_t;
 #define SLS_DETECTOR_HEADER_VERSION         0x2
 #define SLS_DETECTOR_JSON_HEADER_VERSION    0x3
 
+// ctb/ moench 1g udp (read from fifo)
+#define UDP_PACKET_DATA_BYTES		(1344)
+
 /** maximum rois */
 #define MAX_ROIS 100
 

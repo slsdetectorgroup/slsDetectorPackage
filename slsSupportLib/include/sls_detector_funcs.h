@@ -119,6 +119,7 @@ enum detFuncs{
 	F_RECEIVER_DISCARD_POLICY, /** < frames discard policy */
 	F_RECEIVER_PADDING_ENABLE, /** < partial frames padding enable */
 	F_RECEIVER_DEACTIVATED_PADDING_ENABLE, /** < deactivated receiver padding enable */
+	F_RECEIVER_SET_READOUT_FLAGS, /**< set/get receiver readout flags */
 	NUM_REC_FUNCTIONS
 };
 
@@ -235,6 +236,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_DISCARD_POLICY:			return "F_RECEIVER_DISCARD_POLICY";
     case F_RECEIVER_PADDING_ENABLE:			return "F_RECEIVER_PADDING_ENABLE";
     case F_RECEIVER_DEACTIVATED_PADDING_ENABLE: return "F_RECEIVER_DEACTIVATED_PADDING_ENABLE";
+    case F_RECEIVER_SET_READOUT_FLAGS: 		return "F_RECEIVER_SET_READOUT_FLAGS";
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";
 	}

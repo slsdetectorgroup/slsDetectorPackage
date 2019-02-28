@@ -1247,7 +1247,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 	if (interface->Server_ReceiveArg(ret, mess, &val, sizeof(val), true, receiver) == FAIL)
 		return FAIL;
 
-	if (myDetectorType != EIGER)
+	if (myDetectorType != EIGER && myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH)
 		functionNotImplemented();
 
 	// base object not null

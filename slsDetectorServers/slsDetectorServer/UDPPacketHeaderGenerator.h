@@ -22,7 +22,7 @@ extern int nframes;
 extern char* ramValues;
 
 #define UDP_PACKET_HEADER_VERSION 	(0x1)
-#define UDP_PACKET_MAX_DATA_BYTES	(1280)
+#define UDP_PACKET_DATA_BYTES		(1344)
 
 
 uint32_t udpPacketNumber = 0;
@@ -41,13 +41,6 @@ uint64_t getUDPFrameNumber() {
 	return udpFrameNumber;
 }
 
-void calculateDataBytesPerSample() {
-	dataBytesPerSample = dataBytes / nSamples;
-	numSamplesPerPacket = (double)UDP_PACKET_MAX_DATA_BYTES / (double)dataBytesPerSample;
-	dataBytesPerPacket = dataBytesPerSample * numSamplesPerPacket;
-	FILE_LOG(logDEBUG2, ("Databytes/Sample = %d, numSamples/Packet:%d dataBytes/Packet:%d\n",
-			dataBytesPerSample, numSamplesPerPacket, dataBytesPerPacket));
-}
 
 /**
  * Called for each UDP packet header creation
@@ -81,35 +74,34 @@ int fillUDPPacket(char* buffer) {
 
 	sls_detector_header* header = (sls_detector_header*)(buffer);
 
-	// first packet (update frame number)
+	// update frame number, starts at 1 (reset packet number)
 	if (udpHeaderOffset == 0) {
-		// increment frame number (starts at 1)
 		++udpFrameNumber;
 		header->frameNumber = udpFrameNumber;
 		udpPacketNumber = -1;
 	}
-	// increment udp packet number (starts at 0)
+
+	// increment  and copy udp packet number (starts at 0)
 	++udpPacketNumber;
-
-	// copy packet number
-	FILE_LOG(logDEBUG2, ("Creating packet number %d (fnum:%lld)\n", udpPacketNumber, (long long int) udpFrameNumber));
 	header->packetNumber = udpPacketNumber;
+	FILE_LOG(logDEBUG2, ("Creating packet number %d (fnum:%lld)\n", udpPacketNumber, (long long int) udpFrameNumber));
 
-	// calculate number of bytes to write
-	int numBytesToWrite = ((udpHeaderOffset + dataBytesPerPacket) <= dataBytes) ?
-			dataBytesPerPacket : (dataBytes - udpHeaderOffset);
+	// calculate number of bytes to copy
+	int numBytesToCopy = ((udpHeaderOffset + UDP_PACKET_DATA_BYTES) <= dataBytes) ?
+			UDP_PACKET_DATA_BYTES : (dataBytes - udpHeaderOffset);
+	header->reserved = numBytesToCopy;
 
-	// copy number of samples in current packet
-	header->reserved = (numBytesToWrite / dataBytesPerSample);
-	if (numBytesToWrite % dataBytesPerSample) {
-		FILE_LOG(logERROR, ("fillUDPPacketHeader: numBytesToWrite is not divisible by dataBytesPerSample! Calculation error\n"));
+	// copy data
+	memcpy(buffer + sizeof(sls_detector_header), ramValues + udpHeaderOffset, numBytesToCopy);
+	// pad last packet if extra space
+	if (numBytesToCopy < UDP_PACKET_DATA_BYTES) {
+		int bytes = UDP_PACKET_DATA_BYTES - numBytesToCopy;
+		FILE_LOG(logDEBUG1, ("Padding %d bytes for fnum:%lld pnum:%d\n", bytes, (long long int)udpFrameNumber, udpPacketNumber));
+		memset(buffer + sizeof(sls_detector_header) + numBytesToCopy, 0, bytes);
 	}
 
-	// copy date
-	memcpy(buffer + sizeof(sls_detector_header), ramValues + udpHeaderOffset, numBytesToWrite);
-
 	// increment offset
-	udpHeaderOffset += numBytesToWrite;
+	udpHeaderOffset += numBytesToCopy;
 
-	return numBytesToWrite + sizeof(sls_detector_header);
+	return UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header);
 }

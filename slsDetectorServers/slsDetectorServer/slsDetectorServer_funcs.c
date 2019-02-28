@@ -1498,9 +1498,8 @@ int read_all(int file_des) {
 
     		  if (createUDPSocket() == OK) {
 
-    			  char buffer[UDP_PACKET_MAX_DATA_BYTES + sizeof(sls_detector_header)];
+    			  char buffer[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
     			  createUDPPacketHeader(buffer, getHardwareSerialNumber());
-    			  calculateDataBytesPerSample();
 
     	          // keep reading frames
     	          while(readFrameFromFifo() == OK) {

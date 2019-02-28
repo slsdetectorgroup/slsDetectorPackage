@@ -407,110 +407,6 @@ private:
 };
 
 
-
-
-
-class JCTBData : public GeneralData {
-
-
-private:
-	/** Structure of an jungfrau ctb packet header */
-	typedef struct {
-		unsigned char emptyHeader[6];
-		unsigned char reserved[4];
-		unsigned char packetNumber[1];
-		unsigned char frameNumber[3];
-		unsigned char bunchid[8];
-	} jfrauctb_packet_header_t;
-
- public:
-
-
-
-	/** Bytes Per Adc */
-	const static uint32_t bytesPerAdc = 2;
-
-	/** Constructor */
-	JCTBData(){
-		myDetectorType		= slsDetectorDefs::CHIPTESTBOARD;
-		nPixelsX 			= 400;
-		nPixelsY 			= 400;
-		headerSizeinPacket  = 22;
-		dataSize 			= 8192;
-		packetSize 			= headerSizeinPacket + dataSize;
-		packetsPerFrame 	= 1;
-		imageSize 			= nPixelsX * nPixelsY * 2;
-		frameIndexMask 		= 0xFFFFFF;
-		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-	};
-
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
-	 * @param oddStartingPacket odd starting packet (gotthard)
-	 * @param frameNumber frame number 	 * @param packetNumber packet number
-	 * @param subFrameNumber sub frame number if applicable
-	 * @param bunchId bunch id
-	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
-		subFrameNumber = -1;
-		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);
-		frameNumber = (uint64_t)((*( (uint32_t*) header->frameNumber)) & frameIndexMask);
-		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
-		bunchId = (*((uint64_t*) header->bunchid));
-	}
-
-	/**
-	 * Setting packets per frame changes member variables
-	 * @param ns number of samples
-	 * @param nroich number of channels in roi
-	 */
-	void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
-		packetsPerFrame = ceil(double(2 * (nroich ? nroich : 32) * ns) / dataSize);
-		nPixelsY		= (ns * 2) / 25;/* depends on nroich also?? */
-		imageSize 		= nPixelsX * nPixelsY * 2;
-	};
-
-	/**
-	 * Print all variables
-	 */
-	void Print(TLogLevel level = logDEBUG1) const {
-		GeneralData::Print(level);
-		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
-	}
-};
-
-
-class JungfrauData : public GeneralData {
-
- public:
-
-	/** Constructor */
-	JungfrauData(){
-		myDetectorType		= slsDetectorDefs::JUNGFRAU;
-		nPixelsX 			= (256*4);
-		nPixelsY 			= 512;
-		emptyHeader			= 6;
-		headerSizeinPacket  = emptyHeader + sizeof(slsDetectorDefs::sls_detector_header);
-		dataSize 			= 8192;
-		packetSize 			= headerSizeinPacket + dataSize;
-		packetsPerFrame 	= 128;
-		imageSize 			= dataSize*packetsPerFrame;
-		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-		standardheader		= true;
-		defaultUdpSocketBufferSize = (2000 * 1024 * 1024);
-	};
-
-};
-
-
 class EigerData : public GeneralData {
 
  public:
@@ -585,4 +481,169 @@ class EigerData : public GeneralData {
 
 
 };
+
+
+
+class JungfrauData : public GeneralData {
+
+ public:
+
+	/** Constructor */
+	JungfrauData(){
+		myDetectorType		= slsDetectorDefs::JUNGFRAU;
+		nPixelsX 			= (256*4);
+		nPixelsY 			= 512;
+		emptyHeader			= 6;
+		headerSizeinPacket  = emptyHeader + sizeof(slsDetectorDefs::sls_detector_header);
+		dataSize 			= 8192;
+		packetSize 			= headerSizeinPacket + dataSize;
+		packetsPerFrame 	= 128;
+		imageSize 			= dataSize*packetsPerFrame;
+		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+		defaultFifoDepth 	= 2500;
+		standardheader		= true;
+		defaultUdpSocketBufferSize = (2000 * 1024 * 1024);
+	};
+
+};
+
+
+
+class ChipTestBoardData : public GeneralData {
+
+ public:
+
+
+	/** Constructor */
+	ChipTestBoardData(){
+		myDetectorType		= slsDetectorDefs::CHIPTESTBOARD;
+		nPixelsX 			= 36;
+		nPixelsY 			= 1;
+		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
+		dataSize 			= 0; // to be calculatedd
+		packetSize 			= headerSizeinPacket + dataSize;
+		packetsPerFrame 	= 0; // to be calculated
+		imageSize 			= nPixelsX * nPixelsY * 2;
+		maxFramesPerFile 	= CTB_MAX_FRAMES_PER_FILE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+		defaultFifoDepth 	= 2500;
+		standardheader		= true;
+	};
+
+	/**
+	 * Setting packets per frame changes member variables
+	 * @param ns number of samples
+	 * @param nroich number of channels in roi
+	 */
+	void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
+		packetsPerFrame = ceil(double(2 * (nroich ? nroich : 32) * ns) / dataSize);
+		nPixelsY		= (ns * 2) / 25;/* depends on nroich also?? */
+		imageSize 		= nPixelsX * nPixelsY * 2;
+	};
+
+	/**
+	 * Setting ten giga enable changes member variables
+	 * @param tgEnable true if 10GbE is enabled, else false
+	 * @param dr dynamic range
+	 */
+	void SetTenGigaEnable(bool tgEnable, int dr) {
+		dataSize 		= (tgEnable ? 4096 : 1024);
+		packetSize 		= headerSizeinPacket + dataSize;
+		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
+		imageSize 		= dataSize*packetsPerFrame;
+	};
+
+};
+
+
+class MoenchData : public GeneralData {
+
+
+private:
+	/** Structure of an jungfrau ctb packet header */
+	typedef struct {
+		unsigned char emptyHeader[6];
+		unsigned char reserved[4];
+		unsigned char packetNumber[1];
+		unsigned char frameNumber[3];
+		unsigned char bunchid[8];
+	} jfrauctb_packet_header_t;
+
+ public:
+
+
+
+	/** Bytes Per Adc */
+	const static uint32_t bytesPerAdc = 2;
+
+	/** Constructor */
+	MoenchData(){
+		myDetectorType		= slsDetectorDefs::MOENCH;
+		nPixelsX 			= 400;
+		nPixelsY 			= 400;
+		headerSizeinPacket  = 22;
+		dataSize 			= 8192;
+		packetSize 			= headerSizeinPacket + dataSize;
+		packetsPerFrame 	= 1;
+		imageSize 			= nPixelsX * nPixelsY * 2;
+		frameIndexMask 		= 0xFFFFFF;
+		maxFramesPerFile 	= CTB_MAX_FRAMES_PER_FILE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+		defaultFifoDepth 	= 2500;
+	};
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param oddStartingPacket odd starting packet (gotthard)
+	 * @param frameNumber frame number 	 * @param packetNumber packet number
+	 * @param subFrameNumber sub frame number if applicable
+	 * @param bunchId bunch id
+	 */
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
+		subFrameNumber = -1;
+		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);
+		frameNumber = (uint64_t)((*( (uint32_t*) header->frameNumber)) & frameIndexMask);
+		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
+		bunchId = (*((uint64_t*) header->bunchid));
+	}
+
+	/**
+	 * Setting packets per frame changes member variables
+	 * @param ns number of samples
+	 * @param nroich number of channels in roi
+	 */
+	void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
+		packetsPerFrame = ceil(double(2 * (nroich ? nroich : 32) * ns) / dataSize);
+		nPixelsY		= (ns * 2) / 25;/* depends on nroich also?? */
+		imageSize 		= nPixelsX * nPixelsY * 2;
+	};
+
+	/**
+	 * Setting ten giga enable changes member variables
+	 * @param tgEnable true if 10GbE is enabled, else false
+	 * @param dr dynamic range
+	 */
+	void SetTenGigaEnable(bool tgEnable, int dr) {
+		dataSize 		= (tgEnable ? 4096 : 1024);
+		packetSize 		= headerSizeinPacket + dataSize;
+		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
+		imageSize 		= dataSize*packetsPerFrame;
+	};
+
+	/**
+	 * Print all variables
+	 */
+	void Print(TLogLevel level = logDEBUG1) const {
+		GeneralData::Print(level);
+		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
+	}
+};
+
+
+
 

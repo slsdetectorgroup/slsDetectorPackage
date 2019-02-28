@@ -844,10 +844,11 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 
 	//set detector specific variables
 	switch(myDetectorType) {
-	case GOTTHARD:		generalData = new GotthardData();	break;
-	case EIGER:			generalData = new EigerData();		break;
-	case CHIPTESTBOARD:	generalData = new JCTBData();		break;
-	case JUNGFRAU:		generalData = new JungfrauData();	break;
+	case GOTTHARD:		generalData = new GotthardData();		break;
+	case EIGER:			generalData = new EigerData();			break;
+	case JUNGFRAU:		generalData = new JungfrauData();		break;
+	case CHIPTESTBOARD:	generalData = new ChipTestBoardData();	break;
+	case MOENCH:		generalData = new MoenchData();			break;
 	default: break;
 	}
 	numThreads = generalData->threadsPerReceiver;

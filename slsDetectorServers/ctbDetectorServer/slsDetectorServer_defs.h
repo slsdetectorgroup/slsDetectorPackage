@@ -8,7 +8,7 @@
 #define REQRD_FRMWR_VRSN            0x181130
 
 #define PROGRAMMING_MODE            (0x2)
-#define CTRL_SRVR_INIT_TIME_US      (1000 * 1000)
+#define CTRL_SRVR_INIT_TIME_US      (1 * 1000 * 1000)
 
 /* Struct Definitions */
 typedef struct ip_header_struct {
@@ -77,6 +77,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define VIO_MIN_MV                  (1200) // for fpga to function
 
 /* Defines in the Firmware */
+#define MAX_PATTERN_LENGTH  		(0xFFFF)
 #define WAIT_TME_US_FR_LK_AT_ME_REG (100) // wait time in us after acquisition done to ensure there is no data in fifo
 #define WAIT_TIME_US_PLL            (10 * 1000)
 #define WAIT_TIME_US_STP_ACQ        (100)

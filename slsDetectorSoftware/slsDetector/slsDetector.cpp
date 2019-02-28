@@ -424,8 +424,10 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
         thisDetector->receiver_framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
         break;
     case CHIPTESTBOARD:
+    	thisDetector->receiver_framesPerFile = CTB_MAX_FRAMES_PER_FILE;
+    	break;
     case MOENCH:
-        thisDetector->receiver_framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
+        thisDetector->receiver_framesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
         break;
     default:
         break;
@@ -2412,16 +2414,19 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
             overwriteFile(thisDetector->receiver_overWriteEnable);
             setTimer(FRAME_PERIOD, thisDetector->timerValue[FRAME_PERIOD]);
             setTimer(FRAME_NUMBER, thisDetector->timerValue[FRAME_NUMBER]);
-            setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
+            if (thisDetector->myDetectorType != CHIPTESTBOARD && thisDetector->myDetectorType != MOENCH) {
+            	setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
+            }
             if (thisDetector->myDetectorType == EIGER) {
                 setTimer(SUBFRAME_ACQUISITION_TIME,
                          thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
                 setTimer(SUBFRAME_DEADTIME, thisDetector->timerValue[SUBFRAME_DEADTIME]);
             }
+            setDynamicRange(thisDetector->dynamicRange);
             if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
                 setTimer(SAMPLES, thisDetector->timerValue[SAMPLES]);
+                enableTenGigabitEthernet(thisDetector->tenGigaEnable);
             }
-            setDynamicRange(thisDetector->dynamicRange);
             if (thisDetector->myDetectorType == EIGER) {
                 setFlippedData(X, -1);
                 activate(-1);

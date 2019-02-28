@@ -58,7 +58,7 @@
 #define STATUS_PLL_PHS_DN_MSK               (0x00000001 << STATUS_PLL_PHS_DN_OFST)
 #define STATUS_PT_CNTRL_STTS_OFF_OFST       (24)
 #define STATUS_PT_CNTRL_STTS_OFF_MSK        (0x000000FF << STATUS_PT_CNTRL_STTS_OFF_OFST)
-#define STATUS_IDLE_MSK                     (0x7FFFF)
+#define STATUS_IDLE_MSK                     (0x6FFFF)
 
 /* Look at me RO register TODO */
 #define LOOK_AT_ME_REG                      (0x03 << MEM_MAP_SHIFT)
@@ -363,6 +363,11 @@
 
 /* Pattern Limit RW regiser */
 #define PATTERN_LIMIT_REG                   (0x53 << MEM_MAP_SHIFT)
+
+#define PATTERN_LIMIT_STRT_OFST       		(0)
+#define PATTERN_LIMIT_STRT_MSK        		(0x0000FFFF << PATTERN_LIMIT_STRT_OFST)
+#define PATTERN_LIMIT_STP_OFST        		(16)
+#define PATTERN_LIMIT_STP_MSK         		(0x0000FFFF << PATTERN_LIMIT_STP_OFST)
 
 /* Pattern Loop 0 Address RW regiser */
 #define PATTERN_LOOP_0_ADDR_REG             (0x54 << MEM_MAP_SHIFT)

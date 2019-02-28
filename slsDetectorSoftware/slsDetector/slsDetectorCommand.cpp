@@ -354,7 +354,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER only. \c Returns \c (int)
+   - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER, Moench and ChipTestBoard only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "tengiga"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;

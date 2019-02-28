@@ -12,8 +12,6 @@ typedef enum{
 }intType;
 
 
-
-
 int bindSocket(unsigned short int port_number);
 int acceptConnection(int socketDescriptor);
 void closeConnection(int file_Des);

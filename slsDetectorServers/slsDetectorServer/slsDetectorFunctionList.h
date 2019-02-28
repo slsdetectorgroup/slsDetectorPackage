@@ -220,6 +220,9 @@ int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int 		setDetectorPosition(int pos[]);
 #endif
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD)
+int 		enableTenGigabitEthernet(int val);
+#endif
 
 
 // very detector specific
@@ -231,7 +234,6 @@ int         powerChip (int on);
 
 // chip test board specific - sendudp, pll, flashing firmware
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-int         sendUDP(int enable);
 void        configurePhase(enum CLKINDEX ind, int val);
 int         getPhase(enum CLKINDEX ind);
 void        configureFrequency(enum CLKINDEX ind, int val);
@@ -279,10 +281,9 @@ extern int 	startWritingFPGAprogram(FILE** filefp);							// programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);							// programfpga.h
 extern int 	writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);	// programfpga.h
 
-// eiger specific - iodelay, 10g, pulse, rate, temp, activate, delay nw parameter
+// eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
 int 		setIODelay(int val);
-int 		enableTenGigabitEthernet(int val);
 int 		setCounterBit(int val);
 int 		pulsePixel(int n, int x, int y);
 int 		pulsePixelNMove(int n, int x, int y);
@@ -325,8 +326,9 @@ int 		startReadOut();
 enum 		runStatus getRunStatus();
 void 		readFrame(int *ret, char *mess);
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+void 		readandSendUDPFrames(int *ret, char *mess);
 void        unsetFifoReadStrobes();
-void        readSample();
+void        readSample(int ns);
 int         checkDataPresent();
 int         readFrameFromFifo();
 #endif

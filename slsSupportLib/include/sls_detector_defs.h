@@ -45,9 +45,6 @@ typedef  int int32_t;
 /** maximum unit size of program sent to detector */
 #define MAX_FPGAPROGRAMSIZE (2 * 1024 *1024)
 
-/** maximum pattern length */
-#define MAX_PATTERN_LENGTH  65535
-
 /** get flag form most functions */
 #define GET_FLAG -1
 
@@ -58,11 +55,10 @@ typedef  int int32_t;
 #define MAX_STR_LENGTH 1000
 #define MAX_FRAMES_PER_FILE			20000
 #define SHORT_MAX_FRAMES_PER_FILE	100000
-#define MOENCH_MAX_FRAMES_PER_FILE	1000
+#define MOENCH_MAX_FRAMES_PER_FILE	100000
 #define EIGER_MAX_FRAMES_PER_FILE	10000
 #define JFRAU_MAX_FRAMES_PER_FILE 	10000
-#define JFCTB_MAX_FRAMES_PER_FILE   100000
-
+#define CTB_MAX_FRAMES_PER_FILE   20000
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 

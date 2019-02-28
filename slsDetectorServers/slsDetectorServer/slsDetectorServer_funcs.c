@@ -35,11 +35,6 @@ extern char mess[MAX_STR_LENGTH];
 // Variables that will be exported
 int sockfd = 0;
 int debugflag = 0;
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-int dataBytes = 0;
-uint16_t *ramValues = 0;
-int nframes = 0;
-#endif
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
@@ -1372,15 +1367,16 @@ int start_acquisition(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-        nframes = 0;
-#endif
 		ret = startStateMachine();
 		if (ret == FAIL) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+			sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
+#else
 			sprintf(mess, "Could not start acquisition\n");
+#endif
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG1, ("Starting Acquisition ret: %d\n", ret));
+		FILE_LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
 	}
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
@@ -1456,18 +1452,19 @@ int start_and_read_all(int file_des) {
 
 	FILE_LOG(logDEBUG1, ("Starting Acquisition and read all frames\n"));
 	// start state machine
-	FILE_LOG(logDEBUG1, ("Stopping Acquisition\n"));
+	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-        nframes = 0;
-#endif
 		ret = startStateMachine();
 		if (ret == FAIL) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+			sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
+#else
 			sprintf(mess, "Could not start acquisition\n");
+#endif
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG1, ("Starting Acquisition ret: %d\n", ret));
+		FILE_LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
 
 	}
 
@@ -1489,34 +1486,6 @@ int read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Reading all frames\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	    // read from fifo enabled
-      if (!sendUDP(-1)) {
-
-          // keep reading frames
-          while(readFrameFromFifo() == OK) {
-              // (to the receiver)
-              Server_SendResult(file_des, INT32, NO_UPDATE, ramValues, dataBytes);// (or get as arg first)send number of bytes (dataBytes) first //FIXME
-              FILE_LOG(logDEBUG1, ("Frame %d sent\n", nframes));
-              ++nframes;
-          }
-
-          // finished readng frames
-          // frames left to give status
-          int64_t retval = getTimeLeft(FRAME_NUMBER) + 2;
-          if ( retval > 1) {
-              ret = FAIL;
-              sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
-              FILE_LOG(logERROR, (mess));
-          } else {
-              ret = OK; // send number of bytes (8)  first to acknowledge finish of acquisition //FIXME
-              FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
-          }
-            Server_SendResult(file_des, INT32, UPDATE, NULL, 0); // to the client
-      }
-      // read from receiver
-      else
-#endif
 		readFrame(&ret, mess);
 	}
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
@@ -2223,9 +2192,9 @@ int configure_mac(int file_des) {
 	{
 		int iloop = 5;
 		for (iloop = 5; iloop >= 0; --iloop) {
-			FILE_LOG(logDEBUG1, ("%x", (unsigned int)(((dstMac >> (8 * iloop)) & 0xFF))));
+			printf ("%x", (unsigned int)(((dstMac >> (8 * iloop)) & 0xFF)));
 			if (iloop > 0) {
-				FILE_LOG(logDEBUG1, (":"));
+				printf(":");
 			}
 		}
 	}
@@ -2246,9 +2215,9 @@ int configure_mac(int file_des) {
 	{
 		int iloop = 5;
 		for (iloop = 5; iloop >= 0; --iloop) {
-			FILE_LOG(logDEBUG1, ("%x", (unsigned int)(((srcMac >> (8 * iloop)) & 0xFF))));
+			printf("%x", (unsigned int)(((srcMac >> (8 * iloop)) & 0xFF)));
 			if (iloop > 0) {
-				FILE_LOG(logDEBUG1, (":"));
+				printf(":");
 			}
 		}
 	}
@@ -2466,7 +2435,7 @@ int enable_ten_giga(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Enable/ Disable 10GbE : %d\n", arg));
 
-#ifndef EIGERD
+#if defined(JUNGFRAUD) || defined(GOTTHARDD)
 	functionNotImplemented();
 #else
 	// set & get
@@ -2541,7 +2510,7 @@ int set_ctb_pattern(int file_des) {
 #else
         int addr = (int)args[0];
         uint64_t word = args[1];
-        FILE_LOG(logDEBUG1, ("addr:0x%x  word:0x%llx\n", addr, word));
+        FILE_LOG(logDEBUG1, (" addr:0x%x  word:0x%llx\n", addr, word));
 
         if ((word == -1) || (Server_VerifyLock() == OK)) {
 
@@ -2558,21 +2527,21 @@ int set_ctb_pattern(int file_des) {
                 switch (addr) {
                 case -1:
                     strcpy(tempName, "Pattern (I/O Control Register)");
-                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternIOControl(word);
                     break;
                 case -2:
                     strcpy(tempName, "Pattern (Clock Control Register)");
-                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternClkControl(word);
                     break;
                 default:
                     sprintf(tempName, "Pattern (Word, addr:0x%x)", addr);
-                    FILE_LOG(logDEBUG1, ("Setting %s to 0x%llx\n", tempName, (long long int) word));
+                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternWord(addr, word);
                     break;
                 }
-                FILE_LOG(logDEBUG1, ("%s: 0x%llx\n", tempName, (long long int)retval64));
+                FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
                 validate64(word, retval64, tempName, HEX);
             }
         }
@@ -2598,7 +2567,7 @@ int set_ctb_pattern(int file_des) {
         int startAddr = (int)args[1];
         int stopAddr = (int)args[2];
         int numLoops = (int)args[3];
-        FILE_LOG(logDEBUG1, ("loopLevel:%d startAddr:0x%x stopAddr:0x%x numLoops:%d word:0x%llx\n", loopLevel, startAddr, stopAddr, numLoops));
+        FILE_LOG(logDEBUG1, (" loopLevel:%d startAddr:0x%x stopAddr:0x%x numLoops:%d\n", loopLevel, startAddr, stopAddr, numLoops));
 
         if (loopLevel < -1 || loopLevel > 2) { // -1 complete pattern
             ret = FAIL;
@@ -2607,11 +2576,11 @@ int set_ctb_pattern(int file_des) {
         }
 
         // level 0-2, addr upto patternlength + 1
-        else if ((loopLevel != -1) && (startAddr > (MAX_PATTERN_LENGTH + 1) || stopAddr > (MAX_PATTERN_LENGTH + 1))) {
+        else if ((loopLevel != -1) && (startAddr > MAX_PATTERN_LENGTH  || stopAddr > MAX_PATTERN_LENGTH )) {
             ret = FAIL;
             sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, startaddr:0x%x, stopaddr:0x%x). "
                     "Addr must be less than 0x%x\n",
-                    loopLevel, startAddr, stopAddr, MAX_PATTERN_LENGTH + 1);
+                    loopLevel, startAddr, stopAddr, MAX_PATTERN_LENGTH);
             FILE_LOG(logERROR, (mess));
         }
 
@@ -2650,26 +2619,26 @@ int set_ctb_pattern(int file_des) {
 #else
         int loopLevel = (int)args[0];
         int addr = (int)args[1];
-        FILE_LOG(logDEBUG1, ("loopLevel:%d  addr:0x%x\n", loopLevel, addr));
+        FILE_LOG(logDEBUG1, (" loopLevel:%d  addr:0x%x\n", loopLevel, addr));
 
         if ((addr == -1) ||  (Server_VerifyLock() == OK)) {
             if (loopLevel < 0 || loopLevel > 2) {
                 ret = FAIL;
                 sprintf(mess, "Pattern (Wait Address) Level (0x%x) is not implemented for this detector\n", loopLevel);
                 FILE_LOG(logERROR,(mess));
-            } else if (addr > (MAX_PATTERN_LENGTH + 1)) {
+            } else if (addr > MAX_PATTERN_LENGTH) {
                 ret = FAIL;
                 sprintf(mess, "Cannot set Pattern (Wait Address, addr:0x%x). Addr must be less than 0x%x\n",
-                        addr, MAX_PATTERN_LENGTH + 1);
+                        addr, MAX_PATTERN_LENGTH);
                 FILE_LOG(logERROR, (mess));
             } else {
                 char tempName[100];
                 memset(tempName, 0, 100);
                 sprintf(tempName, "Pattern (Wait Address, Level:%d)", loopLevel);
 
-                FILE_LOG(logDEBUG1, ("Setting %s to 0x%x\n", tempName, addr));
+                FILE_LOG(logDEBUG1, (" Setting %s to 0x%x\n", tempName, addr));
                 retval32 = setPatternWaitAddress(loopLevel, addr);
-                FILE_LOG(logDEBUG1, ("%s: 0x%x\n", tempName, retval32));
+                FILE_LOG(logDEBUG1, (" %s: 0x%x\n", tempName, retval32));
                 validate(addr, retval32, tempName, HEX);
             }
         }
@@ -2693,7 +2662,7 @@ int set_ctb_pattern(int file_des) {
 #else
         int loopLevel = (int)args[0];
         uint64_t timeval = args[1];
-        FILE_LOG(logDEBUG1, ("loopLevel:%d  timeval:0x%lld\n", loopLevel, timeval));
+        FILE_LOG(logDEBUG1, (" loopLevel:%d  timeval:0x%lld\n", loopLevel, timeval));
 
         if ((timeval == -1) ||  (Server_VerifyLock() == OK)) {
             if (loopLevel < 0 || loopLevel > 2) {
@@ -2705,9 +2674,9 @@ int set_ctb_pattern(int file_des) {
                 memset(tempName, 0, 100);
                 sprintf(tempName, "Pattern (Wait Time, Level:%d)", loopLevel);
 
-                FILE_LOG(logDEBUG1, ("Setting %s to 0x%lld\n", tempName, (long long int)timeval));
+                FILE_LOG(logDEBUG1, (" Setting %s to 0x%lld\n", tempName, (long long int)timeval));
                 retval64 = setPatternWaitTime(loopLevel, timeval);
-                FILE_LOG(logDEBUG1, ("%s: 0x%lld\n", tempName, (long long int)retval64));
+                FILE_LOG(logDEBUG1, (" %s: 0x%lld\n", tempName, (long long int)retval64));
                 validate64(timeval, retval64, tempName, HEX);
             }
         }

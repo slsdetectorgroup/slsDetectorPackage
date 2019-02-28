@@ -88,7 +88,6 @@ int fillUDPPacket(char* buffer) {
 	// calculate number of bytes to copy
 	int numBytesToCopy = ((udpHeaderOffset + UDP_PACKET_DATA_BYTES) <= dataBytes) ?
 			UDP_PACKET_DATA_BYTES : (dataBytes - udpHeaderOffset);
-	header->reserved = numBytesToCopy;
 
 	// copy data
 	memcpy(buffer + sizeof(sls_detector_header), ramValues + udpHeaderOffset, numBytesToCopy);

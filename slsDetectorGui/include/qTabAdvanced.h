@@ -213,7 +213,7 @@ private:
 	multiSlsDetector *myDet;
 
 	/** The sls detector object */
-	slsDetector *det;
+	// slsDetector *det;
 
 	/** detector type */
 	slsDetectorDefs::detectorType detType;

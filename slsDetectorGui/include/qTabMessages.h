@@ -56,7 +56,7 @@ private:
 	qDebugStream *qout;
 	qDebugStream *qerr;
 
-	string errMsg;
+	std::string errMsg;
 
 /** methods */
 	/** Sets up the widget */

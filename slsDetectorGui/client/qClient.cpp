@@ -12,7 +12,7 @@
 // C++ Include Headers
 #include <iostream>
 #include <sstream>
-using namespace std;
+
 
 
 
@@ -47,11 +47,11 @@ qClient::qClient(char* hostname):
 		myStopSocket = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO+1);
 	} catch(...) {
 		if (mySocket == 0)
-			cout << "Error: could not connect to control server:" <<
-			hostname << " with port " << DEFAULT_GUI_PORTNO << endl;
+			std::cout << "Error: could not connect to control server:" <<
+			hostname << " with port " << DEFAULT_GUI_PORTNO << '\n';
 		else
-			cout << "Error: could not connect to stop server:" <<
-			hostname << " with port " << DEFAULT_GUI_PORTNO + 1 << endl;
+			std::cout << "Error: could not connect to stop server:" <<
+			hostname << " with port " << DEFAULT_GUI_PORTNO + 1 << '\n';
 		throw;
 	}
 }
@@ -70,14 +70,14 @@ qClient::~qClient() {
 
 int qClient::executeLine(int narg, char *args[]){
 
-	string retval = "";
-	string cmd = args[0];
-	string argument;
+	std::string retval = "";
+	std::string cmd = args[0];
+	std::string argument;
 
 
 	//validate command structure
 	if(narg<1){
-		cout << "Error: no command parsed" << endl;
+		std::cout << "Error: no command parsed\n";
 		return FAIL;
 	}
 
@@ -120,13 +120,13 @@ int qClient::executeLine(int narg, char *args[]){
 
 	//unrecognized command
 	else{
-		cout << "Error: unrecognized command" << endl;
+		std::cout << "Error: unrecognized command\n";
 		return FAIL;
 	}
 
 
 	//print result
-	cout << cmd << ": " << retval << endl;
+	std::cout << cmd << ": " << retval << '\n';
 
 	return OK;
 }
@@ -134,8 +134,8 @@ int qClient::executeLine(int narg, char *args[]){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-string qClient::printCommands(){
-	ostringstream os;
+std::string qClient::printCommands(){
+	std::ostringstream os;
 	os << "\nexit \t exits servers in gui" << std::endl;
 	os << "status \t gets status of acquisition in gui. - can be running or idle" << std::endl;
 	os << "status i  starts/stops acquistion in gui-non blocking. i is start or stop" << std::endl;
@@ -147,7 +147,7 @@ string qClient::printCommands(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-string qClient::getStatus(){
+std::string qClient::getStatus(){
 	int fnum = F_GET_RUN_STATUS;
 	int ret = FAIL;
 	runStatus retval=ERROR;
@@ -167,7 +167,7 @@ string qClient::getStatus(){
 	sprintf(answer,"%d%% ",progress);
 	strcat(answer,slsDetectorDefs::runStatusType((runStatus)retval).c_str());
 
-	return string(answer);
+	return std::string(answer);
 }
 
 
@@ -206,7 +206,7 @@ int qClient::stopAcquisition(){
 		myStopSocket->ReceiveDataOnly(&ret,sizeof(ret));
 		if (ret == FAIL){
 			myStopSocket->ReceiveDataOnly(mess,sizeof(mess));
-			std::cout<< "Gui returned error: " << mess << std::endl;
+			std::cout<< "Gui returned error: " << mess << '\n';
 		}
 		myStopSocket->Disconnect();
 	}else
@@ -227,7 +227,7 @@ int qClient::exitServer(){
 		myStopSocket->SendDataOnly(&fnum,sizeof(fnum));
 		myStopSocket->ReceiveDataOnly(&ret,sizeof(ret));
 		myStopSocket->ReceiveDataOnly(mess,sizeof(mess));
-		cout << mess << endl;
+		std::cout << mess << '\n';
 		myStopSocket->Disconnect();
 	}else
 		exit(-1);

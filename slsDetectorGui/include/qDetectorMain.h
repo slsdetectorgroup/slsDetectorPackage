@@ -32,7 +32,7 @@ class multiSlsDetector;
 #include <QTabWidget>
 
 #include <iostream>
-using namespace std;
+
 
 /** To Over-ride the QTabWidget class to get the tabBar */
 class MyTabWidget:public QTabWidget{
@@ -146,7 +146,7 @@ private:
 	/**Sets up detector
 	 * @param fName file name of the config file at start up
 	 * */
-	void SetUpDetector(const string fName);
+	void SetUpDetector(const std::string fName);
 
 	/**Sets up the signals and the slots
 	 * */
@@ -154,7 +154,7 @@ private:
 
 	/** Loads config file at start up
 	 * */
-	void LoadConfigFile(const string fName);
+	void LoadConfigFile(const std::string fName);
 
 
 private slots:

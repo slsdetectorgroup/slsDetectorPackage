@@ -17,7 +17,7 @@
 #include <iostream>
 #include <QMessageBox>
 #include <QAbstractButton>
-using namespace std;
+
 
 class qDefs:public QWidget{
 public:
@@ -63,15 +63,15 @@ public:
 	/** returns the unit in words
 	 * @param unit is the time unit
 	 */
-	static string getUnitString(timeUnit unit){
+	static std::string getUnitString(timeUnit unit){
 		switch(unit){
-		case HOURS:			return string("hrs");
-		case MINUTES:		return string("min");
-		case SECONDS:		return string("sec");
-		case MILLISECONDS:	return string("msec");
-		case MICROSECONDS:	return string("usec");
-		case NANOSECONDS:	return string("nsec");
-		default:			return string("error");
+		case HOURS:			return "hrs";
+		case MINUTES:		return "min";
+		case SECONDS:		return "sec";
+		case MILLISECONDS:	return "msec";
+		case MICROSECONDS:	return "usec";
+		case NANOSECONDS:	return "nsec";
+		default:			return "error";
 		}
 	};
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -142,18 +142,18 @@ public:
 	 * @param message the message to be displayed
 	 * @param source is the tab or the source of the message
 	 * */
-	static int  Message(MessageIndex index, string message,string source)
+	static int  Message(MessageIndex index, std::string message, std::string source)
 	{
 		static QMessageBox* msgBox;
 		size_t pos;
 
 		//replace all \n with <br>
 		pos = 0;
-		while((pos = message.find("\n", pos)) != string::npos){
+		while((pos = message.find("\n", pos)) != std::string::npos){
 			message.replace(pos, 1, "<br>");
 			pos += 1;
 		}
-		message.append(string("<p style=\"font-size:10px;color:grey;\">Source:&nbsp;&nbsp; ") + source + string("</p>"));
+		message.append(std::string("<p style=\"font-size:10px;color:grey;\">Source:&nbsp;&nbsp; ") + source + std::string("</p>"));
 
 		switch(index){
 		case WARNING:
@@ -190,20 +190,19 @@ public:
 	 * @param myDet is the multidetector object
 	 /returns error message else an empty string
 	 * */
-	static string checkErrorMessage(multiSlsDetector*& myDet, string title = "Main"){
+	static std::string checkErrorMessage(multiSlsDetector*& myDet, std::string title = "Main"){
 
 
 		int errorLevel= (int)WARNING;
-		string retval="";
 		size_t pos;
 
 
-		retval = myDet->getErrorMessage(errorLevel);
+		std::string retval = myDet->getErrorMessage(errorLevel);
 
 		if(!retval.empty()){
 			//replace all \n with <br>
 			pos = 0;
-			while((pos = retval.find("\n", pos)) != string::npos){
+			while((pos = retval.find("\n", pos)) != std::string::npos){
 				retval.replace(pos, 1, "<br>");
 				pos += 1;
 			}
@@ -231,21 +230,21 @@ public:
 	 * @param show to display the error message
 		 /returns error message else an empty string
 	 * */
-	static string checkErrorMessage(slsDetector*& myDet, string title = "Main", bool show = true){
+	static std::string checkErrorMessage(slsDetector*& myDet, std::string title = "Main", bool show = true){
 
 
 		int errorLevel= (int)WARNING;
-		string retval="";
+		// string retval="";
 		size_t pos;
 		int64_t emask=0;
 
 		emask = myDet->getErrorMask();
-		retval = myDet->getErrorMessage(emask);
+		std::string retval = myDet->getErrorMessage(emask);
 
 		if(!retval.empty()){
 			//replace all \n with <br>
 			pos = 0;
-			while((pos = retval.find("\n", pos)) != string::npos){
+			while((pos = retval.find("\n", pos)) != std::string::npos){
 				retval.replace(pos, 1, "<br>");
 				pos += 1;
 			}

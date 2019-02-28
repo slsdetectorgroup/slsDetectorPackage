@@ -235,14 +235,14 @@ private:
 	bool isAngular;
 
 	/** ROI */
-	vector <QLabel*> 	lblFromX;
-	vector <QSpinBox*> 	spinFromX;
-	vector <QLabel*> 	lblFromY;
-	vector <QSpinBox*> 	spinFromY;
-	vector <QLabel*> 	lblToX;
-	vector <QSpinBox*> 	spinToX;
-	vector <QLabel*> 	lblToY;
-	vector <QSpinBox*> 	spinToY;
+	std::vector <QLabel*> 	lblFromX;
+	std::vector <QSpinBox*> 	spinFromX;
+	std::vector <QLabel*> 	lblFromY;
+	std::vector <QSpinBox*> 	spinFromY;
+	std::vector <QLabel*> 	lblToX;
+	std::vector <QSpinBox*> 	spinToX;
+	std::vector <QLabel*> 	lblToY;
+	std::vector <QSpinBox*> 	spinToY;
 	int numRois;
 
 	/** sub period tool tip variables*/

@@ -29,7 +29,7 @@ class qDetectorMain;
 /** C++ Include Headers */
 #include <string>
 #include <vector>
-using namespace std;
+
 
 
 /**To override the spin box class to have an id and emit it*/
@@ -89,8 +89,8 @@ private:
 
 	static const int ADC_TIMEOUT = 5000;
 
-	vector<string>dacNames;
-	vector<string>adcNames;
+	std::vector<std::string>dacNames;
+	std::vector<std::string>adcNames;
 
 
 	/**widgets needed*/

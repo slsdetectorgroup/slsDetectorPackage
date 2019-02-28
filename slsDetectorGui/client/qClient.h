@@ -15,7 +15,7 @@ class MySocketTCP;
 /** C++ Include Headers */
 #include <stdlib.h>
 #include <string>
-using namespace std;
+
 
 /**
  *@short Sets up the gui server
@@ -34,7 +34,7 @@ public:
 
 private:
 	/** Print list of commands */
-	string printCommands();
+	std::string printCommands();
 
 	/** Start Acquisition
 	 * @param blocking true if its a blocking acquistion
@@ -45,7 +45,7 @@ private:
 	int stopAcquisition();
 
 	/** Gets run status */
-	string getStatus();
+	std::string getStatus();
 
 	/** Exits Server */
 	int exitServer();

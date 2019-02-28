@@ -13,7 +13,6 @@
 #include <QFileDialog>
 /** C++ Include Headers */
 #include<iostream>
-using namespace std;
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -418,9 +417,9 @@ void qTabAdvanced::SetOutputFile(){
 		trimdir = dir.absoluteFilePath(trimdir);
 		trimdir = dir.cleanPath(trimdir);
 		if(!dirPath.compare(trimdir)){
-			int ret = qDefs::Message(qDefs::QUESTION,string("<nobr>This will possibly overwrite your original trimbits.</nobr><br>"
-					"<nobr>Proposed file path:") + string(dirPath.toAscii().constData())+
-					string("</nobr><br><nobr>Do you still want to continue?</nobr>"),"qTabAdvanced::SetOutputFile");
+			int ret = qDefs::Message(qDefs::QUESTION,std::string("<nobr>This will possibly overwrite your original trimbits.</nobr><br>"
+					"<nobr>Proposed file path:") + std::string(dirPath.toAscii().constData())+
+					std::string("</nobr><br><nobr>Do you still want to continue?</nobr>"),"qTabAdvanced::SetOutputFile");
 			if(ret==qDefs::FAIL){
 				dispFile->setText("");
 				dispFile->setToolTip(outputDirTip + errOutputTip);
@@ -756,7 +755,7 @@ void qTabAdvanced::SetRxrTCPPort(int port){
 
 void qTabAdvanced::SetRxrUDPPort(int port){
 #ifdef VERBOSE
-	cout << "Setting Receiver UDP Port:" << port << endl;
+	std::cout << "Setting Receiver UDP Port:" << port << endl;
 #endif
 
 	disconnect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
@@ -772,9 +771,9 @@ void qTabAdvanced::SetRxrUDPPort(int port){
 
 void qTabAdvanced::SetCltZmqPort(int port){
 #ifdef VERBOSE
-	cout << "Setting Client UDP Port:" << port << endl;
+	std::cout << "Setting Client UDP Port:" << port << endl;
 #endif
-	 ostringstream ss; ss << port; string sport = ss.str();
+	 std::ostringstream ss; ss << port; std::string sport = ss.str();
 
 	disconnect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
 	// spinZmqPort->setValue(atoi(det->setClientStreamingPort(sport).c_str()));
@@ -793,9 +792,9 @@ void qTabAdvanced::SetCltZmqPort(int port){
 
 void qTabAdvanced::SetRxrZmqPort(int port){
 #ifdef VERBOSE
-	cout << "Setting Receiver UDP Port:" << port << endl;
+	std::cout << "Setting Receiver UDP Port:" << port << endl;
 #endif
-	 ostringstream ss; ss << port; string sport = ss.str();
+	 std::ostringstream ss; ss << port; std::string sport = ss.str();
 
 	disconnect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
 	// spinZmqPort2->setValue(atoi(det->setReceiverStreamingPort(sport).c_str()));

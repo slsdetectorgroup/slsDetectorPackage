@@ -10,62 +10,57 @@
 
 #include "qDefs.h"
 
-
 /** Qt Project Class Headers */
 class SlsQtH1D;
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlotLayout.h"
 /** Qt Include Headers */
-#include <QMainWindow>
-#include <QMenu>
-#include <QMenuBar>
 #include <QAction>
-#include <QGridLayout>
+#include <QCheckBox>
 #include <QCloseEvent>
+#include <QComboBox>
+#include <QGridLayout>
 #include <QGroupBox>
-#include <QWidget>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QComboBox>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
 #include <QPushButton>
-#include <QCheckBox>
-#include <QString>
 #include <QSpacerItem>
+#include <QString>
 #include <QWidget>
 /** C++ Include Headers */
-#include <string>
 #include <iostream>
-using namespace std;
+#include <string>
 
 /**
  *@short Sets up the clone plot widget
  */
-class qCloneWidget:public QMainWindow{
-	Q_OBJECT
+class qCloneWidget : public QMainWindow {
+    Q_OBJECT
 
-public:
-	/** \short The constructor
+  public:
+    /** \short The constructor
 	 */
-	qCloneWidget(QWidget *parent,int id,QString title,QString xTitle, QString yTitle, QString zTitle, int numDim,string FilePath,
-		bool displayStats, QString min, QString max, QString sum);
+    qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle, int numDim, std::string FilePath,
+                 bool displayStats, QString min, QString max, QString sum);
 
-	/** Destructor
+    /** Destructor
 	 */
-	~qCloneWidget();
+    ~qCloneWidget();
 
-	/** Sets up the widget window
+    /** Sets up the widget window
 	 * @param title title of the image with frame number
 	 * @param xTitle title of x axis
 	 * @param yTitle title of y axis
 	 * @param zTitle title of z axis
 	 * @param numDim 1D or 2D
 	 * */
-	void SetupWidgetWindow(QString title, QString xTitle, QString yTitle, QString zTitle, int numDim);
+    void SetupWidgetWindow(QString title, QString xTitle, QString yTitle, QString zTitle, int numDim);
 
-
-
-	/** Get the 1D hist values to plot
+    /** Get the 1D hist values to plot
 	 * @param nHists Number of graphs in 1D
 	 * @param histNBins Total Number of X axis values/channels in 1D
 	 * @param histXAxis X Axis value in 1D
@@ -74,9 +69,9 @@ public:
 	 * @param lines style of plot if lines or dots
 	 * @param markers style of plot markers or not
 	 * */
-	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[],bool lines,bool markers);
+    void SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis[], std::string histTitle[], bool lines, bool markers);
 
-	/** Get the 1D hist values to plot for angle plotting
+    /** Get the 1D hist values to plot for angle plotting
 	 * @param nHists Number of graphs in 1D
 	 * @param histNBins Total Number of X axis values/channels in 1D
 	 * @param histXAxis X Axis value in 1D
@@ -85,9 +80,9 @@ public:
 	 * @param lines style of plot if lines or dots
 	 * @param markers style of plot markers or not
 	 * */
-	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[],bool lines,bool markers);
+    void SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis, std::string histTitle[], bool lines, bool markers);
 
-	/** Get the 1D hist values to plot for angle plotting
+    /** Get the 1D hist values to plot for angle plotting
 	 * @param nbinsx number of bins in x axis
 	 * @param xmin minimum in x axis
 	 * @param xmax maximum in x axis
@@ -96,69 +91,63 @@ public:
 	 * @param ymax maximum in y axis
 	 * @param d data
 	 * */
-	void SetCloneHists2D(int nbinsx,double xmin,double xmax,int nbinsy, double ymin, double ymax, double *d);
+    void SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d);
 
-	/**Set the range of the 1d plot
+    /**Set the range of the 1d plot
 	 * @param IsXYRange array of x,y,min,max if these values are set
 	 * @param XYRangeValues array of set values of x,y, min, max
 	 */
-	void SetRange(bool IsXYRange[], double XYRangeValues[]);
+    void SetRange(bool IsXYRange[], double XYRangeValues[]);
 
-	/** Returns the 1d plot
+    /** Returns the 1d plot
 	 */
-	SlsQt1DPlot* Get1dPlot(){return cloneplot1D;};
+    SlsQt1DPlot *Get1dPlot() { return cloneplot1D; };
 
-public slots:
-/** Save Plots automatically by save all clones
+  public slots:
+    /** Save Plots automatically by save all clones
  * returns -1 if fail*/
-int SavePlotAutomatic();
+    int SavePlotAutomatic();
 
+  private:
+    /**	clone window id*/
+    int id;
+    /** Default Save file path */
+    std::string filePath;
+    /**	clone 1D Plot */
+    SlsQt1DPlot *cloneplot1D;
+    /**	clone 2D Plot */
+    SlsQt2DPlotLayout *cloneplot2D;
+    /**	vector of 1D hist values */
+    QVector<SlsQtH1D *> cloneplot1D_hists;
 
-private:
-	/**	clone window id*/
-	int id;
-	/** Default Save file path */
-	string filePath;
-	/**	clone 1D Plot */
-	SlsQt1DPlot* 		cloneplot1D;
-	/**	clone 2D Plot */
-	SlsQt2DPlotLayout* 	cloneplot2D;
-	/**	vector of 1D hist values */
-	QVector<SlsQtH1D*> 	cloneplot1D_hists;
+    /** markers for the plot*/
+    QwtSymbol *marker;
+    QwtSymbol *nomarker;
 
-	/** markers for the plot*/
-	QwtSymbol *marker;
-	QwtSymbol *nomarker;
+    QMenuBar *menubar;
+    QAction *actionSave;
 
-	 QMenuBar 	*menubar;
-	 QAction 	*actionSave;
+    QGridLayout *mainLayout;
+    QGroupBox *cloneBox;
+    QGridLayout *gridClone;
 
-	QGridLayout *mainLayout;
-	QGroupBox 	*cloneBox;
-	QGridLayout *gridClone;
-
-    QLabel		*lblHistTitle;
+    QLabel *lblHistTitle;
 
     /** Gets the current time stamp for the window title*/
-    char* GetCurrentTimeStamp();
+    char *GetCurrentTimeStamp();
 
     /** Display Statistics */
     void DisplayStats(bool enable, QString min, QString max, QString sum);
 
+  private slots:
+    /** Save Plot */
+    void SavePlot();
 
-private slots:
-/** Save Plot */
-void SavePlot();
+  protected:
+    void closeEvent(QCloseEvent *event);
 
-protected:
-	void closeEvent(QCloseEvent* event);
-
-signals:
-void CloneClosedSignal(int);
-
+  signals:
+    void CloneClosedSignal(int);
 };
-
-
-
 
 #endif /* QCLONEWIDGET_H_ */

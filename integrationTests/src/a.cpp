@@ -13,11 +13,11 @@
 #define VERBOSE
 
 int main() {
-    // const std::string hostname = "beb083";
-    // auto d = slsDetector(hostname);
+    const std::string hostname = "beb083";
+    auto d = slsDetector(hostname);
     
-    // d.setOnline(1);
-    // std::cout << "type: " << d.getDetectorTypeAsString() << '\n';
+    d.setOnline(1);
+    std::cout << "type: " << d.getDetectorTypeAsString() << '\n';
     // std::cout << "hostname: " << d.getHostname() << '\n';
     // std::cout << "receiver: " << d.getReceiverOnline() << '\n';
    

@@ -1,10 +1,3 @@
-/*
- * qTabAdvanced.h
- *
- *  Created on: May 10, 2012
- *      Author: l_maliakal_d
- */
-
 #ifndef QTABADVANCED_H_
 #define QTABADVANCED_H_
 

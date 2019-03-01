@@ -608,6 +608,20 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
+    /*! \page timing
+   - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 15(0xf).. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
+     */
+    descrToFuncMap[i].m_pFuncName = "storagecell_start"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
+    ++i;
+
+    /*! \page timing
+   - <b>storagecell_delay [i]</b> sets/gets additional time between 2 storage cells. For very advanced users only! For JUNGFRAU only. Range: 0-1638375 ns (resolution of 25ns). \c Returns \c (int)
+     */
+    descrToFuncMap[i].m_pFuncName = "storagecell_delay"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
+    ++i;
+
     /* read only timers */
 
     /*! \page timing
@@ -4299,6 +4313,8 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
         index = SAMPLES;
     else if (cmd == "storagecells")
         index = STORAGE_CELL_NUMBER;
+    else if (cmd == "storagecell_delay")
+        index = STORAGE_CELL_DELAY;
     else if (cmd == "storagecell_start") {
         myDet->setOnline(ONLINE_FLAG, detPos);
         if (action == PUT_ACTION) {
@@ -4317,9 +4333,11 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
             ; //printf("value:%0.9lf\n",val);
         else
             return std::string("cannot scan timer value ") + std::string(args[1]);
+
+        // timer
         if (index == ACQUISITION_TIME || index == SUBFRAME_ACQUISITION_TIME ||
             index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER ||
-            index == SUBFRAME_DEADTIME) {
+            index == SUBFRAME_DEADTIME || index == STORAGE_CELL_DELAY) {
             // 	+0.5 for precision of eg.0.0000325
             t = (val * 1E9 + 0.5);
         } else
@@ -4331,8 +4349,9 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
 
     ret = myDet->setTimer(index, t, detPos);
 
-    if ((ret != -1) && (index == ACQUISITION_TIME || index == SUBFRAME_ACQUISITION_TIME || index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER ||
-                        index == SUBFRAME_DEADTIME)) {
+    if ((ret != -1) && (index == ACQUISITION_TIME || index == SUBFRAME_ACQUISITION_TIME ||
+    		index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER ||
+                        index == SUBFRAME_DEADTIME || index == STORAGE_CELL_DELAY)) {
         rval = (double)ret * 1E-9;
         sprintf(answer, "%0.9f", rval);
     } else
@@ -4354,6 +4373,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
         os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
         os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 15(0xf). For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
+        os << "storagecell_delay t \t sets additional time to t between 2 storage cells. For very advanced users only! For JUNGFRAU only. Range: 0-1638375 ns (resolution of 25ns).. " << std::endl;
         os << "subdeadtime t \t sets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. " << std::endl;
         os << std::endl;
     }
@@ -4368,6 +4388,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "samples \t gets the number of samples expected from the jctb" << std::endl;
         os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
         os << "storagecell_start \t gets the storage cell that stores the first acquisition of the series." << std::endl;
+        os << "storagecell_delay \tgets additional time between 2 storage cells. " << std::endl;
         os << "subperiod \t gets sub frame dead time in s. Used in EIGER in 32 bit only." << std::endl;
         os << std::endl;
     }

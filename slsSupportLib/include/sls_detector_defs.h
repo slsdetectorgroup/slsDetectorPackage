@@ -123,6 +123,7 @@ public:
 		SUBFRAME_DEADTIME, /**< subframe deadtime */
 		MEASURED_PERIOD,	/**< measured period */
 		MEASURED_SUBPERIOD,	/**< measured subperiod */
+		STORAGE_CELL_DELAY, /**< storage cell delay */
 		MAX_TIMERS
 	};
 

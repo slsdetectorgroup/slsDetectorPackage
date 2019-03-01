@@ -147,7 +147,7 @@ public:
 	 * @param i ROI
 	 */
 	virtual void SetROI(std::vector<slsDetectorDefs::ROI> i) {
-		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
+		FILE_LOG(logERROR) << "SetROI is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -157,7 +157,7 @@ public:
 	 * @returns adc configured
 	 */
 	virtual int GetAdcConfigured(int index, std::vector<slsDetectorDefs::ROI>* i)  const{
-		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
+		FILE_LOG(logERROR) << "GetAdcConfigured is a generic function that should be overloaded by a derived class";
 		return 0;
 	};
 
@@ -167,7 +167,7 @@ public:
 	 * @param tgEnable true if 10GbE is enabled, else false
 	 */
 	virtual void SetDynamicRange(int dr, bool tgEnable) {
-		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
+		FILE_LOG(logERROR) << "SetDynamicRange is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -176,7 +176,7 @@ public:
 	 * @param dr dynamic range
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
+		FILE_LOG(logERROR) << "SetTenGigaEnable is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -184,7 +184,7 @@ public:
 	 * @param ns number of samples
 	 */
 	virtual void setNumberofSamples(const uint64_t ns) {
-		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
+		FILE_LOG(logERROR) << "setNumberofSamples is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -192,7 +192,7 @@ public:
 	 * @param enable true if gap pixels enable, else false
 	 */
 	virtual void SetGapPixelsEnable(bool b, int dr) {
-		FILE_LOG(logERROR) << "This is a generic function that should be overloaded by a derived class";
+		FILE_LOG(logERROR) << "SetGapPixelsEnable is a generic function that should be overloaded by a derived class";
 	};
 
     /**
@@ -202,7 +202,7 @@ public:
      * @returns true or false for odd starting packet number
      */
     virtual bool SetOddStartingPacket(int index, char* packetData) {
-        cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+        cprintf(RED,"SetOddStartingPacket is a generic function that should be overloaded by a derived class\n");
         return false;
     };
 
@@ -214,7 +214,7 @@ public:
      * @param t tengiga enable
      */
     virtual void setImageSize(slsDetectorDefs::readOutFlags f, std::vector<slsDetectorDefs::ROI> i, int s, bool t) {
-        cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+        cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
     };
 
 	/**

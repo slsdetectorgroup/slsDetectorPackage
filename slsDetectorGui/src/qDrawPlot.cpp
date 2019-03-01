@@ -805,8 +805,6 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
     std::cout << "progress " << data->progressIndex << '\n';
     if (data->values != NULL)
         std::cout << "values " << data->values << '\n';
-    // std::cout << "errors " << data->errors << '\n';
-    // std::cout << "angle " << data->angles << '\n';
     std::cout << "databytes " << data->databytes << '\n';
     std::cout << "dynamicRange " << data->dynamicRange << '\n';
     std::cout << "fileIndex " << data->fileIndex << '\n';
@@ -824,7 +822,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
     			return -1;
     		}*/
 #ifdef VERYVERBOSE
-        cout << "progress:" << progress << '\n';
+        std::cout << "progress:" << progress << '\n';
 #endif
         // secondary title necessary to differentiate between frames when not saving data
         char temp_title[2000];

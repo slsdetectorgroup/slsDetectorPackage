@@ -619,7 +619,6 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 
     Refresh(tabs->currentIndex());
     if (refreshTabs) {
-        // tab_actions->Refresh();
         tab_measurement->Refresh();
         tab_settings->Refresh();
         tab_dataoutput->Refresh();
@@ -639,18 +638,17 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 void qDetectorMain::ExecuteHelp(QAction *action) {
     if (action == actionAbout) {
 #ifdef VERBOSE
-        std::cout << "About: Common GUI for Mythen, Eiger, Gotthard, Jungfrau, Moench and Propix detectors" << '\n';
+        std::cout << "About: Common GUI for Eiger, Gotthard, Jungfrau, Moench and Propix detectors" << '\n';
 #endif
         char version[200];
         long long unsigned int retval = GITDATE;
         sprintf(version, "%llx", retval);
-        std::string thisGUIVersion = std::string(version);
+        std::string thisGUIVersion{version};
 
         sprintf(version, "%llx", (long long unsigned int)myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
         qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteHelp");
-        std::string thisClientVersion = std::string(version);
+        std::string thisClientVersion{version};
 
-        //<h1 style="font-family:verdana;">A heading</h1>
         qDefs::Message(qDefs::INFORMATION, "<p style=\"font-family:verdana;\">"
                                            "SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" +
                                                thisGUIVersion + "<br>"
@@ -688,7 +686,6 @@ void qDetectorMain::Refresh(int index) {
         case Plot:
             tab_plot->Refresh();
             break;
-        // case Actions:		tab_actions->Refresh();		break;
         case Advanced:
             tab_advanced->Refresh();
             break;
@@ -729,14 +726,8 @@ void qDetectorMain::ResizeMainWindow(bool b) {
 
 void qDetectorMain::resizeEvent(QResizeEvent *event) {
     if (!dockWidgetPlot->isFloating()) {
-        // if (tabs->currentIndex() == Actions) {
-        //     dockWidgetPlot->setMinimumHeight(heightPlotWindow - 100);
-        //     centralwidget->setMaximumHeight(QWIDGETSIZE_MAX);
-
-        // } else {
             dockWidgetPlot->setMinimumHeight(height() - centralwidget->height() - 50);
             centralwidget->setMaximumHeight(heightCentralWidget);
-        // }
     }
 
     //adjusting tab width
@@ -764,7 +755,6 @@ void qDetectorMain::EnableTabs() {
     // or use the Enable/Disable button
     // normal tabs
     tabs->setTabEnabled(DataOutput, enable);
-    // tabs->setTabEnabled(Actions, enable);
     tabs->setTabEnabled(Settings, enable);
     tabs->setTabEnabled(Messages, enable);
 
@@ -793,11 +783,6 @@ void qDetectorMain::EnableTabs() {
         myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
         myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
         qDefs::checkErrorMessage(myDet, "qDetectorMain::EnableTabs");
-        //refresh all the required tabs
-        // tab_actions->Refresh();// angular, positions,
-
-        //too slow to refresh
-        /*tab_measurement->Refresh();*/
 
         tab_settings->Refresh();
         tab_dataoutput->Refresh();
@@ -852,7 +837,7 @@ int qDetectorMain::StartStopAcquisitionFromClient(bool start) {
 
 void qDetectorMain::UncheckServer() {
 #ifdef VERBOSE
-    std::cout << "Unchecking Mode : Listen to Gui Client" << '\n';
+    std::cout << "Unchecking Mode : Listen to Gui Client\n";
 #endif
     disconnect(menuModes, SIGNAL(triggered(QAction *)), this, SLOT(EnableModes(QAction *)));
     actionListenGuiClient->setChecked(false);

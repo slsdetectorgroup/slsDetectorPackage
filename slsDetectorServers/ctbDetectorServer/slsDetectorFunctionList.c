@@ -2000,6 +2000,26 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
 }
 
 
+int	setLEDEnable(int enable) {
+	uint32_t addr = CONFIG_REG;
+
+	// set
+	if (enable >= 0) {
+		FILE_LOG(logINFO, ("Switching LED %s\n", (enable > 0) ? "ON" : "OFF"));
+		// disable
+		if (enable == 0) {
+			bus_w(addr, bus_r(addr) | CONFIG_LED_DSBL_MSK);
+		}
+		// enable
+		else {
+			bus_w(addr, bus_r(addr) & (~CONFIG_LED_DSBL_MSK));
+		}
+	}
+	// ~ to get the opposite
+	return  (((~bus_r(addr)) & CONFIG_LED_DSBL_MSK) >> CONFIG_LED_DSBL_OFST);
+}
+
+
 /* aquisition */
 
 int startStateMachine(){

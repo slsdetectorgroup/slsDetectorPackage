@@ -211,6 +211,7 @@ const char* getFunctionName(enum detFuncs func) {
     case F_STORAGE_CELL_START:              return "F_STORAGE_CELL_START";
     case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
+    case F_LED:              				return "F_LED";
 
 	default:								return "Unknown Function";
 	}
@@ -275,6 +276,7 @@ void function_table() {
 	flist[F_STORAGE_CELL_START]                 = &storage_cell_start;
 	flist[F_CHECK_VERSION]                 		= &check_version;
 	flist[F_SOFTWARE_TRIGGER]                 	= &software_trigger;
+	flist[F_LED]                 				= &led;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -3446,4 +3448,30 @@ int software_trigger(int file_des) {
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
+
+
+int led(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+    int retval = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    FILE_LOG(logDEBUG1, ("Setting led enable to %d\n", arg));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+    functionNotImplemented();
+#else
+    // set & get
+    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    	retval = setLEDEnable(arg);
+    	FILE_LOG(logDEBUG1, ("LED Enable: %d\n", retval));
+    	validate(arg, retval, "LED Enable", DEC);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
 

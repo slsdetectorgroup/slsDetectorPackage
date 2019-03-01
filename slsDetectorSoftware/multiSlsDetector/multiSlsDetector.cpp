@@ -3595,6 +3595,17 @@ uint64_t multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t, int detPos) 
     return sls::minusOneIfDifferent(r);
 }
 
+int multiSlsDetector::setLEDEnable(int enable, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setLEDEnable(enable);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setLEDEnable, enable);
+    return sls::minusOneIfDifferent(r);
+}
+
 int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
                                             int level) {
 

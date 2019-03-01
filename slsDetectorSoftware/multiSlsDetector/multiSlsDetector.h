@@ -1736,6 +1736,14 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     uint64_t setCTBPatWaitTime(int level, uint64_t t = -1, int detPos = -1);
 
     /**
+     * Set LED Enable (Moench, CTB only)
+     * @param enable 1 to switch on, 0 to switch off, -1 gets
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns LED enable
+     */
+    int setLEDEnable(int enable = -1, int detPos = -1);
+
+    /**
      * Loads the detector setup from file
      * @param fname file to read from
      * @param level if 2 reads also reads trimbits, angular conversion

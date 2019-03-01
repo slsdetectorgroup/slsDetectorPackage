@@ -1596,6 +1596,13 @@ public:
 	 */
 	uint64_t setCTBPatWaitTime(uint64_t level, uint64_t t=-1);
 
+    /**
+     * Set LED Enable (Moench, CTB only)
+     * @param enable 1 to switch on, 0 to switch off, -1 gets
+     * @returns LED enable
+     */
+    int setLEDEnable(int enable = -1);
+
 private:
 
 	/**

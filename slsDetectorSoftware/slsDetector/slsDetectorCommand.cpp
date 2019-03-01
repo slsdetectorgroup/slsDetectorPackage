@@ -4621,18 +4621,14 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, 
     }
 
     else if (cmd == "led") {
-        char ans[100];
-        int val = 0;
         myDet->setOnline(ONLINE_FLAG, detPos);
         if (action == PUT_ACTION) {
             int ival = -1;
             if (!sscanf(args[1], "%d", &ival))
-                return std::string("could not scan powerchip parameter " + std::string(args[1]));
-            val = myDet->readRegister(0x4d, detPos);
-            myDet->writeRegister(0x4d, (val & (~1)) | ((~ival) & 1), detPos); //config register
+                return std::string("could not scan led parameter " + std::string(args[1]));
+            myDet->setLEDEnable(ival, detPos);
         }
-        sprintf(ans, "%d", ~(myDet->readRegister(0x4d, detPos)) & 1);
-        return std::string(ans);
+        return std::to_string(myDet->setLEDEnable(-1, detPos));
     }
 
     else if (cmd == "auto_comp_disable") {

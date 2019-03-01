@@ -39,6 +39,7 @@ class detectorData {
     int npoints;/**< @short number of points */
     int npy;/**< @short dimensions in y coordinate*/
     char* cvalues; /**< @short pointer to the data as char arary */
+    double* values; //TODO! remove when not used by GUI
     int databytes; /**< @short number of bytes of data. Used with cvalues */
     int dynamicRange; /**< @short dynamic range */
     double* dgainvalues; /**< @short pointer to gain data as double array for Jungfrau only in show gain mode */

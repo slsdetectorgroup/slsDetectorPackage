@@ -89,7 +89,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int &ret,
 
         case 'v':
             tempval = GITDATE;
-            std::cout << "SLS Detector GUI " << GITBRANCH << " (0x" << hex << tempval << ")" << '\n';
+            std::cout << "SLS Detector GUI " << GITBRANCH << " (0x" << std::hex << tempval << ")" << '\n';
             return;
 
         case 'h':
@@ -173,7 +173,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->insertTab(Measurement, scroll[Measurement], "Measurement");
     tabs->insertTab(DataOutput, scroll[DataOutput], "Data Output");
     tabs->insertTab(Plot, scroll[Plot], "Plot");
-    tabs->insertTab(Actions, scroll[Actions], "Actions");
+    // tabs->insertTab(Actions, scroll[Actions], "Actions");
     tabs->insertTab(Settings, scroll[Settings], "Settings");
     tabs->insertTab(Advanced, scroll[Advanced], "Advanced");
     tabs->insertTab(Debugging, scroll[Debugging], "Debugging");
@@ -729,14 +729,14 @@ void qDetectorMain::ResizeMainWindow(bool b) {
 
 void qDetectorMain::resizeEvent(QResizeEvent *event) {
     if (!dockWidgetPlot->isFloating()) {
-        if (tabs->currentIndex() == Actions) {
-            dockWidgetPlot->setMinimumHeight(heightPlotWindow - 100);
-            centralwidget->setMaximumHeight(QWIDGETSIZE_MAX);
+        // if (tabs->currentIndex() == Actions) {
+        //     dockWidgetPlot->setMinimumHeight(heightPlotWindow - 100);
+        //     centralwidget->setMaximumHeight(QWIDGETSIZE_MAX);
 
-        } else {
+        // } else {
             dockWidgetPlot->setMinimumHeight(height() - centralwidget->height() - 50);
             centralwidget->setMaximumHeight(heightCentralWidget);
-        }
+        // }
     }
 
     //adjusting tab width
@@ -764,7 +764,7 @@ void qDetectorMain::EnableTabs() {
     // or use the Enable/Disable button
     // normal tabs
     tabs->setTabEnabled(DataOutput, enable);
-    tabs->setTabEnabled(Actions, enable);
+    // tabs->setTabEnabled(Actions, enable);
     tabs->setTabEnabled(Settings, enable);
     tabs->setTabEnabled(Messages, enable);
 

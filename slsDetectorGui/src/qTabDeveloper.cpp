@@ -63,16 +63,6 @@ void qTabDeveloper::SetupWidgetWindow() {
 
     //the number of dacs and adcs
     switch (detType) {
-    // case slsDetectorDefs::MYTHEN:
-    // 	NUM_DAC_WIDGETS = 6;
-    // 	NUM_ADC_WIDGETS = 0;
-    // 	dacNames.push_back("v Trimbit:");
-    // 	dacNames.push_back("v Threshold:");
-    // 	dacNames.push_back("v Shaper1:");
-    // 	dacNames.push_back("v Shaper2:");
-    // 	dacNames.push_back("v Calibration:");
-    // 	dacNames.push_back("v Preamp:");
-    // 	break;
     case slsDetectorDefs::EIGER:
         NUM_DAC_WIDGETS = 17;
         NUM_ADC_WIDGETS = 6;
@@ -103,7 +93,7 @@ void qTabDeveloper::SetupWidgetWindow() {
         adcNames.push_back("Temperature FPGA:");
 
         break;
-    // case slsDetectorDefs::PROPIX:
+
     case slsDetectorDefs::GOTTHARD:
         NUM_DAC_WIDGETS = 8;
         NUM_ADC_WIDGETS = 2;
@@ -189,8 +179,6 @@ void qTabDeveloper::SetupWidgetWindow() {
     boxDacs->setFixedHeight(25 + (NUM_DAC_WIDGETS / 2) * 35);
     CreateDACWidgets();
 
-    //HV for gotthard
-    // (detType==slsDetectorDefs::PROPIX) ||
     if ((detType == slsDetectorDefs::GOTTHARD) ||
         (detType == slsDetectorDefs::MOENCH)) {
         boxDacs->setFixedHeight(boxDacs->height() + 35);
@@ -298,9 +286,9 @@ void qTabDeveloper::SetDacValues(int id) {
     cout << "Setting dac:" << dacNames[id] << " : " << spinDacs[id]->value() << endl;
 #endif
 
-    int module_id = comboDetector->currentIndex();
-    if (module_id)
-        module_id--;
+    int module_id = comboDetector->currentIndex()-1;
+    // if (module_id)
+    //     module_id--;
 
     //all detectors
     // if(!detid){

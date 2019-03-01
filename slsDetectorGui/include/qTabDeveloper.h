@@ -1,10 +1,3 @@
-/*
- * qTabDeveloper.h
- *
- *  Created on: May 10, 2012
- *      Author: l_maliakal_d
- */
-
 #ifndef QTABDEVELOPER_H_
 #define QTABDEVELOPER_H_
 

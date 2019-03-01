@@ -288,22 +288,10 @@ void qTabDeveloper::SetDacValues(int id) {
     cout << "Setting dac:" << dacNames[id] << " : " << spinDacs[id]->value() << endl;
 #endif
 
-    int module_id = comboDetector->currentIndex()-1;
-    // if (module_id)
-    //     module_id--;
-
-    //all detectors
-    // if(!detid){
-    myDet->setDAC((int)spinDacs[id]->value(), getSLSIndex(id), 0, module_id);
+    int module_id = comboDetector->currentIndex() - 1;
+    myDet->setDAC(spinDacs[id]->value(), getSLSIndex(id), 0, module_id);
     lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(id), 1, module_id), -10));
     qDefs::checkErrorMessage(myDet, "qTabDeveloper::SetDacValues");
-    // }
-    //specific detector
-    // else{
-    // 	myDet->setDAC((int)spinDacs[id]->value(),getSLSIndex(id),0, module_id);
-    // 	lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(id),1),-10));
-    // 	qDefs::checkErrorMessage(det,"qTabDeveloper::SetDacValues");
-    // }
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -547,29 +535,15 @@ void qTabDeveloper::RefreshAdcs() {
 
 void qTabDeveloper::Refresh() {
 #ifdef VERBOSE
-    cout << endl
-         << "**Updating Developer Tab" << endl;
+    std::cout << "**Updating Developer Tab\n";
+    std::cout << "Getting DACs" << NUM_DAC_WIDGETS << '\n';
 #endif
 
-    auto module_id = comboDetector->currentIndex()-1;
-    // if (module_id)
-    //     module_id--;
-
-        //dacs
-#ifdef VERBOSE
-    cout << "Getting DACs" << NUM_DAC_WIDGETS << endl;
-#endif
+    
+    auto module_id = comboDetector->currentIndex() - 1;
     for (int i = 0; i < NUM_DAC_WIDGETS; i++) {
-        // //all detectors
-        // if (module_id == -1) {
-        //     spinDacs[i]->setValue((double)myDet->setDAC(-1, getSLSIndex(i), 0));
-        //     lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(i), 1), -10));
-        // }
-        // //specific detector
-        // else {
-            spinDacs[i]->setValue((double)myDet->setDAC(-1, getSLSIndex(i), 0, module_id));
-            lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(i), 1, module_id), -10));
-        // }
+        spinDacs[i]->setValue(myDet->setDAC(-1, getSLSIndex(i), 0, module_id));
+        lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(i), 1, module_id), -10));
     }
 
     //adcs

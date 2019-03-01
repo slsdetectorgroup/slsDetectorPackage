@@ -81,7 +81,6 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int &ret,
 
         case 'd':
             isDeveloper = 1;
-			std::cout << "HEEEY!\n";
             break;
 
         case 'i':

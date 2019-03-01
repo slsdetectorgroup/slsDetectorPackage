@@ -13,8 +13,8 @@
 #include "ui_form_detectormain.h"
 /** Qt Project Class Headers */
 #include "qDrawPlot.h"
-#include "qTabMeasurement.h"
 #include "qTabDataOutput.h"
+#include "qTabMeasurement.h"
 class qTabPlot;
 class qTabActions;
 class qTabAdvanced;
@@ -26,32 +26,29 @@ class qServer;
 /** Project Class Headers */
 class multiSlsDetector;
 /** Qt Include Headers */
-#include <QScrollArea>
 #include <QGridLayout>
 #include <QResizeEvent>
+#include <QScrollArea>
 #include <QTabWidget>
 
 #include <iostream>
 
-
 /** To Over-ride the QTabWidget class to get the tabBar */
-class MyTabWidget:public QTabWidget{
-public:
-    MyTabWidget(QWidget* parent = 0) {setParent(parent);}
+class MyTabWidget : public QTabWidget {
+  public:
+    MyTabWidget(QWidget *parent = 0) { setParent(parent); }
     /** Overridden method from QTabWidget */
-    QTabBar* tabBar(){return QTabWidget::tabBar();}
+    QTabBar *tabBar() { return QTabWidget::tabBar(); }
 };
-
 
 /**
  *@short Main window of the GUI.
  */
-class qDetectorMain:public QMainWindow, private Ui::DetectorMainObject{
-	Q_OBJECT
+class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
+    Q_OBJECT
 
-
-public:
-	/** \short Main Window constructor.
+  public:
+    /** \short Main Window constructor.
 	 *  This is mainly used to create detector object and all the tabs
 	 *   @param argc number of command line arguments for server options
 	 *   @param argv server options
@@ -59,144 +56,151 @@ public:
 	 *   @param ret OK or FAIL of constructor (from command line arguments)
 	 *   @param parent makes the parent window 0 by default
 	 *   */
-	qDetectorMain(int argc, char **argv, QApplication *app, int& ret, QWidget *parent = 0);
+    qDetectorMain(int argc, char **argv, QApplication *app, int &ret, QWidget *parent = 0);
 
-	/**Destructor
+    /**Destructor
 	 * */
-	~qDetectorMain();
+    ~qDetectorMain();
 
-	/** Starts or stops Acquisition From gui client
+    /** Starts or stops Acquisition From gui client
 	 * @param start 1 for start and 0 to stop
 	 /returns success or fail
 	 */
-	int StartStopAcquisitionFromClient(bool start);
+    int StartStopAcquisitionFromClient(bool start);
 
-	/** Returns if plot is running
+    /** Returns if plot is running
 	 */
-	bool isPlotRunning(){return myPlot->isRunning();};
+    bool isPlotRunning() { return myPlot->isRunning(); };
 
-	/** Returns progress bar value */
-	int GetProgress(){return tab_measurement->GetProgress();};
+    /** Returns progress bar value */
+    int GetProgress() { return tab_measurement->GetProgress(); };
 
-	/** Returns file path */
-	QString GetFilePath(){QString s = QString(myDet->getFilePath().c_str());qDefs::checkErrorMessage(myDet); return s;};
+    /** Returns file path */
+    QString GetFilePath() {
+        QString s = QString(myDet->getFilePath().c_str());
+        qDefs::checkErrorMessage(myDet);
+        return s;
+    };
 
-	/** Verifies if output directories for all the receivers exist */
-	int DoesOutputDirExist(){return tab_dataoutput->VerifyOutputDirectory();};
+    /** Verifies if output directories for all the receivers exist */
+    int DoesOutputDirExist() { return tab_dataoutput->VerifyOutputDirectory(); };
 
-	bool isCurrentlyTabDeveloper();
+    bool isCurrentlyTabDeveloper();
 
-private:
-	/** The Qt Application */
-	QApplication *theApp;
-	/** The sls detector object */
-	multiSlsDetector *myDet;
-	/** sls detector id */
-	int detID;
-	/** true for mythen and eiger */
-	bool digitalDetector;
-	/** The Plot widget	 */
-	qDrawPlot *myPlot;
-	/**Tab Widget */
-	MyTabWidget *tabs;
-	/**Layout of the central Widget */
-	QGridLayout *layoutTabs;
-	/** default height of Plot Window when docked */
-	int heightPlotWindow;
-	/** default height of central widgetwhen plot Window when docked */
-	int heightCentralWidget;
-	/** The default zooming tool tip */
-	QString zoomToolTip;
+  private:
+    /** The Qt Application */
+    QApplication *theApp;
+    /** The sls detector object */
+    multiSlsDetector *myDet;
+    /** sls detector id */
+    int detID;
+    /** true for mythen and eiger */
+    bool digitalDetector;
+    /** The Plot widget	 */
+    qDrawPlot *myPlot;
+    /**Tab Widget */
+    MyTabWidget *tabs;
+    /**Layout of the central Widget */
+    QGridLayout *layoutTabs;
+    /** default height of Plot Window when docked */
+    int heightPlotWindow;
+    /** default height of central widgetwhen plot Window when docked */
+    int heightCentralWidget;
+    /** The default zooming tool tip */
+    QString zoomToolTip;
 
-	/** The default tab heading color */
-	QColor defaultTabColor;
-	/** enumeration of the tabs */
-	enum {Measurement, Settings, DataOutput, Plot, Actions, Advanced, Debugging, Developer, Messages, NumberOfTabs };
-	/* Scroll Area for the tabs**/
-	QScrollArea *scroll[NumberOfTabs];
-	/**Measurement tab */
-	qTabMeasurement 	*tab_measurement;
-	/**DataOutput tab */
-	qTabDataOutput 		*tab_dataoutput;
-	/**Plot tab */
-	qTabPlot		 	*tab_plot;
-	/**Actions tab */
-	// qTabActions 		*tab_actions;
-	/**Settings tab */
-	qTabSettings 		*tab_settings;
-	/**Advanced tab */
-	qTabAdvanced 		*tab_advanced;
-	/**Debugging tab */
-	qTabDebugging 		*tab_debugging;
-	/**Developer tab */
-	qTabDeveloper 		*tab_developer;
-	/**Messages tab */
-	qTabMessages 		*tab_messages;
+    /** The default tab heading color */
+    QColor defaultTabColor;
+    /** enumeration of the tabs */
+    enum { Measurement,
+           Settings,
+           DataOutput,
+           Plot,
+           Advanced,
+           Debugging,
+           Developer,
+           Messages,
+           NumberOfTabs };
+    /* Scroll Area for the tabs**/
+    QScrollArea *scroll[NumberOfTabs];
+    /**Measurement tab */
+    qTabMeasurement *tab_measurement;
+    /**DataOutput tab */
+    qTabDataOutput *tab_dataoutput;
+    /**Plot tab */
+    qTabPlot *tab_plot;
+    /**Settings tab */
+    qTabSettings *tab_settings;
+    /**Advanced tab */
+    qTabAdvanced *tab_advanced;
+    /**Debugging tab */
+    qTabDebugging *tab_debugging;
+    /**Developer tab */
+    qTabDeveloper *tab_developer;
+    /**Messages tab */
+    qTabMessages *tab_messages;
 
-	/** server object*/
-	qServer				*myServer;
+    /** server object*/
+    qServer *myServer;
 
-	/**if the developer tab should be enabled,known from command line */
-	int isDeveloper;
+    /**if the developer tab should be enabled,known from command line */
+    int isDeveloper;
 
-	/**Sets up the layout of the widget
+    /**Sets up the layout of the widget
 	 * */
-	void SetUpWidgetWindow();
+    void SetUpWidgetWindow();
 
-	/**Sets up detector
+    /**Sets up detector
 	 * @param fName file name of the config file at start up
 	 * */
-	void SetUpDetector(const std::string fName);
+    void SetUpDetector(const std::string fName);
 
-	/**Sets up the signals and the slots
+    /**Sets up the signals and the slots
 	 * */
-	void Initialization();
+    void Initialization();
 
-	/** Loads config file at start up
+    /** Loads config file at start up
 	 * */
-	void LoadConfigFile(const std::string fName);
+    void LoadConfigFile(const std::string fName);
 
-
-private slots:
-/** Enables modes as selected -Debug, Expert, Dockable(calls setdockablemode())
+  private slots:
+    /** Enables modes as selected -Debug, Expert, Dockable(calls setdockablemode())
  * */
-void EnableModes(QAction *action);
+    void EnableModes(QAction *action);
 
-/** Executes actions in the utilities menu as selected
+    /** Executes actions in the utilities menu as selected
  * */
-void ExecuteUtilities(QAction *action);
+    void ExecuteUtilities(QAction *action);
 
-/** Executes actions in the utilities menu as selected
+    /** Executes actions in the utilities menu as selected
  * */
-void ExecuteHelp(QAction *action);
+    void ExecuteHelp(QAction *action);
 
-/** Refreshes the tab each time the tab is changed. Also displays the next enabled tab
+    /** Refreshes the tab each time the tab is changed. Also displays the next enabled tab
  * */
-void Refresh(int index);
+    void Refresh(int index);
 
-/** Resizes the main window if the plot is docked/undocked
+    /** Resizes the main window if the plot is docked/undocked
  *	@param b bool TRUE if undocked(outside main window), FALSE docked
  *	*/
-void ResizeMainWindow(bool b);
+    void ResizeMainWindow(bool b);
 
-/** Enables/disables tabs depending on if acquisition is currently in progress
+    /** Enables/disables tabs depending on if acquisition is currently in progress
  * */
-void EnableTabs();
+    void EnableTabs();
 
-/** Set the tool tip of mouse controlled zooming depening on if its enabled/disabled
+    /** Set the tool tip of mouse controlled zooming depening on if its enabled/disabled
  * */
-void SetZoomToolTip(bool disable);
+    void SetZoomToolTip(bool disable);
 
-/** Uncheck the Listen to gui client mode when the server has exited
+    /** Uncheck the Listen to gui client mode when the server has exited
  */
-void UncheckServer();
+    void UncheckServer();
 
-protected:
-/** Adjust the resizing to resize plot, except for actions tab
+  protected:
+    /** Adjust the resizing to resize plot, except for actions tab
  * */
-void resizeEvent(QResizeEvent* event);
-
-
+    void resizeEvent(QResizeEvent *event);
 };
 
 #endif /* QDETECTORMAIN_H */

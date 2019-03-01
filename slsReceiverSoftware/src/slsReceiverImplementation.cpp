@@ -447,11 +447,13 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 		readoutFlags = f;
 
 		// side effects
-		generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
-		for (const auto& it : dataProcessor)
-			it->SetPixelDimension();
-		if (SetupFifoStructure() == FAIL)
-			return FAIL;
+		if (myDetectorType == CHIPTESTBOARD || myDetectorType == MOENCH) {
+			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
+			for (const auto& it : dataProcessor)
+				it->SetPixelDimension();
+			if (SetupFifoStructure() == FAIL)
+				return FAIL;
+		}
 	}
 	std::string flag;
 	if (f == NORMAL_READOUT)

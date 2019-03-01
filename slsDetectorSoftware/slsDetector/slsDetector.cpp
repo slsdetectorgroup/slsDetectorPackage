@@ -5108,6 +5108,30 @@ int slsDetector::setLEDEnable(int enable) {
     return retval;
 }
 
+int slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
+    int fnum = F_DIGITAL_IO_DELAY;
+    int ret = FAIL;
+    uint64_t args[2] = {pinMask, (uint64_t)delay};
+    FILE_LOG(logDEBUG1) << "Sending Digital IO Delay, pin mask: " << std::hex << args[0]
+    		<< ", delay: " << std::dec << args[1] << " ps";
+
+    if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
+    	auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
+        ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);
+
+        // handle ret
+        if (ret == FAIL) {
+            setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
+        } else {
+            FILE_LOG(logDEBUG1) << "Digital IO Delay successful";
+        }
+    }
+    if (ret == FORCE_UPDATE) {
+        ret = updateDetector();
+    }
+    return ret;
+}
+
 slsDetectorDefs::sls_detector_module *slsDetector::interpolateTrim(
     sls_detector_module *a, sls_detector_module *b,
     const int energy, const int e1, const int e2, int tb) {

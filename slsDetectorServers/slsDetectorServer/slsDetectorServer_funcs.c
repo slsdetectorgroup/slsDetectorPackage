@@ -212,6 +212,7 @@ const char* getFunctionName(enum detFuncs func) {
     case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
     case F_LED:              				return "F_LED";
+    case F_DIGITAL_IO_DELAY:              	return "F_DIGITAL_IO_DELAY";
 
 	default:								return "Unknown Function";
 	}
@@ -277,6 +278,7 @@ void function_table() {
 	flist[F_CHECK_VERSION]                 		= &check_version;
 	flist[F_SOFTWARE_TRIGGER]                 	= &software_trigger;
 	flist[F_LED]                 				= &led;
+	flist[F_DIGITAL_IO_DELAY]                 	= &digital_io_delay;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -2530,7 +2532,7 @@ int set_ctb_pattern(int file_des) {
             // address for set word should be valid (if not -1 or -2,  it goes to setword)
             if (addr < -2 || addr > MAX_PATTERN_LENGTH) {
                 ret = FAIL;
-                sprintf(mess, "Cannot set Pattern (Word, addr:0x%x). Addr must be less than 0x%x\n",
+                sprintf(mess, "Cannot set Pattern (Word, addr:0x%x). Addr must be <= 0x%x\n",
                         addr, MAX_PATTERN_LENGTH);
                 FILE_LOG(logERROR, (mess));
             } else {
@@ -2592,7 +2594,7 @@ int set_ctb_pattern(int file_des) {
         else if ((loopLevel != -1) && (startAddr > MAX_PATTERN_LENGTH  || stopAddr > MAX_PATTERN_LENGTH )) {
             ret = FAIL;
             sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, startaddr:0x%x, stopaddr:0x%x). "
-                    "Addr must be less than 0x%x\n",
+                    "Addr must be <= 0x%x\n",
                     loopLevel, startAddr, stopAddr, MAX_PATTERN_LENGTH);
             FILE_LOG(logERROR, (mess));
         }
@@ -2601,7 +2603,7 @@ int set_ctb_pattern(int file_des) {
         else if ((loopLevel == -1) && (startAddr > MAX_PATTERN_LENGTH || stopAddr > MAX_PATTERN_LENGTH)) {
             ret = FAIL;
             sprintf(mess, "Cannot set Pattern (Pattern Loop, complete pattern, startaddr:0x%x, stopaddr:0x%x). "
-                    "Addr must be less than 0x%x\n",
+                    "Addr must be <= 0x%x\n",
                     startAddr, stopAddr, MAX_PATTERN_LENGTH);
             FILE_LOG(logERROR, (mess));
         }
@@ -2641,7 +2643,7 @@ int set_ctb_pattern(int file_des) {
                 FILE_LOG(logERROR,(mess));
             } else if (addr > MAX_PATTERN_LENGTH) {
                 ret = FAIL;
-                sprintf(mess, "Cannot set Pattern (Wait Address, addr:0x%x). Addr must be less than 0x%x\n",
+                sprintf(mess, "Cannot set Pattern (Wait Address, addr:0x%x). Addr must be <= 0x%x\n",
                         addr, MAX_PATTERN_LENGTH);
                 FILE_LOG(logERROR, (mess));
             } else {
@@ -3443,7 +3445,7 @@ int software_trigger(int file_des) {
 			sprintf(mess, "Could not send software trigger\n");
 			FILE_LOG(logERROR,(mess));
 		}
-		FILE_LOG(logDEBUG1, ("Software trigger ret: %d\n", ret));
+		FILE_LOG(logDEBUG1, ("Software trigger successful\n"));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
@@ -3472,6 +3474,38 @@ int led(int file_des) {
 #endif
     return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
+
+
+
+
+int digital_io_delay(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
+        return printSocketReadError();
+    FILE_LOG(logDEBUG1, ("Digital IO Delay, pinMask: 0x%llx, delay:%d ps\n", args[0], (int)args[1]));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		int delay = (int)args[1];
+		if (delay < 0 || delay > DIGITAL_IO_DELAY_MAXIMUM_PS) {
+			ret = FAIL;
+			sprintf(mess, "Could not set digital IO delay. Delay maximum is %d ps\n", DIGITAL_IO_DELAY_MAXIMUM_PS);
+			FILE_LOG(logERROR,(mess));
+		} else {
+			setDigitalIODelay(args[0], delay);
+			FILE_LOG(logDEBUG1, ("Digital IO Delay successful\n"));
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
 
 
 

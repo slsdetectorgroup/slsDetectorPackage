@@ -1603,6 +1603,14 @@ public:
      */
     int setLEDEnable(int enable = -1);
 
+    /**
+     * Set Digital IO Delay (Moench, CTB only)
+     * @param digital IO mask to select the pins
+     * @param delay delay in ps(1 bit=25ps, max of 775 ps)
+     * @returns OK or FAIL
+     */
+    int setDigitalIODelay(uint64_t pinMask, int delay);
+
 private:
 
 	/**

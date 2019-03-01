@@ -1761,9 +1761,9 @@ uint64_t writePatternClkControl(uint64_t word) {
 
 uint64_t readPatternWord(int addr) {
     // error (handled in tcp)
-    if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
+    if (addr < 0 || addr > MAX_PATTERN_LENGTH) {
         FILE_LOG(logERROR, ("Cannot get Pattern - Word. Invalid addr 0x%x. "
-                "Should be within 0x%x\n", addr, MAX_PATTERN_LENGTH));
+                "Should be <= 0x%x\n", addr, MAX_PATTERN_LENGTH));
         return -1;
     }
 
@@ -1792,9 +1792,9 @@ uint64_t writePatternWord(int addr, uint64_t word) {
         return readPatternWord(addr);
 
     // error (handled in tcp)
-    if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
+    if (addr < 0 || addr > MAX_PATTERN_LENGTH) {
         FILE_LOG(logERROR, ("Cannot set Pattern - Word. Invalid addr 0x%x. "
-                "Should be within 0x%x\n", addr, MAX_PATTERN_LENGTH));
+                "Should be <= 0x%x\n", addr, MAX_PATTERN_LENGTH));
         return -1;
     }
 
@@ -1820,9 +1820,9 @@ uint64_t writePatternWord(int addr, uint64_t word) {
 int setPatternWaitAddress(int level, int addr) {
 
     // error (handled in tcp)
-    if (addr >= MAX_PATTERN_LENGTH) {
+    if (addr > MAX_PATTERN_LENGTH) {
         FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid addr 0x%x. "
-                "Should be within 0x%x\n", addr, MAX_PATTERN_LENGTH));
+                "Should be <= 0x%x\n", addr, MAX_PATTERN_LENGTH));
         return -1;
     }
 
@@ -1905,7 +1905,7 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     if ((level != -1) &&
             (*startAddr > MAX_PATTERN_LENGTH || *stopAddr > MAX_PATTERN_LENGTH)) {
         FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, startaddr:0x%x, stopaddr:0x%x). "
-                "Addr must be less than 0x%x\n",
+                "Addr must be <= 0x%x\n",
                 level, *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
     }
 
@@ -1913,7 +1913,7 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     else if ((level == -1) &&
             (*startAddr > MAX_PATTERN_LENGTH || *stopAddr > MAX_PATTERN_LENGTH)) {
         FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, startaddr:0x%x, stopaddr:0x%x). "
-                "Addr must be less than 0x%x\n",
+                "Addr must be <= 0x%x\n",
                 *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
     }
 
@@ -2017,6 +2017,28 @@ int	setLEDEnable(int enable) {
 	}
 	// ~ to get the opposite
 	return  (((~bus_r(addr)) & CONFIG_LED_DSBL_MSK) >> CONFIG_LED_DSBL_OFST);
+}
+
+void setDigitalIODelay(uint64_t pinMask, int delay) {
+	FILE_LOG(logINFO, ("Setings Digital IO Delay (pinMask:0x%llx, delay: %d ps)\n",
+			(long long unsigned int)pinMask, delay));
+
+	int delayunit = delay / OUTPUT_DELAY_0_OTPT_STTNG_STEPS;
+	FILE_LOG(logDEBUG1, ("delay unit: 0x%x (steps of 25ps)\n", delayunit));
+
+	// set pin mask
+	bus_w(PIN_DELAY_1_REG, pinMask);
+
+	uint32_t addr = OUTPUT_DELAY_0_REG;
+	// set delay
+	bus_w(addr, bus_r(addr) & (~OUTPUT_DELAY_0_OTPT_STTNG_MSK));
+	bus_w(addr, (bus_r(addr)  | ((delayunit << OUTPUT_DELAY_0_OTPT_STTNG_OFST) & OUTPUT_DELAY_0_OTPT_STTNG_MSK)));
+
+	// load value
+	bus_w(addr, bus_r(addr) | OUTPUT_DELAY_0_OTPT_TRGGR_MSK);
+
+	// trigger configuration
+	bus_w(addr, bus_r(addr) & (~OUTPUT_DELAY_0_OTPT_TRGGR_MSK));
 }
 
 

@@ -191,7 +191,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
     /*! \page acquisition
    - \b acquire blocking acquisition (like calling sls_detector_acquire). Starts receiver and detector, writes and processes the data, stops detector. Only get!
-     \c Returns (string)\c "acquire unsuccessful" if fails, else \c "Acquired (int)", where int is number of frames caught.
+     \c Returns (string)\c "acquire failed" if fails, else \c "Acquired (int)", where int is number of frames caught.
 	 */
     descrToFuncMap[i].m_pFuncName = "acquire"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAcquire;
@@ -392,14 +392,14 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /* fpga */
 
     /*! \page config
-   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU only. Only put! \c Returns \c ("successful", "unsuccessful")
+   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU only. Only put! \c Returns \c ("successful", "failed")
 	 */
     descrToFuncMap[i].m_pFuncName = "programfpga";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
     ++i;
 
     /*! \page config
-   - <b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put! \c Returns \c ("successful", "unsuccessful")
+   - <b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put! \c Returns \c ("successful", "failed")
 	 */
     descrToFuncMap[i].m_pFuncName = "resetfpga";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
@@ -426,6 +426,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
+   - <b>diodelay [i] [v]</b> sets the delay for the digital IO pins selected by mask i and delay set by v. mask is upto 64 bits in hex, delay is a max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only. Cannot get. \c Returns \c ("successful", failed")
+	 */
+    descrToFuncMap[i].m_pFuncName = "diodelay";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
+    ++i;
+
+    /*! \page config
    - <b>auto_comp_disable i </b> Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). \c Returns \c (int)
      */
     descrToFuncMap[i].m_pFuncName = "auto_comp_disable"; //
@@ -433,21 +440,21 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put! \c Returns \c ("successful", "unsuccessful")
+   - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
 	 */
     descrToFuncMap[i].m_pFuncName = "pulse"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
     ++i;
 
     /*! \page config
-   - <b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put! \c Returns \c ("successful", "unsuccessful")
+   - <b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
 	 */
     descrToFuncMap[i].m_pFuncName = "pulsenmove"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
     ++i;
 
     /*! \page config
-   - <b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put! \c Returns \c ("successful", "unsuccessful")
+   - <b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
 	 */
     descrToFuncMap[i].m_pFuncName = "pulsechip"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
@@ -2054,11 +2061,11 @@ std::string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, i
     }
     if (!myDet->getNumberOfDetectors()) {
         cprintf(RED, "Error: This shared memory has no detectors added. Aborting.\n");
-        return std::string("acquire unsuccessful");
+        return std::string("acquire failed");
     }
     if (detPos >= 0) {
         cprintf(RED, "Error: Individual detectors not allowed for readout. Aborting.\n");
-        return std::string("acquire unsuccessful");
+        return std::string("acquire failed");
     }
 
     myDet->setOnline(ONLINE_FLAG, detPos);
@@ -2067,7 +2074,7 @@ std::string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, i
 
 
     if (myDet->acquire() == FAIL)
-        return std::string("acquire unsuccessful");
+        return std::string("acquire failed");
     if (r_online) {
         char answer[100];
         sprintf(answer, "\nAcquired %d", myDet->getFramesCaughtByReceiver(detPos));
@@ -3380,7 +3387,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, 
             if (ret == OK)
                 return sval;
             else
-                return std::string("not successful");
+                return std::string("failed");
         }
         return myDet->getSettingsFile(detPos);
     } else if (cmd == "trimval") {
@@ -4592,7 +4599,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, 
         myDet->setOnline(ONLINE_FLAG, detPos);
         if (myDet->programFPGA(sval, detPos) == OK)
             return std::string("successful");
-        return std::string("unsuccessful");
+        return std::string("failed");
     }
 
     else if (cmd == "resetfpga") {
@@ -4604,7 +4611,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, 
         myDet->setOnline(ONLINE_FLAG, detPos);
         if (myDet->resetFPGA(detPos) == OK)
             return std::string("successful");
-        return std::string("unsuccessful");
+        return std::string("failed");
     }
 
     else if (cmd == "powerchip") {
@@ -4629,6 +4636,25 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, 
             myDet->setLEDEnable(ival, detPos);
         }
         return std::to_string(myDet->setLEDEnable(-1, detPos));
+    }
+
+    else if (cmd == "diodelay") {
+    	if (action == GET_ACTION) {
+    		return std::string("Cannot get");
+    	}
+    	myDet->setOnline(ONLINE_FLAG, detPos);
+
+    	uint64_t pinMask = -1;
+    	if (!sscanf(args[1], "%lx", &pinMask))
+    		return std::string("could not scan diodelay pin mask(in hex) " + std::string(args[1]));
+    	int delay = -1;
+    	if (!sscanf(args[2], "%d", &delay))
+    		return std::string("could not scan diodelay delay " + std::string(args[2]));
+
+    	int retval = myDet->setDigitalIODelay(pinMask, delay, detPos);
+    	if (retval == -1)
+    		return std::to_string(-1);
+      	return std::string((retval == OK) ? "successful" :  "failed");
     }
 
     else if (cmd == "auto_comp_disable") {
@@ -4658,6 +4684,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
 
         os << "led s \t sets led status (0 off, 1 on)" << std::endl;
+        os << "diodelay m v \tsets the delay for the digital IO pins selected by mask m and delay set by v. mask is upto 64 bits in hex, delay max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only." << std::endl;
         os << "powerchip i \t powers on or off the chip. i = 1 for on, i = 0 for off" << std::endl;
         os << "auto_comp_disable i \t Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). " << std::endl;
     }
@@ -4778,10 +4805,10 @@ std::string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, 
         if (action == GET_ACTION)
             return std::string("cannot get");
         else {
-            if (myDet->resetFramesCaught(detPos) == FAIL)
-                strcpy(answer, "failed");
-            else
+            if (myDet->resetFramesCaught(detPos) == OK)
                 strcpy(answer, "successful");
+            else
+                strcpy(answer, "failed");
             return std::string(answer);
         }
     }
@@ -5462,7 +5489,7 @@ std::string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int
     if (retval == OK)
         return std::string(" successful");
     else
-        return std::string(" unsuccessful");
+        return std::string(" failed");
 }
 
 

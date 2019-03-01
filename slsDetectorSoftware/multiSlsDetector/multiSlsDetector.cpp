@@ -3606,6 +3606,17 @@ int multiSlsDetector::setLEDEnable(int enable, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+int multiSlsDetector::setDigitalIODelay(uint64_t pinMask, int delay, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setDigitalIODelay(pinMask, delay);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setDigitalIODelay, pinMask, delay);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
 int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
                                             int level) {
 

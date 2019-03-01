@@ -506,12 +506,12 @@
 
 /* Pin Delay 0 RW register */
 #define OUTPUT_DELAY_0_REG                  (0x7C << MEM_MAP_SHIFT)
-
+#define OUTPUT_DELAY_0_OTPT_STTNG_STEPS		(25)
 #define OUTPUT_DELAY_0_OTPT_STTNG_OFST      (0)     //t = OTPT_STTNG * 25 ps, max for Cyclone V = 775 ps
-#define OUTPUT_DELAY_0_OTPT_STTNG_MSK       (0x0000001F << OUTPUT_DELAY_0_OFST)
+#define OUTPUT_DELAY_0_OTPT_STTNG_MSK       (0x0000001F << OUTPUT_DELAY_0_OTPT_STTNG_OFST)
 // 1: load dynamic output settings, 0: trigger start of dynamic output delay configuration pn falling edge of ODT (output delay trigger) bit
 #define OUTPUT_DELAY_0_OTPT_TRGGR_OFST      (31)
-#define OUTPUT_DELAY_0_OTPT_TRGGR_MSK       (0x00000001 << OUTPUT_DELAY_0_OFST)
+#define OUTPUT_DELAY_0_OTPT_TRGGR_MSK       (0x00000001 << OUTPUT_DELAY_0_OTPT_TRGGR_OFST)
 #define OUTPUT_DELAY_0_OTPT_TRGGR_LD_VAL    (1)
 #define OUTPUT_DELAY_0_OTPT_TRGGR_STRT_VAL  (0)
 

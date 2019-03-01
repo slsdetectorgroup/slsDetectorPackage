@@ -78,6 +78,9 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 
 /* Defines in the Firmware */
 #define MAX_PATTERN_LENGTH  		(0xFFFF)
+#define DIGITAL_IO_DELAY_MAXIMUM_PS	((OUTPUT_DELAY_0_OTPT_STTNG_MSK >> OUTPUT_DELAY_0_OTPT_STTNG_OFST) * OUTPUT_DELAY_0_OTPT_STTNG_STEPS)
+
+
 #define WAIT_TME_US_FR_LK_AT_ME_REG (100) // wait time in us after acquisition done to ensure there is no data in fifo
 #define WAIT_TIME_US_PLL            (10 * 1000)
 #define WAIT_TIME_US_STP_ACQ        (100)

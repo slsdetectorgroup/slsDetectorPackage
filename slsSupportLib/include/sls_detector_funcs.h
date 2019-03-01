@@ -69,6 +69,7 @@ enum detFuncs{
 	F_CHECK_VERSION,/** < check version compatibility */
 	F_SOFTWARE_TRIGGER,/** < software trigger */
 	F_LED,	/** < switch on/off led */
+	F_DIGITAL_IO_DELAY,  /** < digital IO delay */
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */

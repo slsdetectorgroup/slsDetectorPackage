@@ -1744,6 +1744,15 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int setLEDEnable(int enable = -1, int detPos = -1);
 
     /**
+     * Set Digital IO Delay (Moench, CTB only)
+     * @param digital IO mask to select the pins
+     * @param delay delay in ps(1 bit=25ps, max of 775 ps)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns OK or FAIL
+     */
+    int setDigitalIODelay(uint64_t pinMask, int delay, int detPos = -1);
+
+    /**
      * Loads the detector setup from file
      * @param fname file to read from
      * @param level if 2 reads also reads trimbits, angular conversion

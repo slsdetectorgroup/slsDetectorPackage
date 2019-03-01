@@ -551,25 +551,25 @@ void qTabDeveloper::Refresh() {
          << "**Updating Developer Tab" << endl;
 #endif
 
-    auto module_id = comboDetector->currentIndex();
-    if (module_id)
-        module_id--;
+    auto module_id = comboDetector->currentIndex()-1;
+    // if (module_id)
+    //     module_id--;
 
         //dacs
 #ifdef VERBOSE
     cout << "Getting DACs" << NUM_DAC_WIDGETS << endl;
 #endif
     for (int i = 0; i < NUM_DAC_WIDGETS; i++) {
-        //all detectors
-        if (module_id == -1) {
-            spinDacs[i]->setValue((double)myDet->setDAC(-1, getSLSIndex(i), 0));
-            lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(i), 1), -10));
-        }
-        //specific detector
-        else {
+        // //all detectors
+        // if (module_id == -1) {
+        //     spinDacs[i]->setValue((double)myDet->setDAC(-1, getSLSIndex(i), 0));
+        //     lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(i), 1), -10));
+        // }
+        // //specific detector
+        // else {
             spinDacs[i]->setValue((double)myDet->setDAC(-1, getSLSIndex(i), 0, module_id));
             lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(i), 1, module_id), -10));
-        }
+        // }
     }
 
     //adcs

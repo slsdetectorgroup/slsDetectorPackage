@@ -81,6 +81,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int &ret,
 
         case 'd':
             isDeveloper = 1;
+			std::cout << "HEEEY!\n";
             break;
 
         case 'i':
@@ -769,6 +770,7 @@ void qDetectorMain::EnableTabs() {
 
     // special tabs
     tabs->setTabEnabled(Debugging, enable && (actionDebug->isChecked()));
+	std::cout << "Developer: " << enable << " isdev: " << isDeveloper << '\n';
     tabs->setTabEnabled(Developer, enable && isDeveloper);
     //expert
     bool expertTab = enable && (actionExpert->isChecked());

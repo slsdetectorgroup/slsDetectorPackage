@@ -47,7 +47,11 @@ enum detFuncs{
 	F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
 	F_ENABLE_TEN_GIGA, /**< enable 10Gbe */
 	F_SET_ALL_TRIMBITS, /** < set all trimbits to this value */
-	F_SET_CTB_PATTERN, /** < loads a pattern in the CTB */
+	F_SET_PATTERN, /** < loads a pattern  */
+	F_SET_PATTERN_MASK, /** < loads a pattern mask  */
+	F_GET_PATTERN_MASK, /** < retrieves pattern mask  */
+	F_SET_PATTERN_BIT_MASK, /** < loads bitmask for the pattern  */
+	F_GET_PATTERN_BIT_MASK, /** < retrieves bitmask for the pattern  */
 	F_WRITE_ADC_REG, /** < writes an ADC register */
 	F_SET_COUNTER_BIT, /** < set/reset counter bit in detector for eiger */
 	F_PULSE_PIXEL,/** < pulse pixel n number of times in eiger at (x,y)  */
@@ -165,7 +169,11 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
-	case F_SET_CTB_PATTERN:					return "F_SET_CTB_PATTERN";
+	case F_SET_PATTERN:						return "F_SET_PATTERN";
+	case F_SET_PATTERN_MASK:				return "F_SET_PATTERN_MASK";
+	case F_GET_PATTERN_MASK:				return "F_GET_PATTERN_MASK";
+	case F_SET_PATTERN_BIT_MASK:			return "F_SET_PATTERN_BIT_MASK";
+	case F_GET_PATTERN_BIT_MASK:			return "F_GET_PATTERN_BIT_MASK";
 	case F_WRITE_ADC_REG:					return "F_WRITE_ADC_REG";
 	case F_SET_COUNTER_BIT:					return "F_SET_COUNTER_BIT";
 	case F_PULSE_PIXEL:						return "F_PULSE_PIXEL";

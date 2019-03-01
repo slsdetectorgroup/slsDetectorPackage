@@ -2041,6 +2041,22 @@ void setDigitalIODelay(uint64_t pinMask, int delay) {
 	bus_w(addr, bus_r(addr) & (~OUTPUT_DELAY_0_OTPT_TRGGR_MSK));
 }
 
+void setPatternMask(uint64_t mask) {
+	set64BitReg(mask, PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+}
+
+uint64_t getPatternMask() {
+	return 	get64BitReg(PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+}
+
+void setPatternBitMask(uint64_t mask) {
+	set64BitReg(mask, PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+}
+
+uint64_t getPatternBitMask() {
+	return 	get64BitReg(PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+}
+
 
 /* aquisition */
 

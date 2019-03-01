@@ -4134,8 +4134,9 @@ std::string slsDetector::checkReceiverOnline() {
     std::string retval;
     try {
         auto receiver = sls::ClientSocket(true, thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
-        retval = thisDetector->receiver_hostname;
+        
     } catch (...) {
+        retval = thisDetector->receiver_hostname;
     }
     return retval;
 }

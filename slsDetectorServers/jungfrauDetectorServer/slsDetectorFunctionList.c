@@ -436,6 +436,7 @@ void setupDetector() {
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTimer(STORAGE_CELL_NUMBER, DEFAULT_NUM_STRG_CLLS);
+	setTimer(STORAGE_CELL_DELAY, DEFAULT_STRG_CLL_DLY);
 	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
 	/*setClockDivider(HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
@@ -609,6 +610,18 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
         retval = ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >> CONTROL_STORAGE_CELL_NUM_OFST);
         FILE_LOG(logDEBUG1, ("Getting #storage cells: %lld\n", (long long int)retval));
         break;
+
+	case STORAGE_CELL_DELAY:
+		if(val >= 0){
+			FILE_LOG(logINFO, ("Setting storage cell delay: %lldns\n", (long long int)val));
+			val *= (1E-3 * CLK_RUN);
+            bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_EXPSRE_TMR_MSK) |
+                    ((val << ASIC_CTRL_EXPSRE_TMR_OFST) & ASIC_CTRL_EXPSRE_TMR_MSK));
+		}
+
+		retval = ((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_EXPSRE_TMR_MSK) >> ASIC_CTRL_EXPSRE_TMR_OFST);
+		FILE_LOG(logDEBUG1, ("Getting storage cell delay: %lldns\n", (long long int)retval));
+		break;
 
 	default:
 		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));

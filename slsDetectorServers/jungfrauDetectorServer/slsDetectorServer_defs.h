@@ -65,6 +65,7 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define DEFAULT_TMP_THRSHLD         (65*1000) //milli degree Celsius
 #define DEFAULT_NUM_STRG_CLLS       (0)
 #define DEFAULT_STRG_CLL_STRT       (0xf)
+#define DEFAULT_STRG_CLL_DLY		(0)
 
 #define HIGHVOLTAGE_MIN             (60)
 #define HIGHVOLTAGE_MAX             (200)
@@ -75,6 +76,7 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define MAX_TIMESLOT_VAL            (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL      (127999) //millidegrees
 #define MAX_STORAGE_CELL_VAL        (15) //0xF
+#define MAX_STORAGE_CELL_DLY_NS_VAL	((ASIC_CTRL_EXPSRE_TMR_MSK >> ASIC_CTRL_EXPSRE_TMR_OFST) * ASIC_CTRL_EXPSRE_TMR_STEPS)
 #define ACQ_TIME_MIN_CLOCK          (2)
 
 #define SAMPLE_ADC_HALF_SPEED	 	(SAMPLE_DECMT_FACTOR_2_VAL + SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x1000 */

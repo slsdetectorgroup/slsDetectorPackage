@@ -128,10 +128,11 @@ const char* getTimerName(enum timerIndex ind) {
     case MEASUREMENTS_NUMBER:       return "measurements_number";
     case FRAMES_FROM_START:         return "frames_from_start";
     case FRAMES_FROM_START_PG:      return "frames_from_start_pg";
-    case SAMPLES:              return "samples";
+    case SAMPLES:              		return "samples";
     case SUBFRAME_ACQUISITION_TIME: return "subframe_acquisition_time";
     case SUBFRAME_DEADTIME:         return "subframe_deadtime";
     case STORAGE_CELL_NUMBER:       return "storage_cell_number";
+    case STORAGE_CELL_DELAY:		return "storage_cell_delay";
     default:                        return "unknown_timer";
     }
 }
@@ -1553,6 +1554,16 @@ int set_timer(int file_des) {
 	        }
 	        retval = setTimer(ind,tns);
 	        break;
+
+	    case STORAGE_CELL_DELAY:
+	        if (tns > MAX_STORAGE_CELL_DLY_NS_VAL) {
+	            ret = FAIL;
+	            sprintf(mess,"Max Storage cell delay value should not exceed %d ns\n", MAX_STORAGE_CELL_DLY_NS_VAL);
+	            FILE_LOG(logERROR,(mess));
+	            break;
+	        }
+	        retval = setTimer(ind,tns);
+	        break;
 #endif
 #ifdef EIGERD
 	    case SUBFRAME_ACQUISITION_TIME:
@@ -1611,6 +1622,7 @@ int set_timer(int file_des) {
 	        case DELAY_AFTER_TRIGGER:
 	        case SUBFRAME_ACQUISITION_TIME:
 	        case SUBFRAME_DEADTIME:
+	        case STORAGE_CELL_DELAY:
 	            // losing precision due to conversion to clock (also gotthard master delay is different)
 	            if (validateTimer(ind, tns, retval) == FAIL) {
 	                ret = FAIL;
@@ -2148,6 +2160,16 @@ int send_update(int file_des) {
 
 #ifndef EIGERD
 	i64 = setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+#endif
+
+#ifdef JUNGFRAUD
+	i64 = setTimer(STORAGE_CELL_NUMBER,GET_FLAG);
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	i64 = setTimer(STORAGE_CELL_DELAY,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 #endif

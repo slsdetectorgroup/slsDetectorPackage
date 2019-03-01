@@ -411,6 +411,7 @@
 #define ASIC_CTRL_DS_TMR_MSK            (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
 #define ASIC_CTRL_DS_TMR_VAL            ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
 // tET = (ET + 1) * 25ns (increase timeout range between 2 consecutive storage cells)
+#define ASIC_CTRL_EXPSRE_TMR_STEPS		(25)
 #define ASIC_CTRL_EXPSRE_TMR_OFST       (16)
 #define ASIC_CTRL_EXPSRE_TMR_MSK        (0x0000FFFF << ASIC_CTRL_EXPSRE_TMR_OFST)
 

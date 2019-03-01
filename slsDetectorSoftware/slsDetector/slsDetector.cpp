@@ -1086,6 +1086,16 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
         thisDetector->timerValue[DELAY_AFTER_TRIGGER] = i64;
     }
 
+    if (thisDetector->myDetectorType == JUNGFRAU) {
+    	// storage cell
+    	n += client.receiveData(&i64, sizeof(i64));
+    	thisDetector->timerValue[STORAGE_CELL_NUMBER] = i64;
+
+    	// storage cell delay
+    	n += client.receiveData(&i64, sizeof(i64));
+    	thisDetector->timerValue[STORAGE_CELL_DELAY] = i64;
+    }
+
     // cycles
     n += client.receiveData(&i64, sizeof(i64));
     thisDetector->timerValue[CYCLES_NUMBER] = i64;

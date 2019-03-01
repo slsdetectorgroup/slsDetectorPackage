@@ -3538,10 +3538,10 @@ int multiSlsDetector::setReceiverSilentMode(int i, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setCTBPattern(const std::string &fname, int detPos) {
+int multiSlsDetector::setPattern(const std::string &fname, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setCTBPattern(fname);
+        return detectors[detPos]->setPattern(fname);
     }
 
     // multi
@@ -3556,7 +3556,7 @@ int multiSlsDetector::setCTBPattern(const std::string &fname, int detPos) {
 
     uint64_t word;
     while (fread(&word, sizeof(word), 1, fd)) {
-        serialCall(&slsDetector::setCTBWord, addr, word);
+        serialCall(&slsDetector::setPatternWord, addr, word);
         ++addr;
     }
 
@@ -3564,52 +3564,110 @@ int multiSlsDetector::setCTBPattern(const std::string &fname, int detPos) {
     return addr;
 }
 
-uint64_t multiSlsDetector::setCTBWord(int addr, uint64_t word, int detPos) {
+uint64_t multiSlsDetector::setPatternWord(int addr, uint64_t word, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setCTBWord(addr, word);
+        return detectors[detPos]->setPatternWord(addr, word);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setCTBWord, addr, word);
+    auto r = parallelCall(&slsDetector::setPatternWord, addr, word);
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setCTBPatLoops(int level, int &start, int &stop, int &n,
+int multiSlsDetector::setPatternLoops(int level, int &start, int &stop, int &n,
                                      int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setCTBPatLoops(level, start, stop, n);
+        return detectors[detPos]->setPatternLoops(level, start, stop, n);
     }
 
     // multi
     std::vector<int> r;
     for (auto &d : detectors) {
-        r.push_back(d->setCTBPatLoops(level, start, stop, n));
+        r.push_back(d->setPatternLoops(level, start, stop, n));
     }
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-int multiSlsDetector::setCTBPatWaitAddr(int level, int addr, int detPos) {
+int multiSlsDetector::setPatternWaitAddr(int level, int addr, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setCTBPatWaitAddr(level, addr);
+        return detectors[detPos]->setPatternWaitAddr(level, addr);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setCTBPatWaitAddr, level, addr);
+    auto r = parallelCall(&slsDetector::setPatternWaitAddr, level, addr);
     return sls::minusOneIfDifferent(r);
 }
 
-uint64_t multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t, int detPos) {
+uint64_t multiSlsDetector::setPatternWaitTime(int level, uint64_t t, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setCTBPatWaitTime(level, t);
+        return detectors[detPos]->setPatternWaitTime(level, t);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setCTBPatWaitTime, level, t);
+    auto r = parallelCall(&slsDetector::setPatternWaitTime, level, t);
     return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::setPatternMask(uint64_t mask, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setPatternMask(mask);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setPatternMask, mask);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+uint64_t multiSlsDetector::getPatternMask(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getPatternMask();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getPatternMask);
+    if (sls::allEqual(r)) {
+        return r.front();
+    }
+
+    // can't have different values
+    FILE_LOG(logERROR) << "Error: Different Values returned)";
+    setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
+    return -1;
+}
+
+int multiSlsDetector::setPatternBitMask(uint64_t mask, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setPatternBitMask(mask);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setPatternBitMask, mask);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+uint64_t multiSlsDetector::getPatternBitMask(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getPatternBitMask();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getPatternBitMask);
+    if (sls::allEqual(r)) {
+        return r.front();
+    }
+
+    // can't have different values
+    FILE_LOG(logERROR) << "Error: Different Values returned)";
+    setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
+    return -1;
 }
 
 int multiSlsDetector::setLEDEnable(int enable, int detPos) {

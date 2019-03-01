@@ -252,9 +252,13 @@ uint64_t    readPatternWord(int addr);
 uint64_t    writePatternWord(int addr, uint64_t word);
 int         setPatternWaitAddress(int level, int addr);
 uint64_t    setPatternWaitTime(int level, uint64_t t);
-void         setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+void        setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
 int			setLEDEnable(int enable);
-void			setDigitalIODelay(uint64_t pinMask, int delay);
+void		setDigitalIODelay(uint64_t pinMask, int delay);
+void 		setPatternMask(uint64_t mask);
+uint64_t	getPatternMask();
+void 		setPatternBitMask(uint64_t mask);
+uint64_t	getPatternBitMask();
 #endif
 
 // gotthard specific - image, pedestal

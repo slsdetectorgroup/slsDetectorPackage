@@ -1700,7 +1700,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK/FAIL
      */
-    int setCTBPattern(const std::string& fname, int detPos = -1);
+    int setPattern(const std::string& fname, int detPos = -1);
 
     /**
      * Writes a pattern word to the CTB
@@ -1710,7 +1710,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    uint64_t setCTBWord(int addr, uint64_t word = -1, int detPos = -1);
+    uint64_t setPatternWord(int addr, uint64_t word = -1, int detPos = -1);
 
     /**
      * Sets the pattern or loop limits in the CTB
@@ -1721,7 +1721,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK/FAIL
      */
-    int setCTBPatLoops(int level, int &start, int &stop, int &n,
+    int setPatternLoops(int level, int &start, int &stop, int &n,
                        int detPos = -1);
 
     /**
@@ -1731,7 +1731,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    int setCTBPatWaitAddr(int level, int addr = -1, int detPos = -1);
+    int setPatternWaitAddr(int level, int addr = -1, int detPos = -1);
 
     /**
      * Sets the wait time in the CTB
@@ -1740,7 +1740,37 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    uint64_t setCTBPatWaitTime(int level, uint64_t t = -1, int detPos = -1);
+    uint64_t setPatternWaitTime(int level, uint64_t t = -1, int detPos = -1);
+
+    /**
+     * Sets the mask applied to every pattern
+     * @param mask mask to be applied
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns OK or FAIL
+     */
+    int setPatternMask(uint64_t mask, int detPos = -1);
+
+    /**
+     * Gets the mask applied to every pattern
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns mask set
+     */
+    uint64_t getPatternMask(int detPos = -1);
+
+    /**
+     * Selects the bits that the mask will be applied to for every pattern
+     * @param mask mask to select bits
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns OK or FAIL
+     */
+    int setPatternBitMask(uint64_t mask, int detPos = -1);
+
+    /**
+     * Gets the bits that the mask will be applied to for every pattern
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns mask  of bits selected
+     */
+    uint64_t getPatternBitMask(int detPos = -1);
 
     /**
      * Set LED Enable (Moench, CTB only)

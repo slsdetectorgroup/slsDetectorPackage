@@ -4965,13 +4965,13 @@ int slsDetector::restreamStopFromReceiver() {
     return ret;
 }
 
-int slsDetector::setCTBPattern(const std::string &fname) {
+int slsDetector::setPattern(const std::string &fname) {
     uint64_t word;
     int addr = 0;
     FILE *fd = fopen(fname.c_str(), "r");
     if (fd != nullptr) {
         while (fread(&word, sizeof(word), 1, fd)) {
-            setCTBWord(addr, word); //TODO! (Erik) do we need to send pattern in 64bit chunks?
+            setPatternWord(addr, word); //TODO! (Erik) do we need to send pattern in 64bit chunks?
             ++addr;
         }
         fclose(fd);
@@ -4981,13 +4981,13 @@ int slsDetector::setCTBPattern(const std::string &fname) {
     return addr;
 }
 
-uint64_t slsDetector::setCTBWord(int addr, uint64_t word) {
-    int fnum = F_SET_CTB_PATTERN;
+uint64_t slsDetector::setPatternWord(int addr, uint64_t word) {
+    int fnum = F_SET_PATTERN;
     int ret = FAIL;
     int mode = 0; // sets word
     uint64_t args[3] = {(uint64_t)mode, (uint64_t)addr, word};
     uint64_t retval = -1;
-    FILE_LOG(logDEBUG1) << "Setting CTB word, addr: 0x" << std::hex << addr << ", word: 0x" << word << std::dec;
+    FILE_LOG(logDEBUG1) << "Setting Pattern word, addr: 0x" << std::hex << addr << ", word: 0x" << word << std::dec;
 
     if (thisDetector->onlineFlag == ONLINE_FLAG) {
         auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
@@ -4995,7 +4995,7 @@ uint64_t slsDetector::setCTBWord(int addr, uint64_t word) {
         if (ret == FAIL) {
             setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
         } else {
-            FILE_LOG(logDEBUG1) << "Set CTB word: " << retval;
+            FILE_LOG(logDEBUG1) << "Set Pattern word: " << retval;
         }
     }
     if (ret == FORCE_UPDATE) {
@@ -5004,13 +5004,13 @@ uint64_t slsDetector::setCTBWord(int addr, uint64_t word) {
     return retval;
 }
 
-int slsDetector::setCTBPatLoops(int level, int &start, int &stop, int &n) {
-    int fnum = F_SET_CTB_PATTERN;
+int slsDetector::setPatternLoops(int level, int &start, int &stop, int &n) {
+    int fnum = F_SET_PATTERN;
     int ret = FAIL;
     int mode = 1; // sets loop
     uint64_t args[5] = {(uint64_t)mode, (uint64_t)level, (uint64_t)start, (uint64_t)stop, (uint64_t)n};
     int retvals[3] = {0, 0, 0};
-    FILE_LOG(logDEBUG1) << "Setting CTB Pat Loops, "
+    FILE_LOG(logDEBUG1) << "Setting Pat Loops, "
                            "level: "
                         << level << ", start: " << start << ", stop: " << stop << ", n: " << n;
 
@@ -5022,7 +5022,7 @@ int slsDetector::setCTBPatLoops(int level, int &start, int &stop, int &n) {
         if (ret == FAIL) {
             setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
         } else {
-            FILE_LOG(logDEBUG1) << "Set CTB Pat Loops: " << retvals[0] << ", " << retvals[1] << ", " << retvals[2];
+            FILE_LOG(logDEBUG1) << "Set Pat Loops: " << retvals[0] << ", " << retvals[1] << ", " << retvals[2];
             start = retvals[0];
             stop = retvals[1];
             n = retvals[2];
@@ -5034,13 +5034,13 @@ int slsDetector::setCTBPatLoops(int level, int &start, int &stop, int &n) {
     return ret;
 }
 
-int slsDetector::setCTBPatWaitAddr(uint64_t level, uint64_t addr) {
-    int fnum = F_SET_CTB_PATTERN;
+int slsDetector::setPatternWaitAddr(uint64_t level, uint64_t addr) {
+    int fnum = F_SET_PATTERN;
     int ret = FAIL;
     uint64_t mode = 2; // sets loop
     int retval = -1;
     std::array<uint64_t, 3> args{mode, level, addr};
-    FILE_LOG(logDEBUG1) << "Setting CTB Wait Addr, "
+    FILE_LOG(logDEBUG1) << "Setting Pat Wait Addr, "
                            "level: "
                         << level << ", addr: 0x" << std::hex << addr << std::dec;
 
@@ -5052,7 +5052,7 @@ int slsDetector::setCTBPatWaitAddr(uint64_t level, uint64_t addr) {
         if (ret == FAIL) {
             setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
         } else {
-            FILE_LOG(logDEBUG1) << "Set CTB Wait Addr: " << retval;
+            FILE_LOG(logDEBUG1) << "Set Pat Wait Addr: " << retval;
         }
     }
     if (ret == FORCE_UPDATE) {
@@ -5061,13 +5061,13 @@ int slsDetector::setCTBPatWaitAddr(uint64_t level, uint64_t addr) {
     return retval;
 }
 
-uint64_t slsDetector::setCTBPatWaitTime(uint64_t level, uint64_t t) {
-    int fnum = F_SET_CTB_PATTERN;
+uint64_t slsDetector::setPatternWaitTime(uint64_t level, uint64_t t) {
+    int fnum = F_SET_PATTERN;
     int ret = FAIL;
     uint64_t mode = 3;    // sets loop
     uint64_t retval = -1; //TODO! is this what we want?
     std::array<uint64_t, 3> args{mode, level, t};
-    FILE_LOG(logDEBUG1) << "Setting CTB Wait Time, level: " << level << ", t: " << t;
+    FILE_LOG(logDEBUG1) << "Setting Pat Wait Time, level: " << level << ", t: " << t;
 
     if (thisDetector->onlineFlag == ONLINE_FLAG) {
         auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
@@ -5077,13 +5077,105 @@ uint64_t slsDetector::setCTBPatWaitTime(uint64_t level, uint64_t t) {
         if (ret == FAIL) {
             setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
         } else {
-            FILE_LOG(logDEBUG1) << "Set CTB Wait Time: " << retval;
+            FILE_LOG(logDEBUG1) << "Set Pat Wait Time: " << retval;
         }
     }
     if (ret == FORCE_UPDATE) {
         ret = updateDetector();
     }
     return retval;
+}
+
+int slsDetector::setPatternMask(uint64_t mask) {
+	int fnum = F_SET_PATTERN_MASK;
+	int ret = FAIL;
+	uint64_t arg = mask;
+	FILE_LOG(logDEBUG1) << "Setting Pattern Mask " << std::hex << mask << std::dec;
+
+	if (thisDetector->onlineFlag == ONLINE_FLAG) {
+		auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
+		ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
+
+		// handle ret
+		if (ret == FAIL) {
+			setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
+		} else {
+			FILE_LOG(logDEBUG1) << "Pattern Mask successful";
+		}
+	}
+	if (ret == FORCE_UPDATE) {
+		ret = updateDetector();
+	}
+	return ret;
+}
+
+uint64_t slsDetector::getPatternMask() {
+    int fnum = F_GET_PATTERN_MASK;
+    int ret = FAIL;
+    uint64_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting Pattern Mask " ;
+
+    if (thisDetector->onlineFlag == ONLINE_FLAG) {
+        auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
+        ret = client.sendCommandThenRead(fnum, nullptr, 0, &retval, sizeof(retval));
+
+        // handle ret
+        if (ret == FAIL) {
+            setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
+        } else {
+            FILE_LOG(logDEBUG1) << "Pattern Mask:" << retval;
+        }
+    }
+    if (ret == FORCE_UPDATE) {
+        ret = updateDetector();
+    }
+    return retval;
+}
+
+int slsDetector::setPatternBitMask(uint64_t mask) {
+	int fnum = F_SET_PATTERN_BIT_MASK;
+	int ret = FAIL;
+	uint64_t arg = mask;
+	FILE_LOG(logDEBUG1) << "Setting Pattern Bit Mask " << std::hex << mask << std::dec;
+
+	if (thisDetector->onlineFlag == ONLINE_FLAG) {
+		auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
+		ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
+
+		// handle ret
+		if (ret == FAIL) {
+			setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
+		} else {
+			FILE_LOG(logDEBUG1) << "Pattern Bit Mask successful";
+		}
+	}
+	if (ret == FORCE_UPDATE) {
+		ret = updateDetector();
+	}
+	return ret;
+}
+
+uint64_t slsDetector::getPatternBitMask() {
+	int fnum = F_GET_PATTERN_BIT_MASK;
+	int ret = FAIL;
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1) << "Getting Pattern Bit Mask " ;
+
+	if (thisDetector->onlineFlag == ONLINE_FLAG) {
+		auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
+		ret = client.sendCommandThenRead(fnum, nullptr, 0, &retval, sizeof(retval));
+
+		// handle ret
+		if (ret == FAIL) {
+			setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
+		} else {
+			FILE_LOG(logDEBUG1) << "Pattern Bit Mask:" << retval;
+		}
+	}
+	if (ret == FORCE_UPDATE) {
+		ret = updateDetector();
+	}
+	return retval;
 }
 
 int slsDetector::setLEDEnable(int enable) {

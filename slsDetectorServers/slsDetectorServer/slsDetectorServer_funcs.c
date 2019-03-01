@@ -190,7 +190,11 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
-	case F_SET_CTB_PATTERN:					return "F_SET_CTB_PATTERN";
+	case F_SET_PATTERN:						return "F_SET_PATTERN";
+	case F_SET_PATTERN_MASK:				return "F_SET_PATTERN_MASK";
+	case F_GET_PATTERN_MASK:				return "F_GET_PATTERN_MASK";
+	case F_SET_PATTERN_BIT_MASK:			return "F_SET_PATTERN_BIT_MASK";
+	case F_GET_PATTERN_BIT_MASK:			return "F_GET_PATTERN_BIT_MASK";
 	case F_WRITE_ADC_REG:					return "F_WRITE_ADC_REG";
 	case F_SET_COUNTER_BIT:					return "F_SET_COUNTER_BIT";
 	case F_PULSE_PIXEL:						return "F_PULSE_PIXEL";
@@ -256,7 +260,11 @@ void function_table() {
 	flist[F_RESET_COUNTER_BLOCK]				= &reset_counter_block;
 	flist[F_ENABLE_TEN_GIGA]					= &enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]					= &set_all_trimbits;
-	flist[F_SET_CTB_PATTERN]					= &set_ctb_pattern;
+	flist[F_SET_PATTERN]						= &set_pattern;
+	flist[F_SET_PATTERN_MASK]					= &set_pattern_mask;
+	flist[F_GET_PATTERN_MASK]					= &get_pattern_mask;
+	flist[F_SET_PATTERN_BIT_MASK]				= &set_pattern_bit_mask;
+	flist[F_GET_PATTERN_BIT_MASK]				= &get_pattern_bit_mask;
 	flist[F_WRITE_ADC_REG]						= &write_adc_register;
 	flist[F_SET_COUNTER_BIT]					= &set_counter_bit;
 	flist[F_PULSE_PIXEL]						= &pulse_pixel;
@@ -2498,7 +2506,7 @@ int set_all_trimbits(int file_des) {
 
 
 
-int set_ctb_pattern(int file_des) {
+int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
@@ -2707,6 +2715,88 @@ int set_ctb_pattern(int file_des) {
         FILE_LOG(logERROR,(mess));
         return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
     }
+}
+
+int set_pattern_mask(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Set Pattern Mask to %d\n", arg));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setPatternMask(arg);
+		uint64_t retval64 = getPatternMask();
+		FILE_LOG(logDEBUG1, ("Pattern mask: 0x%llx\n", (long long unsigned int) retval64));
+		validate64(arg, retval64, "Set Pattern Mask", HEX);
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_pattern_mask(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval64 = -1;
+
+	FILE_LOG(logDEBUG1, ("Get Pattern Mask\n"));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else
+	// only get
+	retval64 = getPatternMask();
+	FILE_LOG(logDEBUG1, ("Get Pattern mask: 0x%llx\n", (long long unsigned int) retval64));
+
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval64, sizeof(retval64));
+}
+
+int set_pattern_bit_mask(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Set Pattern Bit Mask to %d\n", arg));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setPatternBitMask(arg);
+		uint64_t retval64 = getPatternBitMask();
+		FILE_LOG(logDEBUG1, ("Pattern bit mask: 0x%llx\n", (long long unsigned int) retval64));
+		validate64(arg, retval64, "Set Pattern Bit Mask", HEX);
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_pattern_bit_mask(int file_des){
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval64 = -1;
+
+	FILE_LOG(logDEBUG1, ("Get Pattern Bit Mask\n"));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else
+	// only get
+	retval64 = getPatternBitMask();
+	FILE_LOG(logDEBUG1, ("Get Pattern Bitmask: 0x%llx\n", (long long unsigned int) retval64));
+
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval64, sizeof(retval64));
 }
 
 int write_adc_register(int file_des) {

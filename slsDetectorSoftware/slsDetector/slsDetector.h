@@ -1560,7 +1560,7 @@ public:
 	 * @param fname pattern file to open
 	 * @returns OK/FAIL
 	 */
-	int setCTBPattern(const std::string& fname);
+	int setPattern(const std::string& fname);
 
 	/**
 	 * Writes a pattern word to the CTB
@@ -1568,7 +1568,7 @@ public:
 	 * @param word 64bit word to be written, -1 gets
 	 * @returns actual value
 	 */
-	uint64_t setCTBWord(int addr,uint64_t word=-1);
+	uint64_t setPatternWord(int addr,uint64_t word=-1);
 
 	/**
 	 * Sets the pattern or loop limits in the CTB
@@ -1578,7 +1578,7 @@ public:
 	 * @param n number of loops (if level >=0)
 	 * @returns OK/FAIL
 	 */
-	int setCTBPatLoops(int level,int &start, int &stop, int &n);
+	int setPatternLoops(int level,int &start, int &stop, int &n);
 
 	/**
 	 * Sets the wait address in the CTB
@@ -1586,7 +1586,7 @@ public:
 	 * @param addr wait address, -1 gets
 	 * @returns actual value
 	 */
-	int setCTBPatWaitAddr(uint64_t level, uint64_t addr=-1);
+	int setPatternWaitAddr(uint64_t level, uint64_t addr=-1);
 
 	/**
 	 * Sets the wait time in the CTB
@@ -1594,7 +1594,33 @@ public:
 	 * @param t wait time, -1 gets
 	 * @returns actual value
 	 */
-	uint64_t setCTBPatWaitTime(uint64_t level, uint64_t t=-1);
+	uint64_t setPatternWaitTime(uint64_t level, uint64_t t=-1);
+
+    /**
+     * Sets the mask applied to every pattern
+     * @param mask mask to be applied
+     * @returns OK or FAIL
+     */
+    int setPatternMask(uint64_t mask);
+
+    /**
+     * Gets the mask applied to every pattern
+     * @returns mask set
+     */
+    uint64_t getPatternMask();
+
+    /**
+     * Selects the bits that the mask will be applied to for every pattern
+     * @param mask mask to select bits
+     * @returns OK or FAIL
+     */
+    int setPatternBitMask(uint64_t mask);
+
+    /**
+     * Gets the bits that the mask will be applied to for every pattern
+     * @returns mask  of bits selected
+     */
+    uint64_t getPatternBitMask();
 
     /**
      * Set LED Enable (Moench, CTB only)

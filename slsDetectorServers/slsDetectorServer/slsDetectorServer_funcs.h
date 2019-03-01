@@ -79,4 +79,5 @@ int auto_comp_disable(int);
 int storage_cell_start(int);
 int check_version(int);
 int software_trigger(int);
-
+int led(int);
+int digital_io_delay(int);

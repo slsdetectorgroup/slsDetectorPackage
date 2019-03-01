@@ -68,6 +68,8 @@ enum detFuncs{
 	F_STORAGE_CELL_START, /** < storage cell start */
 	F_CHECK_VERSION,/** < check version compatibility */
 	F_SOFTWARE_TRIGGER,/** < software trigger */
+	F_LED,	/** < switch on/off led */
+	F_DIGITAL_IO_DELAY,  /** < digital IO delay */
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -184,6 +186,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_STORAGE_CELL_START:              return "F_STORAGE_CELL_START";
     case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
+    case F_LED:              				return "F_LED";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

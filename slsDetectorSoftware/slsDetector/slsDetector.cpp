@@ -2460,7 +2460,7 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
             }
             if (thisDetector->myDetectorType == EIGER || thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
                 enableTenGigabitEthernet(thisDetector->tenGigaEnable);
-                setReadOutFlags(thisDetector->roFlags);
+                setReadOutFlags(GET_READOUT_FLAGS);
             }
             setReceiverSilentMode(thisDetector->receiver_silentMode);
             // data streaming

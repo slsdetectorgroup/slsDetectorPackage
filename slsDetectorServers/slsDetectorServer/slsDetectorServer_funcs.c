@@ -1187,6 +1187,7 @@ int set_module(int file_des) {
 		case FORCESWITCHG1:
 		case FORCESWITCHG2:
 #elif GOTTHARDD
+		case GET_SETTINGS:
 		case DYNAMICGAIN:
 		case HIGHGAIN:
 		case LOWGAIN:
@@ -1791,6 +1792,7 @@ int set_readout_flags(int file_des) {
 	if ((arg == GET_READOUT_FLAGS) || (Server_VerifyLock() == OK)) {
 
 		switch(arg) {
+		case GET_READOUT_FLAGS:
 		case STORE_IN_RAM:
 		case CONTINOUS_RO:
 		case PARALLEL:

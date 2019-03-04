@@ -831,5 +831,5 @@ private:
 	int nsent;
 	int total_sent;
 	int header_packet_size;
-	int64_t actual_udp_socket_buffer_size;
+	uint64_t actual_udp_socket_buffer_size;
 };

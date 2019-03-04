@@ -2626,8 +2626,8 @@ int slsReceiverTCPIPInterface::set_additional_json_header() {
 int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int index = -1;
-    int retval = -1;
+    uint64_t index = -1;
+    uint64_t retval = -1;
 
     // receive arguments
     if (mySock->ReceiveDataOnly(&index,sizeof(index)) < 0 )
@@ -2639,7 +2639,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
         invalidReceiverObject();
     else {
         // set
-        if(index >= 0) {
+        if((int64_t)index >= 0) {
             if (mySock->differentClients && lockStatus)
                 receiverlocked();
             else if (receiverBase->getStatus() != IDLE)
@@ -2654,9 +2654,10 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
         }
         //get
         retval=receiverBase->getUDPSocketBufferSize();
-        if(index >= 0 && ((retval != index) || ((int)receiverBase->getActualUDPSocketBufferSize() != (index*2)))) {
+        if((int64_t)index >= 0 && ((retval != index) || (receiverBase->getActualUDPSocketBufferSize() != (index*2)))) {
             ret = FAIL;
-            strcpy(mess, "Could not set UDP Socket buffer size (No CAP_NET_ADMIN privileges?)\n");
+            sprintf(mess, "Could not set UDP Socket buffer size (No CAP_NET_ADMIN privileges?). "
+            		"set %lld, got %lld\n", (long long unsigned int)index, (long long unsigned int)retval);
             FILE_LOG(logERROR) << mess;
         }
     }

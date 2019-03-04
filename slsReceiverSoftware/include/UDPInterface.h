@@ -404,13 +404,13 @@ class UDPInterface {
      * Get UDP Socket Buffer Size
      * @return UDP Socket Buffer Size
      */
-    virtual uint32_t getUDPSocketBufferSize() const = 0;
+    virtual uint64_t getUDPSocketBufferSize() const = 0;
 
     /** (not saved in client shared memory)
      * Get actual UDP Socket Buffer Size
      * @return actual UDP Socket Buffer Size
      */
-    virtual uint32_t getActualUDPSocketBufferSize() const = 0;
+    virtual uint64_t getActualUDPSocketBufferSize() const = 0;
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -743,7 +743,7 @@ class UDPInterface {
      * @param s UDP Socket Buffer Size
      * @return OK or FAIL if dummy socket could be created
      */
-    virtual int setUDPSocketBufferSize(const uint32_t s) = 0;
+    virtual int setUDPSocketBufferSize(const uint64_t s) = 0;
 
 	/*
 	 * Restream stop dummy packet from receiver

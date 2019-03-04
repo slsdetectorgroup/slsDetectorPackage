@@ -184,7 +184,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
      * @param s UDP Socket Buffer Size
      * @return OK or FAIL if dummy socket could be created
      */
-    int setUDPSocketBufferSize(const uint32_t s);
+    int setUDPSocketBufferSize(const uint64_t s);
 
 	/**
 	 * Restream stop dummy packet from receiver

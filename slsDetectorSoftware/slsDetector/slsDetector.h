@@ -2422,7 +2422,7 @@ private:
 	 * @param udpsockbufsize additional json header
 	 * @returns receiver udp socket buffer size
 	 */
-	std::string setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
+	std::string setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize=-1);
 
 	/**
 	 * Sets the transmission delay for left, right or entire frame

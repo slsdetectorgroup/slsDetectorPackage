@@ -4040,7 +4040,8 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 	} else if (cmd=="rx_udpsocksize") {
         t=RECEIVER_UDP_SCKT_BUF_SIZE;
         if (action==PUT_ACTION){
-            if (!(sscanf(args[1],"%d",&i)))
+        	uint64_t ival = -1;
+            if (!(sscanf(args[1],"%ld",&i)))
                 return ("cannot parse argument") + string(args[1]);
         }
     } else if (cmd=="rx_realudpsocksize") {

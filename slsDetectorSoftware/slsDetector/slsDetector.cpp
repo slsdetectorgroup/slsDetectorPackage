@@ -4959,6 +4959,7 @@ uint32_t slsDetector::clearBit(uint32_t addr, int n) {
 
 string slsDetector::setNetworkParameter(networkParameter index, string value) {
 	int i;
+	uint64_t i64 = -1;
 	switch (index) {
 	case DETECTOR_MAC:
 		return setDetectorMAC(value);
@@ -5000,8 +5001,8 @@ string slsDetector::setNetworkParameter(networkParameter index, string value) {
 	case ADDITIONAL_JSON_HEADER:
 		return setAdditionalJsonHeader(value);
 	case RECEIVER_UDP_SCKT_BUF_SIZE:
-		sscanf(value.c_str(),"%d",&i);
-		setReceiverUDPSocketBufferSize(i);
+		sscanf(value.c_str(),"%ld",&i64);
+		setReceiverUDPSocketBufferSize(i64);
 		return getReceiverUDPSocketBufferSize();
 
 	default:
@@ -5109,7 +5110,7 @@ string slsDetector::getReceiverRealUDPSocketBufferSize() {
 
 	int fnum=F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE;
 	int ret = FAIL;
-	int retval = -1;
+	int64_t retval = -1;
 
 	if(thisDetector->receiverOnlineFlag == ONLINE_FLAG){
 #ifdef VERBOSE
@@ -5591,12 +5592,12 @@ string slsDetector::setAdditionalJsonHeader(string jsonheader) {
 }
 
 
-string slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
+string slsDetector::setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize) {
 
 	int fnum=F_RECEIVER_UDP_SOCK_BUF_SIZE;
 	int ret = FAIL;
-	int retval = -1;
-	int arg = udpsockbufsize;
+	int64_t retval = -1;
+	int64_t arg = udpsockbufsize;
 
 	if(thisDetector->receiverOnlineFlag == ONLINE_FLAG){
 #ifdef VERBOSE

@@ -39,7 +39,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 */
 	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
-	        uint32_t* us, uint32_t* as, uint32_t* fpf,
+	        uint64_t* us, uint64_t* as, uint32_t* fpf,
 			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
 
 	/**
@@ -138,7 +138,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
      * @param s UDP socket buffer size to be set
      * @return OK or FAIL of dummy socket creation
      */
-    int CreateDummySocketForUDPSocketBufferSize(uint32_t s);
+    int CreateDummySocketForUDPSocketBufferSize(uint64_t s);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -231,10 +231,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	uint32_t* dynamicRange;
 
 	/** UDP Socket Buffer Size */
-	uint32_t* udpSocketBufferSize;
+	uint64_t* udpSocketBufferSize;
 
 	/** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
-	uint32_t* actualUDPSocketBufferSize;
+	uint64_t* actualUDPSocketBufferSize;
 
 	/** frames per file */
 	uint32_t* framesPerFile;

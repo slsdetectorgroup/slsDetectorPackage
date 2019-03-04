@@ -654,7 +654,7 @@ void UDPStandardImplementation::closeFiles() {
 	dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
 }
 
-int UDPStandardImplementation::setUDPSocketBufferSize(const uint32_t s) {
+int UDPStandardImplementation::setUDPSocketBufferSize(const uint64_t s) {
     if (listener.size())
         return listener[0]->CreateDummySocketForUDPSocketBufferSize(s);
     return FAIL;

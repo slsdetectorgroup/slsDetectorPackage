@@ -356,12 +356,12 @@ char *UDPBaseImplementation::getAdditionalJsonHeader() const{
     return output;
 }
 
-uint32_t UDPBaseImplementation::getUDPSocketBufferSize() const {
+uint64_t UDPBaseImplementation::getUDPSocketBufferSize() const {
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return udpSocketBufferSize;
 }
 
-uint32_t UDPBaseImplementation::getActualUDPSocketBufferSize() const {
+uint64_t UDPBaseImplementation::getActualUDPSocketBufferSize() const {
     FILE_LOG(logDEBUG) << __AT__ << " starting";
     return actualUDPSocketBufferSize;
 }
@@ -786,7 +786,7 @@ void UDPBaseImplementation::setAdditionalJsonHeader(const char c[]){
     FILE_LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
 }
 
-int UDPBaseImplementation::setUDPSocketBufferSize(const uint32_t s) {
+int UDPBaseImplementation::setUDPSocketBufferSize(const uint64_t s) {
     FILE_LOG(logDEBUG) << __AT__ << " starting";
 
     udpSocketBufferSize = s;

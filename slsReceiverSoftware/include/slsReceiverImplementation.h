@@ -308,14 +308,14 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
      * Get UDP Socket Buffer Size
      * @return UDP Socket Buffer Size
      */
-    uint32_t getUDPSocketBufferSize() const;
+    uint64_t getUDPSocketBufferSize() const;
 
 
     /** (not saved in client shared memory)
      * Get actual UDP Socket Buffer Size
      * @return actual UDP Socket Buffer Size
      */
-    uint32_t getActualUDPSocketBufferSize() const;
+    uint64_t getActualUDPSocketBufferSize() const;
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -438,7 +438,7 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
      * @param s UDP Socket Buffer Size
      * @return OK or FAIL if dummy socket could be created
      */
-    int setUDPSocketBufferSize(const uint32_t s);
+    int setUDPSocketBufferSize(const uint64_t s);
 
 
 	//***acquisition parameters***
@@ -805,9 +805,9 @@ private:
 	/** Server UDP Port Number*/
 	uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
 	/** udp socket buffer size */
-	uint32_t udpSocketBufferSize;
+	uint64_t udpSocketBufferSize;
     /** actual UDP Socket Buffer Size (halved due to kernel bookkeeping) */
-    uint32_t actualUDPSocketBufferSize;
+    uint64_t actualUDPSocketBufferSize;
 
     //***file parameters***
 	/** File format */

@@ -2842,11 +2842,11 @@ std::string slsDetector::getAdditionalJsonParameter(const std::string& key) {
     return std::string("");
 }
 
-int slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
+uint64_t slsDetector::setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize) {
     int fnum = F_RECEIVER_UDP_SOCK_BUF_SIZE;
     int ret = FAIL;
-    int arg = udpsockbufsize;
-    int retval = -1;
+    uint64_t arg = udpsockbufsize;
+    uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver: " << arg;
 
     if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
@@ -2865,14 +2865,14 @@ int slsDetector::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
     return retval;
 }
 
-int slsDetector::getReceiverUDPSocketBufferSize() {
+uint64_t slsDetector::getReceiverUDPSocketBufferSize() {
     return setReceiverUDPSocketBufferSize();
 }
 
-int slsDetector::getReceiverRealUDPSocketBufferSize() {
+uint64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
     int fnum = F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE;
     int ret = FAIL;
-    int retval = -1;
+    uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting real UDP Socket Buffer size to receiver";
 
     if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {

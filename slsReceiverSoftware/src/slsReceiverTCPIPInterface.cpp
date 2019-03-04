@@ -1726,8 +1726,8 @@ int slsReceiverTCPIPInterface::get_additional_json_header() {
 int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 	ret = OK;
     memset(mess, 0, sizeof(mess));
-    int index = -1;
-    int retval = -1;
+    uint64_t index = -1;
+    uint64_t retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
@@ -1760,7 +1760,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-    int retval = -1;
+	uint64_t retval = -1;
 
 	// no arg, check receiver is null
 	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);

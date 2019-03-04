@@ -373,12 +373,12 @@ std::string slsReceiverImplementation::getAdditionalJsonHeader() const{
 	return std::string(additionalJsonHeader);
 }
 
-uint32_t slsReceiverImplementation::getUDPSocketBufferSize() const {
+uint64_t slsReceiverImplementation::getUDPSocketBufferSize() const {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	return udpSocketBufferSize;
 }
 
-uint32_t slsReceiverImplementation::getActualUDPSocketBufferSize() const {
+uint64_t slsReceiverImplementation::getActualUDPSocketBufferSize() const {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	return actualUDPSocketBufferSize;
 }
@@ -607,7 +607,7 @@ void slsReceiverImplementation::setEthernetInterface(const char* c) {
 	FILE_LOG(logINFO) << "Ethernet Interface: " << eth;
 }
 
-int slsReceiverImplementation::setUDPSocketBufferSize(const uint32_t s) {
+int slsReceiverImplementation::setUDPSocketBufferSize(const uint64_t s) {
 	if (listener.size())
 		return listener[0]->CreateDummySocketForUDPSocketBufferSize(s);
 	return FAIL;

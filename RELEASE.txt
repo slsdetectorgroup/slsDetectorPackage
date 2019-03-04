@@ -1,8 +1,8 @@
-SLS Detector Package 4.0.1 released on 08.02.2018 (Bug Fix Release)
+SLS Detector Package 4.0.2 released on xx.xx.2019 (Bug Fix Release)
 ===================================================================
 
 
-This document describes the differences between 4.0.1 and 4.0.0 releases.   
+This document describes the differences between 4.0.2 and 4.0.1 releases.   
     
     CONTENTS
     --------
@@ -17,99 +17,26 @@ This document describes the differences between 4.0.1 and 4.0.0 releases.
 1. Topics Concerning
 ====================
 
-    - Jungfrau server (new firmware mapped)
-    - Eiger server (measuredPeriod, reg)
-    - Gotthard server(ADC channel shift, ROI, 25um slave packets)
-    - Receiver (padding, releasing resources segfault, gappixels)
-    - Users class (detectorSize, ROI, versions, status)
-    - API (config error, ROI)
-    - Compile (Options prefix, static libraries, Makefile for API)
-    - Gui (multi module)
+    - Jungfrau receiver as root user
 
 
 
 2. Resolved Issues
 ==================          
 
-    Detector Server
-    ---------------
-    
-    1.  (Jungfrau): Latest Jungfrau firmware release mapped.
-    
-    2.  (Eiger): Measured subperiod initially wrapped around 4.29s. Now, upto 42.9s.
-        
-        Advanced command "reg" was writing only to right FPGA. 
-    
-    3.  (Gotthard 25/50um): Since Gotthard only sends packet numbers, one had to 
-        remember to take even number of images in ROI mode, if they wanted to 
-        switch back to non ROI mode.
-        This is fixed now, but temporary fix involves sending an image during 
-        configuration, which will not be captured by the receiver. Hence, it takes
-        longer to configure. Permanent fix will require a firmware update.
-           
-        The detector output is shifted by 1 for every 32 channels. This is fixed now.
-        
-        
     Receiver
     --------
     
-    1.  Receiver padding was enabled only if deactivated padding was also enabled.
-        Receiver padding enable and receiver deactivated padding enable are independent now.
-        
-    2.  Starting and stopping receiver without listening resulted in seg faults.
-    
-    3.  Gappixels in receiver bug fix.
-        
-        
-    Client
-    ------
-            
-    1.  (Users class): DetectorSize modified to set/get ROI if ROI is only 1 in number.
-    
-        Allowed setting/getting ROI at single detector level via API. 
-        (ROI for Gotthard only). Added them to the users class as setROI and getROI.
-        
-        Retrieving versions at module level is possible now.
-        
-        Added "stopped" as status in getRunStatus list.
-    
-    2.  (API): Incorrect mac address in config file will set error flag in API and not just
-        print the error.
-        
-        ROI possible at module level.
-         
-    
-    Compile
-    -------
-    
-    1.	CMake options now have a prefix 'SLS_'.
+    1.  Jungfrau Receiver as root user fails to set UDP socket size to default value
+        of (2000 * 1024 * 1024). It does not receive any packets afterwards.
+        Temporary solution was to set it to a lower number using
+            sls_detector_put rx_udpsocksize 1048576000
+        This has been fixed now to allow a greater size (including the default size).
 
-    2.  Static libraries removed.
-    
-    2.  slsDetectorPackage/manual/manual-api/Makefile modified to use libraries
-        from slsDetectorPackage/bin as the main Makefile copies the libraries there. 
-        No effect when using CMakeFiles.
-    
-
-    Gui
-    ---
-        
-    1.  Adding multiple detectors in x and y direction incremented number of detectors
-        in y direction incorrectly. Effect seen only in GUI (segfault) if 
-        detsizechan has multi detectors in both direction. Fixed.
-        
-        
         
 3. Known Issues
 ===============
     
-    Detector Specific 
-    -----------------
-    
-    1.  (Gotthard 25 um): Slave misses or captures an extra frame. Occurs irregularly.
-    
-    2.  (Gotthard 25/50um): Using ROI (2 chips, 256 channels) missses last pixel
-        of that ADC.
     
     
     

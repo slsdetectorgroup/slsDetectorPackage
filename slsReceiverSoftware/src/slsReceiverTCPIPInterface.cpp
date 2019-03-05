@@ -292,10 +292,10 @@ void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename, 
 		ret = FAIL;
 		if (hex)
 			sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n",
-				modename.c_str(), arg, retval);
+				modename.c_str(), (unsigned int) arg, (unsigned int) retval);
 		else
 			sprintf(mess, "Could not %s. Set %d, but read %d\n",
-				modename.c_str(), arg, retval);
+				modename.c_str(), (unsigned int) arg, (unsigned int) retval);
 		FILE_LOG(logERROR) << mess;
 	}
 }

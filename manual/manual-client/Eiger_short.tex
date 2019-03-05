@@ -219,6 +219,7 @@ We have added a special command, {\tt{thresholdnotb}}, which allows to scan the 
 \begin{verbatim}
 sls_detector_put 0-thresholdnotb energy_in_eV
 \end{verbatim}
+See section~\ref{sec:fastthresholdscan}.
 
 \section{Standard acquisition}
 
@@ -576,7 +577,7 @@ sls_detector_put 0-frames x
 sls_detector_put 0-cycles y
 sls_detector_status trigger
 \end{verbatim}
- Note that this functionality is very (!) useful if you need to do something between and acquisition and the next. This can be used to do a fast threshold scan for example. See section~\ref{Sec:fastthresholdscan}.
+ Note that this functionality is very (!) useful if you need to do something between and acquisition and the next. This can be used to do a fast threshold scan for example. See section~\ref{sec:fastthresholdscan}.
 
 
 \section{Autosumming and rate corrections} \label{advanced}
@@ -1064,6 +1065,34 @@ To exit from this pattern noise, just set the theshold to something known.
 \end{verbatim}
 where 5000 would be a value in eV and {/tt{standard}} is important in this case.
 
+\section{(Fast) threshold scans during beam operation}\label{sec:fastthresholdscan}
+Occasionally you might need to do threshold scans during your data taking (for example for Laue experiments or to get any spectral information). Settinng the threshold in thsi case would be not optimal as you would change thrimbits at every energy and this could give you a ``step'' behaviour. What you could do is to use the 
+\begin{verbatim}
+\item sls_detector_put thresholdnotb 50000 
+\end{verbatim}
+ which set the threshold to an energy but does not change trimbits. We suggest that before using this function you load the {\tt{threshold}} at an energy in the middle of your scan range and then change {\tt{thresholdnotb}}.
+We have also been requested if we could speed up the threshold scan. At the moment no specific function has been integrated in firware, but one could use the software thrigger option to perform what you need:
+\begin{verbatim}
+./sls_detector_put exptime 0.01
+./sls_detector_put timing trigger
+./sls_detector_put enablefwrite 0
+./sls_detector_put resetframescaught 0 
+./sls_detector_put index 0
+./sls_detector_put cycles 21
+./sls_detector_put receiver start
+./sls_detector_put status start 
+for i in $(seq 0 20); 
+ do
+   #./sls_detector_put thresholdnotb 5000 ##this is still too slow as it loads the module 
+ ./sls_detector_put 0:vrf 3199 #need to know the appropriat vrf at every energy 
+ ./sls_detector_put 1:vrf 3199 #need to know the appropriat vrf at every energy 
+ ./sls_detector_put status trigger
+    #sleep 0.005
+done
+./sls_detector_put  receiver stop
+./sls_detector_put  resetframescaught 0 
+./sls_detector_put  timing auto
+\end{verbatim} 
 
 \section{Troubleshooting}
 \subsection{Cannot successfully finish an acquisition}

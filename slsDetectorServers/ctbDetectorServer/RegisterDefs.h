@@ -85,8 +85,8 @@
 
 #define FIFO_DATA_HRDWR_SRL_NMBR_OFST       (0)
 #define FIFO_DATA_HRDWR_SRL_NMBR_MSK        (0x0000FFFF << FIFO_DATA_HRDWR_SRL_NMBR_OFST)
-//0xCACA#define FIFO_DATA_WRD_OFST                  (16)
-//0xCACA#define FIFO_DATA_WRD_MSK                   (0x0000FFFF << FIFO_DATA_WRD_OFST)
+//#define FIFO_DATA_WRD_OFST                  (16)
+//#define FIFO_DATA_WRD_MSK                   (0x0000FFFF << FIFO_DATA_WRD_OFST)
 
 /* FIFO Status RO register TODO */
 #define FIFO_STATUS_REG                     (0x07 << MEM_MAP_SHIFT)

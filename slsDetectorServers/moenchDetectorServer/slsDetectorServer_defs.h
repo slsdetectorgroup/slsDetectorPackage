@@ -26,7 +26,7 @@ typedef struct ip_header_struct {
 
 /* Enums */
 enum CLKINDEX               {RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
-enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8};
+enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7};
 
 /* Hardware Definitions */
 #define NCHAN 						(36)
@@ -49,6 +49,10 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8};
 #define DEFAULT_VLIMIT              (-100)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
+#define DEFAULT_RUN_CLK             (40)
+#define DEFAULT_ADC_CLK             (20)
+#define DEFAULT_SYNC_CLK            (20)
+#define DEFAULT_DBIT_CLK            (200)
 
 #define HIGHVOLTAGE_MIN             (60)
 #define HIGHVOLTAGE_MAX             (200)
@@ -57,6 +61,9 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8};
 
 /* Defines in the Firmware */
 #define MAX_PATTERN_LENGTH  		(0xFFFF)
+#define DIGITAL_IO_DELAY_MAXIMUM_PS	((OUTPUT_DELAY_0_OTPT_STTNG_MSK >> OUTPUT_DELAY_0_OTPT_STTNG_OFST) * OUTPUT_DELAY_0_OTPT_STTNG_STEPS)
+
+
 #define WAIT_TME_US_FR_LK_AT_ME_REG (100) // wait time in us after acquisition done to ensure there is no data in fifo
 #define WAIT_TIME_US_PLL            (10 * 1000)
 #define WAIT_TIME_US_STP_ACQ        (100)

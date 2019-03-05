@@ -3267,6 +3267,7 @@ int power_chip(int file_des) {
 		retval = powerChip(arg);
 		FILE_LOG(logDEBUG1, ("Power chip: %d\n", retval));
 		validate(arg, retval, "power on/off chip", DEC);
+#ifdef JUNGFRAUD
 		// narrow down error when powering on
 		if (ret == FAIL && arg > 0) {
 			if (setTemperatureEvent(-1) == 1)
@@ -3274,6 +3275,7 @@ int power_chip(int file_des) {
 			    		"Clear event & power chip again. Set %d, read %d \n", arg, retval);
 			FILE_LOG(logERROR, (mess));
 		}
+#endif
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));

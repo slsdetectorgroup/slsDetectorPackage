@@ -142,7 +142,7 @@ int checkType() {
 	return OK;
 }
 
-u_int32_t testFpga(void) {
+int testFpga() {
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -950,6 +950,7 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         val = (val / (1E-3 * CLK_FREQ)) + 0.5;  // convert back to timer
         if (val != retval)
             return FAIL;
+        break;
     case DELAY_AFTER_TRIGGER:
         if (masterflags == IS_MASTER) {
             val += masterdefaultdelay;
@@ -961,6 +962,7 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         }
         if (val != retval)
             return FAIL;
+        break;
     default:
         break;
     }

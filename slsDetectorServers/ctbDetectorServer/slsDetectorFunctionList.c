@@ -103,7 +103,7 @@ void basictests() {
 		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
-		cprintf(RED,"exiting for now!\n");exit(-1); return;
+		return;
 	}
 
 	uint16_t hversion			= getHardwareVersionNumber();
@@ -204,7 +204,7 @@ int checkType() {
 	return OK;
 }
 
-uint32_t testFpga(void) {
+int testFpga() {
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -538,6 +538,9 @@ void setupDetector() {
 	cleanFifos(); // FIXME: why twice?
 	resetCore();
 
+	// 1G UDP
+	enableTenGigabitEthernet(0);
+
 	//Initialization of acquistion parameters
     setTimer(SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
@@ -545,9 +548,8 @@ void setupDetector() {
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
+	setReadOutFlags(NORMAL_READOUT);
 
-	// 1G UDP
-	enableTenGigabitEthernet(0);
     // clear roi
     {
         int ret = OK, retvalsize = 0;
@@ -953,7 +955,6 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	    }
         retval = nSamples;
         FILE_LOG(logINFO, ("\tGetting #samples: %lld\n", (long long int)retval));
-
         break;
 
 	default:
@@ -1031,6 +1032,7 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         val = (val) / (1E-3 * ADC_CLK);
         if (val != retval)
             return FAIL;
+        break;
     default:
         break;
     }
@@ -1614,7 +1616,7 @@ int enableTenGigabitEthernet(int val) {
 
 
 
-/* ctb specific - pll, flashing fpga */
+/* ctb specific - configure frequency, phase, pll */
 
 
 // ind can only be ADC_CLK or DBIT_CLK
@@ -1738,6 +1740,9 @@ int getAdcOffsetRegister(int adc) {
         return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_ADC_PPLN_MSK) >> ADC_OFFSET_ADC_PPLN_OFST);
     return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_DBT_PPLN_MSK) >> ADC_OFFSET_DBT_PPLN_OFST);
 }
+
+
+// patterns
 
 uint64_t writePatternIOControl(uint64_t word) {
     if (word != -1) {
@@ -2176,10 +2181,12 @@ enum runStatus getRunStatus(){
 	        return TRANSMITTING;
 	    }
 
-	    /*if (retval & STATUS_ALL_FF_EMPTY_MSK) {
-	        FILE_LOG(logINFOBLUE, ("Status: Transmitting (All fifo empty)\n"));
-	        return TRANSMITTING;
-	    }*/
+	    if (digitalEnable && !analogEnable) {
+	    	if (retval & STATUS_ALL_FF_EMPTY_MSK) {
+	    		FILE_LOG(logINFOBLUE, ("Status: Transmitting (All fifo empty)\n"));
+	    		return TRANSMITTING;
+	    	}
+	    }
 
 	    if (! (retval & STATUS_IDLE_MSK)) {
 	        FILE_LOG(logINFOBLUE, ("Status: Idle\n"));

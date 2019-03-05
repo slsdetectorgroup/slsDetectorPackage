@@ -1,6 +1,6 @@
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DMOENCHD  -DSTOP_SERVER # -DVERBOSEI #-DVERBOSE
+CFLAGS		+=  -Wall -DMOENCHD  -DSTOP_SERVER  -DDEBUG1# -DVERBOSEI #-DVERBOSE
 LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	moenchDetectorServer 

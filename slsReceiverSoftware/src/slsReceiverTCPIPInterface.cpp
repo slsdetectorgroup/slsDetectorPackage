@@ -759,7 +759,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 				}
 				else {
 					strcpy(retvals,temp.c_str());
-					FILE_LOG(logINFO) << "Reciever MAC Address: " << retvals;
+					FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals;
 				}
 			}
 		}
@@ -983,7 +983,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 				sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
 				FILE_LOG(logERROR) << mess;
 			}else {
-				FILE_LOG(logDEBUG1) << "Starting Reciever";
+				FILE_LOG(logDEBUG1) << "Starting Receiver";
 				ret = receiver->startReceiver(mess);
 				if (ret == FAIL) {
 					FILE_LOG(logERROR) << mess;
@@ -1009,7 +1009,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		// verify if receiver is unlocked
 		if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
 			if(receiver->getStatus() != IDLE) {
-				FILE_LOG(logDEBUG1) << "Stopping Reciever";
+				FILE_LOG(logDEBUG1) << "Stopping Receiver";
 				receiver->stopReceiver();
 			}
 			enum runStatus s = receiver->getStatus();

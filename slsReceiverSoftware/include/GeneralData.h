@@ -213,7 +213,7 @@ public:
      * @param s number of samples
      * @param t tengiga enable
      */
-    virtual void setImageSize(std::vector<slsDetectorDefs::ROI> i, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+    virtual void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
         cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
     };
 
@@ -555,15 +555,18 @@ public:
 	 * @param s number of samples
 	 * @param t tengiga enable
 	 */
-	void setImageSize(std::vector<slsDetectorDefs::ROI> i, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+	void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
 		 int nchans = 0;
 		 if (f != slsDetectorDefs::GET_READOUT_FLAGS) {
 			 // analog channels
 			 if (f == slsDetectorDefs::NORMAL_READOUT || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
 				 nchans += NCHAN_ANALOG;
 				 // if roi
-				 if (i.size()) {
-					 nchans = abs(i[0].xmax - i[0].xmin);
+				 if (r.size()) {
+					 nchans = 0;
+					 for (auto &roi : r) {
+						 nchans += (roi.xmax - roi.xmin + 1);
+					 }
 				 }
 			 }
 			 // digital channels
@@ -575,18 +578,20 @@ public:
 	    nPixelsY = s;
 	    // 10G
 	    if (t) {
-	    	// fixed values
-	    	dataSize = 0; // FIXME: fix when firmware written
-	    	packetSize = headerSizeinPacket + dataSize;
-			packetsPerFrame = 0; // FIXME: fix when firmware written
-			imageSize = dataSize*packetsPerFrame; // FIXME: OR fix when firmware written
-	    }
+			headerSizeinPacket 	= 22;
+			dataSize 			= 8192;
+			packetSize 			= headerSizeinPacket + dataSize;
+			imageSize 			= nPixelsX * nPixelsY * 2;
+			packetsPerFrame 	= ceil((double)imageSize / (double)packetSize);
+			standardheader		= false;	    }
 	    // 1g udp (via fifo readout)
 	    else {
-			dataSize = UDP_PACKET_DATA_BYTES;
-			packetSize = headerSizeinPacket + dataSize;
-	    	imageSize = nchans * NUM_BYTES_PER_PIXEL * s;
-	    	packetsPerFrame = ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+			headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
+			dataSize 			= UDP_PACKET_DATA_BYTES;
+			packetSize 			= headerSizeinPacket + dataSize;
+			imageSize 			= nPixelsX * nPixelsY * 2;
+			packetsPerFrame 	= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+			standardheader		= true;
 	    }
 	}
 
@@ -658,12 +663,15 @@ private:
 	 * @param s number of samples
 	 * @param t tengiga enable
 	 */
-	void setImageSize(std::vector<slsDetectorDefs::ROI> i, int s, bool t,
+	void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t,
 			slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
 		int nchans = NCHAN_ANALOG;
 		// if roi
-		if (i.size()) {
-			nchans = abs(i[0].xmax - i[0].xmin);
+		if (r.size()) {
+			 nchans = 0;
+			 for (auto &roi : r) {
+				 nchans += abs(roi.xmax - roi.xmin) + 1;
+			 }
 		}
 
 		nPixelsX = nchans;

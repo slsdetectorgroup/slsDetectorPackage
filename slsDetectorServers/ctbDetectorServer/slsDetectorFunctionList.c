@@ -554,7 +554,7 @@ void setupDetector() {
     // clear roi
     {
         int ret = OK, retvalsize = 0;
-        setROI(0, rois, &ret, &retvalsize);
+        setROI(0, rois, &retvalsize, &ret);
     }
 }
 
@@ -617,6 +617,7 @@ int getChannels() {
     }
     if (digitalEnable)
         nchans += NCHAN_DIGITAL;
+    FILE_LOG(logINFO, ("\tNumber of Channels calculated: %d\n", nchans))
     return nchans;
 }
 
@@ -674,13 +675,13 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
             int iroi = 0;
             // for every roi
             for (iroi = 0; iroi < n; ++iroi) {
-                FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", arg[iroi].xmin, arg[iroi].xmax));
+                FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", iroi, arg[iroi].xmin, arg[iroi].xmax));
                 // swap if xmin > xmax
                 if (arg[iroi].xmin > arg[iroi].xmax) {
                     int temp = arg[iroi].xmin;
                     arg[iroi].xmin = arg[iroi].xmax;
                     arg[iroi].xmax = temp;
-                    FILE_LOG(logINFORED, ("\tCorrected %d: (%d, %d)\n", arg[iroi].xmin, arg[iroi].xmax));
+                    FILE_LOG(logINFORED, ("\tCorrected %d: (%d, %d)\n", iroi, arg[iroi].xmin, arg[iroi].xmax));
                 }
                 int ich = 0;
                 // for the roi specified

@@ -480,6 +480,9 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 		flag.append("nooverflow ");
 
 	FILE_LOG(logINFO)  << "ReadoutFlags: " << flag;
+	if (myDetectorType == CHIPTESTBOARD) {
+		FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
+	}
 	return OK;
 }
 
@@ -672,6 +675,7 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i)
 	}
 	std::string message = sstm.str();
 	FILE_LOG(logINFO) << message;
+	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 	return OK;
 }
 
@@ -844,6 +848,7 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 			return FAIL;
 	}
 	FILE_LOG(logINFO) << "Ten Giga: " << stringEnable(tengigaEnable);
+	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 	return OK;
 }
 

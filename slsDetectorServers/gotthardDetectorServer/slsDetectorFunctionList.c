@@ -1522,7 +1522,10 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
         FILE_LOG(logINFO, ("\twaited %d loops to start\n", loop));
         FILE_LOG(logINFO, ("\tWaiting for acquisition to end (frames left: %lld)\n", (long long int)getTimeLeft(FRAME_NUMBER)));
-        waitForAcquisitionFinish();
+    	// wait for status to be done
+    	while(runBusy()){
+    		usleep(500);
+    	}
 
         // set to previous parameters
         FILE_LOG(logINFO, ("\tSetting previous parameters:\n"

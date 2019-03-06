@@ -377,12 +377,17 @@ public:
 	 */
 	int setDetectorType(detectorType type=GET_DETECTOR_TYPE);
 
-
 	/**
 	 * Returns the total number of channels from shared memory
 	 * @returns the total number of channels
 	 */
 	int getTotalNumberOfChannels();
+
+	/**
+	 * Update total number of channels (chiptestboard or moench)
+	 * depending on the number of samples, roi, readout flags(ctb)
+	 */
+	void updateTotalNumberOfChannels();
 
 	/**
 	 * Returns the total number of channels in dimension d from shared memory
@@ -1066,6 +1071,12 @@ public:
 	 * @returns the counter bit in detector
 	 */
 	int setCounterBit(int i = -1);
+
+	/**
+	 * send ROI to processor (moench only)
+	 * @returns OK or FAIL
+	 */
+	int sendROIToProcessor();
 
 	/**
 	 * Set ROI (Gotthard)

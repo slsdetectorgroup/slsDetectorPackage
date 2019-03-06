@@ -2193,11 +2193,29 @@ int send_update(int file_des) {
     if (n < 0) return printSocketReadError();
 #endif
 
-    // #samples
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+    // #samples, roi
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARDD)
     i64 = setTimer(SAMPLES,GET_FLAG);
     n = sendData(file_des,&i64,sizeof(i64),INT64);
     if (n < 0) return printSocketReadError();
+
+    // roi
+    ROI* retval = NULL;
+    ROI arg[1];
+    int ret = OK, nretval = 0;
+    retval = setROI(-1, arg, &nretval, &ret);
+	//retvalsize could be swapped during sendData
+	int nretval1 = nretval;
+	sendData(file_des, &nretval1, sizeof(nretval1), INT32);
+	int iloop = 0;
+	for(iloop = 0; iloop < nretval; ++iloop) {
+		sendData(file_des, &retval[iloop].xmin, sizeof(int), INT32);
+		sendData(file_des, &retval[iloop].xmax, sizeof(int), INT32);
+		sendData(file_des, &retval[iloop].ymin, sizeof(int), INT32);
+		sendData(file_des, &retval[iloop].ymax, sizeof(int), INT32);
+	}
+
+
 #endif
 
 	if (lockStatus == 0) {

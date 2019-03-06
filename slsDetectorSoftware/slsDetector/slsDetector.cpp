@@ -293,12 +293,21 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
         list.nGappixelsY = 0;
         break;
     case CHIPTESTBOARD:
-    case MOENCH:
         list.nChanX = 36;
         list.nChanY = 1;
         list.nChipX = 1;
         list.nChipY = 1;
         list.nDacs = 24;
+        list.dynamicRange = 16;
+        list.nGappixelsX = 0;
+        list.nGappixelsY = 0;
+    	break;
+    case MOENCH:
+        list.nChanX = 32;
+        list.nChanY = 1;
+        list.nChipX = 1;
+        list.nChipY = 1;
+        list.nDacs = 8;
         list.dynamicRange = 16;
         list.nGappixelsX = 0;
         list.nGappixelsY = 0;
@@ -461,9 +470,9 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
          thisDetector->gappixels * thisDetector->nGappixels[Y]) *
         thisDetector->dynamicRange / 8;
 
-    // special for jctb
+    // update #nchans and databytes, as it depends on #samples, roi, readoutflags (ctb only)
     if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
-        getTotalNumberOfChannels();
+    	updateTotalNumberOfChannels();
     }
 
     /** calculates the memory offsets for
@@ -740,42 +749,44 @@ std::string slsDetector::getDetectorTypeAsString() {
 }
 
 int slsDetector::getTotalNumberOfChannels() {
-    FILE_LOG(logDEBUG1) << "Get total number of channels";
-
-    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
-        if (thisDetector->roFlags & DIGITAL_ONLY) {
-            thisDetector->nChan[X] = 4;
-        } else if (thisDetector->roFlags & ANALOG_AND_DIGITAL) {
-            thisDetector->nChan[X] = 36;
-        } else {
-            thisDetector->nChan[X] = 32;
-        }
-        if (thisDetector->nChan[X] >= 32) {
-            if (thisDetector->nROI > 0) {
-                thisDetector->nChan[X] -= 32;
-                for (int iroi = 0; iroi < thisDetector->nROI; ++iroi) {
-                    thisDetector->nChan[X] +=
-                        thisDetector->roiLimits[iroi].xmax -
-                        thisDetector->roiLimits[iroi].xmin + 1;
-                }
-            }
-        }
-        thisDetector->nChans = thisDetector->nChan[X];
-        thisDetector->dataBytes = thisDetector->nChans * thisDetector->nChips * 2 * thisDetector->timerValue[SAMPLES];
-    }
-
-    FILE_LOG(logDEBUG1) << "Total number of channels: " << thisDetector->nChans * thisDetector->nChips << ". Data bytes: " << thisDetector->dataBytes;
-
     return thisDetector->nChans * thisDetector->nChips;
 }
 
+void slsDetector::updateTotalNumberOfChannels() {
+    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
+
+    	// default number of channels
+    	thisDetector->nChan[X] = 32;
+
+    	// if roi, recalculate #nchanX
+        if (thisDetector->nROI > 0) {
+        	thisDetector->nChan[X] = 0;
+            for (int iroi = 0; iroi < thisDetector->nROI; ++iroi) {
+                thisDetector->nChan[X] +=
+                    (thisDetector->roiLimits[iroi].xmax -
+                    thisDetector->roiLimits[iroi].xmin + 1);
+            }
+        }
+
+    	// add digital signals depending on readout flags
+    	if (thisDetector->myDetectorType == CHIPTESTBOARD &&
+    			(thisDetector->roFlags & DIGITAL_ONLY || thisDetector->roFlags & ANALOG_AND_DIGITAL)) {
+    		thisDetector->nChan[X] += 4;
+    	}
+
+    	// recalculate derived parameters chans and databytes
+    	thisDetector->nChans = thisDetector->nChan[X];
+    	thisDetector->dataBytes = thisDetector->nChans * thisDetector->nChips *
+    			(thisDetector->dynamicRange / 8) * thisDetector->timerValue[SAMPLES];
+    	FILE_LOG(logDEBUG1) << "Number of Channels:" << thisDetector->nChans << " Databytes: " << thisDetector->dataBytes;
+    }
+}
+
 int slsDetector::getTotalNumberOfChannels(dimension d) {
-    getTotalNumberOfChannels();
     return thisDetector->nChan[d] * thisDetector->nChip[d];
 }
 
 int slsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d) {
-    getTotalNumberOfChannels();
     return (thisDetector->nChan[d] * thisDetector->nChip[d] + thisDetector->gappixels * thisDetector->nGappixels[d]);
 }
 
@@ -1111,7 +1122,31 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
         if (i64 >= 0) {
             thisDetector->timerValue[SAMPLES] = i64;
         }
-        getTotalNumberOfChannels();
+    }
+
+    // roi
+    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH|| thisDetector->myDetectorType == GOTTHARD) {
+    	n += client.receiveData(&i32, sizeof(i32));
+    	thisDetector->nROI = i32;
+    	for (int i = 0; i < thisDetector->nROI; ++i) {
+    		n += client.receiveData(&i32, sizeof(i32));
+    		thisDetector->roiLimits[i].xmin = i32;
+    		n += client.receiveData(&i32, sizeof(i32));
+    		thisDetector->roiLimits[i].xmax = i32;
+    		n += client.receiveData(&i32, sizeof(i32));
+    		thisDetector->roiLimits[i].ymin = i32;
+    		n += client.receiveData(&i32, sizeof(i32));
+    		thisDetector->roiLimits[i].xmax = i32;
+    	}
+		// moench (send to processor)
+		if (thisDetector->myDetectorType == MOENCH) {
+			sendROIToProcessor();
+		}
+    }
+
+    // update #nchans and databytes, as it depends on #samples, roi, readoutflags (ctb only)
+    if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
+    	updateTotalNumberOfChannels();
     }
 
 
@@ -1906,6 +1941,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
         } else {
             FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
             thisDetector->timerValue[index] = retval;
+            // update #nchans and databytes, as it depends on #samples, roi, readoutflags (ctb only)
+            if (index == SAMPLES &&
+            		(thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH)) {
+            	updateTotalNumberOfChannels();
+            }
             if (ret == FORCE_UPDATE) {
                 client.close();
                 ret = updateDetector();
@@ -2084,6 +2124,7 @@ int slsDetector::setDynamicRange(int n) {
         }
     }
 
+    // only for eiger
     // setting dr consequences on databytes shm
     // (a get can also change timer value, hence check difference)
     if (olddr != thisDetector->dynamicRange) {
@@ -2094,9 +2135,6 @@ int slsDetector::setDynamicRange(int n) {
             (thisDetector->nChip[Y] * thisDetector->nChan[Y] +
              thisDetector->gappixels * thisDetector->nGappixels[Y]) *
             retval / 8;
-        if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
-            getTotalNumberOfChannels();
-        }
         FILE_LOG(logDEBUG1) << "Data bytes " << thisDetector->dataBytes;
         FILE_LOG(logDEBUG1) << "Data bytes including gap pixels" << thisDetector->dataBytesInclGapPixels;
     }
@@ -2248,6 +2286,10 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
         } else {
             FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
             thisDetector->roFlags = (readOutFlags)retval;
+            // update #nchans and databytes, as it depends on #samples, roi, readoutflags (ctb only)
+            if (thisDetector->myDetectorType == CHIPTESTBOARD) {
+            	updateTotalNumberOfChannels();
+            }
         }
     }
     if (ret == FORCE_UPDATE) {
@@ -3114,6 +3156,17 @@ int slsDetector::setCounterBit(int i) {
     return retval;
 }
 
+int slsDetector::sendROIToProcessor() {
+	std::ostringstream os;
+	os << "[" << thisDetector->roiLimits[0].xmin << ", " << thisDetector->roiLimits[0].xmax << ", " <<
+			thisDetector->roiLimits[0].ymin << ", " << thisDetector->roiLimits[0].ymax << "]";
+	std::string sroi = os.str();
+	std::string result =  setAdditionalJsonParameter("roi", sroi);
+	if (result == sroi)
+		return OK;
+	return FAIL;
+}
+
 int slsDetector::setROI(int n, ROI roiLimits[]) {
     // sort ascending order
     for (int i = 0; i < n; ++i) {
@@ -3138,35 +3191,29 @@ int slsDetector::setROI(int n, ROI roiLimits[]) {
     int ret = sendROI(n, roiLimits);
     if(ret==FAIL)
         setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
+    // moench (send to processor)
+    if (thisDetector->myDetectorType == MOENCH) {
+    	sendROIToProcessor();
+    }
+    // update #nchans and databytes, as it depends on #samples, roi, readoutflags (ctb only)
     if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
-        getTotalNumberOfChannels();
-
-        // moench (send to processor)
-        if (thisDetector->myDetectorType == MOENCH) {
-        	std::ostringstream os;
-        	os << "[" << roiLimits[0].xmin << ", " << roiLimits[0].xmax << ", " <<
-        			roiLimits[0].ymin << ", " << roiLimits[0].ymax << "]";
-        	std::string sroi = os.str();
-        	std::string result =  setAdditionalJsonParameter("roi", sroi);
-        	if (result == sroi)
-        		return OK;
-        	return FAIL;
-        }
+    	updateTotalNumberOfChannels();
     }
     return ret;
 }
 
 slsDetectorDefs::ROI *slsDetector::getROI(int &n) {
-    sendROI(-1, nullptr);
-    n = thisDetector->nROI;
+	sendROI(-1, nullptr);
+	n = thisDetector->nROI;
+	// moench - get json header(due to different clients, diff shm) (get roi is from detector: updated anyway)
+	if (thisDetector->myDetectorType == MOENCH) {
+		getAdditionalJsonHeader();
+	}
+    // update #nchans and databytes, as it depends on #samples, roi, readoutflags (ctb only)
     if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
-        getTotalNumberOfChannels();
-        // moench - get json header(due to different clients, diff shm) (get roi is from detector: updated anyway)
-        if (thisDetector->myDetectorType == MOENCH) {
-        	getAdditionalJsonHeader();
-        }
+    	updateTotalNumberOfChannels();
     }
-    return thisDetector->roiLimits;
+	return thisDetector->roiLimits;
 }
 
 int slsDetector::getNRoi() {

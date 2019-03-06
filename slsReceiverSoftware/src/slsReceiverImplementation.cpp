@@ -447,8 +447,8 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 		readoutFlags = f;
 
 		// side effects
-		if (myDetectorType == CHIPTESTBOARD || myDetectorType == MOENCH) {
-			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
+		if (myDetectorType == CHIPTESTBOARD) {
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
 			for (const auto& it : dataProcessor)
 				it->SetPixelDimension();
 			if (SetupFifoStructure() == FAIL)
@@ -642,10 +642,10 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i)
 			framesPerFile = generalData->maxFramesPerFile;
 			break;
 		case MOENCH:
-			generalData->SetROI(i);
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
 			break;
 		case CHIPTESTBOARD:
-			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
 			break;
 		default:
 			break;
@@ -789,18 +789,13 @@ int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 	if (numberOfSamples != i) {
 		numberOfSamples = i;
 
-		switch(myDetectorType) {
-		case MOENCH:
-			generalData->setNumberofSamples(i);
-			break;
-		case CHIPTESTBOARD:
-			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
-			for (const auto& it : dataProcessor)
-				it->SetPixelDimension();
-			break;
-		default:
-			break;
+		if(myDetectorType == MOENCH) {
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
+		} else if(myDetectorType == CHIPTESTBOARD) {
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
 		}
+		for (const auto& it : dataProcessor)
+			it->SetPixelDimension();
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
@@ -811,6 +806,7 @@ int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 
 
 int slsReceiverImplementation::setDynamicRange(const uint32_t i) {
+	// only eiger
 	if (dynamicRange != i) {
 		dynamicRange = i;
 		generalData->SetDynamicRange(i,tengigaEnable);
@@ -830,7 +826,20 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 	if (tengigaEnable != b) {
 		tengigaEnable = b;
 		//side effects
-		generalData->SetTenGigaEnable(b,dynamicRange);
+		switch(myDetectorType) {
+		case EIGER:
+			generalData->SetTenGigaEnable(b,dynamicRange);
+			break;
+		case MOENCH:
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
+			break;
+		case CHIPTESTBOARD:
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
+			break;
+		default:
+			break;
+		}
+
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}

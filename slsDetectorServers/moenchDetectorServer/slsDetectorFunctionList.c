@@ -530,7 +530,9 @@ void setupDetector() {
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
-	setReadOutFlags(NORMAL_READOUT);
+
+	// ensuring normal readout (only option for moench)
+	bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
 
     // clear roi
     {
@@ -817,60 +819,6 @@ int getSpeed(enum speedVariable ind) {
     default:
         return -1;
     }
-}
-
-enum  readOutFlags setReadOutFlags(enum readOutFlags val) {
-    enum readOutFlags retval = GET_READOUT_FLAGS;
-    uint32_t addr = CONFIG_REG;
-
-    // set
-    if (val != GET_READOUT_FLAGS) {
-        switch(val) {
-        case NORMAL_READOUT:
-            FILE_LOG(logINFO, ("Setting Normal Readout\n"));
-            bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
-            break;
-        case DIGITAL_ONLY:
-            FILE_LOG(logINFO, ("Setting Digital Only Readout\n"));
-            bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
-            break;
-        case ANALOG_AND_DIGITAL:
-            FILE_LOG(logINFO, ("Setting Analog & Digital Readout\n"));
-            bus_w(addr, (bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK)) | CONFIG_ENBLE_DGTL_OTPT_MSK);
-            break;
-        default:
-            FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
-            return retval;
-        }
-    }
-    // get
-    uint32_t regval = bus_r(addr);
-    FILE_LOG(logDEBUG1, ("Config Reg: 0x%08x\n", regval));
-    // this bit reads analog disable, so inverse
-    analogEnable = (((regval & CONFIG_DSBL_ANLG_OTPT_MSK) >> CONFIG_DSBL_ANLG_OTPT_OFST) ? 0 : 1);
-    digitalEnable = ((regval & CONFIG_ENBLE_DGTL_OTPT_MSK) >> CONFIG_ENBLE_DGTL_OTPT_OFST);
-
-    if (analogEnable && digitalEnable) {
-        FILE_LOG(logDEBUG1, ("Getting readout: Analog & Digital\n"));
-        retval = ANALOG_AND_DIGITAL;
-    } else if (analogEnable && !digitalEnable) {
-        FILE_LOG(logDEBUG1, ("Getting readout: Normal\n"));
-        retval = NORMAL_READOUT;
-    } else if (!analogEnable && digitalEnable) {
-        FILE_LOG(logDEBUG1, ("Getting readout: Digital Only\n"));
-        retval = DIGITAL_ONLY;
-    } else {
-        FILE_LOG(logERROR, ("Read unknown readout (Both digital and analog are disabled). "
-                "Config reg: 0x%x\n", regval));
-        return retval;
-    }
-
-    // update databytes and allocate ram
-    if (allocateRAM() == FAIL) {
-        return -2;
-    }
-
-    return retval;
 }
 
 

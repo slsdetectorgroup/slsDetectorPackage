@@ -213,7 +213,7 @@ public:
      * @param s number of samples
      * @param t tengiga enable
      */
-    virtual void setImageSize(slsDetectorDefs::readOutFlags f, std::vector<slsDetectorDefs::ROI> i, int s, bool t) {
+    virtual void setImageSize(std::vector<slsDetectorDefs::ROI> i, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
         cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
     };
 
@@ -535,12 +535,13 @@ public:
 	ChipTestBoardData(){
 		myDetectorType		= slsDetectorDefs::CHIPTESTBOARD;
 		nPixelsX 			= 36; // total number of channels
-		nPixelsY 			= 1; // numberofsamples
+		nPixelsY 			= 1; // number of samples
 		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
 		dataSize 			= UDP_PACKET_DATA_BYTES;
 		packetSize 			= headerSizeinPacket + dataSize;
-		packetsPerFrame 	= 0; // to be calculated
-		imageSize 			= 0; // to be calculated
+		//packetsPerFrame 	= 1;
+		imageSize 			= nPixelsX * nPixelsY * 2;
+		packetsPerFrame		= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
 		maxFramesPerFile 	= CTB_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
@@ -554,7 +555,7 @@ public:
 	 * @param s number of samples
 	 * @param t tengiga enable
 	 */
-	void setImageSize(slsDetectorDefs::readOutFlags f, std::vector<slsDetectorDefs::ROI> i, int s, bool t) {
+	void setImageSize(std::vector<slsDetectorDefs::ROI> i, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
 		 int nchans = 0;
 		 if (f != slsDetectorDefs::GET_READOUT_FLAGS) {
 			 // analog channels
@@ -596,7 +597,12 @@ class MoenchData : public GeneralData {
 
 
 private:
-	/** Structure of an jungfrau ctb packet header */
+	/** Number of analog channels */
+	const int NCHAN_ANALOG = 32;
+	/** Number of bytes per pixel */
+	const int NUM_BYTES_PER_PIXEL = 2;
+
+	/** Structure of an jungfrau ctb packet header (10G Udp) */
 	typedef struct {
 		unsigned char emptyHeader[6];
 		unsigned char reserved[4];
@@ -607,23 +613,22 @@ private:
 
  public:
 
-	/** Bytes Per Adc */
-	const uint32_t bytesPerAdc = 2;
-
 	/** Constructor */
 	MoenchData(){
 		myDetectorType		= slsDetectorDefs::MOENCH;
-		nPixelsX 			= 400;
-		nPixelsY 			= 400;
-		headerSizeinPacket  = 22;
-		dataSize 			= 8192;
+		nPixelsX 			= 32; // total number of channels
+		nPixelsY 			= 1; // number of samples
+		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
+		dataSize 			= UDP_PACKET_DATA_BYTES;
 		packetSize 			= headerSizeinPacket + dataSize;
-		packetsPerFrame 	= 1;
+		//packetsPerFrame 	= 1;
 		imageSize 			= nPixelsX * nPixelsY * 2;
+		packetsPerFrame		= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
 		frameIndexMask 		= 0xFFFFFF;
 		maxFramesPerFile 	= CTB_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
+		standardheader		= true;
 	};
 
 	/**
@@ -645,34 +650,42 @@ private:
 		bunchId = (*((uint64_t*) header->bunchid));
 	}
 
-	/**
-	 * Setting packets per frame changes member variables
-	 * @param ns number of samples
-	 */
-	void setNumberofSamples(const uint64_t ns) {
-		packetsPerFrame = ceil(double(2 * 32 * ns) / dataSize);
-		nPixelsY		= (ns * 2) / 25;/* depends on nroich also?? */
-		imageSize 		= nPixelsX * nPixelsY * 2;
-	};
 
 	/**
-	 * Setting ten giga enable changes member variables
-	 * @param tgEnable true if 10GbE is enabled, else false
-	 * @param dr dynamic range
+	 * Set databytes (ctb, moench)
+	 * @param f readout flags
+	 * @param r roi
+	 * @param s number of samples
+	 * @param t tengiga enable
 	 */
-	void SetTenGigaEnable(bool tgEnable, int dr) {
-		dataSize 		= (tgEnable ? 4096 : 1024);
-		packetSize 		= headerSizeinPacket + dataSize;
-		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
-		imageSize 		= dataSize*packetsPerFrame;
-	};
+	void setImageSize(std::vector<slsDetectorDefs::ROI> i, int s, bool t,
+			slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+		int nchans = NCHAN_ANALOG;
+		// if roi
+		if (i.size()) {
+			nchans = abs(i[0].xmax - i[0].xmin);
+		}
 
-	/**
-	 * Print all variables
-	 */
-	void Print(TLogLevel level = logDEBUG1) const {
-		GeneralData::Print(level);
-		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
+		nPixelsX = nchans;
+		nPixelsY = s;
+		// 10G
+		if (t) {
+			headerSizeinPacket 	= 22;
+			dataSize 			= 8192;
+			packetSize 			= headerSizeinPacket + dataSize;
+			imageSize 			= nPixelsX * nPixelsY * 2;
+			packetsPerFrame 	= ceil((double)imageSize / (double)packetSize);
+			standardheader		= false;
+		}
+		// 1g udp (via fifo readout)
+		else {
+			headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
+			dataSize 			= UDP_PACKET_DATA_BYTES;
+			packetSize 			= headerSizeinPacket + dataSize;
+			imageSize 			= nPixelsX * nPixelsY * 2;
+			packetsPerFrame 	= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+			standardheader		= true;
+		}
 	}
 };
 

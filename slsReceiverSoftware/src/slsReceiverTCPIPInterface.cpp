@@ -1947,7 +1947,7 @@ int slsReceiverTCPIPInterface::set_readout_flags() {
 	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg), true, receiver) == FAIL)
 		return FAIL;
 
-	if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD)
+	if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD || myDetectorType == MOENCH)
 		functionNotImplemented();
 
 	// base object not null

@@ -1797,7 +1797,7 @@ int set_readout_flags(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting readout flags to %d\n", arg));
 
-#if defined(JUNGFRAUD) || defined(GOTTHARDD)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(MOENCHD)
 	functionNotImplemented();
 #else
 	// set & get
@@ -1805,6 +1805,7 @@ int set_readout_flags(int file_des) {
 
 		switch(arg) {
 		case GET_READOUT_FLAGS:
+#ifdef EIGERD
 		case STORE_IN_RAM:
 		case CONTINOUS_RO:
 		case PARALLEL:
@@ -1812,7 +1813,7 @@ int set_readout_flags(int file_des) {
 		case SAFE:
 		case SHOW_OVERFLOW:
 		case NOOVERFLOW:
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#elif CHIPTESTBOARDD
 		case NORMAL_READOUT:
 		case DIGITAL_ONLY:
 		case ANALOG_AND_DIGITAL:
@@ -2178,7 +2179,7 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(EIGERD) || defined(CHIPTESTBOARDD)
     i32 = setReadOutFlags(GET_READOUT_FLAGS);
     n = sendData(file_des,&i32,sizeof(i32),INT32);
     if (n < 0) return printSocketReadError();

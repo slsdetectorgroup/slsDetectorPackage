@@ -1102,7 +1102,7 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
 
     // readout flags
     if (thisDetector->myDetectorType == EIGER ||
-            thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
+            thisDetector->myDetectorType == CHIPTESTBOARD) {
         n += client.receiveData(&i32, sizeof(i32));
         thisDetector->roFlags = (readOutFlags)i32;
     }
@@ -2449,28 +2449,46 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
             overwriteFile(thisDetector->receiver_overWriteEnable);
             setTimer(FRAME_PERIOD, thisDetector->timerValue[FRAME_PERIOD]);
             setTimer(FRAME_NUMBER, thisDetector->timerValue[FRAME_NUMBER]);
-            if (thisDetector->myDetectorType != CHIPTESTBOARD && thisDetector->myDetectorType != MOENCH) {
+
+            // detector specific
+            switch(thisDetector->myDetectorType) {
+            case GOTTHARD:
             	setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
+
+            	break;
+            case JUNGFRAU:
+            	setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
+
+            	break;
+
+            case EIGER:
+            	setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
+            	setTimer(SUBFRAME_ACQUISITION_TIME, thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
+            	setTimer(SUBFRAME_DEADTIME, thisDetector->timerValue[SUBFRAME_DEADTIME]);
+            	setDynamicRange(thisDetector->dynamicRange);
+            	setFlippedData(X, -1);
+            	activate(-1);
+            	setDeactivatedRxrPaddingMode(thisDetector->receiver_deactivatedPaddingEnable);
+            	enableGapPixels(thisDetector->gappixels);
+            	enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+            	setReadOutFlags(GET_READOUT_FLAGS);
+
+            	break;
+            case CHIPTESTBOARD:
+            	setTimer(SAMPLES, thisDetector->timerValue[SAMPLES]);
+            	enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+            	setReadOutFlags(GET_READOUT_FLAGS);
+
+            	break;
+            case MOENCH:
+            	setTimer(SAMPLES, thisDetector->timerValue[SAMPLES]);
+            	enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+
+            	break;
+            default:
+            	break;
             }
-            if (thisDetector->myDetectorType == EIGER) {
-                setTimer(SUBFRAME_ACQUISITION_TIME,
-                         thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
-                setTimer(SUBFRAME_DEADTIME, thisDetector->timerValue[SUBFRAME_DEADTIME]);
-            }
-            setDynamicRange(thisDetector->dynamicRange);
-            if (thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
-                setTimer(SAMPLES, thisDetector->timerValue[SAMPLES]);
-            }
-            if (thisDetector->myDetectorType == EIGER) {
-                setFlippedData(X, -1);
-                activate(-1);
-                setDeactivatedRxrPaddingMode(thisDetector->receiver_deactivatedPaddingEnable);
-                enableGapPixels(thisDetector->gappixels);
-            }
-            if (thisDetector->myDetectorType == EIGER || thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
-                enableTenGigabitEthernet(thisDetector->tenGigaEnable);
-                setReadOutFlags(GET_READOUT_FLAGS);
-            }
+
             setReceiverSilentMode(thisDetector->receiver_silentMode);
             // data streaming
             setReceiverStreamingFrequency(thisDetector->receiver_read_freq);

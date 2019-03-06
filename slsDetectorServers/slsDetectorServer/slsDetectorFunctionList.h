@@ -120,7 +120,7 @@ void 		setSpeed(enum speedVariable ind, int val);
 int         getSpeed(enum speedVariable ind);
 #endif
 
-#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(EIGERD) || defined(CHIPTESTBOARDD)
 enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #endif
 

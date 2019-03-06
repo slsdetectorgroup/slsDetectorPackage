@@ -8,6 +8,7 @@
 #include <vector>
 #include <sstream>
 #include <memory>
+
 namespace sls {
 
 
@@ -15,9 +16,19 @@ namespace sls {
 // C++11 make_unique implementation for exception safety
 // already available as std::make_unique in C++14
 template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args &&... args) {
+typename std::enable_if<!std::is_array<T>::value, std::unique_ptr<T>>::type
+make_unique(Args &&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+
+template <typename T>
+typename std::enable_if<std::is_array<T>::value, std::unique_ptr<T>>::type
+make_unique(std::size_t n)
+{
+    typedef typename std::remove_extent<T>::type RT;
+    return std::unique_ptr<T>(new RT[n]);
+}
+
 
 template <typename T>
 bool allEqual(const std::vector<T>& container)

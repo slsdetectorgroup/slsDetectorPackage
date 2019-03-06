@@ -85,6 +85,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define WAIT_TIME_US_PLL            (10 * 1000)
 #define WAIT_TIME_US_STP_ACQ        (100)
 #define WAIT_TIME_CONFIGURE_MAC     (500 * 1000)
+#define WAIT_TIME_PATTERN_READ     	(10)
 
 /* MSB & LSB DEFINES */
 #define MSB_OF_64_BIT_REG_OFST		(32)

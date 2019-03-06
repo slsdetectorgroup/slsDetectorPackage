@@ -2720,7 +2720,9 @@ std::string slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) 
     sls::strcpy_safe(args, jsonheader.c_str());
     FILE_LOG(logDEBUG1) << "Sending additional json header " << args;
 
-   if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
+    if (thisDetector->receiverOnlineFlag != ONLINE_FLAG) {
+    	sls::strcpy_safe(thisDetector->receiver_additionalJsonHeader, jsonheader.c_str());
+    } else {
         auto receiver = sls::ClientSocket(true, thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, args, sizeof(args), retvals, sizeof(retvals));
         if (ret == FAIL) {

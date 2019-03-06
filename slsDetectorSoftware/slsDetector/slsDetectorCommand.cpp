@@ -5604,7 +5604,7 @@ std::string slsDetectorCommand::cmdProcessor(int narg, char *args[], int action,
         return getFrameModeType(frameModeType(myDet->setFrameMode(GET_FRAME_MODE, detPos)));
     }
 
-    else if (cmd == "detectorMode") {
+    else if (cmd == "detectormode") {
         if (action == PUT_ACTION) {
             detectorModeType ival = getDetectorModeType(args[1]);
             if (ival == GET_DETECTOR_MODE)
@@ -5613,7 +5613,7 @@ std::string slsDetectorCommand::cmdProcessor(int narg, char *args[], int action,
         }
         return getDetectorModeType(detectorModeType(myDet->setDetectorMode(GET_DETECTOR_MODE, detPos)));
     }
-    return std::string("unknown action");
+    return std::string("unknown command");
 }
 
 

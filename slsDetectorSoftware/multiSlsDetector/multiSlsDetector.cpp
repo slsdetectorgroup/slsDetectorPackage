@@ -1379,7 +1379,7 @@ int multiSlsDetector::setSpeed(speedVariable index, int value, int detPos) {
 
     // multi
     auto r = parallelCall(&slsDetector::setSpeed, index, value);
-    return (sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL);
+    return sls::minusOneIfDifferent(r);
 }
 
 int multiSlsDetector::setDynamicRange(int dr, int detPos) {

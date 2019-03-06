@@ -2095,7 +2095,9 @@ int slsDetector::setDynamicRange(int n) {
         // char mess[MAX_STR_LENGTH] = {};
         auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
         ret = client.sendCommandThenRead(fnum, &n, sizeof(n), &retval, sizeof(retval));
-
+        if (ret == FAIL) { //TODO (Dhanya) handle FAIL at least
+        	setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE)); // may or may not be a fail, but better to have it till we introduce proper error handling
+        }
         // handle ret
         //TODO! (Erik) handle FAIL somehow
         // if (ret == FAIL) {
@@ -4124,6 +4126,9 @@ int slsDetector::setRateCorrection(int64_t t) {
         // char mess[MAX_STR_LENGTH]{};
         auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
+        if (ret == FAIL) { //TODO (Dhanya) handle FAIL at least until we implement proper error handling
+        	setErrorMask((getErrorMask()) | (COULD_NOT_SET_RATE_CORRECTION));
+        }
         // TODO! (Read error with this call)
         // if (ret == FAIL) {
         //     if (strstr(mess, "default tau") != nullptr) {
@@ -4196,7 +4201,6 @@ int slsDetector::getReceiverOnline() const {
 }
 
 std::string slsDetector::checkReceiverOnline() {
-    //TODO! (Erik) Figure out usage of this function
     std::string retval;
     try {
         auto receiver = sls::ClientSocket(true, thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
@@ -4676,6 +4680,9 @@ int slsDetector::startReceiver() {
     if (thisDetector->receiverOnlineFlag == ONLINE_FLAG) {
         auto receiver = sls::ClientSocket(true, thisDetector->receiver_hostname, thisDetector->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
+        if (ret == FAIL) {
+        	setErrorMask((getErrorMask()) | (COULDNOT_START_RECEIVER)); //TODO (Dhanya) Atleast put an error code for now
+        }
         //TODO! (Erik) mess should be enum now ignoring
         // if (ret == FAIL) {
         //     if (strstr(mess, "UDP") != nullptr) {

@@ -555,18 +555,21 @@ public:
 	 * @param t tengiga enable
 	 */
 	void setImageSize(slsDetectorDefs::readOutFlags f, std::vector<slsDetectorDefs::ROI> i, int s, bool t) {
-		int nchans = 0;
-	    if (f & slsDetectorDefs::NORMAL_READOUT || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
-	        nchans += NCHAN_ANALOG;
-
-	        // if roi
-	        if (i.size()) {
-	        	nchans = abs(i[0].xmax - i[0].xmin);
-	        }
-	    }
-	    if (f & slsDetectorDefs::DIGITAL_ONLY || f & slsDetectorDefs::ANALOG_AND_DIGITAL)
-	        nchans += NCHAN_DIGITAL;
-
+		 int nchans = 0;
+		 if (f != slsDetectorDefs::GET_READOUT_FLAGS) {
+			 // analog channels
+			 if (f == slsDetectorDefs::NORMAL_READOUT || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+				 nchans += NCHAN_ANALOG;
+				 // if roi
+				 if (i.size()) {
+					 nchans = abs(i[0].xmax - i[0].xmin);
+				 }
+			 }
+			 // digital channels
+			 if (f & slsDetectorDefs::DIGITAL_ONLY || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+				 nchans += NCHAN_DIGITAL;
+			 }
+		 }
 	    nPixelsX = nchans;
 	    nPixelsY = s;
 	    // 10G

@@ -69,7 +69,7 @@ void slsReceiverImplementation::InitializeMembers() {
 	flippedData[0] = 0;
 	flippedData[1] = 0;
 	gapPixelsEnable = false;
-	readoutFlags = NORMAL_READOUT;
+	readoutFlags = GET_READOUT_FLAGS;
 
 	//*** receiver parameters ***
 	numThreads = 1;
@@ -457,7 +457,7 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 	}
 	std::string flag;
 	if (f == NORMAL_READOUT)
-		flag = "none";
+		flag = "normal(analog, no digital)";
 	else if (f & STORE_IN_RAM)
 		flag.append("storeinram ");
 	if (f & TOT_MODE)

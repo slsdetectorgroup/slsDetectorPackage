@@ -2478,7 +2478,7 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
             setReceiverStreamingIP(getReceiverStreamingIP());
             setAdditionalJsonHeader(thisDetector->receiver_additionalJsonHeader);
             enableDataStreamingFromReceiver(enableDataStreamingFromReceiver(-1));
-            if (thisDetector->myDetectorType == GOTTHARD) {
+            if (thisDetector->myDetectorType == GOTTHARD || thisDetector->myDetectorType == CHIPTESTBOARD || thisDetector->myDetectorType == MOENCH) {
                 sendROI(-1, nullptr);
             }
         }

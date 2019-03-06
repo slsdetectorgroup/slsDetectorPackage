@@ -544,6 +544,7 @@ void setupDetector() {
 	//Initialization of acquistion parameters
     setTimer(SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
+	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
@@ -909,6 +910,16 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logINFO, ("\tGetting #frames: %lld\n", (long long int)retval));
 		break;
 
+	case ACQUISITION_TIME:
+		if(val >= 0){
+			FILE_LOG(logINFO, ("Setting exptime (pattern wait time level 0): %lldns\n",(long long int)val));
+			val *= (1E-3 * clkDivider[RUN_CLK]);
+			setPatternWaitTime(0, val);
+		}
+		retval = setPatternWaitTime(0, -1) / (1E-3 * clkDivider[RUN_CLK]);
+		FILE_LOG(logINFO, ("\tGetting exptime (pattern wait time level 0): %lldns\n", (long long int)retval));
+		break;
+
 	case FRAME_PERIOD:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
@@ -1022,11 +1033,18 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         // convert back to timer
         val = (val) / (1E-3 * clkDivider[ADC_CLK]);
         if (val != retval) {
-         FILE_LOG(logERROR, ("Could not validate timer %d. Set %lld, got %lld\n",
-        		 (long long unsigned int)val, (long long unsigned int)retval));
         	return FAIL;
         }
         break;
+    case ACQUISITION_TIME:
+        // convert to freq
+        val *= (1E-3 * clkDivider[RUN_CLK]);
+        // convert back to timer
+        val = (val) / (1E-3 * clkDivider[RUN_CLK]);
+        if (val != retval) {
+        	return FAIL;
+        }
+    	break;
     default:
         break;
     }

@@ -1533,9 +1533,7 @@ int set_timer(int file_des) {
 	    // check index
 	    switch (ind) {
 	    case FRAME_NUMBER:
-#if ((!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)))
 	    case ACQUISITION_TIME:
-#endif
 	    case FRAME_PERIOD:
 	    case CYCLES_NUMBER:
 	    case SAMPLES:
@@ -2115,36 +2113,41 @@ int send_update(int file_des) {
 	n = sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
 	if (n < 0) return printSocketReadError();
 
+	// dr
 	i32 = setDynamicRange(GET_FLAG);
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
+	// databytes
 	i32 = calculateDataBytes();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
+	// settings
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
 	i32 = (int)getSettings();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 #endif
 
+	// threshold energy
 #ifdef EIGERD
 	i32 = getThresholdEnergy(GET_FLAG);
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 #endif
 
+	// #frames
 	i64 = setTimer(FRAME_NUMBER,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
+	// exptime
 	i64 = setTimer(ACQUISITION_TIME,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
-#endif
 
+	// subexptime, subdeadtime
 #ifdef EIGERD
 	i64 = setTimer(SUBFRAME_ACQUISITION_TIME,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
@@ -2155,16 +2158,19 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 #endif
 
+	// period
 	i64 = setTimer(FRAME_PERIOD,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
+	// delay
 #ifndef EIGERD
 	i64 = setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 #endif
 
+	// #storage cell, storage_cell_delay
 #ifdef JUNGFRAUD
 	i64 = setTimer(STORAGE_CELL_NUMBER,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
@@ -2175,16 +2181,19 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 #endif
 
+	// #cycles
 	i64 = setTimer(CYCLES_NUMBER,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
+	// readout flags
 #if defined(EIGERD) || defined(CHIPTESTBOARDD)
     i32 = setReadOutFlags(GET_READOUT_FLAGS);
     n = sendData(file_des,&i32,sizeof(i32),INT32);
     if (n < 0) return printSocketReadError();
 #endif
 
+    // #samples
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     i64 = setTimer(SAMPLES,GET_FLAG);
     n = sendData(file_des,&i64,sizeof(i64),INT64);

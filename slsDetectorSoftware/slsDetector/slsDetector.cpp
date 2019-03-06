@@ -1062,10 +1062,8 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
     thisDetector->timerValue[FRAME_NUMBER] = i64;
 
     // exptime
-    if ((thisDetector->myDetectorType != CHIPTESTBOARD) && (thisDetector->myDetectorType != MOENCH)) {
-        n += client.receiveData(&i64, sizeof(i64));
-        thisDetector->timerValue[ACQUISITION_TIME] = i64;
-    }
+    n += client.receiveData(&i64, sizeof(i64));
+    thisDetector->timerValue[ACQUISITION_TIME] = i64;
 
     // subexptime, subdeadtime
     if (thisDetector->myDetectorType == EIGER) {
@@ -2449,20 +2447,12 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
             overwriteFile(thisDetector->receiver_overWriteEnable);
             setTimer(FRAME_PERIOD, thisDetector->timerValue[FRAME_PERIOD]);
             setTimer(FRAME_NUMBER, thisDetector->timerValue[FRAME_NUMBER]);
+            setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
 
             // detector specific
             switch(thisDetector->myDetectorType) {
-            case GOTTHARD:
-            	setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
-
-            	break;
-            case JUNGFRAU:
-            	setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
-
-            	break;
 
             case EIGER:
-            	setTimer(ACQUISITION_TIME, thisDetector->timerValue[ACQUISITION_TIME]);
             	setTimer(SUBFRAME_ACQUISITION_TIME, thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]);
             	setTimer(SUBFRAME_DEADTIME, thisDetector->timerValue[SUBFRAME_DEADTIME]);
             	setDynamicRange(thisDetector->dynamicRange);
@@ -2472,19 +2462,19 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
             	enableGapPixels(thisDetector->gappixels);
             	enableTenGigabitEthernet(thisDetector->tenGigaEnable);
             	setReadOutFlags(GET_READOUT_FLAGS);
-
             	break;
+
             case CHIPTESTBOARD:
             	setTimer(SAMPLES, thisDetector->timerValue[SAMPLES]);
             	enableTenGigabitEthernet(thisDetector->tenGigaEnable);
             	setReadOutFlags(GET_READOUT_FLAGS);
-
             	break;
+
             case MOENCH:
             	setTimer(SAMPLES, thisDetector->timerValue[SAMPLES]);
             	enableTenGigabitEthernet(thisDetector->tenGigaEnable);
-
             	break;
+
             default:
             	break;
             }

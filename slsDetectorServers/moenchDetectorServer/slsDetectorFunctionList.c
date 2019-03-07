@@ -51,8 +51,6 @@ int highvoltage = 0;
 ROI rois[MAX_ROIS];
 int nROI = 0;
 uint32_t adcDisableMask = 0;
-int analogEnable = 1;
-int digitalEnable = 0;
 int nSamples = 1;
 char volatile *now_ptr = 0;
 
@@ -476,8 +474,6 @@ void setupDetector() {
     highvoltage = 0;
     nROI = 0;
     adcDisableMask = 0;
-    analogEnable = 1;
-    digitalEnable = 0;
     nSamples = 1;
     now_ptr = 0;
 
@@ -589,17 +585,14 @@ void updateDataBytes() {
 int getChannels() {
     int nchans = 0;
 
-    if (analogEnable) {
-        nchans += NCHAN_ANALOG;
-        // remove the channels disabled
-        int ichan = 0;
-        for (ichan = 0; ichan < NCHAN_ANALOG; ++ichan) {
-            if (adcDisableMask & (1 << ichan))
-                --nchans;
-        }
+    nchans += NCHAN;
+    // remove the channels disabled
+    int ichan = 0;
+    for (ichan = 0; ichan < NCHAN; ++ichan) {
+    	if (adcDisableMask & (1 << ichan))
+    		--nchans;
     }
-    if (digitalEnable)
-        nchans += NCHAN_DIGITAL;
+
     FILE_LOG(logINFO, ("\tNumber of Channels calculated: %d\n", nchans))
     return nchans;
 }
@@ -670,7 +663,7 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
                 // for the roi specified
                 for (ich = arg[iroi].xmin; ich <= arg[iroi].xmax; ++ich) {
                     // valid channel (disable)
-                    if (ich >= 0 && ich < NCHAN_ANALOG)
+                    if (ich >= 0 && ich < NCHAN)
                         adcDisableMask &= ~(1 << ich);
 
                     FILE_LOG(logDEBUG1, ("%d: ich:%d adcDisableMask:0x%08x\n",
@@ -690,7 +683,7 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
     if (adcDisableMask) {
         int ich = 0;
         // loop through channels
-        for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
+        for (ich = 0; ich < NCHAN; ++ich) {
             // channel disabled
             if ((~adcDisableMask) & (1 << ich)) {
                 // first channel
@@ -1815,8 +1808,9 @@ enum runStatus getRunStatus(){
 	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
 
 	// error
-	if (retval & STATUS_SM_FF_FLL_MSK) {
-	    FILE_LOG(logINFORED, ("Status: Error (Some fifo full)\n"));
+	//if (retval & STATUS_SM_FF_FLL_MSK) { This bit is high when a analog fifo is full Or when external stop
+	if (retval & STATUS_ANY_FF_FLL_MSK) { // if adc fifo is full
+		FILE_LOG(logINFORED, ("Status: Error (Any fifo full)\n"));
 	    return ERROR;
 	}
 
@@ -1844,13 +1838,6 @@ enum runStatus getRunStatus(){
 	        return TRANSMITTING;
 	    }
 
-		   /* until Carlos updates firmware
-		    if (digitalEnable && !analogEnable) {
-		    	if (retval & STATUS_ALL_FF_EMPTY_MSK) {
-		    		FILE_LOG(logINFOBLUE, ("Status: Transmitting (All fifo empty)\n"));
-		    		return TRANSMITTING;
-		    	}
-		    }*/
 
 	    if (! (retval & STATUS_IDLE_MSK)) {
 	        FILE_LOG(logINFOBLUE, ("Status: Idle\n"));
@@ -1926,7 +1913,7 @@ void readFrame(int *ret, char *mess) {
 }
 
 void unsetFifoReadStrobes() {
-    bus_w(DUMMY_REG, bus_r(DUMMY_REG) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+    bus_w(DUMMY_REG, bus_r(DUMMY_REG) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
 }
 
 void readSample(int ns) {
@@ -1935,72 +1922,69 @@ void readSample(int ns) {
 				ns, nSamples,
 				bus_r(FIFO_DIN_STATUS_REG)));
 	}
-    uint32_t addr = DUMMY_REG;
-    uint32_t fifoAddr = FIFO_DATA_REG;
+	uint32_t addr = DUMMY_REG;
+	uint32_t fifoAddr = FIFO_DATA_REG;
 
-    // read adcs
-    if (analogEnable) {
+	// read adcs
 
-        // read strobe to all analog fifos
-        bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
+	// read strobe to all analog fifos
+	bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
+	bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
+	// wait as it is connected directly to fifo running on a different clock
+	usleep(WAIT_TIME_FIFO_RD_STROBE);
 
-        // loop through all channels
-        int ich = 0;
-        for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
+	// loop through all channels
+	int ich = 0;
+	for (ich = 0; ich < NCHAN; ++ich) {
 
-            // if channel is in ROI
-            if ((1 << ich) & ~(adcDisableMask)) {
+		// if channel is in ROI
+		if ((1 << ich) & ~(adcDisableMask)) {
 
-                // unselect channel
-                bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));
+			// unselect channel
+			bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));
 
-                // select channel
-                bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) & DUMMY_FIFO_CHNNL_SLCT_MSK));
+			// select channel
+			bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) & DUMMY_FIFO_CHNNL_SLCT_MSK));
 
-                // read fifo and write it to current position of data pointer
-                *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
+			// read fifo and write it to current position of data pointer
+			*((uint16_t*)now_ptr) = bus_r16(fifoAddr);
 
-                // keep reading till the value is the same
-                while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
-                    FILE_LOG(logDEBUG1, ("%d ", ich));
-                    *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
-                }
+			// keep reading till the value is the same
+			while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
+				FILE_LOG(logDEBUG1, ("%d ", ich));
+				*((uint16_t*)now_ptr) = bus_r16(fifoAddr);
+			}
 
-                // increment pointer to data out destination
-                now_ptr += 2;
-            }
-        }
-    }
+			// increment pointer to data out destination
+			now_ptr += 2;
+		}
+	}
 
-    // read digital output
-    if (digitalEnable) {
+}
 
-        // read strobe to digital fifo
-        bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
-
-        // read fifo and write it to current position of data pointer
-        *((uint64_t*)now_ptr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
-        now_ptr += 8;
-    }
+uint32_t checkDataInFifo() {
+	uint32_t dataPresent = 0;
+	uint32_t analogFifoEmpty = bus_r(FIFO_EMPTY_REG);
+	FILE_LOG(logDEBUG2, ("Analog Fifo Empty (32 channels): 0x%x\n",analogFifoEmpty));
+	dataPresent = (~analogFifoEmpty);
+	FILE_LOG(logDEBUG2, ("Data in Fifo :0x%x\n", dataPresent));
+	return dataPresent;
 }
 
 // only called for first sample
-int checkDataPresent() {
-    uint32_t dataPresent = bus_r(LOOK_AT_ME_REG);
-    FILE_LOG(logDEBUG2, ("LookatMe:0x%x, status:0x%x\t, fifodinstatus:0x%x\n",
-			dataPresent,
-			bus_r(STATUS_REG),
-			bus_r(FIFO_DIN_STATUS_REG)));
-    // as long as fifo empty (keep checking)
+int checkFifoForEndOfAcquisition() {
+	uint32_t dataPresent = checkDataInFifo();
+    FILE_LOG(logDEBUG2, ("status:0x%x\n", bus_r(STATUS_REG)));
+
+    // as long as no data
     while (!dataPresent) {
         // acquisition done
         if (!runBusy()) {
-            usleep(WAIT_TME_US_FR_LK_AT_ME_REG);
-            dataPresent = bus_r(LOOK_AT_ME_REG);
+        	// wait to be sure there is no data in fifo
+            usleep(WAIT_TME_US_FR_ACQDONE_REG);
+
             // still no data
-            if (!dataPresent) {
+            if (!checkDataInFifo()) {
                 FILE_LOG(logINFO, ("Acquisition Finished (State: 0x%08x), "
                         "no frame found .\n", bus_r(STATUS_REG)));
                 return FAIL;
@@ -2010,12 +1994,13 @@ int checkDataPresent() {
                 break;
             }
         }
-        // check if fifo empty again
-        dataPresent = bus_r(LOOK_AT_ME_REG);
+        // check if data in fifo again
+        dataPresent = checkDataInFifo();
     }
-    FILE_LOG(logDEBUG2, ("Got data, Lookatme:0x%x\n", dataPresent));
+    FILE_LOG(logDEBUG2, ("Got data :0x%x\n", dataPresent));
     return OK;
 }
+
 
 int readFrameFromFifo() {
 	int ns = 0;
@@ -2023,7 +2008,7 @@ int readFrameFromFifo() {
 	now_ptr = ramValues;
 
     // no data for this frame
-    if (checkDataPresent() == FAIL) {
+    if (checkFifoForEndOfAcquisition() == FAIL) {
         return FAIL;
     }
 
@@ -2037,6 +2022,7 @@ int readFrameFromFifo() {
     // got frame
     return OK;
 }
+
 
 uint32_t runBusy() {
 #ifdef VIRTUAL

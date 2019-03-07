@@ -329,7 +329,8 @@ void 		readFrame(int *ret, char *mess);
 void 		readandSendUDPFrames(int *ret, char *mess);
 void        unsetFifoReadStrobes();
 void        readSample(int ns);
-int         checkDataPresent();
+uint32_t	checkDataInFifo();
+int         checkFifoForEndOfAcquisition();
 int         readFrameFromFifo();
 #endif
 

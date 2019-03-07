@@ -11,7 +11,7 @@
 #define FPGA_VERSION_BRD_RVSN_MSK			(0x00FFFFFF << FPGA_VERSION_BRD_RVSN_OFST)
 #define FPGA_VERSION_DTCTR_TYP_OFST		    (24)
 #define FPGA_VERSION_DTCTR_TYP_MSK   	    (0x000000FF << FPGA_VERSION_DTCTR_TYP_OFST)
-#define FPGA_VERSION_DTCTR_TYP_MOENCH_VAL   ((0x2 << FPGA_VERSION_DTCTR_TYP_OFST) & FPGA_VERSION_DTCTR_TYP_MSK)
+#define FPGA_VERSION_DTCTR_TYP_MOENCH_VAL   ((0x5 << FPGA_VERSION_DTCTR_TYP_OFST) & FPGA_VERSION_DTCTR_TYP_MSK)
 
 /* Fix pattern RO register */
 #define FIX_PATT_REG          			    (0x01 << MEM_MAP_SHIFT)
@@ -25,8 +25,8 @@
 #define STATUS_RN_BSY_MSK      			    (0x00000001 << STATUS_RN_BSY_OFST)
 #define STATUS_RDT_BSY_OFST                 (1)
 #define STATUS_RDT_BSY_MSK                  (0x00000001 << STATUS_RDT_BSY_OFST)
-//#define STATUS_FF_TST_BSY_OFST              (2)
-//#define STATUS_FF_TST_BSY_MSK               (0x00000001 << STATUS_FF_TST_BSY_OFST)
+#define STATUS_ANY_FF_FLL_OFST              (2)
+#define STATUS_ANY_FF_FLL_MSK               (0x00000001 << STATUS_ANY_FF_FLL_OFST)
 #define STATUS_WTNG_FR_TRGGR_OFST  		    (3)
 #define STATUS_WTNG_FR_TRGGR_MSK  		    (0x00000001 << STATUS_WTNG_FR_TRGGR_OFST)
 #define STATUS_DLY_BFR_OFST  			    (4)
@@ -59,7 +59,7 @@
 #define STATUS_PLL_PHS_DN_MSK               (0x00000001 << STATUS_PLL_PHS_DN_OFST)
 #define STATUS_PT_CNTRL_STTS_OFF_OFST       (24)
 #define STATUS_PT_CNTRL_STTS_OFF_MSK        (0x000000FF << STATUS_PT_CNTRL_STTS_OFF_OFST)
-#define STATUS_IDLE_MSK                     (0x6FFFF)
+#define STATUS_IDLE_MSK                     (0x677FF)
 
 /* Look at me RO register TODO */
 #define LOOK_AT_ME_REG                      (0x03 << MEM_MAP_SHIFT)
@@ -94,6 +94,7 @@
 
 /* FIFO Empty RO register TODO */
 #define FIFO_EMPTY_REG                      (0x08 << MEM_MAP_SHIFT)
+#define FIFO_EMPTY_ALL_EMPTY_MSK			(0xFFFFFFFF)
 
 /* FIFO Full RO register TODO */
 #define FIFO_FULL_REG                       (0x09 << MEM_MAP_SHIFT)
@@ -176,6 +177,10 @@
 
 /* FIFO Digital In Status RO register */
 #define FIFO_DIN_STATUS_REG                 (0x3B << MEM_MAP_SHIFT)
+#define FIFO_DIN_STATUS_FIFO_FULL_OFST		(30)
+#define FIFO_DIN_STATUS_FIFO_FULL_MSK		(0x00000001 << FIFO_DIN_STATUS_FIFO_FULL_OFST)
+#define FIFO_DIN_STATUS_FIFO_EMPTY_OFST		(31)
+#define FIFO_DIN_STATUS_FIFO_EMPTY_MSK		(0x00000001 << FIFO_DIN_STATUS_FIFO_EMPTY_OFST)
 
 /* FIFO Digital In 64 bit RO register */
 #define FIFO_DIN_LSB_REG                    (0x3C << MEM_MAP_SHIFT)

@@ -292,10 +292,10 @@ void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename, 
 		ret = FAIL;
 		if (hex)
 			sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n",
-				modename.c_str(), arg, retval);
+				modename.c_str(), (unsigned int) arg, (unsigned int) retval);
 		else
 			sprintf(mess, "Could not %s. Set %d, but read %d\n",
-				modename.c_str(), arg, retval);
+				modename.c_str(), (unsigned int) arg, (unsigned int) retval);
 		FILE_LOG(logERROR) << mess;
 	}
 }
@@ -759,7 +759,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 				}
 				else {
 					strcpy(retvals,temp.c_str());
-					FILE_LOG(logINFO) << "Reciever MAC Address: " << retvals;
+					FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals;
 				}
 			}
 		}
@@ -983,7 +983,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 				sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
 				FILE_LOG(logERROR) << mess;
 			}else {
-				FILE_LOG(logDEBUG1) << "Starting Reciever";
+				FILE_LOG(logDEBUG1) << "Starting Receiver";
 				ret = receiver->startReceiver(mess);
 				if (ret == FAIL) {
 					FILE_LOG(logERROR) << mess;
@@ -1009,7 +1009,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		// verify if receiver is unlocked
 		if (interface->Server_VerifyLock(ret, mess, lockStatus) == OK) {
 			if(receiver->getStatus() != IDLE) {
-				FILE_LOG(logDEBUG1) << "Stopping Reciever";
+				FILE_LOG(logDEBUG1) << "Stopping Receiver";
 				receiver->stopReceiver();
 			}
 			enum runStatus s = receiver->getStatus();
@@ -1726,8 +1726,8 @@ int slsReceiverTCPIPInterface::get_additional_json_header() {
 int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 	ret = OK;
     memset(mess, 0, sizeof(mess));
-    int index = -1;
-    int retval = -1;
+    uint64_t index = -1;
+    uint64_t retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
@@ -1760,7 +1760,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-    int retval = -1;
+	uint64_t retval = -1;
 
 	// no arg, check receiver is null
 	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
@@ -1947,7 +1947,7 @@ int slsReceiverTCPIPInterface::set_readout_flags() {
 	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg), true, receiver) == FAIL)
 		return FAIL;
 
-	if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD)
+	if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD || myDetectorType == MOENCH)
 		functionNotImplemented();
 
 	// base object not null

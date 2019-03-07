@@ -2829,18 +2829,19 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
         return ans;
     } else if (cmd == "rx_udpsocksize") {
         if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i))) {
+        	uint64_t ival = -1;
+            if (!(sscanf(args[1], "%ld", &ival))) {
                 return ("cannot parse argument") + std::string(args[1]);
             }
-            myDet->setReceiverUDPSocketBufferSize(i, detPos);
+            myDet->setReceiverUDPSocketBufferSize(ival, detPos);
         }
-        sprintf(ans, "%d", myDet->getReceiverUDPSocketBufferSize(detPos));
+        sprintf(ans, "%ld", myDet->getReceiverUDPSocketBufferSize(detPos));
         return ans;
     } else if (cmd == "rx_realudpsocksize") {
         if (action == PUT_ACTION) {
             return ("cannot put!");
         }
-        sprintf(ans, "%d", myDet->getReceiverRealUDPSocketBufferSize(detPos));
+        sprintf(ans, "%ld", myDet->getReceiverRealUDPSocketBufferSize(detPos));
         return ans;
     } else if (cmd == "txndelay_left") {
     	networkParameter t = DETECTOR_TXN_DELAY_LEFT;
@@ -5603,7 +5604,7 @@ std::string slsDetectorCommand::cmdProcessor(int narg, char *args[], int action,
         return getFrameModeType(frameModeType(myDet->setFrameMode(GET_FRAME_MODE, detPos)));
     }
 
-    else if (cmd == "detectorMode") {
+    else if (cmd == "detectormode") {
         if (action == PUT_ACTION) {
             detectorModeType ival = getDetectorModeType(args[1]);
             if (ival == GET_DETECTOR_MODE)
@@ -5612,7 +5613,7 @@ std::string slsDetectorCommand::cmdProcessor(int narg, char *args[], int action,
         }
         return getDetectorModeType(detectorModeType(myDet->setDetectorMode(GET_DETECTOR_MODE, detPos)));
     }
-    return std::string("unknown action");
+    return std::string("unknown command");
 }
 
 

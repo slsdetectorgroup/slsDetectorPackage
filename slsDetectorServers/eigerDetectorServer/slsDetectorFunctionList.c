@@ -193,7 +193,7 @@ int64_t getDetectorId(enum idMode arg) {
 	case DETECTOR_FIRMWARE_VERSION:
 		return (int64_t)getFirmwareVersion();
 	case SOFTWARE_FIRMWARE_API_VERSION:
-		return (int64_t)Beb_GetFirmwareSoftwareAPIVersion();
+		return (int64_t)getFirmwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
 		return  (GITDATE & 0xFFFFFF);
 	case CLIENT_SOFTWARE_API_VERSION:
@@ -211,6 +211,14 @@ u_int64_t getFirmwareVersion() {
 	return 0;
 #else
 	return Beb_GetFirmwareRevision();
+#endif
+}
+
+u_int64_t   getFirmwareAPIVersion() {
+#ifdef VIRTUAL
+	return 0;
+#else
+	return (u_int64_t)Beb_GetFirmwareSoftwareAPIVersion();
 #endif
 }
 

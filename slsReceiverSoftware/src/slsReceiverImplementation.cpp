@@ -69,7 +69,7 @@ void slsReceiverImplementation::InitializeMembers() {
 	flippedData[0] = 0;
 	flippedData[1] = 0;
 	gapPixelsEnable = false;
-	readoutFlags = NORMAL_READOUT;
+	readoutFlags = GET_READOUT_FLAGS;
 
 	//*** receiver parameters ***
 	numThreads = 1;
@@ -373,12 +373,12 @@ std::string slsReceiverImplementation::getAdditionalJsonHeader() const{
 	return std::string(additionalJsonHeader);
 }
 
-uint32_t slsReceiverImplementation::getUDPSocketBufferSize() const {
+uint64_t slsReceiverImplementation::getUDPSocketBufferSize() const {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	return udpSocketBufferSize;
 }
 
-uint32_t slsReceiverImplementation::getActualUDPSocketBufferSize() const {
+uint64_t slsReceiverImplementation::getActualUDPSocketBufferSize() const {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	return actualUDPSocketBufferSize;
 }
@@ -447,8 +447,8 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 		readoutFlags = f;
 
 		// side effects
-		if (myDetectorType == CHIPTESTBOARD || myDetectorType == MOENCH) {
-			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
+		if (myDetectorType == CHIPTESTBOARD) {
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
 			for (const auto& it : dataProcessor)
 				it->SetPixelDimension();
 			if (SetupFifoStructure() == FAIL)
@@ -457,7 +457,7 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 	}
 	std::string flag;
 	if (f == NORMAL_READOUT)
-		flag = "none";
+		flag = "normal(analog, no digital)";
 	else if (f & STORE_IN_RAM)
 		flag.append("storeinram ");
 	if (f & TOT_MODE)
@@ -480,6 +480,9 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 		flag.append("nooverflow ");
 
 	FILE_LOG(logINFO)  << "ReadoutFlags: " << flag;
+	if (myDetectorType == CHIPTESTBOARD) {
+		FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
+	}
 	return OK;
 }
 
@@ -607,7 +610,7 @@ void slsReceiverImplementation::setEthernetInterface(const char* c) {
 	FILE_LOG(logINFO) << "Ethernet Interface: " << eth;
 }
 
-int slsReceiverImplementation::setUDPSocketBufferSize(const uint32_t s) {
+int slsReceiverImplementation::setUDPSocketBufferSize(const uint64_t s) {
 	if (listener.size())
 		return listener[0]->CreateDummySocketForUDPSocketBufferSize(s);
 	return FAIL;
@@ -642,10 +645,10 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i)
 			framesPerFile = generalData->maxFramesPerFile;
 			break;
 		case MOENCH:
-			generalData->SetROI(i);
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
 			break;
 		case CHIPTESTBOARD:
-			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
 			break;
 		default:
 			break;
@@ -672,6 +675,7 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i)
 	}
 	std::string message = sstm.str();
 	FILE_LOG(logINFO) << message;
+	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 	return OK;
 }
 
@@ -789,18 +793,13 @@ int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 	if (numberOfSamples != i) {
 		numberOfSamples = i;
 
-		switch(myDetectorType) {
-		case MOENCH:
-			generalData->setNumberofSamples(i);
-			break;
-		case CHIPTESTBOARD:
-			generalData->setImageSize(readoutFlags, roi, numberOfSamples, tengigaEnable);
-			for (const auto& it : dataProcessor)
-				it->SetPixelDimension();
-			break;
-		default:
-			break;
+		if(myDetectorType == MOENCH) {
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
+		} else if(myDetectorType == CHIPTESTBOARD) {
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
 		}
+		for (const auto& it : dataProcessor)
+			it->SetPixelDimension();
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
@@ -811,6 +810,7 @@ int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 
 
 int slsReceiverImplementation::setDynamicRange(const uint32_t i) {
+	// only eiger
 	if (dynamicRange != i) {
 		dynamicRange = i;
 		generalData->SetDynamicRange(i,tengigaEnable);
@@ -830,11 +830,25 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 	if (tengigaEnable != b) {
 		tengigaEnable = b;
 		//side effects
-		generalData->SetTenGigaEnable(b,dynamicRange);
+		switch(myDetectorType) {
+		case EIGER:
+			generalData->SetTenGigaEnable(b,dynamicRange);
+			break;
+		case MOENCH:
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
+			break;
+		case CHIPTESTBOARD:
+			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
+			break;
+		default:
+			break;
+		}
+
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
 	FILE_LOG(logINFO) << "Ten Giga: " << stringEnable(tengigaEnable);
+	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 	return OK;
 }
 
@@ -1097,7 +1111,7 @@ void slsReceiverImplementation::stopReceiver() {
 			tot += dataProcessor[i]->GetNumFramesCaught();
 
 			uint64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetPacketsCaught();
-			TLogLevel lev = ((int)missingpackets > 0) ? logINFORED : logINFOGREEN;
+			TLogLevel lev = (((int64_t)missingpackets) > 0) ? logINFORED : logINFOGREEN;
 			FILE_LOG(lev) <<
 					"Summary of Port " << udpPortNum[i] <<
 					"\n\tMissing Packets\t\t: " << missingpackets <<

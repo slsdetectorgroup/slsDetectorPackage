@@ -3,6 +3,8 @@
 #include "versionAPI.h"
 #include "logger.h"
 
+#include "communication_funcs_UDP.h"
+#include "UDPPacketHeaderGenerator.h"
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
@@ -19,8 +21,10 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
-extern int dataBytes;
-extern uint16_t *ramValues;
+
+// Global variable from UDPPacketHeaderGenerator
+extern uint64_t udpFrameNumber;
+extern uint32_t udpPacketNumber;
 
 int firmware_compatibility = OK;
 int firmware_check_done = 0;
@@ -32,6 +36,9 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
+int dataBytes = 0;
+char* ramValues = 0;
+char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
 
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0};
 uint32_t clkDivider[NUM_CLOCKS] = {40, 20, 20, 200};
@@ -49,6 +56,7 @@ int digitalEnable = 0;
 int nSamples = 1;
 char volatile *now_ptr = 0;
 
+// basic tests
 int isFirmwareCheckDone() {
 	return firmware_check_done;
 }
@@ -175,7 +183,7 @@ void basictests() {
 		firmware_check_done = 1;
 		return;
 	}
-	FILE_LOG(logINFO, ("Compatibility - success\n"));
+	FILE_LOG(logINFO, ("\tCompatibility - success\n"));
 	firmware_check_done = 1;
 #endif
 }
@@ -184,9 +192,8 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	uint32_t type = ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
-
-	uint32_t expectedType = FPGA_VERSION_DTCTR_TYP_MOENCH_VAL;
+    uint32_t type = ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
+	uint32_t expectedType = (((FPGA_VERSION_DTCTR_TYP_MOENCH_VAL) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
 
 	if (type != expectedType) {
         FILE_LOG(logERROR, ("This is not a Moench Detector Server (read %d, expected %d)\n",
@@ -196,7 +203,7 @@ int checkType() {
 	return OK;
 }
 
-uint32_t testFpga(void) {
+int testFpga() {
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -206,7 +213,7 @@ uint32_t testFpga(void) {
     int ret = OK;
     uint32_t val = bus_r(FIX_PATT_REG);
     if (val == FIX_PATT_VAL) {
-        FILE_LOG(logINFO, ("Fixed pattern: successful match (0x%08x)\n",val));
+        FILE_LOG(logINFO, ("\tFixed pattern: successful match (0x%08x)\n",val));
     } else {
         FILE_LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
         ret = FAIL;
@@ -264,7 +271,7 @@ uint32_t testFpga(void) {
         // write back previous value
         bus_w(addr, previousValue);
         if (ret == OK) {
-            FILE_LOG(logINFO, ("Successfully tested FPGA Delay LSB Register %d times\n", times));
+            FILE_LOG(logINFO, ("\tSuccessfully tested FPGA Delay LSB Register %d times\n", times));
         }
     }
 
@@ -302,7 +309,7 @@ int testBus() {
     bus_w(addr, previousValue);
 
     if (ret == OK) {
-        FILE_LOG(logINFO, ("Successfully tested bus %d times\n", times));
+        FILE_LOG(logINFO, ("\tSuccessfully tested bus %d times\n", times));
     }
     return ret;
 }
@@ -457,8 +464,11 @@ void setupDetector() {
         int i = 0;
         for (i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
-            clkDivider[i] = 0;
         }
+        clkDivider[RUN_CLK] = DEFAULT_RUN_CLK;
+        clkDivider[ADC_CLK] = DEFAULT_ADC_CLK;
+        clkDivider[SYNC_CLK] = DEFAULT_SYNC_CLK;
+        clkDivider[DBIT_CLK] = DEFAULT_DBIT_CLK;
         for (i = 0; i < NDAC; ++i)
             dacValues[i] = -1;
     }
@@ -480,7 +490,6 @@ void setupDetector() {
     // hv
     MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST, HIGHVOLTAGE_MIN, HIGHVOLTAGE_MAX);
     MAX1932_Disable();
-    //FIXME: power regulators??
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
     // adc
@@ -494,7 +503,8 @@ void setupDetector() {
     LTC2620_Configure();
    //FIXME:
 	// switch off dacs (power regulators most likely only sets to minimum (if power enable on))
-	{
+    FILE_LOG(logINFOBLUE, ("Powering down all dacs\n"));
+    {
 	    int idac = 0;
 	    for (idac = 0; idac < NDAC; ++idac) {
 	        setDAC(idac, LTC2620_PWR_DOWN_VAL, 0);
@@ -510,26 +520,35 @@ void setupDetector() {
 	cleanFifos(); // FIXME: why twice?
 	resetCore();
 
+	// 10 G UDP
+	enableTenGigabitEthernet(1);
+
 	//Initialization of acquistion parameters
     setTimer(SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
+	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
 
-	// send via tcp (moench via udp with configuremac)
-    sendUDP(0);
+	// ensuring normal readout (only option for moench)
+	bus_w(CONFIG_REG, bus_r(CONFIG_REG) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
+
     // clear roi
     {
         int ret = OK, retvalsize = 0;
-        setROI(0, rois, &ret, &retvalsize);
+        setROI(0, rois, &retvalsize, &ret);
     }
 }
 
 int allocateRAM() {
     int oldDataBytes = dataBytes;
     updateDataBytes();
+
+	// only allcoate RAM for 1 giga udp (if 10G, return)
+	if (enableTenGigabitEthernet(-1))
+		return OK;
 
     // update only if change in databytes
     if (dataBytes == oldDataBytes) {
@@ -554,15 +573,16 @@ int allocateRAM() {
                 "Probably cause: Memory Leak.\n"));
         return FAIL;
     }
-    FILE_LOG(logINFO, ("RAM allocated to %d bytes\n", dataBytes));
+
+    FILE_LOG(logINFO, ("\tRAM allocated to %d bytes\n", dataBytes));
     return OK;
 }
 
 void updateDataBytes() {
     int oldDataBytes = dataBytes;
     dataBytes = NCHIP * getChannels() * NUM_BYTES_PER_PIXEL * nSamples;
-    if (oldDataBytes != dataBytes) {
-        FILE_LOG(logINFO, ("Updating Databytes: %d\n", dataBytes));
+    if (dataBytes != oldDataBytes) {
+        FILE_LOG(logINFO, ("\tUpdating Databytes: %d\n", dataBytes));
     }
 }
 
@@ -580,6 +600,7 @@ int getChannels() {
     }
     if (digitalEnable)
         nchans += NCHAN_DIGITAL;
+    FILE_LOG(logINFO, ("\tNumber of Channels calculated: %d\n", nchans))
     return nchans;
 }
 
@@ -637,13 +658,13 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
             int iroi = 0;
             // for every roi
             for (iroi = 0; iroi < n; ++iroi) {
-                FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", arg[iroi].xmin, arg[iroi].xmax));
+                FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", iroi, arg[iroi].xmin, arg[iroi].xmax));
                 // swap if xmin > xmax
                 if (arg[iroi].xmin > arg[iroi].xmax) {
                     int temp = arg[iroi].xmin;
                     arg[iroi].xmin = arg[iroi].xmax;
                     arg[iroi].xmax = temp;
-                    FILE_LOG(logINFORED, ("\tCorrected %d: (%d, %d)\n", arg[iroi].xmin, arg[iroi].xmax));
+                    FILE_LOG(logINFORED, ("\tCorrected %d: (%d, %d)\n", iroi, arg[iroi].xmin, arg[iroi].xmax));
                 }
                 int ich = 0;
                 // for the roi specified
@@ -652,7 +673,7 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
                     if (ich >= 0 && ich < NCHAN_ANALOG)
                         adcDisableMask &= ~(1 << ich);
 
-                    FILE_LOG(logDEBUG1, ("\t%d: ich:%d adcDisableMask:0x%08x\n",
+                    FILE_LOG(logDEBUG1, ("%d: ich:%d adcDisableMask:0x%08x\n",
                             iroi, ich, adcDisableMask));
                 }
             }
@@ -663,7 +684,7 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
 
     // get roi
     adcDisableMask = bus_r(addr);
-    FILE_LOG(logDEBUG1, ("\tGetting adcDisableMask: 0x%08x\n", adcDisableMask));
+    FILE_LOG(logDEBUG1, ("Getting adcDisableMask: 0x%08x\n", adcDisableMask));
 
     nROI = 0;
     if (adcDisableMask) {
@@ -747,20 +768,20 @@ void setSpeed(enum speedVariable ind, int val) {
     switch(ind) {
     case ADC_PHASE:
     case PHASE_SHIFT:
-        FILE_LOG(logINFO, ("Configuring ADC Phase\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring ADC Phase\n"));
         configurePhase(RUN_CLK, val);
         break;
     case DBIT_PHASE:
-        FILE_LOG(logINFO, ("Configuring Dbit Phase\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring Dbit Phase\n"));
         configurePhase(DBIT_CLK, val);
         break;
     case ADC_CLOCK:
-        FILE_LOG(logINFO, ("Configuring ADC Clock\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring ADC Clock\n"));
         configureFrequency(ADC_CLK, val);
         configureSyncFrequency(ADC_CLK);
         break;
     case DBIT_CLOCK:
-        FILE_LOG(logINFO, ("Configuring Dbit Clock\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring Dbit Clock\n"));
         configureFrequency(DBIT_CLK, val);
         configureSyncFrequency(DBIT_CLK);
         break;
@@ -771,7 +792,7 @@ void setSpeed(enum speedVariable ind, int val) {
         setAdcOffsetRegister(0, val);
         break;
     case CLOCK_DIVIDER:
-        FILE_LOG(logINFO, ("Configuring Run Clock\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring Run Clock\n"));
         configureFrequency(RUN_CLK, val);
         configureSyncFrequency(RUN_CLK);
         break;
@@ -786,7 +807,7 @@ int getSpeed(enum speedVariable ind) {
     case PHASE_SHIFT:
         return getPhase(RUN_CLK);
     case DBIT_PHASE:
-        return clkPhase[DBIT_CLK];
+        return getPhase(DBIT_CLK);
     case ADC_CLOCK:
         return getFrequency(ADC_CLK);
     case DBIT_CLOCK:
@@ -802,61 +823,6 @@ int getSpeed(enum speedVariable ind) {
     }
 }
 
-enum  readOutFlags setReadOutFlags(enum readOutFlags val) {
-    enum readOutFlags retval = GET_READOUT_FLAGS;
-    uint32_t addr = CONFIG_REG;
-
-    // set
-    if (val != GET_READOUT_FLAGS) {
-        switch(val) {
-        case NORMAL_READOUT:
-            FILE_LOG(logINFO, ("Setting Normal Readout\n"));
-            bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
-            break;
-        case DIGITAL_ONLY:
-            FILE_LOG(logINFO, ("Setting Digital Only Readout\n"));
-            bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
-            break;
-        case ANALOG_AND_DIGITAL:
-            FILE_LOG(logINFO, ("Setting Analog & Digital Readout\n"));
-            bus_w(addr, (bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK)) | CONFIG_ENBLE_DGTL_OTPT_MSK);
-            break;
-        default:
-            FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
-            return retval;
-        }
-    }
-
-    // get
-    uint32_t regval = bus_r(addr);
-    FILE_LOG(logDEBUG1, ("Config Reg: 0x%08x\n", regval));
-    // this bit reads analog disable, so inverse
-    analogEnable = (((regval & CONFIG_DSBL_ANLG_OTPT_MSK) >> CONFIG_DSBL_ANLG_OTPT_OFST) ? 0 : 1);
-    digitalEnable = ((regval & CONFIG_ENBLE_DGTL_OTPT_MSK) >> CONFIG_ENBLE_DGTL_OTPT_OFST);
-
-    if (analogEnable && digitalEnable) {
-        FILE_LOG(logDEBUG1, ("\tGetting readout: Analog & Digital\n"));
-        retval = ANALOG_AND_DIGITAL;
-    } else if (analogEnable && !digitalEnable) {
-        FILE_LOG(logDEBUG1, ("\tGetting readout: Normal\n"));
-        retval = NORMAL_READOUT;
-    } else if (!analogEnable && digitalEnable) {
-        FILE_LOG(logDEBUG1, ("\tGetting readout: Digital Only\n"));
-        retval = DIGITAL_ONLY;
-    } else {
-        FILE_LOG(logERROR, ("Read unknown readout (Both digital and analog are disabled). "
-                "Config reg: 0x%x\n", regval));
-        return retval;
-    }
-
-    // update databytes and allocate ram
-    if (allocateRAM() == FAIL) {
-        return -2;
-    }
-
-    return retval;
-}
-
 
 
 /* parameters - timer */
@@ -870,25 +836,26 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			FILE_LOG(logINFO, ("Setting #frames: %lld\n",(long long int)val));
 		}
 		retval = set64BitReg(val,  FRAMES_LSB_REG, FRAMES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("Getting #frames: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting #frames: %lld\n", (long long int)retval));
+		break;
+
+	case ACQUISITION_TIME:
+		if(val >= 0){
+			FILE_LOG(logINFO, ("Setting exptime (pattern wait time level 0): %lldns\n",(long long int)val));
+			val *= (1E-3 * clkDivider[RUN_CLK]);
+			setPatternWaitTime(0, val);
+		}
+		retval = setPatternWaitTime(0, -1) / (1E-3 * clkDivider[RUN_CLK]);
+		FILE_LOG(logINFO, ("\tGetting exptime (pattern wait time level 0): %lldns\n", (long long int)retval));
 		break;
 
 	case FRAME_PERIOD:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
 			val *= (1E-3 * clkDivider[ADC_CLK]);
-			// make period odd
-			//FIXME to be tested
-			/*if (val % 2 == 0) { //fIXME: period is even here, not other way round?
-			    FILE_LOG(logINFO, ("\tPeriod %lld not even, adding 1\n", (long long int)val));
-			    ++val;
-			    FILE_LOG(logINFO, ("\tNew Period:%lld\n", (long long int)val))
-			} else {
-			    FILE_LOG(logINFO, ("\tPeriod already even:%lld\n", (long long int)val))
-			}*/
 		}
 		retval = set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG )/ (1E-3 * clkDivider[ADC_CLK]);
-		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting period: %lldns\n", (long long int)retval));
 		break;
 
 	case DELAY_AFTER_TRIGGER:
@@ -897,7 +864,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			val *= (1E-3 * clkDivider[ADC_CLK]);
 		}
 		retval = set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
-		FILE_LOG(logDEBUG1, ("Getting delay: %lldns\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting delay: %lldns\n", (long long int)retval));
 		break;
 
 	case CYCLES_NUMBER:
@@ -905,7 +872,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  CYCLES_LSB_REG, CYCLES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("Getting #cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting #cycles: %lld\n", (long long int)retval));
 		break;
 
 	case SAMPLES:
@@ -918,8 +885,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	        }
 	    }
         retval = nSamples;
-        FILE_LOG(logDEBUG1, ("Getting #samples: %lld\n", (long long int)retval));
-
+        FILE_LOG(logINFO, ("\tGetting #samples: %lld\n", (long long int)retval));
         break;
 
 	default:
@@ -944,6 +910,11 @@ int64_t getTimeLeft(enum timerIndex ind){
 		retval = get64BitReg(FRAMES_LEFT_LSB_REG, FRAMES_LEFT_MSB_REG);
 		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
 		break;
+
+    case FRAME_PERIOD:
+        retval = get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
+        FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
+        break;
 
 	case DELAY_AFTER_TRIGGER:
 		retval = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
@@ -987,16 +958,28 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
     case FRAME_PERIOD:
     case DELAY_AFTER_TRIGGER:
         // convert to freq
-        val *= (1E-3 * ADC_CLK);
+        val *= (1E-3 * clkDivider[ADC_CLK]);
         // convert back to timer
-        val = (val) / (1E-3 * ADC_CLK);
-        if (val != retval)
-            return FAIL;
+        val = (val) / (1E-3 * clkDivider[ADC_CLK]);
+        if (val != retval) {
+        	return FAIL;
+        }
+        break;
+    case ACQUISITION_TIME:
+        // convert to freq
+        val *= (1E-3 * clkDivider[RUN_CLK]);
+        // convert back to timer
+        val = (val) / (1E-3 * clkDivider[RUN_CLK]);
+        if (val != retval) {
+        	return FAIL;
+        }
+    	break;
     default:
         break;
     }
     return OK;
 }
+
 
 
 /* parameters - settings */
@@ -1007,7 +990,7 @@ enum detectorSettings getSettings() {
 /* parameters - dac, adc, hv */
 
 void setDAC(enum DACINDEX ind, int val, int mV) {
-    if (val < 0)
+    if (val < 0 && val != LTC2620_PWR_DOWN_VAL)
         return;
 
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
@@ -1083,10 +1066,9 @@ int setHighVoltage(int val){
 #endif
     // setting hv
     if (val >= 0) {
-        FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+        FILE_LOG(logINFO, ("Setting High voltage: %d V\n", val));
         MAX1932_Set(val);
         highvoltage = val;
-        //FIXME: might have to set the power_reg to set it?
     }
 
 	return highvoltage;
@@ -1172,76 +1154,109 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
-	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
+	// 1 giga udp
+	if (!enableTenGigabitEthernet(-1)) {
+		// if it was in 10G mode, it was not allocating RAM
+		if (allocateRAM() == FAIL)
+			return -1;
+		char cDestIp[MAX_STR_LENGTH];
+		memset(cDestIp, 0, MAX_STR_LENGTH);
+		sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
+		FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
+		if (setUDPDestinationDetails(cDestIp, udpport) == FAIL) {
+			FILE_LOG(logERROR, ("could not set udp 1G destination IP and port\n"));
+			return FAIL;
+		}
+		return OK;
+	}
 
-	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
-	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((sourcemac>>40)&0xFF),
-			(unsigned int)((sourcemac>>32)&0xFF),
-			(unsigned int)((sourcemac>>24)&0xFF),
-			(unsigned int)((sourcemac>>16)&0xFF),
-			(unsigned int)((sourcemac>>8)&0xFF),
-			(unsigned int)((sourcemac>>0)&0xFF),
-			(long  long unsigned int)sourcemac));
-	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
+	// 10 G
+	else {
+		uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 
-	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
-	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((destmac>>40)&0xFF),
-			(unsigned int)((destmac>>32)&0xFF),
-			(unsigned int)((destmac>>24)&0xFF),
-			(unsigned int)((destmac>>16)&0xFF),
-			(unsigned int)((destmac>>8)&0xFF),
-			(unsigned int)((destmac>>0)&0xFF),
-			(long  long unsigned int)destmac));
-	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
+		FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
+				(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
+		FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+				(unsigned int)((sourcemac>>40)&0xFF),
+				(unsigned int)((sourcemac>>32)&0xFF),
+				(unsigned int)((sourcemac>>24)&0xFF),
+				(unsigned int)((sourcemac>>16)&0xFF),
+				(unsigned int)((sourcemac>>8)&0xFF),
+				(unsigned int)((sourcemac>>0)&0xFF),
+				(long  long unsigned int)sourcemac));
+		FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
 
-	long int checksum=calcChecksum(sourceip, destip);
-	bus_w(TX_IP_REG, sourceip);
-	bus_w(RX_IP_REG, destip);
+		FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+				(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
+		FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+				(unsigned int)((destmac>>40)&0xFF),
+				(unsigned int)((destmac>>32)&0xFF),
+				(unsigned int)((destmac>>24)&0xFF),
+				(unsigned int)((destmac>>16)&0xFF),
+				(unsigned int)((destmac>>8)&0xFF),
+				(unsigned int)((destmac>>0)&0xFF),
+				(long  long unsigned int)destmac));
+		FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
 
-	uint32_t val = 0;
+		long int checksum=calcChecksum(sourceip, destip);
+		bus_w(TX_IP_REG, sourceip);
+		bus_w(RX_IP_REG, destip);
 
-	val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-	bus_w(TX_MAC_LSB_REG, val);
-	FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
+		uint32_t val = 0;
 
-	val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-	bus_w(TX_MAC_MSB_REG,val);
-	FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
+		val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+		bus_w(TX_MAC_LSB_REG, val);
+		FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
 
-	val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-	bus_w(RX_MAC_LSB_REG, val);
-	FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
+		val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+		bus_w(TX_MAC_MSB_REG,val);
+		FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
 
-	val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-	bus_w(RX_MAC_MSB_REG, val);
-	FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
+		val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+		bus_w(RX_MAC_LSB_REG, val);
+		FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
 
-	val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
-			((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
-	bus_w(UDP_PORT_REG, val);
-	FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
+		val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+		bus_w(RX_MAC_MSB_REG, val);
+		FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
 
-	bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
-	FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
+		val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
+				((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
+		bus_w(UDP_PORT_REG, val);
+		FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
 
-	cleanFifos();//FIXME: resetPerpheral() for ctb?
-	resetPeripheral();
-	usleep(WAIT_TIME_CONFIGURE_MAC); /* todo maybe without */
-	sendUDP(1);
+		bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
+		FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
+
+		cleanFifos();//FIXME: resetPerpheral() for ctb?
+		resetPeripheral();
+		usleep(WAIT_TIME_CONFIGURE_MAC); /* todo maybe without */
+	}
 
 	return OK;
 }
 
+int enableTenGigabitEthernet(int val) {
+	uint32_t addr = CONFIG_REG;
+
+	// set
+	if (val != -1) {
+		FILE_LOG(logINFO, ("Setting 10Gbe: %d\n", (val > 0) ? 1 : 0));
+		if (val > 0) {
+			bus_w(addr, bus_r(addr) | CONFIG_GB10_SND_UDP_MSK);
+		} else {
+			bus_w(addr, bus_r(addr) & (~CONFIG_GB10_SND_UDP_MSK));
+		}
+		//configuremac called from client
+	}
+	return  ((bus_r(addr) & CONFIG_GB10_SND_UDP_MSK) >> CONFIG_GB10_SND_UDP_OFST);
+}
 
 
-/* jungfrau specific - pll, flashing fpga */
 
-// only for moench
-int powerChip(int on) { //FIXME only for moench? or only for ctb?
+/* moench specific - configure frequency, phase, pll,  */
+
+int powerChip(int on) {
     uint32_t addr = POWER_REG;
     if (on >= 0) {
         FILE_LOG(logINFO, ("Powering %s\n", (on > 0 ? "on" : "off")));
@@ -1259,29 +1274,15 @@ int powerChip(int on) { //FIXME only for moench? or only for ctb?
     return 0;
 }
 
-
-int sendUDP(int enable) {
-    FILE_LOG(logINFO, ("Sending via %s\n", (enable ? "Receiver" : "CPU")));
-
-    uint32_t addr = CONFIG_REG;
-    if (enable > 0)
-        bus_w(addr, bus_r(addr) | CONFIG_GB10_SND_UDP_MSK);
-    else if (enable == 0)
-        bus_w(addr, bus_r(addr) & (~CONFIG_GB10_SND_UDP_MSK));
-
-    FILE_LOG(logDEBUG, ("\tConfig Reg: 0x%x\n", bus_r(addr)));
-    return ((bus_r(addr) & CONFIG_GB10_SND_UDP_MSK) >> CONFIG_GB10_SND_UDP_OFST);
-}
-
-
 // ind can only be ADC_CLK or DBIT_CLK
 void configurePhase(enum CLKINDEX ind, int val) {
+	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
     if (val > 65535 || val < -65535) {
-        FILE_LOG(logERROR, ("\tPhase provided outside limits\n"));
+        FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits\n", ind, clock_names[ind]));
         return;
     }
 
-    FILE_LOG(logINFO, ("Configuring Phase of C%d to %d\n", ind, val));
+    FILE_LOG(logINFO, ("Configuring Phase of C%d(%s) to %d\n", ind, clock_names[ind], val));
 
     // reset only pll
     ALTERA_PLL_ResetPLL();
@@ -1310,10 +1311,11 @@ int getPhase(enum CLKINDEX ind) {
 }
 
 void configureFrequency(enum CLKINDEX ind, int val) {
-    if (val < 0)
+	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
+    if (val <= 0)
         return;
 
-    FILE_LOG(logINFO, ("\tConfiguring Frequency of C%d to %d MHz\n", ind, val));
+    FILE_LOG(logINFO, ("\tConfiguring Frequency of C%d(%s) to %d MHz\n", ind, clock_names[ind], val));
 
     // check adc clk too high
     if (ind == ADC_CLK && val > MAXIMUM_ADC_CLK) {
@@ -1323,7 +1325,7 @@ void configureFrequency(enum CLKINDEX ind, int val) {
 
     // Calculate and set output frequency
     clkDivider[ind] = ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ, val);
-    FILE_LOG(logINFO, ("\tC%d: Frequency set to %d MHz\n", ind, clkDivider[ind]));
+    FILE_LOG(logINFO, ("\tC%d(%s): Frequency set to %d MHz\n", ind, clock_names[ind], clkDivider[ind]));
 }
 
 int getFrequency(enum CLKINDEX ind) {
@@ -1331,17 +1333,18 @@ int getFrequency(enum CLKINDEX ind) {
 }
 
 void configureSyncFrequency(enum CLKINDEX ind) {
+	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
     int clka = 0, clkb = 0;
     switch(ind) {
-    case ADC_CLOCK:
+    case ADC_CLK:
         clka = DBIT_CLK;
         clkb = RUN_CLK;
         break;
-    case DBIT_CLOCK:
+    case DBIT_CLK:
         clka = ADC_CLK;
         clkb = RUN_CLK;
         break;
-    case CLOCK_DIVIDER:
+    case RUN_CLK:
         clka = DBIT_CLK;
         clkb = ADC_CLK;
         break;
@@ -1349,19 +1352,24 @@ void configureSyncFrequency(enum CLKINDEX ind) {
         return;
     }
 
-    int clksync = getFrequency(SYNC_CLK);
+    int syncFreq = getFrequency(SYNC_CLK);
     int retval = getFrequency(ind);
+    int aFreq = getFrequency(clka);
+    int bFreq = getFrequency(clkb);
+    FILE_LOG(logDEBUG1, ("Sync Frequncy:%d, RetvalFreq(%s):%d, aFreq(%s):%d, bFreq(%s):%d\n",
+    		syncFreq, clock_names[ind], retval, clock_names[clka], aFreq, clock_names[clkb], bFreq));
+
     int configure = 0;
 
     // sync is greater than current
-    if (clksync > retval)  {
-        FILE_LOG(logINFO, ("\t--Configuring Sync Clock\n"));
+    if (syncFreq > retval)  {
+        FILE_LOG(logINFO, ("\t--Configuring Sync Clock\n"));cprintf(BG_RED, "SETTING SYNC CLOCK!!!");
         configure = 1;
     }
 
     // the others are both greater than current
-    else if ((clka > retval && clkb > retval)) {
-        FILE_LOG(logINFO, ("\t++Configuring Sync Clock\n"));
+    else if ((aFreq > retval && bFreq > retval)) {
+        FILE_LOG(logINFO, ("\t++Configuring Sync Clock\n"));cprintf(BG_RED, "\n\nSETTING SYNC CLOCK!!!\n\n");
         configure = 1;
     }
 
@@ -1369,6 +1377,7 @@ void configureSyncFrequency(enum CLKINDEX ind) {
     if (configure)
         configureFrequency(SYNC_CLK, retval);
 }
+
 
 void setAdcOffsetRegister(int adc, int val) {
     if (val < 0)
@@ -1387,7 +1396,7 @@ void setAdcOffsetRegister(int adc, int val) {
     bus_w(addr, bus_r(addr) & ~ mask);
     // set value
     bus_w(addr, bus_r(addr) | ((val << offset) & mask));
-    FILE_LOG(logDEBUG1, ("\t %s Offset: 0x%8x\n", (adc ? "ADC" : "Dbit"), bus_r(addr)));
+    FILE_LOG(logDEBUG1, (" %s Offset: 0x%8x\n", (adc ? "ADC" : "Dbit"), bus_r(addr)));
 }
 
 int getAdcOffsetRegister(int adc) {
@@ -1396,13 +1405,15 @@ int getAdcOffsetRegister(int adc) {
     return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_DBT_PPLN_MSK) >> ADC_OFFSET_DBT_PPLN_OFST);
 }
 
+
+// patterns
 uint64_t writePatternIOControl(uint64_t word) {
     if (word != -1) {
         FILE_LOG(logINFO, ("Setting Pattern - I/O Control: 0x%llx\n", (long long int) word));
         set64BitReg(word, PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
     }
     uint64_t retval = get64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
-    FILE_LOG(logDEBUG1, ("\tI/O Control: 0x%llx\n", (long long int) retval));
+    FILE_LOG(logDEBUG1, ("I/O Control: 0x%llx\n", (long long int) retval));
     return retval;
 }
 
@@ -1412,19 +1423,19 @@ uint64_t writePatternClkControl(uint64_t word) {
         set64BitReg(word, PATTERN_IO_CLK_CNTRL_LSB_REG, PATTERN_IO_CLK_CNTRL_MSB_REG);
     }
     uint64_t retval = get64BitReg(PATTERN_IO_CLK_CNTRL_LSB_REG, PATTERN_IO_CLK_CNTRL_MSB_REG);
-    FILE_LOG(logDEBUG1, ("\tClock Control: 0x%llx\n", (long long int) retval));
+    FILE_LOG(logDEBUG1, ("Clock Control: 0x%llx\n", (long long int) retval));
     return retval;
 }
 
 uint64_t readPatternWord(int addr) {
     // error (handled in tcp)
-    if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
-        FILE_LOG(logERROR, ("Cannot get Pattern - Word. Invalid addr %d. "
-                "Should be within %d\n", addr, MAX_PATTERN_LENGTH));
+    if (addr < 0 || addr > MAX_PATTERN_LENGTH) {
+        FILE_LOG(logERROR, ("Cannot get Pattern - Word. Invalid addr 0x%x. "
+                "Should be <= 0x%x\n", addr, MAX_PATTERN_LENGTH));
         return -1;
     }
 
-    FILE_LOG(logDEBUG1, ("Reading Pattern - Word (addr:%d)\n", addr));
+    FILE_LOG(logDEBUG1, ("  Reading Pattern - Word (addr:0x%x)\n", addr));
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // overwrite with  only addr
@@ -1433,33 +1444,35 @@ uint64_t readPatternWord(int addr) {
     // set read strobe
     bus_w(reg, bus_r(reg) | PATTERN_CNTRL_RD_MSK);
 
-    // read value
-    uint64_t retval = get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
-    FILE_LOG(logDEBUG1, ("\tWord(addr:%d): 0x%llx\n", addr, (long long int) retval));
-
     // unset read strobe
     bus_w(reg, bus_r(reg) & (~PATTERN_CNTRL_RD_MSK));
+    usleep(WAIT_TIME_PATTERN_READ);
+
+    // read value
+    uint64_t retval = get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
+    FILE_LOG(logDEBUG1, ("  Word(addr:0x%x): 0x%llx\n", addr, (long long int) retval));
 
     return retval;
 }
 
 uint64_t writePatternWord(int addr, uint64_t word) {
     // get
-    if (word != -1)
+    if (word == -1)
         return readPatternWord(addr);
 
     // error (handled in tcp)
-    if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
-        FILE_LOG(logERROR, ("Cannot set Pattern - Word. Invalid addr %d. "
-                "Should be within %d\n", addr, MAX_PATTERN_LENGTH));
+    if (addr < 0 || addr > MAX_PATTERN_LENGTH) {
+        FILE_LOG(logERROR, ("Cannot set Pattern - Word. Invalid addr 0x%x. "
+                "Should be <= 0x%x\n", addr, MAX_PATTERN_LENGTH));
         return -1;
     }
 
-    FILE_LOG(logINFO, ("Setting Pattern - Word (addr:%d, word:0x%llx)\n", addr, (long long int) word));
+    FILE_LOG(logINFO, ("Setting Pattern - Word (addr:0x%x, word:0x%llx)\n", addr, (long long int) word));
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // write word
     set64BitReg(word, PATTERN_IN_LSB_REG, PATTERN_IN_MSB_REG);
+    FILE_LOG(logDEBUG1, ("  Wrote word. PatternIn Reg: 0x%llx\n", get64BitReg(PATTERN_IN_LSB_REG, PATTERN_IN_MSB_REG)));
 
     // overwrite with  only addr
     bus_w(reg, ((addr << PATTERN_CNTRL_ADDR_OFST) & PATTERN_CNTRL_ADDR_MSK));
@@ -1476,9 +1489,9 @@ uint64_t writePatternWord(int addr, uint64_t word) {
 int setPatternWaitAddress(int level, int addr) {
 
     // error (handled in tcp)
-    if (addr >= (MAX_PATTERN_LENGTH + 1)) {
-        FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid addr %d. "
-                "Should be within %d\n", addr, MAX_PATTERN_LENGTH + 1));
+    if (addr > MAX_PATTERN_LENGTH) {
+        FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid addr 0x%x. "
+                "Should be <= 0x%x\n", addr, MAX_PATTERN_LENGTH));
         return -1;
     }
 
@@ -1503,20 +1516,20 @@ int setPatternWaitAddress(int level, int addr) {
         mask = PATTERN_WAIT_2_ADDR_MSK;
         break;
     default:
-        FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid level %d. "
+        FILE_LOG(logERROR, ("Cannot set Pattern - Wait Address. Invalid level 0x%x. "
                 "Should be between 0 and 2.\n", level));
         return -1;
     }
 
     // set
     if (addr >= 0) {
-        FILE_LOG(logINFO, ("Setting Pattern - Wait Address (level:%d, addr:%d)\n", level, addr));
+        FILE_LOG(logINFO, ("Setting Pattern - Wait Address (level:%d, addr:0x%x)\n", level, addr));
         bus_w(reg, ((addr << offset) & mask));
     }
 
     // get
     uint32_t regval = bus_r((reg & mask) >> offset);
-    FILE_LOG(logDEBUG1, ("\tWait Address (level:%d, addr:%d)\n", level, regval));
+    FILE_LOG(logDEBUG1, ("  Wait Address (level:%d, addr:0x%x)\n", level, regval));
     return regval;
 }
 
@@ -1550,8 +1563,8 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
     }
 
     // get
-    uint32_t regval = get64BitReg(regl, regm);
-    FILE_LOG(logDEBUG1, ("\tWait Time (level:%d, t:%lld)\n", level, (long long int)regval));
+    uint64_t regval = get64BitReg(regl, regm);
+    FILE_LOG(logDEBUG1, ("  Wait Time (level:%d, t:%lld)\n", level, (long long int)regval));
     return regval;
 }
 
@@ -1559,17 +1572,17 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
 
     // level 0-2, addr upto patternlength + 1 (checked at tcp)
     if ((level != -1) &&
-            (*startAddr >= 0 || *stopAddr > (MAX_PATTERN_LENGTH + 1))) {
-        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, startaddr:%d, stopaddr:%d). "
-                "Addr must be less than %d\n",
-                level, *startAddr, *stopAddr, MAX_PATTERN_LENGTH + 1));
+            (*startAddr > MAX_PATTERN_LENGTH || *stopAddr > MAX_PATTERN_LENGTH)) {
+        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, level:%d, startaddr:0x%x, stopaddr:0x%x). "
+                "Addr must be <= 0x%x\n",
+                level, *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
     }
 
     //level -1, addr upto patternlength (checked at tcp)
     else if ((level == -1) &&
-            (*startAddr >= 0 || *stopAddr > MAX_PATTERN_LENGTH)) {
-        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, stopaddr:%d). "
-                "Addr must be less than %d\n",
+            (*startAddr > MAX_PATTERN_LENGTH || *stopAddr > MAX_PATTERN_LENGTH)) {
+        FILE_LOG(logERROR, ("Cannot set Pattern (Pattern Loop, complete pattern, startaddr:0x%x, stopaddr:0x%x). "
+                "Addr must be <= 0x%x\n",
                 *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
     }
 
@@ -1609,6 +1622,10 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
         // complete pattern
         addr = PATTERN_LIMIT_REG;
         nLoopReg = -1;
+        startOffset = PATTERN_LIMIT_STRT_OFST;
+        startMask = PATTERN_LIMIT_STRT_MSK;
+        stopOffset = PATTERN_LIMIT_STP_OFST;
+        stopMask = PATTERN_LIMIT_STP_MSK;
         break;
     default:
         // already checked at tcp interface
@@ -1624,30 +1641,89 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
         // set iteration
         if (*nLoop >= 0) {
             FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop (level:%d, nLoop:%d)\n",
-                      level, nLoop));
+                      level, *nLoop));
             bus_w(nLoopReg, *nLoop);
         }
         *nLoop = bus_r(nLoopReg);
     }
 
-    // set start and stop addr
-    if (*startAddr == -1) {
-        *startAddr = ((bus_r(addr) >> startOffset) & startMask);
-        FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop Start Address (level:%d, startAddr:%d was -1)\n",
-                            level, *startAddr));
-    }
-    if (*stopAddr == -1) {
-        *stopAddr = ((bus_r(addr) >> stopOffset) & stopMask);
-        FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop Stop Address (level:%d, stopAddr:%d, was -1)\n",
-                            level, *stopAddr));
+    // set
+    if (*startAddr != -1 && *stopAddr != -1) {
+    	// writing start and stop addr
+    	FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop (level:%d, startaddr:0x%x, stopaddr:0x%x)\n",
+    			level, *startAddr, *stopAddr));
+    	bus_w(addr, ((*startAddr << startOffset) & startMask) | ((*stopAddr << stopOffset) & stopMask));
+    	FILE_LOG(logDEBUG1, ("Addr:0x%x, val:0x%x\n", addr, bus_r(addr)));
     }
 
-    // writing start and stop addr
-    FILE_LOG(logINFO, ("Setting Pattern - Pattern Loop (level:%d, startaddr:%d, stopaddr:%d)\n",
-              level, *startAddr, *stopAddr));
-    bus_w(addr, ((*startAddr << startOffset) & startMask) | ((*stopAddr << stopOffset) & stopMask));
+    // get
+    else {
+    	*startAddr = ((bus_r(addr)  & startMask) >> startOffset);
+    	FILE_LOG(logDEBUG1, ("Getting Pattern - Pattern Loop Start Address (level:%d, Read startAddr:0x%x)\n",
+    			level, *startAddr));
+
+    	*stopAddr = ((bus_r(addr) & stopMask) >> stopOffset);
+    	FILE_LOG(logDEBUG1, ("Getting Pattern - Pattern Loop Stop Address (level:%d, Read stopAddr:0x%x)\n",
+    			level, *stopAddr));
+    }
 }
 
+int	setLEDEnable(int enable) {
+	uint32_t addr = CONFIG_REG;
+
+	// set
+	if (enable >= 0) {
+		FILE_LOG(logINFO, ("Switching LED %s\n", (enable > 0) ? "ON" : "OFF"));
+		// disable
+		if (enable == 0) {
+			bus_w(addr, bus_r(addr) | CONFIG_LED_DSBL_MSK);
+		}
+		// enable
+		else {
+			bus_w(addr, bus_r(addr) & (~CONFIG_LED_DSBL_MSK));
+		}
+	}
+	// ~ to get the opposite
+	return  (((~bus_r(addr)) & CONFIG_LED_DSBL_MSK) >> CONFIG_LED_DSBL_OFST);
+}
+
+void setDigitalIODelay(uint64_t pinMask, int delay) {
+	FILE_LOG(logINFO, ("Setings Digital IO Delay (pinMask:0x%llx, delay: %d ps)\n",
+			(long long unsigned int)pinMask, delay));
+
+	int delayunit = delay / OUTPUT_DELAY_0_OTPT_STTNG_STEPS;
+	FILE_LOG(logDEBUG1, ("delay unit: 0x%x (steps of 25ps)\n", delayunit));
+
+	// set pin mask
+	bus_w(PIN_DELAY_1_REG, pinMask);
+
+	uint32_t addr = OUTPUT_DELAY_0_REG;
+	// set delay
+	bus_w(addr, bus_r(addr) & (~OUTPUT_DELAY_0_OTPT_STTNG_MSK));
+	bus_w(addr, (bus_r(addr)  | ((delayunit << OUTPUT_DELAY_0_OTPT_STTNG_OFST) & OUTPUT_DELAY_0_OTPT_STTNG_MSK)));
+
+	// load value
+	bus_w(addr, bus_r(addr) | OUTPUT_DELAY_0_OTPT_TRGGR_MSK);
+
+	// trigger configuration
+	bus_w(addr, bus_r(addr) & (~OUTPUT_DELAY_0_OTPT_TRGGR_MSK));
+}
+
+void setPatternMask(uint64_t mask) {
+	set64BitReg(mask, PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+}
+
+uint64_t getPatternMask() {
+	return 	get64BitReg(PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+}
+
+void setPatternBitMask(uint64_t mask) {
+	set64BitReg(mask, PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+}
+
+uint64_t getPatternBitMask() {
+	return 	get64BitReg(PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+}
 
 /* aquisition */
 
@@ -1663,13 +1739,20 @@ int startStateMachine(){
 	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
 	return OK;
 #endif
+	// 1 giga udp
+	if (!enableTenGigabitEthernet(-1)) {
+		// create udp socket
+		if(createUDPSocket() != OK) {
+			return FAIL;
+		}
+		// update header with modId, detType and version. Reset offset and fnum
+		createUDPPacketHeader(udpPacketData, getHardwareSerialNumber());
+	}
+
 	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
 
 	cleanFifos();
 	unsetFifoReadStrobes(); // FIXME: unnecessary to write bus_w(dumm, 0) as it is 0 in the beginnig and the strobes are always unset if set
-
-	// point the data pointer to the starting position of data
-	now_ptr = (char*)ramValues;
 
 	//start state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK | CONTROL_STRT_EXPSR_MSK);
@@ -1761,10 +1844,13 @@ enum runStatus getRunStatus(){
 	        return TRANSMITTING;
 	    }
 
-	    if (retval & STATUS_ALL_FF_EMPTY_MSK) {
-	        FILE_LOG(logINFOBLUE, ("Status: Transmitting (All fifo empty)\n"));
-	        return TRANSMITTING;
-	    }
+		   /* until Carlos updates firmware
+		    if (digitalEnable && !analogEnable) {
+		    	if (retval & STATUS_ALL_FF_EMPTY_MSK) {
+		    		FILE_LOG(logINFOBLUE, ("Status: Transmitting (All fifo empty)\n"));
+		    		return TRANSMITTING;
+		    	}
+		    }*/
 
 	    if (! (retval & STATUS_IDLE_MSK)) {
 	        FILE_LOG(logINFOBLUE, ("Status: Idle\n"));
@@ -1777,6 +1863,32 @@ enum runStatus getRunStatus(){
 }
 
 
+void readandSendUDPFrames(int *ret, char *mess) {
+	FILE_LOG(logDEBUG1, ("Reading from 1G UDP\n"));
+
+	// validate udp socket
+	if (getUdPSocketDescriptor() <= 0) {
+		*ret = FAIL;
+		sprintf(mess,"UDP Socket not created. sockfd:%d\n", getUdPSocketDescriptor());
+		FILE_LOG(logERROR, (mess));
+		return;
+	}
+
+	// every frame read
+	while(readFrameFromFifo() == OK) {
+		int bytesToSend = 0, n = 0;
+		while((bytesToSend = fillUDPPacket(udpPacketData))) {
+			n += sendUDPPacket(udpPacketData, bytesToSend);
+		}
+		if (n >= dataBytes) {
+			FILE_LOG(logINFO, (" Frame %lld sent (%d packets, %d databytes, n:%d bytes sent)\n",
+					udpFrameNumber, udpPacketNumber + 1, dataBytes, n));
+		}
+	}
+	closeUDPSocket();
+}
+
+
 
 void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
@@ -1786,20 +1898,30 @@ void readFrame(int *ret, char *mess) {
 	}
 	return;
 #endif
-	// wait for status to be done
-	while(runBusy()){
-		usleep(500); // random
+	// 1G
+	if (!enableTenGigabitEthernet(-1)) {
+		readandSendUDPFrames(ret, mess);
+	}
+	 // 10G
+	else {
+		// wait for acquisition to be done
+		while(runBusy()){
+			usleep(500); // random
+		}
 	}
 
-	// frames left to give status
-	int64_t retval = getTimeLeft(FRAME_NUMBER) + 2;
-	if ( retval > 1) {
-		*ret = (int)FAIL;
-		sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
-		FILE_LOG(logERROR, (mess));
-	} else {
-		*ret = (int)OK;
-		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+	// ret could be fail in 1gudp for not creating udp sockets
+	if (*ret != FAIL) {
+		// frames left to give status
+		int64_t retval = getTimeLeft(FRAME_NUMBER) + 2;
+		if ( retval > 1) {
+			*ret = (int)FAIL;
+			sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
+			FILE_LOG(logERROR, (mess));
+		} else {
+			*ret = (int)OK;
+			FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+		}
 	}
 }
 
@@ -1807,7 +1929,12 @@ void unsetFifoReadStrobes() {
     bus_w(DUMMY_REG, bus_r(DUMMY_REG) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
 }
 
-void readSample() {
+void readSample(int ns) {
+	if (!(ns%1000)) {
+		FILE_LOG(logDEBUG2, ("Reading sample ns:%d (out of %d), fifodinstatus:0x%x\n",
+				ns, nSamples,
+				bus_r(FIFO_DIN_STATUS_REG)));
+	}
     uint32_t addr = DUMMY_REG;
     uint32_t fifoAddr = FIFO_DATA_REG;
 
@@ -1836,8 +1963,8 @@ void readSample() {
 
                 // keep reading till the value is the same
                 while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
+                    FILE_LOG(logDEBUG1, ("%d ", ich));
                     *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
-                    FILE_LOG(logDEBUG1, (""))
                 }
 
                 // increment pointer to data out destination
@@ -1862,6 +1989,10 @@ void readSample() {
 // only called for first sample
 int checkDataPresent() {
     uint32_t dataPresent = bus_r(LOOK_AT_ME_REG);
+    FILE_LOG(logDEBUG2, ("LookatMe:0x%x, status:0x%x\t, fifodinstatus:0x%x\n",
+			dataPresent,
+			bus_r(STATUS_REG),
+			bus_r(FIFO_DIN_STATUS_REG)));
     // as long as fifo empty (keep checking)
     while (!dataPresent) {
         // acquisition done
@@ -1870,8 +2001,8 @@ int checkDataPresent() {
             dataPresent = bus_r(LOOK_AT_ME_REG);
             // still no data
             if (!dataPresent) {
-                FILE_LOG(logERROR, ("Acquisition Finished (State: 0x%08x), "
-                        "but no frame found (Look_at_me: 0x%08x).\n", dataPresent));
+                FILE_LOG(logINFO, ("Acquisition Finished (State: 0x%08x), "
+                        "no frame found .\n", bus_r(STATUS_REG)));
                 return FAIL;
             }
             // got data, exit
@@ -1882,19 +2013,23 @@ int checkDataPresent() {
         // check if fifo empty again
         dataPresent = bus_r(LOOK_AT_ME_REG);
     }
+    FILE_LOG(logDEBUG2, ("Got data, Lookatme:0x%x\n", dataPresent));
     return OK;
 }
 
 int readFrameFromFifo() {
-    int ns = 0;
+	int ns = 0;
+	// point the data pointer to the starting position of data
+	now_ptr = ramValues;
 
     // no data for this frame
-    if (checkDataPresent(ns) == FAIL) {
+    if (checkDataPresent() == FAIL) {
         return FAIL;
     }
 
     // read Sample
     while(ns < nSamples) {
+    	// chceck if no data in fifo, return ns?//FIXME: ask Anna
         readSample(ns);
         ns++;
     }
@@ -1908,7 +2043,7 @@ uint32_t runBusy() {
     return virtual_status;
 #endif
 	uint32_t s = (bus_r(STATUS_REG) & STATUS_RN_BSY_MSK);
-	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+	//FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
 }
 

@@ -26,7 +26,7 @@ typedef struct ip_header_struct {
 
 /* Enums */
 enum CLKINDEX               {RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
-enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8};
+enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7};
 
 /* Hardware Definitions */
 #define NCHAN 						(36)
@@ -41,6 +41,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8};
 /** Default Parameters */
 #define DEFAULT_DATA_BYTES          (NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
 #define DEFAULT_NUM_SAMPLES         (1)
+#define DEFAULT_EXPTIME				(0)
 #define DEFAULT_NUM_FRAMES			(100 * 1000 * 1000)
 #define DEFAULT_NUM_CYCLES			(1)
 #define DEFAULT_PERIOD				(1 * 1000 * 1000)	//ns
@@ -49,6 +50,10 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8};
 #define DEFAULT_VLIMIT              (-100)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
+#define DEFAULT_RUN_CLK             (40)
+#define DEFAULT_ADC_CLK             (20)
+#define DEFAULT_SYNC_CLK            (20)
+#define DEFAULT_DBIT_CLK            (200)
 
 #define HIGHVOLTAGE_MIN             (60)
 #define HIGHVOLTAGE_MAX             (200)
@@ -57,10 +62,14 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8};
 
 /* Defines in the Firmware */
 #define MAX_PATTERN_LENGTH  		(0xFFFF)
+#define DIGITAL_IO_DELAY_MAXIMUM_PS	((OUTPUT_DELAY_0_OTPT_STTNG_MSK >> OUTPUT_DELAY_0_OTPT_STTNG_OFST) * OUTPUT_DELAY_0_OTPT_STTNG_STEPS)
+
+
 #define WAIT_TME_US_FR_LK_AT_ME_REG (100) // wait time in us after acquisition done to ensure there is no data in fifo
 #define WAIT_TIME_US_PLL            (10 * 1000)
 #define WAIT_TIME_US_STP_ACQ        (100)
 #define WAIT_TIME_CONFIGURE_MAC     (500 * 1000)
+#define WAIT_TIME_PATTERN_READ     	(10)
 
 /* MSB & LSB DEFINES */
 #define MSB_OF_64_BIT_REG_OFST      (32)

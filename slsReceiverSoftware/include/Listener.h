@@ -9,6 +9,8 @@
  *@short creates & manages a listener thread each
  */
 
+#include <memory>
+
 #include "ThreadObject.h"
 
 class GeneralData;
@@ -39,7 +41,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
-	        uint32_t* us, uint32_t* as, uint32_t* fpf,
+	        uint64_t* us, uint64_t* as, uint32_t* fpf,
 			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
 
 	/**
@@ -138,7 +140,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @param s UDP socket buffer size to be set
      * @return OK or FAIL of dummy socket creation
      */
-    int CreateDummySocketForUDPSocketBufferSize(uint32_t s);
+    int CreateDummySocketForUDPSocketBufferSize(uint64_t s);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -169,7 +171,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 * Pop free addresses, listen to udp socket,
 	 * write to memory & push the address into fifo
 	 */
-	void ThreadExecution();
+	void ThreadExecution() override;
 
 	/**
 	 * Pushes non empty buffers into fifo/ frees empty buffer,
@@ -207,7 +209,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	/** Fifo structure */
 	Fifo* fifo;
 
-
 	// individual members
 	/** Detector Type */
 	detectorType myDetectorType;
@@ -216,7 +217,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	runStatus* status;
 
 	/** UDP Socket - Detector to Receiver */
-	genericSocket* udpSocket;
+	std::unique_ptr<genericSocket> udpSocket;
 
 	/** UDP Port Number */
 	uint32_t* udpPortNumber;
@@ -231,10 +232,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	uint32_t* dynamicRange;
 
 	/** UDP Socket Buffer Size */
-	uint32_t* udpSocketBufferSize;
+	uint64_t* udpSocketBufferSize;
 
 	/** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
-	uint32_t* actualUDPSocketBufferSize;
+	uint64_t* actualUDPSocketBufferSize;
 
 	/** frames per file */
 	uint32_t* framesPerFile;
@@ -293,10 +294,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	bool carryOverFlag;
 
 	/** Carry over packet buffer */
-	char* carryOverPacket;
+	std::unique_ptr<char []> carryOverPacket;
 
 	/** Listening buffer for one packet - might be removed when we can peek and eiger fnum is in header */
-	char* listeningPacket;
+	std::unique_ptr<char []> listeningPacket;
 
 	/** if the udp socket is connected */
 	bool udpSocketAlive;

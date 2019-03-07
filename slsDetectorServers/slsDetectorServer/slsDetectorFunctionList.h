@@ -20,8 +20,8 @@ int			getFirmwareCheckResult(char** mess);
 void 		basictests();
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		checkType();
-u_int32_t 	testFpga(void);
-int 		testBus(void);
+int 		testFpga();
+int 		testBus();
 #endif
 
 #ifdef GOTTHARDD
@@ -33,8 +33,8 @@ int 		detectorTest(enum digitalTestMode arg);
 // Ids
 int64_t 	getDetectorId(enum idMode arg);
 u_int64_t  	getFirmwareVersion();
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 u_int64_t   getFirmwareAPIVersion();
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
 #endif
@@ -120,7 +120,7 @@ void 		setSpeed(enum speedVariable ind, int val);
 int         getSpeed(enum speedVariable ind);
 #endif
 
-#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(EIGERD) || defined(CHIPTESTBOARDD)
 enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #endif
 
@@ -183,13 +183,7 @@ int         getPower();
 void        setPower(enum DACINDEX ind, int val);
 void        powerOff();
 #endif
-/*#ifdef GOTTHARDD
-void        initDAC(int dac_addr, int value);
-void        clearDACSregister();
-void        nextDAC();
-void        program_one_dac(int addr, int value);
-u_int32_t   putout(char *s);
-#endif*/
+
 #ifndef MOENCHD
 int 		getADC(enum ADCINDEX ind);
 #endif
@@ -232,7 +226,7 @@ int 		enableTenGigabitEthernet(int val);
 int         powerChip (int on);
 #endif
 
-// chip test board specific - sendudp, pll, flashing firmware
+// chip test board or moench specific - configure frequency, phase, pll, flashing firmware
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 void        configurePhase(enum CLKINDEX ind, int val);
 int         getPhase(enum CLKINDEX ind);
@@ -245,7 +239,7 @@ extern void eraseFlash();                                                   // p
 extern int  startWritingFPGAprogram(FILE** filefp);                         // programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);                           // programfpga.h
 extern int  writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);    // programfpga.h
-// ctb patterns
+// patterns
 uint64_t    writePatternIOControl(uint64_t word);
 uint64_t    writePatternClkControl(uint64_t word);
 uint64_t    readPatternWord(int addr);

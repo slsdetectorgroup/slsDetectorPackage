@@ -142,7 +142,7 @@ void AD9252_Set(int addr, int val) {
     codata = val + (addr << 8);
     FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr));
     serializeToSPI(AD9252_Reg, codata, AD9252_CsMask, AD9252_ADC_NUMBITS,
-            AD9252_ClkMask, AD9252_DigMask, AD9252_DigOffset);
+            AD9252_ClkMask, AD9252_DigMask, AD9252_DigOffset, 0);
 }
 
 /**

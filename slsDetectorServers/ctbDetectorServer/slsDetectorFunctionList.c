@@ -103,7 +103,7 @@ void basictests() {
 		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
-		cprintf(RED,"exiting for now!\n");exit(-1); return;
+		return;
 	}
 
 	uint16_t hversion			= getHardwareVersionNumber();
@@ -204,7 +204,7 @@ int checkType() {
 	return OK;
 }
 
-uint32_t testFpga(void) {
+int testFpga() {
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -538,20 +538,23 @@ void setupDetector() {
 	cleanFifos(); // FIXME: why twice?
 	resetCore();
 
+	// 1G UDP
+	enableTenGigabitEthernet(0);
+
 	//Initialization of acquistion parameters
     setTimer(SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
+	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
+	setReadOutFlags(NORMAL_READOUT);
 
-	// 1G UDP
-	enableTenGigabitEthernet(0);
     // clear roi
     {
         int ret = OK, retvalsize = 0;
-        setROI(0, rois, &ret, &retvalsize);
+        setROI(0, rois, &retvalsize, &ret);
     }
 }
 
@@ -614,6 +617,7 @@ int getChannels() {
     }
     if (digitalEnable)
         nchans += NCHAN_DIGITAL;
+    FILE_LOG(logINFO, ("\tNumber of Channels calculated: %d\n", nchans))
     return nchans;
 }
 
@@ -671,13 +675,13 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
             int iroi = 0;
             // for every roi
             for (iroi = 0; iroi < n; ++iroi) {
-                FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", arg[iroi].xmin, arg[iroi].xmax));
+                FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", iroi, arg[iroi].xmin, arg[iroi].xmax));
                 // swap if xmin > xmax
                 if (arg[iroi].xmin > arg[iroi].xmax) {
                     int temp = arg[iroi].xmin;
                     arg[iroi].xmin = arg[iroi].xmax;
                     arg[iroi].xmax = temp;
-                    FILE_LOG(logINFORED, ("\tCorrected %d: (%d, %d)\n", arg[iroi].xmin, arg[iroi].xmax));
+                    FILE_LOG(logINFORED, ("\tCorrected %d: (%d, %d)\n", iroi, arg[iroi].xmin, arg[iroi].xmax));
                 }
                 int ich = 0;
                 // for the roi specified
@@ -781,20 +785,20 @@ void setSpeed(enum speedVariable ind, int val) {
     switch(ind) {
     case ADC_PHASE:
     case PHASE_SHIFT:
-        FILE_LOG(logINFO, ("Configuring ADC Phase\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring ADC Phase\n"));
         configurePhase(RUN_CLK, val);
         break;
     case DBIT_PHASE:
-        FILE_LOG(logINFO, ("Configuring Dbit Phase\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring Dbit Phase\n"));
         configurePhase(DBIT_CLK, val);
         break;
     case ADC_CLOCK:
-        FILE_LOG(logINFO, ("Configuring ADC Clock\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring ADC Clock\n"));
         configureFrequency(ADC_CLK, val);
         configureSyncFrequency(ADC_CLK);
         break;
     case DBIT_CLOCK:
-        FILE_LOG(logINFO, ("Configuring Dbit Clock\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring Dbit Clock\n"));
         configureFrequency(DBIT_CLK, val);
         configureSyncFrequency(DBIT_CLK);
         break;
@@ -805,7 +809,7 @@ void setSpeed(enum speedVariable ind, int val) {
         setAdcOffsetRegister(0, val);
         break;
     case CLOCK_DIVIDER:
-        FILE_LOG(logINFO, ("Configuring Run Clock\n"));
+        FILE_LOG(logINFOBLUE, ("Configuring Run Clock\n"));
         configureFrequency(RUN_CLK, val);
         configureSyncFrequency(RUN_CLK);
         break;
@@ -820,7 +824,7 @@ int getSpeed(enum speedVariable ind) {
     case PHASE_SHIFT:
         return getPhase(RUN_CLK);
     case DBIT_PHASE:
-        return clkPhase[DBIT_CLK];
+        return getPhase(DBIT_CLK);
     case ADC_CLOCK:
         return getFrequency(ADC_CLK);
     case DBIT_CLOCK:
@@ -907,19 +911,20 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logINFO, ("\tGetting #frames: %lld\n", (long long int)retval));
 		break;
 
+	case ACQUISITION_TIME:
+		if(val >= 0){
+			FILE_LOG(logINFO, ("Setting exptime (pattern wait time level 0): %lldns\n",(long long int)val));
+			val *= (1E-3 * clkDivider[RUN_CLK]);
+			setPatternWaitTime(0, val);
+		}
+		retval = setPatternWaitTime(0, -1) / (1E-3 * clkDivider[RUN_CLK]);
+		FILE_LOG(logINFO, ("\tGetting exptime (pattern wait time level 0): %lldns\n", (long long int)retval));
+		break;
+
 	case FRAME_PERIOD:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
 			val *= (1E-3 * clkDivider[ADC_CLK]);
-			// make period odd
-			//FIXME to be tested
-			/*if (val % 2 == 0) { //fIXME: period is even here, not other way round?
-			    FILE_LOG(logINFO, ("\tPeriod %lld not even, adding 1\n", (long long int)val));
-			    ++val;
-			    FILE_LOG(logINFO, ("\tNew Period:%lld\n", (long long int)val))
-			} else {
-			    FILE_LOG(logINFO, ("\tPeriod already even:%lld\n", (long long int)val))
-			}*/
 		}
 		retval = set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG )/ (1E-3 * clkDivider[ADC_CLK]);
 		FILE_LOG(logINFO, ("\tGetting period: %lldns\n", (long long int)retval));
@@ -953,7 +958,6 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	    }
         retval = nSamples;
         FILE_LOG(logINFO, ("\tGetting #samples: %lld\n", (long long int)retval));
-
         break;
 
 	default:
@@ -1026,11 +1030,22 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
     case FRAME_PERIOD:
     case DELAY_AFTER_TRIGGER:
         // convert to freq
-        val *= (1E-3 * ADC_CLK);
+        val *= (1E-3 * clkDivider[ADC_CLK]);
         // convert back to timer
-        val = (val) / (1E-3 * ADC_CLK);
-        if (val != retval)
-            return FAIL;
+        val = (val) / (1E-3 * clkDivider[ADC_CLK]);
+        if (val != retval) {
+        	return FAIL;
+        }
+        break;
+    case ACQUISITION_TIME:
+        // convert to freq
+        val *= (1E-3 * clkDivider[RUN_CLK]);
+        // convert back to timer
+        val = (val) / (1E-3 * clkDivider[RUN_CLK]);
+        if (val != retval) {
+        	return FAIL;
+        }
+    	break;
     default:
         break;
     }
@@ -1614,17 +1629,18 @@ int enableTenGigabitEthernet(int val) {
 
 
 
-/* ctb specific - pll, flashing fpga */
+/* ctb specific - configure frequency, phase, pll */
 
 
 // ind can only be ADC_CLK or DBIT_CLK
 void configurePhase(enum CLKINDEX ind, int val) {
+	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
     if (val > 65535 || val < -65535) {
-        FILE_LOG(logERROR, ("\tPhase provided outside limits\n"));
+        FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits\n", ind, clock_names[ind]));
         return;
     }
 
-    FILE_LOG(logINFO, ("Configuring Phase of C%d to %d\n", ind, val));
+    FILE_LOG(logINFO, ("Configuring Phase of C%d(%s) to %d\n", ind, clock_names[ind], val));
 
     // reset only pll
     ALTERA_PLL_ResetPLL();
@@ -1653,10 +1669,11 @@ int getPhase(enum CLKINDEX ind) {
 }
 
 void configureFrequency(enum CLKINDEX ind, int val) {
-    if (val < 0)
+	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
+    if (val <= 0)
         return;
 
-    FILE_LOG(logINFO, ("\tConfiguring Frequency of C%d to %d MHz\n", ind, val));
+    FILE_LOG(logINFO, ("\tConfiguring Frequency of C%d(%s) to %d MHz\n", ind, clock_names[ind], val));
 
     // check adc clk too high
     if (ind == ADC_CLK && val > MAXIMUM_ADC_CLK) {
@@ -1666,7 +1683,7 @@ void configureFrequency(enum CLKINDEX ind, int val) {
 
     // Calculate and set output frequency
     clkDivider[ind] = ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ, val);
-    FILE_LOG(logINFO, ("\tC%d: Frequency set to %d MHz\n", ind, clkDivider[ind]));
+    FILE_LOG(logINFO, ("\tC%d(%s): Frequency set to %d MHz\n", ind, clock_names[ind], clkDivider[ind]));
 }
 
 int getFrequency(enum CLKINDEX ind) {
@@ -1674,17 +1691,18 @@ int getFrequency(enum CLKINDEX ind) {
 }
 
 void configureSyncFrequency(enum CLKINDEX ind) {
+	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
     int clka = 0, clkb = 0;
     switch(ind) {
-    case ADC_CLOCK:
+    case ADC_CLK:
         clka = DBIT_CLK;
         clkb = RUN_CLK;
         break;
-    case DBIT_CLOCK:
+    case DBIT_CLK:
         clka = ADC_CLK;
         clkb = RUN_CLK;
         break;
-    case CLOCK_DIVIDER:
+    case RUN_CLK:
         clka = DBIT_CLK;
         clkb = ADC_CLK;
         break;
@@ -1692,19 +1710,24 @@ void configureSyncFrequency(enum CLKINDEX ind) {
         return;
     }
 
-    int clksync = getFrequency(SYNC_CLK);
+    int syncFreq = getFrequency(SYNC_CLK);
     int retval = getFrequency(ind);
+    int aFreq = getFrequency(clka);
+    int bFreq = getFrequency(clkb);
+    FILE_LOG(logDEBUG1, ("Sync Frequncy:%d, RetvalFreq(%s):%d, aFreq(%s):%d, bFreq(%s):%d\n",
+    		syncFreq, clock_names[ind], retval, clock_names[clka], aFreq, clock_names[clkb], bFreq));
+
     int configure = 0;
 
     // sync is greater than current
-    if (clksync > retval)  {
-        FILE_LOG(logINFO, ("\t--Configuring Sync Clock\n"));
+    if (syncFreq > retval)  {
+        FILE_LOG(logINFO, ("\t--Configuring Sync Clock\n"));cprintf(BG_RED, "SETTING SYNC CLOCK!!!");
         configure = 1;
     }
 
     // the others are both greater than current
-    else if ((clka > retval && clkb > retval)) {
-        FILE_LOG(logINFO, ("\t++Configuring Sync Clock\n"));
+    else if ((aFreq > retval && bFreq > retval)) {
+        FILE_LOG(logINFO, ("\t++Configuring Sync Clock\n"));cprintf(BG_RED, "\n\nSETTING SYNC CLOCK!!!\n\n");
         configure = 1;
     }
 
@@ -1738,6 +1761,9 @@ int getAdcOffsetRegister(int adc) {
         return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_ADC_PPLN_MSK) >> ADC_OFFSET_ADC_PPLN_OFST);
     return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_DBT_PPLN_MSK) >> ADC_OFFSET_DBT_PPLN_OFST);
 }
+
+
+// patterns
 
 uint64_t writePatternIOControl(uint64_t word) {
     if (word != -1) {
@@ -1778,6 +1804,7 @@ uint64_t readPatternWord(int addr) {
 
     // unset read strobe
     bus_w(reg, bus_r(reg) & (~PATTERN_CNTRL_RD_MSK));
+    usleep(WAIT_TIME_PATTERN_READ);
 
     // read value
     uint64_t retval = get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
@@ -2176,9 +2203,13 @@ enum runStatus getRunStatus(){
 	        return TRANSMITTING;
 	    }
 
-	    /*if (retval & STATUS_ALL_FF_EMPTY_MSK) {
-	        FILE_LOG(logINFOBLUE, ("Status: Transmitting (All fifo empty)\n"));
-	        return TRANSMITTING;
+
+	   /* until Carlos updates firmware
+	    if (digitalEnable && !analogEnable) {
+	    	if (retval & STATUS_ALL_FF_EMPTY_MSK) {
+	    		FILE_LOG(logINFOBLUE, ("Status: Transmitting (All fifo empty)\n"));
+	    		return TRANSMITTING;
+	    	}
 	    }*/
 
 	    if (! (retval & STATUS_IDLE_MSK)) {

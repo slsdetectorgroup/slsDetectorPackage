@@ -142,7 +142,7 @@ int checkType() {
 	return OK;
 }
 
-u_int32_t testFpga(void) {
+int testFpga() {
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -950,6 +950,7 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         val = (val / (1E-3 * CLK_FREQ)) + 0.5;  // convert back to timer
         if (val != retval)
             return FAIL;
+        break;
     case DELAY_AFTER_TRIGGER:
         if (masterflags == IS_MASTER) {
             val += masterdefaultdelay;
@@ -961,6 +962,7 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         }
         if (val != retval)
             return FAIL;
+        break;
     default:
         break;
     }
@@ -1520,7 +1522,10 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
         FILE_LOG(logINFO, ("\twaited %d loops to start\n", loop));
         FILE_LOG(logINFO, ("\tWaiting for acquisition to end (frames left: %lld)\n", (long long int)getTimeLeft(FRAME_NUMBER)));
-        waitForAcquisitionFinish();
+    	// wait for status to be done
+    	while(runBusy()){
+    		usleep(500);
+    	}
 
         // set to previous parameters
         FILE_LOG(logINFO, ("\tSetting previous parameters:\n"

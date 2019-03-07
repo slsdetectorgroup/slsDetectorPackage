@@ -377,12 +377,17 @@ public:
 	 */
 	int setDetectorType(detectorType type=GET_DETECTOR_TYPE);
 
-
 	/**
 	 * Returns the total number of channels from shared memory
 	 * @returns the total number of channels
 	 */
 	int getTotalNumberOfChannels();
+
+	/**
+	 * Update total number of channels (chiptestboard or moench)
+	 * depending on the number of samples, roi, readout flags(ctb)
+	 */
+	void updateTotalNumberOfChannels();
 
 	/**
 	 * Returns the total number of channels in dimension d from shared memory
@@ -999,19 +1004,19 @@ public:
 	 * @param udpsockbufsize additional json header
 	 * @returns receiver udp socket buffer size
 	 */
-	int setReceiverUDPSocketBufferSize(int udpsockbufsize=-1);
+   uint64_t setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize=-1);
 
 	/**
 	 * Returns the receiver UDP socket buffer size\sa sharedSlsDetector
 	 * @returns the receiver UDP socket buffer size
 	 */
-	int getReceiverUDPSocketBufferSize() ;
+   uint64_t getReceiverUDPSocketBufferSize() ;
 
 	/**
 	 * Returns the receiver real UDP socket buffer size\sa sharedSlsDetector
 	 * @returns the receiver real UDP socket buffer size
 	 */
-	int getReceiverRealUDPSocketBufferSize();
+   uint64_t getReceiverRealUDPSocketBufferSize();
 
 	/**
 	 * Execute a digital test (Gotthard, Mythen)
@@ -1066,6 +1071,12 @@ public:
 	 * @returns the counter bit in detector
 	 */
 	int setCounterBit(int i = -1);
+
+	/**
+	 * send ROI to processor (moench only)
+	 * @returns OK or FAIL
+	 */
+	int sendROIToProcessor();
 
 	/**
 	 * Set ROI (Gotthard)

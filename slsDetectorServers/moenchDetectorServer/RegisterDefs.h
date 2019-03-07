@@ -1,7 +1,7 @@
 #pragma once
 
 /* Definitions for FPGA */
-#define MEM_MAP_SHIFT 11
+#define MEM_MAP_SHIFT 1
 
 
 /* FPGA Version RO register */
@@ -59,7 +59,7 @@
 #define STATUS_PLL_PHS_DN_MSK               (0x00000001 << STATUS_PLL_PHS_DN_OFST)
 #define STATUS_PT_CNTRL_STTS_OFF_OFST       (24)
 #define STATUS_PT_CNTRL_STTS_OFF_MSK        (0x000000FF << STATUS_PT_CNTRL_STTS_OFF_OFST)
-#define STATUS_IDLE_MSK                     (0x7FFFF)
+#define STATUS_IDLE_MSK                     (0x6FFFF)
 
 /* Look at me RO register TODO */
 #define LOOK_AT_ME_REG                      (0x03 << MEM_MAP_SHIFT)
@@ -365,6 +365,11 @@
 /* Pattern Limit RW regiser */
 #define PATTERN_LIMIT_REG                   (0x53 << MEM_MAP_SHIFT)
 
+#define PATTERN_LIMIT_STRT_OFST       		(0)
+#define PATTERN_LIMIT_STRT_MSK        		(0x0000FFFF << PATTERN_LIMIT_STRT_OFST)
+#define PATTERN_LIMIT_STP_OFST        		(16)
+#define PATTERN_LIMIT_STP_MSK         		(0x0000FFFF << PATTERN_LIMIT_STP_OFST)
+
 /* Pattern Loop 0 Address RW regiser */
 #define PATTERN_LOOP_0_ADDR_REG             (0x54 << MEM_MAP_SHIFT)
 
@@ -501,18 +506,27 @@
 #define DBIT_EXT_TRG_OPRTN_MD_MSK           (0x00000001 << DBIT_EXT_TRG_OPRTN_MD_OFST)
 
 /* Pin Delay 0 RW register */
-#define PIN_DELAY_0_REG                     (0x7C << MEM_MAP_SHIFT)
-
-#define PIN_DELAY_0_OTPT_STTNG_OFST         (0)     //t = OTPT_STTNG * 25 ps, max for Cyclone V = 775 ps
-#define PIN_DELAY_0_OTPT_STTNG_MSK          (0x0000001F << PIN_DELAY_0_OFST)
-#define PIN_DELAY_0_OTPT_TRGGR_OFST         (31)
-#define PIN_DELAY_0_OTPT_TRGGR_MSK          (0x00000001 << PIN_DELAY_0_OFST)
-#define PIN_DELAY_0_OTPT_TRGGR_LD_VAL       (1)
-#define PIN_DELAY_0_OTPT_TRGGR_STRT_VAL     (0)
+#define OUTPUT_DELAY_0_REG                  (0x7C << MEM_MAP_SHIFT)
+#define OUTPUT_DELAY_0_OTPT_STTNG_STEPS		(25)
+#define OUTPUT_DELAY_0_OTPT_STTNG_OFST      (0)     //t = OTPT_STTNG * 25 ps, max for Cyclone V = 775 ps
+#define OUTPUT_DELAY_0_OTPT_STTNG_MSK       (0x0000001F << OUTPUT_DELAY_0_OTPT_STTNG_OFST)
+// 1: load dynamic output settings, 0: trigger start of dynamic output delay configuration pn falling edge of ODT (output delay trigger) bit
+#define OUTPUT_DELAY_0_OTPT_TRGGR_OFST      (31)
+#define OUTPUT_DELAY_0_OTPT_TRGGR_MSK       (0x00000001 << OUTPUT_DELAY_0_OTPT_TRGGR_OFST)
+#define OUTPUT_DELAY_0_OTPT_TRGGR_LD_VAL    (1)
+#define OUTPUT_DELAY_0_OTPT_TRGGR_STRT_VAL  (0)
 
 /* Pin Delay 1 RW register
  * Each bit configured as enable for dynamic output delay configuration */
 #define PIN_DELAY_1_REG                     (0x7D << MEM_MAP_SHIFT)
+
+/** Pattern Mask 64 bit RW regiser */
+#define PATTERN_MASK_LSB_REG                (0x80 << MEM_MAP_SHIFT)
+#define PATTERN_MASK_MSB_REG                (0x81 << MEM_MAP_SHIFT)
+
+/** Pattern Set 64 bit RW regiser */
+#define PATTERN_SET_LSB_REG                 (0x82 << MEM_MAP_SHIFT)
+#define PATTERN_SET_MSB_REG                 (0x83 << MEM_MAP_SHIFT)
 
 /** I2C Control register */
 //#define I2C_TRANSFER_COMMAND_FIFO_REG       (0x100 << MEM_MAP_SHIFT) // in FW, but not used anywhere

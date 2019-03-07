@@ -10,6 +10,7 @@
 #include "GeneralData.h"
 #include "Fifo.h"
 #include "genericSocket.h"
+#include "container_utils.h" // For sls::make_unique<>
 
 #include <iostream>
 #include <errno.h>
@@ -20,7 +21,7 @@ const std::string Listener::TypeName = "Listener";
 
 Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
-        uint32_t* us, uint32_t* as, uint32_t* fpf,
+        uint64_t* us, uint64_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
@@ -50,8 +51,6 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 		lastCaughtFrameIndex(0),
 		currentFrameIndex(0),
 		carryOverFlag(0),
-		carryOverPacket(nullptr),
-		listeningPacket(nullptr),
 		udpSocketAlive(0),
 		numPacketsStatistic(0),
 		numFramesStatistic(0),
@@ -66,13 +65,10 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 
 Listener::~Listener() {
 	if (udpSocket){
-		delete udpSocket;
 		sem_post(&semaphore_socket);
     	sem_destroy(&semaphore_socket);
 	} 
 
-	if (carryOverPacket) delete [] carryOverPacket;
-	if (listeningPacket) delete [] listeningPacket;
 	ThreadObject::DestroyThread();
 }
 
@@ -131,14 +127,10 @@ void Listener::ResetParametersforNewMeasurement() {
 	numPacketsCaught = 0;
 	firstMeasurementIndex = 0;
 	carryOverFlag = false;
-	if (carryOverPacket)
-		delete [] carryOverPacket;
-	carryOverPacket = new char[generalData->packetSize];
-	memset(carryOverPacket,0,generalData->packetSize);
-	if (listeningPacket)
-		delete [] listeningPacket;
-	listeningPacket = new char[generalData->packetSize];
-	memset(listeningPacket,0,generalData->packetSize);
+	carryOverPacket = sls::make_unique<char[]>(generalData->packetSize);
+	memset(carryOverPacket.get(),0,generalData->packetSize);
+	listeningPacket = sls::make_unique<char[]>(generalData->packetSize);
+	memset(carryOverPacket.get(),0,generalData->packetSize);
 
 	numPacketsStatistic = 0;
 	numFramesStatistic = 0;
@@ -204,10 +196,9 @@ int Listener::CreateUDPSockets() {
 	ShutDownUDPSocket();
 
 	try{
-	    genericSocket* g = new genericSocket(*udpPortNumber, genericSocket::UDP,
+	    udpSocket = sls::make_unique<genericSocket>(*udpPortNumber, genericSocket::UDP,
 				generalData->packetSize, (strlen(eth)?eth:nullptr), generalData->headerPacketSize,
 				*udpSocketBufferSize);
-	    udpSocket = g;
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
 	} catch (...) {
 		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber;
@@ -235,14 +226,12 @@ void Listener::ShutDownUDPSocket() {
 		//give a post to semaphore(at stopListening)
 		if (runningFlag)
 			sem_wait(&semaphore_socket);
-        delete udpSocket;
-        udpSocket = nullptr;
 	    sem_destroy(&semaphore_socket);
 	}
 }
 
 
-int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
+int Listener::CreateDummySocketForUDPSocketBufferSize(uint64_t s) {
     FILE_LOG(logINFO) << "Testing UDP Socket Buffer size with test port " << *udpPortNumber;
 
     if (!(*activated)) {
@@ -250,7 +239,7 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     	return OK;
     }
 
-    uint32_t temp = *udpSocketBufferSize;
+    uint64_t temp = *udpSocketBufferSize;
     *udpSocketBufferSize = s;
 
     //if eth is mistaken with ip address
@@ -261,13 +250,11 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     // shutdown if any open
     if(udpSocket){
         udpSocket->ShutDownSocket();
-        delete udpSocket;
-        udpSocket = nullptr;
     }
 
     //create dummy socket
     try {
-    	udpSocket = new genericSocket(*udpPortNumber, genericSocket::UDP,
+    	udpSocket = sls::make_unique<genericSocket>(*udpPortNumber, genericSocket::UDP,
             generalData->packetSize, (strlen(eth)?eth:nullptr), generalData->headerPacketSize,
             *udpSocketBufferSize);
     } catch (...) {
@@ -287,8 +274,6 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint32_t s) {
     if(udpSocket){
         udpSocketAlive = false;
         udpSocket->ShutDownSocket();
-        delete udpSocket;
-        udpSocket = nullptr;
     }
 
     return OK;
@@ -422,13 +407,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
-			old_header = (sls_detector_header*) (carryOverPacket + esize);
+			old_header = (sls_detector_header*) (&carryOverPacket[esize]);
 			fnum = old_header->frameNumber;
 			pnum = old_header->packetNumber;
 		}
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
-			generalData->GetHeaderInfo(index, carryOverPacket + esize,
+			generalData->GetHeaderInfo(index, &carryOverPacket[esize],
 					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
@@ -462,19 +447,19 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//				2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data !!
 		case GOTTHARD:
 			if(!pnum)
-				memcpy(buf + fifohsize , carryOverPacket + hsize+4, dsize-2);
+				memcpy(buf + fifohsize , &carryOverPacket[hsize+4], dsize-2);
 			else
-				memcpy(buf + fifohsize + dsize - 2, carryOverPacket + hsize, dsize+2);
+				memcpy(buf + fifohsize + dsize - 2, &carryOverPacket[hsize], dsize+2);
 			break;
 		case CHIPTESTBOARD:
 		case MOENCH:
 			if (pnum == (pperFrame-1))
-				memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize, corrected_dsize);
+				memcpy(buf + fifohsize + (pnum * dsize), &carryOverPacket[hsize], corrected_dsize);
 			else
-				memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize,  dsize);
+				memcpy(buf + fifohsize + (pnum * dsize), &carryOverPacket[hsize],  dsize);
 			break;
 		default:
-			memcpy(buf + fifohsize + (pnum * dsize), carryOverPacket + hsize, dsize);
+			memcpy(buf + fifohsize + (pnum * dsize), &carryOverPacket[hsize], dsize);
 			break;
 		}
 
@@ -510,7 +495,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//listen to new packet
 		rc = 0;
 		if (udpSocketAlive){
-			rc = udpSocket->ReceiveDataOnly(listeningPacket);
+			rc = udpSocket->ReceiveDataOnly(&listeningPacket[0]);
 		}
 		// end of acquisition
 		if(rc <= 0) {
@@ -540,7 +525,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
-			old_header = (sls_detector_header*) (listeningPacket + esize);
+			old_header = (sls_detector_header*) (&listeningPacket[esize]);
 			fnum = old_header->frameNumber;
 			pnum = old_header->packetNumber;
 		}
@@ -548,10 +533,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		else {
             // set first packet to be odd or even (check required when switching from roi to no roi)
             if (myDetectorType == GOTTHARD && !measurementStartedFlag) {
-                oddStartingPacket = generalData->SetOddStartingPacket(index, listeningPacket + esize);
+                oddStartingPacket = generalData->SetOddStartingPacket(index, &listeningPacket[esize]);
             }
 
-			generalData->GetHeaderInfo(index, listeningPacket + esize,
+			generalData->GetHeaderInfo(index, &listeningPacket[esize],
 					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
@@ -582,7 +567,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//future packet	by looking at image number  (all other detectors)
 		if (fnum != currentFrameIndex) {
 			carryOverFlag = true;
-			memcpy(carryOverPacket,listeningPacket, generalData->packetSize);
+			memcpy(carryOverPacket.get(), &listeningPacket[0], generalData->packetSize);
 
 			switch(*frameDiscardMode) {
 			case DISCARD_EMPTY_FRAMES:
@@ -608,19 +593,19 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//				2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data !!
 		case GOTTHARD:
 			if(!pnum)
-				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize+4, dsize-2);
+				memcpy(buf + fifohsize + (pnum * dsize), &listeningPacket[hsize+4], dsize-2);
 			else
-				memcpy(buf + fifohsize + (pnum * dsize) - 2, listeningPacket + hsize, dsize+2);
+				memcpy(buf + fifohsize + (pnum * dsize) - 2, &listeningPacket[hsize], dsize+2);
 			break;
 		case CHIPTESTBOARD:
 		case MOENCH:
 			if (pnum == (pperFrame-1))
-				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, corrected_dsize);
+				memcpy(buf + fifohsize + (pnum * dsize), &listeningPacket[hsize], corrected_dsize);
 			else
-				memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, dsize);
+				memcpy(buf + fifohsize + (pnum * dsize), &listeningPacket[hsize], dsize);
 			break;
 		default:
-			memcpy(buf + fifohsize + (pnum * dsize), listeningPacket + hsize, dsize);
+			memcpy(buf + fifohsize + (pnum * dsize), &listeningPacket[hsize], dsize);
 			break;
 		}
 		++numpackets;			//number of packets in this image (each time its copied to buf)

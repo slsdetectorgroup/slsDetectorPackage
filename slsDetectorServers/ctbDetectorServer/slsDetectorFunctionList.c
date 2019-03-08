@@ -2174,8 +2174,9 @@ enum runStatus getRunStatus(){
 	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
 
 	// error
-	if (retval & STATUS_SM_FF_FLL_MSK) {
-	    FILE_LOG(logINFORED, ("Status: Error (Some fifo full)\n"));
+	//if (retval & STATUS_SM_FF_FLL_MSK) { This bit is high when a analog fifo is full Or when external stop
+	if (retval & STATUS_ANY_FF_FLL_MSK) { // if adc or digital fifo is full
+		FILE_LOG(logINFORED, ("Status: Error (Any fifo full)\n"));
 	    return ERROR;
 	}
 
@@ -2203,14 +2204,6 @@ enum runStatus getRunStatus(){
 	        return TRANSMITTING;
 	    }
 
-
-	   /* until Carlos updates firmware
-	    if (digitalEnable && !analogEnable) {
-	    	if (retval & STATUS_ALL_FF_EMPTY_MSK) {
-	    		FILE_LOG(logINFOBLUE, ("Status: Transmitting (All fifo empty)\n"));
-	    		return TRANSMITTING;
-	    	}
-	    }*/
 
 	    if (! (retval & STATUS_IDLE_MSK)) {
 	        FILE_LOG(logINFOBLUE, ("Status: Idle\n"));
@@ -2303,6 +2296,8 @@ void readSample(int ns) {
         // read strobe to all analog fifos
         bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
         bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
+        // wait as it is connected directly to fifo running on a different clock
+        usleep(WAIT_TIME_FIFO_RD_STROBE);
 
         // loop through all channels
         int ich = 0;
@@ -2337,6 +2332,8 @@ void readSample(int ns) {
         // read strobe to digital fifo
         bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
         bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+        // wait as it is connected directly to fifo running on a different clock
+        usleep(WAIT_TIME_FIFO_RD_STROBE);
 
         // read fifo and write it to current position of data pointer
         *((uint64_t*)now_ptr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
@@ -2344,21 +2341,36 @@ void readSample(int ns) {
     }
 }
 
+uint32_t checkDataInFifo() {
+	uint32_t dataPresent = 0;
+	if (analogEnable) {
+		uint32_t analogFifoEmpty = bus_r(FIFO_EMPTY_REG);
+		FILE_LOG(logDEBUG2, ("Analog Fifo Empty (32 channels): 0x%x\n", analogFifoEmpty));
+		dataPresent = (~analogFifoEmpty);
+	}
+	if (!dataPresent && digitalEnable) {
+		int digitalFifoEmpty = ((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
+		FILE_LOG(logDEBUG2, ("Digital Fifo Empty: %d\n",digitalFifoEmpty));
+		dataPresent = (digitalFifoEmpty ? 0 : 1);
+	}
+    FILE_LOG(logDEBUG2, ("Data in Fifo :0x%x\n", dataPresent));
+	return dataPresent;
+}
+
 // only called for first sample
-int checkDataPresent() {
-    uint32_t dataPresent = bus_r(LOOK_AT_ME_REG);
-    FILE_LOG(logDEBUG2, ("LookatMe:0x%x, status:0x%x\t, fifodinstatus:0x%x\n",
-			dataPresent,
-			bus_r(STATUS_REG),
-			bus_r(FIFO_DIN_STATUS_REG)));
-    // as long as fifo empty (keep checking)
+int checkFifoForEndOfAcquisition() {
+	uint32_t dataPresent = checkDataInFifo();
+    FILE_LOG(logDEBUG2, ("status:0x%x\n", bus_r(STATUS_REG)));
+
+    // as long as no data
     while (!dataPresent) {
         // acquisition done
         if (!runBusy()) {
-            usleep(WAIT_TME_US_FR_LK_AT_ME_REG);
-            dataPresent = bus_r(LOOK_AT_ME_REG);
+        	// wait to be sure there is no data in fifo
+            usleep(WAIT_TME_US_FR_ACQDONE_REG);
+
             // still no data
-            if (!dataPresent) {
+            if (!checkDataInFifo()) {
                 FILE_LOG(logINFO, ("Acquisition Finished (State: 0x%08x), "
                         "no frame found .\n", bus_r(STATUS_REG)));
                 return FAIL;
@@ -2368,10 +2380,10 @@ int checkDataPresent() {
                 break;
             }
         }
-        // check if fifo empty again
-        dataPresent = bus_r(LOOK_AT_ME_REG);
+        // check if data in fifo again
+        dataPresent = checkDataInFifo();
     }
-    FILE_LOG(logDEBUG2, ("Got data, Lookatme:0x%x\n", dataPresent));
+    FILE_LOG(logDEBUG2, ("Got data :0x%x\n", dataPresent));
     return OK;
 }
 
@@ -2381,7 +2393,7 @@ int readFrameFromFifo() {
 	now_ptr = ramValues;
 
     // no data for this frame
-    if (checkDataPresent() == FAIL) {
+    if (checkFifoForEndOfAcquisition() == FAIL) {
         return FAIL;
     }
 

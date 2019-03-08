@@ -946,8 +946,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 			dataProcessor.push_back(sls::make_unique<DataProcessor>(i, myDetectorType, fifo_ptr, &fileFormatType,
 	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &streamingFrequency, &streamingTimerInMs,
-					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
-	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady));
+					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode));
 	    }
 	    catch (...) {
 	         FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
@@ -1222,12 +1221,16 @@ void slsReceiverImplementation::registerCallBackRawDataReady(void (*func)(char* 
 		char*, uint32_t, void*),void *arg) {
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
+	for (const auto& it : dataProcessor)
+		it->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
 }
 
 void slsReceiverImplementation::registerCallBackRawDataModifyReady(void (*func)(char* ,
 		char*, uint32_t&, void*),void *arg) {
 	rawDataModifyReadyCallBack=func;
 	pRawDataReady=arg;
+	for (const auto& it : dataProcessor)
+		it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
 }
 
 

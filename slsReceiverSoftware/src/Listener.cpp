@@ -247,34 +247,23 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint64_t s) {
         memset(eth, 0, MAX_STR_LENGTH);
     }
 
-    // shutdown if any open
-    if(udpSocket){
-        udpSocket->ShutDownSocket();
-    }
-
     //create dummy socket
     try {
-    	udpSocket = sls::make_unique<genericSocket>(*udpPortNumber, genericSocket::UDP,
+    	genericSocket g(*udpPortNumber, genericSocket::UDP,
             generalData->packetSize, (strlen(eth)?eth:nullptr), generalData->headerPacketSize,
             *udpSocketBufferSize);
+
+        // doubled due to kernel bookkeeping (could also be less due to permissions)
+        *actualUDPSocketBufferSize = g.getActualUDPSocketBufferSize();
+        if (*actualUDPSocketBufferSize != (s*2)) {
+            *udpSocketBufferSize = temp;
+        }
+
     } catch (...) {
         FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber;
         return FAIL;
     }
 
-
-    // doubled due to kernel bookkeeping (could also be less due to permissions)
-    *actualUDPSocketBufferSize = udpSocket->getActualUDPSocketBufferSize();
-    if (*actualUDPSocketBufferSize != (s*2)) {
-        *udpSocketBufferSize = temp;
-    }
-
-
-    // shutdown socket
-    if(udpSocket){
-        udpSocketAlive = false;
-        udpSocket->ShutDownSocket();
-    }
 
     return OK;
 }

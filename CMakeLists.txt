@@ -37,7 +37,7 @@ option (SLS_USE_GUI "GUI" OFF)
 option (SLS_USE_TESTS "TESTS" ON)
 option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
 
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #Testing for minimum version for compilers
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

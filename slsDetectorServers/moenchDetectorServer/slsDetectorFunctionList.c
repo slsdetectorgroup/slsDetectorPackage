@@ -1356,13 +1356,13 @@ void configureSyncFrequency(enum CLKINDEX ind) {
 
     // sync is greater than current
     if (syncFreq > retval)  {
-        FILE_LOG(logINFO, ("\t--Configuring Sync Clock\n"));cprintf(BG_RED, "SETTING SYNC CLOCK!!!");
+        FILE_LOG(logINFO, ("\t--Configuring Sync Clock\n"));
         configure = 1;
     }
 
     // the others are both greater than current
     else if ((aFreq > retval && bFreq > retval)) {
-        FILE_LOG(logINFO, ("\t++Configuring Sync Clock\n"));cprintf(BG_RED, "\n\nSETTING SYNC CLOCK!!!\n\n");
+        FILE_LOG(logINFO, ("\t++Configuring Sync Clock\n"));
         configure = 1;
     }
 
@@ -1476,7 +1476,8 @@ uint64_t writePatternWord(int addr, uint64_t word) {
     // unset write strobe
     bus_w(reg, bus_r(reg) & (~PATTERN_CNTRL_WR_MSK));
 
-    return readPatternWord(addr);
+    return word;
+    //return readPatternWord(addr); // will start executing the pattern
 }
 
 int setPatternWaitAddress(int level, int addr) {
@@ -1918,9 +1919,10 @@ void unsetFifoReadStrobes() {
 
 void readSample(int ns) {
 	if (!(ns%1000)) {
-		FILE_LOG(logDEBUG2, ("Reading sample ns:%d (out of %d), fifodinstatus:0x%x\n",
+		FILE_LOG(logINFO, ("Reading sample ns:%d (out of %d), DigitalFifoEmpty:%d AnalogFifoEmptyReg:0x%x\n",
 				ns, nSamples,
-				bus_r(FIFO_DIN_STATUS_REG)));
+				((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
+				bus_r(FIFO_EMPTY_REG)));
 	}
 	uint32_t addr = DUMMY_REG;
 	uint32_t fifoAddr = FIFO_DATA_REG;

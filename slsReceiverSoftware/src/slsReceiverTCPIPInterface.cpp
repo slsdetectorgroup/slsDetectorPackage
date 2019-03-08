@@ -597,18 +597,20 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			if(ret == OK) {
 				if(receiver == nullptr){
 					receiver = new slsReceiverImplementation();
-					if(startAcquisitionCallBack)
-						receiver->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
-					if(acquisitionFinishedCallBack)
-						receiver->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,pAcquisitionFinished);
-					if(rawDataReadyCallBack)
-						receiver->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
-					if(rawDataModifyReadyCallBack)
-						receiver->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
 				}
 				myDetectorType = arg;
 				ret = receiver->setDetectorType(myDetectorType);
 				retval = myDetectorType;
+
+				// callbacks after (in setdetectortype, the object is reinitialized)
+				if(startAcquisitionCallBack)
+					receiver->registerCallBackStartAcquisition(startAcquisitionCallBack,pStartAcquisition);
+				if(acquisitionFinishedCallBack)
+					receiver->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,pAcquisitionFinished);
+				if(rawDataReadyCallBack)
+					receiver->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
+				if(rawDataModifyReadyCallBack)
+					receiver->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
 
 				// client has started updating receiver, update ip
 				if (!lockStatus)

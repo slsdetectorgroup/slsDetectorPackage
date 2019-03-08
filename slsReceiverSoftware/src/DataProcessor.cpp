@@ -26,10 +26,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		fileFormat* ftype, bool fwenable,
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
-		bool* fp, bool* act, bool* depaden, bool* sm,
-		void (*dataReadycb)(char*, char*, uint32_t, void*),
-		void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
-		void *pDataReadycb) :
+		bool* fp, bool* act, bool* depaden, bool* sm) :
 
 		ThreadObject(ind),
 		runningFlag(0),
@@ -56,10 +53,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		firstMeasurementIndex(0),
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
-		currentFrameIndex(0),
-		rawDataReadyCallBack(dataReadycb),
-		rawDataModifyReadyCallBack(dataModifyReadycb),
-		pRawDataReady(pDataReadycb)
+		currentFrameIndex(0)
 {
      if(ThreadObject::CreateThread() == FAIL)
          throw std::exception();
@@ -433,6 +427,19 @@ void DataProcessor::SetPixelDimension() {
 		}
 	}
 }
+
+void DataProcessor::registerCallBackRawDataReady(void (*func)(char* ,
+		char*, uint32_t, void*),void *arg) {
+	rawDataReadyCallBack=func;
+	pRawDataReady=arg;
+}
+
+void DataProcessor::registerCallBackRawDataModifyReady(void (*func)(char* ,
+		char*, uint32_t&, void*),void *arg) {
+	rawDataModifyReadyCallBack=func;
+	pRawDataReady=arg;
+}
+
 
 
 void DataProcessor::PadMissingPackets(char* buf) {

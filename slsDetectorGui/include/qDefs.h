@@ -218,7 +218,7 @@ public:
 			qDefs::Message((MessageIndex)errorLevel,retval,title);
 		}
 
-		myDet->clearAllErrorMask();
+		myDet->clearModuleErrorMask();
 		return retval;
 	};
 
@@ -226,11 +226,12 @@ public:
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 	/**gets error mask and displays the message if it exists
-	 * @param myDet is the slsdetector object
+	 * @param myDet is the multidetector object
+	 * @param modIndex module index
 	 * @param show to display the error message
 		 /returns error message else an empty string
 	 * */
-	static std::string checkErrorMessage(slsDetector*& myDet, std::string title = "Main", bool show = true){
+	static std::string checkErrorMessage(multiSlsDetector*& myDet, int modIndex, std::string title = "Main", bool show = true){
 
 
 		int errorLevel= (int)WARNING;
@@ -238,8 +239,8 @@ public:
 		size_t pos;
 		int64_t emask=0;
 
-		emask = myDet->getErrorMask();
-		std::string retval = myDet->getErrorMessage(emask);
+		emask = myDet->getModuleErrorMask(modIndex);
+		std::string retval = errorDefs::getErrorMessage(emask);
 
 		if(!retval.empty()){
 			//replace all \n with <br>
@@ -261,7 +262,7 @@ public:
 				qDefs::Message((MessageIndex)errorLevel,retval,title);
 		}
 
-		myDet->clearErrorMask();
+		myDet->clearModuleErrorMask(modIndex);
 
 		return retval;
 	};

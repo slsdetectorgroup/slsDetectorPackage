@@ -50,10 +50,6 @@ void qTabSettings::SetupWidgetWindow() {
     lblThreshold->setEnabled(false);
     spinThreshold->setEnabled(false);
 
-    // Number of Modules
-    spinNumModules->setMaximum(myDet->getNumberOfDetectors());
-    spinNumModules->setValue(myDet->getNumberOfDetectors());
-
     Initialization();
 
     // Dynamic Range
@@ -221,8 +217,6 @@ void qTabSettings::Initialization() {
     // Settings
     if (detType != slsDetectorDefs::CHIPTESTBOARD)
         connect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(setSettings(int)));
-    // Number of Modules
-    connect(spinNumModules, SIGNAL(valueChanged(int)), this, SLOT(SetNumberOfModules(int)));
     // Dynamic Range
     connect(comboDynamicRange, SIGNAL(activated(int)), this, SLOT(SetDynamicRange(int)));
     // Threshold
@@ -267,22 +261,6 @@ void qTabSettings::setSettings(int index) {
     qDefs::checkErrorMessage(myDet, "qTabSettings::setSettings");
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-// void qTabSettings::SetNumberOfModules(int index){
-// #ifdef VERBOSE
-// 	std::cout << "Setting number of modules to "<< index << '\n';
-// #endif
-// 	int i = myDet->setNumberOfModules(index);
-// 	if(index!=i)
-// 		qDefs::Message(qDefs::WARNING,"Number of modules cannot be set for this value.","qTabSettings::SetNumberOfModules");
-// #ifdef VERBOSE
-// 	std::cout << "ERROR: Setting number of modules to "<< i << '\n';
-// #endif
-// 	spinNumModules->setValue(i);
-
-// 	qDefs::checkErrorMessage(myDet,"qTabSettings::SetNumberOfModules");
-// }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -342,18 +320,7 @@ void qTabSettings::Refresh() {
 
     if (detType != slsDetectorDefs::CHIPTESTBOARD)
         disconnect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(setSettings(int)));
-    disconnect(spinNumModules, SIGNAL(valueChanged(int)), this, SLOT(SetNumberOfModules(int)));
     disconnect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetEnergy()));
-
-    // Number of Modules
-#ifdef VERBOSE
-    std::cout << "Getting number of modules:";
-#endif
-    int numMod = myDet->getNumberOfDetectors();
-#ifdef VERBOSE
-    std::cout << numMod << '\n';
-#endif
-    spinNumModules->setValue(numMod);
 
     // Dynamic Range
     GetDynamicRange();
@@ -391,7 +358,6 @@ void qTabSettings::Refresh() {
 
     if (detType != slsDetectorDefs::CHIPTESTBOARD)
         connect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(setSettings(int)));
-    connect(spinNumModules, SIGNAL(valueChanged(int)), this, SLOT(SetNumberOfModules(int)));
     connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetEnergy()));
 
 #ifdef VERBOSE

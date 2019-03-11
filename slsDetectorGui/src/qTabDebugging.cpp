@@ -133,7 +133,7 @@ void qTabDebugging::UpdateModuleList() {
         comboModule->addItem(QString("Module %1").arg(i));
     }
 
-    // qDefs::checkErrorMessage(det,"qTabDebugging::UpdateModuleList");
+    // qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(),"qTabDebugging::UpdateModuleList");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ void qTabDebugging::UpdateStatus() {
     std::string status = slsDetectorDefs::runStatusType(slsDetectorDefs::runStatus(detStatus));
     lblStatus->setText(QString(status.c_str()).toUpper());
 
-    // qDefs::checkErrorMessage(det,"qTabDebugging::UpdateStatus");
+    // qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(),"qTabDebugging::UpdateStatus");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ void qTabDebugging::GetInfo() {
         // 		for(int j=0;j<det->getNMods();j++)
         // 			childItems.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Module %1").arg(j))));
         // 		treeDet->topLevelItem(i)->insertChildren(0,childItems);
-        // 		qDefs::checkErrorMessage(det,"qTabDebugging::GetInfo");
+        // 		qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(),"qTabDebugging::GetInfo");
         // 	}
 
         // 	break;
@@ -436,7 +436,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item) {
             sprintf(value, "%llx", (long long unsigned int)myDet->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, module_id));
             lblDetectorSoftware->setText(QString(value));
 
-            qDefs::checkErrorMessage(det, "qTabDebugging::SetParameters");
+            qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabDebugging::SetParameters");
         }
         break;
 
@@ -461,7 +461,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item) {
         sprintf(value, "%llx", (long long unsigned int)myDet->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, module_id));
         lblDetectorSoftware->setText(QString(value));
 
-        qDefs::checkErrorMessage(det, "qTabDebugging::SetParameters");
+        qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabDebugging::SetParameters");
         break;
 
     default:
@@ -569,7 +569,7 @@ void qTabDebugging::TestDetector() {
     //display message
     qDefs::Message(qDefs::INFORMATION, message.toAscii().constData(), "qTabDebugging::TestDetector");
 
-    // qDefs::checkErrorMessage(det,"qTabDebugging::TestDetector");
+    // qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(),"qTabDebugging::TestDetector");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

@@ -142,7 +142,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     std::cout << "DataOutput ready" << '\n';
     tab_plot = new qTabPlot(this, myDet, myPlot);
     std::cout << "Plot ready" << '\n';
-    // tab_actions			=  new qTabActions		(this,	myDet);				cout<<"Actions ready"<<'\n';
     tab_settings = new qTabSettings(this, myDet);
     std::cout << "Settings ready" << '\n';
     tab_advanced = new qTabAdvanced(this, myDet, myPlot);
@@ -164,7 +163,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     scroll[Measurement]->setWidget(tab_measurement);
     scroll[DataOutput]->setWidget(tab_dataoutput);
     scroll[Plot]->setWidget(tab_plot);
-    // scroll[Actions]		->setWidget(tab_actions);
     scroll[Settings]->setWidget(tab_settings);
     scroll[Advanced]->setWidget(tab_advanced);
     scroll[Debugging]->setWidget(tab_debugging);
@@ -173,7 +171,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->insertTab(Measurement, scroll[Measurement], "Measurement");
     tabs->insertTab(DataOutput, scroll[DataOutput], "Data Output");
     tabs->insertTab(Plot, scroll[Plot], "Plot");
-    // tabs->insertTab(Actions, scroll[Actions], "Actions");
     tabs->insertTab(Settings, scroll[Settings], "Settings");
     tabs->insertTab(Advanced, scroll[Advanced], "Advanced");
     tabs->insertTab(Debugging, scroll[Debugging], "Debugging");
@@ -186,7 +183,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->tabBar()->moveTab(tabs->indexOf(tab_settings), Settings);
     tabs->tabBar()->moveTab(tabs->indexOf(tab_dataoutput), DataOutput);
     tabs->tabBar()->moveTab(tabs->indexOf(tab_plot), Plot);
-    // tabs->tabBar()->moveTab(tabs->indexOf(tab_actions),		Actions);
     tabs->tabBar()->moveTab(tabs->indexOf(tab_advanced), Advanced);
     tabs->tabBar()->moveTab(tabs->indexOf(tab_debugging), Debugging);
     tabs->tabBar()->moveTab(tabs->indexOf(tab_developer), Developer);
@@ -211,8 +207,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->setTabEnabled(Developer, isDeveloper);
     actionLoadTrimbits->setVisible(false);
     actionSaveTrimbits->setVisible(false);
-    actionLoadCalibration->setVisible(false);
-    actionSaveCalibration->setVisible(false);
 
     dockWidgetPlot->setFloating(false);
     dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -308,22 +302,15 @@ void qDetectorMain::Initialization() {
     connect(tab_measurement, SIGNAL(StartSignal()), this, SLOT(EnableTabs()));
     connect(tab_measurement, SIGNAL(StopSignal()), myPlot, SLOT(StopAcquisition()));
     connect(tab_measurement, SIGNAL(CheckPlotIntervalSignal()), tab_plot, SLOT(SetFrequency()));
-    // Data Output Tab
-    // connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_actions,SLOT(EnablePositions(bool)));
-    //enable scanbox( for angles)
-    connect(tab_dataoutput, SIGNAL(AngularConversionSignal(bool)), tab_plot, SLOT(EnableScanBox()));
-    // Plot tab
+     // Plot tab
     connect(tab_plot, SIGNAL(DisableZoomSignal(bool)), this, SLOT(SetZoomToolTip(bool)));
-    // Actions tab (only for scan)
-    // connect(tab_actions,		SIGNAL(EnableScanBox()),			tab_plot,SLOT(EnableScanBox()));
     //settings to advanced tab(int is always 0 to only refresh)
     connect(tab_settings, SIGNAL(UpdateTrimbitSignal(int)), tab_advanced, SLOT(UpdateTrimbitPlot(int)));
+
     // Plotting
     // When the acquisition is finished, must update the meas tab
     connect(myPlot, SIGNAL(UpdatingPlotFinished()), this, SLOT(EnableTabs()));
     connect(myPlot, SIGNAL(UpdatingPlotFinished()), tab_measurement, SLOT(UpdateFinished()));
-    //This should not be called as it will change file name to measurement when run finished
-    //connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_plot,			SLOT(Refresh()));
     connect(myPlot, SIGNAL(SetCurrentMeasurementSignal(int)), tab_measurement, SLOT(SetCurrentMeasurement(int)));
 
     // menubar
@@ -376,11 +363,7 @@ void qDetectorMain::EnableModes(QAction *action) {
     if (action == actionListenGuiClient) {
 
         myServer->StartStopServer(actionListenGuiClient->isChecked());
-
-        //disconnect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
-        //actionListenGuiClient->setChecked(myServer->StartStopServer(actionListenGuiClient->isChecked()));
-        //connect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
-    }
+     }
     //Set DebugMode
     else if (action == actionDebug) {
         enable = actionDebug->isChecked();
@@ -397,8 +380,6 @@ void qDetectorMain::EnableModes(QAction *action) {
         tabs->setTabEnabled(Advanced, enable);
         actionLoadTrimbits->setVisible(enable);
         actionSaveTrimbits->setVisible(enable);
-        actionLoadCalibration->setVisible(enable);
-        actionSaveCalibration->setVisible(enable);
         tab_measurement->SetExpertMode(enable);
         tab_settings->SetExpertMode(enable);
 #ifdef VERBOSE
@@ -576,45 +557,6 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                 qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
             }
         }
-    } else if (action == actionLoadCalibration) {
-#ifdef VERBOSE
-        std::cout << "Loading Calibration Data" << '\n';
-#endif
-        // QString fName = QString( (myDet->getCalDir()).c_str() );
-        // do we have a caldir?
-        // qDefs::checkErrorMessage(myDet);
-
-        // //so that even nonexisting files can be selected
-        // QFileDialog	*fileDialog = new QFileDialog(this,
-        // 		tr("Load Detector Calibration Data"),fName,
-        // 		tr("Calibration files (*.cal calibration.sn*);;All Files(*)"));
-        // fileDialog->setFileMode(QFileDialog::AnyFile );
-        // if ( fileDialog->exec() == QDialog::Accepted )
-        // 	fName = fileDialog->selectedFiles()[0];
-
-        // // Gets called when cancelled as well
-        // if (!fName.isEmpty()){
-        // 	if(myDet->loadCalibrationFile(std::string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
-        // 		qDefs::Message(qDefs::INFORMATION,"The Calibration Data have been loaded successfully.","qDetectorMain::ExecuteUtilities");
-        // 	else qDefs::Message(qDefs::WARNING,string("Could not load the Calibration data from file:\n")+ fName.toAscii().constData(),"qDetectorMain::ExecuteUtilities");
-        // 	qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
-        // }
-    } else if (action == actionSaveCalibration) {
-#ifdef VERBOSE
-        std::cout << "Saving Calibration Data" << '\n';
-#endif //different output directory so as not to overwrite                                                                                                             \
-       // QString fName = QString( (myDet->getCalDir()).c_str()  );                                                                                                    \
-       // qDefs::checkErrorMessage(myDet);                                                                                                                             \
-       // fName = QFileDialog::getSaveFileName(this,                                                                                                                   \
-       // 		tr("Save Current Detector Calibration Data"),fName,                                                                                                        \
-       // 		tr("Calibration files (*.cal calibration.sn*);;All Files(*) "));                                                                                           \
-       // // Gets called when cancelled as well                                                                                                                        \
-       // if (!fName.isEmpty()){                                                                                                                                       \
-       // 	if(myDet->saveCalibrationFile(std::string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)                                                               \
-       // 		qDefs::Message(qDefs::INFORMATION,"The Calibration Data have been saved successfully.","qDetectorMain::ExecuteUtilities");                                 \
-       // 	else qDefs::Message(qDefs::WARNING,string("Could not save the Calibration data to file:\n")+fName.toAscii().constData(),"qDetectorMain::ExecuteUtilities"); \
-       // 	qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");                                                                                          \
-       // }
     }
 
     Refresh(tabs->currentIndex());
@@ -776,8 +718,6 @@ void qDetectorMain::EnableTabs() {
     tabs->setTabEnabled(Advanced, expertTab);
     actionLoadTrimbits->setVisible(expertTab);
     actionSaveTrimbits->setVisible(expertTab);
-    actionLoadCalibration->setVisible(expertTab);
-    actionSaveCalibration->setVisible(expertTab);
 
     //moved to here, so that its all in order, instead of signals and different threads
     if (!enable) {

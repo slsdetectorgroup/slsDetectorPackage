@@ -19,7 +19,7 @@
 
 
 qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
-				  QWidget(parent),myDet(detector),myPlot(plot),btnGroup(NULL),isEnergy(false),isAngular(false),
+				  QWidget(parent),myDet(detector),myPlot(plot),btnGroup(NULL),isEnergy(false),
 				  lblFromX(0),
 				  spinFromX(0),
 				  lblFromY(0),
@@ -61,11 +61,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 	red = QPalette();
 	red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
-	outputDirTip = dispFile->toolTip();
-	errOutputTip = QString("<br><br><font color=\"red\"><nobr>"
-			"<b>Output Trim File</b> should contain both existing directory and a file name.</nobr><br>"
-			"<nobr>The extensions are automatically added.</nobr><br><br>"
-			"<nobr>Enter valid<b> Output Trim File</b> to enable <b>Start Trimming</b> button.</nobr></font>");
 	detOnlineTip = comboOnline->toolTip();
 	rxrOnlineTip = comboRxrOnline->toolTip();
 	errOnlineTip = QString("<nobr><br><br><font color=\"red\"><nobr>It is offline!</nobr></font>");
@@ -82,7 +77,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 	switch(detType){
 	case slsDetectorDefs::EIGER:
 		isEnergy = true;
-		isAngular = false;
 		lblIP->setEnabled(true);
 		lblMAC->setEnabled(true);
 		dispIP->setEnabled(true);
@@ -98,7 +92,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 		break;
 	case slsDetectorDefs::MOENCH:
 		isEnergy = false;
-		isAngular = false;
 		lblIP->setEnabled(true);
 		lblMAC->setEnabled(true);
 		dispIP->setEnabled(true);
@@ -107,7 +100,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 		break;
 	case slsDetectorDefs::GOTTHARD:
 		isEnergy = false;
-		isAngular = true;
 		lblIP->setEnabled(true);
 		lblMAC->setEnabled(true);
 		dispIP->setEnabled(true);
@@ -117,7 +109,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 	case slsDetectorDefs::JUNGFRAU:
 	case slsDetectorDefs::CHIPTESTBOARD:
 		isEnergy = false;
-		isAngular = false;
 		lblIP->setEnabled(true);
 		lblMAC->setEnabled(true);
 		dispIP->setEnabled(true);
@@ -128,24 +119,15 @@ void qTabAdvanced::SetupWidgetWindow(){
 	}
 
 
-	//logs and trimming
-	// if(!isAngular && !isEnergy) boxLogs->setEnabled(false);
-	// else{
-	// 	if(!isAngular) 	chkAngularLog->setEnabled(false);
-	// 	if(!isEnergy){
-	// 		chkEnergyLog->setEnabled(false);
-	// 		boxPlot->setEnabled(false);
-	// 		boxTrimming->setEnabled(false);
-	// 	}else{
-	// 		boxTrimming->setChecked(false);
-	// 		SetOptimize(false);
+	// logs and trimming
+	if(!isEnergy){
+		boxPlot->setEnabled(false);
+	}else{
+		btnGroup = new QButtonGroup(this);
+		btnGroup->addButton(btnRefresh,0);
+		btnGroup->addButton(btnGetTrimbits,1);
+	}
 
-	// 		btnGroup = new QButtonGroup(this);
-	// 		btnGroup->addButton(btnRefresh,0);
-	// 		btnGroup->addButton(btnGetTrimbits,1);
-	// 	}
-	// }
-	// trimmingMode = slsDetectorDefs::NOISE_TRIMMING;
 
 	//network
 
@@ -155,7 +137,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 	comboDetector->setCurrentIndex(0);
 	int module_id = comboDetector->currentIndex();
-	// det = myDet->getSlsDetector(comboDetector->currentIndex());
 
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetupWidgetWindow");
 	cout << "Getting ports" << endl;
@@ -232,8 +213,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 	Initialization();
 
-	//TOTO! fix error message
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetupWidgetWindow");
+	qDefs::checkErrorMessage(myDet, module_id,"qTabAdvanced::SetupWidgetWindow");
 
 }
 
@@ -245,39 +225,10 @@ void qTabAdvanced::Initialization(){
 
 	connect(tabAdvancedSettings,SIGNAL(currentChanged(int)),	this, SLOT(Refresh()));
 
-	//energy/angular logs
-	if(isAngular)
-		connect(chkEnergyLog,	SIGNAL(toggled(bool)),		this,	SLOT(SetLogs()));
-
 	if(isEnergy){
-		connect(chkAngularLog,	SIGNAL(toggled(bool)),		this,	SLOT(SetLogs()));
-
-		//exptime
-		connect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
-		connect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
-
-		//threshold dac
-		connect(spinThreshold,	SIGNAL(valueChanged(double)),	this,	SLOT(SetThreshold()));
-
-		//output directory
-		connect(dispFile,		SIGNAL(editingFinished()),		this, SLOT(SetOutputFile()));
-		connect(btnFile,		SIGNAL(clicked()), 				this, SLOT(BrowseOutputFile()));
-
 		//setalltrimbits
 		if(boxSetAllTrimbits->isEnabled())
 			connect(spinSetAllTrimbits,	SIGNAL(editingFinished()),	this,	SLOT(SetAllTrimbits()));
-
-		//enable trimming method group box
-		// connect(boxTrimming,	SIGNAL(toggled(bool)),	this, SLOT(EnableTrimming(bool)));
-
-		//trimming method combo
-		connect(comboMethod,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetTrimmingMethod(int)));
-
-		//method options
-		connect(chkOptimize,	SIGNAL(toggled(bool)),	this, SLOT(SetOptimize(bool)));
-
-		//start Trimming
-		connect(btnStart,		SIGNAL(clicked()),	this, SLOT(StartTrimming()));
 
 		//refresh
 		connect(btnGroup,		SIGNAL(buttonClicked(int)),	this, SLOT(UpdateTrimbitPlot(int)));
@@ -289,25 +240,23 @@ void qTabAdvanced::Initialization(){
 	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
-	// if(detType!=slsDetectorDefs::MYTHEN){
+	//network
+	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+	connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+	connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+	connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
+	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
 
-	// 	//network
-	// 	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
-	// 	connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
-	// 	connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
-	// 	connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
-	// 	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 
-	// 	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 
-	// 	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
-	// 	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
+	connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
 
-	// 	connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
-	// }
 
 
 	//roi
@@ -335,373 +284,14 @@ void qTabAdvanced::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabAdvanced::SetLogs(){
-// 	QCheckBox *checkedBox = qobject_cast<QCheckBox *>(sender());
-// 	int index = ((!checkedBox->text().compare("Energy Calibration"))?slsDetectorDefs::enCalLog:slsDetectorDefs::angCalLog);
-// 	bool enable = checkedBox->isChecked();
-// #ifdef VERBOSE
-// 	if(index==slsDetectorDefs::enCalLog)
-// 		cout << "Setting Energy Calibration Logs to " << enable << endl;
-// 	else
-// 		cout << "Setting Angular Calibration Logs to " << enable << endl;
-// #endif
-// 	//set/unset the log
-// 	myDet->setAction(index,(enable?"set":"none"));
-// 	//verify
-// 	if(myDet->getActionMode(index)!=(enable)){
-// #ifdef VERBOSE
-// 	cout << "Could not set/reset Log." << endl;
-// #endif
-// 		qDefs::Message(qDefs::WARNING,"Could not set/reset Log.","qTabAdvanced::SetLogs");
-// 		checkedBox->setChecked(!enable);
-// 	}
-
-	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetLogs");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabAdvanced::SetExposureTime(){
-	//Get the value of timer in ns
-	double exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
-#ifdef VERBOSE
-	cout << "Setting Exposure Time to " << exptimeNS << " clocks" << "/" << spinExpTime->value() << qDefs::getUnitString((qDefs::timeUnit)comboExpUnit->currentIndex()) << endl;
-#endif
-	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,(int64_t)exptimeNS);
-
-	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetExposureTime");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabAdvanced::SetThreshold(){
-#ifdef VERBOSE
-	cout << "Setting Threshold DACu:" << spinThreshold->value() << endl;
-#endif
-	spinThreshold->setValue((double)myDet->setDAC((int)spinThreshold->value(),slsDetectorDefs::THRESHOLD,0));
-	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetThreshold");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabAdvanced::SetOutputFile(){
-#ifdef VERBOSE
-	cout << "Setting Output File for Trimming:" << endl;
-#endif
-	QString dirPath = dispFile->text().section('/',0,-2,QString::SectionIncludeLeadingSep);
-	cout << "Directory:" << dirPath.toAscii().constData() << "." << endl;
-	QString fName = dispFile->text().section('/',-1);
-	cout << "File Name:" << fName.toAscii().constData() << "." << endl;
-	//checks if directory exists and file name is not empty
-	if((QFile::exists(dirPath))&&(!fName.isEmpty())){
-
-		dispFile->setToolTip(outputDirTip);
-		lblFile->setToolTip(outputDirTip);
-		lblFile->setPalette(lblExpTime->palette());
-		lblFile->setText("Output Trim File: ");
-		btnStart->setEnabled(true);
-
-
-		//check if you're overwriting original trimsettings
-		QDir dir;
-		//gets the clean absolute path
-		dirPath = dir.absoluteFilePath(dirPath);
-		dirPath = dir.cleanPath(dirPath);
-		QString trimdir = QString::fromStdString(myDet->getSettingsFile()).section('/',0,-2,QString::SectionIncludeLeadingSep);
-		trimdir = dir.absoluteFilePath(trimdir);
-		trimdir = dir.cleanPath(trimdir);
-		if(!dirPath.compare(trimdir)){
-			int ret = qDefs::Message(qDefs::QUESTION,std::string("<nobr>This will possibly overwrite your original trimbits.</nobr><br>"
-					"<nobr>Proposed file path:") + std::string(dirPath.toAscii().constData())+
-					std::string("</nobr><br><nobr>Do you still want to continue?</nobr>"),"qTabAdvanced::SetOutputFile");
-			if(ret==qDefs::FAIL){
-				dispFile->setText("");
-				dispFile->setToolTip(outputDirTip + errOutputTip);
-				lblFile->setToolTip(outputDirTip + errOutputTip);
-				lblFile->setPalette(red);
-				lblFile->setText("Output Trim File:*");
-				btnStart->setEnabled(false);
-			}
-		}
-
-	}//if the directory doesnt exist or if file name is empty
-	else{
-		cout<<"Invalid Trimming output File"<<endl;
-		dispFile->setToolTip(outputDirTip + errOutputTip);
-		lblFile->setToolTip(outputDirTip + errOutputTip);
-		lblFile->setPalette(red);
-		lblFile->setText("Output Trim File:*");
-		btnStart->setEnabled(false);
-	}
-
-	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetOutputFile");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabAdvanced::BrowseOutputFile(){
-#ifdef VERBOSE
-	cout << "Browsing Output Dir for Trimming" << endl;
-#endif
-	QString fName = dispFile->text();
-	//dialog
-	QFileDialog	*fileDialog = new QFileDialog(this,
-			tr("Save Trimbits"),fName,
-			tr("Trimbit files (*.trim noise.sn*);;All Files(*) "));
-	fileDialog->setFileMode(QFileDialog::AnyFile );
-    if ( fileDialog->exec() == QDialog::Accepted )
-    	fName = fileDialog->selectedFiles()[0];
-
-	//if empty, set the file name and it calls SetFileSteps, else ignore
-	if (!fName.isEmpty()){
-		dispFile->setText(fName);
-		SetOutputFile();
-	}
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-// void qTabAdvanced::EnableTrimming(bool enable){
-// #ifdef VERBOSE
-// 	cout << "Enable Trimming set to:" << enable << endl;
-// #endif
-// 	if(enable){
-// 		//show error label if invalid output dir
-// 		SetOutputFile();
-// 		SetTrimmingMethod(comboMethod->currentIndex());
-// 	}else{
-// 		//error label shouldnt show when disabled
-// 		dispFile->setToolTip(outputDirTip);
-// 		lblFile->setToolTip(outputDirTip);
-// 		lblFile->setPalette(lblExpTime->palette());
-// 		lblFile->setText("Output Trim File: ");
-// 	}
-// }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-void qTabAdvanced::SetOptimize(bool enable){
-#ifdef VERBOSE
-	cout << "Setting Optimize to:" << enable << endl;
-#endif
-	//trimming method is adjust to count
-	if(!comboMethod->currentIndex()){
-		lblCounts->setEnabled(true);
-		spinCounts->setEnabled(true);
-		lblResolution->setEnabled(enable);
-		spinResolution->setEnabled(enable);
-	}//trimming method is equalize to median
-	else{
-		lblCounts->setEnabled(false);
-		spinCounts->setEnabled(false);
-		lblResolution->setEnabled(true);
-		spinResolution->setEnabled(true);
-	}
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-// void qTabAdvanced::SetTrimmingMethod(int mode){
-// #ifdef VERBOSE
-// 	cout << "Setting Trimming method to :" << mode << endl;
-// #endif
-// 	//make sure the right resolution/Counts is enabled
-// 	SetOptimize(chkOptimize->isChecked());
-
-// 	//set mode
-// 	switch(mode){
-// 	case 0: trimmingMode = slsDetectorDefs::NOISE_TRIMMING; 	break;
-// 	case 1:	trimmingMode = slsDetectorDefs::IMPROVE_TRIMMING;	break;
-// 	}
-// }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-// int qTabAdvanced::validateBeforeTrimming(){
-// #ifdef VERBOSE
-// 	cout << "Validating conditions before Trimming" << endl;
-// #endif
-// 	char temp[100];
-// 	string message = "<nobr>All conditions satisfied for Trimming.</nobr><br>";
-// 	switch(detType){
-// 	case slsDetectorDefs::MYTHEN:
-
-// 		//dynamic range
-// 		if(myDet->setDynamicRange(-1) != TRIMMING_DYNAMIC_RANGE){
-// 			sprintf(temp,"%d",TRIMMING_DYNAMIC_RANGE);
-// 			if(myDet->setDynamicRange(TRIMMING_DYNAMIC_RANGE) != TRIMMING_DYNAMIC_RANGE){
-// 				qDefs::Message(qDefs::WARNING,
-// 						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
-// 								"<nobr>Could not set dynamic range to ") + string(temp)+string(".</nobr><br>"
-// 										"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
-// 				return slsDetectorDefs::FAIL;
-// 			}else
-// 				message.append(string("<nobr><b>Dynamic Range</b> has been changed to ") + string(temp) + string(".<nobr><br>"));
-// 		}
-// 		//frames
-// 		if((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1) != TRIMMING_FRAME_NUMBER){
-// 			sprintf(temp,"%d",TRIMMING_FRAME_NUMBER);
-// 			if((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,TRIMMING_FRAME_NUMBER) != TRIMMING_FRAME_NUMBER){
-// 				qDefs::Message(qDefs::WARNING,
-// 						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
-// 								"<nobr>Could not set <b>Number of Frames</b> to ") + string(temp)+string(".</nobr><br>"
-// 										"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
-// 				return slsDetectorDefs::FAIL;
-// 			}else
-// 				message.append(string("<nobr><b>Number of Frames</b> has been changed to ") + string(temp) + string(".<nobr><br>"));
-// 		}
-// 		//trigger
-// 		if((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1) != TRIMMING_TRIGGER_NUMBER){
-// 			sprintf(temp,"%d",TRIMMING_TRIGGER_NUMBER);
-// 			if((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,TRIMMING_TRIGGER_NUMBER) != TRIMMING_TRIGGER_NUMBER){
-// 				qDefs::Message(qDefs::WARNING,
-// 						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
-// 								"<nobr>Could not set <b>Number of Triggers</b> to ") + string(temp)+string(".</nobr><br>"
-// 										"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
-// 				return slsDetectorDefs::FAIL;
-// 			}else
-// 				message.append(string("<nobr><b>Number of Triggers</b> has been changed to ") + string(temp) + string(".<nobr><br>"));
-// 		}
-// 		//probes
-// 		if((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1) != TRIMMING_PROBE_NUMBER){
-// 			sprintf(temp,"%d",TRIMMING_PROBE_NUMBER);
-// 			if((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,TRIMMING_PROBE_NUMBER) != TRIMMING_PROBE_NUMBER){
-// 				qDefs::Message(qDefs::WARNING,
-// 						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
-// 								"<nobr>Could not set <b>Number of Probes</b> to ") + string(temp)+string(".</nobr><br>"
-// 										"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
-// 				return slsDetectorDefs::FAIL;
-// 			}else
-// 				message.append(string("<nobr><b>Number of Probes</b> has been changed to ") + string(temp) + string(".<nobr><br>"));
-// 		}
-// 		//Setting
-// 		if(myDet->getSettings() == slsDetectorDefs::UNINITIALIZED){
-// 			if(qDefs::Message(qDefs::QUESTION,
-// 					string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>")+
-// 					string("<nobr><b>Settings</b> cannot be <b>Uninitialized</b> to start Trimming.</nobr><br>"
-// 							"Change it to <b>Standard</b> and proceed?"),"qTabAdvanced::validateBeforeTrimming") == slsDetectorDefs::FAIL){
-// 				qDefs::Message(qDefs::INFORMATION,
-// 						"<nobr>Please change the <b>Settings</b> in the Settings tab to your choice.</nobr><br>"
-// 						"Aborting Trimming.","qTabAdvanced::validateBeforeTrimming");
-// 				return slsDetectorDefs::FAIL;
-// 			}
-// 			//user asked to change settings to standard
-// 			else{
-// 				if((int)myDet->setSettings(slsDetectorDefs::STANDARD) != slsDetectorDefs::STANDARD){
-// 					qDefs::Message(qDefs::WARNING,
-// 							string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
-// 									"<nobr>Could not change <b>Settings</b> to <b>Standard</b></nobr><br>"
-// 									"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
-// 					return slsDetectorDefs::FAIL;
-// 				}else
-// 					message.append(string("<nobr><b>Settings</b> has been changed to Standard.<nobr><br>"));
-// 			}
-// 		}
-// 		break;
-// 	default:
-// 		return slsDetectorDefs::FAIL;
-
-// 	}
-
-// 	message.append("<nobr>Initiating Trimming...</nobr>");
-// 	qDefs::Message(qDefs::INFORMATION,message,"qTabAdvanced::validateBeforeTrimming");
-// 	return slsDetectorDefs::OK;
-
-// }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-// void qTabAdvanced::StartTrimming(){
-// 	//check a few conditions before trimming
-// 	if(validateBeforeTrimming() == slsDetectorDefs::FAIL)
-// 		return;
-
-// #ifdef VERBOSE
-// 	cout << "Starting Trimming" << endl;
-// #endif
-// 	int parameter1=0, parameter2=0;
-// 	//optimize
-// 	bool optimize = chkOptimize->isChecked();
-
-// 	//set the mode again and also set resolution, counts
-// 	switch(trimmingMode){
-
-// 	case slsDetectorDefs::NOISE_TRIMMING:
-// 		//define parameters
-// 		parameter1 = spinCounts->value();
-// 		parameter2 = spinResolution->value();
-// 		if(!optimize){
-// 			parameter2 = -1;
-// 			trimmingMode = slsDetectorDefs::FIXEDSETTINGS_TRIMMING;
-// #ifdef VERBOSE
-// 			cout << "Trimming Mode: FIXEDSETTINGS_TRIMMING" << endl;
-// #endif
-// 		}else{
-// #ifdef VERBOSE
-// 			cout << "Trimming Mode: NOISE_TRIMMING" << endl;
-// #endif
-// 		}
-// 		break;
-
-// 	case slsDetectorDefs::IMPROVE_TRIMMING:
-// #ifdef VERBOSE
-// 			cout << "Trimming Mode: IMPROVE_TRIMMING" << endl;
-// #endif
-// 		//define parameters
-// 		parameter1 = spinResolution->value();
-// 		parameter2 = 1;
-// 		if(!optimize)	parameter2 = 0;
-// 		break;
-// 	default:
-// 		cout << "Should never come here. Start Trimming will have only 2 methods. Trimming Method:" << trimmingMode << endl;
-// 		return;
-// 	}
-
-// 	//execute
-// 	int ret = myDet->executeTrimming(trimmingMode,parameter1,parameter2,-1);
-
-// 	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1));
-// 	else
-// 	   qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","qTabAdvanced::StartTrimming");
-// 	//save trim file
-// 	ret = myDet->saveSettingsFile(string(dispFile->text().toAscii().constData()),-1);
-// 	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1)){
-// 		qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","qTabAdvanced::StartTrimming");
-// 		//updates plots
-// 		myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
-// 	}
-// 	else qDefs::Message(qDefs::WARNING,string("Could not Save the Trimbits to file:\n")+dispFile->text().toAscii().constData(),"qTabAdvanced::StartTrimming");
-
-// 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::StartTrimming");
-// }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-// void qTabAdvanced::UpdateTrimbitPlot(int id){
-// 	if(boxPlot->isChecked()){
-// 		//refresh
-// 		if(!id)	myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
-// 		//from detector
-// 		else	myPlot->UpdateTrimbitPlot(true,radioHistogram->isChecked());
-// 	}
-// }
+ void qTabAdvanced::UpdateTrimbitPlot(int id){
+ 	if(boxPlot->isChecked()){
+ 		//refresh
+ 		if(!id)	myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
+ 		//from detector
+ 		else	myPlot->UpdateTrimbitPlot(true,radioHistogram->isChecked());
+ 	}
+ }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -712,9 +302,8 @@ void qTabAdvanced::SetControlPort(int port){
 	cout << "Setting Control Port:" << port << endl;
 #endif
 	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
-	// spinControlPort->setValue(det->setPort(slsDetectorDefs::CONTROL_PORT,port));
 	spinControlPort->setValue(myDet->setControlPort(port, comboDetector->currentIndex()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetControlPort");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetControlPort");
 	connect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
 }
 
@@ -727,9 +316,8 @@ void qTabAdvanced::SetStopPort(int port){
 	cout << "Setting Stop Port:" << port << endl;
 #endif
 	disconnect(spinStopPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
-	// spinStopPort->setValue(det->setPort(slsDetectorDefs::STOP_PORT,port));
 	spinStopPort->setValue(myDet->setStopPort(port, comboDetector->currentIndex()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetStopPort");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetStopPort");
 	connect(spinStopPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 
 }
@@ -743,9 +331,8 @@ void qTabAdvanced::SetRxrTCPPort(int port){
 	cout << "Setting Receiver TCP Port:" << port << endl;
 #endif
 	disconnect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
-	// spinTCPPort->setValue(det->setPort(slsDetectorDefs::DATA_PORT,port));
 	spinTCPPort->setValue(myDet->setReceiverPort(port, comboDetector->currentIndex()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetRxrTCPPort");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetRxrTCPPort");
 	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 }
 
@@ -759,9 +346,8 @@ void qTabAdvanced::SetRxrUDPPort(int port){
 #endif
 
 	disconnect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
-	// spinUDPPort->setValue(det->setReceiverUDPPort(port));
 	spinUDPPort->setValue(myDet->setReceiverUDPPort(port, comboDetector->currentIndex()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetRxrUDPPort");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetRxrUDPPort");
 	connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
 }
 
@@ -776,10 +362,9 @@ void qTabAdvanced::SetCltZmqPort(int port){
 	 std::ostringstream ss; ss << port; std::string sport = ss.str();
 
 	disconnect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
-	// spinZmqPort->setValue(atoi(det->setClientStreamingPort(sport).c_str()));
 	myDet->setClientDataStreamingInPort(port, comboDetector->currentIndex());
 	spinZmqPort->setValue(myDet->getClientStreamingPort(comboDetector->currentIndex()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetCltZmqPort");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetCltZmqPort");
 	myDet->enableDataStreamingToClient(false);
 	myDet->enableDataStreamingToClient(true);
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetCltZmqPort");
@@ -797,10 +382,9 @@ void qTabAdvanced::SetRxrZmqPort(int port){
 	 std::ostringstream ss; ss << port; std::string sport = ss.str();
 
 	disconnect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
-	// spinZmqPort2->setValue(atoi(det->setReceiverStreamingPort(sport).c_str()));
 	myDet->setReceiverDataStreamingOutPort(port, comboDetector->currentIndex());
 	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(comboDetector->currentIndex()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetRxrZmqPort");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetRxrZmqPort");
 	myDet->enableDataStreamingFromReceiver(false);
 	myDet->enableDataStreamingFromReceiver(true);
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetRxrZmqPort");
@@ -819,10 +403,9 @@ void qTabAdvanced::SetReceiverOnline(int index){
 	if(index){
 		SetReceiver();
 	}else{
-		// comboRxrOnline->setCurrentIndex(det->setReceiverOnline(index));
 		comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(index, comboDetector->currentIndex()));
 	}
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiverOnline");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetReceiverOnline");
 	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
 	//highlight in red if offline
 	if(!comboRxrOnline->currentIndex()){
@@ -847,9 +430,8 @@ void qTabAdvanced::SetOnline(int index){
 	cout << "Setting Detector Online to " << index << endl;
 #endif
 	disconnect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
-	// comboOnline->setCurrentIndex(det->setOnline(index));
 	comboOnline->setCurrentIndex(myDet->setOnline(index, comboDetector->currentIndex()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetOnline");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetOnline");
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 	//highlight in red if offline
 	if(!comboOnline->currentIndex()){
@@ -884,7 +466,7 @@ void qTabAdvanced::SetNetworkParameters(){
 	dispMAC->setText(QString(myDet->setDetectorMAC(dispMAC->text().toAscii().constData(), module_id).c_str()));
 	dispUDPIP->setText(QString(myDet->setReceiverUDPIP(dispUDPIP->text().toAscii().constData(), module_id).c_str()));
 	dispUDPMAC->setText(QString(myDet->setReceiverUDPMAC(dispUDPMAC->text().toAscii().constData(), module_id).c_str()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetNetworkParameters");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetNetworkParameters");
 
 	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 	connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
@@ -907,7 +489,7 @@ void qTabAdvanced::SetClientZMQIP(){
 	dispZMQIP->setText(QString(myDet->getClientStreamingIP(module_id).c_str()));
 	myDet->enableDataStreamingToClient(false);
 	myDet->enableDataStreamingToClient(true);
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetClientZMQIP");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetClientZMQIP");
 
 	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
 }
@@ -927,7 +509,7 @@ void qTabAdvanced::SetReceiverZMQIP(){
 	dispZMQIP2->setText(QString(myDet->getReceiverStreamingIP(module_id).c_str()));
 	myDet->enableDataStreamingFromReceiver(false);
 	myDet->enableDataStreamingFromReceiver(true);
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiverZMQIP");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(),"qTabAdvanced::SetReceiverZMQIP");
 
 	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 }
@@ -943,9 +525,9 @@ void qTabAdvanced::SetReceiver(){
 	auto outdir = myDet->getFilePath();
 	auto module_id = comboDetector->currentIndex();
 	dispRxrHostname->setText(QString(myDet->setReceiver(dispRxrHostname->text().toAscii().constData(), module_id).c_str()));
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiver");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetReceiver");
 	myDet->setFilePath(outdir, module_id);
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiver");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetReceiver");
 	Refresh();
 }
 
@@ -1240,7 +822,7 @@ void qTabAdvanced::SetDetector(int index){
 		}
 	}
 
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::SetDetector");
+	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetDetector");
 }
 
 
@@ -1390,7 +972,7 @@ void qTabAdvanced::CheckAcqPeriodGreaterThanExp(){
 	else {
 		spinSubPeriod->setToolTip(acqSubPeriodTip);
 		lblSubPeriod->setToolTip(acqSubPeriodTip);
-		lblSubPeriod->setPalette(lblExpTime->palette());
+		lblSubPeriod->setPalette(lblSetAllTrimbits->palette());
 		lblSubPeriod->setText("Sub Frame Period:");
 	}
 }
@@ -1405,71 +987,8 @@ void qTabAdvanced::Refresh(){
 #ifdef VERBOSE
 		cout  << endl << "**Updating Advanced Tab" << endl;
 #endif
-	//setting color of tab
-		//void 	setTabBar ( QTabBar * tb )
-		//QTabBar * 	tabBar () const
-		/*
-		for(int i=0;i<NumberOfTabs;i++)
-			tabAdvancedSettings->tabBar()->setTabTextColor(i,defaultTabColor);
-		tabAdvancedSettings->tabBar()->setTabTextColor(index,QColor(0,0,200,255));
-		*/
-
-// 	if(isAngular){
-// #ifdef VERBOSE
-// 		cout << "Angular Calibration Log set to " << chkAngularLog->isChecked() << endl;
-// #endif
-
-// 		disconnect(chkAngularLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
-
-// 		chkAngularLog->setChecked(myDet->getActionMode(slsDetectorDefs::angCalLog));
-
-// 		connect(chkAngularLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
-// 	}
-
-
-// 	if(isEnergy){
-// 		//disconnect
-// 		disconnect(chkEnergyLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
-// 		disconnect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
-// 		disconnect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
-// 		disconnect(spinThreshold,	SIGNAL(valueChanged(double)),		this,	SLOT(SetThreshold()));
-
-
-// 		//energy/angular logs
-// 		chkEnergyLog->setChecked(myDet->getActionMode(slsDetectorDefs::enCalLog));
-// #ifdef VERBOSE
-// 		cout << "Energy Calibration Log set to " << chkEnergyLog->isChecked() << endl;
-// #endif
-
-
-// 		//exptime
-// 		qDefs::timeUnit unit;
-// 		double time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
-// #ifdef VERBOSE
-// 		cout << "Getting acquisition time : " << time << qDefs::getUnitString(unit) << endl;
-// #endif
-// 		spinExpTime->setValue(time);
-// 		comboExpUnit->setCurrentIndex((int)unit);
-
-
-// 		//threshold
-// 		double threshold = (double)myDet->setDAC(-1,slsDetectorDefs::THRESHOLD,0);
-// #ifdef VERBOSE
-// 		cout << "Getting Threshold DACu : " << threshold << endl;
-// #endif
-// 		spinThreshold->setValue(threshold);
-
-
-// 		//connect
-// 		connect(chkEnergyLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
-// 		connect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
-// 		connect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
-// 		connect(spinThreshold,	SIGNAL(valueChanged(double)),		this,	SLOT(SetThreshold()));
-// 	}
-
 
 	//network
-	// det = myDet->getSlsDetector(comboDetector->currentIndex());
 	auto module_id = comboDetector->currentIndex();
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::Refresh");
 
@@ -1497,59 +1016,57 @@ void qTabAdvanced::Refresh(){
 
 
 #ifdef VERBOSE
-		cout << "Getting Receiver Network Information" << endl;
+	cout << "Getting Receiver Network Information" << endl;
 #endif
-	// if (detType!=slsDetectorDefs::MYTHEN){
-	// 	//disconnect
-	// 	disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
-	// 	disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
-	// 	disconnect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
-	// 	disconnect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
-	// 	disconnect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
-	// 	disconnect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	disconnect(dispMAC,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	disconnect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	disconnect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	disconnect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
+	//disconnect
+	disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+	disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+	disconnect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+	disconnect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
+	disconnect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+	disconnect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	disconnect(dispMAC,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	disconnect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	disconnect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	disconnect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
 
-	// 	dispIP->setText(det->getDetectorIP().c_str());
-	// 	dispMAC->setText(det->getDetectorMAC().c_str());
+	dispIP->setText(myDet->getDetectorIP(module_id).c_str());
+	dispMAC->setText(myDet->getDetectorMAC(module_id).c_str());
 
-	// 	//so that updated status
-	// 	if(det->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
-	// 		det->checkReceiverOnline();
-	// 	comboRxrOnline->setCurrentIndex(det->setReceiverOnline());
+	//so that updated status
+	if(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG, module_id)==slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkReceiverOnline(module_id);
+	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG, module_id));
 
-	// 	dispRxrHostname->setText(det->getReceiver().c_str());
-	// 	spinTCPPort->setValue(det->getReceiverPort());
-	// 	spinUDPPort->setValue(atoi(det->getReceiverUDPPort().c_str()));
-	// 	spinZmqPort->setValue(atoi(det->getClientStreamingPort().c_str()));
-	// 	spinZmqPort2->setValue(atoi(det->getReceiverStreamingPort().c_str()));
+	dispRxrHostname->setText(myDet->getReceiver(module_id).c_str());
+	spinTCPPort->setValue(myDet->setReceiverPort(-1, module_id));
+	spinUDPPort->setValue(myDet->getReceiverUDPPort(module_id));
+	spinZmqPort->setValue(myDet->getClientStreamingPort(module_id));
+	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(module_id));
 
-	// 	dispUDPIP->setText(det->getReceiverUDPIP().c_str());
-	// 	dispUDPMAC->setText(det->getReceiverUDPMAC().c_str());
+	dispUDPIP->setText(myDet->getReceiverUDPIP(module_id).c_str());
+	dispUDPMAC->setText(myDet->getReceiverUDPMAC(module_id).c_str());
 
-	// 	//connect
-	// 	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
-	// 	connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
-	// 	connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
-	// 	connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
-	// 	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
-	// 	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
-	// 	connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
+	//connect
+	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+	connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+	connect(spinZmqPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetCltZmqPort(int)));
+	connect(spinZmqPort2,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrZmqPort(int)));
+	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
 
-	// 	// zmq parameters
-	// 	disconnect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
-	// 	dispZMQIP->setText(det->getClientStreamingIP().c_str());
-	// 	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+	// zmq parameters
+	disconnect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
+	dispZMQIP->setText(myDet->getClientStreamingIP(module_id).c_str());
+	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
 
-	// 	disconnect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
-	// 	dispZMQIP2->setText(det->getReceiverStreamingIP().c_str());
-	// 	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
-	// }
+	disconnect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
+	dispZMQIP2->setText(myDet->getReceiverStreamingIP(module_id).c_str());
+	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 
 	//highlight in red if detector or receiver is offline
 	if(!comboOnline->currentIndex()){
@@ -1631,7 +1148,7 @@ void qTabAdvanced::Refresh(){
 		cout  << "**Updated Advanced Tab" << endl << endl;
 #endif
 
-	// qDefs::checkErrorMessage(det,"qTabAdvanced::Refresh");
+	qDefs::checkErrorMessage(myDet, module_id, "qTabAdvanced::Refresh");
 }
 
 

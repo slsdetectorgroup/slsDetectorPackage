@@ -16,7 +16,6 @@
 #include "qTabDataOutput.h"
 #include "qTabMeasurement.h"
 class qTabPlot;
-class qTabActions;
 class qTabAdvanced;
 class qTabSettings;
 class qTabDebugging;

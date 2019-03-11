@@ -91,10 +91,6 @@ private slots:
  */
 void setSettings(int index);
 
-/** Set number of modules if possible
- *  @param index number of modules
- */
-// void SetNumberOfModules(int index);
 
 /** Set dynamic range if possible
  *  @param index selection

@@ -198,6 +198,28 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     void setErrorMaskFromAllDetectors();
 
     /**
+     * Sets error mask
+     * @param multi error mask to be set to
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns multi error mask
+     */
+    int64_t  setModuleErrorMask(int64_t i, int detPos = -1);
+
+    /**
+     * Returns multi error mask
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns multi error mask
+     */
+    int64_t  getModuleErrorMask(int detPos = -1);
+
+    /**
+     * Clears error mask
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns error mask
+     */
+    int64_t clearModuleErrorMask(int detPos = -1);
+
+    /**
      * Set acquiring flag in shared memory
      * @param b acquiring flag
      */

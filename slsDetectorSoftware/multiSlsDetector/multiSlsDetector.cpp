@@ -196,6 +196,36 @@ void multiSlsDetector::setErrorMaskFromAllDetectors() {
     }
 }
 
+int64_t  multiSlsDetector::setModuleErrorMask(int64_t i, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setErrorMask(i);
+    }
+
+    // multi
+    return setErrorMask(i);
+}
+
+int64_t  multiSlsDetector::getModuleErrorMask(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getErrorMask();
+    }
+
+    // multi
+    return getErrorMask();
+}
+
+int64_t multiSlsDetector::clearModuleErrorMask(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->clearErrorMask();
+    }
+
+    // multi
+    return clearErrorMask();
+}
+
 void multiSlsDetector::setAcquiringFlag(bool b) {
     thisMultiDetector->acquiringFlag = b;
 }

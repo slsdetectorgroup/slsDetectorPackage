@@ -51,11 +51,6 @@ private:
 	 */
 	void AddROIInput(int num);
 
-	/** Checks for a few conditions before trimming
-	 /returns OK or FAIL
-	 */
-	int validateBeforeTrimming();
-
 	/** update the setalltrimbits value from server
 	 */
 	void updateAllTrimbitsFromServer();
@@ -63,48 +58,9 @@ private:
 
 private slots:
 
-	/** Enable/Disable Energy and Calibration Logs
-	 */
-	void SetLogs();
-
-	/** Set acquisition time
-	 */
-	void SetExposureTime();
-
-	/** Set the Threshold dac value
-	 */
-	void SetThreshold();
-
-	/** Set output directory for trimming
-	 */
-	void SetOutputFile();
-
-	/** Browse output directory for trimming
-	 */
-	void BrowseOutputFile();
-
-	/** Enables trimming method and calls SetTrimmingMethod if enabled
-	 * @param enable to enable trimming
-	 */
-	// void EnableTrimming(bool enable);
-
-	/** Enabling resolution and Counts if this is enabled
-	 * @param enable to enable
-	 */
-	void SetOptimize(bool enable);
-
-	/** Sets the trimming method
-	 * @param mode trimming method
-	 */
-	// void SetTrimmingMethod(int mode);
-
-	/** Ensures the right trimming mode and Executes Trimming
-	 */
-	// void StartTrimming();
-
 	/** Updates the plot with trimbits from detector/shared memory
 	 */
-	// void UpdateTrimbitPlot(int id);
+	 void UpdateTrimbitPlot(int id);
 
 	/** Sets control port
 	 * @param port control port
@@ -216,23 +172,13 @@ private:
 
 	QButtonGroup 	*btnGroup;
 
-	/** Tool Tip for the output dir */
-	QString 	outputDirTip;
-	QString 	errOutputTip;
+	/** Tool Tip */
 	QString		errOnlineTip;
 	QString		detOnlineTip;
 	QString 	rxrOnlineTip;
 	QPalette	red;
 
-	// /** Trimming mode */
-	// slsDetectorDefs::trimMode trimmingMode;
-	// static const int TRIMMING_DYNAMIC_RANGE 	= 32;
-	// static const int TRIMMING_FRAME_NUMBER 		= 1;
-	// static const int TRIMMING_TRIGGER_NUMBER 	= 1;
-	// static const int TRIMMING_PROBE_NUMBER 		= 0;
-
 	bool isEnergy;
-	bool isAngular;
 
 	/** ROI */
 	std::vector <QLabel*> 	lblFromX;

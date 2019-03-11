@@ -1692,7 +1692,7 @@ int set_settings(int file_des) {
 				printf("Warning: %s",mess);
 			}
 
-			else {
+			else if (isett != GET_SETTINGS){
 				ret = setDefaultDacs();
 				if (ret == FAIL) {
 					strcpy(mess,"Could change settings, but could not set to default dacs\n");

@@ -206,7 +206,7 @@ void qCloneWidget::SetRange(bool IsXYRange[], double XYRangeValues[]) {
         if (cloneplot1D)
             XYCloneRangeValues[qDefs::XMAXIMUM] = cloneplot1D->GetXMaximum();
         else
-            XYCloneRangeValues[qDefs::XMINIMUM] = cloneplot2D->GetPlot()->GetXMaximum();
+            XYCloneRangeValues[qDefs::XMAXIMUM] = cloneplot2D->GetPlot()->GetXMaximum();
     } else
         XYCloneRangeValues[qDefs::XMAXIMUM] = XYRangeValues[qDefs::XMAXIMUM];
 
@@ -214,7 +214,7 @@ void qCloneWidget::SetRange(bool IsXYRange[], double XYRangeValues[]) {
         if (cloneplot1D)
             XYCloneRangeValues[qDefs::YMINIMUM] = cloneplot1D->GetYMinimum();
         else
-            XYCloneRangeValues[qDefs::XMINIMUM] = cloneplot2D->GetPlot()->GetYMinimum();
+            XYCloneRangeValues[qDefs::YMINIMUM] = cloneplot2D->GetPlot()->GetYMinimum();
     } else
         XYCloneRangeValues[qDefs::YMINIMUM] = XYRangeValues[qDefs::YMINIMUM];
 
@@ -222,7 +222,7 @@ void qCloneWidget::SetRange(bool IsXYRange[], double XYRangeValues[]) {
         if (cloneplot1D)
             XYCloneRangeValues[qDefs::YMAXIMUM] = cloneplot1D->GetYMaximum();
         else
-            XYCloneRangeValues[qDefs::XMINIMUM] = cloneplot2D->GetPlot()->GetYMaximum();
+            XYCloneRangeValues[qDefs::YMAXIMUM] = cloneplot2D->GetPlot()->GetYMaximum();
     } else
         XYCloneRangeValues[qDefs::YMAXIMUM] = XYRangeValues[qDefs::YMAXIMUM];
 

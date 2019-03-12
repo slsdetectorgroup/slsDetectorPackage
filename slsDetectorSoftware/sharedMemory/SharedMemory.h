@@ -39,8 +39,7 @@ class SharedMemory {
 	 * @param multiId multi detector id
      * @param slsId sls detector id, -1 if a multi detector shared memory
  	 */
-    SharedMemory(int multiId, int slsId) : fd(-1),
-                                           shmSize(0) {
+    SharedMemory(int multiId, int slsId){
         name = ConstructSharedMemoryName(multiId, slsId);
     }
 
@@ -50,6 +49,10 @@ class SharedMemory {
     ~SharedMemory() {
         if (fd >= 0)
             close(fd);
+
+        if (shared_struct) {
+            UnmapSharedMemory();
+        }
     }
 
     /**
@@ -81,10 +84,10 @@ class SharedMemory {
      */
     void CreateSharedMemory(size_t sz = 0) {
         // create
-        if (sz == 0){
+        if (sz == 0) {
             sz = sizeof(T);
         }
-        
+
         fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
         if (fd < 0) {
             FILE_LOG(logERROR) << "Create shared memory " << name << " failed: " << strerror(errno);
@@ -112,9 +115,12 @@ class SharedMemory {
      * throws a SharedMemoryException exception on failure to open or map
      * @param sz of shared memory
      */
-    void OpenSharedMemory() {
+    void OpenSharedMemory(size_t sz = 0) {
         // open
-        size_t sz = sizeof(T);
+        if (sz == 0) {
+            sz = sizeof(T);
+        }
+
         fd = shm_open(name.c_str(), O_RDWR, 0);
         if (fd < 0) {
             FILE_LOG(logERROR) << "Open existing shared memory " << name << " failed: " << strerror(errno);
@@ -130,10 +136,13 @@ class SharedMemory {
      * throws a SharedMemoryException exception on failure
      */
     void UnmapSharedMemory() {
-        if (munmap(shared_struct, shmSize) < 0) {
-            FILE_LOG(logERROR) << "Unmapping shared memory " << name << " failed: " << strerror(errno);
-            close(fd);
-            throw SharedMemoryException();
+        if (shared_struct != nullptr) {
+            if (munmap(shared_struct, shmSize) < 0) {
+                FILE_LOG(logERROR) << "Unmapping shared memory " << name << " failed: " << strerror(errno);
+                close(fd);
+                throw SharedMemoryException();
+            }
+            shared_struct = nullptr;
         }
     }
 
@@ -141,6 +150,7 @@ class SharedMemory {
 	 * Remove existing Shared memory
 	 */
     void RemoveSharedMemory() {
+        UnmapSharedMemory();
         if (shm_unlink(name.c_str()) < 0) {
             // silent exit if shm did not exist anyway
             if (errno == ENOENT)
@@ -252,10 +262,10 @@ class SharedMemory {
     std::string name;
 
     /** File descriptor */
-    int fd;
+    int fd{-1};
 
     /** shm size */
-    size_t shmSize;
+    size_t shmSize{0};
 
-    T *shared_struct;
+    T *shared_struct{nullptr};
 };

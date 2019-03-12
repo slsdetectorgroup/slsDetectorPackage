@@ -247,7 +247,7 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
         // open and verify version
         else {
             // thisDetector = (sharedSlsDetector *)sharedMemory->OpenSharedMemory(sz);
-            sharedMemory->OpenSharedMemory();
+            sharedMemory->OpenSharedMemory(sz);
             thisDetector = (*sharedMemory)();
             if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
                 FILE_LOG(logERROR) << "Single shared memory "

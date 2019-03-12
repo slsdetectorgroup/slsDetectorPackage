@@ -1966,7 +1966,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int detId;
 
     /** Shared Memory object */
-    SharedMemory<sharedMultiSlsDetector> *sharedMemory {nullptr};
+    SharedMemory<sharedMultiSlsDetector> sharedMemory{0,-1};
 
     /** Shared memory structure */
     sharedMultiSlsDetector *thisMultiDetector {nullptr};

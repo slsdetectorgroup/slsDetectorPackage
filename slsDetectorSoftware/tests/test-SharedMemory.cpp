@@ -3,6 +3,8 @@
 #include "catch.hpp"
 #include "string_utils.h"
 
+#include <iostream>
+
 struct Data {
     int x;
     double y;
@@ -30,7 +32,7 @@ TEST_CASE("Create SharedMemory read and write") {
 }
 
 TEST_CASE("Open existing SharedMemory and read") {
-    
+
     {
         SharedMemory<double> shm(0, -1);
         shm.CreateSharedMemory();
@@ -77,4 +79,50 @@ TEST_CASE("Open two shared memories to the same place") {
     shm2.RemoveSharedMemory();
     CHECK(shm.IsExisting() == false);
     CHECK(shm2.IsExisting() == false);
+}
+
+
+TEST_CASE("Move SharedMemory"){
+
+    SharedMemory<Data> shm(0,-1);
+    CHECK(shm.GetName() == "/slsDetectorPackage_multi_0");
+    shm.CreateSharedMemory();
+    shm()->x = 9;
+
+    CHECK(shm.size()== sizeof(Data));
+
+    SharedMemory<Data> shm2(1,-1);
+    shm2 = std::move(shm); //shm is now a moved from object!
+
+    CHECK(shm2()->x == 9);
+    CHECK(shm() == nullptr);
+    CHECK(shm.size() == 0);
+
+    CHECK(shm2.GetName() == "/slsDetectorPackage_multi_0");
+    shm2.RemoveSharedMemory();
+
+}
+
+
+TEST_CASE("Create several shared memories") {
+    constexpr int N = 5;
+    std::vector<SharedMemory<int>> v;
+    v.reserve(N);
+    for (int i = 0; i != N; ++i) {
+        v.emplace_back(i, -1);
+        CHECK(v[i].IsExisting() == false);
+        v[i].CreateSharedMemory();
+        *v[i]() = i;
+        CHECK(*v[i]() == i);
+    }
+
+    for (int i = 0; i != N; ++i) {
+        CHECK(*v[i]() == i);
+        CHECK(v[i].GetName() == std::string("/slsDetectorPackage_multi_")+std::to_string(i));
+    }
+
+    for (int i = 0; i != N; ++i) {
+        v[i].RemoveSharedMemory();
+        CHECK(v[i].IsExisting() == false);
+    }
 }

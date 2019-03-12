@@ -39,13 +39,48 @@ class SharedMemory {
 	 * @param multiId multi detector id
      * @param slsId sls detector id, -1 if a multi detector shared memory
  	 */
-    SharedMemory(int multiId, int slsId){
+    SharedMemory(int multiId, int slsId) {
         name = ConstructSharedMemoryName(multiId, slsId);
     }
 
-    /**
-	 * Destructor
-	 */
+    /** 
+     * Delete the copy constructor and copy assignment since we don't want two 
+     * objects managing the same resource
+     */
+    SharedMemory(const SharedMemory &) = delete;
+    SharedMemory &operator=(const SharedMemory &other) = delete;
+
+    //Move constructor
+    SharedMemory(SharedMemory &&other) : name(other.name),
+                                         fd(other.fd),
+                                         shmSize(other.shmSize),
+                                         shared_struct(other.shared_struct) {
+
+        other.fd = -1;
+        other.shared_struct = nullptr;
+        other.shmSize = 0;
+    }
+
+    //Move assignment
+    SharedMemory &operator=(SharedMemory &&other) {
+        name = other.name;
+        if (fd) {
+            close(fd);
+        }
+        fd = other.fd;
+        other.fd = -1;
+
+        if (shared_struct != nullptr) {
+            UnmapSharedMemory();
+        }
+        shared_struct = other.shared_struct;
+        other.shared_struct = nullptr;
+
+        shmSize = other.shmSize;
+        other.shmSize = 0;
+        return *this;
+    }
+
     ~SharedMemory() {
         if (fd >= 0)
             close(fd);
@@ -73,8 +108,12 @@ class SharedMemory {
     /**
 	 * Get shared memory name
 	 */
-    std::string GetName() {
+    std::string GetName() const {
         return name;
+    }
+
+    size_t size() const {
+        return shmSize;
     }
 
     /**
@@ -83,7 +122,6 @@ class SharedMemory {
      * @param sz of shared memory
      */
     void CreateSharedMemory(size_t sz = 0) {
-        // create
         if (sz == 0) {
             sz = sizeof(T);
         }
@@ -94,7 +132,6 @@ class SharedMemory {
             throw SharedMemoryException();
         }
 
-        // resize
         if (ftruncate(fd, sz) < 0) {
             FILE_LOG(logERROR) << "Create shared memory " << name << " failed at ftruncate: " << strerror(errno);
             close(fd);
@@ -102,12 +139,8 @@ class SharedMemory {
             throw SharedMemoryException();
         }
 
-        // map
-        // void* addr = MapSharedMemory(sz);
         shared_struct = MapSharedMemory(sz);
         FILE_LOG(logINFO) << "Shared memory created " << name;
-
-        // return addr;
     }
 
     /**
@@ -116,7 +149,6 @@ class SharedMemory {
      * @param sz of shared memory
      */
     void OpenSharedMemory(size_t sz = 0) {
-        // open
         if (sz == 0) {
             sz = sizeof(T);
         }
@@ -128,7 +160,6 @@ class SharedMemory {
         }
 
         shared_struct = MapSharedMemory(sz);
-        // return MapSharedMemory(sz);
     }
 
     /**
@@ -166,15 +197,16 @@ class SharedMemory {
      */
     static const int NAME_MAX = 255;
 
-    /*
-    Using the call operator to access the pointer
-
+    /**
+    *Using the call operator to access the pointer
     */
-
     T *operator()() {
         return shared_struct;
     }
 
+    /**
+    *Using the call operator to access the pointer, const overload
+    */
     const T *operator()() const {
         return shared_struct;
     }

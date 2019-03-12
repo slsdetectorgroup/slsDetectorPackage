@@ -245,7 +245,7 @@ void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
     }
 
     // multi
-    auto multiShm = SharedMemory<sharedMultiSlsDetector>(multiId, -1);
+    SharedMemory<sharedMultiSlsDetector> multiShm(multiId, -1);
     int numDetectors = 0;
 
     if (multiShm.IsExisting()) {
@@ -255,7 +255,7 @@ void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
     }
 
     for (int i = 0; i < numDetectors; ++i) {
-        auto shm = SharedMemory<sharedSlsDetector>(multiId, i);
+        SharedMemory<sharedSlsDetector> shm(multiId, i);
         shm.RemoveSharedMemory();
     }
 }

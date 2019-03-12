@@ -25,14 +25,17 @@ TEST_CASE("Create SharedMemory read and write") {
 
     shm.UnmapSharedMemory();
     shm.RemoveSharedMemory();
+
+    CHECK(shm.IsExisting() == false);
 }
 
 TEST_CASE("Open existing SharedMemory and read") {
-
-    SharedMemory<double> shm(0, -1);
-    shm.CreateSharedMemory();
-    *shm() = 5.3;
-    shm.UnmapSharedMemory();
+    
+    {
+        SharedMemory<double> shm(0, -1);
+        shm.CreateSharedMemory();
+        *shm() = 5.3;
+    }
 
     SharedMemory<double> shm2(0, -1);
     shm2.OpenSharedMemory();
@@ -41,7 +44,7 @@ TEST_CASE("Open existing SharedMemory and read") {
     shm2.RemoveSharedMemory();
 }
 
-TEST_CASE("Two shared memories with the same name throws") {
+TEST_CASE("Creating a second shared memory with the same name throws") {
 
     SharedMemory<double> shm0(0, -1);
     SharedMemory<double> shm1(0, -1);
@@ -69,8 +72,7 @@ TEST_CASE("Open two shared memories to the same place") {
     shm2()->x = 7;
     CHECK(shm()->x == 7);
 
-
-    //Remove only needs to be done once since they refer 
+    //Remove only needs to be done once since they refer
     //to the same memory
     shm2.RemoveSharedMemory();
     CHECK(shm.IsExisting() == false);

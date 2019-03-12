@@ -59,7 +59,7 @@ slsDetector::slsDetector(int multiId, int id, bool verify)
 
 slsDetector::~slsDetector() {
     if (sharedMemory) {
-        sharedMemory->UnmapSharedMemory(thisDetector);
+        sharedMemory->UnmapSharedMemory();
         delete sharedMemory;
     }
 }
@@ -208,7 +208,7 @@ void slsDetector::freeSharedMemory(int multiId, int slsId) {
 
 void slsDetector::freeSharedMemory() {
     if (sharedMemory) {
-        sharedMemory->UnmapSharedMemory(thisDetector);
+        sharedMemory->UnmapSharedMemory();
         sharedMemory->RemoveSharedMemory();
         delete sharedMemory;
         sharedMemory = nullptr;
@@ -240,11 +240,15 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
 
         // create
         if (created) {
-            thisDetector = (sharedSlsDetector *)sharedMemory->CreateSharedMemory(sz);
+            // thisDetector = (sharedSlsDetector *)sharedMemory->CreateSharedMemory(sz);
+            sharedMemory->CreateSharedMemory(sz);
+            thisDetector = (*sharedMemory)();
         }
         // open and verify version
         else {
-            thisDetector = (sharedSlsDetector *)sharedMemory->OpenSharedMemory(sz);
+            // thisDetector = (sharedSlsDetector *)sharedMemory->OpenSharedMemory(sz);
+            sharedMemory->OpenSharedMemory();
+            thisDetector = (*sharedMemory)();
             if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
                 FILE_LOG(logERROR) << "Single shared memory "
                                       "("
@@ -259,7 +263,7 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
         if (sharedMemory) {
             // unmap
             if (thisDetector) {
-                sharedMemory->UnmapSharedMemory(thisDetector);
+                sharedMemory->UnmapSharedMemory();
                 thisDetector = nullptr;
             }
             // delete
@@ -643,10 +647,10 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
         throw SharedMemoryException();
     }
 
-    size_t sz = sizeof(sharedSlsDetector);
-
     // open, map, verify version
-    auto sdet = (sharedSlsDetector *)shm.OpenSharedMemory(sz);
+    // auto sdet = (sharedSlsDetector *)shm.OpenSharedMemory(sz);
+    shm.OpenSharedMemory();
+    auto sdet = shm();
     if (verify && sdet->shmversion != SLS_SHMVERSION) {
         FILE_LOG(logERROR) << "Single shared memory "
                               "("
@@ -654,13 +658,13 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
                                                          "(expected 0x"
                            << std::hex << SLS_SHMVERSION << " but got 0x" << sdet->shmversion << ")" << std::dec;
         // unmap and throw
-        sharedMemory->UnmapSharedMemory(thisDetector);
+        sharedMemory->UnmapSharedMemory();
         throw SharedMemoryException();
     }
 
     // get type, unmap
     auto type = sdet->myDetectorType;
-    shm.UnmapSharedMemory(sdet);
+    shm.UnmapSharedMemory();
     return type;
 }
 

@@ -259,7 +259,7 @@ void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
         // sharedMultiSlsDetector *mdet =
         //     (sharedMultiSlsDetector *)shm.OpenSharedMemory(
         //         sizeof(sharedMultiSlsDetector));
-        shm.OpenSharedMemory(sizeof(sharedMultiSlsDetector));
+        shm.OpenSharedMemory();
         numDetectors = shm()->numberOfDetectors;
         shm.UnmapSharedMemory();
         shm.RemoveSharedMemory();
@@ -328,13 +328,13 @@ void multiSlsDetector::initSharedMemory(bool verify) {
     try {
         // shared memory object with name
         sharedMemory = new SharedMemory<sharedMultiSlsDetector>(detId, -1);
-        size_t sz = sizeof(sharedMultiSlsDetector);
+        // size_t sz = sizeof(sharedMultiSlsDetector);
 
         // create
         if (!sharedMemory->IsExisting()) {
             // thisMultiDetector =
             //     (sharedMultiSlsDetector *)sharedMemory->CreateSharedMemory(sz);
-            sharedMemory->CreateSharedMemory(sz);
+            sharedMemory->CreateSharedMemory();
             thisMultiDetector= (*sharedMemory)(); //TODO remove line
             initializeDetectorStructure();
         }
@@ -342,7 +342,7 @@ void multiSlsDetector::initSharedMemory(bool verify) {
         else {
             // thisMultiDetector =
             //     (sharedMultiSlsDetector *)sharedMemory->OpenSharedMemory(sz);
-            sharedMemory->OpenSharedMemory(sz);
+            sharedMemory->OpenSharedMemory();
             thisMultiDetector = (*sharedMemory)();
             if (verify && thisMultiDetector->shmversion != MULTI_SHMVERSION) {
                 FILE_LOG(logERROR) << "Multi shared memory (" << detId << ") version mismatch "

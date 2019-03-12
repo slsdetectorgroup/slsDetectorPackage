@@ -81,7 +81,7 @@ class FILELOG_DECLSPEC FILELog : public Log<Output2FILE> {};
 
 inline std::string NowTime()
 {
-    char buffer[11];
+    char buffer[12];
     const int buffer_len = sizeof(buffer);
     time_t t;
     time(&t);

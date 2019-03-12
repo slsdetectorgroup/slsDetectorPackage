@@ -24,7 +24,6 @@
 #include <getopt.h>
 #include <iostream>
 #include <string>
-
 #include <sys/stat.h>
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -33,21 +32,23 @@ int main(int argc, char **argv) {
     QApplication *theApp = new QApplication(argc, argv);
     theApp->setStyle(new QPlastiqueStyle);
     theApp->setWindowIcon(QIcon(":/icons/images/mountain.png"));
-    int ret = 1;
-    qDetectorMain *det = new qDetectorMain(argc, argv, theApp, ret, 0);
-    if (ret == 1)
-        return EXIT_FAILURE;
-    det->show();
+    try{
+    	qDetectorMain *det = new qDetectorMain(argc, argv, theApp, 0);
+        det->show();
+    } catch(...) {
+    	;
+    }
     return theApp->exec();
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int &ret, QWidget *parent) : QMainWindow(parent), theApp(app), myDet(0), detID(0), myPlot(0), tabs(0), isDeveloper(0) {
+qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) : QMainWindow(parent), myDet(0), myPlot(0), tabs(0), isDeveloper(0) {
 
     // options
     std::string fname = "";
     int64_t tempval = 0;
+    int multiId = 0;
 
     //parse command line for config
     static struct option long_options[] = {
@@ -61,22 +62,21 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int &ret,
         {"help", no_argument, 0, 'h'},
         {0, 0, 0, 0}};
 
-    // getopt_long stores the option index here.
+    // getopt_long stores the option index here
+	optind = 1;
     int option_index = 0;
     int c = 0;
 
     while (c != -1) {
         c = getopt_long(argc, argv, "hvdf:i:", long_options, &option_index);
-        // Detect the end of the options.
+        // Detect the end of the options
         if (c == -1)
             break;
         switch (c) {
 			
         case 'f':
             fname = optarg;
-#ifdef VERYVERBOSE
-            std::cout << long_options[option_index].name << " " << optarg << '\n';
-#endif
+            FILE_LOG(logDEBUG) << long_options[option_index].name << " " << optarg;
             break;
 
         case 'd':
@@ -84,27 +84,33 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int &ret,
             break;
 
         case 'i':
-            detID = atoi(optarg);
+        	multiId = atoi(optarg);
             break;
 
         case 'v':
             tempval = GITDATE;
-            std::cout << "SLS Detector GUI " << GITBRANCH << " (0x" << std::hex << tempval << ")" << '\n';
+            FILE_LOG(logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x" << std::hex << tempval << ")";
             return;
 
         case 'h':
         default:
-            std::string help_message = "\n" + std::string(argv[0]) + "\n" + "Usage: " + std::string(argv[0]) + " [arguments]\n" + "Possible arguments are:\n" + "\t-d, --developer           : Enables the developer tab\n" + "\t-f, --config <fname>      : Loads config from file\n" + "\t-i, --id <i>              : Sets the multi detector id to i. Default: 0. Required \n" + "\t                            only when more than one multi detector object is needed.\n\n";
-            std::cout << help_message << '\n';
-            return;
+            std::string help_message = "\n"
+            		+ std::string(argv[0]) + "\n"
+					+ "Usage: " + std::string(argv[0]) + " [arguments]\n"
+					+ "Possible arguments are:\n"
+					+ "\t-d, --developer           : Enables the developer tab\n"
+					+ "\t-f, --config <fname>      : Loads config from file\n"
+					+ "\t-i, --id <i>              : Sets the multi detector id to i. Default: 0. Required \n"
+					+ "\t                            only when more than one multi detector object is needed.\n\n";
+            FILE_LOG(logERROR) << help_message << '\n';
+            throw std::exception();
         }
     }
 
     setupUi(this);
-    SetUpDetector(fname);
+    SetUpDetector(fname, multiId);
     SetUpWidgetWindow();
     Initialization();
-    ret = 0;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -112,10 +118,38 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, int &ret,
 qDetectorMain::~qDetectorMain() {
     if (myDet)
         delete myDet;
-    if (menubar)
-        delete menubar;
-    if (centralwidget)
-        delete centralwidget;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool qDetectorMain::isPlotRunning() {
+	return myPlot->isRunning();
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+int qDetectorMain::GetProgress() {
+	return tab_measurement->GetProgress();
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+QString qDetectorMain::GetFilePath() {
+    QString s = QString(myDet->getFilePath().c_str());
+    qDefs::checkErrorMessage(myDet);
+    return s;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+int qDetectorMain::DoesOutputDirExist() {
+	return tab_dataoutput->VerifyOutputDirectory();
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool qDetectorMain::isCurrentlyTabDeveloper() {
+    return (tabs->currentIndex() == Developer);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -123,12 +157,12 @@ qDetectorMain::~qDetectorMain() {
 void qDetectorMain::SetUpWidgetWindow() {
 
     // Layout
-    layoutTabs = new QGridLayout;
+	QGridLayout *layoutTabs = new QGridLayout;
     centralwidget->setLayout(layoutTabs);
 
     //plot setup
     myPlot = new qDrawPlot(dockWidgetPlot, myDet);
-    std::cout << "DockPlot ready" << '\n';
+    FILE_LOG(logDEBUG) << "DockPlot ready";
     dockWidgetPlot->setWidget(myPlot);
 
     //tabs setup
@@ -137,24 +171,24 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     // creating all the other tab widgets
     tab_measurement = new qTabMeasurement(this, myDet, myPlot);
-    std::cout << "Measurement ready" << '\n';
+    FILE_LOG(logDEBUG) << "Measurement ready";
     tab_dataoutput = new qTabDataOutput(this, myDet);
-    std::cout << "DataOutput ready" << '\n';
+    FILE_LOG(logDEBUG) << "DataOutput ready";
     tab_plot = new qTabPlot(this, myDet, myPlot);
-    std::cout << "Plot ready" << '\n';
+    FILE_LOG(logDEBUG) << "Plot ready";
     tab_settings = new qTabSettings(this, myDet);
-    std::cout << "Settings ready" << '\n';
+    FILE_LOG(logDEBUG) << "Settings ready";
     tab_advanced = new qTabAdvanced(this, myDet, myPlot);
-    std::cout << "Advanced ready" << '\n';
+    FILE_LOG(logDEBUG) << "Advanced ready";
     tab_debugging = new qTabDebugging(this, myDet);
-    std::cout << "Debugging ready" << '\n';
+    FILE_LOG(logDEBUG) << "Debugging ready";
     tab_developer = new qTabDeveloper(this, myDet);
-    std::cout << "Developer ready" << '\n';
-
+    FILE_LOG(logDEBUG) << "Developer ready";
     myServer = new qServer(this);
-    std::cout << "Client Server ready" << '\n';
+    FILE_LOG(logDEBUG) << "Client Server ready";
 
     //	creating the scroll area widgets for the tabs
+    QScrollArea *scroll[NumberOfTabs];
     for (int i = 0; i < NumberOfTabs; i++) {
         scroll[i] = new QScrollArea;
         scroll[i]->setFrameShape(QFrame::NoFrame);
@@ -198,10 +232,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->tabBar()->setFixedWidth(width() + 61);
 
     // mode setup - to set up the tabs initially as disabled, not in form so done here
-#ifdef VERBOSE
-    std::cout << "Setting Debug Mode to 0\nSetting Expert Mode to 0\nSetting Developer Mode to " << isDeveloper << "\nSetting Dockable Mode to false\n"
-         << '\n';
-#endif
+    FILE_LOG(logINFO) << "Dockable Mode: 0, Debug Mode: 0, Expert Mode: 0, Developer Mode: " << isDeveloper;
     tabs->setTabEnabled(Debugging, false);
     tabs->setTabEnabled(Advanced, false);
     tabs->setTabEnabled(Developer, isDeveloper);
@@ -221,14 +252,14 @@ void qDetectorMain::SetUpWidgetWindow() {
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qDetectorMain::SetUpDetector(const std::string fName) {
+void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
 
     //instantiate detector and set window title
-    myDet = new multiSlsDetector(detID);
+    myDet = new multiSlsDetector(multiID);
 
     //create messages tab to capture config file loading logs
     tab_messages = new qTabMessages(this);
-    std::cout << "Messages ready" << '\n';
+    FILE_LOG(logDEBUG) << "Messages ready";
 
     //loads the config file at startup
     if (!fName.empty())
@@ -240,10 +271,9 @@ void qDetectorMain::SetUpDetector(const std::string fName) {
 
     //if hostname doesnt exist even in shared memory
     if (!host.length()) {
-        std::cout << '\n'
-             << "No Detector Connected." << '\n';
+    	FILE_LOG(logERROR)  << "No Detector Connected.";
         qDefs::Message(qDefs::CRITICAL, "No Detectors Connected. ", "qDetectorMain::SetUpDetector");
-        exit(-1);
+        throw std::exception();
     }
 
     //check if the detector is not even connected
@@ -252,8 +282,8 @@ void qDetectorMain::SetUpDetector(const std::string fName) {
 
     if (!offline.empty()) {
         qDefs::Message(qDefs::CRITICAL, std::string("<nobr>The detector(s)  <b>") + offline + std::string(" </b> is/are not connected.  Exiting GUI.</nobr>"), "qDetectorMain::SetUpDetector");
-        std::cout << "The detector(s)  " << host << "  is/are not connected. Exiting GUI." << '\n';
-        exit(-1);
+        FILE_LOG(logERROR) << "The detector(s)  " << host << "  is/are not connected. Exiting GUI.";
+        throw std::exception();
     }
 
     // Check if type valid. If not, exit
@@ -273,19 +303,17 @@ void qDetectorMain::SetUpDetector(const std::string fName) {
     default:
         std::string detName = myDet->getDetectorTypeAsString();
         qDefs::checkErrorMessage(myDet, "qDetectorMain::SetUpDetector");
-        std::cout << "ERROR: " + host + " has unknown detector type \"" + detName + "\". Exiting GUI." << '\n';
         std::string errorMess = host + std::string(" has unknown detector type \"") +
                            detName + std::string("\". Exiting GUI.");
+        FILE_LOG(logERROR) << errorMess;
         qDefs::Message(qDefs::CRITICAL, errorMess, "qDetectorMain::SetUpDetector");
-        exit(-1);
+        throw std::exception();
     }
 
     setWindowTitle("SLS Detector GUI : " +
                    QString(myDet->getDetectorTypeAsString().c_str()) + " - " + QString(host.c_str()));
-    //#ifdef VERBOSE
-    std::cout << '\n'
-         << "Type : " << myDet->getDetectorTypeAsString() << "\nDetector : " << host << '\n';
-    //#endif
+    FILE_LOG(logINFO) << "Type : " << myDet->getDetectorTypeAsString() << "\nDetector : " << host;
+
     myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
     myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
     qDefs::checkErrorMessage(myDet, "qDetectorMain::SetUpDetector");
@@ -328,28 +356,33 @@ void qDetectorMain::Initialization() {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::LoadConfigFile(const std::string fName) {
-#ifdef VERBOSE
-    std::cout << "Loading config file at start up:" << fName << '\n';
-#endif
+
+	FILE_LOG(logINFO) << "Loading config file at start up:" << fName;
+
     struct stat st_buf;
     QString file = QString(fName.c_str());
 
     //path doesnt exist
-    if (stat(fName.c_str(), &st_buf))
+    if (stat(fName.c_str(), &st_buf)) {
         qDefs::Message(qDefs::WARNING, std::string("<nobr>Start up configuration failed to load. The following file does not exist:</nobr><br><nobr>") + fName, "qDetectorMain::LoadConfigFile");
-
+        FILE_LOG(logWARNING) << "Config file does not exist";
+    }
     //not a file
-    else if (!S_ISREG(st_buf.st_mode))
+    else if (!S_ISREG(st_buf.st_mode)) {
         qDefs::Message(qDefs::WARNING, std::string("<nobr>Start up configuration failed to load. The following file is not a recognized file format:</nobr><br><nobr>") + fName, "qDetectorMain::LoadConfigFile");
-
+        FILE_LOG(logWARNING) << "File not recognized";
+    }
     else {
         //could not load config file
-        if (myDet->readConfigurationFile(fName) == slsDetectorDefs::FAIL)
+        if (myDet->readConfigurationFile(fName) == slsDetectorDefs::FAIL) {
             qDefs::Message(qDefs::WARNING, std::string("<nobr>Could not load all the Configuration Parameters from file:<br>") + fName, "qDetectorMain::LoadConfigFile");
+            FILE_LOG(logWARNING) << "Could not load all configuration parameters";
+        }
         //successful
-        else
+        else {
             qDefs::Message(qDefs::INFORMATION, "<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>", "qDetectorMain::LoadConfigFile");
-
+            FILE_LOG(logINFO) << "Config file loaded successfully";
+        }
         qDefs::checkErrorMessage(myDet, "qDetectorMain::LoadConfigFile");
     }
 }
@@ -361,16 +394,14 @@ void qDetectorMain::EnableModes(QAction *action) {
 
     //listen to gui client
     if (action == actionListenGuiClient) {
-
         myServer->StartStopServer(actionListenGuiClient->isChecked());
      }
     //Set DebugMode
     else if (action == actionDebug) {
         enable = actionDebug->isChecked();
         tabs->setTabEnabled(Debugging, enable);
-#ifdef VERBOSE
-        std::cout << "Setting Debug Mode to " << enable << '\n';
-#endif
+        FILE_LOG(logINFO) << "Debug Mode: " << slsDetectorDefs::stringEnable(enable);
+
     }
 
     //Set ExpertMode(comes here only if its a digital detector)
@@ -382,23 +413,19 @@ void qDetectorMain::EnableModes(QAction *action) {
         actionSaveTrimbits->setVisible(enable);
         tab_measurement->SetExpertMode(enable);
         tab_settings->SetExpertMode(enable);
-#ifdef VERBOSE
-        std::cout << "Setting Expert Mode to " << enable << '\n';
-#endif
+        FILE_LOG(logINFO) << "Expert Mode: " << slsDetectorDefs::stringEnable(enable);
     }
 
     //Set DockableMode
     else {
         enable = actionDockable->isChecked();
-        if (enable)
+        if (enable) {
             dockWidgetPlot->setFeatures(QDockWidget::DockWidgetFloatable);
-        else {
+        } else {
             dockWidgetPlot->setFloating(false);
             dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
         }
-#ifdef VERBOSE
-        std::cout << "Setting Dockable Mode to " << enable << '\n';
-#endif
+        FILE_LOG(logINFO) << "Dockable Mode: " << slsDetectorDefs::stringEnable(enable);
     }
 }
 
@@ -406,28 +433,30 @@ void qDetectorMain::EnableModes(QAction *action) {
 
 void qDetectorMain::ExecuteUtilities(QAction *action) {
     bool refreshTabs = false;
+
     if (action == actionOpenSetup) {
-#ifdef VERBOSE
-        std::cout << "Loading Setup" << '\n';
-#endif
-        QString fName = QString(myDet->getFilePath().c_str());
-        qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
-        fName = QFileDialog::getOpenFileName(this,
-                                             tr("Load Detector Setup"), fName,
-                                             tr("Detector Setup files (*.det);;All Files(*)"));
-        // Gets called when cancelled as well
-        if (!fName.isEmpty()) {
-            if (myDet->retrieveDetectorSetup(std::string(fName.toAscii().constData())) != slsDetectorDefs::FAIL) {
-                qDefs::Message(qDefs::INFORMATION, "The Setup Parameters have been loaded successfully.", "qDetectorMain::ExecuteUtilities");
-                refreshTabs = true;
-            } else
-                qDefs::Message(qDefs::WARNING, std::string("Could not load the Setup Parameters from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
-            qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
-        }
-    } else if (action == actionSaveSetup) {
-#ifdef VERBOSE
-        std::cout << "Saving Setup" << '\n';
-#endif
+    	FILE_LOG(logDEBUG) << "Loading Setup";
+    	QString fName = QString(myDet->getFilePath().c_str());
+    	qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
+    	fName = QFileDialog::getOpenFileName(this,
+    			tr("Load Detector Setup"), fName,
+				tr("Detector Setup files (*.det);;All Files(*)"));
+    	// Gets called when cancelled as well
+    	if (!fName.isEmpty()) {
+    		if (myDet->retrieveDetectorSetup(std::string(fName.toAscii().constData())) != slsDetectorDefs::FAIL) {
+    			qDefs::Message(qDefs::INFORMATION, "The Setup Parameters have been loaded successfully.", "qDetectorMain::ExecuteUtilities");
+    			refreshTabs = true;
+    	    	FILE_LOG(logINFO) << "Setup Parameters loaded successfully";
+    		} else {
+    			qDefs::Message(qDefs::WARNING, std::string("Could not load the Setup Parameters from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+    	    	FILE_LOG(logWARNING) << "Could not load Setup Parameters";
+    		}
+    		qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
+    	}
+    }
+
+    else if (action == actionSaveSetup) {
+    	FILE_LOG(logDEBUG) << "Saving Setup";
         QString fName = QString(myDet->getFilePath().c_str());
         qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
         fName = QFileDialog::getSaveFileName(this,
@@ -435,16 +464,19 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                                              tr("Detector Setup files (*.det);;All Files(*) "));
         // Gets called when cancelled as well
         if (!fName.isEmpty()) {
-            if (myDet->dumpDetectorSetup(std::string(fName.toAscii().constData())) != slsDetectorDefs::FAIL)
+            if (myDet->dumpDetectorSetup(std::string(fName.toAscii().constData())) != slsDetectorDefs::FAIL) {
                 qDefs::Message(qDefs::INFORMATION, "The Setup Parameters have been saved successfully.", "qDetectorMain::ExecuteUtilities");
-            else
+                FILE_LOG(logINFO) << "Setup Parameters saved successfully";
+            } else {
                 qDefs::Message(qDefs::WARNING, std::string("Could not save the Setup Parameters from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+                FILE_LOG(logWARNING) << "Could not save Setup Parameters";
+            }
             qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
         }
-    } else if (action == actionOpenConfiguration) {
-#ifdef VERBOSE
-        std::cout << "Loading Configuration" << '\n';
-#endif
+    }
+
+    else if (action == actionOpenConfiguration) {
+    	FILE_LOG(logDEBUG) << "Loading Configuration";
         QString fName = QString(myDet->getFilePath().c_str());
         qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
         fName = QFileDialog::getOpenFileName(this,
@@ -455,14 +487,17 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             if (myDet->readConfigurationFile(std::string(fName.toAscii().constData())) != slsDetectorDefs::FAIL) {
                 qDefs::Message(qDefs::INFORMATION, "The Configuration Parameters have been configured successfully.", "qDetectorMain::ExecuteUtilities");
                 refreshTabs = true;
-            } else
+                FILE_LOG(logINFO) << "Configuration Parameters loaded successfully";
+            } else {
                 qDefs::Message(qDefs::WARNING, std::string("Could not load all the Configuration Parameters from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+            	FILE_LOG(logWARNING) << "Could not load all Configuration Parameters";
+            }
             qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
         }
-    } else if (action == actionSaveConfiguration) {
-#ifdef VERBOSE
-        std::cout << "Saving Configuration" << '\n';
-#endif
+    }
+
+    else if (action == actionSaveConfiguration) {
+    	FILE_LOG(logDEBUG) << "Saving Configuration";
         QString fName = QString(myDet->getFilePath().c_str());
         qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
         fName = QFileDialog::getSaveFileName(this,
@@ -470,37 +505,39 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                                              tr("Configuration files (*.config) ;;All Files(*)"));
         // Gets called when cancelled as well
         if (!fName.isEmpty()) {
-            if (myDet->writeConfigurationFile(std::string(fName.toAscii().constData())) != slsDetectorDefs::FAIL)
+            if (myDet->writeConfigurationFile(std::string(fName.toAscii().constData())) != slsDetectorDefs::FAIL) {
                 qDefs::Message(qDefs::INFORMATION, "The Configuration Parameters have been saved successfully.", "qDetectorMain::ExecuteUtilities");
-            else
+                FILE_LOG(logINFO) << "Configuration Parameters saved successfully";
+            } else {
                 qDefs::Message(qDefs::WARNING, std::string("Could not save the Configuration Parameters from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+                FILE_LOG(logWARNING) << "Could not save Configuration Parameters";
+            }
             qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
         }
-    } else if (action == actionLoadTrimbits) {
+    }
+
+    else if (action == actionLoadTrimbits) {
         QString fName = QString((myDet->getSettingsDir()).c_str());
         qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
         //gotthard
         if (actionLoadTrimbits->text().contains("Settings")) {
-#ifdef VERBOSE
-            std::cout << "Loading Settings" << '\n';
-#endif
+        	FILE_LOG(logDEBUG) << "Loading Settings";
             fName = QFileDialog::getOpenFileName(this,
                                                  tr("Load Detector Settings"), fName,
                                                  tr("Settings files (*.settings settings.sn*);;All Files(*)"));
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
-                if (myDet->loadSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL)
+                if (myDet->loadSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL) {
                     qDefs::Message(qDefs::INFORMATION, "The Settings have been loaded successfully.", "qDetectorMain::ExecuteUtilities");
-                else
+                } else {
                     qDefs::Message(qDefs::WARNING, std::string("Could not load the Settings from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+                }
                 qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
             }
 
         } //mythen and eiger
         else {
-#ifdef VERBOSE
-            std::cout << "Loading Trimbits" << '\n';
-#endif
+        	FILE_LOG(logDEBUG) << "Loading Trimbits";
             //so that even nonexisting files can be selected
             QFileDialog *fileDialog = new QFileDialog(this,
                                                       tr("Load Detector Trimbits"), fName,
@@ -511,19 +548,20 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
-                if (myDet->loadSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL)
+                if (myDet->loadSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL) {
                     qDefs::Message(qDefs::INFORMATION, "The Trimbits have been loaded successfully.", "qDetectorMain::ExecuteUtilities");
-                else
+                } else {
                     qDefs::Message(qDefs::WARNING, std::string("Could not load the Trimbits from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+                }
                 qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
             }
         }
-    } else if (action == actionSaveTrimbits) {
+    }
+
+    else if (action == actionSaveTrimbits) {
         //gotthard
         if (actionLoadTrimbits->text().contains("Settings")) {
-#ifdef VERBOSE
-            std::cout << "Saving Settings" << '\n';
-#endif
+        	FILE_LOG(logDEBUG) << "Saving Settings";
             //different output directory so as not to overwrite
             QString fName = QString((myDet->getSettingsDir()).c_str());
             qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
@@ -540,9 +578,8 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             }
         } //mythen and eiger
         else {
-#ifdef VERBOSE
-            std::cout << "Saving Trimbits" << '\n';
-#endif //different output directory so as not to overwrite
+        	FILE_LOG(logDEBUG) << "Saving Trimbits";
+        	//different output directory so as not to overwrite
             QString fName = QString((myDet->getSettingsDir()).c_str());
             qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
             fName = QFileDialog::getSaveFileName(this,
@@ -783,12 +820,6 @@ void qDetectorMain::UncheckServer() {
     disconnect(menuModes, SIGNAL(triggered(QAction *)), this, SLOT(EnableModes(QAction *)));
     actionListenGuiClient->setChecked(false);
     connect(menuModes, SIGNAL(triggered(QAction *)), this, SLOT(EnableModes(QAction *)));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-bool qDetectorMain::isCurrentlyTabDeveloper() {
-    return (tabs->currentIndex() == Developer);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

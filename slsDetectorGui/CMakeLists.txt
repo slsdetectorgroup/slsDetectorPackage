@@ -67,13 +67,7 @@ qt4_add_resources(RESOURCES_SRCS ${RESOURCES})
 include_directories(
     include
     slsDetectorPlotting/include
-    ../slsSupportLib/include 
-    ../slsDetectorSoftware/slsReceiverInterface   
-    ../slsDetectorSoftware/slsDetector  
-    ../slsDetectorSoftware/slsDetectorAnalysis  
-    ../slsDetectorSoftware/multiSlsDetector   
-    ../slsDetectorSoftware/usersFunctions  
-    ../slsReceiverSoftware/include
+    ../slsSupportLib/include  
     ${QT_INCLUDE_DIR}
     ${QT_QTCORE_INCLUDE_DIR}
     ${QT_QTGUI_INCLUDE_DIR}
@@ -82,7 +76,7 @@ include_directories(
 )
 
 add_definitions(
-    -DDACS_INT -DVERBOSE -DPRINT_LOG
+    -DPRINT_LOG -DVERBOSE 
 )
 
 add_executable(slsDetectorGui

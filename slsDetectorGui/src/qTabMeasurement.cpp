@@ -270,7 +270,7 @@ void qTabMeasurement::Initialization() {
         connect(spinNumGates, SIGNAL(valueChanged(int)), this, SLOT(setNumGates(int)));
 
     //Number of Probes
-    connect(spinNumProbes, SIGNAL(valueChanged(int)), this, SLOT(setNumProbes(int)));
+    //connect(spinNumProbes, SIGNAL(valueChanged(int)), this, SLOT(setNumProbes(int)));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -879,7 +879,7 @@ void qTabMeasurement::EnableProbes() {
     }
     qDefs::checkErrorMessage(myDet, "qTabMeasurement::EnableProbes");
 
-    connect(spinNumProbes, SIGNAL(valueChanged(int)), this, SLOT(setNumProbes(int)));
+   // connect(spinNumProbes, SIGNAL(valueChanged(int)), this, SLOT(setNumProbes(int)));
     connect(spinNumTriggers, SIGNAL(valueChanged(int)), this, SLOT(setNumTriggers(int)));
     return;
 

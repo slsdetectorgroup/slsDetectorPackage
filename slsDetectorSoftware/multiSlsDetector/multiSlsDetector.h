@@ -10,9 +10,9 @@
 #include "error_defs.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
-
+#include "SharedMemory.h"
 class slsDetector;
-class SharedMemory;
+// class SharedMemory;
 class ZmqSocket;
 class detectorData;
 
@@ -27,10 +27,7 @@ class detectorData;
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
-class multiSlsDetector : public virtual slsDetectorDefs,
-                         public virtual errorDefs {
 
-  private:
     /**
      * @short structure allocated in shared memory to store detector settings
      * for IPC and cache
@@ -99,7 +96,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
         int maxNumberOfChannelsPerDetector[2];
 
         /** timer values */
-        int64_t timerValue[MAX_TIMERS];
+        int64_t timerValue[slsDetectorDefs::timerIndex::MAX_TIMERS];
 
         /** flag for acquiring */
         bool acquiringFlag;
@@ -112,6 +109,12 @@ class multiSlsDetector : public virtual slsDetectorDefs,
         bool receiver_upstream;
 
     } sharedMultiSlsDetector;
+
+class multiSlsDetector : public virtual slsDetectorDefs,
+                         public virtual errorDefs {
+
+  // private:
+
 
   public:
     /**
@@ -1963,7 +1966,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int detId;
 
     /** Shared Memory object */
-    SharedMemory *sharedMemory {nullptr};
+    SharedMemory<sharedMultiSlsDetector> *sharedMemory {nullptr};
 
     /** Shared memory structure */
     sharedMultiSlsDetector *thisMultiDetector {nullptr};

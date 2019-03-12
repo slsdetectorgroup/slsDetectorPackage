@@ -13,13 +13,13 @@
 #include "error_defs.h"
 #include "logger.h"
 #include "ClientSocket.h"
-
+#include "SharedMemory.h"
 class ClientInterface;
 
 #include <cmath>
 
 class multiSlsDetector;
-class SharedMemory;
+// class SharedMemory;
 class ServerInterface;
 class MySocketTCP;
 
@@ -42,9 +42,6 @@ typedef  struct detParameterList {
 } detParameterList;
 
 
-class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
-
-private:
 	/**
 	 * @short structure allocated in shared memory to store detector settings for IPC and cache
 	 */
@@ -68,7 +65,7 @@ private:
 		char hostname[MAX_STR_LENGTH];
 
 		/** detector type  \ see :: detectorType*/
-		detectorType myDetectorType;
+		slsDetectorDefs::detectorType myDetectorType;
 
 		/** END OF FIXED PATTERN -----------------------------------------------*/
 
@@ -125,22 +122,22 @@ private:
 		int nROI;
 
 		/** list of rois */
-		ROI roiLimits[MAX_ROIS];
+		slsDetectorDefs::ROI roiLimits[MAX_ROIS];
 
 		/** readout flags */
-		readOutFlags roFlags;
+		slsDetectorDefs::readOutFlags roFlags;
 
 		/** name root of the output files */
 		char settingsFile[MAX_STR_LENGTH];
 
 		/** detector settings (standard, fast, etc.) */
-		detectorSettings currentSettings;
+		slsDetectorDefs::detectorSettings currentSettings;
 
 		/** detector threshold (eV) */
 		int currentThresholdEV;
 
 		/** timer values */
-		int64_t timerValue[MAX_TIMERS];
+		int64_t timerValue[slsDetectorDefs::timerIndex::MAX_TIMERS];
 
 		/** memory offsets for the module structures  */
 		int modoff;
@@ -226,7 +223,7 @@ private:
 		int64_t receiverAPIVersion;
 
 		/** receiver frames discard policy */
-		frameDiscardPolicy receiver_frameDiscardMode;
+		slsDetectorDefs::frameDiscardPolicy receiver_frameDiscardMode;
 
 		/** receiver partial frames padding enable */
 		bool receiver_framePadding;
@@ -250,7 +247,7 @@ private:
 		int receiver_fileIndex;
 
 		/** file format */
-		fileFormat receiver_fileFormatType;
+		slsDetectorDefs::fileFormat receiver_fileFormatType;
 
 		/** frames per file */
 		int receiver_framesPerFile;
@@ -263,10 +260,7 @@ private:
 
 	} sharedSlsDetector;
 
-
-
-
-
+class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 public:
 
 	/**
@@ -1794,7 +1788,7 @@ private:
 	int detId;
 
 	/** Shared Memory object */
-	SharedMemory* sharedMemory {nullptr};
+	SharedMemory<sharedSlsDetector>* sharedMemory {nullptr};
 
 	/** Shared memory structure */
 	sharedSlsDetector *thisDetector {nullptr};

@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 
+template <typename T>
 class SharedMemory{
 public:
 	/**
@@ -43,21 +44,20 @@ public:
      * throws a SharedMemoryException exception on failure to create, ftruncate or map
      * @param sz of shared memory
      */
-    void* CreateSharedMemory(size_t sz);
+    void CreateSharedMemory(size_t sz);
 
     /**
      * Open existing Shared memory and call MapSharedMemory to map it to an address
      * throws a SharedMemoryException exception on failure to open or map
      * @param sz of shared memory
      */
-    void* OpenSharedMemory(size_t sz);
+    void OpenSharedMemory(size_t sz);
 
     /**
      * Unmap shared memory from an address
      * throws a SharedMemoryException exception on failure
-     * @param addr double pointer to address to be mapped
      */
-    void UnmapSharedMemory(void* addr);
+    void UnmapSharedMemory();
 
 	/**
 	 * Remove existing Shared memory
@@ -68,6 +68,19 @@ public:
      * Maximum length of name as from man pages
      */
     static const int NAME_MAX = 255;
+
+
+    /*
+    Using the call operator to access the pointer
+
+    */
+    T* operator()(){
+        return shared_struct;
+    }
+
+    const T* operator()() const{
+        return shared_struct;
+    }
 
 private:
     /**
@@ -84,7 +97,7 @@ private:
      * throws a SharedMemoryException exception on failure
      * @param sz of shared memory
      */
-    void* MapSharedMemory(size_t sz);
+    T* MapSharedMemory(size_t sz);
 
     /**
      * Verify if existing shared memory size matches expected size
@@ -101,5 +114,7 @@ private:
 
 	/** shm size */
 	size_t shmSize;
+
+    T* shared_struct;
 
 };

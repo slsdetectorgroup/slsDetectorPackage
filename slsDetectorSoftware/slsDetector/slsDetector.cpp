@@ -31,7 +31,7 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
 	 * so sls shared memory will be created */
 
     // ensure shared memory was not created before
-    auto shm = SharedMemory(multiId, id);
+    auto shm = SharedMemory<sharedSlsDetector>(multiId, id);
     if (shm.IsExisting()) {
         FILE_LOG(logWARNING) << "This shared memory should have been "
                                 "deleted before! "
@@ -202,7 +202,7 @@ int64_t slsDetector::getId(idMode mode) {
 }
 
 void slsDetector::freeSharedMemory(int multiId, int slsId) {
-    auto shm = SharedMemory(multiId, slsId);
+    auto shm = SharedMemory<sharedSlsDetector>(multiId, slsId);
     shm.RemoveSharedMemory();
 }
 
@@ -236,7 +236,7 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
         int sz = calculateSharedMemorySize(type);
 
         // shared memory object with name
-        sharedMemory = new SharedMemory(multiId, detId);
+        sharedMemory = new SharedMemory<sharedSlsDetector>(multiId, detId);
 
         // create
         if (created) {
@@ -636,7 +636,7 @@ int slsDetector::receiveModule(sls_detector_module *myMod) {
 }
 
 slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
-    auto shm = SharedMemory(multiId, detId);
+    auto shm = SharedMemory<sharedSlsDetector>(multiId, detId);
     if (!shm.IsExisting()) {
         FILE_LOG(logERROR) << "Shared memory " << shm.GetName() << " does not exist.\n"
                                                                    "Corrupted Multi Shared memory. Please free shared memory.";

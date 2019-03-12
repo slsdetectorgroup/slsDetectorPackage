@@ -3,6 +3,9 @@
 #include "ansi.h"
 #include "logger.h"
 
+#include "slsDetector.h"
+#include "multiSlsDetector.h"
+
 #include <iostream>
 #include <stdio.h>      // printf
 #include <cerrno>       // errno
@@ -18,7 +21,8 @@
 #define SHM_SLS_PREFIX "_sls_"
 #define SHM_ENV_NAME	"SLSDETNAME"
 
-SharedMemory::SharedMemory(int multiId, int slsId):
+template<typename T>
+SharedMemory<T>::SharedMemory(int multiId, int slsId):
     fd(-1),
 	shmSize(0)
 {
@@ -26,14 +30,14 @@ SharedMemory::SharedMemory(int multiId, int slsId):
 }
 
 
-
-SharedMemory::~SharedMemory(){
+template<typename T>
+SharedMemory<T>::~SharedMemory(){
 	if (fd >= 0)
 		close(fd);
 }
 
-
-bool SharedMemory::IsExisting() {
+template<typename T>
+bool SharedMemory<T>::IsExisting() {
     bool ret = true;
     int tempfd = shm_open(name.c_str(), O_RDWR, 0);
     if ((tempfd < 0) && (errno == ENOENT)) {
@@ -43,12 +47,13 @@ bool SharedMemory::IsExisting() {
     return ret;
 }
 
-std::string SharedMemory::GetName() {
+template<typename T>
+std::string SharedMemory<T>::GetName() {
     return name;
 }
 
-
-void* SharedMemory::CreateSharedMemory(size_t sz){
+template<typename T>
+void SharedMemory<T>::CreateSharedMemory(size_t sz){
     // create
     fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
     if (fd < 0) {
@@ -65,12 +70,15 @@ void* SharedMemory::CreateSharedMemory(size_t sz){
     }
 
     // map
-    void* addr = MapSharedMemory(sz);
+    // void* addr = MapSharedMemory(sz);
+    shared_struct = MapSharedMemory(sz);
     FILE_LOG(logINFO) << "Shared memory created " << name;
-    return addr;
+    
+    // return addr;
 }
 
-void* SharedMemory::OpenSharedMemory(size_t sz){
+template<typename T>
+void SharedMemory<T>::OpenSharedMemory(size_t sz){
     // open
     fd = shm_open(name.c_str(), O_RDWR, 0);
     if (fd < 0) {
@@ -78,19 +86,21 @@ void* SharedMemory::OpenSharedMemory(size_t sz){
         throw SharedMemoryException();
     }
 
-    return MapSharedMemory(sz);
+    shared_struct = MapSharedMemory(sz);
+    // return MapSharedMemory(sz);
 }
 
-
-void SharedMemory::UnmapSharedMemory(void* addr) {
-    if (munmap(addr, shmSize) < 0) {
+template<typename T>
+void SharedMemory<T>::UnmapSharedMemory() {
+    if (munmap(shared_struct, shmSize) < 0) {
     	FILE_LOG(logERROR) << "Unmapping shared memory " << name << " failed: " << strerror(errno);
         close(fd);
         throw SharedMemoryException();
     }
 }
 
-void SharedMemory::RemoveSharedMemory() {
+template<typename T>
+void SharedMemory<T>::RemoveSharedMemory() {
     if (shm_unlink(name.c_str()) < 0) {
         // silent exit if shm did not exist anyway
         if (errno == ENOENT)
@@ -102,7 +112,8 @@ void SharedMemory::RemoveSharedMemory() {
 }
 
 
-void* SharedMemory::MapSharedMemory(size_t sz) {
+template<typename T>
+T* SharedMemory<T>::MapSharedMemory(size_t sz) {
     void* addr = mmap(nullptr, sz, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (addr == MAP_FAILED) {
     	FILE_LOG(logERROR) << "Mapping shared memory " << name << " failed: " << strerror(errno);
@@ -111,11 +122,11 @@ void* SharedMemory::MapSharedMemory(size_t sz) {
     }
     shmSize = sz;
     close(fd);
-    return addr;
+    return (T*)addr;
 }
 
-
-std::string SharedMemory::ConstructSharedMemoryName(int multiId, int slsId) {
+template<typename T>
+std::string SharedMemory<T>::ConstructSharedMemoryName(int multiId, int slsId) {
 
 	// using environment path
 	std::string sEnvPath = "";
@@ -141,8 +152,8 @@ std::string SharedMemory::ConstructSharedMemoryName(int multiId, int slsId) {
 	return temp;
 }
 
-
-int SharedMemory::VerifySizeMatch(size_t expectedSize) {
+template<typename T>
+int SharedMemory<T>::VerifySizeMatch(size_t expectedSize) {
     struct stat sb;
     // could not fstat
     if (fstat(fd, &sb) < 0) {
@@ -163,3 +174,5 @@ int SharedMemory::VerifySizeMatch(size_t expectedSize) {
     return 0;
 }
 
+template class SharedMemory<sharedSlsDetector>;
+template class SharedMemory<sharedMultiSlsDetector>;

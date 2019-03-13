@@ -29,7 +29,7 @@ class MySocketTCP;
 /**
  * parameter list that has to be initialized depending on the detector type
  */
-typedef struct detParameterList {
+struct detParameterList {
     int nChanX;
     int nChanY;
     int nChipX;
@@ -38,7 +38,7 @@ typedef struct detParameterList {
     int dynamicRange;
     int nGappixelsX;
     int nGappixelsY;
-} detParameterList;
+};
 
 /**
 	 * @short structure allocated in shared memory to store detector settings for IPC and cache
@@ -133,15 +133,6 @@ struct sharedSlsDetector {
 
     /** timer values */
     int64_t timerValue[slsDetectorDefs::timerIndex::MAX_TIMERS];
-
-    /** memory offsets for the module structures  */
-    int modoff;
-
-    /** memory offsets for the dac arrays */
-    int dacoff;
-
-    /** memory offsets for the channel register arrays  -trimbits*/
-    int chanoff;
 
     /** ip address/hostname of the receiver for client control via TCP */
     char receiver_hostname[MAX_STR_LENGTH];
@@ -1648,7 +1639,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param verify true to verify if shm size matches existing one
 	 * @returns true if the shared memory was created now
 	 */
-    void initSharedMemory(bool created, detectorType type, int multiId, bool verify = true);
+    void initSharedMemory(detectorType type, int multiId, bool verify = true);
 
     /**
 	 * Sets detector parameters depending detector type
@@ -1658,13 +1649,6 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     void setDetectorSpecificParameters(detectorType type, detParameterList &list);
 
     /**
-	 * Calculate shared memory size based on detector type
-	 * @param type type of detector
-	 * @returns size of shared memory of sharedSlsDetector structure
-	 */
-    int calculateSharedMemorySize(detectorType type);
-
-    /**
 	 * Initialize detector structure to defaults
 	 * Called when new shared memory is created
 	 * @param type type of detector
@@ -1672,23 +1656,9 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     void initializeDetectorStructure(detectorType type);
 
     /**
-	 * Initialize class members (and from parent classes)
-	 * Also connect member pointers to detector structure pointers
-	 * Called when shared memory created/existed
-	 */
-    void initializeMembers();
-
-    /**
-	 * Initialize detector structure
-	 * Called when new shared memory created
-	 * Initializes the member pointers to defaults as well
-	 */
-    void initializeDetectorStructurePointers();
-
-    /**
 	 * Allocates the memory for a sls_detector_module structure and initializes it
 	 * Uses current detector type
-	 * @returns myMod the pointer to the allocate dmemory location
+	 * @returns myMod the pointer to the allocate memory location
 	 */
     sls_detector_module *createModule();
 
@@ -1775,19 +1745,8 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     int detId;
 
     /** Shared Memory object */
-    SharedMemory<sharedSlsDetector> *sharedMemory{nullptr};
+    SharedMemory<sharedSlsDetector> detector_shm{0,0};
 
-    /** Shared memory structure */
-    sharedSlsDetector *thisDetector{nullptr};
-
-    /** pointer to detector module structures in shared memory */
-    // sls_detector_module *detectorModules{nullptr};
-
-    /** pointer to dac valuse in shared memory  */
-    // int *dacs{nullptr};
-
-    /** pointer to channel registers  in shared memory */
-    // int *chanregs{nullptr};
 };
 
 #endif

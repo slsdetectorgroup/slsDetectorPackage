@@ -31,7 +31,7 @@ slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
 	 * so sls shared memory will be created */
 
     // ensure shared memory was not created before
-    auto shm = SharedMemory(multiId, id);
+    SharedMemory<sharedSlsDetector> shm(multiId, id);
     if (shm.IsExisting()) {
         FILE_LOG(logWARNING) << "This shared memory should have been "
                                 "deleted before! "
@@ -59,7 +59,7 @@ slsDetector::slsDetector(int multiId, int id, bool verify)
 
 slsDetector::~slsDetector() {
     if (sharedMemory) {
-        sharedMemory->UnmapSharedMemory(thisDetector);
+        sharedMemory->UnmapSharedMemory();
         delete sharedMemory;
     }
 }
@@ -202,13 +202,13 @@ int64_t slsDetector::getId(idMode mode) {
 }
 
 void slsDetector::freeSharedMemory(int multiId, int slsId) {
-    auto shm = SharedMemory(multiId, slsId);
+    SharedMemory<sharedSlsDetector> shm(multiId, slsId);
     shm.RemoveSharedMemory();
 }
 
 void slsDetector::freeSharedMemory() {
     if (sharedMemory) {
-        sharedMemory->UnmapSharedMemory(thisDetector);
+        sharedMemory->UnmapSharedMemory();
         sharedMemory->RemoveSharedMemory();
         delete sharedMemory;
         sharedMemory = nullptr;
@@ -236,15 +236,17 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
         int sz = calculateSharedMemorySize(type);
 
         // shared memory object with name
-        sharedMemory = new SharedMemory(multiId, detId);
+        sharedMemory = new SharedMemory<sharedSlsDetector>(multiId, detId);
 
         // create
         if (created) {
-            thisDetector = (sharedSlsDetector *)sharedMemory->CreateSharedMemory(sz);
+            sharedMemory->CreateSharedMemory(sz);
+            thisDetector = (*sharedMemory)();
         }
         // open and verify version
         else {
-            thisDetector = (sharedSlsDetector *)sharedMemory->OpenSharedMemory(sz);
+            sharedMemory->OpenSharedMemory(sz);
+            thisDetector = (*sharedMemory)();
             if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
                 FILE_LOG(logERROR) << "Single shared memory "
                                       "("
@@ -259,7 +261,7 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
         if (sharedMemory) {
             // unmap
             if (thisDetector) {
-                sharedMemory->UnmapSharedMemory(thisDetector);
+                sharedMemory->UnmapSharedMemory();
                 thisDetector = nullptr;
             }
             // delete
@@ -636,17 +638,16 @@ int slsDetector::receiveModule(sls_detector_module *myMod) {
 }
 
 slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
-    auto shm = SharedMemory(multiId, detId);
+    SharedMemory<sharedSlsDetector> shm(multiId, detId);
     if (!shm.IsExisting()) {
         FILE_LOG(logERROR) << "Shared memory " << shm.GetName() << " does not exist.\n"
                                                                    "Corrupted Multi Shared memory. Please free shared memory.";
         throw SharedMemoryException();
     }
 
-    size_t sz = sizeof(sharedSlsDetector);
-
     // open, map, verify version
-    auto sdet = (sharedSlsDetector *)shm.OpenSharedMemory(sz);
+    shm.OpenSharedMemory();
+    auto sdet = shm();
     if (verify && sdet->shmversion != SLS_SHMVERSION) {
         FILE_LOG(logERROR) << "Single shared memory "
                               "("
@@ -654,13 +655,13 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
                                                          "(expected 0x"
                            << std::hex << SLS_SHMVERSION << " but got 0x" << sdet->shmversion << ")" << std::dec;
         // unmap and throw
-        sharedMemory->UnmapSharedMemory(thisDetector);
+        sharedMemory->UnmapSharedMemory();
         throw SharedMemoryException();
     }
 
     // get type, unmap
     auto type = sdet->myDetectorType;
-    shm.UnmapSharedMemory(sdet);
+    shm.UnmapSharedMemory();
     return type;
 }
 

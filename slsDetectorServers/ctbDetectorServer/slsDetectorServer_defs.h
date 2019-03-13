@@ -97,6 +97,6 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 
 #define IP_PACKETSIZE               (0x2032)
 #define ADC_PORT_INVERT_VAL         (0x453b2593)
-#define MAXIMUM_ADC_CLK             (40)
-#define PLL_VCO_FREQ_MHZ            (400)
+#define MAXIMUM_ADC_CLK             (65)
+#define PLL_VCO_FREQ_MHZ            (800)
 

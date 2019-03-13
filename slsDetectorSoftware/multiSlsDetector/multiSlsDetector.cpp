@@ -244,7 +244,7 @@ void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
         return;
     }
 
-    // multi
+    // multi - get number of detectors from shm
     SharedMemory<sharedMultiSlsDetector> multiShm(multiId, -1);
     int numDetectors = 0;
 
@@ -276,7 +276,7 @@ void multiSlsDetector::freeSharedMemory(int detPos) {
     detectors.clear();
 
     // clear multi detector shm
-    sharedMemory.RemoveSharedMemory(); //TODO verify use
+    sharedMemory.RemoveSharedMemory();
     client_downstream = false;
 }
 

@@ -12,7 +12,6 @@
 #include "logger.h"
 #include "sls_detector_defs.h"
 class slsDetector;
-// class SharedMemory;
 class ZmqSocket;
 class detectorData;
 

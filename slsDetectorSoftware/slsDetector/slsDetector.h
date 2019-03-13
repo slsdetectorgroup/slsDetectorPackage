@@ -19,7 +19,6 @@ class ClientInterface;
 #include <cmath>
 
 class multiSlsDetector;
-// class SharedMemory;
 class ServerInterface;
 class MySocketTCP;
 

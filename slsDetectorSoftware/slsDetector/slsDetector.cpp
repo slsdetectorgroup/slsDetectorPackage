@@ -240,13 +240,11 @@ void slsDetector::initSharedMemory(bool created, detectorType type, int multiId,
 
         // create
         if (created) {
-            // thisDetector = (sharedSlsDetector *)sharedMemory->CreateSharedMemory(sz);
             sharedMemory->CreateSharedMemory(sz);
             thisDetector = (*sharedMemory)();
         }
         // open and verify version
         else {
-            // thisDetector = (sharedSlsDetector *)sharedMemory->OpenSharedMemory(sz);
             sharedMemory->OpenSharedMemory(sz);
             thisDetector = (*sharedMemory)();
             if (verify && thisDetector->shmversion != SLS_SHMVERSION) {
@@ -648,7 +646,6 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
     }
 
     // open, map, verify version
-    // auto sdet = (sharedSlsDetector *)shm.OpenSharedMemory(sz);
     shm.OpenSharedMemory();
     auto sdet = shm();
     if (verify && sdet->shmversion != SLS_SHMVERSION) {

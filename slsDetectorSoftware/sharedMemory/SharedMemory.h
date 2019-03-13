@@ -121,25 +121,21 @@ class SharedMemory {
      * throws a SharedMemoryException exception on failure to create, ftruncate or map
      * @param sz of shared memory
      */
-    void CreateSharedMemory(size_t sz = 0) {
-        if (sz == 0) {
-            sz = sizeof(T);
-        }
-
+    void CreateSharedMemory() {
         fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
         if (fd < 0) {
             FILE_LOG(logERROR) << "Create shared memory " << name << " failed: " << strerror(errno);
             throw SharedMemoryException();
         }
 
-        if (ftruncate(fd, sz) < 0) {
+        if (ftruncate(fd, sizeof(T)) < 0) {
             FILE_LOG(logERROR) << "Create shared memory " << name << " failed at ftruncate: " << strerror(errno);
             close(fd);
             RemoveSharedMemory();
             throw SharedMemoryException();
         }
 
-        shared_struct = MapSharedMemory(sz);
+        shared_struct = MapSharedMemory();
         FILE_LOG(logINFO) << "Shared memory created " << name;
     }
 
@@ -148,18 +144,14 @@ class SharedMemory {
      * throws a SharedMemoryException exception on failure to open or map
      * @param sz of shared memory
      */
-    void OpenSharedMemory(size_t sz = 0) {
-        if (sz == 0) {
-            sz = sizeof(T);
-        }
-
+    void OpenSharedMemory() {
         fd = shm_open(name.c_str(), O_RDWR, 0);
         if (fd < 0) {
             FILE_LOG(logERROR) << "Open existing shared memory " << name << " failed: " << strerror(errno);
             throw SharedMemoryException();
         }
 
-        shared_struct = MapSharedMemory(sz);
+        shared_struct = MapSharedMemory();
     }
 
     /**
@@ -251,14 +243,14 @@ class SharedMemory {
      * @param sz of shared memory
      */
 
-    T *MapSharedMemory(size_t sz) {
-        void *addr = mmap(nullptr, sz, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    T *MapSharedMemory() {
+        void *addr = mmap(nullptr, sizeof(T), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if (addr == MAP_FAILED) {
             FILE_LOG(logERROR) << "Mapping shared memory " << name << " failed: " << strerror(errno);
             close(fd);
             throw SharedMemoryException();
         }
-        shmSize = sz;
+        shmSize = sizeof(T);
         close(fd);
         return (T *)addr;
     }

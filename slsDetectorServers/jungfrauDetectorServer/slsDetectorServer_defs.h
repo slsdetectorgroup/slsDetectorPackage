@@ -88,6 +88,7 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define ADC_PHASE_HALF_SPEED 		(0x2D) //45
 #define ADC_PHASE_QUARTER_SPEED 	(0x2D) //45
 #define ADC_PORT_INVERT_VAL         (0x453b2a9c)
+#define MAX_PHASE_SHIFTS			(160)
 
 /* MSB & LSB DEFINES */
 #define MSB_OF_64_BIT_REG_OFST		(32)

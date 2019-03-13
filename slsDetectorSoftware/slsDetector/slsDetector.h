@@ -1769,7 +1769,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param mod module structure which has to be written to file
 	 * @returns OK or FAIL if the file could not be written
 	 */
-    int writeSettingsFile(const std::string &fname, sls_detector_module mod);
+    int writeSettingsFile(const std::string &fname, sls_detector_module& mod);
 
     /** slsDetector Id or position in the detectors list */
     int detId;
@@ -1781,13 +1781,13 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     sharedSlsDetector *thisDetector{nullptr};
 
     /** pointer to detector module structures in shared memory */
-    sls_detector_module *detectorModules{nullptr};
+    // sls_detector_module *detectorModules{nullptr};
 
     /** pointer to dac valuse in shared memory  */
-    int *dacs{nullptr};
+    // int *dacs{nullptr};
 
     /** pointer to channel registers  in shared memory */
-    int *chanregs{nullptr};
+    // int *chanregs{nullptr};
 };
 
 #endif

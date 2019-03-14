@@ -14,6 +14,7 @@
 #include "HDF5File.h"
 #endif
 #include "DataStreamer.h"
+#include "sls_detector_exceptions.h"
 
 #include <iostream>
 #include <errno.h>
@@ -56,7 +57,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		currentFrameIndex(0)
 {
      if(ThreadObject::CreateThread() == FAIL)
-         throw std::exception();
+         throw sls::RuntimeError("Could not create processing thread");
 
     FILE_LOG(logDEBUG) << "DataProcessor " << ind << " created";
 

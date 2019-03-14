@@ -385,7 +385,7 @@ std::string multiSlsDetector::exec(const char *cmd) {
     std::string result = "";
     FILE *pipe = popen(cmd, "r");
     if (!pipe) {
-        throw std::exception();
+        throw RuntimeError("Could not open pipe");
     }
     try {
         while (!feof(pipe)) {

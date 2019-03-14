@@ -6,6 +6,7 @@
  ***********************************************/
 
 #include "Fifo.h"
+#include "sls_detector_exceptions.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -23,7 +24,7 @@ Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):
 		status_fifoFree(depth){
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	if(CreateFifos(fifoItemSize) == FAIL)
-	    throw std::exception();
+	    throw sls::RuntimeError("Could not create FIFO");
 }
 
 

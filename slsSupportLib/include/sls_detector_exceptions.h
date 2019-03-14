@@ -30,6 +30,12 @@ public:
 
 };
 
+struct ZmqSocketError : public RuntimeError {
+public:
+	ZmqSocketError(std::string msg):RuntimeError(msg) {}
+
+};
+
 
 
 }

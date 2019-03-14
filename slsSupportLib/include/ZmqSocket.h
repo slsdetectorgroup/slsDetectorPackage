@@ -8,7 +8,7 @@
  */
 
 #include "ansi.h"
-
+#include "sls_detector_exceptions.h"
 
 #include <iostream>
 #include <zmq.h>
@@ -26,6 +26,8 @@ using namespace rapidjson;
 
 // #define ZMQ_DETAIL
 #define ROIVERBOSITY
+
+
 
 class ZmqSocket {
 
@@ -54,7 +56,7 @@ public:
 		struct addrinfo *result;
 		if ((ConvertHostnameToInternetAddress(hostname_or_ip, &result)) ||
 		 (ConvertInternetAddresstoIpString(result, ip, MAX_STR_LENGTH)))
-		    throw std::exception();
+		    throw sls::ZmqSocketError("Could convert IP to string");
 
 		// construct address
 		sprintf (sockfd.serverAddress, "tcp://%s:%d", ip, portno);
@@ -65,14 +67,14 @@ public:
 		// create context
 		sockfd.contextDescriptor = zmq_ctx_new();
 		if (sockfd.contextDescriptor == 0)
-		    throw std::exception();
+		    throw sls::ZmqSocketError("Could not create contextDescriptor");
 
 		// create publisher
 		sockfd.socketDescriptor = zmq_socket (sockfd.contextDescriptor, ZMQ_SUB);
 		if (sockfd.socketDescriptor == 0) {
 		    PrintError ();
 		    Close ();
-		    throw std::exception();
+		    throw sls::ZmqSocketError("Could not create socket");
 		}
 
 		//Socket Options provided above
@@ -80,7 +82,7 @@ public:
 		if ( zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
 		    PrintError ();
 		    Close();
-		    throw std::exception();
+		    throw sls::ZmqSocketError("Could set socket opt");
 		}
 		//ZMQ_LINGER default is already -1 means no messages discarded. use this options if optimizing required
 		//ZMQ_SNDHWM default is 0 means no limit. use this to optimize if optimizing required
@@ -89,7 +91,7 @@ public:
 		if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
 		    PrintError ();
 		    Close();
-		    throw std::exception();
+		    throw sls::ZmqSocketError("Could not set ZMQ_LINGER");
 		}
 	};
 
@@ -110,13 +112,13 @@ public:
 		// create context
 		sockfd.contextDescriptor = zmq_ctx_new();
 		if (sockfd.contextDescriptor == 0)
-		    throw std::exception();
+		    throw sls::ZmqSocketError("Could not create contextDescriptor");
 		// create publisher
 		sockfd.socketDescriptor = zmq_socket (sockfd.contextDescriptor, ZMQ_PUB);
 		if (sockfd.socketDescriptor == 0) {
 			PrintError ();
 			Close ();
-			throw std::exception();
+			throw sls::ZmqSocketError("Could not create socket");
 		}
 
 		//Socket Options provided above
@@ -130,7 +132,7 @@ public:
 		if (zmq_bind (sockfd.socketDescriptor, sockfd.serverAddress) < 0) {
 			PrintError ();
 			Close ();
-			throw std::exception();
+			throw sls::ZmqSocketError("Could not bind socket");
 		}
 
 		//sleep for a few milliseconds to allow a slow-joiner

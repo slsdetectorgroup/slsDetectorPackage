@@ -11,6 +11,7 @@
 #include "Fifo.h"
 #include "genericSocket.h"
 #include "container_utils.h" // For sls::make_unique<>
+#include "sls_detector_exceptions.h"
 
 #include <iostream>
 #include <errno.h>
@@ -57,7 +58,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 		oddStartingPacket(true)
 {
 	if(ThreadObject::CreateThread() == FAIL)
-	    throw std::exception();
+	    throw sls::RuntimeError("Could not create listener thread");
 
 	FILE_LOG(logDEBUG) << "Listener " << ind << " created";
 }

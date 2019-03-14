@@ -15,6 +15,7 @@
 
 #include "slsReceiver.h"
 #include "slsReceiverTCPIPInterface.h"
+#include "sls_detector_exceptions.h"
 #include "gitInfoReceiver.h"
 #include "logger.h"
 
@@ -60,7 +61,7 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 			tempval = GITREV;
 			tempval = (tempval <<32) | GITDATE;
 			std::cout << "SLS Receiver " << GITBRANCH << " (0x" << std::hex << tempval << ")" << std::endl;
-			throw std::exception();
+			throw sls::RuntimeError();
 
 		case 'h':
 		default:
@@ -73,7 +74,7 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 					+ "\t                          receivers\n\n";
 
 			FILE_LOG(logINFO) << help_message << std::endl;
-			throw std::exception();
+			throw sls::RuntimeError();
 
 		}
 	}

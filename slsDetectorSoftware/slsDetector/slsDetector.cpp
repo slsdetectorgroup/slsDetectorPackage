@@ -22,6 +22,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <cassert>
 
 #define DEFAULT_HOSTNAME "localhost"
 
@@ -230,7 +231,7 @@ void slsDetector::initSharedMemory(detectorType type,
                                                              "version mismatch "
                                                              "(expected 0x"
                                << std::hex << SLS_SHMVERSION << " but got 0x" << detector_shm()->shmversion << ")" << std::dec;
-            throw SharedMemoryException();
+            throw SharedMemoryError("Shared memory version mismatch (det)");
         }
     }
 }
@@ -537,7 +538,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
     if (!shm.IsExisting()) {
         FILE_LOG(logERROR) << "Shared memory " << shm.GetName() << " does not exist.\n"
                                                                    "Corrupted Multi Shared memory. Please free shared memory.";
-        throw SharedMemoryException();
+        throw SharedMemoryError("Could not read detector type from shared memory");
     }
 
     // open, map, verify version
@@ -551,7 +552,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, b
                            << std::hex << SLS_SHMVERSION << " but got 0x" << shm()->shmversion << ")" << std::dec;
         // unmap and throw
         detector_shm.UnmapSharedMemory();
-        throw SharedMemoryException();
+        throw SharedMemoryError("Shared memory version mismatch");
     }
     auto type = shm()->myDetectorType;
     return type;

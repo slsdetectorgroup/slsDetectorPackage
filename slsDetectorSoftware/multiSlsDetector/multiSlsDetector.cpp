@@ -314,7 +314,7 @@ void multiSlsDetector::initSharedMemory(bool verify) {
             FILE_LOG(logERROR) << "Multi shared memory (" << detId << ") version mismatch "
                                                                       "(expected 0x"
                                << std::hex << MULTI_SHMVERSION << " but got 0x" << multi_shm()->shmversion << std::dec;
-            throw SharedMemoryException();
+            throw SharedMemoryError("Shared memory version mismatch!");
         }
     }
 }

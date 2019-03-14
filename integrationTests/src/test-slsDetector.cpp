@@ -46,20 +46,20 @@ TEST_CASE("single EIGER detector no receiver basic set and get") {
     CHECK(d.getTotalNumberOfChannels() == 256 * 256 * 4);
     CHECK(d.getTotalNumberOfChannels(slsDetectorDefs::dimension::X) == 1024);
     CHECK(d.getTotalNumberOfChannels(slsDetectorDefs::dimension::Y) == 256);
-    CHECK(d.getTotalNumberOfChannels(slsDetectorDefs::dimension::Z) == 1);
+    // CHECK(d.getTotalNumberOfChannels(slsDetectorDefs::dimension::Z) == 1);
     CHECK(d.getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::dimension::X) == 1024);
     CHECK(d.getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::dimension::Y) == 256);
-    CHECK(d.getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::dimension::Z) == 1);
+    // CHECK(d.getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::dimension::Z) == 1);
 
     CHECK(d.getNChans() == 256 * 256);
     CHECK(d.getNChans(slsDetectorDefs::dimension::X) == 256);
     CHECK(d.getNChans(slsDetectorDefs::dimension::Y) == 256);
-    CHECK(d.getNChans(slsDetectorDefs::dimension::Z) == 1);
+    // CHECK(d.getNChans(slsDetectorDefs::dimension::Z) == 1);
 
     CHECK(d.getNChips() == 4);
     CHECK(d.getNChips(slsDetectorDefs::dimension::X) == 4);
     CHECK(d.getNChips(slsDetectorDefs::dimension::Y) == 1);
-    CHECK(d.getNChips(slsDetectorDefs::dimension::Z) == 1);
+    // CHECK(d.getNChips(slsDetectorDefs::dimension::Z) == 1);
 
     d.freeSharedMemory();
 }

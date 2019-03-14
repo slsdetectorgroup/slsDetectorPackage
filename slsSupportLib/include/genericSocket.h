@@ -49,6 +49,7 @@ class sockaddr_in;
 #define SOCKET_BUFFER_SIZE (100*1024*1024) //100 MB
 #define DEFAULT_BACKLOG 5
 
+using sls::SocketError;
 
 class genericSocket{
 
@@ -90,7 +91,7 @@ public:
 		struct addrinfo *result;
 		if (ConvertHostnameToInternetAddress(host_ip_or_name, &result)) {
 			sockfd.fd  = -1;
-			throw SocketException();
+			throw SocketError("Could convert hostname to address");
 		}
 
 		sockfd.fd = 0;
@@ -134,7 +135,7 @@ public:
 		// same port
 		if(serverAddress.sin_port == htons(port_number)){
 			sockfd.fd = -10;
-			throw SamePortSocketException();
+			throw SocketError("Cannot create socket on same port");
 		}
 
 		char ip[20];
@@ -152,7 +153,7 @@ public:
 		if (sockfd.fd < 0) {
 			FILE_LOG(logERROR) << "Can not create socket";
 			sockfd.fd =-1;
-			throw SocketException();
+			throw SocketError("Can not create socket");
 		}
 
 		// Set some fields in the serverAddress structure.
@@ -175,7 +176,7 @@ public:
 					&val,sizeof(int)) == -1) {
 			    FILE_LOG(logERROR) << "setsockopt REUSEADDR failed";
 				sockfd.fd =-1;
-				throw SocketException();
+				throw SocketError("setsockopt REUSEADDR failed");
 			}
 		}
 
@@ -244,7 +245,7 @@ public:
 		if(bind(sockfd.fd,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
             FILE_LOG(logERROR) << "Can not bind socket";
 			sockfd.fd =-1;
-			throw SocketException();
+			throw SocketError("Can not bind socket");
 		}
 
 

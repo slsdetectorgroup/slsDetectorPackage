@@ -1158,11 +1158,6 @@ std::string slsDetector::getSettingsFile() {
     return std::string(detector_shm()->settingsFile);
 }
 
-// int slsDetector::writeSettingsFile(const std::string &fname) {
-//     //TODO should read module from detector...
-//     return writeSettingsFile(fname, getModule());
-// }
-
 slsDetectorDefs::detectorSettings slsDetector::getSettings() {
     return sendSettingsOnly(GET_SETTINGS);
 }
@@ -3878,13 +3873,15 @@ int slsDetector::getChanRegs(double *retval) {
     // update chanregs
     sls_detector_module *myMod = getModule();
 
-    //the original array has 0 initialized
-    if (myMod->chanregs) {
-        for (int i = 0; i < n; ++i) {
-            retval[i] = (double)(myMod->chanregs[i] & TRIMBITMASK);
-        }
+    if (myMod != nullptr) {
+    	//the original array has 0 initialized
+    	if (myMod->chanregs) {
+    		for (int i = 0; i < n; ++i) {
+    			retval[i] = (double)(myMod->chanregs[i] & TRIMBITMASK);
+    		}
+    	}
+    	deleteModule(myMod);
     }
-    deleteModule(myMod);
     return n;
 }
 
@@ -3926,26 +3923,6 @@ int slsDetector::setModule(sls_detector_module module, int tb) {
 
     // update client structure
     if (ret == OK) {
-        // if (detectorModules) {
-        //     if (detector_shm()->myDetectorType == EIGER && tb && chanregs) {
-        //         for (int ichip = 0; ichip < detector_shm()->nChips; ++ichip) {
-        //             for (int i = 0; i < detector_shm()->nChans; ++i) {
-        //                 chanregs[i + ichip * detector_shm()->nChans] =
-        //                     module.chanregs[ichip * detector_shm()->nChans + i];
-        //             }
-        //         }
-        //     }
-        //     if (dacs) {
-        //         for (int i = 0; i < detector_shm()->nDacs; ++i) {
-        //             dacs[i] = module.dacs[i];
-        //         }
-        //     }
-        //     (detectorModules)->serialnumber = module.serialnumber;
-        //     (detectorModules)->reg = module.reg;
-        //     (detectorModules)->iodelay = module.iodelay;
-        //     (detectorModules)->tau = module.tau;
-        //     (detectorModules)->eV = module.eV;
-        // }
         if (module.eV != -1) {
             detector_shm()->currentThresholdEV = module.eV;
         }
@@ -3981,31 +3958,11 @@ slsDetectorDefs::sls_detector_module *slsDetector::getModule() {
     }
 
     // update client structure
-    // if (ret == OK) {
-    //     if (detectorModules) {
-    //         if (detector_shm()->myDetectorType == EIGER && chanregs) {
-    //             for (int ichip = 0; ichip < detector_shm()->nChips; ++ichip) {
-    //                 for (int i = 0; i < detector_shm()->nChans; ++i) {
-    //                     chanregs[i + ichip * detector_shm()->nChans] =
-    //                         myMod->chanregs[ichip * detector_shm()->nChans + i];
-    //                 }
-    //             }
-    //         }
-    //         if (dacs) {
-    //             for (int i = 0; i < detector_shm()->nDacs; ++i) {
-    //                 dacs[i] = myMod->dacs[i];
-    //             }
-    //         }
-    //         (detectorModules)->serialnumber = myMod->serialnumber;
-    //         (detectorModules)->reg = myMod->reg;
-    //         (detectorModules)->iodelay = myMod->iodelay;
-    //         (detectorModules)->tau = myMod->tau;
-    //         (detectorModules)->eV = myMod->eV;
-    //     }
-    // } else {
-    //     deleteModule(myMod);
-    //     myMod = nullptr;
-    // }
+    if (ret == OK) {
+        if (myMod->eV != -1) {
+            detector_shm()->currentThresholdEV = myMod->eV;
+        }
+    }
     return myMod;
 }
 

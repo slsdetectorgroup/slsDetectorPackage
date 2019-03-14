@@ -540,15 +540,6 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     std::string getSettingsFile();
 
     /**
-	 * Writes a trim/settings file for module number
-	 * the values will be read from the current detector structure
-	 * @param fname name of the file to be written
-	 * @returns OK or FAIL if the file could not be written
-	 * \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
-	 */
-    int writeSettingsFile(const std::string &fname);
-
-    /**
 	 * Get detector settings
 	 * @returns current settings
 	 */

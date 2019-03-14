@@ -631,12 +631,12 @@ void Listener::PrintFifoStatistics() {
 	FILE_LOG(logDEBUG1) << "numFramesStatistic:" << numFramesStatistic << " numPacketsStatistic:" << numPacketsStatistic;
 
 	//calculate packet loss
-	int64_t loss = -1;
-	loss = (numFramesStatistic*(generalData->packetsPerFrame)) - numPacketsStatistic;
+	int64_t loss = (numFramesStatistic*(generalData->packetsPerFrame)) - numPacketsStatistic;
 	numPacketsStatistic = 0;
 	numFramesStatistic = 0;
 
-	FILE_LOG(loss ? logINFORED : logINFOGREEN) << "[" << *udpPortNumber << "]:  "
+	const auto color = loss ? logINFORED : logINFOGREEN;
+	FILE_LOG(color) << "[" << *udpPortNumber << "]:  "
 			"Packet_Loss:" << loss <<
 			"  Used_Fifo_Max_Level:" << fifo->GetMaxLevelForFifoBound() <<
 			" \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree() <<

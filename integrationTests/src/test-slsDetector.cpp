@@ -24,7 +24,7 @@ TEST_CASE("single EIGER detector no receiver basic set and get") {
     CHECK(type == type_enum);
 
     //Create slsDetector of said type and set hostname and detector online
-    auto d = slsDetector(type);
+    slsDetector d(type);
     CHECK(d.getDetectorTypeAsEnum() == type);
     CHECK(d.getDetectorTypeAsString() == type_string);
 
@@ -79,7 +79,7 @@ TEST_CASE("Set control port then create a new object with this control port") {
     {
         auto type = slsDetector::getTypeFromDetector(hostname);
         CHECK(type == type_enum);
-        auto d = slsDetector(type);
+        slsDetector d(type);
         d.setHostname(hostname);
         d.setOnline(true);
         CHECK(d.getControlPort() == old_cport);
@@ -91,7 +91,7 @@ TEST_CASE("Set control port then create a new object with this control port") {
     {
         auto type = slsDetector::getTypeFromDetector(hostname, new_cport);
         CHECK(type == type_enum);
-        auto d = slsDetector(type);
+        slsDetector d(type);
         d.setHostname(hostname);
         d.setControlPort(new_cport);
         d.setStopPort(new_sport);
@@ -108,7 +108,7 @@ TEST_CASE("Set control port then create a new object with this control port") {
 
     auto type = slsDetector::getTypeFromDetector(hostname);
     CHECK(type == type_enum);
-    auto d = slsDetector(type);
+    slsDetector d(type);
     d.setHostname(hostname);
     d.setOnline(true);
     CHECK(d.getStopPort() == DEFAULT_PORTNO + 1);
@@ -116,7 +116,7 @@ TEST_CASE("Set control port then create a new object with this control port") {
 
 TEST_CASE("Locking mechanism and last ip") {
     auto type = slsDetector::getTypeFromDetector(hostname);
-    auto d = slsDetector(type);
+    slsDetector d(type);
     d.setHostname(hostname);
     d.setOnline(true);
 
@@ -160,7 +160,7 @@ TEST_CASE("Excersise all possible set timer functions") {
     // MAX_TIMERS
 
     auto type = slsDetector::getTypeFromDetector(hostname);
-    auto d = slsDetector(type);
+    slsDetector d(type);
     d.setHostname(hostname);
     d.setOnline(true);
 

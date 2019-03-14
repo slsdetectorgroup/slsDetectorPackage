@@ -748,10 +748,10 @@ std::string slsDetector::checkOnline() {
         //Need both control and stop socket to work!
         auto client = sls::ClientSocket(false, detector_shm()->hostname, detector_shm()->controlPort);
         auto stop = sls::ClientSocket(false, detector_shm()->hostname, detector_shm()->stopPort);
-        retval = detector_shm()->hostname;
+        detector_shm()->onlineFlag = ONLINE_FLAG;
     } catch (...) {
-        //try catch should not be used for control but we should also not call this function
         detector_shm()->onlineFlag = OFFLINE_FLAG;
+        retval = detector_shm()->hostname;
     }
     return retval;
 }
@@ -4051,8 +4051,10 @@ std::string slsDetector::checkReceiverOnline() {
     std::string retval;
     try {
         auto receiver = sls::ClientSocket(true, detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
-        retval = detector_shm()->receiver_hostname;
+        detector_shm()->receiverOnlineFlag = ONLINE_FLAG;
     } catch (...) {
+    	 detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
+        retval = detector_shm()->receiver_hostname;
     }
     return retval;
 }

@@ -563,12 +563,11 @@ void slsDetector::connectDataError() {
     setErrorMask((getErrorMask()) | (CANNOT_CONNECT_TO_RECEIVER));
 }
 
-int slsDetector::sendModule(sls_detector_module *myMod) {
+int slsDetector::sendModule(sls_detector_module *myMod, sls::ClientSocket& client) {
     TLogLevel level = logDEBUG1;
     FILE_LOG(level) << "Sending Module";
     int ts = 0;
     int n = 0;
-    auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
     n = client.sendData(&(myMod->serialnumber), sizeof(myMod->serialnumber));
     ts += n;
     FILE_LOG(level) << "Serial number sent. " << n << " bytes. serialno: " << myMod->serialnumber;
@@ -613,8 +612,7 @@ int slsDetector::sendModule(sls_detector_module *myMod) {
     return ts;
 }
 
-int slsDetector::receiveModule(sls_detector_module *myMod) {
-    auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
+int slsDetector::receiveModule(sls_detector_module *myMod, sls::ClientSocket& client) {
     int ts = 0;
     ts += client.receiveData(&(myMod->serialnumber), sizeof(myMod->serialnumber));
     ts += client.receiveData(&(myMod->nchan), sizeof(myMod->nchan));
@@ -4012,7 +4010,7 @@ int slsDetector::setModule(sls_detector_module module, int tb) {
     if (thisDetector->onlineFlag == ONLINE_FLAG) {
         auto client = sls::ClientSocket(false, thisDetector->hostname, thisDetector->controlPort);
         client.sendData(&fnum, sizeof(fnum));
-        sendModule(&module);
+        sendModule(&module, client);
         client.receiveData(&ret, sizeof(ret));
 
         // handle ret
@@ -4082,7 +4080,7 @@ slsDetectorDefs::sls_detector_module *slsDetector::getModule() {
         if (ret == FAIL) {
             setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
         } else {
-            receiveModule(myMod);
+            receiveModule(myMod, client);
         }
     }
     if (ret == FORCE_UPDATE) {

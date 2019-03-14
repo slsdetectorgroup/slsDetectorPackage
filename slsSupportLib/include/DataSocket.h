@@ -12,7 +12,7 @@ class DataSocket {
     virtual ~DataSocket();
     DataSocket &operator=(DataSocket &&move) noexcept;
     void swap(DataSocket &other) noexcept;
-    DataSocket(DataSocket const &) = delete;
+    DataSocket(const DataSocket &) = delete;
     DataSocket &operator=(DataSocket const &) = delete;
     int getSocketId() const {
         return socketId_;

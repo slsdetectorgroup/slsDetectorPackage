@@ -11,6 +11,8 @@ struct Data {
     char mess[50];
 };
 
+using namespace sls;
+
 TEST_CASE("Create SharedMemory read and write") {
 
     SharedMemory<Data> shm(0, -1);

@@ -30,10 +30,11 @@
 #include <iostream>
 #include <string>
 
-using sls::SharedMemoryError;
+namespace sls {
 
 template <typename T>
 class SharedMemory {
+
   public:
     /**
 	 * Constructor
@@ -166,7 +167,7 @@ class SharedMemory {
     void UnmapSharedMemory() {
         if (shared_struct != nullptr) {
             if (munmap(shared_struct, shmSize) < 0) {
-                std::string msg = "Unmapping shared memory " + name +" failed: " + strerror(errno);
+                std::string msg = "Unmapping shared memory " + name + " failed: " + strerror(errno);
                 FILE_LOG(logERROR) << msg;
                 close(fd);
                 throw SharedMemoryError(msg);
@@ -236,8 +237,7 @@ class SharedMemory {
 
         std::string temp = ss.str();
         if (temp.length() > NAME_MAX) {
-            std::string msg = "Shared memory initialization failed. " + temp + " has " + std::to_string(temp.length())  + " characters. \n"
-                               + "Maximum is " + std::to_string(NAME_MAX) + ". Change the environment variable " + SHM_ENV_NAME;
+            std::string msg = "Shared memory initialization failed. " + temp + " has " + std::to_string(temp.length()) + " characters. \n" + "Maximum is " + std::to_string(NAME_MAX) + ". Change the environment variable " + SHM_ENV_NAME;
             FILE_LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
@@ -272,8 +272,7 @@ class SharedMemory {
         struct stat sb;
         // could not fstat
         if (fstat(fd, &sb) < 0) {
-            std::string msg = "Could not verify existing shared memory " + name + " size match "
-                               + "(could not fstat): " + strerror(errno);
+            std::string msg = "Could not verify existing shared memory " + name + " size match " + "(could not fstat): " + strerror(errno);
             FILE_LOG(logERROR) << msg;
             close(fd);
             throw SharedMemoryError(msg);
@@ -282,8 +281,7 @@ class SharedMemory {
         //size does not match
         long unsigned int sz = (long unsigned int)sb.st_size;
         if (sz != expectedSize) {
-            std::string msg = "Existing shared memory " + name + " size does not match"
-                                + "Expected " +  std::to_string(expectedSize)  + ", found " + std::to_string(sz);
+            std::string msg = "Existing shared memory " + name + " size does not match" + "Expected " + std::to_string(expectedSize) + ", found " + std::to_string(sz);
             FILE_LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
             return 1;
@@ -302,3 +300,5 @@ class SharedMemory {
 
     T *shared_struct{nullptr};
 };
+
+} // namespace sls

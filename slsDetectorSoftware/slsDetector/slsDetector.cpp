@@ -24,6 +24,10 @@
 #include <sys/types.h>
 #include <cassert>
 
+using sls::SharedMemory;
+using sls::SharedMemoryError;
+using sls::RuntimeError;
+
 #define DEFAULT_HOSTNAME "localhost"
 
 slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
@@ -290,7 +294,7 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
         break;
     default:
         FILE_LOG(logERROR) << "Unknown detector type! " << type;
-        throw std::exception();
+        throw RuntimeError("Unknown detector type");
     }
 }
 

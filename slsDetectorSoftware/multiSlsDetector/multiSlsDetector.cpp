@@ -26,6 +26,9 @@
 #include <future>
 #include <vector>
 
+using sls::SharedMemory;
+using sls::SharedMemoryError;
+
 multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
     : detId(id) {
     setupMultiDetector(verify, update);

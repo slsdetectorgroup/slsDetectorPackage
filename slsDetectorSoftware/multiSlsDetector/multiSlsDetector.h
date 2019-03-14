@@ -1959,7 +1959,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int detId;
 
     /** Shared Memory object */
-    SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
+    sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
 
     /** pointers to the slsDetector structures */
     std::vector<std::unique_ptr<slsDetector>> detectors;

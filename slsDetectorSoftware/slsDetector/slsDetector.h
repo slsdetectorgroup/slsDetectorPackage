@@ -1736,7 +1736,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     int detId;
 
     /** Shared Memory object */
-    SharedMemory<sharedSlsDetector> detector_shm{0,0};
+    sls::SharedMemory<sharedSlsDetector> detector_shm{0,0};
 
 };
 

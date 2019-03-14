@@ -2027,12 +2027,18 @@ int lock_server(int file_des) {
 				(!strcmp(lastClientIP, thisClientIP)) || // if it was locked, need same ip
 				(!strcmp(lastClientIP,"none"))) { // if it was locked, must be by "none"
 			lockStatus = lock;
+			if (lock) {
+				FILE_LOG(logINFO, ("Server lock to %s\n", lastClientIP));
+			} else {
+				FILE_LOG(logINFO, ("Server unlocked\n"));
+			}
 			strcpy(lastClientIP, thisClientIP);
 		}   else {
 			Server_LockedError();
 		}
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, &lockStatus, sizeof(lockStatus));
+	int retval = lockStatus;
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2041,7 +2047,7 @@ int lock_server(int file_des) {
 int get_last_client_ip(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	return Server_SendResult(file_des, INT32, UPDATE, lastClientIP, sizeof(lastClientIP));
+	return Server_SendResult(file_des, OTHER, UPDATE, lastClientIP, sizeof(lastClientIP));
 }
 
 

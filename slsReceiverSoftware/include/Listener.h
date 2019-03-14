@@ -56,7 +56,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * Returns if the thread is currently running
      * @returns true if thread is running, else false
      */
-    bool IsRunning();
+    bool IsRunning() override;
 
 	/**
 	 * Get acquisition started flag
@@ -158,7 +158,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 * Get Type
 	 * @return type
 	 */
-	std::string GetType();
+	std::string GetType() override;
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)

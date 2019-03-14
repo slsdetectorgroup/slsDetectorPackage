@@ -1672,14 +1672,14 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param myMod module structure to send
 	 * @returns number of bytes sent to the detector
 	 */
-    int sendModule(sls_detector_module *myMod);
+    int sendModule(sls_detector_module *myMod, sls::ClientSocket& client);
 
     /**
 	 * Receive a sls_detector_module structure over socket
 	 * @param myMod module structure to receive
 	 * @returns number of bytes received from the detector
 	 */
-    int receiveModule(sls_detector_module *myMod);
+    int receiveModule(sls_detector_module *myMod, sls::ClientSocket& client);
 
     /**
 	 * Get MAC from the receiver using udpip and

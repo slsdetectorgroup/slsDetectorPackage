@@ -1,6 +1,6 @@
 set(SOURCES
     multiSlsDetector/multiSlsDetector.cpp 
-    sharedMemory/SharedMemory.cpp
+    # sharedMemory/SharedMemory.cpp
     slsDetector/slsDetectorUsers.cpp 
     slsDetector/slsDetectorCommand.cpp
     slsDetector/slsDetector.cpp 
@@ -48,6 +48,10 @@ if(DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
 endif()
+
+if (SLS_USE_TESTS)
+    add_subdirectory(tests)
+endif(SLS_USE_TESTS)
 
 
 install(TARGETS slsDetectorShared

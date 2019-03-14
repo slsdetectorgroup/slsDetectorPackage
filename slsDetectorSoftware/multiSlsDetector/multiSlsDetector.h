@@ -7,12 +7,11 @@
  * @short This is the base class for multi detector system functionalities
  * @author Anna Bergamaschi
  */
+#include "SharedMemory.h"
 #include "error_defs.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
-
 class slsDetector;
-class SharedMemory;
 class ZmqSocket;
 class detectorData;
 
@@ -27,91 +26,91 @@ class detectorData;
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
-class multiSlsDetector : public virtual slsDetectorDefs,
-                         public virtual errorDefs {
-
-  private:
-    /**
+/**
      * @short structure allocated in shared memory to store detector settings
      * for IPC and cache
      */
-    typedef struct sharedMultiSlsDetector {
+struct sharedMultiSlsDetector {
 
-        /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND
+    /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND
          * ------*/
 
-        /** shared memory version */
-        int shmversion;
+    /** shared memory version */
+    int shmversion;
 
-        /** last process id accessing the shared memory */
-        pid_t lastPID;
+    /** last process id accessing the shared memory */
+    pid_t lastPID;
 
-        /** last user name accessing the shared memory */
-        char lastUser[SHORT_STRING_LENGTH];
+    /** last user name accessing the shared memory */
+    char lastUser[SHORT_STRING_LENGTH];
 
-        /** last time stamp when accessing the shared memory */
-        char lastDate[SHORT_STRING_LENGTH];
+    /** last time stamp when accessing the shared memory */
+    char lastDate[SHORT_STRING_LENGTH];
 
-        /** number of sls detectors in shared memory */
-        int numberOfDetectors;
+    /** number of sls detectors in shared memory */
+    int numberOfDetectors;
 
-        /** END OF FIXED PATTERN
+    /** END OF FIXED PATTERN
          * -----------------------------------------------*/
 
-        /** Number of detectors operated at once */
-        int numberOfDetector[2];
+    /** Number of detectors operated at once */
+    int numberOfDetector[2];
 
-        /** online flag - is set if the detector is connected, unset if socket
+    /** online flag - is set if the detector is connected, unset if socket
          * connection is not possible  */
-        int onlineFlag;
+    int onlineFlag;
 
-        /** stopped flag - is set if an acquisition error occurs or the detector
+    /** stopped flag - is set if an acquisition error occurs or the detector
          * is stopped manually. Is reset to 0 at the start of the acquisition */
-        int stoppedFlag;
+    int stoppedFlag;
 
-        /**  size of the data that are transfered from all detectors */
-        int dataBytes;
+    /**  size of the data that are transfered from all detectors */
+    int dataBytes;
 
-        /** data bytes including gap pixels transferred from all detectors */
-        int dataBytesInclGapPixels;
+    /** data bytes including gap pixels transferred from all detectors */
+    int dataBytesInclGapPixels;
 
-        /**  total number of channels for all detectors */
-        int numberOfChannels;
+    /**  total number of channels for all detectors */
+    int numberOfChannels;
 
-        /**  total number of channels for all detectors  in one dimension*/
-        int numberOfChannel[2];
+    /**  total number of channels for all detectors  in one dimension*/
+    int numberOfChannel[2];
 
-        /** total number of channels including gap pixels in one dimension */
-        int numberOfChannelInclGapPixels[2];
+    /** total number of channels including gap pixels in one dimension */
+    int numberOfChannelInclGapPixels[2];
 
-        /**  total number of channels for all detectors */
-        int maxNumberOfChannels;
+    /**  total number of channels for all detectors */
+    int maxNumberOfChannels;
 
-        /**  max number of channels for all detectors  in one dimension*/
-        int maxNumberOfChannel[2];
+    /**  max number of channels for all detectors  in one dimension*/
+    int maxNumberOfChannel[2];
 
-        /**  max number of channels including gap pixels for all detectors  in
+    /**  max number of channels including gap pixels for all detectors  in
          * one dimension*/
-        int maxNumberOfChannelInclGapPixels[2];
+    int maxNumberOfChannelInclGapPixels[2];
 
-        /** max number of channels allowed for the complete set of detectors in
+    /** max number of channels allowed for the complete set of detectors in
          * one dimension */
-        int maxNumberOfChannelsPerDetector[2];
+    int maxNumberOfChannelsPerDetector[2];
 
-        /** timer values */
-        int64_t timerValue[MAX_TIMERS];
+    /** timer values */
+    int64_t timerValue[slsDetectorDefs::timerIndex::MAX_TIMERS];
 
-        /** flag for acquiring */
-        bool acquiringFlag;
+    /** flag for acquiring */
+    bool acquiringFlag;
 
-        /** receiver online flag - is set if the receiver is connected,
+    /** receiver online flag - is set if the receiver is connected,
          * unset if socket connection is not possible  */
-        int receiverOnlineFlag;
+    int receiverOnlineFlag;
 
-        /** data streaming (up stream) enable in receiver */
-        bool receiver_upstream;
+    /** data streaming (up stream) enable in receiver */
+    bool receiver_upstream;
+};
 
-    } sharedMultiSlsDetector;
+class multiSlsDetector : public virtual slsDetectorDefs,
+                         public virtual errorDefs {
+
+    // private:
 
   public:
     /**
@@ -253,7 +252,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns FAIL for incompatibility, OK for compatibility
      */
     int checkReceiverVersionCompatibility(int detPos = -1);
-    
+
     /**
      * Get ID or version numbers
      * @param mode version type
@@ -460,15 +459,13 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     int setStopPort(int port_number = -1, int detPos = -1);
 
-        /**
+    /**
      * Set/Gets TCP Port of the receiver
      * @param port_number (-1 gets)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns port number
      */
     int setReceiverPort(int port_number = -1, int detPos = -1);
-    
-
 
     /**
      * Lock server for this client IP
@@ -498,7 +495,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int execCommand(const std::string& cmd, int detPos);
+    int execCommand(const std::string &cmd, int detPos);
 
     /**
      * Load configuration from a configuration File
@@ -569,7 +566,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the trimbit/settings directory
      */
-    std::string setSettingsDir(const std::string& directory, int detPos = -1);
+    std::string setSettingsDir(const std::string &directory, int detPos = -1);
 
     /**
      * Loads the modules settings/trimbits reading from a specific file
@@ -578,7 +575,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * returns OK or FAIL
      */
-    int loadSettingsFile(const std::string& fname, int detPos = -1);
+    int loadSettingsFile(const std::string &fname, int detPos = -1);
 
     /**
      * Saves the modules settings/trimbits to a specific file
@@ -587,7 +584,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * returns OK or FAIL
      */
-    int saveSettingsFile(const std::string& fname, int detPos = -1);
+    int saveSettingsFile(const std::string &fname, int detPos = -1);
 
     /**
      * Get Detector run status
@@ -896,7 +893,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address
      */
-    std::string setDetectorMAC(const std::string& detectorMAC, int detPos = -1);
+    std::string setDetectorMAC(const std::string &detectorMAC, int detPos = -1);
 
     /**
      * Returns the detector MAC address
@@ -911,7 +908,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address
      */
-    std::string setDetectorIP(const std::string& detectorIP, int detPos = -1);
+    std::string setDetectorIP(const std::string &detectorIP, int detPos = -1);
 
     /**
      * Returns the detector IP address
@@ -928,7 +925,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address from shared memory
      */
-    std::string setReceiver(const std::string& receiver, int detPos = -1);
+    std::string setReceiver(const std::string &receiver, int detPos = -1);
 
     /**
      * Returns the receiver IP address
@@ -943,7 +940,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address
      */
-    std::string setReceiverUDPIP(const std::string& udpip, int detPos = -1);
+    std::string setReceiverUDPIP(const std::string &udpip, int detPos = -1);
 
     /**
      * Returns the receiver UDP IP address
@@ -958,7 +955,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string setReceiverUDPMAC(const std::string& udpmac, int detPos = -1);
+    std::string setReceiverUDPMAC(const std::string &udpmac, int detPos = -1);
 
     /**
      * Returns the receiver UDP MAC address
@@ -974,7 +971,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns the receiver UDP port
      */
     int setReceiverUDPPort(int udpport, int detPos = -1);
-
 
     /**
      * Returns the receiver UDP port
@@ -1008,13 +1004,13 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     void setClientDataStreamingInPort(int i = -1, int detPos = -1);
 
-	/**
+    /**
 	 * Returns the client zmq port
 	 * If detPos is -1(multi module), port returns client streaming port of first module
      * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns the client zmq port
 	 */
-	int getClientStreamingPort(int detPos = -1);
+    int getClientStreamingPort(int detPos = -1);
 
     /**
      * (advanced users)
@@ -1026,13 +1022,13 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
 
-	/**
+    /**
 	 * Returns the receiver zmq port
 	 * If detPos is -1(multi module), port returns receiver streaming port of first module
      * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns the receiver zmq port
 	 */
-	int getReceiverStreamingPort(int detPos = -1);
+    int getReceiverStreamingPort(int detPos = -1);
 
     /**
      * (advanced users)
@@ -1041,8 +1037,8 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * By default, it is the IP of receiver hostname
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-   void setClientDataStreamingInIP(const std::string& ip = "",
-                                           int detPos = -1);
+    void setClientDataStreamingInIP(const std::string &ip = "",
+                                    int detPos = -1);
 
     /**
 	 * Returns the client zmq ip
@@ -1050,7 +1046,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns the client zmq ip
 	 */
-	std::string getClientStreamingIP(int detPos = -1);
+    std::string getClientStreamingIP(int detPos = -1);
 
     /**
      * (advanced users)
@@ -1059,8 +1055,8 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * By default, it is the IP of receiver hostname
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReceiverDataStreamingOutIP(const std::string& ip = "",
-                                              int detPos = -1);
+    void setReceiverDataStreamingOutIP(const std::string &ip = "",
+                                       int detPos = -1);
 
     /**
   	 * Returns the receiver zmq ip
@@ -1068,7 +1064,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
        * @param detPos -1 for all detectors in  list or specific detector position
   	 * @returns the receiver zmq ip
   	 */
-  	std::string getReceiverStreamingIP(int detPos = -1);
+    std::string getReceiverStreamingIP(int detPos = -1);
 
     /**
      * Sets the transmission delay for left, right or entire frame
@@ -1086,7 +1082,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns additional json header, default is empty
      */
-    std::string setAdditionalJsonHeader(const std::string& jsonheader, int detPos = -1);
+    std::string setAdditionalJsonHeader(const std::string &jsonheader, int detPos = -1);
 
     /**
      * Returns the additional json header
@@ -1103,7 +1099,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns the additional json header parameter value,
      * empty if no parameter found in additional json header
      */
-    std::string setAdditionalJsonParameter(const std::string& key, const std::string& value, int detPos = -1);
+    std::string setAdditionalJsonParameter(const std::string &key, const std::string &value, int detPos = -1);
 
     /**
      * Returns the additional json header parameter value
@@ -1112,7 +1108,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns the additional json header parameter value,
      * empty if no parameter found in additional json header
      */
-    std::string getAdditionalJsonParameter(const std::string& key, int detPos = -1);
+    std::string getAdditionalJsonParameter(const std::string &key, int detPos = -1);
 
     /**
      * Sets the detector minimum/maximum energy threshold in processor (for Moench only)
@@ -1144,14 +1140,14 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns receiver udp socket buffer size
      */
-    uint64_t setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize=-1, int detPos = -1);
+    uint64_t setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize = -1, int detPos = -1);
 
     /**
      * Returns the receiver UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP socket buffer size
      */
-    uint64_t getReceiverUDPSocketBufferSize(int detPos = -1) ;
+    uint64_t getReceiverUDPSocketBufferSize(int detPos = -1);
 
     /**
      * Returns the receiver real UDP socket buffer size
@@ -1387,7 +1383,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int programFPGA(const std::string& fname, int detPos = -1);
+    int programFPGA(const std::string &fname, int detPos = -1);
 
     /**
      * Resets FPGA (Jungfrau)
@@ -1490,7 +1486,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int execReceiverCommand(const std::string& cmd, int detPos = -1);
+    int execReceiverCommand(const std::string &cmd, int detPos = -1);
 
     /**
      * Returns output file directory
@@ -1505,7 +1501,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param s file directory
      * @returns file dir
      */
-    std::string setFilePath(const std::string& path, int detPos = -1);
+    std::string setFilePath(const std::string &path, int detPos = -1);
 
     /**
      * Returns file name prefix
@@ -1520,7 +1516,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param s file name prefix
      * @returns file name prefix
      */
-    std::string setFileName(const std::string& fname, int detPos = -1);
+    std::string setFileName(const std::string &fname, int detPos = -1);
 
     /**
      * Sets the max frames per file in receiver
@@ -1722,7 +1718,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK/FAIL
      */
-    int setPattern(const std::string& fname, int detPos = -1);
+    int setPattern(const std::string &fname, int detPos = -1);
 
     /**
      * Writes a pattern word to the CTB
@@ -1744,7 +1740,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns OK/FAIL
      */
     int setPatternLoops(int level, int &start, int &stop, int &n,
-                       int detPos = -1);
+                        int detPos = -1);
 
     /**
      * Sets the wait address in the CTB
@@ -1926,7 +1922,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * Add sls detector
      * @param s hostname of the single detector
      */
-    void addSlsDetector(const std::string& hostname);
+    void addSlsDetector(const std::string &hostname);
 
     /**
      * add gap pixels to the image (only for Eiger in 4 bit mode)
@@ -1992,16 +1988,13 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int detId;
 
     /** Shared Memory object */
-    SharedMemory *sharedMemory {nullptr};
-
-    /** Shared memory structure */
-    sharedMultiSlsDetector *thisMultiDetector {nullptr};
+    SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
 
     /** pointers to the slsDetector structures */
     std::vector<std::unique_ptr<slsDetector>> detectors;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
-    bool client_downstream {false};
+    bool client_downstream{false};
 
     /** ZMQ Socket - Receiver to Client */
     std::vector<std::unique_ptr<ZmqSocket>> zmqSocket;
@@ -2015,10 +2008,10 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     sem_t sem_endRTAcquisition;
 
     /** Total number of frames/images for next acquisition */
-    int totalProgress {0};
+    int totalProgress{0};
 
     /** Current progress or frames/images processed in current acquisition */
-    int progressIndex {0};
+    int progressIndex{0};
 
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;
@@ -2027,26 +2020,26 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     mutable std::mutex mg;
 
     /** sets when the acquisition is finished */
-    bool jointhread {false};
+    bool jointhread{false};
 
     /** the data processing thread */
     // pthread_t dataProcessingThread;
     std::thread dataProcessingThread;
 
     /** detector data packed for the gui */
-    detectorData *thisData {nullptr};
+    detectorData *thisData{nullptr};
 
-    int (*acquisition_finished)(double, int, void *) {nullptr};
-    void *acqFinished_p {nullptr};
+    int (*acquisition_finished)(double, int, void *){nullptr};
+    void *acqFinished_p{nullptr};
 
-    int (*measurement_finished)(int, int, void *) {nullptr};
-    void *measFinished_p {nullptr};
+    int (*measurement_finished)(int, int, void *){nullptr};
+    void *measFinished_p{nullptr};
 
     int (*progress_call)(double, void *);
-    void *pProgressCallArg {nullptr};
+    void *pProgressCallArg{nullptr};
 
     int (*dataReady)(detectorData *, int, int, void *){nullptr};
-    void *pCallbackArg {nullptr};
+    void *pCallbackArg{nullptr};
 };
 
 #endif

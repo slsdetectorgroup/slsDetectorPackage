@@ -1255,29 +1255,25 @@ void configurePll() {
 #ifdef VIRTUAL
     return;
 #endif
-	int32_t phase=0, inv=0;
+	int32_t phase=0;
 	// ensuring PLL is never configured with same phase
     if (clkPhase[1] == 0) {
         return;
     }
 
 	FILE_LOG(logINFO, ("\tConfiguring PLL with phase in %d\n", clkPhase[1]));
+
+	// delay ADC clk
 	if (clkPhase[1]>0) {
-		inv=0;
-		phase=clkPhase[1];
-	}  else {
-		inv=1;
-		phase=-1*clkPhase[1];
+		phase = MAX_PHASE_SHIFTS - clkPhase[1];
 	}
+	// advance adc clk
+	else {
+		phase = (-1) * clkPhase[1];
+	}
+
 	FILE_LOG(logDEBUG1, ("\tphase out %d (0x%08x)\n", phase, phase));
-
-	if (inv) {
-	    ALTERA_PLL_SetPhaseShift(phase, 1, 0);
-	} else {
-        ALTERA_PLL_SetPhaseShift(phase, 0, 0);
-
-        ALTERA_PLL_SetPhaseShift(phase, 2, 0);
-	}
+	ALTERA_PLL_SetPhaseShift(phase, 1, 0); // phase, 1: adc clk, 0:neg
 	usleep(10000);
 }
 

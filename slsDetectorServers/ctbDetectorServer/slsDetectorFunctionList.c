@@ -786,7 +786,7 @@ void setSpeed(enum speedVariable ind, int val) {
     case ADC_PHASE:
     case PHASE_SHIFT:
         FILE_LOG(logINFOBLUE, ("Configuring ADC Phase\n"));
-        configurePhase(RUN_CLK, val);
+        configurePhase(ADC_CLK, val);
         break;
     case DBIT_PHASE:
         FILE_LOG(logINFOBLUE, ("Configuring Dbit Phase\n"));
@@ -1639,6 +1639,12 @@ void configurePhase(enum CLKINDEX ind, int val) {
         FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits\n", ind, clock_names[ind]));
         return;
     }
+    int relativePhase = clkPhase[ind] - val;
+
+    // same phase
+    if (!relativePhase) {
+    	return;
+    }
 
     FILE_LOG(logINFO, ("Configuring Phase of C%d(%s) to %d\n", ind, clock_names[ind], val));
 
@@ -1648,16 +1654,17 @@ void configurePhase(enum CLKINDEX ind, int val) {
     // set mode register to polling mode
     ALTERA_PLL_SetModePolling();
 
-    int phase = 0, inv = 0;
-    if (val > 0) {
-        inv = 0;
-        phase = val;
+
+    int phase = 0;
+    int maxShifts = ((ind == ADC_CLK) ? MAX_PHASE_SHIFTS_ADC_CLK : MAX_PHASE_SHIFTS_DBIT_CLK);
+
+    // delay clk
+    if (relativePhase > 0) {
+        phase =  (maxShifts - relativePhase);
     } else {
-        inv = 1;
-        val = -1 * val;
-        phase = (~val);
+    	phase = (-1) * relativePhase;
     }
-    FILE_LOG(logINFO, ("\tphase out %d (0x%08x), inv:%d\n", phase, phase, inv));
+    FILE_LOG(logINFO, ("\tphase out %d (0x%08x)\n", phase, phase));
 
     ALTERA_PLL_SetPhaseShift(phase, (int)ind, 0);
 

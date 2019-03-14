@@ -31,12 +31,7 @@ multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
     setupMultiDetector(verify, update);
 }
 
-multiSlsDetector::~multiSlsDetector() {
-    if (sharedMemory) {
-        sharedMemory->UnmapSharedMemory(thisMultiDetector);
-        delete sharedMemory;
-    }
-}
+multiSlsDetector::~multiSlsDetector() = default;
 
 void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
     initSharedMemory(verify);
@@ -227,21 +222,21 @@ int64_t multiSlsDetector::clearModuleErrorMask(int detPos) {
 }
 
 void multiSlsDetector::setAcquiringFlag(bool b) {
-    thisMultiDetector->acquiringFlag = b;
+    multi_shm()->acquiringFlag = b;
 }
 
 bool multiSlsDetector::getAcquiringFlag() const {
-    return thisMultiDetector->acquiringFlag;
+    return multi_shm()->acquiringFlag;
 }
 
 bool multiSlsDetector::isAcquireReady() {
-    if (thisMultiDetector->acquiringFlag) {
+    if (multi_shm()->acquiringFlag) {
         FILE_LOG(logWARNING) << "Acquire has already started. "
                                 "If previous acquisition terminated unexpectedly, "
                                 "reset busy flag to restart.(sls_detector_put busy 0)";
         return FAIL;
     }
-    thisMultiDetector->acquiringFlag = true;
+    multi_shm()->acquiringFlag = true;
     return OK;
 }
 
@@ -279,23 +274,18 @@ void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
         return;
     }
 
-    // multi
-    // get number of detectors
+    // multi - get number of detectors from shm
+    SharedMemory<sharedMultiSlsDetector> multiShm(multiId, -1);
     int numDetectors = 0;
-    auto shm = SharedMemory(multiId, -1);
 
-    // get number of detectors from multi shm
-    if (shm.IsExisting()) {
-        sharedMultiSlsDetector *mdet =
-            (sharedMultiSlsDetector *)shm.OpenSharedMemory(
-                sizeof(sharedMultiSlsDetector));
-        numDetectors = mdet->numberOfDetectors;
-        shm.UnmapSharedMemory(mdet);
-        shm.RemoveSharedMemory();
+    if (multiShm.IsExisting()) {
+        multiShm.OpenSharedMemory();
+        numDetectors = multiShm()->numberOfDetectors;
+        multiShm.RemoveSharedMemory();
     }
 
     for (int i = 0; i < numDetectors; ++i) {
-        auto shm = SharedMemory(multiId, i);
+        SharedMemory<sharedSlsDetector> shm(multiId, i);
         shm.RemoveSharedMemory();
     }
 }
@@ -316,17 +306,7 @@ void multiSlsDetector::freeSharedMemory(int detPos) {
     detectors.clear();
 
     // clear multi detector shm
-    if (sharedMemory) {
-        if (thisMultiDetector) {
-            sharedMemory->UnmapSharedMemory(thisMultiDetector);
-            thisMultiDetector = nullptr;
-        }
-        sharedMemory->RemoveSharedMemory();
-        delete sharedMemory;
-        sharedMemory = nullptr;
-    }
-
-    // zmq
+    multi_shm.RemoveSharedMemory();
     client_downstream = false;
 }
 
@@ -342,78 +322,56 @@ std::string multiSlsDetector::getUserDetails() {
         sstream << d->getDetectorTypeAsString() << "+";
     }
 
-    sstream << "\nPID: " << thisMultiDetector->lastPID
-            << "\nUser: " << thisMultiDetector->lastUser
-            << "\nDate: " << thisMultiDetector->lastDate << std::endl;
+    sstream << "\nPID: " << multi_shm()->lastPID
+            << "\nUser: " << multi_shm()->lastUser
+            << "\nDate: " << multi_shm()->lastDate << std::endl;
 
     return sstream.str();
 }
 
 /*
- * pre: sharedMemory=0, thisMultiDetector = 0, detectors.size() = 0
- * exceptions are caught in calling function, shm unmapped and deleted
+ * pre: multi_shm=0, multi_shm() = 0, detectors.size() = 0
  */
 void multiSlsDetector::initSharedMemory(bool verify) {
-    try {
-        // shared memory object with name
-        sharedMemory = new SharedMemory(detId, -1);
-        size_t sz = sizeof(sharedMultiSlsDetector);
-
-        // create
-        if (!sharedMemory->IsExisting()) {
-            thisMultiDetector =
-                (sharedMultiSlsDetector *)sharedMemory->CreateSharedMemory(sz);
-            initializeDetectorStructure();
+    multi_shm = SharedMemory<sharedMultiSlsDetector>(detId, -1);
+    if (!multi_shm.IsExisting()) {
+        multi_shm.CreateSharedMemory();
+        initializeDetectorStructure();
+    }
+    else {
+        multi_shm.OpenSharedMemory();
+        if (verify && multi_shm()->shmversion != MULTI_SHMVERSION) {
+            FILE_LOG(logERROR) << "Multi shared memory (" << detId << ") version mismatch "
+                                                                      "(expected 0x"
+                               << std::hex << MULTI_SHMVERSION << " but got 0x" << multi_shm()->shmversion << std::dec;
+            throw SharedMemoryException();
         }
-        // open and verify version
-        else {
-            thisMultiDetector =
-                (sharedMultiSlsDetector *)sharedMemory->OpenSharedMemory(sz);
-            if (verify && thisMultiDetector->shmversion != MULTI_SHMVERSION) {
-                FILE_LOG(logERROR) << "Multi shared memory (" << detId << ") version mismatch "
-                                                                          "(expected 0x"
-                                   << std::hex << MULTI_SHMVERSION << " but got 0x" << thisMultiDetector->shmversion << std::dec;
-                throw SharedMemoryException();
-            }
-        }
-    } catch (...) {
-        if (sharedMemory) {
-            // unmap
-            if (thisMultiDetector) {
-                sharedMemory->UnmapSharedMemory(thisMultiDetector);
-                thisMultiDetector = nullptr;
-            }
-            // delete
-            delete sharedMemory;
-            sharedMemory = nullptr;
-        }
-        throw;
     }
 }
 
 void multiSlsDetector::initializeDetectorStructure() {
-    thisMultiDetector->shmversion = MULTI_SHMVERSION;
-    thisMultiDetector->numberOfDetectors = 0;
-    thisMultiDetector->numberOfDetector[X] = 0;
-    thisMultiDetector->numberOfDetector[Y] = 0;
-    thisMultiDetector->onlineFlag = 1;
-    thisMultiDetector->stoppedFlag = 0;
-    thisMultiDetector->dataBytes = 0;
-    thisMultiDetector->dataBytesInclGapPixels = 0;
-    thisMultiDetector->numberOfChannels = 0;
-    thisMultiDetector->numberOfChannel[X] = 0;
-    thisMultiDetector->numberOfChannel[Y] = 0;
-    thisMultiDetector->numberOfChannelInclGapPixels[X] = 0;
-    thisMultiDetector->numberOfChannelInclGapPixels[Y] = 0;
-    thisMultiDetector->maxNumberOfChannelsPerDetector[X] = 0;
-    thisMultiDetector->maxNumberOfChannelsPerDetector[Y] = 0;
-    for (int64_t &i : thisMultiDetector->timerValue) {
+    multi_shm()->shmversion = MULTI_SHMVERSION;
+    multi_shm()->numberOfDetectors = 0;
+    multi_shm()->numberOfDetector[X] = 0;
+    multi_shm()->numberOfDetector[Y] = 0;
+    multi_shm()->onlineFlag = 1;
+    multi_shm()->stoppedFlag = 0;
+    multi_shm()->dataBytes = 0;
+    multi_shm()->dataBytesInclGapPixels = 0;
+    multi_shm()->numberOfChannels = 0;
+    multi_shm()->numberOfChannel[X] = 0;
+    multi_shm()->numberOfChannel[Y] = 0;
+    multi_shm()->numberOfChannelInclGapPixels[X] = 0;
+    multi_shm()->numberOfChannelInclGapPixels[Y] = 0;
+    multi_shm()->maxNumberOfChannelsPerDetector[X] = 0;
+    multi_shm()->maxNumberOfChannelsPerDetector[Y] = 0;
+    for (int64_t &i : multi_shm()->timerValue) {
         i = 0;
     }
 
-    thisMultiDetector->acquiringFlag = false;
-    thisMultiDetector->receiverOnlineFlag = OFFLINE_FLAG;
-    thisMultiDetector->receiver_upstream = false;
+    multi_shm()->acquiringFlag = false;
+    multi_shm()->receiverOnlineFlag = OFFLINE_FLAG;
+    multi_shm()->receiver_upstream = false;
 }
 
 void multiSlsDetector::initializeMembers(bool verify) {
@@ -421,7 +379,7 @@ void multiSlsDetector::initializeMembers(bool verify) {
     zmqSocket.clear();
 
     // get objects from single det shared memory (open)
-    for (int i = 0; i < thisMultiDetector->numberOfDetectors; i++) {
+    for (int i = 0; i < multi_shm()->numberOfDetectors; i++) {
         try {
             detectors.push_back(
                 sls::make_unique<slsDetector>(detId, i, verify));
@@ -436,15 +394,15 @@ void multiSlsDetector::initializeMembers(bool verify) {
 }
 
 void multiSlsDetector::updateUserdetails() {
-    thisMultiDetector->lastPID = getpid();
-    memset(thisMultiDetector->lastUser, 0, SHORT_STRING_LENGTH);
-    memset(thisMultiDetector->lastDate, 0, SHORT_STRING_LENGTH);
+    multi_shm()->lastPID = getpid();
+    memset(multi_shm()->lastUser, 0, SHORT_STRING_LENGTH);
+    memset(multi_shm()->lastDate, 0, SHORT_STRING_LENGTH);
     try {
-        sls::strcpy_safe(thisMultiDetector->lastUser, exec("whoami").c_str());
-        sls::strcpy_safe(thisMultiDetector->lastDate, exec("date").c_str());
+        sls::strcpy_safe(multi_shm()->lastUser, exec("whoami").c_str());
+        sls::strcpy_safe(multi_shm()->lastDate, exec("date").c_str());
     } catch (...) {
-        sls::strcpy_safe(thisMultiDetector->lastUser, "errorreading");
-        sls::strcpy_safe(thisMultiDetector->lastDate, "errorreading");
+        sls::strcpy_safe(multi_shm()->lastUser, "errorreading");
+        sls::strcpy_safe(multi_shm()->lastDate, "errorreading");
     }
 }
 
@@ -480,7 +438,7 @@ void multiSlsDetector::setHostname(const char *name, int detPos) {
 
     // multi
     // this check is there only to allow the previous detsizechan command
-    if (thisMultiDetector->numberOfDetectors) {
+    if (multi_shm()->numberOfDetectors) {
         FILE_LOG(logWARNING) << "There are already detector(s) in shared memory."
                                 "Freeing Shared memory now.";
         freeSharedMemory();
@@ -533,11 +491,11 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
 
     int pos = (int)detectors.size();
     detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
-    thisMultiDetector->numberOfDetectors = detectors.size();
-    thisMultiDetector->dataBytes += detectors[pos]->getDataBytes();
-    thisMultiDetector->dataBytesInclGapPixels +=
+    multi_shm()->numberOfDetectors = detectors.size();
+    multi_shm()->dataBytes += detectors[pos]->getDataBytes();
+    multi_shm()->dataBytesInclGapPixels +=
         detectors[pos]->getDataBytesInclGapPixels();
-    thisMultiDetector->numberOfChannels +=
+    multi_shm()->numberOfChannels +=
         detectors[pos]->getTotalNumberOfChannels();
 
     detectors[pos]->setHostname(hostname);
@@ -571,12 +529,12 @@ int multiSlsDetector::getNumberOfDetectors() const {
 }
 
 int multiSlsDetector::getNumberOfDetectors(dimension d) const {
-    return thisMultiDetector->numberOfDetector[d];
+    return multi_shm()->numberOfDetector[d];
 }
 
 void multiSlsDetector::getNumberOfDetectors(int &nx, int &ny) const {
-    nx = thisMultiDetector->numberOfDetector[X];
-    ny = thisMultiDetector->numberOfDetector[Y];
+    nx = multi_shm()->numberOfDetector[X];
+    ny = multi_shm()->numberOfDetector[Y];
 }
 
 int multiSlsDetector::getTotalNumberOfChannels(int detPos) {
@@ -586,7 +544,7 @@ int multiSlsDetector::getTotalNumberOfChannels(int detPos) {
     }
 
     // multi
-    return thisMultiDetector->numberOfChannels;
+    return multi_shm()->numberOfChannels;
 }
 
 int multiSlsDetector::getTotalNumberOfChannels(dimension d, int detPos) {
@@ -596,7 +554,7 @@ int multiSlsDetector::getTotalNumberOfChannels(dimension d, int detPos) {
     }
 
     // multi
-    return thisMultiDetector->numberOfChannel[d];
+    return multi_shm()->numberOfChannel[d];
 }
 
 int multiSlsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d,
@@ -607,16 +565,16 @@ int multiSlsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d,
     }
 
     // multi
-    return thisMultiDetector->numberOfChannelInclGapPixels[d];
+    return multi_shm()->numberOfChannelInclGapPixels[d];
 }
 
 int multiSlsDetector::getMaxNumberOfChannelsPerDetector(dimension d) {
-    return thisMultiDetector->maxNumberOfChannelsPerDetector[d];
+    return multi_shm()->maxNumberOfChannelsPerDetector[d];
 }
 
 int multiSlsDetector::setMaxNumberOfChannelsPerDetector(dimension d, int i) {
-    thisMultiDetector->maxNumberOfChannelsPerDetector[d] = i;
-    return thisMultiDetector->maxNumberOfChannelsPerDetector[d];
+    multi_shm()->maxNumberOfChannelsPerDetector[d] = i;
+    return multi_shm()->maxNumberOfChannelsPerDetector[d];
 }
 
 int multiSlsDetector::getDetectorOffset(dimension d, int detPos) {
@@ -631,22 +589,22 @@ void multiSlsDetector::updateOffsets() {
     FILE_LOG(logDEBUG1) << "Updating Multi-Detector Offsets";
 
     int offsetX = 0, offsetY = 0, numX = 0, numY = 0;
-    int maxChanX = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
-    int maxChanY = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
+    int maxChanX = multi_shm()->maxNumberOfChannelsPerDetector[X];
+    int maxChanY = multi_shm()->maxNumberOfChannelsPerDetector[Y];
     int prevChanX = 0;
     int prevChanY = 0;
     bool firstTime = true;
 
-    thisMultiDetector->numberOfChannel[X] = 0;
-    thisMultiDetector->numberOfChannel[Y] = 0;
-    thisMultiDetector->numberOfDetector[X] = 0;
-    thisMultiDetector->numberOfDetector[Y] = 0;
+    multi_shm()->numberOfChannel[X] = 0;
+    multi_shm()->numberOfChannel[Y] = 0;
+    multi_shm()->numberOfDetector[X] = 0;
+    multi_shm()->numberOfDetector[Y] = 0;
 
     // gap pixels
     int offsetX_gp = 0, offsetY_gp = 0, numX_gp = 0, numY_gp = 0;
     int prevChanX_gp = 0, prevChanY_gp = 0;
-    thisMultiDetector->numberOfChannelInclGapPixels[X] = 0;
-    thisMultiDetector->numberOfChannelInclGapPixels[Y] = 0;
+    multi_shm()->numberOfChannelInclGapPixels[X] = 0;
+    multi_shm()->numberOfChannelInclGapPixels[Y] = 0;
 
     for (size_t idet = 0; idet < detectors.size(); ++idet) {
         FILE_LOG(logDEBUG1) << "offsetX:" << offsetX << " prevChanX:" << prevChanX << " offsetY:" << offsetY << " prevChanY:" << prevChanY << " offsetX_gp:" << offsetX_gp << " prevChanX_gp:" << prevChanX_gp << " offsetY_gp:" << offsetY_gp << " prevChanY_gp:" << prevChanY_gp;
@@ -679,8 +637,8 @@ void multiSlsDetector::updateOffsets() {
                 detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
             numY_gp +=
                 detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
-            ++thisMultiDetector->numberOfDetector[X];
-            ++thisMultiDetector->numberOfDetector[Y];
+            ++multi_shm()->numberOfDetector[X];
+            ++multi_shm()->numberOfDetector[Y];
             FILE_LOG(logDEBUG1) << "incrementing in both direction";
         }
 
@@ -698,8 +656,8 @@ void multiSlsDetector::updateOffsets() {
             numY_gp +=
                 detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
             // increment in y again only in the first column (else you double increment)
-            if (thisMultiDetector->numberOfDetector[X] == 1)
-                ++thisMultiDetector->numberOfDetector[Y];
+            if (multi_shm()->numberOfDetector[X] == 1)
+                ++multi_shm()->numberOfDetector[Y];
             FILE_LOG(logDEBUG1) << "incrementing in y direction";
         }
 
@@ -728,7 +686,7 @@ void multiSlsDetector::updateOffsets() {
             numX += detectors[idet]->getTotalNumberOfChannels(X);
             numX_gp +=
                 detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
-            ++thisMultiDetector->numberOfDetector[X];
+            ++multi_shm()->numberOfDetector[X];
             FILE_LOG(logDEBUG1) << "incrementing in x direction";
         }
 
@@ -746,28 +704,28 @@ void multiSlsDetector::updateOffsets() {
                             << detectors[idet]->getDetectorOffset(Y) << ")";
         // offsetY has been reset sometimes and offsetX the first time,
         // but remember the highest values
-        if (numX > thisMultiDetector->numberOfChannel[X]) {
-            thisMultiDetector->numberOfChannel[X] = numX;
+        if (numX > multi_shm()->numberOfChannel[X]) {
+            multi_shm()->numberOfChannel[X] = numX;
         }
-        if (numY > thisMultiDetector->numberOfChannel[Y]) {
-            thisMultiDetector->numberOfChannel[Y] = numY;
+        if (numY > multi_shm()->numberOfChannel[Y]) {
+            multi_shm()->numberOfChannel[Y] = numY;
         }
-        if (numX_gp > thisMultiDetector->numberOfChannelInclGapPixels[X]) {
-            thisMultiDetector->numberOfChannelInclGapPixels[X] = numX_gp;
+        if (numX_gp > multi_shm()->numberOfChannelInclGapPixels[X]) {
+            multi_shm()->numberOfChannelInclGapPixels[X] = numX_gp;
         }
-        if (numY_gp > thisMultiDetector->numberOfChannelInclGapPixels[Y]) {
-            thisMultiDetector->numberOfChannelInclGapPixels[Y] = numY_gp;
+        if (numY_gp > multi_shm()->numberOfChannelInclGapPixels[Y]) {
+            multi_shm()->numberOfChannelInclGapPixels[Y] = numY_gp;
         }
     }
-    FILE_LOG(logDEBUG1) << "\n\tNumber of Channels in X direction:" << thisMultiDetector->numberOfChannel[X] << "\n\tNumber of Channels in Y direction:" << thisMultiDetector->numberOfChannel[Y] << "\n\tNumber of Channels in X direction with Gap Pixels:" << thisMultiDetector->numberOfChannelInclGapPixels[X] << "\n\tNumber of Channels in Y direction with Gap Pixels:" << thisMultiDetector->numberOfChannelInclGapPixels[Y];
+    FILE_LOG(logDEBUG1) << "\n\tNumber of Channels in X direction:" << multi_shm()->numberOfChannel[X] << "\n\tNumber of Channels in Y direction:" << multi_shm()->numberOfChannel[Y] << "\n\tNumber of Channels in X direction with Gap Pixels:" << multi_shm()->numberOfChannelInclGapPixels[X] << "\n\tNumber of Channels in Y direction with Gap Pixels:" << multi_shm()->numberOfChannelInclGapPixels[Y];
 
-    thisMultiDetector->numberOfChannels =
-        thisMultiDetector->numberOfChannel[0] *
-        thisMultiDetector->numberOfChannel[1];
+    multi_shm()->numberOfChannels =
+        multi_shm()->numberOfChannel[0] *
+        multi_shm()->numberOfChannel[1];
 
     for (auto &d : detectors) {
-        d->updateMultiSize(thisMultiDetector->numberOfDetector[0],
-                           thisMultiDetector->numberOfDetector[1]);
+        d->updateMultiSize(multi_shm()->numberOfDetector[0],
+                           multi_shm()->numberOfDetector[1]);
     }
 }
 
@@ -780,9 +738,9 @@ int multiSlsDetector::setOnline(int value, int detPos) {
     // multi
     if (value != GET_ONLINE_FLAG) {
         auto r = parallelCall(&slsDetector::setOnline, value);
-        thisMultiDetector->onlineFlag = sls::minusOneIfDifferent(r);
+        multi_shm()->onlineFlag = sls::minusOneIfDifferent(r);
     }
-    return thisMultiDetector->onlineFlag;
+    return multi_shm()->onlineFlag;
 }
 
 int multiSlsDetector::getOnline(int detPos) const {
@@ -1143,12 +1101,12 @@ int multiSlsDetector::stopAcquisition(int detPos) {
     if (detPos >= 0) {
         // if only 1 detector, set flag to stop current acquisition
         if (detectors.size() == 1) {
-            thisMultiDetector->stoppedFlag = 1;
+            multi_shm()->stoppedFlag = 1;
         }
 
         return detectors[detPos]->stopAcquisition();
     } else {
-        thisMultiDetector->stoppedFlag = 1;
+        multi_shm()->stoppedFlag = 1;
         auto r = parallelCall(&slsDetector::stopAcquisition);
         return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
     }
@@ -1235,7 +1193,7 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
                     << "Cannot set number of frames, cycles, "
                        "storage cells or measurements individually.";
                 setErrorMask(getErrorMask() | MUST_BE_MULTI_CMD);
-                return thisMultiDetector->timerValue[index];
+                return multi_shm()->timerValue[index];
             default:
                 break;
             }
@@ -1266,7 +1224,7 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
         }
     }
 
-    thisMultiDetector->timerValue[index] = ret;
+    multi_shm()->timerValue[index] = ret;
     return ret;
 }
 
@@ -1434,16 +1392,16 @@ int multiSlsDetector::setDynamicRange(int dr, int detPos) {
     int ret = sls::minusOneIfDifferent(r);
 
     // update shm
-    int prevValue = thisMultiDetector->dataBytes;
-    int prevGValue = thisMultiDetector->dataBytesInclGapPixels;
-    thisMultiDetector->dataBytes = 0;
-    thisMultiDetector->dataBytesInclGapPixels = 0;
-    thisMultiDetector->numberOfChannels = 0;
+    int prevValue = multi_shm()->dataBytes;
+    int prevGValue = multi_shm()->dataBytesInclGapPixels;
+    multi_shm()->dataBytes = 0;
+    multi_shm()->dataBytesInclGapPixels = 0;
+    multi_shm()->numberOfChannels = 0;
     for (auto &d : detectors) {
-        thisMultiDetector->dataBytes += d->getDataBytes();
-        thisMultiDetector->dataBytesInclGapPixels +=
+        multi_shm()->dataBytes += d->getDataBytes();
+        multi_shm()->dataBytesInclGapPixels +=
             d->getDataBytesInclGapPixels();
-        thisMultiDetector->numberOfChannels += d->getTotalNumberOfChannels();
+        multi_shm()->numberOfChannels += d->getTotalNumberOfChannels();
     }
 
     // for usability
@@ -1466,8 +1424,8 @@ int multiSlsDetector::setDynamicRange(int dr, int detPos) {
 
     // update offsets if there was a change FIXME:add dr to sls shm and check
     // that instead
-    if ((prevValue != thisMultiDetector->dataBytes) ||
-        (prevGValue != thisMultiDetector->dataBytesInclGapPixels)) {
+    if ((prevValue != multi_shm()->dataBytes) ||
+        (prevGValue != multi_shm()->dataBytesInclGapPixels)) {
         updateOffsets();
     }
 
@@ -1994,7 +1952,6 @@ std::string multiSlsDetector::getAdditionalJsonParameter(const std::string &key,
     return sls::concatenateIfDifferent(r);
 }
 
-
 int multiSlsDetector::setDetectorMinMaxEnergyThreshold(const int index, int value, int detPos) {
     std::string parameter = (index ? "emax" : "emin");
 
@@ -2010,7 +1967,7 @@ int multiSlsDetector::setDetectorMinMaxEnergyThreshold(const int index, int valu
         return stoi(result);
     }
     // not found or cannot scan integer
-    catch(...) {
+    catch (...) {
         return -1;
     }
 }
@@ -2103,7 +2060,7 @@ int multiSlsDetector::loadImageToDetector(imageType index,
     // multi
 
     // read image for all
-    int nch = thisMultiDetector->numberOfChannels;
+    int nch = multi_shm()->numberOfChannels;
     short int imageVals[nch];
     if (readDataFile(fname, imageVals, nch) < nch * (int)sizeof(short int)) {
         FILE_LOG(logERROR) << "Could not open file or not enough data in file "
@@ -2132,7 +2089,7 @@ int multiSlsDetector::writeCounterBlockFile(const std::string &fname,
     // multi
 
     // get image from all
-    int nch = thisMultiDetector->numberOfChannels;
+    int nch = multi_shm()->numberOfChannels;
     short int imageVals[nch];
     std::vector<int> r;
     for (size_t idet = 0; idet < detectors.size(); ++idet) {
@@ -2576,7 +2533,7 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
     // update data bytes incl gap pixels
     if (val != -1) {
         auto r = serialCall(&slsDetector::getDataBytesInclGapPixels);
-        thisMultiDetector->dataBytesInclGapPixels = sls::sum(r);
+        multi_shm()->dataBytesInclGapPixels = sls::sum(r);
 
         // update
         updateOffsets();
@@ -2783,9 +2740,9 @@ int multiSlsDetector::setReceiverOnline(int value, int detPos) {
     // multi
     if (value != GET_ONLINE_FLAG) {
         auto r = parallelCall(&slsDetector::setReceiverOnline, value);
-        thisMultiDetector->receiverOnlineFlag = sls::minusOneIfDifferent(r);
+        multi_shm()->receiverOnlineFlag = sls::minusOneIfDifferent(r);
     }
-    return thisMultiDetector->receiverOnlineFlag;
+    return multi_shm()->receiverOnlineFlag;
 }
 
 int multiSlsDetector::getReceiverOnline(int detPos) const{
@@ -3131,8 +3088,8 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 void multiSlsDetector::readFrameFromReceiver() {
 
     int nX =
-        thisMultiDetector->numberOfDetector[X]; // to copy data in multi module
-    int nY = thisMultiDetector
+        multi_shm()->numberOfDetector[X]; // to copy data in multi module
+    int nY = multi_shm()
                  ->numberOfDetector[Y]; // for eiger, to reverse the data
     bool gappixelsenable = false;
     bool eiger = false;
@@ -3280,8 +3237,8 @@ void multiSlsDetector::readFrameFromReceiver() {
             // 4bit gap pixels
             if (dynamicRange == 4 && gappixelsenable) {
                 int n = processImageWithGapPixels(multiframe, multigappixels);
-                nPixelsX = thisMultiDetector->numberOfChannelInclGapPixels[X];
-                nPixelsY = thisMultiDetector->numberOfChannelInclGapPixels[Y];
+                nPixelsX = multi_shm()->numberOfChannelInclGapPixels[X];
+                nPixelsY = multi_shm()->numberOfChannelInclGapPixels[Y];
                 thisData = new detectorData(getCurrentProgress(),
                                             currentFileName.c_str(), nPixelsX,
                                             nPixelsY, multigappixels, n,
@@ -3337,12 +3294,12 @@ void multiSlsDetector::readFrameFromReceiver() {
 
 int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {
     // eiger 4 bit mode
-    int nxb = thisMultiDetector->numberOfDetector[X] * (512 + 3);
-    int nyb = thisMultiDetector->numberOfDetector[Y] * (256 + 1);
+    int nxb = multi_shm()->numberOfDetector[X] * (512 + 3);
+    int nyb = multi_shm()->numberOfDetector[Y] * (256 + 1);
     int gapdatabytes = nxb * nyb;
 
-    int nxchip = thisMultiDetector->numberOfDetector[X] * 4;
-    int nychip = thisMultiDetector->numberOfDetector[Y] * 1;
+    int nxchip = multi_shm()->numberOfDetector[X] * 4;
+    int nychip = multi_shm()->numberOfDetector[Y] * 1;
 
     // allocate
     if (gpImage == nullptr) {
@@ -3606,7 +3563,7 @@ uint64_t multiSlsDetector::setPatternWord(int addr, uint64_t word, int detPos) {
 }
 
 int multiSlsDetector::setPatternLoops(int level, int &start, int &stop, int &n,
-                                     int detPos) {
+                                      int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setPatternLoops(level, start, stop, n);
@@ -3949,20 +3906,20 @@ void multiSlsDetector::registerDataCallback(
 int multiSlsDetector::setTotalProgress() {
     int nf = 1, nc = 1, ns = 1, nm = 1;
 
-    if (thisMultiDetector->timerValue[FRAME_NUMBER]) {
-        nf = thisMultiDetector->timerValue[FRAME_NUMBER];
+    if (multi_shm()->timerValue[FRAME_NUMBER]) {
+        nf = multi_shm()->timerValue[FRAME_NUMBER];
     }
 
-    if (thisMultiDetector->timerValue[CYCLES_NUMBER] > 0) {
-        nc = thisMultiDetector->timerValue[CYCLES_NUMBER];
+    if (multi_shm()->timerValue[CYCLES_NUMBER] > 0) {
+        nc = multi_shm()->timerValue[CYCLES_NUMBER];
     }
 
-    if (thisMultiDetector->timerValue[STORAGE_CELL_NUMBER] > 0) {
-        ns = thisMultiDetector->timerValue[STORAGE_CELL_NUMBER] + 1;
+    if (multi_shm()->timerValue[STORAGE_CELL_NUMBER] > 0) {
+        ns = multi_shm()->timerValue[STORAGE_CELL_NUMBER] + 1;
     }
 
-    if (thisMultiDetector->timerValue[MEASUREMENTS_NUMBER] > 0) {
-        nm = thisMultiDetector->timerValue[MEASUREMENTS_NUMBER];
+    if (multi_shm()->timerValue[MEASUREMENTS_NUMBER] > 0) {
+        nm = multi_shm()->timerValue[MEASUREMENTS_NUMBER];
     }
 
     totalProgress = nm * nf * nc * ns;
@@ -4014,10 +3971,10 @@ int multiSlsDetector::acquire() {
 
     bool receiver = (setReceiverOnline() == ONLINE_FLAG);
     progressIndex = 0;
-    thisMultiDetector->stoppedFlag = 0;
+    multi_shm()->stoppedFlag = 0;
     setJoinThreadFlag(false);
 
-    int nm = thisMultiDetector->timerValue[MEASUREMENTS_NUMBER];
+    int nm = multi_shm()->timerValue[MEASUREMENTS_NUMBER];
     if (nm < 1) {
         nm = 1;
     }
@@ -4027,7 +3984,7 @@ int multiSlsDetector::acquire() {
         std::lock_guard<std::mutex> lock(mg);
         if (getReceiverStatus() != IDLE) {
             if (stopReceiver() == FAIL) {
-                thisMultiDetector->stoppedFlag = 1;
+                multi_shm()->stoppedFlag = 1;
             }
         }
     }
@@ -4038,13 +3995,13 @@ int multiSlsDetector::acquire() {
     if (receiver) {
         std::lock_guard<std::mutex> lock(mg);
         if (resetFramesCaught() == FAIL) {
-            thisMultiDetector->stoppedFlag = 1;
+            multi_shm()->stoppedFlag = 1;
         }
     }
 
     // loop through measurements
     for (int im = 0; im < nm; ++im) {
-        if (thisMultiDetector->stoppedFlag) {
+        if (multi_shm()->stoppedFlag) {
             break;
         }
 
@@ -4054,7 +4011,7 @@ int multiSlsDetector::acquire() {
             if (startReceiver() == FAIL) {
                 FILE_LOG(logERROR) << "Start receiver failed ";
                 stopReceiver();
-                thisMultiDetector->stoppedFlag = 1;
+                multi_shm()->stoppedFlag = 1;
                 break;
             }
             // let processing thread listen to these packets
@@ -4067,7 +4024,7 @@ int multiSlsDetector::acquire() {
         std::lock_guard<std::mutex> lock(mg);
         if (receiver) {
             if (stopReceiver() == FAIL) {
-                thisMultiDetector->stoppedFlag = 1;
+                multi_shm()->stoppedFlag = 1;
             } else {
                 if (dataReady) {
                     sem_wait(&sem_endRTAcquisition); // waits for receiver's
@@ -4082,7 +4039,7 @@ int multiSlsDetector::acquire() {
         if (measurement_finished) {
             measurement_finished(im, findex, measFinished_p);
         }
-        if (thisMultiDetector->stoppedFlag) {
+        if (multi_shm()->stoppedFlag) {
             break;
         }
 

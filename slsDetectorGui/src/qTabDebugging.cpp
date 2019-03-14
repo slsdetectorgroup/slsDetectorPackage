@@ -31,6 +31,7 @@ qTabDebugging::qTabDebugging(QWidget *parent, multiSlsDetector *&detector) : QWi
     setupUi(this);
     SetupWidgetWindow();
     Initialization();
+    FILE_LOG(logDEBUG) << "Debugging ready";
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

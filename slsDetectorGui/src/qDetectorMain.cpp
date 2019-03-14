@@ -1,7 +1,3 @@
-/**********************************************************************
- * TO DO
- * 1. settcpsocket is done with slsdetector.maybe do for all detectors connected: mythen
- * ********************************************************************/
 #include "qDetectorMain.h"
 #include "qServer.h"
 #include "qTabAdvanced.h"
@@ -26,7 +22,6 @@
 #include <string>
 #include <sys/stat.h>
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char **argv) {
     QApplication *theApp = new QApplication(argc, argv);
@@ -41,9 +36,8 @@ int main(int argc, char **argv) {
     return theApp->exec();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) : QMainWindow(parent), myDet(0), myPlot(0), tabs(0), isDeveloper(0) {
+qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) : QMainWindow(parent), myDet(0), detType(0), myPlot(0), tabs(0), isDeveloper(0) {
 
     // options
     std::string fname = "";
@@ -102,7 +96,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 					+ "\t-f, --config <fname>      : Loads config from file\n"
 					+ "\t-i, --id <i>              : Sets the multi detector id to i. Default: 0. Required \n"
 					+ "\t                            only when more than one multi detector object is needed.\n\n";
-            FILE_LOG(logERROR) << help_message << '\n';
+            FILE_LOG(logERROR) << help_message;
             throw std::exception();
         }
     }
@@ -113,26 +107,22 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
     Initialization();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qDetectorMain::~qDetectorMain() {
     if (myDet)
         delete myDet;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 bool qDetectorMain::isPlotRunning() {
 	return myPlot->isRunning();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int qDetectorMain::GetProgress() {
 	return tab_measurement->GetProgress();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 QString qDetectorMain::GetFilePath() {
     QString s = QString(myDet->getFilePath().c_str());
@@ -140,19 +130,16 @@ QString qDetectorMain::GetFilePath() {
     return s;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int qDetectorMain::DoesOutputDirExist() {
 	return tab_dataoutput->VerifyOutputDirectory();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 bool qDetectorMain::isCurrentlyTabDeveloper() {
     return (tabs->currentIndex() == Developer);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetUpWidgetWindow() {
 
@@ -171,21 +158,13 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     // creating all the other tab widgets
     tab_measurement = new qTabMeasurement(this, myDet, myPlot);
-    FILE_LOG(logDEBUG) << "Measurement ready";
     tab_dataoutput = new qTabDataOutput(this, myDet);
-    FILE_LOG(logDEBUG) << "DataOutput ready";
     tab_plot = new qTabPlot(this, myDet, myPlot);
-    FILE_LOG(logDEBUG) << "Plot ready";
     tab_settings = new qTabSettings(this, myDet);
-    FILE_LOG(logDEBUG) << "Settings ready";
-    tab_advanced = new qTabAdvanced(this, myDet, myPlot);
-    FILE_LOG(logDEBUG) << "Advanced ready";
+    tab_advanced = new qTabAdvanced(this, myDet);
     tab_debugging = new qTabDebugging(this, myDet);
-    FILE_LOG(logDEBUG) << "Debugging ready";
     tab_developer = new qTabDeveloper(this, myDet);
-    FILE_LOG(logDEBUG) << "Developer ready";
     myServer = new qServer(this);
-    FILE_LOG(logDEBUG) << "Client Server ready";
 
     //	creating the scroll area widgets for the tabs
     QScrollArea *scroll[NumberOfTabs];
@@ -250,7 +229,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     zoomToolTip = dockWidgetPlot->toolTip();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
 
@@ -259,7 +237,6 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
 
     //create messages tab to capture config file loading logs
     tab_messages = new qTabMessages(this);
-    FILE_LOG(logDEBUG) << "Messages ready";
 
     //loads the config file at startup
     if (!fName.empty())
@@ -287,19 +264,21 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     }
 
     // Check if type valid. If not, exit
-    slsDetectorDefs::detectorType detType = myDet->getDetectorTypeAsEnum();
+    detType = myDet->getDetectorTypeAsEnum();
     qDefs::checkErrorMessage(myDet, "qDetectorMain::SetUpDetector");
 
+    // check detector type and update menu
     switch (detType) {
     case slsDetectorDefs::EIGER:
         break;
     case slsDetectorDefs::GOTTHARD:
-    case slsDetectorDefs::MOENCH:
     case slsDetectorDefs::JUNGFRAU:
-    case slsDetectorDefs::CHIPTESTBOARD:
         actionLoadTrimbits->setText("Load Settings");
         actionSaveTrimbits->setText("Save Settings");
         break;
+    case MOENCH:
+    case CHIPTESTBOARD:
+    	break;
     default:
         std::string detName = myDet->getDetectorTypeAsString();
         qDefs::checkErrorMessage(myDet, "qDetectorMain::SetUpDetector");
@@ -319,7 +298,6 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     qDefs::checkErrorMessage(myDet, "qDetectorMain::SetUpDetector");
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::Initialization() {
     // Dockable Plot
@@ -332,8 +310,6 @@ void qDetectorMain::Initialization() {
     connect(tab_measurement, SIGNAL(CheckPlotIntervalSignal()), tab_plot, SLOT(SetFrequency()));
      // Plot tab
     connect(tab_plot, SIGNAL(DisableZoomSignal(bool)), this, SLOT(SetZoomToolTip(bool)));
-    //settings to advanced tab(int is always 0 to only refresh)
-    connect(tab_settings, SIGNAL(UpdateTrimbitSignal(int)), tab_advanced, SLOT(UpdateTrimbitPlot(int)));
 
     // Plotting
     // When the acquisition is finished, must update the meas tab
@@ -353,7 +329,6 @@ void qDetectorMain::Initialization() {
     connect(myServer, SIGNAL(ServerStoppedSignal()), this, SLOT(UncheckServer()));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::LoadConfigFile(const std::string fName) {
 
@@ -387,14 +362,13 @@ void qDetectorMain::LoadConfigFile(const std::string fName) {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::EnableModes(QAction *action) {
     bool enable;
 
     //listen to gui client
     if (action == actionListenGuiClient) {
-        myServer->StartStopServer(actionListenGuiClient->isChecked());
+        myServer->StartServers(actionListenGuiClient->isChecked());
      }
     //Set DebugMode
     else if (action == actionDebug) {
@@ -409,8 +383,11 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(Advanced, enable);
-        actionLoadTrimbits->setVisible(enable);
-        actionSaveTrimbits->setVisible(enable);
+        // moench and ctb don't have settings
+        if (detType != MOENCH && detType != CHIPTESTBOARD) {
+        	actionLoadTrimbits->setVisible(enable);
+        	actionSaveTrimbits->setVisible(enable);
+        }
         tab_measurement->SetExpertMode(enable);
         tab_settings->SetExpertMode(enable);
         FILE_LOG(logINFO) << "Expert Mode: " << slsDetectorDefs::stringEnable(enable);
@@ -429,7 +406,6 @@ void qDetectorMain::EnableModes(QAction *action) {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::ExecuteUtilities(QAction *action) {
     bool refreshTabs = false;
@@ -529,8 +505,10 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             if (!fName.isEmpty()) {
                 if (myDet->loadSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL) {
                     qDefs::Message(qDefs::INFORMATION, "The Settings have been loaded successfully.", "qDetectorMain::ExecuteUtilities");
+                    FILE_LOG(logINFO) << "Settings loaded successfully";
                 } else {
                     qDefs::Message(qDefs::WARNING, std::string("Could not load the Settings from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+                    FILE_LOG(logWARNING) << "Could not load Settings";
                 }
                 qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
             }
@@ -550,8 +528,10 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             if (!fName.isEmpty()) {
                 if (myDet->loadSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL) {
                     qDefs::Message(qDefs::INFORMATION, "The Trimbits have been loaded successfully.", "qDetectorMain::ExecuteUtilities");
+                    FILE_LOG(logINFO) << "Trimbits loaded successfully";
                 } else {
                     qDefs::Message(qDefs::WARNING, std::string("Could not load the Trimbits from file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+                    FILE_LOG(logWARNING) << "Could not load Trimbits";
                 }
                 qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
             }
@@ -570,10 +550,13 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                                                  tr("Settings files (*.settings settings.sn*);;All Files(*) "));
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
-                if (myDet->saveSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL)
+                if (myDet->saveSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL) {
                     qDefs::Message(qDefs::INFORMATION, "The Settings have been saved successfully.", "qDetectorMain::ExecuteUtilities");
-                else
+                    FILE_LOG(logINFO) << "Settings saved successfully";
+                } else {
                     qDefs::Message(qDefs::WARNING, std::string("Could not save the Settings to file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+                    FILE_LOG(logWARNING) << "Could not save Settings";
+                }
                 qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
             }
         } //mythen and eiger
@@ -587,10 +570,13 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                                                  tr("Trimbit files (*.trim noise.sn*) ;;All Files(*)"));
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
-                if (myDet->saveSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL)
+                if (myDet->saveSettingsFile(std::string(fName.toAscii().constData()), -1) != slsDetectorDefs::FAIL) {
                     qDefs::Message(qDefs::INFORMATION, "The Trimbits have been saved successfully.", "qDetectorMain::ExecuteUtilities");
-                else
+                    FILE_LOG(logINFO) << "Trimbits saved successfully";
+                } else {
                     qDefs::Message(qDefs::WARNING, std::string("Could not save the Trimbits to file:\n") + fName.toAscii().constData(), "qDetectorMain::ExecuteUtilities");
+                    FILE_LOG(logWARNING) << "Could not save Trimbits";
+                }
                 qDefs::checkErrorMessage(myDet, "qDetectorMain::ExecuteUtilities");
             }
         }
@@ -607,18 +593,15 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             tab_debugging->Refresh();
         if (tab_developer->isEnabled())
             tab_developer->Refresh();
-
         tab_plot->Refresh();
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::ExecuteHelp(QAction *action) {
     if (action == actionAbout) {
-#ifdef VERBOSE
-        std::cout << "About: Common GUI for Eiger, Gotthard, Jungfrau, Moench and Propix detectors" << '\n';
-#endif
+    	FILE_LOG(logINFO) << "About Common GUI for Eiger, Gotthard, Jungfrau and Moench detectors";
+
         char version[200];
         long long unsigned int retval = GITDATE;
         sprintf(version, "%llx", retval);
@@ -634,7 +617,7 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
                                                                 "SLS Detector Client version:  " +
                                                thisClientVersion + "<br><br>"
                                                                    "Common GUI to control the SLS Detectors: "
-                                                                   "Mythen, Eiger, Gotthard, Jungfrau, Moench and Propix.<br><br>"
+                                                                   "Eiger, Gotthard, Jungfrau and Moench.<br><br>"
                                                                    "It can be operated in parallel with the command line interface:<br>"
                                                                    "sls_detector_put,<br>sls_detector_get,<br>sls_detector_acquire and<br>sls_detector_help.<br><br>"
                                                                    "The GUI Software is still in progress. "
@@ -643,12 +626,14 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::Refresh(int index) {
+	FILE_LOG(logDEBUG) << "Refresh Main Tab";
+
     myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
     myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
     qDefs::checkErrorMessage(myDet, "qDetectorMain::Refresh");
+
     if (!tabs->isTabEnabled(index))
         tabs->setCurrentIndex((index++) < (tabs->count() - 1) ? index : Measurement);
     else {
@@ -683,25 +668,22 @@ void qDetectorMain::Refresh(int index) {
     tabs->tabBar()->setTabTextColor(index, QColor(0, 0, 200, 255));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::ResizeMainWindow(bool b) {
-#ifdef VERBOSE
-    std::cout << "Resizing Main Window: height:" << height() << '\n';
-#endif
+	FILE_LOG(logDEBUG1) << "Resizing Main Window: height:" << height();
+
     // undocked from the main window
     if (b) {
         // sets the main window height to a smaller maximum to get rid of space
         setMaximumHeight(height() - heightPlotWindow - 9);
         dockWidgetPlot->setMinimumHeight(0);
-        std::cout << "undocking it from main window" << '\n';
+        FILE_LOG(logINFO) << "Undocking from main window";
     } else {
         setMaximumHeight(QWIDGETSIZE_MAX);
         // the minimum for plot will be set when the widget gets resized automatically
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::resizeEvent(QResizeEvent *event) {
     if (!dockWidgetPlot->isFloating()) {
@@ -721,12 +703,9 @@ void qDetectorMain::resizeEvent(QResizeEvent *event) {
     event->accept();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::EnableTabs() {
-#ifdef VERBOSE
-    std::cout << "Entering EnableTabs function" << '\n';
-#endif
+	FILE_LOG(logDEBUG1) << "Entering EnableTabs function";
 
     bool enable;
     enable = !(tabs->isTabEnabled(DataOutput));
@@ -748,10 +727,9 @@ void qDetectorMain::EnableTabs() {
 
     // special tabs
     tabs->setTabEnabled(Debugging, enable && (actionDebug->isChecked()));
-	std::cout << "Developer: " << enable << " isdev: " << isDeveloper << '\n';
     tabs->setTabEnabled(Developer, enable && isDeveloper);
     //expert
-    bool expertTab = enable && (actionExpert->isChecked());
+    bool expertTab = enable && (actionExpert->isChecked()) && (detType != MOENCH && detType != CHIPTESTBOARD);
     tabs->setTabEnabled(Advanced, expertTab);
     actionLoadTrimbits->setVisible(expertTab);
     actionSaveTrimbits->setVisible(expertTab);
@@ -762,6 +740,8 @@ void qDetectorMain::EnableTabs() {
         myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
         qDefs::checkErrorMessage(myDet, "qDetectorMain::EnableTabs");
 
+
+        //tab_measurement->Refresh(); too slow to refresh
         tab_settings->Refresh();
         tab_dataoutput->Refresh();
         if (tab_advanced->isEnabled())
@@ -777,7 +757,7 @@ void qDetectorMain::EnableTabs() {
         if (isDeveloper)
             tab_developer->StopADCTimer();
         //set the plot type first(acccss shared memory)
-        // tab_plot->SetScanArgument();
+        tab_plot->SetScanArgument();
         //sets running to true
         myPlot->StartStopDaqToggle();
     } else { //to enable scan box
@@ -788,7 +768,6 @@ void qDetectorMain::EnableTabs() {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetZoomToolTip(bool disable) {
     if (disable)
@@ -797,29 +776,24 @@ void qDetectorMain::SetZoomToolTip(bool disable) {
         dockWidgetPlot->setToolTip(zoomToolTip);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int qDetectorMain::StartStopAcquisitionFromClient(bool start) {
-#ifdef VERBOSE
-    std::cout << "Start/Stop Acquisition From Client:" << start << '\n';
-#endif
+	FILE_LOG(logINFO) << (start ? "Start" : "Stop") << " Acquisition From Clien";
 
     if (tab_measurement->GetStartStatus() != start) {
         tab_measurement->ClickStartStop();
+        while(myPlot->GetClientInitiated());
     }
 
     return slsDetectorDefs::OK;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::UncheckServer() {
-#ifdef VERBOSE
-    std::cout << "Unchecking Mode : Listen to Gui Client\n";
-#endif
+	FILE_LOG(logINFO) << "Stop Listening to Gui Client";
+
     disconnect(menuModes, SIGNAL(triggered(QAction *)), this, SLOT(EnableModes(QAction *)));
     actionListenGuiClient->setChecked(false);
     connect(menuModes, SIGNAL(triggered(QAction *)), this, SLOT(EnableModes(QAction *)));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------

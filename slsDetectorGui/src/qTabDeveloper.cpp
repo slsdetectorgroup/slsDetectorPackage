@@ -41,6 +41,7 @@ qTabDeveloper::qTabDeveloper(qDetectorMain *parent, multiSlsDetector *&detector)
     }
     SetupWidgetWindow();
     Initialization();
+    FILE_LOG(logDEBUG) << "Developer ready";
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

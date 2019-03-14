@@ -1,20 +1,9 @@
-/*
- * qCloneWidget.cpp
- *
- *  Created on: May 18, 2012
- *      Author: l_maliakal_d
- */
-
-/** Qt Project Class Headers */
 #include "qCloneWidget.h"
-/** Qt Include Headers */
+
 #include "qwt_symbol.h"
 #include <QFileDialog>
 #include <QImage>
 #include <QPainter>
-/** C++ Include Headers */
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle,
                            int numDim, std::string FilePath, bool displayStats, QString min, QString max, QString sum) : QMainWindow(parent), id(id), filePath(FilePath), cloneplot1D(0), cloneplot2D(0) {
@@ -34,20 +23,24 @@ qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitl
     DisplayStats(displayStats, min, max, sum);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qCloneWidget::~qCloneWidget() {
     delete cloneplot1D;
     delete cloneplot2D;
     delete cloneBox;
+    cloneplot1D_hists.clear();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+SlsQt1DPlot* qCloneWidget::Get1dPlot() {
+	return cloneplot1D;
+}
+
 
 void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTitle, QString zTitle, int numDim) {
 
-    menubar = new QMenuBar(this);
-    actionSave = new QAction("&Save", this);
+	QMenuBar* menubar = new QMenuBar(this);
+	QAction* actionSave = new QAction("&Save", this);
     menubar->addAction(actionSave);
     setMenuBar(menubar);
 
@@ -58,7 +51,7 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
 
     //plot group box
     cloneBox = new QGroupBox(this);
-    gridClone = new QGridLayout(cloneBox);
+    QGridLayout* gridClone = new QGridLayout(cloneBox);
     cloneBox->setLayout(gridClone);
     cloneBox->setContentsMargins(0, 0, 0, 0);
     cloneBox->setAlignment(Qt::AlignHCenter);
@@ -103,7 +96,6 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
     resize(500, 350);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis[], std::string histTitle[], bool lines, bool markers) {
     //for each plot,  create hists
@@ -141,7 +133,6 @@ void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, d
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis, std::string histTitle[], bool lines, bool markers) {
     // for each plot create hists
@@ -182,14 +173,12 @@ void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, d
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d) {
     cloneplot2D->GetPlot()->SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d);
     cloneplot2D->UpdateNKeepSetRangeIfSet();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetRange(bool IsXYRange[], double XYRangeValues[]) {
     double XYCloneRangeValues[4];
@@ -236,22 +225,6 @@ void qCloneWidget::SetRange(bool IsXYRange[], double XYRangeValues[]) {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-char *qCloneWidget::GetCurrentTimeStamp() {
-    char output[30];
-    char *result;
-
-    //using sys cmds to get output or str
-    FILE *sysFile = popen("date", "r");
-    fgets(output, sizeof(output), sysFile);
-    pclose(sysFile);
-
-    result = output + 0;
-    return result;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SavePlot() {
     char cID[10];
@@ -271,16 +244,18 @@ void qCloneWidget::SavePlot() {
 
     fName = QFileDialog::getSaveFileName(this, tr("Save Snapshot "), fName, tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), 0, QFileDialog::ShowDirsOnly);
     if (!fName.isEmpty()) {
-        if ((img.save(fName)))
+        if ((img.save(fName))) {
             qDefs::Message(qDefs::INFORMATION, "The SnapShot has been successfully saved", "qCloneWidget::SavePlot");
-        else
+            FILE_LOG(logINFO) << "The SnapShot has been successfully saved";
+        } else {
             qDefs::Message(qDefs::WARNING, "Attempt to save snapshot failed.\n"
                                            "Formats: .png, .jpg, .xpm.",
                            "qCloneWidget::SavePlot");
+            FILE_LOG(logWARNING) << "Attempt to save snapshot failed";
+        }
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int qCloneWidget::SavePlotAutomatic() {
     char cID[10];
@@ -293,7 +268,7 @@ int qCloneWidget::SavePlotAutomatic() {
         fName.replace(".raw", ".png");
     } else
         fName.append(QString("/Snapshot_unknown_title.png"));
-    cout << "fname:" << fName.toAscii().constData() << endl;
+    FILE_LOG(logDEBUG) << "fname:" << fName.toAscii().constData();
     //save
     QImage img(cloneBox->size().width(), cloneBox->size().height(), QImage::Format_RGB32);
     QPainter painter(&img);
@@ -304,14 +279,26 @@ int qCloneWidget::SavePlotAutomatic() {
         return -1;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::closeEvent(QCloseEvent *event) {
     emit CloneClosedSignal(id);
     event->accept();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+char *qCloneWidget::GetCurrentTimeStamp() {
+    char output[30];
+    char *result;
+
+    //using sys cmds to get output or str
+    FILE *sysFile = popen("date", "r");
+    fgets(output, sizeof(output), sysFile);
+    pclose(sysFile);
+
+    result = output + 0;
+    return result;
+}
+
 
 void qCloneWidget::DisplayStats(bool enable, QString min, QString max, QString sum) {
     if (enable) {
@@ -351,4 +338,3 @@ void qCloneWidget::DisplayStats(bool enable, QString min, QString max, QString s
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------

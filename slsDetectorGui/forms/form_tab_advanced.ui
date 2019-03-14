@@ -65,117 +65,13 @@
     <attribute name="title">
      <string>Trimming</string>
     </attribute>
-    <widget class="QGroupBox" name="boxPlot">
-     <property name="geometry">
-      <rect>
-       <x>5</x>
-       <y>10</y>
-       <width>495</width>
-       <height>66</height>
-      </rect>
-     </property>
-     <property name="title">
-      <string>Trimbits Plot</string>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-     <widget class="QWidget" name="horizontalLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>230</x>
-        <y>15</y>
-        <width>259</width>
-        <height>44</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <property name="spacing">
-        <number>17</number>
-       </property>
-       <item>
-        <widget class="QPushButton" name="btnRefresh">
-         <property name="toolTip">
-          <string>&lt;nobr&gt;
-Updates plot with Trimbits from Shared Memory, not from Detector.
-&lt;/nobr&gt;</string>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Refresh  </string>
-         </property>
-         <property name="icon">
-          <iconset resource="../include/icons.qrc">
-           <normaloff>:/icons/images/refresh.png</normaloff>:/icons/images/refresh.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>24</width>
-           <height>16</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnGetTrimbits">
-         <property name="toolTip">
-          <string>&lt;nobr&gt;
-Plots Trimbits from Detector. This will take time.
-&lt;/nobr&gt;</string>
-         </property>
-         <property name="text">
-          <string>Get Trimbits  </string>
-         </property>
-         <property name="icon">
-          <iconset resource="../include/icons.qrc">
-           <normaloff>:/icons/images/download.png</normaloff>:/icons/images/download.png</iconset>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="gridLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>25</x>
-        <y>20</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QRadioButton" name="radioDataGraph">
-         <property name="text">
-          <string>Data Graph</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QRadioButton" name="radioHistogram">
-         <property name="text">
-          <string>Histogram</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
     <widget class="QGroupBox" name="boxSetAllTrimbits">
      <property name="enabled">
       <bool>false</bool>
      </property>
      <property name="geometry">
       <rect>
-       <x>518</x>
+       <x>10</x>
        <y>10</y>
        <width>233</width>
        <height>66</height>
@@ -1495,11 +1391,6 @@ Default value is 0. A value less than the required minimum is ignored.
  </widget>
  <tabstops>
   <tabstop>tabAdvancedSettings</tabstop>
-  <tabstop>boxPlot</tabstop>
-  <tabstop>radioDataGraph</tabstop>
-  <tabstop>radioHistogram</tabstop>
-  <tabstop>btnRefresh</tabstop>
-  <tabstop>btnGetTrimbits</tabstop>
   <tabstop>btnGetRoi</tabstop>
   <tabstop>btnSetRoi</tabstop>
   <tabstop>btnClearRoi</tabstop>

@@ -24,6 +24,7 @@
 qTabMessages::qTabMessages(qDetectorMain *m) : myMainTab(m), qout(0), qerr(0) {
     SetupWidgetWindow();
     Initialization();
+    FILE_LOG(logDEBUG) << "Messages ready";
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

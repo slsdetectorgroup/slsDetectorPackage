@@ -1435,9 +1435,10 @@ class multiSlsDetector : public virtual slsDetectorDefs,
 
     /**
 	 * Prints receiver configuration
+	 * @param level print level
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 */
-    void printReceiverConfiguration(int detPos = -1);
+    void printReceiverConfiguration(TLogLevel level = logINFO, int detPos = -1);
 
     /**
      * Sets up receiver socket if online and sets the flag

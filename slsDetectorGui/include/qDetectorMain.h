@@ -1,17 +1,7 @@
-/*
- * qDetectorMain.h
- * Main Window of the GUI
- *  Created on: Apr 30, 2012
- *      Author: l_maliakal_d
- */
-#ifndef QDETECTORMAIN_H
-#define QDETECTORMAIN_H
+#pragma once
 
 #include "qDefs.h"
-
-/** Form Header */
 #include "ui_form_detectormain.h"
-/** Qt Project Class Headers */
 #include "qDrawPlot.h"
 #include "qTabDataOutput.h"
 #include "qTabMeasurement.h"
@@ -22,9 +12,9 @@ class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
 class qServer;
-/** Project Class Headers */
+
 class multiSlsDetector;
-/** Qt Include Headers */
+
 #include <QGridLayout>
 #include <QResizeEvent>
 #include <QScrollArea>
@@ -97,6 +87,8 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
   private:
     /** The sls detector object */
     multiSlsDetector *myDet;
+    /** Detector Type */
+    slsDetectorDefs::detectorType detType;
     /** The Plot widget	 */
     qDrawPlot *myPlot;
     /**Tab Widget */
@@ -212,4 +204,3 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     void resizeEvent(QResizeEvent *event);
 };
 
-#endif /* QDETECTORMAIN_H */

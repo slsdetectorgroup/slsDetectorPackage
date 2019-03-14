@@ -2719,15 +2719,15 @@ int64_t multiSlsDetector::getRateCorrection(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-void multiSlsDetector::printReceiverConfiguration(int detPos) {
+void multiSlsDetector::printReceiverConfiguration(TLogLevel level, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->printReceiverConfiguration();
+        return detectors[detPos]->printReceiverConfiguration(level);
     }
 
     // multi
     for (auto &d : detectors) {
-        d->printReceiverConfiguration();
+        d->printReceiverConfiguration(level);
     }
 }
 

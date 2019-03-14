@@ -1,222 +1,172 @@
-/*
- * qServer.cpp
- *
- *  Created on: Feb 27, 2013
- *      Author: Dhanya Maliakal
- */
-// Qt Project Class Headers
 #include "qServer.h"
 #include "qDetectorMain.h"
-// Project Class Headers
+
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 #include "MySocketTCP.h"
-// C++ Include Headers
+
 #include <iostream>
 #include <string>
 
 
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-int qServer::gui_server_thread_running(0);
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+int qServer::threadRunning(0);
 
 
 qServer::qServer(qDetectorMain *t):
-		  myMainTab(t), mySocket(0),myStopSocket(0),port_no(DEFAULT_GUI_PORTNO),lockStatus(0),checkStarted(0),checkStopStarted(0){
+		  myMainTab(t), controlSocket(0), stopSocket(0), portNo(DEFAULT_GUI_PORTNO), checkControlStarted(0), checkStopStarted(0){
 	strcpy(mess,"");
 	FunctionTable();
-
+    FILE_LOG(logDEBUG) << "Client Server ready";
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qServer::~qServer(){
 	delete myMainTab;
-	if(mySocket) delete mySocket;
-	if(myStopSocket) delete myStopSocket;
+	if(controlSocket) delete controlSocket;
+	if(stopSocket) delete stopSocket;
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-int qServer::FunctionTable(){
-
+void qServer::FunctionTable(){
 	flist[F_GET_RUN_STATUS]		=	&qServer::GetStatus;
 	flist[F_START_ACQUISITION]	=	&qServer::StartAcquisition;
 	flist[F_STOP_ACQUISITION]	=	&qServer::StopsAcquisition;
 	flist[F_START_AND_READ_ALL]	=	&qServer::Acquire;
 	flist[F_EXIT_SERVER]		=	&qServer::ExitServer;
-
-	return qDefs::OK;
 }
-
-
-//------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int qServer::DecodeFunction(MySocketTCP* sock){
 	int ret = qDefs::FAIL;
-	int n,fnum;
-#ifdef VERYVERBOSE
-	cout <<  "receive data" << endl;
-#endif
-	n = sock->ReceiveDataOnly(&fnum,sizeof(fnum));
+
+	int fnum = 0;
+	int n = sock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
-#ifdef VERYVERBOSE
-		cout << "ERROR reading from socket " << n << ", " << fnum << endl;
-#endif
-		return qDefs::FAIL;
+		FILE_LOG(logDEBUG3) << "Could not read socket. "
+				"Received " << n << " bytes," <<
+				"fnum:" << fnum;
+		return FAIL;
+	} else {
+		FILE_LOG(logDEBUG3) << "Received " << n << " bytes";
 	}
-#ifdef VERYVERBOSE
-	else
-		cout << "size of data received " << n <<endl;
-#endif
 
-#ifdef VERYVERBOSE
-	cout <<  "calling function fnum = "<< fnum << hex << ":"<< flist[fnum] << endl;
-#endif
-
-
-
-	if (((sock == myStopSocket) && ((fnum == F_GET_RUN_STATUS) || (fnum == F_STOP_ACQUISITION) || (fnum == F_EXIT_SERVER))) ||
-			((sock == mySocket) && ((fnum == F_START_ACQUISITION) || (fnum == F_START_AND_READ_ALL))))
+	// validate
+	if (((sock == stopSocket) && ((fnum == F_GET_RUN_STATUS) || (fnum == F_STOP_ACQUISITION) || (fnum == F_EXIT_SERVER))) ||
+			((sock == controlSocket) && ((fnum == F_START_ACQUISITION) || (fnum == F_START_AND_READ_ALL))))
 		;
 	//unrecognized functions exit guis
 	else{
 		ret = qDefs::FAIL;
-		sprintf(mess,"Unrecognized Function\n");
-		cout << mess << endl;
+		sprintf(mess,"Unrecognized Function in Gui Server\n");
+		FILE_LOG(logERROR) << mess;
 
-		if (mySocket)
-			mySocket->ShutDownSocket();
+		if (controlSocket)
+			controlSocket->ShutDownSocket();
 
-		myStopSocket->SendDataOnly(&ret,sizeof(ret));
-		myStopSocket->SendDataOnly(mess,sizeof(mess));
+		stopSocket->SendDataOnly(&ret,sizeof(ret));
+		stopSocket->SendDataOnly(mess,sizeof(mess));
 		return GOODBYE;
 	}
 
 
 	//calling function
+	FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
+			"located at " << flist[fnum];
 	ret = (this->*flist[fnum])();
-	if (ret==qDefs::FAIL)
-		cout <<  "Error executing the function = " << fnum << endl;
+
+	if (ret == qDefs::FAIL)
+		FILE_LOG(logERROR) <<  "Error executing the function = " << fnum;
 
 	return ret;
 }
-
-
-//------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int qServer::ExitServer(){
 
 	int ret = OK;
 	strcpy(mess," Gui Server closed successfully\n");
+	FILE_LOG(logINFO) << mess;
 
-	if(mySocket)
-		mySocket->ShutDownSocket();
+	if(controlSocket)
+		controlSocket->ShutDownSocket();
 
-	myStopSocket->SendDataOnly(&ret,sizeof(ret));
-	myStopSocket->SendDataOnly(mess,sizeof(mess));
+	stopSocket->SendDataOnly(&ret,sizeof(ret));
+	stopSocket->SendDataOnly(mess,sizeof(mess));
 	cout << mess << endl;
 
 	return GOODBYE;
 }
 
 
-//------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-int qServer::StartStopServer(int start){
+void qServer::StartServers(int start){
 
 	//start server
 	if(start){
-#ifdef VERBOSE
-		cout << endl << "Starting Gui Server" << endl;
-#endif
+		FILE_LOG(logINFO) << "Starting Gui Server";
 
-		if(!gui_server_thread_running){
-			gui_server_thread_running=1;
+		if(!threadRunning){
+			threadRunning=1;
 
 
-			//error creating thread
-			checkStarted=1;
-			if (pthread_create(&gui_server_thread, NULL,StartServerThread, (void*) this)){
-				gui_server_thread_running=0;
-				qDefs::Message(qDefs::WARNING,"Can't create gui server thread", "qServer::StartStopServer");
-				cout << "ERROR: Can't create gui server thread" << endl;
-				return FAIL;
+			// start control server
+			checkControlStarted=1;
+			if (pthread_create(&controlThread, NULL,ControlServerThread, (void*) this)) {
+				threadRunning=0;
+				qDefs::Message(qDefs::WARNING,"Can't create gui server thread", "qServer::StartServers");
+				FILE_LOG(logERROR) << "Can't create gui server thread";
+				return;
 			}
-			while(checkStarted);
-			checkStarted = 0;
-#ifdef VERBOSE
-			if(gui_server_thread_running)
-				cout << "Server thread created successfully." << endl;
-#endif
+			while(checkControlStarted);
+			checkControlStarted = 0;
+			if(threadRunning)
+				FILE_LOG(logDEBUG) << "Server thread created successfully.";
 
 
-			//error creating thread
+			// start stop server
 			checkStopStarted=1;
-			if (pthread_create(&gui_stop_server_thread, NULL,StopServerThread, (void*) this)){
-				gui_server_thread_running=0;
-				qDefs::Message(qDefs::WARNING,"Can't create gui stop server thread", "qServer::StartStopServer");
-				cout << "ERROR: Can't create gui stop server thread" << endl;
-				return FAIL;
+			if (pthread_create(&stopThread, NULL,StopServerThread, (void*) this)) {
+				threadRunning=0;
+				qDefs::Message(qDefs::WARNING,"Can't create gui stop server thread", "qServer::StartServers");
+				FILE_LOG(logINFO) << "Can't create gui stop server thread";
+				return;
 			}
 			while(checkStopStarted);
 			checkStopStarted=0;
-#ifdef VERBOSE
-			if(gui_server_thread_running)
-				cout << "Server Stop thread created successfully." << endl;
-#endif
+			if(threadRunning)
+				FILE_LOG(logDEBUG) << "Server Stop thread created successfully.";
 		}
 	}
 
 
 	//stop server
 	else{
-#ifdef VERBOSE
-		cout << "Stopping Gui Server" << endl;
-#endif
+		FILE_LOG(logINFO) << "Stopping Gui Server";
 
-		if(gui_server_thread_running){
-			gui_server_thread_running=0;
+		if(threadRunning){
+			threadRunning=0;
 
-			if(mySocket)
-				mySocket->ShutDownSocket();
-			pthread_join(gui_server_thread,NULL);
-			if(mySocket){
-				delete mySocket;
-				mySocket = 0;
+			// kill control server
+			if(controlSocket)
+				controlSocket->ShutDownSocket();
+			pthread_join(controlThread,NULL);
+			if(controlSocket){
+				delete controlSocket;
+				controlSocket = 0;
 			}
 
-			if(myStopSocket)
-				myStopSocket->ShutDownSocket();
-			pthread_join(gui_stop_server_thread,NULL);
-			if(myStopSocket){
-				delete myStopSocket;
-				myStopSocket = 0;
+			// kill stop server
+			if(stopSocket)
+				stopSocket->ShutDownSocket();
+			pthread_join(stopThread,NULL);
+			if(stopSocket){
+				delete stopSocket;
+				stopSocket = 0;
 			}
 		}
-#ifdef VERBOSE
-		cout << "Server threads stopped successfully." << endl;
-#endif
+		FILE_LOG(logDEBUG) << "Server threads stopped successfully.";
 	}
 
-	return gui_server_thread_running;
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void* qServer::StopServerThread(void* this_pointer){
@@ -225,131 +175,87 @@ void* qServer::StopServerThread(void* this_pointer){
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-int qServer::StopServer(){
-#ifdef VERYVERBOSE
-	cout << "In StopServer()" <<  endl;
-#endif
+void qServer::StopServer(){
+	FILE_LOG(logDEBUG) << "Starting StopServer()";
 	int ret = qDefs::OK;
 
 	try {
-		MySocketTCP* s = new MySocketTCP(port_no+1);
-		myStopSocket = s;
+		MySocketTCP* s = new MySocketTCP(portNo+1);
+		stopSocket = s;
 	} catch(...) {
-		gui_server_thread_running = 0;
+		threadRunning = 0;
 		qDefs::Message(qDefs::WARNING,"Could not start gui stop server socket","qServer::StopServer");
+		FILE_LOG(logWARNING) << "Could not start gui stop server socket";
 	}
 	checkStopStarted = 0;
 
-	while ((gui_server_thread_running) && (ret!=GOODBYE)) {
-#ifdef VERBOSE
-		cout<< endl;
-#endif
-#ifdef VERYVERBOSE
-		cout << "Waiting for client call" << endl;
-#endif
-		if(myStopSocket->Connect()>=0){
-#ifdef VERYVERBOSE
-			cout << "Conenction accepted" << endl;
-#endif
-			ret = DecodeFunction(myStopSocket);
-#ifdef VERYVERBOSE
-			cout << "function executed" << endl;
-#endif
-			myStopSocket->Disconnect();
-#ifdef VERYVERBOSE
-			cout << "connection closed" << endl;
-#endif
+	while ((threadRunning) && (ret!=GOODBYE)) {
+		FILE_LOG(logDEBUG3) << "Waiting for client call";
+		if(stopSocket->Connect()>=0){
+			FILE_LOG(logDEBUG3) << "Conenction accepted";
+			ret = DecodeFunction(stopSocket);
+			FILE_LOG(logDEBUG3) << "function executed";
+			stopSocket->Disconnect();
+			FILE_LOG(logDEBUG3) << "connection closed";
 		}
 	}
-#ifdef VERBOSE
-	cout << "Stopped gui stop server thread" << endl;
-#endif
-	gui_server_thread_running = 0;
+	FILE_LOG(logDEBUG) << "Stopped gui stop server thread";
+
+	threadRunning = 0;
 	//delete socket(via exit server)
-	if(myStopSocket){
-		delete myStopSocket;
-		myStopSocket = 0;
+	if(stopSocket){
+		delete stopSocket;
+		stopSocket = 0;
 	}
 
-	if(!gui_server_thread_running)
+	if(!threadRunning)
 		emit ServerStoppedSignal();
 
-	return qDefs::OK;
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-void* qServer::StartServerThread(void* this_pointer){
-	((qServer*)this_pointer)->StartServer();
+void* qServer::ControlServerThread(void* this_pointer){
+	((qServer*)this_pointer)->ControlServer();
 	return this_pointer;
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-int qServer::StartServer(){
-#ifdef VERYVERBOSE
-	cout << "In StartServer()" << endl;
-#endif
+void qServer::ControlServer(){
+	FILE_LOG(logDEBUG) << "Starting ControlServer()";
 	int ret = qDefs::OK;
 
 	try {
-		MySocketTCP* s = new MySocketTCP(port_no);
-		mySocket = s;
+		MySocketTCP* s = new MySocketTCP(portNo);
+		controlSocket = s;
 	} catch(...) {
-		gui_server_thread_running = 0;
-		qDefs::Message(qDefs::WARNING,"Could not start gui server socket","qServer::StartServer");
+		threadRunning = 0;
+		qDefs::Message(qDefs::WARNING,"Could not start gui server socket","qServer::ControlServer");
+		FILE_LOG(logWARNING) << "Could not start gui start server socket";
 	}
-	checkStarted = 0;
+	checkControlStarted = 0;
 
-	while ((gui_server_thread_running) && (ret!=GOODBYE)) {
-#ifdef VERBOSE
-		cout<< endl;
-#endif
-#ifdef VERYVERBOSE
-		cout << "Waiting for client call" << endl;
-#endif
-		if(mySocket->Connect()>=0){
-#ifdef VERYVERBOSE
-			cout << "Conenction accepted" << endl;
-#endif
-			ret = DecodeFunction(mySocket);
-#ifdef VERYVERBOSE
-			cout << "function executed" << endl;
-#endif
-			mySocket->Disconnect();
-#ifdef VERYVERBOSE
-			cout << "connection closed" << endl;
-#endif
+	while ((threadRunning) && (ret!=GOODBYE)) {
+		FILE_LOG(logDEBUG3) << "Waiting for client call";
+		if(controlSocket->Connect()>=0){
+			FILE_LOG(logDEBUG3) << "Conenction accepted";
+			ret = DecodeFunction(controlSocket);
+			FILE_LOG(logDEBUG3) << "function executed";
+			controlSocket->Disconnect();
+			FILE_LOG(logDEBUG3) << "connection closed";
 		}
 	}
-#ifdef VERBOSE
-	cout << "Stopped gui server thread" << endl;
-#endif
-	gui_server_thread_running = 0;
+	FILE_LOG(logDEBUG) << "Stopped gui server thread";
+
+	threadRunning = 0;
 	//delete socket(via exit server)
-	if(mySocket){
-		delete mySocket;
-		mySocket = 0;
+	if(controlSocket){
+		delete controlSocket;
+		controlSocket = 0;
 	}
 
-	if(!gui_server_thread_running)
+	if(!threadRunning)
 		emit ServerStoppedSignal();
-
-	return qDefs::OK;
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int qServer::GetStatus(){
@@ -367,31 +273,27 @@ int qServer::GetStatus(){
 	progress = myMainTab->GetProgress();
 
 	// send answer
-	myStopSocket->SendDataOnly(&ret,sizeof(ret));
-	myStopSocket->SendDataOnly(&retval,sizeof(retval));
-	myStopSocket->SendDataOnly(&progress,sizeof(progress));
+	stopSocket->SendDataOnly(&ret,sizeof(ret));
+	stopSocket->SendDataOnly(&retval,sizeof(retval));
+	stopSocket->SendDataOnly(&progress,sizeof(progress));
 	//return ok/fail
 	return ret;
 }
 
 
-//------------------------------------------------------------------------------------------------------------------------------------------
-
-
 int qServer::StartAcquisition(){
 
-	strcpy(mess,"Could not start acquisition in gui. \n");
+	strcpy(mess,"Could not start acquisition in gui. \n")
 
 	int ret = myMainTab->StartStopAcquisitionFromClient(true);
-	mySocket->SendDataOnly(&ret,sizeof(ret));
-	if(ret==FAIL)
-		mySocket->SendDataOnly(mess,sizeof(mess));
+	controlSocket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL) {
+		FILE_LOG(logERROR) << mess;
+		controlSocket->SendDataOnly(mess,sizeof(mess));
+	}
 
 	return ret;
 }
-
-
-//------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int qServer::StopsAcquisition(){
@@ -399,15 +301,13 @@ int qServer::StopsAcquisition(){
 	strcpy(mess,"Could not stop acquisition in gui. \n");
 
 	int ret = myMainTab->StartStopAcquisitionFromClient(false);
-	myStopSocket->SendDataOnly(&ret,sizeof(ret));
-	if(ret==FAIL)
-		myStopSocket->SendDataOnly(mess,sizeof(mess));
-
+	stopSocket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL) {
+		FILE_LOG(logERROR) << mess;
+		controlSocket->SendDataOnly(mess,sizeof(mess));
+	}
 	return ret;
 }
-
-
-//------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int qServer::Acquire(){
@@ -419,13 +319,11 @@ int qServer::Acquire(){
 	usleep(5000);
 	while(myMainTab->isPlotRunning());
 
-	mySocket->SendDataOnly(&ret,sizeof(ret));
-	if(ret==FAIL)
-		mySocket->SendDataOnly(mess,sizeof(mess));
+	controlSocket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL) {
+		FILE_LOG(logERROR) << mess;
+		controlSocket->SendDataOnly(mess,sizeof(mess));
+	}
 
 	return ret;
 }
-
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-

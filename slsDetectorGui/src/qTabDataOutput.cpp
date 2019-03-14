@@ -24,6 +24,7 @@ qTabDataOutput::qTabDataOutput(QWidget *parent, multiSlsDetector *&detector) : Q
     setupUi(this);
     SetupWidgetWindow();
     Refresh();
+    FILE_LOG(logDEBUG) << "DataOutput ready";
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

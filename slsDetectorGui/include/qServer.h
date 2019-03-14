@@ -1,23 +1,15 @@
-/*
- * qServer.h.h
- *
- *  Created on: Feb 27, 2013
- *      Author: Dhanya Maliakal
- */
-#ifndef QSERVER_H
-#define QSERVER_H
+#pragma once
 
 
-/** Qt Project Class Headers */
 #include "sls_detector_defs.h"
 #include "qDefs.h"
 class qDetectorMain;
-/** Project Class Headers */
+
 class multiSlsDetector;
 class MySocketTCP;
-/** Qt Include Headers */
+
 #include <QWidget>
-/** C++ Include Headers */
+
 
 
 /**
@@ -28,99 +20,110 @@ class qServer: public QWidget, public virtual slsDetectorDefs{
 
 
 public:
-	/** \short The constructor	 */
+	/**
+	 * The constructor
+	 */
 	qServer(qDetectorMain *t);
-	/** Destructor	 */
+	/**
+	 * Destructor
+	 */
 	~qServer();
 
-	/** Start or Stop Gui Server
+	/**
+	 * Start or Stop Gui (Control and Stop) Servers
 	 * @param start is 1 to start and 0 to stop
 	 */
-	int StartStopServer(int start);
+	void StartServers(int start);
 
 private:
-	/** assigns functions to the fnum enum */
-	int FunctionTable();
+	/**
+	 * Assigns functions to the fnum enum
+	 */
+	void FunctionTable();
 
-	/** Decodes Function */
+	/**
+	 * Decodes Function
+	 * @param sock control or stop socket
+	 * @returns success of function
+	 */
 	int DecodeFunction(MySocketTCP* sock);
 
-	/** Exit Server */
+	/**
+	 * Exit Server
+	 * @returns GOODBYE
+	 */
 	int ExitServer();
 
-
 	/**
-	 * Static function - Thread started which listens to client gui.
-	 * Called by StartStopServer()
+	 * Static function - to start contol server
 	 * @param this_pointer pointer to this object
 	 */
-	static void* StartServerThread(void *this_pointer);
+	static void* ControlServerThread(void *this_pointer);
 
 	/**
-	 * Thread started which listens to client gui.
-	 * Called by startServerThread()
-	 *
+	 * Thread of control server
 	 */
-	int StartServer();
+	void ControlServer();
 
 	/**
-	 * Static function - Thread started which listens to client gui to stop acquisition
-	 * Called by StartStopServer()
+	 * Static function - to start stop server
 	 * @param this_pointer pointer to this object
 	 */
 	static void* StopServerThread(void *this_pointer);
 
 	/**
-	 * Thread started which listens to client gui to stop acquisition.
-	 * Called by startServerThread()
-	 *
+	 * Thread of stop server
 	 */
-	int StopServer();
+	void StopServer();
 
-
-
-	/** Get Detector Status */
+	/**
+	 * Get Detector Status
+	 * @returns success of operation
+	 */
 	int GetStatus();
 
-	/** Starts Acquisition */
+	/**
+	 * Starts Acquisition
+	 * @returns success of operation
+	 */
 	int StartAcquisition();
 
-	/** Stops Acquisition */
+	/**
+	 * Stops Acquisition
+	 * @returns success of operation
+	 */
 	int StopsAcquisition();
 
-	/** Acquire - blocking */
+	/**
+	 * Acquire - blocking
+	 * @returns success of operation
+	 */
 	int Acquire();
-
-
 
 	/**The measurement tab object*/
 	qDetectorMain *myMainTab;
 
 	/** tcp socket to gui client */
-	MySocketTCP 	*mySocket;
+	MySocketTCP *controlSocket;
 	/** tcp socket to gui client to stop or get status */
-	MySocketTCP 	*myStopSocket;
+	MySocketTCP *stopSocket;
 
-	/** server port number*/
-	int port_no;
-
-	/** Lock Status if server locked to a client */
-	int lockStatus;
+	/** server port number */
+	int portNo;
 
 	/** Function List */
-	static const int NUMBER_OF_FUNCTIONS = 256;
+	static const int NUMBER_OF_FUNCTIONS = 10;
 	int (qServer::*flist[NUMBER_OF_FUNCTIONS])();
 
-
 	/** if the gui server thread is running*/
-	static int gui_server_thread_running;
+	static int threadRunning;
 	/** thread listening to gui client*/
-	pthread_t   gui_server_thread;
+	pthread_t controlThread;
 	/** thread also listening to gui client to stop acquisition*/
-	pthread_t   gui_stop_server_thread;
+	pthread_t stopThread;
 
 	/** server started */
-	int checkStarted;
+	int checkControlStarted;
 	int checkStopStarted;
 
 	/** Message */
@@ -132,6 +135,3 @@ signals:
 
 };
 
-
-
-#endif /* QSERVER_H */

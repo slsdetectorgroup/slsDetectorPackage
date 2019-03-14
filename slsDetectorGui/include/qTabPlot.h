@@ -106,7 +106,7 @@ public slots:
 
 	/** Enable Scan box
 	 */
-	// void EnableScanBox();
+	 void EnableScanBox();
 
 
 private slots:

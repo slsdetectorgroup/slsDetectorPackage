@@ -21,6 +21,7 @@ qTabSettings::qTabSettings(QWidget *parent, multiSlsDetector *&detector) : QWidg
         item[i] = 0;
     setupUi(this);
     SetupWidgetWindow();
+    FILE_LOG(logDEBUG) << "Settings ready";
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

@@ -22,6 +22,7 @@ qTabMeasurement::qTabMeasurement(qDetectorMain *parent, multiSlsDetector *&detec
     SetupWidgetWindow();
     Initialization();
     SetupTimingMode();
+    FILE_LOG(logDEBUG) << "Measurement ready";
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

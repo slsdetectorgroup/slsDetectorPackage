@@ -39,6 +39,7 @@ qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *&detector, qDrawPlot *&plo
     setupUi(this);
     SetupWidgetWindow();
     Initialization();
+    FILE_LOG(logDEBUG) << "Plot ready";
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1034,307 +1035,307 @@ void qTabPlot::SetFrequency() {
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-// void qTabPlot::EnableScanBox(){
-// #ifdef VERBOSE
-// 	cout << "Entering Enable Scan Box"<< endl;
-// #endif
-// 	disconnect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
-// 	disconnect(boxScan,	  	SIGNAL(toggled(bool)),		this, SLOT(EnableScanBox()));
+ void qTabPlot::EnableScanBox(){
+ #ifdef VERBOSE
+ 	cout << "Entering Enable Scan Box"<< endl;
+ #endif
+ 	disconnect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
+ 	disconnect(boxScan,	  	SIGNAL(toggled(bool)),		this, SLOT(EnableScanBox()));
 
-// 	int oldfreqvalue = myDet->setReadReceiverFrequency();
+ 	int oldfreqvalue = myDet->setReadReceiverFrequency();
 
-// 	int mode0 = myDet->getScanMode(0);
-// 	int mode1 = myDet->getScanMode(1);
+ 	int mode0 = myDet->getScanMode(0);
+ 	int mode1 = myDet->getScanMode(1);
 
-// 	radioHistLevel0->setEnabled(mode0);
-// 	radioHistLevel1->setEnabled(mode1);
-// 	int ang;
-// 	bool angConvert = myDet->getAngularConversion(ang);
-// 	myPlot->EnableAnglePlot(angConvert);
+ 	radioHistLevel0->setEnabled(mode0);
+ 	radioHistLevel1->setEnabled(mode1);
+ 	int ang;
+ 	bool angConvert = myDet->getAngularConversion(ang);
+ 	myPlot->EnableAnglePlot(angConvert);
 
-// 	radioDataGraph->setEnabled(true);
-// 	radioHistogram->setEnabled(true);
-// 	chkSuperimpose->setEnabled(true);
-// 	pageAccumulate->setEnabled(true);
-// 	pageAccumulate_2->setEnabled(true);
-// 	if((myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) ||
-// 			(myDet->getDetectorsType() == slsDetectorDefs::PROPIX) ||
-// 			(myDet->getDetectorsType() == slsDetectorDefs::JUNGFRAU) ||
-// 			(myDet->getDetectorsType() == slsDetectorDefs::CHIPTESTBOARD) ||
-// 			(myDet->getDetectorsType() == slsDetectorDefs::MOENCH)){
-// 		pagePedestal->setEnabled(true);
-// 		pagePedestal_2->setEnabled(true);
-// 		chkBinary->setEnabled(true);
-// 		chkBinary_2->setEnabled(true);
-// 	}
+ 	radioDataGraph->setEnabled(true);
+ 	radioHistogram->setEnabled(true);
+ 	chkSuperimpose->setEnabled(true);
+ 	pageAccumulate->setEnabled(true);
+ 	pageAccumulate_2->setEnabled(true);
+ 	if((myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) ||
+ 			(myDet->getDetectorsType() == slsDetectorDefs::PROPIX) ||
+ 			(myDet->getDetectorsType() == slsDetectorDefs::JUNGFRAU) ||
+ 			(myDet->getDetectorsType() == slsDetectorDefs::CHIPTESTBOARD) ||
+ 			(myDet->getDetectorsType() == slsDetectorDefs::MOENCH)){
+ 		pagePedestal->setEnabled(true);
+ 		pagePedestal_2->setEnabled(true);
+ 		chkBinary->setEnabled(true);
+ 		chkBinary_2->setEnabled(true);
+ 	}
 
-// 	//if angle plot or originally 2d, uncheck and disable scanbox
-// 	if ((angConvert) || (!isOriginallyOneD)){
-// 		boxScan->setChecked(false);
-// 		boxScan->setEnabled(false);
+ 	//if angle plot or originally 2d, uncheck and disable scanbox
+ 	if ((angConvert) || (!isOriginallyOneD)){
+ 		boxScan->setChecked(false);
+ 		boxScan->setEnabled(false);
 
-// 		/**Newly added*/
-// 		// To remind the updateplot in qdrawplot to set range after updating plot
-// 		if(!isOriginallyOneD)
-// 			myPlot->SetXYRange(true);
+ 		/**Newly added*/
+ 		// To remind the updateplot in qdrawplot to set range after updating plot
+ 		if(!isOriginallyOneD)
+ 			myPlot->SetXYRange(true);
 
-// 		//2d scans read every frame, not compulsory, but for historgrams
-// 		if((!isOriginallyOneD) && (mode0 || mode1)){
-// 			//read every frame
-// 			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-// 			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-// 			comboFrequency->setCurrentIndex(1);
-// 			spinNthFrame->setValue(1);
-// 			SetFrequency();
-// 			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-// 			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-// 		}
+ 		//2d scans read every frame, not compulsory, but for historgrams
+ 		if((!isOriginallyOneD) && (mode0 || mode1)){
+ 			//read every frame
+ 			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+ 			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+ 			comboFrequency->setCurrentIndex(1);
+ 			spinNthFrame->setValue(1);
+ 			SetFrequency();
+ 			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+ 			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+ 		}
 
-// 		//persistency, accumulate, pedestal, binary
-// 		if(angConvert){
-// 			if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);
-// 			if(chkPedestal->isChecked())	chkPedestal->setChecked(false);
-// 			if(chkPedestal_2->isChecked())	chkPedestal_2->setChecked(false);
-// 			if(chkAccumulate->isChecked())	chkAccumulate->setChecked(false);
-// 			if(chkAccumulate_2->isChecked())chkAccumulate_2->setChecked(false);
-// 			if(chkBinary->isChecked())		chkBinary->setChecked(false);
-// 			if(chkBinary_2->isChecked())	chkBinary_2->setChecked(false);
-// 			pagePedestal->setEnabled(false);
-// 			pagePedestal_2->setEnabled(false);
-// 			chkBinary->setEnabled(false);
-// 			chkBinary_2->setEnabled(false);
-// 			pageAccumulate->setEnabled(false);
-// 			pageAccumulate_2->setEnabled(false);
-// 		}
+ 		//persistency, accumulate, pedestal, binary
+ 		if(angConvert){
+ 			if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);
+ 			if(chkPedestal->isChecked())	chkPedestal->setChecked(false);
+ 			if(chkPedestal_2->isChecked())	chkPedestal_2->setChecked(false);
+ 			if(chkAccumulate->isChecked())	chkAccumulate->setChecked(false);
+ 			if(chkAccumulate_2->isChecked())chkAccumulate_2->setChecked(false);
+ 			if(chkBinary->isChecked())		chkBinary->setChecked(false);
+ 			if(chkBinary_2->isChecked())	chkBinary_2->setChecked(false);
+ 			pagePedestal->setEnabled(false);
+ 			pagePedestal_2->setEnabled(false);
+ 			chkBinary->setEnabled(false);
+ 			chkBinary_2->setEnabled(false);
+ 			pageAccumulate->setEnabled(false);
+ 			pageAccumulate_2->setEnabled(false);
+ 		}
 
-// 		if(angConvert){
-// 			boxScan->setToolTip("<nobr>Only 1D Plots enabled for Angle Plots</nobr>");
-// 			//disable histogram
-// 			if(radioHistogram->isChecked()){
-// 				radioDataGraph->setChecked(true);
-// 				radioHistogram->setEnabled(false);
-// 				//  To remind the updateplot in qdrawplot to set range after updating plot
-// 				myPlot->SetXYRange(true);
-// 				boxScan->show();
-// 				boxHistogram->hide();
-// 			}
-// 		}
-// 	}
+ 		if(angConvert){
+ 			boxScan->setToolTip("<nobr>Only 1D Plots enabled for Angle Plots</nobr>");
+ 			//disable histogram
+ 			if(radioHistogram->isChecked()){
+ 				radioDataGraph->setChecked(true);
+ 				radioHistogram->setEnabled(false);
+ 				//  To remind the updateplot in qdrawplot to set range after updating plot
+ 				myPlot->SetXYRange(true);
+ 				boxScan->show();
+ 				boxHistogram->hide();
+ 			}
+ 		}
+ 	}
 
-// 	//originally1d && not angle plot
-// 	else{
-// 		boxScan->setToolTip("");
-// 		boxScan->setEnabled(true);
-// 		/*if(mode0 || mode1)
-// 			boxScan->setChecked(true);*/
+ 	//originally1d && not angle plot
+ 	else{
+ 		boxScan->setToolTip("");
+ 		boxScan->setEnabled(true);
+ 		/*if(mode0 || mode1)
+ 			boxScan->setChecked(true);*/
 
-// 		//2d enabled with boxscan
-// 		if(boxScan->isChecked()){
+ 		//2d enabled with boxscan
+ 		if(boxScan->isChecked()){
 
-// 			//2d for 1d detctors and histogram dont go
-// 			if(radioHistogram->isChecked()){
-// 				radioDataGraph->setChecked(true);
-// 				//  To remind the updateplot in qdrawplot to set range after updating plot
-// 				myPlot->SetXYRange(true);
-// 				boxScan->show();
-// 				boxHistogram->hide();
-// 			}
+ 			//2d for 1d detctors and histogram dont go
+ 			if(radioHistogram->isChecked()){
+ 				radioDataGraph->setChecked(true);
+ 				//  To remind the updateplot in qdrawplot to set range after updating plot
+ 				myPlot->SetXYRange(true);
+ 				boxScan->show();
+ 				boxHistogram->hide();
+ 			}
 
-// 			//read every frame
-// 			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-// 			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-// 			comboFrequency->setCurrentIndex(1);
-// 			spinNthFrame->setValue(1);
-// 			SetFrequency();
-// 			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-// 			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+ 			//read every frame
+ 			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+ 			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+ 			comboFrequency->setCurrentIndex(1);
+ 			spinNthFrame->setValue(1);
+ 			SetFrequency();
+ 			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+ 			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 
-// 			//enabling options
-// 			radioFileIndex->setEnabled(mode0||mode1);
-// 			if(mode0 && mode1){
-// 				radioLevel0->setEnabled(false);
-// 				radioLevel1->setEnabled(false);
-// 			}else{
-// 				radioLevel0->setEnabled(mode0);
-// 				radioLevel1->setEnabled(mode1);
-// 			}
-// 			//default is allframes if checked button is disabled
-// 			if(!btnGroupScan->checkedButton()->isEnabled())
-// 				radioAllFrames->setChecked(true);
-// 		}
-// 	}
+ 			//enabling options
+ 			radioFileIndex->setEnabled(mode0||mode1);
+ 			if(mode0 && mode1){
+ 				radioLevel0->setEnabled(false);
+ 				radioLevel1->setEnabled(false);
+ 			}else{
+ 				radioLevel0->setEnabled(mode0);
+ 				radioLevel1->setEnabled(mode1);
+ 			}
+ 			//default is allframes if checked button is disabled
+ 			if(!btnGroupScan->checkedButton()->isEnabled())
+ 				radioAllFrames->setChecked(true);
+ 		}
+ 	}
 
-// 	//histogram
-// 	if(radioHistogram->isChecked()){
-// 		if(radioHistIntensity->isChecked()){
-// 			pageHistogram->setEnabled(true);
-// 			pageHistogram_2->setEnabled(true);
-// 		}else{
-// 			pageHistogram->setEnabled(false);
-// 			pageHistogram_2->setEnabled(false);
-// 		}
-// 		stackedWidget->setCurrentIndex(stackedWidget->count()-1);
-// 		stackedWidget_2->setCurrentIndex(stackedWidget_2->count()-1);
-// 		box1D->setTitle(QString("1D Plot Options %1 - Histogram").arg(stackedWidget->currentIndex()+1));
-// 		box2D->setTitle(QString("2D Plot Options %1 - Histogram").arg(stackedWidget_2->currentIndex()+1));
+ 	//histogram
+ 	if(radioHistogram->isChecked()){
+ 		if(radioHistIntensity->isChecked()){
+ 			pageHistogram->setEnabled(true);
+ 			pageHistogram_2->setEnabled(true);
+ 		}else{
+ 			pageHistogram->setEnabled(false);
+ 			pageHistogram_2->setEnabled(false);
+ 		}
+ 		stackedWidget->setCurrentIndex(stackedWidget->count()-1);
+ 		stackedWidget_2->setCurrentIndex(stackedWidget_2->count()-1);
+ 		box1D->setTitle(QString("1D Plot Options %1 - Histogram").arg(stackedWidget->currentIndex()+1));
+ 		box2D->setTitle(QString("2D Plot Options %1 - Histogram").arg(stackedWidget_2->currentIndex()+1));
 
-// 		if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);
-// 		if(chkPedestal->isChecked())	chkPedestal->setChecked(false);
-// 		if(chkPedestal_2->isChecked())	chkPedestal_2->setChecked(false);
-// 		if(chkAccumulate->isChecked())	chkAccumulate->setChecked(false);
-// 		if(chkAccumulate_2->isChecked())chkAccumulate_2->setChecked(false);
-// 		if(chkBinary->isChecked())		chkBinary->setChecked(false);
-// 		if(chkBinary_2->isChecked())	chkBinary_2->setChecked(false);
-// 		pagePedestal->setEnabled(false);
-// 		pagePedestal_2->setEnabled(false);
-// 		chkBinary->setEnabled(false);
-// 		chkBinary_2->setEnabled(false);
-// 		pageAccumulate->setEnabled(false);
-// 		pageAccumulate_2->setEnabled(false);
+ 		if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);
+ 		if(chkPedestal->isChecked())	chkPedestal->setChecked(false);
+ 		if(chkPedestal_2->isChecked())	chkPedestal_2->setChecked(false);
+ 		if(chkAccumulate->isChecked())	chkAccumulate->setChecked(false);
+ 		if(chkAccumulate_2->isChecked())chkAccumulate_2->setChecked(false);
+ 		if(chkBinary->isChecked())		chkBinary->setChecked(false);
+ 		if(chkBinary_2->isChecked())	chkBinary_2->setChecked(false);
+ 		pagePedestal->setEnabled(false);
+ 		pagePedestal_2->setEnabled(false);
+ 		chkBinary->setEnabled(false);
+ 		chkBinary_2->setEnabled(false);
+ 		pageAccumulate->setEnabled(false);
+ 		pageAccumulate_2->setEnabled(false);
 
-// 		//read every frame
-// 		disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-// 		disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-// 		comboFrequency->setCurrentIndex(1);
-// 		spinNthFrame->setValue(1);
-// 		SetFrequency();
-// 		connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-// 		connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+ 		//read every frame
+ 		disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+ 		disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+ 		comboFrequency->setCurrentIndex(1);
+ 		spinNthFrame->setValue(1);
+ 		SetFrequency();
+ 		connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+ 		connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 
-// 	}else{
-// 		pageHistogram->setEnabled(false);
-// 		pageHistogram_2->setEnabled(false);
-// 	}
+ 	}else{
+ 		pageHistogram->setEnabled(false);
+ 		pageHistogram_2->setEnabled(false);
+ 	}
 
-// 	// if it was set to read every frame
-// 	if (oldfreqvalue != 0 && (comboFrequency->currentIndex() != 1 || spinNthFrame->value() != oldfreqvalue)) {
-// 		disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-// 		disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-// 		comboFrequency->setCurrentIndex(1);
-// 		spinNthFrame->setValue(1);
-// 		SetFrequency();
-// 		connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-// 		connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-// 	}
+ 	// if it was set to read every frame
+ 	if (oldfreqvalue != 0 && (comboFrequency->currentIndex() != 1 || spinNthFrame->value() != oldfreqvalue)) {
+ 		disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+ 		disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+ 		comboFrequency->setCurrentIndex(1);
+ 		spinNthFrame->setValue(1);
+ 		SetFrequency();
+ 		connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+ 		connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+ 	}
 
-// 	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
-// 	connect(boxScan,	 	SIGNAL(toggled(bool)),	this, SLOT(EnableScanBox()));
+ 	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
+ 	connect(boxScan,	 	SIGNAL(toggled(bool)),	this, SLOT(EnableScanBox()));
 
-// }
+ }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-// void qTabPlot::SetScanArgument(){
-// #ifdef VERYVERBOSE
-// 	cout << "Entering qTabPlot::SetScanArgument()" << endl;
-// #endif
+ void qTabPlot::SetScanArgument(){
+ #ifdef VERYVERBOSE
+ 	cout << "Entering qTabPlot::SetScanArgument()" << endl;
+ #endif
 
-// 	//1d
-// 	if(isOriginallyOneD){
-// 		dispXAxis->setText(defaultHistXAxisTitle);
-// 		dispYAxis->setText(defaultHistYAxisTitle);
-// 		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
-// 		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
-// 		Select1DPlot(true);
-// 	}
-// 	//2d
-// 	else{
-// 		dispXAxis->setText(defaultImageXAxisTitle);
-// 		dispYAxis->setText(defaultImageYAxisTitle);
-// 		dispZAxis->setText(defaultImageZAxisTitle);
-// 		myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
-// 		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
-// 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
-// 		Select1DPlot(false);
-// 	}
+ 	//1d
+ 	if(isOriginallyOneD){
+ 		dispXAxis->setText(defaultHistXAxisTitle);
+ 		dispYAxis->setText(defaultHistYAxisTitle);
+ 		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
+ 		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
+ 		Select1DPlot(true);
+ 	}
+ 	//2d
+ 	else{
+ 		dispXAxis->setText(defaultImageXAxisTitle);
+ 		dispYAxis->setText(defaultImageYAxisTitle);
+ 		dispZAxis->setText(defaultImageZAxisTitle);
+ 		myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
+ 		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
+ 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
+ 		Select1DPlot(false);
+ 	}
 
-// 	//histogram default  - set before setscanargument
-// 	int min = spinHistFrom->value();
-// 	int max = spinHistTo->value();
-// 	double size = spinHistSize->value();
-// 	int histArg = qDefs::Intensity;
-// 	if(radioHistogram->isChecked()){
-// 		if(!radioHistIntensity->isChecked()){
+ 	//histogram default  - set before setscanargument
+ 	int min = spinHistFrom->value();
+ 	int max = spinHistTo->value();
+ 	double size = spinHistSize->value();
+ 	int histArg = qDefs::Intensity;
+ 	if(radioHistogram->isChecked()){
+ 		if(!radioHistIntensity->isChecked()){
 
-// 			int mode = 0;
-// 			histArg = qDefs::histLevel0;
-// 			if(radioHistLevel1->isChecked()){
-// 				mode = 1;
-// 				histArg = qDefs::histLevel1;
-// 			}
+ 			int mode = 0;
+ 			histArg = qDefs::histLevel0;
+ 			if(radioHistLevel1->isChecked()){
+ 				mode = 1;
+ 				histArg = qDefs::histLevel1;
+ 			}
 
-// 			int numSteps = myDet->getScanSteps(mode);
-// 			double *values = NULL;
-// 			min = 0;max = 1;size = 1;
+ 			int numSteps = myDet->getScanSteps(mode);
+ 			double *values = NULL;
+ 			min = 0;max = 1;size = 1;
 
-// 			if(numSteps > 0){
-// 				values = new double[numSteps];
-// 				myDet->getScanSteps(mode,values);
-// 				min = values[0];
-// 				max = values[numSteps - 1];
-// 				size = (max - min)/(numSteps - 1);
-// 			}
-// 		}
+ 			if(numSteps > 0){
+ 				values = new double[numSteps];
+ 				myDet->getScanSteps(mode,values);
+ 				min = values[0];
+ 				max = values[numSteps - 1];
+ 				size = (max - min)/(numSteps - 1);
+ 			}
+ 		}
 
-// 	}
+ 	}
 
-// 	//cout <<"min:"<<min<<" max:"<<max<<" size:"<<size<<endl;
-// 	myPlot->SetHistogram(radioHistogram->isChecked(),histArg,min,max,size);
+ 	//cout <<"min:"<<min<<" max:"<<max<<" size:"<<size<<endl;
+ 	myPlot->SetHistogram(radioHistogram->isChecked(),histArg,min,max,size);
 
-// 	if(radioHistogram->isChecked()){
-// 		if(radioHistIntensity->isChecked())
-// 			dispXAxis->setText("Intensity");
-// 		else if (radioHistLevel0->isChecked())
-// 			dispXAxis->setText("Level 0");
-// 		else
-// 			dispXAxis->setText("Level 1");
-// 		dispYAxis->setText("Frequency");
-// 		myPlot->SetHistXAxisTitle("Intensity");
-// 		myPlot->SetHistYAxisTitle("Frequency");
-// 		Select1DPlot(true);
-// 	}
+ 	if(radioHistogram->isChecked()){
+ 		if(radioHistIntensity->isChecked())
+ 			dispXAxis->setText("Intensity");
+ 		else if (radioHistLevel0->isChecked())
+ 			dispXAxis->setText("Level 0");
+ 		else
+ 			dispXAxis->setText("Level 1");
+ 		dispYAxis->setText("Frequency");
+ 		myPlot->SetHistXAxisTitle("Intensity");
+ 		myPlot->SetHistYAxisTitle("Frequency");
+ 		Select1DPlot(true);
+ 	}
 
-// 	//angles (1D)
-// 	int ang;
-// 	if(myDet->getAngularConversion(ang)){
-// 		dispXAxis->setText("Angles");
-// 		myPlot->SetHistXAxisTitle("Angles");
-// 		Select1DPlot(true);
-// 	}
+ 	//angles (1D)
+ 	int ang;
+ 	if(myDet->getAngularConversion(ang)){
+ 		dispXAxis->setText("Angles");
+ 		myPlot->SetHistXAxisTitle("Angles");
+ 		Select1DPlot(true);
+ 	}
 
-// 	//1d with scan
-// 	if(boxScan->isChecked()){
-// 		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
+ 	//1d with scan
+ 	if(boxScan->isChecked()){
+ 		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
 
-// 		switch(btnGroupScan->checkedId()){
-// 		case 0://level0
-// 			dispYAxis->setText("Scan Level 0");
-// 			myPlot->SetImageYAxisTitle("Scan Level 0");
-// 			break;
-// 		case 1://level1
-// 			dispYAxis->setText("Scan Level 1");
-// 			myPlot->SetImageYAxisTitle("Scan Level 1");
-// 			break;
-// 			break;
-// 		case 2://file index
-// 			dispYAxis->setText("Frame Index");
-// 			myPlot->SetImageYAxisTitle("Frame Index");
-// 			break;
-// 		case 3://all frames
-// 			dispYAxis->setText("All Frames");
-// 			myPlot->SetImageYAxisTitle("All Frames");
-// 			break;
-// 		}
-// 		Select1DPlot(false);
-// 	}else
-// 		myPlot->SetScanArgument(qDefs::None);
+ 		switch(btnGroupScan->checkedId()){
+ 		case 0://level0
+ 			dispYAxis->setText("Scan Level 0");
+ 			myPlot->SetImageYAxisTitle("Scan Level 0");
+ 			break;
+ 		case 1://level1
+ 			dispYAxis->setText("Scan Level 1");
+ 			myPlot->SetImageYAxisTitle("Scan Level 1");
+ 			break;
+ 			break;
+ 		case 2://file index
+ 			dispYAxis->setText("Frame Index");
+ 			myPlot->SetImageYAxisTitle("Frame Index");
+ 			break;
+ 		case 3://all frames
+ 			dispYAxis->setText("All Frames");
+ 			myPlot->SetImageYAxisTitle("All Frames");
+ 			break;
+ 		}
+ 		Select1DPlot(false);
+ 	}else
+ 		myPlot->SetScanArgument(qDefs::None);
 
-// 	//update the from and to labels to be enabled
-// 	SetBinary();
+ 	//update the from and to labels to be enabled
+ 	SetBinary();
 
-// 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
+ 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
 
-// }
+ }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

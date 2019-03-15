@@ -1140,21 +1140,21 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns receiver udp socket buffer size
      */
-    uint64_t setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize = -1, int detPos = -1);
+    int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1, int detPos = -1);
 
     /**
      * Returns the receiver UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP socket buffer size
      */
-    uint64_t getReceiverUDPSocketBufferSize(int detPos = -1);
+    int64_t getReceiverUDPSocketBufferSize(int detPos = -1);
 
     /**
      * Returns the receiver real UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver real UDP socket buffer size
      */
-    uint64_t getReceiverRealUDPSocketBufferSize(int detPos = -1);
+    int64_t getReceiverRealUDPSocketBufferSize(int detPos = -1);
 
     /** (users only)
      * Set 10GbE Flow Control (Eiger)
@@ -1989,7 +1989,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int detId;
 
     /** Shared Memory object */
-    SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
+    sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
 
     /** pointers to the slsDetector structures */
     std::vector<std::unique_ptr<slsDetector>> detectors;

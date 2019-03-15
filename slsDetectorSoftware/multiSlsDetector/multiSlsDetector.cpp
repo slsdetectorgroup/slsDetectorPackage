@@ -26,6 +26,9 @@
 #include <future>
 #include <vector>
 
+using sls::SharedMemory;
+using sls::SharedMemoryError;
+
 multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
     : detId(id) {
     setupMultiDetector(verify, update);
@@ -344,7 +347,7 @@ void multiSlsDetector::initSharedMemory(bool verify) {
             FILE_LOG(logERROR) << "Multi shared memory (" << detId << ") version mismatch "
                                                                       "(expected 0x"
                                << std::hex << MULTI_SHMVERSION << " but got 0x" << multi_shm()->shmversion << std::dec;
-            throw SharedMemoryException();
+            throw SharedMemoryError("Shared memory version mismatch!");
         }
     }
 }
@@ -412,7 +415,7 @@ std::string multiSlsDetector::exec(const char *cmd) {
     std::string result = "";
     FILE *pipe = popen(cmd, "r");
     if (!pipe) {
-        throw std::exception();
+        throw RuntimeError("Could not open pipe");
     }
     try {
         while (!feof(pipe)) {
@@ -1998,7 +2001,7 @@ int multiSlsDetector::setDetectorMode(detectorModeType value, int detPos) {
     return getDetectorModeType(result);
 }
 
-uint64_t multiSlsDetector::setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize, int detPos) {
+int64_t multiSlsDetector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setReceiverUDPSocketBufferSize(udpsockbufsize);
@@ -2009,7 +2012,7 @@ uint64_t multiSlsDetector::setReceiverUDPSocketBufferSize(uint64_t udpsockbufsiz
     return sls::minusOneIfDifferent(r);
 }
 
-uint64_t multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
+int64_t multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPSocketBufferSize();
@@ -2020,7 +2023,7 @@ uint64_t multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-uint64_t multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
+int64_t multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverRealUDPSocketBufferSize();

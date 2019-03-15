@@ -2829,7 +2829,7 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
         return ans;
     } else if (cmd == "rx_udpsocksize") {
         if (action == PUT_ACTION) {
-        	uint64_t ival = -1;
+        	int64_t ival = -1;
             if (!(sscanf(args[1], "%ld", &ival))) {
                 return ("cannot parse argument") + std::string(args[1]);
             }

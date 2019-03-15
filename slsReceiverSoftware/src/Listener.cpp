@@ -11,6 +11,7 @@
 #include "Fifo.h"
 #include "genericSocket.h"
 #include "container_utils.h" // For sls::make_unique<>
+#include "sls_detector_exceptions.h"
 
 #include <iostream>
 #include <errno.h>
@@ -21,7 +22,7 @@ const std::string Listener::TypeName = "Listener";
 
 Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
-        uint64_t* us, uint64_t* as, uint32_t* fpf,
+        int64_t* us, int64_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
@@ -57,7 +58,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 		oddStartingPacket(true)
 {
 	if(ThreadObject::CreateThread() == FAIL)
-	    throw std::exception();
+	    throw sls::RuntimeError("Could not create listener thread");
 
 	FILE_LOG(logDEBUG) << "Listener " << ind << " created";
 }
@@ -231,7 +232,7 @@ void Listener::ShutDownUDPSocket() {
 }
 
 
-int Listener::CreateDummySocketForUDPSocketBufferSize(uint64_t s) {
+int Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
     FILE_LOG(logINFO) << "Testing UDP Socket Buffer size with test port " << *udpPortNumber;
 
     if (!(*activated)) {
@@ -239,7 +240,7 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint64_t s) {
     	return OK;
     }
 
-    uint64_t temp = *udpSocketBufferSize;
+    int64_t temp = *udpSocketBufferSize;
     *udpSocketBufferSize = s;
 
     //if eth is mistaken with ip address
@@ -630,12 +631,12 @@ void Listener::PrintFifoStatistics() {
 	FILE_LOG(logDEBUG1) << "numFramesStatistic:" << numFramesStatistic << " numPacketsStatistic:" << numPacketsStatistic;
 
 	//calculate packet loss
-	int64_t loss = -1;
-	loss = (numFramesStatistic*(generalData->packetsPerFrame)) - numPacketsStatistic;
+	int64_t loss = (numFramesStatistic*(generalData->packetsPerFrame)) - numPacketsStatistic;
 	numPacketsStatistic = 0;
 	numFramesStatistic = 0;
 
-	FILE_LOG(loss ? logINFORED : logINFOGREEN) << "[" << *udpPortNumber << "]:  "
+	const auto color = loss ? logINFORED : logINFOGREEN;
+	FILE_LOG(color) << "[" << *udpPortNumber << "]:  "
 			"Packet_Loss:" << loss <<
 			"  Used_Fifo_Max_Level:" << fifo->GetMaxLevelForFifoBound() <<
 			" \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree() <<

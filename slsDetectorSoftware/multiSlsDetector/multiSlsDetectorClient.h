@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <memory>
 
+using sls::RuntimeError;
+
 inline int dummyCallback(detectorData *d, int p, void *) {
     std::cout << "got data " << p << std::endl;
     return 0;
@@ -73,7 +75,7 @@ class multiSlsDetectorClient {
             try {
                 localDet = sls::make_unique<multiSlsDetector>(parser.multi_id(), verify, update);
                 detPtr = localDet.get();
-            } catch (const SlsDetectorPackageExceptions &e) {
+            } catch (const RuntimeError &e) {
                 /*std::cout << e.GetMessage() << std::endl;*/
                 return;
             } catch (...) {

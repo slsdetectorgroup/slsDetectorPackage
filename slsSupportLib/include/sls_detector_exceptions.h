@@ -8,29 +8,37 @@
  */
 
 #include <iostream>
-#include <exception>
+#include <stdexcept>
 
-struct SlsDetectorPackageExceptions : public std::exception {
+namespace sls{
+
+struct RuntimeError : public std::runtime_error {
 public:
-	SlsDetectorPackageExceptions() {}
-    std::string GetMessage() const { return "SLS Detector Package Failed";};
+	RuntimeError(): runtime_error("SLS Detector Package Failed") {}
+	RuntimeError(std::string msg): runtime_error(msg) {}
 };
 
-struct SharedMemoryException : public SlsDetectorPackageExceptions {
+struct SharedMemoryError : public RuntimeError {
 public:
-    SharedMemoryException() {}
-    std::string GetMessage() const { return "Shared Memory Failed";};
+    SharedMemoryError(std::string msg):RuntimeError(msg) {}
+
 };
 
-struct SocketException : public SlsDetectorPackageExceptions {
+struct SocketError : public RuntimeError {
 public:
-	SocketException() {}
-	std::string GetMessage() const { return "Socket Failed";};
+	SocketError(std::string msg):RuntimeError(msg) {}
+
 };
 
-struct SamePortSocketException : public SocketException {
+struct ZmqSocketError : public RuntimeError {
 public:
-	SamePortSocketException() {}
-	std::string GetMessage() const { return "Socket Failed";};
+	ZmqSocketError(std::string msg):RuntimeError(msg) {}
+
 };
+
+
+
+}
+
+
 

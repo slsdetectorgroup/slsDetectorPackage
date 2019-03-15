@@ -8,6 +8,7 @@
 #include "GeneralData.h"
 #include "Fifo.h"
 #include "ZmqSocket.h"
+#include "sls_detector_exceptions.h"
 
 #include <iostream>
 #include <errno.h>
@@ -35,7 +36,7 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 		completeBuffer(nullptr)
 {
     if(ThreadObject::CreateThread() == FAIL)
-        throw std::exception();
+        throw sls::RuntimeError("Could not create streaming thread");
 
     FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
 

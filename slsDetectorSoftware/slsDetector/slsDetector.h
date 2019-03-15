@@ -971,19 +971,19 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param udpsockbufsize additional json header
 	 * @returns receiver udp socket buffer size
 	 */
-    uint64_t setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize = -1);
+    int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1);
 
     /**
 	 * Returns the receiver UDP socket buffer size\sa sharedSlsDetector
 	 * @returns the receiver UDP socket buffer size
 	 */
-    uint64_t getReceiverUDPSocketBufferSize();
+    int64_t getReceiverUDPSocketBufferSize();
 
     /**
 	 * Returns the receiver real UDP socket buffer size\sa sharedSlsDetector
 	 * @returns the receiver real UDP socket buffer size
 	 */
-    uint64_t getReceiverRealUDPSocketBufferSize();
+    int64_t getReceiverRealUDPSocketBufferSize();
 
     /**
 	 * Execute a digital test (Gotthard, Mythen)
@@ -1736,7 +1736,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     int detId;
 
     /** Shared Memory object */
-    SharedMemory<sharedSlsDetector> detector_shm{0,0};
+    sls::SharedMemory<sharedSlsDetector> detector_shm{0,0};
 
 };
 

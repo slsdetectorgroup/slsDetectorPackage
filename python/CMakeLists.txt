@@ -20,6 +20,7 @@ set( PYTHON_FILES
     detector.py
     eiger.py
     errors.py
+    experimental.py
     jungfrau_ctb.py
     jungfrau.py
     registers.py
@@ -34,3 +35,5 @@ foreach(FILE ${PYTHON_FILES})
 endforeach(FILE ${PYTHON_FILES})
 
 
+configure_file( scripts/basic.py  
+    ${CMAKE_BINARY_DIR}/basic.py  )

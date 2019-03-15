@@ -455,8 +455,8 @@ class Eiger(Detector):
             d.rx_udpport = [50010, 50011, 50012, 50013]
         
         """
-        p0 = self._api.getNetworkParameter('rx_udpport')
-        p1 = self._api.getNetworkParameter('rx_udpport2')
+        p0 = self._api.getReceiverUDPPort()
+        p1 = self._api.getReceiverUDPPort2()
         return [int(val) for pair in zip(p0, p1) for val in pair]
     
     @rx_udpport.setter
@@ -465,8 +465,8 @@ class Eiger(Detector):
         """Requires iterating over elements two and two for setting ports"""
         a = iter(ports)
         for i, p in enumerate(zip(a, a)):
-            self._api.setNetworkParameter('rx_udpport', str(p[0]), i)
-            self._api.setNetworkParameter('rx_udpport2', str(p[1]), i)
+            self._api.setReceiverUDPPort(p[0], i)
+            self._api.setReceiverUDPPort2(p[1], i)
 
     @property
     @error_handling
@@ -481,7 +481,7 @@ class Eiger(Detector):
 
 
         """
-        _s = self._api.getNetworkParameter('rx_zmqport')
+        _s = self._api.getReceiverStreamingPort()
         if _s == '':
             return []
         else:
@@ -492,9 +492,9 @@ class Eiger(Detector):
     def rx_zmqport(self, port):
         if isinstance(port, Iterable):
             for i, p in enumerate(port):
-                self._api.setNetworkParameter('rx_zmqport', str(p), i)
+                self._api.setReceiverStreamingPort(p, i)
         else:
-            self._api.setNetworkParameter('rx_zmqport', str(port), -1)
+            self._api.setReceiverStreamingPort(port, -1)
 
 
     @property

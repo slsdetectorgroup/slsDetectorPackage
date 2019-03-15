@@ -153,16 +153,10 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
                                  typename NonDeduced<CT>::type... Args);
 
-    /**
-     * If specific position, then provide result with that detector at position
-     * pos else concatenate the result of all detectors
-     * @param somefunc function pointer
-     * @param pos positin of detector in array (-1 is for all)
-     * @returns result for detector at that position or concatenated string of
-     * all detectors
-     */
-    // std::string concatResultOrPos(std::string (slsDetector::*somefunc)(int),
-    // int pos);
+     //Const qualified version
+    template <typename RT, typename... CT>
+    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
+                                 typename NonDeduced<CT>::type... Args) const;
 
     /**
      * Decodes which detector and the corresponding channel numbers for it
@@ -439,6 +433,8 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns port number
      */
     int setReceiverPort(int port_number = -1, int detPos = -1);
+
+    std::vector<int> getReceiverPort() const;
 
     /**
      * Lock server for this client IP

@@ -65,16 +65,16 @@ def test_rx_tcpport(eiger):
     eiger.acq()
     assert eiger.frames_caught == 1
 
-@eigertest
-@pytest.mark.new
-def test_enable_disable_tengiga(eiger):
-    """
-    This test does not check for dat on the 10Gbit link, only the set and get functions
-    """
-    eiger.tengiga = True
-    assert eiger.tengiga == True
-    eiger.tengiga = False
-    assert eiger.tengiga == False
+# @eigertest
+# @pytest.mark.new
+# def test_enable_disable_tengiga(eiger):
+#     """
+#     This test does not check for dat on the 10Gbit link, only the set and get functions
+#     """
+#     eiger.tengiga = True
+#     assert eiger.tengiga == True
+#     eiger.tengiga = False
+#     assert eiger.tengiga == False
 
 
 

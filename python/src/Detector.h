@@ -19,7 +19,7 @@ class Detector {
     Detector(int i)
         : det(i), multi_detector_id(i) {
         //Disable output from std::cout
-        std::cout.setstate(std::ios_base::failbit);
+        // std::cout.setstate(std::ios_base::failbit);
     }
 
     int getMultiDetectorId() { return multi_detector_id; }
@@ -42,7 +42,7 @@ class Detector {
 
     //for Eiger check status of  the module
     //true active false deactivated
-    bool getActive(int i){
+    bool getActive(int i) {
         return det.activate(-1, i);
     }
     //activate or deactivate a module
@@ -58,30 +58,28 @@ class Detector {
         return det.getFramesCaughtByReceiver(i);
     }
 
-    void setReceiverFifoDepth(int n_frames){
+    void setReceiverFifoDepth(int n_frames) {
         det.setReceiverFifoDepth(n_frames);
     }
-
 
     void setNumberOfStorageCells(const int64_t num) {
         det.setTimer(slsDetectorDefs::timerIndex::STORAGE_CELL_NUMBER, num);
     }
-    int getNumberOfStorageCells(){
+    int getNumberOfStorageCells() {
         return det.setTimer(slsDetectorDefs::timerIndex::STORAGE_CELL_NUMBER, -1);
     }
 
-    void setStoragecellStart(int cell){
+    void setStoragecellStart(int cell) {
         det.setStoragecellStart(cell);
     }
 
-    int getStoragecellStart(){
+    int getStoragecellStart() {
         return det.setStoragecellStart();
     }
 
-    int getReceiverFifoDepth(){
+    int getReceiverFifoDepth() {
         return det.setReceiverFifoDepth();
     }
-
 
     void resetFramesCaught() {
         det.resetFramesCaught();
@@ -91,18 +89,17 @@ class Detector {
         return det.getReceiverCurrentFrameIndex();
     }
 
-
     void startReceiver() { det.startReceiver(); }
     void stopReceiver() { det.stopReceiver(); }
 
     bool getTenGigabitEthernet() {
         return det.enableTenGigabitEthernet();
     }
-    void setTenGigabitEthernet(const bool value) {
+    void setTenGigabitEthernet(bool value) {
         det.enableTenGigabitEthernet(value);
     }
 
-    void setFileFormat(const std::string& format);
+    void setFileFormat(const std::string &format);
     std::string getFileFormat();
 
     std::string checkOnline() {
@@ -261,8 +258,8 @@ class Detector {
     int getDbitClock() {
         return det.setSpeed(slsDetectorDefs::DBIT_CLOCK, -1);
     }
-    int getReceiverPort(int det_id){
-        return det.setReceiverPort(-1, det_id);
+    std::vector<int> getReceiverPort() const {
+        return det.getReceiverPort();
     }
 
     void setReceiverPort(int det_id, int value) {
@@ -276,11 +273,11 @@ class Detector {
 
     std::vector<double> getRateCorrection();
 
-    bool getFlippedDataX(int i){
+    bool getFlippedDataX(int i) {
         return det.getFlippedData(slsDetectorDefs::dimension::X, i);
     }
 
-    bool getFlippedDataY(int i){
+    bool getFlippedDataY(int i) {
         return det.getFlippedData(slsDetectorDefs::dimension::Y, i);
     }
 
@@ -308,7 +305,7 @@ class Detector {
     std::string getFilePath() {
         return det.getFilePath();
     }
-    std::string getFilePath(int i){
+    std::string getFilePath(int i) {
         return det.getFilePath(i);
     }
 
@@ -611,15 +608,13 @@ class Detector {
         return det.enableWriteToFile(-1);
     }
 
-    void setFileOverWrite(bool value){
+    void setFileOverWrite(bool value) {
         det.overwriteFile(value);
     }
 
-    bool getFileOverWrite(){
+    bool getFileOverWrite() {
         return det.overwriteFile(-1);
     }
-
-
 
     void setAllTrimbits(int tb) {
         det.setAllTrimbits(tb);
@@ -635,16 +630,46 @@ class Detector {
         det.enableDataStreamingFromReceiver(state);
     }
 
-    // //Get a network parameter for all detectors, looping over individual detectors
-    // //return a vector of strings
-    // std::vector<std::string> getDetectorNetworkParameter(std::string par_name) {
-    //     auto p = networkNameToEnum(par_name);
-    //     std::vector<std::string> par;
-    //     for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
-    //         par.push_back(det.setDetectorNetworkParameter(p, -1, i));
-    //     }
-    //     return par;
-    // }
+    //Get a network parameter for all detectors, looping over individual detectors
+    //return a vector of strings
+    std::vector<int> getReceiverStreamingPort() {
+        std::vector<int> vec;
+        vec.reserve(det.getNumberOfDetectors());
+        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+            vec.push_back(det.getReceiverStreamingPort(i));
+        }
+        return vec;
+    }
+
+    void setReceiverStreamingPort(int value, int det_id) {
+        det.setReceiverDataStreamingOutPort(value, det_id);
+    }
+
+    std::vector<int> getReceiverUDPPort() {
+        std::vector<int> vec;
+        vec.reserve(det.getNumberOfDetectors());
+        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+            vec.push_back(det.getReceiverUDPPort(i));
+        }
+        return vec;
+    }
+
+    std::vector<int> getReceiverUDPPort2() {
+        std::vector<int> vec;
+        vec.reserve(det.getNumberOfDetectors());
+        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+            vec.push_back(det.getReceiverUDPPort2(i));
+        }
+        return vec;
+    }
+
+    void setReceiverUDPPort(int port, int det_id){
+        det.setReceiverUDPPort(port, det_id);
+    }
+    void setReceiverUDPPort2(int port, int det_id){
+        det.setReceiverUDPPort2(port, det_id);
+    }
+
 
     // //Set network parameter for all modules if det_id == -1 otherwise the module
     // //specified with det_id.
@@ -720,31 +745,27 @@ class Detector {
     int multi_detector_id = 0;
 };
 
-
-
-
-void Detector::setFileFormat(const std::string& format){
-    if (format == "binary"){
+void Detector::setFileFormat(const std::string &format) {
+    if (format == "binary") {
         det.setFileFormat(slsDetectorDefs::fileFormat::BINARY);
-    }else if(format == "ascii"){
+    } else if (format == "ascii") {
         det.setFileFormat(slsDetectorDefs::fileFormat::ASCII);
-    }else if(format == "hdf5"){
+    } else if (format == "hdf5") {
         det.setFileFormat(slsDetectorDefs::fileFormat::HDF5);
     }
 }
 
-std::string Detector::getFileFormat(){
+std::string Detector::getFileFormat() {
     auto format = det.setFileFormat(slsDetectorDefs::fileFormat::GET_FILE_FORMAT, -1);
-    switch (format)
-    {
-        case slsDetectorDefs::fileFormat::BINARY:
-            return "binary";
-        case slsDetectorDefs::fileFormat::ASCII:
-            return "ascii";
-        case slsDetectorDefs::fileFormat::HDF5:
-            return "hdf5";
-        default:
-            return "unknown";
+    switch (format) {
+    case slsDetectorDefs::fileFormat::BINARY:
+        return "binary";
+    case slsDetectorDefs::fileFormat::ASCII:
+        return "ascii";
+    case slsDetectorDefs::fileFormat::HDF5:
+        return "hdf5";
+    default:
+        return "unknown";
     }
 }
 

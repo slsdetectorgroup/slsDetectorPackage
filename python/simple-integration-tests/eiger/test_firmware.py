@@ -89,7 +89,8 @@ def test_zero_period_with_acq(eiger):
     eiger.exposure_time = 0.001
     eiger.period = t
     eiger.file_write = False
-    eiger.acq()
+    eiger.start_detector()
+    eiger.stop_detector()
 
     # Register 0x5 holds period
     reg = eiger.register[0x5]

@@ -43,9 +43,6 @@ PYBIND11_MODULE(_sls_detector, m)
         d.n_frames
         >> 10
 
-
-
-
     )pbdoc");
     DetectorApi
         .def(py::init<int>())
@@ -180,8 +177,15 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getRxDataStreamStatus", &Detector::getRxDataStreamStatus)
         .def("setRxDataStreamStatus", &Detector::setRxDataStreamStatus)
 
-        // .def("getDetectorNetworkParameter", &Detector::getDetectorNetworkParameter)
-        // .def("setDetectorNetworkParameter", &Detector::setDetectorNetworkParameter)
+        //Network stuff
+        .def("getReceiverStreamingPort", &Detector::getReceiverStreamingPort)
+        .def("setReceiverStreamingPort", &Detector::setReceiverStreamingPort)
+        .def("getReceiverUDPPort", &Detector::getReceiverUDPPort)
+        .def("getReceiverUDPPort2", &Detector::getReceiverUDPPort2)
+        
+        .def("getReceiverPort", &Detector::getReceiverPort)
+        .def("setReceiverPort", &Detector::setReceiverPort)
+
         .def("configureNetworkParameters", &Detector::configureNetworkParameters)
         .def("getDelayFrame", &Detector::getDelayFrame)
         .def("setDelayFrame", &Detector::setDelayFrame)
@@ -222,6 +226,7 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getFramesCaughtByReceiver", (int (Detector::*)() ) & Detector::getFramesCaughtByReceiver)
         .def("getFramesCaughtByReceiver", (int (Detector::*)(int)) & Detector::getFramesCaughtByReceiver)
 
+
         .def("resetFramesCaught", &Detector::resetFramesCaught)
         .def("getReceiverCurrentFrameIndex", &Detector::getReceiverCurrentFrameIndex)
         .def("getGapPixels", &Detector::getGapPixels)
@@ -258,6 +263,22 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("setImageSize", &Detector::setImageSize)
         .def("getNumberOfDetectors", &Detector::getNumberOfDetectors)
         .def("getDetectorGeometry", &Detector::getDetectorGeometry);
+
+
+
+//Experimental API to use the multi directly and inherit from to reduce
+//code duplication need to investigate how to handle documentation
+py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
+    multiDetectorApi
+        .def(py::init<int>())
+        .def_property("busy", 
+            py::cpp_function(&multiSlsDetector::getAcquiringFlag),
+            py::cpp_function(&multiSlsDetector::setAcquiringFlag))
+         .def_property_readonly("rx_tcpport", 
+            py::cpp_function(&multiSlsDetector::getReceiverPort))          
+            
+            ;
+
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

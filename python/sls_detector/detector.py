@@ -1069,7 +1069,7 @@ class Detector:
     @property
     @error_handling
     def rx_tcpport(self):
-        return [self._api.getRxTcpport(i) for i in range(self.n_modules)]
+        return self._api.getReceiverPort()
 
     @rx_tcpport.setter
     @error_handling
@@ -1079,7 +1079,7 @@ class Detector:
                              'detectors: {}'.format(len(ports), len(self)))
         else:
             for i, p in enumerate(ports):
-                self._api.setRxTcpport(i, p)
+                self._api.setReceiverPort(i, p)
 
     @property
     @error_handling

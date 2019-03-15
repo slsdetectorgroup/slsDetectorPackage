@@ -250,23 +250,23 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     /**
 	 * Constructor called when creating new shared memory
 	 * @param type detector type
-	 * @param multiId multi detector shared memory id
+	 * @param multi_id multi detector shared memory id
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
 	 */
     explicit slsDetector(detectorType type,
-                         int multiId = 0,
-                         int id = 0,
+                         int multi_id = 0,
+                         int det_id = 0,
                          bool verify = true);
 
     /**
 	 * Constructor called when opening existing shared memory
-	 * @param multiId multi detector shared memory id
+	 * @param multi_id multi detector shared memory id
 	 * @param id sls detector id (position in detectors list)
 	 * @param verify true to verify if shared memory version matches existing one
 	 */
-    explicit slsDetector(int multiId = 0,
-                         int id = 0,
+    explicit slsDetector(int multi_id = 0,
+                         int det_id = 0,
                          bool verify = true);
 
     /**
@@ -300,10 +300,10 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * If this is called, must take care to update
 	 * multiSlsDetectors thisMultiDetector->numberofDetectors
 	 * avoiding creating the constructor classes and mapping
-	 * @param multiId multi detector Id
+	 * @param multi_id multi detector Id
 	 * @param slsId slsDetectorId or position of slsDetector in detectors list
 	 */
-    static void freeSharedMemory(int multiId, int slsId);
+    static void freeSharedMemory(int multi_id, int slsId);
 
     /**
 	 * Free shared memory and delete shared memory structure
@@ -1616,21 +1616,21 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
   private:
     /**
 	 * Get Detector Type from Shared Memory (opening shm without verifying size)
-	 * @param multiId multi detector Id
+	 * @param multi_id multi detector Id
 	 * @param verify true to verify if shm size matches existing one
 	 * @returns detector type
 	 */
-    detectorType getDetectorTypeFromShm(int multiId, bool verify = true);
+    detectorType getDetectorTypeFromShm(int multi_id, bool verify = true);
 
     /**
 	 * Initialize shared memory
 	 * @param created true if shared memory must be created, else false to open
 	 * @param type type of detector
-	 * @param multiId multi detector Id
+	 * @param multi_id multi detector Id
 	 * @param verify true to verify if shm size matches existing one
 	 * @returns true if the shared memory was created now
 	 */
-    void initSharedMemory(detectorType type, int multiId, bool verify = true);
+    void initSharedMemory(detectorType type, int multi_id, bool verify = true);
 
     /**
 	 * Sets detector parameters depending detector type
@@ -1733,7 +1733,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     int writeSettingsFile(const std::string &fname, sls_detector_module& mod);
 
     /** slsDetector Id or position in the detectors list */
-    int detId;
+    const int detId;
 
     /** Shared Memory object */
     sls::SharedMemory<sharedSlsDetector> detector_shm{0,0};

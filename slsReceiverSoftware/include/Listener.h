@@ -41,7 +41,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
-	        uint64_t* us, uint64_t* as, uint32_t* fpf,
+	        int64_t* us, int64_t* as, uint32_t* fpf,
 			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
 
 	/**

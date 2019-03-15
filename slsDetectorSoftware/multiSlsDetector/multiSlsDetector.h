@@ -120,7 +120,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit multiSlsDetector(int id = 0, bool verify = true, bool update = true);
+    explicit multiSlsDetector(int multi_id = 0, bool verify = true, bool update = true);
 
     /**
      * Destructor
@@ -1986,7 +1986,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int kbhit();
 
     /** Multi detector Id */
-    int detId;
+    const int multiId;
 
     /** Shared Memory object */
     sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};

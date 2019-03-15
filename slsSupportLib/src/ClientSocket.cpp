@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdexcept>
 #include "sls_detector_defs.h"
+#include "sls_detector_exceptions.h"
+#include "logger.h"
 namespace sls {
 
 ClientSocket::ClientSocket(const bool isRx, const std::string &host, uint16_t port) : DataSocket(socket(AF_INET, SOCK_STREAM, 0)), isReceiver(isRx) {
@@ -17,7 +19,8 @@ ClientSocket::ClientSocket(const bool isRx, const std::string &host, uint16_t po
     hints.ai_flags |= AI_CANONNAME;
 
     if (getaddrinfo(host.c_str(), NULL, &hints, &result) != 0) {
-        throw std::runtime_error("ClientSocket ERROR: cannot decode host\n");
+        std::string msg = "ClientSocket ERROR: decode host:" + host + " on port " + std::to_string(port)+ "\n";
+        throw std::runtime_error(msg);
     }
 
     //TODO! Erik, results could have multiple entries do we need to loop through them?
@@ -29,7 +32,9 @@ ClientSocket::ClientSocket(const bool isRx, const std::string &host, uint16_t po
 
     if (::connect(getSocketId(), (struct sockaddr *)&serverAddr, sizeof(serverAddr)) != 0) {
         freeaddrinfo(result);
-        throw std::runtime_error("ClientSocket ERROR: cannot connect to host\n");
+        std::string msg = "ClientSocket ERROR: cannot connect to host:" + host + " on port " + std::to_string(port)+ "\n";
+        FILE_LOG(logERROR) << msg;
+        throw SocketError(msg);
     }
     freeaddrinfo(result);
 }

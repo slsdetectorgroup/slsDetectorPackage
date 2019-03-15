@@ -29,8 +29,9 @@
 using sls::SharedMemory;
 using sls::SharedMemoryError;
 
-multiSlsDetector::multiSlsDetector(int id, bool verify, bool update)
-    : detId(id) {
+multiSlsDetector::multiSlsDetector(int multi_id, bool verify, bool update)
+    : multiId(multi_id),
+      multi_shm(multi_id, -1) {
     setupMultiDetector(verify, update);
 }
 
@@ -302,20 +303,15 @@ std::string multiSlsDetector::getUserDetails() {
     return sstream.str();
 }
 
-/*
- * pre: multi_shm=0, multi_shm() = 0, detectors.size() = 0
- */
 void multiSlsDetector::initSharedMemory(bool verify) {
-    multi_shm = SharedMemory<sharedMultiSlsDetector>(detId, -1);
     if (!multi_shm.IsExisting()) {
         multi_shm.CreateSharedMemory();
         initializeDetectorStructure();
-    }
-    else {
+    } else {
         multi_shm.OpenSharedMemory();
         if (verify && multi_shm()->shmversion != MULTI_SHMVERSION) {
-            FILE_LOG(logERROR) << "Multi shared memory (" << detId << ") version mismatch "
-                                                                      "(expected 0x"
+            FILE_LOG(logERROR) << "Multi shared memory (" << multiId << ") version mismatch "
+                                                                         "(expected 0x"
                                << std::hex << MULTI_SHMVERSION << " but got 0x" << multi_shm()->shmversion << std::dec;
             throw SharedMemoryError("Shared memory version mismatch!");
         }
@@ -355,7 +351,7 @@ void multiSlsDetector::initializeMembers(bool verify) {
     for (int i = 0; i < multi_shm()->numberOfDetectors; i++) {
         try {
             detectors.push_back(
-                sls::make_unique<slsDetector>(detId, i, verify));
+                sls::make_unique<slsDetector>(multiId, i, verify));
         } catch (...) {
             detectors.clear();
             throw;
@@ -463,7 +459,7 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     }
 
     int pos = (int)detectors.size();
-    detectors.push_back(sls::make_unique<slsDetector>(type, detId, pos, false));
+    detectors.push_back(sls::make_unique<slsDetector>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
     multi_shm()->dataBytes += detectors[pos]->getDataBytes();
     multi_shm()->dataBytesInclGapPixels +=

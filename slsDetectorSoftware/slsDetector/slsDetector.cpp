@@ -541,7 +541,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multi_id, 
     if (!detector_shm.IsExisting()) {
         FILE_LOG(logERROR) << "Shared memory " << detector_shm.GetName() << " does not exist.\n"
                                                                    "Corrupted Multi Shared memory. Please free shared memory.";
-        throw SharedMemoryError("Could not read detector type from shared memory");
+        throw SharedMemoryError("Corrupted multi shared memory.");
     }
 
     // open, map, verify version
@@ -2785,11 +2785,11 @@ std::string slsDetector::getAdditionalJsonParameter(const std::string &key) {
     return std::string("");
 }
 
-uint64_t slsDetector::setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize) {
+int64_t slsDetector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
     int fnum = F_RECEIVER_UDP_SOCK_BUF_SIZE;
     int ret = FAIL;
-    uint64_t arg = udpsockbufsize;
-    uint64_t retval = -1;
+    int64_t arg = udpsockbufsize;
+    int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver: " << arg;
 
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
@@ -2808,14 +2808,14 @@ uint64_t slsDetector::setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize) {
     return retval;
 }
 
-uint64_t slsDetector::getReceiverUDPSocketBufferSize() {
+int64_t slsDetector::getReceiverUDPSocketBufferSize() {
     return setReceiverUDPSocketBufferSize();
 }
 
-uint64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
+int64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
     int fnum = F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE;
     int ret = FAIL;
-    uint64_t retval = -1;
+    int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting real UDP Socket Buffer size to receiver";
 
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {

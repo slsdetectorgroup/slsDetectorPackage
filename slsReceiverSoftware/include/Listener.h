@@ -140,7 +140,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @param s UDP socket buffer size to be set
      * @return OK or FAIL of dummy socket creation
      */
-    int CreateDummySocketForUDPSocketBufferSize(uint64_t s);
+    int CreateDummySocketForUDPSocketBufferSize(int64_t s);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -232,10 +232,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	uint32_t* dynamicRange;
 
 	/** UDP Socket Buffer Size */
-	uint64_t* udpSocketBufferSize;
+	int64_t* udpSocketBufferSize;
 
 	/** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
-	uint64_t* actualUDPSocketBufferSize;
+	int64_t* actualUDPSocketBufferSize;
 
 	/** frames per file */
 	uint32_t* framesPerFile;

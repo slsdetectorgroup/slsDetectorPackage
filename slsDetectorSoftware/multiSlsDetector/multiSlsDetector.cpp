@@ -1958,7 +1958,7 @@ int multiSlsDetector::setDetectorMode(detectorModeType value, int detPos) {
     return getDetectorModeType(result);
 }
 
-uint64_t multiSlsDetector::setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize, int detPos) {
+int64_t multiSlsDetector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setReceiverUDPSocketBufferSize(udpsockbufsize);
@@ -1969,7 +1969,7 @@ uint64_t multiSlsDetector::setReceiverUDPSocketBufferSize(uint64_t udpsockbufsiz
     return sls::minusOneIfDifferent(r);
 }
 
-uint64_t multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
+int64_t multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPSocketBufferSize();
@@ -1980,7 +1980,7 @@ uint64_t multiSlsDetector::getReceiverUDPSocketBufferSize(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-uint64_t multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
+int64_t multiSlsDetector::getReceiverRealUDPSocketBufferSize(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverRealUDPSocketBufferSize();

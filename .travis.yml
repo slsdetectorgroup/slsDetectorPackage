@@ -2,10 +2,14 @@ sudo: false
 
 language: cpp
 
-matrix:
-  include:
-    - os: linux
-      env: CONDA_PY=3.6
+os: linux
+
+env: 
+  matrix: 
+     - CONDA_PY=3.5
+     - CONDA_PY=3.6
+     - CONDA_PY=3.7
+
 
 dist: trusty
 

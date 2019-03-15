@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 #include <array>
 #include <bitset>
+#include <cassert>
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
@@ -22,39 +23,39 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <cassert>
 
+using sls::RuntimeError;
 using sls::SharedMemory;
 using sls::SharedMemoryError;
-using sls::RuntimeError;
 
 #define DEFAULT_HOSTNAME "localhost"
 
-slsDetector::slsDetector(detectorType type, int multiId, int id, bool verify)
-    : detId(id) {
+slsDetector::slsDetector(detectorType type, int multi_id, int det_id, bool verify)
+    : detId(det_id),
+      detector_shm(multi_id, det_id) {
     /* called from put hostname command,
 	 * so sls shared memory will be created */
 
     // ensure shared memory was not created before
-    SharedMemory<sharedSlsDetector> shm(multiId, id);
-    if (shm.IsExisting()) {
+    if (detector_shm.IsExisting()) {
         FILE_LOG(logWARNING) << "This shared memory should have been "
                                 "deleted before! "
-                             << shm.GetName() << ". Freeing it again";
-        freeSharedMemory(multiId, id);
+                             << detector_shm.GetName() << ". Freeing it again";
+        freeSharedMemory(multi_id, det_id);
     }
 
-    initSharedMemory(type, multiId, verify);
+    initSharedMemory(type, multi_id, verify);
 }
 
-slsDetector::slsDetector(int multiId, int id, bool verify)
-    : detId(id) {
+slsDetector::slsDetector(int multi_id, int det_id, bool verify)
+    : detId(det_id),
+      detector_shm(multi_id, det_id) {
     /* called from multi constructor to populate structure,
 	 * so sls shared memory will be opened, not created */
 
     // getDetectorType From shm will check if it was already existing
-    detectorType type = getDetectorTypeFromShm(multiId, verify);
-    initSharedMemory(type, multiId, verify);
+    detectorType type = getDetectorTypeFromShm(multi_id, verify);
+    initSharedMemory(type, multi_id, verify);
 }
 
 slsDetector::~slsDetector() = default;
@@ -196,8 +197,8 @@ int64_t slsDetector::getId(idMode mode) {
     }
 }
 
-void slsDetector::freeSharedMemory(int multiId, int slsId) {
-    SharedMemory<sharedSlsDetector> shm(multiId, slsId);
+void slsDetector::freeSharedMemory(int multi_id, int slsId) {
+    SharedMemory<sharedSlsDetector> shm(multi_id, slsId);
     if (shm.IsExisting()) {
         shm.RemoveSharedMemory();
     }
@@ -219,10 +220,10 @@ std::string slsDetector::getHostname() {
 }
 
 void slsDetector::initSharedMemory(detectorType type,
-                                   int multiId,
+                                   int multi_id,
                                    bool verify) {
 
-    detector_shm = SharedMemory<sharedSlsDetector>(multiId, detId);
+    detector_shm = SharedMemory<sharedSlsDetector>(multi_id, detId);
     if (!detector_shm.IsExisting()) {
         detector_shm.CreateSharedMemory();
         initializeDetectorStructure(type);
@@ -231,9 +232,9 @@ void slsDetector::initSharedMemory(detectorType type,
         if (verify && detector_shm()->shmversion != SLS_SHMVERSION) {
             FILE_LOG(logERROR) << "Single shared memory "
                                   "("
-                               << multiId << "-" << detId << ":) "
-                                                             "version mismatch "
-                                                             "(expected 0x"
+                               << multi_id << "-" << detId << ":) "
+                                                               "version mismatch "
+                                                               "(expected 0x"
                                << std::hex << SLS_SHMVERSION << " but got 0x" << detector_shm()->shmversion << ")" << std::dec;
             throw SharedMemoryError("Shared memory version mismatch (det)");
         }
@@ -423,7 +424,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     if (detector_shm()->myDetectorType == CHIPTESTBOARD || detector_shm()->myDetectorType == MOENCH) {
         updateTotalNumberOfChannels();
     }
-
 }
 
 slsDetectorDefs::sls_detector_module *slsDetector::createModule() {
@@ -465,7 +465,7 @@ void slsDetector::connectDataError() {
     setErrorMask((getErrorMask()) | (CANNOT_CONNECT_TO_RECEIVER));
 }
 
-int slsDetector::sendModule(sls_detector_module *myMod, sls::ClientSocket& client) {
+int slsDetector::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
     TLogLevel level = logDEBUG1;
     FILE_LOG(level) << "Sending Module";
     int ts = 0;
@@ -514,7 +514,7 @@ int slsDetector::sendModule(sls_detector_module *myMod, sls::ClientSocket& clien
     return ts;
 }
 
-int slsDetector::receiveModule(sls_detector_module *myMod, sls::ClientSocket& client) {
+int slsDetector::receiveModule(sls_detector_module *myMod, sls::ClientSocket &client) {
     int ts = 0;
     ts += client.receiveData(&(myMod->serialnumber), sizeof(myMod->serialnumber));
     ts += client.receiveData(&(myMod->nchan), sizeof(myMod->nchan));
@@ -537,28 +537,27 @@ int slsDetector::receiveModule(sls_detector_module *myMod, sls::ClientSocket& cl
     return ts;
 }
 
-slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multiId, bool verify) {
-    SharedMemory<sharedSlsDetector> shm(multiId, detId);
-    if (!shm.IsExisting()) {
-        FILE_LOG(logERROR) << "Shared memory " << shm.GetName() << " does not exist.\n"
+slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multi_id, bool verify) {
+    if (!detector_shm.IsExisting()) {
+        FILE_LOG(logERROR) << "Shared memory " << detector_shm.GetName() << " does not exist.\n"
                                                                    "Corrupted Multi Shared memory. Please free shared memory.";
         throw SharedMemoryError("Corrupted multi shared memory.");
     }
 
     // open, map, verify version
-    shm.OpenSharedMemory();
+    detector_shm.OpenSharedMemory();
 
-    if (verify && shm()->shmversion != SLS_SHMVERSION) {
+    if (verify && detector_shm()->shmversion != SLS_SHMVERSION) {
         FILE_LOG(logERROR) << "Single shared memory "
                               "("
-                           << multiId << "-" << detId << ":)version mismatch "
-                                                         "(expected 0x"
-                           << std::hex << SLS_SHMVERSION << " but got 0x" << shm()->shmversion << ")" << std::dec;
+                           << multi_id << "-" << detId << ":)version mismatch "
+                                                           "(expected 0x"
+                           << std::hex << SLS_SHMVERSION << " but got 0x" << detector_shm()->shmversion << ")" << std::dec;
         // unmap and throw
         detector_shm.UnmapSharedMemory();
         throw SharedMemoryError("Shared memory version mismatch");
     }
-    auto type = shm()->myDetectorType;
+    auto type = detector_shm()->myDetectorType;
     return type;
 }
 
@@ -3877,13 +3876,13 @@ int slsDetector::getChanRegs(double *retval) {
     sls_detector_module *myMod = getModule();
 
     if (myMod != nullptr) {
-    	//the original array has 0 initialized
-    	if (myMod->chanregs) {
-    		for (int i = 0; i < n; ++i) {
-    			retval[i] = (double)(myMod->chanregs[i] & TRIMBITMASK);
-    		}
-    	}
-    	deleteModule(myMod);
+        //the original array has 0 initialized
+        if (myMod->chanregs) {
+            for (int i = 0; i < n; ++i) {
+                retval[i] = (double)(myMod->chanregs[i] & TRIMBITMASK);
+            }
+        }
+        deleteModule(myMod);
     }
     return n;
 }
@@ -4058,7 +4057,7 @@ std::string slsDetector::checkReceiverOnline() {
         auto receiver = sls::ClientSocket(true, detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         detector_shm()->receiverOnlineFlag = ONLINE_FLAG;
     } catch (...) {
-    	 detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
+        detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
         retval = detector_shm()->receiver_hostname;
     }
     return retval;

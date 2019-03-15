@@ -22,7 +22,7 @@ const std::string Listener::TypeName = "Listener";
 
 Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
-        uint64_t* us, uint64_t* as, uint32_t* fpf,
+        int64_t* us, int64_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
 		ThreadObject(ind),
 		runningFlag(0),
@@ -232,7 +232,7 @@ void Listener::ShutDownUDPSocket() {
 }
 
 
-int Listener::CreateDummySocketForUDPSocketBufferSize(uint64_t s) {
+int Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
     FILE_LOG(logINFO) << "Testing UDP Socket Buffer size with test port " << *udpPortNumber;
 
     if (!(*activated)) {
@@ -240,7 +240,7 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(uint64_t s) {
     	return OK;
     }
 
-    uint64_t temp = *udpSocketBufferSize;
+    int64_t temp = *udpSocketBufferSize;
     *udpSocketBufferSize = s;
 
     //if eth is mistaken with ip address

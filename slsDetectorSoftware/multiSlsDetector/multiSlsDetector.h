@@ -1113,21 +1113,21 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns receiver udp socket buffer size
      */
-    uint64_t setReceiverUDPSocketBufferSize(uint64_t udpsockbufsize = -1, int detPos = -1);
+    int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1, int detPos = -1);
 
     /**
      * Returns the receiver UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP socket buffer size
      */
-    uint64_t getReceiverUDPSocketBufferSize(int detPos = -1);
+    int64_t getReceiverUDPSocketBufferSize(int detPos = -1);
 
     /**
      * Returns the receiver real UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver real UDP socket buffer size
      */
-    uint64_t getReceiverRealUDPSocketBufferSize(int detPos = -1);
+    int64_t getReceiverRealUDPSocketBufferSize(int detPos = -1);
 
     /** (users only)
      * Set 10GbE Flow Control (Eiger)

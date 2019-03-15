@@ -425,11 +425,12 @@ int slsReceiverTCPIPInterface::set_port() {
 				strcpy(mySock->lastClientIP,oldLastClientIP);
 			} catch(SocketError &e) {
 				ret = FAIL;
-				sprintf(mess, "Could not bind port %d. It is already set\n", p_number);
+				// same socket, could not bind port
+				sprintf(mess, e.what());
 				FILE_LOG(logERROR) << mess;
 			} catch (...) {
 				ret = FAIL;
-				sprintf(mess, "Could not bind port %d.\n", p_number);
+				sprintf(mess, "Could not set port %d.\n", p_number);
 				FILE_LOG(logERROR) << mess;
 			}
 		}
@@ -1728,8 +1729,8 @@ int slsReceiverTCPIPInterface::get_additional_json_header() {
 int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 	ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint64_t index = -1;
-    uint64_t retval = -1;
+    int64_t index = -1;
+    int64_t retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, &index, sizeof(index), true, receiver) == FAIL)
@@ -1762,7 +1763,7 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	int64_t retval = -1;
 
 	// no arg, check receiver is null
 	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);

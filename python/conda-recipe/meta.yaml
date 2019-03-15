@@ -1,0 +1,43 @@
+package:
+    name: sls_detector
+    version: 4.0.1
+
+build:
+  number: 0
+
+source:
+    path: ..
+
+requirements:
+    build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+        - cmake
+        - python {{ python }}
+        - libpng >=1.6.32,<1.6.35
+        - setuptools
+        - sls_detector_lib 4.0.1
+        - pyzmq
+        - pybind11
+
+    host:
+        - python
+        - pybind11
+
+    run:
+        - python
+        - numpy
+        - sls_detector_lib 4.0.1
+        - pyzmq
+        - libstdcxx-ng
+        - libgcc-ng
+
+
+test:
+      imports:
+        - sls_detector
+
+
+
+about:
+    summary: "Interacting with detectors"

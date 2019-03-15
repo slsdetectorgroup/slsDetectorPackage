@@ -104,8 +104,8 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getReceiverOnline", &Detector::getReceiverOnline)
         .def("setReceiverOnline", &Detector::setReceiverOnline)
 
-        .def("getRxTcpport", &Detector::getRxTcpport)
-        .def("setRxTcpport", &Detector::setRxTcpport)
+        .def("getReceiverPort", &Detector::getReceiverPort)
+        .def("setReceiverPort", &Detector::setReceiverPort)
 
         .def("isChipPowered", &Detector::isChipPowered)
         .def("powerChip", &Detector::powerChip)
@@ -132,9 +132,9 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("stopReceiver", &Detector::stopReceiver)
 
         .def("getFilePath", (std::string(Detector::*)()) & Detector::getFilePath, "Using multiSlsDetector")
-        .def("getFilePath", (std::string(Detector::*)(const int)const) & Detector::getFilePath, "File path for individual detector")
+        .def("getFilePath", (std::string(Detector::*)(int)) & Detector::getFilePath, "File path for individual detector")
         .def("setFilePath", (void (Detector::*)(std::string)) & Detector::setFilePath)
-        .def("setFilePath", (void (Detector::*)(std::string, const int)) & Detector::setFilePath)
+        .def("setFilePath", (void (Detector::*)(std::string, int)) & Detector::setFilePath)
 
         .def("setFileName", &Detector::setFileName)
         .def("getFileName", &Detector::getFileName)
@@ -158,8 +158,7 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("setNumberOfGates", &Detector::setNumberOfGates)
         .def("getDelay", &Detector::getDelay)
         .def("setDelay", &Detector::setDelay)
-        .def("getJCTBSamples", &Detector::getJCTBSamples)
-        .def("setJCTBSamples", &Detector::setJCTBSamples)
+
 
         .def("setStoragecellStart", &Detector::setStoragecellStart)
         .def("getStoragecellStart", &Detector::getStoragecellStart)
@@ -181,8 +180,8 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getRxDataStreamStatus", &Detector::getRxDataStreamStatus)
         .def("setRxDataStreamStatus", &Detector::setRxDataStreamStatus)
 
-        .def("getNetworkParameter", &Detector::getNetworkParameter)
-        .def("setNetworkParameter", &Detector::setNetworkParameter)
+        // .def("getDetectorNetworkParameter", &Detector::getDetectorNetworkParameter)
+        // .def("setDetectorNetworkParameter", &Detector::setDetectorNetworkParameter)
         .def("configureNetworkParameters", &Detector::configureNetworkParameters)
         .def("getDelayFrame", &Detector::getDelayFrame)
         .def("setDelayFrame", &Detector::setDelayFrame)
@@ -221,7 +220,7 @@ PYBIND11_MODULE(_sls_detector, m)
 
         //Overloaded calls
         .def("getFramesCaughtByReceiver", (int (Detector::*)() ) & Detector::getFramesCaughtByReceiver)
-        .def("getFramesCaughtByReceiver", (int (Detector::*)(int) const) & Detector::getFramesCaughtByReceiver)
+        .def("getFramesCaughtByReceiver", (int (Detector::*)(int)) & Detector::getFramesCaughtByReceiver)
 
         .def("resetFramesCaught", &Detector::resetFramesCaught)
         .def("getReceiverCurrentFrameIndex", &Detector::getReceiverCurrentFrameIndex)
@@ -251,8 +250,6 @@ PYBIND11_MODULE(_sls_detector, m)
 
         .def("getActive", &Detector::getActive)
         .def("setActive", &Detector::setActive)
-        .def("getThreadedProcessing", &Detector::getThreadedProcessing)
-        .def("setThreadedProcessing", &Detector::setThreadedProcessing)
 
         .def("getTenGigabitEthernet", &Detector::getTenGigabitEthernet)
         .def("setTenGigabitEthernet", &Detector::setTenGigabitEthernet)

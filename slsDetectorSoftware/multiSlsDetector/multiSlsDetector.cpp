@@ -1857,14 +1857,14 @@ std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::setDetectorNetworkParameter(networkParameter index, int delay, int detPos) {
+int multiSlsDetector::setDetectorNetworkParameter(networkParameter index, int value, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setDetectorNetworkParameter(index, delay);
+        return detectors[detPos]->setDetectorNetworkParameter(index, value);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setDetectorNetworkParameter, index, delay);
+    auto r = parallelCall(&slsDetector::setDetectorNetworkParameter, index, value);
     return sls::minusOneIfDifferent(r);
 }
 

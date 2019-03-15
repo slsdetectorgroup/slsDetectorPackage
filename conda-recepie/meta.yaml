@@ -58,6 +58,15 @@ outputs:
       build:
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
+
+  # - name: sls_detector
+  #   version: "refactor"
+  #   script: copy_lib.sh
+    # requirements:
+    #   build:
+    #     - {{ compiler('c') }}
+    #     - {{compiler('cxx')}}
+
   # - name: sls_detector_gui
   #   version: "refactor"
   #   script: copy_gui.sh

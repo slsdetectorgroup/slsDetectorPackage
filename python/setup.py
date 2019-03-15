@@ -8,7 +8,7 @@ import sys
 import setuptools
 import os
 
-__version__ = '4.0.0'
+__version__ = 'refactor'
 
 
 def get_conda_path():
@@ -32,30 +32,6 @@ class get_pybind_include(object):
         import pybind11
         return pybind11.get_include(self.user)
 
-
-# ext_modules = [
-#     Extension(
-#         '_sls_detector',
-#         ['src/main.cpp'],
-#         include_dirs=[
-#             # Path to pybind11 headers
-#             get_pybind_include(),
-#             get_pybind_include(user=True),
-#             os.path.join(get_sls_path(), 'slsDetectorSoftware/multiSlsDetector'),
-#             os.path.join(get_sls_path(), 'slsReceiverSoftware/include/'),
-#             os.path.join(get_sls_path(),'slsDetectorSoftware/commonFiles/'),
-#             os.path.join(get_sls_path(), 'slsDetectorSoftware/slsDetector'),
-#             os.path.join(get_sls_path(), 'slsDetectorSoftware/slsDetectorAnalysis'),
-#             os.path.join(get_sls_path(), 'slsDetectorSoftware/slsReceiverInterface/'),
-#
-#         ],
-#         libraries = ['SlsDetector', 'zmq'],
-#         library_dirs = [os.path.join(get_sls_path(),'build/bin'),
-#                         os.path.join(get_sls_path(),'slsReceiverSoftware/include')],
-#
-#         language='c++'
-#     ),
-# ]
 
 ext_modules = [
     Extension(

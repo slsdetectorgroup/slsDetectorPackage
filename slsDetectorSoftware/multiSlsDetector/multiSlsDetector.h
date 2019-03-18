@@ -120,7 +120,9 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit multiSlsDetector(int multi_id = 0, bool verify = true, bool update = true);
+    explicit multiSlsDetector(int multi_id = 0,
+                              bool verify = true,
+                              bool update = true);
 
     /**
      * Destructor
@@ -134,11 +136,11 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * one
      * @param update true to update last user pid, date etc
      */
-    void setupMultiDetector(bool verify = true, bool update = true);
+    void setupMultiDetector(bool verify = true,
+                            bool update = true);
 
     /**
-     * Loop through the detectors serially
-     * and return a vector of results
+     * Loop through the detectors serially and return the result as a vector
      */
     template <class CT>
     struct NonDeduced { using type = CT; };
@@ -146,20 +148,25 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...),
                                typename NonDeduced<CT>::type... Args);
 
-     //Const qualified version should be preferred for calling get methods
+    /**
+     * Loop through the detectors serially and return the result as a vector
+     * Const qualified version
+     */
     template <typename RT, typename... CT>
     std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...) const,
                                typename NonDeduced<CT>::type... Args) const;
 
     /**
-     * Loop through the detectors in parallel threads
-     * and return a vector of results
+     * Loop through the detectors in parallel and return the result as a vector
      */
     template <typename RT, typename... CT>
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
                                  typename NonDeduced<CT>::type... Args);
 
-    //Const qualified version should be preferred for calling get methods
+    /**
+     * Loop through the detectors in parallel and return the result as a vector
+     * Const qualified version
+     */
     template <typename RT, typename... CT>
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...) const,
                                  typename NonDeduced<CT>::type... Args) const;
@@ -176,31 +183,10 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);
 
     /**
-     * Checks error mask and returns error message and its severity if it exists
-     * @param critical is 1 if any of the messages is critical
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns error message else an empty std::string
-     */
-    std::string getErrorMessage(int &critical, int detPos = -1);
-
-    /**
-     * Clears error mask of both multi and sls
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns error mask
-     */
-    int64_t clearAllErrorMask(int detPos = -1);
-
-    /**
-     * Set Error Mask from all detectors
-     * if each had errors in the mask already
-     */
-    void setErrorMaskFromAllDetectors();
-
-    /**
      * Set acquiring flag in shared memory
      * @param b acquiring flag
      */
-    void setAcquiringFlag(bool b = false);
+    void setAcquiringFlag(bool flag);
 
     /**
      * Get acquiring flag from shared memory
@@ -239,6 +225,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     int64_t getId(idMode mode, int detPos = -1);
 
+     std::vector<int64_t> getDetectorNumber();
     /**
      * Free shared memory from the command line
      * avoiding creating the constructor classes and mapping
@@ -277,7 +264,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns concatenated hostnames of all detectors or hostname of specific
      * one
      */
-    std::string getHostname(int detPos = -1);
+    std::string getHostname(int detPos = -1) const;
 
     /**
      * Appends detectors to the end of the list in shared memory
@@ -890,7 +877,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address
      */
-    std::string getDetectorIP(int detPos = -1);
+    std::string getDetectorIP(int detPos = -1) const;
 
     /**
      * Validates and sets the receiver.

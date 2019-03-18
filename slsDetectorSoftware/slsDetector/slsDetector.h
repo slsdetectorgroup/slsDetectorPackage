@@ -323,7 +323,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Gets the hostname of detector
 	 * @returns hostname
 	 */
-    std::string getHostname();
+    std::string getHostname() const;
 
     /**
 	 * Could not connect to receiver, log error
@@ -810,7 +810,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the detector IP address\sa sharedSlsDetector
 	 * @returns the detector IP address
 	 */
-    std::string getDetectorIP();
+    std::string getDetectorIP() const;
 
     /**
 	 * Validates and sets the receiver.

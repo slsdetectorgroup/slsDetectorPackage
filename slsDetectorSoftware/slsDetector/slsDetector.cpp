@@ -153,7 +153,7 @@ int slsDetector::checkReceiverVersionCompatibility() {
     return ret;
 }
 
-int64_t slsDetector::getId(idMode mode) {
+int64_t slsDetector::getId(idMode mode){
     int arg = (int)mode;
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting id type " << mode;
@@ -166,9 +166,6 @@ int64_t slsDetector::getId(idMode mode) {
             int fnum = F_GET_RECEIVER_ID;
             auto receiver = sls::ClientSocket(true, detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
             ret = receiver.sendCommandThenRead(fnum, nullptr, 0, &retval, sizeof(retval));
-            if (ret == FAIL) {
-                setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
-            }
         }
         if (ret == FORCE_UPDATE) {
             ret = updateReceiver();
@@ -180,13 +177,7 @@ int64_t slsDetector::getId(idMode mode) {
         if (detector_shm()->onlineFlag == ONLINE_FLAG) {
             auto client = sls::ClientSocket(false, detector_shm()->hostname, detector_shm()->controlPort);
             ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-
-            // handle ret
-            if (ret == FAIL) {
-                setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
-            }
         }
-
         if (ret != FAIL) {
             FILE_LOG(logDEBUG1) << "Id (" << mode << "): 0x" << std::hex << retval << std::dec;
         }
@@ -215,7 +206,7 @@ void slsDetector::setHostname(const std::string &hostname) {
     updateDetector();
 }
 
-std::string slsDetector::getHostname() {
+std::string slsDetector::getHostname() const {
     return detector_shm()->hostname;
 }
 
@@ -920,8 +911,8 @@ int slsDetector::exitServer() {
 int slsDetector::execCommand(const std::string &cmd) {
     int fnum = F_EXEC_COMMAND;
     int ret = FAIL;
-    char arg[MAX_STR_LENGTH] = {0};
-    char retval[MAX_STR_LENGTH] = {0};
+    char arg[MAX_STR_LENGTH] = {};
+    char retval[MAX_STR_LENGTH] = {};
     sls::strcpy_safe(arg, cmd.c_str());
     FILE_LOG(logDEBUG1) << "Sending command to detector " << arg;
 
@@ -942,7 +933,6 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
     int n = 0, i32 = 0;
     int64_t i64 = 0;
     char lastClientIP[INET_ADDRSTRLEN] = {0};
-    // auto client = sls::ClientSocket(false, detector_shm()->hostname, detector_shm()->controlPort);
     n += client.receiveData(lastClientIP, sizeof(lastClientIP));
     FILE_LOG(logDEBUG1) << "Updating detector last modified by " << lastClientIP;
 
@@ -2341,7 +2331,7 @@ std::string slsDetector::setDetectorIP(const std::string &detectorIP) {
     return std::string(detector_shm()->detectorIP);
 }
 
-std::string slsDetector::getDetectorIP() {
+std::string slsDetector::getDetectorIP() const {
     return std::string(detector_shm()->detectorIP);
 }
 

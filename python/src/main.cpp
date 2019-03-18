@@ -239,12 +239,6 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getReceiverCurrentFrameIndex", &Detector::getReceiverCurrentFrameIndex)
         .def("getGapPixels", &Detector::getGapPixels)
         .def("setGapPixels", &Detector::setGapPixels)
-
-        .def("clearErrorMask", &Detector::clearErrorMask)
-        .def("getErrorMask", &Detector::getErrorMask)
-        .def("setErrorMask", &Detector::setErrorMask)
-        .def("getErrorMessage", &Detector::getErrorMessage)
-
         .def("getFlippedDataX", &Detector::getFlippedDataX)
         .def("getFlippedDataY", &Detector::getFlippedDataY)
         .def("setFlippedDataX", &Detector::setFlippedDataX)
@@ -284,9 +278,10 @@ py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
             py::cpp_function(&multiSlsDetector::setAcquiringFlag))
          .def_property_readonly("rx_tcpport", 
             py::cpp_function(&multiSlsDetector::getReceiverPort))          
-        // .def_property_readonly("rx_udpip", 
-        //     py::cpp_function(&multiSlsDetector::getReceiverUDPIP), py::arg("det_id")=1)  
-        // .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
+        .def_property_readonly("detectornumber", 
+            py::cpp_function(&multiSlsDetector::getDetectorNumber))  
+        .def("_getReceiverUDPIP", &multiSlsDetector::getReceiverUDPIP)
+        .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
             ;
 
 

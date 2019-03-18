@@ -83,7 +83,6 @@ multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), typename NonD
     return result;
 }
 
-//Const qualified version
 template <typename RT, typename... CT>
 std::vector<RT>
 multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...) const, typename NonDeduced<CT>::type... Args) const {
@@ -131,100 +130,8 @@ int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int &channelX,
     return -1;
 }
 
-std::string multiSlsDetector::getErrorMessage(int &critical, int detPos) {
-    int64_t multiMask = 0, slsMask = 0;
-    std::string retval = "";
-    critical = 0;
-    size_t posmin = 0, posmax = detectors.size();
-
-    // single
-    if (detPos >= 0) {
-
-        slsMask = detectors[detPos]->getErrorMask();
-        posmin = (size_t)detPos;
-        posmax = posmin + 1;
-    }
-
-    multiMask = getErrorMask();
-    if (multiMask || slsMask) {
-        if (multiMask & MULTI_DETECTORS_NOT_ADDED) {
-            retval.append("Detectors not added:\n" +
-                          std::string(getNotAddedList()) + std::string("\n"));
-            critical = 1;
-        }
-        if (multiMask & MULTI_HAVE_DIFFERENT_VALUES) {
-            retval.append(
-                "A previous multi detector command gave different values\n"
-                "Please check the console\n");
-            critical = 0;
-        }
-        if (multiMask & MULTI_CONFIG_FILE_ERROR) {
-            retval.append("Could not load Config File\n");
-            critical = 1;
-        }
-        if (multiMask & MULTI_POS_EXCEEDS_LIST) {
-            retval.append("Position exceeds multi detector list\n");
-            critical = 0;
-        }
-        if (multiMask & MUST_BE_MULTI_CMD) {
-            retval.append("Must be a multi detector level command.\n");
-            critical = 0;
-        }
-        if (multiMask & MULTI_OTHER_ERROR) {
-            retval.append("Some error occured from multi level.\n");
-            critical =
-                0; // FIXME: with exceptions/appropriate errors wherever used
-        }
-
-        for (size_t idet = posmin; idet < posmax; ++idet) {
-            // if the detector has error
-            if ((multiMask & (1 << idet)) || (detPos >= 0)) {
-
-                // append detector id
-                retval.append("Detector " + std::to_string(idet) +
-                              std::string(":\n"));
-
-                // get sls det error mask
-                slsMask = detectors[idet]->getErrorMask();
-
-                // get the error critical level
-                if ((slsMask > 0xFFFFFFFF) | critical) {
-                    critical = 1;
-                }
-
-                // append error message
-                retval.append(errorDefs::getErrorMessage(slsMask));
-            }
-        }
-    }
-    return retval;
-}
-
-int64_t multiSlsDetector::clearAllErrorMask(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->clearErrorMask();
-    }
-
-    // multi
-    clearErrorMask();
-    clearNotAddedList();
-    for (auto &d : detectors) {
-        d->clearErrorMask();
-    }
-    return getErrorMask();
-}
-
-void multiSlsDetector::setErrorMaskFromAllDetectors() {
-    for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        if (detectors[idet]->getErrorMask()) {
-            setErrorMask(getErrorMask() | (1 << idet));
-        }
-    }
-}
-
-void multiSlsDetector::setAcquiringFlag(bool b) {
-    multi_shm()->acquiringFlag = b;
+void multiSlsDetector::setAcquiringFlag(bool flag) {
+    multi_shm()->acquiringFlag = flag;
 }
 
 bool multiSlsDetector::getAcquiringFlag() const {
@@ -269,6 +176,10 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+std::vector<int64_t> multiSlsDetector::getDetectorNumber(){
+    return parallelCall(&slsDetector::getId, slsDetectorDefs::DETECTOR_SERIAL_NUMBER);
+}
+
 void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
     // single
     if (detPos >= 0) {
@@ -301,7 +212,6 @@ void multiSlsDetector::freeSharedMemory(int detPos) {
 
     // multi
     zmqSocket.clear();
-    clearAllErrorMask();
     for (auto &d : detectors) {
         d->freeSharedMemory();
     }
@@ -444,7 +354,7 @@ void multiSlsDetector::setHostname(const char *name, int detPos) {
     addMultipleDetectors(name);
 }
 
-std::string multiSlsDetector::getHostname(int detPos) {
+std::string multiSlsDetector::getHostname(int detPos) const {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getHostname();
@@ -781,45 +691,33 @@ std::vector<int> multiSlsDetector::getReceiverPort() const {
 }
 
 int multiSlsDetector::lockServer(int p, int detPos) {
-    // single
     if (detPos >= 0) {
         return detectors[detPos]->lockServer(p);
     }
-
-    // multi
     auto r = parallelCall(&slsDetector::lockServer, p);
     return sls::minusOneIfDifferent(r);
 }
 
 std::string multiSlsDetector::getLastClientIP(int detPos) {
-    // single
     if (detPos >= 0) {
         return detectors[detPos]->getLastClientIP();
     }
-
-    // multi
     auto r = parallelCall(&slsDetector::getLastClientIP);
     return sls::concatenateIfDifferent(r);
 }
 
 int multiSlsDetector::exitServer(int detPos) {
-    // single
     if (detPos >= 0) {
         return detectors[detPos]->exitServer();
     }
-
-    // multi
     auto r = parallelCall(&slsDetector::exitServer);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
 int multiSlsDetector::execCommand(const std::string &cmd, int detPos) {
-    // single
     if (detPos >= 0) {
         return detectors[detPos]->execCommand(cmd);
     }
-
-    // multi
     auto r = parallelCall(&slsDetector::execCommand, cmd);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
@@ -846,14 +744,6 @@ int multiSlsDetector::readConfigurationFile(const std::string &fname) {
         input_file.close();
     } else {
         FILE_LOG(logERROR) << "Could not openconfiguration file " << fname << " for reading";
-        setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
-        return FAIL;
-    }
-
-    if (getErrorMask()) {
-        int c;
-        FILE_LOG(logERROR) << "----------------\n Error Messages\n----------------";
-        FILE_LOG(logERROR) << getErrorMessage(c);
         return FAIL;
     }
     return OK;
@@ -1624,7 +1514,7 @@ std::string multiSlsDetector::setDetectorIP(const std::string &detectorIP, int d
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::getDetectorIP(int detPos) {
+std::string multiSlsDetector::getDetectorIP(int detPos) const {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getDetectorIP();

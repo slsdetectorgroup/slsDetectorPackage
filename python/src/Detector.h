@@ -130,23 +130,6 @@ class Detector {
         return det.checkOnline();
     }
 
-    void clearErrorMask() {
-        det.clearAllErrorMask();
-    }
-
-    int64_t getErrorMask() {
-        return det.getErrorMask();
-    }
-    void setErrorMask(const int64_t i) {
-        det.setErrorMask(i);
-    }
-
-    std::string getErrorMessage() {
-        //tmp would hold the number of critical errors, is and should this be used?
-        int tmp = 0;
-        return det.getErrorMessage(tmp);
-    }
-
     bool getReceiverOnline() {
         return det.setReceiverOnline();
     }
@@ -253,8 +236,8 @@ class Detector {
     int64_t getClientVersion() { return det.getId(slsDetectorDefs::THIS_SOFTWARE_VERSION); }
     int64_t getReceiverVersion() { return det.getId(slsDetectorDefs::RECEIVER_VERSION); }
 
-    int getDetectorNumber(int i) {
-        return det.getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER, i);
+    std::vector<int64_t> getDetectorNumber() {
+        return det.getDetectorNumber();
     }
 
     int getReadoutClockSpeed() {

@@ -1053,15 +1053,15 @@ class Detector:
 
     @property
     def rx_udpmac(self):
-        return element_if_equal(self._api.getNetworkParameter('rx_udpmac'))
+        return self._api.getReceiverUDPMAC(-1)
 
     @rx_udpmac.setter
     def rx_udpmac(self, mac):
         if isinstance(mac, list):
             for i, m in enumerate(mac):
-                self._api.setNetworkParameter('rx_udpmac', m, i)
+                self._api.setReceiverUDPMAC(m, i)
         else:
-            self._api.setNetworkParameter('rx_udpmac', mac, -1)
+            self._api.setReceiverUDPMAC(mac, -1)
 
     @property
     @error_handling

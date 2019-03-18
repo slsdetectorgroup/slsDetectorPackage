@@ -188,6 +188,8 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("setReceiverUDPPort2", &Detector::setReceiverUDPPort2)
         .def("setReceiverUDPIP", &Detector::setReceiverUDPIP)
         .def("getReceiverUDPIP", &Detector::getReceiverUDPIP)
+        .def("getReceiverUDPMAC", &Detector::getReceiverUDPMAC)
+        .def("setReceiverUDPMAC", &Detector::setReceiverUDPMAC)
         
         .def("getReceiverPort", &Detector::getReceiverPort)
         .def("setReceiverPort", &Detector::setReceiverPort)

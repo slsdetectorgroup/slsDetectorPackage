@@ -93,7 +93,7 @@ class Detector {
         return det.getReceiverHostname(det_id);
     }
 
-    void setReceiverHostname(const std::string &hostname, int det_id = -1) {
+    void setReceiverHostname(std::string hostname, int det_id = -1) {
         det.setReceiverHostname(hostname, det_id);
     }
 
@@ -101,8 +101,16 @@ class Detector {
         return det.getReceiverUDPIP(det_id);
     }
 
-    void setReceiverUDPIP(const std::string &ip, int det_id = -1) {
+    void setReceiverUDPIP(std::string ip, int det_id = -1) {
         det.setReceiverUDPIP(ip, det_id);
+    }
+
+    std::string getReceiverUDPMAC(int det_id = -1){
+        return det.getReceiverUDPMAC(det_id);
+    }
+
+    void setReceiverUDPMAC(std::string mac, int det_id = -1){
+        det.setReceiverUDPMAC(mac, det_id);
     }
 
     void startReceiver() { det.startReceiver(); }

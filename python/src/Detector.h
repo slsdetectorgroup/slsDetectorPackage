@@ -89,6 +89,22 @@ class Detector {
         return det.getReceiverCurrentFrameIndex();
     }
 
+    std::string getReceiverHostname(int det_id = -1) const {
+        return det.getReceiverHostname(det_id);
+    }
+
+    void setReceiverHostname(const std::string &hostname, int det_id = -1) {
+        det.setReceiverHostname(hostname, det_id);
+    }
+
+    std::string getReceiverUDPIP(int det_id = -1) const {
+        return det.getReceiverUDPIP(det_id);
+    }
+
+    void setReceiverUDPIP(const std::string &ip, int det_id = -1) {
+        det.setReceiverUDPIP(ip, det_id);
+    }
+
     void startReceiver() { det.startReceiver(); }
     void stopReceiver() { det.stopReceiver(); }
 
@@ -352,15 +368,15 @@ class Detector {
         return mp;
     }
 
-    bool isClientAndDetecorCompatible() {
-        auto r = det.checkDetectorVersionCompatibility(slsDetectorDefs::CONTROL_PORT);
+    bool isClientAndDetectorCompatible() {
+        auto r = det.checkDetectorVersionCompatibility();
         if (r == 0)
             return true;
         else
             return false;
     }
     bool isClientAndReceiverCompatible() {
-        auto r = det.checkReceiverVersionCompatibility(slsDetectorDefs::DATA_PORT);
+        auto r = det.checkReceiverVersionCompatibility();
         if (r == 0)
             return true;
         else
@@ -663,13 +679,12 @@ class Detector {
         return vec;
     }
 
-    void setReceiverUDPPort(int port, int det_id){
+    void setReceiverUDPPort(int port, int det_id) {
         det.setReceiverUDPPort(port, det_id);
     }
-    void setReceiverUDPPort2(int port, int det_id){
+    void setReceiverUDPPort2(int port, int det_id) {
         det.setReceiverUDPPort2(port, det_id);
     }
-
 
     // //Set network parameter for all modules if det_id == -1 otherwise the module
     // //specified with det_id.

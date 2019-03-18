@@ -844,6 +844,10 @@ int slsDetector::setReceiverPort(int port_number) {
     return detector_shm()->receiverTCPPort;
 }
 
+int slsDetector::getReceiverPort() const{
+    return detector_shm()->receiverTCPPort;
+}
+
 int slsDetector::getControlPort() const {
     return detector_shm()->controlPort;
 }
@@ -852,9 +856,6 @@ int slsDetector::getStopPort() const {
     return detector_shm()->stopPort;
 }
 
-int slsDetector::getReceiverPort() const {
-    return detector_shm()->receiverTCPPort;
-}
 
 int slsDetector::lockServer(int lock) {
     int fnum = F_LOCK_SERVER;
@@ -2344,7 +2345,7 @@ std::string slsDetector::getDetectorIP() {
     return std::string(detector_shm()->detectorIP);
 }
 
-std::string slsDetector::setReceiver(const std::string &receiverIP) {
+std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
     FILE_LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
     // recieverIP is none
     if (receiverIP == "none") {
@@ -2430,7 +2431,7 @@ std::string slsDetector::setReceiver(const std::string &receiverIP) {
     return std::string(detector_shm()->receiver_hostname);
 }
 
-std::string slsDetector::getReceiver() {
+std::string slsDetector::getReceiverHostname() const {
     return std::string(detector_shm()->receiver_hostname);
 }
 
@@ -2458,7 +2459,7 @@ std::string slsDetector::setReceiverUDPIP(const std::string &udpip) {
     return std::string(detector_shm()->receiverUDPIP);
 }
 
-std::string slsDetector::getReceiverUDPIP() {
+std::string slsDetector::getReceiverUDPIP() const {
     return std::string(detector_shm()->receiverUDPIP);
 }
 
@@ -2482,7 +2483,7 @@ std::string slsDetector::setReceiverUDPMAC(const std::string &udpmac) {
     return std::string(detector_shm()->receiverUDPMAC);
 }
 
-std::string slsDetector::getReceiverUDPMAC() {
+std::string slsDetector::getReceiverUDPMAC() const {
     return std::string(detector_shm()->receiverUDPMAC);
 }
 
@@ -2496,7 +2497,7 @@ int slsDetector::setReceiverUDPPort(int udpport) {
     return detector_shm()->receiverUDPPort;
 }
 
-int slsDetector::getReceiverUDPPort() {
+int slsDetector::getReceiverUDPPort() const {
     return detector_shm()->receiverUDPPort;
 }
 
@@ -2513,7 +2514,7 @@ int slsDetector::setReceiverUDPPort2(int udpport) {
     return detector_shm()->receiverUDPPort2;
 }
 
-int slsDetector::getReceiverUDPPort2() {
+int slsDetector::getReceiverUDPPort2() const {
     return detector_shm()->receiverUDPPort2;
 }
 
@@ -4023,7 +4024,7 @@ int64_t slsDetector::getRateCorrection() {
 
 void slsDetector::printReceiverConfiguration(TLogLevel level) {
     FILE_LOG(level) << "#Detector " << detId << ":\n"
-                    << "Receiver Hostname:\t" << getReceiver() << "\nDetector UDP IP (Source):\t\t" << getDetectorIP() << "\nDetector UDP MAC:\t\t" << getDetectorMAC() << "\nReceiver UDP IP:\t" << getReceiverUDPIP() << "\nReceiver UDP MAC:\t" << getReceiverUDPMAC() << "\nReceiver UDP Port:\t" << getReceiverUDPPort() << "\nReceiver UDP Port2:\t" << getReceiverUDPPort2();
+                    << "Receiver Hostname:\t" << getReceiverHostname() << "\nDetector UDP IP (Source):\t\t" << getDetectorIP() << "\nDetector UDP MAC:\t\t" << getDetectorMAC() << "\nReceiver UDP IP:\t" << getReceiverUDPIP() << "\nReceiver UDP MAC:\t" << getReceiverUDPMAC() << "\nReceiver UDP Port:\t" << getReceiverUDPPort() << "\nReceiver UDP Port2:\t" << getReceiverUDPPort2();
 }
 
 int slsDetector::setReceiverOnline(int value) {

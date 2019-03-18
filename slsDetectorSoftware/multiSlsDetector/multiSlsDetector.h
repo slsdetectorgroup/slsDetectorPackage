@@ -143,7 +143,13 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     template <class CT>
     struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args);
+    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...),
+                               typename NonDeduced<CT>::type... Args);
+
+     //Const qualified version should be preferred for calling get methods
+    template <typename RT, typename... CT>
+    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...) const,
+                               typename NonDeduced<CT>::type... Args) const;
 
     /**
      * Loop through the detectors in parallel threads
@@ -153,9 +159,9 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
                                  typename NonDeduced<CT>::type... Args);
 
-     //Const qualified version
+    //Const qualified version should be preferred for calling get methods
     template <typename RT, typename... CT>
-    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
+    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...) const,
                                  typename NonDeduced<CT>::type... Args) const;
 
     /**
@@ -894,14 +900,14 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address from shared memory
      */
-    std::string setReceiver(const std::string &receiver, int detPos = -1);
+    std::string setReceiverHostname(const std::string &receiver, int detPos = -1);
 
     /**
      * Returns the receiver IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address
      */
-    std::string getReceiver(int detPos = -1);
+    std::string getReceiverHostname(int detPos = -1) const;
 
     /**
      * Validates the format of the receiver UDP IP address and sets it
@@ -916,7 +922,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address
      */
-    std::string getReceiverUDPIP(int detPos = -1);
+    std::string getReceiverUDPIP(int detPos = -1) const;
 
     /**
      * Validates the format of the receiver UDP MAC address and sets it
@@ -931,7 +937,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string getReceiverUDPMAC(int detPos = -1);
+    std::string getReceiverUDPMAC(int detPos = -1) const;
 
     /**
      * Sets the receiver UDP port
@@ -946,7 +952,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port
      */
-    int getReceiverUDPPort(int detPos = -1);
+    int getReceiverUDPPort(int detPos = -1) const;
 
     /**
      * Sets the receiver UDP port 2
@@ -961,7 +967,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2 of same interface
      */
-    int getReceiverUDPPort2(int detPos = -1);
+    int getReceiverUDPPort2(int detPos = -1) const;
 
     /**
      * (advanced users)

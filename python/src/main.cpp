@@ -178,10 +178,16 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("setRxDataStreamStatus", &Detector::setRxDataStreamStatus)
 
         //Network stuff
+        .def("getReceiverHostname", &Detector::getReceiverHostname)
+        .def("setReceiverHostname", &Detector::setReceiverHostname)
         .def("getReceiverStreamingPort", &Detector::getReceiverStreamingPort)
         .def("setReceiverStreamingPort", &Detector::setReceiverStreamingPort)
         .def("getReceiverUDPPort", &Detector::getReceiverUDPPort)
         .def("getReceiverUDPPort2", &Detector::getReceiverUDPPort2)
+        .def("setReceiverUDPPort", &Detector::setReceiverUDPPort)
+        .def("setReceiverUDPPort2", &Detector::setReceiverUDPPort2)
+        .def("setReceiverUDPIP", &Detector::setReceiverUDPIP)
+        .def("getReceiverUDPIP", &Detector::getReceiverUDPIP)
         
         .def("getReceiverPort", &Detector::getReceiverPort)
         .def("setReceiverPort", &Detector::setReceiverPort)
@@ -207,7 +213,7 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getReceiverPartialFramesPadding", &Detector::getReceiverPartialFramesPadding)
 
         .def("getUserDetails", &Detector::getUserDetails)
-        .def("isClientAndDetecorCompatible", &Detector::isClientAndDetecorCompatible)
+        .def("isClientAndDetectorCompatible", &Detector::isClientAndDetectorCompatible)
         .def("isClientAndReceiverCompatible", &Detector::isClientAndReceiverCompatible)
         .def("getMeasuredPeriod", &Detector::getMeasuredPeriod)
         .def("getMeasuredSubPeriod", &Detector::getMeasuredSubPeriod)
@@ -276,7 +282,9 @@ py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
             py::cpp_function(&multiSlsDetector::setAcquiringFlag))
          .def_property_readonly("rx_tcpport", 
             py::cpp_function(&multiSlsDetector::getReceiverPort))          
-            
+        // .def_property_readonly("rx_udpip", 
+        //     py::cpp_function(&multiSlsDetector::getReceiverUDPIP), py::arg("det_id")=1)  
+        // .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
             ;
 
 

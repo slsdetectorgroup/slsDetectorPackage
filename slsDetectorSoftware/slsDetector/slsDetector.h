@@ -819,13 +819,13 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param receiver receiver hostname or IP address
 	 * @returns the receiver IP address from shared memory
 	 */
-    std::string setReceiver(const std::string &receiver);
+    std::string setReceiverHostname(const std::string &receiver);
 
     /**
 	 * Returns the receiver IP address\sa sharedSlsDetector
 	 * @returns the receiver IP address
 	 */
-    std::string getReceiver();
+    std::string getReceiverHostname() const;
 
     /**
 	 * Validates the format of the receiver UDP IP address and sets it \sa sharedSlsDetector
@@ -838,7 +838,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the receiver UDP IP address\sa sharedSlsDetector
 	 * @returns the receiver UDP IP address
 	 */
-    std::string getReceiverUDPIP();
+    std::string getReceiverUDPIP() const;
 
     /**
 	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
@@ -851,7 +851,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the receiver UDP MAC address\sa sharedSlsDetector
 	 * @returns the receiver UDP MAC address
 	 */
-    std::string getReceiverUDPMAC();
+    std::string getReceiverUDPMAC() const;
 
     /**
 	 * Sets the receiver UDP port\sa sharedSlsDetector
@@ -864,7 +864,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the receiver UDP port\sa sharedSlsDetector
 	 * @returns the receiver UDP port
 	 */
-    int getReceiverUDPPort();
+    int getReceiverUDPPort() const;
 
     /**
 	 * Sets the receiver UDP port 2\sa sharedSlsDetector
@@ -877,7 +877,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
 	 * @returns the receiver UDP port 2 of same interface
 	 */
-    int getReceiverUDPPort2();
+    int getReceiverUDPPort2() const;
 
     /**
 	 * Sets the client zmq port\sa sharedSlsDetector

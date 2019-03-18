@@ -57,6 +57,17 @@ std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...),
 }
 
 template <typename RT, typename... CT>
+std::vector<RT> multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...) const,
+                                             typename NonDeduced<CT>::type... Args) const {
+    std::vector<RT> result;
+    result.reserve(detectors.size());
+    for (auto &d : detectors) {
+        result.push_back((d.get()->*somefunc)(Args...));
+    }
+    return result;
+}
+
+template <typename RT, typename... CT>
 std::vector<RT>
 multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<RT>> futures;
@@ -75,7 +86,7 @@ multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), typename NonD
 //Const qualified version
 template <typename RT, typename... CT>
 std::vector<RT>
-multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args) const{
+multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...) const, typename NonDeduced<CT>::type... Args) const {
     std::vector<std::future<RT>> futures;
     for (auto &d : detectors) {
         futures.push_back(
@@ -328,7 +339,7 @@ void multiSlsDetector::initSharedMemory(bool verify) {
         multi_shm.OpenSharedMemory();
         if (verify && multi_shm()->shmversion != MULTI_SHMVERSION) {
             FILE_LOG(logERROR) << "Multi shared memory (" << multiId << ") version mismatch "
-                                                                         "(expected 0x"
+                                                                        "(expected 0x"
                                << std::hex << MULTI_SHMVERSION << " but got 0x" << multi_shm()->shmversion << std::dec;
             throw SharedMemoryError("Shared memory version mismatch!");
         }
@@ -765,8 +776,8 @@ int multiSlsDetector::setReceiverPort(int port_number, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-std::vector<int> multiSlsDetector::getReceiverPort() const{
-    return parallelCall(&slsDetector::setReceiverPort, -1);
+std::vector<int> multiSlsDetector::getReceiverPort() const {
+    return parallelCall(&slsDetector::getReceiverPort);
 }
 
 int multiSlsDetector::lockServer(int p, int detPos) {
@@ -1624,25 +1635,25 @@ std::string multiSlsDetector::getDetectorIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::setReceiver(const std::string &receiver, int detPos) {
+std::string multiSlsDetector::setReceiverHostname(const std::string &receiver, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setReceiver(receiver);
+        return detectors[detPos]->setReceiverHostname(receiver);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setReceiver, receiver);
+    auto r = parallelCall(&slsDetector::setReceiverHostname, receiver);
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiver(int detPos) {
+std::string multiSlsDetector::getReceiverHostname(int detPos) const {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getReceiver();
+        return detectors[detPos]->getReceiverHostname();
     }
 
     // multi
-    auto r = serialCall(&slsDetector::getReceiver);
+    auto r = parallelCall(&slsDetector::getReceiverHostname);
     return sls::concatenateIfDifferent(r);
 }
 
@@ -1657,7 +1668,7 @@ std::string multiSlsDetector::setReceiverUDPIP(const std::string &udpip, int det
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverUDPIP(int detPos) {
+std::string multiSlsDetector::getReceiverUDPIP(int detPos) const {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPIP();
@@ -1679,7 +1690,7 @@ std::string multiSlsDetector::setReceiverUDPMAC(const std::string &udpmac, int d
     return sls::concatenateIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverUDPMAC(int detPos) {
+std::string multiSlsDetector::getReceiverUDPMAC(int detPos) const {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPMAC();
@@ -1701,7 +1712,7 @@ int multiSlsDetector::setReceiverUDPPort(int udpport, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getReceiverUDPPort(int detPos) {
+int multiSlsDetector::getReceiverUDPPort(int detPos) const {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPPort();
@@ -1723,7 +1734,7 @@ int multiSlsDetector::setReceiverUDPPort2(int udpport, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getReceiverUDPPort2(int detPos) {
+int multiSlsDetector::getReceiverUDPPort2(int detPos) const {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverUDPPort2();

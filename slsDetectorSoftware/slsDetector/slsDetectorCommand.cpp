@@ -2796,9 +2796,9 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
   	  return myDet->getDetectorIP(detPos);
     } else if (cmd == "rx_hostname") {
     	  if (action == PUT_ACTION) {
-    		  myDet->setReceiver(args[1], detPos);
+    		  myDet->setReceiverHostname(args[1], detPos);
     	  }
-    	  return myDet->getReceiver(detPos);
+    	  return myDet->getReceiverHostname(detPos);
     } else if (cmd == "rx_udpip") {
     	  if (action == PUT_ACTION) {
     		  myDet->setReceiverUDPIP(args[1], detPos);

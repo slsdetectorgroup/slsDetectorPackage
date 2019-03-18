@@ -441,7 +441,7 @@ class Detector:
     @property
     def api_compatibility(self):
         Compatibility = namedtuple('Compatibility', ['client_detector', 'client_receiver'])
-        c = Compatibility(self._api.isClientAndDetecorCompatible(), self._api.isClientAndReceiverCompatible())
+        c = Compatibility(self._api.isClientAndDetectorCompatible(), self._api.isClientAndReceiverCompatible())
         return c
 
     @property
@@ -1022,18 +1022,15 @@ class Detector:
     def rx_hostname(self):
         """
         Receiver hostname
+        TODO! setting of individual hostnames, now done with API call
         """
-        s = self._api.getNetworkParameter('rx_hostname')
-        return element_if_equal(s)
+        return self._api.getReceiverHostname()
+
 
     @rx_hostname.setter
     @error_handling
-    def rx_hostname(self, names):
-        # if we pass a list join the list
-        if isinstance(names, list):
-            names = '+'.join(n for n in names)+'+'
-
-        self._api.setNetworkParameter('rx_hostname', names, -1)
+    def rx_hostname(self, name):
+        self._api.setReceiverHostname(name)
 
 
     @property
@@ -1042,16 +1039,16 @@ class Detector:
         """
         Receiver UDP ip
         """
-        s = self._api.getNetworkParameter('rx_udpip')
-        return element_if_equal(s)
+        return self._api.getReceiverUDPIP(-1)
+        
 
     @rx_udpip.setter
     def rx_udpip(self, ip):
         if isinstance(ip, list):
             for i, addr in enumerate(ip):
-                self._api.setNetworkParameter('rx_udpip', addr, i)
+                self._api.setReceiverUDPIP(addr, i)
         else:
-            self._api.setNetworkParameter('rx_udpip', ip, -1)
+            self._api.setReceiverUDPIP(ip, -1)
 
 
     @property

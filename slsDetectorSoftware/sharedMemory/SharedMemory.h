@@ -195,7 +195,7 @@ class SharedMemory {
     /**
      * Maximum length of name as from man pages
      */
-    static const int name_max_length = 255;
+    static const int NAME_MAX_LENGTH = 255;
 
     /**
     *Using the call operator to access the pointer
@@ -236,8 +236,8 @@ class SharedMemory {
             ss << SHM_MULTI_PREFIX << multiId << SHM_SLS_PREFIX << slsId << sEnvPath;
 
         std::string temp = ss.str();
-        if (temp.length() > name_max_length) {
-            std::string msg = "Shared memory initialization failed. " + temp + " has " + std::to_string(temp.length()) + " characters. \n" + "Maximum is " + std::to_string(name_max_length) + ". Change the environment variable " + SHM_ENV_NAME;
+        if (temp.length() > NAME_MAX_LENGTH) {
+            std::string msg = "Shared memory initialization failed. " + temp + " has " + std::to_string(temp.length()) + " characters. \n" + "Maximum is " + std::to_string(NAME_MAX_LENGTH) + ". Change the environment variable " + SHM_ENV_NAME;
             FILE_LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }

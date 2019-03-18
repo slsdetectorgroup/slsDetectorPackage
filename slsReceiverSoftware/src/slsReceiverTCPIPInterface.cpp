@@ -426,7 +426,7 @@ int slsReceiverTCPIPInterface::set_port() {
 			} catch(SocketError &e) {
 				ret = FAIL;
 				// same socket, could not bind port
-				sprintf(mess, e.what());
+				sprintf(mess, "%s", e.what());
 				FILE_LOG(logERROR) << mess;
 			} catch (...) {
 				ret = FAIL;

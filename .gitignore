@@ -10,3 +10,8 @@ bin/
 build
 docs/
 RELEASE.txt
+
+
+*.pyc
+*/__pycache__/*
+

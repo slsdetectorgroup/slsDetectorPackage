@@ -72,6 +72,23 @@ multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), typename NonD
     return result;
 }
 
+//Const qualified version
+template <typename RT, typename... CT>
+std::vector<RT>
+multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args) const{
+    std::vector<std::future<RT>> futures;
+    for (auto &d : detectors) {
+        futures.push_back(
+            std::async(std::launch::async, somefunc, d.get(), Args...));
+    }
+    std::vector<RT> result;
+    result.reserve(detectors.size());
+    for (auto &i : futures) {
+        result.push_back(i.get());
+    }
+    return result;
+}
+
 int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int &channelX,
                                      int &channelY) {
     channelX = -1;
@@ -785,6 +802,10 @@ int multiSlsDetector::setReceiverPort(int port_number, int detPos) {
 
     auto r = serialCall(&slsDetector::setReceiverPort, port_number);
     return sls::minusOneIfDifferent(r);
+}
+
+std::vector<int> multiSlsDetector::getReceiverPort() const{
+    return parallelCall(&slsDetector::setReceiverPort, -1);
 }
 
 int multiSlsDetector::lockServer(int p, int detPos) {
@@ -1896,14 +1917,14 @@ std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::setDetectorNetworkParameter(networkParameter index, int delay, int detPos) {
+int multiSlsDetector::setDetectorNetworkParameter(networkParameter index, int value, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setDetectorNetworkParameter(index, delay);
+        return detectors[detPos]->setDetectorNetworkParameter(index, value);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setDetectorNetworkParameter, index, delay);
+    auto r = parallelCall(&slsDetector::setDetectorNetworkParameter, index, value);
     return sls::minusOneIfDifferent(r);
 }
 

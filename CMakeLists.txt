@@ -36,8 +36,8 @@ option (SLS_USE_RECEIVER "Receiver" OFF)
 option (SLS_USE_GUI "GUI" OFF)
 option (SLS_USE_TESTS "TESTS" ON)
 option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
-
-option(SLS_USE_SANITIZER OFF)
+option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
+option(SLS_USE_PYTHON "Python bindings" OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -111,7 +111,9 @@ if (SLS_USE_INTEGRATION_TESTS)
     add_subdirectory(integrationTests)
 endif (SLS_USE_INTEGRATION_TESTS)
 
-
+if (SLS_USE_PYTHON)
+    add_subdirectory(python)
+endif(SLS_USE_PYTHON)
 
 
 if(SLS_MASTER_PROJECT)

@@ -1339,7 +1339,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
         FILE_LOG(logDEBUG1) << "Settings File is " << settingsfname;
 
         //read the files
-        myMod = createModule(); // readSettings also checks if create module is null
+        // myMod = createModule(); // readSettings also checks if create module is null
         if (nullptr == readSettingsFile(settingsfname, myMod, tb)) {
             if (myMod) {
                 deleteModule(myMod);
@@ -1392,7 +1392,10 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
             deleteModule(myMod2);
             return FAIL;
         }
-        myMod->iodelay = myMod1->iodelay;
+        // myMod = createModule();
+        // myMod->iodelay = myMod1->iodelay;
+
+        
 
         //interpolate  module
         myMod = interpolateTrim(myMod1, myMod2, e_eV, trim1, trim2, tb);
@@ -1404,6 +1407,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
             return FAIL;
         }
         //interpolate tau
+        myMod->iodelay = myMod1->iodelay;
         myMod->tau = linearInterpolation(e_eV, trim1, trim2, myMod1->tau, myMod2->tau);
         //printf("new tau:%d\n",tau);
 

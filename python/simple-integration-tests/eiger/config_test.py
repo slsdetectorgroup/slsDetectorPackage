@@ -6,7 +6,7 @@ Created on Tue Nov 14 16:49:07 2017
 @author: l_frojdh
 """
 
-fw_version = 22
+fw_version = 23
 detector_type = 'Eiger'
 known_hostnames = ['beb083', 'beb098']
 image_size = (512,1024) #rows, cols

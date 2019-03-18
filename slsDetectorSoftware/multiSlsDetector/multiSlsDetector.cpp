@@ -176,7 +176,7 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-std::vector<int64_t> multiSlsDetector::getDetectorNumber(){
+std::vector<int64_t> multiSlsDetector::getDetectorNumber() {
     return parallelCall(&slsDetector::getId, slsDetectorDefs::DETECTOR_SERIAL_NUMBER);
 }
 
@@ -849,7 +849,7 @@ multiSlsDetector::setSettings(detectorSettings isettings, int detPos) {
     return (detectorSettings)sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getThresholdEnergy(int detPos) {
+int multiSlsDetector::getThresholdEnergy(int detPos){
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getThresholdEnergy();
@@ -863,16 +863,17 @@ int multiSlsDetector::getThresholdEnergy(int detPos) {
     return -1;
 }
 
-int multiSlsDetector::setThresholdEnergy(int e_eV, detectorSettings isettings,
-                                         int tb, int detPos) {
+int multiSlsDetector::setThresholdEnergy(int e_eV,
+                                         detectorSettings isettings,
+                                         int tb,
+                                         int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setThresholdEnergy(e_eV, isettings, tb);
     }
 
     // multi
-    auto r =
-        parallelCall(&slsDetector::setThresholdEnergy, e_eV, isettings, tb);
+    auto r = parallelCall(&slsDetector::setThresholdEnergy, e_eV, isettings, tb);
     if (sls::allEqualWithTol(r, 200)) {
         return r.front();
     }

@@ -10,7 +10,6 @@
 
 #include "gitInfoGui.h"
 #include "multiSlsDetector.h"
-#include "slsDetector.h"
 #include "sls_detector_defs.h"
 
 #include <QFileDialog>
@@ -136,11 +135,6 @@ int qDetectorMain::DoesOutputDirExist() {
 }
 
 
-bool qDetectorMain::isCurrentlyTabDeveloper() {
-    return (tabs->currentIndex() == Developer);
-}
-
-
 void qDetectorMain::SetUpWidgetWindow() {
 
     // Layout
@@ -168,43 +162,43 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     //	creating the scroll area widgets for the tabs
     QScrollArea *scroll[NumberOfTabs];
-    for (int i = 0; i < NumberOfTabs; i++) {
+    for (int i = 0; i < NumberOfTabs; ++i) {
         scroll[i] = new QScrollArea;
         scroll[i]->setFrameShape(QFrame::NoFrame);
     }
     // setting the tab widgets to the scrollareas
-    scroll[Measurement]->setWidget(tab_measurement);
-    scroll[DataOutput]->setWidget(tab_dataoutput);
-    scroll[Plot]->setWidget(tab_plot);
-    scroll[Settings]->setWidget(tab_settings);
-    scroll[Advanced]->setWidget(tab_advanced);
-    scroll[Debugging]->setWidget(tab_debugging);
-    scroll[Developer]->setWidget(tab_developer);
+    scroll[MEASUREMENT]->setWidget(tab_measurement);
+    scroll[DATAOUTPUT]->setWidget(tab_dataoutput);
+    scroll[PLOT]->setWidget(tab_plot);
+    scroll[SETTINGS]->setWidget(tab_settings);
+    scroll[ADVANCED]->setWidget(tab_advanced);
+    scroll[DEBUGGING]->setWidget(tab_debugging);
+    scroll[DEVELOPER]->setWidget(tab_developer);
     // inserting all the tabs
-    tabs->insertTab(Measurement, scroll[Measurement], "Measurement");
-    tabs->insertTab(DataOutput, scroll[DataOutput], "Data Output");
-    tabs->insertTab(Plot, scroll[Plot], "Plot");
-    tabs->insertTab(Settings, scroll[Settings], "Settings");
-    tabs->insertTab(Advanced, scroll[Advanced], "Advanced");
-    tabs->insertTab(Debugging, scroll[Debugging], "Debugging");
-    tabs->insertTab(Developer, scroll[Developer], "Developer");
+    tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT], "Measurement");
+    tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT], "Data Output");
+    tabs->insertTab(PLOT, scroll[PLOT], "Plot");
+    tabs->insertTab(SETTINGS, scroll[SETTINGS], "Settings");
+    tabs->insertTab(ADVANCED, scroll[ADVANCED], "Advanced");
+    tabs->insertTab(DEBUGGING, scroll[DEBUGGING], "Debugging");
+    tabs->insertTab(DEVELOPER, scroll[DEVELOPER], "Developer");
     //no scroll buttons this way
-    tabs->insertTab(Messages, tab_messages, "Messages");
+    tabs->insertTab(MESSAGES, tab_messages, "Messages");
 
     //swap tabs so that messages is last tab
-    tabs->tabBar()->moveTab(tabs->indexOf(tab_measurement), Measurement);
-    tabs->tabBar()->moveTab(tabs->indexOf(tab_settings), Settings);
-    tabs->tabBar()->moveTab(tabs->indexOf(tab_dataoutput), DataOutput);
-    tabs->tabBar()->moveTab(tabs->indexOf(tab_plot), Plot);
-    tabs->tabBar()->moveTab(tabs->indexOf(tab_advanced), Advanced);
-    tabs->tabBar()->moveTab(tabs->indexOf(tab_debugging), Debugging);
-    tabs->tabBar()->moveTab(tabs->indexOf(tab_developer), Developer);
-    tabs->tabBar()->moveTab(tabs->indexOf(tab_messages), Messages);
-    tabs->setCurrentIndex(Measurement);
+    tabs->tabBar()->moveTab(tabs->indexOf(tab_measurement), MEASUREMENT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tab_settings), SETTINGS);
+    tabs->tabBar()->moveTab(tabs->indexOf(tab_dataoutput), DATAOUTPUT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tab_plot), PLOT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tab_advanced), ADVANCED);
+    tabs->tabBar()->moveTab(tabs->indexOf(tab_debugging), DEBUGGING);
+    tabs->tabBar()->moveTab(tabs->indexOf(tab_developer), DEVELOPER);
+    tabs->tabBar()->moveTab(tabs->indexOf(tab_messages), MESSAGES);
+    tabs->setCurrentIndex(MEASUREMENT);
 
     //other tab properties
     // Default tab color
-    defaultTabColor = tabs->tabBar()->tabTextColor(DataOutput);
+    defaultTabColor = tabs->tabBar()->tabTextColor(DATAOUTPUT);
     //Set the current tab(measurement) to blue as it is the current one
     tabs->tabBar()->setTabTextColor(0, QColor(0, 0, 200, 255));
     // increase the width so it uses all the empty space for the tab titles
@@ -212,9 +206,9 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     // mode setup - to set up the tabs initially as disabled, not in form so done here
     FILE_LOG(logINFO) << "Dockable Mode: 0, Debug Mode: 0, Expert Mode: 0, Developer Mode: " << isDeveloper;
-    tabs->setTabEnabled(Debugging, false);
-    tabs->setTabEnabled(Advanced, false);
-    tabs->setTabEnabled(Developer, isDeveloper);
+    tabs->setTabEnabled(DEBUGGING, false);
+    tabs->setTabEnabled(ADVANCED, false);
+    tabs->setTabEnabled(DEVELOPER, isDeveloper);
     actionLoadTrimbits->setVisible(false);
     actionSaveTrimbits->setVisible(false);
 
@@ -277,7 +271,6 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
         actionSaveTrimbits->setText("Save Settings");
         break;
     case MOENCH:
-    case CHIPTESTBOARD:
     	break;
     default:
         std::string detName = myDet->getDetectorTypeAsString();
@@ -373,7 +366,7 @@ void qDetectorMain::EnableModes(QAction *action) {
     //Set DebugMode
     else if (action == actionDebug) {
         enable = actionDebug->isChecked();
-        tabs->setTabEnabled(Debugging, enable);
+        tabs->setTabEnabled(DEBUGGING, enable);
         FILE_LOG(logINFO) << "Debug Mode: " << slsDetectorDefs::stringEnable(enable);
 
     }
@@ -382,13 +375,12 @@ void qDetectorMain::EnableModes(QAction *action) {
     else if (action == actionExpert) {
         enable = actionExpert->isChecked();
 
-        tabs->setTabEnabled(Advanced, enable);
-        // moench and ctb don't have settings
-        if (detType != MOENCH && detType != CHIPTESTBOARD) {
+        tabs->setTabEnabled(ADVANCED, enable);
+        // moench don't have settings
+        if (detType != MOENCH) {
         	actionLoadTrimbits->setVisible(enable);
         	actionSaveTrimbits->setVisible(enable);
         }
-        tab_measurement->SetExpertMode(enable);
         tab_settings->SetExpertMode(enable);
         FILE_LOG(logINFO) << "Expert Mode: " << slsDetectorDefs::stringEnable(enable);
     }
@@ -635,35 +627,35 @@ void qDetectorMain::Refresh(int index) {
     qDefs::checkErrorMessage(myDet, "qDetectorMain::Refresh");
 
     if (!tabs->isTabEnabled(index))
-        tabs->setCurrentIndex((index++) < (tabs->count() - 1) ? index : Measurement);
+        tabs->setCurrentIndex((index++) < (tabs->count() - 1) ? index : MEASUREMENT);
     else {
         switch (tabs->currentIndex()) {
-        case Measurement:
+        case MEASUREMENT:
             tab_measurement->Refresh();
             break;
-        case Settings:
+        case SETTINGS:
             tab_settings->Refresh();
             break;
-        case DataOutput:
+        case DATAOUTPUT:
             tab_dataoutput->Refresh();
             break;
-        case Plot:
+        case PLOT:
             tab_plot->Refresh();
             break;
-        case Advanced:
+        case ADVANCED:
             tab_advanced->Refresh();
             break;
-        case Debugging:
+        case DEBUGGING:
             tab_debugging->Refresh();
             break;
-        case Developer:
+        case DEVELOPER:
             tab_developer->Refresh();
             break;
-        case Messages:
+        case MESSAGES:
             break;
         }
     }
-    for (int i = 0; i < NumberOfTabs; i++)
+    for (int i = 0; i < NumberOfTabs; ++i)
         tabs->tabBar()->setTabTextColor(i, defaultTabColor);
     tabs->tabBar()->setTabTextColor(index, QColor(0, 0, 200, 255));
 }
@@ -708,13 +700,13 @@ void qDetectorMain::EnableTabs() {
 	FILE_LOG(logDEBUG1) << "Entering EnableTabs function";
 
     bool enable;
-    enable = !(tabs->isTabEnabled(DataOutput));
+    enable = !(tabs->isTabEnabled(DATAOUTPUT));
 
     // or use the Enable/Disable button
     // normal tabs
-    tabs->setTabEnabled(DataOutput, enable);
-    tabs->setTabEnabled(Settings, enable);
-    tabs->setTabEnabled(Messages, enable);
+    tabs->setTabEnabled(DATAOUTPUT, enable);
+    tabs->setTabEnabled(SETTINGS, enable);
+    tabs->setTabEnabled(MESSAGES, enable);
 
     //actions check
     actionOpenSetup->setEnabled(enable);
@@ -726,11 +718,11 @@ void qDetectorMain::EnableTabs() {
     actionExpert->setEnabled(enable);
 
     // special tabs
-    tabs->setTabEnabled(Debugging, enable && (actionDebug->isChecked()));
-    tabs->setTabEnabled(Developer, enable && isDeveloper);
+    tabs->setTabEnabled(DEBUGGING, enable && (actionDebug->isChecked()));
+    tabs->setTabEnabled(DEVELOPER, enable && isDeveloper);
     //expert
-    bool expertTab = enable && (actionExpert->isChecked()) && (detType != MOENCH && detType != CHIPTESTBOARD);
-    tabs->setTabEnabled(Advanced, expertTab);
+    bool expertTab = enable && (actionExpert->isChecked()) && (detType != MOENCH);
+    tabs->setTabEnabled(ADVANCED, expertTab);
     actionLoadTrimbits->setVisible(expertTab);
     actionSaveTrimbits->setVisible(expertTab);
 
@@ -753,9 +745,6 @@ void qDetectorMain::EnableTabs() {
 
         tab_plot->Refresh();
 
-        //stop the adc timer in gotthard
-        if (isDeveloper)
-            tab_developer->StopADCTimer();
         //set the plot type first(acccss shared memory)
         tab_plot->SetScanArgument();
         //sets running to true

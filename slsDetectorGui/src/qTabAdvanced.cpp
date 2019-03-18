@@ -1,10 +1,7 @@
 #include "qTabAdvanced.h"
 #include "qDrawPlot.h"
 
-#include "slsDetector.h"
 #include "multiSlsDetector.h"
-
-#include <QFileDialog>
 
 #include<iostream>
 
@@ -54,38 +51,38 @@ void qTabAdvanced::SetupWidgetWindow(){
 	//network
 
 	//add detectors
-	for(int i=0;i<myDet->getNumberOfDetectors();i++)
+	for(int i=0;i<myDet->getNumberOfDetectors(); ++i)
 		comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
 
 	comboDetector->setCurrentIndex(0);
-	int module_id = comboDetector->currentIndex();
+	int moduleId = comboDetector->currentIndex();
 
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetupWidgetWindow");
 	FILE_LOG(logDEBUG) << "Getting ports";
-	spinControlPort->setValue(myDet->setControlPort(-1, module_id));
-	spinStopPort->setValue(myDet->setStopPort(-1, module_id));
-	spinTCPPort->setValue(myDet->setReceiverPort(-1, module_id));
-	spinUDPPort->setValue(myDet->getReceiverUDPPort(module_id));
-	spinZmqPort->setValue(myDet->getClientStreamingPort(module_id));
-	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(module_id));
+	spinControlPort->setValue(myDet->setControlPort(-1, moduleId));
+	spinStopPort->setValue(myDet->setStopPort(-1, moduleId));
+	spinTCPPort->setValue(myDet->setReceiverPort(-1, moduleId));
+	spinUDPPort->setValue(myDet->getReceiverUDPPort(moduleId));
+	spinZmqPort->setValue(myDet->getClientStreamingPort(moduleId));
+	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(moduleId));
 
 	FILE_LOG(logDEBUG) << "Getting network information";
-	dispIP->setText(myDet->getDetectorIP(module_id).c_str());
-	dispMAC->setText(myDet->getDetectorMAC(module_id).c_str());
-	dispRxrHostname->setText(myDet->getReceiver(module_id).c_str());
-	dispUDPIP->setText(myDet->getReceiverUDPIP(module_id).c_str());
-	dispUDPMAC->setText(myDet->getReceiverUDPMAC(module_id).c_str());
-	dispZMQIP->setText(myDet->getClientStreamingIP(module_id).c_str());
-	dispZMQIP2->setText(myDet->getReceiverStreamingIP(module_id).c_str());
+	dispIP->setText(myDet->getDetectorIP(moduleId).c_str());
+	dispMAC->setText(myDet->getDetectorMAC(moduleId).c_str());
+	dispRxrHostname->setText(myDet->getReceiver(moduleId).c_str());
+	dispUDPIP->setText(myDet->getReceiverUDPIP(moduleId).c_str());
+	dispUDPMAC->setText(myDet->getReceiverUDPMAC(moduleId).c_str());
+	dispZMQIP->setText(myDet->getClientStreamingIP(moduleId).c_str());
+	dispZMQIP2->setText(myDet->getReceiverStreamingIP(moduleId).c_str());
 
 	//check if its online and set it to red if offline
 	FILE_LOG(logDEBUG) << "Getting online status";
-	if(myDet->setOnline(module_id)==slsDetectorDefs::ONLINE_FLAG)
-		myDet->checkOnline(module_id);
-	if(myDet->setReceiverOnline(module_id)==slsDetectorDefs::ONLINE_FLAG)
-		myDet->checkReceiverOnline(module_id);
-	comboOnline->setCurrentIndex(myDet->setOnline(module_id));
-	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(module_id));
+	if(myDet->setOnline(moduleId)==slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkOnline(moduleId);
+	if(myDet->setReceiverOnline(moduleId)==slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkReceiverOnline(moduleId);
+	comboOnline->setCurrentIndex(myDet->setOnline(moduleId));
+	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(moduleId));
 	if(!comboOnline->currentIndex()){
 		comboOnline->setToolTip(detOnlineTip + errOnlineTip);
 		lblOnline->setToolTip(detOnlineTip + errOnlineTip);
@@ -126,7 +123,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 	Initialization();
 
-	qDefs::checkErrorMessage(myDet, module_id,"qTabAdvanced::SetupWidgetWindow");
+	qDefs::checkErrorMessage(myDet, moduleId,"qTabAdvanced::SetupWidgetWindow");
 
 }
 
@@ -308,11 +305,11 @@ void qTabAdvanced::SetNetworkParameters(){
 	disconnect(dispUDPIP,		SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 	disconnect(dispUDPMAC,		SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 
-	auto module_id = comboDetector->currentIndex();
-	dispIP->setText(QString(myDet->setDetectorIP(dispIP->text().toAscii().constData(), module_id).c_str()));
-	dispMAC->setText(QString(myDet->setDetectorMAC(dispMAC->text().toAscii().constData(), module_id).c_str()));
-	dispUDPIP->setText(QString(myDet->setReceiverUDPIP(dispUDPIP->text().toAscii().constData(), module_id).c_str()));
-	dispUDPMAC->setText(QString(myDet->setReceiverUDPMAC(dispUDPMAC->text().toAscii().constData(), module_id).c_str()));
+	auto moduleId = comboDetector->currentIndex();
+	dispIP->setText(QString(myDet->setDetectorIP(dispIP->text().toAscii().constData(), moduleId).c_str()));
+	dispMAC->setText(QString(myDet->setDetectorMAC(dispMAC->text().toAscii().constData(), moduleId).c_str()));
+	dispUDPIP->setText(QString(myDet->setReceiverUDPIP(dispUDPIP->text().toAscii().constData(), moduleId).c_str()));
+	dispUDPMAC->setText(QString(myDet->setReceiverUDPMAC(dispUDPMAC->text().toAscii().constData(), moduleId).c_str()));
 	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetNetworkParameters");
 
 	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
@@ -326,9 +323,9 @@ void qTabAdvanced::SetClientZMQIP(){
 	FILE_LOG(logINFO) << "Setting Client ZMQ IP";
 	disconnect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
 
-	auto module_id = comboDetector->currentIndex();
-	myDet->setClientDataStreamingInIP(dispZMQIP->text().toAscii().constData(), module_id);
-	dispZMQIP->setText(QString(myDet->getClientStreamingIP(module_id).c_str()));
+	auto moduleId = comboDetector->currentIndex();
+	myDet->setClientDataStreamingInIP(dispZMQIP->text().toAscii().constData(), moduleId);
+	dispZMQIP->setText(QString(myDet->getClientStreamingIP(moduleId).c_str()));
 	myDet->enableDataStreamingToClient(false);
 	myDet->enableDataStreamingToClient(true);
 	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetClientZMQIP");
@@ -341,9 +338,9 @@ void qTabAdvanced::SetReceiverZMQIP(){
 	FILE_LOG(logINFO) << "Setting Receiver ZMQ IP";
 	disconnect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 
-	auto module_id = comboDetector->currentIndex();
-	myDet->setReceiverDataStreamingOutIP(dispZMQIP2->text().toAscii().constData(), module_id);
-	dispZMQIP2->setText(QString(myDet->getReceiverStreamingIP(module_id).c_str()));
+	auto moduleId = comboDetector->currentIndex();
+	myDet->setReceiverDataStreamingOutIP(dispZMQIP2->text().toAscii().constData(), moduleId);
+	dispZMQIP2->setText(QString(myDet->getReceiverStreamingIP(moduleId).c_str()));
 	myDet->enableDataStreamingFromReceiver(false);
 	myDet->enableDataStreamingFromReceiver(true);
 	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(),"qTabAdvanced::SetReceiverZMQIP");
@@ -355,10 +352,10 @@ void qTabAdvanced::SetReceiverZMQIP(){
 void qTabAdvanced::SetReceiver(){
 	FILE_LOG(logINFO) << "Setting Receiver";
 	auto outdir = myDet->getFilePath();
-	auto module_id = comboDetector->currentIndex();
-	dispRxrHostname->setText(QString(myDet->setReceiver(dispRxrHostname->text().toAscii().constData(), module_id).c_str()));
+	auto moduleId = comboDetector->currentIndex();
+	dispRxrHostname->setText(QString(myDet->setReceiver(dispRxrHostname->text().toAscii().constData(), moduleId).c_str()));
 	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetReceiver");
-	myDet->setFilePath(outdir, module_id);
+	myDet->setFilePath(outdir, moduleId);
 	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetReceiver");
 	Refresh();
 }
@@ -572,31 +569,31 @@ void qTabAdvanced::clearROIinDetector(){
 void qTabAdvanced::SetDetector(int index){
 	FILE_LOG(logINFO) << "in SetDetector: " << index;
 	// det = myDet->getSlsDetector(comboDetector->currentIndex());
-	auto module_id = comboDetector->currentIndex();
+	auto moduleId = comboDetector->currentIndex();
 
-	spinControlPort->setValue(myDet->setControlPort(-1, module_id));
-	spinStopPort->setValue(myDet->setStopPort(-1, module_id));
-	spinTCPPort->setValue(myDet->setReceiverPort(-1, module_id));
-	spinUDPPort->setValue(myDet->getReceiverUDPPort(module_id));
-	spinZmqPort->setValue(myDet->getClientStreamingPort(module_id));
-	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(module_id));
+	spinControlPort->setValue(myDet->setControlPort(-1, moduleId));
+	spinStopPort->setValue(myDet->setStopPort(-1, moduleId));
+	spinTCPPort->setValue(myDet->setReceiverPort(-1, moduleId));
+	spinUDPPort->setValue(myDet->getReceiverUDPPort(moduleId));
+	spinZmqPort->setValue(myDet->getClientStreamingPort(moduleId));
+	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(moduleId));
 
-	dispIP->setText(myDet->getDetectorIP(module_id).c_str());
-	dispMAC->setText(myDet->getDetectorMAC(module_id).c_str());
-	dispRxrHostname->setText(myDet->getReceiver(module_id).c_str());
-	dispUDPIP->setText(myDet->getReceiverUDPIP(module_id).c_str());
-	dispUDPMAC->setText(myDet->getReceiverUDPMAC(module_id).c_str());
-	dispZMQIP->setText(myDet->getClientStreamingIP(module_id).c_str());
-	dispZMQIP2->setText(myDet->getReceiverStreamingIP(module_id).c_str());
+	dispIP->setText(myDet->getDetectorIP(moduleId).c_str());
+	dispMAC->setText(myDet->getDetectorMAC(moduleId).c_str());
+	dispRxrHostname->setText(myDet->getReceiver(moduleId).c_str());
+	dispUDPIP->setText(myDet->getReceiverUDPIP(moduleId).c_str());
+	dispUDPMAC->setText(myDet->getReceiverUDPMAC(moduleId).c_str());
+	dispZMQIP->setText(myDet->getClientStreamingIP(moduleId).c_str());
+	dispZMQIP2->setText(myDet->getReceiverStreamingIP(moduleId).c_str());
 
 
 	//check if its online and set it to red if offline
-	if(myDet->getOnline(module_id) == slsDetectorDefs::ONLINE_FLAG)
-		myDet->checkOnline(module_id);
-	if(myDet->getReceiverOnline(module_id)==slsDetectorDefs::ONLINE_FLAG)
-		myDet->checkReceiverOnline(module_id);
-	comboOnline->setCurrentIndex(myDet->getOnline(module_id));
-	comboRxrOnline->setCurrentIndex(myDet->getReceiverOnline(module_id));
+	if(myDet->getOnline(moduleId) == slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkOnline(moduleId);
+	if(myDet->getReceiverOnline(moduleId)==slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkReceiverOnline(moduleId);
+	comboOnline->setCurrentIndex(myDet->getOnline(moduleId));
+	comboRxrOnline->setCurrentIndex(myDet->getReceiverOnline(moduleId));
 	//highlight in red if detector or receiver is offline
 	if(!comboOnline->currentIndex()){
 		comboOnline->setToolTip(detOnlineTip + errOnlineTip);
@@ -728,7 +725,7 @@ void qTabAdvanced::Refresh(){
 	FILE_LOG(logDEBUG)  << endl << "**Updating Advanced Tab";
 
 	//network
-	auto module_id = comboDetector->currentIndex();
+	auto moduleId = comboDetector->currentIndex();
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::Refresh");
 
 
@@ -740,11 +737,11 @@ void qTabAdvanced::Refresh(){
 	disconnect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
 	//so that updated status
-	if(myDet->getOnline(module_id)==slsDetectorDefs::ONLINE_FLAG)
-		myDet->checkOnline(module_id);
-	comboOnline->setCurrentIndex(myDet->getOnline(module_id));
-	spinControlPort->setValue(myDet->setControlPort(-1, module_id));
-	spinStopPort->setValue(myDet->setStopPort(-1, module_id));
+	if(myDet->getOnline(moduleId)==slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkOnline(moduleId);
+	comboOnline->setCurrentIndex(myDet->getOnline(moduleId));
+	spinControlPort->setValue(myDet->setControlPort(-1, moduleId));
+	spinStopPort->setValue(myDet->setStopPort(-1, moduleId));
 
 	//connect
 	connect(spinControlPort,	SIGNAL(valueChanged(int)),			this,	SLOT(SetControlPort(int)));
@@ -765,22 +762,22 @@ void qTabAdvanced::Refresh(){
 	disconnect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 	disconnect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
 
-	dispIP->setText(myDet->getDetectorIP(module_id).c_str());
-	dispMAC->setText(myDet->getDetectorMAC(module_id).c_str());
+	dispIP->setText(myDet->getDetectorIP(moduleId).c_str());
+	dispMAC->setText(myDet->getDetectorMAC(moduleId).c_str());
 
 	//so that updated status
-	if(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG, module_id)==slsDetectorDefs::ONLINE_FLAG)
-		myDet->checkReceiverOnline(module_id);
-	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG, module_id));
+	if(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG, moduleId)==slsDetectorDefs::ONLINE_FLAG)
+		myDet->checkReceiverOnline(moduleId);
+	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG, moduleId));
 
-	dispRxrHostname->setText(myDet->getReceiver(module_id).c_str());
-	spinTCPPort->setValue(myDet->setReceiverPort(-1, module_id));
-	spinUDPPort->setValue(myDet->getReceiverUDPPort(module_id));
-	spinZmqPort->setValue(myDet->getClientStreamingPort(module_id));
-	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(module_id));
+	dispRxrHostname->setText(myDet->getReceiver(moduleId).c_str());
+	spinTCPPort->setValue(myDet->setReceiverPort(-1, moduleId));
+	spinUDPPort->setValue(myDet->getReceiverUDPPort(moduleId));
+	spinZmqPort->setValue(myDet->getClientStreamingPort(moduleId));
+	spinZmqPort2->setValue(myDet->getReceiverStreamingPort(moduleId));
 
-	dispUDPIP->setText(myDet->getReceiverUDPIP(module_id).c_str());
-	dispUDPMAC->setText(myDet->getReceiverUDPMAC(module_id).c_str());
+	dispUDPIP->setText(myDet->getReceiverUDPIP(moduleId).c_str());
+	dispUDPMAC->setText(myDet->getReceiverUDPMAC(moduleId).c_str());
 
 	//connect
 	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
@@ -796,11 +793,11 @@ void qTabAdvanced::Refresh(){
 
 	// zmq parameters
 	disconnect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
-	dispZMQIP->setText(myDet->getClientStreamingIP(module_id).c_str());
+	dispZMQIP->setText(myDet->getClientStreamingIP(moduleId).c_str());
 	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, SLOT(SetClientZMQIP()));
 
 	disconnect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
-	dispZMQIP2->setText(myDet->getReceiverStreamingIP(module_id).c_str());
+	dispZMQIP2->setText(myDet->getReceiverStreamingIP(moduleId).c_str());
 	connect(dispZMQIP2,			SIGNAL(editingFinished()),	this, SLOT(SetReceiverZMQIP()));
 
 	//highlight in red if detector or receiver is offline
@@ -874,6 +871,6 @@ void qTabAdvanced::Refresh(){
 
 	FILE_LOG(logDEBUG)  << "**Updated Advanced Tab";
 
-	qDefs::checkErrorMessage(myDet, module_id, "qTabAdvanced::Refresh");
+	qDefs::checkErrorMessage(myDet, moduleId, "qTabAdvanced::Refresh");
 }
 

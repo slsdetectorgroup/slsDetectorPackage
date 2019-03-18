@@ -214,6 +214,8 @@ public:
 	 * */
 	static std::string checkErrorMessage(multiSlsDetector*& myDet, int modIndex, std::string title = "Main", bool show = true){
 
+		if (modIndex == -1)
+			return checkErrorMessage(myDet, title);
 
 		int errorLevel= (int)WARNING;
 		// string retval="";

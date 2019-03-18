@@ -477,7 +477,7 @@ int set_external_communication_mode(int file_des) {
 		case AUTO_TIMING:
 		case TRIGGER_EXPOSURE:
 #ifdef EIGERD
-		case GATE_FIX_NUMBER:
+		case GATED:
 		case BURST_TRIGGER:
 #endif
 			setTiming(arg);
@@ -1536,7 +1536,9 @@ int set_timer(int file_des) {
 	    case ACQUISITION_TIME:
 	    case FRAME_PERIOD:
 	    case CYCLES_NUMBER:
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	    case SAMPLES:
+#endif
 #ifndef EIGERD
 	    case DELAY_AFTER_TRIGGER:
 #endif

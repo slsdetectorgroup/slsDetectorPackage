@@ -8,7 +8,6 @@
 #include "qTabSettings.h"
 // Project Class Headers
 #include "multiSlsDetector.h"
-#include "slsDetector.h"
 // C++ Include Headers
 #include <cmath>
 #include <iostream>
@@ -17,7 +16,7 @@
 
 qTabSettings::qTabSettings(QWidget *parent, multiSlsDetector *&detector) : QWidget(parent), myDet(detector), expertMode(false) {
 
-    for (int i = 0; i < NumSettings; i++)
+    for (int i = 0; i < NumSettings; ++i)
         item[i] = 0;
     setupUi(this);
     SetupWidgetWindow();
@@ -37,7 +36,7 @@ void qTabSettings::SetupWidgetWindow() {
     detType = myDet->getDetectorTypeAsEnum();
 
     // Settings
-    if (detType != slsDetectorDefs::CHIPTESTBOARD) {
+    if (detType != slsDetectorDefs::MOENCH) {
         SetupDetectorSettings();
     } else
         comboSettings->setEnabled(false);
@@ -118,7 +117,7 @@ void qTabSettings::SetupDetectorSettings() {
     // To be able to index items on a combo box
     model = qobject_cast<QStandardItemModel *>(comboSettings->model());
     if (model) {
-        for (int i = 0; i < NumSettings; i++) {
+        for (int i = 0; i < NumSettings; ++i) {
             index[i] = model->index(i, comboSettings->modelColumn(), comboSettings->rootModelIndex());
             item[i] = model->itemFromIndex(index[i]);
         }
@@ -216,7 +215,7 @@ void qTabSettings::SetupDetectorSettings() {
 
 void qTabSettings::Initialization() {
     // Settings
-    if (detType != slsDetectorDefs::CHIPTESTBOARD)
+    if (detType != slsDetectorDefs::MOENCH)
         connect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(setSettings(int)));
     // Dynamic Range
     connect(comboDynamicRange, SIGNAL(activated(int)), this, SLOT(SetDynamicRange(int)));
@@ -319,7 +318,7 @@ void qTabSettings::Refresh() {
     std::cout << "\n**Updating Settings Tab\n";
 #endif
 
-    if (detType != slsDetectorDefs::CHIPTESTBOARD)
+    if (detType != slsDetectorDefs::MOENCH)
         disconnect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(setSettings(int)));
     disconnect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetEnergy()));
 
@@ -327,7 +326,7 @@ void qTabSettings::Refresh() {
     GetDynamicRange();
 
     // Settings
-    if (detType != slsDetectorDefs::CHIPTESTBOARD) {
+    if (detType != slsDetectorDefs::MOENCH) {
 #ifdef VERBOSE
         std::cout << "Getting settings\n";
 #endif
@@ -357,7 +356,7 @@ void qTabSettings::Refresh() {
         }
     }
 
-    if (detType != slsDetectorDefs::CHIPTESTBOARD)
+    if (detType != slsDetectorDefs::MOENCH)
         connect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(setSettings(int)));
     connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetEnergy()));
 

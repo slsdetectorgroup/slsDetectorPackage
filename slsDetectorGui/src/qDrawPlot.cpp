@@ -37,7 +37,7 @@ qDrawPlot::qDrawPlot(QWidget *parent, multiSlsDetector *&detector) : QWidget(par
 qDrawPlot::~qDrawPlot() {
     // Clear plot
     Clear1DPlot();
-    for (QVector<SlsQtH1D *>::iterator h = plot1D_hists.begin(); h != plot1D_hists.end(); h++)
+    for (QVector<SlsQtH1D *>::iterator h = plot1D_hists.begin(); h != plot1D_hists.end(); ++h)
         delete *h;
     plot1D_hists.clear();
     if (lastImageArray)
@@ -49,7 +49,7 @@ qDrawPlot::~qDrawPlot() {
     StartOrStopThread(0);
     delete myDet;
     myDet = 0;
-    for (int i = 0; i < MAXCloneWindows; i++)
+    for (int i = 0; i < MAXCloneWindows; ++i)
         if (winClone[i]) {
             delete winClone[i];
             winClone[i] = NULL;
@@ -72,7 +72,6 @@ void qDrawPlot::SetupWidgetWindow() {
     case slsDetectorDefs::EIGER:
     case slsDetectorDefs::MOENCH:
     case slsDetectorDefs::JUNGFRAU:
-    case slsDetectorDefs::CHIPTESTBOARD:
         originally2D = true;
         break;
     default:
@@ -104,7 +103,7 @@ void qDrawPlot::SetupWidgetWindow() {
     imageZAxisTitle = "Intensity";
     histXAxisTitle = "Channel Number";
     histYAxisTitle = "Counts";
-    for (int i = 0; i < MAX_1DPLOTS; i++) {
+    for (int i = 0; i < MAX_1DPLOTS; ++i) {
         histTitle[i] = "";
         //char temp_title[2000];
         //sprintf(temp_title,"Frame -%d",i);
@@ -117,7 +116,7 @@ void qDrawPlot::SetupWidgetWindow() {
 
     nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
     nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-    if (detType == slsDetectorDefs::CHIPTESTBOARD) {
+    if (detType == slsDetectorDefs::MOENCH) {
         npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES, -1) * 2) / 25; // for moench 03
         nPixelsX = npixelsx_jctb;
         nPixelsY = npixelsy_jctb;
@@ -138,7 +137,7 @@ void qDrawPlot::SetupWidgetWindow() {
     nHists = 0;
     histNBins = 0;
     histXAxis = 0;
-    for (int i = 0; i < MAX_1DPLOTS; i++)
+    for (int i = 0; i < MAX_1DPLOTS; ++i)
         histYAxis[i] = 0;
     histXAngleAxis = 0;
     histYAngleAxis = 0;
@@ -233,7 +232,7 @@ void qDrawPlot::SetupWidgetWindow() {
     //widget related initialization
 
     // clone
-    for (int i = 0; i < MAXCloneWindows; i++)
+    for (int i = 0; i < MAXCloneWindows; ++i)
         winClone[i] = 0;
 
     // Setting up window
@@ -305,7 +304,7 @@ void qDrawPlot::SetupWidgetWindow() {
     if (histYAxis[0])
         delete[] histYAxis[0];
     histYAxis[0] = new double[nPixelsX];
-    for (unsigned int px = 0; px < nPixelsX; px++) {
+    for (unsigned int px = 0; px < nPixelsX; ++px) {
         histXAxis[px] = px;
         histYAxis[0][px] = 0;
     }
@@ -321,8 +320,8 @@ void qDrawPlot::SetupWidgetWindow() {
     plot2D = new SlsQt2DPlotLayout(boxPlot);
     //default plot
     lastImageArray = new double[nPixelsY * nPixelsX];
-    for (unsigned int px = 0; px < nPixelsX; px++)
-        for (unsigned int py = 0; py < nPixelsY; py++)
+    for (unsigned int px = 0; px < nPixelsX; ++px)
+        for (unsigned int py = 0; py < nPixelsY; ++py)
             lastImageArray[py * nPixelsX + px] = sqrt(pow(0 + 1, 2) * pow(double(px) - nPixelsX / 2, 2) / pow(nPixelsX / 2, 2) / pow(1 + 1, 2) + pow(double(py) - nPixelsY / 2, 2) / pow(nPixelsY / 2, 2)) / sqrt(2);
     plot2D->setFont(QFont("Sans Serif", 9, QFont::Normal));
     plot2D->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, startPixel, endPixel, lastImageArray);
@@ -342,8 +341,8 @@ void qDrawPlot::SetupWidgetWindow() {
     //gainplot
     gainplot2D = new SlsQt2DPlotLayout(boxPlot);
     gainImageArray = new double[nPixelsY * nPixelsX];
-    for (unsigned int px = 0; px < nPixelsX; px++)
-        for (unsigned int py = 0; py < nPixelsY; py++)
+    for (unsigned int px = 0; px < nPixelsX; ++px)
+        for (unsigned int py = 0; py < nPixelsY; ++py)
             gainImageArray[py * nPixelsX + px] = sqrt(pow(0 + 1, 2) * pow(double(px) - nPixelsX / 2, 2) / pow(nPixelsX / 2, 2) / pow(1 + 1, 2) + pow(double(py) - nPixelsY / 2, 2) / pow(nPixelsY / 2, 2)) / sqrt(2);
     gainplot2D->setFont(QFont("Sans Serif", 9, QFont::Normal));
     gainplot2D->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, startPixel, endPixel, gainImageArray);
@@ -569,7 +568,7 @@ bool qDrawPlot::StartOrStopThread(bool start) {
 // 	minPixelsY = 0;
 // 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 // 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-// 	if (detType == slsDetectorDefs::CHIPTESTBOARD) {
+// 	if (detType == slsDetectorDefs::MOENCH) {
 // 		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES, -1) * 2)/25; // for moench 03
 // 		nPixelsX = npixelsx_jctb;
 // 		nPixelsY = npixelsy_jctb;
@@ -616,14 +615,14 @@ bool qDrawPlot::StartOrStopThread(bool start) {
 // 	if(gainImageArray) delete [] gainImageArray; gainImageArray = new double[nPixelsY*nPixelsX];
 
 // 	//initializing 1d x axis
-// 	for(unsigned int px=0;px<nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
+// 	for(unsigned int px=0;px<nPixelsX;++px)	histXAxis[px]  = px;/*+10;*/
 
 // 	//initializing 2d array
 
 // 	memset(lastImageArray,0,nPixelsY *nPixelsX * sizeof(double));
 // 	memset(gainImageArray,0,nPixelsY *nPixelsX * sizeof(double));
-// 	/*for(int py=0;py<(int)nPixelsY;py++)
-// 		for(int px=0;px<(int)nPixelsX;px++) {
+// 	/*for(int py=0;py<(int)nPixelsY;++py)
+// 		for(int px=0;px<(int)nPixelsX;++px) {
 // 			lastImageArray[py*nPixelsX+px] = 0;
 // 			gainImageArray[py*nPixelsX+px] = 0;
 // 		}
@@ -645,7 +644,7 @@ bool qDrawPlot::StartOrStopThread(bool start) {
 
 // 		//print values
 // 		std::cout << "Histogram Intervals:" <<'\n';
-// 		for(int j=0;j<histogramSamples.size();j++){
+// 		for(int j=0;j<histogramSamples.size();++j){
 // 			std::cout<<j<<":\tmin:"<<histogramSamples[j].interval.minValue()<<""
 // 					"\t\tmax:"<<histogramSamples[j].interval.maxValue()<<"\t\tvalue:"<<histogramSamples[j].value<<endl;
 // 		}
@@ -681,8 +680,8 @@ void qDrawPlot::SetupMeasurement() {
     memset(lastImageArray, 0, nPixelsY * nPixelsX * sizeof(double));
     memset(gainImageArray, 0, nPixelsY * nPixelsX * sizeof(double));
     /*
-	for(int py=0;py<(int)nPixelsY;py++)
-		for(int px=0;px<(int)nPixelsX;px++) {
+	for(int py=0;py<(int)nPixelsY;++py)
+		for(int px=0;px<(int)nPixelsX;++px) {
 			lastImageArray[py*nPixelsX+px] = 0;
 			gainImageArray[py*nPixelsX+px] = 0;
 			}
@@ -895,7 +894,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
             //title
             imageTitle = temp_title;
             //copy data
-            for (unsigned int px = 0; px < nPixelsX; px++)
+            for (unsigned int px = 0; px < nPixelsX; ++px)
                 lastImageArray[currentScanDivLevel * nPixelsX + px] += data->values[px];
             plotRequired = true;
             UnlockLastImageArray();
@@ -926,7 +925,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
             // //title
             // imageTitle = temp_title;
             // //copy data
-            // for (unsigned int px = 0; px < nPixelsX; px++)
+            // for (unsigned int px = 0; px < nPixelsX; ++px)
             //     lastImageArray[currentScanDivLevel * nPixelsX + px] += data->values[px];
             // plotRequired = true;
             // UnlockLastImageArray();
@@ -955,7 +954,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
             // //title
             // imageTitle = temp_title;
             // //copy data
-            // for (unsigned int px = 0; px < nPixelsX; px++)
+            // for (unsigned int px = 0; px < nPixelsX; ++px)
             //     lastImageArray[currentScanDivLevel * nPixelsX + px] += data->values[px];
             // plotRequired = true;
             // UnlockLastImageArray();
@@ -988,20 +987,20 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
 
                 //clean up graph
                 if (histogramArgument == qDefs::Intensity) {
-                    for (int j = 0; j < histogramSamples.size(); j++) {
+                    for (int j = 0; j < histogramSamples.size(); ++j) {
                         histogramSamples[j].value = 0;
                     }
                 }
 
                 int val = 0;
-                for (int i = 0; i < numValues; i++) {
+                for (int i = 0; i < numValues; ++i) {
                     //frequency of intensity
                     if (histogramArgument == qDefs::Intensity) {
                         //ignore outside limits
                         if ((data->values[i] < histFrom) || (data->values[i] > histTo))
                             continue;
                         //check for intervals, increment if validates
-                        for (int j = 0; j < histogramSamples.size(); j++) {
+                        for (int j = 0; j < histogramSamples.size(); ++j) {
                             if (histogramSamples[j].interval.contains(data->values[i]))
                                 histogramSamples[j].value += 1;
                         }
@@ -1030,7 +1029,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
                     // if ((scanval < histFrom) || (scanval > histTo) || (scanval == -1))
                     //     scanval = -1;
                     // //check for intervals, increment if validates
-                    // for (int j = 0; j < histogramSamples.size(); j++) {
+                    // for (int j = 0; j < histogramSamples.size(); ++j) {
                     //     if (histogramSamples[j].interval.contains(scanval)) {
                     //         histogramSamples[j].value = val;
                     //         cout << "j:" << j << " scanval:" << scanval << " val:" << val << endl;
@@ -1057,7 +1056,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
                 if (startPedestalCal) {
                     //start adding frames to get to the pedestal value
                     if (pedestalCount < NUM_PEDESTAL_FRAMES) {
-                        for (unsigned int px = 0; px < nPixelsX; px++)
+                        for (unsigned int px = 0; px < nPixelsX; ++px)
                             tempPedestalVals[px] += data->values[px];
                         memcpy(histYAxis[0], data->values, nPixelsX * sizeof(double));
                         pedestalCount++;
@@ -1065,7 +1064,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
                     //calculate the pedestal value
                     if (pedestalCount == NUM_PEDESTAL_FRAMES) {
                         cout << "Pedestal Calculated" << '\n';
-                        for (unsigned int px = 0; px < nPixelsX; px++)
+                        for (unsigned int px = 0; px < nPixelsX; ++px)
                             tempPedestalVals[px] = tempPedestalVals[px] / (double)NUM_PEDESTAL_FRAMES;
                         memcpy(pedestalVals, tempPedestalVals, nPixelsX * sizeof(double));
                         startPedestalCal = 0;
@@ -1080,7 +1079,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
                 //pedestal or accumulate
                 else {
                     double temp; //cannot overwrite cuz of accumulate
-                    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); px++) {
+                    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); ++px) {
                         temp = data->values[px];
                         if (pedestal)
                             temp = data->values[px] - (pedestalVals[px]);
@@ -1114,7 +1113,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
             if (startPedestalCal) {
                 //start adding frames to get to the pedestal value
                 if (pedestalCount < NUM_PEDESTAL_FRAMES) {
-                    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); px++)
+                    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); ++px)
                         tempPedestalVals[px] += data->values[px];
                     memcpy(lastImageArray, data->values, nPixelsX * nPixelsY * sizeof(double));
                     pedestalCount++;
@@ -1122,7 +1121,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
                 //calculate the pedestal value
                 if (pedestalCount == NUM_PEDESTAL_FRAMES) {
                     std::cout << "Pedestal Calculated" << '\n';
-                    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); px++)
+                    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); ++px)
                         tempPedestalVals[px] = tempPedestalVals[px] / (double)NUM_PEDESTAL_FRAMES;
                     memcpy(pedestalVals, tempPedestalVals, nPixelsX * nPixelsY * sizeof(double));
                     startPedestalCal = 0;
@@ -1137,7 +1136,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
             //pedestal or accumulate or binary
             else {
                 double temp;
-                for (unsigned int px = 0; px < (nPixelsX * nPixelsY); px++) {
+                for (unsigned int px = 0; px < (nPixelsX * nPixelsY); ++px) {
                     temp = data->values[px];
                     if (pedestal)
                         temp = data->values[px] - (pedestalVals[px]);
@@ -1213,7 +1212,7 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
     //calculate s curve inflection point
     int l1 = 0, l2 = 0, j;
     if ((histogram) && (histogramArgument != qDefs::Intensity)) {
-        for (j = 0; j < histogramSamples.size() - 2; j++) {
+        for (j = 0; j < histogramSamples.size() - 2; ++j) {
             l1 = histogramSamples[j + 1].value - histogramSamples[j].value;
             l2 = histogramSamples[j + 2].value - histogramSamples[j + 1].value;
             if (l1 > l2) {
@@ -1307,7 +1306,7 @@ void qDrawPlot::SelectPlot(int i) { //1 for 1D otherwise 2D
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::Clear1DPlot() {
-    for (QVector<SlsQtH1D *>::iterator h = plot1D_hists.begin(); h != plot1D_hists.end(); h++) {
+    for (QVector<SlsQtH1D *>::iterator h = plot1D_hists.begin(); h != plot1D_hists.end(); ++h) {
         (*h)->Detach(plot1D);
         //do not delete *h or h.
     }
@@ -1355,7 +1354,7 @@ void qDrawPlot::UpdatePlot() {
                 }
                 //not histogram
                 else {
-                    for (int hist_num = 0; hist_num < (int)nHists; hist_num++) {
+                    for (int hist_num = 0; hist_num < (int)nHists; ++hist_num) {
                         SlsQtH1D *h;
                         if (hist_num + 1 > plot1D_hists.size()) {
                             if (anglePlot)
@@ -1492,7 +1491,7 @@ void qDrawPlot::ClonePlot() {
 
     //check for space for more clone widget references
     bool found = false;
-    for (i = 0; i < MAXCloneWindows; i++)
+    for (i = 0; i < MAXCloneWindows; ++i)
         if (!winClone[i]) {
             found = true;
             break;
@@ -1531,7 +1530,7 @@ void qDrawPlot::ClonePlot() {
 
     // update range
     found = false;
-    for (int index = 0; index < 4; index++)
+    for (int index = 0; index < 4; ++index)
         if (IsXYRange[index]) {
             found = true;
             break;
@@ -1553,7 +1552,7 @@ void qDrawPlot::SaveClones() {
     char errID[200];
     std::string errMessage = "The Snapshots with ID's: ";
     bool success = true;
-    for (int i = 0; i < MAXCloneWindows; i++)
+    for (int i = 0; i < MAXCloneWindows; ++i)
         if (winClone[i]) {
             if (winClone[i]->SavePlotAutomatic()) {
                 success = false;
@@ -1570,7 +1569,7 @@ void qDrawPlot::SaveClones() {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::CloseClones() {
-    for (int i = 0; i < MAXCloneWindows; i++)
+    for (int i = 0; i < MAXCloneWindows; ++i)
         if (winClone[i])
             winClone[i]->close();
 }
@@ -1671,7 +1670,7 @@ void qDrawPlot::ShowSaveErrorMessage(QString fileName) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::SetPersistency(int val) {
-    for (int i = 0; i <= val; i++)
+    for (int i = 0; i <= val; ++i)
         if (!histYAxis[i])
             histYAxis[i] = new double[nPixelsX];
     persistency = val;
@@ -1719,8 +1718,8 @@ void qDrawPlot::DisableZoom(bool disable) {
  		//initializing 2d array
  		memset(lastImageArray, 0 ,nPixelsY * nPixelsX * sizeof(double));
  		/*
- 		for(int py=0;py<(int)nPixelsY;py++)
- 			for(int px=0;px<(int)nPixelsX;px++)
+ 		for(int py=0;py<(int)nPixelsY;++py)
+ 			for(int px=0;px<(int)nPixelsX;++px)
  				lastImageArray[py*nPixelsX+px] = 0;
  				*/
  		//get trimbits
@@ -1792,9 +1791,9 @@ void qDrawPlot::RecalculatePedestal() {
         delete[] tempPedestalVals;
     tempPedestalVals = new double[nPixelsX * nPixelsY];
     //reset all values
-    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); px++)
+    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); ++px)
         pedestalVals[px] = 0;
-    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); px++)
+    for (unsigned int px = 0; px < (nPixelsX * nPixelsY); ++px)
         tempPedestalVals[px] = 0;
     UnlockLastImageArray();
 }
@@ -1905,7 +1904,7 @@ void qDrawPlot::GetStatistics(double &min, double &max, double &sum, double *arr
     std::cout << "Calculating Statistics\n";
 #endif
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; ++i) {
         //calculate min
         if (array[i] < min)
             min = array[i];
@@ -1954,7 +1953,7 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
         break;
 
     case 16:
-        if (detType == slsDetectorDefs::JUNGFRAU || detType == slsDetectorDefs::CHIPTESTBOARD) {
+        if (detType == slsDetectorDefs::JUNGFRAU || detType == slsDetectorDefs::MOENCH) {
 
             // show gain plot
             if (gaindest != NULL) {

@@ -99,7 +99,7 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
 
 void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis[], std::string histTitle[], bool lines, bool markers) {
     //for each plot,  create hists
-    for (int hist_num = 0; hist_num < nHists; hist_num++) {
+    for (int hist_num = 0; hist_num < nHists; ++hist_num) {
         SlsQtH1D *k;
         if (hist_num + 1 > cloneplot1D_hists.size()) {
             cloneplot1D_hists.append(k = new SlsQtH1D("1d plot", histNBins, histXAxis, histYAxis[hist_num]));
@@ -136,7 +136,7 @@ void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, d
 
 void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis, std::string histTitle[], bool lines, bool markers) {
     // for each plot create hists
-    for (int hist_num = 0; hist_num < nHists; hist_num++) {
+    for (int hist_num = 0; hist_num < nHists; ++hist_num) {
         SlsQtH1D *k;
         if (hist_num + 1 > cloneplot1D_hists.size()) {
             cloneplot1D_hists.append(k = new SlsQtH1D("1d plot", histNBins, histXAxis, histYAxis));

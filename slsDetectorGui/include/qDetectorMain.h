@@ -79,11 +79,6 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
      */
     int DoesOutputDirExist();
 
-    /**
-     * Is the current tab developer tab
-     */
-    bool isCurrentlyTabDeveloper();
-
   private:
     /** The sls detector object */
     multiSlsDetector *myDet;
@@ -105,14 +100,14 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     /** The default tab heading color */
     QColor defaultTabColor;
     /** enumeration of the tabs */
-    enum { Measurement,
-           Settings,
-           DataOutput,
-           Plot,
-           Advanced,
-           Debugging,
-           Developer,
-           Messages,
+    enum { MEASUREMENT,
+           SETTINGS,
+           DATAOUTPUT,
+           PLOT,
+           ADVANCED,
+           DEBUGGING,
+           DEVELOPER,
+           MESSAGES,
            NumberOfTabs };
     /**Measurement tab */
     qTabMeasurement *tab_measurement;

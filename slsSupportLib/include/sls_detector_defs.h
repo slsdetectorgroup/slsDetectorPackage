@@ -207,7 +207,6 @@ public:
 	enum fileFormat {
 		GET_FILE_FORMAT=-1,/**< the receiver will return its file format */
 		BINARY, /**< binary format */
-		ASCII, /**< ascii format */
 		HDF5, /**< hdf5 format */
 		NUM_FILE_FORMATS
 	};
@@ -310,8 +309,7 @@ public:
 	*/
 	enum dimension {
 	  X=0, /**< X dimension */
-	  Y=1, /**< Y dimension */
-	  Z=2 /**< Z dimension */
+	  Y=1 /**< Y dimension */
 	};
 
 	/**
@@ -353,9 +351,7 @@ public:
 	  GET_EXTERNAL_COMMUNICATION_MODE=-1,/**<return flag for communication mode */
 	  AUTO_TIMING, /**< internal timing */
 	  TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
-	  TRIGGER_READOUT, /**< stop trigger mode i.e. readout is triggered by external signal */
-	  GATE_FIX_NUMBER, /**< gated and reads out after a fixed number of gates */
-	  GATE_WITH_START_TRIGGER, /**< gated with start trigger */
+	  GATED, /**< gated  */
 	  BURST_TRIGGER	/**< trigger a burst of frames */
 	};
 	/**
@@ -599,6 +595,7 @@ public:
 	    case GOTTHARD:    	return std::string("Gotthard");	\
 	    case JUNGFRAU:    	return std::string("Jungfrau");	\
 	    case CHIPTESTBOARD:   return std::string("JungfrauCTB");	\
+	    case MOENCH:   		return std::string("Moench");	\
 	    default:    		return std::string("Unknown");	\
 	    }};
 
@@ -611,6 +608,7 @@ public:
 	    if (type=="Gotthard")    	return GOTTHARD;	\
 	    if (type=="Jungfrau")    	return JUNGFRAU;	\
 	    if (type=="JungfrauCTB") 	return CHIPTESTBOARD;	\
+	    if (type=="Moench") 		return MOENCH;	\
 	    							return GENERIC;		\
 	  };
 
@@ -637,7 +635,6 @@ public:
 	  */
 	  static std::string getFileFormatType(fileFormat f){\
 	    switch (f) {				\
-	    case ASCII:     return std::string("ascii");	\
 	    case HDF5:      return std::string("hdf5");	\
 	    case BINARY:    return std::string("binary");	\
 	    default:       		return std::string("unknown");		\
@@ -763,17 +760,15 @@ public:
 
 		  /**
 		     returns external communication mode std::string from index
-		     \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
-		     \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown
+		     \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, GATE_FIX_NUMBER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
+		     \returns  auto, trigger, gating, burst_trigger, unknown
 		  */
 
 		  static std::string externalCommunicationType(externalCommunicationMode f){	\
 		    switch(f) {						 \
 		    case AUTO_TIMING:      return std::string( "auto");			\
 		    case TRIGGER_EXPOSURE: return std::string("trigger");			\
-		    case TRIGGER_READOUT: return std::string("ro_trigger");			\
 		    case GATE_FIX_NUMBER: return std::string("gating");			\
-		    case GATE_WITH_START_TRIGGER: return std::string("triggered_gating");	\
 		    case BURST_TRIGGER: return std::string("burst_trigger");	\
 		    default:    return std::string( "unknown");				\
 		    }    };
@@ -782,16 +777,14 @@ public:
 
 		  /**
 		     returns external communication mode index from std::string
-		     \param sval can be auto, trigger, ro_trigger, gating, triggered_gating
-		     \returns AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
+		     \param sval can be auto, trigger,  gating, burst_trigger
+		     \returns AUTO_TIMING, TRIGGER_EXPOSURE, GATE_FIX_NUMBER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
 		  */
 
 		  static externalCommunicationMode externalCommunicationType(std::string sval){\
 		    if (sval=="auto")      return AUTO_TIMING;\
 		    if (sval=="trigger")     return TRIGGER_EXPOSURE;	\
-		    if  (sval=="ro_trigger") return TRIGGER_READOUT;\
 		    if  (sval=="gating") return GATE_FIX_NUMBER;\
-		    if  (sval=="triggered_gating") return GATE_WITH_START_TRIGGER;\
 		    if  (sval=="burst_trigger") return BURST_TRIGGER;\
 		    return GET_EXTERNAL_COMMUNICATION_MODE;			\
 		  };
@@ -803,7 +796,6 @@ public:
 		  static std::string fileFormats(fileFormat f){\
 		    switch (f) {				\
 		    case BINARY:       return std::string("binary");		\
-		    case ASCII:       return std::string("ascii");		\
 		    case HDF5:      return  std::string("hdf5");	\
 		    default:       return std::string("unknown");		\
 		    }};

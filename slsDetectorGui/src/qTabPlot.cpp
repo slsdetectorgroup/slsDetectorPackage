@@ -2,7 +2,6 @@
 #include "qDrawPlot.h"
 // Project Class Headers
 #include "multiSlsDetector.h"
-#include "slsDetector.h"
 // Qt Include Headers
 #include <QStandardItemModel>
 // C++ Include Headers
@@ -155,11 +154,8 @@ void qTabPlot::SetupWidgetWindow() {
     case slsDetectorDefs::GOTTHARD:
         isOriginallyOneD = true;
         break;
-    case slsDetectorDefs::MOENCH:
-        isOriginallyOneD = false;
-        break;
     case slsDetectorDefs::JUNGFRAU:
-    case slsDetectorDefs::CHIPTESTBOARD:
+    case slsDetectorDefs::MOENCH:
         isOriginallyOneD = false;
         chkGainPlot->setEnabled(true);
         break;
@@ -1061,7 +1057,6 @@ void qTabPlot::SetFrequency() {
  	if((myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) ||
  			(myDet->getDetectorsType() == slsDetectorDefs::PROPIX) ||
  			(myDet->getDetectorsType() == slsDetectorDefs::JUNGFRAU) ||
- 			(myDet->getDetectorsType() == slsDetectorDefs::CHIPTESTBOARD) ||
  			(myDet->getDetectorsType() == slsDetectorDefs::MOENCH)){
  		pagePedestal->setEnabled(true);
  		pagePedestal_2->setEnabled(true);

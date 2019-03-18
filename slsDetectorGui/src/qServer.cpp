@@ -1,7 +1,6 @@
 #include "qServer.h"
 #include "qDetectorMain.h"
 
-#include "slsDetector.h"
 #include "multiSlsDetector.h"
 #include "MySocketTCP.h"
 

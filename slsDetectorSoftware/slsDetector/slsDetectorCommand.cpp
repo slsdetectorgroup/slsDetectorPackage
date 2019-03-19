@@ -3465,7 +3465,7 @@ std::string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int de
         return helpSN(action);
 
     if (cmd == "thisversion") {
-        int64_t retval = myDet->getId(THIS_SOFTWARE_VERSION, detPos);
+        int64_t retval = myDet->getClientSoftwareVersion();
         if (retval < 0)
             sprintf(answer, "%d", -1);
         else
@@ -3504,7 +3504,7 @@ std::string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int de
 
     if (cmd == "receiverversion") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
-        int64_t retval = myDet->getId(RECEIVER_VERSION, detPos);
+        int64_t retval = myDet->getReceiverSoftwareVersion(detPos);
         if (retval < 0)
             sprintf(answer, "%d", -1);
         else

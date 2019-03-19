@@ -9,6 +9,7 @@
  */
 #include "SharedMemory.h"
 #include "error_defs.h"
+#include "gitInfoLib.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
 class slsDetector;
@@ -225,7 +226,13 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     int64_t getId(idMode mode, int detPos = -1);
 
-     std::vector<int64_t> getDetectorNumber();
+    int64_t getClientSoftwareVersion() const {
+        return GITDATE;
+    }
+
+    int64_t getReceiverSoftwareVersion(int detPos = -1) const;
+
+    std::vector<int64_t> getDetectorNumber();
     /**
      * Free shared memory from the command line
      * avoiding creating the constructor classes and mapping

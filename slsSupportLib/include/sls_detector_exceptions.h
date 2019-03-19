@@ -36,6 +36,11 @@ public:
 
 };
 
+struct NotImplementedError : public RuntimeError {
+public:
+	NotImplementedError(std::string msg):RuntimeError(msg) {}
+
+};
 
 
 }

@@ -295,6 +295,9 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 */
     int64_t getId(idMode mode);
 
+
+	int64_t getReceiverSoftwareVersion() const;
+
     /**
 	 * Free shared memory without creating objects
 	 * If this is called, must take care to update
@@ -1318,13 +1321,13 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
      updates the shared memory receiving the data from the detector (without asking and closing the connection
      /returns OK
 	 */
-    int updateReceiverNoWait(sls::ClientSocket &receiver);
+    // int updateReceiverNoWait(sls::ClientSocket &receiver);
 
     /**
 	 * Updates the shared memory receiving the data from the detector
 	 * @returns OK or FAIL
 	 */
-    int updateReceiver();
+    int updateCachedReceiverVariables() const;
 
     /**
 	 * Send the multi detector size to the detector
@@ -1736,7 +1739,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     const int detId;
 
     /** Shared Memory object */
-    sls::SharedMemory<sharedSlsDetector> detector_shm{0,0};
+    mutable sls::SharedMemory<sharedSlsDetector> detector_shm{0,0};
 
 };
 

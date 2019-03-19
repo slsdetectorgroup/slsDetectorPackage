@@ -42,6 +42,18 @@ public:
 
 };
 
+struct DetectorError : public RuntimeError {
+public:
+	DetectorError(std::string msg):RuntimeError(msg) {}
+
+};
+
+struct ReceiverError : public RuntimeError {
+public:
+	ReceiverError(std::string msg):RuntimeError(msg) {}
+
+};
+
 
 }
 

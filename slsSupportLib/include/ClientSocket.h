@@ -18,4 +18,16 @@ class ClientSocket : public DataSocket {
     bool isReceiver;
 };
 
+class ReceiverSocket : public ClientSocket {
+    public:
+    ReceiverSocket(const std::string &hostname, uint16_t port_number)
+        : ClientSocket(true, hostname, port_number){};
+};
+
+class DetectorSocket : public ClientSocket {
+    public:
+    DetectorSocket(const std::string &hostname, uint16_t port_number)
+        : ClientSocket(false, hostname, port_number){};
+};
+
 }; //namespace sls

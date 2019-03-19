@@ -96,31 +96,29 @@ int slsDetector::checkDetectorVersionCompatibility() {
 
     // control server
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+
+    	// in case it throws
+    	detector_shm()->detectorControlAPIVersion = 0;
+    	detector_shm()->detectorStopAPIVersion = 0;
+    	detector_shm()->onlineFlag = OFFLINE_FLAG;
+
         auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
 
-        if (ret == FAIL) {
-            detector_shm()->detectorControlAPIVersion = 0;
+        auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
+        ret = stop.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
 
-            // stop server
-        } else {
-            detector_shm()->detectorControlAPIVersion = arg;
-            ret = FAIL;
-            auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
-            ret = stop.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
-            if (ret == FAIL) {
-                detector_shm()->detectorStopAPIVersion = 0;
-            } else {
-                detector_shm()->detectorStopAPIVersion = arg;
-            }
-        }
+        // success
+        detector_shm()->detectorControlAPIVersion = arg;
+        detector_shm()->detectorStopAPIVersion = arg;
+        detector_shm()->onlineFlag = ONLINE_FLAG;
+
     }
-    if (ret == FAIL) {
-        setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));
-        // if (strstr(mess, "Unrecognized Function") != nullptr) {
-        //     FILE_LOG(logERROR) << "The " << ((t == CONTROL_PORT) ? "detector" : "receiver") << " server is too old to get API version. Please update detector server!";
-        // }
-    }
+
+    // pointless
+//    if (ret == FAIL) {
+//        setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));
+//     }
 
     return ret;
 }
@@ -136,21 +134,23 @@ int slsDetector::checkReceiverVersionCompatibility() {
                         << std::hex << arg << std::dec;
 
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+
+    	// in case it throws
+    	detector_shm()->receiverAPIVersion = 0;
+    	detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
+
         auto receiver = ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
-        if (ret == FAIL) {
-            detector_shm()->receiverAPIVersion = 0;
-        } else {
-            detector_shm()->receiverAPIVersion = arg;
-        }
+
+        // success
+    	detector_shm()->receiverAPIVersion = arg;
+    	detector_shm()->receiverOnlineFlag = ONLINE_FLAG;
     }
 
-    if (ret == FAIL) {
-        setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));
-        // if (strstr(mess, "Unrecognized Function") != nullptr) {
-        //     FILE_LOG(logERROR) << "The " << ((t == CONTROL_PORT) ? "detector" : "receiver") << " server is too old to get API version. Please update detector server!";
-        // }
-    }
+    // pointless
+//    if (ret == FAIL) {
+//        setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));
+//    }
 
     return ret;
 }
@@ -698,22 +698,35 @@ void slsDetector::updateMultiSize(int detx, int dety) {
 
 int slsDetector::setOnline(int value) {
     if (value != GET_ONLINE_FLAG) {
-        detector_shm()->onlineFlag = value;
+
+    	// set offline
+    	if (value == OFFLINE_FLAG) {
+    		 detector_shm()->onlineFlag = value;
+    	}
 
         // set online
-        if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+    	else {
             int old = detector_shm()->onlineFlag;
+
+            // connect and set offline flag (set it to fail in case it throws)
+            detector_shm()->onlineFlag = OFFLINE_FLAG;
+            auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
+            client.close();
+            detector_shm()->onlineFlag = ONLINE_FLAG;
+
             // connecting first time
             if (detector_shm()->onlineFlag == ONLINE_FLAG && old == OFFLINE_FLAG) {
-                auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
-                FILE_LOG(logINFO) << "Detector connecting for the first time - updating!";
-                client.close();
-                updateDetector();
-            }
-            // error
-            else if (detector_shm()->onlineFlag == OFFLINE_FLAG) {
-                FILE_LOG(logERROR) << "Cannot connect to detector";
-                setErrorMask((getErrorMask()) | (CANNOT_CONNECT_TO_DETECTOR));
+                // check version compatibility (first time)
+                if ((detector_shm()->detectorControlAPIVersion == 0) ||
+                		(detector_shm()->detectorStopAPIVersion == 0)) {
+                	checkDetectorVersionCompatibility();
+                }
+
+                // check detector version could set it offline
+                if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+                	FILE_LOG(logINFO) << "Detector connecting for the first time - updating!";
+                	updateDetector();
+                }
             }
         }
     }
@@ -4010,17 +4023,27 @@ int slsDetector::setReceiverOnline(int value) {
         // no receiver
         if (!strcmp(detector_shm()->receiver_hostname, "none")) {
             detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
-        } else {
-            detector_shm()->receiverOnlineFlag = value;
         }
-        // set online
-        if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
-            // setReceiverTCPSocket();
-            // error in connecting
-            if (detector_shm()->receiverOnlineFlag == OFFLINE_FLAG) {
-                FILE_LOG(logERROR) << "Cannot connect to receiver";
-                setErrorMask((getErrorMask()) | (CANNOT_CONNECT_TO_RECEIVER));
-            }
+
+        else {
+        	// set offline
+        	if (value == OFFLINE_FLAG) {
+        		 detector_shm()->receiverOnlineFlag = value;
+        	}
+
+            // set online
+        	else {
+                // connect and set offline flag
+                detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
+                auto receiver = ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
+                receiver.close();
+                detector_shm()->receiverOnlineFlag = ONLINE_FLAG;
+
+                // check for version compatibility
+                if (detector_shm()->receiverAPIVersion == 0) {
+                	checkReceiverVersionCompatibility();
+                }
+        	}
         }
     }
     return detector_shm()->receiverOnlineFlag;

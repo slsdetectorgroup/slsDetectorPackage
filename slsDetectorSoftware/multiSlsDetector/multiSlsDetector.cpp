@@ -176,6 +176,15 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+int64_t multiSlsDetector::getReceiverSoftwareVersion(int detPos) const {
+        if (detPos >= 0) {
+        return detectors[detPos]->getReceiverSoftwareVersion();
+    }
+
+    auto r = parallelCall(&slsDetector::getReceiverSoftwareVersion);
+    return sls::minusOneIfDifferent(r);
+}
+
 std::vector<int64_t> multiSlsDetector::getDetectorNumber() {
     return parallelCall(&slsDetector::getId, slsDetectorDefs::DETECTOR_SERIAL_NUMBER);
 }

@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+using sls::NotImplementedError;
 using sls::RuntimeError;
 using sls::SharedMemory;
 using sls::SharedMemoryError;
@@ -63,7 +64,6 @@ slsDetector::~slsDetector() = default;
 int slsDetector::checkDetectorVersionCompatibility() {
     int fnum = F_CHECK_VERSION;
     int ret = FAIL;
-    // char mess[MAX_STR_LENGTH]{};
     int64_t arg = 0;
 
     // get api version number for detector server
@@ -153,39 +153,46 @@ int slsDetector::checkReceiverVersionCompatibility() {
     return ret;
 }
 
-int64_t slsDetector::getId(idMode mode){
+int64_t slsDetector::getId(idMode mode) {
     int arg = (int)mode;
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting id type " << mode;
 
-    if (mode == THIS_SOFTWARE_VERSION) {
-        return GITDATE;
-    } else if (mode == RECEIVER_VERSION) {
-        int ret = FAIL;
-        if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
-            int fnum = F_GET_RECEIVER_ID;
-            auto receiver = sls::ClientSocket(true, detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
-            ret = receiver.sendCommandThenRead(fnum, nullptr, 0, &retval, sizeof(retval));
-        }
-        if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
-        }
-        return retval;
-    } else {
-        int fnum = F_GET_ID;
-        int ret = FAIL;
-        if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-            auto client = sls::ClientSocket(false, detector_shm()->hostname, detector_shm()->controlPort);
-            ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-        }
-        if (ret != FAIL) {
-            FILE_LOG(logDEBUG1) << "Id (" << mode << "): 0x" << std::hex << retval << std::dec;
-        }
-        if (ret == FORCE_UPDATE) {
-            updateDetector();
-        }
-        return retval;
+    //These four should not go to detector...
+    assert(mode != THIS_SOFTWARE_VERSION);
+    assert(mode != RECEIVER_VERSION);
+    assert(mode != CLIENT_SOFTWARE_API_VERSION);
+    assert(mode != CLIENT_RECEIVER_API_VERSION);
+
+    int fnum = F_GET_ID;
+    int ret = FAIL;
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        auto client = sls::ClientSocket(false, detector_shm()->hostname, detector_shm()->controlPort);
+        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
     }
+    if (ret != FAIL) {
+        FILE_LOG(logDEBUG1) << "Id (" << mode << "): 0x" << std::hex << retval << std::dec;
+    }
+    if (ret == FORCE_UPDATE) {
+        updateDetector();
+    }
+    return retval;
+}
+
+int64_t slsDetector::getReceiverSoftwareVersion() const {
+    int ret = FAIL;
+    int arg = RECEIVER_VERSION;
+    int64_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting id type " << arg;
+    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+        int fnum = F_GET_RECEIVER_ID;
+        auto receiver = sls::ClientSocket(true, detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
+        ret = receiver.sendCommandThenRead(fnum, nullptr, 0, &retval, sizeof(retval));
+    }
+    if (ret == FORCE_UPDATE) {
+        ret = updateCachedReceiverVariables();
+    }
+    return retval;
 }
 
 void slsDetector::freeSharedMemory(int multi_id, int slsId) {
@@ -224,8 +231,8 @@ void slsDetector::initSharedMemory(detectorType type,
             FILE_LOG(logERROR) << "Single shared memory "
                                   "("
                                << multi_id << "-" << detId << ":) "
-                                                               "version mismatch "
-                                                               "(expected 0x"
+                                                              "version mismatch "
+                                                              "(expected 0x"
                                << std::hex << SLS_SHMVERSION << " but got 0x" << detector_shm()->shmversion << ")" << std::dec;
             throw SharedMemoryError("Shared memory version mismatch (det)");
         }
@@ -531,7 +538,7 @@ int slsDetector::receiveModule(sls_detector_module *myMod, sls::ClientSocket &cl
 slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multi_id, bool verify) {
     if (!detector_shm.IsExisting()) {
         FILE_LOG(logERROR) << "Shared memory " << detector_shm.GetName() << " does not exist.\n"
-                                                                   "Corrupted Multi Shared memory. Please free shared memory.";
+                                                                            "Corrupted Multi Shared memory. Please free shared memory.";
         throw SharedMemoryError("Corrupted multi shared memory.");
     }
 
@@ -542,7 +549,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multi_id, 
         FILE_LOG(logERROR) << "Single shared memory "
                               "("
                            << multi_id << "-" << detId << ":)version mismatch "
-                                                           "(expected 0x"
+                                                          "(expected 0x"
                            << std::hex << SLS_SHMVERSION << " but got 0x" << detector_shm()->shmversion << ")" << std::dec;
         // unmap and throw
         detector_shm.UnmapSharedMemory();
@@ -621,7 +628,7 @@ int slsDetector::setDetectorType(detectorType const type) {
 
             if (ret == FORCE_UPDATE) {
                 receiver.close(); //need to find a better solution
-                ret = updateReceiver();
+                ret = updateCachedReceiverVariables();
             }
         }
     }
@@ -830,12 +837,12 @@ int slsDetector::setReceiverPort(int port_number) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return detector_shm()->receiverTCPPort;
 }
 
-int slsDetector::getReceiverPort() const{
+int slsDetector::getReceiverPort() const {
     return detector_shm()->receiverTCPPort;
 }
 
@@ -846,7 +853,6 @@ int slsDetector::getControlPort() const {
 int slsDetector::getStopPort() const {
     return detector_shm()->stopPort;
 }
-
 
 int slsDetector::lockServer(int lock) {
     int fnum = F_LOCK_SERVER;
@@ -1395,8 +1401,6 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV, detectorSettings isetti
         // myMod = createModule();
         // myMod->iodelay = myMod1->iodelay;
 
-        
-
         //interpolate  module
         myMod = interpolateTrim(myMod1, myMod2, e_eV, trim1, trim2, tb);
         if (myMod == nullptr) {
@@ -1912,7 +1916,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
                 }
             } else if (ret == FORCE_UPDATE) {
                 receiver.close();
-                ret = updateReceiver();
+                ret = updateCachedReceiverVariables();
             }
 
             break;
@@ -2045,7 +2049,7 @@ int slsDetector::setDynamicRange(int n) {
             FILE_LOG(logDEBUG1) << "Receiver Dynamic range: " << retval;
             if (ret == FORCE_UPDATE) {
                 receiver.close();
-                ret = updateReceiver();
+                ret = updateCachedReceiverVariables();
             }
         }
     }
@@ -2205,7 +2209,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
 
@@ -2541,7 +2545,7 @@ void slsDetector::setReceiverStreamingPort(int port) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
 }
 
@@ -2617,7 +2621,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
             sls::strcpy_safe(detector_shm()->receiver_zmqip, retvals);
             if (ret == FORCE_UPDATE) {
                 receiver.close();
-                ret = updateReceiver();
+                ret = updateCachedReceiverVariables();
             }
         }
     }
@@ -2673,7 +2677,7 @@ std::string slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) 
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return std::string(detector_shm()->receiver_additionalJsonHeader);
 }
@@ -2696,7 +2700,7 @@ std::string slsDetector::getAdditionalJsonHeader() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return std::string(detector_shm()->receiver_additionalJsonHeader);
 }
@@ -2798,7 +2802,7 @@ int64_t slsDetector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -2824,7 +2828,7 @@ int64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -2879,7 +2883,7 @@ int slsDetector::setUDPConnection() {
             sls::strcpy_safe(detector_shm()->receiverUDPMAC, retvals);
             if (ret == FORCE_UPDATE) {
                 receiver.close();
-                ret = updateReceiver();
+                ret = updateCachedReceiverVariables();
             }
 
             //configure detector with udp details
@@ -3190,7 +3194,7 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
         }
 
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return ret;
@@ -3255,7 +3259,7 @@ int slsDetector::activate(int const enable) {
             setErrorMask((getErrorMask()) | (RECEIVER_ACTIVATE));
         } else if (ret == FORCE_UPDATE) {
             receiver.close();
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->activated;
@@ -3280,7 +3284,7 @@ int slsDetector::setDeactivatedRxrPaddingMode(int padding) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return detector_shm()->receiver_deactivatedPaddingEnable;
 }
@@ -3320,7 +3324,7 @@ int slsDetector::setFlippedData(dimension d, int value) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return detector_shm()->flippedData[d];
 }
@@ -3378,7 +3382,7 @@ int slsDetector::enableGapPixels(int val) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->gappixels;
@@ -4075,7 +4079,7 @@ int slsDetector::lockReceiver(int lock) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -4097,7 +4101,7 @@ std::string slsDetector::getReceiverLastClientIP() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -4138,105 +4142,107 @@ int slsDetector::execReceiverCommand(const std::string &cmd) {
     return ret;
 }
 
-int slsDetector::updateReceiverNoWait(sls::ClientSocket &receiver) {
-
-    int n = 0, i32 = 0;
-    char cstring[MAX_STR_LENGTH] = {};
-    char lastClientIP[INET_ADDRSTRLEN] = {};
-
-    n += receiver.receiveData(lastClientIP, sizeof(lastClientIP));
-    FILE_LOG(logDEBUG1) << "Updating receiver last modified by " << lastClientIP;
-
-    // filepath
-    n += receiver.receiveData(cstring, sizeof(cstring));
-    sls::strcpy_safe(detector_shm()->receiver_filePath, cstring);
-
-    // filename
-    n += receiver.receiveData(cstring, sizeof(cstring));
-    sls::strcpy_safe(detector_shm()->receiver_fileName, cstring);
-
-    // index
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_fileIndex = i32;
-
-    //file format
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_fileFormatType = (fileFormat)i32;
-
-    // frames per file
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_framesPerFile = i32;
-
-    // frame discard policy
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_frameDiscardMode = (frameDiscardPolicy)i32;
-
-    // frame padding
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_framePadding = i32;
-
-    // file write enable
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_fileWriteEnable = i32;
-
-    // file overwrite enable
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_overWriteEnable = i32;
-
-    // gap pixels
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->gappixels = i32;
-
-    // receiver read frequency
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_read_freq = i32;
-
-    // receiver streaming port
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_zmqport = i32;
-
-    // streaming source ip
-    n += receiver.receiveData(cstring, sizeof(cstring));
-    sls::strcpy_safe(detector_shm()->receiver_zmqip, cstring);
-
-    // additional json header
-    n += receiver.receiveData(cstring, sizeof(cstring));
-    sls::strcpy_safe(detector_shm()->receiver_additionalJsonHeader, cstring);
-
-    // receiver streaming enable
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_upstream = i32;
-
-    // activate
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->activated = i32;
-
-    // deactivated padding enable
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_deactivatedPaddingEnable = i32;
-
-    // silent mode
-    n += receiver.receiveData(&i32, sizeof(i32));
-    detector_shm()->receiver_silentMode = i32;
-
-    if (!n) {
-        FILE_LOG(logERROR) << "Could not update receiver, received 0 bytes\n";
-    }
-    return OK;
-}
-
-int slsDetector::updateReceiver() {
+int slsDetector::updateCachedReceiverVariables() const {
     int fnum = F_UPDATE_RECEIVER_CLIENT;
     int ret = FAIL;
     FILE_LOG(logDEBUG1) << "Sending update client to receiver server";
 
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
-        auto receiver = sls::ClientSocket(true, detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
+        auto receiver = sls::ClientSocket(true,
+                                          detector_shm()->receiver_hostname,
+                                          detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
         if (ret == FAIL) {
-            setErrorMask((getErrorMask()) | (OTHER_ERROR_CODE));
+            std::string msg = "Could not update receiver: " + std::string(detector_shm()->receiver_hostname);
+            throw RuntimeError(msg);
         } else {
-            updateReceiverNoWait(receiver);
+            int n = 0, i32 = 0;
+            char cstring[MAX_STR_LENGTH] = {};
+            char lastClientIP[INET_ADDRSTRLEN] = {};
+
+            n += receiver.receiveData(lastClientIP, sizeof(lastClientIP));
+            FILE_LOG(logDEBUG1) << "Updating receiver last modified by " << lastClientIP;
+
+            // filepath
+            n += receiver.receiveData(cstring, sizeof(cstring));
+            sls::strcpy_safe(detector_shm()->receiver_filePath, cstring);
+
+            // filename
+            n += receiver.receiveData(cstring, sizeof(cstring));
+            sls::strcpy_safe(detector_shm()->receiver_fileName, cstring);
+
+            // index
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_fileIndex = i32;
+
+            //file format
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_fileFormatType = (fileFormat)i32;
+
+            // frames per file
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_framesPerFile = i32;
+
+            // frame discard policy
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_frameDiscardMode = (frameDiscardPolicy)i32;
+
+            // frame padding
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_framePadding = i32;
+
+            // file write enable
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_fileWriteEnable = i32;
+
+            // file overwrite enable
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_overWriteEnable = i32;
+
+            // gap pixels
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->gappixels = i32;
+
+            // receiver read frequency
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_read_freq = i32;
+
+            // receiver streaming port
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_zmqport = i32;
+
+            // streaming source ip
+            n += receiver.receiveData(cstring, sizeof(cstring));
+            sls::strcpy_safe(detector_shm()->receiver_zmqip, cstring);
+
+            // additional json header
+            n += receiver.receiveData(cstring, sizeof(cstring));
+            sls::strcpy_safe(detector_shm()->receiver_additionalJsonHeader, cstring);
+
+            // receiver streaming enable
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_upstream = i32;
+
+            // activate
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->activated = i32;
+
+            // deactivated padding enable
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_deactivatedPaddingEnable = i32;
+
+            // silent mode
+            n += receiver.receiveData(&i32, sizeof(i32));
+            detector_shm()->receiver_silentMode = i32;
+
+            if (!n) {
+                std::string msg = "Could not update receiver: " +
+                                  std::string(detector_shm()->receiver_hostname) +
+                                  ", received 0 bytes\n";
+                FILE_LOG(logERROR) << msg;
+                throw RuntimeError(msg);
+            }
+            return OK;
         }
     }
     return ret;
@@ -4260,7 +4266,7 @@ void slsDetector::sendMultiDetectorSize() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
 }
 
@@ -4282,7 +4288,7 @@ void slsDetector::setDetectorId() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
 }
 
@@ -4305,7 +4311,7 @@ void slsDetector::setDetectorHostname() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
 }
 
@@ -4339,7 +4345,7 @@ std::string slsDetector::setFilePath(const std::string &path) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_filePath;
@@ -4370,7 +4376,7 @@ std::string slsDetector::setFileName(const std::string &fname) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_fileName;
@@ -4397,7 +4403,7 @@ int slsDetector::setReceiverFramesPerFile(int f) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_framesPerFile;
@@ -4421,7 +4427,7 @@ slsDetectorDefs::frameDiscardPolicy slsDetector::setReceiverFramesDiscardPolicy(
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return detector_shm()->receiver_frameDiscardMode;
 }
@@ -4446,7 +4452,7 @@ int slsDetector::setReceiverPartialFramesPadding(int f) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return detector_shm()->receiver_framePadding;
 }
@@ -4472,7 +4478,7 @@ slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return getFileFormat();
@@ -4507,7 +4513,7 @@ int slsDetector::setFileIndex(int i) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            updateReceiver();
+            updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_fileIndex;
@@ -4543,7 +4549,7 @@ int slsDetector::startReceiver() {
         // }
     }
     if (ret == FORCE_UPDATE) {
-        updateReceiver();
+        updateCachedReceiverVariables();
     }
     return ret;
 }
@@ -4562,7 +4568,7 @@ int slsDetector::stopReceiver() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return ret;
 }
@@ -4585,7 +4591,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        updateReceiver(); //Do we need to handle this ret?
+        updateCachedReceiverVariables(); //Do we need to handle this ret?
     }
     return retval;
 }
@@ -4606,7 +4612,7 @@ int slsDetector::getFramesCaughtByReceiver() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        updateReceiver();
+        updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -4626,7 +4632,7 @@ int slsDetector::getReceiverCurrentFrameIndex() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        updateReceiver();
+        updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -4644,7 +4650,7 @@ int slsDetector::resetFramesCaught() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        updateReceiver();
+        updateCachedReceiverVariables();
     }
     return ret;
 }
@@ -4667,7 +4673,7 @@ int slsDetector::enableWriteToFile(int enable) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_fileWriteEnable;
@@ -4692,7 +4698,7 @@ int slsDetector::overwriteFile(int enable) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_overWriteEnable;
@@ -4717,7 +4723,7 @@ int slsDetector::setReceiverStreamingFrequency(int freq) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_read_freq;
@@ -4740,7 +4746,7 @@ int slsDetector::setReceiverStreamingTimer(int time_in_ms) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -4764,7 +4770,7 @@ int slsDetector::enableDataStreamingFromReceiver(int enable) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateReceiver();
+            ret = updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_upstream;
@@ -4809,7 +4815,7 @@ int slsDetector::enableTenGigabitEthernet(int i) {
             FILE_LOG(logDEBUG1) << "Receiver 10Gbe enable: " << retval;
             if (ret == FORCE_UPDATE) {
                 receiver.close();
-                updateReceiver();
+                updateCachedReceiverVariables();
             }
         }
     }
@@ -4835,7 +4841,7 @@ int slsDetector::setReceiverFifoDepth(int i) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        updateReceiver();
+        updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -4860,7 +4866,7 @@ int slsDetector::setReceiverSilentMode(int i) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return detector_shm()->receiver_silentMode;
 }
@@ -4880,7 +4886,7 @@ int slsDetector::restreamStopFromReceiver() {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateReceiver();
+        ret = updateCachedReceiverVariables();
     }
     return ret;
 }

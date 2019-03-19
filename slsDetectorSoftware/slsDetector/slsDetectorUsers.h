@@ -199,10 +199,9 @@ public:
 	/**
 	 * (previously getThisSoftwareVersion)
 	 * Get client software version
-	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns client software version
 	 */
-	int64_t getClientSoftwareVersion(int detPos = -1);
+	int64_t getClientSoftwareVersion();
 
 	/**
 	 * Get receiver software version

@@ -66,8 +66,8 @@ int64_t slsDetectorUsers::getDetectorSoftwareVersion(int detPos){
 	return detector.getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, detPos);
 }
 
-int64_t slsDetectorUsers::getClientSoftwareVersion(int detPos){
-	return detector.getId(slsDetectorDefs::THIS_SOFTWARE_VERSION, detPos);
+int64_t slsDetectorUsers::getClientSoftwareVersion(){
+	return detector.getClientSoftwareVersion();
 }
 
 int64_t slsDetectorUsers::getReceiverSoftwareVersion(int detPos){

@@ -1109,7 +1109,7 @@ void slsReceiverImplementation::stopReceiver() {
 		for (int i = 0; i < numThreads; i++) {
 			tot += dataProcessor[i]->GetNumFramesCaught();
 
-			uint64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetPacketsCaught();
+			int64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetPacketsCaught();
 			TLogLevel lev = (((int64_t)missingpackets) > 0) ? logINFORED : logINFOGREEN;
 			FILE_LOG(lev) <<
 					"Summary of Port " << udpPortNum[i] <<

@@ -1,42 +1,26 @@
-/*
- * qTabMessages.cpp
- *
- *  Created on: Jun 26, 2012
- *      Author: l_maliakal_d
- */
-
-/** Qt Project Class Headers */
 #include "qTabMessages.h"
 #include "qDetectorMain.h"
-/** Project Class Headers */
-/** Qt Include Headers */
+
 #include <QFile>
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QTextStream>
 
-/** C++ Include Headers */
 #include <iostream>
 #include <string>
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabMessages::qTabMessages(qDetectorMain *m) : myMainTab(m), qout(0), qerr(0) {
+qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent) {
     SetupWidgetWindow();
     Initialization();
     FILE_LOG(logDEBUG) << "Messages ready";
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qTabMessages::~qTabMessages() {
-    delete myMainTab;
     delete dispLog;
-    delete qout;
-    delete qerr;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::SetupWidgetWindow() {
     /** Layout */
@@ -63,19 +47,16 @@ void qTabMessages::SetupWidgetWindow() {
     gridLayout->addItem(new QSpacerItem(15, 10, QSizePolicy::Fixed, QSizePolicy::Fixed), 2, 0);
     gridLayout->addWidget(dispLog, 3, 0, 1, 5);
 
-    errMsg = "<nobr> Please check Messages Tab. Following message was caught:</nobr><br><br><nobr><font color=\"darkBlue\">";
-    qout = new qDebugStream(std::cout, this);
-    qerr = new qDebugStream(std::cerr, this);
+    qDebugStream *qout = new qDebugStream(std::cout, this);
+    qDebugStream *qerr = new qDebugStream(std::cerr, this);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::Initialization() {
     connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveLog()));
     connect(btnClear, SIGNAL(clicked()), this, SLOT(ClearLog()));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::customEvent(QEvent *e) {
     if (e->type() == (STREAMEVENT)) {
@@ -84,10 +65,9 @@ void qTabMessages::customEvent(QEvent *e) {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::SaveLog() {
-    QString fName = QString(myMainTab->GetFilePath());
+    QString fName = QString(""); //FIXME:current directory?
     fName = fName + "/LogFile.txt";
     fName = QFileDialog::getSaveFileName(this, tr("Save Snapshot "),
                                          fName, tr("Text files (*.txt);;All Files(*)"));
@@ -101,18 +81,15 @@ void qTabMessages::SaveLog() {
                                                       "") +
                                                    fName.toAscii().constData(),
                            "qTabMessages::SaveLog");
-        } else
-            qDefs::Message(qDefs::WARNING, "Attempt to save log file failed.", "qTabMessages::SaveLog");
+        } else {
+        	FILE_LOG(logWARNING) << "Attempt to save log file failed.";
+        	qDefs::Message(qDefs::WARNING, "Attempt to save log file failed.", "qTabMessages::SaveLog");
+        }
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::ClearLog() {
     dispLog->clear();
-#ifdef VERBOSE
-    cout << "Log Cleared" << endl;
-#endif
+    FILE_LOG(logINFO) << "Log Cleared";
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------

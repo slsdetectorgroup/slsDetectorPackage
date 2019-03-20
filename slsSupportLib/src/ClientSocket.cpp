@@ -19,7 +19,7 @@ ClientSocket::ClientSocket(const bool isRx, const std::string &host, uint16_t po
     hints.ai_flags |= AI_CANONNAME;
 
     if (getaddrinfo(host.c_str(), NULL, &hints, &result) != 0) {
-        std::string msg = "ClientSocket ERROR: decode host:" + host + " on port " + std::to_string(port) + "\n";
+        std::string msg = "ClientSocket cannot decode host:" + host + " on port " + std::to_string(port) + "\n";
         throw SocketError(msg);
     }
 
@@ -32,7 +32,7 @@ ClientSocket::ClientSocket(const bool isRx, const std::string &host, uint16_t po
 
     if (::connect(getSocketId(), (struct sockaddr *)&serverAddr, sizeof(serverAddr)) != 0) {
         freeaddrinfo(result);
-        std::string msg = "ClientSocket ERROR: cannot connect to host:" + host + " on port " + std::to_string(port) + "\n";
+        std::string msg = "ClientSocket: cannot connect to host:" + host + " on port " + std::to_string(port) + "\n";
         FILE_LOG(logERROR) << msg;
         throw SocketError(msg);
     }
@@ -57,6 +57,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         receiveData(mess, sizeof(mess));
         // cprintf(RED, "%s %d returned error: %s", type.c_str(), index, mess);
         cprintf(RED, "%s returned error: %s", (isReceiver ? "Receiver" : "Detector"), mess);
+        std::cout << "\n"; //needed to reset the color.
 
         // unrecognized function, do not ask for retval
         if (strstr(mess, "Unrecognized Function") != nullptr)

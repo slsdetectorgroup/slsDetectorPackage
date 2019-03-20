@@ -329,11 +329,6 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     std::string getHostname() const;
 
     /**
-	 * Could not connect to receiver, log error
-	 */
-    void connectDataError();
-
-    /**
 	 * Get detector type by connecting to the detector 
 	 * @returns detector tpe or GENERIC if failed
 	 */

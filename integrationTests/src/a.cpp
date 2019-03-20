@@ -16,16 +16,31 @@
 using sls::RuntimeError;
 using sls::SharedMemoryError;
 using sls::SocketError;
+using sls::DetectorError;
 
 int main() {
 
 
-    // const std::string hostname = "beb083";
-    // auto type = slsDetector::getTypeFromDetector(hostname);
-    // slsDetector d(type);
-    // d.setHostname(hostname);
-    // d.setReceiverHostname("mpc2408");
-    // std::cout << "hostname: " << d.getHostname() << '\n';
+    const std::string hostname = "beb083";
+    auto type = slsDetector::getTypeFromDetector(hostname);
+    slsDetector d(type);
+    d.setHostname(hostname);
+    d.setOnline(true);
+
+    std::cout << "hostname: " << d.getHostname() << '\n';
+    try{
+        d.setThresholdTemperature(50);
+    }catch(const DetectorError &e){
+        std::cout << "Caught: " << e.what() << '\n';
+    }
+    std::cout << "hostname: " << d.getHostname() << '\n';
+    std::cout << "exptime: " << d.setDAC(-1, slsDetectorDefs::E_Vrf, 0) << '\n';
+
+
+    std::cout << "Line: " << __LINE__ << " file: " << __FILE__ << '\n';
+
+    auto type2 = slsDetector::getTypeFromDetector("beb799");
+
     // std::cout << "port: " << d.getControlPort() << '\n';
     // d.setOnline(true);
     // d.setReceiverOnline(true);

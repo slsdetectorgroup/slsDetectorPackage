@@ -671,13 +671,23 @@ void slsDetector::updateMultiSize(int detx, int dety) {
 int slsDetector::setOnline(int value) {
     if (value != GET_ONLINE_FLAG) {
         int old_flag = detector_shm()->onlineFlag;
-        detector_shm()->onlineFlag = value;
+        detector_shm()->onlineFlag = OFFLINE_FLAG;
 
-        if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-            if (detector_shm()->onlineFlag == ONLINE_FLAG && old_flag == OFFLINE_FLAG) {
-                auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
-                FILE_LOG(logINFO) << "Detector connecting - updating!";
-                client.close();
+        if (value == ONLINE_FLAG) {
+
+            auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
+  	    client.close();
+            detector_shm()->onlineFlag = ONLINE_FLAG;
+
+            if (old_flag == OFFLINE_FLAG) {
+
+	        // check version compatibility (first time)
+                if ((detector_shm()->detectorControlAPIVersion == 0) ||
+                		(detector_shm()->detectorStopAPIVersion == 0)) {
+                	checkDetectorVersionCompatibility();
+                }
+
+                FILE_LOG(logINFO) << "Detector connecting - updating!";            
                 updateDetector();
             }
         }
@@ -3432,7 +3442,6 @@ int slsDetector::setRateCorrection(int64_t t) {
     int64_t arg = t;
     FILE_LOG(logDEBUG1) << "Setting Rate Correction to " << arg;
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        //TODO! proper error handling of rate corr
         auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
     }
@@ -3476,15 +3485,22 @@ int slsDetector::setReceiverOnline(int value) {
         if (!strcmp(detector_shm()->receiver_hostname, "none")) {
             detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
         } else {
-            detector_shm()->receiverOnlineFlag = value;
-        }
-        // set online
-        if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
-            // setReceiverTCPSocket();
-            // TODO! run a function on the receiver
-            if (detector_shm()->receiverOnlineFlag == OFFLINE_FLAG) {
-                FILE_LOG(logERROR) << "Cannot connect to receiver";
-            }
+            detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
+
+            // set online
+            if (value == ONLINE_FLAG) {
+	        
+		// connect and set offline flag
+                auto receiver = ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
+                receiver.close();
+		detector_shm()->receiverOnlineFlag = ONLINE_FLAG;
+
+                // check for version compatibility
+                if (detector_shm()->receiverAPIVersion == 0) {
+                	checkReceiverVersionCompatibility();
+                }
+	    }
+
         }
     }
     return detector_shm()->receiverOnlineFlag;
@@ -3806,7 +3822,7 @@ slsDetectorDefs::frameDiscardPolicy slsDetector::setReceiverFramesDiscardPolicy(
     int fnum = F_RECEIVER_DISCARD_POLICY;
     int ret = FAIL;
     int arg = static_cast<int>(f);
-    auto retval = (frameDiscardPolicy)-1; //TODO! ??
+    auto retval = static_cast<frameDiscardPolicy>(-1); 
     FILE_LOG(logDEBUG1) << "Setting receiver frames discard policy to " << arg;
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
         auto receiver = ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);

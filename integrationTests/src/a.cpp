@@ -16,16 +16,36 @@
 using sls::RuntimeError;
 using sls::SharedMemoryError;
 using sls::SocketError;
+using sls::DetectorError;
 
 int main() {
 
 
-    // const std::string hostname = "beb083";
-    // auto type = slsDetector::getTypeFromDetector(hostname);
-    // slsDetector d(type);
-    // d.setHostname(hostname);
-    // d.setReceiverHostname("mpc2408");
+    const std::string hostname = "beb083";
+    auto type = slsDetector::getTypeFromDetector(hostname);
+    slsDetector d(type);
+    d.setHostname(hostname);
+    d.setOnline(true);
+    std::cout << "hostname: " << d.getHostname() << '\n';
+    d.setThresholdTemperature(50);
+    // try{
+    //     d.setThresholdTemperature(50);
+    // }catch(const DetectorError &e){
+    //     std::cout << "Caught: " << e.what() << '\n';
+    // }
     // std::cout << "hostname: " << d.getHostname() << '\n';
+    // std::cout << "exptime: " << d.setDAC(-1, slsDetectorDefs::E_Vrf, 0) << '\n';
+
+
+
+
+    // slsDetector d2(type);
+    // std::cout << "Online: " << d2.getOnlineFlag() << '\n';
+    // d2.setHostname("beb55555");
+    // d2.setOnline(true);
+    // std::cout << "Online: " << d2.getOnlineFlag() << '\n';
+    // std::cout << "hostname: " << d2.getHostname() << '\n';
+
     // std::cout << "port: " << d.getControlPort() << '\n';
     // d.setOnline(true);
     // d.setReceiverOnline(true);

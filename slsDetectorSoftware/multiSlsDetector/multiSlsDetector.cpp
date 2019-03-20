@@ -26,6 +26,8 @@
 #include <future>
 #include <vector>
 
+using sls::NotImplementedError;
+using sls::RuntimeError;
 using sls::SharedMemory;
 using sls::SharedMemoryError;
 
@@ -177,7 +179,7 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 }
 
 int64_t multiSlsDetector::getReceiverSoftwareVersion(int detPos) const {
-        if (detPos >= 0) {
+    if (detPos >= 0) {
         return detectors[detPos]->getReceiverSoftwareVersion();
     }
 
@@ -397,14 +399,6 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
 
     // get type by connecting
     detectorType type = slsDetector::getTypeFromDetector(hostname.c_str(), DEFAULT_PORTNO);
-    if (type == GENERIC) {
-        FILE_LOG(logERROR) << "Could not connect to Detector " << hostname
-                           << " to determine the type!";
-        setErrorMask(getErrorMask() | MULTI_DETECTORS_NOT_ADDED);
-        appendNotAddedList(hostname.c_str());
-        return;
-    }
-
     int pos = (int)detectors.size();
     detectors.push_back(sls::make_unique<slsDetector>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
@@ -759,19 +753,21 @@ int multiSlsDetector::readConfigurationFile(const std::string &fname) {
 }
 
 int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
+    //TODO! make exception safe!
     const std::vector<std::string> names = {"detsizechan", "hostname", "outdir",
                                             "threaded"};
 
-    char *args[100];
-    for (auto &arg : args) {
-        arg = new char[1000];
-    }
     int ret = OK, ret1 = OK;
     std::ofstream outfile;
     size_t iline = 0;
 
     outfile.open(fname.c_str(), std::ios_base::out);
     if (outfile.is_open()) {
+        char *args[100];
+        for (auto &arg : args) {
+            arg = new char[1000];
+        }
+
         auto cmd = slsDetectorCommand(this);
 
         // complete size of detector
@@ -792,9 +788,6 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
         for (size_t idet = 0; idet < detectors.size(); ++idet) {
             outfile << std::endl;
             ret1 = detectors[idet]->writeConfigurationFile(outfile, this);
-            if (detectors[idet]->getErrorMask()) {
-                setErrorMask(getErrorMask() | (1 << idet));
-            }
             if (ret1 == FAIL) {
                 ret = FAIL;
             }
@@ -811,28 +804,13 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
         }
         outfile.close();
         FILE_LOG(logDEBUG1) << "wrote " << iline << " lines to configuration file ";
+        for (auto &arg : args) {
+            delete[] arg;
+        }
     } else {
-        FILE_LOG(logERROR) << "Could not open configuration file " << fname << " for writing";
-        setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
-        ret = FAIL;
+        throw RuntimeError("Could not open configuration file " + fname + " for writing");
     }
-
-    for (auto &arg : args) {
-        delete[] arg;
-    }
-
     return ret;
-}
-
-std::string multiSlsDetector::getSettingsFile(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getSettingsFile();
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getSettingsFile);
-    return sls::concatenateIfDifferent(r);
 }
 
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int detPos) {
@@ -858,7 +836,7 @@ multiSlsDetector::setSettings(detectorSettings isettings, int detPos) {
     return (detectorSettings)sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getThresholdEnergy(int detPos){
+int multiSlsDetector::getThresholdEnergy(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getThresholdEnergy();
@@ -1072,7 +1050,6 @@ int multiSlsDetector::configureMAC(int detPos) {
 int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
     // single
     if (detPos >= 0) {
-
         // error for setting values individually
         // FIXME: what else? and error code
         if (t != -1) {
@@ -1081,16 +1058,11 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
             case CYCLES_NUMBER:
             case STORAGE_CELL_NUMBER:
             case MEASUREMENTS_NUMBER:
-                FILE_LOG(logERROR)
-                    << "Cannot set number of frames, cycles, "
-                       "storage cells or measurements individually.";
-                setErrorMask(getErrorMask() | MUST_BE_MULTI_CMD);
-                return multi_shm()->timerValue[index];
+                throw RuntimeError("Cannot set number of frames, cycles,storage cells or measurements individually.");
             default:
                 break;
             }
         }
-
         return detectors[detPos]->setTimer(index, t);
     }
 
@@ -1274,9 +1246,7 @@ int multiSlsDetector::setSpeed(speedVariable index, int value, int detPos) {
 int multiSlsDetector::setDynamicRange(int dr, int detPos) {
     // single
     if (detPos >= 0) {
-        FILE_LOG(logERROR) << "Dynamic Range cannot be set individually";
-        setErrorMask(getErrorMask() | MUST_BE_MULTI_CMD);
-        return -1;
+        throw RuntimeError("Dynamic Range cannot be set individually");
     }
 
     // multi
@@ -1421,12 +1391,11 @@ uint32_t multiSlsDetector::writeRegister(uint32_t addr, uint32_t val,
     }
 
     // can't have different values
-    FILE_LOG(logERROR) << "Error: Different Values for function writeRegister "
-                          "(write 0x"
-                       << std::hex << val << " to addr 0x" << std::hex << addr
-                       << std::dec << ")";
-    setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
-    return -1;
+    std::ostringstream ss;
+    ss << "Error: Different Values for function writeRegister (write 0x"
+       << std::hex << val << " to addr 0x" << std::hex << addr
+       << std::dec << ")";
+    throw RuntimeError(ss.str());
 }
 
 uint32_t multiSlsDetector::readRegister(uint32_t addr, int detPos) {
@@ -1442,11 +1411,10 @@ uint32_t multiSlsDetector::readRegister(uint32_t addr, int detPos) {
     }
 
     // can't have different values
-    FILE_LOG(logERROR) << "Error: Different Values for function readRegister "
-                          "(read from 0x"
-                       << std::hex << addr << std::dec << ")";
-    setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
-    return -1;
+    std::ostringstream ss;
+    ss << "Error: Different Values for function readRegister (read from 0x"
+       << std::hex << addr << std::dec << ")";
+    throw RuntimeError(ss.str());
 }
 
 uint32_t multiSlsDetector::setBit(uint32_t addr, int n, int detPos) {
@@ -1462,12 +1430,12 @@ uint32_t multiSlsDetector::setBit(uint32_t addr, int n, int detPos) {
     }
 
     // can't have different values
-    FILE_LOG(logERROR) << "Error: Different Values for function setBit "
-                          "(set bit "
-                       << n << " to addr 0x" << std::hex << addr << std::dec
-                       << ")";
-    setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
-    return -1;
+    std::ostringstream ss;
+    ss << "Error: Different Values for function setBit "
+          "(set bit "
+       << n << " to addr 0x" << std::hex << addr << std::dec
+       << ")";
+    throw RuntimeError(ss.str());
 }
 
 uint32_t multiSlsDetector::clearBit(uint32_t addr, int n, int detPos) {
@@ -1483,12 +1451,10 @@ uint32_t multiSlsDetector::clearBit(uint32_t addr, int n, int detPos) {
     }
 
     // can't have different values
-    FILE_LOG(logERROR) << "Error: Different Values for function clearBit "
-                          "(clear bit "
-                       << n << " to addr 0x" << std::hex << addr << std::dec
-                       << ")";
-    setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
-    return -1;
+    std::ostringstream ss;
+    ss << "Error: Different Values for function clearBit (clear bit "
+       << n << " to addr 0x" << std::hex << addr << std::dec << ")";
+    throw RuntimeError(ss.str());
 }
 
 std::string multiSlsDetector::setDetectorMAC(const std::string &detectorMAC, int detPos) {
@@ -1955,10 +1921,7 @@ int multiSlsDetector::loadImageToDetector(imageType index,
     int nch = multi_shm()->numberOfChannels;
     short int imageVals[nch];
     if (readDataFile(fname, imageVals, nch) < nch * (int)sizeof(short int)) {
-        FILE_LOG(logERROR) << "Could not open file or not enough data in file "
-                              "to load image to detector.";
-        setErrorMask(getErrorMask() | MULTI_OTHER_ERROR);
-        return -1;
+        throw RuntimeError("Could not open file or not enough data in file to load image to detector.");
     }
 
     // send image to all
@@ -1994,11 +1957,8 @@ int multiSlsDetector::writeCounterBlockFile(const std::string &fname,
     if (sls::allEqualTo(r, static_cast<int>(OK))) {
         if (writeDataFile(fname, nch, imageVals) <
             nch * (int)sizeof(short int)) {
-            FILE_LOG(logERROR) << "Could not open file to write or did not "
-                                  "write enough data in file "
-                                  "to wrte counter block file from detector.";
-            setErrorMask(getErrorMask() | MULTI_OTHER_ERROR);
-            return -1;
+            throw RuntimeError("Could not open file to write or did not write enough data"
+                               " in file to write counter block file from detector.");
         }
         return OK;
     }
@@ -2400,9 +2360,7 @@ int multiSlsDetector::setAllTrimbits(int val, int detPos) {
 int multiSlsDetector::enableGapPixels(int val, int detPos) {
     if (getDetectorTypeAsEnum() != EIGER) {
         if (val >= 0) {
-            FILE_LOG(logERROR) << "Function (enableGapPixels) not implemented "
-                                  "for this detector";
-            setErrorMask(getErrorMask() | MULTI_OTHER_ERROR);
+            throw NotImplementedError("Function (enableGapPixels) not implemented for this detector");
         }
         return 0;
     }
@@ -2410,10 +2368,7 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
     // single
     if (detPos >= 0) {
         if (val >= 0) {
-            FILE_LOG(logERROR) << "Function (enableGapPixels) must be called "
-                                  "from a multi detector level.";
-            setErrorMask(getErrorMask() | MUST_BE_MULTI_CMD);
-            return -1;
+            throw RuntimeError("Function (enableGapPixels) must be called from a multi detector level.");
         }
         return detectors[detPos]->enableGapPixels(val);
     }
@@ -2952,10 +2907,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
         portnum += (iSocket % numSocketsPerDetector);
         try {
             zmqSocket.push_back(sls::make_unique<ZmqSocket>(
-                detectors[iSocket / numSocketsPerDetector]
-                    ->getClientStreamingIP()
-                    .c_str(),
-                portnum));
+                detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(), portnum));
             FILE_LOG(logINFO) << "Zmq Client[" << iSocket << "] at " << zmqSocket.back()->GetZmqServerAddress();
         } catch (...) {
             FILE_LOG(logERROR) << "Could not create Zmq socket on port " << portnum;
@@ -3352,12 +3304,7 @@ int multiSlsDetector::enableDataStreamingToClient(int enable) {
             // create data threads
         } else {
             if (createReceivingDataSockets() == FAIL) {
-                FILE_LOG(logERROR)
-                    << "Could not create data threads in client.";
-                detectors[0]->setErrorMask((detectors[0]->getErrorMask()) |
-                                           (DATA_STREAMING));
-                // only for the first det as theres no general one
-                setErrorMask(getErrorMask() | (1 << 0));
+                throw RuntimeError("Could not create data threads in client.");
             }
         }
     }
@@ -3414,25 +3361,19 @@ int multiSlsDetector::setPattern(const std::string &fname, int detPos) {
     if (detPos >= 0) {
         return detectors[detPos]->setPattern(fname);
     }
-
-    // multi
-    int addr = 0;
-
     FILE *fd = fopen(fname.c_str(), "r");
     if (fd == nullptr) {
-        FILE_LOG(logERROR) << "Could not open file";
-        setErrorMask(getErrorMask() | MULTI_OTHER_ERROR);
-        return -1;
+        throw RuntimeError("multiSlsDetector::setPattern: Could not open file");
+    } else {
+        int addr{0};
+        uint64_t word{0};
+        while (fread(&word, sizeof(word), 1, fd)) {
+            serialCall(&slsDetector::setPatternWord, addr, word);
+            ++addr;
+        }
+        fclose(fd);
+        return addr;
     }
-
-    uint64_t word;
-    while (fread(&word, sizeof(word), 1, fd)) {
-        serialCall(&slsDetector::setPatternWord, addr, word);
-        ++addr;
-    }
-
-    fclose(fd);
-    return addr;
 }
 
 uint64_t multiSlsDetector::setPatternWord(int addr, uint64_t word, int detPos) {
@@ -3505,40 +3446,30 @@ uint64_t multiSlsDetector::getPatternMask(int detPos) {
     if (sls::allEqual(r)) {
         return r.front();
     }
+    // should not have different values
+    throw RuntimeError("multiSlsDetector::getPatternMask: Error: Different Values returned)");
 
-    // can't have different values
-    FILE_LOG(logERROR) << "Error: Different Values returned)";
-    setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
-    return -1;
 }
 
 int multiSlsDetector::setPatternBitMask(uint64_t mask, int detPos) {
-    // single
     if (detPos >= 0) {
         return detectors[detPos]->setPatternBitMask(mask);
     }
-
-    // multi
     auto r = parallelCall(&slsDetector::setPatternBitMask, mask);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
 uint64_t multiSlsDetector::getPatternBitMask(int detPos) {
-    // single
     if (detPos >= 0) {
         return detectors[detPos]->getPatternBitMask();
     }
-
-    // multi
     auto r = parallelCall(&slsDetector::getPatternBitMask);
     if (sls::allEqual(r)) {
         return r.front();
     }
 
-    // can't have different values
-    FILE_LOG(logERROR) << "Error: Different Values returned)";
-    setErrorMask(getErrorMask() | MULTI_HAVE_DIFFERENT_VALUES);
-    return -1;
+    // should not have different values
+    throw RuntimeError("multiSlsDetector::getPatternBitMask Different Values returned)");
 }
 
 int multiSlsDetector::setLEDEnable(int enable, int detPos) {
@@ -3612,7 +3543,6 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
                     // }
                     skip = 0;
                 }
-
                 if (level != 2) {
                     if (std::string(args[0]) == std::string("trimbits")) {
                         skip = 1;
@@ -3627,24 +3557,15 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
         infile.close();
 
     } else {
-        FILE_LOG(logERROR) << "Error opening  " << fname << " for reading";
-        return FAIL;
+        throw RuntimeError("Error opening  " + fname + " for reading");
     }
     FILE_LOG(logDEBUG1) << "Read  " << iline << " lines";
-
-    if (getErrorMask()) {
-        return FAIL;
-    }
-
     return OK;
 }
 
 int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
     detectorType type = getDetectorTypeAsEnum();
-    // std::string names[100];
     std::vector<std::string> names;
-    // int nvar = 0;
-
     // common config
     names.emplace_back("fname");
     names.emplace_back("index");
@@ -4025,17 +3946,4 @@ int multiSlsDetector::kbhit() {
     FD_SET(STDIN_FILENO, &fds); // STDIN_FILENO is 0
     select(STDIN_FILENO + 1, &fds, nullptr, nullptr, &tv);
     return FD_ISSET(STDIN_FILENO, &fds);
-}
-
-bool multiSlsDetector::isDetectorIndexOutOfBounds(int detPos) {
-    // position exceeds multi list size
-    if (detPos >= static_cast<int>(detectors.size())) {
-        FILE_LOG(logERROR) << "Position " << detPos
-                           << " is out of bounds with "
-                              "a detector list of "
-                           << detectors.size();
-        setErrorMask(getErrorMask() | MULTI_POS_EXCEEDS_LIST);
-        return true;
-    }
-    return false;
 }

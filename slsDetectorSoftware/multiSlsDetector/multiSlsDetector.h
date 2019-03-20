@@ -108,11 +108,7 @@ struct sharedMultiSlsDetector {
     bool receiver_upstream;
 };
 
-class multiSlsDetector : public virtual slsDetectorDefs,
-                         public virtual errorDefs {
-
-    // private:
-
+class multiSlsDetector : public virtual slsDetectorDefs {
   public:
     /**
      * Constructor
@@ -479,13 +475,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns OK or FAIL
      */
     int writeConfigurationFile(const std::string &fname);
-
-    /**
-     * Returns the trimfile or settings file name (Useless??)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the trimfile or settings file name
-     */
-    std::string getSettingsFile(int detPos = -1);
 
     /**
      * Get detector settings
@@ -1840,11 +1829,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns OK or FAIL depending on if it already started
      */
     int acquire();
-
-    /**
-     * Returns true if detector position is out of bounds
-     */
-    bool isDetectorIndexOutOfBounds(int detPos);
 
     /**
      * Combines data from all readouts and gives it to the gui

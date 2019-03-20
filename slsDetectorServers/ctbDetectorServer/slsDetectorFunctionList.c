@@ -924,9 +924,9 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	case FRAME_PERIOD:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
-			val *= (1E-3 * clkDivider[ADC_CLK]);
+			val *= (1E-3 * clkDivider[SYNC_CLK]);
 		}
-		retval = set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG )/ (1E-3 * clkDivider[ADC_CLK]);
+		retval = set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG )/ (1E-3 * clkDivider[SYNC_CLK]);
 		FILE_LOG(logINFO, ("\tGetting period: %lldns\n", (long long int)retval));
 		break;
 
@@ -984,7 +984,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 		break;
 
     case FRAME_PERIOD:
-        retval = get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
+        retval = get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
         FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
         break;
 
@@ -1028,6 +1028,14 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         return OK;
     switch(ind) {
     case FRAME_PERIOD:
+        // convert to freq
+        val *= (1E-3 * clkDivider[SYNC_CLK]);
+        // convert back to timer
+        val = (val) / (1E-3 * clkDivider[SYNC_CLK]);
+        if (val != retval) {
+        	return FAIL;
+        }
+        break;
     case DELAY_AFTER_TRIGGER:
         // convert to freq
         val *= (1E-3 * clkDivider[ADC_CLK]);
@@ -2290,23 +2298,22 @@ void unsetFifoReadStrobes() {
 }
 
 void readSample(int ns) {
-	if (!(ns%1000)) {
-		FILE_LOG(logINFO, ("Reading sample ns:%d (out of %d), DigitalFifoEmpty:%d AnalogFifoEmptyReg:0x%x\n",
-				ns, nSamples,
-				((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
-				bus_r(FIFO_EMPTY_REG)));
-	}
     uint32_t addr = DUMMY_REG;
-    uint32_t fifoAddr = FIFO_DATA_REG;
 
     // read adcs
     if (analogEnable) {
+
+        uint32_t fifoAddr = FIFO_DATA_REG;
 
         // read strobe to all analog fifos
         bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
         bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
         // wait as it is connected directly to fifo running on a different clock
-        usleep(WAIT_TIME_FIFO_RD_STROBE);
+        //usleep(WAIT_TIME_FIFO_RD_STROBE);
+        if (!(ns%1000)) {
+    		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x Status:0x%x\n",
+    				ns, nSamples, bus_r(FIFO_EMPTY_REG), bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
+        }
 
         // loop through all channels
         int ich = 0;
@@ -2325,10 +2332,10 @@ void readSample(int ns) {
                 *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
 
                 // keep reading till the value is the same
-                while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
+               /* while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
                     FILE_LOG(logDEBUG1, ("%d ", ich));
                     *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
-                }
+                }*/
 
                 // increment pointer to data out destination
                 now_ptr += 2;
@@ -2342,7 +2349,13 @@ void readSample(int ns) {
         bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
         bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
         // wait as it is connected directly to fifo running on a different clock
-        usleep(WAIT_TIME_FIFO_RD_STROBE);
+        if (!(ns%1000)) {
+    		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
+    				ns, nSamples,
+					((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
+					((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_FULL_MSK) >> FIFO_DIN_STATUS_FIFO_FULL_OFST),
+					bus_r(STATUS_REG)));
+        }
 
         // read fifo and write it to current position of data pointer
         *((uint64_t*)now_ptr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
@@ -2392,7 +2405,7 @@ int checkFifoForEndOfAcquisition() {
         // check if data in fifo again
         dataPresent = checkDataInFifo();
     }
-    FILE_LOG(logDEBUG2, ("Got data :0x%x\n", dataPresent));
+    FILE_LOG(logDEBUG1, ("Got data :0x%x\n", dataPresent));
     return OK;
 }
 

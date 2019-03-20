@@ -5,7 +5,7 @@
 
 #define GOODBYE 					(-200)
 #define MIN_REQRD_VRSN_T_RD_API     0x181130
-#define REQRD_FRMWR_VRSN            0x181130
+#define REQRD_FRMWR_VRSN            0x190310
 
 #define PROGRAMMING_MODE            (0x2)
 #define CTRL_SRVR_INIT_TIME_US      (1 * 1000 * 1000)

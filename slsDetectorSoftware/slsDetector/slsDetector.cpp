@@ -96,31 +96,29 @@ int slsDetector::checkDetectorVersionCompatibility() {
 
     // control server
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+
+    	// in case it throws
+    	detector_shm()->detectorControlAPIVersion = 0;
+    	detector_shm()->detectorStopAPIVersion = 0;
+    	detector_shm()->onlineFlag = OFFLINE_FLAG;
+
         auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
 
-        if (ret == FAIL) {
-            detector_shm()->detectorControlAPIVersion = 0;
+        auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
+        ret = stop.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
 
-            // stop server
-        } else {
-            detector_shm()->detectorControlAPIVersion = arg;
-            ret = FAIL;
-            auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
-            ret = stop.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
-            if (ret == FAIL) {
-                detector_shm()->detectorStopAPIVersion = 0;
-            } else {
-                detector_shm()->detectorStopAPIVersion = arg;
-            }
-        }
+        // success
+        detector_shm()->detectorControlAPIVersion = arg;
+        detector_shm()->detectorStopAPIVersion = arg;
+        detector_shm()->onlineFlag = ONLINE_FLAG;
+
     }
-    if (ret == FAIL) {
-        setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));
-        // if (strstr(mess, "Unrecognized Function") != nullptr) {
-        //     FILE_LOG(logERROR) << "The " << ((t == CONTROL_PORT) ? "detector" : "receiver") << " server is too old to get API version. Please update detector server!";
-        // }
-    }
+
+    // pointless
+//    if (ret == FAIL) {
+//        setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));
+//     }
 
     return ret;
 }
@@ -128,24 +126,38 @@ int slsDetector::checkDetectorVersionCompatibility() {
 int slsDetector::checkReceiverVersionCompatibility() {
     int fnum = F_RECEIVER_CHECK_VERSION;
     int ret = FAIL;
+    // char mess[MAX_STR_LENGTH]{};
     int64_t arg = APIRECEIVER;
 
-    FILE_LOG(logDEBUG1) << "Checking version compatibility with receiver with value "
+    FILE_LOG(logDEBUG1) << "Checking version compatibility with receiver with "
+                           "value "
                         << std::hex << arg << std::dec;
 
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+
+    	// in case it throws
+    	detector_shm()->receiverAPIVersion = 0;
+    	detector_shm()->receiverOnlineFlag = OFFLINE_FLAG;
+
         auto receiver = ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
-        detector_shm()->receiverAPIVersion = arg;
+
+        // success
+    	detector_shm()->receiverAPIVersion = arg;
+    	detector_shm()->receiverOnlineFlag = ONLINE_FLAG;
     }
+
+    // pointless
+//    if (ret == FAIL) {
+//        setErrorMask((getErrorMask()) | (VERSION_COMPATIBILITY));
+//    }
+
     return ret;
 }
 
 int64_t slsDetector::getId(idMode mode) {
-    int arg = static_cast<int>(mode);
+    int arg = (int)mode;
     int64_t retval = -1;
-    int fnum = F_GET_ID;
-    int ret = FAIL;
     FILE_LOG(logDEBUG1) << "Getting id type " << mode;
 
     //These four should not go to detector...
@@ -154,6 +166,8 @@ int64_t slsDetector::getId(idMode mode) {
     assert(mode != CLIENT_SOFTWARE_API_VERSION);
     assert(mode != CLIENT_RECEIVER_API_VERSION);
 
+    int fnum = F_GET_ID;
+    int ret = FAIL;
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
@@ -217,13 +231,13 @@ void slsDetector::initSharedMemory(detectorType type,
     } else {
         detector_shm.OpenSharedMemory();
         if (verify && detector_shm()->shmversion != SLS_SHMVERSION) {
-            std::ostringstream ss;
-            ss << "Single shared memory ("<<  multi_id << "-" << detId
-               << ":) version mismatch (expected 0x" <<std::hex << SLS_SHMVERSION 
-               << " but got 0x" << detector_shm()->shmversion << ")" << std::dec;
-            std::string msg = ss.str();
-            FILE_LOG(logERROR) << msg;
-            throw SharedMemoryError(msg);
+            FILE_LOG(logERROR) << "Single shared memory "
+                                  "("
+                               << multi_id << "-" << detId << ":) "
+                                                              "version mismatch "
+                                                              "(expected 0x"
+                               << std::hex << SLS_SHMVERSION << " but got 0x" << detector_shm()->shmversion << ")" << std::dec;
+            throw SharedMemoryError("Shared memory version mismatch (det)");
         }
     }
 }
@@ -282,7 +296,7 @@ void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterL
         break;
     default:
         FILE_LOG(logERROR) << "Unknown detector type! " << type;
-        throw RuntimeError("Unknown detector type passed to setDetectorSpecificParameters");
+        throw RuntimeError("Unknown detector type");
     }
 }
 
@@ -447,6 +461,10 @@ void slsDetector::deleteModule(sls_detector_module *myMod) {
     delete myMod;
 }
 
+void slsDetector::connectDataError() {
+    FILE_LOG(logERROR) << "Cannot connect to receiver";
+    setErrorMask((getErrorMask()) | (CANNOT_CONNECT_TO_RECEIVER));
+}
 
 int slsDetector::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
     TLogLevel level = logDEBUG1;
@@ -3134,7 +3152,7 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
         arg = detector_shm()->roiLimits;
         FILE_LOG(logDEBUG1) << "Sending ROI to receiver: " << detector_shm()->nROI;
 
-        auto receiver = ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
+        auto receiver = ReceiverSocket( detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         receiver.sendData(&fnum, sizeof(fnum));
         receiver.sendData(&narg, sizeof(narg));
         if (narg != -1) {
@@ -3213,7 +3231,7 @@ int slsDetector::activate(int const enable) {
         retval = -1;
         FILE_LOG(logDEBUG1) << "Setting activate flag " << arg << " to receiver";
 
-        auto receiver = ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
+        auto receiver = ReceiverSocket( detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
 
         // handle ret
@@ -3436,11 +3454,17 @@ int slsDetector::setThresholdTemperature(int val) {
     int arg = val;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting threshold temperature to " << val;
+
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
         ret = stop.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-        FILE_LOG(logDEBUG1) << "Threshold temperature: " << retval;
-        // no updateDetector as it is stop server
+
+        // handle ret
+        if (ret == FAIL) {
+            setErrorMask((getErrorMask()) | (TEMPERATURE_CONTROL));
+        } else {
+            FILE_LOG(logDEBUG1) << "Threshold temperature: " << retval;
+        } // no updateDetector as it is stop server
     }
     return retval;
 }

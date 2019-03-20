@@ -16,6 +16,7 @@ auto type_enum = slsDetectorDefs::detectorType::EIGER;
 const std::string hostname = "beb083";
 const std::string type_string = "Eiger";
 const std::string my_ip = "129.129.205.242";
+
 TEST_CASE("single EIGER detector no receiver basic set and get") {
     //TODO! this test should take command line arguments for config
 
@@ -195,13 +196,4 @@ TEST_CASE("Excersise all possible set timer functions") {
     CHECK(d.setTimer(slsDetectorDefs::timerIndex::SUBFRAME_ACQUISITION_TIME) == subtime);
 }
 
-// TEST_CASE("ACQ") {
-//     auto type = slsDetector::getTypeFromDetector(hostname);
-//     auto d = slsDetector(type);
-//     d.setHostname(hostname);
-//     d.setOnline(true);
-
-//     d.prepareAcquisition();
-//     d.startAcquisition();
-//     d.stopAcquisition();
-// }
+// TEST_CASE()

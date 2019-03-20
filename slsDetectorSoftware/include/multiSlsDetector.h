@@ -9,6 +9,7 @@
  */
 #include "SharedMemory.h"
 #include "error_defs.h"
+#include "gitInfoLib.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
 class slsDetector;
@@ -107,11 +108,7 @@ struct sharedMultiSlsDetector {
     bool receiver_upstream;
 };
 
-class multiSlsDetector : public virtual slsDetectorDefs,
-                         public virtual errorDefs {
-
-    // private:
-
+class multiSlsDetector : public virtual slsDetectorDefs {
   public:
     /**
      * Constructor
@@ -120,7 +117,9 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit multiSlsDetector(int multi_id = 0, bool verify = true, bool update = true);
+    explicit multiSlsDetector(int multi_id = 0,
+                              bool verify = true,
+                              bool update = true);
 
     /**
      * Destructor
@@ -134,28 +133,39 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * one
      * @param update true to update last user pid, date etc
      */
-    void setupMultiDetector(bool verify = true, bool update = true);
+    void setupMultiDetector(bool verify = true,
+                            bool update = true);
 
     /**
-     * Loop through the detectors serially
-     * and return a vector of results
+     * Loop through the detectors serially and return the result as a vector
      */
     template <class CT>
     struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args);
+    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...),
+                               typename NonDeduced<CT>::type... Args);
 
     /**
-     * Loop through the detectors in parallel threads
-     * and return a vector of results
+     * Loop through the detectors serially and return the result as a vector
+     * Const qualified version
+     */
+    template <typename RT, typename... CT>
+    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...) const,
+                               typename NonDeduced<CT>::type... Args) const;
+
+    /**
+     * Loop through the detectors in parallel and return the result as a vector
      */
     template <typename RT, typename... CT>
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
                                  typename NonDeduced<CT>::type... Args);
 
-     //Const qualified version
+    /**
+     * Loop through the detectors in parallel and return the result as a vector
+     * Const qualified version
+     */
     template <typename RT, typename... CT>
-    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
+    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...) const,
                                  typename NonDeduced<CT>::type... Args) const;
 
     /**
@@ -170,53 +180,10 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);
 
     /**
-     * Checks error mask and returns error message and its severity if it exists
-     * @param critical is 1 if any of the messages is critical
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns error message else an empty std::string
-     */
-    std::string getErrorMessage(int &critical, int detPos = -1);
-
-    /**
-     * Clears error mask of both multi and sls
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns error mask
-     */
-    int64_t clearAllErrorMask(int detPos = -1);
-
-    /**
-     * Set Error Mask from all detectors
-     * if each had errors in the mask already
-     */
-    void setErrorMaskFromAllDetectors();
-
-    /**
-     * Sets error mask
-     * @param multi error mask to be set to
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns multi error mask
-     */
-    int64_t  setModuleErrorMask(int64_t i, int detPos = -1);
-
-    /**
-     * Returns multi error mask
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns multi error mask
-     */
-    int64_t  getModuleErrorMask(int detPos = -1);
-
-    /**
-     * Clears error mask
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns error mask
-     */
-    int64_t clearModuleErrorMask(int detPos = -1);
-
-    /**
      * Set acquiring flag in shared memory
      * @param b acquiring flag
      */
-    void setAcquiringFlag(bool b = false);
+    void setAcquiringFlag(bool flag);
 
     /**
      * Get acquiring flag from shared memory
@@ -255,6 +222,13 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      */
     int64_t getId(idMode mode, int detPos = -1);
 
+    int64_t getClientSoftwareVersion() const {
+        return GITDATE;
+    }
+
+    int64_t getReceiverSoftwareVersion(int detPos = -1) const;
+
+    std::vector<int64_t> getDetectorNumber();
     /**
      * Free shared memory from the command line
      * avoiding creating the constructor classes and mapping
@@ -293,7 +267,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns concatenated hostnames of all detectors or hostname of specific
      * one
      */
-    std::string getHostname(int detPos = -1);
+    std::string getHostname(int detPos = -1) const;
 
     /**
      * Appends detectors to the end of the list in shared memory
@@ -506,13 +480,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns OK or FAIL
      */
     int writeConfigurationFile(const std::string &fname);
-
-    /**
-     * Returns the trimfile or settings file name (Useless??)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the trimfile or settings file name
-     */
-    std::string getSettingsFile(int detPos = -1);
 
     /**
      * Get detector settings
@@ -911,7 +878,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address
      */
-    std::string getDetectorIP(int detPos = -1);
+    std::string getDetectorIP(int detPos = -1) const;
 
     /**
      * Validates and sets the receiver.
@@ -921,14 +888,14 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address from shared memory
      */
-    std::string setReceiver(const std::string &receiver, int detPos = -1);
+    std::string setReceiverHostname(const std::string &receiver, int detPos = -1);
 
     /**
      * Returns the receiver IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address
      */
-    std::string getReceiver(int detPos = -1);
+    std::string getReceiverHostname(int detPos = -1) const;
 
     /**
      * Validates the format of the receiver UDP IP address and sets it
@@ -943,7 +910,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address
      */
-    std::string getReceiverUDPIP(int detPos = -1);
+    std::string getReceiverUDPIP(int detPos = -1) const;
 
     /**
      * Validates the format of the receiver UDP MAC address and sets it
@@ -958,7 +925,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string getReceiverUDPMAC(int detPos = -1);
+    std::string getReceiverUDPMAC(int detPos = -1) const;
 
     /**
      * Sets the receiver UDP port
@@ -973,7 +940,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port
      */
-    int getReceiverUDPPort(int detPos = -1);
+    int getReceiverUDPPort(int detPos = -1) const;
 
     /**
      * Sets the receiver UDP port 2
@@ -988,7 +955,7 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2 of same interface
      */
-    int getReceiverUDPPort2(int detPos = -1);
+    int getReceiverUDPPort2(int detPos = -1) const;
 
     /**
      * (advanced users)
@@ -1870,11 +1837,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
      * @returns OK or FAIL depending on if it already started
      */
     int acquire();
-
-    /**
-     * Returns true if detector position is out of bounds
-     */
-    bool isDetectorIndexOutOfBounds(int detPos);
 
     /**
      * Combines data from all readouts and gives it to the gui

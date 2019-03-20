@@ -4,6 +4,7 @@ import numpy as np
 class DetectorProperty:
     """
     Base class for a detector property that should be accessed by name and index
+    TODO! Calls are not in parallel and exposes object that can be passes around
     """
     def __init__(self, get_func, set_func, nmod_func, name):
         self.get = get_func

@@ -2796,9 +2796,9 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
   	  return myDet->getDetectorIP(detPos);
     } else if (cmd == "rx_hostname") {
     	  if (action == PUT_ACTION) {
-    		  myDet->setReceiver(args[1], detPos);
+    		  myDet->setReceiverHostname(args[1], detPos);
     	  }
-    	  return myDet->getReceiver(detPos);
+    	  return myDet->getReceiverHostname(detPos);
     } else if (cmd == "rx_udpip") {
     	  if (action == PUT_ACTION) {
     		  myDet->setReceiverUDPIP(args[1], detPos);
@@ -3418,7 +3418,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, 
             else
                 return std::string("failed");
         }
-        return myDet->getSettingsFile(detPos);
+        return std::string("Specify file name for geting settings file");
     } else if (cmd == "trimval") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &val))
@@ -3465,7 +3465,7 @@ std::string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int de
         return helpSN(action);
 
     if (cmd == "thisversion") {
-        int64_t retval = myDet->getId(THIS_SOFTWARE_VERSION, detPos);
+        int64_t retval = myDet->getClientSoftwareVersion();
         if (retval < 0)
             sprintf(answer, "%d", -1);
         else
@@ -3504,7 +3504,7 @@ std::string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int de
 
     if (cmd == "receiverversion") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
-        int64_t retval = myDet->getId(RECEIVER_VERSION, detPos);
+        int64_t retval = myDet->getReceiverSoftwareVersion(detPos);
         if (retval < 0)
             sprintf(answer, "%d", -1);
         else

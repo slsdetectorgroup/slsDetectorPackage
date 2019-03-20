@@ -122,9 +122,6 @@ struct sharedSlsDetector {
     /** readout flags */
     slsDetectorDefs::readOutFlags roFlags;
 
-    /** name root of the output files */
-    char settingsFile[MAX_STR_LENGTH];
-
     /** detector settings (standard, fast, etc.) */
     slsDetectorDefs::detectorSettings currentSettings;
 
@@ -245,7 +242,7 @@ struct sharedSlsDetector {
     bool receiver_overWriteEnable;
 };
 
-class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
+class slsDetector : public virtual slsDetectorDefs{
   public:
     /**
 	 * Constructor called when creating new shared memory
@@ -295,6 +292,9 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 */
     int64_t getId(idMode mode);
 
+
+	int64_t getReceiverSoftwareVersion() const;
+
     /**
 	 * Free shared memory without creating objects
 	 * If this is called, must take care to update
@@ -323,12 +323,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Gets the hostname of detector
 	 * @returns hostname
 	 */
-    std::string getHostname();
-
-    /**
-	 * Could not connect to receiver, log error
-	 */
-    void connectDataError();
+    std::string getHostname() const;
 
     /**
 	 * Get detector type by connecting to the detector 
@@ -340,13 +335,13 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Get Detector type from shared memory variable
 	 * @returns detector type from shared memory variable
 	 */
-    detectorType getDetectorTypeAsEnum();
+    detectorType getDetectorTypeAsEnum() const;
 
     /**
 	 * Gets string version of detector type from shared memory variable
 	 * @returns string version of detector type from shared memory variable
 	 */
-    std::string getDetectorTypeAsString();
+    std::string getDetectorTypeAsString() const;
 
     /**
 	 * Gets detector type from detector and set it in receiver
@@ -359,7 +354,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the total number of channels from shared memory
 	 * @returns the total number of channels
 	 */
-    int getTotalNumberOfChannels();
+    int getTotalNumberOfChannels() const;
 
     /**
 	 * Update total number of channels (chiptestboard or moench)
@@ -372,7 +367,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param d dimension d
 	 * @returns the total number of channels  in dimension d
 	 */
-    int getTotalNumberOfChannels(dimension d);
+    int getTotalNumberOfChannels(dimension d) const;
 
     /**
 	 * Returns the total number of channels of in dimension d including gap pixels
@@ -381,40 +376,40 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @returns the total number of channels including gap pixels in dimension d
 	 * including gap pixels
 	 */
-    int getTotalNumberOfChannelsInclGapPixels(dimension d);
+    int getTotalNumberOfChannelsInclGapPixels(dimension d) const;
 
     /**
 	 * returns the number of channels per chip from shared memory (Mythen)
 	 * @returns number of channels per chip
 	 */
-    int getNChans();
+    int getNChans() const;
 
     /**
 	 * returns the number of channels per chip in dimension d from shared memory (Mythen)
 	 * @param d dimension d
 	 * @returns number of channels per chip in dimension d
 	 */
-    int getNChans(dimension d);
+    int getNChans(dimension d) const;
 
     /**
 	 * returns the number of chips per module from shared memory (Mythen)
 	 * @returns number of chips per module
 	 */
-    int getNChips();
+    int getNChips() const;
 
     /**
 	 * returns the number of chips per module in dimension d from shared memory (Mythen)
 	 * @param d dimension d
 	 * @returns number of chips per module in dimension d
 	 */
-    int getNChips(dimension d);
+    int getNChips(dimension d) const;
 
     /**
 	 * Get Detector offset from shared memory in dimension d
 	 * @param d dimension d
 	 * @returns offset in dimension d
 	 */
-    int getDetectorOffset(dimension d);
+    int getDetectorOffset(dimension d) const;
 
     /**
 	 * Set Detector offset in shared memory in dimension d
@@ -532,12 +527,6 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @returns OK or FAIL
 	 */
     int writeConfigurationFile(std::ofstream &outfile, multiSlsDetector *m);
-
-    /**
-	 * Returns the trimfile or settings file name (Useless??)
-	 * @returns the trimfile or settings file name
-	 */
-    std::string getSettingsFile();
 
     /**
 	 * Get detector settings
@@ -810,7 +799,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the detector IP address\sa sharedSlsDetector
 	 * @returns the detector IP address
 	 */
-    std::string getDetectorIP();
+    std::string getDetectorIP() const;
 
     /**
 	 * Validates and sets the receiver.
@@ -819,13 +808,13 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param receiver receiver hostname or IP address
 	 * @returns the receiver IP address from shared memory
 	 */
-    std::string setReceiver(const std::string &receiver);
+    std::string setReceiverHostname(const std::string &receiver);
 
     /**
 	 * Returns the receiver IP address\sa sharedSlsDetector
 	 * @returns the receiver IP address
 	 */
-    std::string getReceiver();
+    std::string getReceiverHostname() const;
 
     /**
 	 * Validates the format of the receiver UDP IP address and sets it \sa sharedSlsDetector
@@ -838,7 +827,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the receiver UDP IP address\sa sharedSlsDetector
 	 * @returns the receiver UDP IP address
 	 */
-    std::string getReceiverUDPIP();
+    std::string getReceiverUDPIP() const;
 
     /**
 	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
@@ -851,7 +840,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the receiver UDP MAC address\sa sharedSlsDetector
 	 * @returns the receiver UDP MAC address
 	 */
-    std::string getReceiverUDPMAC();
+    std::string getReceiverUDPMAC() const;
 
     /**
 	 * Sets the receiver UDP port\sa sharedSlsDetector
@@ -864,7 +853,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the receiver UDP port\sa sharedSlsDetector
 	 * @returns the receiver UDP port
 	 */
-    int getReceiverUDPPort();
+    int getReceiverUDPPort() const;
 
     /**
 	 * Sets the receiver UDP port 2\sa sharedSlsDetector
@@ -877,7 +866,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
 	 * @returns the receiver UDP port 2 of same interface
 	 */
-    int getReceiverUDPPort2();
+    int getReceiverUDPPort2() const;
 
     /**
 	 * Sets the client zmq port\sa sharedSlsDetector
@@ -1103,7 +1092,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param d axis across which data is flipped
 	 * @returns 1 for flipped, else 0
 	 */
-    int getFlippedData(dimension d = X);
+    int getFlippedData(dimension d = X) const;
 
     /**
 	 * Sets the enable which determines if
@@ -1318,13 +1307,13 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
      updates the shared memory receiving the data from the detector (without asking and closing the connection
      /returns OK
 	 */
-    int updateReceiverNoWait(sls::ClientSocket &receiver);
+    // int updateReceiverNoWait(sls::ClientSocket &receiver);
 
     /**
 	 * Updates the shared memory receiving the data from the detector
 	 * @returns OK or FAIL
 	 */
-    int updateReceiver();
+    int updateCachedReceiverVariables() const;
 
     /**
 	 * Send the multi detector size to the detector
@@ -1736,7 +1725,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
     const int detId;
 
     /** Shared Memory object */
-    sls::SharedMemory<sharedSlsDetector> detector_shm{0,0};
+    mutable sls::SharedMemory<sharedSlsDetector> detector_shm{0,0};
 
 };
 

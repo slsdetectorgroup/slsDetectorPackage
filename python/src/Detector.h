@@ -89,6 +89,30 @@ class Detector {
         return det.getReceiverCurrentFrameIndex();
     }
 
+    std::string getReceiverHostname(int det_id = -1) const {
+        return det.getReceiverHostname(det_id);
+    }
+
+    void setReceiverHostname(std::string hostname, int det_id = -1) {
+        det.setReceiverHostname(hostname, det_id);
+    }
+
+    std::string getReceiverUDPIP(int det_id = -1) const {
+        return det.getReceiverUDPIP(det_id);
+    }
+
+    void setReceiverUDPIP(std::string ip, int det_id = -1) {
+        det.setReceiverUDPIP(ip, det_id);
+    }
+
+    std::string getReceiverUDPMAC(int det_id = -1){
+        return det.getReceiverUDPMAC(det_id);
+    }
+
+    void setReceiverUDPMAC(std::string mac, int det_id = -1){
+        det.setReceiverUDPMAC(mac, det_id);
+    }
+
     void startReceiver() { det.startReceiver(); }
     void stopReceiver() { det.stopReceiver(); }
 
@@ -104,23 +128,6 @@ class Detector {
 
     std::string checkOnline() {
         return det.checkOnline();
-    }
-
-    void clearErrorMask() {
-        det.clearAllErrorMask();
-    }
-
-    int64_t getErrorMask() {
-        return det.getErrorMask();
-    }
-    void setErrorMask(const int64_t i) {
-        det.setErrorMask(i);
-    }
-
-    std::string getErrorMessage() {
-        //tmp would hold the number of critical errors, is and should this be used?
-        int tmp = 0;
-        return det.getErrorMessage(tmp);
     }
 
     bool getReceiverOnline() {
@@ -229,8 +236,8 @@ class Detector {
     int64_t getClientVersion() { return det.getId(slsDetectorDefs::THIS_SOFTWARE_VERSION); }
     int64_t getReceiverVersion() { return det.getId(slsDetectorDefs::RECEIVER_VERSION); }
 
-    int getDetectorNumber(int i) {
-        return det.getId(slsDetectorDefs::DETECTOR_SERIAL_NUMBER, i);
+    std::vector<int64_t> getDetectorNumber() {
+        return det.getDetectorNumber();
     }
 
     int getReadoutClockSpeed() {
@@ -352,15 +359,15 @@ class Detector {
         return mp;
     }
 
-    bool isClientAndDetecorCompatible() {
-        auto r = det.checkDetectorVersionCompatibility(slsDetectorDefs::CONTROL_PORT);
+    bool isClientAndDetectorCompatible() {
+        auto r = det.checkDetectorVersionCompatibility();
         if (r == 0)
             return true;
         else
             return false;
     }
     bool isClientAndReceiverCompatible() {
-        auto r = det.checkReceiverVersionCompatibility(slsDetectorDefs::DATA_PORT);
+        auto r = det.checkReceiverVersionCompatibility();
         if (r == 0)
             return true;
         else
@@ -663,13 +670,12 @@ class Detector {
         return vec;
     }
 
-    void setReceiverUDPPort(int port, int det_id){
+    void setReceiverUDPPort(int port, int det_id) {
         det.setReceiverUDPPort(port, det_id);
     }
-    void setReceiverUDPPort2(int port, int det_id){
+    void setReceiverUDPPort2(int port, int det_id) {
         det.setReceiverUDPPort2(port, det_id);
     }
-
 
     // //Set network parameter for all modules if det_id == -1 otherwise the module
     // //specified with det_id.

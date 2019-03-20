@@ -178,10 +178,18 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("setRxDataStreamStatus", &Detector::setRxDataStreamStatus)
 
         //Network stuff
+        .def("getReceiverHostname", &Detector::getReceiverHostname)
+        .def("setReceiverHostname", &Detector::setReceiverHostname)
         .def("getReceiverStreamingPort", &Detector::getReceiverStreamingPort)
         .def("setReceiverStreamingPort", &Detector::setReceiverStreamingPort)
         .def("getReceiverUDPPort", &Detector::getReceiverUDPPort)
         .def("getReceiverUDPPort2", &Detector::getReceiverUDPPort2)
+        .def("setReceiverUDPPort", &Detector::setReceiverUDPPort)
+        .def("setReceiverUDPPort2", &Detector::setReceiverUDPPort2)
+        .def("setReceiverUDPIP", &Detector::setReceiverUDPIP)
+        .def("getReceiverUDPIP", &Detector::getReceiverUDPIP)
+        .def("getReceiverUDPMAC", &Detector::getReceiverUDPMAC)
+        .def("setReceiverUDPMAC", &Detector::setReceiverUDPMAC)
         
         .def("getReceiverPort", &Detector::getReceiverPort)
         .def("setReceiverPort", &Detector::setReceiverPort)
@@ -207,7 +215,7 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getReceiverPartialFramesPadding", &Detector::getReceiverPartialFramesPadding)
 
         .def("getUserDetails", &Detector::getUserDetails)
-        .def("isClientAndDetecorCompatible", &Detector::isClientAndDetecorCompatible)
+        .def("isClientAndDetectorCompatible", &Detector::isClientAndDetectorCompatible)
         .def("isClientAndReceiverCompatible", &Detector::isClientAndReceiverCompatible)
         .def("getMeasuredPeriod", &Detector::getMeasuredPeriod)
         .def("getMeasuredSubPeriod", &Detector::getMeasuredSubPeriod)
@@ -231,12 +239,6 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getReceiverCurrentFrameIndex", &Detector::getReceiverCurrentFrameIndex)
         .def("getGapPixels", &Detector::getGapPixels)
         .def("setGapPixels", &Detector::setGapPixels)
-
-        .def("clearErrorMask", &Detector::clearErrorMask)
-        .def("getErrorMask", &Detector::getErrorMask)
-        .def("setErrorMask", &Detector::setErrorMask)
-        .def("getErrorMessage", &Detector::getErrorMessage)
-
         .def("getFlippedDataX", &Detector::getFlippedDataX)
         .def("getFlippedDataY", &Detector::getFlippedDataY)
         .def("setFlippedDataX", &Detector::setFlippedDataX)
@@ -276,7 +278,10 @@ py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
             py::cpp_function(&multiSlsDetector::setAcquiringFlag))
          .def_property_readonly("rx_tcpport", 
             py::cpp_function(&multiSlsDetector::getReceiverPort))          
-            
+        .def_property_readonly("detectornumber", 
+            py::cpp_function(&multiSlsDetector::getDetectorNumber))  
+        .def("_getReceiverUDPIP", &multiSlsDetector::getReceiverUDPIP)
+        .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
             ;
 
 

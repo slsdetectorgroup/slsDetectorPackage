@@ -1843,14 +1843,13 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
 
 int slsDetector::getADC(dacIndex index) {
     int fnum = F_GET_ADC;
-    int ret = FAIL;
     int arg = static_cast<int>(index);
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC " << index;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+        client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "ADC (" << index << "): " << retval;
     }
     return retval;
@@ -2555,7 +2554,6 @@ int slsDetector::digitalTest(digitalTestMode mode, int ival) {
 }
 
 int slsDetector::loadImageToDetector(imageType index, const std::string &fname) {
-    int ret = FAIL;
     int nChan = getTotalNumberOfChannels();
     int16_t args[nChan];
     FILE_LOG(logDEBUG1) << "Loading " << (!index ? "Dark" : "Gain") << "image from file " << fname;
@@ -3027,14 +3025,13 @@ int slsDetector::pulseChip(int n) {
 
 int slsDetector::setThresholdTemperature(int val) {
     int fnum = F_THRESHOLD_TEMP;
-    int ret = FAIL;
     int arg = val;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting threshold temperature to " << val;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
-        ret = stop.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+        stop.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Threshold temperature: " << retval;
         // no updateDetector as it is stop server
     }
@@ -3043,14 +3040,13 @@ int slsDetector::setThresholdTemperature(int val) {
 
 int slsDetector::setTemperatureControl(int val) {
     int fnum = F_TEMP_CONTROL;
-    int ret = FAIL;
     int arg = val;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting temperature control to " << val;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
-        ret = stop.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+        stop.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Temperature control: " << retval;
         // no updateDetector as it is stop server
     }
@@ -3059,14 +3055,13 @@ int slsDetector::setTemperatureControl(int val) {
 
 int slsDetector::setTemperatureEvent(int val) {
     int fnum = F_TEMP_EVENT;
-    int ret = FAIL;
     int arg = val;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting temperature event to " << val;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
-        ret = stop.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+        stop.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Temperature event: " << retval;
         // no updateDetector as it is stop server
     }

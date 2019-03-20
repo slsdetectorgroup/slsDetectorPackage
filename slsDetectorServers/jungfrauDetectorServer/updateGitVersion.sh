@@ -12,7 +12,7 @@ source $EVALFILE
 
 #get modified date
 #RDATE1='git log --pretty=format:"%ci" -1'
-RDATE1="find ../slsDetectorServer . -type f -exec stat --format '%Y :%y %n' '{}' \; | sort -nr | cut -d: -f2- | egrep -v 'gitInfo|bin|.git|updateGitVersion|.o' | head -n 1"
+RDATE1="find ../slsDetectorServer . -type f -exec stat --format '%Y :%y %n' '{}' \; | sort -nr | cut -d: -f2- | egrep -v '(\.)o' | egrep -v '(gitInfo).*' | egrep -v bin | egrep -v 'updateGit' | head -n 1"
 RDATE=`eval $RDATE1`
 NEWDATE=$(sed "s/-//g" <<< $RDATE | awk '{print $1;}') 
 NEWDATE=${NEWDATE/#/0x}

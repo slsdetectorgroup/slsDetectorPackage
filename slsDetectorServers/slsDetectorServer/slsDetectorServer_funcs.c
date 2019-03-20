@@ -2610,20 +2610,25 @@ int set_pattern(int file_des) {
                     strcpy(tempName, "Pattern (I/O Control Register)");
                     FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternIOControl(word);
+                    FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
+                    validate64(word, retval64, tempName, HEX);
                     break;
                 case -2:
                     strcpy(tempName, "Pattern (Clock Control Register)");
                     FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternClkControl(word);
+                    FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
+                    validate64(word, retval64, tempName, HEX);
                     break;
                 default:
                     sprintf(tempName, "Pattern (Word, addr:0x%x)", addr);
                     FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
                     retval64 = writePatternWord(addr, word);
+                    FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
+                    // do not validate as it can be different due to masking
+                    //validate64(word, retval64, tempName, HEX);
                     break;
                 }
-                FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
-                validate64(word, retval64, tempName, HEX);
             }
         }
 #endif

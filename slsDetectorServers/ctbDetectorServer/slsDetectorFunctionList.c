@@ -933,9 +933,9 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	case DELAY_AFTER_TRIGGER:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting delay: %lldns\n", (long long int)val));
-			val *= (1E-3 * clkDivider[ADC_CLK]);
+			val *= (1E-3 * clkDivider[SYNC_CLK]);
 		}
-		retval = set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
+		retval = set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
 		FILE_LOG(logINFO, ("\tGetting delay: %lldns\n", (long long int)retval));
 		break;
 
@@ -989,7 +989,7 @@ int64_t getTimeLeft(enum timerIndex ind){
         break;
 
 	case DELAY_AFTER_TRIGGER:
-		retval = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[ADC_CLK]);
+		retval = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
 		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
 		break;
 
@@ -1028,19 +1028,11 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         return OK;
     switch(ind) {
     case FRAME_PERIOD:
+    case DELAY_AFTER_TRIGGER:
         // convert to freq
         val *= (1E-3 * clkDivider[SYNC_CLK]);
         // convert back to timer
         val = (val) / (1E-3 * clkDivider[SYNC_CLK]);
-        if (val != retval) {
-        	return FAIL;
-        }
-        break;
-    case DELAY_AFTER_TRIGGER:
-        // convert to freq
-        val *= (1E-3 * clkDivider[ADC_CLK]);
-        // convert back to timer
-        val = (val) / (1E-3 * clkDivider[ADC_CLK]);
         if (val != retval) {
         	return FAIL;
         }

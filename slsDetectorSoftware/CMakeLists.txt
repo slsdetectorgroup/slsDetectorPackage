@@ -1,9 +1,8 @@
 set(SOURCES
-    multiSlsDetector/multiSlsDetector.cpp 
-    # sharedMemory/SharedMemory.cpp
-    slsDetector/slsDetectorUsers.cpp 
-    slsDetector/slsDetectorCommand.cpp
-    slsDetector/slsDetector.cpp 
+    src/multiSlsDetector.cpp 
+    src/slsDetectorUsers.cpp 
+    src/slsDetectorCommand.cpp
+    src/slsDetector.cpp 
 )
 
 set(HEADERS
@@ -14,9 +13,7 @@ add_library(slsDetectorShared SHARED
     ${HEADERS}
 )
 target_include_directories(slsDetectorShared PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/multiSlsDetector>"
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/sharedMemory>"
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/slsDetector>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
@@ -26,11 +23,11 @@ target_link_libraries(slsDetectorShared PUBLIC
 )
 
 set(PUBLICHEADERS
-    sharedMemory/SharedMemory.h
-    slsDetector/slsDetector.h
-    slsDetector/slsDetectorUsers.h
-    slsDetector/detectorData.h
-    multiSlsDetector/multiSlsDetector.h
+    include/SharedMemory.h
+    include/slsDetector.h
+    include/slsDetectorUsers.h
+    include/detectorData.h
+    include/multiSlsDetector.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector
@@ -38,7 +35,67 @@ set_target_properties(slsDetectorShared PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-add_subdirectory(slsDetectorClient)
+# add_subdirectory(slsDetectorClient)
+
+add_executable(sls_detector_get
+    src/sls_detector_client.cpp
+)
+target_link_libraries(sls_detector_get
+   slsDetectorShared
+   slsSupportLib
+   pthread
+   ${ZeroMQ_LIBRARIES}
+   rt
+)
+set_target_properties(sls_detector_get PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    COMPILE_DEFINITIONS GET=1
+)
+
+add_executable(sls_detector_put
+    src/sls_detector_client.cpp
+)
+target_link_libraries(sls_detector_put
+   slsDetectorShared
+   pthread
+   ${ZeroMQ_LIBRARIES}
+   rt
+)
+set_target_properties(sls_detector_put PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    COMPILE_DEFINITIONS PUT=1
+)
+
+add_executable(sls_detector_acquire
+    src/sls_detector_client.cpp
+)
+target_link_libraries(sls_detector_acquire
+   slsDetectorShared
+   pthread
+   ${ZeroMQ_LIBRARIES}
+   rt
+)
+set_target_properties(sls_detector_acquire PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    COMPILE_DEFINITIONS READOUT=1
+)
+
+add_executable(sls_detector_help
+    src/sls_detector_client.cpp
+)
+target_link_libraries(sls_detector_help
+   slsDetectorShared
+   pthread
+   ${ZeroMQ_LIBRARIES}
+   rt
+)
+set_target_properties(sls_detector_help PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    COMPILE_DEFINITIONS HELP=1
+)
+
+install(TARGETS sls_detector_put sls_detector_get sls_detector_acquire sls_detector_help DESTINATION bin)
+
 
 if(DOXYGEN_FOUND)
     add_custom_target(doc

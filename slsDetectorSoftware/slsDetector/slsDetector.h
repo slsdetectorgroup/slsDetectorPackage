@@ -242,7 +242,7 @@ struct sharedSlsDetector {
     bool receiver_overWriteEnable;
 };
 
-class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
+class slsDetector : public virtual slsDetectorDefs{
   public:
     /**
 	 * Constructor called when creating new shared memory

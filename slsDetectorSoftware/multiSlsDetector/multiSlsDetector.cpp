@@ -824,17 +824,6 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
     return ret;
 }
 
-std::string multiSlsDetector::getSettingsFile(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getSettingsFile();
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getSettingsFile);
-    return sls::concatenateIfDifferent(r);
-}
-
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int detPos) {
     // single
     if (detPos >= 0) {

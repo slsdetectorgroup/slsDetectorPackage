@@ -481,13 +481,6 @@ class multiSlsDetector : public virtual slsDetectorDefs,
     int writeConfigurationFile(const std::string &fname);
 
     /**
-     * Returns the trimfile or settings file name (Useless??)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the trimfile or settings file name
-     */
-    std::string getSettingsFile(int detPos = -1);
-
-    /**
      * Get detector settings
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current settings

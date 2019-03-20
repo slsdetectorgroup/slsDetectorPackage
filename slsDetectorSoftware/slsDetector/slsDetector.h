@@ -122,9 +122,6 @@ struct sharedSlsDetector {
     /** readout flags */
     slsDetectorDefs::readOutFlags roFlags;
 
-    /** name root of the output files */
-    char settingsFile[MAX_STR_LENGTH];
-
     /** detector settings (standard, fast, etc.) */
     slsDetectorDefs::detectorSettings currentSettings;
 
@@ -338,13 +335,13 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Get Detector type from shared memory variable
 	 * @returns detector type from shared memory variable
 	 */
-    detectorType getDetectorTypeAsEnum();
+    detectorType getDetectorTypeAsEnum() const;
 
     /**
 	 * Gets string version of detector type from shared memory variable
 	 * @returns string version of detector type from shared memory variable
 	 */
-    std::string getDetectorTypeAsString();
+    std::string getDetectorTypeAsString() const;
 
     /**
 	 * Gets detector type from detector and set it in receiver
@@ -357,7 +354,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * Returns the total number of channels from shared memory
 	 * @returns the total number of channels
 	 */
-    int getTotalNumberOfChannels();
+    int getTotalNumberOfChannels() const;
 
     /**
 	 * Update total number of channels (chiptestboard or moench)
@@ -370,7 +367,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param d dimension d
 	 * @returns the total number of channels  in dimension d
 	 */
-    int getTotalNumberOfChannels(dimension d);
+    int getTotalNumberOfChannels(dimension d) const;
 
     /**
 	 * Returns the total number of channels of in dimension d including gap pixels
@@ -379,40 +376,40 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @returns the total number of channels including gap pixels in dimension d
 	 * including gap pixels
 	 */
-    int getTotalNumberOfChannelsInclGapPixels(dimension d);
+    int getTotalNumberOfChannelsInclGapPixels(dimension d) const;
 
     /**
 	 * returns the number of channels per chip from shared memory (Mythen)
 	 * @returns number of channels per chip
 	 */
-    int getNChans();
+    int getNChans() const;
 
     /**
 	 * returns the number of channels per chip in dimension d from shared memory (Mythen)
 	 * @param d dimension d
 	 * @returns number of channels per chip in dimension d
 	 */
-    int getNChans(dimension d);
+    int getNChans(dimension d) const;
 
     /**
 	 * returns the number of chips per module from shared memory (Mythen)
 	 * @returns number of chips per module
 	 */
-    int getNChips();
+    int getNChips() const;
 
     /**
 	 * returns the number of chips per module in dimension d from shared memory (Mythen)
 	 * @param d dimension d
 	 * @returns number of chips per module in dimension d
 	 */
-    int getNChips(dimension d);
+    int getNChips(dimension d) const;
 
     /**
 	 * Get Detector offset from shared memory in dimension d
 	 * @param d dimension d
 	 * @returns offset in dimension d
 	 */
-    int getDetectorOffset(dimension d);
+    int getDetectorOffset(dimension d) const;
 
     /**
 	 * Set Detector offset in shared memory in dimension d
@@ -530,12 +527,6 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @returns OK or FAIL
 	 */
     int writeConfigurationFile(std::ofstream &outfile, multiSlsDetector *m);
-
-    /**
-	 * Returns the trimfile or settings file name (Useless??)
-	 * @returns the trimfile or settings file name
-	 */
-    std::string getSettingsFile();
 
     /**
 	 * Get detector settings
@@ -1101,7 +1092,7 @@ class slsDetector : public virtual slsDetectorDefs, public virtual errorDefs {
 	 * @param d axis across which data is flipped
 	 * @returns 1 for flipped, else 0
 	 */
-    int getFlippedData(dimension d = X);
+    int getFlippedData(dimension d = X) const;
 
     /**
 	 * Sets the enable which determines if

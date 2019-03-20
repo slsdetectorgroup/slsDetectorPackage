@@ -3418,7 +3418,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, 
             else
                 return std::string("failed");
         }
-        return myDet->getSettingsFile(detPos);
+        return std::string("Specify file name for geting settings file");
     } else if (cmd == "trimval") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &val))

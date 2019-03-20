@@ -26,20 +26,25 @@ int main() {
     slsDetector d(type);
     d.setHostname(hostname);
     d.setOnline(true);
-
     std::cout << "hostname: " << d.getHostname() << '\n';
-    try{
-        d.setThresholdTemperature(50);
-    }catch(const DetectorError &e){
-        std::cout << "Caught: " << e.what() << '\n';
-    }
-    std::cout << "hostname: " << d.getHostname() << '\n';
-    std::cout << "exptime: " << d.setDAC(-1, slsDetectorDefs::E_Vrf, 0) << '\n';
+    d.setThresholdTemperature(50);
+    // try{
+    //     d.setThresholdTemperature(50);
+    // }catch(const DetectorError &e){
+    //     std::cout << "Caught: " << e.what() << '\n';
+    // }
+    // std::cout << "hostname: " << d.getHostname() << '\n';
+    // std::cout << "exptime: " << d.setDAC(-1, slsDetectorDefs::E_Vrf, 0) << '\n';
 
 
-    std::cout << "Line: " << __LINE__ << " file: " << __FILE__ << '\n';
 
-    auto type2 = slsDetector::getTypeFromDetector("beb799");
+
+    // slsDetector d2(type);
+    // std::cout << "Online: " << d2.getOnlineFlag() << '\n';
+    // d2.setHostname("beb55555");
+    // d2.setOnline(true);
+    // std::cout << "Online: " << d2.getOnlineFlag() << '\n';
+    // std::cout << "hostname: " << d2.getHostname() << '\n';
 
     // std::cout << "port: " << d.getControlPort() << '\n';
     // d.setOnline(true);

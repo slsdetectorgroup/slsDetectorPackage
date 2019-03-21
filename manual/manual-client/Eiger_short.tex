@@ -712,7 +712,7 @@ To activate back a module, do:
 \end{verbatim}
 
 \end{itemize}
-\subsection{Setting up 10Gb correctly: experience so far}\label{10g}
+\subsection{Setting up 10Gb and the PC settings for highframe rate experiments}\label{10g}
 
 For configuring well the 10Gb card not to loose packets, 
 \begin{itemize}
@@ -734,7 +734,29 @@ Very important is to activate the flow control in 10Gb (in 1Gb it is on by defau
 \begin{verbatim}
 ./sls_detector_put flowcontrol_10g 1
 \end{verbatim}
-Set the transmission delays as explained in the manual.
+You ned to check that flow control is setup on the reeceiving interfaces. Check with:
+\begin{verbatim}
+ethtool -a eth1
+\end{verbatim}
+.RX should be ON. Set the transmission delays as explained in the manual if necessary. These transmission delays should help matching teh writing speed performance of your disk. You can check how fast you are writing using the {\tt{dstat}} command.  
+
+Now setup the computer server propery:
+Check the size of: 
+\begin{verbatim}
+sysctl -a | grep backlog
+sysctl -a | grep rmem
+\end{verbatim}
+Set it correctly with: 
+\begin{verbatim}
+sysctl net.core.netdev_max_backlog=250000
+sysctl net.core.rmem_default=$((100*1024*1024))
+\end{verbatim}
+
+Last, you can disable power saving in teh CPU frequency:
+\begin{verbatim}
+cpupower frequency-info
+cpupower frequency-set -g performance 
+\end{verbatim}
 
 It can help to increase the fifo size of the receiver to {\tt{rx\_fifodepth}} to 1000 images
 \begin{verbatim}
@@ -757,6 +779,9 @@ or
 mount -t tmpfs none /mnt/ramdisk -o size=10G
 \end{verbatim}
 check how many GB memory you can allocate, to avoid swapping otherwise
+
+
+
 
 \section{Offline processing and monitoring}
 

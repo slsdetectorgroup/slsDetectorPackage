@@ -24,7 +24,7 @@ Figure ~\ref{boards} show the readout board basic components on an Eiger half mo
 \begin{center}
 \includegraphics[width=1\textwidth]{Boards}
 \end{center}
-\caption{Picture with most relevant components of the EIGER readout system. The readout system starts with the Front End Boards (FEB) which performs data descrambling (also converts the packets from 12 $\to$ 16 bits) and rate correction. The BackEndBoard (BEB) has 2x2GB DDR2 memories and can perform data buffering (storing images on board) and data summation (16 bit $\to$ 32 bits). The controls to the detector are passed through the 1Gb, while in most installations, the data are sent out through the 10GB ethernet connection.} 
+\caption{Picture with most relevant components of the EIGER readout system. The readout system starts with the Front End Boards (FEB) which performs data descrambling (also converts the packets from 12 $\to$ 16 bits) and rate correction. The BackEndBoard (BEB) has 2x2GB DDR2 memories and can perform data buffering (storing images on board) and data summation (16 bit $\to$ 32 bits). The controls to the detector are passed through the 1Gb, while in most installations, the data are sent out through the 10~GB ethernet connection.} 
 \label{boards}
 \end{figure}
 
@@ -747,6 +747,16 @@ Last, it is very important that not too many files are created. There is high po
 #define EIGER_MAX_FRAMES_PER_FILE	2000
 \end{verbatim}
 in {\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}. In 4.0.x, this is interactively defined using the command: {\tt{r\_framesperfile}}. By default it is 10000.  
+
+If you do not have a large disk, you can write to memory if your pc is not fast enough:
+\begin{verbatim}
+mount -t tmpfs none /ramdisk_folder
+\end{verbatim}
+or 
+\begin{verbatim}
+mount -t tmpfs none /mnt/ramdisk -o size=10G
+\end{verbatim}
+check how many GB memory you can allocate, to avoid swapping otherwise
 
 \section{Offline processing and monitoring}
 

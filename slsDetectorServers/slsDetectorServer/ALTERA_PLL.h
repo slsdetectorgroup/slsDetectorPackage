@@ -196,15 +196,15 @@ int ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
     FILE_LOG(logINFO, ("\tC%d: Setting output frequency to %d (pllvcofreq: %dMhz)\n", clkIndex, value, pllVCOFreqMhz));
 
     // calculate output frequency
-    uint32_t total_div =  pllVCOFreqMhz / value;
+    float total_div =  (float)pllVCOFreqMhz / (float)value;
 
     // assume 50% duty cycle
     uint32_t low_count = total_div / 2;
     uint32_t high_count = low_count;
     uint32_t odd_division = 0;
-
+	cprintf(RED, "toatldiv:%f\n", total_div);
     // odd division
-    if (total_div > (2 * low_count)) {
+    if (total_div > (float)(2 * low_count)) {
         ++high_count;
         odd_division = 1;
     }

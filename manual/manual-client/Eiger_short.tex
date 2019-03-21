@@ -156,13 +156,20 @@ outdir /sls/X12SA/data/x12saop/Data10/Eiger0.5M
 threaded 1
 \end{verbatim}
 
+The geometry on af an EIGER module, showing the quadrants corresponding to the udp ports and the 2 receivers is shown in figure~\ref{fig:eigerports}.
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{Eiger-Chips}
+\end{center}
+\caption{Geometry of UDP ports and receivers in a singel module.}
+\label{fig:eigerports}
+\end{figure}
 
 In the case you are developing your own receiver, then you need to remove the 1Gb receiver hostname {\tt{rx\_hostname}} and substitute it with the mac address of the device:
 \begin{verbatim}
 configuremac 0
 rx_udpmac xx:xx:...
 \end{verbatim}
-
 
 One can configure all the detector settings in a parameter file {\tt{setup.det}}, which is loaded by doing:
 \begin{verbatim}
@@ -712,7 +719,7 @@ To activate back a module, do:
 \end{verbatim}
 
 \end{itemize}
-\subsection{Setting up 10Gb and the PC settings for highframe rate experiments}\label{10g}
+\section{Setting up the PC settings for 10Gb}\label{10g}
 
 For configuring well the 10Gb card not to loose packets, 
 \begin{itemize}

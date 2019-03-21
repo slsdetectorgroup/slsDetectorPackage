@@ -111,7 +111,9 @@ void ALTERA_PLL_ResetPLL () {
 
     bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) | ALTERA_PLL_Cntrl_PLLRstMask);
     FILE_LOG(logDEBUG2, ("Set PLL Reset mSk: ALTERA_PLL_Cntrl_Reg:0x%x\n", bus_r(ALTERA_PLL_Cntrl_Reg)));
+
     usleep(ALTERA_PLL_WAIT_TIME_US);
+
     bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) & ~ALTERA_PLL_Cntrl_PLLRstMask);
     FILE_LOG(logDEBUG2, ("UnSet PLL Reset mSk: ALTERA_PLL_Cntrl_Reg:0x%x\n", bus_r(ALTERA_PLL_Cntrl_Reg)));
 
@@ -153,9 +155,12 @@ void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val) {
     //write parameter
     bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) | ALTERA_PLL_Cntrl_WrPrmtrMask);
     FILE_LOG(logDEBUG2, ("Set WR bit: ALTERA_PLL_Cntrl_Reg:0x%x\n", bus_r(ALTERA_PLL_Cntrl_Reg)));
-    bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) & ~ALTERA_PLL_Cntrl_WrPrmtrMask);
+
     usleep(ALTERA_PLL_WAIT_TIME_US);
+
+    bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) & ~ALTERA_PLL_Cntrl_WrPrmtrMask);
     FILE_LOG(logDEBUG2, ("Unset WR bit: ALTERA_PLL_Cntrl_Reg:0x%x\n", bus_r(ALTERA_PLL_Cntrl_Reg)));
+
     usleep(ALTERA_PLL_WAIT_TIME_US);
 }
 

@@ -729,6 +729,7 @@ public:
 		    case FORCESWITCHG1: return  std::string("forceswitchg1");\
 		    case FORCESWITCHG2: return  std::string("forceswitchg2");\
 		    case VERYLOWGAIN: return  std::string("verylowgain");\
+		    case UNINITIALIZED:	return std::string("uninitialized"); \
 		    default:    		return std::string("undefined");		\
 		    }};
 

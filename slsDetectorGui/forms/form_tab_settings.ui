@@ -42,7 +42,7 @@
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="2" column="0">
-     <widget class="QLabel" name="label_6">
+     <widget class="QLabel" name="lblDynamicRange">
       <property name="text">
        <string>Dynamic Range:</string>
       </property>
@@ -190,7 +190,7 @@
      </widget>
     </item>
     <item row="0" column="0">
-     <widget class="QLabel" name="label_3">
+     <widget class="QLabel" name="lblSettings">
       <property name="text">
        <string>Settings:</string>
       </property>

@@ -1,8 +1,6 @@
 #pragma once
 
-#include "ansi.h"
 #include "sls_detector_defs.h"
-#include "slsDetector.h"
 #include "multiSlsDetector.h"
 #include <string>
 #include <ostream>

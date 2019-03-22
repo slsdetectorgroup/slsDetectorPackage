@@ -760,10 +760,15 @@ sysctl net.core.rmem_default=$((100*1024*1024))
 sysctl net.core.rmem_max=$((100*1024*1024))
 \end{verbatim}
 
-Last, you can disable power saving in teh CPU frequency:
+Last, you can disable power saving in the CPU frequency (chose the appropriate command for your system):
 \begin{verbatim}
 cpupower frequency-info
 cpupower frequency-set -g performance 
+\end{verbatim}
+or
+\begin{verbatim}
+cpufreq-info
+for i in `seq 0 7`; do cpufreq-set -c $i -g performance; done
 \end{verbatim}
 
 It can help to increase the fifo size of the receiver to {\tt{rx\_fifodepth}} to 1000 images

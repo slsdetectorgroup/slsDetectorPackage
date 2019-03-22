@@ -280,6 +280,7 @@ extern void eraseFlash();													// programfpga.h
 extern int 	startWritingFPGAprogram(FILE** filefp);							// programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);							// programfpga.h
 extern int 	writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);	// programfpga.h
+void		setUnknowns();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD

@@ -424,6 +424,9 @@ void setupDetector() {
 	cleanFifos();
 	resetCore();
 
+	setUnknowns();
+
+
 	configureASICTimer();
 	bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
 
@@ -486,6 +489,9 @@ void resetCore() {
 	FILE_LOG(logINFO, ("Resetting Core\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CORE_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_CORE_RST_MSK);
+
+	//FIXME: usleep required??
+	usleep(1000 * 1000);
 }
 
 void resetPeripheral() {
@@ -1080,7 +1086,10 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	cleanFifos();
 	resetCore();
 
-	usleep(500 * 1000); /* todo maybe without */
+	//FIXME: usleep(500 * 1000); /* todo maybe without */
+	usleep(1000 * 1000);
+
+	setUnknowns();
 	return OK;
 }
 
@@ -1333,6 +1342,21 @@ int setTemperatureEvent(int val) {
     return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST);
 }
 
+void setUnknowns() {
+	// set unknowns
+	bus_w(UNKNOWN_0_REG, bus_r(UNKNOWN_0_REG) | UNKNOWN_0_UNKNOWN_MSK);
+	bus_w(UNKNOWN_1_REG, bus_r(UNKNOWN_1_REG) | UNKNOWN_1_UNKNOWN_MSK);
+	bus_w(UNKNOWN_2_REG, bus_r(UNKNOWN_2_REG) | UNKNOWN_2_UNKNOWN_MSK);
+	bus_w(UNKNOWN_3_REG, bus_r(UNKNOWN_3_REG) | UNKNOWN_3_UNKNOWN_MSK);
+
+	usleep(1 * 1000 * 1000);
+
+	// reset unknowns
+	bus_w(UNKNOWN_0_REG, bus_r(UNKNOWN_0_REG) & (~(UNKNOWN_0_UNKNOWN_MSK)));
+	bus_w(UNKNOWN_1_REG, bus_r(UNKNOWN_1_REG) & (~(UNKNOWN_1_UNKNOWN_MSK)));
+	bus_w(UNKNOWN_2_REG, bus_r(UNKNOWN_2_REG) & (~(UNKNOWN_2_UNKNOWN_MSK)));
+	bus_w(UNKNOWN_3_REG, bus_r(UNKNOWN_3_REG) & (~(UNKNOWN_3_UNKNOWN_MSK)));
+}
 
 
 int setNetworkParameter(enum NETWORKINDEX mode, int value) {

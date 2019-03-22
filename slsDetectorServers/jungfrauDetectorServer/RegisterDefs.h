@@ -250,7 +250,7 @@
 #define PLL_CNTRL_ADDR_OFST				(16)
 #define PLL_CNTRL_ADDR_MSK				(0x0000003F << PLL_CNTRL_ADDR_OFST)
 
-/* Sample Register (Obsolete) */
+/* Sample Register (Obsolete) FIXME: what is it now? */
 #define SAMPLE_REG 						(0x59 << MEM_MAP_SHIFT)
 
 #define SAMPLE_ADC_SAMPLE_SEL_OFST		(0)
@@ -417,10 +417,25 @@
 
 
 
+/* FIXME UNKNOWN 0 */
+#define UNKNOWN_0_REG					(0xF0 << MEM_MAP_SHIFT)
+#define UNKNOWN_0_UNKNOWN_OFST       	(31)
+#define UNKNOWN_0_UNKNOWN_MSK        	(0x00000001 << UNKNOWN_0_UNKNOWN_OFST)
 
+/* FIXME UNKNOWN 1 */
+#define UNKNOWN_1_REG					(0xF1 << MEM_MAP_SHIFT)
+#define UNKNOWN_1_UNKNOWN_OFST       	(31)
+#define UNKNOWN_1_UNKNOWN_MSK        	(0x00000001 << UNKNOWN_1_UNKNOWN_OFST)
 
+/* FIXME UNKNOWN 2 */
+#define UNKNOWN_2_REG					(0xF2 << MEM_MAP_SHIFT)
+#define UNKNOWN_2_UNKNOWN_OFST       	(31)
+#define UNKNOWN_2_UNKNOWN_MSK        	(0x00000001 << UNKNOWN_2_UNKNOWN_OFST)
 
-
+/* FIXME UNKNOWN 3 */
+#define UNKNOWN_3_REG					(0xF3 << MEM_MAP_SHIFT)
+#define UNKNOWN_3_UNKNOWN_OFST       	(31)
+#define UNKNOWN_3_UNKNOWN_MSK        	(0x00000001 << UNKNOWN_3_UNKNOWN_OFST)
 
 
 

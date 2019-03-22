@@ -225,9 +225,6 @@ int ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
     // write frequency (post-scale output counter C)
     ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_C_COUNTER_REG, val);
 
-    // reset only PLL
-    ALTERA_PLL_ResetPLL();
-
     return (pllVCOFreqMhz / (low_count + high_count));
 }
 

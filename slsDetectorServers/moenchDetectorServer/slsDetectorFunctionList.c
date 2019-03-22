@@ -798,7 +798,7 @@ int getSpeed(enum speedVariable ind) {
     switch(ind) {
     case ADC_PHASE:
     case PHASE_SHIFT:
-        return getPhase(RUN_CLK);
+        return getPhase(ADC_CLK);
     case DBIT_PHASE:
         return getPhase(DBIT_CLK);
     case ADC_CLOCK:

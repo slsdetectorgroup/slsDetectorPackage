@@ -52,7 +52,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 /** Default Parameters */
 #define DEFAULT_DATA_BYTES          (NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
 #define DEFAULT_NUM_SAMPLES         (1)
-#define DEFAULT_NUM_FRAMES			(100 * 1000 * 1000)
+#define DEFAULT_NUM_FRAMES			(1)
 #define DEFAULT_EXPTIME				(0)
 #define DEFAULT_NUM_CYCLES			(1)
 #define DEFAULT_PERIOD				(1 * 1000 * 1000)	//ns

@@ -424,7 +424,7 @@ void setupDetector() {
 	cleanFifos();
 	resetCore();
 
-	setUnknowns();
+	alignDeserializer();
 
 
 	configureASICTimer();
@@ -489,8 +489,6 @@ void resetCore() {
 	FILE_LOG(logINFO, ("Resetting Core\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CORE_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_CORE_RST_MSK);
-
-	//FIXME: usleep required??
 	usleep(1000 * 1000);
 }
 
@@ -1085,11 +1083,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
 	cleanFifos();
 	resetCore();
-
-	//FIXME: usleep(500 * 1000); /* todo maybe without */
-	usleep(1000 * 1000);
-
-	setUnknowns();
+	alignDeserializer();
 	return OK;
 }
 
@@ -1342,20 +1336,20 @@ int setTemperatureEvent(int val) {
     return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST);
 }
 
-void setUnknowns() {
-	// set unknowns
-	bus_w(UNKNOWN_0_REG, bus_r(UNKNOWN_0_REG) | UNKNOWN_0_UNKNOWN_MSK);
-	bus_w(UNKNOWN_1_REG, bus_r(UNKNOWN_1_REG) | UNKNOWN_1_UNKNOWN_MSK);
-	bus_w(UNKNOWN_2_REG, bus_r(UNKNOWN_2_REG) | UNKNOWN_2_UNKNOWN_MSK);
-	bus_w(UNKNOWN_3_REG, bus_r(UNKNOWN_3_REG) | UNKNOWN_3_UNKNOWN_MSK);
+void alignDeserializer() {
+	// refresh alignment
+	bus_w(ADC_DSRLZR_0_REG, bus_r(ADC_DSRLZR_0_REG) | ADC_DSRLZR_0_RFRSH_ALGNMNT_MSK);
+	bus_w(ADC_DSRLZR_1_REG, bus_r(ADC_DSRLZR_1_REG) | ADC_DSRLZR_1_RFRSH_ALGNMNT_MSK);
+	bus_w(ADC_DSRLZR_2_REG, bus_r(ADC_DSRLZR_2_REG) | ADC_DSRLZR_2_RFRSH_ALGNMNT_MSK);
+	bus_w(ADC_DSRLZR_3_REG, bus_r(ADC_DSRLZR_3_REG) | ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK);
 
 	usleep(1 * 1000 * 1000);
 
-	// reset unknowns
-	bus_w(UNKNOWN_0_REG, bus_r(UNKNOWN_0_REG) & (~(UNKNOWN_0_UNKNOWN_MSK)));
-	bus_w(UNKNOWN_1_REG, bus_r(UNKNOWN_1_REG) & (~(UNKNOWN_1_UNKNOWN_MSK)));
-	bus_w(UNKNOWN_2_REG, bus_r(UNKNOWN_2_REG) & (~(UNKNOWN_2_UNKNOWN_MSK)));
-	bus_w(UNKNOWN_3_REG, bus_r(UNKNOWN_3_REG) & (~(UNKNOWN_3_UNKNOWN_MSK)));
+	// disable the refresh
+	bus_w(ADC_DSRLZR_0_REG, bus_r(ADC_DSRLZR_0_REG) & (~(ADC_DSRLZR_0_RFRSH_ALGNMNT_MSK)));
+	bus_w(ADC_DSRLZR_1_REG, bus_r(ADC_DSRLZR_1_REG) & (~(ADC_DSRLZR_1_RFRSH_ALGNMNT_MSK)));
+	bus_w(ADC_DSRLZR_2_REG, bus_r(ADC_DSRLZR_2_REG) & (~(ADC_DSRLZR_2_RFRSH_ALGNMNT_MSK)));
+	bus_w(ADC_DSRLZR_3_REG, bus_r(ADC_DSRLZR_3_REG) & (~(ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK)));
 }
 
 

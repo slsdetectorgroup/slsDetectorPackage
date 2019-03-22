@@ -822,7 +822,7 @@ int getSpeed(enum speedVariable ind) {
     switch(ind) {
     case ADC_PHASE:
     case PHASE_SHIFT:
-        return getPhase(RUN_CLK);
+        return getPhase(ADC_CLK);
     case DBIT_PHASE:
         return getPhase(DBIT_CLK);
     case ADC_CLOCK:
@@ -1647,13 +1647,6 @@ void configurePhase(enum CLKINDEX ind, int val) {
     }
 
     FILE_LOG(logINFO, ("Configuring Phase of C%d(%s) to %d\n", ind, clock_names[ind], val));
-
-    // reset only pll
-    ALTERA_PLL_ResetPLL();
-
-    // set mode register to polling mode
-    ALTERA_PLL_SetModePolling();
-
 
     int phase = 0;
     int maxShifts = ((ind == ADC_CLK) ? MAX_PHASE_SHIFTS_ADC_CLK : MAX_PHASE_SHIFTS_DBIT_CLK);

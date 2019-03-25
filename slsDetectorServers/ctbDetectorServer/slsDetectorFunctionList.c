@@ -1656,7 +1656,9 @@ void configurePhase(enum CLKINDEX ind, int val) {
 
 
     int phase = 0;
-    int maxShifts = ((ind == ADC_CLK) ? MAX_PHASE_SHIFTS_ADC_CLK : MAX_PHASE_SHIFTS_DBIT_CLK);
+    int maxShifts = (PLL_VCO_FREQ_MHZ / clkDivider[ind]) * MAX_PHASE_SHIFTS_STEPS;
+    FILE_LOG(logDEBUG1, ("Clock: %d MHz, VCO:%d MHz, Max Phase shifts:%d\n",
+    		clkDivider[ind], PLL_VCO_FREQ_MHZ, maxShifts));
 
     // delay clk
     if (relativePhase > 0) {

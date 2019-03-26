@@ -141,20 +141,38 @@ struct sharedSlsDetector {
     int receiverUDPPort;
 
     /** is the port used to communicate between second half module of
-		 * Eiger detector and the receiver*/
+		 * Eiger/ Jungfrau detector and the receiver*/
     int receiverUDPPort2;
 
     /** ip address of the receiver for the detector to send packets to**/
     char receiverUDPIP[MAX_STR_LENGTH];
 
+    /** ip address of the receiver for the 2nd interface of the detector to send packets to**/
+    char receiverUDPIP2[MAX_STR_LENGTH];
+
     /** mac address of receiver for the detector to send packets to **/
     char receiverUDPMAC[MAX_STR_LENGTH];
+
+    /** mac address of receiver for the 2nd interface of the detector to send packets to **/
+    char receiverUDPMAC2[MAX_STR_LENGTH];
 
     /**  mac address of the detector **/
     char detectorMAC[MAX_STR_LENGTH];
 
+    /**  mac address of the 2nd interface of the detector **/
+    char detectorMAC2[MAX_STR_LENGTH];
+
     /**  ip address of the detector **/
     char detectorIP[MAX_STR_LENGTH];
+
+    /**  ip address of the 2nd interface of the detector **/
+    char detectorIP2[MAX_STR_LENGTH];
+
+    /** number of udp interface */
+    int numUDPInterfaces;
+
+    /** selected udp interface */
+    int selectedUDPInterface;
 
     /** online flag - is set if the receiver is connected,
 		 * unset if socket connection is not possible  */
@@ -789,6 +807,19 @@ class slsDetector : public virtual slsDetectorDefs{
     std::string getDetectorMAC();
 
     /**
+     * Validates the format of the detector MAC address (bottom half) and sets it (Jungfrau only)
+     * @param detectorMAC detector MAC address (bottom half)
+     * @returns the detector MAC address (bottom half)
+     */
+    std::string setDetectorMAC2(const std::string &detectorMAC);
+
+    /**
+     * Returns the detector MAC address (bottom half) Jungfrau only
+     * @returns the detector MAC address (bottom half)
+     */
+    std::string getDetectorMAC2();
+
+    /**
 	 * Validates the format of the detector IP address and sets it \sa sharedSlsDetector
 	 * @param detectorIP detector IP address
 	 * @returns the detector IP address
@@ -800,6 +831,19 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns the detector IP address
 	 */
     std::string getDetectorIP() const;
+
+    /**
+     * Validates the format of the detector IP address (bottom half) and sets it (Jungfrau only)
+     * @param detectorIP detector IP address (bottom half)
+     * @returns the detector IP address (bottom half)
+     */
+    std::string setDetectorIP2(const std::string &detectorIP);
+
+    /**
+     * Returns the detector IP address (bottom half) Jungfrau only
+     * @returns the detector IP address (bottom half)
+     */
+    std::string getDetectorIP2() const;
 
     /**
 	 * Validates and sets the receiver.
@@ -830,6 +874,19 @@ class slsDetector : public virtual slsDetectorDefs{
     std::string getReceiverUDPIP() const;
 
     /**
+     * Validates the format of the receiver UDP IP address (bottom half) and sets it(Jungfrau only)
+     * @param udpip receiver UDP IP address (bottom half)
+     * @returns the receiver UDP IP address (bottom half)
+     */
+    std::string setReceiverUDPIP2(const std::string &udpip);
+
+    /**
+     * Returns the receiver UDP IP address (bottom half) Jungfrau only
+     * @returns the receiver UDP IP address (bottom half)
+     */
+    std::string getReceiverUDPIP2() const;
+
+    /**
 	 * Validates the format of the receiver UDP MAC address and sets it \sa sharedSlsDetector
 	 * @param udpmac receiver UDP MAC address
 	 * @returns the receiver UDP MAC address
@@ -841,6 +898,19 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns the receiver UDP MAC address
 	 */
     std::string getReceiverUDPMAC() const;
+
+    /**
+     * Validates the format of the receiver UDP MAC address  (bottom half) and sets it (Jungfrau only)
+     * @param udpmac receiver UDP MAC address (bottom half)
+     * @returns the receiver UDP MAC address (bottom half)
+     */
+    std::string setReceiverUDPMAC2(const std::string &udpmac);
+
+    /**
+     * Returns the receiver UDP MAC address (bottom half) Jungfrau only
+     * @returns the receiver UDP MAC address (bottom half)
+     */
+    std::string getReceiverUDPMAC2() const;
 
     /**
 	 * Sets the receiver UDP port\sa sharedSlsDetector
@@ -856,17 +926,43 @@ class slsDetector : public virtual slsDetectorDefs{
     int getReceiverUDPPort() const;
 
     /**
-	 * Sets the receiver UDP port 2\sa sharedSlsDetector
+	 * Sets the receiver UDP port 2\sa sharedSlsDetector (Eiger and Jungfrau only)
 	 * @param udpport receiver UDP port 2
 	 * @returns the receiver UDP port 2
 	 */
     int setReceiverUDPPort2(int udpport);
 
     /**
-	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
+	 * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector (Eiger and Jungfrau only)
 	 * @returns the receiver UDP port 2 of same interface
 	 */
     int getReceiverUDPPort2() const;
+
+    /**
+     * Sets the number of UDP interfaces to stream data from detector (Jungfrau only)
+     * @param n number of interfaces. Options 1 or 2.
+     * @returns the number of interfaces
+     */
+    int setNumberofUDPInterfaces(int n);
+
+    /**
+     * Returns the number of UDP interfaces to stream data from detector (Jungfrau only)
+     * @returns the number of interfaces
+     */
+    int getNumberofUDPInterfaces() const;
+
+    /**
+     * Selects the UDP interfaces to stream data from detector. Effective only when number of interfaces is 1. (Jungfrau only)
+     * @param n selected interface. Options 1 or 2.
+     * @returns the interface selected
+     */
+    int selectUDPInterface(int n);
+
+    /**
+     * Returns the UDP interfaces to stream data from detector. Effective only when number of interfaces is 1. (Jungfrau only)
+     * @returns the interface selected
+     */
+    int getSelectedUDPInterface() const;
 
     /**
 	 * Sets the client zmq port\sa sharedSlsDetector

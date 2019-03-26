@@ -861,6 +861,21 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     std::string getDetectorMAC(int detPos = -1);
 
     /**
+     * Validates the format of the detector MAC address (bottom half) and sets it (Jungfrau only)
+     * @param detectorMAC detector MAC address (bottom half)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the detector MAC address (bottom half)
+     */
+    std::string setDetectorMAC2(const std::string &detectorMAC, int detPos = -1);
+
+    /**
+     * Returns the detector MAC address (bottom half) Jungfrau only
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the detector MAC address (bottom half)
+     */
+    std::string getDetectorMAC2(int detPos = -1);
+
+    /**
      * Validates the format of the detector IP address and sets it
      * @param detectorIP detector IP address
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -874,6 +889,21 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the detector IP address
      */
     std::string getDetectorIP(int detPos = -1) const;
+
+    /**
+     * Validates the format of the detector IP address (bottom half) and sets it (Jungfrau only)
+     * @param detectorIP detector IP address (bottom half)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the detector IP address (bottom half)
+     */
+    std::string setDetectorIP2(const std::string &detectorIP, int detPos = -1);
+
+    /**
+     * Returns the detector IP address (bottom half) Jungfrau only
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the detector IP address (bottom half)
+     */
+    std::string getDetectorIP2(int detPos = -1) const;
 
     /**
      * Validates and sets the receiver.
@@ -908,6 +938,21 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     std::string getReceiverUDPIP(int detPos = -1) const;
 
     /**
+     * Validates the format of the receiver UDP IP address (bottom half) and sets it(Jungfrau only)
+     * @param udpip receiver UDP IP address (bottom half)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP IP address (bottom half)
+     */
+    std::string setReceiverUDPIP2(const std::string &udpip, int detPos = -1);
+
+    /**
+     * Returns the receiver UDP IP address (bottom half) Jungfrau only
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP IP address (bottom half)
+     */
+    std::string getReceiverUDPIP2(int detPos = -1) const;
+
+    /**
      * Validates the format of the receiver UDP MAC address and sets it
      * @param udpmac receiver UDP MAC address
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -921,6 +966,21 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the receiver UDP MAC address
      */
     std::string getReceiverUDPMAC(int detPos = -1) const;
+
+    /**
+     * Validates the format of the receiver UDP MAC address  (bottom half) and sets it (Jungfrau only)
+     * @param udpmac receiver UDP MAC address (bottom half)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP MAC address (bottom half)
+     */
+    std::string setReceiverUDPMAC2(const std::string &udpmac, int detPos = -1);
+
+    /**
+     * Returns the receiver UDP MAC address (bottom half) Jungfrau only
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver UDP MAC address (bottom half)
+     */
+    std::string getReceiverUDPMAC2(int detPos = -1) const;
 
     /**
      * Sets the receiver UDP port
@@ -938,7 +998,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int getReceiverUDPPort(int detPos = -1) const;
 
     /**
-     * Sets the receiver UDP port 2
+     * Sets the receiver UDP port 2 (Eiger and Jungfrau only)
      * @param udpport receiver UDP port 2
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2
@@ -946,11 +1006,41 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setReceiverUDPPort2(int udpport, int detPos = -1);
 
     /**
-     * Returns the receiver UDP port 2 of same interface
+     * Returns the receiver UDP port 2 of same interface (Eiger and Jungfrau only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2 of same interface
      */
     int getReceiverUDPPort2(int detPos = -1) const;
+
+    /**
+     * Sets the number of UDP interfaces to stream data from detector (Jungfrau only)
+     * @param n number of interfaces. Options 1 or 2.
+     * @param detPos -1 for all detectors in  list or specific detector position
+     *  @returns the number of interfaces
+     */
+    int setNumberofUDPInterfaces(int n, int detPos = -1);
+
+    /**
+     * Returns the number of UDP interfaces to stream data from detector (Jungfrau only)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the number of interfaces
+     */
+    int getNumberofUDPInterfaces(int detPos = -1) const;
+
+    /**
+     * Selects the UDP interfaces to stream data from detector. Effective only when number of interfaces is 1. (Jungfrau only)
+     * @param n selected interface. Options 1 or 2.
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the interface selected
+     */
+    int selectUDPInterface(int n, int detPos = -1);
+
+    /**
+     * Returns the UDP interfaces to stream data from detector. Effective only when number of interfaces is 1. (Jungfrau only)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the interface selected
+     */
+    int getSelectedUDPInterface(int detPos = -1) const;
 
     /**
      * (advanced users)

@@ -1188,11 +1188,10 @@ void Beb_SetDetectorNumber(uint32_t detid) {
 int Beb_SetDetectorPosition(int pos[]) {
 	if (!Beb_activated)
 		return OK;
-	FILE_LOG(logINFO, ("Got Position values %d %d %d...\n", pos[0],pos[1], pos[2]));
+	FILE_LOG(logINFO, ("Got Position values %d %d...\n", pos[0],pos[1]));
 
 	pos[0] = Beb_swap_uint16(pos[0]);
 	//pos[1] = Beb_swap_uint16(pos[1]);
-	pos[2] = Beb_swap_uint16(pos[2]);
 
 	int ret = FAIL;
 	//mapping new memory to read master top module configuration
@@ -1224,37 +1223,21 @@ int Beb_SetDetectorPosition(int pos[]) {
 
 
 		// y left (column)
-		// overwriting z anyway, so no need to look at previous z value
 		int posval = Beb_swap_uint16(Beb_top ? pos[1] : (pos[1]+1));
-		Beb_Write32(csp0base, UDP_HEADER_B_LEFT_OFST, ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
-		if (value  != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK))
+		value &= UDP_HEADER_Z_MSK;	// to keep previous z value
+		Beb_Write32(csp0base, UDP_HEADER_B_LEFT_OFST, value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
+		value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
+		if ((value & UDP_HEADER_Z_MSK) != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK))
 			ret = FAIL;
 
 		// y right
-		// overwriting z anyway, so no need to look at previous z value
+		value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
+		value &= UDP_HEADER_Z_MSK;	// to keep previous z value
 		posval = Beb_swap_uint16(Beb_top ? (pos[1]+1) : pos[1]);
-		Beb_Write32(csp0base, UDP_HEADER_B_RIGHT_OFST, ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
+		Beb_Write32(csp0base, UDP_HEADER_B_RIGHT_OFST, value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
-		if (value  != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK))
-			ret = FAIL;
-
-
-
-		// z left
-		value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
-		value &= UDP_HEADER_Y_MSK;	// to keep previous y value
-		Beb_Write32(csp0base, UDP_HEADER_B_LEFT_OFST, value | ((pos[2] << UDP_HEADER_Z_OFST) & UDP_HEADER_Z_MSK));
-		value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
-		if ((value & UDP_HEADER_Z_MSK) != ((pos[2] << UDP_HEADER_Z_OFST) & UDP_HEADER_Z_MSK))
-			ret = FAIL;
-
-		// z right
-		value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
-		value &= UDP_HEADER_Y_MSK;	// to keep previous y value
-		Beb_Write32(csp0base, UDP_HEADER_B_RIGHT_OFST, value | ((pos[2] << UDP_HEADER_Z_OFST) & UDP_HEADER_Z_MSK));
-		value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
-		if ((value & UDP_HEADER_Z_MSK) != ((pos[2] << UDP_HEADER_Z_OFST) & UDP_HEADER_Z_MSK))
+		if ((value & UDP_HEADER_Z_MSK) != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK))
 			ret = FAIL;
 
 
@@ -1263,10 +1246,10 @@ int Beb_SetDetectorPosition(int pos[]) {
 	}
 	if (ret == OK) {
 		FILE_LOG(logINFO, ("Position set to...\n"
-				"\tLeft: [%d, %d, %d]\n"
-				"\tRight:[%d, %d, %d]\n",
-				Beb_swap_uint16(pos[0]), Beb_top ? pos[1] : (pos[1]+1), Beb_swap_uint16(pos[2]),
-						Beb_swap_uint16(pos[0]), Beb_top ? (pos[1]+1) : pos[1], Beb_swap_uint16(pos[2])));
+				"\tLeft: [%d, %d]\n"
+				"\tRight:[%d, %d]\n",
+				Beb_swap_uint16(pos[0]), Beb_top ? pos[1] : (pos[1]+1)),
+						Beb_swap_uint16(pos[0]), Beb_top ? (pos[1]+1) : pos[1]);
 	}
 
 	return ret;

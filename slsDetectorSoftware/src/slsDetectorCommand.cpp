@@ -1535,10 +1535,18 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncName = "rx_hostname"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
+
     /*! \page network
    - <b>rx_udpip [ip]</b> sets/gets the ip address of the receiver UDP interface where the data from the detector will be streamed to. Normally used for single detectors (Can be multi-detector). Used if different from eth0. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_udpip"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>rx_udpip2 [ip]</b> sets/gets the ip address of the second receiver UDP interface where the data from the bottom half module of the detector will be streamed to. Normally used for single detectors (Can be multi-detector). Used if different from eth0. JUNGFRAU only. \c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "rx_udpip2"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
@@ -1550,6 +1558,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
+   - <b>rx_udpmac2 [mac]</b> sets/gets the mac address of the second receiver UDP interface where the data from the bottom half module of the detector will be streamed to. Normally used for single detectors (Can be multi-detector). JUNGFRAU only.\c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "rx_udpmac2"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
    - <b>rx_udpport [port]</b> sets/gets the port of the receiver UDP interface where the data from the detector will be streamed to. Use single-detector command. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_udpport"; //
@@ -1557,7 +1572,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>rx_udpport2 [port]</b> sets/gets the second port of the receiver UDP interface where the data from the second half of the detector will be streamed to. Use single-detector command. Used for EIGER only. \c Returns \c (int)
+   - <b>rx_udpport2 [port]</b> sets/gets the second port of the receiver UDP interface where the data from the second half of the detector will be streamed to. Use single-detector command. Used for EIGERand JUNGFRAU only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_udpport2"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -1585,9 +1600,37 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>detectorip [ip]</b> sets/gets the ip address of the detector UDP interface from where the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip (if rx_udpip specified). \c Returns \c (string)
+   - <b>detectormac2 [mac]</b> sets/gets the mac address of the second half of the detector UDP interface from where the bottom half module of the detector will stream data. Use single-detector command. Normally unused. JUNGFRAU only. \c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "detectormac2"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>detectorip [ip]</b> sets/gets the ip address of the detector UDP interface from where the bottom half of the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip (if rx_udpip specified). \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "detectorip"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>detectorip2 [ip]</b> sets/gets the ip address of the second half of the detector UDP interface from where the bottom half of the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip2 (if rx_udpip2 specified). JUNGFRAU only. \c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "detectorip2"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>numinterfaces [n]</b> sets/gets the number of interfaces used to stream out from the detector. Options: 1, 2. JUNGFRAU only. \c Returns \c (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "numinterfaces"; //
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>selinterface [n]</b> sets/gets the 1st or the 2nd interface to use to stream data out of the detector. Options: 1, 2. Effective only when \c numinterfaces is 1. JUNGFRAU only. \c Returns \c (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "selinterface"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
@@ -1606,7 +1649,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>txndelay_frame [delay]</b> sets/gets the transmission frame period of entire frame being streamed out from the detector for both ports. Use single-detector command. Used for EIGER only. \c Returns \c (int)
+   - <b>txndelay_frame [delay]</b> sets/gets the transmission frame period of entire frame being streamed out from the detector for both ports. Use single-detector command. Used for EIGER and JUNGFRAU only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "txndelay_frame"; //
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -2789,11 +2832,21 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
     		  myDet->setDetectorMAC(args[1], detPos);
     	  }
     	  return myDet->getDetectorMAC(detPos);
+    } else if (cmd == "detectormac2") {
+    	if (action == PUT_ACTION) {
+    		myDet->setDetectorMAC2(args[1], detPos);
+    	}
+    	return myDet->getDetectorMAC2(detPos);
     } else if (cmd == "detectorip") {
-  	  if (action == PUT_ACTION) {
-  		myDet->setDetectorIP(args[1], detPos);
-  	  }
-  	  return myDet->getDetectorIP(detPos);
+    	if (action == PUT_ACTION) {
+    		myDet->setDetectorIP(args[1], detPos);
+    	}
+    	return myDet->getDetectorIP(detPos);
+    } else if (cmd == "detectorip2") {
+    	if (action == PUT_ACTION) {
+    		myDet->setDetectorIP2(args[1], detPos);
+    	}
+    	return myDet->getDetectorIP2(detPos);
     } else if (cmd == "rx_hostname") {
     	  if (action == PUT_ACTION) {
     		  myDet->setReceiverHostname(args[1], detPos);
@@ -2804,9 +2857,19 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
     		  myDet->setReceiverUDPIP(args[1], detPos);
     	  }
     	  return myDet->getReceiverUDPIP(detPos);
+    } else if (cmd == "rx_udpip2") {
+    	if (action == PUT_ACTION) {
+    		myDet->setReceiverUDPIP2(args[1], detPos);
+    	}
+    	return myDet->getReceiverUDPIP(detPos);
     } else if (cmd == "rx_udpmac") {
-    	  if (action == PUT_ACTION) {
+    	if (action == PUT_ACTION) {
     		  myDet->setReceiverUDPMAC(args[1], detPos);
+    	  }
+    	  return myDet->getReceiverUDPMAC(detPos);
+    } else if (cmd == "rx_udpmac2") {
+    	if (action == PUT_ACTION) {
+    		  myDet->setReceiverUDPMAC2(args[1], detPos);
     	  }
     	  return myDet->getReceiverUDPMAC(detPos);
     } else if (cmd == "rx_udpport") {
@@ -2826,6 +2889,24 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
             myDet->setReceiverUDPPort2(i, detPos);
         }
         sprintf(ans, "%d", myDet->getReceiverUDPPort2(detPos));
+        return ans;
+    }  else if (cmd == "numinterfaces") {
+        if (action == PUT_ACTION) {
+            if (!(sscanf(args[1], "%d", &i))) {
+                return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setNumberofUDPInterfaces(i, detPos);
+        }
+        sprintf(ans, "%d", myDet->getNumberofUDPInterfaces(detPos));
+        return ans;
+    }  else if (cmd == "selinterface") {
+        if (action == PUT_ACTION) {
+            if (!(sscanf(args[1], "%d", &i))) {
+                return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->selectUDPInterface(i, detPos);
+        }
+        sprintf(ans, "%d", myDet->getSelectedUDPInterface(detPos));
         return ans;
     } else if (cmd == "rx_udpsocksize") {
         if (action == PUT_ACTION) {
@@ -2921,12 +3002,18 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "detectormac mac \n sets detector mac to mac" << std::endl;
+        os << "detectormac2 mac \n sets detector mac of 2nd udp interface to mac. Jungfrau only" << std::endl;
         os << "detectorip ip \n sets detector ip to ip" << std::endl;
+        os << "detectorip2 ip \n sets detector ip of 2nd udp interface to ip. Jungfrau only" << std::endl;
         os << "rx_hostname name \n sets receiver ip/hostname to name" << std::endl;
         os << "rx_udpip ip \n sets receiver udp ip to ip" << std::endl;
+        os << "rx_udpip2 ip \n sets receiver udp ip of 2nd udp interface to ip. Jungfrau only" << std::endl;
         os << "rx_udpmac mac \n sets receiver udp mac to mac" << std::endl;
+        os << "rx_udpmac2 mac \n sets receiver udp mac of 2nd udp interface to mac. Jungfrau only." << std::endl;
         os << "rx_udpport port \n sets receiver udp port to port" << std::endl;
-        os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger and Jungfrau, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "numinterfaces n \n sets the number of interfaces to n used to stream out from the detector. Options: 1, 2. JUNGFRAU only. " << std::endl;
+        os << "selinterface n \n sets the 1st or the 2nd interface to use to stream data out of the detector. Options: 1, 2. Effective only when  numinterfaces is 1. JUNGFRAU only. " << std::endl;
         os << "txndelay_left port \n sets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right port \n sets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame port \n sets detector transmission delay of the entire frame" << std::endl;
@@ -2955,11 +3042,18 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "detectormac \n gets detector mac " << std::endl;
+        os << "detectormac2 \n gets detector mac of 2nd udp interface. Jungfrau only" << std::endl;
         os << "detectorip \n gets detector ip " << std::endl;
+        os << "detectorip2 \n gets detector ip of 2nd udp interface. Jungfrau only" << std::endl;
         os << "rx_hostname \n gets receiver ip " << std::endl;
         os << "rx_udpmac \n gets receiver udp mac " << std::endl;
+        os << "rx_udpmac2 \n gets receiver udp mac of 2nd udp interface. Jungfrau only" << std::endl;
+        os << "rx_udpip \n gets receiver udp mac " << std::endl;
+        os << "rx_udpip2 \n gets receiver udp mac of 2nd udp interface. Jungfrau only" << std::endl;
         os << "rx_udpport \n gets receiver udp port " << std::endl;
-        os << "rx_udpport2 \n gets receiver udp port. For Eiger, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "rx_udpport2 \n gets receiver udp port of 2nd udp interface. For Eiger and Jungfrau, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "numinterfaces \n gets the number of interfaces to n used to stream out from the detector. Options: 1, 2. JUNGFRAU only. " << std::endl;
+        os << "selinterface \n gets the interface selected to use to stream data out of the detector. Options: 1, 2. Effective only when numinterfaces is 1. JUNGFRAU only. " << std::endl;
         os << "txndelay_left \n gets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right \n gets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame \n gets detector transmission delay of the entire frame" << std::endl;

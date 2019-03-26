@@ -163,16 +163,28 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	uint32_t getUDPPortNumber() const;
 
 	/**
-	 * Get Second UDP Port Number (eiger specific)
+	 * Get Second UDP Port Number (eiger/jungfrau specific)
 	 * @return second udp port number
 	 */
 	uint32_t getUDPPortNumber2() const;
 
 	/**
 	 * Get Ehernet Interface
-	 * @ethernet interface. eg. eth0 or "" if listening to all
+	 * @return ethernet interface. eg. eth0 or "" if listening to all
 	 */
 	std::string getEthernetInterface() const;
+
+	/**
+	 * Get Ehernet Interface 2 (jungfrau specific)
+	 * @return ethernet interface 2. eg. eth0 or "" if listening to all
+	 */
+	std::string getEthernetInterface2() const;
+
+	/**
+	 * Get number of UDP Interfaces (jungfrau specific)
+	 * @return number of udp interfaces. Options (1-2)
+	 */
+	int getNumberofUDPInterfaces() const;
 
 
 	//***acquisition parameters***
@@ -422,7 +434,7 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	void setUDPPortNumber(const uint32_t i);
 
 	/**
-	 * Set Second UDP Port Number (eiger specific)
+	 * Set Second UDP Port Number (eiger/jungfrau specific)
 	 * @return second udp port number
 	 */
 	void setUDPPortNumber2(const uint32_t i);
@@ -432,6 +444,19 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 * @param c ethernet inerface eg. eth0 (max of 1000 characters)
 	 */
 	void setEthernetInterface(const char* c);
+
+	/**
+	 * Set second Ethernet Interface to listen to (jungfrau specific)
+	 * @param c second ethernet inerface eg. eth0 (max of 1000 characters)
+	 */
+	void setEthernetInterface2(const char* c);
+
+	/**
+	 * Set number of UDP Interfaces (jungfrau specific)
+	 * @param n number of udp interfaces. Options (1-2)
+	 * @return OK or FAIL for fifo structure creation
+	 */
+	int setNumberofUDPInterfaces(const int n);
 
     /** (not saved in client shared memory)
      * Set UDP Socket Buffer Size
@@ -591,9 +616,9 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 
 	/**
 	 * Set detector position id and construct filewriter
-	 * @param i position id
+	 * @param id position id
 	 */
-	void setDetectorPositionId(const int i);
+	void setDetectorPositionId(const int id);
 
 	//***acquisition functions***
 	/**
@@ -800,8 +825,10 @@ private:
 	bool silentMode;
 
 	//***connection parameters***
+	/** Number of UDP Interfaces */
+	int numUDPInterfaces;
 	/** Ethernet Interface */
-	char eth[MAX_STR_LENGTH];
+	char eth[MAX_NUMBER_OF_LISTENING_THREADS][MAX_STR_LENGTH];
 	/** Server UDP Port Number*/
 	uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
 	/** udp socket buffer size */

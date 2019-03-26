@@ -1523,7 +1523,7 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2){
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport){
 #ifdef VIRTUAL
 	return OK;
 #endif
@@ -2152,6 +2152,7 @@ int stopStateMachine(){
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STP_ACQSTN_MSK);
 
 	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
+
 	return OK;
 }
 

@@ -1350,7 +1350,7 @@ void calcChecksum(mac_conf* mac, int sourceip, int destip) {
 	mac->ip.ip_chksum   =  checksum;
 }
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2) {
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport) {
 #ifdef VIRTUAL
     return OK;
 #endif

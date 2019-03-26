@@ -217,6 +217,14 @@ public:
         cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
     };
 
+    /**
+     * set number of interfaces (jungfrau)
+     * @param number of interfaces
+     */
+    virtual void SetNumberofInterfaces(const int n) {
+        cprintf(RED,"SetNumberofInterfaces is a generic function that should be overloaded by a derived class\n");
+    }
+
 	/**
 	 * Print all variables
 	 */
@@ -508,14 +516,38 @@ class JungfrauData : public GeneralData {
 		dataSize 			= 8192;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 128;
-		imageSize 			= dataSize*packetsPerFrame;
+		imageSize 			= dataSize * packetsPerFrame;
 		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 		standardheader		= true;
-		defaultUdpSocketBufferSize = (2000 * 1024 * 1024);
+		defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
 	};
 
+
+    /**
+     * set number of interfaces (jungfrau)
+     * @param number of interfaces
+     */
+    void SetNumberofInterfaces(const int n) {
+    	// 2 interfaces
+    	if (n == 2) {
+    		nPixelsY 					= 256;
+    		packetsPerFrame 			= 64;
+    		imageSize 					= dataSize * packetsPerFrame;
+    		threadsPerReceiver			= 2;
+    		defaultUdpSocketBufferSize 	= (500 * 1024 * 1024);
+
+    	}
+    	// 1 interface
+    	else  {
+    		nPixelsY 					= 512;
+    		packetsPerFrame 			= 128;
+    		imageSize 					= dataSize * packetsPerFrame;
+    		threadsPerReceiver			= 1;
+    		defaultUdpSocketBufferSize 	= (1000 * 1024 * 1024);
+    	}
+    }
 };
 
 

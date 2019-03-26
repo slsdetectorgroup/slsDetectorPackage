@@ -1021,12 +1021,18 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2){
+int configureMAC(int numInterfaces, int selInterface,
+		uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
+		uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2) {
 #ifdef VIRTUAL
     return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
+
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
+
+	FILE_LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
+	FILE_LOG(logINFO, ("\tInterface   : %d\n\n", selInterface));
 
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
@@ -1040,7 +1046,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(long  long unsigned int)sourcemac));
 	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
 
-	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t\t(0x%08x)\n",
 	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
 	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((destmac>>40)&0xFF),
@@ -1050,7 +1056,32 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((destmac>>8)&0xFF),
 			(unsigned int)((destmac>>0)&0xFF),
 			(long  long unsigned int)destmac));
-	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
+
+	uint32_t sourceport2  =  DEFAULT_TX_UDP_PORT + 1;
+	FILE_LOG(logINFO, ("\tSource IP2  : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (sourceip2>>24)&0xff,(sourceip2>>16)&0xff,(sourceip2>>8)&0xff,(sourceip2)&0xff, sourceip2));
+	FILE_LOG(logINFO, ("\tSource MAC2 : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+			(unsigned int)((sourcemac2>>40)&0xFF),
+			(unsigned int)((sourcemac2>>32)&0xFF),
+			(unsigned int)((sourcemac2>>24)&0xFF),
+			(unsigned int)((sourcemac2>>16)&0xFF),
+			(unsigned int)((sourcemac2>>8)&0xFF),
+			(unsigned int)((sourcemac2>>0)&0xFF),
+			(long  long unsigned int)sourcemac2));
+	FILE_LOG(logINFO, ("\tSource Port2: %d \t\t\t(0x%08x)\n",sourceport2, sourceport2));
+
+	FILE_LOG(logINFO, ("\tDest. IP2   : %d.%d.%d.%d \t\t\t(0x%08x)\n",
+	        (destip2>>24)&0xff,(destip2>>16)&0xff,(destip2>>8)&0xff,(destip2)&0xff, destip2));
+	FILE_LOG(logINFO, ("\tDest. MAC2  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+			(unsigned int)((destmac2>>40)&0xFF),
+			(unsigned int)((destmac2>>32)&0xFF),
+			(unsigned int)((destmac2>>24)&0xFF),
+			(unsigned int)((destmac2>>16)&0xFF),
+			(unsigned int)((destmac2>>8)&0xFF),
+			(unsigned int)((destmac2>>0)&0xFF),
+			(long  long unsigned int)destmac2));
+	FILE_LOG(logINFO, ("\tDest. Port2 : %d \t\t\t(0x%08x)\n",udpport2, udpport2));
 
 	long int checksum=calcChecksum(sourceip, destip);
 	bus_w(TX_IP_REG, sourceip);
@@ -1090,21 +1121,20 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
-	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d), reserved: %d\n", pos[0], pos[1], pos[2]));
+	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", pos[0], pos[1]));
+
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_X_MSK)));
 	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK));
 	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK))
 		ret = FAIL;
 
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_Y_MSK)));
 	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
 	if ((bus_r(COORD_0_REG) &  COORD_0_Y_MSK) != ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
 		ret = FAIL;
 
-	bus_w(COORD_1_REG, bus_r(COORD_1_REG) | ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK));
-	if ((bus_r(COORD_1_REG) &  COORD_0_Z_MSK) != ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK))
-		ret = FAIL;
-
 	if (ret == OK) {
-		FILE_LOG(logINFO, ("Position set to [%d, %d, %d]\n", pos[0], pos[1], pos[2]));
+		FILE_LOG(logINFO, ("Position set to [%d, %d]\n", pos[0], pos[1]));
 	}
 	return ret;
 }

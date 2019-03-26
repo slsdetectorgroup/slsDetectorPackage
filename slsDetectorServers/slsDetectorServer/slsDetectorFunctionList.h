@@ -210,7 +210,17 @@ long int 	calcChecksum(int sourceip, int destip);
 #ifdef GOTTHARDD
 int         getAdcConfigured();
 #endif
+
+#ifdef EIGERD
 int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2);
+#elif JUNGFRAUD
+int 		configureMAC(int numInterfaces, int selInterface,
+				uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
+				uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2);
+#else
+int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport);
+#endif
+
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int 		setDetectorPosition(int pos[]);
 #endif

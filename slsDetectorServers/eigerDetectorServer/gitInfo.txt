@@ -1,9 +1,9 @@
 Path: slsDetectorPackage/slsDetectorServers/eigerDetectorServer 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: d9503bebf9aed76490b8166ef233e5ceeff97547 
-Revision: 29 
-Branch: refactor 
+Repsitory UUID: cd5aea895b07b7af25e3fb74a341a861f9aa291c 
+Revision: 30 
+Branch: jungfrau 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 4465 
-Last Changed Date: 2019-03-21 14:03:50.000000002 +0100 ../slsDetectorServer/ALTERA_PLL.h
+Last Changed Rev: 4473 
+Last Changed Date: 2019-03-22 17:13:44.000000002 +0100 ../slsDetectorServer/slsDetectorServer_funcs.c

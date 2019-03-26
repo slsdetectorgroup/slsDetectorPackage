@@ -1438,6 +1438,28 @@ std::string multiSlsDetector::getDetectorMAC(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
+std::string multiSlsDetector::setDetectorMAC2(const std::string &detectorMAC, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setDetectorMAC2(detectorMAC);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setDetectorMAC2, detectorMAC);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getDetectorMAC2(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getDetectorMAC2();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getDetectorMAC2);
+    return sls::concatenateIfDifferent(r);
+}
+
 std::string multiSlsDetector::setDetectorIP(const std::string &detectorIP, int detPos) {
     // single
     if (detPos >= 0) {
@@ -1459,6 +1481,29 @@ std::string multiSlsDetector::getDetectorIP(int detPos) const {
     auto r = serialCall(&slsDetector::getDetectorIP);
     return sls::concatenateIfDifferent(r);
 }
+
+std::string multiSlsDetector::setDetectorIP2(const std::string &detectorIP, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setDetectorIP2(detectorIP);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setDetectorIP2, detectorIP);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getDetectorIP2(int detPos) const {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getDetectorIP2();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getDetectorIP2);
+    return sls::concatenateIfDifferent(r);
+}
+
 
 std::string multiSlsDetector::setReceiverHostname(const std::string &receiver, int detPos) {
     // single
@@ -1504,6 +1549,28 @@ std::string multiSlsDetector::getReceiverUDPIP(int detPos) const {
     return sls::concatenateIfDifferent(r);
 }
 
+std::string multiSlsDetector::setReceiverUDPIP2(const std::string &udpip, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setReceiverUDPIP2(udpip);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setReceiverUDPIP2, udpip);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getReceiverUDPIP2(int detPos) const {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverUDPIP2();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverUDPIP2);
+    return sls::concatenateIfDifferent(r);
+}
+
 std::string multiSlsDetector::setReceiverUDPMAC(const std::string &udpmac, int detPos) {
     // single
     if (detPos >= 0) {
@@ -1523,6 +1590,28 @@ std::string multiSlsDetector::getReceiverUDPMAC(int detPos) const {
 
     // multi
     auto r = serialCall(&slsDetector::getReceiverUDPMAC);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::setReceiverUDPMAC2(const std::string &udpmac, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setReceiverUDPMAC2(udpmac);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setReceiverUDPMAC2, udpmac);
+    return sls::concatenateIfDifferent(r);
+}
+
+std::string multiSlsDetector::getReceiverUDPMAC2(int detPos) const {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverUDPMAC2();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getReceiverUDPMAC2);
     return sls::concatenateIfDifferent(r);
 }
 
@@ -1570,6 +1659,71 @@ int multiSlsDetector::getReceiverUDPPort2(int detPos) const {
     return sls::minusOneIfDifferent(r);
 }
 
+int multiSlsDetector::setNumberofUDPInterfaces(int n, int detPos) {
+
+    int previouslyClientStreaming = enableDataStreamingToClient();
+    int previouslyReceiverStreaming = enableDataStreamingFromReceiver();
+
+    // single
+    int ret = OK;
+    if (detPos >= 0) {
+        ret = detectors[detPos]->setNumberofUDPInterfaces(n);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setNumberofUDPInterfaces,n);
+
+    // redo the zmq sockets
+    if (previouslyClientStreaming) {
+        enableDataStreamingToClient(0);
+        enableDataStreamingToClient(1);
+    }
+    if (previouslyReceiverStreaming) {
+        enableDataStreamingFromReceiver(0);
+        enableDataStreamingFromReceiver(1);
+    }
+
+    // return single
+    if (detPos >= 0)
+    	return ret;
+
+    // return multi
+    return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::getNumberofUDPInterfaces(int detPos) const {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getNumberofUDPInterfaces();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getNumberofUDPInterfaces);
+    return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::selectUDPInterface(int n, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->selectUDPInterface(n);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::selectUDPInterface,n);
+    return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::getSelectedUDPInterface(int detPos) const {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getSelectedUDPInterface();
+    }
+
+    // multi
+    auto r = serialCall(&slsDetector::getSelectedUDPInterface);
+    return sls::minusOneIfDifferent(r);
+}
+
 void multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
     if (i >= 0) {
         int prev_streaming = enableDataStreamingToClient();
@@ -1583,6 +1737,8 @@ void multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
             // calculate ports individually
             int firstPort = i;
             int numSockets = (getDetectorTypeAsEnum() == EIGER) ? 2 : 1;
+            if (getNumberofUDPInterfaces() == 2)
+            	numSockets *= 2;
 
             for (size_t idet = 0; idet < detectors.size(); ++idet) {
                 auto port = firstPort + (idet * numSockets);
@@ -1621,6 +1777,8 @@ void multiSlsDetector::setReceiverDataStreamingOutPort(int i, int detPos) {
             // calculate ports individually
             int firstPort = i;
             int numSockets = (getDetectorTypeAsEnum() == EIGER) ? 2 : 1;
+            if (getNumberofUDPInterfaces() == 2)
+            	numSockets *= 2;
 
             for (size_t idet = 0; idet < detectors.size(); ++idet) {
                 auto port = firstPort + (idet * numSockets);
@@ -2848,6 +3006,9 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
     if (getDetectorTypeAsEnum() == EIGER) {
         numSocketsPerDetector = 2;
     }
+    if (getNumberofUDPInterfaces() == 2) {
+        numSocketsPerDetector = 2;
+    }
     numSockets *= numSocketsPerDetector;
 
     for (size_t iSocket = 0; iSocket < numSockets; ++iSocket) {
@@ -2881,6 +3042,9 @@ void multiSlsDetector::readFrameFromReceiver() {
         eiger = true;
         nX *= 2;
         gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true : false;
+    }
+    if (getNumberofUDPInterfaces() == 2) {
+        nY *= 2;
     }
 
     bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];

@@ -1143,7 +1143,7 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2){
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport){
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -1926,69 +1926,25 @@ void unsetFifoReadStrobes() {
 }
 
 void readSample(int ns) {
-    uint32_t addr = DUMMY_REG;
+	uint32_t addr = DUMMY_REG;
 
-    // read adcs
-    if (analogEnable) {
+	// read digital output
+	// read strobe to digital fifo
+	bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
+	bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+	// wait as it is connected directly to fifo running on a different clock
+	if (!(ns%1000)) {
+		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
+				ns, nSamples,
+				((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
+				((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_FULL_MSK) >> FIFO_DIN_STATUS_FIFO_FULL_OFST),
+				bus_r(STATUS_REG)));
+	}
 
-        uint32_t fifoAddr = FIFO_DATA_REG;
+	// read fifo and write it to current position of data pointer
+	*((uint64_t*)now_ptr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
+	now_ptr += 8;
 
-        // read strobe to all analog fifos
-        bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
-        // wait as it is connected directly to fifo running on a different clock
-        //usleep(WAIT_TIME_FIFO_RD_STROBE);
-        if (!(ns%1000)) {
-    		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x Status:0x%x\n",
-    				ns, nSamples, bus_r(FIFO_EMPTY_REG), bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
-        }
-
-        // loop through all channels
-        int ich = 0;
-        for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
-
-            // if channel is in ROI
-            if ((1 << ich) & ~(adcDisableMask)) {
-
-                // unselect channel
-                bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));
-
-                // select channel
-                bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) & DUMMY_FIFO_CHNNL_SLCT_MSK));
-
-                // read fifo and write it to current position of data pointer
-                *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
-
-                // keep reading till the value is the same
-               /* while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
-                    FILE_LOG(logDEBUG1, ("%d ", ich));
-                    *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
-                }*/
-
-                // increment pointer to data out destination
-                now_ptr += 2;
-            }
-        }
-    }
-
-    // read digital output
-    if (digitalEnable) {
-        // read strobe to digital fifo
-        bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
-        bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
-        // wait as it is connected directly to fifo running on a different clock
-        if (!(ns%1000)) {
-    		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
-    				ns, nSamples,
-					((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
-					((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_FULL_MSK) >> FIFO_DIN_STATUS_FIFO_FULL_OFST),
-					bus_r(STATUS_REG)));
-        }
-
-        // read fifo and write it to current position of data pointer
-        *((uint64_t*)now_ptr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
-        now_ptr += 8;
-    }
 }
 
 uint32_t checkDataInFifo() {

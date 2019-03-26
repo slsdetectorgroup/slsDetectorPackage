@@ -1,9 +1,9 @@
 Path: slsDetectorPackage/slsDetectorServers/moenchDetectorServer 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: cd5aea895b07b7af25e3fb74a341a861f9aa291c 
-Revision: 21 
+Repsitory UUID: 7cd5bc8b2db6e89fbec4c06c65e683cf788338c0 
+Revision: 22 
 Branch: jungfrau 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 4473 
-Last Changed Date: 2019-03-22 17:13:44.000000002 +0100 ../slsDetectorServer/slsDetectorServer_funcs.c
+Last Changed Rev: 4474 
+Last Changed Date: 2019-03-26 15:01:04.000000002 +0100 ./slsDetectorServer_defs.h

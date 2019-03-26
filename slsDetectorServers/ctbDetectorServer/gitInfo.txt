@@ -1,9 +1,9 @@
 Path: slsDetectorPackage/slsDetectorServers/ctbDetectorServer 
 URL: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
 Repository Root: origin git@github.com:slsdetectorgroup/slsDetectorPackage.git 
-Repsitory UUID: 5bf37a4f0d840820e676f11419e98c0203d700eb 
-Revision: 44 
+Repsitory UUID: 7cd5bc8b2db6e89fbec4c06c65e683cf788338c0 
+Revision: 46 
 Branch: jungfrau 
 Last Changed Author: Dhanya_Thattil 
-Last Changed Rev: 4472 
-Last Changed Date: 2019-03-22 14:25:24.000000002 +0100 ../slsDetectorServer/ALTERA_PLL.h
+Last Changed Rev: 4474 
+Last Changed Date: 2019-03-26 15:01:04.000000002 +0100 ./slsDetectorServer_defs.h

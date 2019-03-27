@@ -1199,14 +1199,14 @@ int64_t multiSlsDetector::getTimeLeft(timerIndex index, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setSpeed(speedVariable index, int value, int detPos) {
+int multiSlsDetector::setSpeed(speedVariable index, int value, int mode, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setSpeed(index, value);
+        return detectors[detPos]->setSpeed(index, value, mode);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setSpeed, index, value);
+    auto r = parallelCall(&slsDetector::setSpeed, index, value, mode);
     return sls::minusOneIfDifferent(r);
 }
 

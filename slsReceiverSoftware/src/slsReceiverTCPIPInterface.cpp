@@ -733,13 +733,16 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			uint32_t port2 = atoi(args[5]);
 
 			// using the 2nd interface only
-			if (numInterfaces == 1 && selInterface == 2) {
+			if (myDetectorType == JUNGFRAU && numInterfaces == 1 && selInterface == 2) {
 				ip1 = ip2;
 				port1 = port2;
 			}
 
 			// 1st interface
 			receiver->setUDPPortNumber(port1);
+			if (myDetectorType == EIGER) {
+				receiver->setUDPPortNumber2(port2);
+			}
 			FILE_LOG(logINFO) << "Receiver UDP IP: " << ip1;
 			// get eth
 			std::string temp = genericSocket::ipToName(ip1);
@@ -769,7 +772,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 						FILE_LOG(logERROR) << mess;
 					} else {
 						// using the 2nd interface only
-						if (numInterfaces == 1 && selInterface == 2) {
+						if (myDetectorType == JUNGFRAU && numInterfaces == 1 && selInterface == 2) {
 							strcpy(retvals[1],temp.c_str());
 							FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[1];
 						}
@@ -782,7 +785,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			}
 
 			// 2nd interface
-			if (numInterfaces == 2) {
+			if (myDetectorType == JUNGFRAU && numInterfaces == 2) {
 				receiver->setUDPPortNumber2(port2);
 				FILE_LOG(logINFO) << "Receiver UDP IP 2: " << ip2;
 				// get eth
@@ -820,7 +823,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			}
 
 			// set the number of udp interfaces (changes number of threads and many others)
-			if (receiver->setNumberofUDPInterfaces(numInterfaces) == FAIL) {
+			if (myDetectorType == JUNGFRAU && receiver->setNumberofUDPInterfaces(numInterfaces) == FAIL) {
 				ret = FAIL;
 				sprintf(mess, "Failed to set number of interfaces\n");
 				FILE_LOG(logERROR) << mess;

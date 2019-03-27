@@ -734,14 +734,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Set speed
-     * @param sp speed type  (clkdivider option for Jungfrau and Eiger, others
-     * for Mythen/Gotthard)
+     * @param sp speed type  (clkdivider option for Jungfrau and Eiger,
+     * adcphase for Gotthard, others for CTB & Moench)
      * @param value (clkdivider 0,1,2 for full, half and quarter speed). Other
      * values check manual
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value of speed set
      */
-    int setSpeed(speedVariable index, int value = -1, int detPos = -1);
+    int setSpeed(speedVariable index, int value = -1, int mode = 0, int detPos = -1);
 
     /**
      * Set/get dynamic range and updates the number of dataBytes

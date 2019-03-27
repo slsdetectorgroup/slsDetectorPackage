@@ -140,14 +140,14 @@ const char* getTimerName(enum timerIndex ind) {
 const char* getSpeedName(enum speedVariable ind) {
     switch (ind) {
     case CLOCK_DIVIDER:  return "clock_divider";
-    case PHASE_SHIFT:    return "phase_shift";
-    case OVERSAMPLING:   return "oversampling";
     case ADC_CLOCK:      return "adc_clock";
     case ADC_PHASE:      return "adc_phase";
     case ADC_PIPELINE:   return "adc_pipeline";
     case DBIT_CLOCK:     return "dbit_clock";
     case DBIT_PHASE:     return "dbit_phase";
     case DBIT_PIPELINE:  return "dbit_pipeline";
+    case MAX_ADC_PHASE_SHIFT:  	return "max_adc_phase_shift";
+    case MAX_DBIT_PHASE_SHIFT:  return "max_dbit_phase_shift";
     default:             return "unknown_speed";
     }
 }
@@ -1938,73 +1938,97 @@ int set_roi(int file_des) {
 int set_speed(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1,-1};
+	int args[3] = {-1, -1, -1};
 	int retval = -1;
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
 
-#ifdef GOTTHARDD
-    functionNotImplemented();
-#else
 	enum speedVariable ind = args[0];
 	int val = args[1];
-    int GET_VAL = -1;
-    if ((ind == PHASE_SHIFT) || (ind == ADC_PHASE) || (ind == DBIT_PHASE))
-        GET_VAL = 100000;
+	int mode = args[2];
 
     char speedName[20] = {0};
     strcpy(speedName, getSpeedName(ind));
-    FILE_LOG(logDEBUG1, ("Setting speed index %s (%d) to %d\n", speedName, ind, val));
+    FILE_LOG(logDEBUG1, ("Setting speed index %s (speedVariable %d) to %d (mode: %d)\n", speedName, ind, val, mode));
 
     // check index
     switch(ind) {
 #ifdef JUNGFRAUD
         case ADC_PHASE:
+        case CLOCK_DIVIDER:
 #elif CHIPTESTBOARDD
         case ADC_PHASE:
-        case PHASE_SHIFT:
         case DBIT_PHASE:
+        case MAX_ADC_PHASE_SHIFT:
+        case MAX_DBIT_PHASE_SHIFT:
         case ADC_CLOCK:
         case DBIT_CLOCK:
+        case CLOCK_DIVIDER:
         case ADC_PIPELINE:
         case DBIT_PIPELINE:
 #elif MOENCHD
         case ADC_PHASE:
-        case PHASE_SHIFT:
         case DBIT_PHASE:
+        case MAX_ADC_PHASE_SHIFT:
+        case MAX_DBIT_PHASE_SHIFT:
         case ADC_CLOCK:
         case DBIT_CLOCK:
+        case CLOCK_DIVIDER:
         case ADC_PIPELINE:
         case DBIT_PIPELINE:
-#endif
+#elif GOTTHARDD
+        case ADC_PHASE:
+#elif EIGERD
         case CLOCK_DIVIDER:
+#endif
             break;
         default:
             modeNotImplemented(speedName, (int)ind);
             break;
     }
-
-    if (ret == OK) {
-        // set
-        if ((val != GET_VAL) && (Server_VerifyLock() == OK)) {
-            setSpeed(ind, val);
-        }
-        // get
-        retval = getSpeed(ind);
-        FILE_LOG(logDEBUG1, ("%s: %d\n", speedName, retval));
-        // validate
-        if (GET_VAL == -1) {
-            char validateName[20] = {0};
-            sprintf(validateName, "set %s", speedName);
-            validate(val, retval, validateName, DEC);
-        } else if (ret == OK && val != GET_VAL && retval != val ) {
-            ret = FAIL;
-            sprintf(mess, "Could not set %s. Set %d, but read %d\n", speedName, val, retval);
-            FILE_LOG(logERROR,(mess));
-        }
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD))
+    if (ret == OK && mode == 1) {
+		ret = FAIL;
+		strcpy(mess, "deg is not defined for this detector.\n");
+		FILE_LOG(logERROR,(mess));
     }
 #endif
+
+    if (ret == OK) {
+    	// set
+    	if ((val != -1) && (Server_VerifyLock() == OK)) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+    		setSpeed(ind, val, mode);
+#else
+    		setSpeed(ind, val);
+#endif
+    	}
+    	// get
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+    	retval = getSpeed(ind, mode);
+#else
+    	retval = getSpeed(ind);
+#endif
+    	FILE_LOG(logDEBUG1, ("%s: %d (mode:%d)\n", speedName, retval, mode));
+    	// validate
+    	char validateName[20] = {0};
+    	sprintf(validateName, "set %s", speedName);
+#ifndef GOTTHARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+    	if (ind == ADC_PHASE || ind == DBIT_PHASE && mode == 1) {
+    		ret = validatePhaseinDegrees(ind, val, retval);
+    		if (ret == FAIL) {
+    			sprintf(mess, "Could not set %s. Set %s, got %s\n", validateName);
+    			FILE_LOG(logERROR,(mess));
+    		}
+    	} else
+    		validate(val, retval, validateName, DEC);
+#else
+    	validate(val, retval, validateName, DEC);
+#endif
+#endif
+    }
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

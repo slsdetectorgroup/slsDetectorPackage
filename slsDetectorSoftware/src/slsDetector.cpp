@@ -1840,12 +1840,12 @@ int64_t slsDetector::getTimeLeft(timerIndex index) {
     return retval;
 }
 
-int slsDetector::setSpeed(speedVariable sp, int value) {
+int slsDetector::setSpeed(speedVariable sp, int value, int mode) {
     int fnum = F_SET_SPEED;
     int ret = FAIL;
-    int args[2] = {(int)sp, value};
+    int args[3] = {(int)sp, value, mode};
     int retval = -1;
-    FILE_LOG(logDEBUG1) << "Setting speed index " << sp << " to " << value;
+    FILE_LOG(logDEBUG1) << "Setting speed index " << sp << " to " << value << " mode: " << mode;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);

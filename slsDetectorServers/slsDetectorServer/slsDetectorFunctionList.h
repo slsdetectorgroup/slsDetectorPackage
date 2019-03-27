@@ -115,7 +115,10 @@ ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
 // parameters - readout
-#ifndef GOTTHARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+void 		setSpeed(enum speedVariable ind, int val, int mode);
+int         getSpeed(enum speedVariable ind, int mode);
+#else
 void 		setSpeed(enum speedVariable ind, int val);
 int         getSpeed(enum speedVariable ind);
 #endif
@@ -238,8 +241,10 @@ int         powerChip (int on);
 
 // chip test board or moench specific - configure frequency, phase, pll, flashing firmware
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-void        configurePhase(enum CLKINDEX ind, int val);
-int         getPhase(enum CLKINDEX ind);
+void        configurePhase(enum CLKINDEX ind, int val, int degrees);
+int         getPhase(enum CLKINDEX ind, int degrees);
+int         getMaxPhase(enum CLKINDEX ind);
+int 		validatePhaseinDegrees(enum speedVariable ind, int val, int retval);
 void        configureFrequency(enum CLKINDEX ind, int val);
 int         getFrequency(enum CLKINDEX ind);
 void        configureSyncFrequency(enum CLKINDEX ind);

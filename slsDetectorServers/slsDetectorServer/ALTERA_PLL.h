@@ -207,7 +207,7 @@ int ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
     uint32_t low_count = total_div / 2;
     uint32_t high_count = low_count;
     uint32_t odd_division = 0;
-	cprintf(RED, "toatldiv:%f\n", total_div);
+
     // odd division
     if (total_div > (float)(2 * low_count)) {
         ++high_count;

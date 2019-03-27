@@ -1209,16 +1209,19 @@ int Beb_SetDetectorPosition(int pos[]) {
 		value &= UDP_HEADER_ID_MSK;	// to keep previous id value
 		Beb_Write32(csp0base, UDP_HEADER_A_LEFT_OFST, value | ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
-		if ((value & UDP_HEADER_X_MSK) != ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK))
+		if ((value & UDP_HEADER_X_MSK) != ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK)) {
+			FILE_LOG(logERROR, ("Could not set row position for left port\n"));
 			ret = FAIL;
-
+		}
 		// x right
 		value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
 		value &= UDP_HEADER_ID_MSK;	// to keep previous id value
 		Beb_Write32(csp0base, UDP_HEADER_A_RIGHT_OFST, value | ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
-		if ((value & UDP_HEADER_X_MSK) != ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK))
+		if ((value & UDP_HEADER_X_MSK) != ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK)) {
+			FILE_LOG(logERROR, ("Could not set row position for right port\n"));
 			ret = FAIL;
+		}
 
 
 
@@ -1228,8 +1231,10 @@ int Beb_SetDetectorPosition(int pos[]) {
 		value &= UDP_HEADER_Z_MSK;	// to keep previous z value
 		Beb_Write32(csp0base, UDP_HEADER_B_LEFT_OFST, value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
-		if ((value & UDP_HEADER_Z_MSK) != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK))
+		if ((value & UDP_HEADER_Y_MSK) != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
+			FILE_LOG(logERROR, ("Could not set column position for left port\n"));
 			ret = FAIL;
+		}
 
 		// y right
 		value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
@@ -1237,8 +1242,10 @@ int Beb_SetDetectorPosition(int pos[]) {
 		posval = Beb_swap_uint16(Beb_top ? (pos[1]+1) : pos[1]);
 		Beb_Write32(csp0base, UDP_HEADER_B_RIGHT_OFST, value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
-		if ((value & UDP_HEADER_Z_MSK) != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK))
+		if ((value & UDP_HEADER_Y_MSK) != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
+			FILE_LOG(logERROR, ("Could not set column position for right port\n"));
 			ret = FAIL;
+		}
 
 
 		//close file pointer

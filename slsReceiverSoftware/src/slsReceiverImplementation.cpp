@@ -722,8 +722,10 @@ int slsReceiverImplementation::setUDPSocketBufferSize(const int64_t s) {
 	int64_t size = (s == 0) ? udpSocketBufferSize : s;
 	size_t listSize = listener.size();
 
-	if ((int)listSize != numUDPInterfaces)
+	if (myDetectorType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
+		FILE_LOG(logERROR) << "Number of Interfaces " << numUDPInterfaces << " do not match listener size " << listSize;
 		return FAIL;
+	}
 
 	for (unsigned int i = 0; i < listSize; ++i) {
 		if (listener[i]->CreateDummySocketForUDPSocketBufferSize(size) == FAIL)

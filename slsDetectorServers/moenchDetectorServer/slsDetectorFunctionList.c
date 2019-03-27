@@ -757,16 +757,15 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
 
 /* parameters - speed, readout */
 
-void setSpeed(enum speedVariable ind, int val) {
+void setSpeed(enum speedVariable ind, int val, int mode) {
     switch(ind) {
     case ADC_PHASE:
-    case PHASE_SHIFT:
         FILE_LOG(logINFOBLUE, ("Configuring ADC Phase\n"));
-        configurePhase(ADC_CLK, val);
+        configurePhase(ADC_CLK, val, mode);
         break;
     case DBIT_PHASE:
         FILE_LOG(logINFOBLUE, ("Configuring Dbit Phase\n"));
-        configurePhase(DBIT_CLK, val);
+        configurePhase(DBIT_CLK, val, mode);
         break;
     case ADC_CLOCK:
         FILE_LOG(logINFOBLUE, ("Configuring ADC Clock\n"));
@@ -794,23 +793,26 @@ void setSpeed(enum speedVariable ind, int val) {
     }
 }
 
-int getSpeed(enum speedVariable ind) {
+int getSpeed(enum speedVariable ind, int mode) {
     switch(ind) {
     case ADC_PHASE:
-    case PHASE_SHIFT:
-        return getPhase(ADC_CLK);
+        return getPhase(ADC_CLK, mode);
     case DBIT_PHASE:
-        return getPhase(DBIT_CLK);
+        return getPhase(DBIT_CLK, mode);
+    case MAX_ADC_PHASE_SHIFT:
+    	return getMaxPhase(ADC_CLK);
+    case MAX_DBIT_PHASE_SHIFT:
+    	return getMaxPhase(DBIT_CLK);
     case ADC_CLOCK:
         return getFrequency(ADC_CLK);
     case DBIT_CLOCK:
         return getFrequency(DBIT_CLK);
+    case CLOCK_DIVIDER:
+        return getFrequency(RUN_CLK);
     case ADC_PIPELINE:
         return getAdcOffsetRegister(1);
     case DBIT_PIPELINE:
         return getAdcOffsetRegister(0);
-    case CLOCK_DIVIDER:
-        return getFrequency(RUN_CLK);
     default:
         return -1;
     }
@@ -1269,48 +1271,100 @@ int powerChip(int on) {
 }
 
 // ind can only be ADC_CLK or DBIT_CLK
-void configurePhase(enum CLKINDEX ind, int val) {
-	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
-    if (val > 65535 || val < -65535) {
-        FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits\n", ind, clock_names[ind]));
-        return;
-    }
-    int relativePhase = clkPhase[ind] - val;
+void configurePhase(enum CLKINDEX ind, int val, int degrees) {
+	char clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
+	int maxShift = getMaxPhase(ind);
+
+	// validation
+	if (degrees && (val < 0 || val > 359)) {
+		 FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits (0 - 359°C)\n", ind, clock_names[ind]));
+		 return;
+	}
+	if (!degrees && (val < 0 || val > maxShift - 1)) {
+		 FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits (0 - %d phase shifts)\n", ind, clock_names[ind], maxShift - 1));
+		 return;
+	}
+
+    FILE_LOG(logINFO, ("Configuring Phase of C%d(%s) to %d (degree mode: %d)\n", ind, clock_names[ind], val, degrees));
+	int valShift = val;
+	// convert to phase shift
+	if (degrees) {
+		double temp = val * ((double)maxShift / 360.00);
+		if ((temp - (int)temp) > 0.0001) {
+			temp += 0.5;
+		}
+		valShift = temp;
+		FILE_LOG(logDEBUG1, ("phase shift: %d\n", valShift));
+	}
+	FILE_LOG(logDEBUG1, ("phase shift: %d (degrees/shift: %d)\n", valShift, val));
+
+	int relativePhase = clkPhase[ind] - valShift;
+	FILE_LOG(logDEBUG1, ("relative phase shift: %d (Current phase: %d)\n", relativePhase, clkPhase[ind]));
 
     // same phase
     if (!relativePhase) {
+    	FILE_LOG(logDEBUG1, ("Nothing to do\n"));
     	return;
     }
 
-    FILE_LOG(logINFO, ("Configuring Phase of C%d(%s) to %d\n", ind, clock_names[ind], val));
-
-    // reset only pll
-    ALTERA_PLL_ResetPLL();
-
-    // set mode register to polling mode
-    ALTERA_PLL_SetModePolling();
-
-
     int phase = 0;
-    int maxShifts = (PLL_VCO_FREQ_MHZ / clkDivider[ind]) * MAX_PHASE_SHIFTS_STEPS;
-    FILE_LOG(logDEBUG1, ("Clock: %d MHz, VCO:%d MHz, Max Phase shifts:%d\n",
-    		clkDivider[ind], PLL_VCO_FREQ_MHZ, maxShifts));
-
-    // delay clk
     if (relativePhase > 0) {
-        phase =  (maxShifts - relativePhase);
+        phase = (maxShift - relativePhase);
     } else {
     	phase = (-1) * relativePhase;
     }
-    FILE_LOG(logINFO, ("\tphase out %d (0x%08x)\n", phase, phase));
+    FILE_LOG(logDEBUG1, ("[Single Direction] Phase:%d (0x%x). Max Phase shifts:%d\n", phase, phase, maxShift));
 
     ALTERA_PLL_SetPhaseShift(phase, (int)ind, 0);
 
-    clkPhase[ind] = val;
+    clkPhase[ind] = valShift;
 }
 
-int getPhase(enum CLKINDEX ind) {
-    return clkPhase[ind];
+int getPhase(enum CLKINDEX ind, int degrees) {
+	if (!degrees)
+		return clkPhase[ind];
+	return (clkPhase[ind] * (360.00 / (double)getMaxPhase(ind)));
+}
+
+int getMaxPhase(enum CLKINDEX ind) {
+	int ret = ((double)PLL_VCO_FREQ_MHZ / (double)clkDivider[ind]) * MAX_PHASE_SHIFTS_STEPS;
+
+	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
+	FILE_LOG(logDEBUG1, ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d MHz)\n",
+			clock_names[ind], ret, clkDivider[ind], PLL_VCO_FREQ_MHZ));
+
+	return ret;
+}
+
+int validatePhaseinDegrees(enum speedVariable ind, int val, int retval) {
+	if (val == -1)
+		return OK;
+	enum CLKINDEX clkIndex;
+	switch(ind) {
+	case ADC_PHASE:
+		clkIndex = ADC_CLK;
+		break;
+	case DBIT_PHASE:
+		clkIndex = DBIT_CLK;
+		break;
+	default:
+		FILE_LOG(logERROR, ("Unknown speed enum %d for validating phase in degrees\n", (int)ind));
+	}
+	FILE_LOG(logDEBUG1, ("validating phase in degrees for clk %d\n", clkIndex));
+	int maxShift = getMaxPhase(clkIndex);
+	// convert degrees to shift
+	double temp = val;
+	temp *= ((double)maxShift / 360.00);
+	if ((temp - (int)temp) > 0.0001) {
+		temp += 0.5;
+	}
+	val = (int)temp;
+	// convert back to degrees
+	val *= (360.00 / (double)maxShift);
+
+	if (val == retval)
+		return OK;
+	return FAIL;
 }
 
 void configureFrequency(enum CLKINDEX ind, int val) {
@@ -1929,23 +1983,45 @@ void unsetFifoReadStrobes() {
 
 void readSample(int ns) {
 	uint32_t addr = DUMMY_REG;
+	// read analog data
+    uint32_t fifoAddr = FIFO_DATA_REG;
 
-	// read digital output
-	// read strobe to digital fifo
-	bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
-	bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
-	// wait as it is connected directly to fifo running on a different clock
-	if (!(ns%1000)) {
-		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
-				ns, nSamples,
-				((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
-				((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_FULL_MSK) >> FIFO_DIN_STATUS_FIFO_FULL_OFST),
-				bus_r(STATUS_REG)));
-	}
+    // read strobe to all analog fifos
+    bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
+    bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
+    // wait as it is connected directly to fifo running on a different clock
+    //usleep(WAIT_TIME_FIFO_RD_STROBE);
+    if (!(ns%1000)) {
+		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x Status:0x%x\n",
+				ns, nSamples, bus_r(FIFO_EMPTY_REG), bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
+    }
 
-	// read fifo and write it to current position of data pointer
-	*((uint64_t*)now_ptr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
-	now_ptr += 8;
+    // loop through all channels
+    int ich = 0;
+    for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
+
+        // if channel is in ROI
+        if ((1 << ich) & ~(adcDisableMask)) {
+
+            // unselect channel
+            bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));
+
+            // select channel
+            bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) & DUMMY_FIFO_CHNNL_SLCT_MSK));
+
+            // read fifo and write it to current position of data pointer
+            *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
+
+            // keep reading till the value is the same
+           /* while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
+                FILE_LOG(logDEBUG1, ("%d ", ich));
+                *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
+            }*/
+
+            // increment pointer to data out destination
+            now_ptr += 2;
+        }
+    }
 
 }
 

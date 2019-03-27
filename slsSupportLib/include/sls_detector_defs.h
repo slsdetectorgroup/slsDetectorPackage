@@ -502,14 +502,14 @@ public:
 	*/
 	enum speedVariable {
 	  CLOCK_DIVIDER, /**< readout clock divider */
-	  PHASE_SHIFT, /**< adds phase shift */
-	  OVERSAMPLING, /**< oversampling for analog detectors */
 	  ADC_CLOCK, /**< adc clock divider */
 	  ADC_PHASE, /**< adc clock phase */
 	  ADC_PIPELINE, /**< adc pipeline */
 	  DBIT_CLOCK, /**< adc clock divider */
 	  DBIT_PHASE, /**< adc clock phase */
-	  DBIT_PIPELINE /**< adc pipeline */
+	  DBIT_PIPELINE, /**< adc pipeline */
+	  MAX_ADC_PHASE_SHIFT, /** max adc phase shift */
+	  MAX_DBIT_PHASE_SHIFT, /** max adc phase shift */
 	};
 
 

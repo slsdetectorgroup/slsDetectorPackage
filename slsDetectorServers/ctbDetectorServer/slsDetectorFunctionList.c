@@ -1744,6 +1744,12 @@ void configureFrequency(enum CLKINDEX ind, int val) {
         return;
     }
 
+    // reset phase
+    if (ind == ADC_CLK || ind == DBIT_CLK) {
+    	FILE_LOG(logDEBUG1, ("Reseting phase of %s\n", clock_names[ind]));
+    	configurePhase(ind, 0, 0);
+    }
+
     // Calculate and set output frequency
     clkDivider[ind] = ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ, val);
     FILE_LOG(logINFO, ("\tC%d(%s): Frequency set to %d MHz\n", ind, clock_names[ind], clkDivider[ind]));

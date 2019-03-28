@@ -558,8 +558,6 @@ private:
 	const int NCHAN_ANALOG = 32;
 	/** Number of digital channels */
 	const int NCHAN_DIGITAL = 4;
-	/** Number of bytes per pixel */
-	const int NUM_BYTES_PER_PIXEL = 2;
 public:
 
 
@@ -634,11 +632,6 @@ class MoenchData : public GeneralData {
 
 
 private:
-	/** Number of analog channels */
-	const int NCHAN_ANALOG = 32;
-	/** Number of bytes per pixel */
-	const int NUM_BYTES_PER_PIXEL = 2;
-
 	/** Structure of an jungfrau ctb packet header (10G Udp) */
 	typedef struct {
 		unsigned char emptyHeader[6];
@@ -697,7 +690,7 @@ private:
 	 */
 	void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t,
 			slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
-		int nchans = NCHAN_ANALOG;
+		int nchans = 32;
 		// if roi
 		if (r.size()) {
 			 nchans = 0;

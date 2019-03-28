@@ -729,7 +729,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>adcphase [i] [deg]</b> Sets/gets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB & Moench. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger. \c Returns \c (int)
+   - <b>adcphase [i] [deg]</b> Sets/gets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB, Moench and Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "adcphase";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
@@ -743,7 +743,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>maxadcphaseshift </b> Gets maximum phase shift of the ADC clock. CTB & Moench only. \c Returns \c (int)
+   - <b>maxadcphaseshift </b> Gets maximum phase shift of the ADC clock. CTB, Moench and Jungfrau only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "maxadcphaseshift";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
@@ -4636,7 +4636,7 @@ std::string slsDetectorCommand::helpSpeed(int action) {
         os << "clkdivider c  \t sets readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)].  Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard." << std::endl;
         os << "adcclk c \tSets ADC clock frequency in MHz. CTB & Moench only. It also resets adcphase." << std::endl;
         os << "dbitclk c \tSets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. It also resets dbit phase." << std::endl;
-        os << "adcphase c [deg]\t Sets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB & Moench. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
+        os << "adcphase c [deg]\t Sets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
         os << "dbitphase c [deg]\t Sets the phase of the clock for latching of the digital bits to i. i is the shift or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only." << std::endl;
         os << "adcpipeline c \t Sets the pipeline of the ADC. For CTB & Moench only." << std::endl;
         os << "dbitpipeline c \t Sets the pipeline of the latching of the digital bits. For CTB & Moench only." << std::endl;
@@ -4646,11 +4646,11 @@ std::string slsDetectorCommand::helpSpeed(int action) {
         os << "clkdivider \t Gets readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)].  Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard." << std::endl;
         os << "adcclk \tGets ADC clock frequency in MHz. CTB & Moench only. It also resets adcphase." << std::endl;
         os << "dbitclk \tGets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. It also resets dbit phase." << std::endl;
-        os << "adcphase [deg]\t Gets phase of the ADC clock. unit is number of shifts or in degrees if deg is used. deg is optional & only for CTB & Moench. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
+        os << "adcphase [deg]\t Gets phase of the ADC clock. unit is number of shifts or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
         os << "dbitphase [deg]\t Gets the phase of the clock for  latching of the digital bits. unit is number of shifts or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only." << std::endl;
         os << "adcpipeline \t Gets the pipeline of the ADC. For CTB & Moench only." << std::endl;
         os << "dbitpipeline \t Gets the pipeline of the latching of the digital bits. For CTB & Moench only." << std::endl;
-        os << "maxadcphaseshift \t Gets maximum phase shift of the ADC clock. CTB & Moench only." << std::endl;
+        os << "maxadcphaseshift \t Gets maximum phase shift of the ADC clock. CTB,Moench and Jungfrau only." << std::endl;
         os << "maxdbitphaseshift \t Gets maximum phase shift of the clock for latching of the digital bits. CTB & Moench only." << std::endl;
         os << std::endl;
     }

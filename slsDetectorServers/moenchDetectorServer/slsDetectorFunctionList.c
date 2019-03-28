@@ -1418,21 +1418,25 @@ void configureSyncFrequency(enum CLKINDEX ind) {
 
     int configure = 0;
 
-    // sync is greater than current
+    // find the smallest frequency
+    int min = (aFreq < bFreq) ? aFreq : bFreq;
+    min = (retval < min) ? retval : min;
+
+    // sync is greater than min
     if (syncFreq > retval)  {
         FILE_LOG(logINFO, ("\t--Configuring Sync Clock\n"));
         configure = 1;
     }
 
-    // the others are both greater than current
-    else if ((aFreq > retval && bFreq > retval)) {
+    // sync is smaller than min
+    else if (syncFreq < min) {
         FILE_LOG(logINFO, ("\t++Configuring Sync Clock\n"));
         configure = 1;
     }
 
     // configure sync to current
     if (configure)
-        configureFrequency(SYNC_CLK, retval);
+        configureFrequency(SYNC_CLK, min);
 }
 
 

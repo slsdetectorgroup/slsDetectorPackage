@@ -1649,25 +1649,20 @@ void configurePhase(enum CLKINDEX ind, int val, int degrees) {
 		 return;
 	}
 
-    FILE_LOG(logINFO, ("Configuring Phase of C%d(%s) to %d (degree mode: %d)\n", ind, clock_names[ind], val, degrees));
+    FILE_LOG(logINFO, ("\tConfiguring Phase of C%d(%s) to %d (degree mode: %d)\n", ind, clock_names[ind], val, degrees));
 	int valShift = val;
 	// convert to phase shift
 	if (degrees) {
-		double temp = val * ((double)maxShift / 360.00);
-		if ((temp - (int)temp) > 0.0001) {
-			temp += 0.5;
-		}
-		valShift = temp;
-		FILE_LOG(logDEBUG1, ("phase shift: %d\n", valShift));
+		ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
 	}
 	FILE_LOG(logDEBUG1, ("phase shift: %d (degrees/shift: %d)\n", valShift, val));
 
-	int relativePhase = clkPhase[ind] - valShift;
+	int relativePhase = valShift - clkPhase[ind];
 	FILE_LOG(logDEBUG1, ("relative phase shift: %d (Current phase: %d)\n", relativePhase, clkPhase[ind]));
 
     // same phase
     if (!relativePhase) {
-    	FILE_LOG(logDEBUG1, ("Nothing to do\n"));
+    	FILE_LOG(logINFO, ("\tNothing to do in Phase Shift\n"));
     	return;
     }
 
@@ -1687,7 +1682,10 @@ void configurePhase(enum CLKINDEX ind, int val, int degrees) {
 int getPhase(enum CLKINDEX ind, int degrees) {
 	if (!degrees)
 		return clkPhase[ind];
-	return (clkPhase[ind] * (360.00 / (double)getMaxPhase(ind)));
+	// convert back to degrees
+	int val = 0;
+	ConvertToDifferentRange(0, getMaxPhase(ind) - 1, 0, 359, clkPhase[ind], &val);
+	return val;
 }
 
 int getMaxPhase(enum CLKINDEX ind) {
@@ -1717,14 +1715,11 @@ int validatePhaseinDegrees(enum speedVariable ind, int val, int retval) {
 	FILE_LOG(logDEBUG1, ("validating phase in degrees for clk %d\n", clkIndex));
 	int maxShift = getMaxPhase(clkIndex);
 	// convert degrees to shift
-	double temp = val;
-	temp *= ((double)maxShift / 360.00);
-	if ((temp - (int)temp) > 0.0001) {
-		temp += 0.5;
-	}
-	val = (int)temp;
+	// convert degrees to shift
+	int valShift = 0;
+	ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
 	// convert back to degrees
-	val *= (360.00 / (double)maxShift);
+	ConvertToDifferentRange(0, maxShift - 1, 0, 359, valShift, &val);
 
 	if (val == retval)
 		return OK;
@@ -1746,7 +1741,7 @@ void configureFrequency(enum CLKINDEX ind, int val) {
 
     // reset phase
     if (ind == ADC_CLK || ind == DBIT_CLK) {
-    	FILE_LOG(logDEBUG1, ("Reseting phase of %s\n", clock_names[ind]));
+    	FILE_LOG(logINFO, ("\tReseting phase of %s\n", clock_names[ind]));
     	configurePhase(ind, 0, 0);
     }
 
@@ -1788,21 +1783,25 @@ void configureSyncFrequency(enum CLKINDEX ind) {
 
     int configure = 0;
 
-    // sync is greater than current
+    // find the smallest frequency
+    int min = (aFreq < bFreq) ? aFreq : bFreq;
+    min = (retval < min) ? retval : min;
+
+    // sync is greater than min
     if (syncFreq > retval)  {
         FILE_LOG(logINFO, ("\t--Configuring Sync Clock\n"));
         configure = 1;
     }
 
-    // the others are both greater than current
-    else if ((aFreq > retval && bFreq > retval)) {
+    // sync is smaller than min
+    else if (syncFreq < min) {
         FILE_LOG(logINFO, ("\t++Configuring Sync Clock\n"));
         configure = 1;
     }
 
     // configure sync to current
     if (configure)
-        configureFrequency(SYNC_CLK, retval);
+        configureFrequency(SYNC_CLK, min);
 }
 
 void setAdcOffsetRegister(int adc, int val) {

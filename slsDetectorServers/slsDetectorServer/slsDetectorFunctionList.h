@@ -115,7 +115,7 @@ ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
 // parameters - readout
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
 void 		setSpeed(enum speedVariable ind, int val, int mode);
 int         getSpeed(enum speedVariable ind, int mode);
 #else
@@ -283,11 +283,10 @@ int         autoCompDisable(int on);
 void        configureASICTimer();
 void        setClockDivider(int val);
 int         getClockDivider();
-int         setAdcPhase(int st);
-int         getPhase();
-void 		resetPLL();
-u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
-void 		configurePll();
+void        setAdcPhase(int val, int degrees);
+int         getPhase(int degrees);
+int			getMaxPhaseShift();
+int 		validatePhaseinDegrees(int val, int retval);
 int         setThresholdTemperature(int val);
 int         setTemperatureControl(int val);
 int         setTemperatureEvent(int val);

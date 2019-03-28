@@ -1957,6 +1957,7 @@ int set_speed(int file_des) {
 #ifdef JUNGFRAUD
         case ADC_PHASE:
         case CLOCK_DIVIDER:
+        case MAX_ADC_PHASE_SHIFT:
 #elif CHIPTESTBOARDD
         case ADC_PHASE:
         case DBIT_PHASE:
@@ -1987,7 +1988,7 @@ int set_speed(int file_des) {
             modeNotImplemented(speedName, (int)ind);
             break;
     }
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD))
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(JUNGFRAUD))
     if (ret == OK && mode == 1) {
 		ret = FAIL;
 		strcpy(mess, "deg is not defined for this detector.\n");
@@ -1998,14 +1999,14 @@ int set_speed(int file_des) {
     if (ret == OK) {
     	// set
     	if ((val != -1) && (Server_VerifyLock() == OK)) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
     		setSpeed(ind, val, mode);
 #else
     		setSpeed(ind, val);
 #endif
     	}
     	// get
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
     	retval = getSpeed(ind, mode);
 #else
     	retval = getSpeed(ind);
@@ -2015,9 +2016,13 @@ int set_speed(int file_des) {
     	char validateName[20] = {0};
     	sprintf(validateName, "set %s", speedName);
 #ifndef GOTTHARDD
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
     	if (ind == ADC_PHASE || ind == DBIT_PHASE && mode == 1) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     		ret = validatePhaseinDegrees(ind, val, retval);
+#else
+    		ret = validatePhaseinDegrees(val, retval);
+#endif
     		if (ret == FAIL) {
     			sprintf(mess, "Could not set %s. Set %s, got %s\n", validateName);
     			FILE_LOG(logERROR,(mess));

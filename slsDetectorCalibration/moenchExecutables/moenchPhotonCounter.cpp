@@ -2,6 +2,7 @@
 #include <iostream>
 
 
+#define VERSION_V1
 
 //#include "moench03T1ZmqData.h"
 #ifdef NEWRECEIVER
@@ -52,14 +53,14 @@ int main(int argc, char *argv[]) {
 
   int p=10000;
   int fifosize=1000;
-  int nthreads=8;
+  int nthreads=1;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
   int csize=3;
   int save=1;
   int nsigma=5;
-  int nped=1000;
+  int nped=10000;
   int ndark=100;
   int ok;
   int iprog=0;
@@ -169,7 +170,11 @@ int main(int argc, char *argv[]) {
   //#ifndef ANALOG
   if (thr>0) {
     cout << "threshold is " << thr << endl;
+    
+    //#ifndef ANALOG
     filter->setThreshold(thr);
+    //#endif
+
   } else
     cf=1;
   //#endif
@@ -184,7 +189,9 @@ int main(int argc, char *argv[]) {
   cout << std::ctime(&end_time) <<   endl;
 
   char* buff;
+
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
+
 #ifndef ANALOG
     mt->setDetectorMode(ePhotonCounting);
     cout << "Counting!" << endl;
@@ -197,8 +204,7 @@ int main(int argc, char *argv[]) {
       mt->setDetectorMode(eAnalog);
       cout << "Analog!" << endl;
       cf=0;
-// #ifdef ANALOG
-//       thr1=thr;
+      // thr1=thr;
 #endif  
       //  }
   
@@ -229,11 +235,14 @@ int main(int argc, char *argv[]) {
     if (filebin.is_open()){
       ff=-1;
       while (decoder->readNextFrame(filebin, ff, np,buff)) {
-	mt->pushData(buff);
-	mt->nextThread();
-	mt->popFree(buff);
-	ifr++;
-	if (ifr%10000==0) 
+	if (np==40) {
+	  mt->pushData(buff);
+	  mt->nextThread();
+	  mt->popFree(buff);
+	  ifr++;
+	  if (ifr%10000==0) 
+	    cout << ifr << " " << ff << " " << np << endl;
+	} else
 	  cout << ifr << " " << ff << " " << np << endl;
 	ff=-1;
       }
@@ -244,16 +253,18 @@ int main(int argc, char *argv[]) {
       cout << std::ctime(&end_time) <<   endl;
       
       } else 
-	cout << "Could not open "<< fname << " for reading " << endl;
+	cout << "Could not open pedestal file "<< fname << " for reading " << endl;
   }
   
+
 
   ifr=0;
   int ifile=0;
   
+  mt->setFrameMode(eFrame);
+
   for (int irun=runmin; irun<=runmax; irun++) {
     cout << "DATA " ;
-    mt->setFrameMode(eFrame);
     // sprintf(fn,fformat,irun);
     sprintf(ffname,"%s/%s.raw",indir,fformat);
     sprintf(fname,ffname,irun);
@@ -270,8 +281,7 @@ int main(int argc, char *argv[]) {
     //      //open file
     ifile=0;
     if (filebin.is_open()){
-      if (thr<=0) {
-	if (cf) {
+      if (thr<=0 && cf!=0) { //cluster finder
 	  if (of==NULL) {
 	    of=fopen(cfname,"w");
 	    if (of) {
@@ -283,35 +293,36 @@ int main(int argc, char *argv[]) {
 	      return 1;
 	    }
 	  }
-	}
       }
       //     //while read frame 
       ff=-1;
       ifr=0;
       while (decoder->readNextFrame(filebin, ff, np,buff)) {
+	if (np==40) {
 	//	cout << "*"<<ifr++<<"*"<<ff<< endl;
 	//	cout << ff << " " << np << endl;
   	//         //push
-	mt->pushData(buff);
-  // 	//         //pop
-	mt->nextThread();
-  // // 		//	cout << " " << (void*)buff;
-	mt->popFree(buff);
-	ifr++;
-	if (ifr%1000==0) cout << ifr << " " << ff << endl;
-	if (nframes>0) {
-	  if (ifr%nframes==0) {
-	    //The name has an additional "_fXXXXX" at the end, where "XXXXX" is the initial frame number of the image (0,1000,2000...)
-	    
-	    sprintf(ffname,"%s/%s_f%05d.tiff",outdir,fformat,ifile);
-	    sprintf(imgfname,ffname,irun);
-	    //cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
-	    mt->writeImage(imgfname, thr1);
-	    mt->clearImage();
-	    ifile++;
+	  mt->pushData(buff);
+	  // 	//         //pop
+	  mt->nextThread();
+	  // // 		//	cout << " " << (void*)buff;
+	  mt->popFree(buff);
+	  ifr++;
+	  if (ifr%1000==0) cout << ifr << " " << ff << endl;
+	  if (nframes>0) {
+	    if (ifr%nframes==0) {
+	      //The name has an additional "_fXXXXX" at the end, where "XXXXX" is the initial frame number of the image (0,1000,2000...)
+	      
+	      sprintf(ffname,"%s/%s_f%05d.tiff",outdir,fformat,ifile);
+	      sprintf(imgfname,ffname,irun);
+	      //cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
+	      mt->writeImage(imgfname, thr1);
+	      mt->clearImage();
+	      ifile++;
+	    }
 	  }
-	}
-
+	} else
+	  cout << ifr << " " << ff << " " << np << endl;
 	ff=-1;
       }
       cout << "--" << endl;

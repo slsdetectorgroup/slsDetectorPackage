@@ -22,6 +22,10 @@
 #include "moench03Ctb10GbT1Data.h"
 #endif 
 
+#ifdef REORDERED
+#include "moench03T1ReorderedData.h"
+#endif
+
 // #include "interpolatingDetector.h"
 //#include "etaInterpolationPosXY.h"
 // #include "linearInterpolation.h"
@@ -48,7 +52,7 @@ int main(int argc, char *argv[]) {
   }
   int p=10000;
   int fifosize=1000;
-  int nthreads=24;
+  int nthreads=1;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
@@ -83,6 +87,14 @@ int main(int argc, char *argv[]) {
   cout << "OLD RECEIVER DATA!"<<endl;
 #endif
 
+#ifdef REORDERED
+  moench03T1ReorderedData *decoder=new  moench03T1ReorderedData();
+  cout << "REORDERED DATA!"<<endl;
+#endif
+
+
+  decoder->getDetectorSize(nx,ny);
+  cout << "nx " << nx << " ny " << ny << endl;
 
   //moench03T1ZmqData *decoder=new  moench03T1ZmqData();
   singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 200);
@@ -183,11 +195,18 @@ int main(int argc, char *argv[]) {
 	//	cout << "*"<<ifr++<<"*"<<ff<< endl;
 	//	cout << ff << " " << np << endl;
   	//         //push
-	mt->pushData(buff);
+	// for (int ix=0; ix<400; ix++)
+	//   for (int iy=0; iy<400; iy++) {
+	//     if (decoder->getChannel(buff, ix, iy)<3000 || decoder->getChannel(buff, ix, iy)>8000) {
+	//       cout <<  ifr << " " << ff << " " << ix << " " << iy << " " << decoder->getChannel(buff, ix, iy) << endl ;
+	//     }
+	//   }
+
+  	mt->pushData(buff);
   // 	//         //pop
-	mt->nextThread();
+  	mt->nextThread();
   // // 		//	cout << " " << (void*)buff;
-	mt->popFree(buff);
+  	mt->popFree(buff);
 	ifr++;
 	if (ifr%10000==0) cout << ifr << " " << ff << endl;
 	ff=-1;

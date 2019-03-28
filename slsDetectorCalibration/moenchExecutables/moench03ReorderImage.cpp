@@ -57,8 +57,6 @@ int main(int argc, char *argv[]) {
   uint16_t data[NY*NX];
 
 
-  int size = 327680;////atoi(argv[3]);
-  
   int* image;
 
   int ff, np;
@@ -76,8 +74,6 @@ int main(int argc, char *argv[]) {
   
   char fname[10000];
   char outfname[10000];
-  char imgfname[10000];
-  char pedfname[10000];
   //  strcpy(pedfname,argv[6]);
   char fn[10000];
   
@@ -98,7 +94,7 @@ int main(int argc, char *argv[]) {
 
 
 
-  char* buff;
+  char buff[dsize];
 
  
 
@@ -112,7 +108,7 @@ int main(int argc, char *argv[]) {
     sprintf(outfname,"%s/%s_image.raw",outdir,fn);
     std::time(&end_time);
     cout << std::ctime(&end_time) <<    endl;
-    cout <<  fname << " " << outfname << " " << imgfname <<  endl;
+    // cout <<  fname << " " << outfname << " " << imgfname <<  endl;
     filebin.open((const char *)(fname), ios::in | ios::binary);
     //      //open file
     if (filebin.is_open()){
@@ -126,10 +122,14 @@ int main(int argc, char *argv[]) {
       //     //while read frame 
       ff=-1;
       while (decoder->readNextFrame(filebin, ff, np,buff)) {
-	for (int ix=0; ix<400; ix++)
-	  for (int iy=0; iy<400; iy++)
-	    data[iy*NX+ix]=decoder->getChannel(buff,ix,iy);
-	
+	for (int ix=0; ix<400; ix++) {
+	  for (int iy=0; iy<400; iy++) {
+	    data[iy*400+ix]=decoder->getChannel(buff,ix,iy);
+	    if (data[iy*NX+ix]<3000 || data[iy*NX+ix]>8000) {
+	      cout << ifr << " " << ff << " " << ix << " " << iy << " " << data[iy*NX+ix] << " " << decoder->getChannel(buff,ix,iy) << endl;
+	    }
+	  }
+	}
 	ifr++;
 
 	fwrite(&ff, 8, 1,of);//write detector frame number
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
 
 	if (ifr%10000==0) cout << ifr << " " << ff << endl;
 	ff=-1;
-
+	//	break;
       }
         cout << "--" << endl;
       filebin.close();	 

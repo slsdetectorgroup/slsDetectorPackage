@@ -324,8 +324,11 @@ public:
       img=dets[ii]->getImage();
       for (int i=0; i<nn; i++) {
 	if (ii==0)
-	  image[i]=img[i];
-	else
+	  //	  if (img[i]>0)
+	    image[i]=img[i];
+	// else
+	//  image[i]=0;
+	else	//if (img[i]>0)
 	  image[i]+=img[i];
 	//if (img[i])	  cout << "det " << ii << " pix " << i << " val " <<  img[i] << " " << image[i] << endl;
       }
@@ -359,11 +362,14 @@ public:
      float *gm=new float[nn];
      if (gm) {
        for (int ix=0; ix<nn; ix++) {
-	 if (t)
-	   gm[ix]=(image[ix])/t;
-	 else
+	 if (t) {
+	   if (image[ix]<0) 
+	     gm[ix]=0;
+	   else
+	     gm[ix]=(image[ix])/t;
+	 } else
 	   gm[ix]=image[ix];
-	   
+
 	 //if (image[ix]>0 && ix/nnx<350) cout << ix/nnx << " " << ix%nnx << " " << image[ix]<< " " << gm[ix] << endl;
        }
        //cout << "image " << nnx << " " << nny << endl;

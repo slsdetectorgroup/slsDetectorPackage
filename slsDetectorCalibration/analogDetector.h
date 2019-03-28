@@ -854,9 +854,11 @@ template <class dataType> class analogDetector {
 	  if (g==0) g=-1.;
 	}
 
-	if (det)
+	if (det) {
+	  /* if (det->getChannel(data, ix, iy)>=0x3fff) */
+	  /*   cout << ix << " " << iy << " " << det->getChannel(data, ix, iy) <<endl; */
 	  val= (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy,cm))/g;
-	else
+	}	else
 	  val= (((double*)data)[iy*nx+ix]-getPedestal(ix,iy))/g;
     
 #ifdef ROOTSPECTRUM

@@ -140,15 +140,28 @@ const char* getTimerName(enum timerIndex ind) {
 const char* getSpeedName(enum speedVariable ind) {
     switch (ind) {
     case CLOCK_DIVIDER:  return "clock_divider";
-    case PHASE_SHIFT:    return "phase_shift";
-    case OVERSAMPLING:   return "oversampling";
     case ADC_CLOCK:      return "adc_clock";
     case ADC_PHASE:      return "adc_phase";
     case ADC_PIPELINE:   return "adc_pipeline";
     case DBIT_CLOCK:     return "dbit_clock";
     case DBIT_PHASE:     return "dbit_phase";
     case DBIT_PIPELINE:  return "dbit_pipeline";
+    case MAX_ADC_PHASE_SHIFT:  	return "max_adc_phase_shift";
+    case MAX_DBIT_PHASE_SHIFT:  return "max_dbit_phase_shift";
     default:             return "unknown_speed";
+    }
+}
+
+const char* getRunStateName(enum runStatus ind) {
+    switch (ind) {
+    case IDLE:  		return "idle";
+    case ERROR:    		return "error";
+    case WAITING:   	return "waiting";
+    case RUN_FINISHED:  return "run_finished";
+    case TRANSMITTING:  return "transmitting";
+    case RUNNING:   	return "running";
+    case STOPPED:     	return "stopped";
+    default:            return "unknown";
     }
 }
 
@@ -1927,73 +1940,102 @@ int set_roi(int file_des) {
 int set_speed(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1,-1};
+	int args[3] = {-1, -1, -1};
 	int retval = -1;
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
 
-#ifdef GOTTHARDD
-    functionNotImplemented();
-#else
 	enum speedVariable ind = args[0];
 	int val = args[1];
-    int GET_VAL = -1;
-    if ((ind == PHASE_SHIFT) || (ind == ADC_PHASE) || (ind == DBIT_PHASE))
-        GET_VAL = 100000;
+	int mode = args[2];
 
     char speedName[20] = {0};
     strcpy(speedName, getSpeedName(ind));
-    FILE_LOG(logDEBUG1, ("Setting speed index %s (%d) to %d\n", speedName, ind, val));
+    FILE_LOG(logDEBUG1, ("Setting speed index %s (speedVariable %d) to %d (mode: %d)\n", speedName, ind, val, mode));
 
     // check index
     switch(ind) {
 #ifdef JUNGFRAUD
         case ADC_PHASE:
+        case CLOCK_DIVIDER:
+        case MAX_ADC_PHASE_SHIFT:
 #elif CHIPTESTBOARDD
         case ADC_PHASE:
-        case PHASE_SHIFT:
         case DBIT_PHASE:
+        case MAX_ADC_PHASE_SHIFT:
+        case MAX_DBIT_PHASE_SHIFT:
         case ADC_CLOCK:
         case DBIT_CLOCK:
+        case CLOCK_DIVIDER:
         case ADC_PIPELINE:
         case DBIT_PIPELINE:
 #elif MOENCHD
         case ADC_PHASE:
-        case PHASE_SHIFT:
         case DBIT_PHASE:
+        case MAX_ADC_PHASE_SHIFT:
+        case MAX_DBIT_PHASE_SHIFT:
         case ADC_CLOCK:
         case DBIT_CLOCK:
+        case CLOCK_DIVIDER:
         case ADC_PIPELINE:
         case DBIT_PIPELINE:
-#endif
+#elif GOTTHARDD
+        case ADC_PHASE:
+#elif EIGERD
         case CLOCK_DIVIDER:
+#endif
             break;
         default:
             modeNotImplemented(speedName, (int)ind);
             break;
     }
-
-    if (ret == OK) {
-        // set
-        if ((val != GET_VAL) && (Server_VerifyLock() == OK)) {
-            setSpeed(ind, val);
-        }
-        // get
-        retval = getSpeed(ind);
-        FILE_LOG(logDEBUG1, ("%s: %d\n", speedName, retval));
-        // validate
-        if (GET_VAL == -1) {
-            char validateName[20] = {0};
-            sprintf(validateName, "set %s", speedName);
-            validate(val, retval, validateName, DEC);
-        } else if (ret == OK && val != GET_VAL && retval != val ) {
-            ret = FAIL;
-            sprintf(mess, "Could not set %s. Set %d, but read %d\n", speedName, val, retval);
-            FILE_LOG(logERROR,(mess));
-        }
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(JUNGFRAUD))
+    if (ret == OK && mode == 1) {
+		ret = FAIL;
+		strcpy(mess, "deg is not defined for this detector.\n");
+		FILE_LOG(logERROR,(mess));
     }
 #endif
+
+    if (ret == OK) {
+    	// set
+    	if ((val != -1) && (Server_VerifyLock() == OK)) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
+    		setSpeed(ind, val, mode);
+#else
+    		setSpeed(ind, val);
+#endif
+    	}
+    	// get
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
+    	retval = getSpeed(ind, mode);
+#else
+    	retval = getSpeed(ind);
+#endif
+    	FILE_LOG(logDEBUG1, ("%s: %d (mode:%d)\n", speedName, retval, mode));
+    	// validate
+    	char validateName[20] = {0};
+    	sprintf(validateName, "set %s", speedName);
+#ifndef GOTTHARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
+    	if (ind == ADC_PHASE || ind == DBIT_PHASE && mode == 1) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+    		ret = validatePhaseinDegrees(ind, val, retval);
+#else
+    		ret = validatePhaseinDegrees(val, retval);
+#endif
+    		if (ret == FAIL) {
+    			sprintf(mess, "Could not set %s. Set %s, got %s\n", validateName);
+    			FILE_LOG(logERROR,(mess));
+    		}
+    	} else
+    		validate(val, retval, validateName, DEC);
+#else
+    	validate(val, retval, validateName, DEC);
+#endif
+#endif
+    }
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -2241,24 +2283,35 @@ int send_update(int file_des) {
 int configure_mac(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	char args[9][50];
+    const size_t array_size = 50;
+    const size_t n_args = 14;
+    const size_t n_retvals = 2;
+    char args[n_args][array_size];
+    char retvals[n_retvals][array_size];
+
 	memset(args, 0, sizeof(args));
-	char retvals[2][50];
 	memset(retvals, 0, sizeof(retvals));
 
 	if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("\n Configuring MAC\n"));
+
+	// dest port
+	uint32_t dstPort = 0;
+	sscanf(args[0], "%x", 	&dstPort);
+	FILE_LOG(logDEBUG1, ("Dst Port: %x\n", dstPort));
+	// dest ip
 	uint32_t dstIp = 0;
-	sscanf(args[0], "%x", 	&dstIp);
+	sscanf(args[1], "%x", 	&dstIp);
 	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
 			(dstIp >> 24) & 0xff, (dstIp >> 16) & 0xff, (dstIp >> 8) & 0xff, (dstIp) & 0xff,
 			dstIp));
+	// dest mac
 	uint64_t dstMac = 0;
 #ifdef VIRTUAL
-	sscanf(args[1], "%lx", 	&dstMac);
+	sscanf(args[2], "%lx", 	&dstMac);
 #else
-	sscanf(args[1], "%llx", 	&dstMac);
+	sscanf(args[2], "%llx", 	&dstMac);
 #endif
 	FILE_LOG(logDEBUG1, ("Dst Mac Addr: (0x) "));
 	{
@@ -2271,17 +2324,18 @@ int configure_mac(int file_des) {
 		}
 	}
 	FILE_LOG(logDEBUG1, (" = %llx\n", dstMac));
-	uint32_t dstPort = 0;
-	sscanf(args[2], "%x", 	&dstPort);
-	FILE_LOG(logDEBUG1, ("Dst Port: %x\n", dstPort));
-	uint32_t dstPort2 = 0;
-	sscanf(args[5], "%x", 	&dstPort2);
-	FILE_LOG(logDEBUG1, ("Dst Port2: %x\n", dstPort2));
+	// source ip
+	uint32_t srcIp = 0;
+	sscanf(args[3], "%x",	&srcIp);
+	FILE_LOG(logDEBUG1, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
+			(srcIp >> 24) & 0xff, (srcIp >> 16) & 0xff, (srcIp >> 8) & 0xff, (srcIp) & 0xff,
+			srcIp));
+	// source mac
 	uint64_t srcMac = 0;
 #ifdef VIRTUAL
-	sscanf(args[3], "%lx",	&srcMac);
+	sscanf(args[4], "%lx",	&srcMac);
 #else
-	sscanf(args[3], "%llx",	&srcMac);
+	sscanf(args[4], "%llx",	&srcMac);
 #endif
 	FILE_LOG(logDEBUG1, ("Src Mac Addr: (0x) "));
 	{
@@ -2294,30 +2348,98 @@ int configure_mac(int file_des) {
 		}
 	}
 	FILE_LOG(logDEBUG1, (" = %llx\n", srcMac));
-	uint32_t srcIp = 0;
-	sscanf(args[4], "%x",	&srcIp);
-	FILE_LOG(logDEBUG1, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(srcIp >> 24) & 0xff, (srcIp >> 16) & 0xff, (srcIp >> 8) & 0xff, (srcIp) & 0xff,
-			srcIp));
+
 #if defined(JUNGFRAUD) || defined(EIGERD)
-	int pos[3] = {0, 0, 0};
-	sscanf(args[6], "%x", 	&pos[0]);
-	sscanf(args[7], "%x", 	&pos[1]);
-	sscanf(args[8], "%x", 	&pos[2]);
-	FILE_LOG(logDEBUG1, ("Position: [%d, %d, %d]\n", pos[0], pos[1], pos[2]));
+	// source port 2
+	uint32_t dstPort2 = 0;
+	sscanf(args[5], "%x", 	&dstPort2);
+	FILE_LOG(logDEBUG1, ("Dst Port2: %x\n", dstPort2));
 #endif
+#ifdef JUNGFRAUD
+	// dest ip2
+	uint32_t dstIp2 = 0;
+	sscanf(args[6], "%x", 	&dstIp2);
+	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
+			(dstIp2 >> 24) & 0xff, (dstIp2 >> 16) & 0xff, (dstIp2 >> 8) & 0xff, (dstIp2) & 0xff,
+			dstIp2));
+	// dest mac2
+	uint64_t dstMac2 = 0;
+#ifdef VIRTUAL
+	sscanf(args[7], "%lx", 	&dstMac2);
+#else
+	sscanf(args[7], "%llx", 	&dstMac2);
+#endif
+	FILE_LOG(logDEBUG1, ("Dst Mac Addr: (0x) "));
+	{
+		int iloop = 5;
+		for (iloop = 5; iloop >= 0; --iloop) {
+			printf ("%x", (unsigned int)(((dstMac2 >> (8 * iloop)) & 0xFF)));
+			if (iloop > 0) {
+				printf(":");
+			}
+		}
+	}
+	FILE_LOG(logDEBUG1, (" = %llx\n", dstMac2));
+	// source ip2
+	uint32_t srcIp2 = 0;
+	sscanf(args[8], "%x",	&srcIp2);
+	FILE_LOG(logDEBUG1, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
+			(srcIp2 >> 24) & 0xff, (srcIp2 >> 16) & 0xff, (srcIp2 >> 8) & 0xff, (srcIp2) & 0xff,
+			srcIp2));
+	// source mac2
+	uint64_t srcMac2 = 0;
+#ifdef VIRTUAL
+	sscanf(args[9], "%lx",	&srcMac2);
+#else
+	sscanf(args[9], "%llx",	&srcMac2);
+#endif
+	FILE_LOG(logDEBUG1, ("Src Mac Addr: (0x) "));
+	{
+		int iloop = 5;
+		for (iloop = 5; iloop >= 0; --iloop) {
+			printf("%x", (unsigned int)(((srcMac2 >> (8 * iloop)) & 0xFF)));
+			if (iloop > 0) {
+				printf(":");
+			}
+		}
+	}
+	FILE_LOG(logDEBUG1, (" = %llx\n", srcMac2));
+
+	// number of interfaces
+	int numInterfaces = 0;
+	sscanf(args[10], "%d",	&numInterfaces);
+	int selInterface = 1;
+	sscanf(args[11], "%d",	&selInterface);
+
+#endif
+#if defined(JUNGFRAUD) || defined(EIGERD)
+	int pos[2] = {0, 0};
+	sscanf(args[12], "%x", 	&pos[0]);
+	sscanf(args[13], "%x", 	&pos[1]);
+	FILE_LOG(logDEBUG1, ("Position: [%d, %d]\n", pos[0], pos[1]));
+#endif
+
 
 	// set only
 	if ((Server_VerifyLock() == OK)) {
 
 		// stop detector if it was running
-		if (getRunStatus() != IDLE) {
-			ret = FAIL;
-			sprintf(mess, "Cannot configure mac when detector is not idle\n");
-			FILE_LOG(logERROR,(mess));
+		enum runStatus status = getRunStatus();
+		if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
+			if (status == RUNNING)
+				stopStateMachine();
+#ifndef EIGERD
+		    cleanFifos();
+#endif
+		    status = getRunStatus();
+		    if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
+		    	ret = FAIL;
+		    	sprintf(mess, "Cannot configure mac when detector is not idle. Detector at %s state\n", getRunStateName(status));
+		    	FILE_LOG(logERROR,(mess));
+		    }
 		}
 
-		else {
+		if (ret == OK) {
 #ifdef EIGERD
 			// change mac to hardware mac
 			if (srcMac != getDetectorMAC()) {
@@ -2341,9 +2463,12 @@ int configure_mac(int file_des) {
 			// 10 gbe (use ip given from client)
 			else
 				srcIp = dhcpipad;
-
+			ret = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2);
+#elif JUNGFRAUD
+			ret = configureMAC(numInterfaces, selInterface, dstIp, dstMac, srcMac, srcIp, dstPort, dstIp2, dstMac2, srcMac2, srcIp2, dstPort2);
+#else
+			ret = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort);
 #endif
-            ret = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2);
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
             if (ret != OK) {
             	if (ret == FAIL)

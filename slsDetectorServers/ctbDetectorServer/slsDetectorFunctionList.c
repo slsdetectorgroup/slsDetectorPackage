@@ -781,16 +781,15 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
 
 /* parameters - speed, readout */
 
-void setSpeed(enum speedVariable ind, int val) {
+void setSpeed(enum speedVariable ind, int val, int mode) {
     switch(ind) {
     case ADC_PHASE:
-    case PHASE_SHIFT:
         FILE_LOG(logINFOBLUE, ("Configuring ADC Phase\n"));
-        configurePhase(ADC_CLK, val);
+        configurePhase(ADC_CLK, val, mode);
         break;
     case DBIT_PHASE:
         FILE_LOG(logINFOBLUE, ("Configuring Dbit Phase\n"));
-        configurePhase(DBIT_CLK, val);
+        configurePhase(DBIT_CLK, val, mode);
         break;
     case ADC_CLOCK:
         FILE_LOG(logINFOBLUE, ("Configuring ADC Clock\n"));
@@ -818,23 +817,26 @@ void setSpeed(enum speedVariable ind, int val) {
     }
 }
 
-int getSpeed(enum speedVariable ind) {
+int getSpeed(enum speedVariable ind, int mode) {
     switch(ind) {
     case ADC_PHASE:
-    case PHASE_SHIFT:
-        return getPhase(RUN_CLK);
+        return getPhase(ADC_CLK, mode);
     case DBIT_PHASE:
-        return getPhase(DBIT_CLK);
+        return getPhase(DBIT_CLK, mode);
+    case MAX_ADC_PHASE_SHIFT:
+    	return getMaxPhase(ADC_CLK);
+    case MAX_DBIT_PHASE_SHIFT:
+    	return getMaxPhase(DBIT_CLK);
     case ADC_CLOCK:
         return getFrequency(ADC_CLK);
     case DBIT_CLOCK:
         return getFrequency(DBIT_CLK);
+    case CLOCK_DIVIDER:
+        return getFrequency(RUN_CLK);
     case ADC_PIPELINE:
         return getAdcOffsetRegister(1);
     case DBIT_PIPELINE:
         return getAdcOffsetRegister(0);
-    case CLOCK_DIVIDER:
-        return getFrequency(RUN_CLK);
     default:
         return -1;
     }
@@ -1523,7 +1525,7 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2){
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport){
 #ifdef VIRTUAL
 	return OK;
 #endif
@@ -1633,46 +1635,95 @@ int enableTenGigabitEthernet(int val) {
 
 
 // ind can only be ADC_CLK or DBIT_CLK
-void configurePhase(enum CLKINDEX ind, int val) {
-	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
-    if (val > 65535 || val < -65535) {
-        FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits\n", ind, clock_names[ind]));
-        return;
-    }
-    int relativePhase = clkPhase[ind] - val;
+void configurePhase(enum CLKINDEX ind, int val, int degrees) {
+	char clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
+	int maxShift = getMaxPhase(ind);
+
+	// validation
+	if (degrees && (val < 0 || val > 359)) {
+		 FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits (0 - 359°C)\n", ind, clock_names[ind]));
+		 return;
+	}
+	if (!degrees && (val < 0 || val > maxShift - 1)) {
+		 FILE_LOG(logERROR, ("\tPhase provided for C%d(%s) outside limits (0 - %d phase shifts)\n", ind, clock_names[ind], maxShift - 1));
+		 return;
+	}
+
+    FILE_LOG(logINFO, ("\tConfiguring Phase of C%d(%s) to %d (degree mode: %d)\n", ind, clock_names[ind], val, degrees));
+	int valShift = val;
+	// convert to phase shift
+	if (degrees) {
+		ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
+	}
+	FILE_LOG(logDEBUG1, ("phase shift: %d (degrees/shift: %d)\n", valShift, val));
+
+	int relativePhase = valShift - clkPhase[ind];
+	FILE_LOG(logDEBUG1, ("relative phase shift: %d (Current phase: %d)\n", relativePhase, clkPhase[ind]));
 
     // same phase
     if (!relativePhase) {
+    	FILE_LOG(logINFO, ("\tNothing to do in Phase Shift\n"));
     	return;
     }
 
-    FILE_LOG(logINFO, ("Configuring Phase of C%d(%s) to %d\n", ind, clock_names[ind], val));
-
-    // reset only pll
-    ALTERA_PLL_ResetPLL();
-
-    // set mode register to polling mode
-    ALTERA_PLL_SetModePolling();
-
-
     int phase = 0;
-    int maxShifts = ((ind == ADC_CLK) ? MAX_PHASE_SHIFTS_ADC_CLK : MAX_PHASE_SHIFTS_DBIT_CLK);
-
-    // delay clk
     if (relativePhase > 0) {
-        phase =  (maxShifts - relativePhase);
+        phase = (maxShift - relativePhase);
     } else {
     	phase = (-1) * relativePhase;
     }
-    FILE_LOG(logINFO, ("\tphase out %d (0x%08x)\n", phase, phase));
+    FILE_LOG(logDEBUG1, ("[Single Direction] Phase:%d (0x%x). Max Phase shifts:%d\n", phase, phase, maxShift));
 
     ALTERA_PLL_SetPhaseShift(phase, (int)ind, 0);
 
-    clkPhase[ind] = val;
+    clkPhase[ind] = valShift;
 }
 
-int getPhase(enum CLKINDEX ind) {
-    return clkPhase[ind];
+int getPhase(enum CLKINDEX ind, int degrees) {
+	if (!degrees)
+		return clkPhase[ind];
+	// convert back to degrees
+	int val = 0;
+	ConvertToDifferentRange(0, getMaxPhase(ind) - 1, 0, 359, clkPhase[ind], &val);
+	return val;
+}
+
+int getMaxPhase(enum CLKINDEX ind) {
+	int ret = ((double)PLL_VCO_FREQ_MHZ / (double)clkDivider[ind]) * MAX_PHASE_SHIFTS_STEPS;
+
+	char  clock_names[4][10]={"run_clk","adc_clk", "sync_clk", "dbit_clk"};
+	FILE_LOG(logDEBUG1, ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d MHz)\n",
+			clock_names[ind], ret, clkDivider[ind], PLL_VCO_FREQ_MHZ));
+
+	return ret;
+}
+
+int validatePhaseinDegrees(enum speedVariable ind, int val, int retval) {
+	if (val == -1)
+		return OK;
+	enum CLKINDEX clkIndex;
+	switch(ind) {
+	case ADC_PHASE:
+		clkIndex = ADC_CLK;
+		break;
+	case DBIT_PHASE:
+		clkIndex = DBIT_CLK;
+		break;
+	default:
+		FILE_LOG(logERROR, ("Unknown speed enum %d for validating phase in degrees\n", (int)ind));
+	}
+	FILE_LOG(logDEBUG1, ("validating phase in degrees for clk %d\n", clkIndex));
+	int maxShift = getMaxPhase(clkIndex);
+	// convert degrees to shift
+	// convert degrees to shift
+	int valShift = 0;
+	ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
+	// convert back to degrees
+	ConvertToDifferentRange(0, maxShift - 1, 0, 359, valShift, &val);
+
+	if (val == retval)
+		return OK;
+	return FAIL;
 }
 
 void configureFrequency(enum CLKINDEX ind, int val) {
@@ -1686,6 +1737,12 @@ void configureFrequency(enum CLKINDEX ind, int val) {
     if (ind == ADC_CLK && val > MAXIMUM_ADC_CLK) {
         FILE_LOG(logERROR, ("Frequency %d MHz too high for ADC\n", val));
         return;
+    }
+
+    // reset phase
+    if (ind == ADC_CLK || ind == DBIT_CLK) {
+    	FILE_LOG(logINFO, ("\tReseting phase of %s\n", clock_names[ind]));
+    	configurePhase(ind, 0, 0);
     }
 
     // Calculate and set output frequency
@@ -2159,6 +2216,7 @@ int stopStateMachine(){
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STP_ACQSTN_MSK);
 
 	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
+
 	return OK;
 }
 

@@ -820,6 +820,21 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
     return rois;
 }
 
+// parameters - readout
+void setSpeed(enum speedVariable ind, int val) {
+    switch(ind) {
+    case ADC_PHASE:
+    	setPhaseShift(val);
+        break;
+    default:
+        return;
+    }
+}
+
+int getSpeed(enum speedVariable ind) {
+	// cannot get phase shift
+	return -1;
+}
 
 /* parameters - timer */
 
@@ -1350,7 +1365,7 @@ void calcChecksum(mac_conf* mac, int sourceip, int destip) {
 	mac->ip.ip_chksum   =  checksum;
 }
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2) {
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport) {
 #ifdef VIRTUAL
     return OK;
 #endif

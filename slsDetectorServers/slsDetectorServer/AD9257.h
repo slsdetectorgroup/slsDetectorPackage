@@ -205,7 +205,7 @@ void AD9257_Configure(){
     AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_BINARY_OFST_VAL);
 
     //output clock phase
-#ifdef GOTTHARDD
+#if defined(GOTTHARDD)  || defined(JUNGFRAUD)
     FILE_LOG(logINFO, ("\tOutput clock phase is at default: 180\n"));
 #else
 	FILE_LOG(logINFO, ("\tOutput clock phase: 60\n"));

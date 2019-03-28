@@ -710,8 +710,8 @@ int slsReceiverTCPIPInterface::set_roi() {
 int slsReceiverTCPIPInterface::setup_udp(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	char args[3][MAX_STR_LENGTH] = {{""}, {""}, {""}};
-	char retvals[MAX_STR_LENGTH] = {""};
+	char args[6][MAX_STR_LENGTH] = {{""}, {""}, {""}, {""}, {""}, {""}};
+	char retvals[2][MAX_STR_LENGTH] = {{""}, {""}};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	if (interface->Server_ReceiveArg(ret, mess, args, sizeof(args), true, receiver) == FAIL)
@@ -722,48 +722,111 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		// only set
 		// verify if receiver is unlocked and idle
 		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-			//set up udp port
-			int udpport=-1,udpport2=-1;
-			sscanf(args[1],"%d",&udpport);
-			sscanf(args[2],"%d",&udpport2);
-			receiver->setUDPPortNumber(udpport);
-			if (myDetectorType == EIGER)
-				receiver->setUDPPortNumber2(udpport2);
 
-			//setup udpip
-			//get ethernet interface or IP to listen to
-			FILE_LOG(logINFO) << "Receiver UDP IP: " << args[0];
-			std::string temp = genericSocket::ipToName(args[0]);
+			//setup interfaces count
+			int numInterfaces = atoi(args[0]) > 1 ? 2 : 1;
+			int selInterface = atoi(args[1]) > 1 ? 2 : 1;
+
+			char* ip1 = args[2];
+			char* ip2 = args[3];
+			uint32_t port1 = atoi(args[4]);
+			uint32_t port2 = atoi(args[5]);
+
+			// using the 2nd interface only
+			if (myDetectorType == JUNGFRAU && numInterfaces == 1 && selInterface == 2) {
+				ip1 = ip2;
+				port1 = port2;
+			}
+
+			// 1st interface
+			receiver->setUDPPortNumber(port1);
+			if (myDetectorType == EIGER) {
+				receiver->setUDPPortNumber2(port2);
+			}
+			FILE_LOG(logINFO) << "Receiver UDP IP: " << ip1;
+			// get eth
+			std::string temp = genericSocket::ipToName(ip1);
 			if (temp == "none"){
 				ret = FAIL;
-				strcpy(mess, "Failed to get ethernet interface or IP\n");
+				strcpy(mess, "Failed to get ethernet interface or IP \n");
 				FILE_LOG(logERROR) << mess;
-			}
-			else {
-				char eth[MAX_STR_LENGTH];
-				memset(eth,0,sizeof(eth));
-				strcpy(eth,temp.c_str());
-				if (strchr(eth,'.') != nullptr) {
-					strcpy(eth,"");
+			} else {
+				char eth[MAX_STR_LENGTH] = {""};
+				memset(eth, 0, MAX_STR_LENGTH);
+				strcpy(eth, temp.c_str());
+				// if there is a dot in eth name
+				if (strchr(eth, '.') != nullptr) {
+					strcpy(eth, "");
 					ret = FAIL;
-					strcpy(mess, "Failed to get ethernet interface\n");
+					sprintf(mess, "Failed to get ethernet interface from IP. Got %s\n", temp.c_str());
 					FILE_LOG(logERROR) << mess;
 				}
 				receiver->setEthernetInterface(eth);
 
-				//get mac address from ethernet interface
-				if (ret != FAIL)
+				//get mac address
+				if (ret != FAIL) {
 					temp = genericSocket::nameToMac(eth);
+					if (temp=="00:00:00:00:00:00") {
+						ret = FAIL;
+						strcpy(mess,"failed to get mac adddress to listen to\n");
+						FILE_LOG(logERROR) << mess;
+					} else {
+						// using the 2nd interface only
+						if (myDetectorType == JUNGFRAU && numInterfaces == 1 && selInterface == 2) {
+							strcpy(retvals[1],temp.c_str());
+							FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[1];
+						}
+						else {
+							strcpy(retvals[0],temp.c_str());
+							FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[0];
+						}
+					}
+				}
+			}
 
-				if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
+			// 2nd interface
+			if (myDetectorType == JUNGFRAU && numInterfaces == 2) {
+				receiver->setUDPPortNumber2(port2);
+				FILE_LOG(logINFO) << "Receiver UDP IP 2: " << ip2;
+				// get eth
+				std::string temp = genericSocket::ipToName(ip2);
+				if (temp == "none"){
 					ret = FAIL;
-					strcpy(mess,"failed to get mac adddress to listen to\n");
+					strcpy(mess, "Failed to get 2nd ethernet interface or IP \n");
 					FILE_LOG(logERROR) << mess;
+				} else {
+					char eth[MAX_STR_LENGTH] = {""};
+					memset(eth, 0, MAX_STR_LENGTH);
+					strcpy(eth, temp.c_str());
+					// if there is a dot in eth name
+					if (strchr(eth, '.') != nullptr) {
+						strcpy(eth, "");
+						ret = FAIL;
+						sprintf(mess, "Failed to get 2nd ethernet interface from IP. Got %s\n", temp.c_str());
+						FILE_LOG(logERROR) << mess;
+					}
+					receiver->setEthernetInterface2(eth);
+
+					//get mac address
+					if (ret != FAIL) {
+						temp = genericSocket::nameToMac(eth);
+						if (temp=="00:00:00:00:00:00") {
+							ret = FAIL;
+							strcpy(mess,"failed to get 2nd mac adddress to listen to\n");
+							FILE_LOG(logERROR) << mess;
+						} else {
+							strcpy(retvals[1],temp.c_str());
+							FILE_LOG(logINFO) << "Receiver MAC Address 2: " << retvals[1];
+						}
+					}
 				}
-				else {
-					strcpy(retvals,temp.c_str());
-					FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals;
-				}
+			}
+
+			// set the number of udp interfaces (changes number of threads and many others)
+			if (myDetectorType == JUNGFRAU && receiver->setNumberofUDPInterfaces(numInterfaces) == FAIL) {
+				ret = FAIL;
+				sprintf(mess, "Failed to set number of interfaces\n");
+				FILE_LOG(logERROR) << mess;
 			}
 		}
 	}
@@ -1752,7 +1815,8 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size() {
 		}
 		// get
         retval = receiver->getUDPSocketBufferSize();
-        validate(index, retval, std::string("set udp socket buffer size (No CAP_NET_ADMIN privileges?)"), DEC);
+        if (index != 0)
+        	validate(index, retval, std::string("set udp socket buffer size (No CAP_NET_ADMIN privileges?)"), DEC);
         FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);

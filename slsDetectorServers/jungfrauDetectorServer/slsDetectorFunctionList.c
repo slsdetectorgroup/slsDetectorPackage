@@ -33,7 +33,7 @@ int virtual_stop = 0;
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
-int32_t clkPhase[2] = {0, 0};
+int adcPhase = 0;
 
 
 int isFirmwareCheckDone() {
@@ -365,7 +365,6 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
-    clkPhase[0] = 0; clkPhase[1] = 0;
 	setupDetector();
 }
 
@@ -393,6 +392,7 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
 
+    adcPhase = 0;
     ALTERA_PLL_ResetPLL();
 	resetCore();
 	resetPeripheral();
@@ -423,6 +423,9 @@ void setupDetector() {
 	setClockDivider(HALF_SPEED);
 	cleanFifos();
 	resetCore();
+
+	alignDeserializer();
+
 
 	configureASICTimer();
 	bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
@@ -486,6 +489,7 @@ void resetCore() {
 	FILE_LOG(logINFO, ("Resetting Core\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CORE_RST_MSK);
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_CORE_RST_MSK);
+	usleep(1000 * 1000);
 }
 
 void resetPeripheral() {
@@ -514,23 +518,25 @@ int setDynamicRange(int dr){
 
 /* parameters - speed, readout */
 
-void setSpeed(enum speedVariable ind, int val) {
+void setSpeed(enum speedVariable ind, int val, int mode) {
     switch(ind) {
     case CLOCK_DIVIDER:
         setClockDivider(val);
     case ADC_PHASE:
-        setAdcPhase(val);
+        setAdcPhase(val, mode);
     default:
         return;
     }
 }
 
-int getSpeed(enum speedVariable ind) {
+int getSpeed(enum speedVariable ind, int mode) {
     switch(ind) {
     case CLOCK_DIVIDER:
         return getClockDivider();
     case ADC_PHASE:
-        return getPhase();
+        return getPhase(mode);
+    case MAX_ADC_PHASE_SHIFT:
+    	return getMaxPhaseShift();
     default:
         return -1;
     }
@@ -1017,12 +1023,18 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2){
+int configureMAC(int numInterfaces, int selInterface,
+		uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
+		uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2) {
 #ifdef VIRTUAL
     return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
+
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
+
+	FILE_LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
+	FILE_LOG(logINFO, ("\tInterface   : %d\n\n", selInterface));
 
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
@@ -1036,7 +1048,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(long  long unsigned int)sourcemac));
 	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
 
-	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t\t(0x%08x)\n",
 	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
 	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((destmac>>40)&0xFF),
@@ -1046,7 +1058,32 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((destmac>>8)&0xFF),
 			(unsigned int)((destmac>>0)&0xFF),
 			(long  long unsigned int)destmac));
-	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
+
+	uint32_t sourceport2  =  DEFAULT_TX_UDP_PORT + 1;
+	FILE_LOG(logINFO, ("\tSource IP2  : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (sourceip2>>24)&0xff,(sourceip2>>16)&0xff,(sourceip2>>8)&0xff,(sourceip2)&0xff, sourceip2));
+	FILE_LOG(logINFO, ("\tSource MAC2 : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+			(unsigned int)((sourcemac2>>40)&0xFF),
+			(unsigned int)((sourcemac2>>32)&0xFF),
+			(unsigned int)((sourcemac2>>24)&0xFF),
+			(unsigned int)((sourcemac2>>16)&0xFF),
+			(unsigned int)((sourcemac2>>8)&0xFF),
+			(unsigned int)((sourcemac2>>0)&0xFF),
+			(long  long unsigned int)sourcemac2));
+	FILE_LOG(logINFO, ("\tSource Port2: %d \t\t\t(0x%08x)\n",sourceport2, sourceport2));
+
+	FILE_LOG(logINFO, ("\tDest. IP2   : %d.%d.%d.%d \t\t\t(0x%08x)\n",
+	        (destip2>>24)&0xff,(destip2>>16)&0xff,(destip2>>8)&0xff,(destip2)&0xff, destip2));
+	FILE_LOG(logINFO, ("\tDest. MAC2  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+			(unsigned int)((destmac2>>40)&0xFF),
+			(unsigned int)((destmac2>>32)&0xFF),
+			(unsigned int)((destmac2>>24)&0xFF),
+			(unsigned int)((destmac2>>16)&0xFF),
+			(unsigned int)((destmac2>>8)&0xFF),
+			(unsigned int)((destmac2>>0)&0xFF),
+			(long  long unsigned int)destmac2));
+	FILE_LOG(logINFO, ("\tDest. Port2 : %d \t\t\t(0x%08x)\n",udpport2, udpport2));
 
 	long int checksum=calcChecksum(sourceip, destip);
 	bus_w(TX_IP_REG, sourceip);
@@ -1079,29 +1116,27 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
 	cleanFifos();
 	resetCore();
-
-	usleep(500 * 1000); /* todo maybe without */
+	alignDeserializer();
 	return OK;
 }
 
 
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
-	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d), reserved: %d\n", pos[0], pos[1], pos[2]));
+	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", pos[0], pos[1]));
+
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_X_MSK)));
 	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK));
 	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK))
 		ret = FAIL;
 
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_Y_MSK)));
 	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
 	if ((bus_r(COORD_0_REG) &  COORD_0_Y_MSK) != ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
 		ret = FAIL;
 
-	bus_w(COORD_1_REG, bus_r(COORD_1_REG) | ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK));
-	if ((bus_r(COORD_1_REG) &  COORD_0_Z_MSK) != ((pos[2] << COORD_0_Z_OFST) & COORD_0_Z_MSK))
-		ret = FAIL;
-
 	if (ret == OK) {
-		FILE_LOG(logINFO, ("Position set to [%d, %d, %d]\n", pos[0], pos[1], pos[2]));
+		FILE_LOG(logINFO, ("Position set to [%d, %d]\n", pos[0], pos[1]));
 	}
 	return ret;
 }
@@ -1177,7 +1212,7 @@ void setClockDivider(int val) {
             bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
 
             FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
-            setAdcPhase(ADC_PHASE_HALF_SPEED);
+            setAdcPhase(ADC_PHASE_HALF_SPEED, 0);
 
             break;
         case HALF_SPEED:
@@ -1194,7 +1229,7 @@ void setClockDivider(int val) {
             bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
 
             FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
-            setAdcPhase(ADC_PHASE_HALF_SPEED);
+            setAdcPhase(ADC_PHASE_HALF_SPEED, 0);
 
             break;
         case QUARTER_SPEED:
@@ -1211,7 +1246,7 @@ void setClockDivider(int val) {
             bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
 
             FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED));
-            setAdcPhase(ADC_PHASE_QUARTER_SPEED);
+            setAdcPhase(ADC_PHASE_QUARTER_SPEED, 0);
 
             break;
         }
@@ -1232,51 +1267,77 @@ int getClockDivider() {
     }
 }
 
-int setAdcPhase(int st){ /**carlos needed clkphase 1 and 2?  cehck with Aldo */
-    FILE_LOG(logINFO, ("Setting ADC Phase to %d\n", st));
-    if (st > 65535 || st < -65535)
-        return clkPhase[0];
+void setAdcPhase(int val, int degrees){
+	int maxShift = MAX_PHASE_SHIFTS;
 
-    clkPhase[1] = st - clkPhase[0];
-    if (clkPhase[1] == 0)
-        return clkPhase[0];
+	// validation
+	if (degrees && (val < 0 || val > 359)) {
+		 FILE_LOG(logERROR, ("\tPhase provided outside limits (0 - 359°C)\n"));
+		 return;
+	}
+	if (!degrees && (val < 0 || val > MAX_PHASE_SHIFTS - 1)) {
+		 FILE_LOG(logERROR, ("\tPhase provided outside limits (0 - %d phase shifts)\n", maxShift - 1));
+		 return;
+	}
 
-    configurePll();
-    clkPhase[0] = st;
-    return clkPhase[0];
-}
+    FILE_LOG(logINFO, ("Setting ADC Phase to %d (degree mode: %d)\n", val, degrees));
+	int valShift = val;
+	// convert to phase shift
+	if (degrees) {
+		ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
+	}
+	FILE_LOG(logDEBUG1, ("phase shift: %d (degrees/shift: %d)\n", valShift, val));
 
-int getPhase() {
-    return clkPhase[0];
-}
+	int relativePhase = valShift - adcPhase;
+	FILE_LOG(logDEBUG1, ("relative phase shift: %d (Current phase: %d)\n", relativePhase, adcPhase));
 
-
-void configurePll() {
-#ifdef VIRTUAL
-    return;
-#endif
-	int32_t phase=0;
-	// ensuring PLL is never configured with same phase
-    if (clkPhase[1] == 0) {
-        return;
+    // same phase
+    if (!relativePhase) {
+    	FILE_LOG(logINFO, ("Nothing to do in Phase Shift\n"));
+    	return;
     }
 
-	FILE_LOG(logINFO, ("\tConfiguring PLL with phase in %d\n", clkPhase[1]));
+    int phase = 0;
+    if (relativePhase > 0) {
+        phase = (maxShift - relativePhase);
+    } else {
+    	phase = (-1) * relativePhase;
+    }
+    FILE_LOG(logDEBUG1, ("[Single Direction] Phase:%d (0x%x). Max Phase shifts:%d\n", phase, phase, maxShift));
 
-	// delay ADC clk
-	if (clkPhase[1]>0) {
-		phase = MAX_PHASE_SHIFTS - clkPhase[1];
-	}
-	// advance adc clk
-	else {
-		phase = (-1) * clkPhase[1];
-	}
+    ALTERA_PLL_SetPhaseShift(phase, 1, 0);
 
-	FILE_LOG(logDEBUG1, ("\tphase out %d (0x%08x)\n", phase, phase));
-	ALTERA_PLL_SetPhaseShift(phase, 1, 0); // phase, 1: adc clk, 0:neg
-	usleep(10000);
+    adcPhase = valShift;
 }
 
+int getPhase(degrees) {
+	if (!degrees)
+		return adcPhase;
+	// convert back to degrees
+	int val = 0;
+	ConvertToDifferentRange(0, MAX_PHASE_SHIFTS - 1, 0, 359, adcPhase, &val);
+	return val;
+}
+
+int getMaxPhaseShift() {
+	return MAX_PHASE_SHIFTS;
+}
+
+int validatePhaseinDegrees(int val, int retval) {
+	if (val == -1)
+		return OK;
+	FILE_LOG(logDEBUG1, ("validating phase in degrees\n"));
+	int maxShift = MAX_PHASE_SHIFTS;
+	// convert degrees to shift
+	int valShift = 0;
+	ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
+	// convert back to degrees
+	ConvertToDifferentRange(0, maxShift - 1, 0, 359, valShift, &val);
+
+	if (val == retval)
+		return OK;
+	return FAIL;
+}
 
 
 int setThresholdTemperature(int val) {
@@ -1333,6 +1394,21 @@ int setTemperatureEvent(int val) {
     return ((bus_r(TEMP_CTRL_REG) & TEMP_CTRL_OVR_TMP_EVNT_MSK) >> TEMP_CTRL_OVR_TMP_EVNT_OFST);
 }
 
+void alignDeserializer() {
+	// refresh alignment
+	bus_w(ADC_DSRLZR_0_REG, bus_r(ADC_DSRLZR_0_REG) | ADC_DSRLZR_0_RFRSH_ALGNMNT_MSK);
+	bus_w(ADC_DSRLZR_1_REG, bus_r(ADC_DSRLZR_1_REG) | ADC_DSRLZR_1_RFRSH_ALGNMNT_MSK);
+	bus_w(ADC_DSRLZR_2_REG, bus_r(ADC_DSRLZR_2_REG) | ADC_DSRLZR_2_RFRSH_ALGNMNT_MSK);
+	bus_w(ADC_DSRLZR_3_REG, bus_r(ADC_DSRLZR_3_REG) | ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK);
+
+	usleep(1 * 1000 * 1000);
+
+	// disable the refresh
+	bus_w(ADC_DSRLZR_0_REG, bus_r(ADC_DSRLZR_0_REG) & (~(ADC_DSRLZR_0_RFRSH_ALGNMNT_MSK)));
+	bus_w(ADC_DSRLZR_1_REG, bus_r(ADC_DSRLZR_1_REG) & (~(ADC_DSRLZR_1_RFRSH_ALGNMNT_MSK)));
+	bus_w(ADC_DSRLZR_2_REG, bus_r(ADC_DSRLZR_2_REG) & (~(ADC_DSRLZR_2_RFRSH_ALGNMNT_MSK)));
+	bus_w(ADC_DSRLZR_3_REG, bus_r(ADC_DSRLZR_3_REG) & (~(ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK)));
+}
 
 
 int setNetworkParameter(enum NETWORKINDEX mode, int value) {

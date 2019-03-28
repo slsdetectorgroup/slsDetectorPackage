@@ -52,7 +52,9 @@ typedef  int int32_t;
 #define GET_FLAG -1
 
 #define DEFAULT_DET_MAC         "00:aa:bb:cc:dd:ee"
-#define DEFAULT_DET_IP          "129.129.202.46"
+#define DEFAULT_DET_IP          "129.129.202.45"
+#define DEFAULT_DET_MAC2        "00:aa:bb:cc:dd:ff"
+#define DEFAULT_DET_IP2         "129.129.202.46"
 
 /** default maximum string length */
 #define MAX_STR_LENGTH 1000
@@ -496,14 +498,14 @@ public:
 	*/
 	enum speedVariable {
 	  CLOCK_DIVIDER, /**< readout clock divider */
-	  PHASE_SHIFT, /**< adds phase shift */
-	  OVERSAMPLING, /**< oversampling for analog detectors */
 	  ADC_CLOCK, /**< adc clock divider */
 	  ADC_PHASE, /**< adc clock phase */
 	  ADC_PIPELINE, /**< adc pipeline */
 	  DBIT_CLOCK, /**< adc clock divider */
 	  DBIT_PHASE, /**< adc clock phase */
-	  DBIT_PIPELINE /**< adc pipeline */
+	  DBIT_PIPELINE, /**< adc pipeline */
+	  MAX_ADC_PHASE_SHIFT, /** max adc phase shift */
+	  MAX_DBIT_PHASE_SHIFT, /** max adc phase shift */
 	};
 
 

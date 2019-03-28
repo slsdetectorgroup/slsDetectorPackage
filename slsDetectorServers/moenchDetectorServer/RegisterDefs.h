@@ -533,17 +533,6 @@
 #define PATTERN_SET_LSB_REG                 (0x82 << MEM_MAP_SHIFT)
 #define PATTERN_SET_MSB_REG                 (0x83 << MEM_MAP_SHIFT)
 
-/** I2C Control register */
-//#define I2C_TRANSFER_COMMAND_FIFO_REG       (0x100 << MEM_MAP_SHIFT) // in FW, but not used anywhere
-//#define I2C_CONTROL_REG                     (0x102 << MEM_MAP_SHIFT) // in FW, but not used anywhere
-//#define I2C_RX_DATA_FIFO_LEVEL_REG          (0x107 << MEM_MAP_SHIFT) // in FW, but not used anywhere
-//#define I2C_SCL_LOW_COUNT_REG               (0x108 << MEM_MAP_SHIFT) // in FW, but not used anywhere
-//#define I2C_SCL_HIGH_COUNT_REG              (0x109 << MEM_MAP_SHIFT) // in FW, but not used anywhere
-//#define I2C_SDA_HOLD_REG                    (0x10A << MEM_MAP_SHIFT) // in FW, but not used anywhere
-
-
-
-
 
 
 

@@ -250,7 +250,7 @@
 #define PLL_CNTRL_ADDR_OFST				(16)
 #define PLL_CNTRL_ADDR_MSK				(0x0000003F << PLL_CNTRL_ADDR_OFST)
 
-/* Sample Register (Obsolete) */
+/* Sample Register */
 #define SAMPLE_REG 						(0x59 << MEM_MAP_SHIFT)
 
 #define SAMPLE_ADC_SAMPLE_SEL_OFST		(0)
@@ -417,10 +417,25 @@
 
 
 
+/* ADC 0 Deserializer Control */
+#define ADC_DSRLZR_0_REG				(0xF0 << MEM_MAP_SHIFT)
+#define ADC_DSRLZR_0_RFRSH_ALGNMNT_OFST (31)	/* Refresh alignment */
+#define ADC_DSRLZR_0_RFRSH_ALGNMNT_MSK  (0x00000001 << ADC_DSRLZR_0_RFRSH_ALGNMNT_OFST)
 
+/* ADC 0 Deserializer Control */
+#define ADC_DSRLZR_1_REG				(0xF1 << MEM_MAP_SHIFT)
+#define ADC_DSRLZR_1_RFRSH_ALGNMNT_OFST (31)
+#define ADC_DSRLZR_1_RFRSH_ALGNMNT_MSK  (0x00000001 << ADC_DSRLZR_1_RFRSH_ALGNMNT_OFST)
 
+/* ADC 0 Deserializer Control */
+#define ADC_DSRLZR_2_REG				(0xF2 << MEM_MAP_SHIFT)
+#define ADC_DSRLZR_2_RFRSH_ALGNMNT_OFST (31)
+#define ADC_DSRLZR_2_RFRSH_ALGNMNT_MSK  (0x00000001 << ADC_DSRLZR_2_RFRSH_ALGNMNT_OFST)
 
-
+/* ADC 0 Deserializer Control */
+#define ADC_DSRLZR_3_REG				(0xF3 << MEM_MAP_SHIFT)
+#define ADC_DSRLZR_3_RFRSH_ALGNMNT_OFST (31)
+#define ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK  (0x00000001 << ADC_DSRLZR_3_RFRSH_ALGNMNT_OFST)
 
 
 

@@ -115,7 +115,10 @@ ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #endif
 
 // parameters - readout
-#ifndef GOTTHARDD
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
+void 		setSpeed(enum speedVariable ind, int val, int mode);
+int         getSpeed(enum speedVariable ind, int mode);
+#else
 void 		setSpeed(enum speedVariable ind, int val);
 int         getSpeed(enum speedVariable ind);
 #endif
@@ -210,7 +213,17 @@ long int 	calcChecksum(int sourceip, int destip);
 #ifdef GOTTHARDD
 int         getAdcConfigured();
 #endif
+
+#ifdef EIGERD
 int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2);
+#elif JUNGFRAUD
+int 		configureMAC(int numInterfaces, int selInterface,
+				uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
+				uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2);
+#else
+int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport);
+#endif
+
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int 		setDetectorPosition(int pos[]);
 #endif
@@ -228,8 +241,10 @@ int         powerChip (int on);
 
 // chip test board or moench specific - configure frequency, phase, pll, flashing firmware
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-void        configurePhase(enum CLKINDEX ind, int val);
-int         getPhase(enum CLKINDEX ind);
+void        configurePhase(enum CLKINDEX ind, int val, int degrees);
+int         getPhase(enum CLKINDEX ind, int degrees);
+int         getMaxPhase(enum CLKINDEX ind);
+int 		validatePhaseinDegrees(enum speedVariable ind, int val, int retval);
 void        configureFrequency(enum CLKINDEX ind, int val);
 int         getFrequency(enum CLKINDEX ind);
 void        configureSyncFrequency(enum CLKINDEX ind);
@@ -268,11 +283,10 @@ int         autoCompDisable(int on);
 void        configureASICTimer();
 void        setClockDivider(int val);
 int         getClockDivider();
-int         setAdcPhase(int st);
-int         getPhase();
-void 		resetPLL();
-u_int32_t 	setPllReconfigReg(u_int32_t reg, u_int32_t val);
-void 		configurePll();
+void        setAdcPhase(int val, int degrees);
+int         getPhase(int degrees);
+int			getMaxPhaseShift();
+int 		validatePhaseinDegrees(int val, int retval);
 int         setThresholdTemperature(int val);
 int         setTemperatureControl(int val);
 int         setTemperatureEvent(int val);
@@ -280,6 +294,7 @@ extern void eraseFlash();													// programfpga.h
 extern int 	startWritingFPGAprogram(FILE** filefp);							// programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);							// programfpga.h
 extern int 	writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);	// programfpga.h
+void		alignDeserializer();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD

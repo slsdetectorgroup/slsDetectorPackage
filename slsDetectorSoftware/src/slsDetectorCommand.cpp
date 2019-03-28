@@ -81,49 +81,49 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     - \b test returns an error
 	 */
 
-    descrToFuncMap[i].m_pFuncName = "test"; //
+    descrToFuncMap[i].m_pFuncName = "test";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdUnderDevelopment;
     ++i;
 
     /*! \page test
    - <b>help</b> Returns a list of possible commands.
 	 */
-    descrToFuncMap[i].m_pFuncName = "help"; //OK
+    descrToFuncMap[i].m_pFuncName = "help";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHelp;
     ++i;
 
     /*! \page test
    - <b>exitserver</b> Shuts down all the detector servers. Don't use it!!!!
 	 */
-    descrToFuncMap[i].m_pFuncName = "exitserver"; //OK
+    descrToFuncMap[i].m_pFuncName = "exitserver";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
     ++i;
 
     /*! \page test
    - <b>exitreceiver</b> Shuts down all the receivers. Don't use it!!!!
 	 */
-    descrToFuncMap[i].m_pFuncName = "exitreceiver"; //OK
+    descrToFuncMap[i].m_pFuncName = "exitreceiver";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
     ++i;
 
     /*! \page test
    - <b>execcommand</b> Executes a command on the detector server. Don't use it!!!!
 	 */
-    descrToFuncMap[i].m_pFuncName = "execcommand"; //OK
+    descrToFuncMap[i].m_pFuncName = "execcommand";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
     ++i;
 
     /*! \page test
    - <b>rx_execcommand</b> Executes a command on the receiver server. Don't use it!!!!
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_execcommand"; //OK
+    descrToFuncMap[i].m_pFuncName = "rx_execcommand";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
     ++i;
 
     /*! \page test
    - <b>flippeddatay [i]</b> enables/disables data being flipped across y axis. 1 enables, 0 disables. Not implemented.
 	 */
-    descrToFuncMap[i].m_pFuncName = "flippeddatay"; //
+    descrToFuncMap[i].m_pFuncName = "flippeddatay";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
     ++i;
 
@@ -132,56 +132,56 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page test
    - <b>digibittest:[i]</b> performs digital test of the module i. Returns 0 if succeeded, otherwise error mask. Gotthard only. Only put!
 	 */
-    descrToFuncMap[i].m_pFuncName = "digibittest"; //
+    descrToFuncMap[i].m_pFuncName = "digibittest";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDigiTest;
     ++i;
 
     /*! \page test
    - <b>bustest</b> performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Cannot set! Jungfrau only. Only get!
 	 */
-    descrToFuncMap[i].m_pFuncName = "bustest"; //
+    descrToFuncMap[i].m_pFuncName = "bustest";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDigiTest;
     ++i;
 
     /*! \page test
    - <b>firmwaretest</b> performs the firmware test.  Cannot set! Jungfrau only. Only get!
 	 */
-    descrToFuncMap[i].m_pFuncName = "firmwaretest"; //
+    descrToFuncMap[i].m_pFuncName = "firmwaretest";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDigiTest;
     ++i;
 
     /*! \page test
    - <b>reg [addr] [val]</b> ??? writes to an register \c addr with \c value in hexadecimal format.
 	 */
-    descrToFuncMap[i].m_pFuncName = "reg"; //
+    descrToFuncMap[i].m_pFuncName = "reg";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
     ++i;
 
     /*! \page test
    - <b>adcreg [addr] [val]</b> ??? writes to an adc register \c addr with \c value in hexadecimal format. Only put!
 	 */
-    descrToFuncMap[i].m_pFuncName = "adcreg"; //
+    descrToFuncMap[i].m_pFuncName = "adcreg";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
     ++i;
 
     /*! \page test
    - <b>setbit</b> ???  Only put!
 	 */
-    descrToFuncMap[i].m_pFuncName = "setbit"; //
+    descrToFuncMap[i].m_pFuncName = "setbit";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
     ++i;
 
     /*! \page test
    - <b>clearbit </b> ??? Only put!
 	 */
-    descrToFuncMap[i].m_pFuncName = "clearbit"; //
+    descrToFuncMap[i].m_pFuncName = "clearbit";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
     ++i;
 
     /*! \page test
    - <b>getbit </b> ??? Only get!
 	 */
-    descrToFuncMap[i].m_pFuncName = "getbit"; //
+    descrToFuncMap[i].m_pFuncName = "getbit";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
     ++i;
 
@@ -193,49 +193,49 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    - \b acquire blocking acquisition (like calling sls_detector_acquire). Starts receiver and detector, writes and processes the data, stops detector. Only get!
      \c Returns (string)\c "acquire failed" if fails, else \c "Acquired (int)", where int is number of frames caught.
 	 */
-    descrToFuncMap[i].m_pFuncName = "acquire"; //
+    descrToFuncMap[i].m_pFuncName = "acquire";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAcquire;
     ++i;
 
     /*! \page acquisition
    - <b>  busy i</b> sets/gets acquiring flag. \c 1 the acquisition is active, \c 0 otherwise. Acquire command will set this flag to 1 at the beginning and to 0 at the end. Use this to clear flag if acquisition terminated unexpectedly. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "busy"; //
+    descrToFuncMap[i].m_pFuncName = "busy";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdStatus;
     ++i;
 
     /*! \page acquisition
    - <b> status [s] </b> starts or stops acquisition in detector in non blocking mode. When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). Eiger can also provide an internal software trigger. \c s: [\c start, \c stop, \c trigger(EIGER only)]. \c Returns the detector status: [\c running, \c error, \c transmitting, \c finished, \c waiting, \c idle]. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "status"; //
+    descrToFuncMap[i].m_pFuncName = "status";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdStatus;
     ++i;
 
     /*! \page acquisition
    - \b data gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup (Eigerr store in ram only). Only get!
 	 */
-    descrToFuncMap[i].m_pFuncName = "data"; //
+    descrToFuncMap[i].m_pFuncName = "data";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdData;
     ++i;
 
     /*! \page acquisition
    - <b>readctr </b> Reads the counters from the detector memory (analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.
 	 */
-    descrToFuncMap[i].m_pFuncName = "readctr"; //
+    descrToFuncMap[i].m_pFuncName = "readctr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdCounter;
     ++i;
 
     /*! \page acquisition
    - <b>resetctr i </b> Resets counter in detector, restarts acquisition if i=1(analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.
 	 */
-    descrToFuncMap[i].m_pFuncName = "resetctr"; //
+    descrToFuncMap[i].m_pFuncName = "resetctr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdCounter;
     ++i;
 
     /*! \page acquisition
    - <b>resmat i </b> sets/resets counter bit in detector.gets the counter bit in detector ????
 	 */
-    descrToFuncMap[i].m_pFuncName = "resmat"; //
+    descrToFuncMap[i].m_pFuncName = "resmat";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdCounter;
     ++i;
 
@@ -262,35 +262,35 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page config
    - \b free Free shared memory on the control PC
 	 */
-    descrToFuncMap[i].m_pFuncName = "free"; //OK
+    descrToFuncMap[i].m_pFuncName = "free";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFree;
     ++i;
 
     /*! \page config
    - <b>hostname</b> \c put frees shared memory and sets the hostname (or IP adress). Only allowed at multi detector level. \c Returns the list of the hostnames of the multi-detector structure. \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "hostname"; //OK
+    descrToFuncMap[i].m_pFuncName = "hostname";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHostname;
     ++i;
 
     /*! \page config
    - \b add appends a hostname (or IP address) at the end of the multi-detector structure. Only allowed at multi detector level. Cannot get. \c Returns the current list of detector hostnames. \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "add"; //OK
+    descrToFuncMap[i].m_pFuncName = "add";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHostname;
     ++i;
 
     /*! \page config
    - <b>replace</b> \c Sets the hostname (or IP adress) for a single detector. Only allowed at single detector level.  Cannot get. \c Returns the hostnames for that detector \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "replace"; //OK
+    descrToFuncMap[i].m_pFuncName = "replace";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHostname;
     ++i;
 
     /*! \page config
    - <b>user</b> \c Returns user details from shared memory. Only allowed at multi detector level.  Cannot put. \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "user"; //OK
+    descrToFuncMap[i].m_pFuncName = "user";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdUser;
     ++i;
 
@@ -302,20 +302,20 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page config
     - <b>online [i]</b> sets the detector in online (1) or offline (0) mode. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "online"; //
+    descrToFuncMap[i].m_pFuncName = "online";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
     ++i;
 
     /*! \page config
     - <b>checkonline</b> returns the hostnames of all detectors without connecting to them. \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
 	 */
-    descrToFuncMap[i].m_pFuncName = "checkonline"; //
+    descrToFuncMap[i].m_pFuncName = "checkonline";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
     ++i;
     /*! \page config
     - <b>activate [b] [p]</b> Activates/Deactivates the detector. \c b is 1 for activate, 0 for deactivate. Deactivated detector does not send data. \c p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Used for EIGER only. \c Returns \c (int) (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "activate"; //
+    descrToFuncMap[i].m_pFuncName = "activate";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
     ++i;
 
@@ -328,42 +328,42 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page config
    - <b>dr [i]</b> sets/gets the dynamic range of detector. Eiger [4,8,16,32]. Others cannot put! \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "dr"; //
+    descrToFuncMap[i].m_pFuncName = "dr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
     ++i;
 
     /*! \page config
    - <b>roi [i] [xmin] [xmax] [ymin] [ymax]  </b> sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "roi"; //
+    descrToFuncMap[i].m_pFuncName = "roi";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
     ++i;
 
     /*! \page config
    - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file. \c Returns \c ("int int")
 	 */
-    descrToFuncMap[i].m_pFuncName = "detsizechan"; //
+    descrToFuncMap[i].m_pFuncName = "detsizechan";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
     ++i;
 
     /*! \page config
    - <b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "flippeddatax"; //
+    descrToFuncMap[i].m_pFuncName = "flippeddatax";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
     ++i;
 
     /*! \page config
    - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER, Moench and ChipTestBoard only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "tengiga"; //
+    descrToFuncMap[i].m_pFuncName = "tengiga";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page config
    - <b>gappixels [i]</b> enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and only in multi detector level command. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "gappixels"; //
+    descrToFuncMap[i].m_pFuncName = "gappixels";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
     ++i;
 
@@ -435,28 +435,28 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page config
    - <b>auto_comp_disable i </b> Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). \c Returns \c (int)
      */
-    descrToFuncMap[i].m_pFuncName = "auto_comp_disable"; //
+    descrToFuncMap[i].m_pFuncName = "auto_comp_disable";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
     ++i;
 
     /*! \page config
    - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
 	 */
-    descrToFuncMap[i].m_pFuncName = "pulse"; //
+    descrToFuncMap[i].m_pFuncName = "pulse";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
     ++i;
 
     /*! \page config
    - <b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
 	 */
-    descrToFuncMap[i].m_pFuncName = "pulsenmove"; //
+    descrToFuncMap[i].m_pFuncName = "pulsenmove";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
     ++i;
 
     /*! \page config
    - <b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
 	 */
-    descrToFuncMap[i].m_pFuncName = "pulsechip"; //
+    descrToFuncMap[i].m_pFuncName = "pulsechip";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
     ++i;
 
@@ -469,49 +469,49 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page config
    - <b>checkdetversion</b> Checks the version compatibility with detector server (if hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
 	 */
-    descrToFuncMap[i].m_pFuncName = "checkdetversion"; //
+    descrToFuncMap[i].m_pFuncName = "checkdetversion";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
     /*! \page config
    - <b>checkrecversion</b> Checks the version compatibility with receiver server (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
 	 */
-    descrToFuncMap[i].m_pFuncName = "checkrecversion"; //
+    descrToFuncMap[i].m_pFuncName = "checkrecversion";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
     /*! \page config
    - <b>detectornumber</b> Gets the serial number or MAC of detector. Only get! \c Returns \c (long int) in hexadecimal
 	 */
-    descrToFuncMap[i].m_pFuncName = "detectornumber"; //
+    descrToFuncMap[i].m_pFuncName = "detectornumber";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
     /*! \page config
    - <b>detectorversion</b> Gets the firmware version of detector. Only get! \c Returns \c (long int) in hexadecimal
 	 */
-    descrToFuncMap[i].m_pFuncName = "detectorversion"; //
+    descrToFuncMap[i].m_pFuncName = "detectorversion";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
     /*! \page config
    - <b>softwareversion</b> Gets the software version of detector server. Only get! \c Returns \c (long int) in hexadecimal
 	 */
-    descrToFuncMap[i].m_pFuncName = "softwareversion"; //
+    descrToFuncMap[i].m_pFuncName = "softwareversion";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
     /*! \page config
    - <b>thisversion</b> Gets the software version of this client software. Only get! \c Returns \c (long int) in hexadecimal
 	 */
-    descrToFuncMap[i].m_pFuncName = "thisversion"; //
+    descrToFuncMap[i].m_pFuncName = "thisversion";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
     /*! \page config
    - <b>receiverversion</b> Gets the software version of receiver. Only get! \c Returns \c (long int) in hexadecimal
 	 */
-    descrToFuncMap[i].m_pFuncName = "receiverversion"; //
+    descrToFuncMap[i].m_pFuncName = "receiverversion";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
@@ -520,105 +520,105 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page timing
    - <b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating (string)
 	*/
-    descrToFuncMap[i].m_pFuncName = "timing"; //
+    descrToFuncMap[i].m_pFuncName = "timing";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTiming;
     ++i;
 
     /*! \page timing
    - <b>exptime [i]</b> sets/gets exposure time in s. \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "exptime"; //
+    descrToFuncMap[i].m_pFuncName = "exptime";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "subexptime"; //
+    descrToFuncMap[i].m_pFuncName = "subexptime";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>period [i]</b> sets/gets frame period in s. \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "period"; //
+    descrToFuncMap[i].m_pFuncName = "period";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>subdeadtime [i]</b> sets/gets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
      */
-    descrToFuncMap[i].m_pFuncName = "subdeadtime"; //
+    descrToFuncMap[i].m_pFuncName = "subdeadtime";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>delay [i]</b> sets/gets delay in s. Used in GOTTHARD only. \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "delay"; //
+    descrToFuncMap[i].m_pFuncName = "delay";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>gates [i]</b> sets/gets number of gates. Used in GOTTHARD only. \c Returns \c (long long int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "gates"; //
+    descrToFuncMap[i].m_pFuncName = "gates";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>frames [i]</b> sets/gets number of frames. If \c timing is not \c auto, then it is the number of frames per cycle/trigger. \c Returns \c (long long int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "frames"; //
+    descrToFuncMap[i].m_pFuncName = "frames";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately. \c Returns \c (long long int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "cycles"; //
+    descrToFuncMap[i].m_pFuncName = "cycles";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>measurements [i]</b> sets/gets number of measurements. \c Returns \c (long long int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "measurements"; //
+    descrToFuncMap[i].m_pFuncName = "measurements";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only. \c Returns \c (long long int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "samples"; //
+    descrToFuncMap[i].m_pFuncName = "samples";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>storagecells [i]</b> sets/gets number of additional storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells +1). \c Returns \c (long long int)
      */
-    descrToFuncMap[i].m_pFuncName = "storagecells"; //
+    descrToFuncMap[i].m_pFuncName = "storagecells";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 15(0xf).. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
      */
-    descrToFuncMap[i].m_pFuncName = "storagecell_start"; //
+    descrToFuncMap[i].m_pFuncName = "storagecell_start";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 15(0xf).. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
      */
-    descrToFuncMap[i].m_pFuncName = "storagecell_start"; //
+    descrToFuncMap[i].m_pFuncName = "storagecell_start";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
     /*! \page timing
    - <b>storagecell_delay [i]</b> sets/gets additional time between 2 storage cells. For very advanced users only! For JUNGFRAU only. Range: 0-1638375 ns (resolution of 25ns). \c Returns \c (int)
      */
-    descrToFuncMap[i].m_pFuncName = "storagecell_delay"; //
+    descrToFuncMap[i].m_pFuncName = "storagecell_delay";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
@@ -627,77 +627,77 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page timing
    - <b>exptimel</b> gets exposure time left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "exptimel"; //
+    descrToFuncMap[i].m_pFuncName = "exptimel";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>periodl</b> gets frame period left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "periodl"; //
+    descrToFuncMap[i].m_pFuncName = "periodl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>delayl</b> gets delay left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "delayl"; //
+    descrToFuncMap[i].m_pFuncName = "delayl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>gatesl</b> gets number of gates left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "gatesl"; //
+    descrToFuncMap[i].m_pFuncName = "gatesl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page config
    - <b>framesl</b> gets number of frames left. Used in GOTTHARD and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "framesl"; //
+    descrToFuncMap[i].m_pFuncName = "framesl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>cyclesl</b> gets number of cylces left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
-    descrToFuncMap[i].m_pFuncName = "cyclesl"; //
+    descrToFuncMap[i].m_pFuncName = "cyclesl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>now</b> Getting actual time of the detector from start. For Jungfrau only. Only get!
 	 */
-    descrToFuncMap[i].m_pFuncName = "now"; //
+    descrToFuncMap[i].m_pFuncName = "now";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>timestamp</b> Getting timestamp. For Jungfrau only. Only get!
 	 */
-    descrToFuncMap[i].m_pFuncName = "timestamp"; //
+    descrToFuncMap[i].m_pFuncName = "timestamp";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>nframes</b> Frames from start run control. Only Jungfrau. Only get!
 	 */
-    descrToFuncMap[i].m_pFuncName = "nframes"; //
+    descrToFuncMap[i].m_pFuncName = "nframes";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>measuredperiod</b> gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame. \c Returns \c  (double with 9 decimal digits)
      */
-    descrToFuncMap[i].m_pFuncName = "measuredperiod"; //
+    descrToFuncMap[i].m_pFuncName = "measuredperiod";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
    - <b>measuredsubperiod</b> gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode. \c Returns \c  (double with 9 decimal digits)
      */
-    descrToFuncMap[i].m_pFuncName = "measuredsubperiod"; //
+    descrToFuncMap[i].m_pFuncName = "measuredsubperiod";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
@@ -708,65 +708,65 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page config
-   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau, full speed is not implemented and overwrites adcphase to recommended default.  \c Returns \c (int)
+   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "clkdivider"; //
+    descrToFuncMap[i].m_pFuncName = "clkdivider";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>phasestep [i]</b> Only put for gotthard. Moves the phase of the ADC clock.\c Returns \c (int)
+   - <b>adcclk [i]</b> sets/gets the ADC clock frequency in MHz. CTB & Moench only. It also resets adcphase. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "phasestep"; //
+    descrToFuncMap[i].m_pFuncName = "adcclk";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>oversampling [i]</b> Sets/gets the number of adcsamples per clock. For the new chiptestboard.\c Returns \c (int)
+   - <b>dbitclk [i]</b> Sets/gets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. It also resets dbit phase. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "oversampling"; //
+    descrToFuncMap[i].m_pFuncName = "dbitclk";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>adcclk [i]</b> sets/gets the ADC clock frequency in MHz. For the new chiptestboard!\c Returns \c (int)
+   - <b>adcphase [i] [deg]</b> Sets/gets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB, Moench and Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "adcclk"; //
+    descrToFuncMap[i].m_pFuncName = "adcphase";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>adcphase [i]</b> Sets/gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. \c Returns \c (int)
+   - <b>dbitphase [i] [deg]</b> Sets/gets phase of the clock for latching of the digital bits to i. i is the shift or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only.\c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "adcphase"; //
+    descrToFuncMap[i].m_pFuncName = "dbitphase";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>adcpipeline [i]</b> Sets/gets the pipeline of the ADC. For the new chiptestbaord!\c Returns \c (int)
+   - <b>maxadcphaseshift </b> Gets maximum phase shift of the ADC clock. CTB, Moench and Jungfrau only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "adcpipeline"; //
+    descrToFuncMap[i].m_pFuncName = "maxadcphaseshift";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>dbitclk [i]</b> Sets/gets the clock frequency of the latching of the digital bits in MHz. For the new chiptestboard!\c Returns \c (int)
+   - <b>maxdbitphaseshift </b> Gets the maximum phase shift of the clock for latching of the digital bits.\c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "dbitclk"; //
+    descrToFuncMap[i].m_pFuncName = "maxdbitphaseshift";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>dbitphase [i]</b> Sets/gets the phase of the clock for  latching of the digital bits. For the new chiptestboard!?\c Returns \c (int)
+   - <b>adcpipeline [i]</b> Sets/gets the pipeline of the ADC. For CTB & Moench only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "dbitphase"; //
+    descrToFuncMap[i].m_pFuncName = "adcpipeline";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>dbitpipeline [i]</b> Sets/gets the pipeline of the latching of the digital bits. For the new chiptestbaord!\c Returns \c (int)
+   - <b>dbitpipeline [i]</b> Sets/gets the pipeline of the latching of the digital bits. For CTB & Moench only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "dbitpipeline"; //
+    descrToFuncMap[i].m_pFuncName = "dbitpipeline";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
@@ -814,28 +814,28 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page data
    - <b>ratecorr [ns]</b> Returns the dead time used for rate correections in ns (int). \c put sets the deadtime correction constant in ns, -1  will set it to default tau of settings (0 unset).  \c Returns \c (int). For Eiger only.
 	 */
-    descrToFuncMap[i].m_pFuncName = "ratecorr"; //
+    descrToFuncMap[i].m_pFuncName = "ratecorr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRateCorr;
     ++i;
 
-    // 	/*! \page data
+     	/*! \page data
     //    - <b>threaded [i]</b> Sets/gets the data processing threaded flag. 1 is threaded, 0 unthreaded.
     // 	 */
-    // 	descrToFuncMap[i].m_pFuncName="threaded"; //
+    // 	descrToFuncMap[i].m_pFuncName="threaded";
     // 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdThreaded;
     // 	++i;
 
     /*! \page data
    - <b>darkimage fn</b> Loads the dark image to the detector from file fn (pedestal image). Cannot get. For Gotthard only.
 	 */
-    descrToFuncMap[i].m_pFuncName = "darkimage"; //
+    descrToFuncMap[i].m_pFuncName = "darkimage";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdImage;
     ++i;
 
     /*! \page data
    - <b>gainimage fn</b> Loads the gain image to the detector from file fn (gain map for translation into number of photons of an analog detector). Cannot get. For Gotthard only.
 	 */
-    descrToFuncMap[i].m_pFuncName = "gainimage"; //
+    descrToFuncMap[i].m_pFuncName = "gainimage";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdImage;
     ++i;
 
@@ -856,13 +856,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page settings
    - <b>settingsdir [dir]</b> Sets/gets the directory where the settings files are located. \c Returns \c (string) dir
 	 */
-    descrToFuncMap[i].m_pFuncName = "settingsdir"; //OK
+    descrToFuncMap[i].m_pFuncName = "settingsdir";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettingsDir;
     ++i;
     /*! \page settings
    - <b>trimdir [dir]</b> obsolete \c settingsdir. \c Returns \c (string) dir
 	 */
-    descrToFuncMap[i].m_pFuncName = "trimdir"; //OK
+    descrToFuncMap[i].m_pFuncName = "trimdir";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettingsDir;
     ++i;
 
@@ -884,35 +884,35 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    \c lownoise, \c dynamichg0, \c fixgain1, \c fixgain2, \c forceswitchg1, \c forceswitchg2.
    \n In Eiger, only sets in client shared memory. Use \c threshold or \c thresholdnotb to pass to detector. Gets from detector.  \c Returns \c (string) s
 	 */
-    descrToFuncMap[i].m_pFuncName = "settings"; //
+    descrToFuncMap[i].m_pFuncName = "settings";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
     ++i;
 
     /*! \page settings
    - <b>threshold [eV] [sett] </b> sets/gets the detector threshold in eV. sett is optional and if provided also sets the settings. Use this for Eiger instead of \c settings. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "threshold"; //
+    descrToFuncMap[i].m_pFuncName = "threshold";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
     ++i;
 
     /*! \page settings
    - <b>thresholdnotb [eV] [sett] </b> sets/gets the detector threshold in eV without loading trimbits. sett is optional and if provided also sets the settings. Use this for Eiger instead of \c settings. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "thresholdnotb"; //
+    descrToFuncMap[i].m_pFuncName = "thresholdnotb";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
     ++i;
 
     /*! \page settings
    - <b>trimbits [fname] </b> loads/stores the trimbits to/from the detector. If no extension is specified, the serial number of each module will be attached. \c Returns \c (string) fname
 	 */
-    descrToFuncMap[i].m_pFuncName = "trimbits"; //
+    descrToFuncMap[i].m_pFuncName = "trimbits";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
     ++i;
 
     /*! \page settings
    - <b>trimval [i]</b> sets all trimbits to i. Used in EIGER only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "trimval"; //
+    descrToFuncMap[i].m_pFuncName = "trimval";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
     ++i;
 
@@ -925,383 +925,383 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page settings
    - <b>vthreshold [i] [mv]</b> Sets/gets detector threshold voltage for single photon counters. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vthreshold"; //
+    descrToFuncMap[i].m_pFuncName = "vthreshold";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcalibration [i] [mv]</b> Sets/gets the voltage of the calibration pulses. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcalibration"; //
+    descrToFuncMap[i].m_pFuncName = "vcalibration";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vtrimbit [i] [mv]</b> Sets/gets the voltage to set the width of the trimbits. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vtrimbit"; //
+    descrToFuncMap[i].m_pFuncName = "vtrimbit";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vpreamp [i] [mv]</b> Sets/gets the voltage to define the preamplifier feedback resistance. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vpreamp"; //
+    descrToFuncMap[i].m_pFuncName = "vpreamp";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vhaper1 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the first shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vshaper1"; //
+    descrToFuncMap[i].m_pFuncName = "vshaper1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vshaper2 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the second shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vshaper2"; //
+    descrToFuncMap[i].m_pFuncName = "vshaper2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vhighvoltage [i]</b> Sets/gets the high voltage to the sensor in V. \c Returns \c (int ["mV"]).
 	 */
-    descrToFuncMap[i].m_pFuncName = "vhighvoltage"; //
+    descrToFuncMap[i].m_pFuncName = "vhighvoltage";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vapower [i]</b> Sets/gets the analog power supply for the old chiptest board in DAC units. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vapower"; //
+    descrToFuncMap[i].m_pFuncName = "vapower";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vddpower [i]</b> Sets/gets the digital power supply for the old chiptest board in DAC units. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vddpower"; //
+    descrToFuncMap[i].m_pFuncName = "vddpower";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vshpower [i]</b> Sets/gets the comparator power supply for the old chiptest board in DAC units. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vshpower"; //
+    descrToFuncMap[i].m_pFuncName = "vshpower";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>viopower [i]</b> Sets/gets the power supply of the FPGA I/Os for the old chiptest board in DAC units. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "viopower"; //
+    descrToFuncMap[i].m_pFuncName = "viopower";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vrefds [i] [mv]</b> Sets/gets vrefds. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vref_ds"; //
+    descrToFuncMap[i].m_pFuncName = "vref_ds";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcascn_pb [i] [mv]</b> Sets/gets vcascn_pb. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcascn_pb"; //
+    descrToFuncMap[i].m_pFuncName = "vcascn_pb";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcasc_pb [i] [mv]</b> Sets/gets vcasc_pb. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcascp_pb"; //
+    descrToFuncMap[i].m_pFuncName = "vcascp_pb";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vout_cm [i] [mv]</b> Sets/gets vout_cm. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vout_cm"; //
+    descrToFuncMap[i].m_pFuncName = "vout_cm";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcasc_out [i] [mv]</b> Sets/gets vcasc_out. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcasc_out"; //
+    descrToFuncMap[i].m_pFuncName = "vcasc_out";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vin_com [i] [mv]</b> Sets/gets vin_com. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vin_cm"; //
+    descrToFuncMap[i].m_pFuncName = "vin_cm";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vref_comp [i] [mv]</b> Sets/gets vref_comp. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vref_comp"; //
+    descrToFuncMap[i].m_pFuncName = "vref_comp";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>ib_test_c [i] [mv]</b> Sets/gets ib_test_c. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "ib_test_c"; //
+    descrToFuncMap[i].m_pFuncName = "ib_test_c";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vsvp [i] [mv]</b> Sets/gets vsvp. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vsvp"; //
+    descrToFuncMap[i].m_pFuncName = "vsvp";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vsvn [i] [mv]</b> Sets/gets vsvn. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vsvn"; //
+    descrToFuncMap[i].m_pFuncName = "vsvn";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vtr [i] [mv]</b> Sets/gets vtr. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vtr"; //
+    descrToFuncMap[i].m_pFuncName = "vtr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vrf [i] [mv]</b> Sets/gets vrf. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vrf"; //
+    descrToFuncMap[i].m_pFuncName = "vrf";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vrs [i] [mv]</b> Sets/gets vrs. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vrs"; //
+    descrToFuncMap[i].m_pFuncName = "vrs";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vtgstv [i] [mv]</b> Sets/gets vtgstv. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vtgstv"; //
+    descrToFuncMap[i].m_pFuncName = "vtgstv";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcmp_ll [i] [mv]</b> Sets/gets vcmp_ll. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcmp_ll"; //
+    descrToFuncMap[i].m_pFuncName = "vcmp_ll";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcmp_lr [i] [mv]</b> Sets/gets vcmp_lr. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcmp_lr"; //
+    descrToFuncMap[i].m_pFuncName = "vcmp_lr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcal_l [i] [mv]</b> Sets/gets vcal_l. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcall"; //
+    descrToFuncMap[i].m_pFuncName = "vcall";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcomp_rl [i] [mv]</b> Sets/gets vcomp_rl. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcmp_rl"; //
+    descrToFuncMap[i].m_pFuncName = "vcmp_rl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcomp_rr [i] [mv]</b> Sets/gets vcomp_rr. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcmp_rr"; //
+    descrToFuncMap[i].m_pFuncName = "vcmp_rr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>rxb_rb [i] [mv]</b> Sets/gets rxb_rb. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "rxb_rb"; //
+    descrToFuncMap[i].m_pFuncName = "rxb_rb";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>rxb_lb [i] [mv]</b> Sets/gets rxb_lb. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "rxb_lb"; //
+    descrToFuncMap[i].m_pFuncName = "rxb_lb";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcp [i] [mv]</b> Sets/gets vcp. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcp"; //
+    descrToFuncMap[i].m_pFuncName = "vcp";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vcn [i] [mv]</b> Sets/gets vcn. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vcn"; //
+    descrToFuncMap[i].m_pFuncName = "vcn";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>vis [i] [mv]</b> Sets/gets vis. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "vis"; //
+    descrToFuncMap[i].m_pFuncName = "vis";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>iodelay [i] [mv]</b> Sets/gets iodelay. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "iodelay"; //
+    descrToFuncMap[i].m_pFuncName = "iodelay";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>dac:j [i] [mv]</b> Sets/gets value for DAC number j for the new chiptestboard. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "dac"; //
+    descrToFuncMap[i].m_pFuncName = "dac";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>adcvpp [i] </b> Sets/gets the Vpp of the ADC  0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V . \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "adcvpp"; //
+    descrToFuncMap[i].m_pFuncName = "adcvpp";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>v_a [i] mv</b> Sets/gets value for Va on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "v_a"; //
+    descrToFuncMap[i].m_pFuncName = "v_a";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>v_b [i] mv</b> Sets/gets value for Vb on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "v_b"; //
+    descrToFuncMap[i].m_pFuncName = "v_b";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>v_c [i] mv</b> Sets/gets value for Vc on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "v_c"; //
+    descrToFuncMap[i].m_pFuncName = "v_c";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>v_d [i] mv</b> Sets/gets value for Vd on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "v_d"; //
+    descrToFuncMap[i].m_pFuncName = "v_d";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>v_io [i] mv</b> Sets/gets value for Vio on the new chiptest board. Must be in mV. It should be minimum 1200 mV and must be the first power regulator to be set after server start up (fpga reset). To change again, reset fpga first. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "v_io"; //
+    descrToFuncMap[i].m_pFuncName = "v_io";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>v_chip [i] mv</b> Sets/gets value for Vchip on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"]). Do NOT use it, unless you are completely sure you won't fry the board!
 	 */
-    descrToFuncMap[i].m_pFuncName = "v_chip"; //
+    descrToFuncMap[i].m_pFuncName = "v_chip";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>v_limit [i] mv</b> Sets/gets a soft limit for the power supplies and the DACs on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "v_limit"; //
+    descrToFuncMap[i].m_pFuncName = "v_limit";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /* MYTHEN 3.01  
 	all values are in DACu */
 
-    descrToFuncMap[i].m_pFuncName = "vIpre"; //
+    descrToFuncMap[i].m_pFuncName = "vIpre";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "VcdSh"; //
+    descrToFuncMap[i].m_pFuncName = "VcdSh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>Vth1</b> Sets/gets first detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "Vth1"; //
+    descrToFuncMap[i].m_pFuncName = "Vth1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>Vth1</b> Sets/gets second detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "Vth2"; //
+    descrToFuncMap[i].m_pFuncName = "Vth2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>Vth1</b> Sets/gets third detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "Vth3"; //
+    descrToFuncMap[i].m_pFuncName = "Vth3";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "VPL"; // baseline for analog pulsing
+    descrToFuncMap[i].m_pFuncName = "VPL";  //baseline for analog pulsing
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "Vtrim"; //
+    descrToFuncMap[i].m_pFuncName = "Vtrim";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIbias"; //
+    descrToFuncMap[i].m_pFuncName = "vIbias";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIinSh"; //
+    descrToFuncMap[i].m_pFuncName = "vIinSh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "cas"; //
+    descrToFuncMap[i].m_pFuncName = "cas";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "casSh"; //
+    descrToFuncMap[i].m_pFuncName = "casSh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIbiasSh"; //
+    descrToFuncMap[i].m_pFuncName = "vIbiasSh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIcin"; //
+    descrToFuncMap[i].m_pFuncName = "vIcin";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIpreOut"; //
+    descrToFuncMap[i].m_pFuncName = "vIpreOut";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
@@ -1314,140 +1314,140 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page settings
    - <b>temp_adc</b> Gets the ADC temperature. \c Returns \c EIGER,JUNGFRAU(double"°C") Others \c (int"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_adc"; //
+    descrToFuncMap[i].m_pFuncName = "temp_adc";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>temp_fpga</b> Gets the FPGA temperature. \c Returns \c EIGER,JUNGFRAU(double"°C") Others \c (int"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_fpga"; //
+    descrToFuncMap[i].m_pFuncName = "temp_fpga";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>temp_fpgaext</b> Gets the external FPGA temperature. Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_fpgaext"; //
+    descrToFuncMap[i].m_pFuncName = "temp_fpgaext";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>temp_10ge</b> Gets the 10Gbe temperature. Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_10ge"; //
+    descrToFuncMap[i].m_pFuncName = "temp_10ge";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>temp_dcdc</b> Gets the temperature of the DC/DC converter. Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_dcdc"; //
+    descrToFuncMap[i].m_pFuncName = "temp_dcdc";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>temp_sodl</b> Gets the temperature of the left so-dimm memory . Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_sodl"; //
+    descrToFuncMap[i].m_pFuncName = "temp_sodl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>temp_sodr</b> Gets the temperature of the right so-dimm memory. Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_sodr"; //
+    descrToFuncMap[i].m_pFuncName = "temp_sodr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>adc:j</b> Gets the values of the slow ADC number j for the new chiptest board. \c Returns \c (int"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "adc"; //
+    descrToFuncMap[i].m_pFuncName = "adc";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>temp_fpgal</b> Gets the temperature of the left frontend FPGA. Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_fpgafl"; //
+    descrToFuncMap[i].m_pFuncName = "temp_fpgafl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>temp_fpgar</b> Gets the temperature of the right frontend FPGA. Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
-    descrToFuncMap[i].m_pFuncName = "temp_fpgafr"; //
+    descrToFuncMap[i].m_pFuncName = "temp_fpgafr";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>i_a</b> Gets the current of the power supply a on the new chiptest board. \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "i_a"; //
+    descrToFuncMap[i].m_pFuncName = "i_a";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>i_b</b> Gets the current of the power supply b on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "i_b"; //
+    descrToFuncMap[i].m_pFuncName = "i_b";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>i_c</b> Gets the current of the power supply c on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "i_c"; //
+    descrToFuncMap[i].m_pFuncName = "i_c";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>i_d</b> Gets the current of the power supply d on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "i_d"; //
+    descrToFuncMap[i].m_pFuncName = "i_d";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>i_io</b> Gets the current of the power supply io on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "i_io"; //
+    descrToFuncMap[i].m_pFuncName = "i_io";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>vm_a</b> Gets the measured voltage of the power supply a on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "vm_a"; //
+    descrToFuncMap[i].m_pFuncName = "vm_a";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>vm_b</b> Gets the measured voltage of the power supply b on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "vm_b"; //
+    descrToFuncMap[i].m_pFuncName = "vm_b";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>vm_c</b> Gets the measured voltage of the power supply c on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "vm_c"; //
+    descrToFuncMap[i].m_pFuncName = "vm_c";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>vm_d</b> Gets the measured voltage of the power supply d on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "vm_d"; //
+    descrToFuncMap[i].m_pFuncName = "vm_d";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
     /*! \page settings
    - <b>vm_io</b> Gets the measured voltage of the power supply io on the new chiptest board \c Returns \c (int"mV")
 	 */
-    descrToFuncMap[i].m_pFuncName = "vm_io"; //
+    descrToFuncMap[i].m_pFuncName = "vm_io";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
@@ -1460,21 +1460,21 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page settings
    - <b>temp_threshold</b> Sets/gets the threshold temperature. JUNGFRAU ONLY. \c Returns \c (double"°C")
      */
-    descrToFuncMap[i].m_pFuncName = "temp_threshold"; //
+    descrToFuncMap[i].m_pFuncName = "temp_threshold";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTempControl;
     ++i;
 
     /*! \page settings
    - <b>temp_control</b> Enables/Disables the temperature control. 1 enables, 0 disables.  JUNGFRAU ONLY. \c Returns \c int
      */
-    descrToFuncMap[i].m_pFuncName = "temp_control"; //
+    descrToFuncMap[i].m_pFuncName = "temp_control";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTempControl;
     ++i;
 
     /*! \page settings
    - <b>temp_event</b> Resets/gets over-temperative event. Put only with option 0 to clear event. Gets 1 if temperature went over threshold and control is enabled, else 0. /Disables the temperature control.  JUNGFRAU ONLY. \c Returns \c int
      */
-    descrToFuncMap[i].m_pFuncName = "temp_event"; //
+    descrToFuncMap[i].m_pFuncName = "temp_event";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTempControl;
     ++i;
 
@@ -1487,42 +1487,42 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page output
    - <b>outdir [dir]</b> Sets/gets the file output directory. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "outdir"; //OK
+    descrToFuncMap[i].m_pFuncName = "outdir";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOutDir;
     ++i;
 
     /*! \page output
    - <b>fname [fn]</b> Sets/gets the root of the output file name \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "fname"; //OK
+    descrToFuncMap[i].m_pFuncName = "fname";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
     ++i;
 
     /*! \page output
    - <b>index [i]</b> Sets/gets the current file index. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "index"; //OK
+    descrToFuncMap[i].m_pFuncName = "index";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileIndex;
     ++i;
 
     /*! \page output
    - <b>enablefwrite [i]</b> Enables/disables file writing. 1 enables, 0 disables. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "enablefwrite"; //
+    descrToFuncMap[i].m_pFuncName = "enablefwrite";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdEnablefwrite;
     ++i;
 
     /*! \page output
     - <b>overwrite [i]</b> enables(1) /disables(0) file overwriting. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "overwrite"; //
+    descrToFuncMap[i].m_pFuncName = "overwrite";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOverwrite;
     ++i;
 
     /*! \page output
     - <b>fileformat</b> sets/gets the file format for data in receiver. Options: [ascii, binary, hdf5]. Ascii is not implemented in Receiver. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "fileformat"; //OK
+    descrToFuncMap[i].m_pFuncName = "fileformat";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
     ++i;
 
@@ -1532,167 +1532,210 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     Commands to setup the network between client, detector and receiver
     - <b>rx_hostname [s]</b> sets/gets the receiver hostname or IP address, configures detector mac with all network parameters and updates receiver with acquisition parameters. Normally used for single detectors (Can be multi-detector). \c none disables. If used, use as last network command in configuring detector MAC. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_hostname"; //
+    descrToFuncMap[i].m_pFuncName = "rx_hostname";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
+
     /*! \page network
    - <b>rx_udpip [ip]</b> sets/gets the ip address of the receiver UDP interface where the data from the detector will be streamed to. Normally used for single detectors (Can be multi-detector). Used if different from eth0. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_udpip"; //
+    descrToFuncMap[i].m_pFuncName = "rx_udpip";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>rx_udpip2 [ip]</b> sets/gets the ip address of the second receiver UDP interface where the data from the bottom half module of the detector will be streamed to. Normally used for single detectors (Can be multi-detector). Used if different from eth0. JUNGFRAU only. \c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "rx_udpip2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>rx_udpmac [mac]</b> sets/gets the mac address of the receiver UDP interface where the data from the detector will be streamed to. Normally used for single detectors (Can be multi-detector). \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_udpmac"; //
+    descrToFuncMap[i].m_pFuncName = "rx_udpmac";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>rx_udpmac2 [mac]</b> sets/gets the mac address of the second receiver UDP interface where the data from the bottom half module of the detector will be streamed to. Normally used for single detectors (Can be multi-detector). JUNGFRAU only.\c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "rx_udpmac2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>rx_udpport [port]</b> sets/gets the port of the receiver UDP interface where the data from the detector will be streamed to. Use single-detector command. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_udpport"; //
+    descrToFuncMap[i].m_pFuncName = "rx_udpport";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
-   - <b>rx_udpport2 [port]</b> sets/gets the second port of the receiver UDP interface where the data from the second half of the detector will be streamed to. Use single-detector command. Used for EIGER only. \c Returns \c (int)
+   - <b>rx_udpport2 [port]</b> sets/gets the second port of the receiver UDP interface where the data from the second half of the detector will be streamed to. Use single-detector command. Used for EIGERand JUNGFRAU only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_udpport2"; //
+    descrToFuncMap[i].m_pFuncName = "rx_udpport2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>rx_udpsocksize [size]</b> sets/gets the UDP socket buffer size. Already trying to set by default to 100mb, 2gb for Jungfrau. Does not remember in client shared memory, so must be initialized each time after setting receiver hostname in config file.\c Returns \c (int)
      */
-    descrToFuncMap[i].m_pFuncName = "rx_udpsocksize"; //
+    descrToFuncMap[i].m_pFuncName = "rx_udpsocksize";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>rx_realudpsocksize [size]</b> gets the actual UDP socket buffer size. Usually double the set udp socket buffer size due to kernel bookkeeping. Get only. \c Returns \c (int)
      */
-    descrToFuncMap[i].m_pFuncName = "rx_realudpsocksize"; //
+    descrToFuncMap[i].m_pFuncName = "rx_realudpsocksize";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>detectormac [mac]</b> sets/gets the mac address of the detector UDP interface from where the detector will stream data. Use single-detector command. Normally unused. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "detectormac"; //
+    descrToFuncMap[i].m_pFuncName = "detectormac";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
-   - <b>detectorip [ip]</b> sets/gets the ip address of the detector UDP interface from where the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip (if rx_udpip specified). \c Returns \c (string)
+   - <b>detectormac2 [mac]</b> sets/gets the mac address of the second half of the detector UDP interface from where the bottom half module of the detector will stream data. Use single-detector command. Normally unused. JUNGFRAU only. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "detectorip"; //
+    descrToFuncMap[i].m_pFuncName = "detectormac2";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>detectorip [ip]</b> sets/gets the ip address of the detector UDP interface from where the bottom half of the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip (if rx_udpip specified). \c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "detectorip";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>detectorip2 [ip]</b> sets/gets the ip address of the second half of the detector UDP interface from where the bottom half of the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip2 (if rx_udpip2 specified). JUNGFRAU only. \c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "detectorip2";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>numinterfaces [n]</b> sets/gets the number of interfaces used to stream out from the detector. Options: 1, 2. JUNGFRAU only. \c Returns \c (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "numinterfaces";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
+    ++i;
+
+    /*! \page network
+   - <b>selinterface [n]</b> sets/gets the 1st or the 2nd interface to use to stream data out of the detector. Options: 1, 2. Effective only when \c numinterfaces is 1. JUNGFRAU only. \c Returns \c (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "selinterface";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>txndelay_left [delay]</b> sets/gets the transmission delay of first packet in an image being streamed out from the detector's left UDP port. Use single-detector command. Used for EIGER only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "txndelay_left"; //
+    descrToFuncMap[i].m_pFuncName = "txndelay_left";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>txndelay_right [delay]</b> sets/gets the transmission delay of first packet in an image being streamed out from the detector's right UDP port. Use single-detector command. Used for EIGER only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "txndelay_right"; //
+    descrToFuncMap[i].m_pFuncName = "txndelay_right";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
-   - <b>txndelay_frame [delay]</b> sets/gets the transmission frame period of entire frame being streamed out from the detector for both ports. Use single-detector command. Used for EIGER only. \c Returns \c (int)
+   - <b>txndelay_frame [delay]</b> sets/gets the transmission frame period of entire frame being streamed out from the detector for both ports. Use single-detector command. Used for EIGER and JUNGFRAU only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "txndelay_frame"; //
+    descrToFuncMap[i].m_pFuncName = "txndelay_frame";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>flowcontrol_10g [delay]</b> Enables/disables 10 GbE flow control. 1 enables, 0 disables. Used for EIGER only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "flowcontrol_10g"; //
+    descrToFuncMap[i].m_pFuncName = "flowcontrol_10g";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. Must restart zmq client streaming in gui/external gui \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "zmqport"; //
+    descrToFuncMap[i].m_pFuncName = "zmqport";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b>rx_zmqport [port]</b> sets/gets the 0MQ (TCP) port of the receiver from where data is streamed from (eg. to GUI or another process for further processing). Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest.  put restarts streaming in receiver with new port. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_zmqport"; //
+    descrToFuncMap[i].m_pFuncName = "rx_zmqport";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
    - <b> rx_datastream </b>enables/disables data streaming from receiver. 1 enables 0MQ data stream from receiver (creates streamer threads), while 0 disables (destroys streamer threads). Switching to Gui enables data streaming in receiver and switching back to command line acquire will require disabling data streaming in receiver for fast applications \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_datastream"; //
+    descrToFuncMap[i].m_pFuncName = "rx_datastream";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDataStream;
     ++i;
 
     /*! \page network
    - <b>zmqip [ip]</b> sets/gets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). For Experts only! Default is ip of rx_hostname and works for GUI. This command to change from default can be used from command line when sockets are not already open as the command line is not aware/create the 0mq sockets in the client side. This is usually used to stream in from an external process. . If no custom ip, empty until first time connect to receiver. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "zmqip"; //
+    descrToFuncMap[i].m_pFuncName = "zmqip";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     i++;
 
     /*! \page network
    - <b>rx_zmqip [ip]</b> sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from (eg. to GUI or another process for further processing). For Experts only! Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing. . If no custom ip, empty until first time connect to receiver. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_zmqip"; //
+    descrToFuncMap[i].m_pFuncName = "rx_zmqip";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     i++;
 
     /*! \page network
    - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). This command is already included in \c rx_hsotname. Only put!. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "configuremac"; //
+    descrToFuncMap[i].m_pFuncName = "configuremac";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfigureMac;
     ++i;
 
     /*! \page network
    - <b>rx_tcpport [port]</b> sets/gets the port of the client-receiver TCP interface. Use single-detector command. Is different for each detector if same \c rx_hostname used. Must be first command to communicate with receiver. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_tcpport"; //
+    descrToFuncMap[i].m_pFuncName = "rx_tcpport";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPort;
     ++i;
 
     /*! \page network
    - <b>port [port]</b> sets/gets the port of the client-detector control server TCP interface. Use single-detector command. Default value is 1952 for all detectors. Normally not changed. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "port"; //
+    descrToFuncMap[i].m_pFuncName = "port";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPort;
     ++i;
 
     /*! \page network
    - <b>stopport [port]</b> sets/gets the port of the client-detector stop server TCP interface. Use single-detector command. Default value is 1953 for all detectors. Normally not changed. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "stopport"; //
+    descrToFuncMap[i].m_pFuncName = "stopport";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPort;
     ++i;
 
     /*! \page network
    - <b>lock [i]</b> Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "lock"; //
+    descrToFuncMap[i].m_pFuncName = "lock";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLock;
     ++i;
 
     /*! \page network
    - <b>lastclient </b> Gets the last client communicating with the detector. Cannot put!. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "lastclient"; //
+    descrToFuncMap[i].m_pFuncName = "lastclient";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLastClient;
     ++i;
 
@@ -1747,70 +1790,70 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page receiver
    - <b>r_lock [i]</b> locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_lock"; //
+    descrToFuncMap[i].m_pFuncName = "r_lock";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLock;
     ++i;
 
     /*! \page receiver
    - <b>r_lastclient</b> gets the last client communicating with the receiver. Only get! \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_lastclient"; //
+    descrToFuncMap[i].m_pFuncName = "r_lastclient";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLastClient;
     ++i;
 
     /*! \page receiver
    - <b>r_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms). \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_readfreq"; //
+    descrToFuncMap[i].m_pFuncName = "r_readfreq";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
    - <b>rx_fifodepth [i]</b> sets/gets receiver fifo (between Listener and Writer Threads) depth to i number of frames. Can improve listener packet loss (loss due to packet processing time in Listener threads), not if limited by writing. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "rx_fifodepth"; //
+    descrToFuncMap[i].m_pFuncName = "rx_fifodepth";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
    - <b>r_silent [i]</b> sets/gets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_silent"; //
+    descrToFuncMap[i].m_pFuncName = "r_silent";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
     - <b>r_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_framesperfile"; //OK
+    descrToFuncMap[i].m_pFuncName = "r_framesperfile";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
     - <b>r_discardpolicy</b> sets/gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_discardpolicy"; //OK
+    descrToFuncMap[i].m_pFuncName = "r_discardpolicy";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
     - <b>r_padding</b> sets/gets the frame padding in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_padding"; //OK
+    descrToFuncMap[i].m_pFuncName = "r_padding";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
     - <b>rx_jsonaddheader [t]</b> sets/gets additional json header to be streamed out with the zmq from receiver. Default is empty. \c t must be in the format "\"label1\":\"value1\",\"label2\":\"value2\"" etc. Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
      */
-    descrToFuncMap[i].m_pFuncName = "rx_jsonaddheader"; //
+    descrToFuncMap[i].m_pFuncName = "rx_jsonaddheader";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     i++;
 
     /*! \page receiver
     - <b>rx_jsonpara [k] [v]</b> sets/gets  value v for additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
      */
-    descrToFuncMap[i].m_pFuncName = "rx_jsonpara"; //
+    descrToFuncMap[i].m_pFuncName = "rx_jsonpara";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     i++;
 
@@ -1824,182 +1867,182 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /*! \page prototype
   - <b>emin [i] </b> Sets/gets detector minimum energy threshold for Moench (soft setting in processor)
      */
-    descrToFuncMap[i].m_pFuncName = "emin"; //
+    descrToFuncMap[i].m_pFuncName = "emin";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
 
     /*! \page prototype
   - <b>emax [i] </b> Sets/gets detector maximum energy threshold for Moench (soft setting in processor)
      */
-    descrToFuncMap[i].m_pFuncName = "emax"; //
+    descrToFuncMap[i].m_pFuncName = "emax";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
 
     /*! \page prototype
   - <b>framemode [i] </b> Sets/gets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield
      */
-    descrToFuncMap[i].m_pFuncName = "framemode"; //
+    descrToFuncMap[i].m_pFuncName = "framemode";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
 
     /*! \page prototype
   - <b>detectormode [i] </b> Sets/gets detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog
      */
-    descrToFuncMap[i].m_pFuncName = "detectormode"; //
+    descrToFuncMap[i].m_pFuncName = "detectormode";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
 
     /*! \page prototype
    - <b>adcinvert [mask]</b> Sets/gets ADC inversion mask (8 digits hex format)
 	 */
-    descrToFuncMap[i].m_pFuncName = "adcinvert"; //
+    descrToFuncMap[i].m_pFuncName = "adcinvert";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>adcdisable [mask]</b> Sets/gets ADC disable mask (8 digits hex format)
 	 */
-    descrToFuncMap[i].m_pFuncName = "adcdisable"; //
+    descrToFuncMap[i].m_pFuncName = "adcdisable";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>pattern fn</b> loads binary pattern file fn
 	 */
-    descrToFuncMap[i].m_pFuncName = "pattern"; //
+    descrToFuncMap[i].m_pFuncName = "pattern";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patword addr [word]</b> sets/gets 64 bit word at address addr of pattern memory. Both address and word in hex format. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "patword"; //
+    descrToFuncMap[i].m_pFuncName = "patword";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patioctrl [word]</b> sets/gets 64 bit mask defining input (0) and output (1) signals. hex format.
 	 */
-    descrToFuncMap[i].m_pFuncName = "patioctrl"; //
+    descrToFuncMap[i].m_pFuncName = "patioctrl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patclkctrl [word]</b> sets/gets 64 bit mask defining if output signal is a clock and runs. hex format. Unused at the moment.
 	 */
-    descrToFuncMap[i].m_pFuncName = "patclkctrl"; //
+    descrToFuncMap[i].m_pFuncName = "patclkctrl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patlimits [addr1 addr2]</b> sets/gets the start and stop limits of the pattern to be executed. hex format. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "patlimits"; //
+    descrToFuncMap[i].m_pFuncName = "patlimits";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patloop0 [addr1 addr2]</b> sets/gets the start and stop limits of the level 0 loop. hex format. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "patloop0"; //
+    descrToFuncMap[i].m_pFuncName = "patloop0";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patnloop0 [n]</b> sets/gets the number of cyclesof the  level 0 loop (int).
 	 */
-    descrToFuncMap[i].m_pFuncName = "patnloop0"; //
+    descrToFuncMap[i].m_pFuncName = "patnloop0";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patwait0 [addr]</b> sets/gets the address of the level 0 wait point. hex format. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "patwait0"; //
+    descrToFuncMap[i].m_pFuncName = "patwait0";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patwaittime0 [n]</b> sets/gets the duration of the witing of the 0 waiting point in clock cycles (int).
 	 */
-    descrToFuncMap[i].m_pFuncName = "patwaittime0"; //
+    descrToFuncMap[i].m_pFuncName = "patwaittime0";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patloop1 [addr1 addr2]</b> sets/gets the start and stop limits of the level 1 loop. hex format. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "patloop1"; //
+    descrToFuncMap[i].m_pFuncName = "patloop1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patnloop1 [n]</b> sets/gets the number of cyclesof the  level 1 loop (int).
 	 */
-    descrToFuncMap[i].m_pFuncName = "patnloop1"; //
+    descrToFuncMap[i].m_pFuncName = "patnloop1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patwait1 [addr]</b> sets/gets the address of the level 1 wait point. hex format. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "patwait1"; //
+    descrToFuncMap[i].m_pFuncName = "patwait1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patwaittime1 [n]</b> sets/gets the duration of the witing of the 1 waiting point in clock cycles (int).
 	 */
-    descrToFuncMap[i].m_pFuncName = "patwaittime1"; //
+    descrToFuncMap[i].m_pFuncName = "patwaittime1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patloop2 [addr1 addr2]</b> sets/gets the start and stop limits of the level 2 loop. hex format. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "patloop2"; //
+    descrToFuncMap[i].m_pFuncName = "patloop2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patnloop2 [n]</b> sets/gets the number of cyclesof the  level 2 loop (int).
 	 */
-    descrToFuncMap[i].m_pFuncName = "patnloop2"; //
+    descrToFuncMap[i].m_pFuncName = "patnloop2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patwait2 [addr]</b> sets/gets the address of the level 2 wait point. hex format. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "patwait2"; //
+    descrToFuncMap[i].m_pFuncName = "patwait2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patwaittime2 [n]</b> sets/gets the duration of the waiting of the 2 waiting point in clock cycles (int).
 	 */
-    descrToFuncMap[i].m_pFuncName = "patwaittime2"; //
+    descrToFuncMap[i].m_pFuncName = "patwaittime2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patmask [m]</b> sets/gets the 64 bit mask (hex) applied to every pattern. Only the bits from \c patsetbit are selected to mask for the corresponding bit value from \c m mask. Returns \c (uint64_t).
 	 */
-    descrToFuncMap[i].m_pFuncName = "patmask"; //
+    descrToFuncMap[i].m_pFuncName = "patmask";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>patsetbit [m]</b> selects/gets the 64 bits  (hex) that the patmask will be applied to every pattern. Only the bits from \c m mask are selected to mask for the corresponding bit value from \c patmask. Returns \c (uint64_t).
 	 */
-    descrToFuncMap[i].m_pFuncName = "patsetbit"; //
+    descrToFuncMap[i].m_pFuncName = "patsetbit";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
     /*! \page prototype
    - <b>dut_clk [i]</b> sets/gets the signal to be used as a clock for the digital data coming from the device under test. Advanced!
 	 */
-    descrToFuncMap[i].m_pFuncName = "dut_clk"; //
+    descrToFuncMap[i].m_pFuncName = "dut_clk";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
@@ -2789,11 +2832,21 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
     		  myDet->setDetectorMAC(args[1], detPos);
     	  }
     	  return myDet->getDetectorMAC(detPos);
+    } else if (cmd == "detectormac2") {
+    	if (action == PUT_ACTION) {
+    		myDet->setDetectorMAC2(args[1], detPos);
+    	}
+    	return myDet->getDetectorMAC2(detPos);
     } else if (cmd == "detectorip") {
-  	  if (action == PUT_ACTION) {
-  		myDet->setDetectorIP(args[1], detPos);
-  	  }
-  	  return myDet->getDetectorIP(detPos);
+    	if (action == PUT_ACTION) {
+    		myDet->setDetectorIP(args[1], detPos);
+    	}
+    	return myDet->getDetectorIP(detPos);
+    } else if (cmd == "detectorip2") {
+    	if (action == PUT_ACTION) {
+    		myDet->setDetectorIP2(args[1], detPos);
+    	}
+    	return myDet->getDetectorIP2(detPos);
     } else if (cmd == "rx_hostname") {
     	  if (action == PUT_ACTION) {
     		  myDet->setReceiverHostname(args[1], detPos);
@@ -2804,9 +2857,19 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
     		  myDet->setReceiverUDPIP(args[1], detPos);
     	  }
     	  return myDet->getReceiverUDPIP(detPos);
+    } else if (cmd == "rx_udpip2") {
+    	if (action == PUT_ACTION) {
+    		myDet->setReceiverUDPIP2(args[1], detPos);
+    	}
+    	return myDet->getReceiverUDPIP(detPos);
     } else if (cmd == "rx_udpmac") {
-    	  if (action == PUT_ACTION) {
+    	if (action == PUT_ACTION) {
     		  myDet->setReceiverUDPMAC(args[1], detPos);
+    	  }
+    	  return myDet->getReceiverUDPMAC(detPos);
+    } else if (cmd == "rx_udpmac2") {
+    	if (action == PUT_ACTION) {
+    		  myDet->setReceiverUDPMAC2(args[1], detPos);
     	  }
     	  return myDet->getReceiverUDPMAC(detPos);
     } else if (cmd == "rx_udpport") {
@@ -2826,6 +2889,24 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
             myDet->setReceiverUDPPort2(i, detPos);
         }
         sprintf(ans, "%d", myDet->getReceiverUDPPort2(detPos));
+        return ans;
+    }  else if (cmd == "numinterfaces") {
+        if (action == PUT_ACTION) {
+            if (!(sscanf(args[1], "%d", &i))) {
+                return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->setNumberofUDPInterfaces(i, detPos);
+        }
+        sprintf(ans, "%d", myDet->getNumberofUDPInterfaces(detPos));
+        return ans;
+    }  else if (cmd == "selinterface") {
+        if (action == PUT_ACTION) {
+            if (!(sscanf(args[1], "%d", &i))) {
+                return ("cannot parse argument") + std::string(args[1]);
+            }
+            myDet->selectUDPInterface(i, detPos);
+        }
+        sprintf(ans, "%d", myDet->getSelectedUDPInterface(detPos));
         return ans;
     } else if (cmd == "rx_udpsocksize") {
         if (action == PUT_ACTION) {
@@ -2921,12 +3002,18 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "detectormac mac \n sets detector mac to mac" << std::endl;
+        os << "detectormac2 mac \n sets detector mac of 2nd udp interface to mac. Jungfrau only" << std::endl;
         os << "detectorip ip \n sets detector ip to ip" << std::endl;
+        os << "detectorip2 ip \n sets detector ip of 2nd udp interface to ip. Jungfrau only" << std::endl;
         os << "rx_hostname name \n sets receiver ip/hostname to name" << std::endl;
         os << "rx_udpip ip \n sets receiver udp ip to ip" << std::endl;
+        os << "rx_udpip2 ip \n sets receiver udp ip of 2nd udp interface to ip. Jungfrau only" << std::endl;
         os << "rx_udpmac mac \n sets receiver udp mac to mac" << std::endl;
+        os << "rx_udpmac2 mac \n sets receiver udp mac of 2nd udp interface to mac. Jungfrau only." << std::endl;
         os << "rx_udpport port \n sets receiver udp port to port" << std::endl;
-        os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger and Jungfrau, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "numinterfaces n \n sets the number of interfaces to n used to stream out from the detector. Options: 1, 2. JUNGFRAU only. " << std::endl;
+        os << "selinterface n \n sets the 1st or the 2nd interface to use to stream data out of the detector. Options: 1, 2. Effective only when  numinterfaces is 1. JUNGFRAU only. " << std::endl;
         os << "txndelay_left port \n sets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right port \n sets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame port \n sets detector transmission delay of the entire frame" << std::endl;
@@ -2955,11 +3042,18 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "detectormac \n gets detector mac " << std::endl;
+        os << "detectormac2 \n gets detector mac of 2nd udp interface. Jungfrau only" << std::endl;
         os << "detectorip \n gets detector ip " << std::endl;
+        os << "detectorip2 \n gets detector ip of 2nd udp interface. Jungfrau only" << std::endl;
         os << "rx_hostname \n gets receiver ip " << std::endl;
         os << "rx_udpmac \n gets receiver udp mac " << std::endl;
+        os << "rx_udpmac2 \n gets receiver udp mac of 2nd udp interface. Jungfrau only" << std::endl;
+        os << "rx_udpip \n gets receiver udp mac " << std::endl;
+        os << "rx_udpip2 \n gets receiver udp mac of 2nd udp interface. Jungfrau only" << std::endl;
         os << "rx_udpport \n gets receiver udp port " << std::endl;
-        os << "rx_udpport2 \n gets receiver udp port. For Eiger, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "rx_udpport2 \n gets receiver udp port of 2nd udp interface. For Eiger and Jungfrau, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "numinterfaces \n gets the number of interfaces to n used to stream out from the detector. Options: 1, 2. JUNGFRAU only. " << std::endl;
+        os << "selinterface \n gets the interface selected to use to stream data out of the detector. Options: 1, 2. Effective only when numinterfaces is 1. JUNGFRAU only. " << std::endl;
         os << "txndelay_left \n gets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right \n gets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame \n gets detector transmission delay of the entire frame" << std::endl;
@@ -4469,34 +4563,54 @@ std::string slsDetectorCommand::helpTimeLeft(int action) {
 std::string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action, int detPos) {
 
     speedVariable index;
-    int t = -1, ret;
+    int t = -1, ret = 0, mode = 0;
 
     char answer[1000];
 
     if (action == HELP_ACTION)
-        return helpSpeed(action);
+    	return helpSpeed(action);
 
-    if (cmd == "clkdivider")
-        index = CLOCK_DIVIDER;
-    else if (cmd == "phasestep") {
-        index = PHASE_SHIFT;
-        t = 100000;
-    } else if (cmd == "oversampling")
-        index = OVERSAMPLING;
-    else if (cmd == "adcclk")
-        index = ADC_CLOCK;
+    if (cmd == "clkdivider") {
+    	index = CLOCK_DIVIDER;
+    }
+    else if (cmd == "adcclk") {
+    	index = ADC_CLOCK;
+    }
+    else if (cmd == "dbitclk") {
+    	index = DBIT_CLOCK;
+    }
     else if (cmd == "adcphase") {
-        index = ADC_PHASE;
-        t = 100000;
-    } else if (cmd == "adcpipeline")
-        index = ADC_PIPELINE;
-    else if (cmd == "dbitclk")
-        index = DBIT_CLOCK;
+    	index = ADC_PHASE;
+    	if ((action == PUT_ACTION && narg > 2 && std::string(args[2]) == "deg") ||
+    			(action == GET_ACTION && narg > 1 && std::string(args[1]) == "deg")) {
+    		mode = 1;
+    	}
+    }
     else if (cmd == "dbitphase") {
-        index = DBIT_PHASE;
-        t = 100000;
-    } else if (cmd == "dbitpipeline")
-        index = DBIT_PIPELINE;
+    	index = DBIT_PHASE;
+    	if ((action == PUT_ACTION && narg > 2 && std::string(args[2]) == "deg") ||
+    			(action == GET_ACTION && narg > 1 && std::string(args[1]) == "deg")) {
+    		mode = 1;
+    	}
+    }
+    else if (cmd == "maxadcphaseshift") {
+    	index = MAX_ADC_PHASE_SHIFT;
+    	 if (action == PUT_ACTION) {
+    		 return std::string("cannot put");
+    	 }
+    }
+    else if (cmd == "maxdbitphaseshift") {
+    	index = MAX_DBIT_PHASE_SHIFT;
+   	 if (action == PUT_ACTION) {
+   		 return std::string("cannot put");
+   	 }
+    }
+    else if (cmd == "adcpipeline") {
+    	index = ADC_PIPELINE;
+    }
+    else if (cmd == "dbitpipeline") {
+    	index = DBIT_PIPELINE;
+    }
     else
         return std::string("could not decode speed variable ") + cmd;
 
@@ -4509,7 +4623,7 @@ std::string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action, int
 
     myDet->setOnline(ONLINE_FLAG, detPos);
 
-    ret = myDet->setSpeed(index, t, detPos);
+    ret = myDet->setSpeed(index, t, mode, detPos);
 
     sprintf(answer, "%d", ret);
     return std::string(answer);
@@ -4519,15 +4633,25 @@ std::string slsDetectorCommand::helpSpeed(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-
-        os << "clkdivider c  \t sets readout clock divider. For Jungfrau, it also overwrites adcphase to recommended default" << std::endl;
-        os << "adcphase  c\t Sets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
+        os << "clkdivider c  \t sets readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)].  Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard." << std::endl;
+        os << "adcclk c \tSets ADC clock frequency in MHz. CTB & Moench only. It also resets adcphase." << std::endl;
+        os << "dbitclk c \tSets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. It also resets dbit phase." << std::endl;
+        os << "adcphase c [deg]\t Sets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
+        os << "dbitphase c [deg]\t Sets the phase of the clock for latching of the digital bits to i. i is the shift or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only." << std::endl;
+        os << "adcpipeline c \t Sets the pipeline of the ADC. For CTB & Moench only." << std::endl;
+        os << "dbitpipeline c \t Sets the pipeline of the latching of the digital bits. For CTB & Moench only." << std::endl;
         os << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-
-        os << "clkdivider  \t gets readout clock divider. For Jungfrau, it also overwrites adcphase to recommended default" << std::endl;
-        os << "adcphase \t gets phase of the sampling clock. For JUNGFRAU, setting speed (clkdivider) overwrites adcphase to its default recommended value. (Not for EIGER)" << std::endl;
+        os << "clkdivider \t Gets readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)].  Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard." << std::endl;
+        os << "adcclk \tGets ADC clock frequency in MHz. CTB & Moench only. It also resets adcphase." << std::endl;
+        os << "dbitclk \tGets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. It also resets dbit phase." << std::endl;
+        os << "adcphase [deg]\t Gets phase of the ADC clock. unit is number of shifts or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
+        os << "dbitphase [deg]\t Gets the phase of the clock for  latching of the digital bits. unit is number of shifts or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only." << std::endl;
+        os << "adcpipeline \t Gets the pipeline of the ADC. For CTB & Moench only." << std::endl;
+        os << "dbitpipeline \t Gets the pipeline of the latching of the digital bits. For CTB & Moench only." << std::endl;
+        os << "maxadcphaseshift \t Gets maximum phase shift of the ADC clock. CTB,Moench and Jungfrau only." << std::endl;
+        os << "maxdbitphaseshift \t Gets maximum phase shift of the clock for latching of the digital bits. CTB & Moench only." << std::endl;
         os << std::endl;
     }
     return os.str();

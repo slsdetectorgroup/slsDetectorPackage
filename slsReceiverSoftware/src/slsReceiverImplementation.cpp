@@ -81,8 +81,9 @@ void slsReceiverImplementation::InitializeMembers() {
 	silentMode = false;
 
 	//***connection parameters***
-	strcpy(eth,"");
+	numUDPInterfaces = 1;
 	for(int i=0;i<MAX_NUMBER_OF_LISTENING_THREADS;i++) {
+		strcpy(eth[i], "");
 		udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
 	}
 	udpSocketBufferSize = 0;
@@ -268,7 +269,17 @@ uint32_t slsReceiverImplementation::getUDPPortNumber2() const{
 
 std::string slsReceiverImplementation::getEthernetInterface() const{
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-	return std::string(eth);
+	return std::string(eth[0]);
+}
+
+std::string slsReceiverImplementation::getEthernetInterface2() const{
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	return std::string(eth[1]);
+}
+
+int slsReceiverImplementation::getNumberofUDPInterfaces() const{
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	return numUDPInterfaces;
 }
 
 
@@ -402,10 +413,14 @@ void slsReceiverImplementation::setDetectorHostname(const char *c) {
 
 void slsReceiverImplementation::setMultiDetectorSize(const int* size) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-	std::string log_message = "Detector Size: (";
+	std::string log_message = "Detector Size (ports): (";
 	for (int i = 0; i < MAX_DIMENSIONS; ++i) {
-		if (myDetectorType == EIGER && (!i))
-			numDet[i] = size[i]*2;
+		// x dir (colums) each udp port
+		if (myDetectorType == EIGER && i == X)
+			numDet[i] = size[i] * 2;
+		// y dir (rows) each udp port
+		else if (numUDPInterfaces == 2 && i == Y)
+			numDet[i] = size[i] * 2;
 		else
 			numDet[i] = size[i];
 		log_message += std::to_string(numDet[i]);
@@ -606,14 +621,118 @@ void slsReceiverImplementation::setUDPPortNumber2(const uint32_t i) {
 void slsReceiverImplementation::setEthernetInterface(const char* c) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
-	strcpy(eth, c);
-	FILE_LOG(logINFO) << "Ethernet Interface: " << eth;
+	strcpy(eth[0], c);
+	FILE_LOG(logINFO) << "Ethernet Interface: " << eth[0];
+}
+
+void slsReceiverImplementation::setEthernetInterface2(const char* c) {
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+	strcpy(eth[1], c);
+	FILE_LOG(logINFO) << "Ethernet Interface 2: " << eth[1];
+}
+
+int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+	if (numUDPInterfaces  != n) {
+
+		// reduce number of detectors in y dir (rows) if it had 2 interfaces before
+		if (numUDPInterfaces == 2)
+			numDet[Y] /= 2;
+
+		numUDPInterfaces = n;
+
+		// clear all threads and fifos
+		listener.clear();
+		dataProcessor.clear();
+		dataStreamer.clear();
+		fifo.clear();
+
+		// set local variables
+		generalData->SetNumberofInterfaces(n);
+		numThreads = generalData->threadsPerReceiver;
+		udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
+
+		// fifo
+		if (SetupFifoStructure() == FAIL)
+			return FAIL;
+
+		//create threads
+		for ( int i = 0; i < numThreads; ++i ) {
+			// listener and dataprocessor threads
+			try {
+				auto fifo_ptr = fifo[i].get();
+				listener.push_back(sls::make_unique<Listener>(i, myDetectorType, fifo_ptr, &status,
+						&udpPortNum[i], eth[i], &numberOfFrames, &dynamicRange,
+						&udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile,
+						&frameDiscardMode, &activated, &deactivatedPaddingEnable, &silentMode));
+				listener[i]->SetGeneralData(generalData);
+
+				dataProcessor.push_back(sls::make_unique<DataProcessor>(i, myDetectorType, fifo_ptr, &fileFormatType,
+						fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
+						&dynamicRange, &streamingFrequency, &streamingTimerInMs,
+						&framePadding, &activated, &deactivatedPaddingEnable, &silentMode));
+				dataProcessor[i]->SetGeneralData(generalData);
+			}
+			catch (...) {
+				FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
+				listener.clear();
+				dataProcessor.clear();
+				return FAIL;
+			}
+			// streamer threads
+			if (dataStreamEnable) {
+				try {
+
+					dataStreamer.push_back(sls::make_unique<DataStreamer>(i, fifo[i].get(), &dynamicRange,
+							&roi, &fileIndex, flippedData, additionalJsonHeader));
+					dataStreamer[i]->SetGeneralData(generalData);
+					dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP);
+
+				} catch(...) {
+					FILE_LOG(logERROR) << "Could not create datastreamer threads (index:" << i << ")";
+					if (dataStreamEnable) {
+						dataStreamer.clear();
+						dataStreamEnable = false;
+					}
+					return FAIL;
+				}
+			}
+		}
+
+		SetThreadPriorities();
+
+		// update (from 1 to 2 interface) & also for printout
+		setMultiDetectorSize(numDet);
+		// update row and column in dataprocessor
+		setDetectorPositionId(detID);
+
+		// test socket buffer size with current set up
+		if (setUDPSocketBufferSize(0) == FAIL) {
+			return FAIL;
+		}
+	}
+
+	FILE_LOG(logINFO) << "Number of Interfaces: " << numUDPInterfaces;
+	return OK;
 }
 
 int slsReceiverImplementation::setUDPSocketBufferSize(const int64_t s) {
-	if (listener.size())
-		return listener[0]->CreateDummySocketForUDPSocketBufferSize(s);
-	return FAIL;
+	int64_t size = (s == 0) ? udpSocketBufferSize : s;
+	size_t listSize = listener.size();
+
+	if (myDetectorType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
+		FILE_LOG(logERROR) << "Number of Interfaces " << numUDPInterfaces << " do not match listener size " << listSize;
+		return FAIL;
+	}
+
+	for (unsigned int i = 0; i < listSize; ++i) {
+		if (listener[i]->CreateDummySocketForUDPSocketBufferSize(size) == FAIL)
+			return FAIL;
+	}
+
+	return OK;
 }
 
 
@@ -940,7 +1059,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	    try {
 			auto fifo_ptr = fifo[i].get();
 			listener.push_back(sls::make_unique<Listener>(i, myDetectorType, fifo_ptr, &status,
-	                &udpPortNum[i], eth, &numberOfFrames, &dynamicRange,
+					&udpPortNum[i], eth[i], &numberOfFrames, &dynamicRange,
 	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile,
 					&frameDiscardMode, &activated, &deactivatedPaddingEnable, &silentMode));
 			dataProcessor.push_back(sls::make_unique<DataProcessor>(i, myDetectorType, fifo_ptr, &fileFormatType,
@@ -964,9 +1083,6 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 		it->SetGeneralData(generalData);
 	SetThreadPriorities();
 
-	// check udp socket buffer size
-	setUDPSocketBufferSize(udpSocketBufferSize);
-
 	FILE_LOG(logDEBUG) << " Detector type set to " << detectorTypeToString(d);
 	return OK;
 }
@@ -974,9 +1090,9 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 
 
 
-void slsReceiverImplementation::setDetectorPositionId(const int i) {
+void slsReceiverImplementation::setDetectorPositionId(const int id) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-	detID = i;
+	detID = id;
 	FILE_LOG(logINFO) << "Detector Position Id:" << detID;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
 		dataProcessor[i]->SetupFileWriter(fileWriteEnable, (int*)numDet,
@@ -987,7 +1103,7 @@ void slsReceiverImplementation::setDetectorPositionId(const int i) {
 
 	for (unsigned int i = 0; i < listener.size(); ++i) {
 		uint16_t row = 0, col = 0;
-		row = detID % numDet[1]; // row
+		row = (detID % numDet[1]) * ((numUDPInterfaces == 2) ? 2 : 1); // row
 		col = (detID / numDet[1])  * ((myDetectorType == EIGER) ? 2 : 1) + i; // col for horiz. udp ports
 		listener[i]->SetHardCodedPosition(row, col);
 	}
@@ -1112,6 +1228,7 @@ void slsReceiverImplementation::stopReceiver() {
 			int64_t missingpackets = numberOfFrames*generalData->packetsPerFrame-listener[i]->GetPacketsCaught();
 			TLogLevel lev = (((int64_t)missingpackets) > 0) ? logINFORED : logINFOGREEN;
 			FILE_LOG(lev) <<
+					// udp port number could be the second if selected interface is 2 for jungfrau
 					"Summary of Port " << udpPortNum[i] <<
 					"\n\tMissing Packets\t\t: " << missingpackets <<
 					"\n\tComplete Frames\t\t: " << dataProcessor[i]->GetNumFramesCaught() <<
@@ -1328,11 +1445,15 @@ void slsReceiverImplementation::ResetParametersforNewMeasurement() {
 int slsReceiverImplementation::CreateUDPSockets() {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	bool error = false;
-	for (unsigned int i = 0; i < listener.size(); ++i)
+
+	for (unsigned int i = 0; i < listener.size(); ++i) {
 		if (listener[i]->CreateUDPSockets() == FAIL) {
 			error = true;
 			break;
 		}
+	}
+
+
 	if (error) {
 		shutDownUDPSockets();
 		return FAIL;

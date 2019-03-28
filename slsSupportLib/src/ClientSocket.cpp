@@ -42,6 +42,19 @@ ClientSocket::ClientSocket(const bool isRx, const std::string &host, uint16_t po
     freeaddrinfo(result);
 }
 
+ClientSocket::ClientSocket(const bool isRx, struct sockaddr_in addr)
+    : DataSocket(socket(AF_INET, SOCK_STREAM, 0)), isReceiver(isRx) {
+
+    if (::connect(getSocketId(), (struct sockaddr *)&addr, sizeof(addr)) != 0) {
+        char address[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &addr.sin_addr, address, INET_ADDRSTRLEN);
+        const std::string name{(isReceiver ? "Receiver" : "Detector")};
+        std::string msg = "ClientSocket: Cannot connect to " + name + ":" + address + " on port " +
+                          std::to_string(addr.sin_port) + "\n";
+        throw SocketError(msg);
+    }
+}
+
 int ClientSocket::sendCommandThenRead(int fnum, void *args, size_t args_size, void *retval,
                                       size_t retval_size) {
     int ret = slsDetectorDefs::FAIL;

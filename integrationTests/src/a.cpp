@@ -11,6 +11,12 @@
 #include <iostream>
 #include <vector>
 
+#include <netdb.h>
+#include <string>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+
 #define VERBOSE
 
 using sls::RuntimeError;
@@ -21,13 +27,47 @@ using sls::DetectorError;
 int main() {
 
 
-    const std::string hostname = "beb083";
-    auto type = slsDetector::getTypeFromDetector(hostname);
-    slsDetector d(type);
-    d.setHostname(hostname);
-    d.setOnline(true);
-    std::cout << "hostname: " << d.getHostname() << '\n';
-    d.setThresholdTemperature(50);
+    std::string hostname;
+    std::cout << "Enter hostname: ";
+    std::cin >> hostname;
+
+    struct addrinfo hints, *result;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags |= AI_CANONNAME;
+
+    struct sockaddr_in serverAddr {};
+    // std::cout << "sizeof(result):" << sizeof(hints) << '\n';
+    // std::cout << "sizeof(serverAddr):" << sizeof(serverAddr) << '\n';
+
+    int port = 1952;
+
+    if (getaddrinfo(hostname.c_str(), NULL, &hints, &result) != 0) {
+        std::string msg = "ClientSocket cannot decode host:" + hostname + " on port " +
+                          std::to_string(port) + "\n";
+        throw 5;
+    }
+
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    memcpy(&serverAddr.sin_addr.s_addr, &((struct sockaddr_in *)result->ai_addr)->sin_addr,
+           sizeof(in_addr_t));
+    freeaddrinfo(result);
+
+    char address[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &serverAddr.sin_addr, address, INET_ADDRSTRLEN);
+    std::cout << "ip of host is: " << address << '\n';
+
+    sls::ClientSocket(false, serverAddr);
+
+    // const std::string hostname = "beb083";
+    // auto type = slsDetector::getTypeFromDetector(hostname);
+    // slsDetector d(type);
+    // d.setHostname(hostname);
+    // d.setOnline(true);
+    // std::cout << "hostname: " << d.getHostname() << '\n';
+    // d.setThresholdTemperature(50);
     // try{
     //     d.setThresholdTemperature(50);
     // }catch(const DetectorError &e){

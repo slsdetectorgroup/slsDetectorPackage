@@ -66,9 +66,6 @@ private:
 	 */
 	sls::ClientSocket* socket_;
 
-	/** index for client debugging purposes */
-	int index;
-
 };
 
 

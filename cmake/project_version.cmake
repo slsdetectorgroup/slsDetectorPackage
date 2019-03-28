@@ -57,28 +57,28 @@ if (GIT_CMD AND NOT "${GIT_TOPLEVEL}" STREQUAL "")
             ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
     #message(STATUS "GIT_DESCRIBE: " ${GIT_DESCRIBE})
 
-    if (GIT_DESCRIBE)
-        string(REGEX REPLACE "v?([0-9.]+).*" "\\1" GIT_VERSION ${GIT_DESCRIBE})
-        message(STATUS "GIT_VERSION: " ${GIT_VERSION})
+    # if (GIT_DESCRIBE)
+    #     string(REGEX REPLACE "v?([0-9.]+).*" "\\1" GIT_VERSION ${GIT_DESCRIBE})
+    #     message(STATUS "GIT_VERSION: " ${GIT_VERSION})
 
-        # as package version we use the full version from git describe: 1.7.1+7+ge324c81
-        if (GIT_DESCRIBE MATCHES ".*-g.*")
-            # convert a git describe string to usable debian version, e.g. v1.7.1-7-ge324c81 to 1.7.1+7+ge324c81
-            string(REGEX REPLACE "v?([0-9]*.[0-9.]*).*-([0-9]*)-([a-g0-9]*)" "\\1+\\2+\\3" GIT_FULL_VERSION ${GIT_DESCRIBE})
-        else()
-            # current HEAD is git tag (i.e. releaase), directly use the version
-            set(GIT_FULL_VERSION ${GIT_VERSION})
-        endif()
-    else ()
-        # no (suitable) tag found
-        set(GIT_VERSION "0.0.0")
-        # get number of commits in repo
-        execute_process(COMMAND ${GIT_CMD} rev-list --count HEAD
-                WORKING_DIRECTORY ${GIT_TOPLEVEL}
-                OUTPUT_VARIABLE GIT_COMMIT_COUNT
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
-        set(GIT_FULL_VERSION 0.0.0+${GIT_COMMIT_COUNT}+g${GIT_SHA1})
-    endif ()
+    #     # as package version we use the full version from git describe: 1.7.1+7+ge324c81
+    #     if (GIT_DESCRIBE MATCHES ".*-g.*")
+    #         # convert a git describe string to usable debian version, e.g. v1.7.1-7-ge324c81 to 1.7.1+7+ge324c81
+    #         string(REGEX REPLACE "v?([0-9]*.[0-9.]*).*-([0-9]*)-([a-g0-9]*)" "\\1+\\2+\\3" GIT_FULL_VERSION ${GIT_DESCRIBE})
+    #     else()
+    #         # current HEAD is git tag (i.e. releaase), directly use the version
+    #         set(GIT_FULL_VERSION ${GIT_VERSION})
+    #     endif()
+    # else ()
+    #     # no (suitable) tag found
+    #     set(GIT_VERSION "0.0.0")
+    #     # get number of commits in repo
+    #     execute_process(COMMAND ${GIT_CMD} rev-list --count HEAD
+    #             WORKING_DIRECTORY ${GIT_TOPLEVEL}
+    #             OUTPUT_VARIABLE GIT_COMMIT_COUNT
+    #             OUTPUT_STRIP_TRAILING_WHITESPACE)
+    #     set(GIT_FULL_VERSION 0.0.0+${GIT_COMMIT_COUNT}+g${GIT_SHA1})
+    # endif ()
 endif ()
 
 # get version from package.xml if it exists
@@ -104,10 +104,10 @@ if (NOT PROJECT_VERSION)
         set(PROJECT_VERSION "0.0.0")
     endif ()
 endif ()
-if (NOT PACKAGE_VERSION)
-    message(WARNING "PACKAGE_VERSION not set! Falling back to (${PROJECT_VERSION})")
+# if (NOT PACKAGE_VERSION)
+    # message(WARNING "PACKAGE_VERSION not set! Falling back to (${PROJECT_VERSION})")
     set(PACKAGE_VERSION ${PROJECT_VERSION})
-endif ()
+# endif ()
 
 # warn if versions don't match
 if (GIT_VERSION AND NOT GIT_VERSION MATCHES ${PROJECT_VERSION})

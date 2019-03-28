@@ -323,7 +323,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     sls::strcpy_safe(detector_shm()->receiverUDPMAC2, "none");
     sls::strcpy_safe(detector_shm()->detectorMAC, DEFAULT_DET_MAC);
     sls::strcpy_safe(detector_shm()->detectorMAC2, DEFAULT_DET_MAC2);
-    sls::strcpy_safe(detector_shm()->detectorIP, DEFAULT_DET_IP);
+    // sls::strcpy_safe(detector_shm()->detectorIP, DEFAULT_DET_IP);
     sls::strcpy_safe(detector_shm()->detectorIP2, DEFAULT_DET_IP2);
     detector_shm()->numUDPInterfaces = 1;
     detector_shm()->selectedUDPInterface = 1;
@@ -1614,7 +1614,12 @@ int slsDetector::configureMAC() {
     snprintf(args[0], array_size, "%x", detector_shm()->receiverUDPPort);
     sls::strcpy_safe(args[1], detector_shm()->receiverUDPIP);
     sls::strcpy_safe(args[2], detector_shm()->receiverUDPMAC);
-    sls::strcpy_safe(args[3], detector_shm()->detectorIP);
+
+
+    char detectorIP[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(detector_shm()->detectorIP), detectorIP, INET_ADDRSTRLEN);
+
+    sls::strcpy_safe(args[3], detectorIP);
     sls::strcpy_safe(args[4], detector_shm()->detectorMAC);
 
     snprintf(args[5], array_size, "%x", detector_shm()->receiverUDPPort2);
@@ -1711,10 +1716,10 @@ int slsDetector::configureMAC() {
             FILE_LOG(logINFO) << detId << ": Detector MAC updated to "
                               << detector_shm()->detectorMAC;
         }
-        if (strcasecmp(retvals[1], detector_shm()->detectorIP)) {
+        if (strcasecmp(retvals[1], detectorIP)) {
             // memset(detector_shm()->detectorIP, 0, MAX_STR_LENGTH);
-            sls::strcpy_safe(detector_shm()->detectorIP, retvals[1]);
-            FILE_LOG(logINFO) << detId << ": Detector IP updated to " << detector_shm()->detectorIP;
+            // sls::strcpy_safe(detectorIP, retvals[1]);
+            FILE_LOG(logINFO) << detId << ": Detector IP updated to " << detectorIP;
         }
     }
     if (ret == FORCE_UPDATE) {
@@ -2133,14 +2138,16 @@ std::string slsDetector::getDetectorMAC2() {
 }
 
 std::string slsDetector::setDetectorIP(const std::string &detectorIP) {
-    struct sockaddr_in sa;
-    if (detectorIP.length() && detectorIP.length() < 16) {
-        int result = inet_pton(AF_INET, detectorIP.c_str(), &(sa.sin_addr));
+    // struct sockaddr_in sa;
+    uint64_t ip{0};
+    if (detectorIP.length() && detectorIP.length() < INET_ADDRSTRLEN) {
+        int result = inet_pton(AF_INET, detectorIP.c_str(), &ip);
         if (result == 0) {
             throw RuntimeError(
                 "setDetectorIP: IP Address should be VALID and in xxx.xxx.xxx.xxx format");
         } else {
-            sls::strcpy_safe(detector_shm()->detectorIP, detectorIP.c_str());
+            // sls::strcpy_safe(detector_shm()->detectorIP, detectorIP.c_str());
+            detector_shm()->detectorIP = ip;
             if (!strcmp(detector_shm()->receiver_hostname, "none")) {
                 FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
             } else if (setUDPConnection() == FAIL) {
@@ -2148,11 +2155,15 @@ std::string slsDetector::setDetectorIP(const std::string &detectorIP) {
             }
         }
     }
-    return std::string(detector_shm()->detectorIP);
+    char address[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &detector_shm()->detectorIP, address, INET_ADDRSTRLEN);
+    return address;
 }
 
 std::string slsDetector::getDetectorIP() const {
-	return std::string(detector_shm()->detectorIP);
+	char address[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &detector_shm()->detectorIP, address, INET_ADDRSTRLEN);
+    return address;
 }
 
 std::string slsDetector::setDetectorIP2(const std::string &detectorIP) {

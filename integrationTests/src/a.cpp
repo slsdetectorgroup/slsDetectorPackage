@@ -41,6 +41,8 @@ int main() {
     // std::cout << "sizeof(result):" << sizeof(hints) << '\n';
     // std::cout << "sizeof(serverAddr):" << sizeof(serverAddr) << '\n';
 
+    uint64_t ip{0};
+
     int port = 1952;
 
     if (getaddrinfo(hostname.c_str(), NULL, &hints, &result) != 0) {
@@ -54,9 +56,10 @@ int main() {
     memcpy(&serverAddr.sin_addr.s_addr, &((struct sockaddr_in *)result->ai_addr)->sin_addr,
            sizeof(in_addr_t));
     freeaddrinfo(result);
+    ip = serverAddr.sin_addr.s_addr;
 
     char address[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &serverAddr.sin_addr, address, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &ip, address, INET_ADDRSTRLEN);
     std::cout << "ip of host is: " << address << '\n';
 
     sls::ClientSocket(false, serverAddr);

@@ -163,7 +163,8 @@ struct sharedSlsDetector {
     char detectorMAC2[MAX_STR_LENGTH];
 
     /**  ip address of the detector **/
-    char detectorIP[MAX_STR_LENGTH];
+    // char detectorIP[MAX_STR_LENGTH];
+	uint64_t detectorIP;
 
     /**  ip address of the 2nd interface of the detector **/
     char detectorIP2[MAX_STR_LENGTH];

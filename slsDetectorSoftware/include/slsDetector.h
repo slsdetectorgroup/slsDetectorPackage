@@ -109,10 +109,6 @@ struct sharedSlsDetector {
     /**  size of the data that are transfered from the detector */
     int dataBytes;
 
-    /** threaded processing flag
-		 * (i.e. if data are processed in a separate thread)  */
-    // int threadedProcessing;
-
     /** number of rois defined */
     int nROI;
 
@@ -145,22 +141,22 @@ struct sharedSlsDetector {
     int receiverUDPPort2;
 
     /** ip address of the receiver for the detector to send packets to**/
-    char receiverUDPIP[MAX_STR_LENGTH];
+	uint32_t receiverUDPIP;
 
     /** ip address of the receiver for the 2nd interface of the detector to send packets to**/
-    char receiverUDPIP2[MAX_STR_LENGTH];
+    uint32_t receiverUDPIP2;
 
     /** mac address of receiver for the detector to send packets to **/
-    char receiverUDPMAC[MAX_STR_LENGTH];
+    uint64_t receiverUDPMAC;
 
     /** mac address of receiver for the 2nd interface of the detector to send packets to **/
-    char receiverUDPMAC2[MAX_STR_LENGTH];
+    uint64_t receiverUDPMAC2;
 
     /**  mac address of the detector **/
-    char detectorMAC[MAX_STR_LENGTH];
+	uint64_t detectorMAC;
 
     /**  mac address of the 2nd interface of the detector **/
-    char detectorMAC2[MAX_STR_LENGTH];
+	uint64_t detectorMAC2;
 
     /**  ip address of the detector **/
 	uint32_t detectorIP;

@@ -1,12 +1,5 @@
-#ifndef MULTI_SLS_DETECTOR_H
-#define MULTI_SLS_DETECTOR_H
+#pragma once
 
-/**
- @libdoc The multiSlsDetector class is used to operate several slsDetectors in
- parallel.
- * @short This is the base class for multi detector system functionalities
- * @author Anna Bergamaschi
- */
 #include "SharedMemory.h"
 #include "error_defs.h"
 #include "gitInfoLib.h"
@@ -2002,11 +1995,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void startProcessingThread();
 
-    // /**
-    //  * Static function to call processing thread
-    //  */
-    // static void* startProcessData(void *n);
-
     /**
      * Check if processing thread is ready to join main thread
      * @returns true if ready, else false
@@ -2024,6 +2012,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * when using acquire command
      */
     int kbhit();
+
+    /**
+     * Convert raw file
+     * @param fname name of pof file
+     * @param fpgasrc pointer in memory to read pof to
+     * @returns file size
+     */
+    std::vector<char> readPofFile(const std::string &fname);
+
 
     /** Multi detector Id */
     const int multiId;
@@ -2083,4 +2080,3 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void *pCallbackArg{nullptr};
 };
 
-#endif

@@ -1,13 +1,4 @@
-#ifndef SLS_DETECTOR_H
-#define SLS_DETECTOR_H
-
-/**
- *
- * @short complete detector functionalities for a single module detector.
- * The slsDetector class takes care of the communication with the
- * detector and all kind actions related with a single detector controller
- * @author Anna Bergamaschi
- */
+#pragma once
 
 #include "ClientSocket.h"
 #include "SharedMemory.h"
@@ -17,6 +8,7 @@
 class ClientInterface;
 
 #include <cmath>
+#include <vector>
 
 class multiSlsDetector;
 class ServerInterface;
@@ -1286,11 +1278,11 @@ class slsDetector : public virtual slsDetectorDefs{
     int setStoragecellStart(int pos = -1);
 
     /**
-	 * Programs FPGA with pof file (Jungfrau)
-	 * @param fname file name
+	 * Programs FPGA with pof file (Jungfrau, CTB, Moench)
+	 * @param buffer programming file in memory
 	 * @returns OK or FAIL
 	 */
-    int programFPGA(const std::string &fname);
+    int programFPGA(std::vector<char> buffer);
 
     /**
 	 * Resets FPGA (Jungfrau)
@@ -1826,4 +1818,3 @@ class slsDetector : public virtual slsDetectorDefs{
 
 };
 
-#endif

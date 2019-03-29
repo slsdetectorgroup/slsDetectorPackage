@@ -16,7 +16,7 @@ namespace sls {
 DataSocket::DataSocket(int socketId) : socketId_(socketId) {}
 
 DataSocket::~DataSocket() {
-    if (socketId_ == -1) {
+    if (socketId_ <= 0) {
         return;
     } else {
         try {
@@ -78,7 +78,11 @@ int DataSocket::setTimeOut(int t_seconds) {
 
 void DataSocket::close() {
     if (socketId_ > 0) {
-        ::close(socketId_);
+        if(::close(socketId_)){
+            throw SocketError("could not close socket");
+        }
+        socketId_ = 0;
+        
     } else {
         throw std::runtime_error("Socket ERROR: close called on bad socket\n");
     }

@@ -11,58 +11,66 @@
 #include <iostream>
 #include <vector>
 
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <string>
-#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 
 #define VERBOSE
 
+using sls::DetectorError;
 using sls::RuntimeError;
 using sls::SharedMemoryError;
 using sls::SocketError;
-using sls::DetectorError;
 
 int main() {
 
+    std::cout << "size: " <<sizeof(struct in_addr) << "\n";
+    // std::string hostname;
+    // std::cout << "Enter hostname: ";
+    // std::cin >> hostname;
 
-    std::string hostname;
-    std::cout << "Enter hostname: ";
-    std::cin >> hostname;
+    // struct addrinfo hints, *result;
+    // memset(&hints, 0, sizeof(hints));
+    // hints.ai_family = AF_INET;
+    // hints.ai_socktype = SOCK_STREAM;
+    // hints.ai_flags |= AI_CANONNAME;
 
-    struct addrinfo hints, *result;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags |= AI_CANONNAME;
+    // struct sockaddr_in serverAddr {};
+    // // std::cout << "sizeof(result):" << sizeof(hints) << '\n';
+    // // std::cout << "sizeof(serverAddr):" << sizeof(serverAddr) << '\n';
 
-    struct sockaddr_in serverAddr {};
-    // std::cout << "sizeof(result):" << sizeof(hints) << '\n';
-    // std::cout << "sizeof(serverAddr):" << sizeof(serverAddr) << '\n';
+    // uint32_t ip{0};
 
-    uint64_t ip{0};
+    // int port = 1952;
 
-    int port = 1952;
+    // if (getaddrinfo(hostname.c_str(), NULL, &hints, &result) != 0) {
+    //     std::string msg = "ClientSocket cannot decode host:" + hostname + " on port " +
+    //                       std::to_string(port) + "\n";
+    //     throw 5;
+    // }
 
-    if (getaddrinfo(hostname.c_str(), NULL, &hints, &result) != 0) {
-        std::string msg = "ClientSocket cannot decode host:" + hostname + " on port " +
-                          std::to_string(port) + "\n";
-        throw 5;
-    }
+    // serverAddr.sin_family = AF_INET;
+    // serverAddr.sin_port = htons(port);
+    // memcpy(&serverAddr.sin_addr.s_addr, &((struct sockaddr_in *)result->ai_addr)->sin_addr,
+    //        sizeof(in_addr_t));
+    // freeaddrinfo(result);
+    // ip = serverAddr.sin_addr.s_addr;
 
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(port);
-    memcpy(&serverAddr.sin_addr.s_addr, &((struct sockaddr_in *)result->ai_addr)->sin_addr,
-           sizeof(in_addr_t));
-    freeaddrinfo(result);
-    ip = serverAddr.sin_addr.s_addr;
+    // char address[INET_ADDRSTRLEN];
+    // inet_ntop(AF_INET, &ip, address, INET_ADDRSTRLEN);
+    // std::cout << "ip of host is: " << address << '\n';
 
-    char address[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &ip, address, INET_ADDRSTRLEN);
-    std::cout << "ip of host is: " << address << '\n';
+    // // hints.ai_addr = reinterpret_cast<sockaddr*>(&serverAddr);
 
-    sls::ClientSocket(false, serverAddr);
+    // // if (getaddrinfo("NULL", NULL, &hints, &result) != 0) {
+    // //     std::string msg = "ClientSocket cannot decode host:" + hostname + " on port " +
+    // //                       std::to_string(port) + "\n";
+    // //     throw 5;
+    // // }
+
+    // sls::ClientSocket(false, serverAddr);
 
     // const std::string hostname = "beb083";
     // auto type = slsDetector::getTypeFromDetector(hostname);
@@ -78,9 +86,6 @@ int main() {
     // }
     // std::cout << "hostname: " << d.getHostname() << '\n';
     // std::cout << "exptime: " << d.setDAC(-1, slsDetectorDefs::E_Vrf, 0) << '\n';
-
-
-
 
     // slsDetector d2(type);
     // std::cout << "Online: " << d2.getOnlineFlag() << '\n';
@@ -130,7 +135,6 @@ int main() {
     // } catch (...) {
     //     std::cout << "Caught Something else probably should have let me crash\n";
     // }
-
 
     // throw RuntimeError("This one we missed");
     return 0;

@@ -3403,7 +3403,7 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 	int fnum = F_PROGRAM_FPGA;
 	int ret = FAIL;
 	char mess[MAX_STR_LENGTH] = {0};
-	FILE_LOG(logINFO) << "Sending programming binary to detector " << detector_shm()->hostname;
+	FILE_LOG(logINFO) << "Sending programming binary to detector " << detId << " (" << detector_shm()->hostname << ")";
 
 	if (detector_shm()->onlineFlag == ONLINE_FLAG) {
 		auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
@@ -3413,14 +3413,16 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 		// opening error
 		if (ret == FAIL) {
 			client.receiveData(mess, sizeof(mess));
-			throw RuntimeError("Detector " + std::to_string(detId) +
-					" returned error: " + std::string(mess));
+			std::ostringstream os;
+			os << "Detector " << detId << " (" << detector_shm()->hostname << ")" <<
+					" returned error: " << mess;
+			throw RuntimeError(os.str());
 		}
 
 		// erasing flash
 		if (ret != FAIL) {
 			FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
-			FILE_LOG(logINFO) << detId << "Erasing Flash:";
+			FILE_LOG(logINFO) << "Erasing Flash for detector " << detId << " (" << detector_shm()->hostname << ")";
 			printf("%d%%\r", 0);
 			std::cout << std::flush;
 			// erasing takes 65 seconds, printing here (otherwise need threads
@@ -3434,7 +3436,7 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 				std::cout << std::flush;
 			}
 			printf("\n");
-			FILE_LOG(logINFO) << detId << "Writing to Flash:";
+			FILE_LOG(logINFO) << "Writing to Flash to detector " << detId << " (" << detector_shm()->hostname << ")";
 			printf("%d%%\r", 0);
 			std::cout << std::flush;
 		}
@@ -3464,8 +3466,10 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 			} else {
 				printf("\n");
 				client.receiveData(mess, sizeof(mess));
-				throw RuntimeError("Detector " + std::to_string(detId) +
-						" returned error: " + std::string(mess));
+				std::ostringstream os;
+				os << "Detector " << detId << " (" << detector_shm()->hostname << ")" <<
+						" returned error: " << mess;
+				throw RuntimeError(os.str());
 			}
 		}
 		printf("\n");
@@ -3476,8 +3480,10 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 			client.receiveData(&ret, sizeof(ret));
 			if (ret == FAIL) {
 				client.receiveData(mess, sizeof(mess));
-				throw RuntimeError("Detector " + std::to_string(detId) +
-						" returned error: " + std::string(mess));
+				std::ostringstream os;
+				os << "Detector " << detId << " (" << detector_shm()->hostname << ")" <<
+						" returned error: " << mess;
+				throw RuntimeError(os.str());
 			}
 		}
 
@@ -3495,8 +3501,10 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 			stop.receiveData(&stopret, sizeof(stopret));
 			if (stopret == FAIL) {
 				client.receiveData(mess, sizeof(mess));
-				throw RuntimeError("Detector " + std::to_string(detId) +
-						" returned error: " + std::string(mess));
+				std::ostringstream os;
+				os << "Detector " << detId << " (" << detector_shm()->hostname << ")" <<
+						" returned error: " << mess;
+				throw RuntimeError(os.str());
 			}
 		}
 	}

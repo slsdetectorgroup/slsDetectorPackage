@@ -39,15 +39,21 @@ uint32_t IpStringToUint(const char *ipstr) {
 }
 
 std::string IpToString(uint32_t ip) {
-    char ipstring[INET_ADDRSTRLEN];
-    if (inet_ntop(AF_INET, &ip, ipstring, INET_ADDRSTRLEN) == nullptr) {
-        // handle error
-    }
-    // TODO! Check return
+    char ipstring[INET_ADDRSTRLEN]{};
+    inet_ntop(AF_INET, &ip, ipstring, INET_ADDRSTRLEN);
     return ipstring;
 }
 
-uint32_t HostnameToIp(const char *const hostname) {
+std::string IpToHexString(uint32_t ip){
+    std::ostringstream ss; 
+    ss << std::hex << std::setfill('0') << std::setw(2);
+    for (int i=0; i!=4; ++i){
+        ss << ((ip >> i*8) & 0xFF);
+    }
+    return ss.str();
+}
+
+uint32_t HostnameToIp(const char *hostname) {
     struct addrinfo hints, *result;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
@@ -60,6 +66,8 @@ uint32_t HostnameToIp(const char *const hostname) {
     freeaddrinfo(result);
     return ip;
 }
+
+
 
 } // namespace sls
 

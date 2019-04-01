@@ -8,6 +8,7 @@
 #include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 #include "sls_detector_funcs.h"
+#include "network_utils.h"
 #include <iostream>
 #include <vector>
 
@@ -26,7 +27,10 @@ using sls::SocketError;
 
 int main() {
 
-    std::cout << "size: " <<sizeof(struct in_addr) << "\n";
+    auto ip = sls::IpStringToUint("74.125.43.99");
+    char buffer[50];
+    snprintf(buffer, 50, "%x", __builtin_bswap32(ip));
+    std::cout << "buffer: " << buffer << "\n";
     // std::string hostname;
     // std::cout << "Enter hostname: ";
     // std::cin >> hostname;

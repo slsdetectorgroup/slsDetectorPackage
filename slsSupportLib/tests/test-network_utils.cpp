@@ -21,11 +21,11 @@ TEST_CASE("Convert mac address") {
     }
 }
 
-TEST_CASE("Convert IP"){
+TEST_CASE("Convert IP") {
     std::vector<uint32_t> vec_addr{4073554305, 2747957633, 2697625985};
     std::vector<std::string> vec_ans{"129.129.205.242", "129.129.202.163", "129.129.202.160"};
 
-    for (int i=0; i!= vec_addr.size(); ++i){
+    for (int i = 0; i != vec_addr.size(); ++i) {
         auto ip = vec_addr[i];
         auto answer = vec_ans[i];
 
@@ -35,10 +35,19 @@ TEST_CASE("Convert IP"){
     }
 }
 
-TEST_CASE("IP not valid"){
+TEST_CASE("IP not valid") {
 
     CHECK(IpStringToUint("hej") == 0);
     CHECK(IpStringToUint("mpc2408") == 0);
+}
+
+TEST_CASE("Convert ip to hex") {
+    std::vector<std::string> ipstrings{"74.125.43.99", "129.129.202.217"};
+    std::vector<std::string> vec_ans{"4a7d2b63", "8181cad9"};
+    for (int i = 0; i != ipstrings.size(); ++i) {
+        uint32_t ip = IpStringToUint(ipstrings[i].c_str());
+        CHECK(IpToHexString(ip) == vec_ans[i]);
+    }
 }
 
 // TEST_CASE("Lookup ip")

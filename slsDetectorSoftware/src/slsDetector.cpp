@@ -1663,7 +1663,6 @@ int slsDetector::configureMAC() {
         if (detector_shm()->detectorIP != detector_ip) {
             detector_shm()->detectorIP = detector_ip;
             FILE_LOG(logINFO) << detId << ": Detector IP updated to " << getDetectorIP();
-            std::cout << "ip: " << detector_ip << "\n";
         }
     }
     if (ret == FORCE_UPDATE) {

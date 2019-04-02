@@ -161,6 +161,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...) const,
                                  typename NonDeduced<CT>::type... Args) const;
 
+
+    template <typename... CT>
+    void parallelCall(void (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args);
+
+    template <typename... CT>
+    void parallelCall(void (slsDetector::*somefunc)(CT...) const, typename NonDeduced<CT>::type... Args) const;
+
+
     /**
      * Decodes which detector and the corresponding channel numbers for it
      * Mainly useful in a multi detector setROI (Gotthard, Mythen?)

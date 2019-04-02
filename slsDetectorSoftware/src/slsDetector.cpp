@@ -848,7 +848,9 @@ int slsDetector::execCommand(const std::string &cmd) {
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, arg, sizeof(arg), retval, sizeof(retval));
-        FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
+       	if (strlen(retval)) {
+       		FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
+       	}
     }
     return ret;
 }
@@ -3386,220 +3388,98 @@ int slsDetector::setStoragecellStart(int pos) {
     return retval;
 }
 
-int slsDetector::programFPGA(const std::string &fname) {
-    // TODO! make exception safe!
-    // now malloced memory can leak
-    // only jungfrau implemented (client processing, so check now)
-    if (detector_shm()->myDetectorType != JUNGFRAU &&
-        detector_shm()->myDetectorType != CHIPTESTBOARD &&
-        detector_shm()->myDetectorType != MOENCH) {
-        throw RuntimeError("Program FPGA is not implemented for this detector");
-    }
-    FILE_LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
-    size_t filesize = 0;
-    char *fpgasrc = nullptr;
+int slsDetector::programFPGA(std::vector<char> buffer) {
+	// validate type
+	switch(detector_shm()->myDetectorType) {
+	case JUNGFRAU:
+	case CHIPTESTBOARD:
+	case MOENCH:
+		break;
+	default:
+		throw RuntimeError("Program FPGA is not implemented for this detector");
+	}
 
-    // check if it exists
-    {
-        struct stat st;
-        if (stat(fname.c_str(), &st)) {
-            throw RuntimeError("Program FPGA: Programming file does not exist");
-        }
-    }
+	size_t filesize = buffer.size();
 
-    {
-        // open src
-        FILE *src = fopen(fname.c_str(), "rb");
-        if (src == nullptr) {
-            throw RuntimeError("Program FPGA: Could not open source file for programming: " +
-                               fname);
-        }
+	// send program from memory to detector
+	int fnum = F_PROGRAM_FPGA;
+	int ret = FAIL;
+	char mess[MAX_STR_LENGTH] = {0};
+	FILE_LOG(logINFO) << "Sending programming binary to detector " << detId << " (" << detector_shm()->hostname << ")";
 
-        // create temp destination file
-        char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
-        int dst = mkstemp(destfname); // create temporary file and open it in r/w
-        if (dst == -1) {
-            fclose(src);
-            throw RuntimeError(
-                std::string("Could not create destination file in /tmp for programming: ") +
-                destfname);
-        }
+	if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+		auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
+		client.sendData(&fnum, sizeof(fnum));
+		client.sendData(&filesize, sizeof(filesize));
+		client.receiveData(&ret, sizeof(ret));
+		// error in detector at opening file pointer to flash
+		if (ret == FAIL) {
+			client.receiveData(mess, sizeof(mess));
+			std::ostringstream os;
+			os << "Detector " << detId << " (" << detector_shm()->hostname << ")" <<
+					" returned error: " << mess;
+			throw RuntimeError(os.str());
+		}
 
-        // convert src to dst rawbin
-        FILE_LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
-        {
-            int filepos, x, y, i;
-            // Remove header (0...11C)
-            for (filepos = 0; filepos < 0x11C; ++filepos) {
-                fgetc(src);
-            }
-            // Write 0x80 times 0xFF (0...7F)
-            {
-                char c = 0xFF;
-                for (filepos = 0; filepos < 0x80; ++filepos) {
-                    write(dst, &c, 1);
-                }
-            }
-            // Swap bits and write to file
-            for (filepos = 0x80; filepos < 0x1000000; ++filepos) {
-                x = fgetc(src);
-                if (x < 0) {
-                    break;
-                }
-                y = 0;
-                for (i = 0; i < 8; ++i) {
-                    y = y | (((x & (1 << i)) >> i) << (7 - i)); // This swaps the bits
-                }
-                write(dst, &y, 1);
-            }
-            if (filepos < 0x1000000) {
-                throw RuntimeError("Could not convert programming file. EOF before end of flash");
-            }
-        }
-        if (fclose(src)) {
-            throw RuntimeError("Program FPGA: Could not close source file");
-        }
-        if (close(dst)) {
-            throw RuntimeError("Program FPGA: Could not close destination file");
-        }
-        FILE_LOG(logDEBUG1) << "File has been converted to " << destfname;
+		// erasing flash
+		if (ret != FAIL) {
+			FILE_LOG(logINFO) << "Erasing Flash for detector " << detId << " (" << detector_shm()->hostname << ")";
+			printf("%d%%\r", 0);
+			std::cout << std::flush;
+			// erasing takes 65 seconds, printing here (otherwise need threads in server-unnecessary)
+			const int ERASE_TIME = 65;
+			int count = ERASE_TIME + 1;
+			while (count > 0) {
+				usleep(1 * 1000 * 1000);
+				--count;
+				printf("%d%%\r", (int)(((double)(ERASE_TIME - count) / ERASE_TIME) * 100));
+				std::cout << std::flush;
+			}
+			printf("\n");
+			FILE_LOG(logINFO) << "Writing to Flash to detector " << detId << " (" << detector_shm()->hostname << ")";
+			printf("%d%%\r", 0);
+			std::cout << std::flush;
+		}
 
-        // loading dst file to memory
-        FILE *fp = fopen(destfname, "r");
-        if (fp == nullptr) {
-            throw RuntimeError("Program FPGA: Could not open rawbin file");
-        }
-        if (fseek(fp, 0, SEEK_END)) {
-            throw RuntimeError("Program FPGA: Seek error in rawbin file");
-        }
-        filesize = ftell(fp);
-        if (filesize <= 0) {
-            throw RuntimeError("Program FPGA: Could not get length of rawbin file");
-        }
-        rewind(fp);
-        fpgasrc = (char *)malloc(filesize + 1); //<------------------- MALLOC!
-        if (fpgasrc == nullptr) {
-            throw RuntimeError("Program FPGA: Could not allocate size of program");
-        }
-        if (fread(fpgasrc, sizeof(char), filesize, fp) != filesize) {
-            free(fpgasrc);
-            throw RuntimeError("Program FPGA: Could not read rawbin file");
-        }
+		// sending program in parts of 2mb each
+		size_t unitprogramsize = 0;
+		int currentPointer = 0;
+		size_t totalsize = filesize;
+		while (ret != FAIL && (filesize > 0)) {
 
-        if (fclose(fp)) {
-            free(fpgasrc);
-            throw RuntimeError("Program FPGA: Could not close destination file after converting");
-        }
-        unlink(destfname); // delete temporary file
-        FILE_LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
-    }
+			unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
+			if (unitprogramsize > filesize) {      // less than 2mb
+				unitprogramsize = filesize;
+			}
+			FILE_LOG(logDEBUG1) << "unitprogramsize:" << unitprogramsize
+					<< "\t filesize:" << filesize;
 
-    // send program from memory to detector
-    int fnum = F_PROGRAM_FPGA;
-    int ret = FAIL;
-    char mess[MAX_STR_LENGTH] = {0};
-    FILE_LOG(logDEBUG1) << "Sending programming binary to detector";
+			client.sendData(&buffer[currentPointer], unitprogramsize);
+			client.receiveData(&ret, sizeof(ret));
+			if (ret != FAIL) {
+				filesize -= unitprogramsize;
+				currentPointer += unitprogramsize;
 
-    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
-        client.sendData(&fnum, sizeof(fnum));
-        client.sendData(&filesize, sizeof(filesize));
-        client.receiveData(&ret, sizeof(ret));
-        // opening error
-        if (ret == FAIL) {
-            client.receiveData(mess, sizeof(mess));
-            free(fpgasrc);
-            throw RuntimeError("Detector " + std::to_string(detId) +
-                               " returned error: " + std::string(mess));
-        }
-
-        // erasing flash
-        if (ret != FAIL) {
-            FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
-            FILE_LOG(logINFO) << "Erasing Flash:";
-            printf("%d%%\r", 0);
-            std::cout << std::flush;
-            // erasing takes 65 seconds, printing here (otherwise need threads
-            // in server-unnecessary)
-            const int ERASE_TIME = 65;
-            int count = ERASE_TIME + 1;
-            while (count > 0) {
-                usleep(1 * 1000 * 1000);
-                --count;
-                printf("%d%%\r", (int)(((double)(ERASE_TIME - count) / ERASE_TIME) * 100));
-                std::cout << std::flush;
-            }
-            printf("\n");
-            FILE_LOG(logINFO) << "Writing to Flash:";
-            printf("%d%%\r", 0);
-            std::cout << std::flush;
-        }
-
-        // sending program in parts of 2mb each
-        size_t unitprogramsize = 0;
-        int currentPointer = 0;
-        size_t totalsize = filesize;
-        while (ret != FAIL && (filesize > 0)) {
-
-            unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
-            if (unitprogramsize > filesize) {      // less than 2mb
-                unitprogramsize = filesize;
-            }
-            FILE_LOG(logDEBUG1) << "unitprogramsize:" << unitprogramsize
-                                << "\t filesize:" << filesize;
-
-            client.sendData(fpgasrc + currentPointer, unitprogramsize);
-            client.receiveData(&ret, sizeof(ret));
-            if (ret != FAIL) {
-                filesize -= unitprogramsize;
-                currentPointer += unitprogramsize;
-
-                // print progress
-                printf("%d%%\r", (int)(((double)(totalsize - filesize) / totalsize) * 100));
-                std::cout << std::flush;
-            } else {
-                printf("\n");
-                client.receiveData(mess, sizeof(mess));
-                free(fpgasrc);
-                throw RuntimeError("Detector returned error: " + std::string(mess));
-            }
-        }
-        printf("\n");
-
-        // check ending error
-        if ((ret == FAIL) && (strstr(mess, "not implemented") == nullptr) &&
-            (strstr(mess, "locked") == nullptr) && (strstr(mess, "-update") == nullptr)) {
-            client.receiveData(&ret, sizeof(ret));
-            if (ret == FAIL) {
-                client.receiveData(mess, sizeof(mess));
-                free(fpgasrc);
-                throw RuntimeError("Detector returned error: " + std::string(mess));
-            }
-        }
-
-        if (ret == FORCE_UPDATE) {
-            updateDetector();
-        }
-
-        // remapping stop server
-        if ((ret == FAIL) && (strstr(mess, "not implemented") == nullptr) &&
-            (strstr(mess, "locked") == nullptr) && (strstr(mess, "-update") == nullptr)) {
-            fnum = F_RESET_FPGA;
-            int stopret = FAIL;
-            auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
-            stop.sendData(&fnum, sizeof(fnum));
-            stop.receiveData(&stopret, sizeof(stopret));
-            if (stopret == FAIL) {
-                client.receiveData(mess, sizeof(mess));
-                free(fpgasrc);
-                throw RuntimeError("Detector returned error: " + std::string(mess));
-            }
-        }
-    }
-    FILE_LOG(logINFO) << "You can now restart the detector servers in normal mode.";
-    free(fpgasrc);
-    return ret;
+				// print progress
+				printf("%d%%\r", (int)(((double)(totalsize - filesize) / totalsize) * 100));
+				std::cout << std::flush;
+			} else {
+				printf("\n");
+				client.receiveData(mess, sizeof(mess));
+				std::ostringstream os;
+				os << "Detector " << detId << " (" << detector_shm()->hostname << ")" <<
+						" returned error: " << mess;
+				throw RuntimeError(os.str());
+			}
+		}
+		printf("\n");
+	}
+	if (ret != FAIL) {
+		ret = rebootController();
+	}
+	return ret;
 }
+
 
 int slsDetector::resetFPGA() {
     int fnum = F_RESET_FPGA;
@@ -3614,6 +3494,37 @@ int slsDetector::resetFPGA() {
     }
     return ret;
 }
+
+int slsDetector::copyDetectorServer(const std::string &fname, const std::string &hostname) {
+    int fnum = F_COPY_DET_SERVER;
+    int ret = FAIL;
+    char args[2][MAX_STR_LENGTH] = {};
+    sls::strcpy_safe(args[0], fname.c_str());
+    sls::strcpy_safe(args[1], hostname.c_str());
+    FILE_LOG(logINFO) << "Sending detector server " << args[0]  << " from host " << args[1];
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
+        ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);
+    }
+    return ret;
+}
+
+int slsDetector::rebootController() {
+	if (detector_shm()->myDetectorType == EIGER) {
+		throw RuntimeError("Reboot controller not implemented for this detector");
+	}
+
+    int fnum = F_REBOOT_CONTROLLER;
+    int ret = FAIL;
+    FILE_LOG(logINFO) << "Sending reboot controller to detector " << detId << " (" << detector_shm()->hostname << ")";
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
+        client.sendData(&fnum, sizeof(fnum));
+        ret = OK;
+    }
+    return ret;
+}
+
 
 int slsDetector::powerChip(int ival) {
     int fnum = F_POWER_CHIP;

@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <netdb.h>
+#include <string>
 namespace sls {
 
 class DataSocket {
@@ -28,5 +29,7 @@ class DataSocket {
 
 int ConvertHostnameToInternetAddress(const char *const hostname, struct ::addrinfo **res);
 int ConvertInternetAddresstoIpString(struct ::addrinfo *res, char *ip, const int ipsize);
+
+struct ::sockaddr_in ConvertHostnameToInternetAddress(const std::string &hostname);
 
 }; // namespace sls

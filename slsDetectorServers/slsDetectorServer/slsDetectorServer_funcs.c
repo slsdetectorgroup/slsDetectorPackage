@@ -58,9 +58,6 @@ void init_detector() {
 #endif
 	if (isControlServer) {
 	    basictests();
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	    if (debugflag != PROGRAMMING_MODE)
-#endif
 	    initControlServer();
 #ifdef EIGERD
 	    dhcpipad = getDetectorIP();
@@ -85,18 +82,6 @@ int decode_function(int file_des) {
 	} else
 		FILE_LOG(logDEBUG3, ("Received %d bytes\n", n ));
 
-	// jungfrau in programming mode
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	if ((debugflag == PROGRAMMING_MODE) &&
-			(fnum != F_PROGRAM_FPGA) &&
-			(fnum != F_GET_DETECTOR_TYPE) &&
-			(fnum != F_RESET_FPGA) &&
-			(fnum != F_UPDATE_CLIENT) &&
-			(fnum != F_CHECK_VERSION)) {
-		ret = (M_nofuncMode)(file_des);
-	}
-	else
-#endif
 		if (fnum < 0 || fnum >= NUM_DET_FUNCTIONS) {
 		FILE_LOG(logERROR, ("Unknown function enum %d\n", fnum));
 		ret=(M_nofunc)(file_des);
@@ -109,9 +94,20 @@ int decode_function(int file_des) {
 			FILE_LOG(logDEBUG1, ("Error executing the function = %d (%s)\n",
 					fnum, getFunctionName((enum detFuncs)fnum)));
 		} else FILE_LOG(logDEBUG1, ("Function (%s) executed %s\n",
-				getFunctionName((enum detFuncs)fnum), (ret == OK)?"OK":"FORCE_UPDATE"));
+				getFunctionName((enum detFuncs)fnum), getRetName()));
 	}
 	return ret;
+}
+
+const char* getRetName() {
+	switch(ret) {
+	case OK:			return "OK";
+	case FAIL:			return "FAIL";
+	case FORCE_UPDATE: 	return "FORCE_UPDATE";
+	case GOODBYE:		return "GOODBYE";
+	case REBOOT:		return "REBOOT";
+	default:			return "unknown";
+	}
 }
 
 const char* getTimerName(enum timerIndex ind) {
@@ -136,6 +132,7 @@ const char* getTimerName(enum timerIndex ind) {
     default:                        return "unknown_timer";
     }
 }
+
 
 const char* getSpeedName(enum speedVariable ind) {
     switch (ind) {
@@ -231,6 +228,8 @@ const char* getFunctionName(enum detFuncs func) {
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
     case F_LED:              				return "F_LED";
     case F_DIGITAL_IO_DELAY:              	return "F_DIGITAL_IO_DELAY";
+    case F_COPY_DET_SERVER:              	return "F_COPY_DET_SERVER";
+    case F_REBOOT_CONTROLLER:              	return "F_REBOOT_CONTROLLER";
 
 	default:								return "Unknown Function";
 	}
@@ -301,6 +300,8 @@ void function_table() {
 	flist[F_SOFTWARE_TRIGGER]                 	= &software_trigger;
 	flist[F_LED]                 				= &led;
 	flist[F_DIGITAL_IO_DELAY]                 	= &digital_io_delay;
+	flist[F_COPY_DET_SERVER]                 	= &copy_detector_server;
+	flist[F_REBOOT_CONTROLLER]                 	= &reboot_controller;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -354,6 +355,39 @@ void validate64(int64_t arg, int64_t retval, char* modename, enum numberMode num
 	}
 }
 
+int executeCommand(char* command, char* result, enum TLogLevel level) {
+	const size_t tempsize = 256;
+	char temp[tempsize];
+	memset(temp, 0, tempsize);
+	memset(result, 0, MAX_STR_LENGTH);
+
+	FILE_LOG(level, ("Executing command:\n[%s]\n", command));
+	strcat(command, " 2>&1");
+
+	fflush(stdout);
+	FILE* sysFile = popen(command, "r");
+	while(fgets(temp, tempsize, sysFile) != NULL) {
+		// size left excludes terminating character
+		size_t sizeleft = MAX_STR_LENGTH - strlen(result) - 1;
+		// more than the command
+		if (tempsize > sizeleft) {
+			strncat(result, temp, sizeleft);
+			break;
+		}
+		strncat(result, temp, tempsize);
+		memset(temp, 0, tempsize);
+	}
+	int sucess = pclose(sysFile);
+	if (strlen(result)) {
+		if (sucess) {
+			sucess = FAIL;
+			FILE_LOG(logERROR, ("%s\n", result));
+		} else {
+			FILE_LOG(level, ("Result:\n[%s]\n", result));
+		}
+	}
+	return sucess;
+}
 
 int  M_nofunc(int file_des) {
 	ret = FAIL;
@@ -399,27 +433,10 @@ int exec_command(int file_des) {
 
 	if (receiveData(file_des, cmd, MAX_STR_LENGTH, OTHER) < 0)
 		return printSocketReadError();
-	FILE_LOG(logINFO, ("Executing command (%s)\n", cmd));
 
 	// set
 	if (Server_VerifyLock() == OK) {
-		FILE* sysFile = popen(cmd, "r");
-		const size_t tempsize = 256;
-		char temp[tempsize];
-		memset(temp, 0, tempsize);
-		while(fgets(temp, tempsize, sysFile) != NULL) {
-			// size left excludes terminating character
-			size_t sizeleft = MAX_STR_LENGTH - strlen(retval) - 1;
-			// more than the command
-			if (tempsize > sizeleft) {
-				strncat(retval, temp, sizeleft);
-				break;
-			}
-			strncat(retval, temp, tempsize);
-			memset(temp, 0, tempsize);
-		}
-		pclose(sysFile);
-		FILE_LOG(logINFO, ("Result of cmd (%s):\n%s\n", cmd, retval));
+		ret = executeCommand(cmd, retval, logINFO);
 	}
 	return Server_SendResult(file_des, OTHER, NO_UPDATE, retval, sizeof(retval));
 }
@@ -2019,14 +2036,14 @@ int set_speed(int file_des) {
     	sprintf(validateName, "set %s", speedName);
 #ifndef GOTTHARDD
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
-    	if (ind == ADC_PHASE || ind == DBIT_PHASE && mode == 1) {
+    	if ((ind == ADC_PHASE || ind == DBIT_PHASE) && mode == 1) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     		ret = validatePhaseinDegrees(ind, val, retval);
 #else
     		ret = validatePhaseinDegrees(val, retval);
 #endif
     		if (ret == FAIL) {
-    			sprintf(mess, "Could not set %s. Set %s, got %s\n", validateName);
+    			sprintf(mess, "Could not set %s. Set %d, got %d\n", validateName, val, retval);
     			FILE_LOG(logERROR,(mess));
     		}
     	} else
@@ -2140,14 +2157,7 @@ int set_port(int file_des) {
 int update_client(int file_des) {
 	ret = FORCE_UPDATE;
 	memset(mess, 0, sizeof(mess));
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	if (debugflag == PROGRAMMING_MODE) {
-	    ret = OK;
-	}
-#endif
 	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
-	if (ret == OK)
-	    return ret;
 	return send_update(file_des);
 }
 
@@ -3281,110 +3291,87 @@ int program_fpga(int file_des) {
 	// only set
 	if (Server_VerifyLock() == OK) {
 
-		// not in programming mode
-		if (debugflag != PROGRAMMING_MODE) {
-			//to receive any arguments
-			int n = 1;
-			while (n > 0)
-				n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
+		FILE_LOG(logINFOBLUE, ("Programming FPGA...\n"));
+
+		size_t filesize = 0;
+		size_t totalsize = 0;
+		size_t unitprogramsize = 0;
+		char* fpgasrc = NULL;
+		FILE* fp = NULL;
+
+		// filesize
+		if (receiveData(file_des,&filesize,sizeof(filesize),INT32) < 0)
+			return printSocketReadError();
+		totalsize = filesize;
+		FILE_LOG(logDEBUG1, ("Total program size is: %d\n", totalsize));
+
+
+		// opening file pointer to flash and telling FPGA to not touch flash
+		if (startWritingFPGAprogram(&fp) != OK) {
 			ret = FAIL;
-			sprintf(mess,"FPGA cannot be programmed in this mode. "
-					"Restart on-board detector server with -update for programming mode.\n");
+			sprintf(mess,"Could not write to flash. Error at startup.\n");
 			FILE_LOG(logERROR,(mess));
 		}
+		Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
 
-		else {
-			FILE_LOG(logINFOBLUE, ("Programming FPGA...\n"));
 
-			size_t filesize = 0;
-			size_t totalsize = 0;
-			size_t unitprogramsize = 0;
-			char* fpgasrc = NULL;
-			FILE* fp = NULL;
+		//erasing flash
+		if (ret != FAIL) {
+			eraseFlash();
+			fpgasrc = (char*)malloc(MAX_FPGAPROGRAMSIZE);
+		}
 
-			// filesize
-			if (receiveData(file_des,&filesize,sizeof(filesize),INT32) < 0)
+
+		//writing to flash part by part
+		while(ret != FAIL && filesize) {
+
+			unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
+			if (unitprogramsize > filesize) //less than 2mb
+				unitprogramsize = filesize;
+			FILE_LOG(logDEBUG1, ("unit size to receive is:%d\nfilesize:%d\n", unitprogramsize, filesize));
+
+			//receive part of program
+			if (receiveData(file_des,fpgasrc,unitprogramsize,OTHER) < 0)
 				return printSocketReadError();
-			totalsize = filesize;
-			FILE_LOG(logDEBUG1, ("Total program size is: %d\n", totalsize));
 
-			// opening file pointer to flash and telling FPGA to not touch flash
-			if (startWritingFPGAprogram(&fp) != OK) {
-				ret = FAIL;
-				sprintf(mess,"Could not write to flash. Error at startup.\n");
-				FILE_LOG(logERROR,(mess));
-			}
+			if (!(unitprogramsize - filesize)) {
+				fpgasrc[unitprogramsize] = '\0';
+				filesize -= unitprogramsize;
+				unitprogramsize++;
+			} else
+				filesize -= unitprogramsize;
 
-			//---------------- first ret ----------------
+			// write part to flash
+			ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
 			Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
-
-			if (ret != FAIL) {
-				//erasing flash
-				eraseFlash();
-				fpgasrc = (char*)malloc(MAX_FPGAPROGRAMSIZE);
-			}
-
-			//writing to flash part by part
-			while(ret != FAIL && filesize) {
-
-				unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
-				if (unitprogramsize > filesize) //less than 2mb
-					unitprogramsize = filesize;
-				FILE_LOG(logDEBUG1, ("unit size to receive is:%d\n"
-						"filesize:%d\n", unitprogramsize, filesize));
-
-
-				//receive part of program
-				if (receiveData(file_des,fpgasrc,unitprogramsize,OTHER) < 0)
-					return printSocketReadError();
-
-				if (!(unitprogramsize - filesize)) {
-					fpgasrc[unitprogramsize] = '\0';
-					filesize -= unitprogramsize;
-					unitprogramsize++;
-				} else
-					filesize -= unitprogramsize;
-
-				// write part to flash
-				ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
-
-				//---------------- middle rets ----------------
-				Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
-
-
-
-				if (ret == FAIL) {
-				    FILE_LOG(logERROR, ("Failure: Breaking out of program receiving\n"));
-				} else {
-					//print progress
-					FILE_LOG(logINFO, ("Writing to Flash:%d%%\r",
-							(int) (((double)(totalsize-filesize)/totalsize)*100) ));
-					fflush(stdout);
-				}
-			}
-			printf("\n");
-			FILE_LOG(logINFO, ("Done copying program or due to failure earlier\n"));
-
-			// closing file pointer to flash and informing FPGA
-			stopWritingFPGAprogram(fp);
-
-			//free resources
-			if (fpgasrc != NULL)
-				free(fpgasrc);
-			if (fp != NULL)
-				fclose(fp);
-
-			FILE_LOG(logDEBUG1, ("Done with program receiving command\n"));
-
-			if (ret != FAIL && isControlServer) {
-				basictests();
-				initControlServer();
+			if (ret == FAIL) {
+				FILE_LOG(logERROR, ("Failure: Breaking out of program receiving\n"));
+			} else {
+				//print progress
+				FILE_LOG(logINFO, ("Writing to Flash:%d%%\r",
+						(int) (((double)(totalsize-filesize)/totalsize)*100) ));
+				fflush(stdout);
 			}
 		}
+		printf("\n");
+		if (ret == OK) {
+			FILE_LOG(logINFO, ("Done copying program\n"));
+		}
+
+		// closing file pointer to flash and informing FPGA
+		stopWritingFPGAprogram(fp);
+
+		//free resources
+		if (fpgasrc != NULL)
+			free(fpgasrc);
+		if (fp != NULL)
+			fclose(fp);
+
+		FILE_LOG(logINFO, ("Completed program fpga command with %s\n", (ret == OK ? "success" : "fail")));
 	}
 #endif
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return ret;
 }
 
 
@@ -3403,8 +3390,7 @@ int reset_fpga(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		if (isControlServer) {
 			basictests();	// mapping of control server at least
-			if (debugflag != PROGRAMMING_MODE)
-				initControlServer();
+			initControlServer();
 		}
 		else initStopServer(); //remapping of stop server
 		ret = FORCE_UPDATE;
@@ -3788,6 +3774,83 @@ int digital_io_delay(int file_des) {
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
+int copy_detector_server(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char args[2][MAX_STR_LENGTH];
+	char retvals[MAX_STR_LENGTH] = {0};
+
+    memset(args, 0, sizeof(args));
+    memset(retvals, 0, sizeof(retvals));
+
+    if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
+        return printSocketReadError();
+
+#ifdef EIGERD
+    functionNotImplemented();
+#else
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        char* sname = args[0];
+        char* hostname = args[1];
+        FILE_LOG(logINFOBLUE, ("Copying server %s from host %s\n", sname, hostname));
+
+        char cmd[MAX_STR_LENGTH];
+        memset(cmd, 0, MAX_STR_LENGTH);
+
+        // copy server
+        sprintf(cmd, "tftp %s -r %s -g", hostname, sname);
+        int success = executeCommand(cmd, retvals, logDEBUG1);
+        if (success == FAIL) {
+        	ret = FAIL;
+        	strcpy(mess, retvals);
+        	//FILE_LOG(logERROR, (mess)); already printed in executecommand
+        }
+
+        // success
+        else {
+        	FILE_LOG(logINFO, ("Server copied successfully\n"));
+        	// give permissions
+        	sprintf(cmd, "chmod 777 %s", sname);
+        	executeCommand(cmd, retvals, logDEBUG1);
+
+        	// edit /etc/inittab
+        	// find line numbers in /etc/inittab where DetectorServer
+        	strcpy(cmd, "sed -n '/DetectorServer/=' /etc/inittab");
+        	executeCommand(cmd, retvals, logDEBUG1);
+        	while (strlen(retvals)) {
+        		// get first linen number
+        		int lineNumber = atoi(retvals);
+        		// delete that line
+        		sprintf(cmd, "sed -i \'%dd\' /etc/inittab", lineNumber);
+        		executeCommand(cmd, retvals, logDEBUG1);
+        		// find line numbers again
+        		strcpy(cmd, "sed -n '/DetectorServer/=' /etc/inittab");
+        		executeCommand(cmd, retvals, logDEBUG1);
+        	}
+        	FILE_LOG(logINFO, ("Deleted all lines containing DetectorServer in /etc/inittab\n"));
+
+        	// append line
+        	sprintf(cmd, "echo \"ttyS0::respawn:/./%s\" >> /etc/inittab", sname);
+        	executeCommand(cmd, retvals, logDEBUG1);
+
+        	FILE_LOG(logINFO, ("/etc/inittab modified to have %s\n", sname));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, OTHER, NO_UPDATE, retvals, sizeof(retvals));
+}
 
 
-
+int reboot_controller(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+#ifdef EIGERD
+	functionNotImplemented();
+	return ret;
+#else
+	FILE_LOG(logINFORED, ("Rebooting controller\n"));
+	return REBOOT;
+#endif
+}

@@ -3,11 +3,9 @@
 #include "RegisterDefs.h"
 
 
-#define GOODBYE 					(-200)
 #define MIN_REQRD_VRSN_T_RD_API     0x171220
 #define REQRD_FRMWR_VRSN            0x181206 // temp bug fix from last version, timing mode is backwards compatible
 
-#define PROGRAMMING_MODE            (0x2)
 #define BOARD_JUNGFRAU_TYPE         (8)
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 

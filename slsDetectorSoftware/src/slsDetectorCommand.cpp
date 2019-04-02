@@ -405,6 +405,27 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
     ++i;
 
+    /*! \page config
+   - <b>copydetectorserver [sname] [phost]</b> copies the detector server sname via tftp from pc with hostname phost and changes respawn server for all detector. Not for Eiger.  Only put! \c Returns \c ("successful", "failed")
+	 */
+    descrToFuncMap[i].m_pFuncName = "copydetectorserver";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
+    ++i;
+
+    /*! \page config
+   - <b>rebootdetpc </b> reboot detector controller blackfin. Only put! Not for Eiger. \c Returns \c ("successful", "failed")
+	 */
+    descrToFuncMap[i].m_pFuncName = "rebootcontroller";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
+    ++i;
+
+    /*! \page config
+   - <b>update [sname] [phost] [file] </b> updates the firmware to file and detector server to sname from phost via tftp and then reboots controller (blackfin). Only put! Not for Eiger. \c Returns \c ("successful", "failed")
+	 */
+    descrToFuncMap[i].m_pFuncName = "update";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
+    ++i;
+
     /* chip */
     /*! \page config
 		\section configchip Chip
@@ -4753,9 +4774,6 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, 
         if (strstr(args[1], ".pof") == nullptr)
             return std::string("wrong usage: programming file should have .pof extension");
         std::string sval = std::string(args[1]);
-#ifdef VERBOSE
-        std::cout << " programming file " << sval << std::endl;
-#endif
         myDet->setOnline(ONLINE_FLAG, detPos);
         if (myDet->programFPGA(sval, detPos) == OK)
             return std::string("successful");
@@ -4765,11 +4783,47 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, 
     else if (cmd == "resetfpga") {
         if (action == GET_ACTION)
             return std::string("cannot get");
-#ifdef VERBOSE
-        std::cout << " resetting fpga " << std::endl;
-#endif
         myDet->setOnline(ONLINE_FLAG, detPos);
         if (myDet->resetFPGA(detPos) == OK)
+            return std::string("successful");
+        return std::string("failed");
+    }
+
+    else if (cmd == "copydetectorserver") {
+        if (action == GET_ACTION)
+            return std::string("cannot get");
+        if (narg < 3)
+        	return ("wrong usage." + helpAdvanced(PUT_ACTION));
+        std::string sval = std::string(args[1]);
+        std::string pval = std::string(args[2]);
+        myDet->setOnline(ONLINE_FLAG, detPos);
+        if (myDet->copyDetectorServer(sval, pval, detPos) == OK)
+            return std::string("successful");
+        return std::string("failed");
+    }
+
+    else if (cmd == "rebootcontroller") {
+        if (action == GET_ACTION)
+            return std::string("cannot get");
+        myDet->setOnline(ONLINE_FLAG, detPos);
+        if (myDet->rebootController(detPos) == OK)
+            return std::string("successful");
+        return std::string("failed");
+    }
+
+    else if (cmd == "update") {
+        if (action == GET_ACTION)
+            return std::string("cannot get");
+        if (narg < 4)
+        	return ("wrong usage." + helpAdvanced(PUT_ACTION));
+        // pof
+        if (strstr(args[3], ".pof") == nullptr)
+            return std::string("wrong usage: programming file should have .pof extension");
+        std::string sval = std::string(args[1]);
+        std::string pval = std::string(args[2]);
+        std::string fval = std::string(args[3]);
+        myDet->setOnline(ONLINE_FLAG, detPos);
+        if (myDet->update(sval, pval, fval, detPos) == OK)
             return std::string("successful");
         return std::string("failed");
     }
@@ -4842,7 +4896,9 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
 
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
         os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
-
+        os << "copydetectorserver s p \t copies the detector server s via tftp from pc with hostname p and changes respawn server. Not for Eiger. " << std::endl;
+        os << "rebootcontroller \t reboot controler blackfin of the detector. Not for Eiger." << std::endl;
+        os << "update s p f \t updates the firmware to f and detector server to f from host p via tftp and then reboots controller (blackfin). Not for Eiger. " << std::endl;
         os << "led s \t sets led status (0 off, 1 on)" << std::endl;
         os << "diodelay m v \tsets the delay for the digital IO pins selected by mask m and delay set by v. mask is upto 64 bits in hex, delay max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only." << std::endl;
         os << "powerchip i \t powers on or off the chip. i = 1 for on, i = 0 for off" << std::endl;

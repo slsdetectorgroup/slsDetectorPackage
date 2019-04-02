@@ -1,12 +1,5 @@
-#ifndef MULTI_SLS_DETECTOR_H
-#define MULTI_SLS_DETECTOR_H
+#pragma once
 
-/**
- @libdoc The multiSlsDetector class is used to operate several slsDetectors in
- parallel.
- * @short This is the base class for multi detector system functionalities
- * @author Anna Bergamaschi
- */
 #include "SharedMemory.h"
 #include "error_defs.h"
 #include "gitInfoLib.h"
@@ -167,6 +160,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     template <typename RT, typename... CT>
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...) const,
                                  typename NonDeduced<CT>::type... Args) const;
+
+
+    template <typename... CT>
+    void parallelCall(void (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args);
+
+    template <typename... CT>
+    void parallelCall(void (slsDetector::*somefunc)(CT...) const, typename NonDeduced<CT>::type... Args) const;
+
 
     /**
      * Decodes which detector and the corresponding channel numbers for it
@@ -1431,7 +1432,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setStoragecellStart(int pos = -1, int detPos = -1);
 
     /**
-     * Programs FPGA with pof file (Jungfrau)
+     * Programs FPGA with pof file (Not Eiger)
      * @param fname file name
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
@@ -1439,11 +1440,37 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int programFPGA(const std::string &fname, int detPos = -1);
 
     /**
-     * Resets FPGA (Jungfrau)
+     * Resets FPGA (Not Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
     int resetFPGA(int detPos = -1);
+
+    /**
+     * Copies detector server from tftp and changes respawn server (Not Eiger)
+     * @param fname name of detector server binary
+     * @param hostname name of pc to tftp from
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns OK or FAIL
+     */
+    int copyDetectorServer(const std::string &fname, const std::string &hostname, int detPos = -1);
+
+    /**
+     * Reboot detector controller (Not Eiger)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns OK or FAIL
+     */
+    int rebootController(int detPos = -1);
+
+    /**
+     * Updates the firmware, detector server and then reboots detector controller blackfin. (Not Eiger)
+     * @param sname name of detector server binary
+     * @param hostname name of pc to tftp from
+     * @param fname programming file name
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns OK or FAIL
+     */
+    int update(const std::string &sname, const std::string &hostname, const std::string &fname, int detPos = -1);
 
     /**
      * Power on/off Chip (Jungfrau)
@@ -2010,11 +2037,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void startProcessingThread();
 
-    // /**
-    //  * Static function to call processing thread
-    //  */
-    // static void* startProcessData(void *n);
-
     /**
      * Check if processing thread is ready to join main thread
      * @returns true if ready, else false
@@ -2032,6 +2054,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * when using acquire command
      */
     int kbhit();
+
+    /**
+     * Convert raw file
+     * @param fname name of pof file
+     * @param fpgasrc pointer in memory to read pof to
+     * @returns file size
+     */
+    std::vector<char> readPofFile(const std::string &fname);
+
 
     /** Multi detector Id */
     const int multiId;
@@ -2091,4 +2122,3 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void *pCallbackArg{nullptr};
 };
 
-#endif

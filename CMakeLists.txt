@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 # cmake_minimum_required(VERSION 3.5)
 project(slsDetectorPackage)
+set(PROJECT_VERSION 5.0.0)
+# set(PACKAGE_VERSION ${})
+
 include(cmake/project_version.cmake)
 
 # Include additional modules that are used unconditionally
@@ -40,6 +43,11 @@ option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "No build type selected, default to Release")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
+endif()
 
 #Testing for minimum version for compilers
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

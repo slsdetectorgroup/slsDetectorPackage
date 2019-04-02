@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <sstream>
@@ -15,7 +16,7 @@
 
 namespace sls {
 
-IpAddr::IpAddr(uint32_t address) : addr_{address} {}
+
 IpAddr::IpAddr(const std::string &address) { inet_pton(AF_INET, address.c_str(), &addr_); }
 IpAddr::IpAddr(const char *address) { inet_pton(AF_INET, address, &addr_); }
 std::string IpAddr::str() const {
@@ -32,18 +33,18 @@ std::string IpAddr::hex() const {
     return ss.str();
 }
 
-MacAddr::MacAddr(uint64_t mac) : addr_{mac} {}
 MacAddr::MacAddr(std::string mac) {
     if ((mac.length() != 17) || (mac[2] != ':') || (mac[5] != ':') || (mac[8] != ':') ||
         (mac[11] != ':') || (mac[14] != ':')) {
         addr_ = 0;
+    } else {
+        mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
+        addr_ = std::strtoul(mac.c_str(), nullptr, 16);
     }
-    mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
-    addr_ = std::stol(mac, nullptr, 16);
 }
 MacAddr::MacAddr(const char *address) : MacAddr(std::string(address)) {}
 
-std::string MacAddr::to_hex(const char delimiter) const{
+std::string MacAddr::to_hex(const char delimiter) const {
     std::ostringstream ss;
     ss << std::hex << std::setfill('0') << std::setw(2);
     ss << ((addr_ >> 40) & 0xFF);
@@ -55,53 +56,9 @@ std::string MacAddr::to_hex(const char delimiter) const{
     return ss.str();
 }
 
-std::ostream &operator<<(std::ostream &out, const IpAddr &addr){
-    return out << addr.str();
-}
+std::ostream &operator<<(std::ostream &out, const IpAddr &addr) { return out << addr.str(); }
 
-std::ostream &operator<<(std::ostream &out, const MacAddr &addr){
-    return out << addr.str();
-}
-
-std::string MacAddrToString(uint64_t mac) {
-    std::ostringstream ss;
-    ss << std::hex << std::setfill('0') << std::setw(2);
-    ss << ((mac >> 40) & 0xFF);
-    for (int i = 32; i >= 0; i -= 8) {
-        ss << ':' << ((mac >> i) & 0xFF);
-    }
-    return ss.str();
-}
-
-uint64_t MacStringToUint(std::string mac) {
-    if ((mac.length() != 17) || (mac[2] != ':') || (mac[5] != ':') || (mac[8] != ':') ||
-        (mac[11] != ':') || (mac[14] != ':')) {
-        return 0;
-    }
-    mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
-    return std::stol(mac, nullptr, 16);
-}
-
-uint32_t IpStringToUint(const char *ipstr) {
-    uint32_t ip{0};
-    inet_pton(AF_INET, ipstr, &ip);
-    return ip;
-}
-
-std::string IpToString(uint32_t ip) {
-    char ipstring[INET_ADDRSTRLEN]{};
-    inet_ntop(AF_INET, &ip, ipstring, INET_ADDRSTRLEN);
-    return ipstring;
-}
-
-std::string IpToHexString(uint32_t ip) {
-    std::ostringstream ss;
-    ss << std::hex << std::setfill('0') << std::setw(2);
-    for (int i = 0; i != 4; ++i) {
-        ss << ((ip >> i * 8) & 0xFF);
-    }
-    return ss.str();
-}
+std::ostream &operator<<(std::ostream &out, const MacAddr &addr) { return out << addr.str(); }
 
 uint32_t HostnameToIp(const char *hostname) {
     struct addrinfo hints, *result;

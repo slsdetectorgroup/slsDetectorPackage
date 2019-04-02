@@ -1573,7 +1573,7 @@ int slsDetector::configureMAC() {
     FILE_LOG(logDEBUG1) << "Configuring MAC";
     if (detector_shm()->receiverUDPIP == 0) {
         // If hostname is valid ip use that, oterwise lookup hostname
-        detector_shm()->receiverUDPIP = IpStringToUint(detector_shm()->receiver_hostname);
+        detector_shm()->receiverUDPIP = detector_shm()->receiver_hostname;
         if (detector_shm()->receiverUDPIP == 0) {
             detector_shm()->receiverUDPIP = HostnameToIp(detector_shm()->receiver_hostname);
         }
@@ -1597,23 +1597,15 @@ int slsDetector::configureMAC() {
 
     // copy to args and convert to hex
     snprintf(args[0], array_size, "%x", detector_shm()->receiverUDPPort);
-    // snprintf(args[1], array_size, "%x", __builtin_bswap32(detector_shm()->receiverUDPIP));
-    sls::strcpy_safe(args[1], getReceiverUDPIP().str());
-    sls::strcpy_safe(args[2], getReceiverUDPMAC().hex().c_str());
-    // sls::removeChar(args[2], ':');
-    sls::strcpy_safe(args[3], getDetectorIP().hex().c_str());
-    sls::strcpy_safe(args[4], getDetectorMAC().hex().c_str());
-    // sls::removeChar(args[4], ':');
+    sls::strcpy_safe(args[1], getReceiverUDPIP().str()); //TODO! Why not hex? 
+    sls::strcpy_safe(args[2], getReceiverUDPMAC().hex());
+    sls::strcpy_safe(args[3], getDetectorIP().hex());
+    sls::strcpy_safe(args[4], getDetectorMAC().hex());
     snprintf(args[5], array_size, "%x", detector_shm()->receiverUDPPort2);
-    // snprintf(args[6], array_size, "%x", __builtin_bswap32(detector_shm()->receiverUDPIP2));
     sls::strcpy_safe(args[6], getReceiverUDPIP2().str());
-    sls::strcpy_safe(args[7], getReceiverUDPMAC2().hex().c_str());
-    // sls::removeChar(args[7], ':');
-    sls::strcpy_safe(args[8], getDetectorIP2().hex().c_str());
-    sls::strcpy_safe(args[9], getDetectorMAC2().hex().c_str());
-    // sls::removeChar(args[9], ':');
-
-    // number of interfaces and which one
+    sls::strcpy_safe(args[7], getReceiverUDPMAC2().hex());
+    sls::strcpy_safe(args[8], getDetectorIP2().hex());
+    sls::strcpy_safe(args[9], getDetectorMAC2().hex());
     snprintf(args[10], array_size, "%x", detector_shm()->numUDPInterfaces);
     snprintf(args[11], array_size, "%x", detector_shm()->selectedUDPInterface);
 
@@ -2237,48 +2229,43 @@ std::string slsDetector::getReceiverHostname() const {
 }
 
 std::string slsDetector::setReceiverUDPIP(const std::string &udpip) {
-
-    if (udpip.length() && udpip.length() < 16) {
-        auto ip = IpStringToUint(udpip.c_str());
-        if (ip == 0) {
-            throw ReceiverError("setReceiverUDPIP: UDP IP Address should be "
-                                "VALID and in xxx.xxx.xxx.xxx format");
-        } else {
-            detector_shm()->receiverUDPIP = ip;
-            if (!strcmp(detector_shm()->receiver_hostname, "none")) {
-                FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
-            } else if (setUDPConnection() == FAIL) {
-                FILE_LOG(logWARNING) << "UDP connection set up failed";
-            }
+    auto ip = IpAddr(udpip);
+    if (ip == 0) {
+        throw ReceiverError("setReceiverUDPIP: UDP IP Address should be "
+                            "VALID and in xxx.xxx.xxx.xxx format");
+    } else {
+        detector_shm()->receiverUDPIP = ip;
+        if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+            FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
+        } else if (setUDPConnection() == FAIL) {
+            FILE_LOG(logWARNING) << "UDP connection set up failed";
         }
+        return getReceiverUDPIP().str();
     }
-    return getReceiverUDPIP().str();
 }
 
 sls::IpAddr slsDetector::getReceiverUDPIP() const { return detector_shm()->receiverUDPIP; }
 
 std::string slsDetector::setReceiverUDPIP2(const std::string &udpip) {
-    if (udpip.length() && udpip.length() < 16) {
-        auto ip = IpStringToUint(udpip.c_str());
-        if (ip == 0) {
-            throw ReceiverError("setReceiverUDPIP: UDP IP Address 2 should be "
-                                "VALID and in xxx.xxx.xxx.xxx format");
-        } else {
-            detector_shm()->receiverUDPIP2 = ip;
-            if (!strcmp(detector_shm()->receiver_hostname, "none")) {
-                FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
-            } else if (setUDPConnection() == FAIL) {
-                FILE_LOG(logWARNING) << "UDP connection set up failed";
-            }
+    auto ip = IpAddr(udpip);
+    if (ip == 0) {
+        throw ReceiverError("setReceiverUDPIP: UDP IP Address 2 should be "
+                            "VALID and in xxx.xxx.xxx.xxx format");
+    } else {
+        detector_shm()->receiverUDPIP2 = ip;
+        if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+            FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
+        } else if (setUDPConnection() == FAIL) {
+            FILE_LOG(logWARNING) << "UDP connection set up failed";
         }
+        return getReceiverUDPIP2().str();
     }
-    return getReceiverUDPIP2().str();
 }
 
 sls::IpAddr slsDetector::getReceiverUDPIP2() const { return detector_shm()->receiverUDPIP2; }
 
 std::string slsDetector::setReceiverUDPMAC(const std::string &udpmac) {
-    auto mac = MacStringToUint(udpmac);
+    auto mac = MacAddr(udpmac);
     if (mac == 0) {
         throw ReceiverError("Could not decode UDPMAC from: " + udpmac);
     }
@@ -2289,7 +2276,7 @@ std::string slsDetector::setReceiverUDPMAC(const std::string &udpmac) {
 MacAddr slsDetector::getReceiverUDPMAC() const { return detector_shm()->receiverUDPMAC; }
 
 std::string slsDetector::setReceiverUDPMAC2(const std::string &udpmac) {
-    auto mac = MacStringToUint(udpmac);
+    auto mac = MacAddr(udpmac);
     if (mac == 0) {
         throw ReceiverError("Could not decode UDPMA2C from: " + udpmac);
     }
@@ -2647,7 +2634,7 @@ int slsDetector::setUDPConnection() {
 
     if (detector_shm()->receiverUDPIP == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
-        detector_shm()->receiverUDPIP = IpStringToUint(detector_shm()->receiver_hostname);
+        detector_shm()->receiverUDPIP = detector_shm()->receiver_hostname;
         if (detector_shm()->receiverUDPIP == 0) {
             detector_shm()->receiverUDPIP = HostnameToIp(detector_shm()->receiver_hostname);
         }
@@ -2681,11 +2668,11 @@ int slsDetector::setUDPConnection() {
         ret = receiver.sendCommandThenRead(fnum, args, sizeof(args), retvals, sizeof(retvals));
         if (strlen(retvals[0])) {
             FILE_LOG(logDEBUG1) << "Receiver UDP MAC returned : " << retvals[0];
-            detector_shm()->receiverUDPMAC = MacStringToUint(retvals[0]);
+            detector_shm()->receiverUDPMAC = retvals[0];
         }
         if (strlen(retvals[1])) {
             FILE_LOG(logDEBUG1) << "Receiver UDP MAC2 returned : " << retvals[1];
-            detector_shm()->receiverUDPMAC2 = MacStringToUint(retvals[1]);
+            detector_shm()->receiverUDPMAC2 = retvals[1];
         }
         if (ret == FORCE_UPDATE) {
             receiver.close();

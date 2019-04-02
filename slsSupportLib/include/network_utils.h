@@ -4,11 +4,6 @@
 
 namespace sls {
 
-std::string MacAddrToString(uint64_t mac);
-uint64_t MacStringToUint(std::string mac);
-uint32_t IpStringToUint(const char *ipstr);
-std::string IpToString(uint32_t ip);
-std::string IpToHexString(uint32_t ip);
 uint32_t HostnameToIp(const char *hostname);
 
 class IpAddr {
@@ -16,7 +11,7 @@ class IpAddr {
     uint32_t addr_{0};
 
   public:
-    IpAddr(uint32_t address);
+    constexpr IpAddr(uint32_t address) noexcept: addr_{address} {}
     IpAddr(const std::string &address);
     IpAddr(const char *address);
     std::string str() const;
@@ -33,7 +28,7 @@ class MacAddr {
     std::string to_hex(const char delimiter = 0) const;
 
   public:
-    MacAddr(uint64_t mac);
+    constexpr MacAddr(uint64_t mac) noexcept : addr_{mac} {}
     MacAddr(std::string mac);
     MacAddr(const char *address);
     std::string str() const { return to_hex(':'); }

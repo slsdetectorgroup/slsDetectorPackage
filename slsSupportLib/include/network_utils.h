@@ -11,15 +11,15 @@ class IpAddr {
     uint32_t addr_{0};
 
   public:
-    constexpr IpAddr(uint32_t address) noexcept: addr_{address} {}
+    constexpr IpAddr(uint32_t address) noexcept : addr_{address} {}
     IpAddr(const std::string &address);
     IpAddr(const char *address);
     std::string str() const;
     std::string hex() const;
-    bool operator==(const IpAddr &other) const { return addr_ == other.addr_; }
-    bool operator!=(const IpAddr &other) const { return addr_ != other.addr_; }
-    bool operator==(const uint32_t other) const { return addr_ == other; }
-    bool operator!=(const uint32_t other) const { return addr_ != other; }
+    constexpr bool operator==(const IpAddr &other) const noexcept { return addr_ == other.addr_; }
+    constexpr bool operator!=(const IpAddr &other) const noexcept { return addr_ != other.addr_; }
+    constexpr bool operator==(const uint32_t other) const noexcept { return addr_ == other; }
+    constexpr bool operator!=(const uint32_t other) const noexcept { return addr_ != other; }
 };
 
 class MacAddr {
@@ -33,10 +33,10 @@ class MacAddr {
     MacAddr(const char *address);
     std::string str() const { return to_hex(':'); }
     std::string hex() const { return to_hex(); }
-    bool operator==(const MacAddr &other) const { return addr_ == other.addr_; }
-    bool operator!=(const MacAddr &other) const { return addr_ != other.addr_; }
-    bool operator==(const uint64_t other) const { return addr_ == other; }
-    bool operator!=(const uint64_t other) const { return addr_ != other; }
+    constexpr bool operator==(const MacAddr &other) const noexcept { return addr_ == other.addr_; }
+    constexpr bool operator!=(const MacAddr &other) const noexcept { return addr_ != other.addr_; }
+    constexpr bool operator==(const uint64_t other) const noexcept { return addr_ == other; }
+    constexpr bool operator!=(const uint64_t other) const noexcept { return addr_ != other; }
 };
 
 std::ostream &operator<<(std::ostream &out, const IpAddr &addr);

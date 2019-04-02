@@ -16,8 +16,9 @@
 
 namespace sls {
 
-
-IpAddr::IpAddr(const std::string &address) { inet_pton(AF_INET, address.c_str(), &addr_); }
+IpAddr::IpAddr(const std::string &address) {
+    inet_pton(AF_INET, address.c_str(), &addr_);
+}
 IpAddr::IpAddr(const char *address) { inet_pton(AF_INET, address, &addr_); }
 std::string IpAddr::str() const {
     char ipstring[INET_ADDRSTRLEN]{};
@@ -34,8 +35,8 @@ std::string IpAddr::hex() const {
 }
 
 MacAddr::MacAddr(std::string mac) {
-    if ((mac.length() != 17) || (mac[2] != ':') || (mac[5] != ':') || (mac[8] != ':') ||
-        (mac[11] != ':') || (mac[14] != ':')) {
+    if ((mac.length() != 17) || (mac[2] != ':') || (mac[5] != ':') ||
+        (mac[8] != ':') || (mac[11] != ':') || (mac[14] != ':')) {
         addr_ = 0;
     } else {
         mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
@@ -56,9 +57,13 @@ std::string MacAddr::to_hex(const char delimiter) const {
     return ss.str();
 }
 
-std::ostream &operator<<(std::ostream &out, const IpAddr &addr) { return out << addr.str(); }
+std::ostream &operator<<(std::ostream &out, const IpAddr &addr) {
+    return out << addr.str();
+}
 
-std::ostream &operator<<(std::ostream &out, const MacAddr &addr) { return out << addr.str(); }
+std::ostream &operator<<(std::ostream &out, const MacAddr &addr) {
+    return out << addr.str();
+}
 
 uint32_t HostnameToIp(const char *hostname) {
     struct addrinfo hints, *result;

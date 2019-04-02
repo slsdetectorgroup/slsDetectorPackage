@@ -27,13 +27,7 @@ int main() {
     IpAddr a("129.129.205.242");
     IpAddr b(4073554305);
 
-    std::cout << "a is: " << a << " and b is: " << b << "\n";
-    if (a == b)
-        std::cout << "a is equal to b\n";
-
-    std::cout << "as hex they look like: " << a.hex() << "\n";
-    std::cout << "and the best thing is that the size is only: " << sizeof(a) << " bytes\n";
-
-
+    std::vector<IpAddr> vec;
+    vec.push_back(a);
     return 0;
 }

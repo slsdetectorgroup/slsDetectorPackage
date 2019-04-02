@@ -17,6 +17,7 @@ namespace sls {
 
 IpAddr::IpAddr(uint32_t address) : addr_{address} {}
 IpAddr::IpAddr(const std::string &address) { inet_pton(AF_INET, address.c_str(), &addr_); }
+IpAddr::IpAddr(const char *address) { inet_pton(AF_INET, address, &addr_); }
 std::string IpAddr::str() const {
     char ipstring[INET_ADDRSTRLEN]{};
     inet_ntop(AF_INET, &addr_, ipstring, INET_ADDRSTRLEN);
@@ -31,6 +32,7 @@ std::string IpAddr::hex() const {
     return ss.str();
 }
 
+MacAddr::MacAddr(uint64_t mac) : addr_{mac} {}
 MacAddr::MacAddr(std::string mac) {
     if ((mac.length() != 17) || (mac[2] != ':') || (mac[5] != ':') || (mac[8] != ':') ||
         (mac[11] != ':') || (mac[14] != ':')) {
@@ -39,8 +41,9 @@ MacAddr::MacAddr(std::string mac) {
     mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
     addr_ = std::stol(mac, nullptr, 16);
 }
+MacAddr::MacAddr(const char *address) : MacAddr(std::string(address)) {}
 
-std::string MacAddr::to_hex(const char delimiter) {
+std::string MacAddr::to_hex(const char delimiter) const{
     std::ostringstream ss;
     ss << std::hex << std::setfill('0') << std::setw(2);
     ss << ((addr_ >> 40) & 0xFF);
@@ -50,6 +53,14 @@ std::string MacAddr::to_hex(const char delimiter) {
         ss << ((addr_ >> i) & 0xFF);
     }
     return ss.str();
+}
+
+std::ostream &operator<<(std::ostream &out, const IpAddr &addr){
+    return out << addr.str();
+}
+
+std::ostream &operator<<(std::ostream &out, const MacAddr &addr){
+    return out << addr.str();
 }
 
 std::string MacAddrToString(uint64_t mac) {

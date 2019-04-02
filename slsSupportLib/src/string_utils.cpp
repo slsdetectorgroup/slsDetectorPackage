@@ -1,6 +1,7 @@
 
 #include "string_utils.h"
 #include "container_utils.h"
+#include "network_utils.h"
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -38,6 +39,22 @@ std::string concatenateIfDifferent(const std::vector<std::string>& container)
         return result;
     }
 }
+template<typename T>
+std::string concatenateIfDifferent(const std::vector<T>& container)
+{
+    if (allEqual(container)) {
+        return container.front().str();
+    } else {
+        std::string result;
+        for (const auto& s : container)
+            result += s.str() + '+';
+        return result;
+    }
+}
+
+template std::string concatenateIfDifferent(const std::vector<IpAddr>&);
+template std::string concatenateIfDifferent(const std::vector<MacAddr>&);
+
 
 std::string stringIpToHex(const std::string& ip)
 {

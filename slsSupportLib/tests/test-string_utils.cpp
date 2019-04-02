@@ -111,3 +111,5 @@ TEST_CASE("Many characters in a row"){
   sls::removeChar(str, 'l');
   REQUIRE(std::string(str) == "someeequite::ongstring");
 }
+
+// TEST_CASE("concat things not being strings")

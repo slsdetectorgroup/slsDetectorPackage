@@ -1291,6 +1291,20 @@ class slsDetector : public virtual slsDetectorDefs{
     int resetFPGA();
 
     /**
+     * Copies detector server from tftp and changes respawn server (Not Eiger)
+     * @param fname name of detector server binary
+     * @param hostname name of pc to tftp from
+     * @returns OK or FAIL
+     */
+    int copyDetectorServer(const std::string &fname, const std::string &hostname);
+
+    /**
+     * Reboot detector controller (blackfin/ powerpc)
+     * @returns OK or FAIL
+     */
+    int rebootController();
+
+   /**
 	 * Power on/off Chip (Jungfrau)
 	 * @param ival on is 1, off is 0, -1 to get
 	 * @returns OK or FAIL

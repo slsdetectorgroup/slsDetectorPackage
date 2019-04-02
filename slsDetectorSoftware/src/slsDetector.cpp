@@ -848,7 +848,9 @@ int slsDetector::execCommand(const std::string &cmd) {
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, arg, sizeof(arg), retval, sizeof(retval));
-        FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
+       	if (strlen(retval)) {
+       		FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
+       	}
     }
     return ret;
 }
@@ -3410,7 +3412,7 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 		client.sendData(&fnum, sizeof(fnum));
 		client.sendData(&filesize, sizeof(filesize));
 		client.receiveData(&ret, sizeof(ret));
-		// opening error
+		// error in detector at opening file pointer to flash
 		if (ret == FAIL) {
 			client.receiveData(mess, sizeof(mess));
 			std::ostringstream os;
@@ -3421,12 +3423,10 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 
 		// erasing flash
 		if (ret != FAIL) {
-			FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
 			FILE_LOG(logINFO) << "Erasing Flash for detector " << detId << " (" << detector_shm()->hostname << ")";
 			printf("%d%%\r", 0);
 			std::cout << std::flush;
-			// erasing takes 65 seconds, printing here (otherwise need threads
-			// in server-unnecessary)
+			// erasing takes 65 seconds, printing here (otherwise need threads in server-unnecessary)
 			const int ERASE_TIME = 65;
 			int count = ERASE_TIME + 1;
 			while (count > 0) {
@@ -3473,43 +3473,10 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 			}
 		}
 		printf("\n");
-
-		// check ending error
-		if ((ret == FAIL) && (strstr(mess, "not implemented") == nullptr) &&
-				(strstr(mess, "locked") == nullptr) && (strstr(mess, "-update") == nullptr)) {
-			client.receiveData(&ret, sizeof(ret));
-			if (ret == FAIL) {
-				client.receiveData(mess, sizeof(mess));
-				std::ostringstream os;
-				os << "Detector " << detId << " (" << detector_shm()->hostname << ")" <<
-						" returned error: " << mess;
-				throw RuntimeError(os.str());
-			}
-		}
-
-		if (ret == FORCE_UPDATE) {
-			updateDetector();
-		}
-
-		// remapping stop server
-		if ((ret == FAIL) && (strstr(mess, "not implemented") == nullptr) &&
-				(strstr(mess, "locked") == nullptr) && (strstr(mess, "-update") == nullptr)) {
-			fnum = F_RESET_FPGA;
-			int stopret = FAIL;
-			auto stop = DetectorSocket(detector_shm()->hostname, detector_shm()->stopPort);
-			stop.sendData(&fnum, sizeof(fnum));
-			stop.receiveData(&stopret, sizeof(stopret));
-			if (stopret == FAIL) {
-				client.receiveData(mess, sizeof(mess));
-				std::ostringstream os;
-				os << "Detector " << detId << " (" << detector_shm()->hostname << ")" <<
-						" returned error: " << mess;
-				throw RuntimeError(os.str());
-			}
-		}
 	}
-	FILE_LOG(logINFO) << "You can now restart the detector " + std::to_string(detId) +
-			" in normal mode.";
+	if (ret != FAIL) {
+		ret = rebootController();
+	}
 	return ret;
 }
 
@@ -3527,6 +3494,37 @@ int slsDetector::resetFPGA() {
     }
     return ret;
 }
+
+int slsDetector::copyDetectorServer(const std::string &fname, const std::string &hostname) {
+    int fnum = F_COPY_DET_SERVER;
+    int ret = FAIL;
+    char args[2][MAX_STR_LENGTH] = {};
+    sls::strcpy_safe(args[0], fname.c_str());
+    sls::strcpy_safe(args[1], hostname.c_str());
+    FILE_LOG(logINFO) << "Sending detector server " << args[0]  << " from host " << args[1];
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
+        ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);
+    }
+    return ret;
+}
+
+int slsDetector::rebootController() {
+	if (detector_shm()->myDetectorType == EIGER) {
+		throw RuntimeError("Reboot controller not implemented for this detector");
+	}
+
+    int fnum = F_REBOOT_CONTROLLER;
+    int ret = FAIL;
+    FILE_LOG(logINFO) << "Sending reboot controller to detector " << detId << " (" << detector_shm()->hostname << ")";
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        auto client = DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
+        client.sendData(&fnum, sizeof(fnum));
+        ret = OK;
+    }
+    return ret;
+}
+
 
 int slsDetector::powerChip(int ival) {
     int fnum = F_POWER_CHIP;

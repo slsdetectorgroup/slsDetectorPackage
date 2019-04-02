@@ -1,7 +1,6 @@
 #pragma once
 #include "sls_detector_defs.h"
 
-#define GOODBYE 					 		(-200)
 #define REQUIRED_FIRMWARE_VERSION 	 		(22)
 #define IDFILECOMMAND						"more /home/root/executables/detid.txt"
 

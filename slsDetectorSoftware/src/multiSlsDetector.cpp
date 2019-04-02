@@ -2597,12 +2597,13 @@ int multiSlsDetector::setStoragecellStart(int pos, int detPos) {
 }
 
 int multiSlsDetector::programFPGA(const std::string &fname, int detPos) {
+	FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
 	// read pof file
 	std::vector<char> buffer = readPofFile(fname);
 
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->programFPGA(buffer);
+    	return detectors[detPos]->programFPGA(buffer);
     }
 
     // multi
@@ -2618,6 +2619,47 @@ int multiSlsDetector::resetFPGA(int detPos) {
 
     // multi
     auto r = parallelCall(&slsDetector::resetFPGA);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+int multiSlsDetector::copyDetectorServer(const std::string &fname, const std::string &hostname, int detPos) {
+    // single
+    if (detPos >= 0) {
+        detectors[detPos]->copyDetectorServer(fname, hostname);
+        return detectors[detPos]->rebootController(); // reboot and copy should be independant for update command
+    }
+
+    // multi
+    parallelCall(&slsDetector::copyDetectorServer,fname, hostname);
+    auto r = parallelCall(&slsDetector::rebootController);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+int multiSlsDetector::rebootController(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->rebootController();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::rebootController);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+int multiSlsDetector::update(const std::string &sname, const std::string &hostname, const std::string &fname, int detPos) {
+	FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
+	// read pof file
+	std::vector<char> buffer = readPofFile(fname);
+
+	// single
+    if (detPos >= 0) {
+        detectors[detPos]->copyDetectorServer(sname, hostname);
+        return detectors[detPos]->programFPGA(buffer);
+    }
+
+    // multi
+    parallelCall(&slsDetector::copyDetectorServer,sname, hostname);
+    auto r = parallelCall(&slsDetector::programFPGA, buffer);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 

@@ -98,6 +98,33 @@ std::vector<RT> multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...
     return result;
 }
 
+template <typename... CT>
+void multiSlsDetector::parallelCall(void (slsDetector::*somefunc)(CT...),
+                                    typename NonDeduced<CT>::type... Args) {
+    std::vector<std::future<void>> futures;
+    for (auto &d : detectors) {
+        futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
+    }
+    for (auto &i : futures) {
+        i.get();
+    }
+    return;
+}
+
+template <typename... CT>
+void multiSlsDetector::parallelCall(void (slsDetector::*somefunc)(CT...) const,
+                                    typename NonDeduced<CT>::type... Args) const{
+    std::vector<std::future<void>> futures;
+    for (auto &d : detectors) {
+        futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
+    }
+    for (auto &i : futures) {
+        i.get();
+    }
+    return;
+}
+
+
 int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY) {
     channelX = -1;
     channelY = -1;

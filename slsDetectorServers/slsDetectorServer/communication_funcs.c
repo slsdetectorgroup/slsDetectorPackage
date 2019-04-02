@@ -245,9 +245,10 @@ void closeConnection(int file_des) {
 void exitServer(int socketDescriptor) {
 	if (socketDescriptor >= 0)
 		close(socketDescriptor);
-	FILE_LOG(logDEBUG3, ("Closing %s server\n", (isControlServer ? "control":"stop")));
+	FILE_LOG(logINFO, ("Closing %s server\n", (isControlServer ? "control":"stop")));
 	FD_CLR(socketDescriptor, &readset);
 	isock--;
+	fflush(stdout);
 }
 
 

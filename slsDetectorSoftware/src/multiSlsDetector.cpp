@@ -2624,13 +2624,17 @@ int multiSlsDetector::setStoragecellStart(int pos, int detPos) {
 }
 
 int multiSlsDetector::programFPGA(const std::string &fname, int detPos) {
+	FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
+	// read pof file
+	std::vector<char> buffer = readPofFile(fname);
+
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->programFPGA(fname);
+    	return detectors[detPos]->programFPGA(buffer);
     }
 
     // multi
-    auto r = serialCall(&slsDetector::programFPGA, fname);
+    auto r = parallelCall(&slsDetector::programFPGA, buffer);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
@@ -2642,6 +2646,47 @@ int multiSlsDetector::resetFPGA(int detPos) {
 
     // multi
     auto r = parallelCall(&slsDetector::resetFPGA);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+int multiSlsDetector::copyDetectorServer(const std::string &fname, const std::string &hostname, int detPos) {
+    // single
+    if (detPos >= 0) {
+        detectors[detPos]->copyDetectorServer(fname, hostname);
+        return detectors[detPos]->rebootController(); // reboot and copy should be independant for update command
+    }
+
+    // multi
+    parallelCall(&slsDetector::copyDetectorServer,fname, hostname);
+    auto r = parallelCall(&slsDetector::rebootController);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+int multiSlsDetector::rebootController(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->rebootController();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::rebootController);
+    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+}
+
+int multiSlsDetector::update(const std::string &sname, const std::string &hostname, const std::string &fname, int detPos) {
+	FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
+	// read pof file
+	std::vector<char> buffer = readPofFile(fname);
+
+	// single
+    if (detPos >= 0) {
+        detectors[detPos]->copyDetectorServer(sname, hostname);
+        return detectors[detPos]->programFPGA(buffer);
+    }
+
+    // multi
+    parallelCall(&slsDetector::copyDetectorServer,sname, hostname);
+    auto r = parallelCall(&slsDetector::programFPGA, buffer);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
@@ -4013,10 +4058,6 @@ void multiSlsDetector::startProcessingThread() {
     dataProcessingThread = std::thread(&multiSlsDetector::processData, this);
 }
 
-// void* multiSlsDetector::startProcessData(void *n) {
-// 	((multiSlsDetector*)n)->processData();
-// 	return n;
-// }
 
 void multiSlsDetector::processData() {
     if (setReceiverOnline() == OFFLINE_FLAG) {
@@ -4077,3 +4118,107 @@ int multiSlsDetector::kbhit() {
     select(STDIN_FILENO + 1, &fds, nullptr, nullptr, &tv);
     return FD_ISSET(STDIN_FILENO, &fds);
 }
+
+
+
+std::vector<char> multiSlsDetector::readPofFile(const std::string &fname) {
+	FILE_LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
+	size_t filesize = 0;
+	// check if it exists
+
+	struct stat st;
+	if (stat(fname.c_str(), &st)) {
+		throw RuntimeError("Program FPGA: Programming file does not exist");
+	}
+
+
+
+	// open src
+	FILE *src = fopen(fname.c_str(), "rb");
+	if (src == nullptr) {
+		throw RuntimeError("Program FPGA: Could not open source file for programming: " +
+				fname);
+	}
+
+	// create temp destination file
+	char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
+	int dst = mkstemp(destfname); // create temporary file and open it in r/w
+	if (dst == -1) {
+		fclose(src);
+		throw RuntimeError(
+				std::string("Could not create destination file in /tmp for programming: ") +
+				destfname);
+	}
+
+	// convert src to dst rawbin
+	FILE_LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
+	{
+		int filepos, x, y, i;
+		// Remove header (0...11C)
+		for (filepos = 0; filepos < 0x11C; ++filepos) {
+			fgetc(src);
+		}
+		// Write 0x80 times 0xFF (0...7F)
+		{
+			char c = 0xFF;
+			for (filepos = 0; filepos < 0x80; ++filepos) {
+				write(dst, &c, 1);
+			}
+		}
+		// Swap bits and write to file
+		for (filepos = 0x80; filepos < 0x1000000; ++filepos) {
+			x = fgetc(src);
+			if (x < 0) {
+				break;
+			}
+			y = 0;
+			for (i = 0; i < 8; ++i) {
+				y = y | (((x & (1 << i)) >> i) << (7 - i)); // This swaps the bits
+			}
+			write(dst, &y, 1);
+		}
+		if (filepos < 0x1000000) {
+			throw RuntimeError("Could not convert programming file. EOF before end of flash");
+		}
+	}
+	if (fclose(src)) {
+		throw RuntimeError("Program FPGA: Could not close source file");
+	}
+	if (close(dst)) {
+		throw RuntimeError("Program FPGA: Could not close destination file");
+	}
+	FILE_LOG(logDEBUG1) << "File has been converted to " << destfname;
+
+	// loading dst file to memory
+	FILE *fp = fopen(destfname, "r");
+	if (fp == nullptr) {
+		throw RuntimeError("Program FPGA: Could not open rawbin file");
+	}
+	if (fseek(fp, 0, SEEK_END)) {
+		throw RuntimeError("Program FPGA: Seek error in rawbin file");
+	}
+	filesize = ftell(fp);
+	if (filesize <= 0) {
+		throw RuntimeError("Program FPGA: Could not get length of rawbin file");
+	}
+	rewind(fp);
+
+	std::vector<char> buffer(filesize, 0);
+	if (fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
+		throw RuntimeError("Program FPGA: Could not read rawbin file");
+	}
+
+	if (fclose(fp)) {
+		throw RuntimeError("Program FPGA: Could not close destination file after converting");
+	}
+	unlink(destfname); // delete temporary file
+	FILE_LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
+	FILE_LOG(logINFO) << "Read file into memory";
+	return buffer;
+}
+
+
+
+
+
+

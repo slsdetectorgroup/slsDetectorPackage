@@ -37,7 +37,6 @@ int main(int argc, char *argv[]){
 	// subsequent read/write to socket gives error - must handle locally
 	signal(SIGPIPE, SIG_IGN);
 
-
     // circumvent the basic tests
 	{
 		int i;
@@ -63,16 +62,6 @@ int main(int argc, char *argv[]){
 				FILE_LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));
 			}
 #endif
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-			else if(!strcasecmp(argv[i],"-update")){
-				FILE_LOG(logINFO, ("Detected update mode\n"));
-				debugflag = PROGRAMMING_MODE;
-			}
-#endif
-			else if(strchr(argv[i],'-') != NULL) {
-				FILE_LOG(logERROR, ("cannot scan program argument %s\n", argv[1]));
-				return -1;
-			}
 		}
 	}
 
@@ -116,7 +105,7 @@ int main(int argc, char *argv[]){
 	}
 
 	// waits for connection
-	while(retval != GOODBYE) {
+	while(retval != GOODBYE && retval != REBOOT) {
 		fd = acceptConnection(sockfd);
 		if (fd > 0) {
 			retval = decode_function(fd);
@@ -125,8 +114,13 @@ int main(int argc, char *argv[]){
 	}
 
 	exitServer(sockfd);
-	FILE_LOG(logINFO,("Goodbye!\n"));
 
+	if (retval == REBOOT) {
+		FILE_LOG(logINFOBLUE,("Rebooting!\n"));
+		fflush(stdout);
+		system("reboot");
+	}
+	FILE_LOG(logINFO,("Goodbye!\n"));
 	return 0;
 }
 

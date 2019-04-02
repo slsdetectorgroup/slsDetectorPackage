@@ -1,12 +1,16 @@
 #pragma once
 #include "sls_detector_defs.h"
+#include "logger.h"
 
 enum numberMode {DEC, HEX};
+#define GOODBYE 					(-200)
+#define REBOOT						(-400)
 
 // initialization functions
 int printSocketReadError();
 void init_detector();
 int decode_function(int);
+const char* getRetName();
 const char* getTimerName(enum timerIndex ind);
 const char* getSpeedName(enum speedVariable ind);
 const char* getFunctionName(enum detFuncs func);
@@ -15,6 +19,7 @@ void functionNotImplemented();
 void modeNotImplemented(char* modename, int mode);
 void validate(int arg, int retval, char* modename, enum numberMode nummode);
 void validate64(int64_t arg, int64_t retval, char* modename, enum numberMode nummode);
+int executeCommand(char* command, char* result, enum TLogLevel level);
 int M_nofunc(int);
 int M_nofuncMode(int);
 
@@ -85,3 +90,6 @@ int check_version(int);
 int software_trigger(int);
 int led(int);
 int digital_io_delay(int);
+int copy_detector_server(int);
+int reboot_controller(int);
+

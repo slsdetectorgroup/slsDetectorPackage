@@ -74,6 +74,8 @@ enum detFuncs{
 	F_SOFTWARE_TRIGGER,/** < software trigger */
 	F_LED,	/** < switch on/off led */
 	F_DIGITAL_IO_DELAY,  /** < digital IO delay */
+	F_COPY_DET_SERVER,	/** < copy detector server & respawn */
+	F_REBOOT_CONTROLLER, /** < reboot detector controller (blackfin/ powerpc) */
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */

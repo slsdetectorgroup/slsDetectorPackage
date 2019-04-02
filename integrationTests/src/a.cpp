@@ -4,11 +4,11 @@
 #include "ClientSocket.h"
 #include "Timer.h"
 #include "logger.h"
+#include "network_utils.h"
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 #include "sls_detector_funcs.h"
-#include "network_utils.h"
 #include <iostream>
 #include <vector>
 
@@ -18,128 +18,22 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#define VERBOSE
+#include "network_utils.h"
 
-using sls::DetectorError;
-using sls::RuntimeError;
-using sls::SharedMemoryError;
-using sls::SocketError;
+using namespace sls;
 
 int main() {
 
-    auto ip = sls::IpStringToUint("74.125.43.99");
-    char buffer[50];
-    snprintf(buffer, 50, "%x", __builtin_bswap32(ip));
-    std::cout << "buffer: " << buffer << "\n";
-    // std::string hostname;
-    // std::cout << "Enter hostname: ";
-    // std::cin >> hostname;
+    IpAddr a("129.129.205.242");
+    IpAddr b(4073554305);
 
-    // struct addrinfo hints, *result;
-    // memset(&hints, 0, sizeof(hints));
-    // hints.ai_family = AF_INET;
-    // hints.ai_socktype = SOCK_STREAM;
-    // hints.ai_flags |= AI_CANONNAME;
+    std::cout << "a is: " << a << " and b is: " << b << "\n";
+    if (a == b)
+        std::cout << "a is equal to b\n";
 
-    // struct sockaddr_in serverAddr {};
-    // // std::cout << "sizeof(result):" << sizeof(hints) << '\n';
-    // // std::cout << "sizeof(serverAddr):" << sizeof(serverAddr) << '\n';
+    std::cout << "as hex they look like: " << a.hex() << "\n";
+    std::cout << "and the best thing is that the size is only: " << sizeof(a) << " bytes\n";
 
-    // uint32_t ip{0};
 
-    // int port = 1952;
-
-    // if (getaddrinfo(hostname.c_str(), NULL, &hints, &result) != 0) {
-    //     std::string msg = "ClientSocket cannot decode host:" + hostname + " on port " +
-    //                       std::to_string(port) + "\n";
-    //     throw 5;
-    // }
-
-    // serverAddr.sin_family = AF_INET;
-    // serverAddr.sin_port = htons(port);
-    // memcpy(&serverAddr.sin_addr.s_addr, &((struct sockaddr_in *)result->ai_addr)->sin_addr,
-    //        sizeof(in_addr_t));
-    // freeaddrinfo(result);
-    // ip = serverAddr.sin_addr.s_addr;
-
-    // char address[INET_ADDRSTRLEN];
-    // inet_ntop(AF_INET, &ip, address, INET_ADDRSTRLEN);
-    // std::cout << "ip of host is: " << address << '\n';
-
-    // // hints.ai_addr = reinterpret_cast<sockaddr*>(&serverAddr);
-
-    // // if (getaddrinfo("NULL", NULL, &hints, &result) != 0) {
-    // //     std::string msg = "ClientSocket cannot decode host:" + hostname + " on port " +
-    // //                       std::to_string(port) + "\n";
-    // //     throw 5;
-    // // }
-
-    // sls::ClientSocket(false, serverAddr);
-
-    // const std::string hostname = "beb083";
-    // auto type = slsDetector::getTypeFromDetector(hostname);
-    // slsDetector d(type);
-    // d.setHostname(hostname);
-    // d.setOnline(true);
-    // std::cout << "hostname: " << d.getHostname() << '\n';
-    // d.setThresholdTemperature(50);
-    // try{
-    //     d.setThresholdTemperature(50);
-    // }catch(const DetectorError &e){
-    //     std::cout << "Caught: " << e.what() << '\n';
-    // }
-    // std::cout << "hostname: " << d.getHostname() << '\n';
-    // std::cout << "exptime: " << d.setDAC(-1, slsDetectorDefs::E_Vrf, 0) << '\n';
-
-    // slsDetector d2(type);
-    // std::cout << "Online: " << d2.getOnlineFlag() << '\n';
-    // d2.setHostname("beb55555");
-    // d2.setOnline(true);
-    // std::cout << "Online: " << d2.getOnlineFlag() << '\n';
-    // std::cout << "hostname: " << d2.getHostname() << '\n';
-
-    // std::cout << "port: " << d.getControlPort() << '\n';
-    // d.setOnline(true);
-    // d.setReceiverOnline(true);
-    // std::cout << "reciver version: " << std::hex << d.getReceiverVersion() << '\n';
-    // // std::cout << "version: " << d.getId(slsDetectorDefs::CLIENT_RECEIVER_API_VERSION) << '\n';
-    // d.freeSharedMemory();
-    // //Catch exception
-    // try {
-    //     throw RuntimeError("something went wrong");
-    // } catch (RuntimeError &e) {
-    //     std::cout << "Caught RuntimeError with message : " << e.what() << '\n';
-    // }
-
-    // //Catch base class
-    // try {
-    //     throw SharedMemoryError("Could not create shared memory");
-    // } catch (RuntimeError &e) {
-    //     std::cout << "Caught: " << e.what() << '\n';
-    // }
-
-    // //Catch base class after looking for something else
-    // try {
-    //     throw SharedMemoryError("Could not create shared memory");
-    // } catch (SocketError &e) {
-
-    //     std::cout << "Caught Socket error: " << e.what() << '\n';
-
-    // } catch (RuntimeError &e) {
-    //     std::cout << "Caught base class: " << e.what() << '\n';
-    // }
-
-    // //Catch any after looking for something else
-    // try {
-    //     throw SharedMemoryError("Could not create shared memory");
-    // } catch (SocketError &e) {
-
-    //     std::cout << "Caught Socket error: " << e.what() << '\n';
-
-    // } catch (...) {
-    //     std::cout << "Caught Something else probably should have let me crash\n";
-    // }
-
-    // throw RuntimeError("This one we missed");
     return 0;
 }

@@ -258,7 +258,7 @@ public:
 
 		
 		/** Json Header Format */
-		const char* jsonHeaderFormat =
+		const char jsonHeaderFormat[] =
 				"{"
 				"\"jsonversion\":%u, "
 				"\"bitmode\":%u, "

@@ -39,6 +39,8 @@ add_library(slsReceiverShared SHARED
 )
 
 target_link_libraries(slsReceiverShared PUBLIC
+    slsProjectOptions
+    slsProjectWarnings
     slsSupportLib
 )
 
@@ -66,6 +68,8 @@ set_target_properties(slsReceiver PROPERTIES
 )
 
 target_link_libraries(slsReceiver PUBLIC
+    slsProjectOptions
+    slsProjectWarnings
     slsSupportLib
     slsReceiverShared
     pthread

@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.8)
-# cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 5.0.0)
-# set(PACKAGE_VERSION ${})
+
+
 
 include(cmake/project_version.cmake)
 
@@ -31,8 +31,6 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     set(SLS_MASTER_PROJECT ON)
 endif()
 
-
-
 option (SLS_USE_HDF5 "HDF5 File format" OFF)
 option (SLS_USE_TEXTCLIENT "Text Client" OFF)
 option (SLS_USE_RECEIVER "Receiver" OFF)
@@ -41,7 +39,6 @@ option (SLS_USE_TESTS "TESTS" ON)
 option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -49,9 +46,23 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
 endif()
 
+
+#Add two fake libraries to manage options
+add_library(slsProjectOptions INTERFACE)
+add_library(slsProjectWarnings INTERFACE)
+target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
+target_compile_options(slsProjectWarnings INTERFACE 
+                                            -Wall
+                                            -Wnon-virtual-dtor
+                                            -Woverloaded-virtual
+                                            -Wnull-dereference 
+                                            -Wdouble-promotion
+                                            -Wformat=2
+                                 )
+
+
 #Testing for minimum version for compilers
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    # clang does not support -Wno-misleading-indentation 
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.2)
         message(FATAL_ERROR "Clang version must be at least 3.2!")
     endif()
@@ -59,23 +70,27 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
             message(FATAL_ERROR "GCC version must be at least 4.8!")
     endif()
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-misleading-indentation -Wno-stringop-truncation -Wno-class-memaccess")
+    target_compile_options(slsProjectWarnings INTERFACE 
+                                                -Wno-misleading-indentation # mostly in rapidjson remove using clang format
+                                                -Wno-class-memaccess        # also in rapidjson
+                                                -Wduplicated-cond
+                                                )
 endif()
 
-# Suppressed warnings in GCC
-# -Wno-stringop-truncation happens when we do sls::strcpy_safe truncates string instead of overwrite buffer
-# -Wno-class-memaccess - on memcpy in rapidjson should be investigated upgrade implementation?
-# -Wno-misleading-indentation - until clang format
-
-#set (CMAKE_CXX_STANDARD 11)
-#set (CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 ")
 
 if(SLS_USE_SANITIZER)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefined")
-    set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address,undefiend")
+    target_compile_options(slsProjectOptions INTERFACE -fsanitize=address,undefined)
+    target_link_libraries(slsProjectOptions INTERFACE -fsanitize=address,undefined)
 endif()
 
+
+# Install fake the library
+install(TARGETS slsProjectOptions slsProjectWarnings
+    EXPORT "${TARGETS_EXPORT_NAME}"
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")

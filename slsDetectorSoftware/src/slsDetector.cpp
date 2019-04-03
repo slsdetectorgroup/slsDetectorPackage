@@ -2034,8 +2034,8 @@ uint32_t slsDetector::clearBit(uint32_t addr, int n) {
     }
 }
 
-std::string slsDetector::setDetectorMAC(const std::string &address) {
-    auto addr = MacAddr(address);
+std::string slsDetector::setDetectorMAC(const std::string &detectorMAC) {
+    auto addr = MacAddr(detectorMAC);
     if (addr == 0) {
         throw RuntimeError("server MAC Address should be in xx:xx:xx:xx:xx:xx format");
     } 
@@ -2051,8 +2051,8 @@ std::string slsDetector::setDetectorMAC(const std::string &address) {
 
 MacAddr slsDetector::getDetectorMAC() { return detector_shm()->detectorMAC; }
 
-std::string slsDetector::setDetectorMAC2(const std::string &address) {
-    auto addr = MacAddr(address);
+std::string slsDetector::setDetectorMAC2(const std::string &detectorMAC) {
+    auto addr = MacAddr(detectorMAC);
     if (addr == 0) {
         throw RuntimeError("server MAC Address 2 should be in xx:xx:xx:xx:xx:xx format");
     }

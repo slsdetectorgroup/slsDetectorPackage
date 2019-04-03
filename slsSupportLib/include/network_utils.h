@@ -31,8 +31,8 @@ class MacAddr {
     constexpr MacAddr(uint64_t mac) noexcept : addr_{mac} {}
     MacAddr(std::string mac);
     MacAddr(const char *address);
-    std::string str() const { return to_hex(':'); }
-    std::string hex() const { return to_hex(); }
+    std::string str() const;
+    std::string hex() const;
     constexpr bool operator==(const MacAddr &other) const noexcept { return addr_ == other.addr_; }
     constexpr bool operator!=(const MacAddr &other) const noexcept { return addr_ != other.addr_; }
     constexpr bool operator==(const uint64_t other) const noexcept { return addr_ == other; }

@@ -2,8 +2,6 @@
 #include "sls_detector_defs.h"
 #include <stdlib.h>
 
-#define GOODBYE 					(-200)
-
 /* Enums */
 enum ADCINDEX				        {TEMP_FPGA, TEMP_ADC};
 enum DACINDEX				        {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_TESTC};

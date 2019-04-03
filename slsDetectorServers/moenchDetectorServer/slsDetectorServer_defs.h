@@ -3,11 +3,9 @@
 #include "RegisterDefs.h"
 
 
-#define GOODBYE 					(-200)
 #define MIN_REQRD_VRSN_T_RD_API     0x180314
 #define REQRD_FRMWR_VRSN            0x180314
 
-#define PROGRAMMING_MODE            (0x2)
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
 /* Struct Definitions */

@@ -1,13 +1,4 @@
-#ifndef SLS_DETECTOR_H
-#define SLS_DETECTOR_H
-
-/**
- *
- * @short complete detector functionalities for a single module detector.
- * The slsDetector class takes care of the communication with the
- * detector and all kind actions related with a single detector controller
- * @author Anna Bergamaschi
- */
+#pragma once
 
 #include "ClientSocket.h"
 #include "SharedMemory.h"
@@ -18,6 +9,7 @@
 class ClientInterface;
 
 #include <cmath>
+#include <vector>
 
 class multiSlsDetector;
 class ServerInterface;
@@ -796,7 +788,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param detectorMAC detector MAC address
 	 * @returns the detector MAC address
 	 */
-    std::string setDetectorMAC(const std::string &address);
+    std::string setDetectorMAC(const std::string &detectorMAC);
 
     /**
 	 * Returns the detector MAC address\sa sharedSlsDetector
@@ -809,7 +801,7 @@ class slsDetector : public virtual slsDetectorDefs{
      * @param detectorMAC detector MAC address (bottom half)
      * @returns the detector MAC address (bottom half)
      */
-    std::string setDetectorMAC2(const std::string &address);
+    std::string setDetectorMAC2(const std::string &detectorMAC);
 
     /**
      * Returns the detector MAC address (bottom half) Jungfrau only
@@ -1283,11 +1275,11 @@ class slsDetector : public virtual slsDetectorDefs{
     int setStoragecellStart(int pos = -1);
 
     /**
-	 * Programs FPGA with pof file (Jungfrau)
-	 * @param fname file name
+	 * Programs FPGA with pof file (Jungfrau, CTB, Moench)
+	 * @param buffer programming file in memory
 	 * @returns OK or FAIL
 	 */
-    int programFPGA(const std::string &fname);
+    int programFPGA(std::vector<char> buffer);
 
     /**
 	 * Resets FPGA (Jungfrau)
@@ -1296,6 +1288,20 @@ class slsDetector : public virtual slsDetectorDefs{
     int resetFPGA();
 
     /**
+     * Copies detector server from tftp and changes respawn server (Not Eiger)
+     * @param fname name of detector server binary
+     * @param hostname name of pc to tftp from
+     * @returns OK or FAIL
+     */
+    int copyDetectorServer(const std::string &fname, const std::string &hostname);
+
+    /**
+     * Reboot detector controller (blackfin/ powerpc)
+     * @returns OK or FAIL
+     */
+    int rebootController();
+
+   /**
 	 * Power on/off Chip (Jungfrau)
 	 * @param ival on is 1, off is 0, -1 to get
 	 * @returns OK or FAIL
@@ -1823,4 +1829,3 @@ class slsDetector : public virtual slsDetectorDefs{
 
 };
 
-#endif

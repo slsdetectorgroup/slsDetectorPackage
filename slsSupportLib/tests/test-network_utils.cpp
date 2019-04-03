@@ -78,3 +78,22 @@ TEST_CASE("Convert to uint for sending over network", "[support]") {
 TEST_CASE("Hostname lookup failed throws", "[support]"){
     CHECK_THROWS_AS(HostnameToIp("pippifax"), RuntimeError);
 }
+
+TEST_CASE("IP Output operator gives same result as string", "[support]") {
+    IpAddr addr{"129.129.205.242"};
+    std::ostringstream os;
+    os << addr;
+    CHECK(os.str() == "129.129.205.242");
+    CHECK(os.str() == addr.str());
+
+}
+
+TEST_CASE("MAC Output operator gives same result as string", "[support]") {
+    MacAddr addr{"00:50:c2:46:d9:a6"};
+    std::ostringstream os;
+    os << addr;
+    CHECK(os.str() == "00:50:c2:46:d9:a6");
+    CHECK(os.str() == addr.str());
+}
+
+//TODO!(Erik) Look up a real hostname and verify the IP

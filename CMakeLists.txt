@@ -55,7 +55,6 @@ target_compile_options(slsProjectWarnings INTERFACE
                                             -Wall
                                             -Wnon-virtual-dtor
                                             -Woverloaded-virtual
-                                            -Wnull-dereference 
                                             -Wdouble-promotion
                                             -Wformat=2
                                  )
@@ -73,8 +72,13 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_compile_options(slsProjectWarnings INTERFACE 
                                                 -Wno-misleading-indentation # mostly in rapidjson remove using clang format
                                                 -Wno-class-memaccess        # also in rapidjson
-                                                -Wduplicated-cond
                                                 )
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+        target_compile_options(slsProjectWarnings INTERFACE 
+                                                -Wduplicated-cond
+                                                -Wnull-dereference )
+
+    endif()
 endif()
 
 

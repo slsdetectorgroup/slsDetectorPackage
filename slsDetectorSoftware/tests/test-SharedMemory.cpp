@@ -13,7 +13,7 @@ struct Data {
 
 using namespace sls;
 
-TEST_CASE("Create SharedMemory read and write") {
+TEST_CASE("Create SharedMemory read and write", "[detector]") {
 
     SharedMemory<Data> shm(0, -1);
     shm.CreateSharedMemory();
@@ -33,7 +33,7 @@ TEST_CASE("Create SharedMemory read and write") {
     CHECK(shm.IsExisting() == false);
 }
 
-TEST_CASE("Open existing SharedMemory and read") {
+TEST_CASE("Open existing SharedMemory and read", "[detector]") {
 
     {
         SharedMemory<double> shm(0, -1);
@@ -48,7 +48,8 @@ TEST_CASE("Open existing SharedMemory and read") {
     shm2.RemoveSharedMemory();
 }
 
-TEST_CASE("Creating a second shared memory with the same name throws") {
+TEST_CASE("Creating a second shared memory with the same name throws",
+          "[detector]") {
 
     SharedMemory<double> shm0(0, -1);
     SharedMemory<double> shm1(0, -1);
@@ -58,7 +59,7 @@ TEST_CASE("Creating a second shared memory with the same name throws") {
     shm0.RemoveSharedMemory();
 }
 
-TEST_CASE("Open two shared memories to the same place") {
+TEST_CASE("Open two shared memories to the same place", "[detector]") {
 
     //Create the first shared memory
     SharedMemory<Data> shm(0, -1);
@@ -83,8 +84,7 @@ TEST_CASE("Open two shared memories to the same place") {
     CHECK(shm2.IsExisting() == false);
 }
 
-
-TEST_CASE("Move SharedMemory"){
+TEST_CASE("Move SharedMemory", "[detector]") {
 
     SharedMemory<Data> shm(0,-1);
     CHECK(shm.GetName() == "/slsDetectorPackage_multi_0");
@@ -105,8 +105,7 @@ TEST_CASE("Move SharedMemory"){
 
 }
 
-
-TEST_CASE("Create several shared memories") {
+TEST_CASE("Create several shared memories", "[detector]") {
     constexpr int N = 5;
     std::vector<SharedMemory<int>> v;
     v.reserve(N);

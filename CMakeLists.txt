@@ -110,6 +110,10 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 find_package(Doxygen)
 find_package(ZeroMQ 4 REQUIRED)
 
+if (SLS_USE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif(SLS_USE_TESTS)
 
 # Support library containing functionallity common to 
 # detector and receiver
@@ -135,9 +139,7 @@ if (SLS_USE_GUI)
     endif()
 endif (SLS_USE_GUI)
 
-if (SLS_USE_TESTS)
-    enable_testing()
-endif(SLS_USE_TESTS)
+
 
 if (SLS_USE_INTEGRATION_TESTS)
     add_subdirectory(integrationTests)

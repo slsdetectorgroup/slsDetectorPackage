@@ -81,7 +81,9 @@ if (HDF5_FOUND)
     target_link_libraries(slsReceiver PUBLIC ${HDF5_LIBRARIES})
 endif ()
 
-
+if (SLS_USE_TESTS)
+    add_subdirectory(tests)
+endif(SLS_USE_TESTS)
 
 install(TARGETS slsReceiverShared
         EXPORT "${TARGETS_EXPORT_NAME}"

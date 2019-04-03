@@ -81,7 +81,7 @@ void DataSocket::close() {
         if(::close(socketId_)){
             throw SocketError("could not close socket");
         }
-        socketId_ = 0;
+        socketId_ = -1;
         
     } else {
         throw std::runtime_error("Socket ERROR: close called on bad socket\n");

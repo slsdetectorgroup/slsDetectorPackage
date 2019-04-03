@@ -72,7 +72,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	/**
 	 * Reset parameters for new measurement (eg. for each scan)
 	 */
-	void ResetParametersforNewMeasurement(char* fname);
+	void ResetParametersforNewMeasurement(const std::string& fname);
 
 	/**
 	 * Set GeneralData pointer to the one given
@@ -201,7 +201,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	uint64_t firstMeasurementIndex;
 
 	/* File name to stream */
-	char fileNametoStream[MAX_STR_LENGTH];
+	std::string fileNametoStream;
 
 	/** Complete buffer used for roi, eg. shortGotthard */
 	char* completeBuffer;

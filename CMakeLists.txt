@@ -70,13 +70,18 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             message(FATAL_ERROR "GCC version must be at least 4.8!")
     endif()
     target_compile_options(slsProjectWarnings INTERFACE 
-                                                -Wno-misleading-indentation # mostly in rapidjson remove using clang format
-                                                -Wno-class-memaccess        # also in rapidjson
+                                                 
                                                 )
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
         target_compile_options(slsProjectWarnings INTERFACE 
+                                                -Wno-misleading-indentation # mostly in rapidjson remove using clang format
                                                 -Wduplicated-cond
                                                 -Wnull-dereference )
+
+    endif()
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
+        target_compile_options(slsProjectWarnings INTERFACE 
+                                                -Wno-class-memaccess )
 
     endif()
 endif()

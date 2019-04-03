@@ -247,7 +247,7 @@ public:
 	 */
 	int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
 			uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
-			uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
+			uint64_t acqIndex = 0, uint64_t fIndex = 0, const char* fname = NULL,
 			uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
 			uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
@@ -262,19 +262,19 @@ public:
 				"{"
 				"\"jsonversion\":%u, "
 				"\"bitmode\":%u, "
-				"\"fileIndex\":%llu, "
+				"\"fileIndex\":%lu, "
 				"\"shape\":[%u, %u], "
 				"\"size\":%u, "
-				"\"acqIndex\":%llu, "
-				"\"fIndex\":%llu, "
+				"\"acqIndex\":%lu, "
+				"\"fIndex\":%lu, "
 				"\"fname\":\"%s\", "
 				"\"data\": %d, "
 
-				"\"frameNumber\":%llu, "
+				"\"frameNumber\":%lu, "
 				"\"expLength\":%u, "
 				"\"packetNumber\":%u, "
-				"\"bunchId\":%llu, "
-				"\"timestamp\":%llu, "
+				"\"bunchId\":%lu, "
+				"\"timestamp\":%lu, "
 				"\"modId\":%u, "
 				"\"row\":%u, "
 				"\"column\":%u, "

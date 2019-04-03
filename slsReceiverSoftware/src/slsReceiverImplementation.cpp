@@ -1433,8 +1433,8 @@ void slsReceiverImplementation::ResetParametersforNewMeasurement() {
 		it->ResetParametersforNewMeasurement();
 
 	if (dataStreamEnable) {
-		char fnametostream[MAX_STR_LENGTH];
-		snprintf(fnametostream, MAX_STR_LENGTH, "%s/%s", filePath, fileName);
+		char fnametostream[MAX_STR_LENGTH*2];
+		snprintf(fnametostream, MAX_STR_LENGTH*2, "%s/%s", filePath, fileName);
 		for (const auto& it : dataStreamer)
 			it->ResetParametersforNewMeasurement(fnametostream);
 	}

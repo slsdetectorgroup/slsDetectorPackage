@@ -301,7 +301,7 @@ private:
 		if (nPixelsX == 1280) {
 			subFrameNumber = -1;
 			bunchId = -1;
-			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+			frameNumber = *reinterpret_cast<uint32_t*>(packetData);
 			if (oddStartingPacket)
 			    frameNumber++;
 			packetNumber = frameNumber&packetIndexMask;
@@ -309,8 +309,8 @@ private:
 		} else  {
 			subFrameNumber = -1;
 			bunchId = -1;
-			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			packetNumber = 0;
+            frameNumber = *reinterpret_cast<uint32_t *>(packetData);
+            packetNumber = 0;
 		}
 	}
 
@@ -673,7 +673,7 @@ public:
 	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
 		subFrameNumber = -1;
-		jfrauctb_packet_header* header = (jfrauctb_packet_header*)(packetData);
+		auto header = reinterpret_cast<jfrauctb_packet_header*>(packetData);
 		frameNumber = (header->packetFrameNumber >> 8) & frameIndexMask;
 		packetNumber = header->packetFrameNumber & 0xFF;
 		bunchId = header->bunchid;
@@ -723,4 +723,4 @@ public:
 
 
 
-
+;

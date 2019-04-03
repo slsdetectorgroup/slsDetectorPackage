@@ -25,8 +25,8 @@ TEST_CASE("Parse jungfrauctb header", "[receiver]") {
         unsigned char packetNumber[1];
         unsigned char frameNumber[3];
         unsigned char bunchid[8];
-        unsigned char data[1024];
-    };
+        unsigned char data[UDP_PACKET_DATA_BYTES];
+    } __attribute__((packed));
 
     MoenchData data;
     // GetHeaderInfo(int index, char *packetData, uint32_t dynamicRange,
@@ -65,4 +65,32 @@ TEST_CASE("Parse jungfrauctb header", "[receiver]") {
     CHECK(packetNumber == 53);
     CHECK(frameNumber == 0x5b0f20);
     CHECK(bunchId == 0xf012fb20010f195b);
+    CHECK(subFrameNumber == -1);
+}
+
+TEST_CASE("Parse header gotthard data", "[receiver]") { 
+    GotthardData data;
+    struct packet {
+        uint32_t frameNumber;
+        unsigned char data[GOTTHARD_PACKET_SIZE];
+    } __attribute__((packed));
+    packet test_packet;
+    test_packet.frameNumber = 25698u;
+
+    int index = 0;
+    char *packetData = reinterpret_cast<char *>(&test_packet);
+    uint32_t dynamicRange{0};
+    bool oddStartingPacket{0};
+    uint64_t frameNumber{0};
+    uint32_t packetNumber{0};
+    uint32_t subFrameNumber{0};
+    uint64_t bunchId{0};
+
+    data.GetHeaderInfo(index, packetData, dynamicRange, oddStartingPacket,
+                       frameNumber, packetNumber, subFrameNumber, bunchId);
+
+    CHECK(frameNumber == test_packet.frameNumber/2);
+    CHECK(subFrameNumber == -1);
+    CHECK(bunchId == -1);
+
 }

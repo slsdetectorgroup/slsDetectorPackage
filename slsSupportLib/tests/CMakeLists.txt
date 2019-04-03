@@ -10,6 +10,7 @@ set(SOURCES
     test-ClientInterface.cpp
     test-CmdLineParser.cpp
     test-container_utils.cpp
+    test-network_utils.cpp
     test-string_utils.cpp
     test-Timer.cpp
 )

@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <cassert>
+#include <cstring>
 
 namespace sls {
 
@@ -14,7 +16,15 @@ Still this is better than strcpy and a buffer overflow...
 */
 template <size_t array_size>
 void strcpy_safe(char (&destination)[array_size], const char *source) {
+    assert(array_size > strlen(source));
     strncpy(destination, source, array_size-1);
+    destination[array_size - 1] = '\0';
+}
+
+template <size_t array_size>
+void strcpy_safe(char (&destination)[array_size], const std::string& source) {
+    assert(array_size > source.size());
+    strncpy(destination, source.c_str(), array_size-1);
     destination[array_size - 1] = '\0';
 }
 
@@ -50,6 +60,12 @@ std::string concatenateNonEmptyStrings(const std::vector<std::string> &vec);
 Concatenate strings using + if the strings are different
 */
 std::string concatenateIfDifferent(const std::vector<std::string> &container);
+
+/*
+Concatenate vector of things with str method using + if the strings are different
+*/
+template<typename T>
+std::string concatenateIfDifferent(const std::vector<T> &container);
 
 /*
 Convert an ip address string to a string in hex format. (removing dots)

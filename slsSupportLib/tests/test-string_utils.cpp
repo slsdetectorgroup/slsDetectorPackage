@@ -1,6 +1,5 @@
 #include "MySocketTCP.h"
 #include "catch.hpp"
-// #include "multiSlsDetector.h"
 #include "logger.h"
 #include <iostream>
 #include <vector>
@@ -23,6 +22,9 @@ TEST_CASE("copy a string") {
 
 }
 
+	
+#ifdef NDEBUG
+//This test can only run in release since we assert on the length of the string
 TEST_CASE("copy a long string"){
     auto src = "some very very long sting that does not fit";
     char dst[3];
@@ -32,7 +34,7 @@ TEST_CASE("copy a long string"){
     REQUIRE(dst[2]=='\0');
     
 }
-
+#endif
 TEST_CASE("Concat") {
   std::vector<std::string> v{"one", "one", "one"};
   std::vector<std::string> v2{"one", "one", "one"};
@@ -111,3 +113,5 @@ TEST_CASE("Many characters in a row"){
   sls::removeChar(str, 'l');
   REQUIRE(std::string(str) == "someeequite::ongstring");
 }
+
+// TEST_CASE("concat things not being strings")

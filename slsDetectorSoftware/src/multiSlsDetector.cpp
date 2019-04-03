@@ -9,7 +9,10 @@
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
 
+
+#include "container_utils.h"
 #include "string_utils.h"
+#include "network_utils.h"
 
 #include <cstring>
 #include <iomanip>
@@ -19,17 +22,14 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/types.h>
-//#include <time.h> //clock()
 
-#include "container_utils.h"
+
+
 #include <chrono>
 #include <future>
 #include <vector>
 
-using sls::NotImplementedError;
-using sls::RuntimeError;
-using sls::SharedMemory;
-using sls::SharedMemoryError;
+using namespace sls;
 
 multiSlsDetector::multiSlsDetector(int multi_id, bool verify, bool update)
     : multiId(multi_id), multi_shm(multi_id, -1) {
@@ -1457,7 +1457,7 @@ std::string multiSlsDetector::setDetectorMAC(const std::string &detectorMAC, int
 std::string multiSlsDetector::getDetectorMAC(int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getDetectorMAC();
+        return detectors[detPos]->getDetectorMAC().str();
     }
 
     // multi
@@ -1479,7 +1479,7 @@ std::string multiSlsDetector::setDetectorMAC2(const std::string &detectorMAC, in
 std::string multiSlsDetector::getDetectorMAC2(int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getDetectorMAC2();
+        return detectors[detPos]->getDetectorMAC2().str();
     }
 
     // multi
@@ -1501,7 +1501,7 @@ std::string multiSlsDetector::setDetectorIP(const std::string &detectorIP, int d
 std::string multiSlsDetector::getDetectorIP(int detPos) const {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getDetectorIP();
+        return detectors[detPos]->getDetectorIP().str();
     }
 
     // multi
@@ -1523,7 +1523,7 @@ std::string multiSlsDetector::setDetectorIP2(const std::string &detectorIP, int 
 std::string multiSlsDetector::getDetectorIP2(int detPos) const {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getDetectorIP2();
+        return detectors[detPos]->getDetectorIP2().str();
     }
 
     // multi
@@ -1568,7 +1568,7 @@ std::string multiSlsDetector::setReceiverUDPIP(const std::string &udpip, int det
 std::string multiSlsDetector::getReceiverUDPIP(int detPos) const {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getReceiverUDPIP();
+        return detectors[detPos]->getReceiverUDPIP().str();
     }
 
     // multi
@@ -1590,7 +1590,7 @@ std::string multiSlsDetector::setReceiverUDPIP2(const std::string &udpip, int de
 std::string multiSlsDetector::getReceiverUDPIP2(int detPos) const {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getReceiverUDPIP2();
+        return detectors[detPos]->getReceiverUDPIP2().str();
     }
 
     // multi
@@ -1612,7 +1612,7 @@ std::string multiSlsDetector::setReceiverUDPMAC(const std::string &udpmac, int d
 std::string multiSlsDetector::getReceiverUDPMAC(int detPos) const {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getReceiverUDPMAC();
+        return detectors[detPos]->getReceiverUDPMAC().str();
     }
 
     // multi
@@ -1634,7 +1634,7 @@ std::string multiSlsDetector::setReceiverUDPMAC2(const std::string &udpmac, int 
 std::string multiSlsDetector::getReceiverUDPMAC2(int detPos) const {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getReceiverUDPMAC2();
+        return detectors[detPos]->getReceiverUDPMAC2().str();
     }
 
     // multi

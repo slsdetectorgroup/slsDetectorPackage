@@ -37,7 +37,6 @@ requirements:
   host:
     - libstdcxx-ng
     - libgcc-ng
-    - libpng >=1.6.32,<1.6.35
     - xorg-libx11
     - xorg-libice
     - xorg-libxext

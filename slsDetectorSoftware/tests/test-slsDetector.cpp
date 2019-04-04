@@ -8,6 +8,8 @@
 
 using namespace sls;
 
+
+
 TEST_CASE("Set and get trimen", "[detector]") {
     // Free shared memory to be sure that we start in a clean state
     slsDetector::freeSharedMemory(0, 0);

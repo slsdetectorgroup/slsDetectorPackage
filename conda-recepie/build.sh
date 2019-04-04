@@ -15,3 +15,5 @@ cmake .. \
 
 cmake --build . -- -j10
 cmake --build . --target install
+
+CTEST_OUTPUT_ON_FAILURE=1 ctest -j 2

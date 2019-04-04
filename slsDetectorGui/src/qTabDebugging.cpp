@@ -11,11 +11,9 @@
 
 qTabDebugging::qTabDebugging(QWidget *parent, multiSlsDetector *&detector) : QWidget(parent),
                                                                              myDet(detector),
-                                                                             det(0),
-																			 detType(0),
+																			 detType(slsDetectorDefs::GENERIC),
                                                                              treeDet(0),
                                                                              lblDetectorId(0),
-                                                                             lblDetectorSerial(0),
                                                                              lblDetectorFirmware(0),
                                                                              lblDetectorSoftware(0) {
     setupUi(this);
@@ -26,8 +24,6 @@ qTabDebugging::qTabDebugging(QWidget *parent, multiSlsDetector *&detector) : QWi
 
 qTabDebugging::~qTabDebugging() {
     delete myDet;
-    if (det)
-        delete det;
 }
 
 
@@ -107,7 +103,7 @@ void qTabDebugging::GetInfo() {
     lblDetectorFirmware->setFixedWidth(100);
     layout->addWidget(dispFrame, 0, 1);
 
-    QString detName = myDet->getDetectorTypeAsString();
+    QString detName = QString(myDet->getDetectorTypeAsString().c_str());
 
     switch (detType) {
 
@@ -211,9 +207,6 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item) {
 
         qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabDebugging::SetParameters");
         break;
-
-    default:
-        break;
     }
 }
 
@@ -233,8 +226,6 @@ void qTabDebugging::TestDetector() {
         break;
     default:
         Detector = "Module";
-        break;
-    default:
         break;
     }
 

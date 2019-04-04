@@ -740,31 +740,28 @@ int multiSlsDetector::execCommand(const std::string &cmd, int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-int multiSlsDetector::readConfigurationFile(const std::string &fname) {
+void multiSlsDetector::readConfigurationFile(const std::string &fname) {
     freeSharedMemory();
     setupMultiDetector();
     FILE_LOG(logINFO) << "Loading configuration file: " << fname;
 
     std::ifstream input_file;
     input_file.open(fname, std::ios_base::in);
-    if (input_file.is_open()) {
-        std::string current_line;
-        while (input_file.good()) {
-            getline(input_file, current_line);
-            if (current_line.find('#') != std::string::npos) {
-                current_line.erase(current_line.find('#'));
-            }
-            FILE_LOG(logDEBUG1) << "current_line after removing comments:\n\t" << current_line;
-            if (current_line.length() > 1) {
-                multiSlsDetectorClient(current_line, PUT_ACTION, this);
-            }
-        }
-        input_file.close();
-    } else {
-        FILE_LOG(logERROR) << "Could not openconfiguration file " << fname << " for reading";
-        return FAIL;
+    if (!input_file.is_open()) {
+       throw RuntimeError("Could not open configuration file " + fname + " for reading");
     }
-    return OK;
+    std::string current_line;
+    while (input_file.good()) {
+        getline(input_file, current_line);
+        if (current_line.find('#') != std::string::npos) {
+            current_line.erase(current_line.find('#'));
+        }
+        FILE_LOG(logDEBUG1) << "current_line after removing comments:\n\t" << current_line;
+        if (current_line.length() > 1) {
+            multiSlsDetectorClient(current_line, PUT_ACTION, this);
+        }
+    }
+    input_file.close();
 }
 
 int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
@@ -3869,8 +3866,7 @@ int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
         }
         outfile.close();
     } else {
-        FILE_LOG(logERROR) << "Could not open parameters file " << outfname << " for writing";
-        return FAIL;
+        throw RuntimeError("Error opening parameters file " + fname + " for writing");
     }
 
     FILE_LOG(logDEBUG1) << "wrote " << names.size() << " lines to  " << outfname;

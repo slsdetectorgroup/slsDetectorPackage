@@ -646,10 +646,7 @@ void qTabMeasurement::Refresh() {
 		spinIndex->setValue(myDet->getFileIndex());
 
 		//progress label index
-		if(myDet->getFrameIndex()==-1)
-			lblProgressIndex->setText("0");
-		else
-			lblProgressIndex->setText(QString::number(myDet->getFrameIndex()));
+		lblProgressIndex->setText("0");
 
 		connect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(setNumMeasurements(int)));
 		connect(spinNumFrames, SIGNAL(valueChanged(int)), this, SLOT(setNumFrames(int)));

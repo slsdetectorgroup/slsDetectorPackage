@@ -282,7 +282,7 @@ int qServer::GetStatus(){
 
 int qServer::StartAcquisition(){
 
-	strcpy(mess,"Could not start acquisition in gui. \n")
+	strcpy(mess,"Could not start acquisition in gui. \n");
 
 	int ret = myMainTab->StartStopAcquisitionFromClient(true);
 	controlSocket->SendDataOnly(&ret,sizeof(ret));

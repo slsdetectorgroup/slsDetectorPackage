@@ -51,7 +51,7 @@
     <enum>QTabWidget::North</enum>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>4</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
@@ -1268,7 +1268,7 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="lblSubPeriod">
+       <widget class="QLabel" name="lblSubDeadTime">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1287,7 +1287,7 @@ Default value is 0. A value less than the required minimum is ignored.
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="QDoubleSpinBox" name="spinSubPeriod">
+       <widget class="QDoubleSpinBox" name="spinSubDeadTime">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1327,7 +1327,7 @@ Default value is 0. A value less than the required minimum is ignored.
        </widget>
       </item>
       <item row="2" column="3">
-       <widget class="QComboBox" name="comboSubPeriodUnit">
+       <widget class="QComboBox" name="comboSubDeadTimeUnit">
         <property name="enabled">
          <bool>false</bool>
         </property>

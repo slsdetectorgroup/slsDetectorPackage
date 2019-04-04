@@ -1,7 +1,5 @@
 #pragma once
 
-#include "qDefs.h"
-
 #include <QApplication>
 #include <QCustomEvent>
 #include <QString>

@@ -1,4 +1,5 @@
 #include "qCloneWidget.h"
+#include "qDefs.h"
 
 #include "qwt_symbol.h"
 #include <QFileDialog>

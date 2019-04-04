@@ -1,8 +1,5 @@
 #pragma once
 
-#include "qDefs.h"
-
-
 class SlsQtH1D;
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlotLayout.h"

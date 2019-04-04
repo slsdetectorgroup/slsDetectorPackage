@@ -70,11 +70,6 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     int GetProgress();
 
     /**
-     * Returns file path
-     */
-    QString GetFilePath();
-
-    /**
      * Verifies if output directories for all the receivers exist
      */
     int DoesOutputDirExist();

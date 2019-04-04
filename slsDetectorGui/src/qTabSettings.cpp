@@ -37,7 +37,7 @@ void qTabSettings::SetupWidgetWindow() {
 	}
 
 	// Dynamic Range
-	GetDynamicRange(-1);
+	GetDynamicRange();
 	// cannot change dr for other types
 	if (detType != slsDetectorDefs::EIGER) {
 		lblDynamicRange->setEnabled(false);

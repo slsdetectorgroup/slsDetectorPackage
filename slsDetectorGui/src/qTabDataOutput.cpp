@@ -464,8 +464,8 @@ void qTabDataOutput::UpdateSpeedFromServer() {
 					"qTabDataOutput::updateSpeedFromServer");
 			FILE_LOG(logWARNING) << "Inconsistent value from clock divider.";
 			//set to default
-			comboEigerClkDivider->setCurrentIndex(HalfSpeed);
-			myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, HalfSpeed);
+			comboEigerClkDivider->setCurrentIndex(HALFSPEED);
+			myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, HALFSPEED);
 			qDefs::checkErrorMessage(myDet, "qTabDataOutput::updateSpeedFromServer");
 		}
 		connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));

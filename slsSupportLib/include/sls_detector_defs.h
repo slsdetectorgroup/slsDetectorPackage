@@ -763,7 +763,7 @@ public:
 
 		  /**
 		     returns external communication mode std::string from index
-		     \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, GATE_FIX_NUMBER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
+		     \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
 		     \returns  auto, trigger, gating, burst_trigger, unknown
 		  */
 
@@ -771,7 +771,7 @@ public:
 		    switch(f) {						 \
 		    case AUTO_TIMING:      return std::string( "auto");			\
 		    case TRIGGER_EXPOSURE: return std::string("trigger");			\
-		    case GATE_FIX_NUMBER: return std::string("gating");			\
+		    case GATED: return std::string("gating");			\
 		    case BURST_TRIGGER: return std::string("burst_trigger");	\
 		    default:    return std::string( "unknown");				\
 		    }    };
@@ -781,13 +781,13 @@ public:
 		  /**
 		     returns external communication mode index from std::string
 		     \param sval can be auto, trigger,  gating, burst_trigger
-		     \returns AUTO_TIMING, TRIGGER_EXPOSURE, GATE_FIX_NUMBER, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
+		     \returns AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
 		  */
 
 		  static externalCommunicationMode externalCommunicationType(std::string sval){\
 		    if (sval=="auto")      return AUTO_TIMING;\
 		    if (sval=="trigger")     return TRIGGER_EXPOSURE;	\
-		    if  (sval=="gating") return GATE_FIX_NUMBER;\
+		    if  (sval=="gating") return GATED;\
 		    if  (sval=="burst_trigger") return BURST_TRIGGER;\
 		    return GET_EXTERNAL_COMMUNICATION_MODE;			\
 		  };

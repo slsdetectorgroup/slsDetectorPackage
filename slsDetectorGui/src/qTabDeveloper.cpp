@@ -12,7 +12,7 @@
 
 qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *&detector) : QWidget(parent),
 		myDet(detector),
-		detType(0),
+		detType(slsDetectorDefs::GENERIC),
 		numDACWidgets(0),
 		numADCWidgets(0),
 		boxDacs(0),
@@ -38,10 +38,7 @@ qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *&detector) : QWi
 qTabDeveloper::~qTabDeveloper() {
 	if (myDet)
 		delete myDet;
-	if (thisParent)
-		delete thisParent;
 }
-
 
 void qTabDeveloper::SetupWidgetWindow() {
 	//Detector Type
@@ -254,7 +251,7 @@ void qTabDeveloper::CreateADCWidgets() {
 	}
 }
 
-void CreateHVWidget() {
+void qTabDeveloper::CreateHVWidget() {
 	boxDacs->setFixedHeight(boxDacs->height() + 35);
 	lblHV = new QLabel("High Voltage", boxDacs);
 	dacLayout->addWidget(lblHV, (int)(numDACWidgets / 2), 1);
@@ -295,7 +292,7 @@ void qTabDeveloper::SetDacValues(int id) {
 
 	int moduleId = comboDetector->currentIndex() - 1;
 
-	myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id), 0, moduleId);
+	myDet->setDAC(spinDacs[id]->value(),getSLSIndex(id), 0, moduleId);
 	lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(id), 1, moduleId),-10));
 	qDefs::checkErrorMessage(myDet, moduleId, "qTabDeveloper::SetDacValues");
 }

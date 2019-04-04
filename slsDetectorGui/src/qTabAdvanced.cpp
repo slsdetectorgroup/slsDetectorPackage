@@ -7,7 +7,7 @@
 
 
 qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector):
-QWidget(parent), myDet(detector),detType(0),
+QWidget(parent), myDet(detector),detType(slsDetectorDefs::GENERIC),
 lblFromX(0),
 spinFromX(0),
 lblFromY(0),
@@ -69,7 +69,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 	FILE_LOG(logDEBUG) << "Getting network information";
 	dispIP->setText(myDet->getDetectorIP(moduleId).c_str());
 	dispMAC->setText(myDet->getDetectorMAC(moduleId).c_str());
-	dispRxrHostname->setText(myDet->getReceiver(moduleId).c_str());
+	dispRxrHostname->setText(myDet->getReceiverHostname(moduleId).c_str());
 	dispUDPIP->setText(myDet->getReceiverUDPIP(moduleId).c_str());
 	dispUDPMAC->setText(myDet->getReceiverUDPMAC(moduleId).c_str());
 	dispZMQIP->setText(myDet->getClientStreamingIP(moduleId).c_str());
@@ -353,7 +353,7 @@ void qTabAdvanced::SetReceiver(){
 	FILE_LOG(logINFO) << "Setting Receiver";
 	auto outdir = myDet->getFilePath();
 	auto moduleId = comboDetector->currentIndex();
-	dispRxrHostname->setText(QString(myDet->setReceiver(dispRxrHostname->text().toAscii().constData(), moduleId).c_str()));
+	dispRxrHostname->setText(QString(myDet->setReceiverHostname(dispRxrHostname->text().toAscii().constData(), moduleId).c_str()));
 	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetReceiver");
 	myDet->setFilePath(outdir, moduleId);
 	qDefs::checkErrorMessage(myDet, comboDetector->currentIndex(), "qTabAdvanced::SetReceiver");
@@ -580,7 +580,7 @@ void qTabAdvanced::SetDetector(int index){
 
 	dispIP->setText(myDet->getDetectorIP(moduleId).c_str());
 	dispMAC->setText(myDet->getDetectorMAC(moduleId).c_str());
-	dispRxrHostname->setText(myDet->getReceiver(moduleId).c_str());
+	dispRxrHostname->setText(myDet->getReceiverHostname(moduleId).c_str());
 	dispUDPIP->setText(myDet->getReceiverUDPIP(moduleId).c_str());
 	dispUDPMAC->setText(myDet->getReceiverUDPMAC(moduleId).c_str());
 	dispZMQIP->setText(myDet->getClientStreamingIP(moduleId).c_str());
@@ -770,7 +770,7 @@ void qTabAdvanced::Refresh(){
 		myDet->checkReceiverOnline(moduleId);
 	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(slsDetectorDefs::GET_ONLINE_FLAG, moduleId));
 
-	dispRxrHostname->setText(myDet->getReceiver(moduleId).c_str());
+	dispRxrHostname->setText(myDet->getReceiverHostname(moduleId).c_str());
 	spinTCPPort->setValue(myDet->setReceiverPort(-1, moduleId));
 	spinUDPPort->setValue(myDet->getReceiverUDPPort(moduleId));
 	spinZmqPort->setValue(myDet->getClientStreamingPort(moduleId));

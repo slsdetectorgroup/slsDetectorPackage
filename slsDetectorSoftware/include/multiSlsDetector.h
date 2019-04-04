@@ -471,9 +471,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Load configuration from a configuration File
      * @param fname configuration file name
-     * @return OK or FAIL
      */
-    int readConfigurationFile(const std::string &fname);
+    void readConfigurationFile(const std::string &fname);
 
     /**
      * Write current configuration to a file

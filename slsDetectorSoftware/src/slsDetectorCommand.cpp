@@ -2505,41 +2505,24 @@ std::string slsDetectorCommand::helpSettingsDir(int action) {
 }
 
 std::string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action, int detPos) {
-    int ival;
-    int ip;
-
-    char answer[1000];
-
-    if (action == HELP_ACTION)
+    std::vector<int> energies;
+    if (action == HELP_ACTION) 
         return helpTrimEn(action);
 
     if (action == PUT_ACTION) {
-        if (sscanf(args[1], "%d", &ival)) {
-            int pos[ival];
-            for (ip = 0; ip < ival; ++ip) {
-                if ((2 + ip) < narg) {
-                    if (sscanf(args[2 + ip], "%d", pos + ip)) {
-                    } else
-                        break;
-                }
-            }
-            myDet->setTrimEn(ip, pos, detPos);
+        energies.reserve(narg-1);
+        for(int i=1; i!=narg; ++i){
+            energies.push_back(std::stoi(args[i]));
         }
+        myDet->setTrimEn(energies, detPos);
+        energies.clear();
     }
-    int npos = myDet->getTrimEn(nullptr, detPos);
-    if (npos != -1) {
-        sprintf(answer, "%d", npos);
-        int opos[npos];
-        npos = myDet->getTrimEn(opos, detPos);
-        if (npos != -1) {
-            for (int ip = 0; ip < npos; ++ip) {
-                sprintf(answer, "%s %d", answer, opos[ip]);
-            }
-        }
+    energies = myDet->getTrimEn(detPos);
+    std::ostringstream os;
+    for(const auto& en : energies){
+        os << en << ' ';
     }
-    if (npos == -1)
-        sprintf(answer, "%d", -1);
-    return std::string(answer);
+    return os.str();
 }
 
 std::string slsDetectorCommand::helpTrimEn(int action) {

@@ -1208,18 +1208,17 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * Sets the number of trim energies and their value  (Eiger)
 	 * \sa sharedSlsDetector
 	 * @param nen number of energies
-	 * @param en array of energies
+	 * @param vector os trimmed energies
 	 * @returns number of trim energies
 	 */
-    int setTrimEn(int nen, int *en = nullptr);
+    int setTrimEn(std::vector<int> energies={});
 
     /**
-	 * Returns the number of trim energies and their value  (Eiger)
-	 * \sa sharedSlsDetector
-	 * @param en array of energies
-	 * @returns number of trim energies
-	 */
-    int getTrimEn(int *en = nullptr);
+     * Returns a vector with the trimmed energies  (Eiger)
+     * \sa sharedSlsDetector
+     * @returns vector with the trimmed energies
+     */
+    std::vector<int> getTrimEn();
 
     /**
 	 * Pulse Pixel (Eiger)

@@ -427,6 +427,15 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     detectors[pos]->setOnline(true);
 }
 
+void multiSlsDetector::addSlsDetector(std::unique_ptr<slsDetector> det){
+    detectors.push_back(std::move(det));
+    multi_shm()->numberOfDetectors = detectors.size();
+    multi_shm()->dataBytes += detectors.back()->getDataBytes();
+    multi_shm()->dataBytesInclGapPixels +=
+        detectors.back()->getDataBytesInclGapPixels();
+    multi_shm()->numberOfChannels += detectors.back()->getTotalNumberOfChannels();
+}
+
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum(int detPos) {
     // single
     if (detPos >= 0) {
@@ -2531,25 +2540,19 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
     return ret;
 }
 
-int multiSlsDetector::setTrimEn(int ne, int *ene, int detPos) {
-    // single
+int multiSlsDetector::setTrimEn(std::vector<int> energies, int detPos) {
     if (detPos >= 0) {
-        return detectors[detPos]->setTrimEn(ne, ene);
+        return detectors[detPos]->setTrimEn(energies);
     }
-
-    // multi
-    auto r = serialCall(&slsDetector::setTrimEn, ne, ene);
+    auto r = parallelCall(&slsDetector::setTrimEn, energies);
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getTrimEn(int *ene, int detPos) {
-    // single
+std::vector<int> multiSlsDetector::getTrimEn(int detPos) {
     if (detPos >= 0) {
-        return detectors[detPos]->getTrimEn(ene);
+        return detectors[detPos]->getTrimEn();
     }
-
-    // multi
-    auto r = serialCall(&slsDetector::getTrimEn, ene);
+    auto r = parallelCall(&slsDetector::getTrimEn);
     return sls::minusOneIfDifferent(r);
 }
 

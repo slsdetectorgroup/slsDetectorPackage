@@ -30,7 +30,7 @@ requirements:
     - {{ cdt('mesa-libgl-devel') }}      # [linux]
     - {{ cdt('mesa-libegl-devel') }}     # [linux]
     - {{ cdt('mesa-dri-drivers') }}      # [linux]
-    - {{ cdt('libselinux') }}      # [linux]
+    - {{ cdt('libselinux') }}            # [linux]
     - {{ cdt('libxdamage') }}            # [linux]
     - {{ cdt('libxxf86vm') }}            # [linux]
 
@@ -50,18 +50,35 @@ requirements:
     - libstdcxx-ng
     - libgcc-ng 
 
+
 outputs:
   - name: sls_detector_lib
-    version: "refactor"
     script: copy_lib.sh
+
+  - name: sls_detector
+    script: build_pylib.sh
+
     requirements:
       build:
-        - {{ compiler('c') }}
-        - {{compiler('cxx')}}
+        - python {{ python }}
+        - setuptools
+        - sls_detector_lib
+        - pyzmq
+        - pybind11 2.2
+      host:
+        - python
+        - pybind11 2.2 
+      run:
+        - python
+        - numpy
+        - sls_detector_lib
+        - pyzmq
+        - libstdcxx-ng
+        - libgcc-ng
+    test:
+      imports:
+        - sls_detector
 
-  # - name: sls_detector
-  #   version: "refactor"
-  #   script: copy_lib.sh
     # requirements:
     #   build:
     #     - {{ compiler('c') }}

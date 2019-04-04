@@ -47,17 +47,8 @@ std::string concatenateIfDifferent(const std::vector<T> &container) {
     }
 }
 
+
 template std::string concatenateIfDifferent(const std::vector<IpAddr> &);
 template std::string concatenateIfDifferent(const std::vector<MacAddr> &);
-
-std::string stringIpToHex(const std::string &ip) {
-    std::istringstream iss(ip);
-    std::ostringstream oss;
-    std::string item;
-    while (std::getline(iss, item, '.')) {
-        oss << std::setw(2) << std::setfill('0') << std::hex << std::stoi(item);
-    }
-    return oss.str();
-}
 
 }; // namespace sls

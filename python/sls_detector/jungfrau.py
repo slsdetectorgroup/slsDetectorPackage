@@ -69,7 +69,6 @@ class Jungfrau(Detector):
         return self._dacs
 
     @property
-    @error_handling
     def power_chip(self):
         """Power on or off the ASICs, True for on False for off"""
         return self._api.isChipPowered()
@@ -80,7 +79,6 @@ class Jungfrau(Detector):
         self._api.powerChip(value)
 
     @property
-    @error_handling
     def delay(self):
         """Delay after trigger [s]"""
         return self._api.getDelay()/1e9
@@ -92,7 +90,6 @@ class Jungfrau(Detector):
         self._api.setDelay(ns_time)
 
     @property
-    @error_handling
     def n_gates(self):
         return self._api.getNumberOfGates()
 
@@ -102,7 +99,6 @@ class Jungfrau(Detector):
         self._api.setNumberOfGates(n)
 
     @property
-    @error_handling
     def n_probes(self):
         return self._api.getNumberOfProbes()
 
@@ -112,7 +108,6 @@ class Jungfrau(Detector):
         self._api.setNumberOfProbes(n)
 
     @property
-    @error_handling
     def storagecell_start(self):
         """
         First storage cell
@@ -126,7 +121,6 @@ class Jungfrau(Detector):
 
 
     @property
-    @error_handling
     def n_storagecells(self):
         """
         number of storage cells used for the measurements
@@ -214,7 +208,6 @@ class Jungfrau(Detector):
         self._api.resetTemperatureEvent()
 
     @property
-    @error_handling
     def rx_udpport(self):
         """
         UDP port for the receiver. Each module have one port.
@@ -261,7 +254,6 @@ class Jungfrau(Detector):
 
 
     @property
-    @error_handling
     def detector_ip(self):
         s = self._api.getNetworkParameter('detectorip')
         return element_if_equal(s)

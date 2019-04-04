@@ -157,7 +157,6 @@ class JungfrauCTB(Detector):
         self._api.setJCTBSamples(value)
 
     @property
-    @error_handling
     def readout_clock(self):
         """
         Speed of the readout clock relative to the full speed

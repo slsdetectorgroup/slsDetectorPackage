@@ -169,7 +169,6 @@ class Eiger(Detector):
         self._temp.fpgafr = Adc('temp_fpgafr', self)
 
     @property
-    @error_handling
     def active(self):
         """
         Is the detector active? Can be used to enable or disable a detector
@@ -189,7 +188,6 @@ class Eiger(Detector):
         return self._active
     
     @active.setter
-    @error_handling
     def active(self, value):
         self._active[:] = value
     
@@ -202,7 +200,6 @@ class Eiger(Detector):
         return self._api.getMeasuredSubPeriod()
 
     @property
-    @error_handling
     def add_gappixels(self):
        """Enable or disable the (virual) pixels between ASICs
 
@@ -220,7 +217,6 @@ class Eiger(Detector):
        return self._api.getGapPixels()
 
     @add_gappixels.setter
-    @error_handling
     def add_gappixels(self, value):
        self._api.setGapPixels(value)
 
@@ -286,7 +282,6 @@ class Eiger(Detector):
         return self._dacs
 
     @property
-    @error_handling
     def tx_delay(self):
         """
         Transmission delay of the modules to allow running the detector
@@ -319,7 +314,6 @@ class Eiger(Detector):
         self.dynamic_range = 16
 
     @property
-    @error_handling
     def eiger_matrix_reset(self):
         """
         Matrix reset bit for Eiger.
@@ -331,12 +325,10 @@ class Eiger(Detector):
         return self._api.getCounterBit()
 
     @eiger_matrix_reset.setter
-    @error_handling
     def eiger_matrix_reset(self, value):
         self._api.setCounterBit(value)
 
     @property
-    @error_handling
     def flowcontrol_10g(self):
         """
         :py:obj:`True` - Flow control enabled :py:obj:`False` flow control disabled.
@@ -348,7 +340,6 @@ class Eiger(Detector):
         return element_if_equal([bool(int(e)) for e in fc])
 
     @flowcontrol_10g.setter
-    @error_handling
     def flowcontrol_10g(self, value):
         if value is True:
             v = '1'
@@ -424,7 +415,6 @@ class Eiger(Detector):
         return self._vcmp
     
     @vcmp.setter
-    @error_handling
     def vcmp(self, values):
         if len(values) == len(self._vcmp.set):
             for i, v in enumerate(values):
@@ -433,7 +423,6 @@ class Eiger(Detector):
             raise ValueError('vcmp only compatible with setting all')
 
     @property
-    @error_handling
     def rx_udpport(self):
         """
         UDP port for the receiver. Each module has two ports referred to
@@ -460,7 +449,6 @@ class Eiger(Detector):
         return [int(val) for pair in zip(p0, p1) for val in pair]
     
     @rx_udpport.setter
-    @error_handling
     def rx_udpport(self, ports):
         """Requires iterating over elements two and two for setting ports"""
         a = iter(ports)
@@ -469,7 +457,6 @@ class Eiger(Detector):
             self._api.setReceiverUDPPort2(p[1], i)
 
     @property
-    @error_handling
     def rx_zmqport(self):
         """
         Return the receiver zmq ports. Note that Eiger has two ports per receiver!
@@ -488,7 +475,6 @@ class Eiger(Detector):
             return [int(_p) + i for _p in _s for i in range(2)]
 
     @rx_zmqport.setter
-    @error_handling
     def rx_zmqport(self, port):
         if isinstance(port, Iterable):
             for i, p in enumerate(port):
@@ -498,7 +484,6 @@ class Eiger(Detector):
 
 
     @property
-    @error_handling
     def sub_exposure_time(self):
         """
         Sub frame exposure time in *seconds* for Eiger in 32bit autosumming mode
@@ -515,7 +500,6 @@ class Eiger(Detector):
 
     
     @sub_exposure_time.setter
-    @error_handling
     def sub_exposure_time(self, t):
         #TODO! checking here or in the detector?
         ns_time = int(t * 1e9)
@@ -525,7 +509,6 @@ class Eiger(Detector):
             raise DetectorValueError('Sub exposure time must be larger than 0')
 
     @property
-    @error_handling
     def sub_deadtime(self):
         """
         Deadtime between subexposures. Used to mimize noise by delaying the start of the next
@@ -535,7 +518,6 @@ class Eiger(Detector):
 
     
     @sub_deadtime.setter
-    @error_handling
     def sub_deadtime(self, t):
         ns_time = int(t * 1e9)
         if ns_time >= 0:
@@ -574,7 +556,6 @@ class Eiger(Detector):
         return self._temp
 
     @property
-    @error_handling
     def tengiga(self):
         """Enable 10Gbit/s data output
         
@@ -592,7 +573,6 @@ class Eiger(Detector):
         return self._api.getTenGigabitEthernet()
     
     @tengiga.setter
-    @error_handling
     def tengiga(self, value):
         self._api.setTenGigabitEthernet(value)
 

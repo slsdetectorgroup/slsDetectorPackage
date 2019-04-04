@@ -19,8 +19,6 @@ target_link_libraries(tests
 set_target_properties(tests PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
-include(CTest)
-include(Catch)
-catch_discover_tests(tests)
+
 # #TODO! Move to automatic test discovery
 # add_test(test ${CMAKE_BINARY_DIR}/bin/testSlsReceiver)

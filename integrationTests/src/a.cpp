@@ -6,7 +6,6 @@
 #include "logger.h"
 #include "network_utils.h"
 #include "slsDetector.h"
-#include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 #include "sls_detector_funcs.h"

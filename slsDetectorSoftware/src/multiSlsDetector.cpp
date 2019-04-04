@@ -668,15 +668,6 @@ int multiSlsDetector::setOnline(int value, int detPos) {
     return multi_shm()->onlineFlag;
 }
 
-int multiSlsDetector::getOnline(int detPos) const {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->setOnline(GET_ONLINE_FLAG);
-    }
-
-    return thisMultiDetector->onlineFlag;
-}
-
 std::string multiSlsDetector::checkOnline(int detPos) {
     if (detPos >= 0) {
         return detectors[detPos]->checkOnline();
@@ -2781,14 +2772,6 @@ int multiSlsDetector::setReceiverOnline(int value, int detPos) {
         multi_shm()->receiverOnlineFlag = sls::minusOneIfDifferent(r);
     }
     return multi_shm()->receiverOnlineFlag;
-}
-
-int multiSlsDetector::getReceiverOnline(int detPos) const{
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->setReceiverOnline(GET_ONLINE_FLAG);
-    }
-    return thisMultiDetector->receiverOnlineFlag;
 }
 
 std::string multiSlsDetector::checkReceiverOnline(int detPos) {

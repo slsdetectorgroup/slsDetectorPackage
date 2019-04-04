@@ -1541,7 +1541,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page output
-    - <b>fileformat</b> sets/gets the file format for data in receiver. Options: [ascii, binary, hdf5]. Ascii is not implemented in Receiver. \c Returns \c (string)
+    - <b>fileformat</b> sets/gets the file format for data in receiver. Options: [binary, hdf5]. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "fileformat";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
@@ -2568,8 +2568,6 @@ std::string slsDetectorCommand::cmdFileName(int narg, char *args[], int action, 
         if (action == PUT_ACTION) {
             if (std::string(args[1]) == "binary")
                 myDet->setFileFormat(BINARY, detPos);
-            else if (std::string(args[1]) == "ascii")
-                myDet->setFileFormat(ASCII, detPos);
             else if (std::string(args[1]) == "hdf5")
                 myDet->setFileFormat(HDF5, detPos);
             else
@@ -2588,7 +2586,7 @@ std::string slsDetectorCommand::helpFileName(int action) {
     }
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << std::string("fname s \t  sets the filename for the data (index and extension will be automatically appended)\n");
-        os << std::string("fileformat s \t  sets the file format for the data (binary, ascii, hdf5)\n");
+        os << std::string("fileformat s \t  sets the file format for the data (binary, hdf5)\n");
     }
     return os.str();
 }
@@ -4924,7 +4922,7 @@ std::string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int act
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
         if (action == PUT_ACTION)
             return std::string("cannot put");
-        myDet->printReceiverConfiguration(detPos);
+        myDet->printReceiverConfiguration(logINFO, detPos);
         return std::string("");
     } else if (cmd == "parameters") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);

@@ -400,11 +400,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setOnline(int value = GET_ONLINE_FLAG, int detPos = -1);
 
     /**
-     * Getter for online flag. 
-     */
-    int getOnline(int detPos = -1) const;
-
-    /**
      * Checks if each of the detectors are online/offline
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns empty string if they are all online,
@@ -1525,8 +1520,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns online/offline flag
      */
     int setReceiverOnline(int value = GET_ONLINE_FLAG, int detPos = -1);
-
-    int getReceiverOnline(int detPos = -1) const;
 
     /**
      * Checks if the receiver is really online

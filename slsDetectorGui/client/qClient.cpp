@@ -1,22 +1,9 @@
-/*
- * qClient.cpp
- *
- *  Created on: Feb 27, 2013
- *      Author: Dhanya Maliakal
- */
-// Qt Project Class Headers
 #include "qClient.h"
-// Project Class Headers
+
 #include "MySocketTCP.h"
 
-// C++ Include Headers
 #include <iostream>
 #include <sstream>
-
-
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int main(int argc, char *argv[]){
@@ -31,9 +18,6 @@ int main(int argc, char *argv[]){
 
 	return 0;
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qClient::qClient(char* hostname):
@@ -57,15 +41,10 @@ qClient::qClient(char* hostname):
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
 qClient::~qClient() {
 	if(mySocket) delete mySocket;
 	if(myStopSocket) delete myStopSocket;
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int qClient::executeLine(int narg, char *args[]){
@@ -131,8 +110,6 @@ int qClient::executeLine(int narg, char *args[]){
 	return OK;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 std::string qClient::printCommands(){
 	std::ostringstream os;
@@ -142,9 +119,6 @@ std::string qClient::printCommands(){
 	os << "acquire  starts acquistion in gui-blocking" << std::endl;
 	return os.str();
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 std::string qClient::getStatus(){
@@ -171,9 +145,6 @@ std::string qClient::getStatus(){
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 int qClient::startAcquisition(bool blocking){
 	int fnum = F_START_ACQUISITION;
 	if(blocking) fnum = F_START_AND_READ_ALL;
@@ -194,9 +165,6 @@ int qClient::startAcquisition(bool blocking){
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 int qClient::stopAcquisition(){
 	int fnum = F_STOP_ACQUISITION;
 	int ret = FAIL;
@@ -214,9 +182,6 @@ int qClient::stopAcquisition(){
 
 	return ret;
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 int qClient::exitServer(){

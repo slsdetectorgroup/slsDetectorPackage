@@ -1,10 +1,10 @@
 #pragma once
 
 #include "qDefs.h"
-#include "ui_form_detectormain.h"
 #include "qDrawPlot.h"
 #include "qTabDataOutput.h"
 #include "qTabMeasurement.h"
+#include "ui_form_detectormain.h"
 class qTabPlot;
 class qTabAdvanced;
 class qTabSettings;
@@ -39,29 +39,30 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
   public:
     /**
      * Main Window constructor.
-	 * This is mainly used to create detector object and all the tabs
-	 * @param argc number of command line arguments for server options
-	 * @param argv server options
-	 * @param app the qapplication3
-	 * @param parent makes the parent window 0 by default
-	 */
-    qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent = 0);
+     * This is mainly used to create detector object and all the tabs
+     * @param argc number of command line arguments for server options
+     * @param argv server options
+     * @param app the qapplication3
+     * @param parent makes the parent window 0 by default
+     */
+    qDetectorMain(int argc, char **argv, QApplication *app,
+                  QWidget *parent = 0);
 
     /**
      * Destructor
-	 */
+     */
     ~qDetectorMain();
 
     /**
      * Starts or stops Acquisition From gui client
-	 * @param start 1 for start and 0 to stop
-	 * @returns success or fail
-	 */
+     * @param start 1 for start and 0 to stop
+     * @returns success or fail
+     */
     int StartStopAcquisitionFromClient(bool start);
 
     /**
      * Returns if plot is running
-	 */
+     */
     bool isPlotRunning();
 
     /**
@@ -73,77 +74,6 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
      * Verifies if output directories for all the receivers exist
      */
     int DoesOutputDirExist();
-
-  private:
-    /** The sls detector object */
-    multiSlsDetector *myDet;
-    /** Detector Type */
-    slsDetectorDefs::detectorType detType;
-    /** The Plot widget	 */
-    qDrawPlot *myPlot;
-    /**Tab Widget */
-    MyTabWidget *tabs;
-    /**if the developer tab should be enabled,known from command line */
-    int isDeveloper;
-
-    /** default height of Plot Window when docked */
-    int heightPlotWindow;
-    /** default height of central widgetwhen plot Window when docked */
-    int heightCentralWidget;
-    /** The default zooming tool tip */
-    QString zoomToolTip;
-    /** The default tab heading color */
-    QColor defaultTabColor;
-    /** enumeration of the tabs */
-    enum { MEASUREMENT,
-           SETTINGS,
-           DATAOUTPUT,
-           PLOT,
-           ADVANCED,
-           DEBUGGING,
-           DEVELOPER,
-           MESSAGES,
-           NumberOfTabs };
-    /**Measurement tab */
-    qTabMeasurement *tab_measurement;
-    /**DataOutput tab */
-    qTabDataOutput *tab_dataoutput;
-    /**Plot tab */
-    qTabPlot *tab_plot;
-    /**Settings tab */
-    qTabSettings *tab_settings;
-    /**Advanced tab */
-    qTabAdvanced *tab_advanced;
-    /**Debugging tab */
-    qTabDebugging *tab_debugging;
-    /**Developer tab */
-    qTabDeveloper *tab_developer;
-    /**Messages tab */
-    qTabMessages *tab_messages;
-    /** server object*/
-    qServer *myServer;
-
-    /**
-     * Sets up the layout of the widget
-	 */
-    void SetUpWidgetWindow();
-
-    /**
-     * Sets up detector
-	 * @param fName file name of the config file at start up
-	 * @param multi detector ID
-	 */
-    void SetUpDetector(const std::string fName, int multiID);
-
-    /**
-     * Sets up the signals and the slots
-	 */
-    void Initialization();
-
-    /**
-     * Loads config file at start up
-	 */
-    void LoadConfigFile(const std::string fName);
 
   private slots:
     /**
@@ -162,23 +92,26 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     void ExecuteHelp(QAction *action);
 
     /**
-     * Refreshes the tab each time the tab is changed. Also displays the next enabled tab
+     * Refreshes the tab each time the tab is changed. Also displays the next
+     * enabled tab
      */
     void Refresh(int index);
 
     /**
      * Resizes the main window if the plot is docked/undocked
- 	 * @param b bool TRUE if undocked(outside main window), FALSE docked
- 	 */
+     * @param b bool TRUE if undocked(outside main window), FALSE docked
+     */
     void ResizeMainWindow(bool b);
 
     /**
-     * Enables/disables tabs depending on if acquisition is currently in progress
+     * Enables/disables tabs depending on if acquisition is currently in
+     * progress
      */
     void EnableTabs();
 
     /**
-     * Set the tool tip of mouse controlled zooming depening on if its enabled/disabled
+     * Set the tool tip of mouse controlled zooming depening on if its
+     * enabled/disabled
      */
     void SetZoomToolTip(bool disable);
 
@@ -192,5 +125,76 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
      * Adjust the resizing to resize plot
      */
     void resizeEvent(QResizeEvent *event);
-};
 
+  private:
+    /**
+     * Sets up the layout of the widget
+     */
+    void SetUpWidgetWindow();
+
+    /**
+     * Sets up detector
+     * @param fName file name of the config file at start up
+     * @param multi detector ID
+     */
+    void SetUpDetector(const std::string fName, int multiID);
+
+    /**
+     * Sets up the signals and the slots
+     */
+    void Initialization();
+
+    /**
+     * Loads config file at start up
+     */
+    void LoadConfigFile(const std::string fName);
+
+    /** enumeration of the tabs */
+    enum {
+        MEASUREMENT,
+        SETTINGS,
+        DATAOUTPUT,
+        PLOT,
+        ADVANCED,
+        DEBUGGING,
+        DEVELOPER,
+        MESSAGES,
+        NumberOfTabs
+    };
+    /** Detector Type */
+    slsDetectorDefs::detectorType detType;
+    /** The sls detector object */
+    std::unique_ptr<multiSlsDetector> myDet;
+    /** The Plot widget	 */
+    std::unique_ptr<qDrawPlot> myPlot;
+    /**Tab Widget */
+    std::unique_ptr<MyTabWidget> tabs;
+    /**Measurement tab */
+    std::unique_ptr<qTabMeasurement> tabMeasurement;
+    /**DataOutput tab */
+    std::unique_ptr<qTabDataOutput> tabDataOutput;
+    /**Plot tab */
+    std::unique_ptr<qTabPlot> tabPlot;
+    /**Settings tab */
+    std::unique_ptr<qTabSettings> tabSettings;
+    /**Advanced tab */
+    std::unique_ptr<qTabAdvanced> tabAdvanced;
+    /**Debugging tab */
+    std::unique_ptr<qTabDebugging> tabDebugging;
+    /**Developer tab */
+    std::unique_ptr<qTabDeveloper> tabDeveloper;
+    /**Messages tab */
+    std::unique_ptr<qTabMessages> *tabMessages;
+    /** server object*/
+    std::unique_ptr<qServer> myServer;
+    /**if the developer tab should be enabled,known from command line */
+    int isDeveloper;
+    /** default height of Plot Window when docked */
+    int heightPlotWindow;
+    /** default height of central widgetwhen plot Window when docked */
+    int heightCentralWidget;
+    /** The default zooming tool tip */
+    QString zoomToolTip;
+    /** The default tab heading color */
+    QColor defaultTabColor;
+};

@@ -1,18 +1,8 @@
-/*
- * qClient.h
- *
- *  Created on: Feb 27, 2013
- *      Author: Dhanya Maliakal
- */
-#ifndef QCLIENT_H
-#define QCLIENT_H
+#pragma once
 
-
-/** Qt Project Class Headers */
-/** Project Class Headers */
 class MySocketTCP;
 #include "sls_detector_defs.h"
-/** C++ Include Headers */
+
 #include <stdlib.h>
 #include <string>
 
@@ -24,30 +14,45 @@ class qClient: public virtual slsDetectorDefs{
 
 
 public:
-	/** \short The constructor*/
+	/** 
+	 * The constructor
+	 */
 	qClient(char* hostname);
-	/** Destructor	 */
+	/** 
+	 * Destructor	 
+	 */
 	virtual ~qClient();
 
-	/**Execute command*/
+	/**
+	 * Execute command
+	 */
 	int executeLine(int narg, char *args[]);
 
 private:
-	/** Print list of commands */
+	/** 
+	 * Print list of commands
+	 */
 	std::string printCommands();
 
-	/** Start Acquisition
+	/** 
+	 * Start Acquisition
 	 * @param blocking true if its a blocking acquistion
 	 */
 	int startAcquisition(bool blocking = false);
 
-	/** Stops Acquisition */
+	/** 
+	 * Stops Acquisition 
+	 */
 	int stopAcquisition();
 
-	/** Gets run status */
+	/** 
+	 * Gets run status 
+	 */
 	std::string getStatus();
 
-	/** Exits Server */
+	/** 
+	 * Exits Server 
+	 */
 	int exitServer();
 
 	/** client socket */
@@ -56,10 +61,7 @@ private:
 	/** client socket */
 	MySocketTCP *myStopSocket;
 
+	/** error message */
 	char mess[MAX_STR_LENGTH];
 
 };
-
-
-
-#endif /* QCLIENT_H */

@@ -39,6 +39,8 @@ add_library(slsReceiverShared SHARED
 )
 
 target_link_libraries(slsReceiverShared PUBLIC
+    slsProjectOptions
+    slsProjectWarnings
     slsSupportLib
 )
 
@@ -66,6 +68,8 @@ set_target_properties(slsReceiver PROPERTIES
 )
 
 target_link_libraries(slsReceiver PUBLIC
+    slsProjectOptions
+    slsProjectWarnings
     slsSupportLib
     slsReceiverShared
     pthread
@@ -77,7 +81,9 @@ if (HDF5_FOUND)
     target_link_libraries(slsReceiver PUBLIC ${HDF5_LIBRARIES})
 endif ()
 
-
+if (SLS_USE_TESTS)
+    add_subdirectory(tests)
+endif(SLS_USE_TESTS)
 
 install(TARGETS slsReceiverShared
         EXPORT "${TARGETS_EXPORT_NAME}"

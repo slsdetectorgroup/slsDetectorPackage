@@ -9,7 +9,7 @@
 
 #include "sls_detector_defs.h"
 #include "receiver_defs.h"
-
+#include "logger.h"
 #include <math.h>			//ceil
 #include <vector>
 
@@ -301,7 +301,7 @@ private:
 		if (nPixelsX == 1280) {
 			subFrameNumber = -1;
 			bunchId = -1;
-			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+			frameNumber = *reinterpret_cast<uint32_t*>(packetData);
 			if (oddStartingPacket)
 			    frameNumber++;
 			packetNumber = frameNumber&packetIndexMask;
@@ -309,8 +309,8 @@ private:
 		} else  {
 			subFrameNumber = -1;
 			bunchId = -1;
-			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			packetNumber = 0;
+            frameNumber = *reinterpret_cast<uint32_t *>(packetData);
+            packetNumber = 0;
 		}
 	}
 
@@ -633,32 +633,31 @@ class MoenchData : public GeneralData {
 
 private:
 	/** Structure of an jungfrau ctb packet header (10G Udp) */
-	typedef struct {
-		unsigned char emptyHeader[6];
-		unsigned char reserved[4];
-		unsigned char packetNumber[1];
-		unsigned char frameNumber[3];
-		unsigned char bunchid[8];
-	} jfrauctb_packet_header_t;
+  struct jfrauctb_packet_header {
+      unsigned char emptyHeader[6];
+      unsigned char reserved[4];
+      uint32_t packetFrameNumber;
+      uint64_t bunchid;
+  } __attribute__((packed));
 
- public:
-
-	/** Constructor */
-	MoenchData(){
-		myDetectorType		= slsDetectorDefs::MOENCH;
-		nPixelsX 			= 32; // total number of channels
-		nPixelsY 			= 1; // number of samples
-		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
-		dataSize 			= UDP_PACKET_DATA_BYTES;
-		packetSize 			= headerSizeinPacket + dataSize;
-		//packetsPerFrame 	= 1;
-		imageSize 			= nPixelsX * nPixelsY * 2;
-		packetsPerFrame		= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
-		frameIndexMask 		= 0xFFFFFF;
-		maxFramesPerFile 	= CTB_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-		standardheader		= true;
+public:
+  /** Constructor */
+  MoenchData() {
+      myDetectorType = slsDetectorDefs::MOENCH;
+      nPixelsX = 32; // total number of channels
+      nPixelsY = 1;  // number of samples
+      headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+      dataSize = UDP_PACKET_DATA_BYTES;
+      packetSize = headerSizeinPacket + dataSize;
+      // packetsPerFrame 	= 1;
+      imageSize = nPixelsX * nPixelsY * 2;
+      packetsPerFrame = ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+      frameIndexMask = 0xFFFFFF;
+      maxFramesPerFile = CTB_MAX_FRAMES_PER_FILE;
+      fifoBufferHeaderSize =
+          FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+      defaultFifoDepth = 2500;
+      standardheader = true;
 	};
 
 	/**
@@ -674,10 +673,10 @@ private:
 	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
 			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
 		subFrameNumber = -1;
-		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);
-		frameNumber = (uint64_t)((*( (uint32_t*) header->frameNumber)) & frameIndexMask);
-		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
-		bunchId = (*((uint64_t*) header->bunchid));
+		auto header = reinterpret_cast<jfrauctb_packet_header*>(packetData);
+		frameNumber = (header->packetFrameNumber >> 8) & frameIndexMask;
+		packetNumber = header->packetFrameNumber & 0xFF;
+		bunchId = header->bunchid;
 	}
 
 
@@ -724,4 +723,4 @@ private:
 
 
 
-
+;

@@ -18,6 +18,8 @@ target_include_directories(slsDetectorShared PUBLIC
 )
 
 target_link_libraries(slsDetectorShared PUBLIC
+    slsProjectOptions
+    slsProjectWarnings
     slsSupportLib
 	${ZeroMQ_LIBRARIES}
 )
@@ -42,6 +44,8 @@ add_executable(sls_detector_get
     src/sls_detector_client.cpp
 )
 target_link_libraries(sls_detector_get
+   slsProjectOptions
+   slsProjectWarnings
    slsDetectorShared
    slsSupportLib
    pthread
@@ -57,6 +61,8 @@ add_executable(sls_detector_put
     src/sls_detector_client.cpp
 )
 target_link_libraries(sls_detector_put
+   slsProjectOptions
+   slsProjectWarnings
    slsDetectorShared
    pthread
    ${ZeroMQ_LIBRARIES}
@@ -71,6 +77,8 @@ add_executable(sls_detector_acquire
     src/sls_detector_client.cpp
 )
 target_link_libraries(sls_detector_acquire
+   slsProjectOptions
+   slsProjectWarnings
    slsDetectorShared
    pthread
    ${ZeroMQ_LIBRARIES}
@@ -85,6 +93,8 @@ add_executable(sls_detector_help
     src/sls_detector_client.cpp
 )
 target_link_libraries(sls_detector_help
+   slsProjectOptions
+   slsProjectWarnings
    slsDetectorShared
    pthread
    ${ZeroMQ_LIBRARIES}

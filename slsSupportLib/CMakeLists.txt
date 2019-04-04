@@ -51,6 +51,8 @@ set_target_properties(slsSupportLib PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
+target_link_libraries(slsSupportLib slsProjectOptions slsProjectWarnings)
+
 if (SLS_USE_TESTS)
     add_subdirectory(tests)
 endif(SLS_USE_TESTS)

@@ -78,7 +78,8 @@ std::ostream &operator<<(std::ostream &out, const MacAddr &addr) {
 }
 
 uint32_t HostnameToIp(const char *hostname) {
-    struct addrinfo hints, *result;
+    addrinfo hints;
+    addrinfo *result = nullptr;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -86,7 +87,7 @@ uint32_t HostnameToIp(const char *hostname) {
         freeaddrinfo(result);
         throw RuntimeError("Could not convert hostname to ip");
     }
-    uint32_t ip = ((struct sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
+    uint32_t ip = ((sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
     freeaddrinfo(result);
     return ip;
 }

@@ -40,7 +40,7 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 
     FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
 
-	memset(fileNametoStream, 0, MAX_STR_LENGTH);
+	// memset(fileNametoStream, 0, MAX_STR_LENGTH);
 }
 
 
@@ -79,14 +79,15 @@ void DataStreamer::ResetParametersforNewAcquisition() {
 	acquisitionStartedFlag = false;
 }
 
-void DataStreamer::ResetParametersforNewMeasurement(char* fname){
+void DataStreamer::ResetParametersforNewMeasurement(const std::string& fname){
     runningFlag = false;
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
-	strcpy(fileNametoStream, fname);
-	if (completeBuffer) {
-		delete [] completeBuffer;
-		completeBuffer = nullptr;
+	// strcpy(fileNametoStream, fname);
+    fileNametoStream = fname;
+    if (completeBuffer) {
+            delete[] completeBuffer;
+            completeBuffer = nullptr;
 	}
 	if (roi->size()) {
 		if (generalData->myDetectorType == GOTTHARD) {
@@ -247,7 +248,7 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 
 	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, *fileIndex,
 			nx, ny, size,
-			acquisitionIndex, frameIndex, fileNametoStream,
+			acquisitionIndex, frameIndex, fileNametoStream.c_str(),
 			header.frameNumber, header.expLength, header.packetNumber, header.bunchId, header.timestamp,
 			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,

@@ -16,10 +16,19 @@ class IpAddr {
     IpAddr(const char *address);
     std::string str() const;
     std::string hex() const;
-    constexpr bool operator==(const IpAddr &other) const noexcept { return addr_ == other.addr_; }
-    constexpr bool operator!=(const IpAddr &other) const noexcept { return addr_ != other.addr_; }
-    constexpr bool operator==(const uint32_t other) const noexcept { return addr_ == other; }
-    constexpr bool operator!=(const uint32_t other) const noexcept { return addr_ != other; }
+    constexpr bool operator==(const IpAddr &other) const noexcept {
+        return addr_ == other.addr_;
+    }
+    constexpr bool operator!=(const IpAddr &other) const noexcept {
+        return addr_ != other.addr_;
+    }
+    constexpr bool operator==(const uint32_t other) const noexcept {
+        return addr_ == other;
+    }
+    constexpr bool operator!=(const uint32_t other) const noexcept {
+        return addr_ != other;
+    }
+    constexpr uint32_t uint32() const noexcept { return addr_; }
 };
 
 class MacAddr {
@@ -33,10 +42,19 @@ class MacAddr {
     MacAddr(const char *address);
     std::string str() const;
     std::string hex() const;
-    constexpr bool operator==(const MacAddr &other) const noexcept { return addr_ == other.addr_; }
-    constexpr bool operator!=(const MacAddr &other) const noexcept { return addr_ != other.addr_; }
-    constexpr bool operator==(const uint64_t other) const noexcept { return addr_ == other; }
-    constexpr bool operator!=(const uint64_t other) const noexcept { return addr_ != other; }
+    constexpr bool operator==(const MacAddr &other) const noexcept {
+        return addr_ == other.addr_;
+    }
+    constexpr bool operator!=(const MacAddr &other) const noexcept {
+        return addr_ != other.addr_;
+    }
+    constexpr bool operator==(const uint64_t other) const noexcept {
+        return addr_ == other;
+    }
+    constexpr bool operator!=(const uint64_t other) const noexcept {
+        return addr_ != other;
+    }
+    constexpr uint64_t uint64() const noexcept { return addr_; }
 };
 
 std::ostream &operator<<(std::ostream &out, const IpAddr &addr);

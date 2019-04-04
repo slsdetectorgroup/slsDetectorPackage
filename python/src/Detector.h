@@ -386,17 +386,11 @@ class Detector {
 
     //Eiger: set the energies where the detector is trimmed
     void setTrimEnergies(std::vector<int> energy) {
-        det.setTrimEn(energy.size(), energy.data());
+        det.setTrimEn(energy);
     }
 
     std::vector<int> getTrimEnergies() {
-        //initial call to get legth, energies defaults to NULL
-        auto n_trimen = det.getTrimEn();
-        std::vector<int> trim_energies(n_trimen);
-
-        //second call to get the energies
-        det.getTrimEn(trim_energies.data());
-        return trim_energies;
+        return det.getTrimEn();
     }
 
     /*** Temperature control functions for Jungfrau ***/
@@ -405,7 +399,7 @@ class Detector {
     }
 
     float getThresholdTemperature() {
-        return static_cast<float>(det.setThresholdTemperature(-1, -1)) / 1000.0;
+        return static_cast<double>(det.setThresholdTemperature(-1, -1)) / 1000.0;
     }
 
     void setTemperatureControl(bool v) {

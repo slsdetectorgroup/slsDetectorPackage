@@ -3125,23 +3125,28 @@ int slsDetector::enableGapPixels(int val) {
     return detector_shm()->gappixels;
 }
 
-int slsDetector::setTrimEn(int nen, int *en) {
-    if (en) {
-        for (int ien = 0; ien < nen; ++ien) {
-            detector_shm()->trimEnergies[ien] = en[ien];
-        }
-        detector_shm()->nTrimEn = nen;
+int slsDetector::setTrimEn(std::vector<int> energies) {
+    if (energies.size()>MAX_TRIMEN){
+        std::ostringstream os;
+        os << "Size of trim energies: " << energies.size() << " exceeds what can "
+        << "be stored in shared memory: " << MAX_TRIMEN << "\n";
+        throw RuntimeError(os.str());
     }
+
+    for (int i = 0; i != energies.size(); ++i) {
+        detector_shm()->trimEnergies[i] = energies[i];
+    }
+    detector_shm()->nTrimEn = energies.size();
     return (detector_shm()->nTrimEn);
 }
 
-int slsDetector::getTrimEn(int *en) {
-    if (en) {
-        for (int ien = 0; ien < detector_shm()->nTrimEn; ++ien) {
-            en[ien] = detector_shm()->trimEnergies[ien];
-        }
+std::vector<int> slsDetector::getTrimEn() {
+    std::vector<int> energies;
+    energies.reserve(detector_shm()->nTrimEn);
+    for (int i = 0; i != detector_shm()->nTrimEn; ++i) {
+        energies.push_back(detector_shm()->trimEnergies[i]);
     }
-    return (detector_shm()->nTrimEn);
+    return energies;
 }
 
 int slsDetector::pulsePixel(int n, int x, int y) {

@@ -1355,16 +1355,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of trim energies
      */
-    int setTrimEn(int nen, int *en = nullptr, int detPos = -1);
+    int setTrimEn(std::vector<int> energies, int detPos = -1);
 
     /**
      * Returns the number of trim energies and their value  (Eiger)
      *
-     * @param en array of energies
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns number of trim energies
+     * @returns vector of trim energies
      */
-    int getTrimEn(int *en = nullptr, int detPos = -1);
+    std::vector<int> getTrimEn(int detPos = -1);
 
     /**
      * Pulse Pixel (Eiger)
@@ -1953,6 +1952,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void processData();
 
+    void addSlsDetector(std::unique_ptr<slsDetector> det);
+
   private:
     /**
      * Initialize (open/create) shared memory for the sharedMultiDetector
@@ -1992,14 +1993,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void addSlsDetector(const std::string &hostname);
 
-    /**
-     * add gap pixels to the image (only for Eiger in 4 bit mode)
-     * @param image pointer to image without gap pixels
-     * @param gpImage poiner to image with gap pixels, if NULL, allocated inside
-     * function
-     * @returns number of data bytes of image with gap pixels
-     */
-    int processImageWithGapPixels(char *image, char *&gpImage);
+    
+
+        /**
+         * add gap pixels to the image (only for Eiger in 4 bit mode)
+         * @param image pointer to image without gap pixels
+         * @param gpImage poiner to image with gap pixels, if NULL, allocated
+         * inside function
+         * @returns number of data bytes of image with gap pixels
+         */
+        int processImageWithGapPixels(char *image, char *&gpImage);
 
     /**
      * Set total progress (total number of frames/images in an acquisition)

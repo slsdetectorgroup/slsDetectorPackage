@@ -3133,7 +3133,7 @@ int slsDetector::setTrimEn(std::vector<int> energies) {
         throw RuntimeError(os.str());
     }
 
-    for (int i = 0; i != energies.size(); ++i) {
+    for (size_t i = 0; i != energies.size(); ++i) {
         detector_shm()->trimEnergies[i] = energies[i];
     }
     detector_shm()->nTrimEn = energies.size();

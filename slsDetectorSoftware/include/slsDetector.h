@@ -1134,7 +1134,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param n number of rois
 	 * @returns OK or FAIL
 	 */
-    slsDetectorDefs::ROI *getROI(int &n);
+    const slsDetectorDefs::ROI * getROI(int &n);
 
     /**
 	 * Returns number of rois

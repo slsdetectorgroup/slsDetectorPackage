@@ -57,6 +57,7 @@ target_compile_options(slsProjectWarnings INTERFACE
                                             -Woverloaded-virtual
                                             -Wdouble-promotion
                                             -Wformat=2
+                                            -Wshadow
                                  )
 
 

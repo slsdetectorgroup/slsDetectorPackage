@@ -5,6 +5,8 @@
 #include "gitInfoLib.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
+
+
 class slsDetector;
 class ZmqSocket;
 class detectorData;
@@ -1283,7 +1285,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    ROI *getROI(int &n, int detPos = -1);
+    const ROI *getROI(int &n, int detPos = -1);
 
     /**
      * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert

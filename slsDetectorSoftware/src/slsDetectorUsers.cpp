@@ -236,7 +236,7 @@ int slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int detPos
     return detector.setROI(n, roiLimits, detPos);
 }
 
-slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int detPos) {
+const slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int detPos) {
     return detector.getROI(n, detPos);
 }
 

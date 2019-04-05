@@ -24,6 +24,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <algorithm>
+
 using namespace sls;
 
 #define DEFAULT_HOSTNAME "localhost"
@@ -2497,8 +2499,7 @@ std::string slsDetector::getAdditionalJsonHeader() {
 
 std::string slsDetector::setAdditionalJsonParameter(const std::string &key,
                                                     const std::string &value) {
-    // validation (value or key is empty)
-    if (!key.length() || !value.length()) {
+    if (key.empty() || value.empty()) {
         throw("Could not set additional json header parameter as the key or "
               "value is empty");
     }
@@ -2822,33 +2823,14 @@ int slsDetector::sendROIToProcessor() {
 }
 
 int slsDetector::setROI(int n, ROI roiLimits[]) {
-    // sort ascending order
-    for (int i = 0; i < n; ++i) {
-        for (int j = i + 1; j < n; ++j) {
-            if (roiLimits[j].xmin < roiLimits[i].xmin) {
-                int temp = roiLimits[i].xmin;
-                roiLimits[i].xmin = roiLimits[j].xmin;
-                roiLimits[j].xmin = temp;
-                temp = roiLimits[i].xmax;
-                roiLimits[i].xmax = roiLimits[j].xmax;
-                roiLimits[j].xmax = temp;
-                temp = roiLimits[i].ymin;
-                roiLimits[i].ymin = roiLimits[j].ymin;
-                roiLimits[j].ymin = temp;
-                temp = roiLimits[i].ymax;
-                roiLimits[i].ymax = roiLimits[j].ymax;
-                roiLimits[j].ymax = temp;
-            }
-        }
-    }
+    std::sort(roiLimits, roiLimits+n,
+              [](ROI a, ROI b) { return a.xmin < b.xmin; });
 
     int ret = sendROI(n, roiLimits);
-    // moench (send to processor)
     if (detector_shm()->myDetectorType == MOENCH) {
         sendROIToProcessor();
     }
     // update #nchans and databytes, as it depends on #samples, roi,
-    // readoutflags (ctb only)
     if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
         detector_shm()->myDetectorType == MOENCH) {
         updateTotalNumberOfChannels();
@@ -2856,7 +2838,7 @@ int slsDetector::setROI(int n, ROI roiLimits[]) {
     return ret;
 }
 
-slsDetectorDefs::ROI *slsDetector::getROI(int &n) {
+const slsDetectorDefs::ROI * slsDetector::getROI(int &n) {
     sendROI(-1, nullptr);
     n = detector_shm()->nROI;
     // moench - get json header(due to different clients, diff shm) (get roi is
@@ -2924,6 +2906,15 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
                     << "," << detector_shm()->roiLimits[i].ymax << ")";
             }
         }
+    }else{
+        //detector is offline lets just update SHM
+        if (n!=-1){
+            detector_shm()->nROI = n;
+            for(int i = 0; i!=n; ++i){
+                detector_shm()->roiLimits[i] = roiLimits[i];
+            }
+        }
+
     }
     if (ret == FORCE_UPDATE) {
         ret = updateDetector();

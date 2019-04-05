@@ -3384,7 +3384,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int acti
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
         ret = myDet->setDynamicRange(val, detPos);
     } else if (cmd == "roi") {
-        ROI* r = myDet->getROI(ret, detPos);
+        const ROI* r = myDet->getROI(ret, detPos);
         if (r != NULL)
             delete [] r;
     } else if (cmd == "detsizechan") {
@@ -4663,7 +4663,7 @@ std::string slsDetectorCommand::helpSpeed(int action) {
 
 std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, int detPos) {
 
-    int retval;
+    
     char answer[1000] = "";
 
     if (action == HELP_ACTION)
@@ -4702,7 +4702,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, 
         }
 
         myDet->setOnline(ONLINE_FLAG, detPos);
-        retval = myDet->setReadOutFlags(flag, detPos);
+        int retval = myDet->setReadOutFlags(flag, detPos);
 
         // std::cout << std::hex << flag << " " << retval << std::endl;
 
@@ -5074,7 +5074,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, 
             } else
                 return std::string("could not scan max frames per file\n");
         }
-        char answer[100];
         memset(answer, 0, 100);
         sprintf(answer, "%d", myDet->setReceiverFramesPerFile(-1, detPos));
         return std::string(answer);
@@ -5097,7 +5096,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, 
             } else
                 return std::string("could not scan receiver padding enable\n");
         }
-        char answer[100];
         memset(answer, 0, 100);
         sprintf(answer, "%d", myDet->setReceiverPartialFramesPadding(-1, detPos));
         return std::string(answer);
@@ -5636,7 +5634,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             // myDet->writeRegister(120,addr, detPos);
         }
 
-        ROI *aa = myDet->getROI(nroi, detPos);
+        const ROI *aa = myDet->getROI(nroi, detPos);
 
         int reg = 0xffffffff;
         if (nroi < 1)

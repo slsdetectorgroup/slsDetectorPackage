@@ -545,7 +545,7 @@ public:
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns pointer to array of ROI structure
      */
-    slsDetectorDefs::ROI* getROI(int &n, int detPos = -1);
+    const slsDetectorDefs::ROI* getROI(int &n, int detPos = -1);
 
 
 

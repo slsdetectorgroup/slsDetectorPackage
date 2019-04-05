@@ -2278,13 +2278,14 @@ int multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
 
     // settings the rois for each detector
     std::vector<int> r;
-    for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        r.push_back(detectors[idet]->setROI(nroi[idet], allroi[idet]));
+    r.reserve(detectors.size());
+    for (size_t i = 0; i != detectors.size(); ++i) {
+        r.push_back(detectors[i]->setROI(nroi[i], allroi[i]));
     }
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
+const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getROI(n);
@@ -2298,7 +2299,7 @@ slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
     ROI temproi;
     ROI roiLimits[maxroi];
     ROI *retval = new ROI[maxroi];
-    ROI *temp = nullptr;
+    const ROI *temp = nullptr;
     int index = 0;
 
     // get each detector's roi array

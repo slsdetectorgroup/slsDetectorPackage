@@ -7,12 +7,6 @@
 #ifndef SLSQTVALIDATORS_H
 #define SLSQTVALIDATORS_H
 
-#ifndef IAN
-typedef  double double32_t;
-typedef  float float32_t;
-typedef  int int32_t;
-#endif
-
 #include <iostream>
 #include <math.h>
 

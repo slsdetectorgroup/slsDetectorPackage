@@ -21,11 +21,6 @@
 #include "ansi.h"
 
 
-typedef  double double32_t;
-typedef  float float32_t;
-typedef  int int32_t;
-
-
 /** default ports */
 #define DEFAULT_PORTNO    		1952
 #define DEFAULT_UDP_PORTNO 		50001

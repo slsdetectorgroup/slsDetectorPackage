@@ -13,9 +13,6 @@
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
 
-typedef  double double32_t;
-typedef  float float32_t;
-typedef  int int32_t;
 #include "ansi.h"
 
 

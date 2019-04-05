@@ -1,1 +1,0 @@
-API_FILE=$PACKAGE_DIR/slsSupportLib/include/versionAPI.h

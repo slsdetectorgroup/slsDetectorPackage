@@ -5,7 +5,6 @@
 #include "ServerInterface.h"
 #include "SharedMemory.h"
 #include "file_utils.h"
-#include "gitInfoLib.h"
 #include "multiSlsDetector.h"
 #include "network_utils.h"
 #include "slsDetectorCommand.h"

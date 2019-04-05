@@ -14,8 +14,11 @@ all: clean versioning $(PROGS)
 
 boot: $(OBJS) 
 
+version_name=APIMOENCH
+version_path=slsDetectorServers/moenchDetectorServer
 versioning: 
-	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path);  tput sgr0;`
+
 
 $(PROGS): $(OBJS)
 #	echo $(OBJS) 

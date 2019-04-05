@@ -10,7 +10,7 @@
 #include "qTabSettings.h"
 
 #include "container_utils.h"
-#include "gitInfoLib.h"
+#include "versionAPI.h"
 #include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
 
@@ -87,7 +87,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
             break;
 
         case 'v':
-            tempval = GITDATE;
+            tempval = APIGUI;
             FILE_LOG(logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
                               << std::hex << tempval << ")";
             return;
@@ -597,7 +597,7 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
                              "and Moench detectors";
 
         char version[200];
-        long long unsigned int retval = GITDATE;
+        long long unsigned int retval = APIGUI;
         sprintf(version, "%llx", retval);
         std::string thisGUIVersion{version};
 

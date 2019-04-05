@@ -56,7 +56,7 @@ set(HEADERS
     include/qTabDebugging.h
     include/qTabDeveloper.h
     include/qTabMessages.h
-    ../slsSupportLib/include/gitInfoLib.h
+    ../slsSupportLib/include/versionAPI.h
     include/qServer.h
 )
 set(RESOURCES

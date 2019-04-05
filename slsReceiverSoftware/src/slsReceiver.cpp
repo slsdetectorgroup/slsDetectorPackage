@@ -16,7 +16,7 @@
 #include "slsReceiver.h"
 #include "slsReceiverTCPIPInterface.h"
 #include "sls_detector_exceptions.h"
-#include "gitInfoLib.h"
+#include "versionAPI.h"
 #include "logger.h"
 
 slsReceiver::slsReceiver(int argc, char *argv[]):
@@ -25,7 +25,6 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 	// options
 	std::map<std::string, std::string> configuration_map;
 	int tcpip_port_no = 1954;
-	int64_t tempval = 0;
 
 	//parse command line for config
 	static struct option long_options[] = {
@@ -58,9 +57,7 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 			break;
 
 		case 'v':
-			tempval = GITREV;
-			tempval = (tempval <<32) | GITDATE;
-			std::cout << "SLS Receiver " << GITBRANCH << " (0x" << std::hex << tempval << ")" << std::endl;
+			std::cout << "SLS Receiver " << GITBRANCH << " (0x" << std::hex << APIRECEIVER << ")" << std::endl;
 			throw sls::RuntimeError();
 
 		case 'h':

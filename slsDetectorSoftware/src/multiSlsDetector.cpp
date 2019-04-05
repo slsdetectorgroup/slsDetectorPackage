@@ -8,6 +8,7 @@
 #include "slsDetector.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
+#include "versionAPI.h"
 
 
 #include "container_utils.h"
@@ -193,6 +194,10 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
 
     auto r = parallelCall(&slsDetector::getId, mode);
     return sls::minusOneIfDifferent(r);
+}
+
+int64_t multiSlsDetector::getClientSoftwareVersion() const {
+    return APILIB;
 }
 
 int64_t multiSlsDetector::getReceiverSoftwareVersion(int detPos) const {

@@ -7,7 +7,6 @@
 #include "slsReceiverImplementation.h"
 #include "MySocketTCP.h"
 #include "ServerInterface.h"
-#include "gitInfoLib.h"
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
 #include "versionAPI.h"
@@ -103,8 +102,7 @@ void slsReceiverTCPIPInterface::stop(){
 
 
 int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
-	int64_t retval = GITDATE & 0xFFFFFF;
-	return retval;
+	return APIRECEIVER;
 }
 
 

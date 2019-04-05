@@ -16,7 +16,7 @@
 #include "slsReceiver.h"
 #include "slsReceiverTCPIPInterface.h"
 #include "sls_detector_exceptions.h"
-#include "gitInfoReceiver.h"
+#include "gitInfoLib.h"
 #include "logger.h"
 
 slsReceiver::slsReceiver(int argc, char *argv[]):

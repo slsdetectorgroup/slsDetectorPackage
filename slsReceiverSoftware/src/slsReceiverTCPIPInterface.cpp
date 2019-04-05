@@ -7,7 +7,7 @@
 #include "slsReceiverImplementation.h"
 #include "MySocketTCP.h"
 #include "ServerInterface.h"
-#include "gitInfoReceiver.h"
+#include "gitInfoLib.h"
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
 #include "versionAPI.h"

@@ -164,29 +164,29 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     /** Detector Type */
     slsDetectorDefs::detectorType detType;
     /** The sls detector object */
-    std::unique_ptr<multiSlsDetector> myDet;
+    multiSlsDetector *myDet;
     /** The Plot widget	 */
-    std::unique_ptr<qDrawPlot> myPlot;
+    qDrawPlot *myPlot;
     /**Tab Widget */
-    std::unique_ptr<MyTabWidget> tabs;
+    MyTabWidget *tabs;
     /**Measurement tab */
-    std::unique_ptr<qTabMeasurement> tabMeasurement;
+    qTabMeasurement *tabMeasurement;
     /**DataOutput tab */
-    std::unique_ptr<qTabDataOutput> tabDataOutput;
+    qTabDataOutput *tabDataOutput;
     /**Plot tab */
-    std::unique_ptr<qTabPlot> tabPlot;
+    qTabPlot *tabPlot;
     /**Settings tab */
-    std::unique_ptr<qTabSettings> tabSettings;
+    qTabSettings *tabSettings;
     /**Advanced tab */
-    std::unique_ptr<qTabAdvanced> tabAdvanced;
+    qTabAdvanced *tabAdvanced;
     /**Debugging tab */
-    std::unique_ptr<qTabDebugging> tabDebugging;
+    qTabDebugging *tabDebugging;
     /**Developer tab */
-    std::unique_ptr<qTabDeveloper> tabDeveloper;
+    qTabDeveloper *tabDeveloper;
     /**Messages tab */
-    std::unique_ptr<qTabMessages> *tabMessages;
+    qTabMessages *tabMessages;
     /** server object*/
-    std::unique_ptr<qServer> myServer;
+    qServer *myServer;
     /**if the developer tab should be enabled,known from command line */
     int isDeveloper;
     /** default height of Plot Window when docked */

@@ -56,7 +56,7 @@ set(HEADERS
     include/qTabDebugging.h
     include/qTabDeveloper.h
     include/qTabMessages.h
-    include/gitInfoGui.h
+    ../slsSupportLib/include/gitInfoLib.h
     include/qServer.h
 )
 set(RESOURCES
@@ -76,7 +76,7 @@ include_directories(
 )
 
 add_definitions(
-    -DPRINT_LOG -DVERBOSE 
+    -DPRINT_LOG #-DVERBOSE 
 )
 
 add_executable(slsDetectorGui
@@ -86,14 +86,11 @@ add_executable(slsDetectorGui
     ${RESOURCES_SRCS}
 )
 
-set_target_properties(slsDetectorGui PROPERTIES
-    LINKER_LANGUAGE CXX
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
-
 target_link_libraries(slsDetectorGui 
+    slsProjectOptions
+    slsProjectWarnings
     slsDetectorShared
+    slsSupportLib
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
@@ -104,16 +101,26 @@ target_link_libraries(slsDetectorGui
     z
     Qt4::QtOpenGL
     Qt4::QtSvg
+)
 
+set_target_properties(slsDetectorGui PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 add_executable(gui_client
     client/qClient.h
     client/qClient.cpp
 )
+
+target_link_libraries(gui_client
+    slsProjectOptions
+    slsProjectWarnings
+    pthread
+    rt
+)
+
 set_target_properties(gui_client PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS slsDetectorGui gui_client
-    RUNTIME DESTINATION bin)
+install(TARGETS slsDetectorGui gui_client DESTINATION bin)

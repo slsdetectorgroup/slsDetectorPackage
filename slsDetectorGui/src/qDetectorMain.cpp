@@ -9,10 +9,10 @@
 #include "qTabPlot.h"
 #include "qTabSettings.h"
 
-#include "gitInfoGui.h"
+#include "container_utils.h"
+#include "gitInfoLib.h"
 #include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
-#include "container_utils.h"
 
 #include <QFileDialog>
 #include <QPlastiqueStyle>
@@ -24,16 +24,16 @@
 #include <sys/stat.h>
 
 int main(int argc, char **argv) {
-    std::unique_ptr<QApplication> theApp = sls::make_unique<QApplication>(argc, argv);
-    theApp->setStyle(sls::make_unique<QPlastiqueStyle>);
+    QApplication *theApp = new QApplication(argc, argv);
+    theApp->setStyle(new QPlastiqueStyle);
     theApp->setWindowIcon(QIcon(":/icons/images/mountain.png"));
     try {
-        std::unique_ptr<qDetectorMain> det = sls::make_unique<qDetectorMain>(argc, argv, theApp, 0);
+        qDetectorMain *det = new qDetectorMain(argc, argv, theApp, 0);
         det->show();
         theApp->exec();
     } catch (const std::exception &e) {
-        qDefs::Message(qDefs::CRITICAL, e.what() + "\nExiting Gui :'( ",
-                       "main");
+        qDefs::Message(qDefs::CRITICAL,
+                       std::string(e.what()) + "\nExiting Gui :'( ", "main");
     }
     return 0;
 }
@@ -66,7 +66,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
     int c = 0;
 
     while (c != -1) {
-        c = getopt_loncg(argc, argv, "hvdf:i:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvdf:i:", long_options, &option_index);
         // Detect the end of the options
         if (c == -1)
             break;
@@ -115,7 +115,57 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
     Initialization();
 }
 
-qDetectorMain::~qDetectorMain() {}
+qDetectorMain::~qDetectorMain() {
+    if (myDet)
+        delete myDet;
+    if (myPlot)
+        delete myPlot;
+    if (tabs)
+        delete tabs;
+    if (tabMeasurement)
+        delete tabMeasurement;
+    if (tabDataOutput)
+        delete tabDataOutput;
+    if (tabPlot)
+        delete tabPlot;
+    if (tabSettings)
+        delete tabSettings;
+    if (tabAdvanced)
+        delete tabAdvanced;
+    if (tabDebugging)
+        delete tabDebugging;
+    if (tabDeveloper)
+        delete tabDeveloper;
+    if (tabMessages)
+        delete tabMessages;
+    if (myServer)
+        delete myServer;
+}
+if (myDet)
+    delete myDet;
+if (myPlot)
+    delete myPlot;
+if (tabs)
+    delete tabs;
+if (tabMeasurement)
+    delete tabMeasurement;
+if (tabDataOutput)
+    delete tabDataOutput;
+if (tabPlot)
+    delete tabPlot;
+if (tabSettings)
+    delete tabSettings;
+if (tabAdvanced)
+    delete tabAdvanced;
+if (tabDebugging)
+    delete tabDebugging;
+if (tabDeveloper)
+    delete tabDeveloper;
+if (tabMessages)
+    delete tabMessages;
+if (myServer)
+    delete myServer;
+}
 
 bool qDetectorMain::isPlotRunning() { return myPlot->isRunning(); }
 
@@ -132,23 +182,23 @@ void qDetectorMain::SetUpWidgetWindow() {
     centralwidget->setLayout(layoutTabs);
 
     // plot setup
-    myPlot = sls::make_unique<qDrawPlot>(dockWidgetPlot, myDet);
+    myPlot = new qDrawPlot(dockWidgetPlot, myDet);
     FILE_LOG(logDEBUG) << "DockPlot ready";
     dockWidgetPlot->setWidget(myPlot);
 
     // tabs setup
-    tabs = sls::make_unique<MyTabWidget>(this);
+    tabs = new MyTabWidget(this);
     layoutTabs->addWidget(tabs);
 
     // creating all the other tab widgets
-    tabMeasurement = sls::make_unique<qTabMeasurement>(this, myDet.get(), myPlot.get());
-    tabDataOutput = sls::make_unique<qTabDataOutput>(this, myDet.get());
-    tabPlot = sls::make_unique<qTabPlot>(this, myDet.get(), myPlot.get());
-    tabSettings = sls::make_unique<qTabSettings>(this, myDet.get());
-    tabAdvanced = sls::make_unique<qTabAdvanced>(this, myDet.get());
-    tabDebugging = sls::make_unique<qTabDebugging>(this, myDet.get());
-    tabDeveloper = sls::make_unique<qTabDeveloper>(this, myDet.get());
-    myServer = sls::make_unique<qServer>(this);
+    tabMeasurement = new qTabMeasurement(this, myDet, myPlot);
+    tabDataOutput = new qTabDataOutput(this, myDet);
+    tabPlot = new qTabPlot(this, myDet, myPlot);
+    tabSettings = new qTabSettings(this, myDet);
+    tabAdvanced = new qTabAdvanced(this, myDet);
+    tabDebugging = new qTabDebugging(this, myDet);
+    tabDeveloper = new qTabDeveloper(this, myDet);
+    myServer = new qServer(this);
 
     //	creating the scroll area widgets for the tabs
     QScrollArea *scroll[NumberOfTabs];
@@ -219,10 +269,10 @@ void qDetectorMain::SetUpWidgetWindow() {
 void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
 
     // instantiate detector and set window title
-    myDet = sls::make_unique<multiSlsDetector>(multiID);
+    myDet = new multiSlsDetector(multiID);
 
     // create messages tab to capture config file loading logs
-    tabMessages = sls::make_unique<qTabMessages>(this);
+    tabMessages = new qTabMessages(this);
 
     // loads the config file at startup
     if (!fName.empty())
@@ -250,32 +300,8 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     }
 
     std::string title =
-        "SLS Detector GUI : " + myDet->getDetectorTypeAsString() + " - " + myDet->getHostname();
-    setWindowTitle(QString(title.c_str()));
-    FILE_LOG(logINFO) << title;
-
-    // ensure they are online
-    myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
-    myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
-}
-
-void qDetectorMain::Initialization() {
-    // Dockable Plot
-    connect(dockWidgetPlot, SIGNAL(topLevelChanged(bool)), this,
-            SLOT(ResizeMainWindow(bool)));
-    // tabs
-    connect(tabs, SIGNAL(currentChanged(int)), this,
-            SLOT(Refresh(int))); //( QWidget*)));
-    //	Measurement tab
-    connect(tabMeasurement, SIGNAL(StartSignal()), this, SLOT(EnableTabs()));
-    connect(tabMeasurement, SIGNAL(StopSignal()), myPlot,
-            SLOT(StopAcquisition()));
-    connect(tabMeasurement, SIGNAL(CheckPlotIntervalSignal()), tabPlot,
-            SLOT(SetFrequency()));
-    // Plot tab
-    connect(tabPlot, SIGNAL(DisableZoomSignal(bool)), this,
-            SLOT(SetZoomToolTip(bool)));
-
+        "SLS Detector GUI : " + myDet->getDetectorTypeAsString() + " - " +
+        myDet->getHostname();
     // Plotting
     // When the acquisition is finished, must update the meas tab
     connect(myPlot, SIGNAL(UpdatingPlotFinished()), this, SLOT(EnableTabs()));

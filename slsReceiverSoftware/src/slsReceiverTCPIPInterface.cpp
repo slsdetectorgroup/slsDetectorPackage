@@ -789,7 +789,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 				receiver->setUDPPortNumber2(port2);
 				FILE_LOG(logINFO) << "Receiver UDP IP 2: " << ip2;
 				// get eth
-				std::string temp = genericSocket::ipToName(ip2);
+				temp = genericSocket::ipToName(ip2);
 				if (temp == "none"){
 					ret = FAIL;
 					strcpy(mess, "Failed to get 2nd ethernet interface or IP \n");

@@ -472,38 +472,38 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 * @param i ROI
 	 * @return OK or FAIL
 	 */
-	int setROI(const std::vector<ROI> i);
+    int setROI(const std::vector<ROI> new_roi);
 
-	/**
-	 * Set the streaming frequency
-	 * @param freq 0 for timer, n for nth frame frequency
-	 * @return OK or FAIL
-	 */
-	int setStreamingFrequency(const uint32_t freq);
+    /**
+     * Set the streaming frequency
+     * @param freq 0 for timer, n for nth frame frequency
+     * @return OK or FAIL
+     */
+    int setStreamingFrequency(const uint32_t freq);
 
-	/**
-	 * Sets the timer between frames streamed when frequency is set to 0
-	 * @param time_in_ms timer between frames streamed
-	 */
-	void setStreamingTimer(const uint32_t time_in_ms);
-	/**
-	 * Set the data stream enable
-	 * @param enable data stream enable
-	 * @return OK or FAIL
-	 */
-	int setDataStreamEnable(const bool enable);
+    /**
+     * Sets the timer between frames streamed when frequency is set to 0
+     * @param time_in_ms timer between frames streamed
+     */
+    void setStreamingTimer(const uint32_t time_in_ms);
+    /**
+     * Set the data stream enable
+     * @param enable data stream enable
+     * @return OK or FAIL
+     */
+    int setDataStreamEnable(const bool enable);
 
-	/**
-	 * Set streaming port
-	 * @param i streaming port
-	 */
-	void setStreamingPort(const uint32_t i);
+    /**
+     * Set streaming port
+     * @param i streaming port
+     */
+    void setStreamingPort(const uint32_t i);
 
-	/**
-	 * Set streaming source ip
-	 * @param c streaming source ip
-	 */
-	void setStreamingSourceIP(const char* c);
+    /**
+     * Set streaming source ip
+     * @param c streaming source ip
+     */
+    void setStreamingSourceIP(const char *c);
 
     /**
      * Set additional json header

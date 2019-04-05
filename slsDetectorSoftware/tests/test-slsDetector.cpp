@@ -106,8 +106,8 @@ TEST_CASE("Set ROI", "[detector]") {
     slsDetector d(slsDetectorDefs::detectorType::EIGER, 0, 0);
 
     int n{0};
-    auto res = d.getROI(n);
-    // CHECK(n == 0);
+    d.getROI(n);
+    CHECK(n == 0);
     CHECK(d.getNRoi() == 0);
 
     // set one ROI

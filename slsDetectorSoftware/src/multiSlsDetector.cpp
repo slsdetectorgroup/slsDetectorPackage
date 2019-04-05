@@ -2293,7 +2293,7 @@ const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
 
     // multi
     n = 0;
-    int num = 0, i, j;
+    int num = 0;
     int ndet = detectors.size();
     int maxroi = ndet * MAX_ROIS;
     ROI temproi;
@@ -2309,7 +2309,7 @@ const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
             if (index) {
                 FILE_LOG(logINFO) << "detector " << idet << ":";
             }
-            for (j = 0; j < index; ++j) {
+            for (int j = 0; j < index; ++j) {
                 FILE_LOG(logINFO) << temp[j].xmin << "\t" << temp[j].xmax << "\t" << temp[j].ymin
                                   << "\t" << temp[j].ymax;
                 int x = detectors[idet]->getDetectorOffset(X);
@@ -2335,12 +2335,12 @@ const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
     }
 
     // combine all the adjacent rois in x direction
-    for (i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         // since the ones combined are replaced by -1
         if ((roiLimits[i].xmin) == -1) {
             continue;
         }
-        for (j = i + 1; j < n; ++j) {
+        for (int j = i + 1; j < n; ++j) {
             // since the ones combined are replaced by -1
             if ((roiLimits[j].xmin) == -1) {
                 continue;
@@ -2368,19 +2368,19 @@ const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
         }
     }
 
-    FILE_LOG(logDEBUG1) << "Combined along x axis Getting ROI :\ndetector " << i;
+    FILE_LOG(logDEBUG1) << "Combined along x axis Getting ROI :\ndetector " << n;
     for (int j = 0; j < n; ++j) {
         FILE_LOG(logDEBUG1) << roiLimits[j].xmin << "\t" << roiLimits[j].xmax << "\t"
                             << roiLimits[j].ymin << "\t" << roiLimits[j].ymax;
     }
 
     // combine all the adjacent rois in y direction
-    for (i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         // since the ones combined are replaced by -1
         if ((roiLimits[i].ymin) == -1) {
             continue;
         }
-        for (j = i + 1; j < n; ++j) {
+        for (int j = i + 1; j < n; ++j) {
             // since the ones combined are replaced by -1
             if ((roiLimits[j].ymin) == -1) {
                 continue;
@@ -2409,15 +2409,15 @@ const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
     }
 
     // get rid of -1s
-    for (i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         if ((roiLimits[i].xmin) != -1) {
             retval[num] = roiLimits[i];
             ++num;
         }
     }
     // sort final roi
-    for (i = 0; i < num; ++i) {
-        for (j = i + 1; j < num; ++j) {
+    for (int i = 0; i < num; ++i) {
+        for (int j = i + 1; j < num; ++j) {
             if (retval[j].xmin < retval[i].xmin) {
                 temproi = retval[i];
                 retval[i] = retval[j];
@@ -2428,7 +2428,7 @@ const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
     n = num;
 
     FILE_LOG(logDEBUG1) << "\nxmin\txmax\tymin\tymax";
-    for (i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i) {
         FILE_LOG(logDEBUG1) << retval[i].xmin << "\t" << retval[i].xmax << "\t" << retval[i].ymin
                             << "\t" << retval[i].ymax;
     }
@@ -2525,8 +2525,8 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
 
     // update data bytes incl gap pixels
     if (val != -1) {
-        auto r = serialCall(&slsDetector::getDataBytesInclGapPixels);
-        multi_shm()->dataBytesInclGapPixels = sls::sum(r);
+        auto r2 = serialCall(&slsDetector::getDataBytesInclGapPixels);
+        multi_shm()->dataBytesInclGapPixels = sls::sum(r2);
 
         // update
         updateOffsets();

@@ -737,40 +737,38 @@ int slsReceiverImplementation::setUDPSocketBufferSize(const int64_t s) {
 
 
 /***acquisition parameters***/
-int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i) {
+int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> new_roi) {
 	bool change = false;
-	if (roi.size() != i.size())
-		change = true;
+        if (roi.size() != new_roi.size())
+            change = true;
 	else {
-		for (unsigned int iloop = 0; iloop < i.size(); ++iloop) {
-			if (
-					(roi[iloop].xmin != i[iloop].xmin) ||
-					(roi[iloop].xmax != i[iloop].xmax) ||
-					(roi[iloop].ymin != i[iloop].ymin) ||
-					(roi[iloop].xmax != i[iloop].xmax)) {
-				change = true;
-				break;
-			}
+            for (size_t i = 0; i != new_roi.size(); ++i) {
+                if ((roi[i].xmin != new_roi[i].xmin) ||
+                    (roi[i].xmax != new_roi[i].xmax) ||
+                    (roi[i].ymin != new_roi[i].ymin) ||
+                    (roi[i].xmax != new_roi[i].xmax)) {
+                    change = true;
+                    break;
+                }
 		}
 	}
 
 	if (change) {
-
-		roi = i;
-
-		switch(myDetectorType) {
-		case GOTTHARD:
-			generalData->SetROI(i);
-			framesPerFile = generalData->maxFramesPerFile;
-			break;
-		case MOENCH:
-			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
-			break;
-		case CHIPTESTBOARD:
-			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
-			break;
-		default:
-			break;
+            roi = new_roi;
+            switch (myDetectorType) {
+            case GOTTHARD:
+                generalData->SetROI(new_roi);
+                framesPerFile = generalData->maxFramesPerFile;
+                break;
+            case MOENCH:
+                generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
+                break;
+            case CHIPTESTBOARD:
+                generalData->setImageSize(roi, numberOfSamples, tengigaEnable,
+                                          readoutFlags);
+                break;
+            default:
+                break;
 		}
 		for (const auto& it : dataProcessor)
 			it->SetPixelDimension();
@@ -784,7 +782,7 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> i)
 	if (!roi.size())
 		sstm << "0";
 	else {
-		for (unsigned int i = 0; i < roi.size(); ++i) {
+		for (size_t i = 0; i < roi.size(); ++i) {
 			sstm << "( " <<
 					roi[i].xmin << ", " <<
 					roi[i].xmax << ", " <<

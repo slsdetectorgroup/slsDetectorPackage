@@ -2553,7 +2553,7 @@ std::string slsDetector::setAdditionalJsonParameter(const std::string &key,
 std::string slsDetector::getAdditionalJsonParameter(const std::string &key) {
     // additional json header is empty
     if (!strlen(detector_shm()->receiver_additionalJsonHeader))
-        return std::string("");
+        return std::string();
 
     // add quotations before and after the key value
     std::string keyLiteral = key;
@@ -2575,7 +2575,7 @@ std::string slsDetector::getAdditionalJsonParameter(const std::string &key) {
     }
 
     // return empty string as no match found with key
-    return std::string("");
+    return std::string();
 }
 
 int64_t slsDetector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {

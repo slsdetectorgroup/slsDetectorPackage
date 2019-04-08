@@ -1,1 +1,0 @@
-rm /dev/shm/slsDetectorPackage*;

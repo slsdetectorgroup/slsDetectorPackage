@@ -1,8 +1,0 @@
-*~
-*.o
-build/*
-GPATH
-GRTAGS
-GSYMS
-GTAGS
-.project

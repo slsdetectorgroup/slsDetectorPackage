@@ -18,6 +18,7 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
 ====================
 
     - Jungfrau receiver as root user
+    - Jungfrau server detector position error when switching between different detector sizes
 
 
 
@@ -32,6 +33,12 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
         Temporary solution was to set it to a lower number using
             sls_detector_put rx_udpsocksize 1048576000
         This has been fixed now to allow a greater size (including the default size).
+
+
+   Detector Server (Jungfrau)
+   --------------------------
+   1.   Switching between different detector size configurations, the detector gave an
+	error "Could not set detector position". This is fixed now.
 
         
 3. Known Issues

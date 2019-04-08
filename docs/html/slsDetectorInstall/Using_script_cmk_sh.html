@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Using script cmk.sh</TITLE>
+<META NAME="description" CONTENT="Using script cmk.sh">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+<LINK REL="next" HREF="Directly_using_cmake.html">
+<LINK REL="previous" HREF="Compilation.html">
+<LINK REL="up" HREF="Compilation.html">
+<LINK REL="next" HREF="Directly_using_cmake.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html209"
+  HREF="Directly_using_cmake.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html205"
+  HREF="Compilation.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html199"
+  HREF="Compilation.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html207"
+  HREF="Contents.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html210"
+  HREF="Directly_using_cmake.html">Directly using cmake</A>
+<B> Up:</B> <A NAME="tex2html206"
+  HREF="Compilation.html">Compilation</A>
+<B> Previous:</B> <A NAME="tex2html200"
+  HREF="Compilation.html">Compilation</A>
+ &nbsp; <B>  <A NAME="tex2html208"
+  HREF="Contents.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00043100000000000000">
+Using script cmk.sh</A>
+</H3>
+The script uses <code>cmake</code>. After compiling, the libraries and executables
+will be found in `slsDetectorPackage/build/bin` directory.
+Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]
+
+<UL>
+<LI>-[no option]: only make
+</LI>
+<LI>-c: Clean
+</LI>
+<LI>-b: Builds/Rebuilds CMake files normal mode
+</LI>
+<LI>-h: Builds/Rebuilds Cmake files with HDF5 package
+</LI>
+<LI>-d: HDF5 Custom Directory
+</LI>
+<LI>-t: Build/Rebuilds only text client
+</LI>
+<LI>-r: Build/Rebuilds only receiver
+</LI>
+<LI>-g: Build/Rebuilds only gui
+</LI>
+<LI>-j: Number of threads to compile through
+</LI>
+</UL>
+
+<P>
+Some example options for compilation:
+
+<P>
+Most basic option: <code>./cmk.sh -b</code>
+
+<P>
+For only make: <code>./cmk.sh</code>
+
+<P>
+For make clean;make: <code>./cmk.sh -c</code>
+
+<P>
+For using hdf5 without custom dir /blabla: <code>./cmk.sh -h -d /blabla</code>
+
+<P>
+For rebuilding cmake without hdf5: <code>./cmk.sh -b</code>
+
+<P>
+For using multiple cores to compile faster: <code>./cmk.sh -j9</code>
+
+<P>
+For rebuilding only certain parts: <code>./cmk.sh -tg</code> (only text client and
+gui)
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thattil Dhanya
+2019-04-08
+</ADDRESS>
+</BODY>
+</HTML>

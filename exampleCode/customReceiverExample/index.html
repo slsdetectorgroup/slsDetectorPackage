@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><!-- #BeginTemplate "/templates/psi_template.dwt" -->
+<HEAD>
+
+<!--#include virtual="/webbase/ssi/defaultvariables.shtml" -->
+
+<!-- Change only the text within the 3 BeginEditable ... EndEditable Sections: -->
+<!-- MetaData - Definitions - BodyContent -->
+
+<!-- #BeginEditable "MetaData" -->
+<TITLE>slsDetectorUsers Example</TITLE>
+<META name="keywords" content="slsDetectorUsers">
+<META name="description" content="SLS Detector Users Example">
+<META name="author" content="Anna Bergamaschi">
+<!-- #EndEditable -->
+
+<!--#include virtual="/webbase/ssi/instructions.shtml" -->
+
+<!--#include virtual="$PRJDIR/ssi/projectvariables.shtml" -->
+
+<!-- # = Active changes to projectvariables or defaultvariables, no # = Inactive -->
+
+<!-- #BeginEditable "Definitions" -->
+<!--#set  var="PAGETITLE"    value='Anna Bergamaschi' -->
+<!--set  var="ALTLANGUAGE"  value='english' -->
+<!--set  var="DIRLANGUAGE"  value='d/' -->
+<!--#set      var="MAILTO"  value='anna.bergamaschi@psi.&#99;&#104;' -->
+<!--#set      var="MAILCC"   value=' ' -->
+<!--set  var="NAVTOP"       value='/webbase/ssi/top_psi.shtml' -->
+<!--#set  var="NAVLEFT"     value='$SSIDIR/side.shtml' -->
+<!-- #EndEditable -->
+
+<!--#include virtual="/webbase/ssi/head.shtml" -->
+
+</head>
+
+<!--#include virtual="/webbase/ssi/pretemplate.shtml" -->
+
+<!-- #BeginEditable "BodyContent" -->
+
+<H1>Custom SLS Receiver Example</H1>
+
+
+<H3> Main Files </H3>
+<ul> 
+	<li>
+	<a href="Makefile">Makefile</a> Edit to properly link the slsDetector libraries
+	</li>
+
+	<li>
+	<a href="dummyMain.cpp">dummyMain.cpp</a> Main combining the required TCPIP interface and the custom dummy UDP implementation
+	</li>
+ 	
+ 	<li>
+	<a href="dummyUDPInterface.h">dummyUDPInterface.h</a> Dummy example of UDP interface implementation -- the UDP server never start listening!
+	</li>
+ </ul>
+ 
+ <H3> Library Files </H3>
+ <ul> 
+  	<li>
+  		<a href="libSlsReceiver.so">libSlsReceiver.so</a> Receiver Library
+  	</li>
+ </ul>
+ 
+ <H3> Include Files </H3>
+ <ul>	
+  	<li>
+	<a href="slsReceiverTCPIPInterface.h">slsReceiverTCPIPInterface.h</a>  TCP/IP Interface between client and receiver
+	</li>
+	
+	<li>
+	<a href="UDPInterface.h">UDPInterface.h</a>  abstract UDP Interface of the receiver
+	</li>
+		 
+	<li>
+	<a href="UDPBaseImplementation.h">UDPBaseImplementation.h</a>  Base Implementation of UDP Interface. Dummy Interface will be a child class of this
+	</li>
+	
+ 	<li>
+	<a href="sls_receiver_defs.h">sls_receiver_defs.h</a>  Includes definitions used in the example files
+	</li>
+	
+ 	<li>
+	<a href="sls_receiver_funcs.h">sls_receiver_funcs.h</a>  Required by sls_receiver_defs.h
+	</li>
+	
+	<li>
+	<a href="sls_receiver_funcs.h">sls_receiver_funcs.h</a>  Required by sls_receiver_defs.h
+	</li>
+ 
+ 	<li>
+	<a href="MySocketTCP.h">MySocketTCP.h</a> To create Sockets. Required by slsReceiverTCPIPInterface.h
+	</li>
+	
+	<li>
+	<a href="genericSocket.h">genericSocket.h</a> Required by MySocketTCP.h
+	</li>
+	
+	<li>
+	<a href="receiver_defs.h">receiver_defs.h</a> Required by slsReceiverTCPIPInterface.h
+	</li>
+	
+	<li>
+	<a href="utilities.h">utilities.h</a> Required by UDPInterface.h
+	</li>
+	
+	<li>
+	<a href="logger.h">logger.h</a> Required by UDPInterface.h
+	</li>
+
+	<li>
+	<a href="ansi.h">ansi.h</a> Colored print. Required by most files
+	</li>
+	
+</ul>
+
+<H3> ZMQ Include Files </H3>
+<ul>
+ 	<li>
+	<a href="zmq.h">zmq.h</a>  Public Include file for ZMQ API users. 
+	</li>
+ 	<li>
+	<a href="libzmq.a">libzmq.a</a>  Static libary file 
+	</li>
+</ul> 
+
+
+<!-- #EndEditable -->
+
+<!--#include virtual="/webbase/ssi/posttemplate.shtml" -->
+<!-- #EndTemplate -->
+</HTML>

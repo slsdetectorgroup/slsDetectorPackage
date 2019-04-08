@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Requirements</TITLE>
+<META NAME="description" CONTENT="Requirements">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+<LINK REL="next" HREF="Compilation.html">
+<LINK REL="previous" HREF="Download_Source_Code.html">
+<LINK REL="up" HREF="Install_via_Source_Code.html">
+<LINK REL="next" HREF="Qt4_Installation_GUI.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html146"
+  HREF="Qt4_Installation_GUI.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html142"
+  HREF="Install_via_Source_Code.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html136"
+  HREF="Download_Source_Code.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html144"
+  HREF="Contents.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html147"
+  HREF="Qt4_Installation_GUI.html">Qt4 Installation for GUI</A>
+<B> Up:</B> <A NAME="tex2html143"
+  HREF="Install_via_Source_Code.html">Install via Source Code</A>
+<B> Previous:</B> <A NAME="tex2html137"
+  HREF="Download_Source_Code.html">Download Source Code</A>
+ &nbsp; <B>  <A NAME="tex2html145"
+  HREF="Contents.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00042000000000000000">
+Requirements</A>
+</H2>
+These are the basic requirements to install and use the software. Fine Tuning
+the system will be discussed in other documentation provided.
+
+<UL>
+<LI><I>C/C++</I>:
+<BR>
+The software is written in C/C++. If Python API is used, it is a wrap around
+to the C++ software.  Any Linux installation with working libgcc should be
+sufficient.
+
+<P>
+</LI>
+<LI><I>Shared Memory</I>:
+<BR>
+Access to the shared memory of the control PC is required for the client.
+
+<P>
+</LI>
+<LI><I>Network</I>:
+<BR>
+The control PC communicates to the detectors and data receivers over TCP/IP.
+Therefore, the detector should receive a proper IP address (either DHCP or
+static) and no firewall should be present between the control PC and the
+detector.
+
+<P>
+</LI>
+<LI><I>Compilation</I>:
+<BR>
+cmake is required to compile. make is also possible, but is harder to find
+dependencies.
+
+<P>
+</LI>
+<LI><I>GUI</I>:
+<BR>
+To use the GUI, one requires atleast Qt4.8.2 and Qwt6.0. Installation of these
+are discussed in the next sections.
+
+<P>
+</LI>
+<LI><I>Calibration Wizards</I>:
+<BR>
+They are based on the CERN Root data analysis framework. Installation of it is
+discussed in the next sections.
+
+<P>
+</LI>
+</UL>
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html148"
+  HREF="Qt4_Installation_GUI.html">Qt4 Installation for GUI</A>
+<LI><A NAME="tex2html149"
+  HREF="Qwt_Installation_GUI.html">Qwt Installation for GUI</A>
+<LI><A NAME="tex2html150"
+  HREF="Root_Installation_Calibrati.html">Root Installation for Calibration Wizards</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html146"
+  HREF="Qt4_Installation_GUI.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html142"
+  HREF="Install_via_Source_Code.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html136"
+  HREF="Download_Source_Code.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html144"
+  HREF="Contents.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html147"
+  HREF="Qt4_Installation_GUI.html">Qt4 Installation for GUI</A>
+<B> Up:</B> <A NAME="tex2html143"
+  HREF="Install_via_Source_Code.html">Install via Source Code</A>
+<B> Previous:</B> <A NAME="tex2html137"
+  HREF="Download_Source_Code.html">Download Source Code</A>
+ &nbsp; <B>  <A NAME="tex2html145"
+  HREF="Contents.html">Contents</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Thattil Dhanya
+2019-04-08
+</ADDRESS>
+</BODY>
+</HTML>

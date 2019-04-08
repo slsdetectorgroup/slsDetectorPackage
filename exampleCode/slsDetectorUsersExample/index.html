@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><!-- #BeginTemplate "/templates/psi_template.dwt" -->
+<HEAD>
+
+<!--#include virtual="/webbase/ssi/defaultvariables.shtml" -->
+
+<!-- Change only the text within the 3 BeginEditable ... EndEditable Sections: -->
+<!-- MetaData - Definitions - BodyContent -->
+
+<!-- #BeginEditable "MetaData" -->
+<TITLE>slsDetectorUsers Example</TITLE>
+<META name="keywords" content="slsDetectorUsers">
+<META name="description" content="SLS Detector Users Example">
+<META name="author" content="Anna Bergamaschi">
+<!-- #EndEditable -->
+
+<!--#include virtual="/webbase/ssi/instructions.shtml" -->
+
+<!--#include virtual="$PRJDIR/ssi/projectvariables.shtml" -->
+
+<!-- # = Active changes to projectvariables or defaultvariables, no # = Inactive -->
+
+<!-- #BeginEditable "Definitions" -->
+<!--#set  var="PAGETITLE"    value='Anna Bergamaschi' -->
+<!--set  var="ALTLANGUAGE"  value='english' -->
+<!--set  var="DIRLANGUAGE"  value='d/' -->
+<!--#set      var="MAILTO"  value='anna.bergamaschi@psi.&#99;&#104;' -->
+<!--#set      var="MAILCC"   value=' ' -->
+<!--set  var="NAVTOP"       value='/webbase/ssi/top_psi.shtml' -->
+<!--#set  var="NAVLEFT"     value='$SSIDIR/side.shtml' -->
+<!-- #EndEditable -->
+
+<!--#include virtual="/webbase/ssi/head.shtml" -->
+
+</head>
+
+<!--#include virtual="/webbase/ssi/pretemplate.shtml" -->
+
+<!-- #BeginEditable "BodyContent" -->
+
+<H1>SLS Detector Users Example</H1>
+
+<H3> Main Files </H3>
+<ul> 
+	<li>
+	<a href="CMakeLists.txt">CMakeLists.txt</a> This is called from main package cmake to create slsMultiReceiver.
+	</li>
+
+	<li>
+	<a href="Makefile">Makefile</a> Edit to properly link the slsDetector libraries to build/bin or bin
+	</li>
+
+	<li>
+	<a href="mainClient.cpp">mainClient.cpp</a>  Example of control client
+	</li>
+ 	
+ 	<li>
+	<a href="mainReceiver.cpp">mainReceiver.cpp</a> Example of receiver. Can be used in same process as client or a separate process. 
+	</li>
+ </ul>
+
+<!-- #EndEditable -->
+
+<!--#include virtual="/webbase/ssi/posttemplate.shtml" -->
+<!-- #EndTemplate -->
+</HTML>

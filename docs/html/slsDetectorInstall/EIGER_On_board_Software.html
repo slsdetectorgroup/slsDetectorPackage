@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>EIGER On-board Software</TITLE>
+<META NAME="description" CONTENT="EIGER On-board Software">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+<LINK REL="previous" HREF="EIGER_Firmware.html">
+<LINK REL="up" HREF="EIGER.html">
+<LINK REL="next" HREF="JUNGFRAU.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html397"
+  HREF="JUNGFRAU.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html393"
+  HREF="EIGER.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html389"
+  HREF="EIGER_Firmware.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html395"
+  HREF="Contents.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html398"
+  HREF="JUNGFRAU.html">JUNGFRAU</A>
+<B> Up:</B> <A NAME="tex2html394"
+  HREF="EIGER.html">EIGER</A>
+<B> Previous:</B> <A NAME="tex2html390"
+  HREF="EIGER_Firmware.html">EIGER Firmware</A>
+ &nbsp; <B>  <A NAME="tex2html396"
+  HREF="Contents.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00053200000000000000">
+EIGER On-board Software</A>
+</H3>
+Every SLS Detector package release will have its coresponding matching on-board
+server under <B>slsDetectorPackage/serverBin</B>.
+
+<P>
+Update the on-board software without connecting to the detector
+<PRE>
+#password for the boards: root
+
+#Kill existing servers that are running on the detector
+ssh root@beb031 killall eigerDetectorServer;
+
+#Copy on-board server to detector inside executables folder
+scp ~/path-where-it-is/eigerDetectorServerxxx root@bebxxx:~/executables;
+
+#Overwrite the actual eigerDetectorServer on board
+scp ~/path-where-it-is/eigerDetectorServerxxx
+root@bebxxx:~/executables/eigerDetectorServer;
+
+#sync
+ssh root@bebxxx sync; 
+
+#reboot the eiger board
+</PRE>
+
+<P>
+
+<P><P>
+<BR>
+One can connect to the detector by:
+<PRE>
+ssh root@bebxxx
+password: root
+</PRE>
+
+<P>
+The on-board server is in&nbsp;/executables folder and respawned at startup in 
+<BR><code>/etc/rc5.d/S50board_com.sh</code> 
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thattil Dhanya
+2019-04-08
+</ADDRESS>
+</BODY>
+</HTML>

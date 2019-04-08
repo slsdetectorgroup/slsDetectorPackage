@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Root Installation for Calibration Wizards</TITLE>
+<META NAME="description" CONTENT="Root Installation for Calibration Wizards">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+<LINK REL="previous" HREF="Qwt_Installation_GUI.html">
+<LINK REL="up" HREF="Requirements.html">
+<LINK REL="next" HREF="Compilation.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html183"
+  HREF="Compilation.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html179"
+  HREF="Requirements.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html175"
+  HREF="Qwt_Installation_GUI.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html181"
+  HREF="Contents.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html184"
+  HREF="Compilation.html">Compilation</A>
+<B> Up:</B> <A NAME="tex2html180"
+  HREF="Requirements.html">Requirements</A>
+<B> Previous:</B> <A NAME="tex2html176"
+  HREF="Qwt_Installation_GUI.html">Qwt Installation for GUI</A>
+ &nbsp; <B>  <A NAME="tex2html182"
+  HREF="Contents.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00042300000000000000">
+Root Installation for Calibration Wizards</A>
+</H3>
+The software has been developed and tested with root 5.20, but any version
+should work. One can download it from:
+<PRE>
+&gt; svn co https://root.cern.ch/svn/root/trunk root
+</PRE>
+
+<P>
+To install:
+<PRE>
+&gt; cd root
+&gt; ./configure --enable-qt
+&gt; make
+&gt; make install
+</PRE>
+
+<P>
+Edit your .bashrc to define the ROOTSYS enviroment variable and annd
+the libraries and executables to the <code>LD_LIBRARY_PATH</code> and <code>PATH</code>:
+<PRE>
+export ROOTSYS=/usr/local/root-5.34
+export PATH=$ROOTSYS/bin:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+</PRE>
+
+<P>
+You can also download the binaries, assuming that your linux and gcc versions
+match as in:
+<PRE>
+http://root.cern.ch/drupal/content/production-version-534
+</PRE>
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thattil Dhanya
+2019-04-08
+</ADDRESS>
+</BODY>
+</HTML>

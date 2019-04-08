@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Qwt Installation for GUI</TITLE>
+<META NAME="description" CONTENT="Qwt Installation for GUI">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+<LINK REL="next" HREF="Root_Installation_Calibrati.html">
+<LINK REL="previous" HREF="Qt4_Installation_GUI.html">
+<LINK REL="up" HREF="Requirements.html">
+<LINK REL="next" HREF="Root_Installation_Calibrati.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html173"
+  HREF="Root_Installation_Calibrati.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html169"
+  HREF="Requirements.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html163"
+  HREF="Qt4_Installation_GUI.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html171"
+  HREF="Contents.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html174"
+  HREF="Root_Installation_Calibrati.html">Root Installation for Calibration</A>
+<B> Up:</B> <A NAME="tex2html170"
+  HREF="Requirements.html">Requirements</A>
+<B> Previous:</B> <A NAME="tex2html164"
+  HREF="Qt4_Installation_GUI.html">Qt4 Installation for GUI</A>
+ &nbsp; <B>  <A NAME="tex2html172"
+  HREF="Contents.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00042200000000000000">
+Qwt Installation for GUI</A>
+</H3>
+Before installing Qwt, one must install Qt
+and ensure that <code>QTDIR</code>, <code>LD_LIBRARY_PATH</code> and <code>PATH</code> point to
+the correct Qt4
+version.
+
+<P>
+A Qwt version equal or higher than 6 is required. One can
+install it:
+
+<UL>
+<LI>via YUM:
+<PRE>
+ yum install qwt-devel
+</PRE>
+</LI>
+<LI>via download from:
+<BR><TT><A NAME="tex2html3"
+  HREF="
+https://sourceforge.net/projects/qwt/files/qwt/6.0.0/qwt-6.0.0.zip/download">https://sourceforge.net/projects/qwt/files/qwt/6.0.0/qwt-6.0.0.zip/download</A></TT>
+<P>
+To install:
+<PRE>
+&gt; cd qwt-6.0.0
+&gt; qmake
+&gt; make
+&gt; make install
+</PRE>
+By default Qwt will be installed int /usr/local/qwt-6.0.0 
+</LI>
+</UL>
+
+<P>
+<B>Setup Environment</B> 
+
+<P>
+One has to ensure that <code>QWTDIR</code> and <code>LD_LIBRARY_PATH</code> have
+been updated to include Qwt install path and libraries.
+
+<P>
+If the environment is not set up, one can add the libraries to the
+.bashrc by adding <code>LD_LIBRARY_PATH</code>:
+<PRE>
+export QWTDIR=/usr/local/qwt-6.0.0/
+export LD_LIBRARY_PATH=$QWTDIR/lib:$LD_LIBRARY_PATH
+</PRE>
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thattil Dhanya
+2019-04-08
+</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2012 (1.2)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Directly using cmake</TITLE>
+<META NAME="description" CONTENT="Directly using cmake">
+<META NAME="keywords" CONTENT="slsDetectorInstall">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2012">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="slsDetectorInstall.css">
+
+<LINK REL="previous" HREF="Using_script_cmk_sh.html">
+<LINK REL="up" HREF="Compilation.html">
+<LINK REL="next" HREF="Setting_environment_variabl.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html219"
+  HREF="Setting_environment_variabl.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html215"
+  HREF="Compilation.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html211"
+  HREF="Using_script_cmk_sh.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html217"
+  HREF="Contents.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A>  
+<BR>
+<B> Next:</B> <A NAME="tex2html220"
+  HREF="Setting_environment_variabl.html">Setting environment variables</A>
+<B> Up:</B> <A NAME="tex2html216"
+  HREF="Compilation.html">Compilation</A>
+<B> Previous:</B> <A NAME="tex2html212"
+  HREF="Using_script_cmk_sh.html">Using script cmk.sh</A>
+ &nbsp; <B>  <A NAME="tex2html218"
+  HREF="Contents.html">Contents</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00043200000000000000">
+Directly using cmake</A>
+</H3>
+
+<P>
+Use cmake to create out-of-source builds, by creating a build folder parallel to
+source directory. 
+<PRE>
+ $ cd ..
+ $ mkdir slsDetectorPackage-build
+ $ cd slsDetectorPackage-build
+ $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=OFF 
+ $ make
+</PRE>
+
+<P>
+Use the following as an example to compile statically and using specific hdf5
+folder 
+<PRE>
+ $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage
+-DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=ON
+</PRE>
+
+<P>
+After compiling, the libraries and executables will be found at `bin` directory 
+<PRE>
+ $ ls bin/
+    gui_client  libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a 
+libSlsReceiver.so    sls_detector_acquire  sls_detector_get  slsDetectorGui 
+sls_detector_help sls_detector_put  slsReceiver
+</PRE>
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thattil Dhanya
+2019-04-08
+</ADDRESS>
+</BODY>
+</HTML>

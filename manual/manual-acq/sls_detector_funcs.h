@@ -1,1 +1,0 @@
-../../slsDetectorSoftware/commonFiles/sls_detector_funcs.h

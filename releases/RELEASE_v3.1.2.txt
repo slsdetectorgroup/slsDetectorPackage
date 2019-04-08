@@ -1,0 +1,26 @@
+SLS Detector Package 3.1.2 released on 2018-06-12
+=================================================
+
+
+
+INTRODUCTION
+
+This document describes the differences between 3.1.2 into 3.1.1 releases.
+
+
+Topics Concerning
+==================
+	Memory Leak in Client API
+
+
+Resolved Issues
+===============
+
+	Client
+	------
+	1. 	Memory Leak for every multi threading command in client
+		when using API in multi detector mode. This is fixed now.
+	
+
+
+

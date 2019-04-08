@@ -1,0 +1,229 @@
+SLS Detector Package 3.0.0 released on 2017-08-25
+================================================================================
+
+
+
+INTRODUCTION
+
+This document describes the differences between previous versions and 3.0.0 releases.
+
+Manual (both HTML and pdf versions) are provided in
+	manual/docs/
+
+Documentation from Source Code can be found for the Command Line and for the API in
+	html:
+		manual/docs/html/slsDetectorClientDocs/index.html
+		manual/docs/html/slsDetectorUsersDocs/index.html
+	pdf:
+		manual/docs/pdf/slsDetectorClientDocs.pdf
+		manual/docs/pdf/slsDetectorUsersDocs.pdf
+
+Example including binaries for detector and receiver user classes can be found in 
+
+	manual/manual-api
+	
+User documentation can also be accessed directly at this location:
+
+    https://www.psi.ch/detectors/users-support
+
+If you have any software related questions or comments, please send them to:
+
+    dhanya.thattil@psi.ch
+    anna.bergamaschi@psi.ch
+
+
+CONTENTS
+
+- Changes in User Interface
+- New Features
+- Resolved Issues
+- Known Issues
+
+
+
+Changes in User Interface
+=========================
+This release has no changes in user interface from the previous 2.3 version.
+However, receiver data call backs have been redefined for the 
+standard image header.
+
+Reiterating, both 2.3 and 3.0 supports the following features:
+  	
+	Receiver
+	--------
+	1.	The files will be written in this format in the binary mode:
+		* 1 ASCII file per measurement: header with measurement parameters
+		* binary files: series of images, each preceded by a 
+		  	  Standard Image Header (header described below)
+	
+	2. 	Standard Image Header in file and call back
+	 	arguments defined. It is in the following format defined as 
+	  	sls_detector_header defined in 
+	 	slsReceiverSoftware/include/sls_receiver_defs.h
+	 	Mostly 0 if not applicatble or implemented, but updated in next release 
+	  	from firmware.
+		
+		* Frame Number       : 8 bytes 	# Image Number
+		* Exposure Length    : 4 bytes  # Sub frame number in 32 bit mode (Eiger)
+		  		       					  Real time exposre time in 100ns (Others) 
+		* Packet Number      : 4 bytes	# Number of packets caught in the image
+		* Bunch ID           : 8 bytes  # Bunch Id in beamline (Jungfrau) 
+		* Timestamp          : 8 bytes  # Not implemened. 
+										  Time stamp with 10MHz clock
+		* Module Id          : 2 bytes  # Not implemented. Unique module ID.
+		* X Coordinate       : 2 bytes  # Currently as Id of part of detector in 1D
+										  (Future Releases) as X coordinate 
+										  in complete detector system
+		* Y Coordinate       : 2 bytes  # Not implemented 
+										  Y coordinate in complete detector system
+		* Z Coordinate       : 2 bytes  # Not implemented
+										  Z coordinate in complete detector system
+		* Debug              : 4 bytes  # Not implemented
+										  For debugging purposes
+		* Round Robin Number : 2 bytes  # Not implemented
+										  Round Robin Number
+		* Detector Type      : 1 byte   # Detector type defined by enum
+				                          detectorType in slsReceiverSoftware
+						                  /include/sls_receiver_defs.h
+		* Header Version     : 1 byte   # 1.0 currently
+		
+	3.	The call back value for Start Acquisition Call back is insignificant at the 
+	 	 moment and left for future use. Instead, the following rules apply:
+		* If file write is enabled from the client, we will write the files.
+		* If callbacks are registered, they will be called.
+		For example, the user prefers to write the data himself, one must disable
+		file write (so we dont write) and register the callbacks (so the user gets 
+		the data).
+		
+	4.	Multiple Receivers have to be started as different processes, instead of threads
+		due to static variables being used. Please refer example code provided in the 
+		slsDetectorsPackage/manual/manual-api folder (mainReceiver.cpp).
+		
+
+
+New Features
+============
+	Package
+	-------
+	1.	One can compile using cmake or the ./cmk.sh script(also uses cmake)
+	  	Run ./cmk.sh -help to get more info. This method does not touch the 
+	  	source files. Please start off with ./cmk.sh -bj9, where (9 is #cores+1)
+	  
+	2.	One can compile the normal way using Makefile (editing Makefile.include
+	  	for the hdf5 options), but this will modify other gitInfo files.
+	
+	
+	General
+	-------
+	3.	UDP Packets from all the detectors will contain the standard sls detector header. 
+		Jungfrau will have an extra 6 bytes preceding the standard header in the udp packets
+		only. X, Y and Z Coordinates define the position of the detector in 3d. These values
+		are not filled in the udp header at the moment, but will be in the files and receiver
+		call backs with only x in 1d at the moment.
+	  	
+	4.	When acquire has started, one can use sls_detector_get busy to check the status
+		of the acquire. 1 is running 0 is idle. This way one can start acqusition with &,
+		poll the busy command ( or framescaught or frameindex to get status from receiver).
+	  	
+	  	
+	Receiver
+	--------
+	4.	One can choose the file format using the command "fileformat binary/hdf5" from 
+	  	the client, but one must compile with the options as defined in README.md
+	
+	5.	Virtual HDF5 file maps all the files into a single file.
+	
+	6.	Gotthard, Propix and Moench also save data in the same way as Jungfrau and Eiger,
+	  	as described above (ie. without any packet headers, only standard image headers 
+	  	for each image data)
+	
+	7.	(Eiger) The ascii part of the file (file header with acquisition parameters) moved to 
+	  	a separate file called the master file. So one master file per acquisition.
+	  
+	  
+   	Client
+	------
+	8.	(Eiger) Can now set Threshold without uploading Trimbits.
+	
+	9. 	(Eiger)	Setting high voltage returns -999 for only slave and on the multi level gives
+		the value of the master only.
+		
+	10.	StartAcquisition (or sls_detector_put status start) parallelized.
+	
+	
+	Gui
+	---
+	10.	Set the data streaming port (individually/ a single one that calculates for the other
+	  	receiver streamer threads) via the command line
+	
+		
+	Users-API
+	-----
+	11.	manual-api example forks new child processes for every extra receiver object.
+
+
+
+Resolved Issues
+===============
+	Client
+	------
+	1.	 Memory Leak fixed when setting receiver parameters such as udp port or detector 
+	  	network parameter. The signature in slsDetector.cpp and corresponding files have 
+	  	changed, but does not change the slsDetectorUser API.
+	  
+	2.	Bug Fix: Has been made more threadsafe (strtok). Removed bug of configuring MAC 
+	  	correctly even in multiple thread mode.
+	  
+	3.	Bug Fix: Client crashing when rx_hostname is IP instead of a hostname has been fixed.
+	
+	
+	
+	Server
+	------
+	4.	(Eiger/Jungfrau) Bug Fix: Client crashing should not crash the server as SIGPIPE 
+	  	signal is caught.
+	  
+	5.	(Eiger) Bug Fix: Front End Temperature read out conversion fixed.
+	
+	6.	(Eiger) Bug Fix: sls_detector_get trimval(get all trimbits) would return only the first pixel 
+		value. Now it returns -1 if all the pixels are different.
+	  
+	  
+	Receiver
+	--------	  
+	6.	Bug Fix: Ctrl+C kills the receiver properly calling the appropriate destructors.
+	
+	7.	Acquire & Unblocking acquire (receiver start, status start, receiver stop) can work
+	  	also when switching from gui to command line and vice versa.
+	  
+	8.	Bug Fix: sls_detector_get frameindex was always returning 0.
+	
+	9.	Bug Fix: In the rare chance that the shut down socket is still processing in 
+		the genericsocket class, but the object is being deleted. 
+		
+	10.	(Eiger): When running independent(not slsReceiver) receiver, one needn't do receiver start
+		to prepare acquisition. Prepare Acquisition has been moved to StartAcqusition and
+		StartAndReadAll. 
+	
+	11.	(Gotthard): 639 pixels in first packet and 641 pixels in second packet. The first pixel in second 
+		packet was unaccounted for. This is fixed now.
+
+
+
+Known Issues
+============
+	Server
+	------
+	1.	(Eiger) The hardware mac of the detector is used (not relayed back to the client). 
+	  	For 1 GbE, the hardware IP of the detector is used (also not relayed back to the 
+	  	client). 
+	  	
+	2.	Standard header fills x-coord in 1D. y-coord and z-coord is not implemented (3D).
+	
+	
+	3. HDF5 compression and filters are not implemented yet.
+
+
+
+
+

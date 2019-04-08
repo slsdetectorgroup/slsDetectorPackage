@@ -1,0 +1,37 @@
+SLS Detector Package 3.1.5 released on 2018-11-30
+=================================================
+
+
+
+INTRODUCTION
+
+This document describes the differences between 3.1.5 and 3.1.4 releases.
+
+
+Topics Concerning
+==================
+    - Gotthard adc channel shifted by one
+    - users class: get version, status, resetframescaught
+
+
+Resolved Issues
+===============
+    
+    Detector Server
+    ---------------
+    1.  (Gotthard) The adc channel is shifted by one due to an incorrect ADC pipeline
+        register. This is fixed now.
+        
+
+    Client
+    ------
+    1.  Users class: Get versions gave -1. Has been fixed for single and multi modules.
+    	
+	
+New Features
+============
+
+    Client
+    ------
+    1.  Users class: Added "stopped" to detector status list, resetframescaught in
+        receiver function.

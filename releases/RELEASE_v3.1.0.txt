@@ -1,0 +1,353 @@
+SLS Detector Package 3.1.0 released on 2018-03-12
+=================================================
+
+
+
+INTRODUCTION
+
+This document describes the differences between 3.1.0 and 3.0.0 releases.
+
+The conda package of the binaries can be downloaded from
+	
+	https://github.com/slsdetectorgroup/sls_detector_software.git
+	
+The Python interface to the software package (including the package) is at 
+	
+	https://github.com/slsdetectorgroup/sls_detector.git
+	
+Manual (both HTML and pdf versions) are provided in
+	
+	manual/docs/
+
+Documentation from Source Code can be found for the Command Line and C++ API in
+	
+	html:
+		manual/docs/html/slsDetectorClientDocs/index.html
+		manual/docs/html/slsDetectorUsersDocs/index.html
+	pdf:
+		manual/docs/pdf/slsDetectorClientDocs.pdf
+		manual/docs/pdf/slsDetectorUsersDocs.pdf
+		
+Documentation to the python API is available at
+
+	https://slsdetectorgroup.github.io/sls_detector/
+		
+Example including binaries for detector and receiver user classes can be found in 
+
+	manual/manual-api
+	
+User documentation can also be accessed directly at this location:
+
+    https://www.psi.ch/detectors/users-support
+
+If you have any software related questions or comments, please send them to:
+
+    dhanya.thattil@psi.ch
+    anna.bergamaschi@psi.ch
+    
+If you have any python related questions or comments, please send them to:
+	
+	erik.frojdh@psi.ch
+
+
+CONTENTS
+
+- Firmware Requirements
+- Changes in User Interface
+- New Features
+- Resolved Issues
+- Known Issues
+
+
+
+Firmware Requirements
+=====================
+
+	Please refer to the link below for more details on the firmware versions.
+		https://www.psi.ch/detectors/firmware.
+
+    	Gotthard
+    	========   
+    	Minimum compatible version  : 11.01.2013
+    	Latest version              : 08.02.2018 (50um and 25um Master)
+                                      09.02.2018 (25 um Slave) 
+
+   	-Can not be upgraded remotely.
+    
+    
+    	Eiger
+    	=====  
+    	Minimum compatible version  : 16
+    	Latest version              : 20
+        
+    	-Can be upgraded remotely via bit files.
+    
+        
+    	Jungfrau
+    	========       
+    	Minimum compatible version  : 13.11.2017
+    	Latest version              : 13.11.2017
+
+    	-Can be upgraded remotely via sls_detector_put programfpga <pof>.
+	 
+
+
+Changes in User Interface
+========================= 
+	
+	
+	Client
+	------
+	1.	Additional functions added for advanced users in users class:
+		(setSpeed, setClockDivider, setReadOutFlags, setDac, getADC, 
+		setAllTrimbits, startReceiver, stopReceiver,
+		startAcquisition non blocking, setReceiverSilentMode, setHighVoltage,
+		enableDataStreamingToClient, enableDataStreamingFromReceiver, 
+		setReceiverDataStreamingOutPort, setClientDataStreamingInPort)
+			
+	2.	Zmq set up for client and receiver are separated.
+		zmqport for client and rx_zmqport for receiver. By default, they are the
+		same for the slsDetectorGui to work.
+		
+	3. 	Users example also works without config file, where detector already
+		configured in shared memory.
+		
+	4. 	Use "sls_detector_get busy 0" to clear acquiring flag in shared memory
+		caused due to an earlier interrupted acquisition from Ctrl+C"
+		
+	5. 	Set bit, clear bit, read register and write register cannot give -1 for
+		inconsistent values from multiple detectors. One has to check error from 
+		API or read the values individually.
+		
+	6. 	multiSlsDetector::char* getSettingsFile() function signature has been 
+		changed to string getSettingsFile().
+
+		
+		
+	Receiver
+	--------
+	7.	Modified the help manaual/main-api/mainReceiver.cpp to make it more
+		robust (handling child process exit) and flexible to determine upon 
+		start up the number of receivers (child processes), the start TCP port 
+		and whether to call back data.
+		
+		detReceiver is now executed with [start tcp port] [number of receivers]
+		[1 for call back, 0 for none] as arguments. 
+		By default, start tcp port is 1954, number of receivers	is 1, and call
+		back is initiated.
+		
+	8.	rx_datastream to enable/disable data streaming in receiver. Using the GUI
+		or registering data call back in client automatically enables zmq in 
+		receiver and client. "externalgui" is removed from the command line. Use
+		this command instead.
+		
+	9.	Rx_tcpport argument to the slsReceiver can be given using -t. 
+		Eg. slsReceiver -t1955
+		
+
+New Features
+============
+
+
+	Package
+	-------
+	1.	In addition to the C++ API, the Python API is also now provided.
+	
+	2. 	CMAKE now with debug flag and rpath, show warnings, compile only certain 
+		components (such as receiver or gui)
+	
+	3. 	One repository for entire package and made available at github.
+	
+	4. 	One can do --version or -v to all the binaries to find out the release
+		version of the particular executable.
+		
+	5. 	All the software version numbers have only date in format YYMMDD.
+	
+	  
+   	Client
+	------
+	6. 	Parallelized more commands to detector. Beneficial for large detectors.
+		(setTimer, setFileIndex, setOnline, setReceiverOnline, getReceiverStatus,
+		resetFramesCaught, setFrameIndex, setFileName, getFramesCaughtByReceiver,
+		setDynamicRange, setRateCorrection)
+		
+		Option to also use "sls_detector_put threaded 0" to improve speed by 
+		eliminating progress display during acquisition. Effective only for 
+		large detectors.
+		
+	
+	Detector Server
+	---------------
+	7.	(Eiger) Virtual class to execute on pc.
+	
+	8. 	One can now read temperatures during acquisition. It goes via the stop
+		server.
+		
+	9.	(Jungfrau) One can start server in "debug" mode and then program the
+		new firmware via software command "sls_detector_put programfpga xx.pof".
+		
+	10.	(Jungfrau) Server can exit on start up if either the firmware or the 
+		server is incompatible with each other.
+	
+	11.	(Jungfrau) One is able to set transmission delay (ms) of image for each
+		individual detector using "txndelay_frame" command. Beneficial for 
+		large detectors.
+		
+	12.	(Jungfrau) One can set a threshold temperature (temp_threshold) and 
+		enable the temperature control feature (temp_control). When the 
+		temperature (temp_fpga) overshoots the threshold temperature, it will
+		set the temperature event (temp_event) and power off the chip. One must
+		then switch off the detector and check cooling. Switching back on starts
+		with defaults.
+		
+	13.	(25um Gotthard) Added start acquisition delay to master module.
+	
+	14. 	(Gotthard) New constraints for firmware dated 08.02.2018 and 09.02.2018 
+		(25 um Slave) include minimum exposure time is 186 ns and minimum 
+		period is 1278 ns + current exposure time.
+	
+	
+	Receiver
+	--------
+	14. 	The detectorip and rx_udpip does not have to be in the same subnet anymore.
+		Add the following commands after rx_hostname in config file to overwrite
+		mac configuration:
+		rx_udpmac [router mac]
+		configuremac 0 
+		
+	15.	Added silent mode to receiver using command r_silent [i] from client. 
+		It might be beneficial for max frame rate applications.
+		
+	16.	Receiver print out can handle black or white backgrounds.
+	
+	17.	zmq package included updated to v4.0.8.
+	
+	18.	Zmq streaming from receiver also sends file index in json header.
+	
+	
+	Gui
+	---
+	19.	If acquisition is done, but "stop dummy packet" to the gui was lost in 
+		the network, stop acquisition command will restream it so that the gui
+		doesnt hang forever. This is used only for very fast detectors like 
+		Moench.
+
+
+
+Resolved Issues
+===============
+
+
+	Client
+	------
+	1. 	gethostbyname used in connecting to sockets was not thread safe for 
+		multiple detectors. Using getaddrinfo for stability in multi threaded
+		environment.
+	
+	2. 	Updated writing content of config and parameter dump into files.
+	
+	3. 	More locking to handle main and processing threads using the threadpool.
+		Removing unlock twice, which is undefined behavior.
+		
+	4.	(Jungfrau) adcphase returns the correct value, instead of -1.
+			
+
+	Detector Server
+	---------------
+	4. 	(Eiger) The hardware MAC of the detector is used during configuration 
+		and relayed  back to client. Similarly, hardware IP for 1 Gbe data mode.
+		
+	5. 	(Eiger) Status will return error if there was the unlikely trouble 
+		reading status register in the front end board. Earlier, it would only 
+		return idle.
+		
+	6.	(Jungfrau) patch server v3.0.0.6.3
+		Able to set settings, high voltage now correctly reads 0 when 
+		switched off, dacs are properly set.
+			
+	7. 	(Jungfrau) FPGA reset and programming FPGA firmware via software is done
+		properly
+		
+	8. 	(Gotthard) patch server v3.0.0.5.1
+		Able to read temperature properly.
+		
+	9. 	(Gotthard) butst mode if set too fast had unwanted behavior such as 
+		sending same image continuously. Now it is handled to display error
+		and stop acquisition.
+		
+	10.	(Gotthard) completely removed the possibility to set timing modes 
+		other than auto and trigger as they are not implemented anyway. Also
+		signal index 1, 2 and 3 are reserved and hence, cannot be configured for
+		an external trigger.
+		
+	11.	Non Mythen and non Eiger detectors can also now get settings file from 
+		board.
+		
+	12. 	(Gotthard) Did not get first few images initially after configuring MAC
+		of detector. Fixed.
+	
+	
+	Receiver
+	--------
+	12.	Made it easier to disable the standard receiver and fixing bugs related 
+		to the use of a custom one. 
+		
+	13.	(Jungfrau) HDF5 dimensions (npixelsY) required for mapping fixed.
+	
+	14.	patch2-v3.0.0-slsReceiverSoftware.patch
+		x, y and z coordinates in the call backs and the files are hardcoded 
+		for this release. 
+		
+	15.	Rest implementation (not used by standard receiver) removed.
+
+	
+	Gui
+	---
+	16.	patch1-v3.0.0-slsDetectorGui.patch
+		(Eiger) In expert mode and in advanced tab, when trimbits 
+		loaded are different for every pixel, the gui complains and sets 
+		all trimbits to zero. This has been resolved. Now, the "Set All 
+		Trimbits" field is just set to -1.
+		
+	17.	Fixed segmentation fault of xputsn properly.
+	
+	18.	Upon clicking on "Start", clears acquiring flag in shared memory
+		caused due to an earlier interrupted acquisition from Ctrl+C"
+		
+	19.	Fixed plotting twice caused due to unzooming the first time.
+	
+	20.	Removed option for compression in Gui as it is not available currently.
+	
+	21. 	Can also show Jungfrau multi detector in x direction in gui.
+	
+	22. 	Switching tabs sometimes results in delay and gates fields being incorrectly
+		enabled. Fixed.
+
+
+	
+Known Issues
+============
+
+
+	Client
+	------
+	1.	File name prefix can only be done at multi deector level. Changing at 
+		individual detector level will not include scan or position variables.
+
+	
+	Detector Server
+	---------------
+	2.	Standard header fills x-coord in 1D. y-coord and z-coord is not 
+		implemented (3D).
+
+
+	Receiver
+	--------
+	3. 	HDF5 compression and filters are not implemented yet.
+	
+
+	
+
+
+
+

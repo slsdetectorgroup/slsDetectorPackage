@@ -1,0 +1,508 @@
+SLS Detector Package 4.0.0 released on 27.09.2018
+=================================================
+
+
+
+INTRODUCTION
+
+	This document describes the differences between 4.0.0 and 3.1.4 releases.
+
+	Download
+	--------
+	
+	The Source Code (Default C++ API):
+		 https://github.com/slsdetectorgroup/slsDetectorPackage
+		 
+	The Conda Lib Package:
+		https://github.com/slsdetectorgroup/sls_detector_lib
+		
+	The Conda GUI Package:
+		https://github.com/slsdetectorgroup/sls_detector_gui	
+		
+	The Python Interface (including the package):
+    	https://github.com/slsdetectorgroup/sls_detector
+	
+	
+	Documentation
+	-------------
+	
+	Manual (HTML & PDF):
+		https://www.psi.ch/detectors/documentation
+		slsDetectorPackage/manual/docs/
+		
+	Command Line Documentation:
+		manual/docs/html/slsDetectorClientDocs/index.html
+		manual/docs/pdf/slsDetectorClientDocs.pdf
+		
+	C++ API Documentation:
+		manual/docs/html/slsDetectorUsersDocs/index.html
+		manual/docs/pdf/slsDetectorUsersDocs.pdf
+		
+	C++ API Example:
+		manual/manual-api/mainClient.cpp
+		manual/manual-api/mainReceiver.cpp
+		
+	Python API Documentation:
+		https://slsdetectorgroup.github.io/sls_detector/
+		
+	Further Documentation:
+		https://www.psi.ch/detectors/users-support
+		
+	
+	Support
+	-------
+
+	General Software related:
+		dhanya.thattil@psi.ch
+		anna.bergamaschi@psi.ch
+		
+	Python related:
+		erik.frojdh@psi.ch
+
+
+
+CONTENTS
+
+	1.	Firmware Requirements
+	2.	Changes in User Interface
+	3.	New/Modified Commands
+	4.	Other New Features
+	5.	Resolved Issues
+	6.	Known Issues
+	7.	Next Major Release Plans
+
+
+
+1. Firmware Requirements
+========================
+
+    	Gotthard
+    	========   
+    	Minimum compatible version  : 11.01.2013
+    	Latest version              : 08.02.2018 (50um and 25um Master)
+                                      09.02.2018 (25 um Slave) 
+    	Eiger
+    	=====  
+    	Minimum compatible version  : 22
+    	Latest version              : 22
+        
+    	Jungfrau
+    	========       
+    	Minimum compatible version  : 15.06.2018
+    	Latest version              : 15.06.2018
+
+    	
+    	Detector Upgrade
+    	================
+    	Gotthard	Cannot be upgraded remotely. Requires programming via USB blaster
+    	Eiger		Can be upgraded remotely via bit files
+    	Jungfrau	Can be upgraded remotely using sls_detector_put programfpga <pof>
+    	
+    	Instructions available at
+    	https://www.psi.ch/detectors/installation-instructions
+    	under Detector Upgrade -> [Detector Type] -> Firmware. 
+    	
+    	 
+	Please refer to the link below for more details on the firmware versions.
+	https://www.psi.ch/detectors/firmware.
+		
+
+
+2. Changes in User Interface
+============================
+	
+	Client
+	------
+	
+	1.	Shared Memory:
+	
+		POSIX shared memory has been implemented and they are typically created in
+		/dev/shm/ folder.
+		
+		A multiSlsDetector object will create a shared memory segment with naming style:
+		slsDetectorPackage_x_[_z]
+		and an slsDetector object will create a shared memory segment with naming style:
+		slsDetectorPackage_x_sls_y[_z]
+		 	
+		where
+		x is the multi detector id
+		y is the sls detector id
+		z is the environment variable SLSDETNAME, if set.
+		They can be deleted directly.
+		
+		Environment variable SLSDETNAME included for user-friendliness
+		of using 2 different detectors from the same client pc. One needn't use
+		different multi detector id if the SLSDETNAME is different for both consoles.
+		
+		Constructor will fail if shared memory size is different (different package
+		releases/detectors). Loading config file cleans shared memory.
+
+
+	2.	Exceptions in constructors:
+	
+		All constructors that have an error throws an exception. For this release,
+		this is caught within the package and interfaced as error codes or messages
+		to the users using command line or API.
+		
+		As a result:
+		- slsDetectorsUsers constructor signature now includes a success flag.
+		- If one uses multiSlsDetector, slsDetector, ZmqSocket classes directly, 
+		  catch exceptions from constructors.
+		- In future releases, the exception will be thrown 
+		  outside the package for the users to handle it.
+		  
+		  
+	3.	API Compatibility:
+	
+		Client now checks API version of Detector Server - Client and Receiver - Client
+		when connecting for the first time to detector server or receiver server
+		and the online flags have not been set in shm. 
+		
+		Upon failure, error messages will ensue and further commands will not 
+		be executed. Detector servers referred to are only for Eiger, Jungfrau and Gotthard.
+		
+		Previously, the detector server would exit on mismatched Firmware-Detector
+		server mismatch. They now wait for client to ask for compatibility check,
+		which is done the first time client connects to the detector and the
+		online flag in shm has not been set.
+		
+		
+	4.	Commands "type", "id" and "replace" are removed.
+		  
+		  
+	Receiver
+	--------
+	
+	1.	Reciever Header Structure in file writing and call back:
+	
+		sls_receiver_header structure added to sls_receiver_defs.h for image headers 
+		in file writing. 
+		
+		#define MAX_NUM_PACKETS	512
+		typedef std::bitset<MAX_NUM_PACKETS> sls_bitset;
+		typedef struct {
+			sls_detector_header detHeader;	/**< is the detector header */
+			sls_bitset packetsMask;			/**< is the packets caught bit mask */
+		} sls_receiver_header;
+		
+		It includes the detector header structure + bitmask of 512 bits, 
+		where each bit represents a packet caught. This is useful in saving time 
+		in writing to file by not padding missing packets and still retaining useful data.
+		
+		The binary and HDF5 writer version number changed from 1.0 to 2.0. 
+		The detector header version remains as 1.0.
+		
+		registerCallBackRawDataReady modified to give this structure pointer,
+		instead of individual structure member pointers.
+		
+		
+	2.	ZmqSocket class:
+	
+		If one uses ZmqSocket.h, then the json header has to be parsed outside 
+		the class to allow the user to remove the restriction in extracting all data
+		from the json header.
+
+
+	3.	Receiver Call back with modified size:
+	
+		registerCallBackRawDataModifyReady call back that is similar to the receiver 
+		registerCallBackRawDataReady has been added to allow the call back to 
+		specify an updated size of image after call back. This is in view to process
+		an image in call back (including extract only a region of the image) and 
+		provide this updated size in callback. This new resized/processed image
+		will be written to file or streamed out via zmq. This is useful in ROI
+		selection in the receiver.
+
+		This also means that the call back is now called before writing to file.
+
+
+
+3. New/Modified Commands 
+========================
+	
+	Client
+	------
+
+	1.	add (modified): 
+		appends detector to end of multi detector list.
+
+	2.	replace: 
+		sets hostname/ip address for a single detector.
+
+	3.	user: 
+		get user details from shared memory.
+
+	4.	checkdetversion: 
+		checks client version compatibility with detector server.
+
+	5.	checkrecversion: 
+		checks client version compatibility with receiver server.
+		
+	
+	Receiver
+	--------
+	
+	1.	rx_zmqip:	
+		sets/gets the zmq (TCP) ip of the receiver from where data is streamed 
+		out from. (Eg. to the gui or intermediate process). By default, it is 
+		the same as the zmqip.
+	
+	2.	zmqip: 
+		sets/gets the zmq (TCP) ip, where client listens to, to reconstuct images. 
+		(Eg. from receiver or intermediate process). By default, it is the same 
+		as rx_zmqip.
+	  		 	
+	3.	rx_jsonaddheader:
+		sets/gets additional json header to be streamed out with the zmq from 
+		receiver. Default is empty. Eg. p rx_jsonaddheader \"what\":\"nothing\"
+		
+	4.	r_discardpolicy:
+		sets/gets the frame discard policy in the receiver. 
+		nodiscard - no discard (default), 
+		discardempty - discard only empty frames, 
+		discardpartial - discard any partial frame(fastest)
+		
+	5.	r_padding:
+		sets/gets the frame padding in the receiver. 
+		0 does not pad partial frames(fastest), 
+		1 (default) pads partial frames.
+		One can look at bitmask in the sls_receiver_header to process the unpadded
+		partial	frames later.
+		
+	6.	activate (modified):
+		Extra option added to pad or unpad images in receivers when deactivated.
+		activate i [padding option], where i is activate/deactivate	and padding 
+		option is "padding" (default) or "nopadding".
+		
+	7.	rx_udpsocksize:
+		sets/gets the UDP socket buffer size. Already attempts to set by default 
+		to 100mb, 2gb for Jungfrau. Does not remember custom values	in client 
+		shared memory, so must be initialized each time after setting receiver 
+		hostname in config file.
+		
+	8.	rx_realudpsocksize:
+		gets the actual UDP socket buffer size. Usually double the set udp socket 
+		buffer size due to kernel bookkeeping.
+	
+	9.	r_framesperfile:
+		sets/gets the frames per file in receiver. 0 means infinite or all frames 
+		in a single file. Default of Eiger changed from 2k to 10k.
+		
+
+	Eiger Specific
+	--------------
+	
+	1.	status trigger:
+		To trigger internally via software, one can use "status trigger".
+		
+	2.	subdeadtime:
+		sets/gets sub frame dead time in s in 32 bit mode. Subperiod is	set in 
+		the detector by subexptime + subdeadtime. This value is	normally a 
+		constant set by an expert catered to individual detector modules in the 
+		config file. Receiver files writes master file metadata subperiod 
+		instead of subdeadtime.
+		
+	3.	gappixels:
+		enables/disables gap pixels in system (detector & receiver). 1 sets, 
+		0 unsets. In Receiver, 4 bit gap pixels mode is not implemented, but is 
+		implemented in client data call back. Gap pixels are at module level 
+		and not at multi module level.
+				
+	4.	measuredperiod:
+		gets the measured frame period (time between last frame and the	previous 
+		one) in s. Makes sense only for acquisitions of more than 1 frame.
+		
+	5.	measuredsubperiod:
+		gets the measured subframe period (time between last subframe and the 
+		previous one) in s in 32 bit mode.
+
+	6.	flags(modified):
+		extra flags "nooverflow" (default) and "overflow" for sub images in	32 
+		bit mode. If set to overflow, it will set MSB of pixel data high if 
+		there was any saturation in any of the sub images 32 bit mode.
+		
+				
+	Jungfrau Specific
+	-----------------
+	
+	1.	storagecells:
+		sets/gets number of additional storage cells per acquisition. For very 
+		advanced users only. Range: 0-15. Default: 0. 
+		The #images = #frames * #cycles * (#storagecells +1).
+		
+	2.	storage_start:
+		sets/gets the storage cell that stores the first acquisition of the	series. 
+		For very advanced users only. Range: 0-15. Default: 15(0xf).  
+
+
+
+4. Other New Features
+=====================
+
+	Client
+	------
+	
+	1.	(Jungfrau & Gotthard) Settingsdir and caldir is removed from config file.
+		Default dacs are stored in detector server. Hence, these folders
+		are also removed from slsDetectorPackage/settingsdir. Eiger and Mythen 
+		continue to have them.
+		
+	2.	Depending on 1d position of detectors and detsizechan in config file,
+		row and column (previously xcoord and ycoord) are given to detector 
+		servers (Eiger and Jungfrau) to encode into the udp header.
+		
+	3.	(Eiger) Setting threshold energy changes such as CAL dac is irrelevant 
+		when interpolating between two energies and VRS dac is interpolated, not copied.
+		
+	4.	Users API updated with the following functions:
+		-	setReceiverFramesDiscardPolicy
+		-	setReceiverPartialFramesPadding
+		-	setReceiverFramesPerFile
+		-	sendSoftwareTrigger
+		-	setSubFrameExposureDeadTime
+		-	setSubFrameExposureTime
+		-	enableGapPixels
+		-	getMeasuredPeriod
+		-	getMeasuredSubFramePeriod
+		-	setOverflowMode
+		-	setNumberOfStorageCells
+		-	setStoragecellStart
+		-	setThresholdEnergy (overloaded)
+		-	resetFramesCaughtInReceiver
+		-	setReceiverFifoDepth
+		-	setFlowControl10G
+		-	setTenGigabitEthernet
+		-	getNMods
+		-	setReceiverDataStreamingOutIP
+		-	setClientDataStreamingInIP
+		
+	SlsReceiver
+	-----------
+	
+	1.	slsMultiReceiver executable added that creates multiple receiver child processes.
+		./slsMultiReceiver [start_tcp_port] [num_receivers] [1 for call back, 0 for none]
+		
+	2.	Default row and column (previously xcoord and ycoord) are hardcoded 
+		for missing packets. (Eiger and Jungfrau)
+		
+
+	Gui
+	---
+	
+	1.	(Jungfrau) Gain plot included. Option under 2D options in Plot tab.
+	
+	2.	Option to maintain aspect ratio
+	
+	3.	Start and Stop separated to prevent multiple click syndrome.
+	
+
+	Detector Server
+	---------------
+	
+	1. 	(Jungfrau) To use programfpga command, one must start server with -update
+		mode and then restart server without -update mode.
+	
+	2.	(Jungfrau) ASIC Timer configured at server start up and changed a few
+		startup values for firmware v0.7 such as adc phase, ADC_PORT_INVERT_VAL
+		and ADC offset half speed value.
+		
+	3.	(Jungfrau) Minimum exposure time of 50 us was implemented.
+	
+	4. 	(Eiger and Jungfrau) They can be configured to have x and y coord values
+		of the detector in their udp header.
+
+
+
+
+5. Resolved Issues
+==================
+
+	Client
+	------
+	memory leak for multi threading
+	
+	1.	Compiler flag -std=c++98 enforced. Debug flag removed.
+	
+	2.	If trimen gives different list from different detectors, it returns a -1.
+	
+	3.	Version format for each submodule of the package changed to just date YYMMDD.
+		Users class fixed to give correct version, instead of -1.
+		
+	4.	Getting settings in users class gave -1. Fixed now.
+
+	5.	(Jungfrau) Programming FPGA now creates the rawbin file from pof in tmp
+		rather than source file location (for permission issues).
+		
+	6.	(Gotthard) ROI segmentation fault fixed.
+		
+	Receiver
+	--------
+	
+	1.	Silent feature of receiver fixed.
+	
+	2. 	Socket descriptor misused earlier for success flag, instead exceptions
+		used that are handled inside the package.
+
+	3.	Global optind variable initialized to instantiate multiple receivers 
+		in same process. Also removed static members to enable this feature.
+		
+	4.	Socket buffer size attempts to set for each acquiistion and provide
+		warning if no capabilities. Warnings can be removed using instruction with
+		error provided. Default Jungfrau UDP socket buffer size if 2 GB, default is 
+		100 MB.
+		
+	5.	Refactored code a bit for performance and robustness, blocking push 
+		in buffer between listener and dataprocessor
+
+	
+	Detector Server
+	---------------
+	
+	1.	(Jungfrau) Stop server also mapped during a reset. Reading power status
+		instead of user input register for power.
+	
+	2.	(Eiger) Bug fix for saving trimbits to file (Advanced users).
+	
+	3.	(Gotthard 25um) config.txt is not read again after detector startup,
+		no matter the number of times the detector server is restarted. 
+
+	
+6. Known Issues
+===============
+
+	Receiver
+	--------
+	
+	1. 	HDF5 compression and filters are not implemented yet.
+	
+	
+	Detector Server
+	---------------
+	
+	1.	(Eiger) Registers mapped differently between firmware v20 and v22.
+		So, please ensure correct on-board server before switching between
+		firmware versions. Else one cannot ping it anymore. Will need to flash firmware
+		again to recover.
+		
+	2.	(Gotthard) To switch back to all ADC from single ADC ROI, one must take
+		even number of images for the receiver to understand complete images.
+		This will be fixed in the next firmware upgrade.
+	
+	
+	
+7. Next Major Release Plans
+===========================
+
+	Client
+	------
+	
+	1.	Exceptions thrown to the user to be handled.
+	
+	2. 	Compilation using c++11.
+	
+	3.	Support of Mythen II restricted to this major and its minor releases.
+	
+	4.	Restructuring and refactoring of client code. 
+
+
+

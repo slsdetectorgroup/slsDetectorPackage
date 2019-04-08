@@ -1,0 +1,72 @@
+SLS Detector Package 3.1.4 released on 2018-08-17
+=================================================
+
+
+
+INTRODUCTION
+
+This document describes the differences between 3.1.4 into 3.1.3 releases.
+
+
+Topics Concerning
+==================
+	- get settings in users class
+	- HDF5 in Receiver
+	- gotthard timer accuracy
+
+
+Resolved Issues
+===============
+
+	Client
+	------
+	1.	Users class setSettings(-1) gave undefined settings. Has been fixed.
+	
+	2. 	Users class timers give more precise values now.
+	
+	3.	When deleting slsDetector object, Stop socket deletion includes a close on 
+		default file descriptor zero (which it didn't open, just set for flag).
+		This is fixed with temporary solution, to connect stop socket at checkOnline
+		to set file descriptor to the right one. Later releases will use exception
+		to handle constructor error flags.
+
+	
+	Detector Server
+	---------------
+	1.	(Gotthard) Timers converted from time in nanoseconds to number of cycles
+		is made more precise now. Clock value changed from 32.1E+6 to 32.007729E+6. 
+	
+	
+	Receiver
+	--------	
+	1.	Jungfrau Single Module Master files did not link to the HDF5 data file properly.
+		This is fixed now.
+		
+	2.	Relative linking is used in the HDF5, instead of absolute now.
+	
+
+
+New Features
+============
+
+	Client
+	------
+	1.	Timers can be set/retrieved individually. It has been introduced because
+		Gotthard 25um can have different delays for master and slave modules.
+
+	Receiver
+	--------
+	1.	HDF5 x dimension (#images). Max made unlimited. Chunked Dataset by default.
+		
+		When receiver gets an image more than #frames, the HDF5 dataset will 
+		extend itself in the x dimension by another #frames. So, one can do
+		(in Jungfrau, Gotthard, NOT Eiger)
+		sls_detector_put resetframescaught 0
+		sls_detector_put receiver start
+		sls_detector_put status start
+		sls_detector_put status start
+		...
+		sls_detector_put receiver stop
+		
+	
+		

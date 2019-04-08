@@ -1,10 +1,16 @@
 add_subdirectory(pybind11)
 pybind11_add_module(_sls_detector src/main.cpp)
 
+
+
 target_link_libraries(_sls_detector PUBLIC 
+                        slsProjectOptions
+                        slsProjectWarnings
                         slsDetectorShared
                         slsReceiverShared
                         slsSupportLib )  
+
+
 
 set_target_properties(_sls_detector PROPERTIES
                         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

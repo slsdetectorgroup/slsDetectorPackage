@@ -57,7 +57,7 @@ target_compile_options(slsProjectWarnings INTERFACE
                                             -Woverloaded-virtual
                                             -Wdouble-promotion
                                             -Wformat=2
-                                            -Wshadow
+
                                  )
 
 
@@ -66,6 +66,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.2)
         message(FATAL_ERROR "Clang version must be at least 3.2!")
     endif()
+    target_compile_options(slsProjectWarnings INTERFACE -Wshadow) #Clag does not warn on constructor
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
             message(FATAL_ERROR "GCC version must be at least 4.8!")

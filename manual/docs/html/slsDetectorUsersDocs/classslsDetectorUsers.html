@@ -169,10 +169,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ae6e5f06995e3ef110824adc5f8b095e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">get positions for the acquisition  <a href="#ae6e5f06995e3ef110824adc5f8b095e9">More...</a><br/></td></tr>
 <tr class="separator:ae6e5f06995e3ef110824adc5f8b095e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42c97d03516a2457f8e9a98a16a9a43d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a42c97d03516a2457f8e9a98a16a9a43d">setDetectorSize</a> (int x0=-1, int y0=-1, int nx=-1, int ny=-1)</td></tr>
-<tr class="memdesc:a42c97d03516a2457f8e9a98a16a9a43d"><td class="mdescLeft">&#160;</td><td class="mdescRight">sets the detector size  <a href="#a42c97d03516a2457f8e9a98a16a9a43d">More...</a><br/></td></tr>
+<tr class="memdesc:a42c97d03516a2457f8e9a98a16a9a43d"><td class="mdescLeft">&#160;</td><td class="mdescRight">sets the detector size (only 1 ROI)  <a href="#a42c97d03516a2457f8e9a98a16a9a43d">More...</a><br/></td></tr>
 <tr class="separator:a42c97d03516a2457f8e9a98a16a9a43d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f4fb3cefff5f0175cd2e4fd57ee1be4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a7f4fb3cefff5f0175cd2e4fd57ee1be4">getDetectorSize</a> (int &amp;x0, int &amp;y0, int &amp;nx, int &amp;ny)</td></tr>
-<tr class="memdesc:a7f4fb3cefff5f0175cd2e4fd57ee1be4"><td class="mdescLeft">&#160;</td><td class="mdescRight">gets detector size  <a href="#a7f4fb3cefff5f0175cd2e4fd57ee1be4">More...</a><br/></td></tr>
+<tr class="memdesc:a7f4fb3cefff5f0175cd2e4fd57ee1be4"><td class="mdescLeft">&#160;</td><td class="mdescRight">gets detector size (roi size if only one roi)  <a href="#a7f4fb3cefff5f0175cd2e4fd57ee1be4">More...</a><br/></td></tr>
 <tr class="separator:a7f4fb3cefff5f0175cd2e4fd57ee1be4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a588a5e1d231cd6778f6f78fdc53b9681"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a588a5e1d231cd6778f6f78fdc53b9681">getMaximumDetectorSize</a> (int &amp;nx, int &amp;ny)</td></tr>
 <tr class="memdesc:a588a5e1d231cd6778f6f78fdc53b9681"><td class="mdescLeft">&#160;</td><td class="mdescRight">gets the maximum detector size  <a href="#a588a5e1d231cd6778f6f78fdc53b9681">More...</a><br/></td></tr>
@@ -255,16 +255,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a7dc6e97a09efb0640e2b16088f85ea72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89b08e5887ddf2c96a065d38ad402d2c"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a89b08e5887ddf2c96a065d38ad402d2c">setClientDataStreamingInIP</a> (std::string ip=&quot;&quot;)</td></tr>
 <tr class="separator:a89b08e5887ddf2c96a065d38ad402d2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09ded3b9c81e4544d42bb0697c3b7624"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a09ded3b9c81e4544d42bb0697c3b7624">getModuleFirmwareVersion</a> ()</td></tr>
-<tr class="separator:a09ded3b9c81e4544d42bb0697c3b7624"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0c44bbc8f9d83d8723d4304ba7043c4"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#ae0c44bbc8f9d83d8723d4304ba7043c4">getModuleFirmwareVersion</a> (int imod=-1)</td></tr>
+<tr class="separator:ae0c44bbc8f9d83d8723d4304ba7043c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c0e9f8836e1a8a2d986408e4f5dfd3b"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a5c0e9f8836e1a8a2d986408e4f5dfd3b">getModuleSerialNumber</a> (int imod=-1)</td></tr>
 <tr class="separator:a5c0e9f8836e1a8a2d986408e4f5dfd3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2cbba4518b585064f7870ae2d39a8b8b"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a2cbba4518b585064f7870ae2d39a8b8b">getDetectorFirmwareVersion</a> ()</td></tr>
-<tr class="separator:a2cbba4518b585064f7870ae2d39a8b8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c79314ceeda9b3085ca118e25882669"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a1c79314ceeda9b3085ca118e25882669">getDetectorSerialNumber</a> ()</td></tr>
-<tr class="separator:a1c79314ceeda9b3085ca118e25882669"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1857f2afea58227cb96ad92f5e562a5e"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a1857f2afea58227cb96ad92f5e562a5e">getDetectorSoftwareVersion</a> ()</td></tr>
-<tr class="separator:a1857f2afea58227cb96ad92f5e562a5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a9325a9e278167a13839305cb4f1833"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a7a9325a9e278167a13839305cb4f1833">getDetectorFirmwareVersion</a> (int imod=-1)</td></tr>
+<tr class="separator:a7a9325a9e278167a13839305cb4f1833"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a60c842502978a6ee04ff89ef64abfc"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a4a60c842502978a6ee04ff89ef64abfc">getDetectorSerialNumber</a> (int imod=-1)</td></tr>
+<tr class="separator:a4a60c842502978a6ee04ff89ef64abfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d15399c769777633f7073a82a1d1f30"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a7d15399c769777633f7073a82a1d1f30">getDetectorSoftwareVersion</a> (int imod=-1)</td></tr>
+<tr class="separator:a7d15399c769777633f7073a82a1d1f30"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a547feb09262a2f0fa1ec4de82e92ab63"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a547feb09262a2f0fa1ec4de82e92ab63">getThisSoftwareVersion</a> ()</td></tr>
 <tr class="separator:a547feb09262a2f0fa1ec4de82e92ab63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbe92d525807394b0fbd6b9646111880"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#abbe92d525807394b0fbd6b9646111880">enableGapPixels</a> (int enable=-1)</td></tr>
@@ -358,6 +358,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a4d582900210fa940f2bb2d77fd6d5a3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72e440afafffd6ad68c2f304d75f2093"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a72e440afafffd6ad68c2f304d75f2093">setStoragecellStart</a> (int pos=-1)</td></tr>
 <tr class="separator:a72e440afafffd6ad68c2f304d75f2093"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afddc9c8f59820247ab6e6343bad3b189"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#afddc9c8f59820247ab6e6343bad3b189">setROI</a> (int n=-1, slsDetectorDefs::ROI roiLimits[]=NULL, int imod=-1)</td></tr>
+<tr class="separator:afddc9c8f59820247ab6e6343bad3b189"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85e640f6cde8aaa697c2128db3e621d8"><td class="memItemLeft" align="right" valign="top">slsDetectorDefs::ROI *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetectorUsers.html#a85e640f6cde8aaa697c2128db3e621d8">getROI</a> (int &amp;n, int imod=-1)</td></tr>
+<tr class="separator:a85e640f6cde8aaa697c2128db3e621d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -381,7 +385,7 @@ Static Public Member Functions</h2></td></tr>
 <div class="textblock"><p>The <a class="el" href="classslsDetectorUsers.html" title="The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in ...">slsDetectorUsers</a> class is a minimal interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written. </p>
 <p>Class for detector functionalities to embed the detector controls in the users custom interface e.g. EPICS, Lima etc. </p>
 
-<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00083">83</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
+<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00085">85</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="aa98e06bad937451f423cd3e6dce1276e"></a>
 <div class="memitem">
@@ -883,36 +887,50 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a2cbba4518b585064f7870ae2d39a8b8b"></a>
+<a class="anchor" id="a7a9325a9e278167a13839305cb4f1833"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">int64_t slsDetectorUsers::getDetectorFirmwareVersion </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>imod</em> = <code>-1</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>get get Detector Firmware Version </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imod</td><td>module number </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>id </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="a1c79314ceeda9b3085ca118e25882669"></a>
+<a class="anchor" id="a4a60c842502978a6ee04ff89ef64abfc"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">int64_t slsDetectorUsers::getDetectorSerialNumber </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>imod</em> = <code>-1</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>get get Detector Serial Number </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imod</td><td>module number </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>id </dd></dl>
 
 </div>
@@ -948,7 +966,7 @@ Static Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>setting index (-1 unknown std::string) </dd></dl>
 
-<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00845">845</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
+<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00870">870</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
 
 </div>
 </div>
@@ -983,7 +1001,7 @@ Static Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined when wrong index </dd></dl>
 
-<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00859">859</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
+<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00884">884</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
 
 </div>
 </div>
@@ -1023,7 +1041,7 @@ Static Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>gets detector size </p>
+<p>gets detector size (roi size if only one roi) </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">x0</td><td>horizontal position origin in channel number </td></tr>
@@ -1033,23 +1051,30 @@ Static Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>OK/FAIL </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>total number of channels </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="a1857f2afea58227cb96ad92f5e562a5e"></a>
+<a class="anchor" id="a7d15399c769777633f7073a82a1d1f30"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">int64_t slsDetectorUsers::getDetectorSoftwareVersion </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>imod</em> = <code>-1</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>get get Detector Software Version </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imod</td><td>module number </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>id </dd></dl>
 
 </div>
@@ -1281,19 +1306,26 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a09ded3b9c81e4544d42bb0697c3b7624"></a>
+<a class="anchor" id="ae0c44bbc8f9d83d8723d4304ba7043c4"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">int64_t slsDetectorUsers::getModuleFirmwareVersion </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>imod</em> = <code>-1</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>get get Module Firmware Version </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">imod</td><td>module number </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>id </dd></dl>
 
 </div>
@@ -1311,7 +1343,7 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>get get Module Serial Number </p>
+<p>get get Module Serial Number (only mythen) </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">imod</td><td>module number </td></tr>
@@ -1361,6 +1393,41 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>number of positions </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a85e640f6cde8aaa697c2128db3e621d8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">slsDetectorDefs::ROI* slsDetectorUsers::getROI </td>
+          <td>(</td>
+          <td class="paramtype">int &amp;&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>imod</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get ROI from each detector and convert it to the multi detector scale (Gotthard) &gt;= 1 roi, but max 1 roi per module </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>number of rois </td></tr>
+    <tr><td class="paramname">imod</td><td>module number (ignored) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>pointer to array of ROI structure </dd></dl>
 
 </div>
 </div>
@@ -1430,7 +1497,7 @@ Static Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode </dd></dl>
 
-<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00879">879</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
+<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00904">904</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
 
 </div>
 </div>
@@ -1465,7 +1532,7 @@ Static Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode </dd></dl>
 
-<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00896">896</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
+<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00921">921</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
 
 </div>
 </div>
@@ -1957,7 +2024,7 @@ Static Public Member Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::string error, waiting, running, data, finished or unknown when wrong index </dd></dl>
 
-<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00827">827</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
+<p>Definition at line <a class="el" href="slsDetectorUsers_8h_source.html#l00851">851</a> of file <a class="el" href="slsDetectorUsers_8h_source.html">slsDetectorUsers.h</a>.</p>
 
 </div>
 </div>
@@ -2234,7 +2301,7 @@ Static Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>sets the detector size </p>
+<p>sets the detector size (only 1 ROI) </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">x0</td><td>horizontal position origin in channel number (-1 unchanged) </td></tr>
@@ -2976,6 +3043,48 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>silent mode of receiver </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="afddc9c8f59820247ab6e6343bad3b189"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int slsDetectorUsers::setROI </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n</em> = <code>-1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">slsDetectorDefs::ROI&#160;</td>
+          <td class="paramname"><em>roiLimits</em>[] = <code>NULL</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>imod</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set ROI (Gotthard) (&gt;= 1 roi, but max 1 roi per module) At the moment only one set allowed </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>number of rois </td></tr>
+    <tr><td class="paramname">roiLimits</td><td>array of roi </td></tr>
+    <tr><td class="paramname">imod</td><td>module number (-1 for all) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>OK or FAIL </dd></dl>
 
 </div>
 </div>

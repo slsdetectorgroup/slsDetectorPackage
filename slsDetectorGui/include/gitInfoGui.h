@@ -1,6 +1,6 @@
 #define GITURL "git@github.com:slsdetectorgroup/slsDetectorPackage.git"
-#define GITREPUUID "3c774478681813e451df683e2bc8403b37490323"
+#define GITREPUUID "e998226bce91a0d82ca0bb38c202d404357cf1ff"
 #define GITAUTH "Dhanya_Thattil"
-#define GITREV 0x4084
-#define GITDATE 0x20190207
-#define GITBRANCH "4.0.1"
+#define GITREV 0x4092
+#define GITDATE 0x20190408
+#define GITBRANCH "gh-pages"

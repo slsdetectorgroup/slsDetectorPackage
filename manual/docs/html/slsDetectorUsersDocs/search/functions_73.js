@@ -35,6 +35,7 @@ var searchData=
   ['setreceiveronline',['setReceiverOnline',['../classslsDetectorUsers.html#a3f961fb6eb6409f7b98a2267ad674af4',1,'slsDetectorUsers']]],
   ['setreceiverpartialframespadding',['setReceiverPartialFramesPadding',['../classslsDetectorUsers.html#af1c4d67f84835018622794a02d298f1c',1,'slsDetectorUsers']]],
   ['setreceiversilentmode',['setReceiverSilentMode',['../classslsDetectorUsers.html#a849a8f3e89bc14c8dbda103c0f1dcde5',1,'slsDetectorUsers']]],
+  ['setroi',['setROI',['../classslsDetectorUsers.html#afddc9c8f59820247ab6e6343bad3b189',1,'slsDetectorUsers']]],
   ['setsettings',['setSettings',['../classslsDetectorUsers.html#a31b25d2659d3b244bb10b5516a9fd957',1,'slsDetectorUsers']]],
   ['setstoragecellstart',['setStoragecellStart',['../classslsDetectorUsers.html#a72e440afafffd6ad68c2f304d75f2093',1,'slsDetectorUsers']]],
   ['setsubframeexposuredeadtime',['setSubFrameExposureDeadTime',['../classslsDetectorUsers.html#acb1c586a072156fad8a11a5cca27d36b',1,'slsDetectorUsers']]],

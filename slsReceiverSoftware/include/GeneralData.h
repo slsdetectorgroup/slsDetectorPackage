@@ -10,7 +10,7 @@
 #include "sls_detector_defs.h"
 #include "receiver_defs.h"
 #include "logger.h"
-#include <math.h>			//ceil
+#include <cmath>			//ceil
 #include <vector>
 
 
@@ -706,7 +706,7 @@ public:
 			dataSize 			= 8192;
 			packetSize 			= headerSizeinPacket + dataSize;
 			imageSize 			= nPixelsX * nPixelsY * 2;
-			packetsPerFrame 	= ceil((double)imageSize / (double)packetSize);
+			packetsPerFrame 	= (imageSize + packetSize - 1) / packetSize;
 			standardheader		= false;
 		}
 		// 1g udp (via fifo readout)
@@ -715,8 +715,8 @@ public:
 			dataSize 			= UDP_PACKET_DATA_BYTES;
 			packetSize 			= headerSizeinPacket + dataSize;
 			imageSize 			= nPixelsX * nPixelsY * 2;
-			packetsPerFrame 	= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
-			standardheader		= true;
+			packetsPerFrame 	= (imageSize + UDP_PACKET_DATA_BYTES - 1) / UDP_PACKET_DATA_BYTES;
+            standardheader		= true;
 		}
 	}
 };

@@ -279,7 +279,7 @@ class SharedMemory {
         }
 
         //size does not match
-        long unsigned int sz = (long unsigned int)sb.st_size;
+        auto sz = static_cast<size_t>(sb.st_size);
         if (sz != expectedSize) {
             std::string msg = "Existing shared memory " + name + " size does not match" + "Expected " + std::to_string(expectedSize) + ", found " + std::to_string(sz);
             FILE_LOG(logERROR) << msg;

@@ -1,6 +1,14 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.9)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 5.0.0)
+
+
+include(CheckIPOSupported)
+ check_ipo_supported(RESULT result)
+ if(result)
+   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+#    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+ endif()
 
 
 
@@ -53,10 +61,14 @@ add_library(slsProjectWarnings INTERFACE)
 target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
 target_compile_options(slsProjectWarnings INTERFACE 
                                             -Wall
+                                            -Wextra
+                                            -Wno-unused-parameter #Needs to be slowly mitigated
+                                            # -Wold-style-cast
                                             -Wnon-virtual-dtor
                                             -Woverloaded-virtual
                                             -Wdouble-promotion
                                             -Wformat=2
+                                            -Wredundant-decls
 
                                  )
 

@@ -35,43 +35,49 @@ std::ostream &operator<<(std::ostream &out, const ROI &r) {
 }
 
 int main() {
+    // uint32_t imageSize = 101;
+    // uint32_t packetSize = 100;
+    // std::cout << "a: " << std::ceil((double)imageSize / (double)packetSize) <<'\n';
+    // std::cout << "b: " << imageSize / packetSize <<'\n';
+    // std::cout << "c: " << static_cast<double>(imageSize / packetSize) << '\n';
+    // std::cout << "c: " << (imageSize + packetSize-1) / packetSize << '\n';
 
-    slsDetectorDefs::ROI roilimits[5];
-    roilimits[0].xmin = 5;
-    roilimits[0].xmax = 12;
-    roilimits[0].ymin = 5;
-    roilimits[0].ymax = 15;
+    // slsDetectorDefs::ROI roilimits[5];
+    // roilimits[0].xmin = 5;
+    // roilimits[0].xmax = 12;
+    // roilimits[0].ymin = 5;
+    // roilimits[0].ymax = 15;
 
-    roilimits[1].xmin = 0;
-    roilimits[1].xmax = 3;
-    roilimits[1].ymin = 20;
-    roilimits[1].ymax = 25;
+    // roilimits[1].xmin = 0;
+    // roilimits[1].xmax = 3;
+    // roilimits[1].ymin = 20;
+    // roilimits[1].ymax = 25;
 
-    roilimits[2].xmin = 500;
-    roilimits[2].xmax = 600;
-    roilimits[2].ymin = 100;
-    roilimits[2].ymax = 200;
+    // roilimits[2].xmin = 500;
+    // roilimits[2].xmax = 600;
+    // roilimits[2].ymin = 100;
+    // roilimits[2].ymax = 200;
 
-    roilimits[3].xmin = 300;
-    roilimits[3].xmax = 500;
-    roilimits[3].ymin = 800;
-    roilimits[3].ymax = 900;
+    // roilimits[3].xmin = 300;
+    // roilimits[3].xmax = 500;
+    // roilimits[3].ymin = 800;
+    // roilimits[3].ymax = 900;
 
-    roilimits[4].xmin = 1000;
-    roilimits[4].xmax = 2000;
-    roilimits[4].ymin = 300;
-    roilimits[4].ymax = 500;
+    // roilimits[4].xmin = 1000;
+    // roilimits[4].xmax = 2000;
+    // roilimits[4].ymin = 300;
+    // roilimits[4].ymax = 500;
 
-    std::cout << "Before sorting:\n";
-    for (auto r : roilimits) {
-        std::cout << r << '\n';
-    }
+    // std::cout << "Before sorting:\n";
+    // for (auto r : roilimits) {
+    //     std::cout << r << '\n';
+    // }
 
-    std::sort(std::begin(roilimits), std::end(roilimits),
-              [](ROI a, ROI b) { return a.xmin < b.xmin; });
+    // std::sort(std::begin(roilimits), std::end(roilimits),
+    //           [](ROI a, ROI b) { return a.xmin < b.xmin; });
 
-    std::cout << "After sorting: \n";
-    for (auto r : roilimits) {
-        std::cout << r << '\n';
-    }
+    // std::cout << "After sorting: \n";
+    // for (auto r : roilimits) {
+    //     std::cout << r << '\n';
+    // }
 }

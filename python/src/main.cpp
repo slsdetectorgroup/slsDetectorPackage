@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 
 #include "Detector.h"
+#include "mythenFileIO.h"
 
 namespace py = pybind11;
 
@@ -284,6 +285,7 @@ py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
         .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
             ;
 
+        m.def("hej", &hej, "some");
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

@@ -2112,7 +2112,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int (*measurement_finished)(int, int, void *){nullptr};
     void *measFinished_p{nullptr};
 
-    int (*progress_call)(double, void *);
+    int (*progress_call)(double, void *){nullptr};
     void *pProgressCallArg{nullptr};
 
     int (*dataReady)(detectorData *, int, int, void *){nullptr};

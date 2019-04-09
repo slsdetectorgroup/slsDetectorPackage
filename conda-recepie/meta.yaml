@@ -69,6 +69,7 @@ outputs:
       host:
         - python
         - pybind11 2.2 
+        - pyzmq
         - sls_detector_lib
         - libstdcxx-ng
         - libgcc-ng

@@ -1587,7 +1587,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param enable 0 to disable 1 to enable -1 to only get the value
 	 * @returns data streaming from receiver enable
 	 */
-    int enableDataStreamingFromReceiver(int enable = -1);
+    bool enableDataStreamingFromReceiver(int enable = -1);
 
     /**
 	 * Enable/disable or 10Gbe
@@ -1608,7 +1608,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
 	 * @returns the receiver silent mode enable
 	 */
-    int setReceiverSilentMode(int i = -1);
+    bool setReceiverSilentMode(int i = -1);
 
     /**
 	 * If data streaming in receiver is enabled,

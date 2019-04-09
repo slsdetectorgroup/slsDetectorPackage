@@ -36,7 +36,7 @@ std::ostream &operator<<(std::ostream &out, const ROI &r) {
 
 int main() {
 
-    int ret[3]{};
+    int ret[]{0,0,0};
     for (auto i: ret)
         std::cout << i << "\n";
     // uint32_t imageSize = 101;

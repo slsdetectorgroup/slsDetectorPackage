@@ -1,6 +1,6 @@
 ---
 Checks:          '*, 
-                    -google-runtime-references, 
+                    -android-cloexec-fopen,
                     -cppcoreguidelines-pro-bounds-array-to-pointer-decay, 
                     -cppcoreguidelines-pro-bounds-pointer-arithmetic, 
                     -fuchsia*,
@@ -14,8 +14,10 @@ Checks:          '*,
                     -hicpp-signed-bitwise,
                     -hicpp-no-array-decay, 
                     -hicpp-braces-around-statements,
+                    -google-runtime-references, 
                     -google-readability-todo, 
                     -google-readability-braces-around-statements'
+
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false

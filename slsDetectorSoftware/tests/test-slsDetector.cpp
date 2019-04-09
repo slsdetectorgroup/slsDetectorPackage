@@ -19,7 +19,7 @@ TEST_CASE("Set and get trimen", "[detector]") {
 
     // At the beginning there should be no trimen set
     auto res = d.getTrimEn();
-    CHECK(res.empty() == 0);
+    CHECK(res.empty());
 
     std::vector<int> energies{5200, 6400, 8500, 9900, 12000};
     d.setTrimEn(energies);

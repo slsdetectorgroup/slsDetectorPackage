@@ -1632,7 +1632,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param word 64bit word to be written, -1 gets
 	 * @returns actual value
 	 */
-    uint64_t setPatternWord(int addr, uint64_t word = -1);
+    uint64_t setPatternWord(uint64_t addr, uint64_t word = -1);
 
     /**
 	 * Sets the pattern or loop limits in the CTB

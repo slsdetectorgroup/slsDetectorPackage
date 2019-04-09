@@ -8,7 +8,8 @@ target_link_libraries(_sls_detector PUBLIC
                         slsProjectWarnings
                         slsDetectorShared
                         slsReceiverShared
-                        slsSupportLib )  
+                        slsSupportLib
+                        zmq )  
 
 
 

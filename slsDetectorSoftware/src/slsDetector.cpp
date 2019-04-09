@@ -4283,7 +4283,7 @@ int slsDetector::restreamStopFromReceiver() {
 
 int slsDetector::setPattern(const std::string &fname) {
     uint64_t word;
-    int addr = 0;
+    uint64_t addr = 0;
     FILE *fd = fopen(fname.c_str(), "r");
     if (fd != nullptr) {
         while (fread(&word, sizeof(word), 1, fd) != 0u) {
@@ -4298,11 +4298,11 @@ int slsDetector::setPattern(const std::string &fname) {
     return addr;
 }
 
-uint64_t slsDetector::setPatternWord(int addr, uint64_t word) {
+uint64_t slsDetector::setPatternWord(uint64_t addr, uint64_t word) {
     int fnum = F_SET_PATTERN;
     int ret = FAIL;
-    int mode = 0; // sets word
-    uint64_t args[3] = {(uint64_t)mode, (uint64_t)addr, word};
+    uint64_t mode = 0; // sets word
+    uint64_t args[]{mode, addr, word};
     uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Setting Pattern word, addr: 0x" << std::hex << addr << ", word: 0x"
                         << word << std::dec;
@@ -4622,14 +4622,18 @@ slsDetector::readSettingsFile(const std::string &fname, sls_detector_module *myM
     // eiger
     if (detector_shm()->myDetectorType == EIGER) {
         bool allread = false;
-        infile.read((char *)myMod->dacs, sizeof(int) * (myMod->ndac));
+        infile.read(reinterpret_cast<char *>(myMod->dacs),
+                    sizeof(int) * (myMod->ndac));
         if (infile.good()) {
-            infile.read((char *)&myMod->iodelay, sizeof(myMod->iodelay));
+            infile.read(reinterpret_cast<char *>(&myMod->iodelay),
+                        sizeof(myMod->iodelay));
             if (infile.good()) {
-                infile.read((char *)&myMod->tau, sizeof(myMod->tau));
+                infile.read(reinterpret_cast<char *>(&myMod->tau),
+                            sizeof(myMod->tau));
                 if (tb) {
                     if (infile.good()) {
-                        infile.read((char *)myMod->chanregs, sizeof(int) * (myMod->nchan));
+                        infile.read(reinterpret_cast<char *>(myMod->chanregs),
+                                    sizeof(int) * (myMod->nchan));
                         if (infile) {
                             allread = true;
                         }

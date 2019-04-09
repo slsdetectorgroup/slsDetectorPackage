@@ -19,7 +19,7 @@ TEST_CASE("Set and get trimen", "[detector]") {
 
     // At the beginning there should be no trimen set
     auto res = d.getTrimEn();
-    CHECK(res.size() == 0);
+    CHECK(res.empty() == 0);
 
     std::vector<int> energies{5200, 6400, 8500, 9900, 12000};
     d.setTrimEn(energies);
@@ -41,7 +41,7 @@ TEST_CASE("Set and get trimen", "[detector]") {
 
     // Setting trimen without arguments resets to zero
     d.setTrimEn();
-    CHECK(d.getTrimEn().size() == 0);
+    CHECK(d.getTrimEn().empty());
 
     // Clean up before next test
     d.freeSharedMemory();

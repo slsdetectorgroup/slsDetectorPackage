@@ -16,6 +16,8 @@ if(SLS_USE_TESTS)
     
     target_link_libraries(detector_test 
         slsDetectorShared
+        slsProjectOptions
+        slsProjectWarnings
         slsSupportLib
         pthread
         rt
@@ -23,9 +25,11 @@ if(SLS_USE_TESTS)
     set_target_properties(detector_test PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
-    add_executable(a src/a.cpp)
 
+    add_executable(a src/a.cpp)
     target_link_libraries(a 
+        slsProjectOptions
+        slsProjectWarnings
         slsDetectorShared
         slsSupportLib
         pthread

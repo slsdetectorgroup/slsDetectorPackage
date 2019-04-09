@@ -170,7 +170,7 @@ int64_t slsDetector::getReceiverSoftwareVersion() const {
         ret = receiver.sendCommandThenRead(fnum, nullptr, 0, &retval, sizeof(retval));
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -213,7 +213,7 @@ void slsDetector::initSharedMemory(detectorType type, int multi_id, bool verify)
     }
 }
 
-void slsDetector::setDetectorSpecificParameters(detectorType type, detParameterList &list) {
+void slsDetector::setDetectorSpecificParameters(detectorType type, detParameters &list) {
     switch (type) {
     case GOTTHARD:
         list.nChanX = 128;
@@ -374,16 +374,16 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     detector_shm()->receiver_overWriteEnable = true;
 
     // get the detector parameters based on type
-    detParameterList detlist;
-    setDetectorSpecificParameters(type, detlist);
-    detector_shm()->nChan[X] = detlist.nChanX;
-    detector_shm()->nChan[Y] = detlist.nChanY;
-    detector_shm()->nChip[X] = detlist.nChipX;
-    detector_shm()->nChip[Y] = detlist.nChipY;
-    detector_shm()->nDacs = detlist.nDacs;
-    detector_shm()->dynamicRange = detlist.dynamicRange;
-    detector_shm()->nGappixels[X] = detlist.nGappixelsX;
-    detector_shm()->nGappixels[Y] = detlist.nGappixelsY;
+    detParameters parameters{};
+    setDetectorSpecificParameters(type, parameters);
+    detector_shm()->nChan[X] = parameters.nChanX;
+    detector_shm()->nChan[Y] = parameters.nChanY;
+    detector_shm()->nChip[X] = parameters.nChipX;
+    detector_shm()->nChip[Y] = parameters.nChipY;
+    detector_shm()->nDacs = parameters.nDacs;
+    detector_shm()->dynamicRange = parameters.dynamicRange;
+    detector_shm()->nGappixels[X] = parameters.nGappixelsX;
+    detector_shm()->nGappixels[Y] = parameters.nGappixelsY;
 
     // derived parameters
     detector_shm()->nChans = detector_shm()->nChan[X] * detector_shm()->nChan[Y];
@@ -413,13 +413,13 @@ slsDetectorDefs::sls_detector_module *slsDetector::createModule() {
 
 slsDetectorDefs::sls_detector_module *slsDetector::createModule(detectorType type) {
     // get the detector parameters based on type
-    detParameterList detlist;
+    detParameters parameters{};
     int nch = 0, nc = 0, nd = 0;
     try {
-        setDetectorSpecificParameters(type, detlist);
-        nch = detlist.nChanX * detlist.nChanY;
-        nc = detlist.nChipX * detlist.nChipY;
-        nd = detlist.nDacs;
+        setDetectorSpecificParameters(type, parameters);
+        nch = parameters.nChanX * parameters.nChanY;
+        nc = parameters.nChipX * parameters.nChipY;
+        nd = parameters.nDacs;
     } catch (...) {
         return nullptr;
     }
@@ -575,18 +575,16 @@ int slsDetector::setDetectorType(detectorType const type) {
     // receiver
     if ((detector_shm()->receiverOnlineFlag == ONLINE_FLAG) && ret == OK) {
         fnum = F_GET_RECEIVER_TYPE;
-        ret = FAIL;
-        int arg = (int)detector_shm()->myDetectorType;
+        auto arg = static_cast<int>(detector_shm()->myDetectorType);
         retval = GENERIC;
-        FILE_LOG(logDEBUG1) << "Sending detector type to Receiver: "
-                            << (int)detector_shm()->myDetectorType;
+        FILE_LOG(logDEBUG1) << "Sending detector type to Receiver: " << arg;
         auto receiver =
             ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Receiver Type: " << retval;
         if (ret == FORCE_UPDATE) {
             receiver.close(); // TODO! Should find a better solution
-            ret = updateCachedReceiverVariables();
+            updateCachedReceiverVariables();
         }
     }
     return retval;
@@ -728,7 +726,7 @@ int slsDetector::setControlPort(int port_number) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return detector_shm()->controlPort;
 }
@@ -752,7 +750,7 @@ int slsDetector::setStopPort(int port_number) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return detector_shm()->stopPort;
 }
@@ -778,7 +776,7 @@ int slsDetector::setReceiverPort(int port_number) {
         }
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return detector_shm()->receiverTCPPort;
 }
@@ -801,7 +799,7 @@ int slsDetector::lockServer(int lock) {
         FILE_LOG(logDEBUG1) << "Lock: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -809,7 +807,7 @@ int slsDetector::lockServer(int lock) {
 std::string slsDetector::getLastClientIP() {
     int fnum = F_GET_LAST_CLIENT_IP;
     int ret = FAIL;
-    char retval[INET_ADDRSTRLEN] = {0};
+    char retval[INET_ADDRSTRLEN]{};
     FILE_LOG(logDEBUG1) << "Getting last client ip to detector server";
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
@@ -818,9 +816,9 @@ std::string slsDetector::getLastClientIP() {
         FILE_LOG(logDEBUG1) << "Last client IP to detector: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
-    return std::string(retval);
+    return retval;
 }
 
 int slsDetector::exitServer() {
@@ -2438,7 +2436,7 @@ std::string slsDetector::getReceiverStreamingIP() {
 int slsDetector::setDetectorNetworkParameter(networkParameter index, int delay) {
     int fnum = F_SET_NETWORK_PARAMETER;
     int ret = FAIL;
-    int args[2] = {(int)index, delay};
+    int args[2]{static_cast<int>(index), delay};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting network parameter index " << index << " to " << delay;
 
@@ -2691,7 +2689,7 @@ int slsDetector::setUDPConnection() {
 int slsDetector::digitalTest(digitalTestMode mode, int ival) {
     int fnum = F_DIGITAL_TEST;
     int ret = FAIL;
-    int args[2] = {(int)mode, ival};
+    int args[2]{static_cast<int>(mode), ival};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending digital test of mode " << mode << ", ival " << ival;
 
@@ -2701,7 +2699,7 @@ int slsDetector::digitalTest(digitalTestMode mode, int ival) {
         FILE_LOG(logDEBUG1) << "Digital Test returned: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -3007,7 +3005,7 @@ int slsDetector::activate(int const enable) {
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         if (ret == FORCE_UPDATE) {
             receiver.close();
-            ret = updateCachedReceiverVariables();
+            updateCachedReceiverVariables();
         }
     }
     return detector_shm()->activated;
@@ -4315,18 +4313,23 @@ uint64_t slsDetector::setPatternWord(int addr, uint64_t word) {
         FILE_LOG(logDEBUG1) << "Set Pattern word: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
 
 int slsDetector::setPatternLoops(int level, int &start, int &stop, int &n) {
+    //TODO!(Erik) Should we change function signature to accept uint64_t?
     int fnum = F_SET_PATTERN;
     int ret = FAIL;
-    int mode = 1; // sets loop
-    uint64_t args[5] = {(uint64_t)mode, (uint64_t)level, (uint64_t)start, (uint64_t)stop,
-                        (uint64_t)n};
-    int retvals[3] = {0, 0, 0};
+    uint64_t mode = 1; // sets loop
+    uint64_t args[5]{
+        mode, 
+        static_cast<uint64_t>(level), 
+        static_cast<uint64_t>(start),
+        static_cast<uint64_t>(stop), 
+        static_cast<uint64_t>(n)};
+    int retvals[3]{};
     FILE_LOG(logDEBUG1) << "Setting Pat Loops, level: " << level << ", start: " << start
                         << ", stop: " << stop << ", n: " << n;
 
@@ -4340,7 +4343,7 @@ int slsDetector::setPatternLoops(int level, int &start, int &stop, int &n) {
         n = retvals[2];
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return ret;
 }
@@ -4361,7 +4364,7 @@ int slsDetector::setPatternWaitAddr(uint64_t level, uint64_t addr) {
         FILE_LOG(logDEBUG1) << "Set Pat Wait Addr: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -4379,7 +4382,7 @@ uint64_t slsDetector::setPatternWaitTime(uint64_t level, uint64_t t) {
         FILE_LOG(logDEBUG1) << "Set Pat Wait Time: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -4395,7 +4398,7 @@ int slsDetector::setPatternMask(uint64_t mask) {
         FILE_LOG(logDEBUG1) << "Pattern Mask successful";
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return ret;
 }
@@ -4411,7 +4414,7 @@ uint64_t slsDetector::getPatternMask() {
         FILE_LOG(logDEBUG1) << "Pattern Mask:" << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -4427,7 +4430,7 @@ int slsDetector::setPatternBitMask(uint64_t mask) {
         FILE_LOG(logDEBUG1) << "Pattern Bit Mask successful";
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return ret;
 }
@@ -4443,7 +4446,7 @@ uint64_t slsDetector::getPatternBitMask() {
         FILE_LOG(logDEBUG1) << "Pattern Bit Mask:" << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -4460,7 +4463,7 @@ int slsDetector::setLEDEnable(int enable) {
         FILE_LOG(logDEBUG1) << "LED Enable: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -4468,7 +4471,7 @@ int slsDetector::setLEDEnable(int enable) {
 int slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
     int fnum = F_DIGITAL_IO_DELAY;
     int ret = FAIL;
-    uint64_t args[2] = {pinMask, (uint64_t)delay};
+    uint64_t args[2] = {pinMask, static_cast<uint64_t>(delay)};
     FILE_LOG(logDEBUG1) << "Sending Digital IO Delay, pin mask: " << std::hex << args[0]
                         << ", delay: " << std::dec << args[1] << " ps";
 
@@ -4478,7 +4481,7 @@ int slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
         FILE_LOG(logDEBUG1) << "Digital IO Delay successful";
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return ret;
 }

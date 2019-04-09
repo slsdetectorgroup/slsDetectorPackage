@@ -39,6 +39,11 @@ add_library(slsSupportLib SHARED
     ${HEADERS}
 )
 
+check_ipo_supported(RESULT result)
+if(result)
+    set_property(TARGET slsSupportLib PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
+
 target_include_directories(slsSupportLib PUBLIC
     ${ZeroMQ_INCLUDE_DIRS}
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"

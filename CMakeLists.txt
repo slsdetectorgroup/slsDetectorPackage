@@ -2,13 +2,8 @@ cmake_minimum_required(VERSION 3.9)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 5.0.0)
 
-
 include(CheckIPOSupported)
- check_ipo_supported(RESULT result)
- if(result)
-   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-#    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
- endif()
+
 
 
 
@@ -69,6 +64,8 @@ target_compile_options(slsProjectWarnings INTERFACE
                                             -Wdouble-promotion
                                             -Wformat=2
                                             -Wredundant-decls
+                                            # -Wconversion
+                                            -Wdouble-promotion
 
                                  )
 
@@ -163,6 +160,8 @@ if (SLS_USE_PYTHON)
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)
 
+configure_file( .clang-tidy  
+    ${CMAKE_BINARY_DIR}/.clang-tidy  )
 
 if(SLS_MASTER_PROJECT)
     # Set install dir CMake packages

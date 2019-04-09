@@ -22,7 +22,7 @@ class MySocketTCP;
 /**
  * parameter list that has to be initialized depending on the detector type
  */
-struct detParameterList {
+struct detParameters {
     int nChanX;
     int nChanY;
     int nChipX;
@@ -1725,7 +1725,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param type detector type
 	 * @param list structure of parameters to initialize depending on detector type
 	 */
-    void setDetectorSpecificParameters(detectorType type, detParameterList &list);
+    void setDetectorSpecificParameters(detectorType type, detParameters &list);
 
     /**
 	 * Initialize detector structure to defaults

@@ -42,4 +42,5 @@ endforeach(FILE ${PYTHON_FILES})
 
 
 configure_file( scripts/basic.py  
-    ${CMAKE_BINARY_DIR}/basic.py  )
+    ${CMAKE_BINARY_DIR}/basic.py 
+)

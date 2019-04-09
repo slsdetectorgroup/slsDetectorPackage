@@ -12,6 +12,15 @@ add_library(slsDetectorShared SHARED
     ${SOURCES}
     ${HEADERS}
 )
+
+
+
+check_ipo_supported(RESULT result)
+if(result)
+    set_property(TARGET slsDetectorShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
+
+
 target_include_directories(slsDetectorShared PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
@@ -104,6 +113,14 @@ set_target_properties(sls_detector_help PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     COMPILE_DEFINITIONS HELP=1
 )
+
+check_ipo_supported(RESULT result)
+if(result)
+    set_property(TARGET sls_detector_help PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET sls_detector_get PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET sls_detector_put PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET sls_detector_acquire PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
 
 install(TARGETS sls_detector_put sls_detector_get sls_detector_acquire sls_detector_help DESTINATION bin)
 

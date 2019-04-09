@@ -35,6 +35,10 @@ std::ostream &operator<<(std::ostream &out, const ROI &r) {
 }
 
 int main() {
+
+    int ret[3]{};
+    for (auto i: ret)
+        std::cout << i << "\n";
     // uint32_t imageSize = 101;
     // uint32_t packetSize = 100;
     // std::cout << "a: " << std::ceil((double)imageSize / (double)packetSize) <<'\n';

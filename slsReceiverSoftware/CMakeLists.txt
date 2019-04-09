@@ -29,14 +29,15 @@ if (SLS_USE_HDF5)
 endif (SLS_USE_HDF5)
 
 
-# include_directories(
-#     ${SLS_SUPPORT_LIB_INCLUDE_DIRS}
-# )
-
 add_library(slsReceiverShared SHARED
     ${SOURCES}
     ${HEADERS}
 )
+
+check_ipo_supported(RESULT result)
+if(result)
+    set_property(TARGET slsReceiverShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
 
 target_link_libraries(slsReceiverShared PUBLIC
     slsProjectOptions

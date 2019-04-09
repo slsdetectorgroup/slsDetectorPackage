@@ -74,7 +74,6 @@ class Jungfrau(Detector):
         return self._api.isChipPowered()
 
     @power_chip.setter
-    @error_handling
     def power_chip(self, value):
         self._api.powerChip(value)
 
@@ -84,7 +83,6 @@ class Jungfrau(Detector):
         return self._api.getDelay()/1e9
 
     @delay.setter
-    @error_handling
     def delay(self, t):
         ns_time = int(t * 1e9)
         self._api.setDelay(ns_time)
@@ -94,7 +92,6 @@ class Jungfrau(Detector):
         return self._api.getNumberOfGates()
 
     @n_gates.setter
-    @error_handling
     def n_gates(self, n):
         self._api.setNumberOfGates(n)
 
@@ -103,7 +100,6 @@ class Jungfrau(Detector):
         return self._api.getNumberOfProbes()
 
     @n_probes.setter
-    @error_handling
     def n_probes(self, n):
         self._api.setNumberOfProbes(n)
 
@@ -115,7 +111,6 @@ class Jungfrau(Detector):
         return self._api.getStoragecellStart()
 
     @storagecell_start.setter
-    @error_handling
     def storagecell_start(self, value):
         self._api.setStoragecellStart(value)
 
@@ -128,7 +123,6 @@ class Jungfrau(Detector):
         return self._api.getNumberOfStorageCells()
 
     @n_storagecells.setter
-    @error_handling
     def n_storagecells(self, value):
         self._api.setNumberOfStorageCells(value)
 
@@ -232,7 +226,6 @@ class Jungfrau(Detector):
 
 
     @rx_udpport.setter
-    @error_handling
     def rx_udpport(self, ports):
         """Requires iterating over elements two and two for setting ports"""
         for i, p in enumerate(ports):

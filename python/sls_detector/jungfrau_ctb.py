@@ -175,6 +175,5 @@ class JungfrauCTB(Detector):
 
 
     @readout_clock.setter
-    @error_handling
     def readout_clock(self, value):
         self._api.setReadoutClockSpeed(value)

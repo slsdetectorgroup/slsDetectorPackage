@@ -347,7 +347,6 @@ class Eiger(Detector):
             v = '0'
         self._api.setNetworkParameter('flow_control_10g', v, -1)
 
-    @error_handling
     def pulse_all_pixels(self, n):
         """
         Pulse each pixel of the chip **n** times using the analog test pulses.
@@ -371,7 +370,7 @@ class Eiger(Detector):
         """
         self._api.pulseAllPixels(n)
         
-    @error_handling
+
     def pulse_diagonal(self, n):
         """
         Pulse pixels in super colums in a diagonal fashion. Used for calibration
@@ -379,7 +378,7 @@ class Eiger(Detector):
         """
         self._api.pulseDiagonal(n)
 
-    @error_handling
+
     def pulse_chip(self, n):
         """
         Advance the counter by toggling enable. Gives 2*n+2 int the counter

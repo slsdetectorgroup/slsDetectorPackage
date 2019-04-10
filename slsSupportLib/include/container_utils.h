@@ -95,6 +95,12 @@ template <typename T> T minusOneIfDifferent(const std::vector<T> &container) {
     return static_cast<T>(-1);
 }
 
+inline int minusOneIfDifferent(const std::vector<bool> &container) {
+    if (allEqual(container))
+        return static_cast<int>(container.front());
+    return -1;
+}
+
 template <typename T>
 std::vector<T>
 minusOneIfDifferent(const std::vector<std::vector<T>> &container) {

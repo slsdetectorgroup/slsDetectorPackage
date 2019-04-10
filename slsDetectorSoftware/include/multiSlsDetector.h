@@ -1716,7 +1716,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file write enable
      */
-    int enableWriteToFile(int enable = -1, int detPos = -1);
+    int setFileWrite(bool value, int detPos = -1);
+    int getFileWrite(int detPos = -1) const;
 
     /**
      * Sets/Gets file overwrite enable
@@ -1724,7 +1725,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file overwrite enable
      */
-    int overwriteFile(int enable = -1, int detPos = -1);
+    int setFileOverWrite(bool enable, int detPos = -1);
+    int getFileOverWrite(int detPos = -1) const;
 
     /**
      * (previously setReadReceiverFrequency)
@@ -2062,7 +2064,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
 
     /** Multi detector Id */
-    const int multiId;
+    const int multiId{0};
 
     /** Shared Memory object */
     sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};

@@ -284,19 +284,26 @@ std::string slsDetectorUsers::setFileName(const std::string& s, int detPos){
 }
 
 int slsDetectorUsers::getFileIndex(int detPos){
-	return (int)detector.getFileIndex(detPos);
+	return detector.getFileIndex(detPos);
 }
 
 int slsDetectorUsers::setFileIndex(int i, int detPos){
-	return (int)detector.setFileIndex(i, detPos);
+	return detector.setFileIndex(i, detPos);
 }
 
 int slsDetectorUsers::enableWriteToFile(int enable, int detPos){
-	return detector.enableWriteToFile(enable, detPos);
+	if (enable >0)
+		return detector.setFileWrite(enable, detPos);
+	else
+		return detector.getFileWrite(detPos);
+	
 }
 
-int slsDetectorUsers::enableOverwriteFile(int enable, int detPos){
-	return detector.overwriteFile(enable, detPos);
+int slsDetectorUsers::enableOverwriteFile(int enable, int detPos) {
+    if (enable > 0)
+        return detector.setFileOverWrite(enable, detPos);
+    else
+        return detector.getFileOverWrite(detPos);
 }
 
 int slsDetectorUsers::setReceiverStreamingFrequency(int freq, int detPos){

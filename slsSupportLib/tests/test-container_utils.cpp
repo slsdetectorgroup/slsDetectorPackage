@@ -112,3 +112,14 @@ TEST_CASE("Compare a vector containing two vectors", "[support]") {
     CHECK(minusOneIfDifferent(c) == std::vector<int>{-1});
     CHECK(minusOneIfDifferent(d) == d[2]);
 }
+
+
+TEST_CASE("vector of bool", "[support]"){
+    std::vector<bool> a{true, true, true};
+    std::vector<bool> b{false, false, false};
+    std::vector<bool> c{true, false, true};
+
+    CHECK(minusOneIfDifferent(a) == 1);
+    CHECK(minusOneIfDifferent(b) == 0);
+    CHECK(minusOneIfDifferent(c) == -1);
+}

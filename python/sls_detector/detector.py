@@ -663,11 +663,11 @@ class Detector:
 
     @property
     def frames_per_file(self):
-        return self._api.getReceiverFramesPerFile()
+        return self._api.getFramesPerFile()
 
     @frames_per_file.setter
     def frames_per_file(self, n):
-        self._api.setReceiverFramesPerFile(n)
+        self._api.setFramesPerFile(n)
 
     @property
     def n_cycles(self):

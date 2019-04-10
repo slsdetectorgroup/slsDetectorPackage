@@ -1598,7 +1598,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns max frames per file in receiver
      */
-    int setReceiverFramesPerFile(int f = -1, int detPos = -1);
+    int setFramesPerFile(int f = -1, int detPos = -1);
+
+    /**
+     * Gets the max frames per file in receiver
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns max frames per file in receiver
+     */
+    int getFramesPerFile(int detPos = -1) const;
 
     /**
      * Sets the frames discard policy in receiver

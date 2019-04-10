@@ -350,22 +350,22 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     sls::strcpy_safe(detector_shm()->receiver_filePath, "/");
     sls::strcpy_safe(detector_shm()->receiver_fileName, "run");
     detector_shm()->receiver_fileIndex = 0;
-    detector_shm()->receiver_fileFormatType = BINARY;
+    detector_shm()->rxFileFormat = BINARY;
     switch (detector_shm()->myDetectorType) {
     case GOTTHARD:
-        detector_shm()->receiver_framesPerFile = MAX_FRAMES_PER_FILE;
+        detector_shm()->rxFramesPerFile = MAX_FRAMES_PER_FILE;
         break;
     case EIGER:
-        detector_shm()->receiver_framesPerFile = EIGER_MAX_FRAMES_PER_FILE;
+        detector_shm()->rxFramesPerFile = EIGER_MAX_FRAMES_PER_FILE;
         break;
     case JUNGFRAU:
-        detector_shm()->receiver_framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
+        detector_shm()->rxFramesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
         break;
     case CHIPTESTBOARD:
-        detector_shm()->receiver_framesPerFile = CTB_MAX_FRAMES_PER_FILE;
+        detector_shm()->rxFramesPerFile = CTB_MAX_FRAMES_PER_FILE;
         break;
     case MOENCH:
-        detector_shm()->receiver_framesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
+        detector_shm()->rxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
         break;
     default:
         break;
@@ -2128,8 +2128,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nfile path:" << detector_shm()->receiver_filePath
             << "\nfile name:" << detector_shm()->receiver_fileName
             << "\nfile index:" << detector_shm()->receiver_fileIndex
-            << "\nfile format:" << detector_shm()->receiver_fileFormatType
-            << "\nr_framesperfile:" << detector_shm()->receiver_framesPerFile
+            << "\nfile format:" << detector_shm()->rxFileFormat
+            << "\nr_framesperfile:" << detector_shm()->rxFramesPerFile
             << "\nr_discardpolicy:" << detector_shm()->receiver_frameDiscardMode
             << "\nr_padding:" << detector_shm()->receiver_framePadding
             << "\nwrite enable:" << detector_shm()->rxFileWrite
@@ -2164,8 +2164,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setFilePath(detector_shm()->receiver_filePath);
             setFileName(detector_shm()->receiver_fileName);
             setFileIndex(detector_shm()->receiver_fileIndex);
-            setFileFormat(detector_shm()->receiver_fileFormatType);
-            setReceiverFramesPerFile(detector_shm()->receiver_framesPerFile);
+            setFileFormat(detector_shm()->rxFileFormat);
+            setFramesPerFile(detector_shm()->rxFramesPerFile);
             setReceiverFramesDiscardPolicy(detector_shm()->receiver_frameDiscardMode);
             setReceiverPartialFramesPadding(detector_shm()->receiver_framePadding);
             setFileWrite(detector_shm()->rxFileWrite);
@@ -3690,11 +3690,11 @@ int slsDetector::updateCachedReceiverVariables() const {
 
             // file format
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_fileFormatType = (fileFormat)i32;
+            detector_shm()->rxFileFormat = (fileFormat)i32;
 
             // frames per file
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_framesPerFile = i32;
+            detector_shm()->rxFramesPerFile = i32;
 
             // frame discard policy
             n += receiver.receiveData(&i32, sizeof(i32));
@@ -3866,7 +3866,7 @@ std::string slsDetector::setFileName(const std::string &fname) {
     return detector_shm()->receiver_fileName;
 }
 
-int slsDetector::setReceiverFramesPerFile(int f) {
+int slsDetector::setFramesPerFile(int f) {
     if (f >= 0) {
         int fnum = F_SET_RECEIVER_FRAMES_PER_FILE;
         int ret = FAIL;
@@ -3879,13 +3879,17 @@ int slsDetector::setReceiverFramesPerFile(int f) {
                 ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
             ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
             FILE_LOG(logDEBUG1) << "Receiver frames per file: " << retval;
-            detector_shm()->receiver_framesPerFile = retval;
+            detector_shm()->rxFramesPerFile = retval;
         }
         if (ret == FORCE_UPDATE) {
             updateCachedReceiverVariables();
         }
     }
-    return detector_shm()->receiver_framesPerFile;
+    return getFramesPerFile();
+}
+
+int slsDetector::getFramesPerFile() const {
+    return detector_shm()->rxFramesPerFile;
 }
 
 slsDetectorDefs::frameDiscardPolicy
@@ -3919,7 +3923,7 @@ int slsDetector::setReceiverPartialFramesPadding(int f) {
             ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Receiver partial frames enable: " << retval;
-        detector_shm()->receiver_framePadding = retval;
+        detector_shm()->receiver_framePadding = static_cast<bool>(retval);
     }
     if (ret == FORCE_UPDATE) {
         updateCachedReceiverVariables();
@@ -3931,8 +3935,8 @@ slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
     if (f != GET_FILE_FORMAT) {
         int fnum = F_SET_RECEIVER_FILE_FORMAT;
         int ret = FAIL;
-        int arg = f;
-        auto retval = (fileFormat)-1;
+        auto arg = static_cast<int>(f);
+        auto retval = static_cast<fileFormat>(-1);
         FILE_LOG(logDEBUG1) << "Setting receiver file format to " << arg;
 
         if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
@@ -3940,7 +3944,7 @@ slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
                 ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
             ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
             FILE_LOG(logDEBUG1) << "Receiver file format: " << retval;
-            detector_shm()->receiver_fileFormatType = retval;
+            detector_shm()->rxFileFormat = retval;
         }
         if (ret == FORCE_UPDATE) {
             updateCachedReceiverVariables();
@@ -3949,8 +3953,8 @@ slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
     return getFileFormat();
 }
 
-slsDetectorDefs::fileFormat slsDetector::getFileFormat() {
-    return detector_shm()->receiver_fileFormatType;
+slsDetectorDefs::fileFormat slsDetector::getFileFormat() const {
+    return detector_shm()->rxFileFormat;
 }
 
 int slsDetector::getFileIndex() { return detector_shm()->receiver_fileIndex; }
@@ -4095,7 +4099,7 @@ bool slsDetector::setFileWrite(bool value) {
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
                                            sizeof(retval));
         FILE_LOG(logDEBUG1) << "Receiver file write enable: " << retval;
-        detector_shm()->rxFileWrite = retval;
+        detector_shm()->rxFileWrite = static_cast<bool>(retval);
     }
     if (ret == FORCE_UPDATE) {
         updateCachedReceiverVariables();

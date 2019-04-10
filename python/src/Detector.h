@@ -320,11 +320,11 @@ class Detector {
         return det.getUserDetails();
     }
 
-    void setReceiverFramesPerFile(const int n_frames) {
-        det.setReceiverFramesPerFile(n_frames);
+    void setFramesPerFile(const int n_frames) {
+        det.setFramesPerFile(n_frames);
     }
-    int getReceiverFramesPerFile() {
-        return det.setReceiverFramesPerFile();
+    int getFramesPerFile() {
+        return det.setFramesPerFile();
     }
 
     std::string getReceiverFrameDiscardPolicy() {

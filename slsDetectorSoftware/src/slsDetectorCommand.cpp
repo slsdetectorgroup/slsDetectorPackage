@@ -5069,12 +5069,12 @@ std::string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, 
     else if (cmd == "r_framesperfile") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &ival)) {
-                myDet->setReceiverFramesPerFile(ival, detPos);
+                myDet->setFramesPerFile(ival, detPos);
             } else
                 return std::string("could not scan max frames per file\n");
         }
         memset(answer, 0, 100);
-        sprintf(answer, "%d", myDet->setReceiverFramesPerFile(-1, detPos));
+        sprintf(answer, "%d", myDet->getFramesPerFile(detPos));
         return std::string(answer);
     }
 

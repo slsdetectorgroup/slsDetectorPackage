@@ -363,7 +363,12 @@ int slsDetectorUsers::setReceiverPartialFramesPadding(int f, int detPos) {
 }
 
 int slsDetectorUsers::setReceiverFramesPerFile(int f, int detPos) {
-    return detector.setReceiverFramesPerFile(f, detPos);
+    if (f > 0) {
+        return detector.setFramesPerFile(f, detPos);
+    }
+    else {
+        return detector.getFramesPerFile(detPos);
+    }
 }
 
 int slsDetectorUsers::setDetectorMinMaxEnergyThreshold(const int index, int v, int detPos) {

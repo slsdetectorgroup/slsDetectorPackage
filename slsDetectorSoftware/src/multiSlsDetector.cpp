@@ -2884,14 +2884,19 @@ std::string multiSlsDetector::setFileName(const std::string &fname, int detPos) 
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::setReceiverFramesPerFile(int f, int detPos) {
-    // single
+int multiSlsDetector::setFramesPerFile(int f, int detPos) {
     if (detPos >= 0) {
-        return detectors[detPos]->setReceiverFramesPerFile(f);
+        return detectors[detPos]->setFramesPerFile(f);
     }
+    auto r = parallelCall(&slsDetector::setFramesPerFile, f);
+    return sls::minusOneIfDifferent(r);
+}
 
-    // multi
-    auto r = parallelCall(&slsDetector::setReceiverFramesPerFile, f);
+int multiSlsDetector::getFramesPerFile(int detPos) const {
+    if (detPos >= 0) {
+        return detectors[detPos]->getFramesPerFile();
+    }
+    auto r = parallelCall(&slsDetector::getFramesPerFile);
     return sls::minusOneIfDifferent(r);
 }
 

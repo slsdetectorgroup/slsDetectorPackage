@@ -237,10 +237,10 @@ struct sharedSlsDetector {
     int receiver_fileIndex;
 
     /** file format */
-    slsDetectorDefs::fileFormat receiver_fileFormatType;
+    slsDetectorDefs::fileFormat rxFileFormat;
 
     /** frames per file */
-    int receiver_framesPerFile;
+    int rxFramesPerFile;
 
     /** filewriteenable */
     bool rxFileWrite;
@@ -1464,7 +1464,9 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param f max frames per file
 	 * @returns max frames per file in receiver
 	 */
-    int setReceiverFramesPerFile(int f = -1);
+    int setFramesPerFile(int frames);
+
+	int getFramesPerFile() const;
 
     /**
 	 * Sets the frames discard policy in receiver
@@ -1482,9 +1484,9 @@ class slsDetector : public virtual slsDetectorDefs{
 
     /**
 	 * Returns file format
-	 * @returns file name
+	 * @returns file format
 	 */
-    fileFormat getFileFormat();
+    fileFormat getFileFormat() const;
 
     /**
 	 * Sets up the file format

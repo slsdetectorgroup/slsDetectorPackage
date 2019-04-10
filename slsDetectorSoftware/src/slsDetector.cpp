@@ -370,8 +370,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     default:
         break;
     }
-    detector_shm()->receiver_fileWriteEnable = true;
-    detector_shm()->receiver_overWriteEnable = true;
+    detector_shm()->rxFileWrite = true;
+    detector_shm()->rxFileOverWrite = true;
 
     // get the detector parameters based on type
     detParameters parameters{};
@@ -2132,8 +2132,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nr_framesperfile:" << detector_shm()->receiver_framesPerFile
             << "\nr_discardpolicy:" << detector_shm()->receiver_frameDiscardMode
             << "\nr_padding:" << detector_shm()->receiver_framePadding
-            << "\nwrite enable:" << detector_shm()->receiver_fileWriteEnable
-            << "\noverwrite enable:" << detector_shm()->receiver_overWriteEnable
+            << "\nwrite enable:" << detector_shm()->rxFileWrite
+            << "\noverwrite enable:" << detector_shm()->rxFileOverWrite
             << "\nframe index needed:"
             << ((detector_shm()->timerValue[FRAME_NUMBER] *
                  detector_shm()->timerValue[CYCLES_NUMBER]) > 1)
@@ -2168,8 +2168,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setReceiverFramesPerFile(detector_shm()->receiver_framesPerFile);
             setReceiverFramesDiscardPolicy(detector_shm()->receiver_frameDiscardMode);
             setReceiverPartialFramesPadding(detector_shm()->receiver_framePadding);
-            enableWriteToFile(detector_shm()->receiver_fileWriteEnable);
-            overwriteFile(detector_shm()->receiver_overWriteEnable);
+            setFileWrite(detector_shm()->rxFileWrite);
+            setFileOverWrite(detector_shm()->rxFileOverWrite);
             setTimer(FRAME_PERIOD, detector_shm()->timerValue[FRAME_PERIOD]);
             setTimer(FRAME_NUMBER, detector_shm()->timerValue[FRAME_NUMBER]);
             setTimer(ACQUISITION_TIME, detector_shm()->timerValue[ACQUISITION_TIME]);
@@ -3706,11 +3706,11 @@ int slsDetector::updateCachedReceiverVariables() const {
 
             // file write enable
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_fileWriteEnable = i32;
+            detector_shm()->rxFileWrite = i32;
 
             // file overwrite enable
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_overWriteEnable = i32;
+            detector_shm()->rxFileOverWrite = i32;
 
             // gap pixels
             n += receiver.receiveData(&i32, sizeof(i32));
@@ -3977,7 +3977,7 @@ int slsDetector::setFileIndex(int i) {
 }
 
 int slsDetector::incrementFileIndex() {
-    if (detector_shm()->receiver_fileWriteEnable) {
+    if (detector_shm()->rxFileWrite) {
         return setFileIndex(detector_shm()->receiver_fileIndex + 1);
     }
     return detector_shm()->receiver_fileIndex;
@@ -4083,47 +4083,51 @@ int slsDetector::resetFramesCaught() {
     return ret;
 }
 
-int slsDetector::enableWriteToFile(int enable) {
-    if (enable >= 0) {
-        int fnum = F_ENABLE_RECEIVER_FILE_WRITE;
-        int ret = FAIL;
-        int arg = enable;
-        int retval = -1;
-        FILE_LOG(logDEBUG1) << "Sending enable file write to receiver: " << arg;
-        if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
-            auto receiver =
-                ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
-            ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-            FILE_LOG(logDEBUG1) << "Receiver file write enable: " << retval;
-            detector_shm()->receiver_fileWriteEnable = retval;
-        }
-        if (ret == FORCE_UPDATE) {
-            updateCachedReceiverVariables();
-        }
+bool slsDetector::setFileWrite(bool value) {
+    int fnum = F_ENABLE_RECEIVER_FILE_WRITE;
+    int ret = FAIL;
+    int arg = static_cast<int>(value);
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Sending enable file write to receiver: " << arg;
+    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+        auto receiver = ReceiverSocket(detector_shm()->receiver_hostname,
+                                       detector_shm()->receiverTCPPort);
+        ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
+                                           sizeof(retval));
+        FILE_LOG(logDEBUG1) << "Receiver file write enable: " << retval;
+        detector_shm()->rxFileWrite = retval;
     }
-    return detector_shm()->receiver_fileWriteEnable;
+    if (ret == FORCE_UPDATE) {
+        updateCachedReceiverVariables();
+    }
+    return getFileWrite();
 }
 
-int slsDetector::overwriteFile(int enable) {
-    if (enable >= 0) {
-        int fnum = F_ENABLE_RECEIVER_OVERWRITE;
-        int ret = FAIL;
-        int arg = enable;
-        int retval = -1;
-        FILE_LOG(logDEBUG1) << "Sending enable file overwrite to receiver: " << arg;
+bool slsDetector::getFileWrite() const { return detector_shm()->rxFileWrite; }
 
-        if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
-            auto receiver =
-                ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
-            ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-            FILE_LOG(logDEBUG1) << "Receiver file overwrite enable: " << retval;
-            detector_shm()->receiver_overWriteEnable = retval;
-        }
-        if (ret == FORCE_UPDATE) {
-            updateCachedReceiverVariables();
-        }
+bool slsDetector::setFileOverWrite(bool value) {
+    int fnum = F_ENABLE_RECEIVER_OVERWRITE;
+    int ret = FAIL;
+    int arg = static_cast<int>(value);
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Sending enable file overwrite to receiver: " << arg;
+
+    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+        auto receiver = ReceiverSocket(detector_shm()->receiver_hostname,
+                                       detector_shm()->receiverTCPPort);
+        ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
+                                           sizeof(retval));
+        FILE_LOG(logDEBUG1) << "Receiver file overwrite enable: " << retval;
+        detector_shm()->rxFileOverWrite = static_cast<bool>(retval);
     }
-    return detector_shm()->receiver_overWriteEnable;
+    if (ret == FORCE_UPDATE) {
+        updateCachedReceiverVariables();
+    }
+    return getFileOverWrite();
+}
+
+bool slsDetector::getFileOverWrite() const {
+    return detector_shm()->rxFileOverWrite;
 }
 
 int slsDetector::setReceiverStreamingFrequency(int freq) {
@@ -4142,7 +4146,7 @@ int slsDetector::setReceiverStreamingFrequency(int freq) {
             detector_shm()->receiver_read_freq = retval;
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateCachedReceiverVariables();
+            updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_read_freq;
@@ -4162,7 +4166,7 @@ int slsDetector::setReceiverStreamingTimer(int time_in_ms) {
         FILE_LOG(logDEBUG1) << "Receiver read timer: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -4180,10 +4184,10 @@ bool slsDetector::enableDataStreamingFromReceiver(int enable) {
                 ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
             ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
             FILE_LOG(logDEBUG1) << "Receiver Data Streaming: " << retval;
-            detector_shm()->receiver_upstream = retval;
+            detector_shm()->receiver_upstream = static_cast<bool>(retval);
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateCachedReceiverVariables();
+            updateCachedReceiverVariables();
         }
     }
     return detector_shm()->receiver_upstream;
@@ -4211,7 +4215,6 @@ int slsDetector::enableTenGigabitEthernet(int i) {
     // receiver
     if ((detector_shm()->receiverOnlineFlag == ONLINE_FLAG) && ret == OK) {
         fnum = F_ENABLE_RECEIVER_TEN_GIGA;
-        ret = FAIL;
         arg = detector_shm()->tenGigaEnable;
         retval = -1;
         FILE_LOG(logDEBUG1) << "Sending 10Gbe enable to receiver: " << arg;
@@ -4258,7 +4261,7 @@ bool slsDetector::setReceiverSilentMode(int i) {
             ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Receiver Data Streaming: " << retval;
-        detector_shm()->receiver_silentMode = retval;
+        detector_shm()->receiver_silentMode = static_cast<bool>(retval);
     }
     if (ret == FORCE_UPDATE) {
         updateCachedReceiverVariables();
@@ -4550,7 +4553,7 @@ slsDetectorDefs::sls_detector_module *slsDetector::interpolateTrim(sls_detector_
     }
 
     // Interpolate all trimbits
-    if (tb) {
+    if (tb != 0) {
         for (int i = 0; i < myMod->nchan; ++i) {
             myMod->chanregs[i] =
                 linearInterpolation(energy, e1, e2, a->chanregs[i], b->chanregs[i]);
@@ -4630,7 +4633,7 @@ slsDetector::readSettingsFile(const std::string &fname, sls_detector_module *myM
             if (infile.good()) {
                 infile.read(reinterpret_cast<char *>(&myMod->tau),
                             sizeof(myMod->tau));
-                if (tb) {
+                if (tb != 0) {
                     if (infile.good()) {
                         infile.read(reinterpret_cast<char *>(myMod->chanregs),
                                     sizeof(int) * (myMod->nchan));

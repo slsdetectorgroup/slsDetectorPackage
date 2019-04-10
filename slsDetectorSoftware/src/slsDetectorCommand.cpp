@@ -2603,11 +2603,11 @@ std::string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int acti
     }
     if (action == PUT_ACTION) {
         if (sscanf(args[1], "%d", &i))
-            myDet->enableWriteToFile(i, detPos);
+            myDet->setFileWrite(i, detPos);
         else
             return std::string("could not decode enable file write");
     }
-    sprintf(ans, "%d", myDet->enableWriteToFile(-1, detPos));
+    sprintf(ans, "%d", myDet->getFileWrite(detPos));
     return std::string(ans);
 }
 
@@ -2621,7 +2621,6 @@ std::string slsDetectorCommand::helpEnablefwrite(int action) {
 }
 
 std::string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action, int detPos) {
-
     int i;
     char ans[100];
     myDet->setReceiverOnline(ONLINE_FLAG, detPos);
@@ -2630,11 +2629,11 @@ std::string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action,
     }
     if (action == PUT_ACTION) {
         if (sscanf(args[1], "%d", &i))
-            myDet->overwriteFile(i, detPos);
+            myDet->setFileOverWrite(i, detPos);
         else
             return std::string("could not decode overwrite");
     }
-    sprintf(ans, "%d", myDet->overwriteFile(-1, detPos));
+    sprintf(ans, "%d", myDet->getFileOverWrite(detPos));
     return std::string(ans);
 }
 

@@ -243,10 +243,10 @@ struct sharedSlsDetector {
     int receiver_framesPerFile;
 
     /** filewriteenable */
-    bool receiver_fileWriteEnable;
+    bool rxFileWrite;
 
     /** overwriteenable */
-    bool receiver_overWriteEnable;
+    bool rxFileOverWrite;
 };
 
 class slsDetector : public virtual slsDetectorDefs{
@@ -1554,14 +1554,22 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param enable 1 or 0 to set/reset file write enable
 	 * @returns file write enable
 	 */
-    int enableWriteToFile(int enable = -1);
+    bool setFileWrite(bool value);
+
+	bool getFileWrite() const;
 
     /**
-	 * Sets/Gets file overwrite enable
-	 * @param enable 1 or 0 to set/reset file overwrite enable
+	 * Sets file overwrite in the receiver
+	 * @param enable true or false to set/reset file overwrite enable
 	 * @returns file overwrite enable
 	 */
-    int overwriteFile(int enable = -1);
+    bool setFileOverWrite(bool value);
+
+    /**
+     * Gets file overwrite in the receiver
+     * @returns file overwrite enable
+     */
+    bool getFileOverWrite() const;
 
     /**
 	 * (previously setReadReceiverFrequency)

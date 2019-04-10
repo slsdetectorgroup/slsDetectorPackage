@@ -603,18 +603,18 @@ class Detector {
     }
 
     void setFileWrite(bool value) {
-        det.enableWriteToFile(value);
+        det.setFileWrite(value);
     }
     bool getFileWrite() {
-        return det.enableWriteToFile(-1);
+        return det.getFileWrite();
     }
 
     void setFileOverWrite(bool value) {
-        det.overwriteFile(value);
+        det.setFileOverWrite(value);
     }
 
     bool getFileOverWrite() {
-        return det.overwriteFile(-1);
+        return det.getFileOverWrite();
     }
 
     void setAllTrimbits(int tb) {

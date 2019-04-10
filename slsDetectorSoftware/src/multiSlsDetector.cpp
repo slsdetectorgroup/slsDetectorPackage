@@ -3442,25 +3442,35 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {
     return gapdatabytes;
 }
 
-int multiSlsDetector::enableWriteToFile(int enable, int detPos) {
-    // single
+int multiSlsDetector::setFileWrite(bool value, int detPos) {
     if (detPos >= 0) {
-        return detectors[detPos]->enableWriteToFile(enable);
+        return detectors[detPos]->setFileWrite(value);
     }
-
-    // multi
-    auto r = parallelCall(&slsDetector::enableWriteToFile, enable);
+    auto r = parallelCall(&slsDetector::setFileWrite, value);
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::overwriteFile(int enable, int detPos) {
-    // single
+int multiSlsDetector::getFileWrite(int detPos) const{
     if (detPos >= 0) {
-        return detectors[detPos]->overwriteFile(enable);
+        return detectors[detPos]->getFileWrite();
     }
+    auto r = parallelCall(&slsDetector::getFileWrite);
+    return sls::minusOneIfDifferent(r);
+}
 
-    // multi
-    auto r = parallelCall(&slsDetector::overwriteFile, enable);
+int multiSlsDetector::setFileOverWrite(bool enable, int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->setFileOverWrite(enable);
+    }
+    auto r = parallelCall(&slsDetector::setFileOverWrite, enable);
+    return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::getFileOverWrite(int detPos) const {
+    if (detPos >= 0) {
+        return detectors[detPos]->getFileOverWrite();
+    }
+    auto r = parallelCall(&slsDetector::getFileOverWrite);
     return sls::minusOneIfDifferent(r);
 }
 

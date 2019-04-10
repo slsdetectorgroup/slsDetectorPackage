@@ -285,7 +285,9 @@ py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
         .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
             ;
 
-        m.def("hej", &hej, "some");
+    py::module io = m.def_submodule("io", "Submodule for io");
+    io.def("read_ctb_file", &read_ctb_file, "some");
+
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

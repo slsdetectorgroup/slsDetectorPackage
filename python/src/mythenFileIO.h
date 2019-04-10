@@ -7,6 +7,11 @@
 #include <iostream>
 #include <vector>
 
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+namespace py = pybind11;
+
 template <size_t bit_index0, size_t bit_index1>
 std::vector<int> ExtractBits(const std::vector<uint64_t> &data, int dr = 24) {
     constexpr int mask0 = (1 << bit_index0);
@@ -50,11 +55,11 @@ std::vector<int> ExtractBits(const std::vector<uint64_t> &data, int dr = 24) {
     return result;
 }
 
-std::vector<uint64_t> ReadFile(const std::string &fname, int offset = 8, int dr = 24) {
+std::vector<uint64_t> ReadFile(const std::string &fname, int offset = 8,
+                               int dr = 24) {
     const int element_size = static_cast<int>(sizeof(uint64_t));
     const int byte_offset = element_size * offset;
     const int expected_size = dr * element_size * 32 * 3;
-
     std::ifstream fs(fname, std::ios::binary | std::ios::ate);
     if (!fs.is_open()) {
         throw std::runtime_error("File not found: " + std::string(fname));
@@ -63,15 +68,18 @@ std::vector<uint64_t> ReadFile(const std::string &fname, int offset = 8, int dr 
     if (data_size != expected_size) {
         auto diff = data_size - expected_size;
         std::cout << "WARNING: data size is: " << data_size
-                  << " expected size is: " << expected_size << ", " << std::abs(diff) << " bytes "
+                  << " expected size is: " << expected_size << ", "
+                  << std::abs(diff) << " bytes "
                   << ((diff < 0) ? "missing" : "too many") << '\n';
     }
     std::vector<uint64_t> data(expected_size / element_size);
     fs.seekg(byte_offset, std::ios::beg);
-    fs.read(reinterpret_cast<char *>(data.data()), data_size);
+    fs.read(reinterpret_cast<char *>(data.data()), expected_size);
     return data;
 }
 
-int hej(){
-    return 5;
+py::array_t<uint64_t> read_ctb_file(const std::string &fname, int offset = 8,
+                                    int dr = 24) {
+    auto data = ExtractBits<17, 6>(ReadFile(fname, offset, dr));
+    return py::array(data.size(), data.data());
 }

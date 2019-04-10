@@ -19,7 +19,7 @@ class Detector {
     Detector(int i)
         : det(i), multi_detector_id(i) {
         //Disable output from std::cout
-        std::cout.setstate(std::ios_base::failbit);
+        // std::cout.setstate(std::ios_base::failbit);
     }
 
     int getMultiDetectorId() { return multi_detector_id; }

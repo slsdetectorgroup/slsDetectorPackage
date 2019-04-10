@@ -216,7 +216,7 @@ struct sharedSlsDetector {
     slsDetectorDefs::frameDiscardPolicy receiver_frameDiscardMode;
 
     /** receiver partial frames padding enable */
-    bool receiver_framePadding;
+    bool rxFramePadding;
 
     /** activated receiver */
     bool activated;
@@ -234,7 +234,7 @@ struct sharedSlsDetector {
     char receiver_fileName[MAX_STR_LENGTH];
 
     /** file index */
-    int receiver_fileIndex;
+    int rxFileIndex;
 
     /** file format */
     slsDetectorDefs::fileFormat rxFileFormat;
@@ -1508,6 +1508,12 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int setFileIndex(int i);
 
+    /**
+     * Gets the file index
+     * @returns file index
+     */
+
+    int getFileIndex() const;
     /**
 	 * increments file index
 	 * @returns the file index

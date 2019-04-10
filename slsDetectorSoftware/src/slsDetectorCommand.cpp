@@ -2647,19 +2647,14 @@ std::string slsDetectorCommand::helpOverwrite(int action) {
 }
 
 std::string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action, int detPos) {
-    char ans[100];
-    int i;
     myDet->setReceiverOnline(ONLINE_FLAG, detPos);
     if (action == HELP_ACTION) {
         return helpFileName(action);
     } else if (action == PUT_ACTION) {
-        if (!sscanf(args[1], "%d", &i))
-            return std::string("cannot parse file index");
+        int i = std::stoi(args[1]);
         myDet->setFileIndex(i, detPos);
     }
-
-    sprintf(ans, "%d", myDet->getFileIndex(detPos));
-    return std::string(ans);
+    return std::to_string(myDet->getFileIndex(detPos));
 }
 
 std::string slsDetectorCommand::helpFileIndex(int action) {

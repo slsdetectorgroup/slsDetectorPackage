@@ -343,13 +343,13 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     detector_shm()->detectorStopAPIVersion = 0;
     detector_shm()->receiverAPIVersion = 0;
     detector_shm()->receiver_frameDiscardMode = NO_DISCARD;
-    detector_shm()->receiver_framePadding = true;
+    detector_shm()->rxFramePadding = true;
     detector_shm()->activated = true;
     detector_shm()->receiver_deactivatedPaddingEnable = true;
     detector_shm()->receiver_silentMode = false;
     sls::strcpy_safe(detector_shm()->receiver_filePath, "/");
     sls::strcpy_safe(detector_shm()->receiver_fileName, "run");
-    detector_shm()->receiver_fileIndex = 0;
+    detector_shm()->rxFileIndex = 0;
     detector_shm()->rxFileFormat = BINARY;
     switch (detector_shm()->myDetectorType) {
     case GOTTHARD:
@@ -2127,11 +2127,11 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\ndetector id:" << detId << "\ndetector hostname:" << detector_shm()->hostname
             << "\nfile path:" << detector_shm()->receiver_filePath
             << "\nfile name:" << detector_shm()->receiver_fileName
-            << "\nfile index:" << detector_shm()->receiver_fileIndex
+            << "\nfile index:" << detector_shm()->rxFileIndex
             << "\nfile format:" << detector_shm()->rxFileFormat
             << "\nr_framesperfile:" << detector_shm()->rxFramesPerFile
             << "\nr_discardpolicy:" << detector_shm()->receiver_frameDiscardMode
-            << "\nr_padding:" << detector_shm()->receiver_framePadding
+            << "\nr_padding:" << detector_shm()->rxFramePadding
             << "\nwrite enable:" << detector_shm()->rxFileWrite
             << "\noverwrite enable:" << detector_shm()->rxFileOverWrite
             << "\nframe index needed:"
@@ -2163,11 +2163,11 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setReceiverUDPSocketBufferSize(0);
             setFilePath(detector_shm()->receiver_filePath);
             setFileName(detector_shm()->receiver_fileName);
-            setFileIndex(detector_shm()->receiver_fileIndex);
+            setFileIndex(detector_shm()->rxFileIndex);
             setFileFormat(detector_shm()->rxFileFormat);
             setFramesPerFile(detector_shm()->rxFramesPerFile);
             setReceiverFramesDiscardPolicy(detector_shm()->receiver_frameDiscardMode);
-            setReceiverPartialFramesPadding(detector_shm()->receiver_framePadding);
+            setReceiverPartialFramesPadding(detector_shm()->rxFramePadding);
             setFileWrite(detector_shm()->rxFileWrite);
             setFileOverWrite(detector_shm()->rxFileOverWrite);
             setTimer(FRAME_PERIOD, detector_shm()->timerValue[FRAME_PERIOD]);
@@ -3686,7 +3686,7 @@ int slsDetector::updateCachedReceiverVariables() const {
 
             // index
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_fileIndex = i32;
+            detector_shm()->rxFileIndex = i32;
 
             // file format
             n += receiver.receiveData(&i32, sizeof(i32));
@@ -3702,15 +3702,15 @@ int slsDetector::updateCachedReceiverVariables() const {
 
             // frame padding
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_framePadding = i32;
+            detector_shm()->rxFramePadding = static_cast<bool>(i32);
 
             // file write enable
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->rxFileWrite = i32;
+            detector_shm()->rxFileWrite = static_cast<bool>(i32);
 
             // file overwrite enable
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->rxFileOverWrite = i32;
+            detector_shm()->rxFileOverWrite = static_cast<bool>(i32);
 
             // gap pixels
             n += receiver.receiveData(&i32, sizeof(i32));
@@ -3734,21 +3734,21 @@ int slsDetector::updateCachedReceiverVariables() const {
 
             // receiver streaming enable
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_upstream = i32;
+            detector_shm()->receiver_upstream = static_cast<bool>(i32);
 
             // activate
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->activated = i32;
+            detector_shm()->activated = static_cast<bool>(i32);
 
             // deactivated padding enable
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_deactivatedPaddingEnable = i32;
+            detector_shm()->receiver_deactivatedPaddingEnable = static_cast<bool>(i32);
 
             // silent mode
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_silentMode = i32;
+            detector_shm()->receiver_silentMode = static_cast<bool>(i32);
 
-            if (!n) {
+            if (n == 0) {
                 throw RuntimeError(
                     "Could not update receiver: " + std::string(detector_shm()->receiver_hostname) +
                     ", received 0 bytes\n");
@@ -3775,7 +3775,7 @@ void slsDetector::sendMultiDetectorSize() {
         FILE_LOG(logDEBUG1) << "Receiver multi size returned: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
 }
 
@@ -3793,7 +3793,7 @@ void slsDetector::setDetectorId() {
         FILE_LOG(logDEBUG1) << "Receiver Position Id returned: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
 }
 
@@ -3923,12 +3923,12 @@ int slsDetector::setReceiverPartialFramesPadding(int f) {
             ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Receiver partial frames enable: " << retval;
-        detector_shm()->receiver_framePadding = static_cast<bool>(retval);
+        detector_shm()->rxFramePadding = static_cast<bool>(retval);
     }
     if (ret == FORCE_UPDATE) {
         updateCachedReceiverVariables();
     }
-    return detector_shm()->receiver_framePadding;
+    return detector_shm()->rxFramePadding;
 }
 
 slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
@@ -3957,7 +3957,7 @@ slsDetectorDefs::fileFormat slsDetector::getFileFormat() const {
     return detector_shm()->rxFileFormat;
 }
 
-int slsDetector::getFileIndex() { return detector_shm()->receiver_fileIndex; }
+int slsDetector::getFileIndex() { return detector_shm()->rxFileIndex; }
 
 int slsDetector::setFileIndex(int i) {
     if (i >= 0) {
@@ -3971,20 +3971,22 @@ int slsDetector::setFileIndex(int i) {
                 ReceiverSocket(detector_shm()->receiver_hostname, detector_shm()->receiverTCPPort);
             ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
             FILE_LOG(logDEBUG1) << "Receiver file index: " << retval;
-            detector_shm()->receiver_fileIndex = retval;
+            detector_shm()->rxFileIndex = retval;
         }
         if (ret == FORCE_UPDATE) {
             updateCachedReceiverVariables();
         }
     }
-    return detector_shm()->receiver_fileIndex;
+    return getFileIndex();
 }
+
+int slsDetector::getFileIndex() const { return detector_shm()->rxFileIndex; }
 
 int slsDetector::incrementFileIndex() {
     if (detector_shm()->rxFileWrite) {
-        return setFileIndex(detector_shm()->receiver_fileIndex + 1);
+        return setFileIndex(detector_shm()->rxFileIndex + 1);
     }
-    return detector_shm()->receiver_fileIndex;
+    return detector_shm()->rxFileIndex;
 }
 
 int slsDetector::startReceiver() {

@@ -1654,6 +1654,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int setFileIndex(int i, int detPos = -1);
 
+    int getFileIndex(int detPos = -1) const;
+
     /**
      * increments file index
      * @param detPos -1 for all detectors in  list or specific detector position

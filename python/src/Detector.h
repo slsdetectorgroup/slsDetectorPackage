@@ -505,7 +505,7 @@ class Detector {
     }
 
     int getFileIndex() {
-        return det.setFileIndex(-1);
+        return det.getFileIndex();
     }
 
     //time in ns

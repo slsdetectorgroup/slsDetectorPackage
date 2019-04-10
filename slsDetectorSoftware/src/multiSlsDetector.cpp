@@ -2978,6 +2978,13 @@ int multiSlsDetector::setFileIndex(int i, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+int multiSlsDetector::getFileIndex(int detPos) const {
+    if (detPos >= 0)
+        return detectors[detPos]->getFileIndex();
+    auto r = parallelCall(&slsDetector::getFileIndex);
+    return sls::minusOneIfDifferent(r);
+}
+
 int multiSlsDetector::startReceiver(int detPos) {
     // single
     if (detPos >= 0) {

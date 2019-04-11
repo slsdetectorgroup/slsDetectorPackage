@@ -2912,14 +2912,17 @@ multiSlsDetector::setReceiverFramesDiscardPolicy(frameDiscardPolicy f, int detPo
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setReceiverPartialFramesPadding(int f, int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->setReceiverPartialFramesPadding(f);
-    }
+int multiSlsDetector::setPartialFramesPadding(bool padding, int detPos) {
+    if (detPos >= 0)
+        return detectors[detPos]->setPartialFramesPadding(padding);
+    auto r = parallelCall(&slsDetector::setPartialFramesPadding, padding);
+    return sls::minusOneIfDifferent(r);
+}
 
-    // multi
-    auto r = parallelCall(&slsDetector::setReceiverPartialFramesPadding, f);
+int multiSlsDetector::getPartialFramesPadding(int detPos) const {
+    if (detPos >= 0)
+        return detectors[detPos]->getPartialFramesPadding();
+    auto r = parallelCall(&slsDetector::getPartialFramesPadding);
     return sls::minusOneIfDifferent(r);
 }
 

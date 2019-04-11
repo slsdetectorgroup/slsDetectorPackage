@@ -11,10 +11,10 @@ using namespace sls;
 
 SCENARIO("Multi detector operation", "[detector]") {
 
-    multiSlsDetector::freeSharedMemory(0, -1);
+    multiSlsDetector::freeSharedMemory(20, -1);
 
     GIVEN("An empty multi detector") {
-        multiSlsDetector m(0);
+        multiSlsDetector m(20);
         THEN("the size is zero") {
             CHECK(m.getNumberOfDetectors() == 0);
             CHECK(m.getDataBytes() == 0);
@@ -23,7 +23,7 @@ SCENARIO("Multi detector operation", "[detector]") {
 
         WHEN("we add a detector") {
             m.addSlsDetector(sls::make_unique<slsDetector>(
-                slsDetectorDefs::detectorType::EIGER, 0, 0));
+                slsDetectorDefs::detectorType::EIGER, 20, 0));
             THEN("the size and number of detector changes") {
                 CHECK(m.getNumberOfDetectors() == 1);
                 CHECK(m.getTotalNumberOfChannels() == 256 * 1024);
@@ -31,7 +31,7 @@ SCENARIO("Multi detector operation", "[detector]") {
 
             WHEN("we add another detector") {
                 m.addSlsDetector(sls::make_unique<slsDetector>(
-                    slsDetectorDefs::detectorType::EIGER, 0, 1));
+                    slsDetectorDefs::detectorType::EIGER, 20, 1));
                 THEN("the size and number of detector changes") {
                     CHECK(m.getNumberOfDetectors() == 2);
                     CHECK(m.getTotalNumberOfChannels() == 2 * 256 * 1024);
@@ -60,4 +60,25 @@ SCENARIO("Multi detector operation", "[detector]") {
 
         m.freeSharedMemory();
     }
+}
+
+TEST_CASE("Set and get partialFramesPadding", "[detector]"){
+
+    multiSlsDetector::freeSharedMemory(20, -1);
+    multiSlsDetector m(20);
+    m.addSlsDetector(sls::make_unique<slsDetector>(
+        slsDetectorDefs::detectorType::EIGER, 20, 0));
+    m.addSlsDetector(sls::make_unique<slsDetector>(
+        slsDetectorDefs::detectorType::EIGER, 20, 1));
+
+    m.setPartialFramesPadding(0);
+    CHECK(m.getPartialFramesPadding() == 0);
+
+    m.setPartialFramesPadding(1);
+    CHECK(m.getPartialFramesPadding() == 1);
+
+    m.setPartialFramesPadding(0, 0);
+    CHECK(m.getPartialFramesPadding() == -1);
+
+    m.freeSharedMemory();
 }

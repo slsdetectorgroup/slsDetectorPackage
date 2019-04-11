@@ -212,8 +212,8 @@ PYBIND11_MODULE(_sls_detector, m)
 
         .def("getReceiverFrameDiscardPolicy", &Detector::getReceiverFrameDiscardPolicy)
         .def("setReceiverFramesDiscardPolicy", &Detector::setReceiverFramesDiscardPolicy)
-        .def("setReceiverPartialFramesPadding", &Detector::setReceiverPartialFramesPadding)
-        .def("getReceiverPartialFramesPadding", &Detector::getReceiverPartialFramesPadding)
+        .def("setPartialFramesPadding", &Detector::setPartialFramesPadding)
+        .def("getPartialFramesPadding", &Detector::getPartialFramesPadding)
 
         .def("getUserDetails", &Detector::getUserDetails)
         .def("isClientAndDetectorCompatible", &Detector::isClientAndDetectorCompatible)

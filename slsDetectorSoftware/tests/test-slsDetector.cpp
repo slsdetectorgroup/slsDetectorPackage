@@ -11,10 +11,10 @@ using namespace sls;
 
 TEST_CASE("Set and get trimen", "[detector]") {
     // Free shared memory to be sure that we start in a clean state
-    slsDetector::freeSharedMemory(0, 0);
+    slsDetector::freeSharedMemory(20, 20);
 
     // Create a detector and check that the type is set correctly
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 0, 0);
+    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
     CHECK(d.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER);
 
     // At the beginning there should be no trimen set
@@ -48,8 +48,8 @@ TEST_CASE("Set and get trimen", "[detector]") {
 }
 
 TEST_CASE("Set additional JSON header", "[detector]") {
-    slsDetector::freeSharedMemory(0, 0);
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 0, 0);
+    slsDetector::freeSharedMemory(20, 20);
+    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
     auto header = d.getAdditionalJsonHeader();
     CHECK(header.empty());
 
@@ -102,8 +102,8 @@ TEST_CASE("Set additional JSON header", "[detector]") {
 TEST_CASE("Set ROI", "[detector]") {
     using ROI = slsDetectorDefs::ROI;
 
-    slsDetector::freeSharedMemory(0, 0);
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 0, 0);
+    slsDetector::freeSharedMemory(20,20);
+    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
 
     int n{0};
     d.getROI(n);
@@ -133,8 +133,8 @@ TEST_CASE("Set ROI", "[detector]") {
 TEST_CASE("Set multiple ROIs", "[detector]") {
     using ROI = slsDetectorDefs::ROI;
 
-    slsDetector::freeSharedMemory(0, 0);
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 0, 0);
+    slsDetector::freeSharedMemory(20, 20);
+    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
 
     // set one ROI
     constexpr int n = 3;
@@ -176,4 +176,19 @@ TEST_CASE("Set multiple ROIs", "[detector]") {
     CHECK(res[2].ymax == 800);
 
     d.freeSharedMemory();
+}
+
+TEST_CASE("Padding and discard policy", "[detector][new]"){
+    slsDetector::freeSharedMemory(20, 20);
+    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
+
+    //
+    d.setPartialFramesPadding(false);
+    CHECK(d.getPartialFramesPadding() == false);
+    d.setPartialFramesPadding(true);
+    CHECK(d.getPartialFramesPadding() == true);
+
+    
+    d.freeSharedMemory();
+    
 }

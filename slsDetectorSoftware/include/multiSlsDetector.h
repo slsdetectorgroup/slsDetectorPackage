@@ -1622,7 +1622,9 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns partial frames padding enable in receiver
      */
-    int setReceiverPartialFramesPadding(int f = -1, int detPos = -1);
+    int setPartialFramesPadding(bool padding, int detPos = -1);
+
+    int getPartialFramesPadding(int detPos = -1) const;
 
     /**
      * Returns file format

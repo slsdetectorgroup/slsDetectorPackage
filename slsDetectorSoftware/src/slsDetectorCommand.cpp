@@ -5086,12 +5086,12 @@ std::string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, 
     else if (cmd == "r_padding") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &ival)) {
-                myDet->setReceiverPartialFramesPadding(ival, detPos);
+                myDet->setPartialFramesPadding(ival, detPos);
             } else
                 return std::string("could not scan receiver padding enable\n");
         }
         memset(answer, 0, 100);
-        sprintf(answer, "%d", myDet->setReceiverPartialFramesPadding(-1, detPos));
+        sprintf(answer, "%d", myDet->getPartialFramesPadding(detPos));
         return std::string(answer);
     }
 

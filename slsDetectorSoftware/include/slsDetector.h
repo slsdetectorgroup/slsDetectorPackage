@@ -1480,7 +1480,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param f partial frames padding enable
 	 * @returns partial frames padding enable in receiver
 	 */
-    int setReceiverPartialFramesPadding(int f = -1);
+    bool setPartialFramesPadding(bool padding);
+	bool getPartialFramesPadding() const;
 
     /**
 	 * Returns file format

@@ -417,11 +417,11 @@ class Detector:
         """
         Padd partial frames in the receiver
         """
-        return self._api.getReceiverPartialFramesPadding()
+        return self._api.getPartialFramesPadding()
     
     @frame_padding.setter
     def frame_padding(self, padding):
-        self._api.setReceiverPartialFramesPadding(padding)
+        self._api.setPartialFramesPadding(padding)
 
     def free_shared_memory(self):
         """

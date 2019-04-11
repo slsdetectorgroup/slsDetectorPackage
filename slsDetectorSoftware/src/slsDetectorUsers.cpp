@@ -359,7 +359,10 @@ int slsDetectorUsers::setReceiverFramesDiscardPolicy(int f, int detPos) {
 }
 
 int slsDetectorUsers::setReceiverPartialFramesPadding(int f, int detPos) {
-	return detector.setReceiverPartialFramesPadding(f, detPos);
+	if (f>=0)
+		return detector.setPartialFramesPadding(f, detPos);
+	else
+		return detector.getPartialFramesPadding(detPos);
 }
 
 int slsDetectorUsers::setReceiverFramesPerFile(int f, int detPos) {

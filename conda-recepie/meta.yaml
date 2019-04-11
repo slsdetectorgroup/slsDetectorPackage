@@ -63,14 +63,14 @@ outputs:
         - {{compiler('cxx')}}
         - python {{ python }}
         - setuptools
-        - sls_detector_lib=refactor
+        - sls_detector_lib
         - pyzmq
         - pybind11 2.2
       host:
         - python
         - pybind11 2.2 
         - pyzmq
-        - sls_detector_lib=refactor
+        - sls_detector_lib
         - libstdcxx-ng
         - libgcc-ng
       run:

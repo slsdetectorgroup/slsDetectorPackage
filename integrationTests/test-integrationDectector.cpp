@@ -12,25 +12,24 @@
 #include <vector>
 #define VERBOSE
 
-auto type_enum = slsDetectorDefs::detectorType::EIGER;
-const std::string hostname = "beb083";
-const std::string type_string = "Eiger";
-const std::string my_ip = "129.129.205.242";
+//Header holding all configurations for different detectors
+#include "config.h"
 
-TEST_CASE("single EIGER detector no receiver basic set and get") {
+TEST_CASE("single EIGER detector no receiver basic set and get", "[.integration]") {
     //TODO! this test should take command line arguments for config
+    SingleDetectorConfig c;
 
     //Read type by connecting to the detector
-    auto type = slsDetector::getTypeFromDetector(hostname);
-    CHECK(type == type_enum);
+    auto type = slsDetector::getTypeFromDetector(c.hostname);
+    CHECK(type == c.type_enum);
 
     //Create slsDetector of said type and set hostname and detector online
     slsDetector d(type);
     CHECK(d.getDetectorTypeAsEnum() == type);
-    CHECK(d.getDetectorTypeAsString() == type_string);
+    CHECK(d.getDetectorTypeAsString() == c.type_string);
 
-    d.setHostname(hostname);
-    CHECK(d.getHostname() == hostname);
+    d.setHostname(c.hostname);
+    CHECK(d.getHostname() == c.hostname);
 
     d.setOnline(true);
     CHECK(d.getOnlineFlag() == true);
@@ -65,7 +64,8 @@ TEST_CASE("single EIGER detector no receiver basic set and get") {
     d.freeSharedMemory();
 }
 
-TEST_CASE("Set control port then create a new object with this control port") {
+TEST_CASE("Set control port then create a new object with this control port",
+          "[.integration]") {
     /*
     TODO!
     Standard port but should not be hardcoded 
@@ -76,12 +76,12 @@ TEST_CASE("Set control port then create a new object with this control port") {
     int old_sport = DEFAULT_PORTNO + 1;
     int new_cport = 1993;
     int new_sport = 2000;
-
+    SingleDetectorConfig c;
     {
-        auto type = slsDetector::getTypeFromDetector(hostname);
-        CHECK(type == type_enum);
+        auto type = slsDetector::getTypeFromDetector(c.hostname);
+        CHECK(type == c.type_enum);
         slsDetector d(type);
-        d.setHostname(hostname);
+        d.setHostname(c.hostname);
         d.setOnline(true);
         CHECK(d.getControlPort() == old_cport);
         d.setControlPort(new_cport);
@@ -90,10 +90,10 @@ TEST_CASE("Set control port then create a new object with this control port") {
         d.freeSharedMemory();
     }
     {
-        auto type = slsDetector::getTypeFromDetector(hostname, new_cport);
-        CHECK(type == type_enum);
+        auto type = slsDetector::getTypeFromDetector(c.hostname, new_cport);
+        CHECK(type == c.type_enum);
         slsDetector d(type);
-        d.setHostname(hostname);
+        d.setHostname(c.hostname);
         d.setControlPort(new_cport);
         d.setStopPort(new_sport);
         CHECK(d.getControlPort() == new_cport);
@@ -107,18 +107,20 @@ TEST_CASE("Set control port then create a new object with this control port") {
         d.freeSharedMemory();
     }
 
-    auto type = slsDetector::getTypeFromDetector(hostname);
-    CHECK(type == type_enum);
+    auto type = slsDetector::getTypeFromDetector(c.hostname);
+    CHECK(type == c.type_enum);
     slsDetector d(type);
-    d.setHostname(hostname);
+    d.setHostname(c.hostname);
     d.setOnline(true);
     CHECK(d.getStopPort() == DEFAULT_PORTNO + 1);
+    d.freeSharedMemory();
 }
 
-TEST_CASE("Locking mechanism and last ip") {
-    auto type = slsDetector::getTypeFromDetector(hostname);
+TEST_CASE("Locking mechanism and last ip", "[.integration]") {
+    SingleDetectorConfig c;
+    auto type = slsDetector::getTypeFromDetector(c.hostname);
     slsDetector d(type);
-    d.setHostname(hostname);
+    d.setHostname(c.hostname);
     d.setOnline(true);
 
     //Check that detector server is unlocked then lock
@@ -126,19 +128,20 @@ TEST_CASE("Locking mechanism and last ip") {
     d.lockServer(1);
     CHECK(d.lockServer() == 1);
 
-    //Can we do things while it is locked
+    //Can we still access the detector while it's locked
     auto t = 1300000000;
     d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME, t);
     CHECK(d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME) == t);
 
-    //unlock again
+    //unlock again and free
     d.lockServer(0);
     CHECK(d.lockServer() == 0);
 
-    CHECK(d.getLastClientIP() == my_ip);
+    CHECK(d.getLastClientIP() == c.my_ip);
+    d.freeSharedMemory();
 }
 
-TEST_CASE("Excersise all possible set timer functions") {
+TEST_CASE("Excersise all possible set timer functions", "[.integration]") {
     // FRAME_NUMBER, /**< number of real time frames: total number of acquisitions is number or frames*number of cycles */
     // ACQUISITION_TIME, /**< exposure time */
     // FRAME_PERIOD, /**< period between exposures */
@@ -159,10 +162,10 @@ TEST_CASE("Excersise all possible set timer functions") {
     // MEASURED_PERIOD,	/**< measured period */
     // MEASURED_SUBPERIOD,	/**< measured subperiod */
     // MAX_TIMERS
-
-    auto type = slsDetector::getTypeFromDetector(hostname);
+    SingleDetectorConfig c;
+    auto type = slsDetector::getTypeFromDetector(c.hostname);
     slsDetector d(type);
-    d.setHostname(hostname);
+    d.setHostname(c.hostname);
     d.setOnline(true);
 
     //Number of frames
@@ -194,6 +197,28 @@ TEST_CASE("Excersise all possible set timer functions") {
     auto subtime = 200;
     d.setTimer(slsDetectorDefs::timerIndex::SUBFRAME_ACQUISITION_TIME, subtime);
     CHECK(d.setTimer(slsDetectorDefs::timerIndex::SUBFRAME_ACQUISITION_TIME) == subtime);
+
+    d.freeSharedMemory();
 }
 
-// TEST_CASE()
+// TEST_CASE("Aquire", "[.integration][eiger]"){
+//     SingleDetectorConfig c;
+//     auto type = slsDetector::getTypeFromDetector(c.hostname);
+//     slsDetector d(type);
+//     d.setHostname(c.hostname);
+//     d.setOnline(true);
+
+//     auto period = 1000000000;
+//     auto exptime = 100000000;
+//     d.setTimer(slsDetectorDefs::timerIndex::FRAME_NUMBER, 5);
+//     d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME, exptime);
+//     d.setTimer(slsDetectorDefs::timerIndex::FRAME_PERIOD, period);
+//     d.startAndReadAll();
+
+    
+
+//     auto rperiod = d.getTimeLeft(slsDetectorDefs::timerIndex::MEASURED_PERIOD);
+//     CHECK(rperiod == 0.1);
+
+//     d.freeSharedMemory();
+// }

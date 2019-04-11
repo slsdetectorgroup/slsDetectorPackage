@@ -19,6 +19,7 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
 
     - Jungfrau receiver as root user
     - Jungfrau server detector position error when switching between different detector sizes
+    - Client API data call back / Gui (Eiger in 4 bit mode)
 
 
 
@@ -35,10 +36,21 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
         This has been fixed now to allow a greater size (including the default size).
 
 
-   Detector Server (Jungfrau)
-   --------------------------
-   1.   Switching between different detector size configurations, the detector gave an
-	error "Could not set detector position". This is fixed now.
+    Detector Server (Jungfrau)
+    --------------------------
+    1.  Switching between different detector size configurations, the detector gave an
+	    error "Could not set detector position". This is fixed now.
+
+    
+    Client API / Gui (Eiger)
+    ------------------------
+    1.  Client data call back provided the complete image data, but the number of pixels 
+        in x and y was provided incorrectly at a modular level. This has been fixed to give 
+        the proper value. This also fixes the Gui crashing for Eiger 4 bit mode when 
+        acquiring for multiple images.
+
+
+
 
         
 3. Known Issues

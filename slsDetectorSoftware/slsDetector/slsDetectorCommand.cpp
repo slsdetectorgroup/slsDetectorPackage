@@ -4041,7 +4041,7 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
         t=RECEIVER_UDP_SCKT_BUF_SIZE;
         if (action==PUT_ACTION){
         	uint64_t ival = -1;
-            if (!(sscanf(args[1],"%ld",&i)))
+            if (!(sscanf(args[1],"%ld",&ival)))
                 return ("cannot parse argument") + string(args[1]);
         }
     } else if (cmd=="rx_realudpsocksize") {

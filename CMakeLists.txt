@@ -80,9 +80,12 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
             message(FATAL_ERROR "GCC version must be at least 4.8!")
     endif()
-    target_compile_options(slsProjectWarnings INTERFACE 
-                                             -Wno-missing-field-initializers    
-                                                )
+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5)
+            target_compile_options(slsProjectWarnings INTERFACE 
+                                             -Wno-missing-field-initializers)
+    endif()
+    
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
         target_compile_options(slsProjectWarnings INTERFACE 
                                                 -Wno-misleading-indentation # mostly in rapidjson remove using clang format

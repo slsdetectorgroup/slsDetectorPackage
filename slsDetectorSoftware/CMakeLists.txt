@@ -39,7 +39,6 @@ set(PUBLICHEADERS
     include/slsDetectorUsers.h
     include/detectorData.h
     include/multiSlsDetector.h
-    include/gitInfoLib.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

@@ -17,8 +17,11 @@ all: clean versioning $(PROGS) #hv9m_blackfin_server
 	
 boot: $(OBJS) 
 
-versioning:  
-	@echo `tput setaf 6;	./updateGitVersion.sh; tput sgr0;`
+version_name=APIEIGER
+version_path=slsDetectorServers/eigerDetectorServer
+versioning: 
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path);  tput sgr0;`
+
 
 $(PROGS):  $(OBJS)
 #	echo $(OBJS) 

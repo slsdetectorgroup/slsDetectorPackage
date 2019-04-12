@@ -1,65 +1,70 @@
-/*
- * qClient.h
- *
- *  Created on: Feb 27, 2013
- *      Author: Dhanya Maliakal
- */
-#ifndef QCLIENT_H
-#define QCLIENT_H
+#pragma once
 
+#include "qDefs.h"
 
-/** Qt Project Class Headers */
-/** Project Class Headers */
-class MySocketTCP;
 #include "sls_detector_defs.h"
-/** C++ Include Headers */
+
 #include <stdlib.h>
 #include <string>
-using namespace std;
 
 /**
  *@short Sets up the gui server
  */
-class qClient: public virtual slsDetectorDefs{
+class qClient : public virtual slsDetectorDefs {
 
+  public:
+    /**
+     * The constructor
+     * @param h hostname
+     */
+    qClient(char *h);
+    /**
+     * Destructor
+     */
+    virtual ~qClient();
 
-public:
-	/** \short The constructor*/
-	qClient(char* hostname);
-	/** Destructor	 */
-	virtual ~qClient();
+    /**
+     * Execute command
+     * @param narg number of arguments
+     * @param args argument list
+     */
+    void executeLine(int narg, char *args[]);
 
-	/**Execute command*/
-	int executeLine(int narg, char *args[]);
+  private:
+    /**
+     * Print list of commands
+     * @returns string of result
+     */
+    std::string printCommands();
 
-private:
-	/** Print list of commands */
-	string printCommands();
+    /**
+     * Gets run status
+     * @returns status
+     */
+    std::string getStatus();
 
-	/** Start Acquisition
-	 * @param blocking true if its a blocking acquistion
-	 */
-	int startAcquisition(bool blocking = false);
+    /**
+     * Start Acquisition
+     * @param blocking true if its a blocking acquistion
+     */
+    void startAcquisition(bool blocking = false);
 
-	/** Stops Acquisition */
-	int stopAcquisition();
+    /**
+     * Stops Acquisition
+     */
+    void stopAcquisition();
 
-	/** Gets run status */
-	string getStatus();
+    /**
+     * Exits Server
+     */
+    void exitServer();
 
-	/** Exits Server */
-	int exitServer();
+    /** hostname */
+    std::string hostname;
 
-	/** client socket */
-	MySocketTCP *mySocket;
+    /** control port */
+    int controlPort;
 
-	/** client socket */
-	MySocketTCP *myStopSocket;
-
-	char mess[MAX_STR_LENGTH];
-
+    /** stop port */
+    int stopPort;
 };
-
-
-
-#endif /* QCLIENT_H */

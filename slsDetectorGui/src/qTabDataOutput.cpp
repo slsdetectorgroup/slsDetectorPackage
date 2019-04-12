@@ -1,556 +1,149 @@
-/*
- * qTabDataOutput.cpp
- *
- *  Created on: May 10, 2012
- *      Author: l_maliakal_d
- */
-/**********************************************************************
- * ********************************************************************/
-
 #include "qTabDataOutput.h"
-// Project Class Headers
-#include "slsDetector.h"
+
 #include "multiSlsDetector.h"
-// Qt Include Headers
-#include <QStandardItemModel>
+
 #include <QFileDialog>
-// C++ Include Headers
+#include <QStandardItemModel>
+
 #include <iostream>
 #include <string>
-using namespace std;
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-qTabDataOutput::qTabDataOutput(QWidget *parent,multiSlsDetector*& detector):
-						QWidget(parent),myDet(detector){
+qTabDataOutput::qTabDataOutput(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector) {
 	setupUi(this);
 	SetupWidgetWindow();
 	Refresh();
+	FILE_LOG(logDEBUG) << "DataOutput ready";
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+qTabDataOutput::~qTabDataOutput() {}
 
 
-qTabDataOutput::~qTabDataOutput(){
-	delete myDet;
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetupWidgetWindow(){
-	// Detector Type
-	detType=myDet->getDetectorsType();
-	widgetEiger->setVisible(false);
-
-	//rate correction  - not for charge integrating detectors
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER))
-		chkRate->setEnabled(true);
-
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD))
-		chkAngular->setEnabled(true);
-
-	if(detType == slsDetectorDefs::EIGER){
-		chkRate->setEnabled(true);
-		chkTenGiga->setEnabled(true);
-		widgetEiger->setVisible(true);
-	}
-
-	/** error message **/
+void qTabDataOutput::SetupWidgetWindow() {
 	red = QPalette();
-	red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
+	red.setColor(QPalette::Active, QPalette::WindowText, Qt::red);
 	black = QPalette();
-	black.setColor(QPalette::Active,QPalette::WindowText,Qt::black);
+	black.setColor(QPalette::Active, QPalette::WindowText, Qt::black);
 
 	red1 = new QPalette();
-	red1->setColor(QPalette::Text,Qt::red);
+	red1->setColor(QPalette::Text, Qt::red);
 	black1 = new QPalette();
-	black1->setColor(QPalette::Text,Qt::black);
+	black1->setColor(QPalette::Text, Qt::black);
 
-	flatFieldTip = dispFlatField->toolTip();
-	errFlatFieldTip = QString("<nobr>Flat field corrections.</nobr><br>"
-			"<nobr> #flatfield# filename</nobr><br><br>")+
-			QString("<nobr><font color=\"red\">"
-					"Enter a valid file to enable Flat Field.</font></nobr>");
 	outDirTip = lblOutputDir->toolTip();
 
+	// Detector Type
+	detType = myDet->getDetectorTypeAsEnum();
 
-	//not used at all, later used for gappixels
-	chkUnused->setEnabled(false);
-
-	//enabling file format depending on detector type
-	SetupFileFormat();
+	// disabling depening on detector type
+	chkRate->setEnabled(false);
+	widgetEiger->setVisible(false);
+	if (detType == slsDetectorDefs::EIGER) {
+		chkRate->setEnabled(true);
+		widgetEiger->setVisible(true);
+	}
+	chkTenGiga->setEnabled(false);
+	if (detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::MOENCH) {
+		chkTenGiga->setEnabled(true);
+	}
 
 	Initialization();
 
-	disconnect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
+	// populate detectors, get output dir
 	PopulateDetectors();
-	connect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
 
-	//flat field correction from server
-#ifdef VERBOSE
-	cout  << "Getting flat field" << endl;
-#endif
-	UpdateFlatFieldFromServer();
+	VerifyOutputDirectory();
 
+	// over write
+	UpdateFileOverwriteFromServer();
 
-	//rate correction - not for charge integrating detectors
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER)){
-#ifdef VERBOSE
-		cout  << "Getting rate correction" << endl;
-#endif
+	// file format
+	UpdateFileFormatFromServer();
+
+	// rate correction
+	if (chkRate->isEnabled()) {
 		UpdateRateCorrectionFromServer();
 	}
 
-
-	//update angular conversion from server
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD)){
-#ifdef VERBOSE
-		cout  << "Getting angular conversion" << endl;
-#endif
-		int ang;
-		if(myDet->getAngularConversion(ang))
-			chkAngular->setChecked(true);
-		emit AngularConversionSignal(chkAngular->isChecked());
+	// 10 gbe
+	if (chkTenGiga->isEnabled()) {
+		EnableTenGigabitEthernet(-1, 1);
 	}
 
-
-	//discard bad channels from server
-#ifdef VERBOSE
-	cout  << "Getting bad channel correction:" << myDet->getBadChannelCorrection() << endl;
-#endif
-	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
-	if(myDet->getBadChannelCorrection())
-		chkDiscardBad->setChecked(true);
-	else
-		chkDiscardBad->setChecked(false);
-	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
-
-/*
-	if(detType == slsDetectorDefs::MYTHEN){
-		comboDetector->hide();
+	//Eiger specific
+	if (widgetEiger->isVisible()) {
+		//speed
+		UpdateSpeedFromServer();
+		//flags
+		UpdateFlagsFromServer();
 	}
-*/
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetupWidgetWindow");
+
+	qDefs::checkErrorMessage(myDet, "qTabDataOutput::SetupWidgetWindow");
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::Initialization(){
+void qTabDataOutput::Initialization() {
 	//output dir
-	connect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
-	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
+	connect(comboDetector, SIGNAL(currentIndexChanged(int)), this, SLOT(GetOutputDir()));
+	connect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
+	connect(btnOutputBrowse, SIGNAL(clicked()), this, SLOT(BrowseOutputDir()));
 
 	//overwrite enable
-	connect(chkOverwriteEnable,	SIGNAL(toggled(bool)), 		this, 	SLOT(SetOverwriteEnable(bool)));
+	connect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
 
 	//file format
-	connect(comboFileFormat,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFileFormat(int)));
+	connect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 
-	connect(btnOutputBrowse,	SIGNAL(clicked()), 			this, 	SLOT(BrowseOutputDir()));
-	//flat field correction
-	connect(chkFlatField,		SIGNAL(toggled(bool)), 		this, 	SLOT(SetFlatField()));
-	connect(btnFlatField,		SIGNAL(clicked()), 			this, 	SLOT(BrowseFlatFieldPath()));
 	//rate correction
-	connect(chkRate,			SIGNAL(toggled(bool)), 		this,	SLOT(SetRateCorrection()));
-	connect(btnDefaultRate,		SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
-	connect(spinDeadTime,		SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
+	connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(SetRateCorrection()));
+	connect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
+	connect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
 
-	//angular correction
-	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
-	//discard bad channels
-	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 	//10GbE
-	connect(chkTenGiga,			SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
+	connect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(EnableTenGigabitEthernet(bool)));
 
 	//eiger
-	if(widgetEiger->isVisible()){
+	if (widgetEiger->isVisible()) {
 		//speed
-		connect(comboEigerClkDivider,SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetSpeed()));
+		connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
 		//flags
-		connect(comboEigerFlags1,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFlags()));
-		connect(comboEigerFlags2,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFlags()));
+		connect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
+		connect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 	}
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::BrowseOutputDir()
-{
-	QString directory = QFileDialog::getExistingDirectory(this,tr("Choose Output Directory "),dispOutputDir->text());
+void qTabDataOutput::BrowseOutputDir() {
+	QString directory = QFileDialog::getExistingDirectory(this, tr("Choose Output Directory "), dispOutputDir->text());
 	if (!directory.isEmpty())
 		dispOutputDir->setText(directory);
 	SetOutputDir();
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+void qTabDataOutput::GetOutputDir() {
+	FILE_LOG(logDEBUG) << "Getting output directory";
 
-
-void qTabDataOutput::SetFlatField(){
-#ifdef VERYVERBOSE
-	cout << "Entering Set Flat Field Correction Function" << endl;
-#endif
-	// so that it doesnt call it twice
-	disconnect(dispFlatField,		SIGNAL(editingFinished()),	this, 			SLOT(SetFlatField()));
-
-	//enable/disable
-	dispFlatField->setEnabled(chkFlatField->isChecked());
-	btnFlatField->setEnabled(chkFlatField->isChecked());
-
-	if(chkFlatField->isChecked()){
-		if(dispFlatField->text().isEmpty()){
-			chkFlatField->setToolTip(errFlatFieldTip);
-			dispFlatField->setToolTip(errFlatFieldTip);
-			chkFlatField->setPalette(red);
-			chkFlatField->setText("Flat Field File:*");
-#ifdef VERBOSE
-		cout << "Flat Field File is not set." << endl;
-#endif
-		}else{
-			QString fName = dispFlatField->text();
-			QString file = fName.section('/',-1);
-			QString dir = fName.section('/',0,-2,QString::SectionIncludeLeadingSep);
-
-			chkFlatField->setToolTip(flatFieldTip);
-			dispFlatField->setToolTip(flatFieldTip);
-			chkFlatField->setPalette(chkDiscardBad->palette());
-			chkFlatField->setText("Flat Field File:");
-			//set ff dir
-			myDet->setFlatFieldCorrectionDir(dir.toAscii().constData());
-			//set ff file and catch error if -1
-			if(myDet->setFlatFieldCorrectionFile(file.toAscii().constData())<0){
-				string sDir = dir.toAscii().constData(),sFile = file.toAscii().constData();
-				if(sDir.length()<1) {sDir = string(QDir::current().absolutePath().toAscii().constData()); /*"/home/";*/}
-				qDefs::Message(qDefs::WARNING,"Invalid Flat Field file: "+sDir+"/"+sFile+
-						".\nUnsetting Flat Field.","qTabDataOutput::SetFlatField");
-
-				//Unsetting flat field
-				myDet->setFlatFieldCorrectionFile("");
-				dispFlatField->setText("");
-				chkFlatField->setToolTip(errFlatFieldTip);
-				dispFlatField->setToolTip(errFlatFieldTip);
-				chkFlatField->setPalette(red);
-				chkFlatField->setText("Flat Field File:*");
-#ifdef VERBOSE
-		cout << "Invalid Flat Field File - "<< sDir << sFile << ". Unsetting Flat Field." << endl;
-#endif
-			}
-			else{
-#ifdef VERBOSE
-		cout << "Setting flat field file to "<< dispFlatField->text().toAscii().constData() << endl;
-#endif
-			}
-		}
-	}else{
-		chkFlatField->setToolTip(flatFieldTip);
-		dispFlatField->setToolTip(flatFieldTip);
-		chkFlatField->setPalette(chkDiscardBad->palette());
-		chkFlatField->setText("Flat Field File:");
-		//Unsetting flat field
-		myDet->setFlatFieldCorrectionFile("");
-		dispFlatField->setText("");
-#ifdef VERBOSE
-		cout << "Unsetting flat field correction file" << endl;
-#endif
-	}
-
-	connect(dispFlatField,SIGNAL(editingFinished()),this,SLOT(SetFlatField()));
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetFlatField");
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qTabDataOutput::UpdateFlatFieldFromServer(){
-	disconnect(dispFlatField,	SIGNAL(editingFinished()),	this, 	SLOT(SetFlatField()));
-
-	dispFlatField->setText(QString(myDet->getFlatFieldCorrectionDir().c_str())+"/"+QString(myDet->getFlatFieldCorrectionFile().c_str()));
-#ifdef VERBOSE
-	cout << "Getting flat field correction file" << dispFlatField->text().toAscii().constData() << endl;
-#endif
-	//calls setflatfield to ensure the file still exists or disable it
-	if(!QString(myDet->getFlatFieldCorrectionFile().c_str()).compare("none")){
-		dispFlatField->setText("");
-		chkFlatField->setChecked(false);
-#ifdef VERBOSE
-		cout << "Flat Field is not set." << endl;
-#endif
-	}
-	else
-		chkFlatField->setChecked(true);
-
-	chkFlatField->setToolTip(flatFieldTip);
-	dispFlatField->setToolTip(flatFieldTip);
-	chkFlatField->setPalette(chkDiscardBad->palette());
-	chkFlatField->setText("Flat Field File:");
-
-	connect(dispFlatField,		SIGNAL(editingFinished()),	this,	SLOT(SetFlatField()));
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::UpdateFlatFieldFromServer");
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qTabDataOutput::BrowseFlatFieldPath(){
-	QString fName = dispFlatField->text();
-	QString dir = fName.section('/',0,-2,QString::SectionIncludeLeadingSep);
-	if(dir.isEmpty()) dir =  QString(myDet->getFlatFieldCorrectionDir().c_str());/*"/home/";*/
-	fName = QFileDialog::getOpenFileName(this,
-			tr("Load Flat Field Correction File"),dir,
-					     tr("Data Files(*.raw *.dat);; All Files (*.*)"),0,QFileDialog::ShowDirsOnly);
-	if (!fName.isEmpty()){
-		dispFlatField->setText(fName);
-		SetFlatField();
-	}
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::BrowseFlatFieldPath");
-
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetRateCorrection(int deadtime){
-	disconnect(btnDefaultRate,	SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
-	disconnect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
-
-#ifdef VERBOSE
-	cout << "Entering Set Rate Correction function" << endl;
-#endif
-
-	if(chkRate->isChecked()){
-		if(!btnDefaultRate->isEnabled()){
-			btnDefaultRate->setEnabled(true);
-			lblDeadTime->setEnabled(true);
-			spinDeadTime->setEnabled(true);
-		}
-
-		if(deadtime!=-1){
-			deadtime = (double)spinDeadTime->value();
-#ifdef VERBOSE
-			cout << "Setting rate corrections with custom dead time: "  << deadtime << endl;
-#endif
-		}else{;
-#ifdef VERBOSE
-		cout << "Setting rate corrections with default dead time"  <<  endl;
-#endif
-		}
-		myDet->setRateCorrection(deadtime);
-
-	}//unsetting rate correction
-	else{
-		btnDefaultRate->setEnabled(false);
-		lblDeadTime->setEnabled(false);
-		spinDeadTime->setEnabled(false);
-		myDet->setRateCorrection(0);
-#ifdef VERBOSE
-		cout << "Unsetting rate correction" << endl;
-#endif
-	}
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetRateCorrection");
-
-	//update just the value
-	double rate = (double)myDet->getRateCorrectionTau();
-	spinDeadTime->setValue((double)rate);
-	if(rate == -1){
-		qDefs::Message(qDefs::WARNING,"Dead time is inconsistent for all detectors. Returned Value: -1.","qTabDataOutput::UpdateRateCorrectionFromServer");
-		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
-				"<nobr> #ratecorr# tau in seconds</nobr><br><br>")+
-				QString("<nobr><font color=\"red\">"
-						"Dead time is inconsistent for all detectors.</font></nobr>");
-		chkRate->setToolTip(errorTip);
-		spinDeadTime->setToolTip(errorTip);
-		chkRate->setPalette(red);
-		chkRate->setText("Rate:*");
-	}else{
-		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
-				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
-		chkRate->setToolTip(normalTip);
-		spinDeadTime->setToolTip(normalTip);
-		chkRate->setPalette(chkDiscardBad->palette());
-		chkRate->setText("Rate:");
-	}
-
-	connect(btnDefaultRate,	SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
-	connect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
-
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetDefaultRateCorrection(){
-	SetRateCorrection(-1);
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::UpdateRateCorrectionFromServer(){
-	disconnect(chkRate,			SIGNAL(toggled(bool)), 		this,	SLOT(SetRateCorrection()));
-	disconnect(btnDefaultRate,	SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
-	disconnect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
-
-	double rate;
-	rate = (double)myDet->getRateCorrectionTau();
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::UpdateRateCorrectionFromServer");
-#ifdef VERBOSE
-	cout << "Getting rate correction from server: " << rate << endl;
-#endif
-	if(rate==0){
-		chkRate->setChecked(false);
-		btnDefaultRate->setEnabled(false);
-		lblDeadTime->setEnabled(false);
-		spinDeadTime->setEnabled(false);
-	}
-
-	else{
-		chkRate->setChecked(true);
-		btnDefaultRate->setEnabled(true);
-		lblDeadTime->setEnabled(true);
-		spinDeadTime->setEnabled(true);
-		spinDeadTime->setValue((double)rate);
-	}
-
-	if(rate == -1){
-		qDefs::Message(qDefs::WARNING,"Dead time is inconsistent for all detectors. Returned Value: -1.","qTabDataOutput::UpdateRateCorrectionFromServer");
-		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
-				"<nobr> #ratecorr# tau in seconds</nobr><br><br>")+
-				QString("<nobr><font color=\"red\">"
-						"Dead time is inconsistent for all detectors.</font></nobr>");
-		chkRate->setToolTip(errorTip);
-		spinDeadTime->setToolTip(errorTip);
-		chkRate->setPalette(red);
-		chkRate->setText("Rate:*");
-	}else{
-		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
-				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
-		chkRate->setToolTip(normalTip);
-		spinDeadTime->setToolTip(normalTip);
-		chkRate->setPalette(chkDiscardBad->palette());
-		chkRate->setText("Rate:");
-	}
-
-	connect(chkRate,		SIGNAL(toggled(bool)), 		this,	SLOT(SetRateCorrection()));
-	connect(btnDefaultRate,	SIGNAL(clicked()), 			this, 	SLOT(SetDefaultRateCorrection()));
-	connect(spinDeadTime,	SIGNAL(editingFinished()), 	this, 	SLOT(SetRateCorrection()));
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetAngularCorrection(){
-	disconnect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
-#ifdef VERYVERBOSE
-	cout << "Entering Set Angular Correction function" << endl;
-#endif
-	bool enabled = chkAngular->isChecked();
-	//set
-	if(myDet->setAngularCorrectionMask(enabled) == enabled){
-#ifdef VERBOSE
-		cout << "Angular Conversion mask:"  << enabled << endl;
-#endif
-	}
-	//error
-	else{
-#ifdef VERBOSE
-		cout << "Could not set angular conversion to default"  << endl;
-#endif
-		qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set/reset. Please set the default file name using the command line, if you want to set it.","qTabDataOutput::SetAngularCorrection");
-		chkAngular->setChecked(!enabled);
-	}
-
-	emit AngularConversionSignal(chkAngular->isChecked());
-	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetAngularCorrection");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::DiscardBadChannels(){
-#ifdef VERBOSE
-	cout << "Entering Discard bad channels function" << endl;
-#endif
-	if(chkDiscardBad->isChecked()){
-#ifdef VERBOSE
-		cout << "Setting bad channel correction to default"  << endl;
-#endif
-		myDet->setBadChannelCorrection("default");
-	}else{
-#ifdef VERBOSE
-		cout << "Unsetting bad channel correction" << endl;
-#endif
-		myDet->setBadChannelCorrection("");
-	}
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::DiscardBadChannels");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::PopulateDetectors(){
-#ifdef VERBOSE
-	cout << "Populating detectors" << endl;
-#endif
-	comboDetector->clear();
-	comboDetector->addItem("All");
-	lblOutputDir->setText("Path:");
-	//add specific detector options only if more than 1 detector
-	if(myDet->getNumberOfDetectors()>1){
-		for(int i=0;i<myDet->getNumberOfDetectors();i++)
-			comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
-	}
-	GetOutputDir();
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::GetOutputDir(){
-#ifdef VERBOSE
-	cout << "Getting output directory" << endl;
-#endif
-
-	disconnect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
+	disconnect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
 	//all
-	if(!comboDetector->currentIndex()) {
+	if (!comboDetector->currentIndex()) {
 		dispOutputDir->setText(QString(myDet->getFilePath().c_str()));
+		qDefs::checkErrorMessage(myDet, "qTabDataOutput::GetOutputDir");
+
 		//multi file path blank means sls file paths are different
 		if (dispOutputDir->text().isEmpty()) {
-#ifdef VERYVERBOSE
-			qDefs::Message(qDefs::INFORMATION,"The file path for individual units are different.\n"
-					"Hence, leaving the common field blank.","qTabDataOutput::GetOutputDir");
-#endif
-#ifdef VERBOSE
-						cout << "The file path for individual units are different.\n"
-					"Hence, leaving the common field blank." << endl;
-#endif
-						QString errTip = QString("<br><nobr><font color=\"red\">"
-												"<b>Output Directory</b> Information only: The file path for individual units are different.<br>"
-												"Hence, leaving the common field blank.</font></nobr>");
-						lblOutputDir->setText("Path*:");
-						lblOutputDir->setPalette(red);
-						lblOutputDir->setToolTip(errTip);
-						btnOutputBrowse->setToolTip(errTip);
-						dispOutputDir->setToolTip(errTip);
+			qDefs::Message(qDefs::INFORMATION, "The file path for individual readouts are different.\n"
+					"Hence, leaving the common field blank.", "qTabDataOutput::GetOutputDir");
+			FILE_LOG(logWARNING) << "The file path for individual units are different.";
+			QString errTip = QString("<br><nobr><font color=\"red\">"
+					"<b>Output Directory</b> Information only: The file path for individual readouts are different.<br>"
+					"Hence, leaving the common field blank.</font></nobr>");
+			lblOutputDir->setText("Path*:");
+			lblOutputDir->setPalette(red);
+			lblOutputDir->setToolTip(errTip);
+			btnOutputBrowse->setToolTip(errTip);
+			dispOutputDir->setToolTip(errTip);
 		} else {
 			lblOutputDir->setText("Path:");
 			lblOutputDir->setPalette(*black1);
@@ -561,64 +154,57 @@ void qTabDataOutput::GetOutputDir(){
 	}
 
 	//specific
-	else{
-		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex()-1);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::GetOutputDir");
-		dispOutputDir->setText(QString(det->getFilePath().c_str()));
+	else {
+		dispOutputDir->setText(QString(myDet->getFilePath(comboDetector->currentIndex() - 1).c_str()));
+		qDefs::checkErrorMessage(myDet, comboDetector->currentIndex() - 1, "qTabDataOutput::GetOutputDir");
 	}
 
-	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
+	connect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-int qTabDataOutput::VerifyOutputDirectory(){
-#ifdef VERBOSE
-	cout << "Verifying output directory" << endl;
-#endif
+int qTabDataOutput::VerifyOutputDirectory() {
+	FILE_LOG(logDEBUG) << "Verifying output directory";
 
 	GetOutputDir();
 
 	bool error = false;
-	string detName = "";
-	string mess = "";
+	std::string detName = "";
+	std::string mess = "";
 
-	//common
-	myDet->setFilePath(myDet->getFilePath());
-	if(!qDefs::checkErrorMessage(myDet,"qTabDataOutput::VerifyOutputDirectory").empty())
-		error = true;
+	//common  (check only if no +, different values)
+	std::string fpath = myDet->getFilePath();
+	if (fpath.find('+') == std::string::npos) {
+		myDet->setFilePath(myDet->getFilePath());
+		if (!qDefs::checkErrorMessage(myDet, "qTabDataOutput::VerifyOutputDirectory").empty())
+			error = true;
+	}
 
 	//for each detector
-	for(int i=0;i<myDet->getNumberOfDetectors();i++){
-		slsDetector *det = 	myDet->getSlsDetector(i);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::VerifyOutputDirectory");
-		detName = string("\n - ") + string(comboDetector->itemText(i+1).toAscii().constData());
-		det->setFilePath(det->getFilePath());
-		if(!qDefs::checkErrorMessage(det,"qTabDataOutput::VerifyOutputDirectory").empty()) {
-			mess. append(detName);
-			error = true;
-		}
+	for (int i = 0; i < myDet->getNumberOfDetectors(); ++i) {
+		 detName = std::string("\n - ") + std::string(comboDetector->itemText(i+1).toAscii().constData());
+		 myDet->setFilePath(myDet->getFilePath(i), i);
+		 if(!qDefs::checkErrorMessage(myDet, i, "qTabDataOutput::VerifyOutputDirectory").empty()) {
+		 	mess. append(detName);
+		 	error = true;
+		 }
 	}
 
 	//invalid
-	if(error){
-		qDefs::Message(qDefs::WARNING,string("Invalid Output Directory ")+ mess ,"qTabDataOutput::VerifyOutputDirectory");
-#ifdef VERBOSE
-		cout << "The output path doesnt exist anymore" << endl;
-#endif
+	if (error) {
+		qDefs::Message(qDefs::WARNING, std::string("Invalid Output Directory ") + mess, "qTabDataOutput::VerifyOutputDirectory");
+		FILE_LOG(logWARNING) << "The output path doesnt exist anymore";
 		//replace all \n with <br>
 		size_t pos = 0;
-		while((pos = mess.find("\n", pos)) != string::npos){
+		while ((pos = mess.find("\n", pos)) != std::string::npos) {
 			mess.replace(pos, 1, "<br>");
 			pos += 1;
 		}
 		QString errTip = outDirTip +
 				QString("<br><nobr><font color=\"red\">"
-				"Invalid <b>Output Directory</b>") +
-				QString(mess.c_str()) +
-				QString( ".</font></nobr>");
+						"Invalid <b>Output Directory</b>") +
+						QString(mess.c_str()) +
+						QString(".</font></nobr>");
 		lblOutputDir->setText("Path*:");
 		lblOutputDir->setPalette(red);
 		lblOutputDir->setToolTip(errTip);
@@ -629,10 +215,8 @@ int qTabDataOutput::VerifyOutputDirectory(){
 	}
 
 	//valid
-	else{
-#ifdef VERBOSE
-		cout << "The output pathid valid" << endl;
-#endif
+	else {
+		FILE_LOG(logDEBUG) << "The output path is valid";
 		lblOutputDir->setText("Path:");
 		lblOutputDir->setPalette(*black1);
 		lblOutputDir->setToolTip(outDirTip);
@@ -644,351 +228,390 @@ int qTabDataOutput::VerifyOutputDirectory(){
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+void qTabDataOutput::SetOutputDir() {
 
+	FILE_LOG(logDEBUG) << "Setting output directory";
 
-void qTabDataOutput::SetOutputDir(){
-
-#ifdef VERBOSE
-	cout << "Setting output directory" << endl;
-#endif
-
-	disconnect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
-
+	disconnect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
 
 	bool error = false;
 	QString path = dispOutputDir->text();
 
 	//empty
-	if(path.isEmpty()) {
-		qDefs::Message(qDefs::WARNING,"Invalid Output Path. Must not be empty.","qTabDataOutput::SetOutputDir");
-#ifdef VERBOSE
-			cout << "Invalid Output Path. Must not be empty." << endl;
-#endif
+	if (path.isEmpty()) {
+		qDefs::Message(qDefs::WARNING, "Invalid Output Path. Must not be empty.", "qTabDataOutput::SetOutputDir");
+		FILE_LOG(logWARNING) << "Invalid Output Path. Must not be empty.";
 		error = true;
 	}
 	//gets rid of the end '/'s
-	else if (path.endsWith('/')){
-		while(path.endsWith('/'))
+	else if (path.endsWith('/')) {
+		while (path.endsWith('/'))
 			path.chop(1);
 		dispOutputDir->setText(path);
 	}
 
 	//specific
-	if(comboDetector->currentIndex()){
-		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex()-1);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
-		det->setFilePath(string(dispOutputDir->text().toAscii().constData()));
-		if(!qDefs::checkErrorMessage(det,"qTabDataOutput::SetOutputDir").empty())
+	if (comboDetector->currentIndex()) {
+		myDet->setFilePath(std::string(dispOutputDir->text().toAscii().constData()), comboDetector->currentIndex() - 1);
+		if (!qDefs::checkErrorMessage(myDet, comboDetector->currentIndex() - 1, "qTabDataOutput::SetOutputDir").empty())
 			error = true;
 	}
 
 	//multi
-	else{
-		myDet->setFilePath(string(path.toAscii().constData()));
-		if(!qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir").empty())
+	else {
+		myDet->setFilePath(std::string(path.toAscii().constData()));
+		if (!qDefs::checkErrorMessage(myDet, "qTabDataOutput::SetOutputDir").empty())
 			error = true;
 	}
 
-
-	if(error){
-#ifdef VERBOSE
-		cout << "The output path could not be set" << endl;
-#endif
+	if (error) {
+		FILE_LOG(logWARNING) << "The output path could not be set";
 		QString errTip = outDirTip + QString("<br><nobr><font color=\"red\">"
-								"Invalid <b>File Path</b></font></nobr>");
+				"Invalid <b>File Path</b></font></nobr>");
 
 		lblOutputDir->setText("Path*:");
 		lblOutputDir->setPalette(red);
 		lblOutputDir->setToolTip(errTip);
 		btnOutputBrowse->setToolTip(errTip);
 		dispOutputDir->setToolTip(errTip);
-	}
-	else{
-#ifdef VERBOSE
-		cout << "The output path has been modified" << endl;
-#endif
+	} else {
+		FILE_LOG(logINFO) << "Output dir set to " << path.toAscii().constData();
 		lblOutputDir->setText("Path:");
 		lblOutputDir->setPalette(*black1);
 		lblOutputDir->setToolTip(outDirTip);
 		btnOutputBrowse->setToolTip(outDirTip);
 		dispOutputDir->setToolTip(outDirTip);
-
 	}
 
-
-	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
-
+	connect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+void qTabDataOutput::SetRateCorrection(int deadtime) {
+	disconnect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
+	disconnect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
+
+	FILE_LOG(logDEBUG) << "Entering Set Rate Correction function";
+
+	if (chkRate->isChecked()) {
+		if (!btnDefaultRate->isEnabled()) {
+			btnDefaultRate->setEnabled(true);
+			lblDeadTime->setEnabled(true);
+			spinDeadTime->setEnabled(true);
+		}
+
+		if (deadtime != -1) {
+			deadtime = (double)spinDeadTime->value();
+			FILE_LOG(logINFO) << "Setting rate corrections with custom dead time: " << deadtime << '\n';
+		} else {
+			FILE_LOG(logINFO) << "Setting rate corrections with default dead time" << '\n';
+		}
+		myDet->setRateCorrection(deadtime);
+
+	} //unsetting rate correction
+	else {
+		btnDefaultRate->setEnabled(false);
+		lblDeadTime->setEnabled(false);
+		spinDeadTime->setEnabled(false);
+		myDet->setRateCorrection(0);
+		FILE_LOG(logINFO) << "Unsetting rate correction";
+	}
+	qDefs::checkErrorMessage(myDet, "qTabDataOutput::SetRateCorrection");
+
+	//update just the value
+	double rate = (double)myDet->getRateCorrection();
+	spinDeadTime->setValue((double)rate);
+	if (rate == -1) {
+		qDefs::Message(qDefs::WARNING, "Dead time is inconsistent for all detectors. Returned Value: -1.", "qTabDataOutput::UpdateRateCorrectionFromServer");
+		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
+				"<nobr> #ratecorr# tau in seconds</nobr><br><br>") +
+						QString("<nobr><font color=\"red\">"
+								"Dead time is inconsistent for all detectors.</font></nobr>");
+		chkRate->setToolTip(errorTip);
+		spinDeadTime->setToolTip(errorTip);
+		chkRate->setPalette(red);
+		chkRate->setText("Rate:*");
+	} else {
+		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
+				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
+		chkRate->setToolTip(normalTip);
+		spinDeadTime->setToolTip(normalTip);
+		chkRate->setPalette(chkDiscardBad->palette());
+		chkRate->setText("Rate:");
+	}
+
+	connect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
+	connect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
+}
 
 
-void qTabDataOutput::EnableTenGigabitEthernet(bool enable,int get){
-#ifdef VERBOSE
-	cout  << endl << "Enabling/Disabling 10GbE" << endl;
-#endif
-	disconnect(chkTenGiga,	SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
+void qTabDataOutput::SetDefaultRateCorrection() {
+	SetRateCorrection(-1);
+}
+
+
+void qTabDataOutput::UpdateRateCorrectionFromServer() {
+	disconnect(chkRate, SIGNAL(toggled(bool)), this, SLOT(SetRateCorrection()));
+	disconnect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
+	disconnect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
+
+	double rate;
+	rate = (double)myDet->getRateCorrection();
+	qDefs::checkErrorMessage(myDet, "qTabDataOutput::UpdateRateCorrectionFromServer");
+	FILE_LOG(logDEBUG) << "Getting rate correction from server: " << rate << '\n';
+	if (rate == 0) {
+		chkRate->setChecked(false);
+		btnDefaultRate->setEnabled(false);
+		lblDeadTime->setEnabled(false);
+		spinDeadTime->setEnabled(false);
+	}
+
+	else {
+		chkRate->setChecked(true);
+		btnDefaultRate->setEnabled(true);
+		lblDeadTime->setEnabled(true);
+		spinDeadTime->setEnabled(true);
+		spinDeadTime->setValue((double)rate);
+	}
+
+	if (rate == -1) {
+		qDefs::Message(qDefs::WARNING, "Dead time is inconsistent for all detectors. Returned Value: -1.", "qTabDataOutput::UpdateRateCorrectionFromServer");
+		FILE_LOG(logWARNING) << "Dead time is inconsistent for all detectors.";
+		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
+				"<nobr> #ratecorr# tau in seconds</nobr><br><br>") +
+						QString("<nobr><font color=\"red\">"
+								"Dead time is inconsistent for all detectors.</font></nobr>");
+		chkRate->setToolTip(errorTip);
+		spinDeadTime->setToolTip(errorTip);
+		chkRate->setPalette(red);
+		chkRate->setText("Rate:*");
+	} else {
+		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
+				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
+		chkRate->setToolTip(normalTip);
+		spinDeadTime->setToolTip(normalTip);
+		chkRate->setPalette(chkDiscardBad->palette());
+		chkRate->setText("Rate:");
+	}
+
+	connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(SetRateCorrection()));
+	connect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
+	connect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
+}
+
+
+void qTabDataOutput::PopulateDetectors() {
+	disconnect(comboDetector, SIGNAL(currentIndexChanged(int)), this, SLOT(GetOutputDir()));
+
+	FILE_LOG(logDEBUG) << "Populating detectors";
+	comboDetector->clear();
+	comboDetector->addItem("All");
+	lblOutputDir->setText("Path:");
+	//add specific detector options only if more than 1 detector
+	if (myDet->getNumberOfDetectors() > 1) {
+		for (int i = 0; i < myDet->getNumberOfDetectors(); i++)
+			comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
+	}
+	GetOutputDir();
+	connect(comboDetector, SIGNAL(currentIndexChanged(int)), this, SLOT(GetOutputDir()));
+}
+
+
+
+
+void qTabDataOutput::EnableTenGigabitEthernet(bool enable, int get) {
+	if (get || enable == -1) {
+		FILE_LOG(logDEBUG) << "Getting 10Gbe enable";
+	} else {
+		FILE_LOG(logINFO) << (enable == 0 ? "Disabling" : "Enabling") << "10GbE";
+	}
+	disconnect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(EnableTenGigabitEthernet(bool)));
 	int ret;
-	if(get)
+	if (get)
 		ret = myDet->enableTenGigabitEthernet(-1);
 	else
 		ret = myDet->enableTenGigabitEthernet(enable);
-	if(ret > 0)	chkTenGiga->setChecked(true);
-	else		chkTenGiga->setChecked(false);
-	connect(chkTenGiga,		SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
+	if (ret > 0)
+		chkTenGiga->setChecked(true);
+	else
+		chkTenGiga->setChecked(false);
+	connect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(EnableTenGigabitEthernet(bool)));
 
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::EnableTenGigabitEthernet");
+	qDefs::checkErrorMessage(myDet, "qTabDataOutput::EnableTenGigabitEthernet");
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetSpeed(){
-#ifdef VERBOSE
-	cout  << endl << "Setting Speed" << endl;
-#endif
-	if(widgetEiger->isVisible()){
-		 myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER,comboEigerClkDivider->currentIndex());
-		 qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetSpeed");
-		 UpdateSpeedFromServer();
-	}
-
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetFlags(){
-#ifdef VERBOSE
-	cout  << endl << "Setting Readout Flags" << endl;
-#endif
-	slsDetectorDefs::readOutFlags val = slsDetectorDefs::GET_READOUT_FLAGS;
-	if(widgetEiger->isVisible()){
-
-		//set to continous or storeinram
-		switch(comboEigerFlags1->currentIndex()){
-		case Storeinram:	val = slsDetectorDefs::STORE_IN_RAM;	break;
-		default:			val = slsDetectorDefs::CONTINOUS_RO;	break;
-		}
-		myDet->setReadOutFlags(val);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::setFlags");
-
-		//set to parallel, nonparallel or safe
-		switch(comboEigerFlags2->currentIndex()){
-		case Parallel:		val = slsDetectorDefs::PARALLEL;		break;
-		case Safe:			val = slsDetectorDefs::SAFE;			break;
-		default:			val = slsDetectorDefs::NONPARALLEL;		break;
-		}
-		myDet->setReadOutFlags(val);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::setFlags");
-
-		//update flags
-		 UpdateFlagsFromServer();
-	}
-
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::UpdateSpeedFromServer(){
+void qTabDataOutput::UpdateSpeedFromServer() {
 	int ret;
-	if(widgetEiger->isVisible()){
-		disconnect(comboEigerClkDivider,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetSpeed()));
+	if (widgetEiger->isVisible()) {
+		disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
 
 		//get speed
 		ret = myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, -1);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateSpeedFromServer");
+		qDefs::checkErrorMessage(myDet, "qTabDataOutput::updateSpeedFromServer");
 
 		//valid speed
-		if(ret  >= 0 && ret < NumberofSpeeds)
+		if (ret >= 0 && ret < NUMBEROFSPEEDS)
 			comboEigerClkDivider->setCurrentIndex(ret);
 
 		//invalid speed
-		else{
-			qDefs::Message(qDefs::WARNING,"Inconsistent value from clock divider.\n"
-					"Setting it for all detectors involved to half speed.","qTabDataOutput::updateSpeedFromServer");
+		else {
+			qDefs::Message(qDefs::WARNING, "Inconsistent value from clock divider.\n"
+					"Setting it for all detectors involved to half speed.",
+					"qTabDataOutput::updateSpeedFromServer");
+			FILE_LOG(logWARNING) << "Inconsistent value from clock divider.";
 			//set to default
-			comboEigerClkDivider->setCurrentIndex(HalfSpeed);
-			 myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER,HalfSpeed);
-			 qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateSpeedFromServer");
-
+			comboEigerClkDivider->setCurrentIndex(HALFSPEED);
+			myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, HALFSPEED);
+			qDefs::checkErrorMessage(myDet, "qTabDataOutput::updateSpeedFromServer");
 		}
-		connect(comboEigerClkDivider,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetSpeed()));
+		connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
 	}
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+void qTabDataOutput::SetSpeed() {
+	FILE_LOG(logINFO) << "Setting Speed";
+	myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, comboEigerClkDivider->currentIndex());
+	qDefs::checkErrorMessage(myDet, "qTabDataOutput::SetSpeed");
+	UpdateSpeedFromServer();
+}
 
 
-void qTabDataOutput::UpdateFlagsFromServer(){
+
+void qTabDataOutput::UpdateFlagsFromServer() {
 	int ret;
-	if(widgetEiger->isVisible()){
-		disconnect(comboEigerFlags1,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFlags()));
-		disconnect(comboEigerFlags2,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFlags()));
+	if (widgetEiger->isVisible()) {
+		disconnect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
+		disconnect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 
 		//get speed
 		ret = myDet->setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS);
-		qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateFlagsFromServer");
+		qDefs::checkErrorMessage(myDet, "qTabDataOutput::updateFlagsFromServer");
 
 		//invalid flags
-		if(ret==-1){
-			qDefs::Message(qDefs::WARNING,"Inconsistent value for readout flags.\n"
-								"Setting it for all detectors involved to continous nonparallel mode.",
-								"qTabDataOutput::updateFlagsFromServer");
+		if (ret == -1) {
+			qDefs::Message(qDefs::WARNING, "Inconsistent value for readout flags.\n"
+					"Setting it for all detectors involved to continous nonparallel mode.",
+					"qTabDataOutput::updateFlagsFromServer");
+			FILE_LOG(logWARNING) << "Inconsistent value for readout flags.";
 			//set to default
-			comboEigerFlags1->setCurrentIndex(Continous);
-			 myDet->setReadOutFlags(slsDetectorDefs::CONTINOUS_RO);
-			 qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateFlagsFromServer");
-			comboEigerFlags2->setCurrentIndex(NonParallel);
-			 myDet->setReadOutFlags(slsDetectorDefs::NONPARALLEL);
-			 qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateFlagsFromServer");
+			comboEigerFlags1->setCurrentIndex(CONTINUOUS);
+			myDet->setReadOutFlags(slsDetectorDefs::CONTINOUS_RO);
+			qDefs::checkErrorMessage(myDet, "qTabDataOutput::updateFlagsFromServer");
+			comboEigerFlags2->setCurrentIndex(NONPARALLEL);
+			myDet->setReadOutFlags(slsDetectorDefs::NONPARALLEL);
+			qDefs::checkErrorMessage(myDet, "qTabDataOutput::updateFlagsFromServer");
 		}
 
 		//valid flags
-		else{
-			if(ret & slsDetectorDefs::STORE_IN_RAM)
-				comboEigerFlags1->setCurrentIndex(Storeinram);
-			else if(ret & slsDetectorDefs::CONTINOUS_RO)
-				comboEigerFlags1->setCurrentIndex(Continous);
-			if(ret & slsDetectorDefs::PARALLEL)
-				comboEigerFlags2->setCurrentIndex(Parallel);
-			else if(ret & slsDetectorDefs::NONPARALLEL)
-				comboEigerFlags2->setCurrentIndex(NonParallel);
-			else if(ret & slsDetectorDefs::SAFE)
-				comboEigerFlags2->setCurrentIndex(Safe);
+		else {
+			if (ret & slsDetectorDefs::STORE_IN_RAM)
+				comboEigerFlags1->setCurrentIndex(STOREINRAM);
+			else if (ret & slsDetectorDefs::CONTINOUS_RO)
+				comboEigerFlags1->setCurrentIndex(CONTINUOUS);
+			if (ret & slsDetectorDefs::PARALLEL)
+				comboEigerFlags2->setCurrentIndex(PARALLEL);
+			else if (ret & slsDetectorDefs::NONPARALLEL)
+				comboEigerFlags2->setCurrentIndex(NONPARALLEL);
+			else if (ret & slsDetectorDefs::SAFE)
+				comboEigerFlags2->setCurrentIndex(SAFE);
 		}
 
-		connect(comboEigerFlags1,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFlags()));
-		connect(comboEigerFlags2,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFlags()));
+		connect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
+		connect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 	}
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+void qTabDataOutput::SetFlags() {
+	FILE_LOG(logINFO) << "Setting Readout Flags";
+	slsDetectorDefs::readOutFlags val = slsDetectorDefs::GET_READOUT_FLAGS;
 
-
-void qTabDataOutput::SetupFileFormat(){
-
-
-	//To be able to index items on a combo box
-	QStandardItemModel* model = qobject_cast<QStandardItemModel*>(comboFileFormat->model());
-	QModelIndex index[slsDetectorDefs::NUM_FILE_FORMATS];
-	QStandardItem* item[slsDetectorDefs::NUM_FILE_FORMATS];
-	if (model) {
-		for(int i=0;i<slsDetectorDefs::NUM_FILE_FORMATS;i++){
-			index[i] = model->index(i,	comboFileFormat->modelColumn(), comboFileFormat->rootModelIndex());
-			item[i] = model->itemFromIndex(index[i]);
-		}
-		//Enabling/Disabling depending on the detector type
-		switch(detType){
-		case slsDetectorDefs::MYTHEN:
-			item[(int)slsDetectorDefs::BINARY]->setEnabled(false);
-			item[(int)slsDetectorDefs::ASCII]->setEnabled(true);
-			item[(int)slsDetectorDefs::HDF5]->setEnabled(false);
-			break;
-		case slsDetectorDefs::EIGER:
-		case slsDetectorDefs::MOENCH:
-		case slsDetectorDefs::PROPIX:
-		case slsDetectorDefs::GOTTHARD:
-		case slsDetectorDefs::JUNGFRAU:
-		case slsDetectorDefs::CHIPTESTBOARD:
-			item[(int)slsDetectorDefs::BINARY]->setEnabled(true);
-			item[(int)slsDetectorDefs::ASCII]->setEnabled(false);
-			item[(int)slsDetectorDefs::HDF5]->setEnabled(true);
-			break;
-		default:
-			cout << "Unknown detector type " << endl;
-			qDefs::Message(qDefs::CRITICAL,"Unknown detector type.","qTabDataOutput::SetupFileFormat");
-			exit(-1);
-			break;
-		}
+	//set to continous or storeinram
+	switch (comboEigerFlags1->currentIndex()) {
+	case STOREINRAM:
+		val = slsDetectorDefs::STORE_IN_RAM;
+		break;
+	default:
+		val = slsDetectorDefs::CONTINOUS_RO;
+		break;
 	}
+	myDet->setReadOutFlags(val);
+	qDefs::checkErrorMessage(myDet, "qTabDataOutput::setFlags");
 
-	comboFileFormat->setCurrentIndex((int)myDet->getFileFormat());
+	//set to parallel, nonparallel or safe
+	switch (comboEigerFlags2->currentIndex()) {
+	case PARALLEL:
+		val = slsDetectorDefs::PARALLEL;
+		break;
+	case SAFE:
+		val = slsDetectorDefs::SAFE;
+		break;
+	default:
+		val = slsDetectorDefs::NONPARALLEL;
+		break;
+	}
+	myDet->setReadOutFlags(val);
+	qDefs::checkErrorMessage(myDet, "qTabDataOutput::setFlags");
+
+	//update flags
+	UpdateFlagsFromServer();
+
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::UpdateFileFormatFromServer(){
-#ifdef VERBOSE
-	cout  << endl << "Getting File Format" << endl;
-#endif
-	disconnect(comboFileFormat,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFileFormat(int)));
+void qTabDataOutput::UpdateFileFormatFromServer() {
+	FILE_LOG(logDEBUG) << "Getting File Format";
+	disconnect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 
 	comboFileFormat->setCurrentIndex((int)myDet->getFileFormat());
 
-	connect(comboFileFormat,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFileFormat(int)));
+	connect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::SetFileFormat(int format){
-#ifdef VERBOSE
-	cout  << endl << "Setting File Format" << endl;
-#endif
-	disconnect(comboFileFormat,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFileFormat(int)));
+void qTabDataOutput::SetFileFormat(int format) {
+	FILE_LOG(logINFO) << "Setting File Format";
+	disconnect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 
 	int ret = (int)myDet->setFileFormat((slsDetectorDefs::fileFormat)comboFileFormat->currentIndex());
 	if (ret != comboFileFormat->currentIndex()) {
-		qDefs::Message(qDefs::WARNING,"Could not set file format.","qTabDataOutput::SetFileFormat");
+		qDefs::Message(qDefs::WARNING, "Could not set file format.", "qTabDataOutput::SetFileFormat");
 		comboFileFormat->setCurrentIndex((int)ret);
 	}
 
-	connect(comboFileFormat,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(SetFileFormat(int)));
+	connect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::UpdateFileOverwriteFromServer(){
-#ifdef VERBOSE
-	cout  << endl << "Getting File Over Write Enable" << endl;
-#endif
-	disconnect(chkOverwriteEnable,	SIGNAL(toggled(bool)), 		this, 	SLOT(SetOverwriteEnable(bool)));
+void qTabDataOutput::UpdateFileOverwriteFromServer() {
+	FILE_LOG(logDEBUG) << "Getting File Over Write Enable";
+	disconnect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
 
 	chkOverwriteEnable->setChecked(myDet->overwriteFile());
 
-	connect(chkOverwriteEnable,	SIGNAL(toggled(bool)), 		this, 	SLOT(SetOverwriteEnable(bool)));
+	connect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+void qTabDataOutput::SetOverwriteEnable(bool enable) {
+	FILE_LOG(logINFO) << "Setting File Over Write Enable";
+	disconnect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
 
-
-void qTabDataOutput::SetOverwriteEnable(bool enable){
-#ifdef VERBOSE
-	cout  << endl << "Setting File Over Write Enable" << endl;
-#endif
-	disconnect(chkOverwriteEnable,	SIGNAL(toggled(bool)), 		this, 	SLOT(SetOverwriteEnable(bool)));
-
-	int valid = (enable?1:0);
+	int valid = (enable ? 1 : 0);
 	if (myDet->overwriteFile(enable) != valid)
-		qDefs::Message(qDefs::WARNING,"Could not over write enable.","qTabDataOutput::SetOverwriteEnable");
+		qDefs::Message(qDefs::WARNING, "Could not over write enable.", "qTabDataOutput::SetOverwriteEnable");
 
-	connect(chkOverwriteEnable,	SIGNAL(toggled(bool)), 		this, 	SLOT(SetOverwriteEnable(bool)));
+	connect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
 
 	UpdateFileOverwriteFromServer();
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabDataOutput::Refresh(){
-#ifdef VERBOSE
-	cout  << endl << "**Updating DataOutput Tab" << endl;
-#endif
+void qTabDataOutput::Refresh() {
+	FILE_LOG(logDEBUG) << "**Updating DataOutput Tab";
 
 	if (!myDet->enableWriteToFile())
 		boxFileWriteEnabled->setEnabled(false);
@@ -996,107 +619,46 @@ void qTabDataOutput::Refresh(){
 		boxFileWriteEnabled->setEnabled(true);
 
 	// output dir
-#ifdef VERBOSE
-	cout  << "Getting output directory" << endl;
-#endif
-
-	disconnect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
 	PopulateDetectors();
-	connect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
-
-	//file format
-	UpdateFileFormatFromServer();
 
 	//overwrite
 	UpdateFileOverwriteFromServer();
 
+	//file format
+	UpdateFileFormatFromServer();
+
 	//file name
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
 
-	//flat field correction from server
-#ifdef VERBOSE
-	cout  << "Getting flat field" << endl;
-#endif
-	UpdateFlatFieldFromServer();
-
-
-	//rate correction - not for charge integrating detectors
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER)){
-#ifdef VERBOSE
-		cout  << "Getting rate correction" << endl;
-#endif
+	// rate correction
+	if (chkRate->isEnabled()) {
 		UpdateRateCorrectionFromServer();
 	}
 
-
-	//update angular conversion from server
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD)){
-#ifdef VERBOSE
-		cout  << "Getting angular conversion" << endl;
-#endif
-		int ang;
-		if(myDet->getAngularConversion(ang))
-			chkAngular->setChecked(true);
-		emit AngularConversionSignal(chkAngular->isChecked());
-	}
-
-
-	//discard bad channels from server
-#ifdef VERBOSE
-	cout  << "Getting bad channel correction" << endl;//cout << "ff " << myDet->getBadChannelCorrection() << endl;
-#endif
-
-
-	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
-	if(myDet->getBadChannelCorrection())
-		chkDiscardBad->setChecked(true);
-	else
-		chkDiscardBad->setChecked(false);
-	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
-
-	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
+	if (myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
 		btnOutputBrowse->setEnabled(false);
 		btnOutputBrowse->setToolTip("<font color=\"red\">This button is disabled as receiver PC is different from "
-				"client PC and hence different directory structures.</font><br><br>" + dispOutputDir->toolTip());
-	}else{
+				"client PC and hence different directory structures.</font><br><br>" +
+				dispOutputDir->toolTip());
+	} else {
 		btnOutputBrowse->setEnabled(true);
 		btnOutputBrowse->setToolTip(dispOutputDir->toolTip());
 	}
 
-	//getting 10GbE
-	if(chkTenGiga->isEnabled()){
-#ifdef VERBOSE
-		cout  << "Getting 10GbE enable" << endl;
-#endif
-		EnableTenGigabitEthernet(-1,1);
+	// 10GbE
+	if (chkTenGiga->isEnabled()) {
+		EnableTenGigabitEthernet(-1, 1);
 	}
 
 	//Eiger specific
-	if(widgetEiger->isVisible()){
+	if (widgetEiger->isVisible()) {
 		//speed
-#ifdef VERBOSE
-		cout  << "Getting Speed" << endl;
-#endif
 		UpdateSpeedFromServer();
 		//flags
-#ifdef VERBOSE
-		cout  << "Getting Readout Flags" << endl;
-#endif
 		UpdateFlagsFromServer();
-
-
-
 	}
 
+	FILE_LOG(logDEBUG) << "**Updated DataOutput Tab";
 
-#ifdef VERBOSE
-	cout  << "**Updated DataOutput Tab" << endl << endl;
-#endif
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::Refresh");
+	qDefs::checkErrorMessage(myDet, "qTabDataOutput::Refresh");
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-

@@ -39,7 +39,12 @@ int slsDetectorUsers::setReceiverOnline(int const online, int detPos){
 }
 
 int slsDetectorUsers::readConfigurationFile(const std::string& fname){
-	return detector.readConfigurationFile(fname);
+	try{
+		detector.readConfigurationFile(fname);
+		return slsDetectorDefs::OK;
+	} catch (...) {
+		return slsDetectorDefs::FAIL;
+	}
 }
 
 int slsDetectorUsers::writeConfigurationFile(const std::string& fname){

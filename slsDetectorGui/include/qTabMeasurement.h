@@ -1,20 +1,11 @@
-/*
- * qTabMeasurement.h
- *
- *  Created on: May 2, 2012
- *      Author: l_maliakal_d
- */
-#ifndef QTABMEASUREMENT
-#define QTABMEASUREMENT
+#pragma once
 
 #include "qDefs.h"
 
-
-/** Form Header */
 #include "ui_form_tab_measurement.h"
-/** Project Class Headers */
+
 class multiSlsDetector;
-/** Qt Project Class Headers */
+
 #include <QStandardItemModel>
 #include "qDrawPlot.h"
 class qDetectorMain;
@@ -26,157 +17,172 @@ class qTabMeasurement:public QWidget, private Ui::TabMeasurementObject{
 	Q_OBJECT
 
 public:
-	/** \short The constructor
-	 *    This tab allows to change the detector settings, the threshold, the number of (non real time) measurements,
-	 *    the acquisition time, the file name, the start run index and shows the current progress of the measurement
-	 *    via a progress bar and labels inidicating the current position, scan variable, frame number etc.
-	 *    Contains the start and stop acquisition button
-	 *    @param parent is the parent tab widget
-	 *    @param detector is the detector returned from the detector tab
-	 *    @param plot plot object reference
+	/**
+	 * The constructor
+	 * This tab allows to change measurement parameters and to start/stop an acquisition
+	 * @param parent is the parent tab widget
+	 * @param detector is the detector returned from the detector tab
+	 * @param plot plot object reference
 	 */
-	qTabMeasurement(qDetectorMain *parent,multiSlsDetector*& detector, qDrawPlot*& plot);
+	qTabMeasurement(QWidget *parent,multiSlsDetector* detector, qDrawPlot* plot);
 
-	/** Destructor
+	/**
+	 * Destructor
 	 */
 	~qTabMeasurement();
 
-	/** To refresh and update widgets
+	/**
+	 * Returns the status of the acquisition in gui
 	 */
-	void Refresh();
+	bool GetStartStatus();
 
-	/** To enable expert mode
-	 * @param enable to enable if true
-	 */
-	void SetExpertMode(bool enable);
-
-	/** Returns the status of the acquisition in gui
-	 */
-	bool GetStartStatus(){return (!btnStart->isEnabled());};
-
-	/** Click the Start/Stop Acquisition button
+	/**
+	 * Click the Start/Stop Acquisition button
 	 *  This is used if this command came from gui client
 	 */
-	void ClickStartStop(){startAcquisition();myPlot->SetClientInitiated();};
+	void ClickStartStop();
 
-	/** Returns progress bar value */
-	int GetProgress(){return progressBar->value();};
+	/**
+	 * Returns progress bar value
+	 */
+	int GetProgress();
+
+	/**
+	 * Refresh and update widgets
+	 */
+	void Refresh();
 
 
 public slots:
 
-	/** update plot is finished,
+	/**
+	 * Update plot is finished,
 	 * changes start/stop text and enables/disables all widgets
 	 */
 	void UpdateFinished();
 
-	/** updates the current measurement
+	/**
+	 * Updates the current measurement
 	 * @param val the value to be updated
 	 */
 	void SetCurrentMeasurement(int val);
 
-
-
-
-private:
-	/** Sets up the widget
-	 */
-	void SetupWidgetWindow();
-
-	/** Sets up the timing mode
-	 */
-	void SetupTimingMode();
-
-	/** Sets up all the slots and signals
-	 */
-	void Initialization();
-
-	/** Enables/Disables all the widgets
-	 */
-	void Enable(bool enable);
-
-	/** Validates before enabling or disabling probes */
-	void EnableProbes();
-
-	/** Get timing mode from detector
-	 * @param startup is true when gui has just started up*/
-	void GetModeFromDetector(bool startup = false);
-
-	/** Checks if acquisition period is greater than exposure time
-	 * and dsplays in red as a warning */
-	void CheckAcqPeriodGreaterThanExp();
-
-
 private slots:
-	/** Sets the timing mode
-	 * @ param mode cane be None, Auto, Gated, Trigger Exposure Series,
-	 * Trigger Frame, Trigger Readout, External Trigger Window
-	 */
-	void SetTimingMode(int mode);
 
-	/** Set number of measurements
-	 *  @param num number of measurements to be set */
+	/**
+	 * Set number of measurements
+	 * @param num number of measurements to be set
+	 */
 	void setNumMeasurements(int num);
 
-	/** Set file name
-	 */
-	void setFileName();
-
-	/** Set index of file name
-	 * @param index index of selection
-	 */
-	void setRunIndex(int index);
-
-	/** starts Acquisition
-	 */
-	void startAcquisition();
-
-    /** stops Acquisition
-     */
-    void stopAcquisition();
-
-	/** Set number of frames
+	/**
+	 * Set number of frames
 	 *  @param val number of frames to be set
 	 */
 	void setNumFrames(int val);
 
-	/** Set acquisition time
+	/**
+	 * Set acquisition time
 	 */
 	void setExposureTime();
 
-	/** Set frame period between exposures
+	/**
+	 * Set frame period between exposures
 	 */
 	void setAcquisitionPeriod();
 
-	/** Set number of triggers
+	/**
+	 * Set number of triggers
 	 *  @param val number of triggers to be set
 	 */
 	void setNumTriggers(int val);
 
-	/** Set delay
+	/**
+	 * Set delay
 	 */
 	void setDelay();
 
-	/** Set number of gates
-	 *  @param val number of gates to be set
+	/**
+	 * Set number of samples
+	 *  @param val number of samples to be set
 	 */
-	void setNumGates(int val);
+	void setNumSamples(int val);
 
-	/** Set number of probes
-	 *  @param val number of probes to be set
+	/**
+	 * Set file name
 	 */
-	void setNumProbes(int val);
+	void setFileName();
 
-	/** Update progress*/
-	void UpdateProgress();
-
-	/** Enable write to file */
+	/**
+	 * Enable write to file
+	 */
 	void EnableFileWrite(bool enable);
 
+	/**
+	 * Set index of file name
+	 * @param index index of selection
+	 */
+	void setRunIndex(int index);
+
+	/**
+	 * Update progress
+	 */
+	void UpdateProgress();
+
+	/**
+	 * starts Acquisition
+	 */
+	void startAcquisition();
+
+    /**
+     * stops Acquisition
+     */
+    void stopAcquisition();
+
+	/**
+	 * Sets the timing mode
+	 * @param mode timing mode
+	 */
+	void SetTimingMode(int mode);
 
 private:
-	/** parent widget */
-	qDetectorMain *thisParent;
+	/**
+	 * Sets up the widget
+	 */
+	void SetupWidgetWindow();
+
+	/**
+	 * Sets up the timing mode
+	 */
+	void SetupTimingMode();
+
+	/**
+	 * Sets up all the slots and signals
+	 */
+	void Initialization();
+
+	/**
+	 * Get timing mode from detector
+	 * @param startup is true when gui has just started up
+	 */
+	void GetTimingModeFromDetector(bool startup = false);
+
+	/**
+	 * Enables/Disables widgetframes to avoid setting measurement during an acquisition
+	 */
+	void Enable(bool enable);
+
+	/**
+	 * Checks if acquisition period is greater than exposure time
+	 */
+	void CheckAcqPeriodGreaterThanExp();
+
+	/**
+	 * Verify if output directory existing error is set
+	 * @returns OK or FAIL
+	 */
+	int VerifyOutputDirectoryError();
+
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 	/** The Plot widget	 */
@@ -184,15 +190,13 @@ private:
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
 	/** enum for the timing mode */
-	enum{None, Auto, Trigger_Exp_Series, Trigger_Readout, Gated, Gated_Start, Burst_Trigger, NumTimingModes};
+	enum{AUTO, TRIGGER, GATED, BURST_TRIGGER, NUM_TIMING_MODES};
 	/** timer to update the progress*/
 	QTimer *progressTimer;
 	/** tool tip variables*/
 	QString 	acqPeriodTip;
 	QString 	errPeriodTip;
 	QPalette	red;
-	/** expert mode */
-	bool expertMode;
 	/** to access items in settings combobox */
 	QStandardItemModel* model;
 
@@ -201,7 +205,3 @@ signals:
 	void StopSignal();
 	void CheckPlotIntervalSignal();
 };
-
-
-
-#endif /* QTABMEASUREMENT */

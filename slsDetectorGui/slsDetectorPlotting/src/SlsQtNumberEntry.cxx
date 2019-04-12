@@ -27,7 +27,6 @@
 
 #include "SlsQtNumberEntry.h"
 
-using namespace std;
 
 SlsQtNumberEntry::SlsQtNumberEntry(QWidget *parent, int with_checkbox, char *start_string, int num_type, char* middle_string, int num2_type, int n_units, char** units, double* unit_factors,char* end_string):QWidget(parent){
   SetupNumberEntry(with_checkbox,start_string,num_type,middle_string,num2_type,n_units,units,unit_factors,end_string);

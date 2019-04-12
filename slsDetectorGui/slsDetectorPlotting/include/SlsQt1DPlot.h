@@ -22,7 +22,7 @@
 #include <qwt_scale_div.h>
 #include  "SlsQt1DZoomer.h"
 #include <iostream>
-using namespace std;
+
 
 class QPen;
 class SlsQt1DPlot;

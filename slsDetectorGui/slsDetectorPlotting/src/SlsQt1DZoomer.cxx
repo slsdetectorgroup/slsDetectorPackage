@@ -13,7 +13,6 @@
 #include "SlsQt1DPlot.h"
 #include "SlsQt1DZoomer.h"
 
-using namespace std;
 
 void SlsQt1DZoomer::ResetZoomBase(){
   SetZoomBase(x0,y0,x1-x0,y1-y0); //for going between log and nonlog plots
@@ -100,8 +99,6 @@ void SlsQt1DZoomer::ExtendZoomBase(SlsQtH1D* h){
   if(h->GetFirstXgtZero()<firstXgt0) firstXgt0 = h->GetFirstXgtZero(); 
   if(h->GetFirstYgtZero()<firstYgt0) firstYgt0 = h->GetFirstYgtZero(); 
   
-  //  cout<<"extend  "<<h_x0<<"  "<<h_y0<<"  "<<h_x1<<"  "<<h_y1<<endl;
-  //  cout<<"extend  "<<x0<<"  "<<y0<<"  "<<x1-x0<<"  "<<y1-y0<<endl;
   ResetZoomBase();
 }
 

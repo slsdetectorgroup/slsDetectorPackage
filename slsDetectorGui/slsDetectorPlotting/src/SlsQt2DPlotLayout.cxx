@@ -14,7 +14,7 @@
 
 #include "SlsQt2DPlotLayout.h"
 
-using namespace std;
+
 
 SlsQt2DPlotLayout::SlsQt2DPlotLayout(QWidget *parent):QGroupBox(parent){
 	the_layout=0;

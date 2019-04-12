@@ -1,5 +1,4 @@
 #include "slsDetectorFunctionList.h"
-#include "gitInfoGotthard.h"
 #include "versionAPI.h"
 #include "logger.h"
 #include "RegisterDefs.h"
@@ -275,7 +274,6 @@ int64_t getDetectorId(enum idMode arg){
 	case DETECTOR_FIRMWARE_VERSION:
 		return getFirmwareVersion();
 	case DETECTOR_SOFTWARE_VERSION:
-		return  (GITDATE & 0xFFFFFF);
 	case CLIENT_SOFTWARE_API_VERSION:
 		return APIGOTTHARD;
 	default:

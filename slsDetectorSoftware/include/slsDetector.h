@@ -1355,7 +1355,7 @@ class slsDetector : public virtual slsDetectorDefs{
 
     /**
 	 * Prints receiver configuration
-	 * #param level print level
+	 * @param level print level
 	 */
     void printReceiverConfiguration(TLogLevel level = logINFO);
 

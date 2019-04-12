@@ -6,6 +6,7 @@
 #include "communication_funcs.h"
 #include "slsDetectorServer_funcs.h"
 #include "slsDetectorServer_defs.h"
+#include "versionAPI.h"
 
 #include <signal.h>
 #include <string.h>
@@ -29,7 +30,25 @@ void error(char *msg){
 }
 
 int main(int argc, char *argv[]){
-	int  portno = DEFAULT_PORTNO;
+	
+	// print version
+	if (argc > 1 && !strcasecmp(argv[1], "-version")) {
+        int version = 0;
+#ifdef GOTTHARDD
+        version = APIGOTTHARD;
+#elif EIGERD
+		version = APIEIGER;
+#elif JUNGFRAUD
+		version = APIJUNGFRAU;
+#elif CHIPTESTBOARDD
+		version = APICTB;
+#elif MOENCHD
+		version = APIMOENCH;
+#endif
+		FILE_LOG(logINFO, ("SLS Detector Server %s (0x%x)\n", GITBRANCH, version));
+	}
+
+        int  portno = DEFAULT_PORTNO;
 	int retval = OK;
 	int fd = 0;
 

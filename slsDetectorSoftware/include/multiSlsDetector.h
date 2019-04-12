@@ -2,7 +2,6 @@
 
 #include "SharedMemory.h"
 #include "error_defs.h"
-#include "gitInfoLib.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
 
@@ -225,10 +224,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int64_t getId(idMode mode, int detPos = -1);
 
-    int64_t getClientSoftwareVersion() const {
-        return GITDATE;
-    }
+     /**
+      * Get Client Software version
+      * @returns client software version 
+      */
+    int64_t getClientSoftwareVersion() const;
 
+     /**
+      * Get Receiver software version
+      * @return receiver software version
+      */
     int64_t getReceiverSoftwareVersion(int detPos = -1) const;
 
     std::vector<int64_t> getDetectorNumber();
@@ -468,9 +473,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Load configuration from a configuration File
      * @param fname configuration file name
-     * @return OK or FAIL
      */
-    int readConfigurationFile(const std::string &fname);
+    void readConfigurationFile(const std::string &fname);
 
     /**
      * Write current configuration to a file
@@ -1511,9 +1515,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
 	 * Prints receiver configuration
+	 * @param level print level
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 */
-    void printReceiverConfiguration(int detPos = -1);
+    void printReceiverConfiguration(TLogLevel level = logINFO, int detPos = -1);
 
     /**
      * Sets up receiver socket if online and sets the flag

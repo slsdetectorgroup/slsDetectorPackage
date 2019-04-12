@@ -35,7 +35,7 @@ public:
 	 *    @param detector is the detector returned from the detector tab
 	 *    @param plot plot object reference
 	 */
-	qTabPlot(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot);
+	qTabPlot(QWidget *parent,multiSlsDetector* detector, qDrawPlot* plot);
 
 	/** Destructor
 	 */
@@ -106,7 +106,7 @@ public slots:
 
 	/** Enable Scan box
 	 */
-	void EnableScanBox();
+	 void EnableScanBox();
 
 
 private slots:

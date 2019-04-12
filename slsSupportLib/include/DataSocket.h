@@ -22,6 +22,7 @@ class DataSocket {
     size_t receiveData(void *buffer, size_t size);
     int setTimeOut(int t_seconds);
     void close();
+    void shutDownSocket();
 
   private:
     int socketId_ = -1;

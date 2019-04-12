@@ -5,7 +5,6 @@
 #include "ServerInterface.h"
 #include "SharedMemory.h"
 #include "file_utils.h"
-#include "gitInfoLib.h"
 #include "multiSlsDetector.h"
 #include "network_utils.h"
 #include "slsDetectorCommand.h"
@@ -575,7 +574,7 @@ slsDetector::getTypeFromDetector(const std::string &hostname, int cport) {
     int ret = FAIL;
     detectorType retval = GENERIC;
     FILE_LOG(logDEBUG1) << "Getting detector type ";
-    sls::ClientSocket cs(false, hostname, cport);
+    sls::ClientSocket cs("Detector", hostname, cport);
     cs.sendData(reinterpret_cast<char *>(&fnum), sizeof(fnum));
     cs.receiveData(reinterpret_cast<char *>(&ret), sizeof(ret));
     cs.receiveData(reinterpret_cast<char *>(&retval), sizeof(retval));
@@ -3971,9 +3970,8 @@ int slsDetector::updateCachedReceiverVariables() const {
     FILE_LOG(logDEBUG1) << "Sending update client to receiver server";
 
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
-        auto receiver =
-            sls::ClientSocket(true, detector_shm()->receiver_hostname,
-                              detector_shm()->receiverTCPPort);
+        auto receiver = sls::ClientSocket("Receiver", detector_shm()->receiver_hostname,
+                                          detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
         if (ret == FAIL) {
             std::string msg = "Could not update receiver: " +

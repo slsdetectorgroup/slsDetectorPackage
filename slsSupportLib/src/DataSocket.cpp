@@ -88,6 +88,11 @@ void DataSocket::close() {
     }
 }
 
+void DataSocket::shutDownSocket() {
+  	shutdown(getSocketId(), SHUT_RDWR);
+	close();  
+}
+
 struct sockaddr_in ConvertHostnameToInternetAddress(const std::string &hostname) {
     struct addrinfo hints, *result;
     memset(&hints, 0, sizeof(hints));

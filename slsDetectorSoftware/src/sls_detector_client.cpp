@@ -1,11 +1,11 @@
-#include "gitInfoLib.h"
+#include "versionAPI.h"
 #include "multiSlsDetectorClient.h"
 #include <cstdlib>
 
 int main(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         if (!(strcmp(argv[i], "--version")) || !(strcmp(argv[i], "-v"))) {
-            int64_t tempval = GITDATE;
+            int64_t tempval = APILIB;
             std::cout << argv[0] << " " << GITBRANCH << " (0x" << std::hex << tempval << ")" << std::endl;
             return 0;
         }

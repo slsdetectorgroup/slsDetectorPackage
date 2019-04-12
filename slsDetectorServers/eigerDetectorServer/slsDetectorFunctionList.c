@@ -1,5 +1,4 @@
 #include "slsDetectorFunctionList.h"
-#include "gitInfoEiger.h"
 #include "versionAPI.h"
 #include "logger.h"
 #include "common.h"
@@ -195,7 +194,6 @@ int64_t getDetectorId(enum idMode arg) {
 	case SOFTWARE_FIRMWARE_API_VERSION:
 		return (int64_t)getFirmwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
-		return  (GITDATE & 0xFFFFFF);
 	case CLIENT_SOFTWARE_API_VERSION:
 		return APIEIGER;
 	default:
@@ -1182,7 +1180,7 @@ void setTiming( enum externalCommunicationMode arg) {
 		case AUTO_TIMING:			ret = 0;	break;
 		case TRIGGER_EXPOSURE:		ret = 2;	break;
 		case BURST_TRIGGER:			ret = 1;	break;
-		case GATE_FIX_NUMBER:		ret = 3;	break;
+		case GATED:					ret = 3;	break;
 		}
 		FILE_LOG(logDEBUG1, ("Setting Triggering Mode: %d\n", (int)ret));
 #ifndef VIRTUAL
@@ -1200,7 +1198,7 @@ enum externalCommunicationMode getTiming() {
 	case 0:		ret = AUTO_TIMING;		break;
 	case 2:		ret = TRIGGER_EXPOSURE; break;
 	case 1:		ret = BURST_TRIGGER;	break;
-	case 3:		ret = GATE_FIX_NUMBER;	break;
+	case 3:		ret = GATED;			break;
 	default:
 		FILE_LOG(logERROR, ("Unknown trigger mode found %d\n", ret));
 		ret = 0;

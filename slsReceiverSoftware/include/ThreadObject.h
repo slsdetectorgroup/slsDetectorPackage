@@ -7,14 +7,14 @@
  *@short creates/destroys a thread
  */
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "logger.h"
 
 #include <pthread.h>
 #include <semaphore.h>
 #include <string>
 
-class ThreadObject : private virtual slsReceiverDefs {
+class ThreadObject : private virtual slsDetectorDefs {
 	
  public:
 	/**

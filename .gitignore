@@ -6,6 +6,13 @@ bin/
 *.log
 *.out
 *.toc
+*.o
+.*
 build
 docs/
 RELEASE.txt
+
+
+*.pyc
+*/__pycache__/*
+

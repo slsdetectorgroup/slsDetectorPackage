@@ -139,7 +139,7 @@
      <x>390</x>
      <y>8</y>
      <width>362</width>
-     <height>342</height>
+     <height>281</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -154,10 +154,121 @@
       <x>0</x>
       <y>10</y>
       <width>357</width>
-      <height>321</height>
+      <height>264</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridTimeResolved">
+     <item row="1" column="1">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>10</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="3" column="3">
+      <widget class="QComboBox" name="comboPeriodUnit">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Frame period between exposures. 
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #period#
+&lt;/nobr&gt;</string>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>hr</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>min</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ms</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>us</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ns</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="2" colspan="2">
+      <widget class="QComboBox" name="comboTimingMode">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Timing Mode of the detector. 
+ #timing#</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>None</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Auto</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Trigger Exposure Series</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string> Gated with fixed number</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Burst Trigger</string>
+        </property>
+       </item>
+      </widget>
+     </item>
      <item row="4" column="0">
       <widget class="QLabel" name="lblNumTriggers">
        <property name="enabled">
@@ -311,201 +422,6 @@
        <item>
         <property name="text">
          <string>ns</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="lblNumGates">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>Number of Gate Signals per Frame.
- #gates#</string>
-       </property>
-       <property name="text">
-        <string>Number of Gates:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="2" colspan="2">
-      <widget class="QSpinBox" name="spinNumGates">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>Number of Gate Signals per Frame.
- #gates#</string>
-       </property>
-       <property name="statusTip">
-        <string/>
-       </property>
-       <property name="whatsThis">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-       <property name="keyboardTracking">
-        <bool>false</bool>
-       </property>
-       <property name="suffix">
-        <string/>
-       </property>
-       <property name="minimum">
-        <number>-1</number>
-       </property>
-       <property name="maximum">
-        <number>2000000000</number>
-       </property>
-       <property name="value">
-        <number>1</number>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="lblNumProbes">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>&lt;nobr&gt;
-The data are accumulated over several (frames) pump cycles.
-&lt;/nobr&gt;
-&lt;br&gt;
-&lt;nobr&gt; 
-Enabled only in &lt;b&gt;Expert Mode&lt;/b&gt; and if&lt;b&gt; Number of Frames&lt;/b&gt; &gt; 1.
-&lt;/nobr&gt;
-&lt;br&gt;
-&lt;nobr&gt;Setting &lt;b&gt;Number of Probes&lt;/b&gt; will reset &lt;b&gt;Number of Triggers&lt;/b&gt; to 1.
-&lt;/nobr&gt;
-&lt;br&gt;
-Maximum value is 3. &lt;br&gt;
-#probes#
-</string>
-       </property>
-       <property name="text">
-        <string>Number of Probes:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2" colspan="2">
-      <widget class="QSpinBox" name="spinNumProbes">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>&lt;nobr&gt;
-The data are accumulated over several (frames) pump cycles.
-&lt;/nobr&gt;
-&lt;br&gt;
-&lt;nobr&gt; 
-Enabled only in &lt;b&gt;Expert Mode&lt;/b&gt; and if&lt;b&gt; Number of Frames&lt;/b&gt; &gt; 1.
-&lt;/nobr&gt;
-&lt;br&gt;
-&lt;nobr&gt;Setting &lt;b&gt;Number of Probes&lt;/b&gt; will reset &lt;b&gt;Number of Triggers&lt;/b&gt; to 1.
-&lt;/nobr&gt;
-&lt;br&gt;
-Maximum value is 3. &lt;br&gt;
-#probes#
-</string>
-       </property>
-       <property name="statusTip">
-        <string/>
-       </property>
-       <property name="whatsThis">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-       <property name="keyboardTracking">
-        <bool>false</bool>
-       </property>
-       <property name="suffix">
-        <string/>
-       </property>
-       <property name="minimum">
-        <number>-1</number>
-       </property>
-       <property name="maximum">
-        <number>3</number>
-       </property>
-       <property name="value">
-        <number>1</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2" colspan="2">
-      <widget class="QComboBox" name="comboTimingMode">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>Timing Mode of the detector. 
- #timing#</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>None</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Auto</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Trigger Exposure Series</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Trigger Readout</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Gated with Fixed Number</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Gated with Start Trigger</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Burst Trigger</string>
         </property>
        </item>
       </widget>
@@ -727,78 +643,6 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="3" column="3">
-      <widget class="QComboBox" name="comboPeriodUnit">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>&lt;nobr&gt;
-Frame period between exposures. 
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #period#
-&lt;/nobr&gt;</string>
-       </property>
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
-       <property name="currentIndex">
-        <number>2</number>
-       </property>
-       <item>
-        <property name="text">
-         <string>hr</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>min</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>s</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>us</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>ns</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>10</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="lblTimingMode">
        <property name="text">
@@ -806,8 +650,65 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="lblNumSamples">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>Number of Triggers to be expected.
+ #cycles#</string>
+       </property>
+       <property name="text">
+        <string>Number of Samples:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="2" colspan="2">
+      <widget class="QSpinBox" name="spinNumSamples">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Number of Triggers to be expected.
+ #cycles#</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="whatsThis">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
+       <property name="suffix">
+        <string/>
+       </property>
+       <property name="minimum">
+        <number>-1</number>
+       </property>
+       <property name="maximum">
+        <number>2000000000</number>
+       </property>
+       <property name="value">
+        <number>1</number>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
+   <zorder>gridLayoutWidget</zorder>
+   <zorder>spinNumSamples</zorder>
   </widget>
   <widget class="QFrame" name="frameNotTimeResolved">
    <property name="geometry">
@@ -967,7 +868,7 @@ Frame period between exposures.
      <x>30</x>
      <y>298</y>
      <width>318</width>
-     <height>31</height>
+     <height>34</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -1074,8 +975,6 @@ Frame period between exposures.
   <tabstop>spinNumTriggers</tabstop>
   <tabstop>spinDelay</tabstop>
   <tabstop>comboDelayUnit</tabstop>
-  <tabstop>spinNumGates</tabstop>
-  <tabstop>spinNumProbes</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

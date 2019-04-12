@@ -14,7 +14,7 @@
 #include <string>
 
 
-class BinaryFile : private virtual slsReceiverDefs, public File, public BinaryFileStatic {
+class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFileStatic {
 	
  public:
 	/**
@@ -47,7 +47,7 @@ class BinaryFile : private virtual slsReceiverDefs, public File, public BinaryFi
 	/**
 	 * Print all member values
 	 */
-	void PrintMembers();
+	void PrintMembers(TLogLevel level = logDEBUG1);
 
 	/**
 	 * Create file

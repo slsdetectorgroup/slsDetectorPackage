@@ -1,5 +1,14 @@
-
 set(CMAKE_AUTOMOC ON)
+
+set(ENV{QMAKESPEC} "/afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/mkspecs/linux-g++")
+set(ENV{PATH} "/afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/bin:$PATH")
+
+link_directories(
+    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/lib 
+    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/qwt-6.0.1/lib 
+    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/qwtplot3d/lib
+    /afs/psi.ch/project/sls_det_software/dhanya_softwareDevelopment/mySoft/slsDetectorPackage/build/bin
+)
 
 set(SOURCES
     slsDetectorPlotting/src/SlsQt1DPlot.cxx
@@ -14,9 +23,6 @@ set(SOURCES
     src/qTabMeasurement.cpp
     src/qTabDataOutput.cpp
     src/qTabPlot.cpp
-    src/qTabActions.cpp
-    src/qActionsWidget.cpp
-    src/qScanWidget.cpp
     src/qTabAdvanced.cpp
     src/qTabSettings.cpp
     src/qTabDebugging.cpp
@@ -33,8 +39,6 @@ set(FORMS
     forms/form_tab_advanced.ui
     forms/form_tab_settings.ui
     forms/form_tab_debugging.ui
-    forms/form_action.ui
-    forms/form_scan.ui
 )
 
 qt4_wrap_ui(FORMS_H ${FORMS})
@@ -56,15 +60,12 @@ set(HEADERS
     include/qTabMeasurement.h
     include/qTabDataOutput.h
     include/qTabPlot.h
-    include/qTabActions.h
-    include/qActionsWidget.h
-    include/qScanWidget.h
     include/qTabAdvanced.h
     include/qTabSettings.h
     include/qTabDebugging.h
     include/qTabDeveloper.h
     include/qTabMessages.h
-    include/gitInfoGui.h
+    ../slsSupportLib/include/versionAPI.h
     include/qServer.h
 )
 set(RESOURCES
@@ -75,13 +76,7 @@ qt4_add_resources(RESOURCES_SRCS ${RESOURCES})
 include_directories(
     include
     slsDetectorPlotting/include
-    ../slsDetectorSoftware/commonFiles 
-    ../slsDetectorSoftware/slsReceiverInterface   
-    ../slsDetectorSoftware/slsDetector  
-    ../slsDetectorSoftware/slsDetectorAnalysis  
-    ../slsDetectorSoftware/multiSlsDetector   
-    ../slsDetectorSoftware/usersFunctions  
-    ../slsReceiverSoftware/include
+    ../slsSupportLib/include  
     ${QT_INCLUDE_DIR}
     ${QT_QTCORE_INCLUDE_DIR}
     ${QT_QTGUI_INCLUDE_DIR}
@@ -90,7 +85,7 @@ include_directories(
 )
 
 add_definitions(
-    -DDACS_INT -DVERBOSE -DPRINT_LOG
+    -DPRINT_LOG #-DVERBOSE 
 )
 
 add_executable(slsDetectorGui
@@ -100,34 +95,43 @@ add_executable(slsDetectorGui
     ${RESOURCES_SRCS}
 )
 
-set_target_properties(slsDetectorGui PROPERTIES
-    LINKER_LANGUAGE CXX
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
-
-target_link_libraries(slsDetectorGui 
+target_link_libraries(slsDetectorGui PUBLIC
+    slsProjectOptions
+    slsProjectWarnings
+    slsSupportLib
     slsDetectorShared
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
     pthread
-    zmq
+    ${ZeroMQ_LIBRARIES}
     rt
     png
     z
     Qt4::QtOpenGL
     Qt4::QtSvg
+)
 
+set_target_properties(slsDetectorGui PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 add_executable(gui_client
     client/qClient.h
     client/qClient.cpp
 )
+
+target_link_libraries(gui_client PUBLIC
+    slsProjectOptions
+    slsProjectWarnings
+    slsSupportLib
+    slsDetectorShared
+    pthread
+    rt
+)
+
 set_target_properties(gui_client PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS slsDetectorGui gui_client
-    RUNTIME DESTINATION bin)
+install(TARGETS slsDetectorGui gui_client DESTINATION bin)

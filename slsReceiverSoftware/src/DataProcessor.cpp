@@ -14,6 +14,7 @@
 #include "HDF5File.h"
 #endif
 #include "DataStreamer.h"
+#include "sls_detector_exceptions.h"
 
 #include <iostream>
 #include <errno.h>
@@ -22,21 +23,18 @@
 const std::string DataProcessor::TypeName = "DataProcessor";
 
 
-DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
+DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		fileFormat* ftype, bool fwenable,
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
-		bool* fp, bool* act, bool* depaden, bool* sm,
-		void (*dataReadycb)(char*, char*, uint32_t, void*),
-		void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
-		void *pDataReadycb) :
+		bool* fp, bool* act, bool* depaden, bool* sm) :
 
 		ThreadObject(ind),
 		runningFlag(0),
-		generalData(0),
+		generalData(nullptr),
 		fifo(f),
 		myDetectorType(dtype),
-		file(0),
+		file(nullptr),
 		dataStreamEnable(dsEnable),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
@@ -45,7 +43,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		streamingFrequency(freq),
 		streamingTimerInMs(timer),
 		currentFreqCount(0),
-		tempBuffer(0),
+		tempBuffer(nullptr),
 		activated(act),
 		deactivatedPaddingEnable(depaden),
         silentMode(sm),
@@ -56,13 +54,10 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo*& f,
 		firstMeasurementIndex(0),
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
-		currentFrameIndex(0),
-		rawDataReadyCallBack(dataReadycb),
-		rawDataModifyReadyCallBack(dataModifyReadycb),
-		pRawDataReady(pDataReadycb)
+		currentFrameIndex(0)
 {
      if(ThreadObject::CreateThread() == FAIL)
-         throw std::exception();
+         throw sls::RuntimeError("Could not create processing thread");
 
     FILE_LOG(logDEBUG) << "DataProcessor " << ind << " created";
 
@@ -125,7 +120,7 @@ void DataProcessor::StopRunning() {
     runningFlag = false;
 }
 
-void DataProcessor::SetFifo(Fifo*& f) {
+void DataProcessor::SetFifo(Fifo* f) {
 	fifo = f;
 }
 
@@ -144,7 +139,7 @@ void DataProcessor::ResetParametersforNewMeasurement(){
 
 	if (tempBuffer) {
 		delete [] tempBuffer;
-		tempBuffer = 0;
+		tempBuffer = nullptr;
 	}
 	if (*gapPixelsEnable) {
 		tempBuffer = new char[generalData->imageSize];
@@ -166,18 +161,14 @@ void DataProcessor::RecordFirstIndices(uint64_t fnum) {
 		firstAcquisitionIndex = fnum;
 	}
 
-#ifdef VERBOSE
-	cprintf(BLUE,"%d First Acquisition Index:%lld\tFirst Measurement Index:%lld\n",
-			index, (long long int)firstAcquisitionIndex, (long long int)firstMeasurementIndex);
-#endif
+	FILE_LOG(logDEBUG1) << index << " First Acquisition Index:" << firstAcquisitionIndex <<
+			"\tFirst Measurement Index:" << firstMeasurementIndex;
 }
 
 
 void DataProcessor::SetGeneralData(GeneralData* g) {
 	generalData = g;
-#ifdef VERY_VERBOSE
 	generalData->Print();
-#endif
 	if (file) {
 		if (file->GetFileType() == HDF5) {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
@@ -200,10 +191,10 @@ void DataProcessor::SetFileFormat(const fileFormat f) {
 	if (file && file->GetFileType() != f) {
 		//remember the pointer values before they are destroyed
 		int nd[MAX_DIMENSIONS];nd[0] = 0; nd[1] = 0;
-		uint32_t* maxf = 0;
-		char* fname=0; char* fpath=0; uint64_t* findex=0;
-		bool* owenable=0; int* dindex=0; int* nunits=0; uint64_t* nf = 0;
-		uint32_t* dr = 0; uint32_t* port = 0;
+		uint32_t* maxf = nullptr;
+		char* fname=nullptr; char* fpath=nullptr; uint64_t* findex=nullptr;
+		bool* owenable=nullptr; int* dindex=nullptr; int* nunits=nullptr; uint64_t* nf = nullptr;
+		uint32_t* dr = nullptr; uint32_t* port = nullptr;
 		file->GetMemberPointerValues(nd, maxf, fname, fpath, findex,
 				owenable, dindex, nunits, nf, dr, port);
 		//create file writer with same pointers
@@ -225,7 +216,7 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 
 
 	if (file) {
-		delete file; file = 0;
+		delete file; file = nullptr;
 	}
 
 	if (fileWriteEnable) {
@@ -250,7 +241,7 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 // only the first file
 int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st,
 		uint64_t sp, uint64_t ap) {
-	if (file == NULL)
+	if (file == nullptr)
 		return FAIL;
 	file->CloseAllFiles();
 	if (file->CreateMasterFile(en,	generalData->imageSize,
@@ -276,18 +267,14 @@ void DataProcessor::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 
 
 void DataProcessor::ThreadExecution() {
-	char* buffer=0;
+	char* buffer=nullptr;
 	fifo->PopAddress(buffer);
-#ifdef FIFODEBUG
-	if (!index) cprintf(BLUE,"DataProcessor %d, pop 0x%p buffer:%s\n",
-			index,(void*)(buffer),buffer);
-#endif
+	FILE_LOG(logDEBUG5) << "DataProcessor " << index << ", "
+			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;
 
 	//check dummy
 	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
-#ifdef VERBOSE
-	if (!index) cprintf(BLUE,"DataProcessor %d, Numbytes:%u\n", index,numBytes);
-#endif
+	FILE_LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
 		return;
@@ -304,10 +291,8 @@ void DataProcessor::ThreadExecution() {
 
 
 void DataProcessor::StopProcessing(char* buf) {
-#ifdef VERBOSE
-	if (!index)
-		cprintf(RED,"DataProcessing %d: Dummy\n", index);
-#endif
+	FILE_LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
+
 	//stream or free
 	if (*dataStreamEnable)
 		fifo->PushAddressToStream(buf);
@@ -317,9 +302,7 @@ void DataProcessor::StopProcessing(char* buf) {
 	if (file)
 		file->CloseCurrentFile();
 	StopRunning();
-#ifdef VERBOSE
-	FILE_LOG(logINFO) << index << ": Processing Completed";
-#endif
+	FILE_LOG(logDEBUG1) << index << ": Processing Completed";
 }
 
 
@@ -335,16 +318,9 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		numTotalFramesCaught++;
 	}
 
-
-#ifdef VERBOSE
-	if (!index)
-		cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
-#endif
+	FILE_LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
 
 	if (!measurementStartedFlag) {
-#ifdef VERBOSE
-		if (!index) cprintf(BLUE,"DataProcessing %d: fnum:%lu\n", index, fnum);
-#endif
 		RecordFirstIndices(fnum);
 
 		if (*dataStreamEnable) {
@@ -367,7 +343,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
     if (*activated && *framePadding && nump < generalData->packetsPerFrame)
         PadMissingPackets(buf);
 
-	// deactivated and padding enabled
+    // deactivated and padding enabled
     else if (!(*activated) && *deactivatedPaddingEnable)
 		PadMissingPackets(buf);
 
@@ -420,11 +396,10 @@ bool DataProcessor::SendToStreamer() {
 bool DataProcessor::CheckTimer() {
 	struct timespec end;
 	clock_gettime(CLOCK_REALTIME, &end);
-#ifdef VERBOSE
-	cprintf(BLUE,"%d Timer elapsed time:%f seconds\n", index,
-			( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec )
-			/ 1000000000.0);
-#endif
+
+	FILE_LOG(logDEBUG1) << index << " Timer elapsed time:" <<
+			(( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0)
+			<< " seconds";
 	//still less than streaming timer, keep waiting
 	if((( end.tv_sec - timerBegin.tv_sec )	+ ( end.tv_nsec - timerBegin.tv_nsec )
 			/ 1000000000.0) < ((double)*streamingTimerInMs/1000.00))
@@ -454,6 +429,19 @@ void DataProcessor::SetPixelDimension() {
 	}
 }
 
+void DataProcessor::registerCallBackRawDataReady(void (*func)(char* ,
+		char*, uint32_t, void*),void *arg) {
+	rawDataReadyCallBack=func;
+	pRawDataReady=arg;
+}
+
+void DataProcessor::registerCallBackRawDataModifyReady(void (*func)(char* ,
+		char*, uint32_t&, void*),void *arg) {
+	rawDataModifyReadyCallBack=func;
+	pRawDataReady=arg;
+}
+
+
 
 void DataProcessor::PadMissingPackets(char* buf) {
 	FILE_LOG(logDEBUG) << index << ": Padding Missing Packets";
@@ -466,9 +454,8 @@ void DataProcessor::PadMissingPackets(char* buf) {
 	uint32_t dsize = generalData->dataSize;
 	uint32_t fifohsize = generalData->fifoBufferHeaderSize;
 	uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - generalData->imageSize);
-#ifdef VERBOSE
-	cprintf(RED,"bitmask:%s\n", pmask.to_string().c_str());
-#endif
+	FILE_LOG(logDEBUG1) << "bitmask: " << pmask.to_string();
+
 	for (unsigned int pnum = 0; pnum < pperFrame; ++pnum) {
 
 		// not missing packet
@@ -491,7 +478,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 			else
 				memset(buf + fifohsize + (pnum * dsize), 0xFF, dsize+2);
 			break;
-		case JUNGFRAUCTB:
+		case CHIPTESTBOARD:
 			if (pnum == (pperFrame-1))
 				memset(buf + fifohsize + (pnum * dsize), 0xFF, corrected_dsize);
 			else
@@ -515,8 +502,8 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 	const uint32_t ny = generalData->nPixelsY;
 	const uint32_t npx = nx * ny;
 
-	char* srcptr = 0;
-	char* dstptr = 0;
+	char* srcptr = nullptr;
+	char* dstptr = nullptr;
 
 	const uint32_t b1px = generalData->imageSize / (npx); // not double as not dealing with 4 bit mode
 	const uint32_t b2px = 2 * b1px;
@@ -538,8 +525,8 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 
 	// vertical filling of values
 	{
-		char* srcgp1 = 0; char* srcgp2 = 0; char* srcgp3 = 0;
-		char* dstgp1 = 0; char* dstgp2 = 0; char* dstgp3 = 0;
+		char* srcgp1 = nullptr; char* srcgp2 = nullptr; char* srcgp3 = nullptr;
+		char* dstgp1 = nullptr; char* dstgp2 = nullptr; char* dstgp3 = nullptr;
 		const uint32_t b3px = 3 * b1px;
 
 		srcptr = tempBuffer + b1line;

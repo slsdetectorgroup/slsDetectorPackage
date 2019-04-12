@@ -116,7 +116,8 @@ done
 
 
 if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
-       CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
+		#CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
+		CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=OFF "
        echo "Compile Option: TextClient, Receiver and GUI"
 else 
        if [ $TEXTCLIENT -eq 1 ]; then
@@ -177,7 +178,7 @@ echo "in "$PWD
 #cmake
 if [ $REBUILD -eq 1 ]; then
 	rm -f CMakeCache.txt
-	BUILDCOMMAND="$CMAKE_PRE cmake $CMAKE_POST .."
+	BUILDCOMMAND="$CMAKE_PRE cmake3 $CMAKE_POST .."
 	echo $BUILDCOMMAND
 	eval $BUILDCOMMAND
 fi

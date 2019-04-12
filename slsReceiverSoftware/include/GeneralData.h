@@ -7,10 +7,10 @@
  *@short abstract for setting/getting properties of detector data
  */
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "receiver_defs.h"
-
-#include <math.h>			//ceil
+#include "logger.h"
+#include <cmath>			//ceil
 #include <vector>
 
 
@@ -19,7 +19,7 @@ class GeneralData {
 public:
 
 	/** DetectorType */
-	slsReceiverDefs::detectorType myDetectorType;
+	slsDetectorDefs::detectorType myDetectorType;
 
 	/** Number of Pixels in x axis */
 	uint32_t nPixelsX;
@@ -89,9 +89,10 @@ public:
 
 
 
+
 	/** Cosntructor */
 	GeneralData():
-		myDetectorType(slsReceiverDefs::GENERIC),
+		myDetectorType(slsDetectorDefs::GENERIC),
 		nPixelsX(0),
 		nPixelsY(0),
 		emptyHeader(0),
@@ -145,8 +146,8 @@ public:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	virtual void SetROI(std::vector<slsReceiverDefs::ROI> i) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	virtual void SetROI(std::vector<slsDetectorDefs::ROI> i) {
+		FILE_LOG(logERROR) << "SetROI is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -155,8 +156,8 @@ public:
 	 * @param i pointer to a vector of ROI pointers
 	 * @returns adc configured
 	 */
-	virtual int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	virtual int GetAdcConfigured(int index, std::vector<slsDetectorDefs::ROI>* i)  const{
+		FILE_LOG(logERROR) << "GetAdcConfigured is a generic function that should be overloaded by a derived class";
 		return 0;
 	};
 
@@ -166,7 +167,7 @@ public:
 	 * @param tgEnable true if 10GbE is enabled, else false
 	 */
 	virtual void SetDynamicRange(int dr, bool tgEnable) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "SetDynamicRange is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -175,16 +176,15 @@ public:
 	 * @param dr dynamic range
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "SetTenGigaEnable is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
 	 * Setting packets per frame changes member variables
 	 * @param ns number of samples
-	 * @param nroich number of channels in roi
 	 */
-	virtual void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+	virtual void setNumberofSamples(const uint64_t ns) {
+		FILE_LOG(logERROR) << "setNumberofSamples is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -192,49 +192,67 @@ public:
 	 * @param enable true if gap pixels enable, else false
 	 */
 	virtual void SetGapPixelsEnable(bool b, int dr) {
-		cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
+		FILE_LOG(logERROR) << "SetGapPixelsEnable is a generic function that should be overloaded by a derived class";
 	};
 
-	/**
-	 * Set odd starting packet (gotthard)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @returns true or false for odd starting packet number
-	 */
-	virtual bool SetOddStartingPacket(int index, char* packetData) {
-	    cprintf(RED,"This is a generic function that should be overloaded by a derived class\n");
-	    return false;
-	};
+    /**
+     * Set odd starting packet (gotthard)
+     * @param index thread index for debugging purposes
+     * @param packetData pointer to data
+     * @returns true or false for odd starting packet number
+     */
+    virtual bool SetOddStartingPacket(int index, char* packetData) {
+        cprintf(RED,"SetOddStartingPacket is a generic function that should be overloaded by a derived class\n");
+        return false;
+    };
 
+    /**
+     * Set databytes (ctb, moench)
+     * @param f readout flags
+     * @param r roi
+     * @param s number of samples
+     * @param t tengiga enable
+     */
+    virtual void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+        cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
+    };
+
+    /**
+     * set number of interfaces (jungfrau)
+     * @param number of interfaces
+     */
+    virtual void SetNumberofInterfaces(const int n) {
+        cprintf(RED,"SetNumberofInterfaces is a generic function that should be overloaded by a derived class\n");
+    }
 
 	/**
 	 * Print all variables
 	 */
-	virtual void Print() const {
-		FILE_LOG(logDEBUG) << "\n\nDetector Data Variables:";
-		FILE_LOG(logDEBUG) << "myDetectorType: " << slsReceiverDefs::getDetectorType(myDetectorType);
-		FILE_LOG(logDEBUG) << "Pixels X: " << nPixelsX;
-		FILE_LOG(logDEBUG) << "Pixels Y: " << nPixelsY;
-		FILE_LOG(logDEBUG) << "Empty Header: " << emptyHeader;
-		FILE_LOG(logDEBUG) << "Header Size in Packet: " << headerSizeinPacket;
-		FILE_LOG(logDEBUG) << "Data Size: " << dataSize;
-		FILE_LOG(logDEBUG) << "Packet Size: " << packetSize;
-		FILE_LOG(logDEBUG) << "Packets per Frame: " << packetsPerFrame;
-		FILE_LOG(logDEBUG) << "Image Size: " << imageSize;
-		FILE_LOG(logDEBUG) << "Frame Index Mask: " << frameIndexMask;
-		FILE_LOG(logDEBUG) << "Frame Index Offset: " << frameIndexOffset;
-		FILE_LOG(logDEBUG) << "Packet Index Mask: " << packetIndexMask;
-		FILE_LOG(logDEBUG) << "Packet Index Offset: " << packetIndexOffset;
-		FILE_LOG(logDEBUG) << "Max Frames Per File: " << maxFramesPerFile;
-		FILE_LOG(logDEBUG) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
-		FILE_LOG(logDEBUG) << "Default Fifo Depth: " << defaultFifoDepth;
-		FILE_LOG(logDEBUG) << "Threads Per Receiver: " << threadsPerReceiver;
-		FILE_LOG(logDEBUG) << "Header Packet Size: " << headerPacketSize;
-		FILE_LOG(logDEBUG) << "Complete Pixels X: " << nPixelsXComplete;
-		FILE_LOG(logDEBUG) << "Complete Pixels Y: " << nPixelsYComplete;
-		FILE_LOG(logDEBUG) << "Complete Image Size: " << imageSizeComplete;
-		FILE_LOG(logDEBUG) << "Standard Header: " << standardheader;
-		FILE_LOG(logDEBUG) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
+	virtual void Print(TLogLevel level = logDEBUG1) const {
+		FILE_LOG(level) << "\n\nDetector Data Variables:";
+		FILE_LOG(level) << "myDetectorType: " << slsDetectorDefs::detectorTypeToString(myDetectorType);
+		FILE_LOG(level) << "Pixels X: " << nPixelsX;
+		FILE_LOG(level) << "Pixels Y: " << nPixelsY;
+		FILE_LOG(level) << "Empty Header: " << emptyHeader;
+		FILE_LOG(level) << "Header Size in Packet: " << headerSizeinPacket;
+		FILE_LOG(level) << "Data Size: " << dataSize;
+		FILE_LOG(level) << "Packet Size: " << packetSize;
+		FILE_LOG(level) << "Packets per Frame: " << packetsPerFrame;
+		FILE_LOG(level) << "Image Size: " << imageSize;
+		FILE_LOG(level) << "Frame Index Mask: " << frameIndexMask;
+		FILE_LOG(level) << "Frame Index Offset: " << frameIndexOffset;
+		FILE_LOG(level) << "Packet Index Mask: " << packetIndexMask;
+		FILE_LOG(level) << "Packet Index Offset: " << packetIndexOffset;
+		FILE_LOG(level) << "Max Frames Per File: " << maxFramesPerFile;
+		FILE_LOG(level) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
+		FILE_LOG(level) << "Default Fifo Depth: " << defaultFifoDepth;
+		FILE_LOG(level) << "Threads Per Receiver: " << threadsPerReceiver;
+		FILE_LOG(level) << "Header Packet Size: " << headerPacketSize;
+		FILE_LOG(level) << "Complete Pixels X: " << nPixelsXComplete;
+		FILE_LOG(level) << "Complete Pixels Y: " << nPixelsYComplete;
+		FILE_LOG(level) << "Complete Image Size: " << imageSizeComplete;
+		FILE_LOG(level) << "Standard Header: " << standardheader;
+		FILE_LOG(level) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
 	};
 };
 
@@ -242,14 +260,14 @@ public:
 class GotthardData : public GeneralData {
 
 private:
-	const static int nChip = 10;
-	const static int nChan = 128;
-	const static int nChipsPerAdc = 2;
+	const int nChip = 10;
+	const int nChan = 128;
+	const int nChipsPerAdc = 2;
  public:
 
 	/** Constructor */
 	GotthardData(){
-		myDetectorType		= slsReceiverDefs::GOTTHARD;
+		myDetectorType		= slsDetectorDefs::GOTTHARD;
 		nPixelsX 			= 1280;
 		nPixelsY 			= 1;
 		headerSizeinPacket  = 4;
@@ -261,7 +279,7 @@ private:
 		frameIndexOffset 	= 1;
 		packetIndexMask 	= 1;
 		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 50000;
 	};
 
@@ -283,7 +301,7 @@ private:
 		if (nPixelsX == 1280) {
 			subFrameNumber = -1;
 			bunchId = -1;
-			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
+			frameNumber = *reinterpret_cast<uint32_t*>(packetData);
 			if (oddStartingPacket)
 			    frameNumber++;
 			packetNumber = frameNumber&packetIndexMask;
@@ -291,8 +309,8 @@ private:
 		} else  {
 			subFrameNumber = -1;
 			bunchId = -1;
-			frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
-			packetNumber = 0;
+            frameNumber = *reinterpret_cast<uint32_t *>(packetData);
+            packetNumber = 0;
 		}
 	}
 
@@ -301,7 +319,7 @@ private:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	void SetROI(std::vector<slsReceiverDefs::ROI> i) {
+	void SetROI(std::vector<slsDetectorDefs::ROI> i) {
 		// all adcs
 		if(!i.size()) {
 			nPixelsX 			= 1280;
@@ -313,7 +331,7 @@ private:
 			frameIndexOffset 	= 1;
 			packetIndexMask 	= 1;
 			maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 			defaultFifoDepth 	= 50000;
 			nPixelsXComplete 	= 0;
 			nPixelsYComplete 	= 0;
@@ -331,7 +349,7 @@ private:
 			frameIndexOffset 	= 0;
 			packetIndexMask 	= 0;
 			maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
-			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 			defaultFifoDepth 	= 25000;
 			nPixelsXComplete 	= 1280;
 			nPixelsYComplete 	= 1;
@@ -345,7 +363,7 @@ private:
 	 * @param i pointer to a vector of ROI
 	 * @returns adc configured
 	 */
-	int GetAdcConfigured(int index, std::vector<slsReceiverDefs::ROI>* i)  const{
+	int GetAdcConfigured(int index, std::vector<slsDetectorDefs::ROI>* i)  const{
 		int adc = -1;
 		// single adc
 		if(i->size())  {
@@ -376,8 +394,8 @@ private:
      * @param packetData pointer to data
      * @returns true or false for odd starting packet number
      */
-	bool SetOddStartingPacket(int index, char* packetData) {
-	    bool oddStartingPacket = true;
+    bool SetOddStartingPacket(int index, char* packetData) {
+        bool oddStartingPacket = true;
         // care only if no roi
         if  (nPixelsX == 1280) {
             uint32_t fnum = ((uint32_t)(*((uint32_t*)(packetData))));
@@ -404,197 +422,6 @@ private:
         return oddStartingPacket;
     };
 
-
-};
-
-
-class PropixData : public GeneralData {
-
- private:
-
-	/**bytes per pixel for calculating image size */
-	const static uint32_t bytesPerPixel = 2;
-
- public:
-
-	/** Constructor */
-	PropixData(){
-		myDetectorType		= slsReceiverDefs::PROPIX;
-		nPixelsX 			= 22;
-		nPixelsY 			= 22;
-		headerSizeinPacket  = 4;
-		dataSize 			= 1280;
-		packetSize 			= 1286;
-		packetsPerFrame 	= 2; //not really
-		imageSize 			= nPixelsX*nPixelsY*bytesPerPixel;
-		frameIndexMask 		= 0xFFFFFFFE;
-		frameIndexOffset 	= 1;
-		packetIndexMask 	= 1;
-		maxFramesPerFile 	= MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
-		defaultFifoDepth 	= 50000;
-	};
-};
-
-
-class Moench02Data : public GeneralData {
-
- public:
-
-	/** Bytes Per Adc */
-	const static uint32_t bytesPerAdc = (40*2);
-
-	/** Constructor */
-	Moench02Data(){
-		myDetectorType		= slsReceiverDefs::MOENCH;
-		nPixelsX 			= 160;
-		nPixelsY 			= 160;
-		headerSizeinPacket  = 4;
-		dataSize 			= 1280;
-		packetSize 			= 1286;
-		packetsPerFrame 	= 40;
-		imageSize 			= dataSize*packetsPerFrame;
-		frameIndexMask 		= 0xFFFFFF00;
-		frameIndexOffset 	= 8;
-		packetIndexMask 	= 0xFF;
-		maxFramesPerFile 	= MOENCH_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-	};
-
-	/**
-	 * Print all variables
-	 */
-	void Print() const {
-		GeneralData::Print();
-		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
-	}
-};
-
-
-class Moench03Data : public GeneralData {
-
- public:
-
-	/** Constructor */
-	Moench03Data(){
-		myDetectorType		= slsReceiverDefs::MOENCH;
-		nPixelsX 			= 400;
-		nPixelsY 			= 400;
-		headerSizeinPacket  = 22;
-		dataSize 			= 8192;
-		packetSize 			= headerSizeinPacket + dataSize;
-		packetsPerFrame 	= 40;
-		imageSize 			= dataSize*packetsPerFrame;
-		frameIndexMask 		= 0xFFFFFFFF;
-		frameIndexOffset 	= (6+8);
-		packetIndexMask 	= 0xFFFFFFFF;
-		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-	};
-};
-
-
-class JCTBData : public GeneralData {
-
-
-private:
-	/** Structure of an jungfrau ctb packet header */
-	typedef struct {
-		unsigned char emptyHeader[6];
-		unsigned char reserved[4];
-		unsigned char packetNumber[1];
-		unsigned char frameNumber[3];
-		unsigned char bunchid[8];
-	} jfrauctb_packet_header_t;
-
- public:
-
-
-
-	/** Bytes Per Adc */
-	const static uint32_t bytesPerAdc = 2;
-
-	/** Constructor */
-	JCTBData(){
-		myDetectorType		= slsReceiverDefs::JUNGFRAUCTB;
-		nPixelsX 			= 400;
-		nPixelsY 			= 400;
-		headerSizeinPacket  = 22;
-		dataSize 			= 8192;
-		packetSize 			= headerSizeinPacket + dataSize;
-		packetsPerFrame 	= 1;
-		imageSize 			= nPixelsX * nPixelsY * 2;
-		frameIndexMask 		= 0xFFFFFF;
-		maxFramesPerFile 	= JFCTB_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-	};
-
-
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
-	 * @param oddStartingPacket odd starting packet (gotthard)
-	 * @param frameNumber frame number 	 * @param packetNumber packet number
-	 * @param subFrameNumber sub frame number if applicable
-	 * @param bunchId bunch id
-	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
-		subFrameNumber = -1;
-		jfrauctb_packet_header_t* header = (jfrauctb_packet_header_t*)(packetData);
-		frameNumber = (uint64_t)((*( (uint32_t*) header->frameNumber)) & frameIndexMask);
-		packetNumber = (uint32_t)(*( (uint8_t*) header->packetNumber));
-		bunchId = (*((uint64_t*) header->bunchid));
-	}
-
-	/**
-	 * Setting packets per frame changes member variables
-	 * @param ns number of samples
-	 * @param nroich number of channels in roi
-	 */
-	void setNumberofSamples(const uint64_t ns, uint32_t nroich) {
-		packetsPerFrame = ceil(double(2 * (nroich ? nroich : 32) * ns) / dataSize);
-		nPixelsY		= (ns * 2) / 25;/* depends on nroich also?? */
-		imageSize 		= nPixelsX * nPixelsY * 2;
-	};
-
-	/**
-	 * Print all variables
-	 */
-	void Print() const {
-		GeneralData::Print();
-		FILE_LOG(logINFO) << "Bytes Per Adc: " << bytesPerAdc;
-	}
-};
-
-
-class JungfrauData : public GeneralData {
-
- public:
-
-	/** Constructor */
-	JungfrauData(){
-		myDetectorType		= slsReceiverDefs::JUNGFRAU;
-		nPixelsX 			= (256*4);
-		nPixelsY 			= 512;
-		emptyHeader			= 6;
-		headerSizeinPacket  = emptyHeader + sizeof(slsReceiverDefs::sls_detector_header);
-		dataSize 			= 8192;
-		packetSize 			= headerSizeinPacket + dataSize;
-		packetsPerFrame 	= 128;
-		imageSize 			= dataSize*packetsPerFrame;
-		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
-		defaultFifoDepth 	= 2500;
-		standardheader		= true;
-		defaultUdpSocketBufferSize = (2000 * 1024 * 1024);
-	};
-
 };
 
 
@@ -604,16 +431,16 @@ class EigerData : public GeneralData {
 
 	/** Constructor */
 	EigerData(){
-		myDetectorType		= slsReceiverDefs::EIGER;
+		myDetectorType		= slsDetectorDefs::EIGER;
 		nPixelsX 			= (256*2);
 		nPixelsY 			= 256;
-		headerSizeinPacket  = sizeof(slsReceiverDefs::sls_detector_header);
+		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
 		dataSize 			= 1024;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 256;
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
-		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsReceiverDefs::sls_receiver_header);
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 100;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 40;
@@ -673,3 +500,227 @@ class EigerData : public GeneralData {
 
 };
 
+
+
+class JungfrauData : public GeneralData {
+
+ public:
+
+	/** Constructor */
+	JungfrauData(){
+		myDetectorType		= slsDetectorDefs::JUNGFRAU;
+		nPixelsX 			= (256*4);
+		nPixelsY 			= 512;
+		emptyHeader			= 6;
+		headerSizeinPacket  = emptyHeader + sizeof(slsDetectorDefs::sls_detector_header);
+		dataSize 			= 8192;
+		packetSize 			= headerSizeinPacket + dataSize;
+		packetsPerFrame 	= 128;
+		imageSize 			= dataSize * packetsPerFrame;
+		maxFramesPerFile 	= JFRAU_MAX_FRAMES_PER_FILE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+		defaultFifoDepth 	= 2500;
+		standardheader		= true;
+		defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
+	};
+
+
+    /**
+     * set number of interfaces (jungfrau)
+     * @param number of interfaces
+     */
+    void SetNumberofInterfaces(const int n) {
+    	// 2 interfaces
+    	if (n == 2) {
+    		nPixelsY 					= 256;
+    		packetsPerFrame 			= 64;
+    		imageSize 					= dataSize * packetsPerFrame;
+    		threadsPerReceiver			= 2;
+    		defaultUdpSocketBufferSize 	= (500 * 1024 * 1024);
+
+    	}
+    	// 1 interface
+    	else  {
+    		nPixelsY 					= 512;
+    		packetsPerFrame 			= 128;
+    		imageSize 					= dataSize * packetsPerFrame;
+    		threadsPerReceiver			= 1;
+    		defaultUdpSocketBufferSize 	= (1000 * 1024 * 1024);
+    	}
+    }
+};
+
+
+
+class ChipTestBoardData : public GeneralData {
+private:
+	/** Number of analog channels */
+	const int NCHAN_ANALOG = 32;
+	/** Number of digital channels */
+	const int NCHAN_DIGITAL = 4;
+public:
+
+
+	/** Constructor */
+	ChipTestBoardData(){
+		myDetectorType		= slsDetectorDefs::CHIPTESTBOARD;
+		nPixelsX 			= 36; // total number of channels
+		nPixelsY 			= 1; // number of samples
+		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
+		dataSize 			= UDP_PACKET_DATA_BYTES;
+		packetSize 			= headerSizeinPacket + dataSize;
+		//packetsPerFrame 	= 1;
+		imageSize 			= nPixelsX * nPixelsY * 2;
+		packetsPerFrame		= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+		maxFramesPerFile 	= CTB_MAX_FRAMES_PER_FILE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+		defaultFifoDepth 	= 2500;
+		standardheader		= true;
+	};
+
+	/**
+	 * Set databytes (ctb, moench)
+	 * @param f readout flags
+	 * @param r roi
+	 * @param s number of samples
+	 * @param t tengiga enable
+	 */
+	void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+		 int nchans = 0;
+		 if (f != slsDetectorDefs::GET_READOUT_FLAGS) {
+			 // analog channels
+			 if (f == slsDetectorDefs::NORMAL_READOUT || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+				 nchans += NCHAN_ANALOG;
+				 // if roi
+				 if (r.size()) {
+					 nchans = 0;
+					 for (auto &roi : r) {
+						 nchans += (roi.xmax - roi.xmin + 1);
+					 }
+				 }
+			 }
+			 // digital channels
+			 if (f & slsDetectorDefs::DIGITAL_ONLY || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+				 nchans += NCHAN_DIGITAL;
+			 }
+		 }
+	    nPixelsX = nchans;
+	    nPixelsY = s;
+	    // 10G
+	    if (t) {
+			headerSizeinPacket 	= 22;
+			dataSize 			= 8192;
+			packetSize 			= headerSizeinPacket + dataSize;
+			imageSize 			= nPixelsX * nPixelsY * 2;
+			packetsPerFrame 	= ceil((double)imageSize / (double)packetSize);
+			standardheader		= false;	    }
+	    // 1g udp (via fifo readout)
+	    else {
+			headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
+			dataSize 			= UDP_PACKET_DATA_BYTES;
+			packetSize 			= headerSizeinPacket + dataSize;
+			imageSize 			= nPixelsX * nPixelsY * 2;
+			packetsPerFrame 	= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+			standardheader		= true;
+	    }
+	}
+
+};
+
+
+class MoenchData : public GeneralData {
+
+
+private:
+	/** Structure of an jungfrau ctb packet header (10G Udp) */
+  struct jfrauctb_packet_header {
+      unsigned char emptyHeader[6];
+      unsigned char reserved[4];
+      uint32_t packetFrameNumber;
+      uint64_t bunchid;
+  } __attribute__((packed));
+
+public:
+  /** Constructor */
+  MoenchData() {
+      myDetectorType = slsDetectorDefs::MOENCH;
+      nPixelsX = 32; // total number of channels
+      nPixelsY = 1;  // number of samples
+      headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+      dataSize = UDP_PACKET_DATA_BYTES;
+      packetSize = headerSizeinPacket + dataSize;
+      // packetsPerFrame 	= 1;
+      imageSize = nPixelsX * nPixelsY * 2;
+      packetsPerFrame = ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+      frameIndexMask = 0xFFFFFF;
+      maxFramesPerFile = CTB_MAX_FRAMES_PER_FILE;
+      fifoBufferHeaderSize =
+          FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+      defaultFifoDepth = 2500;
+      standardheader = true;
+	};
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
+	 * @param oddStartingPacket odd starting packet (gotthard)
+	 * @param frameNumber frame number 	 * @param packetNumber packet number
+	 * @param subFrameNumber sub frame number if applicable
+	 * @param bunchId bunch id
+	 */
+	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
+			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
+		subFrameNumber = -1;
+		auto header = reinterpret_cast<jfrauctb_packet_header*>(packetData);
+		frameNumber = (header->packetFrameNumber >> 8) & frameIndexMask;
+		packetNumber = header->packetFrameNumber & 0xFF;
+		bunchId = header->bunchid;
+	}
+
+
+	/**
+	 * Set databytes (ctb, moench)
+	 * @param f readout flags
+	 * @param r roi
+	 * @param s number of samples
+	 * @param t tengiga enable
+	 */
+	void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t,
+			slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+		int nchans = 32;
+		// if roi
+		if (r.size()) {
+			 nchans = 0;
+			 for (auto &roi : r) {
+				 nchans += abs(roi.xmax - roi.xmin) + 1;
+			 }
+		}
+
+		nPixelsX = nchans;
+		nPixelsY = s;
+		// 10G
+		if (t) {
+			headerSizeinPacket 	= 22;
+			dataSize 			= 8192;
+			packetSize 			= headerSizeinPacket + dataSize;
+			imageSize 			= nPixelsX * nPixelsY * 2;
+			packetsPerFrame 	= (imageSize + packetSize - 1) / packetSize;
+			standardheader		= false;
+		}
+		// 1g udp (via fifo readout)
+		else {
+			headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
+			dataSize 			= UDP_PACKET_DATA_BYTES;
+			packetSize 			= headerSizeinPacket + dataSize;
+			imageSize 			= nPixelsX * nPixelsY * 2;
+			packetsPerFrame 	= (imageSize + UDP_PACKET_DATA_BYTES - 1) / UDP_PACKET_DATA_BYTES;
+            standardheader		= true;
+		}
+	}
+};
+
+
+
+;

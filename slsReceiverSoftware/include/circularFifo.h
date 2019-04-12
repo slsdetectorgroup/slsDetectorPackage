@@ -7,16 +7,9 @@
 * modified by the sls detetor group
 * */
 
-//#include "sls_receiver_defs.h"
 #include <semaphore.h>
 #include <vector>
 #include <iostream>
-
-typedef  double double32_t;
-typedef  float float32_t;
-typedef  int int32_t;
-
-
 
 /** Circular Fifo (a.k.a. Circular Buffer)
 * Thread safe for one reader, and one writer */

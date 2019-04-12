@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include <stdint.h> 
 
 #define MAX_DIMENSIONS					2

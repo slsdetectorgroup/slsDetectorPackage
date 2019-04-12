@@ -1,26 +1,14 @@
-/*
- * qTabMessages.h
- *
- *  Created on: Jun 26, 2012
- *      Author: l_maliakal_d
- */
-
-#ifndef QTABMESSAGES_H_
-#define QTABMESSAGES_H_
-
+#pragma once
 
 #include "qDefs.h"
-
-
-
-/** Project Class Headers */
+#include "qDebugStream.h"
 class qDetectorMain;
-/** Qt Include Headers */
+
 #include <QWidget>
 #include <QTextEdit>
 #include <QEvent>
 #include <QPushButton>
-#include "qDebugStream.h"
+
 
 /**
  *@short sets up the Messages parameters
@@ -29,17 +17,46 @@ class qTabMessages:public QWidget{
 	Q_OBJECT
 
 public:
-	/** \short The constructor
-	 *  @param det the qDetectorMain class  reference
+	/**
+	 * The constructor
+	 * @param parent parent widget
 	 */
-	qTabMessages(qDetectorMain* m);
+	qTabMessages(QWidget* parent);
 
-	/** Destructor
+	/**
+	 * Destructor
 	 */
 	~qTabMessages();
 
+private slots:
+	/**
+	 * Stream log to textedit in GUI
+	 */
+	void customEvent(QEvent *e);
+
+	/**
+	 * Save Log to File
+	 */
+	void SaveLog();
+
+	/**
+	 * Clear Log to File
+	 */
+	void ClearLog();
 
 private:
+
+	/**
+	 * Sets up the widget
+	 */
+	void SetupWidgetWindow();
+
+	/**
+	 * Sets up all the slots and signals
+	 */
+	void Initialization();
+
+
 	/** The qDetectorMain object */
 	qDetectorMain *myMainTab;
 
@@ -51,36 +68,5 @@ private:
 
 	/** To clear the log to file */
 	QPushButton *btnClear;
-
-	/** This class creates the log */
-	qDebugStream *qout;
-	qDebugStream *qerr;
-
-	string errMsg;
-
-/** methods */
-	/** Sets up the widget */
-	void SetupWidgetWindow();
-
-	/** Sets up all the slots and signals */
-	void Initialization();
-
-private slots:
-/** Stream log to textedit in GUI */
-void customEvent(QEvent *e);
-
-/** Save Log to File*/
-void SaveLog();
-
-/** Clear Log to File*/
-void ClearLog();
-
-
-
 };
 
-
-
-
-
-#endif /* QTABMESSAGES_H_ */

@@ -3,8 +3,8 @@ set(SOURCES
 )
 
 include_directories(
+    ../../slsSupportLib/include
     ../../slsReceiverSoftware/include
-    ../../slsDetectorSoftware/slsDetectorAnalysis 
     ../../build/bin 
     ../../slsdetectorSoftware/slsDetector 
 )
@@ -16,15 +16,12 @@ add_executable(slsMultiReceiver
 target_link_libraries(slsMultiReceiver
     slsReceiverShared
     pthread
-    zmq
+    ${ZeroMQ_LIBRARIES}
     rt
-    ${HDF5_LIBRARIES}
 )
 
 if (HDF5_FOUND)
-    target_link_libraries(slsMultiReceiver 
-    ${HDF5_LIBRARIES}
-    )
+    target_link_libraries(slsMultiReceiver ${HDF5_LIBRARIES})
 endif ()
 
 

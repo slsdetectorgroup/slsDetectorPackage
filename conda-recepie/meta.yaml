@@ -1,0 +1,120 @@
+
+package:
+  name: sls_detector_software
+  version: "refactor"
+
+source:
+  - path: ..
+
+build:
+  number: 0
+  rpaths:
+    - lib/
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{compiler('cxx')}}
+    - cmake
+    - qwt 6.*
+    - qt=4.8.7=7
+    - zeromq=4.2.5=hfc679d8_5
+    - pyzmq
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libxext
+    - xorg-libsm
+    - xorg-libxau
+    - xorg-libxrender
+    - xorg-libxfixes
+    - {{ cdt('mesa-libgl-devel') }}      # [linux]
+    - {{ cdt('mesa-libegl-devel') }}     # [linux]
+    - {{ cdt('mesa-dri-drivers') }}      # [linux]
+    - {{ cdt('libselinux') }}            # [linux]
+    - {{ cdt('libxdamage') }}            # [linux]
+    - {{ cdt('libxxf86vm') }}            # [linux]
+
+  host:
+    - libstdcxx-ng
+    - libgcc-ng
+    - xorg-libx11
+    - xorg-libice
+    - xorg-libxext
+    - xorg-libsm
+    - xorg-libxau
+    - xorg-libxrender
+    - xorg-libxfixes
+
+  run:
+    - libstdcxx-ng
+    - libgcc-ng 
+
+
+outputs:
+  - name: sls_detector_lib
+    script: copy_lib.sh
+
+  - name: sls_detector
+    script: build_pylib.sh
+
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
+        - python {{ python }}
+        - setuptools
+        - sls_detector_lib
+        - pyzmq
+        - pybind11 2.2
+      host:
+        - python
+        - pybind11 2.2 
+        - pyzmq
+        - sls_detector_lib
+        - libstdcxx-ng
+        - libgcc-ng
+      run:
+        - python
+        - numpy
+        - sls_detector_lib=refactor
+        - pyzmq
+        - libstdcxx-ng
+        - libgcc-ng
+    test:
+      imports:
+        - sls_detector
+
+    # requirements:
+    #   build:
+    #     - {{ compiler('c') }}
+    #     - {{compiler('cxx')}}
+
+  # - name: sls_detector_gui
+  #   version: "refactor"
+  #   script: copy_gui.sh
+  #   requirements:
+  #     build:
+  #     - {{ compiler('c') }}
+  #     - {{compiler('cxx')}}
+  #     - cmake
+  #     - qwt 6.*
+  #     - qt=4.8.7=7
+  #     - zeromq=4.2.5=hfc679d8_5
+  #     - pyzmq
+  #     - xorg-libx11
+  #     - xorg-libice
+  #     - xorg-libxext
+  #     - xorg-libsm
+  #     - xorg-libxau
+  #     - xorg-libxrender
+  #     - xorg-libxfixes
+  #     - {{ cdt('mesa-libgl-devel') }}      # [linux]
+  #     - {{ cdt('mesa-libegl-devel') }}     # [linux]
+  #     - {{ cdt('mesa-dri-drivers') }}      # [linux]
+  #     - {{ cdt('libselinux') }}      # [linux]
+  #     - {{ cdt('libxdamage') }}            # [linux]
+  #     - {{ cdt('libxxf86vm') }}            # [linux]
+  #     run:
+  #       - sls_detector_lib=refactor
+  #       - qwt 6.*
+  #       - qt=4.8.7=7

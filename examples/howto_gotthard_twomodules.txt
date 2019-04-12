@@ -1,0 +1,13 @@
+Turn on the two receivers:
+slsReceiver -t1954 &
+slsReceiver -t1955 &
+
+Switch on the photon conversion on the receiver machine (replace my_receiver_hostname):
+gotthard25umZmq my_receiver_hostname 30003 my_receiver_hostname 40003 &
+
+Run the configuration file:
+sls_detector_put config bchip2modules.config 
+
+
+Start your measurements using the command line, the slsDetectorGui or the EPICS driver
+

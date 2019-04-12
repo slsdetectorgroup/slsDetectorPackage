@@ -51,8 +51,8 @@
      <rect>
       <x>15</x>
       <y>110</y>
-      <width>141</width>
-      <height>51</height>
+      <width>149</width>
+      <height>58</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -62,17 +62,17 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Readout Firmware</string>
+        <string>Module Firmware</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QCheckBox" name="chkDetectorSoftware">
+      <widget class="QCheckBox" name="chkDetectorBus">
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Readout Software</string>
+        <string>Module Bus</string>
        </property>
       </widget>
      </item>
@@ -83,7 +83,7 @@
      <rect>
       <x>15</x>
       <y>185</y>
-      <width>656</width>
+      <width>147</width>
       <height>36</height>
      </rect>
     </property>
@@ -107,144 +107,13 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="gridLayoutWidget_5">
-    <property name="geometry">
-     <rect>
-      <x>415</x>
-      <y>30</y>
-      <width>256</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_5">
-     <item row="0" column="0">
-      <widget class="QLabel" name="lblModule">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Module:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QComboBox" name="comboModule">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="frame">
-        <bool>true</bool>
-       </property>
-       <item>
-        <property name="text">
-         <string>All Modules</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <spacer name="horizontalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>10</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="gridLayoutWidget_3">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>110</y>
-      <width>141</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="chkDetectorBus">
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>Readout Bus</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="chkDetectorMemory">
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>Readout Memory</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="gridLayoutWidget_6">
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>110</y>
-      <width>141</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_6">
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="chkChip">
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>Chip</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QWidget" name="gridLayoutWidget_4">
     <property name="geometry">
      <rect>
       <x>15</x>
       <y>30</y>
       <width>276</width>
-      <height>31</height>
+      <height>32</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_4">
@@ -367,46 +236,11 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="gridLayoutWidget_7">
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>135</y>
-      <width>141</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_7">
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="chkModuleFirmware">
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>Module Firmware</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
       <x>5</x>
       <y>95</y>
-      <width>676</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="Line" name="line_2">
-    <property name="geometry">
-     <rect>
-      <x>5</x>
-      <y>165</y>
       <width>676</width>
       <height>16</height>
      </rect>
@@ -422,7 +256,7 @@
      <x>45</x>
      <y>25</y>
      <width>686</width>
-     <height>31</height>
+     <height>34</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -461,7 +295,6 @@
  <tabstops>
   <tabstop>btnGetInfo</tabstop>
   <tabstop>comboDetector</tabstop>
-  <tabstop>comboModule</tabstop>
   <tabstop>btnTest</tabstop>
  </tabstops>
  <resources>

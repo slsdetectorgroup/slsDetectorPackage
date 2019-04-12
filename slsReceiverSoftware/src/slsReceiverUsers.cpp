@@ -1,19 +1,19 @@
+#include "container_utils.h" // For sls::make_unique<>
+
 #include "slsReceiverUsers.h"
-#include "slsReceiver.h"
 
 slsReceiverUsers::slsReceiverUsers(int argc, char *argv[], int &success) {
 	// catch the exception here to limit it to within the library (for current version)
 	try {
-		slsReceiver* r = new slsReceiver(argc, argv);
-		receiver = r;
-		success = slsReceiverDefs::OK;
+		receiver = sls::make_unique<slsReceiver>(argc, argv);
+		success = slsDetectorDefs::OK;
 	} catch (...) {
-		success = slsReceiverDefs::FAIL;
+		success = slsDetectorDefs::FAIL;
 	}
 }
 
-slsReceiverUsers::~slsReceiverUsers() {
-	delete receiver;
+slsReceiverUsers::slsReceiverUsers(int tcpip_port_no) {
+	receiver = sls::make_unique<slsReceiver>(tcpip_port_no);
 }
 
 int slsReceiverUsers::start() {

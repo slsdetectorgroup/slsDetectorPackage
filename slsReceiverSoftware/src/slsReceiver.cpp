@@ -11,31 +11,30 @@
 #include <map>
 #include <getopt.h>
 
+#include "container_utils.h" // For sls::make_unique<>
+
 #include "slsReceiver.h"
-#include "gitInfoReceiver.h"
-
-
-
+#include "slsReceiverTCPIPInterface.h"
+#include "sls_detector_exceptions.h"
+#include "versionAPI.h"
+#include "logger.h"
 
 slsReceiver::slsReceiver(int argc, char *argv[]):
-		tcpipInterface (0) {
+		tcpipInterface (nullptr) {
 
 	// options
 	std::map<std::string, std::string> configuration_map;
 	int tcpip_port_no = 1954;
-	std::string fname = "";
-	int64_t tempval = 0;
 
 	//parse command line for config
 	static struct option long_options[] = {
 			// These options set a flag.
 			//{"verbose", no_argument,       &verbose_flag, 1},
 			// These options don’t set a flag. We distinguish them by their indices.
-			{"config",     	required_argument,  0, 'f'},
-			{"rx_tcpport",  required_argument,  0, 't'},
-			{"version",  	no_argument,  		0, 'v'},
-			{"help",  		no_argument,       	0, 'h'},
-			{0, 			0, 					0, 	0}
+			{"rx_tcpport",  required_argument,  nullptr, 't'},
+			{"version",  	no_argument,  		nullptr, 'v'},
+			{"help",  		no_argument,       	nullptr, 'h'},
+			{nullptr, 			0, 					nullptr, 	0}
 	};
 
 	//initialize global optind variable (required when instantiating multiple receivers in the same process)
@@ -53,22 +52,13 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 
 		switch(c){
 
-		case 'f':
-			fname = optarg;
-#ifdef VERYVERBOSE
-			FILE_LOG(logDEBUG) << long_options[option_index].name << " " << optarg << endl;
-#endif
-			break;
-
 		case 't':
 			sscanf(optarg, "%d", &tcpip_port_no);
 			break;
 
 		case 'v':
-			tempval = GITREV;
-			tempval = (tempval <<32) | GITDATE;
-			std::cout << "SLS Receiver " << GITBRANCH << " (0x" << std::hex << tempval << ")" << std::endl;
-			throw std::exception();
+			std::cout << "SLS Receiver " << GITBRANCH << " (0x" << std::hex << APIRECEIVER << ")" << std::endl;
+			throw sls::RuntimeError();
 
 		case 'h':
 		default:
@@ -76,30 +66,25 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 					+ std::string(argv[0]) + "\n"
 					+ "Usage: " + std::string(argv[0]) + " [arguments]\n"
 					+ "Possible arguments are:\n"
-					+ "\t-f, --config <fname>    : Loads config from file\n"
 					+ "\t-t, --rx_tcpport <port> : TCP Communication Port with client. \n"
 					+ "\t                          Default: 1954. Required for multiple \n"
 					+ "\t                          receivers\n\n";
 
 			FILE_LOG(logINFO) << help_message << std::endl;
-			throw std::exception();
+			throw sls::RuntimeError();
 
 		}
 	}
 
-	if( !fname.empty() && read_config_file(fname, &tcpip_port_no, &configuration_map) == FAIL) {
-		throw std::exception();
-	}
-
 	// might throw an exception
-	tcpipInterface = new slsReceiverTCPIPInterface(tcpip_port_no);
-
+	tcpipInterface = sls::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
 }
 
 
-slsReceiver::~slsReceiver() {
-	if(tcpipInterface)
-		delete tcpipInterface;
+slsReceiver::slsReceiver(int tcpip_port_no)
+{
+	// might throw an exception
+	tcpipInterface = sls::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
 }
 
 

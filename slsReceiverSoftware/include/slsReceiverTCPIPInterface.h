@@ -5,10 +5,12 @@
  ***********************************************/
 
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "receiver_defs.h"
-#include "MySocketTCP.h"
-#include "UDPInterface.h"
+
+class MySocketTCP;
+class ServerInterface;
+class slsReceiverImplementation;
 
 
 
@@ -16,7 +18,9 @@
  *@short interface between receiver and client
  */
 
-class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
+class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
+ private:
+	enum numberMode {DEC, HEX};
 	
  public:
 
@@ -104,29 +108,21 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	 */
 	void startTCPServer();
 
-	/** retuns function name with function index */
-	const char* getFunctionName(enum recFuncs func);
-
 	/** assigns functions to the fnum enum */
 	int function_table();
 
 	/** Decodes Function */
 	int decode_function();
 
-	/** print socket read error */
-	int printSocketReadError();
-
-	/** receiver object is null */
-	void invalidReceiverObject();
-
-	/** receiver already locked */
-	void receiverlocked();
-
-	/** receiver not idle */
-	void receiverNotIdle();
-
 	/** function not implemented for specific detector */
 	void functionNotImplemented();
+
+	/** mode not implemented for specific detector */
+	void modeNotImplemented(std::string modename, int mode);
+
+	/** validate and set error */
+	template <typename T>
+	void validate(T arg, T retval, std::string modename, numberMode hex);
 
 	/** Unrecognized Function */
 	int M_nofunc();
@@ -175,8 +171,8 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** set dynamic range  */
 	int set_dynamic_range();
 
-	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
-	int set_read_frequency();
+	/** Sets the receiver streaming frequency */
+	int set_streaming_frequency();
 
 	/** Gets receiver status */
 	int	get_status();
@@ -186,10 +182,6 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 
 	/** Stop Receiver - stops listening to udp packets from detector*/
 	int stop_receiver();
-
-	/** set status to transmitting and
-	 * when fifo is empty later, sets status to run_finished */
-	int start_readout();
 
 	/** Set File path */
 	int set_file_dir();
@@ -230,8 +222,8 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/* Set the data stream enable */
 	int set_data_stream_enable();
 
-	/** Sets the timer between frames streamed by receiver when frequency is set to 0 */
-	int set_read_receiver_timer();
+	/** Sets the steadming timer when frequency is set to 0 */
+	int set_streaming_timer();
 
 	/** enable flipped data */
 	int set_flipped_data();
@@ -263,6 +255,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
     /** set additional json header */
     int set_additional_json_header();
 
+    /** get additional json header */
+    int get_additional_json_header();
+
     /** set udp socket buffer size */
     int set_udp_socket_buffer_size();
 
@@ -284,12 +279,15 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
     /** set deactivated receiver padding enable */
     int set_deactivated_receiver_padding_enable();
 
+    /** set readout flags */
+    int set_readout_flags();
+
 
 	/** detector type */
 	detectorType myDetectorType;
 
 	/** slsReceiverBase object */
-	UDPInterface *receiverBase;
+	slsReceiverImplementation *receiver;
 
 	/** Function List */
 	int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])();
@@ -368,6 +366,10 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 
 
 protected:
+
 	/** Socket */
 	MySocketTCP* mySock;
+
+	/** client interface */
+	ServerInterface* interface;
 };

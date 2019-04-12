@@ -39,7 +39,7 @@ void  ThreadObject::DestroyThread() {
 	if(alive){
 		killThread = true;
 		sem_post(&semaphore);
-		pthread_join(thread,NULL);
+		pthread_join(thread,nullptr);
 		sem_destroy(&semaphore);
 		killThread = false;
 		alive = false;
@@ -56,7 +56,7 @@ int ThreadObject::CreateThread() {
 	sem_init(&semaphore,1,0);
 	killThread = false;
 
-	if(pthread_create(&thread, NULL,StartThread, (void*) this)){
+	if(pthread_create(&thread, nullptr,StartThread, (void*) this)){
 		FILE_LOG(logERROR) << "Could not create "  << GetType() << " thread with index " << index;
 		return FAIL;
 	}
@@ -74,7 +74,8 @@ void* ThreadObject::StartThread(void* thisPointer) {
 
 
 void ThreadObject::RunningThread() {
-	cprintf(BLUE,"Created [ %s Thread %d, Tid: %ld ]\n", GetType().c_str(),index, (long)syscall(SYS_gettid));
+	FILE_LOG(logINFOBLUE) << "Created [ " << GetType() << "Thread " << index << ", "
+			"Tid: " << syscall(SYS_gettid) << "]";
 	while(true)	{
 
 		while(IsRunning()) {
@@ -88,8 +89,9 @@ void ThreadObject::RunningThread() {
 		sem_wait(&semaphore);
 
 		if(killThread)	{
-			cprintf(BLUE,"Exiting [ %s Thread %d, Tid: %ld ]\n", GetType().c_str(),index, (long)syscall(SYS_gettid));
-			pthread_exit(NULL);
+			FILE_LOG(logINFOBLUE) << "Exiting [ " << GetType() <<
+					" Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
+			pthread_exit(nullptr);
 		}
 
 	}//end of outer loop

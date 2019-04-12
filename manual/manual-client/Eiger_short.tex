@@ -6,6 +6,7 @@
 \usepackage{verbatim}
 \usepackage{xspace}
 \usepackage{hyperref}
+\usepackage{xcolor}
 \newcommand{\E}{EIGER\xspace}  
 \newcommand{\p}{sls\_detector\_put}
 \newcommand{\g}{sls\_detector\_get}
@@ -24,7 +25,7 @@ Figure ~\ref{boards} show the readout board basic components on an Eiger half mo
 \begin{center}
 \includegraphics[width=1\textwidth]{Boards}
 \end{center}
-\caption{Picture with most relevant components of the EIGER readout system. The readout system starts with the Front End Boards (FEB) which performs data descrambling (also converts the packets from 12 $\to$ 16 bits) and rate correction. The BackEndBoard (BEB) has 2x2GB DDR2 memories and can perform data buffering (storing images on board) and data summation (16 bit $\to$ 32 bits). The controls to the detector are passed through the 1Gb, while in most installations, the data are sent out through the 10GB ethernet connection.} 
+\caption{Picture with most relevant components of the EIGER readout system. The readout system starts with the Front End Boards (FEB) which performs data descrambling (also converts the packets from 12 $\to$ 16 bits) and rate correction. The BackEndBoard (BEB) has 2x2GB DDR2 memories and can perform data buffering (storing images on board) and data summation (16 bit $\to$ 32 bits). The controls to the detector are passed through the 1Gb, while in most installations, the data are sent out through the 10~GB ethernet connection.} 
 \label{boards}
 \end{figure}
 
@@ -156,13 +157,20 @@ outdir /sls/X12SA/data/x12saop/Data10/Eiger0.5M
 threaded 1
 \end{verbatim}
 
+The geometry on af an EIGER module, showing the quadrants corresponding to the udp ports and the 2 receivers is shown in figure~\ref{fig:eigerports}.
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{Eiger-Chips}
+\end{center}
+\caption{Geometry of UDP ports and receivers in a singel module.}
+\label{fig:eigerports}
+\end{figure}
 
 In the case you are developing your own receiver, then you need to remove the 1Gb receiver hostname {\tt{rx\_hostname}} and substitute it with the mac address of the device:
 \begin{verbatim}
 configuremac 0
 rx_udpmac xx:xx:...
 \end{verbatim}
-
 
 One can configure all the detector settings in a parameter file {\tt{setup.det}}, which is loaded by doing:
 \begin{verbatim}
@@ -412,17 +420,8 @@ where the 'minimum time between frames' and the minimum period will be discussed
 \hline
 4 & 0 & \tiny {parallel} & 3.4 & 22  & 44 & 44.01 & 30k/50k\\
 \hline
-4 & 1 & \tiny {parallel} & 6 & 10.5 & 92 & 92.02 & 30k/100k\\
-\hline
-4 & 2 & \tiny {parallel} & 11.2 & 5.4 & 197& 197.01 & infinite\\
-\hline
 \hline
 8 & 0 & \tiny {parallel} & 3.4 & 11.1 & 89 & 89.01 & 15k/24k\\
-\hline
-8 & 1 & \tiny {parallel} & 6.1 & 5.7 & 181 & 181.01 & 15k/52k\\
-\hline
-8 & 2 & \tiny {parallel} & 11.2 &  2.9 &  342 & 342.01 & infinite\\
-\hline
 \hline
 16 & 0 & \tiny {parallel} & 3.4 & 6.1 & (126+38)* =164 & 164.02 & 8k/12k\\
 \hline
@@ -432,14 +431,6 @@ where the 'minimum time between frames' and the minimum period will be discussed
 \hline
 16 & 1 & \tiny {nonparallel} & 255 & 3.3 &  303 & 303.01 & infinite\\
 \hline
-16 & 2 & \tiny {parallel} &  11.2 & 1.9 & 526 & 526.2 & infinite \\
-\hline
-16 & 2 & \tiny {nonparallel} & 505 & 1.8  & 555 & 555.01& infinite\\
-\hline
-%32 & 2 & parallel &  11 & 2&  & &\\
-%\hline
-%32 & 2 & nonparallel & 504 & $<2$&  & &\\
-%\hline
 \end{tabular}
 \caption{Readout settings. The {\tiny{min exptime}} possible is 5$-$10~$\mu$s. This is due to the time to pass the pixel enable signal in the whole chip. The time between frames ($\Delta$t) has been measured with the oscilloscope and the maximum frames rate (max FR) has been tested with an external gating from a pulse generator at known frequency. The minimum period is obtained as 1/$\textrm{max frame rate}$.}
 \label{tframes}
@@ -450,7 +441,6 @@ where the 'minimum time between frames' and the minimum period will be discussed
 \textbf{From software version 4.0.0, there is a very useful function {\tt{sls\_detector\_get measuredperiod}} which return the measured period AFTER the acquisition. This is important to check that the settings to obtain the targeted frame rate was correct.} 
 
 \textbf{If you run too fast, the detector could become noisier (see problem shooting), it is important to match the detector settings to your frame rate. This can be done having more parameters files and load the one suitable with your experiment.} We experienced that with low energy settings could not reach 6~kHz and no noise.
-
 In 16 bit mode, it could make sense, in case of noise and low threshold to either reduce the frame rate:
 \begin{equation} 
 \textrm{new period}  = \textrm{exptime} + \textrm{minimum time between frames} + (\textrm{10$-$20 }\mu \textrm{s})
@@ -460,7 +450,54 @@ to let the signal settle  or,  if the frame rate is important, leave the {\tt{pe
 \textrm{new exptime}  = \textrm{old exptime} - (\textrm{10$-$20 }\mu \textrm{s})
 \end{equation}
 
-In general, choose first the desired dead time: this will tell you if you want to run in parallel or non parallel mode, although most likely it is parallel mode. Then, choose the maximum frame rate you want to aim, not exceeding what you aim for not to increase the noise. In 4 and 8 bit modes it makes no sense to run nonparallel as the exposure time is too small compared to the readout time. 
+In general, choose the maximum frame rate you want to aim, not exceeding what you aim for not to increase the noise. In 4 and 8 bit modes it makes no sense to run nonparallel as the exposure time is too small compared to the readout time. 
+
+Here below are the final tables for settting the detcetor correctly:
+
+\begin{itemize}
+\item CONTINUOUS redout (imagesnot stored on board memories,  frames can be achieved. {\tt{flags parallel}}, {\tt{clkdivider 0}} are always set. In 32-bit no extra {\tt{subdeadtime}} is assumed. The difference between {\tt{exptime}} and {\tt{period}} has to be $\approx$5 $\mu$s:
+\begin{center}
+  \begin{tabular}{ |c| c| } 
+    \hline
+    max frame rate & settings\\
+    \hline
+    \textcolor{red}{170 Hz} &  \textcolor{red}{32-bit} \\
+    & Nframes=infinite\\
+    \hline
+      \textcolor{red}{2.56 kHz} &  \textcolor{red}{16-bit}\\
+     & Nframes=infinite\\
+     \hline
+      \textcolor{red}{5.1 kHz} &  \textcolor{red}{8-bit}\\
+     & Nframes=infinite\\
+     \hline
+      \textcolor{red}{10.2 kHz} &  \textcolor{red}{4-bit}\\
+     & Nframes=infinite\\
+     \hline
+  \end{tabular}
+\end{center}
+\item BUFFERED redout (images stored on board memories, such that the maximum frame rate can be achieved for a limited amount of frames. {\tt{flags parallel}}, {\tt{clkdivider 0}} are always set. In 32-bit no extra {\tt{subdeadtime}} is assumed. The difference between {\tt{exptime}} and {\tt{period}} has to be $\approx$5 $\mu$s:
+\begin{center}
+  \begin{tabular}{ |c| c| } 
+    \hline
+    max frame rate & settings\\
+    \hline
+     \textcolor{red}{170 Hz} &  \textcolor{red}{32-bit} \\
+    & Nframes=infinite\\
+    \hline
+     \textcolor{red}{6.1 kHz} &  \textcolor{red}{16-bit}\\
+    & Nframes=7600\\
+    \hline
+     \textcolor{red}{11.1 kHz} &  \textcolor{red}{8-bit}\\
+    & Nframes=15000\\
+    \hline
+     \textcolor{red}{22 kHz} &  \textcolor{red}{4-bit}\\
+    & Nframes=30000\\
+    \hline
+  \end{tabular}
+\end{center}
+\end{itemize}
+
+
 
 \subsubsection{4 and 8 bit mode}
 In {\tt{parallel}} mode, the minimum time between frames is due to the time required to latch the values of the counter with capacitors. These values are determined in firmware and they can be estimated as:
@@ -712,7 +749,7 @@ To activate back a module, do:
 \end{verbatim}
 
 \end{itemize}
-\subsection{Setting up 10Gb correctly: experience so far}\label{10g}
+\section{Setting up the PC settings for 10Gb}\label{10g}
 
 For configuring well the 10Gb card not to loose packets, 
 \begin{itemize}
@@ -734,13 +771,74 @@ Very important is to activate the flow control in 10Gb (in 1Gb it is on by defau
 \begin{verbatim}
 ./sls_detector_put flowcontrol_10g 1
 \end{verbatim}
-Set the transmission delays as explained in the manual.
+You ned to check that flow control is setup on the reeceiving interfaces. Check with:
+\begin{verbatim}
+ethtool -a eth1
+\end{verbatim}
+.RX should be ON. Set the transmission delays as explained in the manual if necessary. These transmission delays should help matching teh writing speed performance of your disk. You can check how fast you are writing using the {\tt{dstat}} command.  
+
+Now setup the computer server propery:
+Check the size of: 
+\begin{verbatim}
+sysctl -a | grep backlog
+sysctl -a | grep rmem
+\end{verbatim}
+Set it correctly with: 
+\begin{verbatim}
+sysctl net.core.netdev_max_backlog=250000
+sysctl net.core.rmem_default=$((100*1024*1024))
+sysctl net.core.rmem_max=$((100*1024*1024))
+\end{verbatim}
+
+Other way to setup the same,  increase the socket receiving buffer size and the maximum length of the input queue:
+\begin{verbatim}
+echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max
+echo 250000 > /proc/sys/net/core/netdev_max_backlog
+\end{verbatim}
+to make the settings permanent, edit /etc/sysctl.conf:
+ \begin{verbatim}
+# 100MiB
+net.core.rmem_max = 104857600
+net.core.netdev_max_backlog = 250000
+\end{verbatim}
+and run \textbf{sysctl -p}.
+
+Last, you can disable power saving in the CPU frequency (chose the appropriate command for your system):
+\begin{verbatim}
+cpupower frequency-info
+cpupower frequency-set -g performance 
+\end{verbatim}
+or
+\begin{verbatim}
+cpufreq-info
+for i in `seq 0 7`; do cpufreq-set -c $i -g performance; done
+\end{verbatim}
 
 It can help to increase the fifo size of the receiver to {\tt{rx\_fifodepth}} to 1000 images
 \begin{verbatim}
 ./sls_detector_put rx_fifodepth 1000
 \end{verbatim}
-One needs to keep into account that in 16 bit mode for 1 image we expect each slsReceiver  to allocate 0.5MB. So for 1000 images, we expect  500MB memory for each receiver. This can be monitored in Linux with "top" or "free -m".
+One needs to keep into account that in 16 bit mode for 1 image we expect each slsReceiver  to allocate 0.5MB. So for 1000 images, we expect  500MB memory for each receiver. This can be monitored in Linux with "top" or "free -m". To receive the max number of images possible on the detector, a minimum of 8~GB of memories are required.
+For very high frame rate, very long measurements, we had to increase the {\tt{rx\_fifodepth}} to 10000 images but this only in 4, 8, 16 bit mode. In 32 bit mode it will assign 40~GB of memory, which is more than what normal PC would have. So make sure you do not require too much memory.  
+
+Last, it is very important that not too many files are created. There is high possibility to loose packets in the time to close and open files for the writer. IN 3.1.x, the default number of images written per file, in Eiger is 2000. This is defined by the line:
+\begin{verbatim}
+#define EIGER_MAX_FRAMES_PER_FILE	2000
+\end{verbatim}
+in {\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}. In 4.0.x, this is interactively defined using the command: {\tt{r\_framesperfile}}. By default it is 10000.  
+
+If you do not have a large disk, you can write to memory if your pc is not fast enough:
+\begin{verbatim}
+mount -t tmpfs none /ramdisk_folder
+\end{verbatim}
+or 
+\begin{verbatim}
+mount -t tmpfs none /mnt/ramdisk -o size=10G
+\end{verbatim}
+check how many GB memory you can allocate, to avoid swapping otherwise
+
+
+
 
 \section{Offline processing and monitoring}
 
@@ -820,9 +918,14 @@ Checkout the {\tt{developer}} branch if in a 3.1.X release or the {\tt{v4.0.0}} 
 
 Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5} and \textbf{root} format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 
+Note that the number of images per file is hardcoded and needs to match whatever you are using in {\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}:
+\begin{verbatim}
+#define EIGER_MAX_FRAMES_PER_FILE	2000
+\end{verbatim}
+The default is 2000.
 
 \subsubsection{cbf}
-The cbf executable executable uses the CBFlib-0.9.5 library (downloaded from the web as it download some architecture dependent packages at installation).Edit the Makefile to correclty point at it.\\
+The cbf executable executable uses the CBFlib-0.9.5 library (downloaded from the web as it downloads architecture dependent packages at installation).Edit the Makefile to correclty point at it.\\
 \underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
 
 To use it for a single module:
@@ -833,7 +936,7 @@ eg.
 {\tt{cbfMaker /scratch/run\_63\_d1\_f000000000000\_3.raw}}\\
 
 To use it any geometry:\\
-{\tt{cbfMaker [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
+{\tt{cbfMaker [filename] [outdir, def=same as filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
 eg.
 {\tt cbfMaker /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
 
@@ -877,7 +980,7 @@ make cbfMaker; make cbfMakerOMNY;
 \end{verbatim}
 
 \subsubsection{hdf5}
-In case of HDF5 output file, we rely on having the HDF5 1.10.1 library installed. Edit the Makefile to correclty point at it. Different compression methods are being tried so different external filters might be to be installed. This work is not finished yet.
+In case of HDF5 output file, we rely on having the HDF5 1.10.1 library installed and {\tt{HDF5-External-Filter-Plugins}} installed. With HDF5 1.10.3, no need of the external plugings package is needed, but a small modification to the file is needed. Edit the Makefile to correclty point at it. Different compression methods are being tried so different external filters might be to be installed. This work is not finished yet.
 
 To choose HDF5, with ZLIB implementation, open {\tt{slsImageReconstruction/src/main\_csaxs.cpp}} and make sure that 
 \begin{verbatim}
@@ -889,7 +992,7 @@ are not commented out. All other options need to be commented out. Copile the co
 make hdf5Maker; make hdf5MakerOMNY;
 \end{verbatim}
 
-If you are at cSAXS. all images collected will be written in a single file. If you are not at CSAXS, most likely you want to have all the images written in a single raw file into an HDF5 file. The multiple HDF5 files are then linked in a master file, with many subdatasets (can be read by albula) or by a virtual file with a single dataset. If you want a mster o virtual file, uncomment this option:
+If you are at cSAXS. all images collected will be written in a single file. If you are not at CSAXS, most likely you want to have all the images written in a single raw file into an HDF5 file. The multiple HDF5 files are then linked in a master file, with many subdatasets (can be read by albula) or by a virtual file with a single dataset. If you want a master o virtual file, uncomment this option:
 \begin{verbatim}
 #define MASTERVIRTUAL
 \end{verbatim}
@@ -911,7 +1014,7 @@ The data will be written as TH2D in root format. Edit the {\tt{Makefile}} to poi
 \begin{verbatim}
 make image 
 \end{verbatim}
-There is no program other executable that alredy keeps into account the geometry for it.
+There is no program other executable that already keeps into account the geometry for it.
 To use it any geometry:\\
 {\tt{image [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
 eg.
@@ -979,9 +1082,9 @@ ssh root@$i sync; done
 
 \section{Loading firmware bitfiles}
 
-\textbf{As a new procedure, the first thing to do is to kill the server on the boards, copy the new one there without starting it.} Note taht failure to do this step before may cause the linux on the baords to crash and not being able to ping it (this if the registers between the old and new firmware change).
+\textbf{As a new procedure, the first thing to do is to kill the server on the boards, copy the new one there without starting it.} Note that failure to do this step before may cause the linux on the boards to crash and not being able to ping it (this if the registers between the old and new firmware change).
 
-This is teh procedure from a terminal;
+This is the procedure from a terminal;
 \begin{verbatim}
 for i in beb111 beb070; 
 do ssh root@$i killall eigerDetectorServer; 
@@ -1059,19 +1162,19 @@ To load the special noise file look at {\tt{settingsdir/eiger/standard/eigernois
 \begin{verbatim}
 sls_detector_put trimbits ../settingsdir/eiger/standard/eigernoise
 \end{verbatim}
-To exit from this pattern noise, just set the theshold to something known. 
+To exit from this pattern noise, just set the threshold to something known. 
 \begin{verbatim}
 \item sls_detector_put threshold 50000 standard
 \end{verbatim}
 where 5000 would be a value in eV and {/tt{standard}} is important in this case.
 
 \section{(Fast) threshold scans during beam operation}\label{sec:fastthresholdscan}
-Occasionally you might need to do threshold scans during your data taking (for example for Laue experiments or to get any spectral information). Settinng the threshold in thsi case would be not optimal as you would change thrimbits at every energy and this could give you a ``step'' behaviour. What you could do is to use the 
+Occasionally you might need to do threshold scans during your data taking (for example for Laue experiments or to get any spectral information). Setting the threshold in this case would be not optimal as you would change trimbits at every energy and this could give you a ``step'' behaviour. What you could do is to use the 
 \begin{verbatim}
 \item sls_detector_put thresholdnotb 50000 
 \end{verbatim}
  which set the threshold to an energy but does not change trimbits. We suggest that before using this function you load the {\tt{threshold}} at an energy in the middle of your scan range and then change {\tt{thresholdnotb}}.
-We have also been requested if we could speed up the threshold scan. At the moment no specific function has been integrated in firware, but one could use the software thrigger option to perform what you need:
+We have also been requested if we could speed up the threshold scan. At the moment no specific function has been integrated in firmware, but one could use the software trigger option to perform what you need:
 \begin{verbatim}
 ./sls_detector_put exptime 0.01
 ./sls_detector_put timing trigger
@@ -1084,8 +1187,8 @@ We have also been requested if we could speed up the threshold scan. At the mome
 for i in $(seq 0 20); 
  do
    #./sls_detector_put thresholdnotb 5000 ##this is still too slow as it loads the module 
- ./sls_detector_put 0:vrf 3199 #need to know the appropriat vrf at every energy 
- ./sls_detector_put 1:vrf 3199 #need to know the appropriat vrf at every energy 
+ ./sls_detector_put 0:vrf 3199 #need to know the appropriate vrf at every energy 
+ ./sls_detector_put 1:vrf 3199 #need to know the appropriate vrf at every energy 
  ./sls_detector_put status trigger
     #sleep 0.005
 done
@@ -1244,7 +1347,7 @@ Scroll up in the terminal till you find:\\
 *************** MASTER/SLAVE ***************\\
 *************** NORMAL/SPECIAL ***************\\
 
-There is also an easier way, that is that only the master module will reaturn the real value of the HV. If you have more than 1 detector system, then you will have more than 1 physical master, as the HV needs to be applied to all the systems.
+There is also an easier way, that is that only the master module will return the real value of the HV. If you have more than 1 detector system, then you will have more than 1 physical master, as the HV needs to be applied to all the systems.
 
 \begin{verbatim}
 for i in $(seq 0 36); do sls_detector_put $i:vhighvoltage; done
@@ -1254,10 +1357,14 @@ for i in $(seq 0 36); do sls_detector_put $i:vhighvoltage; done
 \subsection{'Cannot connect to socket'}
 This error is typically due to the detector server not running. For why, see section~\ref{servernot}.
 
+\subsection{Running at low frame rate, the communication to receiver stops}
+If running in 32-bit mode (or even in 16-bit mode), if more memory than what your machine can handle is asked for, the receiver process could be terminated by the kernel of your machine. It would loook like you had executed a clean control-c on the receiver executable. This has been the case, when setting up by mistake
+\tt{rx\_fifodepth} to 10000 images in 32 bit mode. In 32 bit mode it will assign 40~GB of memory, which is more than what normal PC would have. So make sure you do not require too much memory. The same is tru also for smaller values of {\tt{rx\_fifodepth}} if your  machine has not much memory.  
+
 \subsection{Detector server is not running}\label{servernot}
 The detector server could not be running: either the detector was powered off, or it powered off itself due to too high temperature or, in the case of the 9M, if the waterflow sensor detected no flux and powered it off (the chiller stops occasionally as cSAXS).
 
-If the powering and the temperature are OK, instead, it can be that the firmware version is incompatible to the server version and/or the client software version. So check the consistency of firmware/software/server versions.
+If the powering and the temperature are OK, instead, it can be that the firmware version is incompatible to the server version and/or the client software version. In software packages 3.x.y, the eigerDetectorServer was killed automatically. So check the consistency of firmware/software/server versions if using this version of the software. From 4.x.y onwards, the server, if associated to a wrong firmware, does not kill itself.   
 
 \subsection{'Acquire has already started' error message}
 If you see the client returning the following error message:\\ 
@@ -1268,10 +1375,10 @@ If you see the client returning the following error message:\\
 \end{verbatim}
 
 \subsection{There is noise running the detector in 32-bit}
-If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower thereshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the readout time. It is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will give enough time for the signals to settle. From release 4.0.0, there is a configurable delay that can be set through the {\tt{subdeadtime}} variable, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames. Ask the SLS detector group for an appropriate dead time for your detector, but typically a dead time of 20-50~$\mu$s should be enough. Note that this {\tt{subdeadtime}} need to include the 12~$\mu$s minimum readout time, so it has to be larger than 12~$\mu$s to do anything.  
+If you are running the detector in 32-bit (autosumming), there might be some noise, particularly at lower threshold energies. This is due to the fact that the analog part of the chips require some latency time to settle which is larger than the readout time. It is possible to run the detector only in {\tt{parallel}} or {\tt{nonparallel}} mode, respectively with readout times between frames of 12~$\mu$s and 504~$\mu$s. If you switch {\tt{flags}} to non {\tt{nonparallel}} mode you will give enough time for the signals to settle. From release 4.0.0, there is a configurable delay that can be set through the {\tt{subdeadtime}} variable, such that you can remain with the {\tt{parallel}} flag, but can obtain a configurable dead time between frames. Ask the SLS detector group for an appropriate dead time for your detector, but typically a dead time of 20-50~$\mu$s should be enough. Note that this {\tt{subdeadtime}} need to include the 12~$\mu$s minimum readout time, so it has to be larger than 12~$\mu$s to do anything.  
  
 \subsection{There is noise running the detector at high frame rate(4,8,16 bit)}
-If are running in {\tt{parallel}} mode, in particular at low thereshold energies, you might encounter some noise. The reason is that the analog part of the chips require some latency time to settle which is larger than the readout time. 
+If are running in {\tt{parallel}} mode, in particular at low threshold energies, you might encounter some noise. The reason is that the analog part of the chips require some latency time to settle which is larger than the readout time. 
 \begin{enumerate}
 \item You can lower the frame rate and relax requirements on period: 
 At low frame rate, you normally leave enough time between the end of the acquisition and the starting of the next, so you should not see this effect. In any case setting a {\tt{period}}={\tt{exptime}}+readout time from Table~\ref{tchipro} +extra 20$\mu$s cures the problem. The 20$\mu$s could also be 10~$\mu$s, they are very hardware dependent.

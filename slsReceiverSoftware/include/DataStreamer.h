@@ -16,7 +16,7 @@ class ZmqSocket;
 
 #include <vector>
 
-class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
+class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	
  public:
 	/**
@@ -29,10 +29,9 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param fi pointer to file index
 	 * @param fd flipped data enable for x and y dimensions
 	 * @param ajh additional json header
-	 * @param sm pointer to silent mode
 	 */
-	DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
-			uint64_t* fi, int* fd, char* ajh, bool* sm);
+	DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
+			uint64_t* fi, int* fd, char* ajh);
 
 	/**
 	 * Destructor
@@ -63,7 +62,7 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * Set Fifo pointer to the one given
 	 * @param f address of Fifo pointer
 	 */
-	void SetFifo(Fifo*& f);
+	void SetFifo(Fifo* f);
 
 	/**
 	 * Reset parameters for new acquisition (including all scans)
@@ -73,7 +72,7 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/**
 	 * Reset parameters for new measurement (eg. for each scan)
 	 */
-	void ResetParametersforNewMeasurement(char* fname);
+	void ResetParametersforNewMeasurement(const std::string& fname);
 
 	/**
 	 * Set GeneralData pointer to the one given
@@ -202,7 +201,7 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	uint64_t firstMeasurementIndex;
 
 	/* File name to stream */
-	char fileNametoStream[MAX_STR_LENGTH];
+	std::string fileNametoStream;
 
 	/** Complete buffer used for roi, eg. shortGotthard */
 	char* completeBuffer;

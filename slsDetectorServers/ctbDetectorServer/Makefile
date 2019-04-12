@@ -1,0 +1,34 @@
+CROSS  		= bfin-uclinux-
+CC    		= $(CROSS)gcc
+CFLAGS		+=  -Wall -DCHIPTESTBOARDD  -DSTOP_SERVER -DDEBUG1 #-DJCTB -DVERBOSEI #-DVERBOSE
+LDLIBS		+= 	-lm  -lstdc++ 
+
+PROGS		= 	ctbDetectorServer 
+DESTDIR		?= 	bin
+INSTMODE	= 	0777
+
+SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+OBJS 		= 	$(SRC_CLNT:.c=.o) 
+ 
+all: clean versioning $(PROGS)
+
+boot: $(OBJS) 
+
+version_name=APICTB
+version_path=slsDetectorServers/ctbDetectorServer
+versioning: 
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path);  tput sgr0;`
+
+
+$(PROGS): $(OBJS)
+#	echo $(OBJS) 
+	mkdir -p $(DESTDIR) 
+	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
+	mv $(PROGS) $(DESTDIR)
+	rm *.gdb
+
+clean:
+	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb
+	
+
+	

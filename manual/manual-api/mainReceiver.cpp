@@ -16,7 +16,7 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
 
  */
 
-#include "sls_receiver_defs.h"
+#include "sls_detector_defs.h"
 #include "slsReceiverUsers.h"
 
 #include <iostream>
@@ -96,20 +96,20 @@ void AcquisitionFinished(uint64_t frames, void*p){
  * @param p pointer to object
  */
 void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
-	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
-	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
+	slsDetectorDefs::sls_receiver_header* header = (slsDetectorDefs::sls_receiver_header*)metadata;
+	slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
 	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
 			"#### %d GetData: ####\n"
-			"frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %llu"
-			"\t\ttimestamp: %llu\t\tmodId: %u\t\t"
+			"frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %lu"
+			"\t\ttimestamp: %lu\t\tmodId: %u\t\t"
 			"row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
 			"\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
 			//"\t\tpacketsMask:%s"
 			"\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
-			detectorHeader.row, (long long unsigned int)detectorHeader.frameNumber,
-			detectorHeader.expLength, detectorHeader.packetNumber, (long long unsigned int)detectorHeader.bunchId,
-			(long long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
+			detectorHeader.row, (long unsigned int)detectorHeader.frameNumber,
+			detectorHeader.expLength, detectorHeader.packetNumber, (long unsigned int)detectorHeader.bunchId,
+			(long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
 			detectorHeader.row, detectorHeader.column, detectorHeader.reserved,
 			detectorHeader.debug, detectorHeader.roundRNumber,
 			detectorHeader.detType, detectorHeader.version,
@@ -130,8 +130,8 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
  * @param p pointer to object
  */
 void GetData(char* metadata, char* datapointer, uint32_t &revDatasize, void* p){
-	slsReceiverDefs::sls_receiver_header* header = (slsReceiverDefs::sls_receiver_header*)metadata;
-	slsReceiverDefs::sls_detector_header detectorHeader = header->detHeader;
+	slsDetectorDefs::sls_receiver_header* header = (slsDetectorDefs::sls_receiver_header*)metadata;
+	slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
 	PRINT_IN_COLOR (detectorHeader.modId?detectorHeader.modId:detectorHeader.row,
 			"#### %d GetData: ####\n"
@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_flags=0;							// no flags
 	sa.sa_handler=sigInterruptHandler;		// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGINT, &sa, NULL) == -1) {
+	if (sigaction(SIGINT, &sa, nullptr) == -1) {
 		cprintf(RED, "Could not set handler function for SIGINT\n");
 	}
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[]) {
 	asa.sa_flags=0;							// no flags
 	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGPIPE, &asa, NULL) == -1) {
+	if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
 		cprintf(RED, "Could not set handler function for SIGPIPE\n");
 	}
 
@@ -221,10 +221,10 @@ int main(int argc, char *argv[]) {
 			char temp[10];
 			sprintf(temp,"%d",startTCPPort + i);
 			char* args[] = {(char*)"ignored", (char*)"--rx_tcpport", temp};
-			int ret = slsReceiverDefs::OK;
+			int ret = slsDetectorDefs::OK;
 			/**	-  create slsReceiverUsers object with appropriate arguments */
 			slsReceiverUsers *receiver = new slsReceiverUsers(3, args, ret);
-			if(ret==slsReceiverDefs::FAIL){
+			if(ret==slsDetectorDefs::FAIL){
 				delete receiver;
 				exit(EXIT_FAILURE);
 			}
@@ -236,22 +236,22 @@ int main(int argc, char *argv[]) {
 
 				/** - Call back for start acquisition */
 				cprintf(BLUE, "Registering 	StartAcq()\n");
-				receiver->registerCallBackStartAcquisition(StartAcq, NULL);
+				receiver->registerCallBackStartAcquisition(StartAcq, nullptr);
 
 				/** - Call back for acquisition finished */
 				cprintf(BLUE, "Registering 	AcquisitionFinished()\n");
-				receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, NULL);
+				receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, nullptr);
 
 				/* 	- Call back for raw data */
 				cprintf(BLUE, "Registering     GetData() \n");
-				if (withCallback == 1) receiver->registerCallBackRawDataReady(GetData,NULL);
-				else if (withCallback == 2) receiver->registerCallBackRawDataModifyReady(GetData,NULL);
+				if (withCallback == 1) receiver->registerCallBackRawDataReady(GetData,nullptr);
+				else if (withCallback == 2) receiver->registerCallBackRawDataModifyReady(GetData,nullptr);
 			}
 
 
 
 			/**	- start tcp server thread */
-			if (receiver->start() == slsReceiverDefs::FAIL){
+			if (receiver->start() == slsDetectorDefs::FAIL){
 				delete receiver;
 				cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 				exit(EXIT_FAILURE);
@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_flags=0;							// no flags
 	sa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
-	if (sigaction(SIGINT, &sa, NULL) == -1) {
+	if (sigaction(SIGINT, &sa, nullptr) == -1) {
 		cprintf(RED, "Could not set handler function for SIGINT\n");
 	}
 
@@ -283,7 +283,7 @@ int main(int argc, char *argv[]) {
 
 	/** - Parent process waits for all child processes to exit */
 	for(;;) {
-		pid_t childPid = waitpid (-1, NULL, 0);
+		pid_t childPid = waitpid (-1, nullptr, 0);
 
 		// no child closed
 		if (childPid == -1) {

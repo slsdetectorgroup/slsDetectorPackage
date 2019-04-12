@@ -1,1 +1,0 @@
-../../slsReceiverSoftware/include/ansi.h

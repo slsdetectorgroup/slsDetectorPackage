@@ -9,13 +9,15 @@
  *@short creates & manages a listener thread each
  */
 
+#include <memory>
+
 #include "ThreadObject.h"
 
 class GeneralData;
 class Fifo;
 class genericSocket;
 
-class Listener : private virtual slsReceiverDefs, public ThreadObject {
+class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	
  public:
 	/**
@@ -37,9 +39,9 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param depaden pointer to deactivated padding enable
 	 * @param sm pointer to silent mode
 	 */
-	Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
+	Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
-	        uint32_t* us, uint32_t* as, uint32_t* fpf,
+	        int64_t* us, int64_t* as, uint32_t* fpf,
 			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
 
 	/**
@@ -54,7 +56,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
      * Returns if the thread is currently running
      * @returns true if thread is running, else false
      */
-    bool IsRunning();
+    bool IsRunning() override;
 
 	/**
 	 * Get acquisition started flag
@@ -96,7 +98,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Set Fifo pointer to the one given
 	 * @param f address of Fifo pointer
 	 */
-	void SetFifo(Fifo*& f);
+	void SetFifo(Fifo* f);
 
 	/**
 	 * Reset parameters for new acquisition (including all scans)
@@ -112,7 +114,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Set GeneralData pointer to the one given
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
-	void SetGeneralData(GeneralData*& g);
+	void SetGeneralData(GeneralData* g);
 
 	/**
 	 * Set thread priority
@@ -138,7 +140,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
      * @param s UDP socket buffer size to be set
      * @return OK or FAIL of dummy socket creation
      */
-    int CreateDummySocketForUDPSocketBufferSize(uint32_t s);
+    int CreateDummySocketForUDPSocketBufferSize(int64_t s);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -156,7 +158,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Get Type
 	 * @return type
 	 */
-	std::string GetType();
+	std::string GetType() override;
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
@@ -169,7 +171,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	 * Pop free addresses, listen to udp socket,
 	 * write to memory & push the address into fifo
 	 */
-	void ThreadExecution();
+	void ThreadExecution() override;
 
 	/**
 	 * Pushes non empty buffers into fifo/ frees empty buffer,
@@ -207,7 +209,6 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** Fifo structure */
 	Fifo* fifo;
 
-
 	// individual members
 	/** Detector Type */
 	detectorType myDetectorType;
@@ -216,7 +217,7 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	runStatus* status;
 
 	/** UDP Socket - Detector to Receiver */
-	genericSocket* udpSocket;
+	std::unique_ptr<genericSocket> udpSocket;
 
 	/** UDP Port Number */
 	uint32_t* udpPortNumber;
@@ -231,10 +232,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	uint32_t* dynamicRange;
 
 	/** UDP Socket Buffer Size */
-	uint32_t* udpSocketBufferSize;
+	int64_t* udpSocketBufferSize;
 
 	/** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
-	uint32_t* actualUDPSocketBufferSize;
+	int64_t* actualUDPSocketBufferSize;
 
 	/** frames per file */
 	uint32_t* framesPerFile;
@@ -293,10 +294,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	bool carryOverFlag;
 
 	/** Carry over packet buffer */
-	char* carryOverPacket;
+	std::unique_ptr<char []> carryOverPacket;
 
 	/** Listening buffer for one packet - might be removed when we can peek and eiger fnum is in header */
-	char* listeningPacket;
+	std::unique_ptr<char []> listeningPacket;
 
 	/** if the udp socket is connected */
 	bool udpSocketAlive;
@@ -312,10 +313,10 @@ class Listener : private virtual slsReceiverDefs, public ThreadObject {
 	/** number of images for statistic */
 	uint32_t numFramesStatistic;
 
-	/**
-	 * starting packet number is odd or evern, accordingly increment frame number
-	 * to get first packet number as 0
-	 * (pecific to gotthard, can vary between modules, hence defined here) */
-	bool oddStartingPacket;
+    /**
+     * starting packet number is odd or evern, accordingly increment frame number
+     * to get first packet number as 0
+     * (pecific to gotthard, can vary between modules, hence defined here) */
+    bool oddStartingPacket;
 };
 

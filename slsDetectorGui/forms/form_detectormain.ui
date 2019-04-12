@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>848</height>
+    <height>851</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -236,8 +236,6 @@
     <addaction name="actionLoadTrimbits"/>
     <addaction name="actionSaveTrimbits"/>
     <addaction name="separator"/>
-    <addaction name="actionLoadCalibration"/>
-    <addaction name="actionSaveCalibration"/>
    </widget>
    <widget class="QMenu" name="menuModes">
     <property name="title">
@@ -271,7 +269,7 @@
    <property name="minimumSize">
     <size>
      <width>36</width>
-     <height>422</height>
+     <height>425</height>
     </size>
    </property>
    <property name="maximumSize">

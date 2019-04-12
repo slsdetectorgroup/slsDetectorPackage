@@ -81,7 +81,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             message(FATAL_ERROR "GCC version must be at least 4.8!")
     endif()
     target_compile_options(slsProjectWarnings INTERFACE 
-                                                 
+                                             -Wno-missing-field-initializers    
                                                 )
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
         target_compile_options(slsProjectWarnings INTERFACE 

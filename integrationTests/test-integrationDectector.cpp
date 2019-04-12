@@ -3,6 +3,7 @@
 
 #include "ClientSocket.h"
 #include "logger.h"
+#include "multiSlsDetector.h"
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
 
@@ -222,3 +223,56 @@ TEST_CASE("Excersise all possible set timer functions", "[.integration]") {
 
 //     d.freeSharedMemory();
 // }
+
+TEST_CASE("Eiger Dynamic Range with effect on rate correction and clock divider", "[.integration]") {
+    SingleDetectorConfig c;
+    
+    int ratecorr = 125;
+
+    // pick up multi detector from shm id 0
+    multiSlsDetector m(0);
+
+    // ensure eiger detector type, hostname and online
+    REQUIRE(m.getDetectorTypeAsEnum()==c.type_enum);
+    REQUIRE(m.getHostname()==c.hostname);
+    REQUIRE(m.setOnline(true)==slsDetectorDefs::ONLINE_FLAG);
+
+    // starting state with rate correction off
+    CHECK(m.setRateCorrection(0) == 0);
+
+    // dr 16: clk divider, no change for ratecorr
+    CHECK(m.setDynamicRange(16) == 16);
+    CHECK(m.setSpeed(slsDetectorDefs::CLOCK_DIVIDER) == 1);
+    CHECK(m.getRateCorrection() == 0);
+
+    // dr 32: clk divider, no change for ratecorr
+    CHECK(m.setDynamicRange(32) == 32);
+    CHECK(m.setSpeed(slsDetectorDefs::CLOCK_DIVIDER) == 2);
+    CHECK(m.getRateCorrection() == 0);
+
+    // other drs: no change for clk divider, no change for ratecorr
+    CHECK(m.setDynamicRange(8) == 8);
+    CHECK(m.setSpeed(slsDetectorDefs::CLOCK_DIVIDER) == 2);
+    CHECK(m.getRateCorrection() == 0);
+    CHECK(m.setDynamicRange(4) == 4);
+    CHECK(m.setSpeed(slsDetectorDefs::CLOCK_DIVIDER) == 2);
+    CHECK(m.getRateCorrection() == 0);
+
+    // switching on rate correction with dr 16, 32
+    m.setDynamicRange(16);
+    m.setRateCorrection(ratecorr);
+    CHECK(m.getRateCorrection() == ratecorr);
+    m.setDynamicRange(32);
+    CHECK(m.getRateCorrection() == ratecorr);
+
+    // ratecorr fail with dr 4 or 8
+    CHECK_THROWS_AS(m.setDynamicRange(8), sls::NonCriticalError);
+    CHECK(m.getRateCorrection()==0);
+    m.setDynamicRange(16);
+    m.setDynamicRange(16);
+    m.setRateCorrection(ratecorr);
+    m.setDynamicRange(16);
+    m.setRateCorrection(ratecorr);
+    CHECK_THROWS_AS(m.setDynamicRange(4), sls::NonCriticalError);
+    CHECK(m.getRateCorrection()==0);
+}

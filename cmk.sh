@@ -7,6 +7,7 @@ TEXTCLIENT=0
 RECEIVER=0
 GUI=0
 DEBUG=0
+PYTHON=0
 
 
 CLEAN=0
@@ -15,10 +16,11 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-h] [-d <HDF5 directory>] [-j]
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [-h] [-d <HDF5 directory>] [-j]
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
+ -p: Builds/Rebuilds Python API
  -h: Builds/Rebuilds Cmake files with HDF5 package
  -d: HDF5 Custom Directory
  -t: Build/Rebuilds only text client
@@ -26,6 +28,12 @@ Usage: $0 [-c] [-b] [-h] [-d <HDF5 directory>] [-j]
  -g: Build/Rebuilds only gui
  -j: Number of threads to compile through
  -e: Debug mode
+
+Rebuild when you switch to a new build and compile in parallel:
+./cmk.sh -bj5
+
+Rebuild python
+./cmk.sh -p
  
 For only make:
 ./cmk.sh
@@ -55,12 +63,17 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bchd:j:trge" opt ; do
+while getopts ":bpchd:j:trge" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
 		REBUILD=1
 		;;
+	p)
+    	echo "Compiling Options: Python" 
+		PYTHON=1
+		REBUILD=1
+		;;   
 	c) 
 		echo "Clean Required"
 		CLEAN=1
@@ -111,27 +124,28 @@ while getopts ":bchd:j:trge" opt ; do
 done
 
 
-
-
+if [ $PYTHON -eq 1 ]; then
+		CMAKE_POST+=" -DSLS_USE_PYTHON=ON "
+		echo "Enabling Compile Option: Python"
+fi
 
 
 if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
 		#CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
 		CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=OFF "
-       echo "Compile Option: TextClient, Receiver and GUI"
+       echo "Enabling Compile Option: TextClient, Receiver and GUI"
 else 
        if [ $TEXTCLIENT -eq 1 ]; then
               CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON "
-               echo "Compile Option: TextClient"
+               echo "Enabling Compile Option: TextClient"
        fi
        if [ $RECEIVER -eq 1 ]; then
                CMAKE_POST+=" -DSLS_USE_RECEIVER=ON "
-               echo "Compile Option: Receiver"
-       fi
-                               
+               echo "Enabling Compile Option: Receiver"
+       fi              
        if [ $GUI -eq 1 ]; then
                CMAKE_POST+=" -DSLS_USE_GUI=ON "
-               echo "Compile Option: GUI"
+               echo "Enabling Compile Option: GUI"
        fi
 fi
 

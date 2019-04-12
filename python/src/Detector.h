@@ -676,8 +676,6 @@ class Detector {
 void Detector::setFileFormat(const std::string &format) {
     if (format == "binary") {
         det.setFileFormat(slsDetectorDefs::fileFormat::BINARY);
-    } else if (format == "ascii") {
-        det.setFileFormat(slsDetectorDefs::fileFormat::ASCII);
     } else if (format == "hdf5") {
         det.setFileFormat(slsDetectorDefs::fileFormat::HDF5);
     }
@@ -689,8 +687,6 @@ std::string Detector::getFileFormat() {
     switch (format) {
     case slsDetectorDefs::fileFormat::BINARY:
         return "binary";
-    case slsDetectorDefs::fileFormat::ASCII:
-        return "ascii";
     case slsDetectorDefs::fileFormat::HDF5:
         return "hdf5";
     default:

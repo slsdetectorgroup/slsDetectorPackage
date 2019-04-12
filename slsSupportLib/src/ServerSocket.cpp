@@ -55,7 +55,7 @@ DataSocket ServerSocket::accept() {
 
 const std::string &ServerSocket::getLastClient() { return lastClient_; }
 
-const int ServerSocket::getPort() { return serverPort; }
+int ServerSocket::getPort() const { return serverPort; }
 
 void ServerSocket::SendResult(int &ret, void* retval, int retvalSize, char* mess) {
 

@@ -3289,13 +3289,13 @@ void multiSlsDetector::readFrameFromReceiver() {
             if (dynamicRange == 4 && gappixelsenable) {
                 int n = processImageWithGapPixels(multiframe, multigappixels);
                 thisData =
-                    new detectorData(getCurrentProgress(), currentFileName.c_str(), nPixelsX,
-                                     nPixelsY, multigappixels, n, dynamicRange, currentFileIndex);
+                    new detectorData(getCurrentProgress(), currentFileName.c_str(), nCompletePixelsX,
+                                     nCompletePixelsY, multigappixels, n, dynamicRange, currentFileIndex);
             }
             // normal pixels
             else {
-                thisData = new detectorData(getCurrentProgress(), currentFileName.c_str(), nPixelsX,
-                                            nPixelsY, multiframe, multisize, dynamicRange,
+                thisData = new detectorData(getCurrentProgress(), currentFileName.c_str(), nCompletePixelsX,
+                                            nCompletePixelsY, multiframe, multisize, dynamicRange,
                                             currentFileIndex);
             }
             dataReady(thisData, currentFrameIndex,

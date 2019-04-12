@@ -15,7 +15,7 @@ class ServerSocket : public DataSocket {
     ServerSocket(int port);
     DataSocket accept();
     const std::string &getLastClient();
-    const int getPort();
+    int getPort() const;
     void SendResult(int &ret, void *retval, int retvalSize, char* mess);
 
   private:

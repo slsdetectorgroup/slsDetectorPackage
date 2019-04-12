@@ -4824,7 +4824,7 @@ int slsDetector::setLEDEnable(int enable) {
     int arg = enable;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending LED Enable: " << arg;
-    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
                                      detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
@@ -4845,7 +4845,7 @@ int slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
                         << args[0] << ", delay: " << std::dec << args[1]
                         << " ps";
 
-    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
                                      detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);

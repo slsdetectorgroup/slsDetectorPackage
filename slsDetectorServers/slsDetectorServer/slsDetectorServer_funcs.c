@@ -1766,10 +1766,6 @@ int set_dynamic_range(int file_des) {
 
 	// set & get
 	if ((dr == -1) || (Server_VerifyLock() == OK)) {
-
-#ifdef EIGERD
-		int old_dr = setDynamicRange(-1);
-#endif
 		// check dr
 		switch(dr) {
 		case -1:
@@ -1785,29 +1781,6 @@ int set_dynamic_range(int file_des) {
 			modeNotImplemented("Dynamic range", dr);
 			break;
 		}
-
-#ifdef EIGERD
-		if (dr != -1 && getRateCorrectionEnable()) {
-			// 4 or 8 bit, switch off rate corr (only if dr worked)
-			if ((dr != 32) && (dr != 16) && (ret == OK)) {
-				setRateCorrection(0);
-				ret = FAIL;
-				strcpy(mess,"Switching off Rate Correction. Must be in 32 or 16 bit mode\n");
-				FILE_LOG(logERROR,(mess));
-			}
-
-			// 16, 32 (diff from old value), set new tau in rate table(-1), if it didnt work, give error
-			else if ((dr == 16 || dr == 32) && (old_dr != dr)) {
-				setRateCorrection(-1); //tau_ns will not be -1 here
-				// it didnt work
-				if (!getRateCorrectionEnable()) {
-					ret = FAIL;
-					strcpy(mess,"Deactivating Rate Correction. Could not set it.\n");
-					FILE_LOG(logERROR,(mess));
-				}
-			}
-		}
-#endif
 	}
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

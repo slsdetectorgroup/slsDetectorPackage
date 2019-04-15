@@ -322,6 +322,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     detector_shm()->timerValue[SUBFRAME_ACQUISITION_TIME] = 0;
     detector_shm()->timerValue[STORAGE_CELL_NUMBER] = 0;
     detector_shm()->timerValue[SUBFRAME_DEADTIME] = 0;
+    detector_shm()->deadTime = 0;
     sls::strcpy_safe(detector_shm()->receiver_hostname, "none");
     detector_shm()->receiverTCPPort = DEFAULT_PORTNO + 2;
     detector_shm()->receiverUDPPort = DEFAULT_UDP_PORTNO;
@@ -1951,7 +1952,7 @@ int slsDetector::setDynamicRange(int n) {
             client.close();
             ret = updateDetector();
         }
-    }
+    } 
 
     // only for eiger
     // setting dr consequences on databytes shm
@@ -3810,6 +3811,7 @@ int slsDetector::setRateCorrection(int64_t t) {
         auto client = DetectorSocket(detector_shm()->hostname,
                                      detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
+        detector_shm()->deadTime = t;
     }
     if (ret == FORCE_UPDATE) {
         ret = updateDetector();
@@ -3828,12 +3830,31 @@ int64_t slsDetector::getRateCorrection() {
                                      detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, nullptr, 0, &retval,
                                          sizeof(retval));
+        detector_shm()->deadTime = retval;
         FILE_LOG(logDEBUG1) << "Rate correction: " << retval;
     }
     if (ret == FORCE_UPDATE) {
         updateDetector();
     }
     return retval;
+}
+
+void slsDetector::updateRateCorrection() {
+    // rate correction is enabled
+    if (detector_shm()->deadTime != 0) {
+        switch (detector_shm()->dynamicRange) {
+        // rate correction is allowed
+        case 16:
+        case 32:
+            setRateCorrection(detector_shm()->deadTime);
+            break;
+        // not allowed
+        default:
+            setRateCorrection(0);
+            throw sls::NonCriticalError(
+                "Rate correction Deactivated, must be in 32 or 16 bit mode");
+        }
+    }
 }
 
 void slsDetector::printReceiverConfiguration(TLogLevel level) {
@@ -4824,7 +4845,7 @@ int slsDetector::setLEDEnable(int enable) {
     int arg = enable;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending LED Enable: " << arg;
-    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
                                      detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
@@ -4845,7 +4866,7 @@ int slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
                         << args[0] << ", delay: " << std::dec << args[1]
                         << " ps";
 
-    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
                                      detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);

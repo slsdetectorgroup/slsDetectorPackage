@@ -15,7 +15,7 @@ class multiSlsDetector;
 class ServerInterface;
 class MySocketTCP;
 
-#define SLS_SHMVERSION 0x181005
+#define SLS_SHMVERSION 0x190412
 #define NCHIPSMAX 10
 #define NCHANSMAX 65536
 #define NDACSMAX 16
@@ -119,6 +119,9 @@ struct sharedSlsDetector {
 
     /** timer values */
     int64_t timerValue[slsDetectorDefs::timerIndex::MAX_TIMERS];
+
+	/** rate correction in ns */
+    int64_t deadTime;
 
     /** ip address/hostname of the receiver for client control via TCP */
     char receiver_hostname[MAX_STR_LENGTH];
@@ -1339,7 +1342,7 @@ class slsDetector : public virtual slsDetectorDefs{
     sls_detector_module *getModule();
 
     /**
-	 * Set Rate correction (Mythen, Eiger)
+	 * Set Rate correction (Eiger)
 	 * @param t dead time in ns - if 0 disable correction,
 	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
 	 * for current settings
@@ -1348,10 +1351,17 @@ class slsDetector : public virtual slsDetectorDefs{
     int setRateCorrection(int64_t t = 0);
 
     /**
-	 * Get rate correction Eiger)
+	 * Get rate correction (Eiger)
 	 * @returns 0 if rate correction disabled,  > 0 otherwise
 	 */
     int64_t getRateCorrection();
+
+	/**
+	 * Update rate correction according to dynamic range (Eiger)
+	 * If rate correction enabled and dr is 8 or 16, it will throw
+	 * Otherwise update ratecorrection if enabled
+	 */
+    void updateRateCorrection();
 
     /**
 	 * Prints receiver configuration

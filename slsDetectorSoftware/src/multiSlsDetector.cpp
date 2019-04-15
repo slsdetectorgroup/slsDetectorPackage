@@ -1264,36 +1264,46 @@ int multiSlsDetector::setDynamicRange(int dr, int detPos) {
     int prevGValue = multi_shm()->dataBytesInclGapPixels;
     multi_shm()->dataBytes = 0;
     multi_shm()->dataBytesInclGapPixels = 0;
-    multi_shm()->numberOfChannels = 0;
     for (auto &d : detectors) {
         multi_shm()->dataBytes += d->getDataBytes();
         multi_shm()->dataBytesInclGapPixels += d->getDataBytesInclGapPixels();
-        multi_shm()->numberOfChannels += d->getTotalNumberOfChannels();
     }
 
-    // for usability
-    if (getDetectorTypeAsEnum() == EIGER) {
-        switch (dr) {
-        case 32:
-            FILE_LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
-                                 "Dynamic Range of 32";
-            setSpeed(CLOCK_DIVIDER, 2);
-            break;
-        case 16:
-            FILE_LOG(logINFO) << "Setting Clock to Half Speed for Dynamic Range of 16";
-            setSpeed(CLOCK_DIVIDER, 1);
-            break;
-        default:
-            break;
+    // if there was a change FIXME:add dr to sls shm and check that instead
+    if ((prevValue != multi_shm()->dataBytes) ||
+        (prevGValue != multi_shm()->dataBytesInclGapPixels)) {
+
+        updateOffsets();
+
+        // update speed, check ratecorrection
+        if (getDetectorTypeAsEnum() == EIGER) {
+
+            // rate correction before speed for consistency 
+            // (else exception at speed makes ratecorr inconsistent)
+            parallelCall(&slsDetector::updateRateCorrection);
+            
+            // speed(usability)
+            switch (dr) {
+            case 32:
+                FILE_LOG(logINFO)
+                    << "Setting Clock to Quarter Speed to cope with "
+                       "Dynamic Range of 32";
+                setSpeed(CLOCK_DIVIDER, 2);
+                break;
+            case 16:
+                FILE_LOG(logINFO)
+                    << "Setting Clock to Half Speed for Dynamic Range of 16";
+                setSpeed(CLOCK_DIVIDER, 1);
+                break;
+            default:
+                break;
+            }
         }
     }
 
-    // update offsets if there was a change FIXME:add dr to sls shm and check
-    // that instead
-    if ((prevValue != multi_shm()->dataBytes) ||
-        (prevGValue != multi_shm()->dataBytesInclGapPixels)) {
-        updateOffsets();
-    }
+
+
+
 
     return ret;
 }

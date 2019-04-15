@@ -2584,7 +2584,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 
     // if empty, give rx_hostname
     if (sourceIP.empty()) {
-        if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+        if (strcmp(detector_shm()->receiver_hostname, "none") == 0) {
             throw RuntimeError("Receiver hostname not set yet. Cannot create "
                                "rx_zmqip from none");
         }
@@ -2624,7 +2624,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
         sls::strcpy_safe(detector_shm()->receiver_zmqip, retvals);
         if (ret == FORCE_UPDATE) {
             receiver.close();
-            ret = updateCachedReceiverVariables();
+            updateCachedReceiverVariables();
         }
     }
 }
@@ -2680,7 +2680,7 @@ slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) {
                          retvals);
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return std::string(detector_shm()->receiver_additionalJsonHeader);
 }
@@ -2703,7 +2703,7 @@ std::string slsDetector::getAdditionalJsonHeader() {
                          retvals);
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return std::string(detector_shm()->receiver_additionalJsonHeader);
 }
@@ -3279,7 +3279,7 @@ int slsDetector::setDeactivatedRxrPaddingMode(int padding) {
         detector_shm()->receiver_deactivatedPaddingEnable = retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return detector_shm()->receiver_deactivatedPaddingEnable;
 }
@@ -3315,7 +3315,7 @@ int slsDetector::setFlippedData(dimension d, int value) {
         FILE_LOG(logDEBUG1) << "Flipped data:" << retval << " ret: " << ret;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return detector_shm()->flippedData[d];
 }
@@ -3370,7 +3370,7 @@ int slsDetector::enableGapPixels(int val) {
             }
         }
         if (ret == FORCE_UPDATE) {
-            ret = updateCachedReceiverVariables();
+            updateCachedReceiverVariables();
         }
     }
     return detector_shm()->gappixels;
@@ -3521,7 +3521,7 @@ int slsDetector::setStoragecellStart(int pos) {
         FILE_LOG(logDEBUG1) << "Storage cell start: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }

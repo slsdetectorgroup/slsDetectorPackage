@@ -62,7 +62,7 @@ SCENARIO("Multi detector operation", "[detector]") {
     }
 }
 
-TEST_CASE("Set and get partialFramesPadding", "[detector]"){
+TEST_CASE("Set and get partialFramesPadding", "[detector][somenewtag]"){
 
     multiSlsDetector::freeSharedMemory(20, -1);
     multiSlsDetector m(20);

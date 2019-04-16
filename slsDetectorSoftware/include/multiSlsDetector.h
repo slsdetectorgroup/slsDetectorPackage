@@ -1299,7 +1299,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns return value  (mostly -1 as it can't read adc register)
      */
-    int writeAdcRegister(int addr, int val, int detPos = -1);
+    int writeAdcRegister(uint32_t addr, uint32_t val, int detPos = -1);
 
     /**
      * Activates/Deactivates the detector (Eiger only)

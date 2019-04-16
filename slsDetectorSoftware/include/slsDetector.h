@@ -1160,7 +1160,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param val value
 	 * @returns return value  (mostly -1 as it can't read adc register)
 	 */
-    int writeAdcRegister(int addr, int val);
+    int writeAdcRegister(uint32_t addr, uint32_t val);
 
     /**
 	 * Activates/Deactivates the detector (Eiger only)

@@ -3204,10 +3204,10 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
     return ret;
 }
 
-int slsDetector::writeAdcRegister(int addr, int val) {
+int slsDetector::writeAdcRegister(uint32_t addr, uint32_t val) {
     int fnum = F_WRITE_ADC_REG;
     int ret = FAIL;
-    uint32_t args[2] = {(uint32_t)addr, (uint32_t)val};
+    uint32_t args[]{addr, val};
     FILE_LOG(logDEBUG1) << "Writing to ADC register 0x" << std::hex << addr
                         << "data: 0x" << std::hex << val << std::dec;
 
@@ -3236,7 +3236,7 @@ int slsDetector::activate(int enable) {
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
                                          sizeof(retval));
         FILE_LOG(logDEBUG1) << "Activate: " << retval;
-        detector_shm()->activated = retval;
+        detector_shm()->activated = static_cast<bool>(retval);
     }
     if (ret == FORCE_UPDATE) {
         ret = updateDetector();
@@ -3260,7 +3260,7 @@ int slsDetector::activate(int enable) {
             updateCachedReceiverVariables();
         }
     }
-    return detector_shm()->activated;
+    return static_cast<int>(detector_shm()->activated);
 }
 
 int slsDetector::setDeactivatedRxrPaddingMode(int padding) {

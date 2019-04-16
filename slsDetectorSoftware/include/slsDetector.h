@@ -225,7 +225,7 @@ struct sharedSlsDetector {
     bool activated;
 
     /** padding enable in deactivated receiver */
-    bool receiver_deactivatedPaddingEnable;
+    bool rxPadDeactivatedModules;
 
     /** silent receiver */
     bool receiver_silentMode;
@@ -1174,7 +1174,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param padding padding option for deactivated receiver. Can be 1 (padding), 0 (no padding), -1 (gets)
 	 * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for padding option
 	 */
-    int setDeactivatedRxrPaddingMode(int padding = -1);
+    bool setDeactivatedRxrPaddingMode(int padding = -1);
 
     /**
 	 * Returns the enable if data will be flipped across x or y axis (Eiger)

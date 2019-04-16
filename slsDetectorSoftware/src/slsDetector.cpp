@@ -362,7 +362,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     detector_shm()->receiver_frameDiscardMode = NO_DISCARD;
     detector_shm()->rxFramePadding = true;
     detector_shm()->activated = true;
-    detector_shm()->receiver_deactivatedPaddingEnable = true;
+    detector_shm()->rxPadDeactivatedModules = true;
     detector_shm()->receiver_silentMode = false;
     sls::strcpy_safe(detector_shm()->receiver_filePath, "/");
     sls::strcpy_safe(detector_shm()->receiver_fileName, "run");
@@ -2307,7 +2307,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nflippeddatax:" << (detector_shm()->flippedData[X])
             << "\nactivated: " << detector_shm()->activated
             << "\nreceiver deactivated padding: "
-            << detector_shm()->receiver_deactivatedPaddingEnable
+            << detector_shm()->rxPadDeactivatedModules
             << "\nsilent Mode:" << detector_shm()->receiver_silentMode
             << "\n10GbE:" << detector_shm()->tenGigaEnable
             << "\nGap pixels: " << detector_shm()->gappixels
@@ -2352,7 +2352,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 setFlippedData(X, -1);
                 activate(-1);
                 setDeactivatedRxrPaddingMode(
-                    detector_shm()->receiver_deactivatedPaddingEnable);
+                    detector_shm()->rxPadDeactivatedModules);
                 enableGapPixels(detector_shm()->gappixels);
                 enableTenGigabitEthernet(detector_shm()->tenGigaEnable);
                 setReadOutFlags(GET_READOUT_FLAGS);
@@ -2844,7 +2844,7 @@ int slsDetector::setUDPConnection() {
     FILE_LOG(logDEBUG1) << "Setting UDP Connection";
 
     // called before set up
-    if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+    if (strcmp(detector_shm()->receiver_hostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet.";
         return FAIL;
     }
@@ -2892,11 +2892,11 @@ int slsDetector::setUDPConnection() {
                                        detector_shm()->receiverTCPPort);
         ret = receiver.sendCommandThenRead(fnum, args, sizeof(args), retvals,
                                            sizeof(retvals));
-        if (strlen(retvals[0])) {
+        if (strlen(retvals[0]) != 0u) {
             FILE_LOG(logDEBUG1) << "Receiver UDP MAC returned : " << retvals[0];
             detector_shm()->receiverUDPMAC = retvals[0];
         }
-        if (strlen(retvals[1])) {
+        if (strlen(retvals[1]) != 0u) {
             FILE_LOG(logDEBUG1)
                 << "Receiver UDP MAC2 returned : " << retvals[1];
             detector_shm()->receiverUDPMAC2 = retvals[1];
@@ -2942,10 +2942,10 @@ int slsDetector::loadImageToDetector(imageType index,
                                      const std::string &fname) {
     int nChan = getTotalNumberOfChannels();
     int16_t args[nChan];
-    FILE_LOG(logDEBUG1) << "Loading " << (!index ? "Dark" : "Gain")
+    FILE_LOG(logDEBUG1) << "Loading " << (index == 0u ? "Dark" : "Gain")
                         << "image from file " << fname;
 
-    if (readDataFile(fname, args, nChan)) {
+    if (readDataFile(fname, args, nChan) != 0) {
         return sendImageToDetector(index, args);
     } else {
         throw RuntimeError(
@@ -2957,7 +2957,7 @@ int slsDetector::sendImageToDetector(imageType index, int16_t imageVals[]) {
     int fnum = F_LOAD_IMAGE;
     int ret = FAIL;
     int nChan = getTotalNumberOfChannels();
-    int args[2] = {(int)index, nChan};
+    int args[]{static_cast<int>(index), nChan};
     FILE_LOG(logDEBUG1) << "Sending image to detector";
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
@@ -2983,7 +2983,7 @@ int slsDetector::sendImageToDetector(imageType index, int16_t imageVals[]) {
 int slsDetector::writeCounterBlockFile(const std::string &fname, int startACQ) {
     int ret = FAIL;
     int nChan = getTotalNumberOfChannels();
-    short int retvals[nChan];
+    int16_t retvals[nChan];
     FILE_LOG(logDEBUG1) << "Reading Counter to " << fname
                         << (startACQ ? " and Restarting Acquisition" : "\n");
 
@@ -3047,7 +3047,7 @@ int slsDetector::setCounterBit(int i) {
         FILE_LOG(logDEBUG1) << "Counter bit: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -3245,8 +3245,7 @@ int slsDetector::activate(int enable) {
     // receiver
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG && ret == OK) {
         fnum = F_RECEIVER_ACTIVATE;
-        ret = FAIL;
-        arg = detector_shm()->activated;
+        arg = static_cast<int>(detector_shm()->activated);
         retval = -1;
         FILE_LOG(logDEBUG1)
             << "Setting activate flag " << arg << " to receiver";
@@ -3263,7 +3262,7 @@ int slsDetector::activate(int enable) {
     return static_cast<int>(detector_shm()->activated);
 }
 
-int slsDetector::setDeactivatedRxrPaddingMode(int padding) {
+bool slsDetector::setDeactivatedRxrPaddingMode(int padding) {
     int fnum = F_RECEIVER_DEACTIVATED_PADDING_ENABLE;
     int ret = OK;
     int arg = padding;
@@ -3276,12 +3275,12 @@ int slsDetector::setDeactivatedRxrPaddingMode(int padding) {
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
                                            sizeof(retval));
         FILE_LOG(logDEBUG1) << "Deactivated Receiver Padding Enable:" << retval;
-        detector_shm()->receiver_deactivatedPaddingEnable = retval;
+        detector_shm()->rxPadDeactivatedModules = retval;
     }
     if (ret == FORCE_UPDATE) {
         updateCachedReceiverVariables();
     }
-    return detector_shm()->receiver_deactivatedPaddingEnable;
+    return detector_shm()->rxPadDeactivatedModules;
 }
 
 int slsDetector::getFlippedData(dimension d) const {
@@ -4075,7 +4074,7 @@ int slsDetector::updateCachedReceiverVariables() const {
 
             // deactivated padding enable
             n += receiver.receiveData(&i32, sizeof(i32));
-            detector_shm()->receiver_deactivatedPaddingEnable =
+            detector_shm()->rxPadDeactivatedModules =
                 static_cast<bool>(i32);
 
             // silent mode

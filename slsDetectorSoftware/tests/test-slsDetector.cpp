@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <iostream>
 
-using namespace sls;
+
 
 TEST_CASE("Set and get trimen", "[detector]") {
     // Free shared memory to be sure that we start in a clean state
@@ -191,4 +191,30 @@ TEST_CASE("Padding and discard policy", "[detector][new]"){
     
     d.freeSharedMemory();
     
+}
+
+
+TEST_CASE("create detParamets struct", "[detector][new]"){
+    detParameters par;
+    CHECK(sizeof(par) == 32);
+    CHECK(par.nChanX == 0);
+    CHECK(par.nChanY == 0);
+    CHECK(par.nChipX == 0);
+    CHECK(par.nChipY == 0);
+    CHECK(par.nDacs == 0);
+    CHECK(par.dynamicRange == 0);
+    CHECK(par.nGappixelsX == 0);
+    CHECK(par.nGappixelsY == 0);
+
+
+    detParameters par2{slsDetectorDefs::detectorType::EIGER};
+    CHECK(sizeof(par2) == 32);
+    CHECK(par2.nChanX == 256);
+    CHECK(par2.nChanY == 256);
+    CHECK(par2.nChipX == 4);
+    CHECK(par2.nChipY == 1);
+    CHECK(par2.nDacs == 16);
+    CHECK(par2.dynamicRange == 16);
+    CHECK(par2.nGappixelsX == 6);
+    CHECK(par2.nGappixelsY == 1);
 }

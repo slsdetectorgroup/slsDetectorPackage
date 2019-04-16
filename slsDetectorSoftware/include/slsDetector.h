@@ -23,14 +23,73 @@ class MySocketTCP;
  * parameter list that has to be initialized depending on the detector type
  */
 struct detParameters {
-    int nChanX;
-    int nChanY;
-    int nChipX;
-    int nChipY;
-    int nDacs;
-    int dynamicRange;
-    int nGappixelsX;
-    int nGappixelsY;
+    int nChanX{0};
+    int nChanY{0};
+    int nChipX{0};
+    int nChipY{0};
+    int nDacs{0};
+    int dynamicRange{0};
+    int nGappixelsX{0};
+    int nGappixelsY{0};
+
+	detParameters(){}
+	detParameters(slsDetectorDefs::detectorType type){
+            switch (type) {
+            case slsDetectorDefs::detectorType::GOTTHARD:
+                nChanX = 128;
+                nChanY = 1;
+                nChipX = 10;
+                nChipY = 1;
+                nDacs = 8;
+                dynamicRange = 16;
+                nGappixelsX = 0;
+                nGappixelsY = 0;
+                break;
+            case slsDetectorDefs::detectorType::JUNGFRAU:
+                nChanX = 256;
+                nChanY = 256;
+                nChipX = 4;
+                nChipY = 2;
+                nDacs = 8;
+                dynamicRange = 16;
+                nGappixelsX = 0;
+                nGappixelsY = 0;
+                break;
+            case slsDetectorDefs::detectorType::CHIPTESTBOARD:
+                nChanX = 36;
+                nChanY = 1;
+                nChipX = 1;
+                nChipY = 1;
+                nDacs = 24;
+                dynamicRange = 16;
+                nGappixelsX = 0;
+                nGappixelsY = 0;
+                break;
+            case slsDetectorDefs::detectorType::MOENCH:
+                nChanX = 32;
+                nChanY = 1;
+                nChipX = 1;
+                nChipY = 1;
+                nDacs = 8;
+                dynamicRange = 16;
+                nGappixelsX = 0;
+                nGappixelsY = 0;
+                break;
+            case slsDetectorDefs::detectorType::EIGER:
+                nChanX = 256;
+                nChanY = 256;
+                nChipX = 4;
+                nChipY = 1;
+                nDacs = 16;
+                dynamicRange = 16;
+                nGappixelsX = 6;
+                nGappixelsY = 1;
+                break;
+            default:
+                throw sls::RuntimeError("Unknown detector type! " +
+                                   slsDetectorDefs::detectorTypeToString(type));
+            }
+        }
 };
 
 /**
@@ -1746,13 +1805,6 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns true if the shared memory was created now
 	 */
     void initSharedMemory(detectorType type, int multi_id, bool verify = true);
-
-    /**
-	 * Sets detector parameters depending detector type
-	 * @param type detector type
-	 * @param list structure of parameters to initialize depending on detector type
-	 */
-    void setDetectorSpecificParameters(detectorType type, detParameters &list);
 
     /**
 	 * Initialize detector structure to defaults

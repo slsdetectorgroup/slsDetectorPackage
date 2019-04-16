@@ -355,7 +355,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     memset(detector_shm()->zmqip, 0, MAX_STR_LENGTH);
     memset(detector_shm()->receiver_zmqip, 0, MAX_STR_LENGTH);
     detector_shm()->gappixels = 0;
-    memset(detector_shm()->receiver_additionalJsonHeader, 0, MAX_STR_LENGTH);
+    memset(detector_shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
     detector_shm()->detectorControlAPIVersion = 0;
     detector_shm()->detectorStopAPIVersion = 0;
     detector_shm()->receiverAPIVersion = 0;
@@ -656,8 +656,8 @@ void slsDetector::updateTotalNumberOfChannels() {
 
         // add digital signals depending on readout flags
         if (detector_shm()->myDetectorType == CHIPTESTBOARD &&
-            (detector_shm()->roFlags & DIGITAL_ONLY ||
-             detector_shm()->roFlags & ANALOG_AND_DIGITAL)) {
+            (((detector_shm()->roFlags & DIGITAL_ONLY) != 0) ||
+             ((detector_shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
             detector_shm()->nChan[X] += 4;
         }
 
@@ -1329,7 +1329,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
     }
 
     // verify e_eV exists in trimEneregies[]
-    if (!detector_shm()->nTrimEn || (e_eV < detector_shm()->trimEnergies[0]) ||
+    if ((detector_shm()->nTrimEn == 0) || (e_eV < detector_shm()->trimEnergies[0]) ||
         (e_eV > detector_shm()->trimEnergies[detector_shm()->nTrimEn - 1])) {
         throw RuntimeError("This energy " + std::to_string(e_eV) +
                            " not defined for this module!");
@@ -1361,7 +1361,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
         // myMod = createModule(); // readSettings also checks if create module
         // is null
         if (nullptr == readSettingsFile(settingsfname, myMod, tb)) {
-            if (myMod) {
+            if (myMod != nullptr) {
                 deleteModule(myMod);
             }
             return FAIL;
@@ -1830,7 +1830,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
             if ((dr == 32 && index == SUBFRAME_ACQUISITION_TIME) ||
                 (dr == 16 && index == ACQUISITION_TIME)) {
                 int r = getRateCorrection();
-                if (r) {
+                if (r != 0) {
                     setRateCorrection(r);
                 }
             }
@@ -2003,7 +2003,7 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
     int args[3]{static_cast<int>(index), mV, val};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting DAC " << index << " to " << val
-                        << (mV ? "mV" : "dac units");
+                        << (mV != 0 ? "mV" : "dac units");
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
@@ -2011,7 +2011,7 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
         ret = client.sendCommandThenRead(fnum, args, sizeof(args), &retval,
                                          sizeof(retval));
         FILE_LOG(logDEBUG1) << "Dac index " << index << ": " << retval
-                            << (mV ? "mV" : "dac units");
+                            << (mV != 0 ? "mV" : "dac units");
     }
     if (ret == FORCE_UPDATE) {
         updateDetector();
@@ -2315,7 +2315,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nrx streaming port:" << detector_shm()->receiver_zmqport
             << "\nrx streaming source ip:" << detector_shm()->receiver_zmqip
             << "\nrx additional json header:"
-            << detector_shm()->receiver_additionalJsonHeader
+            << detector_shm()->rxAdditionalJsonHeader
             << "\nrx_datastream:" << enableDataStreamingFromReceiver(-1)
             << std::endl;
 
@@ -2352,7 +2352,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 setFlippedData(X, -1);
                 activate(-1);
                 setDeactivatedRxrPaddingMode(
-                    detector_shm()->rxPadDeactivatedModules);
+                    static_cast<int>(detector_shm()->rxPadDeactivatedModules));
                 enableGapPixels(detector_shm()->gappixels);
                 enableTenGigabitEthernet(detector_shm()->tenGigaEnable);
                 setReadOutFlags(GET_READOUT_FLAGS);
@@ -2373,15 +2373,15 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 break;
             }
 
-            setReceiverSilentMode(detector_shm()->receiver_silentMode);
+            setReceiverSilentMode(static_cast<int>(detector_shm()->receiver_silentMode));
             // data streaming
             setReceiverStreamingFrequency(detector_shm()->receiver_read_freq);
             setReceiverStreamingPort(getReceiverStreamingPort());
             setReceiverStreamingIP(getReceiverStreamingIP());
             setAdditionalJsonHeader(
-                detector_shm()->receiver_additionalJsonHeader);
+                detector_shm()->rxAdditionalJsonHeader);
             enableDataStreamingFromReceiver(
-                enableDataStreamingFromReceiver(-1));
+                static_cast<int>(enableDataStreamingFromReceiver(-1)));
             if (detector_shm()->myDetectorType == GOTTHARD ||
                 detector_shm()->myDetectorType == CHIPTESTBOARD ||
                 detector_shm()->myDetectorType == MOENCH) {
@@ -2403,7 +2403,7 @@ std::string slsDetector::setReceiverUDPIP(const std::string &udpip) {
                             "VALID and in xxx.xxx.xxx.xxx format");
     }
     detector_shm()->receiverUDPIP = ip;
-    if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+    if (strcmp(detector_shm()->receiver_hostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
     } else if (setUDPConnection() == FAIL) {
         FILE_LOG(logWARNING) << "UDP connection set up failed";
@@ -2422,7 +2422,7 @@ std::string slsDetector::setReceiverUDPIP2(const std::string &udpip) {
                             "VALID and in xxx.xxx.xxx.xxx format");
     }
     detector_shm()->receiverUDPIP2 = ip;
-    if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+    if (strcmp(detector_shm()->receiver_hostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
     } else if (setUDPConnection() == FAIL) {
         FILE_LOG(logWARNING) << "UDP connection set up failed";
@@ -2462,7 +2462,7 @@ MacAddr slsDetector::getReceiverUDPMAC2() const {
 
 int slsDetector::setReceiverUDPPort(int udpport) {
     detector_shm()->receiverUDPPort = udpport;
-    if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+    if (strcmp(detector_shm()->receiver_hostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
     } else if (setUDPConnection() == FAIL) {
         FILE_LOG(logWARNING) << "UDP connection set up failed";
@@ -2476,7 +2476,7 @@ int slsDetector::getReceiverUDPPort() const {
 
 int slsDetector::setReceiverUDPPort2(int udpport) {
     detector_shm()->receiverUDPPort2 = udpport;
-    if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+    if (strcmp(detector_shm()->receiver_hostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
     } else if (setUDPConnection() == FAIL) {
         FILE_LOG(logWARNING) << "UDP connection set up failed";
@@ -2494,7 +2494,7 @@ int slsDetector::setNumberofUDPInterfaces(int n) {
             "Cannot choose number of interfaces for this detector");
     }
     detector_shm()->numUDPInterfaces = (n > 1 ? 2 : 1);
-    if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+    if (strcmp(detector_shm()->receiver_hostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
     } else if (setUDPConnection() == FAIL) {
         FILE_LOG(logWARNING) << "UDP connection set up failed";
@@ -2511,7 +2511,7 @@ int slsDetector::selectUDPInterface(int n) {
         throw RuntimeError("Cannot select an interface for this detector");
     }
     detector_shm()->selectedUDPInterface = (n > 1 ? 2 : 1);
-    if (!strcmp(detector_shm()->receiver_hostname, "none")) {
+    if (strcmp(detector_shm()->receiver_hostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
     } else if (setUDPConnection() == FAIL) {
         FILE_LOG(logWARNING) << "UDP connection set up failed";
@@ -2560,7 +2560,7 @@ int slsDetector::getReceiverStreamingPort() {
 void slsDetector::setClientStreamingIP(const std::string &sourceIP) {
     struct addrinfo *result;
     // on failure to convert to a valid ip
-    if (sls::ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
+    if (sls::ConvertHostnameToInternetAddress(sourceIP.c_str(), &result) != 0) {
         throw RuntimeError("Could not convert zmqip into a valid IP" +
                            sourceIP);
     }
@@ -2595,7 +2595,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
     {
         struct addrinfo *result;
         // on failure to convert to a valid ip
-        if (sls::ConvertHostnameToInternetAddress(sourceIP.c_str(), &result)) {
+        if (sls::ConvertHostnameToInternetAddress(sourceIP.c_str(), &result) != 0) {
             throw RuntimeError("Could not convert rx_zmqip into a valid IP" +
                                sourceIP);
         }
@@ -2607,7 +2607,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
     memset(detector_shm()->receiver_zmqip, 0, MAX_STR_LENGTH);
     sls::strcpy_safe(detector_shm()->receiver_zmqip, args);
     // if zmqip is empty, update it
-    if (!strlen(detector_shm()->zmqip)) {
+    if (strlen(detector_shm()->zmqip) != 0u) {
         sls::strcpy_safe(detector_shm()->zmqip, args);
     }
     FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: "
@@ -2666,7 +2666,7 @@ slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) {
     FILE_LOG(logDEBUG1) << "Sending additional json header " << args;
 
     if (detector_shm()->receiverOnlineFlag != ONLINE_FLAG) {
-        sls::strcpy_safe(detector_shm()->receiver_additionalJsonHeader,
+        sls::strcpy_safe(detector_shm()->rxAdditionalJsonHeader,
                          jsonheader.c_str());
     } else {
         auto receiver = ReceiverSocket(detector_shm()->receiver_hostname,
@@ -2674,15 +2674,15 @@ slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) {
         ret = receiver.sendCommandThenRead(fnum, args, sizeof(args), retvals,
                                            sizeof(retvals));
         FILE_LOG(logDEBUG1) << "Additional json header: " << retvals;
-        memset(detector_shm()->receiver_additionalJsonHeader, 0,
+        memset(detector_shm()->rxAdditionalJsonHeader, 0,
                MAX_STR_LENGTH);
-        sls::strcpy_safe(detector_shm()->receiver_additionalJsonHeader,
+        sls::strcpy_safe(detector_shm()->rxAdditionalJsonHeader,
                          retvals);
     }
     if (ret == FORCE_UPDATE) {
         updateCachedReceiverVariables();
     }
-    return std::string(detector_shm()->receiver_additionalJsonHeader);
+    return std::string(detector_shm()->rxAdditionalJsonHeader);
 }
 
 std::string slsDetector::getAdditionalJsonHeader() {
@@ -2697,21 +2697,21 @@ std::string slsDetector::getAdditionalJsonHeader() {
         ret = receiver.sendCommandThenRead(fnum, nullptr, 0, retvals,
                                            sizeof(retvals));
         FILE_LOG(logDEBUG1) << "Additional json header: " << retvals;
-        memset(detector_shm()->receiver_additionalJsonHeader, 0,
+        memset(detector_shm()->rxAdditionalJsonHeader, 0,
                MAX_STR_LENGTH);
-        sls::strcpy_safe(detector_shm()->receiver_additionalJsonHeader,
+        sls::strcpy_safe(detector_shm()->rxAdditionalJsonHeader,
                          retvals);
     }
     if (ret == FORCE_UPDATE) {
         updateCachedReceiverVariables();
     }
-    return std::string(detector_shm()->receiver_additionalJsonHeader);
+    return std::string(detector_shm()->rxAdditionalJsonHeader);
 }
 
 std::string slsDetector::setAdditionalJsonParameter(const std::string &key,
                                                     const std::string &value) {
     if (key.empty() || value.empty()) {
-        throw("Could not set additional json header parameter as the key or "
+        throw RuntimeError("Could not set additional json header parameter as the key or "
               "value is empty");
     }
 
@@ -2736,7 +2736,7 @@ std::string slsDetector::setAdditionalJsonParameter(const std::string &key,
         valueLiteral.append("\"");
     }
 
-    std::string header(detector_shm()->receiver_additionalJsonHeader);
+    std::string header(detector_shm()->rxAdditionalJsonHeader);
     size_t keyPos = header.find(keyLiteral);
 
     // if key found, replace value
@@ -2751,7 +2751,7 @@ std::string slsDetector::setAdditionalJsonParameter(const std::string &key,
 
     // key not found, append key value pair
     else {
-        if (header.length()) {
+        if (header.length() != 0u) {
             header.append(",");
         }
         header.append(keyLiteral + valueLiteral);
@@ -2764,7 +2764,7 @@ std::string slsDetector::setAdditionalJsonParameter(const std::string &key,
 
 std::string slsDetector::getAdditionalJsonParameter(const std::string &key) {
     // additional json header is empty
-    if (!strlen(detector_shm()->receiver_additionalJsonHeader))
+    if (strlen(detector_shm()->rxAdditionalJsonHeader) == 0u)
         return std::string();
 
     // add quotations before and after the key value
@@ -2774,7 +2774,7 @@ std::string slsDetector::getAdditionalJsonParameter(const std::string &key) {
 
     // loop through the parameters
     for (const auto &parameter :
-         sls::split(detector_shm()->receiver_additionalJsonHeader, ',')) {
+         sls::split(detector_shm()->rxAdditionalJsonHeader, ',')) {
         // get a vector of key value pair for each parameter
         const auto &pairs = sls::split(parameter, ':');
         // match for key
@@ -2807,7 +2807,7 @@ int64_t slsDetector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
         FILE_LOG(logDEBUG1) << "Receiver UDP Socket Buffer size: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -2831,7 +2831,7 @@ int64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
             << "Real Receiver UDP Socket Buffer size: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        updateCachedReceiverVariables();
     }
     return retval;
 }
@@ -2839,8 +2839,8 @@ int64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
 int slsDetector::setUDPConnection() {
     int fnum = F_SETUP_RECEIVER_UDP;
     int ret = FAIL;
-    char args[6][MAX_STR_LENGTH] = {{}, {}, {}, {}, {}, {}};
-    char retvals[2][MAX_STR_LENGTH] = {{}, {}};
+    char args[6][MAX_STR_LENGTH]{};
+    char retvals[2][MAX_STR_LENGTH]{};
     FILE_LOG(logDEBUG1) << "Setting UDP Connection";
 
     // called before set up
@@ -2985,7 +2985,7 @@ int slsDetector::writeCounterBlockFile(const std::string &fname, int startACQ) {
     int nChan = getTotalNumberOfChannels();
     int16_t retvals[nChan];
     FILE_LOG(logDEBUG1) << "Reading Counter to " << fname
-                        << (startACQ ? " and Restarting Acquisition" : "\n");
+                        << (startACQ !=0 ? " and Restarting Acquisition" : "\n");
 
     ret = getCounterBlock(retvals, startACQ);
     if (ret != FAIL) {
@@ -3275,7 +3275,7 @@ bool slsDetector::setDeactivatedRxrPaddingMode(int padding) {
         ret = receiver.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
                                            sizeof(retval));
         FILE_LOG(logDEBUG1) << "Deactivated Receiver Padding Enable:" << retval;
-        detector_shm()->rxPadDeactivatedModules = retval;
+        detector_shm()->rxPadDeactivatedModules = static_cast<bool>(retval);
     }
     if (ret == FORCE_UPDATE) {
         updateCachedReceiverVariables();
@@ -3290,7 +3290,7 @@ int slsDetector::getFlippedData(dimension d) const {
 int slsDetector::setFlippedData(dimension d, int value) {
     int fnum = F_SET_FLIPPED_DATA_RECEIVER;
     int ret = OK;
-    int args[2] = {(int)d, value};
+    int args[]{static_cast<int>(d), value};
     int retval = -1;
 
     // flipped across y
@@ -3334,7 +3334,7 @@ int slsDetector::setAllTrimbits(int val) {
         FILE_LOG(logDEBUG1) << "All trimbit value: " << retval;
     }
     if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        updateDetector();
     }
     return retval;
 }
@@ -4061,7 +4061,7 @@ int slsDetector::updateCachedReceiverVariables() const {
 
             // additional json header
             n += receiver.receiveData(cstring, sizeof(cstring));
-            sls::strcpy_safe(detector_shm()->receiver_additionalJsonHeader,
+            sls::strcpy_safe(detector_shm()->rxAdditionalJsonHeader,
                              cstring);
 
             // receiver streaming enable

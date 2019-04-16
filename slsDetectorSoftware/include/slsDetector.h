@@ -204,7 +204,7 @@ struct sharedSlsDetector {
     int dataBytesInclGapPixels;
 
     /** additional json header */
-    char receiver_additionalJsonHeader[MAX_STR_LENGTH];
+    char rxAdditionalJsonHeader[MAX_STR_LENGTH];
 
     /** detector control server software API version */
     int64_t detectorControlAPIVersion;

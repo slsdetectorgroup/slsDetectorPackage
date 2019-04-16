@@ -1164,7 +1164,7 @@ int slsDetector::writeConfigurationFile(std::ofstream &outfile,
 
     auto cmd = slsDetectorCommand(m);
     for (auto &name : names) {
-        char *args[] = {(char *)name.c_str()};
+        char *args[] = {const_cast<char *>(name.c_str())};
         outfile << detId << ":";
         outfile << name << " " << cmd.executeLine(1, args, GET_ACTION)
                 << std::endl;
@@ -1211,7 +1211,7 @@ slsDetectorDefs::detectorSettings
 slsDetector::sendSettingsOnly(detectorSettings isettings) {
     int fnum = F_SET_SETTINGS;
     int ret = FAIL;
-    int arg = (int)isettings;
+    int arg = static_cast<int>(isettings);
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting settings to " << arg;
 
@@ -1221,7 +1221,7 @@ slsDetector::sendSettingsOnly(detectorSettings isettings) {
         client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
                                    sizeof(retval));
         FILE_LOG(logDEBUG1) << "Settings: " << retval;
-        detector_shm()->currentSettings = (detectorSettings)retval;
+        detector_shm()->currentSettings = static_cast<detectorSettings>(retval);
     }
     if (ret == FORCE_UPDATE) {
         updateDetector();
@@ -1785,7 +1785,7 @@ int slsDetector::configureMAC() {
 int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     int fnum = F_SET_TIMER;
     int ret = FAIL;
-    int64_t args[2] = {(int64_t)index, t};
+    int64_t args[2] = {static_cast<int64_t>(index), t};
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Setting " << getTimerType(index) << " to " << t
                         << " ns/value";
@@ -1881,7 +1881,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
                                                &retval, sizeof(retval));
             if (ret == FORCE_UPDATE) {
                 receiver.close();
-                ret = updateCachedReceiverVariables();
+                updateCachedReceiverVariables();
             }
             break;
         default:
@@ -1904,7 +1904,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index) {
                                        sizeof(retval));
         FILE_LOG(logDEBUG1) << getTimerType(index) << " left: " << retval;
         if (ret == FORCE_UPDATE) {
-            ret = updateDetector();
+            updateDetector();
         }
     }
     return retval;
@@ -1913,7 +1913,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index) {
 int slsDetector::setSpeed(speedVariable sp, int value, int mode) {
     int fnum = F_SET_SPEED;
     int ret = FAIL;
-    int args[3] = {(int)sp, value, mode};
+    int args[]{static_cast<int>(sp), value, mode};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting speed index " << sp << " to " << value
                         << " mode: " << mode;
@@ -1974,7 +1974,6 @@ int slsDetector::setDynamicRange(int n) {
     // send to receiver
     if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG && ret == OK) {
         fnum = F_SET_RECEIVER_DYNAMIC_RANGE;
-        ret = FAIL;
         n = detector_shm()->dynamicRange;
         retval = -1;
         FILE_LOG(logDEBUG1) << "Sending dynamic range to receiver: " << n;
@@ -1985,7 +1984,7 @@ int slsDetector::setDynamicRange(int n) {
         FILE_LOG(logDEBUG1) << "Receiver Dynamic range: " << retval;
         if (ret == FORCE_UPDATE) {
             receiver.close();
-            ret = updateCachedReceiverVariables();
+            updateCachedReceiverVariables();
         }
     }
     return detector_shm()->dynamicRange;
@@ -2091,7 +2090,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
         ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
                                          sizeof(retval));
         FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
-        detector_shm()->roFlags = (readOutFlags)retval;
+        detector_shm()->roFlags = retval;
         // update #nchans and databytes, as it depends on #samples, roi,
         // readoutflags (ctb only)
         if (detector_shm()->myDetectorType == CHIPTESTBOARD) {
@@ -3576,7 +3575,7 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
                 --count;
                 printf(
                     "%d%%\r",
-                    (int)(((double)(ERASE_TIME - count) / ERASE_TIME) * 100));
+                    static_cast<int>((static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
                 std::cout << std::flush;
             }
             printf("\n");
@@ -3608,7 +3607,7 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
                 // print progress
                 printf(
                     "%d%%\r",
-                    (int)(((double)(totalsize - filesize) / totalsize) * 100));
+                    static_cast<int>((static_cast<double>(totalsize - filesize) / totalsize) * 100));
                 std::cout << std::flush;
             } else {
                 printf("\n");
@@ -3728,7 +3727,7 @@ int slsDetector::getChanRegs(double *retval) {
         // the original array has 0 initialized
         if (myMod->chanregs != nullptr) {
             for (int i = 0; i < n; ++i) {
-                retval[i] = (double)(myMod->chanregs[i] & TRIMBITMASK);
+                retval[i] = static_cast<double>(myMod->chanregs[i] & TRIMBITMASK);
             }
         }
         deleteModule(myMod);

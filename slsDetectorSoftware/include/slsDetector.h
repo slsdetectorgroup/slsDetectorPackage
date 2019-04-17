@@ -19,78 +19,7 @@ class MySocketTCP;
 #define NCHIPSMAX 10
 #define NCHANSMAX 65536
 #define NDACSMAX 16
-/**
- * parameter list that has to be initialized depending on the detector type
- */
-struct detParameters {
-    int nChanX{0};
-    int nChanY{0};
-    int nChipX{0};
-    int nChipY{0};
-    int nDacs{0};
-    int dynamicRange{0};
-    int nGappixelsX{0};
-    int nGappixelsY{0};
 
-	detParameters(){}
-	detParameters(slsDetectorDefs::detectorType type){
-            switch (type) {
-            case slsDetectorDefs::detectorType::GOTTHARD:
-                nChanX = 128;
-                nChanY = 1;
-                nChipX = 10;
-                nChipY = 1;
-                nDacs = 8;
-                dynamicRange = 16;
-                nGappixelsX = 0;
-                nGappixelsY = 0;
-                break;
-            case slsDetectorDefs::detectorType::JUNGFRAU:
-                nChanX = 256;
-                nChanY = 256;
-                nChipX = 4;
-                nChipY = 2;
-                nDacs = 8;
-                dynamicRange = 16;
-                nGappixelsX = 0;
-                nGappixelsY = 0;
-                break;
-            case slsDetectorDefs::detectorType::CHIPTESTBOARD:
-                nChanX = 36;
-                nChanY = 1;
-                nChipX = 1;
-                nChipY = 1;
-                nDacs = 24;
-                dynamicRange = 16;
-                nGappixelsX = 0;
-                nGappixelsY = 0;
-                break;
-            case slsDetectorDefs::detectorType::MOENCH:
-                nChanX = 32;
-                nChanY = 1;
-                nChipX = 1;
-                nChipY = 1;
-                nDacs = 8;
-                dynamicRange = 16;
-                nGappixelsX = 0;
-                nGappixelsY = 0;
-                break;
-            case slsDetectorDefs::detectorType::EIGER:
-                nChanX = 256;
-                nChanY = 256;
-                nChipX = 4;
-                nChipY = 1;
-                nDacs = 16;
-                dynamicRange = 16;
-                nGappixelsX = 6;
-                nGappixelsY = 1;
-                break;
-            default:
-                throw sls::RuntimeError("Unknown detector type! " +
-                                   slsDetectorDefs::detectorTypeToString(type));
-            }
-        }
-};
 
 /**
 	 * @short structure allocated in shared memory to store detector settings for IPC and cache

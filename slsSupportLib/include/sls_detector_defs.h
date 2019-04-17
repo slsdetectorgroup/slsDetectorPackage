@@ -15,6 +15,7 @@
 
 #include <stdint.h> 
 #ifdef __cplusplus
+#include "sls_detector_exceptions.h"
 #include <bitset>
 #include <string>
 #endif
@@ -62,33 +63,6 @@
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
-/**
-    @short  structure for a detector module
-
-    should not be used by unexperienced users
-
-    \see  :: moduleRegisterBit ::chipRegisterBit :channelRegisterBit
-
-    @li reg is the module register (e.g. dynamic range? see moduleRegisterBit)
-    @li dacs is the pointer to the array of dac values (in V)
-    @li adcs is the pointer to the array of adc values (in V)
-    @li chipregs is the pointer to the array of chip registers
-    @li chanregs is the pointer to the array of channel registers
-    @li gain is the module gain
-    @li offset is the module offset
-*/
-typedef struct {
-    int serialnumber; /**< is the module serial number */
-    int nchan;        /**< is the number of channels on the module*/
-    int nchip;        /**< is the number of chips on the module */
-    int ndac;         /**< is the number of dacs on the module */
-    int reg;          /**< is the module register settings (gain level) */
-    int iodelay;      /**< iodelay */
-    int tau;          /**< tau */
-    int eV;           /**< threshold energy */
-    int *dacs;     /**< is the pointer to the array of the dac values (in V) */
-    int *chanregs; /**< is the pointer to the array of the channel registers */
-} sls_detector_module;
 
 typedef char mystring[MAX_STR_LENGTH];
 
@@ -959,3 +933,133 @@ protected:
 };
 #endif
 ;
+
+#ifdef __cplusplus
+struct detParameters {
+    int nChanX{0};
+    int nChanY{0};
+    int nChipX{0};
+    int nChipY{0};
+    int nDacs{0};
+    int dynamicRange{0};
+    int nGappixelsX{0};
+    int nGappixelsY{0};
+
+    detParameters() {}
+    detParameters(slsDetectorDefs::detectorType type) {
+        switch (type) {
+        case slsDetectorDefs::detectorType::GOTTHARD:
+            nChanX = 128;
+            nChanY = 1;
+            nChipX = 10;
+            nChipY = 1;
+            nDacs = 8;
+            dynamicRange = 16;
+            nGappixelsX = 0;
+            nGappixelsY = 0;
+            break;
+        case slsDetectorDefs::detectorType::JUNGFRAU:
+            nChanX = 256;
+            nChanY = 256;
+            nChipX = 4;
+            nChipY = 2;
+            nDacs = 8;
+            dynamicRange = 16;
+            nGappixelsX = 0;
+            nGappixelsY = 0;
+            break;
+        case slsDetectorDefs::detectorType::CHIPTESTBOARD:
+            nChanX = 36;
+            nChanY = 1;
+            nChipX = 1;
+            nChipY = 1;
+            nDacs = 24;
+            dynamicRange = 16;
+            nGappixelsX = 0;
+            nGappixelsY = 0;
+            break;
+        case slsDetectorDefs::detectorType::MOENCH:
+            nChanX = 32;
+            nChanY = 1;
+            nChipX = 1;
+            nChipY = 1;
+            nDacs = 8;
+            dynamicRange = 16;
+            nGappixelsX = 0;
+            nGappixelsY = 0;
+            break;
+        case slsDetectorDefs::detectorType::EIGER:
+            nChanX = 256;
+            nChanY = 256;
+            nChipX = 4;
+            nChipY = 1;
+            nDacs = 16;
+            dynamicRange = 16;
+            nGappixelsX = 6;
+            nGappixelsY = 1;
+            break;
+        default:
+            throw sls::RuntimeError(
+                "Unknown detector type! " +
+                slsDetectorDefs::detectorTypeToString(type));
+        }
+    }
+};
+#endif
+
+/**
+    @short  structure for a detector module
+
+    should not be used by unexperienced users
+
+    \see  :: moduleRegisterBit ::chipRegisterBit :channelRegisterBit
+
+    @li reg is the module register (e.g. dynamic range? see moduleRegisterBit)
+    @li dacs is the pointer to the array of dac values (in V)
+    @li adcs is the pointer to the array of adc values (in V)
+    @li chipregs is the pointer to the array of chip registers
+    @li chanregs is the pointer to the array of channel registers
+    @li gain is the module gain
+    @li offset is the module offset
+*/
+#ifdef __cplusplus
+struct sls_detector_module {
+#else
+typedef struct {
+#endif
+    int serialnumber; /**< is the module serial number */
+    int nchan;        /**< is the number of channels on the module*/
+    int nchip;        /**< is the number of chips on the module */
+    int ndac;         /**< is the number of dacs on the module */
+    int reg;          /**< is the module register settings (gain level) */
+    int iodelay;      /**< iodelay */
+    int tau;          /**< tau */
+    int eV;           /**< threshold energy */
+    int *dacs;     /**< is the pointer to the array of the dac values (in V) */
+    int *chanregs; /**< is the pointer to the array of the channel registers */
+
+#ifdef __cplusplus
+
+    sls_detector_module()
+        : serialnumber(0), nchan(0), nchip(0), ndac(0), reg(0), iodelay(0),
+          tau(0), eV(0), dacs(nullptr), chanregs(nullptr) {}
+    sls_detector_module(slsDetectorDefs::detectorType type) {
+        detParameters parameters{type};
+        int nch = parameters.nChanX * parameters.nChanY;
+        int nc = parameters.nChipX * parameters.nChipY;
+        int nd = parameters.nDacs;
+
+        ndac = nd;
+        nchip = nc;
+        nchan = nch * nc;
+        dacs = new int[nd];
+        chanregs = new int[nch * nc];
+    }
+		~sls_detector_module(){
+			delete[] dacs;
+			delete[] chanregs;
+		}
+};
+#else
+} sls_detector_module;
+#endif

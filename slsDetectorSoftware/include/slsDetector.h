@@ -1321,7 +1321,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns ok or fail
 	 * \sa ::sls_detector_module
 	 */
-    int setModule(sls_detector_module module, int tb = 1);
+    int setModule(sls_detector_module& module, int tb = 1);
 
     /**
 	 * Get module structure from detector (all detectors)
@@ -1805,7 +1805,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
 	 * @returns  the pointer to the module structure with interpolated values or NULL if error
 	 */
-    sls_detector_module *interpolateTrim(
+    sls_detector_module interpolateTrim(
         sls_detector_module *a, sls_detector_module *b, const int energy,
         const int e1, const int e2, int tb = 1);
 

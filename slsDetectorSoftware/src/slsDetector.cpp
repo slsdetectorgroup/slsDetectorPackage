@@ -1280,10 +1280,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
             break;
         }
     }
-
-    // fill detector module structure
-    sls_detector_module *myMod = nullptr;
-
+    sls_detector_module myMod{detector_shm()->myDetectorType};
     // normal
     if (interpolate == false) {
         // find their directory names
@@ -1294,13 +1291,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
         std::string settingsfname = ostfn.str();
         FILE_LOG(logDEBUG1) << "Settings File is " << settingsfname;
 
-        // read the files
-        // myMod = createModule(); // readSettings also checks if create module
-        // is null
-        if (readSettingsFile(settingsfname, myMod, tb) == nullptr) {
-            if (myMod != nullptr) {
-                deleteModule(myMod);
-            }
+        if (readSettingsFile(settingsfname, &myMod, tb) == nullptr) {
             return FAIL;
         }
     }else{
@@ -1330,51 +1321,33 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
         // read the files
         FILE_LOG(logDEBUG1) << "Settings Files are " << settingsfname1
                             << " and " << settingsfname2;
-        sls_detector_module *myMod1 = createModule();
-        sls_detector_module *myMod2 = createModule();
-        if (nullptr == readSettingsFile(settingsfname1, myMod1, tb)) {
-
-            deleteModule(myMod1);
-            deleteModule(myMod2);
+        sls_detector_module myMod1{detector_shm()->myDetectorType};
+        sls_detector_module myMod2{detector_shm()->myDetectorType};
+        if (readSettingsFile(settingsfname1, &myMod1, tb) == nullptr) {
             throw RuntimeError(
                 "setThresholdEnergyAndSettings: Could not open settings file");
         }
-        if (nullptr == readSettingsFile(settingsfname2, myMod2, tb)) {
-            deleteModule(myMod1);
-            deleteModule(myMod2);
+        if (readSettingsFile(settingsfname2, &myMod2, tb) == nullptr) {
             throw RuntimeError(
                 "setThresholdEnergyAndSettings: Could not open settings file");
         }
-        if (myMod1->iodelay != myMod2->iodelay) {
-            deleteModule(myMod1);
-            deleteModule(myMod2);
+        if (myMod1.iodelay != myMod2.iodelay) {
             throw RuntimeError("setThresholdEnergyAndSettings: Iodelays do not "
                                "match between files");
         }
 
         // interpolate  module
-        myMod = interpolateTrim(myMod1, myMod2, e_eV, trim1, trim2, tb);
-        if (myMod == nullptr) {
-            deleteModule(myMod1);
-            deleteModule(myMod2);
-            throw RuntimeError("setThresholdEnergyAndSettings: Could not "
-                               "interpolate, different "
-                               "dac values in files");
-        }
-        // interpolate tau
-        myMod->iodelay = myMod1->iodelay;
-        myMod->tau =
-            linearInterpolation(e_eV, trim1, trim2, myMod1->tau, myMod2->tau);
-        // printf("new tau:%d\n",tau);
+        myMod = interpolateTrim(&myMod1, &myMod2, e_eV, trim1, trim2, tb);
 
-        deleteModule(myMod1);
-        deleteModule(myMod2);
+        // // interpolate tau
+        myMod.iodelay = myMod1.iodelay;
+        myMod.tau =
+            linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
     }
 
-    myMod->reg = detector_shm()->currentSettings;
-    myMod->eV = e_eV;
-    setModule(*myMod, tb);
-    deleteModule(myMod);
+    myMod.reg = detector_shm()->currentSettings;
+    myMod.eV = e_eV;
+    setModule(myMod, tb);
     if (getSettings() != is) {
         throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
                            "settings in detector");
@@ -3670,7 +3643,7 @@ int slsDetector::getChanRegs(double *retval) {
     return n;
 }
 
-int slsDetector::setModule(sls_detector_module module, int tb) {
+int slsDetector::setModule(sls_detector_module& module, int tb) {
     int fnum = F_SET_MODULE;
     int ret = FAIL;
     int retval = -1;
@@ -4810,7 +4783,7 @@ int slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
     return ret;
 }
 
-sls_detector_module *
+sls_detector_module
 slsDetector::interpolateTrim(sls_detector_module *a, sls_detector_module *b,
                              const int energy, const int e1, const int e2,
                              int tb) {
@@ -4821,10 +4794,7 @@ slsDetector::interpolateTrim(sls_detector_module *a, sls_detector_module *b,
             "Interpolation of Trim values not implemented for this detector!");
     }
 
-    sls_detector_module *myMod = createModule(detector_shm()->myDetectorType);
-    if (myMod == nullptr) {
-        throw RuntimeError("Could not create module");
-    }
+    sls_detector_module myMod{detector_shm()->myDetectorType};
     enum eiger_DacIndex {
         SVP,
         VTR,
@@ -4849,10 +4819,9 @@ slsDetector::interpolateTrim(sls_detector_module *a, sls_detector_module *b,
     int num_dacs_to_copy = sizeof(dacs_to_copy) / sizeof(dacs_to_copy[0]);
     for (int i = 0; i < num_dacs_to_copy; ++i) {
         if (a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
-            deleteModule(myMod);
-            return nullptr;
+            throw RuntimeError("Interpolate module: dacs different");
         }
-        myMod->dacs[dacs_to_copy[i]] = a->dacs[dacs_to_copy[i]];
+        myMod.dacs[dacs_to_copy[i]] = a->dacs[dacs_to_copy[i]];
     }
 
     // Copy irrelevant dacs (without failing): CAL
@@ -4864,7 +4833,7 @@ slsDetector::interpolateTrim(sls_detector_module *a, sls_detector_module *b,
                                 "Taking first: "
                              << a->dacs[CAL];
     }
-    myMod->dacs[CAL] = a->dacs[CAL];
+    myMod.dacs[CAL] = a->dacs[CAL];
 
     // Interpolate vrf, vcmp, vcp
     int dacs_to_interpolate[] = {VRF,     VCMP_LL, VCMP_LR, VCMP_RL,
@@ -4872,15 +4841,15 @@ slsDetector::interpolateTrim(sls_detector_module *a, sls_detector_module *b,
     int num_dacs_to_interpolate =
         sizeof(dacs_to_interpolate) / sizeof(dacs_to_interpolate[0]);
     for (int i = 0; i < num_dacs_to_interpolate; ++i) {
-        myMod->dacs[dacs_to_interpolate[i]] =
+        myMod.dacs[dacs_to_interpolate[i]] =
             linearInterpolation(energy, e1, e2, a->dacs[dacs_to_interpolate[i]],
                                 b->dacs[dacs_to_interpolate[i]]);
     }
 
     // Interpolate all trimbits
     if (tb != 0) {
-        for (int i = 0; i < myMod->nchan; ++i) {
-            myMod->chanregs[i] = linearInterpolation(
+        for (int i = 0; i < myMod.nchan; ++i) {
+            myMod.chanregs[i] = linearInterpolation(
                 energy, e1, e2, a->chanregs[i], b->chanregs[i]);
         }
     }

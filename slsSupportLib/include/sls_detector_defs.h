@@ -16,6 +16,7 @@
 #include <stdint.h> 
 #ifdef __cplusplus
 #include "sls_detector_exceptions.h"
+#include <algorithm>
 #include <bitset>
 #include <string>
 #endif
@@ -1043,22 +1044,47 @@ typedef struct {
     sls_detector_module()
         : serialnumber(0), nchan(0), nchip(0), ndac(0), reg(0), iodelay(0),
           tau(0), eV(0), dacs(nullptr), chanregs(nullptr) {}
+
     sls_detector_module(slsDetectorDefs::detectorType type) {
         detParameters parameters{type};
         int nch = parameters.nChanX * parameters.nChanY;
         int nc = parameters.nChipX * parameters.nChipY;
-        int nd = parameters.nDacs;
+        // int nd = parameters.nDacs;
 
-        ndac = nd;
+        ndac = parameters.nDacs;
         nchip = nc;
         nchan = nch * nc;
-        dacs = new int[nd];
-        chanregs = new int[nch * nc];
+        dacs = new int[ndac];
+        chanregs = new int[nchan];
     }
-		~sls_detector_module(){
-			delete[] dacs;
-			delete[] chanregs;
-		}
+
+    sls_detector_module(const sls_detector_module &other)
+        : dacs(nullptr), chanregs(nullptr) {
+        *this = other;
+    }
+
+    sls_detector_module &operator=(const sls_detector_module &other) {
+        delete[] dacs;
+        delete[] chanregs;
+        serialnumber = other.serialnumber;
+        nchan = other.nchan;
+        nchip = other.nchip;
+        ndac = other.ndac;
+        reg = other.reg;
+        iodelay = other.iodelay;
+        tau = other.tau;
+        eV = other.eV;
+        dacs = new int[ndac];
+        std::copy(other.dacs, other.dacs + ndac, dacs);
+        chanregs = new int[nchan];
+        std::copy(other.chanregs, other.chanregs + nchan, chanregs);
+        return *this;
+    }
+
+    ~sls_detector_module() {
+        delete[] dacs;
+        delete[] chanregs;
+    }
 };
 #else
 } sls_detector_module;

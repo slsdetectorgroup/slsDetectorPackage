@@ -368,11 +368,11 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     }
 }
 
-slsDetectorDefs::sls_detector_module *slsDetector::createModule() {
+sls_detector_module *slsDetector::createModule() {
     return createModule(detector_shm()->myDetectorType);
 }
 
-slsDetectorDefs::sls_detector_module *
+sls_detector_module *
 slsDetector::createModule(detectorType type) {
     // get the detector parameters based on type
     detParameters parameters{type};
@@ -3709,7 +3709,7 @@ int slsDetector::setModule(sls_detector_module module, int tb) {
     return ret;
 }
 
-slsDetectorDefs::sls_detector_module *slsDetector::getModule() {
+sls_detector_module *slsDetector::getModule() {
     int fnum = F_GET_MODULE;
     int ret = FAIL;
     FILE_LOG(logDEBUG1) << "Getting module";
@@ -4810,7 +4810,7 @@ int slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
     return ret;
 }
 
-slsDetectorDefs::sls_detector_module *
+sls_detector_module *
 slsDetector::interpolateTrim(sls_detector_module *a, sls_detector_module *b,
                              const int energy, const int e1, const int e2,
                              int tb) {
@@ -4887,7 +4887,7 @@ slsDetector::interpolateTrim(sls_detector_module *a, sls_detector_module *b,
     return myMod;
 }
 
-slsDetectorDefs::sls_detector_module *
+sls_detector_module *
 slsDetector::readSettingsFile(const std::string &fname,
                               sls_detector_module *myMod, int tb) {
 

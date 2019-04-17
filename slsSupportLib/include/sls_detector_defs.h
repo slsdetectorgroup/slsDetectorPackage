@@ -62,7 +62,33 @@
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
+/**
+    @short  structure for a detector module
 
+    should not be used by unexperienced users
+
+    \see  :: moduleRegisterBit ::chipRegisterBit :channelRegisterBit
+
+    @li reg is the module register (e.g. dynamic range? see moduleRegisterBit)
+    @li dacs is the pointer to the array of dac values (in V)
+    @li adcs is the pointer to the array of adc values (in V)
+    @li chipregs is the pointer to the array of chip registers
+    @li chanregs is the pointer to the array of channel registers
+    @li gain is the module gain
+    @li offset is the module offset
+*/
+typedef struct {
+    int serialnumber; /**< is the module serial number */
+    int nchan;        /**< is the number of channels on the module*/
+    int nchip;        /**< is the number of chips on the module */
+    int ndac;         /**< is the number of dacs on the module */
+    int reg;          /**< is the module register settings (gain level) */
+    int iodelay;      /**< iodelay */
+    int tau;          /**< tau */
+    int eV;           /**< threshold energy */
+    int *dacs;     /**< is the pointer to the array of the dac values (in V) */
+    int *chanregs; /**< is the pointer to the array of the channel registers */
+} sls_detector_module;
 
 typedef char mystring[MAX_STR_LENGTH];
 
@@ -220,33 +246,7 @@ public:
 	  int ymax;   /**< is the roi ymax  (in channel number)*/
 	} ROI ;
 
-	/**
-	    @short  structure for a detector module
 
-	    should not be used by unexperienced users
-
-	    \see  :: moduleRegisterBit ::chipRegisterBit :channelRegisterBit
-
-	    @li reg is the module register (e.g. dynamic range? see moduleRegisterBit)
-	    @li dacs is the pointer to the array of dac values (in V)
-	    @li adcs is the pointer to the array of adc values (in V)
-	    @li chipregs is the pointer to the array of chip registers
-	    @li chanregs is the pointer to the array of channel registers
-	    @li gain is the module gain
-	    @li offset is the module offset
-	*/
-	typedef struct {
-	  int serialnumber;  /**< is the module serial number */
-	  int nchan; /**< is the number of channels on the module*/
-	  int nchip; /**< is the number of chips on the module */
-	  int ndac; /**< is the number of dacs on the module */
-	  int reg; /**< is the module register settings (gain level) */
-	  int iodelay;	/**< iodelay */
-	  int tau;	/**< tau */
-	  int eV;	/**< threshold energy */
-	  int *dacs; /**< is the pointer to the array of the dac values (in V) */
-	  int *chanregs; /**< is the pointer to the array of the channel registers */
-	} sls_detector_module;
 
 
 	/**

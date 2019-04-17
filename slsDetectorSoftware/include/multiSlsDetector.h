@@ -1488,13 +1488,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int setAutoComparatorDisableMode(int ival = -1, int detPos = -1);
 
-    /**
-	 * Returns the trimbits from the detector's shared memmory (Mythen, Eiger)
-	 * @param retval is the array with the trimbits
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns total number of channels for the detector
-	 */
-    int getChanRegs(double *retval, int detPos = -1);
 
     /**
 	 * Set Rate correction ( Eiger)

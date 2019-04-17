@@ -368,37 +368,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     }
 }
 
-sls_detector_module *slsDetector::createModule() {
-    return createModule(detector_shm()->myDetectorType);
-}
-
-sls_detector_module *
-slsDetector::createModule(detectorType type) {
-    // get the detector parameters based on type
-    detParameters parameters{type};
-    int nch = parameters.nChanX * parameters.nChanY;
-    int nc = parameters.nChipX * parameters.nChipY;
-    int nd = parameters.nDacs;
-
-    int *dacs = new int[nd];
-    int *chanregs = new int[nch * nc];
-
-    auto *myMod = new sls_detector_module;
-    myMod->ndac = nd;
-    myMod->nchip = nc;
-    myMod->nchan = nch * nc;
-    myMod->dacs = dacs;
-    myMod->chanregs = chanregs;
-    return myMod;
-}
-
-void slsDetector::deleteModule(sls_detector_module *myMod) {
-    if (myMod != nullptr) {
-        delete[] myMod->dacs;
-        delete[] myMod->chanregs;
-        delete myMod;
-    }
-}
 
 int slsDetector::sendModule(sls_detector_module *myMod,
                             sls::ClientSocket &client) {
@@ -1235,34 +1204,6 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
     detectorSettings is =
         ((isettings != GET_SETTINGS) ? isettings
                                      : detector_shm()->currentSettings);
-    std::string ssettings;
-    switch (is) {
-    case STANDARD:
-        ssettings = "/standard";
-        detector_shm()->currentSettings = STANDARD;
-        break;
-    case HIGHGAIN:
-        ssettings = "/highgain";
-        detector_shm()->currentSettings = HIGHGAIN;
-        break;
-    case LOWGAIN:
-        ssettings = "/lowgain";
-        detector_shm()->currentSettings = LOWGAIN;
-        break;
-    case VERYHIGHGAIN:
-        ssettings = "/veryhighgain";
-        detector_shm()->currentSettings = VERYHIGHGAIN;
-        break;
-    case VERYLOWGAIN:
-        ssettings = "/verylowgain";
-        detector_shm()->currentSettings = VERYLOWGAIN;
-        break;
-    default:
-        std::ostringstream ss;
-        ss << "Unknown settings " << getDetectorSettings(is)
-           << " for this detector!";
-        throw RuntimeError(ss.str());
-    }
 
     // verify e_eV exists in trimEneregies[]
     if ((detector_shm()->nTrimEn == 0) ||
@@ -1272,28 +1213,18 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
                            " not defined for this module!");
     }
 
-    // find if interpolation required
-    bool interpolate = true;
-    for (int i = 0; i < detector_shm()->nTrimEn; ++i) {
-        if (detector_shm()->trimEnergies[i] == e_eV) {
-            interpolate = false;
-            break;
-        }
-    }
-    sls_detector_module myMod{detector_shm()->myDetectorType};
-    // normal
-    if (interpolate == false) {
-        // find their directory names
-        std::ostringstream ostfn;
-        ostfn << detector_shm()->settingsDir << ssettings << "/" << e_eV << "eV"
-              << "/noise.sn" << std::setfill('0') << std::setw(3) << std::dec
-              << getId(DETECTOR_SERIAL_NUMBER) << std::setbase(10);
-        std::string settingsfname = ostfn.str();
-        FILE_LOG(logDEBUG1) << "Settings File is " << settingsfname;
 
-        if (readSettingsFile(settingsfname, &myMod, tb) == nullptr) {
-            return FAIL;
-        }
+    bool interpolate =
+        std::all_of(detector_shm()->trimEnergies,
+                    detector_shm()->trimEnergies + detector_shm()->nTrimEn,
+                    [e_eV](const int &e) { return e != e_eV; });
+
+        sls_detector_module myMod{detector_shm()->myDetectorType};
+
+    if (!interpolate) {
+        std::string settingsfname = getTrimbitFilename(is, e_eV);
+        FILE_LOG(logDEBUG1) << "Settings File is " << settingsfname;
+        myMod = readSettingsFile(settingsfname, tb);
     }else{
         // find the trim values
         int trim1 = -1, trim2 = -1;
@@ -1304,47 +1235,23 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
                 break;
             }
         }
-        // find their directory names
-        std::ostringstream ostfn;
-        ostfn << detector_shm()->settingsDir << ssettings << "/" << trim1
-              << "eV"
-              << "/noise.sn" << std::setfill('0') << std::setw(3) << std::dec
-              << getId(DETECTOR_SERIAL_NUMBER) << std::setbase(10);
-        std::string settingsfname1 = ostfn.str();
-        ostfn.str("");
-        ostfn.clear();
-        ostfn << detector_shm()->settingsDir << ssettings << "/" << trim2
-              << "eV"
-              << "/noise.sn" << std::setfill('0') << std::setw(3) << std::dec
-              << getId(DETECTOR_SERIAL_NUMBER) << std::setbase(10);
-        std::string settingsfname2 = ostfn.str();
-        // read the files
+        std::string settingsfname1 = getTrimbitFilename(is, trim1);
+        std::string settingsfname2 = getTrimbitFilename(is, trim2);
         FILE_LOG(logDEBUG1) << "Settings Files are " << settingsfname1
                             << " and " << settingsfname2;
-        sls_detector_module myMod1{detector_shm()->myDetectorType};
-        sls_detector_module myMod2{detector_shm()->myDetectorType};
-        if (readSettingsFile(settingsfname1, &myMod1, tb) == nullptr) {
-            throw RuntimeError(
-                "setThresholdEnergyAndSettings: Could not open settings file");
-        }
-        if (readSettingsFile(settingsfname2, &myMod2, tb) == nullptr) {
-            throw RuntimeError(
-                "setThresholdEnergyAndSettings: Could not open settings file");
-        }
+        auto myMod1 = readSettingsFile(settingsfname1, tb);
+        auto myMod2 = readSettingsFile(settingsfname2, tb);
         if (myMod1.iodelay != myMod2.iodelay) {
             throw RuntimeError("setThresholdEnergyAndSettings: Iodelays do not "
                                "match between files");
         }
-
-        // interpolate  module
         myMod = interpolateTrim(&myMod1, &myMod2, e_eV, trim1, trim2, tb);
-
-        // // interpolate tau
         myMod.iodelay = myMod1.iodelay;
         myMod.tau =
             linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
     }
 
+    detector_shm()->currentSettings = is;
     myMod.reg = detector_shm()->currentSettings;
     myMod.eV = e_eV;
     setModule(myMod, tb);
@@ -1353,6 +1260,37 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
                            "settings in detector");
     }
     return OK;
+}
+
+std::string slsDetector::getTrimbitFilename(detectorSettings s, int e_eV){
+    std::string ssettings;
+    switch (s) {
+    case STANDARD:
+        ssettings = "/standard";
+        break;
+    case HIGHGAIN:
+        ssettings = "/highgain";
+        break;
+    case LOWGAIN:
+        ssettings = "/lowgain";
+        break;
+    case VERYHIGHGAIN:
+        ssettings = "/veryhighgain";
+        break;
+    case VERYLOWGAIN:
+        ssettings = "/verylowgain";
+        break;
+    default:
+        std::ostringstream ss;
+        ss << "Unknown settings " << getDetectorSettings(s)
+           << " for this detector!";
+        throw RuntimeError(ss.str());
+    }
+    std::ostringstream ostfn;
+        ostfn << detector_shm()->settingsDir << ssettings << "/" << e_eV << "eV"
+              << "/noise.sn" << std::setfill('0') << std::setw(3) << std::dec
+              << getId(DETECTOR_SERIAL_NUMBER) << std::setbase(10);
+    return ostfn.str();
 }
 
 std::string slsDetector::getSettingsDir() {
@@ -1379,19 +1317,8 @@ int slsDetector::loadSettingsFile(const std::string &fname) {
         }
     }
     fn = ostfn.str();
-
-    // read settings file
-    sls_detector_module *myMod = nullptr;
-    myMod = readSettingsFile(fn, myMod);
-
-    // set module
-    int ret = FAIL;
-    if (myMod != nullptr) {
-        myMod->reg = -1;
-        myMod->eV = -1;
-        ret = setModule(*myMod);
-        deleteModule(myMod);
-    }
+    auto myMod = readSettingsFile(fn);
+    int ret = setModule(myMod);
     return ret;
 }
 
@@ -1406,14 +1333,8 @@ int slsDetector::saveSettingsFile(const std::string &fname) {
               << getId(DETECTOR_SERIAL_NUMBER);
     }
     fn = ostfn.str();
-
-    // get module
-    int ret = FAIL;
-    sls_detector_module *myMod = getModule();
-    if (myMod != nullptr) {
-        ret = writeSettingsFile(fn, *myMod);
-        deleteModule(myMod);
-    }
+    sls_detector_module myMod = getModule();
+    int ret = writeSettingsFile(fn, myMod);
     return ret;
 }
 
@@ -3625,23 +3546,6 @@ int slsDetector::setAutoComparatorDisableMode(int ival) {
     return retval;
 }
 
-int slsDetector::getChanRegs(double *retval) {
-    int n = getTotalNumberOfChannels();
-    // update chanregs
-    sls_detector_module *myMod = getModule();
-
-    if (myMod != nullptr) {
-        // the original array has 0 initialized
-        if (myMod->chanregs != nullptr) {
-            for (int i = 0; i < n; ++i) {
-                retval[i] =
-                    static_cast<double>(myMod->chanregs[i] & TRIMBITMASK);
-            }
-        }
-        deleteModule(myMod);
-    }
-    return n;
-}
 
 int slsDetector::setModule(sls_detector_module& module, int tb) {
     int fnum = F_SET_MODULE;
@@ -3682,27 +3586,24 @@ int slsDetector::setModule(sls_detector_module& module, int tb) {
     return ret;
 }
 
-sls_detector_module *slsDetector::getModule() {
+sls_detector_module slsDetector::getModule() {
     int fnum = F_GET_MODULE;
     int ret = FAIL;
     FILE_LOG(logDEBUG1) << "Getting module";
 
-    sls_detector_module *myMod = createModule();
-    if (myMod == nullptr) {
-        throw RuntimeError("Could not create module");
-    }
+    sls_detector_module myMod{detector_shm()->myDetectorType};
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
                                      detector_shm()->controlPort);
         ret = client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
-        receiveModule(myMod, client);
+        receiveModule(&myMod, client);
     }
     if (ret == FORCE_UPDATE) {
         ret = updateDetector();
     }
     if (ret == OK) {
-        if (myMod->eV != -1) {
-            detector_shm()->currentThresholdEV = myMod->eV;
+        if (myMod.eV != -1) {
+            detector_shm()->currentThresholdEV = myMod.eV;
         }
     }
     return myMod;
@@ -4856,20 +4757,11 @@ slsDetector::interpolateTrim(sls_detector_module *a, sls_detector_module *b,
     return myMod;
 }
 
-sls_detector_module *
-slsDetector::readSettingsFile(const std::string &fname,
-                              sls_detector_module *myMod, int tb) {
+sls_detector_module
+slsDetector::readSettingsFile(const std::string &fname, int tb) {
 
     FILE_LOG(logDEBUG1) << "Read settings file " << fname;
-    bool modCreated =
-        false; // If we create a module it must be deleted, TODO! usre RAII
-    if (myMod == nullptr) {
-        myMod = createModule(detector_shm()->myDetectorType);
-        if (myMod == nullptr) {
-            throw RuntimeError("Could not create module");
-        }
-        modCreated = true;
-    }
+    sls_detector_module myMod(detector_shm()->myDetectorType);
 
     std::vector<std::string> names;
     switch (detector_shm()->myDetectorType) {
@@ -4896,11 +4788,6 @@ slsDetector::readSettingsFile(const std::string &fname,
         names.emplace_back("VDAC7");
         break;
     default:
-        if (modCreated) {
-            if (myMod != nullptr) {
-                deleteModule(myMod);
-            }
-        }
         throw RuntimeError(
             "Unknown detector type - unknown format for settings file");
     }
@@ -4913,9 +4800,6 @@ slsDetector::readSettingsFile(const std::string &fname,
         infile.open(fname.c_str(), std::ios_base::in);
     }
     if (!infile.is_open()) {
-        if (modCreated) {
-            deleteModule(myMod);
-        }
         throw RuntimeError("Could not open settings file for reading: " +
                            fname);
     }
@@ -4923,18 +4807,18 @@ slsDetector::readSettingsFile(const std::string &fname,
     // eiger
     if (detector_shm()->myDetectorType == EIGER) {
         bool allread = false;
-        infile.read(reinterpret_cast<char *>(myMod->dacs),
-                    sizeof(int) * (myMod->ndac));
+        infile.read(reinterpret_cast<char *>(myMod.dacs),
+                    sizeof(int) * (myMod.ndac));
         if (infile.good()) {
-            infile.read(reinterpret_cast<char *>(&myMod->iodelay),
-                        sizeof(myMod->iodelay));
+            infile.read(reinterpret_cast<char *>(&myMod.iodelay),
+                        sizeof(myMod.iodelay));
             if (infile.good()) {
-                infile.read(reinterpret_cast<char *>(&myMod->tau),
-                            sizeof(myMod->tau));
+                infile.read(reinterpret_cast<char *>(&myMod.tau),
+                            sizeof(myMod.tau));
                 if (tb != 0) {
                     if (infile.good()) {
-                        infile.read(reinterpret_cast<char *>(myMod->chanregs),
-                                    sizeof(int) * (myMod->nchan));
+                        infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                                    sizeof(int) * (myMod.nchan));
                         if (infile) {
                             allread = true;
                         }
@@ -4945,19 +4829,16 @@ slsDetector::readSettingsFile(const std::string &fname,
             }
         }
         if (!allread) {
-            if (modCreated) {
-                deleteModule(myMod);
-            }
             infile.close();
             throw RuntimeError("readSettingsFile: Could not load all values "
                                "for settings for " +
                                fname);
         }
-        for (int i = 0; i < myMod->ndac; ++i) {
-            FILE_LOG(logDEBUG1) << "dac " << i << ":" << myMod->dacs[i];
+        for (int i = 0; i < myMod.ndac; ++i) {
+            FILE_LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
         }
-        FILE_LOG(logDEBUG1) << "iodelay:" << myMod->iodelay;
-        FILE_LOG(logDEBUG1) << "tau:" << myMod->tau;
+        FILE_LOG(logDEBUG1) << "iodelay:" << myMod.iodelay;
+        FILE_LOG(logDEBUG1) << "tau:" << myMod.tau;
     }
 
     // gotthard, jungfrau
@@ -4977,7 +4858,7 @@ slsDetector::readSettingsFile(const std::string &fname,
             bool found = false;
             for (size_t i = 0; i < names.size(); ++i) {
                 if (sargname == names[i]) {
-                    myMod->dacs[i] = ival;
+                    myMod.dacs[i] = ival;
                     found = true;
                     FILE_LOG(logDEBUG1)
                         << names[i] << "(" << i << "): " << ival;
@@ -4987,17 +4868,11 @@ slsDetector::readSettingsFile(const std::string &fname,
             if (!found) {
                 throw RuntimeError("readSettingsFile: Unknown dac: " +
                                    sargname);
-                if (modCreated) {
-                    deleteModule(myMod);
-                }
                 infile.close();
             }
         }
         // not all read
         if (idac != names.size()) {
-            if (modCreated) {
-                deleteModule(myMod);
-            }
             infile.close();
             throw RuntimeError("Could read only " + std::to_string(idac) +
                                " dacs. Expected " +

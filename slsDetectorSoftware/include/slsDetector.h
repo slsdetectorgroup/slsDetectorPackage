@@ -1305,12 +1305,12 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int setAutoComparatorDisableMode(int ival = -1);
 
-    /**
-	 * Returns the trimbits from the detector's shared memmory (Eiger)
-	 * @param retval is the array with the trimbits
-	 * @returns total number of channels for the detector
+
+	/**
+	 * Get trimbit filename with path for settings and energy 
+	 * 
 	 */
-    int getChanRegs(double *retval);
+	std::string getTrimbitFilename(detectorSettings settings, int e_eV);
 
     /**
 	 * Configure Module (Eiger)
@@ -1327,7 +1327,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * Get module structure from detector (all detectors)
 	 * @returns pointer to module structure (which has been created and must then be deleted)
 	 */
-    sls_detector_module *getModule();
+    sls_detector_module getModule();
 
     /**
 	 * Set Rate correction (Eiger)
@@ -1743,27 +1743,6 @@ class slsDetector : public virtual slsDetectorDefs{
     void initializeDetectorStructure(detectorType type);
 
     /**
-	 * Allocates the memory for a sls_detector_module structure and initializes it
-	 * Uses current detector type
-	 * @returns myMod the pointer to the allocate memory location
-	 */
-    sls_detector_module *createModule();
-
-    /**
-	 * Allocates the memory for a sls_detector_module structure and initializes it
-	 * Has detector type
-	 * @param type detector type
-	 * @returns myMod the pointer to the allocate dmemory location
-	 */
-    sls_detector_module *createModule(detectorType type);
-
-    /**
-	 * Frees the memory for a sls_detector_module structure
-	 * @param myMod the pointer to the memory to be freed
-	 */
-    void deleteModule(sls_detector_module *myMod);
-
-    /**
 	 * Send a sls_detector_module structure over socket
 	 * @param myMod module structure to send
 	 * @returns number of bytes sent to the detector
@@ -1818,7 +1797,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns the pointer to myMod or NULL if reading the file failed
 	 */
 
-    sls_detector_module *readSettingsFile(const std::string &fname, sls_detector_module *myMod = nullptr, int tb = 1);
+    sls_detector_module readSettingsFile(const std::string &fname, int tb = 1);
 
     /**
 	 * writes a trim/settings file

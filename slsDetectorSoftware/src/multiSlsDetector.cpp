@@ -2729,18 +2729,6 @@ int multiSlsDetector::setAutoComparatorDisableMode(int ival, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getChanRegs(double *retval, int detPos) {
-
-    int offset = 0;
-    std::vector<int> r;
-    for (auto &d : detectors) {
-        int nch = d->getTotalNumberOfChannels();
-        double result[nch];
-        r.push_back(d->getChanRegs(result));
-        memcpy(retval + offset, result, nch * sizeof(double));
-    }
-    return sls::minusOneIfDifferent(r);
-}
 
 int multiSlsDetector::setRateCorrection(int64_t t, int detPos) {
     // single

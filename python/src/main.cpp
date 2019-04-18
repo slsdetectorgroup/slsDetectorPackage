@@ -183,8 +183,10 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("setRxDataStreamStatus", &Detector::setRxDataStreamStatus)
 
         // Network stuff
-        .def("getReceiverHostname", &Detector::getReceiverHostname)
-        .def("setReceiverHostname", &Detector::setReceiverHostname)
+        .def("getReceiverHostname", &Detector::getReceiverHostname,
+             py::arg("det_id") = -1)
+        .def("setReceiverHostname", &Detector::setReceiverHostname,
+             py::arg("hostname"), py::arg("det_id") = -1)
         .def("getReceiverStreamingPort", &Detector::getReceiverStreamingPort)
         .def("setReceiverStreamingPort", &Detector::setReceiverStreamingPort)
         .def("getReceiverUDPPort", &Detector::getReceiverUDPPort)
@@ -289,9 +291,9 @@ PYBIND11_MODULE(_sls_detector, m) {
 
         .def("setPatternWaitTime", &Detector::setPatternWaitTime,
              py::arg("level"), py::arg("duration"), py::arg("det_id") = -1)
-             
+
         .def("getPatternWaitTime", &Detector::getPatternWaitTime,
-             py::arg("level"), py::arg("det_id") = -1)            
+             py::arg("level"), py::arg("det_id") = -1)
 
         .def("getImageSize", &Detector::getImageSize)
         .def("setImageSize", &Detector::setImageSize)
@@ -303,8 +305,13 @@ PYBIND11_MODULE(_sls_detector, m) {
     py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
     multiDetectorApi.def(py::init<int>())
         .def("acquire", &multiSlsDetector::acquire)
-        .def("_setOnline", &multiSlsDetector::setOnline, py::arg("flag") = -1,
-             py::arg("det_id") = -1)
+
+        .def_property("online", 
+        py::cpp_function(&multiSlsDetector::setOnline, py::arg(), py::arg()=-1, py::arg("det_id")=-1),
+        py::cpp_function(&multiSlsDetector::setOnline, py::arg(), py::arg("flag"), py::arg("det_id")=-1)
+        )
+        // .def("_setOnline", &multiSlsDetector::setOnline, py::arg("flag") = -1,
+        //      py::arg("det_id") = -1)
 
         .def_property_readonly(
             "hostname", py::cpp_function(&multiSlsDetector::getHostname,
@@ -317,6 +324,11 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def_property_readonly(
             "detectornumber",
             py::cpp_function(&multiSlsDetector::getDetectorNumber))
+        .def_property("rx_udpip",
+                      py::cpp_function(&multiSlsDetector::getReceiverUDPIP,
+                                       py::arg(), py::arg("det_id") = -1),
+                      py::cpp_function(&multiSlsDetector::setReceiverUDPIP,
+                                       py::arg(), py::arg("ip"), py::arg("det_id") = -1) )
         .def("_getReceiverUDPIP", &multiSlsDetector::getReceiverUDPIP)
         .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
         .def("getPatternLoops", &multiSlsDetector::getPatternLoops,

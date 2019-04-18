@@ -1355,6 +1355,38 @@ class Detector:
         self._api.configureNetworkParameters()
 
 
+    #TODO! can we make this one function?
+    @property
+    def patnloop0(self):
+        return self._api.getPatternLoops(0, -1)
+
+    @patnloop0.setter
+    def patnloop0(self, n):
+        self._api.setPatternLoops(0, -1, -1, n, -1)
+
+    @property
+    def patnloop1(self):
+        return self._api.getPatternLoops(1, -1)
+
+    @patnloop1.setter
+    def patnloop1(self, n):
+        self._api.setPatternLoops(1, -1, -1, n, -1)
+
+    @property
+    def patnloop2(self):
+        return self._api.getPatternLoops(2, -1)
+
+    @patnloop2.setter
+    def patnloop2(self, n):
+        self._api.setPatternLoops(2, -1, -1, n, -1)
+
+    def setPatternWord(self, addr, word, det_id = -1):
+        self._api.setPatternWord(addr, word, det_id)
+
+    def setPatternLoops(self, level, start, stop, n, det_id=-1):
+        self._api.setPatternLoops(level, start, stop, n, det_id)
+
+
 def free_shared_memory(multi_id=0):
     """
     Function to free the shared memory but do not initialize with new

@@ -123,3 +123,15 @@ TEST_CASE("vector of bool", "[support]"){
     CHECK(minusOneIfDifferent(b) == 0);
     CHECK(minusOneIfDifferent(c) == -1);
 }
+
+TEST_CASE("compare a vector of arrays", "[support]"){
+
+    std::vector<std::array<uint64_t, 3>> vec0{{5,6,8},{5,6,8},{5,6,8}};
+    CHECK(minusOneIfDifferent(vec0) == std::array<uint64_t, 3>{5,6,8});
+
+    std::array<uint64_t, 3> arr;
+    arr.fill(-1);
+    std::vector<std::array<uint64_t, 3>> vec1{{5,90,8},{5,6,8},{5,6,8}};
+    CHECK(minusOneIfDifferent(vec1) == arr);
+
+}

@@ -5295,11 +5295,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             myDet->setPatternLoops(-1, start, stop, n, detPos);
         }
 
-        start = -1;
-        stop = -1;
-        n = -1;
-        myDet->setPatternLoops(-1, start, stop, n, detPos);
-        os << std::hex << start << " " << stop; // << " "<< std::dec << n ;
+        // start = -1;
+        // stop = -1;
+        // n = -1;
+        // myDet->setPatternLoops(-1, start, stop, n, detPos);
+        auto r = myDet->getPatternLoops(-1, detPos);
+        os << std::hex << r[0] << " " << r[1];
+        // os << std::hex << start << " " << stop; // << " "<< std::dec << n ;
     } else if (cmd == "patloop0") {
         //get start, stop from stdin
 
@@ -5321,11 +5323,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             myDet->setPatternLoops(0, start, stop, n, detPos);
         }
 
-        start = -1;
-        stop = -1;
-        n = -1;
-        myDet->setPatternLoops(0, start, stop, n, detPos);
-        os << std::hex << start << " " << stop; // << " "<< std::dec << n ;
+        // start = -1;
+        // stop = -1;
+        // n = -1;
+        // myDet->setPatternLoops(0, start, stop, n, detPos);
+        // os << std::hex << start << " " << stop; // << " "<< std::dec << n ;
+        auto r = myDet->getPatternLoops(0, detPos);
+        os << std::hex << r[0] << " " << r[1];
 
     } else if (cmd == "patloop1") {
 
@@ -5347,11 +5351,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             myDet->setPatternLoops(1, start, stop, n, detPos);
         }
 
-        start = -1;
-        stop = -1;
-        n = -1;
-        myDet->setPatternLoops(1, start, stop, n, detPos);
-        os << std::hex << start << " " << stop; // << " "<< std::dec << n ;
+        // start = -1;
+        // stop = -1;
+        // n = -1;
+        // myDet->setPatternLoops(1, start, stop, n, detPos);
+        // os << std::hex << start << " " << stop; // << " "<< std::dec << n ;
+        auto r = myDet->getPatternLoops(1, detPos);
+        os << std::hex << r[0] << " " << r[1];
 
     } else if (cmd == "patloop2") {
 
@@ -5373,12 +5379,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             myDet->setPatternLoops(2, start, stop, n, detPos);
         }
 
-        start = -1;
-        stop = -1;
-        n = -1;
-        myDet->setPatternLoops(2, start, stop, n, detPos);
-        os << std::hex << start << " " << stop << std::dec; // << " "<< std::dec << n ;
-
+        // start = -1;
+        // stop = -1;
+        // n = -1;
+        // myDet->setPatternLoops(2, start, stop, n, detPos);
+        // os << std::hex << start << " " << stop << std::dec; // << " "<< std::dec << n ;
+        auto r = myDet->getPatternLoops(2, detPos);
+        os << std::hex << r[0] << " " << r[1];
     } else if (cmd == "patnloop0") {
         start = -1;
         stop = -1;
@@ -5393,11 +5400,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             myDet->setPatternLoops(0, start, stop, n, detPos);
         }
 
-        start = -1;
-        stop = -1;
-        n = -1;
-        myDet->setPatternLoops(0, start, stop, n, detPos);
-        os << n;
+        // start = -1;
+        // stop = -1;
+        // n = -1;
+        // myDet->setPatternLoops(0, start, stop, n, detPos);
+        // os << n;
+        auto r = myDet->getPatternLoops(0, detPos);
+        os << std::hex << r[2];
     } else if (cmd == "patnloop1") {
 
         start = -1;
@@ -5413,11 +5422,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             myDet->setPatternLoops(1, start, stop, n, detPos);
         }
 
-        start = -1;
-        stop = -1;
-        n = -1;
-        myDet->setPatternLoops(1, start, stop, n, detPos);
-        os << n;
+        // start = -1;
+        // stop = -1;
+        // n = -1;
+        // myDet->setPatternLoops(1, start, stop, n, detPos);
+        // os << n;
+        auto r = myDet->getPatternLoops(1, detPos);
+        os << std::hex << r[2];
 
     } else if (cmd == "patnloop2") {
 
@@ -5434,11 +5445,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
             myDet->setPatternLoops(2, start, stop, n, detPos);
         }
 
-        start = -1;
-        stop = -1;
-        n = -1;
-        myDet->setPatternLoops(2, start, stop, n, detPos);
-        os << n;
+        // start = -1;
+        // stop = -1;
+        // n = -1;
+        // myDet->setPatternLoops(2, start, stop, n, detPos);
+        // os << n;
+        auto r = myDet->getPatternLoops(2, detPos);
+        os << std::hex << r[2];
 
     } else if (cmd == "patwait0") {
 

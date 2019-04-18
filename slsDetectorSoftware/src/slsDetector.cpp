@@ -4498,14 +4498,12 @@ uint64_t slsDetector::setPatternWord(uint64_t addr, uint64_t word) {
     return retval;
 }
 
-int slsDetector::setPatternLoops(int level, int &start, int &stop, int &n) {
-    // TODO!(Erik) Should we change function signature to accept uint64_t?
+int slsDetector::setPatternLoops(uint64_t level, uint64_t start, uint64_t stop,
+                                 uint64_t n) {
     int fnum = F_SET_PATTERN;
     int ret = FAIL;
     uint64_t mode = 1; // sets loop
-    uint64_t args[5]{mode, static_cast<uint64_t>(level),
-                     static_cast<uint64_t>(start), static_cast<uint64_t>(stop),
-                     static_cast<uint64_t>(n)};
+    uint64_t args[]{mode, level, start, stop, n};
     int retvals[3]{};
     FILE_LOG(logDEBUG1) << "Setting Pat Loops, level: " << level
                         << ", start: " << start << ", stop: " << stop
@@ -4518,14 +4516,43 @@ int slsDetector::setPatternLoops(int level, int &start, int &stop, int &n) {
                                          sizeof(retvals));
         FILE_LOG(logDEBUG1) << "Set Pat Loops: " << retvals[0] << ", "
                             << retvals[1] << ", " << retvals[2];
-        start = retvals[0];
-        stop = retvals[1];
-        n = retvals[2];
+        assert(start == retvals[0]);
+        assert(stop == retvals[1]);
+        assert(n == retvals[2]);
     }
     if (ret == FORCE_UPDATE) {
         updateDetector();
     }
     return ret;
+}
+
+std::array<uint64_t, 3> slsDetector::getPatternLoops(uint64_t level) {
+    int fnum = F_SET_PATTERN;
+    int ret = FAIL;
+    uint64_t mode = 1; // sets loop
+    uint64_t args[]{mode, level, static_cast<uint64_t>(-1),
+                    static_cast<uint64_t>(-1), static_cast<uint64_t>(-1)};
+    int retvals[3]{};
+    FILE_LOG(logDEBUG1) << "Setting Pat Loops, level: " << level
+                        << ", start: " << -1 << ", stop: " << -1
+                        << ", n: " << -1;
+
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        auto client = DetectorSocket(detector_shm()->hostname,
+                                     detector_shm()->controlPort);
+        ret = client.sendCommandThenRead(fnum, args, sizeof(args), retvals,
+                                         sizeof(retvals));
+        FILE_LOG(logDEBUG1) << "Get Pat Loops: " << retvals[0] << ", "
+                            << retvals[1] << ", " << retvals[2];
+    }
+    if (ret == FORCE_UPDATE) {
+        updateDetector();
+    }
+    std::array<uint64_t, 3> r{};
+    r[0] = retvals[0];
+    r[1] = retvals[1];
+    r[2] = retvals[2];
+    return r;
 }
 
 int slsDetector::setPatternWaitAddr(uint64_t level, uint64_t addr) {

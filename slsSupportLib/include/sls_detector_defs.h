@@ -1040,7 +1040,6 @@ typedef struct {
     int *chanregs; /**< is the pointer to the array of the channel registers */
 
 #ifdef __cplusplus
-
     sls_detector_module()
         : serialnumber(0), nchan(0), nchip(0), ndac(0), reg(0), iodelay(0),
           tau(0), eV(0), dacs(nullptr), chanregs(nullptr) {}
@@ -1049,8 +1048,6 @@ typedef struct {
         detParameters parameters{type};
         int nch = parameters.nChanX * parameters.nChanY;
         int nc = parameters.nChipX * parameters.nChipY;
-        // int nd = parameters.nDacs;
-
         ndac = parameters.nDacs;
         nchip = nc;
         nchan = nch * nc;

@@ -109,6 +109,19 @@ minusOneIfDifferent(const std::vector<std::vector<T>> &container) {
     return std::vector<T>{-1};
 }
 
+template <typename T, size_t size>
+std::array<T, size>
+minusOneIfDifferent(const std::vector<std::array<T,size>> &container) {
+    if (allEqual(container))
+        return container.front();
+    
+    std::array<T,size> arr;
+    arr.fill(static_cast<T>(-1));
+    return arr;
+}
+
+
+
 } // namespace sls
 
 #endif // CONTAINER_UTILS_H

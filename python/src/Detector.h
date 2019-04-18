@@ -271,11 +271,11 @@ class Detector {
     }
 
     void setPatternWaitTime(int level, uint64_t duration, int detPos){
-        det.setPatternWaitTime(level, duration, detPos)
+        det.setPatternWaitTime(level, duration, detPos);
     }
 
     uint64_t getPatternWaitTime(int level, int detPos){
-        det.setPatternWaitTime(level, -1, detPos)
+        det.setPatternWaitTime(level, -1, detPos);
     }
 
     bool getFlippedDataX(int i) {

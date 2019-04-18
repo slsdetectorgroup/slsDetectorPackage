@@ -708,6 +708,16 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
 		// update row and column in dataprocessor
 		setDetectorPositionId(detID);
 
+		// update call backs
+		if(rawDataReadyCallBack)  {
+			for (const auto& it : dataProcessor)
+				it->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
+		}
+		if(rawDataModifyReadyCallBack) {
+			for (const auto& it : dataProcessor)
+				it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
+		}
+
 		// test socket buffer size with current set up
 		if (setUDPSocketBufferSize(0) == FAIL) {
 			return FAIL;

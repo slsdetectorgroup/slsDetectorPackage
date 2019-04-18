@@ -54,7 +54,10 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		firstMeasurementIndex(0),
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
-		currentFrameIndex(0)
+		currentFrameIndex(0),
+		rawDataReadyCallBack(nullptr),
+		rawDataModifyReadyCallBack(nullptr),
+		pRawDataReady(nullptr)
 {
      if(ThreadObject::CreateThread() == FAIL)
          throw sls::RuntimeError("Could not create processing thread");

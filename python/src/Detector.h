@@ -250,7 +250,7 @@ class Detector {
     }
 
 
-    std::array<uint64_t, 3> getPatternLoops(uint64_t level, int detPos) {
+    std::array<int, 3> getPatternLoops(int level, int detPos) {
         return det.getPatternLoops(level, detPos);
     }
 

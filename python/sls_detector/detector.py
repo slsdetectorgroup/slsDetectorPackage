@@ -16,6 +16,7 @@ from .errors import DetectorError, DetectorValueError
 from .registers import Register
 from .utils import element_if_equal
 
+import numpy as np
 
 class Detector:
     """
@@ -1358,7 +1359,7 @@ class Detector:
     #TODO! can we make this one function?
     @property
     def patnloop0(self):
-        return self._api.getPatternLoops(0, -1)
+        return self._api.getPatternLoops(0, -1)[2]
 
     @patnloop0.setter
     def patnloop0(self, n):
@@ -1366,7 +1367,7 @@ class Detector:
 
     @property
     def patnloop1(self):
-        return self._api.getPatternLoops(1, -1)
+        return self._api.getPatternLoops(1, -1)[2]
 
     @patnloop1.setter
     def patnloop1(self, n):
@@ -1374,7 +1375,7 @@ class Detector:
 
     @property
     def patnloop2(self):
-        return self._api.getPatternLoops(2, -1)
+        return self._api.getPatternLoops(2, -1)[2]
 
     @patnloop2.setter
     def patnloop2(self, n):
@@ -1385,6 +1386,20 @@ class Detector:
 
     def setPatternLoops(self, level, start, stop, n, det_id=-1):
         self._api.setPatternLoops(level, start, stop, n, det_id)
+
+    @property
+    def patioctrl(self):
+        self._api.setPatternWord(-1,-1,-1)
+
+    @patioctrl.setter
+    def patioctrl(self, word):
+        self._api.setPatternWord(-1, word, -1)
+
+    @property
+    def patlimits(self):
+        return self._api.getPatternLoops(np.uint64(-1),-1)[0:2]
+
+
 
 
 def free_shared_memory(multi_id=0):

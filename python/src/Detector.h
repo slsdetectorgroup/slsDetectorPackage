@@ -244,18 +244,17 @@ class Detector {
 
     std::vector<double> getRateCorrection();
 
-
-
-    void setPatternLoops(uint64_t level, uint64_t start, uint64_t stop,
-                         uint64_t n, int detPos) {
+    void setPatternLoops(int level, int start, int stop,
+                         int n, int detPos) {
         det.setPatternLoops(level, start, stop, n, detPos);
     }
+
 
     std::array<uint64_t, 3> getPatternLoops(uint64_t level, int detPos) {
         return det.getPatternLoops(level, detPos);
     }
 
-    void setPatternWord(int addr, uint64_t word, int detPos){
+    void setPatternWord(int addr, uint64_t word, int detPos) {
         det.setPatternWord(addr, word, detPos);
     }
 

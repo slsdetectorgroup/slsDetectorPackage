@@ -286,7 +286,7 @@ py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
             ;
 
     py::module io = m.def_submodule("io", "Submodule for io");
-    io.def("read_ctb_file", &read_ctb_file, "some");
+    io.def("read_my302_file", &read_my302_file, "some");
 
 
 #ifdef VERSION_INFO

@@ -5,11 +5,19 @@ sys.path.append(os.path.join(os.getcwd(), 'bin'))
 from sls_detector import Eiger
 from sls_detector import ExperimentalDetector
 
-from _sls_detector.io import read_ctb_file
+from _sls_detector.io import read_my302_file
 
 d = Eiger()
 e = ExperimentalDetector()
 
+
+# for i in range(200):
+#     a = read_my302_file('/home/l_frojdh/Downloads/run_d0_5.raw', i, 24)
+#     print(f'{i}: {(a==5).sum()}')
+
+
+
+a = read_my302_file('/home/l_frojdh/Downloads/run_d0_5.raw', 104, 24)
 # ncols = 192
 # start = 600
 # end = 1800

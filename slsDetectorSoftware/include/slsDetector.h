@@ -19,19 +19,7 @@ class MySocketTCP;
 #define NCHIPSMAX 10
 #define NCHANSMAX 65536
 #define NDACSMAX 16
-/**
- * parameter list that has to be initialized depending on the detector type
- */
-struct detParameters {
-    int nChanX;
-    int nChanY;
-    int nChipX;
-    int nChipY;
-    int nDacs;
-    int dynamicRange;
-    int nGappixelsX;
-    int nGappixelsY;
-};
+
 
 /**
 	 * @short structure allocated in shared memory to store detector settings for IPC and cache
@@ -204,7 +192,7 @@ struct sharedSlsDetector {
     int dataBytesInclGapPixels;
 
     /** additional json header */
-    char receiver_additionalJsonHeader[MAX_STR_LENGTH];
+    char rxAdditionalJsonHeader[MAX_STR_LENGTH];
 
     /** detector control server software API version */
     int64_t detectorControlAPIVersion;
@@ -225,7 +213,7 @@ struct sharedSlsDetector {
     bool activated;
 
     /** padding enable in deactivated receiver */
-    bool receiver_deactivatedPaddingEnable;
+    bool rxPadDeactivatedModules;
 
     /** silent receiver */
     bool receiver_silentMode;
@@ -1160,7 +1148,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param val value
 	 * @returns return value  (mostly -1 as it can't read adc register)
 	 */
-    int writeAdcRegister(int addr, int val);
+    int writeAdcRegister(uint32_t addr, uint32_t val);
 
     /**
 	 * Activates/Deactivates the detector (Eiger only)
@@ -1174,7 +1162,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param padding padding option for deactivated receiver. Can be 1 (padding), 0 (no padding), -1 (gets)
 	 * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for padding option
 	 */
-    int setDeactivatedRxrPaddingMode(int padding = -1);
+    bool setDeactivatedRxrPaddingMode(int padding = -1);
 
     /**
 	 * Returns the enable if data will be flipped across x or y axis (Eiger)
@@ -1317,12 +1305,12 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int setAutoComparatorDisableMode(int ival = -1);
 
-    /**
-	 * Returns the trimbits from the detector's shared memmory (Eiger)
-	 * @param retval is the array with the trimbits
-	 * @returns total number of channels for the detector
+
+	/**
+	 * Get trimbit filename with path for settings and energy 
+	 * 
 	 */
-    int getChanRegs(double *retval);
+	std::string getTrimbitFilename(detectorSettings settings, int e_eV);
 
     /**
 	 * Configure Module (Eiger)
@@ -1333,13 +1321,13 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns ok or fail
 	 * \sa ::sls_detector_module
 	 */
-    int setModule(sls_detector_module module, int tb = 1);
+    int setModule(sls_detector_module& module, int tb = 1);
 
     /**
 	 * Get module structure from detector (all detectors)
 	 * @returns pointer to module structure (which has been created and must then be deleted)
 	 */
-    sls_detector_module *getModule();
+    sls_detector_module getModule();
 
     /**
 	 * Set Rate correction (Eiger)
@@ -1748,39 +1736,11 @@ class slsDetector : public virtual slsDetectorDefs{
     void initSharedMemory(detectorType type, int multi_id, bool verify = true);
 
     /**
-	 * Sets detector parameters depending detector type
-	 * @param type detector type
-	 * @param list structure of parameters to initialize depending on detector type
-	 */
-    void setDetectorSpecificParameters(detectorType type, detParameters &list);
-
-    /**
 	 * Initialize detector structure to defaults
 	 * Called when new shared memory is created
 	 * @param type type of detector
 	 */
     void initializeDetectorStructure(detectorType type);
-
-    /**
-	 * Allocates the memory for a sls_detector_module structure and initializes it
-	 * Uses current detector type
-	 * @returns myMod the pointer to the allocate memory location
-	 */
-    sls_detector_module *createModule();
-
-    /**
-	 * Allocates the memory for a sls_detector_module structure and initializes it
-	 * Has detector type
-	 * @param type detector type
-	 * @returns myMod the pointer to the allocate dmemory location
-	 */
-    sls_detector_module *createModule(detectorType type);
-
-    /**
-	 * Frees the memory for a sls_detector_module structure
-	 * @param myMod the pointer to the memory to be freed
-	 */
-    void deleteModule(sls_detector_module *myMod);
 
     /**
 	 * Send a sls_detector_module structure over socket
@@ -1824,7 +1784,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
 	 * @returns  the pointer to the module structure with interpolated values or NULL if error
 	 */
-    sls_detector_module *interpolateTrim(
+    sls_detector_module interpolateTrim(
         sls_detector_module *a, sls_detector_module *b, const int energy,
         const int e1, const int e2, int tb = 1);
 
@@ -1837,7 +1797,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns the pointer to myMod or NULL if reading the file failed
 	 */
 
-    sls_detector_module *readSettingsFile(const std::string &fname, sls_detector_module *myMod = nullptr, int tb = 1);
+    sls_detector_module readSettingsFile(const std::string &fname, int tb = 1);
 
     /**
 	 * writes a trim/settings file

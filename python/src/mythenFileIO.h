@@ -55,10 +55,10 @@ std::vector<int> ExtractBits(const std::vector<uint64_t> &data, int dr = 24) {
     return result;
 }
 
-std::vector<uint64_t> ReadFile(const std::string &fname, int offset = 8,
+std::vector<uint64_t> ReadFile(const std::string &fname, int byte_offset = 8,
                                int dr = 24) {
     const int element_size = static_cast<int>(sizeof(uint64_t));
-    const int byte_offset = element_size * offset;
+    // const int byte_offset = element_size * offset;
     const int expected_size = dr * element_size * 32 * 3;
     std::ifstream fs(fname, std::ios::binary | std::ios::ate);
     if (!fs.is_open()) {
@@ -78,7 +78,7 @@ std::vector<uint64_t> ReadFile(const std::string &fname, int offset = 8,
     return data;
 }
 
-py::array_t<uint64_t> read_ctb_file(const std::string &fname, int offset = 8,
+py::array_t<uint64_t> read_my302_file(const std::string &fname, int offset = 8,
                                     int dr = 24) {
     auto data = ExtractBits<17, 6>(ReadFile(fname, offset, dr));
     return py::array(data.size(), data.data());

@@ -250,7 +250,7 @@ class Detector {
     }
 
 
-    std::array<uint64_t, 3> getPatternLoops(uint64_t level, int detPos) {
+    std::array<int, 3> getPatternLoops(int level, int detPos) {
         return det.getPatternLoops(level, detPos);
     }
 
@@ -260,6 +260,14 @@ class Detector {
 
     uint64_t getPatternWord(int addr, int detPos){
         return det.setPatternWord(addr, -1, detPos);
+    }
+
+    uint64_t setPatternIOControl(uint64_t word, int detPos){
+        return det.setPatternIOControl(word, detPos);
+    }
+
+    uint64_t setPatternClockControl(uint64_t word, int detPos){
+        return det.setPatternClockControl(word, detPos);
     }
 
     void setPatternWaitAddr(int level, int addr, int detPos){

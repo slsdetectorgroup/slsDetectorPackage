@@ -1480,15 +1480,15 @@ class Detector:
 
     @property
     def patioctrl(self):
-        return self._api.getPatternWord(-1)
+        return self._api.setPatternIOControl(np.uint64(-1))
 
     @patioctrl.setter
     def patioctrl(self, word):
-        self._api.setPatternWord(-1, np.uint64(word))
+        self._api.setPatternIOControl(np.uint64(word))
 
     @property
     def patlimits(self):
-        return self._api.getPatternLoops(np.uint64(-1),-1)[0:2]
+        return self._api.getPatternLoops(-1,-1)[0:2]
 
     @patlimits.setter
     def patlimits(self, value):
@@ -1506,11 +1506,11 @@ class Detector:
 
     @property
     def patclkctrl(self):
-        return self._api.getPatternWord(-2)
+        return self._api.setPatternClockControl(np.uint64(-1))
 
     @patclkctrl.setter
     def patclkctrl(self, value):
-        self._api.setPatternWord(-2, value)
+        self._api.setPatternClockControl(value)
 
 
 def free_shared_memory(multi_id=0):

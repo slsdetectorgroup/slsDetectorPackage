@@ -284,6 +284,9 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getPatternWord", &Detector::getPatternWord, py::arg("addr"),
              py::arg("det_id") = -1)
 
+        .def("setPatternIOControl", &Detector::setPatternIOControl, py::arg("word"), py::arg("det_id") = -1)
+        .def("setPatternClockControl", &Detector::setPatternClockControl, py::arg("word"), py::arg("det_id") = -1)
+        
         .def("setPatternWaitAddr", &Detector::setPatternWaitAddr,
              py::arg("level"), py::arg("addr"), py::arg("det_id") = -1)
         .def("getPatternWaitAddr", &Detector::getPatternWaitAddr,
@@ -300,17 +303,21 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getNumberOfDetectors", &Detector::getNumberOfDetectors)
         .def("getDetectorGeometry", &Detector::getDetectorGeometry);
 
+
+
     // Experimental API to use the multi directly and inherit from to reduce
     // code duplication need to investigate how to handle documentation
     py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
     multiDetectorApi.def(py::init<int>())
         .def("acquire", &multiSlsDetector::acquire)
 
-        .def_property("online", 
-        py::cpp_function(&multiSlsDetector::setOnline, py::arg(), py::arg()=-1, py::arg("det_id")=-1),
-        py::cpp_function(&multiSlsDetector::setOnline, py::arg(), py::arg("flag"), py::arg("det_id")=-1)
-        )
-        // .def("_setOnline", &multiSlsDetector::setOnline, py::arg("flag") = -1,
+        .def_property("online",
+                      py::cpp_function(&multiSlsDetector::setOnline, py::arg(),
+                                       py::arg() = -1, py::arg("det_id") = -1),
+                      py::cpp_function(&multiSlsDetector::setOnline, py::arg(),
+                                       py::arg("flag"), py::arg("det_id") = -1))
+        // .def("_setOnline", &multiSlsDetector::setOnline, py::arg("flag") =
+        // -1,
         //      py::arg("det_id") = -1)
 
         .def_property_readonly(
@@ -328,7 +335,8 @@ PYBIND11_MODULE(_sls_detector, m) {
                       py::cpp_function(&multiSlsDetector::getReceiverUDPIP,
                                        py::arg(), py::arg("det_id") = -1),
                       py::cpp_function(&multiSlsDetector::setReceiverUDPIP,
-                                       py::arg(), py::arg("ip"), py::arg("det_id") = -1) )
+                                       py::arg(), py::arg("ip"),
+                                       py::arg("det_id") = -1))
         .def("_getReceiverUDPIP", &multiSlsDetector::getReceiverUDPIP)
         .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
         .def("getPatternLoops", &multiSlsDetector::getPatternLoops,

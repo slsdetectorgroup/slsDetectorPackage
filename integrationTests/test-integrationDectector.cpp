@@ -224,7 +224,7 @@ TEST_CASE("Excersise all possible set timer functions", "[.integration]") {
 //     d.freeSharedMemory();
 // }
 
-TEST_CASE("Eiger Dynamic Range with effect on rate correction and clock divider", "[.integration]") {
+TEST_CASE("Eiger Dynamic Range with effect on rate correction and clock divider", "[.eigerintegration]") {
     SingleDetectorConfig c;
     
     int ratecorr = 125;
@@ -275,4 +275,85 @@ TEST_CASE("Eiger Dynamic Range with effect on rate correction and clock divider"
     m.setRateCorrection(ratecorr);
     CHECK_THROWS_AS(m.setDynamicRange(4), sls::NonCriticalError);
     CHECK(m.getRateCorrection()==0);
+}
+
+
+TEST_CASE("Chiptestboard Loading Patterns", "[.ctbintegration]") {
+    SingleDetectorConfig c;
+   
+   // pick up multi detector from shm id 0
+    multiSlsDetector m(0);
+
+    // ensure ctb detector type, hostname and online
+    REQUIRE(m.getDetectorTypeAsEnum()==c.type_enum);
+    REQUIRE(m.getHostname()==c.hostname);
+    REQUIRE(m.setOnline(true)==slsDetectorDefs::ONLINE_FLAG);
+
+    uint64_t word = 0;
+    int addr = 0;
+    int level = 0;
+    const int MAX_ADDR = 0x7fff;
+
+    word = 0xc000000000f47ff;
+    CHECK(m.setPatternIOControl(word) == word);
+    CHECK(m.setPatternIOControl(-1) == word);
+    CHECK(m.setPatternIOControl(0) == 0);
+
+    CHECK(m.setPatternClockControl(word) == word);
+    CHECK(m.setPatternClockControl(-1) == word);
+    CHECK(m.setPatternClockControl(0) == 0);
+
+    // testing pattern word will execute the pattern as well
+    addr = 0;
+    m.setPatternWord(addr, word);
+    CHECK(m.setPatternWord(addr, -1) == word);
+    addr = MAX_ADDR - 1;
+    m.setPatternWord(addr, word);
+    CHECK(m.setPatternWord(addr, -1) == word);
+    addr = 0x2FF;
+    m.setPatternWord(addr, word);
+    CHECK(m.setPatternWord(addr, -1) == word);
+    addr = MAX_ADDR;
+    CHECK_THROWS_AS(m.setPatternWord(addr, word),  sls::NonCriticalError);
+    CHECK_THROWS_WITH(m.setPatternWord(addr, word),  Catch::Matchers::Contains( "be between 0 and" ));
+    addr = -1;
+    CHECK_THROWS_AS(m.setPatternWord(addr, word),  sls::NonCriticalError);
+    CHECK_THROWS_WITH(m.setPatternWord(addr, word),  Catch::Matchers::Contains( "be between 0 and" ));
+
+    addr = 0x2FF;
+    for (level = 0; level < 3; ++level) {
+        CHECK(m.setPatternWaitAddr(level, addr) == addr);
+        CHECK(m.setPatternWaitAddr(level, -1) == addr);
+    }
+    CHECK_THROWS_WITH(m.setPatternWaitAddr(-1, addr),  Catch::Matchers::Contains( "be between 0 and" ));
+    CHECK_THROWS_WITH(m.setPatternWaitAddr(0, MAX_ADDR),  Catch::Matchers::Contains( "be between 0 and" ));
+
+    for (level = 0; level < 3; ++level) {
+        CHECK(m.setPatternWaitTime(level, word) == word);
+        CHECK(m.setPatternWaitTime(level, -1) == word);
+    }
+    CHECK_THROWS_WITH(m.setPatternWaitTime(-1, word),  Catch::Matchers::Contains( "be between 0 and" ));
+
+    {
+        int startaddr = addr;
+        int stopaddr = addr + 5;
+        int nloops = 2;
+        for (level = 0; level < 3; ++level) {
+            m.setPatternLoops(level, startaddr, stopaddr, nloops);
+            auto r = m.getPatternLoops(level);
+            CHECK(r[0] == startaddr);
+            CHECK(r[1] == stopaddr);
+            CHECK(r[2] == nloops);
+        }
+        m.setPatternLoops(-1, startaddr, stopaddr, nloops);
+        auto r = m.getPatternLoops(-1);
+        CHECK(r[0] == startaddr);
+        CHECK(r[1] == stopaddr);
+        CHECK(r[2] == -1);
+
+        CHECK_THROWS_WITH(m.setPatternLoops(-1, startaddr, MAX_ADDR, nloops),
+                          Catch::Matchers::Contains("be less than"));
+        CHECK_THROWS_WITH(m.setPatternLoops(-1, MAX_ADDR, stopaddr, nloops),
+                    Catch::Matchers::Contains("be less than"));                  
+    }
 }

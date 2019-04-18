@@ -2753,9 +2753,9 @@ int set_pattern_word(int file_des) {
 	FILE_LOG(logDEBUG1, ("Setting Pattern Word (addr:0x%x, word:0x%llx\n", addr, (long long int)word));
 	if (Server_VerifyLock() == OK) {
 		// valid address
-		if (addr > MAX_PATTERN_LENGTH) {
+		if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
 			ret = FAIL;
-			sprintf(mess, "Cannot set Pattern (Word, addr:0x%x). Addr must be <= 0x%x\n",
+			sprintf(mess, "Cannot set Pattern (Word, addr:0x%x). Addr must be between 0 and 0x%x\n",
 					addr, MAX_PATTERN_LENGTH);
 			FILE_LOG(logERROR, (mess));
         } else {
@@ -2797,7 +2797,7 @@ int set_pattern_loop(int file_des) {
 			FILE_LOG(logERROR, (mess));
         } 
 		// valid addr for loop level 0-2
-		else if (startAddr > MAX_PATTERN_LENGTH  || stopAddr > MAX_PATTERN_LENGTH ) {
+		else if (startAddr >= MAX_PATTERN_LENGTH  || stopAddr >= MAX_PATTERN_LENGTH ) {
             ret = FAIL;
             sprintf(mess, "Cannot set Pattern loops. Address (start addr:0x%x and stop addr:0x%x) "
 			"should be less than 0x%x\n", startAddr, stopAddr, MAX_PATTERN_LENGTH);
@@ -2846,9 +2846,9 @@ int set_pattern_wait_addr(int file_des) {
 			FILE_LOG(logERROR, (mess));
         } 
 		// valid addr 
-		else if (addr > MAX_PATTERN_LENGTH) {
+		else if (addr >= MAX_PATTERN_LENGTH) {
             ret = FAIL;
-            sprintf(mess, "Cannot set Pattern wait address. Address (0x%x) should be less than 0x%x\n", addr, MAX_PATTERN_LENGTH);
+            sprintf(mess, "Cannot set Pattern wait address. Address (0x%x) should be between 0 and 0x%x\n", addr, MAX_PATTERN_LENGTH);
 			FILE_LOG(logERROR, (mess));
         }
 		else {

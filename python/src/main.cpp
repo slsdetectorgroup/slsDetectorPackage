@@ -272,9 +272,25 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getTenGigabitEthernet", &Detector::getTenGigabitEthernet)
         .def("setTenGigabitEthernet", &Detector::setTenGigabitEthernet)
 
-        .def("getPatternLoops", &Detector::getPatternLoops)
-        .def("setPatternLoops", &Detector::setPatternLoops)
-        .def("setPatternWord", &Detector::setPatternWord, py::arg("addr"), py::arg("word"), py::arg("det_id") = -1 )
+        .def("getPatternLoops", &Detector::getPatternLoops, py::arg("level"),
+             py::arg("det_id") = -1)
+        .def("setPatternLoops", &Detector::setPatternLoops, py::arg("level"),
+             py::arg("start"), py::arg("stop"), py::arg("n"),
+             py::arg("det_id") = -1)
+        .def("setPatternWord", &Detector::setPatternWord, py::arg("addr"),
+             py::arg("word"), py::arg("det_id") = -1)
+        .def("getPatternWord", &Detector::getPatternWord, py::arg("addr"),
+             py::arg("det_id") = -1)
+
+        .def("setPatternWaitAddr", &Detector::setPatternWaitAddr,
+             py::arg("level"), py::arg("addr"), py::arg("det_id") = -1)
+        .def("getPatternWaitAddr", &Detector::getPatternWaitAddr,
+             py::arg("level"), py::arg("det_id") = -1)
+
+        .def("setPatternWaitTime", &Detector::setPatternWaitTime,
+             py::arg("level"), py::arg("duration"), py::arg("det_id") = -1)
+        .def("getPatternWaitTime", &Detector::getPatternWaitTime,
+             py::arg("level"), py::arg("det_id") = -1)            
 
         .def("getImageSize", &Detector::getImageSize)
         .def("setImageSize", &Detector::setImageSize)

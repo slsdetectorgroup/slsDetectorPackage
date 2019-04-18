@@ -258,6 +258,26 @@ class Detector {
         det.setPatternWord(addr, word, detPos);
     }
 
+    uint64_t getPatternWord(int addr, int detPos){
+        return det.setPatternWord(addr, -1, detPos);
+    }
+
+    void setPatternWaitAddr(int level, int addr, int detPos){
+        det.setPatternWaitAddr(level, addr, detPos);
+    }
+
+    int getPatternWaitAddr(int level, int detPos){
+        return det.setPatternWaitAddr(level, -1, detPos);
+    }
+
+    void setPatternWaitTime(int level, uint64_t duration, int detPos){
+        det.setPatternWaitTime(level, duration, detPos)
+    }
+
+    uint64_t getPatternWaitTime(int level, int detPos){
+        det.setPatternWaitTime(level, -1, detPos)
+    }
+
     bool getFlippedDataX(int i) {
         return det.getFlippedData(slsDetectorDefs::dimension::X, i);
     }

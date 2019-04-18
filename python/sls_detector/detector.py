@@ -1381,25 +1381,136 @@ class Detector:
     def patnloop2(self, n):
         self._api.setPatternLoops(2, -1, -1, n, -1)
 
+    @property
+    def patloop0(self):
+        return self._api.getPatternLoops(0)[0:2]
+
+    @patloop0.setter
+    def patloop0(self, value):
+        start, stop = value
+        self._api.setPatternLoops(0, start, stop, -1)
+
+    @property
+    def patloop1(self):
+        return self._api.getPatternLoops(1)[0:2]
+
+    @patloop1.setter
+    def patloop1(self, value):
+        start, stop = value
+        self._api.setPatternLoops(1, start, stop, -1)
+
+    @property
+    def patloop2(self):
+        return self._api.getPatternLoops(2)[0:2]
+
+    @patloop2.setter
+    def patloop2(self, value):
+        start, stop = value
+        self._api.setPatternLoops(2, start, stop, -1)
+
     def setPatternWord(self, addr, word, det_id = -1):
         self._api.setPatternWord(addr, word, det_id)
 
     def setPatternLoops(self, level, start, stop, n, det_id=-1):
         self._api.setPatternLoops(level, start, stop, n, det_id)
 
+    def getPatternLoops(self, level):
+        return self._api.getPatternLoops(level)
+
+    def getPatternWaitAddr(self, level):
+        return self._api.getPatternWaitAddr(level)
+
+    def setPatternWaitAddr(self, level, addr):
+        self._api.setPatternWaitAddr(level, addr)
+
+    @property
+    def patwait0(self):
+        return self._api.getPatternWaitAddr(0)
+
+    @patwait0.setter
+    def patwait0(self, addr):
+        self._api.setPatternWaitAddr(0, addr)
+
+    @property
+    def patwait1(self):
+        return self._api.getPatternWaitAddr(1)
+
+    @patwait1.setter
+    def patwait1(self, addr):
+        self._api.setPatternWaitAddr(1, addr)
+
+    @property
+    def patwait2(self):
+        return self._api.getPatternWaitAddr(0)
+
+    @patwait2.setter
+    def patwait2(self, addr):
+        self._api.setPatternWaitAddr(2, addr)
+
+
+    def setPatternWaitTime(self, level, duration):
+       self._api.setPatternWaitTime(level, duration)
+
+    def getPatternWaitTime(self, level):
+        return self._api.getPatternWaitTime(level)
+
+    @property
+    def patwaittime0(self):
+        return self._api.getPatternWaitTime(0)
+
+    @patwaittime0.setter
+    def patwaittime0(self, duration):
+        self._api.setPatternWaitTime(0, duration)
+
+    @property
+    def patwaittime1(self):
+        return self._api.getPatternWaitTime(1)
+
+    @patwaittime1.setter
+    def patwaittime1(self, duration):
+        self._api.setPatternWaitTime(1, duration)
+
+    @property
+    def patwaittime2(self):
+        return self._api.getPatternWaitTime(2)
+
+    @patwaittime2.setter
+    def patwaittime2(self, duration):
+        self._api.setPatternWaitTime(2, duration)
+
     @property
     def patioctrl(self):
-        self._api.setPatternWord(-1,-1,-1)
+        return self._api.getPatternWord(-1)
 
     @patioctrl.setter
     def patioctrl(self, word):
-        self._api.setPatternWord(-1, word, -1)
+        self._api.setPatternWord(-1, np.uint64(word))
 
     @property
     def patlimits(self):
         return self._api.getPatternLoops(np.uint64(-1),-1)[0:2]
 
+    @patlimits.setter
+    def patlimits(self, value):
+        start, stop = value
+        self._api.setPatternLoops(-1, start, stop, -1)
 
+    @property
+    def patword(self):
+        print('Can\'t read')
+
+    @patword.setter
+    def patword(self, value):
+        addr, word = value
+        self._api.setPatternWord(addr, word)
+
+    @property
+    def patclkctrl(self):
+        return self._api.getPatternWord(-2)
+
+    @patclkctrl.setter
+    def patclkctrl(self, value):
+        self._api.setPatternWord(-2, value)
 
 
 def free_shared_memory(multi_id=0):

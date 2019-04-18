@@ -289,6 +289,7 @@ PYBIND11_MODULE(_sls_detector, m) {
 
         .def("setPatternWaitTime", &Detector::setPatternWaitTime,
              py::arg("level"), py::arg("duration"), py::arg("det_id") = -1)
+             
         .def("getPatternWaitTime", &Detector::getPatternWaitTime,
              py::arg("level"), py::arg("det_id") = -1)            
 

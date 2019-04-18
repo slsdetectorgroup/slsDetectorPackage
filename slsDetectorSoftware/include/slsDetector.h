@@ -10,6 +10,7 @@ class ClientInterface;
 
 #include <cmath>
 #include <vector>
+#include <array>
 
 class multiSlsDetector;
 class ServerInterface;
@@ -1657,7 +1658,9 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param n number of loops (if level >=0)
 	 * @returns OK/FAIL
 	 */
-    int setPatternLoops(int level, int &start, int &stop, int &n);
+    int setPatternLoops(uint64_t level, uint64_t start, uint64_t stop, uint64_t n);
+
+	std::array<uint64_t, 3> getPatternLoops(uint64_t level);
 
     /**
 	 * Sets the wait address in the CTB

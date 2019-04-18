@@ -1,11 +1,11 @@
 #ifndef DETECTOR_H
 #define DETECTOR_H
+#include <array>
 #include <cstdint>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
-
-#include <stdexcept>
 
 #include "error_defs.h"
 #include "multiSlsDetector.h"
@@ -243,6 +243,21 @@ class Detector {
     }
 
     std::vector<double> getRateCorrection();
+
+
+
+    void setPatternLoops(uint64_t level, uint64_t start, uint64_t stop,
+                         uint64_t n, int detPos) {
+        det.setPatternLoops(level, start, stop, n, detPos);
+    }
+
+    std::array<uint64_t, 3> getPatternLoops(uint64_t level, int detPos) {
+        return det.getPatternLoops(level, detPos);
+    }
+
+    void setPatternWord(int addr, uint64_t word, int detPos){
+        det.setPatternWord(addr, word, detPos);
+    }
 
     bool getFlippedDataX(int i) {
         return det.getFlippedData(slsDetectorDefs::dimension::X, i);

@@ -1824,8 +1824,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK/FAIL
      */
-    int setPatternLoops(int level, int &start, int &stop, int &n,
+    int setPatternLoops(uint64_t level, uint64_t start, uint64_t stop, uint64_t n,
                         int detPos = -1);
+
+
+
+     std::array<uint64_t, 3> getPatternLoops(uint64_t level, int detPos = -1);
 
     /**
      * Sets the wait address in the CTB

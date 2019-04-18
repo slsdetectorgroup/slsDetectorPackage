@@ -17,7 +17,7 @@ e = ExperimentalDetector()
 
 
 
-a = read_my302_file('/home/l_frojdh/Downloads/run_d0_5.raw', 104, 24)
+# a = read_my302_file('/home/l_frojdh/Downloads/run_d0_5.raw', 104, 24)
 # ncols = 192
 # start = 600
 # end = 1800

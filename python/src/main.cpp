@@ -262,10 +262,15 @@ PYBIND11_MODULE(_sls_detector, m)
         .def("getTenGigabitEthernet", &Detector::getTenGigabitEthernet)
         .def("setTenGigabitEthernet", &Detector::setTenGigabitEthernet)
 
+        .def("getPatternLoops", &Detector::getPatternLoops)
+        .def("setPatternLoops", &Detector::setPatternLoops)
+        .def("setPatternWord", &Detector::setPatternWord)
+
         .def("getImageSize", &Detector::getImageSize)
         .def("setImageSize", &Detector::setImageSize)
         .def("getNumberOfDetectors", &Detector::getNumberOfDetectors)
         .def("getDetectorGeometry", &Detector::getDetectorGeometry);
+
 
 
 
@@ -283,6 +288,9 @@ py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
             py::cpp_function(&multiSlsDetector::getDetectorNumber))  
         .def("_getReceiverUDPIP", &multiSlsDetector::getReceiverUDPIP)
         .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
+        .def("_getPatternLoops", &multiSlsDetector::getPatternLoops)
+        .def("_setPatternLoops", &multiSlsDetector::setPatternLoops)
+        .def("_setPatternWord", &multiSlsDetector::setPatternWord)
             ;
 
     py::module io = m.def_submodule("io", "Submodule for io");

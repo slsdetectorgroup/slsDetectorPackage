@@ -34,7 +34,6 @@
 
 //parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS				100000000//100ms
-#define MAX_JOBS_PER_THREAD				1000
 
 
 //to differentiate between gotthard and short gotthard

@@ -455,7 +455,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		carryOverFlag = false;
 		++numpackets;					//number of packets in this image (each time its copied to buf)
-		new_header->packetsMask[((pnum < MAX_NUM_PACKETS) ? pnum : MAX_NUM_PACKETS)] = 1;
+		new_header->packetsMask[((pnum < MAX_NUM_PACKETS) ? pnum : MAX_NUM_PACKETS - 1)] = 1;
 
 		//writer header
 		if(isHeaderEmpty) {
@@ -599,7 +599,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			break;
 		}
 		++numpackets;			//number of packets in this image (each time its copied to buf)
-		new_header->packetsMask[((pnum < MAX_NUM_PACKETS) ? pnum : MAX_NUM_PACKETS)] = 1;
+		new_header->packetsMask[((pnum < MAX_NUM_PACKETS) ? pnum : MAX_NUM_PACKETS - 1)] = 1;
 
 		if(isHeaderEmpty) {
 			// -------------------------- new header ----------------------------------------------------------------------

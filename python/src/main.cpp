@@ -284,6 +284,9 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getPatternWord", &Detector::getPatternWord, py::arg("addr"),
              py::arg("det_id") = -1)
 
+        .def("setPatternIOControl", &Detector::setPatternIOControl, py::arg("word"), py::arg("det_id") = -1)
+        .def("setPatternClockControl", &Detector::setPatternClockControl, py::arg("word"), py::arg("det_id") = -1)
+        
         .def("setPatternWaitAddr", &Detector::setPatternWaitAddr,
              py::arg("level"), py::arg("addr"), py::arg("det_id") = -1)
         .def("getPatternWaitAddr", &Detector::getPatternWaitAddr,

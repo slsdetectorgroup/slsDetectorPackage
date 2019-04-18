@@ -262,6 +262,14 @@ class Detector {
         return det.setPatternWord(addr, -1, detPos);
     }
 
+    uint64_t setPatternIOControl(uint64_t word, int detPos){
+        return det.setPatternIOControl(word, detPos);
+    }
+
+    uint64_t setPatternClockControl(uint64_t word, int detPos){
+        return det.setPatternClockControl(word, detPos);
+    }
+
     void setPatternWaitAddr(int level, int addr, int detPos){
         det.setPatternWaitAddr(level, addr, detPos);
     }

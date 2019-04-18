@@ -760,7 +760,9 @@ int slsReceiverTCPIPInterface::setup_udp(){
 					FILE_LOG(logERROR) << mess;
 				}
 				receiver->setEthernetInterface(eth);
-
+				if (myDetectorType == EIGER) {
+					receiver->setEthernetInterface2(eth);
+				}
 				//get mac address
 				if (ret != FAIL) {
 					temp = genericSocket::nameToMac(eth);

@@ -4550,9 +4550,6 @@ std::array<int, 3> slsDetector::setPatternLoops(int level, int start, int stop, 
                                          sizeof(retvals));
         FILE_LOG(logDEBUG1) << "Set Pat Loops: " << retvals[0] << ", "
                             << retvals[1] << ", " << retvals[2];
-        assert(start == retvals[0]);
-        assert(stop == retvals[1]);
-        assert(n == retvals[2]);
         r[0] = retvals[0];
         r[1] = retvals[1];
         r[2] = retvals[2];     

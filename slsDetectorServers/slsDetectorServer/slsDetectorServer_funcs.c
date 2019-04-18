@@ -201,7 +201,12 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
-	case F_SET_PATTERN:						return "F_SET_PATTERN";
+	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
+	case F_SET_PATTERN_CLOCK_CONTROL:		return "F_SET_PATTERN_CLOCK_CONTROL";
+	case F_SET_PATTERN_WORD:				return "F_SET_PATTERN_WORD";
+	case F_SET_PATTERN_LOOP:				return "F_SET_PATTERN_LOOP";
+	case F_SET_PATTERN_WAIT_ADDR:			return "F_SET_PATTERN_WAIT_ADDR";
+	case F_SET_PATTERN_WAIT_TIME:			return "F_SET_PATTERN_WAIT_TIME";
 	case F_SET_PATTERN_MASK:				return "F_SET_PATTERN_MASK";
 	case F_GET_PATTERN_MASK:				return "F_GET_PATTERN_MASK";
 	case F_SET_PATTERN_BIT_MASK:			return "F_SET_PATTERN_BIT_MASK";
@@ -273,7 +278,12 @@ void function_table() {
 	flist[F_RESET_COUNTER_BLOCK]				= &reset_counter_block;
 	flist[F_ENABLE_TEN_GIGA]					= &enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]					= &set_all_trimbits;
-	flist[F_SET_PATTERN]						= &set_pattern;
+	flist[F_SET_PATTERN_IO_CONTROL]				= &set_pattern_io_control;
+	flist[F_SET_PATTERN_CLOCK_CONTROL]			= &set_pattern_clock_control;
+	flist[F_SET_PATTERN_WORD]					= &set_pattern_word;
+	flist[F_SET_PATTERN_LOOP]					= &set_pattern_loop;
+	flist[F_SET_PATTERN_WAIT_ADDR]				= &set_pattern_wait_addr;	
+	flist[F_SET_PATTERN_WAIT_TIME]				= &set_pattern_wait_time;
 	flist[F_SET_PATTERN_MASK]					= &set_pattern_mask;
 	flist[F_GET_PATTERN_MASK]					= &get_pattern_mask;
 	flist[F_SET_PATTERN_BIT_MASK]				= &set_pattern_bit_mask;
@@ -2674,221 +2684,221 @@ int set_all_trimbits(int file_des) {
 
 
 
-int set_pattern(int file_des) {
+
+int set_pattern_io_control(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+	uint64_t arg = -1;
+	uint64_t retval = -1;
 
-    // receive mode
-    uint64_t arg = -1;
-    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-        return printSocketReadError();
-    int mode = (int)arg;
-    FILE_LOG(logDEBUG1, ("Setting Pattern: mode %d\n", mode));
-
-
-
-    // mode 0: control or word
-    if (mode == 0) {
-        // receive arguments
-        uint64_t args[2] = {-1, -1};
-        if (receiveData(file_des, args, sizeof(args), INT64) < 0)
-            return printSocketReadError();
-        int64_t retval64 = -1;
-
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+		return printSocketReadError();
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-        functionNotImplemented();
-        return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+    functionNotImplemented();
 #else
-        int addr = (int)args[0];
-        uint64_t word = args[1];
-        FILE_LOG(logDEBUG1, (" addr:0x%x  word:0x%llx\n", addr, word));
-
-        if ((word == -1) || (Server_VerifyLock() == OK)) {
-
-            // address for set word should be valid (if not -1 or -2,  it goes to setword)
-            if (addr < -2 || addr > MAX_PATTERN_LENGTH) {
-                ret = FAIL;
-                sprintf(mess, "Cannot set Pattern (Word, addr:0x%x). Addr must be <= 0x%x\n",
-                        addr, MAX_PATTERN_LENGTH);
-                FILE_LOG(logERROR, (mess));
-            } else {
-                char tempName[100];
-                memset(tempName, 0, 100);
-
-                switch (addr) {
-                case -1:
-                    strcpy(tempName, "Pattern (I/O Control Register)");
-                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
-                    retval64 = writePatternIOControl(word);
-                    FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
-                    validate64(word, retval64, tempName, HEX);
-                    break;
-                case -2:
-                    strcpy(tempName, "Pattern (Clock Control Register)");
-                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
-                    retval64 = writePatternClkControl(word);
-                    FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
-                    validate64(word, retval64, tempName, HEX);
-                    break;
-                default:
-                    sprintf(tempName, "Pattern (Word, addr:0x%x)", addr);
-                    FILE_LOG(logDEBUG1, (" Setting %s, word to 0x%llx\n", tempName, (long long int) word));
-                    retval64 = writePatternWord(addr, word);
-                    FILE_LOG(logDEBUG1, (" %s: 0x%llx\n", tempName, (long long int)retval64));
-                    // do not validate as it can be different due to masking
-                    //validate64(word, retval64, tempName, HEX);
-                    break;
-                }
-            }
-        }
+	FILE_LOG(logDEBUG1, ("Setting Pattern IO Control to 0x%llx\n", (long long int)arg));
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
+		retval = writePatternIOControl(arg);
+		FILE_LOG(logDEBUG1, ("Pattern IO Control retval: 0x%llx\n", (long long int) retval));
+		validate64(arg, retval, "Pattern IO Control", HEX);
+	}
 #endif
-        return Server_SendResult(file_des, INT64, UPDATE, &retval64, sizeof(retval64));
-    }
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+} 
 
 
 
-    // mode 1: pattern loop
-    else if (mode == 1) {
-        // receive arguments
-        uint64_t args[4] = {-1, -1, -1, -1};
-        if (receiveData(file_des, args, sizeof(args), INT64) < 0)
-            return printSocketReadError();
-        int retvals[3] = {-1, -1, -1};
 
+
+
+int set_pattern_clock_control(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+	uint64_t arg = -1;
+	uint64_t retval = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+		return printSocketReadError();
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-        functionNotImplemented();
-        return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+    functionNotImplemented();
 #else
-        int loopLevel = (int)args[0];
-        int startAddr = (int)args[1];
-        int stopAddr = (int)args[2];
-        int numLoops = (int)args[3];
-        FILE_LOG(logDEBUG1, (" loopLevel:%d startAddr:0x%x stopAddr:0x%x numLoops:%d\n", loopLevel, startAddr, stopAddr, numLoops));
-
-        if (loopLevel < -1 || loopLevel > 2) { // -1 complete pattern
-            ret = FAIL;
-            sprintf(mess, "Pattern (Pattern Loop) Level (%d) is not implemented for this detector\n", loopLevel);
-            FILE_LOG(logERROR,(mess));
-        }
-
-        // level 0-2, addr upto patternlength + 1
-        else if ((loopLevel != -1) && (startAddr > MAX_PATTERN_LENGTH  || stopAddr > MAX_PATTERN_LENGTH )) {
-            ret = FAIL;
-            sprintf(mess, "Cannot set Pattern (Pattern Loop, level:%d, startaddr:0x%x, stopaddr:0x%x). "
-                    "Addr must be <= 0x%x\n",
-                    loopLevel, startAddr, stopAddr, MAX_PATTERN_LENGTH);
-            FILE_LOG(logERROR, (mess));
-        }
-
-        //level -1, addr upto patternlength
-        else if ((loopLevel == -1) && (startAddr > MAX_PATTERN_LENGTH || stopAddr > MAX_PATTERN_LENGTH)) {
-            ret = FAIL;
-            sprintf(mess, "Cannot set Pattern (Pattern Loop, complete pattern, startaddr:0x%x, stopaddr:0x%x). "
-                    "Addr must be <= 0x%x\n",
-                    startAddr, stopAddr, MAX_PATTERN_LENGTH);
-            FILE_LOG(logERROR, (mess));
-        }
-
-        else if ((startAddr == -1 && stopAddr == -1 && numLoops == -1)  ||  (Server_VerifyLock() == OK)) {
-            setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
-        }
-        retvals[0] = startAddr;
-        retvals[1] = stopAddr;
-        retvals[2] = numLoops;
+	FILE_LOG(logDEBUG1, ("Setting Pattern Clock Control to 0x%llx\n", (long long int)arg));
+	if ((arg == -1) || (Server_VerifyLock() == OK)) {
+		retval = writePatternClkControl(arg);
+		FILE_LOG(logDEBUG1, ("Pattern Clock Control retval: 0x%llx\n", (long long int) retval));
+		validate64(arg, retval, "Pattern Clock Control", HEX);
+	}
 #endif
-        return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
-    }
-
-
-
-    // mode 2: wait address
-    else if (mode == 2) {
-        // receive arguments
-        uint64_t args[2] = {-1, -1};
-        if (receiveData(file_des, args, sizeof(args), INT64) < 0)
-            return printSocketReadError();
-        int retval32 = -1;
-
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-        functionNotImplemented();
-        return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
-#else
-        int loopLevel = (int)args[0];
-        int addr = (int)args[1];
-        FILE_LOG(logDEBUG1, (" loopLevel:%d  addr:0x%x\n", loopLevel, addr));
-
-        if ((addr == -1) ||  (Server_VerifyLock() == OK)) {
-            if (loopLevel < 0 || loopLevel > 2) {
-                ret = FAIL;
-                sprintf(mess, "Pattern (Wait Address) Level (0x%x) is not implemented for this detector\n", loopLevel);
-                FILE_LOG(logERROR,(mess));
-            } else if (addr > MAX_PATTERN_LENGTH) {
-                ret = FAIL;
-                sprintf(mess, "Cannot set Pattern (Wait Address, addr:0x%x). Addr must be <= 0x%x\n",
-                        addr, MAX_PATTERN_LENGTH);
-                FILE_LOG(logERROR, (mess));
-            } else {
-                char tempName[100];
-                memset(tempName, 0, 100);
-                sprintf(tempName, "Pattern (Wait Address, Level:%d)", loopLevel);
-
-                FILE_LOG(logDEBUG1, (" Setting %s to 0x%x\n", tempName, addr));
-                retval32 = setPatternWaitAddress(loopLevel, addr);
-                FILE_LOG(logDEBUG1, (" %s: 0x%x\n", tempName, retval32));
-                validate(addr, retval32, tempName, HEX);
-            }
-        }
-#endif
-        return Server_SendResult(file_des, INT32, UPDATE, &retval32, sizeof(retval32));
-    }
-
-
-
-    // mode 3: wait time
-    else if (mode == 3) {
-        // receive arguments
-        uint64_t args[2] = {-1, -1};
-        if (receiveData(file_des, args, sizeof(args), INT64) < 0)
-            return printSocketReadError();
-        int64_t retval64 = -1;
-
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-        functionNotImplemented();
-        return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
-#else
-        int loopLevel = (int)args[0];
-        uint64_t timeval = args[1];
-        FILE_LOG(logDEBUG1, (" loopLevel:%d  timeval:0x%lld\n", loopLevel, timeval));
-
-        if ((timeval == -1) ||  (Server_VerifyLock() == OK)) {
-            if (loopLevel < 0 || loopLevel > 2) {
-                ret = FAIL;
-                sprintf(mess, "Pattern (Wait Time) Level (%d) is not implemented for this detector\n", loopLevel);
-                FILE_LOG(logERROR,(mess));
-            } else {
-                char tempName[100];
-                memset(tempName, 0, 100);
-                sprintf(tempName, "Pattern (Wait Time, Level:%d)", loopLevel);
-
-                FILE_LOG(logDEBUG1, (" Setting %s to 0x%lld\n", tempName, (long long int)timeval));
-                retval64 = setPatternWaitTime(loopLevel, timeval);
-                FILE_LOG(logDEBUG1, (" %s: 0x%lld\n", tempName, (long long int)retval64));
-                validate64(timeval, retval64, tempName, HEX);
-            }
-        }
-#endif
-        return Server_SendResult(file_des, INT64, UPDATE, &retval64, sizeof(retval64));
-    }
-
-
-    // mode not defined
-    else  {
-        ret = FAIL;
-        sprintf(mess, "Pattern mode index (%d) is not implemented for this detector\n", mode);
-        FILE_LOG(logERROR,(mess));
-        return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
-    }
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }
+
+
+
+
+
+
+int set_pattern_word(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t args[2] = {-1, -1};
+    uint64_t retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+    functionNotImplemented();
+#else
+	int addr = (int)args[0];
+	uint64_t word = args[1];
+	FILE_LOG(logDEBUG1, ("Setting Pattern Word (addr:0x%x, word:0x%llx\n", addr, (long long int)word));
+	if (Server_VerifyLock() == OK) {
+		// valid address
+		if (addr > MAX_PATTERN_LENGTH) {
+			ret = FAIL;
+			sprintf(mess, "Cannot set Pattern (Word, addr:0x%x). Addr must be <= 0x%x\n",
+					addr, MAX_PATTERN_LENGTH);
+			FILE_LOG(logERROR, (mess));
+        } else {
+			retval = writePatternWord(addr, word);
+			FILE_LOG(logDEBUG1, ("Pattern Word retval: 0x%llx\n", (long long int) retval));
+			// no validation (cannot read as it will execute the pattern)
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+
+
+int set_pattern_loop(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[4] = {-1, -1, -1, -1};
+    int retvals[3] = {-1, -1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+    functionNotImplemented();
+#else
+    int loopLevel = args[0];
+	int startAddr = args[1];
+	int stopAddr = args[2];
+	int numLoops = args[3];
+	FILE_LOG(logDEBUG1, ("Setting Pattern loops (loopLevel:%d startAddr:0x%x stopAddr:0x%x numLoops:%d)\n", loopLevel, startAddr, stopAddr, numLoops));
+	if ((startAddr == -1) || (stopAddr == -1) || (numLoops == -1) || (Server_VerifyLock() == OK)) {
+		// valid loop level
+		 if (loopLevel < -1 || loopLevel > 2) { // loop level of -1 : complete pattern
+			ret = FAIL;
+			sprintf(mess, "Cannot set Pattern loops. Level %d should be between -1 and 2\n",loopLevel);
+			FILE_LOG(logERROR, (mess));
+        } 
+		// valid addr for loop level 0-2
+		else if (startAddr > MAX_PATTERN_LENGTH  || stopAddr > MAX_PATTERN_LENGTH ) {
+            ret = FAIL;
+            sprintf(mess, "Cannot set Pattern loops. Address (start addr:0x%x and stop addr:0x%x) "
+			"should be less than 0x%x\n", startAddr, stopAddr, MAX_PATTERN_LENGTH);
+			FILE_LOG(logERROR, (mess));
+        }
+		
+		else {
+			setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
+			FILE_LOG(logDEBUG1, ("Pattern Loops retval: (start:0x%x, stop:0x%x, nloop:%d)\n", startAddr, stopAddr, numLoops));
+			retvals[0] = startAddr;
+			retvals[1] = stopAddr;
+			retvals[2] = numLoops;
+			validate(args[1], startAddr, "Pattern loops' start address", HEX);
+			validate(args[2], stopAddr, "Pattern loops' stop address", HEX);
+			validate(args[3], numLoops, "Pattern loops' number of loops", DEC);
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+}
+
+
+
+
+
+
+int set_pattern_wait_addr(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = { -1, -1};
+    int retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+    functionNotImplemented();
+#else
+    int loopLevel = args[0];
+	int addr = args[1];
+	FILE_LOG(logDEBUG1, ("Setting Pattern wait address (loopLevel:%d addr:0x%x)\n", loopLevel, addr));
+	if ((addr == -1) || (Server_VerifyLock() == OK)) {
+		// valid loop level 0-2
+		 if (loopLevel < 0 || loopLevel > 2) { 
+			ret = FAIL;
+			sprintf(mess, "Cannot set Pattern wait address. Level %d should be between 0 and 2\n",loopLevel);
+			FILE_LOG(logERROR, (mess));
+        } 
+		// valid addr 
+		else if (addr > MAX_PATTERN_LENGTH) {
+            ret = FAIL;
+            sprintf(mess, "Cannot set Pattern wait address. Address (0x%x) should be less than 0x%x\n", addr, MAX_PATTERN_LENGTH);
+			FILE_LOG(logERROR, (mess));
+        }
+		else {
+			retval = setPatternWaitAddress(loopLevel, addr);
+			FILE_LOG(logDEBUG1, ("Pattern wait address retval: 0x%x\n", retval));
+			validate(addr, retval, "Pattern wait address", HEX);
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+
+
+int set_pattern_wait_time(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t args[2] = { -1, -1};
+    uint64_t retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+    functionNotImplemented();
+#else
+    int loopLevel = (int)args[0];
+	uint64_t timeval = args[1];
+	FILE_LOG(logDEBUG1, ("Setting Pattern wait time (loopLevel:%d timeval:0x%llx)\n", loopLevel, (long long int)timeval));
+	if ((timeval == -1) || (Server_VerifyLock() == OK)) {
+		// valid loop level 0-2
+		 if (loopLevel < 0 || loopLevel > 2) { 
+			ret = FAIL;
+			sprintf(mess, "Cannot set Pattern wait time. Level %d should be between 0 and 2\n",loopLevel);
+			FILE_LOG(logERROR, (mess));
+        } 
+		else {
+			retval = setPatternWaitTime(loopLevel, timeval);
+			FILE_LOG(logDEBUG1, ("Pattern wait time retval: 0x%llx\n", (long long int)retval));
+			validate64(timeval, retval, "Pattern wait time", HEX);
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
 
 int set_pattern_mask(int file_des) {
 	ret = OK;

@@ -4477,11 +4477,46 @@ int slsDetector::setPattern(const std::string &fname) {
     return addr;
 }
 
-uint64_t slsDetector::setPatternWord(uint64_t addr, uint64_t word) {
-    int fnum = F_SET_PATTERN;
+uint64_t slsDetector::setPatternIOControl(uint64_t word) {
+    int fnum = F_SET_PATTERN_IO_CONTROL;
     int ret = FAIL;
-    uint64_t mode = 0; // sets word
-    uint64_t args[]{mode, addr, word};
+    uint64_t arg = word;
+    uint64_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Setting Pattern IO Control, word: 0x" << std::hex << word << std::dec;
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        auto client = DetectorSocket(detector_shm()->hostname,
+                                     detector_shm()->controlPort);
+        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+        FILE_LOG(logDEBUG1) << "Set Pattern IO Control: " << retval;
+    }
+    if (ret == FORCE_UPDATE) {
+        updateDetector();
+    }
+    return retval;
+}
+
+uint64_t slsDetector::setPatternClockControl(uint64_t word) {
+    int fnum = F_SET_PATTERN_CLOCK_CONTROL;
+    int ret = FAIL;
+    uint64_t arg = word;
+    uint64_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Setting Pattern Clock Control, word: 0x" << std::hex << word << std::dec;
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        auto client = DetectorSocket(detector_shm()->hostname,
+                                     detector_shm()->controlPort);
+        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+        FILE_LOG(logDEBUG1) << "Set Pattern Clock Control: " << retval;
+    }
+    if (ret == FORCE_UPDATE) {
+        updateDetector();
+    }
+    return retval;
+}
+
+uint64_t slsDetector::setPatternWord(int addr, uint64_t word) {
+    int fnum = F_SET_PATTERN_WORD;
+    int ret = FAIL;
+    uint64_t args[]{static_cast<uint64_t>(addr), word};
     uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Setting Pattern word, addr: 0x" << std::hex << addr
                         << ", word: 0x" << word << std::dec;
@@ -4498,16 +4533,15 @@ uint64_t slsDetector::setPatternWord(uint64_t addr, uint64_t word) {
     return retval;
 }
 
-int slsDetector::setPatternLoops(uint64_t level, uint64_t start, uint64_t stop,
-                                 uint64_t n) {
-    int fnum = F_SET_PATTERN;
+std::array<int, 3> slsDetector::setPatternLoops(int level, int start, int stop, int n) {
+    int fnum = F_SET_PATTERN_LOOP;
     int ret = FAIL;
-    uint64_t mode = 1; // sets loop
-    uint64_t args[]{mode, level, start, stop, n};
+    int args[]{level, start, stop, n};
     int retvals[3]{};
+    std::array<int, 3> r{};
     FILE_LOG(logDEBUG1) << "Setting Pat Loops, level: " << level
                         << ", start: " << start << ", stop: " << stop
-                        << ", n: " << n;
+                        << ", nloops: " << n;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
@@ -4519,48 +4553,22 @@ int slsDetector::setPatternLoops(uint64_t level, uint64_t start, uint64_t stop,
         assert(start == retvals[0]);
         assert(stop == retvals[1]);
         assert(n == retvals[2]);
+        r[0] = retvals[0];
+        r[1] = retvals[1];
+        r[2] = retvals[2];     
     }
     if (ret == FORCE_UPDATE) {
         updateDetector();
     }
-    return ret;
-}
-
-std::array<uint64_t, 3> slsDetector::getPatternLoops(uint64_t level) {
-    int fnum = F_SET_PATTERN;
-    int ret = FAIL;
-    uint64_t mode = 1; // sets loop
-    uint64_t args[]{mode, level, static_cast<uint64_t>(-1),
-                    static_cast<uint64_t>(-1), static_cast<uint64_t>(-1)};
-    int retvals[3]{};
-    FILE_LOG(logDEBUG1) << "Setting Pat Loops, level: " << level
-                        << ", start: " << -1 << ", stop: " << -1
-                        << ", n: " << -1;
-
-    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), retvals,
-                                         sizeof(retvals));
-        FILE_LOG(logDEBUG1) << "Get Pat Loops: " << retvals[0] << ", "
-                            << retvals[1] << ", " << retvals[2];
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
-    }
-    std::array<uint64_t, 3> r{};
-    r[0] = retvals[0];
-    r[1] = retvals[1];
-    r[2] = retvals[2];
     return r;
 }
 
-int slsDetector::setPatternWaitAddr(uint64_t level, uint64_t addr) {
-    int fnum = F_SET_PATTERN;
+
+int slsDetector::setPatternWaitAddr(int level, int addr) {
+    int fnum = F_SET_PATTERN_WAIT_ADDR;
     int ret = FAIL;
-    uint64_t mode = 2; // sets loop
     int retval = -1;
-    std::array<uint64_t, 3> args{mode, level, addr};
+    int args[]{level, addr};
     FILE_LOG(logDEBUG1) << "Setting Pat Wait Addr, "
                            "level: "
                         << level << ", addr: 0x" << std::hex << addr
@@ -4569,7 +4577,7 @@ int slsDetector::setPatternWaitAddr(uint64_t level, uint64_t addr) {
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
                                      detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args.data(), sizeof(args),
+        ret = client.sendCommandThenRead(fnum, args, sizeof(args),
                                          &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Set Pat Wait Addr: " << retval;
     }
@@ -4579,18 +4587,17 @@ int slsDetector::setPatternWaitAddr(uint64_t level, uint64_t addr) {
     return retval;
 }
 
-uint64_t slsDetector::setPatternWaitTime(uint64_t level, uint64_t t) {
-    int fnum = F_SET_PATTERN;
+uint64_t slsDetector::setPatternWaitTime(int level, uint64_t t) {
+    int fnum = F_SET_PATTERN_WAIT_TIME;
     int ret = FAIL;
-    uint64_t mode = 3;    // sets loop
-    uint64_t retval = -1; // TODO! is this what we want?
-    std::array<uint64_t, 3> args{mode, level, t};
+    uint64_t retval = -1; 
+    uint64_t args[]{static_cast<uint64_t>(level), t};
     FILE_LOG(logDEBUG1) << "Setting Pat Wait Time, level: " << level
                         << ", t: " << t;
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(detector_shm()->hostname,
                                      detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args.data(), sizeof(args),
+        ret = client.sendCommandThenRead(fnum, args, sizeof(args),
                                          &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Set Pat Wait Time: " << retval;
     }

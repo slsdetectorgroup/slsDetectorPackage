@@ -47,7 +47,12 @@ enum detFuncs{
 	F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
 	F_ENABLE_TEN_GIGA, /**< enable 10Gbe */
 	F_SET_ALL_TRIMBITS, /** < set all trimbits to this value */
-	F_SET_PATTERN, /** < loads a pattern  */
+	F_SET_PATTERN_IO_CONTROL, /** < set pattern i/o control */
+	F_SET_PATTERN_CLOCK_CONTROL, /** < set pattern clock control */
+	F_SET_PATTERN_WORD, /** < sets pattern word */
+	F_SET_PATTERN_LOOP,	 /** < sets pattern loop */
+	F_SET_PATTERN_WAIT_ADDR,	/** < sets pattern wait addr */
+	F_SET_PATTERN_WAIT_TIME,	/** < sets pattern wait time */
 	F_SET_PATTERN_MASK, /** < loads a pattern mask  */
 	F_GET_PATTERN_MASK, /** < retrieves pattern mask  */
 	F_SET_PATTERN_BIT_MASK, /** < loads bitmask for the pattern  */
@@ -171,7 +176,12 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
-	case F_SET_PATTERN:						return "F_SET_PATTERN";
+	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
+	case F_SET_PATTERN_CLOCK_CONTROL:		return "F_SET_PATTERN_CLOCK_CONTROL";
+	case F_SET_PATTERN_WORD:				return "F_SET_PATTERN_WORD";
+	case F_SET_PATTERN_LOOP:				return "F_SET_PATTERN_LOOP";
+	case F_SET_PATTERN_WAIT_ADDR:			return "F_SET_PATTERN_WAIT_ADDR";
+	case F_SET_PATTERN_WAIT_TIME:			return "F_SET_PATTERN_WAIT_TIME";
 	case F_SET_PATTERN_MASK:				return "F_SET_PATTERN_MASK";
 	case F_GET_PATTERN_MASK:				return "F_GET_PATTERN_MASK";
 	case F_SET_PATTERN_BIT_MASK:			return "F_SET_PATTERN_BIT_MASK";
@@ -197,6 +207,9 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
     case F_LED:              				return "F_LED";
+	case F_DIGITAL_IO_DELAY:              	return "F_DIGITAL_IO_DELAY";
+    case F_COPY_DET_SERVER:              	return "F_COPY_DET_SERVER";
+    case F_REBOOT_CONTROLLER:              	return "F_REBOOT_CONTROLLER";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

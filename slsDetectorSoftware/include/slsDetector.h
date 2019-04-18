@@ -1641,65 +1641,77 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns OK/FAIL
 	 */
     int setPattern(const std::string &fname);
-
-    /**
-	 * Writes a pattern word to the CTB
-	 * @param addr address of the word, -1 is I/O control register,  -2 is clk control register
+	
+	 /**
+	 * Sets pattern IO control (CTB/ Moench)
 	 * @param word 64bit word to be written, -1 gets
 	 * @returns actual value
 	 */
-    uint64_t setPatternWord(uint64_t addr, uint64_t word = -1);
+	uint64_t setPatternIOControl(uint64_t word = -1);
 
     /**
-	 * Sets the pattern or loop limits in the CTB
-	 * @param level -1 complete pattern, 0,1,2, loop level
-	 * @param start start address if >=0
-	 * @param stop stop address if >=0
-	 * @param n number of loops (if level >=0)
-	 * @returns OK/FAIL
+	 * Sets pattern clock control (CTB/ Moench)
+	 * @param word 64bit word to be written, -1 gets
+	 * @returns actual value
 	 */
-    int setPatternLoops(uint64_t level, uint64_t start, uint64_t stop, uint64_t n);
-
-	std::array<uint64_t, 3> getPatternLoops(uint64_t level);
+	uint64_t setPatternClockControl(uint64_t word = -1);
 
     /**
-	 * Sets the wait address in the CTB
+	 * Writes a pattern word (CTB/ Moench)
+	 * @param addr address of the word
+	 * @param word 64bit word to be written, -1 reads the addr (same as executing the pattern)
+	 * @returns actual value
+	 */
+    uint64_t setPatternWord(int addr, uint64_t word);
+
+    /**
+	 * Sets the pattern or loop limits (CTB/ Moench)
+	 * @param level -1 complete pattern, 0,1,2, loop level
+	 * @param start start address for level 0-2, -1 gets
+	 * @param stop stop address for level 0-2, -1 gets
+	 * @param n number of loops for level 0-2, -1 gets
+	 * @returns array of start addr, stop addr and number of loops
+	 */
+    std::array<int, 3> setPatternLoops(int level = -1, int start = -1, int stop = -1, int n = -1);
+
+    /**
+	 * Sets the wait address (CTB/ Moench)
 	 * @param level  0,1,2, wait level
 	 * @param addr wait address, -1 gets
 	 * @returns actual value
 	 */
-    int setPatternWaitAddr(uint64_t level, uint64_t addr = -1);
+    int setPatternWaitAddr(int level, int addr = -1);
 
     /**
-	 * Sets the wait time in the CTB
+	 * Sets the wait time (CTB/ Moench)
 	 * @param level  0,1,2, wait level
 	 * @param t wait time, -1 gets
 	 * @returns actual value
 	 */
-    uint64_t setPatternWaitTime(uint64_t level, uint64_t t = -1);
+    uint64_t setPatternWaitTime(int level, uint64_t t = -1);
 
     /**
-     * Sets the mask applied to every pattern
+     * Sets the mask applied to every pattern (CTB/ Moench)
      * @param mask mask to be applied
      * @returns OK or FAIL
      */
     int setPatternMask(uint64_t mask);
 
     /**
-     * Gets the mask applied to every pattern
+     * Gets the mask applied to every pattern (CTB/ Moench)
      * @returns mask set
      */
     uint64_t getPatternMask();
 
     /**
-     * Selects the bits that the mask will be applied to for every pattern
+     * Selects the bits that the mask will be applied to for every pattern (CTB/ Moench)
      * @param mask mask to select bits
      * @returns OK or FAIL
      */
     int setPatternBitMask(uint64_t mask);
 
     /**
-     * Gets the bits that the mask will be applied to for every pattern
+     * Gets the bits that the mask will be applied to for every pattern (CTB/ Moench)
      * @returns mask  of bits selected
      */
     uint64_t getPatternBitMask();

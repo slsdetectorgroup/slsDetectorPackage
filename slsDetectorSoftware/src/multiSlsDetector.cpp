@@ -3591,6 +3591,28 @@ int multiSlsDetector::setPattern(const std::string &fname, int detPos) {
     }
 }
 
+uint64_t multiSlsDetector::setPatternIOControl(uint64_t word, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setPatternIOControl(word);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setPatternIOControl, word);
+    return sls::minusOneIfDifferent(r);
+}
+
+uint64_t multiSlsDetector::setPatternClockControl(uint64_t word, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setPatternClockControl(word);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setPatternClockControl, word);
+    return sls::minusOneIfDifferent(r);
+}
+
 uint64_t multiSlsDetector::setPatternWord(int addr, uint64_t word, int detPos) {
     // single
     if (detPos >= 0) {
@@ -3602,25 +3624,24 @@ uint64_t multiSlsDetector::setPatternWord(int addr, uint64_t word, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setPatternLoops(uint64_t level, uint64_t start, uint64_t stop, uint64_t n, int detPos) {
+void multiSlsDetector::setPatternLoops(int level, int start, int stop, int n, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setPatternLoops(level, start, stop, n);
+        detectors[detPos]->setPatternLoops(level, start, stop, n);
     }
 
     // multi
-    std::vector<int> r;
-    for (auto &d : detectors) {
-        r.push_back(d->setPatternLoops(level, start, stop, n));
-    }
-    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
+    parallelCall(&slsDetector::setPatternLoops, level, start, stop, n);
 }
 
-std::array<uint64_t, 3> multiSlsDetector::getPatternLoops(uint64_t level, int detPos){
-    if (detPos >= 0) 
-        return detectors[detPos]->getPatternLoops(level);
-        
-    auto r = parallelCall(&slsDetector::getPatternLoops, level);
+std::array<int, 3> multiSlsDetector::getPatternLoops(int level, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setPatternLoops(level, -1, -1, -1);
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::setPatternLoops, level, -1, -1, -1);
     return sls::minusOneIfDifferent(r);
 }
 

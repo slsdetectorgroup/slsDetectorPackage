@@ -57,7 +57,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7};
 #define DAC_MAX_MV                  (2500)
 
 /* Defines in the Firmware */
-#define MAX_PATTERN_LENGTH  		(0xFFFF)
+#define MAX_PATTERN_LENGTH  		(0x7FFF)
 #define DIGITAL_IO_DELAY_MAXIMUM_PS	((OUTPUT_DELAY_0_OTPT_STTNG_MSK >> OUTPUT_DELAY_0_OTPT_STTNG_OFST) * OUTPUT_DELAY_0_OTPT_STTNG_STEPS)
 #define MAX_PHASE_SHIFTS_STEPS		(8)
 

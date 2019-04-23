@@ -85,7 +85,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define WAIT_TIME_US_STP_ACQ        (100)
 #define WAIT_TIME_CONFIGURE_MAC     (500 * 1000)
 #define WAIT_TIME_PATTERN_READ     	(10)
-#define WAIT_TIME_FIFO_RD_STROBE  	(10)
+#define WAIT_TIME_1US_FOR_LOOP_CNT	(50) // around 30 is 1 us in blackfin
 
 /* MSB & LSB DEFINES */
 #define MSB_OF_64_BIT_REG_OFST		(32)

@@ -10,6 +10,7 @@
 #include "MAX1932.h"    // hv
 #include "INA226.h"     // i2c
 #include "ALTERA_PLL.h" // pll
+#include <time.h>
 #ifndef VIRTUAL
 #include "programfpga.h"
 #else
@@ -2351,8 +2352,14 @@ void readSample(int ns) {
         // read strobe to all analog fifos
         bus_w(addr, bus_r(addr) | DUMMY_ANLG_FIFO_RD_STRBE_MSK);
         bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
-        // wait as it is connected directly to fifo running on a different clock
-        //usleep(WAIT_TIME_FIFO_RD_STROBE);
+
+        // wait for 1 us to latch different clocks of read and read strobe
+        {
+            int i = 0;
+            for (i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                ;
+        }
+
         if (!(ns%1000)) {
     		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x Status:0x%x\n",
     				ns, nSamples, bus_r(FIFO_EMPTY_REG), bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
@@ -2391,6 +2398,14 @@ void readSample(int ns) {
         // read strobe to digital fifo
         bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
         bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
+
+        // wait for 1 us to latch different clocks of read and read strobe
+        {
+            int i = 0;
+            for (i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+                ;
+        }
+
         // wait as it is connected directly to fifo running on a different clock
         if (!(ns%1000)) {
     		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
@@ -2399,7 +2414,7 @@ void readSample(int ns) {
 					((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_FULL_MSK) >> FIFO_DIN_STATUS_FIFO_FULL_OFST),
 					bus_r(STATUS_REG)));
         }
-
+    
         // read fifo and write it to current position of data pointer
         *((uint64_t*)now_ptr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
         now_ptr += 8;

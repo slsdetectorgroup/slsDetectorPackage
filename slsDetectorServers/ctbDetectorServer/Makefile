@@ -1,7 +1,7 @@
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -DCHIPTESTBOARDD  -DSTOP_SERVER -DDEBUG1 #-DJCTB -DVERBOSEI #-DVERBOSE
-LDLIBS		+= 	-lm  -lstdc++ 
+LDLIBS		+= 	-lm  -lstdc++
 
 PROGS		= 	ctbDetectorServer 
 DESTDIR		?= 	bin

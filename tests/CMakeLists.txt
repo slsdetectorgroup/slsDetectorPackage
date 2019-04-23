@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/catch
+    include
 )
 
 set(SLS_TEST_SOURCES 

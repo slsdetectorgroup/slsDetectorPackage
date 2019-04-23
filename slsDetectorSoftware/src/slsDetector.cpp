@@ -1826,16 +1826,13 @@ int slsDetector::getDataBytesInclGapPixels() {
 int slsDetector::setDAC(int val, dacIndex index, int mV) {
     int fnum = F_SET_DAC;
     int ret = FAIL;
-    int args[3]{static_cast<int>(index), mV, val};
+    int args[]{static_cast<int>(index), mV, val};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting DAC " << index << " to " << val
                         << (mV != 0 ? "mV" : "dac units");
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), &retval,
-                                         sizeof(retval));
+        ret = sendToDetector(fnum, args, sizeof(args), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Dac index " << index << ": " << retval
                             << (mV != 0 ? "mV" : "dac units");
     }
@@ -1843,6 +1840,15 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
         updateDetector();
     }
     return retval;
+}
+
+
+int slsDetector::sendToDetector(int fnum, void* args, size_t args_size, void* retval, size_t retval_size)
+{
+    auto client = DetectorSocket(detector_shm()->hostname,
+                                detector_shm()->controlPort);
+
+    return client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
 }
 
 int slsDetector::getADC(dacIndex index) {
@@ -1870,10 +1876,10 @@ slsDetector::setExternalCommunicationMode(externalCommunicationMode pol) {
     FILE_LOG(logDEBUG1) << "Setting communication to mode " << pol;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+        ret = sendToDetector(fnum, &arg, sizeof(arg), &retval,sizeof(retval));
+        // auto client = DetectorSocket(detector_shm()->hostname,
+        //                              detector_shm()->controlPort);
+        // ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,sizeof(retval));
         FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
     }
     if (ret == FORCE_UPDATE) {

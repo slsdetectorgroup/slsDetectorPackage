@@ -14,16 +14,20 @@ using dt = slsDetectorDefs::detectorType;
 
 std::string hostname;
 std::string detector_type;
+std::string my_ip;
 dt type;
 
 int main(int argc, char *argv[]) {
-    Catch::Session session;
+    my_ip = "undefined";
 
+    Catch::Session session;
     auto cli = session.cli() |
                Opt(hostname, "hostname")["-hn"]["--hostname"](
                    "Detector hostname for integration tests") |
                Opt(detector_type, "detector_type")["-dt"]["--detector_type"](
-                   "Detector type for integration tests");
+                   "Detector type for integration tests") |
+               Opt(my_ip, "my_ip")["-hip"]["--host_ip"](
+                   "Host ip address");
 
     session.cli(cli);
 

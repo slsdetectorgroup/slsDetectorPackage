@@ -139,10 +139,6 @@ int slsDetector::checkReceiverVersionCompatibility() {
 }
 
 int64_t slsDetector::getId(idMode mode) {
-    int arg = static_cast<int>(mode);
-    int64_t retval = -1;
-    FILE_LOG(logDEBUG1) << "Getting id type " << mode;
-
     // These should not go to detector...
     assert(mode != THIS_SOFTWARE_VERSION);
     assert(mode != RECEIVER_VERSION);
@@ -150,17 +146,13 @@ int64_t slsDetector::getId(idMode mode) {
     assert(mode != CLIENT_RECEIVER_API_VERSION);
 
     int fnum = F_GET_ID;
-    int ret = FAIL;
+    int arg = static_cast<int>(mode);
+    int64_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting id type " << mode;
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
-    }
-    FILE_LOG(logDEBUG1) << "Id (" << mode << "): 0x" << std::hex << retval
-                        << std::dec;
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
+        sendToDetector(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+        FILE_LOG(logDEBUG1)
+            << "Id (" << mode << "): 0x" << std::hex << retval << std::dec;
     }
     return retval;
 }
@@ -497,15 +489,9 @@ int slsDetector::setDetectorType(detectorType const type) {
     // if unspecified, then get from detector
     if (type == GET_DETECTOR_TYPE) {
         if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-            auto client = DetectorSocket(detector_shm()->hostname,
-                                         detector_shm()->controlPort);
-            ret = client.sendCommandThenRead(fnum, nullptr, 0, &retval,
-                                             sizeof(retval));
+            ret = sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
             detector_shm()->myDetectorType = static_cast<detectorType>(retval);
             FILE_LOG(logDEBUG1) << "Detector Type: " << retval;
-        }
-        if (ret == FORCE_UPDATE) {
-            ret = updateDetector();
         }
     } else {
         ret = OK;
@@ -619,7 +605,6 @@ int slsDetector::setOnline(int value) {
         detector_shm()->onlineFlag = OFFLINE_FLAG;
 
         if (value == ONLINE_FLAG) {
-
             auto client = DetectorSocket(detector_shm()->hostname,
                                          detector_shm()->controlPort);
             client.close();
@@ -661,25 +646,17 @@ std::string slsDetector::checkOnline() {
 
 int slsDetector::setControlPort(int port_number) {
     int fnum = F_SET_PORT;
-    int ret = FAIL;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting control port to " << port_number;
-
     if (port_number >= 0 && port_number != detector_shm()->controlPort) {
         if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-            auto client = DetectorSocket(detector_shm()->hostname,
-                                         detector_shm()->controlPort);
-            ret = client.sendCommandThenRead(fnum, &port_number,
-                                             sizeof(port_number), &retval,
-                                             sizeof(retval));
+            sendToDetector(fnum, &port_number, sizeof(port_number), &retval,
+                           sizeof(retval));
             detector_shm()->controlPort = retval;
             FILE_LOG(logDEBUG1) << "Control port: " << retval;
         } else {
             detector_shm()->controlPort = port_number;
         }
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return detector_shm()->controlPort;
 }
@@ -747,38 +724,23 @@ int slsDetector::getStopPort() const { return detector_shm()->stopPort; }
 
 int slsDetector::lockServer(int lock) {
     int fnum = F_LOCK_SERVER;
-    int ret = FAIL;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting detector server lock to " << lock;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &lock, sizeof(lock), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, &lock, sizeof(lock), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Lock: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
 
 std::string slsDetector::getLastClientIP() {
     int fnum = F_GET_LAST_CLIENT_IP;
-    int ret = FAIL;
     char retval[INET_ADDRSTRLEN]{};
     FILE_LOG(logDEBUG1) << "Getting last client ip to detector server";
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, nullptr, 0, &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Last client IP to detector: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
@@ -800,16 +762,12 @@ int slsDetector::exitServer() {
 int slsDetector::execCommand(const std::string &cmd) {
     int fnum = F_EXEC_COMMAND;
     int ret = FAIL;
-    char arg[MAX_STR_LENGTH] = {};
-    char retval[MAX_STR_LENGTH] = {};
+    char arg[MAX_STR_LENGTH]{};
+    char retval[MAX_STR_LENGTH]{};
     sls::strcpy_safe(arg, cmd.c_str());
     FILE_LOG(logDEBUG1) << "Sending command to detector " << arg;
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, arg, sizeof(arg), retval,
-                                         sizeof(retval));
+        ret = sendToDetector(fnum, arg, sizeof(arg), retval, sizeof(retval));
         if (strlen(retval) != 0u) {
             FILE_LOG(logINFO) << "Detector " << detId << " returned:\n"
                               << retval;
@@ -1115,21 +1073,14 @@ slsDetector::setSettings(detectorSettings isettings) {
 slsDetectorDefs::detectorSettings
 slsDetector::sendSettingsOnly(detectorSettings isettings) {
     int fnum = F_SET_SETTINGS;
-    int ret = FAIL;
     int arg = static_cast<int>(isettings);
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting settings to " << arg;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                   sizeof(retval));
+        sendToDetector(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Settings: " << retval;
         detector_shm()->currentSettings = static_cast<detectorSettings>(retval);
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return detector_shm()->currentSettings;
 }
@@ -1153,21 +1104,13 @@ int slsDetector::getThresholdEnergy() {
         }
     }
 
-    int fnum = F_GET_THRESHOLD_ENERGY;
-    int ret = FAIL;
-    int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting threshold energy";
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, nullptr, 0, &retval,
-                                         sizeof(retval));
+        int fnum = F_GET_THRESHOLD_ENERGY;
+        int retval = -1;
+        sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Threshold: " << retval;
         detector_shm()->currentThresholdEV = retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return detector_shm()->currentThresholdEV;
 }
@@ -1630,10 +1573,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     // send to detector
     int64_t oldtimer = detector_shm()->timerValue[index];
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), &retval,
-                                         sizeof(retval));
+        ret = sendToDetector(fnum, args, sizeof(args), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
         detector_shm()->timerValue[index] = retval;
         // update #nchans and databytes, as it depends on #samples, roi,
@@ -1642,10 +1582,6 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
             (detector_shm()->myDetectorType == CHIPTESTBOARD ||
              detector_shm()->myDetectorType == MOENCH)) {
             updateTotalNumberOfChannels();
-        }
-        if (ret == FORCE_UPDATE) {
-            client.close();
-            ret = updateDetector();
         }
     }
 
@@ -1666,7 +1602,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     }
 
     // send to reciever
-    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG && ret == OK) {
+    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG && ret != FAIL) {
         auto receiver = ReceiverSocket(detector_shm()->receiver_hostname,
                                        detector_shm()->receiverTCPPort);
         // char mess[MAX_STR_LENGTH]{};
@@ -1739,21 +1675,14 @@ int64_t slsDetector::getTimeLeft(timerIndex index) {
 
 int slsDetector::setSpeed(speedVariable sp, int value, int mode) {
     int fnum = F_SET_SPEED;
-    int ret = FAIL;
     int args[]{static_cast<int>(sp), value, mode};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting speed index " << sp << " to " << value
                         << " mode: " << mode;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, args, sizeof(args), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Speed index " << sp << ": " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
@@ -1765,20 +1694,12 @@ int slsDetector::setDynamicRange(int n) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting dynamic range to " << n;
 
-    // send to detector
+
     int olddr = detector_shm()->dynamicRange;
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        // char mess[MAX_STR_LENGTH] = {};
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &n, sizeof(n), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, &n, sizeof(n), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Dynamic Range: " << retval;
         detector_shm()->dynamicRange = retval;
-        if (ret == FORCE_UPDATE) {
-            client.close();
-            ret = updateDetector();
-        }
     }
 
     // only for eiger
@@ -1838,15 +1759,15 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
     return retval;
 }
 
-
-int slsDetector::sendToDetector(int fnum, void* args, size_t args_size, void* retval, size_t retval_size)
-{
-    auto client = DetectorSocket(detector_shm()->hostname,
-                                detector_shm()->controlPort);
-    auto ret = client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
+int slsDetector::sendToDetector(int fnum, void *args, size_t args_size,
+                                void *retval, size_t retval_size) {
+    auto client =
+        DetectorSocket(detector_shm()->hostname, detector_shm()->controlPort);
+    auto ret =
+        client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
     if (ret == FORCE_UPDATE) {
-        updateDetector();
+        ret = updateDetector();
     }
     return ret;
 }
@@ -1912,10 +1833,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
     FILE_LOG(logDEBUG1) << "Setting readout flags to " << flag;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+        ret = sendToDetector(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
         detector_shm()->roFlags = retval;
         // update #nchans and databytes, as it depends on #samples, roi,
@@ -1923,9 +1841,6 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
         if (detector_shm()->myDetectorType == CHIPTESTBOARD) {
             updateTotalNumberOfChannels();
         }
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
     }
 
     // sending to receiver
@@ -2448,22 +2363,15 @@ std::string slsDetector::getReceiverStreamingIP() {
 int slsDetector::setDetectorNetworkParameter(networkParameter index,
                                              int delay) {
     int fnum = F_SET_NETWORK_PARAMETER;
-    int ret = FAIL;
     int args[2]{static_cast<int>(index), delay};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting network parameter index " << index << " to "
                         << delay;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, args, sizeof(args), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1)
             << "Network Parameter (" << index << "): " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
@@ -2728,21 +2636,14 @@ int slsDetector::setUDPConnection() {
 
 int slsDetector::digitalTest(digitalTestMode mode, int ival) {
     int fnum = F_DIGITAL_TEST;
-    int ret = FAIL;
-    int args[2]{static_cast<int>(mode), ival};
+    int args[]{static_cast<int>(mode), ival};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending digital test of mode " << mode << ", ival "
                         << ival;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, args, sizeof(args), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Digital Test returned: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
@@ -2810,17 +2711,12 @@ int slsDetector::getCounterBlock(int16_t image[], int startACQ) {
     int fnum = F_READ_COUNTER_BLOCK;
     int ret = FAIL;
     int nChan = getTotalNumberOfChannels();
-    int args[2] = {startACQ, nChan};
+    int args[] = {startACQ, nChan};
     FILE_LOG(logDEBUG1) << "Reading Counter block with startacq: " << startACQ;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), image,
-                                         nChan * sizeof(int16_t));
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        ret = sendToDetector(fnum, args, sizeof(args), image,
+                             nChan * sizeof(int16_t));
     }
     return ret;
 }
@@ -2830,34 +2726,19 @@ int slsDetector::resetCounterBlock(int startACQ) {
     int ret = FAIL;
     int arg = startACQ;
     FILE_LOG(logDEBUG1) << "Resetting Counter with startacq: " << startACQ;
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        ret = sendToDetector(fnum, &arg, sizeof(arg), nullptr, 0);
     }
     return ret;
 }
 
 int slsDetector::setCounterBit(int i) {
     int fnum = F_SET_COUNTER_BIT;
-    int ret = FAIL;
-    int arg = i;
     int retval = -1;
-    FILE_LOG(logDEBUG1) << "Sending counter bit " << arg;
-
+    FILE_LOG(logDEBUG1) << "Sending counter bit " << i;
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, &i, sizeof(i), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Counter bit: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
@@ -3022,12 +2903,7 @@ int slsDetector::writeAdcRegister(uint32_t addr, uint32_t val) {
                         << "data: 0x" << std::hex << val << std::dec;
 
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        ret = sendToDetector(fnum, args, sizeof(args), nullptr, 0);
     }
     return ret;
 }
@@ -3041,15 +2917,9 @@ int slsDetector::activate(int enable) {
 
     // detector
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+        ret = sendToDetector(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Activate: " << retval;
         detector_shm()->activated = static_cast<bool>(retval);
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
     }
 
     // receiver
@@ -3131,20 +3001,11 @@ int slsDetector::setFlippedData(dimension d, int value) {
 
 int slsDetector::setAllTrimbits(int val) {
     int fnum = F_SET_ALL_TRIMBITS;
-    int ret = FAIL;
-    int arg = val;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting all trimbits to " << val;
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, &val, sizeof(val), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "All trimbit value: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
@@ -3213,17 +3074,11 @@ std::vector<int> slsDetector::getTrimEn() {
 int slsDetector::pulsePixel(int n, int x, int y) {
     int fnum = F_PULSE_PIXEL;
     int ret = FAIL;
-    int args[3] = {n, x, y};
+    int args[]{n, x, y};
     FILE_LOG(logDEBUG1) << "Pulsing pixel " << n << " number of times at (" << x
                         << "," << y << ")";
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        ret = sendToDetector(fnum, args, sizeof(args), nullptr, 0);
     }
     return ret;
 }
@@ -3231,18 +3086,12 @@ int slsDetector::pulsePixel(int n, int x, int y) {
 int slsDetector::pulsePixelNMove(int n, int x, int y) {
     int fnum = F_PULSE_PIXEL_AND_MOVE;
     int ret = FAIL;
-    int args[3] = {n, x, y};
+    int args[]{n, x, y};
     FILE_LOG(logDEBUG1) << "Pulsing pixel " << n
                         << " number of times and move by delta (" << x << ","
                         << y << ")";
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        ret = sendToDetector(fnum, args, sizeof(args), nullptr, 0);
     }
     return ret;
 }
@@ -3250,16 +3099,9 @@ int slsDetector::pulsePixelNMove(int n, int x, int y) {
 int slsDetector::pulseChip(int n) {
     int fnum = F_PULSE_CHIP;
     int ret = FAIL;
-    int arg = n;
     FILE_LOG(logDEBUG1) << "Pulsing chip " << n << " number of times";
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        ret = sendToDetector(fnum, &n, sizeof(n), nullptr, 0);
     }
     return ret;
 }
@@ -3317,20 +3159,11 @@ int slsDetector::setTemperatureEvent(int val) {
 
 int slsDetector::setStoragecellStart(int pos) {
     int fnum = F_STORAGE_CELL_START;
-    int ret = FAIL;
-    int arg = pos;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting storage cell start to " << pos;
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, &pos, sizeof(pos), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Storage cell start: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
@@ -3445,12 +3278,7 @@ int slsDetector::resetFPGA() {
     int ret = FAIL;
     FILE_LOG(logDEBUG1) << "Sending reset FPGA";
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
+        ret = sendToDetector(fnum, nullptr, 0, nullptr, 0);
     }
     return ret;
 }
@@ -3459,15 +3287,13 @@ int slsDetector::copyDetectorServer(const std::string &fname,
                                     const std::string &hostname) {
     int fnum = F_COPY_DET_SERVER;
     int ret = FAIL;
-    char args[2][MAX_STR_LENGTH] = {};
+    char args[][MAX_STR_LENGTH]{};
     sls::strcpy_safe(args[0], fname.c_str());
     sls::strcpy_safe(args[1], hostname.c_str());
     FILE_LOG(logINFO) << "Sending detector server " << args[0] << " from host "
                       << args[1];
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, args, sizeof(args), nullptr, 0);
+        ret = sendToDetector(fnum, args, sizeof(args), nullptr, 0);
     }
     return ret;
 }
@@ -3493,44 +3319,25 @@ int slsDetector::rebootController() {
 
 int slsDetector::powerChip(int ival) {
     int fnum = F_POWER_CHIP;
-    int ret = FAIL;
-    int arg = ival;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting power chip to " << ival;
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, &ival, sizeof(ival), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Power chip: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
 
 int slsDetector::setAutoComparatorDisableMode(int ival) {
     int fnum = F_AUTO_COMP_DISABLE;
-    int ret = FAIL;
-    int arg = ival;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting auto comp disable mode to " << ival;
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, &ival, sizeof(ival), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Auto comp disable: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }
-
 
 int slsDetector::setModule(sls_detector_module& module, int tb) {
     int fnum = F_SET_MODULE;

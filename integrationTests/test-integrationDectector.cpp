@@ -15,13 +15,14 @@
 
 // Header holding all configurations for different detectors
 #include "tests/config.h"
+#include "tests/globals.h"
 
-using dt = slsDetectorDefs::detectorType;
-extern std::string hostname;
-extern std::string detector_type;
-extern dt type;
+// using dt = slsDetectorDefs::detectorType;
+// extern std::string hostname;
+// extern std::string detector_type;
+// extern dt type;
 
-TEST_CASE("Single detector no receiver", "[.integration][cli]") {
+TEST_CASE("Single detector no receiver", "[.integration][.single]") {
     auto t = slsDetector::getTypeFromDetector(hostname);
     CHECK(t == type);
 
@@ -35,8 +36,56 @@ TEST_CASE("Single detector no receiver", "[.integration][cli]") {
     d.setOnline(true);
     CHECK(d.getOnlineFlag() == true);
 
+    CHECK(d.setDetectorType() == type);
+
     d.freeSharedMemory();
 }
+
+TEST_CASE("Set control port then create a new object with this control port",
+          "[.integration][.single]") {
+    /*
+    TODO!
+    Standard port but should not be hardcoded
+    Is this the best way to initialize the detectors
+    Using braces to make the object go out of scope
+    */
+    int old_cport = DEFAULT_PORTNO;
+    int old_sport = DEFAULT_PORTNO + 1;
+    int new_cport = 1993;
+    int new_sport = 2000;
+    {
+        slsDetector d(type);
+        d.setHostname(hostname);
+        d.setOnline(true);
+        CHECK(d.getControlPort() == old_cport);
+        d.setControlPort(new_cport);
+        CHECK(d.getStopPort() == old_sport);
+        d.setStopPort(new_sport);
+        d.freeSharedMemory();
+    }
+    {
+        slsDetector d(type);
+        d.setHostname(hostname);
+        d.setControlPort(new_cport);
+        d.setStopPort(new_sport);
+        CHECK(d.getControlPort() == new_cport);
+        CHECK(d.getStopPort() == new_sport);
+
+        d.setOnline(true);
+
+        // Reset standard ports
+        d.setControlPort(old_cport);
+        d.setStopPort(old_sport);
+        d.freeSharedMemory();
+    }
+
+    slsDetector d(type);
+    d.setHostname(hostname);
+    d.setOnline(true);
+    CHECK(d.getStopPort() == DEFAULT_PORTNO + 1);
+    d.freeSharedMemory();
+}
+
 
 TEST_CASE("single EIGER detector no receiver basic set and get",
           "[.integration][eiger]") {
@@ -91,63 +140,11 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
     d.freeSharedMemory();
 }
 
-TEST_CASE("Set control port then create a new object with this control port",
-          "[.integration]") {
-    /*
-    TODO!
-    Standard port but should not be hardcoded
-    Is this the best way to initialize the detectors
-    Using braces to make the object go out of scope
-    */
-    int old_cport = DEFAULT_PORTNO;
-    int old_sport = DEFAULT_PORTNO + 1;
-    int new_cport = 1993;
-    int new_sport = 2000;
-    SingleDetectorConfig c;
-    {
-        auto type = slsDetector::getTypeFromDetector(c.hostname);
-        CHECK(type == c.type_enum);
-        slsDetector d(type);
-        d.setHostname(c.hostname);
-        d.setOnline(true);
-        CHECK(d.getControlPort() == old_cport);
-        d.setControlPort(new_cport);
-        CHECK(d.getStopPort() == old_sport);
-        d.setStopPort(new_sport);
-        d.freeSharedMemory();
-    }
-    {
-        auto type = slsDetector::getTypeFromDetector(c.hostname, new_cport);
-        CHECK(type == c.type_enum);
-        slsDetector d(type);
-        d.setHostname(c.hostname);
-        d.setControlPort(new_cport);
-        d.setStopPort(new_sport);
-        CHECK(d.getControlPort() == new_cport);
-        CHECK(d.getStopPort() == new_sport);
 
-        d.setOnline(true);
 
-        // Reset standard ports
-        d.setControlPort(old_cport);
-        d.setStopPort(old_sport);
-        d.freeSharedMemory();
-    }
-
-    auto type = slsDetector::getTypeFromDetector(c.hostname);
-    CHECK(type == c.type_enum);
+TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
     slsDetector d(type);
-    d.setHostname(c.hostname);
-    d.setOnline(true);
-    CHECK(d.getStopPort() == DEFAULT_PORTNO + 1);
-    d.freeSharedMemory();
-}
-
-TEST_CASE("Locking mechanism and last ip", "[.integration]") {
-    SingleDetectorConfig c;
-    auto type = slsDetector::getTypeFromDetector(c.hostname);
-    slsDetector d(type);
-    d.setHostname(c.hostname);
+    d.setHostname(hostname);
     d.setOnline(true);
 
     // Check that detector server is unlocked then lock
@@ -164,9 +161,17 @@ TEST_CASE("Locking mechanism and last ip", "[.integration]") {
     d.lockServer(0);
     CHECK(d.lockServer() == 0);
 
-    CHECK(d.getLastClientIP() == c.my_ip);
+    CHECK(d.getLastClientIP() == my_ip);
     d.freeSharedMemory();
 }
+
+TEST_CASE("Set settings", "[.integration][.single]"){
+    slsDetector d(type);
+    d.setHostname(hostname);
+    d.setOnline(true);
+    CHECK(d.setSettings(defs::STANDARD) == defs::STANDARD);
+}
+
 
 TEST_CASE("Timer functions", "[.integration][cli]") {
     // FRAME_NUMBER, /**< number of real time frames: total number of

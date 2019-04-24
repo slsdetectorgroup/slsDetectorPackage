@@ -11,6 +11,8 @@ class MultiDetectorFixture {
   public:
     MultiDetectorFixture() : d(0, true, true) {
         d.setHostname(hostname.c_str());
+        if (my_ip != "undefined")
+            d.setReceiverHostname(my_ip);
     }
     ~MultiDetectorFixture() { d.freeSharedMemory(); }
 };
@@ -108,7 +110,7 @@ TEST_CASE_METHOD(MultiDetectorFixture, "Read/write register",
 }
 
 TEST_CASE_METHOD(MultiDetectorFixture, "Set dynamic range",
-                 "[.eigerintegration][cli]") {
+                 "[.eigerintegration][cli][dr]") {
     std::vector<int> dynamic_range{4, 8, 16, 32};
     for (auto dr : dynamic_range) {
         d.setDynamicRange(dr);
@@ -117,7 +119,7 @@ TEST_CASE_METHOD(MultiDetectorFixture, "Set dynamic range",
 }
 
 TEST_CASE_METHOD(MultiDetectorFixture, "Set clock divider",
-                 "[.eigerintegration][cli]") {
+                 "[.eigerintegration][cli][this]") {
     for (int i = 0; i != 3; ++i) {
         d.setSpeed(sv::CLOCK_DIVIDER, i);
         CHECK(d.setSpeed(sv::CLOCK_DIVIDER) == i);
@@ -164,12 +166,17 @@ TEST_CASE_METHOD(MultiDetectorFixture, "Set readout flags",
     CHECK((d.setReadOutFlags() & defs::NONPARALLEL));
 }
 
-TEST_CASE_METHOD(MultiDetectorFixture, "Flow control 10gbe",
+TEST_CASE_METHOD(MultiDetectorFixture, "Flow control and tengiga",
                  "[.eigerintegration][cli]") {
     d.setFlowControl10G(1);
     CHECK(d.setFlowControl10G() == 1);
     d.setFlowControl10G(0);
     CHECK(d.setFlowControl10G() == 0);
+
+    d.enableTenGigabitEthernet(1);
+    CHECK(d.enableTenGigabitEthernet() == 1);
+    d.enableTenGigabitEthernet(0);
+    CHECK(d.enableTenGigabitEthernet() == 0);
 }
 
 TEST_CASE_METHOD(MultiDetectorFixture, "activate", "[.eigerintegration][cli]") {
@@ -179,9 +186,14 @@ TEST_CASE_METHOD(MultiDetectorFixture, "activate", "[.eigerintegration][cli]") {
     CHECK(d.activate() == 1);
 }
 
-
-TEST_CASE_METHOD(MultiDetectorFixture, "all trimbits", "[.eigerintegration][cli]") {
+TEST_CASE_METHOD(MultiDetectorFixture, "all trimbits",
+                 "[.eigerintegration][cli]") {
     d.setAllTrimbits(32);
     CHECK(d.setAllTrimbits(-1) == 32);
 }
 
+TEST_CASE_METHOD(MultiDetectorFixture, "rate correction",
+                 "[.eigerintegration][cli]") {
+    d.setRateCorrection(200);
+    CHECK(d.getRateCorrection() == 200);
+}

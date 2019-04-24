@@ -1697,7 +1697,7 @@ int slsDetector::setDynamicRange(int n) {
 
     int olddr = detector_shm()->dynamicRange;
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        sendToDetector(fnum, &n, sizeof(n), &retval, sizeof(retval));
+        ret = sendToDetector(fnum, &n, sizeof(n), &retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Dynamic Range: " << retval;
         detector_shm()->dynamicRange = retval;
     }
@@ -1719,8 +1719,9 @@ int slsDetector::setDynamicRange(int n) {
                             << detector_shm()->dataBytesInclGapPixels;
     }
 
+
     // send to receiver
-    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG && ret == OK) {
+    if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG && ret != FAIL) {
         fnum = F_SET_RECEIVER_DYNAMIC_RANGE;
         n = detector_shm()->dynamicRange;
         retval = -1;
@@ -3404,36 +3405,22 @@ sls_detector_module slsDetector::getModule() {
 int slsDetector::setRateCorrection(int64_t t) {
     int fnum = F_SET_RATE_CORRECT;
     int ret = FAIL;
-    int64_t arg = t;
-    FILE_LOG(logDEBUG1) << "Setting Rate Correction to " << arg;
+    FILE_LOG(logDEBUG1) << "Setting Rate Correction to " << t;
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, &arg, sizeof(arg), nullptr, 0);
+        ret = sendToDetector(fnum, &t, sizeof(t), nullptr, 0);
         detector_shm()->deadTime = t;
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
     }
     return ret;
 }
 
 int64_t slsDetector::getRateCorrection() {
     int fnum = F_GET_RATE_CORRECT;
-    int ret = FAIL;
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting rate correction";
-
     if (detector_shm()->onlineFlag == ONLINE_FLAG) {
-        auto client = DetectorSocket(detector_shm()->hostname,
-                                     detector_shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, nullptr, 0, &retval,
-                                         sizeof(retval));
+        sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
         detector_shm()->deadTime = retval;
         FILE_LOG(logDEBUG1) << "Rate correction: " << retval;
-    }
-    if (ret == FORCE_UPDATE) {
-        updateDetector();
     }
     return retval;
 }

@@ -105,7 +105,10 @@ endif()
 if(SLS_USE_SANITIZER)
     target_compile_options(slsProjectOptions INTERFACE -fsanitize=address,undefined)
     target_link_libraries(slsProjectOptions INTERFACE -fsanitize=address,undefined)
-endif()
+    # target_compile_options(slsProjectOptions INTERFACE -fsanitize=thread)
+    # target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
+
+    endif()
 
 
 # Install fake the library

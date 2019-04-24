@@ -1108,7 +1108,7 @@ void slsReceiverImplementation::setDetectorPositionId(const int id) {
 				&detID,	&numThreads, &numberOfFrames, &dynamicRange, &udpPortNum[i],
 				generalData);
 	}
-
+	assert(numDet[1] != 0);
 	for (unsigned int i = 0; i < listener.size(); ++i) {
 		uint16_t row = 0, col = 0;
 		row = (detID % numDet[1]) * ((numUDPInterfaces == 2) ? 2 : 1); // row

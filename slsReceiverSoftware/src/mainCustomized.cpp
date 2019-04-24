@@ -19,6 +19,7 @@
 bool keeprunning;
 int ctbOffset = 0;
 
+
 void sigInterruptHandler(int p){
 	keeprunning = false;
 }
@@ -26,50 +27,55 @@ void sigInterruptHandler(int p){
 
 #ifdef MYTHEN302
 void GetData(char* metadata, char* datapointer, uint32_t& datasize, void* p) {
-	// remove the offset in datasize
-    int offset = ctbOffset * sizeof(uint64_t);
-    datasize -= offset;
-
-    constexpr int dynamicRange = 24;
+	constexpr int dynamicRange = 24;
     constexpr int numSamples = 32 * 3;          // 32 channels * 3 counters = 96
     constexpr int numCounters = numSamples * 2; // 2 strips
     // validate datasize
     {
         FILE_LOG(logDEBUG) << "Datasize after removing offset:" << datasize;
         const double dataNumSamples =
-            ((double)datasize / (double)sizeof(uint64_t)) / (double)dynamicRange; // 2304 / 24 = 96
+            ((double)(datasize - (ctbOffset * sizeof(uint64_t)))/ // datasize without offset
+			(double)sizeof(uint64_t)) / (double)dynamicRange; // 2304 / 24 = 96
         if (dataNumSamples - numSamples) {
             FILE_LOG(logERROR) << "Number of samples do not match, Expected "
                                << numSamples << ", got " << dataNumSamples;
         }
     }
+
 	// source
-    uint64_t* source = (uint64_t*)datapointer;
-	// remove the offset from source
-    source += offset;
+    uint64_t* ptr = (uint64_t*)datapointer;
+    // remove the offset from source
+   	ptr += ctbOffset;
     // destination
-    auto result = new int[numCounters];
-    auto destStrip0 = result;
-    auto destStrip1 = result + numSamples;
-	constexpr int bit_index0 = 6;
-    constexpr int bit_index1 = 17;
+	auto result = new int[numCounters];
+    auto strip0 = result;
+    auto strip1 = strip0 + numSamples;
+	constexpr int bit_index0 = 17;
+    constexpr int bit_index1 = 6;
+    FILE_LOG(logINFO) << "Bits (" << bit_index0 << ", " << bit_index1 << ")";
     constexpr int mask0 = (1 << bit_index0);
     constexpr int mask1 = (1 << bit_index1);
 
-    for (int j = 0; j < numSamples; ++j) {
-        for (int i = 0; i < dynamicRange; ++i) {
-            int bit0 = (*source & mask0) >> bit_index0;
-            int bit1 = (*source++ & mask1) >> bit_index1;
-            *destStrip0 |= bit0 << i;
-            *destStrip1 |= bit1 << i;
+    for (int j = 0; j != numSamples; ++j) {
+        for (int i = 0; i != dynamicRange; ++i) {
+            int bit0 = (*ptr & mask0) >> bit_index0;
+            int bit1 = (*ptr++ & mask1) >> bit_index1;
+            *strip0 |= bit0 << i;
+            *strip1 |= bit1 << i;
         }
-        destStrip0++;
-        destStrip1++;
+        strip0++;
+        strip1++;
     }
 
-	// update the size to be written to file & overwrite data in memory
+   /* for (int i = 0; i < numCounters; ++i) {
+        cprintf(RED, "%d:%u\t", i, result[i]);
+    }
+    std::cout << std::endl;
+*/
+    // update the size to be written to file & overwrite data in memory
     datasize = numCounters * sizeof(int);
     memcpy(datapointer, (char*)result, datasize);
+    delete[] result;
     FILE_LOG(logDEBUG) << "Modified Size: " << datasize;
 }
 #endif

@@ -8,6 +8,7 @@ RECEIVER=0
 GUI=0
 DEBUG=0
 PYTHON=0
+SPECIAL_RECEIVER_TYPE=0
 
 
 CLEAN=0
@@ -16,7 +17,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [-h] [-d <HDF5 directory>] [-j]
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [-h] [-d <HDF5 directory>] [-j] <Number of threads> [-s] <Special Receiver Type>
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
@@ -28,6 +29,7 @@ Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [-h] [-d <HDF5 directory>] [-j]
  -g: Build/Rebuilds only gui
  -j: Number of threads to compile through
  -e: Debug mode
+ -s: Special Receiver Type (1-Mythen302)
 
 Rebuild when you switch to a new build and compile in parallel:
 ./cmk.sh -bj5
@@ -63,7 +65,7 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:j:trge" opt ; do
+while getopts ":bpchd:j:trges:" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -109,7 +111,11 @@ while getopts ":bpchd:j:trge" opt ; do
 	e)
 		echo "Compiling Options: Debug" 
 		DEBUG=1
-		;;    
+		;;   
+	s) 
+		echo "Special Receiver Type: $OPTARG" 
+		SPECIAL_RECEIVER_TYPE=$OPTARG
+		;; 
     \?)
      	echo "Invalid option: -$OPTARG" 
 		usage
@@ -123,30 +129,36 @@ while getopts ":bpchd:j:trge" opt ; do
 	esac
 done
 
+#special receiver type
+if [ $SPECIAL_RECEIVER_TYPE -eq 1 ]; then
+	CMAKE_POST+=" -DSLS_USE_MYTHEN302_CTB_RECEIVER=ON "
+	echo "Enabling Compile Option: Mythen302 CTB Receiver"
+fi
 
+#python
 if [ $PYTHON -eq 1 ]; then
-		CMAKE_POST+=" -DSLS_USE_PYTHON=ON "
-		echo "Enabling Compile Option: Python"
+	CMAKE_POST+=" -DSLS_USE_PYTHON=ON "
+	echo "Enabling Compile Option: Python"
 fi
 
 
 if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
-		#CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
-		CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=OFF "
-       echo "Enabling Compile Option: TextClient, Receiver and GUI"
+	#CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
+	CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=OFF "
+    echo "Enabling Compile Option: TextClient, Receiver and GUI"
 else 
-       if [ $TEXTCLIENT -eq 1 ]; then
-              CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON "
-               echo "Enabling Compile Option: TextClient"
-       fi
-       if [ $RECEIVER -eq 1 ]; then
-               CMAKE_POST+=" -DSLS_USE_RECEIVER=ON "
-               echo "Enabling Compile Option: Receiver"
-       fi              
-       if [ $GUI -eq 1 ]; then
-               CMAKE_POST+=" -DSLS_USE_GUI=ON "
-               echo "Enabling Compile Option: GUI"
-       fi
+    if [ $TEXTCLIENT -eq 1 ]; then
+        CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON "
+        echo "Enabling Compile Option: TextClient"
+    fi
+    if [ $RECEIVER -eq 1 ]; then
+        CMAKE_POST+=" -DSLS_USE_RECEIVER=ON "
+        echo "Enabling Compile Option: Receiver"
+    fi              
+    if [ $GUI -eq 1 ]; then
+        CMAKE_POST+=" -DSLS_USE_GUI=ON "
+        echo "Enabling Compile Option: GUI"
+    fi
 fi
 
 

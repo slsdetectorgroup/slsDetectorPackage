@@ -4,6 +4,7 @@ set(PROJECT_VERSION 5.0.0)
 
 include(CheckIPOSupported)
 
+cmake_policy(SET CMP0074 OLD)
 
 
 
@@ -38,6 +39,7 @@ option (SLS_USE_HDF5 "HDF5 File format" OFF)
 option (SLS_USE_TEXTCLIENT "Text Client" OFF)
 option (SLS_USE_RECEIVER "Receiver" OFF)
 option (SLS_USE_GUI "GUI" OFF)
+option (SLS_USE_MYTHEN302_CTB_RECEIVER "Mythen302 CTB Receiver" OFF)
 option (SLS_USE_TESTS "TESTS" ON)
 option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
@@ -137,6 +139,7 @@ if (SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
 endif (SLS_USE_TEXTCLIENT)
 
+
 if (SLS_USE_RECEIVER)
     if (SLS_USE_HDF5)
         find_package(HDF5 1.10 COMPONENTS CXX REQUIRED)
@@ -174,4 +177,3 @@ if(SLS_MASTER_PROJECT)
     # Generate and install package config file and version
     include(cmake/package_config.cmake)
 endif()
-

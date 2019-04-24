@@ -6,4 +6,5 @@ target_sources(tests PRIVATE
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-string_utils.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-Timer.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-sls_detector_defs.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/test-Sockets.cpp
                 )

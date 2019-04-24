@@ -10,10 +10,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-
 namespace sls {
 
-DataSocket::DataSocket(int socketId) : socketId_(socketId) {}
+DataSocket::DataSocket(int socketId) : socketId_(socketId) {
+    std::cout << "hej\n";
+    int value = 1;
+    setsockopt(socketId_, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
+}
 
 DataSocket::~DataSocket() {
     if (socketId_ <= 0) {
@@ -27,7 +30,9 @@ DataSocket::~DataSocket() {
     }
 }
 
-void DataSocket::swap(DataSocket &other) noexcept { std::swap(socketId_, other.socketId_); }
+void DataSocket::swap(DataSocket &other) noexcept {
+    std::swap(socketId_, other.socketId_);
+}
 
 DataSocket::DataSocket(DataSocket &&move) noexcept { move.swap(*this); }
 DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
@@ -40,7 +45,8 @@ size_t DataSocket::receiveData(void *buffer, size_t size) {
     size_t dataRead = 0;
     while (dataRead < size) {
         dataRead +=
-            read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead, size - dataRead);
+            read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead,
+                 size - dataRead);
     }
     return dataRead;
 }
@@ -50,7 +56,8 @@ size_t DataSocket::sendData(void *buffer, size_t size) {
     size_t dataSent = 0;
     while (dataSent < size) {
         dataSent +=
-            write(getSocketId(), reinterpret_cast<char *>(buffer) + dataSent, size - dataSent);
+            write(getSocketId(), reinterpret_cast<char *>(buffer) + dataSent,
+                  size - dataSent);
     }
     return dataSent;
 }
@@ -63,14 +70,16 @@ int DataSocket::setTimeOut(int t_seconds) {
     t.tv_sec = 0;
     t.tv_usec = 0;
     // Receive timeout indefinet
-    if (::setsockopt(getSocketId(), SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(struct timeval)) < 0) {
+    if (::setsockopt(getSocketId(), SOL_SOCKET, SO_RCVTIMEO, &t,
+                     sizeof(struct timeval)) < 0) {
         FILE_LOG(logERROR) << "setsockopt SO_RCVTIMEO " << 0;
     }
 
     t.tv_sec = t_seconds;
     t.tv_usec = 0;
     // Sending timeout in seconds
-    if (::setsockopt(getSocketId(), SOL_SOCKET, SO_SNDTIMEO, &t, sizeof(struct timeval)) < 0) {
+    if (::setsockopt(getSocketId(), SOL_SOCKET, SO_SNDTIMEO, &t,
+                     sizeof(struct timeval)) < 0) {
         FILE_LOG(logERROR) << "setsockopt SO_SNDTIMEO " << t_seconds;
     }
     return 0;
@@ -78,22 +87,23 @@ int DataSocket::setTimeOut(int t_seconds) {
 
 void DataSocket::close() {
     if (socketId_ > 0) {
-        if(::close(socketId_)){
+        if (::close(socketId_)) {
             throw SocketError("could not close socket");
         }
         socketId_ = -1;
-        
+
     } else {
         throw std::runtime_error("Socket ERROR: close called on bad socket\n");
     }
 }
 
 void DataSocket::shutDownSocket() {
-  	shutdown(getSocketId(), SHUT_RDWR);
-	close();  
+    shutdown(getSocketId(), SHUT_RDWR);
+    close();
 }
 
-struct sockaddr_in ConvertHostnameToInternetAddress(const std::string &hostname) {
+struct sockaddr_in
+ConvertHostnameToInternetAddress(const std::string &hostname) {
     struct addrinfo hints, *result;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
@@ -107,13 +117,15 @@ struct sockaddr_in ConvertHostnameToInternetAddress(const std::string &hostname)
         throw SocketError(msg);
     }
     serverAddr.sin_family = AF_INET;
-    memcpy((char *)&serverAddr.sin_addr.s_addr, &((struct sockaddr_in *)result->ai_addr)->sin_addr,
+    memcpy((char *)&serverAddr.sin_addr.s_addr,
+           &((struct sockaddr_in *)result->ai_addr)->sin_addr,
            sizeof(in_addr_t));
     freeaddrinfo(result);
     return serverAddr;
 }
 
-int ConvertHostnameToInternetAddress(const char *const hostname, struct ::addrinfo **res) {
+int ConvertHostnameToInternetAddress(const char *const hostname,
+                                     struct ::addrinfo **res) {
     // criteria in selecting socket address structures returned by res
     struct ::addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -123,7 +135,8 @@ int ConvertHostnameToInternetAddress(const char *const hostname, struct ::addrin
     int errcode = getaddrinfo(hostname, NULL, &hints, res);
     if (errcode != 0) {
         FILE_LOG(logERROR) << "Could not convert hostname (" << hostname
-                           << ") to internet address (zmq):" << gai_strerror(errcode);
+                           << ") to internet address (zmq):"
+                           << gai_strerror(errcode);
     } else {
         if (*res == NULL) {
             FILE_LOG(logERROR) << "Could not converthostname (" << hostname
@@ -146,9 +159,11 @@ int ConvertHostnameToInternetAddress(const char *const hostname, struct ::addrin
  * @return 1 for fail, 0 for success
  */
 // Do not make this static (for multi threading environment)
-int ConvertInternetAddresstoIpString(struct ::addrinfo *res, char *ip, const int ipsize) {
-    if (inet_ntop(res->ai_family, &((struct sockaddr_in *)res->ai_addr)->sin_addr, ip, ipsize) !=
-        NULL) {
+int ConvertInternetAddresstoIpString(struct ::addrinfo *res, char *ip,
+                                     const int ipsize) {
+    if (inet_ntop(res->ai_family,
+                  &((struct sockaddr_in *)res->ai_addr)->sin_addr, ip,
+                  ipsize) != NULL) {
         ::freeaddrinfo(res);
         return 0;
     }

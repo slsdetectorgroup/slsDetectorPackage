@@ -12,13 +12,9 @@ set(SOURCES
     src/Fifo.cpp
 )
 
-
 # HDF5
 if (SLS_USE_HDF5)
 	if (HDF5_FOUND)
-	    include_directories( 
-	        ${HDF5_INCLUDE_DIRS}
-	    )
 	    add_definitions( 
 	        -DHDF5C ${HDF5_DEFINITIONS}
 	    )
@@ -48,6 +44,19 @@ target_link_libraries(slsReceiverShared PUBLIC
 target_include_directories(slsReceiverShared PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+
+
+# HDF5
+if (SLS_USE_HDF5)
+    if (HDF5_FOUND)
+        target_link_libraries(slsReceiverShared PUBLIC 
+            ${HDF5_LIBRARIES})
+        target_include_directories(slsReceiverShared PUBLIC
+        	${HDF5_INCLUDE_DIRS}
+            ${CMAKE_INSTALL_PREFIX}/include)
+    endif ()
+endif (SLS_USE_HDF5)
+
 
 #What is included in slsReceiverLib?
 set(PUBLICHEADERS
@@ -88,10 +97,6 @@ target_link_libraries(slsReceiver PUBLIC
     ${ZeroMQ_LIBRARIES}
     rt
 )
-
-if (HDF5_FOUND)
-    target_link_libraries(slsReceiver PUBLIC ${HDF5_LIBRARIES})
-endif ()
 
 if (SLS_USE_TESTS)
     add_subdirectory(tests)

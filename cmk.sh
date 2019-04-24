@@ -187,7 +187,8 @@ fi
 
 #hdf5 rebuild
 if [ $HDF5 -eq 1 ]; then
-	CMAKE_PRE+="HDF5_ROOT="$HDF5DIR
+#	CMAKE_PRE+="HDF5_ROOT="$HDF5DIR
+	CMAKE_POST+=" -DCMAKE_INSTALL_PREFIX="$HDF5DIR
 	CMAKE_POST+=" -DSLS_USE_HDF5=ON "
 #normal mode rebuild
 else

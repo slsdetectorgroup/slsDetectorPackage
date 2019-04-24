@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include "sls_detector_defs.h"
+
+
 struct SingleDetectorConfig {
     slsDetectorDefs::detectorType type_enum =
         slsDetectorDefs::detectorType::CHIPTESTBOARD;

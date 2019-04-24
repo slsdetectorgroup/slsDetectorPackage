@@ -291,6 +291,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int64_t getId(idMode mode);
 
+	
+	int sendToDetector(int fnum, void* args, size_t args_size, void* retval, size_t retval_size);
 
 	int64_t getReceiverSoftwareVersion() const;
 

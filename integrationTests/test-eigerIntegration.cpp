@@ -4,9 +4,21 @@
 #include "tests/globals.h"
 #include <iostream>
 
-TEST_CASE("Set and get dacs", "[.eigerintegration][cli]") {
-    multiSlsDetector d(0, true, true);
-    d.setHostname(hostname.c_str());
+class MultiDetectorFixture {
+  protected:
+    multiSlsDetector d;
+
+  public:
+    MultiDetectorFixture() : d(0, true, true) {
+        d.setHostname(hostname.c_str());
+        if (my_ip != "undefined")
+            d.setReceiverHostname(my_ip);
+    }
+    ~MultiDetectorFixture() { d.freeSharedMemory(); }
+};
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Set and get dacs",
+                 "[.eigerintegration][cli]") {
     auto th = 1000;
 
     // set and read back each individual dac of EIGER
@@ -64,14 +76,10 @@ TEST_CASE("Set and get dacs", "[.eigerintegration][cli]") {
         CHECK(d.setDAC(-1, di::THRESHOLD, 0, 0) == -1);
         CHECK(d.setDAC(-1, di::THRESHOLD, 0, 1) == -1);
     }
-
-    d.freeSharedMemory();
 }
 
-TEST_CASE("Read temperatures", "[.eigerintegration][cli]") {
-    multiSlsDetector d(0, true, true);
-    d.setHostname(hostname.c_str());
-
+TEST_CASE_METHOD(MultiDetectorFixture, "Read temperatures",
+                 "[.eigerintegration][cli]") {
     std::vector<di> tempindex{di::TEMPERATURE_FPGA, di::TEMPERATURE_FPGA2,
                               di::TEMPERATURE_FPGA3};
     for (auto index : tempindex) {
@@ -83,19 +91,15 @@ TEST_CASE("Read temperatures", "[.eigerintegration][cli]") {
     }
 }
 
-int to_time(uint32_t reg){
+int to_time(uint32_t reg) {
     uint32_t clocks = reg >> 3;
-    uint32_t exponent = (reg & 0b111)+1;
-    return clocks*pow(10, exponent);
-    // clocks = register >> 3
-    // exponent = register & 0b111
-    // return clocks*10**exponent / 100e6
+    uint32_t exponent = (reg & 0b111) + 1;
+    return clocks * pow(10, exponent);
 }
 
-TEST_CASE("Read/write register", "[.eigerintegration][cli]"){
-    multiSlsDetector d(0, true, true);
-    d.setHostname(hostname.c_str());
-
+TEST_CASE_METHOD(MultiDetectorFixture, "Read/write register",
+                 "[.eigerintegration][cli]") {
+    d.setTimer(ti::MEASUREMENTS_NUMBER, 1);
     d.setNumberOfFrames(1);
     d.setExposureTime(10000);
     d.acquire();
@@ -103,5 +107,93 @@ TEST_CASE("Read/write register", "[.eigerintegration][cli]"){
 
     d.writeRegister(0x4, 500);
     CHECK(d.readRegister(0x4) == 500);
-    
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Set dynamic range",
+                 "[.eigerintegration][cli][dr]") {
+    std::vector<int> dynamic_range{4, 8, 16, 32};
+    for (auto dr : dynamic_range) {
+        d.setDynamicRange(dr);
+        CHECK(d.setDynamicRange() == dr);
+    }
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Set clock divider",
+                 "[.eigerintegration][cli][this]") {
+    for (int i = 0; i != 3; ++i) {
+        d.setSpeed(sv::CLOCK_DIVIDER, i);
+        CHECK(d.setSpeed(sv::CLOCK_DIVIDER) == i);
+    }
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Get time left",
+                 "[.eigerintegration][cli]") {
+    CHECK_THROWS(d.getTimeLeft(ti::PROGRESS));
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Get ID", "[.eigerintegration][cli]") {
+    std::string hn = hostname;
+    hn.erase(std::remove(begin(hn), end(hn), 'b'), end(hn));
+    hn.erase(std::remove(begin(hn), end(hn), 'e'), end(hn));
+    auto hostnames = sls::split(hn, '+');
+    CHECK(hostnames.size() == d.getNumberOfDetectors());
+    for (int i = 0; i != d.getNumberOfDetectors(); ++i) {
+        CHECK(d.getId(defs::DETECTOR_SERIAL_NUMBER, 0) ==
+              std::stoi(hostnames[0]));
+    }
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Lock server",
+                 "[.eigerintegration][cli]") {
+
+    d.lockServer(1);
+    CHECK(d.lockServer() == 1);
+    d.lockServer(0);
+    CHECK(d.lockServer() == 0);
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Settings", "[.eigerintegration][cli]") {
+    CHECK(d.setSettings(defs::STANDARD) == defs::STANDARD);
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Set readout flags",
+                 "[.eigerintegration][cli]") {
+    d.setReadOutFlags(defs::PARALLEL);
+    CHECK((d.setReadOutFlags() & defs::PARALLEL));
+
+    d.setReadOutFlags(defs::NONPARALLEL);
+    CHECK_FALSE((d.setReadOutFlags() & defs::PARALLEL));
+    CHECK((d.setReadOutFlags() & defs::NONPARALLEL));
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "Flow control and tengiga",
+                 "[.eigerintegration][cli]") {
+    d.setFlowControl10G(1);
+    CHECK(d.setFlowControl10G() == 1);
+    d.setFlowControl10G(0);
+    CHECK(d.setFlowControl10G() == 0);
+
+    d.enableTenGigabitEthernet(1);
+    CHECK(d.enableTenGigabitEthernet() == 1);
+    d.enableTenGigabitEthernet(0);
+    CHECK(d.enableTenGigabitEthernet() == 0);
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "activate", "[.eigerintegration][cli]") {
+    d.activate(0);
+    CHECK(d.activate() == 0);
+    d.activate(1);
+    CHECK(d.activate() == 1);
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "all trimbits",
+                 "[.eigerintegration][cli]") {
+    d.setAllTrimbits(32);
+    CHECK(d.setAllTrimbits(-1) == 32);
+}
+
+TEST_CASE_METHOD(MultiDetectorFixture, "rate correction",
+                 "[.eigerintegration][cli]") {
+    d.setRateCorrection(200);
+    CHECK(d.getRateCorrection() == 200);
 }

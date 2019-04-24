@@ -4,7 +4,6 @@ set(PROJECT_VERSION 5.0.0)
 
 include(CheckIPOSupported)
 
-cmake_policy(SET CMP0074 OLD)
 
 
 

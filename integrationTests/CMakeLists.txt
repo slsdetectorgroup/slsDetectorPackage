@@ -10,6 +10,7 @@
 target_sources(tests PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/test-integrationMulti.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-integrationDectector.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-eigerIntegration.cpp
 )
 
 # if(SLS_USE_TESTS)

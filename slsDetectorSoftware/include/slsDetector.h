@@ -291,11 +291,20 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int64_t getId(idMode mode);
 
-	
-	int sendToDetector(int fnum, void* args, size_t args_size, void* retval, size_t retval_size);
-	int sendToDetector(int fnum);
+    int sendToDetector(int fnum, const void *args, size_t args_size,
+                       void *retval, size_t retval_size);
 
-	int64_t getReceiverSoftwareVersion() const;
+    template <typename Arg, typename Ret>
+    typename std::enable_if<
+        !(std::is_pointer<Arg>::value & std::is_pointer<Ret>::value), int>::type
+    sendToDetector(int fnum, const Arg &args, Ret &retval);
+    int sendToDetectorStop(int fnum, const void *args, size_t args_size,
+                           void *retval, size_t retval_size);
+    int sendToDetector(int fnum);
+    int sendToReceiver(int fnum, const void *args, size_t args_size,
+                       void *retval, size_t retval_size);
+
+    int64_t getReceiverSoftwareVersion() const;
 
     /**
 	 * Free shared memory without creating objects

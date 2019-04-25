@@ -9,10 +9,11 @@ namespace sls {
 
 class ClientSocket : public DataSocket {
   public:
-    ClientSocket(std::string stype, const std::string &hostname, uint16_t port_number);
+    ClientSocket(std::string stype, const std::string &hostname,
+                 uint16_t port_number);
     ClientSocket(std::string stype, struct sockaddr_in addr);
-    int sendCommandThenRead(int fnum, void *args, size_t args_size, void *retval,
-                            size_t retval_size);
+    int sendCommandThenRead(int fnum, const void *args, size_t args_size,
+                            void *retval, size_t retval_size);
 
   private:
     void readReply(int &ret, void *retval, size_t retval_size);

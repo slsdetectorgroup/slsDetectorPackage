@@ -40,7 +40,6 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
 }
 
 size_t DataSocket::receiveData(void *buffer, size_t size) {
-    // std::cout << "Sending\n";
     size_t dataRead = 0;
     while (dataRead < size) {
         dataRead +=
@@ -50,12 +49,11 @@ size_t DataSocket::receiveData(void *buffer, size_t size) {
     return dataRead;
 }
 
-size_t DataSocket::sendData(void *buffer, size_t size) {
-    // std::cout << "Receiving\n";
+size_t DataSocket::sendData(const void *buffer, size_t size) {
     size_t dataSent = 0;
     while (dataSent < size) {
         dataSent +=
-            write(getSocketId(), reinterpret_cast<char *>(buffer) + dataSent,
+            write(getSocketId(), reinterpret_cast<const char *>(buffer) + dataSent,
                   size - dataSent);
     }
     return dataSent;

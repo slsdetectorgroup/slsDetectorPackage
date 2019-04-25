@@ -293,6 +293,7 @@ class slsDetector : public virtual slsDetectorDefs{
 
 	
 	int sendToDetector(int fnum, void* args, size_t args_size, void* retval, size_t retval_size);
+	int sendToDetector(int fnum);
 
 	int64_t getReceiverSoftwareVersion() const;
 

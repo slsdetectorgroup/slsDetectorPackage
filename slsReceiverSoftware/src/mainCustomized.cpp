@@ -18,7 +18,7 @@
 
 bool keeprunning;
 int ctbOffset = 0;
-
+bool printData = false;
 
 void sigInterruptHandler(int p){
 	keeprunning = false;
@@ -32,13 +32,12 @@ void GetData(char* metadata, char* datapointer, uint32_t& datasize, void* p) {
     constexpr int numCounters = numSamples * 2; // 2 strips
     // validate datasize
     {
-        FILE_LOG(logDEBUG) << "Datasize after removing offset:" << datasize;
-        const double dataNumSamples =
-            ((double)(datasize - (ctbOffset * sizeof(uint64_t)))/ // datasize without offset
-			(double)sizeof(uint64_t)) / (double)dynamicRange; // 2304 / 24 = 96
-        if (dataNumSamples - numSamples) {
-            FILE_LOG(logERROR) << "Number of samples do not match, Expected "
-                               << numSamples << ", got " << dataNumSamples;
+        FILE_LOG(logDEBUG) << "Datasize:" << datasize;
+        int wordsCaught = (datasize / sizeof(uint64_t)) - ctbOffset;
+        int expectedWordSize = numSamples * dynamicRange;
+        if (expectedWordSize != wordsCaught) {
+            FILE_LOG(logWARNING) << "Number of words do not match, Expected "
+                               << expectedWordSize << ", got " << wordsCaught;
         }
     }
 
@@ -48,6 +47,7 @@ void GetData(char* metadata, char* datapointer, uint32_t& datasize, void* p) {
    	ptr += ctbOffset;
     // destination
 	auto result = new int[numCounters];
+    memset((char*)result, 0, numCounters * sizeof(int));
     auto strip0 = result;
     auto strip1 = strip0 + numSamples;
 	constexpr int bit_index0 = 17;
@@ -56,8 +56,8 @@ void GetData(char* metadata, char* datapointer, uint32_t& datasize, void* p) {
     constexpr int mask0 = (1 << bit_index0);
     constexpr int mask1 = (1 << bit_index1);
 
-    for (int j = 0; j != numSamples; ++j) {
-        for (int i = 0; i != dynamicRange; ++i) {
+    for (int j = 0; j < numSamples; ++j) {
+        for (int i = 0; i < dynamicRange; ++i) {
             int bit0 = (*ptr & mask0) >> bit_index0;
             int bit1 = (*ptr++ & mask1) >> bit_index1;
             *strip0 |= bit0 << i;
@@ -67,11 +67,16 @@ void GetData(char* metadata, char* datapointer, uint32_t& datasize, void* p) {
         strip1++;
     }
 
-   /* for (int i = 0; i < numCounters; ++i) {
-        cprintf(RED, "%d:%u\t", i, result[i]);
+    if (printData) {
+        slsDetectorDefs::sls_receiver_header* header = (slsDetectorDefs::sls_receiver_header*)metadata;
+        slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
+        FILE_LOG(logINFO) << "Frame Number: " << detectorHeader.frameNumber;
+        for (int i = 0; i < numCounters; ++i) {
+            cprintf(MAGENTA, "%d:%u\t", i, result[i]);
+        }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
-*/
+
     // update the size to be written to file & overwrite data in memory
     datasize = numCounters * sizeof(int);
     memcpy(datapointer, (char*)result, datasize);
@@ -88,6 +93,7 @@ int main(int argc, char *argv[]) {
 	//parse command line for config
 	static struct option long_options[] = {
 		{"ctb_offset",	required_argument,	nullptr,	'o'},
+        {"print_data",	no_argument,	    nullptr,	'p'},
 		{nullptr, 		0, 					nullptr, 	0}
 	};
 	//initialize global optind variable (required when instantiating multiple receivers in the same process)
@@ -96,13 +102,16 @@ int main(int argc, char *argv[]) {
 	int option_index = 0;
 	int c = 0;
 	while ( c != -1 ) {
-		c = getopt_long (argc, argv, "hvf:t:o:", long_options, &option_index);
+		c = getopt_long (argc, argv, "hvf:t:o:p", long_options, &option_index);
 		// Detect the end of the options.
 		if (c == -1)
 			break;
 		switch(c) {
 			case 'o':
 				sscanf(optarg, "%d", &ctbOffset);
+                break;
+            case 'p':
+                printData = true;
                 break;
             default:
                 break;
@@ -112,6 +121,7 @@ int main(int argc, char *argv[]) {
 #ifdef MYTHEN302
     FILE_LOG(logINFOGREEN) << "Mythen 302 Receiver";
     FILE_LOG(logINFO) << "CTB Offset: " << ctbOffset;
+    FILE_LOG(logINFO) << "Print Data: " << printData;
 #endif
 
     keeprunning = true;

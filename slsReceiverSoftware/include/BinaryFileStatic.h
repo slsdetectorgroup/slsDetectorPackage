@@ -100,6 +100,7 @@ class BinaryFileStatic {
 	 * @param fd pointer to file handle
 	 * @param fname master file name
 	 * @param owenable overwrite enable
+	 * @param hwenable header write enable
 	 * @param dr dynamic range
 	 * @param tenE ten giga enable
 	 * @param size image size
@@ -114,7 +115,7 @@ class BinaryFileStatic {
 	 * @param version version of software for binary writing
 	 * @returns 0 for success and 1 for fail
 	 */
-	static int CreateMasterDataFile(FILE*& fd, std::string fname, bool owenable,
+	static int CreateMasterDataFile(FILE*& fd, std::string fname, bool owenable, bool hwenable,
 					uint32_t dr, bool tenE,	uint32_t size,
 					uint32_t nPixelsX, uint32_t nPixelsY, uint64_t nf,
 					uint32_t maxf,
@@ -135,6 +136,24 @@ class BinaryFileStatic {
 			return 1;
 		}
 		time_t t = time(0);
+		char header[MAX_STR_LENGTH];
+		strcpy(header, 
+				"#Frame Header\n"
+				"Frame Number               : 8 bytes\n"
+				"SubFrame Number/ExpLength  : 4 bytes\n"
+				"Packet Number              : 4 bytes\n"
+				"Bunch ID                   : 8 bytes\n"
+				"Timestamp                  : 8 bytes\n"
+				"Module Id                  : 2 bytes\n"
+				"Row                        : 2 bytes\n"
+				"Column                     : 2 bytes\n"
+				"Reserved                   : 2 bytes\n"
+				"Debug                      : 4 bytes\n"
+				"Round Robin Number         : 2 bytes\n"
+				"Detector Type              : 1 byte\n"
+				"Header Version             : 1 byte\n"
+				"Packets Caught Mask        : 64 bytes\n");
+
 		char message[MAX_MASTER_FILE_LENGTH];
 		sprintf(message,
 				"Version                    : %.1f\n"
@@ -151,21 +170,7 @@ class BinaryFileStatic {
 				"Period (ns)                : %lld\n"
 				"Timestamp                  : %s\n\n"
 
-				"#Frame Header\n"
-				"Frame Number               : 8 bytes\n"
-				"SubFrame Number/ExpLength  : 4 bytes\n"
-				"Packet Number              : 4 bytes\n"
-				"Bunch ID                   : 8 bytes\n"
-				"Timestamp                  : 8 bytes\n"
-				"Module Id                  : 2 bytes\n"
-				"Row                        : 2 bytes\n"
-				"Column                     : 2 bytes\n"
-				"Reserved                   : 2 bytes\n"
-				"Debug                      : 4 bytes\n"
-				"Round Robin Number         : 2 bytes\n"
-				"Detector Type              : 1 byte\n"
-				"Header Version             : 1 byte\n"
-				"Packets Caught Mask        : 64 bytes\n"
+				"%s"
 				,
 				version,
 				dr,
@@ -179,7 +184,9 @@ class BinaryFileStatic {
 				(long long int)subexposuretime,
 				(long long int)subperiod,
 				(long long int)acquisitionPeriod,
-				ctime(&t));
+				ctime(&t),
+				(hwenable ? header : "")
+				);
 		if (strlen(message) > MAX_MASTER_FILE_LENGTH) {
 			FILE_LOG(logERROR) << "Master File Size " << strlen(message) <<
 					" is greater than max str size " << MAX_MASTER_FILE_LENGTH;

@@ -87,6 +87,9 @@ public:
 	/** default udp socket buffer size */
 	uint32_t defaultUdpSocketBufferSize;
 
+	/** header write enable */
+	bool headerWriteEnable;
+
 
 
 
@@ -114,7 +117,8 @@ public:
 		nPixelsYComplete(0),
 		imageSizeComplete(0),
 		standardheader(false),
-		defaultUdpSocketBufferSize(RECEIVE_SOCKET_BUFFER_SIZE)
+		defaultUdpSocketBufferSize(RECEIVE_SOCKET_BUFFER_SIZE),
+		headerWriteEnable(true)
 		{};
 
 	/** Destructor */
@@ -253,6 +257,7 @@ public:
 		FILE_LOG(level) << "Complete Image Size: " << imageSizeComplete;
 		FILE_LOG(level) << "Standard Header: " << standardheader;
 		FILE_LOG(level) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
+		FILE_LOG(level) << "Header Write Enable: " << headerWriteEnable;
 	};
 };
 
@@ -576,6 +581,7 @@ public:
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 2500;
 		standardheader		= true;
+		headerWriteEnable	= false;
 	};
 
 	/**

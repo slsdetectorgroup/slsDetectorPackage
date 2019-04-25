@@ -235,7 +235,7 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 	default:
 		file = new BinaryFile(index, maxf,
 				nd, fname, fpath, findex, owenable,
-				dindex, nunits, nf, dr, portno, silentMode);
+				dindex, nunits, nf, dr, portno, silentMode, generalData->headerWriteEnable);
 		break;
 		}
 	}

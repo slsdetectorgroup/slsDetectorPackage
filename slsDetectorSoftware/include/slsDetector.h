@@ -296,7 +296,7 @@ class slsDetector : public virtual slsDetectorDefs{
 
     template <typename Arg, typename Ret>
     typename std::enable_if<
-        !(std::is_pointer<Arg>::value & std::is_pointer<Ret>::value), int>::type
+        !(std::is_pointer<Arg>::value | std::is_pointer<Ret>::value), int>::type
     sendToDetector(int fnum, const Arg &args, Ret &retval);
     int sendToDetectorStop(int fnum, const void *args, size_t args_size,
                            void *retval, size_t retval_size);
@@ -1116,7 +1116,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param i is -1 to get, 0 to reset and any other value to set the counter bit
 	 * @returns the counter bit in detector
 	 */
-    int setCounterBit(int i = -1);
+    int setCounterBit(int cb = -1);
 
     /**
 	 * send ROI to processor (moench only)

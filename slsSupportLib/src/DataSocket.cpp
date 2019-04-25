@@ -13,7 +13,6 @@
 namespace sls {
 
 DataSocket::DataSocket(int socketId) : socketId_(socketId) {
-    std::cout << "hej\n";
     int value = 1;
     setsockopt(socketId_, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
 }

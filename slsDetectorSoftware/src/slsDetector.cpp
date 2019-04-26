@@ -3516,7 +3516,7 @@ int slsDetector::getReceiverCurrentFrameIndex() {
 int slsDetector::resetFramesCaught() {
     FILE_LOG(logDEBUG1) << "Reset Frames Caught by Receiver";
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
-        return sendToDetector(F_RESET_RECEIVER_FRAMES_CAUGHT);
+        return sendToReceiver(F_RESET_RECEIVER_FRAMES_CAUGHT);
     }
     return FAIL;
 }

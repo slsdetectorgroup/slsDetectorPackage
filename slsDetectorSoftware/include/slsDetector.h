@@ -295,14 +295,26 @@ class slsDetector : public virtual slsDetectorDefs{
                        void *retval, size_t retval_size);
 
     template <typename Arg, typename Ret>
-    typename std::enable_if<
-        !(std::is_pointer<Arg>::value | std::is_pointer<Ret>::value), int>::type
-    sendToDetector(int fnum, const Arg &args, Ret &retval);
+    int sendToDetector(int fnum, const Arg &args, Ret &retval);
+	template<typename Arg>
+	int sendToDetector(int fnum, const Arg &args, std::nullptr_t);
+	template<typename Ret>
+	int sendToDetector(int fnum, std::nullptr_t, Ret & retval);
     int sendToDetectorStop(int fnum, const void *args, size_t args_size,
                            void *retval, size_t retval_size);
     int sendToDetector(int fnum);
     int sendToReceiver(int fnum, const void *args, size_t args_size,
                        void *retval, size_t retval_size);
+
+
+	template<typename Arg, typename Ret>
+	int sendToReceiver(int fnum, const Arg& args, Ret& retval);
+	template<typename Arg>
+	int sendToReceiver(int fnum, const Arg& args, std::nullptr_t);
+	template<typename Ret>
+	int sendToReceiver(int fnum, std::nullptr_t, Ret& retval);
+	int sendToReceiver(int fnum);
+
 
     int64_t getReceiverSoftwareVersion() const;
 
@@ -1247,7 +1259,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param n is number of times to pulse
 	 * @returns OK or FAIL
 	 */
-    int pulseChip(int n = 0);
+    int pulseChip(int n_pulses = 0);
 
     /**
 	 * Set/gets threshold temperature (Jungfrau)

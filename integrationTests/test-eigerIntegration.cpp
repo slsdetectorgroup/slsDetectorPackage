@@ -166,18 +166,18 @@ TEST_CASE_METHOD(MultiDetectorFixture, "Set readout flags",
     CHECK((d.setReadOutFlags() & defs::NONPARALLEL));
 }
 
-TEST_CASE_METHOD(MultiDetectorFixture, "Flow control and tengiga",
-                 "[.eigerintegration][cli]") {
-    d.setFlowControl10G(1);
-    CHECK(d.setFlowControl10G() == 1);
-    d.setFlowControl10G(0);
-    CHECK(d.setFlowControl10G() == 0);
+// TEST_CASE_METHOD(MultiDetectorFixture, "Flow control and tengiga",
+//                  "[.eigerintegration][cli]") {
+//     d.setFlowControl10G(1);
+//     CHECK(d.setFlowControl10G() == 1);
+//     d.setFlowControl10G(0);
+//     CHECK(d.setFlowControl10G() == 0);
 
-    d.enableTenGigabitEthernet(1);
-    CHECK(d.enableTenGigabitEthernet() == 1);
-    d.enableTenGigabitEthernet(0);
-    CHECK(d.enableTenGigabitEthernet() == 0);
-}
+//     d.enableTenGigabitEthernet(1);
+//     CHECK(d.enableTenGigabitEthernet() == 1);
+//     d.enableTenGigabitEthernet(0);
+//     CHECK(d.enableTenGigabitEthernet() == 0);
+// }
 
 TEST_CASE_METHOD(MultiDetectorFixture, "activate", "[.eigerintegration][cli]") {
     d.activate(0);

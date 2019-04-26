@@ -113,29 +113,29 @@ struct sharedSlsDetector {
     int64_t deadTime;
 
     /** ip address/hostname of the receiver for client control via TCP */
-    char receiver_hostname[MAX_STR_LENGTH];
+    char rxHostname[MAX_STR_LENGTH];
 
     /** is the TCP port used to communicate between client and the receiver */
-    int receiverTCPPort;
+    int rxTCPPort;
 
     /** is the UDP port used to send data from detector to receiver */
-    int receiverUDPPort;
+    int rxUDPPort;
 
     /** is the port used to communicate between second half module of
 		 * Eiger/ Jungfrau detector and the receiver*/
-    int receiverUDPPort2;
+    int rxUDPPort2;
 
     /** ip address of the receiver for the detector to send packets to**/
-	sls::IpAddr receiverUDPIP;
+	sls::IpAddr rxUDPIP;
 
     /** ip address of the receiver for the 2nd interface of the detector to send packets to**/
-    sls::IpAddr receiverUDPIP2;
+    sls::IpAddr rxUDPIP2;
 
     /** mac address of receiver for the detector to send packets to **/
-    sls::MacAddr receiverUDPMAC;
+    sls::MacAddr rxUDPMAC;
 
     /** mac address of receiver for the 2nd interface of the detector to send packets to **/
-    sls::MacAddr receiverUDPMAC2;
+    sls::MacAddr rxUDPMAC2;
 
     /**  mac address of the detector **/
 	sls::MacAddr detectorMAC;
@@ -157,7 +157,7 @@ struct sharedSlsDetector {
 
     /** online flag - is set if the receiver is connected,
 		 * unset if socket connection is not possible  */
-    int receiverOnlineFlag;
+    int rxOnlineFlag;
 
     /** 10 Gbe enable*/
     int tenGigaEnable;
@@ -169,19 +169,19 @@ struct sharedSlsDetector {
     int zmqport;
 
     /** tcp port from receiver to gui/different process (only data) */
-    int receiver_zmqport;
+    int rxZmqport;
 
     /** data streaming (up stream) enable in receiver */
-    bool receiver_upstream;
+    bool rxUpstream;
 
     /* Receiver read frequency */
-    int receiver_read_freq;
+    int rxReadFreq;
 
     /**  zmq tcp src ip address in client (only data) **/
     char zmqip[MAX_STR_LENGTH];
 
     /**  zmq tcp src ip address in receiver (only data) **/
-    char receiver_zmqip[MAX_STR_LENGTH];
+    char rxZmqip[MAX_STR_LENGTH];
 
     /** gap pixels enable */
     int gappixels;
@@ -205,7 +205,7 @@ struct sharedSlsDetector {
     int64_t receiverAPIVersion;
 
     /** receiver frames discard policy */
-    slsDetectorDefs::frameDiscardPolicy receiver_frameDiscardMode;
+    slsDetectorDefs::frameDiscardPolicy rxFrameDiscardMode;
 
     /** receiver partial frames padding enable */
     bool rxFramePadding;
@@ -217,13 +217,13 @@ struct sharedSlsDetector {
     bool rxPadDeactivatedModules;
 
     /** silent receiver */
-    bool receiver_silentMode;
+    bool rxSilentMode;
 
     /** path of the output files */
-    char receiver_filePath[MAX_STR_LENGTH];
+    char rxFilePath[MAX_STR_LENGTH];
 
     /** file name prefix */
-    char receiver_fileName[MAX_STR_LENGTH];
+    char rxFileName[MAX_STR_LENGTH];
 
     /** file index */
     int rxFileIndex;
@@ -1863,7 +1863,7 @@ class slsDetector : public virtual slsDetectorDefs{
     const int detId;
 
     /** Shared Memory object */
-    mutable sls::SharedMemory<sharedSlsDetector> detector_shm{0,0};
+    mutable sls::SharedMemory<sharedSlsDetector> shm{0,0};
 
 };
 

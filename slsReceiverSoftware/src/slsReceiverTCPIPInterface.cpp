@@ -227,6 +227,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
 	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
 	flist[F_RECEIVER_SET_READOUT_FLAGS] 	= 	&slsReceiverTCPIPInterface::set_readout_flags;
+	flist[F_RECEIVER_SET_ADC_MASK]			=	&slsReceiverTCPIPInterface::set_adc_mask;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -2033,4 +2034,37 @@ int slsReceiverTCPIPInterface::set_readout_flags() {
 		FILE_LOG(logDEBUG1) << "Readout flags: " << retval;
 	}
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
+}
+
+
+
+int slsReceiverTCPIPInterface::set_adc_mask() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = -1;
+	uint32_t retval = -1;
+
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg), true, receiver) == FAIL)
+		return FAIL;
+
+	// base object not null
+	else if (ret == OK) {
+		// set
+		// verify if receiver is unlocked and idle
+		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+			FILE_LOG(logDEBUG1) << "Setting ADC enable mask: " << arg;
+			receiver->setADCEnableMask(arg);
+		}
+	
+		// get
+		retval = receiver->getADCEnableMask();
+		if (ret == OK && retval != arg) {
+			ret = FAIL;
+			sprintf(mess, "Could not ADC enable mask. Set 0x%x, but read 0x%x\n", arg, retval);
+			FILE_LOG(logERROR) << mess;
+		}
+		FILE_LOG(logDEBUG1) << "ADC enable mask retval: " << retval;
+	}
+	return interface->Server_SendResult(false, ret, &retval, sizeof(retval), mess);
 }

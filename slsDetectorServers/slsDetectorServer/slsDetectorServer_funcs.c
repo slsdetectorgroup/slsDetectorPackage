@@ -235,6 +235,8 @@ const char* getFunctionName(enum detFuncs func) {
     case F_DIGITAL_IO_DELAY:              	return "F_DIGITAL_IO_DELAY";
     case F_COPY_DET_SERVER:              	return "F_COPY_DET_SERVER";
     case F_REBOOT_CONTROLLER:              	return "F_REBOOT_CONTROLLER";
+	case F_SET_ADC_ENABLE_MASK:          	return "F_SET_ADC_ENABLE_MASK";
+	case F_GET_ADC_ENABLE_MASK:          	return "F_GET_ADC_ENABLE_MASK";
 
 	default:								return "Unknown Function";
 	}
@@ -312,6 +314,8 @@ void function_table() {
 	flist[F_DIGITAL_IO_DELAY]                 	= &digital_io_delay;
 	flist[F_COPY_DET_SERVER]                 	= &copy_detector_server;
 	flist[F_REBOOT_CONTROLLER]                 	= &reboot_controller;
+	flist[F_SET_ADC_ENABLE_MASK]				= &set_adc_enable_mask;
+	flist[F_GET_ADC_ENABLE_MASK]				= &get_adc_enable_mask;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -1890,7 +1894,7 @@ int set_roi(int file_des) {
 		}
 	}
 
-#if defined(JUNGFRAUD) || defined(EIGERD)
+#ifndef GOTTHARDD
 	functionNotImplemented();
 #else
 	// set & get
@@ -2236,13 +2240,8 @@ int send_update(int file_des) {
     if (n < 0) return printSocketReadError();
 #endif
 
-    // #samples, roi
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARDD)
-    i64 = setTimer(SAMPLES,GET_FLAG);
-    n = sendData(file_des,&i64,sizeof(i64),INT64);
-    if (n < 0) return printSocketReadError();
-
     // roi
+#if defined(GOTTHARDD)
     ROI* retval = NULL;
     ROI arg[1];
     int ret = OK, nretval = 0;
@@ -2257,15 +2256,24 @@ int send_update(int file_des) {
 		sendData(file_des, &retval[iloop].ymin, sizeof(int), INT32);
 		sendData(file_des, &retval[iloop].ymax, sizeof(int), INT32);
 	}
+#endif
+	
+	// #samples, adcmask
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+    i64 = setTimer(SAMPLES,GET_FLAG);
+    n = sendData(file_des,&i64,sizeof(i64),INT64);
+    if (n < 0) return printSocketReadError();
 
-
+    i32 = getADCEnableMask();
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+    if (n < 0) return printSocketReadError();
 #endif
 
-	if (lockStatus == 0) {
-		strcpy(lastClientIP,thisClientIP);
-	}
+    if (lockStatus == 0) {
+        strcpy(lastClientIP, thisClientIP);
+    }
 
-	return ret;
+    return ret;
 }
 
 
@@ -3836,4 +3844,54 @@ int reboot_controller(int file_des) {
 	FILE_LOG(logINFORED, ("Rebooting controller\n"));
 	return REBOOT;
 #endif
+}
+
+
+int set_adc_enable_mask(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Seting ADC Enable Mask to %u\n", arg));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setADCEnableMask(arg);
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set ADC Enable mask to 0x%x. Could not allocate ram\n", arg);
+			FILE_LOG(logERROR,(mess));	
+		} else {
+			uint32_t retval = getADCEnableMask();
+			if (arg != retval) {
+				ret = FAIL;
+				sprintf(mess, "Could not set ADC Enable mask. Set 0x%x, but read 0x%x\n", arg, retval);
+				FILE_LOG(logERROR,(mess));
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_adc_enable_mask(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting ADC Enable Mask \n"));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else	
+	// get
+	retval = getADCEnableMask();
+	FILE_LOG(logDEBUG1, ("ADC Enable Mask retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

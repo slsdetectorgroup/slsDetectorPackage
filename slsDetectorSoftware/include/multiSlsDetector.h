@@ -172,7 +172,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Decodes which detector and the corresponding channel numbers for it
-     * Mainly useful in a multi detector setROI (Gotthard, Mythen?)
+     * Mainly useful in a multi detector setROI (Gotthard)
      * @param offsetX channel number or total channel offset in x direction
      * @param offsetY channel number or total channel offset in y direction
      * @param channelX channel number from detector offset in x direction
@@ -1290,6 +1290,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns OK or FAIL
      */
     const ROI *getROI(int &n, int detPos = -1);
+
+    /**
+     * Set ADC Enable Mask (CTB, Moench)
+     * @param mask ADC Enable mask
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setADCEnableMask(uint32_t mask, int detPos = -1);
+
+     /**
+     * Get ADC Enable Mask (CTB, Moench)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns ADC Enable mask
+     */
+    uint32_t getADCEnableMask(int detPos = -1);
 
     /**
      * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert

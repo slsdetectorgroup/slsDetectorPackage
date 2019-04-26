@@ -50,9 +50,7 @@ int dacValues[NDAC] = {0};
 int vLimit = 0;
 
 int highvoltage = 0;
-ROI rois[MAX_ROIS];
-int nROI = 0;
-uint32_t adcDisableMask = 0;
+uint32_t adcEnableMask = 0;
 int analogEnable = 1;
 int digitalEnable = 0;
 int nSamples = 1;
@@ -474,8 +472,7 @@ void setupDetector() {
     }
     vLimit = DEFAULT_VLIMIT;
     highvoltage = 0;
-    nROI = 0;
-    adcDisableMask = 0;
+    adcEnableMask = BIT_32_MSK;
     analogEnable = 1;
     digitalEnable = 0;
     nSamples = 1;
@@ -550,11 +547,8 @@ void setupDetector() {
 	setTiming(DEFAULT_TIMING_MODE);
 	setReadOutFlags(NORMAL_READOUT);
 
-    // clear roi
-    {
-        int ret = OK, retvalsize = 0;
-        setROI(0, rois, &retvalsize, &ret);
-    }
+    // enable all ADC channels
+    setADCEnableMask(BIT_32_MSK);
 }
 
 int allocateRAM() {
@@ -606,12 +600,14 @@ int getChannels() {
     int nchans = 0;
 
     if (analogEnable) {
-        nchans += NCHAN_ANALOG;
-        // remove the channels disabled
-        int ichan = 0;
-        for (ichan = 0; ichan < NCHAN_ANALOG; ++ichan) {
-            if (adcDisableMask & (1 << ichan))
-                --nchans;
+        if (adcEnableMask == BIT_32_MSK)
+            nchans = 32;
+        else {
+            int ichan = 0;
+            for (ichan = 0; ichan < NCHAN_ANALOG; ++ichan) {
+                if (adcEnableMask & (1 << ichan))
+                    ++nchans;
+            }
         }
     }
     if (digitalEnable)
@@ -651,130 +647,31 @@ void resetPeripheral() {
 }
 
 
-/* set parameters -  dr, roi */
+/* set parameters -  dr, adcenablemask */
 
 int setDynamicRange(int dr){
 	return DYNAMIC_RANGE;
 }
 
-ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
-    uint32_t addr = ADC_DISABLE_REG;
+int setADCEnableMask(uint32_t mask) {
+    FILE_LOG(logINFO, ("Setting adcEnableMask to 0x%08x\n", mask));
+    adcEnableMask = mask;
 
-    // set ROI
-    if(n >= 0) {
-        // clear roi
-        if (!n) {
-            FILE_LOG(logINFO, ("Clearing ROI\n"));
-            adcDisableMask = 0;
-        }
-        // set roi
-        else {
-            FILE_LOG(logINFO, ("Setting ROI:\n"));
-            adcDisableMask = 0xffffffff;
-            int iroi = 0;
-            // for every roi
-            for (iroi = 0; iroi < n; ++iroi) {
-                FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", iroi, arg[iroi].xmin, arg[iroi].xmax));
-                // swap if xmin > xmax
-                if (arg[iroi].xmin > arg[iroi].xmax) {
-                    int temp = arg[iroi].xmin;
-                    arg[iroi].xmin = arg[iroi].xmax;
-                    arg[iroi].xmax = temp;
-                    FILE_LOG(logINFORED, ("\tCorrected %d: (%d, %d)\n", iroi, arg[iroi].xmin, arg[iroi].xmax));
-                }
-                int ich = 0;
-                // for the roi specified
-                for (ich = arg[iroi].xmin; ich <= arg[iroi].xmax; ++ich) {
-                    // valid channel (disable)
-                    if (ich >= 0 && ich < NCHAN_ANALOG)
-                        adcDisableMask &= ~(1 << ich);
+    // get disable mask
+    mask ^= BIT_32_MSK;
+    bus_w(ADC_DISABLE_REG, mask);
 
-                    FILE_LOG(logDEBUG1, ("%d: ich:%d adcDisableMask:0x%08x\n",
-                            iroi, ich, adcDisableMask));
-                }
-            }
-        }
-        FILE_LOG(logINFO, ("\tSetting adcDisableMask to 0x%08x\n", adcDisableMask));
-        bus_w(addr, adcDisableMask);
-    }
+    // update databytes and allocate ram
+    return allocateRAM();
+}
 
-    // get roi
-    adcDisableMask = bus_r(addr);
-    FILE_LOG(logDEBUG1, ("Getting adcDisableMask: 0x%08x\n", adcDisableMask));
+uint32_t getADCEnableMask() {
+    uint32_t retval = bus_r(ADC_DISABLE_REG);
 
-    nROI = 0;
-    if (adcDisableMask) {
-        int ich = 0;
-        // loop through channels
-        for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
-            // channel disabled
-            if ((~adcDisableMask) & (1 << ich)) {
-                // first channel
-                if (ich == 0) {
-                    ++nROI;
-                    rois[nROI - 1].xmin = ich;
-                    rois[nROI - 1].xmax = ich;
-                    rois[nROI - 1].ymin = -1;
-                    rois[nROI - 1].ymax = -1;
-                }
-                // not first channel
-                else {
-                    // previous channel enabled (so increase roi)
-                    if  ((adcDisableMask) & (1 << (ich - 1))) {
-                        ++nROI;
-                        // max roi level
-                        if (nROI > MAX_ROIS) {
-                            nROI = -1;
-                            *ret = FAIL;
-                            FILE_LOG(logERROR, ("Max ROI reached!\n"));
-                            break;
-                        }
-                        rois[nROI - 1].xmin = ich;
-                        rois[nROI - 1].ymin = -1;
-                        rois[nROI - 1].ymax = -1;
-                    }
-                    // set max as current one each time
-                    rois[nROI - 1].xmax = ich;
-                }
-            }
-        }
-    }
-
-    // print
-    if (!nROI) {
-        FILE_LOG(logINFO, ("\tROI: None\n"));
-    } else {
-        FILE_LOG(logINFO, ("ROI:\n"));
-        int i = 0;
-        for (i = 0; i < nROI; ++i) {
-            FILE_LOG(logINFO, ("\t%d: (%d, %d)\n", i, rois[i].xmin, rois[i].xmax));
-
-        }
-    }
-
-    // validate and update databytes
-    if (n >= 0) {
-        // validate
-        if((n != 0) && ((arg[0].xmin != rois[0].xmin)||
-                (arg[0].xmax != rois[0].xmax)||
-                (arg[0].ymin != rois[0].ymin)||
-                (arg[0].ymax != rois[0].ymax))) {
-            *ret = FAIL;
-            FILE_LOG(logERROR, ("\tCould not set given ROI\n"));
-        }
-        if(n != nROI) {
-            *ret = FAIL;
-            FILE_LOG(logERROR, ("\tCould not set or clear ROIs\n"));
-        }
-        // update databytes (now that mask is up to date from fpga) and allocate ram
-        if (allocateRAM() == FAIL) {
-            *ret = FAIL;
-            nROI = -2;
-        }
-    }
-
-    *retvalsize = nROI;
-    return rois;
+    // get enable mask
+    retval ^= BIT_32_MSK;
+    adcEnableMask = retval;
+    return retval;
 }
 
 
@@ -2369,8 +2266,8 @@ void readSample(int ns) {
         int ich = 0;
         for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
 
-            // if channel is in ROI
-            if ((1 << ich) & ~(adcDisableMask)) {
+            // if channel is in enable mask
+            if ((1 << ich) & (adcEnableMask)) {
 
                 // unselect channel
                 bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));

@@ -231,6 +231,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     }
     detector_shm()->nROI = 0;
     memset(detector_shm()->roiLimits, 0, MAX_ROIS * sizeof(ROI));
+    detector_shm()->adcEnableMask = BIT32_MASK;
     detector_shm()->roFlags = NORMAL_READOUT;
     detector_shm()->currentSettings = UNINITIALIZED;
     detector_shm()->currentThresholdEV = -1;
@@ -346,7 +347,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
          detector_shm()->gappixels * detector_shm()->nGappixels[Y]) *
         detector_shm()->dynamicRange / 8;
 
-    // update #nchans and databytes, as it depends on #samples, roi,
+    // update #nchans and databytes, as it depends on #samples, adcmask,
     // readoutflags (ctb only)
     if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
         detector_shm()->myDetectorType == MOENCH) {
@@ -526,28 +527,29 @@ void slsDetector::updateTotalNumberOfChannels() {
     if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
         detector_shm()->myDetectorType == MOENCH) {
 
-        // default number of channels
-        detector_shm()->nChan[X] = 32;
-
-        // if roi, recalculate #nchanX
-        if (detector_shm()->nROI > 0) {
-            detector_shm()->nChan[X] = 0;
-            for (int iroi = 0; iroi < detector_shm()->nROI; ++iroi) {
-                detector_shm()->nChan[X] +=
-                    (detector_shm()->roiLimits[iroi].xmax -
-                     detector_shm()->roiLimits[iroi].xmin + 1);
+        int nchans = 0;
+        // calculate analog channels
+        uint32_t mask = detector_shm()->adcEnableMask;
+        if (mask == BIT32_MASK) {
+            nchans = 32;
+        } else {
+            nchans = 0;
+            for (int ich = 0; ich < 32; ++ich) {
+                if (mask & (1 << ich))
+                    ++nchans;
             }
         }
 
-        // add digital signals depending on readout flags
+        // calcualte digital channels 
         if (detector_shm()->myDetectorType == CHIPTESTBOARD &&
             (((detector_shm()->roFlags & DIGITAL_ONLY) != 0) ||
              ((detector_shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
-            detector_shm()->nChan[X] += 4;
+            nchans += 4;
         }
+        detector_shm()->nChan[X] = nchans;
 
         // recalculate derived parameters chans and databytes
-        detector_shm()->nChans = detector_shm()->nChan[X];
+        detector_shm()->nChans = nchans;
         detector_shm()->dataBytes = detector_shm()->nChans *
                                     detector_shm()->nChips *
                                     (detector_shm()->dynamicRange / 8) *
@@ -830,19 +832,8 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
         detector_shm()->roFlags = static_cast<readOutFlags>(i32);
     }
 
-    // samples
-    if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
-        detector_shm()->myDetectorType == MOENCH) {
-        n += client.receiveData(&i64, sizeof(i64));
-        if (i64 >= 0) {
-            detector_shm()->timerValue[SAMPLES] = i64;
-        }
-    }
-
     // roi
-    if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
-        detector_shm()->myDetectorType == MOENCH ||
-        detector_shm()->myDetectorType == GOTTHARD) {
+    if (detector_shm()->myDetectorType == GOTTHARD) {
         n += client.receiveData(&i32, sizeof(i32));
         detector_shm()->nROI = i32;
         for (int i = 0; i < detector_shm()->nROI; ++i) {
@@ -855,13 +846,25 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
             n += client.receiveData(&i32, sizeof(i32));
             detector_shm()->roiLimits[i].xmax = i32;
         }
-        // moench (send to processor)
-        if (detector_shm()->myDetectorType == MOENCH) {
-            sendROIToProcessor();
-        }
     }
 
-    // update #nchans and databytes, as it depends on #samples, roi,
+    if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
+        detector_shm()->myDetectorType == MOENCH) {
+        // samples
+        n += client.receiveData(&i64, sizeof(i64));
+        if (i64 >= 0) {
+            detector_shm()->timerValue[SAMPLES] = i64;
+        }
+
+        // adcmask
+        uint32_t u32 = 0;
+        n += client.receiveData(&u32, sizeof(u32));
+        detector_shm()->adcEnableMask = u32;
+        if (detector_shm()->myDetectorType == MOENCH)
+            setAdditionalJsonParameter("adcmask", std::to_string(u32));
+    }
+
+    // update #nchans and databytes, as it depends on #samples, adcmask,
     // readoutflags (ctb only)
     if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
         detector_shm()->myDetectorType == MOENCH) {
@@ -1510,8 +1513,8 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
         ret = sendToDetector(F_SET_TIMER, args, retval);
         FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
         detector_shm()->timerValue[index] = retval;
-        // update #nchans and databytes, as it depends on #samples, roi,
-        // readoutflags (ctb only)
+        // update #nchans and databytes, as it depends on #samples, adcmask,
+        // readoutflags
         if (index == SAMPLES &&
             (detector_shm()->myDetectorType == CHIPTESTBOARD ||
              detector_shm()->myDetectorType == MOENCH)) {
@@ -1805,7 +1808,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
         ret = sendToDetector(F_SET_READOUT_FLAGS, arg, retval);
         FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
         detector_shm()->roFlags = retval;
-        // update #nchans and databytes, as it depends on #samples, roi,
+        // update #nchans and databytes, as it depends on #samples, adcmask,
         // readoutflags (ctb only)
         if (detector_shm()->myDetectorType == CHIPTESTBOARD) {
             updateTotalNumberOfChannels();
@@ -2063,10 +2066,12 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setAdditionalJsonHeader(detector_shm()->rxAdditionalJsonHeader);
             enableDataStreamingFromReceiver(
                 static_cast<int>(enableDataStreamingFromReceiver(-1)));
-            if (detector_shm()->myDetectorType == GOTTHARD ||
-                detector_shm()->myDetectorType == CHIPTESTBOARD ||
-                detector_shm()->myDetectorType == MOENCH) {
+            if (detector_shm()->myDetectorType == GOTTHARD) {
                 sendROI(-1, nullptr);
+            }
+            if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
+                detector_shm()->myDetectorType == MOENCH) {
+                setADCEnableMask(detector_shm()->adcEnableMask);
             }
         }
     }
@@ -2654,49 +2659,16 @@ int slsDetector::setCounterBit(int cb) {
     return retval;
 }
 
-int slsDetector::sendROIToProcessor() {
-    std::ostringstream os;
-    os << "[" << detector_shm()->roiLimits[0].xmin << ", "
-       << detector_shm()->roiLimits[0].xmax << ", "
-       << detector_shm()->roiLimits[0].ymin << ", "
-       << detector_shm()->roiLimits[0].ymax << "]";
-    std::string sroi = os.str();
-    std::string result = setAdditionalJsonParameter("roi", sroi);
-    if (result == sroi)
-        return OK;
-    return FAIL;
-}
-
 int slsDetector::setROI(int n, ROI roiLimits[]) {
     std::sort(roiLimits, roiLimits + n,
               [](ROI a, ROI b) { return a.xmin < b.xmin; });
-
     int ret = sendROI(n, roiLimits);
-    if (detector_shm()->myDetectorType == MOENCH) {
-        sendROIToProcessor();
-    }
-    // update #nchans and databytes, as it depends on #samples, roi,
-    if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
-        detector_shm()->myDetectorType == MOENCH) {
-        updateTotalNumberOfChannels();
-    }
     return ret;
 }
 
 const slsDetectorDefs::ROI *slsDetector::getROI(int &n) {
     sendROI(-1, nullptr);
     n = detector_shm()->nROI;
-    // moench - get json header(due to different clients, diff shm) (get roi is
-    // from detector: updated anyway)
-    if (detector_shm()->myDetectorType == MOENCH) {
-        getAdditionalJsonHeader();
-    }
-    // update #nchans and databytes, as it depends on #samples, roi,
-    // readoutflags (ctb only)
-    if (detector_shm()->myDetectorType == CHIPTESTBOARD ||
-        detector_shm()->myDetectorType == MOENCH) {
-        updateTotalNumberOfChannels();
-    }
     return detector_shm()->roiLimits;
 }
 
@@ -2804,6 +2776,42 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
         }
     }
     return ret;
+}
+
+void slsDetector::setADCEnableMask(uint32_t mask) {
+    uint32_t arg = mask;
+    FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex << arg << std::dec;
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
+        detector_shm()->adcEnableMask = mask;
+               
+        // update #nchans and databytes, as it depends on #samples, adcmask, readoutflags
+        updateTotalNumberOfChannels();
+
+        // send to processor
+        if (detector_shm()->myDetectorType == MOENCH)
+            setAdditionalJsonParameter("adcmask", std::to_string(detector_shm()->adcEnableMask));
+        
+        if (detector_shm()->receiverOnlineFlag == ONLINE_FLAG) {
+            int fnum = F_RECEIVER_SET_ADC_MASK;
+            int retval = -1;
+            mask = detector_shm()->adcEnableMask;
+            FILE_LOG(logDEBUG1)
+                << "Setting ADC Enable mask to 0x" << std:: hex << mask << std::dec << " in receiver";
+            sendToReceiver(fnum, &mask, sizeof(mask), &retval, sizeof(retval));
+        }
+    }
+}
+
+uint32_t slsDetector::getADCEnableMask() {
+    uint32_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting ADC Enable mask";
+    if (detector_shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_GET_ADC_ENABLE_MASK, nullptr, 0, &retval, sizeof(retval));
+        detector_shm()->adcEnableMask = retval;
+        FILE_LOG(logDEBUG1) << "ADC Enable Mask: 0x" << std::hex << retval << std::dec;
+    }
+    return detector_shm()->adcEnableMask;
 }
 
 int slsDetector::writeAdcRegister(uint32_t addr, uint32_t val) {

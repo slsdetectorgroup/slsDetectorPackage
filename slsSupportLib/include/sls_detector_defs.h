@@ -23,6 +23,8 @@
 #endif
 #include "ansi.h"
 
+#define BIT32_MASK  0xFFFFFFFF
+
 /** default ports */
 #define DEFAULT_PORTNO 1952
 #define DEFAULT_UDP_PORTNO 50001

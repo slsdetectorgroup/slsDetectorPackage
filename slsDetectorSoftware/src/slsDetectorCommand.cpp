@@ -5554,74 +5554,22 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
         os << std::hex << myDet->readRegister(123, detPos) << std::dec ; //0x7b
     } else if (cmd == "adcdisable") {
 
-        int nroi = 0;
-        ROI roiLimits[MAX_ROIS];
-
         if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%x", &addr))
+            uint32_t adcEnableMask = 0;
+            if (sscanf(args[1], "%x", &adcEnableMask))
                 ;
             else
                 return std::string("Could not scan adcdisable reg ") + std::string(args[1]);
-
-            /******USE ROI?!?!?!?*********/
-            // roiLimits[i].xmin;roiLimits[i].xmax;roiLimits[i].ymin;roiLimits[i].ymin;roiLimits[i].ymax
-            //int mask=1;
-            int ii = 0;
-            while (ii < 32) {
-                ++nroi;
-                roiLimits[nroi - 1].xmin = ii;
-                roiLimits[nroi - 1].ymin = 0;
-                roiLimits[nroi - 1].ymax = 0;
-                while ((addr & (1 << ii))) {
-                    ++ii;
-                    if (ii >= 32)
-                        break;
-                }
-                if (ii >= 32) {
-                    break;
-                    std::cout << "ROI " << nroi << " xmin " << roiLimits[nroi - 1].xmin << " xmax " << roiLimits[nroi - 1].xmax << std::endl;
-                    roiLimits[nroi - 1].xmax = 31;
-                    break;
-                }
-                roiLimits[nroi - 1].xmin = ii;
-                while ((addr & (1 << ii)) == 0) {
-                    ++ii;
-                    if (ii >= 32)
-                        break;
-                }
-                roiLimits[nroi - 1].xmax = ii - 1;
-                if (ii >= 32) {
-                    std::cout << "ROI " << nroi << " xmin " << roiLimits[nroi - 1].xmin << " xmax " << roiLimits[nroi - 1].xmax << std::endl;
-                    ++nroi;
-                    break;
-                }
-                std::cout << "ROI " << nroi << " xmin " << roiLimits[nroi - 1].xmin << " xmax " << roiLimits[nroi - 1].xmax << std::endl;
-            }
-            std::cout << "********ROI " << nroi << std::endl;
-            myDet->setROI(nroi - 1, roiLimits, detPos);
-            //  myDet->writeRegister(94,addr, detPos);
-            // myDet->writeRegister(120,addr, detPos);
+            
+            // get enable mask from enable mask
+            adcEnableMask ^= 0xFFFFFFFF;
+            myDet->setADCEnableMask(adcEnableMask, detPos);
         }
 
-        const ROI *aa = myDet->getROI(nroi, detPos);
-
-        int reg = 0xffffffff;
-        if (nroi < 1)
-            reg = 0;
-        else {
-            for (int iroi = 0; iroi < nroi; ++iroi) {
-                std::cout << iroi << " xmin " << (aa + iroi)->xmin << " xmax " << (aa + iroi)->xmax << std::endl;
-                for (int ich = (aa + iroi)->xmin; ich <= (aa + iroi)->xmax; ++ich) {
-                    reg &= ~(1 << ich);
-                }
-            }
-        }
-        os << std::hex << reg << std::dec ;
-        if (aa != NULL)
-            delete [] aa;
-        //os <<" "<< std::hex << myDet->readRegister(120, detPos) << std::dec ;
-
+        uint32_t retval = myDet->getADCEnableMask(detPos);
+        // get disable mask
+        retval ^= 0xFFFFFFFF;
+        os << std::hex << retval << std::dec;
     }
 
     else

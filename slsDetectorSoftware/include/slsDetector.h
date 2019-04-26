@@ -16,7 +16,7 @@ class multiSlsDetector;
 class ServerInterface;
 class MySocketTCP;
 
-#define SLS_SHMVERSION 0x190412
+#define SLS_SHMVERSION 0x190426
 #define NCHIPSMAX 10
 #define NCHANSMAX 65536
 #define NDACSMAX 16
@@ -97,7 +97,10 @@ struct sharedSlsDetector {
     /** list of rois */
     slsDetectorDefs::ROI roiLimits[MAX_ROIS];
 
-    /** readout flags */
+    /** adc enable mask */
+    uint32_t adcEnableMask;
+	
+	/** readout flags */
     slsDetectorDefs::readOutFlags roFlags;
 
     /** detector settings (standard, fast, etc.) */
@@ -239,6 +242,7 @@ struct sharedSlsDetector {
 
     /** overwriteenable */
     bool rxFileOverWrite;
+	
 };
 
 class slsDetector : public virtual slsDetectorDefs{
@@ -1119,12 +1123,6 @@ class slsDetector : public virtual slsDetectorDefs{
     int setCounterBit(int cb = -1);
 
     /**
-	 * send ROI to processor (moench only)
-	 * @returns OK or FAIL
-	 */
-    int sendROIToProcessor();
-
-    /**
 	 * Set ROI (Gotthard)
 	 * At the moment only one set allowed
 	 * @param n number of rois
@@ -1155,6 +1153,18 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int sendROI(int n = -1, ROI roiLimits[] = nullptr);
 
+	/**
+     * Set ADC Enable Mask (CTB, Moench)
+     * @param mask ADC Enable mask
+     */
+    void setADCEnableMask(uint32_t mask);
+
+     /**
+     * Get ADC Enable Mask (CTB, Moench)
+     * @returns ADC Enable mask
+     */
+    uint32_t getADCEnableMask();
+	
     /**
 	 * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert users
 	 * @param addr address of adc register

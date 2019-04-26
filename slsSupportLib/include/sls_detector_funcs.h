@@ -81,6 +81,8 @@ enum detFuncs{
 	F_DIGITAL_IO_DELAY,  /** < digital IO delay */
 	F_COPY_DET_SERVER,	/** < copy detector server & respawn */
 	F_REBOOT_CONTROLLER, /** < reboot detector controller (blackfin/ powerpc) */
+	F_SET_ADC_ENABLE_MASK,	/** < setting ADC enable mask */
+	F_GET_ADC_ENABLE_MASK,	/** < setting ADC enable mask */
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -133,6 +135,7 @@ enum detFuncs{
 	F_RECEIVER_PADDING_ENABLE, /** < partial frames padding enable */
 	F_RECEIVER_DEACTIVATED_PADDING_ENABLE, /** < deactivated receiver padding enable */
 	F_RECEIVER_SET_READOUT_FLAGS, /**< set/get receiver readout flags */
+	F_RECEIVER_SET_ADC_MASK, /**< set adc mask */
 	NUM_REC_FUNCTIONS
 };
 
@@ -210,6 +213,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_DIGITAL_IO_DELAY:              	return "F_DIGITAL_IO_DELAY";
     case F_COPY_DET_SERVER:              	return "F_COPY_DET_SERVER";
     case F_REBOOT_CONTROLLER:              	return "F_REBOOT_CONTROLLER";
+	case F_SET_ADC_ENABLE_MASK:          	return "F_SET_ADC_ENABLE_MASK";
+	case F_GET_ADC_ENABLE_MASK:          	return "F_GET_ADC_ENABLE_MASK";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -263,6 +268,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_PADDING_ENABLE:			return "F_RECEIVER_PADDING_ENABLE";
     case F_RECEIVER_DEACTIVATED_PADDING_ENABLE: return "F_RECEIVER_DEACTIVATED_PADDING_ENABLE";
     case F_RECEIVER_SET_READOUT_FLAGS: 		return "F_RECEIVER_SET_READOUT_FLAGS";
+	case F_RECEIVER_SET_ADC_MASK:			return "F_RECEIVER_SET_ADC_MASK";
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";
 	}

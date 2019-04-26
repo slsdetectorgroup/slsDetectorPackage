@@ -212,12 +212,12 @@ public:
 
     /**
      * Set databytes (ctb, moench)
-     * @param f readout flags
-     * @param r roi
+     * @param a adc enable mask
      * @param s number of samples
      * @param t tengiga enable
+	 * @param f readout flags
      */
-    virtual void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+    virtual void setImageSize(uint32_t a, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
         cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
     };
 
@@ -584,26 +584,26 @@ public:
 		headerWriteEnable	= false;
 	};
 
-	/**
-	 * Set databytes (ctb, moench)
+    /**
+     * Set databytes (ctb, moench)
+     * @param a adc enable mask
+     * @param s number of samples
+     * @param t tengiga enable
 	 * @param f readout flags
-	 * @param r roi
-	 * @param s number of samples
-	 * @param t tengiga enable
-	 */
-	void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+     */
+    void setImageSize(uint32_t a, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
 		 int nchans = 0;
 		 if (f != slsDetectorDefs::GET_READOUT_FLAGS) {
 			 // analog channels
 			 if (f == slsDetectorDefs::NORMAL_READOUT || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
-				 nchans += NCHAN_ANALOG;
-				 // if roi
-				 if (r.size()) {
-					 nchans = 0;
-					 for (auto &roi : r) {
-						 nchans += (roi.xmax - roi.xmin + 1);
-					 }
-				 }
+				if (a == BIT32_MASK) {
+					nchans = 32;
+				} else {
+					for (int ich = 0; ich < 32; ++ich) {
+						if (a & (1 << ich))
+							++nchans;
+					}
+				}
 			 }
 			 // digital channels
 			 if (f & slsDetectorDefs::DIGITAL_ONLY || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
@@ -686,22 +686,22 @@ public:
 	}
 
 
-	/**
-	 * Set databytes (ctb, moench)
+    /**
+     * Set databytes (ctb, moench)
+     * @param a adc enable mask
+     * @param s number of samples
+     * @param t tengiga enable
 	 * @param f readout flags
-	 * @param r roi
-	 * @param s number of samples
-	 * @param t tengiga enable
-	 */
-	void setImageSize(std::vector<slsDetectorDefs::ROI> r, int s, bool t,
-			slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+     */
+    void setImageSize(uint32_t a, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
 		int nchans = 32;
-		// if roi
-		if (r.size()) {
-			 nchans = 0;
-			 for (auto &roi : r) {
-				 nchans += abs(roi.xmax - roi.xmin) + 1;
-			 }
+		if (a == BIT32_MASK) {
+			nchans = 32;
+		} else {
+			for (int ich = 0; ich < 32; ++ich) {
+				if (a & (1 << ich))
+					++nchans;
+			}
 		}
 
 		nPixelsX = nchans;

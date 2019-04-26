@@ -97,4 +97,6 @@ int led(int);
 int digital_io_delay(int);
 int copy_detector_server(int);
 int reboot_controller(int);
+int set_adc_enable_mask(int);
+int get_adc_enable_mask(int);
 

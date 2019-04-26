@@ -484,15 +484,16 @@ void slsDetector::updateTotalNumberOfChannels() {
     if (shm()->myDetectorType == CHIPTESTBOARD ||
         shm()->myDetectorType == MOENCH) {
 
-        // default number of channels
-        shm()->nChan[X] = 32;
-
-        // if roi, recalculate #nchanX
-        if (shm()->nROI > 0) {
-            shm()->nChan[X] = 0;
-            for (int iroi = 0; iroi < shm()->nROI; ++iroi) {
-                shm()->nChan[X] += (shm()->roiLimits[iroi].xmax -
-                                    shm()->roiLimits[iroi].xmin + 1);
+        int nchans = 0;
+        // calculate analog channels
+        uint32_t mask = shm()->adcEnableMask;
+        if (mask == BIT32_MASK) {
+            nchans = 32;
+        } else {
+            nchans = 0;
+            for (int ich = 0; ich < 32; ++ich) {
+                if (mask & (1 << ich))
+                    ++nchans;
             }
         }
 
@@ -502,6 +503,7 @@ void slsDetector::updateTotalNumberOfChannels() {
              ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
             shm()->nChan[X] += 4;
         }
+        shm()->nChan[X] = nchans;
 
         // recalculate derived parameters chans and databytes
         shm()->nChans = shm()->nChan[X];
@@ -786,10 +788,10 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
             n += client.receiveData(&i32, sizeof(i32));
             shm()->roiLimits[i].xmax = i32;
         }
-        // moench (send to processor)
-        if (shm()->myDetectorType == MOENCH) {
-            sendROIToProcessor();
-        }
+        // // moench (send to processor)
+        // if (shm()->myDetectorType == MOENCH) {
+        //     sendROIToProcessor();
+        // }
     }
 
     // update #nchans and databytes, as it depends on #samples, roi,
@@ -2491,17 +2493,17 @@ int slsDetector::setCounterBit(int cb) {
     return retval;
 }
 
-int slsDetector::sendROIToProcessor() {
-    std::ostringstream os;
-    os << "[" << shm()->roiLimits[0].xmin << ", " << shm()->roiLimits[0].xmax
-       << ", " << shm()->roiLimits[0].ymin << ", " << shm()->roiLimits[0].ymax
-       << "]";
-    std::string sroi = os.str();
-    std::string result = setAdditionalJsonParameter("roi", sroi);
-    if (result == sroi)
-        return OK;
-    return FAIL;
-}
+// int slsDetector::sendROIToProcessor() {
+//     std::ostringstream os;
+//     os << "[" << shm()->roiLimits[0].xmin << ", " << shm()->roiLimits[0].xmax
+//        << ", " << shm()->roiLimits[0].ymin << ", " << shm()->roiLimits[0].ymax
+//        << "]";
+//     std::string sroi = os.str();
+//     std::string result = setAdditionalJsonParameter("roi", sroi);
+//     if (result == sroi)
+//         return OK;
+//     return FAIL;
+// }
 
 int slsDetector::setROI(int n, ROI roiLimits[]) {
     std::sort(roiLimits, roiLimits + n,
@@ -2509,7 +2511,7 @@ int slsDetector::setROI(int n, ROI roiLimits[]) {
 
     int ret = sendROI(n, roiLimits);
     if (shm()->myDetectorType == MOENCH) {
-        sendROIToProcessor();
+        // sendROIToProcessor();
     }
     // update #nchans and databytes, as it depends on #samples, roi,
     if (shm()->myDetectorType == CHIPTESTBOARD ||
@@ -2637,6 +2639,42 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
         }
     }
     return ret;
+}
+
+void slsDetector::setADCEnableMask(uint32_t mask) {
+    uint32_t arg = mask;
+    FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex << arg << std::dec;
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
+        shm()->adcEnableMask = mask;
+               
+        // update #nchans and databytes, as it depends on #samples, adcmask, readoutflags
+        updateTotalNumberOfChannels();
+
+        // send to processor
+        if (shm()->myDetectorType == MOENCH)
+            setAdditionalJsonParameter("adcmask", std::to_string(shm()->adcEnableMask));
+        
+        if (shm()->rxOnlineFlag == ONLINE_FLAG) {
+            int fnum = F_RECEIVER_SET_ADC_MASK;
+            int retval = -1;
+            mask = shm()->adcEnableMask;
+            FILE_LOG(logDEBUG1)
+                << "Setting ADC Enable mask to 0x" << std:: hex << mask << std::dec << " in receiver";
+            sendToReceiver(fnum, &mask, sizeof(mask), &retval, sizeof(retval));
+        }
+    }
+}
+
+uint32_t slsDetector::getADCEnableMask() {
+    uint32_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting ADC Enable mask";
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_GET_ADC_ENABLE_MASK, nullptr, 0, &retval, sizeof(retval));
+        shm()->adcEnableMask = retval;
+        FILE_LOG(logDEBUG1) << "ADC Enable Mask: 0x" << std::hex << retval << std::dec;
+    }
+    return shm()->adcEnableMask;
 }
 
 int slsDetector::writeAdcRegister(uint32_t addr, uint32_t val) {

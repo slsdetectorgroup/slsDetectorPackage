@@ -100,6 +100,7 @@ void slsReceiverImplementation::InitializeMembers() {
 
 	//***acquisition parameters***
 	roi.clear();
+	adcEnableMask = BIT32_MASK;
 	streamingFrequency = 0;
 	streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
 	dataStreamEnable = false;
@@ -289,6 +290,11 @@ std::vector<slsDetectorDefs::ROI> slsReceiverImplementation::getROI() const{
 	return roi;
 }
 
+uint32_t slsReceiverImplementation::getADCEnableMask() const{
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	return adcEnableMask;
+}
+
 uint32_t slsReceiverImplementation::getStreamingFrequency() const{
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	return streamingFrequency;
@@ -463,7 +469,7 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 
 		// side effects
 		if (myDetectorType == CHIPTESTBOARD) {
-			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
+			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable, readoutFlags);
 			for (const auto& it : dataProcessor)
 				it->SetPixelDimension();
 			if (SetupFifoStructure() == FAIL)
@@ -749,7 +755,7 @@ int slsReceiverImplementation::setUDPSocketBufferSize(const int64_t s) {
 /***acquisition parameters***/
 int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> new_roi) {
 	bool change = false;
-        if (roi.size() != new_roi.size())
+    if (roi.size() != new_roi.size())
             change = true;
 	else {
             for (size_t i = 0; i != new_roi.size(); ++i) {
@@ -769,13 +775,6 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> ne
             case GOTTHARD:
                 generalData->SetROI(new_roi);
                 framesPerFile = generalData->maxFramesPerFile;
-                break;
-            case MOENCH:
-                generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
-                break;
-            case CHIPTESTBOARD:
-                generalData->setImageSize(roi, numberOfSamples, tengigaEnable,
-                                          readoutFlags);
                 break;
             default:
                 break;
@@ -802,6 +801,32 @@ int slsReceiverImplementation::setROI(const std::vector<slsDetectorDefs::ROI> ne
 	}
 	std::string message = sstm.str();
 	FILE_LOG(logINFO) << message;
+	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
+	return OK;
+}
+
+int slsReceiverImplementation::setADCEnableMask(uint32_t mask) {
+	if (adcEnableMask != mask) {
+		adcEnableMask =  mask;
+
+		switch (myDetectorType) {
+          case MOENCH:
+		        generalData->setImageSize(mask, numberOfSamples, tengigaEnable);
+                break;
+		   case CHIPTESTBOARD:
+		        generalData->setImageSize(mask, numberOfSamples, tengigaEnable, readoutFlags);
+                break;
+			default:
+				break;
+          }
+        
+		for (const auto& it : dataProcessor)
+			it->SetPixelDimension();
+		if (SetupFifoStructure() == FAIL)
+			return FAIL;
+	}
+
+	FILE_LOG(logINFO) << "ADC Enable Mask: 0x" << std::hex << adcEnableMask << std::dec;
 	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 	return OK;
 }
@@ -921,9 +946,9 @@ int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
 		numberOfSamples = i;
 
 		if(myDetectorType == MOENCH) {
-			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
+			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable);
 		} else if(myDetectorType == CHIPTESTBOARD) {
-			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
+			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable, readoutFlags);
 		}
 		for (const auto& it : dataProcessor)
 			it->SetPixelDimension();
@@ -962,10 +987,10 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 			generalData->SetTenGigaEnable(b,dynamicRange);
 			break;
 		case MOENCH:
-			generalData->setImageSize(roi, numberOfSamples, tengigaEnable);
+			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable);
 			break;
 		case CHIPTESTBOARD:
-			generalData->setImageSize(roi, numberOfSamples, tengigaEnable, readoutFlags);
+			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable, readoutFlags);
 			break;
 		default:
 			break;

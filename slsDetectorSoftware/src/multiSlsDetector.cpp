@@ -2448,6 +2448,32 @@ const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
     return retval;
 }
 
+void multiSlsDetector::setADCEnableMask(uint32_t mask, int detPos) {
+    // single
+    if (detPos >= 0) {
+        detectors[detPos]->setADCEnableMask(mask);
+    }
+
+    // multi
+    parallelCall(&slsDetector::setADCEnableMask, mask);
+}
+
+uint32_t multiSlsDetector::getADCEnableMask(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getADCEnableMask();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getADCEnableMask);
+    if (sls::allEqual(r)) {
+        return r.front();
+    }
+
+    // can't have different values
+    throw RuntimeError("Error: Different Values for function getADCEnableMask");
+}
+
 int multiSlsDetector::writeAdcRegister(uint32_t addr, uint32_t val, int detPos) {
     // single
     if (detPos >= 0) {

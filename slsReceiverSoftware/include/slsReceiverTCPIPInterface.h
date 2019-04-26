@@ -282,6 +282,9 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** set readout flags */
     int set_readout_flags();
 
+		/** set adc mask */
+		int set_adc_mask();
+
 
 	/** detector type */
 	detectorType myDetectorType;

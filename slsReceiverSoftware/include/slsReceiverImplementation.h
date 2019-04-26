@@ -195,6 +195,12 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	std::vector<ROI> getROI() const;
 
 	/**
+	 * Get ADC Enable Mask
+	 * @return ADC Enable Mask
+	 */
+	uint32_t getADCEnableMask() const;
+
+	/**
 	 * Get the streaming frequency
 	 * @return 0 for timer, n for nth frame frequency
 	 */
@@ -473,6 +479,13 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 * @return OK or FAIL
 	 */
     int setROI(const std::vector<ROI> new_roi);
+
+	/**
+	 * Set ADC Enable Mask
+	 * @param mask ADC Enable Mask
+	 * @return OK or FAIL
+	 */
+    int setADCEnableMask(const uint32_t mask);
 
     /**
      * Set the streaming frequency
@@ -855,6 +868,8 @@ private:
 	//***acquisition parameters***
 	/* ROI */
 	std::vector<ROI> roi;
+	/** ADC Enable Mask */
+	uint32_t adcEnableMask;
 	/** streaming frequency */
 	uint32_t streamingFrequency;
 	/** Streaming timer when frequency is 0 */

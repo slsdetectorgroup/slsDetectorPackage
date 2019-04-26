@@ -1857,6 +1857,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int writeSettingsFile(const std::string &fname, sls_detector_module& mod);
 
+	std::vector<std::string> getSettingsFileDacNames();
+
     /** slsDetector Id or position in the detectors list */
     const int detId;
 

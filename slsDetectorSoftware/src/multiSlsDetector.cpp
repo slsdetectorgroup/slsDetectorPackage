@@ -200,7 +200,7 @@ int64_t multiSlsDetector::getClientSoftwareVersion() const {
     return APILIB;
 }
 
-int64_t multiSlsDetector::getReceiverSoftwareVersion(int detPos) const {
+int64_t multiSlsDetector::getReceiverSoftwareVersion(int detPos){
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverSoftwareVersion();
     }

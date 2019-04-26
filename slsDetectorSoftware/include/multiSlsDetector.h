@@ -234,7 +234,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
       * Get Receiver software version
       * @return receiver software version
       */
-    int64_t getReceiverSoftwareVersion(int detPos = -1) const;
+    int64_t getReceiverSoftwareVersion(int detPos = -1);
 
     std::vector<int64_t> getDetectorNumber();
     /**

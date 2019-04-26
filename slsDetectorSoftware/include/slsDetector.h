@@ -299,16 +299,39 @@ class slsDetector : public virtual slsDetectorDefs{
                        void *retval, size_t retval_size);
 
     template <typename Arg, typename Ret>
-    typename std::enable_if<
-        !(std::is_pointer<Arg>::value | std::is_pointer<Ret>::value), int>::type
-    sendToDetector(int fnum, const Arg &args, Ret &retval);
+    int sendToDetector(int fnum, const Arg &args, Ret &retval);
+	template<typename Arg>
+	int sendToDetector(int fnum, const Arg &args, std::nullptr_t);
+	template<typename Ret>
+	int sendToDetector(int fnum, std::nullptr_t, Ret & retval);
+    int sendToDetector(int fnum);
+
+
     int sendToDetectorStop(int fnum, const void *args, size_t args_size,
                            void *retval, size_t retval_size);
-    int sendToDetector(int fnum);
+
+    template <typename Arg, typename Ret>
+    int sendToDetectorStop(int fnum, const Arg &args, Ret &retval);
+	template<typename Arg>
+	int sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t);
+	template<typename Ret>
+	int sendToDetectorStop(int fnum, std::nullptr_t, Ret & retval);
+
+	int sendToDetectorStop(int fnum);
+
     int sendToReceiver(int fnum, const void *args, size_t args_size,
                        void *retval, size_t retval_size);
+	template<typename Arg, typename Ret>
+	int sendToReceiver(int fnum, const Arg& args, Ret& retval);
+	template<typename Arg>
+	int sendToReceiver(int fnum, const Arg& args, std::nullptr_t);
+	template<typename Ret>
+	int sendToReceiver(int fnum, std::nullptr_t, Ret& retval);
 
-    int64_t getReceiverSoftwareVersion() const;
+	int sendToReceiver(int fnum);
+
+
+    int64_t getReceiverSoftwareVersion();
 
     /**
 	 * Free shared memory without creating objects
@@ -1257,7 +1280,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param n is number of times to pulse
 	 * @returns OK or FAIL
 	 */
-    int pulseChip(int n = 0);
+    int pulseChip(int n_pulses = 0);
 
     /**
 	 * Set/gets threshold temperature (Jungfrau)
@@ -1485,7 +1508,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param f max frames per file
 	 * @returns max frames per file in receiver
 	 */
-    int setFramesPerFile(int frames);
+    int setFramesPerFile(int n_frames);
 
 	int getFramesPerFile() const;
 
@@ -1843,6 +1866,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns OK or FAIL if the file could not be written
 	 */
     int writeSettingsFile(const std::string &fname, sls_detector_module& mod);
+
+	std::vector<std::string> getSettingsFileDacNames();
 
     /** slsDetector Id or position in the detectors list */
     const int detId;

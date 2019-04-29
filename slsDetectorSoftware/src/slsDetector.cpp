@@ -1935,12 +1935,18 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 setTimer(SAMPLES, shm()->timerValue[SAMPLES]);
                 enableTenGigabitEthernet(shm()->tenGigaEnable);
                 setReadOutFlags(GET_READOUT_FLAGS);
+                setADCEnableMask(shm()->adcEnableMask);
                 break;
 
             case MOENCH:
                 setTimer(SAMPLES, shm()->timerValue[SAMPLES]);
                 enableTenGigabitEthernet(shm()->tenGigaEnable);
+                setADCEnableMask(shm()->adcEnableMask);
                 break;
+
+            case GOTTHARD:
+                 sendROI(-1, nullptr);
+                 break;
 
             default:
                 break;
@@ -1954,11 +1960,6 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setAdditionalJsonHeader(shm()->rxAdditionalJsonHeader);
             enableDataStreamingFromReceiver(
                 static_cast<int>(enableDataStreamingFromReceiver(-1)));
-            if (shm()->myDetectorType == GOTTHARD ||
-                shm()->myDetectorType == CHIPTESTBOARD ||
-                shm()->myDetectorType == MOENCH) {
-                sendROI(-1, nullptr);
-            }
         }
     }
     return std::string(shm()->rxHostname);
@@ -2647,22 +2648,22 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
     if (shm()->onlineFlag == ONLINE_FLAG) {
         sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
         shm()->adcEnableMask = mask;
-               
-        // update #nchans and databytes, as it depends on #samples, adcmask, readoutflags
-        updateTotalNumberOfChannels();
+    }
 
-        // send to processor
-        if (shm()->myDetectorType == MOENCH)
-            setAdditionalJsonParameter("adcmask", std::to_string(shm()->adcEnableMask));
-        
-        if (shm()->rxOnlineFlag == ONLINE_FLAG) {
-            int fnum = F_RECEIVER_SET_ADC_MASK;
-            int retval = -1;
-            mask = shm()->adcEnableMask;
-            FILE_LOG(logDEBUG1)
-                << "Setting ADC Enable mask to 0x" << std:: hex << mask << std::dec << " in receiver";
-            sendToReceiver(fnum, &mask, sizeof(mask), &retval, sizeof(retval));
-        }
+    // update #nchans and databytes, as it depends on #samples, adcmask, readoutflags
+    updateTotalNumberOfChannels();
+
+    // send to processor
+    if (shm()->myDetectorType == MOENCH)
+        setAdditionalJsonParameter("adcmask", std::to_string(shm()->adcEnableMask));
+    
+    if (shm()->rxOnlineFlag == ONLINE_FLAG) {
+        int fnum = F_RECEIVER_SET_ADC_MASK;
+        int retval = -1;
+        mask = shm()->adcEnableMask;
+        FILE_LOG(logDEBUG1)
+            << "Setting ADC Enable mask to 0x" << std:: hex << mask << std::dec << " in receiver";
+        sendToReceiver(fnum, &mask, sizeof(mask), &retval, sizeof(retval));
     }
 }
 

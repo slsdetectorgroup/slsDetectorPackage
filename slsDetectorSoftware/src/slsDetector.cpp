@@ -34,6 +34,8 @@ slsDetector::slsDetector(detectorType type, int multi_id, int det_id,
     : detId(det_id), shm(multi_id, det_id) {
     /* called from put hostname command,
      * so sls shared memory will be created */
+
+    // ensure shared memory was not created before
     if (shm.IsExisting()) {
         FILE_LOG(logWARNING) << "This shared memory should have been "
                                 "deleted before! "
@@ -48,6 +50,8 @@ slsDetector::slsDetector(int multi_id, int det_id, bool verify)
     : detId(det_id), shm(multi_id, det_id) {
     /* called from multi constructor to populate structure,
      * so sls shared memory will be opened, not created */
+
+    // getDetectorType From shm will check if it was already existing
     detectorType type = getDetectorTypeFromShm(multi_id, verify);
     initSharedMemory(type, multi_id, verify);
 }
@@ -150,6 +154,100 @@ int64_t slsDetector::getReceiverSoftwareVersion() {
     return retval;
 }
 
+int slsDetector::sendToDetector(int fnum, const void *args, size_t args_size,
+                                void *retval, size_t retval_size) {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    auto ret =
+        client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
+    client.close();
+    if (ret == FORCE_UPDATE) {
+        ret = updateDetector();
+    }
+    return ret;
+}
+
+template <typename Arg, typename Ret>
+int slsDetector::sendToDetector(int fnum, const Arg &args, Ret &retval) {
+    return sendToDetector(fnum, &args, sizeof(args), &retval, sizeof(retval));
+}
+
+template <typename Arg>
+int slsDetector::sendToDetector(int fnum, const Arg &args, std::nullptr_t) {
+    return sendToDetector(fnum, &args, sizeof(args), nullptr, 0);
+}
+
+template <typename Ret>
+int slsDetector::sendToDetector(int fnum, std::nullptr_t, Ret &retval) {
+    return sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
+int slsDetector::sendToDetector(int fnum) {
+    return sendToDetector(fnum, nullptr, 0, nullptr, 0);
+}
+
+int slsDetector::sendToDetectorStop(int fnum, const void *args,
+                                    size_t args_size, void *retval,
+                                    size_t retval_size) {
+    auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
+    auto ret =
+        stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
+    stop.close();
+    // no update on stop port
+    return ret;
+}
+
+template <typename Arg, typename Ret>
+int slsDetector::sendToDetectorStop(int fnum, const Arg &args, Ret &retval) {
+    return sendToDetectorStop(fnum, &args, sizeof(args), &retval,
+                              sizeof(retval));
+}
+
+template <typename Arg>
+int slsDetector::sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t) {
+    return sendToDetectorStop(fnum, &args, sizeof(args), nullptr, 0);
+}
+
+template <typename Ret>
+int slsDetector::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) {
+    return sendToDetectorStop(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
+int slsDetector::sendToDetectorStop(int fnum) {
+    return sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
+}
+
+int slsDetector::sendToReceiver(int fnum, const void *args, size_t args_size,
+                                void *retval, size_t retval_size) {
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+
+    auto ret = receiver.sendCommandThenRead(fnum, args, args_size, retval,
+                                            retval_size);
+    receiver.close();
+    if (ret == FORCE_UPDATE) {
+        ret = updateCachedReceiverVariables();
+    }
+    return ret;
+}
+
+template <typename Arg, typename Ret>
+int slsDetector::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
+    return sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+}
+
+template <typename Arg>
+int slsDetector::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
+    return sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
+}
+
+template <typename Ret>
+int slsDetector::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
+    return sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
+int slsDetector::sendToReceiver(int fnum) {
+    return sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+}
+
 void slsDetector::freeSharedMemory(int multi_id, int slsId) {
     SharedMemory<sharedSlsDetector> temp_shm(multi_id, slsId);
     if (temp_shm.IsExisting()) {
@@ -208,6 +306,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     }
     shm()->nROI = 0;
     memset(shm()->roiLimits, 0, MAX_ROIS * sizeof(ROI));
+    shm()->adcEnableMask = BIT32_MASK;
     shm()->roFlags = NORMAL_READOUT;
     shm()->currentSettings = UNINITIALIZED;
     shm()->currentThresholdEV = -1;
@@ -316,7 +415,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
                                      shm()->gappixels * shm()->nGappixels[Y]) *
                                     shm()->dynamicRange / 8;
 
-    // update #nchans and databytes, as it depends on #samples, roi,
+    // update #nchans and databytes, as it depends on #samples, adcmask,
     // readoutflags (ctb only)
     if (shm()->myDetectorType == CHIPTESTBOARD ||
         shm()->myDetectorType == MOENCH) {
@@ -497,16 +596,16 @@ void slsDetector::updateTotalNumberOfChannels() {
             }
         }
 
-        // add digital signals depending on readout flags
+        // calculate digital channels
         if (shm()->myDetectorType == CHIPTESTBOARD &&
             (((shm()->roFlags & DIGITAL_ONLY) != 0) ||
              ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
-            shm()->nChan[X] += 4;
+            nchans += 4;
         }
         shm()->nChan[X] = nchans;
 
         // recalculate derived parameters chans and databytes
-        shm()->nChans = shm()->nChan[X];
+        shm()->nChans = nchans;
         shm()->dataBytes = shm()->nChans * shm()->nChips *
                            (shm()->dynamicRange / 8) *
                            shm()->timerValue[SAMPLES];
@@ -764,18 +863,8 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
         shm()->roFlags = static_cast<readOutFlags>(i32);
     }
 
-    // samples
-    if (shm()->myDetectorType == CHIPTESTBOARD ||
-        shm()->myDetectorType == MOENCH) {
-        n += client.receiveData(&i64, sizeof(i64));
-        if (i64 >= 0) {
-            shm()->timerValue[SAMPLES] = i64;
-        }
-    }
-
     // roi
-    if (shm()->myDetectorType == CHIPTESTBOARD ||
-        shm()->myDetectorType == MOENCH || shm()->myDetectorType == GOTTHARD) {
+    if (shm()->myDetectorType == GOTTHARD) {
         n += client.receiveData(&i32, sizeof(i32));
         shm()->nROI = i32;
         for (int i = 0; i < shm()->nROI; ++i) {
@@ -788,16 +877,25 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
             n += client.receiveData(&i32, sizeof(i32));
             shm()->roiLimits[i].xmax = i32;
         }
-        // // moench (send to processor)
-        // if (shm()->myDetectorType == MOENCH) {
-        //     sendROIToProcessor();
-        // }
     }
 
-    // update #nchans and databytes, as it depends on #samples, roi,
-    // readoutflags (ctb only)
     if (shm()->myDetectorType == CHIPTESTBOARD ||
         shm()->myDetectorType == MOENCH) {
+        // samples
+        n += client.receiveData(&i64, sizeof(i64));
+        if (i64 >= 0) {
+            shm()->timerValue[SAMPLES] = i64;
+        }
+
+        // adcmask
+        uint32_t u32 = 0;
+        n += client.receiveData(&u32, sizeof(u32));
+        shm()->adcEnableMask = u32;
+        if (shm()->myDetectorType == MOENCH)
+            setAdditionalJsonParameter("adcmask", std::to_string(u32));
+        
+        // update #nchans and databytes, as it depends on #samples, adcmask,
+        // readoutflags 
         updateTotalNumberOfChannels();
     }
 
@@ -1417,8 +1515,8 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
         ret = sendToDetector(F_SET_TIMER, args, retval);
         FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
         shm()->timerValue[index] = retval;
-        // update #nchans and databytes, as it depends on #samples, roi,
-        // readoutflags (ctb only)
+        // update #nchans and databytes, as it depends on #samples, adcmask,
+        // readoutflags 
         if (index == SAMPLES && (shm()->myDetectorType == CHIPTESTBOARD ||
                                  shm()->myDetectorType == MOENCH)) {
             updateTotalNumberOfChannels();
@@ -1562,100 +1660,6 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
     return retval;
 }
 
-int slsDetector::sendToDetector(int fnum, const void *args, size_t args_size,
-                                void *retval, size_t retval_size) {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    auto ret =
-        client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
-    client.close();
-    if (ret == FORCE_UPDATE) {
-        ret = updateDetector();
-    }
-    return ret;
-}
-
-template <typename Arg, typename Ret>
-int slsDetector::sendToDetector(int fnum, const Arg &args, Ret &retval) {
-    return sendToDetector(fnum, &args, sizeof(args), &retval, sizeof(retval));
-}
-
-template <typename Arg>
-int slsDetector::sendToDetector(int fnum, const Arg &args, std::nullptr_t) {
-    return sendToDetector(fnum, &args, sizeof(args), nullptr, 0);
-}
-
-template <typename Ret>
-int slsDetector::sendToDetector(int fnum, std::nullptr_t, Ret &retval) {
-    return sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
-}
-
-int slsDetector::sendToDetector(int fnum) {
-    return sendToDetector(fnum, nullptr, 0, nullptr, 0);
-}
-
-int slsDetector::sendToDetectorStop(int fnum, const void *args,
-                                    size_t args_size, void *retval,
-                                    size_t retval_size) {
-    auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
-    auto ret =
-        stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
-    stop.close();
-    // no update on stop port
-    return ret;
-}
-
-template <typename Arg, typename Ret>
-int slsDetector::sendToDetectorStop(int fnum, const Arg &args, Ret &retval) {
-    return sendToDetectorStop(fnum, &args, sizeof(args), &retval,
-                              sizeof(retval));
-}
-
-template <typename Arg>
-int slsDetector::sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t) {
-    return sendToDetectorStop(fnum, &args, sizeof(args), nullptr, 0);
-}
-
-template <typename Ret>
-int slsDetector::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) {
-    return sendToDetectorStop(fnum, nullptr, 0, &retval, sizeof(retval));
-}
-
-int slsDetector::sendToDetectorStop(int fnum) {
-    return sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
-}
-
-int slsDetector::sendToReceiver(int fnum, const void *args, size_t args_size,
-                                void *retval, size_t retval_size) {
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-
-    auto ret = receiver.sendCommandThenRead(fnum, args, args_size, retval,
-                                            retval_size);
-    receiver.close();
-    if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
-    }
-    return ret;
-}
-
-template <typename Arg, typename Ret>
-int slsDetector::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
-    return sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-}
-
-template <typename Arg>
-int slsDetector::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
-    return sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
-}
-
-template <typename Ret>
-int slsDetector::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
-    return sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-}
-
-int slsDetector::sendToReceiver(int fnum) {
-    return sendToReceiver(fnum, nullptr, 0, nullptr, 0);
-}
-
 int slsDetector::getADC(dacIndex index) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC " << index;
@@ -1704,8 +1708,8 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
         ret = sendToDetector(F_SET_READOUT_FLAGS, arg, retval);
         FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
         shm()->roFlags = retval;
-        // update #nchans and databytes, as it depends on #samples, roi,
-        // readoutflags (ctb only)
+        // update #nchans and databytes, as it depends on #samples, adcmask,
+        // readoutflags 
         if (shm()->myDetectorType == CHIPTESTBOARD) {
             updateTotalNumberOfChannels();
         }
@@ -1856,7 +1860,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
     sls::strcpy_safe(shm()->rxHostname, receiverIP.c_str());
 
     if (setReceiverOnline(ONLINE_FLAG) == ONLINE_FLAG) {
-        FILE_LOG(logDEBUG1)
+        FILE_LOG(logDEBUG)
             << "detector type:"
             << (slsDetectorDefs::detectorTypeToString(shm()->myDetectorType))
             << "\ndetector id:" << detId
@@ -2494,48 +2498,17 @@ int slsDetector::setCounterBit(int cb) {
     return retval;
 }
 
-// int slsDetector::sendROIToProcessor() {
-//     std::ostringstream os;
-//     os << "[" << shm()->roiLimits[0].xmin << ", " << shm()->roiLimits[0].xmax
-//        << ", " << shm()->roiLimits[0].ymin << ", " << shm()->roiLimits[0].ymax
-//        << "]";
-//     std::string sroi = os.str();
-//     std::string result = setAdditionalJsonParameter("roi", sroi);
-//     if (result == sroi)
-//         return OK;
-//     return FAIL;
-// }
-
 int slsDetector::setROI(int n, ROI roiLimits[]) {
     std::sort(roiLimits, roiLimits + n,
               [](ROI a, ROI b) { return a.xmin < b.xmin; });
 
     int ret = sendROI(n, roiLimits);
-    if (shm()->myDetectorType == MOENCH) {
-        // sendROIToProcessor();
-    }
-    // update #nchans and databytes, as it depends on #samples, roi,
-    if (shm()->myDetectorType == CHIPTESTBOARD ||
-        shm()->myDetectorType == MOENCH) {
-        updateTotalNumberOfChannels();
-    }
     return ret;
 }
 
 const slsDetectorDefs::ROI *slsDetector::getROI(int &n) {
     sendROI(-1, nullptr);
     n = shm()->nROI;
-    // moench - get json header(due to different clients, diff shm) (get roi is
-    // from detector: updated anyway)
-    if (shm()->myDetectorType == MOENCH) {
-        getAdditionalJsonHeader();
-    }
-    // update #nchans and databytes, as it depends on #samples, roi,
-    // readoutflags (ctb only)
-    if (shm()->myDetectorType == CHIPTESTBOARD ||
-        shm()->myDetectorType == MOENCH) {
-        updateTotalNumberOfChannels();
-    }
     return shm()->roiLimits;
 }
 
@@ -2999,7 +2972,6 @@ int slsDetector::rebootController() {
     FILE_LOG(logINFO) << "Sending reboot controller to detector " << detId
                       << " (" << shm()->hostname << ")";
     if (shm()->onlineFlag == ONLINE_FLAG) {
-        // TODO! (Erik) Investigate if we can return a value before reboot
         auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
         client.sendData(&fnum, sizeof(fnum));
         ret = OK;

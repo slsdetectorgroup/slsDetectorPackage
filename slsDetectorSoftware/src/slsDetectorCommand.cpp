@@ -5562,13 +5562,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
                 return std::string("Could not scan adcdisable reg ") + std::string(args[1]);
             
             // get enable mask from enable mask
-            adcEnableMask ^= 0xFFFFFFFF;
+            adcEnableMask ^= BIT32_MASK;
             myDet->setADCEnableMask(adcEnableMask, detPos);
         }
 
         uint32_t retval = myDet->getADCEnableMask(detPos);
         // get disable mask
-        retval ^= 0xFFFFFFFF;
+        retval ^= BIT32_MASK;
         os << std::hex << retval << std::dec;
     }
 

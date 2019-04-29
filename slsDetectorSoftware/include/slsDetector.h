@@ -295,6 +295,20 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int64_t getId(idMode mode);
 
+	/**
+	 * Get Receiver Software version
+	 */ 
+    int64_t getReceiverSoftwareVersion();
+
+		/**
+	 * Send function parameters to detector (control server)
+	 * @param fnum function enum
+	 * @param args argument pointer
+	 * @param args_size size of argument
+	 * @param retval return pointers
+	 * @param retval_size size of return value
+	 * @returns success or failure
+	 */ 
     int sendToDetector(int fnum, const void *args, size_t args_size,
                        void *retval, size_t retval_size);
 
@@ -306,7 +320,15 @@ class slsDetector : public virtual slsDetectorDefs{
 	int sendToDetector(int fnum, std::nullptr_t, Ret & retval);
     int sendToDetector(int fnum);
 
-
+	/**
+	 * Send function parameters to detector (stop server)
+	 * @param fnum function enum
+	 * @param args argument pointer
+	 * @param args_size size of argument
+	 * @param retval return pointers
+	 * @param retval_size size of return value
+	 * @returns success or failure
+	 */ 
     int sendToDetectorStop(int fnum, const void *args, size_t args_size,
                            void *retval, size_t retval_size);
 
@@ -319,6 +341,15 @@ class slsDetector : public virtual slsDetectorDefs{
 
 	int sendToDetectorStop(int fnum);
 
+	/**
+	 * Send function parameters to receiver
+	 * @param fnum function enum
+	 * @param args argument pointer
+	 * @param args_size size of argument
+	 * @param retval return pointers
+	 * @param retval_size size of return value
+	 * @returns success or failure
+	 */
     int sendToReceiver(int fnum, const void *args, size_t args_size,
                        void *retval, size_t retval_size);
 	template<typename Arg, typename Ret>
@@ -329,9 +360,6 @@ class slsDetector : public virtual slsDetectorDefs{
 	int sendToReceiver(int fnum, std::nullptr_t, Ret& retval);
 
 	int sendToReceiver(int fnum);
-
-
-    int64_t getReceiverSoftwareVersion();
 
     /**
 	 * Free shared memory without creating objects
@@ -1867,6 +1895,10 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int writeSettingsFile(const std::string &fname, sls_detector_module& mod);
 
+	/**
+	 * Get Names of dacs in settings file
+	 * @returns vector dac names expected in settings file
+	 */
 	std::vector<std::string> getSettingsFileDacNames();
 
     /** slsDetector Id or position in the detectors list */

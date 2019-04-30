@@ -117,7 +117,8 @@ class slsDetectorDefs {
         MEASUREMENTS_NUMBER,
         FRAMES_FROM_START,
         FRAMES_FROM_START_PG,
-        SAMPLES,
+        ANALOG_SAMPLES,
+        DIGITAL_SAMPLES,
         SUBFRAME_ACQUISITION_TIME, /**< subframe exposure time */
         STORAGE_CELL_NUMBER,       /**<number of storage cells */
         SUBFRAME_DEADTIME,         /**< subframe deadtime */
@@ -930,12 +931,12 @@ format
         \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD,
        DELAY_AFTER_TRIGGER,GATES_NUMBER, CYCLES_NUMBER,
        ACTUAL_TIME,MEASUREMENT_TIME,
-       PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
+       PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,ANALOG_SAMPLES,DIGITAL_SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
        SUBFRAME_DEADTIME \returns std::string
        frame_number,acquisition_time,frame_period,
        delay_after_trigger,gates_number, cycles_number,
        actual_time,measurement_time,
-       progress,measurements_number,frames_from_start,frames_from_start_pg,samples,subframe_acquisition_time,storage_cell_number,
+       progress,measurements_number,frames_from_start,frames_from_start_pg,analog_samples, digital_samples,subframe_acquisition_time,storage_cell_number,
        SUBFRAME_DEADTIME
     */
     static std::string getTimerType(timerIndex t) {
@@ -964,8 +965,10 @@ format
             return std::string("frames_from_start");
         case FRAMES_FROM_START_PG:
             return std::string("frames_from_start_pg");
-        case SAMPLES:
-            return std::string("samples");
+        case ANALOG_SAMPLES:
+            return std::string("analog_samples");
+        case DIGITAL_SAMPLES:
+            return std::string("digital_samples");    
         case SUBFRAME_ACQUISITION_TIME:
             return std::string("subframe_acquisition_time");
         case SUBFRAME_DEADTIME:

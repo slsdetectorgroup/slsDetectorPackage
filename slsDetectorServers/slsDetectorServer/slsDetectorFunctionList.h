@@ -61,7 +61,6 @@ void 		setupDetector();
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int         allocateRAM();
 void        updateDataBytes();
-int         getChannels();
 #endif
 
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)

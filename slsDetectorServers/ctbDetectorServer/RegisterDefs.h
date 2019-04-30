@@ -429,6 +429,11 @@
 /* Samples RW register */
 #define SAMPLES_REG 						(0x5D << MEM_MAP_SHIFT)
 
+#define SAMPLES_DIGITAL_OFST                (0)
+#define SAMPLES_DIGITAL_MSK                 (0x0000FFFF << SAMPLES_DIGITAL_OFST)
+#define SAMPLES_ANALOG_OFST                 (16)
+#define SAMPLES_ANALOG_MSK                  (0x0000FFFF << SAMPLES_ANALOG_OFST)
+
 /** Power RW register */
 #define POWER_REG					        (0x5E << MEM_MAP_SHIFT)
 

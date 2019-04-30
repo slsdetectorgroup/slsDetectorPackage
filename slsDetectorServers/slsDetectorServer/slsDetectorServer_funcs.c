@@ -124,7 +124,8 @@ const char* getTimerName(enum timerIndex ind) {
     case MEASUREMENTS_NUMBER:       return "measurements_number";
     case FRAMES_FROM_START:         return "frames_from_start";
     case FRAMES_FROM_START_PG:      return "frames_from_start_pg";
-    case SAMPLES:              		return "samples";
+    case ANALOG_SAMPLES:            return "analog_samples";
+	case DIGITAL_SAMPLES:           return "digital_samples";
     case SUBFRAME_ACQUISITION_TIME: return "subframe_acquisition_time";
     case SUBFRAME_DEADTIME:         return "subframe_deadtime";
     case STORAGE_CELL_NUMBER:       return "storage_cell_number";
@@ -1581,7 +1582,8 @@ int set_timer(int file_des) {
 	    case FRAME_PERIOD:
 	    case CYCLES_NUMBER:
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	    case SAMPLES:
+	    case ANALOG_SAMPLES:
+		case DIGITAL_SAMPLES:
 #endif
 #ifndef EIGERD
 	    case DELAY_AFTER_TRIGGER:
@@ -1652,12 +1654,13 @@ int set_timer(int file_des) {
 	        case STORAGE_CELL_NUMBER:
 	            validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
 	            break;
-	        case SAMPLES:
+			case ANALOG_SAMPLES:
+	        case DIGITAL_SAMPLES:
 	            if (retval == -1) {
 	                ret = FAIL;
 	                retval = setTimer(ind, -1);
-	                sprintf(mess, "Could not set samples to %lld. Could not allocate RAM\n",
-	                        (long long unsigned int)tns);
+	                sprintf(mess, "Could not %s to %lld. Could not allocate RAM\n",
+	                       vtimerName, (long long unsigned int)tns);
 	                FILE_LOG(logERROR,(mess));
 	            } else
 	                validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
@@ -2258,12 +2261,18 @@ int send_update(int file_des) {
 	}
 #endif
 	
-	// #samples, adcmask
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-    i64 = setTimer(SAMPLES,GET_FLAG);
+	// #analog samples
+    i64 = setTimer(ANALOG_SAMPLES,GET_FLAG);
     n = sendData(file_des,&i64,sizeof(i64),INT64);
     if (n < 0) return printSocketReadError();
 
+	// #digital samples
+    i64 = setTimer(DIGITAL_SAMPLES,GET_FLAG);
+    n = sendData(file_des,&i64,sizeof(i64),INT64);
+    if (n < 0) return printSocketReadError();
+
+	// adcmask
     i32 = getADCEnableMask();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
     if (n < 0) return printSocketReadError();

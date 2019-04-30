@@ -281,7 +281,7 @@ void slsDetector::initSharedMemory(detectorType type, int multi_id,
             ss << "Single shared memory (" << multi_id << "-" << detId
                << ":) version mismatch (expected 0x" << std::hex
                << SLS_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
-               << std::dec;
+               << std::dec << ". Clear Shared memory to continue.";
             throw SharedMemoryError(ss.str());
         }
     }
@@ -322,7 +322,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->timerValue[MEASUREMENTS_NUMBER] = 1;
     shm()->timerValue[FRAMES_FROM_START] = 0;
     shm()->timerValue[FRAMES_FROM_START_PG] = 0;
-    shm()->timerValue[SAMPLES] = 1;
+    shm()->timerValue[ANALOG_SAMPLES] = 1;
+    shm()->timerValue[DIGITAL_SAMPLES] = 1;
     shm()->timerValue[SUBFRAME_ACQUISITION_TIME] = 0;
     shm()->timerValue[STORAGE_CELL_NUMBER] = 0;
     shm()->timerValue[SUBFRAME_DEADTIME] = 0;
@@ -418,10 +419,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 
     // update #nchans and databytes, as it depends on #samples, adcmask,
     // readoutflags (ctb only)
-    if (shm()->myDetectorType == CHIPTESTBOARD ||
-        shm()->myDetectorType == MOENCH) {
-        updateTotalNumberOfChannels();
-    }
+     updateTotalNumberOfChannels();
 }
 
 int slsDetector::sendModule(sls_detector_module *myMod,
@@ -519,7 +517,8 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multi_id,
         std::ostringstream ss;
         ss << "Single shared memory (" << multi_id << "-" << detId
            << ":)version mismatch (expected 0x" << std::hex << SLS_SHMVERSION
-           << " but got 0x" << shm()->shmversion << ")" << std::dec;
+           << " but got 0x" << shm()->shmversion << ")" << std::dec 
+           << ". Clear Shared memory to continue.";
         shm.UnmapSharedMemory();
         throw SharedMemoryError(ss.str());
     }
@@ -584,34 +583,38 @@ void slsDetector::updateTotalNumberOfChannels() {
     if (shm()->myDetectorType == CHIPTESTBOARD ||
         shm()->myDetectorType == MOENCH) {
 
-        int nchans = 0;
-        // calculate analog channels
-        uint32_t mask = shm()->adcEnableMask;
-        if (mask == BIT32_MASK) {
-            nchans = 32;
-        } else {
-            nchans = 0;
-            for (int ich = 0; ich < 32; ++ich) {
-                if (mask & (1 << ich))
-                    ++nchans;
+        int nachans = 0, ndchans = 0;
+        int adatabytes = 0, ddatabytes = 0;
+        // analog channels (normal, analog/digital readout)
+        if (shm()->roFlags == slsDetectorDefs::NORMAL_READOUT ||
+            shm()->roFlags & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+            uint32_t mask = shm()->adcEnableMask;
+            if (mask == BIT32_MASK) {
+                nachans = 32;
+            } else {
+                for (int ich = 0; ich < 32; ++ich) {
+                    if (mask & (1 << ich))
+                        ++nachans;
+                }
             }
+            adatabytes = nachans * (shm()->dynamicRange / 8) * 
+            shm()->timerValue[ANALOG_SAMPLES];
+            FILE_LOG(logDEBUG1)
+                << "#Analog Channels:" << nachans << " Databytes: " << adatabytes;
         }
 
-        // calculate digital channels
+        // digital channels (ctb only, digital, analog/digital readout)
         if (shm()->myDetectorType == CHIPTESTBOARD &&
-            (((shm()->roFlags & DIGITAL_ONLY) != 0) ||
-             ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
-            nchans += 4;
+            ((shm()->roFlags & DIGITAL_ONLY) || (shm()->roFlags & ANALOG_AND_DIGITAL))) {
+            ndchans = 64;
+            ddatabytes = (sizeof(uint64_t) * shm()->timerValue[DIGITAL_SAMPLES]);
+            FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans
+                                << " Databytes: " << ddatabytes;
         }
-        shm()->nChan[X] = nchans;
-
-        // recalculate derived parameters chans and databytes
-        shm()->nChans = nchans;
-        shm()->dataBytes = shm()->nChans * shm()->nChips *
-                           (shm()->dynamicRange / 8) *
-                           shm()->timerValue[SAMPLES];
-        FILE_LOG(logDEBUG1) << "Number of Channels:" << shm()->nChans
-                            << " Databytes: " << shm()->dataBytes;
+        shm()->nChans = nachans + ndchans;
+        shm()->dataBytes = adatabytes + ddatabytes;
+        FILE_LOG(logDEBUG1) << "# Total #Channels:" << shm()->nChans 
+            << " Databytes: " << shm()->dataBytes;
     }
 }
 
@@ -882,10 +885,16 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
 
     if (shm()->myDetectorType == CHIPTESTBOARD ||
         shm()->myDetectorType == MOENCH) {
-        // samples
+        // analog samples
         n += client.receiveData(&i64, sizeof(i64));
         if (i64 >= 0) {
-            shm()->timerValue[SAMPLES] = i64;
+            shm()->timerValue[ANALOG_SAMPLES] = i64;
+        }
+        
+        // digital samples
+        n += client.receiveData(&i64, sizeof(i64));
+        if (i64 >= 0) {
+            shm()->timerValue[DIGITAL_SAMPLES] = i64;
         }
 
         // adcmask
@@ -1518,8 +1527,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
         shm()->timerValue[index] = retval;
         // update #nchans and databytes, as it depends on #samples, adcmask,
         // readoutflags 
-        if (index == SAMPLES && (shm()->myDetectorType == CHIPTESTBOARD ||
-                                 shm()->myDetectorType == MOENCH)) {
+        if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
             updateTotalNumberOfChannels();
         }
     }
@@ -1548,7 +1556,8 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
                         ACQUISITION_TIME,
                         SUBFRAME_ACQUISITION_TIME,
                         SUBFRAME_DEADTIME,
-                        SAMPLES,
+                        ANALOG_SAMPLES,
+                        DIGITAL_SAMPLES,
                         STORAGE_CELL_NUMBER};
 
         if (std::any_of(std::begin(rt), std::end(rt),
@@ -1884,7 +1893,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nsub exp time:"
             << (shm()->timerValue[SUBFRAME_ACQUISITION_TIME])
             << "\nsub dead time:" << (shm()->timerValue[SUBFRAME_DEADTIME])
-            << "\nsamples:" << (shm()->timerValue[SAMPLES])
+            << "\nasamples:" << (shm()->timerValue[ANALOG_SAMPLES])
+            << "\ndsamples:" << (shm()->timerValue[DIGITAL_SAMPLES]) 
             << "\ndynamic range:" << shm()->dynamicRange
             << "\nflippeddatax:" << (shm()->flippedData[X])
             << "\nactivated: " << shm()->activated
@@ -1939,14 +1949,16 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 break;
 
             case CHIPTESTBOARD:
-                setTimer(SAMPLES, shm()->timerValue[SAMPLES]);
+                setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
+                setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
                 enableTenGigabitEthernet(shm()->tenGigaEnable);
                 setReadOutFlags(GET_READOUT_FLAGS);
                 setADCEnableMask(shm()->adcEnableMask);
                 break;
 
             case MOENCH:
-                setTimer(SAMPLES, shm()->timerValue[SAMPLES]);
+                setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
+                setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
                 enableTenGigabitEthernet(shm()->tenGigaEnable);
                 setADCEnableMask(shm()->adcEnableMask);
                 break;

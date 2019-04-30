@@ -62,7 +62,8 @@ void slsReceiverImplementation::InitializeMembers() {
 	subExpTime = 0;
 	subPeriod = 0;
 	numberOfFrames = 0;
-	numberOfSamples = 0;
+	numberOfAnalogSamples = 0;
+	numberOfDigitalSamples = 0;
 	dynamicRange = 16;
 	tengigaEnable = false;
 	fifoDepth = 0;
@@ -341,9 +342,14 @@ uint64_t slsReceiverImplementation::getNumberOfFrames() const{
 	return numberOfFrames;
 }
 
-uint64_t slsReceiverImplementation::getNumberofSamples() const{
+uint64_t slsReceiverImplementation::getNumberofAnalogSamples() const{
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-	return numberOfSamples;
+	return numberOfAnalogSamples;
+}
+
+uint64_t slsReceiverImplementation::getNumberofDigitalSamples() const{
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	return numberOfDigitalSamples;
 }
 
 uint32_t slsReceiverImplementation::getDynamicRange() const{
@@ -475,7 +481,7 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 
 		// side effects
 		if (myDetectorType == CHIPTESTBOARD) {
-			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable, readoutFlags);
+			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
 			for (const auto& it : dataProcessor)
 				it->SetPixelDimension();
 			if (SetupFifoStructure() == FAIL)
@@ -823,10 +829,10 @@ int slsReceiverImplementation::setADCEnableMask(uint32_t mask) {
 
 		switch (myDetectorType) {
           case MOENCH:
-		        generalData->setImageSize(mask, numberOfSamples, tengigaEnable);
+		        generalData->setImageSize(mask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable);
                 break;
 		   case CHIPTESTBOARD:
-		        generalData->setImageSize(mask, numberOfSamples, tengigaEnable, readoutFlags);
+		        generalData->setImageSize(mask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
                 break;
 			default:
 				break;
@@ -953,21 +959,41 @@ int slsReceiverImplementation::setNumberOfFrames(const uint64_t i) {
 }
 
 
-int slsReceiverImplementation::setNumberofSamples(const uint64_t i) {
-	if (numberOfSamples != i) {
-		numberOfSamples = i;
+int slsReceiverImplementation::setNumberofAnalogSamples(const uint64_t i) {
+	if (numberOfAnalogSamples != i) {
+		numberOfAnalogSamples = i;
 
 		if(myDetectorType == MOENCH) {
-			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable);
+			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable);
 		} else if(myDetectorType == CHIPTESTBOARD) {
-			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable, readoutFlags);
+			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
 		}
 		for (const auto& it : dataProcessor)
 			it->SetPixelDimension();
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;
 	}
-	FILE_LOG (logINFO) << "Number of Samples: " << numberOfSamples;
+	FILE_LOG (logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
+	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
+	return OK;
+}
+
+
+int slsReceiverImplementation::setNumberofDigitalSamples(const uint64_t i) {
+	if (numberOfDigitalSamples != i) {
+		numberOfDigitalSamples = i;
+
+		if(myDetectorType == MOENCH) {
+			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable);
+		} else if(myDetectorType == CHIPTESTBOARD) {
+			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
+		}
+		for (const auto& it : dataProcessor)
+			it->SetPixelDimension();
+		if (SetupFifoStructure() == FAIL)
+			return FAIL;
+	}
+	FILE_LOG (logINFO) << "Number of Digital Samples: " << numberOfDigitalSamples;
 	FILE_LOG (logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 	return OK;
 }
@@ -999,10 +1025,10 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 			generalData->SetTenGigaEnable(b,dynamicRange);
 			break;
 		case MOENCH:
-			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable);
+			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable);
 			break;
 		case CHIPTESTBOARD:
-			generalData->setImageSize(adcEnableMask, numberOfSamples, tengigaEnable, readoutFlags);
+			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
 			break;
 		default:
 			break;

@@ -609,9 +609,23 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>samples [i]</b> sets/gets number of samples expected from the jctb. Used in CHIP TEST BOARD only. \c Returns \c (long long int)
+   - <b>samples [i]</b> sets/gets number of samples (both analog and digital) expected from the ctb. Used in CHIP TEST BOARD  and MOENCH only. \c Returns \c (long long int)
 	 */
     descrToFuncMap[i].m_pFuncName = "samples";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
+    ++i;
+
+    /*! \page timing
+   - <b>asamples [i]</b> sets/gets number of analog samples expected from the ctb. Used in CHIP TEST BOARD and MOENCH only. \c Returns \c (long long int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "asamples";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
+    ++i;
+
+    /*! \page timing
+   - <b>bsamples [i]</b> sets/gets number of digital samples expected from the ctb. Used in CHIP TEST BOARD and MOENCH only. \c Returns \c (long long int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "bsamples";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
@@ -1931,6 +1945,11 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    - <b>adcenable [mask]</b> Sets/gets ADC enable mask (8 digits hex format)
 	 */
     descrToFuncMap[i].m_pFuncName = "adcenable";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
+    ++i;
+
+    /** not documenting this, but keeping this for backwards compatibility */
+    descrToFuncMap[i].m_pFuncName = "adcdisable";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
@@ -4426,8 +4445,13 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
         index = CYCLES_NUMBER;
     else if (cmd == "measurements")
         index = MEASUREMENTS_NUMBER;
-    else if (cmd == "samples")
-        index = SAMPLES;
+    // also does digital sample
+    else if (cmd == "samples") 
+        index = ANALOG_SAMPLES; 
+    else if (cmd == "asamples")
+        index = ANALOG_SAMPLES;
+    else if (cmd == "bsamples")
+        index = DIGITAL_SAMPLES;
     else if (cmd == "storagecells")
         index = STORAGE_CELL_NUMBER;
     else if (cmd == "storagecell_delay")
@@ -4466,6 +4490,14 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
 
     ret = myDet->setTimer(index, t, detPos);
 
+    // samples command does both asamples and dsamples
+    if (cmd == "samples" ) {
+        int64_t dret = myDet->setTimer(DIGITAL_SAMPLES, t, detPos);
+        if (dret != ret) {
+            throw sls::RuntimeError("Analog and digital number of samples are different. Check with asamples and dsamples command");
+        }
+    }
+
     if ((ret != -1) && (index == ACQUISITION_TIME || index == SUBFRAME_ACQUISITION_TIME ||
     		index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER ||
                         index == SUBFRAME_DEADTIME || index == STORAGE_CELL_DELAY)) {
@@ -4487,7 +4519,9 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "delay t \t sets the delay after trigger in s" << std::endl;
         os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
         os << "cycles t \t sets the number of cycles (e.g. number of triggers)" << std::endl;
-        os << "samples t \t sets the number of samples expected from the jctb" << std::endl;
+        os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
+        os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
+        os << "dsamples t \t sets the number of digital samples expected from the ctb" << std::endl;
         os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
         os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 15(0xf). For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
         os << "storagecell_delay t \t sets additional time to t between 2 storage cells. For very advanced users only! For JUNGFRAU only. Range: 0-1638375 ns (resolution of 25ns).. " << std::endl;
@@ -4502,7 +4536,9 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "delay  \t gets the delay after trigger in s" << std::endl;
         os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
         os << "cycles  \t gets the number of cycles (e.g. number of triggers)" << std::endl;
-        os << "samples \t gets the number of samples expected from the jctb" << std::endl;
+        os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
+        os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
+        os << "dsamples \t gets the number of digital samples expected from the ctb" << std::endl;
         os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
         os << "storagecell_start \t gets the storage cell that stores the first acquisition of the series." << std::endl;
         os << "storagecell_delay \tgets additional time between 2 storage cells. " << std::endl;
@@ -5591,6 +5627,26 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
         }
 
         os << std::hex << myDet->getADCEnableMask(detPos) << std::dec;
+    } 
+    // kept only for backwards compatibility, use adcenable
+    else if (cmd == "adcdisable") {
+
+        if (action == PUT_ACTION) {
+            uint32_t adcEnableMask = 0;
+            if (sscanf(args[1], "%x", &adcEnableMask))
+                ;
+            else
+                return std::string("Could not scan adcdisable reg ") + std::string(args[1]);
+            
+            // get enable mask from enable mask
+            adcEnableMask ^= BIT32_MASK;
+            myDet->setADCEnableMask(adcEnableMask, detPos);
+        }
+
+        uint32_t retval = myDet->getADCEnableMask(detPos);
+        // get disable mask
+        retval ^= BIT32_MASK;
+        os << std::hex << retval << std::dec;
     }
 
     else

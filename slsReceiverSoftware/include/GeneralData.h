@@ -180,14 +180,6 @@ public:
 	};
 
 	/**
-	 * Setting packets per frame changes member variables
-	 * @param ns number of samples
-	 */
-	virtual void setNumberofSamples(const uint64_t ns) {
-		FILE_LOG(logERROR) << "setNumberofSamples is a generic function that should be overloaded by a derived class";
-	};
-
-	/**
 	 * Enable Gap Pixels changes member variables
 	 * @param enable true if gap pixels enable, else false
 	 */
@@ -209,11 +201,12 @@ public:
     /**
      * Set databytes (ctb, moench)
      * @param a adc enable mask
-     * @param s number of samples
+	 * @param as analog number of samples
+     * @param ds digital number of samples
      * @param t tengiga enable
 	 * @param f readout flags
      */
-    virtual void setImageSize(uint32_t a, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+    virtual void setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
         cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
     };
 
@@ -557,7 +550,9 @@ private:
 	/** Number of analog channels */
 	const int NCHAN_ANALOG = 32;
 	/** Number of digital channels */
-	const int NCHAN_DIGITAL = 4;
+	const int NCHAN_DIGITAL = 64;
+	/** Number of bytes per analog channel */
+	const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
 public:
 
 
@@ -581,46 +576,60 @@ public:
     /**
      * Set databytes (ctb, moench)
      * @param a adc enable mask
-     * @param s number of samples
+	 * @param as analog number of samples
+     * @param ds digital number of samples
      * @param t tengiga enable
 	 * @param f readout flags
      */
-    void setImageSize(uint32_t a, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
-		 int nchans = 0;
-		 if (f != slsDetectorDefs::GET_READOUT_FLAGS) {
-			 // analog channels
-			 if (f == slsDetectorDefs::NORMAL_READOUT || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
-				if (a == BIT32_MASK) {
-					nchans = 32;
-				} else {
-					for (int ich = 0; ich < 32; ++ich) {
-						if (a & (1 << ich))
-							++nchans;
-					}
-				}
-			 }
-			 // digital channels
-			 if (f & slsDetectorDefs::DIGITAL_ONLY || f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
-				 nchans += NCHAN_DIGITAL;
-			 }
-		 }
-	    nPixelsX = nchans;
-	    nPixelsY = s;
-	    // 10G
-	    if (t) {
-			headerSizeinPacket 	= 22;
-			dataSize 			= 8192;
-			packetSize 			= headerSizeinPacket + dataSize;
-			imageSize 			= nPixelsX * nPixelsY * 2;
-			packetsPerFrame 	= ceil((double)imageSize / (double)packetSize);
-			standardheader		= false;	    }
+	void setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+        int nachans = 0, ndchans = 0;
+        int adatabytes = 0, ddatabytes = 0;
+
+        if (f != slsDetectorDefs::GET_READOUT_FLAGS) {
+            // analog channels (normal, analog/digital readout)
+            if (f == slsDetectorDefs::NORMAL_READOUT ||
+                f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+                if (a == BIT32_MASK) {
+                    nachans = 32;
+                } else {
+                    for (int ich = 0; ich < 32; ++ich) {
+                        if (a & (1 << ich))
+                            ++nachans;
+                    }
+                }
+                adatabytes = nachans * NUM_BYTES_PER_ANALOG_CHANNEL * as;
+                FILE_LOG(logDEBUG1) << " Number of Analog Channels:" << nachans
+                                    << " Databytes: " << adatabytes;
+            }
+            // digital channels
+            if (f & slsDetectorDefs::DIGITAL_ONLY ||
+                f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+                ndchans = NCHAN_DIGITAL;
+                ddatabytes = (sizeof(uint64_t) * ds);
+                FILE_LOG(logDEBUG1) << "Number of Digital Channels:" << ndchans
+                                    << " Databytes: " << ddatabytes;
+            }
+            FILE_LOG(logDEBUG1) << "Total Number of Channels:" << nachans + ndchans
+                                << " Databytes: " << adatabytes + ddatabytes;
+        }
+        nPixelsX = nachans + ndchans;
+        nPixelsY = 1;
+        // 10G
+        if (t) {
+            headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+            dataSize = UDP_PACKET_DATA_BYTES;
+			packetSize = headerSizeinPacket + dataSize;
+            imageSize = adatabytes + ddatabytes;
+            packetsPerFrame = ceil((double)imageSize / (double)dataSize);
+            standardheader = true;	    
+		}
 	    // 1g udp (via fifo readout)
 	    else {
 			headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
 			dataSize 			= UDP_PACKET_DATA_BYTES;
 			packetSize 			= headerSizeinPacket + dataSize;
-			imageSize 			= nPixelsX * nPixelsY * 2;
-			packetsPerFrame 	= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+			imageSize 			= adatabytes + ddatabytes;
+			packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);
 			standardheader		= true;
 	    }
 	}
@@ -632,95 +641,73 @@ class MoenchData : public GeneralData {
 
 
 private:
-	/** Structure of an jungfrau ctb packet header (10G Udp) */
-  struct jfrauctb_packet_header {
-      unsigned char emptyHeader[6];
-      unsigned char reserved[4];
-      uint32_t packetFrameNumber;
-      uint64_t bunchid;
-  } __attribute__((packed));
+	/** Number of bytes per analog channel */
+	const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
 
 public:
   /** Constructor */
   MoenchData() {
-      myDetectorType = slsDetectorDefs::MOENCH;
-      nPixelsX = 32; // total number of channels
-      nPixelsY = 1;  // number of samples
-      headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-      dataSize = UDP_PACKET_DATA_BYTES;
-      packetSize = headerSizeinPacket + dataSize;
-      // packetsPerFrame 	= 1;
-      imageSize = nPixelsX * nPixelsY * 2;
-      packetsPerFrame = ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
-      frameIndexMask = 0xFFFFFF;
-      maxFramesPerFile = CTB_MAX_FRAMES_PER_FILE;
-      fifoBufferHeaderSize =
-          FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-      defaultFifoDepth = 2500;
-      standardheader = true;
+      myDetectorType 			= slsDetectorDefs::MOENCH;
+      nPixelsX 					= 32; // total number of channels
+      nPixelsY 					= 1;  // number of samples
+      headerSizeinPacket 		= sizeof(slsDetectorDefs::sls_detector_header);
+      dataSize 					= UDP_PACKET_DATA_BYTES;
+      packetSize 				= headerSizeinPacket + dataSize;
+      // packetsPerFrame 		= 1;
+      imageSize 				= nPixelsX * nPixelsY * 2;
+      packetsPerFrame 			= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
+      frameIndexMask 			= 0xFFFFFF;
+      maxFramesPerFile 			= CTB_MAX_FRAMES_PER_FILE;
+      fifoBufferHeaderSize 		= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+      defaultFifoDepth 			= 2500;
+      standardheader 			= true;
 	};
-
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
-	 * @param oddStartingPacket odd starting packet (gotthard)
-	 * @param frameNumber frame number 	 * @param packetNumber packet number
-	 * @param subFrameNumber sub frame number if applicable
-	 * @param bunchId bunch id
-	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const 	{
-		subFrameNumber = -1;
-		auto header = reinterpret_cast<jfrauctb_packet_header*>(packetData);
-		frameNumber = (header->packetFrameNumber >> 8) & frameIndexMask;
-		packetNumber = header->packetFrameNumber & 0xFF;
-		bunchId = header->bunchid;
-	}
-
 
     /**
      * Set databytes (ctb, moench)
      * @param a adc enable mask
-     * @param s number of samples
+	 * @param as analog number of samples
+     * @param ds digital number of samples
      * @param t tengiga enable
 	 * @param f readout flags
      */
-    void setImageSize(uint32_t a, int s, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
-		int nchans = 32;
+	void setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+        int nachans = 0;
+        int adatabytes = 0;
+
+		// analog channels (normal, analog/digital readout)
 		if (a == BIT32_MASK) {
-			nchans = 32;
+			nachans = 32;
 		} else {
 			for (int ich = 0; ich < 32; ++ich) {
 				if (a & (1 << ich))
-					++nchans;
+					++nachans;
 			}
 		}
+		adatabytes = nachans * NUM_BYTES_PER_ANALOG_CHANNEL * as;
+		FILE_LOG(logDEBUG1) << "Total Number of Channels:" << nachans
+							<< " Databytes: " << adatabytes;
 
-		nPixelsX = nchans;
-		nPixelsY = s;
-		// 10G
-		if (t) {
-			headerSizeinPacket 	= 22;
-			dataSize 			= 8192;
+        nPixelsX = nachans;
+        nPixelsY = 1;
+        // 10G
+        if (t) {
+            headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
+            dataSize 			= UDP_PACKET_DATA_BYTES;
 			packetSize 			= headerSizeinPacket + dataSize;
-			imageSize 			= nPixelsX * nPixelsY * 2;
-			packetsPerFrame 	= (imageSize + packetSize - 1) / packetSize;
-			standardheader		= false;
+            imageSize 			= adatabytes;
+            packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);  
 		}
-		// 1g udp (via fifo readout)
-		else {
+	    // 1g udp (via fifo readout)
+	    else {
 			headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
 			dataSize 			= UDP_PACKET_DATA_BYTES;
 			packetSize 			= headerSizeinPacket + dataSize;
-			imageSize 			= nPixelsX * nPixelsY * 2;
-			packetsPerFrame 	= (imageSize + UDP_PACKET_DATA_BYTES - 1) / UDP_PACKET_DATA_BYTES;
-            standardheader		= true;
-		}
+			imageSize 			= adatabytes;
+			packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);
+	    }
 	}
 };
 
 
 
-;

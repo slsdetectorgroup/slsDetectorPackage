@@ -15,22 +15,20 @@
 #include <errno.h>
 #include <netdb.h>
 
-extern const enum detectorType myDetectorType;
-extern int nSamples;
-extern int dataBytes;
-extern int nframes;
-extern char* ramValues;
-
 #define UDP_PACKET_HEADER_VERSION 	(0x1)
 
+extern const enum detectorType myDetectorType;
 
+extern int analogDataBytes;
+extern int digitalDataBytes;
+extern char* analogData;
+extern char* digitalData;
+
+int analogOffset = 0;
+int digitalOffset = 0;
 uint32_t udpPacketNumber = 0;
 uint64_t udpFrameNumber = 0;
 
-int numSamplesPerPacket = 0;
-int dataBytesPerSample = 0;
-int dataBytesPerPacket = 0;
-int udpHeaderOffset = 0;
 
 uint32_t getUDPPacketNumber() {
 	return udpPacketNumber;
@@ -56,25 +54,28 @@ void createUDPPacketHeader(char* buffer, uint16_t id) {
 	header->version = UDP_PACKET_HEADER_VERSION;
 
 	// reset offset
-	udpHeaderOffset = 0;
+	analogOffset = 0;
+	digitalOffset = 0;
 	// reset frame number
 	udpFrameNumber = 0;
 }
 
 
 int fillUDPPacket(char* buffer) {
-	FILE_LOG(logDEBUG2, ("Databytes:%d offset:%d\n", dataBytes, udpHeaderOffset));
+	FILE_LOG(logDEBUG2, ("Analog (databytes:%d, offset:%d)\n Digital (databytes:%d offset:%d)\n", 
+		analogDataBytes, analogOffset, digitalDataBytes, digitalOffset));
 	// reached end of data for one frame
-	if (udpHeaderOffset >= dataBytes) {
+	if (analogOffset >= analogDataBytes && digitalOffset >= digitalDataBytes) {
 		// reset offset
-		udpHeaderOffset = 0;
+		analogOffset = 0;
+		digitalOffset = 0;
 		return 0;
 	}
 
 	sls_detector_header* header = (sls_detector_header*)(buffer);
 
 	// update frame number, starts at 1 (reset packet number)
-	if (udpHeaderOffset == 0) {
+	if (analogOffset == 0 && digitalOffset == 0) {
 		++udpFrameNumber;
 		header->frameNumber = udpFrameNumber;
 		udpPacketNumber = -1;
@@ -85,21 +86,41 @@ int fillUDPPacket(char* buffer) {
 	header->packetNumber = udpPacketNumber;
 	FILE_LOG(logDEBUG2, ("Creating packet number %d (fnum:%lld)\n", udpPacketNumber, (long long int) udpFrameNumber));
 
-	// calculate number of bytes to copy
-	int numBytesToCopy = ((udpHeaderOffset + UDP_PACKET_DATA_BYTES) <= dataBytes) ?
-			UDP_PACKET_DATA_BYTES : (dataBytes - udpHeaderOffset);
+	int freeBytes = UDP_PACKET_DATA_BYTES;
 
-	// copy data
-	memcpy(buffer + sizeof(sls_detector_header), ramValues + udpHeaderOffset, numBytesToCopy);
-	// pad last packet if extra space
-	if (numBytesToCopy < UDP_PACKET_DATA_BYTES) {
-		int bytes = UDP_PACKET_DATA_BYTES - numBytesToCopy;
-		FILE_LOG(logDEBUG1, ("Padding %d bytes for fnum:%lld pnum:%d\n", bytes, (long long int)udpFrameNumber, udpPacketNumber));
-		memset(buffer + sizeof(sls_detector_header) + numBytesToCopy, 0, bytes);
+	// analog data
+	int analogBytes = 0;
+	if (analogOffset < analogDataBytes) {
+		// bytes to copy
+		analogBytes = ((analogOffset + freeBytes) <= analogDataBytes) ? 
+			freeBytes : (analogDataBytes - analogOffset);
+		// copy
+		memcpy(buffer + sizeof(sls_detector_header), analogData + analogOffset, analogBytes);
+		// increment offset
+		analogOffset += analogBytes;
+		// decrement free bytes
+		freeBytes -= analogBytes;
 	}
 
-	// increment offset
-	udpHeaderOffset += numBytesToCopy;
+	// digital data
+	int digitalBytes = 0;
+	if (freeBytes && digitalOffset < digitalDataBytes) {
+		// bytes to copy
+		digitalBytes = ((digitalOffset + freeBytes) <= digitalDataBytes) ? 
+			freeBytes : (digitalDataBytes - digitalOffset);
+		// copy
+		memcpy(buffer + sizeof(sls_detector_header) + analogBytes, digitalData + digitalOffset, digitalBytes);
+		// increment offset
+		digitalOffset += digitalBytes;
+		// decrement free bytes
+		freeBytes -= digitalBytes;
+	}
+
+	// pad data
+	if (freeBytes) {
+		memset(buffer + sizeof(sls_detector_header) + analogBytes + digitalBytes, 0, freeBytes);
+		FILE_LOG(logDEBUG1, ("Padding %d bytes for fnum:%lld pnum:%d\n", freeBytes, (long long int)udpFrameNumber, udpPacketNumber));
+	}
 
 	return UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header);
 }

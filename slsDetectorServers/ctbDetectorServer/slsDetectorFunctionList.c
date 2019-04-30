@@ -39,7 +39,13 @@ int virtual_stop = 0;
 #endif
 
 int dataBytes = 0;
-char* ramValues = 0;
+int analogDataBytes = 0;
+int digitalDataBytes = 0;
+char* analogData = 0;
+char* digitalData = 0;
+char volatile *analogDataPtr = 0;
+char volatile *digitalDataPtr = 0;
+
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
 
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0};
@@ -53,8 +59,9 @@ int highvoltage = 0;
 uint32_t adcEnableMask = 0;
 int analogEnable = 1;
 int digitalEnable = 0;
-int nSamples = 1;
-char volatile *now_ptr = 0;
+int naSamples = 1;
+int ndSamples = 1;
+
 
 int isFirmwareCheckDone() {
 	return firmware_check_done;
@@ -454,10 +461,18 @@ void setupDetector() {
 
     // default variables
     dataBytes = 0;
-    if (ramValues) {
-        free(ramValues);
-        ramValues = 0;
+    analogDataBytes = 0;
+    digitalDataBytes = 0;
+    if (analogData) {
+        free(analogData);
+        analogData = 0;
     }
+    if (digitalData) {
+        free(digitalData);
+        digitalData = 0;
+    } 
+    analogDataPtr = 0;
+    digitalDataPtr = 0;
     {
         int i = 0;
         for (i = 0; i < NUM_CLOCKS; ++i) {
@@ -475,8 +490,8 @@ void setupDetector() {
     adcEnableMask = BIT_32_MSK;
     analogEnable = 1;
     digitalEnable = 0;
-    nSamples = 1;
-    now_ptr = 0;
+    naSamples = 1;
+    ndSamples = 1;
 
 
     ALTERA_PLL_ResetPLLAndReconfiguration();
@@ -538,7 +553,8 @@ void setupDetector() {
 	enableTenGigabitEthernet(0);
 
 	//Initialization of acquistion parameters
-    setTimer(SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
+    setTimer(ANALOG_SAMPLES, DEFAULT_NUM_SAMPLES); 
+    setTimer(DIGITAL_SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
@@ -552,7 +568,8 @@ void setupDetector() {
 }
 
 int allocateRAM() {
-	int oldDataBytes = dataBytes;
+	int oldAnalogDataBytes = analogDataBytes;
+    int oldDigitalDataBytes = digitalDataBytes;
 	updateDataBytes();
 
 	// only allcoate RAM for 1 giga udp (if 10G, return)
@@ -561,59 +578,82 @@ int allocateRAM() {
 
 
 	// update only if change in databytes
-	if (dataBytes == oldDataBytes) {
-		FILE_LOG(logDEBUG1, ("RAM of size %d already allocated. Nothing to be done.\n", dataBytes));
+	if (analogDataBytes == oldAnalogDataBytes && digitalDataBytes == oldDigitalDataBytes) {
+		FILE_LOG(logDEBUG1, ("RAM size (Analog:%d, Digital:%d) already allocated. Nothing to be done.\n", 
+        analogDataBytes, digitalDataBytes));
 		return OK;
 	}
 	// Zero databytes
-	if (dataBytes <= 0) {
-		FILE_LOG(logERROR, ("Can not allocate RAM for 0 bytes (databytes: 0).\n"));
+	if (analogDataBytes == 0 && digitalDataBytes == 0) {
+		FILE_LOG(logERROR, ("Can not allocate RAM for 0 bytes.\n"));
 		return FAIL;
 	}
 	// clear RAM
-	if (ramValues) {
-		free(ramValues);
-		ramValues = 0;
-	}
+    if (analogData) {
+        free(analogData);
+        analogData = 0;
+    }
+    if (digitalData) {
+        free(digitalData);
+        digitalData = 0;
+    } 
 	// allocate RAM
-	ramValues = malloc(dataBytes);
-	// cannot malloc
-	if (ramValues == NULL) {
-		FILE_LOG(logERROR, ("Can not allocate RAM for even 1 frame. "
-				"Probably cause: Memory Leak.\n"));
-		return FAIL;
-	}
+    if (analogDataBytes) {
+	    analogData = malloc(analogDataBytes);
+        // cannot malloc
+        if (analogData == NULL) {
+            FILE_LOG(logERROR, ("Can not allocate analog data RAM for even 1 frame. "
+                    "Probable cause: Memory Leak.\n"));
+            return FAIL;
+        }
+        FILE_LOG(logINFO, ("\tAnalog RAM allocated to %d bytes\n", analogDataBytes));
+    }
+    if (digitalDataBytes) {
+        digitalData = malloc(digitalDataBytes);
+        // cannot malloc
+        if (digitalData == NULL) {
+            FILE_LOG(logERROR, ("Can not allocate digital data RAM for even 1 frame. "
+                    "Probable cause: Memory Leak.\n"));
+            return FAIL;
+        }
+    }
 
-	FILE_LOG(logINFO, ("\tRAM allocated to %d bytes\n", dataBytes));
+
+	FILE_LOG(logINFO, ("\tDigital RAM allocated to %d bytes\n", digitalDataBytes));
 	return OK;
 }
 
 void updateDataBytes() {
-    int oldDataBytes = dataBytes;
-    dataBytes = NCHIP * getChannels() * NUM_BYTES_PER_PIXEL * nSamples;
-    if (dataBytes != oldDataBytes) {
-        FILE_LOG(logINFO, ("\tUpdating Databytes: %d\n", dataBytes));
-    }
-}
+    int nachans = 0, ndchans = 0;
+    analogDataBytes = 0;
+    digitalDataBytes = 0;
 
-int getChannels() {
-    int nchans = 0;
-
+    // analog
     if (analogEnable) {
         if (adcEnableMask == BIT_32_MSK)
-            nchans = 32;
+            nachans = 32;
         else {
             int ichan = 0;
             for (ichan = 0; ichan < NCHAN_ANALOG; ++ichan) {
                 if (adcEnableMask & (1 << ichan))
-                    ++nchans;
+                    ++nachans;
             }
         }
+        analogDataBytes = nachans * (DYNAMIC_RANGE / 8) * naSamples;
+        FILE_LOG(logINFO, ("\t#Analog Channels:%d, Databytes:%d\n", nachans, analogDataBytes));
     }
-    if (digitalEnable)
-        nchans += NCHAN_DIGITAL;
-    FILE_LOG(logINFO, ("\tNumber of Channels calculated: %d\n", nchans))
-    return nchans;
+    // digital
+    if (digitalEnable) {
+        ndchans = NCHAN_DIGITAL;
+        digitalDataBytes = (sizeof(uint64_t) * ndSamples);
+        FILE_LOG(logINFO, ("\t#Digital Channels:%d, Databytes:%d\n", ndchans, digitalDataBytes));
+    }
+
+    // total
+    int nchans = nachans + ndchans;
+    dataBytes = analogDataBytes + digitalDataBytes;
+
+    FILE_LOG(logINFO, ("\t#Total Channels:%d, Total Databytes:%d\n", nchans, dataBytes));
 }
 
 
@@ -845,17 +885,33 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logINFO, ("\tGetting #cycles: %lld\n", (long long int)retval));
 		break;
 
-	case SAMPLES:
+	case ANALOG_SAMPLES:
 	    if(val >= 0) {
-	        FILE_LOG(logINFO, ("Setting #samples: %lld\n", (long long int)val));
-	        nSamples = val;
-	        bus_w(SAMPLES_REG, val);
+	        FILE_LOG(logINFO, ("Setting #analog samples: %lld\n", (long long int)val));
+	        naSamples = val;
+	        bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_ANALOG_MSK);
+            bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) | ((val << SAMPLES_ANALOG_OFST) & SAMPLES_ANALOG_MSK));
 	        if (allocateRAM() == FAIL) {
 	            return -1;
 	        }
 	    }
-        retval = nSamples;
-        FILE_LOG(logINFO, ("\tGetting #samples: %lld\n", (long long int)retval));
+        retval = naSamples;
+        FILE_LOG(logINFO, ("\tGetting #analog samples: %lld\n", (long long int)retval));
+        break;
+
+	case DIGITAL_SAMPLES:
+	    if(val >= 0) {
+	        FILE_LOG(logINFO, ("Setting #digital samples: %lld\n", (long long int)val));
+	        ndSamples = val;
+            bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_DIGITAL_MSK);
+            bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) | ((val << SAMPLES_DIGITAL_OFST) & SAMPLES_DIGITAL_MSK));
+
+	        if (allocateRAM() == FAIL) {
+	            return -1;
+	        }
+	    }
+        retval = ndSamples;
+        FILE_LOG(logINFO, ("\tGetting #digital samples: %lld\n", (long long int)retval));
         break;
 
 	default:
@@ -2242,7 +2298,7 @@ void readSample(int ns) {
     uint32_t addr = DUMMY_REG;
 
     // read adcs
-    if (analogEnable) {
+    if (analogEnable && ns < naSamples) {
 
         uint32_t fifoAddr = FIFO_DATA_REG;
 
@@ -2259,7 +2315,7 @@ void readSample(int ns) {
 
         if (!(ns%1000)) {
     		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x Status:0x%x\n",
-    				ns, nSamples, bus_r(FIFO_EMPTY_REG), bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
+    				ns, naSamples, bus_r(FIFO_EMPTY_REG), bus_r(FIFO_FULL_REG), bus_r(STATUS_REG)));
         }
 
         // loop through all channels
@@ -2276,22 +2332,22 @@ void readSample(int ns) {
                 bus_w(addr, bus_r(addr) | ((ich << DUMMY_FIFO_CHNNL_SLCT_OFST) & DUMMY_FIFO_CHNNL_SLCT_MSK));
 
                 // read fifo and write it to current position of data pointer
-                *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
+                *((uint16_t*)analogDataPtr) = bus_r16(fifoAddr);
 
                 // keep reading till the value is the same
-               /* while (*((uint16_t*)now_ptr) != bus_r16(fifoAddr)) {
+               /* while (*((uint16_t*)analogDataPtr) != bus_r16(fifoAddr)) {
                     FILE_LOG(logDEBUG1, ("%d ", ich));
-                    *((uint16_t*)now_ptr) = bus_r16(fifoAddr);
+                    *((uint16_t*)analogDataPtr) = bus_r16(fifoAddr);
                 }*/
 
                 // increment pointer to data out destination
-                now_ptr += 2;
+                analogDataPtr += 2;
             }
         }
     }
 
     // read digital output
-    if (digitalEnable) {
+    if (digitalEnable && ns < ndSamples) {
         // read strobe to digital fifo
         bus_w(addr, bus_r(addr) | DUMMY_DGTL_FIFO_RD_STRBE_MSK);
         bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
@@ -2306,15 +2362,15 @@ void readSample(int ns) {
         // wait as it is connected directly to fifo running on a different clock
         if (!(ns%1000)) {
     		FILE_LOG(logDEBUG1, ("Reading sample ns:%d of %d DEmtpy:%d DFull:%d Status:0x%x\n",
-    				ns, nSamples,
+    				ns, ndSamples,
 					((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST),
 					((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_FULL_MSK) >> FIFO_DIN_STATUS_FIFO_FULL_OFST),
 					bus_r(STATUS_REG)));
         }
     
         // read fifo and write it to current position of data pointer
-        *((uint64_t*)now_ptr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
-        now_ptr += 8;
+        *((uint64_t*)digitalDataPtr) = get64BitReg(FIFO_DIN_LSB_REG, FIFO_DIN_MSB_REG);
+        digitalDataPtr += 8;
     }
 }
 
@@ -2334,7 +2390,7 @@ uint32_t checkDataInFifo() {
 	return dataPresent;
 }
 
-// only called for first sample
+// only called for starting of a new frame
 int checkFifoForEndOfAcquisition() {
 	uint32_t dataPresent = checkDataInFifo();
     FILE_LOG(logDEBUG2, ("status:0x%x\n", bus_r(STATUS_REG)));
@@ -2367,7 +2423,8 @@ int checkFifoForEndOfAcquisition() {
 int readFrameFromFifo() {
 	int ns = 0;
 	// point the data pointer to the starting position of data
-	now_ptr = ramValues;
+    analogDataPtr = analogData;
+    digitalDataPtr = digitalData;
 
     // no data for this frame
     if (checkFifoForEndOfAcquisition() == FAIL) {
@@ -2375,7 +2432,8 @@ int readFrameFromFifo() {
     }
 
     // read Sample
-    while(ns < nSamples) {
+    int maxSamples = (naSamples > ndSamples) ? naSamples : ndSamples;
+    while(ns < maxSamples) {
     	// chceck if no data in fifo, return ns?//FIXME: ask Anna
         readSample(ns);
         ns++;

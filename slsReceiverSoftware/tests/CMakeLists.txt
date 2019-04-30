@@ -7,7 +7,7 @@
 #     test-GeneralData.cpp
 # )
 
-target_sources(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test-GeneralData.cpp)
+#target_sources(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test-GeneralData.cpp)
 
 # add_executable(testSlsReceiver ${SOURCES})
 # target_link_libraries(testSlsReceiver 

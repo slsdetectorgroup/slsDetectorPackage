@@ -877,12 +877,19 @@ int slsReceiverTCPIPInterface::set_timer() {
 				case SUBFRAME_DEADTIME:
 					receiver->setSubPeriod(index[1] + receiver->getSubExpTime());
 					break;
-				case SAMPLES:
+				case ANALOG_SAMPLES:
 					if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
-						modeNotImplemented("(Samples) Timer index", (int)index[0]);
+						modeNotImplemented("(Analog Samples) Timer index", (int)index[0]);
 						break;
 					}
-					receiver->setNumberofSamples(index[1]);
+					receiver->setNumberofAnalogSamples(index[1]);
+					break;
+				case DIGITAL_SAMPLES:
+					if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
+						modeNotImplemented("(Digital Samples) Timer index", (int)index[0]);
+						break;
+					}
+					receiver->setNumberofDigitalSamples(index[1]);
 					break;
 				default:
 					modeNotImplemented("Timer index", (int)index[0]);
@@ -909,14 +916,23 @@ int slsReceiverTCPIPInterface::set_timer() {
 		case SUBFRAME_DEADTIME:
 			retval=(receiver->getSubPeriod() - receiver->getSubExpTime());
 			break;
-		case SAMPLES:
+		case ANALOG_SAMPLES:
 			if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
 				ret = FAIL;
 				sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
 				FILE_LOG(logERROR) << "Warning: " << mess;
 				break;
 			}
-			retval=receiver->getNumberofSamples();
+			retval=receiver->getNumberofAnalogSamples();
+			break;
+		case DIGITAL_SAMPLES:
+			if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
+				ret = FAIL;
+				sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
+				FILE_LOG(logERROR) << "Warning: " << mess;
+				break;
+			}
+			retval=receiver->getNumberofDigitalSamples();
 			break;
 		default:
 			modeNotImplemented("Timer index", (int)index[0]);

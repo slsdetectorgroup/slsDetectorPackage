@@ -257,10 +257,16 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	uint64_t getNumberOfFrames() const;
 
 	/*
-	 * Get Number of Samples expected by receiver from detector (for chip test board only)
-	 * @return number of samples expected
+	 * Get Number of Analog Samples expected by receiver from detector (for chip test board and moench only)
+	 * @return number of Analog samples expected
 	 */
-	uint64_t getNumberofSamples() const;
+	uint64_t getNumberofAnalogSamples() const;
+
+	/*
+	 * Get Number of Digital Samples expected by receiver from detector (for chip test board and moench only)
+	 * @return number of Digital samples expected
+	 */
+	uint64_t getNumberofDigitalSamples() const;
 
 	/**
 	 * Get Dynamic Range or Number of Bits Per Pixel
@@ -571,11 +577,18 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	int setNumberOfFrames(const uint64_t i);
 
 	/**
-	 * Set Number of Samples expected by receiver from detector
-	 * @param i number of Samples expected
+	 * Set Number of Analog Samples expected by receiver from detector
+	 * @param i number of Analog Samples expected
 	 * @return OK or FAIL
 	 */
-	int setNumberofSamples(const uint64_t i);
+	int setNumberofAnalogSamples(const uint64_t i);
+
+	/**
+	 * Set Number of Digital Samples expected by receiver from detector
+	 * @param i number of Digital Samples expected
+	 * @return OK or FAIL
+	 */
+	int setNumberofDigitalSamples(const uint64_t i);
 
 	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel
@@ -816,8 +829,10 @@ private:
 	uint64_t subPeriod;
 	/** Frame Number */
 	uint64_t numberOfFrames;
-	/** Samples Number */
-	uint64_t numberOfSamples;
+	/** Analog Samples Number */
+	uint64_t numberOfAnalogSamples;
+	/** Digital Samples Number */
+	uint64_t numberOfDigitalSamples;
 	/** Dynamic Range */
 	uint32_t dynamicRange;
 	/** Ten Giga Enable*/

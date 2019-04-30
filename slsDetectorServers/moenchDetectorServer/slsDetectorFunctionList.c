@@ -574,25 +574,10 @@ int allocateRAM() {
 
 void updateDataBytes() {
     int oldDataBytes = dataBytes;
-    dataBytes = NCHIP * getChannels() * NUM_BYTES_PER_PIXEL * nSamples;
+    dataBytes = NCHIP * NUM_BYTES_PER_PIXEL * nSamples;
     if (dataBytes != oldDataBytes) {
         FILE_LOG(logINFO, ("\tUpdating Databytes: %d\n", dataBytes));
     }
-}
-
-int getChannels() {
-    int nchans = 0;
-
-    nchans += NCHAN;
-    // remove the channels disabled
-    int ichan = 0;
-    for (ichan = 0; ichan < NCHAN; ++ichan) {
-    	if (adcDisableMask & (1 << ichan))
-    		--nchans;
-    }
-
-    FILE_LOG(logINFO, ("\tNumber of Channels calculated: %d\n", nchans))
-    return nchans;
 }
 
 

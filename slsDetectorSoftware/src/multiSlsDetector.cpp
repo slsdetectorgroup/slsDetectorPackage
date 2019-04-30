@@ -284,7 +284,8 @@ void multiSlsDetector::initSharedMemory(bool verify) {
                                << ") version mismatch "
                                   "(expected 0x"
                                << std::hex << MULTI_SHMVERSION << " but got 0x"
-                               << multi_shm()->shmversion << std::dec;
+                               << multi_shm()->shmversion << std::dec 
+                               << ". Clear Shared memory to continue.";
             throw SharedMemoryError("Shared memory version mismatch!");
         }
     }
@@ -1079,10 +1080,6 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
     // multi
     auto r = parallelCall(&slsDetector::setTimer, index, t);
     int64_t ret = sls::minusOneIfDifferent(r);
-
-    if (index == SAMPLES) {
-        setDynamicRange();
-    }
 
     // set progress
     if (t != -1) {

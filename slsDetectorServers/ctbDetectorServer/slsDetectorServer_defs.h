@@ -32,7 +32,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 /* Hardware Definitions */
 #define NCHAN 						(36)
 #define NCHAN_ANALOG                (32)
-#define NCHAN_DIGITAL               (4)
+#define NCHAN_DIGITAL               (64)
 #define NCHIP 						(1)
 #define NDAC 						(24)
 #define NPWR                        (6)

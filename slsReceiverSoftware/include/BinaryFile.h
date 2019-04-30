@@ -33,12 +33,11 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	 * @param dr pointer to dynamic range
 	 * @param portno pointer to udp port number for logging
 	 * @param smode pointer to silent mode
-	 * @param hwenable header writer enable (ctb)
 	 */
 	BinaryFile(int ind, uint32_t* maxf,
 			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-			bool* smode, bool hwenable);
+			bool* smode);
 
 	/**
 	 * Destructor
@@ -116,9 +115,6 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 
 	/** Number of actual packets caught in file */
 	uint64_t numActualPacketsInFile;
-
-	/** Header writer enable */
-	bool headerWriteEnable;
 
 };
 

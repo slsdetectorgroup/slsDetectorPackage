@@ -16,12 +16,11 @@ FILE* BinaryFile::masterfd = nullptr;
 BinaryFile::BinaryFile(int ind, uint32_t* maxf,
 		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-		bool* smode, bool hwenable):
+		bool* smode):
 		File(ind, maxf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
 		filefd(nullptr),
 		numFramesInFile(0),
-		numActualPacketsInFile(0),
-		headerWriteEnable(hwenable)
+		numActualPacketsInFile(0)
 {
 #ifdef VERBOSE
 	PrintMembers();
@@ -80,11 +79,6 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 
 	// write to file
 	int ret = 0;
-	// remove header for ctb
-	if (!headerWriteEnable) {
-		buffersize -= sizeof(sls_receiver_header);
-		buffer += sizeof(sls_receiver_header);
-	}
 
 	// contiguous bitset
 	if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
@@ -93,30 +87,22 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 
 	// not contiguous bitset
 	else {
+		// write detector header
+		ret = BinaryFileStatic::WriteDataFile(filefd, buffer, sizeof(sls_detector_header));
 
-		if (headerWriteEnable) {
-			// write detector header
-			ret = BinaryFileStatic::WriteDataFile(filefd, buffer, sizeof(sls_detector_header));
-	
-			// get contiguous representation of bit mask
-			bitset_storage storage;
-			memset(storage, 0 , sizeof(bitset_storage));
-			sls_bitset bits = *(sls_bitset*)(buffer + sizeof(sls_detector_header));
-			for (int i = 0; i < MAX_NUM_PACKETS; ++i)
-				storage[i >> 3] |= (bits[i] << (i & 7));
-			// write bitmask
-			ret += BinaryFileStatic::WriteDataFile(filefd, (char*)storage, sizeof(bitset_storage));
+		// get contiguous representation of bit mask
+		bitset_storage storage;
+		memset(storage, 0 , sizeof(bitset_storage));
+		sls_bitset bits = *(sls_bitset*)(buffer + sizeof(sls_detector_header));
+		for (int i = 0; i < MAX_NUM_PACKETS; ++i)
+			storage[i >> 3] |= (bits[i] << (i & 7));
+		// write bitmask
+		ret += BinaryFileStatic::WriteDataFile(filefd, (char*)storage, sizeof(bitset_storage));
 
-			// write data
-			ret += BinaryFileStatic::WriteDataFile(filefd,
-			buffer + sizeof(sls_detector_header), buffersize - sizeof(sls_receiver_header));
-		}
-
-		else {
-			// write only data
-			ret += BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize);
-		}
-	}
+		// write data
+		ret += BinaryFileStatic::WriteDataFile(filefd,
+		buffer + sizeof(sls_detector_header), buffersize - sizeof(sls_receiver_header));
+}
 
 	// if write error
     if (ret != buffersize) {
@@ -141,7 +127,7 @@ int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		}
 		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName,
-				*overWriteEnable, headerWriteEnable,
+				*overWriteEnable, 
 				*dynamicRange, en, size, nx, ny, *numImages, *maxFramesPerFile,
 				at, st, sp, ap, BINARY_WRITER_VERSION);
 	}

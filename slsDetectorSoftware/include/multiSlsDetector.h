@@ -1735,12 +1735,32 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Sets/Gets receiver file write enable
-     * @param enable 1 or 0 to set/reset file write enable
+     * @param value 1 or 0 to set/reset file write enable
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file write enable
      */
     int setFileWrite(bool value, int detPos = -1);
+
+    /**
+     * Gets file write enable
+     * @returns file write enable
+     */
     int getFileWrite(int detPos = -1) const;
+     
+     /**
+     * Sets/Gets receiver master file write enable
+     * @param value 1 or 0 to set/reset master file write enable
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns master file write enable
+     */
+    int setMasterFileWrite(bool value, int detPos = -1);
+
+    /**
+     * Gets master file write enable
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns master file write enable
+     */
+    int getMasterFileWrite(int detPos = -1) const;
 
     /**
      * Sets/Gets file overwrite enable
@@ -1749,6 +1769,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns file overwrite enable
      */
     int setFileOverWrite(bool enable, int detPos = -1);
+
+    /**
+     * Gets file over write enable
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns file over write enable
+     */
     int getFileOverWrite(int detPos = -1) const;
 
     /**

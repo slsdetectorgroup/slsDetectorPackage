@@ -29,6 +29,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param f address of Fifo pointer
 	 * @param ftype pointer to file format type
 	 * @param fwenable file writer enable
+	 * @apram mfwenable pointer to master file write enable
 	 * @param dsEnable pointer to data stream enable
 	 * @param gpEnable pointer to gap pixels enable
 	 * @param dr pointer to dynamic range
@@ -40,7 +41,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param sm pointer to silent mode
 	 */
 	DataProcessor(int ind, detectorType dtype, Fifo* f, fileFormat* ftype,
-			bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
+			bool fwenable, bool* mfwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
 						bool* fp, bool* act, bool* depaden, bool* sm);
 
@@ -324,6 +325,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
 	/** File Write Enable */
 	bool fileWriteEnable;
+
+	/** Master File Write Enable */
+	bool* masterFileWriteEnable;
 
 	/** Gap Pixels Enable */
 	bool* gapPixelsEnable;

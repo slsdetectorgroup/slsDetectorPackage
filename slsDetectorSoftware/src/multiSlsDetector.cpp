@@ -3500,6 +3500,22 @@ int multiSlsDetector::getFileWrite(int detPos) const{
     return sls::minusOneIfDifferent(r);
 }
 
+int multiSlsDetector::setMasterFileWrite(bool value, int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->setMasterFileWrite(value);
+    }
+    auto r = parallelCall(&slsDetector::setMasterFileWrite, value);
+    return sls::minusOneIfDifferent(r);
+}
+
+int multiSlsDetector::getMasterFileWrite(int detPos) const{
+    if (detPos >= 0) {
+        return detectors[detPos]->getMasterFileWrite();
+    }
+    auto r = parallelCall(&slsDetector::getMasterFileWrite);
+    return sls::minusOneIfDifferent(r);
+}
+
 int multiSlsDetector::setFileOverWrite(bool enable, int detPos) {
     if (detPos >= 0) {
         return detectors[detPos]->setFileOverWrite(enable);

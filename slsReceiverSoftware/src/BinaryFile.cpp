@@ -113,14 +113,14 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 }
 
 
-int BinaryFile::CreateMasterFile(bool en, uint32_t size,
+int BinaryFile::CreateMasterFile(bool mfwenable, bool en, uint32_t size,
 		uint32_t nx, uint32_t ny, uint64_t at,  uint64_t st, uint64_t sp,
 		uint64_t ap) {
 	//beginning of every acquisition
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
-	if (master && (*detIndex==0)) {
+	if (mfwenable && master && (*detIndex==0)) {
 		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath,
 				fileNamePrefix, *fileIndex);
 		if(!(*silentMode)) {

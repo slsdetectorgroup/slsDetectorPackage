@@ -204,6 +204,9 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	/** Enable File Write*/
 	int enable_file_write();
 
+	/** Enable Master File Write */
+	int enable_master_file_write();
+
 	/** enable compression */
 	int enable_compression();
 

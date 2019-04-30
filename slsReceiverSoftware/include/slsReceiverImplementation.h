@@ -129,6 +129,12 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	bool getFileWriteEnable() const;
 
 	/**
+	 * Get Master File Write Enable
+	 * @return true if Master file write enabled, else false
+	 */
+	bool getMasterFileWriteEnable() const;
+
+	/**
 	 * Get File Over Write Enable
 	 * @return true if file over write enabled, else false
 	 */
@@ -425,6 +431,12 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 * @param b true for file write enable, else false
 	 */
 	void setFileWriteEnable(const bool b);
+
+		/**
+	 * Set Master File Write Enable
+	 * @param b true for Master file write enable, else false
+	 */
+	void setMasterFileWriteEnable(const bool b);
 
 	/**
 	 * Set File Overwrite Enable
@@ -862,6 +874,8 @@ private:
 	uint32_t framesPerFile;
 	/** File Write enable */
 	bool fileWriteEnable;
+	/** MasterFile Write enable */
+	bool masterFileWriteEnable;	
 	/** Overwrite enable */
 	bool overwriteEnable;
 

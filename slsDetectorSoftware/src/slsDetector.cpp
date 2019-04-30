@@ -390,6 +390,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
         break;
     }
     shm()->rxFileWrite = true;
+    shm()->rxMasterFileWrite = true;
     shm()->rxFileOverWrite = true;
 
     // get the detector parameters based on type
@@ -1873,6 +1874,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nr_discardpolicy:" << shm()->rxFrameDiscardMode
             << "\nr_padding:" << shm()->rxFramePadding
             << "\nwrite enable:" << shm()->rxFileWrite
+            << "\nmaster write enable:" << shm()->rxMasterFileWrite
             << "\noverwrite enable:" << shm()->rxFileOverWrite
             << "\nframe index needed:"
             << ((shm()->timerValue[FRAME_NUMBER] *
@@ -1912,6 +1914,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setReceiverFramesDiscardPolicy(shm()->rxFrameDiscardMode);
             setPartialFramesPadding(shm()->rxFramePadding);
             setFileWrite(shm()->rxFileWrite);
+            setMasterFileWrite(shm()->rxMasterFileWrite);
             setFileOverWrite(shm()->rxFileOverWrite);
             setTimer(FRAME_PERIOD, shm()->timerValue[FRAME_PERIOD]);
             setTimer(FRAME_NUMBER, shm()->timerValue[FRAME_NUMBER]);
@@ -3236,6 +3239,10 @@ int slsDetector::updateCachedReceiverVariables() const {
             n += receiver.receiveData(&i32, sizeof(i32));
             shm()->rxFileWrite = static_cast<bool>(i32);
 
+            // master file write enable
+            n += receiver.receiveData(&i32, sizeof(i32));
+            shm()->rxMasterFileWrite = static_cast<bool>(i32);
+
             // file overwrite enable
             n += receiver.receiveData(&i32, sizeof(i32));
             shm()->rxFileOverWrite = static_cast<bool>(i32);
@@ -3507,6 +3514,20 @@ bool slsDetector::setFileWrite(bool value) {
 }
 
 bool slsDetector::getFileWrite() const { return shm()->rxFileWrite; }
+
+bool slsDetector::setMasterFileWrite(bool value) {
+    int arg = static_cast<int>(value);
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Sending enable master file write to receiver: " << arg;
+    if (shm()->rxOnlineFlag == ONLINE_FLAG) {
+        sendToReceiver(F_ENABLE_RECEIVER_MASTER_FILE_WRITE, arg, retval);
+        FILE_LOG(logDEBUG1) << "Receiver master file write enable: " << retval;
+        shm()->rxMasterFileWrite = static_cast<bool>(retval);
+    }
+    return getMasterFileWrite();
+}
+
+bool slsDetector::getMasterFileWrite() const { return shm()->rxMasterFileWrite; }
 
 bool slsDetector::setFileOverWrite(bool value) {
     int arg = static_cast<int>(value);

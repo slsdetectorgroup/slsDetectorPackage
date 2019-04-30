@@ -24,7 +24,7 @@ const std::string DataProcessor::TypeName = "DataProcessor";
 
 
 DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
-		fileFormat* ftype, bool fwenable,
+		fileFormat* ftype, bool fwenable, bool* mfwenable, 
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
 		bool* fp, bool* act, bool* depaden, bool* sm) :
@@ -38,6 +38,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		dataStreamEnable(dsEnable),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
+		masterFileWriteEnable(mfwenable),
 		gapPixelsEnable(gpEnable),
 		dynamicRange(dr),
 		streamingFrequency(freq),
@@ -247,7 +248,7 @@ int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st,
 	if (file == nullptr)
 		return FAIL;
 	file->CloseAllFiles();
-	if (file->CreateMasterFile(en,	generalData->imageSize,
+	if (file->CreateMasterFile(*masterFileWriteEnable, en,	generalData->imageSize,
 			generalData->nPixelsX, generalData->nPixelsY,
 			at, st, sp, ap) == FAIL)
 		return FAIL;

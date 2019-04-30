@@ -121,6 +121,7 @@ class File : private virtual slsDetectorDefs {
 
 	 /**
 	  * Create master file
+	  * @param mfwenable master file write enable
 	  * @param en ten giga enable
 	  * @param size image size
 	  * @param nx number of pixels in x direction
@@ -131,7 +132,7 @@ class File : private virtual slsDetectorDefs {
 	  * @param ap acquisition period
 	  * @returns OK or FAIL
 	  */
-	virtual int CreateMasterFile(bool en, uint32_t size,
+	virtual int CreateMasterFile(bool mfwenable, bool en, uint32_t size,
 				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st,
 				uint64_t sp, uint64_t ap) {
 		FILE_LOG(logERROR) << "This is a generic function CreateMasterFile that "

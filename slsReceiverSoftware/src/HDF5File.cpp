@@ -238,7 +238,7 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 }
 
 
-int HDF5File::CreateMasterFile(bool en, uint32_t size,
+int HDF5File::CreateMasterFile(bool mfwenable, bool en, uint32_t size,
 		uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t sp,
 		uint64_t ap) {
 
@@ -247,7 +247,7 @@ int HDF5File::CreateMasterFile(bool en, uint32_t size,
 	numActualPacketsInFile = 0;
 	extNumImages = *numImages;
 
-	if (master && (*detIndex==0)) {
+	if (mfwenable && master && (*detIndex==0)) {
 		virtualfd = 0;
 		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath,
 				fileNamePrefix, *fileIndex);

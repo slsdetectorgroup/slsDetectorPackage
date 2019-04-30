@@ -202,6 +202,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&slsReceiverTCPIPInterface::get_frames_caught;
 	flist[F_RESET_RECEIVER_FRAMES_CAUGHT]	=	&slsReceiverTCPIPInterface::reset_frames_caught;
 	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&slsReceiverTCPIPInterface::enable_file_write;
+	flist[F_ENABLE_RECEIVER_MASTER_FILE_WRITE]	=	&slsReceiverTCPIPInterface::enable_master_file_write;
 	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&slsReceiverTCPIPInterface::enable_overwrite;
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&slsReceiverTCPIPInterface::enable_tengiga;
 	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&slsReceiverTCPIPInterface::set_fifo_depth;
@@ -504,6 +505,10 @@ int slsReceiverTCPIPInterface::send_update() {
 
 	// file write enable
 	i32=(int)receiver->getFileWriteEnable();
+	n += mySock->SendDataOnly(&i32, sizeof(i32));
+
+	// master file write enable
+	i32=(int)receiver->getMasterFileWriteEnable();
 	n += mySock->SendDataOnly(&i32, sizeof(i32));
 
 	// file overwrite enable
@@ -1273,6 +1278,35 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
+
+
+int slsReceiverTCPIPInterface::enable_master_file_write(){
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int enable = -1;
+	int retval = -1;
+
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &enable, sizeof(enable), true, receiver) == FAIL)
+		return FAIL;
+
+	// base object not null
+	if (ret == OK) {
+		// set
+		if (enable >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				FILE_LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
+				receiver->setMasterFileWriteEnable(enable);
+			}
+		}
+		// get
+		retval = receiver->getMasterFileWriteEnable();
+		validate(enable, retval, std::string("set master file write enable"), DEC);
+		FILE_LOG(logDEBUG1) << "master file write enable:" << retval;
+	}
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
+}
 
 
 int slsReceiverTCPIPInterface::enable_overwrite() {

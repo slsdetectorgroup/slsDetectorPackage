@@ -93,6 +93,7 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 
 	/**
 	 * Create master file
+	 * @param mfwenable master file write enable
 	 * @param en ten giga enable
 	 * @param size image size
 	 * @param nx number of pixels in x direction
@@ -103,7 +104,7 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 	 * @param ap acquisition period
 	 * @returns OK or FAIL
 	 */
-	int CreateMasterFile(bool en, uint32_t size,
+	int CreateMasterFile(bool mfwenable, bool en, uint32_t size,
 			uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t sp,
 			uint64_t ap);
 

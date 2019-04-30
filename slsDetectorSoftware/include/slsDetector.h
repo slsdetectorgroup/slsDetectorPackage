@@ -16,7 +16,7 @@ class multiSlsDetector;
 class ServerInterface;
 class MySocketTCP;
 
-#define SLS_SHMVERSION 0x190426
+#define SLS_SHMVERSION 0x190430
 #define NCHIPSMAX 10
 #define NCHANSMAX 65536
 #define NDACSMAX 16
@@ -237,10 +237,13 @@ struct sharedSlsDetector {
     /** frames per file */
     int rxFramesPerFile;
 
-    /** filewriteenable */
+    /** file write enable */
     bool rxFileWrite;
 
-    /** overwriteenable */
+	/** master file write enable */
+	bool rxMasterFileWrite;
+
+    /** overwrite enable */
     bool rxFileOverWrite;
 	
 };
@@ -1637,7 +1640,24 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     bool setFileWrite(bool value);
 
+    /**
+     * Gets file write enable
+     * @returns file write enable
+     */
 	bool getFileWrite() const;
+
+	/**
+     * Sets/Gets receiver master file write enable
+     * @param value 1 or 0 to set/reset master file write enable
+     * @returns master file write enable
+     */
+    bool setMasterFileWrite(bool value);
+
+    /**
+     * Gets master file write enable
+     * @returns master file write enable
+     */
+    bool getMasterFileWrite() const;
 
     /**
 	 * Sets file overwrite in the receiver

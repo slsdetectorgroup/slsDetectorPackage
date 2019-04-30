@@ -1541,11 +1541,18 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page output
-    - <b>fileformat</b> sets/gets the file format for data in receiver. Options: [binary, hdf5]. \c Returns \c (string)
+    - <b>fileformat [i]</b> sets/gets the file format for data in receiver. Options: [binary, hdf5]. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "fileformat";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
     ++i;
+
+     /*! \page output
+    - <b>masterfile [i]</b> sets/gets the master file write enable in receiver. \c Returns \c (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "masterfile";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdEnablefwrite;
+    ++i;   
 
     /* communication configuration */
 
@@ -1921,9 +1928,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page prototype
-   - <b>adcdisable [mask]</b> Sets/gets ADC disable mask (8 digits hex format)
+   - <b>adcenable [mask]</b> Sets/gets ADC enable mask (8 digits hex format)
 	 */
-    descrToFuncMap[i].m_pFuncName = "adcdisable";
+    descrToFuncMap[i].m_pFuncName = "adcenable";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
@@ -2599,22 +2606,41 @@ std::string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int acti
     if (action == HELP_ACTION) {
         return helpEnablefwrite(action);
     }
-    if (action == PUT_ACTION) {
-        if (sscanf(args[1], "%d", &i))
-            myDet->setFileWrite(i, detPos);
-        else
-            return std::string("could not decode enable file write");
+    if (cmd == "enablefwrite") {
+        if (action == PUT_ACTION) {
+            if (sscanf(args[1], "%d", &i))
+                myDet->setFileWrite(i, detPos);
+            else
+                return std::string("could not decode enable file write");
+        }
+        sprintf(ans, "%d", myDet->getFileWrite(detPos));
+        return std::string(ans);
     }
-    sprintf(ans, "%d", myDet->getFileWrite(detPos));
-    return std::string(ans);
+
+    else if (cmd == "masterfile") {
+        if (action == PUT_ACTION) {
+            if (sscanf(args[1], "%d", &i))
+                myDet->setMasterFileWrite(i, detPos);
+            else
+                return std::string("could not decode master file enable");
+        }
+        sprintf(ans, "%d", myDet->getMasterFileWrite(detPos));
+        return std::string(ans);
+    }
+
+    else return std::string("unknown command " + cmd);
 }
 
 std::string slsDetectorCommand::helpEnablefwrite(int action) {
     std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
+    if (action == GET_ACTION || action == HELP_ACTION) {
         os << std::string("enablefwrite \t When Enabled writes the data into the file\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("enablefwrite i \t  should be 1 or 0 or -1\n");
+        os << std::string("masterfile \t When Enabled writes the master file\n");
+    }
+    if (action == PUT_ACTION || action == HELP_ACTION) {
+        os << std::string("enablefwrite i \t  should be 1 or 0\n");
+        os << std::string("masterfile i \t  sets the master file write enable. should be 1 or 0\n");
+    }
     return os.str();
 }
 
@@ -5172,7 +5198,7 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patmask m \t sets the 64 bit mask (hex) applied to every pattern. Only the bits from patsetbit are selected to mask for the corresponding bit value from m mask" << std::endl;
         os << "patsetbit m \t selects bits (hex) of the 64 bits that the patmask will be applied to every pattern. Only the bits from m mask are selected to mask for the corresponding bit value from patmask." << std::endl;
         os << "adcinvert mask\t  sets the adcinversion mask (hex)" << std::endl;
-        os << "adcdisable mask\t  sets the adcdisable mask (hex)" << std::endl;
+        os << "adcenable mask\t  sets the adcenable mask (hex)" << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "pattern \t cannot get" << std::endl;
@@ -5196,7 +5222,7 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patsetbit \t gets 64 bit mask (hex) of the selected bits that the patmask will be applied to every pattern. " << std::endl;
         os << "adcinvert \t  returns the adcinversion mask " << std::endl;
 
-        os << "adcdisable \t  returns the adcdisable mask " << std::endl;
+        os << "adcenable \t  returns the adcenable mask " << std::endl;
     }
     return os.str();
 }
@@ -5552,24 +5578,19 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
         }
 
         os << std::hex << myDet->readRegister(123, detPos) << std::dec ; //0x7b
-    } else if (cmd == "adcdisable") {
+    } else if (cmd == "adcenable") {
 
         if (action == PUT_ACTION) {
             uint32_t adcEnableMask = 0;
             if (sscanf(args[1], "%x", &adcEnableMask))
                 ;
             else
-                return std::string("Could not scan adcdisable reg ") + std::string(args[1]);
+                return std::string("Could not scan adcenable reg ") + std::string(args[1]);
             
-            // get enable mask from enable mask
-            adcEnableMask ^= BIT32_MASK;
             myDet->setADCEnableMask(adcEnableMask, detPos);
         }
 
-        uint32_t retval = myDet->getADCEnableMask(detPos);
-        // get disable mask
-        retval ^= BIT32_MASK;
-        os << std::hex << retval << std::dec;
+        os << std::hex << myDet->getADCEnableMask(detPos) << std::dec;
     }
 
     else

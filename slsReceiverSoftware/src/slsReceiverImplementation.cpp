@@ -96,6 +96,7 @@ void slsReceiverImplementation::InitializeMembers() {
 	fileIndex = 0;
 	framesPerFile = 0;
 	fileWriteEnable = true;
+	masterFileWriteEnable = true;
 	overwriteEnable = true;
 
 	//***acquisition parameters***
@@ -200,6 +201,11 @@ bool slsReceiverImplementation::getFramePaddingEnable() const{
 bool slsReceiverImplementation::getFileWriteEnable() const{
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	return fileWriteEnable;
+}
+
+bool slsReceiverImplementation::getMasterFileWriteEnable() const{
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	return masterFileWriteEnable;
 }
 
 bool slsReceiverImplementation::getOverwriteEnable() const{
@@ -600,6 +606,12 @@ void slsReceiverImplementation::setFileWriteEnable(const bool b) {
 	FILE_LOG(logINFO) << "File Write Enable: " << stringEnable(fileWriteEnable);
 }
 
+void slsReceiverImplementation::setMasterFileWriteEnable(const bool b) {
+	masterFileWriteEnable = b;
+
+	FILE_LOG(logINFO) << "Master File Write Enable: " << stringEnable(masterFileWriteEnable);
+}
+
 
 void slsReceiverImplementation::setOverwriteEnable(const bool b) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
@@ -676,7 +688,7 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
 				listener[i]->SetGeneralData(generalData);
 
 				dataProcessor.push_back(sls::make_unique<DataProcessor>(i, myDetectorType, fifo_ptr, &fileFormatType,
-						fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
+						fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 						&dynamicRange, &streamingFrequency, &streamingTimerInMs,
 						&framePadding, &activated, &deactivatedPaddingEnable, &silentMode));
 				dataProcessor[i]->SetGeneralData(generalData);
@@ -1096,7 +1108,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	                &udpSocketBufferSize, &actualUDPSocketBufferSize, &framesPerFile,
 					&frameDiscardMode, &activated, &deactivatedPaddingEnable, &silentMode));
 			dataProcessor.push_back(sls::make_unique<DataProcessor>(i, myDetectorType, fifo_ptr, &fileFormatType,
-	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
+	                fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &streamingFrequency, &streamingTimerInMs,
 					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode));
 	    }

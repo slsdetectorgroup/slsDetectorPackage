@@ -28,7 +28,13 @@ void sigInterruptHandler(int p){
 #ifdef MYTHEN302
 void GetData(char* metadata, char* datapointer, uint32_t& datasize, 
 		int ctbType, int ctbDigitalOffset, int ctbAnalogDataBytes, void* p) {
-            
+
+    // only analog data      
+    if (ctbAnalogDataBytes == (int)datasize) {
+        FILE_LOG(logWARNING) << "No digital data for call back. Remove this unnecessary call back.";
+        return;
+    }
+
 	constexpr int dynamicRange = 24;
     constexpr int numSamples = 32 * 3;          // 32 channels * 3 counters = 96
     constexpr int numCounters = numSamples * 2; // 2 strips

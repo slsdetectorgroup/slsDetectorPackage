@@ -45,3 +45,9 @@ void slsReceiverUsers::registerCallBackRawDataModifyReady(void (*func)(char* hea
 		char* datapointer, uint32_t& revDatasize, void*), void *arg){
 	receiver->registerCallBackRawDataModifyReady(func,arg);
 }
+
+void slsReceiverUsers::registerCallBackCTBReceiverReady(void (*func)(char* header,
+		char* datapointer, uint32_t& revDatasize, 
+		int type, int digitalOffset, int analogDataBytes, void*), void *arg){
+	receiver->registerCallBackCTBReceiverReady(func,arg);
+}

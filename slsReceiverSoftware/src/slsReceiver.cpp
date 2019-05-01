@@ -130,3 +130,9 @@ void slsReceiver::registerCallBackRawDataModifyReady(void (*func)(char*,
         char*, uint32_t &, void*),void *arg){
 	tcpipInterface->registerCallBackRawDataModifyReady(func,arg);
 }
+
+
+void slsReceiver::registerCallBackCTBReceiverReady(void (*func)(char* ,
+        char*, uint32_t &, int, int, int, void*),void *arg){
+	tcpipInterface->registerCallBackCTBReceiverReady(func,arg);
+}

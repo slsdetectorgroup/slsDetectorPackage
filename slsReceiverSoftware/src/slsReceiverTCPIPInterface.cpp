@@ -53,6 +53,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 	pAcquisitionFinished = nullptr;
 	rawDataReadyCallBack = nullptr;
 	rawDataModifyReadyCallBack = nullptr;
+	ctbRawDataReadyCallBack = nullptr;
 	pRawDataReady = nullptr;
 
 	// create socket
@@ -130,7 +131,11 @@ void slsReceiverTCPIPInterface::registerCallBackRawDataModifyReady(void (*func)(
     pRawDataReady=arg;
 }
 
-
+void slsReceiverTCPIPInterface::registerCallBackCTBReceiverReady(void (*func)(char* ,
+        char*, uint32_t &, int, int, int, void*),void *arg){
+    ctbRawDataReadyCallBack=func;
+    pRawDataReady=arg;
+}
 
 void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 	((slsReceiverTCPIPInterface*)this_pointer)->startTCPServer();
@@ -616,6 +621,8 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 					receiver->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
 				if(rawDataModifyReadyCallBack)
 					receiver->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
+				if(ctbRawDataReadyCallBack)
+					receiver->registerCallBackCTBReceiverReady(ctbRawDataReadyCallBack, pRawDataReady);
 
 				// client has started updating receiver, update ip
 				if (!lockStatus)

@@ -26,14 +26,16 @@ void sigInterruptHandler(int p){
 
 
 #ifdef MYTHEN302
-void GetData(char* metadata, char* datapointer, uint32_t& datasize, void* p) {
+void GetData(char* metadata, char* datapointer, uint32_t& datasize, 
+		int ctbType, int ctbDigitalOffset, int ctbAnalogDataBytes, void* p) {
+            
 	constexpr int dynamicRange = 24;
     constexpr int numSamples = 32 * 3;          // 32 channels * 3 counters = 96
     constexpr int numCounters = numSamples * 2; // 2 strips
     // validate datasize
     {
         FILE_LOG(logDEBUG) << "Datasize:" << datasize;
-        int wordsCaught = (datasize / sizeof(uint64_t)) - ctbOffset;
+        int wordsCaught = ((datasize - ctbAnalogDataBytes) / sizeof(uint64_t)) - ctbOffset;
         int expectedWordSize = numSamples * dynamicRange;
         if (expectedWordSize != wordsCaught) {
             FILE_LOG(logWARNING) << "Number of words do not match, Expected "
@@ -42,7 +44,7 @@ void GetData(char* metadata, char* datapointer, uint32_t& datasize, void* p) {
     }
 
 	// source
-    uint64_t* ptr = (uint64_t*)datapointer;
+    uint64_t* ptr = (uint64_t*)(datapointer + ctbAnalogDataBytes);
     // remove the offset from source
    	ptr += ctbOffset;
     // destination
@@ -79,8 +81,9 @@ void GetData(char* metadata, char* datapointer, uint32_t& datasize, void* p) {
 
     // update the size to be written to file & overwrite data in memory
     datasize = numCounters * sizeof(int);
-    memcpy(datapointer, (char*)result, datasize);
+    memcpy(datapointer + ctbAnalogDataBytes, (char*)result, datasize);
     delete[] result;
+    datasize += ctbAnalogDataBytes;
     FILE_LOG(logDEBUG) << "Modified Size: " << datasize;
 }
 #endif
@@ -158,7 +161,7 @@ int main(int argc, char *argv[]) {
 
 
 	//register callbacks
-	receiver->registerCallBackRawDataModifyReady(GetData, NULL);
+	receiver->registerCallBackCTBReceiverReady(GetData, NULL);
 
         //start tcp server thread
 	if (receiver->start() == slsDetectorDefs::FAIL){

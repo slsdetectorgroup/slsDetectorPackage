@@ -27,7 +27,8 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		fileFormat* ftype, bool fwenable, bool* mfwenable, 
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
-		bool* fp, bool* act, bool* depaden, bool* sm) :
+		bool* fp, bool* act, bool* depaden, bool* sm,
+		int* ct, int* cdo, int* cad) :
 
 		ThreadObject(ind),
 		runningFlag(0),
@@ -56,8 +57,12 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
 		currentFrameIndex(0),
+		ctbType(ct),
+		ctbDigitalOffset(cdo),
+		ctbAnalogDataBytes(cad),
 		rawDataReadyCallBack(nullptr),
 		rawDataModifyReadyCallBack(nullptr),
+		ctbRawDataReadyCallBack(nullptr),
 		pRawDataReady(nullptr)
 {
      if(ThreadObject::CreateThread() == FAIL)
@@ -370,6 +375,20 @@ void DataProcessor::ProcessAnImage(char* buf) {
                 pRawDataReady);
         (*((uint32_t*)buf)) =  revsize;
     }
+	
+	// ctb call back
+	else if (ctbRawDataReadyCallBack) {
+		uint32_t revsize = (uint32_t)(*((uint32_t*)buf));
+        ctbRawDataReadyCallBack(
+        		(char*)rheader,
+                buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
+                revsize,
+				*ctbType,
+				*ctbDigitalOffset,
+				*ctbAnalogDataBytes,
+                pRawDataReady);
+        (*((uint32_t*)buf)) =  revsize;
+	}
 
 
 	// write to file
@@ -445,7 +464,11 @@ void DataProcessor::registerCallBackRawDataModifyReady(void (*func)(char* ,
 	pRawDataReady=arg;
 }
 
-
+void DataProcessor::registerCallBackCTBReceiverReady(void (*func)(char* ,
+		char*, uint32_t&, int, int, int, void*),void *arg) {
+	ctbRawDataReadyCallBack=func;
+	pRawDataReady=arg;
+}
 
 void DataProcessor::PadMissingPackets(char* buf) {
 	FILE_LOG(logDEBUG) << index << ": Padding Missing Packets";

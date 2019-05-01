@@ -120,6 +120,7 @@ void slsReceiverImplementation::InitializeMembers() {
 	pAcquisitionFinished = nullptr;
 	rawDataReadyCallBack = nullptr;
 	rawDataModifyReadyCallBack = nullptr;
+	ctbRawDataReadyCallBack = nullptr;
 	pRawDataReady = nullptr;
 }
 
@@ -696,7 +697,8 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
 				dataProcessor.push_back(sls::make_unique<DataProcessor>(i, myDetectorType, fifo_ptr, &fileFormatType,
 						fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 						&dynamicRange, &streamingFrequency, &streamingTimerInMs,
-						&framePadding, &activated, &deactivatedPaddingEnable, &silentMode));
+						&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
+						&ctbType, &ctbDigitalOffset, &ctbAnalogDataBytes));
 				dataProcessor[i]->SetGeneralData(generalData);
 			}
 			catch (...) {
@@ -740,6 +742,10 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
 		if(rawDataModifyReadyCallBack) {
 			for (const auto& it : dataProcessor)
 				it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
+		}
+		if(ctbRawDataReadyCallBack) {
+			for (const auto& it : dataProcessor)
+				it->registerCallBackCTBReceiverReady(ctbRawDataReadyCallBack,pRawDataReady);
 		}
 
 		// test socket buffer size with current set up
@@ -1136,7 +1142,8 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 			dataProcessor.push_back(sls::make_unique<DataProcessor>(i, myDetectorType, fifo_ptr, &fileFormatType,
 	                fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &streamingFrequency, &streamingTimerInMs,
-					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode));
+					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
+					&ctbType, &ctbDigitalOffset, &ctbAnalogDataBytes));
 	    }
 	    catch (...) {
 	         FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
@@ -1419,6 +1426,15 @@ void slsReceiverImplementation::registerCallBackRawDataModifyReady(void (*func)(
 	pRawDataReady=arg;
 	for (const auto& it : dataProcessor)
 		it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
+}
+
+
+void slsReceiverImplementation::registerCallBackCTBReceiverReady(void (*func)(char* ,
+		char*, uint32_t&, int, int, int, void*),void *arg) {
+	ctbRawDataReadyCallBack=func;
+	pRawDataReady=arg;
+	for (const auto& it : dataProcessor)
+		it->registerCallBackCTBReceiverReady(ctbRawDataReadyCallBack,pRawDataReady);
 }
 
 

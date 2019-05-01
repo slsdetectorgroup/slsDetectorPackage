@@ -87,6 +87,16 @@ public:
     void registerCallBackRawDataModifyReady(void (*func)(char* header,
             char* datapointer, uint32_t &revDatasize, void*),void *arg);
 
+    /**
+       @short register callback to be called when CTB data are available in receiver (to process and/or save the data).
+       \param func raw data ready callback. arguments are  sls_receiver_header, dataPointer, revDatasize is the reference of data size in bytes, chip type, digital offset, analog databytes. revDatasize be modified to the new size to be written/streamed. (only smaller value).
+       \param arg argument
+       \returns nothing
+     */
+    void registerCallBackCTBReceiverReady(void (*func)(char* header,
+            char* datapointer, uint32_t &revDatasize, int type, int digitalOffset, int analogDataBytes, void*),void *arg);
+
+
 	//receiver object
 	std::unique_ptr<slsReceiver> receiver;
 };

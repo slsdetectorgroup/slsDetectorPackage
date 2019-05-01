@@ -113,6 +113,11 @@ void slsReceiverImplementation::InitializeMembers() {
 	//** class objects ***
 	generalData = nullptr;
 
+	//** ctb callback parameters
+	ctbType = 0;
+	ctbDigitalOffset = 0;
+	ctbAnalogDataBytes = 0;
+
 	//***callback parameters***
 	startAcquisitionCallBack = nullptr;
 	pStartAcquisition = nullptr;
@@ -482,7 +487,7 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 
 		// side effects
 		if (myDetectorType == CHIPTESTBOARD) {
-			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
+			ctbAnalogDataBytes = generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
 			for (const auto& it : dataProcessor)
 				it->SetPixelDimension();
 			if (SetupFifoStructure() == FAIL)
@@ -838,7 +843,7 @@ int slsReceiverImplementation::setADCEnableMask(uint32_t mask) {
 		        generalData->setImageSize(mask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable);
                 break;
 		   case CHIPTESTBOARD:
-		        generalData->setImageSize(mask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
+		        ctbAnalogDataBytes = generalData->setImageSize(mask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
                 break;
 			default:
 				break;
@@ -972,7 +977,7 @@ int slsReceiverImplementation::setNumberofAnalogSamples(const uint64_t i) {
 		if(myDetectorType == MOENCH) {
 			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable);
 		} else if(myDetectorType == CHIPTESTBOARD) {
-			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
+			ctbAnalogDataBytes = generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
 		}
 		for (const auto& it : dataProcessor)
 			it->SetPixelDimension();
@@ -992,7 +997,7 @@ int slsReceiverImplementation::setNumberofDigitalSamples(const uint64_t i) {
 		if(myDetectorType == MOENCH) {
 			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable);
 		} else if(myDetectorType == CHIPTESTBOARD) {
-			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
+			ctbAnalogDataBytes = generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
 		}
 		for (const auto& it : dataProcessor)
 			it->SetPixelDimension();
@@ -1034,7 +1039,7 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
 			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable);
 			break;
 		case CHIPTESTBOARD:
-			generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
+			ctbAnalogDataBytes = generalData->setImageSize(adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable, readoutFlags);
 			break;
 		default:
 			break;

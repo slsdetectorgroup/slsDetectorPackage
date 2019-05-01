@@ -205,9 +205,11 @@ public:
      * @param ds digital number of samples
      * @param t tengiga enable
 	 * @param f readout flags
+	 * @returns analog data bytes
      */
-    virtual void setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+    virtual int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
         cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
+		return 0;
     };
 
     /**
@@ -580,8 +582,9 @@ public:
      * @param ds digital number of samples
      * @param t tengiga enable
 	 * @param f readout flags
+	 * @returns analog data bytes
      */
-	void setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+	int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
         int nachans = 0, ndchans = 0;
         int adatabytes = 0, ddatabytes = 0;
 
@@ -632,6 +635,7 @@ public:
 			packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);
 			standardheader		= true;
 	    }
+		return adatabytes;
 	}
 
 };
@@ -670,8 +674,9 @@ public:
      * @param ds digital number of samples
      * @param t tengiga enable
 	 * @param f readout flags
+	 * @returns analog data bytes
      */
-	void setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+	int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
         int nachans = 0;
         int adatabytes = 0;
 
@@ -706,6 +711,7 @@ public:
 			imageSize 			= adatabytes;
 			packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);
 	    }
+		return adatabytes;
 	}
 };
 

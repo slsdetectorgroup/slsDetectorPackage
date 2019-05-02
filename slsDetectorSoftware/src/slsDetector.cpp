@@ -2966,7 +2966,7 @@ int slsDetector::resetFPGA() {
 
 int slsDetector::copyDetectorServer(const std::string &fname,
                                     const std::string &hostname) {
-    char args[][MAX_STR_LENGTH]{};
+    char args[2][MAX_STR_LENGTH]{};
     sls::strcpy_safe(args[0], fname.c_str());
     sls::strcpy_safe(args[1], hostname.c_str());
     FILE_LOG(logINFO) << "Sending detector server " << args[0] << " from host "

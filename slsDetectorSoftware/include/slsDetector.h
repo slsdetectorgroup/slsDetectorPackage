@@ -1582,7 +1582,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param i file index
 	 * @returns file index
 	 */
-    int setFileIndex(int i);
+    int setFileIndex(int file_index);
 
     /**
      * Gets the file index
@@ -1703,21 +1703,21 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param i is -1 to get, 0 to disable and 1 to enable
 	 * @returns if 10Gbe is enabled
 	 */
-    int enableTenGigabitEthernet(int i = -1);
+    int enableTenGigabitEthernet(int value = -1);
 
     /**
 	 * Set/get receiver fifo depth
 	 * @param i is -1 to get, any other value to set the fifo deph
 	 * @returns the receiver fifo depth
 	 */
-    int setReceiverFifoDepth(int i = -1);
+    int setReceiverFifoDepth(int n_frames = -1);
 
     /**
 	 * Set/get receiver silent mode
 	 * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
 	 * @returns the receiver silent mode enable
 	 */
-    bool setReceiverSilentMode(int i = -1);
+    bool setReceiverSilentMode(int value = -1);
 
     /**
 	 * If data streaming in receiver is enabled,

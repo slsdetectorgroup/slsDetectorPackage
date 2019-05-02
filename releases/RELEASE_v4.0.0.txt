@@ -406,7 +406,7 @@ CONTENTS
 		startup values for firmware v0.7 such as adc phase, ADC_PORT_INVERT_VAL
 		and ADC offset half speed value.
 		
-	3.	(Jungfrau) Minimum exposure time of 50 us was implemented.
+	3.	(Jungfrau) Minimum exposure time of 50 ns was implemented.
 	
 	4. 	(Eiger and Jungfrau) They can be configured to have x and y coord values
 		of the detector in their udp header.

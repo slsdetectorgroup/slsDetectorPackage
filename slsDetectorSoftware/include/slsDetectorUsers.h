@@ -24,12 +24,12 @@ class detectorData;
 
 
 /*
-   \mainpage 
 <CENTER><H1>API for SLS detectors data acquisition</H1></CENTER>
 <HR>
  */
 /** 
-    \mainpage 
+\mainpage 
+\subpage CLI
 
 
 <H1>API for SLS detectors data acquisition</H1>

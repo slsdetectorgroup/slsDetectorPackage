@@ -57,7 +57,6 @@ SCENARIO("Multi detector operation", "[detector]") {
                 }
             }
         }
-
         m.freeSharedMemory();
     }
 }
@@ -71,13 +70,13 @@ TEST_CASE("Set and get partialFramesPadding", "[detector][somenewtag]"){
     m.addSlsDetector(sls::make_unique<slsDetector>(
         slsDetectorDefs::detectorType::EIGER, 20, 1));
 
-    m.setPartialFramesPadding(0);
+    m.setPartialFramesPadding(false);
     CHECK(m.getPartialFramesPadding() == 0);
 
-    m.setPartialFramesPadding(1);
+    m.setPartialFramesPadding(true);
     CHECK(m.getPartialFramesPadding() == 1);
 
-    m.setPartialFramesPadding(0, 0);
+    m.setPartialFramesPadding(false, 0);
     CHECK(m.getPartialFramesPadding() == -1);
 
     m.freeSharedMemory();

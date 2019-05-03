@@ -10,7 +10,8 @@
 #include <iomanip>
 
 
-/*! \mainpage Introduction
+/*! \page CLI Command line interface
+
 
 This program is intended to control the SLS detectors via command line interface.
 This is the only way to access all possible functionality of the detectors, however it is often recommendable to avoid changing the most advanced settings, rather leaving the task to configuration files, as when using the GUI or the API provided.
@@ -55,16 +56,16 @@ the same multi detector id for both detectors as they have a different shared me
 For additional questions concerning the indexing of the detector, please refer to the SLS Detectors FAQ documentation.
 
 The commands are sudivided into different pages depending on their functionalities:
- - \ref acquisition "Acquisition": commands to start/stop the acquisition and retrieve data
- - \ref config "Configuration": commands to configure the detector
- - \ref timing "Timing": commands to configure the detector timing
- - \ref data "Data postprocessing": commands to process the data
- - \ref settings "Settings": commands to define detector settings/threshold.
- - \ref output "Output": commands to define output file destination and format
- - \ref network "Network": commands to setup the network between client, detector and receiver
- - \ref receiver "Receiver": commands to configure the receiver
- - \ref prototype "Chip Test Board / Moench": commands specific for the chiptest board or moench
- - \ref test "Developer": commands to be used only for software debugging. Avoid using them!
+ - \subpage acquisition "Acquisition": commands to start/stop the acquisition and retrieve data
+ - \subpage config "Configuration": commands to configure the detector
+ - \subpage timing "Timing": commands to configure the detector timing
+ - \subpage data "Data postprocessing": commands to process the data
+ - \subpage settings "Settings": commands to define detector settings/threshold.
+ - \subpage output "Output": commands to define output file destination and format
+ - \subpage network "Network": commands to setup the network between client, detector and receiver
+ - \subpage receiver "Receiver": commands to configure the receiver
+ - \subpage prototype "Chip Test Board / Moench": commands specific for the chiptest board or moench
+ - \subpage test "Developer": commands to be used only for software debugging. Avoid using them!
  
  */
 
@@ -2158,11 +2159,6 @@ std::string slsDetectorCommand::executeLine(int narg, char *args[], int action, 
     }
     return cmdUnknown(narg, args, action, detPos);
 }
-
-/*! \page advanced Advanced Usage
-This page is for advanced users.
-Make sure you have first read \ref intro "the introduction".
- */
 
 std::string slsDetectorCommand::cmdUnknown(int narg, char *args[], int action, int detPos) {
     return std::string("Unknown command ") + std::string(args[0]) + std::string("\n") + helpLine(0, args, action, detPos);

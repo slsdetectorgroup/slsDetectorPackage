@@ -590,13 +590,13 @@ void slsDetector::updateTotalNumberOfChannels() {
         int adatabytes = 0, ddatabytes = 0;
         // analog channels (normal, analog/digital readout)
         if (shm()->roFlags == slsDetectorDefs::NORMAL_READOUT ||
-            shm()->roFlags & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+            ((shm()->roFlags & slsDetectorDefs::ANALOG_AND_DIGITAL) != 0)) {
             uint32_t mask = shm()->adcEnableMask;
             if (mask == BIT32_MASK) {
                 nachans = 32;
             } else {
                 for (int ich = 0; ich < 32; ++ich) {
-                    if (mask & (1 << ich))
+                    if ((mask & (1 << ich)) != 0u)
                         ++nachans;
                 }
             }
@@ -608,7 +608,7 @@ void slsDetector::updateTotalNumberOfChannels() {
 
         // digital channels (ctb only, digital, analog/digital readout)
         if (shm()->myDetectorType == CHIPTESTBOARD &&
-            ((shm()->roFlags & DIGITAL_ONLY) || (shm()->roFlags & ANALOG_AND_DIGITAL))) {
+            (((shm()->roFlags & DIGITAL_ONLY) != 0) || ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
             ndchans = 64;
             ddatabytes = (sizeof(uint64_t) * shm()->timerValue[DIGITAL_SAMPLES]);
             FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans
@@ -1481,10 +1481,10 @@ int slsDetector::configureMAC() {
         ret = client.sendCommandThenRead(fnum, args, sizeof(args), retvals,
                                          sizeof(retvals));
 
+        //TODO!(Erik) Send as int already from detector
         uint64_t detector_mac = 0;
         uint32_t detector_ip = 0;
-        sscanf(retvals[0], "%lx",
-               &detector_mac); // TODO! (Erik) send mac and ip as int
+        sscanf(retvals[0], "%lx", &detector_mac);
         sscanf(retvals[1], "%x", &detector_ip);
         detector_ip = __builtin_bswap32(detector_ip);
 
@@ -3114,7 +3114,7 @@ int slsDetector::resetFPGA() {
 
 int slsDetector::copyDetectorServer(const std::string &fname,
                                     const std::string &hostname) {
-    char args[][MAX_STR_LENGTH]{};
+    char args[2][MAX_STR_LENGTH]{};
     sls::strcpy_safe(args[0], fname.c_str());
     sls::strcpy_safe(args[1], hostname.c_str());
     FILE_LOG(logINFO) << "Sending detector server " << args[0] << " from host "

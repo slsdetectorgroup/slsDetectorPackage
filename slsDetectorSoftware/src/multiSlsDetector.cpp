@@ -2446,22 +2446,18 @@ const slsDetectorDefs::ROI *multiSlsDetector::getROI(int &n, int detPos) {
 }
 
 void multiSlsDetector::setADCEnableMask(uint32_t mask, int detPos) {
-    // single
     if (detPos >= 0) {
         detectors[detPos]->setADCEnableMask(mask);
     }
 
-    // multi
     parallelCall(&slsDetector::setADCEnableMask, mask);
 }
 
 uint32_t multiSlsDetector::getADCEnableMask(int detPos) {
-    // single
     if (detPos >= 0) {
         return detectors[detPos]->getADCEnableMask();
     }
 
-    // multi
     auto r = parallelCall(&slsDetector::getADCEnableMask);
     if (sls::allEqual(r)) {
         return r.front();
@@ -2469,6 +2465,96 @@ uint32_t multiSlsDetector::getADCEnableMask(int detPos) {
 
     // can't have different values
     throw RuntimeError("Error: Different Values for function getADCEnableMask");
+}
+
+void multiSlsDetector::setADCInvert(uint32_t value, int detPos) {
+    if (detPos >= 0) {
+        detectors[detPos]->setADCInvert(value);
+    }
+
+    parallelCall(&slsDetector::setADCInvert, value);
+}
+
+uint32_t multiSlsDetector::getADCInvert(int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->getADCInvert();
+    }
+
+    auto r = parallelCall(&slsDetector::getADCInvert);
+    if (sls::allEqual(r)) {
+        return r.front();
+    }
+
+    // can't have different values
+    throw RuntimeError("Error: Different Values for function getADCInvert");
+}
+
+void multiSlsDetector::setExternalSamplingSource(int value, int detPos) {
+    if (detPos >= 0) {
+        detectors[detPos]->setExternalSamplingSource(value);
+    }
+
+    parallelCall(&slsDetector::setExternalSamplingSource, value);
+}
+
+int multiSlsDetector::getExternalSamplingSource(int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->getExternalSamplingSource();
+    }
+
+    auto r = parallelCall(&slsDetector::getExternalSamplingSource);
+    return sls::minusOneIfDifferent(r);
+}
+
+void multiSlsDetector::setExternalSampling(bool value, int detPos) {
+    if (detPos >= 0) {
+        detectors[detPos]->setExternalSampling(static_cast<int>(value));
+    }
+
+    parallelCall(&slsDetector::setExternalSampling, static_cast<int>(value));
+}
+
+int multiSlsDetector::getExternalSampling(int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->getExternalSampling();
+    }
+
+    auto r = parallelCall(&slsDetector::getExternalSampling);
+    return sls::minusOneIfDifferent(r);
+}
+
+void multiSlsDetector::setReceiverDbitList(std::vector<int> list, int detPos) {
+    if (detPos >= 0) {
+        detectors[detPos]->setReceiverDbitList(list);
+    }
+
+    parallelCall(&slsDetector::setReceiverDbitList, list);
+}
+
+std::vector<int> multiSlsDetector::getReceiverDbitList(int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverDbitList();
+    }
+
+    auto r = parallelCall(&slsDetector::getReceiverDbitList);
+    return sls::minusOneIfDifferent(r);
+}
+
+void multiSlsDetector::setReceiverDbitOffset(int value, int detPos) {
+    if (detPos >= 0) {
+        detectors[detPos]->setReceiverDbitOffset(value);
+    }
+
+    parallelCall(&slsDetector::setReceiverDbitOffset, value);
+}
+
+int multiSlsDetector::getReceiverDbitOffset(int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverDbitOffset();
+    }
+
+    auto r = parallelCall(&slsDetector::getReceiverDbitOffset);
+    return sls::minusOneIfDifferent(r);
 }
 
 int multiSlsDetector::writeAdcRegister(uint32_t addr, uint32_t val, int detPos) {

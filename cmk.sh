@@ -8,7 +8,6 @@ RECEIVER=0
 GUI=0
 DEBUG=0
 PYTHON=0
-SPECIAL_RECEIVER_TYPE=0
 
 
 CLEAN=0
@@ -17,7 +16,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [-h] [-d <HDF5 directory>] [-j] <Number of threads> [-s] <Special Receiver Type>
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
@@ -29,7 +28,6 @@ Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [-h] [-d <HDF5 directory>] [-j] <Number
  -g: Build/Rebuilds only gui
  -j: Number of threads to compile through
  -e: Debug mode
- -s: Special Receiver Type (1-Mythen302)
 
 Rebuild when you switch to a new build and compile in parallel:
 ./cmk.sh -bj5
@@ -112,10 +110,6 @@ while getopts ":bpchd:j:trges:" opt ; do
 		echo "Compiling Options: Debug" 
 		DEBUG=1
 		;;   
-	s) 
-		echo "Special Receiver Type: $OPTARG" 
-		SPECIAL_RECEIVER_TYPE=$OPTARG
-		;; 
     \?)
      	echo "Invalid option: -$OPTARG" 
 		usage
@@ -129,11 +123,6 @@ while getopts ":bpchd:j:trges:" opt ; do
 	esac
 done
 
-#special receiver type
-if [ $SPECIAL_RECEIVER_TYPE -eq 1 ]; then
-	CMAKE_POST+=" -DSLS_USE_MYTHEN302_CTB_RECEIVER=ON "
-	echo "Enabling Compile Option: Mythen302 CTB Receiver"
-fi
 
 #python
 if [ $PYTHON -eq 1 ]; then

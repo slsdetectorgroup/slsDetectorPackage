@@ -115,6 +115,10 @@ ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		setADCEnableMask(uint32_t mask);
 uint32_t 	getADCEnableMask();
+void 		setADCInvertRegister(uint32_t val);
+uint32_t 	getADCInvertRegister();
+int			setExternalSamplingSource(int val);
+int			setExternalSampling(int val);
 #endif
 
 // parameters - readout

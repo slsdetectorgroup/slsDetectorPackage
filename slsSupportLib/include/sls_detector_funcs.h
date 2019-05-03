@@ -83,6 +83,10 @@ enum detFuncs{
 	F_REBOOT_CONTROLLER, /** < reboot detector controller (blackfin/ powerpc) */
 	F_SET_ADC_ENABLE_MASK,	/** < setting ADC enable mask */
 	F_GET_ADC_ENABLE_MASK,	/** < setting ADC enable mask */
+	F_SET_ADC_INVERT,	/** < set adc invert reg */
+	F_GET_ADC_INVERT,	/** < get adc invert reg */
+	F_EXTERNAL_SAMPLING_SOURCE,	/** < set/get external sampling source for ctb */
+	F_EXTERNAL_SAMPLING,	/**< enable/disable external sampling for ctb */
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -137,6 +141,9 @@ enum detFuncs{
 	F_RECEIVER_DEACTIVATED_PADDING_ENABLE, /** < deactivated receiver padding enable */
 	F_RECEIVER_SET_READOUT_FLAGS, /**< set/get receiver readout flags */
 	F_RECEIVER_SET_ADC_MASK, /**< set adc mask */
+	F_SET_RECEIVER_DBIT_LIST, /** < set receiver digital bit list */
+	F_GET_RECEIVER_DBIT_LIST, /** < get receiver digital bit list */
+	F_RECEIVER_DBIT_OFFSET, /** < set/get reciever digital bit offset */
 	NUM_REC_FUNCTIONS
 };
 
@@ -216,6 +223,10 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_REBOOT_CONTROLLER:              	return "F_REBOOT_CONTROLLER";
 	case F_SET_ADC_ENABLE_MASK:          	return "F_SET_ADC_ENABLE_MASK";
 	case F_GET_ADC_ENABLE_MASK:          	return "F_GET_ADC_ENABLE_MASK";
+	case F_SET_ADC_INVERT:					return "F_SET_ADC_INVERT";	
+	case F_GET_ADC_INVERT:					return "F_GET_ADC_INVERT";
+	case F_EXTERNAL_SAMPLING_SOURCE:		return "F_EXTERNAL_SAMPLING_SOURCE";				
+	case F_EXTERNAL_SAMPLING:				return "F_EXTERNAL_SAMPLING";	
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -271,6 +282,10 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_DEACTIVATED_PADDING_ENABLE: return "F_RECEIVER_DEACTIVATED_PADDING_ENABLE";
     case F_RECEIVER_SET_READOUT_FLAGS: 		return "F_RECEIVER_SET_READOUT_FLAGS";
 	case F_RECEIVER_SET_ADC_MASK:			return "F_RECEIVER_SET_ADC_MASK";
+	case F_SET_RECEIVER_DBIT_LIST:			return "F_SET_RECEIVER_DBIT_LIST";		
+	case F_GET_RECEIVER_DBIT_LIST:			return "F_GET_RECEIVER_DBIT_LIST";		
+	case F_RECEIVER_DBIT_OFFSET:			return "F_RECEIVER_DBIT_OFFSET";
+	
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";
 	}

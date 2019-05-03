@@ -44,17 +44,13 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 	int c = 0;
 
 	while ( c != -1 ){
-		c = getopt_long (argc, argv, "hvf:t:o:p", long_options, &option_index);
+		c = getopt_long (argc, argv, "hvf:t:", long_options, &option_index);
 
 		// Detect the end of the options.
 		if (c == -1)
 			break;
 
 		switch(c){
-		// reserved for ctb receiver users
-		case 'o':
-		case 'p':
-			break;
 
 		case 't':
 			sscanf(optarg, "%d", &tcpip_port_no);
@@ -113,7 +109,6 @@ void slsReceiver::registerCallBackStartAcquisition(int (*func)(
 }
 
 
-
 void slsReceiver::registerCallBackAcquisitionFinished(
 		void (*func)(uint64_t, void*),void *arg){
 	tcpipInterface->registerCallBackAcquisitionFinished(func,arg);
@@ -131,8 +126,3 @@ void slsReceiver::registerCallBackRawDataModifyReady(void (*func)(char*,
 	tcpipInterface->registerCallBackRawDataModifyReady(func,arg);
 }
 
-
-void slsReceiver::registerCallBackCTBReceiverReady(void (*func)(char* ,
-        char*, uint32_t &, int, int, int, void*),void *arg){
-	tcpipInterface->registerCallBackCTBReceiverReady(func,arg);
-}

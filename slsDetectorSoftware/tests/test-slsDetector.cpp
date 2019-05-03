@@ -218,3 +218,46 @@ TEST_CASE("create detParamets struct", "[detector][new]"){
     CHECK(par2.nGappixelsX == 6);
     CHECK(par2.nGappixelsY == 1);
 }
+
+
+TEST_CASE("ctb digital offset and list", "[detector][ctb]"){
+    slsDetector::freeSharedMemory(20, 20);
+    slsDetector d(slsDetectorDefs::detectorType::CHIPTESTBOARD, 20, 20);
+
+    // dbit offset
+    CHECK(d.getReceiverDbitOffset() == 0);
+    CHECK(d.setReceiverDbitOffset(-1) == 0);
+    CHECK(d.setReceiverDbitOffset(0) == 0);
+    CHECK(d.setReceiverDbitOffset(5) == 5);
+    CHECK(d.getReceiverDbitOffset() == 5);
+
+    // dbit list
+    std::vector <int> list = d.getReceiverDbitList();
+    CHECK(list.empty());
+
+
+    for (int i = 0; i < 10; ++i)
+        list.push_back(i);
+    d.setReceiverDbitList(list);
+    
+    CHECK(d.getReceiverDbitList().size() == 10);
+
+    list.push_back(64);
+    CHECK_THROWS_AS(d.setReceiverDbitList(list), sls::RuntimeError);
+    CHECK_THROWS_WITH(d.setReceiverDbitList(list), 
+        Catch::Matchers::Contains("be between 0 and 63"));
+
+    list.clear();
+    for (int i = 0; i < 65; ++i)
+        list.push_back(i);
+    CHECK(list.size() == 65);
+    CHECK_THROWS_WITH(d.setReceiverDbitList(list),  
+        Catch::Matchers::Contains("be greater than 64"));
+
+    list.clear(); 
+    d.setReceiverDbitList(list);
+    CHECK(d.getReceiverDbitList().empty());
+
+
+    
+}

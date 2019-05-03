@@ -99,4 +99,7 @@ int copy_detector_server(int);
 int reboot_controller(int);
 int set_adc_enable_mask(int);
 int get_adc_enable_mask(int);
-
+int set_adc_invert(int);
+int get_adc_invert(int);
+int set_external_sampling_source(int);
+int set_external_sampling(int);

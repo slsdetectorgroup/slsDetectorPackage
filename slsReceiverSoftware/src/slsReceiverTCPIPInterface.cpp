@@ -53,7 +53,6 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 	pAcquisitionFinished = nullptr;
 	rawDataReadyCallBack = nullptr;
 	rawDataModifyReadyCallBack = nullptr;
-	ctbRawDataReadyCallBack = nullptr;
 	pRawDataReady = nullptr;
 
 	// create socket
@@ -128,12 +127,6 @@ void slsReceiverTCPIPInterface::registerCallBackRawDataReady(void (*func)(char* 
 void slsReceiverTCPIPInterface::registerCallBackRawDataModifyReady(void (*func)(char* ,
         char*, uint32_t &,void*),void *arg){
     rawDataModifyReadyCallBack=func;
-    pRawDataReady=arg;
-}
-
-void slsReceiverTCPIPInterface::registerCallBackCTBReceiverReady(void (*func)(char* ,
-        char*, uint32_t &, int, int, int, void*),void *arg){
-    ctbRawDataReadyCallBack=func;
     pRawDataReady=arg;
 }
 
@@ -231,9 +224,12 @@ int slsReceiverTCPIPInterface::function_table(){
     flist[F_RECEIVER_CHECK_VERSION]			=   &slsReceiverTCPIPInterface::check_version_compatibility;
     flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
-	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
+	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_padding_enable;
 	flist[F_RECEIVER_SET_READOUT_FLAGS] 	= 	&slsReceiverTCPIPInterface::set_readout_flags;
 	flist[F_RECEIVER_SET_ADC_MASK]			=	&slsReceiverTCPIPInterface::set_adc_mask;
+	flist[F_SET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::set_dbit_list;
+	flist[F_GET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::get_dbit_list;
+	flist[F_RECEIVER_DBIT_OFFSET]			= 	&slsReceiverTCPIPInterface::set_dbit_offset;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -556,6 +552,20 @@ int slsReceiverTCPIPInterface::send_update() {
 	i32=(int)receiver->getSilentMode();
 	n += mySock->SendDataOnly(&i32, sizeof(i32));
 
+	// dbit list
+	{
+		std::vector <int> list = receiver->getDbitList();
+		int retvalsize = list.size();
+		int retval[retvalsize];
+		std::copy(std::begin(list), std::end(list), retval);
+		mySock->SendDataOnly(&retvalsize, sizeof(retvalsize));
+		mySock->SendDataOnly(retval, sizeof(retval));
+	}
+
+	// dbit offset
+	i32=receiver->getDbitOffset();
+	n += mySock->SendDataOnly(&i32, sizeof(i32));
+
 	if (!lockStatus)
 		strcpy(mySock->lastClientIP, mySock->thisClientIP);
 
@@ -621,8 +631,6 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 					receiver->registerCallBackRawDataReady(rawDataReadyCallBack,pRawDataReady);
 				if(rawDataModifyReadyCallBack)
 					receiver->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
-				if(ctbRawDataReadyCallBack)
-					receiver->registerCallBackCTBReceiverReady(ctbRawDataReadyCallBack, pRawDataReady);
 
 				// client has started updating receiver, update ip
 				if (!lockStatus)
@@ -2030,7 +2038,7 @@ int slsReceiverTCPIPInterface::set_padding_enable() {
 
 
 
-int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
+int slsReceiverTCPIPInterface::set_deactivated_padding_enable() {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
@@ -2123,5 +2131,100 @@ int slsReceiverTCPIPInterface::set_adc_mask() {
 		}
 		FILE_LOG(logDEBUG1) << "ADC enable mask retval: " << retval;
 	}
-	return interface->Server_SendResult(false, ret, &retval, sizeof(retval), mess);
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
+}
+
+
+
+int slsReceiverTCPIPInterface::set_dbit_list() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+
+	// receive arguments
+	int narg = -1;
+	if (mySock->ReceiveDataOnly(&narg,sizeof(narg)) < 0 )
+		return interface->Server_SocketCrash();
+	int narglist[narg];
+	if (mySock->ReceiveDataOnly(narglist, narg * sizeof(int)) < 0 )
+		return interface->Server_SocketCrash();
+	std::vector <int> arg(narglist, narglist + narg);
+
+	FILE_LOG(logDEBUG1) << "Setting DBIT list";
+	for (auto &it : arg) {
+		FILE_LOG(logDEBUG1) << it << " ";
+	}
+	FILE_LOG(logDEBUG1) << "\n";
+
+	// base object not null
+	if (receiver == nullptr)
+		interface->Server_NullObjectError(ret, mess);
+	else {
+		// only set
+		// verify if receiver is unlocked and idle
+		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+			if (arg.size() > 64) {
+				ret = FAIL;
+				sprintf(mess, "Could not set dbit list as size is > 64\n");
+				FILE_LOG(logERROR) << mess;
+			} else 
+				receiver->setDbitList(arg);
+		}
+	}
+
+	return interface->Server_SendResult(true, ret, nullptr, 0, mess);
+}
+
+
+
+int slsReceiverTCPIPInterface::get_dbit_list() {
+	ret = OK;
+    memset(mess, 0, sizeof(mess));
+ 	std::vector<int> list;
+
+	// no arg, check receiver is null
+	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
+
+	// base object not null
+	if (ret == OK) {
+		// get
+		list = receiver->getDbitList();
+		FILE_LOG(logDEBUG1) << "Dbit list size retval:" << list.size();
+	}
+
+	interface->Server_SendResult(false, ret, nullptr, 0, mess);
+	int retvalsize = list.size();
+	int retval[retvalsize];
+	std::copy(std::begin(list), std::end(list), retval);
+	mySock->SendDataOnly(&retvalsize, sizeof(retvalsize));
+	mySock->SendDataOnly(retval, sizeof(retval));
+	return ret;
+}
+
+
+int slsReceiverTCPIPInterface::set_dbit_offset() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+	int retval = -1;
+
+	// get args, return if socket crashed, ret is fail if receiver is not null
+	if (interface->Server_ReceiveArg(ret, mess, &arg, sizeof(arg), true, receiver) == FAIL)
+		return FAIL;
+
+	// base object not null
+	else if (ret == OK) {
+		// set
+		if (arg >= 0) {
+			// verify if receiver is unlocked and idle
+			if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
+				FILE_LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
+				receiver->setDbitOffset(arg);
+			}
+		}
+		// get
+		retval = receiver->getDbitOffset();
+		validate(arg, retval, std::string("set dbit offset"), DEC);
+		FILE_LOG(logDEBUG1) << "Dbit offset retval: " << retval;
+	}
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }

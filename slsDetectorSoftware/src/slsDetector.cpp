@@ -393,6 +393,9 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->rxFileWrite = true;
     shm()->rxMasterFileWrite = true;
     shm()->rxFileOverWrite = true;
+    shm()->rxDbitListSize = 0;
+    memset(shm()->rxDbitList, 0, MAX_RX_DBIT * sizeof(int));
+    shm()->rxDbitOffset = 0;
 
     // get the detector parameters based on type
     detParameters parameters{type};
@@ -1908,6 +1911,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nrx streaming source ip:" << shm()->rxZmqip
             << "\nrx additional json header:" << shm()->rxAdditionalJsonHeader
             << "\nrx_datastream:" << enableDataStreamingFromReceiver(-1)
+            << "\nrx_dbitlistsize:" << shm()->rxDbitListSize
+            << "\nrx_DbitOffset:" << shm()->rxDbitOffset
             << std::endl;
 
         if (setDetectorType(shm()->myDetectorType) != GENERIC) {
@@ -1954,6 +1959,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 enableTenGigabitEthernet(shm()->tenGigaEnable);
                 setReadOutFlags(GET_READOUT_FLAGS);
                 setADCEnableMask(shm()->adcEnableMask);
+                setReceiverDbitOffset(shm()->rxDbitOffset);
                 break;
 
             case MOENCH:
@@ -1969,6 +1975,11 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
 
             default:
                 break;
+            }
+
+            if (shm()->myDetectorType == CHIPTESTBOARD) {
+                std::vector<int> list(shm()->rxDbitList, shm()->rxDbitList + shm()->rxDbitListSize);
+                setReceiverDbitList(list);
             }
 
             setReceiverSilentMode(static_cast<int>(shm()->rxSilentMode));
@@ -2666,6 +2677,143 @@ uint32_t slsDetector::getADCEnableMask() {
     return shm()->adcEnableMask;
 }
 
+void slsDetector::setADCInvert(uint32_t value) {
+    uint32_t arg = value;
+    FILE_LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << arg << std::dec;
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_SET_ADC_INVERT, &arg, sizeof(arg), nullptr, 0);
+    }
+}
+
+uint32_t slsDetector::getADCInvert() {
+    uint32_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting ADC Invert";
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_GET_ADC_INVERT, nullptr, 0, &retval, sizeof(retval));
+        FILE_LOG(logDEBUG1) << "ADC Invert: 0x" << std::hex << retval << std::dec;
+    }
+    return retval;
+}
+
+int slsDetector::setExternalSamplingSource(int value) {
+    int arg = value;
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Setting External Sampling Source to " << arg;
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_EXTERNAL_SAMPLING_SOURCE, arg, retval);
+        FILE_LOG(logDEBUG1) << "External Sampling source: " << retval;
+    }
+    return retval;
+}
+
+int slsDetector::getExternalSamplingSource() {
+    return setExternalSamplingSource(-1);
+}
+
+int slsDetector::setExternalSampling(int value) {
+    int arg = value;
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Setting External Sampling to " << arg;
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_EXTERNAL_SAMPLING, arg, retval);
+        FILE_LOG(logDEBUG1) << "External Sampling: " << retval;
+    }
+    return retval;
+}
+
+int slsDetector::getExternalSampling() {
+    return setExternalSampling(-1);
+}
+
+void slsDetector::setReceiverDbitList(std::vector<int> list) {
+    FILE_LOG(logDEBUG1) << "Setting Receiver Dbit List";
+
+    if (list.size() > 64) {
+        throw sls::RuntimeError("Dbit list size cannot be greater than 64\n");
+    }
+    for (auto &it : list) {
+        if (it < 0 || it > 63) {
+            throw sls::RuntimeError("Dbit list value must be between 0 and 63\n");
+        }
+    }
+
+    // copy size and vector to shm
+    shm()->rxDbitListSize = list.size();
+    std::copy(list.begin(), list.end(), shm()->rxDbitList);
+ 
+    int ret = FAIL;
+    if (shm()->rxOnlineFlag == ONLINE_FLAG) {
+        int fnum = F_SET_RECEIVER_DBIT_LIST;
+        int arg = list.size();
+        auto receiver =
+            sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
+        receiver.sendData(&fnum, sizeof(fnum));
+        receiver.sendData(&arg, sizeof(arg));
+        receiver.sendData(shm()->rxDbitList, arg * sizeof(int));
+        receiver.receiveData(&ret, sizeof(ret));
+        if (ret == FAIL) {
+            char mess[MAX_STR_LENGTH]{};
+            receiver.receiveData(mess, MAX_STR_LENGTH);
+            throw ReceiverError("Receiver " + std::to_string(detId) +
+                                " returned error: " + std::string(mess));
+        }
+    }
+    if (ret == FORCE_UPDATE) {
+        ret = updateCachedReceiverVariables();
+    }
+}
+
+std::vector<int> slsDetector::getReceiverDbitList() {
+    int fnum = F_GET_RECEIVER_DBIT_LIST;
+    int ret = FAIL;
+    std::vector <int> retval;
+    int retsize = 0;
+    FILE_LOG(logDEBUG1) << "Getting Receiver Dbit List";
+    if (shm()->rxOnlineFlag == ONLINE_FLAG) {
+        auto receiver =
+        sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
+        receiver.sendData(&fnum, sizeof(fnum));
+        receiver.receiveData(&ret, sizeof(ret));
+        if (ret == FAIL) {
+            char mess[MAX_STR_LENGTH]{};
+            receiver.receiveData(mess, MAX_STR_LENGTH);
+            throw ReceiverError("Receiver " + std::to_string(detId) +
+                            " returned error: " + std::string(mess));
+        }
+        receiver.receiveData(&retsize, sizeof(retsize));
+        int list[retsize];
+        receiver.receiveData(list, sizeof(list));
+
+        // copy after no errors
+        shm()->rxDbitListSize = retsize;
+        std::copy(list, list + retsize, shm()->rxDbitList);
+    } 
+
+    if (shm()->rxDbitListSize) {
+        retval.resize(shm()->rxDbitListSize);
+        std::copy(shm()->rxDbitList, shm()->rxDbitList + shm()->rxDbitListSize, std::begin(retval));
+    }
+
+    return retval;
+}
+
+int slsDetector::setReceiverDbitOffset(int value) {
+    int arg = value;
+    int retval = -1;
+    if (value >= 0)
+        shm()->rxDbitOffset = value;
+    FILE_LOG(logDEBUG1) << "Setting digital bit offset in receiver to " << arg;
+    if (shm()->rxOnlineFlag == ONLINE_FLAG) {
+        sendToReceiver(F_RECEIVER_DBIT_OFFSET, arg, retval);
+        FILE_LOG(logDEBUG1) << "Receiver digital bit offset: " << retval;
+    }
+    return shm()->rxDbitOffset;
+}
+
+int slsDetector::getReceiverDbitOffset() {
+    return shm()->rxDbitOffset;
+}
+
 int slsDetector::writeAdcRegister(uint32_t addr, uint32_t val) {
     uint32_t args[]{addr, val};
     FILE_LOG(logDEBUG1) << "Writing to ADC register 0x" << std::hex << addr
@@ -3294,6 +3442,21 @@ int slsDetector::updateCachedReceiverVariables() const {
             // silent mode
             n += receiver.receiveData(&i32, sizeof(i32));
             shm()->rxSilentMode = static_cast<bool>(i32);
+
+            // dbit list size
+            {
+                int listsize = 0;
+                n += receiver.receiveData(&listsize, sizeof(listsize));
+                int list[listsize];
+                n += receiver.receiveData(list, sizeof(list));
+                // copy after no errors
+                shm()->rxDbitListSize = listsize;
+                std::copy(list, list + listsize, shm()->rxDbitList);
+            }
+
+            // dbit offset
+            n += receiver.receiveData(&i32, sizeof(i32));
+            shm()->rxDbitOffset = i32;
 
             if (n == 0) {
                 throw RuntimeError("Could not update receiver: " +

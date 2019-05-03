@@ -331,24 +331,24 @@ where the {\tt{GapPixelsBetweenModules\_x}} are the one on the short side of the
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
 The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
 
-In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}.
+In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}. The time to send out the frame out of the board 
 \begin{table} 
-\begin{tabular}{|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|}
 \hline
-GbE & dynamic range & continuos maximum frame rate(Hz) & minimum period ($\mu$s)\\
+GbE & dynamic range & continuos maximum frame rate(Hz) & minimum period ($\mu$s)& time to send out data ($\mu$s)\\
 \hline
-1 & 16 &  \textbf{256} & 3901\\ 
+1 & 16 &  \textbf{256} & 3901 & \\ 
 \hline 
-1 &  32 &  \textbf{128} & 7820\\
+1 &  32 &  \textbf{128} & 7820 & \\
 \hline 
-10 & 16 & \textbf{2560} & 391\\  
+10 & 4 & \textbf{10240} & 98 & 100\\
 \hline 
-10 & 32 & \textbf{1280}& 782\\  
-\hline 
-10 & 8 & \textbf{5120} & 196\\
+10 & 8 & \textbf{5120} & 196 & 200\\
 \hline
-10 & 4 & \textbf{10240} & 98\\
-\hline
+10 & 16 & \textbf{2560} & 391 & 400\\  
+\hline 
+10 & 32 & \textbf{1280}& 782 & 800\\  
+\hline 
 \end{tabular}
 \caption{Frame rate limits for the CONTINUOS streaming out of images, i.e. the data rate out is just below 1Gb/s or 10Gb/s.} 
 \label{tcont}\end{table}
@@ -475,7 +475,9 @@ Here below are the final tables for settting the detcetor correctly:
      \hline
   \end{tabular}
 \end{center}
-\item BUFFERED redout (images stored on board memories, such that the maximum frame rate can be achieved for a limited amount of frames. {\tt{flags parallel}}, {\tt{clkdivider 0}} are always set. In 32-bit no extra {\tt{subdeadtime}} is assumed. The difference between {\tt{exptime}} and {\tt{period}} has to be $\approx$5 $\mu$s:
+BE CAREFUL that if you have the transmission delays setup (see sec.~\ref{network}), this will slow down the sending of the data and you risk to fill up the memories of the boards on eiger (30000 images in 4 bit mode) and you will get corrupted data (parts of the memory on the boads will be overwritten).
+
+\item BUFFERED readout (images stored on board memories, such that the maximum frame rate can be achieved for a limited amount of frames. {\tt{flags parallel}}, {\tt{clkdivider 0}} are always set. In 32-bit no extra {\tt{subdeadtime}} is assumed. The difference between {\tt{exptime}} and {\tt{period}} has to be $\approx$5 $\mu$s:
 \begin{center}
   \begin{tabular}{ |c| c| } 
     \hline
@@ -702,7 +704,7 @@ LEDs on the backpanel board at the back of each half module signal:
 
 
 
-\subsection{Delays in sending for 1Gb/s, 10Gb/s, 10Gb flow control, receiver fifo}
+\subsection{Delays in sending for 1Gb/s, 10Gb/s, 10Gb flow control, receiver fifo}\label{network}
 
 Extremely advanced options allow to:
 \begin{itemize}
@@ -731,6 +733,7 @@ for X in $(seq 0 4); do ./sls_detector_put $X:txndelay_left $((X*100000)); done
 ./sls_detector_put txndelay_frame zzzz
 \end{verbatim}
 In the example before, it would be: {\tt{zzzz}}=4*100000+ 100000
+To decide the size of the transmission delays, look at subsection~\ref{delays}. 
 
 \item Readjust the size of the fifo of the receiver between listening and writing (useful when writing is limited)
 \begin{verbatim}
@@ -749,6 +752,18 @@ To activate back a module, do:
 \end{verbatim}
 
 \end{itemize}
+
+\section{Choose correct transmission delays}\label{delays}
+
+Transmission delays should be chosen only to accomodate the writing speed of the disk. The 10Gb network should be optimised independently to allow no packet loss situation. This can be done by turning off the writing of the files and check only for missing frames. 
+
+Table~\ref{tcont} gives the times that are needed to transfer 1 images out of the 10~Gb Ethernet connection. This reflects the CONTINUOS frame rate achieavable. The disk speed can be monitored with {\tt{dstat}}. One you have worked out this, you can calculated the {\tt{txndelay\_frame}} delay as:
+
+\begin{equation}
+ {\tt{txndelay\_frame}}=-tsending+dr \cdot \frac{4*256*256*N\_half\_modules}{1024 \cdot 1000 \cdot disk\_speed [MB/s]}
+\end{equation}
+In 4-bit mode, for a disk seed of 320MB/s, the  {\tt{txndelay\_frame}} is 300~$\mu$s (30000 to be set up to the detector). The sending time is 100~$\mu$s, such that an total ackievable writing sped of 1/400~$\mu$s (2.5~kHz) in achieved.  
+
 \section{Setting up the PC settings for 10Gb}\label{10g}
 
 For configuring well the 10Gb card not to loose packets, 

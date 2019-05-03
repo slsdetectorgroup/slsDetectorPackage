@@ -1478,10 +1478,10 @@ int slsDetector::configureMAC() {
         ret = client.sendCommandThenRead(fnum, args, sizeof(args), retvals,
                                          sizeof(retvals));
 
+        //TODO!(Erik) Send as int already from detector
         uint64_t detector_mac = 0;
         uint32_t detector_ip = 0;
-        sscanf(retvals[0], "%lx",
-               &detector_mac); // TODO! (Erik) send mac and ip as int
+        sscanf(retvals[0], "%lx", &detector_mac);
         sscanf(retvals[1], "%x", &detector_ip);
         detector_ip = __builtin_bswap32(detector_ip);
 

@@ -800,9 +800,9 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
         ++iline;
 
         // single detector configuration
-        for (size_t idet = 0; idet < detectors.size(); ++idet) {
+        for (auto & detector : detectors) {
             outfile << std::endl;
-            ret1 = detectors[idet]->writeConfigurationFile(outfile, this);
+            ret1 = detector->writeConfigurationFile(outfile, this);
             if (ret1 == FAIL) {
                 ret = FAIL;
             }
@@ -3066,7 +3066,7 @@ int multiSlsDetector::getFramesCaughtByReceiver(int detPos) {
     auto r = parallelCall(&slsDetector::getFramesCaughtByReceiver);
 
     // prevent divide by all or do not take avg when -1 for "did not connect"
-    if ((!detectors.size()) || (sls::anyEqualTo(r, -1))) {
+    if ((detectors.empty()) || (sls::anyEqualTo(r, -1))) {
         return -1;
     }
 
@@ -3084,7 +3084,7 @@ int multiSlsDetector::getReceiverCurrentFrameIndex(int detPos) {
     auto r = parallelCall(&slsDetector::getReceiverCurrentFrameIndex);
 
     // prevent divide by all or do not take avg when -1 for "did not connect"
-    if ((!detectors.size()) || (sls::anyEqualTo(r, -1))) {
+    if ((detectors.empty()) || (sls::anyEqualTo(r, -1))) {
         return -1;
     }
 
@@ -3156,7 +3156,7 @@ void multiSlsDetector::readFrameFromReceiver() {
     if (getDetectorTypeAsEnum() == EIGER) {
         eiger = true;
         nX *= 2;
-        gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true : false;
+        gappixelsenable = detectors[0]->enableGapPixels(-1) > 0;
     }
     if (getNumberofUDPInterfaces() == 2) {
         nY *= 2;

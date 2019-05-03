@@ -124,14 +124,14 @@ endif()
 install(TARGETS sls_detector_put sls_detector_get sls_detector_acquire sls_detector_help DESTINATION bin)
 
 
-if(DOXYGEN_FOUND)
-    add_custom_target(doc
-        ${DOXYGEN_EXECUTABLE}
-        ${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorUsers.doxy
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Generating API documentation with Doxygen" VERBATIM
-    )
-endif()
+# if(DOXYGEN_FOUND)
+#     add_custom_target(doc
+#         ${DOXYGEN_EXECUTABLE}
+#         ${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorUsers.doxy
+#         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#         COMMENT "Generating API documentation with Doxygen" VERBATIM
+#     )
+# endif()
 
 if (SLS_USE_TESTS)
     add_subdirectory(tests)

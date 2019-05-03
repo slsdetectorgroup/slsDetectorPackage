@@ -587,13 +587,13 @@ void slsDetector::updateTotalNumberOfChannels() {
         int adatabytes = 0, ddatabytes = 0;
         // analog channels (normal, analog/digital readout)
         if (shm()->roFlags == slsDetectorDefs::NORMAL_READOUT ||
-            shm()->roFlags & slsDetectorDefs::ANALOG_AND_DIGITAL) {
+            ((shm()->roFlags & slsDetectorDefs::ANALOG_AND_DIGITAL) != 0)) {
             uint32_t mask = shm()->adcEnableMask;
             if (mask == BIT32_MASK) {
                 nachans = 32;
             } else {
                 for (int ich = 0; ich < 32; ++ich) {
-                    if (mask & (1 << ich))
+                    if ((mask & (1 << ich)) != 0u)
                         ++nachans;
                 }
             }
@@ -605,7 +605,7 @@ void slsDetector::updateTotalNumberOfChannels() {
 
         // digital channels (ctb only, digital, analog/digital readout)
         if (shm()->myDetectorType == CHIPTESTBOARD &&
-            ((shm()->roFlags & DIGITAL_ONLY) || (shm()->roFlags & ANALOG_AND_DIGITAL))) {
+            (((shm()->roFlags & DIGITAL_ONLY) != 0) || ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
             ndchans = 64;
             ddatabytes = (sizeof(uint64_t) * shm()->timerValue[DIGITAL_SAMPLES]);
             FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans

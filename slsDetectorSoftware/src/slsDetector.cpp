@@ -2681,7 +2681,7 @@ void slsDetector::setADCInvert(uint32_t value) {
     uint32_t arg = value;
     FILE_LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << arg << std::dec;
     if (shm()->onlineFlag == ONLINE_FLAG) {
-        sendToDetector(F_SET_ADC_INVERT, &arg, sizeof(arg), nullptr, 0);
+        sendToDetector(F_SET_ADC_INVERT, &arg, nullptr);
     }
 }
 
@@ -2741,25 +2741,11 @@ void slsDetector::setReceiverDbitList(std::vector<int> list) {
     shm()->rxDbitListSize = list.size();
     std::copy(list.begin(), list.end(), shm()->rxDbitList);
  
-    int ret = FAIL;
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
-        int fnum = F_SET_RECEIVER_DBIT_LIST;
-        int arg = list.size();
-        auto receiver =
-            sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
-        receiver.sendData(&fnum, sizeof(fnum));
-        receiver.sendData(&arg, sizeof(arg));
-        receiver.sendData(shm()->rxDbitList, arg * sizeof(int));
-        receiver.receiveData(&ret, sizeof(ret));
-        if (ret == FAIL) {
-            char mess[MAX_STR_LENGTH]{};
-            receiver.receiveData(mess, MAX_STR_LENGTH);
-            throw ReceiverError("Receiver " + std::to_string(detId) +
-                                " returned error: " + std::string(mess));
-        }
-    }
-    if (ret == FORCE_UPDATE) {
-        ret = updateCachedReceiverVariables();
+        int args[list.size() + 1];
+        args[0] = list.size();
+        std::copy(std::begin(list), std::end(list), args + 1);
+        sendToReceiver(F_SET_RECEIVER_DBIT_LIST, args, sizeof(args), nullptr, 0);
     }
 }
 

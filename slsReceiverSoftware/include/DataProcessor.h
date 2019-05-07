@@ -39,15 +39,15 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param act pointer to activated
 	 * @param depaden pointer to deactivated padding enable
 	 * @param sm pointer to silent mode
-	 * @param ct pointer to ctb type
-	 * @param cdo pointer to ctb digital offset
+	 * @param cdl pointer to vector or ctb digital bits enable
+	 * @param cdo pointer to digital bits offset
 	 * @param cad pointer to ctb analog databytes
 	 */
 	DataProcessor(int ind, detectorType dtype, Fifo* f, fileFormat* ftype,
 			bool fwenable, bool* mfwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
 						bool* fp, bool* act, bool* depaden, bool* sm,
-						int* ct, int* cdo, int* cad);
+						std::vector <int> * cdl, int* cdo, int* cad);
 
 	/**
 	 * Destructor
@@ -223,20 +223,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void registerCallBackRawDataModifyReady(void (*func)(char* ,
             char*, uint32_t &, void*),void *arg);
 
-    /**
-	 * Call back for raw CTB data that will be modified
-	 * args to raw data call back are
-	 * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
-	 * type CTB chip type
-	 * digitalOffset digital offset
-	 * analogdataBytes analog databytes
-     */
-    void registerCallBackCTBReceiverReady(void (*func)(char*,
-            char*, uint32_t &, int, int, int, void*),void *arg);
-
 
 
  private:
@@ -306,6 +292,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param buf buffer
 	 */
 	void PadMissingPackets(char* buf);
+
+	/**
+	 * Align corresponding digital bits together (CTB only if ctbDbitlist is not empty)
+	 */
+	void RearrangeDbitData(char* buf);
 
 	/**
 	 * Processing Function (inserting gap pixels) eiger specific
@@ -380,6 +371,15 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	/** frame padding */
 	bool* framePadding;
 
+	/** ctb digital bits enable list */
+	std::vector <int> *ctbDbitList;
+
+	/** ctb digital bits offset */
+	int* ctbDbitOffset;
+
+	/** ctb analog databytes */
+	int* ctbAnalogDataBytes;
+
 	//acquisition start
 	/** Aquisition Started flag */
 	bool acquisitionStartedFlag;
@@ -404,14 +404,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	/** Frame Number of latest processed frame number of an entire Acquisition (including all scans) */
 	uint64_t currentFrameIndex;
 
-	// for ctb call back
-	/** ctb type*/
-	int* ctbType;
-	/** ctb digital offset */
-	int* ctbDigitalOffset;
-	/** ctb analog databytes */
-	int* ctbAnalogDataBytes;
-
 
 
 
@@ -435,20 +427,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     void (*rawDataModifyReadyCallBack)(char*,
             char*, uint32_t &, void*);
-
-	/**
-	 * Call back for raw CTB data that will be modified
-	 * args to raw data call back are
-	 * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
-	 * type CTB chip type
-	 * digitalOffset digital offset
-	 * analogdataBytes analog databytes
-     */
-    void (*ctbRawDataReadyCallBack)(char*,
-            char*, uint32_t &, int, int, int, void*);
 		
 	void *pRawDataReady;
 

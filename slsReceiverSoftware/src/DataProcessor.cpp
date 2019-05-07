@@ -28,7 +28,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		bool* dsEnable, bool* gpEnable, uint32_t* dr,
 		uint32_t* freq, uint32_t* timer,
 		bool* fp, bool* act, bool* depaden, bool* sm,
-		int* ct, int* cdo, int* cad) :
+		std::vector <int> * cdl, int* cdo, int* cad) :
 
 		ThreadObject(ind),
 		runningFlag(0),
@@ -50,6 +50,9 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		deactivatedPaddingEnable(depaden),
         silentMode(sm),
 		framePadding(fp),
+		ctbDbitList(cdl),
+		ctbDbitOffset(cdo),
+		ctbAnalogDataBytes(cad),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
@@ -57,12 +60,8 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		numTotalFramesCaught(0),
 		numFramesCaught(0),
 		currentFrameIndex(0),
-		ctbType(ct),
-		ctbDigitalOffset(cdo),
-		ctbAnalogDataBytes(cad),
 		rawDataReadyCallBack(nullptr),
 		rawDataModifyReadyCallBack(nullptr),
-		ctbRawDataReadyCallBack(nullptr),
 		pRawDataReady(nullptr)
 {
      if(ThreadObject::CreateThread() == FAIL)
@@ -356,6 +355,11 @@ void DataProcessor::ProcessAnImage(char* buf) {
     else if (!(*activated) && *deactivatedPaddingEnable)
 		PadMissingPackets(buf);
 
+	// rearrange ctb digital bits (if ctbDbitlist is not empty)
+	if (!(*ctbDbitList).empty()) {
+		RearrangeDbitData(buf);
+	}
+
 	// normal call back
 	if (rawDataReadyCallBack) {
 		rawDataReadyCallBack(
@@ -376,28 +380,12 @@ void DataProcessor::ProcessAnImage(char* buf) {
         (*((uint32_t*)buf)) =  revsize;
     }
 	
-	// ctb call back
-	else if (ctbRawDataReadyCallBack) {
-		uint32_t revsize = (uint32_t)(*((uint32_t*)buf));
-        ctbRawDataReadyCallBack(
-        		(char*)rheader,
-                buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
-                revsize,
-				*ctbType,
-				*ctbDigitalOffset,
-				*ctbAnalogDataBytes,
-                pRawDataReady);
-        (*((uint32_t*)buf)) =  revsize;
-	}
-
 
 	// write to file
 	if (file)
 		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES,
 				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)), //+ size of data (resizable from previous call back
 				fnum-firstMeasurementIndex, nump);
-
-
 
 }
 
@@ -464,12 +452,6 @@ void DataProcessor::registerCallBackRawDataModifyReady(void (*func)(char* ,
 	pRawDataReady=arg;
 }
 
-void DataProcessor::registerCallBackCTBReceiverReady(void (*func)(char* ,
-		char*, uint32_t&, int, int, int, void*),void *arg) {
-	ctbRawDataReadyCallBack=func;
-	pRawDataReady=arg;
-}
-
 void DataProcessor::PadMissingPackets(char* buf) {
 	FILE_LOG(logDEBUG) << index << ": Padding Missing Packets";
 
@@ -519,6 +501,45 @@ void DataProcessor::PadMissingPackets(char* buf) {
 	}
 }
 
+/** ctb specific */
+void DataProcessor::RearrangeDbitData(char* buf) {
+	int totalSize = (int)(*((uint32_t*)buf));
+	int ctbDigitalDataBytes = totalSize - (*ctbAnalogDataBytes) - (*ctbDbitOffset);
+
+	// no digital data      
+    if (!ctbDigitalDataBytes) {
+        FILE_LOG(logWARNING) << "No digital data for call back, yet dbitlist is not empty.";
+        return;
+	}
+
+	const int numSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
+
+	// ceil as numResult64Bytes could be decimal 
+	const int numResult64Bytes = ceil((double)(numSamples * (*ctbDbitList).size()) / 64.00); 
+	std::vector<uint64_t> result(numResult64Bytes, 0); 
+
+	auto dest = result.data();
+	const int digOffset = FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header) + (*ctbAnalogDataBytes) + (*ctbDbitOffset);
+	auto source = (uint64_t*)(buf + digOffset);
+
+	// loop through digital bit enable vector
+    for (auto bi : (*ctbDbitList)) {
+		// loop through the frame digital data
+        for (auto ptr = source; ptr < (source + numSamples);) {
+			// extract destination in 64 bit batches
+            for (int i = 0; i != 64; ++i) {
+				// get selected bit from each 64 bit
+                int bit = (*ptr++ >> bi) & 1;
+                *dest |= bit << i;
+            }
+            ++dest;
+        }
+    }
+
+	// copy back to buf and update size
+	memcpy(source + digOffset, result.data(), result.size() * sizeof(uint64_t));
+	(*((uint32_t*)buf)) = result.size() * sizeof(uint64_t);
+}
 
 /** eiger specific */
 void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {

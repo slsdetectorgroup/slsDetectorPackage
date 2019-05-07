@@ -46,6 +46,7 @@ void slsReceiverImplementation::DeleteMembers() {
 	dataProcessor.clear();
 	dataStreamer.clear();
 	fifo.clear();
+	ctbDbitList.clear();
 }
 
 
@@ -80,6 +81,8 @@ void slsReceiverImplementation::InitializeMembers() {
 	frameDiscardMode = NO_DISCARD;
 	framePadding = false;
 	silentMode = false;
+	ctbDbitOffset = 0;
+	ctbAnalogDataBytes = 0;
 
 	//***connection parameters***
 	numUDPInterfaces = 1;
@@ -113,11 +116,6 @@ void slsReceiverImplementation::InitializeMembers() {
 	//** class objects ***
 	generalData = nullptr;
 
-	//** ctb callback parameters
-	ctbType = 0;
-	ctbDigitalOffset = 0;
-	ctbAnalogDataBytes = 0;
-
 	//***callback parameters***
 	startAcquisitionCallBack = nullptr;
 	pStartAcquisition = nullptr;
@@ -125,7 +123,6 @@ void slsReceiverImplementation::InitializeMembers() {
 	pAcquisitionFinished = nullptr;
 	rawDataReadyCallBack = nullptr;
 	rawDataModifyReadyCallBack = nullptr;
-	ctbRawDataReadyCallBack = nullptr;
 	pRawDataReady = nullptr;
 }
 
@@ -381,6 +378,16 @@ slsDetectorDefs::runStatus slsReceiverImplementation::getStatus() const{
 bool slsReceiverImplementation::getSilentMode() const{
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	return silentMode;
+}
+
+std::vector <int> slsReceiverImplementation::getDbitList() const{
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	return ctbDbitList;
+}
+
+int slsReceiverImplementation::getDbitOffset() const{
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	return ctbDbitOffset;
 }
 
 bool slsReceiverImplementation::getActivate() const{
@@ -703,7 +710,7 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
 						fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 						&dynamicRange, &streamingFrequency, &streamingTimerInMs,
 						&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
-						&ctbType, &ctbDigitalOffset, &ctbAnalogDataBytes));
+						&ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
 				dataProcessor[i]->SetGeneralData(generalData);
 			}
 			catch (...) {
@@ -747,10 +754,6 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
 		if(rawDataModifyReadyCallBack) {
 			for (const auto& it : dataProcessor)
 				it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
-		}
-		if(ctbRawDataReadyCallBack) {
-			for (const auto& it : dataProcessor)
-				it->registerCallBackCTBReceiverReady(ctbRawDataReadyCallBack,pRawDataReady);
 		}
 
 		// test socket buffer size with current set up
@@ -1088,6 +1091,17 @@ void slsReceiverImplementation::setSilentMode(const bool i) {
 	FILE_LOG(logINFO) << "Silent Mode: " << i;
 }
 
+void slsReceiverImplementation::setDbitList(const std::vector <int> v) {
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	ctbDbitList = v;
+}
+
+void slsReceiverImplementation::setDbitOffset(const int s) {
+	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	ctbDbitOffset = s;
+}
+
+
 
 /*************************************************************************
  * Behavioral functions***************************************************
@@ -1148,7 +1162,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
 	                fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &streamingFrequency, &streamingTimerInMs,
 					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
-					&ctbType, &ctbDigitalOffset, &ctbAnalogDataBytes));
+					&ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
 	    }
 	    catch (...) {
 	         FILE_LOG(logERROR) << "Could not create listener/dataprocessor threads (index:" << i << ")";
@@ -1431,15 +1445,6 @@ void slsReceiverImplementation::registerCallBackRawDataModifyReady(void (*func)(
 	pRawDataReady=arg;
 	for (const auto& it : dataProcessor)
 		it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
-}
-
-
-void slsReceiverImplementation::registerCallBackCTBReceiverReady(void (*func)(char* ,
-		char*, uint32_t&, int, int, int, void*),void *arg) {
-	ctbRawDataReadyCallBack=func;
-	pRawDataReady=arg;
-	for (const auto& it : dataProcessor)
-		it->registerCallBackCTBReceiverReady(ctbRawDataReadyCallBack,pRawDataReady);
 }
 
 

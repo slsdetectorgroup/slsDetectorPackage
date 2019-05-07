@@ -70,19 +70,9 @@ set_target_properties(slsReceiverShared PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
+add_executable(slsReceiver
+    src/main.cpp)
 
-if (SLS_USE_MYTHEN302_CTB_RECEIVER)
-    add_executable(slsReceiver
-        src/mainCustomized.cpp
-    )
-    add_definitions( 
-        -DMYTHEN302
-    )
-else()
-    add_executable(slsReceiver
-        src/main.cpp
-    )
-endif (SLS_USE_MYTHEN302_CTB_RECEIVER)
 
 set_target_properties(slsReceiver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

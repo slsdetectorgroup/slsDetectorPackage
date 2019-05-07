@@ -301,6 +301,18 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	bool getSilentMode() const;
 
 	/**
+	 * Get CTB digital bits enable list
+	 * @returns digital bits enable list
+	 */
+	std::vector <int> getDbitList() const;
+
+	/**
+	 * Get CTB digital bits offset
+	 * @returns digital bits offset
+	 */
+	int getDbitOffset() const;
+
+	/**
 	 * Get activate
 	 * If deactivated, receiver will create dummy data if deactivated padding is enabled
 	 * (as it will receive nothing from detector)
@@ -637,6 +649,18 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 */
 	void setSilentMode(const bool i);
 
+	/**
+	 * Set CTB digital bits enable list
+	 * @param v digital bits enable list
+	 */
+	void setDbitList(const std::vector <int> v);
+
+	/**
+	 * Set CTB digital bits offset
+	 * @param s digital bits offset
+	 */
+	void setDbitOffset(const int s);
+
 
 	/*************************************************************************
 	 * Behavioral functions***************************************************
@@ -751,20 +775,6 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
     void registerCallBackRawDataModifyReady(void (*func)(char* ,
             char*, uint32_t &,void*),void *arg);
 
-    /**
-	 * Call back for raw CTB data that will be modified
-	 * args to raw data call back are
-	 * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
-	 * type CTB chip type
- 	 * digitalOffset digital offset
-	 * analogdataBytes analog databytes
-     */
-    void registerCallBackCTBReceiverReady(void (*func)(char*,
-            char*, uint32_t &, int, int, int, void*),void *arg);
-
 private:
 
     /**
@@ -877,6 +887,12 @@ private:
 	bool framePadding;
 	/** silent mode */
 	bool silentMode;
+	/** ctb digital bits enabled list (empty: all enabled) */
+	std::vector <int> ctbDbitList;
+	/** ctb digital bit offset in bytes */
+	int ctbDbitOffset;
+	/* analog data bytes */
+	int ctbAnalogDataBytes;
 
 	//***connection parameters***
 	/** Number of UDP Interfaces */
@@ -938,13 +954,6 @@ private:
 	/** Fifo Structure to store addresses of memory writes */
 	std::vector<std::unique_ptr<Fifo>> fifo;
 
-	/** ctb type for callback*/
-	int ctbType;
-	/* ctb digital offset for callback */
-	int ctbDigitalOffset;
-	/* analog data bytes */
-	int ctbAnalogDataBytes;
-
 	//***callback parameters***
 	/**
 	 * Call back for start acquisition
@@ -986,20 +995,6 @@ private:
     void (*rawDataModifyReadyCallBack)(char* ,
             char*, uint32_t &, void*);
 
-	/**
-	 * Call back for raw CTB data that will be modified
-	 * args to raw data call back are
-	 * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
-	 * type CTB chip type
-	 * digitalOffset digital offset
-	 * analogdataBytes analog databytes
-     */
-    void (*ctbRawDataReadyCallBack)(char*,
-            char*, uint32_t &, int, int, int, void*);
-		
 	void *pRawDataReady;
 
 

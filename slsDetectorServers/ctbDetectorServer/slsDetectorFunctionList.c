@@ -714,6 +714,38 @@ uint32_t getADCEnableMask() {
     return retval;
 }
 
+void setADCInvertRegister(uint32_t val) {
+    FILE_LOG(logINFO, ("Setting ADC Port Invert Reg to 0x%x\n", val));
+    bus_w(ADC_PORT_INVERT_REG, val);
+}
+
+uint32_t getADCInvertRegister() {
+    return bus_r(ADC_PORT_INVERT_REG);
+}
+
+int setExternalSamplingSource(int val) {
+    uint32_t addr = DBIT_EXT_TRG_REG;
+    if (val >= 0) {
+        FILE_LOG(logINFO, ("Setting External sampling source to %d\n", val));
+        bus_w(addr, bus_r(addr) &~ DBIT_EXT_TRG_SRC_MSK);
+        bus_w(addr, bus_r(addr) | ((val << DBIT_EXT_TRG_SRC_OFST) & DBIT_EXT_TRG_SRC_MSK));
+    }
+    return ((bus_r(addr) & DBIT_EXT_TRG_SRC_MSK) >> DBIT_EXT_TRG_SRC_OFST);
+}
+
+int setExternalSampling(int val) {
+    uint32_t addr = DBIT_EXT_TRG_REG;
+    if (val > 0) {
+        FILE_LOG(logINFO, ("Enabling External sampling\n"));
+        bus_w(addr, bus_r(addr) | DBIT_EXT_TRG_OPRTN_MD_MSK);
+    }
+    else if (val == 0) {
+        FILE_LOG(logINFO, ("Disabling External sampling\n"));
+        bus_w(addr, bus_r(addr) &~ DBIT_EXT_TRG_OPRTN_MD_MSK);
+    }
+
+    return ((bus_r(addr) & DBIT_EXT_TRG_OPRTN_MD_MSK) >> DBIT_EXT_TRG_OPRTN_MD_OFST);
+}
 
 /* parameters - speed, readout */
 

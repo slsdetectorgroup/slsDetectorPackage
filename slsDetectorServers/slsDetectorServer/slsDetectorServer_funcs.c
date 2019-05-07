@@ -238,7 +238,10 @@ const char* getFunctionName(enum detFuncs func) {
     case F_REBOOT_CONTROLLER:              	return "F_REBOOT_CONTROLLER";
 	case F_SET_ADC_ENABLE_MASK:          	return "F_SET_ADC_ENABLE_MASK";
 	case F_GET_ADC_ENABLE_MASK:          	return "F_GET_ADC_ENABLE_MASK";
-
+	case F_SET_ADC_INVERT:					return "F_SET_ADC_INVERT";	
+	case F_GET_ADC_INVERT:					return "F_GET_ADC_INVERT";
+	case F_EXTERNAL_SAMPLING_SOURCE:		return "F_EXTERNAL_SAMPLING_SOURCE";				
+	case F_EXTERNAL_SAMPLING:				return "F_EXTERNAL_SAMPLING";	
 	default:								return "Unknown Function";
 	}
 }
@@ -317,6 +320,10 @@ void function_table() {
 	flist[F_REBOOT_CONTROLLER]                 	= &reboot_controller;
 	flist[F_SET_ADC_ENABLE_MASK]				= &set_adc_enable_mask;
 	flist[F_GET_ADC_ENABLE_MASK]				= &get_adc_enable_mask;
+	flist[F_SET_ADC_INVERT]						= &set_adc_invert;	
+	flist[F_GET_ADC_INVERT]						= &get_adc_invert;
+	flist[F_EXTERNAL_SAMPLING_SOURCE]			= &set_external_sampling_source;							
+	flist[F_EXTERNAL_SAMPLING]					= &set_external_sampling;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -3903,4 +3910,104 @@ int get_adc_enable_mask(int file_des) {
 	FILE_LOG(logDEBUG1, ("ADC Enable Mask retval: %u\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_adc_invert(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Seting ADC Invert to %u\n", arg));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setADCInvertRegister(arg);
+		uint32_t retval = getADCInvertRegister();
+		if (arg != retval) {
+			ret = FAIL;
+			sprintf(mess, "Could not set ADC Invert register. Set 0x%x, but read 0x%x\n", arg, retval);
+			FILE_LOG(logERROR,(mess));
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_adc_invert(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting ADC Invert register \n"));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else	
+	// get
+	retval = getADCInvertRegister();
+	FILE_LOG(logDEBUG1, ("ADC Invert register retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_external_sampling_source(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+    int retval = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    FILE_LOG(logDEBUG1, ("Setting external sampling source to %d\n", arg));
+
+#ifndef CHIPTESTBOARDD
+    functionNotImplemented();
+#else
+    // set & get
+    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+		if (arg < -1 || arg > 63) {
+			ret = FAIL;
+			sprintf(mess, "Could not set external sampling source to %d. Value must be 0-63.\n", arg);
+			FILE_LOG(logERROR,(mess));
+		} else {
+    		retval = setExternalSamplingSource(arg);
+    		FILE_LOG(logDEBUG1, ("External Sampling source: %d\n", retval));
+    		validate(arg, retval, "External sampling source", DEC);
+		}
+    }
+#endif
+    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+int set_external_sampling(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+    int retval = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    FILE_LOG(logDEBUG1, ("Setting external sampling enable to %d\n", arg));
+
+#ifndef CHIPTESTBOARDD
+    functionNotImplemented();
+#else
+    // set & get
+    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+		arg = (arg > 0) ? 1 : arg;
+    	retval = setExternalSampling(arg);
+    	FILE_LOG(logDEBUG1, ("External Sampling enable: %d\n", retval));
+    	validate(arg, retval, "External sampling enable", DEC);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

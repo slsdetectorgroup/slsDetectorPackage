@@ -16,10 +16,8 @@ class multiSlsDetector;
 class ServerInterface;
 class MySocketTCP;
 
-#define SLS_SHMVERSION 0x190430
-#define NCHIPSMAX 10
-#define NCHANSMAX 65536
-#define NDACSMAX 16
+#define SLS_SHMVERSION 0x190503
+#define MAX_RX_DBIT 64
 
 
 /**
@@ -245,6 +243,15 @@ struct sharedSlsDetector {
 
     /** overwrite enable */
     bool rxFileOverWrite;
+
+	/** receiver dbit size */
+	int rxDbitListSize;
+
+	/** receiver dbit list */
+	int rxDbitList[MAX_RX_DBIT];
+
+	/** reciever dbit offset */
+	int rxDbitOffset;
 	
 };
 
@@ -1218,6 +1225,77 @@ class slsDetector : public virtual slsDetectorDefs{
      * @returns ADC Enable mask
      */
     uint32_t getADCEnableMask();
+
+	     /**
+     * Set ADC invert register (CTB, Moench)
+     * @param value ADC invert value
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setADCInvert(uint32_t value);
+
+     /**
+     * Get ADC invert register (CTB, Moench)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns ADC invert value
+     */
+    uint32_t getADCInvert();
+
+     /**
+     * Set external sampling source (CTB only)
+     * @param value external sampling source (Option: 0-63)
+     * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns external sampling source
+     */
+    int setExternalSamplingSource(int value);
+
+     /**
+     * Get external sampling source (CTB only)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns external sampling source
+     */
+    int getExternalSamplingSource();
+
+     /**
+     * Set external sampling enable (CTB only)
+     * @param value external sampling source (Option: 0-63)
+     * @param detPos -1 for all detectors in  list or specific detector position
+	 * @returns  external sampling enable
+     */
+    int setExternalSampling(int value);
+
+     /**
+     * Get external sampling source (CTB only)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns external sampling enable
+     */
+    int getExternalSampling();
+
+     /**
+     * Set external sampling enable (CTB only)
+     * @param list external sampling source (Option: 0-63)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setReceiverDbitList(std::vector<int> list);
+
+     /**
+     * Get external sampling source (CTB only)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns external sampling enable
+     */
+    std::vector<int> getReceiverDbitList();
+
+	/**
+     * Set digital data offset in bytes (CTB only)
+     * @param value digital data offset in bytes
+	 * @returns digital data offset in bytes
+     */
+    int setReceiverDbitOffset(int value);
+
+     /**
+     * Get digital data offset in bytes (CTB only)
+     * @returns digital data offset in bytes
+     */
+    int getReceiverDbitOffset();
 	
     /**
 	 * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert users

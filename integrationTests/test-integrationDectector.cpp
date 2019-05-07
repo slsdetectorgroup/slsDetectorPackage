@@ -408,3 +408,75 @@ TEST_CASE("Chiptestboard Loading Patterns", "[.ctbintegration]") {
                           Catch::Matchers::Contains("be less than"));
     }
 }
+
+
+TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert", "[.ctbintegration][dbit]") {
+    SingleDetectorConfig c;
+
+    // pick up multi detector from shm id 0
+    multiSlsDetector m(0);
+
+    // ensure ctb detector type, hostname and online
+    REQUIRE(m.getDetectorTypeAsEnum() == c.type_enum);
+    REQUIRE(m.getHostname() == c.hostname);
+    REQUIRE(m.setOnline(true) == slsDetectorDefs::ONLINE_FLAG);
+
+    // dbit offset
+    m.setReceiverDbitOffset(0);
+    CHECK(m.getReceiverDbitOffset() == 0);
+    m.setReceiverDbitOffset(-1);
+    CHECK(m.getReceiverDbitOffset() == 0);
+    m.setReceiverDbitOffset(5);
+    CHECK(m.getReceiverDbitOffset() == 5);
+
+    // dbit list
+
+    std::vector <int> list = m.getReceiverDbitList();
+    list.clear();
+    for (int i = 0; i < 10; ++i)
+        list.push_back(i);
+    m.setReceiverDbitList(list);
+    
+    CHECK(m.getReceiverDbitList().size() == 10);
+
+    list.push_back(64);
+    CHECK_THROWS_AS(m.setReceiverDbitList(list), sls::RuntimeError);
+    CHECK_THROWS_WITH(m.setReceiverDbitList(list), 
+        Catch::Matchers::Contains("be between 0 and 63"));
+
+    list.clear();
+    for (int i = 0; i < 65; ++i)
+        list.push_back(i);
+    CHECK(list.size() == 65);
+    CHECK_THROWS_WITH(m.setReceiverDbitList(list),  
+        Catch::Matchers::Contains("be greater than 64"));
+
+    list.clear(); 
+    m.setReceiverDbitList(list);
+    CHECK(m.getReceiverDbitList().empty());
+
+    // adcinvert
+    m.setADCInvert(0);
+    CHECK(m.getADCInvert() == 0);
+    m.setADCInvert(5);
+    CHECK(m.getADCInvert() == 5);
+    m.setADCInvert(-1);
+    CHECK(m.getADCInvert() == -1);
+
+    // ext sampling reg
+    m.setExternalSamplingSource(0);
+    CHECK(m.getExternalSamplingSource() == 0);
+    m.setExternalSamplingSource(62);
+    CHECK(m.getExternalSamplingSource() == 62);
+    CHECK_THROWS_WITH(m.setExternalSamplingSource(64),
+         Catch::Matchers::Contains("be 0-63"));
+    CHECK(m.getExternalSamplingSource() == 62); 
+    m.setExternalSampling(1);
+    CHECK(m.getExternalSampling() == 1);
+    m.setExternalSampling(0);
+    CHECK(m.getExternalSampling() == 0);
+    m.setExternalSampling(1);
+    CHECK(m.getExternalSampling() == 1);
+    CHECK(m.readRegister(0x7b) == 0x1003E);
+    
+}

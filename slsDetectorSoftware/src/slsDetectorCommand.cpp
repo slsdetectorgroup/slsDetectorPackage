@@ -1936,23 +1936,51 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page prototype
-   - <b>adcinvert [mask]</b> Sets/gets ADC inversion mask (8 digits hex format)
-	 */
-    descrToFuncMap[i].m_pFuncName = "adcinvert";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
    - <b>adcenable [mask]</b> Sets/gets ADC enable mask (8 digits hex format)
 	 */
     descrToFuncMap[i].m_pFuncName = "adcenable";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /** not documenting this, but keeping this for backwards compatibility */
+    /** not documenting this, but keeping this for backwards compatibility  */
     descrToFuncMap[i].m_pFuncName = "adcdisable";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
+
+    /*! \page prototype
+   - <b>adcinvert [mask]</b> Sets/gets ADC inversion mask (8 digits hex format) CTB or Moench only
+	 */
+    descrToFuncMap[i].m_pFuncName = "adcinvert";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
+    ++i;
+
+    /*! \page prototype
+   - <b>extsamplingsrc [i]</b> sets/gets the sampling source signal for digital data. \ci must be between 0 and 63. Advanced!  CTB only \Returns (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "extsamplingsrc";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
+    ++i;
+
+    /*! \page prototype
+   - <b>extsampling [i]</b> enables/disables the external sampling signal to the \c samplingsrc signal for digital data. Advanced!  CTB only \Returns (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "extsampling";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
+    ++i;
+
+    /*! \page prototype
+   - <b>rx_dbitlist [i]</b> sets/gets the list of digital signal bits required for chip in receiver. If set to "all", then all digital bits are enabled. Advanced! CTB only \Returns (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "rx_dbitlist";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
+    ++i;
+
+    /*! \page prototype
+   - <b>rx_dbitoffset [i]</b> sets/gets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only \Returns (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "rx_dbitoffset";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
+    ++i;  
 
     /*! \page prototype
    - <b>pattern fn</b> loads binary pattern file fn
@@ -2084,13 +2112,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    - <b>patsetbit [m]</b> selects/gets the 64 bits  (hex) that the patmask will be applied to every pattern. Only the bits from \c m mask are selected to mask for the corresponding bit value from \c patmask. Returns \c (uint64_t).
 	 */
     descrToFuncMap[i].m_pFuncName = "patsetbit";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>dut_clk [i]</b> sets/gets the signal to be used as a clock for the digital data coming from the device under test. Advanced!
-	 */
-    descrToFuncMap[i].m_pFuncName = "dut_clk";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
@@ -5229,8 +5250,12 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patwaittime2 nclk \t sets wait 2 waiting time in clock number " << std::endl;
         os << "patmask m \t sets the 64 bit mask (hex) applied to every pattern. Only the bits from patsetbit are selected to mask for the corresponding bit value from m mask" << std::endl;
         os << "patsetbit m \t selects bits (hex) of the 64 bits that the patmask will be applied to every pattern. Only the bits from m mask are selected to mask for the corresponding bit value from patmask." << std::endl;
-        os << "adcinvert mask\t  sets the adcinversion mask (hex)" << std::endl;
-        os << "adcenable mask\t  sets the adcenable mask (hex)" << std::endl;
+        os << "adcinvert mask\t sets the adcinversion mask (hex) CTB or Moench only" << std::endl;
+        os << "adcenable mask\t sets the adcenable mask (hex) CTB or Moench only" << std::endl;
+        os << "extsamplingsrc i\t  sets the external sampling source signal for digital data. i must be between 0 and 63. Advanced! CTB only " << std::endl;
+        os << "extsampling i\t enables/disables the external sampling signal to the samplingsrc signal for digital data. Advanced! CTB only" << std::endl;
+        os << "rx_dbitlist i..\t  sets the list of digital signal bits required for chip in receiver. If set to 'all', then all digital bits are enabled. Advanced! CTB only " << std::endl;
+        os << "rx_dbitoffset i\t  sets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only " << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "pattern \t cannot get" << std::endl;
@@ -5253,8 +5278,12 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patmask \t gets the 64 bit mask (hex) applied to every pattern." << std::endl;
         os << "patsetbit \t gets 64 bit mask (hex) of the selected bits that the patmask will be applied to every pattern. " << std::endl;
         os << "adcinvert \t  returns the adcinversion mask " << std::endl;
-
         os << "adcenable \t  returns the adcenable mask " << std::endl;
+        os << "extsamplingsrc \t  gets the external sampling source signal for digital data. i must be between 0 and 63. Advanced! CTB only " << std::endl;
+        os << "extsampling \t gets the external sampling signal enable to the samplingsrc signal for digital data. Advanced! CTB only" << std::endl;
+        os << "rx_dbitlist \t  gets the list of digital signal bits required for chip in receiver. If value is 'all', all digital bits are enabled. Advanced! CTB only " << std::endl;
+        os << "rx_dbitoffset \t  gets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only " << std::endl;
+
     }
     return os.str();
 }
@@ -5270,6 +5299,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
 	 **********/
     std::string fname;
     int addr, start, stop, n;
+    uint32_t u32;
     uint64_t word, t;
 
     myDet->setOnline(ONLINE_FLAG, detPos);
@@ -5585,41 +5615,15 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
 
         os << "0x" << std::hex << myDet->getPatternBitMask(detPos) << std::dec;
 
-    } else if (cmd == "adcinvert") {
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%x", &addr))
-                ;
-            else
-                return std::string("Could not scan adcinvert reg ") + std::string(args[1]);
-
-            myDet->writeRegister(67, addr, detPos);
-        }
-
-        os << std::hex << myDet->readRegister(67, detPos) << std::dec ;
-
-    } else if (cmd == "dut_clk") {
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%x", &addr))
-                ;
-            else
-                return std::string("Could not scan dut_clk reg ") + std::string(args[1]);
-
-            myDet->writeRegister(123, addr, detPos); //0x7b
-        }
-
-        os << std::hex << myDet->readRegister(123, detPos) << std::dec ; //0x7b
-    } else if (cmd == "adcenable") {
+    }  else if (cmd == "adcenable") {
 
         if (action == PUT_ACTION) {
-            uint32_t adcEnableMask = 0;
-            if (sscanf(args[1], "%x", &adcEnableMask))
+            if (sscanf(args[1], "%x", &u32))
                 ;
             else
                 return std::string("Could not scan adcenable reg ") + std::string(args[1]);
             
-            myDet->setADCEnableMask(adcEnableMask, detPos);
+            myDet->setADCEnableMask(u32, detPos);
         }
 
         os << std::hex << myDet->getADCEnableMask(detPos) << std::dec;
@@ -5628,22 +5632,109 @@ std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, i
     else if (cmd == "adcdisable") {
 
         if (action == PUT_ACTION) {
-            uint32_t adcEnableMask = 0;
-            if (sscanf(args[1], "%x", &adcEnableMask))
+            if (sscanf(args[1], "%x", &u32))
                 ;
             else
                 return std::string("Could not scan adcdisable reg ") + std::string(args[1]);
             
             // get enable mask from enable mask
-            adcEnableMask ^= BIT32_MASK;
-            myDet->setADCEnableMask(adcEnableMask, detPos);
+            u32 ^= BIT32_MASK;
+            myDet->setADCEnableMask(u32, detPos);
         }
 
-        uint32_t retval = myDet->getADCEnableMask(detPos);
+        u32 = myDet->getADCEnableMask(detPos);
         // get disable mask
-        retval ^= BIT32_MASK;
-        os << std::hex << retval << std::dec;
-    }
+        u32 ^= BIT32_MASK;
+        os << std::hex << u32 << std::dec;
+
+    } else if (cmd == "adcinvert") {
+        if (action == PUT_ACTION) {
+
+            if (sscanf(args[1], "%x", &u32))
+                ;
+            else
+                return std::string("Could not scan adcinvert reg ") + std::string(args[1]);
+
+            myDet->setADCInvert(u32, detPos);
+        }
+
+        os << std::hex << myDet->getADCInvert(detPos) << std::dec;
+
+    } else if (cmd == "extsamplingsrc") {
+        if (action == PUT_ACTION) {
+
+            if (!sscanf(args[1], "%d", &addr)) 
+                return std::string("Could not scan extsampling src ") + std::string(args[1]);
+
+            if (addr < 0 || addr > 63)
+                return std::string("extsamplingsrc must be between 0 and 63. ") + std::string(args[1]);
+
+            myDet->setExternalSamplingSource(addr, detPos); 
+        }
+
+        os << myDet->getExternalSamplingSource(detPos); 
+   
+    } else if (cmd == "extsampling") {
+        if (action == PUT_ACTION) {
+
+            if (!sscanf(args[1], "%d", &addr)) 
+                return std::string("Could not scan extsampling enable ") + std::string(args[1]);
+
+            myDet->setExternalSampling(addr, detPos); 
+        }
+
+        os << myDet->getExternalSampling(detPos);
+    
+    } else if (cmd == "rx_dbitlist") {
+
+        myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+
+        if (action == PUT_ACTION) {
+            std::vector <int> dbitlist;
+
+            // if not all digital bits enabled
+            if (std::string(args[1]) != "all") {
+                for (int i = 1; i < narg; ++i) {
+                    int temp = 0;
+                    if (!sscanf(args[i], "%d", &temp))
+                        return std::string("Could not scan dbitlist value ") +
+                               std::string(args[i]);
+                    if (temp < 0 || temp > 63)
+                        return std::string("dbitlist value should be between 0 and 63 ") +
+                               std::string(args[i]);
+                    dbitlist.push_back(temp);
+                }
+                if (dbitlist.size() > 64) {
+                    return std::string("Max number of values for dbitlist is 64 ");
+                }
+            }
+
+            myDet->setReceiverDbitList(dbitlist, detPos); 
+        }
+        
+        std::vector <int> dbitlist = myDet->getReceiverDbitList(detPos);  
+        // all digital bits enabled
+        if (dbitlist.empty()) 
+            return std::string("all");
+        // selective bits
+        for (const auto &value : dbitlist) 
+            os << value << " ";
+    
+    } else if (cmd == "rx_dbitoffset") {
+
+        myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+
+        if (action == PUT_ACTION) {
+
+            if (!sscanf(args[1], "%d", &addr)) 
+                return std::string("Could not scan rx_dbitoffset enable ") + std::string(args[1]);
+
+            myDet->setReceiverDbitOffset(addr, detPos); 
+        }
+
+        os << myDet->getReceiverDbitOffset(detPos);
+    
+    } 
 
     else
         return helpPattern(action);

@@ -95,21 +95,6 @@ class slsReceiver : private virtual slsDetectorDefs {
     void registerCallBackRawDataModifyReady(void (*func)(char* ,
             char*, uint32_t &,void*),void *arg);
 
-    /**
-	 * Call back for raw CTB data that will be modified
-	 * args to raw data call back are
-	 * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
-	 * type CTB chip type
-	 * digitalOffset digital offset
-	 * analogdataBytes analog databytes
-     */
-    void registerCallBackCTBReceiverReady(void (*func)(char*,
-            char*, uint32_t &, int, int, int, void*),void *arg);
-
-
 
  private:
 	std::unique_ptr<slsReceiverTCPIPInterface> tcpipInterface;

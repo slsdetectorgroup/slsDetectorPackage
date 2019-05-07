@@ -2678,10 +2678,9 @@ uint32_t slsDetector::getADCEnableMask() {
 }
 
 void slsDetector::setADCInvert(uint32_t value) {
-    uint32_t arg = value;
-    FILE_LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << arg << std::dec;
+    FILE_LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << value << std::dec;
     if (shm()->onlineFlag == ONLINE_FLAG) {
-        sendToDetector(F_SET_ADC_INVERT, &arg, nullptr);
+        sendToDetector(F_SET_ADC_INVERT, value, nullptr);
     }
 }
 
@@ -2689,7 +2688,7 @@ uint32_t slsDetector::getADCInvert() {
     uint32_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC Invert";
     if (shm()->onlineFlag == ONLINE_FLAG) {
-        sendToDetector(F_GET_ADC_INVERT, nullptr, 0, &retval, sizeof(retval));
+        sendToDetector(F_GET_ADC_INVERT, nullptr, retval);
         FILE_LOG(logDEBUG1) << "ADC Invert: 0x" << std::hex << retval << std::dec;
     }
     return retval;
@@ -2784,13 +2783,12 @@ std::vector<int> slsDetector::getReceiverDbitList() {
 }
 
 int slsDetector::setReceiverDbitOffset(int value) {
-    int arg = value;
     int retval = -1;
     if (value >= 0)
         shm()->rxDbitOffset = value;
-    FILE_LOG(logDEBUG1) << "Setting digital bit offset in receiver to " << arg;
+    FILE_LOG(logDEBUG1) << "Setting digital bit offset in receiver to " << value;
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
-        sendToReceiver(F_RECEIVER_DBIT_OFFSET, arg, retval);
+        sendToReceiver(F_RECEIVER_DBIT_OFFSET, value, retval);
         FILE_LOG(logDEBUG1) << "Receiver digital bit offset: " << retval;
     }
     return shm()->rxDbitOffset;

@@ -411,6 +411,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setOnline(int value = GET_ONLINE_FLAG, int detPos = -1);
 
     /**
+     * Get detector online status
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    int getOnlineFlag(int detPos = -1);
+
+    /**
      * Checks if each of the detectors are online/offline
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns empty string if they are all online,
@@ -444,9 +450,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
      /**
       * Get Receiver port
+      * @param detPos -1 for all detectors in  list or specific detector position
       * @returns vector of receiver port
       */
-    std::vector<int> getReceiverPort() const;
+    int getReceiverPort(int detPos = -1) const;
 
     /**
      * Lock server for this client IP
@@ -1612,6 +1619,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns online/offline flag
      */
     int setReceiverOnline(int value = GET_ONLINE_FLAG, int detPos = -1);
+
+    /**
+     * Get receiver online status
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    int getReceiverOnlineFlag(int detPos = -1);
 
     /**
      * Checks if the receiver is really online

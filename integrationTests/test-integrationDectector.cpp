@@ -107,7 +107,7 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
     d.setOnline(true);
     CHECK(d.getOnlineFlag() == true);
 
-    CHECK(d.getReceiverOnline() == false);
+    CHECK(d.getReceiverOnlineFlag() == false);
     CHECK(d.checkDetectorVersionCompatibility() == slsDetectorDefs::OK);
 
     // Setting and reading exposure time

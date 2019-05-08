@@ -62,42 +62,38 @@ class qServer : public QWidget, public virtual slsDetectorDefs {
     void ServerThread(ServerSocket* sock);
 
     /**
-     * Thread of stop server
-     */
-    void StopServer();
-
-    /**
      * Get Detector Status
      * @returns success of operation
      */
-    int GetStatus();
+    int GetStatus(ServerSocket* sock);
 
     /**
      * Starts Acquisition
      * @returns success of operation
      */
-    int StartAcquisition();
+    int StartAcquisition(ServerSocket* sock);
 
     /**
      * Stops Acquisition
      * @returns success of operation
      */
-    int StopsAcquisition();
+    int StopsAcquisition(ServerSocket* sock);
 
     /**
      * Acquire - blocking
      * @returns success of operation
      */
-    int Acquire();
+    int Acquire(ServerSocket* sock);
 
     /**
      * Exit Server
      * @returns GOODBYE
      */
-    int ExitServer();
+    int ExitServer(ServerSocket* sock);
 
     /** function list */
-    std::vector<int (*)()> flist;
+    typedef int (qServer::*some_func_t)(ServerSocket*);
+    typedef std::vector<some_func_t> sflist;
 
     /** if the gui server thread is running*/
     bool threadRunning;

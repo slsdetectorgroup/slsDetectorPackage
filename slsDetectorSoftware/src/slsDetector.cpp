@@ -3270,7 +3270,7 @@ int slsDetector::setReceiverOnline(int value) {
     return shm()->rxOnlineFlag;
 }
 
-int slsDetector::getReceiverOnline() const { return shm()->rxOnlineFlag; }
+int slsDetector::getReceiverOnlineFlag() const { return shm()->rxOnlineFlag; }
 
 std::string slsDetector::checkReceiverOnline() {
     try {

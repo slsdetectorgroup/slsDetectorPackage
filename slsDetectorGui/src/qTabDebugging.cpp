@@ -22,9 +22,7 @@ qTabDebugging::qTabDebugging(QWidget *parent, multiSlsDetector *detector) : QWid
     FILE_LOG(logDEBUG) << "Debugging ready";
 }
 
-qTabDebugging::~qTabDebugging() {
-    delete myDet;
-}
+qTabDebugging::~qTabDebugging() {}
 
 
 void qTabDebugging::SetupWidgetWindow() {

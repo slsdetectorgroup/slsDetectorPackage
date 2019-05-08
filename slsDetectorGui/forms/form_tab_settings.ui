@@ -43,6 +43,9 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="2" column="0">
      <widget class="QLabel" name="lblDynamicRange">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="text">
        <string>Dynamic Range:</string>
       </property>
@@ -50,6 +53,9 @@
     </item>
     <item row="0" column="2" colspan="2">
      <widget class="QComboBox" name="comboSettings">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -144,6 +150,9 @@
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="lblThreshold">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="text">
        <string>Threshold:</string>
       </property>
@@ -167,6 +176,9 @@
     </item>
     <item row="2" column="2" colspan="2">
      <widget class="QComboBox" name="comboDynamicRange">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <item>
        <property name="text">
         <string>1.67772e+07</string>
@@ -191,6 +203,9 @@
     </item>
     <item row="0" column="0">
      <widget class="QLabel" name="lblSettings">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="text">
        <string>Settings:</string>
       </property>
@@ -198,6 +213,9 @@
     </item>
     <item row="1" column="2" colspan="2">
      <widget class="QSpinBox" name="spinThreshold">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="keyboardTracking">
        <bool>false</bool>
       </property>

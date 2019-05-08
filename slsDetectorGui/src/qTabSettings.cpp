@@ -8,50 +8,51 @@
 #include <iostream>
 
 qTabSettings::qTabSettings(QWidget *parent, multiSlsDetector *detector)
-    : QWidget(parent), myDet(detector), detType(slsDetectorDefs::GENERIC) {
+    : QWidget(parent), myDet(detector) {
 
     setupUi(this);
     SetupWidgetWindow();
-    Initialization();
     FILE_LOG(logDEBUG) << "Settings ready";
 }
 
 qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
-    // Detector Type
-    detType = myDet->getDetectorTypeAsEnum();
+
+    switch(myDet->getDetectorTypeAsEnum()) {
+
+        case MOENCH:
+            lblSettings->setEnabled(false);
+            comboSettings->setEnabled(false);
+            break;
+
+        case EIGER:
+            lblDynamicRange->setEnabled(true);
+            comboDynamicRange->setEnabled(true);
+            lblThreshold->setEnabled(true);
+            spinThreshold->setEnabled(true);
+            break;
+
+        default:
+            break;
+    }
+
+    Initialization();
 
     // Settings
     comboSettings->setCurrentIndex(UNINITIALIZED);
-    if (detType == slsDetectorDefs::MOENCH) {
-        lblSettings->setEnabled(false);
-        comboSettings->setEnabled(false);
-    } else {
+    if (comboSettings->isEnabled()) {
         SetupDetectorSettings();
         GetSettings();
     }
 
-    // Dynamic Range
+    // Dynamic Range (update it anyway)
     GetDynamicRange();
-    // cannot change dr for other types
-    if (detType != slsDetectorDefs::EIGER) {
-        lblDynamicRange->setEnabled(false);
-        comboDynamicRange->setEnabled(false);
-    }
 
-    // threshold energy
-    if (detType == slsDetectorDefs::EIGER) {
-			qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-                spinThreshold,
-                &QSpinBox::setValue,
-                myDet,
-                std::string("qTabSettings::SetupWidgetWindow"),
-                &multiSlsDetector::getThresholdEnergy, -1);
-    } else {
-        lblThreshold->setEnabled(false);
-        spinThreshold->setEnabled(false);
-    }
+    // get threshold
+    spinThreshold->setValue(-1);
+    if (spinThreshold->isEnabled())
+        GetThresholdEnergy();
 }
 
 void qTabSettings::SetupDetectorSettings() {
@@ -139,84 +140,114 @@ void qTabSettings::SetupDetectorSettings() {
 void qTabSettings::Initialization() {
     // Settings
     if (comboSettings->isEnabled())
-        connect(comboSettings, SIGNAL(currentIndexChanged(int)), this,
-                SLOT(SetSettings(int)));
+        connect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSettings(int)));
+   
     // Dynamic Range
     if (comboDynamicRange->isEnabled())
-        connect(comboDynamicRange, SIGNAL(activated(int)), this,
-                SLOT(SetDynamicRange(int)));
+        connect(comboDynamicRange, SIGNAL(activated(int)), this, SLOT(SetDynamicRange(int)));
+
     // Threshold
     if (spinThreshold->isEnabled())
-        connect(spinThreshold, SIGNAL(valueChanged(int)), this,
-                SLOT(SetEnergy()));
+        connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetEnergy()));
 }
 
 void qTabSettings::GetSettings() {
     FILE_LOG(logDEBUG) << "Getting settings";
+    disconnect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSettings(int)));
 
-    int sett = qDefs::IgnoreNonCriticalExceptionsandReturn(
-        myDet, std::string("qTabSettings::SetupWidgetWindow"),
-        &multiSlsDetector::getSettings, -1);
-
-    FILE_LOG(logDEBUG) << "Settings from Detector:" << sett;
-
-    if (sett == -1)
-        sett = UNDEFINED;
-    if (sett == slsDetectorDefs::UNDEFINED)
-        sett = UNDEFINED;
-    else if (sett == slsDetectorDefs::UNINITIALIZED)
-        sett = UNINITIALIZED;
-
-    comboSettings->setCurrentIndex(sett);
+    try{
+        int sett = myDet->getSettings(-1);
+        FILE_LOG(logDEBUG) << "Settings from Detector:" << sett;
+        switch (sett) {
+            case -1:
+                qDefs::Message(qDefs::WARNING, "Different values for settings.", "qTabSettings::GetSettings");
+                comboSettings->setCurrentIndex(UNDEFINED);
+                break;
+            case slsDetectorDefs::UNDEFINED:
+                comboSettings->setCurrentIndex(UNDEFINED);
+                break;
+            case slsDetectorDefs::UNINITIALIZED:
+                comboSettings->setCurrentIndex(UNINITIALIZED);
+                break;
+            default:
+                if (sett >= NUMSETTINGS) {
+                    qDefs::Message(qDefs::WARNING, "Unknown settings " + std::to_string(sett) + ".", "qTabSettings::GetSettings");
+                    return;
+                }
+                comboSettings->setCurrentIndex(sett);
+                break;
+        }
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get settings.", e.what(), "qTabSettings::GetSettings");
+    }
+    connect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSettings(int)));
 }
 
 void qTabSettings::GetDynamicRange() {
     FILE_LOG(logDEBUG) << "Getting dynamic range";
+    disconnect(comboDynamicRange, SIGNAL(activated(int)), this, SLOT(SetDynamicRange(int)));
+ 
+    try {
+        int ret = myDet->setDynamicRange(-1);
 
-    int ret = qDefs::IgnoreNonCriticalExceptionsandReturn(
-        myDet, std::string("qTabSettings::GetDynamicRange"),
-        &multiSlsDetector::setDynamicRange, -1, -1);
-
-    // set the final value on gui
-    switch (ret) {
-    case 32:
-        comboDynamicRange->setCurrentIndex(0);
-        break;
-    case 16:
-        comboDynamicRange->setCurrentIndex(1);
-        break;
-    case 8:
-        comboDynamicRange->setCurrentIndex(2);
-        break;
-    case 4:
-        comboDynamicRange->setCurrentIndex(3);
-        break;
-    default:
-        if (ret != -1) {
-            qDefs::Message(qDefs::WARNING,
-                       "Unknown Dyanmic Range " + std::to_string(ret) + ".",
-                       "qTabSettings::SetupDetectorSettings");
+        // set the final value on gui
+        switch (ret) {
+        case -1:
+            qDefs::Message(qDefs::WARNING, "Different values for dynamic range.", "qTabSettings::GetDynamicRange");
+            break;
+        case 32:
+            comboDynamicRange->setCurrentIndex(0);
+            break;
+        case 16:
+            comboDynamicRange->setCurrentIndex(1);
+            break;
+        case 8:
+            comboDynamicRange->setCurrentIndex(2);
+            break;
+        case 4:
+            comboDynamicRange->setCurrentIndex(3);
+            break;
+        default:
+            qDefs::Message(qDefs::WARNING, "Unknown Dynamic Range " + std::to_string(ret) + ".", "qTabSettings::GetDynamicRange");
+            break;
         }
-        break;
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get dynamic range.", e.what(), "qTabSettings::GetDynamicRange");
     }
+    connect(comboDynamicRange, SIGNAL(activated(int)), this,SLOT(SetDynamicRange(int))); 
+}
+
+void qTabSettings::GetThresholdEnergy() {
+    FILE_LOG(logDEBUG) << "Getting theshold energy";
+    disconnect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetEnergy()));
+    qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
+            myDet,
+            "Could not get threshold energy."
+            "qTabSettings::GetThresholdEnergy",
+            spinThreshold,
+            &QSpinBox::setValue,
+            &multiSlsDetector::getThresholdEnergy, -1);
+    connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetEnergy()));
 }
 
 void qTabSettings::SetSettings(int index) {
-    slsDetectorDefs::detectorSettings sett =
+    // settings
+    try {
         myDet->setSettings((slsDetectorDefs::detectorSettings)index);
-    FILE_LOG(logINFO) << "Settings set to "
-                      << myDet->slsDetectorDefs::getDetectorSettings(sett);
+        FILE_LOG(logINFO) << "Settings set to " << myDet->slsDetectorDefs::getDetectorSettings(sett);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set settings.", e.what(), "qTabSettings::SetSettings");
+        GetSettings();    
+    }
 
     // threshold
     if (spinThreshold->isEnabled()) {
         SetEnergy();
     }
-
-    qDefs::checkErrorMessage(myDet, "qTabSettings::SetSettings");
 }
 
 void qTabSettings::SetDynamicRange(int index) {
-    int dr;
+    int dr = -1;
     switch (index) {
     case 0:
         dr = 32;
@@ -231,41 +262,36 @@ void qTabSettings::SetDynamicRange(int index) {
         dr = 4;
         break;
     default:
-        break;
+        qDefs::Message(qDefs::WARNING, "Unknown dynamic range " + std::to_string(index) + ".", "qTabSettings::SetDynamicRange");
+        return;
     }
-    int ret = myDet->setDynamicRange(dr);
-    FILE_LOG(logINFO) << "Setting dynamic range to " << dr;
-    qDefs::checkErrorMessage(myDet, "qTabSettings::SetDynamicRange");
 
-    // check
-    if (ret != dr) {
-        qDefs::Message(qDefs::WARNING, "Could not set dynamic range.",
-                       "qTabSettings::SetDynamicRange");
-        disconnect(comboDynamicRange, SIGNAL(activated(int)), this,
-                   SLOT(SetDynamicRange(int)));
+    try {
+        myDet->setDynamicRange(dr);
+        FILE_LOG(logINFO) << "Setting dynamic range to " << dr;
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set dynamic range.", e.what(), "qTabSettings::SetDynamicRange");
         GetDynamicRange();
-        connect(comboDynamicRange, SIGNAL(activated(int)), this,
-                SLOT(SetDynamicRange(int)));
     }
 }
 
 void qTabSettings::SetEnergy() {
-    int index = spinThreshold->value();
-    FILE_LOG(logINFO) << "Settings threshold energy to " << index;
-
-    myDet->setThresholdEnergy(index);
-    int ret = myDet->getThresholdEnergy();
-    if ((ret - index) > 200) {
-        qDefs::Message(qDefs::WARNING,
-                       "Threshold energy could not be set (tolerance 200).",
+    try {
+        // set
+        int index = spinThreshold->value();
+        int ret = myDet->setThresholdEnergy(index);
+        FILE_LOG(logINFO) << "Threshold energy set to " << index;  
+        // validate
+        if ((ret - index) > THRESHOLD_TOLERANCE) {
+            qDefs::Message(qDefs::WARNING,
+                       "Threshold energy could not be set (tolerance 200 eV).",
                        "qTabSettings::SetEnergy");
+        }
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get threshold energy."), e.what(), "qTabSettings::SetEnergy");
     }
-    disconnect(spinThreshold, SIGNAL(valueChanged(int)), this,
-               SLOT(SetEnergy()));
-    spinThreshold->setValue(ret);
-    connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetEnergy()));
-
-    qDefs::checkErrorMessage(myDet, "qTabSettings::SetEnergy");
+    // set the right value anyway (exception or no)
+    GetThresholdEnergy(); 
 }
 
 void qTabSettings::Refresh() {
@@ -273,32 +299,18 @@ void qTabSettings::Refresh() {
 
     // settings
     if (comboSettings->isEnabled()) {
-        disconnect(comboSettings, SIGNAL(currentIndexChanged(int)), this,
-                   SLOT(SetSettings(int)));
         GetSettings();
-        connect(comboSettings, SIGNAL(currentIndexChanged(int)), this,
-                SLOT(SetSettings(int)));
     }
 
     // threshold
     if (spinThreshold->isEnabled()) {
-        disconnect(spinThreshold, SIGNAL(valueChanged(int)), this,
-                   SLOT(SetEnergy()));
-        spinThreshold->setValue(myDet->getThresholdEnergy());
-        connect(spinThreshold, SIGNAL(valueChanged(int)), this,
-                SLOT(SetEnergy()));
+        GetThresholdEnergy();
     }
 
     // Dynamic Range
     if (comboDynamicRange->isEnabled()) {
-        disconnect(comboDynamicRange, SIGNAL(activated(int)), this,
-                   SLOT(SetDynamicRange(int)));
         GetDynamicRange();
-        connect(comboDynamicRange, SIGNAL(activated(int)), this,
-                SLOT(SetDynamicRange(int)));
     }
 
     FILE_LOG(logDEBUG) << "**Updated Settings Tab";
-
-    qDefs::checkErrorMessage(myDet, "qTabSettings::Refresh");
 }

@@ -199,43 +199,55 @@ class qDefs : public QWidget {
     }
 
     /**
+     * Wrap exception message
+     */
+    static int ExceptionMessage(std::string message, 
+                        std::string exceptionMessage,
+                       std::string source) {
+        return Message(qDefs::WARNING, message + std::string("\nCaught exception:\n") + exceptionMessage, source);
+    } 
+
+    /**
      * Wrap around to ignore non critical exceptions
      */
     template <class CT> struct NonDeduced { using type = CT; };
 
     // only executing multiSlsDetector function
     template <typename RT, typename... CT>
-    static void IgnoreNonCriticalExceptions(multiSlsDetector* det, const std::string loc, RT (multiSlsDetector::*somefunc)(CT...), 
-    typename NonDeduced<CT>::type... Args) {
+    static void IgnoreNonCriticalExceptions(multiSlsDetector* det, 
+            const std::string message, const std::string source,
+            RT (multiSlsDetector::*somefunc)(CT...), 
+            typename NonDeduced<CT>::type... Args) {
         try {
             ((det->*somefunc)(Args...));
         }
         // catch them here as they are not critical
         catch (const sls::NonCriticalError &e) {
-            Message(qDefs::WARNING, e.what(), loc);
+            ExceptionMessage(message, e.what(), source);
         }
     };
 
     // executing multiSlsDetector funtion and using return value to set QWidget function
     template <class W, typename WRT, typename RT, typename... CT>
-    static void IgnoreNonCriticalExceptions(W* wid,  
-    void (W::*someQfunc)(WRT), 
-    multiSlsDetector* det, const std::string loc, 
-    RT (multiSlsDetector::*somefunc)(CT...), 
-    typename NonDeduced<CT>::type... Args) {
+    static void IgnoreNonCriticalExceptions(multiSlsDetector* det, 
+            const std::string message, const std::string source,
+            W* wid, void (W::*someQfunc)(WRT), 
+            RT (multiSlsDetector::*somefunc)(CT...), 
+            typename NonDeduced<CT>::type... Args) {
         try {
             auto val = ((det->*somefunc)(Args...));
             (wid->*someQfunc)(static_cast<RT>(val));
         }
         // catch them here as they are not critical
         catch (const sls::NonCriticalError &e) {
-            Message(qDefs::WARNING, e.what(), loc);
+            ExceptionMessage(message, e.what(), source);
         }
     };
 
 
     // executing multiSlsDetector funtion and returning its value (integers, where value cannot be -1)
-    template <typename RT, typename... CT>
+    /*  can easily get out of hand
+   template <typename RT, typename... CT>
     static RT IgnoreNonCriticalExceptionsandReturn(
     multiSlsDetector* det, const std::string loc, 
     RT (multiSlsDetector::*somefunc)(CT...), 
@@ -248,5 +260,5 @@ class qDefs : public QWidget {
             Message(qDefs::WARNING, e.what(), loc);
             return static_cast<RT>(-1);
         }
-    };
+    };*/
 };

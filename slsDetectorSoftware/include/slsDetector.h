@@ -1519,7 +1519,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int setReceiverOnline(int value = GET_ONLINE_FLAG);
 
-    int getReceiverOnline() const;
+    int getReceiverOnlineFlag() const;
 
     /**
 	 * Checks if the receiver is really online

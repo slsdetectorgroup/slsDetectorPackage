@@ -77,13 +77,17 @@ private:
 	 */
 	void GetDynamicRange();
 
+	/**
+	 * Gets the threshold energy and update widget
+	 */
+	void GetThresholdEnergy();
+
 	/** The sls detector object */
 	multiSlsDetector *myDet;
-
-	/** detector type */
-	slsDetectorDefs::detectorType detType;
 
 	enum{STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, LOWNOISE,
 		DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, VERLOWGAIN,
 		UNDEFINED, UNINITIALIZED, NUMSETTINGS};
+
+	static const int THRESHOLD_TOLERANCE = 200;
 };

@@ -19,11 +19,11 @@ qServer::qServer(qDetectorMain *t)
 qServer::~qServer() {}
 
 void qServer::FunctionTable() {
-    flist.push_back(qServer::GetStatus);
-    flist.push_back(qServer::StartAcquisition);
-    flist.push_back(qServer::StopsAcquisition);
-    flist.push_back(qServer::Acquire);
-    flist.push_back(qServer::ExitServer);
+    sflist.push_back(&qServer::GetStatus);
+    sflist.push_back(&qServer::StartAcquisition);
+    sflist.push_back(&qServer::StopsAcquisition);
+    sflist.push_back(&qServer::Acquire);
+    sflist.push_back(&qServer::ExitServer);
 }
 
 int qServer::DecodeFunction(ServerSocket *sock) {
@@ -46,7 +46,7 @@ int qServer::DecodeFunction(ServerSocket *sock) {
 
     // calling function
     FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum;
-    ret = (this->*flist[fnum])();
+    ret = (this->*sflist[fnum])(sock);
 
     return ret;
 }
@@ -119,7 +119,7 @@ void qServer::ServerThread(ServerSocket* sock) {
         emit ServerStoppedSignal();
 }
 
-int qServer::GetStatus(ServerSock* sock) {
+int qServer::GetStatus(ServerSocket* sock) {
     slsDetectorDefs::runStatus status = slsDetectorDefs::ERROR;
     int progress = 0;
     if (myMainTab->isPlotRunning())
@@ -135,7 +135,7 @@ int qServer::GetStatus(ServerSock* sock) {
     return ret;
 }
 
-int qServer::StartAcquisition(ServerSock* sock) {
+int qServer::StartAcquisition(ServerSocket* sock) {
     char mess[MAX_STR_LENGTH] = {};
     sls::strcpy_safe(mess, "Could not start acquistion in Gui");
     int ret = myMainTab->StartStopAcquisitionFromClient(true);
@@ -143,7 +143,7 @@ int qServer::StartAcquisition(ServerSock* sock) {
     return ret;
 }
 
-int qServer::StopsAcquisition(ServerSock* sock) {
+int qServer::StopsAcquisition(ServerSocket* sock) {
     char mess[MAX_STR_LENGTH] = {};
     sls::strcpy_safe(mess, "Could not stop acquistion in Gui");
     int ret = myMainTab->StartStopAcquisitionFromClient(false);
@@ -151,7 +151,7 @@ int qServer::StopsAcquisition(ServerSock* sock) {
     return ret;
 }
 
-int qServer::Acquire(ServerSock* sock) {
+int qServer::Acquire(ServerSocket* sock) {
     char mess[MAX_STR_LENGTH] = {};
     sls::strcpy_safe(mess, "Could not start blocking acquistion in Gui");
     int ret = myMainTab->StartStopAcquisitionFromClient(true);
@@ -163,7 +163,7 @@ int qServer::Acquire(ServerSock* sock) {
     return ret;
 }
 
-int qServer::ExitServer(ServerSock* sock) {
+int qServer::ExitServer(ServerSocket* sock) {
     DestroyServers();
     int ret = qDefs::OK;
     sock->SendResult(ret, nullptr, 0, mess); 

@@ -1,14 +1,14 @@
 set(CMAKE_AUTOMOC ON)
 
-set(ENV{QMAKESPEC} "/afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/mkspecs/linux-g++")
-set(ENV{PATH} "/afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/bin:$PATH")
+#set(ENV{QMAKESPEC} "/afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/mkspecs/linux-g++")
+#set(ENV{PATH} "/afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/bin:$PATH")
 
-link_directories(
-    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/lib 
-    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/qwt-6.0.1/lib 
-    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/qwtplot3d/lib
-    /afs/psi.ch/project/sls_det_software/dhanya_softwareDevelopment/mySoft/slsDetectorPackage/build/bin
-)
+#link_directories(
+#    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/lib 
+#    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/qwt-6.0.1/lib 
+#    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/qwtplot3d/lib
+#    /afs/psi.ch/project/sls_det_software/dhanya_softwareDevelopment/mySoft/slsDetectorPackage/build/bin
+#)
 
 set(SOURCES
     slsDetectorPlotting/src/SlsQt1DPlot.cxx
@@ -67,6 +67,7 @@ set(HEADERS
     include/qTabMessages.h
     ../slsSupportLib/include/versionAPI.h
     include/qServer.h
+    ../slsDetectorSoftware/include
 )
 set(RESOURCES
     include/icons.qrc

@@ -35,10 +35,7 @@ qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *detector) : QWid
 }
 
 
-qTabDeveloper::~qTabDeveloper() {
-	if (myDet)
-		delete myDet;
-}
+qTabDeveloper::~qTabDeveloper() {}
 
 void qTabDeveloper::SetupWidgetWindow() {
 	//Detector Type
@@ -130,10 +127,11 @@ void qTabDeveloper::SetupWidgetWindow() {
 		break;
 
 	default:
-		FILE_LOG(logERROR) << "Unknown detector type: " + myDet->getDetectorTypeAsString();
-		qDefs::Message(qDefs::CRITICAL, std::string("Unknown detector type:") + myDet->getDetectorTypeAsString(), "qTabDeveloper::SetupWidgetWindow");
-		exit(-1);
-		break;
+		std::string errorMess =
+            myDet->getHostname() + std::string(" has ") +
+            myDet->getDetectorTypeAsString() + std::string(" detector type (") +
+            std::to_string(detType) + std::string("). Exiting GUI. (Source: qTabDeveloper::SetupWidgetWindow)");
+		throw sls::RuntimeError(errorMess.c_str());
 	}
 
 	//layout
@@ -174,8 +172,6 @@ void qTabDeveloper::SetupWidgetWindow() {
 		CreateADCWidgets();
 		layout->addWidget(boxAdcs, 2, 0);
 	}
-
-	qDefs::checkErrorMessage(myDet, "qTabDeveloper::SetupWidgetWindow");
 }
 
 

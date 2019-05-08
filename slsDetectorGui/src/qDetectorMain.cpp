@@ -276,6 +276,25 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     std::string title =
         "SLS Detector GUI : " + myDet->getDetectorTypeAsString() + " - " +
         myDet->getHostname();
+    FILE_LOG(logINFO) << title;
+    setWindowTitle(QString(title.c_str()));
+    //FIXME: not needed anymore due to client creating socket each time
+    //myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
+    //myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
+}
+
+void qDetectorMain::Initialization() {
+    // Dockable Plot
+	connect(dockWidgetPlot,	SIGNAL(topLevelChanged(bool)),	this,SLOT(ResizeMainWindow(bool)));
+    // tabs
+	connect(tabs,			SIGNAL(currentChanged(int)),	this, SLOT(Refresh(int)));//( QWidget*)));
+    //	Measurement tab
+    connect(tabMeasurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
+    connect(tabMeasurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
+    connect(tabMeasurement,	SIGNAL(CheckPlotIntervalSignal()),	tabPlot,SLOT(SetFrequency()));
+    // Plot tab
+    connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
+
     // Plotting
     // When the acquisition is finished, must update the meas tab
     connect(myPlot, SIGNAL(UpdatingPlotFinished()), this, SLOT(EnableTabs()));
@@ -328,7 +347,9 @@ void qDetectorMain::LoadConfigFile(const std::string fName) {
             "qDetectorMain::LoadConfigFile");
         FILE_LOG(logWARNING) << "File not recognized";
     } else {
-        qDefs::IgnoreNonCriticalExceptions(myDet, "qDetectorMain::LoadConfigFile",
+        qDefs::IgnoreNonCriticalExceptions(myDet, 
+                "Could not load config file.",
+                "qDetectorMain::LoadConfigFile",
                 &multiSlsDetector::readConfigurationFile, fName);
     }
 }
@@ -361,11 +382,6 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(ADVANCED, enable);
-        // moench don't have settings
-        if (detType != slsDetectorDefs::MOENCH) {
-            actionLoadTrimbits->setVisible(enable);
-            actionSaveTrimbits->setVisible(enable);
-        }
         FILE_LOG(logINFO) << "Expert Mode: "
                           << slsDetectorDefs::stringEnable(enable);
     }
@@ -546,8 +562,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             }
         }
     } catch (const sls::NonCriticalError &e) {
-        qDefs::Message(qDefs::WARNING, e.what(),
-                       "qDetectorMain::ExecuteUtilities");
+        qDefs::ExceptionMessage("Could not execute utilities.", e.what(), "qDetectorMain::ExecuteUtilities");
     }
 
     Refresh(tabs->currentIndex());
@@ -570,22 +585,22 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
         FILE_LOG(logINFO) << "About Common GUI for Eiger, Gotthard, Jungfrau "
                              "and Moench detectors";
 
-        char version[200];
-        long long unsigned int retval = APIGUI;
-        sprintf(version, "%llx", retval);
-        std::string thisGUIVersion{version};
-
-        sprintf(version, "%lx",
-                myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
-        std::string thisClientVersion{version};
+        std::string guiVersion = std::to_string(APIGUI);
+        std::string clientVersion;
+        try {
+            clientVersion = std::to_string(myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
+        } catch (const sls::NonCriticalError &e) {
+            qDefs::ExceptionMessage("Could not get client version.", e.what(), "qDetectorMain::ExecuteHelp");
+            clientVersion = "unknown";
+        }
 
         qDefs::Message(qDefs::INFORMATION,
                        "<p style=\"font-family:verdana;\">"
                        "SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" +
-                           thisGUIVersion +
+                           guiVersion +
                            "<br>"
                            "SLS Detector Client version:  " +
-                           thisClientVersion +
+                           clientVersion +
                            "<br><br>"
                            "Common GUI to control the SLS Detectors: "
                            "Eiger, Gotthard, Jungfrau and Moench.<br><br>"
@@ -701,8 +716,8 @@ void qDetectorMain::EnableTabs() {
     // expert
     bool expertTab = enable && (actionExpert->isChecked());
     tabs->setTabEnabled(ADVANCED, expertTab);
-    actionLoadTrimbits->setVisible(expertTab);
-    actionSaveTrimbits->setVisible(expertTab);
+    actionLoadTrimbits->setVisible(expertTab && detType != slsDetectorDefs::MOENCH);
+    actionSaveTrimbits->setVisible(expertTab && detType != slsDetectorDefs::MOENCH);
 
     // moved to here, so that its all in order, instead of signals and different
     // threads

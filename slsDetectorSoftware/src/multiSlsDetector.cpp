@@ -674,6 +674,15 @@ int multiSlsDetector::setOnline(int value, int detPos) {
     return multi_shm()->onlineFlag;
 }
 
+int multiSlsDetector::getOnlineFlag(int detPos) {
+    if (detPos >= 0) {
+        return detectors[detPos]->getOnlineFlag();
+    }
+
+    auto r = serialCall(&slsDetector::getOnlineFlag);
+    return sls::minusOneIfDifferent(r);
+}
+
 std::string multiSlsDetector::checkOnline(int detPos) {
     if (detPos >= 0) {
         return detectors[detPos]->checkOnline();
@@ -710,8 +719,13 @@ int multiSlsDetector::setReceiverPort(int port_number, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-std::vector<int> multiSlsDetector::getReceiverPort() const {
-    return parallelCall(&slsDetector::getReceiverPort);
+int multiSlsDetector::getReceiverPort(int detPos) const {
+        if (detPos >= 0) {
+        return detectors[detPos]->getReceiverPort();
+    }
+
+    auto r = serialCall(&slsDetector::getReceiverPort);
+    return sls::minusOneIfDifferent(r);
 }
 
 int multiSlsDetector::lockServer(int p, int detPos) {
@@ -2885,6 +2899,17 @@ int multiSlsDetector::setReceiverOnline(int value, int detPos) {
         multi_shm()->receiverOnlineFlag = sls::minusOneIfDifferent(r);
     }
     return multi_shm()->receiverOnlineFlag;
+}
+
+int multiSlsDetector::getReceiverOnlineFlag(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReceiverOnlineFlag();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getReceiverOnlineFlag);
+    return sls::minusOneIfDifferent(r);
 }
 
 std::string multiSlsDetector::checkReceiverOnline(int detPos) {

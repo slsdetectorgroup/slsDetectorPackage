@@ -300,10 +300,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
-    shm()->nTrimEn = 0;
-    for (int &trimEnergie : shm()->trimEnergies) {
-        trimEnergie = 0;
-    }
     shm()->nROI = 0;
     memset(shm()->roiLimits, 0, MAX_ROIS * sizeof(ROI));
     shm()->adcEnableMask = BIT32_MASK;
@@ -1166,14 +1162,14 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
         ((isettings != GET_SETTINGS) ? isettings : shm()->currentSettings);
 
     // verify e_eV exists in trimEneregies[]
-    if ((shm()->nTrimEn == 0) || (e_eV < shm()->trimEnergies[0]) ||
-        (e_eV > shm()->trimEnergies[shm()->nTrimEn - 1])) {
+    if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
+        (e_eV > shm()->trimEnergies.back())) {
         throw RuntimeError("This energy " + std::to_string(e_eV) +
                            " not defined for this module!");
     }
 
     bool interpolate =
-        std::all_of(shm()->trimEnergies, shm()->trimEnergies + shm()->nTrimEn,
+        std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
                     [e_eV](const int &e) { return e != e_eV; });
 
     sls_detector_module myMod{shm()->myDetectorType};
@@ -1185,7 +1181,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
     } else {
         // find the trim values
         int trim1 = -1, trim2 = -1;
-        for (int i = 0; i < shm()->nTrimEn; ++i) {
+        for (size_t i = 0; i < shm()->trimEnergies.size(); ++i) {
             if (e_eV < shm()->trimEnergies[i]) {
                 trim2 = shm()->trimEnergies[i];
                 trim1 = shm()->trimEnergies[i - 1];
@@ -2908,14 +2904,13 @@ int slsDetector::setTrimEn(std::vector<int> energies) {
            << "\n";
         throw RuntimeError(os.str());
     }
-    std::copy(begin(energies), end(energies), shm()->trimEnergies);
-    shm()->nTrimEn = energies.size();
-    return shm()->nTrimEn;
+    shm()->trimEnergies = energies;
+    return shm()->trimEnergies.size();
 }
 
 std::vector<int> slsDetector::getTrimEn() {
-    return std::vector<int>(shm()->trimEnergies,
-                            shm()->trimEnergies + shm()->nTrimEn);
+    return std::vector<int>(shm()->trimEnergies.begin(),
+                            shm()->trimEnergies.end());
 }
 
 int slsDetector::pulsePixel(int n, int x, int y) {

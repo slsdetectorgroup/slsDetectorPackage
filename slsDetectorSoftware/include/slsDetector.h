@@ -6,11 +6,13 @@
 #include "logger.h"
 #include "sls_detector_defs.h"
 #include "network_utils.h"
+#include "FixedCapacityContainer.h"
 class ClientInterface;
 
 #include <cmath>
 #include <vector>
 #include <array>
+
 
 class multiSlsDetector;
 class ServerInterface;
@@ -62,11 +64,8 @@ struct sharedSlsDetector {
     /** path of the trimbits/settings files */
     char settingsDir[MAX_STR_LENGTH];
 
-    /** number of energies at which the detector has been trimmed */
-    int nTrimEn;
-
     /** list of the energies at which the detector has been trimmed  */
-    int trimEnergies[MAX_TRIMEN];
+	sls::FixedCapacityContainer<int, MAX_TRIMEN> trimEnergies;
 
     /**  number of channels per chip */
     int nChans;

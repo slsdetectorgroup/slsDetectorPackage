@@ -32,6 +32,7 @@ set(PUBLICHEADERS
     include/ServerSocket.h
     include/ServerInterface.h
     include/network_utils.h
+    include/FixedCapacityContainer.h
 )
 
 add_library(slsSupportLib SHARED

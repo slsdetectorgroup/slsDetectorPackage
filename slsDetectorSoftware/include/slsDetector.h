@@ -64,12 +64,7 @@ struct sharedSlsDetector {
     /** path of the trimbits/settings files */
     char settingsDir[MAX_STR_LENGTH];
 
-    // /** number of energies at which the detector has been trimmed */
-    // int nTrimEn;
-
-    // /** list of the energies at which the detector has been trimmed  */
-    // int trimEnergies[MAX_TRIMEN];
-
+    /** list of the energies at which the detector has been trimmed  */
 	sls::FixedCapacityContainer<int, MAX_TRIMEN> trimEnergies;
 
     /**  number of channels per chip */

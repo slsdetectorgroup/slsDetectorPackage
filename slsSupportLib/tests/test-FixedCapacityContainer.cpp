@@ -9,6 +9,7 @@ SCENARIO("FixedCapacityContainers can be sized and resized", "[support]") {
         constexpr size_t n_elem = 5;
         FixedCapacityContainer<int, n_elem> vec;
 
+        REQUIRE(vec.empty());
         REQUIRE(vec.size() == 0);
         REQUIRE(vec.capacity() == n_elem);
         REQUIRE(sizeof(vec) == sizeof(int) * n_elem + sizeof(size_t));
@@ -20,6 +21,7 @@ SCENARIO("FixedCapacityContainers can be sized and resized", "[support]") {
                  "capacity remains fixed") {
                 REQUIRE(vec[0] == 42);
                 REQUIRE(vec.size() == 1);
+                REQUIRE_FALSE(vec.empty());
                 REQUIRE(vec.capacity() == 5);
             }
         }

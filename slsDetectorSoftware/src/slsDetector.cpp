@@ -1162,7 +1162,7 @@ int slsDetector::setThresholdEnergyAndSettings(int e_eV,
         ((isettings != GET_SETTINGS) ? isettings : shm()->currentSettings);
 
     // verify e_eV exists in trimEneregies[]
-    if ((shm()->trimEnergies.size() == 0) || (e_eV < shm()->trimEnergies.front()) ||
+    if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
         (e_eV > shm()->trimEnergies.back())) {
         throw RuntimeError("This energy " + std::to_string(e_eV) +
                            " not defined for this module!");

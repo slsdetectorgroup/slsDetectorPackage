@@ -29,13 +29,16 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
     const T &operator[](size_t i) const { return data_[i]; }
 
     size_t size() const { return size_; }
+    bool empty() const{ return size_ == 0;}
     size_t capacity() const { return Capacity; }
 
     void push_back(const T &value);
     void resize(size_t new_size);
     void erase(T *ptr);
-    T& front(){ return data_.front();}
-    T& back(){ return data_[size_-1];}
+    T &front() { return data_.front(); }
+    T &back() { return data_[size_ - 1]; }
+    const T &front() const { return data_.front(); }
+    const T &back() const { return data_[size_ - 1]; }
 
     // iterators
     T *begin() { return &data_[0]; }
@@ -142,7 +145,6 @@ void FixedCapacityContainer<T, Capacity>::erase(T *ptr) {
     }
 }
 
-
 /* Free function concerning FixedCapacityContainer */
 
 template <typename T, size_t Capacity>
@@ -166,6 +168,5 @@ bool operator!=(const std::vector<T> &vec,
                 const FixedCapacityContainer<T, Capacity> &fixed_container) {
     return fixed_container != vec;
 }
-
 
 } // namespace sls

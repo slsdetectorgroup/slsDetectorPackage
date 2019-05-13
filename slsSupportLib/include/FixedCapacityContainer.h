@@ -1,4 +1,3 @@
-
 #pragma once
 #include <array>
 #include <cassert>
@@ -14,7 +13,7 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
 
     template <size_t OtherCapacity>
     explicit FixedCapacityContainer(
-        const FixedCapacityContainer<T, OtherCapacity> &other);
+        const FixedCapacityContainer<T, OtherCapacity> &other) noexcept;
 
     FixedCapacityContainer &operator=(const std::vector<T> &other);
 
@@ -26,8 +25,8 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
         noexcept;
 
     template <size_t OtherCapacity>
-    bool
-    operator!=(const FixedCapacityContainer<T, OtherCapacity> &other) const;
+    bool operator!=(const FixedCapacityContainer<T, OtherCapacity> &other) const
+        noexcept;
 
     T &operator[](size_t i) { return data_[i]; }
     const T &operator[](size_t i) const { return data_[i]; }
@@ -66,6 +65,10 @@ FixedCapacityContainer<T, Capacity>::FixedCapacityContainer(
 template <typename T, size_t Capacity>
 FixedCapacityContainer<T, Capacity>::FixedCapacityContainer(
     const std::vector<T> &v) {
+    if (v.size() > Capacity) {
+        throw std::runtime_error(
+            "Capacity needs to be same size or larger than vector");
+    }
     size_ = v.size();
     std::copy(v.begin(), v.end(), data_.begin());
 }
@@ -73,11 +76,12 @@ FixedCapacityContainer<T, Capacity>::FixedCapacityContainer(
 template <typename T, size_t Capacity>
 template <size_t OtherCapacity>
 FixedCapacityContainer<T, Capacity>::FixedCapacityContainer(
-    const FixedCapacityContainer<T, OtherCapacity> &other) {
-        static_assert(Capacity >= OtherCapacity, "Container needs to be same size or larger");
-        size_ = other.size();
-        std::copy(other.cbegin(), other.cend(), data_.begin());
-    }
+    const FixedCapacityContainer<T, OtherCapacity> &other) noexcept {
+    static_assert(Capacity >= OtherCapacity,
+                  "Container needs to be same size or larger");
+    size_ = other.size();
+    std::copy(other.cbegin(), other.cend(), data_.begin());
+}
 
 template <typename T, size_t Capacity>
 void FixedCapacityContainer<T, Capacity>::push_back(const T &value) {
@@ -146,7 +150,8 @@ operator==(const FixedCapacityContainer<T, OtherCapacity> &other) const
 template <typename T, size_t Capacity>
 template <size_t OtherCapacity>
 bool FixedCapacityContainer<T, Capacity>::
-operator!=(const FixedCapacityContainer<T, OtherCapacity> &other) const {
+operator!=(const FixedCapacityContainer<T, OtherCapacity> &other) const
+    noexcept {
     return !(*this == other);
 }
 
@@ -171,14 +176,16 @@ constexpr T *end(FixedCapacityContainer<T, Capacity> &container) noexcept {
 }
 
 template <typename T, size_t Capacity>
-bool operator==(const std::vector<T> &vec,
-                const FixedCapacityContainer<T, Capacity> &fixed_container) {
+bool operator==(
+    const std::vector<T> &vec,
+    const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
     return fixed_container == vec;
 }
 
 template <typename T, size_t Capacity>
-bool operator!=(const std::vector<T> &vec,
-                const FixedCapacityContainer<T, Capacity> &fixed_container) {
+bool operator!=(
+    const std::vector<T> &vec,
+    const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
     return fixed_container != vec;
 }
 

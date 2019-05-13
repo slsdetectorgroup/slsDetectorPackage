@@ -12,11 +12,22 @@ target_link_libraries(tests
     slsProjectOptions
     slsProjectWarnings
     slsSupportLib
-    slsDetectorShared
-    slsReceiverShared
     pthread
     rt
 )  
+
+if (SLS_USE_TEXTCLIENT)
+    target_link_libraries(tests
+        slsDetectorShared
+    )
+endif (SLS_USE_TEXTCLIENT)
+
+if (SLS_USE_RECEIVER)
+    target_link_libraries(tests
+        slsReceiverShared
+    )
+endif (SLS_USE_RECEIVER)
+
 set_target_properties(tests PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )

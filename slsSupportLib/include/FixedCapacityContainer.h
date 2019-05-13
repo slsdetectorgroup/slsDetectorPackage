@@ -12,14 +12,18 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
     explicit FixedCapacityContainer(std::initializer_list<T> l);
     explicit FixedCapacityContainer(const std::vector<T> &v);
 
+    template <size_t OtherCapacity>
+    explicit FixedCapacityContainer(
+        const FixedCapacityContainer<T, OtherCapacity> &other);
+
     FixedCapacityContainer &operator=(const std::vector<T> &other);
 
-    bool operator==(const std::vector<T> &other) const;
-    bool operator!=(const std::vector<T> &other) const;
+    bool operator==(const std::vector<T> &other) const noexcept;
+    bool operator!=(const std::vector<T> &other) const noexcept;
 
     template <size_t OtherCapacity>
-    bool
-    operator==(const FixedCapacityContainer<T, OtherCapacity> &other) const;
+    bool operator==(const FixedCapacityContainer<T, OtherCapacity> &other) const
+        noexcept;
 
     template <size_t OtherCapacity>
     bool
@@ -28,23 +32,23 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
     T &operator[](size_t i) { return data_[i]; }
     const T &operator[](size_t i) const { return data_[i]; }
 
-    size_t size() const { return size_; }
-    bool empty() const{ return size_ == 0;}
-    size_t capacity() const { return Capacity; }
+    constexpr size_t size() const noexcept { return size_; }
+    bool empty() const noexcept { return size_ == 0; }
+    constexpr size_t capacity() const noexcept { return Capacity; }
 
     void push_back(const T &value);
     void resize(size_t new_size);
     void erase(T *ptr);
-    T &front() { return data_.front(); }
-    T &back() { return data_[size_ - 1]; }
-    const T &front() const { return data_.front(); }
-    const T &back() const { return data_[size_ - 1]; }
+    T &front() noexcept { return data_.front(); }
+    T &back() noexcept { return data_[size_ - 1]; }
+    constexpr const T &front() const noexcept { return data_.front(); }
+    constexpr const T &back() const noexcept { return data_[size_ - 1]; }
 
     // iterators
-    T *begin() { return &data_[0]; }
-    T *end() { return &data_[size_]; }
-    const T *cbegin() const { return &data_[0]; }
-    const T *cend() const { return &data_[size_]; }
+    T *begin() noexcept { return &data_[0]; }
+    T *end() noexcept { return &data_[size_]; }
+    const T *cbegin() const noexcept { return &data_[0]; }
+    const T *cend() const noexcept { return &data_[size_]; }
 
   private:
     size_t size_{0};
@@ -65,6 +69,15 @@ FixedCapacityContainer<T, Capacity>::FixedCapacityContainer(
     size_ = v.size();
     std::copy(v.begin(), v.end(), data_.begin());
 }
+
+template <typename T, size_t Capacity>
+template <size_t OtherCapacity>
+FixedCapacityContainer<T, Capacity>::FixedCapacityContainer(
+    const FixedCapacityContainer<T, OtherCapacity> &other) {
+        static_assert(Capacity >= OtherCapacity, "Container needs to be same size or larger");
+        size_ = other.size();
+        std::copy(other.cbegin(), other.cend(), data_.begin());
+    }
 
 template <typename T, size_t Capacity>
 void FixedCapacityContainer<T, Capacity>::push_back(const T &value) {
@@ -94,7 +107,7 @@ operator=(const std::vector<T> &other) {
 
 template <typename T, size_t Capacity>
 bool FixedCapacityContainer<T, Capacity>::
-operator==(const std::vector<T> &other) const {
+operator==(const std::vector<T> &other) const noexcept {
     if (size_ != other.size()) {
         return false;
     } else {
@@ -109,14 +122,15 @@ operator==(const std::vector<T> &other) const {
 
 template <typename T, size_t Capacity>
 bool FixedCapacityContainer<T, Capacity>::
-operator!=(const std::vector<T> &other) const {
+operator!=(const std::vector<T> &other) const noexcept {
     return !(*this == other);
 }
 
 template <typename T, size_t Capacity>
 template <size_t OtherCapacity>
 bool FixedCapacityContainer<T, Capacity>::
-operator==(const FixedCapacityContainer<T, OtherCapacity> &other) const {
+operator==(const FixedCapacityContainer<T, OtherCapacity> &other) const
+    noexcept {
     if (size_ != other.size()) {
         return false;
     } else {
@@ -146,14 +160,13 @@ void FixedCapacityContainer<T, Capacity>::erase(T *ptr) {
 }
 
 /* Free function concerning FixedCapacityContainer */
-
 template <typename T, size_t Capacity>
-T *begin(FixedCapacityContainer<T, Capacity> &container) {
+constexpr T *begin(FixedCapacityContainer<T, Capacity> &container) noexcept {
     return container.begin();
 }
 
 template <typename T, size_t Capacity>
-T *end(FixedCapacityContainer<T, Capacity> &container) {
+constexpr T *end(FixedCapacityContainer<T, Capacity> &container) noexcept {
     return container.end();
 }
 

@@ -119,6 +119,7 @@
 #define AD9257_VREF_REG				(0x18)
 #define AD9257_VREF_OFST			(0)
 #define AD9257_VREF_MSK				(0x00000007 << AD9257_VREF_OFST)
+#define AD9257_VREF_DEFAULT_VAL		(AD9257_VREF_2_0_VAL)
 #define AD9257_VREF_1_0_VAL         ((0x0 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
 #define AD9257_VREF_1_14_VAL        ((0x1 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
 #define AD9257_VREF_1_33_VAL        ((0x2 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
@@ -130,6 +131,7 @@ uint32_t AD9257_CsMask = 0x0;
 uint32_t AD9257_ClkMask = 0x0;
 uint32_t AD9257_DigMask = 0x0;
 int AD9257_DigOffset = 0x0;
+int AD9257_VrefVoltage = 0;
 
 /**
  * Set Defines
@@ -158,19 +160,84 @@ void AD9257_Disable() {
 }
 
 /**
- * Get max valid vref value
- * @param get max vref voltage unit (4 for 2.0V)
+ * Get vref voltage
  */
-int AD9257_GetMaxValidVref() {
-    return 0x4;
+int AD9257_GetVrefVoltage(int mV) {
+	if (mV == 0) 
+		return AD9257_VrefVoltage;
+	switch(AD9257_VrefVoltage) {
+		case 0:
+			return 1000;
+		case 1:
+			return 1140;
+		case 2:
+			return 1330;
+		case 3:
+			return 1600;
+		case 4:
+			return 2000;
+		default:
+			FILE_LOG(logERROR, ("Could not convert Adc Vpp from mode to mV\n"));
+			return -1;
+	}
 }
 
 /**
  * Set vref voltage
  * @param val voltage to be set (0 for 1.0V, 1 for 1.14V, 2 for 1.33V, 3 for 1.6V, 4 for 2.0V
+ * @returns ok or fail
  */
-void AD9257_SetVrefVoltage(int val) {
-    AD9257_Set(AD9257_VREF_REG, val);
+int AD9257_SetVrefVoltage(int val, int mV) {
+	int mode = val;
+	// convert to mode
+	if (mV) {
+		switch(val) {
+			case 1000:	
+				mode = 0;
+				break;
+			case 1140:
+				mode = 1;
+				break;
+			case 1330:
+				mode = 2;
+				break;	
+			case 1600:
+				mode = 3;
+				break;
+			case 2000:
+				mode = 4;
+				break;
+			// validation for mV
+			default:
+				FILE_LOG(logERROR, ("mv:%d doesnt exist\n", val));
+				return FAIL;
+		}
+	} 
+
+	// validation for mode
+	switch(mode) {
+		case 0:
+			FILE_LOG(logINFO, ("Setting ADC Vref to 1.0 V (Mode:%d)\n", mode));
+			break;
+		case 1:
+			FILE_LOG(logINFO, ("Setting ADC Vref to 1.14 V (Mode:%d)\n", mode));
+			break;
+		case 2:
+			FILE_LOG(logINFO, ("Setting ADC Vref to 1.33 V (Mode:%d)\n", mode));
+			break;
+		case 3:
+			FILE_LOG(logINFO, ("Setting ADC Vref to 1.6 V (Mode:%d)\n", mode));
+			break;
+		case 4:
+			FILE_LOG(logINFO, ("Setting ADC Vref to 2.0 V (Mode:%d)\n", mode));
+			break;
+		default:
+			return FAIL;
+	}
+	// set vref voltage
+    AD9257_Set(AD9257_VREF_REG, mode);
+	AD9257_VrefVoltage = mode;
+	return OK;
 }
 
 /**
@@ -243,5 +310,8 @@ void AD9257_Configure(){
 	FILE_LOG(logINFO, ("\tMixed bit frequency test mode\n"));
 	AD9257_Set(AD9257_TEST_MODE_REG, AD9257_TST_MXD_BT_FRQ_VAL);
 #endif
+
+	// set default value again (to remember the value set)
+	AD9257_SetVrefVoltage(AD9257_VREF_DEFAULT_VAL, 0);
 
 }

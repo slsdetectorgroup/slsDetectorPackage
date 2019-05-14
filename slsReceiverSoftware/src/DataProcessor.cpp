@@ -16,9 +16,9 @@
 #include "DataStreamer.h"
 #include "sls_detector_exceptions.h"
 
-#include <iostream>
-#include <errno.h>
+#include <cerrno>
 #include <cstring>
+#include <iostream>
 
 const std::string DataProcessor::TypeName = "DataProcessor";
 
@@ -31,7 +31,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		std::vector <int> * cdl, int* cdo, int* cad) :
 
 		ThreadObject(ind),
-		runningFlag(0),
+		runningFlag(false),
 		generalData(nullptr),
 		fifo(f),
 		myDetectorType(dtype),
@@ -281,7 +281,7 @@ void DataProcessor::ThreadExecution() {
 			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;
 
 	//check dummy
-	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
+	auto numBytes = (uint32_t)(*((uint32_t*)buffer));
 	FILE_LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
@@ -316,7 +316,7 @@ void DataProcessor::StopProcessing(char* buf) {
 
 void DataProcessor::ProcessAnImage(char* buf) {
 
-	sls_receiver_header* rheader = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
+	auto* rheader = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
 	sls_detector_header header = rheader->detHeader;
 	uint64_t fnum = header.frameNumber;
 	currentFrameIndex = fnum;
@@ -371,7 +371,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 	// call back with modified size
 	else if (rawDataModifyReadyCallBack) {
-        uint32_t revsize = (uint32_t)(*((uint32_t*)buf));
+        auto revsize = (uint32_t)(*((uint32_t*)buf));
         rawDataModifyReadyCallBack(
         		(char*)rheader,
                 buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
@@ -456,7 +456,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 	FILE_LOG(logDEBUG) << index << ": Padding Missing Packets";
 
 	uint32_t pperFrame = generalData->packetsPerFrame;
-	sls_receiver_header* header = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
+	auto* header = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
 	uint32_t nmissing = pperFrame - header->detHeader.packetNumber;
 	sls_bitset pmask = header->packetsMask;
 
@@ -521,7 +521,7 @@ void DataProcessor::RearrangeDbitData(char* buf) {
 	memset(result, 0, numResult32Bits * sizeof(uint32_t));
 
 	uint32_t* dest = result;
-	uint64_t* source = (uint64_t*)(buf + digOffset + (*ctbDbitOffset));
+	auto* source = (uint64_t*)(buf + digOffset + (*ctbDbitOffset));
 
 	// loop through digital bit enable vector
 	int bitoffset = 0;

@@ -53,7 +53,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * Destructor
 	 * Calls Base Class DestroyThread() and decrements NumberofDataProcessors
 	 */
-	~DataProcessor();
+	~DataProcessor() override;
 
 
 	//*** getters ***
@@ -61,7 +61,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * Returns if the thread is currently running
      * @returns true if thread is running, else false
      */
-    bool IsRunning();
+    bool IsRunning() override;
 
 	/**
 	 * Get acquisition started flag
@@ -170,7 +170,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	void SetupFileWriter(bool fwe, int* nd, uint32_t* maxf, char* fname,
 			char* fpath, uint64_t* findex,
 			 bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
-			 uint32_t* portno, GeneralData* g = 0);
+			 uint32_t* portno, GeneralData* g = nullptr);
 
 	/**
 	 * Create New File
@@ -231,7 +231,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * Get Type
 	 * @return type
 	 */
-	std::string GetType();
+	std::string GetType() override;
 
 	/**
 	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
@@ -250,7 +250,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * Pop bound addresses, process them,
 	 * write to file if needed & free the address
 	 */
-	void ThreadExecution();
+	void ThreadExecution() override;
 
 	/**
 	 * Frees dummy buffer,

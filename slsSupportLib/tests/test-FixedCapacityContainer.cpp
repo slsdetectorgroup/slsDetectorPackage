@@ -201,5 +201,17 @@ SCENARIO("Assigning containers to each other", "[support]") {
                 REQUIRE(c[2] == 3);
             }
         }
+        WHEN("We create a const FixedCapacityContainer"){
+            const FixedCapacityContainer<int, 5> c(a);
+            THEN("The values are still the same using const operators"){
+                REQUIRE(c[0] == 1);
+                REQUIRE(c[1] == 2);
+                REQUIRE(c[2] == 3);
+                REQUIRE(c.front() == 1);
+                REQUIRE(c.back() == 3);
+                
+            }
+        }
     }
 }
+

@@ -1,9 +1,9 @@
 #include "ClientSocket.h"
 #include "ServerSocket.h"
 #include "catch.hpp"
+#include <chrono>
 #include <future>
 #include <iostream>
-#include <chrono>
 
 std::vector<char> server() {
     std::cout << "starting server\n";

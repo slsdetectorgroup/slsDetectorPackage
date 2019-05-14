@@ -5,8 +5,8 @@
  ***********************************************/
 
 #include "BinaryFile.h"
-#include "receiver_defs.h"
 #include "Fifo.h"
+#include "receiver_defs.h"
 
 #include <iostream>
 

@@ -7,9 +7,9 @@
 
 
 #include "DataProcessor.h"
-#include "GeneralData.h"
-#include "Fifo.h"
 #include "BinaryFile.h"
+#include "Fifo.h"
+#include "GeneralData.h"
 #ifdef HDF5C
 #include "HDF5File.h"
 #endif

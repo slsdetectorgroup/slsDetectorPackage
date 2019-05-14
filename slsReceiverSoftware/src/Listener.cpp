@@ -7,10 +7,10 @@
 
 
 #include "Listener.h"
-#include "GeneralData.h"
 #include "Fifo.h"
-#include "genericSocket.h"
+#include "GeneralData.h"
 #include "container_utils.h" // For sls::make_unique<>
+#include "genericSocket.h"
 #include "sls_detector_exceptions.h"
 
 #include <cerrno>

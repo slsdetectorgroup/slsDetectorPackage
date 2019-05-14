@@ -13,11 +13,11 @@
 
 #include "container_utils.h" // For sls::make_unique<>
 
+#include "logger.h"
 #include "slsReceiver.h"
 #include "slsReceiverTCPIPInterface.h"
 #include "sls_detector_exceptions.h"
 #include "versionAPI.h"
-#include "logger.h"
 
 slsReceiver::slsReceiver(int argc, char *argv[]):
 		tcpipInterface (nullptr) {

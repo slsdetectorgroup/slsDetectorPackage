@@ -5,11 +5,11 @@
 
 
 #include "slsReceiverImplementation.h"
-#include "GeneralData.h"
-#include "Listener.h"
 #include "DataProcessor.h"
 #include "DataStreamer.h"
 #include "Fifo.h"
+#include "GeneralData.h"
+#include "Listener.h"
 #include "ZmqSocket.h" 		//just for the zmq port define
 
 #include <cerrno>			//eperm

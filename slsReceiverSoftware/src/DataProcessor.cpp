@@ -74,8 +74,8 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 
 
 DataProcessor::~DataProcessor() {
-	if (file) delete file;
-	if (tempBuffer) delete [] tempBuffer;
+	if (file != nullptr) delete file;
+	if (tempBuffer != nullptr) delete [] tempBuffer;
 	ThreadObject::DestroyThread();
 }
 
@@ -145,7 +145,7 @@ void DataProcessor::ResetParametersforNewMeasurement(){
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
 
-	if (tempBuffer) {
+	if (tempBuffer != nullptr) {
 		delete [] tempBuffer;
 		tempBuffer = nullptr;
 	}
@@ -177,7 +177,7 @@ void DataProcessor::RecordFirstIndices(uint64_t fnum) {
 void DataProcessor::SetGeneralData(GeneralData* g) {
 	generalData = g;
 	generalData->Print();
-	if (file) {
+	if (file != nullptr) {
 		if (file->GetFileType() == HDF5) {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
 		}
@@ -196,7 +196,7 @@ int DataProcessor::SetThreadPriority(int priority) {
 
 
 void DataProcessor::SetFileFormat(const fileFormat f) {
-	if (file && file->GetFileType() != f) {
+	if ((file != nullptr) && file->GetFileType() != f) {
 		//remember the pointer values before they are destroyed
 		int nd[MAX_DIMENSIONS];nd[0] = 0; nd[1] = 0;
 		uint32_t* maxf = nullptr;
@@ -219,11 +219,11 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 		GeneralData* g)
 {
 	fileWriteEnable = fwe;
-	if (g)
+	if (g != nullptr)
 		generalData = g;
 
 
-	if (file) {
+	if (file != nullptr) {
 		delete file; file = nullptr;
 	}
 
@@ -263,12 +263,12 @@ int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st,
 
 
 void DataProcessor::CloseFiles() {
-	if (file)
+	if (file != nullptr)
 		file->CloseAllFiles();
 }
 
 void DataProcessor::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
-	if (file && file->GetFileType() == HDF5) {
+	if ((file != nullptr) && file->GetFileType() == HDF5) {
 		file->EndofAcquisition(anyPacketsCaught, numf);
 	}
 }
@@ -307,7 +307,7 @@ void DataProcessor::StopProcessing(char* buf) {
 	else
 		fifo->FreeAddress(buf);
 
-	if (file)
+	if (file != nullptr)
 		file->CloseCurrentFile();
 	StopRunning();
 	FILE_LOG(logDEBUG1) << index << ": Processing Completed";
@@ -361,7 +361,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	}
 
 	// normal call back
-	if (rawDataReadyCallBack) {
+	if (rawDataReadyCallBack != nullptr) {
 		rawDataReadyCallBack(
 				(char*)rheader,
 				buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
@@ -370,7 +370,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	}
 
 	// call back with modified size
-	else if (rawDataModifyReadyCallBack) {
+	else if (rawDataModifyReadyCallBack != nullptr) {
         auto revsize = (uint32_t)(*((uint32_t*)buf));
         rawDataModifyReadyCallBack(
         		(char*)rheader,
@@ -382,7 +382,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	
 
 	// write to file
-	if (file)
+	if (file != nullptr)
 		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES,
 				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)), //+ size of data (resizable from previous call back
 				fnum-firstMeasurementIndex, nump);
@@ -393,7 +393,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 
 bool DataProcessor::SendToStreamer() {
 	//skip
-	if (!(*streamingFrequency)) {
+	if ((*streamingFrequency) == 0u) {
 		if (!CheckTimer())
 			return false;
 	} else {
@@ -433,7 +433,7 @@ bool DataProcessor::CheckCount() {
 
 
 void DataProcessor::SetPixelDimension() {
-	if (file) {
+	if (file != nullptr) {
 		if (file->GetFileType() == HDF5) {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
 		}
@@ -472,7 +472,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 			continue;
 
 		// done with padding, exit loop earlier
-		if (!nmissing)
+		if (nmissing == 0u)
 			break;
 
 		FILE_LOG(logDEBUG) << "padding for " << index << " for pnum: " << pnum << std::endl;
@@ -482,7 +482,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 		//for gotthard, 1st packet: 4 bytes fnum, CACA                     + CACA, 639*2 bytes data
 		//              2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data !!
 		case GOTTHARD:
-			if(!pnum)
+			if(pnum == 0u)
 				memset(buf + fifohsize + (pnum * dsize), 0xFF, dsize-2);
 			else
 				memset(buf + fifohsize + (pnum * dsize), 0xFF, dsize+2);
@@ -507,7 +507,7 @@ void DataProcessor::RearrangeDbitData(char* buf) {
 	int ctbDigitalDataBytes = totalSize - (*ctbAnalogDataBytes) - (*ctbDbitOffset);
 
 	// no digital data      
-    if (!ctbDigitalDataBytes) {
+    if (ctbDigitalDataBytes == 0) {
         FILE_LOG(logWARNING) << "No digital data for call back, yet dbitlist is not empty.";
         return;
 	}
@@ -566,7 +566,7 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 
 	const uint32_t b1px = generalData->imageSize / (npx); // not double as not dealing with 4 bit mode
 	const uint32_t b2px = 2 * b1px;
-	const uint32_t b1pxofst = (index ? b1px : 0); // left fpga (index 0) has no extra 1px offset, but right fpga has
+	const uint32_t b1pxofst = (index != 0 ? b1px : 0); // left fpga (index 0) has no extra 1px offset, but right fpga has
 	const uint32_t b1chip = 256 * b1px;
 	const uint32_t b1line = (nx * b1px);
 
@@ -596,7 +596,7 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 			dstgp1 = srcgp1 + b1px;
 			srcgp2 = srcgp1 + b3px;
 			dstgp2 = dstgp1 + b1px;
-			if (!index) {
+			if (index == 0u) {
 				srcgp3 = srcptr + b1line - b2px;
 				dstgp3 = srcgp3 + b1px;
 			} else {

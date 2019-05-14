@@ -537,7 +537,7 @@ void DataProcessor::RearrangeDbitData(char* buf) {
     }
 
 	// copy back to buf and update size
-	memcpy(source + digOffset, result.data(), result.size() * sizeof(uint64_t));
+	memcpy(buf + digOffset - (*ctbDbitOffset), result.data(), result.size() * sizeof(uint64_t));
 	(*((uint32_t*)buf)) = result.size() * sizeof(uint64_t);
 }
 

@@ -2210,7 +2210,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     std::vector<char> readPofFile(const std::string &fname);
 
-
+     /** 
+      * Convert a double holding time in seconds to an int64_t with nano seconds
+      * Used for conversion when sending time to detector
+      * @param t time in seconds
+      * @returns time in nano seconds
+      */
      int64_t secondsToNanoSeconds(double t);
 
 

@@ -74,8 +74,8 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 
 
 DataProcessor::~DataProcessor() {
-	if (file != nullptr) delete file;
-	if (tempBuffer != nullptr) delete [] tempBuffer;
+	delete file;
+	delete [] tempBuffer;
 	ThreadObject::DestroyThread();
 }
 

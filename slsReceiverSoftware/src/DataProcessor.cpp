@@ -513,32 +513,43 @@ void DataProcessor::RearrangeDbitData(char* buf) {
 	}
 
 	const int numSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
+	const int digOffset = FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header) + (*ctbAnalogDataBytes);
 
-	// ceil as numResult64Bytes could be decimal 
-	const int numResult64Bytes = ceil((double)(numSamples * (*ctbDbitList).size()) / 64.00); 
-	std::vector<uint64_t> result(numResult64Bytes, 0); 
+	// ceil as numResult32Bits could be decimal 
+	const int numResult32Bits = ceil((double)(numSamples * (*ctbDbitList).size()) / 32.00); 
+	uint32_t result[numResult32Bits];
+	memset(result, 0, numResult32Bits * sizeof(uint32_t));
 
-	auto dest = result.data();
-	const int digOffset = FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header) + (*ctbAnalogDataBytes) + (*ctbDbitOffset);
-	auto source = (uint64_t*)(buf + digOffset);
+	uint32_t* dest = result;
+	uint64_t* source = (uint64_t*)(buf + digOffset + (*ctbDbitOffset));
 
 	// loop through digital bit enable vector
+	int bitoffset = 0;
     for (auto bi : (*ctbDbitList)) {
+		// where numbits * numsamples is not a multiple of 32
+		if (bitoffset != 0) {
+			bitoffset = 0;
+			++dest;
+		}
+		
 		// loop through the frame digital data
         for (auto ptr = source; ptr < (source + numSamples);) {
-			// extract destination in 64 bit batches
-            for (int i = 0; i != 64; ++i) {
-				// get selected bit from each 64 bit
-                int bit = (*ptr++ >> bi) & 1;
-                *dest |= bit << i;
-            }
-            ++dest;
-        }
+			// get selected bit from each 32 bit
+			uint32_t bit = (*ptr++ >> bi) & 1;
+			*dest |= bit << bitoffset;
+			++bitoffset;
+			// extract destination in 32 bit batches
+			if (bitoffset == 32) {
+				bitoffset = 0;
+				++dest;
+			}
+	    }
     }
 
+
 	// copy back to buf and update size
-	memcpy(buf + digOffset - (*ctbDbitOffset), result.data(), result.size() * sizeof(uint64_t));
-	(*((uint32_t*)buf)) = result.size() * sizeof(uint64_t);
+	memcpy(buf + digOffset, result, numResult32Bits * sizeof(uint32_t));
+	(*((uint32_t*)buf)) = numResult32Bits * sizeof(uint32_t);
 }
 
 /** eiger specific */

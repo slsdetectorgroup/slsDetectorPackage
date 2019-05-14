@@ -24,6 +24,7 @@
 #include "ansi.h"
 
 #define BIT32_MASK  0xFFFFFFFF
+#define MAX_RX_DBIT 64
 
 /** default ports */
 #define DEFAULT_PORTNO 1952

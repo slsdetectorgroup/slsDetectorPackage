@@ -5,6 +5,7 @@
 
 #include "slsReceiverTCPIPInterface.h"
 #include "slsReceiverImplementation.h"
+#include "FixedCapacityContainer.h"
 #include "MySocketTCP.h"
 #include "ServerInterface.h"
 #include "slsReceiverUsers.h"
@@ -2134,52 +2135,36 @@ int slsReceiverTCPIPInterface::set_adc_mask() {
 	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
-
-
 int slsReceiverTCPIPInterface::set_dbit_list() {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    sls::FixedCapacityContainer<int, MAX_RX_DBIT> args;
+    if (interface->Server_ReceiveArg(ret, mess, &args, sizeof(args), true, receiver) == FAIL) {
+        return FAIL;
+    } else if (ret == OK) {
+		FILE_LOG(logDEBUG1) << "Setting DBIT list";
+        for (auto &it : args) {
+            FILE_LOG(logDEBUG1) << it << " ";
+        }
+        FILE_LOG(logDEBUG1) << "\n";
+        if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus, receiver->getStatus(), fnum) == OK) {
+            if (args.size() > 64) {
+                ret = FAIL;
+                sprintf(mess, "Could not set dbit list as size is > 64\n");
+                FILE_LOG(logERROR) << mess;
+            } else
+                receiver->setDbitList(args);
+        }
 
-	// receive arguments
-	int narg = -1;
-	if (mySock->ReceiveDataOnly(&narg,sizeof(narg)) < 0 )
-		return interface->Server_SocketCrash();
-	int narglist[narg];
-	if (mySock->ReceiveDataOnly(narglist, narg * sizeof(int)) < 0 )
-		return interface->Server_SocketCrash();
-	std::vector <int> arg(narglist, narglist + narg);
-
-	FILE_LOG(logDEBUG1) << "Setting DBIT list";
-	for (auto &it : arg) {
-		FILE_LOG(logDEBUG1) << it << " ";
-	}
-	FILE_LOG(logDEBUG1) << "\n";
-
-	// base object not null
-	if (receiver == nullptr)
-		interface->Server_NullObjectError(ret, mess);
-	else {
-		// only set
-		// verify if receiver is unlocked and idle
-		if (interface->Server_VerifyLockAndIdle(ret, mess, lockStatus,	receiver->getStatus(), fnum) == OK) {
-			if (arg.size() > 64) {
-				ret = FAIL;
-				sprintf(mess, "Could not set dbit list as size is > 64\n");
-				FILE_LOG(logERROR) << mess;
-			} else 
-				receiver->setDbitList(arg);
-		}
-	}
-
-	return interface->Server_SendResult(true, ret, nullptr, 0, mess);
+        
+    }
+    return interface->Server_SendResult(true, ret, nullptr, 0, mess);
 }
-
-
 
 int slsReceiverTCPIPInterface::get_dbit_list() {
 	ret = OK;
     memset(mess, 0, sizeof(mess));
- 	std::vector<int> list;
+	sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
 
 	// no arg, check receiver is null
 	interface->Server_ReceiveArg(ret, mess, nullptr, 0, true, receiver);
@@ -2187,17 +2172,10 @@ int slsReceiverTCPIPInterface::get_dbit_list() {
 	// base object not null
 	if (ret == OK) {
 		// get
-		list = receiver->getDbitList();
-		FILE_LOG(logDEBUG1) << "Dbit list size retval:" << list.size();
+		retval = receiver->getDbitList();
+		FILE_LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
 	}
-
-	interface->Server_SendResult(false, ret, nullptr, 0, mess);
-	int retvalsize = list.size();
-	int retval[retvalsize];
-	std::copy(std::begin(list), std::end(list), retval);
-	mySock->SendDataOnly(&retvalsize, sizeof(retvalsize));
-	mySock->SendDataOnly(retval, sizeof(retval));
-	return ret;
+	return interface->Server_SendResult(true, ret, &retval, sizeof(retval), mess);
 }
 
 

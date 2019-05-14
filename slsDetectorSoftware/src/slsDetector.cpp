@@ -389,8 +389,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->rxFileWrite = true;
     shm()->rxMasterFileWrite = true;
     shm()->rxFileOverWrite = true;
-    shm()->rxDbitListSize = 0;
-    memset(shm()->rxDbitList, 0, MAX_RX_DBIT * sizeof(int));
     shm()->rxDbitOffset = 0;
 
     // get the detector parameters based on type
@@ -1907,7 +1905,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nrx streaming source ip:" << shm()->rxZmqip
             << "\nrx additional json header:" << shm()->rxAdditionalJsonHeader
             << "\nrx_datastream:" << enableDataStreamingFromReceiver(-1)
-            << "\nrx_dbitlistsize:" << shm()->rxDbitListSize
+            << "\nrx_dbitlistsize:" << shm()->rxDbitList.size()
             << "\nrx_DbitOffset:" << shm()->rxDbitOffset
             << std::endl;
 
@@ -1974,8 +1972,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             }
 
             if (shm()->myDetectorType == CHIPTESTBOARD) {
-                std::vector<int> list(shm()->rxDbitList, shm()->rxDbitList + shm()->rxDbitListSize);
-                setReceiverDbitList(list);
+                setReceiverDbitList(shm()->rxDbitList);
             }
 
             setReceiverSilentMode(static_cast<int>(shm()->rxSilentMode));
@@ -2731,51 +2728,20 @@ void slsDetector::setReceiverDbitList(std::vector<int> list) {
             throw sls::RuntimeError("Dbit list value must be between 0 and 63\n");
         }
     }
-
-    // copy size and vector to shm
-    shm()->rxDbitListSize = list.size();
-    std::copy(list.begin(), list.end(), shm()->rxDbitList);
- 
+    shm()->rxDbitList = list;
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
-        int args[list.size() + 1];
-        args[0] = list.size();
-        std::copy(std::begin(list), std::end(list), args + 1);
-        sendToReceiver(F_SET_RECEIVER_DBIT_LIST, args, sizeof(args), nullptr, 0);
+        sendToReceiver(F_SET_RECEIVER_DBIT_LIST, shm()->rxDbitList, nullptr);
     }
 }
 
 std::vector<int> slsDetector::getReceiverDbitList() {
-    int fnum = F_GET_RECEIVER_DBIT_LIST;
-    int ret = FAIL;
-    std::vector <int> retval;
-    int retsize = 0;
+    sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
     FILE_LOG(logDEBUG1) << "Getting Receiver Dbit List";
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
-        auto receiver =
-        sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
-        receiver.sendData(&fnum, sizeof(fnum));
-        receiver.receiveData(&ret, sizeof(ret));
-        if (ret == FAIL) {
-            char mess[MAX_STR_LENGTH]{};
-            receiver.receiveData(mess, MAX_STR_LENGTH);
-            throw ReceiverError("Receiver " + std::to_string(detId) +
-                            " returned error: " + std::string(mess));
-        }
-        receiver.receiveData(&retsize, sizeof(retsize));
-        int list[retsize];
-        receiver.receiveData(list, sizeof(list));
-
-        // copy after no errors
-        shm()->rxDbitListSize = retsize;
-        std::copy(list, list + retsize, shm()->rxDbitList);
+        sendToReceiver(F_GET_RECEIVER_DBIT_LIST, nullptr, retval);
+        shm()->rxDbitList = retval;
     } 
-
-    if (shm()->rxDbitListSize) {
-        retval.resize(shm()->rxDbitListSize);
-        std::copy(shm()->rxDbitList, shm()->rxDbitList + shm()->rxDbitListSize, std::begin(retval));
-    }
-
-    return retval;
+    return shm()->rxDbitList;
 }
 
 int slsDetector::setReceiverDbitOffset(int value) {
@@ -3422,15 +3388,11 @@ int slsDetector::updateCachedReceiverVariables() const {
             n += receiver.receiveData(&i32, sizeof(i32));
             shm()->rxSilentMode = static_cast<bool>(i32);
 
-            // dbit list size
+            // dbit list
             {
-                int listsize = 0;
-                n += receiver.receiveData(&listsize, sizeof(listsize));
-                int list[listsize];
-                n += receiver.receiveData(list, sizeof(list));
-                // copy after no errors
-                shm()->rxDbitListSize = listsize;
-                std::copy(list, list + listsize, shm()->rxDbitList);
+                sls::FixedCapacityContainer<int, MAX_RX_DBIT> temp;
+                n += receiver.receiveData(&temp, sizeof(temp));
+                shm()->rxDbitList = temp;
             }
 
             // dbit offset

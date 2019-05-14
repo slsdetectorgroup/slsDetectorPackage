@@ -215,3 +215,16 @@ SCENARIO("Assigning containers to each other", "[support]") {
     }
 }
 
+SCENARIO("Converting to vector", "[support]"){
+    GIVEN("a FixedCapacityContainer"){
+        FixedCapacityContainer<int, 5> a{1,2,3};
+        WHEN("Converted into a vector"){
+            std::vector<int> b(a);
+            THEN("Data and size matches"){
+                REQUIRE(a == b);
+                REQUIRE(a.size() == b.size());
+            }
+        }
+    }
+}
+

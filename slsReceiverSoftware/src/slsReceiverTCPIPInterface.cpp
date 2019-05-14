@@ -28,9 +28,9 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 		delete mySock;
 		mySock=nullptr;
 	}
-	if (interface)
+	
 		delete interface;
-	if(receiver)
+	
 		delete receiver;
 }
 

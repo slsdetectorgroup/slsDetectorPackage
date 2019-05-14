@@ -46,7 +46,7 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
-	if (completeBuffer) delete [] completeBuffer;
+	delete [] completeBuffer;
 	ThreadObject::DestroyThread();
 }
 

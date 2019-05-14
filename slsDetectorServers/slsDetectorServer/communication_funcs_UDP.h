@@ -28,6 +28,7 @@ int getUdPSocketDescriptor() {
 int setUDPDestinationDetails(const char* ip, unsigned short int port) {
 	udpDestinationPort = port;
 	size_t len = strlen(ip);
+	memset(udpDestinationIp, 0, MAX_STR_LENGTH);
 	strncpy(udpDestinationIp, ip, len > MAX_STR_LENGTH ? MAX_STR_LENGTH : len );
 
 	if (udpServerAddrInfo) {

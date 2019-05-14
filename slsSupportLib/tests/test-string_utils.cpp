@@ -1,4 +1,3 @@
-#include "MySocketTCP.h"
 #include "catch.hpp"
 #include "logger.h"
 #include <iostream>

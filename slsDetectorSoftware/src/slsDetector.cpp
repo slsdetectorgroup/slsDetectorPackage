@@ -1,7 +1,6 @@
 #include "slsDetector.h"
 #include "ClientInterface.h"
 #include "ClientSocket.h"
-#include "MySocketTCP.h"
 #include "ServerInterface.h"
 #include "SharedMemory.h"
 #include "file_utils.h"

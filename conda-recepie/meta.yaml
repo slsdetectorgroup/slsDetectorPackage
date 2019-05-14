@@ -16,8 +16,8 @@ requirements:
     - {{ compiler('c') }}
     - {{compiler('cxx')}}
     - cmake
-    - qwt 6.*
-    - qt=4.8.7=7
+    # - qwt 6.* #require qt5 investigate befor activating gui
+    # - qt=4.8.7=7
     - zeromq=4.2.5=hfc679d8_5
     - pyzmq
     - xorg-libx11

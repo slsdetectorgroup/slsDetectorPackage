@@ -29,6 +29,7 @@ TEST_CASE("The server recive the same message as we send", "[support]") {
     std::copy(std::begin(m), std::end(m), sent_message.data());
     
     auto s = std::async(std::launch::async, server);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     auto client = sls::DetectorSocket("localhost", 1950);
     client.sendData(sent_message.data(), sent_message.size());
     client.receiveData(received_message.data(), received_message.size());

@@ -10,8 +10,8 @@
 #include "ZmqSocket.h"
 #include "sls_detector_exceptions.h"
 
+#include <cerrno>
 #include <iostream>
-#include <errno.h>
 
 const std::string DataStreamer::TypeName = "DataStreamer";
 

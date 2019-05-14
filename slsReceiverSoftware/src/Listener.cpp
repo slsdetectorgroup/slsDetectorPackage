@@ -13,9 +13,9 @@
 #include "container_utils.h" // For sls::make_unique<>
 #include "sls_detector_exceptions.h"
 
-#include <iostream>
-#include <errno.h>
+#include <cerrno>
 #include <cstring>
+#include <iostream>
 
 const std::string Listener::TypeName = "Listener";
 

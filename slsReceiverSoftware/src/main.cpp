@@ -5,14 +5,14 @@
 #include "slsReceiverUsers.h"
 #include "logger.h"
 
-#include <iostream>
-#include <string.h>
-#include <signal.h>	//SIGINT
+#include <csignal>	//SIGINT
 #include <cstdlib>		//system
+#include <cstring>
+#include <iostream>
 #include <sys/types.h>	//wait
 #include <sys/wait.h>	//wait
-#include <unistd.h> 	//usleep
 #include <syscall.h>
+#include <unistd.h> 	//usleep
 
 
 bool keeprunning;

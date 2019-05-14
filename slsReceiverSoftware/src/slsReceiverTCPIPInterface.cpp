@@ -11,16 +11,16 @@
 #include "slsReceiver.h"
 #include "versionAPI.h"
 
-#include  <stdlib.h>	//EXIT
-#include <iostream>
-#include <string>
-#include <sstream>
+#include <array>
+#include  <cstdlib>	//EXIT
+#include <cstdlib>
 #include <fstream>
-#include <stdlib.h>
+#include <iostream>
+#include <memory>	//unique_ptr
+#include <sstream>
+#include <string>
 #include <syscall.h>
 #include <vector>
-#include <array>
-#include <memory>	//unique_ptr
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	stop();

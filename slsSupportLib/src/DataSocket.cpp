@@ -108,7 +108,7 @@ ConvertHostnameToInternetAddress(const std::string &hostname) {
     hints.ai_flags |= AI_CANONNAME;
 
     struct sockaddr_in serverAddr {};
-    if (getaddrinfo(hostname.c_str(), NULL, &hints, &result) != 0) {
+    if (getaddrinfo(hostname.c_str(), nullptr, &hints, &result) != 0) {
         freeaddrinfo(result);
         std::string msg = "ClientSocket cannot decode host:" + hostname + "\n";
         throw SocketError(msg);
@@ -129,13 +129,13 @@ int ConvertHostnameToInternetAddress(const char *const hostname,
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     // get host info into res
-    int errcode = getaddrinfo(hostname, NULL, &hints, res);
+    int errcode = getaddrinfo(hostname, nullptr, &hints, res);
     if (errcode != 0) {
         FILE_LOG(logERROR) << "Could not convert hostname (" << hostname
                            << ") to internet address (zmq):"
                            << gai_strerror(errcode);
     } else {
-        if (*res == NULL) {
+        if (*res == nullptr) {
             FILE_LOG(logERROR) << "Could not converthostname (" << hostname
                                << ") to internet address (zmq):"
                                   "gettaddrinfo returned null";
@@ -160,7 +160,7 @@ int ConvertInternetAddresstoIpString(struct ::addrinfo *res, char *ip,
                                      const int ipsize) {
     if (inet_ntop(res->ai_family,
                   &((struct sockaddr_in *)res->ai_addr)->sin_addr, ip,
-                  ipsize) != NULL) {
+                  ipsize) != nullptr) {
         ::freeaddrinfo(res);
         return 0;
     }

@@ -421,7 +421,7 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     }
 
     // get type by connecting
-    detectorType type = slsDetector::getTypeFromDetector(hostname.c_str(), DEFAULT_PORTNO);
+    detectorType type = slsDetector::getTypeFromDetector(hostname, DEFAULT_PORTNO);
     int pos = (int)detectors.size();
     detectors.push_back(sls::make_unique<slsDetector>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();

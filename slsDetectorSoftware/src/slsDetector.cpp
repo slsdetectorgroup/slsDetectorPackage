@@ -2177,7 +2177,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
     memset(shm()->rxZmqip, 0, MAX_STR_LENGTH);
     sls::strcpy_safe(shm()->rxZmqip, args);
     // if zmqip is empty, update it
-    if (strlen(shm()->zmqip) != 0u) {
+    if (shm()->zmqip != 0u) {
         sls::strcpy_safe(shm()->zmqip, args);
     }
     FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: "

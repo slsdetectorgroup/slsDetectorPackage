@@ -5,13 +5,13 @@
 
 
 #include "DataStreamer.h"
-#include "GeneralData.h"
 #include "Fifo.h"
+#include "GeneralData.h"
 #include "ZmqSocket.h"
 #include "sls_detector_exceptions.h"
 
+#include <cerrno>
 #include <iostream>
-#include <errno.h>
 
 const std::string DataStreamer::TypeName = "DataStreamer";
 
@@ -46,7 +46,7 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
-	if (completeBuffer) delete [] completeBuffer;
+	delete [] completeBuffer;
 	ThreadObject::DestroyThread();
 }
 

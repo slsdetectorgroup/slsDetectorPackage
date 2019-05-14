@@ -5,20 +5,20 @@
 
 
 #include "slsReceiverImplementation.h"
-#include "GeneralData.h"
-#include "Listener.h"
 #include "DataProcessor.h"
 #include "DataStreamer.h"
 #include "Fifo.h"
+#include "GeneralData.h"
+#include "Listener.h"
 #include "ZmqSocket.h" 		//just for the zmq port define
 
-#include <sys/stat.h> 		// stat
-#include <iostream>
-#include <string.h>
+#include <cerrno>			//eperm
 #include <cstdlib>			//system
+#include <cstring>
 #include <cstring>			//strcpy
-#include <errno.h>			//eperm
 #include <fstream>
+#include <iostream>
+#include <sys/stat.h> 		// stat
 
 
 /** cosntructor & destructor */

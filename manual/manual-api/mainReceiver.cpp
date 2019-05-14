@@ -19,18 +19,18 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
 #include "sls_detector_defs.h"
 #include "slsReceiverUsers.h"
 
-#include <iostream>
-#include <string.h>
-#include <signal.h>	//SIGINT
+#include <csignal>	//SIGINT
 #include <cstdlib>		//system
+#include <cstring>
+#include <iostream>
 //#include "utilities.h"
 //#include "logger.h"
+#include <cerrno>
+#include <string>
 #include <sys/types.h>	//wait
 #include <sys/wait.h>	//wait
-#include <string>
-#include <unistd.h> 	//usleep
-#include <errno.h>
 #include <syscall.h>	//tid
+#include <unistd.h> 	//usleep
 using namespace std;
 
 

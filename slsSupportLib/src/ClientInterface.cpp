@@ -1,5 +1,6 @@
 #include "ClientInterface.h"
 #include "ClientSocket.h"
+#include <cstring>
 
 ClientInterface::ClientInterface(sls::ClientSocket *socket, int n) : socket_(socket){}
 

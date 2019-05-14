@@ -2,7 +2,6 @@
 
 #include "ClientSocket.h"
 #include "SharedMemory.h"
-#include "error_defs.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
 #include "network_utils.h"
@@ -16,7 +15,6 @@ class ClientInterface;
 
 class multiSlsDetector;
 class ServerInterface;
-class MySocketTCP;
 
 #define SLS_SHMVERSION 0x190503
 #define MAX_RX_DBIT 64

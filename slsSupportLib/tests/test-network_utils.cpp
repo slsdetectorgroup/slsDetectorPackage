@@ -4,8 +4,8 @@
 #include <iostream>
 #include <vector>
 
-#include "string_utils.h"
 #include "sls_detector_exceptions.h"
+#include "string_utils.h"
 
 using namespace sls;
 

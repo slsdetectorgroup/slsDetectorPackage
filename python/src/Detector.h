@@ -7,12 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "error_defs.h"
 #include "multiSlsDetector.h"
 #include "slsDetector.h"
-// #include "slsDetectorUtils.h"
 #include "sls_detector_defs.h"
-// #include "sls_receiver_defs.h"
 
 class Detector {
   public:

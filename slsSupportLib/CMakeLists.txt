@@ -17,7 +17,6 @@ set(PUBLICHEADERS
     include/ansi.h
     include/sls_detector_defs.h
     include/sls_detector_funcs.h
-    include/error_defs.h
     include/versionAPI.h
     include/sls_detector_exceptions.h
     include/file_utils.h

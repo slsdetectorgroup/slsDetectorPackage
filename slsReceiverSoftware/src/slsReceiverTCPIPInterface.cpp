@@ -3,25 +3,26 @@
  * @short interface between receiver and client
  ***********************************************/
 
-#include "slsReceiverTCPIPInterface.h"
-#include "slsReceiverImplementation.h"
+
 #include "FixedCapacityContainer.h"
 #include "MySocketTCP.h"
 #include "ServerInterface.h"
-#include "slsReceiverUsers.h"
 #include "slsReceiver.h"
+#include "slsReceiverImplementation.h"
+#include "slsReceiverTCPIPInterface.h"
+#include "slsReceiverUsers.h"
 #include "versionAPI.h"
 
-#include  <stdlib.h>	//EXIT
-#include <iostream>
-#include <string>
-#include <sstream>
+#include <array>
+#include  <cstdlib>	//EXIT
+#include <cstdlib>
 #include <fstream>
-#include <stdlib.h>
+#include <iostream>
+#include <memory>	//unique_ptr
+#include <sstream>
+#include <string>
 #include <syscall.h>
 #include <vector>
-#include <array>
-#include <memory>	//unique_ptr
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	stop();
@@ -29,9 +30,9 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 		delete mySock;
 		mySock=nullptr;
 	}
-	if (interface)
+	
 		delete interface;
-	if(receiver)
+	
 		delete receiver;
 }
 

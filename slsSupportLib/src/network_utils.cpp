@@ -83,7 +83,7 @@ uint32_t HostnameToIp(const char *hostname) {
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(hostname, NULL, &hints, &result)) {
+    if (getaddrinfo(hostname, nullptr, &hints, &result)) {
         freeaddrinfo(result);
         throw RuntimeError("Could not convert hostname to ip");
     }

@@ -1,5 +1,4 @@
 #include "ClientInterface.h"
-#include "MySocketTCP.h"
 #include "catch.hpp"
 
 //tests to add

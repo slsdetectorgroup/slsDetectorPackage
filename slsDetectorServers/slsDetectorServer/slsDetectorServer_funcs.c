@@ -333,7 +333,7 @@ void function_table() {
 
 	int iloop = 0;
 	for (iloop = 0; iloop < NUM_DET_FUNCTIONS ; ++iloop) {
-		FILE_LOG(logDEBUG1, ("function fnum=%d, (%s)\n", iloop,
+		FILE_LOG(logDEBUG3, ("function fnum=%d, (%s)\n", iloop,
 				getFunctionName((enum detFuncs)iloop)));
 	}
 }
@@ -793,14 +793,17 @@ int set_dac(int file_des) {
     		// adc vpp
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     		case ADC_VPP:
-    		if (val < 0 || val > AD9257_GetMaxValidVref())  {
-    		    ret = FAIL;
-                sprintf(mess,"Could not set dac. Adc Vpp value should be between 0 and %d\n", AD9257_GetMaxValidVref());
-                FILE_LOG(logERROR,(mess));
-    		} else {
-    		    AD9257_SetVrefVoltage(val);
-    		    retval = val; // cannot read
-    		}
+			// set
+    		if (val >= 0)  {
+				ret = AD9257_SetVrefVoltage(val, mV);
+    		    if (ret == FAIL) {
+					sprintf(mess,"Could not set Adc Vpp. Please set a proper value\n");
+					FILE_LOG(logERROR,(mess));
+				}
+    		} 
+			retval = AD9257_GetVrefVoltage(mV);
+			FILE_LOG(logDEBUG1, ("Adc Vpp retval: %d %s\n", retval, (mV ? "mV" : "mode")));
+			// cannot validate (its just a variable and mv gives different value)
     		break;
 #endif
 

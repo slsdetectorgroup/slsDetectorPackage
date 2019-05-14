@@ -166,8 +166,8 @@ extern void AD9252_Set(int addr, int val);      // AD9252.h (old board)
 extern void AD9257_Set(int addr, int val);      // AD9257.h
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-extern int AD9257_GetMaxValidVref();                   // AD9257.h
-extern void AD9257_SetVrefVoltage(int val);             // AD9257.h
+extern int AD9257_GetVrefVoltage(int mV);                  // AD9257.h
+extern int AD9257_SetVrefVoltage(int val, int mV);   // AD9257.h
 #endif
 
 void 		setDAC(enum DACINDEX ind, int val, int mV);

@@ -8,9 +8,9 @@
 #include "Fifo.h"
 #include "sls_detector_exceptions.h"
 
-#include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 
 
 Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):

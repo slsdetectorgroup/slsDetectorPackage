@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SharedMemory.h"
-#include "error_defs.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
 

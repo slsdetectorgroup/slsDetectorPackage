@@ -3439,7 +3439,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int acti
         ret = myDet->setDynamicRange(val, detPos);
     } else if (cmd == "roi") {
         const ROI* r = myDet->getROI(ret, detPos);
-        if (r != NULL)
+        
             delete [] r;
     } else if (cmd == "detsizechan") {
         sprintf(ans, "%d %d", myDet->getMaxNumberOfChannelsPerDetector(X), myDet->getMaxNumberOfChannelsPerDetector(Y));

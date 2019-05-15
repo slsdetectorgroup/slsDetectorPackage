@@ -2146,14 +2146,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     
 
-        /**
-         * add gap pixels to the image (only for Eiger in 4 bit mode)
-         * @param image pointer to image without gap pixels
-         * @param gpImage poiner to image with gap pixels, if NULL, allocated
-         * inside function
-         * @returns number of data bytes of image with gap pixels
-         */
-        int processImageWithGapPixels(char *image, char *&gpImage);
+     /**
+      * add gap pixels to the image (only for Eiger in 4 bit mode)
+      * @param image pointer to image without gap pixels
+      * @param gpImage poiner to image with gap pixels, if NULL, allocated
+      * inside function
+      * @returns number of data bytes of image with gap pixels
+      */
+     int processImageWithGapPixels(char *image, char *&gpImage);
 
     /**
      * Set total progress (total number of frames/images in an acquisition)
@@ -2208,6 +2208,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns file size
      */
     std::vector<char> readPofFile(const std::string &fname);
+
+     /** 
+      * Convert a double holding time in seconds to an int64_t with nano seconds
+      * Used for conversion when sending time to detector
+      * @param t time in seconds
+      * @returns time in nano seconds
+      */
+     int64_t secondsToNanoSeconds(double t);
 
 
     /** Multi detector Id */

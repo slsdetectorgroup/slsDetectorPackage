@@ -1099,89 +1099,50 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
     return ret;
 }
 
+int64_t multiSlsDetector::secondsToNanoSeconds(double t){
+    int64_t ns = lround(t * 1E9);
+    return (ns < 0) ? -1: ns;
+}
+
 double multiSlsDetector::setExposureTime(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(ACQUISITION_TIME, (int64_t)t, detPos);
     }
-
-    // + 0.5 to round for precision lost from converting double to int64_t
-    int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-    if (t < 0) {
-        tms = -1;
-    }
-    tms = setTimer(ACQUISITION_TIME, tms, detPos);
-    if (tms < 0) {
-        return -1;
-    }
-    return ((1E-9) * (double)tms);
+    auto t_ns = setTimer(ACQUISITION_TIME, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
 double multiSlsDetector::setExposurePeriod(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(FRAME_PERIOD, (int64_t)t, detPos);
     }
-
-    // + 0.5 to round for precision lost from converting double to int64_t
-    int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-    if (t < 0) {
-        tms = -1;
-    }
-    tms = setTimer(FRAME_PERIOD, tms, detPos);
-    if (tms < 0) {
-        return -1;
-    }
-    return ((1E-9) * (double)tms);
+    auto t_ns = setTimer(FRAME_PERIOD, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
 double multiSlsDetector::setDelayAfterTrigger(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(DELAY_AFTER_TRIGGER, (int64_t)t, detPos);
     }
-
-    // + 0.5 to round for precision lost from converting double to int64_t
-    int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-    if (t < 0) {
-        tms = -1;
-    }
-    tms = setTimer(DELAY_AFTER_TRIGGER, tms, detPos);
-    if (tms < 0) {
-        return -1;
-    }
-    return ((1E-9) * (double)tms);
+    auto t_ns = setTimer(DELAY_AFTER_TRIGGER, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
 double multiSlsDetector::setSubFrameExposureTime(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(SUBFRAME_ACQUISITION_TIME, (int64_t)t, detPos);
-    } else {
-        // + 0.5 to round for precision lost from converting double to int64_t
-        int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-        if (t < 0) {
-            tms = -1;
-        }
-        tms = setTimer(SUBFRAME_ACQUISITION_TIME, tms, detPos);
-        if (tms < 0) {
-            return -1;
-        }
-        return ((1E-9) * (double)tms);
     }
+    auto t_ns = setTimer(SUBFRAME_ACQUISITION_TIME, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
 double multiSlsDetector::setSubFrameExposureDeadTime(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(SUBFRAME_DEADTIME, (int64_t)t, detPos);
-    } else {
-        // + 0.5 to round for precision lost from converting double to int64_t
-        int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-        if (t < 0) {
-            tms = -1;
-        }
-        tms = setTimer(SUBFRAME_DEADTIME, tms, detPos);
-        if (tms < 0) {
-            return -1;
-        }
-        return ((1E-9) * (double)tms);
     }
+    auto t_ns = setTimer(SUBFRAME_DEADTIME, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
+
 }
 
 int64_t multiSlsDetector::setNumberOfFrames(int64_t t, int detPos) {

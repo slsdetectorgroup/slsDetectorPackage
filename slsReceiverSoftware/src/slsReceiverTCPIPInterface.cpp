@@ -5,6 +5,7 @@
 
 #include "slsReceiverTCPIPInterface.h"
 #include "MySocketTCP.h"
+#include "ServerSocket.h"
 #include "ServerInterface.h"
 #include "slsReceiver.h"
 #include "slsReceiverImplementation.h"
@@ -12,11 +13,10 @@
 #include "versionAPI.h"
 
 #include <array>
-#include  <cstdlib>	//EXIT
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <memory>	//unique_ptr
+#include <memory>
 #include <sstream>
 #include <string>
 #include <syscall.h>
@@ -24,14 +24,10 @@
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	stop();
-	if(mySock) {
-		delete mySock;
-		mySock=nullptr;
-	}
-	
-		delete interface;
-	
-		delete receiver;
+	delete mySock;
+	mySock=nullptr;
+	delete interface;
+	delete receiver;
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
@@ -79,9 +75,7 @@ int slsReceiverTCPIPInterface::start(){
 		return FAIL;
 	}
 	tcpThreadCreated = true;
-	//#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG) << "TCP Server thread created successfully.";
-	//#endif
 	return OK;
 }
 
@@ -142,10 +136,13 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 	int ret = OK;
 
 	while(true) {
-		if(mySock->Connect() >= 0){
-			ret = decode_function();
-			mySock->Disconnect();
-		}
+		auto server = sls::ServerSocket(portNumber);
+		auto socket = server.accept();
+		ret = decode_function(socket);
+		// if(mySock->Connect() >= 0){
+		// 	ret = decode_function();
+		// 	mySock->Disconnect();
+		// }
 
 		//if tcp command was to exit server
 		if(ret == GOODBYE){
@@ -242,7 +239,7 @@ int slsReceiverTCPIPInterface::function_table(){
 
 
 
-int slsReceiverTCPIPInterface::decode_function(){
+int slsReceiverTCPIPInterface::decode_function(sls::DataSocket &socket){
 	ret = FAIL;
 	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {

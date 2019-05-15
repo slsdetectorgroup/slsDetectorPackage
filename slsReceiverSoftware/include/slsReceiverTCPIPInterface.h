@@ -11,7 +11,7 @@
 class MySocketTCP;
 class ServerInterface;
 class slsReceiverImplementation;
-
+#include "ServerSocket.h"
 
 
 /**
@@ -113,7 +113,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	int function_table();
 
 	/** Decodes Function */
-	int decode_function();
+	int decode_function(sls::DataSocket &socket);
 
 	/** function not implemented for specific detector */
 	void functionNotImplemented();

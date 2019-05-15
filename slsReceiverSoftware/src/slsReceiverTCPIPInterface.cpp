@@ -243,7 +243,8 @@ int slsReceiverTCPIPInterface::function_table(){
 
 int slsReceiverTCPIPInterface::decode_function(sls::DataSocket &socket){
 	ret = FAIL;
-	int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
+	// int n = mySock->ReceiveDataOnly(&fnum,sizeof(fnum));
+	int n = socket.receiveData(&fnum, sizeof(fnum));
 	if (n <= 0) {
 		FILE_LOG(logDEBUG3) << "Could not read socket. "
 				"Received " << n << " bytes," <<

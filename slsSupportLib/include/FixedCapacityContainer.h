@@ -20,6 +20,8 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
     bool operator==(const std::vector<T> &other) const noexcept;
     bool operator!=(const std::vector<T> &other) const noexcept;
 
+    operator std::vector<T>(){return std::vector<T>(begin(), end());}
+
     template <size_t OtherCapacity>
     bool operator==(const FixedCapacityContainer<T, OtherCapacity> &other) const
         noexcept;

@@ -3,6 +3,7 @@
 #include "string_utils.h"
 
 #include <cstdlib>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -4496,10 +4497,9 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
         if (index == ACQUISITION_TIME || index == SUBFRAME_ACQUISITION_TIME ||
             index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER ||
             index == SUBFRAME_DEADTIME || index == STORAGE_CELL_DELAY) {
-            // 	+0.5 for precision of eg.0.0000325
-            t = (val * 1E9 + 0.5);
+            t = lround(val * 1E9);
         } else
-            t = (int64_t)val;
+            t = static_cast<int64_t>(val);
     }
 
     myDet->setOnline(ONLINE_FLAG, detPos);

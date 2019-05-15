@@ -27,7 +27,7 @@ ServerSocket::ServerSocket(int port)
     if (bind(getSocketId(), (struct sockaddr *)&serverAddr,
              sizeof(serverAddr)) != 0) {
         close();
-        throw std::runtime_error("Server ERROR: cannot  bind socket");
+        throw sls::SocketError("Server ERROR: cannot  bind socket");
     }
     if (listen(getSocketId(), DEFAULT_BACKLOG) != 0) {
         close();
@@ -41,7 +41,7 @@ DataSocket ServerSocket::accept() {
     int newSocket =
         ::accept(getSocketId(), (struct sockaddr *)&clientAddr, &addr_size);
     if (newSocket == -1) {
-        throw std::runtime_error("Server ERROR: socket accept failed\n");
+        throw sls::SocketError("Server ERROR: socket accept failed\n");
     }
     inet_ntop(AF_INET, &(clientAddr.sin_addr), &thisClient_.front(),
               INET_ADDRSTRLEN);

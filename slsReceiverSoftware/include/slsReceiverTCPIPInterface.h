@@ -126,7 +126,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	void validate(T arg, T retval, std::string modename, numberMode hex);
 
 	/** Unrecognized Function */
-	int M_nofunc();
+	int M_nofunc(sls::DataSocket & socket);
 
 
 
@@ -385,6 +385,8 @@ protected:
 
 	/** Socket */
 	MySocketTCP* mySock;
+
+	std::unique_ptr<sls::ServerSocket> server{nullptr};
 
 	/** client interface */
 	ServerInterface* interface;

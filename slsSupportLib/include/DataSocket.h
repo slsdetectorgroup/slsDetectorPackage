@@ -20,7 +20,9 @@ class DataSocket {
     }
     size_t sendData(const void *buffer, size_t size);
     size_t receiveData(void *buffer, size_t size);
+    size_t read(void *buffer, size_t size);
     int setTimeOut(int t_seconds);
+    int setReceiveTimeout(int us);
     void close();
     void shutDownSocket();
 

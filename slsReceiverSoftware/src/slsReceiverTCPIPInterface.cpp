@@ -55,13 +55,13 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
 
 	// create socket
 	portNumber = (pn > 0 ? pn : DEFAULT_PORTNO + 2);
-	MySocketTCP* m = new MySocketTCP(portNumber);
-	mySock = m;
-	interface = new ServerInterface(mySock, -1, "Receiver");
+	// MySocketTCP* m = new MySocketTCP(portNumber);
+	// mySock = m;
+	// interface = new ServerInterface(mySock, -1, "Receiver");
 
 	//initialize variables
-	strcpy(mySock->lastClientIP,"none");
-	strcpy(mySock->thisClientIP,"none1");
+	// strcpy(mySock->lastClientIP,"none");
+	// strcpy(mySock->thisClientIP,"none1");
 	memset(mess,0,sizeof(mess));
 	strcpy(mess,"dummy message");
 
@@ -86,7 +86,9 @@ void slsReceiverTCPIPInterface::stop(){
 	if (tcpThreadCreated) {
 		FILE_LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
 		killTCPServerThread = 1;
-		if(mySock)	mySock->ShutDownSocket();
+		// if(mySock)	mySock->ShutDownSocket();
+		if(server)
+			server->shutDownSocket();
 		FILE_LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
 		pthread_join(TCPServer_thread, nullptr);
 		tcpThreadCreated = false;
@@ -131,48 +133,55 @@ void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
 	return this_pointer;
 }
 
+void slsReceiverTCPIPInterface::startTCPServer() {
+    FILE_LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid)
+                          << "]";
+    ;
+    FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port "
+                      << portNumber << std::endl;
+    int ret = OK;
 
-void slsReceiverTCPIPInterface::startTCPServer(){
-	FILE_LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid) << "]";;
-	FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber << std::endl;
-	int ret = OK;
+    server = sls::make_unique<sls::ServerSocket>(portNumber);
+    while (true) {
 
-	while(true) {
-		auto server = sls::ServerSocket(portNumber);
-		auto socket = server.accept();
-		ret = decode_function(socket);
-		// if(mySock->Connect() >= 0){
-		// 	ret = decode_function();
-		// 	mySock->Disconnect();
-		// }
+        try {
+            auto socket = server->accept();
+            ret = decode_function(socket);
+            // if(mySock->Connect() >= 0){
+            // 	ret = decode_function();
+            // 	mySock->Disconnect();
+            // }
 
-		//if tcp command was to exit server
-		if(ret == GOODBYE){
-			FILE_LOG(logINFO) << "Shutting down UDP Socket";
-			if(receiver){
-				receiver->shutDownUDPSockets();
-			}
+            // if tcp command was to exit server
+            if (ret == GOODBYE) {
+                FILE_LOG(logINFO) << "Shutting down UDP Socket";
+                if (receiver) {
+                    receiver->shutDownUDPSockets();
+                }
 
-			mySock->exitServer();
-			FILE_LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) <<"]";
-			pthread_exit(nullptr);
+                mySock->exitServer();
+                FILE_LOG(logINFOBLUE)
+                    << "Exiting [ TCP server Tid: " << syscall(SYS_gettid)
+                    << "]";
+                pthread_exit(nullptr);
+            }
+        }catch(const sls::SocketError& e){
+			std::cout << "Accept failed\n";
 		}
 
-		//if user entered exit
-		if(killTCPServerThread) {
-			if (ret != GOODBYE) {
-				if(receiver){
-					receiver->shutDownUDPSockets();
-				}
-			}
-			FILE_LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) <<"]";
-			pthread_exit(nullptr);
-		}
-	}
+        // if user entered exit
+        if (killTCPServerThread) {
+            if (ret != GOODBYE) {
+                if (receiver) {
+                    receiver->shutDownUDPSockets();
+                }
+            }
+            FILE_LOG(logINFOBLUE)
+                << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) << "]";
+            pthread_exit(nullptr);
+        }
+    }
 }
-
-
-
 
 int slsReceiverTCPIPInterface::function_table(){
 	flist[F_EXEC_RECEIVER_COMMAND]			=	&slsReceiverTCPIPInterface::exec_command;
@@ -257,7 +266,7 @@ int slsReceiverTCPIPInterface::decode_function(sls::DataSocket &socket){
 
 	if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
 		FILE_LOG(logERROR) << "Unknown function enum " << fnum;
-		ret = (this->M_nofunc)();
+		ret = (this->M_nofunc)(socket);
 	} else{
 		FILE_LOG(logDEBUG1) <<  "calling function fnum: "<< fnum << " "
 				"(" << getFunctionNameFromEnum((enum detFuncs)fnum) << ") "
@@ -301,18 +310,23 @@ void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename, 
 	}
 }
 
-int slsReceiverTCPIPInterface::M_nofunc(){
+int slsReceiverTCPIPInterface::M_nofunc(sls::DataSocket &socket){
 	ret = FAIL;
 	memset(mess, 0, sizeof(mess));
 
 	// to receive any arguments
+
+	socket.setReceiveTimeout(500);
 	int n = 1;
 	while (n > 0)
-		n = mySock->ReceiveDataOnly(mess, MAX_STR_LENGTH);
+		n = socket.read(mess, MAX_STR_LENGTH);
 
 	sprintf(mess,"Unrecognized Function enum %d. Please do not proceed.\n", fnum);
 	FILE_LOG(logERROR) << mess;
-	return interface->Server_SendResult(false, ret, nullptr, 0, mess);
+	socket.sendData(&ret, sizeof(ret));
+	socket.sendData(mess, sizeof(mess));
+	return 0;
+	// return interface->Server_SendResult(false, ret, nullptr, 0, mess);
 }
 
 

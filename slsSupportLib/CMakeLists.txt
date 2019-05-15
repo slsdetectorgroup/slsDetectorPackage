@@ -1,5 +1,4 @@
 set(SOURCES
-    src/ClientInterface.cpp
     src/CmdLineParser.cpp
     src/string_utils.cpp
     src/file_utils.cpp
@@ -22,7 +21,6 @@ set(PUBLICHEADERS
     include/file_utils.h
     include/container_utils.h
     include/string_utils.h
-    include/ClientInterface.h
     include/MySocketTCP.h
     include/genericSocket.h
     include/logger.h

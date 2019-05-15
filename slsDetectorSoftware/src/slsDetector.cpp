@@ -1,5 +1,4 @@
 #include "slsDetector.h"
-#include "ClientInterface.h"
 #include "ClientSocket.h"
 #include "ServerInterface.h"
 #include "SharedMemory.h"

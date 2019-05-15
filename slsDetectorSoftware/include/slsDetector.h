@@ -6,7 +6,7 @@
 #include "sls_detector_defs.h"
 #include "network_utils.h"
 #include "FixedCapacityContainer.h"
-class ClientInterface;
+
 
 #include <cmath>
 #include <vector>

@@ -16,8 +16,8 @@
 class multiSlsDetector;
 class ServerInterface;
 
-#define SLS_SHMVERSION 0x190503
-#define MAX_RX_DBIT 64
+#define SLS_SHMVERSION 0x190515
+
 
 
 /**
@@ -241,11 +241,7 @@ struct sharedSlsDetector {
     /** overwrite enable */
     bool rxFileOverWrite;
 
-	/** receiver dbit size */
-	int rxDbitListSize;
-
-	/** receiver dbit list */
-	int rxDbitList[MAX_RX_DBIT];
+	sls::FixedCapacityContainer<int, MAX_RX_DBIT> rxDbitList;
 
 	/** reciever dbit offset */
 	int rxDbitOffset;

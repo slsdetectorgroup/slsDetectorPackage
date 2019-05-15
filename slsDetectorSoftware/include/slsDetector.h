@@ -16,7 +16,7 @@ class ClientInterface;
 class multiSlsDetector;
 class ServerInterface;
 
-#define SLS_SHMVERSION 0x190503
+#define SLS_SHMVERSION 0x190515
 
 
 

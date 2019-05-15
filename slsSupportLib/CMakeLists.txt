@@ -6,6 +6,7 @@ set(SOURCES
     src/DataSocket.cpp
     src/ServerSocket.cpp
     src/ServerInterface.cpp
+    src/ServerInterface2.cpp
     src/network_utils.cpp
 )
 

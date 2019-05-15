@@ -1,7 +1,8 @@
 #pragma once
 
 #include "DataSocket.h"
-
+#include "ServerInterface2.h"
+#include "network_utils.h"
 #include <cstdint>
 #include <netdb.h>
 #include <string>
@@ -13,14 +14,18 @@ namespace sls {
 class ServerSocket : public DataSocket {
   public:
     ServerSocket(int port);
-    DataSocket accept();
-    const std::string &getLastClient();
+    ServerInterface2 accept();
+    constexpr IpAddr getLastClient() noexcept { return lastClient; }
+    constexpr IpAddr getThisClient() noexcept { return thisClient; }
+    constexpr IpAddr getLockedBy() noexcept { return lockedBy; }
+    void setLockedBy(IpAddr addr){ lockedBy = addr; }
     int getPort() const;
-    void SendResult(int &ret, void *retval, int retvalSize, char* mess);
+    void SendResult(int &ret, void *retval, int retvalSize, char *mess);
 
   private:
-    std::string lastClient_ = std::string(INET_ADDRSTRLEN, '\0');
-    std::string thisClient_ = std::string(INET_ADDRSTRLEN, '\0');
+    IpAddr thisClient;
+    IpAddr lastClient;
+    IpAddr lockedBy;
     int serverPort;
     // char lastClient_[INET_ADDRSTRLEN]{};
 };

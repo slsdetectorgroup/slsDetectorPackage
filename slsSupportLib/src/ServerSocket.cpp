@@ -1,4 +1,6 @@
+#include "ServerInterface2.h"
 #include "ServerSocket.h"
+
 #include "DataSocket.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
@@ -35,7 +37,8 @@ ServerSocket::ServerSocket(int port)
     }
 }
 
-DataSocket ServerSocket::accept() {
+ServerInterface2 ServerSocket::accept() {
+    lastClient = thisClient; //update from previous connection
     struct sockaddr_in clientAddr;
     socklen_t addr_size = sizeof clientAddr;
     int newSocket =
@@ -43,17 +46,15 @@ DataSocket ServerSocket::accept() {
     if (newSocket == -1) {
         throw sls::SocketError("Server ERROR: socket accept failed\n");
     }
-    inet_ntop(AF_INET, &(clientAddr.sin_addr), &thisClient_.front(),
-              INET_ADDRSTRLEN);
-    std::cout << "lastClient: " << lastClient_ << " thisClient: " << thisClient_
+    char tc[INET_ADDRSTRLEN]{};
+    inet_ntop(AF_INET, &(clientAddr.sin_addr), tc, INET_ADDRSTRLEN);
+    thisClient = tc;
+    std::cout << "lastClient: " << lastClient << " thisClient: " << thisClient
               << '\n';
-    // Here goes any check for locks etc
-    lastClient_ = thisClient_;
 
-    return DataSocket(newSocket);
+    return ServerInterface2(newSocket);
 }
 
-const std::string &ServerSocket::getLastClient() { return lastClient_; }
 
 int ServerSocket::getPort() const { return serverPort; }
 

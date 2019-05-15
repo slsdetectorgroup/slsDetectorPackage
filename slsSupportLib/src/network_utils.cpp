@@ -16,6 +16,7 @@
 
 namespace sls {
 
+
 IpAddr::IpAddr(const std::string &address) {
     inet_pton(AF_INET, address.c_str(), &addr_);
 }

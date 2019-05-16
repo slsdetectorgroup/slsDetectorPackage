@@ -306,7 +306,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	detectorType myDetectorType;
 
 	/** slsReceiverBase object */
-	slsReceiverImplementation *receiver;
+	slsReceiverImplementation *receiver{nullptr};
 
 	/** Function List */
 	int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])(sls::ServerInterface2& socket);

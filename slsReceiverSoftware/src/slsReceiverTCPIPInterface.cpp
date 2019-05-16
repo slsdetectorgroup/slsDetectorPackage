@@ -1906,7 +1906,6 @@ int slsReceiverTCPIPInterface::check_version_compatibility(sls::ServerInterface2
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int64_t arg = -1;
-	std::cout << "<----------------- HEY\n";
 	// get args, return if socket crashed
 	if (socket.receiveArg(ret, mess, &arg, sizeof(arg)) == FAIL)
 		return FAIL;

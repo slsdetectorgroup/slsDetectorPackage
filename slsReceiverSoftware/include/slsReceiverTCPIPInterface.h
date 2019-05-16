@@ -299,6 +299,9 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 		int set_dbit_offset(sls::ServerInterface2 &socket);
 
 
+	int LogSocketCrash();
+	void NullObjectError(int& ret, char* mess);
+
 	/** detector type */
 	detectorType myDetectorType;
 
@@ -309,25 +312,25 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])(sls::ServerInterface2& socket);
 
 	/** Message */
-	char mess[MAX_STR_LENGTH];
+	char mess[MAX_STR_LENGTH]{"dummy message"};
 
 	/** success/failure */
-	int ret;
+	int ret{OK};
 
 	/** function index */
-	int fnum;
+	int fnum{-1};
 
 	/** Lock Status if server locked to a client */
-	int lockStatus;
+	int lockStatus{0};
 
 	/** kill tcp server thread */
-	int killTCPServerThread;
+	int killTCPServerThread{0};
 
 	/** thread for TCP server */
 	pthread_t   TCPServer_thread;
 
 	/** tcp thread created flag*/
-	bool tcpThreadCreated;
+	bool tcpThreadCreated{false};
 
 	/** port number */
 	int portNumber;
@@ -345,16 +348,16 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	 * we write depending on file write enable
 	 * users get data to write depending on call backs registered
 	 */
-	int (*startAcquisitionCallBack)(char*, char*, uint64_t, uint32_t, void*);
-	void *pStartAcquisition;
+	int (*startAcquisitionCallBack)(char*, char*, uint64_t, uint32_t, void*) = nullptr;
+	void *pStartAcquisition{nullptr};
 
 	/**
 	 * Call back for acquisition finished
 	 * callback argument is
 	 * total frames caught
 	 */
-	void (*acquisitionFinishedCallBack)(uint64_t, void*);
-	void *pAcquisitionFinished;
+	void (*acquisitionFinishedCallBack)(uint64_t, void*) = nullptr;
+	void *pAcquisitionFinished{nullptr};
 
 
 	/**
@@ -365,7 +368,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	 * dataSize in bytes is the size of the data in bytes.
 	 */
 	void (*rawDataReadyCallBack)(char* ,
-			char*, uint32_t, void*);
+			char*, uint32_t, void*) = nullptr;
 
     /**
      * Call back for raw data (modified)
@@ -375,21 +378,16 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
      * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
      */
     void (*rawDataModifyReadyCallBack)(char* ,
-            char*, uint32_t &, void*);
+            char*, uint32_t &, void*) = nullptr;
 
-	void *pRawDataReady;
+	void *pRawDataReady{nullptr};
 
 
 
 protected:
 
-	/** Socket */
-	MySocketTCP* mySock;
 
 	std::unique_ptr<sls::ServerSocket> server{nullptr};
-
-	/** client interface */
-	ServerInterface* interface;
 
       private:
         int VerifyLock(int &ret, char *mess);

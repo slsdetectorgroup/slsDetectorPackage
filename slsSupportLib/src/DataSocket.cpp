@@ -50,7 +50,7 @@ size_t DataSocket::receiveData(void *buffer, size_t size) {
     return dataRead;
 }
 
-size_t DataSocket::read(void *buffer, size_t size){
+ssize_t DataSocket::read(void *buffer, size_t size){
     return ::read(getSocketId(), reinterpret_cast<char *>(buffer), size);
 }
 

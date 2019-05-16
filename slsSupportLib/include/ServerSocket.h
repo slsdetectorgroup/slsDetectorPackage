@@ -19,6 +19,7 @@ class ServerSocket : public DataSocket {
     constexpr IpAddr getThisClient() noexcept { return thisClient; }
     constexpr IpAddr getLockedBy() noexcept { return lockedBy; }
     void setLockedBy(IpAddr addr){ lockedBy = addr; }
+    void setLastClient(IpAddr addr){ lastClient = addr; }
     int getPort() const;
     void SendResult(int &ret, void *retval, int retvalSize, char *mess);
 
@@ -27,7 +28,6 @@ class ServerSocket : public DataSocket {
     IpAddr lastClient;
     IpAddr lockedBy;
     int serverPort;
-    // char lastClient_[INET_ADDRSTRLEN]{};
 };
 
 }; // namespace sls

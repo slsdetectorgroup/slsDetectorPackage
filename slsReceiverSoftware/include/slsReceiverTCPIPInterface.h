@@ -312,7 +312,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])(sls::ServerInterface2& socket);
 
 	/** Message */
-	char mess[MAX_STR_LENGTH] = "dummy message";
+	char mess[MAX_STR_LENGTH]{};
 
 	/** success/failure */
 	int ret{OK};

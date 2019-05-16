@@ -29,10 +29,9 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn):
-				myDetectorType(GOTTHARD)
-				
+				myDetectorType(GOTTHARD),
+				portNumber(pn > 0 ? pn : DEFAULT_PORTNO + 2)
 {
-	portNumber = pn > 0 ? pn : DEFAULT_PORTNO + 2;
 	function_table();
 }
 

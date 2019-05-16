@@ -15,11 +15,11 @@ class ServerSocket : public DataSocket {
   public:
     ServerSocket(int port);
     ServerInterface2 accept();
-    constexpr IpAddr getLastClient() noexcept { return lastClient; }
-    constexpr IpAddr getThisClient() noexcept { return thisClient; }
-    constexpr IpAddr getLockedBy() noexcept { return lockedBy; }
-    void setLockedBy(IpAddr addr){ lockedBy = addr; }
-    void setLastClient(IpAddr addr){ lastClient = addr; }
+    IpAddr getLastClient() noexcept { return lastClient; }
+    IpAddr getThisClient() noexcept { return thisClient; }
+    IpAddr getLockedBy() noexcept { return lockedBy; }
+    void setLockedBy(IpAddr addr) { lockedBy = addr; }
+    void setLastClient(IpAddr addr) { lastClient = addr; }
     int getPort() const;
     void SendResult(int &ret, void *retval, int retvalSize, char *mess);
 

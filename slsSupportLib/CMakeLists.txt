@@ -28,7 +28,7 @@ set(PUBLICHEADERS
     include/ClientSocket.h
     include/DataSocket.h
     include/ServerSocket.h
-    include/ServerInterface.h
+    include/ServerInterface2.h
     include/network_utils.h
     include/FixedCapacityContainer.h
 )

@@ -10,14 +10,13 @@ class CmdLineParser {
     void Parse(const std::string &s);
     void Print();
 
-    //getters
     int multi_id() const { return multi_id_; };
     int detector_id() const { return detector_id_; };
     int n_arguments() const { return arguments_.size(); }
     const std::string &command() const { return command_; }
     const std::string &executable() const { return executable_; }
     const std::vector<std::string> &arguments() const { return arguments_; };
-    std::vector<char *> argv();
+    std::vector<const char *> argv() const;
 
   private:
     void DecodeIdAndPosition(const char *c);

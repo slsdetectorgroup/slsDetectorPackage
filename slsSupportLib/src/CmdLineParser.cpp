@@ -5,10 +5,11 @@
 #include <iostream>
 #include <iterator>
 #include <sstream>
-//printing function for debugging
+
 void CmdLineParser::Print() {
     std::cout << "\nCmdLineParser::Print()\n";
-    std::cout << "\tmulti_id: " << multi_id_ << ", detector_id: " << detector_id_ << std::endl;
+    std::cout << "\tmulti_id: " << multi_id_
+              << ", detector_id: " << detector_id_ << std::endl;
     std::cout << "\texecutable: " << executable_ << '\n';
     std::cout << "\tcommand: " << command_ << '\n';
     std::cout << "\tn_arguments: " << n_arguments() << '\n';
@@ -20,26 +21,21 @@ void CmdLineParser::Print() {
 };
 
 void CmdLineParser::Parse(int argc, char *argv[]) {
-    //first element of argv is the command used to call the executable ->skipping
-    //and if this is the only command skip all
-    executable_ = argv[0];
+    executable_ = argv[0]; //first arg is calling binary
     if (argc > 1) {
-        //second element is cmd string that needs to be decoded
         DecodeIdAndPosition(argv[1]);
-        //The rest of the arguments goes into a vector for later processing
         for (int i = 2; i < argc; ++i) {
-            arguments_.emplace_back(std::string(argv[i]));
+            arguments_.emplace_back(argv[i]);
         }
     }
-};
+}
 
 void CmdLineParser::Parse(const std::string &s) {
     std::istringstream iss(s);
     auto it = std::istream_iterator<std::string>(iss);
-    //read the first element and increment
     command_ = *it++;
-    arguments_ = std::vector<std::string>(it, std::istream_iterator<std::string>());
-    ;
+    arguments_ =
+        std::vector<std::string>(it, std::istream_iterator<std::string>());
     DecodeIdAndPosition(command_.c_str());
 }
 
@@ -51,19 +47,23 @@ void CmdLineParser::DecodeIdAndPosition(const char *c) {
     if (contains_id && contains_pos) {
         int r = sscanf(c, "%d-%d:%s", &multi_id_, &detector_id_, tmp);
         if (r != 3) {
-            throw(std::invalid_argument("Cannot decode client or detector id from: \"" + std::string(c) + "\"\n"));
+            throw(std::invalid_argument(
+                "Cannot decode client or detector id from: \"" +
+                std::string(c) + "\"\n"));
         }
         command_ = tmp;
     } else if (contains_id && !contains_pos) {
         int r = sscanf(c, "%d-%s", &multi_id_, tmp);
         if (r != 2) {
-            throw(std::invalid_argument("Cannot decode client id from: \"" + std::string(c) + "\"\n"));
+            throw(std::invalid_argument("Cannot decode client id from: \"" +
+                                        std::string(c) + "\"\n"));
         }
         command_ = tmp;
     } else if (!contains_id && contains_pos) {
         int r = sscanf(c, "%d:%s", &detector_id_, tmp);
         if (r != 2) {
-            throw(std::invalid_argument("Cannot decode detector id from: \"" + std::string(c) + "\"\n"));
+            throw(std::invalid_argument("Cannot decode detector id from: \"" +
+                                        std::string(c) + "\"\n"));
         }
         command_ = tmp;
     } else {
@@ -71,12 +71,11 @@ void CmdLineParser::DecodeIdAndPosition(const char *c) {
     }
 }
 
-std::vector<char *> CmdLineParser::argv() {
-    std::vector<char *> vec;
-    if (command_.empty()!=true){
+std::vector<const char *> CmdLineParser::argv() const {
+    std::vector<const char *> vec;
+    if (command_.empty() != true) {
         vec.push_back(&command_.front());
     }
-    
     for (auto &arg : arguments_) {
         vec.push_back(&arg.front());
     }

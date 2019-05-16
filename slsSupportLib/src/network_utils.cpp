@@ -31,9 +31,9 @@ std::string IpAddr::str() const {
 }
 std::string IpAddr::hex() const {
     std::ostringstream ss;
-    ss << std::hex << std::setfill('0') << std::setw(2);
     for (int i = 0; i != 4; ++i) {
-        ss << ((addr_ >> i * 8) & 0xFF);
+        ss << std::hex << std::setfill('0') << std::setw(2)
+           << ((addr_ >> i * 8) & 0xFF);
     }
     return ss.str();
 }

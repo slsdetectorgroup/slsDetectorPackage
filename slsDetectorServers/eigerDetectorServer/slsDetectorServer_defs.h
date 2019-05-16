@@ -47,6 +47,7 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 #define NORMAL_HIGHVOLTAGE_OUTPUTPORT 		"/sys/class/hwmon/hwmon5/device/out0_output"
 #define SPECIAL9M_HIGHVOLTAGE_PORT 			"/dev/ttyS1"
 #define SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE 	(16)
+#define DEFAULT_UDP_SOURCE_PORT				(0xE185)
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES					(1)

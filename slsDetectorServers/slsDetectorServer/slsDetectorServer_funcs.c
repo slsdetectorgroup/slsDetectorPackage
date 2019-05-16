@@ -2298,8 +2298,6 @@ int send_update(int file_des) {
 
 
 
-
-
 int configure_mac(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -2323,9 +2321,12 @@ int configure_mac(int file_des) {
 	// dest ip
 	uint32_t dstIp = 0;
 	sscanf(args[1], "%x", 	&dstIp);
-	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(dstIp >> 24) & 0xff, (dstIp >> 16) & 0xff, (dstIp >> 8) & 0xff, (dstIp) & 0xff,
-			dstIp));
+	{
+		char ipstring[INET_ADDRSTRLEN]; 
+		getIpAddressinString(ipstring, dstIp);
+		FILE_LOG(logINFO, ("Dst Ip Addr: %s\n", ipstring));
+	}
+
 	// dest mac
 	uint64_t dstMac = 0;
 #ifdef VIRTUAL
@@ -2333,23 +2334,19 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[2], "%llx", 	&dstMac);
 #endif
-	FILE_LOG(logDEBUG1, ("Dst Mac Addr: (0x) "));
 	{
-		int iloop = 5;
-		for (iloop = 5; iloop >= 0; --iloop) {
-			printf ("%x", (unsigned int)(((dstMac >> (8 * iloop)) & 0xFF)));
-			if (iloop > 0) {
-				printf(":");
-			}
-		}
+		char macstring[50];
+		getMacAddressinString(macstring, 50, dstMac);
+		FILE_LOG(logDEBUG1, ("Dst Mac Addr: %s\n", macstring));
 	}
-	FILE_LOG(logDEBUG1, (" = %llx\n", dstMac));
 	// source ip
 	uint32_t srcIp = 0;
 	sscanf(args[3], "%x",	&srcIp);
-	FILE_LOG(logDEBUG1, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(srcIp >> 24) & 0xff, (srcIp >> 16) & 0xff, (srcIp >> 8) & 0xff, (srcIp) & 0xff,
-			srcIp));
+	{
+		char ipstring[INET_ADDRSTRLEN]; 
+		getIpAddressinString(ipstring, srcIp);
+		FILE_LOG(logINFO, ("Src Ip Addr: %s\n", ipstring));
+	}
 	// source mac
 	uint64_t srcMac = 0;
 #ifdef VIRTUAL
@@ -2357,17 +2354,11 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[4], "%llx",	&srcMac);
 #endif
-	FILE_LOG(logDEBUG1, ("Src Mac Addr: (0x) "));
 	{
-		int iloop = 5;
-		for (iloop = 5; iloop >= 0; --iloop) {
-			printf("%x", (unsigned int)(((srcMac >> (8 * iloop)) & 0xFF)));
-			if (iloop > 0) {
-				printf(":");
-			}
-		}
+		char macstring[50];
+		getMacAddressinString(macstring, 50, srcMac);
+		FILE_LOG(logDEBUG1, ("Src Mac Addr: %s\n", macstring));
 	}
-	FILE_LOG(logDEBUG1, (" = %llx\n", srcMac));
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
 	// source port 2
@@ -2379,9 +2370,11 @@ int configure_mac(int file_des) {
 	// dest ip2
 	uint32_t dstIp2 = 0;
 	sscanf(args[6], "%x", 	&dstIp2);
-	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(dstIp2 >> 24) & 0xff, (dstIp2 >> 16) & 0xff, (dstIp2 >> 8) & 0xff, (dstIp2) & 0xff,
-			dstIp2));
+	{
+		char ipstring[INET_ADDRSTRLEN]; 
+		getIpAddressinString(ipstring, dstIp2);
+		FILE_LOG(logDEBUG1, ("Dst Ip Addr2: %s\n", ipstring));
+	}
 	// dest mac2
 	uint64_t dstMac2 = 0;
 #ifdef VIRTUAL
@@ -2389,23 +2382,19 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[7], "%llx", 	&dstMac2);
 #endif
-	FILE_LOG(logDEBUG1, ("Dst Mac Addr: (0x) "));
 	{
-		int iloop = 5;
-		for (iloop = 5; iloop >= 0; --iloop) {
-			printf ("%x", (unsigned int)(((dstMac2 >> (8 * iloop)) & 0xFF)));
-			if (iloop > 0) {
-				printf(":");
-			}
-		}
+		char macstring[50];
+		getMacAddressinString(macstring, 50, dstMac2);
+		FILE_LOG(logDEBUG1, ("Dst Mac Addr2: %s\n", macstring));
 	}
-	FILE_LOG(logDEBUG1, (" = %llx\n", dstMac2));
 	// source ip2
 	uint32_t srcIp2 = 0;
 	sscanf(args[8], "%x",	&srcIp2);
-	FILE_LOG(logDEBUG1, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(srcIp2 >> 24) & 0xff, (srcIp2 >> 16) & 0xff, (srcIp2 >> 8) & 0xff, (srcIp2) & 0xff,
-			srcIp2));
+	{
+		char ipstring[INET_ADDRSTRLEN]; 
+		getIpAddressinString(ipstring, srcIp2);
+		FILE_LOG(logDEBUG1, ("Src Ip Addr2: %s\n", ipstring));
+	}
 	// source mac2
 	uint64_t srcMac2 = 0;
 #ifdef VIRTUAL
@@ -2413,17 +2402,11 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[9], "%llx",	&srcMac2);
 #endif
-	FILE_LOG(logDEBUG1, ("Src Mac Addr: (0x) "));
 	{
-		int iloop = 5;
-		for (iloop = 5; iloop >= 0; --iloop) {
-			printf("%x", (unsigned int)(((srcMac2 >> (8 * iloop)) & 0xFF)));
-			if (iloop > 0) {
-				printf(":");
-			}
-		}
+		char macstring[50];
+		getMacAddressinString(macstring, 50, srcMac2);
+		FILE_LOG(logDEBUG1, ("Src Mac Addr2: %s\n", macstring));
 	}
-	FILE_LOG(logDEBUG1, (" = %llx\n", srcMac2));
 
 	// number of interfaces
 	int numInterfaces = 0;

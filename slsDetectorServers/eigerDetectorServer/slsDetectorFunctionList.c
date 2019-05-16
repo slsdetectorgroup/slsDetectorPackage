@@ -21,6 +21,8 @@ extern int debugflag;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
+extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
+extern void getIpAddressinString(char* cip, uint32_t ip);
 
 int firmware_compatibility = OK;
 int firmware_check_done = 0;
@@ -1213,24 +1215,14 @@ enum externalCommunicationMode getTiming() {
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2) {
 #ifndef VIRTUAL
     FILE_LOG(logINFO, ("Configuring MAC\n"));
-	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
-	int src_port = 0xE185;
-	sprintf(src_ip,"%d.%d.%d.%d",(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff);
-	sprintf(dst_ip,"%d.%d.%d.%d",(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((sourcemac>>40)&0xFF),
-			(unsigned int)((sourcemac>>32)&0xFF),
-			(unsigned int)((sourcemac>>24)&0xFF),
-			(unsigned int)((sourcemac>>16)&0xFF),
-			(unsigned int)((sourcemac>>8)&0xFF),
-			(unsigned int)((sourcemac>>0)&0xFF));
-	sprintf(dst_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((destmac>>40)&0xFF),
-			(unsigned int)((destmac>>32)&0xFF),
-			(unsigned int)((destmac>>24)&0xFF),
-			(unsigned int)((destmac>>16)&0xFF),
-			(unsigned int)((destmac>>8)&0xFF),
-			(unsigned int)((destmac>>0)&0xFF));
+	
+	int src_port = DEFAULT_UDP_SOURCE_PORT;
 
-
+	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
+	getMacAddressinString(src_mac, 50, sourcemac);
+	getMacAddressinString(dst_mac, 50, destmac);
+	getIpAddressinString(src_ip, sourceip);
+	getIpAddressinString(dst_ip, destip);
 
 	FILE_LOG(logINFO, (
 	        "\tSource IP   : %s\n"

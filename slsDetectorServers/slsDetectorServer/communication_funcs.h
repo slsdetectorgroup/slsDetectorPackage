@@ -52,4 +52,19 @@ int Server_VerifyLock();
  */
 int Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize);
 
+/**
+ * Convert mac address from integer to char array
+ * @param cmac char arrary result
+ * @param size size of char array result
+ * @param mac mac address as an integer
+ */
+void getMacAddressinString(char* cmac, int size, uint64_t mac);
+
+/**
+ * Convert ip address from integer to char array
+ * @param cip char arrary result
+ * @param ip ip address as an integer
+ */
+void getIpAddressinString(char* cip, uint32_t ip);
+
 #endif

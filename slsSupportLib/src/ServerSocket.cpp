@@ -49,9 +49,6 @@ ServerInterface2 ServerSocket::accept() {
     char tc[INET_ADDRSTRLEN]{};
     inet_ntop(AF_INET, &(clientAddr.sin_addr), tc, INET_ADDRSTRLEN);
     thisClient = tc;
-    std::cout << "lastClient: " << lastClient << " thisClient: " << thisClient
-              << '\n';
-
     return ServerInterface2(newSocket);
 }
 

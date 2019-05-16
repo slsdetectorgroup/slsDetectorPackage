@@ -42,9 +42,12 @@ TEST_CASE("Hex representation of MAC", "[support]") {
 }
 
 TEST_CASE("Convert IP using classes ", "[support]") {
-    std::vector<uint32_t> vec_addr{4073554305, 2747957633, 2697625985, 16779786};
+    std::vector<uint32_t> vec_addr{4073554305, 2747957633, 2697625985, 2566979594, 0};
     std::vector<std::string> vec_ans{"129.129.205.242", "129.129.202.163",
-                                     "129.129.202.160", "10.10.0.1"};
+                                     "129.129.202.160", "10.0.1.153", "0.0.0.0"};
+    std::vector<std::string> vec_hex{"8181cdf2", "8181caa3",
+                                     "8181caa0", "0a000199","00000000"};
+                                     
 
     for (size_t i = 0; i != vec_addr.size(); ++i) {
         auto ip0 = IpAddr(vec_addr[i]);
@@ -57,6 +60,8 @@ TEST_CASE("Convert IP using classes ", "[support]") {
         CHECK(ip1 == vec_ans[i]);
         CHECK(ip0.str() == vec_ans[i]);
         CHECK(ip1.str() == vec_ans[i]);
+        CHECK(ip0.hex() == vec_hex[i]);
+        CHECK(ip1.hex() == vec_hex[i]);
     }
 }
 

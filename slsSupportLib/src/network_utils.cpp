@@ -6,11 +6,14 @@
 #include <cstring>
 #include <iomanip>
 #include <sstream>
-
+#include <sys/prctl.h> 
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
+#include <ifaddrs.h>
+#include <net/if.h>
 
 #include "network_utils.h"
 
@@ -92,5 +95,61 @@ uint32_t HostnameToIp(const char *hostname) {
     freeaddrinfo(result);
     return ip;
 }
+
+std::string IpToInterfaceName(const std::string &ip) {
+    //TODO! Copied from genericSocket needs to be refactored!
+    struct ifaddrs *addrs, *iap;
+    struct sockaddr_in *sa;
+
+    char buf[32];
+    const int buf_len = sizeof(buf);
+    memset(buf, 0, buf_len);
+    strcpy(buf, "none");
+
+    getifaddrs(&addrs);
+    for (iap = addrs; iap != NULL; iap = iap->ifa_next) {
+        if (iap->ifa_addr && (iap->ifa_flags & IFF_UP) &&
+            iap->ifa_addr->sa_family == AF_INET) {
+            sa = (struct sockaddr_in *)(iap->ifa_addr);
+            inet_ntop(iap->ifa_addr->sa_family, (void *)&(sa->sin_addr), buf,
+                      buf_len);
+            if (ip == std::string(buf)) {
+                strcpy(buf, iap->ifa_name);
+                break;
+            }
+        }
+    }
+    freeifaddrs(addrs);
+    return std::string(buf);
+}
+
+MacAddr InterfaceNameToMac(std::string inf) {
+        //TODO! Copied from genericSocket needs to be refactored!
+		struct ifreq ifr;
+		char mac[32];
+		const int mac_len = sizeof(mac);
+		memset(mac,0,mac_len);
+
+		int sock=socket(PF_INET, SOCK_STREAM, 0);
+		strncpy(ifr.ifr_name,inf.c_str(),sizeof(ifr.ifr_name)-1);
+		ifr.ifr_name[sizeof(ifr.ifr_name)-1]='\0';
+
+
+		if (-1==ioctl(sock, SIOCGIFHWADDR, &ifr)) {
+			perror("ioctl(SIOCGIFHWADDR) ");
+			return std::string("00:00:00:00:00:00");
+		}
+		for (int j=0, k=0; j<6; j++) {
+			k+=snprintf(mac+k, mac_len-k-1, j ? ":%02X" : "%02X",
+					(int)(unsigned int)(unsigned char)ifr.ifr_hwaddr.sa_data[j]);
+		}
+		mac[mac_len-1]='\0';
+
+		if(sock!=1){
+			close(sock);
+		}
+		return MacAddr(mac);
+
+	}
 
 } // namespace sls

@@ -6,13 +6,13 @@
 
 #include "FixedCapacityContainer.h"
 #include "ServerSocket.h"
-#include "ServerInterface.h"
 #include "slsReceiver.h"
 #include "slsReceiverImplementation.h"
 #include "slsReceiverTCPIPInterface.h"
 #include "slsReceiverUsers.h"
 #include "versionAPI.h"
 #include "string_utils.h"
+#include "sls_detector_exceptions.h"
 
 #include <array>
 #include <cstdlib>
@@ -23,6 +23,8 @@
 #include <string>
 #include <syscall.h>
 #include <vector>
+
+using sls::SocketError;
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 	stop();
@@ -725,7 +727,7 @@ int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 			}
 			FILE_LOG(logINFO) << "Receiver UDP IP: " << ip1;
 			// get eth
-			std::string temp = genericSocket::ipToName(ip1);
+			std::string temp = sls::IpToInterfaceName(ip1);
 			if (temp == "none"){
 				ret = FAIL;
 				strcpy(mess, "Failed to get ethernet interface or IP \n");
@@ -747,7 +749,7 @@ int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 				}
 				//get mac address
 				if (ret != FAIL) {
-					temp = genericSocket::nameToMac(eth);
+					temp = sls::InterfaceNameToMac(eth).str();
 					if (temp=="00:00:00:00:00:00") {
 						ret = FAIL;
 						strcpy(mess,"failed to get mac adddress to listen to\n");
@@ -771,7 +773,7 @@ int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 				receiver->setUDPPortNumber2(port2);
 				FILE_LOG(logINFO) << "Receiver UDP IP 2: " << ip2;
 				// get eth
-				temp = genericSocket::ipToName(ip2);
+				temp = sls::IpToInterfaceName(ip2);
 				if (temp == "none"){
 					ret = FAIL;
 					strcpy(mess, "Failed to get 2nd ethernet interface or IP \n");
@@ -791,7 +793,7 @@ int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 
 					//get mac address
 					if (ret != FAIL) {
-						temp = genericSocket::nameToMac(eth);
+						temp = sls::InterfaceNameToMac(eth).str();
 						if (temp=="00:00:00:00:00:00") {
 							ret = FAIL;
 							strcpy(mess,"failed to get 2nd mac adddress to listen to\n");

@@ -4,8 +4,6 @@
 
 namespace sls {
 
-uint32_t HostnameToIp(const char *hostname);
-
 class IpAddr {
   private:
     uint32_t addr_{0};
@@ -57,6 +55,10 @@ class MacAddr {
     }
     constexpr uint64_t uint64() const noexcept { return addr_; }
 };
+
+uint32_t HostnameToIp(const char *hostname);
+std::string IpToInterfaceName(const std::string& ip);
+MacAddr InterfaceNameToMac(std::string inf);
 
 std::ostream &operator<<(std::ostream &out, const IpAddr &addr);
 std::ostream &operator<<(std::ostream &out, const MacAddr &addr);

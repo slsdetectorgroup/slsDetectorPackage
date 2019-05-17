@@ -6,7 +6,7 @@
 
 class CmdLineParser {
   public:
-    void Parse(int argc, char *argv[]);
+    void Parse(int argc, const char * const argv[]);
     void Parse(const std::string &s);
     void Print();
 

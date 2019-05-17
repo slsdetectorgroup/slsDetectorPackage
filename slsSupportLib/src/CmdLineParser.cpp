@@ -20,7 +20,7 @@ void CmdLineParser::Print() {
     std::cout << "\n\n";
 };
 
-void CmdLineParser::Parse(int argc, char *argv[]) {
+void CmdLineParser::Parse(int argc, const char * const argv[]) {
     executable_ = argv[0]; //first arg is calling binary
     if (argc > 1) {
         DecodeIdAndPosition(argv[1]);

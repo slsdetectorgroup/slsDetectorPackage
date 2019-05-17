@@ -92,10 +92,10 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
             }
         }
 
-        WHEN("Parsing string with cmd and multiple arguments"){
+        WHEN("Parsing string with cmd and multiple arguments") {
             std::string s = "trimen 5000 6000 7000";
             p.Parse(s);
-            THEN("cmd and args are correct"){
+            THEN("cmd and args are correct") {
                 REQUIRE(p.command() == "trimen");
                 REQUIRE(p.arguments().size() == 3);
                 REQUIRE(p.arguments()[0] == "5000");
@@ -121,10 +121,7 @@ TEST_CASE("Parse with no arguments results in no command and default id",
     // build up argc and argv
     // first argument is the command used to call the binary
     int argc = 1;
-    char *argv[argc];
-    char a0[] = "call";
-    argv[0] = static_cast<char *>(a0);
-
+    const char* const argv[]{"call"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -138,12 +135,7 @@ TEST_CASE(
     "Parse a command without client id and detector id results in default",
     "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char*const argv[]{"caller", "vrf"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -156,14 +148,7 @@ TEST_CASE(
 TEST_CASE("Parse a command with value but without client or detector id",
           "[support]") {
     int argc = 3;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "vrf";
-    char a2[] = "3000";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-    argv[2] = static_cast<char *>(a2);
-
+    const char* const argv[]{"caller", "vrf", "3000"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -176,11 +161,7 @@ TEST_CASE("Parse a command with value but without client or detector id",
 
 TEST_CASE("Decodes position") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "7:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
+    const char*const argv[]{"caller", "7:vrf"};
 
     CmdLineParser p;
     p.Parse(argc, argv);
@@ -193,12 +174,7 @@ TEST_CASE("Decodes position") {
 
 TEST_CASE("Decodes double digit position", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "73:vcmp";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char* const argv[]{"caller", "73:vcmp"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -210,12 +186,7 @@ TEST_CASE("Decodes double digit position", "[support]") {
 
 TEST_CASE("Decodes position and id", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "5-8:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char* const argv[]{"caller", "5-8:vrf"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -227,15 +198,9 @@ TEST_CASE("Decodes position and id", "[support]") {
 
 TEST_CASE("Double digit id", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "56-8:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char *const argv[]{"caller", "56-8:vrf"};
     CmdLineParser p;
     p.Parse(argc, argv);
-
     REQUIRE(p.detector_id() == 8);
     REQUIRE(p.multi_id() == 56);
     REQUIRE(p.command() == "vrf");
@@ -243,26 +208,15 @@ TEST_CASE("Double digit id", "[support]") {
 }
 
 TEST_CASE("Calling with wrong id throws invalid_argument", "[support]") {
-
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "asvldkn:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char *const argv[]{"caller", "asvldkn:vrf"};
     CmdLineParser p;
     CHECK_THROWS(p.Parse(argc, argv));
 }
 
 TEST_CASE("Calling with wrong client throws invalid_argument", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "lki-3:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char *const argv[]{"caller", "lki-3:vrf"};
     CmdLineParser p;
     CHECK_THROWS(p.Parse(argc, argv));
 }

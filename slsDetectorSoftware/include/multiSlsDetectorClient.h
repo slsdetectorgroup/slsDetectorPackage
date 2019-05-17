@@ -90,7 +90,7 @@ class multiSlsDetectorClient {
         }
 
 
-        CmdProxy<multiSlsDetector> proxy(parser.multi_id());
+        sls::CmdProxy<multiSlsDetector> proxy(parser.multi_id());
         auto r = proxy.Call(parser.command(), parser.arguments(), parser.detector_id());
         if (r.empty())
             return;

@@ -1,13 +1,12 @@
-#ifndef MULTI_DETECTOR_CALLER_H
-#define MULTI_DETECTOR_CALLER_H
+#pragma once
 
-#include <exception>
 #include <iostream>
 #include <map>
 #include <sstream>
-#include <stdlib.h>
 #include <string>
 #include <vector>
+
+namespace sls {
 
 using VectorString = std::vector<std::string>;
 
@@ -28,14 +27,13 @@ template <typename T> class CmdProxy {
     size_t GetFunctionMapSize() { return function_map.size(); };
 
   private:
-    // Aliases to shorten code
-    using Fmap = std::map<std::string, std::string (CmdProxy::*)()>;
-    using Smap = std::map<std::string, std::string>;
+    using fmap_t = std::map<std::string, std::string (CmdProxy::*)()>;
+    using smap_t = std::map<std::string, std::string>;
 
     T det;
-    Fmap function_map;
-    Smap depreciated_function_map;
-    Smap help_map;
+    fmap_t function_map;
+    smap_t depreciated_function_map;
+    smap_t help_map;
 
     std::string command_;
     VectorString arguments_;
@@ -86,7 +84,8 @@ template <typename T> CmdProxy<T>::CmdProxy(int multi_id) : det(multi_id) {
 }
 
 template <typename T>
-std::string CmdProxy<T>::Call(std::string command, VectorString arg, int detector_id) {
+std::string CmdProxy<T>::Call(std::string command, VectorString arg,
+                              int detector_id) {
     // TODO! (Erik) investigate the effects of setReceiverOnline when not using
     // receiver. Seems ok...
     det.setOnline(true);
@@ -103,9 +102,7 @@ std::string CmdProxy<T>::Call(std::string command, VectorString arg, int detecto
     if (it != function_map.end()) {
         std::cout << ((*this).*(it->second))();
         return std::string();
-
     } else {
-        std::cout << "Command \"" << command << "\" not found in proxy\n";
         return command_;
     }
 }
@@ -249,4 +246,5 @@ template <typename T> std::string CmdProxy<T>::ExposureTime() {
 //     }
 //     return resultToString(det.tenGigabitEthernet(-1, detector_id_));
 // }
-#endif // MULTI_DETECTOR_CALLER_H
+
+} // namespace sls

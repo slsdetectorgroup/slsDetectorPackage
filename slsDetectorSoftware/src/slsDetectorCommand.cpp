@@ -676,16 +676,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>delayl</b> gets delay left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>delayl</b> gets delay left. Used in GOTTHARD, JUNGFRAU, MOENCH and CTB only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
     descrToFuncMap[i].m_pFuncName = "delayl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page timing
-   - <b>gatesl</b> gets number of gates left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "gatesl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
@@ -1700,7 +1693,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>flowcontrol_10g [delay]</b> Enables/disables 10 GbE flow control. 1 enables, 0 disables. Used for EIGER only. \c Returns \c (int)
+   - <b>flowcontrol_10g [delay]</b> Enables/disables 10 GbE flow control. 1 enables, 0 disables. Used for EIGER and JUNGFRAU only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "flowcontrol_10g";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -3076,7 +3069,7 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
         os << "txndelay_left port \n sets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right port \n sets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame port \n sets detector transmission delay of the entire frame" << std::endl;
-        os << "flowcontrol_10g port \n sets flow control for 10g for eiger" << std::endl;
+        os << "flowcontrol_10g port \n sets flow control for 10g for eiger and jungfrau" << std::endl;
         os << "zmqport port \n sets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. "
               "Use single-detector command to set individually or multi-detector command to calculate based on port for the rest."
               "Must restart streaming in client with new port from gui/external gui"
@@ -3116,7 +3109,7 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
         os << "txndelay_left \n gets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right \n gets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame \n gets detector transmission delay of the entire frame" << std::endl;
-        os << "flowcontrol_10g \n gets flow control for 10g for eiger" << std::endl;
+        os << "flowcontrol_10g \n gets flow control for 10g for eiger and jungfrau" << std::endl;
         os << "zmqport \n gets the 0MQ (TCP) port of the client to where final data is streamed to" << std::endl;
         os << "rx_zmqport \n gets the 0MQ (TCP) port of the receiver from where data is streamed from" << std::endl;
         os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
@@ -4581,8 +4574,6 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action, 
         index = FRAME_PERIOD;
     else if (cmd == "delayl")
         index = DELAY_AFTER_TRIGGER;
-    else if (cmd == "gatesl")
-        index = GATES_NUMBER;
     else if (cmd == "framesl")
         index = FRAME_NUMBER;
     else if (cmd == "cyclesl")

@@ -524,7 +524,8 @@ int Server_SendResult(int fileDes, intType itype, int update, void* retval, int 
 
 void getMacAddressinString(char* cmac, int size, uint64_t mac) {
 	memset(cmac, 0, size);
-	sprintf(cmac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((mac>>40)&0xFF),
+	sprintf(cmac,"%02x:%02x:%02x:%02x:%02x:%02x",
+		(unsigned int)((mac>>40)&0xFF),
 		(unsigned int)((mac>>32)&0xFF),
 		(unsigned int)((mac>>24)&0xFF),
 		(unsigned int)((mac>>16)&0xFF),

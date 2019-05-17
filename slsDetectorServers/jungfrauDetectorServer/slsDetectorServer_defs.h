@@ -4,24 +4,36 @@
 
 
 #define MIN_REQRD_VRSN_T_RD_API     0x171220
-#define REQRD_FRMWR_VRSN            0x181206 // temp bug fix from last version, timing mode is backwards compatible
+#define REQRD_FRMWR_VRSN            0x190509
 
-#define BOARD_JUNGFRAU_TYPE         (8)
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
 /* Struct Definitions */
-typedef struct ip_header_struct {
-	uint16_t     ip_len;
-	uint8_t      ip_tos;
-	uint8_t      ip_ihl:4 ,ip_ver:4;
-	uint16_t     ip_offset:13,ip_flag:3;
-	uint16_t     ip_ident;
-	uint16_t     ip_chksum;
-	uint8_t      ip_protocol;
-	uint8_t      ip_ttl;
-	uint32_t     ip_sourceip;
-	uint32_t     ip_destip;
-} ip_header;
+typedef struct udp_header_struct {
+	uint32_t	udp_destmac_msb;
+	uint16_t	udp_srcmac_msb;
+	uint16_t	udp_destmac_lsb;
+	uint32_t	udp_srcmac_lsb;
+	uint8_t		ip_tos;
+	uint8_t		ip_ihl: 4, ip_ver: 4;
+	uint16_t	udp_ethertype;
+	uint16_t	ip_identification;
+	uint16_t	ip_totallength;
+	uint8_t		ip_protocol;
+	uint8_t		ip_ttl;
+	uint16_t	ip_fragmentoffset: 13, ip_flags: 3;
+	uint16_t	ip_srcip_msb;
+	uint16_t	ip_checksum;
+	uint16_t	ip_destip_msb;
+	uint16_t	ip_srcip_lsb;
+	uint16_t	udp_srcport;
+	uint16_t	ip_destip_lsb;
+	uint16_t	udp_checksum;
+	uint16_t	udp_destport;
+} udp_header;
+
+#define IP_HEADER_SIZE	20
+
 
 /* Enums */
 enum CLK_SPEED_INDEX		{FULL_SPEED, HALF_SPEED, QUARTER_SPEED};
@@ -36,7 +48,7 @@ enum DACINDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF
 								480,	/* VREF_DS */		\
 								420		/* VREF_COMP */		\
 							};
-enum NETWORKINDEX           { TXN_FRAME };
+enum NETWORKINDEX           { TXN_FRAME, FLOWCTRL_10G };
 
 /* Hardware Definitions */
 #define NCHAN 						(256 * 256)
@@ -46,7 +58,6 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define DYNAMIC_RANGE				(16)
 #define NUM_BYTES_PER_PIXEL			(DYNAMIC_RANGE / 8)
 #define DATA_BYTES					(NCHIP * NCHAN * NUM_BYTES_PER_PIXEL)
-#define IP_PACKETSIZE				(0x2052)
 #define CLK_RUN						(40)	/* MHz */
 #define CLK_SYNC					(20)	/* MHz */
 
@@ -77,19 +88,21 @@ enum NETWORKINDEX           { TXN_FRAME };
 #define MAX_STORAGE_CELL_DLY_NS_VAL	((ASIC_CTRL_EXPSRE_TMR_MSK >> ASIC_CTRL_EXPSRE_TMR_OFST) * ASIC_CTRL_EXPSRE_TMR_STEPS)
 #define ACQ_TIME_MIN_CLOCK          (2)
 
+#define SAMPLE_ADC_FULL_SPEED		(SAMPLE_ADC_HALF_SPEED) 
 #define SAMPLE_ADC_HALF_SPEED	 	(SAMPLE_DECMT_FACTOR_2_VAL + SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x1000 */
 #define SAMPLE_ADC_QUARTER_SPEED 	(SAMPLE_DECMT_FACTOR_4_VAL + SAMPLE_DGTL_SAMPLE_8_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL + SAMPLE_ADC_SAMPLE_0_VAL)	/* 0x2810 */
-#define CONFIG_HALF_SPEED           (CONFIG_TDMA_DISABLE_VAL + CONFIG_HALF_SPEED_20MHZ_VAL + CONFIG_OPRTN_MDE_1_X_10GBE_VAL) /**0x100000 */
-#define CONFIG_QUARTER_SPEED        (CONFIG_TDMA_DISABLE_VAL + CONFIG_QUARTER_SPEED_10MHZ_VAL + CONFIG_OPRTN_MDE_1_X_10GBE_VAL)
+
+#define ADC_OFST_FULL_SPEED_VAL		(0x20)//(0x1f) //(0x20)
 #define ADC_OFST_HALF_SPEED_VAL		(0x20)//(0x1f) //(0x20)
 #define ADC_OFST_QUARTER_SPEED_VAL	(0x0f) //(0x0f)
+
+#define ADC_PHASE_FULL_SPEED 		(0x2D) //45
 #define ADC_PHASE_HALF_SPEED 		(0x2D) //45
 #define ADC_PHASE_QUARTER_SPEED 	(0x2D) //45
+
 #define ADC_PORT_INVERT_VAL         (0x5A5A5A5A)//(0x453b2a9c)
 #define MAX_PHASE_SHIFTS			(160)
 
-/* MSB & LSB DEFINES */
-#define MSB_OF_64_BIT_REG_OFST		(32)
-#define LSB_OF_64_BIT_REG_OFST		(0)
-#define BIT_32_MSK					(0xFFFFFFFF)
 
+#define BIT16_MASK					(0xFFFF)
+#define UDP_IP_HEADER_LENGTH_BYTES	(28)

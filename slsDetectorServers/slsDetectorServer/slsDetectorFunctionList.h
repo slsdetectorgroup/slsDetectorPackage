@@ -13,6 +13,7 @@ Here are the definitions, but the actual implementation should be done for each 
 
 ****************************************************/
 
+enum interfaceType {OUTER, INNER};
 
 // basic tests
 int			isFirmwareCheckDone();
@@ -213,6 +214,11 @@ int         getExtSignal();
 // configure mac
 #ifdef GOTTHARDD
 void        calcChecksum(mac_conf* mac, int sourceip, int destip);
+#elif JUNGFRAUD
+void setNumberofUDPInterfaces(int val);
+void selectPrimaryInterface(int val);
+void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport);
+void calcChecksum(udp_header* udp);
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 long int 	calcChecksum(int sourceip, int destip);
@@ -285,6 +291,7 @@ int			resetCounterBlock(int startACQ);
 
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware
 #elif JUNGFRAUD
+void 		initReadoutConfiguration();
 int         powerChip (int on);
 int         autoCompDisable(int on);
 void        configureASICTimer();

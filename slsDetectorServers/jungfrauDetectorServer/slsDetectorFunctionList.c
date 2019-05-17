@@ -34,7 +34,6 @@ int highvoltage = 0;
 int dacValues[NDAC] = {0};
 int adcPhase = 0;
 
-
 int isFirmwareCheckDone() {
 	return firmware_check_done;
 }
@@ -172,8 +171,8 @@ int checkType() {
     return OK;
 #endif
 	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
-	if (type != BOARD_JUNGFRAU_TYPE){
-			FILE_LOG(logERROR, ("This is not a Jungfrau Server (read %d, expected %d)\n", type, BOARD_JUNGFRAU_TYPE));
+	if (type != JUNGFRAU){
+			FILE_LOG(logERROR, ("This is not a Jungfrau Server (read %d, expected %d)\n", type, JUNGFRAU));
 			return FAIL;
 		}
 
@@ -423,10 +422,10 @@ void setupDetector() {
 	resetCore();
 
 	alignDeserializer();
-
-
 	configureASICTimer();
 	bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
+
+	initReadoutConfiguration();
 
 	//Initialization of acquistion parameters
 	setSettings(DEFAULT_SETTINGS);
@@ -654,12 +653,12 @@ int64_t getTimeLeft(enum timerIndex ind){
 		retval = get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-3 * CLK_SYNC);
 		FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
 		break;
-/*
+
 	case DELAY_AFTER_TRIGGER:
-		retval = get64BitReg(xxx) / (1E-3 * CLK_SYNC);
+		retval = get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
 		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
 		break;
-*/
+
 	case CYCLES_NUMBER:
 		retval = get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
 		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
@@ -983,40 +982,106 @@ enum externalCommunicationMode getTiming() {
 
 
 /* configure mac */
+void setNumberofUDPInterfaces(int val) {
+	uint32_t addr = CONFIG_REG;
 
+	// enable 2 interfaces
+	if (val > 1) {
+		FILE_LOG(logINFOBLUE, ("Setting #Interfaces: 2\n"));
+		bus_w(addr, bus_r(addr) | CONFIG_OPRTN_MDE_2_X_10GbE_MSK);
+	} 
+	// enable only 1 interface
+	else  {
+		FILE_LOG(logINFOBLUE, ("Setting #Interfaces: 1\n"));
+		bus_w(addr, bus_r(addr) &~ CONFIG_OPRTN_MDE_2_X_10GbE_MSK);
+	}
+}
 
-long int calcChecksum(int sourceip, int destip) {
-	ip_header ip;
-	ip.ip_ver            = 0x4;
-	ip.ip_ihl            = 0x5;
-	ip.ip_tos            = 0x0;
-	ip.ip_len            = IP_PACKETSIZE;
-	ip.ip_ident          = 0x0000;
-	ip.ip_flag           = 0x2; 	//not nibble aligned (flag& offset
-	ip.ip_offset         = 0x000;
-	ip.ip_ttl            = 0x40;
-	ip.ip_protocol       = 0x11;
-	ip.ip_chksum         = 0x0000 ; // pseudo
-	ip.ip_sourceip       = sourceip;
-	ip.ip_destip         = destip;
+void selectPrimaryInterface(int val) {
+	uint32_t addr = CONFIG_REG;
 
-	int count = sizeof(ip);
+	// inner (user input: 1)
+	if (val == 1) {
+		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 1 (Inner)\n"));
+		bus_w(addr, bus_r(addr) | CONFIG_INNR_PRIMRY_INTRFCE_MSK);
+	}
+	// outer (user input: 2)
+	else {
+		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 2 (Outer)\n"));
+		bus_w(addr, bus_r(addr) &~ CONFIG_INNR_PRIMRY_INTRFCE_MSK);
+	}
+}
 
-	unsigned short *addr;
-    addr = (unsigned short*) &(ip); /* warning: assignment from incompatible pointer type */
+void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport) {
+	
+	// start addr
+	uint32_t addr = (type == INNER ? RXR_ENDPOINT_INNER_START_REG : RXR_ENDPOINT_OUTER_START_REG);
+	// calculate rxr endpoint offset
+	addr += (iRxEntry * RXR_ENDPOINT_OFST);
+	// get struct memory
+	udp_header *udp = (udp_header*) (CSP0BASE + addr * 2);
+	memset(udp, 0, sizeof(udp_header));
 
+	//  mac addresses	
+	// msb (32) + lsb (16)
+	udp->udp_destmac_msb	= ((destmac >> 16) & BIT32_MASK);
+	udp->udp_destmac_lsb	= ((destmac >> 0) & BIT16_MASK);
+	// msb (16) + lsb (32)
+	udp->udp_srcmac_msb		= ((sourcemac >> 32) & BIT16_MASK);
+	udp->udp_srcmac_lsb		= ((sourcemac >> 0) & BIT32_MASK);
+
+	// ip addresses
+	udp->ip_srcip_msb		= ((sourceip >> 16) & BIT16_MASK);
+	udp->ip_srcip_lsb		= ((sourceip >> 0) & BIT16_MASK);	
+	udp->ip_destip_msb		= ((destip >> 16) & BIT16_MASK);
+	udp->ip_destip_lsb		= ((destip >> 0) & BIT16_MASK);	
+
+	// source port
+	udp->udp_srcport 		= sourceport;
+	udp->udp_destport		= destport;
+
+	// other defines
+	udp->udp_ethertype		= 0x800;
+	udp->ip_ver				= 0x4;
+	udp->ip_ihl				= 0x5;
+	udp->ip_flags			= 0x2; //FIXME
+	udp->ip_ttl           	= 0x40;
+	udp->ip_protocol      	= 0x11;
+	// total length is redefined in firmware
+
+	calcChecksum(udp);
+}
+
+void calcChecksum(udp_header* udp) {
+	int count = IP_HEADER_SIZE;
 	long int sum = 0;
-    while( count > 1 )  {
+	
+	// start at ip_tos as the memory is not continous for ip header
+	uint16_t *addr = (uint16_t*) (&(udp->ip_tos)); 
+
+	sum += *addr++;
+	count -= 2;
+
+	// ignore ethertype (from udp header)
+	addr++;
+
+	// from identification to srcip_lsb
+    while( count > 2 )  {
 		sum += *addr++;
 		count -= 2;
 	}
+
+	// ignore src udp port (from udp header)
+	addr++;
+	
 	if (count > 0)
 	    sum += *addr;                     // Add left-over byte, if any
-	while (sum>>16)
+	while (sum >> 16)
 	    sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
-	long int checksum = (~sum) & 0xffff;
-	FILE_LOG(logINFO, ("IP checksum is 0x%lx\n",checksum));
-	return checksum;
+	long int checksum = sum & 0xffff;
+	checksum += UDP_IP_HEADER_LENGTH_BYTES;
+	FILE_LOG(logINFO, ("\tIP checksum is 0x%lx\n",checksum));
+	udp->ip_checksum = checksum;
 }
 
 
@@ -1034,6 +1099,7 @@ int configureMAC(int numInterfaces, int selInterface,
 	FILE_LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
 	FILE_LOG(logINFO, ("\tInterface   : %d\n\n", selInterface));
 
+	FILE_LOG(logINFO, ("\tInner\n"));
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
 	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1059,6 +1125,7 @@ int configureMAC(int numInterfaces, int selInterface,
 	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
 
 	uint32_t sourceport2  =  DEFAULT_TX_UDP_PORT + 1;
+	FILE_LOG(logINFO, ("\tOuter\n"));
 	FILE_LOG(logINFO, ("\tSource IP2  : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip2>>24)&0xff,(sourceip2>>16)&0xff,(sourceip2>>8)&0xff,(sourceip2)&0xff, sourceip2));
 	FILE_LOG(logINFO, ("\tSource MAC2 : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1083,35 +1150,16 @@ int configureMAC(int numInterfaces, int selInterface,
 			(long  long unsigned int)destmac2));
 	FILE_LOG(logINFO, ("\tDest. Port2 : %d \t\t\t(0x%08x)\n",udpport2, udpport2));
 
-	long int checksum=calcChecksum(sourceip, destip);
-	bus_w(TX_IP_REG, sourceip);
-	bus_w(RX_IP_REG, destip);
+	// default one rxr entry (others not yet implemented in client yet)
+	int iRxEntry = 0;
+	// top
+	setupHeader(iRxEntry, INNER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+	// bottom
+	setupHeader(iRxEntry, OUTER, destip2, destmac2, udpport2, sourcemac2, sourceip2, sourceport2);
 
-	uint32_t val = 0;
+	setNumberofUDPInterfaces(numInterfaces);
+	selectPrimaryInterface(selInterface);
 
-	val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-	bus_w(TX_MAC_LSB_REG, val);
-	FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
-
-	val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-	bus_w(TX_MAC_MSB_REG,val);
-	FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
-
-	val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-	bus_w(RX_MAC_LSB_REG, val);
-	FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
-
-	val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-	bus_w(RX_MAC_MSB_REG, val);
-	FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
-
-	val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
-			((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
-	bus_w(UDP_PORT_REG, val);
-	FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
-
-	bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
-	FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
 	cleanFifos();
 	resetCore();
 	alignDeserializer();
@@ -1121,20 +1169,20 @@ int configureMAC(int numInterfaces, int selInterface,
 
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
-	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", pos[0], pos[1]));
+	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", pos[X], pos[Y]));
 
 	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_X_MSK)));
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK));
-	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[0] << COORD_0_X_OFST) & COORD_0_X_MSK))
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[X] << COORD_0_X_OFST) & COORD_0_X_MSK));
+	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[X] << COORD_0_X_OFST) & COORD_0_X_MSK))
 		ret = FAIL;
 
 	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_Y_MSK)));
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
-	if ((bus_r(COORD_0_REG) &  COORD_0_Y_MSK) != ((pos[1] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
+	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[Y] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
+	if ((bus_r(COORD_0_REG) &  COORD_0_Y_MSK) != ((pos[Y] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
 		ret = FAIL;
 
 	if (ret == OK) {
-		FILE_LOG(logINFO, ("Position set to [%d, %d]\n", pos[0], pos[1]));
+		FILE_LOG(logINFO, ("Position set to [%d, %d]\n", pos[X], pos[Y]));
 	}
 	return ret;
 }
@@ -1143,6 +1191,42 @@ int setDetectorPosition(int pos[]) {
 
 /* jungfrau specific - powerchip, autocompdisable, asictimer, clockdiv, pll, flashing fpga */
 
+void initReadoutConfiguration() {
+
+	FILE_LOG(logINFO, ("Initializing Readout Configuration:\n"
+							"\t Reset readout Timer\n"
+							"\t 1 x 10G mode\n"
+							"\t outer interface is primary\n"
+							"\t half speed\n"
+							"\t TDMA disabled, 0 as TDMA slot\n"
+							"\t Ethernet overflow disabled\n"
+							"\t Reset Round robin entries\n"));
+	
+	uint32_t val = 0;
+	// reset readouttimer
+	val &= ~CONFIG_RDT_TMR_MSK;
+	// 1 x 10G mode
+	val &= ~CONFIG_OPRTN_MDE_2_X_10GbE_MSK;
+	// outer interface
+	val &= ~CONFIG_INNR_PRIMRY_INTRFCE_MSK;
+	// half speed
+	val &= ~CONFIG_READOUT_SPEED_MSK;
+	val |= CONFIG_HALF_SPEED_20MHZ_VAL;
+	// tdma disable
+	val &= ~CONFIG_TDMA_ENABLE_MSK;
+	// tdma slot 0
+	val &= ~CONFIG_TDMA_TIMESLOT_MSK;
+	// no ethernet overflow
+	val &= ~CONFIG_ETHRNT_FLW_CNTRL_MSK;
+	bus_w(CONFIG_REG, val);
+
+	val = bus_r(CONTROL_REG);
+	// reset (addtional round robin entry) rx endpoints num
+	val &= CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK;
+	// reset start of round robin entry to 0
+	val &= CONTROL_RX_ENDPTS_START_MSK;
+	bus_w(CONTROL_REG, val);
+}
 
 
 int powerChip (int on){
@@ -1191,62 +1275,56 @@ void setClockDivider(int val) {
         if(runBusy())
             stopStateMachine();
 
-        uint32_t txndelay_msk = 0;
+        switch(val) {
 
-        switch(val){
+        case FULL_SPEED:
+            FILE_LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
 
-        // todo in firmware, for now setting half speed
-        case FULL_SPEED://40
-            FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
+            bus_w(SAMPLE_REG, SAMPLE_ADC_FULL_SPEED);
+			FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-            FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED));
-            bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+            bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | CONFIG_FULL_SPEED_40MHZ_VAL);
+ 			FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-            txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-            FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk));
-            bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
+            bus_w(ADC_OFST_REG, ADC_OFST_FULL_SPEED_VAL);
+			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
-            FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL));
-            bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-
-            FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
-            setAdcPhase(ADC_PHASE_HALF_SPEED, 0);
-
+            setAdcPhase(ADC_PHASE_FULL_SPEED, 0);
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_FULL_SPEED));
             break;
+
         case HALF_SPEED:
             FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
 
-            FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_HALF_SPEED));
             bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
+			FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-            txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-            FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_HALF_SPEED | txndelay_msk));
-            bus_w(CONFIG_REG, CONFIG_HALF_SPEED | txndelay_msk);
+            bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | CONFIG_HALF_SPEED_20MHZ_VAL);
+ 			FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-            FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_HALF_SPEED_VAL));
             bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
+			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
-            FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
             setAdcPhase(ADC_PHASE_HALF_SPEED, 0);
-
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
             break;
+
         case QUARTER_SPEED:
             FILE_LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
 
-            FILE_LOG(logINFO, ("\tSetting Sample Reg to 0x%x\n", SAMPLE_ADC_QUARTER_SPEED));
             bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
+			FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-            txndelay_msk = (bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK); // read config tdma timeslot value
-            FILE_LOG(logINFO, ("\tSetting Config Reg to 0x%x\n", CONFIG_QUARTER_SPEED | txndelay_msk));
-            bus_w(CONFIG_REG, CONFIG_QUARTER_SPEED | txndelay_msk);
+            bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | CONFIG_QUARTER_SPEED_10MHZ_VAL);
+ 			FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-            FILE_LOG(logINFO, ("\tSetting ADC Ofst Reg to 0x%x\n", ADC_OFST_QUARTER_SPEED_VAL));
             bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
+			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
-            FILE_LOG(logINFO, ("\tSetting ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED));
             setAdcPhase(ADC_PHASE_QUARTER_SPEED, 0);
-
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED));
             break;
+
         }
     }
 }
@@ -1410,22 +1488,38 @@ void alignDeserializer() {
 
 
 int setNetworkParameter(enum NETWORKINDEX mode, int value) {
-    if (mode != TXN_FRAME)
-        return -1;
+	switch(mode) {
 
-    if (value >= 0) {
-        FILE_LOG(logINFO, ("Setting transmission delay: %d\n", value));
-        bus_w(CONFIG_REG, (bus_r(CONFIG_REG) &~CONFIG_TDMA_TIMESLOT_MSK)
-                | (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
-        if (value == 0)
-            bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_TDMA_MSK);
-        else
-            bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_TDMA_MSK);
-        FILE_LOG(logDEBUG1, ("Transmission delay read %d\n",
-                ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST)));
-    }
+		case TXN_FRAME:
+			if (value >= 0) {
+				FILE_LOG(logINFO, ("Setting transmission delay: %d\n", value));
+				bus_w(CONFIG_REG, (bus_r(CONFIG_REG) &~CONFIG_TDMA_TIMESLOT_MSK)
+						| (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
+				if (value == 0) {
+					FILE_LOG(logINFO, ("Switching off transmission delay\n"));
+					bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_TDMA_ENABLE_MSK);
+				} else {
+					FILE_LOG(logINFO, ("Switching on transmission delay\n"));
+					bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_TDMA_ENABLE_MSK);
+				}
+				FILE_LOG(logDEBUG1, ("Transmission delay read %d\n",
+						((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST)));
+			}
+			return ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST);
+			
+		case FLOW_CONTROL_10G:
+				if (value == 0) {
+					FILE_LOG(logINFO, ("Switching off 10G flow control\n"));
+					bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_ETHRNT_FLW_CNTRL_MSK);
+				} else {
+					FILE_LOG(logINFO, ("Switching on 10G flow control\n"));
+					bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_ETHRNT_FLW_CNTRL_MSK);
+				}
+			return ((bus_r(CONFIG_REG) & CONFIG_ETHRNT_FLW_CNTRL_MSK) >> CONFIG_ETHRNT_FLW_CNTRL_OFST);
 
-    return ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST);
+		default:
+			return -1;	
+	}
 }
 
 

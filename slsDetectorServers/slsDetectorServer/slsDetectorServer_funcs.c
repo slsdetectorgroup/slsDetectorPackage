@@ -1719,13 +1719,6 @@ int get_time_left(int file_des) {
 
     // only get
     // check index
-#ifdef JUNGFRAUD
-    if (ind == DELAY_AFTER_TRIGGER) {
-        ret = FAIL;
-        sprintf(mess,"Timer Left Index (%d) is not implemented for this release.\n", (int)ind);
-        FILE_LOG(logERROR,(mess));
-    }
-#endif
     if (ret == OK) {
         switch(ind) {
 #ifdef EIGERD
@@ -2417,9 +2410,9 @@ int configure_mac(int file_des) {
 #endif
 #if defined(JUNGFRAUD) || defined(EIGERD)
 	int pos[2] = {0, 0};
-	sscanf(args[12], "%x", 	&pos[0]);
-	sscanf(args[13], "%x", 	&pos[1]);
-	FILE_LOG(logDEBUG1, ("Position: [%d, %d]\n", pos[0], pos[1]));
+	sscanf(args[12], "%x", 	&pos[X]);
+	sscanf(args[13], "%x", 	&pos[Y]);
+	FILE_LOG(logDEBUG1, ("Position: [%d, %d]\n", pos[X], pos[Y]));
 #endif
 
 
@@ -3227,10 +3220,12 @@ int set_network_parameter(int file_des) {
 	if ((value == -1) || (Server_VerifyLock() == OK)) {
 		// check index
 		switch (mode) {
-#ifdef EIGERD
+
         case FLOW_CONTROL_10G:
         	serverIndex = FLOWCTRL_10G;
             break;
+
+#ifdef EIGERD
 		case DETECTOR_TXN_DELAY_LEFT:
 			serverIndex = TXN_LEFT;
 			break;

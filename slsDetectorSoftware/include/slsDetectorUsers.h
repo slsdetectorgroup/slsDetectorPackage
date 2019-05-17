@@ -521,7 +521,7 @@ public:
 	int setHighVoltage(int i = -1, int detPos = -1);
 
 	/**
-	 * Set 10GbE Flow Control (Eiger)
+	 * Set 10GbE Flow Control (Eiger and Jungfrau)
 	 * @param enable 1 to set, 0 to unset, -1 gets
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns 10GbE flow Control

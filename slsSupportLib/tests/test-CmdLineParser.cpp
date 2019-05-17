@@ -2,18 +2,126 @@
 #include "catch.hpp"
 #include <exception>
 #include <string>
-//tests to add
-//help for all docs
-//command for all depreciated commands
+// tests to add
+// help for all docs
+// command for all depreciated commands
 
-TEST_CASE("Parse with no arguments results in no command and default id") {
-    //build up argc and argv
-    //first argument is the command used to call the binary
+using vs = std::vector<std::string>;
+
+SCENARIO("Construction", "[support]") {
+    GIVEN("A default constructed CmdLineParser") {
+        CmdLineParser p;
+        THEN("The state of the object is valid") {
+            REQUIRE(p.detector_id() == -1);
+            REQUIRE(p.multi_id() == 0);
+            REQUIRE(p.command().empty());
+            REQUIRE(p.arguments().empty());
+            REQUIRE(p.argv().empty());
+            REQUIRE(p.argv().data() == nullptr);
+        }
+    }
+}
+
+SCENARIO("Parsing a string with the command line parser", "[support]") {
+    GIVEN("A CmdLineParser") {
+        CmdLineParser p;
+        WHEN("Parsing an empty string") {
+            std::string s;
+            p.Parse(s);
+            THEN("command and arguments are empty") {
+                REQUIRE(p.detector_id() == -1);
+                REQUIRE(p.multi_id() == 0);
+                REQUIRE(p.command().empty());
+                REQUIRE(p.arguments().empty());
+                REQUIRE(p.argv().empty());
+            }
+        }
+        WHEN("Parsing a string with a single command") {
+            std::string s = "vrf";
+            p.Parse(s);
+            THEN("command is assigned and id's remain default") {
+                REQUIRE(p.command() == "vrf");
+                REQUIRE(p.detector_id() == -1);
+                REQUIRE(p.multi_id() == 0);
+                REQUIRE(p.arguments().empty());
+                REQUIRE(p.argv().size() == 1);
+            }
+        }
+        WHEN("Parsing a string with command and value") {
+            std::string s = "vthreshold 1500";
+            p.Parse(s);
+            THEN("cmd and value are assigned and id's remain default") {
+                REQUIRE(p.command() == "vthreshold");
+                REQUIRE(p.arguments()[0] == "1500");
+                REQUIRE(p.arguments().size() == 1);
+                REQUIRE(p.detector_id() == -1);
+                REQUIRE(p.multi_id() == 0);
+            }
+        }
+        WHEN("Parsing a string with detector id and command") {
+            vs arg{"9:vcp", "53:vthreshold", "128:vtrim", "5:threshold"};
+            std::vector<int> det_id{9, 53, 128, 5};
+            vs res{"vcp", "vthreshold", "vtrim", "threshold"};
+
+            THEN("Values are correctly decoded") {
+                for (size_t i = 0; i != arg.size(); ++i) {
+                    p.Parse(arg[i]);
+                    REQUIRE(p.detector_id() == det_id[i]);
+                    REQUIRE(p.multi_id() == 0);
+                    REQUIRE(p.command() == res[i]);
+                    REQUIRE(p.arguments().empty());
+                    REQUIRE(p.argv().size() == 1);
+                }
+            }
+        }
+        WHEN("Parsing a string with multi_id detector id and command") {
+            vs arg{"8-12:vrf", "0-52:vcmp", "19-10:vtrim", "31-127:threshold"};
+            std::vector<int> det_id{12, 52, 10, 127};
+            std::vector<int> multi_id{8, 0, 19, 31};
+            vs res{"vrf", "vcmp", "vtrim", "threshold"};
+
+            THEN("Values are correctly decoded") {
+                for (size_t i = 0; i != arg.size(); ++i) {
+                    p.Parse(arg[i]);
+                    REQUIRE(p.detector_id() == det_id[i]);
+                    REQUIRE(p.multi_id() == multi_id[i]);
+                    REQUIRE(p.command() == res[i]);
+                    REQUIRE(p.arguments().empty());
+                    REQUIRE(p.argv().size() == 1);
+                }
+            }
+        }
+
+        WHEN("Parsing string with cmd and multiple arguments") {
+            std::string s = "trimen 5000 6000 7000";
+            p.Parse(s);
+            THEN("cmd and args are correct") {
+                REQUIRE(p.command() == "trimen");
+                REQUIRE(p.arguments().size() == 3);
+                REQUIRE(p.arguments()[0] == "5000");
+                REQUIRE(p.arguments()[1] == "6000");
+                REQUIRE(p.arguments()[2] == "7000");
+            }
+        }
+
+        WHEN("Cliend id and or detector id cannot be decoded") {
+            vs arg{"o:cmd",     "-5:cmd",    "aedpva:cmd",
+                   "5-svc:vrf", "asv-5:cmd", "savc-asa:cmd"};
+            THEN("Parsing Throws") {
+                for (size_t i = 0; i != arg.size(); ++i) {
+                    REQUIRE_THROWS(p.Parse(arg[i]));
+                }
+            }
+        }
+    }
+}
+
+TEST_CASE("Parse with no arguments results in no command and default id",
+          "[support]") {
+    // build up argc and argv
+    // first argument is the command used to call the binary
     int argc = 1;
-    char *argv[argc];
-    char a0[] = "call";
-    argv[0] = static_cast<char *>(a0);
-
+    const char* const argv[]{"call"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -23,25 +131,11 @@ TEST_CASE("Parse with no arguments results in no command and default id") {
     REQUIRE(p.arguments().empty());
 }
 
-TEST_CASE("Parse empty string") {
-    std::string s;
-    CmdLineParser p;
-    p.Parse(s);
-
-    REQUIRE(p.detector_id() == -1);
-    REQUIRE(p.multi_id() == 0);
-    REQUIRE(p.command().empty());
-    REQUIRE(p.arguments().empty());
-}
-
-TEST_CASE("Parse a command without client id and detector id results in default") {
+TEST_CASE(
+    "Parse a command without client id and detector id results in default",
+    "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char*const argv[]{"caller", "vrf"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -51,41 +145,12 @@ TEST_CASE("Parse a command without client id and detector id results in default"
     REQUIRE(p.arguments().empty());
 }
 
-TEST_CASE("Parse a string without client id and detector id results in default") {
-    std::string s = "vrf";
-    CmdLineParser p;
-    p.Parse(s);
-
-    REQUIRE(p.detector_id() == -1);
-    REQUIRE(p.multi_id() == 0);
-    REQUIRE(p.command() == "vrf");
-    REQUIRE(p.arguments().empty());
-}
-
-TEST_CASE("Parse a command with value but without client or detector id") {
+TEST_CASE("Parse a command with value but without client or detector id",
+          "[support]") {
     int argc = 3;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "vrf";
-    char a2[] = "3000";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-    argv[2] = static_cast<char *>(a2);
-
+    const char* const argv[]{"caller", "vrf", "3000"};
     CmdLineParser p;
     p.Parse(argc, argv);
-
-    REQUIRE(p.detector_id() == -1);
-    REQUIRE(p.multi_id() == 0);
-    REQUIRE(p.command() == "vrf");
-    REQUIRE(p.arguments().size() == 1);
-    REQUIRE(p.arguments()[0] == "3000");
-}
-TEST_CASE("Parse a string with value but without client or detector id") {
-    std::string s = "vrf 3000\n";
-
-    CmdLineParser p;
-    p.Parse(s);
 
     REQUIRE(p.detector_id() == -1);
     REQUIRE(p.multi_id() == 0);
@@ -96,11 +161,7 @@ TEST_CASE("Parse a string with value but without client or detector id") {
 
 TEST_CASE("Decodes position") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "7:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
+    const char*const argv[]{"caller", "7:vrf"};
 
     CmdLineParser p;
     p.Parse(argc, argv);
@@ -110,26 +171,10 @@ TEST_CASE("Decodes position") {
     REQUIRE(p.command() == "vrf");
     REQUIRE(p.arguments().empty());
 }
-TEST_CASE("Decodes position from string") {
-    std::string s = "7:vrf\n";
 
-    CmdLineParser p;
-    p.Parse(s);
-
-    REQUIRE(p.detector_id() == 7);
-    REQUIRE(p.multi_id() == 0);
-    REQUIRE(p.command() == "vrf");
-    REQUIRE(p.arguments().empty());
-}
-
-TEST_CASE("Decodes double digit position") {
+TEST_CASE("Decodes double digit position", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "73:vcmp";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char* const argv[]{"caller", "73:vcmp"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -139,26 +184,9 @@ TEST_CASE("Decodes double digit position") {
     REQUIRE(p.arguments().empty());
 }
 
-TEST_CASE("Decodes double digit position from string") {
-
-    std::string s = "73:vcmp";
-    CmdLineParser p;
-    p.Parse(s);
-
-    REQUIRE(p.detector_id() == 73);
-    REQUIRE(p.multi_id() == 0);
-    REQUIRE(p.command() == "vcmp");
-    REQUIRE(p.arguments().empty());
-}
-
-TEST_CASE("Decodes position and id") {
+TEST_CASE("Decodes position and id", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "5-8:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char* const argv[]{"caller", "5-8:vrf"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -167,94 +195,34 @@ TEST_CASE("Decodes position and id") {
     REQUIRE(p.command() == "vrf");
     REQUIRE(p.arguments().empty());
 }
-TEST_CASE("Decodes position and id from string") {
-    std::string s = "5-8:vrf";
-    CmdLineParser p;
-    p.Parse(s);
 
-    REQUIRE(p.detector_id() == 8);
-    REQUIRE(p.multi_id() == 5);
-    REQUIRE(p.command() == "vrf");
-    REQUIRE(p.arguments().empty());
-}
-
-TEST_CASE("Double digit id") {
+TEST_CASE("Double digit id", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "56-8:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char *const argv[]{"caller", "56-8:vrf"};
     CmdLineParser p;
     p.Parse(argc, argv);
-
     REQUIRE(p.detector_id() == 8);
     REQUIRE(p.multi_id() == 56);
     REQUIRE(p.command() == "vrf");
     REQUIRE(p.arguments().empty());
 }
 
-TEST_CASE("Double digit id from string") {
-    std::string s = "56-8:vrf";
-    CmdLineParser p;
-    p.Parse(s);
-
-    REQUIRE(p.detector_id() == 8);
-    REQUIRE(p.multi_id() == 56);
-    REQUIRE(p.command() == std::string("vrf"));
-    REQUIRE(p.arguments().empty());
-}
-
-TEST_CASE("Calling with wrong id throws invalid_argument") {
-
+TEST_CASE("Calling with wrong id throws invalid_argument", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "asvldkn:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char *const argv[]{"caller", "asvldkn:vrf"};
     CmdLineParser p;
     CHECK_THROWS(p.Parse(argc, argv));
 }
-TEST_CASE("Calling with string with wrong id throws invalid_argument") {
-    std::string s = "asvldkn:vrf";
-    CmdLineParser p;
-    CHECK_THROWS(p.Parse(s));
-}
 
-TEST_CASE("Calling with wrong client throws invalid_argument") {
+TEST_CASE("Calling with wrong client throws invalid_argument", "[support]") {
     int argc = 2;
-    char *argv[argc];
-    char a0[] = "call";
-    char a1[] = "lki-3:vrf";
-    argv[0] = static_cast<char *>(a0);
-    argv[1] = static_cast<char *>(a1);
-
+    const char *const argv[]{"caller", "lki-3:vrf"};
     CmdLineParser p;
     CHECK_THROWS(p.Parse(argc, argv));
 }
-TEST_CASE("Calling with string with wrong client throws invalid_argument") {
-    std::string s = "lki-3:vrf";
-    CmdLineParser p;
-    CHECK_THROWS(p.Parse(s));
-}
 
-TEST_CASE("Parses string with two arguments") {
-    std::string s = "trimen 3000 4000\n";
+TEST_CASE("Build up argv", "[support]") {
     CmdLineParser p;
-    p.Parse(s);
-
-    REQUIRE("trimen" == p.command());
-    REQUIRE("3000" == p.arguments()[0]);
-    REQUIRE("4000" == p.arguments()[1]);
-    REQUIRE(p.arguments().size() == 2);
-}
-
-TEST_CASE("Build up argv"){
-    CmdLineParser p;
-    // p.argv();
     REQUIRE(p.argv().empty());
     REQUIRE(p.argv().data() == nullptr);
 
@@ -262,5 +230,4 @@ TEST_CASE("Build up argv"){
     p.Parse(s);
     REQUIRE(p.argv().data() != nullptr);
     REQUIRE(p.argv().size() == 3);
-
 }

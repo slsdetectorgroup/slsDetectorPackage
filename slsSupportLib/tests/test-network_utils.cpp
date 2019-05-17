@@ -11,9 +11,9 @@ using namespace sls;
 
 TEST_CASE("Convert mac address using classes", "[support]") {
 
-    std::vector<uint64_t> vec_addr{346856806822, 346856806852, 262027939863028};
+    std::vector<uint64_t> vec_addr{346856806822, 346856806852, 262027939863028,0, 281474976710655};
     std::vector<std::string> vec_ans{"00:50:c2:46:d9:a6", "00:50:c2:46:d9:c4",
-                                     "ee:50:22:46:d9:f4"};
+                                     "ee:50:22:46:d9:f4", "00:00:00:00:00:00", "ff:ff:ff:ff:ff:ff"};
     for (size_t i = 0; i != vec_addr.size(); ++i) {
         auto mac0 = MacAddr(vec_addr[i]);
         auto mac1 = MacAddr(vec_ans[i]);

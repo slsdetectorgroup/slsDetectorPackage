@@ -20,9 +20,7 @@ IpAddr::IpAddr(const std::string &address) {
     inet_pton(AF_INET, address.c_str(), &addr_);
 }
 
-IpAddr::IpAddr(const char *address) { 
-    inet_pton(AF_INET, address, &addr_); 
-}
+IpAddr::IpAddr(const char *address) { inet_pton(AF_INET, address, &addr_); }
 
 std::string IpAddr::str() const {
     char ipstring[INET_ADDRSTRLEN]{};
@@ -31,9 +29,9 @@ std::string IpAddr::str() const {
 }
 std::string IpAddr::hex() const {
     std::ostringstream ss;
+    ss << std::hex << std::setfill('0');
     for (int i = 0; i != 4; ++i) {
-        ss << std::hex << std::setfill('0') << std::setw(2)
-           << ((addr_ >> i * 8) & 0xFF);
+        ss << std::setw(2) << ((addr_ >> i * 8) & 0xFF);
     }
     return ss.str();
 }
@@ -56,18 +54,14 @@ std::string MacAddr::to_hex(const char delimiter) const {
     for (int i = 32; i >= 0; i -= 8) {
         if (delimiter)
             ss << delimiter;
-        ss << ((addr_ >> i) & 0xFF);
+        ss << std::setw(2) << ((addr_ >> i) & 0xFF);
     }
     return ss.str();
 }
 
-std::string MacAddr::str() const { 
-    return to_hex(':'); 
-}
+std::string MacAddr::str() const { return to_hex(':'); }
 
-std::string MacAddr::hex() const { 
-    return to_hex(); 
-}
+std::string MacAddr::hex() const { return to_hex(); }
 
 std::ostream &operator<<(std::ostream &out, const IpAddr &addr) {
     return out << addr.str();

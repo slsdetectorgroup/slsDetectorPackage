@@ -14,25 +14,26 @@ template <typename T> class CmdProxy {
   public:
     explicit CmdProxy(int multi_id);
 
-    std::string Call(std::string cmd, VectorString arg, int detector_id);
+    std::string Call(const std::string &cmd, const VectorString &arg,
+                     int detector_id);
     void Help(VectorString commands);
     void PrintMappedFunctions();
     bool CommandExists(std::string command) {
-        return function_map.count(command);
+        return functions.count(command);
     };
     bool HelpExists(std::string command) { return help_map.count(command); };
     VectorString getAllCommands();
     T &getMultiDetector() { return det; };
     bool ReplaceIfDepreciated(std::string &command);
-    size_t GetFunctionMapSize() { return function_map.size(); };
+    size_t GetFunctionMapSize() { return functions.size(); };
 
   private:
     using fmap_t = std::map<std::string, std::string (CmdProxy::*)()>;
     using smap_t = std::map<std::string, std::string>;
 
     T det;
-    fmap_t function_map;
-    smap_t depreciated_function_map;
+    fmap_t functions;
+    smap_t depreciated_functions;
     smap_t help_map;
 
     std::string command_;
@@ -58,17 +59,17 @@ template <typename T> class CmdProxy {
 template <typename T> CmdProxy<T>::CmdProxy(int multi_id) : det(multi_id) {
 
     // map between strings and functions of the MultiDetectorCaller
-    function_map["exptime"] = &CmdProxy::ExposureTime;
-    // function_map["file_name"]   = &CmdProxy::FileName;
-    // function_map["file_write"]  = &CmdProxy::FileWrite;
-    // function_map["hostname"]    = &CmdProxy::Hostname;
-    // function_map["overwrite"]   = &CmdProxy::OverWrite;
-    // function_map["settingsdir"] = &CmdProxy::SettingsDir;
-    // function_map["tengiga"]     = &CmdProxy::TenGiga;
+    functions["exptime"] = &CmdProxy::ExposureTime;
+    // functions["file_name"]   = &CmdProxy::FileName;
+    // functions["file_write"]  = &CmdProxy::FileWrite;
+    // functions["hostname"]    = &CmdProxy::Hostname;
+    // functions["overwrite"]   = &CmdProxy::OverWrite;
+    // functions["settingsdir"] = &CmdProxy::SettingsDir;
+    // functions["tengiga"]     = &CmdProxy::TenGiga;
 
     // Functions that will be removed
-    depreciated_function_map["oldvrf"] = "vrf";
-    depreciated_function_map["fname"] = "file_name";
+    depreciated_functions["oldvrf"] = "vrf";
+    depreciated_functions["fname"] = "file_name";
 
     // Help
     help_map["exptime"] = "exptime \t exposure time in [s]\n";
@@ -84,13 +85,12 @@ template <typename T> CmdProxy<T>::CmdProxy(int multi_id) : det(multi_id) {
 }
 
 template <typename T>
-std::string CmdProxy<T>::Call(std::string command, VectorString arg,
-                              int detector_id) {
+std::string CmdProxy<T>::Call(const std::string &command,
+                              const VectorString &arg, int detector_id) {
     // TODO! (Erik) investigate the effects of setReceiverOnline when not using
     // receiver. Seems ok...
     det.setOnline(true);
     det.setReceiverOnline(true);
-    ReplaceIfDepreciated(command);
 
     // Store command args and detector id for further use
     // Probably also a good place to do sanity check
@@ -98,10 +98,12 @@ std::string CmdProxy<T>::Call(std::string command, VectorString arg,
     arguments_ = arg;
     detector_id_ = detector_id;
 
-    auto it = function_map.find(command);
-    if (it != function_map.end()) {
+    ReplaceIfDepreciated(command_);
+
+    auto it = functions.find(command);
+    if (it != functions.end()) {
         std::cout << ((*this).*(it->second))();
-        return std::string();
+        return {};
     } else {
         return command_;
     }
@@ -129,8 +131,8 @@ template <typename T>
 bool CmdProxy<T>::ReplaceIfDepreciated(std::string &command) {
     // if the command is in a map of depreciated functions warn and replace the
     // command
-    auto d_it = depreciated_function_map.find(command);
-    if (d_it != depreciated_function_map.end()) {
+    auto d_it = depreciated_functions.find(command);
+    if (d_it != depreciated_functions.end()) {
         std::cout << "WARNING: " << command
                   << " is depreciated and will be removed. Please migrate to: "
                   << d_it->second << "\n";
@@ -142,19 +144,19 @@ bool CmdProxy<T>::ReplaceIfDepreciated(std::string &command) {
 
 template <typename T> void CmdProxy<T>::PrintMappedFunctions() {
     std::cout << "The following commands are available: \n";
-    for (auto it = function_map.begin(); it != function_map.end(); ++it) {
+    for (auto it = functions.begin(); it != functions.end(); ++it) {
         std::cout << "\t" << it->first << std::endl;
     }
     std::cout << "\nDepreciaded commands: \n";
-    for (auto it = depreciated_function_map.begin();
-         it != depreciated_function_map.end(); ++it) {
+    for (auto it = depreciated_functions.begin();
+         it != depreciated_functions.end(); ++it) {
         std::cout << "\t" << it->first << " -> " << it->second << std::endl;
     }
 }
 
 template <typename T> VectorString CmdProxy<T>::getAllCommands() {
     VectorString commands;
-    for (auto const &v : function_map)
+    for (auto const &v : functions)
         commands.push_back(v.first);
 
     return commands;

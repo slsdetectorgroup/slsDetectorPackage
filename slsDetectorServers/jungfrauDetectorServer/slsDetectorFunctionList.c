@@ -1584,11 +1584,14 @@ void* start_timer(void* arg) {
 		const int size = 8192 + 112;
 		char buffer[size];
 		memset(buffer, 0, sizeof(sls_detector_header));
-		sls_detector_header* header = (sls_detector_header*)(buffer);
-		header->frameNumber = 1;
-		header->packetNumber = 0;
-		sendUDPPacket(buffer, size);
-		FILE_LOG(logINFO, ("Sent a packet\n"));
+		for(int i=0; i!=128; ++i){
+			sls_detector_header* header = (sls_detector_header*)(buffer);
+			header->frameNumber = 1;
+			header->packetNumber = i;
+			sendUDPPacket(buffer, size);
+			FILE_LOG(logINFO, ("Sent a packet\n"));
+		}
+		
 			
 		
 	// }

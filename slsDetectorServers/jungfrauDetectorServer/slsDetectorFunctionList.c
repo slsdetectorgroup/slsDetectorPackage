@@ -1091,6 +1091,14 @@ int configureMAC(int numInterfaces, int selInterface,
 		uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
 		uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2) {
 #ifdef VIRTUAL
+	char cDestIp[MAX_STR_LENGTH];
+	memset(cDestIp, 0, MAX_STR_LENGTH);
+	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
+	if (setUDPDestinationDetails(cDestIp, udpport) == FAIL) {
+		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
+		return FAIL;
+	}
     return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
@@ -1531,6 +1539,10 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 
 int startStateMachine(){
 #ifdef VIRTUAL
+	// create udp socket
+	if(createUDPSocket() != OK) {
+		return FAIL;
+	}
 	virtual_status = 1;
 	virtual_stop = 0;
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
@@ -1563,7 +1575,8 @@ void* start_timer(void* arg) {
 	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
 	while(!virtual_stop) {
 		usleep(wait_in_s);
-		
+		FILE_LOG(logINFOGREEN, ("Virtual Timer Done\n"));
+			
 		//TODO: Generate data
 		
 		
@@ -1579,7 +1592,9 @@ void* start_timer(void* arg) {
 			
 		
 	}
-	FILE_LOG(logINFOGREEN, ("Virtual Timer Done\n"));
+
+	
+	closeUDPSocket();
 
 	virtual_status = 0;
 	return NULL;

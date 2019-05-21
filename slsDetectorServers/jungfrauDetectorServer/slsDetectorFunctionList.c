@@ -1568,29 +1568,36 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int wait_in_s = 	(setTimer(FRAME_NUMBER, -1) *
+
+	int numFrames = (setTimer(FRAME_NUMBER, -1) *
 						setTimer(CYCLES_NUMBER, -1) *
-						(setTimer(STORAGE_CELL_NUMBER, -1) + 1) *
-						(setTimer(ACQUISITION_TIME, -1)/(1E9)));
+						(setTimer(STORAGE_CELL_NUMBER, -1) + 1));
+	int wait_in_s = 	numFrames *
+						(setTimer(ACQUISITION_TIME, -1)/(1E9));
 	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
 	// while(!virtual_stop) {
-		usleep(wait_in_s);
+		
 		FILE_LOG(logINFOGREEN, ("Virtual Timer Done\n"));
 			
 		//TODO: Generate data
 		
 		
 		//TODO: Send data
-		const int size = 8192 + 112;
-		char buffer[size];
-		memset(buffer, 0, sizeof(sls_detector_header));
-		for(int i=0; i!=128; ++i){
-			sls_detector_header* header = (sls_detector_header*)(buffer);
-			header->frameNumber = 1;
-			header->packetNumber = i;
-			sendUDPPacket(buffer, size);
-			FILE_LOG(logINFO, ("Sent a packet\n"));
+		for(int frameNr=0; frameNr!= numFrames; ++frameNr ){
+			usleep(wait_in_s);
+			const int size = 8192 + 112;
+			char buffer[size];
+			memset(buffer, 0, sizeof(sls_detector_header));
+			for(int i=0; i!=128; ++i){
+				sls_detector_header* header = (sls_detector_header*)(buffer);
+				header->frameNumber = frameNr;
+				header->packetNumber = i;
+				sendUDPPacket(buffer, size);
+				
+			}
+			FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
 		}
+
 		
 			
 		

@@ -1575,33 +1575,48 @@ void* start_timer(void* arg) {
 	int64_t exp_ns = 	setTimer(ACQUISITION_TIME, -1);
 
 		//TODO: Generate data
+		char imageData[DATA_BYTES];
+		memset(imageData, 0, DATA_BYTES);
+		for (int i = 0; i < DATA_BYTES; i += sizeof(uint16_t)) {
+			*((uint16_t*)(imageData + i)) = i;
+		}
+		int datasize = 8192;
 		
 		
 		//TODO: Send data
 		for(int frameNr=0; frameNr!= numFrames; ++frameNr ){
-			struct timespec begin, end;
-			clock_gettime(CLOCK_REALTIME, &begin);
+				int srcOffset = 0;
+			
+				struct timespec begin, end;
+				clock_gettime(CLOCK_REALTIME, &begin);
 
-			usleep(exp_ns / 1000);
+				usleep(exp_ns / 1000);
 
-			const int size = 8192 + 112;
-			char buffer[size];
-			memset(buffer, 0, sizeof(sls_detector_header));
-			for(int i=0; i!=128; ++i){
-				sls_detector_header* header = (sls_detector_header*)(buffer);
-				header->frameNumber = frameNr;
-				header->packetNumber = i;
-				sendUDPPacket(buffer, size);
+				const int size = datasize + 112;
+				char packetData[size];
+				memset(packetData, 0, sizeof(sls_detector_header));
 				
-			}
-			FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
-			clock_gettime(CLOCK_REALTIME, &end);
-			int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
-					(end.tv_nsec - begin.tv_nsec));
-  
-			if (periodns > time_ns) {
-				usleep((periodns - time_ns)/ 1000);
-			}
+				// loop packet
+				for(int i=0; i!=128; ++i){
+					// set header
+					sls_detector_header* header = (sls_detector_header*)(packetData);
+					header->frameNumber = frameNr;
+					header->packetNumber = i;
+					// fill data
+					memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
+					srcOffset += datasize;
+					
+					sendUDPPacket(packetData, size);
+					
+				}
+				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
+				clock_gettime(CLOCK_REALTIME, &end);
+				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+						(end.tv_nsec - begin.tv_nsec));
+	  
+				if (periodns > time_ns) {
+					usleep((periodns - time_ns)/ 1000);
+				}
 		}
 		
 	// }

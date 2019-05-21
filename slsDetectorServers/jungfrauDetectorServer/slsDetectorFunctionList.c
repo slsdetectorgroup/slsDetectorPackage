@@ -1573,7 +1573,7 @@ void* start_timer(void* arg) {
 						(setTimer(STORAGE_CELL_NUMBER, -1) + 1) *
 						(setTimer(ACQUISITION_TIME, -1)/(1E9)));
 	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
-	while(!virtual_stop) {
+	// while(!virtual_stop) {
 		usleep(wait_in_s);
 		FILE_LOG(logINFOGREEN, ("Virtual Timer Done\n"));
 			
@@ -1591,7 +1591,7 @@ void* start_timer(void* arg) {
 		FILE_LOG(logINFO, ("Sent a packet\n"));
 			
 		
-	}
+	// }
 
 	
 	closeUDPSocket();

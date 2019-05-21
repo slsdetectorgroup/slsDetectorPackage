@@ -1,4 +1,4 @@
-CC    		= gcc
+#CC    		= gcc
 CFLAGS		+=  -std=c11 -Wall -DJUNGFRAUD -DVIRTUAL -D_DEFAULT_SOURCE -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
 LDLIBS		+= 	-pthread
 

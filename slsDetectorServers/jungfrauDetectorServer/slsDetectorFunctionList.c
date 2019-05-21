@@ -1568,23 +1568,22 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-
+	int64_t periodns = setTimer(FRAME_PERIOD, -1);
 	int numFrames = (setTimer(FRAME_NUMBER, -1) *
 						setTimer(CYCLES_NUMBER, -1) *
 						(setTimer(STORAGE_CELL_NUMBER, -1) + 1));
-	int wait_in_s = 	numFrames *
-						(setTimer(ACQUISITION_TIME, -1)/(1E9));
-	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
-	// while(!virtual_stop) {
-		
-		FILE_LOG(logINFOGREEN, ("Virtual Timer Done\n"));
-			
+	int64_t exp_ns = 	setTimer(ACQUISITION_TIME, -1);
+
 		//TODO: Generate data
 		
 		
 		//TODO: Send data
 		for(int frameNr=0; frameNr!= numFrames; ++frameNr ){
-			usleep(wait_in_s);
+			struct timespec begin, end;
+			clock_gettime(CLOCK_REALTIME, &begin);
+
+			usleep(exp_ns / 1000);
+
 			const int size = 8192 + 112;
 			char buffer[size];
 			memset(buffer, 0, sizeof(sls_detector_header));
@@ -1596,10 +1595,14 @@ void* start_timer(void* arg) {
 				
 			}
 			FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
+			clock_gettime(CLOCK_REALTIME, &end);
+			int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+					(end.tv_nsec - begin.tv_nsec));
+  
+			if (periodns > time_ns) {
+				usleep((periodns - time_ns)/ 1000);
+			}
 		}
-
-		
-			
 		
 	// }
 

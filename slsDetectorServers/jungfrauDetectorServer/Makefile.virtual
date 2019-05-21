@@ -1,6 +1,6 @@
 CC    		= gcc
-CFLAGS		+=  -Wall -DJUNGFRAUD -DVIRTUAL -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
-LDLIBS		+= 	-lm  -lstdc++  -pthread
+CFLAGS		+=  -std=c11 -Wall -DJUNGFRAUD -DVIRTUAL -D_DEFAULT_SOURCE -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
+LDLIBS		+= 	-pthread
 
 PROGS		= 	jungfrauDetectorServer_virtual 
 DESTDIR		?= 	bin

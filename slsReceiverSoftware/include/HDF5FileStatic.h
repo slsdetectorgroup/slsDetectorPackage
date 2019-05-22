@@ -283,7 +283,7 @@ public:
 		}
 		catch(Exception error){
 			cprintf(RED,"Error in extending dataset in object %d\n",ind);
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;

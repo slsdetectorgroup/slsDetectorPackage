@@ -42,6 +42,7 @@ option (SLS_USE_TESTS "TESTS" ON)
 option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
+option(SLS_USE_SIMULATOR "Backend server simulator" OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -157,7 +158,9 @@ if (SLS_USE_GUI)
     endif()
 endif (SLS_USE_GUI)
 
-
+if (SLS_USE_SIMULATOR)
+    add_subdirectory(slsDetectorServers)
+endif (SLS_USE_SIMULATOR)
 
 if (SLS_USE_INTEGRATION_TESTS)
     add_subdirectory(integrationTests)

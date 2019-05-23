@@ -5,7 +5,7 @@ set(src
     communication_funcs.c
 )
 
-add_library(eigerDetectorServerMaster 
+add_executable(eigerDetectorServerMaster 
     ${src}
 )
 
@@ -19,11 +19,15 @@ target_compile_definitions(eigerDetectorServerMaster
     PUBLIC VIRTUAL_MASTER
 )
 
+target_link_libraries(eigerDetectorServerMaster
+    PUBLIC pthread rt
+)
+
 install(TARGETS eigerDetectorServerMaster
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-add_library(eigerDetectorServerSlave 
+add_executable(eigerDetectorServerSlave 
     ${src}
 )
 
@@ -34,6 +38,10 @@ target_include_directories(eigerDetectorServerSlave
 target_compile_definitions(eigerDetectorServerSlave
     PUBLIC EIGERD PCCOMPILE STOP_SERVER
     PUBLIC VIRTUAL DVIRTUAL_9M
+)
+
+target_link_libraries(eigerDetectorServerSlave
+    PUBLIC pthread rt
 )
 
 install(TARGETS eigerDetectorServerSlave

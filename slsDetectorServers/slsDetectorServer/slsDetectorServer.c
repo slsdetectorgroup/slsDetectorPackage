@@ -30,7 +30,7 @@ void error(char *msg){
 }
 
 int main(int argc, char *argv[]){
-	
+	FILE_LOG(logINFOBLUE, ("I am blue\n"));
 	// print version
 	if (argc > 1 && !strcasecmp(argv[1], "-version")) {
         int version = 0;

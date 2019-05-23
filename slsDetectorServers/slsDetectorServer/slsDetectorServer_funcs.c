@@ -2291,7 +2291,7 @@ int send_update(int file_des) {
 
 
 
-int configure_mac(int file_des) {
+int configure_mac(int file_des) {FILE_LOG(logINFORED, ("blaaaaaaaaaa\n"));
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
     const size_t array_size = 50;
@@ -2419,7 +2419,8 @@ int configure_mac(int file_des) {
 	// set only
 	if ((Server_VerifyLock() == OK)) {
 
-		// stop detector if it was running
+		/*// stop detector if it was runnin
+		g
 		enum runStatus status = getRunStatus();
 		if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
 			if (status == RUNNING)
@@ -2433,7 +2434,7 @@ int configure_mac(int file_des) {
 		    	sprintf(mess, "Cannot configure mac when detector is not idle. Detector at %s state\n", getRunStateName(status));
 		    	FILE_LOG(logERROR,(mess));
 		    }
-		}
+		}*/
 
 		if (ret == OK) {
 #ifdef EIGERD

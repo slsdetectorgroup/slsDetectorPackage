@@ -11,6 +11,7 @@
 #include <unistd.h> //to gethostname
 #include <string.h>
 #ifdef VIRTUAL
+#include "communication_funcs_UDP.h"
 #include <pthread.h>
 #include <time.h>
 #endif
@@ -1214,7 +1215,17 @@ enum externalCommunicationMode getTiming() {
 /* configure mac */
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2) {
-#ifndef VIRTUAL
+#ifdef VIRTUAL
+	char cDestIp[MAX_STR_LENGTH];
+	memset(cDestIp, 0, MAX_STR_LENGTH);
+	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
+	if (setUDPDestinationDetails(cDestIp, udpport) == FAIL) {
+		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
+		return FAIL;
+	}
+    return OK;
+#else
     FILE_LOG(logINFO, ("Configuring MAC\n"));
 	
 	int src_port = DEFAULT_UDP_SOURCE_PORT;
@@ -1607,6 +1618,11 @@ int prepareAcquisition() {
 
 int startStateMachine() {
 #ifdef VIRTUAL
+	// create udp socket
+	if(createUDPSocket() != OK) {
+		return FAIL;
+	}
+	FILE_LOG(logINFOBLUE, ("starting state machine\n"));
 	eiger_virtual_status = 1;
 	eiger_virtual_stop = 0;
 	if (pthread_create(&eiger_virtual_tid, NULL, &start_timer, NULL)) {
@@ -1647,19 +1663,72 @@ int startStateMachine() {
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	eiger_virtual_status = 1;
-	int wait_in_s = nimages_per_request * eiger_virtual_period;
-	FILE_LOG(logINFO, ("going to wait for %d s\n", wait_in_s));
-	while(!eiger_virtual_stop && (wait_in_s >= 0)) {
-		usleep(1000 * 1000);
-		wait_in_s--;
-	}
-	FILE_LOG(logINFO, ("Virtual Timer Done***\n"));
+	int64_t periodns = eiger_virtual_period;
+	int numFrames = nimages_per_request;
+	int64_t exp_ns = eiger_virtual_exptime;
+
+	int dr = 16;
+	int bytesPerPixel  = dr/8;
+	int tgEnable = 0;
+	int datasize = (tgEnable ? 4096 : 1024);
+	int packetsize = datasize + sizeof(sls_detector_header);
+	int numPacketsPerFrame =  (tgEnable ? 4 : 16) * dr;
+	int databytes = 256*256*2*bytesPerPixel;
+	FILE_LOG(logINFO, (" dr:%d\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n numpackes:5d\n databytes:%d\n",
+	dr, bytesPerPixel, tgEnable, datasize, numPacketsPerFrame, databytes));
+
+
+		//TODO: Generate data
+		char imageData[databytes];
+		memset(imageData, 0, databytes);
+		for (int i = 0; i < databytes; i += sizeof(uint16_t)) {
+			*((uint16_t*)(imageData + i)) = i;
+		}
+
+		
+		
+		//TODO: Send data
+		for(int frameNr=0; frameNr!= numFrames; ++frameNr ){
+				int srcOffset = 0;
+			
+				struct timespec begin, end;
+				clock_gettime(CLOCK_REALTIME, &begin);
+
+				usleep(exp_ns / 1000);
+
+				char packetData[packetsize];
+				memset(packetData, 0, packetsize);
+				
+				// loop packet
+				for(int i=0; i!=numPacketsPerFrame; ++i){
+					// set header
+					sls_detector_header* header = (sls_detector_header*)(packetData);
+					header->frameNumber = frameNr;
+					header->packetNumber = i;
+					// fill data
+					memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
+					srcOffset += datasize;
+					
+					sendUDPPacket(packetData, packetsize);
+					
+				}
+				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
+				clock_gettime(CLOCK_REALTIME, &end);
+				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+						(end.tv_nsec - begin.tv_nsec));
+	  
+				if (periodns > time_ns) {
+					usleep((periodns - time_ns)/ 1000);
+				}
+		}
+	
+	closeUDPSocket();
 
 	eiger_virtual_status = 0;
 	return NULL;
 }
 #endif
+
 
 
 
@@ -1718,7 +1787,7 @@ int startReadOut() {
 }
 
 
-enum runStatus getRunStatus() {
+enum runStatus getRunStatus() {FILE_LOG(logINFO, ("in hereeeeee\n"));
 #ifdef VIRTUAL
 	if (eiger_virtual_status == 0) {
 		FILE_LOG(logINFO, ("Status: IDLE\n"));

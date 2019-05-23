@@ -1395,7 +1395,7 @@ void setAdcPhase(int val, int degrees){
     adcPhase = valShift;
 }
 
-int getPhase(degrees) {
+int getPhase(int degrees) {
 	if (!degrees)
 		return adcPhase;
 	// convert back to degrees

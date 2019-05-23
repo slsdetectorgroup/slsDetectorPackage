@@ -1,2 +1,1 @@
-add_subdirectory(slsDetectorServer)
 add_subdirectory(jungfrauDetectorServer)

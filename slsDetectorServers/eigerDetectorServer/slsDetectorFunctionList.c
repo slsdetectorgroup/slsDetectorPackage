@@ -183,11 +183,8 @@ void basictests() {
 /* Ids */
 
 int64_t getDetectorId(enum idMode arg) {
-#ifdef VIRTUAL
-	return 0;
-#else
-	int64_t retval = -1;
 
+	int64_t retval = -1;
 	switch(arg) {
 	case DETECTOR_SERIAL_NUMBER:
 		retval =  getDetectorNumber();/** to be implemented with mac? */
@@ -204,7 +201,7 @@ int64_t getDetectorId(enum idMode arg) {
 	}
 
 	return retval;
-#endif
+
 }
 
 u_int64_t getFirmwareVersion() {

@@ -1026,6 +1026,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     }
 
 #ifdef VIRTUAL
+    int dacval = 0;
     if (!mV) {
         (detectorModules)->dacs[ind] = val;
     }

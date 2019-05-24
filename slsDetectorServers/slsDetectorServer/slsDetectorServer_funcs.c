@@ -2291,7 +2291,7 @@ int send_update(int file_des) {
 
 
 
-int configure_mac(int file_des) {FILE_LOG(logINFORED, ("blaaaaaaaaaa\n"));
+int configure_mac(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
     const size_t array_size = 50;

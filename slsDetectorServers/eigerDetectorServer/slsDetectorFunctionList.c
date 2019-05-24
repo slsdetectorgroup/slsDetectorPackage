@@ -1216,9 +1216,13 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
 	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
-	if (setUDPDestinationDetails(cDestIp, udpport) == FAIL) {
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d, port2:%d)\n", cDestIp, udpport, udpport2));
+	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
 		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
+		return FAIL;
+	}
+	if (setUDPDestinationDetails(1, cDestIp, udpport2) == FAIL) {
+		FILE_LOG(logERROR, ("could not set udp destination IP and port2\n"));
 		return FAIL;
 	}
     return OK;
@@ -1616,7 +1620,10 @@ int prepareAcquisition() {
 int startStateMachine() {
 #ifdef VIRTUAL
 	// create udp socket
-	if(createUDPSocket() != OK) {
+	if(createUDPSocket(0) != OK) {
+		return FAIL;
+	}
+	if(createUDPSocket(1) != OK) {
 		return FAIL;
 	}
 	FILE_LOG(logINFOBLUE, ("starting state machine\n"));
@@ -1664,29 +1671,31 @@ void* start_timer(void* arg) {
 	int numFrames = nimages_per_request;
 	int64_t exp_ns = eiger_virtual_exptime;
 
-	int dr = 16;
-	int bytesPerPixel  = dr/8;
-	int tgEnable = 0;
+	int dr = eiger_dynamicrange;
+	double bytesPerPixel  = (double)dr/8.00;
+	int tgEnable = send_to_ten_gig;
 	int datasize = (tgEnable ? 4096 : 1024);
 	int packetsize = datasize + sizeof(sls_detector_header);
 	int numPacketsPerFrame =  (tgEnable ? 4 : 16) * dr;
-	int databytes = 256*256*2*bytesPerPixel;
-	FILE_LOG(logINFO, (" dr:%d\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n numpackes:5d\n databytes:%d\n",
-	dr, bytesPerPixel, tgEnable, datasize, numPacketsPerFrame, databytes));
+	int npixelsx = 256 * 2 * bytesPerPixel; 
+	int databytes = 256 * 256 * 2 * bytesPerPixel;
+	FILE_LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:5d\n npixelsx:%d\n databytes:%d\n",
+	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes));
 
 
 		//TODO: Generate data
-		char imageData[databytes];
-		memset(imageData, 0, databytes);
-		for (int i = 0; i < databytes; i += sizeof(uint16_t)) {
-			*((uint16_t*)(imageData + i)) = i;
+		char imageData[databytes * 2];
+		memset(imageData, 0, databytes * 2);
+		for (int i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
+			*((uint8_t*)(imageData + i)) = i;
 		}
 
 		
 		
 		//TODO: Send data
-		for(int frameNr=0; frameNr!= numFrames; ++frameNr ){
+		for(int frameNr=1; frameNr <= numFrames; ++frameNr ){
 				int srcOffset = 0;
+				int srcOffset2 = npixelsx;
 			
 				struct timespec begin, end;
 				clock_gettime(CLOCK_REALTIME, &begin);
@@ -1695,18 +1704,41 @@ void* start_timer(void* arg) {
 
 				char packetData[packetsize];
 				memset(packetData, 0, packetsize);
+				char packetData2[packetsize];
+				memset(packetData2, 0, packetsize);
 				
 				// loop packet
 				for(int i=0; i!=numPacketsPerFrame; ++i){
+					int dstOffset = sizeof(sls_detector_header);
+					int dstOffset2 = sizeof(sls_detector_header);
 					// set header
 					sls_detector_header* header = (sls_detector_header*)(packetData);
 					header->frameNumber = frameNr;
 					header->packetNumber = i;
-					// fill data
-					memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
-					srcOffset += datasize;
+					header = (sls_detector_header*)(packetData2);
+					header->frameNumber = frameNr;
+					header->packetNumber = i;
+					// fill data				
+					for (int psize = 0; psize < datasize; psize += npixelsx) {
+						if (dr == 32 && tgEnable == 0) {
+							memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
+							memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
+							srcOffset += npixelsx;
+							srcOffset2 += npixelsx;
+							dstOffset += npixelsx/2;
+							dstOffset2 += npixelsx/2;
+						} else {
+							memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx);
+							memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx);
+							srcOffset += 2 * npixelsx;
+							srcOffset2 += 2 * npixelsx;
+							dstOffset += npixelsx;
+							dstOffset2 += npixelsx;
+						}
+					}
 					
-					sendUDPPacket(packetData, packetsize);
+					sendUDPPacket(0, packetData, packetsize);
+					sendUDPPacket(1, packetData2, packetsize);
 					
 				}
 				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
@@ -1719,8 +1751,9 @@ void* start_timer(void* arg) {
 				}
 		}
 	
-	closeUDPSocket();
-
+	closeUDPSocket(0);
+	closeUDPSocket(1);
+	
 	eiger_virtual_status = 0;
 	return NULL;
 }
@@ -1924,12 +1957,3 @@ int getTotalNumberOfChannels() {return  ((int)getNumberOfChannelsPerChip() * (in
 int getNumberOfChips() {return  NCHIP;}
 int getNumberOfDACs() {return  NDAC;}
 int getNumberOfChannelsPerChip() {return  NCHAN;}
-
-
-
-
-
-
-
-
-

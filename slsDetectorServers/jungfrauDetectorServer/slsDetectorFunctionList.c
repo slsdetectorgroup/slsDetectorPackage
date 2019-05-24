@@ -401,7 +401,7 @@ void setupDetector() {
     MAX1932_Disable();
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-	// adc
+	// adce
     AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
     AD9257_Disable();
     AD9257_Configure();
@@ -1095,7 +1095,7 @@ int configureMAC(int numInterfaces, int selInterface,
 	memset(cDestIp, 0, MAX_STR_LENGTH);
 	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
 	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
-	if (setUDPDestinationDetails(cDestIp, udpport) == FAIL) {
+	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
 		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
@@ -1540,14 +1540,15 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 int startStateMachine(){
 #ifdef VIRTUAL
 	// create udp socket
-	if(createUDPSocket() != OK) {
+	if(createUDPSocket(0) != OK) {
 		return FAIL;
 	}
+	FILE_LOG(logINFOBLUE, ("starting state machine\n"));
 	virtual_status = 1;
 	virtual_stop = 0;
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
-		virtual_status = 0;
 		FILE_LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
+		virtual_status = 0;
 		return FAIL;
 	}
 	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -1606,7 +1607,7 @@ void* start_timer(void* arg) {
 					memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
 					srcOffset += datasize;
 					
-					sendUDPPacket(packetData, size);
+					sendUDPPacket(0, packetData, size);
 					
 				}
 				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
@@ -1622,7 +1623,7 @@ void* start_timer(void* arg) {
 	// }
 
 	
-	closeUDPSocket();
+	closeUDPSocket(0);
 
 	virtual_status = 0;
 	return NULL;
@@ -1701,10 +1702,7 @@ enum runStatus getRunStatus(){
 
 void readFrame(int *ret, char *mess){
 #ifdef VIRTUAL
-	while(virtual_status) {
-		//FILE_LOG(logERROR, ("Waiting for finished flag\n");
-		usleep(5000);
-	}
+	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif
 	// wait for status to be done

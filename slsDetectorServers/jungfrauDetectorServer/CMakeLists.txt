@@ -1,4 +1,4 @@
-add_library(jungfrauDetectorServer
+add_executable(jungfrauDetectorServer
     slsDetectorFunctionList.c
     slsDetectorServer.c
     slsDetectorServer_funcs.c
@@ -11,6 +11,10 @@ target_include_directories(jungfrauDetectorServer
 
 target_compile_definitions(jungfrauDetectorServer
     PUBLIC JUNGFRAUD VIRTUAL STOP_SERVER
+)
+
+target_link_libraries(jungfrauDetectorServer
+    PUBLIC pthread rt
 )
 
 install(TARGETS jungfrauDetectorServer

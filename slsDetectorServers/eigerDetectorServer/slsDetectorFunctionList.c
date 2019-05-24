@@ -1849,10 +1849,6 @@ enum runStatus getRunStatus() {FILE_LOG(logINFO, ("in hereeeeee\n"));
 
 void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
-	while(eiger_virtual_status) {
-		//FILE_LOG(logERROR ,"Waiting for finished flag\n"));
-		usleep(5000);
-	}
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #else

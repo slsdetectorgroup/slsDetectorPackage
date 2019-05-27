@@ -12,7 +12,7 @@ using VectorString = std::vector<std::string>;
 
 template <typename T> class CmdProxy {
   public:
-    explicit CmdProxy(int multi_id);
+    explicit CmdProxy(T *detector_ptr);
 
     std::string Call(const std::string &cmd, const VectorString &arg,
                      int detector_id);
@@ -31,7 +31,7 @@ template <typename T> class CmdProxy {
     using fmap_t = std::map<std::string, std::string (CmdProxy::*)()>;
     using smap_t = std::map<std::string, std::string>;
 
-    T det;
+    T* det;
     fmap_t functions;
     smap_t depreciated_functions;
     smap_t help_map;
@@ -43,29 +43,18 @@ template <typename T> class CmdProxy {
     template <typename U> std::string resultToString(const U &ret);
 
     // Functions to be mapped
-    // std::string FileWrite();
-    // std::string FileName();
-    // std::string Hostname();
     std::string ExposureTime();
-    // std::string OverWrite();
-    // std::string SettingsDir();
-    // std::string TenGiga();
+
 
     void WrongNumberOfParameters(size_t n) {
         std::cout << "ERROR: Wrong number of parameters:" << n << "\n";
     };
 };
 
-template <typename T> CmdProxy<T>::CmdProxy(int multi_id) : det(multi_id) {
+template <typename T> CmdProxy<T>::CmdProxy(T* detectorPtr) : det(detectorPtr) {
 
     // map between strings and functions of the MultiDetectorCaller
     functions["exptime"] = &CmdProxy::ExposureTime;
-    // functions["file_name"]   = &CmdProxy::FileName;
-    // functions["file_write"]  = &CmdProxy::FileWrite;
-    // functions["hostname"]    = &CmdProxy::Hostname;
-    // functions["overwrite"]   = &CmdProxy::OverWrite;
-    // functions["settingsdir"] = &CmdProxy::SettingsDir;
-    // functions["tengiga"]     = &CmdProxy::TenGiga;
 
     // Functions that will be removed
     depreciated_functions["oldvrf"] = "vrf";
@@ -73,16 +62,9 @@ template <typename T> CmdProxy<T>::CmdProxy(int multi_id) : det(multi_id) {
 
     // Help
     help_map["exptime"] = "exptime \t exposure time in [s]\n";
-    help_map["file_name"] =
-        "file_name \t filename for the data without index and extension\n";
-    help_map["file_write"] =
-        "file_write \t Write data files 0 disabled 1 enabled\n";
-    help_map["hostname"] = "hostname \t hostname of det\n";
-    help_map["overwrite"] = "overwrite \t overwite files 0 for no 1 for yes\n";
-    help_map["settingsdir"] = "settingsdir \t directory for settings files\n";
-    help_map["tengiga"] = "tengiga \t sets system to be configure for 10Gbe if "
-                          "set to 1, else 1Gbe if set to 0\n";
 }
+
+
 
 template <typename T>
 std::string CmdProxy<T>::Call(const std::string &command,
@@ -184,69 +166,5 @@ template <typename T> std::string CmdProxy<T>::ExposureTime() {
     // return resultToString(det.setExposureTime() / 1e9);
     return "ProxyFired\n";
 }
-
-// template <typename T>
-// std::string CmdProxy<T>::FileName()
-// {
-//     if (arguments_.size() == 1) {
-//         det.setFileName(arguments_[0]);
-//     } else if (arguments_.size() > 1) {
-//         WrongNumberOfParameters(arguments_.size());
-//     }
-//     return resultToString(det.getFileName());
-// }
-// template <typename T>
-// std::string CmdProxy<T>::FileWrite()
-// {
-//     if (arguments_.size() == 1) {
-//         det.enableWriteToFile(std::stoi(arguments_[0]));
-//     } else if (arguments_.size() > 1) {
-//         WrongNumberOfParameters(arguments_.size());
-//     }
-
-//     return resultToString(det.enableWriteToFile());
-// }
-// template <typename T>
-// std::string CmdProxy<T>::OverWrite()
-// {
-//     if (arguments_.size() == 1) {
-//         det.overwriteFile(std::stoi(arguments_[0]));
-//     } else if (arguments_.size() > 1) {
-//         WrongNumberOfParameters(arguments_.size());
-//     }
-//     return resultToString(det.overwriteFile());
-// }
-// template <typename T>
-// std::string CmdProxy<T>::Hostname()
-// {
-//     if (arguments_.size() == 1) {
-//         //TODO! (Erik) adding logic
-//         //currently only readds hostname
-//     } else if (arguments_.size() > 1) {
-//         WrongNumberOfParameters(arguments_.size());
-//     }
-//     return resultToString(det.getHostname(detector_id_));
-// }
-// template <typename T>
-// std::string CmdProxy<T>::SettingsDir()
-// {
-//     if (arguments_.size() == 1) {
-//         det.setSettingsDir(arguments_[0]);
-//     } else if (arguments_.size() > 1) {
-//         WrongNumberOfParameters(arguments_.size());
-//     }
-//     return resultToString(det.getSettingsDir());
-// }
-
-// template <typename T>
-// std::string CmdProxy<T>::TenGiga()
-// {
-//     if (arguments_.size() == 1) {
-//         det.tenGigabitEthernet(std::stoi(arguments_[0]), detector_id_);
-//     } else if (arguments_.size() > 1) {
-//         WrongNumberOfParameters(arguments_.size());
-//     }
-//     return resultToString(det.tenGigabitEthernet(-1, detector_id_));
-// }
 
 } // namespace sls

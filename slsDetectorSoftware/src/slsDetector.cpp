@@ -1437,7 +1437,7 @@ int slsDetector::configureMAC() {
     // 2d positions to detector to put into udp header
     {
         int pos[2] = {0, 0};
-        int max = shm()->multiSize[1] * (shm()->numUDPInterfaces);
+        int max = shm()->multiSize[Y] * (shm()->numUDPInterfaces);
         // row
         pos[0] = (detId % max);
         // col for horiz. udp ports

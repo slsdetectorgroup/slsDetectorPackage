@@ -67,4 +67,5 @@ void getMacAddressinString(char* cmac, int size, uint64_t mac);
  */
 void getIpAddressinString(char* cip, uint32_t ip);
 
+
 #endif

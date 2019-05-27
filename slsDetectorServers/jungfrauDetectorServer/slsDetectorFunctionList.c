@@ -997,6 +997,11 @@ void setNumberofUDPInterfaces(int val) {
 	}
 }
 
+int getNumberofUDPInterfaces() {
+	// return 2 if enabled, else 1
+	return ((bus_r(CONFIG_REG) | CONFIG_OPRTN_MDE_2_X_10GbE_MSK) ? 2 : 1);
+}
+
 void selectPrimaryInterface(int val) {
 	uint32_t addr = CONFIG_REG;
 
@@ -1169,20 +1174,50 @@ int configureMAC(int numInterfaces, int selInterface,
 
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
-	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", pos[X], pos[Y]));
+	int innerPos[2] = {pos[X], pos[Y]};
+	int outerPos[2] = {pos[X], pos[Y]};
+	int numInterfaces = getNumberofUDPInterfaces();
 
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_X_MSK)));
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[X] << COORD_0_X_OFST) & COORD_0_X_MSK));
-	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[X] << COORD_0_X_OFST) & COORD_0_X_MSK))
+	if (numInterfaces == 1) {
+		FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", innerPos[X], innerPos[Y]));
+	} 
+	else {
+		++outerPos[X]; 
+		FILE_LOG(logDEBUG1, ("Setting detector position:\n"
+						"  inner top(%d, %d), outer bottom(%d, %d)\n"
+						, innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
+	} 
+
+	// row
+	//outer
+	uint32_t addr = COORD_ROW_REG;
+	bus_w(addr, (bus_r(addr) &~COORD_ROW_OUTER_MSK) | ((outerPos[X] << COORD_ROW_OUTER_OFST) & COORD_ROW_OUTER_MSK));
+	if (((bus_r(addr) &  COORD_ROW_OUTER_MSK) >> COORD_ROW_OUTER_OFST) != outerPos[X])
+		ret = FAIL;
+	// inner
+	bus_w(addr, (bus_r(addr) &~COORD_ROW_INNER_MSK) | ((innerPos[X] << COORD_ROW_INNER_OFST) & COORD_ROW_INNER_MSK));
+	if (((bus_r(addr) &  COORD_ROW_INNER_MSK) >> COORD_ROW_INNER_OFST) != innerPos[X])
 		ret = FAIL;
 
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_Y_MSK)));
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[Y] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
-	if ((bus_r(COORD_0_REG) &  COORD_0_Y_MSK) != ((pos[Y] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
+	// col
+	//outer
+	addr = COORD_COL_REG;
+	bus_w(addr, (bus_r(addr) &~COORD_COL_OUTER_MSK) | ((outerPos[Y] << COORD_COL_OUTER_OFST) & COORD_COL_OUTER_MSK));
+	if (((bus_r(addr) &  COORD_COL_OUTER_MSK) >> COORD_COL_OUTER_OFST) != outerPos[Y])
+		ret = FAIL;
+	// inner
+	bus_w(addr, (bus_r(addr) &~COORD_COL_INNER_MSK) | ((innerPos[Y] << COORD_COL_INNER_OFST) & COORD_COL_INNER_MSK));
+	if (((bus_r(addr) &  COORD_COL_INNER_MSK) >> COORD_COL_INNER_OFST) != innerPos[Y])
 		ret = FAIL;
 
 	if (ret == OK) {
-		FILE_LOG(logINFO, ("Position set to [%d, %d]\n", pos[X], pos[Y]));
+		if (numInterfaces == 1) {
+			FILE_LOG(logINFO, ("Position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
+		} 
+		else {
+			FILE_LOG(logINFO, (" Inner (top) position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
+			FILE_LOG(logINFO, (" Outer (bottom) position set to [%d, %d]\n", outerPos[X], outerPos[Y]));
+		} 
 	}
 	return ret;
 }
@@ -1384,6 +1419,8 @@ void setAdcPhase(int val, int degrees){
     ALTERA_PLL_SetPhaseShift(phase, 1, 0);
 
     adcPhase = valShift;
+
+	alignDeserializer();
 }
 
 int getPhase(degrees) {

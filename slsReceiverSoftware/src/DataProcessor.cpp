@@ -515,18 +515,18 @@ void DataProcessor::RearrangeDbitData(char* buf) {
 	const int numSamples = (ctbDigitalDataBytes / sizeof(uint64_t));
 	const int digOffset = FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header) + (*ctbAnalogDataBytes);
 
-	// ceil as numResult32Bits could be decimal 
-	const int numResult32Bits = ceil((double)(numSamples * (*ctbDbitList).size()) / 32.00); 
-	uint32_t result[numResult32Bits];
-	memset(result, 0, numResult32Bits * sizeof(uint32_t));
+	// ceil as numResult8Bits could be decimal 
+	const int numResult8Bits = ceil((double)(numSamples * (*ctbDbitList).size()) / 8.00); 
+	uint8_t result[numResult8Bits];
+	memset(result, 0, numResult8Bits * sizeof(uint8_t));
+	uint8_t* dest = result;
 
-	uint32_t* dest = result;
 	auto* source = (uint64_t*)(buf + digOffset + (*ctbDbitOffset));
 
 	// loop through digital bit enable vector
 	int bitoffset = 0;
     for (auto bi : (*ctbDbitList)) {
-		// where numbits * numsamples is not a multiple of 32
+		// where numbits * numsamples is not a multiple of 8
 		if (bitoffset != 0) {
 			bitoffset = 0;
 			++dest;
@@ -534,12 +534,12 @@ void DataProcessor::RearrangeDbitData(char* buf) {
 		
 		// loop through the frame digital data
         for (auto ptr = source; ptr < (source + numSamples);) {
-			// get selected bit from each 32 bit
-			uint32_t bit = (*ptr++ >> bi) & 1;
+			// get selected bit from each 8 bit
+			uint8_t bit = (*ptr++ >> bi) & 1;
 			*dest |= bit << bitoffset;
 			++bitoffset;
-			// extract destination in 32 bit batches
-			if (bitoffset == 32) {
+			// extract destination in 8 bit batches
+			if (bitoffset == 8) {
 				bitoffset = 0;
 				++dest;
 			}
@@ -548,8 +548,8 @@ void DataProcessor::RearrangeDbitData(char* buf) {
 
 
 	// copy back to buf and update size
-	memcpy(buf + digOffset, result, numResult32Bits * sizeof(uint32_t));
-	(*((uint32_t*)buf)) = numResult32Bits * sizeof(uint32_t);
+	memcpy(buf + digOffset, result, numResult8Bits * sizeof(uint8_t));
+	(*((uint32_t*)buf)) = numResult8Bits * sizeof(uint8_t);
 }
 
 /** eiger specific */

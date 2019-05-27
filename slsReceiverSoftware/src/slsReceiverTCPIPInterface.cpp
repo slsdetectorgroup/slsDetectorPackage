@@ -583,7 +583,7 @@ int slsReceiverTCPIPInterface::set_detector_type(sls::ServerInterface2 &socket){
 			}
 			if(ret == OK) {
 				if(receiver == nullptr){
-					receiver = new slsReceiverImplementation();
+					receiver = sls::make_unique<slsReceiverImplementation>();
 				}
 				myDetectorType = arg;
 				ret = receiver->setDetectorType(myDetectorType);

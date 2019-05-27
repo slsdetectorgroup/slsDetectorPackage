@@ -10,7 +10,8 @@
 
 class MySocketTCP;
 class ServerInterface;
-class slsReceiverImplementation;
+// class slsReceiverImplementation;
+#include "slsReceiverImplementation.h"
 #include "ServerSocket.h"
 
 
@@ -306,7 +307,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	detectorType myDetectorType;
 
 	/** slsReceiverBase object */
-	slsReceiverImplementation *receiver{nullptr};
+	std::unique_ptr<slsReceiverImplementation> receiver{nullptr};
 
 	/** Function List */
 	int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])(sls::ServerInterface2& socket);

@@ -284,7 +284,7 @@ public:
 		}
 		catch(Exception error){
 			FILE_LOG(logERROR) << "Could not extend dataset in object " << ind;
-			error.printError();
+			error.printErrorStack();
 			return 1;
 		}
 		return 0;

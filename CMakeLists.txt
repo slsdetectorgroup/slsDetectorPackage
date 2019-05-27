@@ -1,13 +1,9 @@
 cmake_minimum_required(VERSION 3.9)
 project(slsDetectorPackage)
+
 set(PROJECT_VERSION 5.0.0)
-
-include(CheckIPOSupported)
-
-
-
-
 include(cmake/project_version.cmake)
+include(CheckIPOSupported)
 
 # Include additional modules that are used unconditionally
 include(GNUInstallDirs)
@@ -35,11 +31,11 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 option (SLS_USE_HDF5 "HDF5 File format" OFF)
-option (SLS_USE_TEXTCLIENT "Text Client" OFF)
-option (SLS_USE_RECEIVER "Receiver" OFF)
+option (SLS_USE_TEXTCLIENT "Text Client" ON)
+option (SLS_USE_RECEIVER "Receiver" ON)
 option (SLS_USE_GUI "GUI" OFF)
-option (SLS_USE_TESTS "TESTS" ON)
-option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
+option (SLS_USE_TESTS "TESTS" OFF)
+option (SLS_USE_INTEGRATION_TESTS "Integration Tests" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -91,12 +87,10 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
                                                 -Wno-misleading-indentation # mostly in rapidjson remove using clang format
                                                 -Wduplicated-cond
                                                 -Wnull-dereference )
-
     endif()
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
         target_compile_options(slsProjectWarnings INTERFACE 
                                                 -Wno-class-memaccess )
-
     endif()
 endif()
 
@@ -106,11 +100,10 @@ if(SLS_USE_SANITIZER)
     target_link_libraries(slsProjectOptions INTERFACE -fsanitize=address,undefined)
     # target_compile_options(slsProjectOptions INTERFACE -fsanitize=thread)
     # target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
+endif()
 
-    endif()
 
-
-# Install fake the library
+# Install fake the libraries
 install(TARGETS slsProjectOptions slsProjectWarnings
     EXPORT "${TARGETS_EXPORT_NAME}"
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -122,8 +115,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
-
-
 find_package(Doxygen)
 find_package(ZeroMQ 4 REQUIRED)
 
@@ -132,14 +123,12 @@ if (SLS_USE_TESTS)
     add_subdirectory(tests)
 endif(SLS_USE_TESTS)
 
-# Support library containing functionallity common to 
-# detector and receiver
+# Common functionallity to detector and receiver
 add_subdirectory(slsSupportLib)
 
 if (SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
 endif (SLS_USE_TEXTCLIENT)
-
 
 if (SLS_USE_RECEIVER)
     if (SLS_USE_HDF5)
@@ -157,8 +146,6 @@ if (SLS_USE_GUI)
     endif()
 endif (SLS_USE_GUI)
 
-
-
 if (SLS_USE_INTEGRATION_TESTS)
     add_subdirectory(integrationTests)
 endif (SLS_USE_INTEGRATION_TESTS)
@@ -173,13 +160,9 @@ configure_file( .clang-tidy
 
 
 if (DOXYGEN_FOUND)
-    # set input and output files
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/Doxyfile.in)
     set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
-    # request to configure the file
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-    message("Doxygen build started")
 
     # note the option ALL which allows to build the docs together with the application
     add_custom_target( docs

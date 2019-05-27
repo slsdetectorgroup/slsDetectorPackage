@@ -1665,7 +1665,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>selinterface [n]</b> sets/gets the 1st or the 2nd interface to use to stream data out of the detector. Options: 1, 2. Effective only when \c numinterfaces is 1. JUNGFRAU only. \c Returns \c (int)
+   - <b>selinterface [n]</b> sets/gets the 1st (inner) or the 2nd (outer) interface to use to stream data out of the detector. Options: 1, 2. Effective only when \c numinterfaces is 1. JUNGFRAU only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "selinterface";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -3065,7 +3065,7 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
         os << "rx_udpport port \n sets receiver udp port to port" << std::endl;
         os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger and Jungfrau, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
         os << "numinterfaces n \n sets the number of interfaces to n used to stream out from the detector. Options: 1, 2. JUNGFRAU only. " << std::endl;
-        os << "selinterface n \n sets the 1st or the 2nd interface to use to stream data out of the detector. Options: 1, 2. Effective only when  numinterfaces is 1. JUNGFRAU only. " << std::endl;
+        os << "selinterface n \n sets the 1st (inner) or the 2nd (outer) interface to use to stream data out of the detector. Options: 1, 2. Effective only when  numinterfaces is 1. JUNGFRAU only. " << std::endl;
         os << "txndelay_left port \n sets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right port \n sets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame port \n sets detector transmission delay of the entire frame" << std::endl;

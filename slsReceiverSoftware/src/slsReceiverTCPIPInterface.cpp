@@ -731,7 +731,7 @@ int slsReceiverTCPIPInterface::set_roi() {
 int slsReceiverTCPIPInterface::setup_udp(){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	char args[6][MAX_STR_LENGTH] = {{""}, {""}, {""}, {""}, {""}, {""}};
+	char args[][MAX_STR_LENGTH] = {{""}, {""}, {""}, {""}, {""}};
 	char retvals[2][MAX_STR_LENGTH] = {{""}, {""}};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
@@ -746,18 +746,10 @@ int slsReceiverTCPIPInterface::setup_udp(){
 
 			//setup interfaces count
 			int numInterfaces = atoi(args[0]) > 1 ? 2 : 1;
-			int selInterface = atoi(args[1]) > 1 ? 2 : 1;
-
-			char* ip1 = args[2];
-			char* ip2 = args[3];
-			uint32_t port1 = atoi(args[4]);
-			uint32_t port2 = atoi(args[5]);
-
-			// using the 2nd interface only
-			if (myDetectorType == JUNGFRAU && numInterfaces == 1 && selInterface == 2) {
-				ip1 = ip2;
-				port1 = port2;
-			}
+			char* ip1 = args[1];
+			char* ip2 = args[2];
+			uint32_t port1 = atoi(args[3]);
+			uint32_t port2 = atoi(args[4]);
 
 			// 1st interface
 			receiver->setUDPPortNumber(port1);
@@ -794,15 +786,8 @@ int slsReceiverTCPIPInterface::setup_udp(){
 						strcpy(mess,"failed to get mac adddress to listen to\n");
 						FILE_LOG(logERROR) << mess;
 					} else {
-						// using the 2nd interface only
-						if (myDetectorType == JUNGFRAU && numInterfaces == 1 && selInterface == 2) {
-							strcpy(retvals[1],temp.c_str());
-							FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[1];
-						}
-						else {
-							strcpy(retvals[0],temp.c_str());
-							FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[0];
-						}
+						strcpy(retvals[0],temp.c_str());
+						FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[0];
 					}
 				}
 			}

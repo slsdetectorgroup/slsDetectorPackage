@@ -1005,15 +1005,15 @@ int getNumberofUDPInterfaces() {
 void selectPrimaryInterface(int val) {
 	uint32_t addr = CONFIG_REG;
 
-	// inner (user input: 1)
-	if (val == 1) {
-		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 1 (Inner)\n"));
-		bus_w(addr, bus_r(addr) | CONFIG_INNR_PRIMRY_INTRFCE_MSK);
-	}
-	// outer (user input: 2)
-	else {
-		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 2 (Outer)\n"));
+	// inner (user input: 0)
+	if (val == 0) {
+		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 0 (Outer)\n"));
 		bus_w(addr, bus_r(addr) &~ CONFIG_INNR_PRIMRY_INTRFCE_MSK);
+	}
+	// outer (user input: 1)
+	else {
+		FILE_LOG(logINFOBLUE, ("Setting Secondary Interface: 1 (Inner)\n"));
+		bus_w(addr, bus_r(addr) | CONFIG_INNR_PRIMRY_INTRFCE_MSK);
 	}
 }
 
@@ -1104,7 +1104,7 @@ int configureMAC(int numInterfaces, int selInterface,
 	FILE_LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
 	FILE_LOG(logINFO, ("\tInterface   : %d\n\n", selInterface));
 
-	FILE_LOG(logINFO, ("\tInner\n"));
+	FILE_LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2) ? "(Bottom)": ""));
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
 	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1130,7 +1130,7 @@ int configureMAC(int numInterfaces, int selInterface,
 	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
 
 	uint32_t sourceport2  =  DEFAULT_TX_UDP_PORT + 1;
-	FILE_LOG(logINFO, ("\tOuter\n"));
+	FILE_LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2) ? "(Top)": "Not used"));
 	FILE_LOG(logINFO, ("\tSource IP2  : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip2>>24)&0xff,(sourceip2>>16)&0xff,(sourceip2>>8)&0xff,(sourceip2)&0xff, sourceip2));
 	FILE_LOG(logINFO, ("\tSource MAC2 : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1157,10 +1157,22 @@ int configureMAC(int numInterfaces, int selInterface,
 
 	// default one rxr entry (others not yet implemented in client yet)
 	int iRxEntry = 0;
-	// top
-	setupHeader(iRxEntry, INNER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
-	// bottom
-	setupHeader(iRxEntry, OUTER, destip2, destmac2, udpport2, sourcemac2, sourceip2, sourceport2);
+
+	if (numInterfaces == 2) {
+		// bottom
+		setupHeader(iRxEntry, OUTER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+		// top
+		setupHeader(iRxEntry, INNER, destip2, destmac2, udpport2, sourcemac2, sourceip2, sourceport2);
+	} 
+	// single interface
+	else {
+		// default
+		if (selInterface == 0) {
+			setupHeader(iRxEntry, OUTER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+		} else  {
+			setupHeader(iRxEntry, INNER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+		}
+	}
 
 	setNumberofUDPInterfaces(numInterfaces);
 	selectPrimaryInterface(selInterface);

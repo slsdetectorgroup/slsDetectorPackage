@@ -81,10 +81,7 @@ class multiSlsDetectorClient {
             update = false;
         }
 
-<<<<<<< HEAD
-        // std::cout<<"id:"<<id<<" pos:"<<pos<<std::endl;
-=======
->>>>>>> also 0:
+        // os<<"id:"<<id<<" pos:"<<pos<<std::endl;
         // create multiSlsDetector class if required
         std::unique_ptr<multiSlsDetector> localDet;
         if (detPtr == nullptr) {
@@ -93,7 +90,7 @@ class multiSlsDetectorClient {
                                                               verify, update);
                 detPtr = localDet.get();
             } catch (const RuntimeError &e) {
-                /*std::cout << e.GetMessage() << std::endl;*/
+                /*os << e.GetMessage() << std::endl;*/
                 return;
             } catch (...) {
                 os << " caught exception\n";

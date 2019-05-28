@@ -92,13 +92,18 @@ class multiSlsDetectorClient {
 
         //Call CmdProxy which execute the command if it exists, on success returns an empty string 
         //If the command is not in CmdProxy but deprecated the new command is returned
-        sls::CmdProxy<multiSlsDetector> proxy(detPtr);
-        auto cmd = proxy.Call(parser.command(), parser.arguments(), parser.detector_id());
-        if (cmd.empty())
-            return;
-        else
-            parser.setCommand(cmd);
-
+        if(action_ != slsDetectorDefs::READOUT_ACTION){
+            sls::CmdProxy<multiSlsDetector> proxy(detPtr);
+            auto cmd = proxy.Call(parser.command(), parser.arguments(), parser.detector_id());
+            if (cmd.empty()){
+                return;
+            }
+            else{
+                parser.setCommand(cmd);
+            }
+        }
+        
+            
         
 
         // call multi detector command line

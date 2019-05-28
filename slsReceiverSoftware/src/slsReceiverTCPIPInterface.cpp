@@ -620,7 +620,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname(sls::ServerInterface2 &sock
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	socket.receiveArg(ret, mess, hostname, MAX_STR_LENGTH);
-	if(server == nullptr){
+	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
 	}

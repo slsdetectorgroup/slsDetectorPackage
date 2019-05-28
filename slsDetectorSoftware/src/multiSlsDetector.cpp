@@ -3326,7 +3326,10 @@ void multiSlsDetector::readFrameFromReceiver() {
                     uint32_t xoffset = coordX * nPixelsX * bytesPerPixel;
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
-                    uint32_t rowoffset = nX * singledetrowoffset;
+                    uint32_t rowoffset = nX * singledetrowoffset; 
+		    if (getDetectorTypeAsEnum() == CHIPTESTBOARD) {
+		      singledetrowoffset=size;
+		    }
                     FILE_LOG(logDEBUG1) << "Multi Image Info:"
                                            "\n\txoffset: "
                                         << xoffset << "\n\tyoffset: " << yoffset
@@ -3340,7 +3343,11 @@ void multiSlsDetector::readFrameFromReceiver() {
                                    (char *)image + (i * singledetrowoffset), singledetrowoffset);
                         }
                     } else {
+		      
+
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
+			  std::cout << i << " " << ((yoffset + i) * rowoffset) + xoffset << " " << (i * singledetrowoffset) << " " << singledetrowoffset << std::endl;
+
                             memcpy(((char *)multiframe) + ((yoffset + i) * rowoffset) + xoffset,
                                    (char *)image + (i * singledetrowoffset), singledetrowoffset);
                         }
@@ -3362,6 +3369,7 @@ void multiSlsDetector::readFrameFromReceiver() {
             }
             // normal pixels
             else {
+	      // std::cout << "creating detectorData" << std::endl;
                 thisData = new detectorData(getCurrentProgress(), currentFileName.c_str(), nCompletePixelsX,
                                             nCompletePixelsY, multiframe, multisize, dynamicRange,
                                             currentFileIndex);

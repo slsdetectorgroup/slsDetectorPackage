@@ -3,6 +3,7 @@
 #include <string>
 
 #include "CmdLineParser.h"
+#include "CmdProxy.h"
 #include "container_utils.h"
 #include "string_utils.h"
 #include "multiSlsDetector.h"
@@ -87,6 +88,18 @@ class multiSlsDetectorClient {
             std::cout << "position is out of bounds.\n";
             return;
         }
+
+
+        //Call CmdProxy which execute the command if it exists, on success returns an empty string 
+        //If the command is not in CmdProxy but deprecated the new command is returned
+        sls::CmdProxy<multiSlsDetector> proxy(detPtr);
+        auto cmd = proxy.Call(parser.command(), parser.arguments(), parser.detector_id());
+        if (cmd.empty())
+            return;
+        else
+            parser.setCommand(cmd);
+
+        
 
         // call multi detector command line
         slsDetectorCommand myCmd(detPtr);        

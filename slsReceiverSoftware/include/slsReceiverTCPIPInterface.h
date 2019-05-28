@@ -10,7 +10,6 @@
 
 class MySocketTCP;
 class ServerInterface;
-// class slsReceiverImplementation;
 #include "slsReceiverImplementation.h"
 #include "ServerSocket.h"
 

@@ -423,7 +423,7 @@ int slsReceiverTCPIPInterface::update_client(sls::ServerInterface2 &socket) {
 
 	// no arg, check receiver is null
 	socket.receiveArg(ret, mess, nullptr, 0);
-	if(server == nullptr)
+	if(receiver == nullptr)
 		NullObjectError(ret, mess);
 	socket.sendResult(false, ret, nullptr, 0, mess);
 

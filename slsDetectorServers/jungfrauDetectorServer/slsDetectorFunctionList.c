@@ -519,8 +519,10 @@ void setSpeed(enum speedVariable ind, int val, int mode) {
     switch(ind) {
     case CLOCK_DIVIDER:
         setClockDivider(val);
+		break;
     case ADC_PHASE:
         setAdcPhase(val, mode);
+		break;
     default:
         return;
     }
@@ -1337,7 +1339,7 @@ void setClockDivider(int val) {
 			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
             setAdcPhase(ADC_PHASE_FULL_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_FULL_SPEED));
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_FULL_SPEED));
             break;
 
         case HALF_SPEED:
@@ -1353,7 +1355,7 @@ void setClockDivider(int val) {
 			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
             setAdcPhase(ADC_PHASE_HALF_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_HALF_SPEED));
             break;
 
         case QUARTER_SPEED:
@@ -1369,7 +1371,7 @@ void setClockDivider(int val) {
 			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
             setAdcPhase(ADC_PHASE_QUARTER_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED));
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_QUARTER_SPEED));
             break;
 
         }

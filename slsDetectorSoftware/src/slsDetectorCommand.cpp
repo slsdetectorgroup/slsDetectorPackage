@@ -2913,7 +2913,7 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const
     	if (action == PUT_ACTION) {
     		myDet->setReceiverUDPIP2(args[1], detPos);
     	}
-    	return myDet->getReceiverUDPIP(detPos);
+    	return myDet->getReceiverUDPIP2(detPos);
     } else if (cmd == "rx_udpmac") {
     	if (action == PUT_ACTION) {
     		  myDet->setReceiverUDPMAC(args[1], detPos);
@@ -2923,7 +2923,7 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const
     	if (action == PUT_ACTION) {
     		  myDet->setReceiverUDPMAC2(args[1], detPos);
     	  }
-    	  return myDet->getReceiverUDPMAC(detPos);
+    	  return myDet->getReceiverUDPMAC2(detPos);
     } else if (cmd == "rx_udpport") {
         if (action == PUT_ACTION) {
             if (!(sscanf(args[1], "%d", &i))) {

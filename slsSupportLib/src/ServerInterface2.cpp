@@ -1,5 +1,5 @@
 #include "ServerInterface2.h"
-
+#include <cassert>
 namespace sls {
 
 int ServerInterface2::sendResult(bool update, int ret, void *retval,
@@ -24,9 +24,15 @@ int ServerInterface2::sendResult(bool update, int ret, void *retval,
 
 int ServerInterface2::receiveArg(int &ret, char *mess, void *arg,
                                  int sizeofArg) {
-    if (sizeofArg && receiveData(arg, sizeofArg) < 0)
+    assert(sizeofArg > 0);
+    int bytes_read = read(arg, sizeofArg);
+    if (bytes_read == sizeofArg) {
+        return defs::OK;
+    } else {
+        FILE_LOG(logERROR) << "Read: " << bytes_read << " instead of "
+                           << sizeofArg;
         return defs::FAIL;
-    return defs::OK;
+    }
 }
 
 } // namespace sls

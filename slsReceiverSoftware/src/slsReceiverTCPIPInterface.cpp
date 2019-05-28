@@ -109,6 +109,7 @@ void slsReceiverTCPIPInterface::startTCPServer() {
     int ret = OK;
     server = sls::make_unique<sls::ServerSocket>(portNumber);
     while (true) {
+		FILE_LOG(logDEBUG1) << "Start accept loop";
         try {
             auto socket = server->accept();
 			constexpr int time_us = 5000000;
@@ -422,8 +423,6 @@ int slsReceiverTCPIPInterface::update_client(sls::ServerInterface2 &socket) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	// no arg, check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr)
 		NullObjectError(ret, mess);
 	socket.sendResult(false, ret, nullptr, 0, mess);
@@ -698,15 +697,16 @@ int slsReceiverTCPIPInterface::set_roi(sls::ServerInterface2 &socket) {
 int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	char args[6][MAX_STR_LENGTH]{};
+	char args[5][MAX_STR_LENGTH]{};
 	char retvals[2][MAX_STR_LENGTH]{};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
 	socket.receiveArg(ret, mess, args, sizeof(args));
-	if(receiver == nullptr){
+	if (receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
 	}
+		
 
 	// base object not null
 	if (ret == OK) {
@@ -716,18 +716,10 @@ int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 
 			//setup interfaces count
 			int numInterfaces = atoi(args[0]) > 1 ? 2 : 1;
-			int selInterface = atoi(args[1]) > 1 ? 2 : 1;
-
-			char* ip1 = args[2];
-			char* ip2 = args[3];
-			uint32_t port1 = atoi(args[4]);
-			uint32_t port2 = atoi(args[5]);
-
-			// using the 2nd interface only
-			if (myDetectorType == JUNGFRAU && numInterfaces == 1 && selInterface == 2) {
-				ip1 = ip2;
-				port1 = port2;
-			}
+			char* ip1 = args[1];
+			char* ip2 = args[2];
+			uint32_t port1 = atoi(args[3]);
+			uint32_t port2 = atoi(args[4]);
 
 			// 1st interface
 			receiver->setUDPPortNumber(port1);
@@ -764,15 +756,8 @@ int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 						strcpy(mess,"failed to get mac adddress to listen to\n");
 						FILE_LOG(logERROR) << mess;
 					} else {
-						// using the 2nd interface only
-						if (myDetectorType == JUNGFRAU && numInterfaces == 1 && selInterface == 2) {
-							strcpy(retvals[1],temp.c_str());
-							FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[1];
-						}
-						else {
-							strcpy(retvals[0],temp.c_str());
-							FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[0];
-						}
+						strcpy(retvals[0],temp.c_str());
+						FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[0];
 					}
 				}
 			}
@@ -825,7 +810,6 @@ int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 	}
 	return socket.sendResult(true, ret, retvals, sizeof(retvals), mess);
 }
-
 
 
 
@@ -1037,17 +1021,13 @@ int	slsReceiverTCPIPInterface::get_status(sls::ServerInterface2 &socket){
 	memset(mess, 0, sizeof(mess));
 	enum runStatus retval = ERROR;
 
-	// no arg, check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
 
 	if (ret == OK) {
 		FILE_LOG(logDEBUG1) << "Getting Status";
-		std::cout << "kalas\n";
 		retval = receiver->getStatus();
-		std::cout << "puff\n";
 		FILE_LOG(logDEBUG1) << "Status:" << runStatusType(retval);
 	}
 	return socket.sendResult(true, ret, &retval, sizeof(retval), mess);
@@ -1059,8 +1039,6 @@ int slsReceiverTCPIPInterface::start_receiver(sls::ServerInterface2 &socket){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	// no arg, and check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
@@ -1093,8 +1071,7 @@ int slsReceiverTCPIPInterface::stop_receiver(sls::ServerInterface2 &socket){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	// no arg, and check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
+	
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
@@ -1230,8 +1207,6 @@ int	slsReceiverTCPIPInterface::get_frame_index(sls::ServerInterface2 &socket){
 	memset(mess, 0, sizeof(mess));
 	int retval = -1;
 
-	// no arg, check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
@@ -1251,8 +1226,6 @@ int	slsReceiverTCPIPInterface::get_frames_caught(sls::ServerInterface2 &socket){
 	memset(mess, 0, sizeof(mess));
 	int retval = -1;
 
-	// no arg, check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
@@ -1271,8 +1244,6 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(sls::ServerInterface2 &socket
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	// no arg, and check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
@@ -1839,8 +1810,6 @@ int slsReceiverTCPIPInterface::restream_stop(sls::ServerInterface2 &socket){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-	// no arg, and check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
@@ -1904,8 +1873,6 @@ int slsReceiverTCPIPInterface::get_additional_json_header(sls::ServerInterface2 
     memset(mess, 0, sizeof(mess));
     char retval[MAX_STR_LENGTH] = {0};
 
-	// no arg, check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
@@ -1964,8 +1931,6 @@ int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(sls::ServerInterf
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-	// no arg, check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}
@@ -2253,8 +2218,6 @@ int slsReceiverTCPIPInterface::get_dbit_list(sls::ServerInterface2 &socket) {
     memset(mess, 0, sizeof(mess));
 	sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
 
-	// no arg, check receiver is null
-	socket.receiveArg(ret, mess, nullptr, 0);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 	}

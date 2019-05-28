@@ -111,7 +111,8 @@ void slsReceiverTCPIPInterface::startTCPServer() {
     while (true) {
         try {
             auto socket = server->accept();
-			socket.setReceiveTimeout(static_cast<int>(5E6));
+			constexpr int time_us = 5000000;
+			socket.setReceiveTimeout(time_us);
             ret = decode_function(socket);
 
             // if tcp command was to exit server

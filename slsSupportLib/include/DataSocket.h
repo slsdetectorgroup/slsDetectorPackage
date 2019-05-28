@@ -18,9 +18,9 @@ class DataSocket {
     int getSocketId() const {
         return socketId_;
     }
-    size_t sendData(const void *buffer, size_t size);
-    size_t receiveData(void *buffer, size_t size);
-    ssize_t read(void *buffer, size_t size);
+    int sendData(const void *buffer, size_t size);
+    int receiveData(void *buffer, size_t size);
+    int read(void *buffer, size_t size);
     int setTimeOut(int t_seconds);
     int setReceiveTimeout(int us);
     void close();

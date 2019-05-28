@@ -4,13 +4,12 @@
 
 namespace sls {
 
-uint32_t HostnameToIp(const char *hostname);
-
 class IpAddr {
   private:
     uint32_t addr_{0};
 
   public:
+    constexpr IpAddr() noexcept{}
     constexpr IpAddr(uint32_t address) noexcept : addr_{address} {}
     IpAddr(const std::string &address);
     IpAddr(const char *address);
@@ -56,6 +55,10 @@ class MacAddr {
     }
     constexpr uint64_t uint64() const noexcept { return addr_; }
 };
+
+uint32_t HostnameToIp(const char *hostname);
+std::string IpToInterfaceName(const std::string& ip);
+MacAddr InterfaceNameToMac(std::string inf);
 
 std::ostream &operator<<(std::ostream &out, const IpAddr &addr);
 std::ostream &operator<<(std::ostream &out, const MacAddr &addr);

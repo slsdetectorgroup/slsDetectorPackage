@@ -1,6 +1,5 @@
 #include "slsDetector.h"
 #include "ClientSocket.h"
-#include "ServerInterface.h"
 #include "SharedMemory.h"
 #include "file_utils.h"
 #include "multiSlsDetector.h"
@@ -3216,10 +3215,10 @@ int slsDetector::setReceiverOnline(int value) {
         } else {
             shm()->rxOnlineFlag = OFFLINE_FLAG;
             if (value == ONLINE_FLAG) {
-                // connect and set offline flag
-                auto receiver =
-                    ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-                receiver.close();
+                // Connect and ask for receiver id to verify that
+                // it's online and working
+                int64_t retval{0};
+                sendToReceiver(F_GET_RECEIVER_ID, nullptr, retval);
                 shm()->rxOnlineFlag = ONLINE_FLAG;
                 if (shm()->receiverAPIVersion == 0) {
                     checkReceiverVersionCompatibility();

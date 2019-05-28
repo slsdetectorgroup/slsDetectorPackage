@@ -338,7 +338,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->detectorIP2 = DEFAULT_DET_MAC2;
 
     shm()->numUDPInterfaces = 1;
-    shm()->selectedUDPInterface = 1;
+    shm()->selectedUDPInterface = 0;
     shm()->rxOnlineFlag = OFFLINE_FLAG;
     shm()->tenGigaEnable = 0;
     shm()->flippedData[X] = 0;
@@ -2092,7 +2092,7 @@ int slsDetector::selectUDPInterface(int n) {
     if (shm()->myDetectorType != JUNGFRAU) {
         throw RuntimeError("Cannot select an interface for this detector");
     }
-    shm()->selectedUDPInterface = (n > 1 ? 2 : 1);
+    shm()->selectedUDPInterface = (n == 0 ? 0 : 1);
     if (strcmp(shm()->rxHostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
     } else if (setUDPConnection() == FAIL) {
@@ -2349,7 +2349,7 @@ int64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
 
 int slsDetector::setUDPConnection() {
     int ret = FAIL;
-    char args[6][MAX_STR_LENGTH]{};
+    char args[5][MAX_STR_LENGTH]{};
     char retvals[2][MAX_STR_LENGTH]{};
     FILE_LOG(logDEBUG1) << "Setting UDP Connection";
 
@@ -2366,9 +2366,8 @@ int slsDetector::setUDPConnection() {
             shm()->rxUDPIP = HostnameToIp(shm()->rxHostname);
         }
     }
-    // jungfrau 2 interfaces or (1 interface and 2nd interface), copy udpip if
-    // udpip2 empty
-    if (shm()->numUDPInterfaces == 2 || shm()->selectedUDPInterface == 2) {
+    // jungfrau 2 interfaces, copy udpip if udpip2 empty
+    if (shm()->numUDPInterfaces == 2) {
         if (shm()->rxUDPIP2 == 0) {
             shm()->rxUDPIP2 = shm()->rxUDPIP;
         }
@@ -2376,15 +2375,12 @@ int slsDetector::setUDPConnection() {
 
     // copy arguments to args[][]
     snprintf(args[0], sizeof(args[0]), "%d", shm()->numUDPInterfaces);
-    snprintf(args[1], sizeof(args[1]), "%d", shm()->selectedUDPInterface);
-    sls::strcpy_safe(args[2], getReceiverUDPIP().str());
-    sls::strcpy_safe(args[3], getReceiverUDPIP2().str());
-    snprintf(args[4], sizeof(args[4]), "%d", shm()->rxUDPPort);
-    snprintf(args[5], sizeof(args[5]), "%d", shm()->rxUDPPort2);
+    sls::strcpy_safe(args[1], getReceiverUDPIP().str());
+    sls::strcpy_safe(args[2], getReceiverUDPIP2().str());
+    snprintf(args[3], sizeof(args[3]), "%d", shm()->rxUDPPort);
+    snprintf(args[4], sizeof(args[4]), "%d", shm()->rxUDPPort2);
     FILE_LOG(logDEBUG1) << "Receiver Number of UDP Interfaces: "
                         << shm()->numUDPInterfaces;
-    FILE_LOG(logDEBUG1) << "Receiver Selected Interface: "
-                        << shm()->selectedUDPInterface;
     FILE_LOG(logDEBUG1) << "Receiver udp ip address: " << shm()->rxUDPIP;
     FILE_LOG(logDEBUG1) << "Receiver udp ip address2: " << shm()->rxUDPIP2;
     FILE_LOG(logDEBUG1) << "Receiver udp port: " << shm()->rxUDPPort;

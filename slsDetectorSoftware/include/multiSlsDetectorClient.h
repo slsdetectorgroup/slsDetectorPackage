@@ -3,12 +3,11 @@
 #include <string>
 
 #include "CmdLineParser.h"
-#include "CmdProxy.h"
 #include "container_utils.h"
+#include "string_utils.h"
 #include "multiSlsDetector.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
-#include "string_utils.h"
 
 #include <cstdlib>
 #include <memory>
@@ -23,14 +22,17 @@ inline int dummyCallback(detectorData *d, int p, void *) {
 class multiSlsDetectorClient {
   public:
     multiSlsDetectorClient(int argc, char *argv[], int action,
-                           multiSlsDetector *myDetector = nullptr)
-        : action_(action), detPtr(myDetector) {
+                           multiSlsDetector *myDetector = nullptr,
+                           std::ostream &output = std::cout)
+        : action_(action), detPtr(myDetector), os(output) {
         parser.Parse(argc, argv);
         runCommand();
+
     }
     multiSlsDetectorClient(const std::string &args, int action,
-                           multiSlsDetector *myDetector = nullptr)
-        : action_(action), detPtr(myDetector) {
+                           multiSlsDetector *myDetector = nullptr,
+                           std::ostream &output = std::cout)
+        : action_(action), detPtr(myDetector), os(output) {
         parser.Parse(args);
         runCommand();
     }
@@ -39,6 +41,7 @@ class multiSlsDetectorClient {
     int action_;
     CmdLineParser parser;
     multiSlsDetector *detPtr = nullptr;
+    std::ostream &os;
 
     void runCommand() {
         bool verify = true;

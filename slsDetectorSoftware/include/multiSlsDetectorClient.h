@@ -48,22 +48,22 @@ class multiSlsDetectorClient {
         bool update = true;
         if (action_ == slsDetectorDefs::PUT_ACTION &&
             parser.n_arguments() == 0) {
-            std::cout << "Wrong usage - should be: " << parser.executable()
+            os << "Wrong usage - should be: " << parser.executable()
                       << "[id-][pos:]channel arg" << std::endl;
-            std::cout << std::endl;
+            os << std::endl;
             return;
         };
         if (action_ == slsDetectorDefs::GET_ACTION &&
             parser.command().empty()) {
-            std::cout << "Wrong usage - should be: " << parser.executable()
+            os << "Wrong usage - should be: " << parser.executable()
                       << "[id-][pos:]channel arg" << std::endl;
-            std::cout << std::endl;
+            os << std::endl;
             return;
         };
 
         if (action_ == slsDetectorDefs::READOUT_ACTION &&
             parser.detector_id() != -1) {
-            std::cout << "detector_id: " << parser.detector_id()
+            os << "detector_id: " << parser.detector_id()
                       << " ,readout of individual detectors is not allowed!"
                       << std::endl;
             return;
@@ -81,7 +81,7 @@ class multiSlsDetectorClient {
             update = false;
         }
 
-        // std::cout<<"id:"<<id<<" pos:"<<pos<<std::endl;
+        // os<<"id:"<<id<<" pos:"<<pos<<std::endl;
         // create multiSlsDetector class if required
         std::unique_ptr<multiSlsDetector> localDet;
         if (detPtr == nullptr) {
@@ -90,15 +90,15 @@ class multiSlsDetectorClient {
                                                               verify, update);
                 detPtr = localDet.get();
             } catch (const RuntimeError &e) {
-                /*std::cout << e.GetMessage() << std::endl;*/
+                /*os << e.GetMessage() << std::endl;*/
                 return;
             } catch (...) {
-                std::cout << " caught exception\n";
+                os << " caught exception\n";
                 return;
             }
         }
         if (parser.detector_id() >= detPtr->getNumberOfDetectors()) {
-            std::cout << "position is out of bounds.\n";
+            os << "position is out of bounds.\n";
             return;
         }
 
@@ -123,13 +123,13 @@ class multiSlsDetectorClient {
                               action_, parser.detector_id());
 
         if (parser.multi_id() != 0)
-            std::cout << parser.multi_id() << '-';
+            os << parser.multi_id() << '-';
         if (parser.detector_id() != -1)
-            std::cout << parser.detector_id() << ':';
+            os << parser.detector_id() << ':';
 
         if (action_ != slsDetectorDefs::READOUT_ACTION) {
-            std::cout << parser.command() << " ";
+            os << parser.command() << " ";
         }
-        std::cout << answer << std::endl;
+        os << answer << std::endl;
     }
 };

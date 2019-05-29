@@ -1,6 +1,6 @@
 
 
-INCS=ctbMain.h ctbDacs.h   ctbPattern.h  ctbSignals.h  ctbAdcs.h ctbAcquisition.h ctbPowers.h   ctbSlowAdcs.h 
+INCS=ctbMain.h ctbDacs.h   ctbPattern.h  ctbSignals.h  ctbAdcs.h ctbAcquisition.h ctbPowers.h   ctbSlowAdcs.h  
 SRC= $(INCS:.h=.cpp) ctbDict.cpp 
 LINKDEF=ctbLinkDef.h 
 #ctbActions.h 
@@ -8,6 +8,7 @@ ZMQLIB=../slsReceiverSoftware/include
 LIBRARYCBF=$(CBFLIBDIR)/lib/*.o
 
 INCDIR=-I../slsReceiverSoftware/include/ -I../slsDetectorSoftware/include/ -I../slsSupportLib/include/  -I../slsDetectorCalibration -I../slsDetectorCalibration/dataStructures  -I$(CBFLIBDIR)/include  -I../slsDetectorCalibration/interpolations
+
 LDFLAG=-L../build/bin -lSlsDetector -lSlsSupport  -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt  -ltiff -L$(ZMQLIB) -L$(CBFLIBDIR)/lib/ -std=c++11
 #
 MAIN=ctbGui.cpp
@@ -31,13 +32,13 @@ ctbDict.cpp: $(INCS)  $(LINKDEF)
 
 %.o : %.cpp 
 	echo $@
-	g++ -DMYROOT `root-config --cflags --glibs` -lMinuit -DCTB $(LDFLAG)  -o $@ -c $< $(INCDIR)
+	g++ -DMYROOT `source root-config --cflags --glibs` -lMinuit -DCTB $(LDFLAG)  -o $@ -c $< $(INCDIR)
 #$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) -lpthread #$(FLAGS)
 
 
 
 $(DESTDIR)/ctbGui: $(OBJS) $(LINKDEF) 
-	g++ -DMYROOT `root-config --cflags --glibs` -lMinuit -DCTB $(LDFLAG) -o ctbGui $(INCDIR) $(OBJS)  ../slsDetectorCalibration/tiffIO.cpp
+	g++ -DMYROOT `source root-config --cflags --glibs` -lMinuit -DCTB $(LDFLAG) -o ctbGui $(INCDIR) $(OBJS)  ../slsDetectorCalibration/tiffIO.cpp
 	mv ctbGui $(DESTDIR)	
 
 clean:

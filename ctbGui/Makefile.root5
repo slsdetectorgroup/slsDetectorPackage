@@ -30,13 +30,13 @@ ctbDict.cpp: $(INCS)  $(LINKDEF)
 
 %.o : %.cpp 
 	echo $@
-	g++ -DMYROOT `root-config --cflags --glibs` -lMinuit -DCTB $(LDFLAG)  -o $@ -c $< $(INCDIR)
+	g++ -DMYROOT `source root-config --cflags --glibs` -lMinuit -DCTB $(LDFLAG)  -o $@ -c $< $(INCDIR)
 #$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) -lpthread #$(FLAGS)
 
 
 
 $(DESTDIR)/ctbGui: $(OBJS) $(LINKDEF) 
-	g++ -DMYROOT `root-config --cflags --glibs` -lMinuit -DCTB $(LDFLAG) -o ctbGui $(INCDIR) $(OBJS)  ../slsDetectorCalibration/tiffIO.cpp
+	g++ -DMYROOT `source root-config --cflags --glibs` -lMinuit -DCTB $(LDFLAG) -o ctbGui $(INCDIR) $(OBJS)  ../slsDetectorCalibration/tiffIO.cpp
 	mv ctbGui $(DESTDIR)	
 
 clean:

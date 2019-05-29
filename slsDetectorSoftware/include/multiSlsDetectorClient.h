@@ -3,6 +3,7 @@
 #include <string>
 
 #include "CmdLineParser.h"
+#include "CmdProxy.h"
 #include "container_utils.h"
 #include "string_utils.h"
 #include "multiSlsDetector.h"

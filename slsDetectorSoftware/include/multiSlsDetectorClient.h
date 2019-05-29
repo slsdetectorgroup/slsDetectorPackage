@@ -82,7 +82,6 @@ class multiSlsDetectorClient {
             update = false;
         }
 
-        // os<<"id:"<<id<<" pos:"<<pos<<std::endl;
         // create multiSlsDetector class if required
         std::unique_ptr<multiSlsDetector> localDet;
         if (detPtr == nullptr) {

@@ -18,6 +18,10 @@ TEST_CASE("rx_fifodepth", "[.cmd]") {
     oss = std::ostringstream{};
     multiSlsDetectorClient("rx_fifodepth", GET, nullptr, oss);
     REQUIRE(oss.str() == "rx_fifodepth 100\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("0:rx_fifodepth", GET, nullptr, oss);
+    REQUIRE(oss.str() == "0:rx_fifodepth 100\n");
 }
 
 TEST_CASE("frames", "[.cmd]"){

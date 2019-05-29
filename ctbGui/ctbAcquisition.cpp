@@ -38,6 +38,8 @@
 #include "Mythen3_01_jctbData.h"
 #include "Mythen3_02_jctbData.h"
 #include "adcSar2_jctbData.h"
+#include "moench04CtbReceiverData.h"
+#include "deserializer.h"
 #include "detectorData.h"
 
 using namespace std;
@@ -45,7 +47,7 @@ using namespace std;
 
 
 
-ctbAcquisition::ctbAcquisition(TGVerticalFrame *page, multiSlsDetector *det) : TGGroupFrame(page,"Acquisition",kVerticalFrame),  myDet(det), myCanvas(NULL), globalPlot(0), nAnalogSamples(1), nDigitalSamples(1), dataStructure(NULL), photonFinder(NULL), cmSub(0), dBitMask(0xffffffffffffffff) {
+ctbAcquisition::ctbAcquisition(TGVerticalFrame *page, multiSlsDetector *det) : TGGroupFrame(page,"Acquisition",kVerticalFrame),  myDet(det), myCanvas(NULL), globalPlot(0), nAnalogSamples(1), nDigitalSamples(1), dataStructure(NULL), photonFinder(NULL), cmSub(0), dBitMask(0xffffffffffffffff), deserializer(0) {
 
   adcFit=NULL;
   bitPlot=NULL;
@@ -216,15 +218,16 @@ hframe=new TGHorizontalFrame(this, 800,50);
   // rbScan=new TGRadioButton(hframe, "Scan");
 
   cbDetType=new TGComboBox(hframe);
-  //  enum {MOENCH03, MOENCH02, ADCSAR2, MYTHEN301, MYTHEN302, MAXDET};
-  cbDetType->AddEntry("MOENCH03", MOENCH03);
+  //  enum {DESERIALIZER, MOENCH04, MOENCH02, ADCSAR2, MYTHEN301, MYTHEN302, MAXDET};
+  cbDetType->AddEntry("Deserializer", DESERIALIZER);
   cbDetType->AddEntry("MOENCH02", MOENCH02);
+  cbDetType->AddEntry("MOENCH04", MOENCH04);
   // cbDetType->AddEntry("JUNGFRAU1.0", 2);
   //cbDetType->AddEntry("MOENCH03 T", iiii++);
   //cbDetType->AddEntry("MOENCH03", iiii++);
-  cbDetType->AddEntry("MYTHEN3 0.1", MYTHEN301);
-  cbDetType->AddEntry("ADCSAR2", ADCSAR2);
-  cbDetType->AddEntry("MYTHEN3 0.2", MYTHEN302);
+  // cbDetType->AddEntry("MYTHEN3 0.1", MYTHEN301);
+  // cbDetType->AddEntry("ADCSAR2", ADCSAR2);
+  // cbDetType->AddEntry("MYTHEN3 0.2", MYTHEN302);
  
   cbDetType->SetHeight(20);
   cbDetType->Select(0);
@@ -849,12 +852,18 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
   double ped=0;
   int vv1,vv2;
   int dsize=-1;
-  short unsigned int  **val=NULL;
+  int  *val=NULL;
   int nx=1, ny=1, jj;
   short unsigned int *va;
   if (dataStructure) { 
     dataStructure->getDetectorSize(nx,ny);
     cout << "Data structure: " << dataStructure << " size " << nx << " " << ny <<  endl;
+  }
+  int  dr=24, soff=2;
+  if (deserializer) {
+    nx=eNumCount->GetIntNumber();
+    dr=eDynRange->GetIntNumber();
+    soff=eSerOff->GetIntNumber();
   }
 
   i=0;
@@ -871,9 +880,15 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
   else
     nadc=adclist.size();
       
+  std::vector <int> plotlist;
   if (dbitlist.empty()) {
     ndbit=64;
     dBitOffset=0;
+    for (ib=0; ib<64; ib++){
+      if (bitPlotFlag[ib]) {
+	plotlist.push_back(ib);
+      }
+    }
   } else  
     ndbit=dbitlist.size();
 
@@ -965,21 +980,24 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 
 
 
-  if (dataStructure) {
-    
-    val=dataStructure->getData(d_data);
+  if (deserializer) {
+    if (dbitlist.empty())
+      val=deserializer::deserializeAll(d_data,plotlist,dr,nx,soff);//dataStructure->getData(d_data);
+    else
+      val=deserializer::deserializeList(d_data,dbitlist,dr,nx,soff);//dataStructure->getData(d_data);
+      
     
     if (val) {
-      if (h2DMap) {
-	for (x=0; x<nx; x++) {
-	  for (y=0; y<ny; y++) {
-	    h2DMap->SetBinContent(x+1,y+1,val[y][x]);
-	  }
-	}
-      }
+      // if (h2DMap) {
+      // 	for (x=0; x<nx; x++) {
+      // 	  for (y=0; y<ny; y++) {
+      // 	    h2DMap->SetBinContent(x+1,y+1,val[y][x]);
+      // 	  }
+      // 	}
+      // }
       if (h1DMap){
 	for (x=0; x<nx; x++) {
-	  h1DMap->SetBinContent(x+1,val[0][x]); 
+	  h1DMap->SetBinContent(x+1,val[x]); 
 	  //	cout << dec << x << " " << val[0][x] << endl;
 	}
       }  
@@ -993,9 +1011,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 	    // } else
 	    //   cout << "No scan (digital)" << endl;
       
-      for (y=0; y<ny; y++) {
-	delete [] val[y];
-      }
+    
       delete [] val;
     } else
       cout << "get val did not succeed"<<endl;      
@@ -1166,13 +1182,21 @@ void ctbAcquisition::changeDetector(){
   eNumCount->SetState(kFALSE);
   eDynRange->SetState(kFALSE);
   eSerOff->SetState(kFALSE);
+  deserializer=0;
   if (rb2D->IsOn() ) {//|| rbScan->IsOn()
     switch  (cbDetType->GetSelected()) {
-    case MOENCH03:
-      cout << "MOENCH 0.3 T1!" << endl;
-      dataStructure=new moench03T1CtbData(); 
-      commonMode=new moench03CommonMode();
+    case DESERIALIZER:
+      deserializer=1;
+      // cout << "DESERIALIZER!" << endl;
+      // dataStructure=new moench03T1CtbData(); 
+      // commonMode=new moench03CommonMode();
       break;
+     case MOENCH04:
+       dataStructure=new moench04CtbReceiverData(); 
+       cout << "MOENCH 0.4!" << endl;
+       commonMode=new moench03CommonMode();
+      break;
+   
     // case 1:
     //   cout << "************** T!!!!!!!!!!" << endl;
     //   dataStructure=new moench03TCtbData(); 
@@ -1192,34 +1216,37 @@ void ctbAcquisition::changeDetector(){
     //   dataStructure=new moench03CtbData(); 
     //   commonMode=new moench03CommonMode();
     //   break;
-    case MYTHEN301:
-      cout << "MYTHEN 3 0.1" << endl;
-      dataStructure=new mythen3_01_jctbData(eNumCount->GetIntNumber(),eDynRange->GetIntNumber(),eSerOff->GetIntNumber());
-      //( int nch=64*3,int dr=24, int off=5)
-      eNumCount->SetState(kTRUE);
-      eDynRange->SetState(kTRUE);
-      eSerOff->SetState(kTRUE);
-      commonMode=NULL;
-      dim=1; 
-      break;
-    case ADCSAR2:
-      //adcsar2
-      dataStructure=new adcSar2_jctbData();
-      //need to use configurable number of counters, offset or dynamic range?
-      commonMode=NULL;
-      dim=1;
-      break;
+    // case MYTHEN301:
+    //   deserializer=1;
+    //   cout << "MYTHEN 3 0.1" << endl;
+    //   dataStructure=new mythen3_01_jctbData(eNumCount->GetIntNumber(),eDynRange->GetIntNumber(),eSerOff->GetIntNumber());
+    //   //( int nch=64*3,int dr=24, int off=5)
+    //   eNumCount->SetState(kTRUE);
+    //   eDynRange->SetState(kTRUE);
+    //   eSerOff->SetState(kTRUE);
+    //   commonMode=NULL;
+    //   dim=1; 
+    //   break;
+    // case ADCSAR2:
+    //   deserializer=1;
+    //   //adcsar2
+    //   dataStructure=new adcSar2_jctbData();
+    //   //need to use configurable number of counters, offset or dynamic range?
+    //   commonMode=NULL;
+    //   dim=1;
+    //   break;
       
-    case MYTHEN302:
-      cout << "MYTHEN 3 0.2" << endl;
-      dataStructure=new mythen3_02_jctbData(eNumCount->GetIntNumber(),eDynRange->GetIntNumber(),eSerOff->GetIntNumber());
-      //( int nch=64*3,int dr=24, int off=5)
-      eNumCount->SetState(kTRUE);
-      eDynRange->SetState(kTRUE);
-      eSerOff->SetState(kTRUE);
-      commonMode=NULL;
-      dim=1; 
-      break;
+    // case MYTHEN302:
+    //   deserializer=1;
+    //   cout << "MYTHEN 3 0.2" << endl;
+    //   dataStructure=new mythen3_02_jctbData(eNumCount->GetIntNumber(),eDynRange->GetIntNumber(),eSerOff->GetIntNumber());
+    //   //( int nch=64*3,int dr=24, int off=5)
+    //   eNumCount->SetState(kTRUE);
+    //   eDynRange->SetState(kTRUE);
+    //   eSerOff->SetState(kTRUE);
+    //   commonMode=NULL;
+    //   dim=1; 
+    //   break;
     default:
       dataStructure=NULL;
        commonMode=NULL;
@@ -1227,10 +1254,16 @@ void ctbAcquisition::changeDetector(){
     if (cbCommonMode->IsOn()) cm=commonMode;
   }
     
-    if (dataStructure) {
-      photonFinder=new singlePhotonDetector(dataStructure,csize,nsigma,1,cm); //sign is positive - should correct with ADC mask, no common mode 
-      //photonFinder=new singlePhotonDetector(dataStructure,csize,nsigma,1,cm); //sign is positive - should correct with ADC mask, no common mode
-      dataStructure->getDetectorSize(nx,ny);
+    if (dataStructure || deserializer) {
+      if (dataStructure) {
+	photonFinder=new singlePhotonDetector(dataStructure,csize,nsigma,1,cm); //sign is positive - should correct with ADC mask, no common mode 
+	//photonFinder=new singlePhotonDetector(dataStructure,csize,nsigma,1,cm); //sign is positive - should correct with ADC mask, no common mode
+	dataStructure->getDetectorSize(nx,ny);
+      }
+      if (deserializer) {
+	ny=1;
+	nx=eNumCount->GetIntNumber();
+      }
       //  cout << "h size is " << nx << " " << ny << endl;
       int ymax=ny, xmax=nx;
       // if (ny>500) {ny=ny/2;}

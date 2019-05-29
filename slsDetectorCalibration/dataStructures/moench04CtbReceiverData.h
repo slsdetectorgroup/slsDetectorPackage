@@ -40,7 +40,7 @@
 
 
 
-class moench04ReceiverData : public slsDetectorData<uint16_t> {
+class moench04CtbReceiverData : public slsDetectorData<uint16_t> {
  
  private:
   
@@ -63,7 +63,7 @@ class moench04ReceiverData : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
- moench04ReceiverData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+sizeof(sls_detector_header)+nds*8), aSamples(nas), dSamples(nds) {
+ moench04CtbReceiverData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+sizeof(sls_detector_header)+nds*8), aSamples(nas), dSamples(nds) {
 
     int nadc=32;
     int sc_width=25;
@@ -97,7 +97,7 @@ class moench04ReceiverData : public slsDetectorData<uint16_t> {
 	      row=200+i/sc_width;
 	    }
 	    dataMap[row][col]=sizeof(sls_detector_header)+(nadc*i+iadc)*2;//+16*(ip+1);
-	    if (dataMap[row][col]<0 || dataMap[row][col]>=nSamples*2*32)
+	    if (dataMap[row][col]<0 || dataMap[row][col]>=aSamples*2*32)
 	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  }
 	}

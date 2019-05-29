@@ -49,14 +49,14 @@ class multiSlsDetectorClient {
         if (action_ == slsDetectorDefs::PUT_ACTION &&
             parser.n_arguments() == 0) {
             os << "Wrong usage - should be: " << parser.executable()
-                      << "[id-][pos:]channel arg" << std::endl;
+               << "[id-][pos:]channel arg" << std::endl;
             os << std::endl;
             return;
         };
         if (action_ == slsDetectorDefs::GET_ACTION &&
             parser.command().empty()) {
             os << "Wrong usage - should be: " << parser.executable()
-                      << "[id-][pos:]channel arg" << std::endl;
+               << "[id-][pos:]channel arg" << std::endl;
             os << std::endl;
             return;
         };
@@ -64,8 +64,8 @@ class multiSlsDetectorClient {
         if (action_ == slsDetectorDefs::READOUT_ACTION &&
             parser.detector_id() != -1) {
             os << "detector_id: " << parser.detector_id()
-                      << " ,readout of individual detectors is not allowed!"
-                      << std::endl;
+               << " ,readout of individual detectors is not allowed!"
+               << std::endl;
             return;
         }
 

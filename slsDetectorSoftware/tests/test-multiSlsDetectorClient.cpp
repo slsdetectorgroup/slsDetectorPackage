@@ -7,9 +7,9 @@ auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
 TEST_CASE("rx_fifodepth", "[.cmd]") {
-    std::ostringstream oss1;
-    multiSlsDetectorClient("rx_fifodepth 10", PUT, nullptr, oss1);
-    REQUIRE(oss1.str() == "rx_fifodepth 10\n");
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("rx_fifodepth 10", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "rx_fifodepth 10\n");
 
     oss = std::ostringstream{};
     multiSlsDetectorClient("rx_fifodepth 100", PUT, nullptr, oss);

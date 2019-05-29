@@ -308,6 +308,7 @@ int slsReceiverTCPIPInterface::exec_command(sls::ServerInterface2 &socket) {
 	char cmd[MAX_STR_LENGTH]{};
 	char retval[MAX_STR_LENGTH]{};
 
+	
 	// get args, return if socket crashed
 	if (socket.receiveArg(ret, mess, cmd, MAX_STR_LENGTH) == FAIL)
 		return FAIL;
@@ -356,6 +357,7 @@ int slsReceiverTCPIPInterface::lock_receiver(sls::ServerInterface2 &socket) {
         return FAIL;
     FILE_LOG(logDEBUG1) << "Locking Server to " << lock;
 
+	throw sls::SocketError("Hello");
     // execute action
     if (lock >= 0) {
         if (!lockStatus || (server->getLockedBy() == server->getThisClient())) {
@@ -368,6 +370,8 @@ int slsReceiverTCPIPInterface::lock_receiver(sls::ServerInterface2 &socket) {
 		}
             
     }
+	if(server->differentClients() && ret == OK)
+		ret = FORCE_UPDATE;
     return socket.sendResult(true, ret, &lockStatus,
                                         sizeof(lockStatus), mess);
 }

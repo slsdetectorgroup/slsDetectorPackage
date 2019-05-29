@@ -70,11 +70,11 @@ int ClientSocket::sendCommandThenRead(int fnum, const void *args,
 
 void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
 
-    receiveData(&ret, sizeof(ret));
+    read(&ret, sizeof(ret));
     if (ret == slsDetectorDefs::FAIL) {
         char mess[MAX_STR_LENGTH]{};
         // get error message
-        receiveData(mess, sizeof(mess));
+        read(mess, sizeof(mess));
         FILE_LOG(logERROR) << socketType << " returned error: " << mess;
         std::cout << "\n"; // needed to reset the color.
 
@@ -89,7 +89,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         }
     }
     // get retval
-    receiveData(retval, retval_size);
+    read(retval, retval_size);
 }
 
 }; // namespace sls

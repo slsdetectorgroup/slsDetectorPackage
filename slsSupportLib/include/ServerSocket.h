@@ -15,13 +15,13 @@ class ServerSocket : public DataSocket {
   public:
     ServerSocket(int port);
     ServerInterface2 accept();
-    IpAddr getLastClient() noexcept { return lastClient; }
-    IpAddr getThisClient() noexcept { return thisClient; }
-    IpAddr getLockedBy() noexcept { return lockedBy; }
+    IpAddr getLastClient() const noexcept { return lastClient; }
+    IpAddr getThisClient() const noexcept { return thisClient; }
+    IpAddr getLockedBy() const noexcept { return lockedBy; }
+    bool differentClients() const noexcept {return lastClient != thisClient;}
     void setLockedBy(IpAddr addr) { lockedBy = addr; }
     void setLastClient(IpAddr addr) { lastClient = addr; }
-    int getPort() const;
-    void SendResult(int &ret, void *retval, int retvalSize, char *mess);
+    int getPort() const noexcept { return serverPort; }
 
   private:
     IpAddr thisClient;

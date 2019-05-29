@@ -51,7 +51,7 @@ int DataSocket::receiveData(void *buffer, size_t size) {
 }
 
 int DataSocket::read(void *buffer, size_t size){
-    return ::read(getSocketId(), reinterpret_cast<char *>(buffer), size);
+    return ::read(getSocketId(), buffer, size);
 }
 
 int DataSocket::setReceiveTimeout(int us) {

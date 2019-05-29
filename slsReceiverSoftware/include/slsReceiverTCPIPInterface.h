@@ -301,6 +301,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 
 	int LogSocketCrash();
 	void NullObjectError(int& ret, char* mess);
+	// int
 
 	/** detector type */
 	detectorType myDetectorType;

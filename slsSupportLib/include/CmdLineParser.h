@@ -14,6 +14,7 @@ class CmdLineParser {
     int detector_id() const { return detector_id_; };
     int n_arguments() const { return arguments_.size(); }
     const std::string &command() const { return command_; }
+    void setCommand(std::string cmd){command_ = cmd;}
     const std::string &executable() const { return executable_; }
     const std::vector<std::string> &arguments() const { return arguments_; };
     std::vector<const char *> argv() const;

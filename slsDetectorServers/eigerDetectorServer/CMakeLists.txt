@@ -23,7 +23,11 @@ target_link_libraries(eigerDetectorServerMaster
     PUBLIC pthread rt
 )
 
-install(TARGETS eigerDetectorServerMaster
+set_target_properties(eigerDetectorServerMaster PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+install(TARGETS eigerDetectorServerMaster 
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
@@ -42,6 +46,10 @@ target_compile_definitions(eigerDetectorServerSlave
 
 target_link_libraries(eigerDetectorServerSlave
     PUBLIC pthread rt
+)
+
+set_target_properties(eigerDetectorServerSlave PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 install(TARGETS eigerDetectorServerSlave

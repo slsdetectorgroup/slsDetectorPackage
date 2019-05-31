@@ -1686,14 +1686,18 @@ void* start_timer(void* arg) {
 		//TODO: Generate data
 		char imageData[databytes * 2];
 		memset(imageData, 0, databytes * 2);
-		for (int i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
-			*((uint8_t*)(imageData + i)) = i;
+		{
+			int i = 0;
+			for (i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
+				*((uint8_t*)(imageData + i)) = i;
+			}
 		}
-
 		
 		
 		//TODO: Send data
-		for(int frameNr=1; frameNr <= numFrames; ++frameNr ){
+		{
+			int frameNr = 1;
+			for(frameNr=1; frameNr <= numFrames; ++frameNr ) {
 				int srcOffset = 0;
 				int srcOffset2 = npixelsx;
 			
@@ -1708,38 +1712,43 @@ void* start_timer(void* arg) {
 				memset(packetData2, 0, packetsize);
 				
 				// loop packet
-				for(int i=0; i!=numPacketsPerFrame; ++i){
-					int dstOffset = sizeof(sls_detector_header);
-					int dstOffset2 = sizeof(sls_detector_header);
-					// set header
-					sls_detector_header* header = (sls_detector_header*)(packetData);
-					header->frameNumber = frameNr;
-					header->packetNumber = i;
-					header = (sls_detector_header*)(packetData2);
-					header->frameNumber = frameNr;
-					header->packetNumber = i;
-					// fill data				
-					for (int psize = 0; psize < datasize; psize += npixelsx) {
-						if (dr == 32 && tgEnable == 0) {
-							memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
-							memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
-							srcOffset += npixelsx;
-							srcOffset2 += npixelsx;
-							dstOffset += npixelsx/2;
-							dstOffset2 += npixelsx/2;
-						} else {
-							memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx);
-							memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx);
-							srcOffset += 2 * npixelsx;
-							srcOffset2 += 2 * npixelsx;
-							dstOffset += npixelsx;
-							dstOffset2 += npixelsx;
+				{
+					int i = 0;
+					for(i = 0; i != numPacketsPerFrame; ++i) {
+						int dstOffset = sizeof(sls_detector_header);
+						int dstOffset2 = sizeof(sls_detector_header);
+						// set header
+						sls_detector_header* header = (sls_detector_header*)(packetData);
+						header->frameNumber = frameNr;
+						header->packetNumber = i;
+						header = (sls_detector_header*)(packetData2);
+						header->frameNumber = frameNr;
+						header->packetNumber = i;
+						// fill data	
+						{		
+							int psize = 0;	
+							for (psize = 0; psize < datasize; psize += npixelsx) {
+								if (dr == 32 && tgEnable == 0) {
+									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
+									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
+									srcOffset += npixelsx;
+									srcOffset2 += npixelsx;
+									dstOffset += npixelsx/2;
+									dstOffset2 += npixelsx/2;
+								} else {
+									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx);
+									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx);
+									srcOffset += 2 * npixelsx;
+									srcOffset2 += 2 * npixelsx;
+									dstOffset += npixelsx;
+									dstOffset2 += npixelsx;
+								}
+							}
 						}
+						
+						sendUDPPacket(0, packetData, packetsize);
+						sendUDPPacket(1, packetData2, packetsize);
 					}
-					
-					sendUDPPacket(0, packetData, packetsize);
-					sendUDPPacket(1, packetData2, packetsize);
-					
 				}
 				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
 				clock_gettime(CLOCK_REALTIME, &end);
@@ -1749,6 +1758,7 @@ void* start_timer(void* arg) {
 				if (periodns > time_ns) {
 					usleep((periodns - time_ns)/ 1000);
 				}
+			}
 		}
 	
 	closeUDPSocket(0);

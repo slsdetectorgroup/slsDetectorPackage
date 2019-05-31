@@ -1629,14 +1629,19 @@ void* start_timer(void* arg) {
 		//TODO: Generate data
 		char imageData[DATA_BYTES];
 		memset(imageData, 0, DATA_BYTES);
-		for (int i = 0; i < DATA_BYTES; i += sizeof(uint16_t)) {
-			*((uint16_t*)(imageData + i)) = i;
+		{
+			int i = 0;
+			for (i = 0; i < DATA_BYTES; i += sizeof(uint16_t)) {
+				*((uint16_t*)(imageData + i)) = i;
+			}
 		}
 		int datasize = 8192;
 		
 		
 		//TODO: Send data
-		for(int frameNr=0; frameNr!= numFrames; ++frameNr ){
+		{
+			int frameNr = 0;
+			for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
 				int srcOffset = 0;
 			
 				struct timespec begin, end;
@@ -1649,17 +1654,19 @@ void* start_timer(void* arg) {
 				memset(packetData, 0, sizeof(sls_detector_header));
 				
 				// loop packet
-				for(int i=0; i!=128; ++i){
-					// set header
-					sls_detector_header* header = (sls_detector_header*)(packetData);
-					header->frameNumber = frameNr;
-					header->packetNumber = i;
-					// fill data
-					memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
-					srcOffset += datasize;
-					
-					sendUDPPacket(0, packetData, size);
-					
+				{
+					int i = 0;
+					for(i=0; i!=128; ++i) {
+						// set header
+						sls_detector_header* header = (sls_detector_header*)(packetData);
+						header->frameNumber = frameNr;
+						header->packetNumber = i;
+						// fill data
+						memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
+						srcOffset += datasize;
+						
+						sendUDPPacket(0, packetData, size);
+					}
 				}
 				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
 				clock_gettime(CLOCK_REALTIME, &end);
@@ -1669,6 +1676,7 @@ void* start_timer(void* arg) {
 				if (periodns > time_ns) {
 					usleep((periodns - time_ns)/ 1000);
 				}
+			}
 		}
 		
 	// }

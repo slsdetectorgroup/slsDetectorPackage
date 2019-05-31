@@ -17,6 +17,10 @@ target_link_libraries(jungfrauDetectorServer
     PUBLIC pthread rt
 )
 
+set_target_properties(jungfrauDetectorServer PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
 install(TARGETS jungfrauDetectorServer
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

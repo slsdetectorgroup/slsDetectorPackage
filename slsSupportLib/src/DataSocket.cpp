@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 namespace sls {
 
@@ -39,18 +40,31 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
     return *this;
 }
 
-size_t DataSocket::receiveData(void *buffer, size_t size) {
+int DataSocket::receiveData(void *buffer, size_t size) {
     size_t dataRead = 0;
     while (dataRead < size) {
         dataRead +=
-            read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead,
+            ::read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead,
                  size - dataRead);
     }
     return dataRead;
 }
 
-size_t DataSocket::sendData(const void *buffer, size_t size) {
-    size_t dataSent = 0;
+int DataSocket::read(void *buffer, size_t size){
+    return ::read(getSocketId(), reinterpret_cast<char *>(buffer), size);
+}
+
+int DataSocket::setReceiveTimeout(int us) {
+    timeval t{};
+    t.tv_sec = 0;
+    t.tv_usec = us;
+    return ::setsockopt(getSocketId(), SOL_SOCKET, SO_RCVTIMEO, &t,
+                        sizeof(struct timeval));
+}
+
+
+int DataSocket::sendData(const void *buffer, size_t size) {
+    int dataSent = 0;
     while (dataSent < size) {
         dataSent +=
             write(getSocketId(), reinterpret_cast<const char *>(buffer) + dataSent,

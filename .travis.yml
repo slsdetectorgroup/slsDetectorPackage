@@ -25,7 +25,8 @@ install:
   - conda config --add channels slsdetectorgroup
   - conda update conda
   - conda update --all
-  - conda install conda-build anaconda-client
+  - conda install conda-build=3.17 
+  - conda install anaconda-client
   - conda install conda-verify
 
   # Useful for debugging any issues with conda

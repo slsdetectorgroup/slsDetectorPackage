@@ -26,8 +26,5 @@ int main(int argc, char *argv[]) {
 #ifdef HELP
     int action = slsDetectorDefs::HELP_ACTION;
 #endif
-
-    // if (argc > 1)
-    //     argv++;
     multiSlsDetectorClient(argc, argv, action);
 }

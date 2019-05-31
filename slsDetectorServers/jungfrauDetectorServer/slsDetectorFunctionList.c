@@ -520,8 +520,10 @@ void setSpeed(enum speedVariable ind, int val, int mode) {
     switch(ind) {
     case CLOCK_DIVIDER:
         setClockDivider(val);
+		break;
     case ADC_PHASE:
         setAdcPhase(val, mode);
+		break;
     default:
         return;
     }
@@ -998,18 +1000,23 @@ void setNumberofUDPInterfaces(int val) {
 	}
 }
 
+int getNumberofUDPInterfaces() {
+	// return 2 if enabled, else 1
+	return ((bus_r(CONFIG_REG) | CONFIG_OPRTN_MDE_2_X_10GbE_MSK) ? 2 : 1);
+}
+
 void selectPrimaryInterface(int val) {
 	uint32_t addr = CONFIG_REG;
 
-	// inner (user input: 1)
-	if (val == 1) {
-		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 1 (Inner)\n"));
-		bus_w(addr, bus_r(addr) | CONFIG_INNR_PRIMRY_INTRFCE_MSK);
-	}
-	// outer (user input: 2)
-	else {
-		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 2 (Outer)\n"));
+	// inner (user input: 0)
+	if (val == 0) {
+		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 0 (Outer)\n"));
 		bus_w(addr, bus_r(addr) &~ CONFIG_INNR_PRIMRY_INTRFCE_MSK);
+	}
+	// outer (user input: 1)
+	else {
+		FILE_LOG(logINFOBLUE, ("Setting Secondary Interface: 1 (Inner)\n"));
+		bus_w(addr, bus_r(addr) | CONFIG_INNR_PRIMRY_INTRFCE_MSK);
 	}
 }
 
@@ -1108,7 +1115,7 @@ int configureMAC(int numInterfaces, int selInterface,
 	FILE_LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
 	FILE_LOG(logINFO, ("\tInterface   : %d\n\n", selInterface));
 
-	FILE_LOG(logINFO, ("\tInner\n"));
+	FILE_LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2) ? "(Bottom)": ""));
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
 	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1134,7 +1141,7 @@ int configureMAC(int numInterfaces, int selInterface,
 	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
 
 	uint32_t sourceport2  =  DEFAULT_TX_UDP_PORT + 1;
-	FILE_LOG(logINFO, ("\tOuter\n"));
+	FILE_LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2) ? "(Top)": "Not used"));
 	FILE_LOG(logINFO, ("\tSource IP2  : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip2>>24)&0xff,(sourceip2>>16)&0xff,(sourceip2>>8)&0xff,(sourceip2)&0xff, sourceip2));
 	FILE_LOG(logINFO, ("\tSource MAC2 : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1161,10 +1168,22 @@ int configureMAC(int numInterfaces, int selInterface,
 
 	// default one rxr entry (others not yet implemented in client yet)
 	int iRxEntry = 0;
-	// top
-	setupHeader(iRxEntry, INNER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
-	// bottom
-	setupHeader(iRxEntry, OUTER, destip2, destmac2, udpport2, sourcemac2, sourceip2, sourceport2);
+
+	if (numInterfaces == 2) {
+		// bottom
+		setupHeader(iRxEntry, OUTER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+		// top
+		setupHeader(iRxEntry, INNER, destip2, destmac2, udpport2, sourcemac2, sourceip2, sourceport2);
+	} 
+	// single interface
+	else {
+		// default
+		if (selInterface == 0) {
+			setupHeader(iRxEntry, OUTER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+		} else  {
+			setupHeader(iRxEntry, INNER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+		}
+	}
 
 	setNumberofUDPInterfaces(numInterfaces);
 	selectPrimaryInterface(selInterface);
@@ -1178,20 +1197,50 @@ int configureMAC(int numInterfaces, int selInterface,
 
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
-	FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", pos[X], pos[Y]));
+	int innerPos[2] = {pos[X], pos[Y]};
+	int outerPos[2] = {pos[X], pos[Y]};
+	int numInterfaces = getNumberofUDPInterfaces();
 
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_X_MSK)));
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[X] << COORD_0_X_OFST) & COORD_0_X_MSK));
-	if ((bus_r(COORD_0_REG) &  COORD_0_X_MSK) != ((pos[X] << COORD_0_X_OFST) & COORD_0_X_MSK))
+	if (numInterfaces == 1) {
+		FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", innerPos[X], innerPos[Y]));
+	} 
+	else {
+		++outerPos[X]; 
+		FILE_LOG(logDEBUG1, ("Setting detector position:\n"
+						"  inner top(%d, %d), outer bottom(%d, %d)\n"
+						, innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
+	} 
+
+	// row
+	//outer
+	uint32_t addr = COORD_ROW_REG;
+	bus_w(addr, (bus_r(addr) &~COORD_ROW_OUTER_MSK) | ((outerPos[X] << COORD_ROW_OUTER_OFST) & COORD_ROW_OUTER_MSK));
+	if (((bus_r(addr) &  COORD_ROW_OUTER_MSK) >> COORD_ROW_OUTER_OFST) != outerPos[X])
+		ret = FAIL;
+	// inner
+	bus_w(addr, (bus_r(addr) &~COORD_ROW_INNER_MSK) | ((innerPos[X] << COORD_ROW_INNER_OFST) & COORD_ROW_INNER_MSK));
+	if (((bus_r(addr) &  COORD_ROW_INNER_MSK) >> COORD_ROW_INNER_OFST) != innerPos[X])
 		ret = FAIL;
 
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) & (~(COORD_0_Y_MSK)));
-	bus_w(COORD_0_REG, bus_r(COORD_0_REG) | ((pos[Y] << COORD_0_Y_OFST) & COORD_0_Y_MSK));
-	if ((bus_r(COORD_0_REG) &  COORD_0_Y_MSK) != ((pos[Y] << COORD_0_Y_OFST) & COORD_0_Y_MSK))
+	// col
+	//outer
+	addr = COORD_COL_REG;
+	bus_w(addr, (bus_r(addr) &~COORD_COL_OUTER_MSK) | ((outerPos[Y] << COORD_COL_OUTER_OFST) & COORD_COL_OUTER_MSK));
+	if (((bus_r(addr) &  COORD_COL_OUTER_MSK) >> COORD_COL_OUTER_OFST) != outerPos[Y])
+		ret = FAIL;
+	// inner
+	bus_w(addr, (bus_r(addr) &~COORD_COL_INNER_MSK) | ((innerPos[Y] << COORD_COL_INNER_OFST) & COORD_COL_INNER_MSK));
+	if (((bus_r(addr) &  COORD_COL_INNER_MSK) >> COORD_COL_INNER_OFST) != innerPos[Y])
 		ret = FAIL;
 
 	if (ret == OK) {
-		FILE_LOG(logINFO, ("Position set to [%d, %d]\n", pos[X], pos[Y]));
+		if (numInterfaces == 1) {
+			FILE_LOG(logINFO, ("Position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
+		} 
+		else {
+			FILE_LOG(logINFO, (" Inner (top) position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
+			FILE_LOG(logINFO, (" Outer (bottom) position set to [%d, %d]\n", outerPos[X], outerPos[Y]));
+		} 
 	}
 	return ret;
 }
@@ -1299,7 +1348,7 @@ void setClockDivider(int val) {
 			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
             setAdcPhase(ADC_PHASE_FULL_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_FULL_SPEED));
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_FULL_SPEED));
             break;
 
         case HALF_SPEED:
@@ -1315,7 +1364,7 @@ void setClockDivider(int val) {
 			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
             setAdcPhase(ADC_PHASE_HALF_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_HALF_SPEED));
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_HALF_SPEED));
             break;
 
         case QUARTER_SPEED:
@@ -1331,7 +1380,7 @@ void setClockDivider(int val) {
 			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
             setAdcPhase(ADC_PHASE_QUARTER_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to 0x%x\n", ADC_PHASE_QUARTER_SPEED));
+			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_QUARTER_SPEED));
             break;
 
         }
@@ -1393,6 +1442,8 @@ void setAdcPhase(int val, int degrees){
     ALTERA_PLL_SetPhaseShift(phase, 1, 0);
 
     adcPhase = valShift;
+
+	alignDeserializer();
 }
 
 int getPhase(int degrees) {

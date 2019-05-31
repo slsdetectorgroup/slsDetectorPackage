@@ -295,9 +295,12 @@ void AD9257_Configure(){
 	// vref
 #ifdef GOTTHARDD
 	FILE_LOG(logINFO, ("\tVref default at 2.0\n"));
+	AD9257_SetVrefVoltage(AD9257_VREF_DEFAULT_VAL, 0);
 #else
 	FILE_LOG(logINFO, ("\tVref 1.33\n"));
-	AD9257_Set(AD9257_VREF_REG, AD9257_VREF_1_33_VAL);
+	//AD9257_Set(AD9257_VREF_REG, AD9257_VREF_1_33_VAL);
+	AD9257_SetVrefVoltage(AD9257_VREF_1_33_VAL, 0);
+
 #endif
 
 	// no test mode
@@ -310,8 +313,4 @@ void AD9257_Configure(){
 	FILE_LOG(logINFO, ("\tMixed bit frequency test mode\n"));
 	AD9257_Set(AD9257_TEST_MODE_REG, AD9257_TST_MXD_BT_FRQ_VAL);
 #endif
-
-	// set default value again (to remember the value set)
-	AD9257_SetVrefVoltage(AD9257_VREF_DEFAULT_VAL, 0);
-
 }

@@ -3,11 +3,12 @@
 #include <string>
 
 #include "CmdLineParser.h"
+#include "CmdProxy.h"
 #include "container_utils.h"
-#include "string_utils.h"
 #include "multiSlsDetector.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
+#include "string_utils.h"
 
 #include <cstdlib>
 #include <memory>
@@ -21,59 +22,69 @@ inline int dummyCallback(detectorData *d, int p, void *) {
 
 class multiSlsDetectorClient {
   public:
-    multiSlsDetectorClient(int argc, char *argv[], int action, multiSlsDetector *myDetector = nullptr):
-    action_(action),
-    detPtr(myDetector){
+    multiSlsDetectorClient(int argc, char *argv[], int action,
+                           multiSlsDetector *myDetector = nullptr)
+        : action_(action), detPtr(myDetector) {
         parser.Parse(argc, argv);
         runCommand();
-
     }
-    multiSlsDetectorClient(const std::string& args, int action, multiSlsDetector *myDetector = nullptr):
-    action_(action),
-    detPtr(myDetector){
+    multiSlsDetectorClient(const std::string &args, int action,
+                           multiSlsDetector *myDetector = nullptr)
+        : action_(action), detPtr(myDetector) {
         parser.Parse(args);
         runCommand();
     }
-    private:
-     int action_;
-     CmdLineParser parser;
-     multiSlsDetector* detPtr = nullptr;
 
-    void runCommand(){
+  private:
+    int action_;
+    CmdLineParser parser;
+    multiSlsDetector *detPtr = nullptr;
+
+    void runCommand() {
         bool verify = true;
         bool update = true;
-        if (action_ == slsDetectorDefs::PUT_ACTION && parser.n_arguments() == 0) {
-            std::cout << "Wrong usage - should be: " << parser.executable() << "[id-][pos:]channel arg" << std::endl;
+        if (action_ == slsDetectorDefs::PUT_ACTION &&
+            parser.n_arguments() == 0) {
+            std::cout << "Wrong usage - should be: " << parser.executable()
+                      << "[id-][pos:]channel arg" << std::endl;
             std::cout << std::endl;
             return;
         };
-        if (action_ == slsDetectorDefs::GET_ACTION && parser.command().empty()) {
-            std::cout << "Wrong usage - should be: " << parser.executable() << "[id-][pos:]channel arg" << std::endl;
+        if (action_ == slsDetectorDefs::GET_ACTION &&
+            parser.command().empty()) {
+            std::cout << "Wrong usage - should be: " << parser.executable()
+                      << "[id-][pos:]channel arg" << std::endl;
             std::cout << std::endl;
             return;
         };
 
-        if (action_ == slsDetectorDefs::READOUT_ACTION && parser.detector_id() != -1) {
-            std::cout << "detector_id: " << parser.detector_id() << " ,readout of individual detectors is not allowed!" << std::endl;
+        if (action_ == slsDetectorDefs::READOUT_ACTION &&
+            parser.detector_id() != -1) {
+            std::cout << "detector_id: " << parser.detector_id()
+                      << " ,readout of individual detectors is not allowed!"
+                      << std::endl;
             return;
         }
 
         // special commands
         if (parser.command() == "free") {
-            multiSlsDetector::freeSharedMemory(parser.multi_id(), parser.detector_id());
+            multiSlsDetector::freeSharedMemory(parser.multi_id(),
+                                               parser.detector_id());
             return;
         } // get user details without verify sharedMultiSlsDetector version
-        else if ((parser.command() == "user") && (action_ == slsDetectorDefs::GET_ACTION)) {
+        else if ((parser.command() == "user") &&
+                 (action_ == slsDetectorDefs::GET_ACTION)) {
             verify = false;
             update = false;
         }
 
-        //std::cout<<"id:"<<id<<" pos:"<<pos<<std::endl;
+        // std::cout<<"id:"<<id<<" pos:"<<pos<<std::endl;
         // create multiSlsDetector class if required
         std::unique_ptr<multiSlsDetector> localDet;
         if (detPtr == nullptr) {
             try {
-                localDet = sls::make_unique<multiSlsDetector>(parser.multi_id(), verify, update);
+                localDet = sls::make_unique<multiSlsDetector>(parser.multi_id(),
+                                                              verify, update);
                 detPtr = localDet.get();
             } catch (const RuntimeError &e) {
                 /*std::cout << e.GetMessage() << std::endl;*/
@@ -88,11 +99,27 @@ class multiSlsDetectorClient {
             return;
         }
 
-        // call multi detector command line
-        slsDetectorCommand myCmd(detPtr);        
-        std::string answer = myCmd.executeLine(parser.n_arguments()+1, parser.argv().data(), action_, parser.detector_id());
+        // Call CmdProxy which execute the command if it exists, on success
+        // returns an empty string If the command is not in CmdProxy but
+        // deprecated the new command is returned
+        if (action_ != slsDetectorDefs::READOUT_ACTION) {
+            sls::CmdProxy<multiSlsDetector> proxy(detPtr);
+            auto cmd = proxy.Call(parser.command(), parser.arguments(),
+                                  parser.detector_id());
+            if (cmd.empty()) {
+                return;
+            } else {
+                parser.setCommand(cmd);
+            }
+        }
 
-        if (parser.multi_id()!=0)
+        // call multi detector command line
+        slsDetectorCommand myCmd(detPtr);
+        std::string answer =
+            myCmd.executeLine(parser.n_arguments() + 1, parser.argv().data(),
+                              action_, parser.detector_id());
+
+        if (parser.multi_id() != 0)
             std::cout << parser.multi_id() << '-';
         if (parser.detector_id() != -1)
             std::cout << parser.detector_id() << ':';

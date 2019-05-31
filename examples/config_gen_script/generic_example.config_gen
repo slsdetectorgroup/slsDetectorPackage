@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# local variables
+a_variable=/path/to/something
+
+# HOSTNAMES is special
+# Beside of the hostname line it also defines the amount of modules
+# for the body part
+# take care for the last space
+HOSTNAMES="hostname1 hostname2 hostname3 hostname55 "
+
+## header contains constant values at the beginning of the file
+header=(
+header_var1="wow"
+header_var2="great"
+header_var3="very nice"
+)
+
+## the body part is for each half module
+# counters will count automatically
+# the number behind ':' indicates the incrementation value
+
+counters=(
+counter1="100:1"
+counter2="1024:12"
+counter3="1500:3"
+)
+
+# constant values
+constants=(
+constant1="const1"
+constant2="const2"
+constant3="const3 ${a_variable}"
+)
+
+# lists contains space separated lists each value for each half module
+lists=(
+forallmodules="val_mod1 val_mod2 val_mod3 val_mod4"
+)
+
+
+## footer contains constant values for the end of the file
+footer=(
+footer1=foot1
+footer2=somethingelseathebottom
+)
+

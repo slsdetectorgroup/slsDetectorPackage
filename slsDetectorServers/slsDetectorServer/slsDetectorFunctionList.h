@@ -216,6 +216,7 @@ int         getExtSignal();
 void        calcChecksum(mac_conf* mac, int sourceip, int destip);
 #elif JUNGFRAUD
 void setNumberofUDPInterfaces(int val);
+int getNumberofUDPInterfaces();
 void selectPrimaryInterface(int val);
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport);
 void calcChecksum(udp_header* udp);

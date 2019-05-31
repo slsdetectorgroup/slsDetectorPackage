@@ -622,6 +622,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns OK or FAIL
      */
     int configureMAC(int detPos = -1);
+    
+     /**
+     * Set starting frame number for the next acquisition
+     * @param val starting frame number
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setStartingFrameNumber(uint64_t value, int detPos = -1);
+
+     /**
+     * Get starting frame number for the next acquisition
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns starting frame number
+     */
+    uint64_t getStartingFrameNumber(int detPos = -1);
 
     /**
      * Set/get timer value (not all implemented for all detectors)
@@ -1785,9 +1799,9 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Gets the current frame index of receiver
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns current frame index of receiver
+     * @returns average of all current frame index of receiver
      */
-    int getReceiverCurrentFrameIndex(int detPos = -1);
+    uint64_t getReceiverCurrentFrameIndex(int detPos = -1);
 
     /**
      * Resets framescaught in receiver

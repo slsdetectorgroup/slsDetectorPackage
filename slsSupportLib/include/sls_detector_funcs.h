@@ -87,6 +87,8 @@ enum detFuncs{
 	F_GET_ADC_INVERT,	/** < get adc invert reg */
 	F_EXTERNAL_SAMPLING_SOURCE,	/** < set/get external sampling source for ctb */
 	F_EXTERNAL_SAMPLING,	/**< enable/disable external sampling for ctb */
+	F_SET_STARTING_FRAME_NUMBER,
+	F_GET_STARTING_FRAME_NUMBER,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -227,7 +229,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_ADC_INVERT:					return "F_GET_ADC_INVERT";
 	case F_EXTERNAL_SAMPLING_SOURCE:		return "F_EXTERNAL_SAMPLING_SOURCE";				
 	case F_EXTERNAL_SAMPLING:				return "F_EXTERNAL_SAMPLING";	
-
+	case F_SET_STARTING_FRAME_NUMBER:		return "F_SET_STARTING_FRAME_NUMBER";
+	case F_GET_STARTING_FRAME_NUMBER:		return "F_GET_STARTING_FRAME_NUMBER";
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 

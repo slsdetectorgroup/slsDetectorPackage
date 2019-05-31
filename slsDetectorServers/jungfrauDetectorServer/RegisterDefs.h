@@ -388,6 +388,10 @@
 #define SET_EXPTIME_LSB_REG    			(0x68 << MEM_MAP_SHIFT)
 #define SET_EXPTIME_MSB_REG    			(0x69 << MEM_MAP_SHIFT)
 
+/* Frame number 64 bit register */
+#define FRAME_NUMBER_LSB_REG   			(0x6A << MEM_MAP_SHIFT)
+#define FRAME_NUMBER_MSB_REG    		(0x6B << MEM_MAP_SHIFT)
+
 /* Trigger Delay 32 bit register */
 #define SET_TRIGGER_DELAY_LSB_REG       (0x70 << MEM_MAP_SHIFT)
 #define SET_TRIGGER_DELAY_MSB_REG       (0x71 << MEM_MAP_SHIFT)

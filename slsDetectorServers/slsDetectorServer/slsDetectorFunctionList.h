@@ -139,6 +139,10 @@ enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #ifdef JUNGFRAUD
 int         selectStoragecellStart(int pos);
 #endif
+#if defined(JUNGFRAUD) || defined(EIGERD) 
+int 		setStartingFrameNumber(uint64_t value);
+int			getStartingFrameNumber(uint64_t* value);
+#endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 int64_t 	getTimeLeft(enum timerIndex ind);
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)

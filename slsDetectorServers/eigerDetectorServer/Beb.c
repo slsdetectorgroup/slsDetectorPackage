@@ -36,6 +36,7 @@ int Beb_activated = 1;
 uint32_t Beb_detid = 0;
 int Beb_top =0;
 
+uint64_t Beb_deactivatedStartFrameNumber = 0;
 
 
 void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num) {
@@ -408,6 +409,10 @@ int Beb_Activate(int enable) {
 	return ret;
 }
 
+
+int Beb_GetActivate() {
+	return Beb_activated;
+}
 
 int Beb_Set32bitOverflow(int val) {
 	if (!Beb_activated)
@@ -1260,6 +1265,62 @@ int Beb_SetDetectorPosition(int pos[]) {
 	}
 
 	return ret;
+}
+
+int Beb_SetStartingFrameNumber(uint64_t value) {
+	if (!Beb_activated) {
+		Beb_deactivatedStartFrameNumber = value;
+		return OK;
+	}
+	FILE_LOG(logINFO, ("Setting start frame number: %llu\n", (long long unsigned int)value));
+
+	u_int32_t* csp0base = 0;
+	int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_TEST_BASEADDR);
+	if (fd < 0) {
+		FILE_LOG(logERROR, ("Set Start Frame Number FAIL\n"));
+		return FAIL;
+	} else {
+		// since the read is not implemented in firmware yet
+		Beb_deactivatedStartFrameNumber = value;
+
+		// decrement for firmware
+		uint64_t valueInFirmware = value - 1;
+		Beb_Write32(csp0base, UDP_HEADER_FRAME_NUMBER_LSB_OFST, valueInFirmware & (0xffffffff));
+		Beb_Write32(csp0base, UDP_HEADER_FRAME_NUMBER_MSB_OFST, (valueInFirmware >> 32) & (0xffffffff));
+		Beb_close(fd,csp0base);
+	}
+
+	uint64_t retval = -1;
+	if ((Beb_GetStartingFrameNumber(&retval) == OK) && (retval == value)) {
+		FILE_LOG(logINFO, ("Going to reset Frame Number\n"));
+		Beb_ResetFrameNumber();
+	}
+	return OK;
+}
+
+int Beb_GetStartingFrameNumber(uint64_t* retval) {
+	if (!Beb_activated) {
+		*retval = Beb_deactivatedStartFrameNumber;
+		return OK;
+	}
+	FILE_LOG(logDEBUG1, ("Getting start frame number\n"));
+
+	// since it is not implemented in firmware yet
+	*retval = Beb_deactivatedStartFrameNumber;
+/*
+	u_int32_t* csp0base = 0;
+	int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_TEST_BASEADDR);
+	if (fd < 0) {
+		FILE_LOG(logERROR, ("Set Start Frame Number FAIL\n"));
+		return FAIL;
+	} else {
+		*retval = Beb_Read32(csp0base, UDP_HEADER_FRAME_NUMBER_MSB_OFST);
+		uint32_t lretval = Beb_Read32(csp0base, UDP_HEADER_FRAME_NUMBER_MSB_OFST);
+		*retval = (*retval << 32) | lretval;
+		Beb_close(fd,csp0base);
+	}
+*/
+	return OK;
 }
 
 

@@ -27,6 +27,7 @@ class multiSlsDetector;
 class detectorData;
 
 template <class dataType> class slsDetectorData;
+
 class singlePhotonDetector;
 //class singlePhotonDetector;
 class commonModeSubtraction;
@@ -38,7 +39,7 @@ using namespace std;
 class ctbAcquisition : public TGGroupFrame {
 
 
-  enum {MOENCH03, MOENCH02, ADCSAR2, MYTHEN301, MYTHEN302};
+  enum {DESERIALIZER, MOENCH04, MOENCH02, ADCSAR2, MYTHEN301, MYTHEN302};
 
 
  private:
@@ -161,7 +162,7 @@ class ctbAcquisition : public TGGroupFrame {
 
   uint64_t dBitMask;
 
-
+  int deserializer;
 
  public:
    ctbAcquisition(TGVerticalFrame*,  multiSlsDetector*);

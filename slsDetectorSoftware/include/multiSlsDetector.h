@@ -628,7 +628,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param val starting frame number
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setStartingFrameNumber(uint64_t value, int detPos = -1);
+    void setStartingFrameNumber(const uint64_t value, int detPos = -1);
 
      /**
      * Get starting frame number for the next acquisition

@@ -734,7 +734,7 @@ class slsDetector : public virtual slsDetectorDefs{
      * Set starting frame number for the next acquisition
      * @param val starting frame number
      */
-    void setStartingFrameNumber(uint64_t value);
+    void setStartingFrameNumber(const uint64_t value);
 
      /**
      * Get starting frame number for the next acquisition

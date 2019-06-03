@@ -1057,7 +1057,7 @@ int multiSlsDetector::configureMAC(int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-void multiSlsDetector::setStartingFrameNumber(uint64_t value, int detPos) {
+void multiSlsDetector::setStartingFrameNumber(const uint64_t value, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setStartingFrameNumber(value);

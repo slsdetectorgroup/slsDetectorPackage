@@ -625,13 +625,12 @@ int slsReceiverTCPIPInterface::set_detector_type(sls::ServerInterface2 &socket){
 
 
 int slsReceiverTCPIPInterface::set_detector_hostname(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char hostname[MAX_STR_LENGTH] = {0};
 	char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( hostname, MAX_STR_LENGTH);
+	ret = socket.receiveArg( hostname, MAX_STR_LENGTH);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -707,13 +706,12 @@ int slsReceiverTCPIPInterface::set_roi(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char args[5][MAX_STR_LENGTH]{};
 	char retvals[2][MAX_STR_LENGTH]{};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( args, sizeof(args));
+	ret = socket.receiveArg( args, sizeof(args));
 	if (receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -827,13 +825,12 @@ int slsReceiverTCPIPInterface::setup_udp(sls::ServerInterface2 &socket){
 
 
 int slsReceiverTCPIPInterface::set_timer(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int64_t index[2] = {-1, -1};
 	int64_t retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg( &index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -935,13 +932,12 @@ int slsReceiverTCPIPInterface::set_timer(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::set_dynamic_range(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int dr = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &dr, sizeof(dr));
+	ret = socket.receiveArg( &dr, sizeof(dr));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1111,13 +1107,12 @@ int slsReceiverTCPIPInterface::stop_receiver(sls::ServerInterface2 &socket){
 
 
 int slsReceiverTCPIPInterface::set_file_dir(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char fPath[MAX_STR_LENGTH] = {0};
     char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( fPath, sizeof(fPath));
+	ret = socket.receiveArg( fPath, sizeof(fPath));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1146,13 +1141,12 @@ int slsReceiverTCPIPInterface::set_file_dir(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::set_file_name(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	char fName[MAX_STR_LENGTH] = {0};
     char retval[MAX_STR_LENGTH] = {0};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( fName, sizeof(fName));
+	ret = socket.receiveArg( fName, sizeof(fName));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1181,13 +1175,12 @@ int slsReceiverTCPIPInterface::set_file_name(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::set_file_index(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg( &index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1274,13 +1267,12 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(sls::ServerInterface2 &socket
 
 
 int slsReceiverTCPIPInterface::enable_file_write(sls::ServerInterface2 &socket){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &enable, sizeof(enable));
+	ret = socket.receiveArg( &enable, sizeof(enable));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1307,13 +1299,12 @@ int slsReceiverTCPIPInterface::enable_file_write(sls::ServerInterface2 &socket){
 
 
 int slsReceiverTCPIPInterface::enable_master_file_write(sls::ServerInterface2 &socket){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &enable, sizeof(enable));
+	ret = socket.receiveArg( &enable, sizeof(enable));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1339,13 +1330,12 @@ int slsReceiverTCPIPInterface::enable_master_file_write(sls::ServerInterface2 &s
 
 
 int slsReceiverTCPIPInterface::enable_overwrite(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg( &index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1443,13 +1433,12 @@ int slsReceiverTCPIPInterface::set_fifo_depth(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::set_activate(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &enable, sizeof(enable));
+	ret = socket.receiveArg( &enable, sizeof(enable));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1479,13 +1468,12 @@ int slsReceiverTCPIPInterface::set_activate(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::set_data_stream_enable(sls::ServerInterface2 &socket){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg( &index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1511,13 +1499,12 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(sls::ServerInterface2 &soc
 
 
 int slsReceiverTCPIPInterface::set_streaming_timer(sls::ServerInterface2 &socket){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg( &index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1544,13 +1531,12 @@ int slsReceiverTCPIPInterface::set_streaming_timer(sls::ServerInterface2 &socket
 
 
 int slsReceiverTCPIPInterface::set_flipped_data(sls::ServerInterface2 &socket){
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int args[2] = {0,-1};
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( args, sizeof(args));
+	ret = socket.receiveArg( args, sizeof(args));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1580,13 +1566,12 @@ int slsReceiverTCPIPInterface::set_flipped_data(sls::ServerInterface2 &socket){
 
 
 int slsReceiverTCPIPInterface::set_file_format(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	fileFormat retval = GET_FILE_FORMAT;
 	fileFormat f = GET_FILE_FORMAT;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &f, sizeof(f));
+	ret = socket.receiveArg( &f, sizeof(f));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1613,13 +1598,12 @@ int slsReceiverTCPIPInterface::set_file_format(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::set_detector_posid(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int arg = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &arg, sizeof(arg));
+	ret = socket.receiveArg( &arg, sizeof(arg));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1646,13 +1630,12 @@ int slsReceiverTCPIPInterface::set_detector_posid(sls::ServerInterface2 &socket)
 
 
 int slsReceiverTCPIPInterface::set_multi_detector_size(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int arg[]{-1, -1};
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( arg, sizeof(arg));
+	ret = socket.receiveArg( arg, sizeof(arg));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1684,13 +1667,12 @@ int slsReceiverTCPIPInterface::set_multi_detector_size(sls::ServerInterface2 &so
 
 
 int slsReceiverTCPIPInterface::set_streaming_port(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int port = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &port, sizeof(port));
+	ret = socket.receiveArg( &port, sizeof(port));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1717,13 +1699,12 @@ int slsReceiverTCPIPInterface::set_streaming_port(sls::ServerInterface2 &socket)
 
 
 int slsReceiverTCPIPInterface::set_streaming_source_ip(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	char arg[MAX_STR_LENGTH] = {0};
-    char retval[MAX_STR_LENGTH] = {0};
+	char arg[MAX_STR_LENGTH]{};
+    char retval[MAX_STR_LENGTH]{};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( arg, MAX_STR_LENGTH);
+	ret = socket.receiveArg(arg, MAX_STR_LENGTH);
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1747,13 +1728,12 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip(sls::ServerInterface2 &so
 
 
 int slsReceiverTCPIPInterface::set_silent_mode(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int value = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &value, sizeof(value));
+	ret = socket.receiveArg( &value, sizeof(value));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1780,13 +1760,12 @@ int slsReceiverTCPIPInterface::set_silent_mode(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::enable_gap_pixels(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &enable, sizeof(enable));
+	ret = socket.receiveArg( &enable, sizeof(enable));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1848,13 +1827,12 @@ int slsReceiverTCPIPInterface::restream_stop(sls::ServerInterface2 &socket){
 
 
 int slsReceiverTCPIPInterface::set_additional_json_header(sls::ServerInterface2 &socket) {
-	ret = OK;
     memset(mess, 0, sizeof(mess));
-    char arg[MAX_STR_LENGTH] = {0};
-    char retval[MAX_STR_LENGTH] = {0};
+    char arg[MAX_STR_LENGTH]{};
+    char retval[MAX_STR_LENGTH]{};
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( arg, sizeof(arg));
+	ret = socket.receiveArg( arg, sizeof(arg));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1898,13 +1876,12 @@ int slsReceiverTCPIPInterface::get_additional_json_header(sls::ServerInterface2 
 
 
 int slsReceiverTCPIPInterface::set_udp_socket_buffer_size(sls::ServerInterface2 &socket) {
-	ret = OK;
     memset(mess, 0, sizeof(mess));
     int64_t index = -1;
     int64_t retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg(&index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1954,13 +1931,12 @@ int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(sls::ServerInterf
 
 
 int slsReceiverTCPIPInterface::set_frames_per_file(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg( &index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -1987,11 +1963,10 @@ int slsReceiverTCPIPInterface::set_frames_per_file(sls::ServerInterface2 &socket
 
 
 int slsReceiverTCPIPInterface::check_version_compatibility(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int64_t arg = -1;
 	// get args, return if socket crashed
-	socket.receiveArg( &arg, sizeof(arg));
+	ret = socket.receiveArg( &arg, sizeof(arg));
 	if (ret == FAIL)
 		return FAIL;
 
@@ -2028,13 +2003,12 @@ int slsReceiverTCPIPInterface::check_version_compatibility(sls::ServerInterface2
 
 
 int slsReceiverTCPIPInterface::set_discard_policy(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg( &index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -2061,13 +2035,12 @@ int slsReceiverTCPIPInterface::set_discard_policy(sls::ServerInterface2 &socket)
 
 
 int slsReceiverTCPIPInterface::set_padding_enable(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int index = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &index, sizeof(index));
+	ret = socket.receiveArg( &index, sizeof(index));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -2095,13 +2068,12 @@ int slsReceiverTCPIPInterface::set_padding_enable(sls::ServerInterface2 &socket)
 
 
 int slsReceiverTCPIPInterface::set_deactivated_padding_enable(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int enable = -1;
 	int retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &enable, sizeof(enable));
+	ret = socket.receiveArg( &enable, sizeof(enable));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -2129,13 +2101,12 @@ int slsReceiverTCPIPInterface::set_deactivated_padding_enable(sls::ServerInterfa
 
 
 int slsReceiverTCPIPInterface::set_readout_flags(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	readOutFlags arg = GET_READOUT_FLAGS;
 	readOutFlags retval = GET_READOUT_FLAGS;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &arg, sizeof(arg));
+	ret = socket.receiveArg( &arg, sizeof(arg));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -2165,13 +2136,12 @@ int slsReceiverTCPIPInterface::set_readout_flags(sls::ServerInterface2 &socket) 
 
 
 int slsReceiverTCPIPInterface::set_adc_mask(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	uint32_t arg = -1;
 	uint32_t retval = -1;
 
 	// get args, return if socket crashed, ret is fail if receiver is not null
-	socket.receiveArg( &arg, sizeof(arg));
+	ret = socket.receiveArg(&arg, sizeof(arg));
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);
 		return FAIL;
@@ -2195,16 +2165,15 @@ int slsReceiverTCPIPInterface::set_adc_mask(sls::ServerInterface2 &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_dbit_list(sls::ServerInterface2 &socket) {
-    ret = OK;
     memset(mess, 0, sizeof(mess));
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> args;
-    if (socket.receiveArg( &args, sizeof(args)) == FAIL) {
-        if(receiver == nullptr){
-			NullObjectError(ret, mess);
-		}
+    ret = socket.receiveArg( &args, sizeof(args));
+	if(receiver == nullptr){
+		NullObjectError(ret, mess);
 		return FAIL;
-	
-    } else if (ret == OK) {
+	}
+		
+    if (ret == OK) {
 		FILE_LOG(logDEBUG1) << "Setting DBIT list";
         for (auto &it : args) {
             FILE_LOG(logDEBUG1) << it << " ";
@@ -2240,22 +2209,18 @@ int slsReceiverTCPIPInterface::get_dbit_list(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::set_dbit_offset(sls::ServerInterface2 &socket) {
-	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int arg = -1;
 	int retval = -1;
 
-	// get args, return if socket crashed, ret is fail if receiver is not null
-	if (socket.receiveArg( &arg, sizeof(arg)) == FAIL){
-		if(receiver == nullptr){
-			NullObjectError(ret, mess);
-		}
+	ret = socket.receiveArg( &arg, sizeof(arg));
+	if(receiver == nullptr){
+		NullObjectError(ret, mess);
 		return FAIL;
 	}
 		
-
 	// base object not null
-	else if (ret == OK) {
+	if (ret == OK) {
 		if (arg >= 0) {
 			if (VerifyLockAndIdle(ret, mess, fnum) == OK) {
 				FILE_LOG(logDEBUG1) << "Setting Dbit offset: " << arg;

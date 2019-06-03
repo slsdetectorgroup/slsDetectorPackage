@@ -65,7 +65,7 @@ int DataSocket::setReceiveTimeout(int us) {
 
 int DataSocket::sendData(const void *buffer, size_t size) {
     int dataSent = 0;
-    while (dataSent < size) {
+    while (dataSent < (int)size) {
         dataSent +=
             write(getSocketId(), reinterpret_cast<const char *>(buffer) + dataSent,
                   size - dataSent);

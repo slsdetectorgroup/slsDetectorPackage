@@ -202,8 +202,9 @@
 #define UDP_HEADER_Y_OFST					(16)
 #define UDP_HEADER_Y_MSK					(0xFFFF << UDP_HEADER_Y_OFST)
 
-
-
+// udp header (frame number)
+#define UDP_HEADER_FRAME_NUMBER_LSB_OFST    (0x0140)
+#define UDP_HEADER_FRAME_NUMBER_MSB_OFST    (0x0160)
 
 
 

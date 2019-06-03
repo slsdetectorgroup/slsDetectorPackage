@@ -156,9 +156,9 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 
 	/**
 	 * Get Current Frame Index for an entire  acquisition (including all scans)
-	 * @return -1 if no frames have been caught, else current frame index (represents all scans too)
+	 * @return 0 if no frames have been caught, else average of all current frame index 
 	 */
-	int64_t getAcquisitionIndex() const;
+	uint64_t getAcquisitionIndex() const;
 
 
 	//***connection parameters***
@@ -586,7 +586,7 @@ class slsReceiverImplementation: private virtual slsDetectorDefs {
 	 * The data receiver status will change from running to idle when it gets this number of frames
 	 * @param i number of frames expected
 	 */
-	int setNumberOfFrames(const uint64_t i);
+	void setNumberOfFrames(const uint64_t i);
 
 	/**
 	 * Set Number of Analog Samples expected by receiver from detector

@@ -441,6 +441,7 @@ void setupDetector() {
 	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
 	/*setClockDivider(HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
+	setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
 
 	// temp threshold and reset event
@@ -555,6 +556,20 @@ int selectStoragecellStart(int pos) {
     return ((bus_r(DAQ_REG) & DAQ_STRG_CELL_SLCT_MSK) >> DAQ_STRG_CELL_SLCT_OFST);
 }
 
+int setStartingFrameNumber(uint64_t value) {
+	FILE_LOG(logINFO, ("Setting starting frame number: %llu\n",(long long unsigned int)value));
+	// decrement is for firmware
+	setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+	// need to set it twice for the firmware to catch
+	setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+	return OK;
+}
+
+int getStartingFrameNumber(uint64_t* retval) {
+	// increment is for firmware
+	*retval = (getU64BitReg(FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG) + 1);
+	return OK;
+}
 
 
 int64_t setTimer(enum timerIndex ind, int64_t val) {

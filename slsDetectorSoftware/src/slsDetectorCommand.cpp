@@ -597,6 +597,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
+   - <b>startingfnum [i]</b> sets/gets starting frame number for the next acquisition. Only for Jungfrau and Eiger. \c Returns \c (long long int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "startingfnum";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
+    ++i;
+
+    /*! \page timing
    - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately. \c Returns \c (long long int)
 	 */
     descrToFuncMap[i].m_pFuncName = "cycles";
@@ -4477,6 +4484,16 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
         }
         sprintf(answer, "%d", myDet->setStoragecellStart(-1, detPos));
         return std::string(answer);
+    } else if (cmd == "startingfnum") {
+        myDet->setOnline(ONLINE_FLAG, detPos);
+        if (action == PUT_ACTION) {
+            uint64_t ival = -1;
+            if (!sscanf(args[1], "%lu", &ival))
+                return std::string("cannot scan starting frame number value ") + std::string(args[1]);
+            myDet->setStartingFrameNumber(ival, detPos);
+            return std::string(args[1]);
+        }
+        return std::to_string(myDet->getStartingFrameNumber(detPos));
     } else
         return std::string("could not decode timer ") + cmd;
 
@@ -4528,6 +4545,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "period t \t sets the frame period in s" << std::endl;
         os << "delay t \t sets the delay after trigger in s" << std::endl;
         os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
+        os << "startingfnum t \t sets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
         os << "cycles t \t sets the number of cycles (e.g. number of triggers)" << std::endl;
         os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
@@ -4545,6 +4563,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "period  \t gets the frame period in s" << std::endl;
         os << "delay  \t gets the delay after trigger in s" << std::endl;
         os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
+        os << "startingfnum \t gets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
         os << "cycles  \t gets the number of cycles (e.g. number of triggers)" << std::endl;
         os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
@@ -5078,7 +5097,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
         if (action == PUT_ACTION)
             return std::string("cannot put");
         else {
-            sprintf(answer, "%d", myDet->getReceiverCurrentFrameIndex(detPos));
+            sprintf(answer, "%lu", myDet->getReceiverCurrentFrameIndex(detPos));
             return std::string(answer);
         }
     } else if (cmd == "r_readfreq") {

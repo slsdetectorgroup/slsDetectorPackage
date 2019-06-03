@@ -85,6 +85,7 @@ int eiger_virtual_status=0;
 int eiger_virtual_activate=1;
 pthread_t eiger_virtual_tid;
 int eiger_virtual_stop = 0;
+uint64_t eiger_virtual_startingframenumber = 0;
 #endif
 
 
@@ -444,6 +445,7 @@ void setupDetector() {
 	setSpeed(CLOCK_DIVIDER, DEFAULT_CLK_SPEED);//clk_devider,half speed
 	setIODelay(DEFAULT_IO_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
+	setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
 	setRateCorrection(DEFAULT_RATE_CORRECTION);
 	int enable[2] = {DEFAULT_EXT_GATING_ENABLE, DEFAULT_EXT_GATING_POLARITY};
@@ -657,6 +659,24 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val) {
 
 
 /* parameters - timer */
+
+int setStartingFrameNumber(uint64_t value) {
+#ifdef VIRTUAL
+	eiger_virtual_startingframenumber =  value;
+	return OK;
+#else
+	return Beb_SetStartingFrameNumber(value);
+#endif
+}
+
+int getStartingFrameNumber(uint64_t* retval) {
+#ifdef VIRTUAL
+	*retval = eiger_virtual_startingframenumber;
+	return OK;
+#else
+	return Beb_GetStartingFrameNumber(retval);
+#endif
+}
 
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 #ifndef VIRTUAL
@@ -1609,8 +1629,6 @@ int prepareAcquisition() {
 #ifndef VIRTUAL
 	FILE_LOG(logINFO, ("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit()));
 	Feb_Control_PrepareForAcquisition();
-	FILE_LOG(logINFO, ("Going to reset Frame Number\n"));
-	Beb_ResetFrameNumber();
 #endif
 	return OK;
 

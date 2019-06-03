@@ -1497,6 +1497,23 @@ int slsDetector::configureMAC() {
     return ret;
 }
 
+void slsDetector::setStartingFrameNumber(const uint64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting starting frame number to " << value;
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_SET_STARTING_FRAME_NUMBER, value, nullptr);
+    }
+}
+
+uint64_t slsDetector::getStartingFrameNumber() {
+    uint64_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting starting frame number";
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_GET_STARTING_FRAME_NUMBER, nullptr, retval);
+        FILE_LOG(logDEBUG1) << "Starting frame number :" << retval;
+    }
+    return retval;
+}
+
 int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     int ret = FAIL;
     int64_t args[]{static_cast<int64_t>(index), t};
@@ -1554,6 +1571,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
                         DIGITAL_SAMPLES,
                         STORAGE_CELL_NUMBER};
 
+        // if in list (lambda)
         if (std::any_of(std::begin(rt), std::end(rt),
                         [index](timerIndex t) { return t == index; })) {
             args[1] = shm()->timerValue[index];
@@ -1943,7 +1961,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 enableTenGigabitEthernet(shm()->tenGigaEnable);
                 setReadOutFlags(GET_READOUT_FLAGS);
                 break;
-
+            
             case CHIPTESTBOARD:
                 setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
                 setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
@@ -3592,8 +3610,8 @@ int slsDetector::getFramesCaughtByReceiver() {
     return retval;
 }
 
-int slsDetector::getReceiverCurrentFrameIndex() {
-    int retval = -1;
+uint64_t slsDetector::getReceiverCurrentFrameIndex() {
+    uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Current Frame Index of Receiver";
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
         sendToReceiver(F_GET_RECEIVER_FRAME_INDEX, nullptr, retval);

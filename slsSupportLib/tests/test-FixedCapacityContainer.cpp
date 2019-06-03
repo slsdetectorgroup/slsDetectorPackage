@@ -10,7 +10,7 @@ SCENARIO("FixedCapacityContainers can be sized and resized", "[support]") {
         FixedCapacityContainer<int, n_elem> vec;
 
         REQUIRE(vec.empty());
-        REQUIRE(vec.size() == 0);
+        REQUIRE(vec.size() == 0); //NOLINT
         REQUIRE(vec.capacity() == n_elem);
         REQUIRE(sizeof(vec) == sizeof(int) * n_elem + sizeof(size_t));
 
@@ -201,5 +201,30 @@ SCENARIO("Assigning containers to each other", "[support]") {
                 REQUIRE(c[2] == 3);
             }
         }
+        WHEN("We create a const FixedCapacityContainer"){
+            const FixedCapacityContainer<int, 5> c(a);
+            THEN("The values are still the same using const operators"){
+                REQUIRE(c[0] == 1);
+                REQUIRE(c[1] == 2);
+                REQUIRE(c[2] == 3);
+                REQUIRE(c.front() == 1);
+                REQUIRE(c.back() == 3);
+                
+            }
+        }
     }
 }
+
+SCENARIO("Converting to vector", "[support]"){
+    GIVEN("a FixedCapacityContainer"){
+        FixedCapacityContainer<int, 5> a{1,2,3};
+        WHEN("Converted into a vector"){
+            std::vector<int> b(a);
+            THEN("Data and size matches"){
+                REQUIRE(a == b);
+                REQUIRE(a.size() == b.size());
+            }
+        }
+    }
+}
+

@@ -3,6 +3,7 @@
 #include "string_utils.h"
 
 #include <cstdlib>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -596,6 +597,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
+   - <b>startingfnum [i]</b> sets/gets starting frame number for the next acquisition. Only for Jungfrau and Eiger. \c Returns \c (long long int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "startingfnum";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
+    ++i;
+
+    /*! \page timing
    - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately. \c Returns \c (long long int)
 	 */
     descrToFuncMap[i].m_pFuncName = "cycles";
@@ -675,16 +683,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>delayl</b> gets delay left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>delayl</b> gets delay left. Used in GOTTHARD, JUNGFRAU, MOENCH and CTB only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
     descrToFuncMap[i].m_pFuncName = "delayl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page timing
-   - <b>gatesl</b> gets number of gates left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "gatesl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
@@ -1587,7 +1588,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>rx_udpip2 [ip]</b> sets/gets the ip address of the second receiver UDP interface where the data from the bottom half module of the detector will be streamed to. Normally used for single detectors (Can be multi-detector). Used if different from eth0. JUNGFRAU only. \c Returns \c (string)
+   - <b>rx_udpip2 [ip]</b> sets/gets the ip address of the second receiver UDP interface where the data from the top half module of the detector will be streamed to. Normally used for single detectors (Can be multi-detector). Used if different from eth0. JUNGFRAU only. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_udpip2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -1601,7 +1602,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>rx_udpmac2 [mac]</b> sets/gets the mac address of the second receiver UDP interface where the data from the bottom half module of the detector will be streamed to. Normally used for single detectors (Can be multi-detector). JUNGFRAU only.\c Returns \c (string)
+   - <b>rx_udpmac2 [mac]</b> sets/gets the mac address of the second receiver UDP interface where the data from the top half module of the detector will be streamed to. Normally used for single detectors (Can be multi-detector). JUNGFRAU only.\c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_udpmac2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -1615,7 +1616,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>rx_udpport2 [port]</b> sets/gets the second port of the receiver UDP interface where the data from the second half of the detector will be streamed to. Use single-detector command. Used for EIGERand JUNGFRAU only. \c Returns \c (int)
+   - <b>rx_udpport2 [port]</b> sets/gets the second port of the receiver UDP interface where the data from the second half of the detector will be streamed to. Use single-detector command. For Eiger, it is the right half and for Jungfrau, it is the top half module. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_udpport2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -1643,35 +1644,35 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>detectormac2 [mac]</b> sets/gets the mac address of the second half of the detector UDP interface from where the bottom half module of the detector will stream data. Use single-detector command. Normally unused. JUNGFRAU only. \c Returns \c (string)
+   - <b>detectormac2 [mac]</b> sets/gets the mac address of the second half of the detector UDP interface from where the top half module of the detector will stream data. Use single-detector command. Normally unused. JUNGFRAU only. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "detectormac2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
-   - <b>detectorip [ip]</b> sets/gets the ip address of the detector UDP interface from where the bottom half of the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip (if rx_udpip specified). \c Returns \c (string)
+   - <b>detectorip [ip]</b> sets/gets the ip address of the detector UDP interface from where the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip (if rx_udpip specified). \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "detectorip";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
-   - <b>detectorip2 [ip]</b> sets/gets the ip address of the second half of the detector UDP interface from where the bottom half of the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip2 (if rx_udpip2 specified). JUNGFRAU only. \c Returns \c (string)
+   - <b>detectorip2 [ip]</b> sets/gets the ip address of the top half of the detector UDP interface from where the top half of the detector will stream data. Use single-detector command. Keep in same subnet as rx_udpip2 (if rx_udpip2 specified). JUNGFRAU only. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "detectorip2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
-   - <b>numinterfaces [n]</b> sets/gets the number of interfaces used to stream out from the detector. Options: 1, 2. JUNGFRAU only. \c Returns \c (int)
+   - <b>numinterfaces [n]</b> sets/gets the number of interfaces used to stream out from the detector. Options: 1(default), 2. JUNGFRAU only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "numinterfaces";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
     /*! \page network
-   - <b>selinterface [n]</b> sets/gets the 1st or the 2nd interface to use to stream data out of the detector. Options: 1, 2. Effective only when \c numinterfaces is 1. JUNGFRAU only. \c Returns \c (int)
+   - <b>selinterface [n]</b> sets/gets interface to use to stream data out of the detector. Options: 0 (outer, default), 1(inner). Effective only when \c numinterfaces is 1. JUNGFRAU only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "selinterface";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -1699,7 +1700,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>flowcontrol_10g [delay]</b> Enables/disables 10 GbE flow control. 1 enables, 0 disables. Used for EIGER only. \c Returns \c (int)
+   - <b>flowcontrol_10g [delay]</b> Enables/disables 10 GbE flow control. 1 enables, 0 disables. Used for EIGER and JUNGFRAU only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "flowcontrol_10g";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
@@ -2129,7 +2130,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
 //-----------------------------------------------------------
 
-std::string slsDetectorCommand::executeLine(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::executeLine(int narg, const char * const args[], int action, int detPos) {
 
     if (action == READOUT_ACTION)
         return cmdAcquire(narg, args, action, detPos);
@@ -2160,14 +2161,14 @@ std::string slsDetectorCommand::executeLine(int narg, char *args[], int action, 
     return cmdUnknown(narg, args, action, detPos);
 }
 
-std::string slsDetectorCommand::cmdUnknown(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdUnknown(int narg, const char * const args[], int action, int detPos) {
     return std::string("Unknown command ") + std::string(args[0]) + std::string("\n") + helpLine(0, args, action, detPos);
 }
-std::string slsDetectorCommand::cmdUnderDevelopment(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdUnderDevelopment(int narg, const char * const args[], int action, int detPos) {
     return std::string("Must still develop ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
 }
 
-std::string slsDetectorCommand::helpLine(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::helpLine(int narg, const char * const args[], int action, int detPos) {
 
     std::ostringstream os;
 
@@ -2186,7 +2187,7 @@ std::string slsDetectorCommand::helpLine(int narg, char *args[], int action, int
     return executeLine(narg, args, HELP_ACTION, detPos);
 }
 
-std::string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdAcquire(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
 #endif
@@ -2231,7 +2232,7 @@ std::string slsDetectorCommand::helpAcquire(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdData(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdData(int narg, const char * const args[], int action, int detPos) {
 
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
@@ -2263,7 +2264,7 @@ std::string slsDetectorCommand::helpData(int action) {
         return std::string("data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup\n");
 }
 
-std::string slsDetectorCommand::cmdStatus(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdStatus(int narg, const char * const args[], int action, int detPos) {
 
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
@@ -2316,7 +2317,7 @@ std::string slsDetectorCommand::helpStatus(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdDataStream(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdDataStream(int narg, const char * const args[], int action, int detPos) {
 
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
@@ -2350,7 +2351,7 @@ std::string slsDetectorCommand::helpDataStream(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdFree(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdFree(int narg, const char * const args[], int action, int detPos) {
 
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
@@ -2366,7 +2367,7 @@ std::string slsDetectorCommand::helpFree(int action) {
     return std::string("free \t frees the shared memory\n");
 }
 
-std::string slsDetectorCommand::cmdHostname(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdHostname(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
 #endif
@@ -2428,7 +2429,7 @@ std::string slsDetectorCommand::helpHostname(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdUser(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdUser(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
 #endif
@@ -2458,7 +2459,7 @@ std::string slsDetectorCommand::helpUser(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdHelp(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdHelp(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
 #endif
@@ -2471,7 +2472,7 @@ std::string slsDetectorCommand::cmdHelp(int narg, char *args[], int action, int 
         return helpLine(0, args, action, detPos);
 }
 
-std::string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdExitServer(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
 #endif
@@ -2519,7 +2520,7 @@ std::string slsDetectorCommand::helpExitServer(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdSettingsDir(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdSettingsDir(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
 #endif
@@ -2547,7 +2548,7 @@ std::string slsDetectorCommand::helpSettingsDir(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdTrimEn(int narg, const char * const args[], int action, int detPos) {
     std::vector<int> energies;
     if (action == HELP_ACTION) 
         return helpTrimEn(action);
@@ -2578,7 +2579,7 @@ std::string slsDetectorCommand::helpTrimEn(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdOutDir(int narg, const char * const args[], int action, int detPos) {
     myDet->setReceiverOnline(ONLINE_FLAG, detPos);
     if (action == HELP_ACTION)
         return helpOutDir(action);
@@ -2598,7 +2599,7 @@ std::string slsDetectorCommand::helpOutDir(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdFileName(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdFileName(int narg, const char * const args[], int action, int detPos) {
     myDet->setReceiverOnline(ONLINE_FLAG, detPos);
     if (action == HELP_ACTION)
         return helpFileName(action);
@@ -2634,7 +2635,7 @@ std::string slsDetectorCommand::helpFileName(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdEnablefwrite(int narg, const char * const args[], int action, int detPos) {
 
     int i;
     char ans[100];
@@ -2680,7 +2681,7 @@ std::string slsDetectorCommand::helpEnablefwrite(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdOverwrite(int narg, const char * const args[], int action, int detPos) {
     int i;
     char ans[100];
     myDet->setReceiverOnline(ONLINE_FLAG, detPos);
@@ -2706,7 +2707,7 @@ std::string slsDetectorCommand::helpOverwrite(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdFileIndex(int narg, const char * const args[], int action, int detPos) {
     myDet->setReceiverOnline(ONLINE_FLAG, detPos);
     if (action == HELP_ACTION) {
         return helpFileName(action);
@@ -2726,7 +2727,7 @@ std::string slsDetectorCommand::helpFileIndex(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdRateCorr(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION) {
         return helpRateCorr(action);
@@ -2753,7 +2754,7 @@ std::string slsDetectorCommand::helpRateCorr(int action) {
     return os.str();
 }
 
-// std::string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action, int detPos){
+// std::string slsDetectorCommand::cmdThreaded(int narg, const char * const args[], int action, int detPos){
 // 	int ival;
 // 	char answer[1000];
 
@@ -2779,7 +2780,7 @@ std::string slsDetectorCommand::helpThreaded(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdImage(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdImage(int narg, const char * const args[], int action, int detPos) {
     std::string sval;
     int retval = FAIL;
     if (action == HELP_ACTION)
@@ -2814,7 +2815,7 @@ std::string slsDetectorCommand::helpImage(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdCounter(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdCounter(int narg, const char * const args[], int action, int detPos) {
     int ival;
     char answer[100];
     std::string sval;
@@ -2875,7 +2876,7 @@ std::string slsDetectorCommand::helpCounter(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const args[], int action, int detPos) {
 
 	char ans[100] = {0};
     int i;
@@ -2919,7 +2920,7 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
     	if (action == PUT_ACTION) {
     		myDet->setReceiverUDPIP2(args[1], detPos);
     	}
-    	return myDet->getReceiverUDPIP(detPos);
+    	return myDet->getReceiverUDPIP2(detPos);
     } else if (cmd == "rx_udpmac") {
     	if (action == PUT_ACTION) {
     		  myDet->setReceiverUDPMAC(args[1], detPos);
@@ -2929,7 +2930,7 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int 
     	if (action == PUT_ACTION) {
     		  myDet->setReceiverUDPMAC2(args[1], detPos);
     	  }
-    	  return myDet->getReceiverUDPMAC(detPos);
+    	  return myDet->getReceiverUDPMAC2(detPos);
     } else if (cmd == "rx_udpport") {
         if (action == PUT_ACTION) {
             if (!(sscanf(args[1], "%d", &i))) {
@@ -3069,13 +3070,13 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
         os << "rx_udpmac mac \n sets receiver udp mac to mac" << std::endl;
         os << "rx_udpmac2 mac \n sets receiver udp mac of 2nd udp interface to mac. Jungfrau only." << std::endl;
         os << "rx_udpport port \n sets receiver udp port to port" << std::endl;
-        os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger and Jungfrau, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
-        os << "numinterfaces n \n sets the number of interfaces to n used to stream out from the detector. Options: 1, 2. JUNGFRAU only. " << std::endl;
-        os << "selinterface n \n sets the 1st or the 2nd interface to use to stream data out of the detector. Options: 1, 2. Effective only when  numinterfaces is 1. JUNGFRAU only. " << std::endl;
+        os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger, it is the right half and for Jungfrau, it is the top half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "numinterfaces n \n sets the number of interfaces to n used to stream out from the detector. Options: 1 (default), 2. JUNGFRAU only. " << std::endl;
+        os << "selinterface n \n sets interface to use to stream data out of the detector. Options: 0 (outer, default), 1(inner). Effective only when  numinterfaces is 1. JUNGFRAU only. " << std::endl;
         os << "txndelay_left port \n sets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right port \n sets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame port \n sets detector transmission delay of the entire frame" << std::endl;
-        os << "flowcontrol_10g port \n sets flow control for 10g for eiger" << std::endl;
+        os << "flowcontrol_10g port \n sets flow control for 10g for eiger and jungfrau" << std::endl;
         os << "zmqport port \n sets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. "
               "Use single-detector command to set individually or multi-detector command to calculate based on port for the rest."
               "Must restart streaming in client with new port from gui/external gui"
@@ -3109,13 +3110,13 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
         os << "rx_udpip \n gets receiver udp mac " << std::endl;
         os << "rx_udpip2 \n gets receiver udp mac of 2nd udp interface. Jungfrau only" << std::endl;
         os << "rx_udpport \n gets receiver udp port " << std::endl;
-        os << "rx_udpport2 \n gets receiver udp port of 2nd udp interface. For Eiger and Jungfrau, it is the second half module and for other detectors, same as rx_udpport" << std::endl;
-        os << "numinterfaces \n gets the number of interfaces to n used to stream out from the detector. Options: 1, 2. JUNGFRAU only. " << std::endl;
-        os << "selinterface \n gets the interface selected to use to stream data out of the detector. Options: 1, 2. Effective only when numinterfaces is 1. JUNGFRAU only. " << std::endl;
+        os << "rx_udpport2 \n gets receiver udp port of 2nd udp interface. For Eiger, it is the right half and for Jungfrau, it is the top half module and for other detectors, same as rx_udpport" << std::endl;
+        os << "numinterfaces \n gets the number of interfaces to n used to stream out from the detector. Options: 1 (default), 2. JUNGFRAU only. " << std::endl;
+        os << "selinterface \n gets interface to use to stream data out of the detector. Options: 0 (outer, default), 1(inner). Effective only when numinterfaces is 1. JUNGFRAU only. " << std::endl;
         os << "txndelay_left \n gets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right \n gets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame \n gets detector transmission delay of the entire frame" << std::endl;
-        os << "flowcontrol_10g \n gets flow control for 10g for eiger" << std::endl;
+        os << "flowcontrol_10g \n gets flow control for 10g for eiger and jungfrau" << std::endl;
         os << "zmqport \n gets the 0MQ (TCP) port of the client to where final data is streamed to" << std::endl;
         os << "rx_zmqport \n gets the 0MQ (TCP) port of the receiver from where data is streamed from" << std::endl;
         os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
@@ -3126,7 +3127,7 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdPort(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdPort(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpPort(action);
@@ -3174,7 +3175,7 @@ std::string slsDetectorCommand::helpPort(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdLock(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdLock(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpLock(action);
@@ -3225,7 +3226,7 @@ std::string slsDetectorCommand::helpLock(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdLastClient(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdLastClient(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpLastClient(action);
@@ -3256,7 +3257,7 @@ std::string slsDetectorCommand::helpLastClient(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdOnline(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdOnline(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION) {
         return helpOnline(action);
@@ -3340,7 +3341,7 @@ std::string slsDetectorCommand::helpOnline(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdConfigureMac(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION) {
         return helpConfigureMac(action);
@@ -3371,7 +3372,7 @@ std::string slsDetectorCommand::helpConfigureMac(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpDetectorSize(action);
@@ -3439,7 +3440,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int acti
         ret = myDet->setDynamicRange(val, detPos);
     } else if (cmd == "roi") {
         const ROI* r = myDet->getROI(ret, detPos);
-        if (r != NULL)
+        
             delete [] r;
     } else if (cmd == "detsizechan") {
         sprintf(ans, "%d %d", myDet->getMaxNumberOfChannelsPerDetector(X), myDet->getMaxNumberOfChannelsPerDetector(Y));
@@ -3488,7 +3489,7 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdSettings(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpSettings(action);
@@ -3606,7 +3607,7 @@ std::string slsDetectorCommand::helpSettings(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdSN(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int action, int detPos) {
 
     char answer[1000];
 
@@ -3699,7 +3700,7 @@ std::string slsDetectorCommand::helpSN(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdDigiTest(int narg, const char * const args[], int action, int detPos) {
 
     char answer[1000];
 
@@ -3750,7 +3751,7 @@ std::string slsDetectorCommand::helpDigiTest(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdRegister(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdRegister(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpRegister(action);
@@ -3868,7 +3869,7 @@ std::string slsDetectorCommand::helpRegister(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdDAC(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpDAC(action);
@@ -4214,7 +4215,7 @@ std::string slsDetectorCommand::helpDAC(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdADC(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdADC(int narg, const char * const args[], int action, int detPos) {
 
     dacIndex adc;
     int idac;
@@ -4341,7 +4342,7 @@ std::string slsDetectorCommand::helpADC(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdTempControl(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdTempControl(int narg, const char * const args[], int action, int detPos) {
     char answer[1000] = "";
     int val = -1;
 
@@ -4408,7 +4409,7 @@ std::string slsDetectorCommand::helpTempControl(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdTiming(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdTiming(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
     std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
 #endif
@@ -4434,7 +4435,7 @@ std::string slsDetectorCommand::helpTiming(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], int action, int detPos) {
     timerIndex index;
     int64_t t = -1, ret;
     double val, rval;
@@ -4483,6 +4484,16 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
         }
         sprintf(answer, "%d", myDet->setStoragecellStart(-1, detPos));
         return std::string(answer);
+    } else if (cmd == "startingfnum") {
+        myDet->setOnline(ONLINE_FLAG, detPos);
+        if (action == PUT_ACTION) {
+            uint64_t ival = -1;
+            if (!sscanf(args[1], "%lu", &ival))
+                return std::string("cannot scan starting frame number value ") + std::string(args[1]);
+            myDet->setStartingFrameNumber(ival, detPos);
+            return std::string(args[1]);
+        }
+        return std::to_string(myDet->getStartingFrameNumber(detPos));
     } else
         return std::string("could not decode timer ") + cmd;
 
@@ -4496,10 +4507,9 @@ std::string slsDetectorCommand::cmdTimer(int narg, char *args[], int action, int
         if (index == ACQUISITION_TIME || index == SUBFRAME_ACQUISITION_TIME ||
             index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER ||
             index == SUBFRAME_DEADTIME || index == STORAGE_CELL_DELAY) {
-            // 	+0.5 for precision of eg.0.0000325
-            t = (val * 1E9 + 0.5);
+            t = lround(val * 1E9);
         } else
-            t = (int64_t)val;
+            t = static_cast<int64_t>(val);
     }
 
     myDet->setOnline(ONLINE_FLAG, detPos);
@@ -4535,6 +4545,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "period t \t sets the frame period in s" << std::endl;
         os << "delay t \t sets the delay after trigger in s" << std::endl;
         os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
+        os << "startingfnum t \t sets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
         os << "cycles t \t sets the number of cycles (e.g. number of triggers)" << std::endl;
         os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
@@ -4552,6 +4563,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "period  \t gets the frame period in s" << std::endl;
         os << "delay  \t gets the delay after trigger in s" << std::endl;
         os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
+        os << "startingfnum \t gets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
         os << "cycles  \t gets the number of cycles (e.g. number of triggers)" << std::endl;
         os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
@@ -4565,7 +4577,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[], int action, int detPos) {
     timerIndex index;
     int64_t ret;
     double rval;
@@ -4581,8 +4593,6 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action, 
         index = FRAME_PERIOD;
     else if (cmd == "delayl")
         index = DELAY_AFTER_TRIGGER;
-    else if (cmd == "gatesl")
-        index = GATES_NUMBER;
     else if (cmd == "framesl")
         index = FRAME_NUMBER;
     else if (cmd == "cyclesl")
@@ -4635,7 +4645,7 @@ std::string slsDetectorCommand::helpTimeLeft(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdSpeed(int narg, const char * const args[], int action, int detPos) {
 
     speedVariable index;
     int t = -1, ret = 0, mode = 0;
@@ -4732,7 +4742,7 @@ std::string slsDetectorCommand::helpSpeed(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[], int action, int detPos) {
 
     
     char answer[1000] = "";
@@ -4970,7 +4980,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpConfiguration(action);
@@ -5040,7 +5050,7 @@ std::string slsDetectorCommand::helpConfiguration(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[], int action, int detPos) {
     char answer[100];
     int ival = -1;
 
@@ -5087,7 +5097,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action, 
         if (action == PUT_ACTION)
             return std::string("cannot put");
         else {
-            sprintf(answer, "%d", myDet->getReceiverCurrentFrameIndex(detPos));
+            sprintf(answer, "%lu", myDet->getReceiverCurrentFrameIndex(detPos));
             return std::string(answer);
         }
     } else if (cmd == "r_readfreq") {
@@ -5288,7 +5298,7 @@ std::string slsDetectorCommand::helpPattern(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdPattern(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], int action, int detPos) {
 
     if (action == HELP_ACTION)
         return helpPattern(action);
@@ -5758,7 +5768,7 @@ std::string slsDetectorCommand::helpPulse(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdPulse(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdPulse(int narg, const char * const args[], int action, int detPos) {
     int retval = FAIL;
 
     if (action == HELP_ACTION)
@@ -5820,7 +5830,7 @@ std::string slsDetectorCommand::helpProcessor(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdProcessor(int narg, char *args[], int action, int detPos) {
+std::string slsDetectorCommand::cmdProcessor(int narg, const char * const args[], int action, int detPos) {
     if (action == HELP_ACTION)
         return helpProcessor(action);
 

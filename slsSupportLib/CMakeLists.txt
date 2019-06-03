@@ -1,5 +1,4 @@
 set(SOURCES
-    src/ClientInterface.cpp
     src/CmdLineParser.cpp
     src/string_utils.cpp
     src/file_utils.cpp
@@ -7,6 +6,7 @@ set(SOURCES
     src/DataSocket.cpp
     src/ServerSocket.cpp
     src/ServerInterface.cpp
+    src/ServerInterface2.cpp
     src/network_utils.cpp
 )
 
@@ -17,20 +17,18 @@ set(PUBLICHEADERS
     include/ansi.h
     include/sls_detector_defs.h
     include/sls_detector_funcs.h
-    include/error_defs.h
     include/versionAPI.h
     include/sls_detector_exceptions.h
     include/file_utils.h
     include/container_utils.h
     include/string_utils.h
-    include/ClientInterface.h
     include/MySocketTCP.h
     include/genericSocket.h
     include/logger.h
     include/ClientSocket.h
     include/DataSocket.h
     include/ServerSocket.h
-    include/ServerInterface.h
+    include/ServerInterface2.h
     include/network_utils.h
     include/FixedCapacityContainer.h
 )

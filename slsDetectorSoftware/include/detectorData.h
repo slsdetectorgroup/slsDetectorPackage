@@ -25,7 +25,29 @@ class detectorData {
 			  npoints(np), npy(ny), cvalues(cval), databytes(dbytes),
 			  dynamicRange(dr), dgainvalues(NULL), fileIndex(file_ind) {
 	 strcpy(fileName,fname);
-  };
+			  };
+
+
+			  int64_t getChannel(int i) {
+			    int off=dynamicRange/8;
+			    if (off==1) {
+			      char val=*(cvalues+i);
+			      return val;
+			    }		
+			    if (off==2) {
+			      int16_t val=*((int16_t*)(cvalues+i*off));
+			      return val;
+			    }	
+			    if (off==4) {
+			      int32_t val=*((int32_t*)(cvalues+i*off));
+			      return val;
+			    }
+			    if (off==8) {
+			      int64_t val=*((int64_t*)(cvalues+i*off));
+			      return val;
+			    }
+			    return -1;
+			  }
 
   /**
 	@short The destructor

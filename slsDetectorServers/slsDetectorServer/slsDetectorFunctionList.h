@@ -5,7 +5,7 @@
 #endif
 #include <stdlib.h>
 #include <stdio.h>					// FILE
-
+#include <sys/types.h>
 
 /****************************************************
 This functions are used by the slsDetectroServer_funcs interface.
@@ -13,6 +13,7 @@ Here are the definitions, but the actual implementation should be done for each 
 
 ****************************************************/
 
+enum interfaceType {OUTER, INNER};
 
 // basic tests
 int			isFirmwareCheckDone();
@@ -138,6 +139,10 @@ enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
 #ifdef JUNGFRAUD
 int         selectStoragecellStart(int pos);
 #endif
+#if defined(JUNGFRAUD) || defined(EIGERD) 
+int 		setStartingFrameNumber(uint64_t value);
+int			getStartingFrameNumber(uint64_t* value);
+#endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 int64_t 	getTimeLeft(enum timerIndex ind);
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
@@ -166,8 +171,8 @@ extern void AD9252_Set(int addr, int val);      // AD9252.h (old board)
 extern void AD9257_Set(int addr, int val);      // AD9257.h
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-extern int AD9257_GetMaxValidVref();                   // AD9257.h
-extern void AD9257_SetVrefVoltage(int val);             // AD9257.h
+extern int AD9257_GetVrefVoltage(int mV);                  // AD9257.h
+extern int AD9257_SetVrefVoltage(int val, int mV);   // AD9257.h
 #endif
 
 void 		setDAC(enum DACINDEX ind, int val, int mV);
@@ -213,6 +218,12 @@ int         getExtSignal();
 // configure mac
 #ifdef GOTTHARDD
 void        calcChecksum(mac_conf* mac, int sourceip, int destip);
+#elif JUNGFRAUD
+void setNumberofUDPInterfaces(int val);
+int getNumberofUDPInterfaces();
+void selectPrimaryInterface(int val);
+void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport);
+void calcChecksum(udp_header* udp);
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 long int 	calcChecksum(int sourceip, int destip);
@@ -285,6 +296,7 @@ int			resetCounterBlock(int startACQ);
 
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware
 #elif JUNGFRAUD
+void 		initReadoutConfiguration();
 int         powerChip (int on);
 int         autoCompDisable(int on);
 void        configureASICTimer();

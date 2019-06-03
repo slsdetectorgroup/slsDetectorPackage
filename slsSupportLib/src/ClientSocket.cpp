@@ -20,7 +20,7 @@ ClientSocket::ClientSocket(std::string stype, const std::string &host,
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags |= AI_CANONNAME;
 
-    if (getaddrinfo(host.c_str(), NULL, &hints, &result) != 0) {
+    if (getaddrinfo(host.c_str(), nullptr, &hints, &result) != 0) {
         std::string msg = "ClientSocket cannot decode host:" + host +
                           " on port " + std::to_string(port) + "\n";
         throw SocketError(msg);

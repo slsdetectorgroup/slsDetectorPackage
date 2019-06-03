@@ -242,6 +242,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_ADC_INVERT:					return "F_GET_ADC_INVERT";
 	case F_EXTERNAL_SAMPLING_SOURCE:		return "F_EXTERNAL_SAMPLING_SOURCE";				
 	case F_EXTERNAL_SAMPLING:				return "F_EXTERNAL_SAMPLING";	
+	case F_SET_STARTING_FRAME_NUMBER:		return "F_SET_STARTING_FRAME_NUMBER";
+	case F_GET_STARTING_FRAME_NUMBER:		return "F_GET_STARTING_FRAME_NUMBER";
 	default:								return "Unknown Function";
 	}
 }
@@ -324,6 +326,8 @@ void function_table() {
 	flist[F_GET_ADC_INVERT]						= &get_adc_invert;
 	flist[F_EXTERNAL_SAMPLING_SOURCE]			= &set_external_sampling_source;							
 	flist[F_EXTERNAL_SAMPLING]					= &set_external_sampling;
+	flist[F_SET_STARTING_FRAME_NUMBER] 			= &set_starting_frame_number;
+	flist[F_GET_STARTING_FRAME_NUMBER] 			= &get_starting_frame_number;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -333,7 +337,7 @@ void function_table() {
 
 	int iloop = 0;
 	for (iloop = 0; iloop < NUM_DET_FUNCTIONS ; ++iloop) {
-		FILE_LOG(logDEBUG1, ("function fnum=%d, (%s)\n", iloop,
+		FILE_LOG(logDEBUG3, ("function fnum=%d, (%s)\n", iloop,
 				getFunctionName((enum detFuncs)iloop)));
 	}
 }
@@ -793,14 +797,17 @@ int set_dac(int file_des) {
     		// adc vpp
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     		case ADC_VPP:
-    		if (val < 0 || val > AD9257_GetMaxValidVref())  {
-    		    ret = FAIL;
-                sprintf(mess,"Could not set dac. Adc Vpp value should be between 0 and %d\n", AD9257_GetMaxValidVref());
-                FILE_LOG(logERROR,(mess));
-    		} else {
-    		    AD9257_SetVrefVoltage(val);
-    		    retval = val; // cannot read
-    		}
+			// set
+    		if (val >= 0)  {
+				ret = AD9257_SetVrefVoltage(val, mV);
+    		    if (ret == FAIL) {
+					sprintf(mess,"Could not set Adc Vpp. Please set a proper value\n");
+					FILE_LOG(logERROR,(mess));
+				}
+    		} 
+			retval = AD9257_GetVrefVoltage(mV);
+			FILE_LOG(logDEBUG1, ("Adc Vpp retval: %d %s\n", retval, (mV ? "mV" : "mode")));
+			// cannot validate (its just a variable and mv gives different value)
     		break;
 #endif
 
@@ -1716,13 +1723,6 @@ int get_time_left(int file_des) {
 
     // only get
     // check index
-#ifdef JUNGFRAUD
-    if (ind == DELAY_AFTER_TRIGGER) {
-        ret = FAIL;
-        sprintf(mess,"Timer Left Index (%d) is not implemented for this release.\n", (int)ind);
-        FILE_LOG(logERROR,(mess));
-    }
-#endif
     if (ret == OK) {
         switch(ind) {
 #ifdef EIGERD
@@ -2011,6 +2011,13 @@ int set_speed(int file_des) {
 		FILE_LOG(logERROR,(mess));
     }
 #endif
+#ifdef JUNGFRAUD
+	if (ret == OK && ind == CLOCK_DIVIDER && val == FULL_SPEED && getHardwareVersionNumber() != BOARD_VERSION_2_VAL) {
+		ret = FAIL;
+		strcpy(mess, "Full speed not implemented for this board version.\n");
+		FILE_LOG(logERROR,(mess));
+	}
+#endif
 
     if (ret == OK) {
     	// set
@@ -2295,8 +2302,6 @@ int send_update(int file_des) {
 
 
 
-
-
 int configure_mac(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -2320,9 +2325,12 @@ int configure_mac(int file_des) {
 	// dest ip
 	uint32_t dstIp = 0;
 	sscanf(args[1], "%x", 	&dstIp);
-	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(dstIp >> 24) & 0xff, (dstIp >> 16) & 0xff, (dstIp >> 8) & 0xff, (dstIp) & 0xff,
-			dstIp));
+	{
+		char ipstring[INET_ADDRSTRLEN]; 
+		getIpAddressinString(ipstring, dstIp);
+		FILE_LOG(logINFO, ("Dst Ip Addr: %s\n", ipstring));
+	}
+
 	// dest mac
 	uint64_t dstMac = 0;
 #ifdef VIRTUAL
@@ -2330,23 +2338,19 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[2], "%llx", 	&dstMac);
 #endif
-	FILE_LOG(logDEBUG1, ("Dst Mac Addr: (0x) "));
 	{
-		int iloop = 5;
-		for (iloop = 5; iloop >= 0; --iloop) {
-			printf ("%x", (unsigned int)(((dstMac >> (8 * iloop)) & 0xFF)));
-			if (iloop > 0) {
-				printf(":");
-			}
-		}
+		char macstring[50];
+		getMacAddressinString(macstring, 50, dstMac);
+		FILE_LOG(logDEBUG1, ("Dst Mac Addr: %s\n", macstring));
 	}
-	FILE_LOG(logDEBUG1, (" = %llx\n", dstMac));
 	// source ip
 	uint32_t srcIp = 0;
 	sscanf(args[3], "%x",	&srcIp);
-	FILE_LOG(logDEBUG1, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(srcIp >> 24) & 0xff, (srcIp >> 16) & 0xff, (srcIp >> 8) & 0xff, (srcIp) & 0xff,
-			srcIp));
+	{
+		char ipstring[INET_ADDRSTRLEN]; 
+		getIpAddressinString(ipstring, srcIp);
+		FILE_LOG(logINFO, ("Src Ip Addr: %s\n", ipstring));
+	}
 	// source mac
 	uint64_t srcMac = 0;
 #ifdef VIRTUAL
@@ -2354,17 +2358,11 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[4], "%llx",	&srcMac);
 #endif
-	FILE_LOG(logDEBUG1, ("Src Mac Addr: (0x) "));
 	{
-		int iloop = 5;
-		for (iloop = 5; iloop >= 0; --iloop) {
-			printf("%x", (unsigned int)(((srcMac >> (8 * iloop)) & 0xFF)));
-			if (iloop > 0) {
-				printf(":");
-			}
-		}
+		char macstring[50];
+		getMacAddressinString(macstring, 50, srcMac);
+		FILE_LOG(logDEBUG1, ("Src Mac Addr: %s\n", macstring));
 	}
-	FILE_LOG(logDEBUG1, (" = %llx\n", srcMac));
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
 	// source port 2
@@ -2376,9 +2374,11 @@ int configure_mac(int file_des) {
 	// dest ip2
 	uint32_t dstIp2 = 0;
 	sscanf(args[6], "%x", 	&dstIp2);
-	FILE_LOG(logDEBUG1, ("Dst Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(dstIp2 >> 24) & 0xff, (dstIp2 >> 16) & 0xff, (dstIp2 >> 8) & 0xff, (dstIp2) & 0xff,
-			dstIp2));
+	{
+		char ipstring[INET_ADDRSTRLEN]; 
+		getIpAddressinString(ipstring, dstIp2);
+		FILE_LOG(logDEBUG1, ("Dst Ip Addr2: %s\n", ipstring));
+	}
 	// dest mac2
 	uint64_t dstMac2 = 0;
 #ifdef VIRTUAL
@@ -2386,23 +2386,19 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[7], "%llx", 	&dstMac2);
 #endif
-	FILE_LOG(logDEBUG1, ("Dst Mac Addr: (0x) "));
 	{
-		int iloop = 5;
-		for (iloop = 5; iloop >= 0; --iloop) {
-			printf ("%x", (unsigned int)(((dstMac2 >> (8 * iloop)) & 0xFF)));
-			if (iloop > 0) {
-				printf(":");
-			}
-		}
+		char macstring[50];
+		getMacAddressinString(macstring, 50, dstMac2);
+		FILE_LOG(logDEBUG1, ("Dst Mac Addr2: %s\n", macstring));
 	}
-	FILE_LOG(logDEBUG1, (" = %llx\n", dstMac2));
 	// source ip2
 	uint32_t srcIp2 = 0;
 	sscanf(args[8], "%x",	&srcIp2);
-	FILE_LOG(logDEBUG1, ("Src Ip Addr: %d.%d.%d.%d = 0x%x \n",
-			(srcIp2 >> 24) & 0xff, (srcIp2 >> 16) & 0xff, (srcIp2 >> 8) & 0xff, (srcIp2) & 0xff,
-			srcIp2));
+	{
+		char ipstring[INET_ADDRSTRLEN]; 
+		getIpAddressinString(ipstring, srcIp2);
+		FILE_LOG(logDEBUG1, ("Src Ip Addr2: %s\n", ipstring));
+	}
 	// source mac2
 	uint64_t srcMac2 = 0;
 #ifdef VIRTUAL
@@ -2410,17 +2406,11 @@ int configure_mac(int file_des) {
 #else
 	sscanf(args[9], "%llx",	&srcMac2);
 #endif
-	FILE_LOG(logDEBUG1, ("Src Mac Addr: (0x) "));
 	{
-		int iloop = 5;
-		for (iloop = 5; iloop >= 0; --iloop) {
-			printf("%x", (unsigned int)(((srcMac2 >> (8 * iloop)) & 0xFF)));
-			if (iloop > 0) {
-				printf(":");
-			}
-		}
+		char macstring[50];
+		getMacAddressinString(macstring, 50, srcMac2);
+		FILE_LOG(logDEBUG1, ("Src Mac Addr2: %s\n", macstring));
 	}
-	FILE_LOG(logDEBUG1, (" = %llx\n", srcMac2));
 
 	// number of interfaces
 	int numInterfaces = 0;
@@ -2431,9 +2421,9 @@ int configure_mac(int file_des) {
 #endif
 #if defined(JUNGFRAUD) || defined(EIGERD)
 	int pos[2] = {0, 0};
-	sscanf(args[12], "%x", 	&pos[0]);
-	sscanf(args[13], "%x", 	&pos[1]);
-	FILE_LOG(logDEBUG1, ("Position: [%d, %d]\n", pos[0], pos[1]));
+	sscanf(args[12], "%x", 	&pos[X]);
+	sscanf(args[13], "%x", 	&pos[Y]);
+	FILE_LOG(logDEBUG1, ("Position: [%d, %d]\n", pos[X], pos[Y]));
 #endif
 
 
@@ -3241,10 +3231,12 @@ int set_network_parameter(int file_des) {
 	if ((value == -1) || (Server_VerifyLock() == OK)) {
 		// check index
 		switch (mode) {
-#ifdef EIGERD
+
         case FLOW_CONTROL_10G:
         	serverIndex = FLOWCTRL_10G;
             break;
+
+#ifdef EIGERD
 		case DETECTOR_TXN_DELAY_LEFT:
 			serverIndex = TXN_LEFT;
 			break;
@@ -4010,4 +4002,80 @@ int set_external_sampling(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_starting_frame_number(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting starting frame number to %llu\n", arg));
+
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (arg == 0) {
+			ret = FAIL;
+			sprintf(mess, "Could not set starting frame number. Cannot be 0.\n");
+			FILE_LOG(logERROR,(mess));
+		}
+#ifdef EIGERD
+		else if (arg > UDP_HEADER_MAX_FRAME_VALUE) {
+			ret = FAIL;
+			sprintf(mess, "Could not set starting frame number. Must be less then %lld (0x%llx)\n", UDP_HEADER_MAX_FRAME_VALUE, UDP_HEADER_MAX_FRAME_VALUE);
+			FILE_LOG(logERROR,(mess));
+		}
+#endif	
+		 else {
+			ret = setStartingFrameNumber(arg);
+			if (ret == FAIL) {
+				sprintf(mess, "Could not set starting frame number. Failed to map address.\n");
+				FILE_LOG(logERROR,(mess));	
+			} 
+			if (ret == OK)  {
+				uint64_t retval = 0;
+				ret = getStartingFrameNumber(&retval);
+				if (ret == FAIL) {
+					sprintf(mess, "Could not get starting frame number. Failed to map address.\n");
+					FILE_LOG(logERROR,(mess));	
+				} else {
+					if (arg != retval) {
+						ret = FAIL;
+						sprintf(mess, "Could not set starting frame number. Set 0x%llx, but read 0x%llx\n", arg, retval);
+						FILE_LOG(logERROR,(mess));
+					}
+				}
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_starting_frame_number(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting Starting frame number \n"));
+
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
+	functionNotImplemented();
+#else	
+	// get
+	ret = getStartingFrameNumber(&retval);
+	if (ret == FAIL) {
+		sprintf(mess, "Could not get starting frame number. Failed to map address.\n");
+		FILE_LOG(logERROR,(mess));	
+	} else {
+		FILE_LOG(logDEBUG1, ("Start frame number retval: %u\n", retval));
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }

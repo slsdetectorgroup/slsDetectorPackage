@@ -1,0 +1,16 @@
+
+INCDIR=   -I. -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/ -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3 -g -std=c++11
+#-L../../bin -lhdf5  -L.
+
+#DESTDIR?=../bin
+
+all:  moenchZmqProcess
+
+moenchZmqProcess:  moenchZmqProcess.cpp   clean
+		      g++ -o moenchZmqProcess  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP
+
+clean: 	
+	rm -f  moenchZmqProcess  
+
+

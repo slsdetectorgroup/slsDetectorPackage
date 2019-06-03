@@ -1,8 +1,5 @@
 #include "slsDetector.h"
-#include "ClientInterface.h"
 #include "ClientSocket.h"
-#include "MySocketTCP.h"
-#include "ServerInterface.h"
 #include "SharedMemory.h"
 #include "file_utils.h"
 #include "multiSlsDetector.h"
@@ -340,7 +337,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->detectorIP2 = DEFAULT_DET_MAC2;
 
     shm()->numUDPInterfaces = 1;
-    shm()->selectedUDPInterface = 1;
+    shm()->selectedUDPInterface = 0;
     shm()->rxOnlineFlag = OFFLINE_FLAG;
     shm()->tenGigaEnable = 0;
     shm()->flippedData[X] = 0;
@@ -389,8 +386,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->rxFileWrite = true;
     shm()->rxMasterFileWrite = true;
     shm()->rxFileOverWrite = true;
-    shm()->rxDbitListSize = 0;
-    memset(shm()->rxDbitList, 0, MAX_RX_DBIT * sizeof(int));
     shm()->rxDbitOffset = 0;
 
     // get the detector parameters based on type
@@ -1442,7 +1437,7 @@ int slsDetector::configureMAC() {
     // 2d positions to detector to put into udp header
     {
         int pos[2] = {0, 0};
-        int max = shm()->multiSize[1] * (shm()->numUDPInterfaces);
+        int max = shm()->multiSize[Y] * (shm()->numUDPInterfaces);
         // row
         pos[0] = (detId % max);
         // col for horiz. udp ports
@@ -1502,6 +1497,23 @@ int slsDetector::configureMAC() {
     return ret;
 }
 
+void slsDetector::setStartingFrameNumber(const uint64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting starting frame number to " << value;
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_SET_STARTING_FRAME_NUMBER, value, nullptr);
+    }
+}
+
+uint64_t slsDetector::getStartingFrameNumber() {
+    uint64_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting starting frame number";
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_GET_STARTING_FRAME_NUMBER, nullptr, retval);
+        FILE_LOG(logDEBUG1) << "Starting frame number :" << retval;
+    }
+    return retval;
+}
+
 int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     int ret = FAIL;
     int64_t args[]{static_cast<int64_t>(index), t};
@@ -1559,6 +1571,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
                         DIGITAL_SAMPLES,
                         STORAGE_CELL_NUMBER};
 
+        // if in list (lambda)
         if (std::any_of(std::begin(rt), std::end(rt),
                         [index](timerIndex t) { return t == index; })) {
             args[1] = shm()->timerValue[index];
@@ -1907,7 +1920,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nrx streaming source ip:" << shm()->rxZmqip
             << "\nrx additional json header:" << shm()->rxAdditionalJsonHeader
             << "\nrx_datastream:" << enableDataStreamingFromReceiver(-1)
-            << "\nrx_dbitlistsize:" << shm()->rxDbitListSize
+            << "\nrx_dbitlistsize:" << shm()->rxDbitList.size()
             << "\nrx_DbitOffset:" << shm()->rxDbitOffset
             << std::endl;
 
@@ -1948,7 +1961,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 enableTenGigabitEthernet(shm()->tenGigaEnable);
                 setReadOutFlags(GET_READOUT_FLAGS);
                 break;
-
+            
             case CHIPTESTBOARD:
                 setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
                 setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
@@ -1974,8 +1987,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             }
 
             if (shm()->myDetectorType == CHIPTESTBOARD) {
-                std::vector<int> list(shm()->rxDbitList, shm()->rxDbitList + shm()->rxDbitListSize);
-                setReceiverDbitList(list);
+                setReceiverDbitList(shm()->rxDbitList);
             }
 
             setReceiverSilentMode(static_cast<int>(shm()->rxSilentMode));
@@ -2097,7 +2109,7 @@ int slsDetector::selectUDPInterface(int n) {
     if (shm()->myDetectorType != JUNGFRAU) {
         throw RuntimeError("Cannot select an interface for this detector");
     }
-    shm()->selectedUDPInterface = (n > 1 ? 2 : 1);
+    shm()->selectedUDPInterface = (n == 0 ? 0 : 1);
     if (strcmp(shm()->rxHostname, "none") == 0) {
         FILE_LOG(logDEBUG1) << "Receiver hostname not set yet";
     } else if (setUDPConnection() == FAIL) {
@@ -2178,7 +2190,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
     memset(shm()->rxZmqip, 0, MAX_STR_LENGTH);
     sls::strcpy_safe(shm()->rxZmqip, args);
     // if zmqip is empty, update it
-    if (strlen(shm()->zmqip) != 0u) {
+    if (shm()->zmqip != 0u) {
         sls::strcpy_safe(shm()->zmqip, args);
     }
     FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: "
@@ -2354,7 +2366,7 @@ int64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
 
 int slsDetector::setUDPConnection() {
     int ret = FAIL;
-    char args[6][MAX_STR_LENGTH]{};
+    char args[5][MAX_STR_LENGTH]{};
     char retvals[2][MAX_STR_LENGTH]{};
     FILE_LOG(logDEBUG1) << "Setting UDP Connection";
 
@@ -2371,9 +2383,8 @@ int slsDetector::setUDPConnection() {
             shm()->rxUDPIP = HostnameToIp(shm()->rxHostname);
         }
     }
-    // jungfrau 2 interfaces or (1 interface and 2nd interface), copy udpip if
-    // udpip2 empty
-    if (shm()->numUDPInterfaces == 2 || shm()->selectedUDPInterface == 2) {
+    // jungfrau 2 interfaces, copy udpip if udpip2 empty
+    if (shm()->numUDPInterfaces == 2) {
         if (shm()->rxUDPIP2 == 0) {
             shm()->rxUDPIP2 = shm()->rxUDPIP;
         }
@@ -2381,15 +2392,12 @@ int slsDetector::setUDPConnection() {
 
     // copy arguments to args[][]
     snprintf(args[0], sizeof(args[0]), "%d", shm()->numUDPInterfaces);
-    snprintf(args[1], sizeof(args[1]), "%d", shm()->selectedUDPInterface);
-    sls::strcpy_safe(args[2], getReceiverUDPIP().str());
-    sls::strcpy_safe(args[3], getReceiverUDPIP2().str());
-    snprintf(args[4], sizeof(args[4]), "%d", shm()->rxUDPPort);
-    snprintf(args[5], sizeof(args[5]), "%d", shm()->rxUDPPort2);
+    sls::strcpy_safe(args[1], getReceiverUDPIP().str());
+    sls::strcpy_safe(args[2], getReceiverUDPIP2().str());
+    snprintf(args[3], sizeof(args[3]), "%d", shm()->rxUDPPort);
+    snprintf(args[4], sizeof(args[4]), "%d", shm()->rxUDPPort2);
     FILE_LOG(logDEBUG1) << "Receiver Number of UDP Interfaces: "
                         << shm()->numUDPInterfaces;
-    FILE_LOG(logDEBUG1) << "Receiver Selected Interface: "
-                        << shm()->selectedUDPInterface;
     FILE_LOG(logDEBUG1) << "Receiver udp ip address: " << shm()->rxUDPIP;
     FILE_LOG(logDEBUG1) << "Receiver udp ip address2: " << shm()->rxUDPIP2;
     FILE_LOG(logDEBUG1) << "Receiver udp port: " << shm()->rxUDPPort;
@@ -2731,51 +2739,20 @@ void slsDetector::setReceiverDbitList(std::vector<int> list) {
             throw sls::RuntimeError("Dbit list value must be between 0 and 63\n");
         }
     }
-
-    // copy size and vector to shm
-    shm()->rxDbitListSize = list.size();
-    std::copy(list.begin(), list.end(), shm()->rxDbitList);
- 
+    shm()->rxDbitList = list;
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
-        int args[list.size() + 1];
-        args[0] = list.size();
-        std::copy(std::begin(list), std::end(list), args + 1);
-        sendToReceiver(F_SET_RECEIVER_DBIT_LIST, args, sizeof(args), nullptr, 0);
+        sendToReceiver(F_SET_RECEIVER_DBIT_LIST, shm()->rxDbitList, nullptr);
     }
 }
 
 std::vector<int> slsDetector::getReceiverDbitList() {
-    int fnum = F_GET_RECEIVER_DBIT_LIST;
-    int ret = FAIL;
-    std::vector <int> retval;
-    int retsize = 0;
+    sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
     FILE_LOG(logDEBUG1) << "Getting Receiver Dbit List";
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
-        auto receiver =
-        sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
-        receiver.sendData(&fnum, sizeof(fnum));
-        receiver.receiveData(&ret, sizeof(ret));
-        if (ret == FAIL) {
-            char mess[MAX_STR_LENGTH]{};
-            receiver.receiveData(mess, MAX_STR_LENGTH);
-            throw ReceiverError("Receiver " + std::to_string(detId) +
-                            " returned error: " + std::string(mess));
-        }
-        receiver.receiveData(&retsize, sizeof(retsize));
-        int list[retsize];
-        receiver.receiveData(list, sizeof(list));
-
-        // copy after no errors
-        shm()->rxDbitListSize = retsize;
-        std::copy(list, list + retsize, shm()->rxDbitList);
+        sendToReceiver(F_GET_RECEIVER_DBIT_LIST, nullptr, retval);
+        shm()->rxDbitList = retval;
     } 
-
-    if (shm()->rxDbitListSize) {
-        retval.resize(shm()->rxDbitListSize);
-        std::copy(shm()->rxDbitList, shm()->rxDbitList + shm()->rxDbitListSize, std::begin(retval));
-    }
-
-    return retval;
+    return shm()->rxDbitList;
 }
 
 int slsDetector::setReceiverDbitOffset(int value) {
@@ -3256,10 +3233,10 @@ int slsDetector::setReceiverOnline(int value) {
         } else {
             shm()->rxOnlineFlag = OFFLINE_FLAG;
             if (value == ONLINE_FLAG) {
-                // connect and set offline flag
-                auto receiver =
-                    ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-                receiver.close();
+                // Connect and ask for receiver id to verify that
+                // it's online and working
+                int64_t retval{0};
+                sendToReceiver(F_GET_RECEIVER_ID, nullptr, retval);
                 shm()->rxOnlineFlag = ONLINE_FLAG;
                 if (shm()->receiverAPIVersion == 0) {
                     checkReceiverVersionCompatibility();
@@ -3422,15 +3399,11 @@ int slsDetector::updateCachedReceiverVariables() const {
             n += receiver.receiveData(&i32, sizeof(i32));
             shm()->rxSilentMode = static_cast<bool>(i32);
 
-            // dbit list size
+            // dbit list
             {
-                int listsize = 0;
-                n += receiver.receiveData(&listsize, sizeof(listsize));
-                int list[listsize];
-                n += receiver.receiveData(list, sizeof(list));
-                // copy after no errors
-                shm()->rxDbitListSize = listsize;
-                std::copy(list, list + listsize, shm()->rxDbitList);
+                sls::FixedCapacityContainer<int, MAX_RX_DBIT> temp;
+                n += receiver.receiveData(&temp, sizeof(temp));
+                shm()->rxDbitList = temp;
             }
 
             // dbit offset
@@ -3637,8 +3610,8 @@ int slsDetector::getFramesCaughtByReceiver() {
     return retval;
 }
 
-int slsDetector::getReceiverCurrentFrameIndex() {
-    int retval = -1;
+uint64_t slsDetector::getReceiverCurrentFrameIndex() {
+    uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Current Frame Index of Receiver";
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
         sendToReceiver(F_GET_RECEIVER_FRAME_INDEX, nullptr, retval);

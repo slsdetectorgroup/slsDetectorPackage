@@ -2,12 +2,11 @@
 
 #include "ClientSocket.h"
 #include "SharedMemory.h"
-#include "error_defs.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
 #include "network_utils.h"
 #include "FixedCapacityContainer.h"
-class ClientInterface;
+
 
 #include <cmath>
 #include <vector>
@@ -16,10 +15,9 @@ class ClientInterface;
 
 class multiSlsDetector;
 class ServerInterface;
-class MySocketTCP;
 
-#define SLS_SHMVERSION 0x190503
-#define MAX_RX_DBIT 64
+#define SLS_SHMVERSION 0x190515
+
 
 
 /**
@@ -243,11 +241,7 @@ struct sharedSlsDetector {
     /** overwrite enable */
     bool rxFileOverWrite;
 
-	/** receiver dbit size */
-	int rxDbitListSize;
-
-	/** receiver dbit list */
-	int rxDbitList[MAX_RX_DBIT];
+	sls::FixedCapacityContainer<int, MAX_RX_DBIT> rxDbitList;
 
 	/** reciever dbit offset */
 	int rxDbitOffset;
@@ -735,6 +729,18 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns OK or FAIL
 	 */
     int configureMAC();
+
+	/**
+     * Set starting frame number for the next acquisition
+     * @param val starting frame number
+     */
+    void setStartingFrameNumber(const uint64_t value);
+
+     /**
+     * Get starting frame number for the next acquisition
+     * @returns starting frame number
+     */
+    uint64_t getStartingFrameNumber();
 
     /**
 	 * Set/get timer value (not all implemented for all detectors)
@@ -1701,7 +1707,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * Gets the current frame index of receiver
 	 * @returns current frame index of receiver
 	 */
-    int getReceiverCurrentFrameIndex();
+    uint64_t getReceiverCurrentFrameIndex();
 
     /**
 	 * Resets framescaught in receiver

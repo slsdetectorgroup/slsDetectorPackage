@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 namespace sls {
 
@@ -39,19 +40,32 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
     return *this;
 }
 
-size_t DataSocket::receiveData(void *buffer, size_t size) {
+int DataSocket::receiveData(void *buffer, size_t size) {
     size_t dataRead = 0;
     while (dataRead < size) {
         dataRead +=
-            read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead,
+            ::read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead,
                  size - dataRead);
     }
     return dataRead;
 }
 
-size_t DataSocket::sendData(const void *buffer, size_t size) {
-    size_t dataSent = 0;
-    while (dataSent < size) {
+int DataSocket::read(void *buffer, size_t size){
+    return ::read(getSocketId(), reinterpret_cast<char *>(buffer), size);
+}
+
+int DataSocket::setReceiveTimeout(int us) {
+    timeval t{};
+    t.tv_sec = 0;
+    t.tv_usec = us;
+    return ::setsockopt(getSocketId(), SOL_SOCKET, SO_RCVTIMEO, &t,
+                        sizeof(struct timeval));
+}
+
+
+int DataSocket::sendData(const void *buffer, size_t size) {
+    int dataSent = 0;
+    while (dataSent < (int)size) {
         dataSent +=
             write(getSocketId(), reinterpret_cast<const char *>(buffer) + dataSent,
                   size - dataSent);
@@ -108,7 +122,7 @@ ConvertHostnameToInternetAddress(const std::string &hostname) {
     hints.ai_flags |= AI_CANONNAME;
 
     struct sockaddr_in serverAddr {};
-    if (getaddrinfo(hostname.c_str(), NULL, &hints, &result) != 0) {
+    if (getaddrinfo(hostname.c_str(), nullptr, &hints, &result) != 0) {
         freeaddrinfo(result);
         std::string msg = "ClientSocket cannot decode host:" + hostname + "\n";
         throw SocketError(msg);
@@ -129,13 +143,13 @@ int ConvertHostnameToInternetAddress(const char *const hostname,
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     // get host info into res
-    int errcode = getaddrinfo(hostname, NULL, &hints, res);
+    int errcode = getaddrinfo(hostname, nullptr, &hints, res);
     if (errcode != 0) {
         FILE_LOG(logERROR) << "Could not convert hostname (" << hostname
                            << ") to internet address (zmq):"
                            << gai_strerror(errcode);
     } else {
-        if (*res == NULL) {
+        if (*res == nullptr) {
             FILE_LOG(logERROR) << "Could not converthostname (" << hostname
                                << ") to internet address (zmq):"
                                   "gettaddrinfo returned null";
@@ -160,7 +174,7 @@ int ConvertInternetAddresstoIpString(struct ::addrinfo *res, char *ip,
                                      const int ipsize) {
     if (inet_ntop(res->ai_family,
                   &((struct sockaddr_in *)res->ai_addr)->sin_addr, ip,
-                  ipsize) != NULL) {
+                  ipsize) != nullptr) {
         ::freeaddrinfo(res);
         return 0;
     }

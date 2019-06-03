@@ -47,9 +47,11 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 #define NORMAL_HIGHVOLTAGE_OUTPUTPORT 		"/sys/class/hwmon/hwmon5/device/out0_output"
 #define SPECIAL9M_HIGHVOLTAGE_PORT 			"/dev/ttyS1"
 #define SPECIAL9M_HIGHVOLTAGE_BUFFERSIZE 	(16)
+#define DEFAULT_UDP_SOURCE_PORT				(0xE185)
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES					(1)
+#define DEFAULT_STARTING_FRAME_NUMBER 		(1)
 #define DEFAULT_NUM_CYCLES					(1)
 #define DEFAULT_EXPTIME						(1E9)			//ns
 #define DEFAULT_PERIOD						(1E9)			//ns
@@ -72,6 +74,8 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 #define DEFAULT_EXT_GATING_POLARITY			(1)				//positive
 #define DEFAULT_TEST_MODE					(0)
 #define DEFAULT_HIGH_VOLTAGE				(0)
+
+#define UDP_HEADER_MAX_FRAME_VALUE          (0xFFFFFFFFFFFF)
 
 #define DAC_MIN_MV                          (0)
 #define DAC_MAX_MV                          (2048)

@@ -12,8 +12,8 @@
 
 
 #include "container_utils.h"
-#include "string_utils.h"
 #include "network_utils.h"
+#include "string_utils.h"
 
 #include <cstring>
 #include <iomanip>
@@ -421,7 +421,7 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     }
 
     // get type by connecting
-    detectorType type = slsDetector::getTypeFromDetector(hostname.c_str(), DEFAULT_PORTNO);
+    detectorType type = slsDetector::getTypeFromDetector(hostname, DEFAULT_PORTNO);
     int pos = (int)detectors.size();
     detectors.push_back(sls::make_unique<slsDetector>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
@@ -1071,6 +1071,34 @@ int multiSlsDetector::configureMAC(int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
+void multiSlsDetector::setStartingFrameNumber(const uint64_t value, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setStartingFrameNumber(value);
+    }
+
+    // multi
+    parallelCall(&slsDetector::setStartingFrameNumber, value);
+}
+
+uint64_t multiSlsDetector::getStartingFrameNumber(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getStartingFrameNumber();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getStartingFrameNumber);
+    if (sls::allEqual(r)) {
+        return r.front();
+    }
+
+    // can't have different values for next acquisition
+    std::ostringstream ss;
+    ss << "Error: Different Values for starting frame number";
+    throw RuntimeError(ss.str());
+}
+
 int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
     // single
     if (detPos >= 0) {
@@ -1113,89 +1141,50 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
     return ret;
 }
 
+int64_t multiSlsDetector::secondsToNanoSeconds(double t){
+    int64_t ns = lround(t * 1E9);
+    return (ns < 0) ? -1: ns;
+}
+
 double multiSlsDetector::setExposureTime(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(ACQUISITION_TIME, (int64_t)t, detPos);
     }
-
-    // + 0.5 to round for precision lost from converting double to int64_t
-    int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-    if (t < 0) {
-        tms = -1;
-    }
-    tms = setTimer(ACQUISITION_TIME, tms, detPos);
-    if (tms < 0) {
-        return -1;
-    }
-    return ((1E-9) * (double)tms);
+    auto t_ns = setTimer(ACQUISITION_TIME, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
 double multiSlsDetector::setExposurePeriod(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(FRAME_PERIOD, (int64_t)t, detPos);
     }
-
-    // + 0.5 to round for precision lost from converting double to int64_t
-    int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-    if (t < 0) {
-        tms = -1;
-    }
-    tms = setTimer(FRAME_PERIOD, tms, detPos);
-    if (tms < 0) {
-        return -1;
-    }
-    return ((1E-9) * (double)tms);
+    auto t_ns = setTimer(FRAME_PERIOD, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
 double multiSlsDetector::setDelayAfterTrigger(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(DELAY_AFTER_TRIGGER, (int64_t)t, detPos);
     }
-
-    // + 0.5 to round for precision lost from converting double to int64_t
-    int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-    if (t < 0) {
-        tms = -1;
-    }
-    tms = setTimer(DELAY_AFTER_TRIGGER, tms, detPos);
-    if (tms < 0) {
-        return -1;
-    }
-    return ((1E-9) * (double)tms);
+    auto t_ns = setTimer(DELAY_AFTER_TRIGGER, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
 double multiSlsDetector::setSubFrameExposureTime(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(SUBFRAME_ACQUISITION_TIME, (int64_t)t, detPos);
-    } else {
-        // + 0.5 to round for precision lost from converting double to int64_t
-        int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-        if (t < 0) {
-            tms = -1;
-        }
-        tms = setTimer(SUBFRAME_ACQUISITION_TIME, tms, detPos);
-        if (tms < 0) {
-            return -1;
-        }
-        return ((1E-9) * (double)tms);
     }
+    auto t_ns = setTimer(SUBFRAME_ACQUISITION_TIME, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
 double multiSlsDetector::setSubFrameExposureDeadTime(double t, bool inseconds, int detPos) {
     if (!inseconds) {
         return setTimer(SUBFRAME_DEADTIME, (int64_t)t, detPos);
-    } else {
-        // + 0.5 to round for precision lost from converting double to int64_t
-        int64_t tms = (int64_t)(t * (1E+9) + 0.5);
-        if (t < 0) {
-            tms = -1;
-        }
-        tms = setTimer(SUBFRAME_DEADTIME, tms, detPos);
-        if (tms < 0) {
-            return -1;
-        }
-        return ((1E-9) * (double)tms);
     }
+    auto t_ns = setTimer(SUBFRAME_DEADTIME, secondsToNanoSeconds(t), detPos);
+    return (t_ns < 0) ? -1 : 1E-9 * t_ns;
+
 }
 
 int64_t multiSlsDetector::setNumberOfFrames(int64_t t, int detPos) {
@@ -3185,7 +3174,7 @@ int multiSlsDetector::getFramesCaughtByReceiver(int detPos) {
     return ((sls::sum(r)) / (int)detectors.size());
 }
 
-int multiSlsDetector::getReceiverCurrentFrameIndex(int detPos) {
+uint64_t multiSlsDetector::getReceiverCurrentFrameIndex(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverCurrentFrameIndex();
@@ -3195,7 +3184,7 @@ int multiSlsDetector::getReceiverCurrentFrameIndex(int detPos) {
     auto r = parallelCall(&slsDetector::getReceiverCurrentFrameIndex);
 
     // prevent divide by all or do not take avg when -1 for "did not connect"
-    if ((detectors.empty()) || (sls::anyEqualTo(r, -1))) {
+    if ((detectors.empty()) || (sls::anyEqualTo(r, static_cast<uint64_t>(-1)))) {
         return -1;
     }
 
@@ -3390,7 +3379,10 @@ void multiSlsDetector::readFrameFromReceiver() {
                     uint32_t xoffset = coordX * nPixelsX * bytesPerPixel;
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
-                    uint32_t rowoffset = nX * singledetrowoffset;
+                    uint32_t rowoffset = nX * singledetrowoffset; 
+		    if (getDetectorTypeAsEnum() == CHIPTESTBOARD) {
+		      singledetrowoffset=size;
+		    }
                     FILE_LOG(logDEBUG1) << "Multi Image Info:"
                                            "\n\txoffset: "
                                         << xoffset << "\n\tyoffset: " << yoffset

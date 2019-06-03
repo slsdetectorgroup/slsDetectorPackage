@@ -7,15 +7,15 @@
 
 
 #include "Listener.h"
-#include "GeneralData.h"
 #include "Fifo.h"
-#include "genericSocket.h"
+#include "GeneralData.h"
 #include "container_utils.h" // For sls::make_unique<>
+#include "genericSocket.h"
 #include "sls_detector_exceptions.h"
 
-#include <iostream>
-#include <errno.h>
+#include <cerrno>
 #include <cstring>
+#include <iostream>
 
 const std::string Listener::TypeName = "Listener";
 
@@ -353,7 +353,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 	uint32_t numpackets = 0;
 	uint32_t dsize = generalData->dataSize;
 	uint32_t hsize = generalData->headerSizeinPacket; //(includes empty header)
-	uint32_t esize = generalData->emptyHeader;
 	uint32_t fifohsize = generalData->fifoBufferHeaderSize;
 	uint32_t pperFrame = generalData->packetsPerFrame;
 	bool isHeaderEmpty = true;
@@ -397,13 +396,13 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
-			old_header = (sls_detector_header*) (&carryOverPacket[esize]);
+			old_header = (sls_detector_header*) (&carryOverPacket[0]);
 			fnum = old_header->frameNumber;
 			pnum = old_header->packetNumber;
 		}
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
-			generalData->GetHeaderInfo(index, &carryOverPacket[esize],
+			generalData->GetHeaderInfo(index, &carryOverPacket[0],
 					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------
@@ -515,7 +514,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
-			old_header = (sls_detector_header*) (&listeningPacket[esize]);
+			old_header = (sls_detector_header*) (&listeningPacket[0]);
 			fnum = old_header->frameNumber;
 			pnum = old_header->packetNumber;
 		}
@@ -523,10 +522,10 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		else {
             // set first packet to be odd or even (check required when switching from roi to no roi)
             if (myDetectorType == GOTTHARD && !measurementStartedFlag) {
-                oddStartingPacket = generalData->SetOddStartingPacket(index, &listeningPacket[esize]);
+                oddStartingPacket = generalData->SetOddStartingPacket(index, &listeningPacket[0]);
             }
 
-			generalData->GetHeaderInfo(index, &listeningPacket[esize],
+			generalData->GetHeaderInfo(index, &listeningPacket[0],
 					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
 		}
 		//------------------------------------------------------------------------------------------------------------

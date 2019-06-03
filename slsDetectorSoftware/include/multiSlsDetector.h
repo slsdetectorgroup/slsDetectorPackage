@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SharedMemory.h"
-#include "error_defs.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
 
@@ -630,6 +629,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns OK or FAIL
      */
     int configureMAC(int detPos = -1);
+    
+     /**
+     * Set starting frame number for the next acquisition
+     * @param val starting frame number
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setStartingFrameNumber(const uint64_t value, int detPos = -1);
+
+     /**
+     * Get starting frame number for the next acquisition
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns starting frame number
+     */
+    uint64_t getStartingFrameNumber(int detPos = -1);
 
     /**
      * Set/get timer value (not all implemented for all detectors)
@@ -1799,9 +1812,9 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Gets the current frame index of receiver
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns current frame index of receiver
+     * @returns average of all current frame index of receiver
      */
-    int getReceiverCurrentFrameIndex(int detPos = -1);
+    uint64_t getReceiverCurrentFrameIndex(int detPos = -1);
 
     /**
      * Resets framescaught in receiver
@@ -2160,14 +2173,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     
 
-        /**
-         * add gap pixels to the image (only for Eiger in 4 bit mode)
-         * @param image pointer to image without gap pixels
-         * @param gpImage poiner to image with gap pixels, if NULL, allocated
-         * inside function
-         * @returns number of data bytes of image with gap pixels
-         */
-        int processImageWithGapPixels(char *image, char *&gpImage);
+     /**
+      * add gap pixels to the image (only for Eiger in 4 bit mode)
+      * @param image pointer to image without gap pixels
+      * @param gpImage poiner to image with gap pixels, if NULL, allocated
+      * inside function
+      * @returns number of data bytes of image with gap pixels
+      */
+     int processImageWithGapPixels(char *image, char *&gpImage);
 
     /**
      * Set total progress (total number of frames/images in an acquisition)
@@ -2222,6 +2235,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns file size
      */
     std::vector<char> readPofFile(const std::string &fname);
+
+     /** 
+      * Convert a double holding time in seconds to an int64_t with nano seconds
+      * Used for conversion when sending time to detector
+      * @param t time in seconds
+      * @returns time in nano seconds
+      */
+     int64_t secondsToNanoSeconds(double t);
 
 
     /** Multi detector Id */

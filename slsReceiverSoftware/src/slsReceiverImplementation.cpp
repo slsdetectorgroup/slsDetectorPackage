@@ -5,20 +5,20 @@
 
 
 #include "slsReceiverImplementation.h"
-#include "GeneralData.h"
-#include "Listener.h"
 #include "DataProcessor.h"
 #include "DataStreamer.h"
 #include "Fifo.h"
+#include "GeneralData.h"
+#include "Listener.h"
 #include "ZmqSocket.h" 		//just for the zmq port define
 
-#include <sys/stat.h> 		// stat
-#include <iostream>
-#include <string.h>
+#include <cerrno>			//eperm
 #include <cstdlib>			//system
+#include <cstring>
 #include <cstring>			//strcpy
-#include <errno.h>			//eperm
 #include <fstream>
+#include <iostream>
+#include <sys/stat.h> 		// stat
 
 
 /** cosntructor & destructor */
@@ -249,7 +249,7 @@ uint64_t slsReceiverImplementation::getFramesCaught() const {
 	return (sum/dataProcessor.size());
 }
 
-int64_t slsReceiverImplementation::getAcquisitionIndex() const {
+uint64_t slsReceiverImplementation::getAcquisitionIndex() const {
 	uint64_t sum = 0;
 	uint32_t flagsum = 0;
 
@@ -259,7 +259,7 @@ int64_t slsReceiverImplementation::getAcquisitionIndex() const {
 	}
 	//no data processed
 	if (flagsum != dataProcessor.size()) 
-		return -1;
+		return 0;
 
 	return (sum/dataProcessor.size());
 }
@@ -963,13 +963,11 @@ void slsReceiverImplementation::setSubPeriod(const uint64_t i) {
 	FILE_LOG(logINFO) << "Sub Exposure Period: " <<  (double)subPeriod/(1E9) << "s";
 }
 
-int slsReceiverImplementation::setNumberOfFrames(const uint64_t i) {
+void slsReceiverImplementation::setNumberOfFrames(const uint64_t i) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	numberOfFrames = i;
 	FILE_LOG(logINFO) << "Number of Frames: " << numberOfFrames;
-
-	return OK;
 }
 
 

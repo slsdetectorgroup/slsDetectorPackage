@@ -480,3 +480,41 @@ TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert", "[.ctbintegrat
     CHECK(m.readRegister(0x7b) == 0x1003E);
     
 }
+
+TEST_CASE("Eiger or Jungfrau startingfnum", "[.eigerintegration][.jungfrauintegration][startingfnum]") {
+    SingleDetectorConfig c;
+
+    // pick up multi detector from shm id 0
+    multiSlsDetector m(0);
+
+    // ensure ctb detector type, hostname and online
+    REQUIRE(((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER) || (m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::JUNGFRAU)));
+    REQUIRE(m.getHostname() == c.hostname);
+    REQUIRE(m.setOnline(true) == slsDetectorDefs::ONLINE_FLAG);
+
+     CHECK(m.setTimer(slsDetectorDefs::FRAME_NUMBER, 1) == 1);
+
+    // starting fnum
+    uint64_t val = 8;
+
+    m.setStartingFrameNumber(val);
+    CHECK(m.getStartingFrameNumber() == val);
+    CHECK(m.acquire() == slsDetectorDefs::OK);
+    CHECK(m.getReceiverCurrentFrameIndex() == val);
+
+    ++val;
+    CHECK(m.acquire() == slsDetectorDefs::OK);
+    CHECK(m.getReceiverCurrentFrameIndex() == val);
+
+    CHECK_THROWS_AS(m.setStartingFrameNumber(0), sls::RuntimeError);
+
+    if (m.getDetectorTypeAsString() == "Eiger") {
+        val = 281474976710655;
+    } else if (m.getDetectorTypeAsString() == "Jungfrau") {
+        val = 18446744073709551615;
+    }
+    m.setStartingFrameNumber(val);
+    CHECK(m.getStartingFrameNumber() == val);
+    CHECK(m.acquire() == slsDetectorDefs::OK);
+    CHECK(m.getReceiverCurrentFrameIndex() == val);
+}

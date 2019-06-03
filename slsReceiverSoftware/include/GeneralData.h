@@ -27,9 +27,6 @@ public:
 	/** Number of Pixels in y axis */
 	uint32_t nPixelsY;
 
-	/** emptybuffer  (mainly for jungfrau) */
-	uint32_t emptyHeader;
-
 	/** Size of header in Packet */
 	uint32_t headerSizeinPacket;
 
@@ -95,7 +92,6 @@ public:
 		myDetectorType(slsDetectorDefs::GENERIC),
 		nPixelsX(0),
 		nPixelsY(0),
-		emptyHeader(0),
 		headerSizeinPacket(0),
 		dataSize(0),
 		packetSize(0),
@@ -228,7 +224,6 @@ public:
 		FILE_LOG(level) << "myDetectorType: " << slsDetectorDefs::detectorTypeToString(myDetectorType);
 		FILE_LOG(level) << "Pixels X: " << nPixelsX;
 		FILE_LOG(level) << "Pixels Y: " << nPixelsY;
-		FILE_LOG(level) << "Empty Header: " << emptyHeader;
 		FILE_LOG(level) << "Header Size in Packet: " << headerSizeinPacket;
 		FILE_LOG(level) << "Data Size: " << dataSize;
 		FILE_LOG(level) << "Packet Size: " << packetSize;
@@ -506,8 +501,7 @@ class JungfrauData : public GeneralData {
 		myDetectorType		= slsDetectorDefs::JUNGFRAU;
 		nPixelsX 			= (256*4);
 		nPixelsY 			= 512;
-		emptyHeader			= 6;
-		headerSizeinPacket  = emptyHeader + sizeof(slsDetectorDefs::sls_detector_header);
+		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
 		dataSize 			= 8192;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 128;

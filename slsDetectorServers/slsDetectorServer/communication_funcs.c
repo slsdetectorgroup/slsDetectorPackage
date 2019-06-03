@@ -4,7 +4,11 @@
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
+
+#include <sys/select.h>
 #include <unistd.h>
+
+
 
 #define SEND_REC_MAX_SIZE 4096
 #define DEFAULT_PORTNO    1952
@@ -519,4 +523,21 @@ int Server_SendResult(int fileDes, intType itype, int update, void* retval, int 
 	sendData(fileDes, retval, retvalSize, itype);
 
 	return ret;
+}
+
+
+void getMacAddressinString(char* cmac, int size, uint64_t mac) {
+	memset(cmac, 0, size);
+	sprintf(cmac,"%02x:%02x:%02x:%02x:%02x:%02x",
+		(unsigned int)((mac>>40)&0xFF),
+		(unsigned int)((mac>>32)&0xFF),
+		(unsigned int)((mac>>24)&0xFF),
+		(unsigned int)((mac>>16)&0xFF),
+		(unsigned int)((mac>>8)&0xFF),
+		(unsigned int)((mac>>0)&0xFF));
+}
+
+void getIpAddressinString(char* cip, uint32_t ip) {
+	memset(cip, 0, INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, &ip, cip, INET_ADDRSTRLEN);
 }

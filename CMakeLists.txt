@@ -35,11 +35,12 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 option (SLS_USE_HDF5 "HDF5 File format" OFF)
-option (SLS_USE_TEXTCLIENT "Text Client" OFF)
-option (SLS_USE_RECEIVER "Receiver" OFF)
+option (SLS_USE_TEXTCLIENT "Text Client" ON)
+option (SLS_USE_RECEIVER "Receiver" ON)
 option (SLS_USE_GUI "GUI" OFF)
-option (SLS_USE_TESTS "TESTS" ON)
-option (SLS_USE_INTEGRATION_TESTS "Integration Tests" ON)
+option (SLS_USE_SIMULATOR "Simulator" OFF)
+option (SLS_USE_TESTS "TESTS" OFF)
+option (SLS_USE_INTEGRATION_TESTS "Integration Tests" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -106,11 +107,10 @@ if(SLS_USE_SANITIZER)
     target_link_libraries(slsProjectOptions INTERFACE -fsanitize=address,undefined)
     # target_compile_options(slsProjectOptions INTERFACE -fsanitize=thread)
     # target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
+endif()
 
-    endif()
 
-
-# Install fake the library
+# Install fake the libraries
 install(TARGETS slsProjectOptions slsProjectWarnings
     EXPORT "${TARGETS_EXPORT_NAME}"
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -132,8 +132,7 @@ if (SLS_USE_TESTS)
     add_subdirectory(tests)
 endif(SLS_USE_TESTS)
 
-# Support library containing functionallity common to 
-# detector and receiver
+# Common functionallity to detector and receiver
 add_subdirectory(slsSupportLib)
 
 if (SLS_USE_TEXTCLIENT)
@@ -157,7 +156,9 @@ if (SLS_USE_GUI)
     endif()
 endif (SLS_USE_GUI)
 
-
+if (SLS_USE_SIMULATOR)
+    add_subdirectory(slsDetectorServers)
+endif (SLS_USE_SIMULATOR)
 
 if (SLS_USE_INTEGRATION_TESTS)
     add_subdirectory(integrationTests)

@@ -22,8 +22,7 @@ int ServerInterface2::sendResult(bool update, int ret, void *retval,
     return ret;
 }
 
-int ServerInterface2::receiveArg(int &ret, char *mess, void *arg,
-                                 int sizeofArg) {
+int ServerInterface2::receiveArg(void *arg, int sizeofArg) {
     assert(sizeofArg > 0);
     int bytes_read = read(arg, sizeofArg);
     if (bytes_read == sizeofArg) {

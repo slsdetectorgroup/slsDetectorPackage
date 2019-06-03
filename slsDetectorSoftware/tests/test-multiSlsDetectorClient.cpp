@@ -38,3 +38,21 @@ TEST_CASE("frames", "[.cmd]"){
     REQUIRE(oss.str() == "frames 1\n");
 
 }
+
+TEST_CASE("receiver", "[.cmd]"){
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("receiver start", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "receiver running\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("receiver", GET, nullptr, oss);
+    REQUIRE(oss.str() == "receiver running\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("receiver stop", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "receiver idle\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("receiver", GET, nullptr, oss);
+    REQUIRE(oss.str() == "receiver idle\n");
+}

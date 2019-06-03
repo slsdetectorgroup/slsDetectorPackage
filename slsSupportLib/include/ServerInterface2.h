@@ -17,7 +17,7 @@ class ServerInterface2 : public DataSocket {
 
     int sendResult(bool update, int ret, void *retval, int retvalSize,
                    char *mess = nullptr);
-    int receiveArg(int &ret, char *mess, void *arg, int sizeofArg);
+    int receiveArg(void *arg, int sizeofArg);
 
 
 

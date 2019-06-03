@@ -301,7 +301,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 
 	int LogSocketCrash();
 	void NullObjectError(int& ret, char* mess);
-	// int
+	void ThrowSocketError(std::string mess, sls::ServerInterface2 &socket);
 
 	/** detector type */
 	detectorType myDetectorType;

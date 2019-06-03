@@ -1,0 +1,2 @@
+add_subdirectory(eigerDetectorServer)
+add_subdirectory(jungfrauDetectorServer)

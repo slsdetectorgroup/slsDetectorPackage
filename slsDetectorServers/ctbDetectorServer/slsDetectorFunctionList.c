@@ -1523,7 +1523,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 		memset(cDestIp, 0, MAX_STR_LENGTH);
 		sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
 		FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
-		if (setUDPDestinationDetails(cDestIp, udpport) == FAIL) {
+		if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
 			FILE_LOG(logERROR, ("could not set udp 1G destination IP and port\n"));
 			return FAIL;
 		}
@@ -2146,7 +2146,7 @@ int startStateMachine(){
 	// 1 giga udp
 	if (!enableTenGigabitEthernet(-1)) {
 		// create udp socket
-		if(createUDPSocket() != OK) {
+		if(createUDPSocket(0) != OK) {
 			return FAIL;
 		}
 		// update header with modId, detType and version. Reset offset and fnum
@@ -2265,9 +2265,9 @@ void readandSendUDPFrames(int *ret, char *mess) {
 	FILE_LOG(logDEBUG1, ("Reading from 1G UDP\n"));
 
 	// validate udp socket
-	if (getUdPSocketDescriptor() <= 0) {
+	if (getUdPSocketDescriptor(0) <= 0) {
 		*ret = FAIL;
-		sprintf(mess,"UDP Socket not created. sockfd:%d\n", getUdPSocketDescriptor());
+		sprintf(mess,"UDP Socket not created. sockfd:%d\n", getUdPSocketDescriptor(0));
 		FILE_LOG(logERROR, (mess));
 		return;
 	}
@@ -2276,14 +2276,14 @@ void readandSendUDPFrames(int *ret, char *mess) {
 	while(readFrameFromFifo() == OK) {
 		int bytesToSend = 0, n = 0;
 		while((bytesToSend = fillUDPPacket(udpPacketData))) {
-			n += sendUDPPacket(udpPacketData, bytesToSend);
+			n += sendUDPPacket(0, udpPacketData, bytesToSend);
 		}
 		if (n >= dataBytes) {
 			FILE_LOG(logINFO, (" Frame %lld sent (%d packets, %d databytes, n:%d bytes sent)\n",
 					udpFrameNumber, udpPacketNumber + 1, dataBytes, n));
 		}
 	}
-	closeUDPSocket();
+	closeUDPSocket(0);
 }
 
 

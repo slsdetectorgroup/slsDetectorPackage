@@ -1059,7 +1059,7 @@ int slsReceiverImplementation::setFifoDepth(const uint32_t i) {
 	if (fifoDepth != i) {
 		fifoDepth = i;
 		if (SetupFifoStructure() == FAIL)
-			return FAIL;
+			throw sls::RuntimeError("Failed to setup fifo structure");
 	}
 	FILE_LOG(logINFO) << "Fifo Depth: " << i;
 	return OK;

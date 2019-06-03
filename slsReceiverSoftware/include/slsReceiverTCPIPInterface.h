@@ -301,7 +301,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 
 	int LogSocketCrash();
 	void NullObjectError(int& ret, char* mess);
-	void ThrowSocketError(std::string mess, sls::ServerInterface2 &socket);
+	void ThrowNullObjectError(sls::ServerInterface2 &socket);
 
 	/** detector type */
 	detectorType myDetectorType;
@@ -391,6 +391,14 @@ protected:
 	std::unique_ptr<sls::ServerSocket> server{nullptr};
 
       private:
-        int VerifyLock(int &ret, char *mess);
-				int VerifyLockAndIdle(int &ret, char *mess, int fnum);
+        void VerifyLock();
+				int VerifyIdle(sls::ServerInterface2& socket);
+
+				slsReceiverImplementation* impl(){
+					if (receiver!=nullptr){
+						return receiver.get();
+					}else{
+						throw sls::SocketError("Receiver not set up. Please use rx_hostname first.\n");
+					}
+				}
 };

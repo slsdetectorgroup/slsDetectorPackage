@@ -24,7 +24,7 @@ TEST_CASE("rx_fifodepth", "[.cmd]") {
     REQUIRE(oss.str() == "0:rx_fifodepth 100\n");
 }
 
-TEST_CASE("frames", "[.cmd]"){
+TEST_CASE("frames", "[.cmd]") {
     auto oss = std::ostringstream{};
     multiSlsDetectorClient("frames 1000", PUT, nullptr, oss);
     REQUIRE(oss.str() == "frames 1000\n");
@@ -36,10 +36,9 @@ TEST_CASE("frames", "[.cmd]"){
     oss = std::ostringstream{};
     multiSlsDetectorClient("frames 1", PUT, nullptr, oss);
     REQUIRE(oss.str() == "frames 1\n");
-
 }
 
-TEST_CASE("receiver", "[.cmd]"){
+TEST_CASE("receiver", "[.cmd]") {
     auto oss = std::ostringstream{};
     multiSlsDetectorClient("receiver start", PUT, nullptr, oss);
     REQUIRE(oss.str() == "receiver running\n");
@@ -55,4 +54,18 @@ TEST_CASE("receiver", "[.cmd]"){
     oss = std::ostringstream{};
     multiSlsDetectorClient("receiver", GET, nullptr, oss);
     REQUIRE(oss.str() == "receiver idle\n");
+}
+
+TEST_CASE("enableoverwrite, [.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("overwrite 1", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "overwrite 1\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("overwrite", GET, nullptr, oss);
+    REQUIRE(oss.str() == "overwrite 1\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("overwrite 0", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "overwrite 0\n");
 }

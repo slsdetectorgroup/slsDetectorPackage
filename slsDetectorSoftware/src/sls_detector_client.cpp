@@ -1,12 +1,13 @@
-#include "versionAPI.h"
 #include "multiSlsDetectorClient.h"
+#include "versionAPI.h"
 #include <cstdlib>
 
 int main(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         if (!(strcmp(argv[i], "--version")) || !(strcmp(argv[i], "-v"))) {
             int64_t tempval = APILIB;
-            std::cout << argv[0] << " " << GITBRANCH << " (0x" << std::hex << tempval << ")" << std::endl;
+            std::cout << argv[0] << " " << GITBRANCH << " (0x" << std::hex
+                      << tempval << ")" << std::endl;
             return 0;
         }
     }
@@ -27,5 +28,8 @@ int main(int argc, char *argv[]) {
     int action = slsDetectorDefs::HELP_ACTION;
 #endif
 
-    multiSlsDetectorClient(argc, argv, action);
+    try {
+        multiSlsDetectorClient(argc, argv, action);
+    } catch (const sls::RuntimeError &e) {
+    }
 }

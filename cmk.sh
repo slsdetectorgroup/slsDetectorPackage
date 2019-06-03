@@ -9,6 +9,7 @@ GUI=0
 DEBUG=0
 PYTHON=0
 TESTS=0
+SIMULATOR=0
 
 
 CLEAN=0
@@ -17,7 +18,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [i] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [i] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
@@ -27,6 +28,7 @@ Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [i] [-h] [-d <HDF5 directory>] [-j] <Nu
  -t: Build/Rebuilds only text client
  -r: Build/Rebuilds only receiver
  -g: Build/Rebuilds only gui
+ -s: Simulator
  -j: Number of threads to compile through
  -e: Debug mode
  -i: Builds tests
@@ -65,7 +67,7 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:j:trgeis:" opt ; do
+while getopts ":bpchd:j:trgeis" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -116,16 +118,20 @@ while getopts ":bpchd:j:trgeis:" opt ; do
 		echo "Compiling Options: Tests" 
 		TESTS=1
 		;;   
-    \?)
-     	echo "Invalid option: -$OPTARG" 
+	s)
+		echo "Compiling Options: Simulator" 
+		SIMULATOR=1
+		;; 
+  \?)
+    echo "Invalid option: -$OPTARG" 
 		usage
-      	exit 1
-      	;;
-    :)
-      	echo "Option -$OPTARG requires an argument."
+    exit 1
+   	;;
+  :)
+    echo "Option -$OPTARG requires an argument."
 		usage
-      	exit 1
-      	;;	
+    exit 1
+    ;;	
 	esac
 done
 
@@ -177,6 +183,12 @@ fi
 if [ $DEBUG -eq 1 ]; then
 	CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_SANITIZER=ON "
 	echo "Debug Option enabled"
+fi 
+
+#Simulator
+if [ $SIMULATOR -eq 1 ]; then
+	CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_SIMULATOR=ON "
+	echo "Simulator Option enabled"
 fi 
 
 

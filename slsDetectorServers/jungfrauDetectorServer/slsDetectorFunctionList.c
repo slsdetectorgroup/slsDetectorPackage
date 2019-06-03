@@ -1,7 +1,7 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
 #include "logger.h"
-
+#include <sys/select.h>
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
@@ -9,6 +9,7 @@
 #ifndef VIRTUAL
 #include "programfpga.h"
 #else
+#include "communication_funcs_UDP.h"
 #include "blackfin.h"
 #include <string.h>
 #include <unistd.h>     // usleep
@@ -1112,6 +1113,14 @@ int configureMAC(int numInterfaces, int selInterface,
 		uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
 		uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2) {
 #ifdef VIRTUAL
+	char cDestIp[MAX_STR_LENGTH];
+	memset(cDestIp, 0, MAX_STR_LENGTH);
+	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
+	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
+		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
+		return FAIL;
+	}
     return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
@@ -1452,7 +1461,7 @@ void setAdcPhase(int val, int degrees){
 	alignDeserializer();
 }
 
-int getPhase(degrees) {
+int getPhase(int degrees) {
 	if (!degrees)
 		return adcPhase;
 	// convert back to degrees
@@ -1596,11 +1605,16 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 
 int startStateMachine(){
 #ifdef VIRTUAL
+	// create udp socket
+	if(createUDPSocket(0) != OK) {
+		return FAIL;
+	}
+	FILE_LOG(logINFOBLUE, ("starting state machine\n"));
 	virtual_status = 1;
 	virtual_stop = 0;
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
-		virtual_status = 0;
 		FILE_LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
+		virtual_status = 0;
 		return FAIL;
 	}
 	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -1621,16 +1635,69 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int wait_in_s = 	(setTimer(FRAME_NUMBER, -1) *
+	int64_t periodns = setTimer(FRAME_PERIOD, -1);
+	int numFrames = (setTimer(FRAME_NUMBER, -1) *
 						setTimer(CYCLES_NUMBER, -1) *
-						(setTimer(STORAGE_CELL_NUMBER, -1) + 1) *
-						(setTimer(FRAME_PERIOD, -1)/(1E9)));
-	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
-	while(!virtual_stop && (wait_in_s >= 0)) {
-		usleep(1000 * 1000);
-		wait_in_s--;
-	}
-	FILE_LOG(logINFOGREEN, ("Virtual Timer Done\n"));
+						(setTimer(STORAGE_CELL_NUMBER, -1) + 1));
+	int64_t exp_ns = 	setTimer(ACQUISITION_TIME, -1);
+
+		//TODO: Generate data
+		char imageData[DATA_BYTES];
+		memset(imageData, 0, DATA_BYTES);
+		{
+			int i = 0;
+			for (i = 0; i < DATA_BYTES; i += sizeof(uint16_t)) {
+				*((uint16_t*)(imageData + i)) = i;
+			}
+		}
+		int datasize = 8192;
+		
+		
+		//TODO: Send data
+		{
+			int frameNr = 0;
+			for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+				int srcOffset = 0;
+			
+				struct timespec begin, end;
+				clock_gettime(CLOCK_REALTIME, &begin);
+
+				usleep(exp_ns / 1000);
+
+				const int size = datasize + 112;
+				char packetData[size];
+				memset(packetData, 0, sizeof(sls_detector_header));
+				
+				// loop packet
+				{
+					int i = 0;
+					for(i=0; i!=128; ++i) {
+						// set header
+						sls_detector_header* header = (sls_detector_header*)(packetData);
+						header->frameNumber = frameNr;
+						header->packetNumber = i;
+						// fill data
+						memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
+						srcOffset += datasize;
+						
+						sendUDPPacket(0, packetData, size);
+					}
+				}
+				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
+				clock_gettime(CLOCK_REALTIME, &end);
+				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+						(end.tv_nsec - begin.tv_nsec));
+	  
+				if (periodns > time_ns) {
+					usleep((periodns - time_ns)/ 1000);
+				}
+			}
+		}
+		
+	// }
+
+	
+	closeUDPSocket(0);
 
 	virtual_status = 0;
 	return NULL;
@@ -1709,10 +1776,7 @@ enum runStatus getRunStatus(){
 
 void readFrame(int *ret, char *mess){
 #ifdef VIRTUAL
-	while(virtual_status) {
-		//FILE_LOG(logERROR, ("Waiting for finished flag\n");
-		usleep(5000);
-	}
+	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif
 	// wait for status to be done
@@ -1760,5 +1824,3 @@ int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int
 int getNumberOfChips(){return  NCHIP;}
 int getNumberOfDACs(){return  NDAC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}
-
-

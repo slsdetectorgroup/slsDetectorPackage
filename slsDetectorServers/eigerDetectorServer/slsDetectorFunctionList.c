@@ -11,6 +11,7 @@
 #include <unistd.h> //to gethostname
 #include <string.h>
 #ifdef VIRTUAL
+#include "communication_funcs_UDP.h"
 #include <pthread.h>
 #include <time.h>
 #endif
@@ -183,11 +184,8 @@ void basictests() {
 /* Ids */
 
 int64_t getDetectorId(enum idMode arg) {
-#ifdef VIRTUAL
-	return 0;
-#else
-	int64_t retval = -1;
 
+	int64_t retval = -1;
 	switch(arg) {
 	case DETECTOR_SERIAL_NUMBER:
 		retval =  getDetectorNumber();/** to be implemented with mac? */
@@ -204,7 +202,7 @@ int64_t getDetectorId(enum idMode arg) {
 	}
 
 	return retval;
-#endif
+
 }
 
 u_int64_t getFirmwareVersion() {
@@ -1046,6 +1044,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     }
 
 #ifdef VIRTUAL
+    int dacval = 0;
     if (!mV) {
         (detectorModules)->dacs[ind] = val;
     }
@@ -1233,7 +1232,21 @@ enum externalCommunicationMode getTiming() {
 /* configure mac */
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2) {
-#ifndef VIRTUAL
+#ifdef VIRTUAL
+	char cDestIp[MAX_STR_LENGTH];
+	memset(cDestIp, 0, MAX_STR_LENGTH);
+	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d, port2:%d)\n", cDestIp, udpport, udpport2));
+	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
+		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
+		return FAIL;
+	}
+	if (setUDPDestinationDetails(1, cDestIp, udpport2) == FAIL) {
+		FILE_LOG(logERROR, ("could not set udp destination IP and port2\n"));
+		return FAIL;
+	}
+    return OK;
+#else
     FILE_LOG(logINFO, ("Configuring MAC\n"));
 	
 	int src_port = DEFAULT_UDP_SOURCE_PORT;
@@ -1624,6 +1637,14 @@ int prepareAcquisition() {
 
 int startStateMachine() {
 #ifdef VIRTUAL
+	// create udp socket
+	if(createUDPSocket(0) != OK) {
+		return FAIL;
+	}
+	if(createUDPSocket(1) != OK) {
+		return FAIL;
+	}
+	FILE_LOG(logINFOBLUE, ("starting state machine\n"));
 	eiger_virtual_status = 1;
 	eiger_virtual_stop = 0;
 	if (pthread_create(&eiger_virtual_tid, NULL, &start_timer, NULL)) {
@@ -1656,27 +1677,114 @@ int startStateMachine() {
 		FILE_LOG(logINFOGREEN, ("Acquisition started\n"));
 	}
 
-	/*while(getRunStatus() == IDLE) {FILE_LOG(logINFO, ("waiting for being not idle anymore\n"));}*/
-
 	return ret;
 #endif
 }
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	eiger_virtual_status = 1;
-	int wait_in_s = nimages_per_request * eiger_virtual_period;
-	FILE_LOG(logINFO, ("going to wait for %d s\n", wait_in_s));
-	while(!eiger_virtual_stop && (wait_in_s >= 0)) {
-		usleep(1000 * 1000);
-		wait_in_s--;
-	}
-	FILE_LOG(logINFO, ("Virtual Timer Done***\n"));
+	int64_t periodns = eiger_virtual_period;
+	int numFrames = nimages_per_request;
+	int64_t exp_ns = eiger_virtual_exptime;
 
+	int dr = eiger_dynamicrange;
+	double bytesPerPixel  = (double)dr/8.00;
+	int tgEnable = send_to_ten_gig;
+	int datasize = (tgEnable ? 4096 : 1024);
+	int packetsize = datasize + sizeof(sls_detector_header);
+	int numPacketsPerFrame =  (tgEnable ? 4 : 16) * dr;
+	int npixelsx = 256 * 2 * bytesPerPixel; 
+	int databytes = 256 * 256 * 2 * bytesPerPixel;
+	FILE_LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:5d\n npixelsx:%d\n databytes:%d\n",
+	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes));
+
+
+		//TODO: Generate data
+		char imageData[databytes * 2];
+		memset(imageData, 0, databytes * 2);
+		{
+			int i = 0;
+			for (i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
+				*((uint8_t*)(imageData + i)) = i;
+			}
+		}
+		
+		
+		//TODO: Send data
+		{
+			int frameNr = 1;
+			for(frameNr=1; frameNr <= numFrames; ++frameNr ) {
+				int srcOffset = 0;
+				int srcOffset2 = npixelsx;
+			
+				struct timespec begin, end;
+				clock_gettime(CLOCK_REALTIME, &begin);
+
+				usleep(exp_ns / 1000);
+
+				char packetData[packetsize];
+				memset(packetData, 0, packetsize);
+				char packetData2[packetsize];
+				memset(packetData2, 0, packetsize);
+				
+				// loop packet
+				{
+					int i = 0;
+					for(i = 0; i != numPacketsPerFrame; ++i) {
+						int dstOffset = sizeof(sls_detector_header);
+						int dstOffset2 = sizeof(sls_detector_header);
+						// set header
+						sls_detector_header* header = (sls_detector_header*)(packetData);
+						header->frameNumber = frameNr;
+						header->packetNumber = i;
+						header = (sls_detector_header*)(packetData2);
+						header->frameNumber = frameNr;
+						header->packetNumber = i;
+						// fill data	
+						{		
+							int psize = 0;	
+							for (psize = 0; psize < datasize; psize += npixelsx) {
+								if (dr == 32 && tgEnable == 0) {
+									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
+									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
+									srcOffset += npixelsx;
+									srcOffset2 += npixelsx;
+									dstOffset += npixelsx/2;
+									dstOffset2 += npixelsx/2;
+								} else {
+									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx);
+									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx);
+									srcOffset += 2 * npixelsx;
+									srcOffset2 += 2 * npixelsx;
+									dstOffset += npixelsx;
+									dstOffset2 += npixelsx;
+								}
+							}
+						}
+						
+						sendUDPPacket(0, packetData, packetsize);
+						sendUDPPacket(1, packetData2, packetsize);
+					}
+				}
+				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
+				clock_gettime(CLOCK_REALTIME, &end);
+				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+						(end.tv_nsec - begin.tv_nsec));
+	  
+				if (periodns > time_ns) {
+					usleep((periodns - time_ns)/ 1000);
+				}
+			}
+		}
+	
+	closeUDPSocket(0);
+	closeUDPSocket(1);
+	
 	eiger_virtual_status = 0;
 	return NULL;
 }
 #endif
+
 
 
 
@@ -1767,10 +1875,6 @@ enum runStatus getRunStatus() {
 
 void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
-	while(eiger_virtual_status) {
-		//FILE_LOG(logERROR ,"Waiting for finished flag\n"));
-		usleep(5000);
-	}
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #else
@@ -1875,12 +1979,3 @@ int getTotalNumberOfChannels() {return  ((int)getNumberOfChannelsPerChip() * (in
 int getNumberOfChips() {return  NCHIP;}
 int getNumberOfDACs() {return  NDAC;}
 int getNumberOfChannelsPerChip() {return  NCHAN;}
-
-
-
-
-
-
-
-
-

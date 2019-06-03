@@ -5,7 +5,7 @@
 #endif
 #include <stdlib.h>
 #include <stdio.h>					// FILE
-
+#include <sys/types.h>
 
 /****************************************************
 This functions are used by the slsDetectroServer_funcs interface.

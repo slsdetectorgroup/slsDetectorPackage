@@ -92,7 +92,7 @@ if (SLS_USE_TESTS)
     add_subdirectory(tests)
 endif(SLS_USE_TESTS)
 
-install(TARGETS slsReceiverShared
+install(TARGETS slsReceiverShared slsReceiver
         EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

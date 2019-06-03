@@ -1205,7 +1205,7 @@ int slsReceiverTCPIPInterface::set_file_index(sls::ServerInterface2 &socket) {
 int	slsReceiverTCPIPInterface::get_frame_index(sls::ServerInterface2 &socket){
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int retval = -1;
+	uint64_t retval = -1;
 
 	if(receiver == nullptr){
 		NullObjectError(ret, mess);

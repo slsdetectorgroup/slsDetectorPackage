@@ -1057,6 +1057,34 @@ int multiSlsDetector::configureMAC(int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
+void multiSlsDetector::setStartingFrameNumber(const uint64_t value, int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->setStartingFrameNumber(value);
+    }
+
+    // multi
+    parallelCall(&slsDetector::setStartingFrameNumber, value);
+}
+
+uint64_t multiSlsDetector::getStartingFrameNumber(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getStartingFrameNumber();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getStartingFrameNumber);
+    if (sls::allEqual(r)) {
+        return r.front();
+    }
+
+    // can't have different values for next acquisition
+    std::ostringstream ss;
+    ss << "Error: Different Values for starting frame number";
+    throw RuntimeError(ss.str());
+}
+
 int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
     // single
     if (detPos >= 0) {
@@ -3121,7 +3149,7 @@ int multiSlsDetector::getFramesCaughtByReceiver(int detPos) {
     return ((sls::sum(r)) / (int)detectors.size());
 }
 
-int multiSlsDetector::getReceiverCurrentFrameIndex(int detPos) {
+uint64_t multiSlsDetector::getReceiverCurrentFrameIndex(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverCurrentFrameIndex();
@@ -3131,7 +3159,7 @@ int multiSlsDetector::getReceiverCurrentFrameIndex(int detPos) {
     auto r = parallelCall(&slsDetector::getReceiverCurrentFrameIndex);
 
     // prevent divide by all or do not take avg when -1 for "did not connect"
-    if ((detectors.empty()) || (sls::anyEqualTo(r, -1))) {
+    if ((detectors.empty()) || (sls::anyEqualTo(r, static_cast<uint64_t>(-1)))) {
         return -1;
     }
 
@@ -3343,11 +3371,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                                    (char *)image + (i * singledetrowoffset), singledetrowoffset);
                         }
                     } else {
-		      
-
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
-			  std::cout << i << " " << ((yoffset + i) * rowoffset) + xoffset << " " << (i * singledetrowoffset) << " " << singledetrowoffset << std::endl;
-
                             memcpy(((char *)multiframe) + ((yoffset + i) * rowoffset) + xoffset,
                                    (char *)image + (i * singledetrowoffset), singledetrowoffset);
                         }
@@ -3369,7 +3393,6 @@ void multiSlsDetector::readFrameFromReceiver() {
             }
             // normal pixels
             else {
-	      // std::cout << "creating detectorData" << std::endl;
                 thisData = new detectorData(getCurrentProgress(), currentFileName.c_str(), nCompletePixelsX,
                                             nCompletePixelsY, multiframe, multisize, dynamicRange,
                                             currentFileIndex);

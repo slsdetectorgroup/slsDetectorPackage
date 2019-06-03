@@ -730,6 +730,18 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int configureMAC();
 
+	/**
+     * Set starting frame number for the next acquisition
+     * @param val starting frame number
+     */
+    void setStartingFrameNumber(const uint64_t value);
+
+     /**
+     * Get starting frame number for the next acquisition
+     * @returns starting frame number
+     */
+    uint64_t getStartingFrameNumber();
+
     /**
 	 * Set/get timer value (not all implemented for all detectors)
 	 * @param index timer index
@@ -1695,7 +1707,7 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * Gets the current frame index of receiver
 	 * @returns current frame index of receiver
 	 */
-    int getReceiverCurrentFrameIndex();
+    uint64_t getReceiverCurrentFrameIndex();
 
     /**
 	 * Resets framescaught in receiver

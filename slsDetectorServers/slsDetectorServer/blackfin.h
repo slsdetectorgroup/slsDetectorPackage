@@ -98,6 +98,29 @@ int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
 }
 
 /**
+ * Read unsigned 64 bit from a 64 bit register
+ * @param aLSB LSB offset address
+ * @param aMSB MSB offset address
+ * @returns unsigned 64 bit data read
+ */
+uint64_t getU64BitReg(int aLSB, int aMSB){
+	uint64_t retval = bus_r(aMSB);
+	retval = (retval << 32) | bus_r(aLSB);
+	return retval;
+}
+
+/**
+ * Write unsigned 64 bit into a 64 bit register
+ * @param value unsigned 64 bit data
+ * @param aLSB LSB offset address
+ * @param aMSB MSB offset address
+ */
+void setU64BitReg(uint64_t value, int aLSB, int aMSB){
+	bus_w(aLSB, value & (0xffffffff));
+	bus_w(aMSB, (value >> 32) & (0xffffffff));
+}
+
+/**
  * Read from a 32 bit register (literal register value provided by client)
  * @param offset address offset
  * @retuns 32 bit data read

@@ -242,6 +242,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_ADC_INVERT:					return "F_GET_ADC_INVERT";
 	case F_EXTERNAL_SAMPLING_SOURCE:		return "F_EXTERNAL_SAMPLING_SOURCE";				
 	case F_EXTERNAL_SAMPLING:				return "F_EXTERNAL_SAMPLING";	
+	case F_SET_STARTING_FRAME_NUMBER:		return "F_SET_STARTING_FRAME_NUMBER";
+	case F_GET_STARTING_FRAME_NUMBER:		return "F_GET_STARTING_FRAME_NUMBER";
 	default:								return "Unknown Function";
 	}
 }
@@ -324,6 +326,8 @@ void function_table() {
 	flist[F_GET_ADC_INVERT]						= &get_adc_invert;
 	flist[F_EXTERNAL_SAMPLING_SOURCE]			= &set_external_sampling_source;							
 	flist[F_EXTERNAL_SAMPLING]					= &set_external_sampling;
+	flist[F_SET_STARTING_FRAME_NUMBER] 			= &set_starting_frame_number;
+	flist[F_GET_STARTING_FRAME_NUMBER] 			= &get_starting_frame_number;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -3998,4 +4002,80 @@ int set_external_sampling(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_starting_frame_number(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting starting frame number to %llu\n", arg));
+
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (arg == 0) {
+			ret = FAIL;
+			sprintf(mess, "Could not set starting frame number. Cannot be 0.\n");
+			FILE_LOG(logERROR,(mess));
+		}
+#ifdef EIGERD
+		else if (arg > UDP_HEADER_MAX_FRAME_VALUE) {
+			ret = FAIL;
+			sprintf(mess, "Could not set starting frame number. Must be less then %lld (0x%llx)\n", UDP_HEADER_MAX_FRAME_VALUE, UDP_HEADER_MAX_FRAME_VALUE);
+			FILE_LOG(logERROR,(mess));
+		}
+#endif	
+		 else {
+			ret = setStartingFrameNumber(arg);
+			if (ret == FAIL) {
+				sprintf(mess, "Could not set starting frame number. Failed to map address.\n");
+				FILE_LOG(logERROR,(mess));	
+			} 
+			if (ret == OK)  {
+				uint64_t retval = 0;
+				ret = getStartingFrameNumber(&retval);
+				if (ret == FAIL) {
+					sprintf(mess, "Could not get starting frame number. Failed to map address.\n");
+					FILE_LOG(logERROR,(mess));	
+				} else {
+					if (arg != retval) {
+						ret = FAIL;
+						sprintf(mess, "Could not set starting frame number. Set 0x%llx, but read 0x%llx\n", arg, retval);
+						FILE_LOG(logERROR,(mess));
+					}
+				}
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_starting_frame_number(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting Starting frame number \n"));
+
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
+	functionNotImplemented();
+#else	
+	// get
+	ret = getStartingFrameNumber(&retval);
+	if (ret == FAIL) {
+		sprintf(mess, "Could not get starting frame number. Failed to map address.\n");
+		FILE_LOG(logERROR,(mess));	
+	} else {
+		FILE_LOG(logDEBUG1, ("Start frame number retval: %u\n", retval));
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }

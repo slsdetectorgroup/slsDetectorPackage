@@ -39,6 +39,7 @@ void Beb_EndofDataSend(int tengiga);
 int Beb_SetMasterViaSoftware();
 int Beb_SetSlaveViaSoftware();
 int Beb_Activate(int enable);
+int Beb_GetActivate();
 int Beb_Set32bitOverflow(int val);
 int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val);
 int Beb_ResetToHardwareSettings();
@@ -74,6 +75,8 @@ int Beb_GetBebFPGATemp();
 
 void Beb_SetDetectorNumber(uint32_t detid);
 int Beb_SetDetectorPosition(int pos[]);
+int Beb_SetStartingFrameNumber(uint64_t value);
+int Beb_GetStartingFrameNumber(uint64_t* retval);
 
 uint16_t Beb_swap_uint16( uint16_t val);
 int Beb_open(u_int32_t** csp0base, u_int32_t offset);

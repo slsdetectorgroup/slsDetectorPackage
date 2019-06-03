@@ -2426,8 +2426,7 @@ int configure_mac(int file_des) {
 	// set only
 	if ((Server_VerifyLock() == OK)) {
 
-		/*// stop detector if it was runnin
-		g
+		// stop detector if it was running
 		enum runStatus status = getRunStatus();
 		if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
 			if (status == RUNNING)
@@ -2441,7 +2440,7 @@ int configure_mac(int file_des) {
 		    	sprintf(mess, "Cannot configure mac when detector is not idle. Detector at %s state\n", getRunStateName(status));
 		    	FILE_LOG(logERROR,(mess));
 		    }
-		}*/
+		}
 
 		if (ret == OK) {
 #ifdef EIGERD

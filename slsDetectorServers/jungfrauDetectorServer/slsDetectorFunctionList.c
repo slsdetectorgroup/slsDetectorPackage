@@ -401,7 +401,7 @@ void setupDetector() {
     MAX1932_Disable();
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
-	// adce
+	// adc
     AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
     AD9257_Disable();
     AD9257_Configure();

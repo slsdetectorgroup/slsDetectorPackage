@@ -1659,8 +1659,6 @@ int startStateMachine() {
 		FILE_LOG(logINFOGREEN, ("Acquisition started\n"));
 	}
 
-	/*while(getRunStatus() == IDLE) {FILE_LOG(logINFO, ("waiting for being not idle anymore\n"));}*/
-
 	return ret;
 #endif
 }
@@ -1827,7 +1825,7 @@ int startReadOut() {
 }
 
 
-enum runStatus getRunStatus() {FILE_LOG(logINFO, ("in hereeeeee\n"));
+enum runStatus getRunStatus() {
 #ifdef VIRTUAL
 	if (eiger_virtual_status == 0) {
 		FILE_LOG(logINFO, ("Status: IDLE\n"));

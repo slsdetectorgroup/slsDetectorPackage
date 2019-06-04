@@ -56,7 +56,22 @@ TEST_CASE("receiver", "[.cmd]") {
     REQUIRE(oss.str() == "receiver idle\n");
 }
 
-TEST_CASE("enableoverwrite, [.cmd]") {
+TEST_CASE("enablefwrite", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("enablefwrite 1", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "enablefwrite 1\n");
+
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("enablefwrite", GET, nullptr, oss);
+    REQUIRE(oss.str() == "enablefwrite 1\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("enablefwrite 0", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "enablefwrite 0\n");
+}
+
+TEST_CASE("enableoverwrite", "[.cmd]") {
     auto oss = std::ostringstream{};
     multiSlsDetectorClient("overwrite 1", PUT, nullptr, oss);
     REQUIRE(oss.str() == "overwrite 1\n");
@@ -69,3 +84,78 @@ TEST_CASE("enableoverwrite, [.cmd]") {
     multiSlsDetectorClient("overwrite 0", PUT, nullptr, oss);
     REQUIRE(oss.str() == "overwrite 0\n");
 }
+
+TEST_CASE("activatecmd", "[.cmd]") {
+    //TODO! read padding from somewhere
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("activate 0", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "activate 0 padding\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("activate", GET, nullptr, oss);
+    REQUIRE(oss.str() == "activate 0 padding\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("activate 1", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "activate 1 padding\n");
+}
+
+TEST_CASE("masterfile", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("masterfile 0", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "masterfile 0\n");
+
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("masterfile", GET, nullptr, oss);
+    REQUIRE(oss.str() == "masterfile 0\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("masterfile 1", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "masterfile 1\n");
+}
+
+TEST_CASE("rx_tcpport", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("rx_tcpport 1500", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "rx_tcpport 1500\n");
+
+    oss = std::ostringstream{};
+    REQUIRE_THROWS( multiSlsDetectorClient("rx_tcpport 15", PUT, nullptr, oss));
+    
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("rx_tcpport", GET, nullptr, oss);
+    REQUIRE(oss.str() == "rx_tcpport 1500\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("rx_tcpport 1954", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "rx_tcpport 1954\n");
+}
+
+TEST_CASE("fname", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("fname somename", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "fname somename\n");
+
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("fname", GET, nullptr, oss);
+    REQUIRE(oss.str() == "fname somename\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("fname run", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "fname run\n");
+}
+
+TEST_CASE("resetframescaught get framescaught", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("resetframescaught 0", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "resetframescaught successful\n");
+
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("framescaught", GET, nullptr, oss);
+    REQUIRE(oss.str() == "framescaught 0\n");
+}
+

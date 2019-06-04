@@ -72,8 +72,6 @@ int64_t slsReceiverTCPIPInterface::getReceiverVersion(){
 	return APIRECEIVER;
 }
 
-
-
 /***callback functions***/
 void slsReceiverTCPIPInterface::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
 	startAcquisitionCallBack=func;
@@ -106,23 +104,22 @@ void slsReceiverTCPIPInterface::startTCPServer() {
     FILE_LOG(logINFOBLUE) << "Created [ TCP server Tid: " 
 						  << syscall(SYS_gettid) << "]";
     FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port "
-                      << portNumber << std::endl;
-    int ret = OK;
+                      << portNumber << '\n';
     server = sls::make_unique<sls::ServerSocket>(portNumber);
     while (true) {
 		FILE_LOG(logDEBUG1) << "Start accept loop";
         try {
             auto socket = server->accept();
-			constexpr int time_us = 5000000;
-			socket.setReceiveTimeout(time_us);
+			// constexpr int time_us = 5000000;
+			// socket.setReceiveTimeout(time_us);
 			try{
 				VerifyLock();
+				
             	ret = decode_function(socket);
 			}catch(const RuntimeError& e){
 				//We had an error needs to be sent to client
 				int r = FAIL;
         		strcpy(mess, e.what());
-        		FILE_LOG(logERROR) << mess;
 				socket.write(&r, sizeof(r));
 				socket.write(mess, sizeof(mess));
 			}
@@ -223,24 +220,16 @@ int slsReceiverTCPIPInterface::function_table(){
 
 int slsReceiverTCPIPInterface::decode_function(sls::ServerInterface2 &socket) {
     ret = FAIL;
-    int n = socket.read(&fnum, sizeof(fnum));
-    if (n <= 0) {
-        FILE_LOG(logDEBUG3)
-            << "Could not read socket. Received " << n
-            << " bytes, fnum:" << fnum << " ("
-            << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
-        return FAIL;
-    } else {
-        FILE_LOG(logDEBUG3) << "Received " << n << " bytes";
-    }
+	socket.receiveArg(fnum);
     if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
-        FILE_LOG(logERROR) << "Unknown function enum " << fnum;
-        ret = (this->M_nofunc)(socket);
+        throw RuntimeError("Unrecognized Function enum " + 
+							std::to_string(fnum) + "\n");
     } else {
         FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
                             << getFunctionNameFromEnum((enum detFuncs)fnum)
                             << ") located at " << flist[fnum];
         ret = (this->*flist[fnum])(socket);
+
         if (ret == FAIL) {
             FILE_LOG(logDEBUG1)
                 << "Failed to execute function = " << fnum << " ("
@@ -254,11 +243,12 @@ int slsReceiverTCPIPInterface::decode_function(sls::ServerInterface2 &socket) {
 }
 
 void slsReceiverTCPIPInterface::functionNotImplemented() {
-	ret = FAIL;
-	sprintf(mess, "Function (%s) is not implemented for this detector\n",
+	char message[MAX_STR_LENGTH];
+	sprintf(message, "Function (%s) is not implemented for this detector\n",
 			getFunctionNameFromEnum((enum detFuncs)fnum));
-	FILE_LOG(logERROR) << mess;
+	throw RuntimeError(mess);
 }
+
 
 void slsReceiverTCPIPInterface::modeNotImplemented(std::string modename, int mode) {
 	ret = FAIL;
@@ -276,7 +266,7 @@ void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename, 
 		else
 			sprintf(mess, "Could not %s. Set %d, but read %d\n",
 				modename.c_str(), (unsigned int) arg, (unsigned int) retval);
-		FILE_LOG(logERROR) << mess;
+		throw RuntimeError(mess);
 	}
 }
 
@@ -295,11 +285,7 @@ int slsReceiverTCPIPInterface::M_nofunc(sls::ServerInterface2 &socket){
 
 void slsReceiverTCPIPInterface::VerifyLock() {
     if (lockStatus && server->getThisClient() != server->getLockedBy()) {
-        // int r = FAIL;
-        // strcpy(mess, "Receiver locked\n");
-        // FILE_LOG(logERROR) << mess;
-		// socket.write(&r, sizeof(r));
-		// socket.write(mess, sizeof(mess));
+        strcpy(mess, "Receiver locked\n");
 		throw sls::SocketError(mess);
     }
 }
@@ -308,9 +294,6 @@ int slsReceiverTCPIPInterface::VerifyIdle(sls::ServerInterface2& socket) {
     if (impl()->getStatus() != IDLE) {
         sprintf(mess, "Can not execute %s when receiver is not idle\n",
                 getFunctionNameFromEnum((enum detFuncs)fnum));
-		int r = FAIL;
-		socket.write(&r, sizeof(r));
-		socket.write(mess, sizeof(mess));
 		throw sls::SocketError(mess);
     }
 	return OK;
@@ -324,7 +307,6 @@ int slsReceiverTCPIPInterface::exec_command(sls::ServerInterface2 &socket) {
 	socket.receiveArg( cmd, MAX_STR_LENGTH);
 	FILE_LOG(logINFO) << "Executing command (" << cmd << ")";
 
-	// verify if receiver is unlocked
 	const size_t tempsize = 256;
 	std::array<char, tempsize> temp;
 	std::string sresult;
@@ -409,34 +391,18 @@ int slsReceiverTCPIPInterface::get_last_client_ip(sls::ServerInterface2 &socket)
 
 
 int slsReceiverTCPIPInterface::set_port(sls::ServerInterface2 &socket) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
 	int p_number = -1;
-	socket.receiveArg( &p_number, sizeof(p_number));
-
-	if (p_number < 1024) {
-		ret = FAIL;
-		sprintf(mess,"Port Number (%d) too low\n", p_number);
-		FILE_LOG(logERROR) << mess;
-	} else {
-		FILE_LOG(logINFO) << "set port to " << p_number <<std::endl;
-		try {
-			auto new_server = sls::make_unique<sls::ServerSocket>(p_number);
-			new_server->setLockedBy(server->getLockedBy());
-			new_server->setLastClient(server->getLastClient());
-			server = std::move(new_server);
-		} catch(SocketError &e) {
-			ret = FAIL;
-			sprintf(mess, "%s", e.what());
-			FILE_LOG(logERROR) << mess;
-		} catch (...) {
-			ret = FAIL;
-			sprintf(mess, "Could not set port %d.\n", p_number);
-			FILE_LOG(logERROR) << mess;
-		}
-	}
-	socket.sendResult(ret, &p_number,sizeof(p_number), mess);
-	return ret;
+	socket.receiveArg(p_number);
+	if (p_number < 1024)
+		throw RuntimeError("Port Number: " + std::to_string(p_number)+ " is too low (<1024)");
+	
+	FILE_LOG(logINFO) << "set port to " << p_number <<std::endl;
+	auto new_server = sls::make_unique<sls::ServerSocket>(p_number);
+	new_server->setLockedBy(server->getLockedBy());
+	new_server->setLastClient(server->getThisClient());
+	server = std::move(new_server);
+	socket.sendResult(p_number);
+	return OK;
 }
 
 
@@ -563,10 +529,8 @@ int slsReceiverTCPIPInterface::send_update(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::get_id(sls::ServerInterface2 &socket){
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
 	int64_t retval = getReceiverVersion();
-	return socket.sendResult(ret, &retval, sizeof(retval));
+	return socket.sendResult(retval);
 }
 
 
@@ -577,17 +541,12 @@ int slsReceiverTCPIPInterface::set_detector_type(sls::ServerInterface2 &socket){
 	detectorType arg = GENERIC;
 	detectorType retval = GENERIC;
 
-	// get args, return if socket crashed
-	if (socket.receiveArg( &arg, sizeof(arg)) == FAIL)
-		return FAIL;
+	socket.receiveArg(arg);
 
 	// set
 	if (arg >= 0) {
 		// if object exists, verify unlocked and idle, else only verify lock (connecting first time)
-		if (receiver == nullptr){
-			VerifyLock();
-		}
-		else{
+		if (receiver != nullptr){
 			VerifyIdle(socket);
 		}
 			
@@ -635,43 +594,30 @@ int slsReceiverTCPIPInterface::set_detector_type(sls::ServerInterface2 &socket){
 
 
 int slsReceiverTCPIPInterface::set_detector_hostname(sls::ServerInterface2 &socket) {
-	memset(mess, 0, sizeof(mess));
 	char hostname[MAX_STR_LENGTH]{};
 	char retval[MAX_STR_LENGTH]{};
 
-	// get args, return if socket crashed, ret is fail if receiver is not null
-	ret = socket.receiveArg( hostname, MAX_STR_LENGTH);
+	socket.receiveArg(hostname);
 	if(receiver == nullptr)
 		ThrowNullObjectError(socket);
 
-		
-	// base object not null
-	if (ret == OK) {
-		// set
-		if (strlen(hostname)) {
-			VerifyIdle(socket);
-			receiver->setDetectorHostname(hostname);
-		}
-		// get
-		std::string s = receiver->getDetectorHostname();
-		strcpy(retval, s.c_str());
-		if (!s.length()) {
-			ret = FAIL;
-			sprintf(mess, "hostname not set\n");
-			FILE_LOG(logERROR) << mess;
-		}
+	if (strlen(hostname)) {
+		VerifyIdle(socket);
+		receiver->setDetectorHostname(hostname);
 	}
-
-	return socket.sendResult(ret,	retval, MAX_STR_LENGTH, mess);
+	auto s = receiver->getDetectorHostname();
+	strcpy(retval, s.c_str());
+	if (s.empty()) {
+		ret = FAIL;
+		throw RuntimeError("Hostname not set");
+	}
+	return socket.sendResult(retval);
 }
 
 int slsReceiverTCPIPInterface::LogSocketCrash(){
 	FILE_LOG(logERROR) << "Reading from socket failed. Possible socket crash";
 	return FAIL;
 }
-
-
-
 
 
 int slsReceiverTCPIPInterface::set_roi(sls::ServerInterface2 &socket) {
@@ -1043,155 +989,105 @@ int	slsReceiverTCPIPInterface::get_status(sls::ServerInterface2 &socket){
 
 
 int slsReceiverTCPIPInterface::start_receiver(sls::ServerInterface2 &socket){
-	memset(mess, 0, sizeof(mess));
-	if(receiver == nullptr)
-		ThrowNullObjectError(socket);
-
-	runStatus status = receiver->getStatus();
+	ret = OK;
+	runStatus status = impl()->getStatus();
 	if (status != IDLE) {
-		ret=FAIL;
-		sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(status).c_str());
-		FILE_LOG(logERROR) << mess;
+		throw RuntimeError("Cannot start Receiver as it is: " +runStatusType(status));
 	}else {
 		FILE_LOG(logDEBUG1) << "Starting Receiver";
-		ret = receiver->startReceiver(mess);
+		ret = impl()->startReceiver(mess);
 		if (ret == FAIL) {
-			FILE_LOG(logERROR) << mess;
+			throw RuntimeError(mess);
 		}
 	}
-	return socket.sendResult(ret, nullptr, 0, mess);
+	return socket.sendData(OK);
 }
-
 
 
 int slsReceiverTCPIPInterface::stop_receiver(sls::ServerInterface2 &socket){
 	ret = OK;
-	memset(mess, 0, sizeof(mess));
+	if(receiver == nullptr)
+		ThrowNullObjectError(socket);
 
-	
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
+	if(receiver->getStatus() != IDLE) {
+		FILE_LOG(logDEBUG1) << "Stopping Receiver";
+		receiver->stopReceiver();
 	}
-	// receiver is not null
-	if (ret == OK) {
-		// only set
-
-
-		if(receiver->getStatus() != IDLE) {
-			FILE_LOG(logDEBUG1) << "Stopping Receiver";
-			receiver->stopReceiver();
-		}
-		enum runStatus s = receiver->getStatus();
-		if (s == IDLE)
-			ret = OK;
-		else {
-			ret = FAIL;
-			sprintf(mess,"Could not stop receiver. It is in %s state\n",runStatusType(s).c_str());
-			FILE_LOG(logERROR) << mess;
-		}
-
+	runStatus s = receiver->getStatus();
+	if (s == IDLE)
+		ret = OK;
+	else {
+		throw RuntimeError("Could not stop receiver. It as it is: " + runStatusType(s));
 	}
-	return socket.sendResult(ret, nullptr, 0, mess);
+	return socket.sendData(ret);
 }
 
 
 
 int slsReceiverTCPIPInterface::set_file_dir(sls::ServerInterface2 &socket) {
-	memset(mess, 0, sizeof(mess));
-	char fPath[MAX_STR_LENGTH] = {0};
-    char retval[MAX_STR_LENGTH] = {0};
+	char fPath[MAX_STR_LENGTH]{};
+    char retval[MAX_STR_LENGTH]{};
 
-	// get args, return if socket crashed, ret is fail if receiver is not null
-	ret = socket.receiveArg( fPath, sizeof(fPath));
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
-		return FAIL;
+	socket.receiveArg(fPath);
+	if(receiver == nullptr)
+		ThrowNullObjectError(socket);
+
+	if (strlen(fPath)) {
+		FILE_LOG(logDEBUG1) << "Setting file path: " << fPath;
+		receiver->setFilePath(fPath);
 	}
 
-	// base object not null
-	if (ret == OK) {
-		// set
-		if (strlen(fPath)) {
-			FILE_LOG(logDEBUG1) << "Setting file path: " << fPath;
-			receiver->setFilePath(fPath);
-		}
-		// get
-		std::string s = receiver->getFilePath();
-		strcpy(retval, s.c_str());
-		if ((!s.length()) || (strlen(fPath) && strcasecmp(fPath, retval))) {
-			ret = FAIL;
-			strcpy(mess,"receiver file path does not exist\n");
-			FILE_LOG(logERROR) << mess;
-		} else
-			FILE_LOG(logDEBUG1) << "file path:" << retval;
-	}
-    return socket.sendResult(ret, retval, MAX_STR_LENGTH, mess);
+	std::string s = receiver->getFilePath();
+	strcpy(retval, s.c_str());
+	if ((!s.length()) || (strlen(fPath) && strcasecmp(fPath, retval)))
+		throw RuntimeError("Receiver file path does not exist");
+	else
+		FILE_LOG(logDEBUG1) << "file path:" << retval;
+	
+    return socket.sendResult(retval);
 }
 
 
 
 int slsReceiverTCPIPInterface::set_file_name(sls::ServerInterface2 &socket) {
-	memset(mess, 0, sizeof(mess));
-	char fName[MAX_STR_LENGTH] = {0};
-    char retval[MAX_STR_LENGTH] = {0};
+	char fName[MAX_STR_LENGTH]{};
+    char retval[MAX_STR_LENGTH]{};
 
-	// get args, return if socket crashed, ret is fail if receiver is not null
-	ret = socket.receiveArg( fName, sizeof(fName));
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
-		return FAIL;
-	}
+	ret = socket.receiveArg(fName);
+	if(receiver == nullptr)
+		ThrowNullObjectError(socket);
 
-	// base object not null
-	if (ret == OK) {
-		// set
-		if (strlen(fName)) {
-			FILE_LOG(logDEBUG1) << "Setting file name: " << fName;
-			receiver->setFileName(fName);
-		}
-		// get
-		std::string s = receiver->getFileName();
-		strcpy(retval, s.c_str());
-		if (!s.length()) {
-			ret = FAIL;
-			strcpy(mess, "file name is empty\n");
-			FILE_LOG(logERROR) << mess;
-		} else
-			FILE_LOG(logDEBUG1) << "file name:" << retval;
+	if (strlen(fName)) {
+		FILE_LOG(logDEBUG1) << "Setting file name: " << fName;
+		receiver->setFileName(fName);
 	}
-	 return socket.sendResult(ret, retval, MAX_STR_LENGTH, mess);
+	std::string s = receiver->getFileName();
+	strcpy(retval, s.c_str());
+	if (!s.length())
+		throw RuntimeError("file name is empty");
+	else
+		FILE_LOG(logDEBUG1) << "file name:" << retval;
+	
+	return socket.sendResult(retval);
 }
 
-
-
 int slsReceiverTCPIPInterface::set_file_index(sls::ServerInterface2 &socket) {
-	memset(mess, 0, sizeof(mess));
+	ret = OK;
 	int index = -1;
-	int retval = -1;
+	socket.receiveArg(index);
+	if(receiver == nullptr)
+		ThrowNullObjectError(socket);
 
-	// get args, return if socket crashed, ret is fail if receiver is not null
-	ret = socket.receiveArg( &index, sizeof(index));
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
-		return FAIL;
+	if (index >= 0) {
+		VerifyIdle(socket);
+		FILE_LOG(logDEBUG1) << "Setting file index: " << index;
+		receiver->setFileIndex(index);
 	}
 
-	// base object not null
-	if (ret == OK) {
-		// set
-		if (index >= 0) {
-			// verify if receiver is unlocked and idle
-			if (VerifyIdle(socket) == OK) {
-				FILE_LOG(logDEBUG1) << "Setting file index: " << index;
-				receiver->setFileIndex(index);
-			}
-		}
-		// get
-		retval=receiver->getFileIndex();
-		validate(index, retval, std::string("set file index"), DEC);
-		FILE_LOG(logDEBUG1) << "file index:" << retval;
-	}
-	return socket.sendResult(ret, &retval,sizeof(retval), mess);
+	int retval=receiver->getFileIndex();
+	validate(index, retval, std::string("set file index"), DEC);
+	FILE_LOG(logDEBUG1) << "file index:" << retval;
+	return socket.sendResult(retval);
 }
 
 
@@ -1214,136 +1110,69 @@ int	slsReceiverTCPIPInterface::get_frame_index(sls::ServerInterface2 &socket){
 }
 
 
-
 int	slsReceiverTCPIPInterface::get_frames_caught(sls::ServerInterface2 &socket){
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int retval = -1;
-
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
-	}
-
-	if (ret == OK) {
-		FILE_LOG(logDEBUG1) << "Getting frames caught";
-		retval = receiver->getTotalFramesCaught();
-		FILE_LOG(logDEBUG1) << "frames caught:" << retval;
-	}
-	return socket.sendResult(ret, &retval,sizeof(retval), mess);
+	int retval = impl()->getTotalFramesCaught();
+	FILE_LOG(logDEBUG1) << "frames caught:" << retval;
+	return socket.sendResult(retval);
 }
-
-
 
 int	slsReceiverTCPIPInterface::reset_frames_caught(sls::ServerInterface2 &socket){
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
-	}
-
-	// receiver is not null
-	if (ret == OK) {
-		// only set
-		// verify if receiver is unlocked
-
-		FILE_LOG(logDEBUG1) << "Reset frames caught";
-		receiver->resetAcquisitionCount();
-
-	}
-	return socket.sendResult(ret, nullptr, 0, mess);
+	FILE_LOG(logDEBUG1) << "Reset frames caught";
+	impl()->resetAcquisitionCount();
+	return socket.sendData(OK);
 }
-
 
 
 int slsReceiverTCPIPInterface::enable_file_write(sls::ServerInterface2 &socket){
-	memset(mess, 0, sizeof(mess));
 	int enable = -1;
-	int retval = -1;
-
-	// get args, return if socket crashed, ret is fail if receiver is not null
-	ret = socket.receiveArg( &enable, sizeof(enable));
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
-		return FAIL;
+	socket.receiveArg(enable);
+	// set
+	if (enable >= 0) {
+		// verify if receiver is unlocked and idle
+		VerifyIdle(socket);
+		FILE_LOG(logDEBUG1) << "Setting File write enable:" << enable;
+		impl()->setFileWriteEnable(enable);
 	}
-
-	// base object not null
-	if (ret == OK) {
-		// set
-		if (enable >= 0) {
-			// verify if receiver is unlocked and idle
-			if (VerifyIdle(socket) == OK) {
-				FILE_LOG(logDEBUG1) << "Setting File write enable:" << enable;
-				receiver->setFileWriteEnable(enable);
-			}
-		}
-		// get
-		retval = receiver->getFileWriteEnable();
-		validate(enable, retval, std::string("set file write enable"), DEC);
-		FILE_LOG(logDEBUG1) << "file write enable:" << retval;
-	}
-	return socket.sendResult(ret, &retval, sizeof(retval), mess);
+	// get
+	int retval = impl()->getFileWriteEnable();
+	validate(enable, retval, std::string("set file write enable"), DEC);
+	FILE_LOG(logDEBUG1) << "file write enable:" << retval;
+	return socket.sendResult(retval);
 }
 
 
-
 int slsReceiverTCPIPInterface::enable_master_file_write(sls::ServerInterface2 &socket){
-	memset(mess, 0, sizeof(mess));
 	int enable = -1;
-	int retval = -1;
-
-	// get args, return if socket crashed, ret is fail if receiver is not null
-	ret = socket.receiveArg( &enable, sizeof(enable));
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
-		return FAIL;
+	socket.receiveArg(enable);
+	// set
+	if (enable >= 0) {
+		VerifyIdle(socket);
+		FILE_LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
+		impl()->setMasterFileWriteEnable(enable);	
 	}
-
-	// base object not null
-	if (ret == OK) {
-		// set
-		if (enable >= 0) {
-			// verify if receiver is unlocked and idle
-			if (VerifyIdle(socket) == OK) {
-				FILE_LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
-				receiver->setMasterFileWriteEnable(enable);
-			}
-		}
-		// get
-		retval = receiver->getMasterFileWriteEnable();
-		validate(enable, retval, std::string("set master file write enable"), DEC);
-		FILE_LOG(logDEBUG1) << "master file write enable:" << retval;
-	}
-	return socket.sendResult(ret, &retval, sizeof(retval), mess);
+	// get
+	int retval = impl()->getMasterFileWriteEnable();
+	validate(enable, retval, std::string("set master file write enable"), DEC);
+	FILE_LOG(logDEBUG1) << "master file write enable:" << retval;
+	return socket.sendResult(retval);
 }
 
 
 int slsReceiverTCPIPInterface::enable_overwrite(sls::ServerInterface2 &socket) {
-	memset(mess, 0, sizeof(mess));
 	int index = -1;
-	ret = OK;
-
-	socket.receiveArg( &index, sizeof(index));
-	if(receiver == nullptr)
-		ThrowNullObjectError(socket);
-
+	socket.receiveArg(index);
 	// set
 	if (index >= 0) {
-		if (VerifyIdle(socket) == OK) {
-			FILE_LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
-			receiver->setOverwriteEnable(index);
-		}
+		VerifyIdle(socket);
+		FILE_LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
+		impl()->setOverwriteEnable(index);
 	}
 	// get
-	int retval = receiver->getOverwriteEnable();
+	int retval = impl()->getOverwriteEnable();
 	validate(index, retval, std::string("set file overwrite enable"), DEC);
 	FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
-	
-	return socket.sendResult(ret, &retval, sizeof(retval), mess);
+	return socket.sendResult(retval);
 }
-
-
 
 int slsReceiverTCPIPInterface::enable_tengiga(sls::ServerInterface2 &socket) {
 	memset(mess, 0, sizeof(mess));
@@ -1381,57 +1210,39 @@ int slsReceiverTCPIPInterface::enable_tengiga(sls::ServerInterface2 &socket) {
 
 
 int slsReceiverTCPIPInterface::set_fifo_depth(sls::ServerInterface2 &socket) {
-	ret = OK;
 	int value = -1;
-	socket.receiveArg(&value, sizeof(value));
+	socket.receiveArg(value);
 	if (value >= 0) {
 		VerifyIdle(socket);
 		FILE_LOG(logDEBUG1) << "Setting fifo depth:" << value;
-		ret = impl()->setFifoDepth(value);
-		if (ret == FAIL) {
-			strcpy(mess,"Could not set fifo depth");
-			FILE_LOG(logERROR) << mess;
-		}
+		impl()->setFifoDepth(value);
 	}
 	int retval = impl()->getFifoDepth();
 	validate(value, retval, std::string("set fifo depth"), DEC);
 	FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
-	return socket.sendResult(ret, &retval, sizeof(retval), mess);
+	return socket.sendResult(retval);
 }
 
 
 
 int slsReceiverTCPIPInterface::set_activate(sls::ServerInterface2 &socket) {
-	memset(mess, 0, sizeof(mess));
 	int enable = -1;
-	int retval = -1;
-
-	// get args, return if socket crashed, ret is fail if receiver is not null
-	ret = socket.receiveArg( &enable, sizeof(enable));
-	if(receiver == nullptr){
-		NullObjectError(ret, mess);
-		return FAIL;
-	}
+	socket.receiveArg(enable);
 
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
-	// base object not null
-	else if (ret == OK) {
-		// set
-		if (enable >= 0) {
-			// verify if receiver is unlocked and idle
-			if (VerifyIdle(socket) == OK) {
-				FILE_LOG(logDEBUG1) << "Setting activate:" << enable;
-				receiver->setActivate(enable > 0 ? true : false);
-			}
-		}
-		// get
-		retval = (int)receiver->getActivate();
-		validate(enable, retval, std::string("set activate"), DEC);
-		FILE_LOG(logDEBUG1) << "Activate: " << retval;
+	// set
+	if (enable >= 0) {
+		VerifyIdle(socket);
+		FILE_LOG(logDEBUG1) << "Setting activate:" << enable;
+		impl()->setActivate(enable > 0 ? true : false);
 	}
-	return socket.sendResult(ret, &retval, sizeof(retval), mess);
+	// get
+	auto retval = static_cast<int>(impl()->getActivate());
+	validate(enable, retval, std::string("set activate"), DEC);
+	FILE_LOG(logDEBUG1) << "Activate: " << retval;
+	return socket.sendResult(retval);
 }
 
 

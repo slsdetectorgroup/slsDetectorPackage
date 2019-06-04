@@ -10,7 +10,7 @@ int ServerInterface2::sendResult(int ret, void *retval, int retvalSize,
     write(&ret, sizeof(ret));
     if (ret == defs::FAIL) {
         if (mess != nullptr) {
-            sendData(mess, MAX_STR_LENGTH);
+            write(mess, MAX_STR_LENGTH);
         } else {
             FILE_LOG(logERROR) << "No error message provided for this "
                                   "failure. Will mess up TCP\n";

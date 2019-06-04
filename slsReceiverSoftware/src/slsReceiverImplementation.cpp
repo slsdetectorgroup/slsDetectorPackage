@@ -571,7 +571,7 @@ void slsReceiverImplementation::setFilePath(const char c[]) {
 		if(stat(c,&st) == 0)
 			strcpy(filePath,c);
 		else
-			FILE_LOG(logERROR) << "FilePath does not exist: " << filePath;
+			FILE_LOG(logERROR) << "FilePath does not exist: " << c;
 	}
 	FILE_LOG(logINFO) << "File path: " << filePath;
 }

@@ -68,13 +68,11 @@ int DataSocket::setReceiveTimeout(int us) {
 
 
 int DataSocket::sendData(const void *buffer, size_t size) {
-    int dataSent = 0;
-    while (dataSent < (int)size) {
-        dataSent +=
-            ::write(getSocketId(), reinterpret_cast<const char *>(buffer) + dataSent,
-                  size - dataSent);
-    }
-    return dataSent;
+    // int dataSent = 0;
+    // while (dataSent < (int)size) {
+        return  ::write(getSocketId(), buffer, size);
+    // }
+    // return dataSent;
 }
 
 int DataSocket::setTimeOut(int t_seconds) {

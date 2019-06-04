@@ -19,6 +19,17 @@ class DataSocket {
         return socketId_;
     }
     int sendData(const void *buffer, size_t size);
+
+    template<typename T>
+    int sendData(T& data){
+      return sendData(&data, sizeof(data));
+    }
+
+    template<typename T>
+    int sendData(T&& data){
+      return sendData(&data, sizeof(data));
+    }
+
     int receiveData(void *buffer, size_t size);
     int read(void *buffer, size_t size);
     int write(void *buffer, size_t size);

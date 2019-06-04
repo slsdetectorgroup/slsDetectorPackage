@@ -6,9 +6,6 @@
 #include "ui_form_tab_advanced.h"
 
 class multiSlsDetector;
-class slsDetector;
-
-class qDrawPlot;
 
 #include <QStackedLayout>
 #include <QSpacerItem>

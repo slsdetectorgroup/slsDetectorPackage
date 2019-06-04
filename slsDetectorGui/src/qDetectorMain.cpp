@@ -293,7 +293,7 @@ void qDetectorMain::Initialization() {
     connect(tabMeasurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
     connect(tabMeasurement,	SIGNAL(CheckPlotIntervalSignal()),	tabPlot,SLOT(SetFrequency()));
     // Plot tab
-    connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
+    connect(tabPlot,		SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
 
     // Plotting
     // When the acquisition is finished, must update the meas tab

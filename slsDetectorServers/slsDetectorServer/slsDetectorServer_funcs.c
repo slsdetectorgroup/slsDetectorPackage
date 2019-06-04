@@ -485,31 +485,26 @@ int get_detector_type(int file_des) {
 int set_external_signal_flag(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1,-1};
+	int arg = -1;
 	enum externalSignalFlag retval= GET_EXTERNAL_SIGNAL_FLAG;
 
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
 
-	int signalindex = args[0];
-	enum externalSignalFlag flag = args[1];
-	FILE_LOG(logDEBUG1, ("Setting external signal %d to flag %d\n", signalindex, flag));
+	enum externalSignalFlag flag = arg;
+	FILE_LOG(logDEBUG1, ("Setting external signal flag to %d\n", flag));
 
 #ifndef GOTTHARDD
 	functionNotImplemented();
 #else
-	if (signalindex > 0)
-	    modeNotImplemented("Signal index", signalindex);
-	else {
-	    // set
-	    if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() == OK)) {
-	        setExtSignal(flag);
-	    }
-	    // get
-	    retval = getExtSignal();
-	    validate((int)flag, (int)retval, "set external signal flag", DEC);
-	    FILE_LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
+	// set
+	if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() == OK)) {
+		setExtSignal(flag);
 	}
+	// get
+	retval = getExtSignal();
+	validate((int)flag, (int)retval, "set external signal flag", DEC);
+	FILE_LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

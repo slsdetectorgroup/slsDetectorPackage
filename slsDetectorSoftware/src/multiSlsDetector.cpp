@@ -1366,14 +1366,14 @@ multiSlsDetector::setExternalCommunicationMode(externalCommunicationMode pol, in
 }
 
 slsDetectorDefs::externalSignalFlag
-multiSlsDetector::setExternalSignalFlags(externalSignalFlag pol, int signalindex, int detPos) {
+multiSlsDetector::setExternalSignalFlags(externalSignalFlag pol, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setExternalSignalFlags(pol, signalindex);
+        return detectors[detPos]->setExternalSignalFlags(pol);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setExternalSignalFlags, pol, signalindex);
+    auto r = parallelCall(&slsDetector::setExternalSignalFlags, pol);
     return sls::minusOneIfDifferent(r);
 }
 

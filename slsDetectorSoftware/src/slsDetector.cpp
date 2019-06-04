@@ -1707,15 +1707,13 @@ slsDetector::setExternalCommunicationMode(externalCommunicationMode pol) {
 }
 
 slsDetectorDefs::externalSignalFlag
-slsDetector::setExternalSignalFlags(externalSignalFlag pol, int signalindex) {
+slsDetector::setExternalSignalFlags(externalSignalFlag pol) {
     int fnum = F_SET_EXTERNAL_SIGNAL_FLAG;
-    int args[]{signalindex, pol};
     auto retval = GET_EXTERNAL_SIGNAL_FLAG;
-    FILE_LOG(logDEBUG1) << "Setting signal " << signalindex << " to flag "
-                        << pol;
+    FILE_LOG(logDEBUG1) << "Setting signal flag to " << pol;
     if (shm()->onlineFlag == ONLINE_FLAG) {
-        sendToDetector(fnum, args, retval);
-        FILE_LOG(logDEBUG1) << "Ext Signal (" << signalindex << "): " << retval;
+        sendToDetector(fnum, pol, retval);
+        FILE_LOG(logDEBUG1) << "Ext Signal: " << retval;
     }
     return retval;
 }

@@ -75,6 +75,7 @@ class ctbAdc : public TGHorizontalFrame {
    
    Bool_t getEnable();
    void setEnable(Bool_t);
+   void setPlot(Bool_t);
    Bool_t getInverted();
    Bool_t getPlot();
    void setInverted(Bool_t);

@@ -814,10 +814,9 @@ class slsDetector : public virtual slsDetectorDefs{
     /**
 	 * Set/get external signal flags (to specify triggerinrising edge etc) (Gotthard, Mythen)
 	 * @param pol external signal flag (-1 gets)
-	 * @param signalindex singal index (0 - 3)
 	 * @returns current timing mode
 	 */
-    externalSignalFlag setExternalSignalFlags(externalSignalFlag pol = GET_EXTERNAL_SIGNAL_FLAG, int signalindex = 0);
+    externalSignalFlag setExternalSignalFlags(externalSignalFlag pol = GET_EXTERNAL_SIGNAL_FLAG);
 
     /**
 	 * Set/get readout flags (Eiger, Mythen)

@@ -20,10 +20,10 @@ class DataSocket {
     }
     int sendData(const void *buffer, size_t size);
 
-    template<typename T>
-    int sendData(T& data){
-      return sendData(&data, sizeof(data));
-    }
+    // template<typename T>
+    // int sendData(T& data){
+    //   return sendData(&data, sizeof(data));
+    // }
 
     template<typename T>
     int sendData(T&& data){

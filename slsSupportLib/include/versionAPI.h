@@ -1,6 +1,5 @@
 /** API versions */
 #define GITBRANCH "refgui"
-#define APIGOTTHARD 0x190108
 #define APIMOENCH 0x181108
 #define APILIB 0x190405
 #define APIRECEIVER 0x190405
@@ -8,3 +7,4 @@
 #define APIEIGER 0x190531
 #define APIJUNGFRAU 0x190531
 #define APICTB 0x190603
+#define APIGOTTHARD 0x190604

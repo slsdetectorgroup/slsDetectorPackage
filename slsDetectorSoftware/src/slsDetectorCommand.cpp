@@ -632,9 +632,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>bsamples [i]</b> sets/gets number of digital samples expected from the ctb. Used in CHIP TEST BOARD and MOENCH only. \c Returns \c (long long int)
+   - <b>dsamples [i]</b> sets/gets number of digital samples expected from the ctb. Used in CHIP TEST BOARD and MOENCH only. \c Returns \c (long long int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "bsamples";
+    descrToFuncMap[i].m_pFuncName = "dsamples";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
@@ -4468,7 +4468,7 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
         index = ANALOG_SAMPLES; 
     else if (cmd == "asamples")
         index = ANALOG_SAMPLES;
-    else if (cmd == "bsamples")
+    else if (cmd == "dsamples")
         index = DIGITAL_SAMPLES;
     else if (cmd == "storagecells")
         index = STORAGE_CELL_NUMBER;

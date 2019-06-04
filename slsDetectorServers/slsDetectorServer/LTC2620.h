@@ -302,9 +302,7 @@ int LTC2620_SetDACValue (int dacnum, int val, int mV, int* dacval) {
 
     // set
     if ( (*dacval >= 0) || (*dacval == LTC2620_PWR_DOWN_VAL)) {
-#ifndef CHIPTESTBOARDD
         FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",dacnum, *dacval, dacmV));
-#endif
         LTC2620_SetDAC(dacnum, *dacval);
     }
     return OK;

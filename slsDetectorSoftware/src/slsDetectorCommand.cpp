@@ -3878,13 +3878,16 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
     int val = -1;
     char answer[1000];
     int mode = 0;
+    int iarg = 1;
 
     if (cmd == "dac") {
         int idac = -1;
-        if (sscanf(args[1], "%d", &idac) != 1) {
-            return std::string("Could not scan dac index") + std::string(args[1]);
+        if (sscanf(args[iarg], "%d", &idac) != 1) {
+            return std::string("Could not scan dac index") + std::string(args[iarg]);
         }
         dac = (dacIndex)idac;
+        ++iarg;
+        --narg;
     }
     else if (cmd == "adcvpp")
         dac = ADC_VPP;
@@ -4017,22 +4020,22 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
 
     if (action == PUT_ACTION) {
 
-        if (narg >= 3)
-            if (!strcasecmp(args[2], "mv"))
-                mode = 1;
-
-        if (sscanf(args[1], "%d", &val))
+        if (sscanf(args[iarg], "%d", &val)) 
             ;
         else
-            return std::string("cannot scan DAC value ") + std::string(args[1]);
+            return std::string("cannot scan DAC value ") + std::string(args[iarg]);
+        ++iarg;
+
+        if ((narg >= 3) && (!strcasecmp(args[iarg], "mv")))
+                mode = 1;
 
         myDet->setDAC(val, dac, mode, detPos);
     }
+   
     // get (dacs in dac units or mV)
-    else if ((narg >= 2) && (!strcasecmp(args[1], "mv"))) {
+    else if ((narg >= 2) && (!strcasecmp(args[iarg], "mv"))) {
              mode = 1;
     }
-
     sprintf(answer, "%d", myDet->setDAC(-1, dac, mode, detPos));
     if (mode)
         strcat(answer, " mV");

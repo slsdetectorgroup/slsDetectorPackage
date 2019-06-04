@@ -21,11 +21,12 @@ class ServerInterface2 : public DataSocket {
         return sendResult(ret, &retval, sizeof(retval, nullptr));
     }
 
-    template <typename T> int sendResult(T &retval) {
-      sendData(defs::OK);
-      sendData(retval);
-      return defs::OK;
-    }
+    // template <typename T> int sendResult(T &retval) {
+    //   sendData(defs::OK);
+    //   sendData(retval);
+    //   return defs::OK;
+    // }
+
 
     template <typename T> int sendResult(T &&retval) {
       sendData(defs::OK);

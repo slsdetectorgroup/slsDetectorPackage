@@ -125,11 +125,6 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	template <typename T>
 	void validate(T arg, T retval, std::string modename, numberMode hex);
 
-	/** Unrecognized Function */
-	int M_nofunc(sls::ServerInterface2 & socket);
-
-
-
 	/** Execute command */
 	int	exec_command(sls::ServerInterface2 &socket);
 

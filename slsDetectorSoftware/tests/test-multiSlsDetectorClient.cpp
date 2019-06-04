@@ -115,6 +115,21 @@ TEST_CASE("masterfile", "[.cmd]") {
     REQUIRE(oss.str() == "masterfile 1\n");
 }
 
+TEST_CASE("index", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("index 57", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "index 57\n");
+
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("index", GET, nullptr, oss);
+    REQUIRE(oss.str() == "index 57\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("index 0", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "index 0\n");
+}
+
 TEST_CASE("rx_tcpport", "[.cmd]") {
     auto oss = std::ostringstream{};
     multiSlsDetectorClient("rx_tcpport 1500", PUT, nullptr, oss);
@@ -159,3 +174,92 @@ TEST_CASE("resetframescaught get framescaught", "[.cmd]") {
     REQUIRE(oss.str() == "framescaught 0\n");
 }
 
+TEST_CASE("r_silent", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("r_silent 1", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_silent 1\n");
+
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_silent", GET, nullptr, oss);
+    REQUIRE(oss.str() == "r_silent 1\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_silent 0", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_silent 0\n");
+}
+
+// TEST_CASE("rx_jsonaddheader", "[.cmd]") {
+//     auto oss = std::ostringstream{};
+//     multiSlsDetectorClient("rx_jsonaddheader \"hej\":\"5\"", PUT, nullptr, oss);
+//     REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
+
+
+//     oss = std::ostringstream{};
+//     multiSlsDetectorClient("rx_jsonaddheader", GET, nullptr, oss);
+//     REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
+
+//     oss = std::ostringstream{};
+//     multiSlsDetectorClient("rx_jsonaddheader \"\"", PUT, nullptr, oss);
+//     REQUIRE(oss.str() == "rx_jsonaddheader\n");
+// }
+
+// TEST_CASE("rx_udpsocksize", "[.cmd]") {
+//     auto oss = std::ostringstream{};
+//     multiSlsDetectorClient("rx_udpsocksize 4857600", PUT, nullptr, oss);
+//     REQUIRE(oss.str() == "rx_udpsocksize 4857600\n");
+
+//     oss = std::ostringstream{};
+//     multiSlsDetectorClient("rx_udpsocksize", GET, nullptr, oss);
+//     REQUIRE(oss.str() == "rx_udpsocksize 4857600\n");
+
+//     oss = std::ostringstream{};
+//     multiSlsDetectorClient("rx_udpsocksize 104857600", PUT, nullptr, oss);
+//     REQUIRE(oss.str() == "rx_udpsocksize 104857600\n");
+// }
+
+TEST_CASE("r_framesperfile", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("r_framesperfile 50", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_framesperfile 50\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_framesperfile", GET, nullptr, oss);
+    REQUIRE(oss.str() == "r_framesperfile 50\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_framesperfile 10000", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_framesperfile 10000\n");
+}
+
+TEST_CASE("r_discardpolicy", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("r_discardpolicy discardempty", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_discardpolicy discardempty\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_discardpolicy", GET, nullptr, oss);
+    REQUIRE(oss.str() == "r_discardpolicy discardempty\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_discardpolicy discardpartial", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_discardpolicy discardpartial\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_discardpolicy nodiscard", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_discardpolicy nodiscard\n");
+}
+
+TEST_CASE("r_padding", "[.cmd]") {
+    auto oss = std::ostringstream{};
+    multiSlsDetectorClient("r_padding 0", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_padding 0\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_padding", GET, nullptr, oss);
+    REQUIRE(oss.str() == "r_padding 0\n");
+
+    oss = std::ostringstream{};
+    multiSlsDetectorClient("r_padding 1", PUT, nullptr, oss);
+    REQUIRE(oss.str() == "r_padding 1\n");
+}

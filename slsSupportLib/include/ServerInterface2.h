@@ -21,32 +21,21 @@ class ServerInterface2 : public DataSocket {
         return sendResult(ret, &retval, sizeof(retval, nullptr));
     }
 
-    // template <typename T> int sendResult(T &retval) {
-    //   sendData(defs::OK);
-    //   sendData(retval);
-    //   return defs::OK;
-    // }
-
-
     template <typename T> int sendResult(T &&retval) {
-      sendData(defs::OK);
-      sendData(retval);
-      return defs::OK;
+        sendData(defs::OK);
+        sendData(retval);
+        return defs::OK;
     }
-
-
-
 
     int receiveArg(void *arg, int sizeofArg);
 
     template <typename T> int receiveArg(T &arg) {
         return receiveArg(&arg, sizeof(arg));
     }
-    template <typename T>
-    T receive(){
-      T arg;
-      receiveArg(&arg, sizeof(arg));
-      return arg;
+    template <typename T> T receive() {
+        T arg;
+        receiveArg(&arg, sizeof(arg));
+        return arg;
     }
 
   private:

@@ -229,15 +229,9 @@ int slsReceiverTCPIPInterface::decode_function(Interface &socket) {
                             << getFunctionNameFromEnum((enum detFuncs)fnum)
                             << ") located at " << flist[fnum];
         ret = (this->*flist[fnum])(socket);
-
-        if (ret == FAIL) {
-            FILE_LOG(logDEBUG1)
-                << "Failed to execute function = " << fnum << " ("
-                << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
-        } else
-            FILE_LOG(logDEBUG1)
-                << "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)
-                << " executed OK";
+		FILE_LOG(logDEBUG1)
+			<< "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)
+			<< " finished";
     }
     return ret;
 }
@@ -258,7 +252,6 @@ void slsReceiverTCPIPInterface::modeNotImplemented(std::string modename, int mod
 template <typename T>
 void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename, numberMode hex) {
 	if (ret == OK && arg != -1 && retval != arg) {
-		ret = FAIL;
 		if (hex)
 			sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n",
 				modename.c_str(), (unsigned int) arg, (unsigned int) retval);
@@ -276,41 +269,34 @@ void slsReceiverTCPIPInterface::VerifyLock() {
     }
 }
 
-int slsReceiverTCPIPInterface::VerifyIdle(sls::ServerInterface2& socket) {
+void slsReceiverTCPIPInterface::VerifyIdle(Interface &socket) {
     if (impl()->getStatus() != IDLE) {
         sprintf(mess, "Can not execute %s when receiver is not idle\n",
                 getFunctionNameFromEnum((enum detFuncs)fnum));
 		throw sls::SocketError(mess);
     }
-	return OK;
 }
 
 int slsReceiverTCPIPInterface::exec_command(Interface &socket) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
 	char cmd[MAX_STR_LENGTH]{};
 	char retval[MAX_STR_LENGTH]{};
-	socket.receiveArg( cmd, MAX_STR_LENGTH);
+	socket.receiveArg(cmd);
 	FILE_LOG(logINFO) << "Executing command (" << cmd << ")";
-
 	const size_t tempsize = 256;
 	std::array<char, tempsize> temp;
 	std::string sresult;
 	std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
 	if (!pipe)  {
-		ret = FAIL;
-		strcpy(mess, "Executing Command failed\n");
-		FILE_LOG(logERROR) << mess;
+		throw RuntimeError("Executing Command failed\n");
 	} else  {
 		while (!feof(pipe.get())) {
 			if (fgets(temp.data(), tempsize, pipe.get()) != nullptr)
 				sresult += temp.data();
 		}
 		strncpy(retval, sresult.c_str(), MAX_STR_LENGTH);
-		ret = OK;
 		FILE_LOG(logINFO) << "Result of cmd (" << cmd << "):\n" << retval;
 	}
-	return socket.sendResult(ret, retval, MAX_STR_LENGTH, mess);
+	return socket.sendResult(retval);
 }
 
 
@@ -331,12 +317,6 @@ void slsReceiverTCPIPInterface::ThrowNullObjectError(Interface &socket){
 	throw sls::SocketError(mess);
 }
 
-void slsReceiverTCPIPInterface::NullObjectError(int& ret, char* mess){
-	ret=FAIL;
-	strcpy(mess,"Receiver not set up. Please use rx_hostname first.\n");
-	FILE_LOG(logERROR) << mess;
-}
-
 int slsReceiverTCPIPInterface::lock_receiver(Interface &socket) {
     auto lock = socket.receive<int>();
     FILE_LOG(logDEBUG1) << "Locking Server to " << lock;
@@ -346,10 +326,8 @@ int slsReceiverTCPIPInterface::lock_receiver(Interface &socket) {
             lock ? server->setLockedBy(server->getThisClient())
                  : server->setLockedBy(sls::IpAddr{});
         } else{
-			sprintf(mess, "Receiver locked\n");
-        	FILE_LOG(logERROR) << mess;
+			throw RuntimeError("Receiver locked\n");
 		}
-            
     }
     return socket.sendResult(lockStatus);
 }
@@ -364,8 +342,7 @@ int slsReceiverTCPIPInterface::get_last_client_ip(Interface &socket) {
 
 
 int slsReceiverTCPIPInterface::set_port(Interface &socket) {
-	int p_number = -1;
-	socket.receiveArg(p_number);
+	auto p_number = socket.receive<int>();
 	if (p_number < 1024)
 		throw RuntimeError("Port Number: " + std::to_string(p_number)+ " is too low (<1024)");
 	
@@ -380,7 +357,7 @@ int slsReceiverTCPIPInterface::set_port(Interface &socket) {
 
 int slsReceiverTCPIPInterface::update_client(Interface &socket) {
 	if(receiver == nullptr)
-		ThrowNullObjectError(socket);
+		throw sls::SocketError("Receiver not set up. Please use rx_hostname first.\n");
 	socket.sendResult(OK);
 	return send_update(socket);
 }
@@ -494,11 +471,7 @@ int slsReceiverTCPIPInterface::get_id(Interface &socket){
 }
 
 int slsReceiverTCPIPInterface::set_detector_type(Interface &socket){
-	memset(mess, 0, sizeof(mess));
-	detectorType arg = GENERIC;
-	detectorType retval = GENERIC;
-	socket.receiveArg(arg);
-
+	auto arg = socket.receive<detectorType>();
 	// set
 	if (arg >= 0) {
 		// if object exists, verify unlocked and idle, else only verify lock (connecting first time)
@@ -521,8 +494,9 @@ int slsReceiverTCPIPInterface::set_detector_type(Interface &socket){
 			receiver = sls::make_unique<slsReceiverImplementation>();
 		}
 		myDetectorType = arg;
-		impl()->setDetectorType(myDetectorType);
-		retval = myDetectorType;
+		if (impl()->setDetectorType(myDetectorType) == FAIL){
+			throw RuntimeError("Could not set detector type");
+		}
 
 		// callbacks after (in setdetectortype, the object is reinitialized)
 		if(startAcquisitionCallBack)
@@ -535,17 +509,14 @@ int slsReceiverTCPIPInterface::set_detector_type(Interface &socket){
 			impl()->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,pRawDataReady);
 	
 	}
-	//get
-	retval = myDetectorType;
-	validate((int)arg, (int)retval, std::string("set detector type"), DEC);
-	return socket.sendResult(retval);
+	return socket.sendResult(myDetectorType);
 }
 
 int slsReceiverTCPIPInterface::set_detector_hostname(Interface &socket) {
 	char hostname[MAX_STR_LENGTH]{};
 	char retval[MAX_STR_LENGTH]{};
-
 	socket.receiveArg(hostname);
+
 	if (strlen(hostname)) {
 		VerifyIdle(socket);
 		impl()->setDetectorHostname(hostname);
@@ -558,15 +529,10 @@ int slsReceiverTCPIPInterface::set_detector_hostname(Interface &socket) {
 	return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::LogSocketCrash(){
-	FILE_LOG(logERROR) << "Reading from socket failed. Possible socket crash";
-	return FAIL;
-}
 
 int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
 	static_assert(sizeof(ROI) == 4*sizeof(int), "ROI not packed");
 	auto narg = socket.receive<int>();
-
 	std::vector <ROI> arg;
 	for (int iloop = 0; iloop < narg; ++iloop) {
 		ROI temp{};
@@ -612,9 +578,7 @@ int slsReceiverTCPIPInterface::setup_udp(Interface &socket){
 	// get eth
 	std::string temp = sls::IpToInterfaceName(ip1);
 	if (temp == "none"){
-		ret = FAIL;
-		strcpy(mess, "Failed to get ethernet interface or IP \n");
-		FILE_LOG(logERROR) << mess;
+		throw RuntimeError("Failed to get ethernet interface or IP");
 	} else {
 		char eth[MAX_STR_LENGTH]{};
 		strcpy(eth, temp.c_str());
@@ -633,9 +597,7 @@ int slsReceiverTCPIPInterface::setup_udp(Interface &socket){
 		if (ret != FAIL) {
 			temp = sls::InterfaceNameToMac(eth).str();
 			if (temp=="00:00:00:00:00:00") {
-				ret = FAIL;
-				strcpy(mess,"failed to get mac adddress to listen to\n");
-				FILE_LOG(logERROR) << mess;
+				throw RuntimeError("failed to get mac adddress to listen to\n");
 			} else {
 				strcpy(retvals[0],temp.c_str());
 				FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[0];
@@ -650,9 +612,7 @@ int slsReceiverTCPIPInterface::setup_udp(Interface &socket){
 		// get eth
 		temp = sls::IpToInterfaceName(ip2);
 		if (temp == "none"){
-			ret = FAIL;
-			strcpy(mess, "Failed to get 2nd ethernet interface or IP \n");
-			FILE_LOG(logERROR) << mess;
+			throw RuntimeError("Failed to get 2nd ethernet interface or IP");
 		} else {
 			char eth[MAX_STR_LENGTH] = {""};
 			memset(eth, 0, MAX_STR_LENGTH);
@@ -683,9 +643,7 @@ int slsReceiverTCPIPInterface::setup_udp(Interface &socket){
 
 	// set the number of udp interfaces (changes number of threads and many others)
 	if (myDetectorType == JUNGFRAU && impl()->setNumberofUDPInterfaces(numInterfaces) == FAIL) {
-		ret = FAIL;
-		sprintf(mess, "Failed to set number of interfaces\n");
-		FILE_LOG(logERROR) << mess;
+		throw RuntimeError("Failed to set number of interfaces");
 	}
 	return socket.sendResult(ret, retvals, sizeof(retvals), mess);
 }
@@ -814,8 +772,6 @@ int slsReceiverTCPIPInterface::set_dynamic_range(Interface &socket) {
 	FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
 	return socket.sendResult(retval);
 }
-
-
 
 int slsReceiverTCPIPInterface::set_streaming_frequency(Interface &socket) {
 	auto index = socket.receive<int>();
@@ -1121,13 +1077,7 @@ int slsReceiverTCPIPInterface::set_multi_detector_size(Interface &socket) {
 		
 	}
 	int* temp = impl()->getMultiDetectorSize(); //TODO! return by value!
-	int retval = -1;
-	for (int i = 0; i < MAX_DIMENSIONS; ++i) {
-		if (i == 0)
-			retval = temp[i];
-		else
-			retval *= temp[i];
-	}
+	int retval = temp[0]*temp[1];
 	FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
 	return socket.sendResult(retval);
 }
@@ -1204,10 +1154,9 @@ int slsReceiverTCPIPInterface::set_additional_json_header(Interface &socket) {
     char arg[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
 	socket.receiveArg(arg);
-	if (VerifyIdle(socket) == OK) {
-		FILE_LOG(logDEBUG1) << "Setting additional json header: " << arg;
-		impl()->setAdditionalJsonHeader(arg);
-	}
+	VerifyIdle(socket);
+	FILE_LOG(logDEBUG1) << "Setting additional json header: " << arg;
+	impl()->setAdditionalJsonHeader(arg);
 	strcpy(retval, impl()->getAdditionalJsonHeader().c_str());
 	FILE_LOG(logDEBUG1) << "additional json header:" << retval;
 	return socket.sendResult(retval);
@@ -1329,8 +1278,7 @@ int slsReceiverTCPIPInterface::set_deactivated_padding_enable(Interface &socket)
 }
 
 int slsReceiverTCPIPInterface::set_readout_flags(Interface &socket) {
-	auto arg = GET_READOUT_FLAGS;
-	socket.receiveArg(arg);
+	auto arg = socket.receive<readOutFlags>();
 
 	if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD || myDetectorType == MOENCH)
 		functionNotImplemented();

@@ -294,8 +294,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 		int set_dbit_offset(sls::ServerInterface2 &socket);
 
 
-	int LogSocketCrash();
-	void NullObjectError(int& ret, char* mess);
+
 	void ThrowNullObjectError(sls::ServerInterface2 &socket);
 
 	/** detector type */
@@ -387,7 +386,7 @@ protected:
 
       private:
         void VerifyLock();
-				int VerifyIdle(sls::ServerInterface2& socket);
+				void VerifyIdle(sls::ServerInterface2& socket);
 
 				slsReceiverImplementation* impl(){
 					if (receiver!=nullptr){

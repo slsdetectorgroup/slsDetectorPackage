@@ -400,7 +400,7 @@ void qTabMeasurement::Enable(bool enable) {
 }
 
 int qTabMeasurement::VerifyOutputDirectoryError() {
-	for (int i = 0; i < myDet->getNumberOfDetectors(); i++) {
+	for (int i = 0; i < myDet->getNumberOfDetectors(); i++) {xx
 		if (getModuleErrorMask(i) == FILE_PATH_DOES_NOT_EXIST) {
 			return slsDetectorDefs:: FAIL;
 		}

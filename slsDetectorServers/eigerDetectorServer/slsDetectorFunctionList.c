@@ -553,11 +553,6 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val) {
 				val=E_NON_PARALLEL;
 				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Non Parallel\n"));
 				break;
-			case SAFE:
-				val=E_SAFE;
-				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Safe\n"));
-				break;
-
 			default:
 				FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
 				return -1;
@@ -622,9 +617,6 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val) {
 		break;
 	case E_NON_PARALLEL:
 		retval=NONPARALLEL;
-		break;
-	case E_SAFE:
-		retval=SAFE;
 		break;
 	}
 

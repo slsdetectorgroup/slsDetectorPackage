@@ -1832,7 +1832,6 @@ int set_readout_flags(int file_des) {
 		case CONTINOUS_RO:
 		case PARALLEL:
 		case NONPARALLEL:
-		case SAFE:
 		case SHOW_OVERFLOW:
 		case NOOVERFLOW:
 #elif CHIPTESTBOARDD

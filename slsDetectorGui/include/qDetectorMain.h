@@ -70,11 +70,6 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
      */
     int GetProgress();
 
-    /**
-     * Verifies if output directories for all the receivers exist
-     */
-    int DoesOutputDirExist();
-
   private slots:
     /**
      * Enables modes as selected -Debug, Expert, Dockable: calls setdockablemode

@@ -16,14 +16,14 @@ QWidget(parent), myDet(detector) {
 qTabAdvanced::~qTabAdvanced(){}
 
 void qTabAdvanced::SetupWidgetWindow(){
-
+	// palette
 	red = QPalette();
 	red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
 	detOnlineTip = dispOnline->toolTip();
 	rxrOnlineTip = dispRxrOnline->toolTip();
 	errOnlineTip = QString("<nobr><br><br><font color=\"red\"><nobr>It is offline!</nobr></font>");
 
-
+	// enabling according to det type
     switch((int)myDet->getDetectorTypeAsEnum()) {
 		case slsDetectorDefs::EIGER:
 			// trimming
@@ -41,7 +41,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 			// roi
 			tab_roi->setEnabled(true);
 			break;
-		
+		default:
+			break;
 	}
 
 	// set initially to network tab
@@ -108,6 +109,7 @@ void  qTabAdvanced::PopulateDetectors() {
 	FILE_LOG(logDEBUG) << "Populating detectors";
 	disconnect(comboDetector,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetDetector(int)));
 
+	comboDetector->clear();
 	for(int i = 0; i < myDet->getNumberOfDetectors(); ++i)
 		comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
 	comboDetector->setCurrentIndex(0);

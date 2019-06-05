@@ -376,7 +376,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page config
-   - <b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overflow, nooverflow, unknown. Used for EIGER only. \c Returns \c (string). put takes one string and \c returns concatenation of all active flags separated by spaces.
+   - <b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overflow, nooverflow, unknown. Used for EIGER only. \c Returns \c (string). put takes one string and \c returns concatenation of all active flags separated by spaces.
 	 */
     descrToFuncMap[i].m_pFuncName = "flags";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
@@ -4777,8 +4777,6 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
                 flag = PARALLEL;
             else if (sval == "nonparallel")
                 flag = NONPARALLEL;
-            else if (sval == "safe")
-                flag = SAFE;
             else if (sval == "digital")
                 flag = DIGITAL_ONLY;
             else if (sval == "analog_digital")
@@ -4809,8 +4807,6 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
             strcat(answer, "parallel ");
         if (retval & NONPARALLEL)
             strcat(answer, "nonparallel ");
-        if (retval & SAFE)
-            strcat(answer, "safe ");
         if (retval & DIGITAL_ONLY)
             strcat(answer, "digital ");
         if (retval & ANALOG_AND_DIGITAL)
@@ -4960,7 +4956,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
 
         os << "extsig mode \t sets the mode of the external signal. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-        os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overlow, nooverflow, unknown." << std::endl;
+        os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overlow, nooverflow, unknown." << std::endl;
 
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
         os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
@@ -4976,7 +4972,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
 
         os << "extsig \t gets the mode of the external signal. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
 
-        os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overflow, nooverflow, unknown" << std::endl;
+        os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overflow, nooverflow, unknown" << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;
         os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
         os << "auto_comp_disable \t Currently not implemented. gets if the automatic comparator diable mode is enabled/disabled" << std::endl;

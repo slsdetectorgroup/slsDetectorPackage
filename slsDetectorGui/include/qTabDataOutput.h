@@ -33,14 +33,12 @@ public:
 	 */
 	void Refresh();
 
-	/**
-	 * Verify output directories
-	 * @returns success or fail
-	 */
-	int VerifyOutputDirectory();
-
-
 	private slots:
+
+	/**
+	 * Get output directory
+	 */
+	void GetOutputDir();
 
 	/**
 	 * Open dialog to choose the output directory
@@ -53,29 +51,33 @@ public:
 	void SetOutputDir();
 
 	/**
-	 * Get output directory
+	 * Set file format
+	 * @param format file format
 	 */
-	void GetOutputDir();
+	void SetFileFormat(int format);
+
+	/**
+	 * Set overwrite enable
+	 * @param enable enable
+	 */
+	void SetOverwriteEnable(bool enable);
+
+	/**
+	 * Enable/Disable 10GbE
+	 * @param enable enable
+	 */
+	void SetTenGigaEnable(bool enable);
 
 	/**
 	 * Set rate correction
+	 * @param deadtime dead time
 	 */
-	void SetRateCorrection(int deadtime=0);
+	void SetRateCorrection(int deadtime = 0);
 
 	/**
 	 * Set default rate correction
 	 */
 	void SetDefaultRateCorrection();
-
-	/**
-	 * Set update rate correction from server
-	 */
-	void UpdateRateCorrectionFromServer();
-
-	/**
-	 * Enable/Disable 10GbE
-	 */
-	void EnableTenGigabitEthernet(bool enable, int get=0);
 
 	/**
 	 * Set speed
@@ -86,17 +88,6 @@ public:
 	 * Set flags
 	 */
 	void SetFlags();
-
-	/**
-	 * Set file format
-	 */
-	void SetFileFormat(int format);
-
-	/**
-	 * Set overwrite enable
-	 */
-	void SetOverwriteEnable(bool enable);
-
 
 	private:
 
@@ -115,45 +106,66 @@ public:
 	 */
 	void PopulateDetectors();
 
-	/**
-	 * Update speed
+	/** 
+	 * Enable browse
 	 */
-	void UpdateSpeedFromServer();
+	void EnableBrowse();
 
 	/**
-	 * Update flags
+	 * Get file format
 	 */
-	void UpdateFlagsFromServer();
+	void GetFileFormat();
 
 	/**
-	 * Update file format
+	 * Get overwrite enable
 	 */
-	void UpdateFileFormatFromServer();
+	void GetFileOverwrite();
 
 	/**
-	 * Update overwrite enable
+	 * Get Ten Giga Enable
 	 */
-	void UpdateFileOverwriteFromServer();
+	void GetTenGigaEnable();
 
+	/**
+	 * Set Get rate correction
+	 */
+	void GetRateCorrection();
+
+	/**
+	 * Get speed
+	 */
+	void GetSpeed();
+
+	/**
+	 * Get flags
+	 */
+	void GetFlags();
 
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 
-	/** detector type */
-	slsDetectorDefs::detectorType detType;
-
-	QString 	outDirTip;
-	QPalette	red;
-	QPalette	black;
-	QPalette	*red1;
-	QPalette	*black1;
+	/** Palette */
+	QPalette red;
 
 	/** enum for the Eiger clock divider */
-	enum {FULLSPEED, HALFSPEED, QUARTERSPEED, SUPERSLOWSPEED, NUMBEROFSPEEDS};
-	/** enum for the Eiger readout flags1 */
-	enum {CONTINUOUS, STOREINRAM};
-	/** enum for the Eiger readout flags2 */
-	enum {PARALLEL, NONPARALLEL, SAFE};
+	enum {
+		FULLSPEED,
+		HALFSPEED,
+		QUARTERSPEED,
+		SUPERSLOWSPEED,
+		NUMBEROFSPEEDS
+	};
 
+	/** enum for the Eiger readout flags1 */
+	enum { 
+		CONTINUOUS, 
+		STOREINRAM 
+	};
+
+	/** enum for the Eiger readout flags2 */
+	enum { 
+		PARALLEL, 
+		NONPARALLEL
+	};
 };
 

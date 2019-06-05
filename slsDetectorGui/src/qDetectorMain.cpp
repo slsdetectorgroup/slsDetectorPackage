@@ -145,10 +145,6 @@ bool qDetectorMain::isPlotRunning() { return myPlot->isRunning(); }
 
 int qDetectorMain::GetProgress() { return tabMeasurement->GetProgress(); }
 
-int qDetectorMain::DoesOutputDirExist() {
-    return tabDataOutput->VerifyOutputDirectory();
-}
-
 void qDetectorMain::SetUpWidgetWindow() {
 
     // Layout

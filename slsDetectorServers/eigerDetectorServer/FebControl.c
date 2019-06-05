@@ -1266,9 +1266,6 @@ int Feb_Control_SetReadoutSpeed(unsigned int readout_speed) { //0->full,1->half,
 	} else if (readout_speed==2) {
 		Feb_Control_acquireNReadoutMode |= DAQ_CHIP_CONTROLLER_QUARTER_SPEED;
 		FILE_LOG(logINFO, ("Speed set to quarter speed (25 MHz)\n"));
-	} else if (readout_speed==3) {
-		Feb_Control_acquireNReadoutMode |= DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED;
-		FILE_LOG(logINFO, ("Speed set to super slow speed (~0.200 MHz)\n"));
 	} else {
 		if (readout_speed) {
 			FILE_LOG(logERROR, ("readout speed %d unknown, defaulting to full speed.\n",readout_speed));

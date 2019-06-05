@@ -145,6 +145,9 @@ Directory where one saves the data.
      </item>
      <item row="1" column="5" colspan="2">
       <widget class="QSpinBox" name="spinDeadTime">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -216,6 +219,9 @@ Compression using Root. Available only for Gotthard in Expert Mode.
     </layout>
    </widget>
    <widget class="QWidget" name="widgetEiger" native="true">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>3</x>
@@ -306,11 +312,6 @@ Compression using Root. Available only for Gotthard in Expert Mode.
           <string>Quarter Speed</string>
          </property>
         </item>
-        <item>
-         <property name="text">
-          <string>Super Slow Speed</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item row="1" column="3">
@@ -366,6 +367,9 @@ Compression using Root. Available only for Gotthard in Expert Mode.
    </widget>
   </widget>
   <widget class="QGroupBox" name="boxFileWriteEnabled">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -404,8 +408,7 @@ Directory where one saves the data.
 &lt;/nobr&gt;&lt;br&gt;
  #outdir#
 &lt;br&gt;
-Disabled if a receiver is utilized in acquisition.
-&lt;br&gt;
+Disabled if receiver pc is not same as client pc.
 </string>
        </property>
        <property name="text">

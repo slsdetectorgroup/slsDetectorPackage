@@ -299,20 +299,10 @@ int slsReceiverTCPIPInterface::exec_command(Interface &socket) {
 	return socket.sendResult(retval);
 }
 
-
-
 int slsReceiverTCPIPInterface::exit_server(Interface &socket) {
 	FILE_LOG(logINFO) << "Closing server";
 	socket.sendData(OK);
 	return GOODBYE;
-}
-
-void slsReceiverTCPIPInterface::ThrowNullObjectError(Interface &socket){
-	int r = FAIL;
-	strcpy(mess, "Receiver not set up. Please use rx_hostname first.\n"); 
-	socket.write(&r, sizeof(r));
-	socket.write(mess, sizeof(mess));
-	throw sls::SocketError(mess);
 }
 
 int slsReceiverTCPIPInterface::lock_receiver(Interface &socket) {
@@ -534,7 +524,7 @@ int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
 	std::vector <ROI> arg;
 	for (int iloop = 0; iloop < narg; ++iloop) {
 		ROI temp{};
-		socket.read(&temp, sizeof(temp));
+		socket.receiveArg(temp);
 		arg.push_back(temp);
 	}
 	FILE_LOG(logDEBUG1) << "Set ROI narg: " << narg;
@@ -583,7 +573,6 @@ int slsReceiverTCPIPInterface::setup_udp(Interface &socket){
 		// if there is a dot in eth name
 		if (strchr(eth, '.') != nullptr) {
 			strcpy(eth, "");
-			ret = FAIL;
 			sprintf(mess, "Failed to get ethernet interface from IP. Got %s\n", temp.c_str());
 			FILE_LOG(logERROR) << mess;
 		}
@@ -618,7 +607,6 @@ int slsReceiverTCPIPInterface::setup_udp(Interface &socket){
 			// if there is a dot in eth name
 			if (strchr(eth, '.') != nullptr) {
 				strcpy(eth, "");
-				ret = FAIL;
 				sprintf(mess, "Failed to get 2nd ethernet interface from IP. Got %s\n", temp.c_str());
 				FILE_LOG(logERROR) << mess;
 			}
@@ -628,8 +616,7 @@ int slsReceiverTCPIPInterface::setup_udp(Interface &socket){
 			if (ret != FAIL) {
 				temp = sls::InterfaceNameToMac(eth).str();
 				if (temp=="00:00:00:00:00:00") {
-					ret = FAIL;
-					strcpy(mess,"failed to get 2nd mac adddress to listen to\n");
+					throw RuntimeError("failed to get 2nd mac adddress to listen to");
 					FILE_LOG(logERROR) << mess;
 				} else {
 					strcpy(retvals[1],temp.c_str());
@@ -714,7 +701,6 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
 		if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
 			sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
 			throw RuntimeError(mess);
-			break;
 		}
 		retval=impl()->getNumberofAnalogSamples();
 		break;
@@ -722,7 +708,6 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
 		if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
 			sprintf(mess,"This timer mode (%lld) does not exist for this receiver type\n", (long long int)index[0]);
 			throw RuntimeError(mess);
-			break;
 		}
 		retval=impl()->getNumberofDigitalSamples();
 		break;
@@ -887,14 +872,11 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(Interface &socket){
 
 int slsReceiverTCPIPInterface::enable_file_write(Interface &socket){
 	auto enable = socket.receive<int>();
-	// set
 	if (enable >= 0) {
-		// verify if receiver is unlocked and idle
 		VerifyIdle(socket);
 		FILE_LOG(logDEBUG1) << "Setting File write enable:" << enable;
 		impl()->setFileWriteEnable(enable);
 	}
-	// get
 	int retval = impl()->getFileWriteEnable();
 	validate(enable, retval, std::string("set file write enable"), DEC);
 	FILE_LOG(logDEBUG1) << "file write enable:" << retval;
@@ -904,13 +886,11 @@ int slsReceiverTCPIPInterface::enable_file_write(Interface &socket){
 
 int slsReceiverTCPIPInterface::enable_master_file_write(Interface &socket){
 	auto enable = socket.receive<int>();
-	// set
 	if (enable >= 0) {
 		VerifyIdle(socket);
 		FILE_LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
 		impl()->setMasterFileWriteEnable(enable);	
 	}
-	// get
 	int retval = impl()->getMasterFileWriteEnable();
 	validate(enable, retval, std::string("set master file write enable"), DEC);
 	FILE_LOG(logDEBUG1) << "master file write enable:" << retval;
@@ -920,13 +900,11 @@ int slsReceiverTCPIPInterface::enable_master_file_write(Interface &socket){
 
 int slsReceiverTCPIPInterface::enable_overwrite(Interface &socket) {
 	auto index = socket.receive<int>();
-	// set
 	if (index >= 0) {
 		VerifyIdle(socket);
 		FILE_LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
 		impl()->setOverwriteEnable(index);
 	}
-	// get
 	int retval = impl()->getOverwriteEnable();
 	validate(index, retval, std::string("set file overwrite enable"), DEC);
 	FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
@@ -1177,7 +1155,9 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(Interface &socket){
-	return socket.sendResult(impl()->getActualUDPSocketBufferSize());
+	auto size = impl()->getActualUDPSocketBufferSize();
+	FILE_LOG(logDEBUG1) << "Actual UDP socket size :" << size;
+	return socket.sendResult(size);
 }
 
 int slsReceiverTCPIPInterface::set_frames_per_file(Interface &socket) {
@@ -1308,13 +1288,7 @@ int slsReceiverTCPIPInterface::set_dbit_list(Interface &socket) {
 	}
 	FILE_LOG(logDEBUG1) << "\n";
 	VerifyIdle(socket);
-	if (args.size() > 64) {
-		ret = FAIL;
-		sprintf(mess, "Could not set dbit list as size is > 64\n");
-		FILE_LOG(logERROR) << mess;
-	} else
-		impl()->setDbitList(args);
-	
+	impl()->setDbitList(args);
     return socket.sendData(OK);
 }
 

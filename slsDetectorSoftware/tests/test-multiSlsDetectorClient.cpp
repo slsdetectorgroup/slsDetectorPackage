@@ -61,7 +61,6 @@ TEST_CASE("enablefwrite", "[.cmd]") {
     multiSlsDetectorClient("enablefwrite 1", PUT, nullptr, oss);
     REQUIRE(oss.str() == "enablefwrite 1\n");
 
-
     oss = std::ostringstream{};
     multiSlsDetectorClient("enablefwrite", GET, nullptr, oss);
     REQUIRE(oss.str() == "enablefwrite 1\n");
@@ -86,7 +85,7 @@ TEST_CASE("enableoverwrite", "[.cmd]") {
 }
 
 TEST_CASE("activatecmd", "[.cmd]") {
-    //TODO! read padding from somewhere
+    // TODO! read padding from somewhere
     auto oss = std::ostringstream{};
     multiSlsDetectorClient("activate 0", PUT, nullptr, oss);
     REQUIRE(oss.str() == "activate 0 padding\n");
@@ -105,7 +104,6 @@ TEST_CASE("masterfile", "[.cmd]") {
     multiSlsDetectorClient("masterfile 0", PUT, nullptr, oss);
     REQUIRE(oss.str() == "masterfile 0\n");
 
-
     oss = std::ostringstream{};
     multiSlsDetectorClient("masterfile", GET, nullptr, oss);
     REQUIRE(oss.str() == "masterfile 0\n");
@@ -120,7 +118,6 @@ TEST_CASE("index", "[.cmd]") {
     multiSlsDetectorClient("index 57", PUT, nullptr, oss);
     REQUIRE(oss.str() == "index 57\n");
 
-
     oss = std::ostringstream{};
     multiSlsDetectorClient("index", GET, nullptr, oss);
     REQUIRE(oss.str() == "index 57\n");
@@ -131,28 +128,42 @@ TEST_CASE("index", "[.cmd]") {
 }
 
 TEST_CASE("rx_tcpport", "[.cmd]") {
-    auto oss = std::ostringstream{};
-    multiSlsDetectorClient("rx_tcpport 1500", PUT, nullptr, oss);
-    REQUIRE(oss.str() == "rx_tcpport 1500\n");
+    multiSlsDetector d;
+    int port = 1500;
+    int base = 1954;
+    for (int i = 0; i != d.size(); ++i) {
+        std::ostringstream oss;
+        std::string cmd =
+            std::to_string(i) + ":rx_tcpport " + std::to_string(port + 1);
+        multiSlsDetectorClient(cmd, PUT, nullptr, oss);
+        REQUIRE(oss.str() == cmd + "\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_THROWS(
+            multiSlsDetectorClient("rx_tcpport 15", PUT, nullptr, oss));
+    }
 
-    oss = std::ostringstream{};
-    REQUIRE_THROWS( multiSlsDetectorClient("rx_tcpport 15", PUT, nullptr, oss));
-    
+    for (int i = 0; i != d.size(); ++i) {
+        std::ostringstream oss;
+        std::string cmd = std::to_string(i) + ":rx_tcpport";
+        multiSlsDetectorClient(cmd, GET, nullptr, oss);
+        REQUIRE(oss.str() == cmd + "\n");
+    }
 
-    oss = std::ostringstream{};
-    multiSlsDetectorClient("rx_tcpport", GET, nullptr, oss);
-    REQUIRE(oss.str() == "rx_tcpport 1500\n");
-
-    oss = std::ostringstream{};
-    multiSlsDetectorClient("rx_tcpport 1954", PUT, nullptr, oss);
-    REQUIRE(oss.str() == "rx_tcpport 1954\n");
+    for (int i = 0; i != d.size(); ++i) {
+        std::ostringstream oss;
+        std::string cmd =
+            std::to_string(i) + ":rx_tcpport " + std::to_string(base + 1);
+        multiSlsDetectorClient(cmd, PUT, nullptr, oss);
+        REQUIRE(oss.str() == cmd + "\n");
+    }
 }
 
 TEST_CASE("fname", "[.cmd]") {
     auto oss = std::ostringstream{};
     multiSlsDetectorClient("fname somename", PUT, nullptr, oss);
     REQUIRE(oss.str() == "fname somename\n");
-
 
     oss = std::ostringstream{};
     multiSlsDetectorClient("fname", GET, nullptr, oss);
@@ -168,7 +179,6 @@ TEST_CASE("resetframescaught get framescaught", "[.cmd]") {
     multiSlsDetectorClient("resetframescaught 0", PUT, nullptr, oss);
     REQUIRE(oss.str() == "resetframescaught successful\n");
 
-
     oss = std::ostringstream{};
     multiSlsDetectorClient("framescaught", GET, nullptr, oss);
     REQUIRE(oss.str() == "framescaught 0\n");
@@ -178,7 +188,6 @@ TEST_CASE("r_silent", "[.cmd]") {
     auto oss = std::ostringstream{};
     multiSlsDetectorClient("r_silent 1", PUT, nullptr, oss);
     REQUIRE(oss.str() == "r_silent 1\n");
-
 
     oss = std::ostringstream{};
     multiSlsDetectorClient("r_silent", GET, nullptr, oss);
@@ -191,9 +200,8 @@ TEST_CASE("r_silent", "[.cmd]") {
 
 // TEST_CASE("rx_jsonaddheader", "[.cmd]") {
 //     auto oss = std::ostringstream{};
-//     multiSlsDetectorClient("rx_jsonaddheader \"hej\":\"5\"", PUT, nullptr, oss);
-//     REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
-
+//     multiSlsDetectorClient("rx_jsonaddheader \"hej\":\"5\"", PUT, nullptr,
+//     oss); REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
 
 //     oss = std::ostringstream{};
 //     multiSlsDetectorClient("rx_jsonaddheader", GET, nullptr, oss);

@@ -293,10 +293,6 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 		/** set dbit offset */
 		int set_dbit_offset(sls::ServerInterface2 &socket);
 
-
-
-	void ThrowNullObjectError(sls::ServerInterface2 &socket);
-
 	/** detector type */
 	detectorType myDetectorType;
 

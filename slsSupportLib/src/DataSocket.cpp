@@ -79,6 +79,8 @@ int DataSocket::sendData(const void *buffer, size_t size) {
             break;
         dataSent += thisSend;
     }
+    if(dataSent != size)
+        throw SocketError("Could not send\n");
     return dataSent;
 }
 

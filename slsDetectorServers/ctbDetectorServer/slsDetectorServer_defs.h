@@ -6,7 +6,7 @@
 #define MIN_REQRD_VRSN_T_RD_API     0x181130
 #define REQRD_FRMWR_VRSN            0x190402
 
-#define CTRL_SRVR_INIT_TIME_US      (1 * 1000 * 1000)
+#define CTRL_SRVR_INIT_TIME_US      (2 * 1000 * 1000)
 
 /* Struct Definitions */
 typedef struct ip_header_struct {

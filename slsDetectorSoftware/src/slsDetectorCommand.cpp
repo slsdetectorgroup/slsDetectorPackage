@@ -383,7 +383,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>extsig:[i] [flag]</b> sets/gets the mode of the external signal i. Options: \c off, \c gate_in_active_high, \c gate_in_active_low, \c trigger_in_rising_edge, \c trigger_in_falling_edge,
+   - <b>extsig [flag]</b> sets/gets the mode of the external signal. Options: \c off, \c gate_in_active_high, \c gate_in_active_low, \c trigger_in_rising_edge, \c trigger_in_falling_edge,
    \c ro_trigger_in_rising_edge, \c ro_trigger_in_falling_edge, \c gate_out_active_high, \c gate_out_active_low, \c trigger_out_rising_edge, \c trigger_out_falling_edge, \c ro_trigger_out_rising_edge,
    \c ro_trigger_out_falling_edge. \n Used in GOTTHARDonly. \c Returns \c (string)
 	*/
@@ -632,9 +632,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>bsamples [i]</b> sets/gets number of digital samples expected from the ctb. Used in CHIP TEST BOARD and MOENCH only. \c Returns \c (long long int)
+   - <b>dsamples [i]</b> sets/gets number of digital samples expected from the ctb. Used in CHIP TEST BOARD and MOENCH only. \c Returns \c (long long int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "bsamples";
+    descrToFuncMap[i].m_pFuncName = "dsamples";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
@@ -3878,12 +3878,18 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
     int val = -1;
     char answer[1000];
     int mode = 0;
+    int iarg = 1;
 
-    int idac = -1;
-    if (sscanf(args[0], "dac:%d", &idac) == 1) {
-        //printf("chiptestboard!\n");
+    if (cmd == "dac") {
+        int idac = -1;
+        if (sscanf(args[iarg], "%d", &idac) != 1) {
+            return std::string("Could not scan dac index") + std::string(args[iarg]);
+        }
         dac = (dacIndex)idac;
-    } else if (cmd == "adcvpp")
+        ++iarg;
+        --narg;
+    }
+    else if (cmd == "adcvpp")
         dac = ADC_VPP;
     else if (cmd == "vthreshold")
         dac = THRESHOLD;
@@ -4014,22 +4020,22 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
 
     if (action == PUT_ACTION) {
 
-        if (narg >= 3)
-            if (!strcasecmp(args[2], "mv"))
-                mode = 1;
-
-        if (sscanf(args[1], "%d", &val))
+        if (sscanf(args[iarg], "%d", &val)) 
             ;
         else
-            return std::string("cannot scan DAC value ") + std::string(args[1]);
+            return std::string("cannot scan DAC value ") + std::string(args[iarg]);
+        ++iarg;
+
+        if ((narg >= 3) && (!strcasecmp(args[iarg], "mv")))
+                mode = 1;
 
         myDet->setDAC(val, dac, mode, detPos);
     }
+   
     // get (dacs in dac units or mV)
-    else if ((narg >= 2) && (!strcasecmp(args[1], "mv"))) {
+    else if ((narg >= 2) && (!strcasecmp(args[iarg], "mv"))) {
              mode = 1;
     }
-
     sprintf(answer, "%d", myDet->setDAC(-1, dac, mode, detPos));
     if (mode)
         strcat(answer, " mV");
@@ -4218,8 +4224,6 @@ std::string slsDetectorCommand::helpDAC(int action) {
 std::string slsDetectorCommand::cmdADC(int narg, const char * const args[], int action, int detPos) {
 
     dacIndex adc;
-    int idac;
-    //  double val=-1;
     char answer[1000];
 
     if (action == HELP_ACTION)
@@ -4227,13 +4231,18 @@ std::string slsDetectorCommand::cmdADC(int narg, const char * const args[], int 
     else if (action == PUT_ACTION)
         return std::string("cannot set ") + cmd;
 
-	if (sscanf(args[0],"adc:%d",&idac)==1) {
-		//  printf("chiptestboard!\n");
-		adc=(dacIndex)(idac+SLOW_ADC0);
-        if (idac < 0 || idac > SLOW_ADC_TEMP - SLOW_ADC0)
+    if (cmd == "adc") {
+        int idac = -1;
+        if (sscanf(args[1], "%d", &idac) != 1) {
+            return std::string("Could not scan adc index") + std::string(args[1]);
+        }
+        if (idac < 0 || idac > SLOW_ADC_TEMP - SLOW_ADC0) {
             return (std::string ("cannot set adc, must be between ") + std::to_string(0) +
                     std::string (" and ") + std::to_string(SLOW_ADC_TEMP - SLOW_ADC0));
-	} else if (cmd=="temp_adc")
+        }
+        adc = (dacIndex)(idac + SLOW_ADC0);
+    }
+	else if (cmd=="temp_adc")
 		adc=TEMPERATURE_ADC;
 	else if (cmd=="temp_fpga")
 		adc=TEMPERATURE_FPGA;
@@ -4468,7 +4477,7 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
         index = ANALOG_SAMPLES; 
     else if (cmd == "asamples")
         index = ANALOG_SAMPLES;
-    else if (cmd == "bsamples")
+    else if (cmd == "dsamples")
         index = DIGITAL_SAMPLES;
     else if (cmd == "storagecells")
         index = STORAGE_CELL_NUMBER;
@@ -4817,11 +4826,6 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
 
     } else if (cmd == "extsig") {
         externalSignalFlag flag = GET_EXTERNAL_SIGNAL_FLAG;
-        int is = -1;
-        if (sscanf(args[0], "extsig:%d", &is))
-            ;
-        else
-            return std::string("could not scan signal number ") + std::string(args[0]);
 
         if (action == PUT_ACTION) {
             flag = myDet->externalSignalType(args[1]);
@@ -4830,7 +4834,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         }
         myDet->setOnline(ONLINE_FLAG, detPos);
 
-        return myDet->externalSignalType(myDet->setExternalSignalFlags(flag, is, detPos));
+        return myDet->externalSignalType(myDet->setExternalSignalFlags(flag, detPos));
 
     } else if (cmd == "programfpga") {
         if (action == GET_ACTION)
@@ -4955,7 +4959,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
 
-        os << "extsig:i mode \t sets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
+        os << "extsig mode \t sets the mode of the external signal. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
         os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overlow, nooverflow, unknown." << std::endl;
 
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
@@ -4970,7 +4974,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
 
-        os << "extsig:i \t gets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
+        os << "extsig \t gets the mode of the external signal. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
 
         os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overflow, nooverflow, unknown" << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;

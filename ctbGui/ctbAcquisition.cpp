@@ -616,7 +616,7 @@ hframe=new TGHorizontalFrame(this, 800,50);
     //  mgAdcs=new TMultiGraph();
     adcStack=new THStack();
     TH1F *h;
-      int nSamples=nAnalogSamples;
+    int nSamples=nAnalogSamples;
      
     for (int i=0; i<NADCS; i++) {
       sprintf(tit,"adc%d",i);

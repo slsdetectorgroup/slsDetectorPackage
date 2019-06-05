@@ -825,13 +825,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Set/get external signal flags (to specify triggerinrising edge etc)
      * (Gotthard, Mythen)
      * @param pol external signal flag (-1 gets)
-     * @param signalindex singal index (0 - 3)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current timing mode
      */
     externalSignalFlag
     setExternalSignalFlags(externalSignalFlag pol = GET_EXTERNAL_SIGNAL_FLAG,
-                           int signalindex = 0, int detPos = -1);
+                           int detPos = -1);
 
     /**
      * Set/get readout flags (Eiger, Mythen)

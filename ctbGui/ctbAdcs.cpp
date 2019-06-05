@@ -248,6 +248,15 @@ void ctbAdc::setEnabled(Bool_t b){
 
 
 
+void ctbAdc::setPlot(Bool_t b){
+  //  cout << id << "set enabled " << b << endl;
+  if (b)
+    sAdcPlot->SetOn(kTRUE,kTRUE);
+  else
+    sAdcPlot->SetOn(kFALSE,kTRUE);
+    
+  
+}
 
 
 
@@ -543,16 +552,20 @@ string ctbAdcs::getAdcParameters() {
 void ctbAdcs::CheckAll() {
 
 
-  for (int is=0; is<NADCS; is++)
-    sAdc[is]->setEnabled(kTRUE);
+  for (int is=0; is<NADCS; is++){
+    sAdc[is]->setPlot(kTRUE);
+    // sAdc[is]->setEnabled(kTRUE);
+  }
 }
 
 
 void ctbAdcs::RemoveAll() {
 
 
-  for (int is=0; is<NADCS; is++)
-    sAdc[is]->setEnabled(kFALSE);
+  for (int is=0; is<NADCS; is++) {
+    //  sAdc[is]->setEnabled(kFALSE);
+    sAdc[is]->setPlot(kFALSE);
+  }
 }
 
 
@@ -560,31 +573,39 @@ void ctbAdcs::RemoveAll() {
 void ctbAdcs::CheckHalf0() {
 
 
-  for (int is=0; is<NADCS/2; is++)
-    sAdc[is]->setEnabled(kTRUE);
+  for (int is=0; is<NADCS/2; is++) {
+    sAdc[is]->setPlot(kTRUE);
+    // sAdc[is]->setEnabled(kTRUE)
+  }
 }
 
 
 void ctbAdcs::RemoveHalf0() {
 
 
-  for (int is=0; is<NADCS/2; is++)
-    sAdc[is]->setEnabled(kFALSE);
+  for (int is=0; is<NADCS/2; is++){
+    //  sAdc[is]->setEnabled(kFALSE);
+    sAdc[is]->setPlot(kFALSE);
+  }
 }
 
 void ctbAdcs::CheckHalf1() {
 
 
-  for (int is=NADCS/2; is<NADCS; is++)
-    sAdc[is]->setEnabled(kTRUE);
+  for (int is=NADCS/2; is<NADCS; is++){
+    sAdc[is]->setPlot(kTRUE);
+    // sAdc[is]->setEnabled(kTRUE)
+  }
 }
 
 
 void ctbAdcs::RemoveHalf1() {
 
 
-  for (int is=NADCS/2; is<NADCS; is++)
-    sAdc[is]->setEnabled(kFALSE);
+  for (int is=NADCS/2; is<NADCS; is++){
+    //  sAdc[is]->setEnabled(kFALSE);
+    sAdc[is]->setPlot(kFALSE);
+  }
 }
 
 

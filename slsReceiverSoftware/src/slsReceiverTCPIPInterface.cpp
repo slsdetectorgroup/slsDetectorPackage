@@ -129,7 +129,7 @@ void slsReceiverTCPIPInterface::startTCPServer() {
             if (ret == GOODBYE) {
                 FILE_LOG(logINFO) << "Shutting down UDP Socket";
                 if (receiver) {
-                    impl()->shutDownUDPSockets();
+                    receiver->shutDownUDPSockets();
                 }
                 FILE_LOG(logINFOBLUE)
                     << "Exiting [ TCP server Tid: " << syscall(SYS_gettid)
@@ -144,7 +144,7 @@ void slsReceiverTCPIPInterface::startTCPServer() {
         if (killTCPServerThread) {
             if (ret != GOODBYE) {
                 if (receiver) {
-                    impl()->shutDownUDPSockets();
+                    receiver->shutDownUDPSockets();
                 }
             }
             FILE_LOG(logINFOBLUE)
@@ -303,9 +303,7 @@ int slsReceiverTCPIPInterface::exec_command(Interface &socket) {
 
 int slsReceiverTCPIPInterface::exit_server(Interface &socket) {
 	FILE_LOG(logINFO) << "Closing server";
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	socket.sendResult(ret, nullptr, 0, nullptr);
+	socket.sendData(OK);
 	return GOODBYE;
 }
 
@@ -358,7 +356,7 @@ int slsReceiverTCPIPInterface::set_port(Interface &socket) {
 int slsReceiverTCPIPInterface::update_client(Interface &socket) {
 	if(receiver == nullptr)
 		throw sls::SocketError("Receiver not set up. Please use rx_hostname first.\n");
-	socket.sendResult(OK);
+	socket.sendData(OK);
 	return send_update(socket);
 }
 
@@ -552,7 +550,7 @@ int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
 	VerifyIdle(socket);
 	if (impl()->setROI(arg) == FAIL)
 		throw RuntimeError("Could not set ROI");
-	return socket.sendResult(OK);
+	return socket.sendData(OK);
 }
 
 int slsReceiverTCPIPInterface::setup_udp(Interface &socket){
@@ -1139,7 +1137,7 @@ int slsReceiverTCPIPInterface::restream_stop(Interface &socket){
 		if (ret == FAIL)
 			throw RuntimeError("Could not restream stop packet");
 	}
-	return socket.sendResult(OK);
+	return socket.sendData(OK);
 }
 
 int slsReceiverTCPIPInterface::set_additional_json_header(Interface &socket) {
@@ -1224,7 +1222,7 @@ int slsReceiverTCPIPInterface::check_version_compatibility(Interface &socket) {
 	else{
 		FILE_LOG(logINFO) << "Compatibility with Client: Successful";
 	} 
-	return socket.sendResult(OK);
+	return socket.sendData(OK);
 }
 
 int slsReceiverTCPIPInterface::set_discard_policy(Interface &socket) {
@@ -1317,14 +1315,14 @@ int slsReceiverTCPIPInterface::set_dbit_list(Interface &socket) {
 	} else
 		impl()->setDbitList(args);
 	
-    return socket.sendResult(OK);
+    return socket.sendData(OK);
 }
 
 int slsReceiverTCPIPInterface::get_dbit_list(Interface &socket) {
 	sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
 	retval = impl()->getDbitList();
 	FILE_LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
-	return socket.sendResult(ret, &retval, sizeof(retval), mess);
+	return socket.sendResult(retval);
 }
 
 int slsReceiverTCPIPInterface::set_dbit_offset(Interface &socket) {

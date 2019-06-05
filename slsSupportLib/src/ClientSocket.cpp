@@ -75,15 +75,12 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         char mess[MAX_STR_LENGTH]{};
         // get error message
         read(mess, sizeof(mess));
-        FILE_LOG(logERROR) << socketType << " returned error: " << mess;
-        std::cout << "\n"; // needed to reset the color.
-
         // Do we need to know hostname here?
         // In that case save it???
         if (socketType == "Receiver") {
-            throw ReceiverError(mess);
+            throw ReceiverError("Receiver returned: " + std::string(mess));
         } else if (socketType == "Detector") {
-            throw DetectorError(mess);
+            throw DetectorError("Detector returned: " + std::string(mess));
         } else {
             throw GuiError(mess);
         }

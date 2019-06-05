@@ -23,7 +23,7 @@ int ServerInterface2::sendResult(int ret, void *retval, int retvalSize,
 
 int ServerInterface2::receiveArg(void *arg, int sizeofArg) {
     assert(sizeofArg > 0);
-    int bytes_read = read(arg, sizeofArg);
+    int bytes_read = receiveData(arg, sizeofArg);
     if (bytes_read == sizeofArg) {
         return defs::OK;
     } else {

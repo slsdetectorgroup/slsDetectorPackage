@@ -43,9 +43,12 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
 int DataSocket::receiveData(void *buffer, size_t size) {
     size_t dataRead = 0;
     while (dataRead < size) {
-        dataRead +=
+         auto thisRead =
             ::read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead,
                  size - dataRead);
+        if (thisRead <= 0)
+            break;
+        dataRead += thisRead;
     }
     return dataRead;
 }

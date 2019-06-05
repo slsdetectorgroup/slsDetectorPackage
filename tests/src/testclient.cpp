@@ -4,6 +4,8 @@
 #include <iostream>
 #include "container_utils.h"
 
+constexpr size_t MB = 1048576;
+
 int main(int argc, char** argv) {
     std::cout << "Test client\n";
     std::string hostname{"localhost"};
@@ -20,13 +22,14 @@ int main(int argc, char** argv) {
     }
     std::cout << "Sending to: " << hostname << ":" << port << "\n";
     
-    auto data = sls::make_unique<char[]>(5000);
+    constexpr size_t size = 1*MB;
+    auto data = sls::make_unique<char[]>(size);
 
     for (int64_t i = 0; i!=10; ++i){
         std::cout << "Sending: " << i << "\n";
         auto socket = sls::ClientSocket("test", hostname, port);
         std::cout << "Sent: " << socket.sendData(i) << " bytes\n";
-        std::cout << "Sent: " << socket.sendData(data.get(), 5000) << " bytes\n";
+        std::cout << "Sent: " << socket.sendData(data.get(), size) << " bytes\n";
 
     }
         

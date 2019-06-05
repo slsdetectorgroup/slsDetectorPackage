@@ -41,7 +41,8 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
 }
 
 int DataSocket::receiveData(void *buffer, size_t size) {
-    size_t dataRead = 0;
+    //TODO!(Erik) Add sleep? how many reties?
+    int dataRead = 0;
     while (dataRead < size) {
          auto thisRead =
             ::read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead,
@@ -71,11 +72,14 @@ int DataSocket::setReceiveTimeout(int us) {
 
 
 int DataSocket::sendData(const void *buffer, size_t size) {
-    // int dataSent = 0;
-    // while (dataSent < (int)size) {
-        return  ::write(getSocketId(), buffer, size);
-    // }
-    // return dataSent;
+    int dataSent = 0;
+    while (dataSent < (int)size) {
+        auto thisSend = ::write(getSocketId(), buffer, size);
+        if (thisSend <= 0)
+            break;
+        dataSent += thisSend;
+    }
+    return dataSent;
 }
 
 int DataSocket::setTimeOut(int t_seconds) {

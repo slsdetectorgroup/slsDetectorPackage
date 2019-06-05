@@ -51,7 +51,11 @@ int DataSocket::receiveData(void *buffer, size_t size) {
 }
 
 int DataSocket::read(void *buffer, size_t size){
-    return ::read(getSocketId(), reinterpret_cast<char *>(buffer), size);
+    return ::read(getSocketId(), buffer, size);
+}
+
+int DataSocket::write(void *buffer, size_t size){
+    return ::write(getSocketId(), buffer, size);
 }
 
 int DataSocket::setReceiveTimeout(int us) {
@@ -64,13 +68,11 @@ int DataSocket::setReceiveTimeout(int us) {
 
 
 int DataSocket::sendData(const void *buffer, size_t size) {
-    int dataSent = 0;
-    while (dataSent < (int)size) {
-        dataSent +=
-            write(getSocketId(), reinterpret_cast<const char *>(buffer) + dataSent,
-                  size - dataSent);
-    }
-    return dataSent;
+    // int dataSent = 0;
+    // while (dataSent < (int)size) {
+        return  ::write(getSocketId(), buffer, size);
+    // }
+    // return dataSent;
 }
 
 int DataSocket::setTimeOut(int t_seconds) {

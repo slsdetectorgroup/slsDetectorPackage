@@ -125,11 +125,6 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 	template <typename T>
 	void validate(T arg, T retval, std::string modename, numberMode hex);
 
-	/** Unrecognized Function */
-	int M_nofunc(sls::ServerInterface2 & socket);
-
-
-
 	/** Execute command */
 	int	exec_command(sls::ServerInterface2 &socket);
 
@@ -298,10 +293,6 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 		/** set dbit offset */
 		int set_dbit_offset(sls::ServerInterface2 &socket);
 
-
-	int LogSocketCrash();
-	void NullObjectError(int& ret, char* mess);
-
 	/** detector type */
 	detectorType myDetectorType;
 
@@ -390,6 +381,14 @@ protected:
 	std::unique_ptr<sls::ServerSocket> server{nullptr};
 
       private:
-        int VerifyLock(int &ret, char *mess);
-				int VerifyLockAndIdle(int &ret, char *mess, int fnum);
+        void VerifyLock();
+				void VerifyIdle(sls::ServerInterface2& socket);
+
+				slsReceiverImplementation* impl(){
+					if (receiver!=nullptr){
+						return receiver.get();
+					}else{
+						throw sls::SocketError("Receiver not set up. Please use rx_hostname first.\n");
+					}
+				}
 };

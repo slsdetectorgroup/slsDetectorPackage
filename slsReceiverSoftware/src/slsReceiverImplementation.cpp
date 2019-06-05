@@ -571,7 +571,7 @@ void slsReceiverImplementation::setFilePath(const char c[]) {
 		if(stat(c,&st) == 0)
 			strcpy(filePath,c);
 		else
-			FILE_LOG(logERROR) << "FilePath does not exist: " << filePath;
+			FILE_LOG(logERROR) << "FilePath does not exist: " << c;
 	}
 	FILE_LOG(logINFO) << "File path: " << filePath;
 }
@@ -1059,7 +1059,7 @@ int slsReceiverImplementation::setFifoDepth(const uint32_t i) {
 	if (fifoDepth != i) {
 		fifoDepth = i;
 		if (SetupFifoStructure() == FAIL)
-			return FAIL;
+			throw sls::RuntimeError("Failed to setup fifo structure");
 	}
 	FILE_LOG(logINFO) << "Fifo Depth: " << i;
 	return OK;

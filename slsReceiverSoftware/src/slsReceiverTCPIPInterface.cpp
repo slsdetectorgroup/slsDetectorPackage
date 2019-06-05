@@ -857,8 +857,7 @@ int slsReceiverTCPIPInterface::set_file_name(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_file_index(Interface &socket) {
-	int index = -1;
-	socket.receiveArg(index);
+	auto index = socket.receive<int>();
 	if (index >= 0) {
 		VerifyIdle(socket);
 		FILE_LOG(logDEBUG1) << "Setting file index: " << index;
@@ -889,8 +888,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(Interface &socket){
 }
 
 int slsReceiverTCPIPInterface::enable_file_write(Interface &socket){
-	int enable = -1;
-	socket.receiveArg(enable);
+	auto enable = socket.receive<int>();
 	// set
 	if (enable >= 0) {
 		// verify if receiver is unlocked and idle
@@ -907,8 +905,7 @@ int slsReceiverTCPIPInterface::enable_file_write(Interface &socket){
 
 
 int slsReceiverTCPIPInterface::enable_master_file_write(Interface &socket){
-	int enable = -1;
-	socket.receiveArg(enable);
+	auto enable = socket.receive<int>();
 	// set
 	if (enable >= 0) {
 		VerifyIdle(socket);
@@ -924,8 +921,7 @@ int slsReceiverTCPIPInterface::enable_master_file_write(Interface &socket){
 
 
 int slsReceiverTCPIPInterface::enable_overwrite(Interface &socket) {
-	int index = -1;
-	socket.receiveArg(index);
+	auto index = socket.receive<int>();
 	// set
 	if (index >= 0) {
 		VerifyIdle(socket);
@@ -940,8 +936,7 @@ int slsReceiverTCPIPInterface::enable_overwrite(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::enable_tengiga(Interface &socket) {
-	int val = -1;
-	socket.receiveArg(val);
+	auto val = socket.receive<int>();
 	if (myDetectorType != EIGER && myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH)
 		functionNotImplemented();
 
@@ -971,8 +966,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_activate(Interface &socket) {
-	int enable = -1;
-	socket.receiveArg(enable);
+	auto enable = socket.receive<int>();
 	if (myDetectorType != EIGER)
 		functionNotImplemented();
 
@@ -988,8 +982,7 @@ int slsReceiverTCPIPInterface::set_activate(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_data_stream_enable(Interface &socket){
-	int index = -1;
-	socket.receiveArg(index);
+	auto index = socket.receive<int>();
 	if (index >= 0) {
 		VerifyIdle(socket);
 		FILE_LOG(logDEBUG1) << "Setting data stream enable:" << index;

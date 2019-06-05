@@ -131,10 +131,11 @@ TEST_CASE("rx_tcpport", "[.cmd]") {
     multiSlsDetector d;
     int port = 1500;
     int base = 1954;
-    for (int i = 0; i != d.size(); ++i) {
+    for (size_t i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         std::string cmd =
-            std::to_string(i) + ":rx_tcpport " + std::to_string(port + 1);
+            std::to_string(i) + ":rx_tcpport " + std::to_string(port + i);
+        std::cout << cmd << "\n";
         multiSlsDetectorClient(cmd, PUT, nullptr, oss);
         REQUIRE(oss.str() == cmd + "\n");
     }
@@ -144,17 +145,17 @@ TEST_CASE("rx_tcpport", "[.cmd]") {
             multiSlsDetectorClient("rx_tcpport 15", PUT, nullptr, oss));
     }
 
-    for (int i = 0; i != d.size(); ++i) {
+    for (size_t i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         std::string cmd = std::to_string(i) + ":rx_tcpport";
         multiSlsDetectorClient(cmd, GET, nullptr, oss);
-        REQUIRE(oss.str() == cmd + "\n");
+        REQUIRE(oss.str() == cmd + " " + std::to_string(port + i) + "\n");
     }
 
-    for (int i = 0; i != d.size(); ++i) {
+    for (size_t i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         std::string cmd =
-            std::to_string(i) + ":rx_tcpport " + std::to_string(base + 1);
+            std::to_string(i) + ":rx_tcpport " + std::to_string(base + i);
         multiSlsDetectorClient(cmd, PUT, nullptr, oss);
         REQUIRE(oss.str() == cmd + "\n");
     }

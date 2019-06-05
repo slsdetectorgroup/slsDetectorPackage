@@ -111,8 +111,6 @@ void slsReceiverTCPIPInterface::startTCPServer() {
 		FILE_LOG(logDEBUG1) << "Start accept loop";
         try {
             auto socket = server->accept();
-			// constexpr int time_us = 5000000;
-			// socket.setReceiveTimeout(time_us);
 			try{
 				VerifyLock();
             	ret = decode_function(socket);
@@ -264,8 +262,7 @@ void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename, 
 
 void slsReceiverTCPIPInterface::VerifyLock() {
     if (lockStatus && server->getThisClient() != server->getLockedBy()) {
-        strcpy(mess, "Receiver locked\n");
-		throw sls::SocketError(mess);
+		throw sls::SocketError("Receiver locked\n");
     }
 }
 

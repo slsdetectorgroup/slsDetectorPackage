@@ -645,8 +645,8 @@ format
     };
 
     /** returns string from file format index
-        \param s can be BINARY, ASCII, HDF5
-        \returns string binary, ascii, hdf5
+        \param s can be BINARY, HDF5
+        \returns string binary, hdf5
     */
     static std::string getFileFormatType(fileFormat f) {
         switch (f) {

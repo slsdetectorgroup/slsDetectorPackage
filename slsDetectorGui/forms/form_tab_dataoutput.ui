@@ -444,11 +444,6 @@ Disabled if receiver pc is not same as client pc.
        </item>
        <item>
         <property name="text">
-         <string>ASCII</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
          <string>HDF5</string>
         </property>
        </item>

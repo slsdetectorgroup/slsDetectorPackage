@@ -159,7 +159,7 @@ void qTabAdvanced::GetControlPort() {
 
 	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
             myDet,
-            "Could not get detector control port."
+            "Could not get detector control port.",
             "qTabAdvanced::GetControlPort",
             spinControlPort,
             &QSpinBox::setValue,
@@ -174,7 +174,7 @@ void qTabAdvanced::GetStopPort() {
 
 	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
             myDet,
-            "Could not get detector stop port."
+            "Could not get detector stop port.",
             "qTabAdvanced::GetStopPort",
             spinStopPort,
             &QSpinBox::setValue,
@@ -189,7 +189,7 @@ void qTabAdvanced::GetDetectorUDPIP() {
 
 	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
             myDet,
-            "Could not get detector UDP IP."
+            "Could not get detector UDP IP.",
             "qTabAdvanced::GetDetectorUDPIP",
             dispDetectorUDPIP,
             &QLineEdit::setText,
@@ -204,7 +204,7 @@ void qTabAdvanced::GetDetectorUDPMAC() {
 
 	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
             myDet,
-            "Could not get detector UDP MAC."
+            "Could not get detector UDP MAC.",
             "qTabAdvanced::GetDetectorUDPMAC",
             dispDetectorUDPMAC,
             &QLineEdit::setText,
@@ -219,7 +219,7 @@ void qTabAdvanced::GetCltZMQPort() {
 
 	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
             myDet,
-            "Could not get client zmq port."
+            "Could not get client zmq port.",
             "qTabAdvanced::GetCltZMQPort",
             spinZMQPort,
             &QSpinBox::setValue,
@@ -234,7 +234,7 @@ void qTabAdvanced::GetCltZMQIP() {
 
 	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
             myDet,
-            "Could not get client zmq ip."
+            "Could not get client zmq ip.",
             "qTabAdvanced::GetCltZMQIP",
             dispZMQIP,
             &QLineEdit::setText,
@@ -249,7 +249,7 @@ void qTabAdvanced::GetRxrHostname() {
 
 	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
             myDet,
-            "Could not get receiver hostname."
+            "Could not get receiver hostname.",
             "qTabAdvanced::GetRxrHostname",
             dispRxrHostname,
             &QLineEdit::setText,
@@ -300,7 +300,7 @@ void qTabAdvanced::GetRxrTCPPort() {
 
 	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
             myDet,
-            "Could not get receiver tcp port."
+            "Could not get receiver tcp port.",
             "qTabAdvanced::GetRxrTCPPort",
             spinRxrTCPPort,
             &QSpinBox::setValue,
@@ -315,7 +315,7 @@ void qTabAdvanced::GetRxrUDPPort() {
 
 	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
             myDet,
-            "Could not get receiver udp port."
+            "Could not get receiver udp port.",
             "qTabAdvanced::GetRxrUDPPort",
             spinRxrUDPPort,
             &QSpinBox::setValue,
@@ -330,7 +330,7 @@ void qTabAdvanced::GetRxrUDPIP() {
 
 	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
             myDet,
-            "Could not get receiver udp ip."
+            "Could not get receiver udp ip.",
             "qTabAdvanced::GetRxrUDPIP",
             dispRxrUDPIP,
             &QLineEdit::setText,
@@ -345,7 +345,7 @@ void qTabAdvanced::GetRxrUDPMAC() {
 
 	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
             myDet,
-            "Could not get receiver udp mac."
+            "Could not get receiver udp mac.",
             "qTabAdvanced::GetRxrUDPMAC",
             dispRxrUDPMAC,
             &QLineEdit::setText,
@@ -360,7 +360,7 @@ void qTabAdvanced::GetRxrZMQPort() {
 
 	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
             myDet,
-            "Could not get receiver zmq port."
+            "Could not get receiver zmq port.",
             "qTabAdvanced::GetRxrZMQPort",
             spinRxrZMQPort,
             &QSpinBox::setValue,
@@ -375,7 +375,7 @@ void qTabAdvanced::GetRxrZMQIP() {
 
 	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
             myDet,
-            "Could not get receiver zmq ip."
+            "Could not get receiver zmq ip.",
             "qTabAdvanced::GetRxrZMQIP",
             dispRxrZMQIP,
             &QLineEdit::setText,
@@ -710,7 +710,7 @@ void qTabAdvanced::SetROI() {
 	FILE_LOG(logINFO) << "Setting ROI:" << nroi;
 	qDefs::IgnoreNonCriticalExceptions(
 		myDet,
-		"Could not set these ROIs."
+		"Could not set these ROIs.",
 		"qTabAdvanced::SetROI",
 		&multiSlsDetector::setROI, nroi, roi, -1);
 
@@ -724,7 +724,7 @@ void qTabAdvanced::GetAllTrimbits() {
 
 	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
             myDet,
-            "Could not get all trimbits value."
+            "Could not get all trimbits value.",
             "qTabAdvanced::GetAllTrimbits",
             spinSetAllTrimbits,
             &QSpinBox::setValue,
@@ -736,8 +736,9 @@ void qTabAdvanced::GetAllTrimbits() {
 void qTabAdvanced::SetAllTrimbits() {
 	int value = spinSetAllTrimbits->value();
 	FILE_LOG(logINFO) << "Setting all trimbits:" << value;
+
 	try {
-        myDet->setAllTrimbits(value, -1);
+        myDet->setAllTrimbits(value);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not set all trimbits.", e.what(), "qTabAdvanced::SetAllTrimbits");
 		GetAllTrimbits();
@@ -750,7 +751,7 @@ void qTabAdvanced::GetNumStoragecells() {
 
 	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
             myDet,
-            "Could not get number of additional storage cells."
+            "Could not get number of additional storage cells.",
             "qTabAdvanced::GetNumStoragecells",
             spinNumStoragecells,
             &QSpinBox::setValue,
@@ -775,11 +776,17 @@ void qTabAdvanced::GetSubExposureTime() {
 	disconnect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubExposureTime()));
 
 	try {
-		double value = (double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME,-1) * (1E-9));
-		qDefs::timeUnit unit;
-		double time = qDefs::getCorrectTime(unit, value);
-		spinSubExpTime->setValue(time);
-		comboSubExpTimeUnit->setCurrentIndex((int)unit);
+		int64_t retval = myDet->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME);
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "Subexptime is inconsistent for all detectors.", "qTabAdvanced::GetSubExposureTime");
+			spinSubExpTime->setValue(-1);
+		} else {
+			double value = (double)( retval * (1E-9));
+			qDefs::timeUnit unit;
+			double time = qDefs::getCorrectTime(unit, value);
+			spinSubExpTime->setValue(time);
+			comboSubExpTimeUnit->setCurrentIndex((int)unit);
+		}
 	} catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get sub exposure time.", e.what(), "qTabSettings::GetSubExposureTime");
     }
@@ -806,11 +813,17 @@ void qTabAdvanced::GetSubDeadTime() {
 	disconnect(comboSubDeadTimeUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubDeadTime()));
 
 	try {
-		double value = (double)(myDet->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME,-1) * (1E-9));
-		qDefs::timeUnit unit;
-		double time = qDefs::getCorrectTime(unit, value);
-		spinSubDeadTime->setValue(time);
-		comboSubDeadTimeUnit->setCurrentIndex((int)unit);
+		int64_t retval = myDet->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME);
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "Sub dead time is inconsistent for all detectors.", "qTabAdvanced::GetSubDeadTime");
+			spinSubDeadTime->setValue(-1);
+		} else {
+			double value = (double)(retval * (1E-9));
+			qDefs::timeUnit unit;
+			double time = qDefs::getCorrectTime(unit, value);
+			spinSubDeadTime->setValue(time);
+			comboSubDeadTimeUnit->setCurrentIndex((int)unit);
+		}
 	} catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get sub dead time.", e.what(), "qTabSettings::GetSubDeadTime");
     }

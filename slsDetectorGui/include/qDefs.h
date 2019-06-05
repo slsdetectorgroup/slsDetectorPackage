@@ -244,6 +244,28 @@ class qDefs : public QWidget {
         }
     };
 
+    // executing multiSlsDetector funtion and using return value to set QWidget function 
+    // (handling -1 for comboboxes)
+    template <class W, typename WRT, typename RT, typename... CT>
+    static void IgnoreNonCriticalExceptionsandMinus1(multiSlsDetector* det, 
+            const std::string message, const std::string source,
+            W* wid, void (W::*someQfunc)(WRT), 
+            RT (multiSlsDetector::*somefunc)(CT...), 
+            typename NonDeduced<CT>::type... Args) {
+        try {
+            int val = static_cast<int>((det->*somefunc)(Args...));
+            if (val == -1) {
+                Message(qDefs::WARNING, message + std::string(" is inconsistent for all detectors\n"), source);
+            } else {
+                (wid->*someQfunc)(val);
+            }
+        }
+        // catch them here as they are not critical
+        catch (const sls::NonCriticalError &e) {
+            ExceptionMessage(message, e.what(), source);
+        }
+    };
+
 
     // executing multiSlsDetector funtion and returning its value (integers, where value cannot be -1)
     /*  can easily get out of hand

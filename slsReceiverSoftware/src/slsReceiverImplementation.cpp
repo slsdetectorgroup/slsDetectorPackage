@@ -514,8 +514,6 @@ int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
 		flag.append("parallel ");
 	if (f & NONPARALLEL)
 		flag.append("nonparallel ");
-	if (f & SAFE)
-		flag.append("safe ");
 	if (f & DIGITAL_ONLY)
 		flag.append("digital ");
 	if (f & ANALOG_AND_DIGITAL)

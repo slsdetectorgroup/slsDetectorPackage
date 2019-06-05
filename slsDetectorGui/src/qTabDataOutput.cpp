@@ -97,7 +97,7 @@ void qTabDataOutput::EnableBrowse() {
 			btnOutputBrowse->setEnabled(true);
 		} else {
 			std::string hostname;
-			size_t len = 15;
+			const size_t len = 15;
 			char host[len]{};
 			if (gethostname(host, len) == 0) {
 				hostname.assign(host);
@@ -117,17 +117,16 @@ void qTabDataOutput::EnableBrowse() {
 
 
 void qTabDataOutput::GetOutputDir() {
-	FILE_LOG(logDEBUG) << "Getting output directory";
+	FILE_LOG(logDEBUG) << "Getting file path";
 
 	disconnect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
 
-	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
-            myDet,
-            "Could not get output file path."
-            "qTabDataOutput::GetOutputDir",
-            dispOutputDir,
-            &QLineEdit::setText,
-            &multiSlsDetector::getFilePath, comboDetector->currentIndex() - 1);
+	try {
+        std::string path = myDet->getFilePath(comboDetector->currentIndex() - 1);
+		dispOutputDir->setText(QString(path.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get file path.", e.what(), "qTabDataOutput::GetOutputDir");
+    }
 
 	connect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
 }
@@ -140,9 +139,9 @@ void qTabDataOutput::BrowseOutputDir() {
 }
 
 void qTabDataOutput::SetOutputDir() {
-	FILE_LOG(logDEBUG) << "Setting output directory";
-
 	QString path = dispOutputDir->text();
+	FILE_LOG(logDEBUG) << "Setting output directory to " << path.toAscii().constData();
+
 	// empty
 	if (path.isEmpty()) {
 		qDefs::Message(qDefs::WARNING, "Invalid Output Path. Must not be empty.", "qTabDataOutput::SetOutputDir");
@@ -169,10 +168,10 @@ void qTabDataOutput::GetFileFormat() {
 	FILE_LOG(logDEBUG) << "Getting File Format";
 	disconnect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 
-	qDefs::IgnoreNonCriticalExceptions<QComboBox>(
+	qDefs::IgnoreNonCriticalExceptionsandMinus1<QComboBox>(
             myDet,
-            "Could not get file format."
-            "qTabAdvanced::GetFileFormat",
+            "Could not get file format.",
+            "qTabDataOutput::GetFileFormat",
             comboFileFormat,
             &QComboBox::setCurrentIndex,
             &multiSlsDetector::getFileFormat, -1);
@@ -181,7 +180,7 @@ void qTabDataOutput::GetFileFormat() {
 }
 
 void qTabDataOutput::SetFileFormat(int format) {
-	FILE_LOG(logINFO) << "Setting File Format";
+	FILE_LOG(logINFO) << "Setting File Format to " << slsDetectorDefs::getFileFormatType((slsDetectorDefs::fileFormat)format);
 	try {
         myDet->setFileFormat((slsDetectorDefs::fileFormat)comboFileFormat->currentIndex());
     } catch (const sls::NonCriticalError &e) {
@@ -189,6 +188,65 @@ void qTabDataOutput::SetFileFormat(int format) {
         GetFileFormat();
     }
 }
+
+void qTabDataOutput::GetFileOverwrite() {
+	FILE_LOG(logDEBUG) << "Getting File Over Write Enable";
+	disconnect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
+
+	try {
+        int retval = myDet->getFileOverWrite();
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "File over write is inconsistent for all detectors.", "qTabDataOutput::GetFileOverwrite");
+		} else {
+			chkOverwriteEnable->setChecked(retval == 0 ? false : true);
+		}
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get file over write enable.", e.what(), "qTabDataOutput::GetFileOverwrite");
+    }
+
+	connect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
+}
+
+void qTabDataOutput::SetOverwriteEnable(bool enable) {
+	FILE_LOG(logINFO) << "Setting File Over Write Enable to " << enable;
+
+	try {
+        myDet->setFileOverWrite(enable);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set file over write enable.", e.what(), "qTabDataOutput::SetOverwriteEnable");
+        GetFileOverwrite();
+    }
+}
+
+void qTabDataOutput::GetTenGigaEnable() {
+	FILE_LOG(logDEBUG) << "Getting 10GbE enable";
+	disconnect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(SetTenGigaEnable(bool)));
+
+	try {
+		int retval = myDet->enableTenGigabitEthernet();
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "10GbE enable is inconsistent for all detectors.", "qTabDataOutput::GetTenGigaEnable");
+		} else {
+			chkTenGiga->setChecked(retval == 0 ? false : true);
+		}
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get 10GbE enable.", e.what(), "qTabDataOutput::GetTenGigaEnable");
+    }
+
+	connect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(SetTenGigaEnable(bool)));
+}
+
+void qTabDataOutput::SetTenGigaEnable(bool enable) {
+	FILE_LOG(logINFO) << "Setting 10GbE to " << enable;
+
+	try {
+        myDet->enableTenGigabitEthernet(enable);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set 10GbE enable.", e.what(), "qTabDataOutput::SetTenGigaEnable");
+        GetTenGigaEnable();
+    }
+}
+
 
 
 
@@ -313,26 +371,7 @@ void qTabDataOutput::GetRateCorrection() {
 
 
 
-void qTabDataOutput::GetTenGigaEnable(bool enable, int get) {
-	if (get || enable == -1) {
-		FILE_LOG(logDEBUG) << "Getting 10Gbe enable";
-	} else {
-		FILE_LOG(logINFO) << (enable == 0 ? "Disabling" : "Enabling") << "10GbE";
-	}
-	disconnect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(GetTenGigaEnable(bool)));
-	int ret;
-	if (get)
-		ret = myDet->GetTenGigaEnable(-1);
-	else
-		ret = myDet->GetTenGigaEnable(enable);
-	if (ret > 0)
-		chkTenGiga->setChecked(true);
-	else
-		chkTenGiga->setChecked(false);
-	connect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(GetTenGigaEnable(bool)));
 
-	qDefs::checkErrorMessage(myDet, "qTabDataOutput::GetTenGigaEnable");
-}
 
 
 void qTabDataOutput::GetSpeed() {
@@ -458,28 +497,6 @@ void qTabDataOutput::SetFlags() {
 
 
 
-void qTabDataOutput::GetFileOverwrite() {
-	FILE_LOG(logDEBUG) << "Getting File Over Write Enable";
-	disconnect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
-
-	chkOverwriteEnable->setChecked(myDet->overwriteFile());
-
-	connect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
-}
-
-
-void qTabDataOutput::SetOverwriteEnable(bool enable) {
-	FILE_LOG(logINFO) << "Setting File Over Write Enable";
-	disconnect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
-
-	int valid = (enable ? 1 : 0);
-	if (myDet->overwriteFile(enable) != valid)
-		qDefs::Message(qDefs::WARNING, "Could not over write enable.", "qTabDataOutput::SetOverwriteEnable");
-
-	connect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
-
-	GetFileOverwrite();
-}
 
 
 void qTabDataOutput::Refresh() {

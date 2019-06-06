@@ -3,13 +3,15 @@
 #include "sls_detector_exceptions.h"
 #include <algorithm>
 #include <arpa/inet.h>
+#include <cassert>
 #include <cstring>
+#include <fcntl.h>
 #include <iostream>
 #include <netdb.h>
+#include <sstream>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 namespace sls {
 
@@ -41,25 +43,52 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
 }
 
 int DataSocket::receiveData(void *buffer, size_t size) {
-    //TODO!(Erik) Add sleep? how many reties?
-    int dataRead = 0;
-    while (dataRead < size) {
-         auto thisRead =
-            ::read(getSocketId(), reinterpret_cast<char *>(buffer) + dataRead,
-                 size - dataRead);
-        if (thisRead <= 0)
+    // TODO!(Erik) Add sleep? how many reties?
+    assert(size > 0);
+    int bytes_expected = static_cast<int>(size); // signed size
+    int bytes_read = 0;
+    while (bytes_read < bytes_expected) {
+        auto this_read =
+            ::read(getSocketId(), reinterpret_cast<char *>(buffer) + bytes_read,
+                   bytes_expected - bytes_read);
+        if (this_read <= 0)
             break;
-        dataRead += thisRead;
+        bytes_read += this_read;
     }
-    return dataRead;
+    if (bytes_read == bytes_expected) {
+        return bytes_read;
+    } else {
+        std::ostringstream ss;
+        ss << "TCP socket error read " << bytes_read << " bytes instead of "
+           << bytes_expected << " bytes";
+        throw sls::SocketError(ss.str());
+    }
 }
 
-int DataSocket::read(void *buffer, size_t size){
-    return ::read(getSocketId(), buffer, size);
+int DataSocket::sendData(const void *buffer, size_t size) {
+    int bytes_sent = 0;
+    int data_size = static_cast<int>(size); // signed size
+    while (bytes_sent < (data_size)) {
+        auto this_send = ::write(getSocketId(), buffer, size);
+        if (this_send <= 0)
+            break;
+        bytes_sent += this_send;
+    }
+    if (bytes_sent != data_size){
+        std::ostringstream ss;
+        ss << "TCP socket error sent " << bytes_sent << " bytes instead of "
+           << data_size << " bytes";
+        throw sls::SocketError(ss.str());
+    }
+    return bytes_sent;
 }
 
-int DataSocket::write(void *buffer, size_t size){
+int DataSocket::write(void *buffer, size_t size) {
     return ::write(getSocketId(), buffer, size);
+}
+
+int DataSocket::read(void *buffer, size_t size) {
+    return ::read(getSocketId(), buffer, size);
 }
 
 int DataSocket::setReceiveTimeout(int us) {
@@ -68,20 +97,6 @@ int DataSocket::setReceiveTimeout(int us) {
     t.tv_usec = us;
     return ::setsockopt(getSocketId(), SOL_SOCKET, SO_RCVTIMEO, &t,
                         sizeof(struct timeval));
-}
-
-
-int DataSocket::sendData(const void *buffer, size_t size) {
-    int dataSent = 0;
-    while (dataSent < (int)size) {
-        auto thisSend = ::write(getSocketId(), buffer, size);
-        if (thisSend <= 0)
-            break;
-        dataSent += thisSend;
-    }
-    if(dataSent != size)
-        throw SocketError("Could not send\n");
-    return dataSent;
 }
 
 int DataSocket::setTimeOut(int t_seconds) {

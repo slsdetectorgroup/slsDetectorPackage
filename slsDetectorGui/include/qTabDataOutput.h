@@ -7,7 +7,7 @@
 class multiSlsDetector;
 
 #include <QString>
-
+#include <QButtonGroup>
 
 /**
  *@short sets up the DataOutput parameters
@@ -69,20 +69,20 @@ public:
 	void SetTenGigaEnable(bool enable);
 
 	/**
-	 * Set rate correction
-	 * @param deadtime dead time
+	 * Enable rate correction
 	 */
-	void SetRateCorrection(int deadtime = 0);
+	void EnableRateCorrection();
 
 	/**
-	 * Set default rate correction
+	 * Set rate correction
 	 */
-	void SetDefaultRateCorrection();
+	void SetRateCorrection();
 
 	/**
 	 * Set speed
+	 * @param speed speed chosen
 	 */
-	void SetSpeed();
+	void SetSpeed(int speed);
 
 	/**
 	 * Set flags
@@ -144,15 +144,14 @@ public:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 
-	/** Palette */
-	QPalette red;
+	/** Button group for radiobuttons for rate*/
+	QButtonGroup *btnGroupRate;
 
 	/** enum for the Eiger clock divider */
 	enum {
 		FULLSPEED,
 		HALFSPEED,
 		QUARTERSPEED,
-		SUPERSLOWSPEED,
 		NUMBEROFSPEEDS
 	};
 

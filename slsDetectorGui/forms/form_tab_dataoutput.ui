@@ -48,7 +48,7 @@
      <rect>
       <x>14</x>
       <y>21</y>
-      <width>475</width>
+      <width>527</width>
       <height>76</height>
      </rect>
     </property>
@@ -56,95 +56,8 @@
      <property name="verticalSpacing">
       <number>6</number>
      </property>
-     <item row="1" column="3">
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>10</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="chkRate">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Rate:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="4">
-      <widget class="QLabel" name="lblDeadTime">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="palette">
-        <palette>
-         <active>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>2</red>
-             <green>2</green>
-             <blue>2</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </active>
-         <inactive>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>0</red>
-             <green>0</green>
-             <blue>0</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </inactive>
-         <disabled>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>119</red>
-             <green>119</green>
-             <blue>119</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </disabled>
-        </palette>
-       </property>
-       <property name="toolTip">
-        <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-</string>
-       </property>
-       <property name="text">
-        <string>Dead Time:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="5" colspan="2">
-      <widget class="QSpinBox" name="spinDeadTime">
+     <item row="1" column="4" colspan="2">
+      <widget class="QSpinBox" name="spinCustomDeadTime">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -163,39 +76,28 @@ Directory where one saves the data.
        <property name="maximum">
         <number>200000000</number>
        </property>
+       <property name="value">
+        <number>0</number>
+       </property>
       </widget>
      </item>
-     <item row="1" column="1" colspan="2">
-      <widget class="QPushButton" name="btnDefaultRate">
+     <item row="1" column="1">
+      <widget class="QRadioButton" name="radioDefaultDeadtime">
        <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+       <property name="text">
+        <string>Default Dead Time</string>
        </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-</string>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="chkRate">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
        <property name="text">
-        <string>Default</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../include/icons.qrc">
-         <normaloff>:/icons/images/calculate.png</normaloff>:/icons/images/calculate.png</iconset>
+        <string>Rate:</string>
        </property>
       </widget>
      </item>
@@ -216,6 +118,32 @@ Compression using Root. Available only for Gotthard in Expert Mode.
        </property>
       </widget>
      </item>
+     <item row="1" column="2">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>10</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="3">
+      <widget class="QRadioButton" name="radioCustomDeadtime">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Custom Dead Time:</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="widgetEiger" native="true">
@@ -226,7 +154,7 @@ Compression using Root. Available only for Gotthard in Expert Mode.
      <rect>
       <x>3</x>
       <y>92</y>
-      <width>491</width>
+      <width>547</width>
       <height>72</height>
      </rect>
     </property>
@@ -235,7 +163,7 @@ Compression using Root. Available only for Gotthard in Expert Mode.
       <rect>
        <x>11</x>
        <y>4</y>
-       <width>475</width>
+       <width>527</width>
        <height>68</height>
       </rect>
      </property>

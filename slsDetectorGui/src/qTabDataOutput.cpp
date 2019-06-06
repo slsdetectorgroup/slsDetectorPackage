@@ -20,15 +20,19 @@ qTabDataOutput::~qTabDataOutput() {}
 
 
 void qTabDataOutput::SetupWidgetWindow() {
-	// palette
-	red = QPalette();
-	red.setColor(QPalette::Active, QPalette::WindowText, Qt::red);
+	// button group for rate
+	btnGroupRate = new QButtonGroup(this);
+	btnGroupRate->addButton(radioDefaultDeadtime, 0);
+	btnGroupRate->addButton(radioCustomDeadtime, 1);
+
 
 	// enabling according to det type
 	switch((int)myDet->getDetectorTypeAsEnum()) {
 		case slsDetectorDefs::EIGER:
 			chkTenGiga->setEnabled(true);
 			chkRate->setEnabled(true);
+			radioDefaultDeadtime->setEnabled(true);
+			radioCustomDeadtime->setEnabled(true);
 			widgetEiger->setVisible(true);
 			widgetEiger->setEnabled(true);
 			break;
@@ -39,22 +43,9 @@ void qTabDataOutput::SetupWidgetWindow() {
 			break;	
 	}
 	PopulateDetectors();
-	EnableBrowse();
+
 	Initialization();
 
-	GetOutputDir();
-	GetFileOverwrite();
-	GetFileFormat();
-	if (chkRate->isEnabled()) {
-		GetRateCorrection();
-	}
-	if (chkTenGiga->isEnabled()) {
-		GetTenGigaEnable();
-	}
-	if (widgetEiger->isEnabled()) {
-		GetSpeed();
-		GetFlags();
-	}
 	Refresh();
 }
 
@@ -68,12 +59,12 @@ void qTabDataOutput::Initialization() {
 		connect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(SetTenGigaEnable(bool)));
 	}
 	if (chkRate->isEnabled()) {
-		connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(SetRateCorrection()));
-		connect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
-		connect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
+		connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
+		connect(btnGroupRate, SIGNAL(buttonClicked(int)), this, SLOT(SetRateCorrection()));
+		connect(spinCustomDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
 	}
 	if (widgetEiger->isEnabled()) {
-		connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
+		connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed(int)));
 		connect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 		connect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 	}
@@ -168,13 +159,23 @@ void qTabDataOutput::GetFileFormat() {
 	FILE_LOG(logDEBUG) << "Getting File Format";
 	disconnect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 
-	qDefs::IgnoreNonCriticalExceptionsandMinus1<QComboBox>(
-            myDet,
-            "Could not get file format.",
-            "qTabDataOutput::GetFileFormat",
-            comboFileFormat,
-            &QComboBox::setCurrentIndex,
-            &multiSlsDetector::getFileFormat, -1);
+	try {
+		auto retval = myDet->getFileFormat();
+		switch(retval) {
+			case slsDetectorDefs::GET_FILE_FORMAT:
+				qDefs::Message(qDefs::WARNING, "File Format is inconsistent for all detectors.", "qTabDataOutput::GetFileFormat");
+				break;
+			case slsDetectorDefs::BINARY:
+			case slsDetectorDefs::HDF5:
+				comboFileFormat->setCurrentIndex(static_cast<int>(retval));
+				break;
+			default:
+				qDefs::Message(qDefs::WARNING, std::string("Unknown file format.") + std::to_string(static_cast<int>(retval)), "qTabDataOutput::GetFileFormat");
+				break;
+        }
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get file format.", e.what(), "qTabDataOutput::GetFileFormat");
+    }
 
 	connect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 }
@@ -247,250 +248,175 @@ void qTabDataOutput::SetTenGigaEnable(bool enable) {
     }
 }
 
-
-
-
-
-
-
-void qTabDataOutput::SetRateCorrection(int deadtime) {
-	disconnect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
-	disconnect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
-
-	FILE_LOG(logDEBUG) << "Entering Set Rate Correction function";
-
-	if (chkRate->isChecked()) {
-		if (!btnDefaultRate->isEnabled()) {
-			btnDefaultRate->setEnabled(true);
-			lblDeadTime->setEnabled(true);
-			spinDeadTime->setEnabled(true);
-		}
-
-		if (deadtime != -1) {
-			deadtime = (double)spinDeadTime->value();
-			FILE_LOG(logINFO) << "Setting rate corrections with custom dead time: " << deadtime << '\n';
-		} else {
-			FILE_LOG(logINFO) << "Setting rate corrections with default dead time" << '\n';
-		}
-		myDet->setRateCorrection(deadtime);
-
-	} //unsetting rate correction
-	else {
-		btnDefaultRate->setEnabled(false);
-		lblDeadTime->setEnabled(false);
-		spinDeadTime->setEnabled(false);
-		myDet->setRateCorrection(0);
-		FILE_LOG(logINFO) << "Unsetting rate correction";
-	}
-	qDefs::checkErrorMessage(myDet, "qTabDataOutput::SetRateCorrection");
-
-	//update just the value
-	double rate = (double)myDet->getRateCorrection();
-	spinDeadTime->setValue((double)rate);
-	if (rate == -1) {
-		qDefs::Message(qDefs::WARNING, "Dead time is inconsistent for all detectors. Returned Value: -1.", "qTabDataOutput::GetRateCorrection");
-		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
-				"<nobr> #ratecorr# tau in seconds</nobr><br><br>") +
-						QString("<nobr><font color=\"red\">"
-								"Dead time is inconsistent for all detectors.</font></nobr>");
-		chkRate->setToolTip(errorTip);
-		spinDeadTime->setToolTip(errorTip);
-		chkRate->setPalette(red);
-		chkRate->setText("Rate:*");
-	} else {
-		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
-				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
-		chkRate->setToolTip(normalTip);
-		spinDeadTime->setToolTip(normalTip);
-		chkRate->setPalette(lblDeadTime->palette());
-		chkRate->setText("Rate:");
-	}
-
-	connect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
-	connect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
-}
-
-
-void qTabDataOutput::SetDefaultRateCorrection() {
-	SetRateCorrection(-1);
-}
-
-
 void qTabDataOutput::GetRateCorrection() {
-	disconnect(chkRate, SIGNAL(toggled(bool)), this, SLOT(SetRateCorrection()));
-	disconnect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
-	disconnect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
+	FILE_LOG(logDEBUG) << "Getting Rate Correction";	
+	disconnect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
+	disconnect(btnGroupRate, SIGNAL(buttonClicked(int)), this, SLOT(SetRateCorrection()));
+	disconnect(spinCustomDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
 
-	double rate;
-	rate = (double)myDet->getRateCorrection();
-	qDefs::checkErrorMessage(myDet, "qTabDataOutput::GetRateCorrection");
-	FILE_LOG(logDEBUG) << "Getting rate correction from server: " << rate << '\n';
-	if (rate == 0) {
-		chkRate->setChecked(false);
-		btnDefaultRate->setEnabled(false);
-		lblDeadTime->setEnabled(false);
-		spinDeadTime->setEnabled(false);
-	}
+	try {
+		int64_t retval = myDet->getRateCorrection();
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "Rate correction (enable/tau) is inconsistent for all detectors.", "qTabDataOutput::GetRateCorrection");
+			spinCustomDeadTime->setValue(-1);
+		} else {
+			chkRate->setChecked(retval == 0 ? false : true);
+			if (retval != 0)
+				spinCustomDeadTime->setValue(retval);
+		}
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get rate correction.", e.what(), "qTabDataOutput::GetRateCorrection");
+    }
 
-	else {
-		chkRate->setChecked(true);
-		btnDefaultRate->setEnabled(true);
-		lblDeadTime->setEnabled(true);
-		spinDeadTime->setEnabled(true);
-		spinDeadTime->setValue((double)rate);
-	}
-
-	if (rate == -1) {
-		qDefs::Message(qDefs::WARNING, "Dead time is inconsistent for all detectors. Returned Value: -1.", "qTabDataOutput::GetRateCorrection");
-		FILE_LOG(logWARNING) << "Dead time is inconsistent for all detectors.";
-		QString errorTip = QString("<nobr>Rate Corrections.</nobr><br>"
-				"<nobr> #ratecorr# tau in seconds</nobr><br><br>") +
-						QString("<nobr><font color=\"red\">"
-								"Dead time is inconsistent for all detectors.</font></nobr>");
-		chkRate->setToolTip(errorTip);
-		spinDeadTime->setToolTip(errorTip);
-		chkRate->setPalette(red);
-		chkRate->setText("Rate:*");
-	} else {
-		QString normalTip = QString("<nobr>Rate Corrections.</nobr><br>"
-				"<nobr> #ratecorr# tau in seconds</nobr><br><br>");
-		chkRate->setToolTip(normalTip);
-		spinDeadTime->setToolTip(normalTip);
-		chkRate->setPalette(chkDiscardBad->palette());
-		chkRate->setText("Rate:");
-	}
-
-	connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(SetRateCorrection()));
-	connect(btnDefaultRate, SIGNAL(clicked()), this, SLOT(SetDefaultRateCorrection()));
-	connect(spinDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
+	connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
+	connect(btnGroupRate, SIGNAL(buttonClicked(int)), this, SLOT(SetRateCorrection()));
+	connect(spinCustomDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
 }
 
+void qTabDataOutput::EnableRateCorrection() {
+	// enable
+	if (chkRate->isChecked()) {
+		 SetRateCorrection();
+		 return;
+	} 
+	FILE_LOG(logINFO) << "Disabling Rate correction";
+	// disable
+	try {
+		myDet->setRateCorrection(0);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not switch off rate correction.", e.what(), "qTabDataOutput::EnableRateCorrection");
+     	GetRateCorrection();
+	}
+}
 
+void qTabDataOutput::SetRateCorrection() {
+	// do nothing if rate correction is disabled
+	if (!chkRate->isChecked()) {
+		return;
+	}
+	// get default or custom value
+	int64_t deadtime = -1;
+	if (radioCustomDeadtime->isChecked()) {
+		deadtime = spinCustomDeadTime->value();
+	}
+	FILE_LOG(logINFO) << "Setting Rate Correction with dead time: " << deadtime;
 
-
-
-
-
-
-
+	try {
+		myDet->setRateCorrection(deadtime);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set rate correction.", e.what(), "qTabDataOutput::SetRateCorrection");
+		GetRateCorrection();
+    }
+}
 
 void qTabDataOutput::GetSpeed() {
-	int ret;
-	if (widgetEiger->isVisible()) {
-		disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
+	FILE_LOG(logDEBUG) << "Getting Speed";	
+	disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
+	
+	try {
+		int retval = myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER);
+		switch(retval) {
+			case -1:
+				qDefs::Message(qDefs::WARNING, "Speed is inconsistent for all detectors.", "qTabDataOutput::GetSpeed");
+				break;
+			case FULLSPEED:
+			case HALFSPEED:
+			case QUARTERSPEED:
+				comboEigerClkDivider->setCurrentIndex(retval);
+				break;
+			default:
+				qDefs::Message(qDefs::WARNING, std::string("Unknown speed.") + std::to_string(retval), "qTabDataOutput::GetFileFormat");
+				break;
+        }
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get speed.", e.what(), "qTabDataOutput::GetSpeed");
+    }
 
-		//get speed
-		ret = myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, -1);
-		qDefs::checkErrorMessage(myDet, "qTabDataOutput::GetSpeed");
-
-		//valid speed
-		if (ret >= 0 && ret < NUMBEROFSPEEDS)
-			comboEigerClkDivider->setCurrentIndex(ret);
-
-		//invalid speed
-		else {
-			qDefs::Message(qDefs::WARNING, "Inconsistent value from clock divider.\n"
-					"Setting it for all detectors involved to half speed.",
-					"qTabDataOutput::GetSpeed");
-			FILE_LOG(logWARNING) << "Inconsistent value from clock divider.";
-			//set to default
-			comboEigerClkDivider->setCurrentIndex(HALFSPEED);
-			myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, HALFSPEED);
-			qDefs::checkErrorMessage(myDet, "qTabDataOutput::GetSpeed");
-		}
-		connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
-	}
+	connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
 }
 
-
-void qTabDataOutput::SetSpeed() {
-	FILE_LOG(logINFO) << "Setting Speed";
-	myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, comboEigerClkDivider->currentIndex());
-	qDefs::checkErrorMessage(myDet, "qTabDataOutput::SetSpeed");
-	GetSpeed();
+void qTabDataOutput::SetSpeed(int speed) {
+	FILE_LOG(logINFO) << "Setting Speed to " << ((speed = FULLSPEED) ? "full" : ((speed == HALFSPEED) ? "half" : "quarter")) << " speed";
+	try {
+        myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, speed);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set speed.", e.what(), "qTabDataOutput::SetSpeed");
+        GetSpeed();
+    }
 }
-
-
 
 void qTabDataOutput::GetFlags() {
-	int ret;
-	if (widgetEiger->isVisible()) {
-		disconnect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
-		disconnect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
+	FILE_LOG(logDEBUG) << "Getting readout flags";	
+	disconnect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
+	disconnect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 
-		//get speed
-		ret = myDet->setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS);
-		qDefs::checkErrorMessage(myDet, "qTabDataOutput::GetFlags");
-
-		//invalid flags
-		if (ret == -1) {
-			qDefs::Message(qDefs::WARNING, "Inconsistent value for readout flags.\n"
-					"Setting it for all detectors involved to continous nonparallel mode.",
-					"qTabDataOutput::GetFlags");
-			FILE_LOG(logWARNING) << "Inconsistent value for readout flags.";
-			//set to default
-			comboEigerFlags1->setCurrentIndex(CONTINUOUS);
-			myDet->setReadOutFlags(slsDetectorDefs::CONTINOUS_RO);
-			qDefs::checkErrorMessage(myDet, "qTabDataOutput::GetFlags");
-			comboEigerFlags2->setCurrentIndex(NONPARALLEL);
-			myDet->setReadOutFlags(slsDetectorDefs::NONPARALLEL);
-			qDefs::checkErrorMessage(myDet, "qTabDataOutput::GetFlags");
-		}
-
-		//valid flags
-		else {
-			if (ret & slsDetectorDefs::STORE_IN_RAM)
+	try {
+		int retval = myDet->setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS);
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "Readout flags are inconsistent for all detectors.", "qTabDataOutput::GetFlags");
+		} else {
+			// store in ram or continuous
+			if (retval & slsDetectorDefs::STORE_IN_RAM)
 				comboEigerFlags1->setCurrentIndex(STOREINRAM);
-			else if (ret & slsDetectorDefs::CONTINOUS_RO)
+			else if (retval & slsDetectorDefs::CONTINOUS_RO)
 				comboEigerFlags1->setCurrentIndex(CONTINUOUS);
-			if (ret & slsDetectorDefs::PARALLEL)
-				comboEigerFlags2->setCurrentIndex(PARALLEL);
-			else if (ret & slsDetectorDefs::NONPARALLEL)
-				comboEigerFlags2->setCurrentIndex(NONPARALLEL);
-			else if (ret & slsDetectorDefs::SAFE)
-				comboEigerFlags2->setCurrentIndex(SAFE);
-		}
+			else {
+				qDefs::Message(qDefs::WARNING, std::string("Unknown flag (Not Store in ram or Continous).") + std::to_string(retval), "qTabDataOutput::GetFlags");
+			}
 
-		connect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
-		connect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
-	}
+			// parallel or non parallel
+			if (retval & slsDetectorDefs::PARALLEL)
+				comboEigerFlags2->setCurrentIndex(PARALLEL);
+			else if (retval & slsDetectorDefs::NONPARALLEL)
+				comboEigerFlags2->setCurrentIndex(NONPARALLEL);
+			else {
+				qDefs::Message(qDefs::WARNING, std::string("Unknown flag (Not Parallel or Non Parallel).") + std::to_string(retval), "qTabDataOutput::GetFlags");
+			}
+		}
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get speed.", e.what(), "qTabDataOutput::GetSpeed");
+    }
+
+	connect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
+	connect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 }
 
 
 void qTabDataOutput::SetFlags() {
-	FILE_LOG(logINFO) << "Setting Readout Flags";
-	slsDetectorDefs::readOutFlags val = slsDetectorDefs::GET_READOUT_FLAGS;
+	auto flag1 = slsDetectorDefs::GET_READOUT_FLAGS;
+	auto flag2 = slsDetectorDefs::GET_READOUT_FLAGS;
 
 	//set to continous or storeinram
 	switch (comboEigerFlags1->currentIndex()) {
 	case STOREINRAM:
-		val = slsDetectorDefs::STORE_IN_RAM;
+		FILE_LOG(logINFO) << "Setting Readout Flags to Store in Ram";
+		flag1 = slsDetectorDefs::STORE_IN_RAM;
 		break;
 	default:
-		val = slsDetectorDefs::CONTINOUS_RO;
+		FILE_LOG(logINFO) << "Setting Readout Flags to Continuous";
+		flag1 = slsDetectorDefs::CONTINOUS_RO;
 		break;
 	}
-	myDet->setReadOutFlags(val);
-	qDefs::checkErrorMessage(myDet, "qTabDataOutput::setFlags");
 
 	//set to parallel, nonparallel or safe
 	switch (comboEigerFlags2->currentIndex()) {
 	case PARALLEL:
-		val = slsDetectorDefs::PARALLEL;
-		break;
-	case SAFE:
-		val = slsDetectorDefs::SAFE;
+		FILE_LOG(logINFO) << "Setting Readout Flags to Parallel";
+		flag2 = slsDetectorDefs::PARALLEL;
 		break;
 	default:
-		val = slsDetectorDefs::NONPARALLEL;
+		FILE_LOG(logINFO) << "Setting Readout Flags to Non Parallel";
+		flag2 = slsDetectorDefs::NONPARALLEL;
 		break;
 	}
-	myDet->setReadOutFlags(val);
-	qDefs::checkErrorMessage(myDet, "qTabDataOutput::setFlags");
 
-	//update flags
-	GetFlags();
-
+	try {
+        myDet->setReadOutFlags(flag1);
+		myDet->setReadOutFlags(flag2);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set readout flags.", e.what(), "qTabDataOutput::SetFlags");
+        GetFlags();
+    }
 }
 
 
@@ -503,52 +429,20 @@ void qTabDataOutput::Refresh() {
 	FILE_LOG(logDEBUG) << "**Updating DataOutput Tab";
 
 	EnableBrowse();
-	if (!myDet->enableWriteToFile())
-		boxFileWriteEnabled->setEnabled(false);
-	else
-		boxFileWriteEnabled->setEnabled(true);
-
-	// output dir
-	GetOutputDir();
-
-	//overwrite
-	GetFileOverwrite();
-
-	//file format
-	GetFileFormat();
-
-	//file name
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
-
-	// rate correction
+	GetOutputDir();
+	GetFileOverwrite();
+	GetFileFormat();
 	if (chkRate->isEnabled()) {
 		GetRateCorrection();
 	}
-
-	if (myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
-		btnOutputBrowse->setEnabled(false);
-		btnOutputBrowse->setToolTip("<font color=\"red\">This button is disabled as receiver PC is different from "
-				"client PC and hence different directory structures.</font><br><br>" +
-				dispOutputDir->toolTip());
-	} else {
-		btnOutputBrowse->setEnabled(true);
-		btnOutputBrowse->setToolTip(dispOutputDir->toolTip());
-	}
-
-	// 10GbE
 	if (chkTenGiga->isEnabled()) {
-		GetTenGigaEnable(-1, 1);
+		GetTenGigaEnable();
 	}
-
-	//Eiger specific
-	if (widgetEiger->isVisible()) {
-		//speed
+	if (widgetEiger->isEnabled()) {
 		GetSpeed();
-		//flags
 		GetFlags();
 	}
 
 	FILE_LOG(logDEBUG) << "**Updated DataOutput Tab";
-
-	qDefs::checkErrorMessage(myDet, "qTabDataOutput::Refresh");
 }

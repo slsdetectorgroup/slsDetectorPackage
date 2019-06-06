@@ -246,7 +246,7 @@ class qDefs : public QWidget {
 
     // executing multiSlsDetector funtion and using return value to set QWidget function 
     // (handling -1 for comboboxes)
-    template <class W, typename WRT, typename RT, typename... CT>
+    /*template <class W, typename WRT, typename RT, typename... CT>
     static void IgnoreNonCriticalExceptionsandMinus1(multiSlsDetector* det, 
             const std::string message, const std::string source,
             W* wid, void (W::*someQfunc)(WRT), 
@@ -265,7 +265,7 @@ class qDefs : public QWidget {
             ExceptionMessage(message, e.what(), source);
         }
     };
-
+*/
 
     // executing multiSlsDetector funtion and returning its value (integers, where value cannot be -1)
     /*  can easily get out of hand

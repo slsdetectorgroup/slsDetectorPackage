@@ -773,6 +773,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * adcphase for Gotthard, others for CTB & Moench)
      * @param value (clkdivider 0,1,2 for full, half and quarter speed). Other
      * values check manual
+     * @param mode 0 for shift, 1 for degrees. relevant only for speed type adcphase and dbit phase
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value of speed set
      */

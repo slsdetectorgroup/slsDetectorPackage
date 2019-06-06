@@ -763,6 +763,7 @@ class slsDetector : public virtual slsDetectorDefs{
      * @param sp speed type  (clkdivider option for Jungfrau and Eiger,
      * adcphase for Gotthard, others for CTB & Moench)
 	 * @param value (clkdivider 0,1,2 for full, half and quarter speed). Other values check manual
+	 * @param mode 0 for shift, 1 for degrees. relevant only for speed type adcphase and dbit phase
 	 * @returns value of speed set
 	 */
     int setSpeed(speedVariable sp, int value = -1, int mode = 0);

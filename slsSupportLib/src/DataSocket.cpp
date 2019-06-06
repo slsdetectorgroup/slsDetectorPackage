@@ -42,9 +42,8 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
     return *this;
 }
 
-int DataSocket::receiveData(void *buffer, size_t size) {
+int DataSocket::Receive(void *buffer, size_t size) {
     // TODO!(Erik) Add sleep? how many reties?
-    assert(size > 0);
     int bytes_expected = static_cast<int>(size); // signed size
     int bytes_read = 0;
     while (bytes_read < bytes_expected) {
@@ -65,7 +64,7 @@ int DataSocket::receiveData(void *buffer, size_t size) {
     }
 }
 
-int DataSocket::sendData(const void *buffer, size_t size) {
+int DataSocket::Send(const void *buffer, size_t size) {
     int bytes_sent = 0;
     int data_size = static_cast<int>(size); // signed size
     while (bytes_sent < (data_size)) {

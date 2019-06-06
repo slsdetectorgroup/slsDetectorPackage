@@ -422,49 +422,49 @@ int slsDetector::sendModule(sls_detector_module *myMod,
     FILE_LOG(level) << "Sending Module";
     int ts = 0;
     int n = 0;
-    n = client.sendData(&(myMod->serialnumber), sizeof(myMod->serialnumber));
+    n = client.Send(&(myMod->serialnumber), sizeof(myMod->serialnumber));
     ts += n;
     FILE_LOG(level) << "Serial number sent. " << n
                     << " bytes. serialno: " << myMod->serialnumber;
 
-    n = client.sendData(&(myMod->nchan), sizeof(myMod->nchan));
+    n = client.Send(&(myMod->nchan), sizeof(myMod->nchan));
     ts += n;
     FILE_LOG(level) << "nchan sent. " << n
                     << " bytes. serialno: " << myMod->nchan;
 
-    n = client.sendData(&(myMod->nchip), sizeof(myMod->nchip));
+    n = client.Send(&(myMod->nchip), sizeof(myMod->nchip));
     ts += n;
     FILE_LOG(level) << "nchip sent. " << n
                     << " bytes. serialno: " << myMod->nchip;
 
-    n = client.sendData(&(myMod->ndac), sizeof(myMod->ndac));
+    n = client.Send(&(myMod->ndac), sizeof(myMod->ndac));
     ts += n;
     FILE_LOG(level) << "ndac sent. " << n
                     << " bytes. serialno: " << myMod->ndac;
 
-    n = client.sendData(&(myMod->reg), sizeof(myMod->reg));
+    n = client.Send(&(myMod->reg), sizeof(myMod->reg));
     ts += n;
     FILE_LOG(level) << "reg sent. " << n << " bytes. serialno: " << myMod->reg;
 
-    n = client.sendData(&(myMod->iodelay), sizeof(myMod->iodelay));
+    n = client.Send(&(myMod->iodelay), sizeof(myMod->iodelay));
     ts += n;
     FILE_LOG(level) << "iodelay sent. " << n
                     << " bytes. serialno: " << myMod->iodelay;
 
-    n = client.sendData(&(myMod->tau), sizeof(myMod->tau));
+    n = client.Send(&(myMod->tau), sizeof(myMod->tau));
     ts += n;
     FILE_LOG(level) << "tau sent. " << n << " bytes. serialno: " << myMod->tau;
 
-    n = client.sendData(&(myMod->eV), sizeof(myMod->eV));
+    n = client.Send(&(myMod->eV), sizeof(myMod->eV));
     ts += n;
     FILE_LOG(level) << "ev sent. " << n << " bytes. serialno: " << myMod->eV;
 
-    n = client.sendData(myMod->dacs, sizeof(int) * (myMod->ndac));
+    n = client.Send(myMod->dacs, sizeof(int) * (myMod->ndac));
     ts += n;
     FILE_LOG(level) << "dacs sent. " << n << " bytes";
 
     if (shm()->myDetectorType == EIGER) {
-        n = client.sendData(myMod->chanregs, sizeof(int) * (myMod->nchan));
+        n = client.Send(myMod->chanregs, sizeof(int) * (myMod->nchan));
         ts += n;
         FILE_LOG(level) << "channels sent. " << n << " bytes";
     }
@@ -475,19 +475,19 @@ int slsDetector::receiveModule(sls_detector_module *myMod,
                                sls::ClientSocket &client) {
     int ts = 0;
     ts +=
-        client.receiveData(&(myMod->serialnumber), sizeof(myMod->serialnumber));
-    ts += client.receiveData(&(myMod->nchan), sizeof(myMod->nchan));
-    ts += client.receiveData(&(myMod->nchip), sizeof(myMod->nchip));
-    ts += client.receiveData(&(myMod->ndac), sizeof(myMod->ndac));
-    ts += client.receiveData(&(myMod->reg), sizeof(myMod->reg));
-    ts += client.receiveData(&(myMod->iodelay), sizeof(myMod->iodelay));
-    ts += client.receiveData(&(myMod->tau), sizeof(myMod->tau));
-    ts += client.receiveData(&(myMod->eV), sizeof(myMod->eV));
+        client.Receive(&(myMod->serialnumber), sizeof(myMod->serialnumber));
+    ts += client.Receive(&(myMod->nchan), sizeof(myMod->nchan));
+    ts += client.Receive(&(myMod->nchip), sizeof(myMod->nchip));
+    ts += client.Receive(&(myMod->ndac), sizeof(myMod->ndac));
+    ts += client.Receive(&(myMod->reg), sizeof(myMod->reg));
+    ts += client.Receive(&(myMod->iodelay), sizeof(myMod->iodelay));
+    ts += client.Receive(&(myMod->tau), sizeof(myMod->tau));
+    ts += client.Receive(&(myMod->eV), sizeof(myMod->eV));
 
-    ts += client.receiveData(myMod->dacs, sizeof(int) * (myMod->ndac));
+    ts += client.Receive(myMod->dacs, sizeof(int) * (myMod->ndac));
     FILE_LOG(logDEBUG1) << "received dacs of size " << ts;
     if (shm()->myDetectorType == EIGER) {
-        ts += client.receiveData(myMod->chanregs, sizeof(int) * (myMod->nchan));
+        ts += client.Receive(myMod->chanregs, sizeof(int) * (myMod->nchan));
         FILE_LOG(logDEBUG1)
             << "nchans= " << shm()->nChans << " nchips= " << shm()->nChips
             << "mod - nchans= " << myMod->nchan << " nchips= " << myMod->nchip
@@ -528,9 +528,9 @@ slsDetector::getTypeFromDetector(const std::string &hostname, int cport) {
     detectorType retval = GENERIC;
     FILE_LOG(logDEBUG1) << "Getting detector type ";
     sls::ClientSocket cs("Detector", hostname, cport);
-    cs.sendData(reinterpret_cast<char *>(&fnum), sizeof(fnum));
-    cs.receiveData(reinterpret_cast<char *>(&ret), sizeof(ret));
-    cs.receiveData(reinterpret_cast<char *>(&retval), sizeof(retval));
+    cs.Send(reinterpret_cast<char *>(&fnum), sizeof(fnum));
+    cs.Receive(reinterpret_cast<char *>(&ret), sizeof(ret));
+    cs.Receive(reinterpret_cast<char *>(&retval), sizeof(retval));
     FILE_LOG(logDEBUG1) << "Detector type is " << retval;
     return retval;
 }
@@ -788,91 +788,91 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
     int n = 0, i32 = 0;
     int64_t i64 = 0;
     char lastClientIP[INET_ADDRSTRLEN] = {0};
-    n += client.receiveData(lastClientIP, sizeof(lastClientIP));
+    n += client.Receive(lastClientIP, sizeof(lastClientIP));
     FILE_LOG(logDEBUG1) << "Updating detector last modified by "
                         << lastClientIP;
 
     // dr
-    n += client.receiveData(&i32, sizeof(i32));
+    n += client.Receive(&i32, sizeof(i32));
     shm()->dynamicRange = i32;
 
     // databytes
-    n += client.receiveData(&i32, sizeof(i32));
+    n += client.Receive(&i32, sizeof(i32));
     shm()->dataBytes = i32;
 
     // settings
     if ((shm()->myDetectorType != CHIPTESTBOARD) &&
         (shm()->myDetectorType != MOENCH)) {
-        n += client.receiveData(&i32, sizeof(i32));
+        n += client.Receive(&i32, sizeof(i32));
         shm()->currentSettings = static_cast<detectorSettings>(i32);
     }
 
     // threshold
     if (shm()->myDetectorType == EIGER) {
-        n += client.receiveData(&i32, sizeof(i32));
+        n += client.Receive(&i32, sizeof(i32));
         shm()->currentThresholdEV = i32;
     }
 
     // frame number
-    n += client.receiveData(&i64, sizeof(i64));
+    n += client.Receive(&i64, sizeof(i64));
     shm()->timerValue[FRAME_NUMBER] = i64;
 
     // exptime
-    n += client.receiveData(&i64, sizeof(i64));
+    n += client.Receive(&i64, sizeof(i64));
     shm()->timerValue[ACQUISITION_TIME] = i64;
 
     // subexptime, subdeadtime
     if (shm()->myDetectorType == EIGER) {
-        n += client.receiveData(&i64, sizeof(i64));
+        n += client.Receive(&i64, sizeof(i64));
         shm()->timerValue[SUBFRAME_ACQUISITION_TIME] = i64;
 
-        n += client.receiveData(&i64, sizeof(i64));
+        n += client.Receive(&i64, sizeof(i64));
         shm()->timerValue[SUBFRAME_DEADTIME] = i64;
     }
 
     // period
-    n += client.receiveData(&i64, sizeof(i64));
+    n += client.Receive(&i64, sizeof(i64));
     shm()->timerValue[FRAME_PERIOD] = i64;
 
     // delay
     if (shm()->myDetectorType != EIGER) {
-        n += client.receiveData(&i64, sizeof(i64));
+        n += client.Receive(&i64, sizeof(i64));
         shm()->timerValue[DELAY_AFTER_TRIGGER] = i64;
     }
 
     if (shm()->myDetectorType == JUNGFRAU) {
         // storage cell
-        n += client.receiveData(&i64, sizeof(i64));
+        n += client.Receive(&i64, sizeof(i64));
         shm()->timerValue[STORAGE_CELL_NUMBER] = i64;
 
         // storage cell delay
-        n += client.receiveData(&i64, sizeof(i64));
+        n += client.Receive(&i64, sizeof(i64));
         shm()->timerValue[STORAGE_CELL_DELAY] = i64;
     }
 
     // cycles
-    n += client.receiveData(&i64, sizeof(i64));
+    n += client.Receive(&i64, sizeof(i64));
     shm()->timerValue[CYCLES_NUMBER] = i64;
 
     // readout flags
     if (shm()->myDetectorType == EIGER ||
         shm()->myDetectorType == CHIPTESTBOARD) {
-        n += client.receiveData(&i32, sizeof(i32));
+        n += client.Receive(&i32, sizeof(i32));
         shm()->roFlags = static_cast<readOutFlags>(i32);
     }
 
     // roi
     if (shm()->myDetectorType == GOTTHARD) {
-        n += client.receiveData(&i32, sizeof(i32));
+        n += client.Receive(&i32, sizeof(i32));
         shm()->nROI = i32;
         for (int i = 0; i < shm()->nROI; ++i) {
-            n += client.receiveData(&i32, sizeof(i32));
+            n += client.Receive(&i32, sizeof(i32));
             shm()->roiLimits[i].xmin = i32;
-            n += client.receiveData(&i32, sizeof(i32));
+            n += client.Receive(&i32, sizeof(i32));
             shm()->roiLimits[i].xmax = i32;
-            n += client.receiveData(&i32, sizeof(i32));
+            n += client.Receive(&i32, sizeof(i32));
             shm()->roiLimits[i].ymin = i32;
-            n += client.receiveData(&i32, sizeof(i32));
+            n += client.Receive(&i32, sizeof(i32));
             shm()->roiLimits[i].xmax = i32;
         }
     }
@@ -880,20 +880,20 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
     if (shm()->myDetectorType == CHIPTESTBOARD ||
         shm()->myDetectorType == MOENCH) {
         // analog samples
-        n += client.receiveData(&i64, sizeof(i64));
+        n += client.Receive(&i64, sizeof(i64));
         if (i64 >= 0) {
             shm()->timerValue[ANALOG_SAMPLES] = i64;
         }
         
         // digital samples
-        n += client.receiveData(&i64, sizeof(i64));
+        n += client.Receive(&i64, sizeof(i64));
         if (i64 >= 0) {
             shm()->timerValue[DIGITAL_SAMPLES] = i64;
         }
 
         // adcmask
         uint32_t u32 = 0;
-        n += client.receiveData(&u32, sizeof(u32));
+        n += client.Receive(&u32, sizeof(u32));
         shm()->adcEnableMask = u32;
         if (shm()->myDetectorType == MOENCH)
             setAdditionalJsonParameter("adcmask", std::to_string(u32));
@@ -2459,13 +2459,13 @@ int slsDetector::sendImageToDetector(imageType index, int16_t imageVals[]) {
 
     if (shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.sendData(&fnum, sizeof(fnum));
-        client.sendData(args, sizeof(args));
-        client.sendData(imageVals, nChan * sizeof(int16_t));
-        client.receiveData(&ret, sizeof(ret));
+        client.Send(&fnum, sizeof(fnum));
+        client.Send(args, sizeof(args));
+        client.Send(imageVals, nChan * sizeof(int16_t));
+        client.Receive(&ret, sizeof(ret));
         if (ret == FAIL) {
             char mess[MAX_STR_LENGTH]{};
-            client.receiveData(mess, MAX_STR_LENGTH);
+            client.Receive(mess, MAX_STR_LENGTH);
             throw DetectorError("Detector " + std::to_string(detId) +
                                 " returned error: " + std::string(mess));
         }
@@ -2554,32 +2554,32 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
 
     if (shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.sendData(&fnum, sizeof(fnum));
-        client.sendData(&narg, sizeof(narg));
+        client.Send(&fnum, sizeof(fnum));
+        client.Send(&narg, sizeof(narg));
         if (narg != -1) {
             for (int i = 0; i < narg; ++i) {
-                client.sendData(&arg[i].xmin, sizeof(int));
-                client.sendData(&arg[i].xmax, sizeof(int));
-                client.sendData(&arg[i].ymin, sizeof(int));
-                client.sendData(&arg[i].ymax, sizeof(int));
+                client.Send(&arg[i].xmin, sizeof(int));
+                client.Send(&arg[i].xmax, sizeof(int));
+                client.Send(&arg[i].ymin, sizeof(int));
+                client.Send(&arg[i].ymax, sizeof(int));
             }
         }
-        client.receiveData(&ret, sizeof(ret));
+        client.Receive(&ret, sizeof(ret));
 
         // handle ret
         if (ret == FAIL) {
             char mess[MAX_STR_LENGTH]{};
-            client.receiveData(mess, MAX_STR_LENGTH);
+            client.Receive(mess, MAX_STR_LENGTH);
             throw RuntimeError("Detector " + std::to_string(detId) +
                                " returned error: " + std::string(mess));
         } else {
-            client.receiveData(&nretval, sizeof(nretval));
+            client.Receive(&nretval, sizeof(nretval));
             int nrec = 0;
             for (int i = 0; i < nretval; ++i) {
-                nrec += client.receiveData(&retval[i].xmin, sizeof(int));
-                nrec += client.receiveData(&retval[i].xmax, sizeof(int));
-                nrec += client.receiveData(&retval[i].ymin, sizeof(int));
-                nrec += client.receiveData(&retval[i].ymax, sizeof(int));
+                nrec += client.Receive(&retval[i].xmin, sizeof(int));
+                nrec += client.Receive(&retval[i].xmax, sizeof(int));
+                nrec += client.Receive(&retval[i].ymin, sizeof(int));
+                nrec += client.Receive(&retval[i].ymax, sizeof(int));
             }
             shm()->nROI = nretval;
             FILE_LOG(logDEBUG1) << "nRoi: " << nretval;
@@ -2618,21 +2618,21 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
         FILE_LOG(logDEBUG1) << "Sending ROI to receiver: " << shm()->nROI;
 
         auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        receiver.sendData(&fnum, sizeof(fnum));
-        receiver.sendData(&narg, sizeof(narg));
+        receiver.Send(&fnum, sizeof(fnum));
+        receiver.Send(&narg, sizeof(narg));
         if (narg != -1) {
             for (int i = 0; i < narg; ++i) {
-                receiver.sendData(&arg[i].xmin, sizeof(int));
-                receiver.sendData(&arg[i].xmax, sizeof(int));
-                receiver.sendData(&arg[i].ymin, sizeof(int));
-                receiver.sendData(&arg[i].ymax, sizeof(int));
+                receiver.Send(&arg[i].xmin, sizeof(int));
+                receiver.Send(&arg[i].xmax, sizeof(int));
+                receiver.Send(&arg[i].ymin, sizeof(int));
+                receiver.Send(&arg[i].ymax, sizeof(int));
             }
         }
-        receiver.receiveData(&ret, sizeof(ret));
+        receiver.Receive(&ret, sizeof(ret));
 
         if (ret == FAIL) {
             char mess[MAX_STR_LENGTH]{};
-            receiver.receiveData(mess, MAX_STR_LENGTH);
+            receiver.Receive(mess, MAX_STR_LENGTH);
             throw ReceiverError("Receiver " + std::to_string(detId) +
                                 " returned error: " + std::string(mess));
         }
@@ -2979,12 +2979,12 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
 
     if (shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.sendData(&fnum, sizeof(fnum));
-        client.sendData(&filesize, sizeof(filesize));
-        client.receiveData(&ret, sizeof(ret));
+        client.Send(&fnum, sizeof(fnum));
+        client.Send(&filesize, sizeof(filesize));
+        client.Receive(&ret, sizeof(ret));
         // error in detector at opening file pointer to flash
         if (ret == FAIL) {
-            client.receiveData(mess, sizeof(mess));
+            client.Receive(mess, sizeof(mess));
             std::ostringstream os;
             os << "Detector " << detId << " (" << shm()->hostname << ")"
                << " returned error: " << mess;
@@ -3029,8 +3029,8 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
             FILE_LOG(logDEBUG1) << "unitprogramsize:" << unitprogramsize
                                 << "\t filesize:" << filesize;
 
-            client.sendData(&buffer[currentPointer], unitprogramsize);
-            client.receiveData(&ret, sizeof(ret));
+            client.Send(&buffer[currentPointer], unitprogramsize);
+            client.Receive(&ret, sizeof(ret));
             if (ret != FAIL) {
                 filesize -= unitprogramsize;
                 currentPointer += unitprogramsize;
@@ -3043,7 +3043,7 @@ int slsDetector::programFPGA(std::vector<char> buffer) {
                 std::cout << std::flush;
             } else {
                 printf("\n");
-                client.receiveData(mess, sizeof(mess));
+                client.Receive(mess, sizeof(mess));
                 std::ostringstream os;
                 os << "Detector " << detId << " (" << shm()->hostname << ")"
                    << " returned error: " << mess;
@@ -3090,7 +3090,7 @@ int slsDetector::rebootController() {
                       << " (" << shm()->hostname << ")";
     if (shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.sendData(&fnum, sizeof(fnum));
+        client.Send(&fnum, sizeof(fnum));
         ret = OK;
     }
     return ret;
@@ -3128,16 +3128,16 @@ int slsDetector::setModule(sls_detector_module &module, int tb) {
     }
     if (shm()->onlineFlag == ONLINE_FLAG) {
         auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.sendData(&fnum, sizeof(fnum));
+        client.Send(&fnum, sizeof(fnum));
         sendModule(&module, client);
-        client.receiveData(&ret, sizeof(ret));
+        client.Receive(&ret, sizeof(ret));
         if (ret == FAIL) {
             char mess[MAX_STR_LENGTH] = {0};
-            client.receiveData(mess, sizeof(mess));
+            client.Receive(mess, sizeof(mess));
             throw RuntimeError("Detector " + std::to_string(detId) +
                                " returned error: " + mess);
         }
-        client.receiveData(&retval, sizeof(retval));
+        client.Receive(&retval, sizeof(retval));
         FILE_LOG(logDEBUG1) << "Set Module returned: " << retval;
     }
     if (ret == FORCE_UPDATE) {
@@ -3317,95 +3317,95 @@ int slsDetector::updateCachedReceiverVariables() const {
             char cstring[MAX_STR_LENGTH]{};
             char lastClientIP[INET_ADDRSTRLEN]{};
 
-            n += receiver.receiveData(lastClientIP, sizeof(lastClientIP));
+            n += receiver.Receive(lastClientIP, sizeof(lastClientIP));
             FILE_LOG(logDEBUG1)
                 << "Updating receiver last modified by " << lastClientIP;
 
             // filepath
-            n += receiver.receiveData(cstring, sizeof(cstring));
+            n += receiver.Receive(cstring, sizeof(cstring));
             sls::strcpy_safe(shm()->rxFilePath, cstring);
 
             // filename
-            n += receiver.receiveData(cstring, sizeof(cstring));
+            n += receiver.Receive(cstring, sizeof(cstring));
             sls::strcpy_safe(shm()->rxFileName, cstring);
 
             // index
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxFileIndex = i32;
 
             // file format
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxFileFormat = static_cast<fileFormat>(i32);
 
             // frames per file
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxFramesPerFile = i32;
 
             // frame discard policy
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxFrameDiscardMode = static_cast<frameDiscardPolicy>(i32);
 
             // frame padding
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxFramePadding = static_cast<bool>(i32);
 
             // file write enable
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxFileWrite = static_cast<bool>(i32);
 
             // master file write enable
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxMasterFileWrite = static_cast<bool>(i32);
 
             // file overwrite enable
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxFileOverWrite = static_cast<bool>(i32);
 
             // gap pixels
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->gappixels = i32;
 
             // receiver read frequency
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxReadFreq = i32;
 
             // receiver streaming port
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxZmqport = i32;
 
             // streaming source ip
-            n += receiver.receiveData(cstring, sizeof(cstring));
+            n += receiver.Receive(cstring, sizeof(cstring));
             sls::strcpy_safe(shm()->rxZmqip, cstring);
 
             // additional json header
-            n += receiver.receiveData(cstring, sizeof(cstring));
+            n += receiver.Receive(cstring, sizeof(cstring));
             sls::strcpy_safe(shm()->rxAdditionalJsonHeader, cstring);
 
             // receiver streaming enable
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxUpstream = static_cast<bool>(i32);
 
             // activate
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->activated = static_cast<bool>(i32);
 
             // deactivated padding enable
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxPadDeactivatedModules = static_cast<bool>(i32);
 
             // silent mode
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxSilentMode = static_cast<bool>(i32);
 
             // dbit list
             {
                 sls::FixedCapacityContainer<int, MAX_RX_DBIT> temp;
-                n += receiver.receiveData(&temp, sizeof(temp));
+                n += receiver.Receive(&temp, sizeof(temp));
                 shm()->rxDbitList = temp;
             }
 
             // dbit offset
-            n += receiver.receiveData(&i32, sizeof(i32));
+            n += receiver.Receive(&i32, sizeof(i32));
             shm()->rxDbitOffset = i32;
 
             if (n == 0) {

@@ -1,6 +1,6 @@
 #include "ClientSocket.h"
-#include "sls_detector_exceptions.h"
 #include "clara.hpp"
+#include "sls_detector_exceptions.h"
 #include "tests/testenum.h"
 
 #include "container_utils.h"
@@ -36,45 +36,50 @@ int main(int argc, char **argv) {
     for (int i = 0; i != 100; ++i) {
         std::cout << "Sending: " << i << "\n";
         auto socket = sls::ClientSocket("test", hostname, port);
-        std::cout << "Sent: " << socket.sendData(func_id::read_int)
-                  << " bytes\n";
-        std::cout << "Sent: " << socket.sendData(i) << " bytes\n";
+        std::cout << "Sent: " << socket.Send(func_id::read_int) << " bytes\n";
+        std::cout << "Sent: " << socket.Send(i) << " bytes\n";
     }
 
     // Sending larger blocks
     for (int i = 0; i != 5; ++i) {
         std::cout << "Sending data\n";
         auto socket = sls::ClientSocket("test", hostname, port);
-        std::cout << "Sent: " << socket.sendData(func_id::read_data)
-                  << " bytes\n";
-        std::cout << "Sent: " << socket.sendData(data.get(), DATA_SIZE)
+        std::cout << "Sent: " << socket.Send(func_id::read_data) << " bytes\n";
+        std::cout << "Sent: " << socket.Send(data.get(), DATA_SIZE)
                   << " bytes\n";
     }
 
     // Send too little data
     {
         auto socket = sls::ClientSocket("test", hostname, port);
-        std::cout << "Sent: " << socket.sendData(func_id::read_data)
-                  << " bytes\n";
-        std::cout << "Sent: " << socket.sendData(data.get(), DATA_SIZE / 2)
+        std::cout << "Sent: " << socket.Send(func_id::read_data) << " bytes\n";
+        std::cout << "Sent: " << socket.Send(data.get(), DATA_SIZE / 2)
                   << " bytes\n";
     }
-        // Send too much data
-    try{
+    // Send too much data
+    try {
         auto socket = sls::ClientSocket("test", hostname, port);
-        std::cout << "Sent: " << socket.sendData(func_id::read_half_data)
+        std::cout << "Sent: " << socket.Send(func_id::read_half_data)
                   << " bytes\n";
-        std::cout << "Sent: " << socket.sendData(data.get(), DATA_SIZE)
+        std::cout << "Sent: " << socket.Send(data.get(), DATA_SIZE)
                   << " bytes\n";
-    }catch(const sls::SocketError& e){
-
+    } catch (const sls::SocketError &e) {
     }
     // Some ints again
     for (int i = 0; i != 10; ++i) {
         std::cout << "Sending: " << i << "\n";
         auto socket = sls::ClientSocket("test", hostname, port);
-        std::cout << "Sent: " << socket.sendData(func_id::read_int)
-                  << " bytes\n";
-        std::cout << "Sent: " << socket.sendData(i) << " bytes\n";
+        std::cout << "Sent: " << socket.Send(func_id::read_int) << " bytes\n";
+        std::cout << "Sent: " << socket.Send(i) << " bytes\n";
+    }
+
+    // some combined sends
+    {
+        int a = 9;
+        double b = 18.3;
+        float c = -1.2;
+        auto socket = sls::ClientSocket("test", hostname, port);
+        int s = socket.SendAll(func_id::combined, a, b, c);
+        std::cout << "send all: " << s << "\n";
     }
 }

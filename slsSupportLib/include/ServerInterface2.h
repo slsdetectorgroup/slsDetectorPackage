@@ -22,23 +22,10 @@ class ServerInterface2 : public DataSocket {
     }
 
     template <typename T> int sendResult(T &&retval) {
-        sendData(defs::OK);
-        sendData(retval);
+        Send(defs::OK);
+        Send(retval);
         return defs::OK;
     }
-
-    int receiveArg(void *arg, int sizeofArg);
-
-    template <typename T> int receiveArg(T &arg) {
-        return receiveArg(&arg, sizeof(arg));
-    }
-    template <typename T> T receive() {
-        T arg;
-        receiveArg(&arg, sizeof(arg));
-        return arg;
-    }
-
-  private:
 };
 
 } // namespace sls

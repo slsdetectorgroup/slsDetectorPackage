@@ -10,14 +10,14 @@ std::vector<char> server() {
     auto server = sls::ServerSocket(1950);
     auto s = server.accept();
     std::vector<char> buffer(100, '\0');
-    s.receiveData(buffer.data(), buffer.size());
+    s.Receive(buffer.data(), buffer.size());
     std::cout << "ServerReceived: " << std::string(buffer.begin(), buffer.end())
               << '\n';
     
     std::vector<char> to_send(100, '\0');
     to_send[0] = 'O';
     to_send[1] = 'K';
-    s.sendData(to_send.data(), to_send.size());
+    s.Send(to_send.data(), to_send.size());
     s.close();
     return buffer;
 }
@@ -31,8 +31,8 @@ TEST_CASE("The server recive the same message as we send", "[support]") {
     auto s = std::async(std::launch::async, server);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     auto client = sls::DetectorSocket("localhost", 1950);
-    client.sendData(sent_message.data(), sent_message.size());
-    client.receiveData(received_message.data(), received_message.size());
+    client.Send(sent_message.data(), sent_message.size());
+    client.Receive(received_message.data(), received_message.size());
     client.close();
     auto server_message = s.get();
 

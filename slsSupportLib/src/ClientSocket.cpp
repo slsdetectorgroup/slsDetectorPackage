@@ -62,19 +62,19 @@ int ClientSocket::sendCommandThenRead(int fnum, const void *args,
                                       size_t args_size, void *retval,
                                       size_t retval_size) {
     int ret = slsDetectorDefs::FAIL;
-    sendData(&fnum, sizeof(fnum));
-    sendData(args, args_size);
+    Send(&fnum, sizeof(fnum));
+    Send(args, args_size);
     readReply(ret, retval, retval_size);
     return ret;
 }
 
 void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
 
-    read(&ret, sizeof(ret));
+    Receive(&ret, sizeof(ret));
     if (ret == slsDetectorDefs::FAIL) {
         char mess[MAX_STR_LENGTH]{};
         // get error message
-        read(mess, sizeof(mess));
+        Receive(mess, sizeof(mess));
         // Do we need to know hostname here?
         // In that case save it???
         if (socketType == "Receiver") {
@@ -86,7 +86,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         }
     }
     // get retval
-    read(retval, retval_size);
+    Receive(retval, retval_size);
 }
 
 }; // namespace sls

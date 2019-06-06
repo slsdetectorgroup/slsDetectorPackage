@@ -6,7 +6,7 @@
 #include "container_utils.h"
 #include <iostream>
 #include <unordered_map>
-
+#include "ServerInterface2.h"
 
 using Interface = sls::ServerInterface2;
 using func_ptr = int (*)(Interface &);

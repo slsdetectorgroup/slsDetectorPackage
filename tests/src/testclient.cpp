@@ -1,10 +1,11 @@
 #include "ClientSocket.h"
 #include "clara.hpp"
+#include "tests/testenum.h"
 
 #include <iostream>
 #include "container_utils.h"
 
-constexpr size_t MB = 1048576;
+
 
 int main(int argc, char** argv) {
     std::cout << "Test client\n";
@@ -22,15 +23,21 @@ int main(int argc, char** argv) {
     }
     std::cout << "Sending to: " << hostname << ":" << port << "\n";
     
-    constexpr size_t size = 1*MB;
-    auto data = sls::make_unique<char[]>(size);
+    
+    auto data = sls::make_unique<char[]>(DATA_SIZE);
 
-    for (int64_t i = 0; i!=10; ++i){
+    for (int64_t i = 0; i!=50; ++i){
         std::cout << "Sending: " << i << "\n";
         auto socket = sls::ClientSocket("test", hostname, port);
+        std::cout << "Sent: " << socket.sendData(func_id::read_int) << " bytes\n";
         std::cout << "Sent: " << socket.sendData(i) << " bytes\n";
-        std::cout << "Sent: " << socket.sendData(data.get(), size) << " bytes\n";
+    }
 
+    for (int64_t i = 0; i!=5; ++i){
+        std::cout << "Sending data\n";
+        auto socket = sls::ClientSocket("test", hostname, port);
+        std::cout << "Sent: " << socket.sendData(func_id::read_data) << " bytes\n";
+        std::cout << "Sent: " << socket.sendData(data.get(), DATA_SIZE) << " bytes\n";
     }
         
 

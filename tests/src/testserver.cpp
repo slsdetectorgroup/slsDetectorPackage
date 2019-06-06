@@ -1,10 +1,31 @@
 #include "ServerSocket.h"
 #include "clara.hpp"
 
-#include <iostream>
-#include "container_utils.h"
+#include "tests/testenum.h"
 
-constexpr size_t MB = 1048576;
+#include "container_utils.h"
+#include <iostream>
+#include <unordered_map>
+
+
+using Interface = sls::ServerInterface2;
+using func_ptr = int (*)(Interface &);
+
+int read_data(Interface &socket) {
+    auto data = sls::make_unique<char[]>(DATA_SIZE);
+    std::cout << "Read: " << socket.receiveData(data.get(), DATA_SIZE)
+              << " bytes into buffer\n";
+    return 0;
+}
+
+int read_int(Interface &socket) {
+    auto i = socket.receive<int>();
+    std::cout << "Read <int>: " << i << "\n";
+    return 0;
+}
+
+static std::unordered_map<func_id, func_ptr> fmap{
+    {func_id::read_data, &read_data}, {func_id::read_int, &read_int}};
 
 int main(int argc, char **argv) {
     std::cout << "Test server\n";
@@ -20,14 +41,13 @@ int main(int argc, char **argv) {
     std::cout << "Listening to port: " << port << "\n";
     auto server = sls::ServerSocket(port);
 
-    auto data = sls::make_unique<char[]>(1*MB);
-
     while (true) {
         try {
             auto socket = server.accept();
-            auto val = socket.receive<long>();
-            std::cout << "Value: " << val << "\n";
-            std::cout << "Read: " << socket.receiveData(data.get(), 1*MB) << " bytes";
+            auto fnum = socket.receive<func_id>();
+            std::cout << "Calling func: " << (int)fnum << "\n";
+            auto ret = (*fmap[fnum])(socket);
+            // std::cout << "function returned: " << ret << "\n";
 
         } catch (const sls::RuntimeError &e) {
         }

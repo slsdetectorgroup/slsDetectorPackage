@@ -16,6 +16,7 @@
 class multiSlsDetector;
 class ServerInterface;
 
+
 #define SLS_SHMVERSION 0x190515
 
 
@@ -176,10 +177,10 @@ struct sharedSlsDetector {
     int rxReadFreq;
 
     /**  zmq tcp src ip address in client (only data) **/
-    char zmqip[MAX_STR_LENGTH];
+    sls::IpAddr zmqip;
 
     /**  zmq tcp src ip address in receiver (only data) **/
-    char rxZmqip[MAX_STR_LENGTH];
+    sls::IpAddr rxZmqip;
 
     /** gap pixels enable */
     int gappixels;

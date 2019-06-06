@@ -75,7 +75,7 @@ std::ostream &operator<<(std::ostream &out, const MacAddr &addr) {
     return out << addr.str();
 }
 
-uint32_t HostnameToIp(const char *hostname) {
+IpAddr HostnameToIp(const char *hostname) {
     addrinfo hints;
     addrinfo *result = nullptr;
     memset(&hints, 0, sizeof(hints));
@@ -87,7 +87,7 @@ uint32_t HostnameToIp(const char *hostname) {
     }
     uint32_t ip = ((sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
     freeaddrinfo(result);
-    return ip;
+    return IpAddr(ip);
 }
 
 std::string IpToInterfaceName(const std::string &ip) {

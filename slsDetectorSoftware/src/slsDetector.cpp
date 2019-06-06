@@ -348,9 +348,9 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
                        (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxUpstream = false;
     shm()->rxReadFreq = 0;
-    memset(shm()->zmqip, 0, MAX_STR_LENGTH);
-    memset(shm()->rxZmqip, 0, MAX_STR_LENGTH);
-    shm()->gappixels = 0;
+    shm()->zmqip = 0u;
+    shm()->rxZmqip = 0u;
+    shm()->gappixels = 0u;
     memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
     shm()->detectorControlAPIVersion = 0;
     shm()->detectorStopAPIVersion = 0;
@@ -413,7 +413,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 
     // update #nchans and databytes, as it depends on #samples, adcmask,
     // readoutflags (ctb only)
-     updateTotalNumberOfChannels();
+    updateTotalNumberOfChannels();
 }
 
 int slsDetector::sendModule(sls_detector_module *myMod,
@@ -474,8 +474,7 @@ int slsDetector::sendModule(sls_detector_module *myMod,
 int slsDetector::receiveModule(sls_detector_module *myMod,
                                sls::ClientSocket &client) {
     int ts = 0;
-    ts +=
-        client.Receive(&(myMod->serialnumber), sizeof(myMod->serialnumber));
+    ts += client.Receive(&(myMod->serialnumber), sizeof(myMod->serialnumber));
     ts += client.Receive(&(myMod->nchan), sizeof(myMod->nchan));
     ts += client.Receive(&(myMod->nchip), sizeof(myMod->nchip));
     ts += client.Receive(&(myMod->ndac), sizeof(myMod->ndac));
@@ -511,7 +510,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeFromShm(int multi_id,
         std::ostringstream ss;
         ss << "Single shared memory (" << multi_id << "-" << detId
            << ":)version mismatch (expected 0x" << std::hex << SLS_SHMVERSION
-           << " but got 0x" << shm()->shmversion << ")" << std::dec 
+           << " but got 0x" << shm()->shmversion << ")" << std::dec
            << ". Clear Shared memory to continue.";
         shm.UnmapSharedMemory();
         throw SharedMemoryError(ss.str());
@@ -591,24 +590,26 @@ void slsDetector::updateTotalNumberOfChannels() {
                         ++nachans;
                 }
             }
-            adatabytes = nachans * (shm()->dynamicRange / 8) * 
-            shm()->timerValue[ANALOG_SAMPLES];
-            FILE_LOG(logDEBUG1)
-                << "#Analog Channels:" << nachans << " Databytes: " << adatabytes;
+            adatabytes = nachans * (shm()->dynamicRange / 8) *
+                         shm()->timerValue[ANALOG_SAMPLES];
+            FILE_LOG(logDEBUG1) << "#Analog Channels:" << nachans
+                                << " Databytes: " << adatabytes;
         }
 
         // digital channels (ctb only, digital, analog/digital readout)
         if (shm()->myDetectorType == CHIPTESTBOARD &&
-            (((shm()->roFlags & DIGITAL_ONLY) != 0) || ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
+            (((shm()->roFlags & DIGITAL_ONLY) != 0) ||
+             ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
             ndchans = 64;
-            ddatabytes = (sizeof(uint64_t) * shm()->timerValue[DIGITAL_SAMPLES]);
+            ddatabytes =
+                (sizeof(uint64_t) * shm()->timerValue[DIGITAL_SAMPLES]);
             FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans
                                 << " Databytes: " << ddatabytes;
         }
         shm()->nChans = nachans + ndchans;
         shm()->dataBytes = adatabytes + ddatabytes;
-        FILE_LOG(logDEBUG1) << "# Total #Channels:" << shm()->nChans 
-            << " Databytes: " << shm()->dataBytes;
+        FILE_LOG(logDEBUG1) << "# Total #Channels:" << shm()->nChans
+                            << " Databytes: " << shm()->dataBytes;
     }
 }
 
@@ -884,7 +885,7 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
         if (i64 >= 0) {
             shm()->timerValue[ANALOG_SAMPLES] = i64;
         }
-        
+
         // digital samples
         n += client.Receive(&i64, sizeof(i64));
         if (i64 >= 0) {
@@ -897,9 +898,9 @@ int slsDetector::updateDetectorNoWait(sls::ClientSocket &client) {
         shm()->adcEnableMask = u32;
         if (shm()->myDetectorType == MOENCH)
             setAdditionalJsonParameter("adcmask", std::to_string(u32));
-        
+
         // update #nchans and databytes, as it depends on #samples, adcmask,
-        // readoutflags 
+        // readoutflags
         updateTotalNumberOfChannels();
     }
 
@@ -1472,7 +1473,7 @@ int slsDetector::configureMAC() {
         ret = client.sendCommandThenRead(fnum, args, sizeof(args), retvals,
                                          sizeof(retvals));
 
-        //TODO!(Erik) Send as int already from detector
+        // TODO!(Erik) Send as int already from detector
         uint64_t detector_mac = 0;
         uint32_t detector_ip = 0;
         sscanf(retvals[0], "%lx", &detector_mac);
@@ -1537,7 +1538,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
         FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
         shm()->timerValue[index] = retval;
         // update #nchans and databytes, as it depends on #samples, adcmask,
-        // readoutflags 
+        // readoutflags
         if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
             updateTotalNumberOfChannels();
         }
@@ -1729,7 +1730,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
         FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
         shm()->roFlags = retval;
         // update #nchans and databytes, as it depends on #samples, adcmask,
-        // readoutflags 
+        // readoutflags
         if (shm()->myDetectorType == CHIPTESTBOARD) {
             updateTotalNumberOfChannels();
         }
@@ -1904,7 +1905,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << (shm()->timerValue[SUBFRAME_ACQUISITION_TIME])
             << "\nsub dead time:" << (shm()->timerValue[SUBFRAME_DEADTIME])
             << "\nasamples:" << (shm()->timerValue[ANALOG_SAMPLES])
-            << "\ndsamples:" << (shm()->timerValue[DIGITAL_SAMPLES]) 
+            << "\ndsamples:" << (shm()->timerValue[DIGITAL_SAMPLES])
             << "\ndynamic range:" << shm()->dynamicRange
             << "\nflippeddatax:" << (shm()->flippedData[X])
             << "\nactivated: " << shm()->activated
@@ -1919,8 +1920,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             << "\nrx additional json header:" << shm()->rxAdditionalJsonHeader
             << "\nrx_datastream:" << enableDataStreamingFromReceiver(-1)
             << "\nrx_dbitlistsize:" << shm()->rxDbitList.size()
-            << "\nrx_DbitOffset:" << shm()->rxDbitOffset
-            << std::endl;
+            << "\nrx_DbitOffset:" << shm()->rxDbitOffset << std::endl;
 
         if (setDetectorType(shm()->myDetectorType) != GENERIC) {
             sendMultiDetectorSize();
@@ -1959,7 +1959,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 enableTenGigabitEthernet(shm()->tenGigaEnable);
                 setReadOutFlags(GET_READOUT_FLAGS);
                 break;
-            
+
             case CHIPTESTBOARD:
                 setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
                 setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
@@ -1977,8 +1977,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 break;
 
             case GOTTHARD:
-                 sendROI(-1, nullptr);
-                 break;
+                sendROI(-1, nullptr);
+                break;
 
             default:
                 break;
@@ -2141,25 +2141,17 @@ void slsDetector::setReceiverStreamingPort(int port) {
 int slsDetector::getReceiverStreamingPort() { return shm()->rxZmqport; }
 
 void slsDetector::setClientStreamingIP(const std::string &sourceIP) {
-    struct addrinfo *result;
-    // on failure to convert to a valid ip
-    if (sls::ConvertHostnameToInternetAddress(sourceIP.c_str(), &result) != 0) {
-        throw RuntimeError("Could not convert zmqip into a valid IP" +
-                           sourceIP);
+    auto ip = HostnameToIp(sourceIP.c_str());
+    if (ip != 0) {
+        shm()->zmqip = ip;
+    } else {
+        throw sls::RuntimeError("Could not set zmqip");
     }
-    // on success put IP as std::string into arg
-    memset(shm()->zmqip, 0, MAX_STR_LENGTH);
-    sls::ConvertInternetAddresstoIpString(result, shm()->zmqip, MAX_STR_LENGTH);
 }
 
-std::string slsDetector::getClientStreamingIP() {
-    return std::string(shm()->zmqip);
-}
+std::string slsDetector::getClientStreamingIP() { return shm()->zmqip.str(); }
 
 void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
-    char args[MAX_STR_LENGTH]{};
-    char retvals[MAX_STR_LENGTH]{};
-
     // if empty, give rx_hostname
     if (sourceIP.empty()) {
         if (strcmp(shm()->rxHostname, "none") == 0) {
@@ -2171,40 +2163,28 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 
     FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: "
                         << sourceIP;
-    // verify the ip
-    {
-        struct addrinfo *result;
-        // on failure to convert to a valid ip
-        if (sls::ConvertHostnameToInternetAddress(sourceIP.c_str(), &result) !=
-            0) {
-            throw RuntimeError("Could not convert rx_zmqip into a valid IP" +
-                               sourceIP);
-        }
-        // on success put IP as std::string into arg
-        sls::ConvertInternetAddresstoIpString(result, args, sizeof(args));
-    }
+    shm()->rxZmqip = HostnameToIp(sourceIP.c_str());
 
-    // set it anyway, else it is lost if rx_hostname is not set yet
-    memset(shm()->rxZmqip, 0, MAX_STR_LENGTH);
-    sls::strcpy_safe(shm()->rxZmqip, args);
     // if zmqip is empty, update it
-    if (shm()->zmqip != 0u) {
-        sls::strcpy_safe(shm()->zmqip, args);
+    if (shm()->zmqip == 0) {
+        shm()->zmqip = shm()->rxZmqip;
     }
-    FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: "
-                        << args;
 
     // send to receiver
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
+        char retvals[MAX_STR_LENGTH]{};
+        char args[MAX_STR_LENGTH]{};
+        sls::strcpy_safe(args, shm()->rxZmqip.str()); //TODO send int
+        FILE_LOG(logDEBUG1)
+            << "Sending receiver streaming IP to receiver: " << args;
         sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, args, retvals);
-        FILE_LOG(logDEBUG1) << "Receiver streaming port: " << retvals;
-        memset(shm()->rxZmqip, 0, MAX_STR_LENGTH);
-        sls::strcpy_safe(shm()->rxZmqip, retvals);
+        FILE_LOG(logDEBUG1) << "Receiver streaming ip: " << retvals;
+        shm()->rxZmqip = retvals;
     }
 }
 
 std::string slsDetector::getReceiverStreamingIP() {
-    return std::string(shm()->rxZmqip);
+    return shm()->rxZmqip.str();
 }
 
 int slsDetector::setDetectorNetworkParameter(networkParameter index,
@@ -2645,25 +2625,28 @@ int slsDetector::sendROI(int n, ROI roiLimits[]) {
 
 void slsDetector::setADCEnableMask(uint32_t mask) {
     uint32_t arg = mask;
-    FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex << arg << std::dec;
+    FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex << arg
+                        << std::dec;
     if (shm()->onlineFlag == ONLINE_FLAG) {
         sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
         shm()->adcEnableMask = mask;
     }
 
-    // update #nchans and databytes, as it depends on #samples, adcmask, readoutflags
+    // update #nchans and databytes, as it depends on #samples, adcmask,
+    // readoutflags
     updateTotalNumberOfChannels();
 
     // send to processor
     if (shm()->myDetectorType == MOENCH)
-        setAdditionalJsonParameter("adcmask", std::to_string(shm()->adcEnableMask));
-    
+        setAdditionalJsonParameter("adcmask",
+                                   std::to_string(shm()->adcEnableMask));
+
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
         int fnum = F_RECEIVER_SET_ADC_MASK;
         int retval = -1;
         mask = shm()->adcEnableMask;
-        FILE_LOG(logDEBUG1)
-            << "Setting ADC Enable mask to 0x" << std:: hex << mask << std::dec << " in receiver";
+        FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex
+                            << mask << std::dec << " in receiver";
         sendToReceiver(fnum, &mask, sizeof(mask), &retval, sizeof(retval));
     }
 }
@@ -2672,15 +2655,18 @@ uint32_t slsDetector::getADCEnableMask() {
     uint32_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC Enable mask";
     if (shm()->onlineFlag == ONLINE_FLAG) {
-        sendToDetector(F_GET_ADC_ENABLE_MASK, nullptr, 0, &retval, sizeof(retval));
+        sendToDetector(F_GET_ADC_ENABLE_MASK, nullptr, 0, &retval,
+                       sizeof(retval));
         shm()->adcEnableMask = retval;
-        FILE_LOG(logDEBUG1) << "ADC Enable Mask: 0x" << std::hex << retval << std::dec;
+        FILE_LOG(logDEBUG1)
+            << "ADC Enable Mask: 0x" << std::hex << retval << std::dec;
     }
     return shm()->adcEnableMask;
 }
 
 void slsDetector::setADCInvert(uint32_t value) {
-    FILE_LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << value << std::dec;
+    FILE_LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << value
+                        << std::dec;
     if (shm()->onlineFlag == ONLINE_FLAG) {
         sendToDetector(F_SET_ADC_INVERT, value, nullptr);
     }
@@ -2691,7 +2677,8 @@ uint32_t slsDetector::getADCInvert() {
     FILE_LOG(logDEBUG1) << "Getting ADC Invert";
     if (shm()->onlineFlag == ONLINE_FLAG) {
         sendToDetector(F_GET_ADC_INVERT, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "ADC Invert: 0x" << std::hex << retval << std::dec;
+        FILE_LOG(logDEBUG1)
+            << "ADC Invert: 0x" << std::hex << retval << std::dec;
     }
     return retval;
 }
@@ -2722,9 +2709,7 @@ int slsDetector::setExternalSampling(int value) {
     return retval;
 }
 
-int slsDetector::getExternalSampling() {
-    return setExternalSampling(-1);
-}
+int slsDetector::getExternalSampling() { return setExternalSampling(-1); }
 
 void slsDetector::setReceiverDbitList(std::vector<int> list) {
     FILE_LOG(logDEBUG1) << "Setting Receiver Dbit List";
@@ -2734,7 +2719,8 @@ void slsDetector::setReceiverDbitList(std::vector<int> list) {
     }
     for (auto &it : list) {
         if (it < 0 || it > 63) {
-            throw sls::RuntimeError("Dbit list value must be between 0 and 63\n");
+            throw sls::RuntimeError(
+                "Dbit list value must be between 0 and 63\n");
         }
     }
     shm()->rxDbitList = list;
@@ -2749,7 +2735,7 @@ std::vector<int> slsDetector::getReceiverDbitList() {
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
         sendToReceiver(F_GET_RECEIVER_DBIT_LIST, nullptr, retval);
         shm()->rxDbitList = retval;
-    } 
+    }
     return shm()->rxDbitList;
 }
 
@@ -2757,7 +2743,8 @@ int slsDetector::setReceiverDbitOffset(int value) {
     int retval = -1;
     if (value >= 0)
         shm()->rxDbitOffset = value;
-    FILE_LOG(logDEBUG1) << "Setting digital bit offset in receiver to " << value;
+    FILE_LOG(logDEBUG1) << "Setting digital bit offset in receiver to "
+                        << value;
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
         sendToReceiver(F_RECEIVER_DBIT_OFFSET, value, retval);
         FILE_LOG(logDEBUG1) << "Receiver digital bit offset: " << retval;
@@ -2765,9 +2752,7 @@ int slsDetector::setReceiverDbitOffset(int value) {
     return shm()->rxDbitOffset;
 }
 
-int slsDetector::getReceiverDbitOffset() {
-    return shm()->rxDbitOffset;
-}
+int slsDetector::getReceiverDbitOffset() { return shm()->rxDbitOffset; }
 
 int slsDetector::writeAdcRegister(uint32_t addr, uint32_t val) {
     uint32_t args[]{addr, val};
@@ -3375,7 +3360,7 @@ int slsDetector::updateCachedReceiverVariables() const {
 
             // streaming source ip
             n += receiver.Receive(cstring, sizeof(cstring));
-            sls::strcpy_safe(shm()->rxZmqip, cstring);
+            shm()->rxZmqip = cstring;
 
             // additional json header
             n += receiver.Receive(cstring, sizeof(cstring));
@@ -3643,7 +3628,8 @@ bool slsDetector::getFileWrite() const { return shm()->rxFileWrite; }
 bool slsDetector::setMasterFileWrite(bool value) {
     int arg = static_cast<int>(value);
     int retval = -1;
-    FILE_LOG(logDEBUG1) << "Sending enable master file write to receiver: " << arg;
+    FILE_LOG(logDEBUG1) << "Sending enable master file write to receiver: "
+                        << arg;
     if (shm()->rxOnlineFlag == ONLINE_FLAG) {
         sendToReceiver(F_ENABLE_RECEIVER_MASTER_FILE_WRITE, arg, retval);
         FILE_LOG(logDEBUG1) << "Receiver master file write enable: " << retval;
@@ -3652,7 +3638,9 @@ bool slsDetector::setMasterFileWrite(bool value) {
     return getMasterFileWrite();
 }
 
-bool slsDetector::getMasterFileWrite() const { return shm()->rxMasterFileWrite; }
+bool slsDetector::getMasterFileWrite() const {
+    return shm()->rxMasterFileWrite;
+}
 
 bool slsDetector::setFileOverWrite(bool value) {
     int arg = static_cast<int>(value);

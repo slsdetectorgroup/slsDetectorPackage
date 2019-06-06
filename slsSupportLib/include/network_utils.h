@@ -56,7 +56,7 @@ class MacAddr {
     constexpr uint64_t uint64() const noexcept { return addr_; }
 };
 
-uint32_t HostnameToIp(const char *hostname);
+IpAddr HostnameToIp(const char *hostname);
 std::string IpToInterfaceName(const std::string& ip);
 MacAddr InterfaceNameToMac(std::string inf);
 

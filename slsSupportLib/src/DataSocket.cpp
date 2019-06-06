@@ -27,7 +27,6 @@ DataSocket::~DataSocket() {
         try {
             close();
         } catch (...) {
-            // pass
         }
     }
 }
@@ -73,7 +72,7 @@ int DataSocket::Send(const void *buffer, size_t size) {
             break;
         bytes_sent += this_send;
     }
-    if (bytes_sent != data_size){
+    if (bytes_sent != data_size) {
         std::ostringstream ss;
         ss << "TCP socket sent " << bytes_sent << " bytes instead of "
            << data_size << " bytes";
@@ -127,7 +126,6 @@ void DataSocket::close() {
             throw SocketError("could not close socket");
         }
         socketId_ = -1;
-
     } else {
         throw std::runtime_error("Socket ERROR: close called on bad socket\n");
     }
@@ -136,75 +134,6 @@ void DataSocket::close() {
 void DataSocket::shutDownSocket() {
     shutdown(getSocketId(), SHUT_RDWR);
     close();
-}
-
-struct sockaddr_in
-ConvertHostnameToInternetAddress(const std::string &hostname) {
-    struct addrinfo hints, *result;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags |= AI_CANONNAME;
-
-    struct sockaddr_in serverAddr {};
-    if (getaddrinfo(hostname.c_str(), nullptr, &hints, &result) != 0) {
-        freeaddrinfo(result);
-        std::string msg = "ClientSocket cannot decode host:" + hostname + "\n";
-        throw SocketError(msg);
-    }
-    serverAddr.sin_family = AF_INET;
-    memcpy((char *)&serverAddr.sin_addr.s_addr,
-           &((struct sockaddr_in *)result->ai_addr)->sin_addr,
-           sizeof(in_addr_t));
-    freeaddrinfo(result);
-    return serverAddr;
-}
-
-int ConvertHostnameToInternetAddress(const char *const hostname,
-                                     struct ::addrinfo **res) {
-    // criteria in selecting socket address structures returned by res
-    struct ::addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    // get host info into res
-    int errcode = getaddrinfo(hostname, nullptr, &hints, res);
-    if (errcode != 0) {
-        FILE_LOG(logERROR) << "Could not convert hostname (" << hostname
-                           << ") to internet address (zmq):"
-                           << gai_strerror(errcode);
-    } else {
-        if (*res == nullptr) {
-            FILE_LOG(logERROR) << "Could not converthostname (" << hostname
-                               << ") to internet address (zmq):"
-                                  "gettaddrinfo returned null";
-        } else {
-            return 0;
-        }
-    }
-    FILE_LOG(logERROR) << "Could not convert hostname to internet address";
-    return 1;
-};
-
-/**
- * Convert Internet Address structure pointer to ip string (char*)
- * Clears the internet address structure as well
- * @param res pointer to internet address structure
- * @param ip pointer to char array to store result in
- * @param ipsize size available in ip buffer
- * @return 1 for fail, 0 for success
- */
-// Do not make this static (for multi threading environment)
-int ConvertInternetAddresstoIpString(struct ::addrinfo *res, char *ip,
-                                     const int ipsize) {
-    if (inet_ntop(res->ai_family,
-                  &((struct sockaddr_in *)res->ai_addr)->sin_addr, ip,
-                  ipsize) != nullptr) {
-        ::freeaddrinfo(res);
-        return 0;
-    }
-    FILE_LOG(logERROR) << "Could not convert internet address to ip string";
-    return 1;
 }
 
 } // namespace sls

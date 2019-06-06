@@ -8,6 +8,15 @@
 #include <unordered_map>
 #include "ServerInterface2.h"
 
+struct EnumClassHash
+{
+    template <typename T>
+    std::size_t operator()(T t) const
+    {
+        return static_cast<std::size_t>(t);
+    }
+};
+
 using Interface = sls::ServerInterface2;
 using func_ptr = int (*)(Interface &);
 
@@ -24,7 +33,7 @@ int read_int(Interface &socket) {
     return 0;
 }
 
-static std::unordered_map<func_id, func_ptr> fmap{
+static std::unordered_map<func_id, func_ptr, EnumClassHash> fmap{
     {func_id::read_data, &read_data}, {func_id::read_int, &read_int}};
 
 int main(int argc, char **argv) {

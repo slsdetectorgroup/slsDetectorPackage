@@ -48,10 +48,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 	// set initially to network tab
 	tabAdvancedSettings->setCurrentWidget(tab_network);
 
-
 	Initialization();
 
-	// udpate detector list in network
 	PopulateDetectors();
 	
 	Refresh();
@@ -59,62 +57,62 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 void qTabAdvanced::Initialization(){
 
-	connect(tabAdvancedSettings,SIGNAL(currentChanged(int)),	this, SLOT(Refresh()));
+	connect(tabAdvancedSettings, SIGNAL(currentChanged(int)), this, SLOT(Refresh()));
 
 	// trimming
 	if (tab_trimming->isEnabled()) {
 		// editingFinished to not set trimbits for every character input
-		connect(spinSetAllTrimbits,	SIGNAL(editingFinished()),	this,	SLOT(SetAllTrimbits()));
+		connect(spinSetAllTrimbits,	SIGNAL(editingFinished()), this, SLOT(SetAllTrimbits()));
 	}
 
 	//network
-	connect(comboDetector,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetDetector(int)));
-	connect(spinControlPort,	SIGNAL(valueChanged(int)),	this,			SLOT(SetControlPort(int)));
-	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetStopPort(int)));
-	connect(dispDetectorUDPIP,	SIGNAL(editingFinished()),	this, 			SLOT(SetDetectorUDPIP()));
-	connect(dispDetectorUDPMAC,	SIGNAL(editingFinished()),	this, 			SLOT(SetDetectorUDPMAC()));
-	connect(spinZMQPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetCltZMQPort(int)));
-	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, 			SLOT(SetCltZMQIP()));
-	connect(dispRxrHostname,	SIGNAL(editingFinished()),	this, 			SLOT(SetRxrHostname()));
-	connect(spinRxrTCPPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrTCPPort(int)));
-	connect(spinRxrUDPPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrUDPPort(int)));
-	connect(dispRxrUDPIP,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrUDPIP()));
-	connect(dispRxrUDPMAC,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrUDPMAC()));
-	connect(spinRxrZMQPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrZMQPort(int)));
-	connect(dispRxrZMQIP,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrZMQIP()));
+	connect(comboDetector, SIGNAL(currentIndexChanged(int)), this, SLOT(SetDetector(int)));
+	connect(spinControlPort, SIGNAL(valueChanged(int)), this, SLOT(SetControlPort(int)));
+	connect(spinStopPort, SIGNAL(valueChanged(int)), this, SLOT(SetStopPort(int)));
+	connect(dispDetectorUDPIP, SIGNAL(editingFinished()), this, SLOT(SetDetectorUDPIP()));
+	connect(dispDetectorUDPMAC,	SIGNAL(editingFinished()), this, SLOT(SetDetectorUDPMAC()));
+	connect(spinZMQPort, SIGNAL(valueChanged(int)), this, SLOT(SetCltZMQPort(int)));
+	connect(dispZMQIP, SIGNAL(editingFinished()), this, SLOT(SetCltZMQIP()));
+	connect(dispRxrHostname, SIGNAL(editingFinished()), this, SLOT(SetRxrHostname()));
+	connect(spinRxrTCPPort, SIGNAL(valueChanged(int)), this, SLOT(SetRxrTCPPort(int)));
+	connect(spinRxrUDPPort, SIGNAL(valueChanged(int)), this, SLOT(SetRxrUDPPort(int)));
+	connect(dispRxrUDPIP, SIGNAL(editingFinished()), this, SLOT(SetRxrUDPIP()));
+	connect(dispRxrUDPMAC, SIGNAL(editingFinished()), this, SLOT(SetRxrUDPMAC()));
+	connect(spinRxrZMQPort, SIGNAL(valueChanged(int)), this, SLOT(SetRxrZMQPort(int)));
+	connect(dispRxrZMQIP, SIGNAL(editingFinished()), this, SLOT(SetRxrZMQIP()));
 
 	// roi
 	if (gridRoi->isEnabled()) {
-		connect(btnAddRoi,		SIGNAL(clicked()),			this, SLOT(AddROISlot()));
-		connect(btnSetRoi,		SIGNAL(clicked()),			this, SLOT(SetROI()));
-		connect(btnGetRoi,		SIGNAL(clicked()),			this, SLOT(GetROI()));
-		connect(btnClearRoi,	SIGNAL(clicked()),			this, SLOT(ClearROI()));
+		connect(btnAddRoi, SIGNAL(clicked()), this, SLOT(AddROISlot()));
+		connect(btnSetRoi, SIGNAL(clicked()), this, SLOT(SetROI()));
+		connect(btnGetRoi, SIGNAL(clicked()), this, SLOT(GetROI()));
+		connect(btnClearRoi, SIGNAL(clicked()), this, SLOT(ClearROI()));
 	}
 
 	// storage cells
 	if (lblNumStoragecells->isEnabled()) {
-		connect(spinNumStoragecells, SIGNAL(valueChanged(int)),  this,  SLOT(SetNumStoragecells(int)));
+		connect(spinNumStoragecells, SIGNAL(valueChanged(int)),  this, SLOT(SetNumStoragecells(int)));
 	}
 
 	// subexptime, subdeadtime
 	if (lblSubExpTime->isEnabled()) {
-		connect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
-		connect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetSubExposureTime()));
-		connect(spinSubDeadTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubDeadTime()));
-		connect(comboSubDeadTimeUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetSubDeadTime()));
+		connect(spinSubExpTime,SIGNAL(valueChanged(double)), this, SLOT(SetSubExposureTime()));
+		connect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)), this,	SLOT(SetSubExposureTime()));
+		connect(spinSubDeadTime,SIGNAL(valueChanged(double)), this,	SLOT(SetSubDeadTime()));
+		connect(comboSubDeadTimeUnit,SIGNAL(currentIndexChanged(int)), this, SLOT(SetSubDeadTime()));
 	}
 }
 
 void  qTabAdvanced::PopulateDetectors() {
 	FILE_LOG(logDEBUG) << "Populating detectors";
-	disconnect(comboDetector,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetDetector(int)));
+	disconnect(comboDetector, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetDetector(int)));
 
 	comboDetector->clear();
 	for(int i = 0; i < myDet->getNumberOfDetectors(); ++i)
 		comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
 	comboDetector->setCurrentIndex(0);
 
-	connect(comboDetector,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetDetector(int)));
+	connect(comboDetector, SIGNAL(currentIndexChanged(int)), this, SLOT(SetDetector(int)));
 }
 
 void qTabAdvanced::GetOnline() {
@@ -149,113 +147,106 @@ void qTabAdvanced::GetOnline() {
 	} 
 	// display any other exception
 	catch (const std::exception &e) {
-		qDefs::ExceptionMessage("Could not check detector online status", e.what(), "qTabAdvanced::GetOnline");
+		qDefs::ExceptionMessage("Could not get detector online status", e.what(), "qTabAdvanced::GetOnline");
 	}
 }
 
 void qTabAdvanced::GetControlPort() {
 	FILE_LOG(logDEBUG) << "Getting control port ";
-	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),	this,			SLOT(SetControlPort(int)));
+	disconnect(spinControlPort,	SIGNAL(valueChanged(int)), this, SLOT(SetControlPort(int)));
 
-	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-            myDet,
-            "Could not get detector control port.",
-            "qTabAdvanced::GetControlPort",
-            spinControlPort,
-            &QSpinBox::setValue,
-            &multiSlsDetector::setControlPort, -1, comboDetector->currentIndex());
+	try {
+        int retval = myDet->setControlPort(-1, comboDetector->currentIndex());
+		spinControlPort->setValue(retval);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get detector control port.", e.what(), "qTabAdvanced::GetControlPort");
+	}	
 
-	connect(spinControlPort,	SIGNAL(valueChanged(int)),	this,			SLOT(SetControlPort(int)));
+	connect(spinControlPort, SIGNAL(valueChanged(int)),	this, SLOT(SetControlPort(int)));
 }
 
 void qTabAdvanced::GetStopPort() {
 	FILE_LOG(logDEBUG) << "Getting stop port";
-	disconnect(spinStopPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetStopPort(int)));
+	disconnect(spinStopPort, SIGNAL(valueChanged(int)),	this, SLOT(SetStopPort(int)));
 
-	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-            myDet,
-            "Could not get detector stop port.",
-            "qTabAdvanced::GetStopPort",
-            spinStopPort,
-            &QSpinBox::setValue,
-            &multiSlsDetector::setStopPort, -1, comboDetector->currentIndex());
+	try {
+        int retval = myDet->setStopPort(-1, comboDetector->currentIndex());
+		spinStopPort->setValue(retval);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get detector stop port.", e.what(), "qTabAdvanced::GetStopPort");
+	}	
 
-	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetStopPort(int)));
+	connect(spinStopPort, SIGNAL(valueChanged(int)), this, SLOT(SetStopPort(int)));
 }
 
 void qTabAdvanced::GetDetectorUDPIP() {
 	FILE_LOG(logDEBUG) << "Getting Detector UDP IP";
-	disconnect(dispDetectorUDPIP,				SIGNAL(editingFinished()),	this, 			SLOT(SetDetectorUDPIP()));
+	disconnect(dispDetectorUDPIP, SIGNAL(editingFinished()), this, SLOT(SetDetectorUDPIP()));
 
-	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
-            myDet,
-            "Could not get detector UDP IP.",
-            "qTabAdvanced::GetDetectorUDPIP",
-            dispDetectorUDPIP,
-            &QLineEdit::setText,
-            &multiSlsDetector::getDetectorIP, comboDetector->currentIndex());
+	try {
+        auto retval = myDet->getDetectorIP(comboDetector->currentIndex());
+		dispDetectorUDPIP->setText(QString(retval.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get detector UDP IP.", e.what(), "qTabAdvanced::GetDetectorUDPIP");
+	}	
 
-	connect(dispDetectorUDPIP,				SIGNAL(editingFinished()),	this, 			SLOT(SetDetectorUDPIP()));
+	connect(dispDetectorUDPIP, SIGNAL(editingFinished()), this, SLOT(SetDetectorUDPIP()));
 }
 
 void qTabAdvanced::GetDetectorUDPMAC() {
 	FILE_LOG(logDEBUG) << "Getting Detector UDP MAC";
-	disconnect(dispDetectorUDPMAC,			SIGNAL(editingFinished()),	this, 			SLOT(SetDetectorUDPMAC()));
+	disconnect(dispDetectorUDPMAC, SIGNAL(editingFinished()), this, SLOT(SetDetectorUDPMAC()));
 
-	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
-            myDet,
-            "Could not get detector UDP MAC.",
-            "qTabAdvanced::GetDetectorUDPMAC",
-            dispDetectorUDPMAC,
-            &QLineEdit::setText,
-            &multiSlsDetector::getDetectorMAC, comboDetector->currentIndex());
+	try {
+        auto retval = myDet->getDetectorMAC(comboDetector->currentIndex());
+		dispDetectorUDPMAC->setText(QString(retval.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get detector UDP MAC.", e.what(), "qTabAdvanced::GetDetectorUDPMAC");
+	}	
 
-	connect(dispDetectorUDPMAC,			SIGNAL(editingFinished()),	this, 			SLOT(SetDetectorUDPMAC()));
+	connect(dispDetectorUDPMAC,	SIGNAL(editingFinished()), this, SLOT(SetDetectorUDPMAC()));
 }
 
 void qTabAdvanced::GetCltZMQPort() {
 	FILE_LOG(logDEBUG) << "Getting Client ZMQ port";
-	disconnect(spinZMQPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetCltZMQPort(int)));
+	disconnect(spinZMQPort,	SIGNAL(valueChanged(int)), this, SLOT(SetCltZMQPort(int)));
 
-	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-            myDet,
-            "Could not get client zmq port.",
-            "qTabAdvanced::GetCltZMQPort",
-            spinZMQPort,
-            &QSpinBox::setValue,
-            &multiSlsDetector::getClientStreamingPort, comboDetector->currentIndex());
+	try {
+        int retval = myDet->getClientStreamingPort(comboDetector->currentIndex());
+		spinZMQPort->setValue(retval);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get client zmq port.", e.what(), "qTabAdvanced::GetCltZMQPort");
+	}	
 
-	connect(spinZMQPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetCltZMQPort(int)));
+    connect(spinZMQPort, SIGNAL(valueChanged(int)), this, SLOT(SetCltZMQPort(int)));
 }
 
 void qTabAdvanced::GetCltZMQIP() {
 	FILE_LOG(logDEBUG) << "Getting Client ZMQ IP";
-	disconnect(dispZMQIP,			SIGNAL(editingFinished()),	this, 			SLOT(SetCltZMQIP()));
+	disconnect(dispZMQIP, SIGNAL(editingFinished()), this, SLOT(SetCltZMQIP()));
 
-	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
-            myDet,
-            "Could not get client zmq ip.",
-            "qTabAdvanced::GetCltZMQIP",
-            dispZMQIP,
-            &QLineEdit::setText,
-            &multiSlsDetector::getClientStreamingIP, comboDetector->currentIndex());
+	try {
+        auto retval = myDet->getClientStreamingIP(comboDetector->currentIndex());
+		dispZMQIP->setText(QString(retval.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get client zmq ip.", e.what(), "qTabAdvanced::GetCltZMQIP");
+	}	
 
-	connect(dispZMQIP,			SIGNAL(editingFinished()),	this, 			SLOT(SetCltZMQIP()));
+	connect(dispZMQIP, SIGNAL(editingFinished()), this, SLOT(SetCltZMQIP()));
 }
 
 void qTabAdvanced::GetRxrHostname() {
 	FILE_LOG(logDEBUG) << "Getting Receiver Hostname";
-	disconnect(dispRxrHostname,	SIGNAL(editingFinished()),			this, 	SLOT(SetRxrHostname()));
+	disconnect(dispRxrHostname, SIGNAL(editingFinished()), this, SLOT(SetRxrHostname()));
 
-	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
-            myDet,
-            "Could not get receiver hostname.",
-            "qTabAdvanced::GetRxrHostname",
-            dispRxrHostname,
-            &QLineEdit::setText,
-            &multiSlsDetector::getReceiverHostname, comboDetector->currentIndex());
+	try {
+        auto retval = myDet->getReceiverHostname(comboDetector->currentIndex());
+		dispRxrHostname->setText(QString(retval.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get receiver hostname.", e.what(), "qTabAdvanced::GetRxrHostname");
+	}	
 
-	connect(dispRxrHostname,	SIGNAL(editingFinished()),			this, 	SLOT(SetRxrHostname()));
+	connect(dispRxrHostname, SIGNAL(editingFinished()),	this, SLOT(SetRxrHostname()));
 }
 
 void qTabAdvanced::GetReceiverOnline() {
@@ -289,99 +280,93 @@ void qTabAdvanced::GetReceiverOnline() {
 		;
 	} 
 	// display any other exception
-	catch (const exception &e) {
+	catch (const std::exception &e) {
 		qDefs::ExceptionMessage("Could not check receiver online status", e.what(), "qTabAdvanced::GetReceiverOnline");
 	}
 }
 
 void qTabAdvanced::GetRxrTCPPort() {
 	FILE_LOG(logDEBUG) << "Getting Receiver TCP port";
-	disconnect(spinRxrTCPPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrTCPPort(int)));
+	disconnect(spinRxrTCPPort, SIGNAL(valueChanged(int)), this,	SLOT(SetRxrTCPPort(int)));
 
-	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-            myDet,
-            "Could not get receiver tcp port.",
-            "qTabAdvanced::GetRxrTCPPort",
-            spinRxrTCPPort,
-            &QSpinBox::setValue,
-            &multiSlsDetector::getReceiverPort, comboDetector->currentIndex());
+	try {
+        int retval = myDet->getReceiverPort(comboDetector->currentIndex());
+		spinRxrTCPPort->setValue(retval);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get receiver tcp port.", e.what(), "qTabAdvanced::GetRxrTCPPort");
+	}	
 
-	connect(spinRxrTCPPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrTCPPort(int)));
+	connect(spinRxrTCPPort,	SIGNAL(valueChanged(int)), this, SLOT(SetRxrTCPPort(int)));
 }
 
 void qTabAdvanced::GetRxrUDPPort() {
 	FILE_LOG(logDEBUG) << "Getting Receiver UDP port";
-	disconnect(spinRxrUDPPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrUDPPort(int)));
+	disconnect(spinRxrUDPPort, SIGNAL(valueChanged(int)), this, SLOT(SetRxrUDPPort(int)));
 
-	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-            myDet,
-            "Could not get receiver udp port.",
-            "qTabAdvanced::GetRxrUDPPort",
-            spinRxrUDPPort,
-            &QSpinBox::setValue,
-            &multiSlsDetector::getReceiverUDPPort, comboDetector->currentIndex());
+	try {
+        int retval = myDet->getReceiverUDPPort(comboDetector->currentIndex());
+		spinRxrUDPPort->setValue(retval);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get receiver udp port.", e.what(), "qTabAdvanced::GetRxrUDPPort");
+	}	
 
-	connect(spinRxrUDPPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrUDPPort(int)));
+	connect(spinRxrUDPPort,	SIGNAL(valueChanged(int)), this, SLOT(SetRxrUDPPort(int)));
 }
 
 void qTabAdvanced::GetRxrUDPIP() {
 	FILE_LOG(logDEBUG) << "Getting Receiver UDP IP";
-	disconnect(dispRxrUDPIP,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrUDPIP()));
+	disconnect(dispRxrUDPIP, SIGNAL(editingFinished()),	this, SLOT(SetRxrUDPIP()));
 
-	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
-            myDet,
-            "Could not get receiver udp ip.",
-            "qTabAdvanced::GetRxrUDPIP",
-            dispRxrUDPIP,
-            &QLineEdit::setText,
-            &multiSlsDetector::getReceiverUDPIP, comboDetector->currentIndex());
+	try {
+        auto retval = myDet->getReceiverUDPIP(comboDetector->currentIndex());
+		dispRxrUDPIP->setText(QString(retval.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get receiver udp ip.", e.what(), "qTabAdvanced::GetRxrUDPIP");
+	}
 
-	connect(dispRxrUDPIP,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrUDPIP()));
+	connect(dispRxrUDPIP, SIGNAL(editingFinished()), this, SLOT(SetRxrUDPIP()));
 }
 
 void qTabAdvanced::GetRxrUDPMAC() {
 	FILE_LOG(logDEBUG) << "Getting Receiver UDP MAC";
-	disconnect(dispRxrUDPMAC,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrUDPMAC()));
+	disconnect(dispRxrUDPMAC, SIGNAL(editingFinished()), this, SLOT(SetRxrUDPMAC()));
 
-	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
-            myDet,
-            "Could not get receiver udp mac.",
-            "qTabAdvanced::GetRxrUDPMAC",
-            dispRxrUDPMAC,
-            &QLineEdit::setText,
-            &multiSlsDetector::getReceiverUDPMAC, comboDetector->currentIndex());
+	try {
+        auto retval = myDet->getReceiverUDPMAC(comboDetector->currentIndex());
+		dispRxrUDPMAC->setText(QString(retval.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get receiver udp mac.", e.what(), "qTabAdvanced::GetRxrUDPMAC");
+	}
 
-	connect(dispRxrUDPMAC,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrUDPMAC()));
+	connect(dispRxrUDPMAC, SIGNAL(editingFinished()), this, SLOT(SetRxrUDPMAC()));
 }
 
 void qTabAdvanced::GetRxrZMQPort() {
 	FILE_LOG(logDEBUG) << "Getting Receiver ZMQ port";
-	disconnect(spinRxrZMQPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrZMQPort(int)));
+	disconnect(spinRxrZMQPort, SIGNAL(valueChanged(int)), this,	SLOT(SetRxrZMQPort(int)));
 
-	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-            myDet,
-            "Could not get receiver zmq port.",
-            "qTabAdvanced::GetRxrZMQPort",
-            spinRxrZMQPort,
-            &QSpinBox::setValue,
-            &multiSlsDetector::getReceiverStreamingPort, comboDetector->currentIndex());
+	try {
+        int retval = myDet->getReceiverStreamingPort(comboDetector->currentIndex());
+		spinRxrZMQPort->setValue(retval);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get receiver zmq port.", e.what(), "qTabAdvanced::GetRxrZMQPort");
+	}	
 
-	connect(spinRxrZMQPort,		SIGNAL(valueChanged(int)),	this,			SLOT(SetRxrZMQPort(int)));
+	connect(spinRxrZMQPort,	SIGNAL(valueChanged(int)), this, SLOT(SetRxrZMQPort(int)));
 }
 
 void qTabAdvanced::GetRxrZMQIP() {
 	FILE_LOG(logDEBUG) << "Getting Receiver ZMQ IP";
-	disconnect(dispRxrZMQIP,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrZMQIP()));
+	disconnect(dispRxrZMQIP, SIGNAL(editingFinished()),	this, SLOT(SetRxrZMQIP()));
 
-	qDefs::IgnoreNonCriticalExceptions<QLineEdit>(
-            myDet,
-            "Could not get receiver zmq ip.",
-            "qTabAdvanced::GetRxrZMQIP",
-            dispRxrZMQIP,
-            &QLineEdit::setText,
-            &multiSlsDetector::getReceiverStreamingIP, comboDetector->currentIndex());
+	try {
+        auto retval = myDet->getReceiverStreamingIP(comboDetector->currentIndex());
+		dispRxrZMQIP->setText(QString(retval.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get receiver zmq ip.", e.what(), "qTabAdvanced::GetRxrZMQIP");
+	}
 
-	connect(dispRxrZMQIP,		SIGNAL(editingFinished()),	this, 			SLOT(SetRxrZMQIP()));
+	connect(dispRxrZMQIP, SIGNAL(editingFinished()), this, SLOT(SetRxrZMQIP()));
 }
 
 void qTabAdvanced::SetDetector(int index) {
@@ -552,14 +537,14 @@ void qTabAdvanced::SetRxrZMQIP(){
 void qTabAdvanced::AddROISlot() {
 	FILE_LOG(logDEBUG) << "Add ROI Slot";
 
-	QLabel* lFromX 		= new QLabel("x min:");
-	QLabel* lFromY		= new QLabel("y min:");
-	QLabel* lToX		= new QLabel("x max:");
-	QLabel* lToY		= new QLabel("y max:");
-	QLabel* sFromX		= new QSpinBox();
-	QLabel* sFromY		= new QSpinBox();
-	QLabel* sToX		= new QSpinBox();
-	QLabel* sToY		= new QSpinBox();
+	QLabel* lFromX 	= new QLabel("x min:");
+	QLabel* lFromY	= new QLabel("y min:");
+	QLabel* lToX = new QLabel("x max:");
+	QLabel* lToY = new QLabel("y max:");
+	QSpinBox* sFromX = new QSpinBox();
+	QSpinBox* sFromY = new QSpinBox();
+	QSpinBox* sToX = new QSpinBox();
+	QSpinBox* sToY = new QSpinBox();
 	lFromX->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			
 	lFromY->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			
 	lToX->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			
@@ -603,17 +588,17 @@ void qTabAdvanced::AddROISlot() {
 	spinToY.push_back(sToY);
 
 	int nroi = (int)lblFromX.size();
-	gridRoi->addWidget(lblFromX[nroi],	i,0,Qt::AlignTop);
-	gridRoi->addWidget(spinFromX[nroi],	i,1,Qt::AlignTop);
-	//FIXME: gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),		i,2,Qt::AlignTop);
-	gridRoi->addWidget(lblToX[nroi],	i,3,Qt::AlignTop);
-	gridRoi->addWidget(spinToX[nroi],	i,4,Qt::AlignTop);
-	//FIXME: gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),		i,5,Qt::AlignTop);
-	gridRoi->addWidget(lblFromY[nroi],	i,6,Qt::AlignTop);
-	gridRoi->addWidget(spinFromY[nroi],	i,7,Qt::AlignTop);
-	//FIXME: gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),		i,8,Qt::AlignTop);
-	gridRoi->addWidget(lblToY[nroi],	i,9,Qt::AlignTop);
-	gridRoi->addWidget(spinToY[nroi],	i,10,Qt::AlignTop);
+	gridRoi->addWidget(lblFromX[nroi], nroi,0,Qt::AlignTop);
+	gridRoi->addWidget(spinFromX[nroi], nroi,1,Qt::AlignTop);
+	//FIXME: gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),	nroi,2,Qt::AlignTop);
+	gridRoi->addWidget(lblToX[nroi], nroi,3,Qt::AlignTop);
+	gridRoi->addWidget(spinToX[nroi], nroi,4,Qt::AlignTop);
+	//FIXME: gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),	nroi,5,Qt::AlignTop);
+	gridRoi->addWidget(lblFromY[nroi], nroi,6,Qt::AlignTop);
+	gridRoi->addWidget(spinFromY[nroi], nroi,7,Qt::AlignTop);
+	//FIXME: gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed), nroi,8,Qt::AlignTop);
+	gridRoi->addWidget(lblToY[nroi], nroi,9,Qt::AlignTop);
+	gridRoi->addWidget(spinToY[nroi], nroi,10,Qt::AlignTop);
 
 	lblFromX[nroi]->show();
 	spinFromX[nroi]->show();
@@ -633,7 +618,7 @@ void qTabAdvanced::GetROI(){
 
 	try {
 		int nroi = 0;
-		slsDetectorDefs::ROI* roi = myDet->getROI(nroi);
+		const slsDetectorDefs::ROI* roi = myDet->getROI(nroi);
 		if (roi != nullptr) {
 			for (int i  = 0; i < nroi; ++i) {
 				AddROISlot();
@@ -663,7 +648,7 @@ void qTabAdvanced::ClearROIWidgets() {
 	}
 
 	// delete widgets
-	for (int i = 0; i < lblFromX.size(); ++i) {
+	for (size_t i = 0; i < lblFromX.size(); ++i) {
 		delete lblFromX[i];
 		delete spinFromX[i];
 		delete lblToX[i];
@@ -708,11 +693,11 @@ void qTabAdvanced::SetROI() {
 	
 	// set roi
 	FILE_LOG(logINFO) << "Setting ROI:" << nroi;
-	qDefs::IgnoreNonCriticalExceptions(
-		myDet,
-		"Could not set these ROIs.",
-		"qTabAdvanced::SetROI",
-		&multiSlsDetector::setROI, nroi, roi, -1);
+	try {
+        myDet->setROI(nroi, roi, -1);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set these ROIs.", e.what(), "qTabAdvanced::SetROI");
+	}	
 
 	// update corrected list
 	GetROI();
@@ -720,17 +705,16 @@ void qTabAdvanced::SetROI() {
 
 void qTabAdvanced::GetAllTrimbits() {
 	FILE_LOG(logDEBUG) << "Getting all trimbits value";
-	disconnect(spinSetAllTrimbits,	SIGNAL(editingFinished()),	this,	SLOT(SetAllTrimbits()));
+	disconnect(spinSetAllTrimbits, SIGNAL(editingFinished()), this,	SLOT(SetAllTrimbits()));
 
-	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-            myDet,
-            "Could not get all trimbits value.",
-            "qTabAdvanced::GetAllTrimbits",
-            spinSetAllTrimbits,
-            &QSpinBox::setValue,
-            &multiSlsDetector::setAllTrimbits, -1, -1);
+	try {
+        int retval = myDet->setAllTrimbits(-1);
+		spinSetAllTrimbits->setValue(retval);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get all trimbits.", e.what(), "qTabAdvanced::GetAllTrimbits");
+	}		
 
-	connect(spinSetAllTrimbits,	SIGNAL(editingFinished()),	this,	SLOT(SetAllTrimbits()));
+	connect(spinSetAllTrimbits,	SIGNAL(editingFinished()), this, SLOT(SetAllTrimbits()));
 }
 
 void qTabAdvanced::SetAllTrimbits() {
@@ -747,17 +731,16 @@ void qTabAdvanced::SetAllTrimbits() {
 
 void qTabAdvanced::GetNumStoragecells() {
 	FILE_LOG(logDEBUG) << "Getting number of additional storage cells";
-	disconnect(spinNumStoragecells,SIGNAL(valueChanged(int)),this,   SLOT(SetNumStoragecells(int)));
+	disconnect(spinNumStoragecells, SIGNAL(valueChanged(int)), this, SLOT(SetNumStoragecells(int)));
 
-	qDefs::IgnoreNonCriticalExceptions<QSpinBox>(
-            myDet,
-            "Could not get number of additional storage cells.",
-            "qTabAdvanced::GetNumStoragecells",
-            spinNumStoragecells,
-            &QSpinBox::setValue,
-            &multiSlsDetector::setTimer, slsDetectorDefs::STORAGE_CELL_NUMBER, -1, -1);
+	try {
+        auto retval = myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER);
+		spinNumStoragecells->setValue(retval);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get number of additional storage cells.", e.what(), "qTabAdvanced::GetNumStoragecells");
+	}	
 
-	connect(spinNumStoragecells,SIGNAL(valueChanged(int)),   this,   SLOT(SetNumStoragecells(int)));
+	connect(spinNumStoragecells, SIGNAL(valueChanged(int)), this, SLOT(SetNumStoragecells(int)));
 }
 
 void qTabAdvanced::SetNumStoragecells(int value) {
@@ -772,8 +755,8 @@ void qTabAdvanced::SetNumStoragecells(int value) {
 
 void qTabAdvanced::GetSubExposureTime() {
 	FILE_LOG(logDEBUG) << "Getting sub exposure time";
-	disconnect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
-	disconnect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubExposureTime()));
+	disconnect(spinSubExpTime, SIGNAL(valueChanged(double)), this, SLOT(SetSubExposureTime()));
+	disconnect(comboSubExpTimeUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSubExposureTime()));
 
 	try {
 		int64_t retval = myDet->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME);
@@ -791,8 +774,8 @@ void qTabAdvanced::GetSubExposureTime() {
         qDefs::ExceptionMessage("Could not get sub exposure time.", e.what(), "qTabSettings::GetSubExposureTime");
     }
 
-	connect(spinSubExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(SetSubExposureTime()));
-	connect(comboSubExpTimeUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetSubExposureTime()));
+	connect(spinSubExpTime, SIGNAL(valueChanged(double)), this,	SLOT(SetSubExposureTime()));
+	connect(comboSubExpTimeUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSubExposureTime()));
 }
 
 void qTabAdvanced::SetSubExposureTime() {
@@ -809,8 +792,8 @@ void qTabAdvanced::SetSubExposureTime() {
 
 void qTabAdvanced::GetSubDeadTime() {
 	FILE_LOG(logDEBUG) << "Getting sub dead time";
-	disconnect(spinSubDeadTime,SIGNAL(valueChanged(double)),		  this,	SLOT(SetSubDeadTime()));
-	disconnect(comboSubDeadTimeUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubDeadTime()));
+	disconnect(spinSubDeadTime, SIGNAL(valueChanged(double)), this,	SLOT(SetSubDeadTime()));
+	disconnect(comboSubDeadTimeUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSubDeadTime()));
 
 	try {
 		int64_t retval = myDet->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME);
@@ -828,8 +811,8 @@ void qTabAdvanced::GetSubDeadTime() {
         qDefs::ExceptionMessage("Could not get sub dead time.", e.what(), "qTabSettings::GetSubDeadTime");
     }
 
-	connect(spinSubDeadTime,SIGNAL(valueChanged(double)),		this,	SLOT(SetSubDeadTime()));
-	connect(comboSubDeadTimeUnit,SIGNAL(currentIndexChanged(int)),this,	SLOT(SetSubDeadTime()));
+	connect(spinSubDeadTime, SIGNAL(valueChanged(double)), this, SLOT(SetSubDeadTime()));
+	connect(comboSubDeadTimeUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSubDeadTime()));
 }
 
 void qTabAdvanced::SetSubDeadTime() {
@@ -874,4 +857,3 @@ void qTabAdvanced::Refresh(){
 
 	FILE_LOG(logDEBUG)  << "**Updated Advanced Tab";
 }
-

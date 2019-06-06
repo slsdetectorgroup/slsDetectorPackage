@@ -59,7 +59,7 @@ int DataSocket::receiveData(void *buffer, size_t size) {
         return bytes_read;
     } else {
         std::ostringstream ss;
-        ss << "TCP socket error read " << bytes_read << " bytes instead of "
+        ss << "TCP socket read " << bytes_read << " bytes instead of "
            << bytes_expected << " bytes";
         throw sls::SocketError(ss.str());
     }
@@ -76,7 +76,7 @@ int DataSocket::sendData(const void *buffer, size_t size) {
     }
     if (bytes_sent != data_size){
         std::ostringstream ss;
-        ss << "TCP socket error sent " << bytes_sent << " bytes instead of "
+        ss << "TCP socket sent " << bytes_sent << " bytes instead of "
            << data_size << " bytes";
         throw sls::SocketError(ss.str());
     }

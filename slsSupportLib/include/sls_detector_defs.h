@@ -471,7 +471,6 @@ format
         LOWGAIN,           /**< low gain  settings */
         MEDIUMGAIN,        /**< medium gain  settings */
         VERYHIGHGAIN,      /**< very high gain  settings */
-        LOWNOISE,          /**< low noise settings */
         DYNAMICHG0,        /**< dynamic high gain 0 */
         FIXGAIN1,          /**< fix gain 1 */
         FIXGAIN2,          /**< fix gain 2 */
@@ -786,9 +785,9 @@ format
 
     /** returns detector settings std::string from index
         \param s can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN,
-       MEDIUMGAIN, VERYHIGHGAIN, LOWNOISE, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
+       MEDIUMGAIN, VERYHIGHGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
        FORCESWITCHG1, FORCESWITCHG2, GET_SETTINGS \returns standard, fast,
-       highgain, dynamicgain, lowgain, mediumgain, veryhighgain, lownoise,
+       highgain, dynamicgain, lowgain, mediumgain, veryhighgain, 
         dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2,
        verylowgain, undefined
     */
@@ -808,8 +807,6 @@ format
             return std::string("mediumgain");
         case VERYHIGHGAIN:
             return std::string("veryhighgain");
-        case LOWNOISE:
-            return std::string("lownoise");
         case DYNAMICHG0:
             return std::string("dynamichg0");
         case FIXGAIN1:
@@ -831,10 +828,10 @@ format
 
     /** returns detector settings std::string from index
         \param s can be standard, fast, highgain, dynamicgain, lowgain,
-       mediumgain, veryhighgain, lownoise, dynamichg0, fixgain1, fixgain2,
+       mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2,
        forceswitchg1, forceswitchg2, undefined \returns   setting index
        STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN,
-       VERYHIGHGAIN,LOWNOISE, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1,
+       VERYHIGHGAIN,DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1,
        FORCESWITCHG2, VERYLOWGAIN, GET_SETTINGS
     */
 
@@ -853,8 +850,6 @@ format
             return MEDIUMGAIN;
         if (s == "veryhighgain")
             return VERYHIGHGAIN;
-        if (s == "lownoise")
-            return LOWNOISE;
         if (s == "dynamichg0")
             return DYNAMICHG0;
         if (s == "fixgain1")

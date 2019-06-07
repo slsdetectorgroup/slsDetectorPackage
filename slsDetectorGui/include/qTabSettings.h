@@ -9,7 +9,7 @@ class multiSlsDetector;
 /**
  *@short sets up the Settings parameters
  */
-class qTabSettings:public QWidget, private Ui::TabSettingsObject{
+class qTabSettings: public QWidget, private Ui::TabSettingsObject{
 	Q_OBJECT
 
 public:
@@ -34,20 +34,21 @@ public:
 private slots:
 	/**
 	 * Set settings according to selection
-	 *  @param index index of selection
+	 * @param index index of selection
 	 */
 	void SetSettings(int index);
 
 	/**
 	 * Set dynamic range if possible
-	 *  @param index selection
+	 * @param index selection
 	 */
 	void SetDynamicRange(int index);
 
 	/**
 	 * Set threshold energy
+	 * @param index selection
 	 */
-	void SetEnergy();
+	void SetThresholdEnergy(int index);
 
 
 private:
@@ -85,9 +86,29 @@ private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 
-	enum{STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, LOWNOISE,
-		DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2, VERLOWGAIN,
-		UNDEFINED, UNINITIALIZED, NUMSETTINGS};
-
-	static const int THRESHOLD_TOLERANCE = 200;
+	enum {
+		STANDARD, 
+		FAST, 
+		HIGHGAIN, 
+		DYNAMICGAIN, 
+		LOWGAIN, 
+		MEDIUMGAIN, 
+		VERYHIGHGAIN, 
+		DYNAMICHG0, 
+		FIXGAIN1, 
+		FIXGAIN2, 
+		FORCESWITCHG1, 
+		FORCESWITCHG2, 
+		VERLOWGAIN,
+		UNDEFINED, 
+		UNINITIALIZED, 
+		NUMSETTINGS
+	};
+	
+	enum {
+		DYNAMICRANGE_32,
+		DYNAMICRANGE_16,
+		DYNAMICRANGE_8,
+		DYNAMICRANGE_4
+	};
 };

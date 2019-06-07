@@ -918,7 +918,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /*! \page settings
    - <b>settings [s]</b> sets/gets the settings of the detector. Options: \c standard, \c fast, \c highgain, \c dynamicgain, \c lowgain, \c mediumgain, \c veryhighgain,
-   \c lownoise, \c dynamichg0, \c fixgain1, \c fixgain2, \c forceswitchg1, \c forceswitchg2.
+   \c dynamichg0, \c fixgain1, \c fixgain2, \c forceswitchg1, \c forceswitchg2.
    \n In Eiger, only sets in client shared memory. Use \c threshold or \c thresholdnotb to pass to detector. Gets from detector.  \c Returns \c (string) s
 	 */
     descrToFuncMap[i].m_pFuncName = "settings";
@@ -3590,7 +3590,7 @@ std::string slsDetectorCommand::helpSettings(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "settings s \n sets the settings of the detector - can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain"
-              "lownoise, dynamichg0,fixgain1,fixgain2,forceswitchg1, forceswitchg2"
+              "dynamichg0,fixgain1,fixgain2,forceswitchg1, forceswitchg2"
            << std::endl;
         os << "threshold eV [sett]\n sets the detector threshold in eV. If sett is provided for eiger, uses settings sett" << std::endl;
         os << "thresholdnotb eV [sett]\n sets the detector threshold in eV without loading trimbits. If sett is provided for eiger, uses settings sett" << std::endl;

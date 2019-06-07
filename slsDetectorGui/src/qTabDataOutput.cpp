@@ -15,9 +15,7 @@ qTabDataOutput::qTabDataOutput(QWidget *parent, multiSlsDetector *detector) : QW
 	FILE_LOG(logDEBUG) << "DataOutput ready";
 }
 
-
 qTabDataOutput::~qTabDataOutput() {}
-
 
 void qTabDataOutput::SetupWidgetWindow() {
 	// button group for rate
@@ -25,14 +23,14 @@ void qTabDataOutput::SetupWidgetWindow() {
 	btnGroupRate->addButton(radioDefaultDeadtime, 0);
 	btnGroupRate->addButton(radioCustomDeadtime, 1);
 
-
 	// enabling according to det type
-	switch((int)myDet->getDetectorTypeAsEnum()) {
+	switch(myDet->getDetectorTypeAsEnum()) {
 		case slsDetectorDefs::EIGER:
 			chkTenGiga->setEnabled(true);
 			chkRate->setEnabled(true);
 			radioDefaultDeadtime->setEnabled(true);
 			radioCustomDeadtime->setEnabled(true);
+			// flags and speed
 			widgetEiger->setVisible(true);
 			widgetEiger->setEnabled(true);
 			break;
@@ -50,6 +48,7 @@ void qTabDataOutput::SetupWidgetWindow() {
 }
 
 void qTabDataOutput::Initialization() {
+	// ourdir, fileformat, overwrite enable
 	connect(comboDetector, SIGNAL(currentIndexChanged(int)), this, SLOT(GetOutputDir()));
 	connect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
 	connect(btnOutputBrowse, SIGNAL(clicked()), this, SLOT(BrowseOutputDir()));
@@ -58,11 +57,13 @@ void qTabDataOutput::Initialization() {
 	if (chkTenGiga->isEnabled()) {
 		connect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(SetTenGigaEnable(bool)));
 	}
+	// rate
 	if (chkRate->isEnabled()) {
 		connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
 		connect(btnGroupRate, SIGNAL(buttonClicked(int)), this, SLOT(SetRateCorrection()));
 		connect(spinCustomDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
 	}
+	// flags, speed
 	if (widgetEiger->isEnabled()) {
 		connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed(int)));
 		connect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
@@ -170,7 +171,7 @@ void qTabDataOutput::GetFileFormat() {
 				comboFileFormat->setCurrentIndex(static_cast<int>(retval));
 				break;
 			default:
-				qDefs::Message(qDefs::WARNING, std::string("Unknown file format.") + std::to_string(static_cast<int>(retval)), "qTabDataOutput::GetFileFormat");
+				qDefs::Message(qDefs::WARNING, std::string("Unknown file format: ") + std::to_string(static_cast<int>(retval)), "qTabDataOutput::GetFileFormat");
 				break;
         }
     } catch (const sls::NonCriticalError &e) {
@@ -325,7 +326,7 @@ void qTabDataOutput::GetSpeed() {
 				comboEigerClkDivider->setCurrentIndex(retval);
 				break;
 			default:
-				qDefs::Message(qDefs::WARNING, std::string("Unknown speed.") + std::to_string(retval), "qTabDataOutput::GetFileFormat");
+				qDefs::Message(qDefs::WARNING, std::string("Unknown speed: ") + std::to_string(retval), "qTabDataOutput::GetFileFormat");
 				break;
         }
     } catch (const sls::NonCriticalError &e) {
@@ -361,7 +362,7 @@ void qTabDataOutput::GetFlags() {
 			else if (retval & slsDetectorDefs::CONTINOUS_RO)
 				comboEigerFlags1->setCurrentIndex(CONTINUOUS);
 			else {
-				qDefs::Message(qDefs::WARNING, std::string("Unknown flag (Not Store in ram or Continous).") + std::to_string(retval), "qTabDataOutput::GetFlags");
+				qDefs::Message(qDefs::WARNING, std::string("Unknown flag (Not Store in ram or Continous): ") + std::to_string(retval), "qTabDataOutput::GetFlags");
 			}
 
 			// parallel or non parallel
@@ -370,7 +371,7 @@ void qTabDataOutput::GetFlags() {
 			else if (retval & slsDetectorDefs::NONPARALLEL)
 				comboEigerFlags2->setCurrentIndex(NONPARALLEL);
 			else {
-				qDefs::Message(qDefs::WARNING, std::string("Unknown flag (Not Parallel or Non Parallel).") + std::to_string(retval), "qTabDataOutput::GetFlags");
+				qDefs::Message(qDefs::WARNING, std::string("Unknown flag (Not Parallel or Non Parallel): ") + std::to_string(retval), "qTabDataOutput::GetFlags");
 			}
 		}
     } catch (const sls::NonCriticalError &e) {

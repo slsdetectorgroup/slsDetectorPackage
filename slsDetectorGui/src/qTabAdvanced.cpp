@@ -24,21 +24,17 @@ void qTabAdvanced::SetupWidgetWindow(){
 	errOnlineTip = QString("<nobr><br><br><font color=\"red\"><nobr>It is offline!</nobr></font>");
 
 	// enabling according to det type
-    switch((int)myDet->getDetectorTypeAsEnum()) {
+    switch(myDet->getDetectorTypeAsEnum()) {
 		case slsDetectorDefs::EIGER:
-			// trimming
 			tab_trimming->setEnabled(true);
 			lblSubExpTime->setEnabled(true);
-			// subexptime
 			spinSubExpTime->setEnabled(true);
 			comboSubExpTimeUnit->setEnabled(true);
-			// subdeadtime
 			lblSubDeadTime->setEnabled(true);
 			spinSubDeadTime->setEnabled(true);
 			comboSubDeadTimeUnit->setEnabled(true);
 			break;
 		case slsDetectorDefs::GOTTHARD:
-			// roi
 			tab_roi->setEnabled(true);
 			break;
 		default:

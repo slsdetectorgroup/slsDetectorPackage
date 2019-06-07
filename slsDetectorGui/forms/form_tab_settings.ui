@@ -103,11 +103,6 @@
       </item>
       <item>
        <property name="text">
-        <string>Low Noise</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
         <string>Dynamic HG0</string>
        </property>
       </item>

@@ -120,7 +120,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     void functionNotImplemented();
 
     /** mode not implemented for specific detector */
-    void modeNotImplemented(std::string modename, int mode);
+    void modeNotImplemented(const std::string& modename, int mode);
 
     /** validate and set error */
     template <typename T>

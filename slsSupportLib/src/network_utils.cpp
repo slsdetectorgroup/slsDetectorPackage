@@ -27,10 +27,15 @@ IpAddr::IpAddr(const std::string &address) {
 IpAddr::IpAddr(const char *address) { inet_pton(AF_INET, address, &addr_); }
 
 std::string IpAddr::str() const {
-    char ipstring[INET_ADDRSTRLEN]{};
-    inet_ntop(AF_INET, &addr_, ipstring, INET_ADDRSTRLEN);
+    return arr().data();
+}
+
+std::array<char, INET_ADDRSTRLEN> IpAddr::arr() const{
+    std::array<char, INET_ADDRSTRLEN> ipstring{};
+    inet_ntop(AF_INET, &addr_, ipstring.data(), INET_ADDRSTRLEN);
     return ipstring;
 }
+
 std::string IpAddr::hex() const {
     std::ostringstream ss;
     ss << std::hex << std::setfill('0');

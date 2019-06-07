@@ -11,9 +11,11 @@ using namespace sls;
 
 TEST_CASE("Convert mac address using classes", "[support]") {
 
-    std::vector<uint64_t> vec_addr{346856806822, 346856806852, 262027939863028,0, 281474976710655};
+    std::vector<uint64_t> vec_addr{346856806822, 346856806852, 262027939863028,
+                                   0, 281474976710655};
     std::vector<std::string> vec_ans{"00:50:c2:46:d9:a6", "00:50:c2:46:d9:c4",
-                                     "ee:50:22:46:d9:f4", "00:00:00:00:00:00", "ff:ff:ff:ff:ff:ff"};
+                                     "ee:50:22:46:d9:f4", "00:00:00:00:00:00",
+                                     "ff:ff:ff:ff:ff:ff"};
     for (size_t i = 0; i != vec_addr.size(); ++i) {
         auto mac0 = MacAddr(vec_addr[i]);
         auto mac1 = MacAddr(vec_ans[i]);
@@ -42,12 +44,13 @@ TEST_CASE("Hex representation of MAC", "[support]") {
 }
 
 TEST_CASE("Convert IP using classes ", "[support]") {
-    std::vector<uint32_t> vec_addr{4073554305, 2747957633, 2697625985, 2566979594, 0};
+    std::vector<uint32_t> vec_addr{4073554305, 2747957633, 2697625985,
+                                   2566979594, 0};
     std::vector<std::string> vec_ans{"129.129.205.242", "129.129.202.163",
-                                     "129.129.202.160", "10.0.1.153", "0.0.0.0"};
-    std::vector<std::string> vec_hex{"8181cdf2", "8181caa3",
-                                     "8181caa0", "0a000199","00000000"};
-                                     
+                                     "129.129.202.160", "10.0.1.153",
+                                     "0.0.0.0"};
+    std::vector<std::string> vec_hex{"8181cdf2", "8181caa3", "8181caa0",
+                                     "0a000199", "00000000"};
 
     for (size_t i = 0; i != vec_addr.size(); ++i) {
         auto ip0 = IpAddr(vec_addr[i]);
@@ -59,7 +62,9 @@ TEST_CASE("Convert IP using classes ", "[support]") {
         CHECK(ip0 == vec_ans[i]);
         CHECK(ip1 == vec_ans[i]);
         CHECK(ip0.str() == vec_ans[i]);
+        CHECK(ip0.arr().data() == vec_ans[i]);
         CHECK(ip1.str() == vec_ans[i]);
+        CHECK(ip1.arr().data() == vec_ans[i]);
         CHECK(ip0.hex() == vec_hex[i]);
         CHECK(ip1.hex() == vec_hex[i]);
     }
@@ -80,7 +85,7 @@ TEST_CASE("Convert to uint for sending over network", "[support]") {
     CHECK(b == 4073554305);
 }
 
-TEST_CASE("Hostname lookup failed throws", "[support]"){
+TEST_CASE("Hostname lookup failed throws", "[support]") {
     CHECK_THROWS_AS(HostnameToIp("pippifax"), RuntimeError);
 }
 
@@ -90,7 +95,6 @@ TEST_CASE("IP Output operator gives same result as string", "[support]") {
     os << addr;
     CHECK(os.str() == "129.129.205.242");
     CHECK(os.str() == addr.str());
-
 }
 
 TEST_CASE("MAC Output operator gives same result as string", "[support]") {
@@ -101,4 +105,4 @@ TEST_CASE("MAC Output operator gives same result as string", "[support]") {
     CHECK(os.str() == addr.str());
 }
 
-//TODO!(Erik) Look up a real hostname and verify the IP
+// TODO!(Erik) Look up a real hostname and verify the IP

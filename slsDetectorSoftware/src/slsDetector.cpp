@@ -3216,10 +3216,6 @@ int slsDetector::setReceiverOnline(int value) {
         } else {
             shm()->rxOnlineFlag = OFFLINE_FLAG;
             if (value == ONLINE_FLAG) {
-                // Connect and ask for receiver id to verify that
-                // it's online and working
-                int64_t retval{0};
-                sendToReceiver(F_GET_RECEIVER_ID, nullptr, retval);
                 shm()->rxOnlineFlag = ONLINE_FLAG;
                 if (shm()->receiverAPIVersion == 0) {
                     checkReceiverVersionCompatibility();

@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <array>
 
 namespace sls {
 
@@ -15,6 +16,7 @@ class IpAddr {
     IpAddr(const char *address);
     std::string str() const;
     std::string hex() const;
+    std::array<char, 16u> arr() const;
     constexpr bool operator==(const IpAddr &other) const noexcept {
         return addr_ == other.addr_;
     }

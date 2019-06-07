@@ -1424,17 +1424,12 @@ void slsReceiverImplementation::closeFiles() {
 
 int slsReceiverImplementation::restreamStop() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    bool ret = OK;
     for (const auto &it : dataStreamer) {
         if (it->RestreamStop() == FAIL)
-            ret = FAIL;
+            throw sls::RuntimeError("Could not restream stop packet");
     }
-    // if fail, prints in datastreamer
-    if (ret == OK) {
-        FILE_LOG(logINFO) << "Restreaming Dummy Header via ZMQ successful";
-    }
-
-    return ret;
+    FILE_LOG(logINFO) << "Restreaming Dummy Header via ZMQ successful";
+    return OK;
 }
 
 /***callback functions***/

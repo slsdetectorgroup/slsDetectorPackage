@@ -34,10 +34,10 @@
   <widget class="QGroupBox" name="boxProgress">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>153</y>
+     <x>21</x>
+     <y>130</y>
      <width>319</width>
-     <height>116</height>
+     <height>103</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -55,9 +55,9 @@
    <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>75</y>
-      <width>300</width>
+      <x>-2</x>
+      <y>67</y>
+      <width>319</width>
       <height>23</height>
      </rect>
     </property>
@@ -68,9 +68,9 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>1</x>
       <y>25</y>
-      <width>91</width>
+      <width>96</width>
       <height>16</height>
      </rect>
     </property>
@@ -78,10 +78,10 @@
      <string>Current Frame: </string>
     </property>
    </widget>
-   <widget class="QLabel" name="lblProgressIndex">
+   <widget class="QLabel" name="lblCurrentFrame">
     <property name="geometry">
      <rect>
-      <x>101</x>
+      <x>99</x>
       <y>25</y>
       <width>101</width>
       <height>16</height>
@@ -94,7 +94,7 @@
    <widget class="QLabel" name="lblCurrentMeasurement">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>145</x>
       <y>45</y>
       <width>76</width>
       <height>16</height>
@@ -122,9 +122,9 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>1</x>
       <y>45</y>
-      <width>136</width>
+      <width>146</width>
       <height>16</height>
      </rect>
     </property>
@@ -136,10 +136,10 @@
   <widget class="QFrame" name="frameTimeResolved">
    <property name="geometry">
     <rect>
-     <x>390</x>
+     <x>368</x>
      <y>8</y>
-     <width>362</width>
-     <height>281</height>
+     <width>403</width>
+     <height>332</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -151,14 +151,14 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>3</x>
       <y>10</y>
-      <width>357</width>
-      <height>264</height>
+      <width>390</width>
+      <height>314</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridTimeResolved">
-     <item row="1" column="1">
+     <item row="3" column="1">
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -174,7 +174,7 @@
        </property>
       </spacer>
      </item>
-     <item row="3" column="3">
+     <item row="5" column="3">
       <widget class="QComboBox" name="comboPeriodUnit">
        <property name="enabled">
         <bool>false</bool>
@@ -230,7 +230,7 @@ Frame period between exposures.
        </item>
       </widget>
      </item>
-     <item row="0" column="2" colspan="2">
+     <item row="1" column="2" colspan="2">
       <widget class="QComboBox" name="comboTimingMode">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -244,11 +244,6 @@ Frame period between exposures.
        </property>
        <item>
         <property name="text">
-         <string>None</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
          <string>Auto</string>
         </property>
        </item>
@@ -259,7 +254,7 @@ Frame period between exposures.
        </item>
        <item>
         <property name="text">
-         <string> Gated with fixed number</string>
+         <string>Gated with fixed number</string>
         </property>
        </item>
        <item>
@@ -269,7 +264,7 @@ Frame period between exposures.
        </item>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="lblNumTriggers">
        <property name="enabled">
         <bool>false</bool>
@@ -283,7 +278,7 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="4" column="2" colspan="2">
+     <item row="6" column="2" colspan="2">
       <widget class="QSpinBox" name="spinNumTriggers">
        <property name="enabled">
         <bool>false</bool>
@@ -324,7 +319,7 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="lblDelay">
        <property name="enabled">
         <bool>false</bool>
@@ -338,7 +333,7 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="5" column="2">
+     <item row="7" column="2">
       <widget class="QDoubleSpinBox" name="spinDelay">
        <property name="enabled">
         <bool>false</bool>
@@ -373,7 +368,7 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="5" column="3">
+     <item row="7" column="3">
       <widget class="QComboBox" name="comboDelayUnit">
        <property name="enabled">
         <bool>false</bool>
@@ -426,7 +421,7 @@ Frame period between exposures.
        </item>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="lblNumFrames">
        <property name="enabled">
         <bool>false</bool>
@@ -436,7 +431,7 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="1" column="2" colspan="2">
+     <item row="3" column="2" colspan="2">
       <widget class="QSpinBox" name="spinNumFrames">
        <property name="enabled">
         <bool>false</bool>
@@ -477,7 +472,7 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="lblExpTime">
        <property name="enabled">
         <bool>true</bool>
@@ -494,7 +489,7 @@ Exposure Time of a frame.
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
+     <item row="4" column="2">
       <widget class="QDoubleSpinBox" name="spinExpTime">
        <property name="enabled">
         <bool>true</bool>
@@ -532,7 +527,7 @@ Exposure Time of a frame.
        </property>
       </widget>
      </item>
-     <item row="2" column="3">
+     <item row="4" column="3">
       <widget class="QComboBox" name="comboExpUnit">
        <property name="enabled">
         <bool>true</bool>
@@ -588,7 +583,7 @@ Exposure Time of a frame.
        </item>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="lblPeriod">
        <property name="enabled">
         <bool>false</bool>
@@ -605,7 +600,7 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
+     <item row="5" column="2">
       <widget class="QDoubleSpinBox" name="spinPeriod">
        <property name="enabled">
         <bool>false</bool>
@@ -643,14 +638,14 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="lblTimingMode">
        <property name="text">
         <string>Timing Mode:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="lblNumSamples">
        <property name="enabled">
         <bool>false</bool>
@@ -664,7 +659,7 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-     <item row="6" column="2" colspan="2">
+     <item row="8" column="2" colspan="2">
       <widget class="QSpinBox" name="spinNumSamples">
        <property name="enabled">
         <bool>false</bool>
@@ -705,47 +700,14 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
-    </layout>
-   </widget>
-   <zorder>gridLayoutWidget</zorder>
-   <zorder>spinNumSamples</zorder>
-  </widget>
-  <widget class="QFrame" name="frameNotTimeResolved">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>5</y>
-     <width>336</width>
-     <height>159</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::NoFrame</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Plain</enum>
-   </property>
-   <widget class="QWidget" name="gridLayoutWidget_3">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>13</y>
-      <width>321</width>
-      <height>130</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="verticalSpacing">
-      <number>6</number>
-     </property>
-     <item row="0" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Number of Measurements:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1" colspan="2">
+     <item row="2" column="2" colspan="2">
       <widget class="QSpinBox" name="spinNumMeasurements">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -773,7 +735,7 @@ Frame period between exposures.
         <string/>
        </property>
        <property name="minimum">
-        <number>1</number>
+        <number>-1</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
@@ -783,6 +745,37 @@ Frame period between exposures.
        </property>
       </widget>
      </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QFrame" name="frameNotTimeResolved">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>5</y>
+     <width>336</width>
+     <height>96</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Plain</enum>
+   </property>
+   <widget class="QWidget" name="gridLayoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>13</y>
+      <width>321</width>
+      <height>76</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="verticalSpacing">
+      <number>6</number>
+     </property>
      <item row="1" column="1" colspan="2">
       <widget class="QLineEdit" name="dispFileName">
        <property name="sizePolicy">
@@ -865,8 +858,8 @@ Frame period between exposures.
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>298</y>
+     <x>20</x>
+     <y>270</y>
      <width>318</width>
      <height>34</height>
     </rect>
@@ -933,7 +926,7 @@ Frame period between exposures.
       </property>
       <property name="maximumSize">
        <size>
-        <width>70</width>
+        <width>90</width>
         <height>16777215</height>
        </size>
       </property>
@@ -962,7 +955,6 @@ Frame period between exposures.
   </widget>
  </widget>
  <tabstops>
-  <tabstop>spinNumMeasurements</tabstop>
   <tabstop>chkFile</tabstop>
   <tabstop>dispFileName</tabstop>
   <tabstop>spinIndex</tabstop>

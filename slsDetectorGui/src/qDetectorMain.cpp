@@ -753,12 +753,16 @@ void qDetectorMain::SetZoomToolTip(bool disable) {
 
 int qDetectorMain::StartStopAcquisitionFromClient(bool start) {
     FILE_LOG(logINFO) << (start ? "Start" : "Stop")
-                      << " Acquisition From Clien";
+                      << " Acquisition From Client";
 
-    if (tabMeasurement->GetStartStatus() != start) {
-        tabMeasurement->ClickStartStop();
-        while (myPlot->GetClientInitiated())
-            ;
+    if (start) {
+        if (tabMeasurement->GetStartStatus() != start) {
+            tabMeasurement->ClentStartAcquisition();
+            while (myPlot->GetClientInitiated())
+                usleep(500);
+        }
+    } else {
+        tabMeasurement->StopAcquisition();
     }
 
     return slsDetectorDefs::OK;

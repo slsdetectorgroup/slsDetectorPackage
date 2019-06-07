@@ -1,6 +1,5 @@
 #include "qTabSettings.h"
-
-#include "multiSlsDetector.h"
+#include "qDefs.h"
 
 #include <QStandardItemModel>
 
@@ -135,6 +134,24 @@ void qTabSettings::GetSettings() {
     connect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSettings(int)));
 }
 
+void qTabSettings::SetSettings(int index) {
+    // settings
+    auto val = static_cast<slsDetectorDefs::detectorSettings>(index);
+    FILE_LOG(logINFO) << "Setting Settings to " << myDet->slsDetectorDefs::getDetectorSettings(val);
+
+    try {
+        myDet->setSettings(val);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set settings.", e.what(), "qTabSettings::SetSettings");
+        GetSettings();    
+    }
+
+    // threshold
+    if (spinThreshold->isEnabled()) {
+        SetThresholdEnergy(spinThreshold->value());
+    }
+}
+
 void qTabSettings::GetDynamicRange() {
     FILE_LOG(logDEBUG) << "Getting dynamic range";
     disconnect(comboDynamicRange, SIGNAL(activated(int)), this, SLOT(SetDynamicRange(int)));
@@ -170,6 +187,32 @@ void qTabSettings::GetDynamicRange() {
     connect(comboDynamicRange, SIGNAL(activated(int)), this,SLOT(SetDynamicRange(int))); 
 }
 
+void qTabSettings::SetDynamicRange(int index) {
+    FILE_LOG(logINFO) << "Setting dynamic range to " << comboDynamicRange->currentText().toAscii().data()
+    try {
+        switch (index) {
+        case DYNAMICRANGE_32:
+            myDet->setDynamicRange(32);
+            break;
+        case DYNAMICRANGE_16:
+            myDet->setDynamicRange(16);
+            break;
+        case DYNAMICRANGE_8:
+            myDet->setDynamicRange(8);
+            break;
+        case DYNAMICRANGE_4:
+            myDet->setDynamicRange(4);
+            break;
+        default:
+            qDefs::Message(qDefs::WARNING, std::string("Unknown dynamic range: ") + std::to_string(index), "qTabSettings::SetDynamicRange");
+           break;
+        }
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set dynamic range.", e.what(), "qTabSettings::SetDynamicRange");
+        GetDynamicRange();
+    }
+}
+
 void qTabSettings::GetThresholdEnergy() {
     FILE_LOG(logDEBUG) << "Getting theshold energy";
     disconnect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetThresholdEnergy()));
@@ -187,53 +230,6 @@ void qTabSettings::GetThresholdEnergy() {
     }
 
     connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetThresholdEnergy()));
-}
-
-void qTabSettings::SetSettings(int index) {
-    // settings
-    auto val = static_cast<slsDetectorDefs::detectorSettings>(index);
-    FILE_LOG(logINFO) << "Setting Settings to " << myDet->slsDetectorDefs::getDetectorSettings(val);
-
-    try {
-        myDet->setSettings(val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set settings.", e.what(), "qTabSettings::SetSettings");
-        GetSettings();    
-    }
-
-    // threshold
-    if (spinThreshold->isEnabled()) {
-        SetThresholdEnergy(spinThreshold->value());
-    }
-}
-
-void qTabSettings::SetDynamicRange(int index) {
-    try {
-        switch (index) {
-        case DYNAMICRANGE_32:
-            FILE_LOG(logINFO) << "Setting dynamic range to 32";
-            myDet->setDynamicRange(32);
-            break;
-        case DYNAMICRANGE_16:
-            FILE_LOG(logINFO) << "Setting dynamic range to 16";
-            myDet->setDynamicRange(16);
-            break;
-        case DYNAMICRANGE_8:
-            FILE_LOG(logINFO) << "Setting dynamic range to 8";
-            myDet->setDynamicRange(8);
-            break;
-        case DYNAMICRANGE_4:
-            FILE_LOG(logINFO) << "Setting dynamic range to 4";
-            myDet->setDynamicRange(4);
-            break;
-        default:
-            qDefs::Message(qDefs::WARNING, std::string("Unknown dynamic range: ") + std::to_string(index), "qTabSettings::SetDynamicRange");
-           break;
-        }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set dynamic range.", e.what(), "qTabSettings::SetDynamicRange");
-        GetDynamicRange();
-    }
 }
 
 void qTabSettings::SetThresholdEnergy(int index) {

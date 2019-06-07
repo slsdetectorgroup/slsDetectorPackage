@@ -1,9 +1,10 @@
 #include "qTabDataOutput.h"
-
-#include "multiSlsDetector.h"
+#include "qDefs.h"
 
 #include <QFileDialog>
 #include <QStandardItemModel>
+#include <QButtonGroup>
+#include <QString>
 
 #include <iostream>
 #include <string>
@@ -83,6 +84,7 @@ void qTabDataOutput::PopulateDetectors() {
 }
 
 void qTabDataOutput::EnableBrowse() {
+	FILE_LOG(logDEBUG) << "Getting browse enable";
 	try {
 		std::string receiverHostname = myDet->getReceiverHostname(comboDetector->currentIndex() - 1);
 		if (receiverHostname == "localhost") {
@@ -107,6 +109,32 @@ void qTabDataOutput::EnableBrowse() {
     }
 }
 
+void qTabDataOutput::GetFileWriteEnable() {
+		FILE_LOG(logDEBUG) << "Getting file write enable";
+	try {
+		int retval = myDet->getFileWrite();
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "File write is inconsistent for all detectors.", "qTabDataOutput::GetFileWriteEnable");
+			boxFileWriteEnabled->setEnabled(true);
+		} else {
+			boxFileWriteEnabled->setEnabled(retval == 0 ? false : true);
+		}
+	} catch (const sls::RuntimeError &e) {
+		qDefs::ExceptionMessage("Could not get file enable.", e.what(), "qTabDataOutput::GetFileWriteEnable");
+		boxFileWriteEnabled->setEnabled(true);
+    }
+}
+
+void qTabDataOutput::GetFileName() {
+	FILE_LOG(logDEBUG) << "Getting file name";
+	try {
+        auto retval = myDet->getFileName();
+		dispFileName->setText(QString(retval.c_str()));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get file name prefix.", e.what(), "qTabDataOutput::GetFileName");
+	}	
+	
+}
 
 void qTabDataOutput::GetOutputDir() {
 	FILE_LOG(logDEBUG) << "Getting file path";
@@ -182,7 +210,7 @@ void qTabDataOutput::GetFileFormat() {
 }
 
 void qTabDataOutput::SetFileFormat(int format) {
-	FILE_LOG(logINFO) << "Setting File Format to " << slsDetectorDefs::getFileFormatType((slsDetectorDefs::fileFormat)format);
+	FILE_LOG(logINFO) << "Setting File Format to " << comboFileFormat->currentText().toAscii().data();
 	try {
         myDet->setFileFormat((slsDetectorDefs::fileFormat)comboFileFormat->currentIndex());
     } catch (const sls::NonCriticalError &e) {
@@ -337,7 +365,7 @@ void qTabDataOutput::GetSpeed() {
 }
 
 void qTabDataOutput::SetSpeed(int speed) {
-	FILE_LOG(logINFO) << "Setting Speed to " << ((speed = FULLSPEED) ? "full" : ((speed == HALFSPEED) ? "half" : "quarter")) << " speed";
+	FILE_LOG(logINFO) << "Setting Speed to " << comboEigerClkDivider->currentText().toAscii().data();;
 	try {
         myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, speed);
     } catch (const sls::NonCriticalError &e) {
@@ -386,33 +414,31 @@ void qTabDataOutput::GetFlags() {
 void qTabDataOutput::SetFlags() {
 	auto flag1 = slsDetectorDefs::GET_READOUT_FLAGS;
 	auto flag2 = slsDetectorDefs::GET_READOUT_FLAGS;
-
+	
 	//set to continous or storeinram
 	switch (comboEigerFlags1->currentIndex()) {
 	case STOREINRAM:
-		FILE_LOG(logINFO) << "Setting Readout Flags to Store in Ram";
 		flag1 = slsDetectorDefs::STORE_IN_RAM;
 		break;
 	default:
-		FILE_LOG(logINFO) << "Setting Readout Flags to Continuous";
 		flag1 = slsDetectorDefs::CONTINOUS_RO;
 		break;
 	}
 
-	//set to parallel, nonparallel or safe
+	//set to parallel or nonparallel
 	switch (comboEigerFlags2->currentIndex()) {
 	case PARALLEL:
-		FILE_LOG(logINFO) << "Setting Readout Flags to Parallel";
 		flag2 = slsDetectorDefs::PARALLEL;
 		break;
 	default:
-		FILE_LOG(logINFO) << "Setting Readout Flags to Non Parallel";
 		flag2 = slsDetectorDefs::NONPARALLEL;
 		break;
 	}
 
 	try {
+		FILE_LOG(logINFO) << "Setting Readout Flags to " << comboEigerFlags1->currentText().toAscii().data();
         myDet->setReadOutFlags(flag1);
+		FILE_LOG(logINFO) << "Setting Readout Flags to " << comboEigerFlags2->currentText().toAscii().data();
 		myDet->setReadOutFlags(flag2);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not set readout flags.", e.what(), "qTabDataOutput::SetFlags");
@@ -430,7 +456,8 @@ void qTabDataOutput::Refresh() {
 	FILE_LOG(logDEBUG) << "**Updating DataOutput Tab";
 
 	EnableBrowse();
-	dispFileName->setText(QString(myDet->getFileName().c_str()));
+	GetFileWriteEnable();
+	GetFileName();
 	GetOutputDir();
 	GetFileOverwrite();
 	GetFileFormat();

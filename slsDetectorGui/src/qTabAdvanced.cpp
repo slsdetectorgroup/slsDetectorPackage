@@ -1,7 +1,5 @@
 #include "qTabAdvanced.h"
-#include "qDrawPlot.h"
-
-#include "multiSlsDetector.h"
+#include "qDefs.h"
 
 #include <iostream>
 
@@ -366,7 +364,7 @@ void qTabAdvanced::GetRxrZMQIP() {
 }
 
 void qTabAdvanced::SetDetector(int index) {
-	FILE_LOG(logDEBUG) << "Set Detector: " << index;
+	FILE_LOG(logDEBUG) << "Set Detector: " << comboDetector->currentText().toAscii().data();
 	
 	GetOnline();
 	GetControlPort();
@@ -776,7 +774,7 @@ void qTabAdvanced::GetSubExposureTime() {
 
 void qTabAdvanced::SetSubExposureTime() {
 	double timeNS = qDefs::getNSTime((qDefs::timeUnit)comboSubExpTimeUnit->currentIndex(), spinSubExpTime->value());
-	FILE_LOG(logINFO) << "Setting sub frame acquisition time to " << timeNS << " clocks" <<
+	FILE_LOG(logINFO) << "Setting sub frame acquisition time to " << timeNS << " ns" <<
 			"/" << spinSubExpTime->value() << qDefs::getUnitString((qDefs::timeUnit)comboSubExpTimeUnit->currentIndex());
 	try {
         myDet->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME, (int64_t)timeNS, -1);
@@ -813,7 +811,7 @@ void qTabAdvanced::GetSubDeadTime() {
 
 void qTabAdvanced::SetSubDeadTime() {
 	double timeNS = qDefs::getNSTime((qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex(), spinSubDeadTime->value());
-	FILE_LOG(logINFO) << "Setting sub frame dead time to " << timeNS << " clocks" <<
+	FILE_LOG(logINFO) << "Setting sub frame dead time to " << timeNS << " ns" <<
 			"/" << spinSubDeadTime->value() << qDefs::getUnitString((qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex());
 	try {
         myDet->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME, (int64_t)timeNS, -1);
@@ -825,7 +823,7 @@ void qTabAdvanced::SetSubDeadTime() {
 	
 
 void qTabAdvanced::Refresh(){
-	FILE_LOG(logDEBUG)  << endl << "**Updating Advanced Tab";
+	FILE_LOG(logDEBUG)  << "**Updating Advanced Tab";
 	
 	// trimming
 	if (tab_trimming->isEnabled()) {

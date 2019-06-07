@@ -65,7 +65,7 @@ public:
 	int GetFrameIndex(){return currentFrameIndex;};
 	/** sets file write enable , if not enabled,
 	 * file index wont increase and so you need secondary titles to differentitate between plots*/
-	void SetEnableFileWrite(bool enable){fileSaveEnable = enable;};
+	void SetFileWriteEnable(bool enable){fileSaveEnable = enable;};
 
 	/**	sets plot Title prefix*/
 	void SetPlotTitlePrefix(QString title)      	{plotTitle_prefix = title;}

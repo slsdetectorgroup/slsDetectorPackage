@@ -7,6 +7,16 @@ set(SLS_TEST_SOURCES
     test.cpp
 )
 
+add_executable(testclient src/testclient.cpp)
+target_link_libraries(testclient slsSupportLib)
+set_target_properties(testclient PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_executable(testserver src/testserver.cpp)
+target_link_libraries(testserver slsSupportLib)
+set_target_properties(testserver PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    
 add_executable(tests ${SLS_TEST_SOURCES})
 target_link_libraries(tests 
     slsProjectOptions
@@ -31,8 +41,9 @@ endif (SLS_USE_RECEIVER)
 set_target_properties(tests PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
+
+
+
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)
-# #TODO! Move to automatic test discovery
-# add_test(test ${CMAKE_BINARY_DIR}/bin/testSlsReceiver)

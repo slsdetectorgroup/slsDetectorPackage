@@ -62,34 +62,31 @@ int ClientSocket::sendCommandThenRead(int fnum, const void *args,
                                       size_t args_size, void *retval,
                                       size_t retval_size) {
     int ret = slsDetectorDefs::FAIL;
-    sendData(&fnum, sizeof(fnum));
-    sendData(args, args_size);
+    Send(&fnum, sizeof(fnum));
+    Send(args, args_size);
     readReply(ret, retval, retval_size);
     return ret;
 }
 
 void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
 
-    receiveData(&ret, sizeof(ret));
+    Receive(&ret, sizeof(ret));
     if (ret == slsDetectorDefs::FAIL) {
         char mess[MAX_STR_LENGTH]{};
         // get error message
-        receiveData(mess, sizeof(mess));
-        FILE_LOG(logERROR) << socketType << " returned error: " << mess;
-        std::cout << "\n"; // needed to reset the color.
-
+        Receive(mess, sizeof(mess));
         // Do we need to know hostname here?
         // In that case save it???
         if (socketType == "Receiver") {
-            throw ReceiverError(mess);
+            throw ReceiverError("Receiver returned: " + std::string(mess));
         } else if (socketType == "Detector") {
-            throw DetectorError(mess);
+            throw DetectorError("Detector returned: " + std::string(mess));
         } else {
             throw GuiError(mess);
         }
     }
     // get retval
-    receiveData(retval, retval_size);
+    Receive(retval, retval_size);
 }
 
 }; // namespace sls

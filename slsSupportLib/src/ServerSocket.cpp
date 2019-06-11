@@ -52,26 +52,4 @@ ServerInterface2 ServerSocket::accept() {
     return ServerInterface2(newSocket);
 }
 
-
-int ServerSocket::getPort() const { return serverPort; }
-
-void ServerSocket::SendResult(int &ret, void* retval, int retvalSize, char* mess) {
-
-	// send success of operation
-	sendData(&ret, sizeof(ret));
-
-    if (ret == slsDetectorDefs::FAIL) {
-        // create error message if empty
-        if (!strlen(mess))  {
-            strcpy(mess, "No error message provided for this failure in server. Will mess up TCP.");
-        }
-        
-        sendData(mess, MAX_STR_LENGTH);
-        throw sls::RuntimeError(mess);  
-    }
-    // send return value
-    sendData(retval, retvalSize);
-}
-
-
 }; // namespace sls

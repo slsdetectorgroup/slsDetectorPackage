@@ -13,16 +13,19 @@ class ServerInterface2 : public DataSocket {
     using defs = slsDetectorDefs;
 
   public:
-    ServerInterface2(int socketId) : DataSocket(socketId){}
+    ServerInterface2(int socketId) : DataSocket(socketId) {}
 
-    int sendResult(bool update, int ret, void *retval, int retvalSize,
-                   char *mess = nullptr);
-    int receiveArg(int &ret, char *mess, void *arg, int sizeofArg);
+    int sendResult(int ret, void *retval, int retvalSize, char *mess = nullptr);
 
+    template <typename T> int sendResult(int ret, T &retval) {
+        return sendResult(ret, &retval, sizeof(retval, nullptr));
+    }
 
-
-private:
-
+    template <typename T> int sendResult(T &&retval) {
+        Send(defs::OK);
+        Send(retval);
+        return defs::OK;
+    }
 };
 
 } // namespace sls

@@ -2,6 +2,8 @@
 #include "qDefs.h"
 #include "qDrawPlot.h"
 
+#include "string_utils.h"
+
 #include <QStandardItemModel>
 
 #include <iostream>
@@ -73,7 +75,7 @@ void qTabMeasurement::Initialization() {
 	connect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
 	connect(spinNumFrames, SIGNAL(valueChanged(int)), this, SLOT(SetNumFrames(int)));
 	connect(spinNumTriggers, SIGNAL(valueChanged(int)), this, SLOT(SetNumTriggers(int)));
-	if (spinSamples->isEnabled()) {
+	if (spinNumSamples->isEnabled()) {
 		connect(spinNumSamples, SIGNAL(valueChanged(int)), this, SLOT(SetNumSamples(int)));
 	}
 	connect(spinExpTime, SIGNAL(valueChanged(double)), this, SLOT(SetExposureTime()));
@@ -84,7 +86,7 @@ void qTabMeasurement::Initialization() {
 		connect(spinDelay, SIGNAL(valueChanged(double)), this, SLOT(SetDelay()));
 		connect(comboDelayUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetDelay()));
 	}
-	connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWriteEnable(bool)));
+	connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
 	connect(dispFileName, SIGNAL(editingFinished()), this, SLOT(SetFileName()));
 	connect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));
 	connect(progressTimer, SIGNAL(timeout()), this, SLOT(UpdateProgress()));
@@ -191,7 +193,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
 	CheckAcqPeriodGreaterThanExp();
 }
 
-void qTabMeasurement::GetTimingMode(bool startup) {
+void qTabMeasurement::GetTimingMode() {
 	FILE_LOG(logDEBUG) << "Getting timing mode";
 	connect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(SetTimingMode(int)));
 
@@ -199,13 +201,13 @@ void qTabMeasurement::GetTimingMode(bool startup) {
 		auto oldMode = comboTimingMode->currentIndex();
         auto retval = myDet->setExternalCommunicationMode();
 		switch(retval) {
-			case GET_EXTERNAL_COMMUNICATION_MODE:
+			case slsDetectorDefs::GET_EXTERNAL_COMMUNICATION_MODE:
 				qDefs::Message(qDefs::WARNING, "Timing Mode is inconsistent for all detectors.", "qTabMeasurement::GetTimingMode");
 				break;
-			case AUTO:
-			case TRIGGER:
-			case GATED:
-			case BURST_TRIGGER:
+			case slsDetectorDefs::AUTO_TIMING:
+			case slsDetectorDefs::TRIGGER_EXPOSURE:
+			case slsDetectorDefs::GATED:
+			case slsDetectorDefs::BURST_TRIGGER:
 				comboTimingMode->setCurrentIndex((int)retval);
 				// update widget enable only if different 
 				if (oldMode != comboTimingMode->currentIndex()) {
@@ -213,7 +215,7 @@ void qTabMeasurement::GetTimingMode(bool startup) {
 				}
 				break;
 			default:
-				qDefs::ExceptionMessage("Could not get timing mode.", e.what(), "qTabMeasurement::GetTimingMode");
+				qDefs::Message(qDefs::WARNING, std::string("Unknown timing mode: ")+ std::to_string(retval), "qTabMeasurement::GetTimingMode");
 				break;
 		}
     } catch (const sls::NonCriticalError &e) {
@@ -223,11 +225,11 @@ void qTabMeasurement::GetTimingMode(bool startup) {
 	disconnect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(SetTimingMode(int)));
 }
 
-void qTabMeasurement::SetTimingMode(int mode) {
+void qTabMeasurement::SetTimingMode(int val) {
 	FILE_LOG(logINFO) << "Setting timing mode:" << comboTimingMode->currentText().toAscii().data();
 	
 	try {
-        myDet->setExternalCommunicationMode(static_cast<slsDetectorDefs::externalCommunicationMode>(value));
+        myDet->setExternalCommunicationMode(static_cast<slsDetectorDefs::externalCommunicationMode>(val));
 		EnableWidgetsforTimingMode();
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not set timing mode.", e.what(), "qTabMeasurement::SetTimingMode");
@@ -244,7 +246,7 @@ void qTabMeasurement::GetNumMeasurements() {
 		if (retval == -1) {
 			qDefs::Message(qDefs::WARNING, "Number of measurements is inconsistent for all detectors.", "qTabMeasurement::GetNumMeasurements");
 		} 
-		spinNumMeasurements->seValue(retval);
+		spinNumMeasurements->setValue(retval);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get number of measurements.", e.what(), "qTabMeasurement::GetNumMeasurements");
     }
@@ -272,7 +274,7 @@ void qTabMeasurement::GetNumFrames() {
 		if (retval == -1) {
 			qDefs::Message(qDefs::WARNING, "Number of frames is inconsistent for all detectors.", "qTabMeasurement::GetNumFrames");
 		} 
-		spinNumFrames->seValue(retval);
+		spinNumFrames->setValue(retval);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get number of frames.", e.what(), "qTabMeasurement::GetNumFrames");
     }
@@ -300,7 +302,7 @@ void qTabMeasurement::GetNumTriggers() {
 		if (retval == -1) {
 			qDefs::Message(qDefs::WARNING, "Number of triggers is inconsistent for all detectors.", "qTabMeasurement::GetNumTriggers");
 		} 
-		spinNumTriggers->seValue(retval);
+		spinNumTriggers->setValue(retval);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get number of frames.", e.what(), "qTabMeasurement::GetNumTriggers");
     }
@@ -324,11 +326,15 @@ void qTabMeasurement::GetNumSamples() {
 	disconnect(spinNumSamples, SIGNAL(valueChanged(int)), this, SLOT(SetNumSamples(int)));
 
 	try {
-        auto retval = myDet->setTimer(slsDetectorDefs::SAMPLES);
+        auto retval = myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES);
 		if (retval == -1) {
-			qDefs::Message(qDefs::WARNING, "Number of samples is inconsistent for all detectors.", "qTabMeasurement::GetNumSamples");
+			qDefs::Message(qDefs::WARNING, "Number of analog samples is inconsistent for all detectors.", "qTabMeasurement::GetNumSamples");
 		} 
-		spinNumSamples->seValue(retval);
+		retval = myDet->setTimer(slsDetectorDefs::DIGITAL_SAMPLES);
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "Number of digital samples is inconsistent for all detectors.", "qTabMeasurement::GetNumSamples");
+		} 
+		spinNumSamples->setValue(retval);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get number of samples.", e.what(), "qTabMeasurement::GetNumSamples");
     }
@@ -340,7 +346,8 @@ void qTabMeasurement::SetNumSamples(int val) {
 	FILE_LOG(logINFO) << "Setting number of samples to " << val;
 
 	try {
-        myDet->setTimer(slsDetectorDefs::SAMPLES, val);
+        myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES, val);
+		myDet->setTimer(slsDetectorDefs::DIGITAL_SAMPLES, val);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not set number of samples.", e.what(), "qTabMeasurement::SetNumSamples");
         GetNumSamples();
@@ -359,7 +366,7 @@ void qTabMeasurement::GetExposureTime() {
 			spinExpTime->setValue(-1);
 		} else {
 			qDefs::timeUnit unit;
-			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9));
+			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9)));
 			spinExpTime->setValue(time);
 			comboExpUnit->setCurrentIndex(static_cast<int>(unit));
 
@@ -400,7 +407,7 @@ void qTabMeasurement::GetAcquisitionPeriod() {
 			spinPeriod->setValue(-1);
 		} else {
 			qDefs::timeUnit unit;
-			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9));
+			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9)));
 			spinPeriod->setValue(time);
 			comboPeriodUnit->setCurrentIndex(static_cast<int>(unit));
 
@@ -466,7 +473,7 @@ void qTabMeasurement::GetDelay() {
 			spinDelay->setValue(-1);
 		} else {
 			qDefs::timeUnit unit;
-			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9));
+			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9)));
 			spinDelay->setValue(time);
 			comboDelayUnit->setCurrentIndex(static_cast<int>(unit));
 
@@ -495,38 +502,38 @@ void qTabMeasurement::SetDelay() {
     }
 }
 
-void qTabMeasurement::GetFileWriteEnable() {
+void qTabMeasurement::GetFileWrite() {
 	FILE_LOG(logDEBUG) << "Getting File Write Enable";
-	disconnect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWriteEnable(bool)));
+	disconnect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
 
 	try {
         int retval = myDet->getFileWrite();
 		if (retval == -1) {
-			qDefs::Message(qDefs::WARNING, "File write is inconsistent for all detectors.", "qTabMeasurement::GetFileWriteEnable");
+			qDefs::Message(qDefs::WARNING, "File write is inconsistent for all detectors.", "qTabMeasurement::GetFileWrite");
 			dispFileName->setEnabled(true);
 		} else {
 			chkFile->setChecked(retval == 0 ? false : true);
 			dispFileName->setEnabled(chkFile->isChecked());
 		}
     } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get file over write enable.", e.what(), "qTabMeasurement::GetFileWriteEnable");
+        qDefs::ExceptionMessage("Could not get file over write enable.", e.what(), "qTabMeasurement::GetFileWrite");
 		dispFileName->setEnabled(true);
     }
 
-	connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWriteEnable(bool)));
+	connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
 }
 
-void qTabMeasurement::SetFileWriteEnable(bool enable) {
-	FILE_LOG(logINFO) << "Set File Write to " << enable;
+void qTabMeasurement::SetFileWrite(bool val) {
+	FILE_LOG(logINFO) << "Set File Write to " << val;
 
 	try {
-        myDet->setFileWrite(enable);
+        myDet->setFileWrite(val);
 		// for file save enable
-		myPlot->SetFileWriteEnable(enable);
+		myPlot->SetFileWrite(val);
 		dispFileName->setEnabled(chkFile->isChecked());
     } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set file write enable.", e.what(), "qTabMeasurement::SetFileWriteEnable");
-        GetFileWriteEnable();
+        qDefs::ExceptionMessage("Could not set file write enable.", e.what(), "qTabMeasurement::SetFileWrite");
+        GetFileWrite();
     }
 }
 
@@ -564,7 +571,7 @@ void qTabMeasurement::GetRunIndex() {
 		if (retval == -1) {
 			qDefs::Message(qDefs::WARNING, "Acquisition File Index is inconsistent for all detectors.", "qTabMeasurement::GetRunIndex");
 		} 
-		spinIndex->seValue(retval);
+		spinIndex->setValue(retval);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get acquisition file index.", e.what(), "qTabMeasurement::GetRunIndex");
     }
@@ -581,7 +588,6 @@ void qTabMeasurement::SetRunIndex(int val) {
         qDefs::ExceptionMessage("Could not set acquisition file index.", e.what(), "qTabMeasurement::SetRunIndex");
         GetRunIndex();
     }
-	myDet->setFileIndex(index);
 }
 
 void qTabMeasurement::SetCurrentMeasurement(int val) {
@@ -591,7 +597,7 @@ void qTabMeasurement::SetCurrentMeasurement(int val) {
 	}
 }
 
-void ResetProgress() {
+void qTabMeasurement::ResetProgress() {
 	FILE_LOG(logDEBUG) << "Resetting progress";
 	lblCurrentFrame->setText(QString::number(0));
 	lblCurrentMeasurement->setText(QString::number(0));
@@ -604,16 +610,25 @@ void qTabMeasurement::UpdateProgress() {
 	lblCurrentFrame->setText(QString::number(myPlot->GetFrameIndex()));
 }
 
-void qTabMeasurement::UpdateFinished() {
-	UpdateProgress();
-	disconnect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));
-	spinIndex->setValue(myDet->getFileIndex());
-	connect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));
-	progressTimer->stop();
-
-	Enable(1);
-	btnStart->setEnabled(true);
-	qDefs::checkErrorMessage(myDet, "qTabMeasurement::UpdateFinished");
+int qTabMeasurement::VerifyOutputDirectoryError() {
+	try {
+		auto retval = myDet->getFilePath();
+		// multi
+		if (retval.find('+') == std::string::npos) {
+			myDet->setFilePath(retval);
+		}
+		//single
+		else {
+			const auto &paths = sls::split(retval, '+');
+			for (size_t det = 0; det < paths.size(); ++det) {
+				myDet->setFilePath(paths[det], det);
+			}
+		}
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set path.", e.what(), "qTabMeasurement::VerifyOutputDirectoryError");
+		return slsDetectorDefs::FAIL;
+    }
+	return slsDetectorDefs::OK;
 }
 
 void qTabMeasurement::StartAcquisition() {
@@ -626,30 +641,40 @@ void qTabMeasurement::StartAcquisition() {
 			btnStart->setEnabled(true);
 			return;
 		} else {
-			//done because for receiver it cant save a file with blank file path and returns without acquiring even to the gui
-			disconnect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWriteEnable(bool)));
-			SetFileWriteEnable(false);
-			connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWriteEnable(bool)));
+			disconnect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
+			chkFile->setChecked(false);
+			// cannot wait for signals from chkFile
+			SetFileWrite(false);
+			connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
 		}
 	}
 
 	FILE_LOG(logINFOBLUE) << "Starting Acquisition";
-	lblProgressIndex->setText(QString::number(0));
+	lblCurrentFrame->setText(QString::number(0));
+	lblCurrentMeasurement->setText(QString::number(0));
 	Enable(0);
 	progressBar->setValue(0);
 	progressTimer->start(100);
-
 	emit StartSignal();
-	qDefs::checkErrorMessage(myDet, "qTabMeasurement::StartAcquisition");
 }
 
 
 void qTabMeasurement::StopAcquisition() {
 	FILE_LOG(logINFORED) << "Stopping Acquisition";
-	myDet->stopAcquisition();
-	qDefs::checkErrorMessage(myDet, "qTabMeasurement::StopAcquisition");
+	try{
+		myDet->stopAcquisition();
+	} catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not stop acquisition.", e.what(), "qTabMeasurement::StopAcquisition");
+    }
 }
 
+void qTabMeasurement::UpdateFinished() {
+	UpdateProgress();
+	GetRunIndex();
+	progressTimer->stop();
+	Enable(1);
+	btnStart->setEnabled(true);
+}
 
 void qTabMeasurement::Enable(bool enable) {
 	frameTimeResolved->setEnabled(enable);
@@ -659,24 +684,10 @@ void qTabMeasurement::Enable(bool enable) {
 	btnStart->setShortcut(QApplication::translate("TabMeasurementObject", "Shift+Space", 0, QApplication::UnicodeUTF8));
 }
 
-int qTabMeasurement::VerifyOutputDirectoryError() {
-	try {
-		auto retval = myDet->getFilePath();
-		// if path has no  +, set multi path, else set all individually
-	//        myDet->setFileIndex(val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set path.", e.what(), "qTabMeasurement::VerifyOutputDirectoryError");
-		return slsDetectorDefs::FAIL;
-    }
-	return slsDetectorDefs::OK;
-}
-
 void qTabMeasurement::Refresh() {
 	FILE_LOG(logDEBUG) << "**Updating Measurement Tab";
 
 	if (!myPlot->isRunning()) {
-
-		//timing mode - will also check if exptime>acq period
 		GetTimingMode();
 		GetNumMeasurements();
 		GetNumFrames();
@@ -689,10 +700,11 @@ void qTabMeasurement::Refresh() {
 		if (sampleImplemented) {
 			GetNumSamples();
 		}
-		GetFileWriteEnable();
+		GetFileWrite();
 		GetFileName();
 		GetRunIndex();
 		ResetProgress();
+	}
 
 	FILE_LOG(logDEBUG) << "**Updated Measurement Tab";
 }

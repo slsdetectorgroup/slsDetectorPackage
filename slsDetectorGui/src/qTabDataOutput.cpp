@@ -109,18 +109,18 @@ void qTabDataOutput::EnableBrowse() {
     }
 }
 
-void qTabDataOutput::GetFileWriteEnable() {
+void qTabDataOutput::GetFileWrite() {
 		FILE_LOG(logDEBUG) << "Getting file write enable";
 	try {
 		int retval = myDet->getFileWrite();
 		if (retval == -1) {
-			qDefs::Message(qDefs::WARNING, "File write is inconsistent for all detectors.", "qTabDataOutput::GetFileWriteEnable");
+			qDefs::Message(qDefs::WARNING, "File write is inconsistent for all detectors.", "qTabDataOutput::GetFileWrite");
 			boxFileWriteEnabled->setEnabled(true);
 		} else {
 			boxFileWriteEnabled->setEnabled(retval == 0 ? false : true);
 		}
 	} catch (const sls::RuntimeError &e) {
-		qDefs::ExceptionMessage("Could not get file enable.", e.what(), "qTabDataOutput::GetFileWriteEnable");
+		qDefs::ExceptionMessage("Could not get file enable.", e.what(), "qTabDataOutput::GetFileWrite");
 		boxFileWriteEnabled->setEnabled(true);
     }
 }
@@ -456,7 +456,7 @@ void qTabDataOutput::Refresh() {
 	FILE_LOG(logDEBUG) << "**Updating DataOutput Tab";
 
 	EnableBrowse();
-	GetFileWriteEnable();
+	GetFileWrite();
 	GetFileName();
 	GetOutputDir();
 	GetFileOverwrite();

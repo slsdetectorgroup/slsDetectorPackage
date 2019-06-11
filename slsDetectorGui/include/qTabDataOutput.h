@@ -29,9 +29,8 @@ public:
 	void Initialization();
 	void PopulateDetectors();
 	void EnableBrowse();
-	void GetFileEnable();
+	void GetFileWrite();
 	void GetFileName();
-
 	void GetFileFormat();
 	void GetFileOverwrite();
 	void GetTenGigaEnable();

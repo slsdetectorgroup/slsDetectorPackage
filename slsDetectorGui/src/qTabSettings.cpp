@@ -188,7 +188,7 @@ void qTabSettings::GetDynamicRange() {
 }
 
 void qTabSettings::SetDynamicRange(int index) {
-    FILE_LOG(logINFO) << "Setting dynamic range to " << comboDynamicRange->currentText().toAscii().data()
+    FILE_LOG(logINFO) << "Setting dynamic range to " << comboDynamicRange->currentText().toAscii().data();
     try {
         switch (index) {
         case DYNAMICRANGE_32:

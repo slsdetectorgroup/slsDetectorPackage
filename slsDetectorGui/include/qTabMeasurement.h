@@ -22,19 +22,19 @@ public:
 
 public slots:
 	void SetCurrentMeasurement(int val);
-	void UpdateFinished();
     void StopAcquisition();
+	void UpdateFinished();
 
 private slots:
-	void SetTimingMode(int mode);
-	void SetNumMeasurements(int num);
+	void SetTimingMode(int val);
+	void SetNumMeasurements(int val);
 	void SetNumFrames(int val);
 	void SetNumTriggers(int val);
 	void SetNumSamples(int val);
 	void SetExposureTime();
 	void SetAcquisitionPeriod();
 	void SetDelay();
-	void SetFileWriteEnable(bool enable);
+	void SetFileWrite(bool val);
 	void SetFileName();
 	void SetRunIndex(int val);
 	void UpdateProgress();
@@ -55,7 +55,7 @@ private:
 	void GetAcquisitionPeriod();
 	void CheckAcqPeriodGreaterThanExp();
 	void GetDelay();
-	void GetFileWriteEnable();
+	void GetFileWrite();
 	void GetFileName();
 	void GetRunIndex();
 

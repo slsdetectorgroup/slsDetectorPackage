@@ -1,8 +1,6 @@
 #include "qTabDebugging.h"
 #include "qDefs.h"
 
-#include "multiSlsDetector.h"
-
 #include <QDesktopWidget>
 #include <QGridLayout>
 #include <QTreeWidget>

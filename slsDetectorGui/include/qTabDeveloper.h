@@ -1,28 +1,24 @@
 #pragma once
 
-#include "qDefs.h"
-
 class multiSlsDetector;
 
-#include <QWidget>
-#include <QGridLayout>
-#include <QGroupBox>
-#include <QLabel>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QDoubleSpinBox>
-#include <QScrollArea>
-#include <QTimer>
-#include <QString>
-#include <QPalette>
-class qDetectorMain;
+class QGroupBox;
+class QLabel;
+class QDoubleSpinBox;
+class MyDoubleSpinBox;
+class QLineEdit;
+class QComboBox;
+class QSpinBox;
+class QGridLayout;
+class QString;
+class QPalette;
 
 #include <string>
 #include <vector>
 
 
 /**To override the spin box class to have an id and emit it*/
-class MyDoubleSpinBox:public QDoubleSpinBox{
+class MyDoubleSpinBox: public QDoubleSpinBox{
 Q_OBJECT
 private:
 	int myId;
@@ -38,98 +34,50 @@ private:
 };
 
 
-/**
- *@short sets up the Developer parameters
- */
 class qTabDeveloper:public QWidget {
 	Q_OBJECT
 
 public:
-	/**
-	 * The constructor
-	 * @param parent is the parent tab widget
-	 * @param detector is the detector returned from the detector tab
-	 */
 	qTabDeveloper(QWidget *parent, multiSlsDetector* detector);
-
-	/**
-	 * Destructor
-	 */
 	~qTabDeveloper();
 
 public slots:
-
-	/**
-	 * Refresh and update widgets
-	 */
 	void Refresh();
 
 private slots:
-	/**
-	 * Refreshes the adcs
-	 */
-	void RefreshAdcs();
-
-	/**
-	 * Set Dac values
-	 * @param id id of dac
-	 */
-	void SetDacValues(int id);
-
-	/**
-	 * Set High Voltage
-	 */
+	void GetAdcs();
+	void SetDac(int id);
 	void SetHighVoltage();
 
 private:
-
-	/**
-	 * Sets up the widget
-	 */
 	void SetupWidgetWindow();
-
-	/**
-	 * Sets up all the slots and signals
-	 */
 	void Initialization();
-
-	/**
-	 * Sets up the DAC Widgets
-	 */
+	void PopulateDetectors();
 	void CreateDACWidgets();
-
-	/**
-	 * Sets up the ADC Widgets
-	 */
 	void CreateADCWidgets();
-
-	/**
-	 * Sets up HV widget
-	 */
 	void CreateHVWidget();
-
-	/**
-	 * Gets the sls index to set/get dac/adc
-	 * @param index is the gui dac/adc index
-	 * @returns the sls index
-	 */
+	void GetDac(int id);
+	void GetDacs();
+	void GetHighVoltage();
 	slsDetectorDefs::dacIndex getSLSIndex(int index);
 
-	/** The sls detector object */
 	multiSlsDetector *myDet;
-	/** detector type */
 	slsDetectorDefs::detectorType detType;
-	/**number of dac widgets*/
 	int numDACWidgets;
-	/**number of adc widgets*/
 	int numADCWidgets;
-
-	/** list of dac and adc names */
 	std::vector<std::string>dacNames;
 	std::vector<std::string>adcNames;
 
+	enum hvVals {
+		HV_0,
+		HV_90,
+		HV_110,
+		HV_120,
+		HV_150,
+		HV_180,
+		HV_200
+	};
 
-	/**widgets needed*/
 	QGroupBox *boxDacs;
 	QGroupBox *boxAdcs;
 	std::vector<QLabel*>lblDacs;
@@ -141,8 +89,9 @@ private:
 	QComboBox *comboHV;
 	QSpinBox *spinHV;
 	QGridLayout *dacLayout;
-	QString tipHV;
-	QPalette red;
 	QComboBox *comboDetector;
+
+	static const int HV_MIN = 60;
+	static const int HV_MAX = 200;
 };
 

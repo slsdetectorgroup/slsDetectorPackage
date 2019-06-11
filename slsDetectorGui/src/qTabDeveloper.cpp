@@ -1,8 +1,17 @@
 #include "qTabDeveloper.h"
-#include "qDetectorMain.h"
+#include "qDefs.h"
 
-#include "multiSlsDetector.h"
-
+#include <QWidget>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QScrollArea>
+#include <QTimer>
+#include <QString>
+#include <QPalette>
 #include <QDoubleValidator>
 #include <QSpacerItem>
 #include <QString>
@@ -10,47 +19,22 @@
 #include <iostream>
 
 
-qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *detector) : QWidget(parent),
-		myDet(detector),
-		detType(slsDetectorDefs::GENERIC),
-		numDACWidgets(0),
-		numADCWidgets(0),
-		boxDacs(0),
-		boxAdcs(0),
-		lblHV(0),
-		comboHV(0),
-		dacLayout(0),
-		comboDetector(0) {
-
-
-	lblDacs.clear();
-	lblAdcs.clear();
-	spinDacs.clear();
-	spinAdcs.clear();
-	lblDacsmV.clear();
-
+qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *detector) : 
+	QWidget(parent), myDet(detector), detType(slsDetectorDefs::GENERIC), numDACWidgets(0), numADCWidgets(0),
+	boxDacs(nullptr), boxAdcs(nullptr), lblHV(nullptr), comboHV(nullptr), dacLayout(nullptr), comboDetector(nullptr) {
 	SetupWidgetWindow();
 	Initialization();
 	FILE_LOG(logDEBUG) << "Developer ready";
 }
 
-
 qTabDeveloper::~qTabDeveloper() {}
 
 void qTabDeveloper::SetupWidgetWindow() {
-	//Detector Type
 	detType = myDet->getDetectorTypeAsEnum();
-
-	//palette
-	red = QPalette();
-	red.setColor(QPalette::Active, QPalette::WindowText, Qt::red);
-
-	//the number of dacs and adcs
 	switch (detType) {
 	case slsDetectorDefs::EIGER:
 		numDACWidgets = 17;
 		numADCWidgets = 6;
-
 		dacNames.push_back("v SvP:");
 		dacNames.push_back("v SvN");
 		dacNames.push_back("v Vrf:");
@@ -68,16 +52,13 @@ void qTabDeveloper::SetupWidgetWindow() {
 		dacNames.push_back("v Vcmp_rl:");
 		dacNames.push_back("v Vcmp_rr:");
 		dacNames.push_back("v threshold:");
-
 		adcNames.push_back("Temperature FPGA Ext:");
 		adcNames.push_back("Temperature 10GE:");
 		adcNames.push_back("Temperature DCDC:");
 		adcNames.push_back("Temperature SODL:");
 		adcNames.push_back("Temperature SODR:");
 		adcNames.push_back("Temperature FPGA:");
-
 		break;
-
 	case slsDetectorDefs::GOTTHARD:
 		numDACWidgets = 8;
 		numADCWidgets = 2;
@@ -89,12 +70,9 @@ void qTabDeveloper::SetupWidgetWindow() {
 		dacNames.push_back("v Comp. Input:");
 		dacNames.push_back("v Comp. Ref:");
 		dacNames.push_back("i Base Test:");
-
 		adcNames.push_back("Temperature ADC:");
 		adcNames.push_back("Temperature FPGA:");
-
 		break;
-
 	case slsDetectorDefs::JUNGFRAU:
 		numDACWidgets = 8;
 		numADCWidgets = 1;
@@ -106,13 +84,9 @@ void qTabDeveloper::SetupWidgetWindow() {
 		dacNames.push_back("v vb ds:");
 		dacNames.push_back("v vref ds:");
 		dacNames.push_back("i vref comp:");
-
 		adcNames.push_back("Temperature ADC/FPGA:");
-
 		break;
-
 	case slsDetectorDefs::MOENCH:
-
 		numDACWidgets = 8;
 		numADCWidgets = 0;
 		dacNames.push_back("v Dac 0:");
@@ -123,73 +97,54 @@ void qTabDeveloper::SetupWidgetWindow() {
 		dacNames.push_back("v Dac 5:");
 		dacNames.push_back("v Dac 6:");
 		dacNames.push_back("i Dac 7:");
-
 		break;
-
 	default:
-		std::string errorMess =
-            myDet->getHostname() + std::string(" has ") +
-            myDet->getDetectorTypeAsString() + std::string(" detector type (") +
-            std::to_string(detType) + std::string("). Exiting GUI. (Source: qTabDeveloper::SetupWidgetWindow)");
-		throw sls::RuntimeError(errorMess.c_str());
+		break;
 	}
 
-	//layout
 	setFixedWidth(765);
 	setFixedHeight(20 + 50 + (numDACWidgets / 2) * 35);
-
 	QScrollArea* scroll = new QScrollArea;
 	scroll->setWidget(this);
 	scroll->setWidgetResizable(true);
-
 	QGridLayout *layout = new QGridLayout(scroll);
 	layout->setContentsMargins(20, 10, 10, 5);
 	setLayout(layout);
 
-	//readout
 	comboDetector = new QComboBox(this);
-	comboDetector->addItem("All");
-	//add detectors
-	for (int i = 1; i < myDet->getNumberOfDetectors() + 1; ++i)
-		comboDetector->addItem(QString(myDet->getHostname(i - 1).c_str()));
-	comboDetector->setCurrentIndex(0);
+	PopulateDetectors();
 
-	//dacs
 	CreateDACWidgets();
-
-	// hv for gotthard, jungfrau, moench
-	if ((detType == slsDetectorDefs::GOTTHARD) ||
-			(detType == slsDetectorDefs::JUNGFRAU) ||
-			(detType == slsDetectorDefs::MOENCH)) {
-		CreateHVWidget();
-
-	}
+	CreateHVWidget();
 	layout->addWidget(comboDetector, 0, 0);
 	layout->addWidget(boxDacs, 1, 0);
+	CreateADCWidgets();
 
-	//adcs
-	if (numADCWidgets) {
-		CreateADCWidgets();
-		layout->addWidget(boxAdcs, 2, 0);
-	}
+	Refresh();
 }
 
 
 void qTabDeveloper::Initialization() {
 	connect(comboDetector, SIGNAL(currentIndexChanged(int)), this, SLOT(Refresh()));
-
-	// dacs
 	for (int i = 0; i < numDACWidgets; ++i)
-		connect(spinDacs[i], SIGNAL(editingFinished(int)), this, SLOT(SetDacValues(int)));
-
-	// hv
-	if (comboHV) {
+		connect(spinDacs[i], SIGNAL(editingFinished(int)), this, SLOT(SetDac(int)));
+	if (comboHV != nullptr) {
 		connect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
 	} else {
 		connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
 	}
 }
 
+void qTabDeveloper::PopulateDetectors() {
+	FILE_LOG(logDEBUG) << "Populating detectors";
+
+	comboDetector->clear();
+	comboDetector->addItem("All");
+	if (myDet->getNumberOfDetectors() > 1) {
+		for (int i = 0; i < myDet->getNumberOfDetectors(); ++i)
+			comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
+	}
+}
 
 void qTabDeveloper::CreateDACWidgets() {
 	boxDacs = new QGroupBox("Dacs", this);
@@ -216,6 +171,9 @@ void qTabDeveloper::CreateDACWidgets() {
 
 
 void qTabDeveloper::CreateADCWidgets() {
+	if (!numADCWidgets)
+		return;
+
 	int rows = numADCWidgets / 2;
 	if (numADCWidgets % 2)
 		rows++;
@@ -245,9 +203,21 @@ void qTabDeveloper::CreateADCWidgets() {
 		setFixedHeight(340);
 		layout->setVerticalSpacing(diff / 2);
 	}
+
+	layout->addWidget(boxAdcs, 2, 0);
 }
 
 void qTabDeveloper::CreateHVWidget() {
+
+	switch(detType) {
+		case slsDetectorDefs::GOTTHARD:
+		case slsDetectorDefs::JUNGFRAU:
+		case slsDetectorDefs::MOENCH:
+			break;
+		default:
+			return;
+	}
+
 	boxDacs->setFixedHeight(boxDacs->height() + 35);
 	lblHV = new QLabel("High Voltage", boxDacs);
 	dacLayout->addWidget(lblHV, (int)(numDACWidgets / 2), 1);
@@ -274,7 +244,7 @@ void qTabDeveloper::CreateHVWidget() {
 	else  {
 		spinHV = new QSpinBox(boxDacs);
 		spinDacs[i]->setMinimum(-1);
-		spinDacs[i]->setMaximum(200);
+		spinDacs[i]->setMaximum(HV_MAX);
 		tipHV = "<nobr>Set high voltage to 0 or 60 - 200V</nobr>";
 		spinHV->setToolTip(tipHV);
 		dacLayout->addWidget(spinHV, (int)(numDACWidgets / 2), 2);
@@ -282,48 +252,140 @@ void qTabDeveloper::CreateHVWidget() {
 	lblHV->setToolTip(tipHV);
 }
 
+void qTabDeveloper::GetDac(int id) {
+	FILE_LOG(logDEBUG) << "Getting Dac " << id;
 
-void qTabDeveloper::SetDacValues(int id) {
-	FILE_LOG(logINFO) << "Setting dac:" << dacNames[id] << " : " << spinDacs[id]->value();
+	disconnect(spinDacs[id], SIGNAL(editingFinished(int)), this, SLOT(SetDac(int)));
+	try {
+		// dac units
+		auto retval = myDet->setDAC(-1, getSLSIndex(id), 0, comboDetector->currentIndex() - 1);
+		spinDacs[id]->setValue(retval);
+		// mv
+		retval = myDet->setDAC(-1, getSLSIndex(id), 1, comboDetector->currentIndex() - 1);
+		lblDacsmV[id]->setText(QString("%1mV").arg(retval -10));
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get dac.", e.what(), "qTabDeveloper::GetDac");
+    }
 
-	int moduleId = comboDetector->currentIndex() - 1;
-
-	myDet->setDAC(spinDacs[id]->value(),getSLSIndex(id), 0, moduleId);
-	lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(id), 1, moduleId),-10));
-	qDefs::checkErrorMessage(myDet, moduleId, "qTabDeveloper::SetDacValues");
+	connect(spinDacs[id], SIGNAL(editingFinished(int)), this, SLOT(SetDac(int)));
 }
 
+void qTabDeveloper::GetDacs() {
+	FILE_LOG(logDEBUG) << "Getting All Dacs";
+
+	for (int i = 0; i < numDACWidgets; ++i) {
+		GetDac(i);
+	}
+}
+
+void qTabDeveloper::SetDac(int id) {
+	int val = spinDacs[id]->value();
+	FILE_LOG(logINFO) << "Setting dac:" << dacNames[id] << " : " << val;
+
+	try {
+		myDet->setDAC(val, etSLSIndex(id), 0, comboDetector->currentIndex() - 1);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set dac.", e.what(), "qTabDeveloper::SetDac");
+	}
+	// update mV anyway
+    GetDac(id);
+}
+
+void qTabDeveloper::GetAdcs() {
+	FILE_LOG(logDEBUG) << "Getting ADCs";
+
+	for (int i = 0; i < numADCWidgets; ++i) {
+		try {
+			auto retval = myDet->getADC(getSLSIndex(id + numDACWidgets), comboDetector->currentIndex() - 1);
+			if (value == -1 && moduleId == -1) {
+				spinAdcs[i]->setText(QString("Different values"));
+			} else {
+				if (detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU) {
+					value /= 1000.00;
+				}
+				spinAdcs[i]->setText(QString::number(value, 'f', 2) + 0x00b0 + QString("C"));
+			}
+		} catch (const sls::NonCriticalError &e) {
+			qDefs::ExceptionMessage("Could not get adcs.", e.what(), "qTabDeveloper::GetAdcs");
+		}
+	}
+}
+
+void qTabDeveloper::GetHighVoltage() {
+	// not enabled for this detector type
+	if (comboHV == nullptr && spinHV == nullptr)
+		return;
+
+	FILE_LOG(logDEBUG) << "Getting High Voltage";
+	if (comboHV == nullptr) {
+		disconnect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));	
+	} else {
+		disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
+	}
+
+	try {
+		// dac units
+		auto retval = myDet->setDAC(-1, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
+		if (spinHV != nullptr) {
+			if (retval != 0 && retval != -1 && retval < HV_MIN &&  ret > HV_MAX) {
+				qDefs::Message(qDefs::WARNING, std::string("Unknown High Voltage: ") + std::to_string(retval), "qTabDeveloper::GetHighVoltage");
+			} else{
+				spinHV->setValue(ret);	
+			}
+		} else {
+			switch (ret) {
+			case -1:
+				qDefs::Message(qDefs::WARNING, "Different values for high voltage.");
+				break;
+			case 0:
+				comboHV->setCurrentIndex(HV_0);
+				break;
+			case 90:
+				comboHV->setCurrentIndex(HV_90);
+				break;
+			case 110:
+				comboHV->setCurrentIndex(HV_110);
+				break;
+			case 120:
+				comboHV->setCurrentIndex(HV_120);
+				break;
+			case 150:
+				comboHV->setCurrentIndex(HV_150);
+				break;
+			case 180:
+				comboHV->setCurrentIndex(HV_180);
+				break;
+			case 200:
+				comboHV->setCurrentIndex(HV_200);
+				break;
+			default:
+				qDefs::Message(qDefs::WARNING, std::string("Unknown High Voltage: ") + std::to_string(retval), "qTabDeveloper::GetHighVoltage");
+				break;
+			}
+		}
+
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get high voltage.", e.what(), "qTabDeveloper::GetHighVoltage");
+
+    }
+
+	if (comboHV == nullptr) {
+		connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));	
+	} else {
+		connect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
+	}
+}
 
 void qTabDeveloper::SetHighVoltage() {
-	int highvoltage = (comboHV ? comboHV->currentText().toInt() : spinHV->value());
-	FILE_LOG(logINFO) << "Setting high voltage:" << highvoltage;
-
-	auto moduleId = comboDetector->currentIndex() - 1;
-	int ret = det->setDAC(highvoltage,slsDetectorDefs::HIGH_VOLTAGE, 0, moduleId);
-	qDefs::checkErrorMessage(myDet, moduleId, "qTabDeveloper::SetHighVoltage");
-
-	//error
-	if (ret != highvoltage && highvoltage != -1) {
-		qDefs::Message(qDefs::CRITICAL, "High Voltage could not be set to this value.", "qTabDeveloper::SetHighVoltage");
-		FILE_LOG(logERROR) << "Could not set High voltage";
-		lblHV->setPalette(red);
-		lblHV->setText("High Voltage:*");
-		QString errTip = tipHV + QString("<br><br><font color=\"red\"><nobr>High Voltage could not be set. The return value is ") +
-				QString::number(ret) + QString("</nobr></font>");
-		lblHV->setToolTip(errTip);
-		if (comboHV)
-			comboHV->setToolTip(errTip);
-		else
-			spinHV->setToolTip(errTip);
-	} else {
-		lblHV->setPalette(lblDacs[0]->palette());
-		lblHV->setText("High Voltage:");
-		lblHV->setToolTip(tipHV);
-		if (comboHV)
-			comboHV->setToolTip(tipHV);
-		else
-			spinHV->setToolTip(errTip);
-	}
+	int val = (comboHV ? comboHV->currentText().toInt() : spinHV->value());
+	FILE_LOG(logINFO) << "Setting high voltage:" << val;
+	
+	try {
+        myDet->setDAC(val, slsDetectorDefs::HIGH_VOLTAGE, 0, comboFileFormat->currentIndex() - 1);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set high voltage.", e.what(), "qTabDeveloper::SetHighVoltage");
+        GetHighVoltage();
+    }
 }
 
 
@@ -379,9 +441,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		case 22:
 			return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
-			qDefs::Message(qDefs::CRITICAL, "Unknown DAC/ADC Index. Weird Error Index:" + index, "qTabDeveloper::getSLSIndex");
-			Refresh();
-			break;
+			throw sls:NonCriticalError(std::string(Unknown dac/adc index) + std::to_string(index));
 		}
 		break;
 	case slsDetectorDefs::GOTTHARD:
@@ -407,165 +467,41 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		case 9:
 			return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
-			qDefs::Message(qDefs::CRITICAL, "Unknown DAC/ADC Index. Weird Error Index:" + index, "qTabDeveloper::getSLSIndex");
-			Refresh();
-			break;
+			throw sls:NonCriticalError(std::string(Unknown dac/adc index) + std::to_string(index));
 		}
 		break;
 
 	case slsDetectorDefs::JUNGFRAU:
-		if (index >= 0 && index <= 7) {
+		if (index >= 0 && index < numDACWidgets) {
 			return (slsDetectorDefs::dacIndex)index;
 		}
-		if (index == 8) {
+		if (index == numDACWidgets) {
 			return slsDetectorDefs::TEMPERATURE_ADC;
 		} else {
-			qDefs::Message(qDefs::CRITICAL, "Unknown DAC/ADC Index. Weird Error Index:" + index, "qTabDeveloper::getSLSIndex");
-			Refresh();
+			throw sls:NonCriticalError(std::string(Unknown dac/adc index) + std::to_string(index));
 		}
 		break;
+
 	case slsDetectorDefs::MOENCH:
-		if (index >= 0 && index <= 7) {
+		if (index >= 0 && index < numDACWidgets) {
 			return (slsDetectorDefs::dacIndex)index;
 		} else {
-			qDefs::Message(qDefs::CRITICAL, "Unknown DAC/ADC Index. Weird Error Index:" + index, "qTabDeveloper::getSLSIndex");
-			Refresh();
+			throw sls:NonCriticalError(std::string(Unknown dac/adc index) + std::to_string(index));
 		}
 		break;
 
 	default:
-		FILE_LOG(logERROR) << "Unknown detector type:" + myDet->getDetectorTypeAsString();
-		qDefs::Message(qDefs::CRITICAL, std::string("Unknown detector type:") + myDet->getDetectorTypeAsString(), "qTabDeveloper::getSLSIndex");
-		qDefs::checkErrorMessage(myDet, "qTabDeveloper::getSLSIndex");
-		exit(-1);
 		break;
 	}
+
 	return (slsDetectorDefs::dacIndex)0;
 }
 
-
-void qTabDeveloper::RefreshAdcs() {
-	FILE_LOG(logDEBUG) << "Updating ADCs";
-
-	auto moduleId = comboDetector->currentIndex() - 1;
-
-	for (int i = 0; i < numADCWidgets; ++i) {
-
-		double value = (double)myDet->getADC(getSLSIndex(i + numDACWidgets), moduleId);
-		if (value == -1 && moduleId == -1) {
-			spinAdcs[i]->setText(QString("Different values"));
-		} else {
-			if (detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU)
-				value /= 1000.00;
-			spinAdcs[i]->setText(QString::number(value, 'f', 2) + 0x00b0 + QString("C"));
-		}
-	}
-
-	qDefs::checkErrorMessage(myDet, "qTabDeveloper::RefreshAdcs");
-}
-
-
 void qTabDeveloper::Refresh() {
 	FILE_LOG(logDEBUG) << "**Updating Developer Tab\n";
-
-	auto moduleId = comboDetector->currentIndex() - 1;
-
-	// dacs
-	FILE_LOG(logDEBUG) << "Getting DACs";
-	for (int i = 0; i < numDACWidgets; ++i) {
-		spinDacs[i]->setValue(myDet->setDAC(-1, getSLSIndex(i), 0, moduleId));
-		lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1, getSLSIndex(i), 1, moduleId), -10));
-	}
-
-	//adcs
-	if (numADCWidgets)
-		RefreshAdcs();
-
-	//gotthard -high voltage
-	if ((detType == slsDetectorDefs::GOTTHARD) ||
-			(detType == slsDetectorDefs::JUNGFRAU) ||
-			(detType == slsDetectorDefs::MOENCH)) {
-
-		if (comboHV)
-			disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
-		else
-			disconnect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
-
-		//default should be correct
-		lblHV->setPalette(lblDacs[0]->palette());
-		lblHV->setText("High Voltage:");
-		lblHV->setToolTip(tipHV);
-		if (comboHV)
-			comboHV->setToolTip(tipHV);
-		else
-			spinHV->setToolTip(tipHV);
-
-		//getting hv value
-		int ret = myDet->setDAC(-1, slsDetectorDefs::HIGH_VOLTAGE, 0, moduleId);
-
-		bool error = false;
-		if (spinHV) {
-			if (ret != 0 && ret < 60 &&  ret > 200)
-				error = true;
-			else
-				spinHV->setValue(ret);
-		} else  {
-			switch (ret) {
-			case 0:
-				comboHV->setCurrentIndex(0);
-				break;
-			case 90:
-				comboHV->setCurrentIndex(1);
-				break;
-			case 110:
-				comboHV->setCurrentIndex(2);
-				break;
-			case 120:
-				comboHV->setCurrentIndex(3);
-				break;
-			case 150:
-				comboHV->setCurrentIndex(4);
-				break;
-			case 180:
-				comboHV->setCurrentIndex(5);
-				break;
-			case 200:
-				comboHV->setCurrentIndex(6);
-				break;
-			default:
-				comboHV->setCurrentIndex(0); //error
-				error = true;
-				break;
-			}
-		}
-
-		if (error) {
-			lblHV->setPalette(red);
-			lblHV->setText("High Voltage:*");
-			QString errTip = tipHV + QString("<br><br><font color=\"red\"><nobr>High Voltage could not be set. The return value is ") +
-					QString::number(ret) + QString("</nobr></font>");
-			lblHV->setToolTip(errTip);
-			if (comboHV)
-				comboHV->setToolTip(errTip);
-			else
-				spinHV->setToolTip(errTip);
-		} else {
-			lblHV->setPalette(lblDacs[0]->palette());
-			lblHV->setText("High Voltage:");
-			lblHV->setToolTip(tipHV);
-			if (comboHV)
-				comboHV->setToolTip(tipHV);
-			else
-				spinHV->setToolTip(errTip);
-		}
-		if (comboHV)
-			connect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
-		else
-			connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
-	}
-
+	GetDacs();
+	GetAdcs();
+	GetHighVoltage();
 	FILE_LOG(logDEBUG) << "**Updated Developer Tab";
-
-	qDefs::checkErrorMessage(myDet, "qTabDeveloper::Refresh");
 }
 

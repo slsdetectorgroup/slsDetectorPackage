@@ -1,8 +1,8 @@
 #include "qServer.h"
+#include "qDefs.h"
 #include "qDetectorMain.h"
 
 #include "ServerSocket.h"
-#include "multiSlsDetector.h"
 #include "string_utils.h"
 
 #include <iostream>
@@ -10,7 +10,7 @@
 #include <future>
 
 qServer::qServer(qDetectorMain *t)
-    : threadRunning(false), threadStarted(false), mainTab(t),
+    : guiServerRunning(false), threadStarted(false), mainTab(t),
       controlPort(DEFAULT_GUI_PORTNO), stopPort(DEFAULT_GUI_PORTNO + 1),
       controlSocket(nullptr), stopSocket(nullptr) {
     FILE_LOG(logDEBUG) << "Client Server ready";
@@ -52,7 +52,7 @@ int qServer::DecodeFunction(ServerSocket *sock) {
 }
 
 void qServer::ShutDownSockets() {
-    threadRunning = false;
+    guiServerRunning = false;
     if (controlSocket) {
         controlSocket->shutDownSocket();
         delete controlSocket;
@@ -66,9 +66,9 @@ void qServer::ShutDownSockets() {
 }
 
 void qServer::CreateServers() {
-    if (!threadRunning) {
+    if (!guiServerRunning) {
         FILE_LOG(logINFO) << "Starting Gui Servers";
-        threadRunning = true;
+        guiServerRunning = true;
         
         try {
             // start control server
@@ -91,7 +91,7 @@ void qServer::CreateServers() {
 }
 
 void qServer::DestroyServers() {
-    if (threadRunning) {
+    if (guiServerRunning) {
         FILE_LOG(logINFO) << "Stopping Gui Servers";
         ShutDownSockets();
         FILE_LOG(logDEBUG) << "Server threads stopped successfully.";
@@ -101,11 +101,11 @@ void qServer::DestroyServers() {
 void qServer::ServerThread(ServerSocket* sock) {
     FILE_LOG(logDEBUG) << "Starting Gui Server at port " << sock->getPort(); 
 
-    while (threadRunning)) {
+    while (guiServerRunning)) {
         try{
             sock->accept();
             if (DecodeFunction(sock) ==  GOODBYE) {
-                threadRunning = false;
+                guiServerRunning = false;
             }
             sock->close();
         } 

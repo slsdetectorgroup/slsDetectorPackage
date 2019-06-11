@@ -1,6 +1,10 @@
 #include "qTabMessages.h"
-#include "qDetectorMain.h"
+#include "qDefs.h"
 
+#include <QWidget>
+#include <QTextEdit>
+#include <QPushButton>
+#include <QEvent>
 #include <QFile>
 #include <QFileDialog>
 #include <QGridLayout>
@@ -9,21 +13,17 @@
 #include <iostream>
 #include <string>
 
-
 qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent) {
     SetupWidgetWindow();
     Initialization();
     FILE_LOG(logDEBUG) << "Messages ready";
 }
 
-
 qTabMessages::~qTabMessages() {
     delete dispLog;
 }
 
-
 void qTabMessages::SetupWidgetWindow() {
-    /** Layout */
     QGridLayout *gridLayout = new QGridLayout(this);
 
     dispLog = new QTextEdit(this);
@@ -47,16 +47,14 @@ void qTabMessages::SetupWidgetWindow() {
     gridLayout->addItem(new QSpacerItem(15, 10, QSizePolicy::Fixed, QSizePolicy::Fixed), 2, 0);
     gridLayout->addWidget(dispLog, 3, 0, 1, 5);
 
-    qDebugStream *qout = new qDebugStream(std::cout, this);
-    qDebugStream *qerr = new qDebugStream(std::cerr, this);
+    qDebugStream(std::cout, this);
+    qDebugStream(std::cerr, this);
 }
-
 
 void qTabMessages::Initialization() {
     connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveLog()));
     connect(btnClear, SIGNAL(clicked()), this, SLOT(ClearLog()));
 }
-
 
 void qTabMessages::customEvent(QEvent *e) {
     if (e->type() == (STREAMEVENT)) {
@@ -64,7 +62,6 @@ void qTabMessages::customEvent(QEvent *e) {
         dispLog->append(temp);
     }
 }
-
 
 void qTabMessages::SaveLog() {
     QString fName = QString(""); //FIXME:current directory?
@@ -87,7 +84,6 @@ void qTabMessages::SaveLog() {
         }
     }
 }
-
 
 void qTabMessages::ClearLog() {
     dispLog->clear();

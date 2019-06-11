@@ -107,7 +107,7 @@ void qTabDeveloper::SetupWidgetWindow() {
 	QScrollArea* scroll = new QScrollArea;
 	scroll->setWidget(this);
 	scroll->setWidgetResizable(true);
-	QGridLayout *layout = new QGridLayout(scroll);
+	layout = new QGridLayout(scroll);
 	layout->setContentsMargins(20, 10, 10, 5);
 	setLayout(layout);
 
@@ -235,21 +235,20 @@ void qTabDeveloper::CreateHVWidget() {
 		comboHV->addItem("150");
 		comboHV->addItem("180");
 		comboHV->addItem("200");
-		tipHV = "<nobr>Set high voltage to 0, 90, 110, 120, 150 or 200V.</nobr>";
-		comboHV->setToolTip(tipHV);
+		comboHV->setToolTip("<nobr>Set high voltage to 0, 90, 110, 120, 150 or 200V.</nobr>");
+		lblHV->setToolTip(comboHV->toolTip());
 		dacLayout->addWidget(comboHV, (int)(numDACWidgets / 2), 2);
 	}
 
 	// jungfrau, moench (range of values)
 	else  {
 		spinHV = new QSpinBox(boxDacs);
-		spinDacs[i]->setMinimum(-1);
-		spinDacs[i]->setMaximum(HV_MAX);
-		tipHV = "<nobr>Set high voltage to 0 or 60 - 200V</nobr>";
-		spinHV->setToolTip(tipHV);
+		spinDacs[numDACWidgets]->setMinimum(-1);
+		spinDacs[numDACWidgets]->setMaximum(HV_MAX);
+		spinHV->setToolTip("<nobr>Set high voltage to 0 or 60 - 200V</nobr>");
+		lblHV->setToolTip(spinHV->toolTip());
 		dacLayout->addWidget(spinHV, (int)(numDACWidgets / 2), 2);
 	}
-	lblHV->setToolTip(tipHV);
 }
 
 void qTabDeveloper::GetDac(int id) {
@@ -283,7 +282,7 @@ void qTabDeveloper::SetDac(int id) {
 	FILE_LOG(logINFO) << "Setting dac:" << dacNames[id] << " : " << val;
 
 	try {
-		myDet->setDAC(val, etSLSIndex(id), 0, comboDetector->currentIndex() - 1);
+		myDet->setDAC(val, getSLSIndex(id), 0, comboDetector->currentIndex() - 1);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not set dac.", e.what(), "qTabDeveloper::SetDac");
 	}
@@ -294,16 +293,17 @@ void qTabDeveloper::SetDac(int id) {
 void qTabDeveloper::GetAdcs() {
 	FILE_LOG(logDEBUG) << "Getting ADCs";
 
+	auto moduleId = comboDetector->currentIndex() - 1;
 	for (int i = 0; i < numADCWidgets; ++i) {
 		try {
-			auto retval = myDet->getADC(getSLSIndex(id + numDACWidgets), comboDetector->currentIndex() - 1);
-			if (value == -1 && moduleId == -1) {
+			auto retval = myDet->getADC(getSLSIndex(i + numDACWidgets), moduleId);
+			if (retval == -1 && moduleId == -1) {
 				spinAdcs[i]->setText(QString("Different values"));
 			} else {
 				if (detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::JUNGFRAU) {
-					value /= 1000.00;
+					retval /= 1000.00;
 				}
-				spinAdcs[i]->setText(QString::number(value, 'f', 2) + 0x00b0 + QString("C"));
+				spinAdcs[i]->setText(QString::number(retval, 'f', 2) + 0x00b0 + QString("C"));
 			}
 		} catch (const sls::NonCriticalError &e) {
 			qDefs::ExceptionMessage("Could not get adcs.", e.what(), "qTabDeveloper::GetAdcs");
@@ -327,15 +327,15 @@ void qTabDeveloper::GetHighVoltage() {
 		// dac units
 		auto retval = myDet->setDAC(-1, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
 		if (spinHV != nullptr) {
-			if (retval != 0 && retval != -1 && retval < HV_MIN &&  ret > HV_MAX) {
+			if (retval != 0 && retval != -1 && retval < HV_MIN &&  retval > HV_MAX) {
 				qDefs::Message(qDefs::WARNING, std::string("Unknown High Voltage: ") + std::to_string(retval), "qTabDeveloper::GetHighVoltage");
 			} else{
-				spinHV->setValue(ret);	
+				spinHV->setValue(retval);	
 			}
 		} else {
-			switch (ret) {
+			switch (retval) {
 			case -1:
-				qDefs::Message(qDefs::WARNING, "Different values for high voltage.");
+				qDefs::Message(qDefs::WARNING, "Different values for high voltage.", "qTabDeveloper::GetHighVoltage");
 				break;
 			case 0:
 				comboHV->setCurrentIndex(HV_0);
@@ -381,7 +381,7 @@ void qTabDeveloper::SetHighVoltage() {
 	FILE_LOG(logINFO) << "Setting high voltage:" << val;
 	
 	try {
-        myDet->setDAC(val, slsDetectorDefs::HIGH_VOLTAGE, 0, comboFileFormat->currentIndex() - 1);
+        myDet->setDAC(val, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not set high voltage.", e.what(), "qTabDeveloper::SetHighVoltage");
         GetHighVoltage();
@@ -441,7 +441,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		case 22:
 			return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
-			throw sls:NonCriticalError(std::string(Unknown dac/adc index) + std::to_string(index));
+			throw sls::NonCriticalError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
 	case slsDetectorDefs::GOTTHARD:
@@ -467,7 +467,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		case 9:
 			return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
-			throw sls:NonCriticalError(std::string(Unknown dac/adc index) + std::to_string(index));
+			throw sls::NonCriticalError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
 
@@ -478,7 +478,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		if (index == numDACWidgets) {
 			return slsDetectorDefs::TEMPERATURE_ADC;
 		} else {
-			throw sls:NonCriticalError(std::string(Unknown dac/adc index) + std::to_string(index));
+			throw sls::NonCriticalError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
 
@@ -486,7 +486,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		if (index >= 0 && index < numDACWidgets) {
 			return (slsDetectorDefs::dacIndex)index;
 		} else {
-			throw sls:NonCriticalError(std::string(Unknown dac/adc index) + std::to_string(index));
+			throw sls::NonCriticalError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
 

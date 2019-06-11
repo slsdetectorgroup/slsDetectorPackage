@@ -1,10 +1,11 @@
 #pragma once
 
 class multiSlsDetector;
+#include "sls_detector_defs.h"
 
+#include <QDoubleSpinBox>
 class QGroupBox;
 class QLabel;
-class QDoubleSpinBox;
 class MyDoubleSpinBox;
 class QLineEdit;
 class QComboBox;
@@ -12,6 +13,7 @@ class QSpinBox;
 class QGridLayout;
 class QString;
 class QPalette;
+class QGridLayout;
 
 #include <string>
 #include <vector>
@@ -90,6 +92,7 @@ private:
 	QSpinBox *spinHV;
 	QGridLayout *dacLayout;
 	QComboBox *comboDetector;
+	QGridLayout *layout;
 
 	static const int HV_MIN = 60;
 	static const int HV_MAX = 200;

@@ -4,6 +4,7 @@ class qDetectorMain;
 
 class multiSlsDetector;
 class ServerSocket;
+class ServerInterface;
 
 #include <vector>
 
@@ -18,14 +19,14 @@ class qServer : public QWidget, public virtual slsDetectorDefs {
 
   private:
     void FunctionTable();
-    int DecodeFunction(ServerSocket *sock);
+    void DecodeFunction(ServerSocket *sock);
     void ShutDownSockets();
     void ServerThread(ServerSocket* sock);
-    int GetStatus(ServerSocket* sock);
-    int StartAcquisition(ServerSocket* sock);
-    int StopsAcquisition(ServerSocket* sock);
-    int Acquire(ServerSocket* sock);
-    int ExitServer(ServerSocket* sock);
+    void GetStatus(ServerSocket* sock);
+    void StartAcquisition(ServerSocket* sock);
+    void StopsAcquisition(ServerSocket* sock);
+    void Acquire(ServerSocket* sock);
+    void ExitServer(ServerSocket* sock);
 
     /** function list */
     typedef int (qServer::*some_func_t)(ServerSocket*);

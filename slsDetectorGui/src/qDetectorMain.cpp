@@ -343,10 +343,11 @@ void qDetectorMain::LoadConfigFile(const std::string fName) {
             "qDetectorMain::LoadConfigFile");
         FILE_LOG(logWARNING) << "File not recognized";
     } else {
-        qDefs::IgnoreNonCriticalExceptions(myDet, 
-                "Could not load config file.",
-                "qDetectorMain::LoadConfigFile",
-                &multiSlsDetector::readConfigurationFile, fName);
+        try {
+            myDet->readConfigurationFile(fName);
+        } catch (const sls::NonCriticalError &e) {
+            qDefs::ExceptionMessage("Could not load config file.", e.what(), "qDetectorMain::LoadConfigFile");
+	    }   
     }
 }
 

@@ -70,7 +70,11 @@ template <typename T> class CmdProxy {
                                     {"r_framesperfile", "rx_framesperfile"},
                                     {"r_discardpolicy", "rx_discardpolicy"},
                                     {"receiverversion", "rx_version"},
-                                    {"receiver", "rx_status"}};
+                                    {"receiver", "rx_status"},
+                                    {"index", "findex"},
+                                    {"exitreceiver", "rx_exit"},
+                                    {"enablefwrite", "fwrite"},
+                                    {"checkrecversion", "rx_checkversion"}};
 
     template <typename U> std::string ResultToString(const U &ret) {
         std::ostringstream os;

@@ -102,9 +102,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page test
-   - <b>exitreceiver</b> Shuts down all the receivers. Don't use it!!!!
+   - <b>rx_exit</b> Shuts down all the receivers. Don't use it!!!!
 	 */
-    descrToFuncMap[i].m_pFuncName = "exitreceiver";
+    descrToFuncMap[i].m_pFuncName = "rx_exit";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
     ++i;
 
@@ -1536,16 +1536,16 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page output
-   - <b>index [i]</b> Sets/gets the current file index. \c Returns \c (int)
+   - <b>findex [i]</b> Sets/gets the current file index. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "index";
+    descrToFuncMap[i].m_pFuncName = "findex";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileIndex;
     ++i;
 
     /*! \page output
-   - <b>enablefwrite [i]</b> Enables/disables file writing. 1 enables, 0 disables. \c Returns \c (int)
+   - <b>fwrite [i]</b> Enables/disables file writing. 1 enables, 0 disables. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "enablefwrite";
+    descrToFuncMap[i].m_pFuncName = "fwrite";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdEnablefwrite;
     ++i;
 
@@ -2487,7 +2487,7 @@ std::string slsDetectorCommand::cmdExitServer(int narg, const char * const args[
                 return std::string("Server shut down.");
             else
                 return std::string("Error closing server\n");
-        } else if (cmd == "exitreceiver") {
+        } else if (cmd == "rx_exit") {
             myDet->setReceiverOnline(ONLINE_FLAG, detPos);
             if (myDet->exitReceiver(detPos) == OK)
                 return std::string("Receiver shut down\n");
@@ -2514,7 +2514,7 @@ std::string slsDetectorCommand::cmdExitServer(int narg, const char * const args[
 std::string slsDetectorCommand::helpExitServer(int action) {
     std::ostringstream os;
     os << std::string("exitserver \t shuts down all the detector servers. Don't use it!!!!\n");
-    os << std::string("exitreceiver \t shuts down all the receiver servers.\n");
+    os << std::string("rx_exit \t shuts down all the receiver servers.\n");
     os << std::string("execcommand \t executes command in detector server. Don't use it if you do not know what you are doing.\n");
     os << std::string("rx_execcommand \t executes command in receiver server. Don't use it if you do not know what you are doing.\n");
     return os.str();
@@ -2643,7 +2643,7 @@ std::string slsDetectorCommand::cmdEnablefwrite(int narg, const char * const arg
     if (action == HELP_ACTION) {
         return helpEnablefwrite(action);
     }
-    if (cmd == "enablefwrite") {
+    if (cmd == "fwrite") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &i))
                 myDet->setFileWrite(i, detPos);
@@ -2671,11 +2671,11 @@ std::string slsDetectorCommand::cmdEnablefwrite(int narg, const char * const arg
 std::string slsDetectorCommand::helpEnablefwrite(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << std::string("enablefwrite \t When Enabled writes the data into the file\n");
+        os << std::string("fwrite \t When Enabled writes the data into the file\n");
         os << std::string("masterfile \t When Enabled writes the master file\n");
     }
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << std::string("enablefwrite i \t  should be 1 or 0\n");
+        os << std::string("fwrite i \t  should be 1 or 0\n");
         os << std::string("masterfile i \t  sets the master file write enable. should be 1 or 0\n");
     }
     return os.str();
@@ -2721,9 +2721,9 @@ std::string slsDetectorCommand::cmdFileIndex(int narg, const char * const args[]
 std::string slsDetectorCommand::helpFileIndex(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("index \t  gets the file index for the next the data file\n");
+        os << std::string("findex \t  gets the file index for the next the data file\n");
     if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("index i \t  sets the fileindex for the next data file\n");
+        os << std::string("findex i \t  sets the fileindex for the next data file\n");
     return os.str();
 }
 

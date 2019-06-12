@@ -532,9 +532,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>receiverversion</b> Gets the software version of receiver. Only get! \c Returns \c (long int) in hexadecimal
+   - <b>rx_version</b> Gets the software version of receiver. Only get! \c Returns \c (long int) in hexadecimal
 	 */
-    descrToFuncMap[i].m_pFuncName = "receiverversion";
+    descrToFuncMap[i].m_pFuncName = "rx_version";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
@@ -1790,23 +1790,23 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page receiver
-   - <b>receiver [s]</b> starts/stops the receiver to listen to detector packets. Options: [ \c start, \c stop]. \c Returns \c (string) status of receiver[ \c idle, \c running].
+   - <b>rx_status [s]</b> starts/stops the receiver to listen to detector packets. Options: [ \c start, \c stop]. \c Returns \c (string) status of receiver[ \c idle, \c running].
 	 */
-    descrToFuncMap[i].m_pFuncName = "receiver";
+    descrToFuncMap[i].m_pFuncName = "rx_status";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
-   - <b>r_online [i]</b> sets/gets the receiver in online/offline mode. 1 is online, 0 is offline. Get is from shared memory. \c Returns \c (int)
+   - <b>rx_online [i]</b> sets/gets the receiver in online/offline mode. 1 is online, 0 is offline. Get is from shared memory. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_online";
+    descrToFuncMap[i].m_pFuncName = "rx_online";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
     ++i;
 
     /*! \page receiver
-   - <b>r_checkonline</b> Checks the receiver if it is online/offline mode. Only get! \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
+   - <b>rx_checkonline</b> Checks the receiver if it is online/offline mode. Only get! \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_checkonline";
+    descrToFuncMap[i].m_pFuncName = "rx_checkonline";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
     ++i;
 
@@ -1832,23 +1832,23 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-   - <b>r_lock [i]</b> locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks. \c Returns \c (int)
+   - <b>rx_lock [i]</b> locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_lock";
+    descrToFuncMap[i].m_pFuncName = "rx_lock";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLock;
     ++i;
 
     /*! \page receiver
-   - <b>r_lastclient</b> gets the last client communicating with the receiver. Only get! \c Returns \c (int)
+   - <b>rx_lastclient</b> gets the last client communicating with the receiver. Only get! \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_lastclient";
+    descrToFuncMap[i].m_pFuncName = "rx_lastclient";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLastClient;
     ++i;
 
     /*! \page receiver
-   - <b>r_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms). \c Returns \c (int)
+   - <b>rx_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms). \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_readfreq";
+    descrToFuncMap[i].m_pFuncName = "rx_readfreq";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
@@ -1860,30 +1860,30 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-   - <b>r_silent [i]</b> sets/gets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets. \c Returns \c (int)
+   - <b>rx_silent [i]</b> sets/gets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_silent";
+    descrToFuncMap[i].m_pFuncName = "rx_silent";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
-    - <b>r_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
+    - <b>rx_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_framesperfile";
+    descrToFuncMap[i].m_pFuncName = "rx_framesperfile";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
-    - <b>r_discardpolicy</b> sets/gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames. \c Returns \c (int)
+    - <b>rx_discardpolicy</b> sets/gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_discardpolicy";
+    descrToFuncMap[i].m_pFuncName = "rx_discardpolicy";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
     /*! \page receiver
-    - <b>r_padding</b> sets/gets the frame padding in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames. \c Returns \c (int)
+    - <b>rx_padding</b> sets/gets the frame padding in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "r_padding";
+    descrToFuncMap[i].m_pFuncName = "rx_padding";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
@@ -2205,13 +2205,13 @@ std::string slsDetectorCommand::cmdAcquire(int narg, const char * const args[], 
     }
 
     myDet->setOnline(ONLINE_FLAG, detPos);
-    int r_online = myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+    int rx_online = myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
 
 
     if (myDet->acquire() == FAIL)
         return std::string("acquire failed");
-    if (r_online) {
+    if (rx_online) {
         char answer[100];
         sprintf(answer, "\nAcquired %d", myDet->getFramesCaughtByReceiver(detPos));
         return std::string(answer);
@@ -3195,7 +3195,7 @@ std::string slsDetectorCommand::cmdLock(int narg, const char * const args[], int
         sprintf(ans, "%d", myDet->lockServer(-1, detPos));
     }
 
-    else if (cmd == "r_lock") {
+    else if (cmd == "rx_lock") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &val))
@@ -3217,11 +3217,11 @@ std::string slsDetectorCommand::helpLock(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "lock i \n locks (1) or unlocks (0) the detector to communicate to this client" << std::endl;
-        os << "r_lock i \n locks (1) or unlocks (0) the receiver to communicate to this client" << std::endl;
+        os << "rx_lock i \n locks (1) or unlocks (0) the receiver to communicate to this client" << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "lock \n returns the detector lock status" << std::endl;
-        os << "r_lock \n returns the receiver lock status" << std::endl;
+        os << "rx_lock \n returns the receiver lock status" << std::endl;
     }
     return os.str();
 }
@@ -3239,7 +3239,7 @@ std::string slsDetectorCommand::cmdLastClient(int narg, const char * const args[
         return myDet->getLastClientIP(detPos);
     }
 
-    else if (cmd == "r_lastclient") {
+    else if (cmd == "rx_lastclient") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
         return myDet->getReceiverLastClientIP(detPos);
     }
@@ -3252,7 +3252,7 @@ std::string slsDetectorCommand::helpLastClient(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "lastclient \n returns the last client communicating with the detector" << std::endl;
-        os << "r_lastclient \n returns the last client communicating with the receiver" << std::endl;
+        os << "rx_lastclient \n returns the last client communicating with the receiver" << std::endl;
     }
     return os.str();
 }
@@ -3301,7 +3301,7 @@ std::string slsDetectorCommand::cmdOnline(int narg, const char * const args[], i
         }
         int ret = myDet->setDeactivatedRxrPaddingMode(-1, detPos);
         sprintf(ans, "%d %s", myDet->activate(-1, detPos), ret == 1 ? "padding" : (ret == 0 ? "nopadding" : "unknown"));
-    } else if (cmd == "r_online") {
+    } else if (cmd == "rx_online") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &ival))
                 myDet->setReceiverOnline(ival, detPos);
@@ -3328,14 +3328,14 @@ std::string slsDetectorCommand::helpOnline(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "online i \n sets the detector in online (1) or offline (0) mode" << std::endl;
-        os << "r_online i \n sets the receiver in online (1) or offline (0) mode" << std::endl;
+        os << "rx_online i \n sets the receiver in online (1) or offline (0) mode" << std::endl;
         os << "activate i [p]\n sets the detector in  activated (1) or deactivated (0) mode (does not send data).  p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Only for Eiger." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "online \n gets the detector online (1) or offline (0) mode" << std::endl;
         os << "checkonline \n returns the hostnames of all detectors in offline mode" << std::endl;
-        os << "r_online \n gets the receiver online (1) or offline (0) mode" << std::endl;
-        os << "r_checkonline \n returns the hostnames of all receiver in offline mode" << std::endl;
+        os << "rx_online \n gets the receiver online (1) or offline (0) mode" << std::endl;
+        os << "rx_checkonline \n returns the hostnames of all receiver in offline mode" << std::endl;
         os << "activate \n gets the detector activated (1) or deactivated (0) mode. And padding or nonpadding for the deactivated receiver. Only for Eiger." << std::endl;
     }
     return os.str();
@@ -3655,7 +3655,7 @@ std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int a
         return std::string(answer);
     }
 
-    if (cmd == "receiverversion") {
+    if (cmd == "rx_version") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
         int64_t retval = myDet->getReceiverSoftwareVersion(detPos);
         if (retval < 0)
@@ -3695,7 +3695,7 @@ std::string slsDetectorCommand::helpSN(int action) {
         os << "detectorversion \n gets the firmware version of the detector" << std::endl;
         os << "softwareversion \n gets the software version of the detector" << std::endl;
         os << "thisversion \n gets the version of this software" << std::endl;
-        os << "receiverversion \n gets the version of the receiver" << std::endl;
+        os << "rx_version \n gets the version of the receiver" << std::endl;
     }
     return os.str();
 }
@@ -5064,7 +5064,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
     myDet->setOnline(ONLINE_FLAG, detPos);
     myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
-    if (cmd == "receiver") {
+    if (cmd == "rx_status") {
         if (action == PUT_ACTION) {
             if (!strcasecmp(args[1], "start"))
                 myDet->startReceiver(detPos);
@@ -5104,7 +5104,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
             sprintf(answer, "%lu", myDet->getReceiverCurrentFrameIndex(detPos));
             return std::string(answer);
         }
-    } else if (cmd == "r_readfreq") {
+    } else if (cmd == "rx_readfreq") {
         if (action == PUT_ACTION) {
             if (!sscanf(args[1], "%d", &ival))
                 return std::string("Could not scan read frequency mode ") + std::string(args[1]);
@@ -5140,10 +5140,10 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
 
     }
 
-    else if (cmd == "r_silent") {
+    else if (cmd == "rx_silent") {
         if (action == PUT_ACTION) {
             if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan r_online input ") + std::string(args[1]);
+                return std::string("Could not scan rx_online input ") + std::string(args[1]);
             if (ival >= 0)
                 sprintf(answer, "%d", myDet->setReceiverSilentMode(ival, detPos));
         } else
@@ -5152,7 +5152,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
 
     }
 
-    else if (cmd == "r_framesperfile") {
+    else if (cmd == "rx_framesperfile") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &ival)) {
                 myDet->setFramesPerFile(ival, detPos);
@@ -5164,7 +5164,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
         return std::string(answer);
     }
 
-    else if (cmd == "r_discardpolicy") {
+    else if (cmd == "rx_discardpolicy") {
         if (action == PUT_ACTION) {
             frameDiscardPolicy f = myDet->getReceiverFrameDiscardPolicy(std::string(args[1]));
             if (f == GET_FRAME_DISCARD_POLICY)
@@ -5174,7 +5174,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
         return myDet->getReceiverFrameDiscardPolicy(myDet->setReceiverFramesDiscardPolicy(GET_FRAME_DISCARD_POLICY, detPos));
     }
 
-    else if (cmd == "r_padding") {
+    else if (cmd == "rx_padding") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &ival)) {
                 myDet->setPartialFramesPadding(ival, detPos);
@@ -5209,13 +5209,13 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start, stop." << std::endl;
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
-        os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
+        os << "rx_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
         os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
         os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
-        os << "r_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
-        os << "r_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
-        os << "r_discardpolicy s\t sets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
-        os << "r_padding s\t enables/disables partial frames to be padded in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
+        os << "rx_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
+        os << "rx_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
+        os << "rx_discardpolicy s\t sets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
+        os << "rx_padding s\t enables/disables partial frames to be padded in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
         os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
               "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
               "Use only if it needs to be processed by an intermediate process." << std::endl;
@@ -5226,13 +5226,13 @@ std::string slsDetectorCommand::helpReceiver(int action) {
         os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
         os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
-        os << "r_readfreq \t returns the gui read frequency of the receiver" << std::endl;
+        os << "rx_readfreq \t returns the gui read frequency of the receiver" << std::endl;
         os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
         os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
-        os << "r_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
-        os << "r_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
-        os << "r_discardpolicy \t gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
-        os << "r_padding \t gets partial frames padding enable in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
+        os << "rx_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
+        os << "rx_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
+        os << "rx_discardpolicy \t gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
+        os << "rx_padding \t gets partial frames padding enable in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
         os << "rx_jsonaddheader \n gets additional json header to be streamed "
               "out with the zmq from receiver." << std::endl;
         os << "rx_jsonpara [k] \n gets value of additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found." << std::endl;

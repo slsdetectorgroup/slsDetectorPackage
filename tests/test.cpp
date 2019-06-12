@@ -12,22 +12,24 @@
 using Opt = Catch::clara::Opt;
 using dt = slsDetectorDefs::detectorType;
 
+namespace test {
 std::string hostname;
 std::string detector_type;
 std::string my_ip;
 dt type;
+} // namespace test
 
 int main(int argc, char *argv[]) {
-    my_ip = "undefined";
+    test::my_ip = "undefined";
 
     Catch::Session session;
-    auto cli = session.cli() |
-               Opt(hostname, "hostname")["-hn"]["--hostname"](
-                   "Detector hostname for integration tests") |
-               Opt(detector_type, "detector_type")["-dt"]["--detector_type"](
-                   "Detector type for integration tests") |
-               Opt(my_ip, "my_ip")["-hip"]["--host_ip"](
-                   "Host ip address");
+    auto cli =
+        session.cli() |
+        Opt(test::hostname, "hostname")["-hn"]["--hostname"](
+            "Detector hostname for integration tests") |
+        Opt(test::detector_type, "detector_type")["-dt"]["--detector_type"](
+            "Detector type for integration tests") |
+        Opt(test::my_ip, "my_ip")["-hip"]["--host_ip"]("Host ip address");
 
     session.cli(cli);
 
@@ -36,7 +38,7 @@ int main(int argc, char *argv[]) {
         return ret;
     }
 
-    type = slsDetectorDefs::detectorTypeToEnum(detector_type);
+    test::type = slsDetectorDefs::detectorTypeToEnum(test::detector_type);
 
     return session.run();
 }

@@ -13,7 +13,6 @@ from functools import partial
 
 from .adcs import Adc, DetectorAdcs
 from .dacs import DetectorDacs
-from .decorators import error_handling
 from .detector import Detector
 from .detector_property import DetectorProperty
 from .utils import element_if_equal

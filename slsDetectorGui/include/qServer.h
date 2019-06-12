@@ -27,6 +27,11 @@ class qServer : public QWidget {
     void Acquire(sls::ServerInterface2* socket);
     void ExitServer(sls::ServerInterface2* socket);
 
+  signals:
+    // to update the Listening to Gui check box
+    void ServerStoppedSignal();
+
+  private:
     void (qServer::*flist[qDefs::QF_NUM_FUNCTIONS])(sls::ServerInterface2 &socket);
     qDetectorMain *mainTab;
     bool tcpThreadCreated{false};
@@ -38,7 +43,5 @@ class qServer : public QWidget {
     std::unique_ptr<sls::ServerSocket> controlSocket{nullptr};
     std::unique_ptr<sls::ServerSocket> stopSocket{nullptr};
 
-  signals:
-    // to update the Listening to Gui check box
-    void ServerStoppedSignal();
+
 };

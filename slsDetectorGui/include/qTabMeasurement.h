@@ -64,6 +64,13 @@ private:
 	void Enable(bool enable);
 	int VerifyOutputDirectoryError();
 
+signals:
+	void StartSignal();
+	void StopSignal();
+	void CheckPlotIntervalSignal();
+
+
+private:
 	multiSlsDetector *myDet;
 	qDrawPlot *myPlot;
 	// enum for the timing mode
@@ -81,9 +88,4 @@ private:
 	QPalette	red;
 	bool delayImplemented;
 	bool sampleImplemented;
-
-signals:
-	void StartSignal();
-	void StopSignal();
-	void CheckPlotIntervalSignal();
 };

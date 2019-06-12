@@ -1,22 +1,26 @@
 #include "qDetectorMain.h"
 #include "qDefs.h"
-#include "qServer.h"
-#include "qTabAdvanced.h"
+#include "qDrawPlot.h"
+#include "qTabMeasurement.h"
 #include "qTabDataOutput.h"
+#include "qTabPlot.h"
+#include "qTabAdvanced.h"
+#include "qTabSettings.h"
 #include "qTabDebugging.h"
 #include "qTabDeveloper.h"
 #include "qTabMessages.h"
-#include "qTabPlot.h"
-#include "qTabSettings.h"
+#include "qServer.h"
 
-#include "multiSlsDetector.h"
-#include "sls_detector_defs.h"
 #include "versionAPI.h"
 
+#include <QGridLayout>
+#include <QResizeEvent>
+#include <QScrollArea>
 #include <QFileDialog>
 #include <QPlastiqueStyle>
 #include <QSizePolicy>
 
+#include <iostream>
 #include <getopt.h>
 #include <iostream>
 #include <string>
@@ -111,7 +115,6 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
     setupUi(this);
     SetUpDetector(fname, multiId);
     SetUpWidgetWindow();
-    Initialization();
 }
 
 qDetectorMain::~qDetectorMain() {
@@ -277,6 +280,8 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     //FIXME: not needed anymore due to client creating socket each time
     //myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
     //myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
+
+    Initialization();
 }
 
 void qDetectorMain::Initialization() {

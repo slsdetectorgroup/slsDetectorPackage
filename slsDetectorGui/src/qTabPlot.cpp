@@ -1,17 +1,17 @@
 #include "qTabPlot.h"
+#include "qDefs.h"
 #include "qDrawPlot.h"
-// Project Class Headers
-#include "multiSlsDetector.h"
-// Qt Include Headers
+
 #include <QStandardItemModel>
-// C++ Include Headers
+#include <QStackedLayout>
+#include <QButtonGroup>
+#include <QAbstractButton>
+
 #include <iostream>
 #include <math.h>
 #include <string>
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-// const QString qTabPlot::modeNames[5] = {"None", "Energy Scan", "Threshold Scan", "Trimbits Scan", "Custom Script Scan"};
 
 QString qTabPlot::defaultPlotTitle("");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
@@ -20,7 +20,6 @@ QString qTabPlot::defaultImageXAxisTitle("Pixel");
 QString qTabPlot::defaultImageYAxisTitle("Pixel");
 QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : QWidget(parent),
                                                                                      myDet(detector),
@@ -41,14 +40,11 @@ qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot)
     FILE_LOG(logDEBUG) << "Plot ready";
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qTabPlot::~qTabPlot() {
     delete myDet;
     delete myPlot;
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetupWidgetWindow() {
     //error for interval between plots
@@ -181,7 +177,6 @@ void qTabPlot::SetupWidgetWindow() {
     qDefs::checkErrorMessage(myDet, "qTabPlot::SetupWidgetWindow");
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetPlotOptionsRightPage() {
     if (isOneD) {
@@ -201,8 +196,6 @@ void qTabPlot::SetPlotOptionsRightPage() {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
 void qTabPlot::SetPlotOptionsLeftPage() {
     if (isOneD) {
         int i = stackedWidget->currentIndex();
@@ -220,8 +213,6 @@ void qTabPlot::SetPlotOptionsLeftPage() {
         box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex() + 1));
     }
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::Select1DPlot(bool b) {
 #ifdef VERBOSE
@@ -255,8 +246,6 @@ void qTabPlot::Select1DPlot(bool b) {
         myPlot->Select2DPlot();
     }
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::Initialization() {
     // Plot arguments box
@@ -349,8 +338,6 @@ void qTabPlot::Initialization() {
         connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(EnableGapPixels(bool)));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
 void qTabPlot::EnablePersistency(bool enable) {
 #ifdef VERBOSE
     if (enable)
@@ -365,8 +352,6 @@ void qTabPlot::EnablePersistency(bool enable) {
     else
         myPlot->SetPersistency(0);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetTitles() {
 #ifdef VERBOSE
@@ -393,8 +378,6 @@ void qTabPlot::SetTitles() {
     if (dispZAxis->isEnabled())
         myPlot->SetImageZAxisTitle(dispZAxis->text());
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::EnableTitles() {
     // Plot Title
@@ -433,15 +416,12 @@ void qTabPlot::EnableTitles() {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
 void qTabPlot::checkAspectRatio() {
     if (chkAspectRatio->isChecked()) {
         maintainAspectRatio(-1);
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::maintainAspectRatio(int axis) {
 #ifdef VERBOSE
@@ -581,8 +561,6 @@ void qTabPlot::maintainAspectRatio(int axis) {
     myPlot->SetXYRange(true);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
 void qTabPlot::EnableXRange() {
 #ifdef VERBOSE
     cout << "Enable X Axis Range" << endl;
@@ -619,8 +597,6 @@ void qTabPlot::EnableXRange() {
 
     EnableRange();
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::EnableYRange() {
 #ifdef VERBOSE
@@ -659,8 +635,6 @@ void qTabPlot::EnableYRange() {
     EnableRange();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
 void qTabPlot::EnableRange() {
 #ifdef VERBOSE
     cout << "Enable Axes Range" << endl;
@@ -672,8 +646,6 @@ void qTabPlot::EnableRange() {
     emit DisableZoomSignal(disableZoom);
     SetAxesRange();
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetXAxisRange() {
 #ifdef VERBOSE
@@ -705,8 +677,6 @@ void qTabPlot::SetXAxisRange() {
     SetAxesRange();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
 void qTabPlot::SetYAxisRange() {
 #ifdef VERBOSE
     cout << "Setting Y Axis Range" << endl;
@@ -736,8 +706,6 @@ void qTabPlot::SetYAxisRange() {
 
     SetAxesRange();
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetAxesRange() {
 #ifdef VERBOSE
@@ -773,7 +741,6 @@ void qTabPlot::SetAxesRange() {
     myPlot->SetXYRange(true);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetZRange() {
     emit ResetZMinZMaxSignal(
@@ -783,7 +750,6 @@ void qTabPlot::SetZRange() {
         dispZMax->text().toDouble());
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::EnableZRange() {
 
@@ -802,7 +768,6 @@ void qTabPlot::EnableZRange() {
     connect(dispZMax, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 bool qTabPlot::CheckZRange(QString value) {
     if (value.isEmpty())
@@ -820,7 +785,6 @@ bool qTabPlot::CheckZRange(QString value) {
     return true;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetPlot() {
 #ifdef VERBOSE
@@ -890,7 +854,6 @@ void qTabPlot::SetPlot() {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetFrequency() {
 #ifdef VERBOSE
@@ -1028,8 +991,6 @@ void qTabPlot::SetFrequency() {
     connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
     qDefs::checkErrorMessage(myDet, "qTabPlot::SetFrequency");
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
  void qTabPlot::EnableScanBox(){
  #ifdef VERBOSE
@@ -1218,7 +1179,6 @@ void qTabPlot::SetFrequency() {
 
  }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
  void qTabPlot::SetScanArgument(){
  #ifdef VERYVERBOSE
@@ -1332,7 +1292,6 @@ void qTabPlot::SetFrequency() {
 
  }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetBinary() {
     //1d
@@ -1387,7 +1346,6 @@ void qTabPlot::SetBinary() {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetHistogramOptions() {
     if (radioHistIntensity->isChecked()) {
@@ -1399,7 +1357,6 @@ void qTabPlot::SetHistogramOptions() {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::EnableGapPixels(bool enable) {
 #ifdef VERBOSE
@@ -1415,7 +1372,6 @@ void qTabPlot::EnableGapPixels(bool enable) {
     connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(EnableGapPixels(bool)));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::Refresh() {
 #ifdef VERBOSE

@@ -1,7 +1,23 @@
 #include "qCloneWidget.h"
 #include "qDefs.h"
+#include "SlsQt1DPlot.h"
+#include "SlsQt2DPlotLayout.h"
 
 #include "qwt_symbol.h"
+#include <QWidget>
+#include <QCloseEvent>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QAction>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QMenu>
+#include <QMenuBar>
+#include <QPushButton>
+#include <QSpacerItem>
 #include <QFileDialog>
 #include <QImage>
 #include <QPainter>
@@ -24,7 +40,6 @@ qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitl
     DisplayStats(displayStats, min, max, sum);
 }
 
-
 qCloneWidget::~qCloneWidget() {
     delete cloneplot1D;
     delete cloneplot2D;
@@ -32,11 +47,9 @@ qCloneWidget::~qCloneWidget() {
     cloneplot1D_hists.clear();
 }
 
-
 SlsQt1DPlot* qCloneWidget::Get1dPlot() {
 	return cloneplot1D;
 }
-
 
 void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTitle, QString zTitle, int numDim) {
 
@@ -97,7 +110,6 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
     resize(500, 350);
 }
 
-
 void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis[], std::string histTitle[], bool lines, bool markers) {
     //for each plot,  create hists
     for (int hist_num = 0; hist_num < nHists; ++hist_num) {
@@ -133,7 +145,6 @@ void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, d
         k->Attach(cloneplot1D);
     }
 }
-
 
 void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis, std::string histTitle[], bool lines, bool markers) {
     // for each plot create hists
@@ -174,12 +185,10 @@ void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, d
     }
 }
 
-
 void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d) {
     cloneplot2D->GetPlot()->SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d);
     cloneplot2D->UpdateNKeepSetRangeIfSet();
 }
-
 
 void qCloneWidget::SetRange(bool IsXYRange[], double XYRangeValues[]) {
     double XYCloneRangeValues[4];
@@ -226,7 +235,6 @@ void qCloneWidget::SetRange(bool IsXYRange[], double XYRangeValues[]) {
     }
 }
 
-
 void qCloneWidget::SavePlot() {
     char cID[10];
     sprintf(cID, "%d", id);
@@ -257,7 +265,6 @@ void qCloneWidget::SavePlot() {
     }
 }
 
-
 int qCloneWidget::SavePlotAutomatic() {
     char cID[10];
     sprintf(cID, "%d", id);
@@ -280,12 +287,10 @@ int qCloneWidget::SavePlotAutomatic() {
         return -1;
 }
 
-
 void qCloneWidget::closeEvent(QCloseEvent *event) {
     emit CloneClosedSignal(id);
     event->accept();
 }
-
 
 char *qCloneWidget::GetCurrentTimeStamp() {
     char output[30];
@@ -299,7 +304,6 @@ char *qCloneWidget::GetCurrentTimeStamp() {
     result = output + 0;
     return result;
 }
-
 
 void qCloneWidget::DisplayStats(bool enable, QString min, QString max, QString sum) {
     if (enable) {

@@ -128,7 +128,7 @@ void slsReceiverTCPIPInterface::startTCPServer() {
                 pthread_exit(nullptr);
             }
         } catch (const RuntimeError &e) {
-            std::cout << "Accept failed\n";
+            FILE_LOG(logERROR) << "Accept failed";
         }
 
         // if user entered exit

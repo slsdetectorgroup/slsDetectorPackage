@@ -20,6 +20,28 @@ class qDefs : public QWidget {
 
 #define GOODBYE -200
 
+    /** function enums */
+    enum qFuncNames {
+        QF_GET_DETECTOR_STATUS,
+        QF_START_ACQUISITION,
+        QF_STOP_ACQUISITION,
+        QF_START_AND_READ_ALL,
+        QF_EXIT_SERVER,
+        QF_NUM_FUNCTIONS
+    };
+
+    const char* getQFunctionNameFromEnum(enum qFuncNames func) {
+        switch (func) {
+        case QF_GET_DETECTOR_STATUS:	return "QF_GET_DETECTOR_STATUS";
+        case QF_START_ACQUISITION:		return "QF_START_ACQUISITION";
+        case QF_STOP_ACQUISITION:		return "QF_STOP_ACQUISITION";
+        case QF_START_AND_READ_ALL:	    return "QF_START_AND_READ_ALL";
+        case QF_EXIT_SERVER:			return "QF_EXIT_SERVER";
+        case QF_NUM_FUNCTIONS:			return "QF_NUM_FUNCTIONS";
+        default:						return "Unknown Function";
+        }
+    };
+
     /** Success or FAIL */
     enum { OK, FAIL };
 

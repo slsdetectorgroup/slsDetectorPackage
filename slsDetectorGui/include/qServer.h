@@ -1,14 +1,14 @@
 #pragma once
 
+#include "qDefs.h"
+#include "ServerSocket.h"
 class qDetectorMain;
-
-class multiSlsDetector;
-class ServerSocket;
-class ServerInterface;
+class ServerInterface2;
 
 #include <vector>
+#include <future>
 
-class qServer : public QWidget, public virtual slsDetectorDefs {
+class qServer : public QWidget {
     Q_OBJECT
 
   public:
@@ -19,26 +19,24 @@ class qServer : public QWidget, public virtual slsDetectorDefs {
 
   private:
     void FunctionTable();
-    void DecodeFunction(ServerSocket *sock);
-    void ShutDownSockets();
-    void ServerThread(ServerSocket* sock);
-    void GetStatus(ServerSocket* sock);
-    void StartAcquisition(ServerSocket* sock);
-    void StopsAcquisition(ServerSocket* sock);
-    void Acquire(ServerSocket* sock);
-    void ExitServer(ServerSocket* sock);
+    void DecodeFunction(sls::ServerInterface2 *socket);
+    void ServerThread(bool isControlServer);
+    void GetStatus(sls::ServerInterface2* socket);
+    void StartAcquisition(sls::ServerInterface2* socket);
+    void StopsAcquisition(sls::ServerInterface2* socket);
+    void Acquire(sls::ServerInterface2* socket);
+    void ExitServer(sls::ServerInterface2* socket);
 
-    /** function list */
-    typedef int (qServer::*some_func_t)(ServerSocket*);
-    typedef std::vector<some_func_t> sflist;
-     bool guiServerRunning;
-    bool threadStarted;
-
+    void (qServer::*flist[qDefs::QF_NUM_FUNCTIONS])(sls::ServerInterface2 &socket);
     qDetectorMain *mainTab;
+    bool tcpThreadCreated{false};
+    bool killTCPServerThread{false};
+    std::future<void> controlStatus;
+    std::future<void> stopStatus;
     int controlPort;
     int stopPort;
-    ServerSocket *controlSocket;
-    ServerSocket *stopSocket;
+    std::unique_ptr<sls::ServerSocket> controlSocket{nullptr};
+    std::unique_ptr<sls::ServerSocket> stopSocket{nullptr};
 
   signals:
     // to update the Listening to Gui check box

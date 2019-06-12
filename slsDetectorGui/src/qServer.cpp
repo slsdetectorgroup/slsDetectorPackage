@@ -1,8 +1,7 @@
 #include "qServer.h"
-#include "qDefs.h"
 #include "qDetectorMain.h"
 
-#include "ServerSocket.h"
+#include "ServerInterface2.h"
 #include "string_utils.h"
 
 #include <iostream>
@@ -10,116 +9,114 @@
 #include <future>
 
 qServer::qServer(qDetectorMain *t)
-    : guiServerRunning(false), threadStarted(false), mainTab(t),
-      controlPort(DEFAULT_GUI_PORTNO), stopPort(DEFAULT_GUI_PORTNO + 1),
-      controlSocket(nullptr), stopSocket(nullptr) {
+    : mainTab(t), controlPort(DEFAULT_GUI_PORTNO), stopPort(DEFAULT_GUI_PORTNO + 1), 
+    controlSocket(nullptr), stopSocket(nullptr) {
     FILE_LOG(logDEBUG) << "Client Server ready";
 }
 
 qServer::~qServer() {}
 
 void qServer::FunctionTable() {
-    sflist.push_back(&qServer::GetStatus);
-    sflist.push_back(&qServer::StartAcquisition);
-    sflist.push_back(&qServer::StopsAcquisition);
-    sflist.push_back(&qServer::Acquire);
-    sflist.push_back(&qServer::ExitServer);
+    flist[qDefs::QF_GET_DETECTOR_STATUS] = &qServer::GetStatus;
+    flist[qDefs::QF_START_ACQUISITION] = &qServer::StartAcquisition;
+    flist[qDefs::QF_STOP_ACQUISITION] = &qServer::StopsAcquisition;
+    flist[qDefs::QF_START_AND_READ_ALL] = &qServer::Acquire;
+    flist[qDefs::QF_EXIT_SERVER] = &qServer::ExitServer;
 }
 
-int qServer::DecodeFunction(ServerSocket *sock) {
-    int ret = qDefs::FAIL;
-    int fnum = 0;
-    int n = sock->ReceiveDataOnly(&fnum, sizeof(fnum));
-    if (n <= 0) {
-        FILE_LOG(logDEBUG3) << "Received " << n << " bytes";
-        throw sls::RuntimeError("Could not read socket");
+void qServer::DecodeFunction(sls::ServerInterface2 *socket) {
+    qFuncNames fnum;
+    socket.Receive(fnum);
+
+    if (fnum < 0 || fnum >= QF_NUM_FUNCTIONS) {
+        throw RuntimeError("Unrecognized Function enum " + std::to_string(fnum) + "\n");  
     }
 
-    // unrecognized function
-    if (fnum < 0 && fnum >= qDefs::NUM_GUI_FUNCS) {
-        ret = qDefs::FAIL;
-        char mess[MAX_STR_LENGTH] = {};
-        sls::strcpy_safe(mess, "Unrecognized function");
-        // will throw an exception
-        sock->SendResult(ret, nullptr, 0, mess); 
-    }
-
-    // calling function
-    FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum;
-    ret = (this->*sflist[fnum])(sock);
-
-    return ret;
-}
-
-void qServer::ShutDownSockets() {
-    guiServerRunning = false;
-    if (controlSocket) {
-        controlSocket->shutDownSocket();
-        delete controlSocket;
-        controlSocket = nullptr;
-    }
-    if (stopSocket) {
-        stopSocket->shutDownSocket();
-        delete stopSocket;
-        stopSocket = nullptr;
-    }
+    FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum << " (" 
+        << slsDetectorDefs::getQFunctionNameFromEnum(fnum) << ")";
+    (this->*flist[fnum])(socket);   
+    FILE_LOG(logDEBUG1) << "Function " << getQFunctionNameFromEnum(fnum) << " finished";
 }
 
 void qServer::CreateServers() {
-    if (!guiServerRunning) {
+    if (!tcpThreadCreated) {
         FILE_LOG(logINFO) << "Starting Gui Servers";
-        guiServerRunning = true;
-        
+        tcpThreadCreated = true;
         try {
             // start control server
-            controlSocket = new ServerSocket(controlPort);
-            std::async(std::launch::async, ServerThread, controlSocket);
-            FILE_LOG(logDEBUG)
-                << "Gui control server thread created successfully.";
+            controlStatus = std::async(std::launch::async, ServerThread, true);
+            FILE_LOG(logDEBUG) << "Gui control server thread created successfully.";
             // start stop server
-            stopSocket = new ServerSocket(stopPort);
-            std::async(std::launch::async, ServerThread, stopSocket);
-            FILE_LOG(logDEBUG)
-                << "Gui stop server thread created successfully.";    
+            stopStatus = std::async(std::launch::async, ServerThread, false);
+            FILE_LOG(logDEBUG) << "Gui stop server thread created successfully.";    
+         
         } catch (...) {
-            ShutDownSockets();
-            std::string message = "Can't create gui control server thread";
-            FILE_LOG(logERROR) << message;
+            std::string mess = "Could not create Gui TCP servers";
+            FILE_LOG(logERROR) << mess;
             qDefs::Message(qDefs::WARNING, message, "qServer::CreateServers");
+            DestroyServers();
         }
     }
 }
 
 void qServer::DestroyServers() {
-    if (guiServerRunning) {
-        FILE_LOG(logINFO) << "Stopping Gui Servers";
-        ShutDownSockets();
+    if (tcpThreadCreated) {
+        FILE_LOG(logINFO) << "Shutting down Gui TCP Sockets";
+        killTCPServerThread = true;
+        if (controlSocket)
+            controlSocket->shutDownSocket();
+        if (stopSocket)
+            stopSocket->shutDownSocket();     
+        controlStatus.wait();
+        stopStatus.wait();
+        tcpThreadCreated = false;
+        killTCPServerThread = false;
         FILE_LOG(logDEBUG) << "Server threads stopped successfully.";
     }
 }
 
-void qServer::ServerThread(ServerSocket* sock) {
-    FILE_LOG(logDEBUG) << "Starting Gui Server at port " << sock->getPort(); 
+void qServer::ServerThread(isControlServer) {
+    sls::ServerSocket* sock = nullptr;
+    if (isControl) {
+        FILE_LOG(logDEBUG) << "Starting Gui Server (Control port: " << controlPort << ")";
+        controlSocket = sls::make_unique<sls::ServerSocket>(controlPort);
+        sock = controlSocket;
+    } else {
+        FILE_LOG(logDEBUG) << "Starting Gui Server (Stop port: " << stopPort << ")";   
+        stopSocket = sls::make_unique<sls::ServerSocket>(stopPort);
+        sock = stopSocket;
+    }
 
-    while (guiServerRunning)) {
+    while (true) {
         try{
-            sock->accept();
-            if (DecodeFunction(sock) ==  GOODBYE) {
-                guiServerRunning = false;
+            auto socket = sock->accept();
+            try{
+                decode_function(socket);
+            } catch(const sls::NonCriticalError &e) {
+
+                if (strstr(e.what(), "exit")) {
+                    FILE_LOG(logINFO) << "Exiting " << (isControlServer ? "Control" : "Stop") << "Server"; 
+                    break;
+                }
+                char mess[MAX_STR_LENGTH];
+                sls::strcpy_safe(mess, e.what());
+                socket.Send(FAIL);
+                socket.Send(mess);
             }
-            sock->close();
-        } 
-        // any fails will throw an exception, which will be displayed at client side. Ignore here
-        catch (...) {}
+        } catch (const sls::NonCriticalError &e) {
+            FILE_LOG(logERROR) << "Accept failed";
+        }
+
+        // Destroy server 
+        if (killTCPServerThread) {
+            FILE_LOG(logINFO) << "Exiting " << (isControlServer ? "Control" : "Stop") << "Server"; 
+            break;
+        }
     }
     FILE_LOG(logDEBUG) << "Stopped gui server thread";
-
-    // stop port is closed last
-    if (sock->getPort() == stopPort)
-        emit ServerStoppedSignal();
 }
 
-int qServer::GetStatus(ServerSocket* sock) {
+void qServer::GetStatus(sls::ServerInterface2* socket) {
     slsDetectorDefs::runStatus status = slsDetectorDefs::ERROR;
     int progress = 0;
     if (myMainTab->isPlotRunning())
@@ -129,43 +126,36 @@ int qServer::GetStatus(ServerSocket* sock) {
 
     progress = myMainTab->GetProgress();
 
-    int ret = qDefs::OK
-    int retvals[2] = {static_cast<int>(retval), progress};
-    sock->SendResult(ret, retvals, sizeof(retvals), nullptr); 
-    return ret;
+    int retvals[2] = {static_cast<int>(status), progress};
+    socket.SendResult(retvals); 
 }
 
-int qServer::StartAcquisition(ServerSocket* sock) {
-    char mess[MAX_STR_LENGTH] = {};
-    sls::strcpy_safe(mess, "Could not start acquistion in Gui");
-    int ret = myMainTab->StartStopAcquisitionFromClient(true);
-    sock->SendResult(ret, nullptr, 0, mess); 
-    return ret;
+void qServer::StartAcquisition(sls::ServerInterface2* socket) {
+    if (myMainTab->StartStopAcquisitionFromClient(true) == slsDetectorDefs::FAIL) {
+        throw sls::NonCriticalError("Could not start acquistion in Gui");
+    }
+    socket.Send(slsDetectorDefs::OK);
 }
 
-int qServer::StopsAcquisition(ServerSocket* sock) {
-    char mess[MAX_STR_LENGTH] = {};
-    sls::strcpy_safe(mess, "Could not stop acquistion in Gui");
-    int ret = myMainTab->StartStopAcquisitionFromClient(false);
-    sock->SendResult(ret, nullptr, 0, mess); 
-    return ret;
+void qServer::StopsAcquisition(sls::ServerInterface2* socket) {
+    if (myMainTab->StartStopAcquisitionFromClient(false) == slsDetectorDefs::FAIL) {
+        throw sls::NonCriticalError("Could not stop acquistion in Gui");
+    }
+    socket.Send(slsDetectorDefs::OK);
 }
 
-int qServer::Acquire(ServerSocket* sock) {
-    char mess[MAX_STR_LENGTH] = {};
-    sls::strcpy_safe(mess, "Could not start blocking acquistion in Gui");
-    int ret = myMainTab->StartStopAcquisitionFromClient(true);
+void qServer::Acquire(sls::ServerInterface2* socket) {
+    if (myMainTab->StartStopAcquisitionFromClient(true) == slsDetectorDefs::FAIL) {
+        throw sls::NonCriticalError("Could not start blocking acquistion in Gui");
+    }
     //  blocking
     usleep(5000);
-    while (myMainTab->isPlotRunning())
-        ;
-    sock->SendResult(ret, nullptr, 0, mess); 
-    return ret;
+     while (myMainTab->isPlotRunning()) {
+        usleep(5000);
+     }
+    socket.Send(slsDetectorDefs::OK);
 }
 
-int qServer::ExitServer(ServerSocket* sock) {
-    DestroyServers();
-    int ret = qDefs::OK;
-    sock->SendResult(ret, nullptr, 0, mess); 
-    return GOODBYE;
+void qServer::ExitServer(sls::ServerInterface2* socket) {
+    throw sls::NonCriticalError("Server exited");
 }

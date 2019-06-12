@@ -65,9 +65,11 @@ set(HEADERS
     include/qTabDebugging.h
     include/qTabDeveloper.h
     include/qTabMessages.h
-    ../slsSupportLib/include/versionAPI.h
     include/qServer.h
     ../slsDetectorSoftware/include
+    ../slsSupportLib/include/versionAPI.h
+    ../slsSupportLib/include/ServerSocket.h
+    ../slsSupportLib/include/ServerInterface2.h
 )
 set(RESOURCES
     include/icons.qrc

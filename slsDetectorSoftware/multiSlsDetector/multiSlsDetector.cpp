@@ -3911,7 +3911,7 @@ int multiSlsDetector::powerChip(int ival) {
 		ret = detectors[i]->powerChip(ival);
 		// 1s sleep per module for large systems
 		if(ival >=0 && detectors.size() > 3) 
-			usleep(1000000);
+			usleep(1000 * 1000);
 		if (detectors[i]->getErrorMask())
 			setErrorMask(getErrorMask() | (1 << i));
 		if (ret == FAIL)

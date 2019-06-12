@@ -913,9 +913,9 @@ class slsDetectorUsers
     }      };
 
   /**
-     @short returns external communication mode std::string from index
-     \param s index for communication mode
-     \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
+     @short returns external communication mode index from std::string
+     \param s auto, trigger, ro_trigger, gating, triggered_gating, burst_trigger, unknown when wrong mode
+     \returns index for communication mode
   */
 
   static int getTimingMode(std::string s){			\
@@ -924,7 +924,8 @@ class slsDetectorUsers
     if (s== "ro_trigger") return 2;					\
     if (s== "gating") return 3;						\
     if (s== "triggered_gating") return 4;			\
-    return -1;							};
+    if (s== "burst_trigger") return 5;			   \
+    return -1;							};          \
 
 
  private:

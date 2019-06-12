@@ -1,4 +1,4 @@
-SLS Detector Package 4.0.2 released on xx.xx.2019 (Bug Fix Release)
+SLS Detector Package 4.0.2 released on 12.06.2019 (Bug Fix Release)
 ===================================================================
 
 
@@ -18,10 +18,11 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
 ====================
 
     - Jungfrau receiver as root user
-    - Jungfrau server detector position error when switching between different detector sizes
-    - Client API data call back / Gui (Eiger in 4 bit mode)
     - Receiver HDF5 printErrorStack
-
+    - Jungfrau server detector position error when switching between different detector sizes
+    - Gotthard server get settings does not set default dacs anymore
+    - Client API data call back / Gui (Eiger in 4 bit mode)
+    - Users class added burst_trigger in getTimingMode from string
 
 
 2. Resolved Issues
@@ -39,27 +40,31 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
     2.  Fixed bug where printError was still being called once instead of printErrorStack.
 
 
-    Detector Server (Jungfrau)
+    Detector Server 
     --------------------------
-    1.  Switching between different detector size configurations, the detector gave an
-	    error "Could not set detector position". This is fixed now.
+    1.  (Jungfrau)
+        Switching between different detector size configurations with same detector modules, 
+        the detector gave an error "Could not set detector position". This is fixed now.
+
+    2.  (Gotthard)
+        Get settings was setting the default dacs previously. It has been fixed now.
 
     
-    Client API / Gui (Eiger)
-    ------------------------
-    1.  Client data call back provided the complete image data, but the number of pixels 
+    Client API
+    ----------
+    1.  Client Callback / Gui (Eiger)
+        Client data call back provided the complete image data, but the number of pixels 
         in x and y was provided incorrectly at a modular level. This has been fixed to give 
         the proper value. This also fixes the Gui crashing for Eiger 4 bit mode when 
         acquiring for multiple images.
 
+    2.  Added "burst_trigger" in getTimingMode (from string to int) in Users class.
 
 
-
-        
 3. Known Issues
 ===============
     
-    
+    :)
     
     
 4. Firmware Requirements

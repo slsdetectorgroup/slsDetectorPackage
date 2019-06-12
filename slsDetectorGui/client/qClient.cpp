@@ -1,5 +1,6 @@
 #include "qClient.h"
 
+#include "qDefs.h"
 #include "ClientSocket.h"
 #include "logger.h"
 #include "sls_detector_exceptions.h"
@@ -29,7 +30,7 @@ void qClient::executeLine(int narg, char *args[]) {
 
     // validate command structure
     if (narg < 1) {
-        throw sls::RuntimeError("No command parsed. " + printCommands());
+        throw sls::NonCriticalError("No command parsed. " + printCommands());
     }
 
     // help
@@ -48,8 +49,7 @@ void qClient::executeLine(int narg, char *args[]) {
             else if (argument == "stop")
                 stopAcquisition();
             else {
-                throw sls::RuntimeError("Could not parse arguments. " +
-                                        printCommands());
+                throw sls::NonCriticalError("Could not parse arguments. " + printCommands());
             }
         }
         retval = getStatus();
@@ -67,7 +67,7 @@ void qClient::executeLine(int narg, char *args[]) {
 
     // unrecognized command
     else {
-        throw sls::RuntimeError("Unrecognized command. " + printCommands());
+        throw sls::NonCriticalError("Unrecognized command. " + printCommands());
     }
 
     // print result
@@ -88,36 +88,36 @@ std::string qClient::printCommands() {
 }
 
 std::string qClient::getStatus() {
-    int fnum = qDefs::F_GUI_GET_RUN_STATUS;
-    int retvals[2] = {static_cast<int>(ERROR), 0};
+    int fnum = qDefs::QF_GET_DETECTOR_STATUS;
+    int retvals[2] = {static_cast<int>(slsDetectorDefs::ERROR), 0};
 
     auto client = sls::GuiSocket(hostname, controlPort);
     client.sendCommandThenRead(fnum, nullptr, 0, retvals, sizeof(retvals));
 
-    runStatus status = static_cast<runStatus>(retvals[0]);
+    slsDetectorDefs::runStatus status = static_cast<slsDetectorDefs::runStatus>(retvals[0]);
     int progress = retvals[1];
     return std::to_string(progress) + std::string("% ") +
            slsDetectorDefs::runStatusType(status);
 }
 
 void qClient::startAcquisition(bool blocking) {
-    int fnum = qDefs::F_GUI_START_ACQUISITION;
+    int fnum = qDefs::QF_START_ACQUISITION;
     if (blocking)
-        fnum = qDefs::F_GUI_START_AND_READ_ALL;
+        fnum = qDefs::QF_START_AND_READ_ALL;
 
     auto client = sls::GuiSocket(hostname.c_str(), controlPort);
     client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
 }
 
 void qClient::stopAcquisition() {
-    int fnum = qDefs::F_GUI_STOP_ACQUISITION;
+    int fnum = qDefs::QF_STOP_ACQUISITION;
 
     auto client = sls::GuiSocket(hostname, stopPort);
     client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
 }
 
 void qClient::exitServer() {
-    int fnum = qDefs::F_GUI_EXIT_SERVER;
+    int fnum = qDefs::QF_EXIT_SERVER;
     // closes both control and stop server
     auto client = sls::GuiSocket(hostname, controlPort);
     client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);

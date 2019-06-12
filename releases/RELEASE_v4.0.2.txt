@@ -1,0 +1,159 @@
+SLS Detector Package 4.0.2 released on 12.06.2019 (Bug Fix Release)
+===================================================================
+
+
+This document describes the differences between 4.0.2 and 4.0.1 releases.   
+    
+    CONTENTS
+    --------
+    1.  Topics Concerning
+    2.  Resolved Issues
+    3.  Known Issues
+    4.  Firmware Requirements
+    5.  Download, Documentation & Support
+    
+
+
+1. Topics Concerning
+====================
+
+    - Jungfrau receiver as root user
+    - Receiver HDF5 printErrorStack
+    - Jungfrau server detector position error when switching between different detector sizes
+    - Gotthard server get settings does not set default dacs anymore
+    - Client API data call back / Gui (Eiger in 4 bit mode)
+    - Users class added burst_trigger in getTimingMode from string
+
+
+2. Resolved Issues
+==================          
+
+    Receiver
+    --------
+    
+    1.  Jungfrau Receiver as root user fails to set UDP socket size to default value
+        of (2000 * 1024 * 1024). It does not receive any packets afterwards.
+        Temporary solution was to set it to a lower number using
+            sls_detector_put rx_udpsocksize 1048576000
+        This has been fixed now to allow a greater size (including the default size).
+    
+    2.  Fixed bug where printError was still being called once instead of printErrorStack.
+
+
+    Detector Server 
+    --------------------------
+    1.  (Jungfrau)
+        Switching between different detector size configurations with same detector modules, 
+        the detector gave an error "Could not set detector position". This is fixed now.
+
+    2.  (Gotthard)
+        Get settings was setting the default dacs previously. It has been fixed now.
+
+    
+    Client API
+    ----------
+    1.  Client Callback / Gui (Eiger)
+        Client data call back provided the complete image data, but the number of pixels 
+        in x and y was provided incorrectly at a modular level. This has been fixed to give 
+        the proper value. This also fixes the Gui crashing for Eiger 4 bit mode when 
+        acquiring for multiple images.
+
+    2.  Added "burst_trigger" in getTimingMode (from string to int) in Users class.
+
+
+3. Known Issues
+===============
+    
+    :)
+    
+    
+4. Firmware Requirements
+========================
+
+        Gotthard
+        ========   
+        Minimum compatible version  : 11.01.2013
+        Latest compatible version   : 08.02.2018 (50um and 25um Master)
+                                      09.02.2018 (25 um Slave) 
+        Eiger
+        =====  
+        Minimum compatible version  : 22
+        Latest compatible version   : 22
+        
+        Jungfrau
+        ========       
+        Minimum compatible version  : 26.02.2018
+        Latest compatible version   : 06.12.2018
+
+        
+        Detector Upgrade
+        ================
+        Gotthard    Cannot be upgraded remotely. Requires programming via USB blaster
+        Eiger       Can be upgraded remotely via bit files
+        Jungfrau    Can be upgraded remotely using sls_detector_put programfpga <pof>
+        
+        Instructions available at
+        https://www.psi.ch/detectors/installation-instructions
+        under Detector Upgrade -> [Detector Type] -> Firmware. 
+        
+         
+    Please refer to the link below for more details on the firmware versions.
+    https://www.psi.ch/detectors/firmware.
+    
+    
+        
+5. Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code (Default C++ API):
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+         
+    The Conda Lib Package:
+        https://github.com/slsdetectorgroup/sls_detector_lib
+        
+    The Conda GUI Package:
+        https://github.com/slsdetectorgroup/sls_detector_gui    
+        
+    The Python Interface (including the package):
+        https://github.com/slsdetectorgroup/sls_detector
+    
+    
+    Documentation
+    -------------
+    
+    Manual (HTML & PDF):
+        https://www.psi.ch/detectors/documentation
+        slsDetectorPackage/manual/docs/
+        
+    Command Line Documentation:
+        manual/docs/html/slsDetectorClientDocs/index.html
+        manual/docs/pdf/slsDetectorClientDocs.pdf
+        
+    C++ API Documentation:
+        manual/docs/html/slsDetectorUsersDocs/index.html
+        manual/docs/pdf/slsDetectorUsersDocs.pdf
+        
+    C++ API Example:
+        manual/manual-api/mainClient.cpp
+        manual/manual-api/mainReceiver.cpp
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/sls_detector/
+        
+    Further Documentation:
+        https://www.psi.ch/detectors/users-support
+        
+    
+    Support
+    -------
+
+    General Software related:
+        dhanya.thattil@psi.ch
+        anna.bergamaschi@psi.ch
+        
+    Python related:
+        erik.frojdh@psi.ch
+

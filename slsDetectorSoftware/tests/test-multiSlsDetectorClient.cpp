@@ -129,21 +129,21 @@ TEST_CASE("enableoverwrite", "[.cmd]") {
 //     }
 // }
 
-TEST_CASE("masterfile", "[.cmd]") {
+TEST_CASE("fmaster", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("masterfile 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "masterfile 0\n");
+        multiSlsDetectorClient("fmaster 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("masterfile", GET, nullptr, oss);
-        REQUIRE(oss.str() == "masterfile 0\n");
+        multiSlsDetectorClient("fmaster", GET, nullptr, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("masterfile 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "masterfile 1\n");
+        multiSlsDetectorClient("fmaster 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "fmaster 1\n");
     }
 }
 

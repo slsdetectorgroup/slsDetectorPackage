@@ -1522,9 +1522,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page output
-   - <b>outdir [dir]</b> Sets/gets the file output directory. \c Returns \c (string)
+   - <b>fpath [dir]</b> Sets/gets the file output directory. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "outdir";
+    descrToFuncMap[i].m_pFuncName = "fpath";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOutDir;
     ++i;
 
@@ -1557,16 +1557,16 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page output
-    - <b>fileformat [i]</b> sets/gets the file format for data in receiver. Options: [binary, hdf5]. \c Returns \c (string)
+    - <b>fformat [i]</b> sets/gets the file format for data in receiver. Options: [binary, hdf5]. \c Returns \c (string)
 	 */
-    descrToFuncMap[i].m_pFuncName = "fileformat";
+    descrToFuncMap[i].m_pFuncName = "fformat";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
     ++i;
 
      /*! \page output
-    - <b>masterfile [i]</b> sets/gets the master file write enable in receiver. \c Returns \c (int)
+    - <b>fmaster [i]</b> sets/gets the master file write enable in receiver. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "masterfile";
+    descrToFuncMap[i].m_pFuncName = "fmaster";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdEnablefwrite;
     ++i;   
 
@@ -2593,9 +2593,9 @@ std::string slsDetectorCommand::cmdOutDir(int narg, const char * const args[], i
 std::string slsDetectorCommand::helpOutDir(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("outdir \t  gets the directory where the output files will be written\n");
+        os << std::string("fpath \t  gets the directory where the output files will be written\n");
     if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("outdir dir \t  sets the directory where the output files will be written\n");
+        os << std::string("fpath dir \t  sets the directory where the output files will be written\n");
     return os.str();
 }
 
@@ -2608,7 +2608,7 @@ std::string slsDetectorCommand::cmdFileName(int narg, const char * const args[],
             myDet->setFileName(std::string(args[1]), detPos);
 
         return std::string(myDet->getFileName(detPos));
-    } else if (cmd == "fileformat") {
+    } else if (cmd == "fformat") {
         if (action == PUT_ACTION) {
             if (std::string(args[1]) == "binary")
                 myDet->setFileFormat(BINARY, detPos);
@@ -2626,11 +2626,11 @@ std::string slsDetectorCommand::helpFileName(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << std::string("fname \t  gets the filename for the data without index and extension\n");
-        os << std::string("fileformat \t  gets the file format for data\n");
+        os << std::string("fformat \t  gets the file format for data\n");
     }
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << std::string("fname s \t  sets the filename for the data (index and extension will be automatically appended)\n");
-        os << std::string("fileformat s \t  sets the file format for the data (binary, hdf5)\n");
+        os << std::string("fformat s \t  sets the file format for the data (binary, hdf5)\n");
     }
     return os.str();
 }
@@ -2654,7 +2654,7 @@ std::string slsDetectorCommand::cmdEnablefwrite(int narg, const char * const arg
         return std::string(ans);
     }
 
-    else if (cmd == "masterfile") {
+    else if (cmd == "fmaster") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &i))
                 myDet->setMasterFileWrite(i, detPos);
@@ -2672,11 +2672,11 @@ std::string slsDetectorCommand::helpEnablefwrite(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << std::string("fwrite \t When Enabled writes the data into the file\n");
-        os << std::string("masterfile \t When Enabled writes the master file\n");
+        os << std::string("fmaster \t When Enabled writes the master file\n");
     }
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << std::string("fwrite i \t  should be 1 or 0\n");
-        os << std::string("masterfile i \t  sets the master file write enable. should be 1 or 0\n");
+        os << std::string("fmaster i \t  sets the master file write enable. should be 1 or 0\n");
     }
     return os.str();
 }

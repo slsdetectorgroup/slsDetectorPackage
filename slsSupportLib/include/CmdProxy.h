@@ -37,7 +37,7 @@ template <typename T> class CmdProxy {
         auto d_it = depreciated_functions.find(command);
         if (d_it != depreciated_functions.end()) {
             FILE_LOG(logWARNING)
-                << "WARNING: " << command
+                << command
                 << " is depreciated and will be removed. Please migrate to: "
                 << d_it->second;
             command = d_it->second;
@@ -74,7 +74,10 @@ template <typename T> class CmdProxy {
                                     {"index", "findex"},
                                     {"exitreceiver", "rx_exit"},
                                     {"enablefwrite", "fwrite"},
-                                    {"checkrecversion", "rx_checkversion"}};
+                                    {"checkrecversion", "rx_checkversion"},
+                                    {"masterfile", "fmaster"},
+                                    {"outdir", "fpath"},
+                                    {"fileformat", "fformat"}};
 
     template <typename U> std::string ResultToString(const U &ret) {
         std::ostringstream os;

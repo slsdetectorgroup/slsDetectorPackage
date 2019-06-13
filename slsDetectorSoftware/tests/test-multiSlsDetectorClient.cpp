@@ -90,21 +90,21 @@ TEST_CASE("fwrite", "[.cmd]") {
     }
 }
 
-TEST_CASE("enablerx_overwrite", "[.cmd]") {
+TEST_CASE("enablefoverwrite", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("rx_overwrite 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "rx_overwrite 1\n");
+        multiSlsDetectorClient("foverwrite 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "foverwrite 1\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("rx_overwrite", GET, nullptr, oss);
-        REQUIRE(oss.str() == "rx_overwrite 1\n");
+        multiSlsDetectorClient("foverwrite", GET, nullptr, oss);
+        REQUIRE(oss.str() == "foverwrite 1\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("rx_overwrite 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "rx_overwrite 0\n");
+        multiSlsDetectorClient("foverwrite 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "foverwrite 0\n");
     }
 }
 

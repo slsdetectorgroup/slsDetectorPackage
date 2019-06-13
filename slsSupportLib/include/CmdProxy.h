@@ -78,7 +78,7 @@ template <typename T> class CmdProxy {
                                     {"masterfile", "fmaster"},
                                     {"outdir", "fpath"},
                                     {"fileformat", "fformat"},
-                                    {"overwrite", "rx_overwrite"}};
+                                    {"overwrite", "foverwrite"}};
 
     template <typename U> std::string ResultToString(const U &ret) {
         std::ostringstream os;

@@ -84,8 +84,8 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
                                       09.02.2018 (25 um Slave) 
         Eiger
         =====  
-        Minimum compatible version  : 22
-        Latest compatible version   : 22
+        Minimum compatible version  : 23
+        Latest compatible version   : 23
         
         Jungfrau
         ========       

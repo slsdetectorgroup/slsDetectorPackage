@@ -77,7 +77,8 @@ template <typename T> class CmdProxy {
                                     {"checkrecversion", "rx_checkversion"},
                                     {"masterfile", "fmaster"},
                                     {"outdir", "fpath"},
-                                    {"fileformat", "fformat"}};
+                                    {"fileformat", "fformat"},
+                                    {"overwrite", "rx_overwrite"}};
 
     template <typename U> std::string ResultToString(const U &ret) {
         std::ostringstream os;

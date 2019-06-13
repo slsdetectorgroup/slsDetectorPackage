@@ -1550,9 +1550,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page output
-    - <b>overwrite [i]</b> enables(1) /disables(0) file overwriting. \c Returns \c (int)
+    - <b>rx_overwrite [i]</b> enables(1) /disables(0) file overwriting. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "overwrite";
+    descrToFuncMap[i].m_pFuncName = "rx_overwrite";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOverwrite;
     ++i;
 
@@ -2692,7 +2692,7 @@ std::string slsDetectorCommand::cmdOverwrite(int narg, const char * const args[]
         if (sscanf(args[1], "%d", &i))
             myDet->setFileOverWrite(i, detPos);
         else
-            return std::string("could not decode overwrite");
+            return std::string("could not decode rx_overwrite");
     }
     sprintf(ans, "%d", myDet->getFileOverWrite(detPos));
     return std::string(ans);
@@ -2701,9 +2701,9 @@ std::string slsDetectorCommand::cmdOverwrite(int narg, const char * const args[]
 std::string slsDetectorCommand::helpOverwrite(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("overwrite \t When Enabled overwrites files\n");
+        os << std::string("rx_overwrite \t When Enabled overwrites files\n");
     if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("overwrite i \t  should be 1 or 0 or -1\n");
+        os << std::string("rx_overwrite i \t  should be 1 or 0 or -1\n");
     return os.str();
 }
 

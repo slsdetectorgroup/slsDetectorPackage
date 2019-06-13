@@ -406,3 +406,10 @@ TEST_CASE("rx_checkonline", "[.cmd]") {
     multiSlsDetectorClient("rx_checkonline", GET, nullptr, oss);
     REQUIRE(oss.str() == "rx_checkonline All receiver online\n");
 }
+
+TEST_CASE("rx_checkversion", "[.cmd]") {
+
+    std::ostringstream oss;
+    multiSlsDetectorClient("rx_checkversion", GET, nullptr, oss);
+    REQUIRE(oss.str() == "rx_checkversion compatible\n");
+}

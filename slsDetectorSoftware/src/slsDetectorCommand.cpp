@@ -497,9 +497,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>checkrecversion</b> Checks the version compatibility with receiver server (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
+   - <b>rx_checkversion</b> Checks the version compatibility with receiver server (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
 	 */
-    descrToFuncMap[i].m_pFuncName = "checkrecversion";
+    descrToFuncMap[i].m_pFuncName = "rx_checkversion";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
@@ -3673,7 +3673,7 @@ std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int a
         return std::string(answer);
     }
 
-    if (cmd == "checkrecversion") {
+    if (cmd == "rx_checkversion") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
         int retval = myDet->checkReceiverVersionCompatibility(detPos);
         if (retval < 0)
@@ -3690,7 +3690,7 @@ std::string slsDetectorCommand::helpSN(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "checkdetversion \n gets the version compatibility with detector server (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
-        os << "checkrecversion \n gets the version compatibility with receiver server (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
+        os << "rx_checkversion \n gets the version compatibility with receiver server (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
         os << "detectornumber \n gets the serial number of the detector (MAC)" << std::endl;
         os << "detectorversion \n gets the firmware version of the detector" << std::endl;
         os << "softwareversion \n gets the software version of the detector" << std::endl;

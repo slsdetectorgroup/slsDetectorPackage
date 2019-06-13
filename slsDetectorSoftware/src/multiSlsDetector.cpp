@@ -2825,7 +2825,17 @@ int multiSlsDetector::powerChip(int ival, int detPos) {
         return detectors[detPos]->powerChip(ival);
     }
 
-    // multi
+    // multi delayed call for safety
+    if (ival >= 0 && getNumberOfDetectors() > 3) {
+        std::vector<int> r;
+        r.reserve(detectors.size());
+        for (auto &d : detectors) {
+            r.push_back(d->powerChip(ival));
+            usleep(1000 * 1000);
+        }
+        return sls::minusOneIfDifferent(r);
+    }
+    // multi parallel 
     auto r = parallelCall(&slsDetector::powerChip, ival);
     return sls::minusOneIfDifferent(r);
 }

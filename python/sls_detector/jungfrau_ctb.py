@@ -8,7 +8,6 @@ from .utils import element_if_equal
 from .adcs import DetectorAdcs, Adc
 from .dacs import DetectorDacs
 from .detector_property import DetectorProperty
-from .decorators import error_handling
 from .registers import Register, Adc_register
 
 class JungfrauCTBDacs(DetectorDacs):

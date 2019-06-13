@@ -5,7 +5,6 @@ Jungfrau detector class and support functions.
 Inherits from Detector.
 """
 from .adcs import Adc, DetectorAdcs
-from .decorators import error_handling
 from .detector import Detector
 from .dacs import DetectorDacs
 from .utils import element_if_equal

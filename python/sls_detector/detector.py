@@ -10,7 +10,6 @@ from collections.abc import Iterable
 from collections import namedtuple
 
 from _sls_detector import DetectorApi
-from .decorators import error_handling
 from .detector_property import DetectorProperty
 from .errors import DetectorError, DetectorValueError
 from .registers import Register
@@ -97,9 +96,6 @@ class Detector:
     def busy(self, value):
         self._api.setAcquiringFlag(value)
 
-    def clear_errors(self):
-        """Clear the error mask for the detector. Used to reset after checking."""
-        self._api.clearErrorMask()
 
     @property
     def client_version(self):

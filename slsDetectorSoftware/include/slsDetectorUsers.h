@@ -927,7 +927,7 @@ public:
 	/**
      @short returns external communication mode std::string from index
      \param s index for communication mode
-     \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
+     \returns  auto, trigger, ro_trigger, gating, triggered_gating, burst_trigger, unknown when wrong mode
 	 */
 
 	static int getTimingMode(std::string s){			\
@@ -936,6 +936,7 @@ public:
 		if (s== "ro_trigger") return 2;					\
 		if (s== "gating") return 3;						\
 		if (s== "triggered_gating") return 4;			\
+		if (s== "burst_trigger") return 5;				\
 		return -1;							};
 
 

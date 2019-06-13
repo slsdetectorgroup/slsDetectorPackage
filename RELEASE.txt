@@ -157,10 +157,6 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
     Support
     -------
 
-    General Software related:
         dhanya.thattil@psi.ch
-        anna.bergamaschi@psi.ch
-        
-    Python related:
         erik.frojdh@psi.ch
-
+        anna.bergamaschi@psi.ch

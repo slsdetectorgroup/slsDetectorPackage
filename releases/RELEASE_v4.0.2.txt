@@ -1,4 +1,4 @@
-SLS Detector Package 4.0.2 released on 12.06.2019 (Bug Fix Release)
+SLS Detector Package 4.0.2 released on 13.06.2019 (Bug Fix Release)
 ===================================================================
 
 
@@ -23,6 +23,7 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
     - Gotthard server get settings does not set default dacs anymore
     - Client API data call back / Gui (Eiger in 4 bit mode)
     - Users class added burst_trigger in getTimingMode from string
+    - Gui switching to tabplot during acquisition error messages
 
 
 2. Resolved Issues
@@ -41,7 +42,7 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
 
 
     Detector Server 
-    --------------------------
+    ---------------
     1.  (Jungfrau)
         Switching between different detector size configurations with same detector modules, 
         the detector gave an error "Could not set detector position". This is fixed now.
@@ -59,6 +60,12 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
         acquiring for multiple images.
 
     2.  Added "burst_trigger" in getTimingMode (from string to int) in Users class.
+
+
+    Gui
+    ---
+    1.  Switching to Tab Plot during acquisition produced error messages. This has been 
+        fixed.
 
 
 3. Known Issues

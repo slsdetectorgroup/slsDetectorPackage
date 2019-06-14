@@ -941,7 +941,7 @@ public:
 
 
 private:
-	DetectorImpl detector;
+	sls::DetectorImpl detector;
 };
 
 #endif

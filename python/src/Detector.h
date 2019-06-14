@@ -707,7 +707,7 @@ class Detector {
     slsDetectorDefs::networkParameter networkNameToEnum(std::string par_name);
 
   private:
-    DetectorImpl det;
+    sls::DetectorImpl det;
     sls::Module *getSlsDetector(int i) const;
     int multi_detector_id = 0;
 };

@@ -4,8 +4,8 @@
 #include "logger.h"
 #include "sls_detector_defs.h"
 
-namespace sls{
-     class Module;
+namespace sls {
+class Module;
 }
 
 class ZmqSocket;
@@ -22,14 +22,16 @@ class detectorData;
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
+namespace sls {
+
 /**
-     * @short structure allocated in shared memory to store detector settings
-     * for IPC and cache
-     */
+ * @short structure allocated in shared memory to store detector settings
+ * for IPC and cache
+ */
 struct sharedMultiSlsDetector {
 
     /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND
-         * ------*/
+     * ------*/
 
     /** shared memory version */
     int shmversion;
@@ -47,17 +49,17 @@ struct sharedMultiSlsDetector {
     int numberOfDetectors;
 
     /** END OF FIXED PATTERN
-         * -----------------------------------------------*/
+     * -----------------------------------------------*/
 
     /** Number of detectors operated at once */
     int numberOfDetector[2];
 
     /** online flag - is set if the detector is connected, unset if socket
-         * connection is not possible  */
+     * connection is not possible  */
     int onlineFlag;
 
     /** stopped flag - is set if an acquisition error occurs or the detector
-         * is stopped manually. Is reset to 0 at the start of the acquisition */
+     * is stopped manually. Is reset to 0 at the start of the acquisition */
     int stoppedFlag;
 
     /**  size of the data that are transfered from all detectors */
@@ -82,11 +84,11 @@ struct sharedMultiSlsDetector {
     int maxNumberOfChannel[2];
 
     /**  max number of channels including gap pixels for all detectors  in
-         * one dimension*/
+     * one dimension*/
     int maxNumberOfChannelInclGapPixels[2];
 
     /** max number of channels allowed for the complete set of detectors in
-         * one dimension */
+     * one dimension */
     int maxNumberOfChannelsPerDetector[2];
 
     /** timer values */
@@ -96,7 +98,7 @@ struct sharedMultiSlsDetector {
     bool acquiringFlag;
 
     /** receiver online flag - is set if the receiver is connected,
-         * unset if socket connection is not possible  */
+     * unset if socket connection is not possible  */
     int receiverOnlineFlag;
 
     /** data streaming (up stream) enable in receiver */
@@ -112,9 +114,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit DetectorImpl(int multi_id = 0,
-                              bool verify = true,
-                              bool update = true);
+    explicit DetectorImpl(int multi_id = 0, bool verify = true,
+                          bool update = true);
 
     /**
      * Destructor
@@ -128,14 +129,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    void setupMultiDetector(bool verify = true,
-                            bool update = true);
+    void setupMultiDetector(bool verify = true, bool update = true);
 
     /**
      * Loop through the detectors serially and return the result as a vector
      */
-    template <class CT>
-    struct NonDeduced { using type = CT; };
+    template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
     std::vector<RT> serialCall(RT (sls::Module::*somefunc)(CT...),
                                typename NonDeduced<CT>::type... Args);
@@ -163,13 +162,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<RT> parallelCall(RT (sls::Module::*somefunc)(CT...) const,
                                  typename NonDeduced<CT>::type... Args) const;
 
+    template <typename... CT>
+    void parallelCall(void (sls::Module::*somefunc)(CT...),
+                      typename NonDeduced<CT>::type... Args);
 
     template <typename... CT>
-    void parallelCall(void (sls::Module::*somefunc)(CT...), typename NonDeduced<CT>::type... Args);
-
-    template <typename... CT>
-    void parallelCall(void (sls::Module::*somefunc)(CT...) const, typename NonDeduced<CT>::type... Args) const;
-
+    void parallelCall(void (sls::Module::*somefunc)(CT...) const,
+                      typename NonDeduced<CT>::type... Args) const;
 
     /**
      * Decodes which detector and the corresponding channel numbers for it
@@ -225,22 +224,22 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int64_t getId(idMode mode, int detPos = -1);
 
-     /**
-      * Get Client Software version
-      * @returns client software version 
-      */
+    /**
+     * Get Client Software version
+     * @returns client software version
+     */
     int64_t getClientSoftwareVersion() const;
 
-     /**
-      * Get Receiver software version
-      * @return receiver software version
-      */
+    /**
+     * Get Receiver software version
+     * @return receiver software version
+     */
     int64_t getReceiverSoftwareVersion(int detPos = -1);
 
-     /**
-      * Get Detector Number
-      * @returns vector of detector number 
-      */
+    /**
+     * Get Detector Number
+     * @returns vector of detector number
+     */
     std::vector<int64_t> getDetectorNumber();
     /**
      * Free shared memory from the command line
@@ -443,10 +442,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int setReceiverPort(int port_number = -1, int detPos = -1);
 
-     /**
-      * Get Receiver port
-      * @returns vector of receiver port
-      */
+    /**
+     * Get Receiver port
+     * @returns vector of receiver port
+     */
     std::vector<int> getReceiverPort() const;
 
     /**
@@ -624,15 +623,15 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @returns OK or FAIL
      */
     int configureMAC(int detPos = -1);
-    
-     /**
+
+    /**
      * Set starting frame number for the next acquisition
      * @param val starting frame number
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setStartingFrameNumber(const uint64_t value, int detPos = -1);
 
-     /**
+    /**
      * Get starting frame number for the next acquisition
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns starting frame number
@@ -771,7 +770,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value of speed set
      */
-    int setSpeed(speedVariable index, int value = -1, int mode = 0, int detPos = -1);
+    int setSpeed(speedVariable index, int value = -1, int mode = 0,
+                 int detPos = -1);
 
     /**
      * Set/get dynamic range and updates the number of dataBytes
@@ -790,9 +790,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int getDataBytes(int detPos = -1);
 
-     /**
+    /**
      * Returns the number of detectors in the multi structure*/
-     size_t size() const{ return detectors.size();}
+    size_t size() const { return detectors.size(); }
 
     /**
      * Set/get dacs value
@@ -894,12 +894,14 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::string getDetectorMAC(int detPos = -1);
 
     /**
-     * Validates the format of the detector MAC address (bottom half) and sets it (Jungfrau only)
+     * Validates the format of the detector MAC address (bottom half) and sets
+     * it (Jungfrau only)
      * @param detectorMAC detector MAC address (bottom half)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address (bottom half)
      */
-    std::string setDetectorMAC2(const std::string &detectorMAC, int detPos = -1);
+    std::string setDetectorMAC2(const std::string &detectorMAC,
+                                int detPos = -1);
 
     /**
      * Returns the detector MAC address (bottom half) Jungfrau only
@@ -924,7 +926,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::string getDetectorIP(int detPos = -1) const;
 
     /**
-     * Validates the format of the detector IP address (bottom half) and sets it (Jungfrau only)
+     * Validates the format of the detector IP address (bottom half) and sets it
+     * (Jungfrau only)
      * @param detectorIP detector IP address (bottom half)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address (bottom half)
@@ -940,13 +943,15 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /**
      * Validates and sets the receiver.
-     * Also updates the receiver with all the shared memory parameters significant for the receiver
-     * Also configures the detector to the receiver as UDP destination
+     * Also updates the receiver with all the shared memory parameters
+     * significant for the receiver Also configures the detector to the receiver
+     * as UDP destination
      * @param receiver receiver hostname or IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address from shared memory
      */
-    std::string setReceiverHostname(const std::string &receiver, int detPos = -1);
+    std::string setReceiverHostname(const std::string &receiver,
+                                    int detPos = -1);
 
     /**
      * Returns the receiver IP address
@@ -971,7 +976,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::string getReceiverUDPIP(int detPos = -1) const;
 
     /**
-     * Validates the format of the receiver UDP IP address (bottom half) and sets it(Jungfrau only)
+     * Validates the format of the receiver UDP IP address (bottom half) and
+     * sets it(Jungfrau only)
      * @param udpip receiver UDP IP address (bottom half)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address (bottom half)
@@ -1001,7 +1007,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::string getReceiverUDPMAC(int detPos = -1) const;
 
     /**
-     * Validates the format of the receiver UDP MAC address  (bottom half) and sets it (Jungfrau only)
+     * Validates the format of the receiver UDP MAC address  (bottom half) and
+     * sets it (Jungfrau only)
      * @param udpmac receiver UDP MAC address (bottom half)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address (bottom half)
@@ -1039,14 +1046,16 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int setReceiverUDPPort2(int udpport, int detPos = -1);
 
     /**
-     * Returns the receiver UDP port 2 of same interface (Eiger and Jungfrau only)
+     * Returns the receiver UDP port 2 of same interface (Eiger and Jungfrau
+     * only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2 of same interface
      */
     int getReceiverUDPPort2(int detPos = -1) const;
 
     /**
-     * Sets the number of UDP interfaces to stream data from detector (Jungfrau only)
+     * Sets the number of UDP interfaces to stream data from detector (Jungfrau
+     * only)
      * @param n number of interfaces. Options 1 or 2.
      * @param detPos -1 for all detectors in  list or specific detector position
      *  @returns the number of interfaces
@@ -1054,14 +1063,16 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int setNumberofUDPInterfaces(int n, int detPos = -1);
 
     /**
-     * Returns the number of UDP interfaces to stream data from detector (Jungfrau only)
+     * Returns the number of UDP interfaces to stream data from detector
+     * (Jungfrau only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the number of interfaces
      */
     int getNumberofUDPInterfaces(int detPos = -1) const;
 
     /**
-     * Selects the UDP interfaces to stream data from detector. Effective only when number of interfaces is 1. (Jungfrau only)
+     * Selects the UDP interfaces to stream data from detector. Effective only
+     * when number of interfaces is 1. (Jungfrau only)
      * @param n selected interface. Options 1 or 2.
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the interface selected
@@ -1069,7 +1080,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int selectUDPInterface(int n, int detPos = -1);
 
     /**
-     * Returns the UDP interfaces to stream data from detector. Effective only when number of interfaces is 1. (Jungfrau only)
+     * Returns the UDP interfaces to stream data from detector. Effective only
+     * when number of interfaces is 1. (Jungfrau only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the interface selected
      */
@@ -1086,11 +1098,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setClientDataStreamingInPort(int i = -1, int detPos = -1);
 
     /**
-	 * Returns the client zmq port
-	 * If detPos is -1(multi module), port returns client streaming port of first module
+     * Returns the client zmq port
+     * If detPos is -1(multi module), port returns client streaming port of
+     * first module
      * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns the client zmq port
-	 */
+     * @returns the client zmq port
+     */
     int getClientStreamingPort(int detPos = -1);
 
     /**
@@ -1104,11 +1117,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
 
     /**
-	 * Returns the receiver zmq port
-	 * If detPos is -1(multi module), port returns receiver streaming port of first module
+     * Returns the receiver zmq port
+     * If detPos is -1(multi module), port returns receiver streaming port of
+     * first module
      * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns the receiver zmq port
-	 */
+     * @returns the receiver zmq port
+     */
     int getReceiverStreamingPort(int detPos = -1);
 
     /**
@@ -1122,11 +1136,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
                                     int detPos = -1);
 
     /**
-	 * Returns the client zmq ip
-	 * If detPos is -1(multi module), ip returns concatenation of all client streaming ip
+     * Returns the client zmq ip
+     * If detPos is -1(multi module), ip returns concatenation of all client
+     * streaming ip
      * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns the client zmq ip
-	 */
+     * @returns the client zmq ip
+     */
     std::string getClientStreamingIP(int detPos = -1);
 
     /**
@@ -1140,11 +1155,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
                                        int detPos = -1);
 
     /**
-  	 * Returns the receiver zmq ip
-  	 * If detPos is -1(multi module), ip returns concatenation of all receiver streaming ip
-       * @param detPos -1 for all detectors in  list or specific detector position
-  	 * @returns the receiver zmq ip
-  	 */
+     * Returns the receiver zmq ip
+     * If detPos is -1(multi module), ip returns concatenation of all receiver
+     * streaming ip
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the receiver zmq ip
+     */
     std::string getReceiverStreamingIP(int detPos = -1);
 
     /**
@@ -1155,7 +1171,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns transmission delay
      */
-    int setDetectorNetworkParameter(networkParameter index, int delay, int detPos = -1);
+    int setDetectorNetworkParameter(networkParameter index, int delay,
+                                    int detPos = -1);
 
     /**
      * Sets the additional json header
@@ -1163,7 +1180,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns additional json header, default is empty
      */
-    std::string setAdditionalJsonHeader(const std::string &jsonheader, int detPos = -1);
+    std::string setAdditionalJsonHeader(const std::string &jsonheader,
+                                        int detPos = -1);
 
     /**
      * Returns the additional json header
@@ -1173,14 +1191,17 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::string getAdditionalJsonHeader(int detPos = -1);
 
     /**
-     * Sets the value for the additional json header parameter if found, else append it
+     * Sets the value for the additional json header parameter if found, else
+     * append it
      * @param key additional json header parameter
      * @param value additional json header parameter value (cannot be empty)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the additional json header parameter value,
      * empty if no parameter found in additional json header
      */
-    std::string setAdditionalJsonParameter(const std::string &key, const std::string &value, int detPos = -1);
+    std::string setAdditionalJsonParameter(const std::string &key,
+                                           const std::string &value,
+                                           int detPos = -1);
 
     /**
      * Returns the additional json header parameter value
@@ -1189,21 +1210,26 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @returns the additional json header parameter value,
      * empty if no parameter found in additional json header
      */
-    std::string getAdditionalJsonParameter(const std::string &key, int detPos = -1);
+    std::string getAdditionalJsonParameter(const std::string &key,
+                                           int detPos = -1);
 
     /**
-     * Sets the detector minimum/maximum energy threshold in processor (for Moench only)
+     * Sets the detector minimum/maximum energy threshold in processor (for
+     * Moench only)
      * @param index 0 for emin, antyhing else for emax
      * @param v value to set (-1 gets)
-     * @returns detector minimum/maximum energy threshold (-1 for not found or error in computing json parameter value)
+     * @returns detector minimum/maximum energy threshold (-1 for not found or
+     * error in computing json parameter value)
      */
-    int setDetectorMinMaxEnergyThreshold(const int index, int value, int detPos = -1);
+    int setDetectorMinMaxEnergyThreshold(const int index, int value,
+                                         int detPos = -1);
 
     /**
      * Sets the frame mode in processor (Moench only)
      * @param value frameModeType (-1 gets)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns frame mode (-1 for not found or error in computing json parameter value)
+     * @returns frame mode (-1 for not found or error in computing json
+     * parameter value)
      */
     int setFrameMode(frameModeType value, int detPos = -1);
 
@@ -1211,7 +1237,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * Sets the detector mode in processor (Moench only)
      * @param value detectorModetype (-1 gets)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns detector mode (-1 for not found or error in computing json parameter value)
+     * @returns detector mode (-1 for not found or error in computing json
+     * parameter value)
      */
     int setDetectorMode(detectorModeType value, int detPos = -1);
 
@@ -1221,7 +1248,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns receiver udp socket buffer size
      */
-    int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1, int detPos = -1);
+    int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1,
+                                           int detPos = -1);
 
     /**
      * Returns the receiver UDP socket buffer size
@@ -1324,77 +1352,77 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     void setADCEnableMask(uint32_t mask, int detPos = -1);
 
-     /**
+    /**
      * Get ADC Enable Mask (CTB, Moench)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns ADC Enable mask
      */
     uint32_t getADCEnableMask(int detPos = -1);
 
-     /**
+    /**
      * Set ADC invert register (CTB, Moench)
      * @param value ADC invert value
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setADCInvert(uint32_t value, int detPos = -1);
 
-     /**
+    /**
      * Get ADC invert register (CTB, Moench)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns ADC invert value
      */
     uint32_t getADCInvert(int detPos = -1);
 
-     /**
+    /**
      * Set external sampling source (CTB only)
      * @param value external sampling source (Option: 0-63)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setExternalSamplingSource(int value, int detPos = -1);
 
-     /**
+    /**
      * Get external sampling source (CTB only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns external sampling source
      */
     int getExternalSamplingSource(int detPos = -1);
 
-     /**
+    /**
      * Set external sampling enable (CTB only)
      * @param value external sampling source (Option: 0-63)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setExternalSampling(bool value, int detPos = -1);
 
-     /**
+    /**
      * Get external sampling source (CTB only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns external sampling enable
      */
     int getExternalSampling(int detPos = -1);
 
-     /**
+    /**
      * Set external sampling enable (CTB only)
      * @param list external sampling source (Option: 0-63)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setReceiverDbitList(std::vector<int> list, int detPos = -1);
 
-     /**
+    /**
      * Get external sampling source (CTB only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns external sampling enable
      */
     std::vector<int> getReceiverDbitList(int detPos = -1);
 
-     /**
+    /**
      * Set digital data offset in bytes (CTB only)
      * @param value digital data offset in bytes
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setReceiverDbitOffset(int value, int detPos = -1);
 
-     /**
+    /**
      * Get digital data offset in bytes (CTB only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns digital data offset in bytes
@@ -1563,7 +1591,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int copyDetectorServer(const std::string &fname, const std::string &hostname, int detPos = -1);
+    int copyDetectorServer(const std::string &fname,
+                           const std::string &hostname, int detPos = -1);
 
     /**
      * Reboot detector controller (Not Eiger)
@@ -1573,14 +1602,16 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int rebootController(int detPos = -1);
 
     /**
-     * Updates the firmware, detector server and then reboots detector controller blackfin. (Not Eiger)
+     * Updates the firmware, detector server and then reboots detector
+     * controller blackfin. (Not Eiger)
      * @param sname name of detector server binary
      * @param hostname name of pc to tftp from
      * @param fname programming file name
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int update(const std::string &sname, const std::string &hostname, const std::string &fname, int detPos = -1);
+    int update(const std::string &sname, const std::string &hostname,
+               const std::string &fname, int detPos = -1);
 
     /**
      * Power on/off Chip (Jungfrau)
@@ -1598,29 +1629,28 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int setAutoComparatorDisableMode(int ival = -1, int detPos = -1);
 
-
     /**
-	 * Set Rate correction ( Eiger)
-	 * @param t dead time in ns - if 0 disable correction,
-	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
-	 * for current settings
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns 0 if rate correction disabled, >0 otherwise
-	 */
+     * Set Rate correction ( Eiger)
+     * @param t dead time in ns - if 0 disable correction,
+     * if >0 set dead time to t, if < 0 set deadtime to default dead time
+     * for current settings
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns 0 if rate correction disabled, >0 otherwise
+     */
     int setRateCorrection(int64_t t = 0, int detPos = -1);
 
     /**
-	 * Get rate correction ( Eiger)
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns 0 if rate correction disabled, > 0 otherwise (ns)
-	 */
+     * Get rate correction ( Eiger)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns 0 if rate correction disabled, > 0 otherwise (ns)
+     */
     int64_t getRateCorrection(int detPos = -1);
 
     /**
-	 * Prints receiver configuration
-	 * @param level print level
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 */
+     * Prints receiver configuration
+     * @param level print level
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
     void printReceiverConfiguration(TLogLevel level = logINFO, int detPos = -1);
 
     /**
@@ -1842,8 +1872,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @returns file write enable
      */
     int getFileWrite(int detPos = -1) const;
-     
-     /**
+
+    /**
      * Sets/Gets receiver master file write enable
      * @param value 1 or 0 to set/reset master file write enable
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -1941,26 +1971,27 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int setPattern(const std::string &fname, int detPos = -1);
 
-     /**
-      * Sets pattern IO control (CTB/ Moench)
-      * @param word 64bit word to be written, -1 gets
-      * @param detPos -1 for all detectors in  list or specific detector position
-      * @returns actual value
-      */
-     uint64_t setPatternIOControl(uint64_t word = -1, int detPos = -1);
+    /**
+     * Sets pattern IO control (CTB/ Moench)
+     * @param word 64bit word to be written, -1 gets
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns actual value
+     */
+    uint64_t setPatternIOControl(uint64_t word = -1, int detPos = -1);
 
-     /**
-      * Sets pattern clock control (CTB/ Moench)
-      * @param word 64bit word to be written, -1 gets
-      * @param detPos -1 for all detectors in  list or specific detector position
-      * @returns actual value
-      */
-     uint64_t setPatternClockControl(uint64_t word = -1, int detPos = -1);
+    /**
+     * Sets pattern clock control (CTB/ Moench)
+     * @param word 64bit word to be written, -1 gets
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns actual value
+     */
+    uint64_t setPatternClockControl(uint64_t word = -1, int detPos = -1);
 
     /**
      * Writes a pattern word (CTB/ Moench)
      * @param addr address of the word
-     * @param word 64bit word to be written, -1  reads the addr (same as executing the pattern)
+     * @param word 64bit word to be written, -1  reads the addr (same as
+     * executing the pattern)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
@@ -1974,15 +2005,16 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param n number of loops for level 0-2, -1 gets
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-     void setPatternLoops(int level, int start = -1, int stop = -1, int n = -1, int detPos = -1);
+    void setPatternLoops(int level, int start = -1, int stop = -1, int n = -1,
+                         int detPos = -1);
 
-     /**
-      * Gets the pattern loop limits (CTB/ Moench)
-      * @param level  -1 complete pattern, 0,1,2, loop level
-      * @param detPos -1 for all detectors in  list or specific detector position
-      * @returns array of start address, stop address and number of loops
-      */
-     std::array<int, 3> getPatternLoops(int level, int detPos = -1);
+    /**
+     * Gets the pattern loop limits (CTB/ Moench)
+     * @param level  -1 complete pattern, 0,1,2, loop level
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns array of start address, stop address and number of loops
+     */
+    std::array<int, 3> getPatternLoops(int level, int detPos = -1);
 
     /**
      * Sets the wait address (CTB/ Moench)
@@ -2018,7 +2050,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     uint64_t getPatternMask(int detPos = -1);
 
     /**
-     * Selects the bits that the mask will be applied to for every pattern (CTB/ Moench)
+     * Selects the bits that the mask will be applied to for every pattern (CTB/
+     * Moench)
      * @param mask mask to select bits
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
@@ -2026,7 +2059,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int setPatternBitMask(uint64_t mask, int detPos = -1);
 
     /**
-     * Gets the bits that the mask will be applied to for every pattern (CTB/ Moench)
+     * Gets the bits that the mask will be applied to for every pattern (CTB/
+     * Moench)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns mask  of bits selected
      */
@@ -2163,16 +2197,14 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     void addSlsDetector(const std::string &hostname);
 
-    
-
-     /**
-      * add gap pixels to the image (only for Eiger in 4 bit mode)
-      * @param image pointer to image without gap pixels
-      * @param gpImage poiner to image with gap pixels, if NULL, allocated
-      * inside function
-      * @returns number of data bytes of image with gap pixels
-      */
-     int processImageWithGapPixels(char *image, char *&gpImage);
+    /**
+     * add gap pixels to the image (only for Eiger in 4 bit mode)
+     * @param image pointer to image without gap pixels
+     * @param gpImage poiner to image with gap pixels, if NULL, allocated
+     * inside function
+     * @returns number of data bytes of image with gap pixels
+     */
+    int processImageWithGapPixels(char *image, char *&gpImage);
 
     /**
      * Set total progress (total number of frames/images in an acquisition)
@@ -2228,14 +2260,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     std::vector<char> readPofFile(const std::string &fname);
 
-     /** 
-      * Convert a double holding time in seconds to an int64_t with nano seconds
-      * Used for conversion when sending time to detector
-      * @param t time in seconds
-      * @returns time in nano seconds
-      */
-     int64_t secondsToNanoSeconds(double t);
-
+    /**
+     * Convert a double holding time in seconds to an int64_t with nano seconds
+     * Used for conversion when sending time to detector
+     * @param t time in seconds
+     * @returns time in nano seconds
+     */
+    int64_t secondsToNanoSeconds(double t);
 
     /** Multi detector Id */
     const int multiId{0};
@@ -2295,3 +2326,4 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void *pCallbackArg{nullptr};
 };
 
+} // namespace sls

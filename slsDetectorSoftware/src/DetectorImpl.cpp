@@ -1,15 +1,14 @@
 #include "DetectorImpl.h"
+#include "Module.h"
 #include "SharedMemory.h"
 #include "ZmqSocket.h"
 #include "detectorData.h"
 #include "file_utils.h"
 #include "logger.h"
 #include "multiSlsDetectorClient.h"
-#include "Module.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
 #include "versionAPI.h"
-
 
 #include "container_utils.h"
 #include "network_utils.h"
@@ -24,13 +23,11 @@
 #include <sys/shm.h>
 #include <sys/types.h>
 
-
-
 #include <chrono>
 #include <future>
 #include <vector>
 
-using namespace sls;
+namespace sls {
 
 DetectorImpl::DetectorImpl(int multi_id, bool verify, bool update)
     : multiId(multi_id), multi_shm(multi_id, -1) {
@@ -48,8 +45,9 @@ void DetectorImpl::setupMultiDetector(bool verify, bool update) {
 }
 
 template <typename RT, typename... CT>
-std::vector<RT> DetectorImpl::serialCall(RT (Module::*somefunc)(CT...),
-                                             typename NonDeduced<CT>::type... Args) {
+std::vector<RT>
+DetectorImpl::serialCall(RT (Module::*somefunc)(CT...),
+                         typename NonDeduced<CT>::type... Args) {
     std::vector<RT> result;
     result.reserve(detectors.size());
     for (auto &d : detectors) {
@@ -59,8 +57,9 @@ std::vector<RT> DetectorImpl::serialCall(RT (Module::*somefunc)(CT...),
 }
 
 template <typename RT, typename... CT>
-std::vector<RT> DetectorImpl::serialCall(RT (Module::*somefunc)(CT...) const,
-                                             typename NonDeduced<CT>::type... Args) const {
+std::vector<RT>
+DetectorImpl::serialCall(RT (Module::*somefunc)(CT...) const,
+                         typename NonDeduced<CT>::type... Args) const {
     std::vector<RT> result;
     result.reserve(detectors.size());
     for (auto &d : detectors) {
@@ -70,11 +69,13 @@ std::vector<RT> DetectorImpl::serialCall(RT (Module::*somefunc)(CT...) const,
 }
 
 template <typename RT, typename... CT>
-std::vector<RT> DetectorImpl::parallelCall(RT (Module::*somefunc)(CT...),
-                                               typename NonDeduced<CT>::type... Args) {
+std::vector<RT>
+DetectorImpl::parallelCall(RT (Module::*somefunc)(CT...),
+                           typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<RT>> futures;
     for (auto &d : detectors) {
-        futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
+        futures.push_back(
+            std::async(std::launch::async, somefunc, d.get(), Args...));
     }
     std::vector<RT> result;
     result.reserve(detectors.size());
@@ -85,11 +86,13 @@ std::vector<RT> DetectorImpl::parallelCall(RT (Module::*somefunc)(CT...),
 }
 
 template <typename RT, typename... CT>
-std::vector<RT> DetectorImpl::parallelCall(RT (Module::*somefunc)(CT...) const,
-                                               typename NonDeduced<CT>::type... Args) const {
+std::vector<RT>
+DetectorImpl::parallelCall(RT (Module::*somefunc)(CT...) const,
+                           typename NonDeduced<CT>::type... Args) const {
     std::vector<std::future<RT>> futures;
     for (auto &d : detectors) {
-        futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
+        futures.push_back(
+            std::async(std::launch::async, somefunc, d.get(), Args...));
     }
     std::vector<RT> result;
     result.reserve(detectors.size());
@@ -101,10 +104,11 @@ std::vector<RT> DetectorImpl::parallelCall(RT (Module::*somefunc)(CT...) const,
 
 template <typename... CT>
 void DetectorImpl::parallelCall(void (Module::*somefunc)(CT...),
-                                    typename NonDeduced<CT>::type... Args) {
+                                typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<void>> futures;
     for (auto &d : detectors) {
-        futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
+        futures.push_back(
+            std::async(std::launch::async, somefunc, d.get(), Args...));
     }
     for (auto &i : futures) {
         i.get();
@@ -114,10 +118,11 @@ void DetectorImpl::parallelCall(void (Module::*somefunc)(CT...),
 
 template <typename... CT>
 void DetectorImpl::parallelCall(void (Module::*somefunc)(CT...) const,
-                                    typename NonDeduced<CT>::type... Args) const{
+                                typename NonDeduced<CT>::type... Args) const {
     std::vector<std::future<void>> futures;
     for (auto &d : detectors) {
-        futures.push_back(std::async(std::launch::async, somefunc, d.get(), Args...));
+        futures.push_back(
+            std::async(std::launch::async, somefunc, d.get(), Args...));
     }
     for (auto &i : futures) {
         i.get();
@@ -125,8 +130,8 @@ void DetectorImpl::parallelCall(void (Module::*somefunc)(CT...) const,
     return;
 }
 
-
-int DetectorImpl::decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY) {
+int DetectorImpl::decodeNChannel(int offsetX, int offsetY, int &channelX,
+                                 int &channelY) {
     channelX = -1;
     channelY = -1;
     // loop over
@@ -135,14 +140,17 @@ int DetectorImpl::decodeNChannel(int offsetX, int offsetY, int &channelX, int &c
         int y = detectors[i]->getDetectorOffset(Y);
         // check x offset range
         if ((offsetX >= x) &&
-            (offsetX < (x + detectors[i]->getTotalNumberOfChannelsInclGapPixels(X)))) {
+            (offsetX <
+             (x + detectors[i]->getTotalNumberOfChannelsInclGapPixels(X)))) {
             if (offsetY == -1) {
                 channelX = offsetX - x;
                 return i;
             } else {
                 // check y offset range
                 if ((offsetY >= y) &&
-                    (offsetY < (y + detectors[i]->getTotalNumberOfChannelsInclGapPixels(Y)))) {
+                    (offsetY <
+                     (y + detectors[i]->getTotalNumberOfChannelsInclGapPixels(
+                              Y)))) {
                     channelX = offsetX - x;
                     channelY = offsetY - y;
                     return i;
@@ -153,16 +161,20 @@ int DetectorImpl::decodeNChannel(int offsetX, int offsetY, int &channelX, int &c
     return -1;
 }
 
+void DetectorImpl::setAcquiringFlag(bool flag) {
+    multi_shm()->acquiringFlag = flag;
+}
 
-void DetectorImpl::setAcquiringFlag(bool flag) { multi_shm()->acquiringFlag = flag; }
-
-bool DetectorImpl::getAcquiringFlag() const { return multi_shm()->acquiringFlag; }
+bool DetectorImpl::getAcquiringFlag() const {
+    return multi_shm()->acquiringFlag;
+}
 
 bool DetectorImpl::isAcquireReady() {
     if (multi_shm()->acquiringFlag) {
-        FILE_LOG(logWARNING) << "Acquire has already started. "
-                                "If previous acquisition terminated unexpectedly, "
-                                "reset busy flag to restart.(sls_detector_put busy 0)";
+        FILE_LOG(logWARNING)
+            << "Acquire has already started. "
+               "If previous acquisition terminated unexpectedly, "
+               "reset busy flag to restart.(sls_detector_put busy 0)";
         return FAIL != 0u;
     }
     multi_shm()->acquiringFlag = true;
@@ -196,11 +208,9 @@ int64_t DetectorImpl::getId(idMode mode, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int64_t DetectorImpl::getClientSoftwareVersion() const {
-    return APILIB;
-}
+int64_t DetectorImpl::getClientSoftwareVersion() const { return APILIB; }
 
-int64_t DetectorImpl::getReceiverSoftwareVersion(int detPos){
+int64_t DetectorImpl::getReceiverSoftwareVersion(int detPos) {
     if (detPos >= 0) {
         return detectors[detPos]->getReceiverSoftwareVersion();
     }
@@ -210,7 +220,8 @@ int64_t DetectorImpl::getReceiverSoftwareVersion(int detPos){
 }
 
 std::vector<int64_t> DetectorImpl::getDetectorNumber() {
-    return parallelCall(&Module::getId, slsDetectorDefs::DETECTOR_SERIAL_NUMBER);
+    return parallelCall(&Module::getId,
+                        slsDetectorDefs::DETECTOR_SERIAL_NUMBER);
 }
 
 void DetectorImpl::freeSharedMemory(int multiId, int detPos) {
@@ -267,7 +278,8 @@ std::string DetectorImpl::getUserDetails() {
         sstream << d->getDetectorTypeAsString() << "+";
     }
 
-    sstream << "\nPID: " << multi_shm()->lastPID << "\nUser: " << multi_shm()->lastUser
+    sstream << "\nPID: " << multi_shm()->lastPID
+            << "\nUser: " << multi_shm()->lastUser
             << "\nDate: " << multi_shm()->lastDate << std::endl;
 
     return sstream.str();
@@ -284,7 +296,7 @@ void DetectorImpl::initSharedMemory(bool verify) {
                                << ") version mismatch "
                                   "(expected 0x"
                                << std::hex << MULTI_SHMVERSION << " but got 0x"
-                               << multi_shm()->shmversion << std::dec 
+                               << multi_shm()->shmversion << std::dec
                                << ". Clear Shared memory to continue.";
             throw SharedMemoryError("Shared memory version mismatch!");
         }
@@ -380,8 +392,9 @@ void DetectorImpl::setHostname(const char *name, int detPos) {
     // multi
     // this check is there only to allow the previous detsizechan command
     if (multi_shm()->numberOfDetectors != 0) {
-        FILE_LOG(logWARNING) << "There are already detector(s) in shared memory."
-                                "Freeing Shared memory now.";
+        FILE_LOG(logWARNING)
+            << "There are already detector(s) in shared memory."
+               "Freeing Shared memory now.";
         freeSharedMemory();
         setupMultiDetector();
     }
@@ -413,9 +426,10 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
 
     for (auto &d : detectors) {
         if (d->getHostname() == hostname) {
-            FILE_LOG(logWARNING) << "Detector " << hostname << "already part of the multiDetector!"
-                                 << std::endl
-                                 << "Remove it before adding it back in a new position!";
+            FILE_LOG(logWARNING)
+                << "Detector " << hostname
+                << "already part of the multiDetector!" << std::endl
+                << "Remove it before adding it back in a new position!";
             return;
         }
     }
@@ -426,20 +440,22 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
     detectors.push_back(sls::make_unique<Module>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
     multi_shm()->dataBytes += detectors[pos]->getDataBytes();
-    multi_shm()->dataBytesInclGapPixels += detectors[pos]->getDataBytesInclGapPixels();
+    multi_shm()->dataBytesInclGapPixels +=
+        detectors[pos]->getDataBytesInclGapPixels();
     multi_shm()->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
 
     detectors[pos]->setHostname(hostname);
     detectors[pos]->setOnline(1);
 }
 
-void DetectorImpl::addSlsDetector(std::unique_ptr<Module> det){
+void DetectorImpl::addSlsDetector(std::unique_ptr<Module> det) {
     detectors.push_back(std::move(det));
     multi_shm()->numberOfDetectors = detectors.size();
     multi_shm()->dataBytes += detectors.back()->getDataBytes();
     multi_shm()->dataBytesInclGapPixels +=
         detectors.back()->getDataBytesInclGapPixels();
-    multi_shm()->numberOfChannels += detectors.back()->getTotalNumberOfChannels();
+    multi_shm()->numberOfChannels +=
+        detectors.back()->getTotalNumberOfChannels();
 }
 
 slsDetectorDefs::detectorType DetectorImpl::getDetectorTypeAsEnum(int detPos) {
@@ -495,7 +511,8 @@ int DetectorImpl::getTotalNumberOfChannels(dimension d, int detPos) {
     return multi_shm()->numberOfChannel[d];
 }
 
-int DetectorImpl::getTotalNumberOfChannelsInclGapPixels(dimension d, int detPos) {
+int DetectorImpl::getTotalNumberOfChannelsInclGapPixels(dimension d,
+                                                        int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getTotalNumberOfChannelsInclGapPixels(d);
@@ -544,35 +561,44 @@ void DetectorImpl::updateOffsets() {
     multi_shm()->numberOfChannelInclGapPixels[Y] = 0;
 
     for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        FILE_LOG(logDEBUG1) << "offsetX:" << offsetX << " prevChanX:" << prevChanX
-                            << " offsetY:" << offsetY << " prevChanY:" << prevChanY
-                            << " offsetX_gp:" << offsetX_gp << " prevChanX_gp:" << prevChanX_gp
-                            << " offsetY_gp:" << offsetY_gp << " prevChanY_gp:" << prevChanY_gp;
+        FILE_LOG(logDEBUG1)
+            << "offsetX:" << offsetX << " prevChanX:" << prevChanX
+            << " offsetY:" << offsetY << " prevChanY:" << prevChanY
+            << " offsetX_gp:" << offsetX_gp << " prevChanX_gp:" << prevChanX_gp
+            << " offsetY_gp:" << offsetY_gp << " prevChanY_gp:" << prevChanY_gp;
 
         // incrementing in both direction
         if (firstTime) {
             // incrementing in both directions
             firstTime = false;
             if ((maxChanX > 0) &&
-                ((offsetX + detectors[idet]->getTotalNumberOfChannels(X)) > maxChanX)) {
-                FILE_LOG(logWARNING) << "\nDetector[" << idet
-                                     << "] exceeds maximum channels "
-                                        "allowed for complete detector set in X dimension!";
+                ((offsetX + detectors[idet]->getTotalNumberOfChannels(X)) >
+                 maxChanX)) {
+                FILE_LOG(logWARNING)
+                    << "\nDetector[" << idet
+                    << "] exceeds maximum channels "
+                       "allowed for complete detector set in X dimension!";
             }
             if ((maxChanY > 0) &&
-                ((offsetY + detectors[idet]->getTotalNumberOfChannels(Y)) > maxChanY)) {
-                FILE_LOG(logERROR) << "\nDetector[" << idet
-                                   << "] exceeds maximum channels "
-                                      "allowed for complete detector set in Y dimension!";
+                ((offsetY + detectors[idet]->getTotalNumberOfChannels(Y)) >
+                 maxChanY)) {
+                FILE_LOG(logERROR)
+                    << "\nDetector[" << idet
+                    << "] exceeds maximum channels "
+                       "allowed for complete detector set in Y dimension!";
             }
             prevChanX = detectors[idet]->getTotalNumberOfChannels(X);
             prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
-            prevChanX_gp = detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
-            prevChanY_gp = detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            prevChanX_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
+            prevChanY_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
             numX += detectors[idet]->getTotalNumberOfChannels(X);
             numY += detectors[idet]->getTotalNumberOfChannels(Y);
-            numX_gp += detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
-            numY_gp += detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            numX_gp +=
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
+            numY_gp +=
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
             ++multi_shm()->numberOfDetector[X];
             ++multi_shm()->numberOfDetector[Y];
             FILE_LOG(logDEBUG1) << "incrementing in both direction";
@@ -581,14 +607,18 @@ void DetectorImpl::updateOffsets() {
         // incrementing in y direction
         else if ((maxChanY == -1) ||
                  ((maxChanY > 0) && ((offsetY + prevChanY +
-                                      detectors[idet]->getTotalNumberOfChannels(Y)) <= maxChanY))) {
+                                      detectors[idet]->getTotalNumberOfChannels(
+                                          Y)) <= maxChanY))) {
             offsetY += prevChanY;
             offsetY_gp += prevChanY_gp;
             prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
-            prevChanY_gp = detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            prevChanY_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
             numY += detectors[idet]->getTotalNumberOfChannels(Y);
-            numY_gp += detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
-            // increment in y again only in the first column (else you double increment)
+            numY_gp +=
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            // increment in y again only in the first column (else you double
+            // increment)
             if (multi_shm()->numberOfDetector[X] == 1)
                 ++multi_shm()->numberOfDetector[Y];
             FILE_LOG(logDEBUG1) << "incrementing in y direction";
@@ -597,33 +627,41 @@ void DetectorImpl::updateOffsets() {
         // incrementing in x direction
         else {
             if ((maxChanX > 0) &&
-                ((offsetX + prevChanX + detectors[idet]->getTotalNumberOfChannels(X)) > maxChanX)) {
-                FILE_LOG(logDEBUG1) << "\nDetector[" << idet
-                                    << "] exceeds maximum channels "
-                                       "allowed for complete detector set in X dimension!";
+                ((offsetX + prevChanX +
+                  detectors[idet]->getTotalNumberOfChannels(X)) > maxChanX)) {
+                FILE_LOG(logDEBUG1)
+                    << "\nDetector[" << idet
+                    << "] exceeds maximum channels "
+                       "allowed for complete detector set in X dimension!";
             }
             offsetY = 0;
             offsetY_gp = 0;
             prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
-            prevChanY_gp = detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            prevChanY_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
             numY = 0; // assuming symmetry with this statement.
             // whats on 1st column should be on 2nd column
             numY_gp = 0;
             offsetX += prevChanX;
             offsetX_gp += prevChanX_gp;
             prevChanX = detectors[idet]->getTotalNumberOfChannels(X);
-            prevChanX_gp = detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
+            prevChanX_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
             numX += detectors[idet]->getTotalNumberOfChannels(X);
-            numX_gp += detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
+            numX_gp +=
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
             ++multi_shm()->numberOfDetector[X];
             FILE_LOG(logDEBUG1) << "incrementing in x direction";
         }
 
-        double bytesperchannel = (double)detectors[idet]->getDataBytes() /
-                                 (double)(detectors[idet]->getTotalNumberOfChannels(X) *
-                                          detectors[idet]->getTotalNumberOfChannels(Y));
-        detectors[idet]->setDetectorOffset(X, (bytesperchannel >= 1.0) ? offsetX_gp : offsetX);
-        detectors[idet]->setDetectorOffset(Y, (bytesperchannel >= 1.0) ? offsetY_gp : offsetY);
+        double bytesperchannel =
+            (double)detectors[idet]->getDataBytes() /
+            (double)(detectors[idet]->getTotalNumberOfChannels(X) *
+                     detectors[idet]->getTotalNumberOfChannels(Y));
+        detectors[idet]->setDetectorOffset(
+            X, (bytesperchannel >= 1.0) ? offsetX_gp : offsetX);
+        detectors[idet]->setDetectorOffset(
+            Y, (bytesperchannel >= 1.0) ? offsetY_gp : offsetY);
 
         FILE_LOG(logDEBUG1) << "Detector[" << idet << "] has offsets ("
                             << detectors[idet]->getDetectorOffset(X) << ", "
@@ -643,20 +681,22 @@ void DetectorImpl::updateOffsets() {
             multi_shm()->numberOfChannelInclGapPixels[Y] = numY_gp;
         }
     }
-    FILE_LOG(logDEBUG1) << "\n\tNumber of Channels in X direction:"
-                        << multi_shm()->numberOfChannel[X]
-                        << "\n\tNumber of Channels in Y direction:"
-                        << multi_shm()->numberOfChannel[Y]
-                        << "\n\tNumber of Channels in X direction with Gap Pixels:"
-                        << multi_shm()->numberOfChannelInclGapPixels[X]
-                        << "\n\tNumber of Channels in Y direction with Gap Pixels:"
-                        << multi_shm()->numberOfChannelInclGapPixels[Y];
+    FILE_LOG(logDEBUG1)
+        << "\n\tNumber of Channels in X direction:"
+        << multi_shm()->numberOfChannel[X]
+        << "\n\tNumber of Channels in Y direction:"
+        << multi_shm()->numberOfChannel[Y]
+        << "\n\tNumber of Channels in X direction with Gap Pixels:"
+        << multi_shm()->numberOfChannelInclGapPixels[X]
+        << "\n\tNumber of Channels in Y direction with Gap Pixels:"
+        << multi_shm()->numberOfChannelInclGapPixels[Y];
 
     multi_shm()->numberOfChannels =
         multi_shm()->numberOfChannel[0] * multi_shm()->numberOfChannel[1];
 
     for (auto &d : detectors) {
-        d->updateMultiSize(multi_shm()->numberOfDetector[0], multi_shm()->numberOfDetector[1]);
+        d->updateMultiSize(multi_shm()->numberOfDetector[0],
+                           multi_shm()->numberOfDetector[1]);
     }
 }
 
@@ -754,7 +794,8 @@ void DetectorImpl::readConfigurationFile(const std::string &fname) {
     std::ifstream input_file;
     input_file.open(fname, std::ios_base::in);
     if (!input_file.is_open()) {
-       throw RuntimeError("Could not open configuration file " + fname + " for reading");
+        throw RuntimeError("Could not open configuration file " + fname +
+                           " for reading");
     }
     std::string current_line;
     while (input_file.good()) {
@@ -762,7 +803,8 @@ void DetectorImpl::readConfigurationFile(const std::string &fname) {
         if (current_line.find('#') != std::string::npos) {
             current_line.erase(current_line.find('#'));
         }
-        FILE_LOG(logDEBUG1) << "current_line after removing comments:\n\t" << current_line;
+        FILE_LOG(logDEBUG1)
+            << "current_line after removing comments:\n\t" << current_line;
         if (current_line.length() > 1) {
             multiSlsDetectorClient(current_line, PUT_ACTION, this);
         }
@@ -772,7 +814,8 @@ void DetectorImpl::readConfigurationFile(const std::string &fname) {
 
 int DetectorImpl::writeConfigurationFile(const std::string &fname) {
     // TODO! make exception safe!
-    const std::vector<std::string> names = {"detsizechan", "hostname", "outdir", "threaded"};
+    const std::vector<std::string> names = {"detsizechan", "hostname", "outdir",
+                                            "threaded"};
 
     int ret = OK, ret1 = OK;
     std::ofstream outfile;
@@ -788,19 +831,23 @@ int DetectorImpl::writeConfigurationFile(const std::string &fname) {
         auto cmd = slsDetectorCommand(this);
 
         // complete size of detector
-        FILE_LOG(logINFO) << "Command to write: " << iline << " " << names[iline];
+        FILE_LOG(logINFO) << "Command to write: " << iline << " "
+                          << names[iline];
         strcpy(args[0], names[iline].c_str());
-        outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
+        outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION)
+                << std::endl;
         ++iline;
 
         // hostname of the detectors
-        FILE_LOG(logINFO) << "Command to write: " << iline << " " << names[iline];
+        FILE_LOG(logINFO) << "Command to write: " << iline << " "
+                          << names[iline];
         strcpy(args[0], names[iline].c_str());
-        outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
+        outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION)
+                << std::endl;
         ++iline;
 
         // single detector configuration
-        for (auto & detector : detectors) {
+        for (auto &detector : detectors) {
             outfile << std::endl;
             ret1 = detector->writeConfigurationFile(outfile, this);
             if (ret1 == FAIL) {
@@ -811,18 +858,22 @@ int DetectorImpl::writeConfigurationFile(const std::string &fname) {
         outfile << std::endl;
         // other configurations
         while (iline < names.size()) {
-            FILE_LOG(logINFO) << "Command to write:" << iline << " " << names[iline];
+            FILE_LOG(logINFO)
+                << "Command to write:" << iline << " " << names[iline];
             strcpy(args[0], names[iline].c_str());
-            outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
+            outfile << names[iline] << " "
+                    << cmd.executeLine(1, args, GET_ACTION) << std::endl;
             ++iline;
         }
         outfile.close();
-        FILE_LOG(logDEBUG1) << "wrote " << iline << " lines to configuration file ";
+        FILE_LOG(logDEBUG1)
+            << "wrote " << iline << " lines to configuration file ";
         for (auto &arg : args) {
             delete[] arg;
         }
     } else {
-        throw RuntimeError("Could not open configuration file " + fname + " for writing");
+        throw RuntimeError("Could not open configuration file " + fname +
+                           " for writing");
     }
     return ret;
 }
@@ -838,8 +889,8 @@ slsDetectorDefs::detectorSettings DetectorImpl::getSettings(int detPos) {
     return (detectorSettings)sls::minusOneIfDifferent(r);
 }
 
-slsDetectorDefs::detectorSettings DetectorImpl::setSettings(detectorSettings isettings,
-                                                                int detPos) {
+slsDetectorDefs::detectorSettings
+DetectorImpl::setSettings(detectorSettings isettings, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setSettings(isettings);
@@ -864,7 +915,8 @@ int DetectorImpl::getThresholdEnergy(int detPos) {
     return -1;
 }
 
-int DetectorImpl::setThresholdEnergy(int e_eV, detectorSettings isettings, int tb, int detPos) {
+int DetectorImpl::setThresholdEnergy(int e_eV, detectorSettings isettings,
+                                     int tb, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setThresholdEnergy(e_eV, isettings, tb);
@@ -889,7 +941,8 @@ std::string DetectorImpl::getSettingsDir(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::setSettingsDir(const std::string &directory, int detPos) {
+std::string DetectorImpl::setSettingsDir(const std::string &directory,
+                                         int detPos) {
     if (detPos >= 0) {
         return detectors[detPos]->setSettingsDir(directory);
     }
@@ -1096,8 +1149,9 @@ int64_t DetectorImpl::setTimer(timerIndex index, int64_t t, int detPos) {
             case CYCLES_NUMBER:
             case STORAGE_CELL_NUMBER:
             case MEASUREMENTS_NUMBER:
-                throw RuntimeError("Cannot set number of frames, cycles,storage cells or "
-                                   "measurements individually.");
+                throw RuntimeError(
+                    "Cannot set number of frames, cycles,storage cells or "
+                    "measurements individually.");
             default:
                 break;
             }
@@ -1127,9 +1181,9 @@ int64_t DetectorImpl::setTimer(timerIndex index, int64_t t, int detPos) {
     return ret;
 }
 
-int64_t DetectorImpl::secondsToNanoSeconds(double t){
+int64_t DetectorImpl::secondsToNanoSeconds(double t) {
     int64_t ns = lround(t * 1E9);
-    return (ns < 0) ? -1: ns;
+    return (ns < 0) ? -1 : ns;
 }
 
 double DetectorImpl::setExposureTime(double t, bool inseconds, int detPos) {
@@ -1148,7 +1202,8 @@ double DetectorImpl::setExposurePeriod(double t, bool inseconds, int detPos) {
     return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
-double DetectorImpl::setDelayAfterTrigger(double t, bool inseconds, int detPos) {
+double DetectorImpl::setDelayAfterTrigger(double t, bool inseconds,
+                                          int detPos) {
     if (!inseconds) {
         return setTimer(DELAY_AFTER_TRIGGER, (int64_t)t, detPos);
     }
@@ -1156,21 +1211,23 @@ double DetectorImpl::setDelayAfterTrigger(double t, bool inseconds, int detPos) 
     return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
-double DetectorImpl::setSubFrameExposureTime(double t, bool inseconds, int detPos) {
+double DetectorImpl::setSubFrameExposureTime(double t, bool inseconds,
+                                             int detPos) {
     if (!inseconds) {
         return setTimer(SUBFRAME_ACQUISITION_TIME, (int64_t)t, detPos);
     }
-    auto t_ns = setTimer(SUBFRAME_ACQUISITION_TIME, secondsToNanoSeconds(t), detPos);
+    auto t_ns =
+        setTimer(SUBFRAME_ACQUISITION_TIME, secondsToNanoSeconds(t), detPos);
     return (t_ns < 0) ? -1 : 1E-9 * t_ns;
 }
 
-double DetectorImpl::setSubFrameExposureDeadTime(double t, bool inseconds, int detPos) {
+double DetectorImpl::setSubFrameExposureDeadTime(double t, bool inseconds,
+                                                 int detPos) {
     if (!inseconds) {
         return setTimer(SUBFRAME_DEADTIME, (int64_t)t, detPos);
     }
     auto t_ns = setTimer(SUBFRAME_DEADTIME, secondsToNanoSeconds(t), detPos);
     return (t_ns < 0) ? -1 : 1E-9 * t_ns;
-
 }
 
 int64_t DetectorImpl::setNumberOfFrames(int64_t t, int detPos) {
@@ -1224,7 +1281,8 @@ int64_t DetectorImpl::getTimeLeft(timerIndex index, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int DetectorImpl::setSpeed(speedVariable index, int value, int mode, int detPos) {
+int DetectorImpl::setSpeed(speedVariable index, int value, int mode,
+                           int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setSpeed(index, value, mode);
@@ -1264,10 +1322,10 @@ int DetectorImpl::setDynamicRange(int dr, int detPos) {
         // update speed, check ratecorrection
         if (getDetectorTypeAsEnum() == EIGER) {
 
-            // rate correction before speed for consistency 
+            // rate correction before speed for consistency
             // (else exception at speed makes ratecorr inconsistent)
             parallelCall(&Module::updateRateCorrection);
-            
+
             // speed(usability)
             switch (dr) {
             case 32:
@@ -1286,10 +1344,6 @@ int DetectorImpl::setDynamicRange(int dr, int detPos) {
             }
         }
     }
-
-
-
-
 
     return ret;
 }
@@ -1340,7 +1394,8 @@ int DetectorImpl::getADC(dacIndex index, int detPos) {
 }
 
 slsDetectorDefs::externalCommunicationMode
-DetectorImpl::setExternalCommunicationMode(externalCommunicationMode pol, int detPos) {
+DetectorImpl::setExternalCommunicationMode(externalCommunicationMode pol,
+                                           int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setExternalCommunicationMode(pol);
@@ -1388,8 +1443,9 @@ uint32_t DetectorImpl::writeRegister(uint32_t addr, uint32_t val, int detPos) {
 
     // can't have different values
     std::ostringstream ss;
-    ss << "Error: Different Values for function writeRegister (write 0x" << std::hex << val
-       << " to addr 0x" << std::hex << addr << std::dec << ")";
+    ss << "Error: Different Values for function writeRegister (write 0x"
+       << std::hex << val << " to addr 0x" << std::hex << addr << std::dec
+       << ")";
     throw RuntimeError(ss.str());
 }
 
@@ -1407,8 +1463,8 @@ uint32_t DetectorImpl::readRegister(uint32_t addr, int detPos) {
 
     // can't have different values
     std::ostringstream ss;
-    ss << "Error: Different Values for function readRegister (read from 0x" << std::hex << addr
-       << std::dec << ")";
+    ss << "Error: Different Values for function readRegister (read from 0x"
+       << std::hex << addr << std::dec << ")";
     throw RuntimeError(ss.str());
 }
 
@@ -1446,12 +1502,13 @@ uint32_t DetectorImpl::clearBit(uint32_t addr, int n, int detPos) {
 
     // can't have different values
     std::ostringstream ss;
-    ss << "Error: Different Values for function clearBit (clear bit " << n << " to addr 0x"
-       << std::hex << addr << std::dec << ")";
+    ss << "Error: Different Values for function clearBit (clear bit " << n
+       << " to addr 0x" << std::hex << addr << std::dec << ")";
     throw RuntimeError(ss.str());
 }
 
-std::string DetectorImpl::setDetectorMAC(const std::string &detectorMAC, int detPos) {
+std::string DetectorImpl::setDetectorMAC(const std::string &detectorMAC,
+                                         int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setDetectorMAC(detectorMAC);
@@ -1473,7 +1530,8 @@ std::string DetectorImpl::getDetectorMAC(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::setDetectorMAC2(const std::string &detectorMAC, int detPos) {
+std::string DetectorImpl::setDetectorMAC2(const std::string &detectorMAC,
+                                          int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setDetectorMAC2(detectorMAC);
@@ -1495,7 +1553,8 @@ std::string DetectorImpl::getDetectorMAC2(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::setDetectorIP(const std::string &detectorIP, int detPos) {
+std::string DetectorImpl::setDetectorIP(const std::string &detectorIP,
+                                        int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setDetectorIP(detectorIP);
@@ -1517,7 +1576,8 @@ std::string DetectorImpl::getDetectorIP(int detPos) const {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::setDetectorIP2(const std::string &detectorIP, int detPos) {
+std::string DetectorImpl::setDetectorIP2(const std::string &detectorIP,
+                                         int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setDetectorIP2(detectorIP);
@@ -1539,8 +1599,8 @@ std::string DetectorImpl::getDetectorIP2(int detPos) const {
     return sls::concatenateIfDifferent(r);
 }
 
-
-std::string DetectorImpl::setReceiverHostname(const std::string &receiver, int detPos) {
+std::string DetectorImpl::setReceiverHostname(const std::string &receiver,
+                                              int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setReceiverHostname(receiver);
@@ -1562,7 +1622,8 @@ std::string DetectorImpl::getReceiverHostname(int detPos) const {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::setReceiverUDPIP(const std::string &udpip, int detPos) {
+std::string DetectorImpl::setReceiverUDPIP(const std::string &udpip,
+                                           int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setReceiverUDPIP(udpip);
@@ -1584,7 +1645,8 @@ std::string DetectorImpl::getReceiverUDPIP(int detPos) const {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::setReceiverUDPIP2(const std::string &udpip, int detPos) {
+std::string DetectorImpl::setReceiverUDPIP2(const std::string &udpip,
+                                            int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setReceiverUDPIP2(udpip);
@@ -1606,7 +1668,8 @@ std::string DetectorImpl::getReceiverUDPIP2(int detPos) const {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::setReceiverUDPMAC(const std::string &udpmac, int detPos) {
+std::string DetectorImpl::setReceiverUDPMAC(const std::string &udpmac,
+                                            int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setReceiverUDPMAC(udpmac);
@@ -1628,7 +1691,8 @@ std::string DetectorImpl::getReceiverUDPMAC(int detPos) const {
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::setReceiverUDPMAC2(const std::string &udpmac, int detPos) {
+std::string DetectorImpl::setReceiverUDPMAC2(const std::string &udpmac,
+                                             int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setReceiverUDPMAC2(udpmac);
@@ -1706,7 +1770,7 @@ int DetectorImpl::setNumberofUDPInterfaces(int n, int detPos) {
     }
 
     // multi
-    auto r = parallelCall(&Module::setNumberofUDPInterfaces,n);
+    auto r = parallelCall(&Module::setNumberofUDPInterfaces, n);
 
     // redo the zmq sockets
     if (previouslyClientStreaming != 0) {
@@ -1720,7 +1784,7 @@ int DetectorImpl::setNumberofUDPInterfaces(int n, int detPos) {
 
     // return single
     if (detPos >= 0)
-    	return ret;
+        return ret;
 
     // return multi
     return sls::minusOneIfDifferent(r);
@@ -1744,7 +1808,7 @@ int DetectorImpl::selectUDPInterface(int n, int detPos) {
     }
 
     // multi
-    auto r = parallelCall(&Module::selectUDPInterface,n);
+    auto r = parallelCall(&Module::selectUDPInterface, n);
     return sls::minusOneIfDifferent(r);
 }
 
@@ -1773,7 +1837,7 @@ void DetectorImpl::setClientDataStreamingInPort(int i, int detPos) {
             int firstPort = i;
             int numSockets = (getDetectorTypeAsEnum() == EIGER) ? 2 : 1;
             if (getNumberofUDPInterfaces() == 2)
-            	numSockets *= 2;
+                numSockets *= 2;
 
             for (size_t idet = 0; idet < detectors.size(); ++idet) {
                 auto port = firstPort + (idet * numSockets);
@@ -1813,7 +1877,7 @@ void DetectorImpl::setReceiverDataStreamingOutPort(int i, int detPos) {
             int firstPort = i;
             int numSockets = (getDetectorTypeAsEnum() == EIGER) ? 2 : 1;
             if (getNumberofUDPInterfaces() == 2)
-            	numSockets *= 2;
+                numSockets *= 2;
 
             for (size_t idet = 0; idet < detectors.size(); ++idet) {
                 auto port = firstPort + (idet * numSockets);
@@ -1839,7 +1903,8 @@ int DetectorImpl::getReceiverStreamingPort(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-void DetectorImpl::setClientDataStreamingInIP(const std::string &ip, int detPos) {
+void DetectorImpl::setClientDataStreamingInIP(const std::string &ip,
+                                              int detPos) {
     if (ip.length() != 0u) {
         int prev_streaming = enableDataStreamingToClient(-1);
 
@@ -1872,7 +1937,8 @@ std::string DetectorImpl::getClientStreamingIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-void DetectorImpl::setReceiverDataStreamingOutIP(const std::string &ip, int detPos) {
+void DetectorImpl::setReceiverDataStreamingOutIP(const std::string &ip,
+                                                 int detPos) {
     if (ip.length() != 0u) {
         int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
 
@@ -1905,7 +1971,8 @@ std::string DetectorImpl::getReceiverStreamingIP(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-int DetectorImpl::setDetectorNetworkParameter(networkParameter index, int value, int detPos) {
+int DetectorImpl::setDetectorNetworkParameter(networkParameter index, int value,
+                                              int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setDetectorNetworkParameter(index, value);
@@ -1916,7 +1983,8 @@ int DetectorImpl::setDetectorNetworkParameter(networkParameter index, int value,
     return sls::minusOneIfDifferent(r);
 }
 
-std::string DetectorImpl::setAdditionalJsonHeader(const std::string &jsonheader, int detPos) {
+std::string DetectorImpl::setAdditionalJsonHeader(const std::string &jsonheader,
+                                                  int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setAdditionalJsonHeader(jsonheader);
@@ -1939,7 +2007,8 @@ std::string DetectorImpl::getAdditionalJsonHeader(int detPos) {
 }
 
 std::string DetectorImpl::setAdditionalJsonParameter(const std::string &key,
-                                                         const std::string &value, int detPos) {
+                                                     const std::string &value,
+                                                     int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setAdditionalJsonParameter(key, value);
@@ -1950,7 +2019,8 @@ std::string DetectorImpl::setAdditionalJsonParameter(const std::string &key,
     return sls::concatenateIfDifferent(r);
 }
 
-std::string DetectorImpl::getAdditionalJsonParameter(const std::string &key, int detPos) {
+std::string DetectorImpl::getAdditionalJsonParameter(const std::string &key,
+                                                     int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getAdditionalJsonParameter(key);
@@ -1961,14 +2031,16 @@ std::string DetectorImpl::getAdditionalJsonParameter(const std::string &key, int
     return sls::concatenateIfDifferent(r);
 }
 
-int DetectorImpl::setDetectorMinMaxEnergyThreshold(const int index, int value, int detPos) {
+int DetectorImpl::setDetectorMinMaxEnergyThreshold(const int index, int value,
+                                                   int detPos) {
     std::string parameter = (index != 0 ? "emax" : "emin");
 
     std::string result;
     if (value < 0) {
         result = getAdditionalJsonParameter(parameter, detPos);
     } else {
-        result = setAdditionalJsonParameter(parameter, std::to_string(value), detPos);
+        result = setAdditionalJsonParameter(parameter, std::to_string(value),
+                                            detPos);
     }
 
     // convert to integer
@@ -1988,7 +2060,8 @@ int DetectorImpl::setFrameMode(frameModeType value, int detPos) {
     if (value == GET_FRAME_MODE) {
         result = getAdditionalJsonParameter(parameter, detPos);
     } else {
-        result = setAdditionalJsonParameter(parameter, getFrameModeType(value), detPos);
+        result = setAdditionalJsonParameter(parameter, getFrameModeType(value),
+                                            detPos);
     }
 
     return getFrameModeType(result);
@@ -2001,20 +2074,24 @@ int DetectorImpl::setDetectorMode(detectorModeType value, int detPos) {
     if (value == GET_DETECTOR_MODE) {
         result = getAdditionalJsonParameter(parameter, detPos);
     } else {
-        result = setAdditionalJsonParameter(parameter, getDetectorModeType(value), detPos);
+        result = setAdditionalJsonParameter(parameter,
+                                            getDetectorModeType(value), detPos);
     }
 
     return getDetectorModeType(result);
 }
 
-int64_t DetectorImpl::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize, int detPos) {
+int64_t DetectorImpl::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,
+                                                     int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setReceiverUDPSocketBufferSize(udpsockbufsize);
+        return detectors[detPos]->setReceiverUDPSocketBufferSize(
+            udpsockbufsize);
     }
 
     // multi
-    auto r = parallelCall(&Module::setReceiverUDPSocketBufferSize, udpsockbufsize);
+    auto r =
+        parallelCall(&Module::setReceiverUDPSocketBufferSize, udpsockbufsize);
     return sls::minusOneIfDifferent(r);
 }
 
@@ -2058,7 +2135,8 @@ int DetectorImpl::digitalTest(digitalTestMode mode, int ival, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int DetectorImpl::loadImageToDetector(imageType index, const std::string &fname, int detPos) {
+int DetectorImpl::loadImageToDetector(imageType index, const std::string &fname,
+                                      int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->loadImageToDetector(index, fname);
@@ -2070,20 +2148,22 @@ int DetectorImpl::loadImageToDetector(imageType index, const std::string &fname,
     int nch = multi_shm()->numberOfChannels;
     short int imageVals[nch];
     if (readDataFile(fname, imageVals, nch) < nch * (int)sizeof(short int)) {
-        throw RuntimeError(
-            "Could not open file or not enough data in file to load image to detector.");
+        throw RuntimeError("Could not open file or not enough data in file to "
+                           "load image to detector.");
     }
 
     // send image to all
     std::vector<int> r;
     for (size_t idet = 0; idet < detectors.size(); ++idet) {
         r.push_back(detectors[idet]->sendImageToDetector(
-            index, imageVals + idet * detectors[idet]->getTotalNumberOfChannels()));
+            index,
+            imageVals + idet * detectors[idet]->getTotalNumberOfChannels()));
     }
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-int DetectorImpl::writeCounterBlockFile(const std::string &fname, int startACQ, int detPos) {
+int DetectorImpl::writeCounterBlockFile(const std::string &fname, int startACQ,
+                                        int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->writeCounterBlockFile(fname, startACQ);
@@ -2097,14 +2177,17 @@ int DetectorImpl::writeCounterBlockFile(const std::string &fname, int startACQ, 
     std::vector<int> r;
     for (size_t idet = 0; idet < detectors.size(); ++idet) {
         r.push_back(detectors[idet]->getCounterBlock(
-            imageVals + idet * detectors[idet]->getTotalNumberOfChannels(), startACQ));
+            imageVals + idet * detectors[idet]->getTotalNumberOfChannels(),
+            startACQ));
     }
 
     // write image if all ok
     if (sls::allEqualTo(r, static_cast<int>(OK))) {
-        if (writeDataFile(fname, nch, imageVals) < nch * (int)sizeof(short int)) {
-            throw RuntimeError("Could not open file to write or did not write enough data"
-                               " in file to write counter block file from detector.");
+        if (writeDataFile(fname, nch, imageVals) <
+            nch * (int)sizeof(short int)) {
+            throw RuntimeError(
+                "Could not open file to write or did not write enough data"
+                " in file to write counter block file from detector.");
         }
         return OK;
     }
@@ -2156,8 +2239,9 @@ int DetectorImpl::setROI(int n, ROI roiLimits[], int detPos) {
     }
 
     // multi
-    int xmin = 0, xmax = 0, ymin = 0, ymax = 0, channelX = 0, channelY = 0, idet = 0,
-        lastChannelX = 0, lastChannelY = 0, index = 0, offsetX = 0, offsetY = 0;
+    int xmin = 0, xmax = 0, ymin = 0, ymax = 0, channelX = 0, channelY = 0,
+        idet = 0, lastChannelX = 0, lastChannelY = 0, index = 0, offsetX = 0,
+        offsetY = 0;
 
     bool invalidroi = false;
     int ndet = detectors.size();
@@ -2175,8 +2259,9 @@ int DetectorImpl::setROI(int n, ROI roiLimits[], int detPos) {
     verifyMinMaxROI(n, roiLimits);
     FILE_LOG(logDEBUG1) << "Setting ROI for " << n << "rois:";
     for (int i = 0; i < n; ++i) {
-        FILE_LOG(logDEBUG1) << i << ":" << roiLimits[i].xmin << "\t" << roiLimits[i].xmax << "\t"
-                            << roiLimits[i].ymin << "\t" << roiLimits[i].ymax;
+        FILE_LOG(logDEBUG1)
+            << i << ":" << roiLimits[i].xmin << "\t" << roiLimits[i].xmax
+            << "\t" << roiLimits[i].ymin << "\t" << roiLimits[i].ymax;
     }
     // for each roi
     for (int i = 0; i < n; ++i) {
@@ -2189,8 +2274,8 @@ int DetectorImpl::setROI(int n, ROI roiLimits[], int detPos) {
             // check roi max values
             idet = decodeNChannel(xmax, ymax, channelX, channelY);
             FILE_LOG(logDEBUG1) << "Decoded Channel max vals: " << std::endl
-                                << "det:" << idet << "\t" << xmax << "\t" << ymax << "\t"
-                                << channelX << "\t" << channelY;
+                                << "det:" << idet << "\t" << xmax << "\t"
+                                << ymax << "\t" << channelX << "\t" << channelY;
             if (idet == -1) {
                 FILE_LOG(logERROR) << "invalid roi";
                 continue;
@@ -2204,17 +2289,24 @@ int DetectorImpl::setROI(int n, ROI roiLimits[], int detPos) {
                 while (ymin <= ymax) {
                     // get offset for each detector
                     idet = decodeNChannel(xmin, ymin, channelX, channelY);
-                    FILE_LOG(logDEBUG1) << "Decoded Channel min vals: " << std::endl
-                                        << "det:" << idet << "\t" << xmin << "\t" << ymin << "\t"
-                                        << channelX << "\t" << channelY;
+                    FILE_LOG(logDEBUG1)
+                        << "Decoded Channel min vals: " << std::endl
+                        << "det:" << idet << "\t" << xmin << "\t" << ymin
+                        << "\t" << channelX << "\t" << channelY;
                     if (idet < 0 || idet >= (int)detectors.size()) {
                         FILE_LOG(logDEBUG1) << "invalid roi";
                         invalidroi = true;
                         break;
                     }
                     // get last channel for each det in x and y dir
-                    lastChannelX = (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X)) - 1;
-                    lastChannelY = (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y)) - 1;
+                    lastChannelX =
+                        (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
+                            X)) -
+                        1;
+                    lastChannelY =
+                        (detectors[idet]->getTotalNumberOfChannelsInclGapPixels(
+                            Y)) -
+                        1;
 
                     offsetX = detectors[idet]->getDetectorOffset(X);
                     offsetY = detectors[idet]->getDetectorOffset(Y);
@@ -2227,8 +2319,9 @@ int DetectorImpl::setROI(int n, ROI roiLimits[], int detPos) {
                         lastChannelY = ymax - offsetY;
                     }
 
-                    FILE_LOG(logDEBUG1) << "lastChannelX:" << lastChannelX << "\t"
-                                        << "lastChannelY:" << lastChannelY;
+                    FILE_LOG(logDEBUG1)
+                        << "lastChannelX:" << lastChannelX << "\t"
+                        << "lastChannelY:" << lastChannelY;
 
                     // creating the list of roi for corresponding detector
                     index = nroi[idet];
@@ -2243,7 +2336,8 @@ int DetectorImpl::setROI(int n, ROI roiLimits[], int detPos) {
                         ymin = ymax + 1;
                     }
 
-                    FILE_LOG(logDEBUG1) << "nroi[idet]:" << nroi[idet] << "\tymin:" << ymin;
+                    FILE_LOG(logDEBUG1)
+                        << "nroi[idet]:" << nroi[idet] << "\tymin:" << ymin;
                 }
                 if (invalidroi) {
                     break;
@@ -2270,8 +2364,9 @@ int DetectorImpl::setROI(int n, ROI roiLimits[], int detPos) {
     for (size_t i = 0; i < detectors.size(); ++i) {
         FILE_LOG(logDEBUG1) << "detector " << i;
         for (int j = 0; j < nroi[i]; ++j) {
-            FILE_LOG(logDEBUG1) << allroi[i][j].xmin << "\t" << allroi[i][j].xmax << "\t"
-                                << allroi[i][j].ymin << "\t" << allroi[i][j].ymax;
+            FILE_LOG(logDEBUG1)
+                << allroi[i][j].xmin << "\t" << allroi[i][j].xmax << "\t"
+                << allroi[i][j].ymin << "\t" << allroi[i][j].ymax;
         }
     }
 
@@ -2309,8 +2404,9 @@ const slsDetectorDefs::ROI *DetectorImpl::getROI(int &n, int detPos) {
                 FILE_LOG(logINFO) << "detector " << idet << ":";
             }
             for (int j = 0; j < index; ++j) {
-                FILE_LOG(logINFO) << temp[j].xmin << "\t" << temp[j].xmax << "\t" << temp[j].ymin
-                                  << "\t" << temp[j].ymax;
+                FILE_LOG(logINFO)
+                    << temp[j].xmin << "\t" << temp[j].xmax << "\t"
+                    << temp[j].ymin << "\t" << temp[j].ymax;
                 int x = detectors[idet]->getDetectorOffset(X);
                 int y = detectors[idet]->getDetectorOffset(Y);
                 roiLimits[n].xmin = temp[j].xmin + x;
@@ -2329,8 +2425,9 @@ const slsDetectorDefs::ROI *DetectorImpl::getROI(int &n, int detPos) {
 
     FILE_LOG(logDEBUG1) << "ROI :" << std::endl;
     for (int j = 0; j < n; ++j) {
-        FILE_LOG(logDEBUG1) << roiLimits[j].xmin << "\t" << roiLimits[j].xmax << "\t"
-                            << roiLimits[j].ymin << "\t" << roiLimits[j].ymax;
+        FILE_LOG(logDEBUG1)
+            << roiLimits[j].xmin << "\t" << roiLimits[j].xmax << "\t"
+            << roiLimits[j].ymin << "\t" << roiLimits[j].ymax;
     }
 
     // combine all the adjacent rois in x direction
@@ -2367,10 +2464,12 @@ const slsDetectorDefs::ROI *DetectorImpl::getROI(int &n, int detPos) {
         }
     }
 
-    FILE_LOG(logDEBUG1) << "Combined along x axis Getting ROI :\ndetector " << n;
+    FILE_LOG(logDEBUG1) << "Combined along x axis Getting ROI :\ndetector "
+                        << n;
     for (int j = 0; j < n; ++j) {
-        FILE_LOG(logDEBUG1) << roiLimits[j].xmin << "\t" << roiLimits[j].xmax << "\t"
-                            << roiLimits[j].ymin << "\t" << roiLimits[j].ymax;
+        FILE_LOG(logDEBUG1)
+            << roiLimits[j].xmin << "\t" << roiLimits[j].xmax << "\t"
+            << roiLimits[j].ymin << "\t" << roiLimits[j].ymax;
     }
 
     // combine all the adjacent rois in y direction
@@ -2428,8 +2527,8 @@ const slsDetectorDefs::ROI *DetectorImpl::getROI(int &n, int detPos) {
 
     FILE_LOG(logDEBUG1) << "\nxmin\txmax\tymin\tymax";
     for (int i = 0; i < n; ++i) {
-        FILE_LOG(logDEBUG1) << retval[i].xmin << "\t" << retval[i].xmax << "\t" << retval[i].ymin
-                            << "\t" << retval[i].ymax;
+        FILE_LOG(logDEBUG1) << retval[i].xmin << "\t" << retval[i].xmax << "\t"
+                            << retval[i].ymin << "\t" << retval[i].ymax;
     }
     return retval;
 }
@@ -2571,7 +2670,8 @@ int DetectorImpl::activate(int const enable, int detPos) {
 int DetectorImpl::setDeactivatedRxrPaddingMode(int padding, int detPos) {
     // single
     if (detPos >= 0) {
-        return static_cast<int>(detectors[detPos]->setDeactivatedRxrPaddingMode(padding));
+        return static_cast<int>(
+            detectors[detPos]->setDeactivatedRxrPaddingMode(padding));
     }
 
     // multi
@@ -2624,8 +2724,8 @@ int DetectorImpl::enableGapPixels(int val, int detPos) {
     // single
     if (detPos >= 0) {
         if (val >= 0) {
-            throw RuntimeError(
-                "Function (enableGapPixels) must be called from a multi detector level.");
+            throw RuntimeError("Function (enableGapPixels) must be called from "
+                               "a multi detector level.");
         }
         return detectors[detPos]->enableGapPixels(val);
     }
@@ -2739,13 +2839,13 @@ int DetectorImpl::setStoragecellStart(int pos, int detPos) {
 }
 
 int DetectorImpl::programFPGA(const std::string &fname, int detPos) {
-	FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
-	// read pof file
-	std::vector<char> buffer = readPofFile(fname);
+    FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
+    // read pof file
+    std::vector<char> buffer = readPofFile(fname);
 
     // single
     if (detPos >= 0) {
-    	return detectors[detPos]->programFPGA(buffer);
+        return detectors[detPos]->programFPGA(buffer);
     }
 
     // multi
@@ -2764,15 +2864,18 @@ int DetectorImpl::resetFPGA(int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-int DetectorImpl::copyDetectorServer(const std::string &fname, const std::string &hostname, int detPos) {
+int DetectorImpl::copyDetectorServer(const std::string &fname,
+                                     const std::string &hostname, int detPos) {
     // single
     if (detPos >= 0) {
         detectors[detPos]->copyDetectorServer(fname, hostname);
-        return detectors[detPos]->rebootController(); // reboot and copy should be independant for update command
+        return detectors[detPos]
+            ->rebootController(); // reboot and copy should be independant for
+                                  // update command
     }
 
     // multi
-    parallelCall(&Module::copyDetectorServer,fname, hostname);
+    parallelCall(&Module::copyDetectorServer, fname, hostname);
     auto r = parallelCall(&Module::rebootController);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
@@ -2788,19 +2891,20 @@ int DetectorImpl::rebootController(int detPos) {
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
 
-int DetectorImpl::update(const std::string &sname, const std::string &hostname, const std::string &fname, int detPos) {
-	FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
-	// read pof file
-	std::vector<char> buffer = readPofFile(fname);
+int DetectorImpl::update(const std::string &sname, const std::string &hostname,
+                         const std::string &fname, int detPos) {
+    FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
+    // read pof file
+    std::vector<char> buffer = readPofFile(fname);
 
-	// single
+    // single
     if (detPos >= 0) {
         detectors[detPos]->copyDetectorServer(sname, hostname);
         return detectors[detPos]->programFPGA(buffer);
     }
 
     // multi
-    parallelCall(&Module::copyDetectorServer,sname, hostname);
+    parallelCall(&Module::copyDetectorServer, sname, hostname);
     auto r = parallelCall(&Module::programFPGA, buffer);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }
@@ -2821,7 +2925,7 @@ int DetectorImpl::powerChip(int ival, int detPos) {
         }
         return sls::minusOneIfDifferent(r);
     }
-    // multi parallel 
+    // multi parallel
     auto r = parallelCall(&Module::powerChip, ival);
     return sls::minusOneIfDifferent(r);
 }
@@ -2836,7 +2940,6 @@ int DetectorImpl::setAutoComparatorDisableMode(int ival, int detPos) {
     auto r = parallelCall(&Module::setAutoComparatorDisableMode, ival);
     return sls::minusOneIfDifferent(r);
 }
-
 
 int DetectorImpl::setRateCorrection(int64_t t, int detPos) {
     // single
@@ -3023,7 +3126,8 @@ DetectorImpl::setReceiverFramesDiscardPolicy(frameDiscardPolicy f, int detPos) {
 
 int DetectorImpl::setPartialFramesPadding(bool padding, int detPos) {
     if (detPos >= 0)
-        return static_cast<int>(detectors[detPos]->setPartialFramesPadding(padding));
+        return static_cast<int>(
+            detectors[detPos]->setPartialFramesPadding(padding));
     auto r = parallelCall(&Module::setPartialFramesPadding, padding);
     return sls::minusOneIfDifferent(r);
 }
@@ -3046,7 +3150,8 @@ slsDetectorDefs::fileFormat DetectorImpl::getFileFormat(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-slsDetectorDefs::fileFormat DetectorImpl::setFileFormat(fileFormat f, int detPos) {
+slsDetectorDefs::fileFormat DetectorImpl::setFileFormat(fileFormat f,
+                                                        int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setFileFormat(f);
@@ -3169,7 +3274,8 @@ uint64_t DetectorImpl::getReceiverCurrentFrameIndex(int detPos) {
     auto r = parallelCall(&Module::getReceiverCurrentFrameIndex);
 
     // prevent divide by all or do not take avg when -1 for "did not connect"
-    if ((detectors.empty()) || (sls::anyEqualTo(r, static_cast<uint64_t>(-1)))) {
+    if ((detectors.empty()) ||
+        (sls::anyEqualTo(r, static_cast<uint64_t>(-1)))) {
         return -1;
     }
 
@@ -3212,16 +3318,20 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     numSockets *= numSocketsPerDetector;
 
     for (size_t iSocket = 0; iSocket < numSockets; ++iSocket) {
-        uint32_t portnum = (detectors[iSocket / numSocketsPerDetector]->getClientStreamingPort());
+        uint32_t portnum = (detectors[iSocket / numSocketsPerDetector]
+                                ->getClientStreamingPort());
         portnum += (iSocket % numSocketsPerDetector);
         try {
             zmqSocket.push_back(sls::make_unique<ZmqSocket>(
-                detectors[iSocket / numSocketsPerDetector]->getClientStreamingIP().c_str(),
+                detectors[iSocket / numSocketsPerDetector]
+                    ->getClientStreamingIP()
+                    .c_str(),
                 portnum));
             FILE_LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
                               << zmqSocket.back()->GetZmqServerAddress();
         } catch (...) {
-            FILE_LOG(logERROR) << "Could not create Zmq socket on port " << portnum;
+            FILE_LOG(logERROR)
+                << "Could not create Zmq socket on port " << portnum;
             createReceivingDataSockets(true);
             return FAIL;
         }
@@ -3273,8 +3383,10 @@ void DetectorImpl::readFrameFromReceiver() {
     float bytesPerPixel = 0;
     // header info every header
     std::string currentFileName = "";
-    uint64_t currentAcquisitionIndex = -1, currentFrameIndex = -1, currentFileIndex = -1;
-    uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1, flippedDataX = -1;
+    uint64_t currentAcquisitionIndex = -1, currentFrameIndex = -1,
+             currentFileIndex = -1;
+    uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1,
+             flippedDataX = -1;
 
     // wait for real time acquisition to start
     bool running = true;
@@ -3299,8 +3411,9 @@ void DetectorImpl::readFrameFromReceiver() {
                 // HEADER
                 {
                     rapidjson::Document doc;
-                    if (zmqSocket[isocket]->ReceiveHeader(isocket, doc,
-                                                           SLS_DETECTOR_JSON_HEADER_VERSION) == 0) {
+                    if (zmqSocket[isocket]->ReceiveHeader(
+                            isocket, doc, SLS_DETECTOR_JSON_HEADER_VERSION) ==
+                        0) {
                         // parse error, version error or end of acquisition for
                         // socket
                         runningList[isocket] = false;
@@ -3329,7 +3442,8 @@ void DetectorImpl::readFrameFromReceiver() {
                             << size << "\n\tmultisize: " << multisize
                             << "\n\tdynamicRange: " << dynamicRange
                             << "\n\tbytesPerPixel: " << bytesPerPixel
-                            << "\n\tnPixelsX: " << nPixelsX << "\n\tnPixelsY: " << nPixelsY;
+                            << "\n\tnPixelsX: " << nPixelsX
+                            << "\n\tnPixelsY: " << nPixelsY;
                     }
                     // each time, parse rest of header
                     currentFileName = doc["fname"].GetString();
@@ -3346,8 +3460,8 @@ void DetectorImpl::readFrameFromReceiver() {
                     FILE_LOG(logDEBUG1)
                         << "Header Info:"
                            "\n\tcurrentFileName: "
-                        << currentFileName
-                        << "\n\tcurrentAcquisitionIndex: " << currentAcquisitionIndex
+                        << currentFileName << "\n\tcurrentAcquisitionIndex: "
+                        << currentAcquisitionIndex
                         << "\n\tcurrentFrameIndex: " << currentFrameIndex
                         << "\n\tcurrentFileIndex: " << currentFileIndex
                         << "\n\tcurrentSubFrameIndex: " << currentSubFrameIndex
@@ -3364,26 +3478,32 @@ void DetectorImpl::readFrameFromReceiver() {
                     uint32_t xoffset = coordX * nPixelsX * bytesPerPixel;
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
-                    uint32_t rowoffset = nX * singledetrowoffset; 
-		    if (getDetectorTypeAsEnum() == CHIPTESTBOARD) {
-		      singledetrowoffset=size;
-		    }
-                    FILE_LOG(logDEBUG1) << "Multi Image Info:"
-                                           "\n\txoffset: "
-                                        << xoffset << "\n\tyoffset: " << yoffset
-                                        << "\n\tsingledetrowoffset: " << singledetrowoffset
-                                        << "\n\trowoffset: " << rowoffset;
+                    uint32_t rowoffset = nX * singledetrowoffset;
+                    if (getDetectorTypeAsEnum() == CHIPTESTBOARD) {
+                        singledetrowoffset = size;
+                    }
+                    FILE_LOG(logDEBUG1)
+                        << "Multi Image Info:"
+                           "\n\txoffset: "
+                        << xoffset << "\n\tyoffset: " << yoffset
+                        << "\n\tsingledetrowoffset: " << singledetrowoffset
+                        << "\n\trowoffset: " << rowoffset;
 
                     if (eiger && (flippedDataX != 0u)) {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
                             memcpy(((char *)multiframe) +
-                                       ((yoffset + (nPixelsY - 1 - i)) * rowoffset) + xoffset,
-                                   (char *)image + (i * singledetrowoffset), singledetrowoffset);
+                                       ((yoffset + (nPixelsY - 1 - i)) *
+                                        rowoffset) +
+                                       xoffset,
+                                   (char *)image + (i * singledetrowoffset),
+                                   singledetrowoffset);
                         }
                     } else {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
-                            memcpy(((char *)multiframe) + ((yoffset + i) * rowoffset) + xoffset,
-                                   (char *)image + (i * singledetrowoffset), singledetrowoffset);
+                            memcpy(((char *)multiframe) +
+                                       ((yoffset + i) * rowoffset) + xoffset,
+                                   (char *)image + (i * singledetrowoffset),
+                                   singledetrowoffset);
                         }
                     }
                 }
@@ -3397,18 +3517,21 @@ void DetectorImpl::readFrameFromReceiver() {
             // 4bit gap pixels
             if (dynamicRange == 4 && gappixelsenable) {
                 int n = processImageWithGapPixels(multiframe, multigappixels);
-                thisData =
-                    new detectorData(getCurrentProgress(), currentFileName.c_str(), nCompletePixelsX,
-                                     nCompletePixelsY, multigappixels, n, dynamicRange, currentFileIndex);
+                thisData = new detectorData(
+                    getCurrentProgress(), currentFileName.c_str(),
+                    nCompletePixelsX, nCompletePixelsY, multigappixels, n,
+                    dynamicRange, currentFileIndex);
             }
             // normal pixels
             else {
-                thisData = new detectorData(getCurrentProgress(), currentFileName.c_str(), nCompletePixelsX,
-                                            nCompletePixelsY, multiframe, multisize, dynamicRange,
-                                            currentFileIndex);
+                thisData = new detectorData(
+                    getCurrentProgress(), currentFileName.c_str(),
+                    nCompletePixelsX, nCompletePixelsY, multiframe, multisize,
+                    dynamicRange, currentFileIndex);
             }
             dataReady(thisData, currentFrameIndex,
-                      ((dynamicRange == 32) ? currentSubFrameIndex : -1), pCallbackArg);
+                      ((dynamicRange == 32) ? currentSubFrameIndex : -1),
+                      pCallbackArg);
             delete thisData;
             setCurrentProgress(currentAcquisitionIndex + 1);
         }
@@ -3471,8 +3594,9 @@ int DetectorImpl::processImageWithGapPixels(char *image, char *&gpImage) {
     // copying line by line
     src = image;
     dst = gpImage;
-    for (int row = 0; row < nychip; ++row) {               // for each chip in a row
-        for (int ichipy = 0; ichipy < b1chipy; ++ichipy) { // for each row in a chip
+    for (int row = 0; row < nychip; ++row) { // for each chip in a row
+        for (int ichipy = 0; ichipy < b1chipy;
+             ++ichipy) { // for each row in a chip
             for (int col = 0; col < nxchip; ++col) {
                 memcpy(dst, src, b1chipx);
                 src += b1chipx;
@@ -3491,8 +3615,9 @@ int DetectorImpl::processImageWithGapPixels(char *image, char *&gpImage) {
         uint8_t temp, g1, g2;
         int mod;
         dst = gpImage;
-        for (int row = 0; row < nychip; ++row) {               // for each chip in a row
-            for (int ichipy = 0; ichipy < b1chipy; ++ichipy) { // for each row in a chip
+        for (int row = 0; row < nychip; ++row) { // for each chip in a row
+            for (int ichipy = 0; ichipy < b1chipy;
+                 ++ichipy) { // for each row in a chip
                 for (int col = 0; col < nxchip; ++col) {
                     dst += b1chipx;
                     mod = (col + 1) % 4;
@@ -3577,7 +3702,7 @@ int DetectorImpl::setFileWrite(bool value, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int DetectorImpl::getFileWrite(int detPos) const{
+int DetectorImpl::getFileWrite(int detPos) const {
     if (detPos >= 0) {
         return static_cast<int>(detectors[detPos]->getFileWrite());
     }
@@ -3593,7 +3718,7 @@ int DetectorImpl::setMasterFileWrite(bool value, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int DetectorImpl::getMasterFileWrite(int detPos) const{
+int DetectorImpl::getMasterFileWrite(int detPos) const {
     if (detPos >= 0) {
         return static_cast<int>(detectors[detPos]->getMasterFileWrite());
     }
@@ -3657,7 +3782,8 @@ int DetectorImpl::enableDataStreamingToClient(int enable) {
 int DetectorImpl::enableDataStreamingFromReceiver(int enable, int detPos) {
     // single
     if (detPos >= 0) {
-        return static_cast<int>(detectors[detPos]->enableDataStreamingFromReceiver(enable));
+        return static_cast<int>(
+            detectors[detPos]->enableDataStreamingFromReceiver(enable));
     }
 
     // multi
@@ -3751,7 +3877,8 @@ uint64_t DetectorImpl::setPatternWord(int addr, uint64_t word, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-void DetectorImpl::setPatternLoops(int level, int start, int stop, int n, int detPos) {
+void DetectorImpl::setPatternLoops(int level, int start, int stop, int n,
+                                   int detPos) {
     // single
     if (detPos >= 0) {
         detectors[detPos]->setPatternLoops(level, start, stop, n);
@@ -3817,7 +3944,8 @@ uint64_t DetectorImpl::getPatternMask(int detPos) {
         return r.front();
     }
     // should not have different values
-    throw RuntimeError("DetectorImpl::getPatternMask: Error: Different Values returned)");
+    throw RuntimeError(
+        "DetectorImpl::getPatternMask: Error: Different Values returned)");
 }
 
 int DetectorImpl::setPatternBitMask(uint64_t mask, int detPos) {
@@ -3838,7 +3966,8 @@ uint64_t DetectorImpl::getPatternBitMask(int detPos) {
     }
 
     // should not have different values
-    throw RuntimeError("DetectorImpl::getPatternBitMask Different Values returned)");
+    throw RuntimeError(
+        "DetectorImpl::getPatternBitMask Different Values returned)");
 }
 
 int DetectorImpl::setLEDEnable(int enable, int detPos) {
@@ -4033,36 +4162,44 @@ int DetectorImpl::dumpDetectorSetup(const std::string &fname, int level) {
         auto cmd = slsDetectorCommand(this);
         for (auto &name : names) {
             sls::strcpy_safe(buffer, name.c_str()); // this is...
-            outfile << name << " " << cmd.executeLine(n_arguments, args, GET_ACTION) << std::endl;
+            outfile << name << " "
+                    << cmd.executeLine(n_arguments, args, GET_ACTION)
+                    << std::endl;
         }
         outfile.close();
     } else {
-        throw RuntimeError("Error opening parameters file " + fname + " for writing");
+        throw RuntimeError("Error opening parameters file " + fname +
+                           " for writing");
     }
 
-    FILE_LOG(logDEBUG1) << "wrote " << names.size() << " lines to  " << outfname;
+    FILE_LOG(logDEBUG1) << "wrote " << names.size() << " lines to  "
+                        << outfname;
     return OK;
 }
 
-void DetectorImpl::registerAcquisitionFinishedCallback(int (*func)(double, int, void *),
-                                                           void *pArg) {
+void DetectorImpl::registerAcquisitionFinishedCallback(int (*func)(double, int,
+                                                                   void *),
+                                                       void *pArg) {
     acquisition_finished = func;
     acqFinished_p = pArg;
 }
 
-void DetectorImpl::registerMeasurementFinishedCallback(int (*func)(int, int, void *),
-                                                           void *pArg) {
+void DetectorImpl::registerMeasurementFinishedCallback(int (*func)(int, int,
+                                                                   void *),
+                                                       void *pArg) {
     measurement_finished = func;
     measFinished_p = pArg;
 }
 
-void DetectorImpl::registerProgressCallback(int (*func)(double, void *), void *pArg) {
+void DetectorImpl::registerProgressCallback(int (*func)(double, void *),
+                                            void *pArg) {
     progress_call = func;
     pProgressCallArg = pArg;
 }
 
-void DetectorImpl::registerDataCallback(int (*userCallback)(detectorData *, int, int, void *),
-                                            void *pArg) {
+void DetectorImpl::registerDataCallback(int (*userCallback)(detectorData *, int,
+                                                            int, void *),
+                                        void *pArg) {
     dataReady = userCallback;
     pCallbackArg = pArg;
     if (setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
@@ -4092,7 +4229,8 @@ int DetectorImpl::setTotalProgress() {
 
     totalProgress = nm * nf * nc * ns;
 
-    FILE_LOG(logDEBUG1) << "nm " << nm << " nf " << nf << " nc " << nc << " ns " << ns;
+    FILE_LOG(logDEBUG1) << "nm " << nm << " nf " << nf << " nc " << nc << " ns "
+                        << ns;
     FILE_LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
     return totalProgress;
 }
@@ -4106,7 +4244,8 @@ void DetectorImpl::incrementProgress() {
     std::lock_guard<std::mutex> lock(mp);
     progressIndex++;
     std::cout << std::fixed << std::setprecision(2) << std::setw(6)
-              << 100. * ((double)progressIndex) / ((double)totalProgress) << " \%";
+              << 100. * ((double)progressIndex) / ((double)totalProgress)
+              << " \%";
     std::cout << '\r' << std::flush;
 }
 
@@ -4114,7 +4253,8 @@ void DetectorImpl::setCurrentProgress(int i) {
     std::lock_guard<std::mutex> lock(mp);
     progressIndex = i;
     std::cout << std::fixed << std::setprecision(2) << std::setw(6)
-              << 100. * ((double)progressIndex) / ((double)totalProgress) << " \%";
+              << 100. * ((double)progressIndex) / ((double)totalProgress)
+              << " \%";
     std::cout << '\r' << std::flush;
 }
 
@@ -4221,7 +4361,8 @@ int DetectorImpl::acquire() {
     }
 
     if (acquisition_finished != nullptr) {
-        acquisition_finished(getCurrentProgress(), getRunStatus(), acqFinished_p);
+        acquisition_finished(getCurrentProgress(), getRunStatus(),
+                             acqFinished_p);
     }
 
     sem_destroy(&sem_newRTAcquisition);
@@ -4243,7 +4384,6 @@ void DetectorImpl::startProcessingThread() {
     dataProcessingThread = std::thread(&DetectorImpl::processData, this);
 }
 
-
 void DetectorImpl::processData() {
     if (setReceiverOnline() == OFFLINE_FLAG) {
         return;
@@ -4258,7 +4398,8 @@ void DetectorImpl::processData() {
                 // to exit acquire by typing q
                 if (kbhit() != 0) {
                     if (fgetc(stdin) == 'q') {
-                        FILE_LOG(logINFO) << "Caught the command to stop acquisition";
+                        FILE_LOG(logINFO)
+                            << "Caught the command to stop acquisition";
                         stopAcquisition();
                     }
                 }
@@ -4303,106 +4444,104 @@ int DetectorImpl::kbhit() {
     return FD_ISSET(STDIN_FILENO, &fds);
 }
 
-
-
 std::vector<char> DetectorImpl::readPofFile(const std::string &fname) {
-	FILE_LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
-	size_t filesize = 0;
-	// check if it exists
+    FILE_LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
+    size_t filesize = 0;
+    // check if it exists
 
-	struct stat st;
-	if (stat(fname.c_str(), &st) != 0) {
-		throw RuntimeError("Program FPGA: Programming file does not exist");
-	}
+    struct stat st;
+    if (stat(fname.c_str(), &st) != 0) {
+        throw RuntimeError("Program FPGA: Programming file does not exist");
+    }
 
+    // open src
+    FILE *src = fopen(fname.c_str(), "rb");
+    if (src == nullptr) {
+        throw RuntimeError(
+            "Program FPGA: Could not open source file for programming: " +
+            fname);
+    }
 
+    // create temp destination file
+    char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
+    int dst = mkstemp(destfname); // create temporary file and open it in r/w
+    if (dst == -1) {
+        fclose(src);
+        throw RuntimeError(
+            std::string(
+                "Could not create destination file in /tmp for programming: ") +
+            destfname);
+    }
 
-	// open src
-	FILE *src = fopen(fname.c_str(), "rb");
-	if (src == nullptr) {
-		throw RuntimeError("Program FPGA: Could not open source file for programming: " +
-				fname);
-	}
+    // convert src to dst rawbin
+    FILE_LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
+    {
+        int filepos, x, y, i;
+        // Remove header (0...11C)
+        for (filepos = 0; filepos < 0x11C; ++filepos) {
+            fgetc(src);
+        }
+        // Write 0x80 times 0xFF (0...7F)
+        {
+            char c = 0xFF;
+            for (filepos = 0; filepos < 0x80; ++filepos) {
+                write(dst, &c, 1);
+            }
+        }
+        // Swap bits and write to file
+        for (filepos = 0x80; filepos < 0x1000000; ++filepos) {
+            x = fgetc(src);
+            if (x < 0) {
+                break;
+            }
+            y = 0;
+            for (i = 0; i < 8; ++i) {
+                y = y |
+                    (((x & (1 << i)) >> i) << (7 - i)); // This swaps the bits
+            }
+            write(dst, &y, 1);
+        }
+        if (filepos < 0x1000000) {
+            throw RuntimeError(
+                "Could not convert programming file. EOF before end of flash");
+        }
+    }
+    if (fclose(src) != 0) {
+        throw RuntimeError("Program FPGA: Could not close source file");
+    }
+    if (close(dst) != 0) {
+        throw RuntimeError("Program FPGA: Could not close destination file");
+    }
+    FILE_LOG(logDEBUG1) << "File has been converted to " << destfname;
 
-	// create temp destination file
-	char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
-	int dst = mkstemp(destfname); // create temporary file and open it in r/w
-	if (dst == -1) {
-		fclose(src);
-		throw RuntimeError(
-				std::string("Could not create destination file in /tmp for programming: ") +
-				destfname);
-	}
+    // loading dst file to memory
+    FILE *fp = fopen(destfname, "r");
+    if (fp == nullptr) {
+        throw RuntimeError("Program FPGA: Could not open rawbin file");
+    }
+    if (fseek(fp, 0, SEEK_END) != 0) {
+        throw RuntimeError("Program FPGA: Seek error in rawbin file");
+    }
+    filesize = ftell(fp);
+    if (filesize <= 0) {
+        throw RuntimeError("Program FPGA: Could not get length of rawbin file");
+    }
+    rewind(fp);
 
-	// convert src to dst rawbin
-	FILE_LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
-	{
-		int filepos, x, y, i;
-		// Remove header (0...11C)
-		for (filepos = 0; filepos < 0x11C; ++filepos) {
-			fgetc(src);
-		}
-		// Write 0x80 times 0xFF (0...7F)
-		{
-			char c = 0xFF;
-			for (filepos = 0; filepos < 0x80; ++filepos) {
-				write(dst, &c, 1);
-			}
-		}
-		// Swap bits and write to file
-		for (filepos = 0x80; filepos < 0x1000000; ++filepos) {
-			x = fgetc(src);
-			if (x < 0) {
-				break;
-			}
-			y = 0;
-			for (i = 0; i < 8; ++i) {
-				y = y | (((x & (1 << i)) >> i) << (7 - i)); // This swaps the bits
-			}
-			write(dst, &y, 1);
-		}
-		if (filepos < 0x1000000) {
-			throw RuntimeError("Could not convert programming file. EOF before end of flash");
-		}
-	}
-	if (fclose(src) != 0) {
-		throw RuntimeError("Program FPGA: Could not close source file");
-	}
-	if (close(dst) != 0) {
-		throw RuntimeError("Program FPGA: Could not close destination file");
-	}
-	FILE_LOG(logDEBUG1) << "File has been converted to " << destfname;
+    std::vector<char> buffer(filesize, 0);
+    if (fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
+        throw RuntimeError("Program FPGA: Could not read rawbin file");
+    }
 
-	// loading dst file to memory
-	FILE *fp = fopen(destfname, "r");
-	if (fp == nullptr) {
-		throw RuntimeError("Program FPGA: Could not open rawbin file");
-	}
-	if (fseek(fp, 0, SEEK_END) != 0) {
-		throw RuntimeError("Program FPGA: Seek error in rawbin file");
-	}
-	filesize = ftell(fp);
-	if (filesize <= 0) {
-		throw RuntimeError("Program FPGA: Could not get length of rawbin file");
-	}
-	rewind(fp);
-
-	std::vector<char> buffer(filesize, 0);
-	if (fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
-		throw RuntimeError("Program FPGA: Could not read rawbin file");
-	}
-
-	if (fclose(fp) != 0) {
-		throw RuntimeError("Program FPGA: Could not close destination file after converting");
-	}
-	unlink(destfname); // delete temporary file
-	FILE_LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
-	FILE_LOG(logINFO) << "Read file into memory";
-	return buffer;
+    if (fclose(fp) != 0) {
+        throw RuntimeError(
+            "Program FPGA: Could not close destination file after converting");
+    }
+    unlink(destfname); // delete temporary file
+    FILE_LOG(logDEBUG1)
+        << "Successfully loaded the rawbin file to program memory";
+    FILE_LOG(logINFO) << "Read file into memory";
+    return buffer;
 }
 
-
-
-
-
-
+} // namespace sls

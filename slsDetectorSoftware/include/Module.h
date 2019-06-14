@@ -11,13 +11,13 @@
 #include <cmath>
 #include <vector>
 
-class DetectorImpl;
+
 class ServerInterface;
 
 #define SLS_SHMVERSION 0x190515
 
 namespace sls {
-
+    class DetectorImpl;
 /**
  * @short structure allocated in shared memory to store detector settings for
  * IPC and cache

@@ -4,7 +4,7 @@
 
 #include "Detector.h"
 #include "mythenFileIO.h"
-
+using sls::DetectorImpl;
 namespace py = pybind11;
 
 PYBIND11_MODULE(_sls_detector, m) {

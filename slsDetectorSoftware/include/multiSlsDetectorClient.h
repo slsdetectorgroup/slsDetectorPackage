@@ -14,6 +14,7 @@
 #include <memory>
 
 using sls::RuntimeError;
+using sls::DetectorImpl;
 
 inline int dummyCallback(detectorData *d, int p, void *) {
     std::cout << "got data " << p << std::endl;

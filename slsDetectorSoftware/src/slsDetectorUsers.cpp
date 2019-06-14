@@ -2,7 +2,7 @@
 #include "detectorData.h"
 #include "multiSlsDetectorClient.h"
 
-
+using sls::DetectorImpl;
 
 int slsDetectorUsers::getNumberOfDetectors() const {
 	return detector.getNumberOfDetectors();

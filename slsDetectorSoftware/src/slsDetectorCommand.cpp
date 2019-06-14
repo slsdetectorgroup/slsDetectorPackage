@@ -70,6 +70,8 @@ The commands are sudivided into different pages depending on their functionaliti
  
  */
 
+using sls::DetectorImpl;
+
 slsDetectorCommand::slsDetectorCommand(DetectorImpl *det) {
 
     myDet = det;

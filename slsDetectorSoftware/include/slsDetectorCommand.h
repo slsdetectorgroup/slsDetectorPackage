@@ -5,7 +5,10 @@
 
 #include "sls_detector_defs.h"
 
-class DetectorImpl;
+namespace sls{
+  class DetectorImpl;
+}
+
 
 
 
@@ -17,7 +20,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
  public:
 
 
-  slsDetectorCommand(DetectorImpl *det);
+  slsDetectorCommand(sls::DetectorImpl *det);
 
 
   /*
@@ -94,7 +97,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
  private:
 
 
-  DetectorImpl *myDet;
+  sls::DetectorImpl *myDet;
    
   std::string cmdUnderDevelopment(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdUnknown(int narg, const char * const args[], int action, int detPos = -1);

@@ -24,36 +24,39 @@ public:
 
 public slots:
 	void SetFrequency();
-	 void EnableScanBox();
+	void EnableScanBox();
 
 private slots:
-	void Select1DPlot(bool b);
 
-	/**Enables Persistency depending on Superimpose checkbox */
+xxxxxxxxxxxxxxx
+	void Set1DPlotOptionsRight();
+	void Set1DPlotOptionsLeft();
+	void Set2DPlotOptionsRight();
+	void Set2DPlotOptionsLeft();
 	void EnablePersistency(bool enable);
-	void SetTitles();
-	void EnableTitles();
-	void checkAspectRatio();
-
-	/** maintain aspect ratio
-	 * @param axis axis to be changed: 0 for x(y axis values changed), 1 for y (xaxis values changes), -1 for the larger one (aspect ratio checked)
-	 */
-	void maintainAspectRatio(int axis);
-	void EnableXRange();
-	void EnableYRange();
-	void EnableRange();
-	void SetXAxisRange();
-	void SetYAxisRange();
-	void SetAxesRange();
-	void SetZRange();
-	void EnableZRange();
-	bool CheckZRange(QString value);
-	void SetPlot();
-	void SetPlotOptionsRightPage();
-	void SetPlotOptionsLeftPage();
 	void SetBinary();
-	void SetHistogramOptions();
-	void EnableGapPixels(bool enable);
+	void SetGapPixels(bool enable);
+	void SetTitles();
+	void SetXRange();
+	void SetYRange();
+	void CheckAspectRatio();
+	void SetXYRange();
+	/** 
+	 * Maintain aspect ratio 
+	 */
+	void MaintainAspectRatio(int dimension);
+	void SetZRange();
+
+
+
+
+	void Select1DPlot(bool b);
+	void SetPlot();
+
+
+
+
+
 
 signals:
 	void DisableZoomSignal(bool);
@@ -62,36 +65,30 @@ signals:
 private:
 	void SetupWidgetWindow();
 	void Initialization();
+	void GetGapPixels();
+	void EnableRange();
+	void SetAxesRange();
+	bool CheckZRange(QString value);
 
 	multiSlsDetector *myDet;
 	qDrawPlot *myPlot;
 	bool isOneD;
 	bool isOriginallyOneD;
 
-	/**is set if its a possible wrong interval between plots*/
-	bool wrongInterval;
-
+	QButtonGroup	*btnGroupPlotType;
+	/** interval between plots */
 	QStackedLayout	*stackedLayout;
 	QSpinBox 		*spinNthFrame;
 	QDoubleSpinBox 	*spinTimeGap;
 	QComboBox 		*comboTimeGapUnit;
-	QButtonGroup 	*btnGroupScan;
-	QButtonGroup	*btnGroupPlotType;
-	QButtonGroup	*btnGroupHistogram;
-	QPalette 		*red;
-	QString 		intervalTip;
 
-	/** some Default Values */
+	/** default plot and axis titles */
 	static QString defaultPlotTitle;
 	static QString defaultHistXAxisTitle;
 	static QString defaultHistYAxisTitle;
 	static QString defaultImageXAxisTitle;
 	static QString defaultImageYAxisTitle;
 	static QString defaultImageZAxisTitle;
-
-	/** scans */
-	static const QString modeNames[5];
-
 };
 
 

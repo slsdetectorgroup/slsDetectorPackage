@@ -67,18 +67,27 @@ public:
 	 * file index wont increase and so you need secondary titles to differentitate between plots*/
 	void SetFileWrite(bool enable){fileSaveEnable = enable;};
 
+
 	/**	sets plot Title prefix*/
 	void SetPlotTitlePrefix(QString title)      	{plotTitle_prefix = title;}
-	/**	sets 1D X Axis Title */
-	void SetHistXAxisTitle(QString title)   	{histXAxisTitle = title;}
-	/**	sets 1D Y Axis Title */
-	void SetHistYAxisTitle(QString title)   	{histYAxisTitle = title;}
-	/**	sets 2D X Axis Title */
-	void SetImageXAxisTitle(QString title)   {imageXAxisTitle = title;}
-	/**	sets 2D Y Axis Title */
-	void SetImageYAxisTitle(QString title)   {imageYAxisTitle = title;}
+	
+	void SetXAxisTitle(QString title) {
+		if(plot_in_scope==1) {
+			histXAxisTitle = title;
+		} else {
+			imageXAxisTitle = title;
+		}
+	}
+
+	void SetYAxisTitle(QString title) {
+		if(plot_in_scope==1) {
+			histYAxisTitle = title;
+		} else {
+			imageYAxisTitle = title;
+		}
+	}
 	/**	sets 2D Z Axis Title */
-	void SetImageZAxisTitle(QString title)   {imageZAxisTitle = title;}
+	void SetZAxisTitle(QString title)   {imageZAxisTitle = title;}
 	/** Disables zoom if any of the axes range are checked and fixed with a value */
 	void DisableZoom(bool disable);
 	/**	Enables plot from the plot tab*/
@@ -98,8 +107,6 @@ public:
 	 * @param xy is xmin,xmax,ymin or ymax */
 	void IsXYRangeValues(bool changed,qDefs::range xy){IsXYRange[xy]=changed;};
 
-	/** Get minimum Plot timer - between plots */
-	double GetMinimumPlotTimer(){return PLOT_TIMER_MS;};
 	/** Set Plot timer - between plots in ms*/
 	void SetPlotTimer(double time);
 	/** Set  Plot frame factor - between plots, also for receiver if exists */
@@ -499,9 +506,6 @@ bool XYRangeChanged;
 double XYRangeValues[4];
 /**if the specific min/max of x/y is enabled */
 bool IsXYRange[4];
-
-/** Default timer between plots*/
-static const double PLOT_TIMER_MS;
 
 /** Specific timer value between plots */
 double timerValue;

@@ -11,8 +11,6 @@
 #include <math.h>
 #include <string>
 
-
-
 QString qTabPlot::defaultPlotTitle("");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
 QString qTabPlot::defaultHistYAxisTitle("Counts");
@@ -21,76 +19,62 @@ QString qTabPlot::defaultImageYAxisTitle("Pixel");
 QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 
-qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : QWidget(parent),
-                                                                                     myDet(detector),
-                                                                                     myPlot(plot),
-                                                                                     isOneD(false),
-                                                                                     isOriginallyOneD(false),
-                                                                                     wrongInterval(0),
-                                                                                     stackedLayout(0),
-                                                                                     spinNthFrame(0),
-                                                                                     spinTimeGap(0),
-                                                                                     comboTimeGapUnit(0),
-                                                                                     btnGroupScan(0),
-                                                                                     btnGroupPlotType(0),
-                                                                                     btnGroupHistogram(0) {
+qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : 
+    QWidget(parent), myDet(detector), myPlot(plot), isOneD(false), isOriginallyOneD(false), wrongInterval(0), 
+    stackedLayout(nullptr), spinNthFrame(nullptr), spinTimeGap(nullptr), comboTimeGapUnit(nullptr),
+     btnGroupPlotType(0) {
     setupUi(this);
     SetupWidgetWindow();
-    Initialization();
     FILE_LOG(logDEBUG) << "Plot ready";
 }
 
-
-qTabPlot::~qTabPlot() {
-    delete myDet;
-    delete myPlot;
-}
+qTabPlot::~qTabPlot() {}
 
 void qTabPlot::SetupWidgetWindow() {
-    //error for interval between plots
-    red = new QPalette();
-    ;
-    red->setColor(QPalette::Active, QPalette::WindowText, Qt::red);
-    intervalTip = boxFrequency->toolTip();
-
-    //scan arguments
-    btnGroupScan = new QButtonGroup(this);
-    btnGroupScan->addButton(radioLevel0, 0);
-    btnGroupScan->addButton(radioLevel1, 1);
-    btnGroupScan->addButton(radioFileIndex, 2);
-    btnGroupScan->addButton(radioAllFrames, 3);
-
-    //plot type
+    // button group for plot type
     btnGroupPlotType = new QButtonGroup(this);
     btnGroupPlotType->addButton(radioNoPlot, 0);
     btnGroupPlotType->addButton(radioDataGraph, 1);
     btnGroupPlotType->addButton(radioHistogram, 2);
-
-    //histogram arguments
-    btnGroupHistogram = new QButtonGroup(this);
-    btnGroupHistogram->addButton(radioHistIntensity, 0);
-    btnGroupHistogram->addButton(radioHistLevel0, 1);
-    btnGroupHistogram->addButton(radioHistLevel1, 2);
-
+    // Plotting Frequency
+    stackedLayout = new QStackedLayout;
+    stackedLayout->setSpacing(0);
+    spinNthFrame = new QSpinBox;
+    spinNthFrame->setMinimum(1);
+    spinNthFrame->setMaximum(2000000000);
+    spinNthFrame->setValue(1);
+    spinTimeGap = new QDoubleSpinBox;
+    spinTimeGap->setMinimum(0);
+    spinTimeGap->setDecimals(3);
+    spinTimeGap->setMaximum(999999);
+    spinTimeGap->setValue(DEFAULT_STREAMING_TIMER_IN_MS);
+    comboTimeGapUnit = new QComboBox;
+    comboTimeGapUnit->addItem("hr");
+    comboTimeGapUnit->addItem("min");
+    comboTimeGapUnit->addItem("s");
+    comboTimeGapUnit->addItem("ms");
+    comboTimeGapUnit->setCurrentIndex(3);
+    QWidget *wTimeInterval = new QWidget;
+    QHBoxLayout *h1 = new QHBoxLayout;
+    wTimeInterval->setLayout(h1);
+    h1->setContentsMargins(0, 0, 0, 0);
+    h1->setSpacing(3);
+    h1->addWidget(spinTimeGap);
+    h1->addWidget(comboTimeGapUnit);
+    stackedLayout->addWidget(wTimeInterval);
+    stackedLayout->addWidget(spinNthFrame);
+    stackWidget->setLayout(stackedLayout);
+    // 1D and 2D options
+    stackedWidget1D->setCurrentIndex(0);
+    stackedWidget2D->setCurrentIndex(0);
     // Plot Axis
-    dispTitle->setEnabled(false);
-    dispXAxis->setEnabled(false);
-    dispYAxis->setEnabled(false);
-    dispZAxis->setEnabled(false);
-    dispXMin->setEnabled(false);
-    dispYMin->setEnabled(false);
-    dispZMin->setEnabled(false);
-    dispXMax->setEnabled(false);
-    dispYMax->setEnabled(false);
-    dispZMax->setEnabled(false);
     dispXMin->setValidator(new QDoubleValidator(dispXMin));
     dispYMin->setValidator(new QDoubleValidator(dispYMin));
     dispZMin->setValidator(new QDoubleValidator(dispZMin));
     dispXMax->setValidator(new QDoubleValidator(dispXMax));
     dispYMax->setValidator(new QDoubleValidator(dispYMax));
     dispZMax->setValidator(new QDoubleValidator(dispZMax));
-
-    //default titles
+    // Plot titles
     dispTitle->setText("");
     myPlot->SetPlotTitlePrefix("");
     dispXAxis->setText(defaultHistXAxisTitle);
@@ -104,51 +88,16 @@ void qTabPlot::SetupWidgetWindow() {
     myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
     myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 
-    // Plotting Frequency
-
-    stackedLayout = new QStackedLayout;
-    stackedLayout->setSpacing(0);
-    spinNthFrame = new QSpinBox;
-    spinNthFrame->setMinimum(1);
-    spinNthFrame->setMaximum(2000000000);
-    spinTimeGap = new QDoubleSpinBox;
-    spinTimeGap->setMinimum(0);
-    spinTimeGap->setDecimals(3);
-    spinTimeGap->setMaximum(999999);
-    spinTimeGap->setValue(myPlot->GetMinimumPlotTimer());
-    comboTimeGapUnit = new QComboBox;
-    comboTimeGapUnit->addItem("hr");
-    comboTimeGapUnit->addItem("min");
-    comboTimeGapUnit->addItem("s");
-    comboTimeGapUnit->addItem("ms");
-    comboTimeGapUnit->setCurrentIndex(3);
-    QWidget *w = new QWidget;
-    QHBoxLayout *h1 = new QHBoxLayout;
-    w->setLayout(h1);
-    h1->setContentsMargins(0, 0, 0, 0);
-    h1->setSpacing(3);
-    h1->addWidget(spinTimeGap);
-    h1->addWidget(comboTimeGapUnit);
-
-    stackedLayout->addWidget(w);
-    stackedLayout->addWidget(spinNthFrame);
-    stackWidget->setLayout(stackedLayout);
-
-    stackedWidget->setCurrentIndex(0);
-    stackedWidget_2->setCurrentIndex(0);
-
-    // Depending on whether the detector is 1d or 2d
-    switch (myDet->getDetectorTypeAsEnum()) {
+	// enabling according to det type
+	switch(myDet->getDetectorTypeAsEnum()) {
+    case slsDetectorDefs::GOTTHARD:
+        isOriginallyOneD = true;
+        break;
     case slsDetectorDefs::EIGER:
         isOriginallyOneD = false;
         pagePedestal->setEnabled(false);
         pagePedestal_2->setEnabled(false);
-        chkBinary->setEnabled(false);
-        chkBinary_2->setEnabled(false);
         chkGapPixels->setEnabled(true);
-        break;
-    case slsDetectorDefs::GOTTHARD:
-        isOriginallyOneD = true;
         break;
     case slsDetectorDefs::JUNGFRAU:
     case slsDetectorDefs::MOENCH:
@@ -156,113 +105,33 @@ void qTabPlot::SetupWidgetWindow() {
         chkGainPlot->setEnabled(true);
         break;
     default:
-        cout << "ERROR: Detector Type is Generic" << endl;
-        exit(-1);
+        break;
     }
 
     Select1DPlot(isOriginallyOneD);
 
-    //to check if this should be enabled
-    // EnableScanBox();
+    Initialization();
 
-    //disable histogram initially
-    boxHistogram->hide();
-
-    if (chkGapPixels->isEnabled()) {
-        int ret = myDet->enableGapPixels(-1);
-        qDefs::checkErrorMessage(myDet, "qTabPlot::SetupWidgetWindow");
-        chkGapPixels->setChecked((ret == 1) ? true : false);
-    }
-
-    qDefs::checkErrorMessage(myDet, "qTabPlot::SetupWidgetWindow");
-}
-
-
-void qTabPlot::SetPlotOptionsRightPage() {
-    if (isOneD) {
-        int i = stackedWidget->currentIndex();
-        if (i == (stackedWidget->count() - 1))
-            stackedWidget->setCurrentIndex(0);
-        else
-            stackedWidget->setCurrentIndex(i + 1);
-        box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget->currentIndex() + 1));
-    } else {
-        int i = stackedWidget_2->currentIndex();
-        if (i == (stackedWidget_2->count() - 1))
-            stackedWidget_2->setCurrentIndex(0);
-        else
-            stackedWidget_2->setCurrentIndex(i + 1);
-        box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex() + 1));
-    }
-}
-
-void qTabPlot::SetPlotOptionsLeftPage() {
-    if (isOneD) {
-        int i = stackedWidget->currentIndex();
-        if (i == 0)
-            stackedWidget->setCurrentIndex(stackedWidget->count() - 1);
-        else
-            stackedWidget->setCurrentIndex(i - 1);
-        box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget->currentIndex() + 1));
-    } else {
-        int i = stackedWidget_2->currentIndex();
-        if (i == 0)
-            stackedWidget_2->setCurrentIndex(stackedWidget_2->count() - 1);
-        else
-            stackedWidget_2->setCurrentIndex(i - 1);
-        box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex() + 1));
-    }
-}
-
-void qTabPlot::Select1DPlot(bool b) {
-#ifdef VERBOSE
-    if (b)
-        cout << "Selecting 1D Plot" << endl;
-    else
-        cout << "Selecting 2D Plot" << endl;
-#endif
-    isOneD = b;
-    lblFrom->setEnabled(false);
-    lblTo->setEnabled(false);
-    lblFrom_2->setEnabled(false);
-    lblTo_2->setEnabled(false);
-    spinFrom->setEnabled(false);
-    spinFrom_2->setEnabled(false);
-    spinTo->setEnabled(false);
-    spinTo_2->setEnabled(false);
-    if (b) {
-        box1D->show();
-        box2D->hide();
-        chkZAxis->setEnabled(false);
-        chkZMin->setEnabled(false);
-        chkZMax->setEnabled(false);
-        myPlot->Select1DPlot();
-    } else {
-        box1D->hide();
-        box2D->show();
-        chkZAxis->setEnabled(true);
-        chkZMin->setEnabled(true);
-        chkZMax->setEnabled(true);
-        myPlot->Select2DPlot();
-    }
+    Refresh();
 }
 
 void qTabPlot::Initialization() {
     // Plot arguments box
     connect(btnGroupPlotType, SIGNAL(buttonClicked(int)), this, SLOT(SetPlot()));
-    // Histogram arguments box
-    connect(btnGroupHistogram, SIGNAL(buttonClicked(int)), this, SLOT(SetHistogramOptions()));
-    // Scan box
-    // connect(boxScan,	  SIGNAL(toggled(bool)),  this, SLOT(EnableScanBox()));
-    // Snapshot box
-    connect(btnClone, SIGNAL(clicked()), myPlot, SLOT(ClonePlot()));
-    connect(btnCloseClones, SIGNAL(clicked()), myPlot, SLOT(CloseClones()));
-    connect(btnSaveClones, SIGNAL(clicked()), myPlot, SLOT(SaveClones()));
-    // 1D Plot box
-    //to change pages
-    connect(btnRight, SIGNAL(clicked()), this, SLOT(SetPlotOptionsRightPage()));
-    connect(btnLeft, SIGNAL(clicked()), this, SLOT(SetPlotOptionsLeftPage()));
 
+    // Plotting frequency box
+    connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
+    connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
+    connect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
+    connect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
+
+    // navigation buttons for options
+    connect(btnRight1D, SIGNAL(clicked()), this, SLOT(Set1DPlotOptionsRight()));
+    connect(btnLeft1D, SIGNAL(clicked()), this, SLOT(Set1DPlotOptionsLeft()));
+    connect(btnRight2D, SIGNAL(clicked()), this, SLOT(Set2DPlotOptionsRight()));
+    connect(btnLeft2D, SIGNAL(clicked()), this, SLOT(Set2DPlotOptionsLeft()));
+    
+    // 1D options
     connect(chkSuperimpose, SIGNAL(toggled(bool)), this, SLOT(EnablePersistency(bool)));
     connect(spinPersistency, SIGNAL(valueChanged(int)), myPlot, SLOT(SetPersistency(int)));
     connect(chkPoints, SIGNAL(toggled(bool)), myPlot, SLOT(SetMarkers(bool)));
@@ -275,52 +144,16 @@ void qTabPlot::Initialization() {
     connect(chkContour, SIGNAL(toggled(bool)), myPlot, SIGNAL(ContourSignal(bool)));
     connect(chkLogz, SIGNAL(toggled(bool)), myPlot, SIGNAL(LogzSignal(bool)));
     connect(chkStatistics_2, SIGNAL(toggled(bool)), myPlot, SLOT(DisplayStatistics(bool)));
-    // Plotting frequency box
-    connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-    connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-    connect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-    connect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-    // Plot Axis *
-    connect(chkTitle, SIGNAL(toggled(bool)), this, SLOT(EnableTitles()));
-    connect(chkXAxis, SIGNAL(toggled(bool)), this, SLOT(EnableTitles()));
-    connect(chkYAxis, SIGNAL(toggled(bool)), this, SLOT(EnableTitles()));
-    connect(chkZAxis, SIGNAL(toggled(bool)), this, SLOT(EnableTitles()));
-    connect(dispTitle, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
-    connect(dispXAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
-    connect(dispYAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
-    connect(dispZAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
-
-    connect(chkXMin, SIGNAL(toggled(bool)), this, SLOT(EnableXRange()));
-    connect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(EnableXRange()));
-    connect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(EnableYRange()));
-    connect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(EnableYRange()));
-    connect(chkZMin, SIGNAL(toggled(bool)), this, SLOT(EnableZRange()));
-    connect(chkZMax, SIGNAL(toggled(bool)), this, SLOT(EnableZRange()));
-    connect(chkAspectRatio, SIGNAL(toggled(bool)), this, SLOT(checkAspectRatio()));
-    connect(this, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)), myPlot, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)));
-
-    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-    connect(dispZMin, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
-    connect(dispZMax, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
-    // Save
-    connect(btnSave, SIGNAL(clicked()), myPlot, SLOT(SavePlot()));
-    connect(chkSaveAll, SIGNAL(toggled(bool)), myPlot, SLOT(SaveAll(bool)));
-
     //pedstal
     connect(chkPedestal, SIGNAL(toggled(bool)), myPlot, SLOT(SetPedestal(bool)));
     connect(btnRecalPedestal, SIGNAL(clicked()), myPlot, SLOT(RecalculatePedestal()));
     connect(chkPedestal_2, SIGNAL(toggled(bool)), myPlot, SLOT(SetPedestal(bool)));
     connect(btnRecalPedestal_2, SIGNAL(clicked()), myPlot, SLOT(RecalculatePedestal()));
-
     //accumulate
     connect(chkAccumulate, SIGNAL(toggled(bool)), myPlot, SLOT(SetAccumulate(bool)));
     connect(btnResetAccumulate, SIGNAL(clicked()), myPlot, SLOT(ResetAccumulate()));
     connect(chkAccumulate_2, SIGNAL(toggled(bool)), myPlot, SLOT(SetAccumulate(bool)));
     connect(btnResetAccumulate_2, SIGNAL(clicked()), myPlot, SLOT(ResetAccumulate()));
-
     //binary
     connect(chkBinary, SIGNAL(toggled(bool)), this, SLOT(SetBinary()));
     connect(chkBinary_2, SIGNAL(toggled(bool)), this, SLOT(SetBinary()));
@@ -328,223 +161,387 @@ void qTabPlot::Initialization() {
     connect(spinFrom_2, SIGNAL(valueChanged(int)), this, SLOT(SetBinary()));
     connect(spinTo, SIGNAL(valueChanged(int)), this, SLOT(SetBinary()));
     connect(spinTo_2, SIGNAL(valueChanged(int)), this, SLOT(SetBinary()));
-
     //gainplot
     if (chkGainPlot->isEnabled())
         connect(chkGainPlot, SIGNAL(toggled(bool)), myPlot, SIGNAL(GainPlotSignal(bool)));
-
     // gap pixels
     if (chkGapPixels->isEnabled())
-        connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(EnableGapPixels(bool)));
+        connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
+
+    // Save
+    connect(btnSave, SIGNAL(clicked()), myPlot, SLOT(SavePlot()));
+    connect(chkSaveAll, SIGNAL(toggled(bool)), myPlot, SLOT(SaveAll(bool)));
+
+    // Snapshot box
+    connect(btnClone, SIGNAL(clicked()), myPlot, SLOT(ClonePlot()));
+    connect(btnCloseClones, SIGNAL(clicked()), myPlot, SLOT(CloseClones()));
+    connect(btnSaveClones, SIGNAL(clicked()), myPlot, SLOT(SaveClones()));
+
+    // Plot Axis
+    connect(chkTitle, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    connect(chkXAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    connect(chkYAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    connect(chkZAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    connect(dispTitle, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    connect(dispXAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    connect(dispYAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    connect(dispZAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+
+    connect(chkXMin, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
+    connect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
+    connect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
+    connect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
+    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    connect(chkAspectRatio, SIGNAL(toggled(bool)), this, SLOT(CheckAspectRatio()));
+
+    connect(chkZMin, SIGNAL(toggled(bool)), this, SLOT(SetZRange()));
+    connect(chkZMax, SIGNAL(toggled(bool)), this, SLOT(SetZRange()));
+    connect(dispZMin, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
+    connect(dispZMax, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
+    connect(this, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)), myPlot, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)));
+}
+
+xxxxxxxxxxxxxxx
+
+void qTabPlot::Set1DPlotOptionsRight() {
+    FILE_LOG(logDEBUG) << "1D Options Right";
+    int i = stackedWidget->currentIndex();
+    if (i == (stackedWidget->count() - 1))
+        stackedWidget->setCurrentIndex(0);
+    else
+        stackedWidget->setCurrentIndex(i + 1);
+    box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget->currentIndex() + 1));
+}
+
+void qTabPlot::Set1DPlotOptionsLeft() {
+    FILE_LOG(logDEBUG) << "1D Options Left";
+    int i = stackedWidget->currentIndex();
+    if (i == 0)
+        stackedWidget->setCurrentIndex(stackedWidget->count() - 1);
+    else
+        stackedWidget->setCurrentIndex(i - 1);
+    box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget->currentIndex() + 1));
+}
+
+void qTabPlot::Set2DPlotOptionsRight() {
+    FILE_LOG(logDEBUG) << "2D Options Right";
+    int i = stackedWidget_2->currentIndex();
+    if (i == (stackedWidget_2->count() - 1))
+        stackedWidget_2->setCurrentIndex(0);
+    else
+        stackedWidget_2->setCurrentIndex(i + 1);
+    box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex() + 1));
+}
+
+void qTabPlot::Set2DPlotOptionsLeft() {
+    FILE_LOG(logDEBUG) << "2D Options Left";
+    int i = stackedWidget_2->currentIndex();
+    if (i == 0)
+        stackedWidget_2->setCurrentIndex(stackedWidget_2->count() - 1);
+    else
+        stackedWidget_2->setCurrentIndex(i - 1);
+    box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex() + 1));
 }
 
 void qTabPlot::EnablePersistency(bool enable) {
-#ifdef VERBOSE
-    if (enable)
-        cout << "Enabling Persistency" << endl;
-    else
-        cout << "Disabling Persistency" << endl;
-#endif
-    lblPersistency->setEnabled(enable);
-    spinPersistency->setEnabled(enable);
+    FILE_LOG(logINFO) << "Superimpose " << (enable ? "enabled" : "disabled");
+    lblPersistency->setEnabled(val);
+    spinPersistency->setEnabled(val);
     if (enable)
         myPlot->SetPersistency(spinPersistency->value());
     else
         myPlot->SetPersistency(0);
 }
 
+void qTabPlot::SetBinary() {
+    bool binary1D = chkBinary->isChecked();
+    bool binary2D = chkBinary_2->isChecked(); 
+    if (isOneD) {
+        FILE_LOG(logINFO) << "Binary Plot " << (binary1D ? "enabled" : "disabled");
+        lblFrom->setEnabled(binary1D);
+        lblTo->setEnabled(binary1D);
+        spinFrom->setEnabled(binary1D);
+        spinTo->setEnabled(binary1D);
+        myPlot->SetBinary(binary1D, spinFrom->value(), spinTo->value());
+    } else {
+        FILE_LOG(logINFO) << "Binary Plot " << (binary2D ? "enabled" : "disabled");
+        lblFrom_2->setEnabled(binary2D);
+        lblTo_2->setEnabled(binary2D);
+        spinFrom_2->setEnabled(binary2D);
+        spinTo_2->setEnabled(binary2D);
+        myPlot->SetBinary(binary2D, spinFrom_2->value(), spinTo_2->value());
+    }
+}
+
+void qTabPlot::GetGapPixels() {
+    FILE_LOG(logDEBUG) << "Getting gap pixels";
+    disconnect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
+
+	try {
+        auto retval = myDet->enableGapPixels(-1);
+		if (retval == -1) {
+			qDefs::Message(qDefs::WARNING, "Gap pixels enable is inconsistent for all detectors.", "qTabPlot::GetGapPixels");
+		} else {
+			chkGapPixels->setChecked(retval == 0 ? false : true);
+		}
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get gap pixels enable.", e.what(), "qTabPlot::GetGapPixels");
+    }
+
+    connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
+}
+
+void qTabPlot::SetGapPixels(bool enable) {
+	FILE_LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
+
+	try {
+        myDet->enableGapPixels(enable);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set gap pixels enable.", e.what(), "qTabPlot::SetGapPixels");
+        GetGapPixels();
+    }
+}
+
 void qTabPlot::SetTitles() {
-#ifdef VERBOSE
-    cout << "Setting Plot Titles" << endl;
-#endif
-    // Plot Title
-    if (dispTitle->isEnabled())
-        myPlot->SetPlotTitlePrefix(dispTitle->text());
-    // X Axis
-    if (dispXAxis->isEnabled()) {
-        if (isOneD)
-            myPlot->SetHistXAxisTitle(dispXAxis->text());
-        else
-            myPlot->SetImageXAxisTitle(dispXAxis->text());
-    }
-    // Y Axis
-    if (dispYAxis->isEnabled()) {
-        if (isOneD)
-            myPlot->SetHistYAxisTitle(dispYAxis->text());
-        else
-            myPlot->SetImageYAxisTitle(dispYAxis->text());
-    }
-    // Z Axis
-    if (dispZAxis->isEnabled())
-        myPlot->SetImageZAxisTitle(dispZAxis->text());
-}
+    FILE_LOG(logDEBUG) << "Setting Plot Titles";
+    disconnect(chkTitle, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    disconnect(chkXAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    disconnect(chkYAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    disconnect(chkZAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    disconnect(dispTitle, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    disconnect(dispXAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    disconnect(dispYAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    disconnect(dispZAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
 
-void qTabPlot::EnableTitles() {
-    // Plot Title
-    dispTitle->setEnabled(chkTitle->isChecked());
-    if (!chkTitle->isChecked()) {
+    // title
+    if (!chkTitle->isChecked() || dispTitle->text().isEmpty()) {
         myPlot->SetPlotTitlePrefix("");
-        dispTitle->setText("");
+        dispTitle->setText("");   
+    } else {
+        myPlot->SetPlotTitlePrefix(dispTitle->text());
     }
-    // X Axis
-    dispXAxis->setEnabled(chkXAxis->isChecked());
-    if (!chkXAxis->isChecked()) {
-        if (isOneD) {
-            myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
-            dispXAxis->setText(defaultHistXAxisTitle);
-        } else {
-            myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
-            dispXAxis->setText(defaultImageXAxisTitle);
-        }
-    }
-    // Y Axis
-    dispYAxis->setEnabled(chkYAxis->isChecked());
-    if (!chkYAxis->isChecked()) {
-        if (isOneD) {
-            myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
-            dispYAxis->setText(defaultHistYAxisTitle);
-        } else {
-            myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
-            dispYAxis->setText(defaultImageYAxisTitle);
-        }
-    }
-    // Z Axis
-    dispZAxis->setEnabled(chkZAxis->isChecked());
-    if (!chkZAxis->isChecked()) {
-        myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
+    // x
+    if (!chkXAxis->isChecked() || dispXAxis->text().isEmpty()) {
+        dispXAxis->setText(isOneD ? defaultHistXAxisTitle : defaultImageXAxisTitle);
+        myPlot->SetXAxisTitle(isOneD ? defaultHistXAxisTitle : defaultImageXAxisTitle);
+    } else {
+        myPlot->SetXAxisTitle(dispXAxis->text());
+    } 
+    // y
+    if (!chkYAxis->isChecked() || dispYAxis->text().isEmpty()) {
+        dispYAxis->setText(isOneD ? defaultHistYAxisTitle : defaultImageYAxisTitle);
+        myPlot->SetYAxisTitle(isOneD ? defaultHistYAxisTitle : defaultImageYAxisTitle);
+    } else {
+        myPlot->SetYAxisTitle(dispYAxis->text());
+    }  
+    // z
+    if (!chkZAxis->isChecked() || dispZAxis->text().isEmpty()) {
+        myPlot->SetZAxisTitle(defaultImageZAxisTitle);
         dispZAxis->setText(defaultImageZAxisTitle);
+    } else {
+        myPlot->SetZAxisTitle(dispZAxis->text());
     }
+
+    connect(chkTitle, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    connect(chkXAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    connect(chkYAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    connect(chkZAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
+    connect(dispTitle, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    connect(dispXAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    connect(dispYAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
+    connect(dispZAxis, SIGNAL(textChanged(const QString &)), this, SLOT(SetTitles()));
 }
 
-void qTabPlot::checkAspectRatio() {
+void qTabPlot::SetXRange() {
+    FILE_LOG(logDEBUG) << "Enable X axis range";
+
     if (chkAspectRatio->isChecked()) {
-        maintainAspectRatio(-1);
+        MaintainAspectRatio(static_cast<int>(slsDetectorDefs::Y));
+    } else {
+        SetXYRange();
     }
 }
 
+void qTabPlot::SetYRange() {
+    FILE_LOG(logDEBUG) << "Enable Y axis range";
 
-void qTabPlot::maintainAspectRatio(int axis) {
-#ifdef VERBOSE
-    cout << "Maintaining Aspect Ratio" << endl;
-#endif
-    disconnect(chkXMin, SIGNAL(toggled(bool)), this, SLOT(EnableXRange()));
-    disconnect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(EnableXRange()));
-    disconnect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(EnableYRange()));
-    disconnect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(EnableYRange()));
-    disconnect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    disconnect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    disconnect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-    disconnect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
+    if (chkAspectRatio->isChecked()) {
+        MaintainAspectRatio(static_cast<int>(slsDetectorDefs::X));
+    } else {
+        SetXYRange();
+    }
+}
 
+void qTabPlot::CheckAspectRatio() {
+    if (chkAspectRatio->isChecked()) {
+        MaintainAspectRatio(-1);
+    } else {
+        SetXYRange();
+    }
+}
+
+void qTabPlot::SetXYRange() {
+    FILE_LOG(LOGDEBUG) << "Set XY Range";
+    disconnect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    disconnect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    disconnect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    disconnect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+
+    bool disablezoom = false;
+
+    // xmin
+    // if unchecked, empty or invalid (set to false so it takes the min/max of plot)
+    if (!chkXMin->isChecked() || dispXMin->text().isEmpty()) {
+        myPlot->IsXYRangeValues(false, qDefs::XMINIMUM);
+    } else if (dispXMin->text().toDouble() < myPlot->GetXMinimum()) {
+        qDefs::Message(qDefs::WARNING, "XMin Outside Plot Range", "qTabPlot::SetXRange");
+        dispXMin->setText("");
+        myPlot->IsXYRangeValues(false, qDefs::XMINIMUM);
+    } else {
+        myPlot->SetXYRangeValues(dispXMin->text().toDouble(), qDefs::XMINIMUM);
+        myPlot->IsXYRangeValues(true, qDefs::XMINIMUM);
+        disablezoom = true;
+    } 
+
+    //xmax
+    if (!chkXMax->isChecked() || dispXMax->text().isEmpty()) {
+        myPlot->IsXYRangeValues(false, qDefs::XMAXIMUM);
+    } else if (dispXMax->text().toDouble() < myPlot->GetXMaximum()) {
+        qDefs::Message(qDefs::WARNING, "XMax Outside Plot Range", "qTabPlot::SetXYRange");
+        dispXMax->setText("");
+        myPlot->IsXYRangeValues(false, qDefs::XMAXIMUM);
+    } else {
+        myPlot->SetXYRangeValues(dispXMax->text().toDouble(), qDefs::XMAXIMUM);
+        myPlot->IsXYRangeValues(true, qDefs::XMAXIMUM);
+        disablezoom = true;
+    } 
+    
+    // ymin
+    if (!chkYMin->isChecked() || dispYMin->text().isEmpty()) {
+        myPlot->IsXYRangeValues(false, qDefs::YMINIMUM);
+    } else if (dispYMin->text().toDouble() < myPlot->GetYMinimum()) {
+        qDefs::Message(qDefs::WARNING, "YMin Outside Plot Range", "qTabPlot::SetXYRange");
+        dispYMin->setText("");
+        myPlot->IsXYRangeValues(false, qDefs::YMINIMUM);
+    } else {
+        myPlot->SetXYRangeValues(dispYMin->text().toDouble(), qDefs::YMINIMUM);
+        myPlot->IsXYRangeValues(true, qDefs::YMINIMUM);
+        disablezoom = true;
+    } 
+
+    //ymax
+    if (!chkYMax->isChecked() || dispYMax->text().isEmpty()) {
+        myPlot->IsXYRangeValues(false, qDefs::YMAXIMUM);
+    } else if (dispYMax->text().toDouble() < myPlot->GetYMaximum()) {
+        qDefs::Message(qDefs::WARNING, "YMax Outside Plot Range", "qTabPlot::SetXYRange");
+        dispYMax->setText("");
+        myPlot->IsXYRangeValues(false, qDefs::YMAXIMUM);
+    } else {
+        myPlot->SetXYRangeValues(dispYMax->text().toDouble(), qDefs::YMAXIMUM);
+        myPlot->IsXYRangeValues(true, qDefs::YMAXIMUM);
+        disablezoom = true;
+    } 
+
+    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+
+    // to update plot with range
+    myPlot->SetXYRange(true);
+    myPlot->DisableZoom(disablezoom);
+    emit DisableZoomSignal(disablezoom);
+}
+
+void qTabPlot::MaintainAspectRatio(int dimension) {
+    FILE_LOG(logDEBUG) << "Maintaining Aspect Ratio";
+
+    disconnect(chkXMin, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
+    disconnect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
+    disconnect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
+    disconnect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
+    disconnect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    disconnect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    disconnect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    disconnect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+
+    // check all, fill all
+    chkXMin->setChecked(true);
+    chkXMax->setChecked(true);
+    chkYMin->setChecked(true);
+    chkYMax->setChecked(true);
+	if (dispXMin->text().isEmpty()) 
+        dispXMin->setText(QString::number(myPlot->GetXMinimum()));
+	if (dispXMax->text().isEmpty()) 
+        dispXMax->setText(QString::number(myPlot->GetXMaximum()));
+	if (dispYMin->text().isEmpty()) 
+        dispYMin->setText(QString::number(myPlot->GetYMinimum()));
+	if (dispYMax->text().isEmpty()) 
+        dispYMax->setText(QString::number(myPlot->GetYMaximum()));
+
+    // calculate ideal aspect ratio with previous limits
     double ranges[4];
-    //get previous plot limits
     ranges[qDefs::XMINIMUM] = myPlot->GetXMinimum();
     ranges[qDefs::XMAXIMUM] = myPlot->GetXMaximum();
     ranges[qDefs::YMINIMUM] = myPlot->GetYMinimum();
     ranges[qDefs::YMAXIMUM] = myPlot->GetYMaximum();
-#ifdef VERYVERBOSE
-    cprintf(BLUE, "ideal values: xmin:%f, xmax:%f ymin:%f ymax:%f\n", ranges[qDefs::XMINIMUM], ranges[qDefs::XMAXIMUM], ranges[qDefs::YMINIMUM], ranges[qDefs::YMAXIMUM]);
-#endif
     double idealAspectratio = (ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]);
-
-    // enable all
-    chkXMin->setChecked(true);
-    dispXMin->setEnabled(true);
-    chkXMax->setChecked(true);
-    dispXMax->setEnabled(true);
-    chkYMin->setChecked(true);
-    dispYMin->setEnabled(true);
-    chkYMax->setChecked(true);
-    dispYMax->setEnabled(true);
-
-    // if any empty, set it to previous plots boundaries
-    if (dispXMin->text().isEmpty())
-        dispXMin->setText(QString::number(myPlot->GetXMinimum()));
-    if (dispXMax->text().isEmpty())
-        dispXMax->setText(QString::number(myPlot->GetXMaximum()));
-    if (dispYMin->text().isEmpty())
-        dispYMin->setText(QString::number(myPlot->GetYMinimum()));
-    if (dispYMax->text().isEmpty())
-        dispYMax->setText(QString::number(myPlot->GetYMaximum()));
-
-    //get actual limits
+    FILE_LOG(logDEBUG) << "Ideal Aspect ratio: %f for x(%f - %f), y(%f - %f)\n", idealAspectratio, ranges[qDefs::XMINIMUM], ranges[qDefs::XMAXIMUM], ranges[qDefs::YMINIMUM], ranges[qDefs::YMAXIMUM]);
+  
+    // calculate current aspect ratio
     ranges[qDefs::XMINIMUM] = dispXMin->text().toDouble();
     ranges[qDefs::XMAXIMUM] = dispXMax->text().toDouble();
     ranges[qDefs::YMINIMUM] = dispYMin->text().toDouble();
     ranges[qDefs::YMAXIMUM] = dispYMax->text().toDouble();
-#ifdef VERYVERBOSE
-    cprintf(BLUE, "new limits: xmin:%f, xmax:%f ymin:%f ymax:%f\n", ranges[qDefs::XMINIMUM], ranges[qDefs::XMAXIMUM], ranges[qDefs::YMINIMUM], ranges[qDefs::YMAXIMUM]);
-#endif
-    // calcualte new aspect ratio
-    double newAspectRatio = (ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]);
+    double currentAspectRatio = (ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]);
+    FILE_LOG(logDEBUG) << "Current Aspect ratio: %f for x(%f - %f), y(%f - %f)\n", currentAspectRatio, ranges[qDefs::XMINIMUM], ranges[qDefs::XMAXIMUM], ranges[qDefs::YMINIMUM], ranges[qDefs::YMAXIMUM]);
 
-    // if not ideal aspect ratio
     if (newAspectRatio != idealAspectratio) {
-
-        // find the larger difference
-        if (axis == -1) {
-            if ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) > (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM])) {
-                //change x
-                axis = 0;
-            } else {
-                //change y
-                axis = 1;
-            }
+        // dimension: 1(x changed: y adjusted), 0(y changed: x adjusted), -1(aspect ratio clicked: larger one adjusted)
+        if (dimension == -1) {
+            dimension = ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) > (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM])) 
+            ? static_cast<int>(slsDetectorDefs::X) : static_cast<int>(slsDetectorDefs::Y);
         }
 
-        // if x changed: y adjusted, y changed: x adjusted, aspect ratio clicked: larger one adjusted
+        // calculate new value to maintain aspect ratio
+        // adjust x
         double newval = 0;
-        switch (axis) {
-        case 0:
-            //change x
+        if (dimension == static_cast<int>(slsDetectorDefs::X)) {
             newval = idealAspectratio * (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]) + ranges[qDefs::XMINIMUM];
             if (newval <= myPlot->GetXMaximum()) {
                 dispXMax->setText(QString::number(newval));
-#ifdef VERYVERBOSE
-                cprintf(BLUE, "new xmax: %f\n", newval);
-#endif
+                FILE_LOG(logDEBUG) << "New XMax: " << newval;
             } else {
                 newval = ranges[qDefs::XMAXIMUM] - (idealAspectratio * (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]));
                 dispXMin->setText(QString::number(newval));
-#ifdef VERYVERBOSE
-                cprintf(BLUE, "new xmin: %f\n", newval);
-#endif
+                FILE_LOG(logDEBUG) << "New XMin: " << newval;
             }
-
-            break;
-        case 1:
-            // change y
+        }
+        // adjust y
+        else  {
             newval = ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / idealAspectratio) + ranges[qDefs::YMINIMUM];
             if (newval <= myPlot->GetYMaximum()) {
                 dispYMax->setText(QString::number(newval));
-                //#ifdef VERYVERBOSE
-                cprintf(BLUE, "new ymax: %f\n", newval);
-                //#endif
+                FILE_LOG(logDEBUG) << "New YMax: " << newval;
             } else {
                 newval = ranges[qDefs::YMAXIMUM] - ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / idealAspectratio);
                 dispYMin->setText(QString::number(newval));
-#ifdef VERYVERBOSE
-                cprintf(BLUE, "new ymin: %f\n", newval);
-#endif
+                FILE_LOG(logDEBUG) << "New YMax: " << newval;
             }
-            break;
-        default:
-            break;
         }
     }
 
-    connect(chkXMin, SIGNAL(toggled(bool)), this, SLOT(EnableXRange()));
-    connect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(EnableXRange()));
-    connect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(EnableYRange()));
-    connect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(EnableYRange()));
-    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-
-    // disable mouse zooming if any checked
-    myPlot->DisableZoom(true);
-    emit DisableZoomSignal(true);
+    connect(chkXMin, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
+    connect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
+    connect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
+    connect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
+    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
+    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
 
     // set XY values in plot
     myPlot->SetXYRangeValues(dispXMin->text().toDouble(), qDefs::XMINIMUM);
@@ -557,188 +554,10 @@ void qTabPlot::maintainAspectRatio(int axis) {
     myPlot->IsXYRangeValues(true, qDefs::YMINIMUM);
     myPlot->IsXYRangeValues(true, qDefs::YMAXIMUM);
 
-    //  To remind the updateplot in qdrawplot to set range after updating plot
+    // to update plot with range
     myPlot->SetXYRange(true);
-}
-
-void qTabPlot::EnableXRange() {
-#ifdef VERBOSE
-    cout << "Enable X Axis Range" << endl;
-#endif
-    // keeping aspect ratio
-    if (chkAspectRatio->isChecked()) {
-        maintainAspectRatio(1);
-        return;
-    }
-    disconnect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    disconnect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-
-    // enable/disable lineedit
-    if (chkXMin->isChecked()) {
-        dispXMin->setEnabled(true);
-        // if any empty, set it to previous plots boundaries
-        if (dispXMin->text().isEmpty())
-            dispXMin->setText(QString::number(myPlot->GetXMinimum()));
-    } else {
-        dispXMin->setEnabled(false);
-    }
-    // enable/disable lineedit
-    if (chkXMax->isChecked()) {
-        dispXMax->setEnabled(true);
-        // if any empty, set it to previous plots boundaries
-        if (dispXMax->text().isEmpty())
-            dispXMax->setText(QString::number(myPlot->GetXMaximum()));
-    } else {
-        dispXMax->setEnabled(false);
-    }
-
-    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-
-    EnableRange();
-}
-
-void qTabPlot::EnableYRange() {
-#ifdef VERBOSE
-    cout << "Enable Y Axis Range" << endl;
-#endif
-    // keeping aspect ratio
-    if (chkAspectRatio->isChecked()) {
-        maintainAspectRatio(0);
-        return;
-    }
-    disconnect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-    disconnect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-
-    // enable/disable lineedit
-    if (chkYMin->isChecked()) {
-        dispYMin->setEnabled(true);
-        // if any empty, set it to previous plots boundaries
-        if (dispYMin->text().isEmpty())
-            dispYMin->setText(QString::number(myPlot->GetYMinimum()));
-    } else {
-        dispYMin->setEnabled(false);
-    }
-    // enable/disable lineedit
-    if (chkYMax->isChecked()) {
-        dispYMax->setEnabled(true);
-        // if any empty, set it to previous plots boundaries
-        if (dispYMax->text().isEmpty())
-            dispYMax->setText(QString::number(myPlot->GetYMaximum()));
-    } else {
-        dispYMax->setEnabled(false);
-    }
-
-    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-
-    EnableRange();
-}
-
-void qTabPlot::EnableRange() {
-#ifdef VERBOSE
-    cout << "Enable Axes Range" << endl;
-#endif
-    // disable mouse zooming if any checked
-    bool disableZoom = false;
-    if (chkYMin->isChecked() || chkYMax->isChecked() || chkYMin->isChecked() || chkYMax->isChecked())
-        disableZoom = true;
-    emit DisableZoomSignal(disableZoom);
-    SetAxesRange();
-}
-
-void qTabPlot::SetXAxisRange() {
-#ifdef VERBOSE
-    cout << "Setting X Axis Range" << endl;
-#endif
-
-    disconnect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    disconnect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-
-    if (dispXMin->text().toDouble() < myPlot->GetXMinimum()) {
-        qDefs::Message(qDefs::WARNING, "Outside Plot Range", "qTabPlot::CheckZRange");
-        dispXMin->setText(QString::number(myPlot->GetXMinimum()));
-    }
-
-    if (dispXMax->text().toDouble() > myPlot->GetXMaximum()) {
-        qDefs::Message(qDefs::WARNING, "Outside Plot Range", "qTabPlot::CheckZRange");
-        dispXMax->setText(QString::number(myPlot->GetXMaximum()));
-    }
-
-    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXAxisRange()));
-
-    // keeping aspect ratio
-    if (chkAspectRatio->isChecked()) {
-        maintainAspectRatio(1);
-        return;
-    }
-
-    SetAxesRange();
-}
-
-void qTabPlot::SetYAxisRange() {
-#ifdef VERBOSE
-    cout << "Setting Y Axis Range" << endl;
-#endif
-
-    disconnect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-    disconnect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-
-    if (dispYMin->text().toDouble() < myPlot->GetYMinimum()) {
-        qDefs::Message(qDefs::WARNING, "Outside Plot Range", "qTabPlot::CheckZRange");
-        dispYMin->setText(QString::number(myPlot->GetYMinimum()));
-    }
-
-    if (dispYMax->text().toDouble() > myPlot->GetYMaximum()) {
-        qDefs::Message(qDefs::WARNING, "Outside Plot Range", "qTabPlot::CheckZRange");
-        dispYMax->setText(QString::number(myPlot->GetYMaximum()));
-    }
-
-    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYAxisRange()));
-
-    // keeping aspect ratio
-    if (chkAspectRatio->isChecked()) {
-        maintainAspectRatio(0);
-        return;
-    }
-
-    SetAxesRange();
-}
-
-void qTabPlot::SetAxesRange() {
-#ifdef VERBOSE
-    cout << "Setting Axes Range" << endl;
-#endif
-
-    // x min
-    if (dispXMin->isEnabled()) {
-        myPlot->SetXYRangeValues(dispXMin->text().toDouble(), qDefs::XMINIMUM);
-        myPlot->IsXYRangeValues(true, qDefs::XMINIMUM);
-    } else
-        myPlot->IsXYRangeValues(false, qDefs::XMINIMUM);
-    // x max
-    if (dispXMax->isEnabled()) {
-        myPlot->SetXYRangeValues(dispXMax->text().toDouble(), qDefs::XMAXIMUM);
-        myPlot->IsXYRangeValues(true, qDefs::XMAXIMUM);
-    } else
-        myPlot->IsXYRangeValues(false, qDefs::XMAXIMUM);
-    // y min
-    if (dispYMin->isEnabled()) {
-        myPlot->SetXYRangeValues(dispYMin->text().toDouble(), qDefs::YMINIMUM);
-        myPlot->IsXYRangeValues(true, qDefs::YMINIMUM);
-    } else
-        myPlot->IsXYRangeValues(false, qDefs::YMINIMUM);
-    // y max
-    if (dispYMax->isEnabled()) {
-        myPlot->SetXYRangeValues(dispYMax->text().toDouble(), qDefs::YMAXIMUM);
-        myPlot->IsXYRangeValues(true, qDefs::YMAXIMUM);
-    } else
-        myPlot->IsXYRangeValues(false, qDefs::YMAXIMUM);
-
-    //  To remind the updateplot in qdrawplot to set range after updating plot
-    myPlot->SetXYRange(true);
+    myPlot->DisableZoom(true);
+    emit DisableZoomSignal(true);
 }
 
 
@@ -784,6 +603,131 @@ bool qTabPlot::CheckZRange(QString value) {
 
     return true;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void qTabPlot::Select1DPlot(bool b) {
+#ifdef VERBOSE
+    if (b)
+        cout << "Selecting 1D Plot" << endl;
+    else
+        cout << "Selecting 2D Plot" << endl;
+#endif
+    isOneD = b;
+    lblFrom->setEnabled(false);
+    lblTo->setEnabled(false);
+    lblFrom_2->setEnabled(false);
+    lblTo_2->setEnabled(false);
+    spinFrom->setEnabled(false);
+    spinFrom_2->setEnabled(false);
+    spinTo->setEnabled(false);
+    spinTo_2->setEnabled(false);
+    if (b) {
+        box1D->show();
+        box2D->hide();
+        chkZAxis->setEnabled(false);
+        chkZMin->setEnabled(false);
+        chkZMax->setEnabled(false);
+        myPlot->Select1DPlot();
+    } else {
+        box1D->hide();
+        box2D->show();
+        chkZAxis->setEnabled(true);
+        chkZMin->setEnabled(true);
+        chkZMax->setEnabled(true);
+        myPlot->Select2DPlot();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void qTabPlot::SetPlot() {
@@ -1293,58 +1237,7 @@ void qTabPlot::SetFrequency() {
  }
 
 
-void qTabPlot::SetBinary() {
-    //1d
-    if (isOneD) {
-        if (chkBinary->isChecked()) {
-#ifdef VERBOSE
-            cout << endl
-                 << "Enabling Binary" << endl;
-#endif
-            lblFrom->setEnabled(true);
-            lblTo->setEnabled(true);
-            spinFrom->setEnabled(true);
-            spinTo->setEnabled(true);
-            myPlot->SetBinary(true, spinFrom->value(), spinTo->value());
-        } else {
-#ifdef VERBOSE
-            cout << endl
-                 << "Disabling Binary" << endl;
-#endif
-            lblFrom->setEnabled(false);
-            lblTo->setEnabled(false);
-            spinFrom->setEnabled(false);
-            spinTo->setEnabled(false);
-            myPlot->SetBinary(false);
-        }
-    }
-    //2d
-    else {
-        if (chkBinary_2->isChecked()) {
-#ifdef VERBOSE
-            cout << endl
-                 << "Enabling Binary" << endl;
-#endif
-            lblFrom_2->setEnabled(true);
-            lblTo_2->setEnabled(true);
-            spinFrom_2->setEnabled(true);
-            spinTo_2->setEnabled(true);
-            myPlot->SetBinary(true, spinFrom_2->value(), spinTo_2->value());
 
-        } else {
-#ifdef VERBOSE
-            cout << endl
-                 << "Disabling Binary" << endl;
-#endif
-
-            lblFrom_2->setEnabled(false);
-            lblTo_2->setEnabled(false);
-            spinFrom_2->setEnabled(false);
-            spinTo_2->setEnabled(false);
-            myPlot->SetBinary(false);
-        }
-    }
-}
 
 
 void qTabPlot::SetHistogramOptions() {
@@ -1358,22 +1251,11 @@ void qTabPlot::SetHistogramOptions() {
 }
 
 
-void qTabPlot::EnableGapPixels(bool enable) {
-#ifdef VERBOSE
-    cout << "Setting Gap pixels to " << enable << endl;
-#endif
-    disconnect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(EnableGapPixels(bool)));
-
-    myDet->enableGapPixels(enable);
-    int ret = myDet->enableGapPixels(-1);
-    qDefs::checkErrorMessage(myDet, "qTabPlot::SetScanArgument");
-    chkGapPixels->setChecked((ret == 1) ? true : false);
-
-    connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(EnableGapPixels(bool)));
-}
-
 
 void qTabPlot::Refresh() {
+
+
+
 #ifdef VERBOSE
     cout << endl
          << "**Updating Plot Tab" << endl;
@@ -1382,13 +1264,9 @@ void qTabPlot::Refresh() {
         if (!radioNoPlot->isChecked())
             boxFrequency->setEnabled(true);
         SetFrequency();
-
+        
         if (chkGapPixels->isEnabled()) {
-            disconnect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(EnableGapPixels(bool)));
-            int ret = myDet->enableGapPixels(-1);
-            qDefs::checkErrorMessage(myDet, "qTabPlot::Refresh");
-            chkGapPixels->setChecked((ret == 1) ? true : false);
-            connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(EnableGapPixels(bool)));
+            GetGapPixels();
         }
 
     } else {

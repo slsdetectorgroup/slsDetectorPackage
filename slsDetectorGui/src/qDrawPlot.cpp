@@ -24,8 +24,6 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-const double qDrawPlot::PLOT_TIMER_MS = DEFAULT_STREAMING_TIMER_IN_MS;
-
 qDrawPlot::qDrawPlot(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector), plot1D_hists(0) {
     SetupWidgetWindow();
     Initialization();
@@ -177,7 +175,7 @@ void qDrawPlot::SetupWidgetWindow() {
     IsXYRange[2] = false;
     IsXYRange[3] = false;
 
-    timerValue = PLOT_TIMER_MS;
+    timerValue = DEFAULT_STREAMING_TIMER_IN_MS;
     frameFactor = 0;
     isFrameEnabled = false;
     isTriggerEnabled = false;

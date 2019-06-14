@@ -272,7 +272,7 @@ void AD9257_Configure(){
     AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_BINARY_OFST_VAL);
 
     //output clock phase
-#if defined(GOTTHARDD)  || defined(JUNGFRAUD)
+#if defined(GOTTHARDD)  || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
     FILE_LOG(logINFO, ("\tOutput clock phase is at default: 180\n"));
 #else
 	FILE_LOG(logINFO, ("\tOutput clock phase: 60\n"));
@@ -298,9 +298,7 @@ void AD9257_Configure(){
 	AD9257_SetVrefVoltage(AD9257_VREF_DEFAULT_VAL, 0);
 #else
 	FILE_LOG(logINFO, ("\tVref 1.33\n"));
-	//AD9257_Set(AD9257_VREF_REG, AD9257_VREF_1_33_VAL);
 	AD9257_SetVrefVoltage(AD9257_VREF_1_33_VAL, 0);
-
 #endif
 
 	// no test mode

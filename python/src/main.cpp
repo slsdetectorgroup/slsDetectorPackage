@@ -19,7 +19,7 @@ PYBIND11_MODULE(_sls_detector, m) {
     )pbdoc";
 
     py::class_<Detector> DetectorApi(m, "DetectorApi", R"pbdoc(
-    Interface to the multiSlsDetector class through Detector.h These functions
+    Interface to the DetectorImpl class through Detector.h These functions
     are used by the python classes Eiger and Jungfrau and normally it is better
     to use them than to directly access functions here.
 
@@ -307,47 +307,47 @@ PYBIND11_MODULE(_sls_detector, m) {
 
     // Experimental API to use the multi directly and inherit from to reduce
     // code duplication need to investigate how to handle documentation
-    py::class_<multiSlsDetector> multiDetectorApi(m, "multiDetectorApi");
+    py::class_<DetectorImpl> multiDetectorApi(m, "multiDetectorApi");
     multiDetectorApi.def(py::init<int>())
-        .def("acquire", &multiSlsDetector::acquire)
+        .def("acquire", &DetectorImpl::acquire)
 
         .def_property("online",
-                      py::cpp_function(&multiSlsDetector::setOnline, py::arg(),
+                      py::cpp_function(&DetectorImpl::setOnline, py::arg(),
                                        py::arg() = -1, py::arg("det_id") = -1),
-                      py::cpp_function(&multiSlsDetector::setOnline, py::arg(),
+                      py::cpp_function(&DetectorImpl::setOnline, py::arg(),
                                        py::arg("flag"), py::arg("det_id") = -1))
         .def_property("exptime",
-                      py::cpp_function(&multiSlsDetector::setExposureTime,
+                      py::cpp_function(&DetectorImpl::setExposureTime,
                                        py::arg(), py::arg() = -1, py::arg() = 0,
                                        py::arg("det_id") = -1),
-                      py::cpp_function(&multiSlsDetector::setExposureTime,
+                      py::cpp_function(&DetectorImpl::setExposureTime,
                                        py::arg(), py::arg() = -1, py::arg() = 0,
                                        py::arg("det_id") = -1))
-        .def("getExposureTime", &multiSlsDetector::setExposureTime, py::arg()=-1,
+        .def("getExposureTime", &DetectorImpl::setExposureTime, py::arg()=-1,
              py::arg() = 0, py::arg("det_id") = -1)
         .def_property_readonly(
-            "hostname", py::cpp_function(&multiSlsDetector::getHostname,
+            "hostname", py::cpp_function(&DetectorImpl::getHostname,
                                          py::arg(), py::arg("det_id") = -1))
         .def_property("busy",
-                      py::cpp_function(&multiSlsDetector::getAcquiringFlag),
-                      py::cpp_function(&multiSlsDetector::setAcquiringFlag))
+                      py::cpp_function(&DetectorImpl::getAcquiringFlag),
+                      py::cpp_function(&DetectorImpl::setAcquiringFlag))
         .def_property_readonly(
-            "rx_tcpport", py::cpp_function(&multiSlsDetector::getReceiverPort))
+            "rx_tcpport", py::cpp_function(&DetectorImpl::getReceiverPort))
         .def_property_readonly(
             "detectornumber",
-            py::cpp_function(&multiSlsDetector::getDetectorNumber))
+            py::cpp_function(&DetectorImpl::getDetectorNumber))
         .def_property("rx_udpip",
-                      py::cpp_function(&multiSlsDetector::getReceiverUDPIP,
+                      py::cpp_function(&DetectorImpl::getReceiverUDPIP,
                                        py::arg(), py::arg("det_id") = -1),
-                      py::cpp_function(&multiSlsDetector::setReceiverUDPIP,
+                      py::cpp_function(&DetectorImpl::setReceiverUDPIP,
                                        py::arg(), py::arg("ip"),
                                        py::arg("det_id") = -1))
-        .def("_getReceiverUDPIP", &multiSlsDetector::getReceiverUDPIP)
-        .def("_setReceiverUDPIP", &multiSlsDetector::setReceiverUDPIP)
-        .def("getPatternLoops", &multiSlsDetector::getPatternLoops,
+        .def("_getReceiverUDPIP", &DetectorImpl::getReceiverUDPIP)
+        .def("_setReceiverUDPIP", &DetectorImpl::setReceiverUDPIP)
+        .def("getPatternLoops", &DetectorImpl::getPatternLoops,
              py::arg("level"), py::arg("det_id") = -1)
-        .def("setPatternLoops", &multiSlsDetector::setPatternLoops)
-        .def("setPatternWord", &multiSlsDetector::setPatternWord,
+        .def("setPatternLoops", &DetectorImpl::setPatternLoops)
+        .def("setPatternWord", &DetectorImpl::setPatternWord,
              py::arg("addr"), py::arg("word"), py::arg("det_id") = -1);
 
     py::module io = m.def_submodule("io", "Submodule for io");

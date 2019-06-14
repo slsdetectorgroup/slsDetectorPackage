@@ -1,7 +1,7 @@
 #include "qTabMeasurement.h"
 #include "qDetectorMain.h"
 
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 
 #include <iostream>
 

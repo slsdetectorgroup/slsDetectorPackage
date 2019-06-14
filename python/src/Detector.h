@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "multiSlsDetector.h"
-#include "slsDetector.h"
+#include "DetectorImpl.h"
+#include "Module.h"
 #include "sls_detector_defs.h"
 
 class Detector {
@@ -707,8 +707,8 @@ class Detector {
     slsDetectorDefs::networkParameter networkNameToEnum(std::string par_name);
 
   private:
-    multiSlsDetector det;
-    slsDetector *getSlsDetector(int i) const;
+    DetectorImpl det;
+    sls::Module *getSlsDetector(int i) const;
     int multi_detector_id = 0;
 };
 

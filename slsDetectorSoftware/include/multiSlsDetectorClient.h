@@ -6,7 +6,7 @@
 #include "CmdProxy.h"
 #include "container_utils.h"
 #include "string_utils.h"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
 
@@ -23,7 +23,7 @@ inline int dummyCallback(detectorData *d, int p, void *) {
 class multiSlsDetectorClient {
   public:
     multiSlsDetectorClient(int argc, char *argv[], int action,
-                           multiSlsDetector *myDetector = nullptr,
+                           DetectorImpl *myDetector = nullptr,
                            std::ostream &output = std::cout)
         : action_(action), detPtr(myDetector), os(output) {
         parser.Parse(argc, argv);
@@ -31,7 +31,7 @@ class multiSlsDetectorClient {
 
     }
     multiSlsDetectorClient(const std::string &args, int action,
-                           multiSlsDetector *myDetector = nullptr,
+                           DetectorImpl *myDetector = nullptr,
                            std::ostream &output = std::cout)
         : action_(action), detPtr(myDetector), os(output) {
         parser.Parse(args);
@@ -41,7 +41,7 @@ class multiSlsDetectorClient {
   private:
     int action_;
     CmdLineParser parser;
-    multiSlsDetector *detPtr = nullptr;
+    DetectorImpl *detPtr = nullptr;
     std::ostream &os;
 
     void runCommand() {
@@ -72,7 +72,7 @@ class multiSlsDetectorClient {
 
         // special commands
         if (parser.command() == "free") {
-            multiSlsDetector::freeSharedMemory(parser.multi_id(),
+            DetectorImpl::freeSharedMemory(parser.multi_id(),
                                                parser.detector_id());
             return;
         } // get user details without verify sharedMultiSlsDetector version
@@ -82,11 +82,11 @@ class multiSlsDetectorClient {
             update = false;
         }
 
-        // create multiSlsDetector class if required
-        std::unique_ptr<multiSlsDetector> localDet;
+        // create DetectorImpl class if required
+        std::unique_ptr<DetectorImpl> localDet;
         if (detPtr == nullptr) {
             try {
-                localDet = sls::make_unique<multiSlsDetector>(parser.multi_id(),
+                localDet = sls::make_unique<DetectorImpl>(parser.multi_id(),
                                                               verify, update);
                 detPtr = localDet.get();
             } catch (const RuntimeError &e) {
@@ -106,7 +106,7 @@ class multiSlsDetectorClient {
         // returns an empty string If the command is not in CmdProxy but
         // deprecated the new command is returned
         if (action_ != slsDetectorDefs::READOUT_ACTION) {
-            sls::CmdProxy<multiSlsDetector> proxy(detPtr);
+            sls::CmdProxy<DetectorImpl> proxy(detPtr);
             auto cmd = proxy.Call(parser.command(), parser.arguments(),
                                   parser.detector_id());
             if (cmd.empty()) {

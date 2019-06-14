@@ -1,7 +1,7 @@
 #include "qTabPlot.h"
 #include "qDrawPlot.h"
 // Project Class Headers
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 // Qt Include Headers
 #include <QStandardItemModel>
 // C++ Include Headers

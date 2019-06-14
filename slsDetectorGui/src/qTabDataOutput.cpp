@@ -1,6 +1,6 @@
 #include "qTabDataOutput.h"
 
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 
 #include <QFileDialog>
 #include <QStandardItemModel>

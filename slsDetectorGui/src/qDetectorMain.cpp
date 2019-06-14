@@ -9,7 +9,7 @@
 #include "qTabPlot.h"
 #include "qTabSettings.h"
 
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "sls_detector_defs.h"
 #include "versionAPI.h"
 

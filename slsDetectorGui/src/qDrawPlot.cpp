@@ -1,11 +1,11 @@
 // Qt Project Class Headers
 #include "qDrawPlot.h"
 #include "qCloneWidget.h"
-#include "slsDetector.h"
+#include "Module.h"
 
 // Project Class Headers
-#include "multiSlsDetector.h"
-#include "slsDetector.h"
+#include "DetectorImpl.h"
+#include "Module.h"
 // #include "postProcessing.h"
 // Qt Include Headers
 #include <QFileDialog>

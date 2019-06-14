@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "string_utils.h"
 #include "tests/globals.h"
 #include <iostream>

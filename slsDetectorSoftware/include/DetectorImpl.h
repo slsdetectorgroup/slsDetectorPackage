@@ -4,8 +4,10 @@
 #include "logger.h"
 #include "sls_detector_defs.h"
 
+namespace sls{
+     class Module;
+}
 
-class slsDetector;
 class ZmqSocket;
 class detectorData;
 
@@ -101,7 +103,7 @@ struct sharedMultiSlsDetector {
     bool receiver_upstream;
 };
 
-class multiSlsDetector : public virtual slsDetectorDefs {
+class DetectorImpl : public virtual slsDetectorDefs {
   public:
     /**
      * Constructor
@@ -110,14 +112,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit multiSlsDetector(int multi_id = 0,
+    explicit DetectorImpl(int multi_id = 0,
                               bool verify = true,
                               bool update = true);
 
     /**
      * Destructor
      */
-    virtual ~multiSlsDetector();
+    virtual ~DetectorImpl();
 
     /**
      * Creates/open shared memory, initializes detector structure and members
@@ -135,7 +137,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     template <class CT>
     struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...),
+    std::vector<RT> serialCall(RT (sls::Module::*somefunc)(CT...),
                                typename NonDeduced<CT>::type... Args);
 
     /**
@@ -143,14 +145,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Const qualified version
      */
     template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...) const,
+    std::vector<RT> serialCall(RT (sls::Module::*somefunc)(CT...) const,
                                typename NonDeduced<CT>::type... Args) const;
 
     /**
      * Loop through the detectors in parallel and return the result as a vector
      */
     template <typename RT, typename... CT>
-    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
+    std::vector<RT> parallelCall(RT (sls::Module::*somefunc)(CT...),
                                  typename NonDeduced<CT>::type... Args);
 
     /**
@@ -158,15 +160,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Const qualified version
      */
     template <typename RT, typename... CT>
-    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...) const,
+    std::vector<RT> parallelCall(RT (sls::Module::*somefunc)(CT...) const,
                                  typename NonDeduced<CT>::type... Args) const;
 
 
     template <typename... CT>
-    void parallelCall(void (slsDetector::*somefunc)(CT...), typename NonDeduced<CT>::type... Args);
+    void parallelCall(void (sls::Module::*somefunc)(CT...), typename NonDeduced<CT>::type... Args);
 
     template <typename... CT>
-    void parallelCall(void (slsDetector::*somefunc)(CT...) const, typename NonDeduced<CT>::type... Args) const;
+    void parallelCall(void (sls::Module::*somefunc)(CT...) const, typename NonDeduced<CT>::type... Args) const;
 
 
     /**
@@ -2120,7 +2122,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void processData();
 
-    void addSlsDetector(std::unique_ptr<slsDetector> det);
+    void addSlsDetector(std::unique_ptr<sls::Module> det);
 
   private:
     /**
@@ -2242,7 +2244,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
 
     /** pointers to the slsDetector structures */
-    std::vector<std::unique_ptr<slsDetector>> detectors;
+    std::vector<std::unique_ptr<sls::Module>> detectors;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
     bool client_downstream{false};

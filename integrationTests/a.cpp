@@ -5,7 +5,7 @@
 #include "Timer.h"
 #include "logger.h"
 #include "network_utils.h"
-#include "slsDetector.h"
+#include "Module.h"
 #include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 #include "sls_detector_funcs.h"

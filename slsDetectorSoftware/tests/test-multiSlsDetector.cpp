@@ -1,8 +1,8 @@
 
 #include "catch.hpp"
 #include "container_utils.h"
-#include "multiSlsDetector.h"
-#include "slsDetector.h"
+#include "DetectorImpl.h"
+#include "Module.h"
 #include "string_utils.h"
 
 #include <iostream>
@@ -11,10 +11,10 @@ using namespace sls;
 
 SCENARIO("Multi detector operation", "[detector]") {
 
-    multiSlsDetector::freeSharedMemory(20, -1);
+    DetectorImpl::freeSharedMemory(20, -1);
 
     GIVEN("An empty multi detector") {
-        multiSlsDetector m(20);
+        DetectorImpl m(20);
         THEN("the size is zero") {
             CHECK(m.getNumberOfDetectors() == 0);
             CHECK(m.getDataBytes() == 0);
@@ -22,7 +22,7 @@ SCENARIO("Multi detector operation", "[detector]") {
         }
 
         WHEN("we add a detector") {
-            m.addSlsDetector(sls::make_unique<slsDetector>(
+            m.addSlsDetector(sls::make_unique<Module>(
                 slsDetectorDefs::detectorType::EIGER, 20, 0));
             THEN("the size and number of detector changes") {
                 CHECK(m.getNumberOfDetectors() == 1);
@@ -30,7 +30,7 @@ SCENARIO("Multi detector operation", "[detector]") {
             }
 
             WHEN("we add another detector") {
-                m.addSlsDetector(sls::make_unique<slsDetector>(
+                m.addSlsDetector(sls::make_unique<Module>(
                     slsDetectorDefs::detectorType::EIGER, 20, 1));
                 THEN("the size and number of detector changes") {
                     CHECK(m.getNumberOfDetectors() == 2);
@@ -63,11 +63,11 @@ SCENARIO("Multi detector operation", "[detector]") {
 
 TEST_CASE("Set and get partialFramesPadding", "[detector][somenewtag]"){
 
-    multiSlsDetector::freeSharedMemory(20, -1);
-    multiSlsDetector m(20);
-    m.addSlsDetector(sls::make_unique<slsDetector>(
+    DetectorImpl::freeSharedMemory(20, -1);
+    DetectorImpl m(20);
+    m.addSlsDetector(sls::make_unique<Module>(
         slsDetectorDefs::detectorType::EIGER, 20, 0));
-    m.addSlsDetector(sls::make_unique<slsDetector>(
+    m.addSlsDetector(sls::make_unique<Module>(
         slsDetectorDefs::detectorType::EIGER, 20, 1));
 
     m.setPartialFramesPadding(false);

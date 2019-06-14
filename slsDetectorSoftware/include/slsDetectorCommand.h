@@ -5,7 +5,7 @@
 
 #include "sls_detector_defs.h"
 
-class multiSlsDetector;
+class DetectorImpl;
 
 
 
@@ -17,7 +17,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
  public:
 
 
-  slsDetectorCommand(multiSlsDetector *det);
+  slsDetectorCommand(DetectorImpl *det);
 
 
   /*
@@ -94,7 +94,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
  private:
 
 
-  multiSlsDetector *myDet;
+  DetectorImpl *myDet;
    
   std::string cmdUnderDevelopment(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdUnknown(int narg, const char * const args[], int action, int detPos = -1);

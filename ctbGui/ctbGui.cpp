@@ -10,7 +10,7 @@
 #include <string>
 
 
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "sls_detector_defs.h"
 //#include "sls_receiver_defs.h"
 #include "ctbMain.h"

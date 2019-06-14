@@ -37,7 +37,7 @@
 #include <fstream>
 #include <string>
 
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "ctbMain.h"
 #include "ctbDacs.h"
 #include "ctbSlowAdcs.h"

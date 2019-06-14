@@ -167,7 +167,7 @@ TEST_CASE("findex", "[.cmd]") {
 }
 
 TEST_CASE("rx_tcpport", "[.cmd]") {
-    multiSlsDetector d;
+    DetectorImpl d;
     int port = 1500;
     int base = 1954;
     for (size_t i = 0; i != d.size(); ++i) {

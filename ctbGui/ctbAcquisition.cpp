@@ -24,7 +24,7 @@
 #include <fstream>
 
 #include "ctbAcquisition.h"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "sls_detector_defs.h"
 #include "ctbMain.h"
 #include "moench03CtbData.h" 

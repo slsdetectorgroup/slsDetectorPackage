@@ -14,7 +14,7 @@
 
 
 class detectorData;
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 
 #include <cstdint>
 #include <string>
@@ -941,7 +941,7 @@ public:
 
 
 private:
-	multiSlsDetector detector;
+	DetectorImpl detector;
 };
 
 #endif

@@ -1,5 +1,5 @@
 #include "slsDetectorCommand.h"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "string_utils.h"
 
 #include <cstdlib>
@@ -70,7 +70,7 @@ The commands are sudivided into different pages depending on their functionaliti
  
  */
 
-slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
+slsDetectorCommand::slsDetectorCommand(DetectorImpl *det) {
 
     myDet = det;
 
@@ -3455,7 +3455,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
     } else if (cmd == "gappixels") {
         myDet->setReceiverOnline(ONLINE_FLAG, detPos);
         if (detPos >= 0) // only in multi detector level to update offsets etc.
-            return std::string("Cannot execute this command from slsDetector level. Please use multiSlsDetector level.\n");
+            return std::string("Cannot execute this command from slsDetector level. Please use DetectorImpl level.\n");
         ret = myDet->enableGapPixels(-1, detPos);
     }
 
@@ -5308,7 +5308,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
         return helpPattern(action);
     /********
 
-  Must implement set ctb functions in slsDetector and multiSlsDetector
+  Must implement set ctb functions in slsDetector and DetectorImpl
 
 	 **********/
     std::string fname;

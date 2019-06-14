@@ -9,7 +9,7 @@
 #include <TGButton.h>
 
 #include "ctbSlowAdcs.h"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "sls_detector_defs.h"
 
 using namespace std;
@@ -91,7 +91,7 @@ int ctbSlowAdc::getValue() {
   cout << "adc " << id << " " << val << endl;
   sprintf(s,"%d mV",val);
   if (id==999)
-    sprintf(s,"%d °C",val);
+    sprintf(s,"%d ï¿½C",val);
   dacsValue->SetText(s);
  
   

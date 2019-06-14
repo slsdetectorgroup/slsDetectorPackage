@@ -1,7 +1,7 @@
 #include "qTabDeveloper.h"
 #include "qDetectorMain.h"
 
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 
 #include <QDoubleValidator>
 #include <QSpacerItem>

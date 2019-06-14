@@ -1,20 +1,20 @@
 
 #include "catch.hpp"
 #include "container_utils.h"
-#include "slsDetector.h"
+#include "Module.h"
 #include "sls_detector_defs.h"
 #include "string_utils.h"
 #include <algorithm>
 #include <iostream>
 
-
+using sls::Module;
 
 TEST_CASE("Set and get trimen", "[detector]") {
     // Free shared memory to be sure that we start in a clean state
-    slsDetector::freeSharedMemory(20, 20);
+    Module::freeSharedMemory(20, 20);
 
     // Create a detector and check that the type is set correctly
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
+    Module d(slsDetectorDefs::detectorType::EIGER, 20, 20);
     CHECK(d.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER);
 
     // At the beginning there should be no trimen set
@@ -48,8 +48,8 @@ TEST_CASE("Set and get trimen", "[detector]") {
 }
 
 TEST_CASE("Set additional JSON header", "[detector]") {
-    slsDetector::freeSharedMemory(20, 20);
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
+    Module::freeSharedMemory(20, 20);
+    Module d(slsDetectorDefs::detectorType::EIGER, 20, 20);
     auto header = d.getAdditionalJsonHeader();
     CHECK(header.empty());
 
@@ -102,8 +102,8 @@ TEST_CASE("Set additional JSON header", "[detector]") {
 TEST_CASE("Set ROI", "[detector]") {
     using ROI = slsDetectorDefs::ROI;
 
-    slsDetector::freeSharedMemory(20,20);
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
+    Module::freeSharedMemory(20,20);
+    Module d(slsDetectorDefs::detectorType::EIGER, 20, 20);
 
     int n{0};
     d.getROI(n);
@@ -133,8 +133,8 @@ TEST_CASE("Set ROI", "[detector]") {
 TEST_CASE("Set multiple ROIs", "[detector]") {
     using ROI = slsDetectorDefs::ROI;
 
-    slsDetector::freeSharedMemory(20, 20);
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
+    Module::freeSharedMemory(20, 20);
+    Module d(slsDetectorDefs::detectorType::EIGER, 20, 20);
 
     // set one ROI
     constexpr int n = 3;
@@ -179,8 +179,8 @@ TEST_CASE("Set multiple ROIs", "[detector]") {
 }
 
 TEST_CASE("Padding and discard policy", "[detector][new]"){
-    slsDetector::freeSharedMemory(20, 20);
-    slsDetector d(slsDetectorDefs::detectorType::EIGER, 20, 20);
+    Module::freeSharedMemory(20, 20);
+    Module d(slsDetectorDefs::detectorType::EIGER, 20, 20);
 
     //
     d.setPartialFramesPadding(false);
@@ -221,8 +221,8 @@ TEST_CASE("create detParamets struct", "[detector][new]"){
 
 
 TEST_CASE("ctb digital offset and list", "[detector][ctb]"){
-    slsDetector::freeSharedMemory(20, 20);
-    slsDetector d(slsDetectorDefs::detectorType::CHIPTESTBOARD, 20, 20);
+    Module::freeSharedMemory(20, 20);
+    Module d(slsDetectorDefs::detectorType::CHIPTESTBOARD, 20, 20);
 
     // dbit offset
     CHECK(d.getReceiverDbitOffset() == 0);

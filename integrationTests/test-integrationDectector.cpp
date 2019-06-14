@@ -3,8 +3,8 @@
 
 #include "ClientSocket.h"
 #include "logger.h"
-#include "multiSlsDetector.h"
-#include "slsDetector.h"
+#include "DetectorImpl.h"
+#include "Module.h"
 #include "sls_detector_defs.h"
 
 #include "Timer.h"

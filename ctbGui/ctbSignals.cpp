@@ -34,7 +34,7 @@
 
 
 #include "ctbSignals.h"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 
 using namespace std;
 

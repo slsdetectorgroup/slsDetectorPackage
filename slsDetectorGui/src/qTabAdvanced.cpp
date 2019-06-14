@@ -1,7 +1,7 @@
 #include "qTabAdvanced.h"
 #include "qDrawPlot.h"
 
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 
 #include<iostream>
 

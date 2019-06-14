@@ -24,7 +24,7 @@
 #include <fstream>
 
 #include "ctbAdcs.h"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "slsDetectorCommand.h"
 
 using namespace std;

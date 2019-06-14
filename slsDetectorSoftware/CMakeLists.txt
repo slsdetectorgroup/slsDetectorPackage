@@ -1,8 +1,8 @@
 set(SOURCES
-    src/multiSlsDetector.cpp 
+    src/DetectorImpl.cpp 
     src/slsDetectorUsers.cpp 
     src/slsDetectorCommand.cpp
-    src/slsDetector.cpp 
+    src/Module.cpp 
 )
 
 set(HEADERS
@@ -35,10 +35,10 @@ target_link_libraries(slsDetectorShared PUBLIC
 
 set(PUBLICHEADERS
     include/SharedMemory.h
-    include/slsDetector.h
+    include/Module.h
     include/slsDetectorUsers.h
     include/detectorData.h
-    include/multiSlsDetector.h
+    include/DetectorImpl.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector

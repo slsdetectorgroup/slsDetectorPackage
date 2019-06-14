@@ -1,6 +1,6 @@
 #include "qTabSettings.h"
 
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 
 #include <QStandardItemModel>
 

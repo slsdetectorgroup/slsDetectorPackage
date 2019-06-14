@@ -21,6 +21,7 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
     - Receiver HDF5 printErrorStack
     - Jungfrau server detector position error when switching between different detector sizes
     - Gotthard server get settings does not set default dacs anymore
+    - Jungfrau powerchip multi detector command delay
     - Client API data call back / Gui (Eiger in 4 bit mode)
     - Users class added burst_trigger in getTimingMode from string
     - Gui switching to tabplot during acquisition error messages
@@ -51,15 +52,20 @@ This document describes the differences between 4.0.2 and 4.0.1 releases.
         Get settings was setting the default dacs previously. It has been fixed now.
 
     
-    Client API
-    ----------
-    1.  Client Callback / Gui (Eiger)
+    Client
+    ------
+    1.	(Jungfrau)
+	Using multi detector command for powerchip will have a delay of 1 second between
+	modules when there are more than 3 modules for extra protection.
+
+    2.  Client Callback / Gui (Eiger)
         Client data call back provided the complete image data, but the number of pixels 
         in x and y was provided incorrectly at a modular level. This has been fixed to give 
         the proper value. This also fixes the Gui crashing for Eiger 4 bit mode when 
         acquiring for multiple images.
 
-    2.  Added "burst_trigger" in getTimingMode (from string to int) in Users class.
+    3.  (API)
+	Added "burst_trigger" in getTimingMode (from string to int) in Users class.
 
 
     Gui

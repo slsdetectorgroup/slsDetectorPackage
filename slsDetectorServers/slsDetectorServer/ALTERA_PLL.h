@@ -225,7 +225,7 @@ int ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
     // write frequency (post-scale output counter C)
     ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_C_COUNTER_REG, val);
 
-    // reset required to keep the phase
+    // reset required to keep the phase (must reconfigure adcs again after this as adc clock is stopped temporarily when resetting pll)
     ALTERA_PLL_ResetPLL ();
 
     /*double temp = ((double)pllVCOFreqMhz / (double)(low_count + high_count));

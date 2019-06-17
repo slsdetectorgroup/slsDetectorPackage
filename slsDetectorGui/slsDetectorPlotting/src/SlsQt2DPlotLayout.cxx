@@ -39,17 +39,17 @@ void SlsQt2DPlotLayout::ConnectSignalsAndSlots(){
 	connect(this, SIGNAL(LogzSignal(bool)), this, SLOT(SetZScaleToLog(bool)));
 }
 
-void SlsQt2DPlotLayout::KeepZRangeIfSet(){
-	SetZRange(isZMin, isZmax, zmin, zmax);
-}
-
 void SlsQt2DPlotLayout::SetZRange(bool isMin, bool isMax, double min, double max){
 	isZMin = isMin;
 	isZmax = isMax;
 
-	// reset zmin and zmax first
+	// reset zmin and zmax first (recalculate from plot)
 	the_plot->SetZMinMax();
 
+	UpdateZRange(min, max);
+}
+
+void SlsQt2DPlotLayout::UpdateZRange(double min, double max) {
 	if(isLog) {
 		the_plot->SetZMinimumToFirstGreaterThanZero();
 	}

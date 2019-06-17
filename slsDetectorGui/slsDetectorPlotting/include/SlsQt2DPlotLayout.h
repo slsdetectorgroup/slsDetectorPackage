@@ -43,7 +43,10 @@ private:
 public slots:
 void SetZScaleToLog(bool enable);
 void ResetRange();
+// recalculate zmin and zmax from plot and update z range
 void SetZRange(bool isMin, bool isMax, double min, double max);
+// update z range
+void UpdateZRange(double min, double max) ;
 
 signals:
 void InterpolateSignal(bool);

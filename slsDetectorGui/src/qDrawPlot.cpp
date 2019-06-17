@@ -1425,7 +1425,8 @@ void qDrawPlot::UpdatePlot() {
                     plot2D->SetXTitle(imageXAxisTitle);
                     plot2D->SetYTitle(imageYAxisTitle);
                     plot2D->SetZTitle(imageZAxisTitle);
-                    plot2D->KeepZRangeIfSet(); //keep a "set" z range, and call Update();
+                    //zmin and zmax of plot already calculated using SetData, now recalculate if z is set
+                    plot2D->UpdateZRange(); 
                     if (gainPlotEnable) {
                         gainplot2D->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, startPixel, endPixel, gainImageArray);
                         gainplot2D->setTitle(GetImageTitle());
@@ -1734,7 +1735,8 @@ void qDrawPlot::DisableZoom(bool disable) {
  		plot2D->SetXTitle("Pixel");
  		plot2D->SetYTitle("Pixel");
  		plot2D->SetZTitle("Trimbits");
- 		plot2D->KeepZRangeIfSet();
+        //zmin and zmax of plot already calculated using SetData, now recalculate if z is set
+ 		plot2D->UpdateZRange();
  #ifdef VERBOSE
  		std::cout << "Trimbits Plot updated" <<'\n';
  #endif

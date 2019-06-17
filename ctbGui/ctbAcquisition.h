@@ -20,8 +20,8 @@ class TTimer;
 class TCanvas;
 class TH2F;
 class TH1F;
-class  TGLabel;
-class 	TGTextButton;
+class TGLabel;
+class TGTextButton;
 
 class multiSlsDetector;
 class detectorData;
@@ -103,7 +103,8 @@ class ctbAcquisition : public TGGroupFrame {
 
 
 
-  TH2F *h2DMap; // for 2D detectors
+  TH2F *h2DMapAn; // for 2D detectors
+  TH2F *h2DMapDig; // for 2D detectors
   TH1F *h1DMap; //for 1D detectors
 
   //  TH2F *h2Scan; // for 2D detectors
@@ -148,6 +149,8 @@ class ctbAcquisition : public TGGroupFrame {
   char patternCompiler[10000];
   
   int globalPlot;
+  int adcPlot;
+  int dbitPlot;
 
   int nAnalogSamples, nDigitalSamples;
   // int iScanStep;

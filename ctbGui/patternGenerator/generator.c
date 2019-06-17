@@ -126,7 +126,7 @@ void setwaittime(int iloop, uint64_t t) {
 void pw(){
   if (iaddr<MAXWORDS)
     PAT[iaddr]= pat;
-  fprintf(fd,"patword %04x %016llx\n",iaddr, pat);
+  fprintf(fd,"patword 0x%04x 0x%016llx\n",iaddr, pat);
   iaddr++;
   if (iaddr>=MAXWORDS) printf("ERROR: too many word in the pattern (%d instead of %d)!",iaddr, MAXWORDS);
 }
@@ -154,18 +154,18 @@ main(void) {
   fd=fopen(OUTFILE,"w");
 #include INFILE
 
-  fprintf(fd,"patioctrl %016llx\n",iopat);
-  fprintf(fd,"patclkctrl %016llx\n",clkpat);
-  fprintf(fd,"patlimits %04x %04x\n",start, stop);
+  fprintf(fd,"patioctrl 0x%016llx\n",iopat);
+  fprintf(fd,"patclkctrl 0x%016llx\n",clkpat);
+  fprintf(fd,"patlimits 0x%04x 0x%04x\n",start, stop);
 
   for (iloop=0; iloop<MAXLOOPS; iloop++) {
-    fprintf(fd,"patloop%d %04x %04x\n",iloop, startloopaddr[iloop], stoploopaddr[iloop]);
+    fprintf(fd,"patloop%d 0x%04x 0x%04x\n",iloop, startloopaddr[iloop], stoploopaddr[iloop]);
     if ( startloopaddr[iloop]<0 || stoploopaddr[iloop]<= startloopaddr[iloop]) nloop[iloop]=0;
     fprintf(fd,"patnloop%d %d\n",iloop, nloop[iloop]);
   }
 
   for (iloop=0; iloop<MAXTIMERS; iloop++) {
-    fprintf(fd,"patwait%d %04x\n",iloop, waitaddr[iloop]);
+    fprintf(fd,"patwait%d 0x%04x\n",iloop, waitaddr[iloop]);
     if (waitaddr[iloop]<0) waittime[iloop]=0;
     fprintf(fd,"patwaittime%d %lld\n",iloop, waittime[iloop]);
   }

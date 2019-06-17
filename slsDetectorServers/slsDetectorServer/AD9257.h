@@ -267,21 +267,13 @@ void AD9257_Configure(){
 	FILE_LOG(logINFO, ("\tPower mode chip run\n"));
 	AD9257_Set(AD9257_POWER_MODE_REG, AD9257_INT_CHIP_RUN_VAL);
 
-	// binary offset
-    FILE_LOG(logINFO, ("\tBinary offset\n"));
-    AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_BINARY_OFST_VAL);
+	// binary offset, lvds-iee reduced
+    FILE_LOG(logINFO, ("\tBinary offset, Lvds-ieee reduced\n"));
+    AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_BINARY_OFST_VAL | AD9257_OUT_LVDS_IEEE_VAL);
 
     //output clock phase
-#if defined(GOTTHARDD)  || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-    FILE_LOG(logINFO, ("\tOutput clock phase is at default: 180\n"));
-#else
-	FILE_LOG(logINFO, ("\tOutput clock phase: 60\n"));
-	AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_60_VAL);
-#endif
-
-	// lvds-iee reduced , binary offset
-	FILE_LOG(logINFO, ("\tLvds-iee reduced, binary offset\n"));
-	AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_LVDS_IEEE_VAL);
+    FILE_LOG(logINFO, ("\tOutput clock phase: 180\n"));
+	AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_180_VAL);
 
 	// all devices on chip to receive next command
 	FILE_LOG(logINFO, ("\tAll devices on chip to receive next command\n"));

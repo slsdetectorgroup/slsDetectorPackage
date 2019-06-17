@@ -37,7 +37,7 @@ template <typename T> class CmdProxy {
         auto d_it = depreciated_functions.find(command);
         if (d_it != depreciated_functions.end()) {
             FILE_LOG(logWARNING)
-                << "WARNING: " << command
+                << command
                 << " is depreciated and will be removed. Please migrate to: "
                 << d_it->second;
             command = d_it->second;
@@ -60,11 +60,25 @@ template <typename T> class CmdProxy {
     // Initialize maps for translating name and function
     FunctionMap functions{{"newfunc", &CmdProxy::NewFunction}};
 
-    StringMap depreciated_functions{{"oldvrfcmd", "vrf"},
-                                    {"veryveryold", "vcp"},
-                                    {"anothercmd", "vrs"},
-                                    {"this_as_well", "enablefwrite"}};
-
+    StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
+                                    {"r_padding", "rx_padding"},
+                                    {"r_silent", "rx_silent"},
+                                    {"r_lastclient", "rx_lastclient"},
+                                    {"r_lock", "rx_lock"},
+                                    {"r_online", "rx_online"},
+                                    {"r_checkonline", "rx_checkonline"},
+                                    {"r_framesperfile", "rx_framesperfile"},
+                                    {"r_discardpolicy", "rx_discardpolicy"},
+                                    {"receiverversion", "rx_version"},
+                                    {"receiver", "rx_status"},
+                                    {"index", "findex"},
+                                    {"exitreceiver", "rx_exit"},
+                                    {"enablefwrite", "fwrite"},
+                                    {"checkrecversion", "rx_checkversion"},
+                                    {"masterfile", "fmaster"},
+                                    {"outdir", "fpath"},
+                                    {"fileformat", "fformat"},
+                                    {"overwrite", "foverwrite"}};
 
     template <typename U> std::string ResultToString(const U &ret) {
         std::ostringstream os;
@@ -76,21 +90,22 @@ template <typename T> class CmdProxy {
 
     void WrongNumberOfParameters(size_t expected) {
         throw RuntimeError("ERROR: Expected " + std::to_string(expected) +
-                           " parameters but got " + std::to_string(args.size()) +
-                           "\n");
+                           " parameters but got " +
+                           std::to_string(args.size()) + "\n");
     }
 
     // Mapped functions
-    
-    //example
-    std::string NewFunction() { 
-        if(args.size() == 0){
+
+    // example
+    std::string NewFunction() {
+        if (args.size() == 0) {
             std::cout << "This is the new function function\n";
             return ResultToString(det->setExposureTime(-1, true));
-        }else if(args.size() == 1){
+        } else if (args.size() == 1) {
             std::cout << "Setting exposure time to " << args[0] << "s\n";
-            return ResultToString(det->setExposureTime(std::stod(args[0]), true, det_id));
-        }else{
+            return ResultToString(
+                det->setExposureTime(std::stod(args[0]), true, det_id));
+        } else {
             WrongNumberOfParameters(1);
             return {};
         }

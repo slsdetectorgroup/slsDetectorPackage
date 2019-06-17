@@ -3,6 +3,8 @@
 #include "sls_detector_defs.h"
 #include <sstream>
 
+#include "tests/globals.h"
+
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
@@ -47,119 +49,120 @@ TEST_CASE("frames", "[.cmd]") {
     }
 }
 
-TEST_CASE("receiver", "[.cmd]") {
+TEST_CASE("rx_status", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("receiver start", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "receiver running\n");
+        multiSlsDetectorClient("rx_status start", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_status running\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("receiver", GET, nullptr, oss);
-        REQUIRE(oss.str() == "receiver running\n");
+        multiSlsDetectorClient("rx_status", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_status running\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("receiver stop", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "receiver idle\n");
+        multiSlsDetectorClient("rx_status stop", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_status idle\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("receiver", GET, nullptr, oss);
-        REQUIRE(oss.str() == "receiver idle\n");
-    }
-}
-
-TEST_CASE("enablefwrite", "[.cmd]") {
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("enablefwrite 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "enablefwrite 1\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("enablefwrite", GET, nullptr, oss);
-        REQUIRE(oss.str() == "enablefwrite 1\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("enablefwrite 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "enablefwrite 0\n");
+        multiSlsDetectorClient("rx_status", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_status idle\n");
     }
 }
 
-TEST_CASE("enableoverwrite", "[.cmd]") {
+TEST_CASE("fwrite", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("overwrite 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "overwrite 1\n");
+        multiSlsDetectorClient("fwrite 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "fwrite 1\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("overwrite", GET, nullptr, oss);
-        REQUIRE(oss.str() == "overwrite 1\n");
+        multiSlsDetectorClient("fwrite", GET, nullptr, oss);
+        REQUIRE(oss.str() == "fwrite 1\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("overwrite 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "overwrite 0\n");
-    }
-}
-
-TEST_CASE("activatecmd", "[.cmd]") {
-
-    {
-        // TODO! read padding from somewhere
-        std::ostringstream oss;
-        multiSlsDetectorClient("activate 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "activate 0 padding\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("activate", GET, nullptr, oss);
-        REQUIRE(oss.str() == "activate 0 padding\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("activate 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "activate 1 padding\n");
+        multiSlsDetectorClient("fwrite 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "fwrite 0\n");
     }
 }
 
-TEST_CASE("masterfile", "[.cmd]") {
+TEST_CASE("enablefoverwrite", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("masterfile 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "masterfile 0\n");
+        multiSlsDetectorClient("foverwrite 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "foverwrite 1\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("masterfile", GET, nullptr, oss);
-        REQUIRE(oss.str() == "masterfile 0\n");
+        multiSlsDetectorClient("foverwrite", GET, nullptr, oss);
+        REQUIRE(oss.str() == "foverwrite 1\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("masterfile 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "masterfile 1\n");
+        multiSlsDetectorClient("foverwrite 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "foverwrite 0\n");
     }
 }
 
-TEST_CASE("index", "[.cmd]") {
+//EIGER ONLY
+// TEST_CASE("activatecmd", "[.cmd]") {
+
+//     {
+//         // TODO! read padding from somewhere
+//         std::ostringstream oss;
+//         multiSlsDetectorClient("activate 0", PUT, nullptr, oss);
+//         REQUIRE(oss.str() == "activate 0 padding\n");
+//     }
+//     {
+//         std::ostringstream oss;
+//         multiSlsDetectorClient("activate", GET, nullptr, oss);
+//         REQUIRE(oss.str() == "activate 0 padding\n");
+//     }
+//     {
+//         std::ostringstream oss;
+//         multiSlsDetectorClient("activate 1", PUT, nullptr, oss);
+//         REQUIRE(oss.str() == "activate 1 padding\n");
+//     }
+// }
+
+TEST_CASE("fmaster", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("index 57", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "index 57\n");
+        multiSlsDetectorClient("fmaster 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("index", GET, nullptr, oss);
-        REQUIRE(oss.str() == "index 57\n");
+        multiSlsDetectorClient("fmaster", GET, nullptr, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("fmaster 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "fmaster 1\n");
+    }
+}
+
+TEST_CASE("findex", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("findex 57", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "findex 57\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("findex", GET, nullptr, oss);
+        REQUIRE(oss.str() == "findex 57\n");
     }
     {
 
         std::ostringstream oss;
-        multiSlsDetectorClient("index 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "index 0\n");
+        multiSlsDetectorClient("findex 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "findex 0\n");
     }
 }
 
@@ -229,21 +232,21 @@ TEST_CASE("resetframescaught get framescaught", "[.cmd]") {
     }
 }
 
-TEST_CASE("r_silent", "[.cmd]") {
+TEST_CASE("rx_silent", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_silent 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "r_silent 1\n");
+        multiSlsDetectorClient("rx_silent 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_silent 1\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_silent", GET, nullptr, oss);
-        REQUIRE(oss.str() == "r_silent 1\n");
+        multiSlsDetectorClient("rx_silent", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_silent 1\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_silent 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "r_silent 0\n");
+        multiSlsDetectorClient("rx_silent 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_silent 0\n");
     }
 }
 
@@ -275,63 +278,138 @@ TEST_CASE("r_silent", "[.cmd]") {
 //     REQUIRE(oss.str() == "rx_udpsocksize 104857600\n");
 // }
 
-TEST_CASE("r_framesperfile", "[.cmd]") {
+TEST_CASE("rx_framesperfile", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_framesperfile 50", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "r_framesperfile 50\n");
+        multiSlsDetectorClient("rx_framesperfile 50", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 50\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_framesperfile", GET, nullptr, oss);
-        REQUIRE(oss.str() == "r_framesperfile 50\n");
+        multiSlsDetectorClient("rx_framesperfile", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 50\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_framesperfile 10000", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "r_framesperfile 10000\n");
-    }
-}
-
-TEST_CASE("r_discardpolicy", "[.cmd]") {
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("r_discardpolicy discardempty", PUT, nullptr,
-                               oss);
-        REQUIRE(oss.str() == "r_discardpolicy discardempty\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("r_discardpolicy", GET, nullptr, oss);
-        REQUIRE(oss.str() == "r_discardpolicy discardempty\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("r_discardpolicy discardpartial", PUT, nullptr,
-                               oss);
-        REQUIRE(oss.str() == "r_discardpolicy discardpartial\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("r_discardpolicy nodiscard", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "r_discardpolicy nodiscard\n");
+        multiSlsDetectorClient("rx_framesperfile 10000", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 10000\n");
     }
 }
 
-TEST_CASE("r_padding", "[.cmd]") {
+TEST_CASE("rx_discardpolicy", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_padding 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "r_padding 0\n");
+        multiSlsDetectorClient("rx_discardpolicy discardempty", PUT, nullptr,
+                               oss);
+        REQUIRE(oss.str() == "rx_discardpolicy discardempty\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_padding", GET, nullptr, oss);
-        REQUIRE(oss.str() == "r_padding 0\n");
+        multiSlsDetectorClient("rx_discardpolicy", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_discardpolicy discardempty\n");
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("r_padding 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "r_padding 1\n");
+        multiSlsDetectorClient("rx_discardpolicy discardpartial", PUT, nullptr,
+                               oss);
+        REQUIRE(oss.str() == "rx_discardpolicy discardpartial\n");
     }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_discardpolicy nodiscard", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_discardpolicy nodiscard\n");
+    }
+}
+
+TEST_CASE("rx_padding", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_padding 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_padding 0\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_padding", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_padding 0\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_padding 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_padding 1\n");
+    }
+}
+
+TEST_CASE("rx_readfreq", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_readfreq 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_readfreq 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_readfreq", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_readfreq 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_readfreq 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_readfreq 0\n");
+    }
+}
+
+TEST_CASE("rx_lock", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_lock 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_lock 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_lock", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_lock 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_lock 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_lock 0\n");
+    }
+}
+
+TEST_CASE("rx_lastclient", "[.cmd]") {
+
+    std::ostringstream oss;
+    multiSlsDetectorClient("rx_lastclient", GET, nullptr, oss);
+    REQUIRE(oss.str() == "rx_lastclient " + test::my_ip + "\n");
+}
+
+TEST_CASE("rx_online", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_online 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_online 0\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_online", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_online 0\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_online 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_online 1\n");
+    }
+}
+
+TEST_CASE("rx_checkonline", "[.cmd]") {
+
+    std::ostringstream oss;
+    multiSlsDetectorClient("rx_checkonline", GET, nullptr, oss);
+    REQUIRE(oss.str() == "rx_checkonline All receiver online\n");
+}
+
+TEST_CASE("rx_checkversion", "[.cmd]") {
+
+    std::ostringstream oss;
+    multiSlsDetectorClient("rx_checkversion", GET, nullptr, oss);
+    REQUIRE(oss.str() == "rx_checkversion compatible\n");
 }

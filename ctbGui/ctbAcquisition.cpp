@@ -38,7 +38,7 @@
 #include "Mythen3_01_jctbData.h"
 #include "Mythen3_02_jctbData.h"
 #include "adcSar2_jctbData.h"
-#include "moench04CtbReceiverData.h"
+#include "moench04CtbZmqData.h"
 #include "deserializer.h"
 #include "detectorData.h"
 
@@ -299,7 +299,7 @@ hframe=new TGHorizontalFrame(this, 800,50);
 			     TGNumberFormat::kNELLimitMinMax,0,16535);
    hframe->AddFrame(eNumCount,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
    eNumCount->MapWindow();;
-   eNumCount->SetNumber(64*3);
+   eNumCount->SetNumber(128*3);
    e= eNumCount->TGNumberEntry::GetNumberEntry();
    eNumCount->Connect("ValueSet(Long_t)","ctbAcquisition",this,"ChangeNumberOfChannels(Long_t)");
    e->Connect("ReturnPressed()","ctbAcquisition",this,"ChangeNumberOfChannels()");
@@ -633,8 +633,8 @@ hframe=new TGHorizontalFrame(this, 800,50);
 
 
     //  mgAdcs=new TMultiGraph();
-    //    bitStack=new THStack();
-    bitStack=adcStack;
+      bitStack=new THStack();
+      // bitStack=adcStack;
     TH1F *hb;
     for (int i=0; i<NSIGNALS; i++) {
       sprintf(tit,"bit%d",i); 
@@ -670,7 +670,8 @@ hframe=new TGHorizontalFrame(this, 800,50);
     dataStructure=NULL;
     commonMode=NULL;
     photonFinder=NULL;
-    h2DMap=NULL;
+    h2DMapAn=NULL;
+    h2DMapDig=NULL;
     //h2Scan=NULL;
     h1DMap=NULL;
 
@@ -901,86 +902,46 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 
   uint16_t aval;
   i=0;
-  for (ip=0; ip<nAnalogSamples; ip++) { 
-    for (ii=0; ii<nadc; ii++) {
-      //for (ip=0; ip<adclist.size(); ip++) {	
+
+
+  char *d_data=	data->cvalues+2*nadc*nAnalogSamples;
+  char dval;
+
+
+  if (dataStructure) {
+    
+    
+    for (int x=0; x<nx; x++) {
+      for (int y=0; y<ny; y++) {
+	ped=0;
+	aval=dataStructure->getValue(data->cvalues,x,y);
       
-      if (adclist.empty()) 
-	ig=ii;
-      else
-	ig=adclist.at(ii);
-      
-      aval=data->getChannel(i);//*((uint16_t*)(data->cvalues+i*2));//
-      
-      // cout << "asample " << ip << " adc " << ig << " " << i << " " << aval << endl;
-
-      ped=0;
-
-
-
-      if (dataStructure) {
-       	dataStructure->getPixel(i,x,y);
-	
-	
-
 	if (cbGetPedestal->IsOn()) {
 	  if (photonFinder) {
 	    photonFinder->addToPedestal(aval,x,y);
 	  }
 	}
 	
-	if (plotFlag[ig]) {
-	  
-	  if (cbSubtractPedestal->IsOn()) {
-	    if (photonFinder) {
-	      ped=photonFinder->getPedestal(x,y,cmSub);
-	    }
-	  }
-	  
-	  
-	//normal filling except when deserializer
-	  if (h2DMap)
-	    h2DMap->SetBinContent(x+1,y+1,aval-ped);
-	  if (h1DMap){
-	    h1DMap->SetBinContent(x+1,aval-ped);
-	    // cout << "plotting 1D " << endl;
-	  }
-	  // if (h2Scan) {
-	  //   //cout << "plotting Scan " << endl;
-	  //   h2Scan->SetBinContent((x+1)+y*nx,iScanStep+1,data->getChannel(i)-ped);
-	  // } else
-	  //     cout << "No scan (analog)" << endl;
+      if (cbSubtractPedestal->IsOn()) {
+	if (photonFinder) {
+	  ped=photonFinder->getPedestal(x,y,cmSub);
 	}
+      }	
+      if (h2DMapAn)
+	h2DMapAn->SetBinContent(x+1,y+1,aval-ped);
+  
+      
+      
+      
+      if (h2DMapDig)
+	h2DMapDig->SetBinContent(x+1,y+1,dataStructure->getGain(data->cvalues,x,y));
+      
+      
       }
-      
-
-
-
-      //if (enableFlag[ig]) {
-      h=adcHisto[ig];
-      h1=countsHisto[ig];
-	//}
-      
-      if (plotFlag[ig]) {
-	//	cout << data->getChannel(i) << endl;
-	h->SetBinContent(ip+1,aval-ped);	
-	h1->Fill(aval-ped);
-      }  
-    
-      i++;
     }
-    
-  }
-  
-  char *d_data=	data->cvalues+2*nadc*nAnalogSamples;
-  char dval;
-  
-  
-  /**** Digital Samples ****/
-
-
-
+  } else 
   if (deserializer) {
+    cout << "deserializer"<< endl;
     if (dbitlist.empty())
       val=deserializer::deserializeAll(d_data,plotlist,dr,nx,soff);//dataStructure->getData(d_data);
     else
@@ -988,168 +949,210 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
       
     
     if (val) {
-      // if (h2DMap) {
-      // 	for (x=0; x<nx; x++) {
-      // 	  for (y=0; y<ny; y++) {
-      // 	    h2DMap->SetBinContent(x+1,y+1,val[y][x]);
-      // 	  }
-      // 	}
-      // }
       if (h1DMap){
 	for (x=0; x<nx; x++) {
 	  h1DMap->SetBinContent(x+1,val[x]); 
-	  //	cout << dec << x << " " << val[0][x] << endl;
 	}
       }  
-	    // if (h2Scan) {
-	    //   for (x=0; x<nx; x++) {
-	    // 	for (y=0; y<ny; y++) {
-	    // 	  //cout << "plotting Scan " << (x+1)+y*nx << " " << iScanStep+1 << " " << val[y][x] << endl;
-	    // 	  h2Scan->SetBinContent((x+1)+y*nx,iScanStep+1,val[y][x]);
-	    // 	}
-	    //   }
-	    // } else
-	    //   cout << "No scan (digital)" << endl;
-      
-    
       delete [] val;
     } else
       cout << "get val did not succeed"<<endl;      
-  } 
+  } else { 
+    cout << "analog histo " << endl;
+    for (ip=0; ip<nAnalogSamples; ip++) { 
+      for (ii=0; ii<nadc; ii++) {
+	//for (ip=0; ip<adclist.size(); ip++) {	
+	if (adclist.empty()) 
+	  ig=ii;
+	else
+	  ig=adclist.at(ii);
+	aval=data->getChannel(i);//*((uint16_t*)(data->cvalues+i*2));//
+      
+	if (plotFlag[ig]) {
+	  
+	  //if (enableFlag[ig]) {
+	  h=adcHisto[ig];
+	  h1=countsHisto[ig];
+	  //}
+	  
+	//	cout << data->getChannel(i) << endl;
+	  h->SetBinContent(ip+1,aval);	
+	  h1->Fill(aval);
+      } 
+	
+	i++;
+    }
+      
+    }
+    
+  
+    cout << "bit histo"<< endl;
 
-
-
-  if (dbitlist.empty())  {
-    for (ip=0; ip<nDigitalSamples; ip++) {
-      for (ig=0; ig<8; ig++) { 
-
-	dval=*(d_data+ip*8+ig);
-
-	for (ib=(ig)*8; ib<(ig+1)*8; ib++) {
-	  //	  cout << "dsample " << ip << " bit " << ib << endl;
-	  //	cout << "Bit number " << ib << endl;
-	  if (bitPlotFlag[ib]) {
-	    hb=bitHisto[ib];	
-	    //  if (bitStack->GetHists()->Contains(hb)==0) cout << "ERROR!" << endl;
-	  //#define ADCSAR2
-// #ifdef ADCSAR2
-// 	    if (ib==0) vv1=dval;
-// 	    if (ib==16) vv2=dval;
-// 	    cout << ib << " " << hex << vv << dec << endl;
-// #endif 
+    if (dbitlist.empty())  {
+      for (ip=0; ip<nDigitalSamples; ip++) {
+	for (ig=0; ig<8; ig++) { 
+	  
+	  dval=*(d_data+ip*8+ig);
+	  
+	  for (ib=(ig)*8; ib<(ig+1)*8; ib++) {
+	    if (bitPlotFlag[ib]) {
+	      hb=bitHisto[ib];	
 	    if (dval&(1<<(ib%8)))
 	      hb->SetBinContent(ip+1,1+bitOffset[ib]);
 	    else
 	      hb->SetBinContent(ip+1,bitOffset[ib]); 
+	    }
 	  }
-	}
 	
-// #ifdef ADCSAR2
-// 	//this is a deserializer similar to MYTHEN!
-//       hb=bitHisto[0]; 
-//       int adcvalue=0;
-//       // int startbit= ig;
-//       for (int jj=0;jj<8;jj++){
-// 	adcvalue=adcvalue+   (((vv1>>(jj*2)) & 0x1)<<(jj));
-//     }
-//       for (int jj=0;jj<4;jj++){
-// 	adcvalue=adcvalue+   (((vv2>>(jj*2)) & 0x1)<<(jj+8));
-//       }
-//       hb->SetBinContent(ip+1, adcvalue); 
-//       printf(" %d 0x%x 0x%x adc=%d \n", i, vv1, vv2, adcvalue);
-// #endif 
-      }
-    }
-  } else {
-    ii=0;
-    int iii=0;
-    int nb=dbitlist.size();
-    for (const auto &value : dbitlist) {
-      ib=value;
-      hb=bitHisto[ib];  
-      cout << dec <<endl <<  "Bit " << ib << " " << (nDigitalSamples-dBitOffset)/8 << endl;
-      iii=0;
-      for (ip=0; ip<(nDigitalSamples-dBitOffset)/8; ip++) {
-	if (bitPlotFlag[ib]) {
-	  dval=*(d_data+ii*nDigitalSamples/8+ip);
-	
-	  for (int jj=0; jj<8; jj++) {
-	    if (dval&(1<<jj))
-	      hb->SetBinContent(iii,1+bitOffset[ib]);
-	    else
-	      hb->SetBinContent(iii,bitOffset[ib]);
-	    iii++;
-	  }
 	}
       }
-      ii++;
+    } else {
+      ii=0;
+      int iii=0;
+      int nb=dbitlist.size();
+      for (const auto &value : dbitlist) {
+	ib=value;
+	hb=bitHisto[ib];  
+	//	cout << dec <<endl <<  "Bit " << ib << " " << (nDigitalSamples-dBitOffset)/8 << endl;
+	iii=0;
+	for (ip=0; ip<(nDigitalSamples-dBitOffset)/8; ip++) {
+	  if (bitPlotFlag[ib]) {
+	    dval=*(d_data+ii*nDigitalSamples/8+ip);
+	    
+	    for (int jj=0; jj<8; jj++) {
+	      if (dval&(1<<jj))
+		hb->SetBinContent(iii,1+bitOffset[ib]);
+	      else
+		hb->SetBinContent(iii,bitOffset[ib]);
+	      iii++;
+	    }
+	  }
+	}
+	ii++;
+      }
     }
   }
-
   Draw();
   //  iScanStep++;
   if (photonFinder)
     photonFinder->newFrame();
-  return i;
-}
+  }
   return 0;
 
 }
+
+
 
 void ctbAcquisition::Draw(){
   if (globalPlot) {
     //   TThread::Lock();
     cout << "Draw" << endl;
-    if (myCanvas && globalPlot!=0) {
-      myCanvas->cd();
-      myCanvas->Modified();
-      myCanvas->Update();
+    if (myCanvas) {
+      if (adcPlot && dbitPlot) {
+
+	myCanvas->cd(1);
+	//	myCanvas->Modified();
+	//	myCanvas->Update();
+	gPad->Modified();
+	gPad->Update();
+
+	myCanvas->cd(2);
+	//	myCanvas->Modified();
+	//	myCanvas->Update();
+	gPad->Modified();
+	gPad->Update();
+
+      } else {
+	
+	myCanvas->cd();
+	myCanvas->Modified();
+	myCanvas->Update();
+	
+      }
     }
     // TThread::UnLock();
   }
-
+  
 }
 
 
-
+//here!!
 void ctbAcquisition::changePlot(){
   if (rbPlotOff->IsOn()) {
-    globalPlot=0;
+    adcPlot=0;
+    dbitPlot=0;
   } else {
-    globalPlot=0;
+    adcPlot=0;
+    dbitPlot=0;
     for (int ii=0; ii<NADCS; ii++)
-      if (plotFlag[ii]==1) globalPlot=1;
+      if (plotFlag[ii]==1) adcPlot=1;
     for (int ii=0; ii<NSIGNALS; ii++)
-      if (bitPlotFlag[ii]==1) globalPlot=1;
+      if (bitPlotFlag[ii]==1) dbitPlot=1;
   }
 
+  globalPlot=adcPlot || dbitPlot;
+
   if (globalPlot!=0 && myCanvas) {
-    if (rbWaveform->IsOn())
-      if (adcStack)
-	adcStack->Draw("NOSTACK");
+    if (adcPlot && dbitPlot) {
+      if (myCanvas->GetPad(1)==NULL || myCanvas->GetPad(2)==NULL) {
+	myCanvas->Clear();
+	myCanvas->Divide(1,2);
+      } else
+	cout << "Pad already there" << endl;
+      myCanvas->cd(1);
+    }    else {
+      myCanvas->Clear();
+	// myCanvas->Divide(1,1);
+      myCanvas->cd();
+    }
+
+    if (adcPlot) {
+      if (rbWaveform->IsOn())
+	if (adcStack)
+	  adcStack->Draw("NOSTACK");
+	else
+	  cout << "adcStack is NULL" << endl;
+      else if (rbDistribution->IsOn())
+	if (countsStack)
+	  countsStack->Draw("NOSTACK");
+	else
+	  cout << "countsStack is NULL" << endl;
+      else if (rb2D->IsOn()) {
+	if (h2DMapAn)
+	  h2DMapAn->Draw("colz");
+	else if (h1DMap)
+	  h1DMap->Draw();
+	else
+	  cout << "h2DMap  and h1DMap are NULL" << endl;
+      } 
+    }
+
+    if (dbitPlot) {
+      if (adcPlot)
+	myCanvas->cd(2);
+      if (rb2D->IsOn()) {
+	if (h2DMapDig)
+	  h2DMapDig->Draw("colz");
+      } else if (bitStack)
+	bitStack->Draw("NOSTACK");
       else
-	cout << "adcStack is NULL" << endl;
-    else if (rbDistribution->IsOn())
-      if (countsStack)
-	countsStack->Draw("NOSTACK");
-      else
-	cout << "countsStack is NULL" << endl;
-    else if (rb2D->IsOn()) {
-      if (h2DMap)
-	h2DMap->Draw("colz");
-      else if (h1DMap)
-	h1DMap->Draw();
-      else
-	cout << "h2DMap  and h1DMap are NULL" << endl;
-    } // else if (rbScan->IsOn()) {
+	cout << "bitStack is NULL" << endl;
+      
+      
+      
+    }
+    
+    
+    // else if (rbScan->IsOn()) {
     //   if (h2Scan)
     // 	h2Scan->Draw("colz");
     //   else
     // 	cout << "h2Scan is NULL" << endl;
     // }
-  }
-  Draw();
+    
+    Draw();
   
+  }
 }
 
 
@@ -1158,28 +1161,30 @@ void ctbAcquisition::changePlot(){
 
 void ctbAcquisition::changeDetector(){
   //  cout << "change detector " << i << " old " << cbDetType->GetSelected() << endl;
-
-    if (dataStructure) delete dataStructure;
-    if (commonMode) delete commonMode; 
-    if (photonFinder)   delete photonFinder;
-  if (h2DMap)  delete h2DMap; 
+  
+  if (dataStructure) delete dataStructure;
+  if (commonMode) delete commonMode; 
+  if (photonFinder)   delete photonFinder;
+  if (h2DMapAn)  delete h2DMapAn; 
+  if (h2DMapDig)  delete h2DMapDig; 
   if (h1DMap) delete h1DMap;
   //  if (h2Scan) delete h2Scan;
-  h2DMap=NULL;
+  h2DMapAn=NULL;
+  h2DMapDig=NULL;
   h1DMap=NULL;
   // h2Scan=NULL;
   photonFinder=NULL;
   dataStructure=NULL;
   commonMode=NULL;
-  TH2F *h2DMapOld=h2DMap;
+  TH2F *h2DMapOld=h2DMapAn;
   // TH2F *h2ScanOld=h2Scan;
   TH1F *h1DMapOld=h1DMap;
   int dim=2;
-    int nx,ny;
-    int csize=3;
-    int nsigma=5;
-    commonModeSubtraction* cm=0;
-  eNumCount->SetState(kFALSE);
+  int nx,ny;
+  int csize=3;
+  int nsigma=5;
+  commonModeSubtraction* cm=0;
+   eNumCount->SetState(kFALSE);
   eDynRange->SetState(kFALSE);
   eSerOff->SetState(kFALSE);
   deserializer=0;
@@ -1187,12 +1192,12 @@ void ctbAcquisition::changeDetector(){
     switch  (cbDetType->GetSelected()) {
     case DESERIALIZER:
       deserializer=1;
-      // cout << "DESERIALIZER!" << endl;
+       cout << "DESERIALIZER!" << endl;
       // dataStructure=new moench03T1CtbData(); 
       // commonMode=new moench03CommonMode();
       break;
      case MOENCH04:
-       dataStructure=new moench04CtbReceiverData(); 
+       dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
        cout << "MOENCH 0.4!" << endl;
        commonMode=new moench03CommonMode();
       break;
@@ -1263,6 +1268,9 @@ void ctbAcquisition::changeDetector(){
       if (deserializer) {
 	ny=1;
 	nx=eNumCount->GetIntNumber();
+	eNumCount->SetState(kTRUE);
+	eDynRange->SetState(kTRUE);
+	eSerOff->SetState(kTRUE);
       }
       //  cout << "h size is " << nx << " " << ny << endl;
       int ymax=ny, xmax=nx;
@@ -1271,9 +1279,14 @@ void ctbAcquisition::changeDetector(){
       cout << "*** " << nx << " " << ny << endl;
       if (rb2D->IsOn()) {
 	if (ny>1) {
-	  h2DMap=new TH2F("h2dmap","",nx,0,xmax,ny,0,ymax);
-	  h2DMap->SetStats(kFALSE);
-	  cout << "Created h2DMap"<< endl;
+	  h2DMapAn=new TH2F("h2dmapAn","",nx,0,xmax,ny,0,ymax);
+	  h2DMapAn->SetStats(kFALSE);
+	  cout << "Created h2DMapAn"<< endl; 
+	  if (dbitPlot && adcPlot){
+	    h2DMapDig=new TH2F("h2dmapDig","",nx,0,xmax,ny,0,ymax);
+	    h2DMapDig->SetStats(kFALSE);
+	    cout << "Created h2DMapDig"<< endl;
+	  }
 	} else  {
 	  h1DMap=new TH1F("h1dmap","",nx,0,xmax);
 	  h1DMap->SetStats(kFALSE);
@@ -1598,8 +1611,10 @@ void ctbAcquisition::toggleAcquisition() {
       for (int i=0; i<NSIGNALS; i++) {
 	bitHisto[i]->Reset();
       }
-	cout << "reset 2d" << endl;;
-	if (h2DMap)	h2DMap->Reset();
+	cout << "reset 2d an" << endl;;
+	if (h2DMapAn)	h2DMapAn->Reset();
+	cout << "reset 2d dig" << endl;;
+	if (h2DMapDig)	h2DMapDig->Reset();
 	cout << "reset 1d" << endl;;
 	if (h1DMap)	h1DMap->Reset();
 	cout << "done" << endl;;
@@ -1953,42 +1968,44 @@ void ctbAcquisition::ChangeNumberOfChannels(Long_t a){
 
 
 void ctbAcquisition::ChangeSerialOffset(){
-  if (dataStructure) {
+  // if (dataStructure) {
 
-     cout << cbDetType->GetSelected()<< endl;
-    if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302 ){
-      cout << "settings offsets for MYTHEN" << endl;
-      mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
-      ms->setSerialOffset(eSerOff->GetIntNumber());
+  //   //  cout << cbDetType->GetSelected()<< endl;
+  //   // if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302 ){
+  //   //   cout << "settings offsets for MYTHEN" << endl;
+  //   //   mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
+  //   //   ms->setSerialOffset(eSerOff->GetIntNumber());
       
-    }
-  }
+  //   // }
+  // }
 };
 
 
 void ctbAcquisition::ChangeDynamicRange(){
-  if (dataStructure) {
+  // if (dataStructure) {
 
-     cout << cbDetType->GetSelected()<< endl;
-     if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302){
-      cout << "settings dynamic range for MYTHEN" << endl;
-      mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
-      ms->setDynamicRange(eDynRange->GetIntNumber());
+  //    cout << cbDetType->GetSelected()<< endl;
+  //    if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302){
+  //     cout << "settings dynamic range for MYTHEN" << endl;
+  //     mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
+  //     ms->setDynamicRange(eDynRange->GetIntNumber());
       
-    }
-  }
+  //   }
+  // }
 };
 
 void ctbAcquisition::ChangeNumberOfChannels(){
-  if (dataStructure) {
-     cout << cbDetType->GetSelected()<< endl;
-    if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302){
-      cout << "settings number of channels for MYTHEN" << endl;
-      mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
-      ms->setNumberOfCounters(eNumCount->GetIntNumber());
+  // if (dataStructure) {
+  //    cout << cbDetType->GetSelected()<< endl;
+  //   if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302){
+  //     cout << "settings number of channels for MYTHEN" << endl;
+  //     mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
+  //     ms->setNumberOfCounters(eNumCount->GetIntNumber());
       
-    }
-  }
+  //   }
+  // }
+  if (deserializer)
+    changePlot();
 };
 
 
@@ -2023,9 +2040,9 @@ void ctbAcquisition::ChangeHistoLimitsPedSub(){
     if (cMinMaxPedSub->IsOn()) {
       adcStack->SetMaximum( eMaxPedSub->GetNumber());
       adcStack->SetMinimum( eMinPedSub->GetNumber());
-      if (h2DMap) {
-	h2DMap->SetMaximum( eMaxPedSub->GetNumber());
-	h2DMap->SetMinimum( eMinPedSub->GetNumber());
+      if (h2DMapAn) {
+	h2DMapAn->SetMaximum( eMaxPedSub->GetNumber());
+	h2DMapAn->SetMinimum( eMinPedSub->GetNumber());
       }
       if (h1DMap) {
 	h1DMap->SetMaximum( eMaxPedSub->GetNumber());
@@ -2036,11 +2053,11 @@ void ctbAcquisition::ChangeHistoLimitsPedSub(){
     } else {
       if (adcStack->GetHistogram())
 	adcStack->GetHistogram()->GetYaxis()->UnZoom();
-      if (h2DMap) {
-      h2DMap->GetZaxis()->UnZoom();
+      if (h2DMapAn) {
+	h2DMapAn->GetZaxis()->UnZoom();
       }
       if (h1DMap) {
-      h1DMap->GetYaxis()->UnZoom();
+	h1DMap->GetYaxis()->UnZoom();
       }
     if (countsStack->GetHistogram())
       countsStack->GetHistogram()->GetXaxis()->UnZoom();
@@ -2061,9 +2078,9 @@ void ctbAcquisition::ChangeHistoLimitsRaw(){
     if (cMinMaxRaw->IsOn()) {
       adcStack->SetMaximum( eMaxRaw->GetNumber());
       adcStack->SetMinimum( eMinRaw->GetNumber());
-      if (h2DMap) {
-	h2DMap->SetMaximum( eMaxRaw->GetNumber());
-	h2DMap->SetMinimum( eMinRaw->GetNumber());
+      if (h2DMapAn) {
+	h2DMapAn->SetMaximum( eMaxRaw->GetNumber());
+	h2DMapAn->SetMinimum( eMinRaw->GetNumber());
       }
       if (h1DMap) {
 	h1DMap->SetMaximum( eMaxRaw->GetNumber());
@@ -2075,8 +2092,8 @@ void ctbAcquisition::ChangeHistoLimitsRaw(){
 
       if (adcStack->GetHistogram())
 	adcStack->GetHistogram()->GetYaxis()->UnZoom(); 
-      if (h2DMap) {
-	h2DMap->GetZaxis()->UnZoom();
+      if (h2DMapAn) {
+	h2DMapAn->GetZaxis()->UnZoom();
       } 
       
       if (h1DMap) {

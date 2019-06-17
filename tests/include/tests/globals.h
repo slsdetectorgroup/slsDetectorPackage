@@ -5,7 +5,10 @@ using ti = slsDetectorDefs::timerIndex;
 using ro = slsDetectorDefs::readOutFlags;
 using sv = slsDetectorDefs::speedVariable;
 using defs = slsDetectorDefs;
+
+namespace test {
 extern std::string hostname;
 extern std::string detector_type;
 extern dt type;
 extern std::string my_ip;
+} // namespace test

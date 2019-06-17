@@ -261,6 +261,8 @@ class slsDetectorData {
     return d^m;
   };
 
+  virtual int getGain(char *data, int ix, int iy=0){return 0;};
+
   /**
 
      Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.

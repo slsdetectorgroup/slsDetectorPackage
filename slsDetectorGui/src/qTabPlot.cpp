@@ -562,49 +562,17 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
 
 
 void qTabPlot::SetZRange() {
-    emit ResetZMinZMaxSignal(
-        (chkZMin->isChecked() && CheckZRange(dispZMin->text())),
-        (chkZMax->isChecked() && CheckZRange(dispZMax->text())),
-        dispZMin->text().toDouble(),
-        dispZMax->text().toDouble());
-}
-
-
-void qTabPlot::EnableZRange() {
-
-    disconnect(dispZMin, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
-    disconnect(dispZMax, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
-
-    dispZMin->setEnabled(chkZMin->isChecked());
-    dispZMax->setEnabled(chkZMax->isChecked());
-    emit ResetZMinZMaxSignal(
-        (chkZMin->isChecked() && CheckZRange(dispZMin->text())),
-        (chkZMax->isChecked() && CheckZRange(dispZMax->text())),
-        dispZMin->text().toDouble(),
-        dispZMax->text().toDouble());
-
-    connect(dispZMin, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
-    connect(dispZMax, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
-}
-
-
-bool qTabPlot::CheckZRange(QString value) {
-    if (value.isEmpty())
-        return false;
-
-    bool ok;
-    value.toDouble(&ok);
-    if (!ok) {
-        qDefs::Message(qDefs::WARNING, "<nobr>Check Z Range</nobr><br><nobr>"
-                                       "Zmin and Zmax should be in double</nobr>",
-                       "qTabPlot::CheckZRange");
-        return false;
+    bool isZmin = chkZMin->isChecked();
+    bool isZmax = chkZMax->isChecked();
+    double zmin = 0, zmax = 1;
+    if (!dispZMin->text().empty()) {
+        zmin = dispZMin->text().toDouble();
     }
-
-    return true;
+    if (!dispZMax->text().empty()) {
+        zmax = dispZMax->text().toDouble();
+    }  
+    emit ResetZMinZMaxSignal(isZmin, isZmax, zmin, zmax);
 }
-
-
 
 
 

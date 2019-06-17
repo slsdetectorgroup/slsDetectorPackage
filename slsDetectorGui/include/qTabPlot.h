@@ -40,11 +40,6 @@ xxxxxxxxxxxxxxx
 	void SetXRange();
 	void SetYRange();
 	void CheckAspectRatio();
-	void SetXYRange();
-	/** 
-	 * Maintain aspect ratio 
-	 */
-	void MaintainAspectRatio(int dimension);
 	void SetZRange();
 
 
@@ -66,9 +61,8 @@ private:
 	void SetupWidgetWindow();
 	void Initialization();
 	void GetGapPixels();
-	void EnableRange();
-	void SetAxesRange();
-	bool CheckZRange(QString value);
+	void SetXYRange();
+	void MaintainAspectRatio(int dimension);
 
 	multiSlsDetector *myDet;
 	qDrawPlot *myPlot;

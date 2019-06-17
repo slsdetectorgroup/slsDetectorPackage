@@ -373,9 +373,9 @@ void qDrawPlot::Initialization() {
     connect(this, SIGNAL(UpdatePlotSignal()), this, SLOT(UpdatePlot()));
     connect(this, SIGNAL(InterpolateSignal(bool)), plot2D, SIGNAL(InterpolateSignal(bool)));
     connect(this, SIGNAL(ContourSignal(bool)), plot2D, SIGNAL(ContourSignal(bool)));
-    connect(this, SIGNAL(LogzSignal(bool)), plot2D, SLOT(SetZScaleToLog(bool)));
+    connect(this, SIGNAL(LogzSignal(bool)), plot2D, SIGNAL(LogzSignal(bool))));
     connect(this, SIGNAL(LogySignal(bool)), plot1D, SLOT(SetLogY(bool)));
-    connect(this, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)), plot2D, SLOT(ResetZMinZMax(bool, bool, double, double)));
+    connect(this, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)), plot2D, SLOT(SetZRange(bool, bool, double, double)));
 
     connect(this, SIGNAL(AcquisitionErrorSignal(QString)), this, SLOT(ShowAcquisitionErrorMessage(QString)));
 
@@ -1425,7 +1425,7 @@ void qDrawPlot::UpdatePlot() {
                     plot2D->SetXTitle(imageXAxisTitle);
                     plot2D->SetYTitle(imageYAxisTitle);
                     plot2D->SetZTitle(imageZAxisTitle);
-                    plot2D->UpdateNKeepSetRangeIfSet(); //keep a "set" z range, and call Update();
+                    plot2D->KeepZRangeIfSet(); //keep a "set" z range, and call Update();
                     if (gainPlotEnable) {
                         gainplot2D->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, startPixel, endPixel, gainImageArray);
                         gainplot2D->setTitle(GetImageTitle());
@@ -1734,7 +1734,7 @@ void qDrawPlot::DisableZoom(bool disable) {
  		plot2D->SetXTitle("Pixel");
  		plot2D->SetYTitle("Pixel");
  		plot2D->SetZTitle("Trimbits");
- 		plot2D->UpdateNKeepSetRangeIfSet();
+ 		plot2D->KeepZRangeIfSet();
  #ifdef VERBOSE
  		std::cout << "Trimbits Plot updated" <<'\n';
  #endif

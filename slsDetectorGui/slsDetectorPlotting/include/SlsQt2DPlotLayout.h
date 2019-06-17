@@ -1,23 +1,8 @@
-/**
- * @author Ian Johnson
- * @version 1.0
- * @comments
- * 19.06.2012 All modifications with the Ian flag has been made since
- * z_range_ne and the buttons are defined in another class.
- * Logz button and z_range_ne have wrappers to connect them
- * 05.05.2013 Added ResetZMinZMax
- */
-
-
-#ifndef SLSQT2DPLOTLAYOUT_H
-#define SLSQT2DPLOTLAYOUT_H
-
-
+#pragma once
 
 #include <qwidget.h>
 #include <qgroupbox.h>
 
-#include "SlsQtNumberEntry.h"
 #include "SlsQt2DPlot.h"
 
 class QGridLayout;
@@ -37,7 +22,7 @@ public:
     void         SetXTitle(QString st);
     void         SetYTitle(QString st);
     void         SetZTitle(QString st);
-    void 		 UpdateNKeepSetRangeIfSet();
+    void 		 KeepZRangeIfSet();
 
 
 private:
@@ -46,32 +31,23 @@ private:
     QToolButton* 		btnContour;
     QToolButton* 		btnLogz;
     SlsQt2DPlot*    	the_plot;
-    SlsQtNumberEntry* 	z_range_ne;
 
-#ifndef IAN
-    bool zRangeChecked;
-#endif
-
-    void CreateTheButtons();
     void ConnectSignalsAndSlots();
     void Layout();
+    bool isLog;
+    double zmin;
+    double zmax;
+    bool isZmin;
+    bool isZmax;
 
 public slots:
-void SetZScaleToLog(bool yes);
+void SetZScaleToLog(bool enable);
 void ResetRange();
-
-#ifndef IAN
-void SetZRange(double,double);
-void EnableZRange(bool enable);
-void ResetZMinZMax(bool zmin, bool zmax, double min, double max);
-
-#endif
+void SetZRange(bool isMin, bool isMax, double min, double max);
 
 signals:
 void InterpolateSignal(bool);
 void ContourSignal(bool);
+void LogzSignal(bool);
 
 };
-
-#endif
-

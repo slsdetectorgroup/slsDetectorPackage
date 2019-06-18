@@ -3,6 +3,7 @@
 
 #include "ServerInterface2.h"
 #include "string_utils.h"
+#include "container_utils.h"
 
 #include <iostream>
 #include <string>

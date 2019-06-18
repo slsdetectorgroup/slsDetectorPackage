@@ -2162,10 +2162,17 @@ std::string slsDetectorCommand::executeLine(int narg, const char * const args[],
 }
 
 std::string slsDetectorCommand::cmdUnknown(int narg, const char * const args[], int action, int detPos) {
-    return std::string("Unknown command ") + std::string(args[0]) + std::string("\n") + helpLine(0, args, action, detPos);
+    return std::string("Unknown command, use list to list all commands ");
 }
 std::string slsDetectorCommand::cmdUnderDevelopment(int narg, const char * const args[], int action, int detPos) {
     return std::string("Must still develop ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
+}
+
+std::vector<std::string> slsDetectorCommand::getAllCommands(){
+    std::vector<std::string> commands;
+    for (int i = 0; i!= numberOfCommands; ++i)
+        commands.emplace_back(descrToFuncMap[i].m_pFuncName);
+    return commands;
 }
 
 std::string slsDetectorCommand::helpLine(int narg, const char * const args[], int action, int detPos) {

@@ -67,7 +67,7 @@
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
-typedef char mystring[MAX_STR_LENGTH];
+// typedef char mystring[MAX_STR_LENGTH];
 
 #ifdef __cplusplus
 class slsDetectorDefs {

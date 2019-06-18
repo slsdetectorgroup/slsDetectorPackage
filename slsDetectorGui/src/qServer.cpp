@@ -89,7 +89,7 @@ void qServer::ServerThread(bool isControlServer) {
         try{
             auto socket = (isControlServer ? controlSocket->accept() : stopSocket->accept());
             try{
-                decode_function(socket);
+                DecodeFunction(socket);
             } catch(const sls::NonCriticalError &e) {
 
                 if (strstr(e.what(), "exit")) {
@@ -98,7 +98,7 @@ void qServer::ServerThread(bool isControlServer) {
                 }
                 char mess[MAX_STR_LENGTH];
                 sls::strcpy_safe(mess, e.what());
-                socket.Send(FAIL);
+                socket.Send(qDefs::FAIL);
                 socket.Send(mess);
             }
         } catch (const sls::NonCriticalError &e) {
@@ -125,7 +125,7 @@ void qServer::GetStatus(sls::ServerInterface2 &socket) {
     progress = mainTab->GetProgress();
 
     int retvals[2] = {static_cast<int>(status), progress};
-    socket.SendResult(retvals); 
+    socket.sendResult(retvals); 
 }
 
 void qServer::StartAcquisition(sls::ServerInterface2 &socket) {

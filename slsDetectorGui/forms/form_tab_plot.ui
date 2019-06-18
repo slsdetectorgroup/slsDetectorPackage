@@ -99,7 +99,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="page_6">
      <widget class="QWidget" name="gridLayoutWidget_5">
@@ -278,7 +278,7 @@
        <rect>
         <x>8</x>
         <y>0</y>
-        <width>316</width>
+        <width>328</width>
         <height>35</height>
        </rect>
       </property>
@@ -536,7 +536,7 @@
        <rect>
         <x>9</x>
         <y>0</y>
-        <width>318</width>
+        <width>322</width>
         <height>35</height>
        </rect>
       </property>
@@ -871,7 +871,7 @@ Displays minimum, maximum and sum of values for each plot.
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QWidget" name="horizontalLayoutWidget_2">
@@ -1826,7 +1826,7 @@ Displays minimum, maximum and sum of values for each plot.
      <x>15</x>
      <y>190</y>
      <width>746</width>
-     <height>149</height>
+     <height>150</height>
     </rect>
    </property>
    <property name="title">
@@ -1844,7 +1844,7 @@ Displays minimum, maximum and sum of values for each plot.
       <x>10</x>
       <y>20</y>
       <width>726</width>
-      <height>125</height>
+      <height>126</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0,0,0,0">
@@ -2207,7 +2207,7 @@ Displays minimum, maximum and sum of values for each plot.
     </layout>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_3">
+  <widget class="QGroupBox" name="boxPlotType">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -2500,7 +2500,7 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
     <rect>
      <x>400</x>
      <y>130</y>
-     <width>351</width>
+     <width>355</width>
      <height>60</height>
     </rect>
    </property>
@@ -2518,7 +2518,7 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
      <rect>
       <x>10</x>
       <y>23</y>
-      <width>339</width>
+      <width>342</width>
       <height>37</height>
      </rect>
     </property>
@@ -2745,7 +2745,7 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
   <zorder>box2D</zorder>
   <zorder>boxSave</zorder>
   <zorder>boxPlotAxis</zorder>
-  <zorder>groupBox_3</zorder>
+  <zorder>boxPlotType</zorder>
   <zorder>boxFrequency</zorder>
   <zorder>boxSnapshot</zorder>
  </widget>

@@ -365,10 +365,9 @@ void qTabMeasurement::GetExposureTime() {
 			qDefs::Message(qDefs::WARNING, "Exposure Time is inconsistent for all detectors.", "qTabMeasurement::GetExposureTime");
 			spinExpTime->setValue(-1);
 		} else {
-			qDefs::timeUnit unit;
-			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9)));
-			spinExpTime->setValue(time);
-			comboExpUnit->setCurrentIndex(static_cast<int>(unit));
+			auto time = qDefs::getCorrectTime(static_cast<double>(retval) * (1E-9));
+			spinExpTime->setValue(time.first);
+			comboExpUnit->setCurrentIndex(static_cast<int>(time.second));
 
 			CheckAcqPeriodGreaterThanExp();
 		}
@@ -406,10 +405,9 @@ void qTabMeasurement::GetAcquisitionPeriod() {
 			qDefs::Message(qDefs::WARNING, "Acquisition Period is inconsistent for all detectors.", "qTabMeasurement::GetAcquisitionPeriod");
 			spinPeriod->setValue(-1);
 		} else {
-			qDefs::timeUnit unit;
-			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9)));
-			spinPeriod->setValue(time);
-			comboPeriodUnit->setCurrentIndex(static_cast<int>(unit));
+			auto time = qDefs::getCorrectTime(static_cast<double>(retval) * (1E-9));
+			spinPeriod->setValue(time.first);
+			comboPeriodUnit->setCurrentIndex(static_cast<int>(time.second));
 
 			CheckAcqPeriodGreaterThanExp();
 		}
@@ -457,8 +455,6 @@ void qTabMeasurement::CheckAcqPeriodGreaterThanExp() {
 		lblPeriod->setPalette(lblTimingMode->palette());
 		lblPeriod->setText("Acquisition Period:");
 	}
-
-	emit CheckPlotIntervalSignal();
 }
 
 void qTabMeasurement::GetDelay() {
@@ -472,10 +468,9 @@ void qTabMeasurement::GetDelay() {
 			qDefs::Message(qDefs::WARNING, "Delay is inconsistent for all detectors.", "qTabMeasurement::GetDelay");
 			spinDelay->setValue(-1);
 		} else {
-			qDefs::timeUnit unit;
-			auto time = qDefs::getCorrectTime(unit, (static_cast<double>(retval) * (1E-9)));
-			spinDelay->setValue(time);
-			comboDelayUnit->setCurrentIndex(static_cast<int>(unit));
+			auto time = qDefs::getCorrectTime(static_cast<double>(retval) * (1E-9));
+			spinDelay->setValue(time.first);
+			comboDelayUnit->setCurrentIndex(static_cast<int>(time.second));
 
 			CheckAcqPeriodGreaterThanExp();
 		}

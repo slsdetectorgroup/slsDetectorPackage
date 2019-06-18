@@ -20,9 +20,9 @@ QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 
 qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : 
-    QWidget(parent), myDet(detector), myPlot(plot), isOneD(false), isOriginallyOneD(false), wrongInterval(0), 
+    QWidget(parent), myDet(detector), myPlot(plot), isOneD(false), 
     stackedLayout(nullptr), spinNthFrame(nullptr), spinTimeGap(nullptr), comboTimeGapUnit(nullptr),
-     btnGroupPlotType(0) {
+    btnGroupPlotType(0) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Plot ready";
@@ -35,7 +35,6 @@ void qTabPlot::SetupWidgetWindow() {
     btnGroupPlotType = new QButtonGroup(this);
     btnGroupPlotType->addButton(radioNoPlot, 0);
     btnGroupPlotType->addButton(radioDataGraph, 1);
-    btnGroupPlotType->addButton(radioHistogram, 2);
     // Plotting Frequency
     stackedLayout = new QStackedLayout;
     stackedLayout->setSpacing(0);
@@ -88,30 +87,25 @@ void qTabPlot::SetupWidgetWindow() {
     myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
     myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 
-	// enabling according to det type
-	switch(myDet->getDetectorTypeAsEnum()) {
-    case slsDetectorDefs::GOTTHARD:
-        isOriginallyOneD = true;
-        break;
-    case slsDetectorDefs::EIGER:
-        isOriginallyOneD = false;
-        pagePedestal->setEnabled(false);
-        pagePedestal_2->setEnabled(false);
-        chkGapPixels->setEnabled(true);
-        break;
-    case slsDetectorDefs::JUNGFRAU:
-    case slsDetectorDefs::MOENCH:
-        isOriginallyOneD = false;
-        chkGainPlot->setEnabled(true);
-        break;
-    default:
-        break;
+    // enabling according to det type
+    isOneD = false;
+    switch(myDet->getDetectorTypeAsEnum()) {
+        case slsDetectorDefs::GOTTHARD:
+            isOneD = true;
+            break;
+        case slsDetectorDefs::EIGER:
+            chkGapPixels->setEnabled(true);
+            break;
+        case slsDetectorDefs::JUNGFRAU:
+        case slsDetectorDefs::MOENCH:
+            chkGainPlot->setEnabled(true);  
+            break;
+        default:
+            break;  
     }
 
-    Select1DPlot(isOriginallyOneD);
-
+    Select1DPlot(isOneD);
     Initialization();
-
     Refresh();
 }
 
@@ -120,10 +114,10 @@ void qTabPlot::Initialization() {
     connect(btnGroupPlotType, SIGNAL(buttonClicked(int)), this, SLOT(SetPlot()));
 
     // Plotting frequency box
-    connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-    connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-    connect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-    connect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
+    connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
+    connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
+    connect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
+    connect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
 
     // navigation buttons for options
     connect(btnRight1D, SIGNAL(clicked()), this, SLOT(Set1DPlotOptionsRight()));
@@ -204,7 +198,52 @@ void qTabPlot::Initialization() {
     connect(this, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)), myPlot, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)));
 }
 
-xxxxxxxxxxxxxxx
+void qTabPlot::Select1DPlot(bool enable) {
+    FILE_LOG(logDEBUG) << "Selecting " << (enable ? "1" : "2") << "D Plot";
+    isOneD = enable;
+    box1D->setEnabled(enable);
+    box2D->setEnabled(!benable);
+    chkZAxis->setEnabled(!enable);
+    dispZAxis->setEnabled(!enable);
+    chkZMin->setEnabled(!enable);
+    chkZMax->setEnabled(!enable);
+    dispZMin->setEnabled(!enable);
+    dispZMax->setEnabled(!enable);
+    if(enable) {
+        myPlot->Select1DPlot();
+    } else {
+        myPlot->Select2DPlot();  
+    }
+    SetTitles();
+    SetXYRange();
+    if (!isOneD) {
+        SetZRange();
+    }
+}
+
+void qTabPlot::SetPlot() {
+    bool plotEnable = false;
+    if (radioNoPlot->isChecked()) {
+        FILE_LOG(logINFO) << "Setting Plot Type: No Plot";
+    } else if (radioDataGraph->isChecked()) {
+        FILE_LOG(logINFO) << "Setting Plot Type: Datagraph";
+        plotEnable = true;
+    }
+    boxFrequency->setEnabled(plotEnable);
+    box1D->setEnabled(plotEnable);
+    box2D->setEnabled(plotEnable);
+    boxSave->setEnabled(plotEnable);
+    boxSnapshot->setEnabled(plotEnable);
+    boxPlotAxis->setEnabled(plotEnable);
+
+    if (plotEnable) {
+        SetTitles();
+        SetXYRange();
+        if (!isOneD) {
+            SetZRange();
+        }
+    }
+}
 
 void qTabPlot::Set1DPlotOptionsRight() {
     FILE_LOG(logDEBUG) << "1D Options Right";
@@ -560,7 +599,6 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     emit DisableZoomSignal(true);
 }
 
-
 void qTabPlot::SetZRange() {
     bool isZmin = chkZMin->isChecked();
     bool isZmax = chkZMax->isChecked();
@@ -574,682 +612,104 @@ void qTabPlot::SetZRange() {
     emit ResetZMinZMaxSignal(isZmin, isZmax, zmin, zmax);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void qTabPlot::Select1DPlot(bool b) {
-#ifdef VERBOSE
-    if (b)
-        cout << "Selecting 1D Plot" << endl;
-    else
-        cout << "Selecting 2D Plot" << endl;
-#endif
-    isOneD = b;
-    lblFrom->setEnabled(false);
-    lblTo->setEnabled(false);
-    lblFrom_2->setEnabled(false);
-    lblTo_2->setEnabled(false);
-    spinFrom->setEnabled(false);
-    spinFrom_2->setEnabled(false);
-    spinTo->setEnabled(false);
-    spinTo_2->setEnabled(false);
-    if (b) {
-        box1D->show();
-        box2D->hide();
-        chkZAxis->setEnabled(false);
-        chkZMin->setEnabled(false);
-        chkZMax->setEnabled(false);
-        myPlot->Select1DPlot();
-    } else {
-        box1D->hide();
-        box2D->show();
-        chkZAxis->setEnabled(true);
-        chkZMin->setEnabled(true);
-        chkZMax->setEnabled(true);
-        myPlot->Select2DPlot();
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void qTabPlot::SetPlot() {
-#ifdef VERBOSE
-    cout << "Entering Set Plot()";
-#endif
-    if (radioNoPlot->isChecked()) {
-        cout << " - No Plot" << endl;
-
-        boxScan->show();
-        boxHistogram->hide();
-        myPlot->EnablePlot(false);
-        boxSnapshot->setEnabled(false);
-        boxSave->setEnabled(false);
-        boxFrequency->setEnabled(false);
-        boxPlotAxis->setEnabled(false);
-        boxScan->setEnabled(false);
-
-    } else if (radioDataGraph->isChecked()) {
-        cout << " - DataGraph" << endl;
-
-        boxScan->show();
-        boxHistogram->hide();
-        myPlot->EnablePlot(true);
-        Select1DPlot(isOriginallyOneD);
-        boxSnapshot->setEnabled(true);
-        boxSave->setEnabled(true);
-        boxFrequency->setEnabled(true);
-        boxPlotAxis->setEnabled(true);
-        // if(!myPlot->isRunning())
-        // 	EnableScanBox();
-        //  To remind the updateplot in qdrawplot to set range after updating plot
-        myPlot->SetXYRange(true);
-    } else {
-        //histogram and 2d scans dont work
-        if (boxScan->isChecked()) {
-            qDefs::Message(qDefs::WARNING, "<nobr>Histogram cannot be used together with 2D Scan Plots.</nobr><br>"
-                                           "<nobr>Uncheck <b>2D Scan</b> plots to plot <b>Histograms</b></nobr>",
-                           "qTabPlot::SetPlot");
-            radioDataGraph->setChecked(true);
-            boxScan->show();
-            boxHistogram->hide();
-            return;
-        }
-
-        cout << " - Histogram" << endl;
-
-        if (radioHistIntensity->isChecked()) {
-            pageHistogram->setEnabled(true);
-            pageHistogram_2->setEnabled(true);
-        } else {
-            pageHistogram->setEnabled(false);
-            pageHistogram_2->setEnabled(false);
-        }
-        boxScan->hide();
-        boxHistogram->show();
-        myPlot->EnablePlot(true);
-        Select1DPlot(isOriginallyOneD);
-        boxSnapshot->setEnabled(true);
-        boxSave->setEnabled(true);
-        boxFrequency->setEnabled(true);
-        boxPlotAxis->setEnabled(true);
-        // if(!myPlot->isRunning())
-        // 	EnableScanBox();
-
-        //qDefs::Message(qDefs::INFORMATION,"<nobr>Please check the <b>Plot Histogram Options</b> below "
-        //		"before <b>Starting Acquitision</b></nobr>","qTabPlot::SetPlot");
-    }
-}
-
-
-void qTabPlot::SetFrequency() {
-#ifdef VERBOSE
-    cout << "Setting Plot Interval Frequency" << endl;
-#endif
-    disconnect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-    disconnect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-    disconnect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-    disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-    double timeMS, acqPeriodMS;
-    double minPlotTimer = myPlot->GetMinimumPlotTimer();
-    char cMin[200];
-    sprintf(cMin, "%f ms", minPlotTimer);
-
-    acqPeriodMS = (myDet->setTimer(slsDetectorDefs::FRAME_PERIOD, -1) * (1E-6));
-    //if period is 0, check exptime, if that is also 0, give warning and set to min timer
-    if (acqPeriodMS == 0) {
-        acqPeriodMS = (myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME, -1) * (1E-6));
-
-        if (acqPeriodMS == 0) {
-            //to reduce the warnings displayed
-            if ((comboFrequency->currentIndex() == 0) && (spinTimeGap->value() == minPlotTimer))
-                ;
-            else
-                qDefs::Message(qDefs::WARNING, "<nobr>Interval between Plots:</nobr><br><nobr>"
-                                               "<b>Every Nth Image</b>: Period betwen Frames and Exposure Time cannot both be 0 ms.</nobr><br><nobr>"
-                                               "Resetting to minimum plotting time interval",
-                               "qTabPlot::SetFrequency");
+void qTabPlot::GetStreamingFrequency() {
+	FILE_LOG(logDEBUG) << "Getting Streaming Frequency";	
+    disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
+    disconnect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
+    disconnect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
+    disconnect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
+
+	try {
+		int freq = myDet->setReceiverStreamingFrequency(-1);
+        if (freq < 0) {
+            qDefs::Message(qDefs::WARNING, "Streaming frequency is inconsistent for all detectors.", "qTabPlot::GetStreamingFrequency");
+        } 
+        // time interval
+        else if (freq == 0) {
             comboFrequency->setCurrentIndex(0);
-            stackedLayout->setCurrentIndex(comboFrequency->currentIndex());
-            spinTimeGap->setValue(minPlotTimer);
-            comboTimeGapUnit->setCurrentIndex(qDefs::MILLISECONDS);
-            timeMS = minPlotTimer;
-            //This is done so that its known which one was selected
-            myPlot->SetFrameFactor(0);
-            // Setting the timer value(ms) between plots
-            myPlot->SetPlotTimer(timeMS);
-
-            connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-            connect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-            connect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-            connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-            qDefs::checkErrorMessage(myDet, "qTabPlot::SetFrequency");
-            return;
+            stackedLayout->setCurrentIndex(0);
+            try {
+                int timeMs = myDet->setReceiverStreamingTimer(-1);
+                if (freq < 0) {
+                    qDefs::Message(qDefs::WARNING, "Streaming timer is inconsistent for all detectors.", "qTabPlot::GetStreamingFrequency");
+                } else {
+                    double timeS = static_cast<double>(timeMs) / 1000.00;
+                    auto time = qDefs::getCorrectTime(timeS);
+                    spinTimeGap->setValue(time.first);
+                    comboTimeGapUnit->setcurrentIndex(static_cast<int>(time.second));
+                }
+            } catch(const sls::NonCriticalError &e) {
+                qDefs::ExceptionMessage("Could not get streaming timer.", e.what(), "qTabPlot::GetStreamingFrequency");
+            }
         }
-    }
-
-    stackedLayout->setCurrentIndex(comboFrequency->currentIndex());
-    switch (comboFrequency->currentIndex()) {
-    case 0:
-        // Get the time interval from gui in ms
-        timeMS = (qDefs::getNSTime((qDefs::timeUnit)comboTimeGapUnit->currentIndex(), spinTimeGap->value())) / (1e6);
-
-        if ((int)timeMS == 0) {
-            qDefs::Message(qDefs::WARNING, "<nobr>Interval between Plots:</nobr><br><nobr>"
-                                           "Time Interval must be atleast >= 1 ms. Resetting to minimum plotting time interval.",
-                           "qTabPlot::SetFrequency");
-            spinTimeGap->setValue(minPlotTimer);
-            comboTimeGapUnit->setCurrentIndex(qDefs::MILLISECONDS);
-            timeMS = minPlotTimer;
-        }
-
-        //show red if min interval<minplottimer
-        if (timeMS < minPlotTimer) {
-            //qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
-            boxFrequency->setPalette(*red);
-            boxFrequency->setTitle("Interval between Plots*");
-            QString errTip = intervalTip + QString("<br><br><font color=\"red\"><nobr>"
-                                                   "<b>Time Interval</b> Condition: min of ") +
-                             QString("%1").arg(minPlotTimer) +
-                             QString("ms.</nobr><br><nobr>You might be losing images!</nobr></font>");
-            boxFrequency->setToolTip(errTip);
-        }
-        //show red if acqPeriod<minInterval
-        else if ((acqPeriodMS + 1) < timeMS) {
-            cout << "\nacqPeriodMS:" << acqPeriodMS << "\ttimeMS:" << timeMS << endl;
-            //qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
-            boxFrequency->setPalette(*red);
-            boxFrequency->setTitle("Interval between Plots*");
-            QString errTip = intervalTip + QString("<br><br><font color=\"red\"><nobr>"
-                                                   "<b>Time Interval</b> Acquisition Period should be >= Time Interval between plots.</nobr><br><nobr>"
-                                                   "You might be losing images!</nobr></font>");
-            boxFrequency->setToolTip(errTip);
-        }
-        //correct
+        // every nth frame
         else {
-            boxFrequency->setPalette(boxSnapshot->palette());
-            boxFrequency->setTitle("Interval between Plots");
-            boxFrequency->setToolTip(intervalTip);
+            comboFrequency->setCurrentIndex(1);
+            stackedLayout->setCurrentIndex(1);
+            spinNthFrame->setValue(freq);
         }
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not get streaming frequency.", e.what(), "qTabPlot::GetStreamingFrequency");
+    }
 
-        //This is done so that its known which one was selected
-        myPlot->SetFrameFactor(0);
-        // Setting the timer value(ms) between plots
-        myPlot->SetPlotTimer(timeMS);
-#ifdef VERBOSE
-        cout << "Plotting Frequency: Time Gap - " << spinTimeGap->value() << qDefs::getUnitString((qDefs::timeUnit)comboTimeGapUnit->currentIndex()) << endl;
-#endif
-        break;
+	connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
+    connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
+    connect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
+    connect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
 
-    case 1:
+}
 
-        // gets the acq period * number of nth frames
-        timeMS = (spinNthFrame->value()) * acqPeriodMS;
+void qTabPlot::SetStreamingFrequency() {
+    bool frequency = (comboFrequency->currentIndex() == 0) ? 0 : 1;
+    auto freqVal = spinNthFrame->value();
+    auto timeVal = spinTimeGap->value();
+    auto timeUnit = static_cast<qDefs::timeUnit>(comboTimeGapUnit->currentIndex());
 
-        //Show red to make sure the period between plotting is not less than minimum plot timer in  ms
-        if (timeMS < minPlotTimer) {
-            int minFrame = (int)(ceil)(minPlotTimer / acqPeriodMS);
-            //qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
-            boxFrequency->setPalette(*red);
-            boxFrequency->setTitle("Interval between Plots*");
-            QString errTip = intervalTip + QString("<br><br><font color=\"red\"><nobr>"
-                                                   "<b>Every nth Image</b> Condition: min nth Image for this time period: ") +
-                             QString("%1").arg(minFrame) +
-                             QString(".</nobr><br><nobr>You might be losing images!</nobr></font>");
-            boxFrequency->setToolTip(errTip);
+	try {
+        if (frequency) {
+            FILE_LOG(logINFO) << "Setting Streaming Frequency to " << freqVal;
+            myDet->setReceiverStreamingFrequency(freqVal);
         } else {
-            boxFrequency->setPalette(boxSnapshot->palette());
-            boxFrequency->setTitle("Interval between Plots");
-            boxFrequency->setToolTip(intervalTip);
+            FILE_LOG(logINFO) << "Setting Streaming Timer to " << timeVal << " " << qDefs::getUnitString(timeUnit);
+            double timeMS = qDefs::getMSTime(timeUnit, timeVal);
+            myDet->setReceiverStreamingTimer(timeMS);
         }
-
-        // Setting the timer value (nth frames) between plots
-        myPlot->SetFrameFactor(spinNthFrame->value());
-
-#ifdef VERBOSE
-        cout << "Plotting Frequency: Nth Frame - " << spinNthFrame->value() << endl;
-#endif
-        break;
-    }
-
-    connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-    connect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-    connect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetFrequency()));
-    connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFrequency()));
-    qDefs::checkErrorMessage(myDet, "qTabPlot::SetFrequency");
-}
-
- void qTabPlot::EnableScanBox(){
- #ifdef VERBOSE
- 	cout << "Entering Enable Scan Box"<< endl;
- #endif
- 	disconnect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
- 	disconnect(boxScan,	  	SIGNAL(toggled(bool)),		this, SLOT(EnableScanBox()));
-
- 	int oldfreqvalue = myDet->setReadReceiverFrequency();
-
- 	int mode0 = myDet->getScanMode(0);
- 	int mode1 = myDet->getScanMode(1);
-
- 	radioHistLevel0->setEnabled(mode0);
- 	radioHistLevel1->setEnabled(mode1);
- 	int ang;
- 	bool angConvert = myDet->getAngularConversion(ang);
- 	myPlot->EnableAnglePlot(angConvert);
-
- 	radioDataGraph->setEnabled(true);
- 	radioHistogram->setEnabled(true);
- 	chkSuperimpose->setEnabled(true);
- 	pageAccumulate->setEnabled(true);
- 	pageAccumulate_2->setEnabled(true);
- 	if((myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) ||
- 			(myDet->getDetectorsType() == slsDetectorDefs::PROPIX) ||
- 			(myDet->getDetectorsType() == slsDetectorDefs::JUNGFRAU) ||
- 			(myDet->getDetectorsType() == slsDetectorDefs::MOENCH)){
- 		pagePedestal->setEnabled(true);
- 		pagePedestal_2->setEnabled(true);
- 		chkBinary->setEnabled(true);
- 		chkBinary_2->setEnabled(true);
- 	}
-
- 	//if angle plot or originally 2d, uncheck and disable scanbox
- 	if ((angConvert) || (!isOriginallyOneD)){
- 		boxScan->setChecked(false);
- 		boxScan->setEnabled(false);
-
- 		/**Newly added*/
- 		// To remind the updateplot in qdrawplot to set range after updating plot
- 		if(!isOriginallyOneD)
- 			myPlot->SetXYRange(true);
-
- 		//2d scans read every frame, not compulsory, but for historgrams
- 		if((!isOriginallyOneD) && (mode0 || mode1)){
- 			//read every frame
- 			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
- 			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
- 			comboFrequency->setCurrentIndex(1);
- 			spinNthFrame->setValue(1);
- 			SetFrequency();
- 			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
- 			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
- 		}
-
- 		//persistency, accumulate, pedestal, binary
- 		if(angConvert){
- 			if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);
- 			if(chkPedestal->isChecked())	chkPedestal->setChecked(false);
- 			if(chkPedestal_2->isChecked())	chkPedestal_2->setChecked(false);
- 			if(chkAccumulate->isChecked())	chkAccumulate->setChecked(false);
- 			if(chkAccumulate_2->isChecked())chkAccumulate_2->setChecked(false);
- 			if(chkBinary->isChecked())		chkBinary->setChecked(false);
- 			if(chkBinary_2->isChecked())	chkBinary_2->setChecked(false);
- 			pagePedestal->setEnabled(false);
- 			pagePedestal_2->setEnabled(false);
- 			chkBinary->setEnabled(false);
- 			chkBinary_2->setEnabled(false);
- 			pageAccumulate->setEnabled(false);
- 			pageAccumulate_2->setEnabled(false);
- 		}
-
- 		if(angConvert){
- 			boxScan->setToolTip("<nobr>Only 1D Plots enabled for Angle Plots</nobr>");
- 			//disable histogram
- 			if(radioHistogram->isChecked()){
- 				radioDataGraph->setChecked(true);
- 				radioHistogram->setEnabled(false);
- 				//  To remind the updateplot in qdrawplot to set range after updating plot
- 				myPlot->SetXYRange(true);
- 				boxScan->show();
- 				boxHistogram->hide();
- 			}
- 		}
- 	}
-
- 	//originally1d && not angle plot
- 	else{
- 		boxScan->setToolTip("");
- 		boxScan->setEnabled(true);
- 		/*if(mode0 || mode1)
- 			boxScan->setChecked(true);*/
-
- 		//2d enabled with boxscan
- 		if(boxScan->isChecked()){
-
- 			//2d for 1d detctors and histogram dont go
- 			if(radioHistogram->isChecked()){
- 				radioDataGraph->setChecked(true);
- 				//  To remind the updateplot in qdrawplot to set range after updating plot
- 				myPlot->SetXYRange(true);
- 				boxScan->show();
- 				boxHistogram->hide();
- 			}
-
- 			//read every frame
- 			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
- 			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
- 			comboFrequency->setCurrentIndex(1);
- 			spinNthFrame->setValue(1);
- 			SetFrequency();
- 			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
- 			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-
- 			//enabling options
- 			radioFileIndex->setEnabled(mode0||mode1);
- 			if(mode0 && mode1){
- 				radioLevel0->setEnabled(false);
- 				radioLevel1->setEnabled(false);
- 			}else{
- 				radioLevel0->setEnabled(mode0);
- 				radioLevel1->setEnabled(mode1);
- 			}
- 			//default is allframes if checked button is disabled
- 			if(!btnGroupScan->checkedButton()->isEnabled())
- 				radioAllFrames->setChecked(true);
- 		}
- 	}
-
- 	//histogram
- 	if(radioHistogram->isChecked()){
- 		if(radioHistIntensity->isChecked()){
- 			pageHistogram->setEnabled(true);
- 			pageHistogram_2->setEnabled(true);
- 		}else{
- 			pageHistogram->setEnabled(false);
- 			pageHistogram_2->setEnabled(false);
- 		}
- 		stackedWidget->setCurrentIndex(stackedWidget->count()-1);
- 		stackedWidget_2->setCurrentIndex(stackedWidget_2->count()-1);
- 		box1D->setTitle(QString("1D Plot Options %1 - Histogram").arg(stackedWidget->currentIndex()+1));
- 		box2D->setTitle(QString("2D Plot Options %1 - Histogram").arg(stackedWidget_2->currentIndex()+1));
-
- 		if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);
- 		if(chkPedestal->isChecked())	chkPedestal->setChecked(false);
- 		if(chkPedestal_2->isChecked())	chkPedestal_2->setChecked(false);
- 		if(chkAccumulate->isChecked())	chkAccumulate->setChecked(false);
- 		if(chkAccumulate_2->isChecked())chkAccumulate_2->setChecked(false);
- 		if(chkBinary->isChecked())		chkBinary->setChecked(false);
- 		if(chkBinary_2->isChecked())	chkBinary_2->setChecked(false);
- 		pagePedestal->setEnabled(false);
- 		pagePedestal_2->setEnabled(false);
- 		chkBinary->setEnabled(false);
- 		chkBinary_2->setEnabled(false);
- 		pageAccumulate->setEnabled(false);
- 		pageAccumulate_2->setEnabled(false);
-
- 		//read every frame
- 		disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
- 		disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
- 		comboFrequency->setCurrentIndex(1);
- 		spinNthFrame->setValue(1);
- 		SetFrequency();
- 		connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
- 		connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-
- 	}else{
- 		pageHistogram->setEnabled(false);
- 		pageHistogram_2->setEnabled(false);
- 	}
-
- 	// if it was set to read every frame
- 	if (oldfreqvalue != 0 && (comboFrequency->currentIndex() != 1 || spinNthFrame->value() != oldfreqvalue)) {
- 		disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
- 		disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
- 		comboFrequency->setCurrentIndex(1);
- 		spinNthFrame->setValue(1);
- 		SetFrequency();
- 		connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
- 		connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
- 	}
-
- 	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
- 	connect(boxScan,	 	SIGNAL(toggled(bool)),	this, SLOT(EnableScanBox()));
-
- }
-
-
- void qTabPlot::SetScanArgument(){
- #ifdef VERYVERBOSE
- 	cout << "Entering qTabPlot::SetScanArgument()" << endl;
- #endif
-
- 	//1d
- 	if(isOriginallyOneD){
- 		dispXAxis->setText(defaultHistXAxisTitle);
- 		dispYAxis->setText(defaultHistYAxisTitle);
- 		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
- 		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
- 		Select1DPlot(true);
- 	}
- 	//2d
- 	else{
- 		dispXAxis->setText(defaultImageXAxisTitle);
- 		dispYAxis->setText(defaultImageYAxisTitle);
- 		dispZAxis->setText(defaultImageZAxisTitle);
- 		myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
- 		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
- 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
- 		Select1DPlot(false);
- 	}
-
- 	//histogram default  - set before setscanargument
- 	int min = spinHistFrom->value();
- 	int max = spinHistTo->value();
- 	double size = spinHistSize->value();
- 	int histArg = qDefs::Intensity;
- 	if(radioHistogram->isChecked()){
- 		if(!radioHistIntensity->isChecked()){
-
- 			int mode = 0;
- 			histArg = qDefs::histLevel0;
- 			if(radioHistLevel1->isChecked()){
- 				mode = 1;
- 				histArg = qDefs::histLevel1;
- 			}
-
- 			int numSteps = myDet->getScanSteps(mode);
- 			double *values = NULL;
- 			min = 0;max = 1;size = 1;
-
- 			if(numSteps > 0){
- 				values = new double[numSteps];
- 				myDet->getScanSteps(mode,values);
- 				min = values[0];
- 				max = values[numSteps - 1];
- 				size = (max - min)/(numSteps - 1);
- 			}
- 		}
-
- 	}
-
- 	//cout <<"min:"<<min<<" max:"<<max<<" size:"<<size<<endl;
- 	myPlot->SetHistogram(radioHistogram->isChecked(),histArg,min,max,size);
-
- 	if(radioHistogram->isChecked()){
- 		if(radioHistIntensity->isChecked())
- 			dispXAxis->setText("Intensity");
- 		else if (radioHistLevel0->isChecked())
- 			dispXAxis->setText("Level 0");
- 		else
- 			dispXAxis->setText("Level 1");
- 		dispYAxis->setText("Frequency");
- 		myPlot->SetHistXAxisTitle("Intensity");
- 		myPlot->SetHistYAxisTitle("Frequency");
- 		Select1DPlot(true);
- 	}
-
- 	//angles (1D)
- 	int ang;
- 	if(myDet->getAngularConversion(ang)){
- 		dispXAxis->setText("Angles");
- 		myPlot->SetHistXAxisTitle("Angles");
- 		Select1DPlot(true);
- 	}
-
- 	//1d with scan
- 	if(boxScan->isChecked()){
- 		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
-
- 		switch(btnGroupScan->checkedId()){
- 		case 0://level0
- 			dispYAxis->setText("Scan Level 0");
- 			myPlot->SetImageYAxisTitle("Scan Level 0");
- 			break;
- 		case 1://level1
- 			dispYAxis->setText("Scan Level 1");
- 			myPlot->SetImageYAxisTitle("Scan Level 1");
- 			break;
- 			break;
- 		case 2://file index
- 			dispYAxis->setText("Frame Index");
- 			myPlot->SetImageYAxisTitle("Frame Index");
- 			break;
- 		case 3://all frames
- 			dispYAxis->setText("All Frames");
- 			myPlot->SetImageYAxisTitle("All Frames");
- 			break;
- 		}
- 		Select1DPlot(false);
- 	}else
- 		myPlot->SetScanArgument(qDefs::None);
-
- 	//update the from and to labels to be enabled
- 	SetBinary();
-
- 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
-
- }
-
-
-
-
-
-void qTabPlot::SetHistogramOptions() {
-    if (radioHistIntensity->isChecked()) {
-        pageHistogram->setEnabled(true);
-        pageHistogram_2->setEnabled(true);
-    } else {
-        pageHistogram->setEnabled(false);
-        pageHistogram_2->setEnabled(false);
+    } catch (const sls::NonCriticalError &e) {
+        qDefs::ExceptionMessage("Could not set streaming frequency/ timer.", e.what(), "qTabPlot::SetStreamingFrequency");
+        GetStreamingFrequency();
     }
 }
-
-
 
 void qTabPlot::Refresh() {
+    FILE_LOG(logDEBUG) << "**Updating Plot Tab";
 
-
-
-#ifdef VERBOSE
-    cout << endl
-         << "**Updating Plot Tab" << endl;
-#endif
     if (!myPlot->isRunning()) {
-        if (!radioNoPlot->isChecked())
-            boxFrequency->setEnabled(true);
-        SetFrequency();
-        
-        if (chkGapPixels->isEnabled()) {
-            GetGapPixels();
-        }
+        boxPlotType->setEnabled(true);
 
+        // streaming frequency
+        if (!radioNoPlot->isChecked()) {
+            boxFrequency->setEnabled(true);
+        }
+        GetStreamingFrequency();
+        // gain plot, gap pixels enable
+        switch(myDet->getDetectorTypeAsEnum()) {
+            case slsDetectorDefs::EIGER:
+                chkGapPixels->setEnabled(true);
+                GetGapPixels();
+                break;
+            case slsDetectorDefs::JUNGFRAU:
+            case slsDetectorDefs::MOENCH:
+                chkGainPlot->setEnabled(true);  
+                break;
+            default:
+                break;             
+        }
     } else {
+        boxPlotType->setEnabled(false);
         boxFrequency->setEnabled(false);
-        disconnect(boxScan, SIGNAL(toggled(bool)), this, SLOT(EnableScanBox()));
-        boxScan->setEnabled(false);
-        pageHistogram->setEnabled(false);
-        pageHistogram_2->setEnabled(false);
-        if (radioHistogram->isChecked())
-            radioDataGraph->setEnabled(false);
-        else
-            radioHistogram->setEnabled(false);
+        chkGainPlot->setEnabled(false);
+        chkGapPixels->setEnabled(false);
     }
-#ifdef VERBOSE
-    cout << "**Updated Plot Tab" << endl
-         << endl;
-#endif
+
+    FILE_LOG(logDEBUG) << "**Updated Plot Tab";
 }

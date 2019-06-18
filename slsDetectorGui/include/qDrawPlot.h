@@ -112,6 +112,8 @@ public:
 	/** Set  Plot frame factor - between plots, also for receiver if exists */
 	void SetFrameFactor(int frame);
 
+	void SetCallBacks(bool enable);
+
 	/** Starts or stop acquisition
 	 * Calls startDaq() function
 	 * @param stop_if_running is 0 to stop acquisition and 1 to start acquisition
@@ -201,7 +203,6 @@ void SetAccumulate(bool enable);
 void ResetAccumulate();
 /** Display Statistics */
 void DisplayStatistics(bool enable);
-
 
 
 

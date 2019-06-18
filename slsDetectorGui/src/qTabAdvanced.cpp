@@ -759,10 +759,9 @@ void qTabAdvanced::GetSubExposureTime() {
 			spinSubExpTime->setValue(-1);
 		} else {
 			double value = (double)( retval * (1E-9));
-			qDefs::timeUnit unit;
-			double time = qDefs::getCorrectTime(unit, value);
-			spinSubExpTime->setValue(time);
-			comboSubExpTimeUnit->setCurrentIndex((int)unit);
+			auto time = qDefs::getCorrectTime(value);
+			spinSubExpTime->setValue(time.first);
+			comboSubExpTimeUnit->setCurrentIndex(static_cast<int>(time.second));
 		}
 	} catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get sub exposure time.", e.what(), "qTabSettings::GetSubExposureTime");
@@ -796,10 +795,9 @@ void qTabAdvanced::GetSubDeadTime() {
 			spinSubDeadTime->setValue(-1);
 		} else {
 			double value = (double)(retval * (1E-9));
-			qDefs::timeUnit unit;
-			double time = qDefs::getCorrectTime(unit, value);
-			spinSubDeadTime->setValue(time);
-			comboSubDeadTimeUnit->setCurrentIndex((int)unit);
+			auto time = qDefs::getCorrectTime(value);
+			spinSubDeadTime->setValue(time.first);
+			comboSubDeadTimeUnit->setCurrentIndex(static_cast<int>(time.second));
 		}
 	} catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not get sub dead time.", e.what(), "qTabSettings::GetSubDeadTime");

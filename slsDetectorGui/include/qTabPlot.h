@@ -22,13 +22,8 @@ public:
 	void SetScanArgument();
 	void Refresh();
 
-public slots:
-	void SetFrequency();
-	void EnableScanBox();
-
 private slots:
-
-xxxxxxxxxxxxxxx
+	void SetPlot();
 	void Set1DPlotOptionsRight();
 	void Set1DPlotOptionsLeft();
 	void Set2DPlotOptionsRight();
@@ -41,17 +36,7 @@ xxxxxxxxxxxxxxx
 	void SetYRange();
 	void CheckAspectRatio();
 	void SetZRange();
-
-
-
-
-	void Select1DPlot(bool b);
-	void SetPlot();
-
-
-
-
-
+	void SetStreamingFrequency();
 
 signals:
 	void DisableZoomSignal(bool);
@@ -60,14 +45,15 @@ signals:
 private:
 	void SetupWidgetWindow();
 	void Initialization();
+	void Select1DPlot(bool enable);
 	void GetGapPixels();
+	void GetStreamingFrequency();
 	void SetXYRange();
 	void MaintainAspectRatio(int dimension);
 
 	multiSlsDetector *myDet;
 	qDrawPlot *myPlot;
 	bool isOneD;
-	bool isOriginallyOneD;
 
 	QButtonGroup	*btnGroupPlotType;
 	/** interval between plots */

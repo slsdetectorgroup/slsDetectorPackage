@@ -292,7 +292,6 @@ void qDetectorMain::Initialization() {
     //	Measurement tab
     connect(tabMeasurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
     connect(tabMeasurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
-    connect(tabMeasurement,	SIGNAL(CheckPlotIntervalSignal()),	tabPlot,SLOT(SetFrequency()));
     // Plot tab
     connect(tabPlot,		SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
 

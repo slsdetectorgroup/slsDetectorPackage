@@ -130,18 +130,45 @@ class qDefs : public QWidget {
     };
 
     /**
-     * returns the time in the appropriate time unit
+     * returns the value in ms
      * @param unit unit of time
-     * @param value time in seconds
-     * returns the corresponding time value
+     * @param value time
+     * returns time value in ms
      */
-    static double getCorrectTime(timeUnit &unit, double value) {
+    static double getMSTime(timeUnit unit, double value) {
+        double valueMS = value;
+        switch (unit) {
+        case NANOSECONDS:  
+            valueMS /= 1000;
+        case MICROSECONDS:
+            valueMS /= 1000;
+            return valueMs;
+
+        case HOURS:
+            valueMS *= 60;
+        case MINUTES:
+            valueMS *= 60;
+        case SECONDS:
+            valueMS *= 1000;
+        default:
+            break;
+        }
+        return valueMS;
+    };
+
+    /**
+     * returns the time in the appropriate time unit
+     * @param value time in seconds
+     * returns the time in an appropriate time and unit
+     */
+    static std::pair<double, timeUnit> getCorrectTime(double value) {
+        timeUnit unit;
         int intUnit = (int)SECONDS;
 
         /**0 ms*/
         if (!value) {
             unit = MILLISECONDS;
-            return value;
+            return std::make_pair(value, unit);
         }
 
         /** hr, min, sec */
@@ -155,7 +182,7 @@ class qDefs : public QWidget {
             }
             /** returning the previous value*/
             unit = (timeUnit)(intUnit + 1);
-            return value;
+            return std::make_pair(value, unit);
         }
         /** ms, us, ns */
         else {
@@ -164,7 +191,7 @@ class qDefs : public QWidget {
                 intUnit++;
             }
             unit = (timeUnit)(intUnit);
-            return value;
+            return std::make_pair(value, unit);
         }
     };
 

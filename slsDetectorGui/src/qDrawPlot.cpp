@@ -175,8 +175,7 @@ void qDrawPlot::SetupWidgetWindow() {
     IsXYRange[2] = false;
     IsXYRange[3] = false;
 
-    timerValue = DEFAULT_STREAMING_TIMER_IN_MS;
-    frameFactor = 0;
+
     isFrameEnabled = false;
     isTriggerEnabled = false;
 
@@ -355,8 +354,7 @@ void qDrawPlot::SetupWidgetWindow() {
     gainDataEnable = false;
 
     // callbacks
-    // Setting the callback function to get data from detector class
-    myDet->registerDataCallback(&(GetDataCallBack), this); // also enables data streaming in client and receiver (if receiver exists)
+    SetCallBacks(true);
     //Setting the callback function to alert when acquisition finished from detector class
     myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack), this);
     //Setting the callback function to alert when each measurement finished from detector class
@@ -383,6 +381,15 @@ void qDrawPlot::Initialization() {
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+void qDrawPlot::SetCallBacks(bool enable) {
+    if (enable) {
+        // Setting the callback function to get data from detector class
+        myDet->registerDataCallback(&(GetDataCallBack), this); // also enables data streaming in client and receiver (if receiver exists)
+    } else {
+        myDet->registerDataCallback(nullptr, this);
+    }
+}
+
 
 void qDrawPlot::StartStopDaqToggle(bool stop_if_running) {
 #ifdef VERYVERBOSE

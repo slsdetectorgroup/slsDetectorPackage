@@ -67,8 +67,6 @@ private:
 signals:
 	void StartSignal();
 	void StopSignal();
-	void CheckPlotIntervalSignal();
-
 
 private:
 	multiSlsDetector *myDet;

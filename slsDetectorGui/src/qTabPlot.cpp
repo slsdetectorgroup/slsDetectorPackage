@@ -21,8 +21,7 @@ QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : 
     QWidget(parent), myDet(detector), myPlot(plot), isOneD(false), 
-    stackedLayout(nullptr), spinNthFrame(nullptr), spinTimeGap(nullptr), comboTimeGapUnit(nullptr),
-    btnGroupPlotType(0) {
+    btnGroupPlotType(0), stackedLayout(nullptr), spinNthFrame(nullptr), spinTimeGap(nullptr), comboTimeGapUnit(nullptr) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Plot ready";
@@ -75,17 +74,11 @@ void qTabPlot::SetupWidgetWindow() {
     dispZMax->setValidator(new QDoubleValidator(dispZMax));
     // Plot titles
     dispTitle->setText("");
-    myPlot->SetPlotTitlePrefix("");
     dispXAxis->setText(defaultHistXAxisTitle);
     dispYAxis->setText(defaultHistYAxisTitle);
-    myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
-    myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
     dispXAxis->setText(defaultImageXAxisTitle);
     dispYAxis->setText(defaultImageYAxisTitle);
     dispZAxis->setText(defaultImageZAxisTitle);
-    myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
-    myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
-    myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 
     // enabling according to det type
     isOneD = false;
@@ -202,7 +195,7 @@ void qTabPlot::Select1DPlot(bool enable) {
     FILE_LOG(logDEBUG) << "Selecting " << (enable ? "1" : "2") << "D Plot";
     isOneD = enable;
     box1D->setEnabled(enable);
-    box2D->setEnabled(!benable);
+    box2D->setEnabled(!enable);
     chkZAxis->setEnabled(!enable);
     dispZAxis->setEnabled(!enable);
     chkZMin->setEnabled(!enable);
@@ -247,48 +240,48 @@ void qTabPlot::SetPlot() {
 
 void qTabPlot::Set1DPlotOptionsRight() {
     FILE_LOG(logDEBUG) << "1D Options Right";
-    int i = stackedWidget->currentIndex();
-    if (i == (stackedWidget->count() - 1))
-        stackedWidget->setCurrentIndex(0);
+    int i = stackedWidget1D->currentIndex();
+    if (i == (stackedWidget1D->count() - 1))
+        stackedWidget1D->setCurrentIndex(0);
     else
-        stackedWidget->setCurrentIndex(i + 1);
-    box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget->currentIndex() + 1));
+        stackedWidget1D->setCurrentIndex(i + 1);
+    box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget1D->currentIndex() + 1));
 }
 
 void qTabPlot::Set1DPlotOptionsLeft() {
     FILE_LOG(logDEBUG) << "1D Options Left";
-    int i = stackedWidget->currentIndex();
+    int i = stackedWidget1D->currentIndex();
     if (i == 0)
-        stackedWidget->setCurrentIndex(stackedWidget->count() - 1);
+        stackedWidget1D->setCurrentIndex(stackedWidget1D->count() - 1);
     else
-        stackedWidget->setCurrentIndex(i - 1);
-    box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget->currentIndex() + 1));
+        stackedWidget1D->setCurrentIndex(i - 1);
+    box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget1D->currentIndex() + 1));
 }
 
 void qTabPlot::Set2DPlotOptionsRight() {
     FILE_LOG(logDEBUG) << "2D Options Right";
-    int i = stackedWidget_2->currentIndex();
-    if (i == (stackedWidget_2->count() - 1))
-        stackedWidget_2->setCurrentIndex(0);
+    int i = stackedWidget2D->currentIndex();
+    if (i == (stackedWidget2D->count() - 1))
+        stackedWidget2D->setCurrentIndex(0);
     else
-        stackedWidget_2->setCurrentIndex(i + 1);
-    box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex() + 1));
+        stackedWidget2D->setCurrentIndex(i + 1);
+    box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget2D->currentIndex() + 1));
 }
 
 void qTabPlot::Set2DPlotOptionsLeft() {
     FILE_LOG(logDEBUG) << "2D Options Left";
-    int i = stackedWidget_2->currentIndex();
+    int i = stackedWidget2D->currentIndex();
     if (i == 0)
-        stackedWidget_2->setCurrentIndex(stackedWidget_2->count() - 1);
+        stackedWidget2D->setCurrentIndex(stackedWidget2D->count() - 1);
     else
-        stackedWidget_2->setCurrentIndex(i - 1);
-    box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex() + 1));
+        stackedWidget2D->setCurrentIndex(i - 1);
+    box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget2D->currentIndex() + 1));
 }
 
 void qTabPlot::EnablePersistency(bool enable) {
     FILE_LOG(logINFO) << "Superimpose " << (enable ? "enabled" : "disabled");
-    lblPersistency->setEnabled(val);
-    spinPersistency->setEnabled(val);
+    lblPersistency->setEnabled(enable);
+    spinPersistency->setEnabled(enable);
     if (enable)
         myPlot->SetPersistency(spinPersistency->value());
     else
@@ -423,7 +416,7 @@ void qTabPlot::CheckAspectRatio() {
 }
 
 void qTabPlot::SetXYRange() {
-    FILE_LOG(LOGDEBUG) << "Set XY Range";
+    FILE_LOG(logDEBUG) << "Set XY Range";
     disconnect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
     disconnect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
     disconnect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
@@ -528,7 +521,7 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     ranges[qDefs::YMINIMUM] = myPlot->GetYMinimum();
     ranges[qDefs::YMAXIMUM] = myPlot->GetYMaximum();
     double idealAspectratio = (ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]);
-    FILE_LOG(logDEBUG) << "Ideal Aspect ratio: %f for x(%f - %f), y(%f - %f)\n", idealAspectratio, ranges[qDefs::XMINIMUM], ranges[qDefs::XMAXIMUM], ranges[qDefs::YMINIMUM], ranges[qDefs::YMAXIMUM]);
+    FILE_LOG(logDEBUG) << "Ideal Aspect ratio: " << idealAspectratio << " for x(" << ranges[qDefs::XMINIMUM] << " - " << ranges[qDefs::XMAXIMUM] << "), y(" << ranges[qDefs::YMINIMUM] << " - " << ranges[qDefs::YMAXIMUM] << ")";
   
     // calculate current aspect ratio
     ranges[qDefs::XMINIMUM] = dispXMin->text().toDouble();
@@ -536,9 +529,9 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     ranges[qDefs::YMINIMUM] = dispYMin->text().toDouble();
     ranges[qDefs::YMAXIMUM] = dispYMax->text().toDouble();
     double currentAspectRatio = (ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]);
-    FILE_LOG(logDEBUG) << "Current Aspect ratio: %f for x(%f - %f), y(%f - %f)\n", currentAspectRatio, ranges[qDefs::XMINIMUM], ranges[qDefs::XMAXIMUM], ranges[qDefs::YMINIMUM], ranges[qDefs::YMAXIMUM]);
-
-    if (newAspectRatio != idealAspectratio) {
+    FILE_LOG(logDEBUG) << "Current Aspect ratio: " << currentAspectRatio << " for x(" << ranges[qDefs::XMINIMUM] << " - " << ranges[qDefs::XMAXIMUM] << "), y(" << ranges[qDefs::YMINIMUM] << " - " << ranges[qDefs::YMAXIMUM] << ")";
+ 
+    if (currentAspectRatio != idealAspectratio) {
         // dimension: 1(x changed: y adjusted), 0(y changed: x adjusted), -1(aspect ratio clicked: larger one adjusted)
         if (dimension == -1) {
             dimension = ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) > (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM])) 
@@ -603,10 +596,10 @@ void qTabPlot::SetZRange() {
     bool isZmin = chkZMin->isChecked();
     bool isZmax = chkZMax->isChecked();
     double zmin = 0, zmax = 1;
-    if (!dispZMin->text().empty()) {
+    if (!dispZMin->text().isEmpty()) {
         zmin = dispZMin->text().toDouble();
     }
-    if (!dispZMax->text().empty()) {
+    if (!dispZMax->text().isEmpty()) {
         zmax = dispZMax->text().toDouble();
     }  
     emit ResetZMinZMaxSignal(isZmin, isZmax, zmin, zmax);
@@ -636,7 +629,7 @@ void qTabPlot::GetStreamingFrequency() {
                     double timeS = static_cast<double>(timeMs) / 1000.00;
                     auto time = qDefs::getCorrectTime(timeS);
                     spinTimeGap->setValue(time.first);
-                    comboTimeGapUnit->setcurrentIndex(static_cast<int>(time.second));
+                    comboTimeGapUnit->setCurrentIndex(static_cast<int>(time.second));
                 }
             } catch(const sls::NonCriticalError &e) {
                 qDefs::ExceptionMessage("Could not get streaming timer.", e.what(), "qTabPlot::GetStreamingFrequency");

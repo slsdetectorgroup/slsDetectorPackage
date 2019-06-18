@@ -22,7 +22,7 @@ public:
     void         SetXTitle(QString st);
     void         SetYTitle(QString st);
     void         SetZTitle(QString st);
-    void 		 KeepZRangeIfSet();
+    void 	KeepZRangeIfSet();
 
 
 private:

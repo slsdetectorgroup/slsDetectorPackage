@@ -99,7 +99,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="page_6">
      <widget class="QWidget" name="gridLayoutWidget_5">
@@ -610,167 +610,6 @@ Displays minimum, maximum and sum of values for each plot.
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="pageHistogram_2">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <widget class="QWidget" name="horizontalLayoutWidget_14">
-      <property name="geometry">
-       <rect>
-        <x>9</x>
-        <y>0</y>
-        <width>315</width>
-        <height>35</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="layoutThreshold_4">
-       <property name="spacing">
-        <number>1</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="lblHistFrom_2">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>from </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinHistFrom_2">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="minimum">
-          <number>-16777215</number>
-         </property>
-         <property name="maximum">
-          <number>16777215</number>
-         </property>
-         <property name="value">
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblHistTo_2">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string> to </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinHistTo_2">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="minimum">
-          <number>-16777215</number>
-         </property>
-         <property name="maximum">
-          <number>16777215</number>
-         </property>
-         <property name="value">
-          <number>10000</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblHistSize_2">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string> size </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinHistSize_2">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="minimum">
-          <number>-16777215</number>
-         </property>
-         <property name="maximum">
-          <number>16777215</number>
-         </property>
-         <property name="value">
-          <number>1000</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
    </widget>
    <widget class="QPushButton" name="btnLeft2D">
     <property name="geometry">
@@ -871,7 +710,7 @@ Displays minimum, maximum and sum of values for each plot.
      </rect>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QWidget" name="horizontalLayoutWidget_2">
@@ -1462,167 +1301,6 @@ Displays minimum, maximum and sum of values for each plot.
          </property>
          <property name="text">
           <string>Display Statistics</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="pageHistogram">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <widget class="QWidget" name="horizontalLayoutWidget_13">
-      <property name="geometry">
-       <rect>
-        <x>5</x>
-        <y>0</y>
-        <width>331</width>
-        <height>36</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="layoutThreshold_3">
-       <property name="spacing">
-        <number>1</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="lblHistFrom">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>from </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinHistFrom">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="minimum">
-          <number>0</number>
-         </property>
-         <property name="maximum">
-          <number>16777215</number>
-         </property>
-         <property name="value">
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblHistTo">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string> to </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinHistTo">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="minimum">
-          <number>-16777215</number>
-         </property>
-         <property name="maximum">
-          <number>16777215</number>
-         </property>
-         <property name="value">
-          <number>10000</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblHistSize">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string> size </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinHistSize">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="minimum">
-          <number>-16777215</number>
-         </property>
-         <property name="maximum">
-          <number>16777215</number>
-         </property>
-         <property name="value">
-          <number>1000</number>
          </property>
         </widget>
        </item>
@@ -2233,7 +1911,7 @@ Displays minimum, maximum and sum of values for each plot.
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>355</width>
+      <width>345</width>
       <height>27</height>
      </rect>
     </property>
@@ -2251,7 +1929,7 @@ Displays minimum, maximum and sum of values for each plot.
        </property>
       </widget>
      </item>
-     <item row="0" column="4">
+     <item row="0" column="3">
       <widget class="QRadioButton" name="radioDataGraph">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2267,49 +1945,33 @@ Displays minimum, maximum and sum of values for each plot.
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
-      <widget class="QRadioButton" name="radioHistogram">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Histogram</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="1">
       <spacer name="horizontalSpacer_17">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Preferred</enum>
+        <enum>QSizePolicy::Fixed</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
+         <width>20</width>
          <height>10</height>
         </size>
        </property>
       </spacer>
      </item>
-     <item row="0" column="3">
+     <item row="0" column="4">
       <spacer name="horizontalSpacer_18">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeType">
-        <enum>QSizePolicy::Preferred</enum>
+        <enum>QSizePolicy::Fixed</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
+         <width>120</width>
          <height>10</height>
         </size>
        </property>
@@ -2751,7 +2413,6 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
  </widget>
  <tabstops>
   <tabstop>radioNoPlot</tabstop>
-  <tabstop>radioHistogram</tabstop>
   <tabstop>radioDataGraph</tabstop>
   <tabstop>chkInterpolate</tabstop>
   <tabstop>chkContour</tabstop>

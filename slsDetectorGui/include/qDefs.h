@@ -30,7 +30,7 @@ class qDefs : public QWidget {
         QF_NUM_FUNCTIONS
     };
 
-    const char* getQFunctionNameFromEnum(enum qFuncNames func) {
+    static const char* getQFunctionNameFromEnum(enum qFuncNames func) {
         switch (func) {
         case QF_GET_DETECTOR_STATUS:	return "QF_GET_DETECTOR_STATUS";
         case QF_START_ACQUISITION:		return "QF_START_ACQUISITION";
@@ -142,7 +142,7 @@ class qDefs : public QWidget {
             valueMS /= 1000;
         case MICROSECONDS:
             valueMS /= 1000;
-            return valueMs;
+            return valueMS;
 
         case HOURS:
             valueMS *= 60;

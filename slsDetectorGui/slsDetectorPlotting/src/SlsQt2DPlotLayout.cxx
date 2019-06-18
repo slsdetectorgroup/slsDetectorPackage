@@ -1,3 +1,6 @@
+#include "SlsQt2DPlotLayout.h"
+#include "logger.h"
+
 #include <iostream>
 
 #include <qtoolbutton.h>
@@ -5,10 +8,6 @@
 #include <qgridlayout.h>
 #include <qlabel.h>
 #include <QString>
-
-#include "SlsQt2DPlotLayout.h"
-
-
 
 SlsQt2DPlotLayout::SlsQt2DPlotLayout(QWidget *parent):QGroupBox(parent){
 	the_layout=0;
@@ -39,8 +38,12 @@ void SlsQt2DPlotLayout::ConnectSignalsAndSlots(){
 	connect(this, SIGNAL(LogzSignal(bool)), this, SLOT(SetZScaleToLog(bool)));
 }
 
+void SlsQt2DPlotLayout::KeepZRangeIfSet() {
+	UpdateZRange(zmin, zmax);
+}
+
 void SlsQt2DPlotLayout::SetZRange(bool isMin, bool isMax, double min, double max){
-	isZMin = isMin;
+	isZmin = isMin;
 	isZmax = isMax;
 
 	// reset zmin and zmax first (recalculate from plot)
@@ -73,7 +76,7 @@ void SlsQt2DPlotLayout::SetZScaleToLog(bool enable) {
 	FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling")  << " Z Scale to log";
 	isLog = enable;
 	the_plot->LogZ(enable);
-	SetZRange(isZMin, isZmax, zmin, zmax);
+	SetZRange(isZmin, isZmax, zmin, zmax);
 }
 
 

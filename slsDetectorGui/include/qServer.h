@@ -19,13 +19,13 @@ class qServer : public QWidget {
 
   private:
     void FunctionTable();
-    void DecodeFunction(sls::ServerInterface2 *socket);
+    void DecodeFunction(sls::ServerInterface2 &socket);
     void ServerThread(bool isControlServer);
-    void GetStatus(sls::ServerInterface2* socket);
-    void StartAcquisition(sls::ServerInterface2* socket);
-    void StopsAcquisition(sls::ServerInterface2* socket);
-    void Acquire(sls::ServerInterface2* socket);
-    void ExitServer(sls::ServerInterface2* socket);
+    void GetStatus(sls::ServerInterface2 &socket);
+    void StartAcquisition(sls::ServerInterface2 &socket);
+    void StopsAcquisition(sls::ServerInterface2 &socket);
+    void Acquire(sls::ServerInterface2 &socket);
+    void ExitServer(sls::ServerInterface2 &socket);
 
   signals:
     // to update the Listening to Gui check box

@@ -16,7 +16,6 @@ set(SOURCES
     slsDetectorPlotting/src/SlsQt2DHist.cxx
     slsDetectorPlotting/src/SlsQt2DPlot.cxx
     slsDetectorPlotting/src/SlsQt2DPlotLayout.cxx
-    slsDetectorPlotting/src/SlsQtNumberEntry.cxx
     src/qDetectorMain.cpp
     src/qDrawPlot.cpp
     src/qCloneWidget.cpp
@@ -50,8 +49,6 @@ set(HEADERS
     slsDetectorPlotting/include/SlsQt2DPlot.h
     slsDetectorPlotting/include/SlsQt2DPlotLayout.h
     slsDetectorPlotting/include/SlsQt2DZoomer.h
-    slsDetectorPlotting/include/SlsQtValidators.h
-    slsDetectorPlotting/include/SlsQtNumberEntry.h
     include/qDefs.h
     include/qDebugStream.h
     include/qDetectorMain.h

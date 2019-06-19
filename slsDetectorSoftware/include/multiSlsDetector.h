@@ -107,15 +107,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     virtual ~multiSlsDetector();
 
-    /**
-     * Creates/open shared memory, initializes detector structure and members
-     * Called by constructor/ set hostname / read config file
-     * @param verify true to verify if shared memory version matches existing
-     * one
-     * @param update true to update last user pid, date etc
-     */
-    void setupMultiDetector(bool verify = true,
-                            bool update = true);
+
 
     /**
      * Loop through the detectors serially and return the result as a vector
@@ -2133,6 +2125,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void addSlsDetector(const std::string &hostname);
 
     
+     /**
+     * Creates/open shared memory, initializes detector structure and members
+     * Called by constructor/ set hostname / read config file
+     * @param verify true to verify if shared memory version matches existing
+     * one
+     * @param update true to update last user pid, date etc
+     */
+    void setupMultiDetector(bool verify = true,
+                            bool update = true);
 
      /**
       * add gap pixels to the image (only for Eiger in 4 bit mode)

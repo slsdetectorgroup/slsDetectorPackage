@@ -7,11 +7,11 @@
 #     ${PROJECT_SOURCE_DIR}/catch
 # )
 
-target_sources(tests PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/test-integrationMulti.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/test-integrationDectector.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/test-eigerIntegration.cpp
-)
+# target_sources(tests PRIVATE 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/test-integrationMulti.cpp
+#     ${CMAKE_CURRENT_SOURCE_DIR}/test-integrationDectector.cpp
+#     ${CMAKE_CURRENT_SOURCE_DIR}/test-eigerIntegration.cpp
+# )
 
 # if(SLS_USE_TESTS)
 #     set(TEST_SOURCES
@@ -32,18 +32,16 @@ target_sources(tests PRIVATE
 #             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 #     )
 
-#     add_executable(a src/a.cpp)
-#     target_link_libraries(a 
-#         slsProjectOptions
-#         slsProjectWarnings
-#         slsDetectorShared
-#         slsSupportLib
-#         pthread
-#         rt
-#     )  
-#     set_target_properties(a PROPERTIES
-#         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-#     )
+    add_executable(a a.cpp)
+    target_link_libraries(a 
+        slsDetectorShared
+        slsSupportLib
+        pthread
+        rt
+    )  
+    set_target_properties(a PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
 
 # endif()
 

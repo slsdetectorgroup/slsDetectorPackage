@@ -3,6 +3,7 @@ set(SOURCES
     src/slsDetectorUsers.cpp 
     src/slsDetectorCommand.cpp
     src/slsDetector.cpp 
+    src/Detector.cpp
 )
 
 set(HEADERS

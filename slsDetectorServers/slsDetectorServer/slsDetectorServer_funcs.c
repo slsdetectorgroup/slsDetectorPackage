@@ -146,6 +146,7 @@ const char* getSpeedName(enum speedVariable ind) {
     case DBIT_PIPELINE:  return "dbit_pipeline";
     case MAX_ADC_PHASE_SHIFT:  	return "max_adc_phase_shift";
     case MAX_DBIT_PHASE_SHIFT:  return "max_dbit_phase_shift";
+	case SYNC_CLOCK:	 return "sync_clock";
     default:             return "unknown_speed";
     }
 }
@@ -1976,6 +1977,7 @@ int set_speed(int file_des) {
         case MAX_DBIT_PHASE_SHIFT:
         case ADC_CLOCK:
         case DBIT_CLOCK:
+		case SYNC_CLOCK:
         case CLOCK_DIVIDER:
         case ADC_PIPELINE:
         case DBIT_PIPELINE:
@@ -1986,6 +1988,7 @@ int set_speed(int file_des) {
         case MAX_DBIT_PHASE_SHIFT:
         case ADC_CLOCK:
         case DBIT_CLOCK:
+		case SYNC_CLOCK:
         case CLOCK_DIVIDER:
         case ADC_PIPELINE:
         case DBIT_PIPELINE:

@@ -497,6 +497,7 @@ format
         DBIT_PIPELINE,        /**< adc pipeline */
         MAX_ADC_PHASE_SHIFT,  /** max adc phase shift */
         MAX_DBIT_PHASE_SHIFT, /** max adc phase shift */
+        SYNC_CLOCK,
     };
 
     /**

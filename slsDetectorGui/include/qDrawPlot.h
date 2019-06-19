@@ -1,23 +1,12 @@
-/*
- * qDrawPlot.h
- *
- *  Created on: May 7, 2012
- *      Author: Dhanya Maliakal
- */
-#ifndef QDRAWPLOT_H
-#define QDRAWPLOT_H
-
+#pragma once
 
 #include "qDefs.h"
-
-/** Project Class Headers */
-class multiSlsDetector;
-#include "detectorData.h"
-/** Qt Project Class Headers */
-#include "SlsQt1DPlot.h"
-#include "SlsQt2DPlotLayout.h"
+class detectorData;
+class SlsQt1DPlot;
+class SlsQt2DPlotLayout;
 class qCloneWidget;
-/** Qt Include Headers */
+
+
 #include <QWidget>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -33,7 +22,7 @@ class qCloneWidget;
 #include <qwt_column_symbol.h>
 #include <qpen.h>
 
-/** C++ Include Headers */
+
 
 
 #define MAX_1DPLOTS 10
@@ -54,58 +43,30 @@ public:
 	/** Destructor	 */
 	~qDrawPlot();
 
-	/**is an acquisition running , need it to prevent measurement tab
-	 * from being refreshed when switching tabs during acquisition */
-	bool isRunning(){return running;};
-	/** gets the progress of acquisition to the measurement tab*/
-	int GetProgress(){return progress;};
-	/** gets the file index to the measurement tab*/
-	int GetFileIndex(){return currentFileIndex;};
-	/** gets the frame index to the measurement tab*/
-	int GetFrameIndex(){return currentFrameIndex;};
-	/** sets file write enable , if not enabled,
-	 * file index wont increase and so you need secondary titles to differentitate between plots*/
-	void SetFileWrite(bool enable){fileSaveEnable = enable;};
 
-
-	/**	sets plot Title prefix*/
-	void SetPlotTitlePrefix(QString title)      	{plotTitle_prefix = title;}
-	
-	void SetXAxisTitle(QString title) {
-		if(plot_in_scope==1) {
-			histXAxisTitle = title;
-		} else {
-			imageXAxisTitle = title;
-		}
-	}
-
-	void SetYAxisTitle(QString title) {
-		if(plot_in_scope==1) {
-			histYAxisTitle = title;
-		} else {
-			imageYAxisTitle = title;
-		}
-	}
-	/**	sets 2D Z Axis Title */
-	void SetZAxisTitle(QString title)   {imageZAxisTitle = title;}
-	/** Disables zoom if any of the axes range are checked and fixed with a value */
+	bool isRunning();
+	int GetProgress();
+	int GetFileIndex();
+	int GetFrameIndex();
+	void SetFileWrite(bool enable);
+	void SetPlotTitlePrefix(QString title);	
+	void SetXAxisTitle(QString title);
+	void SetYAxisTitle(QString title);
+	void SetZAxisTitle(QString title);
 	void DisableZoom(bool disable);
-	/**	Enables plot from the plot tab*/
 	void EnablePlot(bool enable);
-	/** Enable angle plot */
-	void EnableAnglePlot(bool enable){anglePlot = enable;};
+	void EnableAnglePlot(bool enable);
 
-	/** Its a reminder to update plot to set the xy range
-	 * This is done only when there is a plot to update */
-	void SetXYRange(bool changed){XYRangeChanged = changed;};
+
+	void SetXYRange(bool changed);
 	/**Sets the min/max for x/y
 	 * @param val is the value to be set
 	 * @param xy is xmin,xmax,ymin or ymax */
-	void SetXYRangeValues(double val,qDefs::range xy){XYRangeValues[xy]=val;};
+	void SetXYRangeValues(double val,qDefs::range xy);
 	/**Sets if min/max for x/y is enabled
 	 * @param changed is if this has been changed
 	 * @param xy is xmin,xmax,ymin or ymax */
-	void IsXYRangeValues(bool changed,qDefs::range xy){IsXYRange[xy]=changed;};
+	void IsXYRangeValues(bool changed,qDefs::range xy);
 
 	/** Set Plot timer - between plots in ms*/
 	void SetPlotTimer(double time);
@@ -121,10 +82,10 @@ public:
 	void StartStopDaqToggle(bool stop_if_running=0);
 	/** Set frame enabled
 	 *  @param enable enable*/
-	void setFrameEnabled(bool enable){isFrameEnabled = enable;};
+	void setFrameEnabled(bool enable);
 	/** Set trigger enabled
 	 *  @param enable enable */
-	void setTriggerEnabled(bool enable){isTriggerEnabled = enable;};
+	void setTriggerEnabled(bool enable);
 
 	/** Updates the trimbit plot
 	 * @param fromDetector is true if the trimbits should be loaded from detector
@@ -136,12 +97,12 @@ public:
 	/** This is set once client initiates start/stop acquisition
 	 * and this is reset when the gui really starts/stops- to know when to return
 	 */
-	void SetClientInitiated(){clientInitiated =  true;};
+	void SetClientInitiated();
 
 	/** Get client intiated variable. This is set once client initiates start/stop acquisition
 	 * and this is reset when the gui really starts/stops- to know when to return
 	 */
-	bool GetClientInitiated(){return clientInitiated;};
+	bool GetClientInitiated();
 
 	/** Update all ranges, interpolate etc after cloning
 	 * parameters are if they are checked or not
@@ -155,22 +116,22 @@ public:
 	void SetHistogram(bool enable,int histArg, int min=0, int max=0, double size=0){histogram = enable;histogramArgument = histArg; histFrom=min;histTo=max;histSize=size;};
 
 	/** Get X Minimum value from plot */
-	double GetXMinimum() { if(plot_in_scope==1) return plot1D->GetXMinimum(); else return plot2D->GetPlot()->GetXMinimum();};
+	double GetXMinimum();
 	/** Get X Maximum value from plot */
-	double GetXMaximum() { if(plot_in_scope==1) return plot1D->GetXMaximum(); else return plot2D->GetPlot()->GetXMaximum();};
+	double GetXMaximum();
 	/** Get Y Minimum value from plot */
-	double GetYMinimum() { if(plot_in_scope==1) return plot1D->GetYMinimum(); else return plot2D->GetPlot()->GetYMinimum();};
+	double GetYMinimum();
 	/** Get Y Maximum value from plot */
-	double GetYMaximum() { if(plot_in_scope==1) return plot1D->GetYMaximum(); else return plot2D->GetPlot()->GetYMaximum();};
+	double GetYMaximum();
 
 public slots:
 /** To select 1D or 2D plot
  @param i is 1 for 1D, else 2D plot */
 void SelectPlot(int i=2);
 /** To select 1D plot */
-void Select1DPlot() {SelectPlot(1);}
+void Select1DPlot();
 /** To select 2D plot */
-void Select2DPlot() {SelectPlot(2);}
+void Select2DPlot();
 /** To clear plot */
 void Clear1DPlot();
 /** Creates a clone of the plot */
@@ -182,17 +143,17 @@ void SaveClones();
 /** To Save plot */
 void SavePlot();
 /** Save all plots **/
-void SaveAll(bool enable){saveAll = enable;};
+void SaveAll(bool enable);
 /**	Sets persistency from plot tab */
 void SetPersistency(int val);
 /**	sets style of plot to lines*/
-void SetLines(bool enable){lines = enable;};
+void SetLines(bool enable);
 /**	sets markers */
-void SetMarkers(bool enable){markers = enable;};
+void SetMarkers(bool enable);
 /** sets the scan argument to prepare the plot*/
 // void SetScanArgument(int scanArg);
 /** sets stop_signal to true */
-void StopAcquisition(){	stop_signal = true; };
+void StopAcquisition();
 /** Set/unset pedestal */
 void SetPedestal(bool enable);
 /** Recalculate Pedestal */
@@ -216,21 +177,21 @@ void SetupWidgetWindow();
 
 
 /** Gets the image title	 */
-const char*  GetImageTitle()      	{return imageTitle.c_str();}
+const char*  GetImageTitle();
 /**	Gets the hist title for a 1D plot */
-const char*  GetHistTitle(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histTitle[i].c_str():0;} //int for hist number
+const char*  GetHistTitle(int i);
 /**	Gets the y axis value for the hist in 1D plot */
-double*      GetHistYAxis(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histYAxis[i]:0;} //int for hist number
+double*      GetHistYAxis(int i);
 
 
 /**	Locks the image to update plot */
-int    LockLastImageArray()			{return pthread_mutex_lock(&last_image_complete_mutex); }
+int    LockLastImageArray();
 /**	Unocks the image to update plot */
-int    UnlockLastImageArray()		{return pthread_mutex_unlock(&last_image_complete_mutex);}
+int    UnlockLastImageArray();
 /**	Starts the acquisition */
-int    StartDaqForGui() 		  	{return StartOrStopThread(1) ? 1:0;}
+int    StartDaqForGui();
 /**	Stops the acquisition  */
-int    StopDaqForGui() 			  	{return StartOrStopThread(0) ? 0:1;}
+int    StopDaqForGui();
 
 /** Starts/stops Acquisition Thread */
 bool   StartOrStopThread(bool start);
@@ -284,14 +245,7 @@ static int GetProgressCallBack(double currentProgress, void *this_pointer);
 /** Saves all the plots. All sets saveError to true if not saved.*/
 void SavePlotAutomatic();
 /** Sets the style of the 1d plot */
-void SetStyle(SlsQtH1D*  h){
-	if(lines) h->setStyle(QwtPlotCurve::Lines); else h->setStyle(QwtPlotCurve::Dots);
-#if QWT_VERSION<0x060000
-	if(markers) h->setSymbol(*marker); 			else h->setSymbol(*noMarker);
-#else
-	if(markers) h->setSymbol(marker); 			else h->setSymbol(noMarker);
-#endif
-};
+void SetStyle(SlsQtH1D*  h);
 
 
 /** Find Statistics
@@ -330,7 +284,7 @@ void CloneCloseEvent(int id);
 /**After a pause, the gui is allowed to collect the data
  * this is called when it is over
  * */
-void UpdatePause(){data_pause_over=true;};
+void UpdatePause();
 /** Shows the first save error message while automatic saving
  * @param fileName file name of the first file that it tried to save.
  * */
@@ -345,39 +299,38 @@ void ShowAcquisitionErrorMessage(QString status);
  */
 void EnableGainPlot(bool e);
 
+signals:
+void UpdatingPlotFinished();
+void InterpolateSignal(bool);
+void ContourSignal(bool);
+void LogzSignal(bool);
+void LogySignal(bool);
+void ResetZMinZMaxSignal(bool,bool,double,double);
+void SetCurrentMeasurementSignal(int);
+void saveErrorSignal(QString);
+void AcquisitionErrorSignal(QString);
+void UpdatePlotSignal();
+void GainPlotSignal(bool);
+
 
 private:
-/** The sls detector object */
 multiSlsDetector *myDet;
-
-/** detectot type */
 slsDetectorDefs::detectorType detType;
+SlsQt1DPlot* plot1D;
+SlsQt2DPlotLayout* plot2D;
+QVector<SlsQtH1D*> plot1DHists;
 
 
-/** Widgets needed to plot the clone */
-/**	Max Number of Clone Windows */
 static const int MAXCloneWindows = 50;
-/**	Array of clone window widget pointers */
-qCloneWidget		*winClone[MAXCloneWindows];
+qCloneWidget		*cloneWidgets[MAXCloneWindows];
 
 /** Widgets needed to set up plot*/
 QGroupBox 			*boxPlot;
 QGridLayout 		*layout;
 QGridLayout 		*plotLayout;
-/**	Timer to update plot */
-QTimer* 			plot_update_timer;
-
-/** Timer to pause getting data from client */
-QTimer*				data_pause_timer;
-bool 				data_pause_over;
 
 
-/**	1D object */
-SlsQt1DPlot* 		plot1D;
-/**	2D object */
-SlsQt2DPlotLayout* 	plot2D;
-/**	vector of 1D hist values */
-QVector<SlsQtH1D*> 	plot1D_hists;
+
 
 /**label with frame index for those with many frames per file*/
 QLabel *histFrameIndexTitle;
@@ -610,20 +563,5 @@ bool gainDataEnable;
 const static int npixelsx_jctb = 400;
 int npixelsy_jctb;
 
-signals:
-void UpdatingPlotFinished();
-void InterpolateSignal(bool);
-void ContourSignal(bool);
-void LogzSignal(bool);
-void LogySignal(bool);
-void ResetZMinZMaxSignal(bool,bool,double,double);
-void SetCurrentMeasurementSignal(int);
-void saveErrorSignal(QString);
-void AcquisitionErrorSignal(QString);
-void UpdatePlotSignal();
-void GainPlotSignal(bool);
+
 };
-
-
-
-#endif /* QDRAWPLOT_H */

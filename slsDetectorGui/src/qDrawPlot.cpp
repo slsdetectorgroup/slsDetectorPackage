@@ -1,20 +1,23 @@
-// Qt Project Class Headers
-#include "qDrawPlot.h"
-#include "qCloneWidget.h"
-#include "slsDetector.h"
 
-// Project Class Headers
-#include "multiSlsDetector.h"
-#include "slsDetector.h"
-// #include "postProcessing.h"
-// Qt Include Headers
+#include "qDrawPlot.h"
+
+
+#include "detectorData.h"
+#include "SlsQt1DPlot.h"
+#include "SlsQt2DPlotLayout.h"
+#include "qCloneWidget.h"
+
+
+
+
+
 #include <QFileDialog>
 #include <QFont>
 #include <QImage>
 #include <QPainter>
 //#include "qwt_double_interval.h"
 #include "qwt_series_data.h"
-// C++ Include Headers
+
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -22,22 +25,22 @@
 
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qDrawPlot::qDrawPlot(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector), plot1D_hists(0) {
+
+qDrawPlot::qDrawPlot(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector), plot1DHists(0) {
     SetupWidgetWindow();
     Initialization();
     StartStopDaqToggle(); //as default
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 qDrawPlot::~qDrawPlot() {
     // Clear plot
     Clear1DPlot();
-    for (QVector<SlsQtH1D *>::iterator h = plot1D_hists.begin(); h != plot1D_hists.end(); ++h)
+    for (QVector<SlsQtH1D *>::iterator h = plot1DHists.begin(); h != plot1DHists.end(); ++h)
         delete *h;
-    plot1D_hists.clear();
+    plot1DHists.clear();
     if (lastImageArray)
         delete[] lastImageArray;
     lastImageArray = 0;
@@ -48,13 +51,13 @@ qDrawPlot::~qDrawPlot() {
     delete myDet;
     myDet = 0;
     for (int i = 0; i < MAXCloneWindows; ++i)
-        if (winClone[i]) {
-            delete winClone[i];
-            winClone[i] = NULL;
+        if (cloneWidgets[i]) {
+            delete cloneWidgets[i];
+            cloneWidgets[i] = NULL;
         }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetupWidgetWindow() {
 #ifdef VERBOSE
@@ -230,7 +233,7 @@ void qDrawPlot::SetupWidgetWindow() {
 
     // clone
     for (int i = 0; i < MAXCloneWindows; ++i)
-        winClone[i] = 0;
+        cloneWidgets[i] = 0;
 
     // Setting up window
     setFont(QFont("Sans Serif", 9));
@@ -244,8 +247,6 @@ void qDrawPlot::SetupWidgetWindow() {
     boxPlot->setAlignment(Qt::AlignHCenter);
     boxPlot->setFont(QFont("Sans Serif", 11, QFont::Normal));
     boxPlot->setTitle("Sample Plot");
-    data_pause_timer = new QTimer(this);
-    connect(data_pause_timer, SIGNAL(timeout()), this, SLOT(UpdatePause()));
 
     //display statistics
     displayStatistics = false;
@@ -308,7 +309,7 @@ void qDrawPlot::SetupWidgetWindow() {
     Clear1DPlot();
     plot1D->SetXTitle("X Axis");
     plot1D->SetYTitle("Y Axis");
-    plot1D_hists.append(h = new SlsQtH1D("", histNBins, histXAxis, histYAxis[0]));
+    plot1DHists.append(h = new SlsQtH1D("", histNBins, histXAxis, histYAxis[0]));
     h->SetLineColor(0);
     SetStyle(h);
     h->Attach(plot1D);
@@ -365,7 +366,7 @@ void qDrawPlot::SetupWidgetWindow() {
     qDefs::checkErrorMessage(myDet, "qDrawPlot::SetupWidgetWindow");
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::Initialization() {
     connect(this, SIGNAL(UpdatePlotSignal()), this, SLOT(UpdatePlot()));
@@ -380,7 +381,95 @@ void qDrawPlot::Initialization() {
     connect(this, SIGNAL(GainPlotSignal(bool)), this, SLOT(EnableGainPlot(bool)));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+	bool qDrawPlot::isRunning(){return running;};
+
+	int qDrawPlot::GetProgress(){return progress;};
+
+	int qDrawPlot::GetFileIndex(){return currentFileIndex;};
+
+	int qDrawPlot::GetFrameIndex(){return currentFrameIndex;};
+	void qDrawPlot::SetFileWrite(bool enable){fileSaveEnable = enable;};
+
+	void qDrawPlot::SetPlotTitlePrefix(QString title)      	{plotTitle_prefix = title;}
+	
+	void qDrawPlot::SetXAxisTitle(QString title) {
+		if(plot_in_scope==1) {
+			histXAxisTitle = title;
+		} else {
+			imageXAxisTitle = title;
+		}
+	}
+
+	void qDrawPlot::SetYAxisTitle(QString title) {
+		if(plot_in_scope==1) {
+			histYAxisTitle = title;
+		} else {
+			imageYAxisTitle = title;
+		}
+	}
+
+	void qDrawPlot::SetZAxisTitle(QString title)   {imageZAxisTitle = title;}
+
+
+	void qDrawPlot::EnableAnglePlot(bool enable){anglePlot = enable;};
+
+	void qDrawPlot::SetXYRange(bool changed){XYRangeChanged = changed;};
+
+	void qDrawPlot::SetXYRangeValues(double val,qDefs::range xy){XYRangeValues[xy]=val;};
+
+	void qDrawPlot::IsXYRangeValues(bool changed,qDefs::range xy){IsXYRange[xy]=changed;};
+	
+    void qDrawPlot::setFrameEnabled(bool enable){isFrameEnabled = enable;};
+
+	void qDrawPlot::setTriggerEnabled(bool enable){isTriggerEnabled = enable;};
+
+	void qDrawPlot::SetClientInitiated(){clientInitiated =  true;};
+    bool qDrawPlot::GetClientInitiated(){return clientInitiated;};
+	double qDrawPlot::GetXMinimum() { if(plot_in_scope==1) return plot1D->GetXMinimum(); else return plot2D->GetPlot()->GetXMinimum();};
+
+	double qDrawPlot::GetXMaximum() { if(plot_in_scope==1) return plot1D->GetXMaximum(); else return plot2D->GetPlot()->GetXMaximum();};
+	
+	double qDrawPlot::GetYMinimum() { if(plot_in_scope==1) return plot1D->GetYMinimum(); else return plot2D->GetPlot()->GetYMinimum();};
+	
+	double qDrawPlot::GetYMaximum() { if(plot_in_scope==1) return plot1D->GetYMaximum(); else return plot2D->GetPlot()->GetYMaximum();};
+
+    void qDrawPlot::Select1DPlot() {SelectPlot(1);}
+    void qDrawPlot::Select2DPlot() {SelectPlot(2);}
+
+void qDrawPlot::SaveAll(bool enable){saveAll = enable;};
+
+void qDrawPlot::SetLines(bool enable){lines = enable;};
+
+void qDrawPlot::SetMarkers(bool enable){markers = enable;};
+void qDrawPlot::StopAcquisition(){	stop_signal = true; };
+
+
+const char*  qDrawPlot::GetImageTitle()      	{return imageTitle.c_str();}
+
+const char*  qDrawPlot::GetHistTitle(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histTitle[i].c_str():0;} //int for hist number
+
+double*      qDrawPlot::GetHistYAxis(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histYAxis[i]:0;} //int for hist number
+
+int    qDrawPlot::LockLastImageArray()			{return pthread_mutex_lock(&last_image_complete_mutex); }
+
+int    qDrawPlot::UnlockLastImageArray()		{return pthread_mutex_unlock(&last_image_complete_mutex);}
+
+int    qDrawPlot::StartDaqForGui() 		  	{return StartOrStopThread(1) ? 1:0;}
+
+int    qDrawPlot::StopDaqForGui() 			  	{return StartOrStopThread(0) ? 0:1;}
+
+void qDrawPlot::SetStyle(SlsQtH1D*  h){
+	if(lines) h->setStyle(QwtPlotCurve::Lines); else h->setStyle(QwtPlotCurve::Dots);
+#if QWT_VERSION<0x060000
+	if(markers) h->setSymbol(*marker); 			else h->setSymbol(*noMarker);
+#else
+	if(markers) h->setSymbol(marker); 			else h->setSymbol(noMarker);
+#endif
+};
+
+void qDrawPlot::UpdatePause(){data_pause_over=true;};
+
 void qDrawPlot::SetCallBacks(bool enable) {
     if (enable) {
         // Setting the callback function to get data from detector class
@@ -457,7 +546,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running) {
     clientInitiated = false;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::StartDaq(bool start) {
     if (start) {
@@ -474,7 +563,7 @@ void qDrawPlot::StartDaq(bool start) {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::ResetDaqForGui() {
     if (!StopDaqForGui())
@@ -484,7 +573,7 @@ int qDrawPlot::ResetDaqForGui() {
     return 1;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 bool qDrawPlot::StartOrStopThread(bool start) {
 #ifdef VERYVERBOSE
@@ -537,7 +626,7 @@ bool qDrawPlot::StartOrStopThread(bool start) {
     return gui_acquisition_thread_running;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 // void qDrawPlot::SetScanArgument(int scanArg){
 // #ifdef VERYVERBOSE
@@ -661,7 +750,7 @@ bool qDrawPlot::StartOrStopThread(bool start) {
 
 // }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetupMeasurement() {
 #ifdef VERYVERBOSE
@@ -765,7 +854,7 @@ void qDrawPlot::SetupMeasurement() {
 #endif
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void *qDrawPlot::DataStartAcquireThread(void *this_pointer) {
     // stream data from receiver to the gui
@@ -789,14 +878,14 @@ void *qDrawPlot::DataStartAcquireThread(void *this_pointer) {
     return this_pointer;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, int subIndex, void *this_pointer) {
     ((qDrawPlot *)this_pointer)->GetData(data, fIndex, subIndex);
     return 0;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
 #ifdef VERYVERBOSE
@@ -1176,7 +1265,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
     return 0;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer) {
     ((qDrawPlot *)this_pointer)->AcquisitionFinished(currentProgress, detectorStatus);
@@ -1186,7 +1275,7 @@ int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress, int detect
     return 0;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
 #ifdef VERBOSE
@@ -1231,14 +1320,14 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
     return 0;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::GetProgressCallBack(double currentProgress, void *this_pointer) {
     ((qDrawPlot *)this_pointer)->progress = currentProgress;
     return 0;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::ShowAcquisitionErrorMessage(QString status) {
     if (!alreadyDisplayed) {
@@ -1250,14 +1339,14 @@ void qDrawPlot::ShowAcquisitionErrorMessage(QString status) {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::GetMeasurementFinishedCallBack(int currentMeasurementIndex, int fileIndex, void *this_pointer) {
     ((qDrawPlot *)this_pointer)->MeasurementFinished(currentMeasurementIndex, fileIndex);
     return 0;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex) {
 #ifdef VERBOSE
@@ -1281,7 +1370,7 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex) {
     return 0;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SelectPlot(int i) { //1 for 1D otherwise 2D
     if (i == 1) {
@@ -1308,10 +1397,10 @@ void qDrawPlot::SelectPlot(int i) { //1 for 1D otherwise 2D
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::Clear1DPlot() {
-    for (QVector<SlsQtH1D *>::iterator h = plot1D_hists.begin(); h != plot1D_hists.end(); ++h) {
+    for (QVector<SlsQtH1D *>::iterator h = plot1DHists.begin(); h != plot1DHists.end(); ++h) {
         (*h)->Detach(plot1D);
         //do not delete *h or h.
     }
@@ -1319,7 +1408,7 @@ void qDrawPlot::Clear1DPlot() {
     plotHistogram->detach();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::UpdatePlot() {
 #ifdef VERYVERBOSE
@@ -1361,14 +1450,14 @@ void qDrawPlot::UpdatePlot() {
                 else {
                     for (int hist_num = 0; hist_num < (int)nHists; ++hist_num) {
                         SlsQtH1D *h;
-                        if (hist_num + 1 > plot1D_hists.size()) {
+                        if (hist_num + 1 > plot1DHists.size()) {
                             if (anglePlot)
-                                plot1D_hists.append(h = new SlsQtH1D("", histNBins, histXAngleAxis, histYAngleAxis));
+                                plot1DHists.append(h = new SlsQtH1D("", histNBins, histXAngleAxis, histYAngleAxis));
                             else
-                                plot1D_hists.append(h = new SlsQtH1D("", histNBins, histXAxis, GetHistYAxis(hist_num)));
+                                plot1DHists.append(h = new SlsQtH1D("", histNBins, histXAxis, GetHistYAxis(hist_num)));
                             h->SetLineColor(hist_num);
                         } else {
-                            h = plot1D_hists.at(hist_num);
+                            h = plot1DHists.at(hist_num);
                             if (anglePlot)
                                 h->SetData(histNBins, histXAngleAxis, histYAngleAxis);
                             else
@@ -1490,7 +1579,7 @@ void qDrawPlot::UpdatePlot() {
 #endif
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::ClonePlot() {
     int i;
@@ -1498,7 +1587,7 @@ void qDrawPlot::ClonePlot() {
     //check for space for more clone widget references
     bool found = false;
     for (i = 0; i < MAXCloneWindows; ++i)
-        if (!winClone[i]) {
+        if (!cloneWidgets[i]) {
             found = true;
             break;
         }
@@ -1521,17 +1610,17 @@ void qDrawPlot::ClonePlot() {
 
     // create clone & copy data
     if (plot_in_scope == 1) {
-        winClone[i] = new qCloneWidget(this, i, boxPlot->title(), histXAxisTitle, histYAxisTitle, "",
+        cloneWidgets[i] = new qCloneWidget(this, i, boxPlot->title(), histXAxisTitle, histYAxisTitle, "",
                                        (int)plot_in_scope, sFilePath, displayStatistics, lblMinDisp->text(), lblMaxDisp->text(), lblSumDisp->text());
         if (!anglePlot)
-            winClone[i]->SetCloneHists((int)nHists, histNBins, histXAxis, histYAxis, histTitle, lines, markers);
+            cloneWidgets[i]->SetCloneHists((int)nHists, histNBins, histXAxis, histYAxis, histTitle, lines, markers);
         else
-            winClone[i]->SetCloneHists((int)nHists, histNBins, histXAngleAxis, histYAngleAxis, histTitle, lines, markers);
+            cloneWidgets[i]->SetCloneHists((int)nHists, histNBins, histXAngleAxis, histYAngleAxis, histTitle, lines, markers);
 
     } else {
-        winClone[i] = new qCloneWidget(this, i, boxPlot->title(), imageXAxisTitle, imageYAxisTitle, imageZAxisTitle,
+        cloneWidgets[i] = new qCloneWidget(this, i, boxPlot->title(), imageXAxisTitle, imageYAxisTitle, imageZAxisTitle,
                                        (int)plot_in_scope, sFilePath, displayStatistics, lblMinDisp->text(), lblMaxDisp->text(), lblSumDisp->text());
-        winClone[i]->SetCloneHists2D(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, startPixel, endPixel, lastImageArray);
+        cloneWidgets[i]->SetCloneHists2D(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, startPixel, endPixel, lastImageArray);
     }
 
     // update range
@@ -1542,25 +1631,25 @@ void qDrawPlot::ClonePlot() {
             break;
         }
     if (found)
-        winClone[i]->SetRange(IsXYRange, XYRangeValues);
+        cloneWidgets[i]->SetRange(IsXYRange, XYRangeValues);
 
     UnlockLastImageArray();
 
-    winClone[i]->show();
+    cloneWidgets[i]->show();
 
     // to remember which all clone widgets were closed
-    connect(winClone[i], SIGNAL(CloneClosedSignal(int)), this, SLOT(CloneCloseEvent(int)));
+    connect(cloneWidgets[i], SIGNAL(CloneClosedSignal(int)), this, SLOT(CloneCloseEvent(int)));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SaveClones() {
     char errID[200];
     std::string errMessage = "The Snapshots with ID's: ";
     bool success = true;
     for (int i = 0; i < MAXCloneWindows; ++i)
-        if (winClone[i]) {
-            if (winClone[i]->SavePlotAutomatic()) {
+        if (cloneWidgets[i]) {
+            if (cloneWidgets[i]->SavePlotAutomatic()) {
                 success = false;
                 sprintf(errID, "%d", i);
                 errMessage.append(std::string(errID) + std::string(", "));
@@ -1572,24 +1661,24 @@ void qDrawPlot::SaveClones() {
         qDefs::Message(qDefs::WARNING, errMessage + std::string("were not saved."), "qDrawPlot::SaveClones");
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::CloseClones() {
     for (int i = 0; i < MAXCloneWindows; ++i)
-        if (winClone[i])
-            winClone[i]->close();
+        if (cloneWidgets[i])
+            cloneWidgets[i]->close();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::CloneCloseEvent(int id) {
-    winClone[id] = 0;
+    cloneWidgets[id] = 0;
 #ifdef VERBOSE
     std::cout << "Closing Clone Window id:" << id << '\n';
 #endif
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SavePlot() {
     // render image
@@ -1624,7 +1713,7 @@ void qDrawPlot::SavePlot() {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SavePlotAutomatic() {
     //no need to save the same plot many times
@@ -1667,13 +1756,13 @@ void qDrawPlot::SavePlotAutomatic() {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::ShowSaveErrorMessage(QString fileName) {
     qDefs::Message(qDefs::WARNING, std::string("Automatic Saving: Could not save the first file:\n") + std::string(fileName.toAscii().constData()) + std::string("\n\nNote: Will not show future file save errors for this acquisition."), "qDrawPlot::ShowSaveErrorMessage");
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetPersistency(int val) {
     for (int i = 0; i <= val; ++i)
@@ -1682,7 +1771,7 @@ void qDrawPlot::SetPersistency(int val) {
     persistency = val;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::EnablePlot(bool enable) {
 #ifdef VERBOSE
@@ -1694,7 +1783,7 @@ void qDrawPlot::EnablePlot(bool enable) {
     Clear1DPlot();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::DisableZoom(bool disable) {
     if (plot_in_scope == 1)
@@ -1703,7 +1792,7 @@ void qDrawPlot::DisableZoom(bool disable) {
         plot2D->GetPlot()->DisableZoom(disable);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
  int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
  	int ret;
@@ -1765,7 +1854,7 @@ void qDrawPlot::DisableZoom(bool disable) {
  	return qDefs::OK;
  }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetPedestal(bool enable) {
 #ifdef VERBOSE
@@ -1780,7 +1869,7 @@ void qDrawPlot::SetPedestal(bool enable) {
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::RecalculatePedestal() {
 #ifdef VERBOSE
@@ -1805,7 +1894,7 @@ void qDrawPlot::RecalculatePedestal() {
     UnlockLastImageArray();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetAccumulate(bool enable) {
 #ifdef VERBOSE
@@ -1814,7 +1903,7 @@ void qDrawPlot::SetAccumulate(bool enable) {
     accumulate = enable;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::ResetAccumulate() {
 #ifdef VERBOSE
@@ -1825,7 +1914,7 @@ void qDrawPlot::ResetAccumulate() {
     UnlockLastImageArray();
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetPlotTimer(double time) {
     // 	timerValue = time;
@@ -1838,7 +1927,7 @@ void qDrawPlot::SetPlotTimer(double time) {
     // 	}
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetFrameFactor(int frame) {
     // 	frameFactor = frame;
@@ -1850,7 +1939,7 @@ void qDrawPlot::SetFrameFactor(int frame) {
     // 	}
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::UpdateAfterCloning(bool points, bool logy, bool interpolate, bool contour, bool logz) {
 #ifdef VERBOSE
@@ -1870,7 +1959,7 @@ void qDrawPlot::UpdateAfterCloning(bool points, bool logy, bool interpolate, boo
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetBinary(bool enable, int from, int to) {
 #ifdef VERBOSE
@@ -1884,7 +1973,7 @@ void qDrawPlot::SetBinary(bool enable, int from, int to) {
     binaryTo = to;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::DisplayStatistics(bool enable) {
 #ifdef VERBOSE
@@ -1904,7 +1993,7 @@ void qDrawPlot::DisplayStatistics(bool enable) {
     lblSumDisp->setText("-");
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::GetStatistics(double &min, double &max, double &sum, double *array, int size) {
 #ifdef VERYVERBOSE
@@ -1923,7 +2012,7 @@ void qDrawPlot::GetStatistics(double &min, double &max, double &sum, double *arr
     }
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::EnableGainPlot(bool e) {
 #ifdef VERBOSE
@@ -1932,7 +2021,7 @@ void qDrawPlot::EnableGainPlot(bool e) {
     gainDataEnable = e;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int databytes, int dr, double *gaindest) {
     int ichan = 0;

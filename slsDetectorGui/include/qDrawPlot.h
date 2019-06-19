@@ -316,53 +316,38 @@ void GainPlotSignal(bool);
 private:
 multiSlsDetector *myDet;
 slsDetectorDefs::detectorType detType;
+
 SlsQt1DPlot* plot1D;
-SlsQt2DPlotLayout* plot2D;
 QVector<SlsQtH1D*> plot1DHists;
+
+
+SlsQt2DPlotLayout* plot2D;
 
 
 static const int MAXCloneWindows = 50;
 qCloneWidget		*cloneWidgets[MAXCloneWindows];
 
 /** Widgets needed to set up plot*/
-QGroupBox 			*boxPlot;
-QGridLayout 		*layout;
-QGridLayout 		*plotLayout;
+QGroupBox *boxPlot;
+QGridLayout	*layout;
+QGridLayout	*plotLayout;
 
-
-
-
-/**label with frame index for those with many frames per file*/
 QLabel *histFrameIndexTitle;
 
 
-/** Current Measurement */
+
 int currentMeasurement;
-/** currentFrame */
 int currentFrame;
-/** variable to check if its the nth frame */
-int numFactor;
-/** current Scan Division Level */
-int currentScanDivLevel;
-/** current scan Value */
-double currentScanValue;
-/**	 Number of Exposures */
-int number_of_exposures;
-/** Number of Frames Per Measurement */
-int number_of_frames;
-/**	 Duration between Exposures */
-double acquisitionPeriod;
-/**	 Acquisition Time */
-double exposureTime;
-/** Current file index*/
 int currentFileIndex;
-/** Current frame index*/
 int currentFrameIndex;
 
-/**variables for threads */
-/**	 */
+int numberofFrames;
+double acquisitionPeriod;
+double exposureTime;
+
 volatile bool   stop_signal;
-/**	 */
+
+
 pthread_mutex_t last_image_complete_mutex;
 
 /**variables for histograms */

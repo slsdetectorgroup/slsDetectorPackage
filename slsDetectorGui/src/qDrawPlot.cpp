@@ -85,17 +85,17 @@ void qDrawPlot::SetupWidgetWindow() {
 
     currentMeasurement = 0;
     currentFrame = 0;
-    numFactor = 0;
+
     currentScanDivLevel = 0;
     currentScanValue = 0;
     number_of_exposures = 0;
-    number_of_frames = 0;
+    numberofFrames = 0;
     acquisitionPeriod = 0;
     exposureTime = 0;
     currentFileIndex = 0;
     currentFrameIndex = 0;
 
-    stop_signal = 0;
+    stopSignal = 0;
     pthread_mutex_init(&last_image_complete_mutex, NULL);
 
     // Default titles- only for the initial picture
@@ -442,7 +442,7 @@ void qDrawPlot::SaveAll(bool enable){saveAll = enable;};
 void qDrawPlot::SetLines(bool enable){lines = enable;};
 
 void qDrawPlot::SetMarkers(bool enable){markers = enable;};
-void qDrawPlot::StopAcquisition(){	stop_signal = true; };
+void qDrawPlot::StopAcquisition(){	stopSignal = true; };
 
 
 const char*  qDrawPlot::GetImageTitle()      	{return imageTitle.c_str();}
@@ -502,14 +502,14 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running) {
 		int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
 		numFrames = ((numFrames==0)?1:numFrames);
 		numTriggers = ((numTriggers==0)?1:numTriggers);
-		number_of_frames = numFrames * numTriggers;
-		std::cout << "\tNumber of Frames per Scan/Measurement:" << number_of_frames <<'\n';
+		numberofFrames = numFrames * numTriggers;
+		std::cout << "\tNumber of Frames per Scan/Measurement:" << numberofFrames <<'\n';
 		//get #scansets for level 0 and level 1
 		int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
 		int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
 		int numPos=myDet->getPositions();
 
-		number_of_exposures = number_of_frames * numScan0 * numScan1;
+		number_of_exposures = numberofFrames * numScan0 * numScan1;
 		if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
 		std::cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures <<'\n';
 		*/
@@ -521,8 +521,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running) {
         acquisitionPeriod = ((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD, -1)) * 1E-9);
         std::cout << "\tAcquisition Period:" << std::setprecision(10) << acquisitionPeriod << '\n';
         std::cout << "\tFile Index:" << myDet->getFileIndex() << '\n';
-        //to take the first data if frameFactor
-        numFactor = 0;
+
 
         //for save automatically,
         saveError = false;
@@ -588,7 +587,7 @@ bool qDrawPlot::StartOrStopThread(bool start) {
     //stop part, before start or restart
     if (gui_acquisition_thread_running) {
         std::cout << "Stopping current acquisition thread ...." << '\n';
-        stop_signal = 1; //sorta useless right now
+        stopSignal = 1; //sorta useless right now
         gui_acquisition_thread_running = 0;
     }
 
@@ -628,127 +627,127 @@ bool qDrawPlot::StartOrStopThread(bool start) {
 
 
 
-// void qDrawPlot::SetScanArgument(int scanArg){
-// #ifdef VERYVERBOSE
-// 	std::cout << "SetScanArgument function:" << scanArg << " running:" << running <<'\n';
-// #endif
-// 	scanArgument = scanArg;
+void qDrawPlot::SetScanArgument(int scanArg){
+#ifdef VERYVERBOSE
+	std::cout << "SetScanArgument function:" << scanArg << " running:" << running <<'\n';
+#endif
+	scanArgument = scanArg;
 
-// 	LockLastImageArray();
+	LockLastImageArray();
 
-// 	if(plot_in_scope==1) Clear1DPlot();
+	if(plot_in_scope==1) Clear1DPlot();
 
-// 	// Number of Exposures - must be calculated here to get npixelsy for allframes/frameindex scans
-// 	int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
-// 	int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
-// 	int numStoragecells = 0;
-// 	if (detType == slsDetectorDefs::JUNGFRAU)
-// 	    numStoragecells = (int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
-// 	numFrames = ((numFrames==0)?1:numFrames);
-// 	numTriggers = ((numTriggers==0)?1:numTriggers);
-// 	numStoragecells = ((numStoragecells<=0)?1:numStoragecells+1);
-// 	number_of_frames = numFrames * numTriggers * numStoragecells;
-// 	std::cout << "\tNumber of Frames per Scan/Measurement:" << number_of_frames <<'\n';
-// 	//get #scansets for level 0 and level 1
-// 	int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
-// 	int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
-// 	//int numPos=myDet->getPositions();
+	// Number of Exposures - must be calculated here to get npixelsy for allframes/frameindex scans
+	int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
+	int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
+	int numStoragecells = 0;
+	if (detType == slsDetectorDefs::JUNGFRAU)
+	    numStoragecells = (int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
+	numFrames = ((numFrames==0)?1:numFrames);
+	numTriggers = ((numTriggers==0)?1:numTriggers);
+	numStoragecells = ((numStoragecells<=0)?1:numStoragecells+1);
+	numberofFrames = numFrames * numTriggers * numStoragecells;
+	std::cout << "\tNumber of Frames per Scan/Measurement:" << numberofFrames <<'\n';
+	//get #scansets for level 0 and level 1
+	int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
+	int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
+	//int numPos=myDet->getPositions();
 
-// 	number_of_exposures = number_of_frames * numScan0 * numScan1;
-// 	if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
-// 	std::cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures <<'\n';
+	number_of_exposures = numberofFrames * numScan0 * numScan1;
+	if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
+	std::cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures <<'\n';
 
-// 	maxPixelsY = 0;
-// 	minPixelsY = 0;
-// 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
-// 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-// 	if (detType == slsDetectorDefs::MOENCH) {
-// 		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES, -1) * 2)/25; // for moench 03
-// 		nPixelsX = npixelsx_jctb;
-// 		nPixelsY = npixelsy_jctb;
-// 	}
+	maxPixelsY = 0;
+	minPixelsY = 0;
+	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
+	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
+	if (detType == slsDetectorDefs::MOENCH) {
+		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES, -1) * 2)/25; // for moench 03
+		nPixelsX = npixelsx_jctb;
+		nPixelsY = npixelsy_jctb;
+	}
 
-// 	//cannot do this in between measurements , so update instantly
-// 	if(scanArgument==qDefs::Level0){
-// 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
-// 		int numSteps = myDet->getScanSteps(0);
-// 		double *values = new double[numSteps];
-// 		myDet->getScanSteps(0,values);
+	//cannot do this in between measurements , so update instantly
+	if(scanArgument==qDefs::Level0){
+		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
+		int numSteps = myDet->getScanSteps(0);
+		double *values = new double[numSteps];
+		myDet->getScanSteps(0,values);
 
-// 		maxPixelsY = values[numSteps-1];
-// 		minPixelsY = values[0];
-// 		nPixelsY = numSteps;
-// 	}else if(scanArgument==qDefs::Level1) {
-// 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
-// 		int numSteps = myDet->getScanSteps(1);
-// 		double *values = new double[numSteps];
-// 		myDet->getScanSteps(1,values);
+		maxPixelsY = values[numSteps-1];
+		minPixelsY = values[0];
+		nPixelsY = numSteps;
+	}else if(scanArgument==qDefs::Level1) {
+		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
+		int numSteps = myDet->getScanSteps(1);
+		double *values = new double[numSteps];
+		myDet->getScanSteps(1,values);
 
-// 		maxPixelsY = values[numSteps-1];
-// 		minPixelsY = values[0];
-// 		nPixelsY = numSteps;
-// 	}else if(scanArgument==qDefs::AllFrames)
-// 		nPixelsY = number_of_exposures;
-// 	else if(scanArgument==qDefs::FileIndex)
-// 		nPixelsY = number_of_frames;
+		maxPixelsY = values[numSteps-1];
+		minPixelsY = values[0];
+		nPixelsY = numSteps;
+	}else if(scanArgument==qDefs::AllFrames)
+		nPixelsY = number_of_exposures;
+	else if(scanArgument==qDefs::FileIndex)
+		nPixelsY = numberofFrames;
 
-// 	if(minPixelsY>maxPixelsY){
-// 		double temp = minPixelsY;
-// 		minPixelsY = maxPixelsY;
-// 		maxPixelsY = temp;
-// 		backwardScanPlot = true;
-// 	}else backwardScanPlot = false;
+	if(minPixelsY>maxPixelsY){
+		double temp = minPixelsY;
+		minPixelsY = maxPixelsY;
+		maxPixelsY = temp;
+		backwardScanPlot = true;
+	}else backwardScanPlot = false;
 
-// 	//1d
-// 	if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
+	//1d
+	if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
 
-// 	if(histYAxis[0]) delete [] histYAxis[0]; histYAxis[0] = new double [nPixelsX];
+	if(histYAxis[0]) delete [] histYAxis[0]; histYAxis[0] = new double [nPixelsX];
 
-// 	//2d
-// 	if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
-// 	if(gainImageArray) delete [] gainImageArray; gainImageArray = new double[nPixelsY*nPixelsX];
+	//2d
+	if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
+	if(gainImageArray) delete [] gainImageArray; gainImageArray = new double[nPixelsY*nPixelsX];
 
-// 	//initializing 1d x axis
-// 	for(unsigned int px=0;px<nPixelsX;++px)	histXAxis[px]  = px;/*+10;*/
+	//initializing 1d x axis
+	for(unsigned int px=0;px<nPixelsX;++px)	histXAxis[px]  = px;/*+10;*/
 
-// 	//initializing 2d array
+	//initializing 2d array
 
-// 	memset(lastImageArray,0,nPixelsY *nPixelsX * sizeof(double));
-// 	memset(gainImageArray,0,nPixelsY *nPixelsX * sizeof(double));
-// 	/*for(int py=0;py<(int)nPixelsY;++py)
-// 		for(int px=0;px<(int)nPixelsX;++px) {
-// 			lastImageArray[py*nPixelsX+px] = 0;
-// 			gainImageArray[py*nPixelsX+px] = 0;
-// 		}
-// 	 */
+	memset(lastImageArray,0,nPixelsY *nPixelsX * sizeof(double));
+	memset(gainImageArray,0,nPixelsY *nPixelsX * sizeof(double));
+	/*for(int py=0;py<(int)nPixelsY;++py)
+		for(int px=0;px<(int)nPixelsX;++px) {
+			lastImageArray[py*nPixelsX+px] = 0;
+			gainImageArray[py*nPixelsX+px] = 0;
+		}
+	 */
 
-// 	//histogram
-// 	if(histogram){
-// 		int iloop = 0;
-// 		int numSteps = ((histTo-histFrom)/(histSize)) + 1;std::cout<<"numSteps:"<<numSteps<<" histFrom:"<<histFrom<<" histTo:"<<histTo<<" histSize:"<<histSize<<endl;
-// 		histogramSamples.resize(numSteps);
-// 		startPixel = histFrom -(histSize/2);std::cout<<"startpixel:"<<startPixel<<endl;
-// 		endPixel = histTo + (histSize/2);std::cout<<"endpixel:"<<endPixel<<endl;
-// 		while(startPixel < endPixel){
-// 			histogramSamples[iloop].interval.setInterval(startPixel,startPixel+histSize,QwtInterval::ExcludeMaximum);
-// 			histogramSamples[iloop].value = 0;
-// 			startPixel += histSize;
-// 			iloop++;
-// 		}
+	//histogram
+	if(histogram){
+		int iloop = 0;
+		int numSteps = ((histTo-histFrom)/(histSize)) + 1;std::cout<<"numSteps:"<<numSteps<<" histFrom:"<<histFrom<<" histTo:"<<histTo<<" histSize:"<<histSize<<endl;
+		histogramSamples.resize(numSteps);
+		startPixel = histFrom -(histSize/2);std::cout<<"startpixel:"<<startPixel<<endl;
+		endPixel = histTo + (histSize/2);std::cout<<"endpixel:"<<endPixel<<endl;
+		while(startPixel < endPixel){
+			histogramSamples[iloop].interval.setInterval(startPixel,startPixel+histSize,QwtInterval::ExcludeMaximum);
+			histogramSamples[iloop].value = 0;
+			startPixel += histSize;
+			iloop++;
+		}
 
-// 		//print values
-// 		std::cout << "Histogram Intervals:" <<'\n';
-// 		for(int j=0;j<histogramSamples.size();++j){
-// 			std::cout<<j<<":\tmin:"<<histogramSamples[j].interval.minValue()<<""
-// 					"\t\tmax:"<<histogramSamples[j].interval.maxValue()<<"\t\tvalue:"<<histogramSamples[j].value<<endl;
-// 		}
-// 	}
+		//print values
+		std::cout << "Histogram Intervals:" <<'\n';
+		for(int j=0;j<histogramSamples.size();++j){
+			std::cout<<j<<":\tmin:"<<histogramSamples[j].interval.minValue()<<""
+					"\t\tmax:"<<histogramSamples[j].interval.maxValue()<<"\t\tvalue:"<<histogramSamples[j].value<<endl;
+		}
+	}
 
-// 	UnlockLastImageArray();
+	UnlockLastImageArray();
 
-// 	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetScanArgument");
+	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetScanArgument");
 
-// }
+}
 
 
 
@@ -762,11 +761,10 @@ void qDrawPlot::SetupMeasurement() {
 #endif
     // Defaults
     if (!running)
-        stop_signal = 0;
+        stopSignal = 0;
     plotRequired = 0;
     currentFrame = 0;
-    //for 2d scans
-    currentScanDivLevel = 0;
+
     //if(plot_in_scope==2)
     if (!running)
         lastImageNumber = 0; /**Just now */
@@ -809,10 +807,10 @@ void qDrawPlot::SetupMeasurement() {
                 nPixelsY = number_of_exposures;
         } //frame index
         else if (scanArgument == qDefs::FileIndex) {
-            maxPixelsY = number_of_frames - 1;
+            maxPixelsY = numberofFrames - 1;
             minPixelsY = 0;
             if (!running)
-                nPixelsY = number_of_frames;
+                nPixelsY = numberofFrames;
         } //level0 or level1
         else {
             currentScanValue = minPixelsY;
@@ -902,7 +900,7 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
     std::cout << "dynamicRange " << data->dynamicRange << '\n';
     std::cout << "fileIndex " << data->fileIndex << '\n';
 #endif
-    if (!stop_signal) {
+    if (!stopSignal) {
 
         //set progress
         progress = (int)data->progressIndex;
@@ -1286,11 +1284,11 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
     std::cout << status.toAscii().constData() << " and progress " << currentProgress << '\n';
 #endif
     //error or stopped
-    if ((stop_signal) || (detectorStatus == slsDetectorDefs::ERROR)) {
+    if ((stopSignal) || (detectorStatus == slsDetectorDefs::ERROR)) {
 #ifdef VERBOSE
         std::cout << "Error in Acquisition\n\n";
 #endif
-        //stop_signal = 1;//just to be sure
+        //stopSignal = 1;//just to be sure
         emit AcquisitionErrorSignal(status);
     }
 #ifdef VERBOSE

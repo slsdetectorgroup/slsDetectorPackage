@@ -4,7 +4,7 @@
 
 
 #include "sls_detector_defs.h"
-
+#include <vector>
 class multiSlsDetector;
 
 
@@ -31,6 +31,9 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
    */
   std::string executeLine(int narg, const char * const args[], int action, int detPos = -1);
   
+
+  std::vector<std::string> getAllCommands();
+
   /*   /\** */
   /*      returns the help for the executeLine command  */
   /*      \param os output stream to return the help to */

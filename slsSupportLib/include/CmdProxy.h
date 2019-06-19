@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -7,7 +8,9 @@
 #include <vector>
 
 #include "logger.h"
+#include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
+#include "string_utils.h"
 
 namespace sls {
 
@@ -58,7 +61,7 @@ template <typename T> class CmdProxy {
     using StringMap = std::map<std::string, std::string>;
 
     // Initialize maps for translating name and function
-    FunctionMap functions{{"newfunc", &CmdProxy::NewFunction}};
+    FunctionMap functions{{"list", &CmdProxy::ListCommands}};
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
@@ -80,34 +83,43 @@ template <typename T> class CmdProxy {
                                     {"fileformat", "fformat"},
                                     {"overwrite", "foverwrite"}};
 
-    template <typename U> std::string ResultToString(const U &ret) {
-        std::ostringstream os;
-        if (det_id != -1)
-            os << det_id << ":";
-        os << cmd << " " << ret << "\n";
-        return os.str();
-    }
-
     void WrongNumberOfParameters(size_t expected) {
-        throw RuntimeError("ERROR: Expected " + std::to_string(expected) +
-                           " parameters but got " +
-                           std::to_string(args.size()) + "\n");
+        throw RuntimeError(
+            "Command " + cmd + " expected <=" + std::to_string(expected) +
+            " parameter/s but got " + std::to_string(args.size()) + "\n");
     }
 
     // Mapped functions
 
-    // example
-    std::string NewFunction() {
+    std::string ListCommands() {
         if (args.size() == 0) {
-            std::cout << "This is the new function function\n";
-            return ResultToString(det->setExposureTime(-1, true));
+            auto commands = slsDetectorCommand(nullptr).getAllCommands();
+            for (const auto &it : functions)
+                commands.emplace_back(it.first);
+            std::sort(begin(commands), end(commands));
+
+            std::cout << "These " << commands.size()
+                      << " commands are available\n";
+            for (auto &c : commands)
+                std::cout << c << '\n';
+            return "";
         } else if (args.size() == 1) {
-            std::cout << "Setting exposure time to " << args[0] << "s\n";
-            return ResultToString(
-                det->setExposureTime(std::stod(args[0]), true, det_id));
+            if (args[0] == "deprecated") {
+                std::cout << "The following " << depreciated_functions.size()
+                          << " commands are deprecated\n";
+                size_t field_width = 20;
+                for (const auto &it : depreciated_functions) {
+                    std::cout << std::right << std::setw(field_width)
+                              << it.first << " -> " << it.second << '\n';
+                }
+                return "";
+            } else {
+                throw RuntimeError(
+                    "Could not decode argument. Possible options: deprecated");
+            }
         } else {
             WrongNumberOfParameters(1);
-            return {};
+            return "";
         }
     }
 };

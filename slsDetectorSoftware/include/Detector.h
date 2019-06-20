@@ -16,13 +16,20 @@ class Detector {
     Detector(int multi_id = 0);
     ~Detector();
 
-
+    void setConfig(const std::string& fname);
     void acquire();
 
+    //File
+    void setFname(const std::string& fname);
+    std::string getFname();
+    void setFwrite(bool value, Positions pos = {});
+    bool getFwrite(Positions pos = {}) const;
 
-    //vector of size
-    std::vector<ns> getExptime(Positions pos = {});
+    //Time
+    std::vector<ns> getExptime(Positions pos = {}) const;
     void setExptime(ns t, Positions pos = {});
+    std::vector<ns> getPeriod(Positions pos = {}) const;
+    void setPeriod(ns t, Positions pos = {});
 
 
 

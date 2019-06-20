@@ -116,27 +116,6 @@ void multiSlsDetector::parallelCall(void (slsDetector::*somefunc)(CT...),
     return;
 }
 
-template <typename RT, typename... CT>
-std::vector<RT>
-multiSlsDetector::Parallel(RT (slsDetector::*somefunc)(CT...),
-                           std::vector<int> positions,
-                           typename NonDeduced<CT>::type... Args)  {
-    if (positions.empty()) {
-        std::vector<std::future<RT>> futures;
-        for (auto &d : detectors) {
-            futures.push_back(
-                std::async(std::launch::async, somefunc, d.get(), Args...));
-        }
-        std::vector<RT> result;
-        result.reserve(detectors.size());
-        for (auto &i : futures) {
-            result.push_back(i.get());
-        }
-        return result;
-    }else{
-        return {};
-    }
-}
 
 template <typename... CT>
 void multiSlsDetector::parallelCall(
@@ -4479,3 +4458,55 @@ std::vector<char> multiSlsDetector::readPofFile(const std::string &fname) {
     FILE_LOG(logINFO) << "Read file into memory";
     return buffer;
 }
+
+template <typename RT, typename... CT>
+std::vector<RT>
+multiSlsDetector::Parallel(RT (slsDetector::*somefunc)(CT...),
+                           std::vector<int> positions,
+                           typename NonDeduced<CT>::type... Args) {
+
+    if (positions.empty()) {
+        positions.resize(detectors.size());
+        std::iota(begin(positions), end(positions), 0);
+    }
+    std::vector<std::future<RT>> futures;
+    futures.reserve(positions.size());
+    for (size_t i : positions) {
+        if (i >= detectors.size())
+            throw RuntimeError("Detector out of range");
+        futures.push_back(std::async(std::launch::async, somefunc,
+                                     detectors[i].get(), Args...));
+    }
+    std::vector<RT> result;
+    result.reserve(positions.size());
+    for (auto &i : futures) {
+        result.push_back(i.get());
+    }
+    return result;
+}
+
+template <typename... CT>
+void
+multiSlsDetector::Parallel(void (slsDetector::*somefunc)(CT...),
+                           std::vector<int> positions,
+                           typename NonDeduced<CT>::type... Args)  {
+    if (positions.empty()) {
+        std::vector<std::future<void>> futures;
+        for (auto &d : detectors) {
+            futures.push_back(
+                std::async(std::launch::async, somefunc, d.get(), Args...));
+        }
+
+        for (auto &i : futures) {
+            i.get();
+        }
+        return;
+    }else{
+        return;
+    }
+}
+
+template std::vector<long, std::allocator<long> > multiSlsDetector::Parallel<long, slsDetectorDefs::timerIndex, long>(long (slsDetector::*)(slsDetectorDefs::timerIndex, long), std::vector<int, std::allocator<int> >, multiSlsDetector::NonDeduced<slsDetectorDefs::timerIndex>::type, multiSlsDetector::NonDeduced<long>::type);
+template std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > multiSlsDetector::Parallel<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > (slsDetector::*)(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&), std::vector<int, std::allocator<int> >, multiSlsDetector::NonDeduced<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&>::type);
+template std::vector<bool, std::allocator<bool> > multiSlsDetector::Parallel<bool, bool>(bool (slsDetector::*)(bool), std::vector<int, std::allocator<int> >, multiSlsDetector::NonDeduced<bool>::type);
+

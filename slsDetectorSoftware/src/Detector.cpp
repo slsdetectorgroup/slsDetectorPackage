@@ -13,7 +13,45 @@ Detector::~Detector() = default;
 
 void Detector::acquire() { pimpl->acquire(); }
 
-std::vector<ns> Detector::getExptime(Positions pos) {
-    auto t = pimpl->getTimer(defs::ACQUISITION_TIME, pos);
+void Detector::setConfig(const std::string &fname) {
+    pimpl->readConfigurationFile(fname);
 }
+
+std::vector<ns> Detector::getExptime(Positions pos) const {
+    auto r = pimpl->Parallel(&slsDetector::setTimer, pos,
+                             defs::ACQUISITION_TIME, -1);
+    return std::vector<ns>(begin(r), end(r));
+}
+
+void Detector::setExptime(ns t, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
+                    t.count());
+}
+
+std::vector<ns> Detector::getPeriod(Positions pos) const {
+    auto r =
+        pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, -1);
+    return std::vector<ns>(begin(r), end(r));
+}
+
+void Detector::setPeriod(ns t, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, t.count());
+}
+
+void Detector::setFname(const std::string& fname){
+    pimpl->Parallel(&slsDetector::setFileName, Positions{}, fname);
+}
+std::string Detector::getFname(){
+    auto r = pimpl->Parallel(&slsDetector::setFileName, Positions{}, "");
+    return r.front();
+}
+
+void Detector::setFwrite(bool value, Positions pos){
+    pimpl->Parallel(&slsDetector::setFileWrite, Positions{}, value);
+}
+
+// std::vector<bool> Detector::getFwrite(Positions pos){
+//     return pimpl->Parallel(&slsDetector::getFileWrite, Positions{});
+// }
+
 } // namespace sls

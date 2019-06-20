@@ -116,6 +116,28 @@ void multiSlsDetector::parallelCall(void (slsDetector::*somefunc)(CT...),
     return;
 }
 
+template <typename RT, typename... CT>
+std::vector<RT>
+multiSlsDetector::Parallel(RT (slsDetector::*somefunc)(CT...),
+                           std::vector<int> positions,
+                           typename NonDeduced<CT>::type... Args)  {
+    if (positions.empty()) {
+        std::vector<std::future<RT>> futures;
+        for (auto &d : detectors) {
+            futures.push_back(
+                std::async(std::launch::async, somefunc, d.get(), Args...));
+        }
+        std::vector<RT> result;
+        result.reserve(detectors.size());
+        for (auto &i : futures) {
+            result.push_back(i.get());
+        }
+        return result;
+    }else{
+        return {};
+    }
+}
+
 template <typename... CT>
 void multiSlsDetector::parallelCall(
     void (slsDetector::*somefunc)(CT...) const,

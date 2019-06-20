@@ -133,6 +133,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
                                  typename NonDeduced<CT>::type... Args);
 
+
+
+
+    template <typename RT, typename... CT>
+    std::vector<RT> Parallel(RT (slsDetector::*somefunc)(CT...),
+                                 std::vector<int> positions, 
+                                 typename NonDeduced<CT>::type... Args);
+
+
     /**
      * Loop through the detectors in parallel and return the result as a vector
      * Const qualified version

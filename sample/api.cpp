@@ -41,6 +41,6 @@ int main() {
 
     std::cout << "fwrite: " << std::boolalpha << d.getFwrite() << '\n';
 
-    d.freeSharedMemory();
+    // d.freeSharedMemory();
    
 }

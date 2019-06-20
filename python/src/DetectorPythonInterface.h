@@ -11,9 +11,9 @@
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
 
-class Detector {
+class DetectorPythonInterface {
   public:
-    Detector(int i) : det(i), multi_detector_id(i) {
+    DetectorPythonInterface(int i) : det(i), multi_detector_id(i) {
         // Disable output from std::cout
         // std::cout.setstate(std::ios_base::failbit);
     }
@@ -695,7 +695,7 @@ class Detector {
     int multi_detector_id = 0;
 };
 
-void Detector::setFileFormat(const std::string &format) {
+void DetectorPythonInterface::setFileFormat(const std::string &format) {
     if (format == "binary") {
         det.setFileFormat(slsDetectorDefs::fileFormat::BINARY);
     } else if (format == "hdf5") {
@@ -703,7 +703,7 @@ void Detector::setFileFormat(const std::string &format) {
     }
 }
 
-std::string Detector::getFileFormat() {
+std::string DetectorPythonInterface::getFileFormat() {
     auto format =
         det.setFileFormat(slsDetectorDefs::fileFormat::GET_FILE_FORMAT, -1);
     switch (format) {
@@ -717,7 +717,7 @@ std::string Detector::getFileFormat() {
 }
 
 slsDetectorDefs::networkParameter
-Detector::networkNameToEnum(std::string par_name) {
+DetectorPythonInterface::networkNameToEnum(std::string par_name) {
 
     if (par_name == "detectormac") {
         return slsDetectorDefs::networkParameter::DETECTOR_MAC;
@@ -761,9 +761,9 @@ Detector::networkNameToEnum(std::string par_name) {
     throw std::runtime_error("Could not decode network parameter");
 };
 
-// slsDetectorDefs::fileFormat Detector::file///
+// slsDetectorDefs::fileFormat DetectorPythonInterface::file///
 
-slsDetectorDefs::dacIndex Detector::dacNameToEnum(std::string dac_name) {
+slsDetectorDefs::dacIndex DetectorPythonInterface::dacNameToEnum(std::string dac_name) {
     // to avoid uninitialised
     slsDetectorDefs::dacIndex dac = slsDetectorDefs::dacIndex::E_SvP;
 
@@ -953,7 +953,7 @@ std::vector<std::string> Detector::getReadoutFlags() {
 }
 
 // note singular
-void Detector::setReadoutFlag(const std::string flag_name) {
+void DetectorPythonInterface::setReadoutFlag(const std::string flag_name) {
     if (flag_name == "none")
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::NORMAL_READOUT);
     else if (flag_name == "storeinram")
@@ -988,7 +988,7 @@ void Detector::setReadoutFlag(const std::string flag_name) {
         throw std::runtime_error("Flag name not recognized");
 }
 
-std::vector<double> Detector::getRateCorrection() {
+std::vector<double> DetectorPythonInterface::getRateCorrection() {
     std::vector<double> rate_corr;
     for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
         rate_corr.push_back(det.getRateCorrection(i));
@@ -996,7 +996,7 @@ std::vector<double> Detector::getRateCorrection() {
     return rate_corr;
 }
 
-void Detector::pulseAllPixels(int n) {
+void DetectorPythonInterface::pulseAllPixels(int n) {
     //  int pulsePixelNMove(int n=0,int x=0,int y=0);
     //  int pulsePixel(int n=0,int x=0,int y=0);
 
@@ -1008,7 +1008,7 @@ void Detector::pulseAllPixels(int n) {
     }
     return;
 }
-void Detector::pulseDiagonal(int n) {
+void DetectorPythonInterface::pulseDiagonal(int n) {
     //  int pulsePixelNMove(int n=0,int x=0,int y=0);
     //  int pulsePixel(int n=0,int x=0,int y=0);
 

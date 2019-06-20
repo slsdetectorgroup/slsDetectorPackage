@@ -11,10 +11,7 @@ Detector::Detector(int multi_id)
     : pimpl(sls::make_unique<multiSlsDetector>(multi_id)) {}
 Detector::~Detector() = default;
 
-
-void Detector::freeSharedMemory(){
-    pimpl->freeSharedMemory();
-}
+void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
 
 void Detector::acquire() { pimpl->acquire(); }
 
@@ -33,7 +30,6 @@ void Detector::setExptime(ns t, Positions pos) {
                     t.count());
 }
 
-
 std::vector<ns> Detector::getSubExptime(Positions pos) const {
     auto r = pimpl->Parallel(&slsDetector::setTimer, pos,
                              defs::SUBFRAME_ACQUISITION_TIME, -1);
@@ -41,8 +37,8 @@ std::vector<ns> Detector::getSubExptime(Positions pos) const {
 }
 
 void Detector::setSubExptime(ns t, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimer, pos, defs::SUBFRAME_ACQUISITION_TIME,
-                    t.count());
+    pimpl->Parallel(&slsDetector::setTimer, pos,
+                    defs::SUBFRAME_ACQUISITION_TIME, t.count());
 }
 
 std::vector<ns> Detector::getPeriod(Positions pos) const {
@@ -55,19 +51,19 @@ void Detector::setPeriod(ns t, Positions pos) {
     pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, t.count());
 }
 
-void Detector::setFname(const std::string& fname){
+void Detector::setFname(const std::string &fname) {
     pimpl->Parallel(&slsDetector::setFileName, Positions{}, fname);
 }
-std::vector<std::string> Detector::getFname(){
+std::vector<std::string> Detector::getFname() const {
     return pimpl->Parallel(&slsDetector::setFileName, Positions{}, "");
 }
 
-void Detector::setFwrite(bool value, Positions pos){
+void Detector::setFwrite(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileWrite, Positions{}, value);
 }
 
-// std::vector<bool> Detector::getFwrite(Positions pos){
-//     return pimpl->Parallel(&slsDetector::getFileWrite, Positions{});
-// }
+std::vector<bool> Detector::getFwrite(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getFileWrite, Positions{});
+}
 
 } // namespace sls

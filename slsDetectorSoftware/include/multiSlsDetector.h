@@ -104,6 +104,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Destructor
      */
     virtual ~multiSlsDetector();
+
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
     std::vector<RT> Parallel(RT (slsDetector::*somefunc)(CT...),
@@ -130,23 +131,72 @@ class multiSlsDetector : public virtual slsDetectorDefs {
         return result;
     }
 
+    template <typename RT, typename... CT>
+    std::vector<RT> Parallel(RT (slsDetector::*somefunc)(CT...) const,
+                             std::vector<int> positions,
+                             typename NonDeduced<CT>::type... Args) const{
+
+        if (positions.empty()) {
+            positions.resize(detectors.size());
+            std::iota(begin(positions), end(positions), 0);
+        }
+        std::vector<std::future<RT>> futures;
+        futures.reserve(positions.size());
+        for (size_t i : positions) {
+            if (i >= detectors.size())
+                throw sls::RuntimeError("Detector out of range");
+            futures.push_back(std::async(std::launch::async, somefunc,
+                                         detectors[i].get(), Args...));
+        }
+        std::vector<RT> result;
+        result.reserve(positions.size());
+        for (auto &i : futures) {
+            result.push_back(i.get());
+        }
+        return result;
+    }
+
     template <typename... CT>
     void Parallel(void (slsDetector::*somefunc)(CT...),
-                  std::vector<int> positions,
-                  typename NonDeduced<CT>::type... Args) {
-        if (positions.empty()) {
-            std::vector<std::future<void>> futures;
-            for (auto &d : detectors) {
-                futures.push_back(
-                    std::async(std::launch::async, somefunc, d.get(), Args...));
-            }
+                             std::vector<int> positions,
+                             typename NonDeduced<CT>::type... Args) {
 
-            for (auto &i : futures) {
-                i.get();
-            }
-            return;
-        } else {
-            return;
+        if (positions.empty()) {
+            positions.resize(detectors.size());
+            std::iota(begin(positions), end(positions), 0);
+        }
+        std::vector<std::future<void>> futures;
+        futures.reserve(positions.size());
+        for (size_t i : positions) {
+            if (i >= detectors.size())
+                throw sls::RuntimeError("Detector out of range");
+            futures.push_back(std::async(std::launch::async, somefunc,
+                                         detectors[i].get(), Args...));
+        }
+        for (auto &i : futures) {
+            i.get();
+        }
+    }
+
+    template <typename... CT>
+    void Parallel(void (slsDetector::*somefunc)(CT...) const,
+                             std::vector<int> positions,
+                             typename NonDeduced<CT>::type... Args) const{
+
+        if (positions.empty()) {
+            positions.resize(detectors.size());
+            std::iota(begin(positions), end(positions), 0);
+        }
+        std::vector<std::future<void>> futures;
+        futures.reserve(positions.size());
+        for (size_t i : positions) {
+            if (i >= detectors.size())
+                throw sls::RuntimeError("Detector out of range");
+            futures.push_back(std::async(std::launch::async, somefunc,
+                                         detectors[i].get(), Args...));
+        }
+        for (auto &i : futures) {
+            i.get();
         }
     }
 

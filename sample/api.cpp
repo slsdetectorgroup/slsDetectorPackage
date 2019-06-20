@@ -1,9 +1,7 @@
-
-
 #include "Detector.h"
+
 #include <chrono>
 #include <iostream>
-#include <thread>
 
 std::ostream &operator<<(std::ostream &os, const std::chrono::nanoseconds &t) {
     os << t.count() << "ns";
@@ -40,6 +38,8 @@ int main() {
 
     std::cout << "Period: " <<  d.getPeriod() << '\n';
     std::cout << "fname: " << d.getFname() << "\n";
+
+    std::cout << "fwrite: " << std::boolalpha << d.getFwrite() << '\n';
 
     d.freeSharedMemory();
    

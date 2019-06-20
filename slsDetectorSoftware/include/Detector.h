@@ -17,17 +17,20 @@ class Detector {
     ~Detector();
 
     void setConfig(const std::string& fname);
+    void freeSharedMemory();
     void acquire();
 
     //File
+    std::vector<std::string> getFname();
     void setFname(const std::string& fname);
-    std::string getFname();
     void setFwrite(bool value, Positions pos = {});
     bool getFwrite(Positions pos = {}) const;
 
     //Time
     std::vector<ns> getExptime(Positions pos = {}) const;
     void setExptime(ns t, Positions pos = {});
+    std::vector<ns> getSubExptime(Positions pos = {}) const;
+    void setSubExptime(ns t, Positions pos = {});
     std::vector<ns> getPeriod(Positions pos = {}) const;
     void setPeriod(ns t, Positions pos = {});
 

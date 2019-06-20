@@ -41,5 +41,6 @@ int main() {
     std::cout << "Period: " <<  d.getPeriod() << '\n';
     std::cout << "fname: " << d.getFname() << "\n";
 
+    d.freeSharedMemory();
    
 }

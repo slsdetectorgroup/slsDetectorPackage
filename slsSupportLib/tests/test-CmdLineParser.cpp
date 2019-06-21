@@ -116,12 +116,51 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
     }
 }
 
+SCENARIO("Parsing strings with -h or --help", "[support]") {
+    GIVEN("A parser") {
+        CmdLineParser p;
+        WHEN("Parsing a string with a command and help ") {
+            std::string s = "-h list";
+
+            THEN("the command is correct and isHelp is set") {
+                p.Parse(s);
+                REQUIRE(p.detector_id() == -1);
+                REQUIRE(p.multi_id() == 0);
+                REQUIRE(p.command() == "list");
+                REQUIRE(p.isHelp());
+                REQUIRE(p.arguments().empty());
+                REQUIRE(p.argv().size() == 1);
+            }
+        }
+        WHEN("Parsing a string with -h at a different position"){
+            std::string s = "list -h something";
+            THEN("its also done right"){
+                p.Parse(s);
+                REQUIRE(p.isHelp());
+                REQUIRE(p.command() == "list");
+                REQUIRE(p.arguments().size() == 1);
+                REQUIRE(p.arguments().front() == "something");
+            }
+        }
+        WHEN("Parsing a string with -help at a different position"){
+            std::string s = "list --help something";
+            THEN("its also done right"){
+                p.Parse(s);
+                REQUIRE(p.isHelp());
+                REQUIRE(p.command() == "list");
+                REQUIRE(p.arguments().size() == 1);
+                REQUIRE(p.arguments().front() == "something");
+            }
+        }
+    }
+}
+
 TEST_CASE("Parse with no arguments results in no command and default id",
           "[support]") {
     // build up argc and argv
     // first argument is the command used to call the binary
     int argc = 1;
-    const char* const argv[]{"call"};
+    const char *const argv[]{"call"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -135,7 +174,7 @@ TEST_CASE(
     "Parse a command without client id and detector id results in default",
     "[support]") {
     int argc = 2;
-    const char*const argv[]{"caller", "vrf"};
+    const char *const argv[]{"caller", "vrf"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -148,7 +187,7 @@ TEST_CASE(
 TEST_CASE("Parse a command with value but without client or detector id",
           "[support]") {
     int argc = 3;
-    const char* const argv[]{"caller", "vrf", "3000"};
+    const char *const argv[]{"caller", "vrf", "3000"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -161,7 +200,7 @@ TEST_CASE("Parse a command with value but without client or detector id",
 
 TEST_CASE("Decodes position") {
     int argc = 2;
-    const char*const argv[]{"caller", "7:vrf"};
+    const char *const argv[]{"caller", "7:vrf"};
 
     CmdLineParser p;
     p.Parse(argc, argv);
@@ -174,7 +213,7 @@ TEST_CASE("Decodes position") {
 
 TEST_CASE("Decodes double digit position", "[support]") {
     int argc = 2;
-    const char* const argv[]{"caller", "73:vcmp"};
+    const char *const argv[]{"caller", "73:vcmp"};
     CmdLineParser p;
     p.Parse(argc, argv);
 
@@ -186,7 +225,7 @@ TEST_CASE("Decodes double digit position", "[support]") {
 
 TEST_CASE("Decodes position and id", "[support]") {
     int argc = 2;
-    const char* const argv[]{"caller", "5-8:vrf"};
+    const char *const argv[]{"caller", "5-8:vrf"};
     CmdLineParser p;
     p.Parse(argc, argv);
 

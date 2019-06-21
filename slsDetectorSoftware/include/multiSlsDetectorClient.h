@@ -27,6 +27,8 @@ class multiSlsDetectorClient {
                            std::ostream &output = std::cout)
         : action_(action), detPtr(myDetector), os(output) {
         parser.Parse(argc, argv);
+        if (parser.isHelp())
+            action_ = slsDetectorDefs::HELP_ACTION;
         runCommand();
 
     }
@@ -35,6 +37,7 @@ class multiSlsDetectorClient {
                            std::ostream &output = std::cout)
         : action_(action), detPtr(myDetector), os(output) {
         parser.Parse(args);
+        action_ = slsDetectorDefs::HELP_ACTION;
         runCommand();
     }
 
@@ -108,7 +111,7 @@ class multiSlsDetectorClient {
         if (action_ != slsDetectorDefs::READOUT_ACTION) {
             sls::CmdProxy<multiSlsDetector> proxy(detPtr);
             auto cmd = proxy.Call(parser.command(), parser.arguments(),
-                                  parser.detector_id());
+                                  parser.detector_id(), action_);
             if (cmd.empty()) {
                 return;
             } else {

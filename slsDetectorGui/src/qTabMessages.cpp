@@ -13,14 +13,19 @@
 #include <iostream>
 #include <string>
 
-qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent) {
+qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent),
+    dispLog(nullptr), btnSave(nullptr), btnClear(nullptr) {
     SetupWidgetWindow();
-    Initialization();
     FILE_LOG(logDEBUG) << "Messages ready";
 }
 
 qTabMessages::~qTabMessages() {
-    delete dispLog;
+    if (dispLog)
+        delete dispLog;
+    if (btnSave)
+        delete btnSave;
+    if (btnClear)
+        delete btnClear;
 }
 
 void qTabMessages::SetupWidgetWindow() {
@@ -49,6 +54,8 @@ void qTabMessages::SetupWidgetWindow() {
 
     qDebugStream(std::cout, this);
     qDebugStream(std::cerr, this);
+
+    Initialization();
 }
 
 void qTabMessages::Initialization() {

@@ -3,550 +3,224 @@
 #include "qDefs.h"
 class detectorData;
 class SlsQt1DPlot;
+class SlsQtH1D;
 class SlsQt2DPlotLayout;
 class qCloneWidget;
 
-
-#include <QWidget>
+/*
+#include "qwt_symbol.h"
 #include <QGridLayout>
 #include <QGroupBox>
-#include <QTimer>
 #include <QString>
-#include "qwt_symbol.h"
-
+#include <QTimer>
+#include <QWidget>
 
 #include <QVector>
-#include <qwt_series_data.h>
-#include <qwt_plot_histogram.h>
-#include <qwt_plot_grid.h>
-#include <qwt_column_symbol.h>
 #include <qpen.h>
-
-
-
-
-#define MAX_1DPLOTS 10
-
-
-/**
- *@short Sets up the plot widget
- */
-class qDrawPlot:public QWidget{
-	Q_OBJECT
-
-
-
-
-public:
-	/** \short The constructor	 */
-	qDrawPlot(QWidget *parent, multiSlsDetector* detector);
-	/** Destructor	 */
-	~qDrawPlot();
-
-
-	bool isRunning();
-	int GetProgress();
-	int GetFileIndex();
-	int GetFrameIndex();
-	void SetFileWrite(bool enable);
-	void SetPlotTitlePrefix(QString title);	
-	void SetXAxisTitle(QString title);
-	void SetYAxisTitle(QString title);
-	void SetZAxisTitle(QString title);
-	void DisableZoom(bool disable);
-	void EnablePlot(bool enable);
-	void EnableAnglePlot(bool enable);
-
-
-	void SetXYRange(bool changed);
-	/**Sets the min/max for x/y
-	 * @param val is the value to be set
-	 * @param xy is xmin,xmax,ymin or ymax */
-	void SetXYRangeValues(double val,qDefs::range xy);
-	/**Sets if min/max for x/y is enabled
-	 * @param changed is if this has been changed
-	 * @param xy is xmin,xmax,ymin or ymax */
-	void IsXYRangeValues(bool changed,qDefs::range xy);
-
-	/** Set Plot timer - between plots in ms*/
-	void SetPlotTimer(double time);
-	/** Set  Plot frame factor - between plots, also for receiver if exists */
-	void SetFrameFactor(int frame);
-
-	void SetCallBacks(bool enable);
-
-	/** Starts or stop acquisition
-	 * Calls startDaq() function
-	 * @param stop_if_running is 0 to stop acquisition and 1 to start acquisition
-	 */
-	void StartStopDaqToggle(bool stop_if_running=0);
-	/** Set frame enabled
-	 *  @param enable enable*/
-	void setFrameEnabled(bool enable);
-	/** Set trigger enabled
-	 *  @param enable enable */
-	void setTriggerEnabled(bool enable);
-
-	/** Updates the trimbit plot
-	 * @param fromDetector is true if the trimbits should be loaded from detector
-	 * @param Histogram true if histogram, else data graph
-	 * returns ok/fail
-	 * */
-	int UpdateTrimbitPlot(bool fromDetector,bool Histogram);
-
-	/** This is set once client initiates start/stop acquisition
-	 * and this is reset when the gui really starts/stops- to know when to return
-	 */
-	void SetClientInitiated();
-
-	/** Get client intiated variable. This is set once client initiates start/stop acquisition
-	 * and this is reset when the gui really starts/stops- to know when to return
-	 */
-	bool GetClientInitiated();
-
-	/** Update all ranges, interpolate etc after cloning
-	 * parameters are if they are checked or not
-	 */
-	void UpdateAfterCloning(bool points, bool logy, bool interpolate, bool contour, bool logz);
-
-	/** set binary range */
-	void SetBinary(bool enable, int from=0, int to=0);
-
-	/** Enable/Disable Histogram */
-	void SetHistogram(bool enable,int histArg, int min=0, int max=0, double size=0){histogram = enable;histogramArgument = histArg; histFrom=min;histTo=max;histSize=size;};
-
-	/** Get X Minimum value from plot */
-	double GetXMinimum();
-	/** Get X Maximum value from plot */
-	double GetXMaximum();
-	/** Get Y Minimum value from plot */
-	double GetYMinimum();
-	/** Get Y Maximum value from plot */
-	double GetYMaximum();
-
-public slots:
-/** To select 1D or 2D plot
- @param i is 1 for 1D, else 2D plot */
-void SelectPlot(int i=2);
-/** To select 1D plot */
-void Select1DPlot();
-/** To select 2D plot */
-void Select2DPlot();
-/** To clear plot */
-void Clear1DPlot();
-/** Creates a clone of the plot */
-void ClonePlot();
-/** Closes all the clone plots */
-void CloseClones();
-/** Saves all the clone plots */
-void SaveClones();
-/** To Save plot */
-void SavePlot();
-/** Save all plots **/
-void SaveAll(bool enable);
-/**	Sets persistency from plot tab */
-void SetPersistency(int val);
-/**	sets style of plot to lines*/
-void SetLines(bool enable);
-/**	sets markers */
-void SetMarkers(bool enable);
-/** sets the scan argument to prepare the plot*/
-// void SetScanArgument(int scanArg);
-/** sets stop_signal to true */
-void StopAcquisition();
-/** Set/unset pedestal */
-void SetPedestal(bool enable);
-/** Recalculate Pedestal */
-void RecalculatePedestal();
-/** Set/unset accumulate */
-void SetAccumulate(bool enable);
-/** Reset accumulation */
-void ResetAccumulate();
-/** Display Statistics */
-void DisplayStatistics(bool enable);
-
-
-
-
-
-private:
-/** Initializes all its members and the thread */
-void Initialization();
-/** Sets up the widget */
-void SetupWidgetWindow();
-
-
-/** Gets the image title	 */
-const char*  GetImageTitle();
-/**	Gets the hist title for a 1D plot */
-const char*  GetHistTitle(int i);
-/**	Gets the y axis value for the hist in 1D plot */
-double*      GetHistYAxis(int i);
-
-
-/**	Locks the image to update plot */
-int    LockLastImageArray();
-/**	Unocks the image to update plot */
-int    UnlockLastImageArray();
-/**	Starts the acquisition */
-int    StartDaqForGui();
-/**	Stops the acquisition  */
-int    StopDaqForGui();
-
-/** Starts/stops Acquisition Thread */
-bool   StartOrStopThread(bool start);
-
-/** Sets up measurement each time
- * */
-void SetupMeasurement();
-
-/**	Resets the acquisition parameter like lastimagenumber */
-int    ResetDaqForGui();
-
-/**	The function which is called when start acquisition thread is created */
-static void* DataStartAcquireThread(void *this_pointer);
-
-/**	This is called by the detector class to copy the data it jus acquired */
-static int GetDataCallBack(detectorData *data, int fIndex, int subIndex, void *this_pointer);
-
-/**	This is called by the GetDataCallBack function to copy the data */
-int GetData(detectorData *data, int fIndex, int subIndex);
-
-/** This is called by detector class when acquisition is finished
- * @param currentProgress current progress of measurement
- * @param detectorStatus current status of the detector
- * @param this_pointer is the pointer pointing to this object
- * */
-static int GetAcquisitionFinishedCallBack(double currentProgress,int detectorStatus, void *this_pointer);
-
-/** This is called by static function when acquisition is finished
- * @param currentProgress current progress of measurement
- * @param detectorStatus current status of the detector
- * */
-int AcquisitionFinished(double currentProgress,int detectorStatus);
-
-/** This is called by detector class when a measurement is finished
- * @param currentMeasurementIndex current measurement index
- * @param fileIndex current file index
- * @param this_pointer is the pointer pointing to this object
- * */
-static int GetMeasurementFinishedCallBack(int currentMeasurementIndex, int fileIndex, void *this_pointer);
-
-/** This is called by the static function when meausrement is finished
- * @param currentMeasurementIndex current measurement index
- * @param fileIndex current file index
- * */
-int MeasurementFinished(int currentMeasurementIndex, int fileIndex);
-
-/**	This is called by the detector class to send progress if receiver is online */
-static int GetProgressCallBack(double currentProgress, void *this_pointer);
-
-
-/** Saves all the plots. All sets saveError to true if not saved.*/
-void SavePlotAutomatic();
-/** Sets the style of the 1d plot */
-void SetStyle(SlsQtH1D*  h);
-
-
-/** Find Statistics
- * @param min is the minimum value
- * @param max is the maximum value
- * @param sum is the sum of all values
- * @param array is the array to get statistics from
- * @param size is the size of the array */
-void GetStatistics(double &min, double &max, double &sum, double* array, int size);
-
-
-/**
- * Convert data from char* to double based on bit mode (get gain data from plot if enabled for jungfrau
- * @param dest destination double array
- * @param source source char array
- * @param size number of pixels
- * @param databytes number of data bytes
- * @param dr dynamic range
- * @param gaindest NULL if not required, points to a double array to be filled up if gain data enabled
- *
- */
-void toDoublePixelData(double* dest, char* source,int size, int databytes, int dr, double* gaindest = NULL);
-
-private slots:
-/** To update plot
- * */
-void UpdatePlot();
-/** To start or stop acquisition
- * @param start is 1 to start and 0 to stop acquisition
- * */
-void StartDaq(bool start);
-/** To set the reference to zero after closing a clone
- * @param id is the id of the clone
- * */
-void CloneCloseEvent(int id);
-/**After a pause, the gui is allowed to collect the data
- * this is called when it is over
- * */
-void UpdatePause();
-/** Shows the first save error message while automatic saving
- * @param fileName file name of the first file that it tried to save.
- * */
-void ShowSaveErrorMessage(QString fileName);
-/**Shows an error message when acquisition stopped unexpectedly
- * @param status is the status of the detector
- * */
-void ShowAcquisitionErrorMessage(QString status);
-/**
- * Enable Gain Plot
- * @param e true for enable, false for disable
- */
-void EnableGainPlot(bool e);
-
-signals:
-void UpdatingPlotFinished();
-void InterpolateSignal(bool);
-void ContourSignal(bool);
-void LogzSignal(bool);
-void LogySignal(bool);
-void ResetZMinZMaxSignal(bool,bool,double,double);
-void SetCurrentMeasurementSignal(int);
-void saveErrorSignal(QString);
-void AcquisitionErrorSignal(QString);
-void UpdatePlotSignal();
-void GainPlotSignal(bool);
-
-
-private:
-multiSlsDetector *myDet;
-slsDetectorDefs::detectorType detType;
-
-SlsQt1DPlot* plot1D;
-QVector<SlsQtH1D*> plot1DHists;
-
-
-SlsQt2DPlotLayout* plot2D;
-
-
-static const int MAXCloneWindows = 50;
-qCloneWidget		*cloneWidgets[MAXCloneWindows];
-
-/** Widgets needed to set up plot*/
-QGroupBox *boxPlot;
-QGridLayout	*layout;
-QGridLayout	*plotLayout;
-
-QLabel *histFrameIndexTitle;
-
-
-
-int currentMeasurement;
-int currentFrame;
-int currentFileIndex;
-int currentFrameIndex;
-
-int numberofFrames;
-double acquisitionPeriod;
-double exposureTime;
-
-volatile bool   stop_signal;
-
-
-pthread_mutex_t last_image_complete_mutex;
-
-/**variables for histograms */
-/**	X Axis Title in 2D */
-QString  imageXAxisTitle;
-/** Y Axis Title in 2D */
-QString  imageYAxisTitle;
-/**	Z Axis Title in 2D */
-QString  imageZAxisTitle;
-/**	X Axis Title in 1D */
-QString  histXAxisTitle;
-/**	Y Axis Title in 1D */
-QString  histYAxisTitle;
-/**	Title for all the graphs in 1D */
-std::string  histTitle[MAX_1DPLOTS];
-/**	Title in 2D */
-std::string  imageTitle;
-/** plot Title */
-QString plotTitle;
-/** plot Title prefix */
-QString plotTitle_prefix;
-/**	1D or 2D */
-unsigned int plot_in_scope;
-/**	Number of Pixels in X Axis */
-unsigned int nPixelsX;
-/** Number of angle Pixels in X Axis */
-int nAnglePixelsX;
-/**	Number of pixel bins in Y Axis */
-unsigned int nPixelsY;
-/** Min Pixel number for Y Axis*/
-double minPixelsY;
-/** Max Pixel number for Y Axis*/
-double maxPixelsY;
-/** starting pixel */
-double startPixel;
-/** end Pixel*/
-double endPixel;
-/** pixel width */
-double pixelWidth;
-
-/**	Current Image Number */
-unsigned int lastImageNumber;
-
-/**	Number of graphs in 1D */
-unsigned int nHists;
-/**	Total Number of X axis values/channels in 1D */
-int          histNBins;
-/**	X Axis value in 1D */
-double*      histXAxis;
-/** Y Axis value in 1D  */
-double*      histYAxis[MAX_1DPLOTS];
-/** X Axis for angles in 1D */
-double*	     histXAngleAxis;
-/** Y Axis for angles in 1D (no persistency) */
-double*	     histYAngleAxis;
-/** X Axis for trimbits in 1D */
-double*	     histTrimbits;
-
-
-/**	Current Image Values in 2D */
-double*      lastImageArray;
-
-/**persistency to be reached*/
-int persistency;
-/** persistency takes time to reach as it increases per frame
- * this is the current one */
-int currentPersistency;
-/** to update the progress for each getData() so that
- * measurement tab can request on a timer basis*/
-int progress;
-/**If plot is enabled from plot tab*/
-bool plotEnable;
-/**If plot is dotted */
-bool lines;
-bool markers;
-/** Plot marker */
-QwtSymbol *marker;
-QwtSymbol *noMarker;
-/** Save all plots */
-bool saveAll;
-/** If error, while automatically saving plots, checks this at the end of an acquistion */
-bool saveError;
-/** index of last saved image for automatic saving*/
-int lastSavedFrame;
-/** index of measurement number of last saved image for automatic saving*/
-int lastSavedMeasurement;
-/**if an acquisition is running, so as not to refresh tab
- * and also to update plot only if running (while creating clones)*/
-bool running;
-
-/** if the min/max of x and y has been changed,
- * to notify while plotting */
-bool XYRangeChanged;
-/**the specific min/max of x/y*/
-double XYRangeValues[4];
-/**if the specific min/max of x/y is enabled */
-bool IsXYRange[4];
-
-/** Specific timer value between plots */
-double timerValue;
-/** every nth frame when to plot */
-int frameFactor;
-/**if frame is enabled in measurement tab */
-bool isFrameEnabled;
-/**if trigger is enabled in measurement tab */
-bool isTriggerEnabled;
-
-/** scan arguments*/
-int scanArgument;
-
-/** histogram arguments*/
-int histogramArgument;
-
-/** enable angle plot */
-bool anglePlot;
-/** prevents err msg displaying twice when detector stopped, "transmitting" */
-bool alreadyDisplayed;
-
-/**saves the file path and file name, not to access shared memory while running*/
-QString filePath;
-QString fileName;
-
-/**	Max Number of Clone Windows */
-static const int TRIM_HISTOGRAM_XMAX = 63;
-
-/**if the values increment backwards*/
-bool backwardScanPlot;
-
-/**if files will be saved and index increased*/
-bool fileSaveEnable;
-
-
-/** true of originally 2d */
-bool originally2D;
-
-
-//pedstal
-/** Number of pedestal frames*/
-static const int NUM_PEDESTAL_FRAMES = 20;
-/** set/unset pedestal*/
-bool pedestal;
-/** pedestal values */
-double*   pedestalVals;
-/** temporary pedestal values to hide while recalculating*/
-double*   tempPedestalVals;
-/** count for 20 frames to calculate the pedestal */
-int pedestalCount;
-/** start pedestal calculation */
-bool startPedestalCal;
-
-//accumulation
-/** set/unset accumulation */
-bool accumulate;
-/** to reset accumulation */
-bool resetAccumulate;
-
-/** range for binary plot output */
-bool binary;
-int binaryFrom;
-int binaryTo;
-
-/** this is set when client starts/stops acquisition
- * and is reset once the gui really starts/stops */
-bool clientInitiated;
-
-
-/** display statistics widgets */
-QWidget *widgetStatistics;
-QLabel *lblMinDisp;
-QLabel *lblMaxDisp;
-QLabel *lblSumDisp;
-
-bool displayStatistics;
-
-
-/* histogram */
-bool histogram;
-int histFrom;
-int histTo;
-double histSize;
-QwtPlotGrid *grid;
-QwtPlotHistogram	*plotHistogram;
-QVector<QwtIntervalSample> histogramSamples;
-
-
-bool plotRequired;
-
-
-/**	2D object second plot  */
-SlsQt2DPlotLayout* 	gainplot2D;
-/**	Current Image Values in 2D gain plot */
-double* gainImageArray;
-/** gain plot enable, enabled if gain data has been extracted and is available */
-bool gainPlotEnable;
-/** gain data enable, enabled if gain data to be extracted from normal data */
-bool gainDataEnable;
-
-const static int npixelsx_jctb = 400;
-int npixelsy_jctb;
-
-
+#include <qwt_column_symbol.h>
+#include <qwt_plot_grid.h>
+#include <qwt_plot_histogram.h>
+#include <qwt_series_data.h>
+*/
+
+class qDrawPlot : public QWidget {
+    Q_OBJECT
+
+  public:
+    /** \short The constructor	 */
+    qDrawPlot(QWidget *parent, multiSlsDetector *detector);
+    /** Destructor	 */
+    ~qDrawPlot();
+
+    /** If the gui client has started or stopped */
+    void SetClientInitiated();
+    bool GetClientInitiated();
+    bool isRunning();
+    int GetProgress();
+    int GetCurrentFrameIndex();
+    void SetPlotTitlePrefix(QString title);
+    void SetXAxisTitle(QString title);
+    void SetYAxisTitle(QString title);
+    void SetZAxisTitle(QString title);
+    void DisableZoom(bool disable);
+    void SetXYRange(bool changed);
+    void SetXYRangeValues(double val, qDefs::range xy);
+    void IsXYRangeValues(bool changed, qDefs::range xy);
+    double GetXMinimum();
+    double GetXMaximum();
+    double GetYMinimum();
+    double GetYMaximum();
+    void SetDataCallBack(bool enable);
+    void SetBinary(bool enable, int from = 0, int to = 0);
+
+    /** Starts or stop acquisition
+     * Calls startDaq() function
+     * @param stop_if_running is 0 to stop acquisition and 1 to start
+     * acquisition
+     */
+    void StartStopDaqToggle(bool stop_if_running = 0);
+
+  public slots:
+    void StopAcquisition();
+    void SetPersistency(int val);
+    void SetLines(bool enable);
+    void SetMarkers(bool enable);
+    void SetPedestal(bool enable);
+    void RecalculatePedestal();
+    void SetAccumulate(bool enable);
+    void ResetAccumulate();
+    void DisplayStatistics(bool enable);
+    void ClonePlot();
+    void CloseClones();
+    void SaveClones();
+	void SavePlot();
+    void Select1DPlot();
+    void Select2DPlot();
+
+  private slots:
+    void CloneCloseEvent(int id);
+  	void EnableGainPlot(bool e);
+  
+    void UpdatePlot();
+    void StartDaq(bool start);
+    void ShowAcquisitionErrorMessage(QString status);
+
+  signals:
+    void UpdatingPlotFinished();
+    void InterpolateSignal(bool);
+    void ContourSignal(bool);
+    void LogzSignal(bool);
+    void LogySignal(bool);
+    void ResetZMinZMaxSignal(bool, bool, double, double);
+    void SetCurrentMeasurementSignal(int);
+    void AcquisitionErrorSignal(QString);
+    void UpdatePlotSignal();
+    void GainPlotSignal(bool);
+
+  private:
+    void SetupWidgetWindow();
+    void Initialization();
+	void SetupStatistics();
+	void SetupPlots();
+	const char *GetTitle1d(int histIndex);
+    double *GetHistYAxis(int histIndex);
+	void SetStyle(SlsQtH1D *h);
+    void GetStatistics(double &min, double &max, double &sum, double *array, int size);
+    void SelectPlot(int i = 2);
+    void Clear1DPlot();
+
+
+    int LockLastImageArray();
+    int UnlockLastImageArray();
+    int StartDaqForGui();
+    int StopDaqForGui();
+    bool StartOrStopThread(bool start);
+    void SetupMeasurement();
+    int ResetDaqForGui();
+    static void *DataStartAcquireThread(void *this_pointer);
+    static int GetDataCallBack(detectorData *data, int fIndex, int subIndex, void *this_pointer);
+    int GetData(detectorData *data, int fIndex, int subIndex);
+    static int GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer);
+    int AcquisitionFinished(double currentProgress, int detectorStatus);
+    static int GetMeasurementFinishedCallBack(int currentMeasurementIndex, int fileIndex, void *this_pointer);
+    int MeasurementFinished(int currentMeasurementIndex, int fileIndex);
+    static int GetProgressCallBack(double currentProgress, void *this_pointer);
+    void toDoublePixelData(double *dest, char *source, int size, int databytes, int dr, double *gaindest = NULL);
+
+  	static const int NUM_PEDESTAL_FRAMES = 20;
+    multiSlsDetector *myDet;
+    slsDetectorDefs::detectorType detType;
+
+    SlsQt1DPlot *plot1d{nullptr};
+	QVector<SlsQtH1D *> hists1d;
+    SlsQt2DPlotLayout *plot2d{nullptr};
+    SlsQt2DPlotLayout *gainplot2d{nullptr};
+
+    QGridLayout *layout{nullptr};
+    QGroupBox *boxPlot{nullptr};
+    QGridLayout *plotLayout{nullptr};
+
+    bool is1d{true};
+    bool plotEnable{true};
+    bool plotRequired{false};/**?? */
+    bool running{false};
+    int progress{0};
+    volatile bool stopSignal{false};
+	bool clientInitiated{false};
+
+	// titles
+	QString plotTitle{""};
+    QString plotTitle_prefix{""};
+    QLabel *lblFrameIndexTitle1d{nullptr};
+    std::vector<std::string> title1d;
+	std::string title2d{""};
+    QString xTitle1d{"Channel Number"};
+    QString yTitle1d{"Counts"};
+	QString xTitle2d{"Pixel"};
+    QString yTitle2d{"Pixel"};
+    QString zTitle2d{"Intensity"};
+    bool XYRangeChanged{false};
+    double XYRangeValues[4]{0, 0, 0, 0};
+    bool isXYRangeEnable[4]{false, false, false, false};
+
+	// data
+    unsigned int nHists{0};
+    int histNBins{0};
+    double *x1d{nullptr};
+    std::vector<double *> y1d;
+    double *image2d{nullptr};
+
+	//options
+	bool binary{false};
+    int binaryFrom{0};
+    int binaryTo{0};
+    int persistency0};
+    int currentPersistency0};
+    bool isLines{true};
+    bool isMarkers{false};
+    QwtSymbol *marker{nullptr};
+    QwtSymbol *noMarker{nullptr};
+    bool pedestal{false};
+    double *pedestalVals{nullptr};
+    double *tempPedestalVals{nullptr};
+    int pedestalCount{0};
+    bool startPedestalCal{false};
+    bool accumulate{false};
+    bool resetAccumulate{false};
+    QWidget *widgetStatistics{nullptr};
+    QLabel *lblMinDisp{nullptr};
+    QLabel *lblMaxDisp{nullptr};
+    QLabel *lblSumDisp{nullptr};
+    bool displayStatistics{false};
+    std::vector<qCloneWidget *> cloneWidgets;
+    QString fileSavePath{"/tmp"};
+    QString fileSaveName{"Image"};
+    double *gainImage{nullptr};
+    bool gainDataExtracted{false};
+    bool gainDataEnable{false};
+
+    unsigned int nPixelsX{0};
+    unsigned int nPixelsY{0};
+    double minPixelsY{0};
+    double maxPixelsY{0};
+    double startPixel{0};
+    double endPixel{0};
+    double pixelWidth{0};
+
+    int currentMeasurement{0};
+    int currentFrame{0};
+    int currentFileIndex{0};
+    int currentFrameIndex{0};
+	pthread_mutex_t lastImageCompleteMutex;
+    unsigned int lastImageNumber{0};
+    int numberofFrames{0};
+    double acquisitionPeriod{0};
+    double exposureTime{0};
+ 
+    /** prevents err msg displaying twice when detector stopped, "transmitting"
+     */
+    bool alreadyDisplayed{false};
+
+    const static int npixelsx_jctb = 400;
+    int npixelsy_jctb{0};
 };

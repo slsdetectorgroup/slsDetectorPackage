@@ -27,7 +27,18 @@ qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot)
     FILE_LOG(logDEBUG) << "Plot ready";
 }
 
-qTabPlot::~qTabPlot() {}
+qTabPlot::~qTabPlot() {
+    if (btnGroupPlotType)
+        delete btnGroupPlotType;
+    if (stackedLayout)
+        delete stackedLayout;
+    if (spinNthFrame)
+        delete spinNthFrame;
+    if (spinTimeGap)
+        delete spinTimeGap;
+    if (comboTimeGapUnit)
+        delete comboTimeGapUnit;
+}
 
 void qTabPlot::SetupWidgetWindow() {
     // button group for plot type
@@ -157,7 +168,6 @@ void qTabPlot::Initialization() {
 
     // Save
     connect(btnSave, SIGNAL(clicked()), myPlot, SLOT(SavePlot()));
-    connect(chkSaveAll, SIGNAL(toggled(bool)), myPlot, SLOT(SaveAll(bool)));
 
     // Snapshot box
     connect(btnClone, SIGNAL(clicked()), myPlot, SLOT(ClonePlot()));
@@ -236,6 +246,8 @@ void qTabPlot::SetPlot() {
             SetZRange();
         }
     }
+    
+    myPlot->SetDataCallBack(plotEnable);
 }
 
 void qTabPlot::Set1DPlotOptionsRight() {

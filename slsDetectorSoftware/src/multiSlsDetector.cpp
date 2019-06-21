@@ -4091,8 +4091,13 @@ void multiSlsDetector::registerDataCallback(int (*userCallback)(detectorData *, 
     dataReady = userCallback;
     pCallbackArg = pArg;
     if (setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
-        enableDataStreamingToClient(1);
-        enableDataStreamingFromReceiver(1);
+        if (dataReady == nullptr) {
+            enableDataStreamingToClient(0);
+            enableDataStreamingFromReceiver(0);
+        } else {
+            enableDataStreamingToClient(1);
+            enableDataStreamingFromReceiver(1);
+        }
     }
 }
 

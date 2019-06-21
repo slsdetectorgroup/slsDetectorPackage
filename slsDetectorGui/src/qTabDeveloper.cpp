@@ -21,13 +21,39 @@
 
 qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *detector) : 
 	QWidget(parent), myDet(detector), detType(slsDetectorDefs::GENERIC), numDACWidgets(0), numADCWidgets(0),
-	boxDacs(nullptr), boxAdcs(nullptr), lblHV(nullptr), comboHV(nullptr), dacLayout(nullptr), comboDetector(nullptr) {
+	boxDacs(nullptr), boxAdcs(nullptr), lblHV(nullptr), comboHV(nullptr), spinHV(nullptr), dacLayout(nullptr), comboDetector(nullptr), layout(nullptr) {
 	SetupWidgetWindow();
 	Initialization();
 	FILE_LOG(logDEBUG) << "Developer ready";
 }
 
-qTabDeveloper::~qTabDeveloper() {}
+qTabDeveloper::~qTabDeveloper() {
+	for (int i = 0; i < lblDacs.size(); ++i) {
+		delete lblDacs[i];
+		delete lblDacsmV[i];
+		delete spinDacs[i];
+	}
+	for (int i = 0; i < lblAdcs.size(); ++i) {
+		delete lblAdcs[i];
+		delete spinAdcs[i];
+	}
+	if (boxDacs)
+		delete boxDacs;
+	if (boxAdcs)
+		delete boxAdcs;
+	if (lblHV)
+		delete lblHV;
+	if (comboHV)
+		delete comboHV;	
+	if (spinHV)
+		delete spinHV;
+	if (dacLayout)
+		delete dacLayout;
+	if (comboDetector)
+		delete comboDetector;
+	if (layout)
+		delete layout;
+}
 
 void qTabDeveloper::SetupWidgetWindow() {
 	detType = myDet->getDetectorTypeAsEnum();

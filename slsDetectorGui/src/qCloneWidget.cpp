@@ -23,7 +23,9 @@
 #include <QPainter>
 
 qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle,
-                           int numDim, std::string FilePath, bool displayStats, QString min, QString max, QString sum) : QMainWindow(parent), id(id), filePath(FilePath), cloneplot1D(0), cloneplot2D(0) {
+                           int numDim, std::string FilePath, bool displayStats, QString min, QString max, QString sum) : 
+                           QMainWindow(parent), id(id), filePath(FilePath), cloneplot1D(nullptr), cloneplot2D(nullptr),
+                           marker(nullptr), nomarker(nullptr), mainLayout(nullptr), cloneBox(nullptr), lblHistTitle(nullptr) {
     // Window title
     char winTitle[300], currTime[50];
     strcpy(currTime, GetCurrentTimeStamp());
@@ -41,10 +43,21 @@ qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitl
 }
 
 qCloneWidget::~qCloneWidget() {
-    delete cloneplot1D;
-    delete cloneplot2D;
-    delete cloneBox;
-    cloneplot1D_hists.clear();
+    if (cloneplot1D)
+        delete cloneplot1D;
+    if (cloneplot2D)
+        delete cloneplot2D;
+    cloneplot1D_hists.clear();    
+    if (marker)
+        delete marker;
+    if (nomarker)
+        delete nomarker;  
+    if (mainLayout)
+        delete mainLayout; 
+    if (cloneBox)
+        delete cloneBox;        
+    if (lblHistTitle)
+        delete lblHistTitle;
 }
 
 SlsQt1DPlot* qCloneWidget::Get1dPlot() {
@@ -110,7 +123,7 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
     resize(500, 350);
 }
 
-void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis[], std::string histTitle[], bool lines, bool markers) {
+void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, std::vector<std::string> histTitle, bool lines, bool markers) {
     //for each plot,  create hists
     for (int hist_num = 0; hist_num < nHists; ++hist_num) {
         SlsQtH1D *k;
@@ -142,45 +155,6 @@ void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, d
         //set title and attach plot
         lblHistTitle->setText(QString(histTitle[0].c_str()));
 
-        k->Attach(cloneplot1D);
-    }
-}
-
-void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, double *histYAxis, std::string histTitle[], bool lines, bool markers) {
-    // for each plot create hists
-    for (int hist_num = 0; hist_num < nHists; ++hist_num) {
-        SlsQtH1D *k;
-        if (hist_num + 1 > cloneplot1D_hists.size()) {
-            cloneplot1D_hists.append(k = new SlsQtH1D("1d plot", histNBins, histXAxis, histYAxis));
-            k->SetLineColor(hist_num + 1);
-        } else {
-            k = cloneplot1D_hists.at(hist_num);
-            k->SetData(histNBins, histXAxis, histYAxis);
-        }
-        //style of plot
-        if (lines)
-            k->setStyle(QwtPlotCurve::Lines);
-        else
-            k->setStyle(QwtPlotCurve::Dots);
-        if (markers) {
-            QwtSymbol *marker = new QwtSymbol();
-            marker->setStyle(QwtSymbol::Cross);
-            marker->setSize(5, 5);
-#if QWT_VERSION < 0x060000
-            k->setSymbol(*marker);
-#else
-            k->setSymbol(marker);
-#endif
-        } else {
-            QwtSymbol *noMarker = new QwtSymbol();
-#if QWT_VERSION < 0x060000
-            k->setSymbol(*noMarker);
-#else
-            k->setSymbol(noMarker);
-#endif
-        }
-        //set title and attach plot
-        lblHistTitle->setText(QString(histTitle[0].c_str()));
         k->Attach(cloneplot1D);
     }
 }

@@ -1382,8 +1382,8 @@ Displays minimum, maximum and sum of values for each plot.
   <widget class="QGroupBox" name="boxSave">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>130</y>
+     <x>11</x>
+     <y>124</y>
      <width>356</width>
      <height>57</height>
     </rect>
@@ -1400,9 +1400,9 @@ Displays minimum, maximum and sum of values for each plot.
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>18</x>
       <y>22</y>
-      <width>342</width>
+      <width>72</width>
       <height>35</height>
      </rect>
     </property>
@@ -1410,22 +1410,6 @@ Displays minimum, maximum and sum of values for each plot.
      <property name="spacing">
       <number>0</number>
      </property>
-     <item>
-      <widget class="QCheckBox" name="chkSaveAll">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Save All with Automatic File Name</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QPushButton" name="btnSave">
        <property name="sizePolicy">
@@ -1501,8 +1485,8 @@ Displays minimum, maximum and sum of values for each plot.
   <widget class="QGroupBox" name="boxPlotAxis">
    <property name="geometry">
     <rect>
-     <x>15</x>
-     <y>190</y>
+     <x>11</x>
+     <y>187</y>
      <width>746</width>
      <height>150</height>
     </rect>
@@ -1522,7 +1506,7 @@ Displays minimum, maximum and sum of values for each plot.
       <x>10</x>
       <y>20</y>
       <width>726</width>
-      <height>126</height>
+      <height>129</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0,0,0,0">
@@ -2160,8 +2144,8 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
    </property>
    <property name="geometry">
     <rect>
-     <x>400</x>
-     <y>130</y>
+     <x>399</x>
+     <y>122</y>
      <width>355</width>
      <height>60</height>
     </rect>
@@ -2180,7 +2164,7 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
      <rect>
       <x>10</x>
       <y>23</y>
-      <width>342</width>
+      <width>336</width>
       <height>37</height>
      </rect>
     </property>
@@ -2315,7 +2299,7 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>10</width>
+         <width>5</width>
          <height>20</height>
         </size>
        </property>
@@ -2331,7 +2315,7 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>10</width>
+         <width>5</width>
          <height>20</height>
         </size>
        </property>
@@ -2417,7 +2401,6 @@ Streaming Interval between 2 plots. Default is time interval with 200 ms.
   <tabstop>chkInterpolate</tabstop>
   <tabstop>chkContour</tabstop>
   <tabstop>chkLogz</tabstop>
-  <tabstop>chkSaveAll</tabstop>
   <tabstop>comboFrequency</tabstop>
   <tabstop>chkTitle</tabstop>
   <tabstop>dispTitle</tabstop>

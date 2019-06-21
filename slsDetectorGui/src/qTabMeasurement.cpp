@@ -8,13 +8,17 @@
 
 #include <iostream>
 
-qTabMeasurement::qTabMeasurement(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : QWidget(parent), myDet(detector), myPlot(plot) {
+qTabMeasurement::qTabMeasurement(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : QWidget(parent), myDet(detector), myPlot(plot),
+	progressTimer(nullptr) {
 	setupUi(this);
 	SetupWidgetWindow();
 	FILE_LOG(logDEBUG) << "Measurement ready";
 }
 
-qTabMeasurement::~qTabMeasurement() {}
+qTabMeasurement::~qTabMeasurement() {
+	if (progressTimer)
+		delete progressTimer;
+}
 
 bool qTabMeasurement::GetStartStatus(){
 	return (!btnStart->isEnabled());
@@ -523,8 +527,6 @@ void qTabMeasurement::SetFileWrite(bool val) {
 
 	try {
         myDet->setFileWrite(val);
-		// for file save enable
-		myPlot->SetFileWrite(val);
 		dispFileName->setEnabled(chkFile->isChecked());
     } catch (const sls::NonCriticalError &e) {
         qDefs::ExceptionMessage("Could not set file write enable.", e.what(), "qTabMeasurement::SetFileWrite");
@@ -602,7 +604,7 @@ void qTabMeasurement::ResetProgress() {
 void qTabMeasurement::UpdateProgress() {
 	FILE_LOG(logDEBUG) << "Updating progress";
 	progressBar->setValue(myPlot->GetProgress());
-	lblCurrentFrame->setText(QString::number(myPlot->GetFrameIndex()));
+	lblCurrentFrame->setText(QString::number(myPlot->GetCurrentFrameIndex()));
 }
 
 int qTabMeasurement::VerifyOutputDirectoryError() {

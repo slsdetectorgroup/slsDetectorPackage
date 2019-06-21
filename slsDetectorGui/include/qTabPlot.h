@@ -56,7 +56,6 @@ private:
 	bool isOneD;
 
 	QButtonGroup	*btnGroupPlotType;
-	/** interval between plots */
 	QStackedLayout	*stackedLayout;
 	QSpinBox 		*spinNthFrame;
 	QDoubleSpinBox 	*spinTimeGap;

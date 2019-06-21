@@ -8,13 +8,22 @@
 #include <iostream>
 
 qTabDebugging::qTabDebugging(QWidget *parent, multiSlsDetector *detector) : 
-    QWidget(parent), myDet(detector), treeDet(0), lblDetectorHostname(0), lblDetectorFirmware(0), lblDetectorSoftware(0) {
+    QWidget(parent), myDet(detector), treeDet(nullptr), lblDetectorHostname(nullptr), lblDetectorFirmware(nullptr), lblDetectorSoftware(nullptr) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Debugging ready";
 }
 
-qTabDebugging::~qTabDebugging() {}
+qTabDebugging::~qTabDebugging() {
+    if (treeDet)
+        delete treeDet;
+    if (lblDetectorHostname)
+        delete lblDetectorHostname;
+    if (lblDetectorFirmware)
+        delete lblDetectorFirmware;
+    if (lblDetectorSoftware)
+        delete lblDetectorSoftware;
+}
 
 
 void qTabDebugging::SetupWidgetWindow() {

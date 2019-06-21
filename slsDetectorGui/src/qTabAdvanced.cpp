@@ -11,7 +11,18 @@ QWidget(parent), myDet(detector) {
 	FILE_LOG(logDEBUG) << "Advanced ready";
 }
 
-qTabAdvanced::~qTabAdvanced(){}
+qTabAdvanced::~qTabAdvanced(){
+	for (int i  = 0; i < lblFromX.size(); ++i) {
+		delete lblFromX[i];
+		delete lblFromY[i];
+		delete lblToX[i];
+		delete lblToY[i];
+		delete spinFromX[i];
+		delete spinFromY[i];
+		delete spinToX[i];
+		delete spinToY[i];
+	}
+}
 
 void qTabAdvanced::SetupWidgetWindow(){
 	// palette

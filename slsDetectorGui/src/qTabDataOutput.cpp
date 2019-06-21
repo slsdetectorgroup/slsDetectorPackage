@@ -10,13 +10,16 @@
 #include <string>
 
 
-qTabDataOutput::qTabDataOutput(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector) {
+qTabDataOutput::qTabDataOutput(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector), btnGroupRate(nullptr) {
 	setupUi(this);
 	SetupWidgetWindow();
 	FILE_LOG(logDEBUG) << "DataOutput ready";
 }
 
-qTabDataOutput::~qTabDataOutput() {}
+qTabDataOutput::~qTabDataOutput() {
+	if (btnGroupRate)
+		delete btnGroupRate;
+}
 
 void qTabDataOutput::SetupWidgetWindow() {
 	// button group for rate

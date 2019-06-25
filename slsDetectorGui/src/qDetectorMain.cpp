@@ -349,9 +349,7 @@ void qDetectorMain::LoadConfigFile(const std::string fName) {
     } else {
         try {
             myDet->readConfigurationFile(fName);
-        } catch (const sls::NonCriticalError &e) {
-            qDefs::ExceptionMessage("Could not load config file.", e.what(), "qDetectorMain::LoadConfigFile");
-	    }   
+        } CATCH_DISPLAY ("Could not load config file.", "qDetectorMain::LoadConfigFile")
     }
 }
 
@@ -562,9 +560,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                 }
             }
         }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not execute utilities.", e.what(), "qDetectorMain::ExecuteUtilities");
-    }
+    } CATCH_DISPLAY ("Could not execute utilities.", "qDetectorMain::ExecuteUtilities")
 
     Refresh(tabs->currentIndex());
     if (refreshTabs) {
@@ -587,13 +583,10 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
                              "and Moench detectors";
 
         std::string guiVersion = std::to_string(APIGUI);
-        std::string clientVersion;
+        std::string clientVersion = "unknown";
         try {
             clientVersion = std::to_string(myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
-        } catch (const sls::NonCriticalError &e) {
-            qDefs::ExceptionMessage("Could not get client version.", e.what(), "qDetectorMain::ExecuteHelp");
-            clientVersion = "unknown";
-        }
+        } CATCH_DISPLAY ("Could not get client version.", "qDetectorMain::ExecuteHelp")
 
         qDefs::Message(qDefs::INFORMATION,
                        "<p style=\"font-family:verdana;\">"

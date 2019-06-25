@@ -30,7 +30,7 @@ void qClient::executeLine(int narg, char *args[]) {
 
     // validate command structure
     if (narg < 1) {
-        throw sls::NonCriticalError("No command parsed. " + printCommands());
+        throw sls::RuntimeError("No command parsed. " + printCommands());
     }
 
     // help
@@ -49,7 +49,7 @@ void qClient::executeLine(int narg, char *args[]) {
             else if (argument == "stop")
                 stopAcquisition();
             else {
-                throw sls::NonCriticalError("Could not parse arguments. " + printCommands());
+                throw sls::RuntimeError("Could not parse arguments. " + printCommands());
             }
         }
         retval = getStatus();
@@ -67,7 +67,7 @@ void qClient::executeLine(int narg, char *args[]) {
 
     // unrecognized command
     else {
-        throw sls::NonCriticalError("Unrecognized command. " + printCommands());
+        throw sls::RuntimeError("Unrecognized command. " + printCommands());
     }
 
     // print result

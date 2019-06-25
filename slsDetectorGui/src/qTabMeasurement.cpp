@@ -222,9 +222,7 @@ void qTabMeasurement::GetTimingMode() {
 				qDefs::Message(qDefs::WARNING, std::string("Unknown timing mode: ")+ std::to_string(retval), "qTabMeasurement::GetTimingMode");
 				break;
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get timing mode.", e.what(), "qTabMeasurement::GetTimingMode");
-    }
+    } CATCH_DISPLAY("Could not get timing mode.", "qTabMeasurement::GetTimingMode")
 
 	disconnect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(SetTimingMode(int)));
 }
@@ -235,10 +233,7 @@ void qTabMeasurement::SetTimingMode(int val) {
 	try {
         myDet->setExternalCommunicationMode(static_cast<slsDetectorDefs::externalCommunicationMode>(val));
 		EnableWidgetsforTimingMode();
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set timing mode.", e.what(), "qTabMeasurement::SetTimingMode");
-		GetTimingMode();
-	}
+    } CATCH_HANDLE("Could not set timing mode.", "qTabMeasurement::SetTimingMode", this, &qTabMeasurement::GetTimingMode)
 }
 
 void qTabMeasurement::GetNumMeasurements() {
@@ -251,9 +246,7 @@ void qTabMeasurement::GetNumMeasurements() {
 			qDefs::Message(qDefs::WARNING, "Number of measurements is inconsistent for all detectors.", "qTabMeasurement::GetNumMeasurements");
 		} 
 		spinNumMeasurements->setValue(retval);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get number of measurements.", e.what(), "qTabMeasurement::GetNumMeasurements");
-    }
+    } CATCH_DISPLAY ("Could not get number of measurements.", "qTabMeasurement::GetNumMeasurements")
 
 	connect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
 }
@@ -263,10 +256,7 @@ void qTabMeasurement::SetNumMeasurements(int val) {
 
 	try {
         myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER, val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set number of measurements.", e.what(), "qTabMeasurement::SetNumMeasurements");
-        GetNumMeasurements();
-    }
+    } CATCH_HANDLE("Could not set number of measurements.", "qTabMeasurement::SetNumMeasurements", this, &qTabMeasurement::GetNumMeasurements)
 }
 
 void qTabMeasurement::GetNumFrames() {
@@ -279,9 +269,7 @@ void qTabMeasurement::GetNumFrames() {
 			qDefs::Message(qDefs::WARNING, "Number of frames is inconsistent for all detectors.", "qTabMeasurement::GetNumFrames");
 		} 
 		spinNumFrames->setValue(retval);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get number of frames.", e.what(), "qTabMeasurement::GetNumFrames");
-    }
+    } CATCH_DISPLAY ("Could not get number of frames.", "qTabMeasurement::GetNumFrames")
 
 	connect(spinNumFrames, SIGNAL(valueChanged(int)), this, SLOT(SetNumFrames(int)));
 }
@@ -291,10 +279,7 @@ void qTabMeasurement::SetNumFrames(int val) {
 
 	try {
         myDet->setTimer(slsDetectorDefs::FRAME_NUMBER, val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set number of frames.", e.what(), "qTabMeasurement::SetNumFrames");
-        GetNumFrames();
-    }
+    } CATCH_HANDLE("Could not set number of frames.", "qTabMeasurement::SetNumFrames", this, &qTabMeasurement::GetNumFrames)
 }
 
 void qTabMeasurement::GetNumTriggers() {
@@ -307,9 +292,7 @@ void qTabMeasurement::GetNumTriggers() {
 			qDefs::Message(qDefs::WARNING, "Number of triggers is inconsistent for all detectors.", "qTabMeasurement::GetNumTriggers");
 		} 
 		spinNumTriggers->setValue(retval);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get number of frames.", e.what(), "qTabMeasurement::GetNumTriggers");
-    }
+    } CATCH_DISPLAY ("Could not get number of frames.", "qTabMeasurement::GetNumTriggers")
 
 	connect(spinNumTriggers, SIGNAL(valueChanged(int)), this, SLOT(SetNumTriggers(int)));
 }
@@ -319,10 +302,7 @@ void qTabMeasurement::SetNumTriggers(int val) {
 
 	try {
         myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER, val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set number of triggers.", e.what(), "qTabMeasurement::SetNumTriggers");
-        GetNumTriggers();
-    }
+    } CATCH_HANDLE("Could not set number of triggers.", "qTabMeasurement::SetNumTriggers", this, &qTabMeasurement::GetNumTriggers)
 }
 
 void qTabMeasurement::GetNumSamples() {
@@ -339,9 +319,7 @@ void qTabMeasurement::GetNumSamples() {
 			qDefs::Message(qDefs::WARNING, "Number of digital samples is inconsistent for all detectors.", "qTabMeasurement::GetNumSamples");
 		} 
 		spinNumSamples->setValue(retval);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get number of samples.", e.what(), "qTabMeasurement::GetNumSamples");
-    }
+    } CATCH_DISPLAY ("Could not get number of samples.", "qTabMeasurement::GetNumSamples")
 
 	connect(spinNumSamples, SIGNAL(valueChanged(int)), this, SLOT(SetNumSamples(int)));
 }
@@ -352,10 +330,7 @@ void qTabMeasurement::SetNumSamples(int val) {
 	try {
         myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES, val);
 		myDet->setTimer(slsDetectorDefs::DIGITAL_SAMPLES, val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set number of samples.", e.what(), "qTabMeasurement::SetNumSamples");
-        GetNumSamples();
-    }
+    } CATCH_HANDLE("Could not set number of samples.", "qTabMeasurement::SetNumSamples", this, &qTabMeasurement::GetNumSamples)
 }
 
 void qTabMeasurement::GetExposureTime() {
@@ -375,9 +350,7 @@ void qTabMeasurement::GetExposureTime() {
 
 			CheckAcqPeriodGreaterThanExp();
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get exposure time.", e.what(), "qTabMeasurement::GetExposureTime");
-    }
+    } CATCH_DISPLAY ("Could not get exposure time.", "qTabMeasurement::GetExposureTime")
 
 	connect(spinExpTime, SIGNAL(valueChanged(double)), this, SLOT(SetExposureTime()));
 	connect(comboExpUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetExposureTime()));
@@ -392,10 +365,7 @@ void qTabMeasurement::SetExposureTime() {
 		double timeNS = qDefs::getNSTime(unit, val);
 		myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME, std::lround(timeNS));
 		CheckAcqPeriodGreaterThanExp();
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set exposure time.", e.what(), "qTabMeasurement::SetExposureTime");
-        GetExposureTime();
-    }
+    } CATCH_HANDLE("Could not set exposure time.", "qTabMeasurement::SetExposureTime", this, &qTabMeasurement::GetExposureTime)
 }
 
 void qTabMeasurement::GetAcquisitionPeriod() {
@@ -415,9 +385,7 @@ void qTabMeasurement::GetAcquisitionPeriod() {
 
 			CheckAcqPeriodGreaterThanExp();
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get acquisition period.", e.what(), "qTabMeasurement::GetAcquisitionPeriod");
-    }
+    } CATCH_DISPLAY ("Could not get acquisition period.", "qTabMeasurement::GetAcquisitionPeriod")
 
 	connect(spinPeriod, SIGNAL(valueChanged(double)), this, SLOT(SetAcquisitionPeriod()));
 	connect(comboPeriodUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetAcquisitionPeriod()));
@@ -432,10 +400,7 @@ void qTabMeasurement::SetAcquisitionPeriod() {
 		double timeNS = qDefs::getNSTime(unit, val);
 		myDet->setTimer(slsDetectorDefs::FRAME_PERIOD, std::lround(timeNS));
 		CheckAcqPeriodGreaterThanExp();
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set acquisition period.", e.what(), "qTabMeasurement::SetAcquisitionPeriod");
-        GetAcquisitionPeriod();
-    }
+    } CATCH_HANDLE("Could not set acquisition period.", "qTabMeasurement::SetAcquisitionPeriod", this, &qTabMeasurement::GetAcquisitionPeriod)
 }
 
 void qTabMeasurement::CheckAcqPeriodGreaterThanExp() {
@@ -478,9 +443,7 @@ void qTabMeasurement::GetDelay() {
 
 			CheckAcqPeriodGreaterThanExp();
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get delay.", e.what(), "qTabMeasurement::GetDelay");
-    }
+    } CATCH_DISPLAY ("Could not get delay.", "qTabMeasurement::GetDelay")
 
 	connect(spinDelay, SIGNAL(valueChanged(double)), this, SLOT(SetDelay()));
 	connect(comboDelayUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetDelay()));
@@ -495,10 +458,7 @@ void qTabMeasurement::SetDelay() {
 		double timeNS = qDefs::getNSTime(unit, val);
 		myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER, std::lround(timeNS));
 		CheckAcqPeriodGreaterThanExp();
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set delay.", e.what(), "qTabMeasurement::SetDelay");
-        GetDelay();
-    }
+    } CATCH_HANDLE("Could not set delay.", "qTabMeasurement::SetDelay", this, &qTabMeasurement::GetDelay)
 }
 
 void qTabMeasurement::GetFileWrite() {
@@ -506,7 +466,8 @@ void qTabMeasurement::GetFileWrite() {
 	disconnect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
 
 	try {
-        int retval = myDet->getFileWrite();
+		dispFileName->setEnabled(true);	// default, even when exception
+		int retval = myDet->getFileWrite();
 		if (retval == -1) {
 			qDefs::Message(qDefs::WARNING, "File write is inconsistent for all detectors.", "qTabMeasurement::GetFileWrite");
 			dispFileName->setEnabled(true);
@@ -514,10 +475,7 @@ void qTabMeasurement::GetFileWrite() {
 			chkFile->setChecked(retval == 0 ? false : true);
 			dispFileName->setEnabled(chkFile->isChecked());
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get file over write enable.", e.what(), "qTabMeasurement::GetFileWrite");
-		dispFileName->setEnabled(true);
-    }
+    } CATCH_DISPLAY ("Could not get file over write enable.", "qTabMeasurement::GetFileWrite")
 
 	connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
 }
@@ -528,10 +486,7 @@ void qTabMeasurement::SetFileWrite(bool val) {
 	try {
         myDet->setFileWrite(val);
 		dispFileName->setEnabled(chkFile->isChecked());
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set file write enable.", e.what(), "qTabMeasurement::SetFileWrite");
-        GetFileWrite();
-    }
+    } CATCH_HANDLE("Could not set file write enable.", "qTabMeasurement::SetFileWrite", this, &qTabMeasurement::GetFileWrite)
 }
 
 void qTabMeasurement::GetFileName() {
@@ -541,9 +496,7 @@ void qTabMeasurement::GetFileName() {
 	try {
         auto retval = myDet->getFileName();
 		dispFileName->setText(QString(retval.c_str()));
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get file name prefix.", e.what(), "qTabMeasurement::GetFileName");
-	}	
+    } CATCH_DISPLAY ("Could not get file name prefix.", "qTabMeasurement::GetFileName")
 	
 	connect(dispFileName, SIGNAL(editingFinished()), this, SLOT(SetFileName()));
 }
@@ -553,10 +506,7 @@ void qTabMeasurement::SetFileName() {
 	FILE_LOG(logINFO) << "Setting File Name Prefix:" << val;
 	try {
         myDet->setFileName(val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set file name prefix.", e.what(), "qTabMeasurement::SetFileName");
-        GetFileName();
-    }
+    } CATCH_HANDLE("Could not set file name prefix.", "qTabMeasurement::SetFileName", this, &qTabMeasurement::GetFileName)
 }
 
 void qTabMeasurement::GetRunIndex() {
@@ -569,9 +519,7 @@ void qTabMeasurement::GetRunIndex() {
 			qDefs::Message(qDefs::WARNING, "Acquisition File Index is inconsistent for all detectors.", "qTabMeasurement::GetRunIndex");
 		} 
 		spinIndex->setValue(retval);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get acquisition file index.", e.what(), "qTabMeasurement::GetRunIndex");
-    }
+    } CATCH_DISPLAY ("Could not get acquisition file index.", "qTabMeasurement::GetRunIndex")
 
 	connect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));
 }
@@ -581,10 +529,7 @@ void qTabMeasurement::SetRunIndex(int val) {
 
 	try {
         myDet->setFileIndex(val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set acquisition file index.", e.what(), "qTabMeasurement::SetRunIndex");
-        GetRunIndex();
-    }
+    } CATCH_HANDLE("Could not set acquisition file index.", "qTabMeasurement::SetRunIndex", this, &qTabMeasurement::GetRunIndex)
 }
 
 void qTabMeasurement::SetCurrentMeasurement(int val) {
@@ -621,11 +566,10 @@ int qTabMeasurement::VerifyOutputDirectoryError() {
 				myDet->setFilePath(paths[det], det);
 			}
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set path.", e.what(), "qTabMeasurement::VerifyOutputDirectoryError");
-		return slsDetectorDefs::FAIL;
-    }
-	return slsDetectorDefs::OK;
+		return slsDetectorDefs::OK;
+    } CATCH_DISPLAY ("Could not set path.", "qTabMeasurement::VerifyOutputDirectoryError")
+	
+	return slsDetectorDefs::FAIL; // for exception
 }
 
 void qTabMeasurement::StartAcquisition() {
@@ -660,9 +604,7 @@ void qTabMeasurement::StopAcquisition() {
 	FILE_LOG(logINFORED) << "Stopping Acquisition";
 	try{
 		myDet->stopAcquisition();
-	} catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not stop acquisition.", e.what(), "qTabMeasurement::StopAcquisition");
-    }
+	} CATCH_DISPLAY("Could not stop acquisition.", "qTabMeasurement::StopAcquisition")
 }
 
 void qTabMeasurement::UpdateFinished() {

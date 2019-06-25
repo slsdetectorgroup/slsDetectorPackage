@@ -89,6 +89,7 @@ void qTabDataOutput::PopulateDetectors() {
 void qTabDataOutput::EnableBrowse() {
 	FILE_LOG(logDEBUG) << "Getting browse enable";
 	try {
+		btnOutputBrowse->setEnabled(false); // exception default
 		std::string receiverHostname = myDet->getReceiverHostname(comboDetector->currentIndex() - 1);
 		if (receiverHostname == "localhost") {
 			btnOutputBrowse->setEnabled(true);
@@ -106,15 +107,13 @@ void qTabDataOutput::EnableBrowse() {
 				btnOutputBrowse->setEnabled(false);
 			}
 		}
-	} catch (const sls::RuntimeError &e) {
-		qDefs::ExceptionMessage("Could not get receiver hostname.", e.what(), "qTabDataOutput::EnableBrowse");
-		btnOutputBrowse->setEnabled(false);
-    }
+	} CATCH_DISPLAY ("Could not get receiver hostname.", "qTabDataOutput::EnableBrowse")
 }
 
 void qTabDataOutput::GetFileWrite() {
 		FILE_LOG(logDEBUG) << "Getting file write enable";
 	try {
+		boxFileWriteEnabled->setEnabled(true); // exception default
 		int retval = myDet->getFileWrite();
 		if (retval == -1) {
 			qDefs::Message(qDefs::WARNING, "File write is inconsistent for all detectors.", "qTabDataOutput::GetFileWrite");
@@ -122,10 +121,7 @@ void qTabDataOutput::GetFileWrite() {
 		} else {
 			boxFileWriteEnabled->setEnabled(retval == 0 ? false : true);
 		}
-	} catch (const sls::RuntimeError &e) {
-		qDefs::ExceptionMessage("Could not get file enable.", e.what(), "qTabDataOutput::GetFileWrite");
-		boxFileWriteEnabled->setEnabled(true);
-    }
+	} CATCH_DISPLAY("Could not get file enable.", "qTabDataOutput::GetFileWrite")
 }
 
 void qTabDataOutput::GetFileName() {
@@ -133,10 +129,7 @@ void qTabDataOutput::GetFileName() {
 	try {
         auto retval = myDet->getFileName();
 		dispFileName->setText(QString(retval.c_str()));
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get file name prefix.", e.what(), "qTabDataOutput::GetFileName");
-	}	
-	
+    } CATCH_DISPLAY ("Could not get file name prefix.", "qTabDataOutput::GetFileName")	
 }
 
 void qTabDataOutput::GetOutputDir() {
@@ -147,9 +140,7 @@ void qTabDataOutput::GetOutputDir() {
 	try {
         std::string path = myDet->getFilePath(comboDetector->currentIndex() - 1);
 		dispOutputDir->setText(QString(path.c_str()));
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get file path.", e.what(), "qTabDataOutput::GetOutputDir");
-    }
+    } CATCH_DISPLAY ("Could not get file path.", "qTabDataOutput::GetOutputDir")
 
 	connect(dispOutputDir, SIGNAL(editingFinished()), this, SLOT(SetOutputDir()));
 }
@@ -180,10 +171,7 @@ void qTabDataOutput::SetOutputDir() {
 		std::string spath = std::string(path.toAscii().constData());
 		try {
 			myDet->setFilePath(spath, comboDetector->currentIndex() - 1);
-		} catch (const sls::NonCriticalError &e) {
-			qDefs::ExceptionMessage("Could not set output file path.", e.what(), "qTabDataOutput::SetOutputDir");
-			GetOutputDir();
-		}
+		} CATCH_HANDLE ("Could not set output file path.", "qTabDataOutput::SetOutputDir", this, &qTabDataOutput::GetOutputDir)
 	}
 }
 
@@ -205,9 +193,7 @@ void qTabDataOutput::GetFileFormat() {
 				qDefs::Message(qDefs::WARNING, std::string("Unknown file format: ") + std::to_string(static_cast<int>(retval)), "qTabDataOutput::GetFileFormat");
 				break;
         }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get file format.", e.what(), "qTabDataOutput::GetFileFormat");
-    }
+    } CATCH_DISPLAY("Could not get file format.", "qTabDataOutput::GetFileFormat")
 
 	connect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 }
@@ -216,10 +202,7 @@ void qTabDataOutput::SetFileFormat(int format) {
 	FILE_LOG(logINFO) << "Setting File Format to " << comboFileFormat->currentText().toAscii().data();
 	try {
         myDet->setFileFormat((slsDetectorDefs::fileFormat)comboFileFormat->currentIndex());
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set file format.", e.what(), "qTabDataOutput::SetFileFormat");
-        GetFileFormat();
-    }
+    } CATCH_HANDLE ("Could not set file format.", "qTabDataOutput::SetFileFormat", this, &qTabDataOutput::GetFileFormat)
 }
 
 void qTabDataOutput::GetFileOverwrite() {
@@ -233,9 +216,7 @@ void qTabDataOutput::GetFileOverwrite() {
 		} else {
 			chkOverwriteEnable->setChecked(retval == 0 ? false : true);
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get file over write enable.", e.what(), "qTabDataOutput::GetFileOverwrite");
-    }
+    } CATCH_DISPLAY ("Could not get file over write enable.", "qTabDataOutput::GetFileOverwrite")
 
 	connect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
 }
@@ -245,10 +226,7 @@ void qTabDataOutput::SetOverwriteEnable(bool enable) {
 
 	try {
         myDet->setFileOverWrite(enable);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set file over write enable.", e.what(), "qTabDataOutput::SetOverwriteEnable");
-        GetFileOverwrite();
-    }
+    } CATCH_HANDLE ("Could not set file over write enable.", "qTabDataOutput::SetOverwriteEnable", this, &qTabDataOutput::GetFileOverwrite)
 }
 
 void qTabDataOutput::GetTenGigaEnable() {
@@ -262,9 +240,7 @@ void qTabDataOutput::GetTenGigaEnable() {
 		} else {
 			chkTenGiga->setChecked(retval == 0 ? false : true);
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get 10GbE enable.", e.what(), "qTabDataOutput::GetTenGigaEnable");
-    }
+    } CATCH_DISPLAY ("Could not get 10GbE enable.", "qTabDataOutput::GetTenGigaEnable")
 
 	connect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(SetTenGigaEnable(bool)));
 }
@@ -274,10 +250,7 @@ void qTabDataOutput::SetTenGigaEnable(bool enable) {
 
 	try {
         myDet->enableTenGigabitEthernet(enable);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set 10GbE enable.", e.what(), "qTabDataOutput::SetTenGigaEnable");
-        GetTenGigaEnable();
-    }
+    } CATCH_HANDLE ("Could not set 10GbE enable.", "qTabDataOutput::SetTenGigaEnable", this, &qTabDataOutput::GetTenGigaEnable)
 }
 
 void qTabDataOutput::GetRateCorrection() {
@@ -296,9 +269,7 @@ void qTabDataOutput::GetRateCorrection() {
 			if (retval != 0)
 				spinCustomDeadTime->setValue(retval);
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get rate correction.", e.what(), "qTabDataOutput::GetRateCorrection");
-    }
+    } CATCH_DISPLAY("Could not get rate correction.", "qTabDataOutput::GetRateCorrection")
 
 	connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
 	connect(btnGroupRate, SIGNAL(buttonClicked(int)), this, SLOT(SetRateCorrection()));
@@ -315,10 +286,7 @@ void qTabDataOutput::EnableRateCorrection() {
 	// disable
 	try {
 		myDet->setRateCorrection(0);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not switch off rate correction.", e.what(), "qTabDataOutput::EnableRateCorrection");
-     	GetRateCorrection();
-	}
+    } CATCH_HANDLE ("Could not switch off rate correction.", "qTabDataOutput::EnableRateCorrection", this, &qTabDataOutput::GetRateCorrection)
 }
 
 void qTabDataOutput::SetRateCorrection() {
@@ -335,10 +303,7 @@ void qTabDataOutput::SetRateCorrection() {
 
 	try {
 		myDet->setRateCorrection(deadtime);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set rate correction.", e.what(), "qTabDataOutput::SetRateCorrection");
-		GetRateCorrection();
-    }
+    } CATCH_HANDLE ("Could not set rate correction.", "qTabDataOutput::SetRateCorrection", this, &qTabDataOutput::GetRateCorrection)
 }
 
 void qTabDataOutput::GetSpeed() {
@@ -360,9 +325,7 @@ void qTabDataOutput::GetSpeed() {
 				qDefs::Message(qDefs::WARNING, std::string("Unknown speed: ") + std::to_string(retval), "qTabDataOutput::GetFileFormat");
 				break;
         }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get speed.", e.what(), "qTabDataOutput::GetSpeed");
-    }
+    } CATCH_DISPLAY ("Could not get speed.", "qTabDataOutput::GetSpeed")
 
 	connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
 }
@@ -371,10 +334,7 @@ void qTabDataOutput::SetSpeed(int speed) {
 	FILE_LOG(logINFO) << "Setting Speed to " << comboEigerClkDivider->currentText().toAscii().data();;
 	try {
         myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, speed);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set speed.", e.what(), "qTabDataOutput::SetSpeed");
-        GetSpeed();
-    }
+    } CATCH_HANDLE ("Could not set speed.", "qTabDataOutput::SetSpeed", this, &qTabDataOutput::GetSpeed)
 }
 
 void qTabDataOutput::GetFlags() {
@@ -405,9 +365,7 @@ void qTabDataOutput::GetFlags() {
 				qDefs::Message(qDefs::WARNING, std::string("Unknown flag (Not Parallel or Non Parallel): ") + std::to_string(retval), "qTabDataOutput::GetFlags");
 			}
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get speed.", e.what(), "qTabDataOutput::GetSpeed");
-    }
+    } CATCH_DISPLAY ("Could not get speed.", "qTabDataOutput::GetSpeed")
 
 	connect(comboEigerFlags1, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 	connect(comboEigerFlags2, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
@@ -443,10 +401,7 @@ void qTabDataOutput::SetFlags() {
         myDet->setReadOutFlags(flag1);
 		FILE_LOG(logINFO) << "Setting Readout Flags to " << comboEigerFlags2->currentText().toAscii().data();
 		myDet->setReadOutFlags(flag2);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set readout flags.", e.what(), "qTabDataOutput::SetFlags");
-        GetFlags();
-    }
+    } CATCH_HANDLE ("Could not set readout flags.", "qTabDataOutput::SetFlags", this, &qTabDataOutput::GetFlags)
 }
 
 

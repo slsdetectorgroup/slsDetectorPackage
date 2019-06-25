@@ -90,7 +90,7 @@ void qServer::ServerThread(bool isControlServer) {
             auto socket = (isControlServer ? controlSocket->accept() : stopSocket->accept());
             try{
                 DecodeFunction(socket);
-            } catch(const sls::NonCriticalError &e) {
+            } catch(const sls::RuntimeError &e) {
 
                 if (strstr(e.what(), "exit")) {
                     FILE_LOG(logINFO) << "Exiting " << (isControlServer ? "Control" : "Stop") << "Server"; 
@@ -101,7 +101,7 @@ void qServer::ServerThread(bool isControlServer) {
                 socket.Send(qDefs::FAIL);
                 socket.Send(mess);
             }
-        } catch (const sls::NonCriticalError &e) {
+        } catch (const sls::RuntimeError &e) {
             FILE_LOG(logERROR) << "Accept failed";
         }
 
@@ -130,21 +130,21 @@ void qServer::GetStatus(sls::ServerInterface2 &socket) {
 
 void qServer::StartAcquisition(sls::ServerInterface2 &socket) {
     if (mainTab->StartStopAcquisitionFromClient(true) == slsDetectorDefs::FAIL) {
-        throw sls::NonCriticalError("Could not start acquistion in Gui");
+        throw sls::RuntimeError("Could not start acquistion in Gui");
     }
     socket.Send(slsDetectorDefs::OK);
 }
 
 void qServer::StopsAcquisition(sls::ServerInterface2 &socket) {
     if (mainTab->StartStopAcquisitionFromClient(false) == slsDetectorDefs::FAIL) {
-        throw sls::NonCriticalError("Could not stop acquistion in Gui");
+        throw sls::RuntimeError("Could not stop acquistion in Gui");
     }
     socket.Send(slsDetectorDefs::OK);
 }
 
 void qServer::Acquire(sls::ServerInterface2 &socket) {
     if (mainTab->StartStopAcquisitionFromClient(true) == slsDetectorDefs::FAIL) {
-        throw sls::NonCriticalError("Could not start blocking acquistion in Gui");
+        throw sls::RuntimeError("Could not start blocking acquistion in Gui");
     }
     //  blocking
     usleep(5000);
@@ -155,5 +155,5 @@ void qServer::Acquire(sls::ServerInterface2 &socket) {
 }
 
 void qServer::ExitServer(sls::ServerInterface2 &socket) {
-    throw sls::NonCriticalError("Server exited");
+    throw sls::RuntimeError("Server exited");
 }

@@ -28,12 +28,12 @@ qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *detector) :
 }
 
 qTabDeveloper::~qTabDeveloper() {
-	for (int i = 0; i < lblDacs.size(); ++i) {
+	for (size_t i = 0; i < lblDacs.size(); ++i) {
 		delete lblDacs[i];
 		delete lblDacsmV[i];
 		delete spinDacs[i];
 	}
-	for (int i = 0; i < lblAdcs.size(); ++i) {
+	for (size_t i = 0; i < lblAdcs.size(); ++i) {
 		delete lblAdcs[i];
 		delete spinAdcs[i];
 	}
@@ -288,9 +288,7 @@ void qTabDeveloper::GetDac(int id) {
 		// mv
 		retval = myDet->setDAC(-1, getSLSIndex(id), 1, comboDetector->currentIndex() - 1);
 		lblDacsmV[id]->setText(QString("%1mV").arg(retval -10));
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get dac.", e.what(), "qTabDeveloper::GetDac");
-    }
+    } CATCH_DISPLAY("Could not get dac.", "qTabDeveloper::GetDac")
 
 	connect(spinDacs[id], SIGNAL(editingFinished(int)), this, SLOT(SetDac(int)));
 }
@@ -309,9 +307,8 @@ void qTabDeveloper::SetDac(int id) {
 
 	try {
 		myDet->setDAC(val, getSLSIndex(id), 0, comboDetector->currentIndex() - 1);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set dac.", e.what(), "qTabDeveloper::SetDac");
-	}
+    } CATCH_DISPLAY ("Could not set dac.", "qTabDeveloper::SetDac")
+	
 	// update mV anyway
     GetDac(id);
 }
@@ -331,9 +328,7 @@ void qTabDeveloper::GetAdcs() {
 				}
 				spinAdcs[i]->setText(QString::number(retval, 'f', 2) + 0x00b0 + QString("C"));
 			}
-		} catch (const sls::NonCriticalError &e) {
-			qDefs::ExceptionMessage("Could not get adcs.", e.what(), "qTabDeveloper::GetAdcs");
-		}
+		} CATCH_DISPLAY ("Could not get adcs.", "qTabDeveloper::GetAdcs")
 	}
 }
 
@@ -390,10 +385,7 @@ void qTabDeveloper::GetHighVoltage() {
 			}
 		}
 
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get high voltage.", e.what(), "qTabDeveloper::GetHighVoltage");
-
-    }
+    } CATCH_DISPLAY ("Could not get high voltage.", "qTabDeveloper::GetHighVoltage")
 
 	if (comboHV == nullptr) {
 		connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));	
@@ -408,10 +400,8 @@ void qTabDeveloper::SetHighVoltage() {
 	
 	try {
         myDet->setDAC(val, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set high voltage.", e.what(), "qTabDeveloper::SetHighVoltage");
-        GetHighVoltage();
-    }
+    } CATCH_HANDLE ("Could not set high voltage.", "qTabDeveloper::SetHighVoltage", 
+					this, &qTabDeveloper::GetHighVoltage)
 }
 
 
@@ -467,7 +457,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		case 22:
 			return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
-			throw sls::NonCriticalError(std::string("Unknown dac/adc index") + std::to_string(index));
+			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
 	case slsDetectorDefs::GOTTHARD:
@@ -493,7 +483,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		case 9:
 			return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
-			throw sls::NonCriticalError(std::string("Unknown dac/adc index") + std::to_string(index));
+			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
 
@@ -504,7 +494,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		if (index == numDACWidgets) {
 			return slsDetectorDefs::TEMPERATURE_ADC;
 		} else {
-			throw sls::NonCriticalError(std::string("Unknown dac/adc index") + std::to_string(index));
+			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
 
@@ -512,7 +502,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index) {
 		if (index >= 0 && index < numDACWidgets) {
 			return (slsDetectorDefs::dacIndex)index;
 		} else {
-			throw sls::NonCriticalError(std::string("Unknown dac/adc index") + std::to_string(index));
+			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
 

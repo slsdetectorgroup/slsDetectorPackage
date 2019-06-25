@@ -11,6 +11,9 @@
 #include <stdint.h>
 #include <string>
 
+#define CATCH_DISPLAY(m, s) catch(...) { qDefs::DisplayExceptions(m, s); }
+#define CATCH_HANDLE(...) catch(...) { qDefs::HandleExceptions(__VA_ARGS__); }
+
 class qDefs : public QWidget {
   public:
     /**
@@ -18,7 +21,36 @@ class qDefs : public QWidget {
      */
     qDefs(){};
 
-#define GOODBYE -200
+    #define GOODBYE -200
+
+    static void DisplayExceptions(std::string emsg, std::string src) {
+        try {
+            throw;
+        } catch (sls::SocketError) {
+            throw;
+        } catch (sls::SharedMemoryError) {
+            throw;
+        } catch (const std::exception &e) {
+            ExceptionMessage(emsg, e.what(), src);
+        }
+    }
+
+    template <class CT> struct NonDeduced { using type = CT; };
+    template <class S, typename RT, typename... CT>
+    static void HandleExceptions(const std::string emsg, const std::string src, S* s,
+                                 RT (S::*somefunc)(CT...),
+                                 typename NonDeduced<CT>::type... Args) {
+        try {
+            throw;
+        } catch (sls::SocketError) {
+            throw;
+        } catch (sls::SharedMemoryError) {
+            throw;
+        } catch (const std::exception &e) {
+            ExceptionMessage(emsg, e.what(), src);
+            (s->*somefunc)(Args...);
+        }
+    }
 
     /** function enums */
     enum qFuncNames {

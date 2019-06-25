@@ -127,9 +127,7 @@ void qTabSettings::GetSettings() {
                 }
                 break;
         }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get settings.", e.what(), "qTabSettings::GetSettings");
-    }
+    } CATCH_DISPLAY ("Could not get settings.", "qTabSettings::GetSettings")
 
     connect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSettings(int)));
 }
@@ -141,10 +139,7 @@ void qTabSettings::SetSettings(int index) {
 
     try {
         myDet->setSettings(val);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set settings.", e.what(), "qTabSettings::SetSettings");
-        GetSettings();    
-    }
+    } CATCH_HANDLE ("Could not set settings.", "qTabSettings::SetSettings", this, &qTabSettings::GetSettings)
 
     // threshold
     if (spinThreshold->isEnabled()) {
@@ -180,9 +175,7 @@ void qTabSettings::GetDynamicRange() {
             qDefs::Message(qDefs::WARNING, std::string("Unknown dynamic range: ") + std::to_string(retval), "qTabSettings::GetDynamicRange");
             break;
         }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get dynamic range.", e.what(), "qTabSettings::GetDynamicRange");
-    }
+    } CATCH_DISPLAY ("Could not get dynamic range.", "qTabSettings::GetDynamicRange")
 
     connect(comboDynamicRange, SIGNAL(activated(int)), this,SLOT(SetDynamicRange(int))); 
 }
@@ -207,10 +200,7 @@ void qTabSettings::SetDynamicRange(int index) {
             qDefs::Message(qDefs::WARNING, std::string("Unknown dynamic range: ") + std::to_string(index), "qTabSettings::SetDynamicRange");
            break;
         }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set dynamic range.", e.what(), "qTabSettings::SetDynamicRange");
-        GetDynamicRange();
-    }
+    } CATCH_HANDLE ("Could not set dynamic range.", "qTabSettings::SetDynamicRange", this, &qTabSettings::GetDynamicRange)
 }
 
 void qTabSettings::GetThresholdEnergy() {
@@ -225,9 +215,7 @@ void qTabSettings::GetThresholdEnergy() {
 		} else {
 			spinThreshold->setValue(retval);
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get threshold energy.", e.what(), "qTabDataOutput::GetThresholdEnergy");
-    }
+    } CATCH_DISPLAY ("Could not get threshold energy.", "qTabDataOutput::GetThresholdEnergy")
 
     connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetThresholdEnergy()));
 }
@@ -236,9 +224,8 @@ void qTabSettings::SetThresholdEnergy(int index) {
     FILE_LOG(logINFO) << "Setting Threshold Energy to " << index << " eV";
     try {
         myDet->setThresholdEnergy(index);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get threshold energy.", e.what(), "qTabSettings::SetThresholdEnergy");
-    }
+    } CATCH_DISPLAY ("Could not get threshold energy.", "qTabSettings::SetThresholdEnergy")
+
     // set the right value anyway (due to tolerance)
     GetThresholdEnergy(); 
 }

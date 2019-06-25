@@ -66,9 +66,7 @@ void qTabDebugging::GetDetectorStatus() {
 	try {
         std::string status = slsDetectorDefs::runStatusType(myDet->getRunStatus(comboDetector->currentIndex()));
         lblStatus->setText(QString(status.c_str()).toUpper());
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get detector status.", e.what(), "qTabDebugging::GetDetectorStatus");
-    }
+    } CATCH_DISPLAY ("Could not get detector status.", "qTabDebugging::GetDetectorStatus")
 }
 
 
@@ -167,9 +165,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item) {
             lblDetectorFirmware->setText(QString(retval.c_str()));
             retval = std::string("0x") + std::to_string((unsigned long)myDet->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, comboDetector->currentIndex()));
             lblDetectorSoftware->setText(QString(retval.c_str()));
-        } catch (const sls::NonCriticalError &e) {
-            qDefs::ExceptionMessage("Could not get versions.", e.what(), "qTabDebugging::SetParameters");
-        }  
+        } CATCH_DISPLAY ("Could not get versions.", "qTabDebugging::SetParameters")
     }
 }
 
@@ -210,9 +206,7 @@ void qTabDebugging::TestDetector() {
 
         //display message
         qDefs::Message(qDefs::INFORMATION, message.toAscii().constData(), "qTabDebugging::TestDetector");
-    } catch (const sls::NonCriticalError &e) {
-         qDefs::ExceptionMessage("Could not execute digital test.", e.what(), "qTabDebugging::TestDetector");
-    }  
+    } CATCH_DISPLAY ("Could not execute digital test.", "qTabDebugging::TestDetector")
 }
 
 

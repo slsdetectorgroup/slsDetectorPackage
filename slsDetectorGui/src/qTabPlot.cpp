@@ -331,9 +331,7 @@ void qTabPlot::GetGapPixels() {
 		} else {
 			chkGapPixels->setChecked(retval == 0 ? false : true);
 		}
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get gap pixels enable.", e.what(), "qTabPlot::GetGapPixels");
-    }
+    } CATCH_DISPLAY ("Could not get gap pixels enable.", "qTabPlot::GetGapPixels")
 
     connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
 }
@@ -343,10 +341,7 @@ void qTabPlot::SetGapPixels(bool enable) {
 
 	try {
         myDet->enableGapPixels(enable);
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set gap pixels enable.", e.what(), "qTabPlot::SetGapPixels");
-        GetGapPixels();
-    }
+    } CATCH_HANDLE("Could not set gap pixels enable.", "qTabPlot::SetGapPixels", this, &qTabPlot::GetGapPixels)
 }
 
 void qTabPlot::SetTitles() {
@@ -643,9 +638,7 @@ void qTabPlot::GetStreamingFrequency() {
                     spinTimeGap->setValue(time.first);
                     comboTimeGapUnit->setCurrentIndex(static_cast<int>(time.second));
                 }
-            } catch(const sls::NonCriticalError &e) {
-                qDefs::ExceptionMessage("Could not get streaming timer.", e.what(), "qTabPlot::GetStreamingFrequency");
-            }
+            } CATCH_DISPLAY ("Could not get streaming timer.", "qTabPlot::GetStreamingFrequency")
         }
         // every nth frame
         else {
@@ -653,9 +646,7 @@ void qTabPlot::GetStreamingFrequency() {
             stackedLayout->setCurrentIndex(1);
             spinNthFrame->setValue(freq);
         }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not get streaming frequency.", e.what(), "qTabPlot::GetStreamingFrequency");
-    }
+    } CATCH_DISPLAY ("Could not get streaming frequency.", "qTabPlot::GetStreamingFrequency")
 
 	connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
     connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
@@ -679,10 +670,7 @@ void qTabPlot::SetStreamingFrequency() {
             double timeMS = qDefs::getMSTime(timeUnit, timeVal);
             myDet->setReceiverStreamingTimer(timeMS);
         }
-    } catch (const sls::NonCriticalError &e) {
-        qDefs::ExceptionMessage("Could not set streaming frequency/ timer.", e.what(), "qTabPlot::SetStreamingFrequency");
-        GetStreamingFrequency();
-    }
+    } CATCH_HANDLE("Could not set streaming frequency/ timer.", "qTabPlot::SetStreamingFrequency", this, &qTabPlot::GetStreamingFrequency)
 }
 
 void qTabPlot::Refresh() {

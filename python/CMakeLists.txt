@@ -1,4 +1,4 @@
-add_subdirectory(pybind11)
+
 pybind11_add_module(_sls_detector src/main.cpp)
 
 

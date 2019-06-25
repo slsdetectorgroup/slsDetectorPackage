@@ -109,9 +109,14 @@ if(SLS_USE_SANITIZER)
     # target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
 endif()
 
+#rapidjson
+add_library(rapidjson INTERFACE)
+target_include_directories(rapidjson INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs/rapidjson>  
+)
 
 # Install fake the libraries
-install(TARGETS slsProjectOptions slsProjectWarnings
+install(TARGETS slsProjectOptions slsProjectWarnings rapidjson
     EXPORT "${TARGETS_EXPORT_NAME}"
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -131,6 +136,9 @@ if (SLS_USE_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif(SLS_USE_TESTS)
+
+
+
 
 # Common functionallity to detector and receiver
 add_subdirectory(slsSupportLib)
@@ -165,6 +173,7 @@ if (SLS_USE_INTEGRATION_TESTS)
 endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
+    add_subdirectory(libs/pybind11)
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)
 

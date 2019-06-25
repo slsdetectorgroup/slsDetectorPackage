@@ -5,10 +5,10 @@
 #include "CmdLineParser.h"
 #include "CmdProxy.h"
 #include "container_utils.h"
-#include "string_utils.h"
 #include "multiSlsDetector.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
+#include "string_utils.h"
 
 #include <cstdlib>
 #include <memory>
@@ -27,14 +27,17 @@ class multiSlsDetectorClient {
                            std::ostream &output = std::cout)
         : action_(action), detPtr(myDetector), os(output) {
         parser.Parse(argc, argv);
+        if (parser.isHelp())
+            action_ = slsDetectorDefs::HELP_ACTION;
         runCommand();
-
     }
     multiSlsDetectorClient(const std::string &args, int action,
                            multiSlsDetector *myDetector = nullptr,
                            std::ostream &output = std::cout)
         : action_(action), detPtr(myDetector), os(output) {
         parser.Parse(args);
+        if (parser.isHelp())
+            action_ = slsDetectorDefs::HELP_ACTION;
         runCommand();
     }
 
@@ -108,7 +111,7 @@ class multiSlsDetectorClient {
         if (action_ != slsDetectorDefs::READOUT_ACTION) {
             sls::CmdProxy<multiSlsDetector> proxy(detPtr);
             auto cmd = proxy.Call(parser.command(), parser.arguments(),
-                                  parser.detector_id());
+                                  parser.detector_id(), action_);
             if (cmd.empty()) {
                 return;
             } else {

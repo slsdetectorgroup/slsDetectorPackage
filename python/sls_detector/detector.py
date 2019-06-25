@@ -1021,6 +1021,11 @@ class Detector:
         self._api.setNetworkParameter('rx_zmqip', ip, -1)
 
 
+
+    @property
+    def syncclk(self):
+        return self._api.getSyncClkSpeed(-1)
+
     @property
     def detectormac(self):
         """

@@ -3188,7 +3188,7 @@ void slsDetector::updateRateCorrection() {
             break;
         default:
             setRateCorrection(0);
-            throw sls::NonCriticalError(
+            throw sls::RuntimeError(
                 "Rate correction Deactivated, must be in 32 or 16 bit mode");
         }
     }

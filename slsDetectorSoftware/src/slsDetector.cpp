@@ -1311,6 +1311,10 @@ int slsDetector::startAcquisition() {
     int ret = FAIL;
     FILE_LOG(logDEBUG1) << "Starting Acquisition";
     shm()->stoppedFlag = 0;
+    if (getDetectorTypeAsEnum() == EIGER){
+        if(prepareAcquisition() == FAIL)
+            return FAIL;
+    }
     if (shm()->onlineFlag == ONLINE_FLAG) {
         ret = sendToDetector(F_START_ACQUISITION);
         FILE_LOG(logDEBUG1) << "Starting Acquisition successful";

@@ -954,22 +954,8 @@ int multiSlsDetector::prepareAcquisition(int detPos) {
 }
 
 int multiSlsDetector::startAcquisition(int detPos) {
-    // single
-    if (detPos >= 0) {
-        if (detectors[detPos]->getDetectorTypeAsEnum() == EIGER) {
-            if (detectors[detPos]->prepareAcquisition() == FAIL) {
-                return FAIL;
-            }
-        }
+    if (detPos >= 0)
         return detectors[detPos]->startAcquisition();
-    }
-
-    // multi
-    if (getDetectorTypeAsEnum() == EIGER) {
-        if (prepareAcquisition() == FAIL) {
-            return FAIL;
-        }
-    }
     auto r = parallelCall(&slsDetector::startAcquisition);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }

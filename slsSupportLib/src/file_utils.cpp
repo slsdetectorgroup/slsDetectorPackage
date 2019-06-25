@@ -1,9 +1,12 @@
 #include "file_utils.h"
 #include "logger.h"
+#include "sls_detector_exceptions.h"
 
 #include <iostream>
 #include <sstream>
-
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
 int readDataFile(std::ifstream &infile, short int *data, int nch, int offset) {
 	int ichan, iline=0;
@@ -75,6 +78,26 @@ int writeDataFile(std::string fname,int nch, short int *data) {
 	}
 }
 
+
+
+void mkdir_p(const std::string& path, std::string dir) {
+    if (path.length() == 0)
+        return;
+
+    size_t i = 0;
+    for (; i < path.length(); i++) {
+        dir += path[i];
+        if (path[i] == '/')
+            break;
+    }
+    if(mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0){
+        if (errno != EEXIST)
+            throw sls::RuntimeError("Could not create: " + dir);
+    }
+
+    if (i + 1 < path.length())
+        mkdir_p(path.substr(i + 1), dir);
+}
 
 
 

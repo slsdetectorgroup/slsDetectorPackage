@@ -14,6 +14,7 @@ class CmdLineParser {
     int detector_id() const { return detector_id_; };
     int n_arguments() const { return arguments_.size(); }
     const std::string &command() const { return command_; }
+    bool isHelp() const{return help_;}
     void setCommand(std::string cmd){command_ = cmd;}
     const std::string &executable() const { return executable_; }
     const std::vector<std::string> &arguments() const { return arguments_; };
@@ -23,6 +24,7 @@ class CmdLineParser {
     void DecodeIdAndPosition(const char *c);
     int multi_id_ = 0;
     int detector_id_ = -1;
+    bool help_{false};
     std::string command_;
     std::string executable_;
     std::vector<std::string> arguments_;

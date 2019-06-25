@@ -10,6 +10,7 @@
 #include "logger.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
+#include "sls_detector_defs.h"
 #include "string_utils.h"
 
 namespace sls {
@@ -20,7 +21,8 @@ template <typename T> class CmdProxy {
 
     std::string Call(const std::string &command,
                      const std::vector<std::string> &arguments,
-                     int detector_id) {
+                     int detector_id,
+                     int action=-1) {
         cmd = command;
         args = arguments;
         det_id = detector_id;
@@ -29,7 +31,7 @@ template <typename T> class CmdProxy {
 
         auto it = functions.find(cmd);
         if (it != functions.end()) {
-            std::cout << ((*this).*(it->second))();
+            std::cout << ((*this).*(it->second))(action);
             return {};
         } else {
             return cmd;
@@ -57,7 +59,7 @@ template <typename T> class CmdProxy {
     std::vector<std::string> args;
     int det_id{-1};
 
-    using FunctionMap = std::map<std::string, std::string (CmdProxy::*)()>;
+    using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
 
     // Initialize maps for translating name and function
@@ -91,7 +93,10 @@ template <typename T> class CmdProxy {
 
     // Mapped functions
 
-    std::string ListCommands() {
+    std::string ListCommands(int action) {
+        if (action==slsDetectorDefs::HELP_ACTION)
+            return "list - lists all available commands, list deprecated - list deprecated commands\n";
+
         if (args.size() == 0) {
             auto commands = slsDetectorCommand(nullptr).getAllCommands();
             for (const auto &it : functions)

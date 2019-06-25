@@ -93,6 +93,7 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("checkOnline", &Detector::checkOnline)
         .def("setReadoutClockSpeed", &Detector::setReadoutClockSpeed)
         .def("getReadoutClockSpeed", &Detector::getReadoutClockSpeed)
+        .def("getSyncClkSpeed", &Detector::getSyncClkSpeed)
         .def("getHostname", &Detector::getHostname)
         .def("setHostname", &Detector::setHostname)
 

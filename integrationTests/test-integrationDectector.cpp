@@ -313,14 +313,14 @@ TEST_CASE(
     CHECK(m.getRateCorrection() == ratecorr);
 
     // ratecorr fail with dr 4 or 8
-    CHECK_THROWS_AS(m.setDynamicRange(8), sls::NonCriticalError);
+    CHECK_THROWS_AS(m.setDynamicRange(8), sls::RuntimeError);
     CHECK(m.getRateCorrection() == 0);
     m.setDynamicRange(16);
     m.setDynamicRange(16);
     m.setRateCorrection(ratecorr);
     m.setDynamicRange(16);
     m.setRateCorrection(ratecorr);
-    CHECK_THROWS_AS(m.setDynamicRange(4), sls::NonCriticalError);
+    CHECK_THROWS_AS(m.setDynamicRange(4), sls::RuntimeError);
     CHECK(m.getRateCorrection() == 0);
 }
 
@@ -360,11 +360,11 @@ TEST_CASE("Chiptestboard Loading Patterns", "[.ctbintegration]") {
     m.setPatternWord(addr, word);
     CHECK(m.setPatternWord(addr, -1) == word);
     addr = MAX_ADDR;
-    CHECK_THROWS_AS(m.setPatternWord(addr, word), sls::NonCriticalError);
+    CHECK_THROWS_AS(m.setPatternWord(addr, word), sls::RuntimeError);
     CHECK_THROWS_WITH(m.setPatternWord(addr, word),
                       Catch::Matchers::Contains("be between 0 and"));
     addr = -1;
-    CHECK_THROWS_AS(m.setPatternWord(addr, word), sls::NonCriticalError);
+    CHECK_THROWS_AS(m.setPatternWord(addr, word), sls::RuntimeError);
     CHECK_THROWS_WITH(m.setPatternWord(addr, word),
                       Catch::Matchers::Contains("be between 0 and"));
 

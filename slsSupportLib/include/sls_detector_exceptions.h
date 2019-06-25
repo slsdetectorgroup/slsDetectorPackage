@@ -27,49 +27,39 @@ public:
 	}
 };
 
-struct CriticalError : public RuntimeError {
+struct SharedMemoryError : public RuntimeError {
 public:
-    CriticalError(std::string msg):RuntimeError(msg) {}
+    SharedMemoryError(std::string msg):RuntimeError(msg) {}
 };
 
-struct SharedMemoryError : public CriticalError {
+struct SocketError : public RuntimeError {
 public:
-    SharedMemoryError(std::string msg):CriticalError(msg) {}
+	SocketError(std::string msg):RuntimeError(msg) {}
 };
 
-struct SocketError : public CriticalError {
+struct ZmqSocketError : public RuntimeError {
 public:
-	SocketError(std::string msg):CriticalError(msg) {}
+	ZmqSocketError(std::string msg):RuntimeError(msg) {}
 };
 
-struct ZmqSocketError : public CriticalError {
+struct NotImplementedError : public RuntimeError {
 public:
-	ZmqSocketError(std::string msg):CriticalError(msg) {}
+	NotImplementedError(std::string msg):RuntimeError(msg) {}
 };
 
-struct NonCriticalError : public RuntimeError {
+struct DetectorError : public RuntimeError {
 public:
-    NonCriticalError(std::string msg):RuntimeError(msg) {}
+	DetectorError(std::string msg):RuntimeError(msg) {}
 };
 
-struct NotImplementedError : public NonCriticalError {
+struct ReceiverError : public RuntimeError {
 public:
-	NotImplementedError(std::string msg):NonCriticalError(msg) {}
+	ReceiverError(std::string msg):RuntimeError(msg) {}
 };
 
-struct DetectorError : public NonCriticalError {
+struct GuiError : public RuntimeError {
 public:
-	DetectorError(std::string msg):NonCriticalError(msg) {}
-};
-
-struct ReceiverError : public NonCriticalError {
-public:
-	ReceiverError(std::string msg):NonCriticalError(msg) {}
-};
-
-struct GuiError : public NonCriticalError {
-public:
-	GuiError(std::string msg):NonCriticalError(msg) {}
+	GuiError(std::string msg):RuntimeError(msg) {}
 };
 
 }

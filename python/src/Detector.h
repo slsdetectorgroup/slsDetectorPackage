@@ -214,6 +214,10 @@ class Detector {
         det.setSpeed(slsDetectorDefs::CLOCK_DIVIDER, speed);
     }
 
+    int getSyncClkSpeed(int det_id=-1){
+        return det.setSpeed(slsDetectorDefs::SYNC_CLOCK, -1, 0, det_id);
+    }
+
     void setDbitPipeline(const int value) {
         det.setSpeed(slsDetectorDefs::DBIT_PIPELINE, value);
     }

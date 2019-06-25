@@ -17,6 +17,9 @@ class Detector {
 
     void setConfig(const std::string &fname);
     void freeSharedMemory();
+
+
+    //Acquisition
     void acquire();
 
     // File

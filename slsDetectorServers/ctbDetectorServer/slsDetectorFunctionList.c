@@ -799,6 +799,8 @@ int getSpeed(enum speedVariable ind, int mode) {
         return getFrequency(ADC_CLK);
     case DBIT_CLOCK:
         return getFrequency(DBIT_CLK);
+    case SYNC_CLOCK:
+        return getFrequency(SYNC_CLK);
     case CLOCK_DIVIDER:
         return getFrequency(RUN_CLK);
     case ADC_PIPELINE:

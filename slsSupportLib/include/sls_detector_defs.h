@@ -67,7 +67,7 @@
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
-typedef char mystring[MAX_STR_LENGTH];
+// typedef char mystring[MAX_STR_LENGTH];
 
 #ifdef __cplusplus
 class slsDetectorDefs {
@@ -496,6 +496,7 @@ format
         DBIT_PIPELINE,        /**< adc pipeline */
         MAX_ADC_PHASE_SHIFT,  /** max adc phase shift */
         MAX_DBIT_PHASE_SHIFT, /** max adc phase shift */
+        SYNC_CLOCK,
     };
 
     /**

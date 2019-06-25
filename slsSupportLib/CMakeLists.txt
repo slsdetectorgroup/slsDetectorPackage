@@ -5,7 +5,6 @@ set(SOURCES
     src/ClientSocket.cpp
     src/DataSocket.cpp
     src/ServerSocket.cpp
-    src/ServerInterface.cpp
     src/ServerInterface2.cpp
     src/network_utils.cpp
 )
@@ -22,7 +21,6 @@ set(PUBLICHEADERS
     include/file_utils.h
     include/container_utils.h
     include/string_utils.h
-    include/MySocketTCP.h
     include/genericSocket.h
     include/logger.h
     include/ClientSocket.h

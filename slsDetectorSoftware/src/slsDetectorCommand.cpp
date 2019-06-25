@@ -752,16 +752,23 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>adcclk [i]</b> sets/gets the ADC clock frequency in MHz. CTB & Moench only. It also resets adcphase. \c Returns \c (int)
+   - <b>adcclk [i]</b> sets/gets the ADC clock frequency in MHz. CTB & Moench only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "adcclk";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
     /*! \page config
-   - <b>dbitclk [i]</b> Sets/gets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. It also resets dbit phase. \c Returns \c (int)
+   - <b>dbitclk [i]</b> Sets/gets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "dbitclk";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
+    ++i;
+
+    /*! \page config
+   - <b>syncclk </b> Gets the clock frequency of the sync clock in MHz. CTB & Moench only. Get only. \c Returns \c (int)
+	 */
+    descrToFuncMap[i].m_pFuncName = "syncclk";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
@@ -2162,10 +2169,17 @@ std::string slsDetectorCommand::executeLine(int narg, const char * const args[],
 }
 
 std::string slsDetectorCommand::cmdUnknown(int narg, const char * const args[], int action, int detPos) {
-    return std::string("Unknown command ") + std::string(args[0]) + std::string("\n") + helpLine(0, args, action, detPos);
+    return std::string("Unknown command, use list to list all commands ");
 }
 std::string slsDetectorCommand::cmdUnderDevelopment(int narg, const char * const args[], int action, int detPos) {
     return std::string("Must still develop ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
+}
+
+std::vector<std::string> slsDetectorCommand::getAllCommands(){
+    std::vector<std::string> commands;
+    for (int i = 0; i!= numberOfCommands; ++i)
+        commands.emplace_back(descrToFuncMap[i].m_pFuncName);
+    return commands;
 }
 
 std::string slsDetectorCommand::helpLine(int narg, const char * const args[], int action, int detPos) {
@@ -4673,6 +4687,12 @@ std::string slsDetectorCommand::cmdSpeed(int narg, const char * const args[], in
     else if (cmd == "dbitclk") {
     	index = DBIT_CLOCK;
     }
+    else if (cmd == "syncclk") {
+    	index = SYNC_CLOCK;
+        if (action == PUT_ACTION) {
+    	    return std::string("cannot put");
+    	}    
+    }
     else if (cmd == "adcphase") {
     	index = ADC_PHASE;
     	if ((action == PUT_ACTION && narg > 2 && std::string(args[2]) == "deg") ||
@@ -4728,8 +4748,8 @@ std::string slsDetectorCommand::helpSpeed(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "clkdivider c  \t sets readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)].  Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard." << std::endl;
-        os << "adcclk c \tSets ADC clock frequency in MHz. CTB & Moench only. It also resets adcphase." << std::endl;
-        os << "dbitclk c \tSets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. It also resets dbit phase." << std::endl;
+        os << "adcclk c \tSets ADC clock frequency in MHz. CTB & Moench only. " << std::endl;
+        os << "dbitclk c \tSets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. " << std::endl;
         os << "adcphase c [deg]\t Sets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
         os << "dbitphase c [deg]\t Sets the phase of the clock for latching of the digital bits to i. i is the shift or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only." << std::endl;
         os << "adcpipeline c \t Sets the pipeline of the ADC. For CTB & Moench only." << std::endl;
@@ -4738,8 +4758,9 @@ std::string slsDetectorCommand::helpSpeed(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "clkdivider \t Gets readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)].  Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard." << std::endl;
-        os << "adcclk \tGets ADC clock frequency in MHz. CTB & Moench only. It also resets adcphase." << std::endl;
-        os << "dbitclk \tGets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. It also resets dbit phase." << std::endl;
+        os << "adcclk \tGets ADC clock frequency in MHz. CTB & Moench only. " << std::endl;
+        os << "dbitclk \tGets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. " << std::endl;
+        os << "syncclk \t Gets the clock frequency of the sync clock in MHz. CTB & Moench only." << std::endl;
         os << "adcphase [deg]\t Gets phase of the ADC clock. unit is number of shifts or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
         os << "dbitphase [deg]\t Gets the phase of the clock for  latching of the digital bits. unit is number of shifts or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only." << std::endl;
         os << "adcpipeline \t Gets the pipeline of the ADC. For CTB & Moench only." << std::endl;

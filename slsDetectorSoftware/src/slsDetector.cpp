@@ -1358,6 +1358,10 @@ int slsDetector::startAndReadAll() {
     int ret = FAIL;
     FILE_LOG(logDEBUG1) << "Starting and reading all frames";
     shm()->stoppedFlag = 0;
+    if (getDetectorTypeAsEnum() == EIGER){
+        if(prepareAcquisition() == FAIL)
+            return FAIL;
+    }
     if (shm()->onlineFlag == ONLINE_FLAG) {
         ret = sendToDetector(F_START_AND_READ_ALL);
         // TODO! how to we hande this? ret == FAIL -->

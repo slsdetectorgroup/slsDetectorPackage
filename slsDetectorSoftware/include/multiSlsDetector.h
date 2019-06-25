@@ -566,13 +566,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     runStatus getRunStatus(int detPos = -1);
 
     /**
-     * Prepares detector for acquisition (Eiger)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK if all detectors are ready for acquisition, FAIL otherwise
-     */
-    int prepareAcquisition(int detPos = -1);
-
-    /**
      * Start detector acquisition (Non blocking)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL if even one does not start properly

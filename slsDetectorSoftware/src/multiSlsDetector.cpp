@@ -942,17 +942,6 @@ slsDetectorDefs::runStatus multiSlsDetector::getRunStatus(int detPos) {
     return IDLE;
 }
 
-int multiSlsDetector::prepareAcquisition(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->prepareAcquisition();
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::prepareAcquisition);
-    return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
-}
-
 int multiSlsDetector::startAcquisition(int detPos) {
     if (detPos >= 0)
         return detectors[detPos]->startAcquisition();
@@ -969,7 +958,6 @@ int multiSlsDetector::stopAcquisition(int detPos) {
         if (detectors.size() == 1) {
             multi_shm()->stoppedFlag = 1;
         }
-
         return detectors[detPos]->stopAcquisition();
     } else {
         multi_shm()->stoppedFlag = 1;
@@ -990,22 +978,8 @@ int multiSlsDetector::sendSoftwareTrigger(int detPos) {
 }
 
 int multiSlsDetector::startAndReadAll(int detPos) {
-    // single
-    if (detPos >= 0) {
-        if (detectors[detPos]->getDetectorTypeAsEnum() == EIGER) {
-            if (detectors[detPos]->prepareAcquisition() == FAIL) {
-                return FAIL;
-            }
-        }
+    if (detPos >= 0) 
         return detectors[detPos]->startAndReadAll();
-    }
-
-    // multi
-    if (getDetectorTypeAsEnum() == EIGER) {
-        if (prepareAcquisition() == FAIL) {
-            return FAIL;
-        }
-    }
     auto r = parallelCall(&slsDetector::startAndReadAll);
     return sls::allEqualTo(r, static_cast<int>(OK)) ? OK : FAIL;
 }

@@ -48,13 +48,17 @@ public:
 	 * @returns complete file name created
 	 */
 	static std::string CreateFileName(char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
-			uint64_t fnum = 0, int dindex = -1, int numunits = 1, int unitindex = 0)
+			uint64_t fnum = 0, int dindex = -1, int numunits = 1, int unitindex = 0, bool fixedw_findex = false)
 	{
 		std::ostringstream osfn;
 		osfn << fpath << "/" << fnameprefix;
 		if (dindex >= 0) osfn << "_d" <<  (dindex * numunits + unitindex);
 		if (frindexenable) osfn << "_f" << std::setfill('0') << std::setw(12) << fnum;
-		osfn << "_" << findex;
+		osfn << "_";
+		if (fixedw_findex)
+			osfn << std::setfill('0') << std::setw(12) << findex;
+		else
+			osfn << findex;
 		osfn << ".h5";
 		return osfn.str();
 	}

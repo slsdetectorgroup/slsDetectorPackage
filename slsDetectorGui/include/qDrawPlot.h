@@ -106,15 +106,16 @@ class qDrawPlot : public QWidget {
     void Initialization();
 	  void SetupStatistics();
 	  void SetupPlots();
-    
     int LockLastImageArray();
     int UnlockLastImageArray();
 	  void SetStyle(SlsQtH1D *h);
     void GetStatistics(double &min, double &max, double &sum, double *array, int size);
     void DetachHists();
-
+    void UpdateXYRange();
 
  
+
+
     int StartDaqForGui();
     int StopDaqForGui();
     bool StartOrStopThread(bool start);
@@ -129,6 +130,7 @@ class qDrawPlot : public QWidget {
     int MeasurementFinished(int currentMeasurementIndex, int fileIndex);
     static int GetProgressCallBack(double currentProgress, void *this_pointer);
     void toDoublePixelData(double *dest, char *source, int size, int databytes, int dr, double *gaindest = NULL);
+
 
   	static const int NUM_PEDESTAL_FRAMES = 20;
     multiSlsDetector *myDet;
@@ -162,8 +164,8 @@ class qDrawPlot : public QWidget {
     QString yTitle2d{"Pixel"};
     QString zTitle2d{"Intensity"};
     bool XYRangeChanged{false};
-    double XYRangeValues[4]{0, 0, 0, 0};
-    bool isXYRangeEnable[4]{false, false, false, false};
+    double XYRange[4]{0, 0, 0, 0};
+    bool isXYRange[4]{false, false, false, false};
 
 	// data
     unsigned int nHists{1};

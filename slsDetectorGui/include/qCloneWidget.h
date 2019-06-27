@@ -53,9 +53,10 @@ class qCloneWidget : public QMainWindow {
     /**
      * Set the range of the 1d plot
 	   * @param IsXYRange array of x,y,min,max if these values are set
-	   * @param XYRangeValues array of set values of x,y, min, max
+	   * @param XYRange array of set values of x,y,
+     *  min, max
 	   */
-    void SetRange(bool IsXYRange[], double XYRangeValues[]);
+    void SetRange(bool IsXYRange[], double XYRange[]);
 
     SlsQt1DPlot *Get1dPlot();
 
@@ -72,6 +73,7 @@ class qCloneWidget : public QMainWindow {
      char *GetCurrentTimeStamp();
     void DisplayStats(bool enable, QString min, QString max, QString sum);
 
+
   signals:
     void CloneClosedSignal(int);
 
@@ -87,7 +89,7 @@ class qCloneWidget : public QMainWindow {
     QwtSymbol *marker;
     QwtSymbol *nomarker;
     QGridLayout *mainLayout;
-    QGroupBox *cloneBox;
+    QGroupBox *boxPlot;
     QLabel *lblHistTitle;
 };
 

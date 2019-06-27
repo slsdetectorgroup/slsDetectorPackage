@@ -429,53 +429,53 @@ void qTabPlot::SetXYRange() {
     // xmin
     // if unchecked, empty or invalid (set to false so it takes the min/max of plot)
     if (!chkXMin->isChecked() || dispXMin->text().isEmpty()) {
-        myPlot->IsXYRangeValues(false, qDefs::XMINIMUM);
+        myPlot->IsXYRangeValues(false, qDefs::XMIN);
     } else if (dispXMin->text().toDouble() < myPlot->GetXMinimum()) {
         qDefs::Message(qDefs::WARNING, "XMin Outside Plot Range", "qTabPlot::SetXRange");
         dispXMin->setText("");
-        myPlot->IsXYRangeValues(false, qDefs::XMINIMUM);
+        myPlot->IsXYRangeValues(false, qDefs::XMIN);
     } else {
-        myPlot->SetXYRangeValues(dispXMin->text().toDouble(), qDefs::XMINIMUM);
-        myPlot->IsXYRangeValues(true, qDefs::XMINIMUM);
+        myPlot->SetXYRangeValues(dispXMin->text().toDouble(), qDefs::XMIN);
+        myPlot->IsXYRangeValues(true, qDefs::XMIN);
         disablezoom = true;
     } 
 
     //xmax
     if (!chkXMax->isChecked() || dispXMax->text().isEmpty()) {
-        myPlot->IsXYRangeValues(false, qDefs::XMAXIMUM);
+        myPlot->IsXYRangeValues(false, qDefs::XMAX);
     } else if (dispXMax->text().toDouble() < myPlot->GetXMaximum()) {
         qDefs::Message(qDefs::WARNING, "XMax Outside Plot Range", "qTabPlot::SetXYRange");
         dispXMax->setText("");
-        myPlot->IsXYRangeValues(false, qDefs::XMAXIMUM);
+        myPlot->IsXYRangeValues(false, qDefs::XMAX);
     } else {
-        myPlot->SetXYRangeValues(dispXMax->text().toDouble(), qDefs::XMAXIMUM);
-        myPlot->IsXYRangeValues(true, qDefs::XMAXIMUM);
+        myPlot->SetXYRangeValues(dispXMax->text().toDouble(), qDefs::XMAX);
+        myPlot->IsXYRangeValues(true, qDefs::XMAX);
         disablezoom = true;
     } 
     
     // ymin
     if (!chkYMin->isChecked() || dispYMin->text().isEmpty()) {
-        myPlot->IsXYRangeValues(false, qDefs::YMINIMUM);
+        myPlot->IsXYRangeValues(false, qDefs::YMIN);
     } else if (dispYMin->text().toDouble() < myPlot->GetYMinimum()) {
         qDefs::Message(qDefs::WARNING, "YMin Outside Plot Range", "qTabPlot::SetXYRange");
         dispYMin->setText("");
-        myPlot->IsXYRangeValues(false, qDefs::YMINIMUM);
+        myPlot->IsXYRangeValues(false, qDefs::YMIN);
     } else {
-        myPlot->SetXYRangeValues(dispYMin->text().toDouble(), qDefs::YMINIMUM);
-        myPlot->IsXYRangeValues(true, qDefs::YMINIMUM);
+        myPlot->SetXYRangeValues(dispYMin->text().toDouble(), qDefs::YMIN);
+        myPlot->IsXYRangeValues(true, qDefs::YMIN);
         disablezoom = true;
     } 
 
     //ymax
     if (!chkYMax->isChecked() || dispYMax->text().isEmpty()) {
-        myPlot->IsXYRangeValues(false, qDefs::YMAXIMUM);
+        myPlot->IsXYRangeValues(false, qDefs::YMAX);
     } else if (dispYMax->text().toDouble() < myPlot->GetYMaximum()) {
         qDefs::Message(qDefs::WARNING, "YMax Outside Plot Range", "qTabPlot::SetXYRange");
         dispYMax->setText("");
-        myPlot->IsXYRangeValues(false, qDefs::YMAXIMUM);
+        myPlot->IsXYRangeValues(false, qDefs::YMAX);
     } else {
-        myPlot->SetXYRangeValues(dispYMax->text().toDouble(), qDefs::YMAXIMUM);
-        myPlot->IsXYRangeValues(true, qDefs::YMAXIMUM);
+        myPlot->SetXYRangeValues(dispYMax->text().toDouble(), qDefs::YMAX);
+        myPlot->IsXYRangeValues(true, qDefs::YMAX);
         disablezoom = true;
     } 
 
@@ -518,25 +518,25 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
 
     // calculate ideal aspect ratio with previous limits
     double ranges[4];
-    ranges[qDefs::XMINIMUM] = myPlot->GetXMinimum();
-    ranges[qDefs::XMAXIMUM] = myPlot->GetXMaximum();
-    ranges[qDefs::YMINIMUM] = myPlot->GetYMinimum();
-    ranges[qDefs::YMAXIMUM] = myPlot->GetYMaximum();
-    double idealAspectratio = (ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]);
-    FILE_LOG(logDEBUG) << "Ideal Aspect ratio: " << idealAspectratio << " for x(" << ranges[qDefs::XMINIMUM] << " - " << ranges[qDefs::XMAXIMUM] << "), y(" << ranges[qDefs::YMINIMUM] << " - " << ranges[qDefs::YMAXIMUM] << ")";
+    ranges[qDefs::XMIN] = myPlot->GetXMinimum();
+    ranges[qDefs::XMAX] = myPlot->GetXMaximum();
+    ranges[qDefs::YMIN] = myPlot->GetYMinimum();
+    ranges[qDefs::YMAX] = myPlot->GetYMaximum();
+    double idealAspectratio = (ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) / (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]);
+    FILE_LOG(logDEBUG) << "Ideal Aspect ratio: " << idealAspectratio << " for x(" << ranges[qDefs::XMIN] << " - " << ranges[qDefs::XMAX] << "), y(" << ranges[qDefs::YMIN] << " - " << ranges[qDefs::YMAX] << ")";
   
     // calculate current aspect ratio
-    ranges[qDefs::XMINIMUM] = dispXMin->text().toDouble();
-    ranges[qDefs::XMAXIMUM] = dispXMax->text().toDouble();
-    ranges[qDefs::YMINIMUM] = dispYMin->text().toDouble();
-    ranges[qDefs::YMAXIMUM] = dispYMax->text().toDouble();
-    double currentAspectRatio = (ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]);
-    FILE_LOG(logDEBUG) << "Current Aspect ratio: " << currentAspectRatio << " for x(" << ranges[qDefs::XMINIMUM] << " - " << ranges[qDefs::XMAXIMUM] << "), y(" << ranges[qDefs::YMINIMUM] << " - " << ranges[qDefs::YMAXIMUM] << ")";
+    ranges[qDefs::XMIN] = dispXMin->text().toDouble();
+    ranges[qDefs::XMAX] = dispXMax->text().toDouble();
+    ranges[qDefs::YMIN] = dispYMin->text().toDouble();
+    ranges[qDefs::YMAX] = dispYMax->text().toDouble();
+    double currentAspectRatio = (ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) / (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]);
+    FILE_LOG(logDEBUG) << "Current Aspect ratio: " << currentAspectRatio << " for x(" << ranges[qDefs::XMIN] << " - " << ranges[qDefs::XMAX] << "), y(" << ranges[qDefs::YMIN] << " - " << ranges[qDefs::YMAX] << ")";
  
     if (currentAspectRatio != idealAspectratio) {
         // dimension: 1(x changed: y adjusted), 0(y changed: x adjusted), -1(aspect ratio clicked: larger one adjusted)
         if (dimension == -1) {
-            dimension = ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) > (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM])) 
+            dimension = ((ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) > (ranges[qDefs::YMAX] - ranges[qDefs::YMIN])) 
             ? static_cast<int>(slsDetectorDefs::X) : static_cast<int>(slsDetectorDefs::Y);
         }
 
@@ -544,24 +544,24 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
         // adjust x
         double newval = 0;
         if (dimension == static_cast<int>(slsDetectorDefs::X)) {
-            newval = idealAspectratio * (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]) + ranges[qDefs::XMINIMUM];
+            newval = idealAspectratio * (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]) + ranges[qDefs::XMIN];
             if (newval <= myPlot->GetXMaximum()) {
                 dispXMax->setText(QString::number(newval));
                 FILE_LOG(logDEBUG) << "New XMax: " << newval;
             } else {
-                newval = ranges[qDefs::XMAXIMUM] - (idealAspectratio * (ranges[qDefs::YMAXIMUM] - ranges[qDefs::YMINIMUM]));
+                newval = ranges[qDefs::XMAX] - (idealAspectratio * (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]));
                 dispXMin->setText(QString::number(newval));
                 FILE_LOG(logDEBUG) << "New XMin: " << newval;
             }
         }
         // adjust y
         else  {
-            newval = ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / idealAspectratio) + ranges[qDefs::YMINIMUM];
+            newval = ((ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) / idealAspectratio) + ranges[qDefs::YMIN];
             if (newval <= myPlot->GetYMaximum()) {
                 dispYMax->setText(QString::number(newval));
                 FILE_LOG(logDEBUG) << "New YMax: " << newval;
             } else {
-                newval = ranges[qDefs::YMAXIMUM] - ((ranges[qDefs::XMAXIMUM] - ranges[qDefs::XMINIMUM]) / idealAspectratio);
+                newval = ranges[qDefs::YMAX] - ((ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) / idealAspectratio);
                 dispYMin->setText(QString::number(newval));
                 FILE_LOG(logDEBUG) << "New YMax: " << newval;
             }
@@ -578,15 +578,15 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
 
     // set XY values in plot
-    myPlot->SetXYRangeValues(dispXMin->text().toDouble(), qDefs::XMINIMUM);
-    myPlot->SetXYRangeValues(dispXMax->text().toDouble(), qDefs::XMAXIMUM);
-    myPlot->SetXYRangeValues(dispYMin->text().toDouble(), qDefs::YMINIMUM);
-    myPlot->SetXYRangeValues(dispYMax->text().toDouble(), qDefs::YMAXIMUM);
+    myPlot->SetXYRangeValues(dispXMin->text().toDouble(), qDefs::XMIN);
+    myPlot->SetXYRangeValues(dispXMax->text().toDouble(), qDefs::XMAX);
+    myPlot->SetXYRangeValues(dispYMin->text().toDouble(), qDefs::YMIN);
+    myPlot->SetXYRangeValues(dispYMax->text().toDouble(), qDefs::YMAX);
 
-    myPlot->IsXYRangeValues(true, qDefs::XMINIMUM);
-    myPlot->IsXYRangeValues(true, qDefs::XMAXIMUM);
-    myPlot->IsXYRangeValues(true, qDefs::YMINIMUM);
-    myPlot->IsXYRangeValues(true, qDefs::YMAXIMUM);
+    myPlot->IsXYRangeValues(true, qDefs::XMIN);
+    myPlot->IsXYRangeValues(true, qDefs::XMAX);
+    myPlot->IsXYRangeValues(true, qDefs::YMIN);
+    myPlot->IsXYRangeValues(true, qDefs::YMAX);
 
     // to update plot with range
     myplot->SetXYRangeChanged();

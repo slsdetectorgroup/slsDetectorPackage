@@ -721,10 +721,6 @@ void qDetectorMain::EnableTabs() {
             tabDeveloper->Refresh();
 
         tabPlot->Refresh();
-
-        // set the plot type first(acccss shared memory)
-        tabPlot->SetScanArgument();
-        // sets running to true
         myPlot->StartStopDaqToggle();
     } else { // to enable scan box
         tabPlot->Refresh();

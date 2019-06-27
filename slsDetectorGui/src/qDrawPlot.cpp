@@ -220,10 +220,10 @@ void qDrawPlot::SetupPlots() {
     }
     // add a hist
     DetachHists();
-    SlsQtH1D *h;
-    hists1d.append(h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[0]));
+    SlsQtH1D *h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[0]);
     h->SetLineColor(0);
     SetStyle(h);
+    hists1d.append(h);
 
     // setup 2d plot
     plot2d = new SlsQt2DPlotLayout(boxPlot);
@@ -377,14 +377,14 @@ void qDrawPlot::SetXYRangeChanged() {
 void qDrawPlot::SetXYRangeValues(double val, qDefs::range xy) {
     LockLastImageArray();
     FILE_LOG(logDEBUG) << "Setting XY Range [" << static_cast<int>(xy) << "] to " << val;
-    XYRangeValues[xy] = val;
+    XYRange[xy] = val;
     UnlockLastImageArray();     
 }
 
 void qDrawPlot::IsXYRangeValues(bool changed, qDefs::range xy) {
     LockLastImageArray();
     FILE_LOG(logDEBUG) << "Setting XY Range Change [" << static_cast<int>(xy) << "] to " << std::boolalpha << changed << std::noboolalpha;;
-    isXYRangeEnable[xy] = changed;
+    isXYRange[xy] = changed;
     UnlockLastImageArray();     
 }
 
@@ -592,8 +592,8 @@ void qDrawPlot::ClonePlot() {
                                          data2d);
     }
 
-    if (isXYRangeEnable[qDefs::XMINIMUM] || isXYRangeEnable[qDefs::XMAXIMUM] ||isXYRangeEnable[qDefs::YMINIMUM] ||isXYRangeEnable[qDefs::YMAXIMUM]) {
-        cloneWidgets[i]->SetRange(isXYRangeEnable, XYRangeValues);
+    if (isXYRange[qDefs::XMIN] || isXYRange[qDefs::XMAX] ||isXYRange[qDefs::YMIN] ||isXYRange[qDefs::YMAX]) {
+        cloneWidgets[i]->SetRange(isXYRange, XYRange);
     }
     UnlockLastImageArray();
     cloneWidgets[i]->show();
@@ -603,18 +603,19 @@ void qDrawPlot::ClonePlot() {
 }
 
 void qDrawPlot::CloseClones() {
+    FILE_LOG(logDEBUG) << "Closing all Clones"; 
     for (auto &it : cloneWidgets) {
         it->close();
     }
+}
 
-    void qDrawPlot::CloneCloseEvent(int id) {
+void qDrawPlot::CloneCloseEvent(int id) {
+    FILE_LOG(logDEBUG) << "Closing Clone " << id; 
     cloneWidgets.erase(cloneWidgets.begin() + id;
-#ifdef VERBOSE
-    std::cout << "Closing Clone Window id:" << id << '\n';
-#endif
-    }
+}
 
 void qDrawPlot::SaveClones() {
+    FILE_LOG(logINFO) << "Saving all Clones"; 
     char errID[200];
     std::string errMessage = "The Snapshots with ID's: ";
     bool success = true;
@@ -625,44 +626,41 @@ void qDrawPlot::SaveClones() {
             errMessage.append(std::string(errID) + std::string(", "));
         }
     }
-    if (success)
+    if (success) {
         qDefs::Message(
             qDefs::INFORMATION,
             "The Snapshots have all been saved successfully in .png.", "Dock");
-    else
+    } else {
         qDefs::Message(qDefs::WARNING,
                        errMessage + std::string("were not saved."),
                        "qDrawPlot::SaveClones");
+        FILE_LOG(logWARNING) << errMessage << "were not saved";
+    }
+}
+
+void qDrawPlot::SavePlot() {
+    // render image
+    QImage savedImage(size().width(), size().height(), QImage::Format_RGB32);
+    QPainter painter(&savedImage);
+    render(&painter);
+
+    QString fName = fileSavePath + Qstring('/') + fileSaveName + Qstring('_') + lastImageNumber +  Qstring('_') + QString(NowTime().c_str()) + QString(".png");
+        fName = QFileDialog::getSaveFileName(
+        0, tr("Save Image"), fName,
+        tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), 0,
+        QFileDialog::ShowDirsOnly);
+
+    if (!fName.isEmpty()) {
+        if (savedImage.save(fName)) {
+            qDefs::Message(qDefs::INFORMATION, "The Image has been successfully saved", "qDrawPlot::SavePlot");
+            fileSavePath = fName.section('/', 0, -2);
+        } else {
+            qDefs::Message(qDefs::WARNING, "Attempt to save image failed.\n Formats: .png, .jpg, .xpm.", "qDrawPlot::SavePlot");
+        }
+    }
 }
 
 
-    void qDrawPlot::SavePlot() {
-        // render image
-        QImage savedImage(size().width(), size().height(),
-                          QImage::Format_RGB32);
-        QPainter painter(&savedImage);
-        render(&painter);
-
-        QString fName = fileSavePath + Qstring('/') + fileSaveName + Qstring('_') + lastImageNumber +  Qstring('_') + QString(NowTime().c_str()) + QString(".png");
-         fName = QFileDialog::getSaveFileName(
-            0, tr("Save Image"), fName,
-            tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), 0,
-            QFileDialog::ShowDirsOnly);
-
-        if (!fName.isEmpty()) {
-            if (savedImage.save(fName)) {}
-                qDefs::Message(qDefs::INFORMATION,
-                               "The Image has been successfully saved",
-                               "qDrawPlot::SavePlot");
-            fileSavePath = fName.section('/', 0, -2);
-
-         } else
-                qDefs::Message(qDefs::WARNING,
-                               "Attempt to save image failed.\n"
-                               "Formats: .png, .jpg, .xpm.",
-                               "qDrawPlot::SavePlot");
-        }
-    }
 
 
 
@@ -691,25 +689,23 @@ int qDrawPlot::UnlockLastImageArray() {
 }
 
 void qDrawPlot::SetStyle(SlsQtH1D *h) {
-    if (isLines)
-        h->setStyle(QwtPlotCurve::isLines);
-    else
-        h->setStyle(QwtPlotCurve::Dots);
+    h->setStyle(isLines ? QwtPlotCurve::Lines : QwtPlotCurve::Dots);
 #if QWT_VERSION < 0x060000
-    if (isMarkers)
-        h->setSymbol(*marker);
-    else
-        h->setSymbol(*noMarker);
+    h->setSymbol(isMarkers ? *marker : *nomarker);
 #else
-    if (isMarkers)
-        h->setSymbol(marker);
-    else
-        h->setSymbol(noMarker);
+    h->setSymbol(isMarkers ? marker : nomarker);
 #endif
 }
 
-void qDrawPlot::GetStatistics(double &min, double &max, double &sum, double *array, int size) {
+void qDrawPlot::GetStatistics(double &min, double &max, double &sum) {
  FILE_LOG(logDEBUG) << "Calculating Statistics";   
+    double *array = data2d;
+    int size = nPixelsX * nPixelsY;
+    if(is1d) {
+        array = datay1d[0];
+        size = nPixelsX;
+    }
+    , int size
     for (int i = 0; i < size; ++i) {
         if (array[i] < min)
             min = array[i];
@@ -719,6 +715,42 @@ void qDrawPlot::GetStatistics(double &min, double &max, double &sum, double *arr
     }
 }
 
+void qDrawPlot::DetachHists() {
+    for (QVector<SlsQtH1D *>::iterator h = hists1d.begin(); h != hists1d.end(); ++h) {
+        (*h)->Detach(plot1d);
+    }
+}
+
+void qDrawPlot::UpdateXYRange() {
+    if (XYRangeChanged) {
+        void* plot = plot1d;
+        if (!is1d) {
+            plot = plot2d->GetPlot();
+        }
+
+        if (!isXYRange[qDefs::XMIN] || !isXYRange[qDefs::XMAX]) {
+            plot->EnableXAutoScaling();
+        } else {
+            if (!isXYRange[qDefs::XMIN])
+                XYRange[qDefs::XMIN] = plot->GetXMinimum();
+            if (!isXYRange[qDefs::XMAX])
+                XYRange[qDefs::XMAX] = plot->GetXMaximum();
+            plot->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
+        } 
+
+        if (!isXYRange[qDefs::YMIN] || !isXYRange[qDefs::YMAX]) {
+            plot->EnableYAutoScaling();
+        } else {
+            if (!isXYRange[qDefs::YMIN])
+                XYRange[qDefs::YMIN] = plot->GetYMinimum();
+            if (!isXYRange[qDefs::YMAX])
+                XYRange[qDefs::YMAX] = plot->GetYMaximum();
+            plot->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
+        } 
+        XYRangeChanged = false;
+        plot->Update();
+    }
+}
 
 
 
@@ -1657,11 +1689,6 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex) {
                 boxPlot->setTitle("OLD_plot.raw");*/
     return 0;
 }
-void qDrawPlot::DetachHists() {
-    for (QVector<SlsQtH1D *>::iterator h = hists1d.begin(); h != hists1d.end(); ++h) {
-        (*h)->Detach(plot1d);
-    }
-}
 
 void qDrawPlot::UpdatePlot() {
 #ifdef VERYVERBOSE
@@ -1686,166 +1713,50 @@ void qDrawPlot::UpdatePlot() {
                 plot1d->SetXTitle(xTitle1d.toAscii().constData());
                 plot1d->SetYTitle(yTitle1d.toAscii().constData());
 
-                // histogram
-                if (histogram) {
-                    plotHistogram->setData(
-                        new QwtIntervalSeriesData(histogramSamples));
-                    plotHistogram->setPen(QPen(Qt::red));
-                    plotHistogram->setBrush(
-                        QBrush(Qt::red, Qt::Dense4Pattern)); // Qt::SolidPattern
+                for (int hist_num = 0; hist_num < (int)nHists; ++hist_num) {
+                    SlsQtH1D *h;
+                    if (hist_num + 1 > hists1d.size()) {
+                        hists1d.append(h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[0]));
+                        h->SetLineColor(hist_num);
+                    } else {
+                        h = hists1d.at(hist_num);
+                        h->SetData(nPixelsX, datax1d, datay1d[hist_num]);
+                    }
+                    SetStyle(h);
                     lblFrameIndexTitle1d->setText(title1d[0].c_str());
-                    plotHistogram->attach(plot1d);
-                    // refixing all the zooming
-
-                    plot1d->SetXMinMax(startPixel, endPixel);
-                    plot1d->SetYMinMax(0,
-                                       plotHistogram->boundingRect().height());
-                    plot1d->SetZoomBase(startPixel, 0, endPixel - startPixel,
-                                        plotHistogram->boundingRect().height());
-
-                }
-                // not histogram
-                else {
-                    for (int hist_num = 0; hist_num < (int)nHists; ++hist_num) {
-                        SlsQtH1D *h;
-                        if (hist_num + 1 > hists1d.size()) {
-                            if (anglePlot)
-                                hists1d.append(
-                                    h = new SlsQtH1D("", nPixelsX,
-                                                     histXAngleAxis,
-                                                     histYAngleAxis));
-                            else
-                                hists1d.append(
-                                    h = new SlsQtH1D("", nPixelsX, datax1d,
-                                                     datay1d[0]));
-                            h->SetLineColor(hist_num);
-                        } else {
-                            h = hists1d.at(hist_num);
-                            if (anglePlot)
-                                h->SetData(nPixelsX, histXAngleAxis,
-                                           histYAngleAxis);
-                            else
-                                h->SetData(nPixelsX, datax1d,
-                                           datay1d[hist_num]);
-                        }
-                        SetStyle(h);
-                        lblFrameIndexTitle1d->setText(title1d[0].c_str());
-                        h->Attach(plot1d);
-                    }
-
-                    /**moved from below (had applied to histograms as well) to
-                     * here, */
-                    // update range if required
-                    if (XYRangeChanged) {
-                        if (!isXYRangeEnable[qDefs::XMINIMUM])
-                            XYRangeValues[qDefs::XMINIMUM] =
-                                plot1d->GetXMinimum();
-                        if (!isXYRangeEnable[qDefs::XMAXIMUM])
-                            XYRangeValues[qDefs::XMAXIMUM] =
-                                plot1d->GetXMaximum();
-                        if (!isXYRangeEnable[qDefs::YMINIMUM])
-                            XYRangeValues[qDefs::YMINIMUM] =
-                                plot1d->GetYMinimum();
-                        if (!isXYRangeEnable[qDefs::YMAXIMUM])
-                            XYRangeValues[qDefs::YMAXIMUM] =
-                                plot1d->GetYMaximum();
-                        plot1d->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],
-                                           XYRangeValues[qDefs::XMAXIMUM]);
-                        plot1d->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],
-                                           XYRangeValues[qDefs::YMAXIMUM]);
-                        // Should not be reset for histogram,
-                        // that is the only way to zoom in (new plots are zoomed
-                        // out as its different each time)
-                        if (!histogram)
-                            XYRangeChanged = false;
-                    }
-                    /**moved from below (had applied to histograms as well) to
-                     * here, */
-                    // Display Statistics
-                    if (displayStatistics) {
-                        double min = 0, max = 0, sum = 0;
-                        if (anglePlot)
-                            GetStatistics(min, max, sum, histYAngleAxis,
-                                          nPixelsX);
-                        else
-                            GetStatistics(min, max, sum, datay1d[0], nPixelsX);
-                        lblMinDisp->setText(QString("%1").arg(min));
-                        lblMaxDisp->setText(QString("%1").arg(max));
-                        lblSumDisp->setText(QString("%1").arg(sum));
-                         widgetStatistics->show();
-                    }
+                    h->Attach(plot1d);
                 }
             }
         } // 2-d plot stuff
         else {
-            if (data2d) {
-                if (nPixelsX > 0 && nPixelsY > 0) {
                     plot2d->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5,
-                                               nPixelsY, startPixel, endPixel,
-                                               data2d);
+                                               nPixelsY, startPixel, endPixel,data2d);
                     plot2d->setTitle(title2d.c_str());
                     plot2d->SetXTitle(xTitle2d);
                     plot2d->SetYTitle(yTitle2d);
                     plot2d->SetZTitle(zTitle2d);
-                    // zmin and zmax of plot already calculated using SetData,
-                    // now recalculate if z is set
+                    // recalculate if z is set
                     plot2d->KeepZRangeIfSet();
-                    if (gainDataExtracted) {
-                        gainplot2d->GetPlot()->SetData(
-                            nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
-                            startPixel, endPixel, gainImage);
-                        gainplot2d->setTitle(title2d.c_str());
-                        gainplot2d->show();
-                    } else {
-                        gainplot2d->hide();
-                    }
-                }
-                // update range if required
-                if (XYRangeChanged) {
-                    if (!isXYRangeEnable[qDefs::XMINIMUM])
-                        XYRangeValues[qDefs::XMINIMUM] =
-                            plot2d->GetPlot()->GetXMinimum();
-                    if (!isXYRangeEnable[qDefs::XMAXIMUM])
-                        XYRangeValues[qDefs::XMAXIMUM] =
-                            plot2d->GetPlot()->GetXMaximum();
-                    if (!isXYRangeEnable[qDefs::YMINIMUM])
-                        XYRangeValues[qDefs::YMINIMUM] =
-                            plot2d->GetPlot()->GetYMinimum();
-                    if (!isXYRangeEnable[qDefs::YMAXIMUM])
-                        XYRangeValues[qDefs::YMAXIMUM] =
-                            plot2d->GetPlot()->GetYMaximum();
-                    plot2d->GetPlot()->SetXMinMax(
-                        XYRangeValues[qDefs::XMINIMUM],
-                        XYRangeValues[qDefs::XMAXIMUM]);
-                    plot2d->GetPlot()->SetYMinMax(
-                        XYRangeValues[qDefs::YMINIMUM],
-                        XYRangeValues[qDefs::YMAXIMUM]);
-                    gainplot2d->GetPlot()->SetXMinMax(
-                        XYRangeValues[qDefs::XMINIMUM],
-                        XYRangeValues[qDefs::XMAXIMUM]);
-                    gainplot2d->GetPlot()->SetYMinMax(
-                        XYRangeValues[qDefs::YMINIMUM],
-                        XYRangeValues[qDefs::YMAXIMUM]);
-                    XYRangeChanged = false;
-                }
-                plot2d->GetPlot()->Update();
                 if (gainDataExtracted) {
-                    gainplot2d->GetPlot()->Update();
+                    gainplot2d->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
+                            startPixel, endPixel, gainImage);
+                    gainplot2d->setTitle(title2d.c_str());
                     gainplot2d->setFixedWidth(plot2d->width() / 4);
                     gainplot2d->setFixedHeight(plot2d->height() / 4);
                     gainplot2d->show();
                 } else
                     gainplot2d->hide();
-                // Display Statistics
-                if (displayStatistics) {
-                    double min = 0, max = 0, sum = 0;
-                    GetStatistics(min, max, sum, data2d, nPixelsX * nPixelsY);
-                    lblMinDisp->setText(QString("%1").arg(min));
-                    lblMaxDisp->setText(QString("%1").arg(max));
-                    lblSumDisp->setText(QString("%1").arg(sum));
-                }
-            }
         }
+        UpdateXYRange();
+        // Display Statistics
+        if (displayStatistics) {
+            double min = 0, max = 0, sum = 0;
+            GetStatistics(min, max, sum);
+            lblMinDisp->setText(QString("%1").arg(min));
+            lblMaxDisp->setText(QString("%1").arg(max));
+            lblSumDisp->setText(QString("%1").arg(sum));
+        }
+
         // set plot title
         boxPlot->setTitle(plotTitle);
         // to notify the measurement finished when its done

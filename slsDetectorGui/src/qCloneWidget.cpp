@@ -25,7 +25,7 @@
 qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle,
                            int numDim, QString fPath, QString fName, int fIndex, bool displayStats, QString min, QString max, QString sum) : 
                            QMainWindow(parent), id(id), filePath(fPath), fileName(fName), fileIndex(fIndex), cloneplot1D(nullptr), cloneplot2D(nullptr),
-                           marker(nullptr), nomarker(nullptr), mainLayout(nullptr), cloneBox(nullptr), lblHistTitle(nullptr) {
+                           marker(nullptr), nomarker(nullptr), mainLayout(nullptr), boxPlot(nullptr), lblHistTitle(nullptr) {
     // Window title
     char winTitle[300], currTime[50];
     strcpy(currTime, GetCurrentTimeStamp());
@@ -54,8 +54,8 @@ qCloneWidget::~qCloneWidget() {
         delete nomarker;  
     if (mainLayout)
         delete mainLayout; 
-    if (cloneBox)
-        delete cloneBox;        
+    if (boxPlot)
+        delete boxPlot;        
     if (lblHistTitle)
         delete lblHistTitle;
 }
@@ -77,43 +77,44 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
     centralWidget->setLayout(mainLayout);
 
     //plot group box
-    cloneBox = new QGroupBox(this);
-    QGridLayout* gridClone = new QGridLayout(cloneBox);
-    cloneBox->setLayout(gridClone);
-    cloneBox->setContentsMargins(0, 0, 0, 0);
-    cloneBox->setAlignment(Qt::AlignHCenter);
-    cloneBox->setFont(QFont("Sans Serif", 11, QFont::Normal));
-    cloneBox->setTitle(title);
+    boxPlot = new QGroupBox(this);
+    QGridLayout* plotLayout = new QGridLayout(boxPlot);
+    boxPlot->setLayout(plotLayout);
+    boxPlot->setAlignment(Qt::AlignHCenter);
+    boxPlot->setFont(QFont("Sans Serif", 11, QFont::Normal));
+    boxPlot->setTitle(title);
+    boxPlot->setContentsMargins(0, 0, 0, 0);
+    
     // According to dimensions, create appropriate 1D or 2Dplot
     if (numDim == 1) {
-        cloneplot1D = new SlsQt1DPlot(cloneBox);
+        cloneplot1D = new SlsQt1DPlot(boxPlot);
 
         cloneplot1D->setFont(QFont("Sans Serif", 9, QFont::Normal));
         cloneplot1D->SetXTitle(xTitle.toAscii().constData());
         cloneplot1D->SetYTitle(yTitle.toAscii().constData());
 
-        cloneBox->setFlat(false);
-        cloneBox->setContentsMargins(0, 30, 0, 0);
-        gridClone->addWidget(cloneplot1D, 0, 0);
+        boxPlot->setFlat(false);
+        boxPlot->setContentsMargins(0, 30, 0, 0);
+        plotLayout->addWidget(cloneplot1D, 0, 0);
 
         lblHistTitle = new QLabel("");
         mainLayout->addWidget(lblHistTitle, 0, 0);
 
     } else {
-        cloneplot2D = new SlsQt2DPlotLayout(cloneBox);
+        cloneplot2D = new SlsQt2DPlotLayout(boxPlot);
         cloneplot2D->setFont(QFont("Sans Serif", 9, QFont::Normal));
         cloneplot2D->SetXTitle(xTitle);
         cloneplot2D->SetYTitle(yTitle);
         cloneplot2D->SetZTitle(zTitle);
         cloneplot2D->setAlignment(Qt::AlignLeft);
 
-        cloneBox->setFlat(true);
-        cloneBox->setContentsMargins(0, 20, 0, 0);
-        gridClone->addWidget(cloneplot2D, 0, 0);
+        boxPlot->setFlat(true);
+        boxPlot->setContentsMargins(0, 20, 0, 0);
+        plotLayout->addWidget(cloneplot2D, 0, 0);
     }
 
     // main window widgets
-    mainLayout->addWidget(cloneBox, 1, 0);
+    mainLayout->addWidget(boxPlot, 1, 0);
     setCentralWidget(centralWidget);
 
     // Save
@@ -126,36 +127,18 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
 void qCloneWidget::SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, std::vector<std::string> histTitle, bool lines, bool markers) {
     //for each plot,  create hists
     for (unsigned int hist_num = 0; hist_num < nHists; ++hist_num) {
-        SlsQtH1D *k;
-        if (hist_num + 1 > cloneplot1D_hists.size()) {
-            cloneplot1D_hists.append(k = new SlsQtH1D("1d plot", histNBins, histXAxis, histYAxis[hist_num]));
-            k->SetLineColor(0);
-        } else {
-            k = cloneplot1D_hists.at(hist_num);
-            k->SetData(histNBins, histXAxis, histYAxis[hist_num]);
-        }
-
-        //style of plot
-        if (lines)
-            k->setStyle(QwtPlotCurve::Lines);
-        else
-            k->setStyle(QwtPlotCurve::Dots);
+        SlsQtH1D *h = new SlsQtH1D("1d plot", histNBins, histXAxis, histYAxis[hist_num]);
+        h->SetLineColor(0);
+        h->setStyle(lines ? QwtPlotCurve::Lines : QwtPlotCurve::Dots);
 #if QWT_VERSION < 0x060000
-        if (markers)
-            k->setSymbol(*marker);
-        else
-            k->setSymbol(*nomarker);
+        h->setSymbol(markers ? *marker : *nomarker);
 #else
-        if (markers)
-            k->setSymbol(marker);
-        else
-            k->setSymbol(nomarker);
+        h->setSymbol(markers ? marker : nomarker);
 #endif
+        cloneplot1D_hists.append(h);
+        h->Attach(cloneplot1D);
 
-        //set title and attach plot
         lblHistTitle->setText(QString(histTitle[0].c_str()));
-
-        k->Attach(cloneplot1D);
     }
 }
 
@@ -164,49 +147,16 @@ void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbi
     cloneplot2D->KeepZRangeIfSet();
 }
 
-void qCloneWidget::SetRange(bool IsXYRange[], double XYRangeValues[]) {
-    double XYCloneRangeValues[4];
-
-    if (!IsXYRange[qDefs::XMINIMUM]) {
-        if (cloneplot1D)
-            XYCloneRangeValues[qDefs::XMINIMUM] = cloneplot1D->GetXMinimum();
-        else
-            XYCloneRangeValues[qDefs::XMINIMUM] = cloneplot2D->GetPlot()->GetXMinimum();
-    } else
-        XYCloneRangeValues[qDefs::XMINIMUM] = XYRangeValues[qDefs::XMINIMUM];
-
-    if (!IsXYRange[qDefs::XMAXIMUM]) {
-        if (cloneplot1D)
-            XYCloneRangeValues[qDefs::XMAXIMUM] = cloneplot1D->GetXMaximum();
-        else
-            XYCloneRangeValues[qDefs::XMAXIMUM] = cloneplot2D->GetPlot()->GetXMaximum();
-    } else
-        XYCloneRangeValues[qDefs::XMAXIMUM] = XYRangeValues[qDefs::XMAXIMUM];
-
-    if (!IsXYRange[qDefs::YMINIMUM]) {
-        if (cloneplot1D)
-            XYCloneRangeValues[qDefs::YMINIMUM] = cloneplot1D->GetYMinimum();
-        else
-            XYCloneRangeValues[qDefs::YMINIMUM] = cloneplot2D->GetPlot()->GetYMinimum();
-    } else
-        XYCloneRangeValues[qDefs::YMINIMUM] = XYRangeValues[qDefs::YMINIMUM];
-
-    if (!IsXYRange[qDefs::YMAXIMUM]) {
-        if (cloneplot1D)
-            XYCloneRangeValues[qDefs::YMAXIMUM] = cloneplot1D->GetYMaximum();
-        else
-            XYCloneRangeValues[qDefs::YMAXIMUM] = cloneplot2D->GetPlot()->GetYMaximum();
-    } else
-        XYCloneRangeValues[qDefs::YMAXIMUM] = XYRangeValues[qDefs::YMAXIMUM];
-
-    if (cloneplot1D) {
-        cloneplot1D->SetXMinMax(XYCloneRangeValues[qDefs::XMINIMUM], XYCloneRangeValues[qDefs::XMAXIMUM]);
-        cloneplot1D->SetYMinMax(XYCloneRangeValues[qDefs::YMINIMUM], XYCloneRangeValues[qDefs::YMAXIMUM]);
-    } else {
-        cloneplot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM], XYRangeValues[qDefs::XMAXIMUM]);
-        cloneplot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM], XYRangeValues[qDefs::YMAXIMUM]);
-        cloneplot2D->GetPlot()->Update();
+void qCloneWidget::SetRange(bool IsXYRange[], double XYRange[]) {
+    double XYRange[4] {0, 0, 0, 0};
+    void* plot = cloneplot1D;
+    if (cloneplot2D) {
+        plot = cloneplot2D->GetPlot();
     }
+
+    plot->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
+    plot->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
+    plot->Update();
 }
 
 void qCloneWidget::SavePlot() {
@@ -216,9 +166,9 @@ void qCloneWidget::SavePlot() {
     QString fName = filePath + Qstring('/') + fileName + Qstring('_') + imageIndex +  Qstring('_') + QString(NowTime().c_str()) + QString(".png");
     FILE_LOG(logDEBUG) << "fname:" << fName.toAscii().constData();
     //save
-    QImage img(cloneBox->size().width(), cloneBox->size().height(), QImage::Format_RGB32);
+    QImage img(boxPlot->size().width(), boxPlot->size().height(), QImage::Format_RGB32);
     QPainter painter(&img);
-    cloneBox->render(&painter);
+    boxPlot->render(&painter);
 
     fName = QFileDialog::getSaveFileName(this, tr("Save Snapshot "), fName, tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), 0, QFileDialog::ShowDirsOnly);
     if (!fName.isEmpty()) {
@@ -226,9 +176,7 @@ void qCloneWidget::SavePlot() {
             qDefs::Message(qDefs::INFORMATION, "The SnapShot has been successfully saved", "qCloneWidget::SavePlot");
             FILE_LOG(logINFO) << "The SnapShot has been successfully saved";
         } else {
-            qDefs::Message(qDefs::WARNING, "Attempt to save snapshot failed.\n"
-                                           "Formats: .png, .jpg, .xpm.",
-                           "qCloneWidget::SavePlot");
+            qDefs::Message(qDefs::WARNING, "Attempt to save snapshot failed.\n Formats: .png, .jpg, .xpm.", "qCloneWidget::SavePlot");
             FILE_LOG(logWARNING) << "Attempt to save snapshot failed";
         }
     }
@@ -241,9 +189,9 @@ int qCloneWidget::SavePlotAutomatic() {
     QString fName = filePath + Qstring('/') + fileName + Qstring('_') + imageIndex +  Qstring('_') + QString(NowTime().c_str()) + QString(".png");
     FILE_LOG(logDEBUG) << "fname:" << fName.toAscii().constData();
     //save
-    QImage img(cloneBox->size().width(), cloneBox->size().height(), QImage::Format_RGB32);
+    QImage img(boxPlot->size().width(), boxPlot->size().height(), QImage::Format_RGB32);
     QPainter painter(&img);
-    cloneBox->render(&painter);
+    boxPlot->render(&painter);
     if (img.save(fName))
         return 0;
     else

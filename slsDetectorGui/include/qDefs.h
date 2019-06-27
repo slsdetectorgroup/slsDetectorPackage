@@ -97,7 +97,7 @@ class qDefs : public QWidget {
     /**
      * range of x and y axes
      */
-    enum range { XMINIMUM, XMAXIMUM, YMINIMUM, YMAXIMUM };
+    enum range { XMIN, XMAX, YMIN, YMAX };
 
     /**
      * function enums for the qServer and qClient

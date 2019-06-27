@@ -2,6 +2,8 @@
 #include "catch.hpp"
 #include <exception>
 #include <string>
+
+
 // tests to add
 // help for all docs
 // command for all depreciated commands

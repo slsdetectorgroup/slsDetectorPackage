@@ -32,26 +32,32 @@ class qDrawPlot : public QWidget {
     /** Destructor	 */
     ~qDrawPlot();
 
-    /** If the gui client has started or stopped */
+   // measurement tab
     void SetClientInitiated();
     bool GetClientInitiated();
+    // main
     bool isRunning();
+    // from measurement tabs
     int GetProgress();
     int GetCurrentFrameIndex();
+    // from plot tab
+    void Select1dPlot(bool enable);
     void SetPlotTitlePrefix(QString title);
     void SetXAxisTitle(QString title);
     void SetYAxisTitle(QString title);
     void SetZAxisTitle(QString title);
     void DisableZoom(bool disable);
-    void SetXYRange(bool changed);
+    void SetXYRangeChanged();
     void SetXYRangeValues(double val, qDefs::range xy);
     void IsXYRangeValues(bool changed, qDefs::range xy);
     double GetXMinimum();
     double GetXMaximum();
     double GetYMinimum();
     double GetYMaximum();
+    void SetZRange(bool isZmin, bool isZmax, double zmin, double zmax);
     void SetDataCallBack(bool enable);
     void SetBinary(bool enable, int from = 0, int to = 0);
+
 
     /** Starts or stop acquisition
      * Calls startDaq() function
@@ -61,25 +67,29 @@ class qDrawPlot : public QWidget {
     void StartStopDaqToggle(bool stop_if_running = 0);
 
   public slots:
-    void StopAcquisition();
     void SetPersistency(int val);
     void SetLines(bool enable);
     void SetMarkers(bool enable);
+    void Set1dLogY(bool enable);
+    void SetInterpolate(bool enable);
+    void SetContour(bool enable);
+    void SetLogz(bool enable);
     void SetPedestal(bool enable);
     void RecalculatePedestal();
     void SetAccumulate(bool enable);
     void ResetAccumulate();
     void DisplayStatistics(bool enable);
+    void EnableGainPlot(bool enable);
     void ClonePlot();
     void CloseClones();
     void SaveClones();
-	void SavePlot();
-    void Select1DPlot();
-    void Select2DPlot();
+	  void SavePlot();
+
 
   private slots:
+    void SetSaveFileName(QString val);
     void CloneCloseEvent(int id);
-  	void EnableGainPlot(bool e);
+
   
     void UpdatePlot();
     void StartDaq(bool start);
@@ -87,31 +97,24 @@ class qDrawPlot : public QWidget {
 
   signals:
     void UpdatingPlotFinished();
-    void InterpolateSignal(bool);
-    void ContourSignal(bool);
-    void LogzSignal(bool);
-    void LogySignal(bool);
-    void ResetZMinZMaxSignal(bool, bool, double, double);
     void SetCurrentMeasurementSignal(int);
     void AcquisitionErrorSignal(QString);
     void UpdatePlotSignal();
-    void GainPlotSignal(bool);
 
   private:
     void SetupWidgetWindow();
     void Initialization();
-	void SetupStatistics();
-	void SetupPlots();
-	const char *GetTitle1d(int histIndex);
-    double *GetHistYAxis(int histIndex);
-	void SetStyle(SlsQtH1D *h);
-    void GetStatistics(double &min, double &max, double &sum, double *array, int size);
-    void SelectPlot(int i = 2);
-    void Clear1DPlot();
-
-
+	  void SetupStatistics();
+	  void SetupPlots();
+    
     int LockLastImageArray();
     int UnlockLastImageArray();
+	  void SetStyle(SlsQtH1D *h);
+    void GetStatistics(double &min, double &max, double &sum, double *array, int size);
+    void DetachHists();
+
+
+ 
     int StartDaqForGui();
     int StopDaqForGui();
     bool StartOrStopThread(bool start);
@@ -132,7 +135,7 @@ class qDrawPlot : public QWidget {
     slsDetectorDefs::detectorType detType;
 
     SlsQt1DPlot *plot1d{nullptr};
-	QVector<SlsQtH1D *> hists1d;
+	  QVector<SlsQtH1D *> hists1d;
     SlsQt2DPlotLayout *plot2d{nullptr};
     SlsQt2DPlotLayout *gainplot2d{nullptr};
 
@@ -145,18 +148,17 @@ class qDrawPlot : public QWidget {
     bool plotRequired{false};/**?? */
     bool running{false};
     int progress{0};
-    volatile bool stopSignal{false};
-	bool clientInitiated{false};
+	  bool clientInitiated{false};
 
 	// titles
-	QString plotTitle{""};
+	  QString plotTitle{""};
     QString plotTitle_prefix{""};
     QLabel *lblFrameIndexTitle1d{nullptr};
     std::vector<std::string> title1d;
-	std::string title2d{""};
+	  std::string title2d{""};
     QString xTitle1d{"Channel Number"};
     QString yTitle1d{"Counts"};
-	QString xTitle2d{"Pixel"};
+	  QString xTitle2d{"Pixel"};
     QString yTitle2d{"Pixel"};
     QString zTitle2d{"Intensity"};
     bool XYRangeChanged{false};
@@ -164,17 +166,16 @@ class qDrawPlot : public QWidget {
     bool isXYRangeEnable[4]{false, false, false, false};
 
 	// data
-    unsigned int nHists{0};
-    int histNBins{0};
-    double *x1d{nullptr};
-    std::vector<double *> y1d;
-    double *image2d{nullptr};
+    unsigned int nHists{1};
+    double *datax1d{nullptr};
+    std::vector<double *> datay1d;
+    double *data2d{nullptr};
 
 	//options
 	bool binary{false};
     int binaryFrom{0};
     int binaryTo{0};
-    int persistency0};
+    int persistency{0};
     int currentPersistency0};
     bool isLines{true};
     bool isMarkers{false};

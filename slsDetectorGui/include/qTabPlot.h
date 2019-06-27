@@ -40,7 +40,6 @@ private slots:
 
 signals:
 	void DisableZoomSignal(bool);
-	void ResetZMinZMaxSignal(bool,bool,double,double);
 
 private:
 	void SetupWidgetWindow();
@@ -53,7 +52,7 @@ private:
 
 	multiSlsDetector *myDet;
 	qDrawPlot *myPlot;
-	bool isOneD;
+	bool is1d;
 
 	QButtonGroup	*btnGroupPlotType;
 	QStackedLayout	*stackedLayout;

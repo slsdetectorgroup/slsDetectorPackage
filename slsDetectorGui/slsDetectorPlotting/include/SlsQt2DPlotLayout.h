@@ -23,7 +23,11 @@ public:
     void         SetYTitle(QString st);
     void         SetZTitle(QString st);
     void 	KeepZRangeIfSet();
-
+// recalculate zmin and zmax from plot and update z range
+void SetZRange(bool isMin, bool isMax, double min, double max);
+void SetInterpolate(bool enable);
+void SetContour(bool enable);
+void SetLogz(bool enable);
 
 private:
     QGridLayout* 		the_layout;
@@ -32,7 +36,6 @@ private:
     QToolButton* 		btnLogz;
     SlsQt2DPlot*    	the_plot;
 
-    void ConnectSignalsAndSlots();
     void Layout();
     bool isLog;
     double zmin;
@@ -43,14 +46,8 @@ private:
 public slots:
 void SetZScaleToLog(bool enable);
 void ResetRange();
-// recalculate zmin and zmax from plot and update z range
-void SetZRange(bool isMin, bool isMax, double min, double max);
+
 // update z range
 void UpdateZRange(double min, double max) ;
-
-signals:
-void InterpolateSignal(bool);
-void ContourSignal(bool);
-void LogzSignal(bool);
 
 };

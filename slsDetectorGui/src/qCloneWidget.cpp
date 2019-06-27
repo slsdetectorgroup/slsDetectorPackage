@@ -23,8 +23,8 @@
 #include <QPainter>
 
 qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle,
-                           int numDim, std::string FilePath, bool displayStats, QString min, QString max, QString sum) : 
-                           QMainWindow(parent), id(id), filePath(FilePath), cloneplot1D(nullptr), cloneplot2D(nullptr),
+                           int numDim, QString fPath, QString fName, int fIndex, bool displayStats, QString min, QString max, QString sum) : 
+                           QMainWindow(parent), id(id), filePath(fPath), fileName(fName), fileIndex(fIndex), cloneplot1D(nullptr), cloneplot2D(nullptr),
                            marker(nullptr), nomarker(nullptr), mainLayout(nullptr), cloneBox(nullptr), lblHistTitle(nullptr) {
     // Window title
     char winTitle[300], currTime[50];
@@ -123,9 +123,9 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
     resize(500, 350);
 }
 
-void qCloneWidget::SetCloneHists(int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, std::vector<std::string> histTitle, bool lines, bool markers) {
+void qCloneWidget::SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, std::vector<std::string> histTitle, bool lines, bool markers) {
     //for each plot,  create hists
-    for (int hist_num = 0; hist_num < nHists; ++hist_num) {
+    for (unsigned int hist_num = 0; hist_num < nHists; ++hist_num) {
         SlsQtH1D *k;
         if (hist_num + 1 > cloneplot1D_hists.size()) {
             cloneplot1D_hists.append(k = new SlsQtH1D("1d plot", histNBins, histXAxis, histYAxis[hist_num]));
@@ -213,13 +213,8 @@ void qCloneWidget::SavePlot() {
     char cID[10];
     sprintf(cID, "%d", id);
     //title
-    QString fName = QString(filePath.c_str());
-    if (cloneBox->title().contains('.')) {
-        fName.append(QString('/') + cloneBox->title());
-        fName.replace(".dat", ".png");
-        fName.replace(".raw", ".png");
-    } else
-        fName.append(QString("/Snapshot_unknown_title.png"));
+    QString fName = filePath + Qstring('/') + fileName + Qstring('_') + imageIndex +  Qstring('_') + QString(NowTime().c_str()) + QString(".png");
+    FILE_LOG(logDEBUG) << "fname:" << fName.toAscii().constData();
     //save
     QImage img(cloneBox->size().width(), cloneBox->size().height(), QImage::Format_RGB32);
     QPainter painter(&img);
@@ -243,13 +238,7 @@ int qCloneWidget::SavePlotAutomatic() {
     char cID[10];
     sprintf(cID, "%d", id);
     //title
-    QString fName = QString(filePath.c_str());
-    if (cloneBox->title().contains('.')) {
-        fName.append(QString('/') + cloneBox->title());
-        fName.replace(".dat", ".png");
-        fName.replace(".raw", ".png");
-    } else
-        fName.append(QString("/Snapshot_unknown_title.png"));
+    QString fName = filePath + Qstring('/') + fileName + Qstring('_') + imageIndex +  Qstring('_') + QString(NowTime().c_str()) + QString(".png");
     FILE_LOG(logDEBUG) << "fname:" << fName.toAscii().constData();
     //save
     QImage img(cloneBox->size().width(), cloneBox->size().height(), QImage::Format_RGB32);

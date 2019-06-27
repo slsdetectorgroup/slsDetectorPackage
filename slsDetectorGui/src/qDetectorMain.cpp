@@ -286,37 +286,31 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
 
 void qDetectorMain::Initialization() {
     // Dockable Plot
-	connect(dockWidgetPlot,	SIGNAL(topLevelChanged(bool)),	this,SLOT(ResizeMainWindow(bool)));
+	connect(dockWidgetPlot, SIGNAL(topLevelChanged(bool)), this, SLOT(ResizeMainWindow(bool)));
     // tabs
-	connect(tabs,			SIGNAL(currentChanged(int)),	this, SLOT(Refresh(int)));//( QWidget*)));
+	connect(tabs,SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));//( QWidget*)));
     //	Measurement tab
-    connect(tabMeasurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
-    connect(tabMeasurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
+    connect(tabMeasurement, SIGNAL(StartSignal()), this,SLOT(EnableTabs()));
+    connect(tabMeasurement, SIGNAL(FileNameChangedSignal(QString)), tablPlot, SLOT(SetSaveFileName(QString)));
     // Plot tab
-    connect(tabPlot,		SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
+    connect(tabPlot, SIGNAL(DisableZoomSignal(bool)), this, SLOT(SetZoomToolTip(bool)));
 
     // Plotting
     // When the acquisition is finished, must update the meas tab
     connect(myPlot, SIGNAL(UpdatingPlotFinished()), this, SLOT(EnableTabs()));
-    connect(myPlot, SIGNAL(UpdatingPlotFinished()), tabMeasurement,
-            SLOT(UpdateFinished()));
-    connect(myPlot, SIGNAL(SetCurrentMeasurementSignal(int)), tabMeasurement,
-            SLOT(SetCurrentMeasurement(int)));
+    connect(myPlot, SIGNAL(UpdatingPlotFinished()), tabMeasurement, SLOT(UpdateFinished()));
+    connect(myPlot, SIGNAL(SetCurrentMeasurementSignal(int)), tabMeasurement, SLOT(SetCurrentMeasurement(int)));
 
     // menubar
     // Modes Menu
-    connect(menuModes, SIGNAL(triggered(QAction *)), this,
-            SLOT(EnableModes(QAction *)));
+    connect(menuModes, SIGNAL(triggered(QAction *)), this, SLOT(EnableModes(QAction *)));
     // Utilities Menu
-    connect(menuUtilities, SIGNAL(triggered(QAction *)), this,
-            SLOT(ExecuteUtilities(QAction *)));
+    connect(menuUtilities, SIGNAL(triggered(QAction *)), this, SLOT(ExecuteUtilities(QAction *)));
     // Help Menu
-    connect(menuHelp, SIGNAL(triggered(QAction *)), this,
-            SLOT(ExecuteHelp(QAction *)));
+    connect(menuHelp, SIGNAL(triggered(QAction *)), this, SLOT(ExecuteHelp(QAction *)));
 
     // server
-    connect(myServer, SIGNAL(ServerStoppedSignal()), this,
-            SLOT(UncheckServer()));
+    connect(myServer, SIGNAL(ServerStoppedSignal()), this, SLOT(UncheckServer()));
 }
 
 void qDetectorMain::LoadConfigFile(const std::string fName) {
@@ -756,8 +750,6 @@ int qDetectorMain::StartStopAcquisitionFromClient(bool start) {
     if (start) {
         if (tabMeasurement->GetStartStatus() != start) {
             tabMeasurement->ClentStartAcquisition();
-            while (myPlot->GetClientInitiated())
-                usleep(500);
         }
     } else {
         tabMeasurement->StopAcquisition();

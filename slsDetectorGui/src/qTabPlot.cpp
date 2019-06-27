@@ -20,7 +20,7 @@ QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 
 qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : 
-    QWidget(parent), myDet(detector), myPlot(plot), isOneD(false), 
+    QWidget(parent), myDet(detector), myPlot(plot), is1d(false), 
     btnGroupPlotType(0), stackedLayout(nullptr), spinNthFrame(nullptr), spinTimeGap(nullptr), comboTimeGapUnit(nullptr) {
     setupUi(this);
     SetupWidgetWindow();
@@ -92,10 +92,10 @@ void qTabPlot::SetupWidgetWindow() {
     dispZAxis->setText(defaultImageZAxisTitle);
 
     // enabling according to det type
-    isOneD = false;
+    is1d = false;
     switch(myDet->getDetectorTypeAsEnum()) {
         case slsDetectorDefs::GOTTHARD:
-            isOneD = true;
+            is1d = true;
             break;
         case slsDetectorDefs::EIGER:
             chkGapPixels->setEnabled(true);
@@ -108,7 +108,7 @@ void qTabPlot::SetupWidgetWindow() {
             break;  
     }
 
-    Select1DPlot(isOneD);
+    Select1DPlot(is1d);
     Initialization();
     Refresh();
 }
@@ -134,13 +134,13 @@ void qTabPlot::Initialization() {
     connect(spinPersistency, SIGNAL(valueChanged(int)), myPlot, SLOT(SetPersistency(int)));
     connect(chkPoints, SIGNAL(toggled(bool)), myPlot, SLOT(SetMarkers(bool)));
     connect(chkLines, SIGNAL(toggled(bool)), myPlot, SLOT(SetLines(bool)));
-    connect(chk1DLog, SIGNAL(toggled(bool)), myPlot, SIGNAL(LogySignal(bool)));
+    connect(chk1DLog, SIGNAL(toggled(bool)), myPlot, SLOT(Set1dLogY(bool)));
     connect(chkStatistics, SIGNAL(toggled(bool)), myPlot, SLOT(DisplayStatistics(bool)));
 
     // 2D Plot box
-    connect(chkInterpolate, SIGNAL(toggled(bool)), myPlot, SIGNAL(InterpolateSignal(bool)));
-    connect(chkContour, SIGNAL(toggled(bool)), myPlot, SIGNAL(ContourSignal(bool)));
-    connect(chkLogz, SIGNAL(toggled(bool)), myPlot, SIGNAL(LogzSignal(bool)));
+    connect(chkInterpolate, SIGNAL(toggled(bool)), myPlot, SLOT(SetInterpolate(bool)));
+    connect(chkContour, SIGNAL(toggled(bool)), myPlot, SLOT(SetContour(bool)));
+    connect(chkLogz, SIGNAL(toggled(bool)), myPlot, SLOT(SetLogz(bool)));
     connect(chkStatistics_2, SIGNAL(toggled(bool)), myPlot, SLOT(DisplayStatistics(bool)));
     //pedstal
     connect(chkPedestal, SIGNAL(toggled(bool)), myPlot, SLOT(SetPedestal(bool)));
@@ -161,7 +161,7 @@ void qTabPlot::Initialization() {
     connect(spinTo_2, SIGNAL(valueChanged(int)), this, SLOT(SetBinary()));
     //gainplot
     if (chkGainPlot->isEnabled())
-        connect(chkGainPlot, SIGNAL(toggled(bool)), myPlot, SIGNAL(GainPlotSignal(bool)));
+        connect(chkGainPlot, SIGNAL(toggled(bool)), myPlot, SLOT(EnableGainPlot(bool)));
     // gap pixels
     if (chkGapPixels->isEnabled())
         connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
@@ -198,12 +198,11 @@ void qTabPlot::Initialization() {
     connect(chkZMax, SIGNAL(toggled(bool)), this, SLOT(SetZRange()));
     connect(dispZMin, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
     connect(dispZMax, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
-    connect(this, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)), myPlot, SIGNAL(ResetZMinZMaxSignal(bool, bool, double, double)));
 }
 
 void qTabPlot::Select1DPlot(bool enable) {
     FILE_LOG(logDEBUG) << "Selecting " << (enable ? "1" : "2") << "D Plot";
-    isOneD = enable;
+    is1d = enable;
     box1D->setEnabled(enable);
     box2D->setEnabled(!enable);
     chkZAxis->setEnabled(!enable);
@@ -212,14 +211,10 @@ void qTabPlot::Select1DPlot(bool enable) {
     chkZMax->setEnabled(!enable);
     dispZMin->setEnabled(!enable);
     dispZMax->setEnabled(!enable);
-    if(enable) {
-        myPlot->Select1DPlot();
-    } else {
-        myPlot->Select2DPlot();  
-    }
+    myplot->Select1dPlot(enable);
     SetTitles();
     SetXYRange();
-    if (!isOneD) {
+    if (!is1d) {
         SetZRange();
     }
 }
@@ -242,7 +237,7 @@ void qTabPlot::SetPlot() {
     if (plotEnable) {
         SetTitles();
         SetXYRange();
-        if (!isOneD) {
+        if (!is1d) {
             SetZRange();
         }
     }
@@ -303,7 +298,7 @@ void qTabPlot::EnablePersistency(bool enable) {
 void qTabPlot::SetBinary() {
     bool binary1D = chkBinary->isChecked();
     bool binary2D = chkBinary_2->isChecked(); 
-    if (isOneD) {
+    if (is1d) {
         FILE_LOG(logINFO) << "Binary Plot " << (binary1D ? "enabled" : "disabled");
         lblFrom->setEnabled(binary1D);
         lblTo->setEnabled(binary1D);
@@ -364,15 +359,15 @@ void qTabPlot::SetTitles() {
     }
     // x
     if (!chkXAxis->isChecked() || dispXAxis->text().isEmpty()) {
-        dispXAxis->setText(isOneD ? defaultHistXAxisTitle : defaultImageXAxisTitle);
-        myPlot->SetXAxisTitle(isOneD ? defaultHistXAxisTitle : defaultImageXAxisTitle);
+        dispXAxis->setText(is1d ? defaultHistXAxisTitle : defaultImageXAxisTitle);
+        myPlot->SetXAxisTitle(is1d ? defaultHistXAxisTitle : defaultImageXAxisTitle);
     } else {
         myPlot->SetXAxisTitle(dispXAxis->text());
     } 
     // y
     if (!chkYAxis->isChecked() || dispYAxis->text().isEmpty()) {
-        dispYAxis->setText(isOneD ? defaultHistYAxisTitle : defaultImageYAxisTitle);
-        myPlot->SetYAxisTitle(isOneD ? defaultHistYAxisTitle : defaultImageYAxisTitle);
+        dispYAxis->setText(is1d ? defaultHistYAxisTitle : defaultImageYAxisTitle);
+        myPlot->SetYAxisTitle(is1d ? defaultHistYAxisTitle : defaultImageYAxisTitle);
     } else {
         myPlot->SetYAxisTitle(dispYAxis->text());
     }  
@@ -490,7 +485,7 @@ void qTabPlot::SetXYRange() {
     connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
 
     // to update plot with range
-    myPlot->SetXYRange(true);
+    myplot->SetXYRangeChanged();
     myPlot->DisableZoom(disablezoom);
     emit DisableZoomSignal(disablezoom);
 }
@@ -594,7 +589,7 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     myPlot->IsXYRangeValues(true, qDefs::YMAXIMUM);
 
     // to update plot with range
-    myPlot->SetXYRange(true);
+    myplot->SetXYRangeChanged();
     myPlot->DisableZoom(true);
     emit DisableZoomSignal(true);
 }
@@ -609,7 +604,7 @@ void qTabPlot::SetZRange() {
     if (!dispZMax->text().isEmpty()) {
         zmax = dispZMax->text().toDouble();
     }  
-    emit ResetZMinZMaxSignal(isZmin, isZmax, zmin, zmax);
+    myPlot->SetZRange(isZmin, isZmax, zmin, zmax);
 }
 
 void qTabPlot::GetStreamingFrequency() {

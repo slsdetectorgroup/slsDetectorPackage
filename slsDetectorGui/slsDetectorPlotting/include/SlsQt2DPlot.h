@@ -101,10 +101,10 @@ public:
     void             FillTestPlot(int i=0);
     void             Update();
 
-public slots:
     void LogZ(bool on=1);
     void InterpolatedPlot(bool on);
     void showContour(bool on);
+public slots:
     void showSpectrogram(bool on);
     //    void printPlot();
 

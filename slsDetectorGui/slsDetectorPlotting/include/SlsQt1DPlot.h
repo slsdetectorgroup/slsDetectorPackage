@@ -133,6 +133,9 @@ class SlsQt1DPlot:public QwtPlot{
   void SetZoomBase(double xmin,double ymin,double x_width, double y_width){ zoomer->SetZoomBase(xmin,ymin,x_width,y_width);}
 
   void alignScales();
+
+  void SetLogX(bool yes=1);  
+  void SetLogY(bool yes=1);
  private:
   
   SlsQtH1DList*     hist_list;
@@ -159,11 +162,6 @@ class SlsQt1DPlot:public QwtPlot{
  public slots:
   void UnZoom();
   void Update();
-
-  void SetLogX(bool yes=1);  
-  void SetLogY(bool yes=1);
-
- protected:
 
 };
 

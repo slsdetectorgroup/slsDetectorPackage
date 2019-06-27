@@ -19,7 +19,8 @@ class qCloneWidget : public QMainWindow {
     Q_OBJECT
 
   public:
-    qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle, int numDim, std::string FilePath,
+    qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle, int numDim, 
+                QString filePath, QString fileName, int fileIndex, 
                  bool displayStats, QString min, QString max, QString sum);
     ~qCloneWidget();
 
@@ -35,7 +36,7 @@ class qCloneWidget : public QMainWindow {
 	   * @param lines style of plot if lines or dots
 	   * @param markers style of plot markers or not
 	   */
-    void SetCloneHists(int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, std::vector<std::string> histTitle, bool lines, bool markers);
+    void SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, std::vector<std::string> histTitle, bool lines, bool markers);
 
      /**
      * Get the 1D hist values to plot for angle plotting
@@ -76,7 +77,9 @@ class qCloneWidget : public QMainWindow {
 
   private:
     int id;
-    std::string filePath;
+    QString filePath;
+    QString fileName;
+    int imageIndex;
     SlsQt1DPlot *cloneplot1D;
     SlsQt2DPlotLayout *cloneplot2D;
     QVector<SlsQtH1D *> cloneplot1D_hists;

@@ -66,8 +66,7 @@ private:
 
 signals:
 	void StartSignal();
-	void StopSignal();
-
+	void FileNameChangedSignal(QString);
 private:
 	multiSlsDetector *myDet;
 	qDrawPlot *myPlot;

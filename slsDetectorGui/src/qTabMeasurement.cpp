@@ -27,6 +27,8 @@ bool qTabMeasurement::GetStartStatus(){
 void qTabMeasurement::ClentStartAcquisition(){
 	StartAcquisition();
 	myPlot->SetClientInitiated();
+	while (myPlot->GetClientInitiated())
+		usleep(500);
 }
 
 int qTabMeasurement::GetProgress(){
@@ -502,11 +504,13 @@ void qTabMeasurement::GetFileName() {
 }
 
 void qTabMeasurement::SetFileName() {
-	auto val = dispFileName->text().toAscii().constData();
+	std::string val = std::string(dispFileName->text().toAscii().constData());
 	FILE_LOG(logINFO) << "Setting File Name Prefix:" << val;
 	try {
         myDet->setFileName(val);
     } CATCH_HANDLE("Could not set file name prefix.", "qTabMeasurement::SetFileName", this, &qTabMeasurement::GetFileName)
+
+	emit FileNameChangedSignal(dispFileName->text());
 }
 
 void qTabMeasurement::GetRunIndex() {

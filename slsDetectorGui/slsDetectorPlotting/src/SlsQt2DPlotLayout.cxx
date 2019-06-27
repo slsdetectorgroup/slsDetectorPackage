@@ -18,7 +18,6 @@ SlsQt2DPlotLayout::SlsQt2DPlotLayout(QWidget *parent):QGroupBox(parent){
   isZmin = false;
   isZmax = false;
 	Layout();
-	ConnectSignalsAndSlots();
 }
 
 SlsQt2DPlotLayout::~SlsQt2DPlotLayout(){
@@ -32,11 +31,7 @@ void SlsQt2DPlotLayout::Layout(){
 	the_layout->addWidget(the_plot,2,0,3,3);
 }
 
-void SlsQt2DPlotLayout::ConnectSignalsAndSlots(){
-	connect(this, SIGNAL(InterpolateSignal(bool)), the_plot,	SLOT(InterpolatedPlot(bool)));
-	connect(this,	SIGNAL(ContourSignal(bool)), the_plot,	SLOT(showContour(bool)));
-	connect(this, SIGNAL(LogzSignal(bool)), this, SLOT(SetZScaleToLog(bool)));
-}
+
 
 void SlsQt2DPlotLayout::KeepZRangeIfSet() {
 	UpdateZRange(zmin, zmax);
@@ -51,6 +46,7 @@ void SlsQt2DPlotLayout::SetZRange(bool isMin, bool isMax, double min, double max
 
 	UpdateZRange(min, max);
 }
+
 
 void SlsQt2DPlotLayout::UpdateZRange(double min, double max) {
 	if(isLog) {
@@ -72,8 +68,15 @@ void SlsQt2DPlotLayout::UpdateZRange(double min, double max) {
 	the_plot->Update();
 }
 
-void SlsQt2DPlotLayout::SetZScaleToLog(bool enable) {
-	FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling")  << " Z Scale to log";
+void SlsQt2DPlotLayout::SetInterpolate(bool enable) {
+	the_plot->InterpolatedPlot(enable);
+}
+
+void SlsQt2DPlotLayout::SetContour(bool enable) {
+	the_plot->showContour(enable);
+}
+
+void SlsQt2DPlotLayout::SetLogz(bool enable) {
 	isLog = enable;
 	the_plot->LogZ(enable);
 	SetZRange(isZmin, isZmax, zmin, zmax);

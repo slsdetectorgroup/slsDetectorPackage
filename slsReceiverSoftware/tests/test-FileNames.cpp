@@ -1,9 +1,9 @@
 #include "BinaryFile.h"
 #include "BinaryFileStatic.h"
-#ifndef HDF5C
-#define HDF5C
-#endif
+#ifdef HDF5C
 #include "HDF5FileStatic.h"
+#endif
+
 #include "catch.hpp"
 
 SCENARIO("File name creation raw files", "[receiver]") {
@@ -89,6 +89,8 @@ SCENARIO("Creating master file name", "[receiver]") {
     }
 }
 
+#ifdef HDF5C
+
 SCENARIO("File name creation hdf5 files", "[receiver]") {
     GIVEN("Some paramters") {
 
@@ -145,3 +147,5 @@ SCENARIO("File name creation hdf5 files", "[receiver]") {
         }
     }
 }
+
+#endif

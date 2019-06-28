@@ -79,13 +79,11 @@ class qDrawPlot : public QWidget {
   private slots:
     void SetSaveFileName(QString val);
     void CloneCloseEvent(int id);
-
-  
-    void UpdatePlot();
+    void AcquireThread();
 
   signals:
-    void UpdatingPlotFinished();
-    void UpdatePlotSignal();
+    void AcquireSignal();
+    void AcquireFinishedSignal();
 
   private:
     void SetupWidgetWindow();
@@ -98,23 +96,15 @@ class qDrawPlot : public QWidget {
     void GetStatistics(double &min, double &max, double &sum, double *array, int size);
     void DetachHists();
     void UpdateXYRange();
-
- 
-
-
-
-    bool StartOrStopThread(bool start);
-    void SetupMeasurement();
-    static void *DataStartAcquireThread(void *this_pointer);
-    static int GetDataCallBack(detectorData *data, int fIndex, int subIndex, void *this_pointer);
-    int GetData(detectorData *data, int fIndex, int subIndex);
-    static int GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer);
-    int AcquisitionFinished(double currentProgress, int detectorStatus);
-    static int GetMeasurementFinishedCallBack(int currentMeasurementIndex, int fileIndex, void *this_pointer);
-    int MeasurementFinished(int currentMeasurementIndex, int fileIndex);
-    static int GetProgressCallBack(double currentProgress, void *this_pointer);
+    static void GetProgressCallBack(double currentProgress, void *this_pointer);
+    static void GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer);
+    static void GetMeasurementFinishedCallBack(int currentMeasurementIndex, void *this_pointer);
+    static void GetDataCallBack(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex, void *this_pointer);
+    void AcquisitionFinished(double currentProgress, int detectorStatus);
+    void MeasurementFinished(int currentMeasurementIndex);
+    void GetData(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex);
     void toDoublePixelData(double *dest, char *source, int size, int databytes, int dr, double *gaindest = NULL);
-
+    void UpdatePlot();
 
   	static const int NUM_PEDESTAL_FRAMES = 20;
     multiSlsDetector *myDet;
@@ -131,14 +121,10 @@ class qDrawPlot : public QWidget {
 
     bool is1d{true};
     bool isRunning{false};
-    int progress{0};
-
+   
 	// titles
-	  QString plotTitle{""};
     QString plotTitle_prefix{""};
     QLabel *lblFrameIndexTitle1d{nullptr};
-    std::vector<std::string> title1d;
-	  std::string title2d{""};
     QString xTitle1d{"Channel Number"};
     QString yTitle1d{"Counts"};
 	  QString xTitle2d{"Pixel"};
@@ -155,11 +141,12 @@ class qDrawPlot : public QWidget {
     double *data2d{nullptr};
 
 	//options
-	bool binary{false};
+    bool plotEnable{true};
+	  bool binary{false};
     int binaryFrom{0};
     int binaryTo{0};
     int persistency{0};
-    int currentPersistency0};
+    int currentPersistency{0};
     bool isLines{true};
     bool isMarkers{false};
     QwtSymbol *marker{nullptr};
@@ -191,9 +178,9 @@ class qDrawPlot : public QWidget {
     double endPixel{0};
     double pixelWidth{0};
 
+    int progress{0};
     int64_t currentMeasurement{0};
     int64_t currentFrame{0};
-    int64_t lastImageNumber{0};
 	  pthread_mutex_t lastImageCompleteMutex;
 
     const static int npixelsx_jctb = 400;

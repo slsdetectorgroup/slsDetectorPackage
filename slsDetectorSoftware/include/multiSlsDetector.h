@@ -2091,16 +2091,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * gets detector status and progress index as arguments
      * @param pArg argument
      */
-    void registerAcquisitionFinishedCallback(int (*func)(double, int, void *),
+    void registerAcquisitionFinishedCallback(void (*func)(double, int, void *),
                                              void *pArg);
 
     /**
      * register callback for accessing measurement final data
      * @param func function to be called at the end of the acquisition.
-     * gets detector status and progress index as arguments
+     * gets measurement index
      * @param pArg argument
      */
-    void registerMeasurementFinishedCallback(int (*func)(int, int, void *),
+    void registerMeasurementFinishedCallback(void (*func)(int, void *),
                                              void *pArg);
 
     /**
@@ -2109,7 +2109,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * gets detector status and progress index as arguments
      * @param pArg argument
      */
-    void registerProgressCallback(int (*func)(double, void *), void *pArg);
+    void registerProgressCallback(void (*func)(double, void *), void *pArg);
 
     /**
      * register calbback for accessing detector final data,
@@ -2120,7 +2120,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * s is for subframe number for eiger for 32 bit mode
      * @param pArg argument
      */
-    void registerDataCallback(int (*userCallback)(detectorData *, int, int,
+    void registerDataCallback(void (*userCallback)(detectorData *, uint64_t, uint32_t,
                                                   void *),
                               void *pArg);
 
@@ -2299,16 +2299,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /** detector data packed for the gui */
     detectorData *thisData{nullptr};
 
-    int (*acquisition_finished)(double, int, void *){nullptr};
+    void (*acquisition_finished)(double, int, void *){nullptr};
     void *acqFinished_p{nullptr};
 
-    int (*measurement_finished)(int, int, void *){nullptr};
+    void (*measurement_finished)(int, void *){nullptr};
     void *measFinished_p{nullptr};
 
-    int (*progress_call)(double, void *){nullptr};
+    void (*progress_call)(double, void *){nullptr};
     void *pProgressCallArg{nullptr};
 
-    int (*dataReady)(detectorData *, int, int, void *){nullptr};
+    void (*dataReady)(detectorData *, uint64_t, uint32_t, void *){nullptr};
     void *pCallbackArg{nullptr};
 };
 

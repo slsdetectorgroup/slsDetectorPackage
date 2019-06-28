@@ -4069,24 +4069,24 @@ int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
     return OK;
 }
 
-void multiSlsDetector::registerAcquisitionFinishedCallback(int (*func)(double, int, void *),
+void multiSlsDetector::registerAcquisitionFinishedCallback(void (*func)(double, int, void *),
                                                            void *pArg) {
     acquisition_finished = func;
     acqFinished_p = pArg;
 }
 
-void multiSlsDetector::registerMeasurementFinishedCallback(int (*func)(int, int, void *),
+void multiSlsDetector::registerMeasurementFinishedCallback(void (*func)(int, void *),
                                                            void *pArg) {
     measurement_finished = func;
     measFinished_p = pArg;
 }
 
-void multiSlsDetector::registerProgressCallback(int (*func)(double, void *), void *pArg) {
+void multiSlsDetector::registerProgressCallback(void (*func)(double, void *), void *pArg) {
     progress_call = func;
     pProgressCallArg = pArg;
 }
 
-void multiSlsDetector::registerDataCallback(int (*userCallback)(detectorData *, int, int, void *),
+void multiSlsDetector::registerDataCallback(void (*userCallback)(detectorData *, uint64_t, uint32_t, void *),
                                             void *pArg) {
     dataReady = userCallback;
     pCallbackArg = pArg;
@@ -4233,7 +4233,7 @@ int multiSlsDetector::acquire() {
         findex = incrementFileIndex();
 
         if (measurement_finished != nullptr) {
-            measurement_finished(im, findex, measFinished_p);
+            measurement_finished(im, measFinished_p);
         }
         if (multi_shm()->stoppedFlag != 0) {
             break;

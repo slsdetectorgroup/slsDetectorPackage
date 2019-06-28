@@ -398,19 +398,19 @@ int slsDetectorUsers::setDetectorMode(int value, int detPos) {
 
  *********************************************************************/
 
-void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*), void *pArg) {
+void slsDetectorUsers::registerDataCallback(void( *userCallback)(detectorData*, uint64_t, uint32_t, void*), void *pArg) {
 	detector.registerDataCallback(userCallback,pArg);
 }
 
-void slsDetectorUsers::registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg) {
+void slsDetectorUsers::registerAcquisitionFinishedCallback(void( *func)(double,int, void*), void *pArg) {
 	detector.registerAcquisitionFinishedCallback(func,pArg);
 }
 
-void slsDetectorUsers::registerMeasurementFinishedCallback(int( *func)(int,int, void*), void *pArg) {
+void slsDetectorUsers::registerMeasurementFinishedCallback(void( *func)(int,void*), void *pArg) {
 	detector.registerMeasurementFinishedCallback(func,pArg);
 }
 
-void slsDetectorUsers::registerProgressCallback(int( *func)(double,void*), void *pArg) {
+void slsDetectorUsers::registerProgressCallback(void( *func)(double,void*), void *pArg) {
 	detector.registerProgressCallback(func,pArg);
 }
 

@@ -36,7 +36,7 @@ class qCloneWidget : public QMainWindow {
 	   * @param lines style of plot if lines or dots
 	   * @param markers style of plot markers or not
 	   */
-    void SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, std::vector<std::string> histTitle, bool lines, bool markers);
+    void SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, QString histTitle, bool lines, bool markers);
 
      /**
      * Get the 1D hist values to plot for angle plotting

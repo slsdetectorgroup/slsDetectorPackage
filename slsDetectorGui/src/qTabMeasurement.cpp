@@ -523,16 +523,18 @@ void qTabMeasurement::SetRunIndex(int val) {
 
 void qTabMeasurement::ResetProgress() {
 	FILE_LOG(logDEBUG) << "Resetting progress";
-	lblCurrentFrame->setText(QString::number(0));
-	lblCurrentMeasurement->setText(QString::number(0));
+	lblCurrentFrame->setText("");
+	lblCurrentMeasurement->setText("");
 	progressBar->setValue(0);
 }
 
 void qTabMeasurement::UpdateProgress() {
 	FILE_LOG(logDEBUG) << "Updating progress";
 	progressBar->setValue(myPlot->GetProgress());
-	lblCurrentFrame->setText(QString::number(myPlot->GetCurrentFrameIndex()));
-	lblCurrentMeasurement->setText(QString::number(myPlot->GetCurrentMeasurementIndex()));
+	int64_t temp = myPlot->GetCurrentFrameIndex();
+	lblCurrentFrame->setText(temp >= 0 ? QString::number(temp) : "");
+	temp = myPlot->GetCurrentMeasurementIndex();
+	lblCurrentMeasurement->setText(temp >= 0 ? QString::number(temp) : "");
 }
 
 int qTabMeasurement::VerifyOutputDirectoryError() {
@@ -574,8 +576,8 @@ void qTabMeasurement::StartAcquisition() {
 	}
 
 	FILE_LOG(logINFOBLUE) << "Starting Acquisition";
-	lblCurrentFrame->setText(QString::number(0));
-	lblCurrentMeasurement->setText(QString::number(0));
+	lblCurrentFrame->setText("");
+	lblCurrentMeasurement->setText("");
 	Enable(0);
 	progressBar->setValue(0);
 	progressTimer->start(100);

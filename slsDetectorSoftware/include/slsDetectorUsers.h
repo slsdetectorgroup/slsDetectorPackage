@@ -813,7 +813,7 @@ public:
 	 * @param pArg argument
 	 */
 
-	void registerDataCallback(int( *userCallback)(detectorData* d, int f, int s, void*), void *pArg);
+	void registerDataCallback(void( *userCallback)(detectorData* d, uint64_t f, uint32_t s, void*), void *pArg);
 
 	/**
 	 * register callback for accessing acquisition final data in client,
@@ -821,15 +821,15 @@ public:
 	 * gets detector status and progress index as arguments
 	 * @param pArg argument
 	 */
-	void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg);
+	void registerAcquisitionFinishedCallback(void( *func)(double,int, void*), void *pArg);
 
 	/**
 	 * register callback for accessing measurement final data in client,
 	 * @param func function to be called at the end of the acquisition.
-	 * gets detector status and progress index as arguments
+	 * gets measurement index
 	 * @param pArg argument
 	 */
-	void registerMeasurementFinishedCallback(int( *func)(int,int, void*), void *pArg);
+	void registerMeasurementFinishedCallback(void( *func)(int, void*), void *pArg);
 
 	/**
 	 * register callback for accessing detector progress in client,
@@ -837,7 +837,7 @@ public:
 	 * gets detector status and progress index as arguments
 	 * @param pArg argument
 	 */
-	void registerProgressCallback(int( *func)(double,void*), void *pArg);
+	void registerProgressCallback(void( *func)(double,void*), void *pArg);
 
 	/**
      @short [usage strongly discouraged] sets parameters trough command line interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf

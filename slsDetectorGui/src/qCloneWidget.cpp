@@ -124,7 +124,7 @@ void qCloneWidget::SetupWidgetWindow(QString title, QString xTitle, QString yTit
     resize(500, 350);
 }
 
-void qCloneWidget::SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, std::vector<std::string> histTitle, bool lines, bool markers) {
+void qCloneWidget::SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, QString histTitle, bool lines, bool markers) {
     //for each plot,  create hists
     for (unsigned int hist_num = 0; hist_num < nHists; ++hist_num) {
         SlsQtH1D *h = new SlsQtH1D("1d plot", histNBins, histXAxis, histYAxis[hist_num]);
@@ -138,13 +138,14 @@ void qCloneWidget::SetCloneHists(unsigned int nHists, int histNBins, double *his
         cloneplot1D_hists.append(h);
         h->Attach(cloneplot1D);
 
-        lblHistTitle->setText(QString(histTitle[0].c_str()));
+        lblHistTitle->setText(histTitle);
     }
 }
 
-void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d) {
+void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d, QwtText frameIndexTitle) {
     cloneplot2D->GetPlot()->SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d);
     cloneplot2D->KeepZRangeIfSet();
+    cloneplot2D->setTitle(frameIndexTitle);
 }
 
 void qCloneWidget::SetRange(bool IsXYRange[], double XYRange[]) {

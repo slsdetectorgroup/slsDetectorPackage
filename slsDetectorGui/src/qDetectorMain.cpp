@@ -699,7 +699,7 @@ void qDetectorMain::EnableTabs() {
             tabDeveloper->Refresh();
 
         tabPlot->Refresh();
-        myPlot->StartStopDaqToggle();
+        myPlot->StartAcquisition();
     } else { // to enable scan box
         tabPlot->Refresh();
         // to start adc timer

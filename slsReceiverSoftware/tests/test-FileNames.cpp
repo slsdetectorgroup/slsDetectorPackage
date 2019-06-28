@@ -12,12 +12,10 @@ SCENARIO("File name creation raw files", "[receiver]") {
         std::string fpath = "/home/test";
         std::string fnameprefix = "hej";
         uint64_t findex{0};
-        bool frindexenable{true};
         uint64_t fnum{0};
         int dindex{0};
         int numunits{1};
         int unitindex{0};
-        bool fixedw_findex{false};
 
         WHEN("called with default arguments and true") {
             auto fname = BinaryFileStatic::CreateFileName(
@@ -97,12 +95,10 @@ SCENARIO("File name creation hdf5 files", "[receiver]") {
         std::string fpath = "/home/test";
         std::string fnameprefix = "hej";
         uint64_t findex{0};
-        bool frindexenable{true};
         uint64_t fnum{0};
         int dindex{0};
         int numunits{1};
         int unitindex{0};
-        bool fixedw_findex{false};
 
         WHEN("called with default arguments and true for frindexenable") {
             auto fname = HDF5FileStatic::CreateFileName(

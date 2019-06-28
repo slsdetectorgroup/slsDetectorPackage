@@ -50,6 +50,8 @@ class File : private virtual slsDetectorDefs {
 	 */
 	std::string GetCurrentFileName();
 
+
+	void resetSubFileIndex();
 	/**
 	 * Print all member values
 	 */
@@ -192,6 +194,8 @@ class File : private virtual slsDetectorDefs {
 
 	/** File Index */
 	uint64_t* fileIndex;
+
+	uint64_t subFileIndex{0};
 
 	/** Over write enable */
 	bool* overWriteEnable;

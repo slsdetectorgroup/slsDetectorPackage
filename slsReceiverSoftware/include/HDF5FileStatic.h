@@ -47,23 +47,18 @@ public:
 	 * @param unitindex unit index
 	 * @returns complete file name created
 	 */
-	static std::string CreateFileName(char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
-			uint64_t fnum = 0, int dindex = -1, int numunits = 1, int unitindex = 0, bool fixedw_findex = false)
-	{
-		std::ostringstream osfn;
-		osfn << fpath << "/" << fnameprefix;
-		if (dindex >= 0) osfn << "_d" <<  (dindex * numunits + unitindex);
-		if (frindexenable) osfn << "_f" << std::setfill('0') << std::setw(12) << fnum;
-		osfn << "_";
-		if (fixedw_findex)
-			osfn << std::setfill('0') << std::setw(12) << findex;
-		else
-			osfn << findex;
-		osfn << ".h5";
-		return osfn.str();
+	static std::string CreateFileName(char *fpath, char *fprefix,
+										uint64_t findex, uint64_t fnum,
+										int dindex, int numunits = 1,
+										int unitindex = 0) {
+		std::ostringstream os;
+		os << fpath << "/" << fprefix << "_d"
+			<< (dindex * numunits + unitindex) << "_f" << fnum << '_'
+			<< findex << ".h5";
+		return os.str();
 	}
 
-	/**
+        /**
 	 * Create master file name
 	 * @param fpath file path
 	 * @param fnameprefix file name prefix (includes scan and position variables)
@@ -72,12 +67,10 @@ public:
 	 */
 	static std::string CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex)
 	{
-		std::ostringstream osfn;
-		osfn << fpath << "/" << fnameprefix;
-		osfn << "_master";
-		osfn << "_" << findex;
-		osfn << ".h5";
-		return osfn.str();
+		std::ostringstream os;
+		os << fpath << "/" << fnameprefix << "_master"
+			<< "_" << findex << ".h5";
+		return os.str();
 	}
 
 	/**
@@ -679,7 +672,7 @@ public:
 
 				//source file name
 				std::string srcFileName = HDF5FileStatic::CreateFileName(fpath, fnameprefix, findex,
-						frindexenable, framesSaved, dindex, numunits, i);
+						framesSaved, dindex, numunits, i);
 
 				// find relative path
 				std::string relative_srcFileName = srcFileName;

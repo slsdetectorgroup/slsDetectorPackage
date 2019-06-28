@@ -38,6 +38,10 @@ std::string File::GetCurrentFileName() {
 	return currentFileName;
 }
 
+void File::resetSubFileIndex(){
+	subFileIndex = 0u;
+}
+
 void File::PrintMembers(TLogLevel level) {
 	FILE_LOG(level) << "\nGeneral Writer Variables:" << std::endl
 			<< "Index: " << index << std::endl

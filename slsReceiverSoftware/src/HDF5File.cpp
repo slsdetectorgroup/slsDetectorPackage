@@ -133,7 +133,7 @@ int HDF5File::CreateFile(uint64_t fnum) {
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 	currentFileName = HDF5FileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
-			(*numImages > 1), fnum, *detIndex, *numUnitsPerDetector, index);
+			fnum, *detIndex, *numUnitsPerDetector, index);
 
 	//first time
 	if(!fnum) UpdateDataType();
@@ -199,7 +199,7 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	// check if maxframesperfile = 0 for infinite
 	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
 		CloseCurrentFile();
-		CreateFile(fnum);
+		CreateFile(++subFileIndex);
 	}
 	numFramesInFile++;
 	numActualPacketsInFile += nump;

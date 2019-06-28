@@ -252,11 +252,12 @@ int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st,
 	if (file == nullptr)
 		return FAIL;
 	file->CloseAllFiles();
+	file->resetSubFileIndex();
 	if (file->CreateMasterFile(*masterFileWriteEnable, en,	generalData->imageSize,
 			generalData->nPixelsX, generalData->nPixelsY,
 			at, st, sp, ap) == FAIL)
 		return FAIL;
-	if (file->CreateFile(currentFrameIndex) == FAIL)
+	if (file->CreateFile(0) == FAIL)
 		return FAIL;
 	return OK;
 }

@@ -5,8 +5,7 @@ set(PROJECT_VERSION 5.0.0)
 include(CheckIPOSupported)
 
 
-# CMP0074
-
+cmake_policy(SET CMP0074 NEW)
 include(cmake/project_version.cmake)
 
 # Include additional modules that are used unconditionally

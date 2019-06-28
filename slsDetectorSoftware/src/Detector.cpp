@@ -19,10 +19,10 @@ void Detector::setConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
 }
 
-std::vector<ns> Detector::getExptime(Positions pos) const {
+Result<ns> Detector::getExptime(Positions pos) const {
     auto r = pimpl->Parallel(&slsDetector::setTimer, pos,
                              defs::ACQUISITION_TIME, -1);
-    return std::vector<ns>(begin(r), end(r));
+    return Result<ns>(begin(r), end(r));
 }
 
 void Detector::setExptime(ns t, Positions pos) {
@@ -30,10 +30,10 @@ void Detector::setExptime(ns t, Positions pos) {
                     t.count());
 }
 
-std::vector<ns> Detector::getSubExptime(Positions pos) const {
+Result<ns> Detector::getSubExptime(Positions pos) const {
     auto r = pimpl->Parallel(&slsDetector::setTimer, pos,
                              defs::SUBFRAME_ACQUISITION_TIME, -1);
-    return std::vector<ns>(begin(r), end(r));
+    return Result<ns>(begin(r), end(r));
 }
 
 void Detector::setSubExptime(ns t, Positions pos) {
@@ -41,10 +41,10 @@ void Detector::setSubExptime(ns t, Positions pos) {
                     defs::SUBFRAME_ACQUISITION_TIME, t.count());
 }
 
-std::vector<ns> Detector::getPeriod(Positions pos) const {
+Result<ns> Detector::getPeriod(Positions pos) const {
     auto r =
         pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, -1);
-    return std::vector<ns>(begin(r), end(r));
+    return Result<ns>(begin(r), end(r));
 }
 
 void Detector::setPeriod(ns t, Positions pos) {
@@ -54,7 +54,7 @@ void Detector::setPeriod(ns t, Positions pos) {
 void Detector::setFname(const std::string &fname) {
     pimpl->Parallel(&slsDetector::setFileName, Positions{}, fname);
 }
-std::vector<std::string> Detector::getFname() const {
+Result<std::string> Detector::getFname() const {
     return pimpl->Parallel(&slsDetector::setFileName, Positions{}, "");
 }
 
@@ -62,7 +62,7 @@ void Detector::setFwrite(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileWrite, Positions{}, value);
 }
 
-std::vector<bool> Detector::getFwrite(Positions pos) const {
+Result<bool> Detector::getFwrite(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFileWrite, Positions{});
 }
 

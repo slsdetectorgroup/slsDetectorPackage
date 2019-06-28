@@ -5,9 +5,20 @@
 
 #include "Detector.h"
 #include "DetectorPythonInterface.h"
+#include "Result.h"
 #include "mythenFileIO.h"
 #include <chrono>
 #include <vector>
+
+
+//Add type_typecaster to pybind for our wrapper type
+namespace pybind11 {
+namespace detail {
+template <typename Type, typename Alloc>
+struct type_caster<sls::Result<Type, Alloc>>
+    : list_caster<sls::Result<Type, Alloc>, Type> {};
+} // namespace detail
+} // namespace pybind11
 
 using ds = std::chrono::duration<double>;
 
@@ -346,8 +357,7 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getFname", &Detector::getFname)
         .def("setFwrite", &Detector::setFwrite, py::arg(),
              py::arg() = std::vector<int>{})
-        .def("getFwrite", &Detector::getFwrite,
-             py::arg() = std::vector<int>{})
+        .def("getFwrite", &Detector::getFwrite, py::arg() = std::vector<int>{})
 
         // Time
         .def("setExptime", &Detector::setExptime, py::arg(),

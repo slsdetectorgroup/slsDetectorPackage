@@ -13,16 +13,39 @@ Detector::~Detector() = default;
 
 void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
 
+// Configuration
+
+Result<std::string> Detector::getHostname(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getHostname, pos);
+}
+
 void Detector::acquire() { pimpl->acquire(); }
 
 void Detector::setConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
 }
 
+void Detector::clearBit(uint32_t addr, int bit, Positions pos){
+    pimpl->Parallel(&slsDetector::clearBit, pos, addr, bit);
+}
+void Detector::setBit(uint32_t addr, int bit, Positions pos){
+    pimpl->Parallel(&slsDetector::setBit, pos, addr, bit);
+}
+Result<uint32_t> Detector::getRegister(uint32_t addr, Positions pos){
+    return pimpl->Parallel(&slsDetector::readRegister, pos, addr);
+}
+
 Result<ns> Detector::getExptime(Positions pos) const {
     auto r = pimpl->Parallel(&slsDetector::setTimer, pos,
                              defs::ACQUISITION_TIME, -1);
     return Result<ns>(begin(r), end(r));
+}
+
+Result<uint64_t> Detector::getStartingFrameNumber(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getStartingFrameNumber, pos);
+}
+void Detector::setStartingFrameNumber(uint64_t value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setStartingFrameNumber, pos, value);
 }
 
 void Detector::setExptime(ns t, Positions pos) {

@@ -10,8 +10,7 @@
 #include <chrono>
 #include <vector>
 
-
-//Add type_typecaster to pybind for our wrapper type
+// Add type_typecaster to pybind for our wrapper type
 namespace pybind11 {
 namespace detail {
 template <typename Type, typename Alloc>
@@ -351,6 +350,24 @@ PYBIND11_MODULE(_sls_detector, m) {
     py::class_<Detector> multiDetectorApi(m, "multiDetectorApi");
     multiDetectorApi.def(py::init<int>())
         .def("acquire", &Detector::acquire)
+
+        // Configuration
+        .def("free", &Detector::freeSharedMemory)
+        .def("setConfig", &Detector::setConfig)
+        .def("getHostname", &Detector::getHostname,
+             py::arg() = std::vector<int>{})
+
+        .def("setBit", &Detector::setBit, py::arg(), py::arg(),
+             py::arg() = std::vector<int>{})
+        .def("clearBit", &Detector::clearBit, py::arg(), py::arg(),
+             py::arg() = std::vector<int>{})
+        .def("getRegister", &Detector::getRegister, py::arg(),
+             py::arg() = std::vector<int>{})
+
+        .def("getStartingFrameNumber", &Detector::getStartingFrameNumber,
+             py::arg() = std::vector<int>{})
+        .def("setStartingFrameNumber", &Detector::setStartingFrameNumber,
+             py::arg(), py::arg() = std::vector<int>{})
 
         // File
         .def("setFname", &Detector::setFname, py::arg())

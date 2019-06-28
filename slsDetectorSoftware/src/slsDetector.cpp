@@ -1382,7 +1382,7 @@ void slsDetector::configureMAC() {
     }
 }
 
-void slsDetector::setStartingFrameNumber(const uint64_t value) {
+void slsDetector::setStartingFrameNumber(uint64_t value) {
     FILE_LOG(logDEBUG1) << "Setting starting frame number to " << value;
     sendToDetector(F_SET_STARTING_FRAME_NUMBER, value, nullptr);
 }

@@ -16,11 +16,21 @@ class Detector {
     Detector(int multi_id = 0);
     ~Detector();
 
-    void setConfig(const std::string &fname);
-    void freeSharedMemory();
-
     // Acquisition
     void acquire();
+
+    // Configuration
+    void freeSharedMemory();
+    void setConfig(const std::string &fname);
+    Result<std::string> getHostname(Positions pos = {}) const;
+    // void setHostname(Positions pos = {});
+
+    Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
+    void setStartingFrameNumber(uint64_t value, Positions pos);
+
+    void clearBit(uint32_t addr, int bit, Positions pos = {});
+    void setBit(uint32_t addr, int bit, Positions pos = {});
+    Result<uint32_t> getRegister(uint32_t addr, Positions pos = {});
 
     // File
     Result<std::string> getFname() const;

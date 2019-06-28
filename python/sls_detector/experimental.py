@@ -2,11 +2,53 @@
 from _sls_detector import multiDetectorApi
 from .utils import element_if_equal, all_equal
 import datetime as dt
+
+from functools import wraps
+
+def freeze(cls):
+    cls.__frozen = False
+    def frozensetattr(self, key, value):
+        if self.__frozen and not hasattr(self, key):
+            raise AttributeError("Class {} is frozen. Cannot set {} = {}"
+                  .format(cls.__name__, key, value))
+        else:
+            object.__setattr__(self, key, value)
+
+    def init_decorator(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            func(self, *args, **kwargs)
+            self.__frozen = True
+        return wrapper
+
+    cls.__setattr__ = frozensetattr
+    cls.__init__ = init_decorator(cls.__init__)
+    return cls
+
+@freeze
 class ExperimentalDetector(multiDetectorApi):
     def __init__(self):
         super().__init__(0)
         self.online = True
 
+
+    # Configuration
+    @property
+    def startingfnum(self):
+        return element_if_equal(self.getStartingFrameNumber())
+    @startingfnum.setter
+    def startingfnum(self, value):
+        self.setStartingFrameNumber(value)
+
+    
+
+    @property
+    def config(self):
+        return 0
+    @config.setter
+    def config(self, fname):
+        self.setConfig(fname)
+    
 
     # File
     @property

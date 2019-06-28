@@ -9,7 +9,6 @@
 #include "qTabDebugging.h"
 #include "qTabDeveloper.h"
 #include "qTabMessages.h"
-#include "qServer.h"
 
 #include "versionAPI.h"
 
@@ -140,13 +139,7 @@ qDetectorMain::~qDetectorMain() {
         delete tabDeveloper;
     if (tabMessages)
         delete tabMessages;
-    if (myServer)
-        delete myServer;
 }
-
-bool qDetectorMain::isPlotRunning() { return myPlot->isRunning(); }
-
-int qDetectorMain::GetProgress() { return tabMeasurement->GetProgress(); }
 
 void qDetectorMain::SetUpWidgetWindow() {
 
@@ -171,7 +164,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabAdvanced = new qTabAdvanced(this, myDet);
     tabDebugging = new qTabDebugging(this, myDet);
     tabDeveloper = new qTabDeveloper(this, myDet);
-    myServer = new qServer(this);
 
     //	creating the scroll area widgets for the tabs
     QScrollArea *scroll[NumberOfTabs];
@@ -299,7 +291,6 @@ void qDetectorMain::Initialization() {
     // When the acquisition is finished, must update the meas tab
     connect(myPlot, SIGNAL(UpdatingPlotFinished()), this, SLOT(EnableTabs()));
     connect(myPlot, SIGNAL(UpdatingPlotFinished()), tabMeasurement, SLOT(UpdateFinished()));
-    connect(myPlot, SIGNAL(SetCurrentMeasurementSignal(int)), tabMeasurement, SLOT(SetCurrentMeasurement(int)));
 
     // menubar
     // Modes Menu
@@ -309,8 +300,6 @@ void qDetectorMain::Initialization() {
     // Help Menu
     connect(menuHelp, SIGNAL(triggered(QAction *)), this, SLOT(ExecuteHelp(QAction *)));
 
-    // server
-    connect(myServer, SIGNAL(ServerStoppedSignal()), this, SLOT(UncheckServer()));
 }
 
 void qDetectorMain::LoadConfigFile(const std::string fName) {
@@ -350,19 +339,8 @@ void qDetectorMain::LoadConfigFile(const std::string fName) {
 void qDetectorMain::EnableModes(QAction *action) {
     bool enable;
 
-    // listen to gui client
-    if (action == actionListenGuiClient) {
-        disconnect(menuModes, SIGNAL(triggered(QAction *)), this,
-                   SLOT(EnableModes(QAction *)));
-        if (actionListenGuiClient->isChecked())
-            myServer->CreateServers();
-        else
-            myServer->DestroyServers();
-        connect(menuModes, SIGNAL(triggered(QAction *)), this,
-                SLOT(EnableModes(QAction *)));
-    }
     // Set DebugMode
-    else if (action == actionDebug) {
+    if (action == actionDebug) {
         enable = actionDebug->isChecked();
         tabs->setTabEnabled(DEBUGGING, enable);
         FILE_LOG(logINFO) << "Debug Mode: "
@@ -737,23 +715,4 @@ void qDetectorMain::SetZoomToolTip(bool disable) {
             "zooming capabilities,\ndisable min and max for all axes.<span> ");
     else
         dockWidgetPlot->setToolTip(zoomToolTip);
-}
-
-int qDetectorMain::StartStopAcquisitionFromClient(bool start) {
-    FILE_LOG(logINFO) << (start ? "Start" : "Stop")
-                      << " Acquisition From Client";
-
-    if (start) {
-        if (tabMeasurement->GetStartStatus() != start) {
-            tabMeasurement->ClentStartAcquisition();
-        }
-    } else {
-        tabMeasurement->StopAcquisition();
-    }
-
-    return slsDetectorDefs::OK;
-}
-
-void qDetectorMain::UncheckServer() {
-    actionListenGuiClient->setChecked(false);
 }

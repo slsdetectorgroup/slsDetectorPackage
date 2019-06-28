@@ -12,7 +12,6 @@ class qTabSettings;
 class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
-class qServer;
 
 class multiSlsDetector;
 
@@ -35,15 +34,6 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
                   QWidget *parent = 0);
     ~qDetectorMain();
 
-    /**
-     * Starts or stops Acquisition From gui client
-     * @param start 1 for start and 0 to stop
-     * @returns success or fail
-     */
-    int StartStopAcquisitionFromClient(bool start);
-    bool isPlotRunning();
-    int GetProgress();
-
   private slots:
     void EnableModes(QAction *action);
     void ExecuteUtilities(QAction *action);
@@ -57,7 +47,6 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     void ResizeMainWindow(bool b);
     void EnableTabs();
     void SetZoomToolTip(bool disable);
-    void UncheckServer();
 
   protected:
     void resizeEvent(QResizeEvent *event);
@@ -92,7 +81,6 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     qTabDebugging* tabDebugging;
     qTabDeveloper* tabDeveloper;
     qTabMessages* tabMessages;
-    qServer* myServer;
     int isDeveloper;
     int heightPlotWindow;
     int heightCentralWidget;

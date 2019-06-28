@@ -15,14 +15,9 @@ public:
 	qTabMeasurement(QWidget *parent, multiSlsDetector* detector, qDrawPlot* plot);
 	~qTabMeasurement();
 
-	bool GetStartStatus();
-	void ClentStartAcquisition();
-	int GetProgress();
 	void Refresh();
 
 public slots:
-	void SetCurrentMeasurement(int val);
-    void StopAcquisition();
 	void UpdateFinished();
 
 private slots:
@@ -39,6 +34,7 @@ private slots:
 	void SetRunIndex(int val);
 	void UpdateProgress();
 	void StartAcquisition();
+	void StopAcquisition();
 
 private:
 	void SetupWidgetWindow();

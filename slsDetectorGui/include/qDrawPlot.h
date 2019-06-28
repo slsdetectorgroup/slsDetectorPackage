@@ -32,14 +32,11 @@ class qDrawPlot : public QWidget {
     /** Destructor	 */
     ~qDrawPlot();
 
-   // measurement tab
-    void SetClientInitiated();
-    bool GetClientInitiated();
-    // main
     bool isRunning();
     // from measurement tabs
     int GetProgress();
-    int GetCurrentFrameIndex();
+    int64_t GetCurrentFrameIndex();
+    int64_t GetCurrentMeasurementIndex();
     // from plot tab
     void Select1dPlot(bool enable);
     void SetPlotTitlePrefix(QString title);
@@ -57,14 +54,7 @@ class qDrawPlot : public QWidget {
     void SetZRange(bool isZmin, bool isZmax, double zmin, double zmax);
     void SetDataCallBack(bool enable);
     void SetBinary(bool enable, int from = 0, int to = 0);
-
-
-    /** Starts or stop acquisition
-     * Calls startDaq() function
-     * @param stop_if_running is 0 to stop acquisition and 1 to start
-     * acquisition
-     */
-    void StartStopDaqToggle(bool stop_if_running = 0);
+    void StartAcquisition();
 
   public slots:
     void SetPersistency(int val);
@@ -92,13 +82,9 @@ class qDrawPlot : public QWidget {
 
   
     void UpdatePlot();
-    void StartDaq(bool start);
-    void ShowAcquisitionErrorMessage(QString status);
 
   signals:
     void UpdatingPlotFinished();
-    void SetCurrentMeasurementSignal(int);
-    void AcquisitionErrorSignal(QString);
     void UpdatePlotSignal();
 
   private:
@@ -116,11 +102,9 @@ class qDrawPlot : public QWidget {
  
 
 
-    int StartDaqForGui();
-    int StopDaqForGui();
+
     bool StartOrStopThread(bool start);
     void SetupMeasurement();
-    int ResetDaqForGui();
     static void *DataStartAcquireThread(void *this_pointer);
     static int GetDataCallBack(detectorData *data, int fIndex, int subIndex, void *this_pointer);
     int GetData(detectorData *data, int fIndex, int subIndex);
@@ -146,11 +130,8 @@ class qDrawPlot : public QWidget {
     QGridLayout *plotLayout{nullptr};
 
     bool is1d{true};
-    bool plotEnable{true};
-    bool plotRequired{false};/**?? */
-    bool running{false};
+    bool isRunning{false};
     int progress{0};
-	  bool clientInitiated{false};
 
 	// titles
 	  QString plotTitle{""};
@@ -210,19 +191,10 @@ class qDrawPlot : public QWidget {
     double endPixel{0};
     double pixelWidth{0};
 
-    int currentMeasurement{0};
-    int currentFrame{0};
-    int currentFileIndex{0};
-    int currentFrameIndex{0};
-	pthread_mutex_t lastImageCompleteMutex;
-    unsigned int lastImageNumber{0};
-    int numberofFrames{0};
-    double acquisitionPeriod{0};
-    double exposureTime{0};
- 
-    /** prevents err msg displaying twice when detector stopped, "transmitting"
-     */
-    bool alreadyDisplayed{false};
+    int64_t currentMeasurement{0};
+    int64_t currentFrame{0};
+    int64_t lastImageNumber{0};
+	  pthread_mutex_t lastImageCompleteMutex;
 
     const static int npixelsx_jctb = 400;
     int npixelsy_jctb{0};

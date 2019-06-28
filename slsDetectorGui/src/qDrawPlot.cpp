@@ -120,12 +120,10 @@ void qDrawPlot::SetupWidgetWindow() {
     myDet->registerProgressCallback(&(GetProgressCallBack), this);
 
     Initialization();
-    StartStopDaqToggle();
 }
 
 void qDrawPlot::Initialization() {
     connect(this, SIGNAL(UpdatePlotSignal()), this, SLOT(UpdatePlot()));
-    connect(this, SIGNAL(AcquisitionErrorSignal(QString)), this, SLOT(ShowAcquisitionErrorMessage(QString)));
 }
 
 void qDrawPlot::SetupStatistics() {
@@ -273,25 +271,20 @@ void qDrawPlot::SetupPlots() {
     plotLayout->addWidget(gainplot2d, 0, 4, 1, 1);
 }
 
-
-void qDrawPlot::SetClientInitiated() { 
-    clientInitiated = true; 
-}
-
-bool qDrawPlot::GetClientInitiated() { 
-    return clientInitiated; 
-}
-
 bool qDrawPlot::isRunning() { 
-    return running; 
+    return isRunning; 
 }
 
 int qDrawPlot::GetProgress() { 
     return progress; 
 }
 
-int qDrawPlot::GetCurrentFrameIndex() { 
-    return currentFrameIndex; 
+int64_t qDrawPlot::GetCurrentFrameIndex() { 
+    return currentFrame; 
+}
+
+int64_t qDrawPlot::GetCurrentMeasurementIndex() { 
+    return currentMeasurement; 
 }
 
 void qDrawPlot::Select1dPlot(bool enable) { 
@@ -660,26 +653,6 @@ void qDrawPlot::SavePlot() {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int qDrawPlot::LockLastImageArray() {
     return pthread_mutex_lock(&lastImageCompleteMutex);
 }
@@ -752,7 +725,13 @@ void qDrawPlot::UpdateXYRange() {
     }
 }
 
-
+void qDrawPlot::StartAcquisition() {
+    FILE_LOG(logDEBUG) << "Starting Acquisition in qDrawPlot";
+    currentMeasurement = 0;
+    currentFrame = 0;
+    lastImageNumber = 0;
+    
+}
 
 
 
@@ -845,105 +824,35 @@ void qDrawPlot::UpdateXYRange() {
 
 
 
-
-
-
-int qDrawPlot::StartDaqForGui() { return StartOrStopThread(1) ? 1 : 0; }
-
-int qDrawPlot::StopDaqForGui() { return StartOrStopThread(0) ? 0 : 1; }
-
-
 void qDrawPlot::StartStopDaqToggle(bool stop_if_running) {
 #ifdef VERYVERBOSE
     std::cout << "Entering StartStopDaqToggle(" << stop_if_running << ")\n";
 #endif
-    // static bool running = 1;
-    if (running) { // stopping
-        StartDaq(false);
-        running = !running;
-    } else if (!stop_if_running) { // then start
-        // Reset Current Measurement
+
+    if (isRunning) { 
+
+        StartOrStopThread(0);
+        isRunning = !isRunning;
+    } else if (!stop_if_running) { 
+
         currentMeasurement = 0;
-        emit SetCurrentMeasurementSignal(currentMeasurement);
-        // in case of error message
-        alreadyDisplayed = false;
+        currentFrame = 0;
+        lastImageNumber = 0;
 
-        /*
-                // Number of Exposures
-                int numFrames =
-           (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
-                int numTriggers =
-           (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
-                numFrames = ((numFrames==0)?1:numFrames);
-                numTriggers = ((numTriggers==0)?1:numTriggers);
-                numberofFrames = numFrames * numTriggers;
-                std::cout << "\tNumber of Frames per Scan/Measurement:" <<
-           numberofFrames <<'\n';
-                //get #scansets for level 0 and level 1
-                int numScan0 = myDet->getScanSteps(0);	numScan0 =
-           ((numScan0==0)?1:numScan0); int numScan1 = myDet->getScanSteps(1);
-           numScan1 = ((numScan1==0)?1:numScan1); int
-           numPos=myDet->getPositions();
 
-                number_of_exposures = numberofFrames * numScan0 * numScan1;
-                if(anglePlot) number_of_exposures = numScan0 * numScan1;// *
-           numPos; std::cout << "\tNumber of Exposures Per Measurement:" <<
-           number_of_exposures <<'\n';
-                */
 
-        // ExposureTime
-        exposureTime =
-            ((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME, -1)) *
-             1E-9);
-        std::cout << "\tExposure Time:" << std::setprecision(10) << exposureTime
-                  << '\n';
-        // Acquisition Period
-        acquisitionPeriod =
-            ((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD, -1)) *
-             1E-9);
-        std::cout << "\tAcquisition Period:" << std::setprecision(10)
-                  << acquisitionPeriod << '\n';
-        std::cout << "\tFile Index:" << myDet->getFileIndex() << '\n';
+        if (!StartOrStopThread(0)) {
+            std::cout << "Resetting image number" << '\n';
+            lastImageNumber = 0;
+        }
+        StartOrStopThread(1);
 
-        // update file path and file name
-        fileSavePath = QString(myDet->getFilePath().c_str());
-        fileSaveName = QString(myDet->getFileName().c_str());
-        // update index
-        currentFileIndex = myDet->getFileIndex();
-        currentFrameIndex = 0;
-
-        StartDaq(true);
-        running = !running;
-
-        qDefs::checkErrorMessage(myDet, "qDrawPlot::StartStopDaqToggle");
+        isRunning = !isRunning;
     }
 
-    /** if this is set during client initation */
-    clientInitiated = false;
 }
 
-void qDrawPlot::StartDaq(bool start) {
-    if (start) {
-#ifdef VERBOSE
-        std::cout << "Start Daq(true) function" << '\n';
-#endif
-        ResetDaqForGui();
-        StartDaqForGui();
-    } else {
-#ifdef VERBOSE
-        std::cout << "Start Daq(false) function" << '\n';
-#endif
-        StopDaqForGui();
-    }
-}
 
-int qDrawPlot::ResetDaqForGui() {
-    if (!StopDaqForGui())
-        return 0;
-    std::cout << "Resetting image number" << '\n';
-    lastImageNumber = 0;
-    return 1;
-}
 
 bool qDrawPlot::StartOrStopThread(bool start) {
 #ifdef VERYVERBOSE
@@ -1002,7 +911,7 @@ bool qDrawPlot::StartOrStopThread(bool start) {
 void qDrawPlot::SetScanArgument(int scanArg) {
 #ifdef VERYVERBOSE
     std::cout << "SetScanArgument function:" << scanArg
-              << " running:" << running << '\n';
+              << " running:" << isRunning << '\n';
 #endif
     scanArgument = scanArg;
 
@@ -1011,35 +920,6 @@ void qDrawPlot::SetScanArgument(int scanArg) {
     if (is1d)
         DetachHists();
 
-    // Number of Exposures - must be calculated here to get npixelsy for
-    // allframes/frameindex scans
-    int numFrames = (isFrameEnabled) *
-                    ((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER, -1));
-    int numTriggers =
-        (isTriggerEnabled) *
-        ((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER, -1));
-    int numStoragecells = 0;
-    if (detType == slsDetectorDefs::JUNGFRAU)
-        numStoragecells =
-            (int)myDet->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, -1);
-    numFrames = ((numFrames == 0) ? 1 : numFrames);
-    numTriggers = ((numTriggers == 0) ? 1 : numTriggers);
-    numStoragecells = ((numStoragecells <= 0) ? 1 : numStoragecells + 1);
-    numberofFrames = numFrames * numTriggers * numStoragecells;
-    std::cout << "\tNumber of Frames per Scan/Measurement:" << numberofFrames
-              << '\n';
-    // get #scansets for level 0 and level 1
-    int numScan0 = myDet->getScanSteps(0);
-    numScan0 = ((numScan0 == 0) ? 1 : numScan0);
-    int numScan1 = myDet->getScanSteps(1);
-    numScan1 = ((numScan1 == 0) ? 1 : numScan1);
-    // int numPos=myDet->getPositions();
-
-    number_of_exposures = numberofFrames * numScan0 * numScan1;
-    if (anglePlot)
-        number_of_exposures = numScan0 * numScan1; // * numPos;
-    std::cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures
-              << '\n';
 
     maxPixelsY = 0;
     minPixelsY = 0;
@@ -1051,32 +931,6 @@ void qDrawPlot::SetScanArgument(int scanArg) {
         nPixelsX = npixelsx_jctb;
         nPixelsY = npixelsy_jctb;
     }
-
-    // cannot do this in between measurements , so update instantly
-    if (scanArgument == qDefs::Level0) {
-        // no need to check if numsteps=0,cuz otherwise this mode wont be set in
-        // plot tab
-        int numSteps = myDet->getScanSteps(0);
-        double *values = new double[numSteps];
-        myDet->getScanSteps(0, values);
-
-        maxPixelsY = values[numSteps - 1];
-        minPixelsY = values[0];
-        nPixelsY = numSteps;
-    } else if (scanArgument == qDefs::Level1) {
-        // no need to check if numsteps=0,cuz otherwise this mode wont be set in
-        // plot tab
-        int numSteps = myDet->getScanSteps(1);
-        double *values = new double[numSteps];
-        myDet->getScanSteps(1, values);
-
-        maxPixelsY = values[numSteps - 1];
-        minPixelsY = values[0];
-        nPixelsY = numSteps;
-    } else if (scanArgument == qDefs::AllFrames)
-        nPixelsY = number_of_exposures;
-    else if (scanArgument == qDefs::FileIndex)
-        nPixelsY = numberofFrames;
 
     if (minPixelsY > maxPixelsY) {
         double temp = minPixelsY;
@@ -1117,81 +971,38 @@ void qDrawPlot::SetScanArgument(int scanArg) {
 
     memset(data2d, 0, nPixelsY * nPixelsX * sizeof(double));
     memset(gainImage, 0, nPixelsY * nPixelsX * sizeof(double));
-    /*for(int py=0;py<(int)nPixelsY;++py)
-            for(int px=0;px<(int)nPixelsX;++px) {
-                    data2d[py*nPixelsX+px] = 0;
-                    gainImage[py*nPixelsX+px] = 0;
-            }
-     */
 
-    // histogram
-    if (histogram) {
-        int iloop = 0;
-        int numSteps = ((histTo - histFrom) / (histSize)) + 1;
-        std::cout << "numSteps:" << numSteps << " histFrom:" << histFrom
-                  << " histTo:" << histTo << " histSize:" << histSize << endl;
-        histogramSamples.resize(numSteps);
-        startPixel = histFrom - (histSize / 2);
-        std::cout << "startpixel:" << startPixel << endl;
-        endPixel = histTo + (histSize / 2);
-        std::cout << "endpixel:" << endPixel << endl;
-        while (startPixel < endPixel) {
-            histogramSamples[iloop].interval.setInterval(
-                startPixel, startPixel + histSize, QwtInterval::ExcludeMaximum);
-            histogramSamples[iloop].value = 0;
-            startPixel += histSize;
-            iloop++;
-        }
-
-        // print values
-        std::cout << "Histogram Intervals:" << '\n';
-        for (int j = 0; j < histogramSamples.size(); ++j) {
-            std::cout << j
-                      << ":\tmin:" << histogramSamples[j].interval.minValue()
-                      << ""
-                         "\t\tmax:"
-                      << histogramSamples[j].interval.maxValue()
-                      << "\t\tvalue:" << histogramSamples[j].value << endl;
-        }
-    }
 
     UnlockLastImageArray();
 
-    qDefs::checkErrorMessage(myDet, "qDrawPlot::SetScanArgument");
 }
 
 void qDrawPlot::SetupMeasurement() {
 #ifdef VERYVERBOSE
-    std::cout << "SetupMeasurement function:" << running << '\n';
+    std::cout << "SetupMeasurement function:" << isRunning << '\n';
 #endif
     LockLastImageArray();
 #ifdef VERYVERBOSE
     std::cout << "locklastimagearray\n";
 #endif
     // Defaults
-    if (!running)
+    if (!isRunning)
     plotRequired = 0;
     currentFrame = 0;
 
     // if(!is1d)
-    if (!running)
+    if (!isRunning)
         lastImageNumber = 0; /**Just now */
     // initializing 2d array
     memset(data2d, 0, nPixelsY * nPixelsX * sizeof(double));
     memset(gainImage, 0, nPixelsY * nPixelsX * sizeof(double));
-    /*
-        for(int py=0;py<(int)nPixelsY;++py)
-                for(int px=0;px<(int)nPixelsX;++px) {
-                        data2d[py*nPixelsX+px] = 0;
-                        gainImage[py*nPixelsX+px] = 0;
-                        }
-         */
+
     // 1d with no scan
     if ((!originally2D) && (scanArgument == qDefs::None)) {
 #ifdef VERYVERBOSE
         std::cout << "1D\n";
 #endif
-        if (!running) {
+        if (!isRunning) {
             maxPixelsY = 100;
             minPixelsY = 0;
             startPixel = -0.5;
@@ -1205,27 +1016,6 @@ void qDrawPlot::SetupMeasurement() {
         if ((originally2D) && (scanArgument == qDefs::None)) {
             maxPixelsY = nPixelsY - 1;
             minPixelsY = 0;
-        }
-
-        // all frames
-        else if (scanArgument == qDefs::AllFrames) {
-            maxPixelsY = number_of_exposures - 1;
-            minPixelsY = 0;
-            if (!running)
-                nPixelsY = number_of_exposures;
-        } // frame index
-        else if (scanArgument == qDefs::FileIndex) {
-            maxPixelsY = numberofFrames - 1;
-            minPixelsY = 0;
-            if (!running)
-                nPixelsY = numberofFrames;
-        } // level0 or level1
-        else {
-            currentScanValue = minPixelsY;
-            if (backwardScanPlot) {
-                currentScanValue = maxPixelsY;
-                currentScanDivLevel = nPixelsY - 1;
-            }
         }
 
         // cannot divide by 0
@@ -1262,8 +1052,7 @@ void qDrawPlot::SetupMeasurement() {
 
 void *qDrawPlot::DataStartAcquireThread(void *this_pointer) {
     // stream data from receiver to the gui
-    if (((qDrawPlot *)this_pointer)->myDet->setReceiverOnline() ==
-        slsDetectorDefs::ONLINE_FLAG) {
+    if (((qDrawPlot *)this_pointer)->myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
 
         // if receiver data up streaming not on, switch it on
         if (((qDrawPlot *)this_pointer)
@@ -1310,15 +1099,9 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
 
         // set progress
         progress = (int)data->progressIndex;
-        // TODO!
-        // currentFrameIndex =
-        // fileIOStatic::getIndicesFromFileName(std::string(data->fileSaveName),currentFileIndex);
+        // currentFrameIndex = fileIOStatic::getIndicesFromFileName(std::string(data->fileSaveName),currentFileIndex);
         currentFileIndex = data->fileIndex;
-        // happens if receiver sends a null and empty file name
-        /*if(std::string(data->fileSaveName).empty()){
-                        std::cout << "Received empty file name. Exiting function
-           without updating data for plot." <<'\n'; return -1;
-                }*/
+
 #ifdef VERYVERBOSE
         std::cout << "progress:" << progress << '\n';
 #endif
@@ -1372,132 +1155,62 @@ int qDrawPlot::GetData(detectorData *data, int fIndex, int subIndex) {
             // Titles
             title1d[0] = temp_title;
 
-            // histogram
-            if (histogram) {
-                resetAccumulate = false;
-                lastImageNumber = currentFrame + 1;
+            // Persistency
+            if (currentPersistency < persistency)
+                currentPersistency++;
+            else
+                currentPersistency = persistency;
+            nHists = currentPersistency + 1;
 
-                int numValues = nPixelsX;
-                if (originally2D)
-                    numValues = nPixelsX * nPixelsY;
+            // copy data
+            for (int i = currentPersistency; i > 0; i--)
+                memcpy(datay1d[i], datay1d[i - 1], nPixelsX * sizeof(double));
 
-                // clean up graph
-                if (histogramArgument == qDefs::Intensity) {
-                    for (int j = 0; j < histogramSamples.size(); ++j) {
-                        histogramSamples[j].value = 0;
-                    }
-                }
-
-                int val = 0;
-                for (int i = 0; i < numValues; ++i) {
-                    // frequency of intensity
-                    if (histogramArgument == qDefs::Intensity) {
-                        // ignore outside limits
-                        if ((data->values[i] < histFrom) ||
-                            (data->values[i] > histTo))
-                            continue;
-                        // check for intervals, increment if validates
-                        for (int j = 0; j < histogramSamples.size(); ++j) {
-                            if (histogramSamples[j].interval.contains(
-                                    data->values[i]))
-                                histogramSamples[j].value += 1;
-                        }
-                    }
-                    // get sum of data pixels
-                    else
-                        val += data->values[i];
-                }
-
-                if (histogramArgument != qDefs::Intensity) {
-                    std::cout << "histogramArgument != qDefs::Intensity\n";
-                    // val /= numValues;
-
-                    // //find scan value
-                    // int ci = 0, fi = 0;
-                    // double cs0 = 0, cs1 = 0;
-                    // fileIOStatic::getVariablesFromFileName(std::string(data->fileSaveName),
-                    // ci, fi, cs0, cs1);
-
-                    // int scanval = -1;
-                    // if (cs0 != -1)
-                    //     scanval = cs0;
-                    // else
-                    //     scanval = cs1;
-
-                    // //ignore outside limits
-                    // if ((scanval < histFrom) || (scanval > histTo) ||
-                    // (scanval == -1))
-                    //     scanval = -1;
-                    // //check for intervals, increment if validates
-                    // for (int j = 0; j < histogramSamples.size(); ++j) {
-                    //     if (histogramSamples[j].interval.contains(scanval)) {
-                    //         histogramSamples[j].value = val;
-                    //         cout << "j:" << j << " scanval:" << scanval << "
-                    //         val:" << val << endl;
-                    //     }
-                    // }
-                }
-
-            }
-            // not histogram
-            else {
-                // Persistency
-                if (currentPersistency < persistency)
-                    currentPersistency++;
-                else
-                    currentPersistency = persistency;
-                nHists = currentPersistency + 1;
-
-                // copy data
-                for (int i = currentPersistency; i > 0; i--)
-                    memcpy(datay1d[i], datay1d[i - 1], nPixelsX * sizeof(double));
-
-                // recalculating pedestal
-                if (startPedestalCal) {
-                    // start adding frames to get to the pedestal value
-                    if (pedestalCount < NUM_PEDESTAL_FRAMES) {
-                        for (unsigned int px = 0; px < nPixelsX; ++px)
-                            tempPedestalVals[px] += data->values[px];
-                        memcpy(datay1d[0], data->values, nPixelsX * sizeof(double));
-                        pedestalCount++;
-                    }
-                    // calculate the pedestal value
-                    if (pedestalCount == NUM_PEDESTAL_FRAMES) {
-                        cout << "Pedestal Calculated" << '\n';
-                        for (unsigned int px = 0; px < nPixelsX; ++px)
-                            tempPedestalVals[px] = tempPedestalVals[px] /
-                                                   (double)NUM_PEDESTAL_FRAMES;
-                        memcpy(pedestalVals, tempPedestalVals,
-                               nPixelsX * sizeof(double));
-                        startPedestalCal = 0;
-                    }
-                }
-
-                // normal data
-                if (((!isPedestal) & (!accumulate) & (!binary)) ||
-                    (resetAccumulate)) {
+            // recalculating pedestal
+            if (startPedestalCal) {
+                // start adding frames to get to the pedestal value
+                if (pedestalCount < NUM_PEDESTAL_FRAMES) {
+                    for (unsigned int px = 0; px < nPixelsX; ++px)
+                        tempPedestalVals[px] += data->values[px];
                     memcpy(datay1d[0], data->values, nPixelsX * sizeof(double));
-                    resetAccumulate = false;
+                    pedestalCount++;
                 }
-                // pedestal or accumulate
-                else {
-                    double temp; // cannot overwrite cuz of accumulate
-                    for (unsigned int px = 0; px < (nPixelsX * nPixelsY);
-                         ++px) {
-                        temp = data->values[px];
-                        if (isPedestal)
-                            temp = data->values[px] - (pedestalVals[px]);
-                        if (binary) {
-                            if ((temp >= binaryFrom) && (temp <= binaryTo))
-                                temp = 1;
-                            else
-                                temp = 0;
-                        }
-                        if (accumulate)
-                            temp += datay1d[0][px];
-                        // after all processing
-                        datay1d[0][px] = temp;
+                // calculate the pedestal value
+                if (pedestalCount == NUM_PEDESTAL_FRAMES) {
+                    cout << "Pedestal Calculated" << '\n';
+                    for (unsigned int px = 0; px < nPixelsX; ++px)
+                        tempPedestalVals[px] = tempPedestalVals[px] /
+                                                (double)NUM_PEDESTAL_FRAMES;
+                    memcpy(pedestalVals, tempPedestalVals,
+                            nPixelsX * sizeof(double));
+                    startPedestalCal = 0;
+                }
+            }
+
+            // normal data
+            if (((!isPedestal) & (!accumulate) & (!binary)) ||
+                (resetAccumulate)) {
+                memcpy(datay1d[0], data->values, nPixelsX * sizeof(double));
+                resetAccumulate = false;
+            }
+            // pedestal or accumulate
+            else {
+                double temp; // cannot overwrite cuz of accumulate
+                for (unsigned int px = 0; px < (nPixelsX * nPixelsY);
+                        ++px) {
+                    temp = data->values[px];
+                    if (isPedestal)
+                        temp = data->values[px] - (pedestalVals[px]);
+                    if (binary) {
+                        if ((temp >= binaryFrom) && (temp <= binaryTo))
+                            temp = 1;
+                        else
+                            temp = 0;
                     }
+                    if (accumulate)
+                        temp += datay1d[0][px];
+                    // after all processing
+                    datay1d[0][px] = temp;
                 }
             }
         }
@@ -1609,7 +1322,12 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
 #ifdef VERBOSE
         std::cout << "Error in Acquisition\n\n";
 #endif
-        emit AcquisitionErrorSignal(status);
+        qDefs::Message(qDefs::WARNING,
+                std::string("<nobr>The acquisiton has ended abruptly. "
+                            "Current Detector Status: ") +
+                    status.toAscii().constData() +
+                    std::string(".</nobr>"),
+                "qDrawPlot::ShowAcquisitionErrorMessage");
     }
 #ifdef VERBOSE
     // all measurements are over
@@ -1621,22 +1339,6 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
     // this lets the measurement tab know its over, and to enable tabs
     emit UpdatingPlotFinished();
 
-    // calculate s curve inflection point
-    int l1 = 0, l2 = 0, j;
-    if ((histogram) && (histogramArgument != qDefs::Intensity)) {
-        for (j = 0; j < histogramSamples.size() - 2; ++j) {
-            l1 = histogramSamples[j + 1].value - histogramSamples[j].value;
-            l2 = histogramSamples[j + 2].value - histogramSamples[j + 1].value;
-            if (l1 > l2) {
-                std::cout << "***** s curve inflectionfound at "
-                          << histogramSamples[j].interval.maxValue()
-                          << ""
-                             "or j at "
-                          << j << " with l1 " << l1 << " and l2 " << l2 << '\n';
-            }
-        }
-    }
-
     return 0;
 }
 
@@ -1645,17 +1347,6 @@ int qDrawPlot::GetProgressCallBack(double currentProgress, void *this_pointer) {
     return 0;
 }
 
-void qDrawPlot::ShowAcquisitionErrorMessage(QString status) {
-    if (!alreadyDisplayed) {
-        alreadyDisplayed = true;
-        qDefs::Message(qDefs::WARNING,
-                       std::string("<nobr>The acquisiton has ended abruptly. "
-                                   "Current Detector Status: ") +
-                           status.toAscii().constData() +
-                           std::string(".</nobr>"),
-                       "qDrawPlot::ShowAcquisitionErrorMessage");
-    }
-}
 
 int qDrawPlot::GetMeasurementFinishedCallBack(int currentMeasurementIndex,
                                               int fileIndex,

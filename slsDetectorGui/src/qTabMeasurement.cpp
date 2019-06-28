@@ -20,21 +20,6 @@ qTabMeasurement::~qTabMeasurement() {
 		delete progressTimer;
 }
 
-bool qTabMeasurement::GetStartStatus(){
-	return (!btnStart->isEnabled());
-}
-
-void qTabMeasurement::ClentStartAcquisition(){
-	StartAcquisition();
-	myPlot->SetClientInitiated();
-	while (myPlot->GetClientInitiated())
-		usleep(500);
-}
-
-int qTabMeasurement::GetProgress(){
-	return progressBar->value();
-}
-
 void qTabMeasurement::SetupWidgetWindow() {
 	// palette
 	red = QPalette();
@@ -536,13 +521,6 @@ void qTabMeasurement::SetRunIndex(int val) {
     } CATCH_HANDLE("Could not set acquisition file index.", "qTabMeasurement::SetRunIndex", this, &qTabMeasurement::GetRunIndex)
 }
 
-void qTabMeasurement::SetCurrentMeasurement(int val) {
-	FILE_LOG(logDEBUG) << "Setting Current Measurement";	
-	if ((val) < spinNumMeasurements->value()) {
-		lblCurrentMeasurement->setText(QString::number(val));
-	}
-}
-
 void qTabMeasurement::ResetProgress() {
 	FILE_LOG(logDEBUG) << "Resetting progress";
 	lblCurrentFrame->setText(QString::number(0));
@@ -554,6 +532,7 @@ void qTabMeasurement::UpdateProgress() {
 	FILE_LOG(logDEBUG) << "Updating progress";
 	progressBar->setValue(myPlot->GetProgress());
 	lblCurrentFrame->setText(QString::number(myPlot->GetCurrentFrameIndex()));
+	lblCurrentMeasurement->setText(QString::number(myPlot->GetCurrentMeasurementIndex()));
 }
 
 int qTabMeasurement::VerifyOutputDirectoryError() {

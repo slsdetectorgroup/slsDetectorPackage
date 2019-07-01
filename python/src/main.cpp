@@ -10,19 +10,22 @@
 #include <chrono>
 #include <vector>
 
-// Add type_typecaster to pybind for our wrapper type
-namespace pybind11 {
-namespace detail {
-template <typename Type, typename Alloc>
-struct type_caster<sls::Result<Type, Alloc>>
-    : list_caster<sls::Result<Type, Alloc>, Type> {};
-} // namespace detail
-} // namespace pybind11
+#include "typecaster.h"
+
+// // Add type_typecaster to pybind for our wrapper type
+// namespace pybind11 {
+// namespace detail {
+// template <typename Type, typename Alloc>
+// struct type_caster<sls::Result<Type, Alloc>>
+//     : list_caster<sls::Result<Type, Alloc>, Type> {};
+// } // namespace detail
+// } // namespace pybind11
 
 using ds = std::chrono::duration<double>;
 
 namespace py = pybind11;
-
+void init_enums(py::module &);
+void init_experimental(py::module &);
 PYBIND11_MODULE(_sls_detector, m) {
     m.doc() = R"pbdoc(
         C/C++ API
@@ -33,6 +36,9 @@ PYBIND11_MODULE(_sls_detector, m) {
             interface provided by sls instead.
 
     )pbdoc";
+
+     init_enums(m);
+     init_experimental(m);
 
     py::class_<DetectorPythonInterface> DetectorApi(m, "DetectorApi", R"pbdoc(
     Interface to the multiSlsDetector class through Detector.h These functions
@@ -344,50 +350,7 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getDetectorGeometry",
              &DetectorPythonInterface::getDetectorGeometry);
 
-    // Experimental API to use the multi directly and inherit from to reduce
-    // code duplication need to investigate how to handle documentation
-    using sls::Detector;
-    py::class_<Detector> multiDetectorApi(m, "multiDetectorApi");
-    multiDetectorApi.def(py::init<int>())
-        .def("acquire", &Detector::acquire)
-
-        // Configuration
-        .def("free", &Detector::freeSharedMemory)
-        .def("setConfig", &Detector::setConfig)
-        .def("getHostname", &Detector::getHostname,
-             py::arg() = std::vector<int>{})
-
-        .def("setBit", &Detector::setBit, py::arg(), py::arg(),
-             py::arg() = std::vector<int>{})
-        .def("clearBit", &Detector::clearBit, py::arg(), py::arg(),
-             py::arg() = std::vector<int>{})
-        .def("getRegister", &Detector::getRegister, py::arg(),
-             py::arg() = std::vector<int>{})
-
-        .def("getStartingFrameNumber", &Detector::getStartingFrameNumber,
-             py::arg() = std::vector<int>{})
-        .def("setStartingFrameNumber", &Detector::setStartingFrameNumber,
-             py::arg(), py::arg() = std::vector<int>{})
-
-        // File
-        .def("setFname", &Detector::setFname, py::arg())
-        .def("getFname", &Detector::getFname)
-        .def("setFwrite", &Detector::setFwrite, py::arg(),
-             py::arg() = std::vector<int>{})
-        .def("getFwrite", &Detector::getFwrite, py::arg() = std::vector<int>{})
-
-        // Time
-        .def("setExptime", &Detector::setExptime, py::arg(),
-             py::arg() = std::vector<int>{})
-        .def("getExptime", &Detector::getExptime,
-             py::arg() = std::vector<int>{})
-        .def("setPeriod", &Detector::setPeriod, py::arg(),
-             py::arg() = std::vector<int>{})
-        .def("getPeriod", &Detector::getPeriod, py::arg() = std::vector<int>{})
-        .def("setSubExptime", &Detector::setSubExptime, py::arg(),
-             py::arg() = std::vector<int>{})
-        .def("getSubExptime", &Detector::getSubExptime,
-             py::arg() = std::vector<int>{});
+    
 
     py::module io = m.def_submodule("io", "Submodule for io");
     io.def("read_my302_file", &read_my302_file, "some");

@@ -3,12 +3,13 @@
 #include <chrono>
 #include <memory>
 #include <vector>
+#include "sls_detector_defs.h"
 
 class multiSlsDetector;
 namespace sls {
 using ns = std::chrono::nanoseconds;
 using Positions = const std::vector<int> &;
-
+using defs = slsDetectorDefs;
 class Detector {
     std::unique_ptr<multiSlsDetector> pimpl;
 
@@ -18,6 +19,9 @@ class Detector {
 
     // Acquisition
     void acquire();
+    void startReceiver(Positions pos = {});
+    void stopReceiver(Positions pos = {});
+    Result<defs::runStatus> getReceiverStatus(Positions pos = {});
 
     // Configuration
     void freeSharedMemory();

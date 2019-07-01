@@ -1,11 +1,13 @@
 
-pybind11_add_module(_sls_detector src/main.cpp)
+pybind11_add_module(_sls_detector 
+    src/main.cpp 
+    src/enums.cpp
+    src/experimental.cpp
+)
 
 
 
 target_link_libraries(_sls_detector PUBLIC 
-                        slsProjectOptions
-                        slsProjectWarnings
                         slsDetectorShared
                         slsReceiverShared
                         slsSupportLib

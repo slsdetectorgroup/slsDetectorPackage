@@ -21,17 +21,29 @@ Result<std::string> Detector::getHostname(Positions pos) const {
 
 void Detector::acquire() { pimpl->acquire(); }
 
+void Detector::startReceiver(Positions pos) {
+    pimpl->Parallel(&slsDetector::startReceiver, pos);
+}
+void Detector::stopReceiver(Positions pos) {
+    pimpl->Parallel(&slsDetector::stopReceiver, pos);
+}
+
+Result<defs::runStatus> Detector::getReceiverStatus(Positions pos) {
+    return pimpl->Parallel(&slsDetector::getReceiverStatus, pos);
+}
+
+
 void Detector::setConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
 }
 
-void Detector::clearBit(uint32_t addr, int bit, Positions pos){
+void Detector::clearBit(uint32_t addr, int bit, Positions pos) {
     pimpl->Parallel(&slsDetector::clearBit, pos, addr, bit);
 }
-void Detector::setBit(uint32_t addr, int bit, Positions pos){
+void Detector::setBit(uint32_t addr, int bit, Positions pos) {
     pimpl->Parallel(&slsDetector::setBit, pos, addr, bit);
 }
-Result<uint32_t> Detector::getRegister(uint32_t addr, Positions pos){
+Result<uint32_t> Detector::getRegister(uint32_t addr, Positions pos) {
     return pimpl->Parallel(&slsDetector::readRegister, pos, addr);
 }
 

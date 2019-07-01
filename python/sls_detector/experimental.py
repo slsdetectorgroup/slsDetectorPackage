@@ -1,5 +1,7 @@
 
 from _sls_detector import multiDetectorApi
+from _sls_detector import slsDetectorDefs
+runStatus = slsDetectorDefs.runStatus
 from .utils import element_if_equal, all_equal
 import datetime as dt
 
@@ -32,6 +34,20 @@ class ExperimentalDetector(multiDetectorApi):
         self.online = True
 
 
+    # Acq
+    @property
+    def rx_status(self):
+        return element_if_equal(self.getReceiverStatus())
+    @rx_status.setter
+    def rx_status(self, status_str):
+        if status_str == 'start':
+            self.startReceiver()
+        elif status_str == 'stop':
+            self.stopReceiver()
+        else:
+            raise NotImplementedError("Unknown argument to rx_status")
+        
+
     # Configuration
     @property
     def startingfnum(self):
@@ -44,7 +60,7 @@ class ExperimentalDetector(multiDetectorApi):
 
     @property
     def config(self):
-        return 0
+        return NotImplementedError("config is set only")
     @config.setter
     def config(self, fname):
         self.setConfig(fname)

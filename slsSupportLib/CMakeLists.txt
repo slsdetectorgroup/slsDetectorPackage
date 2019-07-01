@@ -7,6 +7,7 @@ set(SOURCES
     src/ServerSocket.cpp
     src/ServerInterface2.cpp
     src/network_utils.cpp
+    src/ToString.cpp
 )
 
 set(HEADERS
@@ -29,6 +30,7 @@ set(PUBLICHEADERS
     include/ServerInterface2.h
     include/network_utils.h
     include/FixedCapacityContainer.h
+    include/ToString.h
 )
 
 add_library(slsSupportLib SHARED

@@ -4,6 +4,7 @@
 
 #include "CmdLineParser.h"
 #include "CmdProxy.h"
+#include "Detector.h"
 #include "container_utils.h"
 #include "multiSlsDetector.h"
 #include "slsDetectorCommand.h"
@@ -109,7 +110,12 @@ class multiSlsDetectorClient {
         // returns an empty string If the command is not in CmdProxy but
         // deprecated the new command is returned
         if (action_ != slsDetectorDefs::READOUT_ACTION) {
-            sls::CmdProxy<multiSlsDetector> proxy(detPtr);
+            int multi_id = 0;
+            if (detPtr != nullptr)
+                multi_id = detPtr->getMultiId();
+            sls::Detector d(multi_id);
+            sls::CmdProxy<sls::Detector> proxy(&d);
+            // sls::CmdProxy<multiSlsDetector> proxy(detPtr);
             auto cmd = proxy.Call(parser.command(), parser.arguments(),
                                   parser.detector_id(), action_);
             if (cmd.empty()) {

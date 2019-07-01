@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -7,11 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "ToString.h"
 #include "logger.h"
 #include "slsDetectorCommand.h"
-#include "sls_detector_exceptions.h"
 #include "sls_detector_defs.h"
+#include "sls_detector_exceptions.h"
 #include "string_utils.h"
+#include "TimeAlias.h"
 
 namespace sls {
 
@@ -20,9 +23,8 @@ template <typename T> class CmdProxy {
     explicit CmdProxy(T *detectorPtr) : det(detectorPtr) {}
 
     std::string Call(const std::string &command,
-                     const std::vector<std::string> &arguments,
-                     int detector_id,
-                     int action=-1) {
+                     const std::vector<std::string> &arguments, int detector_id,
+                     int action = -1) {
         cmd = command;
         args = arguments;
         det_id = detector_id;
@@ -63,7 +65,8 @@ template <typename T> class CmdProxy {
     using StringMap = std::map<std::string, std::string>;
 
     // Initialize maps for translating name and function
-    FunctionMap functions{{"list", &CmdProxy::ListCommands}};
+    FunctionMap functions{{"list", &CmdProxy::ListCommands},
+                          {"exptime2", &CmdProxy::Exptime}};
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
@@ -94,8 +97,9 @@ template <typename T> class CmdProxy {
     // Mapped functions
 
     std::string ListCommands(int action) {
-        if (action==slsDetectorDefs::HELP_ACTION)
-            return "list - lists all available commands, list deprecated - list deprecated commands\n";
+        if (action == slsDetectorDefs::HELP_ACTION)
+            return "list - lists all available commands, list deprecated - "
+                   "list deprecated commands\n";
 
         if (args.size() == 0) {
             auto commands = slsDetectorCommand(nullptr).getAllCommands();
@@ -126,6 +130,39 @@ template <typename T> class CmdProxy {
             WrongNumberOfParameters(1);
             return "";
         }
+    }
+
+    std::string Exptime(int action) {
+        std::ostringstream os;
+        os << cmd << ' ';
+        if (action == slsDetectorDefs::HELP_ACTION)
+            os << "[duration] [(optional) unit]";
+        else if (action == slsDetectorDefs::GET_ACTION) {
+            auto t = det->getExptime().squash();
+            if (args.size() == 0)
+                os << ToString(t) << '\n';
+            else if (args.size() == 1) {
+                os << ToString(t, args[0]) << '\n';
+            } else {
+                WrongNumberOfParameters(2);
+            }
+        } else if (action == slsDetectorDefs::PUT_ACTION) {
+            if (args.size() == 1) {
+                std::string time_str(args[0]);
+                std::string unit = RemoveUnit(time_str);
+                auto t = StringTo<ns>(time_str, unit);
+                det->setExptime(t);
+            } else if (args.size() == 2) {
+                auto t = StringTo<ns>(args[0], args[1]);
+                det->setExptime(t);
+            } else {
+                WrongNumberOfParameters(2);
+            }
+            os << ToString(args) << '\n';
+        } else {
+            throw sls::RuntimeError("Unknown action");
+        }
+        return os.str();
     }
 };
 

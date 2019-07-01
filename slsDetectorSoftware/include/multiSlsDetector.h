@@ -301,6 +301,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int64_t getId(idMode mode, int detPos = -1);
 
+    int getMultiId()const{return multiId;}
+
     /**
      * Get Client Software version
      * @returns client software version

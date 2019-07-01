@@ -1,9 +1,9 @@
 #pragma once
 #include "Result.h"
+#include "sls_detector_defs.h"
 #include <chrono>
 #include <memory>
 #include <vector>
-#include "sls_detector_defs.h"
 
 class multiSlsDetector;
 namespace sls {
@@ -32,6 +32,7 @@ class Detector {
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
     void setStartingFrameNumber(uint64_t value, Positions pos);
 
+    // Bits and registers
     void clearBit(uint32_t addr, int bit, Positions pos = {});
     void setBit(uint32_t addr, int bit, Positions pos = {});
     Result<uint32_t> getRegister(uint32_t addr, Positions pos = {});

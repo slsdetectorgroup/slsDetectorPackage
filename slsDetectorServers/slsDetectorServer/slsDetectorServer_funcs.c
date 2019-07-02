@@ -121,7 +121,6 @@ const char* getTimerName(enum timerIndex ind) {
     case ACTUAL_TIME:               return "actual_time";
     case MEASUREMENT_TIME:          return "measurement_time";
     case PROGRESS:                  return "progress";
-    case MEASUREMENTS_NUMBER:       return "measurements_number";
     case FRAMES_FROM_START:         return "frames_from_start";
     case FRAMES_FROM_START_PG:      return "frames_from_start_pg";
     case ANALOG_SAMPLES:            return "analog_samples";

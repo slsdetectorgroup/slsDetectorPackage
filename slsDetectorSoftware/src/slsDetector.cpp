@@ -3230,7 +3230,7 @@ int slsDetector::getReceiverOnline() const { return shm()->rxOnlineFlag; }
 
 std::string slsDetector::checkReceiverOnline() {
     try {
-        auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+        getReceiverSoftwareVersion();
         shm()->rxOnlineFlag = ONLINE_FLAG;
     } catch (...) {
         shm()->rxOnlineFlag = OFFLINE_FLAG;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TimeAlias.h"
+#include "TimeHelper.h"
 #include "TypeTraits.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"

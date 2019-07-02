@@ -14,7 +14,7 @@
 #include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
-#include "TimeAlias.h"
+#include "TimeHelper.h"
 
 namespace sls {
 

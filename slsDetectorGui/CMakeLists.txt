@@ -51,26 +51,12 @@ set(HEADERS
     include/qTabDebugging.h
     include/qTabDeveloper.h
     include/qTabMessages.h
-    ../slsDetectorSoftware/include
-    ../slsSupportLib/include/versionAPI.h
-    ../slsSupportLib/include/ServerSocket.h
-    ../slsSupportLib/include/ServerInterface2.h
 )
 set(RESOURCES
     include/icons.qrc
 )
 qt4_add_resources(RESOURCES_SRCS ${RESOURCES})
 
-include_directories(
-    include
-    slsDetectorPlotting/include
-    ../slsSupportLib/include  
-    ${QT_INCLUDE_DIR}
-    ${QT_QTCORE_INCLUDE_DIR}
-    ${QT_QTGUI_INCLUDE_DIR}
-    ${QWT_INCLUDE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
 
 add_definitions(
     -DPRINT_LOG #-DVERBOSE 
@@ -83,17 +69,22 @@ add_executable(slsDetectorGui
     ${RESOURCES_SRCS}
 )
 
+target_include_directories(slsDetectorGui PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorPlotting/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+    "$<BUILD_INTERFACE:${QT_INCLUDE_DIR}>"
+    "$<BUILD_INTERFACE:${QT_QTCORE_INCLUDE_DIR}>"
+    "$<BUILD_INTERFACE:${QT_QTGUI_INCLUDE_DIR}>"
+    "$<BUILD_INTERFACE:${QWT_INCLUDE_DIR}>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+)
+
 target_link_libraries(slsDetectorGui PUBLIC
-    slsProjectOptions
-    slsProjectWarnings
-    slsSupportLib
     slsDetectorShared
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
-    pthread
-    ${ZeroMQ_LIBRARIES}
-    rt
     png
     z
     Qt4::QtOpenGL

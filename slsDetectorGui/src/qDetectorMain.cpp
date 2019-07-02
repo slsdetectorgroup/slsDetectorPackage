@@ -283,7 +283,7 @@ void qDetectorMain::Initialization() {
 	connect(tabs,SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));//( QWidget*)));
     //	Measurement tab
     connect(tabMeasurement, SIGNAL(StartSignal()), this,SLOT(EnableTabs()));
-    connect(tabMeasurement, SIGNAL(FileNameChangedSignal(QString)), tablPlot, SLOT(SetSaveFileName(QString)));
+    connect(tabMeasurement, SIGNAL(FileNameChangedSignal(QString)), tabPlot, SLOT(SetSaveFileName(QString)));
     // Plot tab
     connect(tabPlot, SIGNAL(DisableZoomSignal(bool)), this, SLOT(SetZoomToolTip(bool)));
 

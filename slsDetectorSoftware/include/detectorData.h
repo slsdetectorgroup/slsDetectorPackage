@@ -18,14 +18,13 @@ class detectorData {
    * @param fIndex file index
   */
   detectorData(double progress, std::string fname, int x, int y, char *d, int dbytes, int dr, uint64_t fIndex) :
-			  progressIndex(progress), fileName(fname), nx(x), ny(y), data(d), databytes(dbytes), dynamicRange(dr), gain(nullptr), fileIndex(fIndex) {};
+			  progressIndex(progress), fileName(fname), fileIndex(fIndex), nx(x), ny(y), data(d), databytes(dbytes), dynamicRange(dr)  {};
 
   /**
 	 * Destructor
-	 * Also deletes gain  
 	 * data has to be deleted by caller
    */
-    ~detectorData() {if(gain) delete [] gain;};
+    ~detectorData() {};
 
 	int64_t getChannel(int i) {
 		int off=dynamicRange/8;
@@ -54,7 +53,6 @@ class detectorData {
     int nx;
     int ny;
     char* data;
-		double* gain;
     int databytes;
     int dynamicRange; 
 };

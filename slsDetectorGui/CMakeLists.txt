@@ -1,15 +1,5 @@
 set(CMAKE_AUTOMOC ON)
 
-set(ENV{QMAKESPEC} "/afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/mkspecs/linux-g++")
-set(ENV{PATH} "/afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/bin:$PATH")
-
-link_directories(
-    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/Qt-4.8.2/lib 
-    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/qwt-6.0.1/lib 
-    /afs/psi.ch/intranet/Controls/Software/Trolltech/RHEL7-x86_64/qwtplot3d/lib
-    /afs/psi.ch/project/sls_det_software/dhanya_softwareDevelopment/mySoft/slsDetectorPackage/build/bin
-)
-
 set(SOURCES
     slsDetectorPlotting/src/SlsQt1DPlot.cxx
     slsDetectorPlotting/src/SlsQt1DZoomer.cxx
@@ -27,7 +17,6 @@ set(SOURCES
     src/qTabDebugging.cpp
     src/qTabDeveloper.cpp
     src/qTabMessages.cpp
-    src/qServer.cpp
 )
 
 set(FORMS
@@ -62,7 +51,6 @@ set(HEADERS
     include/qTabDebugging.h
     include/qTabDeveloper.h
     include/qTabMessages.h
-    include/qServer.h
     ../slsDetectorSoftware/include
     ../slsSupportLib/include/versionAPI.h
     ../slsSupportLib/include/ServerSocket.h
@@ -116,22 +104,3 @@ set_target_properties(slsDetectorGui PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-add_executable(gui_client
-    client/qClient.h
-    client/qClient.cpp
-)
-
-target_link_libraries(gui_client PUBLIC
-    slsProjectOptions
-    slsProjectWarnings
-    slsSupportLib
-    slsDetectorShared
-    pthread
-    rt
-)
-
-set_target_properties(gui_client PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
-install(TARGETS slsDetectorGui gui_client DESTINATION bin)

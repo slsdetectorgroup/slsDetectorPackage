@@ -312,7 +312,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->timerValue[ACTUAL_TIME] = 0;
     shm()->timerValue[MEASUREMENT_TIME] = 0;
     shm()->timerValue[PROGRESS] = 0;
-    shm()->timerValue[MEASUREMENTS_NUMBER] = 1;
     shm()->timerValue[FRAMES_FROM_START] = 0;
     shm()->timerValue[FRAMES_FROM_START_PG] = 0;
     shm()->timerValue[ANALOG_SAMPLES] = 1;
@@ -1521,15 +1520,6 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Setting " << getTimerType(index) << " to " << t
                         << " ns/value";
-
-    // meausurement is only shm level
-    if (index == MEASUREMENTS_NUMBER) {
-        if (t >= 0) {
-            shm()->timerValue[index] = t;
-            FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << t;
-        }
-        return shm()->timerValue[index];
-    }
 
     // send to detector
     int64_t oldtimer = shm()->timerValue[index];

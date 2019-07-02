@@ -1109,9 +1109,7 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
             case FRAME_NUMBER:
             case CYCLES_NUMBER:
             case STORAGE_CELL_NUMBER:
-            case MEASUREMENTS_NUMBER:
-                throw RuntimeError("Cannot set number of frames, cycles,storage cells or "
-                                   "measurements individually.");
+                throw RuntimeError("Cannot set number of frames, cycles or storage cells individually.");
             default:
                 break;
             }
@@ -1129,7 +1127,6 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
         case FRAME_NUMBER:
         case CYCLES_NUMBER:
         case STORAGE_CELL_NUMBER:
-        case MEASUREMENTS_NUMBER:
             setTotalProgress();
             break;
         default:
@@ -3969,7 +3966,6 @@ int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
     names.emplace_back("period");
     names.emplace_back("frames");
     names.emplace_back("cycles");
-    names.emplace_back("measurements");
     names.emplace_back("timing");
 
     switch (type) {
@@ -4075,12 +4071,6 @@ void multiSlsDetector::registerAcquisitionFinishedCallback(void (*func)(double, 
     acqFinished_p = pArg;
 }
 
-void multiSlsDetector::registerMeasurementFinishedCallback(void (*func)(int, void *),
-                                                           void *pArg) {
-    measurement_finished = func;
-    measFinished_p = pArg;
-}
-
 void multiSlsDetector::registerProgressCallback(void (*func)(double, void *), void *pArg) {
     progress_call = func;
     pProgressCallArg = pArg;
@@ -4102,7 +4092,7 @@ void multiSlsDetector::registerDataCallback(void (*userCallback)(detectorData *,
 }
 
 int multiSlsDetector::setTotalProgress() {
-    int nf = 1, nc = 1, ns = 1, nm = 1;
+    int nf = 1, nc = 1, ns = 1;
 
     if (multi_shm()->timerValue[FRAME_NUMBER] != 0) {
         nf = multi_shm()->timerValue[FRAME_NUMBER];
@@ -4116,13 +4106,9 @@ int multiSlsDetector::setTotalProgress() {
         ns = multi_shm()->timerValue[STORAGE_CELL_NUMBER] + 1;
     }
 
-    if (multi_shm()->timerValue[MEASUREMENTS_NUMBER] > 0) {
-        nm = multi_shm()->timerValue[MEASUREMENTS_NUMBER];
-    }
+    totalProgress = nf * nc * ns;
 
-    totalProgress = nm * nf * nc * ns;
-
-    FILE_LOG(logDEBUG1) << "nm " << nm << " nf " << nf << " nc " << nc << " ns " << ns;
+    FILE_LOG(logDEBUG1) << "nf " << nf << " nc " << nc << " ns " << ns;
     FILE_LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
     return totalProgress;
 }
@@ -4170,11 +4156,6 @@ int multiSlsDetector::acquire() {
     multi_shm()->stoppedFlag = 0;
     setJoinThreadFlag(false);
 
-    int nm = multi_shm()->timerValue[MEASUREMENTS_NUMBER];
-    if (nm < 1) {
-        nm = 1;
-    }
-
     // verify receiver is idle
     if (receiver) {
         std::lock_guard<std::mutex> lock(mg);
@@ -4188,58 +4169,44 @@ int multiSlsDetector::acquire() {
     startProcessingThread();
 
     // resets frames caught in receiver
-    if (receiver) {
+    if (receiver && multi_shm()->stoppedFlag == 0) {
         std::lock_guard<std::mutex> lock(mg);
         if (resetFramesCaught() == FAIL) {
             multi_shm()->stoppedFlag = 1;
         }
     }
 
-    // loop through measurements
-    for (int im = 0; im < nm; ++im) {
-        if (multi_shm()->stoppedFlag != 0) {
-            break;
+    // start receiver
+    if (receiver && multi_shm()->stoppedFlag == 0) {
+        std::lock_guard<std::mutex> lock(mg);
+        if (startReceiver() == FAIL) {
+            FILE_LOG(logERROR) << "Start receiver failed ";
+            stopReceiver();
+            multi_shm()->stoppedFlag = 1;
         }
+        // let processing thread listen to these packets
+        sem_post(&sem_newRTAcquisition);
+    }
 
-        // start receiver
-        if (receiver) {
-            std::lock_guard<std::mutex> lock(mg);
-            if (startReceiver() == FAIL) {
-                FILE_LOG(logERROR) << "Start receiver failed ";
-                stopReceiver();
-                multi_shm()->stoppedFlag = 1;
-                break;
-            }
-            // let processing thread listen to these packets
-            sem_post(&sem_newRTAcquisition);
-        }
-
+    if (multi_shm()->stoppedFlag == 0)
         startAndReadAll();
 
-        // stop receiver
-        std::lock_guard<std::mutex> lock(mg);
-        if (receiver) {
-            if (stopReceiver() == FAIL) {
-                multi_shm()->stoppedFlag = 1;
-            } else {
-                if (dataReady != nullptr) {
-                    sem_wait(&sem_endRTAcquisition); // waits for receiver's
-                }
-                // external process to be
-                // done sending data to gui
+    // stop receiver
+    std::lock_guard<std::mutex> lock(mg);
+    if (receiver) {
+        if (stopReceiver() == FAIL) {
+            multi_shm()->stoppedFlag = 1;
+        } else {
+            if (dataReady != nullptr) {
+                sem_wait(&sem_endRTAcquisition); // waits for receiver's
             }
+            // external process to be
+            // done sending data to gui
         }
-        int findex = 0;
-        findex = incrementFileIndex();
+    }
+    
+    incrementFileIndex();
 
-        if (measurement_finished != nullptr) {
-            measurement_finished(im, measFinished_p);
-        }
-        if (multi_shm()->stoppedFlag != 0) {
-            break;
-        }
-
-    } // end measurements loop im
 
     // waiting for the data processing thread to finish!
     setJoinThreadFlag(true);

@@ -23,8 +23,8 @@
 #include <QPainter>
 
 qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle,
-                           int numDim, QString fPath, QString fName, int fIndex, bool displayStats, QString min, QString max, QString sum) : 
-                           QMainWindow(parent), id(id), filePath(fPath), fileName(fName), fileIndex(fIndex), cloneplot1D(nullptr), cloneplot2D(nullptr),
+                           int numDim, QString fPath, QString fName, int iIndex, bool displayStats, QString min, QString max, QString sum) : 
+                           QMainWindow(parent), id(id), filePath(fPath), fileName(fName), imageIndex(iIndex), cloneplot1D(nullptr), cloneplot2D(nullptr),
                            marker(nullptr), nomarker(nullptr), mainLayout(nullptr), boxPlot(nullptr), lblHistTitle(nullptr) {
     // Window title
     char winTitle[300], currTime[50];
@@ -142,29 +142,29 @@ void qCloneWidget::SetCloneHists(unsigned int nHists, int histNBins, double *his
     }
 }
 
-void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d, QwtText frameIndexTitle) {
+void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d, QString frameIndexTitle) {
     cloneplot2D->GetPlot()->SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d);
     cloneplot2D->KeepZRangeIfSet();
-    cloneplot2D->setTitle(frameIndexTitle);
+    cloneplot2D->setTitle(frameIndexTitle.toAscii().constData());
 }
 
 void qCloneWidget::SetRange(bool IsXYRange[], double XYRange[]) {
-    double XYRange[4] {0, 0, 0, 0};
-    void* plot = cloneplot1D;
-    if (cloneplot2D) {
-        plot = cloneplot2D->GetPlot();
+    if (cloneplot1D) {
+        cloneplot1D->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
+        cloneplot1D->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
+        cloneplot1D->Update();        
+    } else {
+        cloneplot2D->GetPlot()->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
+        cloneplot2D->GetPlot()->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
+        cloneplot2D->GetPlot()->Update();
     }
-
-    plot->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
-    plot->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
-    plot->Update();
 }
 
 void qCloneWidget::SavePlot() {
     char cID[10];
     sprintf(cID, "%d", id);
     //title
-    QString fName = filePath + Qstring('/') + fileName + Qstring('_') + imageIndex +  Qstring('_') + QString(NowTime().c_str()) + QString(".png");
+    QString fName = filePath + QString('/') + fileName + QString('_') + imageIndex +  QString('_') + QString(NowTime().c_str()) + QString(".png");
     FILE_LOG(logDEBUG) << "fname:" << fName.toAscii().constData();
     //save
     QImage img(boxPlot->size().width(), boxPlot->size().height(), QImage::Format_RGB32);
@@ -187,7 +187,7 @@ int qCloneWidget::SavePlotAutomatic() {
     char cID[10];
     sprintf(cID, "%d", id);
     //title
-    QString fName = filePath + Qstring('/') + fileName + Qstring('_') + imageIndex +  Qstring('_') + QString(NowTime().c_str()) + QString(".png");
+    QString fName = filePath + QString('/') + fileName + QString('_') + imageIndex +  QString('_') + QString(NowTime().c_str()) + QString(".png");
     FILE_LOG(logDEBUG) << "fname:" << fName.toAscii().constData();
     //save
     QImage img(boxPlot->size().width(), boxPlot->size().height(), QImage::Format_RGB32);

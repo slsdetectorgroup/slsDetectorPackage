@@ -29,7 +29,6 @@
 /** default ports */
 #define DEFAULT_PORTNO 1952
 #define DEFAULT_UDP_PORTNO 50001
-#define DEFAULT_GUI_PORTNO 65001
 #define DEFAULT_ZMQ_CL_PORTNO 30001
 #define DEFAULT_ZMQ_RX_PORTNO 30001
 
@@ -115,7 +114,6 @@ class slsDetectorDefs {
                            */
 
         PROGRESS, /**< fraction of measurement elapsed - only get! */
-        MEASUREMENTS_NUMBER,
         FRAMES_FROM_START,
         FRAMES_FROM_START_PG,
         ANALOG_SAMPLES,
@@ -927,12 +925,12 @@ format
         \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD,
        DELAY_AFTER_TRIGGER,GATES_NUMBER, CYCLES_NUMBER,
        ACTUAL_TIME,MEASUREMENT_TIME,
-       PROGRESS,MEASUREMENTS_NUMBER,FRAMES_FROM_START,FRAMES_FROM_START_PG,ANALOG_SAMPLES,DIGITAL_SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
+       PROGRESS,FRAMES_FROM_START,FRAMES_FROM_START_PG,ANALOG_SAMPLES,DIGITAL_SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
        SUBFRAME_DEADTIME \returns std::string
        frame_number,acquisition_time,frame_period,
        delay_after_trigger,gates_number, cycles_number,
        actual_time,measurement_time,
-       progress,measurements_number,frames_from_start,frames_from_start_pg,analog_samples, digital_samples,subframe_acquisition_time,storage_cell_number,
+       progress,frames_from_start,frames_from_start_pg,analog_samples, digital_samples,subframe_acquisition_time,storage_cell_number,
        SUBFRAME_DEADTIME
     */
     static std::string getTimerType(timerIndex t) {
@@ -955,8 +953,6 @@ format
             return std::string("measurement_time");
         case PROGRESS:
             return std::string("progress");
-        case MEASUREMENTS_NUMBER:
-            return std::string("measurements_number");
         case FRAMES_FROM_START:
             return std::string("frames_from_start");
         case FRAMES_FROM_START_PG:

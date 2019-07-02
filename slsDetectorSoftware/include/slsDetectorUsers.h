@@ -824,14 +824,6 @@ public:
 	void registerAcquisitionFinishedCallback(void( *func)(double,int, void*), void *pArg);
 
 	/**
-	 * register callback for accessing measurement final data in client,
-	 * @param func function to be called at the end of the acquisition.
-	 * gets measurement index
-	 * @param pArg argument
-	 */
-	void registerMeasurementFinishedCallback(void( *func)(int, void*), void *pArg);
-
-	/**
 	 * register callback for accessing detector progress in client,
 	 * @param func function to be called at the end of the acquisition.
 	 * gets detector status and progress index as arguments

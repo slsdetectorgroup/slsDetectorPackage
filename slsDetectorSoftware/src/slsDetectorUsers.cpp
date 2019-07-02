@@ -406,10 +406,6 @@ void slsDetectorUsers::registerAcquisitionFinishedCallback(void( *func)(double,i
 	detector.registerAcquisitionFinishedCallback(func,pArg);
 }
 
-void slsDetectorUsers::registerMeasurementFinishedCallback(void( *func)(int,void*), void *pArg) {
-	detector.registerMeasurementFinishedCallback(func,pArg);
-}
-
 void slsDetectorUsers::registerProgressCallback(void( *func)(double,void*), void *pArg) {
 	detector.registerProgressCallback(func,pArg);
 }

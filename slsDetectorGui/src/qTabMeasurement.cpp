@@ -5,6 +5,7 @@
 #include "string_utils.h"
 
 #include <QStandardItemModel>
+#include <QTimer>
 
 #include <iostream>
 
@@ -177,10 +178,6 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
 			break;
 	}
 
-	// to let qdrawplot know that triggers or frames are used
-	myPlot->setFrameEnabled(lblNumFrames->isEnabled());
-	myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
-
 	CheckAcqPeriodGreaterThanExp();
 }
 
@@ -226,24 +223,13 @@ void qTabMeasurement::SetTimingMode(int val) {
 void qTabMeasurement::GetNumMeasurements() {
 	FILE_LOG(logDEBUG) << "Getting number of measurements";
 	disconnect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
-
-	try {
-        auto retval = myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER);
-		if (retval == -1) {
-			qDefs::Message(qDefs::WARNING, "Number of measurements is inconsistent for all detectors.", "qTabMeasurement::GetNumMeasurements");
-		} 
-		spinNumMeasurements->setValue(retval);
-    } CATCH_DISPLAY ("Could not get number of measurements.", "qTabMeasurement::GetNumMeasurements")
-
+	spinNumFrames->setValue(myPlot->GetNumMeasurements());
 	connect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
 }
 
 void qTabMeasurement::SetNumMeasurements(int val) {
 	FILE_LOG(logINFO) << "Setting Number of Measurements to " << val;
-
-	try {
-        myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER, val);
-    } CATCH_HANDLE("Could not set number of measurements.", "qTabMeasurement::SetNumMeasurements", this, &qTabMeasurement::GetNumMeasurements)
+	myPlot->SetNumMeasurements(val);
 }
 
 void qTabMeasurement::GetNumFrames() {
@@ -588,6 +574,7 @@ void qTabMeasurement::StartAcquisition() {
 void qTabMeasurement::StopAcquisition() {
 	FILE_LOG(logINFORED) << "Stopping Acquisition";
 	try{
+		myPlot->SetStopSignal();
 		myDet->stopAcquisition();
 	} CATCH_DISPLAY("Could not stop acquisition.", "qTabMeasurement::StopAcquisition")
 }
@@ -611,7 +598,7 @@ void qTabMeasurement::Enable(bool enable) {
 void qTabMeasurement::Refresh() {
 	FILE_LOG(logDEBUG) << "**Updating Measurement Tab";
 
-	if (!myPlot->isRunning()) {
+	if (!myPlot->GetIsRunning()) {
 		GetTimingMode();
 		GetNumMeasurements();
 		GetNumFrames();

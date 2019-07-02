@@ -2093,16 +2093,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void registerAcquisitionFinishedCallback(void (*func)(double, int, void *),
                                              void *pArg);
-
-    /**
-     * register callback for accessing measurement final data
-     * @param func function to be called at the end of the acquisition.
-     * gets measurement index
-     * @param pArg argument
-     */
-    void registerMeasurementFinishedCallback(void (*func)(int, void *),
-                                             void *pArg);
-
     /**
      * register callback for accessing detector progress
      * @param func function to be called at the end of the acquisition.
@@ -2301,9 +2291,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     void (*acquisition_finished)(double, int, void *){nullptr};
     void *acqFinished_p{nullptr};
-
-    void (*measurement_finished)(int, void *){nullptr};
-    void *measFinished_p{nullptr};
 
     void (*progress_call)(double, void *){nullptr};
     void *pProgressCallArg{nullptr};

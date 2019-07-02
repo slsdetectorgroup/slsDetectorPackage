@@ -211,7 +211,7 @@ void qTabPlot::Select1DPlot(bool enable) {
     chkZMax->setEnabled(!enable);
     dispZMin->setEnabled(!enable);
     dispZMax->setEnabled(!enable);
-    myplot->Select1dPlot(enable);
+    myPlot->Select1dPlot(enable);
     SetTitles();
     SetXYRange();
     if (!is1d) {
@@ -485,7 +485,7 @@ void qTabPlot::SetXYRange() {
     connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
 
     // to update plot with range
-    myplot->SetXYRangeChanged();
+    myPlot->SetXYRangeChanged();
     myPlot->DisableZoom(disablezoom);
     emit DisableZoomSignal(disablezoom);
 }
@@ -589,7 +589,7 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     myPlot->IsXYRangeValues(true, qDefs::YMAX);
 
     // to update plot with range
-    myplot->SetXYRangeChanged();
+    myPlot->SetXYRangeChanged();
     myPlot->DisableZoom(true);
     emit DisableZoomSignal(true);
 }
@@ -671,7 +671,7 @@ void qTabPlot::SetStreamingFrequency() {
 void qTabPlot::Refresh() {
     FILE_LOG(logDEBUG) << "**Updating Plot Tab";
 
-    if (!myPlot->isRunning()) {
+    if (!myPlot->GetIsRunning()) {
         boxPlotType->setEnabled(true);
 
         // streaming frequency

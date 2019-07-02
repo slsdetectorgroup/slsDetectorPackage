@@ -13,6 +13,7 @@
 #include "GeneralData.h"
 #include "Listener.h"
 #include "ZmqSocket.h" //just for the zmq port define
+#include "file_utils.h"
 
 #include <cerrno>  //eperm
 #include <cstdlib> //system
@@ -553,12 +554,8 @@ void slsReceiverImplementation::setFilePath(const char c[]) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (strlen(c)) {
-        // check if filepath exists
-        struct stat st;
-        if (stat(c, &st) == 0)
-            strcpy(filePath, c);
-        else
-            FILE_LOG(logERROR) << "FilePath does not exist: " << c;
+        mkdir_p(c); //throws if it can't create
+        strcpy(filePath, c);
     }
     FILE_LOG(logINFO) << "File path: " << filePath;
 }

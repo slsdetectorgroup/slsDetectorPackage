@@ -1422,14 +1422,14 @@ int setHighVoltage(int val){
 	    FILE_LOG(logINFO, ("Setting High voltage: %d V\n", val));
 		uint32_t addr = POWER_REG;
 
-		// switch off high voltage
-		bus_w(addr, bus_r(addr) & (~POWER_HV_SLCT_MSK));
+		// switch to external high voltage
+		bus_w(addr, bus_r(addr) & (~POWER_HV_INTERNAL_SLCT_OFST));
 
 		MAX1932_Set(val);
 
-		// switch on high voltage if val > 0
+		// switch on internal high voltage, if set
 		if (val > 0)
-		    bus_w(addr, bus_r(addr) | POWER_HV_SLCT_MSK);
+		    bus_w(addr, bus_r(addr) | POWER_HV_INTERNAL_SLCT_OFST);
 
 		highvoltage = val;
 	}

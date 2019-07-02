@@ -1,5 +1,5 @@
 include_directories(
-    ${PROJECT_SOURCE_DIR}/catch
+    ${PROJECT_SOURCE_DIR}/libs/catch
     include
 )
 

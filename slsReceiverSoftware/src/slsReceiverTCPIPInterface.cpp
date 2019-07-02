@@ -808,6 +808,8 @@ int slsReceiverTCPIPInterface::set_file_dir(Interface &socket) {
 
     if (strlen(fPath) != 0) {
         FILE_LOG(logDEBUG1) << "Setting file path: " << fPath;
+        if(fPath[0] != '/')
+            throw RuntimeError("Receiver path needs to be absolute path");
         impl()->setFilePath(fPath);
     }
     std::string s = impl()->getFilePath();

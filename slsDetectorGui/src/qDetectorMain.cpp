@@ -229,6 +229,8 @@ void qDetectorMain::SetUpWidgetWindow() {
     heightCentralWidget = centralwidget->size().height();
     // Default zoom Tool Tip
     zoomToolTip = dockWidgetPlot->toolTip();
+
+    Initialization();
 }
 
 void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
@@ -273,8 +275,6 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     //FIXME: not needed anymore due to client creating socket each time
     //myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
     //myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
-
-    Initialization();
 }
 
 void qDetectorMain::Initialization() {

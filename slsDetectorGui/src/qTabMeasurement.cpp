@@ -224,7 +224,7 @@ void qTabMeasurement::SetTimingMode(int val) {
 void qTabMeasurement::GetNumMeasurements() {
 	FILE_LOG(logDEBUG) << "Getting number of measurements";
 	disconnect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
-	spinNumFrames->setValue(myPlot->GetNumMeasurements());
+	spinNumMeasurements->setValue(myPlot->GetNumMeasurements());
 	connect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
 }
 
@@ -606,7 +606,7 @@ void qTabMeasurement::Refresh() {
 		GetExposureTime();
 		GetAcquisitionPeriod();
 		GetNumTriggers();
-		if (delayImplemented) {
+		if (delayImplemented) {cprintf(BLUE, "Delay implemented\n");
 			GetDelay();
 		}
 		if (sampleImplemented) {

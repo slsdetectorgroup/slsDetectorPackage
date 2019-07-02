@@ -178,11 +178,11 @@ void qTabDeveloper::CreateDACWidgets() {
 	dacLayout = new QGridLayout(boxDacs);
 
 	for (int i = 0; i < numDACWidgets; ++i) {
-		lblDacs[i] = new QLabel(QString(dacNames[i].c_str()), boxDacs);
-		spinDacs[i] = new MyDoubleSpinBox(i, boxDacs);
+		lblDacs.push_back(new QLabel(QString(dacNames[i].c_str()), boxDacs));
+		spinDacs.push_back(new MyDoubleSpinBox(i, boxDacs));
 		spinDacs[i]->setMinimum(-1);
 		spinDacs[i]->setMaximum(10000);
-		lblDacsmV[i] = new QLabel("", boxDacs);
+		lblDacsmV.push_back(new QLabel("", boxDacs));
 
 		dacLayout->addWidget(lblDacs[i], (int)(i / 2), ((i % 2) == 0) ? 1 : 5);
 		dacLayout->addWidget(spinDacs[i], (int)(i / 2), ((i % 2) == 0) ? 2 : 6);
@@ -210,8 +210,8 @@ void qTabDeveloper::CreateADCWidgets() {
 	QGridLayout *adcLayout = new QGridLayout(boxAdcs);
 
 	for (int i = 0; i < numADCWidgets; ++i) {
-		lblAdcs[i] = new QLabel(QString(adcNames[i].c_str()), boxAdcs);
-		spinAdcs[i] = new QLineEdit(boxAdcs);
+		lblAdcs.push_back(new QLabel(QString(adcNames[i].c_str()), boxAdcs));
+		spinAdcs.push_back(new QLineEdit(boxAdcs));
 		spinAdcs[i]->setReadOnly(true);
 
 		adcLayout->addWidget(lblAdcs[i], (int)(i / 2), ((i % 2) == 0) ? 1 : 4);

@@ -4185,15 +4185,16 @@ int multiSlsDetector::acquire() {
             multi_shm()->stoppedFlag = 1;
         }
         // let processing thread listen to these packets
-        sem_post(&sem_newRTAcquisition);
+        if (multi_shm()->stoppedFlag == 0)
+            sem_post(&sem_newRTAcquisition);
     }
 
     if (multi_shm()->stoppedFlag == 0)
         startAndReadAll();
 
     // stop receiver
-    std::lock_guard<std::mutex> lock(mg);
     if (receiver) {
+        std::lock_guard<std::mutex> lock(mg);
         if (stopReceiver() == FAIL) {
             multi_shm()->stoppedFlag = 1;
         } else {
@@ -4203,10 +4204,8 @@ int multiSlsDetector::acquire() {
             // external process to be
             // done sending data to gui
         }
+        incrementFileIndex();
     }
-    
-    incrementFileIndex();
-
 
     // waiting for the data processing thread to finish!
     setJoinThreadFlag(true);

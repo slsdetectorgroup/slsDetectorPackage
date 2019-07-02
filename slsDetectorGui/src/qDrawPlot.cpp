@@ -111,8 +111,8 @@ void qDrawPlot::SetupWidgetWindow() {
         fileSaveName = "Image";
 	}   
 
-    SetupStatistics();   
     SetupPlots();
+    SetupStatistics();  
     SetDataCallBack(true);
     myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack), this);
     myDet->registerProgressCallback(&(GetProgressCallBack), this);
@@ -219,7 +219,7 @@ void qDrawPlot::SetupPlots() {
     plot2d = new SlsQt2DPlotLayout(boxPlot);
     // default display data 
     if (data2d)
-        delete[] data2d;    
+        delete [] data2d;    
     data2d = new double[nPixelsY * nPixelsX];
     for (unsigned int px = 0; px < nPixelsX; ++px)
         for (unsigned int py = 0; py < nPixelsY; ++py)

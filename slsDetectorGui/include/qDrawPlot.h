@@ -145,7 +145,7 @@ class qDrawPlot : public QWidget {
     unsigned int nHists{1};
     double *datax1d{nullptr};
     std::vector<double *> datay1d;
-    double *data2d;
+    double *data2d{nullptr};
 
 	//options
     bool isPlot{true};

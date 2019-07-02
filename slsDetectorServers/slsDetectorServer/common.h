@@ -24,7 +24,7 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
         bigger = inputMin;
     }
     if ((inputValue < smaller) || (inputValue > bigger)) {
-        FILE_LOG(logERROR, ("Input Value is outside bounds (%d to %d): %d\n", inputValue, smaller, bigger));
+        FILE_LOG(logERROR, ("Input Value is outside bounds (%d to %d): %d\n", smaller, bigger, inputValue));
         *outputValue = -1;
         return FAIL;
     }

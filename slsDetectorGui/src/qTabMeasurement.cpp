@@ -3,7 +3,7 @@
 #include "qDrawPlot.h"
 
 #include "string_utils.h"
-#include <cmath>
+
 #include <QStandardItemModel>
 #include <QTimer>
 

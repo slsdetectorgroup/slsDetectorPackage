@@ -91,7 +91,6 @@ target_link_libraries(slsDetectorGui PUBLIC
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
-    pthread
     ${ZeroMQ_LIBRARIES}
     rt
     png
@@ -104,3 +103,4 @@ set_target_properties(slsDetectorGui PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
+install(TARGETS slsDetectorGui DESTINATION bin)

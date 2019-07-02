@@ -252,6 +252,7 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     case slsDetectorDefs::JUNGFRAU:
         actionLoadTrimbits->setText("Load Settings");
         actionSaveTrimbits->setText("Save Settings");
+        break;
     case slsDetectorDefs::MOENCH:
         actionLoadTrimbits->setEnabled(false);
         actionSaveTrimbits->setEnabled(false);

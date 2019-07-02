@@ -156,6 +156,7 @@ void qTabAdvanced::GetOnline() {
             lblOnline->setToolTip(detOnlineTip);
             dispOnline->setPalette(lblHostname->palette());
             lblOnline->setPalette(lblHostname->palette());
+            break;
         default:
             dispOnline->setText("Offline");
             lblOnline->setText("Detector Online Status:* ");
@@ -291,6 +292,7 @@ void qTabAdvanced::GetReceiverOnline() {
             lblRxrOnline->setToolTip(rxrOnlineTip);
             dispRxrOnline->setPalette(lblHostname->palette());
             lblRxrOnline->setPalette(lblHostname->palette());
+            break;
         default:
             dispRxrOnline->setText("Offline");
             lblRxrOnline->setText("Receiver Online Status:* ");

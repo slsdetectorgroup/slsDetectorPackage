@@ -7,6 +7,7 @@
 #include <QStandardItemModel>
 #include <QTimer>
 
+#include <cmath>
 #include <iostream>
 
 qTabMeasurement::qTabMeasurement(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : QWidget(parent), myDet(detector), myPlot(plot),

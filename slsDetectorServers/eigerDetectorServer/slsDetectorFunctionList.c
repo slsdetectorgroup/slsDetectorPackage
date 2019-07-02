@@ -1092,7 +1092,7 @@ int getDAC(enum DACINDEX ind, int mV) {
     }
     int voltage = -1;
     // dac units to voltage
-    ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL, LTC2620_MAX_VAL,
+    ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, DAC_MIN_MV, DAC_MAX_MV,
             (detectorModules)->dacs[ind], &voltage);
     FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, (detectorModules)->dacs[ind], voltage));
     return voltage;

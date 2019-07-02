@@ -181,7 +181,7 @@ class qDrawPlot : public QWidget {
     int64_t currentFrame{0};
 	  pthread_mutex_t lastImageCompleteMutex;
     bool hasStopped{false};
-    int numMeasurements{0};
+    int numMeasurements{1};
 
     unsigned int nPixelsX{0};
     unsigned int nPixelsY{0};

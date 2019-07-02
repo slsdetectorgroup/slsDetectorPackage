@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TimeAlias.h"
 #include "TypeTraits.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
@@ -38,11 +39,11 @@ template <typename From>
 typename std::enable_if<is_duration<From>::value, std::string>::type
 ToString(From t) {
     auto tns = std::chrono::duration_cast<std::chrono::nanoseconds>(t);
-    if (tns < std::chrono::microseconds(1)) {
+    if (time::abs(tns) < std::chrono::microseconds(1)) {
         return ToString(tns, "ns");
-    } else if (tns < std::chrono::milliseconds(1)) {
+    } else if (time::abs(tns) < std::chrono::milliseconds(1)) {
         return ToString(tns, "us");
-    } else if (tns < std::chrono::milliseconds(99)) {
+    } else if (time::abs(tns) < std::chrono::milliseconds(99)) {
         return ToString(tns, "ms");
     } else {
         return ToString(tns, "s");
@@ -50,8 +51,14 @@ ToString(From t) {
 }
 
 template <typename T>
-T StringTo(const std::string &t, const std::string &unit = {}) {
-    auto tval = std::stod(t);
+T StringTo(const std::string &t, const std::string &unit) {
+    double tval{0};
+    try {
+        tval = std::stod(t);
+    } catch (const std::invalid_argument &e) {
+        throw sls::RuntimeError("Could not convert string to time");
+    }
+
     using std::chrono::duration;
     using std::chrono::duration_cast;
     if (unit == "ns") {
@@ -66,6 +73,11 @@ T StringTo(const std::string &t, const std::string &unit = {}) {
         throw sls::RuntimeError(
             "Invalid unit in conversion from string to std::chrono::duration");
     }
+}
+
+template <typename T> T StringTo(std::string t) {
+    auto unit = RemoveUnit(t);
+    return StringTo<T>(t, unit);
 }
 
 } // namespace sls

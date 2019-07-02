@@ -1,6 +1,18 @@
 #pragma once
 #include <chrono>
-namespace sls{
 
-    using ns = std::chrono::nanoseconds;
+#include "TypeTraits.h"
+namespace sls {
+namespace time {
+using ns = std::chrono::nanoseconds;
+using us = std::chrono::microseconds;
+using ms = std::chrono::milliseconds;
+using s = std::chrono::seconds;
+
+template <class Rep, class Period>
+constexpr std::chrono::duration<Rep, Period> abs(std::chrono::duration<Rep, Period> d) {
+    return d >= d.zero() ? d : -d;
 }
+
+} // namespace time
+} // namespace sls

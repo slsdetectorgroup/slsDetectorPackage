@@ -150,10 +150,10 @@ template <typename T> class CmdProxy {
             if (args.size() == 1) {
                 std::string time_str(args[0]);
                 std::string unit = RemoveUnit(time_str);
-                auto t = StringTo<ns>(time_str, unit);
+                auto t = StringTo<time::ns>(time_str, unit);
                 det->setExptime(t);
             } else if (args.size() == 2) {
-                auto t = StringTo<ns>(args[0], args[1]);
+                auto t = StringTo<time::ns>(args[0], args[1]);
                 det->setExptime(t);
             } else {
                 WrongNumberOfParameters(2);

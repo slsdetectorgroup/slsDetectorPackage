@@ -6,7 +6,7 @@ namespace sls {
 template <typename Container>
 typename Container::value_type
 Squash(const Container &c, typename Container::value_type default_value = {}) {
-    if (std::all_of(begin(c), end(c),
+    if (!c.empty() && std::all_of(begin(c), end(c),
                     [c](const typename Container::value_type &element) {
                         return element == c.front();
                     }))

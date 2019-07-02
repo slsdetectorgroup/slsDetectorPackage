@@ -439,8 +439,8 @@
 
 #define POWER_ENBL_VLTG_RGLTR_OFST          (16)
 #define POWER_ENBL_VLTG_RGLTR_MSK           (0x0000001F << POWER_ENBL_VLTG_RGLTR_OFST)
-#define POWER_HV_SLCT_OFST                  (31)
-#define POWER_HV_SLCT_MSK                   (0x00000001 << POWER_HV_SLCT_OFST)
+#define POWER_HV_INTERNAL_SLCT_OFST         (31)
+#define POWER_HV_INTERNAL_SLCT_MSK          (0x00000001 << POWER_HV_INTERNAL_SLCT_OFST)
 
 /* Number of Words RW register TODO */
 #define NUMBER_OF_WORDS_REG                 (0x5F << MEM_MAP_SHIFT)

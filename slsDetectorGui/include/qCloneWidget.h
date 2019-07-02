@@ -40,7 +40,6 @@ class qCloneWidget : public QMainWindow {
     void closeEvent(QCloseEvent *event);
 
   private:
-     char *GetCurrentTimeStamp();
     void DisplayStats(bool enable, QString min, QString max, QString sum);
 
 

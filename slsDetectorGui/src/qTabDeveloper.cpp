@@ -23,7 +23,6 @@ qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *detector) :
 	QWidget(parent), myDet(detector), detType(slsDetectorDefs::GENERIC), numDACWidgets(0), numADCWidgets(0),
 	boxDacs(nullptr), boxAdcs(nullptr), lblHV(nullptr), comboHV(nullptr), spinHV(nullptr), dacLayout(nullptr), comboDetector(nullptr), layout(nullptr) {
 	SetupWidgetWindow();
-	Initialization();
 	FILE_LOG(logDEBUG) << "Developer ready";
 }
 
@@ -146,6 +145,8 @@ void qTabDeveloper::SetupWidgetWindow() {
 	layout->addWidget(boxDacs, 1, 0);
 	CreateADCWidgets();
 
+	Initialization();
+
 	Refresh();
 }
 
@@ -156,7 +157,8 @@ void qTabDeveloper::Initialization() {
 		connect(spinDacs[i], SIGNAL(editingFinished(int)), this, SLOT(SetDac(int)));
 	if (comboHV != nullptr) {
 		connect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
-	} else {
+	} 
+	if (spinHV != nullptr) {
 		connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
 	}
 }
@@ -338,9 +340,10 @@ void qTabDeveloper::GetHighVoltage() {
 		return;
 
 	FILE_LOG(logDEBUG) << "Getting High Voltage";
-	if (comboHV == nullptr) {
+	if (spinHV != nullptr) {
 		disconnect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));	
-	} else {
+	} 
+	if (comboHV != nullptr) {
 		disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
 	}
 
@@ -387,9 +390,10 @@ void qTabDeveloper::GetHighVoltage() {
 
     } CATCH_DISPLAY ("Could not get high voltage.", "qTabDeveloper::GetHighVoltage")
 
-	if (comboHV == nullptr) {
+	if (spinHV != nullptr) {
 		connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));	
-	} else {
+	} 
+	if (comboHV != nullptr) {
 		connect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
 	}
 }

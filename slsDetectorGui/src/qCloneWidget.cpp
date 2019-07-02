@@ -28,7 +28,7 @@ qCloneWidget::qCloneWidget(QWidget *parent, int id, QString title, QString xTitl
                            marker(nullptr), nomarker(nullptr), mainLayout(nullptr), boxPlot(nullptr), lblHistTitle(nullptr) {
     // Window title
     char winTitle[300], currTime[50];
-    strcpy(currTime, GetCurrentTimeStamp());
+    strcpy(currTime, NowTime().c_str());
     sprintf(winTitle, "Snapshot:%d  -  %s", id, currTime);
     setWindowTitle(QString(winTitle));
 
@@ -202,19 +202,6 @@ int qCloneWidget::SavePlotAutomatic() {
 void qCloneWidget::closeEvent(QCloseEvent *event) {
     emit CloneClosedSignal(id);
     event->accept();
-}
-
-char *qCloneWidget::GetCurrentTimeStamp() {
-    char output[30];
-    char *result;
-
-    //using sys cmds to get output or str
-    FILE *sysFile = popen("date", "r");
-    fgets(output, sizeof(output), sysFile);
-    pclose(sysFile);
-
-    result = output + 0;
-    return result;
 }
 
 void qCloneWidget::DisplayStats(bool enable, QString min, QString max, QString sum) {

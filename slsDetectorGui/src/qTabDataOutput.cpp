@@ -308,7 +308,7 @@ void qTabDataOutput::SetRateCorrection() {
 
 void qTabDataOutput::GetSpeed() {
 	FILE_LOG(logDEBUG) << "Getting Speed";	
-	disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
+	disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed(int)));
 	
 	try {
 		int retval = myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER);
@@ -327,7 +327,7 @@ void qTabDataOutput::GetSpeed() {
         }
     } CATCH_DISPLAY ("Could not get speed.", "qTabDataOutput::GetSpeed")
 
-	connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed()));
+	connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed(int)));
 }
 
 void qTabDataOutput::SetSpeed(int speed) {

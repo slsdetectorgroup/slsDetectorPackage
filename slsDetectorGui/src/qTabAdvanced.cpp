@@ -100,7 +100,7 @@ void qTabAdvanced::Initialization() {
     connect(dispRxrZMQIP, SIGNAL(editingFinished()), this, SLOT(SetRxrZMQIP()));
 
     // roi
-    if (gridRoi->isEnabled()) {
+    if (tab_roi->isEnabled()) {
         connect(btnAddRoi, SIGNAL(clicked()), this, SLOT(AddROISlot()));
         connect(btnSetRoi, SIGNAL(clicked()), this, SLOT(SetROI()));
         connect(btnGetRoi, SIGNAL(clicked()), this, SLOT(GetROI()));
@@ -881,7 +881,7 @@ void qTabAdvanced::Refresh() {
     SetDetector(comboDetector->currentIndex());
 
     // roi
-    if (gridRoi->isEnabled()) {
+    if (tab_roi->isEnabled()) {
         GetROI();
     }
 

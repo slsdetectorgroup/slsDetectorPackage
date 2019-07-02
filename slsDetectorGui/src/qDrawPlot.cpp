@@ -122,7 +122,6 @@ void qDrawPlot::SetupWidgetWindow() {
 
 void qDrawPlot::Initialization() {
     connect(this, SIGNAL(AcquireSignal()), this, SLOT(AcquireThread()));
-    connect(this, SIGNAL(UpdatePlotSignal()), this, SLOT(UpdatePlot()));
 }
 
 void qDrawPlot::SetupStatistics() {
@@ -207,6 +206,7 @@ void qDrawPlot::SetupPlots() {
     // default display data
     for (unsigned int px = 0; px < nPixelsX; ++px) {
         datax1d[px] = px;
+        datay1d[0][px] = 0;
     }
     // add a hist
     DetachHists();

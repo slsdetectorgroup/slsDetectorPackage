@@ -205,19 +205,20 @@ void qTabSettings::SetDynamicRange(int index) {
 
 void qTabSettings::GetThresholdEnergy() {
     FILE_LOG(logDEBUG) << "Getting theshold energy";
-    disconnect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetThresholdEnergy()));
+    disconnect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetThresholdEnergy(int)));
 
     try {
         auto retval = myDet->getThresholdEnergy();
-		if (retval == -1) {
+		/*if (retval == -1) { commenting out as default is -1, handle this when API changes
 			qDefs::Message(qDefs::WARNING, "Threshold Energy is inconsistent for all detectors.", "qTabDataOutput::GetThresholdEnergy");
             spinThreshold->setValue(-1);
 		} else {
 			spinThreshold->setValue(retval);
-		}
+		}*/
+        spinThreshold->setValue(retval);
     } CATCH_DISPLAY ("Could not get threshold energy.", "qTabDataOutput::GetThresholdEnergy")
 
-    connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetThresholdEnergy()));
+    connect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetThresholdEnergy(int)));
 }
 
 void qTabSettings::SetThresholdEnergy(int index) {

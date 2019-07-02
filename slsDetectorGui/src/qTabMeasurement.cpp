@@ -35,20 +35,21 @@ void qTabMeasurement::SetupWidgetWindow() {
 	// timer to update the progress bar
 	progressTimer = new QTimer(this);
 
-	delayImplemented = false;
 	sampleImplemented = false;
+	delayImplemented = true;
+	// by default, delay is disabled in form
+	lblDelay->setEnabled(true);
+	spinDelay->setEnabled(true);
+	comboDelayUnit->setEnabled(true);
 	// enabling according to det type
 	switch(myDet->getDetectorTypeAsEnum()) {
 		case slsDetectorDefs::MOENCH:
-			lblNumSamples->setEnabled(false);
-			spinNumSamples->setEnabled(false);
+			lblNumSamples->setEnabled(true);
+			spinNumSamples->setEnabled(true);
 			sampleImplemented = true;
 			break;
 		case slsDetectorDefs::EIGER:
-			lblDelay->setEnabled(false);
-			spinDelay->setEnabled(false);
-			comboDelayUnit->setEnabled(false);
-			delayImplemented = true;
+			delayImplemented = false;
 			break;
 		default:
 			break;
@@ -606,7 +607,7 @@ void qTabMeasurement::Refresh() {
 		GetExposureTime();
 		GetAcquisitionPeriod();
 		GetNumTriggers();
-		if (delayImplemented) {cprintf(BLUE, "Delay implemented\n");
+		if (delayImplemented) {
 			GetDelay();
 		}
 		if (sampleImplemented) {

@@ -218,7 +218,7 @@ int slsReceiverTCPIPInterface::decode_function(Interface &socket) {
     } else {
         FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
                             << getFunctionNameFromEnum((enum detFuncs)fnum)
-                            << ") located at " << flist[fnum];
+                            << ")";
         ret = (this->*flist[fnum])(socket);
         FILE_LOG(logDEBUG1)
             << "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)

@@ -138,7 +138,7 @@ template <typename T> class CmdProxy {
         if (action == slsDetectorDefs::HELP_ACTION)
             os << "[duration] [(optional) unit]";
         else if (action == slsDetectorDefs::GET_ACTION) {
-            auto t = det->getExptime().squash();
+            auto t = det->getExptime({det_id}).squash();
             if (args.size() == 0)
                 os << ToString(t) << '\n';
             else if (args.size() == 1) {
@@ -154,7 +154,7 @@ template <typename T> class CmdProxy {
                 det->setExptime(t);
             } else if (args.size() == 2) {
                 auto t = StringTo<time::ns>(args[0], args[1]);
-                det->setExptime(t);
+                det->setExptime(t, {det_id});
             } else {
                 WrongNumberOfParameters(2);
             }

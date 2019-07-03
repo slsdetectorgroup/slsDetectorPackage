@@ -6,12 +6,7 @@ class qDrawPlot;
 
 class multiSlsDetector;
 
-class QStackedLayout;
-class QSpinBox;
-class QDoubleSpinBox;
-class QComboBox;
 class QButtonGroup;
-class QPalette;
 
 class qTabPlot:public QWidget, private Ui::TabPlotObject{
 	Q_OBJECT
@@ -54,11 +49,7 @@ private:
 	qDrawPlot *myPlot;
 	bool is1d;
 
-	QButtonGroup	*btnGroupPlotType;
-	QStackedLayout	*stackedLayout;
-	QSpinBox 		*spinNthFrame;
-	QDoubleSpinBox 	*spinTimeGap;
-	QComboBox 		*comboTimeGapUnit;
+	QButtonGroup	*btnGroupPlotType{nullptr};
 
 	/** default plot and axis titles */
 	static QString defaultPlotTitle;

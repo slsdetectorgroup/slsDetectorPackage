@@ -143,10 +143,6 @@ qDetectorMain::~qDetectorMain() {
 
 void qDetectorMain::SetUpWidgetWindow() {
 
-    // Layout
-    QGridLayout *layoutTabs = new QGridLayout;
-    centralwidget->setLayout(layoutTabs);
-
     // plot setup
     myPlot = new qDrawPlot(dockWidgetPlot, myDet);
     FILE_LOG(logDEBUG) << "DockPlot ready";

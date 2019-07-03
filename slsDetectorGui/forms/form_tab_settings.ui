@@ -24,221 +24,256 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>1000</width>
-    <height>1000</height>
+    <width>775</width>
+    <height>400</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="gridLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>20</y>
-     <width>316</width>
-     <height>135</height>
-    </rect>
-   </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="0">
-     <widget class="QLabel" name="lblDynamicRange">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="2">
+    <widget class="QSpinBox" name="spinThreshold">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>25</height>
+      </size>
+     </property>
+     <property name="keyboardTracking">
+      <bool>false</bool>
+     </property>
+     <property name="suffix">
+      <string> eV</string>
+     </property>
+     <property name="minimum">
+      <number>-100000</number>
+     </property>
+     <property name="maximum">
+      <number>100000</number>
+     </property>
+     <property name="singleStep">
+      <number>100</number>
+     </property>
+     <property name="value">
+      <number>-1</number>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="2">
+    <widget class="QComboBox" name="comboDynamicRange">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>25</height>
+      </size>
+     </property>
+     <item>
       <property name="text">
-       <string>Dynamic Range:</string>
+       <string>1.67772e+07</string>
       </property>
-     </widget>
-    </item>
-    <item row="0" column="2" colspan="2">
-     <widget class="QComboBox" name="comboSettings">
-      <property name="enabled">
-       <bool>true</bool>
+     </item>
+     <item>
+      <property name="text">
+       <string>65535</string>
       </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+     </item>
+     <item>
+      <property name="text">
+       <string>255</string>
       </property>
-      <property name="toolTip">
-       <string>Settings of the detector. 
+     </item>
+     <item>
+      <property name="text">
+       <string>7</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="0" column="3">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="2">
+    <widget class="QComboBox" name="comboSettings">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>25</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>Settings of the detector. 
  #settings#</string>
-      </property>
-      <item>
-       <property name="text">
-        <string>Standard</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Fast</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>High Gain</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Dynamic Gain</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Low Gain</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Medium Gain</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Very High Gain</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Dynamic HG0</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Fix Gain 1</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Fix Gain 2</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Force Switch G1</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Force Switch G2</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Very Low Gain</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Undefined</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Uninitialized</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="lblThreshold">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
+     </property>
+     <item>
       <property name="text">
-       <string>Threshold:</string>
+       <string>Standard</string>
       </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Fixed</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="2" column="2" colspan="2">
-     <widget class="QComboBox" name="comboDynamicRange">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <item>
-       <property name="text">
-        <string>1.67772e+07</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>65535</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>255</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>7</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="lblSettings">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     </item>
+     <item>
       <property name="text">
-       <string>Settings:</string>
+       <string>Fast</string>
       </property>
-     </widget>
-    </item>
-    <item row="1" column="2" colspan="2">
-     <widget class="QSpinBox" name="spinThreshold">
-      <property name="enabled">
-       <bool>false</bool>
+     </item>
+     <item>
+      <property name="text">
+       <string>High Gain</string>
       </property>
-      <property name="keyboardTracking">
-       <bool>false</bool>
+     </item>
+     <item>
+      <property name="text">
+       <string>Dynamic Gain</string>
       </property>
-      <property name="suffix">
-       <string> eV</string>
+     </item>
+     <item>
+      <property name="text">
+       <string>Low Gain</string>
       </property>
-      <property name="minimum">
-       <number>-100000</number>
+     </item>
+     <item>
+      <property name="text">
+       <string>Medium Gain</string>
       </property>
-      <property name="maximum">
-       <number>100000</number>
+     </item>
+     <item>
+      <property name="text">
+       <string>Very High Gain</string>
       </property>
-      <property name="singleStep">
-       <number>100</number>
+     </item>
+     <item>
+      <property name="text">
+       <string>Dynamic HG0</string>
       </property>
-      <property name="value">
-       <number>-1</number>
+     </item>
+     <item>
+      <property name="text">
+       <string>Fix Gain 1</string>
       </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+     </item>
+     <item>
+      <property name="text">
+       <string>Fix Gain 2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Force Switch G1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Force Switch G2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Very Low Gain</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Undefined</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Uninitialized</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="lblThreshold">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Threshold:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="lblDynamicRange">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Dynamic Range:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="lblSettings">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>Settings:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>190</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
  </widget>
- <tabstops>
-  <tabstop>comboSettings</tabstop>
-  <tabstop>spinThreshold</tabstop>
-  <tabstop>comboDynamicRange</tabstop>
- </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

@@ -20,8 +20,7 @@ QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 
 qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : 
-    QWidget(parent), myDet(detector), myPlot(plot), is1d(false), 
-    btnGroupPlotType(0), stackedLayout(nullptr), spinNthFrame(nullptr), spinTimeGap(nullptr), comboTimeGapUnit(nullptr) {
+    QWidget(parent), myDet(detector), myPlot(plot), is1d(false) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Plot ready";
@@ -30,14 +29,6 @@ qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot)
 qTabPlot::~qTabPlot() {
     if (btnGroupPlotType)
         delete btnGroupPlotType;
-    if (stackedLayout)
-        delete stackedLayout;
-    if (spinNthFrame)
-        delete spinNthFrame;
-    if (spinTimeGap)
-        delete spinTimeGap;
-    if (comboTimeGapUnit)
-        delete comboTimeGapUnit;
 }
 
 void qTabPlot::SetupWidgetWindow() {
@@ -45,34 +36,7 @@ void qTabPlot::SetupWidgetWindow() {
     btnGroupPlotType = new QButtonGroup(this);
     btnGroupPlotType->addButton(radioNoPlot, 0);
     btnGroupPlotType->addButton(radioDataGraph, 1);
-    // Plotting Frequency
-    stackedLayout = new QStackedLayout;
-    stackedLayout->setSpacing(0);
-    spinNthFrame = new QSpinBox;
-    spinNthFrame->setMinimum(1);
-    spinNthFrame->setMaximum(2000000000);
-    spinNthFrame->setValue(1);
-    spinTimeGap = new QDoubleSpinBox;
-    spinTimeGap->setMinimum(0);
-    spinTimeGap->setDecimals(3);
-    spinTimeGap->setMaximum(999999);
-    spinTimeGap->setValue(DEFAULT_STREAMING_TIMER_IN_MS);
-    comboTimeGapUnit = new QComboBox;
-    comboTimeGapUnit->addItem("hr");
-    comboTimeGapUnit->addItem("min");
-    comboTimeGapUnit->addItem("s");
-    comboTimeGapUnit->addItem("ms");
-    comboTimeGapUnit->setCurrentIndex(3);
-    QWidget *wTimeInterval = new QWidget;
-    QHBoxLayout *h1 = new QHBoxLayout;
-    wTimeInterval->setLayout(h1);
-    h1->setContentsMargins(0, 0, 0, 0);
-    h1->setSpacing(3);
-    h1->addWidget(spinTimeGap);
-    h1->addWidget(comboTimeGapUnit);
-    stackedLayout->addWidget(wTimeInterval);
-    stackedLayout->addWidget(spinNthFrame);
-    stackWidget->setLayout(stackedLayout);
+
     // 1D and 2D options
     stackedWidget1D->setCurrentIndex(0);
     stackedWidget2D->setCurrentIndex(0);
@@ -622,7 +586,7 @@ void qTabPlot::GetStreamingFrequency() {
         // time interval
         else if (freq == 0) {
             comboFrequency->setCurrentIndex(0);
-            stackedLayout->setCurrentIndex(0);
+            stackedTimeInterval->setCurrentIndex(0);
             try {
                 int timeMs = myDet->setReceiverStreamingTimer(-1);
                 if (freq < 0) {
@@ -638,7 +602,7 @@ void qTabPlot::GetStreamingFrequency() {
         // every nth frame
         else {
             comboFrequency->setCurrentIndex(1);
-            stackedLayout->setCurrentIndex(1);
+            stackedTimeInterval->setCurrentIndex(1);
             spinNthFrame->setValue(freq);
         }
     } CATCH_DISPLAY ("Could not get streaming frequency.", "qTabPlot::GetStreamingFrequency")
@@ -655,7 +619,7 @@ void qTabPlot::SetStreamingFrequency() {
     auto freqVal = spinNthFrame->value();
     auto timeVal = spinTimeGap->value();
     auto timeUnit = static_cast<qDefs::timeUnit>(comboTimeGapUnit->currentIndex());
-
+    stackedTimeInterval->setCurrentIndex(comboFrequency->currentIndex());
 	try {
         if (frequency) {
             FILE_LOG(logINFO) << "Setting Streaming Frequency to " << freqVal;

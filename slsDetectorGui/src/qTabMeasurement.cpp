@@ -442,13 +442,20 @@ void qTabMeasurement::GetFileWrite() {
 
 	try {
 		dispFileName->setEnabled(true);	// default, even when exception
+		lblIndex->setEnabled(true);
+		spinIndex->setEnabled(true);
 		int retval = myDet->getFileWrite();
 		if (retval == -1) {
 			qDefs::Message(qDefs::WARNING, "File write is inconsistent for all detectors.", "qTabMeasurement::GetFileWrite");
 			dispFileName->setEnabled(true);
+			lblIndex->setEnabled(true);
+			spinIndex->setEnabled(true);
 		} else {
-			chkFile->setChecked(retval == 0 ? false : true);
-			dispFileName->setEnabled(chkFile->isChecked());
+			bool enable = (retval == 0 ? false : true);
+			chkFile->setChecked(enable);
+			dispFileName->setEnabled(enable);
+			lblIndex->setEnabled(enable);
+			spinIndex->setEnabled(enable);
 		}
     } CATCH_DISPLAY ("Could not get file over write enable.", "qTabMeasurement::GetFileWrite")
 
@@ -460,7 +467,10 @@ void qTabMeasurement::SetFileWrite(bool val) {
 
 	try {
         myDet->setFileWrite(val);
-		dispFileName->setEnabled(chkFile->isChecked());
+		bool enable = chkFile->isChecked();
+		dispFileName->setEnabled(enable);
+		lblIndex->setEnabled(enable);
+		spinIndex->setEnabled(enable);
     } CATCH_HANDLE("Could not set file write enable.", "qTabMeasurement::SetFileWrite", this, &qTabMeasurement::GetFileWrite)
 }
 

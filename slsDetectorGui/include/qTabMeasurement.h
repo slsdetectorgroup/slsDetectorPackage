@@ -18,7 +18,8 @@ public:
 	void Refresh();
 
 public slots:
-	void UpdateFinished();
+	void AcquireFinished();
+	void AbortAcquire();
 
 private slots:
 	void SetTimingMode(int val);
@@ -43,7 +44,6 @@ private:
 	void EnableWidgetsforTimingMode();
 
 	void GetTimingMode();
-	void GetNumMeasurements();
 	void GetNumFrames();
 	void GetNumTriggers();
 	void GetNumSamples();
@@ -61,7 +61,7 @@ private:
 	int VerifyOutputDirectoryError();
 
 signals:
-	void StartSignal();
+	void EnableTabsSignal(bool);
 	void FileNameChangedSignal(QString);
 private:
 	multiSlsDetector *myDet;
@@ -81,4 +81,7 @@ private:
 	QPalette	red;
 	bool delayImplemented;
 	bool sampleImplemented;
+	bool isAcquisitionStopped{false};
+	int numMeasurements{1};
+	int currentMeasurement{0};
 };

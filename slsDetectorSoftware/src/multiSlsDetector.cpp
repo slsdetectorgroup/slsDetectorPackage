@@ -3416,6 +3416,7 @@ void multiSlsDetector::readFrameFromReceiver() {
         if (data) {
             int nCompletePixelsX = multi_shm()->numberOfChannelInclGapPixels[X];
             int nCompletePixelsY = multi_shm()->numberOfChannelInclGapPixels[Y];
+            setCurrentProgress(currentAcquisitionIndex + 1);
             // 4bit gap pixels
             if (dynamicRange == 4 && gappixelsenable) {
                 int n = processImageWithGapPixels(multiframe, multigappixels);
@@ -3432,7 +3433,6 @@ void multiSlsDetector::readFrameFromReceiver() {
             dataReady(thisData, currentFrameIndex,
                       ((dynamicRange == 32) ? currentSubFrameIndex : -1), pCallbackArg);
             delete thisData;
-            setCurrentProgress(currentAcquisitionIndex + 1);
         }
 
         // all done

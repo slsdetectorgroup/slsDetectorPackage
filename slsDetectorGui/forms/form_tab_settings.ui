@@ -274,6 +274,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>comboSettings</tabstop>
+  <tabstop>spinThreshold</tabstop>
+  <tabstop>comboDynamicRange</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

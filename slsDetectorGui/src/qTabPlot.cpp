@@ -396,6 +396,7 @@ void qTabPlot::SetXYRange() {
         myPlot->IsXYRangeValues(false, qDefs::XMIN);
     } else if (dispXMin->text().toDouble() < myPlot->GetXMinimum()) {
         qDefs::Message(qDefs::WARNING, "XMin Outside Plot Range", "qTabPlot::SetXRange");
+        FILE_LOG(logWARNING) << "Xmin entered " << dispXMin->text().toDouble() << " outside xmin range " << myPlot->GetXMinimum();
         dispXMin->setText("");
         myPlot->IsXYRangeValues(false, qDefs::XMIN);
     } else {
@@ -407,8 +408,9 @@ void qTabPlot::SetXYRange() {
     //xmax
     if (!chkXMax->isChecked() || dispXMax->text().isEmpty()) {
         myPlot->IsXYRangeValues(false, qDefs::XMAX);
-    } else if (dispXMax->text().toDouble() < myPlot->GetXMaximum()) {
+    } else if (dispXMax->text().toDouble() > myPlot->GetXMaximum()) {
         qDefs::Message(qDefs::WARNING, "XMax Outside Plot Range", "qTabPlot::SetXYRange");
+        FILE_LOG(logWARNING) << "Xmax entered " << dispXMax->text().toDouble() << " outside xmax range " << myPlot->GetXMaximum();
         dispXMax->setText("");
         myPlot->IsXYRangeValues(false, qDefs::XMAX);
     } else {
@@ -422,6 +424,7 @@ void qTabPlot::SetXYRange() {
         myPlot->IsXYRangeValues(false, qDefs::YMIN);
     } else if (dispYMin->text().toDouble() < myPlot->GetYMinimum()) {
         qDefs::Message(qDefs::WARNING, "YMin Outside Plot Range", "qTabPlot::SetXYRange");
+                FILE_LOG(logWARNING) << "Ymin entered " << dispYMin->text().toDouble() << " outside ymin range " << myPlot->GetYMinimum();
         dispYMin->setText("");
         myPlot->IsXYRangeValues(false, qDefs::YMIN);
     } else {
@@ -433,8 +436,9 @@ void qTabPlot::SetXYRange() {
     //ymax
     if (!chkYMax->isChecked() || dispYMax->text().isEmpty()) {
         myPlot->IsXYRangeValues(false, qDefs::YMAX);
-    } else if (dispYMax->text().toDouble() < myPlot->GetYMaximum()) {
+    } else if (dispYMax->text().toDouble() > myPlot->GetYMaximum()) {
         qDefs::Message(qDefs::WARNING, "YMax Outside Plot Range", "qTabPlot::SetXYRange");
+                FILE_LOG(logWARNING) << "Ymax entered " << dispYMax->text().toDouble() << " outside ymax range " << myPlot->GetYMaximum();
         dispYMax->setText("");
         myPlot->IsXYRangeValues(false, qDefs::YMAX);
     } else {

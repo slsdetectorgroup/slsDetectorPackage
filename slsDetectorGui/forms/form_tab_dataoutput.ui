@@ -718,6 +718,21 @@ Compression using Root. Available only for Gotthard in Expert Mode.
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>comboDetector</tabstop>
+  <tabstop>dispOutputDir</tabstop>
+  <tabstop>btnOutputBrowse</tabstop>
+  <tabstop>comboFileFormat</tabstop>
+  <tabstop>chkOverwriteEnable</tabstop>
+  <tabstop>chkTenGiga</tabstop>
+  <tabstop>chkRate</tabstop>
+  <tabstop>radioDefaultDeadtime</tabstop>
+  <tabstop>radioCustomDeadtime</tabstop>
+  <tabstop>spinCustomDeadTime</tabstop>
+  <tabstop>comboEigerClkDivider</tabstop>
+  <tabstop>comboEigerFlags1</tabstop>
+  <tabstop>comboEigerFlags2</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

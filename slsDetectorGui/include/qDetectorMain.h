@@ -45,7 +45,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
      * @param b bool TRUE if undocked(outside main window), FALSE docked
      */
     void ResizeMainWindow(bool b);
-    void EnableTabs();
+    void EnableTabs(bool enable);
     void SetZoomToolTip(bool disable);
 
   protected:

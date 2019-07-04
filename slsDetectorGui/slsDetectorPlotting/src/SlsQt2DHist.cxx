@@ -89,6 +89,7 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
 }
   
 void SlsQt2DHist::SetMinMax(double zmin,double zmax){
+  cprintf(GREEN, "zmin:%f zmax:%f\n", zmin, zmax);
   if(zmin<zmax){
     z_min=zmin;
     z_max=zmax;

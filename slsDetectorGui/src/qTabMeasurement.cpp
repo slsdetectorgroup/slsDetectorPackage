@@ -222,16 +222,9 @@ void qTabMeasurement::SetTimingMode(int val) {
     } CATCH_HANDLE("Could not set timing mode.", "qTabMeasurement::SetTimingMode", this, &qTabMeasurement::GetTimingMode)
 }
 
-void qTabMeasurement::GetNumMeasurements() {
-	FILE_LOG(logDEBUG) << "Getting number of measurements";
-	disconnect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
-	spinNumMeasurements->setValue(myPlot->GetNumMeasurements());
-	connect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
-}
-
 void qTabMeasurement::SetNumMeasurements(int val) {
 	FILE_LOG(logINFO) << "Setting Number of Measurements to " << val;
-	myPlot->SetNumMeasurements(val);
+	numMeasurements = val;
 }
 
 void qTabMeasurement::GetNumFrames() {
@@ -521,18 +514,16 @@ void qTabMeasurement::SetRunIndex(int val) {
 
 void qTabMeasurement::ResetProgress() {
 	FILE_LOG(logDEBUG) << "Resetting progress";
-	lblCurrentFrame->setText("");
-	lblCurrentMeasurement->setText("");
+	lblCurrentFrame->setText("0");
+	lblCurrentMeasurement->setText("0");
 	progressBar->setValue(0);
 }
 
 void qTabMeasurement::UpdateProgress() {
 	FILE_LOG(logDEBUG) << "Updating progress";
 	progressBar->setValue(myPlot->GetProgress());
-	int64_t temp = myPlot->GetCurrentFrameIndex();
-	lblCurrentFrame->setText(temp >= 0 ? QString::number(temp) : "");
-	temp = myPlot->GetCurrentMeasurementIndex();
-	lblCurrentMeasurement->setText(temp >= 0 ? QString::number(temp) : "");
+	lblCurrentFrame->setText(QString::number(myPlot->GetCurrentFrameIndex()));
+	lblCurrentMeasurement->setText(QString::number(currentMeasurement));
 }
 
 int qTabMeasurement::VerifyOutputDirectoryError() {
@@ -562,7 +553,7 @@ void qTabMeasurement::StartAcquisition() {
 		if (qDefs::Message(qDefs::QUESTION,
 				"<nobr>Your data will not be saved.</nobr><br><nobr>Disable File write and Proceed with acquisition anyway?</nobr>",
 				"qTabMeasurement::StartAcquisition") == slsDetectorDefs::FAIL) {
-			btnStart->setEnabled(true);
+			btnStart->setEnabled(true);		
 			return;
 		} else {
 			disconnect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
@@ -574,29 +565,52 @@ void qTabMeasurement::StartAcquisition() {
 	}
 
 	FILE_LOG(logINFOBLUE) << "Starting Acquisition";
-	lblCurrentFrame->setText("");
-	lblCurrentMeasurement->setText("");
+	myPlot->SetRunning(true);
+	isAcquisitionStopped = false;
+	currentMeasurement = 0;
+	ResetProgress();
 	Enable(0);
 	progressBar->setValue(0);
 	progressTimer->start(100);
-	emit StartSignal();
+	emit EnableTabsSignal(false);
 }
 
 
 void qTabMeasurement::StopAcquisition() {
 	FILE_LOG(logINFORED) << "Stopping Acquisition";
 	try{
-		myPlot->SetStopSignal();
+		isAcquisitionStopped = true;
 		myDet->stopAcquisition();
 	} CATCH_DISPLAY("Could not stop acquisition.", "qTabMeasurement::StopAcquisition")
 }
 
-void qTabMeasurement::UpdateFinished() {
-	UpdateProgress();
-	GetRunIndex();
-	progressTimer->stop();
-	Enable(1);
-	btnStart->setEnabled(true);
+void qTabMeasurement::AcquireFinished() {
+	// to catch only once (if abort acquire also calls acq finished call back)
+	if (!btnStart->isEnabled()) {
+		FILE_LOG(logDEBUG) << "Acquire Finished";
+		UpdateProgress();
+		GetRunIndex();
+		FILE_LOG(logDEBUG) << "Measurement " << currentMeasurement << " finished";
+		// next measurement if acq is not stopped
+		if (!isAcquisitionStopped && ((currentMeasurement + 1) < numMeasurements)) {
+			++currentMeasurement;
+			myPlot->StartAcquisition();
+		}
+		// end of acquisition
+		else {
+			progressTimer->stop();
+			Enable(1);
+			myPlot->SetRunning(false);
+			btnStart->setEnabled(true);
+			emit EnableTabsSignal(true);
+		}
+	}
+}
+
+void qTabMeasurement::AbortAcquire() {
+	FILE_LOG(logINFORED) << "Abort Acquire";
+	isAcquisitionStopped = true;
+	AcquireFinished();
 }
 
 void qTabMeasurement::Enable(bool enable) {
@@ -612,7 +626,6 @@ void qTabMeasurement::Refresh() {
 
 	if (!myPlot->GetIsRunning()) {
 		GetTimingMode();
-		GetNumMeasurements();
 		GetNumFrames();
 		GetExposureTime();
 		GetAcquisitionPeriod();

@@ -10,20 +10,8 @@
 #include <QFileDialog>
 #include <QPainter>
 #include "qwt_symbol.h"
+#include <QtConcurrentRun>
 
-/*
-#include <QFileDialog>
-#include <QFont>
-#include <QImage>
-#include <QPainter>
-//#include "qwt_double_interval.h"
-#include "qwt_series_data.h"
-
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <string>
-*/
 
 
 qDrawPlot::qDrawPlot(QWidget *parent, multiSlsDetector *detector)
@@ -45,6 +33,8 @@ qDrawPlot::~qDrawPlot() {
         delete [] it;
     if (data2d)
         delete [] data2d;
+     if (gainData)
+        delete [] gainData;       
 
     if (plot1d)
         delete plot1d;
@@ -117,11 +107,15 @@ void qDrawPlot::SetupWidgetWindow() {
     myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack), this);
     myDet->registerProgressCallback(&(GetProgressCallBack), this);
 
+    // future watcher to watch result of AcquireThread only because it uses signals/slots to handle acquire exception
+    acqResultWatcher = new QFutureWatcher<std::string>();
+
     Initialization();
 }
 
 void qDrawPlot::Initialization() {
-    connect(this, SIGNAL(AcquireSignal()), this, SLOT(AcquireThread()));
+    connect(this, SIGNAL(UpdateSignal()), this, SLOT(UpdatePlot()));
+    connect(acqResultWatcher, SIGNAL(finished()), this, SLOT(AcquireFinished()));
 }
 
 void qDrawPlot::SetupStatistics() {
@@ -239,7 +233,9 @@ void qDrawPlot::SetupPlots() {
 
     // gainplot
     gainplot2d = new SlsQt2DPlotLayout(boxPlot);
-    double* gainData = new double[nPixelsY * nPixelsX];
+    if (gainData)
+        delete [] gainData;    
+    gainData = new double[nPixelsY * nPixelsX];
     for (unsigned int px = 0; px < nPixelsX; ++px)
         for (unsigned int py = 0; py < nPixelsY; ++py)
             gainData[py * nPixelsX + px] =
@@ -256,7 +252,6 @@ void qDrawPlot::SetupPlots() {
     gainplot2d->GetPlot()->enableAxis(1, false);
     gainplot2d->GetPlot()->enableAxis(2, false);
     gainplot2d->hide();
-    delete [] gainData;
 
     // layout of plots
     plotLayout = new QGridLayout(boxPlot);
@@ -270,25 +265,16 @@ bool qDrawPlot::GetIsRunning() {
     return isRunning; 
 }
 
+void qDrawPlot::SetRunning(bool enable) {
+    isRunning = enable;
+}
+
 int qDrawPlot::GetProgress() { 
     return progress; 
 }
 
 int64_t qDrawPlot::GetCurrentFrameIndex() { 
     return currentFrame; 
-}
-
-int64_t qDrawPlot::GetCurrentMeasurementIndex() { 
-    return currentMeasurement; 
-}
-
-int qDrawPlot::GetNumMeasurements() {
-    return numMeasurements;
-}
-
-void qDrawPlot::SetNumMeasurements(int val) {
-    if (val >= 0)
-        numMeasurements = val;
 }
 
 void qDrawPlot::Select1dPlot(bool enable) { 
@@ -373,14 +359,14 @@ void qDrawPlot::SetXYRangeChanged() {
 
 void qDrawPlot::SetXYRangeValues(double val, qDefs::range xy) {
     LockLastImageArray();
-    FILE_LOG(logDEBUG) << "Setting XY Range [" << static_cast<int>(xy) << "] to " << val;
+    FILE_LOG(logDEBUG) << "Setting " << qDefs::getRangeAsString(xy) << " to " << val;
     XYRange[xy] = val;
     UnlockLastImageArray();     
 }
 
 void qDrawPlot::IsXYRangeValues(bool changed, qDefs::range xy) {
     LockLastImageArray();
-    FILE_LOG(logDEBUG) << "Setting XY Range Change [" << static_cast<int>(xy) << "] to " << std::boolalpha << changed << std::noboolalpha;;
+    FILE_LOG(logDEBUG) << "Setting " << qDefs::getRangeAsString(xy) << " to " << std::boolalpha << changed << std::noboolalpha;;
     isXYRange[xy] = changed;
     UnlockLastImageArray();     
 }
@@ -705,27 +691,22 @@ void qDrawPlot::DetachHists() {
     }
 }
 
-void qDrawPlot::SetStopSignal() {
-    FILE_LOG(logDEBUG) << "Stop Acquisition signal";
-    hasStopped = true;
-}
-
 void qDrawPlot::StartAcquisition() {
     FILE_LOG(logDEBUG) << "Starting Acquisition in qDrawPlot";
-    isRunning = true;
     progress = 0;
-    currentMeasurement = -1;
-    currentFrame = -1;
-    hasStopped = false;
+    currentFrame = 0;
     boxPlot->setTitle("Old Plot");
     // check acquiring flag (from previous exit) or if running
     try{
         if (myDet->getAcquiringFlag()) {
             if (myDet->getRunStatus() != slsDetectorDefs::IDLE) {
                 qDefs::Message(qDefs::WARNING, "Could not start acquisition as it is already in progress.\nClick start when finished.", "qDrawPlot::StartAcquisition");
-                isRunning = false;
-                emit AcquireFinishedSignal();
+                emit AbortSignal();
+                return;
+            } else {
+                myDet->setAcquiringFlag(false);
             }
+
         }
     } CATCH_DISPLAY("Could not get detector stats.", "qDrawPlot::StartAcquisition");
    
@@ -739,6 +720,7 @@ void qDrawPlot::StartAcquisition() {
     }
 
     // refixing all the zooming
+    XYRangeChanged = true; 
     /*
     plot2d->GetPlot()->SetXMinMax(-0.5, nPixelsX + 0.5);
     plot2d->GetPlot()->SetYMinMax(-0.5, nPixelsY + 0.5);
@@ -748,30 +730,38 @@ void qDrawPlot::StartAcquisition() {
     else
         plot2d->GetPlot()->UnZoom(false);
 */
-    // acquisition in another thread, so signal it
-    emit AcquireSignal();
+
+     // acquisition in another thread
+    QFuture<std::string> future = QtConcurrent::run(this, &qDrawPlot::AcquireThread);
+    acqResultWatcher->setFuture(future);
+
+    FILE_LOG(logDEBUG) << "End of Starting Acquisition in qDrawPlot";
 }
 
-void qDrawPlot::AcquireThread() {
-    try {
-        for (int i = 0; i < numMeasurements; ++i) {
-            ++currentMeasurement;
-            myDet->acquire();
-            FILE_LOG(logINFO) << "Measurement finished [ Measurement:" << currentMeasurement << " ]" ;
-            if (hasStopped) {
-                break;
-            }
-        }
-    } catch (const std::exception &e) {
-        qDefs::ExceptionMessage("Acquire unsuccessful.", e.what(), "qDrawPlot::AcquireThread");
-        // handle acquire exception
+void qDrawPlot::AcquireFinished() {
+    FILE_LOG(logDEBUG) << "Acquisition Finished";
+    std::string mess = acqResultWatcher->result();
+    // exception in acquire will not call acquisition finished call back, so handle it
+    if (!mess.empty()) {
+        FILE_LOG(logERROR) << "Acquisition Finished with an exception: " << mess;
+        qDefs::ExceptionMessage("Acquire unsuccessful.", mess, "qDrawPlot::AcquireFinished");
         try{
             myDet->stopAcquisition();
             myDet->stopReceiver();
-        } CATCH_DISPLAY("Could not stop acquisition.", "qDrawPlot::AcquireThread");
-        isRunning = false;
-        emit AcquireFinishedSignal();
+        } CATCH_DISPLAY("Could not stop acquisition and receiver.", "qDrawPlot::AcquireFinished");
+        emit AbortSignal();
     }
+    FILE_LOG(logDEBUG) << "End of Acquisition Finished";
+}
+
+std::string qDrawPlot::AcquireThread() {
+    FILE_LOG(logDEBUG) << "Acquire Thread";
+    try {
+        myDet->acquire();
+    } catch (const std::exception &e) {
+        return std::string(e.what());
+    }
+    return std::string("");
 }
 
 void qDrawPlot::GetProgressCallBack(double currentProgress, void *this_pointer) {
@@ -798,8 +788,6 @@ void qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) 
     } else {
         FILE_LOG(logINFO) << "Acquisition finished [ Status:" << status << ", Progress: " << currentProgress << " ]" ;
     }
-
-    isRunning = false;
     emit AcquireFinishedSignal();
 }
 
@@ -808,17 +796,17 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
 
     FILE_LOG(logDEBUG)
     << "* GetData Callback *" << std::endl
-    << "frame index: " << frameIndex << std::endl
-    << "sub frame index: " << subFrameIndex << std::endl  
-    << "Data [" << std::endl  
-    << "\t progress: " << data->progressIndex << std::endl  
-    << "\t file name: " << data->fileName << std::endl  
-    << "\t nx: " << data->nx << std::endl  
-    << "\t ny: " << data->ny << std::endl  
-    << "\t data bytes: " << data->databytes << std::endl  
-    << "\t dynamic range: " << data->dynamicRange << std::endl  
-    << "\t file index: " << data->fileIndex << std::endl
-    << "]";  
+    << "  frame index: " << frameIndex << std::endl
+    << "  sub frame index: " << (((int)subFrameIndex == -1) ? (int)-1 : subFrameIndex) << std::endl  
+    << "  Data [" << std::endl  
+    << "  \t progress: " << data->progressIndex << std::endl  
+    << "  \t file name: " << data->fileName << std::endl  
+    << "  \t nx: " << data->nx << std::endl  
+    << "  \t ny: " << data->ny << std::endl  
+    << "  \t data bytes: " << data->databytes << std::endl  
+    << "  \t dynamic range: " << data->dynamicRange << std::endl  
+    << "  \t file index: " << data->fileIndex << std::endl
+    << "  ]";  
 
     progress = (int)data->progressIndex;
     currentFrame =  frameIndex;
@@ -829,17 +817,15 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     // convert data to double
     unsigned int nPixels = nPixelsX * (is1d ? 1 : nPixelsY);
     double* rawData = new double[nPixels];
-    double* gainData = nullptr;
     if (hasGainData) {
-        gainData = new double[nPixels];
         toDoublePixelData(rawData, data->data, nPixels, data->databytes, data->dynamicRange, gainData);
     } else {
         toDoublePixelData(rawData, data->data, nPixels, data->databytes, data->dynamicRange);
     }
 
     // title and frame index titles
-    boxPlot->setTitle(plotTitlePrefix + QString(data->fileName.c_str()).section('/', -1));
-    QString indexTitle = QString("%1").arg(frameIndex);
+    plotTitle = plotTitlePrefix + QString(data->fileName.c_str()).section('/', -1);
+    indexTitle = QString("%1").arg(frameIndex);
     if ((int)subFrameIndex != -1) {
         indexTitle = QString("%1 %2").arg(frameIndex, subFrameIndex);
     }
@@ -863,25 +849,17 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     }
 
     if (is1d) {
-        lblFrameIndexTitle1d->setText(indexTitle);
-        Update1dPlot(rawData);
+        Get1dData(rawData);
     } else {   
-        plot2d->setTitle(indexTitle.toAscii().constData());
-        if (hasGainData)
-            gainplot2d->setTitle(indexTitle.toAscii().constData());
-        Update2dPlot(rawData, gainData);
+        Get2dData(rawData);
     }
 
-    if (displayStatistics) {
-        double min = 0, max = 0, sum = 0;
-        GetStatistics(min, max, sum);
-        lblMinDisp->setText(QString("%1").arg(min));
-        lblMaxDisp->setText(QString("%1").arg(max));
-        lblSumDisp->setText(QString("%1").arg(sum));
-    }
+    FILE_LOG(logDEBUG) << "End of Get Data";
+    UnlockLastImageArray();
+    emit UpdateSignal();
 }
 
-void qDrawPlot::Update1dPlot(double* rawData) {
+void qDrawPlot::Get1dData(double* rawData) {
     // persistency
     if (currentPersistency < persistency)
         currentPersistency++;
@@ -918,22 +896,9 @@ void qDrawPlot::Update1dPlot(double* rawData) {
         }
     }
     memcpy(datay1d[0], rawData, nPixelsX * sizeof(double));
-
-
-    // Plot data
-    DetachHists();
-    plot1d->SetXTitle(xTitle1d.toAscii().constData());
-    plot1d->SetYTitle(yTitle1d.toAscii().constData());
-    for (unsigned int i = 0; i < nHists; ++i) {
-        SlsQtH1D* h = hists1d.at(i);
-        h->SetData(nPixelsX, datax1d, datay1d[i]);
-        SetStyle(h);
-        h->Attach(plot1d);
-    }
-    Update1dXYRange();
 }
 
-void qDrawPlot::Update2dPlot(double* rawData, double* gainData) {
+void qDrawPlot::Get2dData(double* rawData) {
     unsigned int nPixels = nPixelsX * nPixelsY;
     // pedestal
     if (isPedestal) {
@@ -960,8 +925,23 @@ void qDrawPlot::Update2dPlot(double* rawData, double* gainData) {
         }
     }
     memcpy(data2d, rawData, nPixels * sizeof(double));
+}
 
+void qDrawPlot::Update1dPlot() {
     // Plot data
+    DetachHists();
+    plot1d->SetXTitle(xTitle1d.toAscii().constData());
+    plot1d->SetYTitle(yTitle1d.toAscii().constData());
+    for (unsigned int i = 0; i < nHists; ++i) {
+        SlsQtH1D* h = hists1d.at(i);
+        h->SetData(nPixelsX, datax1d, datay1d[i]);
+        SetStyle(h);
+        h->Attach(plot1d);
+    }
+    Update1dXYRange();
+}
+
+void qDrawPlot::Update2dPlot() {
     plot2d->SetXTitle(xTitle2d);
     plot2d->SetYTitle(yTitle2d);
     plot2d->SetZTitle(zTitle2d);
@@ -982,7 +962,7 @@ void qDrawPlot::Update2dPlot(double* rawData, double* gainData) {
 
 void qDrawPlot::Update1dXYRange() {
     if (XYRangeChanged) {
-        if (!isXYRange[qDefs::XMIN] || !isXYRange[qDefs::XMAX]) {
+        if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
             plot1d->EnableXAutoScaling();
         } else {
             if (!isXYRange[qDefs::XMIN])
@@ -992,7 +972,7 @@ void qDrawPlot::Update1dXYRange() {
             plot1d->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
         } 
 
-        if (!isXYRange[qDefs::YMIN] || !isXYRange[qDefs::YMAX]) {
+        if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
             plot1d->EnableYAutoScaling();
         } else {
             if (!isXYRange[qDefs::YMIN])
@@ -1008,7 +988,7 @@ void qDrawPlot::Update1dXYRange() {
 
 void qDrawPlot::Update2dXYRange() {
     if (XYRangeChanged) {
-        if (!isXYRange[qDefs::XMIN] || !isXYRange[qDefs::XMAX]) {
+        if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
             plot2d->GetPlot()->EnableXAutoScaling();
         } else {
             if (!isXYRange[qDefs::XMIN])
@@ -1018,7 +998,7 @@ void qDrawPlot::Update2dXYRange() {
             plot2d->GetPlot()->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
         } 
 
-        if (!isXYRange[qDefs::YMIN] || !isXYRange[qDefs::YMAX]) {
+        if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
             plot2d->GetPlot()->EnableYAutoScaling();
         } else {
             if (!isXYRange[qDefs::YMIN])
@@ -1102,3 +1082,30 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
     }
 }
 
+
+void qDrawPlot::UpdatePlot() {
+    LockLastImageArray();
+    FILE_LOG(logDEBUG) << "Update Plot";
+
+    boxPlot->setTitle(plotTitle);
+    if (is1d) {
+        lblFrameIndexTitle1d->setText(indexTitle);
+        Update1dPlot();
+    } else {   
+        plot2d->setTitle(indexTitle.toAscii().constData());
+        if (hasGainData)
+            gainplot2d->setTitle(indexTitle.toAscii().constData());
+        Update2dPlot();
+    }
+
+    if (displayStatistics) {
+        double min = 0, max = 0, sum = 0;
+        GetStatistics(min, max, sum);
+        lblMinDisp->setText(QString("%1").arg(min));
+        lblMaxDisp->setText(QString("%1").arg(max));
+        lblSumDisp->setText(QString("%1").arg(sum));
+    }
+
+    FILE_LOG(logDEBUG) << "End of Update Plot";
+    UnlockLastImageArray();
+}

@@ -74,7 +74,6 @@ void SlsQt2DPlotLayout::KeepZRangeIfSet() {
 void SlsQt2DPlotLayout::SetZRange(bool isMin, bool isMax, double min, double max){
 	isZmin = isMin;
 	isZmax = isMax;
-
 	// reset zmin and zmax first (recalculate from plot)
 	the_plot->SetZMinMax();
 
@@ -85,11 +84,12 @@ void SlsQt2DPlotLayout::UpdateZRange(double min, double max) {
 	if(isLog) {
 		the_plot->SetZMinimumToFirstGreaterThanZero();
 	}
-
+cprintf(BLUE, "zmin:%f zmax:%f\n", zmin, zmax);
 	// set zmin and zmax
 	if (isZmin || isZmax) {
 		zmin = (isZmin ? min : the_plot->GetZMinimum());
 		zmax = (isZmax ? max : the_plot->GetZMaximum());
+		cprintf(RED, "zmin:%f zmax:%f\n", zmin, zmax);
 		// if it is the same values, we should reset it to plots min and max (not doing this now: not foolproof now)
 		// setting the range of values possible in the dispZMin and dispZMax (not doin this now: not foolproof)
 		the_plot->SetZMinMax(zmin, zmax);

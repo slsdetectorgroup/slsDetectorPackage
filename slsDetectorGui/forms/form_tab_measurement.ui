@@ -176,20 +176,40 @@
        <number>18</number>
       </property>
       <item row="1" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Current Frame: </string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Current Measurement:</string>
         </property>
        </widget>
       </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="QProgressBar" name="progressBar">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Current Frame: </string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="1">
+       <widget class="QLabel" name="lblCurrentFrame">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
        <widget class="QLabel" name="lblCurrentMeasurement">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -208,26 +228,6 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="lblCurrentFrame">
-        <property name="text">
-         <string>0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QProgressBar" name="progressBar">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="value">
-         <number>24</number>
         </property>
        </widget>
       </item>
@@ -1047,6 +1047,22 @@ Frame period between exposures.
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>chkFile</tabstop>
+  <tabstop>dispFileName</tabstop>
+  <tabstop>spinIndex</tabstop>
+  <tabstop>comboTimingMode</tabstop>
+  <tabstop>spinNumMeasurements</tabstop>
+  <tabstop>spinNumFrames</tabstop>
+  <tabstop>spinExpTime</tabstop>
+  <tabstop>comboExpUnit</tabstop>
+  <tabstop>spinPeriod</tabstop>
+  <tabstop>comboPeriodUnit</tabstop>
+  <tabstop>spinNumTriggers</tabstop>
+  <tabstop>spinDelay</tabstop>
+  <tabstop>comboDelayUnit</tabstop>
+  <tabstop>spinNumSamples</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

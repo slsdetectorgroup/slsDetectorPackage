@@ -10,40 +10,18 @@ class qCloneWidget;
 class QGridLayout;
 class QGroupBox;
 class QwtSymbol;
-
-/*
-#include "qwt_symbol.h"
-
-#include <QGroupBox>
-#include <QString>
-#include <QTimer>
-#include <QWidget>
-
-#include <QVector>
-#include <qpen.h>
-#include <qwt_column_symbol.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_histogram.h>
-#include <qwt_series_data.h>
-*/
+#include <QFutureWatcher>
 
 class qDrawPlot : public QWidget {
     Q_OBJECT
 
   public:
-    /** \short The constructor	 */
-    qDrawPlot(QWidget *parent, multiSlsDetector *detector);
-    /** Destructor	 */
+     qDrawPlot(QWidget *parent, multiSlsDetector *detector);
     ~qDrawPlot();
-
     bool GetIsRunning();
-    // from measurement tabs
+    void SetRunning(bool enable);
     int GetProgress();
     int64_t GetCurrentFrameIndex();
-    int64_t GetCurrentMeasurementIndex();
-    int GetNumMeasurements();
-    void SetNumMeasurements(int val);
-    // from plot tab
     void Select1dPlot(bool enable);
     void SetPlotTitlePrefix(QString title);
     void SetXAxisTitle(QString title);
@@ -80,17 +58,18 @@ class qDrawPlot : public QWidget {
     void CloseClones();
     void SaveClones();
 	  void SavePlot();
-    void SetStopSignal();
-
 
   private slots:
     void SetSaveFileName(QString val);
     void CloneCloseEvent(int id);
-    void AcquireThread();
+    void AcquireFinished();
+    void UpdatePlot();
+  
 
   signals:
-    void AcquireSignal();
     void AcquireFinishedSignal();
+    void AbortSignal();
+    void UpdateSignal();
 
   private:
     void SetupWidgetWindow();
@@ -105,11 +84,14 @@ class qDrawPlot : public QWidget {
     static void GetProgressCallBack(double currentProgress, void *this_pointer);
     static void GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer);
     static void GetDataCallBack(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex, void *this_pointer);
+    std::string AcquireThread();
     void AcquisitionFinished(double currentProgress, int detectorStatus);
     void GetData(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex);
     void toDoublePixelData(double *dest, char *source, int size, int databytes, int dr, double *gaindest = NULL);
-    void Update1dPlot(double* rawData);
-    void Update2dPlot(double* rawData, double* gainData);
+    void Get1dData(double* rawData);
+    void Get2dData(double* rawData);
+    void Update1dPlot();
+    void Update2dPlot();
     void Update1dXYRange();
     void Update2dXYRange();
     
@@ -121,6 +103,7 @@ class qDrawPlot : public QWidget {
 	  QVector<SlsQtH1D *> hists1d;
     SlsQt2DPlotLayout *plot2d{nullptr};
     SlsQt2DPlotLayout *gainplot2d{nullptr};
+    QFutureWatcher<std::string> *acqResultWatcher;
 
     QGridLayout *layout{nullptr};
     QGroupBox *boxPlot{nullptr};
@@ -137,6 +120,8 @@ class qDrawPlot : public QWidget {
 	  QString xTitle2d{"Pixel"};
     QString yTitle2d{"Pixel"};
     QString zTitle2d{"Intensity"};
+    QString plotTitle{""};
+    QString indexTitle{""};
     bool XYRangeChanged{false};
     double XYRange[4]{0, 0, 0, 0};
     bool isXYRange[4]{false, false, false, false};
@@ -146,6 +131,7 @@ class qDrawPlot : public QWidget {
     double *datax1d{nullptr};
     std::vector<double *> datay1d;
     double *data2d{nullptr};
+    double *gainData{nullptr};
 
 	//options
     bool isPlot{true};
@@ -177,11 +163,8 @@ class qDrawPlot : public QWidget {
     bool hasGainData{false};
 
     int progress{0};
-    int64_t currentMeasurement{0};
     int64_t currentFrame{0};
 	  pthread_mutex_t lastImageCompleteMutex;
-    bool hasStopped{false};
-    int numMeasurements{1};
 
     unsigned int nPixelsX{0};
     unsigned int nPixelsY{0};

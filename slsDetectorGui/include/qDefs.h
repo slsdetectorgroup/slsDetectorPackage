@@ -99,6 +99,16 @@ class qDefs : public QWidget {
      */
     enum range { XMIN, XMAX, YMIN, YMAX };
 
+    static std::string getRangeAsString(enum range r) {
+        switch (r) {
+        case XMIN:	return "XMIN";
+        case XMAX:	return "XMAX";
+        case YMIN:	return "YMIN";
+        case YMAX:	return "YMAX";
+        default:	return "Unknown";
+        }
+    };
+
     /**
      * function enums for the qServer and qClient
      */

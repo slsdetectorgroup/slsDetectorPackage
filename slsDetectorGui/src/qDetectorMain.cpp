@@ -279,15 +279,14 @@ void qDetectorMain::Initialization() {
     // tabs
 	connect(tabs,SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));//( QWidget*)));
     //	Measurement tab
-    connect(tabMeasurement, SIGNAL(StartSignal()), this,SLOT(EnableTabs()));
+    connect(tabMeasurement, SIGNAL(EnableTabsSignal(bool)), this, SLOT(EnableTabs(bool)));
     connect(tabMeasurement, SIGNAL(FileNameChangedSignal(QString)), myPlot, SLOT(SetSaveFileName(QString)));
     // Plot tab
     connect(tabPlot, SIGNAL(DisableZoomSignal(bool)), this, SLOT(SetZoomToolTip(bool)));
 
     // Plotting
-    // When the acquisition is finished, must update the meas tab
-    connect(myPlot, SIGNAL(AcquireFinishedSignal()), this, SLOT(EnableTabs()));
-    connect(myPlot, SIGNAL(AcquireFinishedSignal()), tabMeasurement, SLOT(UpdateFinished()));
+    connect(myPlot, SIGNAL(AcquireFinishedSignal()), tabMeasurement, SLOT(AcquireFinished()));
+    connect(myPlot, SIGNAL(AbortSignal()), tabMeasurement, SLOT(AbortAcquire()));
 
     // menubar
     // Modes Menu
@@ -652,13 +651,9 @@ void qDetectorMain::resizeEvent(QResizeEvent *event) {
     event->accept();
 }
 
-void qDetectorMain::EnableTabs() {
-    FILE_LOG(logDEBUG1) << "Entering EnableTabs function";
+void qDetectorMain::EnableTabs(bool enable) {
+    FILE_LOG(logDEBUG) << "qDetectorMain::EnableTabs";
 
-    bool enable;
-    enable = !(tabs->isTabEnabled(DATAOUTPUT));
-
-    // or use the Enable/Disable button
     // normal tabs
     tabs->setTabEnabled(DATAOUTPUT, enable);
     tabs->setTabEnabled(SETTINGS, enable);
@@ -669,7 +664,6 @@ void qDetectorMain::EnableTabs() {
     actionSaveSetup->setEnabled(enable);
     actionOpenConfiguration->setEnabled(enable);
     actionSaveConfiguration->setEnabled(enable);
-    actionMeasurementWizard->setEnabled(enable);
     actionDebug->setEnabled(enable);
     actionExpert->setEnabled(enable);
 

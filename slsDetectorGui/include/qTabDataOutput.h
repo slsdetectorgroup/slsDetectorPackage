@@ -8,7 +8,7 @@ class qTabDataOutput:public QWidget, private Ui::TabDataOutputObject{
 	Q_OBJECT
 
 public:
-	qTabDataOutput(QWidget *parent,multiSlsDetector* detector);
+	qTabDataOutput(QWidget *parent, multiSlsDetector* detector);
 	~qTabDataOutput();
 	void Refresh();
 

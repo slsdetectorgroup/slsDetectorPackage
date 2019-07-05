@@ -27,6 +27,7 @@ set(FORMS
     forms/form_tab_advanced.ui
     forms/form_tab_settings.ui
     forms/form_tab_debugging.ui
+    forms/form_tab_messages.ui 
 )
 
 qt4_wrap_ui(FORMS_H ${FORMS})

@@ -1,57 +1,30 @@
 #include "qTabMessages.h"
 #include "qDefs.h"
 
-#include <QWidget>
-#include <QTextEdit>
-#include <QPushButton>
 #include <QEvent>
 #include <QFile>
 #include <QFileDialog>
-#include <QGridLayout>
 #include <QTextStream>
+#include <QDir>
+#include <QProcess>
 
 #include <iostream>
 #include <string>
 
-qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent),
-    dispLog(nullptr), btnSave(nullptr), btnClear(nullptr) {
+qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent) {
+    setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Messages ready";
 }
 
-qTabMessages::~qTabMessages() {
-    if (dispLog)
-        delete dispLog;
-    if (btnSave)
-        delete btnSave;
-    if (btnClear)
-        delete btnClear;
+qTabMessages::~qTabMessages() {}
+
+void qTabMessages::Refresh() {
+    dispCommand->clear();
 }
 
 void qTabMessages::SetupWidgetWindow() {
-    QGridLayout *gridLayout = new QGridLayout(this);
-
-    dispLog = new QTextEdit(this);
-    dispLog->setReadOnly(true);
-    dispLog->setFocusPolicy(Qt::NoFocus);
-    dispLog->setTextColor(Qt::darkBlue);
-
-    btnSave = new QPushButton("Save Log  ", this);
-    btnSave->setFocusPolicy(Qt::NoFocus);
-    btnSave->setFixedWidth(100);
-    btnSave->setIcon(QIcon(":/icons/images/save.png"));
-
-    btnClear = new QPushButton("Clear  ", this);
-    btnClear->setFocusPolicy(Qt::NoFocus);
-    btnClear->setFixedWidth(100);
-    btnClear->setIcon(QIcon(":/icons/images/erase.png"));
-
-    gridLayout->addItem(new QSpacerItem(15, 10, QSizePolicy::Fixed, QSizePolicy::Fixed), 0, 0);
-    gridLayout->addWidget(btnSave, 1, 0, 1, 1);
-    gridLayout->addWidget(btnClear, 1, 4, 1, 1);
-    gridLayout->addItem(new QSpacerItem(15, 10, QSizePolicy::Fixed, QSizePolicy::Fixed), 2, 0);
-    gridLayout->addWidget(dispLog, 3, 0, 1, 5);
-
+    PrintNextLine();
     qDebugStream(std::cout, this);
     qDebugStream(std::cerr, this);
 
@@ -61,6 +34,29 @@ void qTabMessages::SetupWidgetWindow() {
 void qTabMessages::Initialization() {
     connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveLog()));
     connect(btnClear, SIGNAL(clicked()), this, SLOT(ClearLog()));
+    connect(dispCommand, SIGNAL(editingFinished()), this, SLOT(ExecuteCommand()));
+}
+
+void qTabMessages::ExecuteCommand() {
+    QString command = dispCommand->text();
+    dispLog->append(command);
+    dispCommand->clear();
+
+    // take 1st string as program
+    QStringList arguments;
+
+    QProcess *myProcess = new QProcess(this);
+    myProcess->start(command, arguments);
+
+    // print readall
+    QByteArray result = myProcess.readAll();
+
+    PrintNextLine();
+}
+
+void qTabMessages::PrintNextLine() {
+    QString path = QDir::cleanPath(QDir::currentPath());
+    dispLog->append(QString("\n") + path + QString("$"));
 }
 
 void qTabMessages::customEvent(QEvent *e) {
@@ -96,3 +92,4 @@ void qTabMessages::ClearLog() {
     dispLog->clear();
     FILE_LOG(logINFO) << "Log Cleared";
 }
+

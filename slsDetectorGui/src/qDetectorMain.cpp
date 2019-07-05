@@ -608,6 +608,7 @@ void qDetectorMain::Refresh(int index) {
             tabDeveloper->Refresh();
             break;
         case MESSAGES:
+            tabMessages->Refresh();
             break;
         }
     }

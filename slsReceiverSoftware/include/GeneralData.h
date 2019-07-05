@@ -190,7 +190,7 @@ public:
      * @returns true or false for odd starting packet number
      */
     virtual bool SetOddStartingPacket(int index, char* packetData) {
-        cprintf(RED,"SetOddStartingPacket is a generic function that should be overloaded by a derived class\n");
+        FILE_LOG(logERROR) << "SetOddStartingPacket is a generic function that should be overloaded by a derived class";
         return false;
     };
 
@@ -204,7 +204,7 @@ public:
 	 * @returns analog data bytes
      */
     virtual int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
-        cprintf(RED,"setImageSize is a generic function that should be overloaded by a derived class\n");
+        FILE_LOG(logERROR) << "setImageSize is a generic function that should be overloaded by a derived class";
 		return 0;
     };
 
@@ -213,7 +213,7 @@ public:
      * @param number of interfaces
      */
     virtual void SetNumberofInterfaces(const int n) {
-        cprintf(RED,"SetNumberofInterfaces is a generic function that should be overloaded by a derived class\n");
+        FILE_LOG(logERROR) << "SetNumberofInterfaces is a generic function that should be overloaded by a derived class";
     }
 
 	/**

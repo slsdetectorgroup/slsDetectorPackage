@@ -2,7 +2,7 @@
 #include "logger.h"
 
 #include <iostream>
-
+#include "ansi.h"
 #include <qtoolbutton.h>
 #include <qgroupbox.h>
 #include <qgridlayout.h>
@@ -84,12 +84,10 @@ void SlsQt2DPlotLayout::UpdateZRange(double min, double max) {
 	if(isLog) {
 		the_plot->SetZMinimumToFirstGreaterThanZero();
 	}
-cprintf(BLUE, "zmin:%f zmax:%f\n", zmin, zmax);
 	// set zmin and zmax
 	if (isZmin || isZmax) {
 		zmin = (isZmin ? min : the_plot->GetZMinimum());
 		zmax = (isZmax ? max : the_plot->GetZMaximum());
-		cprintf(RED, "zmin:%f zmax:%f\n", zmin, zmax);
 		// if it is the same values, we should reset it to plots min and max (not doing this now: not foolproof now)
 		// setting the range of values possible in the dispZMin and dispZMax (not doin this now: not foolproof)
 		the_plot->SetZMinMax(zmin, zmax);
@@ -97,7 +95,6 @@ cprintf(BLUE, "zmin:%f zmax:%f\n", zmin, zmax);
 		zmin = 0;
 		zmax = -1;
 	}
-	
 	the_plot->Update();
 }
 

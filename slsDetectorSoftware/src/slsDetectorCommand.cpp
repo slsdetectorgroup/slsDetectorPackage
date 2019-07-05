@@ -2203,11 +2203,11 @@ std::string slsDetectorCommand::cmdAcquire(int narg, const char * const args[], 
         return helpAcquire(HELP_ACTION);
     }
     if (!myDet->getNumberOfDetectors()) {
-        cprintf(RED, "Error: This shared memory has no detectors added. Aborting.\n");
+        FILE_LOG(logERROR) << "This shared memory has no detectors added. Aborting.";
         return std::string("acquire failed");
     }
     if (detPos >= 0) {
-        cprintf(RED, "Error: Individual detectors not allowed for readout. Aborting.\n");
+        FILE_LOG(logERROR) << "Individual detectors not allowed for readout. Aborting.";
         return std::string("acquire failed");
     }
 

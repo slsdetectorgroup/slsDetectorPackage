@@ -3,7 +3,7 @@
  * @author Ian Johnson
  * @version 1.0
  */
-
+#include "ansi.h"
 #include <cmath>
 #include <iostream>
 #include <qlist.h>
@@ -235,34 +235,19 @@ void SlsQt2DPlot::Update() {
     const QwtInterval zInterval = d_spectrogram->data()->interval(Qt::ZAxis);
 
     rightAxis->setColorMap(zInterval, myColourMap(isLog));
-
 #endif
-
     if (!zoomer->zoomRectIndex())
         UnZoom();
-
 #if QWT_VERSION < 0x060000
-
     setAxisScale(QwtPlot::yRight, d_spectrogram->data().range().minValue(),
                  d_spectrogram->data().range().maxValue());
 #else
-
+    //cprintf(MAGENTA, "zmin:%f zmax:%f\n", zInterval.minValue(), zInterval.maxValue());
     setAxisScale(QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue());
-#ifdef VERYVERBOSE
-    std::cout << "axis scale set\n";
-#endif
     plotLayout()->setAlignCanvasToScales(true);
-#ifdef VERYVERBOSE
-    std::cout << "layout\n";
-#endif
-#endif
-#ifdef VERYVERBOSE
-    std::cout << "going to replot\n";
 #endif
     replot();
-#ifdef VERYVERBOSE
-    std::cout << "done\n";
-#endif
+
 }
 
 void SlsQt2DPlot::showContour(bool on) {

@@ -4,7 +4,7 @@
  * @version 1.0
  */
 
-
+#include "ansi.h"
 #include <iostream>
 #include <cmath>
 #include "SlsQt2DHist.h"
@@ -89,8 +89,8 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
 }
   
 void SlsQt2DHist::SetMinMax(double zmin,double zmax){
-  cprintf(GREEN, "zmin:%f zmax:%f\n", zmin, zmax);
-  if(zmin<zmax){
+ /* if(zmin<zmax){ edited out to test*/
+  if(zmax != -1){
     z_min=zmin;
     z_max=zmax;
   }else{

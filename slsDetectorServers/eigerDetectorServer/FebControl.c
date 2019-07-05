@@ -2023,7 +2023,7 @@ uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 			value = 0;
 		}
         if(!Feb_Interface_WriteRegister(Module_GetTopLeftAddress (&modules[1]),offset, data,0, 0)) {
-            cprintf(RED,"Could not read tl value. Value read:%d\n", value);
+            FILE_LOG(logERROR, ("Could not read tl value. Value read:%d\n", value));
             value = 0;
         }
 	} else {
@@ -2032,7 +2032,7 @@ uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 			value = 0;
 		}
         if(!Feb_Interface_WriteRegister(Module_GetBottomLeftAddress (&modules[1]),offset, data,0, 0)) {
-            cprintf(RED,"Could not read bl value. Value read:%d\n", value);
+            FILE_LOG(logERROR, ("Could not read bl value. Value read:%d\n", value));
             value = 0;
         }
 	}
@@ -2050,7 +2050,7 @@ uint32_t Feb_Control_ReadRegister(uint32_t offset) {
 		}
         printf("Read top right addr: 0x%08x\n", value);
         if(!Feb_Interface_ReadRegister(Module_GetTopLeftAddress (&modules[1]),offset, &value1)) {
-            cprintf(RED,"Could not read value. Value read:%d\n", value1);
+            FILE_LOG(logERROR, (RED,"Could not read value. Value read:%d\n", value1));
             value1 = 0;
         }
         printf("Read top left addr: 0x%08x\n", value1);
@@ -2063,7 +2063,7 @@ uint32_t Feb_Control_ReadRegister(uint32_t offset) {
 		}
         printf("Read bottom right addr: 0x%08x\n", value);
         if(!Feb_Interface_ReadRegister(Module_GetBottomLeftAddress (&modules[1]),offset, &value1)) {
-            cprintf(RED,"Could not read value. Value read:%d\n", value1);
+            FILE_LOG(logERROR, (RED,"Could not read value. Value read:%d\n", value1));
             value1 = 0;
         }
         printf("Read bottom left addr: 0x%08x\n", value1);

@@ -204,17 +204,17 @@ public:
  		 // get host info into res
  		 int errcode = getaddrinfo (hostname, NULL, &hints, res);
  		 if (errcode != 0) {
- 			 cprintf (RED,"Error: Could not convert %s hostname to internet address (zmq):"
- 					 "%s\n", hostname, gai_strerror(errcode));
+ 			 FILE_LOG(logERROR) << "Error: Could not convert hostname " << hostname << " to internet address (zmq):"
+ 					 << gai_strerror(errcode);
  		 } else {
  			 if (*res == NULL) {
- 				 cprintf (RED,"Error: Could not convert %s hostname to internet address (zmq): "
- 						 "gettaddrinfo returned null\n", hostname);
+ 				 FILE_LOG(logERROR) << "Could not convert hostname " << hostname << " to internet address (zmq): "
+ 						 "gettaddrinfo returned null";
  			 } else{
  				 return 0;
  			 }
  		 }
- 		 cprintf(RED, "Error: Could not convert hostname to internet address\n");
+ 		 FILE_LOG(logERROR) << "Could not convert hostname to internet address";
  		 return 1;
  	};
 
@@ -232,7 +232,7 @@ public:
     		 freeaddrinfo(res);
     		 return 0;
     	 }
-    	 cprintf(RED, "Error: Could not convert internet address to ip string\n");
+    	 FILE_LOG(logERROR) << "Could not convert internet address to ip string";
     	 return 1;
      }
 
@@ -351,7 +351,7 @@ public:
 		int length = zmq_msg_recv (&message, sockfd.socketDescriptor, 0);
 		if (length == -1) {
 			PrintError ();
-			cprintf (BG_RED,"Error: Could not read header for socket %d\n",index);
+			FILE_LOG(logERROR) << "Could not read header for socket " << index;
 		}
 #ifdef VERBOSE
 		else
@@ -419,7 +419,7 @@ public:
             Document& document, bool& dummy, uint32_t version)
     {
         if ( document.Parse( buff, length).HasParseError() ) {
-            cprintf( RED,"%d Could not parse. len:%d: Message:%s \n", index, length, buff );
+            FILE_LOG(logERROR) << index << " Could not parse. len:" << length << ": Message:" << buff;
             fflush ( stdout );
             // char* buf =  (char*) zmq_msg_data (&message);
             for ( int i= 0; i < length; ++i ) {
@@ -431,7 +431,7 @@ public:
         }
 
         if (document["jsonversion"].GetUint() != version) {
-            cprintf( RED, "version mismatch. required %u, got %u\n", version, document["jsonversion"].GetUint());
+            FILE_LOG(logERROR) << "version mismatch. required " << version << ", got " << document["jsonversion"].GetUint();
             return 0;
         }
 
@@ -474,7 +474,7 @@ public:
         }
         //incorrect size (larger)
 		else {
-			cprintf(RED,"Error: Received weird packet size %d for socket %d\n", length, index);
+			FILE_LOG(logERROR) << "Received weird packet size " << length << " for socket " << index;
 			memset(buf,0xFF,size);
 		}
 
@@ -490,52 +490,52 @@ public:
 	void PrintError () {
 		switch (errno) {
 		case EINVAL:
-			cprintf(RED, "Error: The socket type/option or value/endpoint supplied is invalid (zmq)\n");
+			FILE_LOG(logERROR) << "The socket type/option or value/endpoint supplied is invalid (zmq)";
 			break;
 		case EAGAIN:
-			cprintf(RED, "Error: Non-blocking mode was requested and the message cannot be sent/available at the moment (zmq)\n");
+			FILE_LOG(logERROR) << "Non-blocking mode was requested and the message cannot be sent/available at the moment (zmq)";
 			break;
 		case ENOTSUP:
-			cprintf(RED, "Error: The zmq_send()/zmq_msg_recv() operation is not supported by this socket type (zmq)\n");
+			FILE_LOG(logERROR) << "The zmq_send()/zmq_msg_recv() operation is not supported by this socket type (zmq)";
 			break;
 		case EFSM:
-			cprintf(RED, "Error: The zmq_send()/zmq_msg_recv() unavailable now as socket in inappropriate state (eg. ZMQ_REP). Look up messaging patterns (zmq)\n");
+			FILE_LOG(logERROR) << "The zmq_send()/zmq_msg_recv() unavailable now as socket in inappropriate state (eg. ZMQ_REP). Look up messaging patterns (zmq)";
 			break;
 		case EFAULT:
-			cprintf(RED, "Error: The provided context/message is invalid (zmq)\n");
+			FILE_LOG(logERROR) << "The provided context/message is invalid (zmq)";
 			break;
 		case EMFILE:
-			cprintf(RED, "Error: The limit on the total number of open ØMQ sockets has been reached (zmq)\n");
+			FILE_LOG(logERROR) << "The limit on the total number of open ØMQ sockets has been reached (zmq)";
 			break;
 		case EPROTONOSUPPORT:
-			cprintf(RED, "Error: The requested transport protocol is not supported (zmq)\n");
+			FILE_LOG(logERROR) << "The requested transport protocol is not supported (zmq)";
 			break;
 		case ENOCOMPATPROTO:
-			cprintf(RED, "Error: The requested transport protocol is not compatible with the socket type (zmq)\n");
+			FILE_LOG(logERROR) << "The requested transport protocol is not compatible with the socket type (zmq)";
 			break;
 		case EADDRINUSE:
-			cprintf(RED, "Error: The requested address is already in use (zmq)\n");
+			FILE_LOG(logERROR) << "The requested address is already in use (zmq)";
 			break;
 		case EADDRNOTAVAIL:
-			cprintf(RED, "Error: The requested address was not local (zmq)\n");
+			FILE_LOG(logERROR) << "The requested address was not local (zmq)";
 			break;
 		case ENODEV:
-			cprintf(RED, "Error: The requested address specifies a nonexistent interface (zmq)\n");
+			FILE_LOG(logERROR) << "The requested address specifies a nonexistent interface (zmq)";
 			break;
 		case ETERM:
-			cprintf(RED, "Error: The ØMQ context associated with the specified socket was terminated (zmq)\n");
+			FILE_LOG(logERROR) << "The ØMQ context associated with the specified socket was terminated (zmq)";
 			break;
 		case ENOTSOCK:
-			cprintf(RED, "Error: The provided socket was invalid (zmq)\n");
+			FILE_LOG(logERROR) << "The provided socket was invalid (zmq)";
 			break;
 		case EINTR:
-			cprintf(RED, "Error: The operation was interrupted by delivery of a signal (zmq)\n");
+			FILE_LOG(logERROR) << "The operation was interrupted by delivery of a signal (zmq)";
 			break;
 		case EMTHREAD:
-			cprintf(RED, "Error: No I/O thread is available to accomplish the task (zmq)\n");
+			FILE_LOG(logERROR) << "No I/O thread is available to accomplish the task (zmq)";
 			break;
 		default:
-			cprintf(RED, "Error: Unknown socket error (zmq)\n");
+			FILE_LOG(logERROR) << "Unknown socket error (zmq)";
 			break;
 		}
 	};

@@ -206,7 +206,7 @@ void qDrawPlot::SetupPlots() {
     DetachHists();
     SlsQtH1D *h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[0]);
     h->SetLineColor(0);
-    SetStyle(h);
+    SetStyleandSymbol(h);
     hists1d.append(h);
 
     // setup 2d plot
@@ -278,8 +278,7 @@ int64_t qDrawPlot::GetCurrentFrameIndex() {
 }
 
 void qDrawPlot::Select1dPlot(bool enable) { 
-        LockLastImageArray();
-        if (enable) {
+    if (enable) {
         // DetachHists(); it clears the last measurement
         plot1d->SetXTitle(xTitle1d.toAscii().constData());
         plot1d->SetYTitle(yTitle1d.toAscii().constData());
@@ -301,74 +300,50 @@ void qDrawPlot::Select1dPlot(bool enable) {
         layout->removeWidget(lblFrameIndexTitle1d);
         plotLayout->setContentsMargins(0, 0, 0, 0);
     }
-    UnlockLastImageArray();
 }
 
 void qDrawPlot::SetPlotTitlePrefix(QString title) { 
-    LockLastImageArray();
     FILE_LOG(logINFO) << "Setting Title to " << title.toAscii().constData();
     plotTitlePrefix = title; 
-    UnlockLastImageArray();
 }
 
 void qDrawPlot::SetXAxisTitle(QString title) {
-    LockLastImageArray();
     FILE_LOG(logINFO) << "Setting X Axis Title to " << title.toAscii().constData();
     if (is1d) {
         xTitle1d = title;
     } else {
         xTitle2d = title;
     }
-    UnlockLastImageArray();
 }
 
 void qDrawPlot::SetYAxisTitle(QString title) {
-    LockLastImageArray();
     FILE_LOG(logINFO) << "Setting Y Axis Title to " << title.toAscii().constData();
     if (is1d) {
         yTitle1d = title;
     } else {
         yTitle2d = title;
     }
-    UnlockLastImageArray();
 }
 
 void qDrawPlot::SetZAxisTitle(QString title) { 
-    LockLastImageArray();
     FILE_LOG(logINFO) << "Setting Z Axis Title to " << title.toAscii().constData();
     zTitle2d = title; 
-    UnlockLastImageArray(); 
 }
 
-void qDrawPlot::DisableZoom(bool disable) {
-    LockLastImageArray();
-    FILE_LOG(logINFO) << "Setting Disable zoom to " << std::boolalpha << disable << std::noboolalpha;
-    if (is1d)
-        plot1d->DisableZoom(disable);
-    else
-        plot2d->GetPlot()->DisableZoom(disable);
-    UnlockLastImageArray();     
-}
-
-void qDrawPlot::SetXYRangeChanged() { 
-    LockLastImageArray();
+void qDrawPlot::SetXYRangeChanged(bool disable, double* xy, bool* isXY) { 
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << "XY Range has changed";
-    XYRangeChanged = true; 
-    UnlockLastImageArray();     
+    xyRangeChanged = true;  
+    std::copy(xy, xy + 4, xyRange);
+    std::copy(isXY, isXY + 4, isXYRange);
+
+    FILE_LOG(logDEBUG) << "Setting Disable zoom to " << std::boolalpha << disable << std::noboolalpha;
+    disableZoom = disable;
 }
 
-void qDrawPlot::SetXYRangeValues(double val, qDefs::range xy) {
-    LockLastImageArray();
-    FILE_LOG(logDEBUG) << "Setting " << qDefs::getRangeAsString(xy) << " to " << val;
-    XYRange[xy] = val;
-    UnlockLastImageArray();     
-}
-
-void qDrawPlot::IsXYRangeValues(bool changed, qDefs::range xy) {
-    LockLastImageArray();
-    FILE_LOG(logDEBUG) << "Setting " << qDefs::getRangeAsString(xy) << " to " << std::boolalpha << changed << std::noboolalpha;;
-    isXYRange[xy] = changed;
-    UnlockLastImageArray();     
+void qDrawPlot::SetZRange(double* z, bool* isZ) {
+    std::copy(z, z + 2, zRange);
+    std::copy(isZ, isZ + 2, isZRange);
 }
 
 double qDrawPlot::GetXMinimum() {
@@ -399,17 +374,7 @@ double qDrawPlot::GetYMaximum() {
         return plot2d->GetPlot()->GetYMaximum();
 }
 
-void qDrawPlot::SetZRange(bool isZmin, bool isZmax, double zmin, double zmax) {
-    LockLastImageArray();
-    FILE_LOG(logINFO) << std::boolalpha << "Setting Z Range to "
-                     "Zmin (" << isZmin << ", " << zmin << ") "
-                     "Zmax (" << isZmax << ", " << zmax << ")";
-    plot2d->SetZRange(isZmin, isZmax, zmin, zmax);
-    UnlockLastImageArray(); 
-}
-
 void qDrawPlot::SetDataCallBack(bool enable) {
-    LockLastImageArray();
     FILE_LOG(logINFO) << "Setting data call back to " << std::boolalpha << enable << std::noboolalpha;
     if (enable) {
         isPlot = true;
@@ -418,138 +383,99 @@ void qDrawPlot::SetDataCallBack(bool enable) {
         isPlot = false;
         myDet->registerDataCallback(nullptr, this);
     }
-    UnlockLastImageArray();     
+  
 }
 
 void qDrawPlot::SetBinary(bool enable, int from, int to) {
-    LockLastImageArray();
     FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling") << " Binary output from " << from << " to " << to;
-    isBinary = enable;
     binaryFrom = from;
     binaryTo = to;
-    UnlockLastImageArray();    
+    isBinary = enable;
 }
 
 void qDrawPlot::SetPersistency(int val) {
-    LockLastImageArray();
     FILE_LOG(logINFO) << "Setting Persistency to " << val;
-    persistency = val;
-    for(int i = datay1d.size(); i <= val; ++i) {
-		datay1d[i] = new double [nPixelsX];
-        SlsQtH1D* h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[i]);
-        h->SetLineColor(i);
-        hists1d.append(h);
-    }
-    UnlockLastImageArray();    
+    persistency = val; 
 }
 
 void qDrawPlot::SetLines(bool enable) { 
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << "Setting Lines to " << std::boolalpha << enable << std::noboolalpha;
     isLines = enable; 
-    UnlockLastImageArray();    
+    for (unsigned int i = 0; i < nHists; ++i) {
+        SlsQtH1D* h = hists1d.at(i);
+        SetStyleandSymbol(h);
+    }
 }
 
 void qDrawPlot::SetMarkers(bool enable) { 
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << "Setting Markers to " << std::boolalpha << enable << std::noboolalpha;
     isMarkers = enable;
-    UnlockLastImageArray();    
+    for (unsigned int i = 0; i < nHists; ++i) {
+        SlsQtH1D* h = hists1d.at(i);
+        SetStyleandSymbol(h);
+    }
 }
 
 void qDrawPlot::Set1dLogY(bool enable) {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << "Setting Log Y to " << std::boolalpha << enable << std::noboolalpha;
     plot1d->SetLogY(enable);
-    UnlockLastImageArray();   
 }
 
 void qDrawPlot::SetInterpolate(bool enable) {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << "Setting Interpolate to " << std::boolalpha << enable << std::noboolalpha;
-    plot2d->SetInterpolate(enable);
-    UnlockLastImageArray();   
+    plot2d->SetInterpolate(enable); 
 }
 
 void qDrawPlot::SetContour(bool enable) {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << "Setting Countour to " << std::boolalpha << enable << std::noboolalpha;
     plot2d->SetContour(enable);
-    UnlockLastImageArray();   
 }
 
 void qDrawPlot::SetLogz(bool enable) {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << "Setting Log Z to " << std::boolalpha << enable << std::noboolalpha;
-    plot2d->SetLogz(enable);
-    UnlockLastImageArray();   
+    plot2d->SetLogz(enable, isZRange[0], isZRange[1], zRange[0], zRange[1]);
 }
 
 void qDrawPlot::SetPedestal(bool enable) {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling") << " Pedestal";
-    if (enable) {
-        isPedestal = true;
-        if (pedestalVals == nullptr)
-            RecalculatePedestal();
-    } else {
-        isPedestal = false;
-    }
-    UnlockLastImageArray();
+    isPedestal = enable;
+    resetPedestal = true;
 }
 
 void qDrawPlot::RecalculatePedestal() {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logDEBUG) << "Recalculating Pedestal";
-
     resetPedestal = true;
-    pedestalCount = 0;
-
-    if (pedestalVals != nullptr)
-        delete [] pedestalVals;
-    int nPixels = nPixelsX * nPixelsY;
-    pedestalVals = new double[nPixels];
-    std::fill(pedestalVals, pedestalVals + nPixels, 0);
-
-    if (tempPedestalVals != nullptr)
-        delete [] tempPedestalVals;
-    tempPedestalVals = new double[nPixels];
-    std::fill(tempPedestalVals, tempPedestalVals + nPixels, 0);
-    UnlockLastImageArray();
 }
 
 void qDrawPlot::SetAccumulate(bool enable) {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling") << " Accumulation";
     isAccumulate = enable;
-    UnlockLastImageArray();
+    resetAccumulate = true;
 }
 
 void qDrawPlot::ResetAccumulate() {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logDEBUG) << "Resetting Accumulation";   
     resetAccumulate = true;
-    UnlockLastImageArray();
 }
 
 void qDrawPlot::DisplayStatistics(bool enable) {
-    LockLastImageArray();
     FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling") << " Statistics Display";
-    if (!enable)
-       widgetStatistics->hide();
-    // shown when calculated
     displayStatistics = enable;
-    lblMinDisp->setText("-");
-    lblMaxDisp->setText("-");
-    lblSumDisp->setText("-");
-    UnlockLastImageArray();
 }
 
 void qDrawPlot::EnableGainPlot(bool enable) {
-    LockLastImageArray();
     FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling") << " Gain Plot";
     hasGainData = enable;
-    UnlockLastImageArray();
 }
 
 void qDrawPlot::SetSaveFileName(QString val) {
@@ -558,7 +484,8 @@ void qDrawPlot::SetSaveFileName(QString val) {
 }
 
 void qDrawPlot::ClonePlot() {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
+
     int index = 0;
     if (is1d) {
         FILE_LOG(logINFO) << "Cloning 1D Image";
@@ -569,7 +496,7 @@ void qDrawPlot::ClonePlot() {
         cloneWidgets.push_back(q);
         index = cloneWidgets.size();
         cloneWidgets[index]->SetCloneHists(nHists, nPixelsX, datax1d, datay1d,
-                                       lblFrameIndexTitle1d->text(), isLines, isMarkers);
+                                       lblFrameIndexTitle1d->text(), isLines, isMarkers);                                                            
     } else  {
         FILE_LOG(logINFO) << "Cloning 2D Image";
         qCloneWidget *q = new qCloneWidget(
@@ -580,13 +507,9 @@ void qDrawPlot::ClonePlot() {
         index = cloneWidgets.size();
         cloneWidgets[index]->SetCloneHists2D(nPixelsX, -0.5, nPixelsX - 0.5,
                                          nPixelsY, -0.5, nPixelsY - 0.5,
-                                         data2d, plot2d->title());
+                                         data2d, plot2d->title(), isZRange[0], isZRange[1], zRange[0], zRange[1]);
     }
 
-    if (isXYRange[qDefs::XMIN] || isXYRange[qDefs::XMAX] ||isXYRange[qDefs::YMIN] ||isXYRange[qDefs::YMAX]) {
-        cloneWidgets[index]->SetRange(isXYRange, XYRange);
-    }
-    UnlockLastImageArray();
     cloneWidgets[index]->show();
 
     // to remember which all clone widgets were closed
@@ -651,15 +574,7 @@ void qDrawPlot::SavePlot() {
     }
 }
 
-int qDrawPlot::LockLastImageArray() {
-    return pthread_mutex_lock(&lastImageCompleteMutex);
-}
-
-int qDrawPlot::UnlockLastImageArray() {
-    return pthread_mutex_unlock(&lastImageCompleteMutex);
-}
-
-void qDrawPlot::SetStyle(SlsQtH1D *h) {
+void qDrawPlot::SetStyleandSymbol(SlsQtH1D *h) {
     h->setStyle(isLines ? QwtPlotCurve::Lines : QwtPlotCurve::Dots);
 #if QWT_VERSION < 0x060000
     h->setSymbol(isMarkers ? *marker : *noMarker);
@@ -720,18 +635,13 @@ void qDrawPlot::StartAcquisition() {
     }
 
     // refixing all the zooming
-    XYRangeChanged = true; 
-    /*
-    plot2d->GetPlot()->SetXMinMax(-0.5, nPixelsX + 0.5);
-    plot2d->GetPlot()->SetYMinMax(-0.5, nPixelsY + 0.5);
-    plot2d->GetPlot()->SetZoom(-0.5, -0.5, nPixelsX, nPixelsY);
-    if (boxPlot->title() == "Sample Plot")
-        plot2d->GetPlot()->UnZoom();
-    else
-        plot2d->GetPlot()->UnZoom(false);
-*/
+    {
+        std::lock_guard<std::mutex> lock(mPlots);
+        pedestalCount = 0;
+        xyRangeChanged = true; 
+    }
 
-     // acquisition in another thread
+    // acquisition in another thread
     QFuture<std::string> future = QtConcurrent::run(this, &qDrawPlot::AcquireThread);
     acqResultWatcher->setFuture(future);
 
@@ -792,8 +702,7 @@ void qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) 
 }
 
 void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex) {
-    LockLastImageArray();
-
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logDEBUG)
     << "* GetData Callback *" << std::endl
     << "  frame index: " << frameIndex << std::endl
@@ -807,7 +716,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     << "  \t dynamic range: " << data->dynamicRange << std::endl  
     << "  \t file index: " << data->fileIndex << std::endl
     << "  ]";  
-
+    
     progress = (int)data->progressIndex;
     currentFrame =  frameIndex;
     FILE_LOG(logDEBUG) << "[ Progress:" << progress << ", Frame:" << currentFrame << " ]";
@@ -819,8 +728,10 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     double* rawData = new double[nPixels];
     if (hasGainData) {
         toDoublePixelData(rawData, data->data, nPixels, data->databytes, data->dynamicRange, gainData);
+        isGainDataExtracted = true;
     } else {
         toDoublePixelData(rawData, data->data, nPixels, data->databytes, data->dynamicRange);
+        isGainDataExtracted = false;
     }
 
     // title and frame index titles
@@ -830,8 +741,21 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
         indexTitle = QString("%1 %2").arg(frameIndex, subFrameIndex);
     }
 
-    // calculate pedestal
+    // reset pedestal
     if (resetPedestal) {
+        pedestalCount = 0;
+        if (pedestalVals != nullptr)
+            delete [] pedestalVals;
+        pedestalVals = new double[nPixels];
+        std::fill(pedestalVals, pedestalVals + nPixels, 0);
+        if (tempPedestalVals != nullptr)
+            delete [] tempPedestalVals;
+        tempPedestalVals = new double[nPixels];
+        std::fill(tempPedestalVals, tempPedestalVals + nPixels, 0);
+        resetPedestal = false;
+    }
+    
+    if (isPedestal) {
         // add pedestals frames
         if (pedestalCount < NUM_PEDESTAL_FRAMES) {
             for (unsigned int px = 0; px < nPixels; ++px)
@@ -844,7 +768,6 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
             for (unsigned int px = 0; px < nPixels; ++px)
                 tempPedestalVals[px] = tempPedestalVals[px] / (double)NUM_PEDESTAL_FRAMES;
             memcpy(pedestalVals, tempPedestalVals, nPixels * sizeof(double));
-            resetPedestal = false;
         }
     }
 
@@ -855,11 +778,11 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     }
 
     FILE_LOG(logDEBUG) << "End of Get Data";
-    UnlockLastImageArray();
     emit UpdateSignal();
 }
 
 void qDrawPlot::Get1dData(double* rawData) {
+
     // persistency
     if (currentPersistency < persistency)
         currentPersistency++;
@@ -867,6 +790,14 @@ void qDrawPlot::Get1dData(double* rawData) {
         currentPersistency = persistency; // when reducing persistency
     nHists = currentPersistency + 1;
     if (currentPersistency) {
+        // allocate
+        for(int i = datay1d.size(); i <= persistency; ++i) {
+            datay1d[i] = new double [nPixelsX];
+            SlsQtH1D* h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[i]);
+            h->SetLineColor(i);
+            SetStyleandSymbol(h);
+            hists1d.append(h);
+        }
         // copy previous data
         for (int i = currentPersistency; i > 0; --i)
             memcpy(datay1d[i], datay1d[i - 1], nPixelsX * sizeof(double));
@@ -879,17 +810,20 @@ void qDrawPlot::Get1dData(double* rawData) {
     }
     // accumulate
     if (resetAccumulate) {
+        std::fill(datay1d[0], datay1d[0] + nPixelsX, 0);
         resetAccumulate = false;
     }
-    else if (isAccumulate) {
+    if (isAccumulate) {
         for (unsigned int px = 0; px < nPixelsX; ++px) {
             rawData[px] += datay1d[0][px];
         }
     }
     // binary
     if (isBinary) {
+        int lBinaryFrom = binaryFrom;
+        int lBinaryTo = binaryTo;
         for (unsigned int px = 0; px < nPixelsX; ++px) {
-            if ((rawData[px] >= binaryFrom) && (rawData[px] <= binaryTo))
+            if ((rawData[px] >= lBinaryFrom) && (rawData[px] <= lBinaryTo))
                 rawData[px] = 1;
             else
                 rawData[px] = 0;
@@ -908,17 +842,20 @@ void qDrawPlot::Get2dData(double* rawData) {
     }
     // accumulate
     if (resetAccumulate) {
+        std::fill(data2d, data2d + nPixels, 0);
         resetAccumulate = false;
     }
-    else if (isAccumulate) {
+    if (isAccumulate) {
         for (unsigned int px = 0; px < nPixels; ++px) {
             rawData[px] += data2d[px];
         }
     }
     // binary
     if (isBinary) {
+        int lBinaryFrom = binaryFrom;
+        int lBinaryTo = binaryTo;
         for (unsigned int px = 0; px < nPixels; ++px) {
-            if ((rawData[px] >= binaryFrom) && (rawData[px] <= binaryTo))
+            if ((rawData[px] >= lBinaryFrom) && (rawData[px] <= lBinaryTo))
                 rawData[px] = 1;
             else
                 rawData[px] = 0;
@@ -928,17 +865,19 @@ void qDrawPlot::Get2dData(double* rawData) {
 }
 
 void qDrawPlot::Update1dPlot() {
-    // Plot data
     DetachHists();
     plot1d->SetXTitle(xTitle1d.toAscii().constData());
     plot1d->SetYTitle(yTitle1d.toAscii().constData());
     for (unsigned int i = 0; i < nHists; ++i) {
         SlsQtH1D* h = hists1d.at(i);
         h->SetData(nPixelsX, datax1d, datay1d[i]);
-        SetStyle(h);
         h->Attach(plot1d);
     }
-    Update1dXYRange();
+    if (xyRangeChanged) {
+        Update1dXYRange();
+        xyRangeChanged = false;
+    }
+    plot1d->DisableZoom(disableZoom);
 }
 
 void qDrawPlot::Update2dPlot() {
@@ -947,8 +886,7 @@ void qDrawPlot::Update2dPlot() {
     plot2d->SetZTitle(zTitle2d);
     plot2d->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5,
                                                nPixelsY, -0.5, nPixelsY - 0.5, data2d);
-    plot2d->KeepZRangeIfSet();
-    if (hasGainData) {
+     if (isGainDataExtracted) {
         gainplot2d->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
                 -0.5, nPixelsY - 0.5, gainData);
         gainplot2d->setFixedWidth(plot2d->width() / 4);
@@ -957,59 +895,50 @@ void qDrawPlot::Update2dPlot() {
     } else {
         gainplot2d->hide();  
     }
-    Update2dXYRange();
+    if (xyRangeChanged) {
+        Update2dXYRange();
+        xyRangeChanged = false;
+    }
+    plot2d->GetPlot()->DisableZoom(disableZoom);
+    plot2d->SetZRange(isZRange[0], isZRange[1], zRange[0], zRange[1]);
 }
 
 void qDrawPlot::Update1dXYRange() {
-    if (XYRangeChanged) {
-        if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
-            plot1d->EnableXAutoScaling();
-        } else {
-            if (!isXYRange[qDefs::XMIN])
-                XYRange[qDefs::XMIN] = plot1d->GetXMinimum();
-            if (!isXYRange[qDefs::XMAX])
-                XYRange[qDefs::XMAX] = plot1d->GetXMaximum();
-            plot1d->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
-        } 
+    if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
+        plot1d->EnableXAutoScaling();
+    } else {
+        double xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN] : plot1d->GetXMinimum());
+        double xmax = (isXYRange[qDefs::XMAX] ? xyRange[qDefs::XMAX] : plot1d->GetXMaximum());
+        plot1d->SetXMinMax(xmin, xmax);
+    } 
 
-        if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
-            plot1d->EnableYAutoScaling();
-        } else {
-            if (!isXYRange[qDefs::YMIN])
-                XYRange[qDefs::YMIN] = plot1d->GetYMinimum();
-            if (!isXYRange[qDefs::YMAX])
-                XYRange[qDefs::YMAX] = plot1d->GetYMaximum();
-            plot1d->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
-        } 
-        XYRangeChanged = false;
-        plot1d->Update();
-    }
+    if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
+        plot1d->EnableYAutoScaling();
+    } else {
+        double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN] : plot1d->GetYMinimum());
+        double ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX] : plot1d->GetYMaximum());
+        plot1d->SetYMinMax(ymin, ymax);
+    } 
+    plot1d->Update();
 }
 
 void qDrawPlot::Update2dXYRange() {
-    if (XYRangeChanged) {
-        if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
-            plot2d->GetPlot()->EnableXAutoScaling();
-        } else {
-            if (!isXYRange[qDefs::XMIN])
-                XYRange[qDefs::XMIN] = plot2d->GetPlot()->GetXMinimum();
-            if (!isXYRange[qDefs::XMAX])
-                XYRange[qDefs::XMAX] = plot2d->GetPlot()->GetXMaximum();
-            plot2d->GetPlot()->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
-        } 
+    if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
+        plot2d->GetPlot()->EnableXAutoScaling();
+    } else {
+        double xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN] : plot2d->GetPlot()->GetXMinimum());
+        double xmax = (isXYRange[qDefs::XMAX] ? xyRange[qDefs::XMAX] : plot2d->GetPlot()->GetXMaximum());
+        plot2d->GetPlot()->SetXMinMax(xmin, xmax);
+    } 
 
-        if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
-            plot2d->GetPlot()->EnableYAutoScaling();
-        } else {
-            if (!isXYRange[qDefs::YMIN])
-                XYRange[qDefs::YMIN] = plot2d->GetPlot()->GetYMinimum();
-            if (!isXYRange[qDefs::YMAX])
-                XYRange[qDefs::YMAX] = plot2d->GetPlot()->GetYMaximum();
-            plot2d->GetPlot()->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
-        } 
-        XYRangeChanged = false;
-        plot2d->GetPlot()->Update();
-    }
+    if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
+        plot2d->GetPlot()->EnableYAutoScaling();
+    } else {
+        double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN] : plot2d->GetPlot()->GetYMinimum());
+        double ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX] : plot2d->GetPlot()->GetYMaximum());
+        plot2d->GetPlot()->SetYMinMax(ymin, ymax);
+    } 
+    plot2d->GetPlot()->Update();
 }
 
 void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int databytes, int dr, double *gaindest) {
@@ -1084,16 +1013,16 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
 
 
 void qDrawPlot::UpdatePlot() {
-    LockLastImageArray();
+    std::lock_guard<std::mutex> lock(mPlots);
     FILE_LOG(logDEBUG) << "Update Plot";
-
+    
     boxPlot->setTitle(plotTitle);
     if (is1d) {
         lblFrameIndexTitle1d->setText(indexTitle);
         Update1dPlot();
     } else {   
         plot2d->setTitle(indexTitle.toAscii().constData());
-        if (hasGainData)
+        if (isGainDataExtracted)
             gainplot2d->setTitle(indexTitle.toAscii().constData());
         Update2dPlot();
     }
@@ -1104,8 +1033,10 @@ void qDrawPlot::UpdatePlot() {
         lblMinDisp->setText(QString("%1").arg(min));
         lblMaxDisp->setText(QString("%1").arg(max));
         lblSumDisp->setText(QString("%1").arg(sum));
+        widgetStatistics->show();
+    } else {
+        widgetStatistics->hide();
     }
 
     FILE_LOG(logDEBUG) << "End of Update Plot";
-    UnlockLastImageArray();
 }

@@ -13,10 +13,6 @@ SlsQt2DPlotLayout::SlsQt2DPlotLayout(QWidget *parent):QGroupBox(parent){
 	the_layout=0;
 	the_plot   = new SlsQt2DPlot(this);
 	isLog = false;
-	zmin = 0;
-  zmax = 0;
-  isZmin = false;
-  isZmax = false;
 	Layout();
 }
 
@@ -55,10 +51,10 @@ void SlsQt2DPlotLayout::SetContour(bool enable) {
 	the_plot->showContour(enable);
 }
 
-void SlsQt2DPlotLayout::SetLogz(bool enable) {
+void SlsQt2DPlotLayout::SetLogz(bool enable, bool isMin, bool isMax, double min, double max) {
 	isLog = enable;
 	the_plot->LogZ(enable);
-	SetZRange(isZmin, isZmax, zmin, zmax);
+	SetZRange(isMin, isMax, min, max);
 }
 
 void SlsQt2DPlotLayout::Layout(){
@@ -67,34 +63,19 @@ void SlsQt2DPlotLayout::Layout(){
 	the_layout->addWidget(the_plot,2,0,3,3);
 }
 
-void SlsQt2DPlotLayout::KeepZRangeIfSet() {
-	UpdateZRange(zmin, zmax);
-}
-
 void SlsQt2DPlotLayout::SetZRange(bool isMin, bool isMax, double min, double max){
-	isZmin = isMin;
-	isZmax = isMax;
-	// reset zmin and zmax first (recalculate from plot)
-	the_plot->SetZMinMax();
-
-	UpdateZRange(min, max);
-}
-
-void SlsQt2DPlotLayout::UpdateZRange(double min, double max) {
 	if(isLog) {
 		the_plot->SetZMinimumToFirstGreaterThanZero();
 	}
+
 	// set zmin and zmax
-	if (isZmin || isZmax) {
-		zmin = (isZmin ? min : the_plot->GetZMinimum());
-		zmax = (isZmax ? max : the_plot->GetZMaximum());
-		// if it is the same values, we should reset it to plots min and max (not doing this now: not foolproof now)
-		// setting the range of values possible in the dispZMin and dispZMax (not doin this now: not foolproof)
+	if (isMin || isMax) {
+		double zmin = (isMin ? min : the_plot->GetZMinimum());
+		double zmax = (isMax ? max : the_plot->GetZMaximum());
 		the_plot->SetZMinMax(zmin, zmax);
-	} else {
-		zmin = 0;
-		zmax = -1;
-	}
+	} 
+
 	the_plot->Update();
+
 }
 

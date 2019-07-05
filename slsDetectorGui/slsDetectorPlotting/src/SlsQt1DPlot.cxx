@@ -535,36 +535,39 @@ void SlsQt1DPlot::UnknownStuff() {
 }
 
 //Added by Dhanya on 19.06.2012 to disable zooming when any of the axes range has been set
-void SlsQt1DPlot::DisableZoom(bool disableZoom) {
+void SlsQt1DPlot::DisableZoom(bool disable) {
+    if (disableZoom != disable) {
+        disableZoom = disable;
 #ifdef VERBOSE
-    if (disableZoom)
-        std::cout << "Disabling zoom\n";
-    else
-        std::cout << "Enabling zoom\n";
+        if (disable)
+            std::cout << "Disabling zoom\n";
+        else
+            std::cout << "Enabling zoom\n";
 #endif
-    if (disableZoom) {
-        if (zoomer) {
-            zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::NoButton);
+        if (disable) {
+            if (zoomer) {
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::NoButton);
 #if QT_VERSION < 0x040000
-            zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlButton);
 #else
-            zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlModifier);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlModifier);
 #endif
-            zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::NoButton);
-        }
-        if (panner)
-            panner->setMouseButton(Qt::NoButton);
-    } else {
-        if (zoomer) {
-            zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::NoButton);
+            }
+            if (panner)
+                panner->setMouseButton(Qt::NoButton);
+        } else {
+            if (zoomer) {
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton);
 #if QT_VERSION < 0x040000
-            zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlButton);
 #else
-            zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
 #endif
-            zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
+            }
+            if (panner)
+                panner->setMouseButton(Qt::MidButton);
         }
-        if (panner)
-            panner->setMouseButton(Qt::MidButton);
     }
 }

@@ -27,15 +27,12 @@ class qDrawPlot : public QWidget {
     void SetXAxisTitle(QString title);
     void SetYAxisTitle(QString title);
     void SetZAxisTitle(QString title);
-    void DisableZoom(bool disable);
-    void SetXYRangeChanged();
-    void SetXYRangeValues(double val, qDefs::range xy);
-    void IsXYRangeValues(bool changed, qDefs::range xy);
+    void SetXYRangeChanged(bool disable, double* xy, bool* isXY);
+    void SetZRange(double* z, bool* isZ);
     double GetXMinimum();
     double GetXMaximum();
     double GetYMinimum();
     double GetYMaximum();
-    void SetZRange(bool isZmin, bool isZmax, double zmin, double zmax);
     void SetDataCallBack(bool enable);
     void SetBinary(bool enable, int from = 0, int to = 0);
     void StartAcquisition();
@@ -78,7 +75,7 @@ class qDrawPlot : public QWidget {
 	  void SetupPlots();
     int LockLastImageArray();
     int UnlockLastImageArray();
-	  void SetStyle(SlsQtH1D *h);
+	  void SetStyleandSymbol(SlsQtH1D *h);
     void GetStatistics(double &min, double &max, double &sum);
     void DetachHists();
     static void GetProgressCallBack(double currentProgress, void *this_pointer);
@@ -122,9 +119,11 @@ class qDrawPlot : public QWidget {
     QString zTitle2d{"Intensity"};
     QString plotTitle{""};
     QString indexTitle{""};
-    bool XYRangeChanged{false};
-    double XYRange[4]{0, 0, 0, 0};
+    bool xyRangeChanged{false};
+    double xyRange[4]{0, 0, 0, 0};
     bool isXYRange[4]{false, false, false, false};
+    double zRange[2]{0, 1};
+    bool isZRange[2]{false, false};
 
 	// data
     unsigned int nHists{1};
@@ -159,11 +158,13 @@ class qDrawPlot : public QWidget {
     std::vector<qCloneWidget *> cloneWidgets;
     QString fileSavePath{"/tmp"};
     QString fileSaveName{"Image"};
-    bool isGainDataExtracted{false};
     bool hasGainData{false};
+    bool isGainDataExtracted{false};
+    bool disableZoom{false};
 
     int progress{0};
     int64_t currentFrame{0};
+    mutable std::mutex mPlots;
 	  pthread_mutex_t lastImageCompleteMutex;
 
     unsigned int nPixelsX{0};

@@ -22,12 +22,8 @@ class SlsQt2DPlotLayout : public QGroupBox {
     void SetZTitle(QString st);
     void SetInterpolate(bool enable);
     void SetContour(bool enable);
-    void SetLogz(bool enable);
-    void KeepZRangeIfSet();
-    // recalculate zmin and zmax from plot and update z range
+    void SetLogz(bool enable, bool isMin, bool isMax, double min, double max);
     void SetZRange(bool isMin, bool isMax, double min, double max);
-  public slots:
-    void UpdateZRange(double min, double max);
 
   private:
     void Layout();
@@ -39,8 +35,4 @@ class SlsQt2DPlotLayout : public QGroupBox {
     SlsQt2DPlot *the_plot;
 
     bool isLog;
-    double zmin;
-    double zmax;
-    bool isZmin;
-    bool isZmax;
 };

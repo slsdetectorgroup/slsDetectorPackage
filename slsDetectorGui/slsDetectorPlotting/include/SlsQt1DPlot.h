@@ -119,7 +119,7 @@ class SlsQt1DPlot:public QwtPlot{
 
   /**	This group of functions have been added by Dhanya on 19.06.2012 to be able to
   	use zooming functionality without mouse control*/
-  void DisableZoom(bool disableZoom);
+  void DisableZoom(bool disable);
   void EnableXAutoScaling() {setAxisAutoScale(QwtPlot::xBottom, true);};
   void EnableYAutoScaling() {setAxisAutoScale(QwtPlot::yLeft, true);};
   void SetXMinMax(double min,double max){setAxisScale(QwtPlot::xBottom,min,max);};
@@ -146,6 +146,7 @@ class SlsQt1DPlot:public QwtPlot{
 
   QwtPlotMarker *hline;
   QwtPlotMarker *vline;
+  bool disableZoom{false};
   
   void SetupZoom();
   void UnknownStuff();

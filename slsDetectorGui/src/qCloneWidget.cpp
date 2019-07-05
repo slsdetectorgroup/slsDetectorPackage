@@ -142,23 +142,13 @@ void qCloneWidget::SetCloneHists(unsigned int nHists, int histNBins, double *his
     }
 }
 
-void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d, QString frameIndexTitle) {
+void qCloneWidget::SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d, QString frameIndexTitle, bool isZmax, bool isZmin, double zmin, double zmax) {
     cloneplot2D->GetPlot()->SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d);
-    cloneplot2D->KeepZRangeIfSet();
     cloneplot2D->setTitle(frameIndexTitle.toAscii().constData());
+    cloneplot2D->SetZRange(isZmin, isZmax, zmin, zmax);
 }
 
-void qCloneWidget::SetRange(bool IsXYRange[], double XYRange[]) {
-    if (cloneplot1D) {
-        cloneplot1D->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
-        cloneplot1D->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
-        cloneplot1D->Update();        
-    } else {
-        cloneplot2D->GetPlot()->SetXMinMax(XYRange[qDefs::XMIN], XYRange[qDefs::XMAX]);
-        cloneplot2D->GetPlot()->SetYMinMax(XYRange[qDefs::YMIN], XYRange[qDefs::YMAX]);
-        cloneplot2D->GetPlot()->Update();
-    }
-}
+
 
 void qCloneWidget::SavePlot() {
     char cID[10];

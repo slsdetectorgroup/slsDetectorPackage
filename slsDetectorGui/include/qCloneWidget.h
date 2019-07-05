@@ -26,8 +26,7 @@ class qCloneWidget : public QMainWindow {
 
     void SetupWidgetWindow(QString title, QString xTitle, QString yTitle, QString zTitle, int numDim);
     void SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, QString histTitle, bool lines, bool markers);
-    void SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d, QString frameIndexTitle);
-    void SetRange(bool IsXYRange[], double XYRange[]);
+    void SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d, QString frameIndexTitle, bool isZmax, bool isZmin, double zmin, double zmax);
     SlsQt1DPlot *Get1dPlot();
 
   public slots:

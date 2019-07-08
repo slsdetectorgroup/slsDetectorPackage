@@ -38,8 +38,6 @@ void qTabMessages::Initialization() {
     connect(btnSave, SIGNAL(clicked()), this, SLOT(SaveLog()));
     connect(btnClear, SIGNAL(clicked()), this, SLOT(ClearLog()));
     connect(dispCommand, SIGNAL(returnPressed()), this, SLOT(ExecuteCommand()));
-    //connect(process, SIGNAL(readAllStandardError()), this, SLOT(AppendError()));
-    //connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(AppendOutput())); 
 }
 
 void qTabMessages::ExecuteCommand() {
@@ -79,7 +77,6 @@ void qTabMessages::AppendError() {
     FILE_LOG(logERROR) << "Error executing command";
     PrintNextLine();
 }
-
 
 
 void qTabMessages::customEvent(QEvent *e) {

@@ -3,6 +3,8 @@
 #include "ui_form_tab_messages.h"
 #include "qDebugStream.h"
 
+class QProcess;
+
 class qTabMessages:public QWidget, private Ui::TabMessagesObject {
 	Q_OBJECT
 
@@ -21,5 +23,9 @@ private:
 	void SetupWidgetWindow();
 	void Initialization();
 	void PrintNextLine();
+	void AppendOutput();
+	void AppendError();
+
+	QProcess* process;
 };
 

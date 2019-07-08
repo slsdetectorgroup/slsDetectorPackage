@@ -127,9 +127,9 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>btnSave</tabstop>
-  <tabstop>btnClear</tabstop>
   <tabstop>dispCommand</tabstop>
+  <tabstop>btnClear</tabstop>
+  <tabstop>btnSave</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

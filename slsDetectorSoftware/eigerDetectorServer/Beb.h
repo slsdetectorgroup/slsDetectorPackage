@@ -91,6 +91,7 @@ struct BebInfo{
   int Beb_GetBebFPGATemp();
 
   void Beb_SetDetectorNumber(uint32_t detid);
+  int Beb_SetQuad(int val);
   int Beb_SetDetectorPosition(int pos[]);
 
   uint16_t Beb_swap_uint16( uint16_t val);

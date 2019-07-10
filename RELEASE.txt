@@ -17,6 +17,7 @@ This document describes the differences between 4.0.3 and 4.0.2 releases.
 1. Topics Concerning
 ====================
 
+    - software for eiger quad hardware integrated
     - command line framesl, cyclesl was printing in float
 
 
@@ -27,13 +28,24 @@ This document describes the differences between 4.0.3 and 4.0.2 releases.
     Client
     ------
     
-    1.  Command line commands framesl, cyclesl, fatesl, problesl and nframes was 
+    1.  Command line quad integrates Eiger quad hardware
+    
+    2.  Command line commands framesl, cyclesl, fatesl, problesl and nframes was 
         printing the result in decimals. It is now fixed to print as whole numbers.
     
 
-    Detector Server 
-    ---------------
-   
+    Detector Server (Eiger)
+    -----------------------
+
+    1.  Command line quad integrates Eiger quad hardware
+
+
+    Receiver
+    --------
+
+    1.  Command line quad integrates Eiger quad hardware
+
+
 
 3. Known Issues
 ===============

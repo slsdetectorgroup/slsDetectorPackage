@@ -194,6 +194,9 @@ int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int 		setDetectorPosition(int pos[]);
 #endif
+#ifdef EIGERD
+int         setQuad(int val);
+#endif
 
 
 // very detector specific

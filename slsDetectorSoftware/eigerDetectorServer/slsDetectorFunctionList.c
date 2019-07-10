@@ -1219,6 +1219,10 @@ int	setDetectorPosition(int pos[]) {
 }
 
 
+int setQuad(int val) {
+	return Beb_SetQuad(val);
+}
+
 
 
 

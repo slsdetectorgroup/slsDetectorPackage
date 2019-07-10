@@ -1021,6 +1021,13 @@ virtual int setReceiverSilentMode(int i = -1)=0;
    */
   virtual int checkVersionCompatibility(portType t) = 0;
 
+	/**
+	 * Set or Get Quad Type (Only for Eiger Quad detector hardware)
+	 * @param val 1 if quad type set, else 0, -1 gets
+	 * @returns  1 if quad type set, else 0
+	 */
+	virtual int setQuad(int val = -1) = 0;
+
  protected:
 
 

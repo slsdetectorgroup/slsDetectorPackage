@@ -9756,5 +9756,50 @@ int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 
 }
 
+int slsDetector::setQuad(int val) {
+	int fnum = F_QUAD, fnum2 = F_RECEIVER_QUAD;
+	int ret = FAIL;
+	int retval = -1;
 
+	// set row column header in detector
+	if (val >= 0) {
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			if (connectControl() == OK){
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&val,sizeof(val));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					char mess[MAX_STR_LENGTH] = {};
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+					setErrorMask((getErrorMask())|(SOME_ERROR));
+				}
+				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				disconnectControl();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+	} else 
+		ret = OK;
 
+	// set quad type to receiver (flipped data and detector shape, numdet)
+	if (ret != FAIL) {
+		ret = FAIL;
+		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+#ifdef VERBOSE
+			if(val ==-1)
+				std::cout<< "Getting Receiver Quad mode" << endl;
+			else
+				std::cout<< "Setting Receiver Quad Mode to " << val << endl;
+#endif
+			if (connectData() == OK){
+				ret=thisReceiver->sendInt(fnum2,retval,val);
+				disconnectData();
+			}
+			if(ret==FAIL)
+				setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
+		}
+	}
+	return retval;
+}

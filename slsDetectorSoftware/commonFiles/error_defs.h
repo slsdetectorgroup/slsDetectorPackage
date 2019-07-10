@@ -52,6 +52,7 @@
 #define CLEANUP_ACQUISITION					0x0000080000000000ULL
 #define REGISER_WRITE_READ					0x0000040000000000ULL
 #define VERSION_COMPATIBILITY				0x0000020000000000ULL
+#define SOME_ERROR							0x0000010000000000ULL
 //											0xFFFFFF0000000000ULL
 
 //											0x000000FFFFFFFFFFULL
@@ -173,6 +174,10 @@ public:
 
 		if(slsErrorMask&VERSION_COMPATIBILITY)
 			retval.append("Incompatible versions with detector or receiver. Please check log for more details.\n");
+
+		if(slsErrorMask&SOME_ERROR)
+			retval.append("Some error has occurred. Please check log for more details.\n");
+
 
 
 

@@ -53,6 +53,7 @@ void UDPBaseImplementation::initializeMembers(){
 	flippedData[0] = 0;
 	flippedData[1] = 0;
 	gapPixelsEnable = false;
+	quadEnable = false;
 
 	//***receiver parameters***
 	status = IDLE;
@@ -135,6 +136,11 @@ int UDPBaseImplementation::getFlippedData(int axis) const{
 bool UDPBaseImplementation::getGapPixelsEnable() const {
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 	return gapPixelsEnable;
+}
+
+bool UDPBaseImplementation::getQuad() const {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	return quadEnable;
 }
 
 /***file parameters***/
@@ -392,6 +398,8 @@ void UDPBaseImplementation::setMultiDetectorSize(const int* size) {
 	}
 	strcat(message,")");
 	FILE_LOG(logINFO)  << message;
+
+	// overridden
 }
 
 void UDPBaseImplementation::setFlippedData(int axis, int enable){
@@ -399,6 +407,8 @@ void UDPBaseImplementation::setFlippedData(int axis, int enable){
 	if(axis<0 || axis>1) return;
 	flippedData[axis] = enable==0?0:1;
 	FILE_LOG(logINFO)  << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
+
+	// overridden
 }
 
 int UDPBaseImplementation::setGapPixelsEnable(const bool b) {
@@ -408,6 +418,14 @@ int UDPBaseImplementation::setGapPixelsEnable(const bool b) {
 
 	// overridden
 	return OK;
+}
+
+void UDPBaseImplementation::setQuad(const bool b) {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	quadEnable = b;
+	FILE_LOG(logINFO)  << "Quad Enable: " << quadEnable;
+
+	// overridden
 }
 
 /***file parameters***/

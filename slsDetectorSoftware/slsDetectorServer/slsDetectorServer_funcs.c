@@ -211,6 +211,7 @@ const char* getFunctionName(enum detFuncs func) {
     case F_STORAGE_CELL_START:              return "F_STORAGE_CELL_START";
     case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
+	case F_QUAD:              				return "F_QUAD";
 
 	default:								return "Unknown Function";
 	}
@@ -297,6 +298,7 @@ void function_table() {
     flist[F_STORAGE_CELL_START]                 = &storage_cell_start;
     flist[F_CHECK_VERSION]                 		= &check_version;
     flist[F_SOFTWARE_TRIGGER]                 	= &software_trigger;
+	flist[F_QUAD]                 				= &set_quad;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -5926,3 +5928,60 @@ int software_trigger(int file_des) {
 	return ret;
 }
 
+int set_quad(int file_des) {
+	int ret=OK,ret1=OK;
+	int n=0;
+	int retval=-1;
+	sprintf(mess,"Setting quad failed\n");
+
+	// execute action
+#ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret = FAIL;
+	sprintf(mess,"Function (set_quad) is not implemented for this detector\n");
+	cprintf(RED, "Warning: %s", mess);
+#else
+
+	// receive arguments
+	int arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// execute action
+	if (differentClients && lockStatus && arg!=-1) {
+		ret = FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		cprintf(RED, "Warning: %s", mess);
+	}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	else {
+#ifdef VERBOSE
+	printf("Setting Quad :%d \n",arg);
+#endif
+		retval=setQuad(arg);
+		if((arg != -1) && (retval != arg)) {
+			ret=FAIL;
+			cprintf(RED, "Warning: %s", mess);
+		}
+	}
+#endif
+	if (ret==OK && differentClients)
+		ret=FORCE_UPDATE;
+
+#endif
+
+	// ret could be swapped during sendData
+	ret1 = ret;
+	// send ok / fail
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	// send return argument
+	if (ret==FAIL) {
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	}
+	n += sendData(file_des,&retval,sizeof(retval),INT32);
+
+	// return ok / fail
+	return ret;
+}

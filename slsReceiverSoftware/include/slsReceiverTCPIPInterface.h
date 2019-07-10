@@ -284,6 +284,9 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
     /** set deactivated receiver padding enable */
     int set_deactivated_receiver_padding_enable();
 
+		/** set quad type */
+		int set_quad_type();
+
 
 	/** detector type */
 	detectorType myDetectorType;

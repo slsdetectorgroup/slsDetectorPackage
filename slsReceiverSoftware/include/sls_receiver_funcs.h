@@ -71,6 +71,7 @@ enum recFuncs{
 	F_RECEIVER_DISCARD_POLICY,		/** < frames discard policy */
 	F_RECEIVER_PADDING_ENABLE,		/** < partial frames padding enable */
 	F_RECEIVER_DEACTIVATED_PADDING_ENABLE, /** < deactivated receiver padding enable */
+	F_RECEIVER_QUAD,
 	/* Always append functions hereafter!!! */
 
 

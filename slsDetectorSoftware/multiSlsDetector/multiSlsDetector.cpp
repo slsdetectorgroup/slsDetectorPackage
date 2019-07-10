@@ -4983,17 +4983,12 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 }
 
 void multiSlsDetector::readFrameFromReceiver() {
-
-	int nX               = thisMultiDetector->numberOfDetector[X]; // to copy data in multi module
-	int nY               = thisMultiDetector->numberOfDetector[Y]; // for eiger, to reverse the data
+	int nX = 0;
+	int nY = 0;
+	int nDetPixelsX = 0;
+	int nDetPixelsY = 0;
 	bool gappixelsenable = false;
-	bool eiger           = false;
-	if (getDetectorsType() == EIGER) {
-		eiger = true;
-		nX *= 2;
-		gappixelsenable = detectors[0]->enableGapPixels(-1) >= 1 ? true : false;
-	}
-
+	bool eiger = false;
 	bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
 	int numRunning = 0;
 	for (unsigned int i = 0; i < zmqSocket.size(); ++i) {
@@ -5068,6 +5063,15 @@ void multiSlsDetector::readFrameFromReceiver() {
 						// shape
 						nPixelsX = doc["shape"][0].GetUint();
 						nPixelsY = doc["shape"][1].GetUint();
+						// detector shape
+						nX = doc["detshape"][0].GetUint();
+						nY = doc["detshape"][1].GetUint();
+						nDetPixelsX = nX * nPixelsX;
+						nDetPixelsY = nY * nPixelsY;
+						// det type
+						eiger = (doc["detType"].GetUint() == (int)EIGER) ? true : false;
+						// gap pixels enable
+						gappixelsenable = (doc["gappixels"].GetUint() == 0) ? false : true;
 
 #ifdef VERBOSE
 						cprintf(BLUE, "(Debug) One Time Header Info:\n"
@@ -5076,9 +5080,13 @@ void multiSlsDetector::readFrameFromReceiver() {
 								"dynamicRange: %u\n"
 								"bytesPerPixel: %f\n"
 								"nPixelsX: %u\n"
-								"nPixelsY: %u\n",
+								"nPixelsY: %u\n"
+								"nX: %u\n"
+								"nY: %u\n"
+								"eiger: %d\n"
+								"gappixelsenable: %d\n",
 								size, multisize, dynamicRange, bytesPerPixel,
-								nPixelsX, nPixelsY);
+								nPixelsX, nPixelsY, nX, nY, eiger, gappixelsenable);
 #endif
 					}
 					// each time, parse rest of header
@@ -5148,21 +5156,18 @@ void multiSlsDetector::readFrameFromReceiver() {
 		}
 
 		//send data to callback
-		if (data) {
-			int nCompletePixelsX = thisMultiDetector->numberOfChannelInclGapPixels[X];
-			int nCompletePixelsY = thisMultiDetector->numberOfChannelInclGapPixels[Y];
-		
+		if (data) {		
 			// 4bit gap pixels
 			if (dynamicRange == 4 && gappixelsenable) {
 				int n    = processImageWithGapPixels(multiframe, multigappixels);
 				thisData = new detectorData(NULL, NULL, NULL, getCurrentProgress(),
-						currentFileName.c_str(), nCompletePixelsX, nCompletePixelsY,
+						currentFileName.c_str(), nDetPixelsX, nDetPixelsY,
 						multigappixels, n, dynamicRange, currentFileIndex);
 			}
 			// normal pixels
 			else {
 				thisData = new detectorData(NULL, NULL, NULL, getCurrentProgress(),
-						currentFileName.c_str(), nCompletePixelsX, nCompletePixelsY,
+						currentFileName.c_str(), nDetPixelsX, nDetPixelsY,
 						multiframe, multisize, dynamicRange, currentFileIndex);
 			}
 			dataReady(thisData, currentFrameIndex,
@@ -5428,4 +5433,10 @@ int multiSlsDetector::setCTBPatWaitAddr(int level, int addr) {
 
 int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 	return callDetectorMember(&slsDetector::setCTBPatWaitTime, level, t);
+}
+
+int multiSlsDetector::setQuad(int val) {
+	if (getNumberOfDetectors() > 1)
+		val = 0;
+	return callDetectorMember(&slsDetector::setQuad, val);
 }

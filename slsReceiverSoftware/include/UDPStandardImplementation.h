@@ -53,12 +53,30 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	int64_t getAcquisitionIndex() const;
 
+	/*
+	 * Set multi detector size
+	 * @param pointer to array of multi detector size in every dimension
+	 */
+	void setMultiDetectorSize(const int* size);
+
+	/*
+	 * Set flipped data across 'axis'
+	 * @return if data is flipped across 'axis'
+	 */
+	void setFlippedData(int axis=0, int enable=-1);
+
 	/**
 	 * Set Gap Pixels Enable (eiger specific)
 	 * @param b true for gap pixels enable, else false
 	 * @return OK or FAIL
 	 */
 	int setGapPixelsEnable(const bool b);
+
+	/**
+	 * Set Quad type Enable (eiger and hardware specific)
+	 * @param true if quad enabled, else false
+	 */
+	void setQuad(const bool b);
 
 	/**
 	 * Set File Format

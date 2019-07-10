@@ -246,6 +246,7 @@ const char* slsReceiverTCPIPInterface::getFunctionName(enum recFuncs func) {
     case F_RECEIVER_DISCARD_POLICY:		return "F_RECEIVER_DISCARD_POLICY";
     case F_RECEIVER_PADDING_ENABLE:		return "F_RECEIVER_PADDING_ENABLE";
     case F_RECEIVER_DEACTIVATED_PADDING_ENABLE: return "F_RECEIVER_DEACTIVATED_PADDING_ENABLE";
+	case F_RECEIVER_QUAD:				return "F_RECEIVER_QUAD";
 
 	default:							return "Unknown Function";
 	}
@@ -303,7 +304,7 @@ int slsReceiverTCPIPInterface::function_table(){
     flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
 	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable;
-
+	flist[F_RECEIVER_QUAD]					=   &slsReceiverTCPIPInterface::set_quad_type;
 
 #ifdef VERYVERBOSE
 	for (int i = 0; i < NUM_REC_FUNCTIONS ; i++) {
@@ -2982,3 +2983,53 @@ int slsReceiverTCPIPInterface::set_deactivated_receiver_padding_enable() {
 	// return ok/fail
 	return ret;
 }
+
+
+
+int slsReceiverTCPIPInterface::set_quad_type() {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int value = -1;
+	int retval = -1;
+
+	// receive arguments
+	if (mySock->ReceiveDataOnly(&value,sizeof(value)) < 0 )
+		return printSocketReadError();
+
+	// execute action
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (receiverBase == NULL)
+		invalidReceiverObject();
+	else {
+		// set
+		if(value >= 0) {
+			if (mySock->differentClients && lockStatus)
+				receiverlocked();
+			else if (receiverBase->getStatus() != IDLE)
+				receiverNotIdle();
+			else {
+				receiverBase->setQuad(value); // no check required
+			}
+		}
+		//get
+		retval = (int)receiverBase->getQuad(); // no check required
+	}
+#endif
+#ifdef VERYVERBOSE
+	FILE_LOG(logINFO) << "Quad mode:" << retval;
+#endif
+
+	if (ret == OK && mySock->differentClients)
+		ret = FORCE_UPDATE;
+
+	// send answer
+	mySock->SendDataOnly(&ret,sizeof(ret));
+	if (ret == FAIL)
+		mySock->SendDataOnly(mess,sizeof(mess));
+	mySock->SendDataOnly(&retval,sizeof(retval));
+
+	// return ok/fail
+	return ret;
+}
+
+

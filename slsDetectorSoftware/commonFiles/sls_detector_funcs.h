@@ -123,6 +123,7 @@ enum detFuncs{
   F_CHECK_VERSION,			/** < check version compatibility */
 
   F_SOFTWARE_TRIGGER,		/** < software trigger */
+  F_QUAD,
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */

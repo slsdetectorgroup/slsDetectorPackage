@@ -121,12 +121,21 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-	if (detType == slsDetectorDefs::JUNGFRAUCTB) {
-		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;// for moench 03
-		nPixelsX = npixelsx_jctb;
-		nPixelsY = npixelsy_jctb;
+	switch(detType) {
+		case slsDetectorDefs::JUNGFRAUCTB:
+			npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;// for moench 03
+			nPixelsX = npixelsx_jctb;
+			nPixelsY = npixelsy_jctb;
+			break;
+		case slsDetectorDefs::EIGER:
+			if (myDet->setQuad()) {
+				nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2;
+				nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y) * 2;
+			}
+			break;
+		default:
+			break;
 	}
-
 	cout<<"nPixelsX:"<<nPixelsX<<endl;
 	cout<<"nPixelsY:"<<nPixelsY<<endl;
 
@@ -583,13 +592,26 @@ void qDrawPlot::SetScanArgument(int scanArg){
 
 	maxPixelsY = 0;
 	minPixelsY = 0;
+
 	nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-	if (detType == slsDetectorDefs::JUNGFRAUCTB) {
-		npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25; // for moench 03
-		nPixelsX = npixelsx_jctb;
-		nPixelsY = npixelsy_jctb;
+	switch(detType) {
+		case slsDetectorDefs::JUNGFRAUCTB:
+			npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::SAMPLES_JCTB, -1) * 2)/25;// for moench 03
+			nPixelsX = npixelsx_jctb;
+			nPixelsY = npixelsy_jctb;
+			break;
+		case slsDetectorDefs::EIGER:
+			if (myDet->setQuad()) {
+				nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2;
+				nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y) * 2;
+			}
+			break;
+		default:
+			break;
 	}
+	cout<<"nPixelsX:"<<nPixelsX<<endl;
+	cout<<"nPixelsY:"<<nPixelsY<<endl;
 
 	//cannot do this in between measurements , so update instantly
 	if(scanArgument==qDefs::Level0){
@@ -1214,7 +1236,6 @@ int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 				gainPlotEnable = true;
 			}else
 				gainPlotEnable = false;
-
 
 			//recalculating pedestal
 			if(startPedestalCal){

@@ -162,6 +162,12 @@ class UDPInterface {
 	 */
 	virtual bool getGapPixelsEnable() const = 0;
 
+	/**
+	 * Get Quad type Enable (eiger and hardware specific)
+	 * @return true if quad enabled, else false
+	 */
+	virtual bool getQuad() const = 0;
+
 
 	//***file parameters***
 	/**
@@ -443,6 +449,12 @@ class UDPInterface {
 	 * @return OK or FAIL
 	 */
 	virtual int setGapPixelsEnable(const bool b) = 0;
+
+	/**
+	 * Set Quad type Enable (eiger and hardware specific)
+	 * @param true if quad enabled, else false
+	 */
+	virtual void setQuad(const bool b) = 0;
 
 
 	//***file parameters***

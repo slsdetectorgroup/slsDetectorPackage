@@ -16,7 +16,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 
 DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
-		uint64_t* fi, int* fd, char* ajh, bool* sm) :
+		uint64_t* fi, int* fd, char* ajh, bool* sm, int* nd, bool* gpEnable) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -26,14 +26,19 @@ DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
 		roi(r),
 		adcConfigured(-1),
 		fileIndex(fi),
-		flippedData(fd),
 		additionJsonHeader(ajh),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0),
-		completeBuffer(0)
+		completeBuffer(0),
+		gapPixelsEnable(gpEnable)
 {
+	flippedData[0] = fd[0];
+	flippedData[1] = fd[1];
+	numDet[0] = nd[0];
+	numDet[1] = nd[1];
+	
     if(ThreadObject::CreateThread() == FAIL)
         throw std::exception();
 
@@ -128,6 +133,16 @@ int DataStreamer::SetThreadPriority(int priority) {
 		return FAIL;
 	FILE_LOG(logINFO) << "Streamer Thread Priority set to " << priority;
 	return OK;
+}
+
+void DataStreamer::SetNumberofDetectors(int* nd) {
+	numDet[0] = nd[0];
+	numDet[1] = nd[1];
+}
+
+void DataStreamer::SetFlippedData(int* fd) {
+	flippedData[0] = fd[0];
+	flippedData[1] = fd[1];
 }
 
 
@@ -261,13 +276,13 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 	uint64_t acquisitionIndex = header.frameNumber - firstAcquisitionIndex;
 
 	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, *fileIndex,
-			nx, ny, size,
+			numDet[0], numDet[1], nx, ny, size,
 			acquisitionIndex, frameIndex, fileNametoStream,
 			header.frameNumber, header.expLength, header.packetNumber, header.bunchId, header.timestamp,
 			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,
 			header.detType, header.version,
-			flippedData,
+			gapPixelsEnable ? 1 : 0, flippedData,
 			additionJsonHeader
 			);
 }

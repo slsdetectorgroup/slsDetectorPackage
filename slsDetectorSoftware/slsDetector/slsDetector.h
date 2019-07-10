@@ -2274,6 +2274,13 @@ public:
 	 */
 	int setCTBPatWaitTime(int level, uint64_t t=-1);
 
+	/**
+	 * Set or Get Quad Type (Only for Eiger Quad detector hardware)
+	 * @param val 1 if quad type set, else 0, -1 gets
+	 * @returns  1 if quad type set, else 0
+	 */
+	int setQuad(int val = -1);
+
 private:
 
 	/**

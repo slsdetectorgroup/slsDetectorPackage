@@ -72,6 +72,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	bool getGapPixelsEnable() const;
 
+	/**
+	 * Get Quad type Enable (eiger and hardware specific)
+	 * @return true if quad enabled, else false
+	 */
+	bool getQuad() const;
+
 
 	//***file parameters***
 	/**
@@ -341,7 +347,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void setMultiDetectorSize(const int* size);
 
 	/*
-	 * Get flipped data across 'axis'
+	 * Set flipped data across 'axis'
 	 * @return if data is flipped across 'axis'
 	 */
 	void setFlippedData(int axis=0, int enable=-1);
@@ -352,6 +358,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @return OK or FAIL
 	 */
 	int setGapPixelsEnable(const bool b);
+
+	/**
+	 * Set Quad type Enable (eiger and hardware specific)
+	 * @param true if quad enabled, else false
+	 */
+	void setQuad(const bool b);
 
 
 	//***file parameters***
@@ -739,6 +751,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	int flippedData[2];
 	/** gap pixels enable */
 	bool gapPixelsEnable;
+	/** quad type enable */
+	bool quadEnable;
 
 	//***receiver parameters***
 	/** Maximum Number of Listening Threads/ UDP Ports */

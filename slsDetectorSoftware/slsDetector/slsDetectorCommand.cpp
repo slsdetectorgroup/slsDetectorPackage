@@ -379,6 +379,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page config
+   - <b>quad [i] </b> if 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="quad"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+	++i;
+
+	/*! \page config
    - <b>roimask [i]</b>  ?? \c Returns \c (int) in hexadecimal
 	 */
 	descrToFuncMap[i].m_pFuncName="roimask"; //
@@ -4458,7 +4465,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 
 	myDet->setOnline(ONLINE_FLAG);
 
-	if (cmd == "roi")
+	if (cmd == "roi" || cmd == "quad")
 		myDet->setReceiverOnline(ONLINE_FLAG);
 
 	if (action==PUT_ACTION) {
@@ -4492,6 +4499,13 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 				myDet->setMaxNumberOfChannelsPerDetector(X,val);
 			if ((narg > 2) && (sscanf(args[2],"%d",&val)) && (val>0))
 				myDet->setMaxNumberOfChannelsPerDetector(Y,val);
+		}
+
+		if(cmd=="quad"){
+			if (val >=0 ) {
+				sprintf(ans, "%d", myDet->setQuad(val));
+				return string(ans);
+			}
 		}
 
 		if(cmd=="flippeddatax"){
@@ -4533,7 +4547,13 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	} else if (cmd=="detsizechan") {
 		sprintf(ans,"%d %d",myDet->getMaxNumberOfChannelsPerDetector(X),myDet->getMaxNumberOfChannelsPerDetector(Y));
 		return string(ans);
+	} 
+	
+	else if (cmd=="quad") {
+		sprintf(ans, "%d", myDet->setQuad());
+		return string(ans);
 	}
+
 	else if(cmd=="flippeddatax"){
 		myDet->setReceiverOnline(ONLINE_FLAG);
 		ret = myDet->getFlippedData(X);
@@ -4571,6 +4591,7 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
 		os << "dr i \n sets the dynamic range of the detector"<< std::endl;
 		os << "roi i xmin xmax ymin ymax \n sets region of interest where i is number of rois;i=0 to clear rois"<< std::endl;
 		os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
+		os << "quad i \n if i = 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
 		os << "flippeddatax x \n sets if the data should be flipped on the x axis"<< std::endl;
 		os << "flippeddatay y \n sets if the data should be flipped on the y axis"<< std::endl;
 		os << "gappixels i \n enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and multidetector level." << std::endl;
@@ -4581,6 +4602,7 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
 		os << "dr \n gets the dynamic range of the detector"<< std::endl;
 		os << "roi \n gets region of interest"<< std::endl;
 		os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
+		os << "quad \n returns 1 if the detector size is a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
 		os << "flippeddatax\n gets if the data will be flipped on the x axis"<< std::endl;
 		os << "flippeddatay\n gets if the data will be flipped on the y axis"<< std::endl;
 		os << "gappixels\n gets if gap pixels is enabled in system. Used in EIGER only and multidetector level." << std::endl;

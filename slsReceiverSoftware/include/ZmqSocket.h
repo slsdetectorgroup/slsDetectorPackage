@@ -330,7 +330,7 @@ public:
 		}
 
 #ifdef VERBOSE
-		//if(!index)
+		if(!index)
 			cprintf(BLUE,"%d : Streamer: buf: %s\n", index, buf);
 #endif
 

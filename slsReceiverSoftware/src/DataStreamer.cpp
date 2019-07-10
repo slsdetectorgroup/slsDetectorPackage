@@ -282,7 +282,7 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,
 			header.detType, header.version,
-			gapPixelsEnable ? 1 : 0, flippedData,
+			*gapPixelsEnable ? 1 : 0, flippedData,
 			additionJsonHeader
 			);
 }

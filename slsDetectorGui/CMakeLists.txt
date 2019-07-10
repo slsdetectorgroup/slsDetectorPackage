@@ -40,7 +40,6 @@ set(HEADERS
     slsDetectorPlotting/include/SlsQt2DPlotLayout.h
     slsDetectorPlotting/include/SlsQt2DZoomer.h
     include/qDefs.h
-    include/qDebugStream.h
     include/qDetectorMain.h
     include/qDrawPlot.h
     include/qCloneWidget.h

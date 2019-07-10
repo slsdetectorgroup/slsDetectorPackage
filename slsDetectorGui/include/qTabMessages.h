@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ui_form_tab_messages.h"
-#include "qDebugStream.h"
 
 class QProcess;
 
@@ -15,7 +14,6 @@ public:
 
 private slots:
 	void ExecuteCommand();
-	void customEvent(QEvent *e);
 	void SaveLog();
 	void ClearLog();
 

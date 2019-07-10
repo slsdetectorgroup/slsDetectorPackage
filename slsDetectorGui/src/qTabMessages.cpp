@@ -1,7 +1,6 @@
 #include "qTabMessages.h"
 #include "qDefs.h"
 
-#include <QEvent>
 #include <QFile>
 #include <QFileDialog>
 #include <QTextStream>
@@ -27,9 +26,6 @@ void qTabMessages::SetupWidgetWindow() {
     process = new QProcess;
     process->setWorkingDirectory(QDir::cleanPath(QDir::currentPath()));
     PrintNextLine();
-
-    qDebugStream(std::cout, this);
-    qDebugStream(std::cerr, this);
 
     Initialization();
 }
@@ -78,13 +74,6 @@ void qTabMessages::AppendError() {
     PrintNextLine();
 }
 
-
-void qTabMessages::customEvent(QEvent *e) {
-    if (e->type() == (STREAMEVENT)) {
-        QString temp = ((qStreamEvent *)e)->getString();
-        dispLog->append(temp);
-    }
-}
 
 void qTabMessages::SaveLog() {
     QString fName = QDir::cleanPath(QDir::currentPath()) + "/LogFile.txt";

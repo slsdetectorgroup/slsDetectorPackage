@@ -5820,18 +5820,14 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 
 	if ((ret!=-1) && (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER
 			|| index==ACTUAL_TIME || index==MEASUREMENT_TIME ||
-			MEASURED_PERIOD || MEASURED_SUBPERIOD))
+			MEASURED_PERIOD || MEASURED_SUBPERIOD)) {
 		rval=(double)ret*1E-9;
-	else rval=ret;
+		sprintf(answer,"%0.9f",rval);
+	} else {
+		sprintf(answer,"%lld",(long long int)ret);
+	}
 
-
-	sprintf(answer,"%0.9f",rval);
 	return string(answer);
-
-
-
-
-
 }
 
 

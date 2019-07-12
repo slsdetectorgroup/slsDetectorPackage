@@ -1824,13 +1824,11 @@ void readFrame(int *ret, char *mess){
 	}
 
 	// frames left to give status
+    *ret = (int)OK;
 	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
 	if ( retval > -1) {
-		*ret = (int)FAIL;
-		sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
-		FILE_LOG(logERROR, (mess));
+		FILE_LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));
 	} else {
-		*ret = (int)OK;
 		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 	}
 }

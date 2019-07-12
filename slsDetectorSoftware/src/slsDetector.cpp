@@ -1443,7 +1443,7 @@ int slsDetector::configureMAC() {
         // col for horiz. udp ports
         pos[1] = (detId / max) * ((shm()->myDetectorType == EIGER) ? 2 : 1);
         // pos[2] (z is reserved)
-        FILE_LOG(logDEBUG1) << "Detector [" << detId << "] - (" << pos[0] << ","
+        FILE_LOG(logDEBUG) << "Detector [" << detId << "] - (" << pos[0] << ","
                             << pos[1] << ")";
         snprintf(args[12], array_size, "%x", pos[0]);
         snprintf(args[13], array_size, "%x", pos[1]);

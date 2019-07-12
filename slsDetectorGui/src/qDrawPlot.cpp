@@ -200,14 +200,15 @@ void qDrawPlot::SetupPlots() {
     // default display data
     for (unsigned int px = 0; px < nPixelsX; ++px) {
         datax1d[px] = px;
-        datay1d[0][px] = 0;
+        datay1d[0][px] = px;
     }
     // add a hist
-    DetachHists();
     SlsQtH1D *h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[0]);
     h->SetLineColor(0);
     SetStyleandSymbol(h);
     hists1d.append(h);
+    h->Attach(plot1d);
+    plot1d->DisableZoom(true);
 
     // setup 2d plot
     plot2d = new SlsQt2DPlotLayout(boxPlot);
@@ -792,7 +793,7 @@ void qDrawPlot::Get1dData(double* rawData) {
     if (currentPersistency) {
         // allocate
         for(int i = datay1d.size(); i <= persistency; ++i) {
-            datay1d[i] = new double [nPixelsX];
+            datay1d.push_back(new double [nPixelsX]);
             SlsQtH1D* h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[i]);
             h->SetLineColor(i);
             SetStyleandSymbol(h);

@@ -1013,26 +1013,36 @@ void setNumberofUDPInterfaces(int val) {
 		FILE_LOG(logINFOBLUE, ("Setting #Interfaces: 1\n"));
 		bus_w(addr, bus_r(addr) &~ CONFIG_OPRTN_MDE_2_X_10GbE_MSK);
 	}
+	FILE_LOG(logINFO, ("config reg:0x%x\n", bus_r(addr)));
 }
 
 int getNumberofUDPInterfaces() {
+		FILE_LOG(logINFO, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
+		FILE_LOG(logINFO, ("config reg 2x10 :0x%x %d\n", 
+		CONFIG_OPRTN_MDE_2_X_10GbE_MSK, 
+		bus_r(CONFIG_REG)|CONFIG_OPRTN_MDE_2_X_10GbE_MSK));
 	// return 2 if enabled, else 1
-	return ((bus_r(CONFIG_REG) | CONFIG_OPRTN_MDE_2_X_10GbE_MSK) ? 2 : 1);
+
+	return ((bus_r(CONFIG_REG) & CONFIG_OPRTN_MDE_2_X_10GbE_MSK) ? 2 : 1);
 }
 
 void selectPrimaryInterface(int val) {
 	uint32_t addr = CONFIG_REG;
 
-	// inner (user input: 0)
+	// outer (user input: 0)
 	if (val == 0) {
 		FILE_LOG(logINFOBLUE, ("Setting Primary Interface: 0 (Outer)\n"));
 		bus_w(addr, bus_r(addr) &~ CONFIG_INNR_PRIMRY_INTRFCE_MSK);
 	}
-	// outer (user input: 1)
+	// inner (user input: 1)
 	else {
 		FILE_LOG(logINFOBLUE, ("Setting Secondary Interface: 1 (Inner)\n"));
 		bus_w(addr, bus_r(addr) | CONFIG_INNR_PRIMRY_INTRFCE_MSK);
 	}
+}
+
+int getPrimaryInterface() {
+	return ((bus_r(CONFIG_REG) & CONFIG_INNR_PRIMRY_INTRFCE_MSK) ? 1 : 0);
 }
 
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport) {
@@ -1128,9 +1138,9 @@ int configureMAC(int numInterfaces, int selInterface,
 	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 
 	FILE_LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
-	FILE_LOG(logINFO, ("\tInterface   : %d\n\n", selInterface));
+	FILE_LOG(logINFO, ("\tInterface   : %d %s\n\n", selInterface, (selInterface ? "Inner" : "Outer")));
 
-	FILE_LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2) ? "(Bottom)": ""));
+	FILE_LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2) ? "(Bottom)": (selInterface ? "Not Used" : "Used")));
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
 	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1156,7 +1166,7 @@ int configureMAC(int numInterfaces, int selInterface,
 	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
 
 	uint32_t sourceport2  =  DEFAULT_TX_UDP_PORT + 1;
-	FILE_LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2) ? "(Top)": "Not used"));
+	FILE_LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2) ? "(Top)": (selInterface ? "Used" : "Not Used")));
 	FILE_LOG(logINFO, ("\tSource IP2  : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (sourceip2>>24)&0xff,(sourceip2>>16)&0xff,(sourceip2>>8)&0xff,(sourceip2)&0xff, sourceip2));
 	FILE_LOG(logINFO, ("\tSource MAC2 : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1214,14 +1224,16 @@ int setDetectorPosition(int pos[]) {
 	int ret = OK;
 	int innerPos[2] = {pos[X], pos[Y]};
 	int outerPos[2] = {pos[X], pos[Y]};
+	int selInterface = getPrimaryInterface();
 	int numInterfaces = getNumberofUDPInterfaces();
 
 	if (numInterfaces == 1) {
-		FILE_LOG(logDEBUG1, ("Setting detector position: (%d, %d)\n", innerPos[X], innerPos[Y]));
+		FILE_LOG(logDEBUG, ("Setting detector position: 1 Interface %s \n(%d, %d)\n", 
+			(selInterface ? "Inner" : "Outer"), innerPos[X], innerPos[Y]));
 	} 
 	else {
 		++outerPos[X]; 
-		FILE_LOG(logDEBUG1, ("Setting detector position:\n"
+		FILE_LOG(logDEBUG, ("Setting detector position: 2 Interfaces \n"
 						"  inner top(%d, %d), outer bottom(%d, %d)\n"
 						, innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
 	} 
@@ -1250,11 +1262,11 @@ int setDetectorPosition(int pos[]) {
 
 	if (ret == OK) {
 		if (numInterfaces == 1) {
-			FILE_LOG(logINFO, ("Position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
+			FILE_LOG(logINFOBLUE, ("Position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
 		} 
 		else {
-			FILE_LOG(logINFO, (" Inner (top) position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
-			FILE_LOG(logINFO, (" Outer (bottom) position set to [%d, %d]\n", outerPos[X], outerPos[Y]));
+			FILE_LOG(logINFOBLUE, (" Inner (top) position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
+			FILE_LOG(logINFOBLUE, (" Outer (bottom) position set to [%d, %d]\n", outerPos[X], outerPos[Y]));
 		} 
 	}
 	return ret;
@@ -1784,14 +1796,13 @@ void readFrame(int *ret, char *mess){
 		usleep(500);
 	}
 
+	*ret = (int)OK;
 	// frames left to give status
 	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
+
 	if ( retval > 0) {
-		*ret = (int)FAIL;
-		sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
-		FILE_LOG(logERROR, (mess));
+		FILE_LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));
 	} else {
-		*ret = (int)OK;
 		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 	}
 }

@@ -159,7 +159,7 @@ void qTabDeveloper::Initialization() {
 		connect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
 	} 
 	if (spinHV != nullptr) {
-		connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
+		connect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));
 	}
 }
 
@@ -271,8 +271,8 @@ void qTabDeveloper::CreateHVWidget() {
 	// jungfrau, moench (range of values)
 	else  {
 		spinHV = new QSpinBox(boxDacs);
-		spinDacs[numDACWidgets]->setMinimum(-1);
-		spinDacs[numDACWidgets]->setMaximum(HV_MAX);
+		spinHV->setMinimum(-1);
+		spinHV->setMaximum(HV_MAX);
 		spinHV->setToolTip("<nobr>Set high voltage to 0 or 60 - 200V</nobr>");
 		lblHV->setToolTip(spinHV->toolTip());
 		dacLayout->addWidget(spinHV, (int)(numDACWidgets / 2), 2);
@@ -341,7 +341,7 @@ void qTabDeveloper::GetHighVoltage() {
 
 	FILE_LOG(logDEBUG) << "Getting High Voltage";
 	if (spinHV != nullptr) {
-		disconnect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));	
+		disconnect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));	
 	} 
 	if (comboHV != nullptr) {
 		disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
@@ -391,7 +391,7 @@ void qTabDeveloper::GetHighVoltage() {
     } CATCH_DISPLAY ("Could not get high voltage.", "qTabDeveloper::GetHighVoltage")
 
 	if (spinHV != nullptr) {
-		connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));	
+		connect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));	
 	} 
 	if (comboHV != nullptr) {
 		connect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));

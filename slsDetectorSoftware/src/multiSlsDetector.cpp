@@ -3464,9 +3464,12 @@ void multiSlsDetector::readFrameFromReceiver() {
     }
 
     // free resources
-    delete[] image;
-    delete[] multiframe;
-    delete[] multigappixels;
+    if (image != nullptr) 
+        delete[] image;
+    if (multiframe)
+        delete[] multiframe;
+    if (multigappixels)
+        delete [] multigappixels;
 }
 
 int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {

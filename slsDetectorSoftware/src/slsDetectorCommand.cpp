@@ -683,14 +683,14 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>framesl</b> gets number of frames left. Used in GOTTHARD and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>framesl</b> gets number of frames left. Used in GOTTHARD and Jungfrau only. Only get! \c Returns \c (long long int)
 	 */
     descrToFuncMap[i].m_pFuncName = "framesl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
     /*! \page timing
-   - <b>cyclesl</b> gets number of cylces left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
+   - <b>cyclesl</b> gets number of cylces left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (long long int)
 	 */
     descrToFuncMap[i].m_pFuncName = "cyclesl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
@@ -711,7 +711,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>nframes</b> Frames from start run control. Only Jungfrau. Only get!
+   - <b>nframes</b> Frames from start run control. Only Jungfrau. Only get! \c Returns \c (long long int)
 	 */
     descrToFuncMap[i].m_pFuncName = "nframes";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
@@ -4633,12 +4633,13 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[],
     ret = myDet->getTimeLeft(index, detPos);
 
     if ((ret != -1) && (index == ACQUISITION_TIME || index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER || index == ACTUAL_TIME || index == MEASUREMENT_TIME ||
-                        index == MEASURED_PERIOD || index == MEASURED_SUBPERIOD))
+                        index == MEASURED_PERIOD || index == MEASURED_SUBPERIOD)) {
         rval = (double)ret * 1E-9;
-    else
-        rval = ret;
+        sprintf(answer,"%0.9f",rval);
+    } else {
+        sprintf(answer,"%lld",(long long int)ret);
+    }
 
-    sprintf(answer, "%0.9f", rval);
     return std::string(answer);
 }
 

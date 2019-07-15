@@ -9,7 +9,7 @@ class qCloneWidget;
 
 class QGridLayout;
 class QGroupBox;
-class QwtSymbol;
+
 #include <QFutureWatcher>
 
 class qDrawPlot : public QWidget {
@@ -75,7 +75,6 @@ class qDrawPlot : public QWidget {
 	  void SetupPlots();
     int LockLastImageArray();
     int UnlockLastImageArray();
-	  void SetStyleandSymbol(SlsQtH1D *h);
     void GetStatistics(double &min, double &max, double &sum);
     void DetachHists();
     static void GetProgressCallBack(double currentProgress, void *this_pointer);
@@ -141,8 +140,6 @@ class qDrawPlot : public QWidget {
     int currentPersistency{0};
     bool isLines{true};
     bool isMarkers{false};
-    QwtSymbol *marker{nullptr};
-    QwtSymbol *noMarker{nullptr};
     bool isPedestal{false};
     double *pedestalVals{nullptr};
     double *tempPedestalVals{nullptr};

@@ -13,6 +13,11 @@
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
 
+
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
+
 #include "ansi.h"
 
 
@@ -26,6 +31,7 @@
 
 class QPen;
 class SlsQt1DPlot;
+class QwtSymbol;
 
 class SlsQtH1D:public QwtPlotCurve{
 
@@ -40,6 +46,8 @@ class SlsQtH1D:public QwtPlotCurve{
   int   SetLineColor(int c=-1);
   int   SetLineWidth(int w=1);
   void  SetLineStyle(int s=0);
+  void  setStyleLinesorDots(bool isLines);
+  void  setSymbolMarkers(bool isMarker);
 
   void SetData(int n, double xmin, double xmax, double* d=0);
   void SetData(int n, double* dx, double* dy);
@@ -72,7 +80,6 @@ class SlsQtH1D:public QwtPlotCurve{
   double *x,*y;
   double ymin,ymax;
   double firstXgt0,firstYgt0;
-
   void Initailize();
   int  SetUpArrays(int n);
   int  CheckIndex(int bx);
@@ -120,8 +127,8 @@ class SlsQt1DPlot:public QwtPlot{
   /**	This group of functions have been added by Dhanya on 19.06.2012 to be able to
   	use zooming functionality without mouse control*/
   void DisableZoom(bool disable);
-  void EnableXAutoScaling() {setAxisAutoScale(QwtPlot::xBottom, true);};
-  void EnableYAutoScaling() {setAxisAutoScale(QwtPlot::yLeft, true);};
+  void EnableXAutoScaling() {setAxisAutoScale(QwtPlot::xBottom, true);Update();};
+  void EnableYAutoScaling() {setAxisAutoScale(QwtPlot::yLeft, true);Update();};
   void SetXMinMax(double min,double max){setAxisScale(QwtPlot::xBottom,min,max);};
   void SetYMinMax(double min,double max){setAxisScale(QwtPlot::yLeft,min,max);};
   double GetXMinimum(){return hist_list->Hist()->GetXMin();};

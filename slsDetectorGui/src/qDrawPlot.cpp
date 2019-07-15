@@ -9,7 +9,6 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QPainter>
-#include "qwt_symbol.h"
 #include <QtConcurrentRun>
 
 
@@ -17,6 +16,7 @@
 qDrawPlot::qDrawPlot(QWidget *parent, multiSlsDetector *detector)
     : QWidget(parent), myDet(detector) {
     SetupWidgetWindow();
+    FILE_LOG(logINFO) << "Plots ready";
 }
 
 qDrawPlot::~qDrawPlot() {
@@ -60,10 +60,6 @@ qDrawPlot::~qDrawPlot() {
         delete layout;     
     if (plotLayout)
         delete plotLayout;    
-    if (marker)
-        delete marker;     
-    if (noMarker)
-        delete noMarker;     
     if (widgetStatistics)
         delete widgetStatistics;     
     if (lblMinDisp)
@@ -82,12 +78,6 @@ void qDrawPlot::SetupWidgetWindow() {
     // frame index 1d
     lblFrameIndexTitle1d = new QLabel("");
     lblFrameIndexTitle1d->setFixedHeight(10);
-
-    // marker
-    marker = new QwtSymbol();
-    marker->setStyle(QwtSymbol::Cross);
-    marker->setSize(5, 5);
-    noMarker = new QwtSymbol();
 
     // save
     try {
@@ -180,39 +170,37 @@ void qDrawPlot::SetupPlots() {
     boxPlot->setFlat(true);
     boxPlot->setContentsMargins(0, 15, 0, 0);
 
-    // setup 1d plot
-    plot1d = new SlsQt1DPlot(boxPlot);
-    plot1d->setFont(QFont("Sans Serif", 9, QFont::Normal));
-    plot1d->SetXTitle(xTitle1d.toAscii().constData());
-    plot1d->SetYTitle(yTitle1d.toAscii().constData());
-    plot1d->hide();
-    // setup data
+    // setup 1d data
     if (datax1d)
         delete[] datax1d;
     datax1d = new double[nPixelsX];
-    for (auto &it : datay1d) {
-        delete[] it;
-    }
     if (datay1d.size()) {
+        for (auto &it : datay1d) {
+            delete[] it;
+        }
         datay1d.clear();
     }
    datay1d.push_back(new double[nPixelsX]);
     // default display data
     for (unsigned int px = 0; px < nPixelsX; ++px) {
         datax1d[px] = px;
-        datay1d[0][px] = px;
+        datay1d[0][px] = 0;
     }
     // add a hist
     SlsQtH1D *h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[0]);
     h->SetLineColor(0);
-    SetStyleandSymbol(h);
+    h->setStyleLinesorDots(isLines);
+    h->setSymbolMarkers(isMarkers);
     hists1d.append(h);
+    // setup 1d plot
+    plot1d = new SlsQt1DPlot(boxPlot);
+    plot1d->setFont(QFont("Sans Serif", 9, QFont::Normal));
+    plot1d->SetXTitle(xTitle1d.toAscii().constData());
+    plot1d->SetYTitle(yTitle1d.toAscii().constData());
+    plot1d->hide();
     h->Attach(plot1d);
-    plot1d->DisableZoom(true);
 
-    // setup 2d plot
-    plot2d = new SlsQt2DPlotLayout(boxPlot);
-    // default display data 
+    // setup 2d data
     if (data2d)
         delete [] data2d;    
     data2d = new double[nPixelsY * nPixelsX];
@@ -223,17 +211,6 @@ void qDrawPlot::SetupPlots() {
                          pow(nPixelsX / 2, 2) / pow(1 + 1, 2) +
                      pow(double(py) - nPixelsY / 2, 2) / pow(nPixelsY / 2, 2)) /
                 sqrt(2);
-    plot2d->setFont(QFont("Sans Serif", 9, QFont::Normal));
-    plot2d->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
-                               -0.5, nPixelsY - 0.5, data2d);
-    plot2d->setTitle("");
-    plot2d->SetXTitle(xTitle2d);
-    plot2d->SetYTitle(yTitle2d);
-    plot2d->SetZTitle(zTitle2d);
-    plot2d->setAlignment(Qt::AlignLeft);
-
-    // gainplot
-    gainplot2d = new SlsQt2DPlotLayout(boxPlot);
     if (gainData)
         delete [] gainData;    
     gainData = new double[nPixelsY * nPixelsX];
@@ -244,6 +221,17 @@ void qDrawPlot::SetupPlots() {
                          pow(nPixelsX / 2, 2) / pow(1 + 1, 2) +
                      pow(double(py) - nPixelsY / 2, 2) / pow(nPixelsY / 2, 2)) /
                 sqrt(2);
+    // setup 2d plot
+    plot2d = new SlsQt2DPlotLayout(boxPlot);
+    plot2d->setFont(QFont("Sans Serif", 9, QFont::Normal));
+    plot2d->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
+                               -0.5, nPixelsY - 0.5, data2d);
+    plot2d->setTitle("");
+    plot2d->SetXTitle(xTitle2d);
+    plot2d->SetYTitle(yTitle2d);
+    plot2d->SetZTitle(zTitle2d);
+    plot2d->setAlignment(Qt::AlignLeft);
+    gainplot2d = new SlsQt2DPlotLayout(boxPlot);
     gainplot2d->setFont(QFont("Sans Serif", 9, QFont::Normal));
     gainplot2d->GetPlot()->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
                                    -0.5, nPixelsY - 0.5, gainData);
@@ -280,23 +268,23 @@ int64_t qDrawPlot::GetCurrentFrameIndex() {
 
 void qDrawPlot::Select1dPlot(bool enable) { 
     if (enable) {
+        is1d = true;
         // DetachHists(); it clears the last measurement
         plot1d->SetXTitle(xTitle1d.toAscii().constData());
         plot1d->SetYTitle(yTitle1d.toAscii().constData());
         plot1d->show();
         plot2d->hide();
         boxPlot->setFlat(false);
-        is1d = true;
         layout->addWidget(lblFrameIndexTitle1d, 0, 0);
         plotLayout->setContentsMargins(10, 10, 10, 10);
     } else {
+        is1d = false;
         plot2d->SetXTitle(xTitle2d);
         plot2d->SetYTitle(yTitle2d);
         plot2d->SetZTitle(zTitle2d);
         plot1d->hide();
         plot2d->show();
         boxPlot->setFlat(true);
-        is1d = false;
         lblFrameIndexTitle1d->setText("");
         layout->removeWidget(lblFrameIndexTitle1d);
         plotLayout->setContentsMargins(0, 0, 0, 0);
@@ -405,7 +393,7 @@ void qDrawPlot::SetLines(bool enable) {
     isLines = enable; 
     for (unsigned int i = 0; i < nHists; ++i) {
         SlsQtH1D* h = hists1d.at(i);
-        SetStyleandSymbol(h);
+        h->setStyleLinesorDots(isLines);
     }
 }
 
@@ -415,7 +403,7 @@ void qDrawPlot::SetMarkers(bool enable) {
     isMarkers = enable;
     for (unsigned int i = 0; i < nHists; ++i) {
         SlsQtH1D* h = hists1d.at(i);
-        SetStyleandSymbol(h);
+        h->setSymbolMarkers(isMarkers);
     }
 }
 
@@ -575,14 +563,6 @@ void qDrawPlot::SavePlot() {
     }
 }
 
-void qDrawPlot::SetStyleandSymbol(SlsQtH1D *h) {
-    h->setStyle(isLines ? QwtPlotCurve::Lines : QwtPlotCurve::Dots);
-#if QWT_VERSION < 0x060000
-    h->setSymbol(isMarkers ? *marker : *noMarker);
-#else
-    h->setSymbol(isMarkers ? marker : noMarker);
-#endif
-}
 
 void qDrawPlot::GetStatistics(double &min, double &max, double &sum) {
  FILE_LOG(logDEBUG) << "Calculating Statistics";   
@@ -796,7 +776,8 @@ void qDrawPlot::Get1dData(double* rawData) {
             datay1d.push_back(new double [nPixelsX]);
             SlsQtH1D* h = new SlsQtH1D("", nPixelsX, datax1d, datay1d[i]);
             h->SetLineColor(i);
-            SetStyleandSymbol(h);
+            h->setStyleLinesorDots(isLines);
+            h->setSymbolMarkers(isMarkers);
             hists1d.append(h);
         }
         // copy previous data

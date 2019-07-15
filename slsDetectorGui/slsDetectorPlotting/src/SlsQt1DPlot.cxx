@@ -14,6 +14,7 @@
 #include <qwt_scale_draw.h>
 #include <qwt_scale_engine.h>
 #include <qwt_scale_widget.h>
+#include "qwt_symbol.h"
 #include <stdlib.h>
 
 #if QWT_VERSION >= 0x060100
@@ -122,6 +123,23 @@ void SlsQtH1D::SetLineStyle(int s) {
     else
         pen_ptr->setStyle(Qt::SolidLine);
     setPen(*pen_ptr);
+}
+
+void  SlsQtH1D::setStyleLinesorDots(bool isLines) {
+    setStyle(isLines ? QwtPlotCurve::Lines : QwtPlotCurve::Dots);
+}
+
+void  SlsQtH1D::setSymbolMarkers(bool isMarker) {
+    QwtSymbol* marker = new QwtSymbol();
+    if (isMarker) {
+        marker->setStyle(QwtSymbol::Cross);
+        marker->setSize(5, 5);
+    }
+#if QWT_VERSION < 0x060000
+    setSymbol(*marker);
+#else
+    setSymbol(marker);
+#endif
 }
 
 void SlsQtH1D::SetData(int n, double xmin, double xmax, double *data) {

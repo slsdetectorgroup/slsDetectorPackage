@@ -50,10 +50,9 @@ class SlsQt1DZoomer:public QwtPlotZoomer{
  
 #if QWT_VERSION<0x060000
     virtual QwtText trackerText(const QwtDoublePoint &pos) const{
-#elif QWT_VERSION==0x060000
-  virtual QwtText trackerText(const QPointF &pos) const{
 #else
-  virtual QwtText trackerTextF(const QPointF &pos) const{
+using QwtPlotPicker::trackerText;
+  virtual QwtText trackerText(const QPoint &pos) const{
 #endif
     QColor bg(Qt::white);
 
@@ -64,8 +63,7 @@ class SlsQt1DZoomer:public QwtPlotZoomer{
 #if QWT_VERSION<0x060000
     QwtText text = QwtPlotZoomer::trackerText(pos);
 #else
-    QPoint p=pos.toPoint();
-    QwtText text = QwtPlotZoomer::trackerText(p);
+    QwtText text = QwtPlotPicker::trackerText(pos);
 #endif
     text.setBackgroundBrush( QBrush( bg ));
     return text;

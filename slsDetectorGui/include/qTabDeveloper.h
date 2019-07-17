@@ -1,42 +1,15 @@
 #pragma once
 
+#include "ui_form_tab_developer.h"
+class qDacWidget;
+
 class multiSlsDetector;
 #include "sls_detector_defs.h"
-
-#include <QDoubleSpinBox>
-class QGroupBox;
-class QLabel;
-class MyDoubleSpinBox;
-class QLineEdit;
-class QComboBox;
-class QSpinBox;
-class QGridLayout;
-class QString;
-class QPalette;
-class QGridLayout;
 
 #include <string>
 #include <vector>
 
-
-/**To override the spin box class to have an id and emit it*/
-class MyDoubleSpinBox: public QDoubleSpinBox{
-Q_OBJECT
-private:
-	int myId;
-	private slots:
-	void valueChangedWithID() {emit editingFinished(myId);};
-	public:
-	/** Overridden constructor from QDoubleSpinBox */
-	MyDoubleSpinBox(int id,QWidget* parent = 0)	:QDoubleSpinBox(parent), myId(id){
-		connect(this, SIGNAL(editingFinished()), this, SLOT(valueChangedWithID()));
-	}
-	signals:
-	void editingFinished(int myId);
-};
-
-
-class qTabDeveloper:public QWidget {
+class qTabDeveloper:public QWidget, private Ui::TabDeveloperObject {
 	Q_OBJECT
 
 public:
@@ -47,29 +20,19 @@ public slots:
 	void Refresh();
 
 private slots:
-	void GetAdcs();
-	void SetDac(int id);
 	void SetHighVoltage();
 
 private:
 	void SetupWidgetWindow();
 	void Initialization();
 	void PopulateDetectors();
-	void CreateDACWidgets();
-	void CreateADCWidgets();
-	void CreateHVWidget();
-	void GetDac(int id);
-	void GetDacs();
 	void GetHighVoltage();
-	slsDetectorDefs::dacIndex getSLSIndex(int index);
+	slsDetectorDefs::dacIndex getSLSIndex(slsDetectorDefs::detectorType detType, int index);
 
 	multiSlsDetector *myDet;
-	slsDetectorDefs::detectorType detType;
-	int numDACWidgets;
-	int numADCWidgets;
-	std::vector<std::string>dacNames;
-	std::vector<std::string>adcNames;
-
+	std::vector<qDacWidget*> dacWidgets;
+	std::vector<qDacWidget*> adcWidgets;
+	
 	enum hvVals {
 		HV_0,
 		HV_90,
@@ -79,20 +42,6 @@ private:
 		HV_180,
 		HV_200
 	};
-
-	QGroupBox *boxDacs;
-	QGroupBox *boxAdcs;
-	std::vector<QLabel*>lblDacs;
-	std::vector<QLabel*>lblAdcs;
-	std::vector<MyDoubleSpinBox*>spinDacs;
-	std::vector<QLabel*>lblDacsmV;
-	std::vector<QLineEdit*>spinAdcs;
-	QLabel *lblHV;
-	QComboBox *comboHV;
-	QSpinBox *spinHV;
-	QGridLayout *dacLayout;
-	QComboBox *comboDetector;
-	QGridLayout *layout;
 
 	static const int HV_MIN = 60;
 	static const int HV_MAX = 200;

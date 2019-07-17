@@ -21,7 +21,7 @@ class qDefs : public QWidget {
      */
     qDefs(){};
 
-    #define GOODBYE -200
+    static const int Q_FONT_SIZE=9;
 
     static void DisplayExceptions(std::string emsg, std::string src) {
         try {

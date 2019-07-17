@@ -1,63 +1,43 @@
 #pragma once
 
+#include "ui_form_cloneplot.h"
+
 class SlsQtH1D;
 class SlsQt1DPlot;
-class SlsQt2DPlotLayout;
+class SlsQt2DPlot;
 
-#include <QString>
 #include <QMainWindow>
-class QwtSymbol;
-class QGridLayout;
-class QGroupBox;
-class QLabel;
-class QCloseEvent;
+#include <QString>
 
 #include <iostream>
 #include <string>
 
-class qCloneWidget : public QMainWindow {
+class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
     Q_OBJECT
 
   public:
-    qCloneWidget(QWidget *parent, int id, QString title, QString xTitle, QString yTitle, QString zTitle, int numDim, 
-                QString filePath, QString fileName, int imageIndex, 
-                 bool displayStats, QString min, QString max, QString sum);
+    qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2, SlsQt2DPlot *gp,
+                 QString title, QString filePath, QString fileName,
+                 int64_t aIndex, bool displayStats, QString min, QString max,
+                 QString sum);
+
     ~qCloneWidget();
-
-    void SetupWidgetWindow(QString title, QString xTitle, QString yTitle, QString zTitle, int numDim);
-    void SetCloneHists(unsigned int nHists, int histNBins, double *histXAxis, std::vector<double*> histYAxis, QString histTitle, bool lines, bool markers);
-    void SetCloneHists2D(int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, double *d, QString frameIndexTitle, bool isZmax, bool isZmin, double zmin, double zmax);
-    SlsQt1DPlot *Get1dPlot();
-
-  public slots:
-    int SavePlotAutomatic();
 
   private slots:
     void SavePlot();
-    
-  protected:
-    void closeEvent(QCloseEvent *event);
 
   private:
+    void SetupWidgetWindow(QString title);
     void DisplayStats(bool enable, QString min, QString max, QString sum);
-
-
-  signals:
-    void CloneClosedSignal(int);
 
   private:
     int id;
-    QString filePath;
-    QString fileName;
-    int imageIndex;
-    SlsQt1DPlot *cloneplot1D;
-    SlsQt2DPlotLayout *cloneplot2D;
-    QVector<SlsQtH1D *> cloneplot1D_hists;
+    SlsQt1DPlot *plot1d{nullptr};
+    SlsQt2DPlot *plot2d{nullptr};
+    SlsQt2DPlot *gainplot2d{nullptr};
+    QString filePath{"/"};
+    QString fileName{"run"};
+    int64_t acqIndex{0};
 
-    QwtSymbol *marker;
-    QwtSymbol *nomarker;
-    QGridLayout *mainLayout;
-    QGroupBox *boxPlot;
-    QLabel *lblHistTitle;
+    static int NumClones;
 };
-

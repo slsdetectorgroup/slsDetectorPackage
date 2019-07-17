@@ -1,8 +1,5 @@
+#include "SlsQt2DPlot.h"
 
-/**
- * @author Ian Johnson
- * @version 1.0
- */
 #include "ansi.h"
 #include <cmath>
 #include <iostream>
@@ -22,7 +19,7 @@
 #include <qwt_scale_engine.h>
 #include <qwt_scale_widget.h>
 
-#include "SlsQt2DPlot.h"
+
 
 #if QWT_VERSION >= 0x060100
 #define QwtLog10ScaleEngine QwtLogScaleEngine
@@ -52,6 +49,48 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
 
     FillTestPlot();
     Update();
+}
+
+
+void SlsQt2DPlot::SetTitle(QString title) {
+	setTitle(title);
+}
+
+void SlsQt2DPlot::SetXTitle(QString title) {
+	setAxisTitle(QwtPlot::xBottom, title);
+}
+
+void SlsQt2DPlot::SetYTitle(QString title) {
+	setAxisTitle(QwtPlot::yLeft, title);
+}
+
+void SlsQt2DPlot::SetZTitle(QString title) {
+	setAxisTitle(QwtPlot::yRight, title);
+}
+
+void SlsQt2DPlot::SetTitleFont(const QFont& f) {
+    QwtText t("");
+    t.setFont(f);
+    t.setRenderFlags( Qt::AlignLeft | Qt::AlignVCenter);
+    setTitle(t);
+}
+
+void SlsQt2DPlot::SetXFont(const QFont& f) {
+    QwtText t("");
+    t.setFont(f);
+    setAxisTitle(QwtPlot::xBottom, t);
+}
+
+void SlsQt2DPlot::SetYFont(const QFont& f) {
+    QwtText t("");
+    t.setFont(f);
+    setAxisTitle(QwtPlot::yLeft, t);
+}
+
+void SlsQt2DPlot::SetZFont(const QFont& f) {
+    QwtText t("");
+    t.setFont(f);
+    setAxisTitle(QwtPlot::yRight, t);
 }
 
 void SlsQt2DPlot::SetupColorMap() {
@@ -179,6 +218,45 @@ void SlsQt2DPlot::SetZoom(double xmin, double ymin, double x_width, double y_wid
 #endif
 }
 
+void SlsQt2DPlot::DisableZoom(bool disable) {
+    if (disableZoom != disable) {
+        disableZoom = disable;
+    
+#ifdef VERBOSE
+        if (disable)
+            std::cout << "Disabling zoom\n";
+        else
+            std::cout << "Enabling zoom\n";
+#endif
+        if (disable) {
+            if (zoomer) {
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::NoButton);
+#if QT_VERSION < 0x040000
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlButton);
+#else
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlModifier);
+#endif
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::NoButton);
+            }
+            if (panner)
+                panner->setMouseButton(Qt::NoButton);
+        } else {
+            if (zoomer) {
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton);
+#if QT_VERSION < 0x040000
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlButton);
+#else
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+#endif
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
+            }
+            if (panner)
+                panner->setMouseButton(Qt::MidButton);
+        }
+    }
+}
+
+
 void SlsQt2DPlot::SetZMinMax(double zmin, double zmax) {
     hist->SetMinMax(zmin, zmax);
 }
@@ -250,22 +328,34 @@ void SlsQt2DPlot::Update() {
 
 }
 
-void SlsQt2DPlot::showContour(bool on) {
-    d_spectrogram->setDisplayMode(QwtPlotSpectrogram::ContourMode, on);
+void SlsQt2DPlot::SetInterpolate(bool enable) {
+    hist->Interpolate(enable);
     Update();
 }
 
-void SlsQt2DPlot::showSpectrogram(bool on) {
-    //  static int io=0;
-    //  FillTestPlot(io++);
-    d_spectrogram->setDisplayMode(QwtPlotSpectrogram::ImageMode, on);
-    d_spectrogram->setDefaultContourPen(on ? QPen() : QPen(Qt::NoPen));
+void SlsQt2DPlot::SetContour(bool enable) {
+    d_spectrogram->setDisplayMode(QwtPlotSpectrogram::ContourMode, enable);
     Update();
 }
 
-void SlsQt2DPlot::InterpolatedPlot(bool on) {
-    hist->Interpolate(on);
-    Update();
+void SlsQt2DPlot::SetLogz(bool enable, bool isMin, bool isMax, double min, double max) {
+	LogZ(enable);
+	SetZRange(isMin, isMax, min, max);
+}
+
+void SlsQt2DPlot::SetZRange(bool isMin, bool isMax, double min, double max){
+	if(isLog) {
+		SetZMinimumToFirstGreaterThanZero();
+	}
+
+	// set zmin and zmax
+	if (isMin || isMax) {
+		double zmin = (isMin ? min : GetZMinimum());
+		double zmax = (isMax ? max : GetZMaximum());
+		SetZMinMax(zmin, zmax);
+	} 
+
+	Update();
 }
 
 void SlsQt2DPlot::LogZ(bool on) {
@@ -303,44 +393,14 @@ void SlsQt2DPlot::LogZ(bool on) {
     Update();
 }
 
-//Added by Dhanya on 19.06.2012 to disable zooming when any of the axes range has been set
-void SlsQt2DPlot::DisableZoom(bool disable) {
-    if (disableZoom != disable) {
-        disableZoom = disable;
-    
-#ifdef VERBOSE
-        if (disable)
-            std::cout << "Disabling zoom\n";
-        else
-            std::cout << "Enabling zoom\n";
-#endif
-        if (disable) {
-            if (zoomer) {
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::NoButton);
-#if QT_VERSION < 0x040000
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlButton);
-#else
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlModifier);
-#endif
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::NoButton);
-            }
-            if (panner)
-                panner->setMouseButton(Qt::NoButton);
-        } else {
-            if (zoomer) {
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton);
-#if QT_VERSION < 0x040000
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlButton);
-#else
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-#endif
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
-            }
-            if (panner)
-                panner->setMouseButton(Qt::MidButton);
-        }
-    }
+void SlsQt2DPlot::showSpectrogram(bool on) {
+    //  static int io=0;
+    //  FillTestPlot(io++);
+    d_spectrogram->setDisplayMode(QwtPlotSpectrogram::ImageMode, on);
+    d_spectrogram->setDefaultContourPen(on ? QPen() : QPen(Qt::NoPen));
+    Update();
 }
+
 
 /*
 void SlsQt2DPlot::printPlot(){

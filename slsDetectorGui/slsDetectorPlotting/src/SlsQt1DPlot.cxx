@@ -395,18 +395,34 @@ void SlsQt1DPlot::Update() {
     replot();
 }
 
-void SlsQt1DPlot::SetTitle(const char *title) {
+void SlsQt1DPlot::SetTitle(QString title) {
     setTitle(title);
 }
 
-void SlsQt1DPlot::SetXTitle(const char *title) {
-    QwtText t(title);
-    t.setFont(QFont("Sans Serif", 11, QFont::Normal));
+void SlsQt1DPlot::SetXTitle(QString title) {
+    setAxisTitle(QwtPlot::xBottom, title);
+}
+
+void SlsQt1DPlot::SetYTitle(QString title) {
+    setAxisTitle(QwtPlot::yLeft, title);
+}
+
+void SlsQt1DPlot::SetTitleFont(const QFont& f) {
+    QwtText t("");
+    t.setFont(f);
+    t.setRenderFlags( Qt::AlignLeft | Qt::AlignVCenter);
+    setTitle(t);
+}
+
+void SlsQt1DPlot::SetXFont(const QFont& f) {
+    QwtText t("");
+    t.setFont(f);
     setAxisTitle(QwtPlot::xBottom, t);
 }
-void SlsQt1DPlot::SetYTitle(const char *title) {
-    QwtText t(title);
-    t.setFont(QFont("Sans Serif", 11, QFont::Normal));
+
+void SlsQt1DPlot::SetYFont(const QFont& f) {
+    QwtText t("");
+    t.setFont(f);
     setAxisTitle(QwtPlot::yLeft, t);
 }
 

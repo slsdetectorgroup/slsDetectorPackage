@@ -130,13 +130,9 @@ void qTabPlot::Initialization() {
     if (chkGapPixels->isEnabled())
         connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
 
-    // Save
+    // Save, clone
     connect(btnSave, SIGNAL(clicked()), myPlot, SLOT(SavePlot()));
-
-    // Snapshot box
     connect(btnClone, SIGNAL(clicked()), myPlot, SLOT(ClonePlot()));
-    connect(btnCloseClones, SIGNAL(clicked()), myPlot, SLOT(CloseClones()));
-    connect(btnSaveClones, SIGNAL(clicked()), myPlot, SLOT(SaveClones()));
 
     // Plot Axis
     connect(chkTitle, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
@@ -195,7 +191,6 @@ void qTabPlot::SetPlot() {
     box1D->setEnabled(plotEnable);
     box2D->setEnabled(plotEnable);
     boxSave->setEnabled(plotEnable);
-    boxSnapshot->setEnabled(plotEnable);
     boxPlotAxis->setEnabled(plotEnable);
 
     if (plotEnable) {

@@ -142,6 +142,7 @@ qDetectorMain::~qDetectorMain() {
 }
 
 void qDetectorMain::SetUpWidgetWindow() {
+    setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
 
     // plot setup
     myPlot = new qDrawPlot(dockWidgetPlot, myDet);

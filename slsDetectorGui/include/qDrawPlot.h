@@ -1,18 +1,17 @@
 #pragma once
 
+#include "ui_form_plot.h"
+
 #include "qDefs.h"
 class detectorData;
 class SlsQt1DPlot;
 class SlsQtH1D;
-class SlsQt2DPlotLayout;
+class SlsQt2DPlot;
 class qCloneWidget;
-
-class QGridLayout;
-class QGroupBox;
 
 #include <QFutureWatcher>
 
-class qDrawPlot : public QWidget {
+class qDrawPlot : public QWidget, private Ui::PlotObject {
     Q_OBJECT
 
   public:
@@ -52,13 +51,10 @@ class qDrawPlot : public QWidget {
     void DisplayStatistics(bool enable);
     void EnableGainPlot(bool enable);
     void ClonePlot();
-    void CloseClones();
-    void SaveClones();
 	  void SavePlot();
 
   private slots:
     void SetSaveFileName(QString val);
-    void CloneCloseEvent(int id);
     void AcquireFinished();
     void UpdatePlot();
   
@@ -71,10 +67,7 @@ class qDrawPlot : public QWidget {
   private:
     void SetupWidgetWindow();
     void Initialization();
-	  void SetupStatistics();
 	  void SetupPlots();
-    int LockLastImageArray();
-    int UnlockLastImageArray();
     void GetStatistics(double &min, double &max, double &sum);
     void DetachHists();
     static void GetProgressCallBack(double currentProgress, void *this_pointer);
@@ -97,20 +90,15 @@ class qDrawPlot : public QWidget {
 
     SlsQt1DPlot *plot1d{nullptr};
 	  QVector<SlsQtH1D *> hists1d;
-    SlsQt2DPlotLayout *plot2d{nullptr};
-    SlsQt2DPlotLayout *gainplot2d{nullptr};
+    SlsQt2DPlot *plot2d{nullptr};
+    SlsQt2DPlot *gainplot2d{nullptr};
     QFutureWatcher<std::string> *acqResultWatcher;
-
-    QGridLayout *layout{nullptr};
-    QGroupBox *boxPlot{nullptr};
-    QGridLayout *plotLayout{nullptr};
 
     bool is1d{true};
     bool isRunning{false};
    
 	// titles
     QString plotTitlePrefix{""};
-    QLabel *lblFrameIndexTitle1d{nullptr};
     QString xTitle1d{"Channel Number"};
     QString yTitle1d{"Counts"};
 	  QString xTitle2d{"Pixel"};
@@ -125,7 +113,7 @@ class qDrawPlot : public QWidget {
     bool isZRange[2]{false, false};
 
 	// data
-    unsigned int nHists{1};
+    int nHists{1};
     double *datax1d{nullptr};
     std::vector<double *> datay1d;
     double *data2d{nullptr};
@@ -147,12 +135,7 @@ class qDrawPlot : public QWidget {
     bool resetPedestal{false};
     bool isAccumulate{false};
     bool resetAccumulate{false};
-    QWidget *widgetStatistics{nullptr};
-    QLabel *lblMinDisp{nullptr};
-    QLabel *lblMaxDisp{nullptr};
-    QLabel *lblSumDisp{nullptr};
     bool displayStatistics{false};
-    std::vector<qCloneWidget *> cloneWidgets;
     QString fileSavePath{"/tmp"};
     QString fileSaveName{"Image"};
     bool hasGainData{false};
@@ -162,7 +145,7 @@ class qDrawPlot : public QWidget {
     int progress{0};
     int64_t currentFrame{0};
     mutable std::mutex mPlots;
-	  pthread_mutex_t lastImageCompleteMutex;
+    int64_t currentAcqIndex{0};
 
     unsigned int nPixelsX{0};
     unsigned int nPixelsY{0};

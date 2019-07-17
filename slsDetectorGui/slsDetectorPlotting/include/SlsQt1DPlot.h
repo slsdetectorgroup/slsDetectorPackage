@@ -114,9 +114,12 @@ class SlsQt1DPlot:public QwtPlot{
   SlsQt1DPlot(QWidget* = NULL);
   ~SlsQt1DPlot();
     
-  void SetTitle(const char *t);
-  void SetXTitle(const char* title);
-  void SetYTitle(const char* title);
+  void SetTitle(QString title);
+  void SetXTitle(QString title);
+  void SetYTitle(QString title);
+  void SetTitleFont(const QFont& f);
+  void SetXFont(const QFont& f);
+  void SetYFont(const QFont& f);
   
   void InsertHLine(double y);
   void RemoveHLine();

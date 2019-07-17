@@ -5,7 +5,6 @@ set(SOURCES
     slsDetectorPlotting/src/SlsQt1DZoomer.cxx
     slsDetectorPlotting/src/SlsQt2DHist.cxx
     slsDetectorPlotting/src/SlsQt2DPlot.cxx
-    slsDetectorPlotting/src/SlsQt2DPlotLayout.cxx
     src/qDetectorMain.cpp
     src/qDrawPlot.cpp
     src/qCloneWidget.cpp
@@ -17,6 +16,7 @@ set(SOURCES
     src/qTabDebugging.cpp
     src/qTabDeveloper.cpp
     src/qTabMessages.cpp
+    src/qDacWidget.cpp
 )
 
 set(FORMS
@@ -28,6 +28,10 @@ set(FORMS
     forms/form_tab_settings.ui
     forms/form_tab_debugging.ui
     forms/form_tab_messages.ui 
+    forms/form_tab_developer.ui
+    forms/form_dac.ui
+    forms/form_plot.ui
+    forms/form_cloneplot.ui
 )
 
 qt4_wrap_ui(FORMS_H ${FORMS})
@@ -37,7 +41,6 @@ set(HEADERS
     slsDetectorPlotting/include/SlsQt1DZoomer.h
     slsDetectorPlotting/include/SlsQt2DHist.h
     slsDetectorPlotting/include/SlsQt2DPlot.h
-    slsDetectorPlotting/include/SlsQt2DPlotLayout.h
     slsDetectorPlotting/include/SlsQt2DZoomer.h
     include/qDefs.h
     include/qDetectorMain.h
@@ -51,6 +54,7 @@ set(HEADERS
     include/qTabDebugging.h
     include/qTabDeveloper.h
     include/qTabMessages.h
+    include/qDacWidget.h
 )
 set(RESOURCES
     include/icons.qrc

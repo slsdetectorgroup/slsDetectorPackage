@@ -2891,7 +2891,10 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const
         return helpNetworkParameter(action);
 
     myDet->setOnline(ONLINE_FLAG, detPos);
-    myDet->setReceiverOnline(ONLINE_FLAG, detPos);
+
+    // when changing hostnames, dont connect to previous one
+    if (cmd != "rx_hostname")
+        myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
     if (cmd == "detectormac") {
     	  if (action == PUT_ACTION) {

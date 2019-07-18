@@ -8,6 +8,7 @@ class SlsQt1DPlot;
 class SlsQtH1D;
 class SlsQt2DPlot;
 class qCloneWidget;
+class QResizeEvent;
 
 #include <QFutureWatcher>
 
@@ -52,6 +53,9 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void EnableGainPlot(bool enable);
     void ClonePlot();
 	  void SavePlot();
+
+  protected:
+    void resizeEvent(QResizeEvent *event);
 
   private slots:
     void SetSaveFileName(QString val);

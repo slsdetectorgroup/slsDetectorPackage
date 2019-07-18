@@ -26,6 +26,9 @@ class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
   private slots:
     void SavePlot();
 
+  protected:
+    void resizeEvent(QResizeEvent *event);
+    
   private:
     void SetupWidgetWindow(QString title);
     void DisplayStats(bool enable, QString min, QString max, QString sum);

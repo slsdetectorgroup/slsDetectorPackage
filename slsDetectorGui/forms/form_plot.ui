@@ -20,8 +20,20 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="layout">
+   <property name="margin">
+    <number>6</number>
+   </property>
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <item row="0" column="0">
     <widget class="QGroupBox" name="boxPlot">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="font">
       <font>
        <family>Sans Serif</family>
@@ -39,7 +51,7 @@
      </property>
      <layout class="QGridLayout" name="plotLayout">
       <property name="margin">
-       <number>0</number>
+       <number>9</number>
       </property>
       <property name="spacing">
        <number>0</number>

@@ -22,6 +22,7 @@ class qDefs : public QWidget {
     qDefs(){};
 
     static const int Q_FONT_SIZE=9;
+    static const int DATA_GAIN_PLOT_RATIO=5;
 
     static void DisplayExceptions(std::string emsg, std::string src) {
         try {

@@ -12,7 +12,6 @@
 
 #include "versionAPI.h"
 
-#include <QGridLayout>
 #include <QResizeEvent>
 #include <QScrollArea>
 #include <QFileDialog>

@@ -8,7 +8,7 @@
 #include <QFileDialog>
 #include <QPainter>
 #include <QtConcurrentRun>
-
+#include <QResizeEvent>
 
 
 qDrawPlot::qDrawPlot(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector) {
@@ -124,8 +124,8 @@ void qDrawPlot::SetupPlots() {
     plot1d->SetTitle("--");
     plot1d->SetXTitle(xTitle1d);
     plot1d->SetYTitle(yTitle1d);
-    plot1d->hide();
     h->Attach(plot1d);
+    plot1d->hide();
 
     // setup 2d data
     if (data2d)
@@ -163,8 +163,7 @@ void qDrawPlot::SetupPlots() {
     plot2d->SetZTitle(zTitle2d); 
 
     gainplot2d = new SlsQt2DPlot(boxPlot);
-    gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
-                                   -0.5, nPixelsY - 0.5, gainData);
+    gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5, nPixelsY - 0.5, gainData);
     gainplot2d->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     gainplot2d->setTitle("");
     gainplot2d->enableAxis(0, false);
@@ -173,9 +172,18 @@ void qDrawPlot::SetupPlots() {
     gainplot2d->hide();
 
     // layout of plots
-    plotLayout->addWidget(plot1d, 0, 0, 4, 4);
-    plotLayout->addWidget(plot2d, 0, 0, 4, 4);
-    plotLayout->addWidget(gainplot2d, 0, 4, 1, 1);
+    int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
+    plotLayout->addWidget(plot1d, 0, 0, ratio, ratio);
+    plotLayout->addWidget(plot2d, 0, 0, ratio, ratio);
+    plotLayout->addWidget(gainplot2d, 0, ratio, 1, 1, Qt::AlignRight | Qt::AlignTop);
+}
+
+void qDrawPlot::resizeEvent(QResizeEvent *event) {
+    if (gainplot2d->isVisible()) {
+        gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+    }
+    event->accept();
 }
 
 bool qDrawPlot::GetIsRunning() { 
@@ -442,7 +450,7 @@ void qDrawPlot::ClonePlot() {
             clonegainplot2D->enableAxis(1, false);
             clonegainplot2D->enableAxis(2, false);
             clonegainplot2D->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5, nPixelsY - 0.5, gainData);
-            clonegainplot2D->SetTitle(gainplot2d->title().text()); 
+            clonegainplot2D->SetTitle(""); 
         }
     }
 
@@ -787,16 +795,15 @@ void qDrawPlot::Update2dPlot() {
     plot2d->SetXTitle(xTitle2d);
     plot2d->SetYTitle(yTitle2d);
     plot2d->SetZTitle(zTitle2d);
-    plot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5,
-                                               nPixelsY, -0.5, nPixelsY - 0.5, data2d);
+    plot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5, nPixelsY - 0.5, data2d);
      if (isGainDataExtracted) {
-        gainplot2d->SetTitle(indexTitle); 
-        gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
-                -0.5, nPixelsY - 0.5, gainData);
-        gainplot2d->setFixedWidth(plot2d->width() / 4);
-        gainplot2d->setFixedHeight(plot2d->height() / 4);
-        gainplot2d->show();
-    } else {
+        gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5, nPixelsY - 0.5, gainData);
+        if (!gainplot2d->isVisible()) {
+            gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
+            gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+            gainplot2d->show();
+          }
+    } else if (gainplot2d->isVisible()) {
         gainplot2d->hide();  
     }
     if (xyRangeChanged) {

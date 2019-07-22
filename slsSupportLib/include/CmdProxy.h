@@ -136,7 +136,7 @@ template <typename T> class CmdProxy {
         std::ostringstream os;
         os << cmd << ' ';
         if (action == slsDetectorDefs::HELP_ACTION)
-            os << "[duration] [(optional) unit]";
+            os << "[duration] [(optional) unit]\n";
         else if (action == slsDetectorDefs::GET_ACTION) {
             auto t = det->getExptime({det_id}).squash();
             if (args.size() == 0)
@@ -151,7 +151,7 @@ template <typename T> class CmdProxy {
                 std::string time_str(args[0]);
                 std::string unit = RemoveUnit(time_str);
                 auto t = StringTo<time::ns>(time_str, unit);
-                det->setExptime(t);
+                det->setExptime(t, {det_id});
             } else if (args.size() == 2) {
                 auto t = StringTo<time::ns>(args[0], args[1]);
                 det->setExptime(t, {det_id});

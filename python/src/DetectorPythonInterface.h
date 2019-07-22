@@ -918,7 +918,7 @@ slsDetectorDefs::dacIndex DetectorPythonInterface::dacNameToEnum(std::string dac
     //                              overflow of single subframes */
     // };
 
-std::vector<std::string> Detector::getReadoutFlags() {
+std::vector<std::string> DetectorPythonInterface::getReadoutFlags() {
     std::vector<std::string> flags;
     auto r = det.setReadOutFlags();
     if (r & slsDetectorDefs::readOutFlags::STORE_IN_RAM)

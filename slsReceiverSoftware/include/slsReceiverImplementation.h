@@ -75,6 +75,12 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     bool getGapPixelsEnable() const;
 
     /**
+     * Get Quad type Enable (eiger and hardware specific)
+     * @return true if quad enabled, else false
+     */
+    bool getQuad() const;
+
+    /**
      * Get readout flags (Eiger, chiptestboard, moench)
      * @return readout flags
      */
@@ -389,6 +395,12 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * @return OK or FAIL
      */
     int setGapPixelsEnable(const bool b);
+
+    /**
+     * Set Quad type Enable (eiger and hardware specific)
+     * @param true if quad enabled, else false
+     */
+    void setQuad(const bool b);
 
     /**
      * Set readout flags (eiger, chiptestboard, moench)
@@ -868,10 +880,12 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     bool tengigaEnable;
     /** Fifo Depth */
     uint32_t fifoDepth;
-    /** enable for flipping data across both axes */
-    int flippedData[2];
+    /** flipped data x across x axis (bottom eiger) */
+    int flippedDataX;
     /** gap pixels enable */
     bool gapPixelsEnable;
+    /** quad type enable */
+    bool quadEnable;   
     /** readout flags*/
     readOutFlags readoutFlags;
 

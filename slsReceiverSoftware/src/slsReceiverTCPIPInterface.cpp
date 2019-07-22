@@ -200,6 +200,8 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_SET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::set_dbit_list;
 	flist[F_GET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::get_dbit_list;
 	flist[F_RECEIVER_DBIT_OFFSET]			= 	&slsReceiverTCPIPInterface::set_dbit_offset;
+    flist[F_SET_RECEIVER_QUAD]			    = 	&slsReceiverTCPIPInterface::set_quad_type;
+
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1305,4 +1307,17 @@ int slsReceiverTCPIPInterface::set_dbit_offset(Interface &socket) {
     validate(arg, retval, "set dbit offset", DEC);
     FILE_LOG(logDEBUG1) << "Dbit offset retval: " << retval;
     return socket.sendResult(retval);
+}
+
+int slsReceiverTCPIPInterface::set_quad_type(Interface &socket) {
+    auto quadEnable = socket.Receive<int>();
+    if (quadEnable >= 0) {
+        VerifyIdle(socket);
+        FILE_LOG(logDEBUG1) << "Setting quad:" << quadEnable;
+        impl()->setQuad(quadEnable == 0 ? false : true);
+    }
+    int retval = impl()->getQuad() ? 1 : 0;
+    validate(quadEnable, retval, "set quad", DEC);
+    FILE_LOG(logDEBUG1) << "quad retval:" << retval;
+    return socket.Send(OK);
 }

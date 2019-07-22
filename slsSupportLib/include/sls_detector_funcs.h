@@ -89,6 +89,8 @@ enum detFuncs{
 	F_EXTERNAL_SAMPLING,	/**< enable/disable external sampling for ctb */
 	F_SET_STARTING_FRAME_NUMBER,
 	F_GET_STARTING_FRAME_NUMBER,
+	F_SET_QUAD,
+	F_GET_QUAD,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -146,6 +148,7 @@ enum detFuncs{
 	F_SET_RECEIVER_DBIT_LIST, /** < set receiver digital bit list */
 	F_GET_RECEIVER_DBIT_LIST, /** < get receiver digital bit list */
 	F_RECEIVER_DBIT_OFFSET, /** < set/get reciever digital bit offset */
+	F_SET_RECEIVER_QUAD,
 	NUM_REC_FUNCTIONS
 };
 
@@ -231,6 +234,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_EXTERNAL_SAMPLING:				return "F_EXTERNAL_SAMPLING";	
 	case F_SET_STARTING_FRAME_NUMBER:		return "F_SET_STARTING_FRAME_NUMBER";
 	case F_GET_STARTING_FRAME_NUMBER:		return "F_GET_STARTING_FRAME_NUMBER";
+	case F_SET_QUAD:						return "F_SET_QUAD";
+	case F_GET_QUAD:						return "F_GET_QUAD";
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 
@@ -288,7 +293,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_RECEIVER_DBIT_LIST:			return "F_SET_RECEIVER_DBIT_LIST";		
 	case F_GET_RECEIVER_DBIT_LIST:			return "F_GET_RECEIVER_DBIT_LIST";		
 	case F_RECEIVER_DBIT_OFFSET:			return "F_RECEIVER_DBIT_OFFSET";
-	
+	case F_SET_RECEIVER_QUAD:				return "F_SET_RECEIVER_QUAD";
+
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";
 	}

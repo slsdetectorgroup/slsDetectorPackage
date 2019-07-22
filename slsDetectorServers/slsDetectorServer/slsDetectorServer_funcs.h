@@ -105,3 +105,5 @@ int set_external_sampling_source(int);
 int set_external_sampling(int);
 int set_starting_frame_number(int);
 int get_starting_frame_number(int);
+int set_quad(int);
+int get_quad(int);

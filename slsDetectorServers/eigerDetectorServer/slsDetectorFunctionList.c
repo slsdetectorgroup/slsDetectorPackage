@@ -1310,6 +1310,13 @@ int	setDetectorPosition(int pos[]) {
 #endif
 }
 
+void setQuad(int value) {
+	Beb_SetQuad(value);
+}
+
+int	getQuad() {
+	return Beb_GetQuad();
+}
 
 int enableTenGigabitEthernet(int val) {
 	if (val!=-1) {

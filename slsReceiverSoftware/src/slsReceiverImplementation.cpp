@@ -67,9 +67,9 @@ void slsReceiverImplementation::InitializeMembers() {
     dynamicRange = 16;
     tengigaEnable = false;
     fifoDepth = 0;
-    flippedData[0] = 0;
-    flippedData[1] = 0;
+    flippedDataX = 0;
     gapPixelsEnable = false;
+    quadEnable = false;
     readoutFlags = GET_READOUT_FLAGS;
 
     //*** receiver parameters ***
@@ -148,14 +148,24 @@ std::string slsReceiverImplementation::getDetectorHostname() const {
 
 int slsReceiverImplementation::getFlippedData(int axis) const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    if (axis < 0 || axis > 1)
-        return -1;
-    return flippedData[axis];
+    switch(axis) {
+        case 0:
+            return flippedDataX;
+        case 1:
+            return 0;
+        default:
+            return -1;
+    }
 }
 
 bool slsReceiverImplementation::getGapPixelsEnable() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return gapPixelsEnable;
+}
+
+bool slsReceiverImplementation::getQuad() const {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	return quadEnable;
 }
 
 slsDetectorDefs::readOutFlags
@@ -452,16 +462,38 @@ void slsReceiverImplementation::setMultiDetectorSize(const int *size) {
             log_message += ", ";
     }
     log_message += ")";
+
+    int nd[2] = {numDet[0], numDet[1]};
+	if (quadEnable) {
+		nd[0] = 1;
+		nd[1] = 2;
+	}
+	for (const auto &it : dataStreamer) {
+		it->SetNumberofDetectors(nd);
+	}
+
     FILE_LOG(logINFO) << log_message;
 }
 
 void slsReceiverImplementation::setFlippedData(int axis, int enable) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    if (axis < 0 || axis > 1)
+    if (axis != 0)
         return;
-    flippedData[axis] = enable == 0 ? 0 : 1;
-    FILE_LOG(logINFO) << "Flipped Data: " << flippedData[0] << " , "
-                      << flippedData[1];
+    flippedDataX = (enable == 0) ? 0 : 1;
+
+	if (!quadEnable) {
+		for (const auto &it : dataStreamer) {
+			it->SetFlippedDataX(flippedDataX);
+		}	
+	} 
+	else {
+		if (dataStreamer.size() == 2) {
+			dataStreamer[0]->SetFlippedDataX(0);
+			dataStreamer[1]->SetFlippedDataX(1);	
+		}
+	}
+
+    FILE_LOG(logINFO) << "Flipped Data X: " << flippedDataX;
 }
 
 int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
@@ -477,6 +509,30 @@ int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
     }
     FILE_LOG(logINFO) << "Gap Pixels Enable: " << gapPixelsEnable;
     return OK;
+}
+
+
+void slsReceiverImplementation::setQuad(const bool b) {
+	if (quadEnable != b) {
+		quadEnable = b;
+
+		if (!quadEnable) {
+			for (const auto &it : dataStreamer) {
+				it->SetNumberofDetectors(numDet);
+				it->SetFlippedDataX(flippedDataX);
+			}
+		} else {
+			int size[2] = {1, 2};
+			for (const auto &it : dataStreamer) {
+			    it->SetNumberofDetectors(size);
+			}
+			if (dataStreamer.size() == 2) {
+				dataStreamer[0]->SetFlippedDataX(0);
+				dataStreamer[1]->SetFlippedDataX(1);	
+			}	
+		}
+	}
+	FILE_LOG(logINFO)  << "Quad Enable: " << quadEnable;
 }
 
 int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
@@ -708,10 +764,16 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
             // streamer threads
             if (dataStreamEnable) {
                 try {
-
+                    int fd = flippedDataX;
+                    int nd[2] = {numDet[0], numDet[1]};
+                    if (quadEnable) {
+                        fd = i;
+                        nd[0] = 1;
+                        nd[1] = 2;
+                    }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        flippedData, additionalJsonHeader));
+                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -884,9 +946,16 @@ int slsReceiverImplementation::setDataStreamEnable(const bool enable) {
         if (enable) {
             for (int i = 0; i < numThreads; ++i) {
                 try {
+                    int fd = flippedDataX;
+                    int nd[2] = {numDet[0], numDet[1]};
+                    if (quadEnable) {
+                        fd = i;
+                        nd[0] = 1;
+                        nd[1] = 2;
+                    }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        flippedData, additionalJsonHeader));
+                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);

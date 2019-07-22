@@ -240,19 +240,42 @@ public:
 
 	/**
 	 * Send Message Header
-	 * @param buf message
-	 * @param length length of message
-	 * @param dummy true if end of acquistion else false
+	 * @param index self index for debugging
+	 * @param dummy true if a dummy message for end of acquisition
+	 * @param jsonversion json version
+	 * @param dynamicrange dynamic range
+	 * @param fileIndex file or acquisition index
+	 * @param ndetx number of detectors in x axis
+	 * @param ndety number of detectors in y axis
+	 * @param npixelsx number of pixels/channels in x axis for this zmq socket
+	 * @param npixelsy number of pixels/channels in y axis for this zmq socket
+	 * @param imageSize number of bytes for an image in this socket
+	 * @param frameNumber current frame number
+	 * @param expLength exposure length or subframe index if eiger
+	 * @param packetNumber number of packets caught for this frame
+	 * @param bunchId bunch id
+	 * @param timestamp time stamp
+	 * @param modId module Id
+	 * @param row row index in complete detector
+	 * @param column column index in complete detector
+	 * @param reserved reserved
+	 * @param debug debug
+	 * @param roundRNumber not used yet 
+	 * @param detType detector enum
+	 * @param version detector header version
+	 * @param gapPixelsEnable gap pixels enable (exception: if gap pixels enable for 4 bit mode, data is not yet gap pixel enabled in receiver)
+	 * @param flippedDataX if it is flipped across x axis
+	 * @param additionalJsonHeader additional json header
 	 * @returns 0 if error, else 1
 	 */
 	int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
-			uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
+			uint32_t ndetx = 0, uint32_t ndety = 0, uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
 			uint64_t acqIndex = 0, uint64_t fIndex = 0, const char* fname = NULL,
 			uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
 			uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
-			uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0,
+			uint8_t detType = 0, uint8_t version = 0, int gapPixelsEnable = 0, int flippedDataX = 0,
 			char* additionalJsonHeader = 0) {
 
 
@@ -263,6 +286,7 @@ public:
 				"\"jsonversion\":%u, "
 				"\"bitmode\":%u, "
 				"\"fileIndex\":%lu, "
+				"\"detshape\":[%u, %u], "
 				"\"shape\":[%u, %u], "
 				"\"size\":%u, "
 				"\"acqIndex\":%lu, "
@@ -285,12 +309,13 @@ public:
 				"\"version\":%u, "
 
 		        //additional stuff
-		        "\"flippedDataX\":%u"
+		        "\"gappixels\":%u, "
+				"\"flippedDataX\":%u"
 
 				;//"}\n";
 		char buf[MAX_STR_LENGTH] = "";
 		sprintf(buf, jsonHeaderFormat,
-				jsonversion, dynamicrange, fileIndex, npixelsx, npixelsy, imageSize,
+				jsonversion, dynamicrange, fileIndex, ndetx, ndety, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
 
 				        frameNumber, expLength, packetNumber, bunchId, timestamp,
@@ -298,7 +323,8 @@ public:
 						detType, version,
 
 						//additional stuff
-						((flippedData == 0 ) ? 0 :flippedData[0])
+						gapPixelsEnable,
+						flippedDataX
 		);
 		
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {

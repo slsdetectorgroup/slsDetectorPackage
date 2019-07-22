@@ -37,6 +37,8 @@ uint32_t Beb_detid = 0;
 int Beb_top =0;
 
 uint64_t Beb_deactivatedStartFrameNumber = 0;
+int Beb_quadEnable = 0;
+int Beb_positions[2] = {0, 0};
 
 
 void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num) {
@@ -1188,6 +1190,16 @@ void Beb_SetDetectorNumber(uint32_t detid) {
 	FILE_LOG(logINFO, ("Detector id %d set in UDP Header\n\n", detid));
 }
 
+void Beb_SetQuad(int value) {
+	if (value >= 0) {
+		Beb_quadEnable = (value == 0 ?  0 : 1);
+		Beb_SetDetectorPosition(Beb_positions);	
+	}
+}
+
+int Beb_GetQuad() {
+	return Beb_quadEnable;
+}
 
 
 int Beb_SetDetectorPosition(int pos[]) {
@@ -1195,8 +1207,18 @@ int Beb_SetDetectorPosition(int pos[]) {
 		return OK;
 	FILE_LOG(logINFO, ("Got Position values %d %d...\n", pos[0],pos[1]));
 
-	pos[0] = Beb_swap_uint16(pos[0]);
-	//pos[1] = Beb_swap_uint16(pos[1]);
+	// save positions
+	Beb_positions[0] = pos[0];
+	Beb_positions[1] = pos[1];
+
+	// get left and right
+	int posLeft[2] = {pos[0], Beb_top ? pos[1] : pos[1] + 1};
+	int posRight[2] = {pos[0], Beb_top ? pos[1] + 1 : pos[1]};
+
+	if (Beb_quadEnable) {
+		posRight[0] = 1; // right is next row
+		posRight[1] = 0; // right same first column
+	}
 
 	int ret = FAIL;
 	//mapping new memory to read master top module configuration
@@ -1210,20 +1232,22 @@ int Beb_SetDetectorPosition(int pos[]) {
 		uint32_t value = 0;
 		ret = OK;
 		// x left
+		int posval = Beb_swap_uint16(posLeft[0]);
 		value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
 		value &= UDP_HEADER_ID_MSK;	// to keep previous id value
-		Beb_Write32(csp0base, UDP_HEADER_A_LEFT_OFST, value | ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
+		Beb_Write32(csp0base, UDP_HEADER_A_LEFT_OFST, value | ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
-		if ((value & UDP_HEADER_X_MSK) != ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK)) {
+		if ((value & UDP_HEADER_X_MSK) != ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK)) {
 			FILE_LOG(logERROR, ("Could not set row position for left port\n"));
 			ret = FAIL;
 		}
 		// x right
+		posval = Beb_swap_uint16(posRight[0]);
 		value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
 		value &= UDP_HEADER_ID_MSK;	// to keep previous id value
-		Beb_Write32(csp0base, UDP_HEADER_A_RIGHT_OFST, value | ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
+		Beb_Write32(csp0base, UDP_HEADER_A_RIGHT_OFST, value | ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
-		if ((value & UDP_HEADER_X_MSK) != ((pos[0] << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK)) {
+		if ((value & UDP_HEADER_X_MSK) != ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK)) {
 			FILE_LOG(logERROR, ("Could not set row position for right port\n"));
 			ret = FAIL;
 		}
@@ -1231,7 +1255,7 @@ int Beb_SetDetectorPosition(int pos[]) {
 
 
 		// y left (column)
-		int posval = Beb_swap_uint16(Beb_top ? pos[1] : (pos[1]+1));
+		posval = Beb_swap_uint16(posLeft[1]);
 		value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
 		value &= UDP_HEADER_Z_MSK;	// to keep previous z value
 		Beb_Write32(csp0base, UDP_HEADER_B_LEFT_OFST, value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
@@ -1242,9 +1266,9 @@ int Beb_SetDetectorPosition(int pos[]) {
 		}
 
 		// y right
+		posval = Beb_swap_uint16(posRight[1]);
 		value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
 		value &= UDP_HEADER_Z_MSK;	// to keep previous z value
-		posval = Beb_swap_uint16(Beb_top ? (pos[1]+1) : pos[1]);
 		Beb_Write32(csp0base, UDP_HEADER_B_RIGHT_OFST, value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
 		value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
 		if ((value & UDP_HEADER_Y_MSK) != ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
@@ -1260,8 +1284,7 @@ int Beb_SetDetectorPosition(int pos[]) {
 		FILE_LOG(logINFO, ("Position set to...\n"
 				"\tLeft: [%d, %d]\n"
 				"\tRight:[%d, %d]\n",
-				Beb_swap_uint16(pos[0]), Beb_top ? pos[1] : (pos[1]+1)),
-						Beb_swap_uint16(pos[0]), Beb_top ? (pos[1]+1) : pos[1]);
+				posLeft[0], posLeft[1], posRight[0], posRight[1]));
 	}
 
 	return ret;

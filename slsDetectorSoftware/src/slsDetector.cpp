@@ -629,6 +629,28 @@ int slsDetector::getNChips() const { return shm()->nChips; }
 
 int slsDetector::getNChips(dimension d) const { return shm()->nChip[d]; }
 
+int slsDetector::getQuad() {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting Quad Type";
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_GET_QUAD, nullptr, retval);
+        FILE_LOG(logDEBUG1) << "Quad Type :" << retval;
+    }
+    return retval;
+}
+
+void slsDetector::setQuad(const bool enable) {
+    int value = enable ? 1 : 0;
+    FILE_LOG(logDEBUG1) << "Setting Quad type to " << value;
+    if (shm()->onlineFlag == ONLINE_FLAG) {
+        sendToDetector(F_SET_QUAD, value, nullptr);
+    }
+    FILE_LOG(logDEBUG1) << "Setting Quad type to " << value << " in Receiver";
+    if (shm()->rxOnlineFlag == ONLINE_FLAG) {
+        sendToReceiver(F_SET_RECEIVER_QUAD, value, nullptr);
+    }   
+}
+
 int slsDetector::getDetectorOffset(dimension d) const {
     return shm()->offset[d];
 }

@@ -78,14 +78,24 @@ void qDrawPlot::Initialization() {
 
 void qDrawPlot::SetupPlots() {
     setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
+ 
     // default image size
     nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
     nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
-    if (detType == slsDetectorDefs::MOENCH) {
-        npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES, -1) * 2) /
-                        25; // for moench 03
+    switch(detType) {
+    case slsDetectorDefs::MOENCH:
+        npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES, -1) * 2)/25;// for moench 03
         nPixelsX = npixelsx_jctb;
         nPixelsY = npixelsy_jctb;
+        break;
+    case slsDetectorDefs::EIGER:
+        if (myDet->getQuad()) {
+            nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2;
+            nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y) * 2;
+        }
+        break;
+    default:
+        break;
     }
     FILE_LOG(logINFO) << "nPixelsX:" << nPixelsX;
     FILE_LOG(logINFO) << "nPixelsY:" << nPixelsY;
@@ -625,7 +635,17 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     currentFrame =  frameIndex;
     FILE_LOG(logDEBUG) << "[ Progress:" << progress << ", Frame:" << currentFrame << " ]";
 
-    //FIXME: check npixelsx and npixelsY (change to this new val, if it is not, and look out for sideeffects)
+    // 2d (only image, not gain data, not pedestalvals), 
+    // check if npixelsX and npixelsY is the same (quad is different)
+    if (!is1d && (static_cast<int>(nPixelsX) != data->nx || static_cast<int>(nPixelsY) != data->ny)) {
+        nPixelsX = data->nx;
+        nPixelsY = data->ny;
+        FILE_LOG(logINFO) << "Change in Detector Shape:\n\tnPixelsX:" << nPixelsX << " nPixelsY:" << nPixelsY;
+        if (data2d)
+            delete [] data2d;    
+        data2d = new double[nPixelsY * nPixelsX];
+        std::fill(data2d, data2d + nPixelsX * nPixelsY, 0);
+    }
 
     // convert data to double
     unsigned int nPixels = nPixelsX * (is1d ? 1 : nPixelsY);

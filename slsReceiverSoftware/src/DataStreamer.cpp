@@ -17,7 +17,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 
 DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
-		uint64_t* fi, int* fd, char* ajh) :
+		uint64_t* fi, int fd, char* ajh, int* nd, bool* gpEnable) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(nullptr),
@@ -27,15 +27,19 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
 		roi(r),
 		adcConfigured(-1),
 		fileIndex(fi),
-		flippedData(fd),
+		flippedDataX(fd),
 		additionJsonHeader(ajh),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0),
-		completeBuffer(nullptr)
+		completeBuffer(nullptr),
+		gapPixelsEnable(gpEnable)
 {
-    if(ThreadObject::CreateThread() == FAIL)
+	numDet[0] = nd[0];
+	numDet[1] = nd[1];
+	
+	if(ThreadObject::CreateThread() == FAIL)
         throw sls::RuntimeError("Could not create streaming thread");
 
     FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
@@ -98,7 +102,6 @@ void DataStreamer::ResetParametersforNewMeasurement(const std::string& fname){
 	}
 }
 
-
 void DataStreamer::RecordFirstIndices(uint64_t fnum) {
 	measurementStartedFlag = true;
 	firstMeasurementIndex = fnum;
@@ -112,7 +115,6 @@ void DataStreamer::RecordFirstIndices(uint64_t fnum) {
 	FILE_LOG(logDEBUG1) << index << " First Acquisition Index: " << firstAcquisitionIndex <<
 			"\tFirst Measurement Index: " << firstMeasurementIndex;
 }
-
 
 void DataStreamer::SetGeneralData(GeneralData* g) {
 	generalData = g;
@@ -128,6 +130,14 @@ int DataStreamer::SetThreadPriority(int priority) {
 	return OK;
 }
 
+void DataStreamer::SetNumberofDetectors(int* nd) {
+	numDet[0] = nd[0];
+	numDet[1] = nd[1];
+}
+
+void DataStreamer::SetFlippedDataX(int fd) {
+	flippedDataX = fd;
+}
 
 void DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const char* srcip) {
 	uint32_t portnum = port + index;
@@ -247,13 +257,13 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 	uint64_t acquisitionIndex = header.frameNumber - firstAcquisitionIndex;
 
 	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, *fileIndex,
-			nx, ny, size,
+			numDet[0], numDet[1], nx, ny, size,
 			acquisitionIndex, frameIndex, fileNametoStream.c_str(),
 			header.frameNumber, header.expLength, header.packetNumber, header.bunchId, header.timestamp,
 			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,
 			header.detType, header.version,
-			flippedData,
+			*gapPixelsEnable ? 1 : 0, flippedDataX,
 			additionJsonHeader
 			);
 }

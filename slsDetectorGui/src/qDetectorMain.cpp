@@ -184,7 +184,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->insertTab(DEBUGGING, scroll[DEBUGGING], "Debugging");
     tabs->insertTab(DEVELOPER, scroll[DEVELOPER], "Developer");
     // no scroll buttons this way
-    tabs->insertTab(MESSAGES, tabMessages, "Messages");
+    tabs->insertTab(MESSAGES, tabMessages, "Terminal");
 
     // swap tabs so that messages is last tab
     tabs->tabBar()->moveTab(tabs->indexOf(tabMeasurement), MEASUREMENT);

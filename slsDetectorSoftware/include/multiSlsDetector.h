@@ -382,10 +382,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     	/**
 	 * Set Quad Type (Only for Eiger Quad detector hardware)
-	 * @param value 1 if quad type set, else 0
+	 * @param enable true if quad type set, else false
       * @param detPos -1 for all detectors in  list or specific detector position
 	 */
-	void setQuad(const int value, int detPos = -1);
+	void setQuad(const bool enable, int detPos = -1);
 
     /**
      * Get Detector offset from shared memory in dimension d

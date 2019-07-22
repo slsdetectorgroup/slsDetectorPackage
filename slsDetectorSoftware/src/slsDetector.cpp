@@ -639,7 +639,8 @@ int slsDetector::getQuad() {
     return retval;
 }
 
-void slsDetector::setQuad(const int value) {
+void slsDetector::setQuad(const bool enable) {
+    int value = enable ? 1 : 0;
     FILE_LOG(logDEBUG1) << "Setting Quad type to " << value;
     if (shm()->onlineFlag == ONLINE_FLAG) {
         sendToDetector(F_SET_QUAD, value, nullptr);

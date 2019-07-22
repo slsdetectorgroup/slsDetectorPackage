@@ -522,12 +522,12 @@ int multiSlsDetector::getQuad(int detPos) {
 	return retval;
 }
 
-void multiSlsDetector::setQuad(const int value, int detPos) {
-	if (getNumberOfDetectors() > 1) {
+void multiSlsDetector::setQuad(const bool enable, int detPos) {
+	if (enable && getNumberOfDetectors() > 1) {
         throw RuntimeError("Cannot set Quad type as it is available only for 1 Eiger Quad Half module.");
     }
 
-    detectors[0]->setQuad(value); 
+    detectors[0]->setQuad(enable); 
 }
 
 int multiSlsDetector::getDetectorOffset(dimension d, int detPos) {

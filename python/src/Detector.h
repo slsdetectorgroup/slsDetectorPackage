@@ -232,7 +232,8 @@ class Detector {
         det.setSpeed(slsDetectorDefs::DBIT_CLOCK, value);
     }
     int getDbitClock() { return det.setSpeed(slsDetectorDefs::DBIT_CLOCK, -1); }
-    std::vector<int> getReceiverPort() const { return det.getReceiverPort(); }
+
+    int getReceiverPort() const { return det.getReceiverPort(); }
 
     void setReceiverPort(int det_id, int value) {
         det.setReceiverPort(value, det_id);
@@ -517,14 +518,6 @@ class Detector {
         det.setTimer(slsDetectorDefs::timerIndex::CYCLES_NUMBER, n_cycles);
     }
 
-    void setNumberOfMeasurements(const int n_measurements) {
-        det.setTimer(slsDetectorDefs::timerIndex::MEASUREMENTS_NUMBER,
-                     n_measurements);
-    }
-    int getNumberOfMeasurements() {
-        return det.setTimer(slsDetectorDefs::timerIndex::MEASUREMENTS_NUMBER,
-                            -1);
-    }
 
     int getNumberOfGates() {
         return det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, -1);
@@ -913,11 +906,45 @@ slsDetectorDefs::dacIndex Detector::dacNameToEnum(std::string dac_name) {
     return dac;
 }
 
+    // enum readOutFlags {
+    //     GET_READOUT_FLAGS = -1, /**< return readout flags */
+    //     NORMAL_READOUT = 0,     /**< no flag */
+    //     STORE_IN_RAM = 0x1, /**< data are stored in ram and sent only after end
+    //                            of acquisition for faster frame rate */
+    //     READ_HITS = 0x2,    /**< return only the number of the channel which
+    //                            counted ate least one */
+    //     ZERO_COMPRESSION = 0x4,          /**< returned data are 0-compressed */
+    //     PUMP_PROBE_MODE = 0x8,           /**<pump-probe mode */
+    //     BACKGROUND_CORRECTIONS = 0x1000, /**<background corrections */
+    //     TOT_MODE = 0x2000,               /**< pump-probe mode */
+    //     CONTINOUS_RO = 0x4000,           /**< pump-probe mode */
+    //     PARALLEL = 0x10000,              /**< eiger parallel mode */
+    //     NONPARALLEL = 0x20000,           /**< eiger serial mode */
+    //     DIGITAL_ONLY = 0x80000, /** chiptest board read only digital bits (not
+    //                                adc values)*/
+    //     ANALOG_AND_DIGITAL = 0x100000, /** chiptest board read adc values and
+    //                                       digital bits digital bits */
+    //     DUT_CLK = 0x200000, /** chiptest board fifo clock comes from device
+    //                            under test */
+    //     SHOW_OVERFLOW = 0x400000, /** eiger 32 bit mode, show saturated for
+    //                                  overflow of single subframes */
+    //     NOOVERFLOW = 0x800000 /** eiger 32 bit mode, do not show saturated for
+    //                              overflow of single subframes */
+    // };
+
 std::vector<std::string> Detector::getReadoutFlags() {
     std::vector<std::string> flags;
     auto r = det.setReadOutFlags();
     if (r & slsDetectorDefs::readOutFlags::STORE_IN_RAM)
         flags.push_back("storeinram");
+    if (r & slsDetectorDefs::readOutFlags::READ_HITS)
+        flags.push_back("readhits");  
+    if (r & slsDetectorDefs::readOutFlags::ZERO_COMPRESSION)
+        flags.push_back("zerocompression");     
+    if (r & slsDetectorDefs::readOutFlags::PUMP_PROBE_MODE)
+        flags.push_back("pumpprobe");  
+    if (r & slsDetectorDefs::readOutFlags::BACKGROUND_CORRECTIONS)
+        flags.push_back("backgroundcorrections");  
     if (r & slsDetectorDefs::readOutFlags::TOT_MODE)
         flags.push_back("tot");
     if (r & slsDetectorDefs::readOutFlags::CONTINOUS_RO)
@@ -926,12 +953,12 @@ std::vector<std::string> Detector::getReadoutFlags() {
         flags.push_back("parallel");
     if (r & slsDetectorDefs::readOutFlags::NONPARALLEL)
         flags.push_back("nonparallel");
-    if (r & slsDetectorDefs::readOutFlags::SAFE)
-        flags.push_back("safe");
     if (r & slsDetectorDefs::readOutFlags::DIGITAL_ONLY)
         flags.push_back("digital");
     if (r & slsDetectorDefs::readOutFlags::ANALOG_AND_DIGITAL)
         flags.push_back("analog_digital");
+    if (r & slsDetectorDefs::readOutFlags::DUT_CLK)
+        flags.push_back("dutclk");
     if (r & slsDetectorDefs::readOutFlags::NOOVERFLOW)
         flags.push_back("nooverflow");
     if (r & slsDetectorDefs::readOutFlags::SHOW_OVERFLOW)
@@ -945,6 +972,14 @@ void Detector::setReadoutFlag(const std::string flag_name) {
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::NORMAL_READOUT);
     else if (flag_name == "storeinram")
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::STORE_IN_RAM);
+    else if (flag_name == "readhits")
+        det.setReadOutFlags(slsDetectorDefs::readOutFlags::READ_HITS);
+    else if (flag_name == "zerocompression")
+        det.setReadOutFlags(slsDetectorDefs::readOutFlags::ZERO_COMPRESSION);
+    else if (flag_name == "pumpprobe")
+        det.setReadOutFlags(slsDetectorDefs::readOutFlags::PUMP_PROBE_MODE);
+    else if (flag_name == "backgroundcorrections")
+        det.setReadOutFlags(slsDetectorDefs::readOutFlags::BACKGROUND_CORRECTIONS);
     else if (flag_name == "tot")
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::TOT_MODE);
     else if (flag_name == "continous")
@@ -953,12 +988,12 @@ void Detector::setReadoutFlag(const std::string flag_name) {
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::PARALLEL);
     else if (flag_name == "nonparallel")
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::NONPARALLEL);
-    else if (flag_name == "safe")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::SAFE);
     else if (flag_name == "digital")
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::DIGITAL_ONLY);
     else if (flag_name == "analog_digital")
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::ANALOG_AND_DIGITAL);
+    else if (flag_name == "dutclk")
+        det.setReadOutFlags(slsDetectorDefs::readOutFlags::DUT_CLK);
     else if (flag_name == "nooverflow")
         det.setReadOutFlags(slsDetectorDefs::readOutFlags::NOOVERFLOW);
     else if (flag_name == "overflow")

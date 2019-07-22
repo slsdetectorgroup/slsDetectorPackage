@@ -3366,7 +3366,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 						// gap pixels enable
 						gappixelsenable = (doc["gappixels"].GetUint() == 0) ? false : true;
                         
-                        FILE_LOG(logINFOBLUE)
+                        FILE_LOG(logDEBUG1)
                             << "One Time Header Info:"
                                "\n\tsize: "
                             << size << "\n\tmultisize: " << multisize
@@ -3391,7 +3391,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                         coordY = (nY - 1) - coordY;
                     }
                     flippedDataX = doc["flippedDataX"].GetUint();
-                    FILE_LOG(logINFOBLUE)
+                    FILE_LOG(logDEBUG1)
                         << "Header Info:"
                            "\n\tcurrentFileName: "
                         << currentFileName

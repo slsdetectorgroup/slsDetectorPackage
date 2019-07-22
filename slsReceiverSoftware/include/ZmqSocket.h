@@ -273,7 +273,7 @@ public:
 			uint64_t bunchId = 0, uint64_t timestamp = 0,
 			uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
-			uint8_t detType = 0, uint8_t version = 0, int gapPixelsEnable = 0, int* flippedData = 0, 
+			uint8_t detType = 0, uint8_t version = 0, uint32_t gapPixelsEnable = 0, uint32_t flippedDataX = 0, 
 			char* additionalJsonHeader = 0) {
 
 
@@ -321,7 +321,7 @@ public:
 
 						//additional stuff
 						gapPixelsEnable,
-						((flippedData == 0 ) ? 0 :flippedData[0])
+						flippedDataX
 		);
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
 		    length = sprintf(buf, "%s, %s}\n", buf, additionalJsonHeader);

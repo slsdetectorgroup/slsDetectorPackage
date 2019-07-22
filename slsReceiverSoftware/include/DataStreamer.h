@@ -27,14 +27,14 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param dr pointer to dynamic range
 	 * @param r roi
 	 * @param fi pointer to file index
-	 * @param fd flipped data enable for x and y dimensions
+	 * @param fd flipped data enable for x dimension
 	 * @param ajh additional json header
 	 * @param sm pointer to silent mode
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param gpEnable pointer to gap pixels enable
 	 */
 	DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
-			uint64_t* fi, int* fd, char* ajh, bool* sm, int* nd, bool* gpEnable);
+			uint64_t* fi, int fd, char* ajh, bool* sm, int* nd, bool* gpEnable);
 
 	/**
 	 * Destructor
@@ -97,10 +97,10 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	void SetNumberofDetectors(int* nd);
 
 	/** 
-	 * Set Flipped data enable across both dimensions
-	 * @param flipped data enable in both dimensions
+	 * Set Flipped data enable across x dimension
+	 * @param flipped data enable in x dimension
 	 */
-	void SetFlippedData(int* fd);	
+	void SetFlippedDataX(int fd);	
 
 	/**
 	 * Creates Zmq Sockets
@@ -197,8 +197,8 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/** Pointer to file index */
 	uint64_t* fileIndex;
 
-	/** flipped data across both dimensions enable */
-	int flippedData[2];
+	/** flipped data across x dimension  */
+	int flippedDataX;
 
 	/** additional json header */
 	char* additionJsonHeader;

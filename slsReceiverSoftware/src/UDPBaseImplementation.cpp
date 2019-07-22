@@ -50,8 +50,7 @@ void UDPBaseImplementation::initializeMembers(){
 	dynamicRange = 16;
 	tengigaEnable = false;
 	fifoDepth = 0;
-	flippedData[0] = 0;
-	flippedData[1] = 0;
+	flippedDataX = 0;
 	gapPixelsEnable = false;
 	quadEnable = false;
 
@@ -129,8 +128,14 @@ char *UDPBaseImplementation::getDetectorHostname() const{
 
 int UDPBaseImplementation::getFlippedData(int axis) const{
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-	if(axis<0 || axis > 1) return -1;
-	return flippedData[axis];
+	  switch(axis) {
+		case 0:
+           return flippedDataX;
+        case 1:
+            return 0;
+        default:
+            return -1;
+    }
 }
 
 bool UDPBaseImplementation::getGapPixelsEnable() const {
@@ -404,9 +409,10 @@ void UDPBaseImplementation::setMultiDetectorSize(const int* size) {
 
 void UDPBaseImplementation::setFlippedData(int axis, int enable){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
-	if(axis<0 || axis>1) return;
-	flippedData[axis] = enable==0?0:1;
-	FILE_LOG(logINFO)  << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
+	if (axis != 0)
+		return;
+	flippedDataX = enable==0?0:1;
+	FILE_LOG(logINFO)  << "Flipped Data X: " << flippedDataX;
 
 	// overridden
 }

@@ -747,8 +747,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	bool tengigaEnable;
 	/** Fifo Depth */
 	uint32_t fifoDepth;
-	/** enable for flipping data across both axes */
-	int flippedData[2];
+	/** enable for flipping data across x axis */
+	int flippedDataX;
 	/** gap pixels enable */
 	bool gapPixelsEnable;
 	/** quad type enable */

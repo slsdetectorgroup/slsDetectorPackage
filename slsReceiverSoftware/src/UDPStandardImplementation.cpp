@@ -125,38 +125,36 @@ void UDPStandardImplementation::setMultiDetectorSize(const int* size) {
 	}
 	strcat(message,")");
 
-	int sz[2] = {numDet[0], numDet[1]};
+	int nd[2] = {numDet[0], numDet[1]};
 	if (quadEnable) {
-		sz[0] = 1;
-		sz[1] = 2;
+		nd[0] = 1;
+		nd[1] = 2;
 	}
 	for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
-		(*it)->SetNumberofDetectors(sz);
+		(*it)->SetNumberofDetectors(nd);
 	}
 
 	FILE_LOG(logINFO)  << message;
 }
 
 void UDPStandardImplementation::setFlippedData(int axis, int enable){
-	if(axis<0 || axis>1) return;
-	flippedData[axis] = enable==0?0:1;
+	if (axis != 0)
+	 	return;
+	flippedDataX = enable == 0 ? 0 : 1;
 
 	if (!quadEnable) {
 		for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
-			(*it)->SetFlippedData(flippedData);
+			(*it)->SetFlippedDataX(flippedDataX);
 		}	
 	} 
 	else {
-		int fd[2] = {flippedData[0], flippedData[1]};
 		if (dataStreamer.size() == 2) {
-			fd[0] = 0; 
-			dataStreamer[0]->SetFlippedData(fd);
-			fd[0] = 1; 
-			dataStreamer[1]->SetFlippedData(fd);	
+			dataStreamer[0]->SetFlippedDataX(0);
+			dataStreamer[1]->SetFlippedDataX(1);	
 		}
 	}
 
-	FILE_LOG(logINFO)  << "Flipped Data: " << flippedData[0] << " , " << flippedData[1];
+	FILE_LOG(logINFO)  << "Flipped Data X: " << flippedDataX;
 }
 
 
@@ -186,19 +184,16 @@ void UDPStandardImplementation::setQuad(const bool b) {
 		if (!quadEnable) {
 			for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
 				(*it)->SetNumberofDetectors(numDet);
-				(*it)->SetFlippedData(flippedData);
+				(*it)->SetFlippedDataX(flippedDataX);
 			}
 		} else {
 			int size[2] = {1, 2};
 			for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
 				(*it)->SetNumberofDetectors(size);
 			}
-			int fd[2] = {flippedData[0], flippedData[1]};
 			if (dataStreamer.size() == 2) {
-				fd[0] = 0; 
-				dataStreamer[0]->SetFlippedData(fd);
-				fd[0] = 1; 
-				dataStreamer[1]->SetFlippedData(fd);	
+				dataStreamer[0]->SetFlippedDataX(0);
+				dataStreamer[1]->SetFlippedDataX(1);	
 			}	
 		}
 	}
@@ -326,8 +321,15 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
 		if (enable) {
 		    for ( int i = 0; i < numThreads; ++i ) {
 		        try {
+					int fd = flippedDataX;
+                    int nd[2] = {numDet[0], numDet[1]};
+                    if (quadEnable) {
+                        fd = i;
+                        nd[0] = 1;
+                        nd[1] = 2;
+                    }
 		            DataStreamer* s = new DataStreamer(i, fifo[i], &dynamicRange,
-		                  &roi, &fileIndex, flippedData, additionalJsonHeader, &silentMode, (int*)numDet, &gapPixelsEnable);
+		                  &roi, &fileIndex, fd, additionalJsonHeader, &silentMode, (int*)nd, &gapPixelsEnable);
 		            dataStreamer.push_back(s);
 		            dataStreamer[i]->SetGeneralData(generalData);
 		            dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP);

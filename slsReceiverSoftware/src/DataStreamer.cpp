@@ -16,7 +16,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 
 DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
-		uint64_t* fi, int* fd, char* ajh, bool* sm, int* nd, bool* gpEnable) :
+		uint64_t* fi, int fd, char* ajh, bool* sm, int* nd, bool* gpEnable) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -26,6 +26,7 @@ DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
 		roi(r),
 		adcConfigured(-1),
 		fileIndex(fi),
+		flippedDataX(fd),
 		additionJsonHeader(ajh),
 		acquisitionStartedFlag(false),
 		measurementStartedFlag(false),
@@ -34,8 +35,6 @@ DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
 		completeBuffer(0),
 		gapPixelsEnable(gpEnable)
 {
-	flippedData[0] = fd[0];
-	flippedData[1] = fd[1];
 	numDet[0] = nd[0];
 	numDet[1] = nd[1];
 	
@@ -140,9 +139,8 @@ void DataStreamer::SetNumberofDetectors(int* nd) {
 	numDet[1] = nd[1];
 }
 
-void DataStreamer::SetFlippedData(int* fd) {
-	flippedData[0] = fd[0];
-	flippedData[1] = fd[1];
+void DataStreamer::SetFlippedDataX(int fd) {
+	flippedDataX = fd;
 }
 
 
@@ -282,7 +280,7 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,
 			header.detType, header.version,
-			*gapPixelsEnable ? 1 : 0, flippedData,
+			*gapPixelsEnable ? 1 : 0, flippedDataX,
 			additionJsonHeader
 			);
 }

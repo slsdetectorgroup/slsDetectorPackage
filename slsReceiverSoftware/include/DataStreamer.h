@@ -27,11 +27,13 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param dr pointer to dynamic range
 	 * @param r roi
 	 * @param fi pointer to file index
-	 * @param fd flipped data enable for x and y dimensions
+	 * @param fd flipped data enable for x dimension
 	 * @param ajh additional json header
+	 * @param nd pointer to number of detectors in each dimension
+	 * @param gpEnable pointer to gap pixels enable
 	 */
 	DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
-			uint64_t* fi, int* fd, char* ajh);
+			uint64_t* fi, int fd, char* ajh, int* nd, bool* gpEnable);
 
 	/**
 	 * Destructor
@@ -87,6 +89,18 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	int SetThreadPriority(int priority);
 
+	/** 
+	 * Set number of detectors
+	 * @param number of detectors in both dimensions
+	 */
+	void SetNumberofDetectors(int* nd);
+
+	/** 
+	 * Set Flipped data enable across x dimension
+	 * @param flipped data enable in x dimension
+	 */
+	void SetFlippedDataX(int fd);	
+	
 	/**
 	 * Creates Zmq Sockets
 	 * (throws an exception if it couldnt create zmq sockets)
@@ -182,8 +196,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	/** Pointer to file index */
 	uint64_t* fileIndex;
 
-	/** flipped data across both dimensions enable */
-	int* flippedData;
+	/** flipped data across x axis */
+	int flippedDataX;
 
 	/** additional json header */
 	char* additionJsonHeader;
@@ -205,6 +219,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
 	/** Complete buffer used for roi, eg. shortGotthard */
 	char* completeBuffer;
+
+	/** Number of Detectors in X and Y dimension */
+	int numDet[2];
+
+	/** Gap Pixels Enable */
+	bool* gapPixelsEnable;
 
 };
 

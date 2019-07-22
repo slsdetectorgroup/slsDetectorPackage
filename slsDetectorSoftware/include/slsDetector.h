@@ -473,6 +473,18 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @returns number of chips per module in dimension d
 	 */
     int getNChips(dimension d) const;
+	
+	/**
+     * Get Quad Type (Only for Eiger Quad detector hardware)
+     * @returns quad type
+     */
+    int getQuad();
+
+    /**
+	 * Set Quad Type (Only for Eiger Quad detector hardware)
+	 * @param value 1 if quad type set, else 0
+	 */
+	void setQuad(const int value);
 
     /**
 	 * Get Detector offset from shared memory in dimension d

@@ -294,6 +294,9 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** set dbit offset */
     int set_dbit_offset(sls::ServerInterface2 &socket);
 
+    /** quad type */
+    int set_quad_type(sls::ServerInterface2 &socket);
+
     /** detector type */
     detectorType myDetectorType;
 

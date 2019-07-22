@@ -374,6 +374,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setMaxNumberOfChannelsPerDetector(dimension d, int i);
 
     /**
+     * Get Quad Type (Only for Eiger Quad detector hardware)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns quad type
+     */
+    int getQuad(int detPos = -1);
+
+    	/**
+	 * Set Quad Type (Only for Eiger Quad detector hardware)
+	 * @param value 1 if quad type set, else 0
+      * @param detPos -1 for all detectors in  list or specific detector position
+	 */
+	void setQuad(const int value, int detPos = -1);
+
+    /**
      * Get Detector offset from shared memory in dimension d
      * @param d dimension d
      * @param detPos -1 for all detectors in  list or specific detector position

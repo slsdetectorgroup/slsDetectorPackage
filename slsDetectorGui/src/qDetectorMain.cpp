@@ -349,6 +349,8 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(ADVANCED, enable);
+        actionLoadTrimbits->setVisible(enable && detType != slsDetectorDefs::MOENCH);
+        actionSaveTrimbits->setVisible(enable && detType != slsDetectorDefs::MOENCH);
         FILE_LOG(logINFO) << "Expert Mode: "
                           << slsDetectorDefs::stringEnable(enable);
     }

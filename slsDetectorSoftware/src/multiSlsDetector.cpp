@@ -514,6 +514,22 @@ int multiSlsDetector::setMaxNumberOfChannelsPerDetector(dimension d, int i) {
     return multi_shm()->maxNumberOfChannelsPerDetector[d];
 }
 
+int multiSlsDetector::getQuad(int detPos) {
+    int retval = detectors[0]->getQuad();
+    if (retval  && getNumberOfDetectors() > 1) {
+        throw RuntimeError("Quad type is available only for 1 Eiger Quad Half module, but it Quad is enabled for 1st readout");
+    }
+	return retval;
+}
+
+void multiSlsDetector::setQuad(const int value, int detPos) {
+	if (getNumberOfDetectors() > 1) {
+        throw RuntimeError("Cannot set Quad type as it is available only for 1 Eiger Quad Half module.");
+    }
+
+    detectors[0]->setQuad(value); 
+}
+
 int multiSlsDetector::getDetectorOffset(dimension d, int detPos) {
     return detectors[detPos]->getDetectorOffset(d);
 }
@@ -3256,18 +3272,13 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 
 void multiSlsDetector::readFrameFromReceiver() {
 
-    int nX = multi_shm()->numberOfDetector[X]; // to copy data in multi module
-    int nY = multi_shm()->numberOfDetector[Y]; // for eiger, to reverse the data
+    int nX = 0;
+    int nY = 0;
+    int nDetPixelsX = 0;
+    int nDetPixelsY = 0;
     bool gappixelsenable = false;
     bool eiger = false;
-    if (getDetectorTypeAsEnum() == EIGER) {
-        eiger = true;
-        nX *= 2;
-        gappixelsenable = detectors[0]->enableGapPixels(-1) > 0;
-    }
-    if (getNumberofUDPInterfaces() == 2) {
-        nY *= 2;
-    }
+    bool numInterfaces =  getNumberofUDPInterfaces(); // cannot pick up from zmq
 
     bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
     int numRunning = 0;
@@ -3344,14 +3355,29 @@ void multiSlsDetector::readFrameFromReceiver() {
                         // shape
                         nPixelsX = doc["shape"][0].GetUint();
                         nPixelsY = doc["shape"][1].GetUint();
-
-                        FILE_LOG(logDEBUG1)
+						// detector shape
+						nX = doc["detshape"][0].GetUint();
+						nY = doc["detshape"][1].GetUint();
+                        nY *= numInterfaces; 
+						nDetPixelsX = nX * nPixelsX;
+						nDetPixelsY = nY * nPixelsY;
+						// det type
+  						eiger = (doc["detType"].GetUint() == static_cast<int>(3)) ? true : false; // to be changed to EIGER when firmware updates its header data
+						// gap pixels enable
+						gappixelsenable = (doc["gappixels"].GetUint() == 0) ? false : true;
+                        
+                        FILE_LOG(logINFOBLUE)
                             << "One Time Header Info:"
                                "\n\tsize: "
                             << size << "\n\tmultisize: " << multisize
                             << "\n\tdynamicRange: " << dynamicRange
                             << "\n\tbytesPerPixel: " << bytesPerPixel
-                            << "\n\tnPixelsX: " << nPixelsX << "\n\tnPixelsY: " << nPixelsY;
+                            << "\n\tnPixelsX: " << nPixelsX 
+                            << "\n\tnPixelsY: " << nPixelsY
+                            << "\n\tnX: " << nX
+                            << "\n\tnY: " << nY
+                            << "\n\teiger: " << eiger
+                            << "\n\tgappixelsenable: " << gappixelsenable;
                     }
                     // each time, parse rest of header
                     currentFileName = doc["fname"].GetString();
@@ -3365,7 +3391,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                         coordY = (nY - 1) - coordY;
                     }
                     flippedDataX = doc["flippedDataX"].GetUint();
-                    FILE_LOG(logDEBUG1)
+                    FILE_LOG(logINFOBLUE)
                         << "Header Info:"
                            "\n\tcurrentFileName: "
                         << currentFileName
@@ -3414,20 +3440,16 @@ void multiSlsDetector::readFrameFromReceiver() {
 
         // send data to callback
         if (data) {
-            int nCompletePixelsX = multi_shm()->numberOfChannelInclGapPixels[X];
-            int nCompletePixelsY = multi_shm()->numberOfChannelInclGapPixels[Y];
             setCurrentProgress(currentAcquisitionIndex + 1);
             // 4bit gap pixels
             if (dynamicRange == 4 && gappixelsenable) {
                 int n = processImageWithGapPixels(multiframe, multigappixels);
                 thisData =
-                    new detectorData(getCurrentProgress(), currentFileName.c_str(), nCompletePixelsX,
-                                     nCompletePixelsY, multigappixels, n, dynamicRange, currentFileIndex);
+                    new detectorData(getCurrentProgress(), currentFileName.c_str(), nDetPixelsX, nDetPixelsY, multigappixels, n, dynamicRange, currentFileIndex);
             }
             // normal pixels
             else {
-                thisData = new detectorData(getCurrentProgress(), currentFileName.c_str(), nCompletePixelsX,
-                                            nCompletePixelsY, multiframe, multisize, dynamicRange,
+                thisData = new detectorData(getCurrentProgress(), currentFileName.c_str(), nDetPixelsX, nDetPixelsY, multiframe, multisize, dynamicRange,
                                             currentFileIndex);
             }
             dataReady(thisData, currentFrameIndex,

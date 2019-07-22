@@ -244,6 +244,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_EXTERNAL_SAMPLING:				return "F_EXTERNAL_SAMPLING";	
 	case F_SET_STARTING_FRAME_NUMBER:		return "F_SET_STARTING_FRAME_NUMBER";
 	case F_GET_STARTING_FRAME_NUMBER:		return "F_GET_STARTING_FRAME_NUMBER";
+	case F_SET_QUAD:						return "F_SET_QUAD";
+	case F_GET_QUAD:						return "F_GET_QUAD";
 	default:								return "Unknown Function";
 	}
 }
@@ -328,6 +330,8 @@ void function_table() {
 	flist[F_EXTERNAL_SAMPLING]					= &set_external_sampling;
 	flist[F_SET_STARTING_FRAME_NUMBER] 			= &set_starting_frame_number;
 	flist[F_GET_STARTING_FRAME_NUMBER] 			= &get_starting_frame_number;
+	flist[F_SET_QUAD]							= &set_quad;
+	flist[F_GET_QUAD]							= &get_quad;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -4074,4 +4078,50 @@ int get_starting_frame_number(int file_des) {
 	}
 #endif
 	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_quad(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting quad: %u\n", arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setQuad(arg);
+		int retval = getQuad();
+		if (arg != retval) {
+			ret = FAIL;
+			sprintf(mess, "Could not set quad. Set %d, but read %d\n", retval, arg);
+			FILE_LOG(logERROR,(mess));
+		}		
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_quad(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting Quad\n"));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getQuad();
+	FILE_LOG(logDEBUG1, ("Quad retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

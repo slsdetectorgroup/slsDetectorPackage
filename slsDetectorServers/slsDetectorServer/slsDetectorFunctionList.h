@@ -246,6 +246,10 @@ int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int 		setDetectorPosition(int pos[]);
 #endif
+#ifdef EIGERD
+void		setQuad(int value);
+int			getQuad();
+#endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD)
 int 		enableTenGigabitEthernet(int val);
 #endif

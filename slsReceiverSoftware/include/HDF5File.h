@@ -69,7 +69,7 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 	 * @param fnum current frame index to include in file name
 	 * @returns OK or FAIL
 	 */
-	int CreateFile(uint64_t fnum);
+	int CreateFile();
 
 	/**
 	 * Close Current File

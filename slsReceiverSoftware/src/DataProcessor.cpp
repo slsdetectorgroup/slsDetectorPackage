@@ -257,7 +257,7 @@ int DataProcessor::CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st,
 			generalData->nPixelsX, generalData->nPixelsY,
 			at, st, sp, ap) == FAIL)
 		return FAIL;
-	if (file->CreateFile(0) == FAIL)
+	if (file->CreateFile() == FAIL)
 		return FAIL;
 	return OK;
 }

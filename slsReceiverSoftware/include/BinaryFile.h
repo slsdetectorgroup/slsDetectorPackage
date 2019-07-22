@@ -47,14 +47,13 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	/**
 	 * Print all member values
 	 */
-	void PrintMembers(TLogLevel level = logDEBUG1);
+	void PrintMembers(TLogLevel level = logDEBUG1) override;
 
 	/**
 	 * Create file
-	 * @param fnum current frame index to include in file name
 	 * @returns OK or FAIL
 	 */
-	int CreateFile(uint64_t fnum);
+	int CreateFile() override;
 
 	 /**
 	  * Create master file
@@ -71,17 +70,17 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	  */
 	 int CreateMasterFile(bool mfwenable, bool en, uint32_t size,
 				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st, uint64_t sp,
-				uint64_t ap);
+				uint64_t ap) override;
 
 	/**
 	 * Close Current File
 	 */
-	void CloseCurrentFile();
+	void CloseCurrentFile() override;
 
 	/**
 	 * Close all Files
 	 */
-	void CloseAllFiles();
+	void CloseAllFiles() override;
 
 	/**
 	 * Write data to file
@@ -91,7 +90,7 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	 * @param nump number of packets caught
 	 * @returns OK or FAIL
 	 */
-	 int WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump);
+	 int WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) override;
 
 
 
@@ -101,7 +100,7 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	 * Get Type
 	 * @return type
 	 */
-	 fileFormat GetFileType();
+	 fileFormat GetFileType() override;
 
 
 

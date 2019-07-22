@@ -40,20 +40,19 @@ public:
 	 * @param fpath file path
 	 * @param fnameprefix file name prefix (includes scan and position variables)
 	 * @param findex file index
-	 * @param frindexenable frame index enable
-	 * @param fnum frame number index
+	 * @param subfindex sub file index
 	 * @param dindex readout index
 	 * @param numunits number of units per readout. eg. eiger has 2 udp units per readout
 	 * @param unitindex unit index
 	 * @returns complete file name created
 	 */
 	static std::string CreateFileName(char *fpath, char *fprefix,
-										uint64_t findex, uint64_t fnum,
+										uint64_t findex, uint64_t subfindex,
 										int dindex, int numunits = 1,
 										int unitindex = 0) {
 		std::ostringstream os;
 		os << fpath << "/" << fprefix << "_d"
-			<< (dindex * numunits + unitindex) << "_f" << fnum << '_'
+			<< (dindex * numunits + unitindex) << "_f" << subfindex << '_'
 			<< findex << ".h5";
 		return os.str();
 	}
@@ -108,7 +107,7 @@ public:
 				delete fd;
 				fd = 0;
 			}
-		} catch(Exception error) {
+		} catch(const Exception& error) {
 			FILE_LOG(logERROR) << "Could not close HDF5 handles of index " << ind;
 			error.printErrorStack();
 		}
@@ -126,7 +125,7 @@ public:
 				delete fd;
 				fd = 0;
 			}
-		} catch(Exception error) {
+		} catch(const Exception& error) {
 			FILE_LOG(logERROR) << "Could not close master HDF5 handles";
 			error.printErrorStack();
 		}
@@ -174,7 +173,7 @@ public:
 			dset->write(buf, dtype, memspace, *dspace);
 			memspace.close();
 		}
-		catch(Exception error){
+		catch(const Exception& error){
 			FILE_LOG(logERROR) << "Could not write to file in object " << ind;
 			error.printErrorStack();
 			return 1;
@@ -236,7 +235,7 @@ public:
 				dset_para[13]->write((char*)storage,	parameterDataTypes[13], memspace, *dspace_para);
 			}i=14;
 		}
-		catch(Exception error){
+		catch(const Exception& error){
 			FILE_LOG(logERROR) << "Could not write parameters (index:" << i << ") to file in object " << ind;
 			error.printErrorStack();
 			return 1;
@@ -279,7 +278,7 @@ public:
 			dspace_para = new DataSpace(dset_para[0]->getSpace());
 
 		}
-		catch(Exception error){
+		catch(const Exception& error){
 			FILE_LOG(logERROR) << "Could not extend dataset in object " << ind;
 			error.printErrorStack();
 			return 1;
@@ -414,7 +413,7 @@ public:
 
 			fd->close();
 
-		} catch(Exception error) {
+		} catch(const Exception& error) {
 			FILE_LOG(logERROR) << "Could not create master HDF5 handles";
 			error.printErrorStack();
 			if (fd) fd->close();
@@ -518,7 +517,7 @@ public:
 				dset_para.push_back(ds);
 			}
 		}
-		catch(Exception error){
+		catch(const Exception& error){
 			FILE_LOG(logERROR) << "Could not create HDF5 handles in object " << ind;
 			error.printErrorStack();
 			if (fd) fd->close();
@@ -672,8 +671,9 @@ public:
 
 				//source file name
 				std::string srcFileName = HDF5FileStatic::CreateFileName(fpath, fnameprefix, findex,
-						framesSaved, dindex, numunits, i);
+						j, dindex, numunits, i);
 
+				FILE_LOG(logERROR) << srcFileName;
 				// find relative path
 				std::string relative_srcFileName = srcFileName;
 				{
@@ -685,7 +685,7 @@ public:
 				//source dataset name
 				std::ostringstream osfn;
 				osfn << "/data";
-				if (frindexenable) osfn << "_f" << std::setfill('0') << std::setw(12) << framesSaved;
+				if (frindexenable) osfn << "_f" << std::setfill('0') << std::setw(12) << j;
 				std::string srcDatasetName = osfn.str();
 
 				//source dataspace
@@ -858,7 +858,7 @@ public:
 			newDataset->write(data_out,datatype);
 			newfd->close();
 			oldfd->close();
-		} catch(Exception error){
+		} catch(const Exception& error){
 			FILE_LOG(logERROR) << "Could not copy virtual files";
 			error.printErrorStack();
 			free(data_out);

@@ -128,22 +128,23 @@ void HDF5File::UpdateDataType() {
 }
 
 
-int HDF5File::CreateFile(uint64_t fnum) {
+int HDF5File::CreateFile() {
 	numFilesinAcquisition++;
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 	currentFileName = HDF5FileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
-			(*numImages > 1), fnum, *detIndex, *numUnitsPerDetector, index);
+			subFileIndex, *detIndex, *numUnitsPerDetector, index);
 
 	//first time
-	if(!fnum) UpdateDataType();
+	if(subFileIndex == 0u) 
+		UpdateDataType();
 
 	uint64_t framestosave = ((*maxFramesPerFile == 0) ? *numImages : // infinite images
-			(((extNumImages - fnum) > (*maxFramesPerFile)) ?  // save up to maximum at a time
-					(*maxFramesPerFile) : (extNumImages-fnum)));
+			(((extNumImages - subFileIndex) > (*maxFramesPerFile)) ?  // save up to maximum at a time
+					(*maxFramesPerFile) : (extNumImages-subFileIndex)));
 	pthread_mutex_lock(&Mutex);
 	if (HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, (*numImages > 1),
-			fnum, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
+			subFileIndex, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			datatype, filefd, dataspace, dataset,
 			HDF5_WRITER_VERSION, MAX_CHUNKED_IMAGES,
 			dataspace_para,	dataset_para,
@@ -199,7 +200,8 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	// check if maxframesperfile = 0 for infinite
 	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
 		CloseCurrentFile();
-		CreateFile(fnum);
+		++subFileIndex;
+		CreateFile();
 	}
 	numFramesInFile++;
 	numActualPacketsInFile += nump;

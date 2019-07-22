@@ -10,6 +10,7 @@
 
 
 #include "ansi.h"
+#include "logger.h"
 
 #include <string>
 #include <iomanip>
@@ -33,43 +34,39 @@ class BinaryFileStatic {
 	 * @param fpath file path
 	 * @param fnameprefix file name prefix (includes scan and position variables)
 	 * @param findex file index
-	 * @param frindexenable frame index enable
-	 * @param fnum frame number index
+	 * @param subfindex sub file index
 	 * @param dindex readout index
 	 * @param numunits number of units per readout. eg. eiger has 2 udp units per readout
 	 * @param unitindex unit index
 	 * @returns complete file name created
 	 */
-	static std::string CreateFileName(char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
-			uint64_t fnum = 0, int dindex = -1, int numunits = 1, int unitindex = 0)
-	{
-		std::ostringstream osfn;
-		osfn << fpath << "/" << fnameprefix;
-		if (dindex >= 0) osfn << "_d" << (dindex * numunits + unitindex);
-		if (frindexenable) osfn << "_f" << std::setfill('0') << std::setw(12) << fnum;
-		osfn << "_" << findex;
-		osfn << ".raw";
-		return osfn.str();
+	static std::string CreateFileName(char *fpath, char *fprefix,
+										uint64_t findex, uint64_t subfindex,
+										int dindex, int numunits = 1,
+										int unitindex = 0) {
+		std::ostringstream os;
+		os << fpath << "/" << fprefix << "_d"
+			<< (dindex * numunits + unitindex) << "_f" << subfindex << '_'
+			<< findex << ".raw";
+		return os.str();
 	}
 
-	/**
+        /**
 	 * Create file names for master file
 	 * @param fpath file path
 	 * @param fnameprefix file name prefix (includes scan and position variables)
 	 * @param findex file index
 	 * @returns master file name
 	 */
-	std::string CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex)
-	{
-		std::ostringstream osfn;
-		osfn << fpath << "/" << fnameprefix;
-		osfn << "_master";
-		osfn << "_" << findex;
-		osfn << ".raw";
-		return osfn.str();
+	static std::string CreateMasterFileName(char *fpath, char *fnameprefix,
+											uint64_t findex) {
+		std::ostringstream os;
+		os << fpath << "/" << fnameprefix << "_master"
+			<< "_" << findex << ".raw";
+		return os.str();
 	}
 
-	/**
+        /**
 	 * Close File
 	 * @param fd file pointer
 	 */

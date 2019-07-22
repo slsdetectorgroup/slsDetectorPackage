@@ -38,11 +38,10 @@ if (SLS_USE_RECEIVER)
     )
 endif (SLS_USE_RECEIVER)
 
+
 set_target_properties(tests PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
-
-
 
 include(CTest)
 include(Catch)

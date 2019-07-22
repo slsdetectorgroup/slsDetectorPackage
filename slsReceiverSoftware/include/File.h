@@ -50,6 +50,8 @@ class File : private virtual slsDetectorDefs {
 	 */
 	std::string GetCurrentFileName();
 
+
+	void resetSubFileIndex();
 	/**
 	 * Print all member values
 	 */
@@ -81,30 +83,19 @@ class File : private virtual slsDetectorDefs {
 
 	/**
 	 * Create file
-	 * @param fnum current frame index to include in file name
 	 * @returns OK or FAIL
 	 */
-	virtual int CreateFile(uint64_t fnum){
-		FILE_LOG(logERROR) << "This is a generic function CreateFile that should be "
-				"overloaded by a derived class";
-		return OK;
-	}
+	virtual int CreateFile() = 0;
 
 	/**
 	 * Close Current File
 	 */
-	virtual void CloseCurrentFile() {
-		FILE_LOG(logERROR) << "This is a generic function CloseCurrentFile that should be "
-				"overloaded by a derived class";
-	}
+	virtual void CloseCurrentFile() = 0;
 
 	/**
 	 * Close Files
 	 */
-	virtual void CloseAllFiles() {
-		FILE_LOG(logERROR) << "This is a generic function that should be overloaded "
-				"by a derived class";
-	}
+	virtual void CloseAllFiles() = 0;
 
 	/**
 	 * Write data to file
@@ -113,11 +104,7 @@ class File : private virtual slsDetectorDefs {
 	 * @param nump number of packets caught
 	 * @param OK or FAIL
 	 */
-	virtual int WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
-		FILE_LOG(logERROR) << "This is a generic function WriteToFile that "
-				"should be overloaded by a derived class";
-		return FAIL;
-	}
+	virtual int WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) = 0;
 
 	 /**
 	  * Create master file
@@ -134,11 +121,7 @@ class File : private virtual slsDetectorDefs {
 	  */
 	virtual int CreateMasterFile(bool mfwenable, bool en, uint32_t size,
 				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st,
-				uint64_t sp, uint64_t ap) {
-		FILE_LOG(logERROR) << "This is a generic function CreateMasterFile that "
-				"should be overloaded by a derived class";
-		return OK;
-	}
+				uint64_t sp, uint64_t ap) = 0;
 
 	// HDf5 specific
 	/**
@@ -150,6 +133,7 @@ class File : private virtual slsDetectorDefs {
 		FILE_LOG(logERROR) << "This is a generic function SetNumberofPixels that "
 				"should be overloaded by a derived class";
 	}
+	
 
 	/**
 	 * End of Acquisition
@@ -192,6 +176,9 @@ class File : private virtual slsDetectorDefs {
 
 	/** File Index */
 	uint64_t* fileIndex;
+
+	/** Sub file index */
+	uint64_t subFileIndex{0};
 
 	/** Over write enable */
 	bool* overWriteEnable;

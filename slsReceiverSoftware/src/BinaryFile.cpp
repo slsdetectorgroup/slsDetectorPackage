@@ -42,12 +42,12 @@ slsDetectorDefs::fileFormat BinaryFile::GetFileType() {
 }
 
 
-int BinaryFile::CreateFile(uint64_t fnum) {
+int BinaryFile::CreateFile() {
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
 	currentFileName = BinaryFileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
-			(*numImages > 1), fnum, *detIndex, *numUnitsPerDetector, index);
+			 subFileIndex, *detIndex, *numUnitsPerDetector, index);
 
 	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
 		return FAIL;
@@ -72,7 +72,8 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 	// check if maxframesperfile = 0 for infinite
 	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
 		CloseCurrentFile();
-		CreateFile(fnum);
+		++subFileIndex;
+		CreateFile();
 	}
 	numFramesInFile++;
 	numActualPacketsInFile += nump;

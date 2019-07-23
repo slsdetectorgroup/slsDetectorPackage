@@ -38,12 +38,10 @@ void qTabMeasurement::SetupWidgetWindow() {
 	sampleImplemented = false;
 	delayImplemented = true;
 	startingFnumImplemented = false;
-	// by default, delay is disabled in form
+	// by default, delay and starting fnum is disabled in form
 	lblDelay->setEnabled(true);
 	spinDelay->setEnabled(true);
 	comboDelayUnit->setEnabled(true);
-	lblStartingFrameNumber->setEnabled(false);
-	spinStartingFrameNumber->setEnabled(false);
 	// enabling according to det type
 	switch(myDet->getDetectorTypeAsEnum()) {
 		case slsDetectorDefs::MOENCH:

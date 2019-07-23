@@ -78,7 +78,7 @@ void Beb_SetQuad(int value);
 int Beb_GetQuad();
 int Beb_SetDetectorPosition(int pos[]);
 int Beb_SetStartingFrameNumber(uint64_t value);
-int Beb_GetStartingFrameNumber(uint64_t* retval);
+int Beb_GetStartingFrameNumber(uint64_t* retval, int tengigaEnable);
 
 uint16_t Beb_swap_uint16( uint16_t val);
 int Beb_open(u_int32_t** csp0base, u_int32_t offset);

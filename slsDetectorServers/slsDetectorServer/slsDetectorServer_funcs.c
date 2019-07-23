@@ -4044,6 +4044,9 @@ int set_starting_frame_number(int file_des) {
 				if (ret == FAIL) {
 					sprintf(mess, "Could not get starting frame number. Failed to map address.\n");
 					FILE_LOG(logERROR,(mess));	
+				} else if (ret == -2) {
+					sprintf(mess, "Inconsistent starting frame number from left and right FPGA. Please set it.\n");
+					FILE_LOG(logERROR,(mess));	
 				} else {
 					if (arg != retval) {
 						ret = FAIL;
@@ -4072,6 +4075,9 @@ int get_starting_frame_number(int file_des) {
 	ret = getStartingFrameNumber(&retval);
 	if (ret == FAIL) {
 		sprintf(mess, "Could not get starting frame number. Failed to map address.\n");
+		FILE_LOG(logERROR,(mess));	
+	} else if (ret == FAIL) {
+		sprintf(mess, "Inconsistent starting frame number from left and right FPGA. Please set it.\n");
 		FILE_LOG(logERROR,(mess));	
 	} else {
 		FILE_LOG(logDEBUG1, ("Start frame number retval: %u\n", retval));

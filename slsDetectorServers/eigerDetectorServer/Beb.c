@@ -1302,47 +1302,77 @@ int Beb_SetStartingFrameNumber(uint64_t value) {
 	if (fd < 0) {
 		FILE_LOG(logERROR, ("Set Start Frame Number FAIL\n"));
 		return FAIL;
-	} else {
-		// since the read is not implemented in firmware yet
-		Beb_deactivatedStartFrameNumber = value;
+	} 
+	// since the read is not implemented in firmware yet
+	Beb_deactivatedStartFrameNumber = value;
 
-		// decrement for firmware
-		uint64_t valueInFirmware = value - 1;
-		Beb_Write32(csp0base, UDP_HEADER_FRAME_NUMBER_LSB_OFST, valueInFirmware & (0xffffffff));
-		Beb_Write32(csp0base, UDP_HEADER_FRAME_NUMBER_MSB_OFST, (valueInFirmware >> 32) & (0xffffffff));
-		Beb_close(fd,csp0base);
-	}
+	// decrement for firmware
+	uint64_t valueInFirmware = value - 1;
+	Beb_Write32(csp0base, UDP_HEADER_FRAME_NUMBER_LSB_OFST, valueInFirmware & (0xffffffff));
+	Beb_Write32(csp0base, UDP_HEADER_FRAME_NUMBER_MSB_OFST, (valueInFirmware >> 32) & (0xffffffff));
+	Beb_close(fd,csp0base);
 
-	uint64_t retval = -1;
-	if ((Beb_GetStartingFrameNumber(&retval) == OK) && (retval == value)) {
-		FILE_LOG(logINFO, ("Going to reset Frame Number\n"));
-		Beb_ResetFrameNumber();
-	}
+	FILE_LOG(logINFO, ("Going to reset Frame Number\n"));
+	Beb_ResetFrameNumber();
 	return OK;
 }
 
-int Beb_GetStartingFrameNumber(uint64_t* retval) {
+int Beb_GetStartingFrameNumber(uint64_t* retval, int tengigaEnable) {
 	if (!Beb_activated) {
 		*retval = Beb_deactivatedStartFrameNumber;
 		return OK;
 	}
-	FILE_LOG(logDEBUG1, ("Getting start frame number\n"));
 
-	// since it is not implemented in firmware yet
-	*retval = Beb_deactivatedStartFrameNumber;
-/*
+	FILE_LOG(logDEBUG1, ("Getting start frame number\n"));
 	u_int32_t* csp0base = 0;
-	int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_TEST_BASEADDR);
+	int fd = Beb_open(&csp0base, XPAR_COUNTER_BASEADDR);
 	if (fd < 0) {
-		FILE_LOG(logERROR, ("Set Start Frame Number FAIL\n"));
+		FILE_LOG(logERROR, ("Get Start Frame Number FAIL\n"));
 		return FAIL;
-	} else {
-		*retval = Beb_Read32(csp0base, UDP_HEADER_FRAME_NUMBER_MSB_OFST);
-		uint32_t lretval = Beb_Read32(csp0base, UDP_HEADER_FRAME_NUMBER_MSB_OFST);
-		*retval = (*retval << 32) | lretval;
+	} 
+
+	uint32_t temp = 0;
+	if (!tengigaEnable) {
+		uint64_t left1g = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_MSB_OFST);
+		temp = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_LSB_OFST);
+		left1g = ((left1g << 32) | temp) >> 16;
+		++left1g; // increment for firmware
+
+		uint64_t right1g = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_MSB_OFST);
+		temp = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_LSB_OFST);
+		right1g = ((right1g << 32) | temp) >> 16;
+		++right1g; // increment for firmware
+
 		Beb_close(fd,csp0base);
+		if (left1g != right1g)  {
+			FILE_LOG(logERROR, ("Retrieved inconsistent frame numbers from 1g left %llu and right %llu\n",
+				(long long int)left1g, (long long int)right1g));
+			*retval = (left1g > right1g) ? left1g : right1g; // give max to set it to when stopping acq & different value
+			return -2; // to differentiate between failed address mapping
+		}
+		*retval = left1g;
+	} 
+	
+	else {
+		uint64_t left10g = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_MSB_OFST);
+		temp = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_LSB_OFST);
+		left10g = ((left10g << 32) | temp) >> 16;
+		++left10g; // increment for firmware
+
+		uint64_t right10g = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_MSB_OFST);
+		temp = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_LSB_OFST);
+		right10g = ((right10g << 32) | temp) >> 16;
+		Beb_close(fd,csp0base);
+		++right10g; // increment for firmware
+
+		if (left10g != right10g) {
+			FILE_LOG(logERROR, ("Retrieved inconsistent frame numbers from `0g left %llu and right %llu\n",
+				(long long int)left10g, (long long int)right10g));
+			*retval = (left10g > right10g) ? left10g : right10g; // give max to set it to when stopping acq & different value
+			return -2; // to differentiate between failed address mapping
+		}
+		*retval = left10g;
 	}
-*/
 	return OK;
 }
 

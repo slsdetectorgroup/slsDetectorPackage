@@ -100,11 +100,13 @@
 #define TEMPERATURE_POLARITY_BIT		(11)
 #define TEMPERATURE_POLARITY_MSK		(0x00000001 << TEMPERATURE_POLARITY_BIT)
 
-
-
 /* Get Frames from Start 64 bit register (frames from last reset using CONTROL_CRST) */
-#define FRAMES_FROM_START_PG_LSB_REG	(0x24 << MEM_MAP_SHIFT)
-#define FRAMES_FROM_START_PG_MSB_REG 	(0x25 << MEM_MAP_SHIFT)
+#define FRAMES_FROM_START_LSB_REG	    (0x22 << MEM_MAP_SHIFT)
+#define FRAMES_FROM_START_MSB_REG 	    (0x23 << MEM_MAP_SHIFT)
+
+/* Get Starting Frame Number */
+#define GET_FRAME_NUMBER_LSB_REG	    (0x24 << MEM_MAP_SHIFT)
+#define GET_FRAME_NUMBER_MSB_REG 	    (0x25 << MEM_MAP_SHIFT)
 
 /* Measurement Time 64 bit register (timestamp at a frame start until reset)*/
 #define START_FRAME_TIME_LSB_REG		(0x26 << MEM_MAP_SHIFT)
@@ -388,7 +390,7 @@
 #define SET_EXPTIME_LSB_REG    			(0x68 << MEM_MAP_SHIFT)
 #define SET_EXPTIME_MSB_REG    			(0x69 << MEM_MAP_SHIFT)
 
-/* Frame number 64 bit register */
+/* Starting Frame number 64 bit register */
 #define FRAME_NUMBER_LSB_REG   			(0x6A << MEM_MAP_SHIFT)
 #define FRAME_NUMBER_MSB_REG    		(0x6B << MEM_MAP_SHIFT)
 

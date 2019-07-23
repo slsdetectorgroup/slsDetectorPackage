@@ -567,7 +567,7 @@ int setStartingFrameNumber(uint64_t value) {
 
 int getStartingFrameNumber(uint64_t* retval) {
 	// increment is for firmware
-	*retval = (getU64BitReg(FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG) + 1);
+	*retval = (getU64BitReg(GET_FRAME_NUMBER_LSB_REG, GET_FRAME_NUMBER_MSB_REG) + 1);
 	return OK;
 }
 
@@ -694,7 +694,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 	case FRAMES_FROM_START:
 	case FRAMES_FROM_START_PG:
-		retval = get64BitReg(FRAMES_FROM_START_PG_LSB_REG, FRAMES_FROM_START_PG_MSB_REG);
+		retval = get64BitReg(FRAMES_FROM_START_LSB_REG, FRAMES_FROM_START_MSB_REG);
 		FILE_LOG(logINFO, ("Getting frames from start run control %lld\n", (long long int)retval));
 		break;
 

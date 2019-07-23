@@ -213,13 +213,6 @@ std::vector<int64_t> multiSlsDetector::getDetectorNumber() {
     return parallelCall(&slsDetector::getId, slsDetectorDefs::DETECTOR_SERIAL_NUMBER);
 }
 
-// void slsDetector::freeSharedMemory(int multi_id, int slsId) {
-//     SharedMemory<sharedSlsDetector> temp_shm(multi_id, slsId);
-//     if (temp_shm.IsExisting()) {
-//         temp_shm.RemoveSharedMemory();
-//     }
-// }
-
 void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
     // single
     if (detPos >= 0) {

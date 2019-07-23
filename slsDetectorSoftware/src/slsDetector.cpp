@@ -2,7 +2,6 @@
 #include "ClientSocket.h"
 #include "SharedMemory.h"
 #include "file_utils.h"
-#include "multiSlsDetector.h"
 #include "network_utils.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
@@ -37,7 +36,7 @@ slsDetector::slsDetector(detectorType type, int multi_id, int det_id,
         FILE_LOG(logWARNING) << "This shared memory should have been "
                                 "deleted before! "
                              << shm.GetName() << ". Freeing it again";
-        freeSharedMemory(multi_id, det_id);
+       shm.RemoveSharedMemory();
     }
 
     initSharedMemory(type, multi_id, verify);
@@ -243,13 +242,6 @@ int slsDetector::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
 
 int slsDetector::sendToReceiver(int fnum) {
     return sendToReceiver(fnum, nullptr, 0, nullptr, 0);
-}
-
-void slsDetector::freeSharedMemory(int multi_id, int slsId) {
-    SharedMemory<sharedSlsDetector> temp_shm(multi_id, slsId);
-    if (temp_shm.IsExisting()) {
-        temp_shm.RemoveSharedMemory();
-    }
 }
 
 void slsDetector::freeSharedMemory() {
@@ -948,105 +940,58 @@ int slsDetector::updateDetector() {
     return ret;
 }
 
-int slsDetector::writeConfigurationFile(const std::string &fname,
-                                        multiSlsDetector *m) {
-    int iline = 0;
-    std::ofstream outfile;
-    outfile.open(fname.c_str(), std::ios_base::out);
-    if (outfile.is_open()) {
-        iline = writeConfigurationFile(outfile, m);
-        outfile.close();
-    } else {
-        throw RuntimeError("Could not open configuration file for writing");
-    }
-    FILE_LOG(logINFO) << iline << " lines written to configuration file";
-    return OK;
-}
+std::vector<std::string> slsDetector::getConfigFileCommands() {
+    std::vector<std::string> base{"hostname",    "port",       "stopport",
+                                    "settingsdir", "fpath",      "lock",
+                                    "zmqport",     "rx_zmqport", "zmqip",
+                                    "rx_zmqip",    "rx_tcpport"};
 
-int slsDetector::writeConfigurationFile(std::ofstream &outfile,
-                                        multiSlsDetector *m) {
-
-    FILE_LOG(logDEBUG1) << "Write configuration file";
-
-    std::vector<std::string> names;
-    // common config
-    names.emplace_back("hostname");
-    names.emplace_back("port");
-    names.emplace_back("stopport");
-    names.emplace_back("settingsdir");
-    names.emplace_back("ffdir");
-    names.emplace_back("outdir");
-    names.emplace_back("lock");
-    // receiver config
-    names.emplace_back("zmqport");
-    names.emplace_back("rx_zmqport");
-    names.emplace_back("zmqip");
-    names.emplace_back("rx_zmqip");
-    names.emplace_back("rx_tcpport");
-
-    // detector specific config
     switch (shm()->myDetectorType) {
     case GOTTHARD:
-        names.emplace_back("detectormac");
-        names.emplace_back("detectorip");
-        names.emplace_back("rx_udpport");
-        names.emplace_back("rx_udpip");
-        names.emplace_back("rx_udpmac");
-        names.emplace_back("rx_hostname");
-
-        names.emplace_back("extsig:0");
-        names.emplace_back("vhighvoltage");
+        base.emplace_back("detectormac");
+        base.emplace_back("detectorip");
+        base.emplace_back("rx_udpport");
+        base.emplace_back("rx_udpip");
+        base.emplace_back("rx_udpmac");
+        base.emplace_back("extsig");
         break;
     case EIGER:
-        names.emplace_back("detectormac");
-        names.emplace_back("detectorip");
-        names.emplace_back("rx_udpport");
-        names.emplace_back("rx_udpport2");
-        names.emplace_back("rx_udpip");
-        names.emplace_back("rx_udpmac");
-        names.emplace_back("rx_hostname");
-
-        names.emplace_back("vhighvoltage");
-        names.emplace_back("trimen");
-        names.emplace_back("iodelay");
-        names.emplace_back("tengiga");
+        base.emplace_back("detectormac");
+        base.emplace_back("detectorip");
+        base.emplace_back("rx_udpport");
+        base.emplace_back("rx_udpport2");
+        base.emplace_back("rx_udpip");
+        base.emplace_back("rx_udpmac");
+        base.emplace_back("trimen");
+        base.emplace_back("iodelay");
+        base.emplace_back("tengiga");
         break;
     case JUNGFRAU:
-        names.emplace_back("detectormac");
-        names.emplace_back("detectormac2");
-        names.emplace_back("detectorip");
-        names.emplace_back("detectorip2");
-        names.emplace_back("rx_udpport");
-        names.emplace_back("rx_udpport2");
-        names.emplace_back("rx_udpip");
-        names.emplace_back("rx_udpip2");
-        names.emplace_back("rx_udpmac");
-        names.emplace_back("rx_udpmac2");
-        names.emplace_back("rx_hostname");
-
-        names.emplace_back("powerchip");
-        names.emplace_back("vhighvoltage");
+        base.emplace_back("detectormac");
+        base.emplace_back("detectormac2");
+        base.emplace_back("detectorip");
+        base.emplace_back("detectorip2");
+        base.emplace_back("rx_udpport");
+        base.emplace_back("rx_udpport2");
+        base.emplace_back("rx_udpip");
+        base.emplace_back("rx_udpip2");
+        base.emplace_back("rx_udpmac");
+        base.emplace_back("rx_udpmac2");
+        base.emplace_back("powerchip");
         break;
     case CHIPTESTBOARD:
-        names.emplace_back("detectormac");
-        names.emplace_back("detectorip");
-        names.emplace_back("rx_udpport");
-        names.emplace_back("rx_udpip");
-        names.emplace_back("rx_udpmac");
-        names.emplace_back("rx_hostname");
-
-        names.emplace_back("vhighvoltage");
+        base.emplace_back("detectormac");
+        base.emplace_back("detectorip");
+        base.emplace_back("rx_udpport");
+        base.emplace_back("rx_udpip");
+        base.emplace_back("rx_udpmac");
         break;
     case MOENCH:
-        names.emplace_back("detectormac");
-        names.emplace_back("detectorip");
-        names.emplace_back("rx_udpport");
-        names.emplace_back("rx_udpip");
-        names.emplace_back("rx_udpmac");
-        names.emplace_back("rx_hostname");
-
-        names.emplace_back("powerchip");
-        names.emplace_back("vhighvoltage");
+        base.emplace_back("detectormac");
+        base.emplace_back("detectorip");
+        base.emplace_back("rx_udpport");
+        base.emplace_back("rx_udpip");
+        base.emplace_back("rx_udpmac");        
         break;
     default:
         throw RuntimeError(
@@ -1054,18 +999,19 @@ int slsDetector::writeConfigurationFile(std::ofstream &outfile,
             std::to_string(shm()->myDetectorType));
     }
 
-    names.emplace_back("r_readfreq");
-    names.emplace_back("rx_udpsocksize");
-    names.emplace_back("rx_realudpsocksize");
-
-    auto cmd = slsDetectorCommand(m);
-    for (auto &name : names) {
-        char *args[] = {const_cast<char *>(name.c_str())};
-        outfile << detId << ":";
-        outfile << name << " " << cmd.executeLine(1, args, GET_ACTION)
-                << std::endl;
+    base.emplace_back("vhighvoltage");
+    base.emplace_back("rx_hostname");
+    base.emplace_back("r_readfreq");
+    base.emplace_back("rx_udpsocksize");
+    base.emplace_back("rx_realudpsocksize");
+    
+    std::vector<std::string> commands;
+    for (const auto &cmd : base) {
+        std::ostringstream os;
+        os << detId << ':' << cmd;
+        commands.emplace_back(os.str());
     }
-    return OK;
+    return commands;
 }
 
 slsDetectorDefs::detectorSettings slsDetector::getSettings() {

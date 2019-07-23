@@ -1,5 +1,4 @@
 #pragma once
-
 #include "ClientSocket.h"
 #include "SharedMemory.h"
 #include "logger.h"
@@ -7,19 +6,13 @@
 #include "network_utils.h"
 #include "FixedCapacityContainer.h"
 
-
 #include <cmath>
 #include <vector>
 #include <array>
 
-
-class multiSlsDetector;
 class ServerInterface;
 
-
 #define SLS_SHMVERSION 0x190515
-
-
 
 /**
 	 * @short structure allocated in shared memory to store detector settings for IPC and cache
@@ -366,16 +359,6 @@ class slsDetector : public virtual slsDetectorDefs{
 	int sendToReceiver(int fnum);
 
     /**
-	 * Free shared memory without creating objects
-	 * If this is called, must take care to update
-	 * multiSlsDetectors thisMultiDetector->numberofDetectors
-	 * avoiding creating the constructor classes and mapping
-	 * @param multi_id multi detector Id
-	 * @param slsId slsDetectorId or position of slsDetector in detectors list
-	 */
-    static void freeSharedMemory(int multi_id, int slsId);
-
-    /**
 	 * Free shared memory and delete shared memory structure
 	 * occupied by the sharedSlsDetector structure
 	 * Is only safe to call if one deletes the slsDetector object afterward
@@ -593,22 +576,11 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int updateDetector();
 
-    /**
-	 * Write current configuration to a file
-	 * calls writeConfigurationFile giving it a stream to write to
-	 * @param fname configuration file name
-	 * @param m multiSlsDetector reference to parse commands
-	 * @returns OK or FAIL
+	/**
+	 * Get detector specific commands to write into config file
+	 * @returns vector of strings with commands
 	 */
-    int writeConfigurationFile(const std::string &fname, multiSlsDetector *m);
-
-    /**
-	 * Write current configuration to a stream
-	 * @param outfile outstream
-	 * @param m multiSlsDetector reference to parse commands
-	 * @returns OK or FAIL
-	 */
-    int writeConfigurationFile(std::ofstream &outfile, multiSlsDetector *m);
+	std::vector<std::string> getConfigFileCommands();
 
     /**
 	 * Get detector settings

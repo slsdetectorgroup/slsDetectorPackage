@@ -216,7 +216,10 @@ std::vector<int64_t> multiSlsDetector::getDetectorNumber() {
 void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
     // single
     if (detPos >= 0) {
-        slsDetector::freeSharedMemory(multiId, detPos);
+        SharedMemory<sharedSlsDetector> temp_shm(multiId, detPos);
+        if (temp_shm.IsExisting()) {
+            temp_shm.RemoveSharedMemory();
+        }
         return;
     }
 
@@ -802,59 +805,25 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
 
 int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
     // TODO! make exception safe!
-    const std::vector<std::string> names = {"detsizechan", "hostname", "outdir", "threaded"};
-
-    int ret = OK, ret1 = OK;
+    const std::vector<std::string> header{"detsizechan", "hostname"};
     std::ofstream outfile;
-    size_t iline = 0;
 
     outfile.open(fname.c_str(), std::ios_base::out);
     if (outfile.is_open()) {
-        char *args[100];
-        for (auto &arg : args) {
-            arg = new char[1000];
-        }
-
-        auto cmd = slsDetectorCommand(this);
-
-        // complete size of detector
-        FILE_LOG(logINFO) << "Command to write: " << iline << " " << names[iline];
-        strcpy(args[0], names[iline].c_str());
-        outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
-        ++iline;
-
-        // hostname of the detectors
-        FILE_LOG(logINFO) << "Command to write: " << iline << " " << names[iline];
-        strcpy(args[0], names[iline].c_str());
-        outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
-        ++iline;
+        for(const auto& cmd : header)
+            multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
 
         // single detector configuration
         for (auto & detector : detectors) {
-            outfile << std::endl;
-            ret1 = detector->writeConfigurationFile(outfile, this);
-            if (ret1 == FAIL) {
-                ret = FAIL;
-            }
-        }
-
-        outfile << std::endl;
-        // other configurations
-        while (iline < names.size()) {
-            FILE_LOG(logINFO) << "Command to write:" << iline << " " << names[iline];
-            strcpy(args[0], names[iline].c_str());
-            outfile << names[iline] << " " << cmd.executeLine(1, args, GET_ACTION) << std::endl;
-            ++iline;
-        }
-        outfile.close();
-        FILE_LOG(logDEBUG1) << "wrote " << iline << " lines to configuration file ";
-        for (auto &arg : args) {
-            delete[] arg;
+            outfile << '\n';
+            auto det_commands = detector->getConfigFileCommands();
+            for(const auto& cmd : det_commands)
+                multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
         }
     } else {
         throw RuntimeError("Could not open configuration file " + fname + " for writing");
     }
-    return ret;
+    return OK;
 }
 
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int detPos) {

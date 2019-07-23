@@ -1311,11 +1311,17 @@ int	setDetectorPosition(int pos[]) {
 }
 
 void setQuad(int value) {
+#ifndef VIRTUAL
 	Beb_SetQuad(value);
+#endif
 }
 
 int	getQuad() {
+#ifdef VIRTUAL
+	return 0;
+#else
 	return Beb_GetQuad();
+#endif
 }
 
 int enableTenGigabitEthernet(int val) {

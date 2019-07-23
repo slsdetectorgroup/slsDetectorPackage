@@ -10,9 +10,9 @@ class MultiDetectorFixture {
 
   public:
     MultiDetectorFixture() : d(0, true, true) {
-        d.setHostname(hostname.c_str());
-        if (my_ip != "undefined")
-            d.setReceiverHostname(my_ip);
+        d.setHostname(test::hostname.c_str());
+        if (test::my_ip != "undefined")
+            d.setReceiverHostname(test::my_ip);
     }
     ~MultiDetectorFixture() { d.freeSharedMemory(); }
 };
@@ -99,7 +99,6 @@ int to_time(uint32_t reg) {
 
 TEST_CASE_METHOD(MultiDetectorFixture, "Read/write register",
                  "[.eigerintegration][cli]") {
-    d.setTimer(ti::MEASUREMENTS_NUMBER, 1);
     d.setNumberOfFrames(1);
     d.setExposureTime(10000);
     d.acquire();
@@ -132,7 +131,7 @@ TEST_CASE_METHOD(MultiDetectorFixture, "Get time left",
 }
 
 TEST_CASE_METHOD(MultiDetectorFixture, "Get ID", "[.eigerintegration][cli]") {
-    std::string hn = hostname;
+    std::string hn = test::hostname;
     hn.erase(std::remove(begin(hn), end(hn), 'b'), end(hn));
     hn.erase(std::remove(begin(hn), end(hn), 'e'), end(hn));
     auto hostnames = sls::split(hn, '+');

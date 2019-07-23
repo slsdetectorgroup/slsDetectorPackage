@@ -7,19 +7,19 @@
 using namespace Catch::literals;
 
 TEST_CASE("Initialize a multi detector", "[.integration][.multi]") {
-    auto hostnames = sls::split(hostname, '+');
+    auto hostnames = sls::split(test::hostname, '+');
 
     multiSlsDetector d(0, true, true);
-    d.setHostname(hostname.c_str());
+    d.setHostname(test::hostname.c_str());
     REQUIRE(d.setOnline() == true); // get!
 
-    CHECK(d.getHostname() == hostname);
+    CHECK(d.getHostname() == test::hostname);
     for (size_t i = 0; i != hostnames.size(); ++i) {
         CHECK(d.getHostname(i) == hostnames[i]);
     }
 
-    CHECK(d.getDetectorTypeAsEnum() == type);
-    CHECK(d.getDetectorTypeAsString() == detector_type);
+    CHECK(d.getDetectorTypeAsEnum() == test::type);
+    CHECK(d.getDetectorTypeAsString() == test::detector_type);
 
     CHECK(d.getNumberOfDetectors() == hostnames.size());
     d.freeSharedMemory();
@@ -30,7 +30,7 @@ TEST_CASE("Initialize a multi detector", "[.integration][.multi]") {
 TEST_CASE("Set and read timers", "[.integration][.multi]") {
 
     multiSlsDetector d(0, true, true);
-    d.setHostname(hostname.c_str());
+    d.setHostname(test::hostname.c_str());
 
     // FRAME_NUMBER
     int n_frames = 3;
@@ -58,9 +58,6 @@ TEST_CASE("Set and read timers", "[.integration][.multi]") {
     // PROGRESS, /**< fraction of measurement elapsed - only get! */
     // MEASUREMENTS_NUMBER,
 
-    int measurements = 2;
-    d.setTimer(ti::MEASUREMENTS_NUMBER, measurements);
-    CHECK(d.setTimer(ti::MEASUREMENTS_NUMBER, -1) == measurements);
 
     // FRAMES_FROM_START,
     // FRAMES_FROM_START_PG,
@@ -68,7 +65,7 @@ TEST_CASE("Set and read timers", "[.integration][.multi]") {
 
     // SUBFRAME_ACQUISITION_TIME, /**< subframe exposure time */
     double subframe_exposure = 2000000; // ns
-    if (type == dt::EIGER) {
+    if (test::type == dt::EIGER) {
         d.setSubFrameExposureTime(subframe_exposure);
         CHECK(d.setSubFrameExposureTime(-1) == Approx(subframe_exposure));
     }
@@ -77,13 +74,13 @@ TEST_CASE("Set and read timers", "[.integration][.multi]") {
 
     // SUBFRAME_DEADTIME, /**< subframe deadtime */
     double subframe_deadtime = 4000; // ns
-    if (type == dt::EIGER) {
+    if (test::type == dt::EIGER) {
         d.setSubFrameExposureDeadTime(subframe_deadtime);
         CHECK(d.setSubFrameExposureDeadTime(-1) == Approx(subframe_deadtime));
     }
 
     
-    if (type == dt::EIGER) {
+    if (test::type == dt::EIGER) {
         // 32bit is needed for subframe exposure
         d.setDynamicRange(32);
         CHECK(d.setDynamicRange(-1) == 32);

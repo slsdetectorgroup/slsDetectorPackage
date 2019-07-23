@@ -813,8 +813,6 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
 int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
     // TODO! make exception safe!
     const std::vector<std::string> header{"detsizechan", "hostname"};
-    const std::vector<std::string> footer{"outdir"};
-    int ret = OK, ret1 = OK;
     std::ofstream outfile;
 
     outfile.open(fname.c_str(), std::ios_base::out);
@@ -825,20 +823,14 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
         // single detector configuration
         for (auto & detector : detectors) {
             outfile << '\n';
-            ret1 = detector->writeConfigurationFile(outfile, this);
-            if (ret1 == FAIL) {
-                ret = FAIL;
-            }
+            auto det_commands = detector->getConfigFileCommands();
+            for(const auto& cmd : det_commands)
+                multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
         }
-        outfile << '\n';
-
-        for(const auto& cmd : footer)
-            multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
-
     } else {
         throw RuntimeError("Could not open configuration file " + fname + " for writing");
     }
-    return ret;
+    return OK;
 }
 
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int detPos) {

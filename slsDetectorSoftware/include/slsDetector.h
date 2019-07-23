@@ -1,5 +1,4 @@
 #pragma once
-
 #include "ClientSocket.h"
 #include "SharedMemory.h"
 #include "logger.h"
@@ -7,19 +6,13 @@
 #include "network_utils.h"
 #include "FixedCapacityContainer.h"
 
-
 #include <cmath>
 #include <vector>
 #include <array>
 
-
-class multiSlsDetector;
 class ServerInterface;
 
-
 #define SLS_SHMVERSION 0x190515
-
-
 
 /**
 	 * @short structure allocated in shared memory to store detector settings for IPC and cache
@@ -583,22 +576,11 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int updateDetector();
 
-    /**
-	 * Write current configuration to a file
-	 * calls writeConfigurationFile giving it a stream to write to
-	 * @param fname configuration file name
-	 * @param m multiSlsDetector reference to parse commands
-	 * @returns OK or FAIL
+	/**
+	 * Get detector specific commands to write into config file
+	 * @returns vector of strings with commands
 	 */
-    int writeConfigurationFile(const std::string &fname, multiSlsDetector *m);
-
-    /**
-	 * Write current configuration to a stream
-	 * @param outfile outstream
-	 * @param m multiSlsDetector reference to parse commands
-	 * @returns OK or FAIL
-	 */
-    int writeConfigurationFile(std::ofstream &outfile, multiSlsDetector *m);
+	std::vector<std::string> getConfigFileCommands();
 
     /**
 	 * Get detector settings

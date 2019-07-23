@@ -517,4 +517,5 @@ TEST_CASE("Eiger or Jungfrau startingfnum", "[.eigerintegration][.jungfrauintegr
     CHECK(m.getStartingFrameNumber() == val);
     CHECK(m.acquire() == slsDetectorDefs::OK);
     CHECK(m.getReceiverCurrentFrameIndex() == val);
+    CHECK(m.getStartingFrameNumber() == (val + 1));
 }

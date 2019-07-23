@@ -619,7 +619,7 @@ void qTabMeasurement::StopAcquisition() {
 void qTabMeasurement::AcquireFinished() {
 	// to catch only once (if abort acquire also calls acq finished call back)
 	if (!btnStart->isEnabled()) {
-		FILE_LOG(logINFORED) << "Acquire Finished";
+		FILE_LOG(logDEBUG) << "Acquire Finished";
 		UpdateProgress();
 		GetRunIndex();
 		if (startingFnumImplemented) {

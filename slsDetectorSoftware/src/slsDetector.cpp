@@ -953,7 +953,7 @@ std::vector<std::string> slsDetector::getConfigFileCommands() {
         base.emplace_back("rx_udpport");
         base.emplace_back("rx_udpip");
         base.emplace_back("rx_udpmac");
-        base.emplace_back("extsig:0");
+        base.emplace_back("extsig");
         break;
     case EIGER:
         base.emplace_back("detectormac");
@@ -991,9 +991,7 @@ std::vector<std::string> slsDetector::getConfigFileCommands() {
         base.emplace_back("detectorip");
         base.emplace_back("rx_udpport");
         base.emplace_back("rx_udpip");
-        base.emplace_back("rx_udpmac");
-        base.emplace_back("powerchip");
-        
+        base.emplace_back("rx_udpmac");        
         break;
     default:
         throw RuntimeError(

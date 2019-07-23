@@ -37,7 +37,8 @@ void qTabMeasurement::SetupWidgetWindow() {
 
 	sampleImplemented = false;
 	delayImplemented = true;
-	// by default, delay is disabled in form
+	startingFnumImplemented = false;
+	// by default, delay and starting fnum is disabled in form
 	lblDelay->setEnabled(true);
 	spinDelay->setEnabled(true);
 	comboDelayUnit->setEnabled(true);
@@ -50,6 +51,14 @@ void qTabMeasurement::SetupWidgetWindow() {
 			break;
 		case slsDetectorDefs::EIGER:
 			delayImplemented = false;
+			lblStartingFrameNumber->setEnabled(true);
+			spinStartingFrameNumber->setEnabled(true);
+			startingFnumImplemented = true;
+			break;
+		case slsDetectorDefs::JUNGFRAU:
+			lblStartingFrameNumber->setEnabled(true);
+			spinStartingFrameNumber->setEnabled(true);
+			startingFnumImplemented = true;
 			break;
 		default:
 			break;
@@ -83,6 +92,9 @@ void qTabMeasurement::Initialization() {
 	connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
 	connect(dispFileName, SIGNAL(editingFinished()), this, SLOT(SetFileName()));
 	connect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));
+	if (startingFnumImplemented) {
+		connect(spinStartingFrameNumber, SIGNAL(valueChanged(int)), this, SLOT(SetStartingFrameNumber(int)));
+	}
 	connect(progressTimer, SIGNAL(timeout()), this, SLOT(UpdateProgress()));
 	connect(btnStart, SIGNAL(clicked()), this, SLOT(StartAcquisition()));
 	connect(btnStop, SIGNAL(clicked()), this, SLOT(StopAcquisition()));
@@ -512,6 +524,26 @@ void qTabMeasurement::SetRunIndex(int val) {
     } CATCH_HANDLE("Could not set acquisition file index.", "qTabMeasurement::SetRunIndex", this, &qTabMeasurement::GetRunIndex)
 }
 
+void qTabMeasurement::GetStartingFrameNumber() {
+	FILE_LOG(logDEBUG) << "Getting Starting Frame Number";
+	disconnect(spinStartingFrameNumber, SIGNAL(valueChanged(int)), this, SLOT(SetStartingFrameNumber(int)));
+
+	try {
+        auto retval = myDet->getStartingFrameNumber();
+		spinStartingFrameNumber->setValue(retval);
+    } CATCH_DISPLAY ("Could not get starting frame number.", "qTabMeasurement::GetStartingFrameNumber")
+
+	connect(spinStartingFrameNumber, SIGNAL(valueChanged(int)), this, SLOT(SetStartingFrameNumber(int)));
+}
+
+void qTabMeasurement::SetStartingFrameNumber(int val) {
+	FILE_LOG(logINFO) << "Setting Starting frame number to " << val;
+
+	try {
+        myDet->setStartingFrameNumber(val);
+    } CATCH_HANDLE("Could not set starting frame number.", "qTabMeasurement::SetStartingFrameNumber", this, &qTabMeasurement::GetStartingFrameNumber)
+}
+
 void qTabMeasurement::ResetProgress() {
 	FILE_LOG(logDEBUG) << "Resetting progress";
 	lblCurrentFrame->setText("0");
@@ -590,6 +622,9 @@ void qTabMeasurement::AcquireFinished() {
 		FILE_LOG(logDEBUG) << "Acquire Finished";
 		UpdateProgress();
 		GetRunIndex();
+		if (startingFnumImplemented) {
+			GetStartingFrameNumber();
+		}
 		FILE_LOG(logDEBUG) << "Measurement " << currentMeasurement << " finished";
 		// next measurement if acq is not stopped
 		if (!isAcquisitionStopped && ((currentMeasurement + 1) < numMeasurements)) {
@@ -639,6 +674,9 @@ void qTabMeasurement::Refresh() {
 		GetFileWrite();
 		GetFileName();
 		GetRunIndex();
+		if (startingFnumImplemented) {
+			GetStartingFrameNumber();
+		}
 		ResetProgress();
 	}
 

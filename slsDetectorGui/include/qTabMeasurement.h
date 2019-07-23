@@ -33,6 +33,7 @@ private slots:
 	void SetFileWrite(bool val);
 	void SetFileName();
 	void SetRunIndex(int val);
+	void SetStartingFrameNumber(int val);
 	void UpdateProgress();
 	void StartAcquisition();
 	void StopAcquisition();
@@ -54,6 +55,7 @@ private:
 	void GetFileWrite();
 	void GetFileName();
 	void GetRunIndex();
+	void GetStartingFrameNumber();
 
 	void ResetProgress();
 
@@ -81,6 +83,7 @@ private:
 	QPalette	red;
 	bool delayImplemented;
 	bool sampleImplemented;
+	bool startingFnumImplemented;
 	bool isAcquisitionStopped{false};
 	int numMeasurements{1};
 	int currentMeasurement{0};

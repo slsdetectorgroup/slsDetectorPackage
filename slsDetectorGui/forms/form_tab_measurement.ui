@@ -255,6 +255,27 @@
       <enum>QFrame::Plain</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblIndex">
+        <property name="text">
+         <string>Run Index:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="chkFile">
+        <property name="toolTip">
+         <string>&lt;nobr&gt;Sets output file name prefix&lt;/nobr&gt;&lt;br&gt;
+&lt;nobr&gt;Check the box to enable write to file. &lt;/nobr&gt;</string>
+        </property>
+        <property name="text">
+         <string>File Name:</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="QSpinBox" name="spinIndex">
         <property name="sizePolicy">
@@ -322,24 +343,62 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="lblIndex">
-        <property name="text">
-         <string>Run Index:</string>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="spinStartingFrameNumber">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The starting frame number of next acquisition.&lt;/p&gt;&lt;p&gt;#startingfnum&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>-1</number>
+        </property>
+        <property name="maximum">
+         <number>2000000000</number>
+        </property>
+        <property name="value">
+         <number>0</number>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="chkFile">
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblStartingFrameNumber">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;Sets output file name prefix&lt;/nobr&gt;&lt;br&gt;
-&lt;nobr&gt;Check the box to enable write to file. &lt;/nobr&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The starting frame number of next acquisition.&lt;/p&gt;&lt;p&gt;#startingfnum&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>File Name:</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
+         <string>Next Frame Number: </string>
         </property>
        </widget>
       </item>

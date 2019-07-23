@@ -666,7 +666,7 @@ int getStartingFrameNumber(uint64_t* retval) {
 	*retval = eiger_virtual_startingframenumber;
 	return OK;
 #else
-	return Beb_GetStartingFrameNumber(retval);
+	return Beb_GetStartingFrameNumber(retval, send_to_ten_gig);
 #endif
 }
 
@@ -1311,11 +1311,17 @@ int	setDetectorPosition(int pos[]) {
 }
 
 void setQuad(int value) {
+#ifndef VIRTUAL
 	Beb_SetQuad(value);
+#endif
 }
 
 int	getQuad() {
+#ifdef VIRTUAL
+	return 0;
+#else
 	return Beb_GetQuad();
+#endif
 }
 
 int enableTenGigabitEthernet(int val) {
@@ -1793,11 +1799,17 @@ int stopStateMachine() {
 	eiger_virtual_stop = 0;
 	return OK;
 #else
+	if ((Feb_Control_StopAcquisition() != STATUS_IDLE) || (!Beb_StopAcquisition()) ) {
+		FILE_LOG(logERROR, ("failed to stop acquisition\n"));
+		return FAIL;
+	}
 
-	if ((Feb_Control_StopAcquisition() == STATUS_IDLE) & Beb_StopAcquisition())
-		return OK;
-	FILE_LOG(logERROR, ("failed to stop acquisition\n"));
-	return FAIL;
+	// ensure all have same starting frame numbers
+	uint64_t retval = 0;
+	if(Beb_GetStartingFrameNumber(&retval, send_to_ten_gig) == -2) {
+		Beb_SetStartingFrameNumber(retval + 1);
+	}
+	return OK;
 #endif
 }
 

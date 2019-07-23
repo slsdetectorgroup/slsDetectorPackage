@@ -16,27 +16,27 @@
 // Header holding all configurations for different detectors
 #include "tests/config.h"
 #include "tests/globals.h"
-
+// using namespace test;
 // using dt = slsDetectorDefs::detectorType;
 // extern std::string hostname;
 // extern std::string detector_type;
 // extern dt type;
 
 TEST_CASE("Single detector no receiver", "[.integration][.single]") {
-    auto t = slsDetector::getTypeFromDetector(hostname);
-    CHECK(t == type);
+    auto t = slsDetector::getTypeFromDetector(test::hostname);
+    CHECK(t == test::type);
 
     slsDetector d(t);
     CHECK(d.getDetectorTypeAsEnum() == t);
-    CHECK(d.getDetectorTypeAsString() == detector_type);
+    CHECK(d.getDetectorTypeAsString() == test::detector_type);
 
-    d.setHostname(hostname);
-    CHECK(d.getHostname() == hostname);
+    d.setHostname(test::hostname);
+    CHECK(d.getHostname() == test::hostname);
 
     d.setOnline(true);
     CHECK(d.getOnlineFlag() == true);
 
-    CHECK(d.setDetectorType() == type);
+    CHECK(d.setDetectorType() == test::type);
 
     d.freeSharedMemory();
 }
@@ -54,8 +54,8 @@ TEST_CASE("Set control port then create a new object with this control port",
     int new_cport = 1993;
     int new_sport = 2000;
     {
-        slsDetector d(type);
-        d.setHostname(hostname);
+        slsDetector d(test::type);
+        d.setHostname(test::hostname);
         d.setOnline(true);
         CHECK(d.getControlPort() == old_cport);
         d.setControlPort(new_cport);
@@ -64,8 +64,8 @@ TEST_CASE("Set control port then create a new object with this control port",
         d.freeSharedMemory();
     }
     {
-        slsDetector d(type);
-        d.setHostname(hostname);
+        slsDetector d(test::type);
+        d.setHostname(test::hostname);
         d.setControlPort(new_cport);
         d.setStopPort(new_sport);
         CHECK(d.getControlPort() == new_cport);
@@ -79,8 +79,8 @@ TEST_CASE("Set control port then create a new object with this control port",
         d.freeSharedMemory();
     }
 
-    slsDetector d(type);
-    d.setHostname(hostname);
+    slsDetector d(test::type);
+    d.setHostname(test::hostname);
     d.setOnline(true);
     CHECK(d.getStopPort() == DEFAULT_PORTNO + 1);
     d.freeSharedMemory();
@@ -143,8 +143,8 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
 
 
 TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
-    slsDetector d(type);
-    d.setHostname(hostname);
+    slsDetector d(test::type);
+    d.setHostname(test::hostname);
     d.setOnline(true);
 
     // Check that detector server is unlocked then lock
@@ -161,13 +161,13 @@ TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
     d.lockServer(0);
     CHECK(d.lockServer() == 0);
 
-    CHECK(d.getLastClientIP() == my_ip);
+    CHECK(d.getLastClientIP() == test::my_ip);
     d.freeSharedMemory();
 }
 
 TEST_CASE("Set settings", "[.integration][.single]"){
-    slsDetector d(type);
-    d.setHostname(hostname);
+    slsDetector d(test::type);
+    d.setHostname(test::hostname);
     d.setOnline(true);
     CHECK(d.setSettings(defs::STANDARD) == defs::STANDARD);
 }
@@ -197,8 +197,8 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
     // MEASURED_SUBPERIOD,	/**< measured subperiod */
     // MAX_TIMERS
 
-    slsDetector d(type);
-    d.setHostname(hostname);
+    slsDetector d(test::type);
+    d.setHostname(test::hostname);
     d.setOnline(true);
 
     // Number of frames
@@ -214,14 +214,14 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
     d.setTimer(slsDetectorDefs::timerIndex::FRAME_PERIOD, period);
     CHECK(d.setTimer(slsDetectorDefs::timerIndex::FRAME_PERIOD) == period);
 
-    if (type != dt::EIGER) {
+    if (test::type != dt::EIGER) {
         auto delay = 10000;
         d.setTimer(slsDetectorDefs::timerIndex::DELAY_AFTER_TRIGGER, delay);
         CHECK(d.setTimer(slsDetectorDefs::timerIndex::DELAY_AFTER_TRIGGER) ==
               delay);
     }
 
-    if (type != dt::EIGER) {
+    if (test::type != dt::EIGER) {
         auto gates = 1;
         d.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, gates);
         CHECK(d.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER) == gates);
@@ -231,7 +231,7 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
     d.setTimer(slsDetectorDefs::timerIndex::CYCLES_NUMBER, cycles);
     CHECK(d.setTimer(slsDetectorDefs::timerIndex::CYCLES_NUMBER) == cycles);
 
-    if (type == dt::EIGER) {
+    if (test::type == dt::EIGER) {
         auto subtime = 200;
         d.setTimer(slsDetectorDefs::timerIndex::SUBFRAME_ACQUISITION_TIME,
                    subtime);

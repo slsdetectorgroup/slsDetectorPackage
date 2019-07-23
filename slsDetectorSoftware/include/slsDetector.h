@@ -366,16 +366,6 @@ class slsDetector : public virtual slsDetectorDefs{
 	int sendToReceiver(int fnum);
 
     /**
-	 * Free shared memory without creating objects
-	 * If this is called, must take care to update
-	 * multiSlsDetectors thisMultiDetector->numberofDetectors
-	 * avoiding creating the constructor classes and mapping
-	 * @param multi_id multi detector Id
-	 * @param slsId slsDetectorId or position of slsDetector in detectors list
-	 */
-    static void freeSharedMemory(int multi_id, int slsId);
-
-    /**
 	 * Free shared memory and delete shared memory structure
 	 * occupied by the sharedSlsDetector structure
 	 * Is only safe to call if one deletes the slsDetector object afterward

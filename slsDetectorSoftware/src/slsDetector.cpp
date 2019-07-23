@@ -37,7 +37,7 @@ slsDetector::slsDetector(detectorType type, int multi_id, int det_id,
         FILE_LOG(logWARNING) << "This shared memory should have been "
                                 "deleted before! "
                              << shm.GetName() << ". Freeing it again";
-        freeSharedMemory(multi_id, det_id);
+       shm.RemoveSharedMemory();
     }
 
     initSharedMemory(type, multi_id, verify);
@@ -243,13 +243,6 @@ int slsDetector::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
 
 int slsDetector::sendToReceiver(int fnum) {
     return sendToReceiver(fnum, nullptr, 0, nullptr, 0);
-}
-
-void slsDetector::freeSharedMemory(int multi_id, int slsId) {
-    SharedMemory<sharedSlsDetector> temp_shm(multi_id, slsId);
-    if (temp_shm.IsExisting()) {
-        temp_shm.RemoveSharedMemory();
-    }
 }
 
 void slsDetector::freeSharedMemory() {

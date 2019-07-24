@@ -8,13 +8,47 @@
 #include <string>
 #include <vector>
 
+#include "Result.h"
+#include "TimeHelper.h"
 #include "ToString.h"
+#include "container_utils.h"
 #include "logger.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
-#include "TimeHelper.h"
+
+#define TIME_COMMAND(get, set)                                                 \
+    std::ostringstream os;                                                     \
+    os << cmd << ' ';                                                          \
+    if (action == slsDetectorDefs::HELP_ACTION)                                \
+        os << "[duration] [(optional) unit]\n";                                \
+    else if (action == slsDetectorDefs::GET_ACTION) {                          \
+        auto t = det->get({det_id});                                           \
+        if (args.size() == 0) {                                                \
+            os << OutString(t) << '\n';                                        \
+        } else if (args.size() == 1) {                                         \
+            os << OutString(t, args[0]) << '\n';                               \
+        } else {                                                               \
+            WrongNumberOfParameters(2);                                        \
+        }                                                                      \
+    } else if (action == slsDetectorDefs::PUT_ACTION) {                        \
+        if (args.size() == 1) {                                                \
+            std::string time_str(args[0]);                                     \
+            std::string unit = RemoveUnit(time_str);                           \
+            auto t = StringTo<time::ns>(time_str, unit);                       \
+            det->set(t, {det_id});                                             \
+        } else if (args.size() == 2) {                                         \
+            auto t = StringTo<time::ns>(args[0], args[1]);                     \
+            det->set(t, {det_id});                                             \
+        } else {                                                               \
+            WrongNumberOfParameters(2);                                        \
+        }                                                                      \
+        os << ToString(args) << '\n';                                          \
+    } else {                                                                   \
+        throw sls::RuntimeError("Unknown action");                             \
+    }                                                                          \
+    return os.str();
 
 namespace sls {
 
@@ -61,12 +95,26 @@ template <typename T> class CmdProxy {
     std::vector<std::string> args;
     int det_id{-1};
 
+    template <typename V> std::string OutString(const V &value) {
+        if (value.equal())
+            return ToString(value.front());
+        return ToString(value);
+    }
+    template <typename V>
+    std::string OutString(const V &value, const std::string &unit) {
+        if (value.equal())
+            return ToString(value.front(), unit);
+        return ToString(value, unit);
+    }
+
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
 
     // Initialize maps for translating name and function
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
-                          {"exptime2", &CmdProxy::Exptime}};
+                          {"exptime2", &CmdProxy::Exptime},
+                          {"period2", &CmdProxy::Period},
+                          {"subexptime2", &CmdProxy::SubExptime}};
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
@@ -132,38 +180,9 @@ template <typename T> class CmdProxy {
         }
     }
 
-    std::string Exptime(int action) {
-        std::ostringstream os;
-        os << cmd << ' ';
-        if (action == slsDetectorDefs::HELP_ACTION)
-            os << "[duration] [(optional) unit]\n";
-        else if (action == slsDetectorDefs::GET_ACTION) {
-            auto t = det->getExptime({det_id}).squash();
-            if (args.size() == 0)
-                os << ToString(t) << '\n';
-            else if (args.size() == 1) {
-                os << ToString(t, args[0]) << '\n';
-            } else {
-                WrongNumberOfParameters(2);
-            }
-        } else if (action == slsDetectorDefs::PUT_ACTION) {
-            if (args.size() == 1) {
-                std::string time_str(args[0]);
-                std::string unit = RemoveUnit(time_str);
-                auto t = StringTo<time::ns>(time_str, unit);
-                det->setExptime(t, {det_id});
-            } else if (args.size() == 2) {
-                auto t = StringTo<time::ns>(args[0], args[1]);
-                det->setExptime(t, {det_id});
-            } else {
-                WrongNumberOfParameters(2);
-            }
-            os << ToString(args) << '\n';
-        } else {
-            throw sls::RuntimeError("Unknown action");
-        }
-        return os.str();
-    }
+    std::string Period(int action) { TIME_COMMAND(getPeriod, setPeriod); }
+    std::string Exptime(int action) { TIME_COMMAND(getExptime, setExptime); }
+    std::string SubExptime(int action) { TIME_COMMAND(getSubExptime, setSubExptime); }
 };
 
 } // namespace sls

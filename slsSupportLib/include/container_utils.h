@@ -9,6 +9,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "TypeTraits.h"
+
 namespace sls {
 
 // C++11 make_unique implementation for exception safety
@@ -33,6 +35,16 @@ template <typename T> bool allEqual(const std::vector<T> &container) {
     return std::all_of(container.cbegin(), container.cend(),
                        [first](const T &element) { return element == first; });
 }
+
+// template <typename T> 
+// typename std::enable_if<is_container<T>::value, bool>::type
+// allEqual(const T &container) {
+//     if (container.empty())
+//         return false;
+//     const auto &first = container[0];
+//     return std::all_of(container.cbegin(), container.cend(),
+//                        [first](const T &element) { return element == first; });
+// }
 
 template <typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, bool>::type

@@ -115,10 +115,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
             positions.resize(detectors.size());
             std::iota(begin(positions), end(positions), 0);
         }
-        std::cout << "Positions: ";
-        for (auto const& i : positions)
-            std::cout << i << ' ';
-        std::cout << '\n';
         std::vector<std::future<RT>> futures;
         futures.reserve(positions.size());
         for (size_t i : positions) {
@@ -144,10 +140,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
             positions.resize(detectors.size());
             std::iota(begin(positions), end(positions), 0);
         }
-        std::cout << "Positions: ";
-        for (auto const& i : positions)
-            std::cout << i << ' ';
-        std::cout << '\n';
         std::vector<std::future<RT>> futures;
         futures.reserve(positions.size());
         for (size_t i : positions) {
@@ -173,10 +165,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
             positions.resize(detectors.size());
             std::iota(begin(positions), end(positions), 0);
         }
-        std::cout << "Positions: ";
-        for (auto const& i : positions)
-            std::cout << i << ' ';
-        std::cout << '\n';
         std::vector<std::future<void>> futures;
         futures.reserve(positions.size());
         for (size_t i : positions) {

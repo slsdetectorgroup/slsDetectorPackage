@@ -21,15 +21,15 @@ ToString(T t, const std::string &unit) {
     using std::chrono::duration_cast;
     std::ostringstream os;
     if (unit == "ns")
-        os << duration_cast<duration<Rep, std::nano>>(t).count() << " " << unit;
+        os << duration_cast<duration<Rep, std::nano>>(t).count()  << unit;
     else if (unit == "us")
-        os << duration_cast<duration<Rep, std::micro>>(t).count() << " "
+        os << duration_cast<duration<Rep, std::micro>>(t).count() 
            << unit;
     else if (unit == "ms")
-        os << duration_cast<duration<Rep, std::milli>>(t).count() << " "
+        os << duration_cast<duration<Rep, std::milli>>(t).count() 
            << unit;
     else if (unit == "s")
-        os << duration_cast<duration<Rep>>(t).count() << " " << unit;
+        os << duration_cast<duration<Rep>>(t).count()  << unit;
     else
         throw std::runtime_error("Unknown unit: " + unit);
     return os.str();
@@ -48,6 +48,36 @@ ToString(From t) {
     } else {
         return ToString(tns, "s");
     }
+}
+
+template <typename T>
+typename std::enable_if<is_container<T>::value, std::string>::type
+ToString(const T &container) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToString(*it++);
+        while (it != container.cend())
+            os << ", " << ToString(*it++);
+    }
+    os << ']';
+    return os.str();
+}
+
+template <typename T>
+typename std::enable_if<is_container<T>::value, std::string>::type
+ToString(const T &container, const std::string& unit) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToString(*it++, unit);
+        while (it != container.cend())
+            os << ", " << ToString(*it++, unit);
+    }
+    os << ']';
+    return os.str();
 }
 
 template <typename T>

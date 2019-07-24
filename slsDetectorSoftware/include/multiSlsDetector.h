@@ -16,7 +16,7 @@ class detectorData;
 #include <thread>
 #include <vector>
 
-#define MULTI_SHMVERSION 0x181002
+#define MULTI_SHMVERSION 0x190724
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
@@ -92,10 +92,6 @@ struct sharedMultiSlsDetector {
 
     /** flag for acquiring */
     bool acquiringFlag;
-
-    /** receiver online flag - is set if the receiver is connected,
-         * unset if socket connection is not possible  */
-    int receiverOnlineFlag;
 
     /** data streaming (up stream) enable in receiver */
     bool receiver_upstream;

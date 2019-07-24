@@ -3064,17 +3064,6 @@ slsDetectorDefs::fileFormat multiSlsDetector::setFileFormat(fileFormat f, int de
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getFileIndex(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getFileIndex();
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getFileIndex);
-    return sls::minusOneIfDifferent(r);
-}
-
 int multiSlsDetector::incrementFileIndex(int detPos) {
     // single
     if (detPos >= 0) {

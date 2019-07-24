@@ -1640,12 +1640,6 @@ class slsDetector : public virtual slsDetectorDefs{
     fileFormat setFileFormat(fileFormat f);
 
     /**
-	 * Returns file index
-	 * @returns file index
-	 */
-    int getFileIndex();
-
-    /**
 	 * Sets up the file index
 	 * @param i file index
 	 * @returns file index

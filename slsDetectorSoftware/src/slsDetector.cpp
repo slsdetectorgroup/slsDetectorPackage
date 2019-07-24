@@ -3487,8 +3487,6 @@ slsDetectorDefs::fileFormat slsDetector::getFileFormat() const {
     return shm()->rxFileFormat;
 }
 
-int slsDetector::getFileIndex() { return shm()->rxFileIndex; }
-
 int slsDetector::setFileIndex(int file_index) {
     if (F_SET_RECEIVER_FILE_INDEX >= 0) {
         int retval = -1;

@@ -268,9 +268,6 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
         myDet->getHostname();
     FILE_LOG(logINFO) << title;
     setWindowTitle(QString(title.c_str()));
-    //FIXME: not needed anymore due to client creating socket each time
-    //myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
-    //myDet->setReceiverOnline(slsDetectorDefs::ONLINE_FLAG);
 }
 
 void qDetectorMain::Initialization() {

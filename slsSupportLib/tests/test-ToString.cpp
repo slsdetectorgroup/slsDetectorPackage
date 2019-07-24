@@ -4,13 +4,13 @@
 using namespace sls;
 
 TEST_CASE("conversion from duration to string", "[support][now]") {
-    REQUIRE(ToString(time::ns(150)) == "150 ns");
-    REQUIRE(ToString(time::ms(783)) == "0.783 s");
-    REQUIRE(ToString(time::ms(783), "ms") == "783 ms");
-    REQUIRE(ToString(time::us(0)) == "0 ns"); // Defaults to the lowest unit
-    REQUIRE(ToString(time::us(0), "s") == "0 s");
-    REQUIRE(ToString(time::s(-1)) == "-1 s");
-    REQUIRE(ToString(time::us(-100)) == "-100 us");
+    REQUIRE(ToString(time::ns(150)) == "150ns");
+    REQUIRE(ToString(time::ms(783)) == "0.783s");
+    REQUIRE(ToString(time::ms(783), "ms") == "783ms");
+    REQUIRE(ToString(time::us(0)) == "0ns"); // Defaults to the lowest unit
+    REQUIRE(ToString(time::us(0), "s") == "0s");
+    REQUIRE(ToString(time::s(-1)) == "-1s");
+    REQUIRE(ToString(time::us(-100)) == "-100us");
 }
 
 TEST_CASE("string to std::chrono::duration", "[support][now]") {

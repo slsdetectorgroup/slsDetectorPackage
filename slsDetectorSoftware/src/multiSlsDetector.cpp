@@ -328,7 +328,6 @@ void multiSlsDetector::initializeDetectorStructure() {
     }
 
     multi_shm()->acquiringFlag = false;
-    multi_shm()->receiverOnlineFlag = OFFLINE_FLAG;
     multi_shm()->receiver_upstream = false;
 }
 
@@ -2986,11 +2985,8 @@ int multiSlsDetector::setReceiverOnline(int value, int detPos) {
     }
 
     // multi
-    if (value != GET_ONLINE_FLAG) {
-        auto r = parallelCall(&slsDetector::setReceiverOnline, value);
-        multi_shm()->receiverOnlineFlag = sls::minusOneIfDifferent(r);
-    }
-    return multi_shm()->receiverOnlineFlag;
+    auto r = parallelCall(&slsDetector::setReceiverOnline, value);
+    return sls::minusOneIfDifferent(r);
 }
 
 int multiSlsDetector::getReceiverOnlineFlag(int detPos) {

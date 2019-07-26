@@ -331,8 +331,7 @@ where the {\tt{GapPixelsBetweenModules\_x}} are the one on the short side of the
 IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
 The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
 
-In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}. The time to send out the frame out of the board are also listed there.
-
+In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}. The time to send out the frame out of the board 
 \begin{table} 
 \begin{tabular}{|c|c|c|c|c|}
 \hline
@@ -348,10 +347,10 @@ In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from
 \hline
 10 & 16 & \textbf{2560} & 391 & 400\\  
 \hline 
-10 & 32 & \textbf{1280} (675~Hz max)& 782 & 800\\  
+10 & 32 & \textbf{1280} & 782 & 800\\  
 \hline 
 \end{tabular}
-\caption{Frame rate limits for the CONTINUOS streaming out of images, i.e. the data rate out is just below 1Gb/s or 10Gb/s. 1280~Hz for 32-bit, 10GbE is obtained from the 10GbE limitation. The maximum achievable frame rate is 675~Hz.} 
+\caption{Frame rate limits for the CONTINUOS streaming out of images, i.e. the data rate out is just below 1Gb/s or 10Gb/s. 1280~Hz for 32-bit, 10GbE is obtained from the 10GbE limitation. The maximum achievable frame rate is 977~Hz.} 
 \label{tcont}\end{table}
  Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuous one can be achieved. Still, this extra buffering is possible till the memories are not saturated. The number of images that can be stored on the DDR2 on board memories are listed in table~\ref{timgs}.
 \begin{table}
@@ -456,8 +455,7 @@ In general, choose the maximum frame rate you want to aim, not exceeding what yo
 Here below are the final tables for settting the detcetor correctly:
 
 \begin{itemize}
-\item CONTINUOUS readout: Images are taken, passed on memories and streamed out through the 1Gb/10Gb Ethernet. Note that you will always pass from the memories even if you require a frame rate that is lower than the 10Gb limitation.     
- {\tt{flags continuos parallel}}, {\tt{clkdivider 0}} are always set. In 32-bit no extra {\tt{subdeadtime}} is assumed. The difference between {\tt{exptime}} and {\tt{period}} has to be $\approx$5 $\mu$s:
+\item CONTINUOUS redout (imagesnot stored on board memories,  frames can be achieved. {\tt{flags parallel}}, {\tt{clkdivider 0}} are always set. In 32-bit no extra {\tt{subdeadtime}} is assumed. The difference between {\tt{exptime}} and {\tt{period}} has to be $\approx$5 $\mu$s:
 \begin{center}
   \begin{tabular}{ |c| c| } 
     \hline
@@ -479,13 +477,13 @@ Here below are the final tables for settting the detcetor correctly:
 \end{center}
 BE CAREFUL that if you have the transmission delays setup (see sec.~\ref{network}), this will slow down the sending of the data and you risk to fill up the memories of the boards on eiger (30000 images in 4 bit mode) and you will get corrupted data (parts of the memory on the boads will be overwritten).
 
-\item BUFFERED readout (images stored on board memories, such that the maximum frame rate can be achieved for a limited amount of frames. {\tt{flags continuous parallel}}, {\tt {clkdivider 0}} are always set. In 32-bit no extra {\tt{subdeadtime}} is assumed. The difference between {\tt{exptime}} and {\tt{period}} has to be $\approx$5 $\mu$s:
+\item BUFFERED readout (images stored on board memories, such that the maximum frame rate can be achieved for a limited amount of frames. {\tt{flags parallel}}, {\tt{clkdivider 0}} are always set. In 32-bit no extra {\tt{subdeadtime}} is assumed. The difference between {\tt{exptime}} and {\tt{period}} has to be $\approx$5 $\mu$s:
 \begin{center}
   \begin{tabular}{ |c| c| } 
     \hline
     max frame rate & settings\\
     \hline
-     \textcolor{red}{189~Hz (977~Hz)} &  \textcolor{red}{32-bit} \\
+    \textcolor{red}{189~Hz (977~Hz)} &  \textcolor{red}{32-bit} \\
     & Nframes=infinite\\
     \hline
      \textcolor{red}{6.1 kHz} &  \textcolor{red}{16-bit}\\
@@ -500,6 +498,7 @@ BE CAREFUL that if you have the transmission delays setup (see sec.~\ref{network
   \end{tabular}
 \end{center}
 \end{itemize}
+
 
 
 \subsubsection{4 and 8 bit mode}
@@ -538,15 +537,13 @@ The time between 12-bit subframes are listed in table~\ref{t32bitframe}.
 \begin{tiny}
 \begin{table}
 \begin{flushleft}
-\begin{tabular}{|c|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|c|c|}
 \hline
 \tiny{dr} & \tiny{clkdivider} & \tiny{flags} & \tiny{subexptime (s)} & \tiny{t difference between subframes($\mu$s)} & \tiny{max internal subframe rate (kHz)} & \tiny{maximum frame rate (Hz)}\\
 \hline
 32 & 2 & parallel & 0.00262144 & 12 & 380 & 189\\
 \hline
-32 & 2 & nonparallel & 0.00262144 & 504 & 320 & 160\\
-\hline
-32 & 2 & parallel & 0.000490 & 12 & 2 & 674\\
+32 & 2 & parallel & 0.000490 & 12 & 2 & 997\\
 \hline
 \end{tabular}
 \caption{Timing for the 32bit case. The maximum frame rate has been computed assuming 2 subframes of default {\tt{subexptime}} of 2.62144 ms, which is the default value. By setting up {\tt{subexptime}} to 490~$\mu$s one can achieve a maximum frame rate. Note that one has to leave 490$\mu$s extra between a frame and the following.}
@@ -604,7 +601,7 @@ Here are the implemented options so far:
 \item {\tt{auto}} is the software controlled acquisition (does not use triggers), where {\tt{exptime}} and {\tt{period}} have to be set. Set number of cycles (i.e. triggers) to 1 using {\tt{cycles}}. Set number of frames using {\tt{frames}}.
 \item {\tt{trigger}} 1 frame taken for 1 trigger. Your {\tt{frames}} needs to be  1 always, {\tt{cycles}} can be changed and defines how many triggers are considered.  {\tt{exptime}} needs to be set. In the GUI this is called trigger exposure series.  
 \item {\tt{burst\_trigger}} gets only 1 trigger, but allows to take many frames. With {\tt{frames}} one can change the number of frames. {\tt{cycles}} needs to be 1.  {\tt{exptime}} and {\tt{period}} have to be set. In the gui it is called trigger readout.
-\item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider.  Set number of frames to 1 using {\tt{frames}}. ATTENTION: if you are in 16 bit mode and you are applying online rate corrections, as now the exptime is generated by the trigger, you might not have correct rate corrections. If you know what the exposure time is in the gating signal, then you can set the {\tt{exptime}} once and the rate corrections will be correct. If the exposure time is unknow, it is recommended that you switch off the rate corrections. In 32 bit mode, it does not matter as the rate corrections depends on the {\tt{subexptime}} which is software set independently from the gate exptime.
+\item{\tt{gating}} allows to get a frame only when the trigger pulse is gating. Note that in this case the exp time and period only depend on the gating signal. {\tt{cycles}} allows to select how many gates to consider.  Set number of frames to 1 using {\tt{frames}}. IMPORTANT: Up to firmware 23, the last subframe is oblige to finish being taken, despite the gate signal going down. This will be configurable from later fw and software version. Also, in gating mode, due to timimg of the state machine, you need to leave 500~$\mu$s deadtime between the end on an acquisition and the next. This is as the state machine is unable to check for changes in the status in the first 500~$\mu$s. ATTENTION: if you are in 16 bit mode and you are applying online rate corrections, as now the exptime is generated by the trigger, you might not have correct rate corrections. If you know what the exposure time is in the gating signal, then you can set the {\tt{exptime}} once and the rate corrections will be correct. In 32 bit mode, it does not matter as the rate corrections depends on the {\tt{subexptime}} which is software set independently from the gate exptime.
 
 \end{itemize}
 
@@ -787,9 +784,18 @@ For configuring well the 10Gb card not to loose packets,
 \item MTU must be set up to 9000 (jumbo frames) on all the involved sides: detector, switch, server NIC
 \item you should set up static MAC address tables with separated VLANs
 \end{itemize}
-As root, also do:
+As root, also first check your ethtool settings (-small letter arguments), then change the settings (-capital letter arguments):
 \begin{verbatim}
- ethtool -G xth1 rx 4096, ethtool -C xth1 rx-usecs 100 
+ethtool -g xth1 
+ethtool -c xth1 
+ethtool -a xth1
+\end{verbatim}
+
+To change settings:
+\begin{verbatim}
+ethtool -G xth1 rx 4096 #or wheterver is the max number for your pc
+ethtool -C xth1 rx-usecs 100 
+ethtool -A xth1 rx on
 \end{verbatim}
 where {\tt{xth1}} can be replaced with the correct 10Gb device. To minimise loosing packets, priorities are set better as root user, so have the receiver as root.
 To try to bypass being root, we trued something like this:
@@ -1585,7 +1591,7 @@ In table~\ref{tframescomplete} is a list of all the readout times in the differe
 \hline
 8 & 1 & parallel & 6.1 & 5.7 & 181 & 15k/52k\\
 \hline
-8 & 1 & nonparallel & 170 & 5.7 & 175 & 15k/52k\\
+8 & 1 & nonparallel & 170.5 & 5.7 & 175 & 15k/52k\\
 \hline
 8 & 2 & parallel & 11.2 &  2.9 &  342 & infinite\\
 \hline

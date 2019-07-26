@@ -8,8 +8,16 @@
 #include <sstream>
 #include <type_traits>
 #include <vector>
+#include <iomanip>
 
 namespace sls {
+
+// /** Base conversion for integer and floating point values */
+// template <typename T>
+// typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type
+// ToString(const T &value) {
+//     return std::to_string(value);
+// }
 
 std::string ToString(const std::vector<std::string> &vec,
                      const char delimiter = ' ');
@@ -21,15 +29,13 @@ ToString(T t, const std::string &unit) {
     using std::chrono::duration_cast;
     std::ostringstream os;
     if (unit == "ns")
-        os << duration_cast<duration<Rep, std::nano>>(t).count()  << unit;
+        os << duration_cast<duration<Rep, std::nano>>(t).count() << unit;
     else if (unit == "us")
-        os << duration_cast<duration<Rep, std::micro>>(t).count() 
-           << unit;
+        os << duration_cast<duration<Rep, std::micro>>(t).count() << unit;
     else if (unit == "ms")
-        os << duration_cast<duration<Rep, std::milli>>(t).count() 
-           << unit;
+        os << duration_cast<duration<Rep, std::milli>>(t).count() << unit;
     else if (unit == "s")
-        os << duration_cast<duration<Rep>>(t).count()  << unit;
+        os << duration_cast<duration<Rep>>(t).count() << unit;
     else
         throw std::runtime_error("Unknown unit: " + unit);
     return os.str();
@@ -50,8 +56,11 @@ ToString(From t) {
     }
 }
 
+/** Not an arithmetical type we have to call our ToString */
 template <typename T>
-typename std::enable_if<is_container<T>::value, std::string>::type
+typename std::enable_if<is_container<T>::value &&
+                            !std::is_arithmetic<typename T::value_type>::value,
+                        std::string>::type
 ToString(const T &container) {
     std::ostringstream os;
     os << '[';
@@ -65,9 +74,27 @@ ToString(const T &container) {
     return os.str();
 }
 
+/** For integers and float we fall back to std::cout formatting */
+template <typename T>
+typename std::enable_if<is_container<T>::value &&
+                            std::is_arithmetic<typename T::value_type>::value,
+                        std::string>::type
+ToString(const T &container) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << *it++;
+        while (it != container.cend()) 
+            os << ", " << std::fixed << *it++;
+    }
+    os << ']';
+    return os.str();
+}
+
 template <typename T>
 typename std::enable_if<is_container<T>::value, std::string>::type
-ToString(const T &container, const std::string& unit) {
+ToString(const T &container, const std::string &unit) {
     std::ostringstream os;
     os << '[';
     if (!container.empty()) {

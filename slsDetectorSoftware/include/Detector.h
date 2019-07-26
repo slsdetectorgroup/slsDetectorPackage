@@ -40,8 +40,13 @@ class Detector {
     // File
     Result<std::string> getFname() const;
     void setFname(const std::string &fname);
+    Result<std::string> getFpath() const;
+    void setFpath(const std::string &fname);
     Result<bool> getFwrite(Positions pos = {}) const;
     void setFwrite(bool value, Positions pos = {});
+    Result<bool> getFileOverWrite(Positions pos = {}) const;
+    void setFileOverWrite(bool value, Positions pos = {});
+
 
     // Time
     Result<ns> getExptime(Positions pos = {}) const;

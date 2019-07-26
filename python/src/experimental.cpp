@@ -18,18 +18,15 @@ void init_experimental(py::module &m) {
 
         // Acq related
         .def("acquire", &Detector::acquire)
-        .def("startReceiver", &Detector::startReceiver,
-             py::arg() = Positions{})
-        .def("stopReceiver", &Detector::stopReceiver,
-             py::arg() = Positions{})
+        .def("startReceiver", &Detector::startReceiver, py::arg() = Positions{})
+        .def("stopReceiver", &Detector::stopReceiver, py::arg() = Positions{})
         .def("getReceiverStatus", &Detector::getReceiverStatus,
              py::arg() = Positions{})
 
         // Configuration
         .def("free", &Detector::freeSharedMemory)
         .def("setConfig", &Detector::setConfig)
-        .def("getHostname", &Detector::getHostname,
-             py::arg() = Positions{})
+        .def("getHostname", &Detector::getHostname, py::arg() = Positions{})
 
         // Bits and registers
         .def("setBit", &Detector::setBit, py::arg(), py::arg(),
@@ -47,15 +44,20 @@ void init_experimental(py::module &m) {
         // File
         .def("getFname", &Detector::getFname)
         .def("setFname", &Detector::setFname, py::arg())
+        .def("getFpath", &Detector::getFpath)
+        .def("setPath", &Detector::setFpath, py::arg())
         .def("setFwrite", &Detector::setFwrite, py::arg(),
              py::arg() = Positions{})
         .def("getFwrite", &Detector::getFwrite, py::arg() = Positions{})
+        .def("setFileOverWrite", &Detector::setFileOverWrite, py::arg(),
+             py::arg() = Positions{})
+        .def("getFileOverWrite", &Detector::getFileOverWrite,
+             py::arg() = Positions{})
 
         // Time
         .def("setExptime", &Detector::setExptime, py::arg(),
              py::arg() = Positions{})
-        .def("getExptime", &Detector::getExptime,
-             py::arg() = Positions{})
+        .def("getExptime", &Detector::getExptime, py::arg() = Positions{})
         .def("setPeriod", &Detector::setPeriod, py::arg(),
              py::arg() = Positions{})
         .def("getPeriod", &Detector::getPeriod, py::arg() = Positions{})

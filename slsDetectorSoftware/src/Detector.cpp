@@ -32,7 +32,6 @@ Result<defs::runStatus> Detector::getReceiverStatus(Positions pos) {
     return pimpl->Parallel(&slsDetector::getReceiverStatus, pos);
 }
 
-
 void Detector::setConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
 }
@@ -86,11 +85,19 @@ void Detector::setPeriod(ns t, Positions pos) {
     pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, t.count());
 }
 
+// File
 void Detector::setFname(const std::string &fname) {
     pimpl->Parallel(&slsDetector::setFileName, Positions{}, fname);
 }
 Result<std::string> Detector::getFname() const {
     return pimpl->Parallel(&slsDetector::setFileName, Positions{}, "");
+}
+
+void Detector::setFpath(const std::string &fpath) {
+    pimpl->Parallel(&slsDetector::setFilePath, Positions{}, fpath);
+}
+Result<std::string> Detector::getFpath() const {
+    return pimpl->Parallel(&slsDetector::getFilePath, Positions{});
 }
 
 void Detector::setFwrite(bool value, Positions pos) {
@@ -99,6 +106,14 @@ void Detector::setFwrite(bool value, Positions pos) {
 
 Result<bool> Detector::getFwrite(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFileWrite, Positions{});
+}
+
+void Detector::setFileOverWrite(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setFileOverWrite, Positions{}, value);
+}
+
+Result<bool> Detector::getFileOverWrite(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getFileOverWrite, Positions{});
 }
 
 } // namespace sls

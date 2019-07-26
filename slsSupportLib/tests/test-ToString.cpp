@@ -1,6 +1,7 @@
 #include "TimeHelper.h"
 #include "ToString.h"
 #include "catch.hpp"
+#include <vector>
 using namespace sls;
 
 TEST_CASE("conversion from duration to string", "[support][now]") {
@@ -21,4 +22,37 @@ TEST_CASE("string to std::chrono::duration", "[support][now]") {
 
     REQUIRE_THROWS(StringTo<time::ns>("5xs"));
     REQUIRE_THROWS(StringTo<time::ns>("asvn"));
+}
+
+TEST_CASE("Convert vector of time", "[support][now]"){
+    std::vector<time::ns> vec{time::ns(150), time::us(10), time::ns(600)};
+    REQUIRE(ToString(vec) == "[150ns, 10us, 600ns]");
+    REQUIRE(ToString(vec, "ns") == "[150ns, 10000ns, 600ns]");
+}
+
+TEST_CASE("Vector of int", "[support][now]"){
+    std::vector<int> vec;
+    REQUIRE(ToString(vec) == "[]");
+
+    vec.push_back(1);
+    REQUIRE(ToString(vec) == "[1]");
+
+    vec.push_back(172);
+    REQUIRE(ToString(vec) == "[1, 172]");
+
+}
+
+TEST_CASE("Vector of double", "[support][now]"){
+    std::vector<double> vec;
+    REQUIRE(ToString(vec) == "[]");
+
+    vec.push_back(1.3);
+    REQUIRE(ToString(vec) == "[1.3]");
+
+    // vec.push_back(5669.325005);
+    // REQUIRE(ToString(vec) == "[1.3, 5669.325]");
+
+    vec.push_back(5.3e23);
+    REQUIRE(ToString(vec) == "[1.3, 5669.325]");
+
 }

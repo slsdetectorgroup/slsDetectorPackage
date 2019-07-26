@@ -40,12 +40,6 @@ class Detector:
                                               self._api.setFlippedDataY,
                                               self._api.getNumberOfDetectors,
                                               'flippeddatay')
-        try:
-            self.online = True
-            self.receiver_online = True
-        except DetectorError:
-            print('WARNING: Cannot connect to detector')
-
 
     def __len__(self):
         return self._api.getNumberOfDetectors()
@@ -728,27 +722,6 @@ class Detector:
         """
         return self._api.getNumberOfDetectors()
 
-    @property
-    def online(self):
-        """Online flag for the detector
-
-        Examples
-        ----------
-
-        ::
-
-            d.online
-            >> False
-
-            d.online = True
-
-        """
-        return self._api.getOnline()
-
-    @online.setter
-    def online(self, value):
-        self._api.setOnline(value)
-
 
     @property
     def last_client_ip(self):
@@ -794,9 +767,6 @@ class Detector:
         """
         return self._api.getReceiverOnline()
 
-    @receiver_online.setter
-    def receiver_online(self, value):
-        self._api.setReceiverOnline(value)
 
     @property
     def receiver_version(self):

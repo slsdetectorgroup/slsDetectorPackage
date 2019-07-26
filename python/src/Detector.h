@@ -115,12 +115,6 @@ class Detector {
 
     std::string checkOnline() { return det.checkOnline(); }
 
-    bool getReceiverOnline() { return det.setReceiverOnline(); }
-    void setReceiverOnline(const bool status) { det.setReceiverOnline(status); }
-
-    bool getOnline() { return det.setOnline(); }
-    void setOnline(const bool status) { det.setOnline(status); }
-
     bool isChipPowered() { return det.powerChip(); }
     void powerChip(const bool value) { det.powerChip(value); }
 
@@ -355,19 +349,11 @@ class Detector {
         return mp;
     }
 
-    bool isClientAndDetectorCompatible() {
-        auto r = det.checkDetectorVersionCompatibility();
-        if (r == 0)
-            return true;
-        else
-            return false;
+    void checkDetectorVersionCompatibility() {
+        det.checkDetectorVersionCompatibility();
     }
-    bool isClientAndReceiverCompatible() {
-        auto r = det.checkReceiverVersionCompatibility();
-        if (r == 0)
-            return true;
-        else
-            return false;
+    bool checkReceiverVersionCompatibility() {
+        det.checkReceiverVersionCompatibility();
     }
 
     /*** END Frame and file settings ***/

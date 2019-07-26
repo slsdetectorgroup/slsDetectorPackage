@@ -130,24 +130,6 @@ public:
 	std::string getDetectorType(int detPos = -1);
 
 	/**
-	 * Sets/Checks the detectors in multi detector list to online/offline
-	 * Must be called before communicating with detector
-	 * @param online 1 to set detector online, 0 to set it offline, -1 to get
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns (1)online/(0)offline status
-	 */
-	int setOnline(int const online = -1, int detPos = -1);
-
-	/**
-	 * Sets/Checks the receivers in multi detector list to online/offline
-	 * Must be called before communicating with receiver
-	 * @param online 1 to set receiver online, 0 to set it receiver, -1 to get
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns (1)online/(0)offline status
-	 */
-	int setReceiverOnline(int const online = -1, int detPos = -1);
-
-	/**
 	 * Load configuration from a configuration File (for one time detector setup)
 	 * @param fname configuration file name
 	 * @return OK or FAIL
@@ -213,16 +195,14 @@ public:
 	/**
 	 * Check Detector Version Compatibility
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns true if compatible, else false
 	 */
-	bool isDetectorVersionCompatible(int detPos = -1);
+	void isDetectorVersionCompatible(int detPos = -1);
 
 	/**
 	 * Check Receiver Version Compatibility
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns  true if compatible, else false
 	 */
-	bool isReceiverVersionCompatible(int detPos = -1);
+	void isReceiverVersionCompatible(int detPos = -1);
 
 	/**
 	 * Performs a complete acquisition
@@ -236,9 +216,8 @@ public:
 	/**
 	 * Stop detector acquisition
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns OK or FAIL
 	 */
-	int stopMeasurement(int detPos = -1);
+	void stopMeasurement(int detPos = -1);
 
 	/**
 	 * Get Detector run status
@@ -251,24 +230,21 @@ public:
 	 * (Advanced user, included in startMeasurement)
 	 * Start detector acquisition (Non blocking)
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns OK or FAIL if even one does not start properly
 	 */
-	int startAcquisition(int detPos = -1);
+	void startAcquisition(int detPos = -1);
 
 	/**
 	 * Stop detector acquisition (Same as stopMeasurement)
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns OK or FAIL
 	 */
-	int stopAcquisition(int detPos = -1);
+	void stopAcquisition(int detPos = -1);
 
 	/**
 	 * (Only in non blocking acquire mode)
 	 * Give an internal software trigger to the detector (Eiger)
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @return OK or FAIL
 	 */
-	int sendSoftwareTrigger(int detPos = -1);
+	void sendSoftwareTrigger(int detPos = -1);
 
 	/**
 	 * Set Rate correction ( Eiger)
@@ -534,9 +510,8 @@ public:
      * @param n number of rois
      * @param roiLimits array of roi
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int setROI(int n=-1, slsDetectorDefs::ROI roiLimits[]=NULL, int detPos = -1);
+    void setROI(int n=-1, slsDetectorDefs::ROI roiLimits[]=NULL, int detPos = -1);
 
     /**
      * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
@@ -559,17 +534,15 @@ public:
 	 * (Advanced user, included in startMeasurement)
 	 * Receiver starts listening to packets
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns OK or FAIL
 	 */
-	int startReceiver(int detPos = -1);
+	void startReceiver(int detPos = -1);
 
 	/**
 	 * (Advanced user, included in startMeasurement)
 	 * Stops the listening mode of receiver
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns OK or FAIL
 	 */
-	int stopReceiver(int detPos = -1);
+	void stopReceiver(int detPos = -1);
 
 	/**
 	 * Set/get receiver silent mode
@@ -584,9 +557,8 @@ public:
 	 * Resets framescaught in receiver
 	 * Use this when using startAcquisition instead of acquire
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns OK or FAIL
 	 */
-	int resetFramesCaughtInReceiver(int detPos = -1);
+	void resetFramesCaughtInReceiver(int detPos = -1);
 
 	/**
 	 * (Advanced user)

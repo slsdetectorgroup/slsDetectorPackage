@@ -32,11 +32,8 @@ PYBIND11_MODULE(_sls_detector, m) {
         d = Eiger()
         d._api.getThresholdEnergy()
 
-        #creating a DetectorApi object (remember to set online flags)
         from _sls_detector import DetectorApi
         api = DetectorApi(0)
-        api.setOnline(True)
-        api.setReceiverOnline(True)
         api.getNumberOfFrames()
 
         #But the Pythonic way is almost alway simpler
@@ -96,11 +93,6 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getSyncClkSpeed", &Detector::getSyncClkSpeed)
         .def("getHostname", &Detector::getHostname)
         .def("setHostname", &Detector::setHostname)
-
-        .def("getOnline", &Detector::getOnline)
-        .def("setOnline", &Detector::setOnline)
-        .def("getReceiverOnline", &Detector::getReceiverOnline)
-        .def("setReceiverOnline", &Detector::setReceiverOnline)
 
         .def("getReceiverPort", &Detector::getReceiverPort)
         .def("setReceiverPort", &Detector::setReceiverPort)
@@ -224,10 +216,10 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getPartialFramesPadding", &Detector::getPartialFramesPadding)
 
         .def("getUserDetails", &Detector::getUserDetails)
-        .def("isClientAndDetectorCompatible",
-             &Detector::isClientAndDetectorCompatible)
-        .def("isClientAndReceiverCompatible",
-             &Detector::isClientAndReceiverCompatible)
+        .def("checkDetectorVersionCompatibility",
+             &Detector::checkDetectorVersionCompatibility)
+        .def("checkReceiverVersionCompatibility",
+             &Detector::checkReceiverVersionCompatibility)
         .def("getMeasuredPeriod", &Detector::getMeasuredPeriod)
         .def("getMeasuredSubPeriod", &Detector::getMeasuredSubPeriod)
 
@@ -310,11 +302,6 @@ PYBIND11_MODULE(_sls_detector, m) {
     multiDetectorApi.def(py::init<int>())
         .def("acquire", &multiSlsDetector::acquire)
 
-        .def_property("online",
-                      py::cpp_function(&multiSlsDetector::setOnline, py::arg(),
-                                       py::arg() = -1, py::arg("det_id") = -1),
-                      py::cpp_function(&multiSlsDetector::setOnline, py::arg(),
-                                       py::arg("flag"), py::arg("det_id") = -1))
         .def_property("exptime",
                       py::cpp_function(&multiSlsDetector::setExposureTime,
                                        py::arg(), py::arg() = -1, py::arg() = 0,

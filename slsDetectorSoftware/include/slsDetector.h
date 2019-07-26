@@ -12,7 +12,7 @@
 
 class ServerInterface;
 
-#define SLS_SHMVERSION 0x190515
+#define SLS_SHMVERSION 0x190726
 
 /**
 	 * @short structure allocated in shared memory to store detector settings for IPC and cache
@@ -24,9 +24,8 @@ struct sharedSlsDetector {
     /** shared memory version */
     int shmversion;
 
-    /** online flag - is set if the detector is connected, unset if socket
-		 * connection is not possible  */
-    int onlineFlag;
+     /** is the port used for control functions */
+    int controlPort;
 
     /** stopped flag - is set if an acquisition error occurs or the detector
 		 * is stopped manually. Is reset to 0 at the start of the acquisition */
@@ -41,14 +40,12 @@ struct sharedSlsDetector {
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
+
     /** Detector offset in the X & Y direction in the multi detector structure */
     int offset[2];
 
     /** Number of detectors in multi list in x dir and y dir */
     int multiSize[2];
-
-    /** is the port used for control functions */
-    int controlPort;
 
     /** is the port used to stop the acquisition */
     int stopPort;
@@ -147,9 +144,9 @@ struct sharedSlsDetector {
     /** selected udp interface */
     int selectedUDPInterface;
 
-    /** online flag - is set if the receiver is connected,
+    /** is set if the receiver hostname given and is connected,
 		 * unset if socket connection is not possible  */
-    int rxOnlineFlag;
+    bool useReceiverFlag;
 
     /** 10 Gbe enable*/
     int tenGigaEnable;
@@ -186,15 +183,6 @@ struct sharedSlsDetector {
 
     /** additional json header */
     char rxAdditionalJsonHeader[MAX_STR_LENGTH];
-
-    /** detector control server software API version */
-    int64_t detectorControlAPIVersion;
-
-    /** detector stop server software API version */
-    int64_t detectorStopAPIVersion;
-
-    /** receiver server software API version */
-    int64_t receiverAPIVersion;
 
     /** receiver frames discard policy */
     slsDetectorDefs::frameDiscardPolicy rxFrameDiscardMode;
@@ -273,17 +261,13 @@ class slsDetector : public virtual slsDetectorDefs{
 
     /**
 	 * Check version compatibility with receiver software
-	 * (if hostname/rx_hostname has been set/ sockets created)
-	 * @param p port type control port or receiver port
-	 * @returns FAIL for incompatibility, OK for compatibility
 	 */
-    int checkReceiverVersionCompatibility();
+    void checkReceiverVersionCompatibility();
 
     /**
 	 * Check version compatibility with detector software
-	 * @returns FAIL for incompatibility, OK for compatibility
 	 */
-    int checkDetectorVersionCompatibility();
+    void checkDetectorVersionCompatibility();
 
     /**
 	 * Get ID or version numbers
@@ -304,18 +288,17 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param args_size size of argument
 	 * @param retval return pointers
 	 * @param retval_size size of return value
-	 * @returns success or failure
 	 */ 
-    int sendToDetector(int fnum, const void *args, size_t args_size,
+    void sendToDetector(int fnum, const void *args, size_t args_size,
                        void *retval, size_t retval_size);
 
     template <typename Arg, typename Ret>
-    int sendToDetector(int fnum, const Arg &args, Ret &retval);
+    void sendToDetector(int fnum, const Arg &args, Ret &retval);
 	template<typename Arg>
-	int sendToDetector(int fnum, const Arg &args, std::nullptr_t);
+	void sendToDetector(int fnum, const Arg &args, std::nullptr_t);
 	template<typename Ret>
-	int sendToDetector(int fnum, std::nullptr_t, Ret & retval);
-    int sendToDetector(int fnum);
+	void sendToDetector(int fnum, std::nullptr_t, Ret & retval);
+    void sendToDetector(int fnum);
 
 	/**
 	 * Send function parameters to detector (stop server)
@@ -324,19 +307,18 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param args_size size of argument
 	 * @param retval return pointers
 	 * @param retval_size size of return value
-	 * @returns success or failure
 	 */ 
-    int sendToDetectorStop(int fnum, const void *args, size_t args_size,
+    void sendToDetectorStop(int fnum, const void *args, size_t args_size,
                            void *retval, size_t retval_size);
 
     template <typename Arg, typename Ret>
-    int sendToDetectorStop(int fnum, const Arg &args, Ret &retval);
+    void sendToDetectorStop(int fnum, const Arg &args, Ret &retval);
 	template<typename Arg>
-	int sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t);
+	void sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t);
 	template<typename Ret>
-	int sendToDetectorStop(int fnum, std::nullptr_t, Ret & retval);
+	void sendToDetectorStop(int fnum, std::nullptr_t, Ret & retval);
 
-	int sendToDetectorStop(int fnum);
+	void sendToDetectorStop(int fnum);
 
 	/**
 	 * Send function parameters to receiver
@@ -345,18 +327,17 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param args_size size of argument
 	 * @param retval return pointers
 	 * @param retval_size size of return value
-	 * @returns success or failure
 	 */
-    int sendToReceiver(int fnum, const void *args, size_t args_size,
+    void sendToReceiver(int fnum, const void *args, size_t args_size,
                        void *retval, size_t retval_size);
 	template<typename Arg, typename Ret>
-	int sendToReceiver(int fnum, const Arg& args, Ret& retval);
+	void sendToReceiver(int fnum, const Arg& args, Ret& retval);
 	template<typename Arg>
-	int sendToReceiver(int fnum, const Arg& args, std::nullptr_t);
+	void sendToReceiver(int fnum, const Arg& args, std::nullptr_t);
 	template<typename Ret>
-	int sendToReceiver(int fnum, std::nullptr_t, Ret& retval);
+	void sendToReceiver(int fnum, std::nullptr_t, Ret& retval);
 
-	int sendToReceiver(int fnum);
+	void sendToReceiver(int fnum);
 
     /**
 	 * Free shared memory and delete shared memory structure
@@ -491,21 +472,6 @@ class slsDetector : public virtual slsDetectorDefs{
     void updateMultiSize(int detx, int dety);
 
     /**
-	 * Checks if the detector is online and sets the online flag
-	 * @param online if GET_ONLINE_FLAG, only returns shared memory online flag,
-	 * else sets the detector in online/offline state
-	 * if OFFLINE_FLAG, (i.e. no communication to the detector - using only local structure - no data acquisition possible!);
-	 * if ONLINE_FLAG, detector in online state (i.e. communication to the detector updating the local structure)
-	 * @returns online/offline status
-	 */
-    int setOnline(int value = GET_ONLINE_FLAG);
-
-    /**
-	 * Returns the online flag
-	 */
-    int getOnlineFlag() const;
-
-    /**
 	 * Checks if each of the detector is online/offline
 	 * @returns empty string if it is online
 	 * else returns hostname if it is offline
@@ -551,30 +517,20 @@ class slsDetector : public virtual slsDetectorDefs{
 
     /**
 	 * Exit detector server
-	 * @returns OK or FAIL
 	 */
-    int exitServer();
+    void exitServer();
 
     /**
 	 * Executes a system command on the detector server
 	 * e.g. mount an nfs disk, reboot and returns answer etc.
 	 * @param cmd command to be executed
-	 * @returns OK or FAIL
 	 */
-    int execCommand(const std::string &cmd);
+    void execCommand(const std::string &cmd);
 
     /**
 	 * Updates some of the shared memory receiving the data from the detector
-	 * @returns OK
 	 */
-    int updateDetectorNoWait(sls::ClientSocket &client);
-
-    /**
-	 * Updates some of the shared memory receiving the data from the detector
-	 * calls updateDetectorNoWait
-	 * @returns OK or FAIL or FORCE_RET
-	 */
-    int updateDetector();
+    void updateCachedDetectorVariables();
 
 	/**
 	 * Get detector specific commands to write into config file
@@ -628,9 +584,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param e_eV threshold in eV
 	 * @param isettings ev. change settings
 	 * @param tb 1 to include trimbits, 0 to exclude
-	 * @returns OK if successful, else FAIL
 	 */
-    int setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings, int tb = 1);
+    void setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings, int tb = 1);
 
     /**
 	 * Returns the detector trimbit/settings directory  \sa sharedSlsDetector
@@ -649,17 +604,15 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * Loads the modules settings/trimbits reading from a specific file
 	 * file name extension is automatically generated.
 	 * @param fname specific settings/trimbits file
-	 * returns OK or FAIL
 	 */
-    int loadSettingsFile(const std::string &fname);
+    void loadSettingsFile(const std::string &fname);
 
     /**
 	 * Saves the modules settings/trimbits to a specific file
 	 * file name extension is automatically generated.
 	 * @param fname specific settings/trimbits file
-	 * returns OK or FAIL
 	 */
-    int saveSettingsFile(const std::string &fname);
+    void saveSettingsFile(const std::string &fname);
 
     /**
 	 * Get run status of the detector
@@ -669,51 +622,43 @@ class slsDetector : public virtual slsDetectorDefs{
 
     /**
 	 * Prepares detector for acquisition (Eiger)
-	 * @returns OK or FAIL
 	 */
-    int prepareAcquisition();
+    void prepareAcquisition();
 
     /**
 	 * Start detector acquisition (Non blocking)
-	 * @returns OK or FAIL if even one does not start properly
 	 */
-    int startAcquisition();
+    void startAcquisition();
 
     /**
 	 * Stop detector acquisition
-	 * @returns OK or FAIL
 	 */
-    int stopAcquisition();
+    void stopAcquisition();
 
     /**
 	 * Give an internal software trigger to the detector (Eiger only)
-	 * @return OK or FAIL
 	 */
-    int sendSoftwareTrigger();
+    void sendSoftwareTrigger();
 
     /**
 	 * Start detector acquisition and read all data (Blocking until end of acquisition)
-	 * @returns OK or FAIL
 	 */
-    int startAndReadAll();
+    void startAndReadAll();
 
     /**
 	 * Start readout (without exposure or interrupting exposure) (Eiger store in ram)
-	 * @returns OK or FAIL
 	 */
-    int startReadOut();
+    void startReadOut();
 
     /**
 	 * Requests and  receives all data from the detector (Eiger store in ram)
-	 * @returns OK or FAIL
 	 */
-    int readAll();
+    void readAll();
 
     /**
 	 * Configures in detector the destination for UDP packets
-	 * @returns OK or FAIL
 	 */
-    int configureMAC();
+    void configureMAC();
 
 	/**
      * Set starting frame number for the next acquisition
@@ -1131,40 +1076,35 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * Load dark or gain image to detector (Gotthard)
 	 * @param index image type, 0 for dark image and 1 for gain image
 	 * @param fname file name from which to load image
-	 * @returns OK or FAIL
 	 */
-    int loadImageToDetector(imageType index, const std::string &fname);
+    void loadImageToDetector(imageType index, const std::string &fname);
 
     /**
 	 * Called from loadImageToDetector to send the image to detector
 	 * @param index image type, 0 for dark image and 1 for gain image
 	 * @param imageVals image
-	 * @returns OK or FAIL
 	 */
-    int sendImageToDetector(imageType index, int16_t imageVals[]);
+    void sendImageToDetector(imageType index, int16_t imageVals[]);
 
     /**
 	 * Writes the counter memory block from the detector (Gotthard)
 	 * @param fname file name to load data from
 	 * @param startACQ is 1 to start acquisition after reading counter
-	 * @returns OK or FAIL
 	 */
-    int writeCounterBlockFile(const std::string &fname, int startACQ = 0);
+    void writeCounterBlockFile(const std::string &fname, int startACQ = 0);
 
     /**
 	 * Gets counter memory block in detector (Gotthard)
 	 * @param image counter memory block from detector
 	 * @param startACQ 1 to start acquisition afterwards, else 0
-	 * @returns OK or FAIL
 	 */
-    int getCounterBlock(int16_t image[], int startACQ = 0);
+    void getCounterBlock(int16_t image[], int startACQ = 0);
 
     /**
 	 * Resets counter in detector
 	 * @param startACQ is 1 to start acquisition after resetting counter
-	 * @returns OK or FAIL
 	 */
-    int resetCounterBlock(int startACQ = 0);
+    void resetCounterBlock(int startACQ = 0);
 
     /**
 	 * Set/get counter bit in detector (Gotthard)
@@ -1178,9 +1118,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * At the moment only one set allowed
 	 * @param n number of rois
 	 * @param roiLimits array of roi
-	 * @returns OK or FAIL
 	 */
-    int setROI(int n = -1, ROI roiLimits[] = nullptr);
+    void setROI(int n = -1, ROI roiLimits[] = nullptr);
 
     /**
 	 * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
@@ -1200,9 +1139,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * from setROI
 	 * @param n number of ROIs (-1 to get)
 	 * @param roiLimits ROI
-	 * @returns OK or FAIL
 	 */
-    int sendROI(int n = -1, ROI roiLimits[] = nullptr);
+    void sendROI(int n = -1, ROI roiLimits[] = nullptr);
 
 	/**
      * Set ADC Enable Mask (CTB, Moench)
@@ -1291,9 +1229,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert users
 	 * @param addr address of adc register
 	 * @param val value
-	 * @returns return value  (mostly -1 as it can't read adc register)
 	 */
-    int writeAdcRegister(uint32_t addr, uint32_t val);
+    void writeAdcRegister(uint32_t addr, uint32_t val);
 
     /**
 	 * Activates/Deactivates the detector (Eiger only)
@@ -1361,25 +1298,22 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param n is number of times to pulse
 	 * @param x is x coordinate
 	 * @param y is y coordinate
-	 * @returns OK or FAIL
 	 */
-    int pulsePixel(int n = 0, int x = 0, int y = 0);
+    void pulsePixel(int n = 0, int x = 0, int y = 0);
 
     /**
 	 * Pulse Pixel and move by a relative value (Eiger)
 	 * @param n is number of times to pulse
 	 * @param x is relative x value
 	 * @param y is relative y value
-	 * @returns OK or FAIL
 	 */
-    int pulsePixelNMove(int n = 0, int x = 0, int y = 0);
+    void pulsePixelNMove(int n = 0, int x = 0, int y = 0);
 
     /**
 	 * Pulse Chip (Eiger)
 	 * @param n is number of times to pulse
-	 * @returns OK or FAIL
 	 */
-    int pulseChip(int n_pulses = 0);
+    void pulseChip(int n_pulses = 0);
 
     /**
 	 * Set/gets threshold temperature (Jungfrau)
@@ -1412,29 +1346,25 @@ class slsDetector : public virtual slsDetectorDefs{
     /**
 	 * Programs FPGA with pof file (Jungfrau, CTB, Moench)
 	 * @param buffer programming file in memory
-	 * @returns OK or FAIL
 	 */
-    int programFPGA(std::vector<char> buffer);
+    void programFPGA(std::vector<char> buffer);
 
     /**
 	 * Resets FPGA (Jungfrau)
-	 * @returns OK or FAIL
 	 */
-    int resetFPGA();
+    void resetFPGA();
 
     /**
      * Copies detector server from tftp and changes respawn server (Not Eiger)
      * @param fname name of detector server binary
      * @param hostname name of pc to tftp from
-     * @returns OK or FAIL
      */
-    int copyDetectorServer(const std::string &fname, const std::string &hostname);
+    void copyDetectorServer(const std::string &fname, const std::string &hostname);
 
     /**
      * Reboot detector controller (blackfin/ powerpc)
-     * @returns OK or FAIL
      */
-    int rebootController();
+    void rebootController();
 
    /**
 	 * Power on/off Chip (Jungfrau)
@@ -1463,10 +1393,9 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param module module to be set - must contain correct module number and
 	 * also channel and chip registers
 	 * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
-	 * @returns ok or fail
 	 * \sa ::sls_detector_module
 	 */
-    int setModule(sls_detector_module& module, int tb = 1);
+    void setModule(sls_detector_module& module, int tb = 1);
 
     /**
 	 * Get module structure from detector (all detectors)
@@ -1479,9 +1408,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * @param t dead time in ns - if 0 disable correction,
 	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
 	 * for current settings
-	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
-    int setRateCorrection(int64_t t = 0);
+    void setRateCorrection(int64_t t = 0);
 
     /**
 	 * Get rate correction (Eiger)
@@ -1502,15 +1430,10 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     void printReceiverConfiguration(TLogLevel level = logINFO);
 
-    /**
-	 * Checks if receiver is online and set flag
-	 * Also initializes the data socekt
-	 * @param online 1 to set online, 0 to set offline, -1 gets
-	 * @returns online, offline (from shared memory)
+	/**
+	 * Gets the use receiver flag from shared memory
 	 */
-    int setReceiverOnline(int value = GET_ONLINE_FLAG);
-
-    int getReceiverOnlineFlag() const;
+	bool getUseReceiverFlag() const;
 
     /**
 	 * Checks if the receiver is really online
@@ -1533,29 +1456,20 @@ class slsDetector : public virtual slsDetectorDefs{
 
     /**
 	 * Exits the receiver TCP server
-	 * @retutns OK or FAIL
 	 */
-    int exitReceiver();
+    void exitReceiver();
 
     /**
 	 * Executes a system command on the receiver server
 	 * e.g. mount an nfs disk, reboot and returns answer etc.
 	 * @param cmd command to be executed
-	 * @returns OK or FAIL
 	 */
-    int execReceiverCommand(const std::string &cmd);
-
-    /**
-     updates the shared memory receiving the data from the detector (without asking and closing the connection
-     /returns OK
-	 */
-    // int updateReceiverNoWait(sls::ClientSocket &receiver);
+    void execReceiverCommand(const std::string &cmd);
 
     /**
 	 * Updates the shared memory receiving the data from the detector
-	 * @returns OK or FAIL
 	 */
-    int updateCachedReceiverVariables() const;
+    void updateCachedReceiverVariables() const;
 
     /**
 	 * Send the multi detector size to the detector
@@ -1660,15 +1574,13 @@ class slsDetector : public virtual slsDetectorDefs{
 
     /**
 	 * Receiver starts listening to packets
-	 * @returns OK or FAIL
 	 */
-    int startReceiver();
+    void startReceiver();
 
     /**
 	 * Stops the listening mode of receiver
-	 * @returns OK or FAIL
 	 */
-    int stopReceiver();
+    void stopReceiver();
 
     /**
 	 * Gets the status of the listening mode of receiver
@@ -1691,9 +1603,8 @@ class slsDetector : public virtual slsDetectorDefs{
     /**
 	 * Resets framescaught in receiver
 	 * Use this when using startAcquisition instead of acquire
-	 * @returns OK or FAIL
 	 */
-    int resetFramesCaught();
+    void resetFramesCaught();
 
     /**
 	 * Sets/Gets receiver file write enable
@@ -1786,9 +1697,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * restream the stop dummy packet from receiver
 	 * Used usually for Moench,
 	 * in case it is lost in network due to high data rate
-	 * @returns OK if success else FAIL
 	 */
-    int restreamStopFromReceiver();
+    void restreamStopFromReceiver();
 
     /**
 	 * Opens pattern file and sends pattern to CTB
@@ -1848,9 +1758,8 @@ class slsDetector : public virtual slsDetectorDefs{
     /**
      * Sets the mask applied to every pattern (CTB/ Moench)
      * @param mask mask to be applied
-     * @returns OK or FAIL
      */
-    int setPatternMask(uint64_t mask);
+    void setPatternMask(uint64_t mask);
 
     /**
      * Gets the mask applied to every pattern (CTB/ Moench)
@@ -1861,9 +1770,8 @@ class slsDetector : public virtual slsDetectorDefs{
     /**
      * Selects the bits that the mask will be applied to for every pattern (CTB/ Moench)
      * @param mask mask to select bits
-     * @returns OK or FAIL
      */
-    int setPatternBitMask(uint64_t mask);
+    void setPatternBitMask(uint64_t mask);
 
     /**
      * Gets the bits that the mask will be applied to for every pattern (CTB/ Moench)
@@ -1882,9 +1790,8 @@ class slsDetector : public virtual slsDetectorDefs{
      * Set Digital IO Delay (Moench, CTB only)
      * @param digital IO mask to select the pins
      * @param delay delay in ps(1 bit=25ps, max of 775 ps)
-     * @returns OK or FAIL
      */
-    int setDigitalIODelay(uint64_t pinMask, int delay);
+    void setDigitalIODelay(uint64_t pinMask, int delay);
 
   private:
     /**
@@ -1929,9 +1836,8 @@ class slsDetector : public virtual slsDetectorDefs{
     /**
 	 * Get MAC from the receiver using udpip and
 	 * set up UDP connection in detector
-	 * @returns Ok or FAIL
 	 */
-    int setUDPConnection();
+    void setUDPConnection();
 
     /*
 	 * Template function to do linear interpolation between two points (Eiger only)
@@ -1973,9 +1879,8 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * writes a trim/settings file
 	 * @param fname name of the file to be written
 	 * @param mod module structure which has to be written to file
-	 * @returns OK or FAIL if the file could not be written
 	 */
-    int writeSettingsFile(const std::string &fname, sls_detector_module& mod);
+    void writeSettingsFile(const std::string &fname, sls_detector_module& mod);
 
 	/**
 	 * Get Names of dacs in settings file

@@ -243,9 +243,9 @@ public:
 
 
 		if(bind(sockfd.fd,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
-            FILE_LOG(logERROR) << "Can not bind socket";
+            FILE_LOG(logERROR) << "Can not bind socket. Please check if another process is running.";
 			sockfd.fd =-1;
-			throw SocketError("Can not bind socket");
+			throw SocketError("Can not bind socket. Please check if another process is running.");
 		}
 
 

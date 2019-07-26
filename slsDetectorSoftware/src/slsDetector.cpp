@@ -54,6 +54,10 @@ slsDetector::slsDetector(int multi_id, int det_id, bool verify)
 
 slsDetector::~slsDetector() = default;
 
+bool slsDetector::isFixedPatternSharedMemoryCompatible() {
+    return (shm()->shmversion >= SLS_SHMAPIVERSION);
+}
+
 void slsDetector::checkDetectorVersionCompatibility() {
     int fnum = F_CHECK_VERSION;
     int64_t arg = 0;
@@ -252,7 +256,6 @@ void slsDetector::initSharedMemory(detectorType type, int multi_id,
 void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->shmversion = SLS_SHMVERSION;
     shm()->controlPort = DEFAULT_PORTNO;
-    shm()->stoppedFlag = 0;
     sls::strcpy_safe(shm()->hostname, DEFAULT_HOSTNAME);
     shm()->myDetectorType = type;
     shm()->offset[X] = 0;
@@ -1161,7 +1164,6 @@ void slsDetector::prepareAcquisition() {
 
 void slsDetector::startAcquisition() {
     FILE_LOG(logDEBUG1) << "Starting Acquisition";
-    shm()->stoppedFlag = 0;
         sendToDetector(F_START_ACQUISITION);
         FILE_LOG(logDEBUG1) << "Starting Acquisition successful";
 }
@@ -1176,7 +1178,6 @@ void slsDetector::stopAcquisition() {
     FILE_LOG(logDEBUG1) << "Stopping Acquisition";
         sendToDetectorStop(F_STOP_ACQUISITION);
         FILE_LOG(logDEBUG1) << "Stopping Acquisition successful";
-    shm()->stoppedFlag = 1;
     // if rxr streaming and acquisition finished, restream dummy stop packet
     if ((shm()->rxUpstream) && (s == IDLE) && (r == IDLE)) {
         restreamStopFromReceiver();
@@ -1185,14 +1186,12 @@ void slsDetector::stopAcquisition() {
 
 void slsDetector::sendSoftwareTrigger() {
     FILE_LOG(logDEBUG1) << "Sending software trigger";
-    shm()->stoppedFlag = 0;
         sendToDetector(F_SOFTWARE_TRIGGER);
         FILE_LOG(logDEBUG1) << "Sending software trigger successful";
 }
 
 void slsDetector::startAndReadAll() {
     FILE_LOG(logDEBUG1) << "Starting and reading all frames";
-    shm()->stoppedFlag = 0;
         sendToDetector(F_START_AND_READ_ALL);
         FILE_LOG(logDEBUG1) << "Detector successfully finished acquisition";
 }

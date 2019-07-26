@@ -50,10 +50,6 @@ struct sharedMultiSlsDetector {
     /** Number of detectors operated at once */
     int numberOfDetector[2];
 
-    /** stopped flag - is set if an acquisition error occurs or the detector
-         * is stopped manually. Is reset to 0 at the start of the acquisition */
-    int stoppedFlag;
-
     /**  size of the data that are transfered from all detectors */
     int dataBytes;
 

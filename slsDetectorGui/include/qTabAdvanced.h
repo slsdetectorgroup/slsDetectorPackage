@@ -43,7 +43,6 @@ private:
 	void Initialization();
 	void PopulateDetectors();
 
-	void GetOnline();
 	void GetControlPort();
 	void GetStopPort();
 	void GetDetectorUDPIP();
@@ -51,7 +50,6 @@ private:
 	void GetCltZMQPort();
 	void GetCltZMQIP();
 	void GetRxrHostname();
-	void GetReceiverOnline();
 	void GetRxrTCPPort();
 	void GetRxrUDPPort();
 	void GetRxrUDPIP();
@@ -65,11 +63,6 @@ private:
 	void GetSubDeadTime();
 
 	multiSlsDetector *myDet;
-	/** Tool Tip */
-	QString		errOnlineTip;
-	QString		detOnlineTip;
-	QString 	rxrOnlineTip;
-	QPalette	red;
 	/** ROI */
 	std::vector <QLabel*> lblFromX;
 	std::vector <QSpinBox*> spinFromX;

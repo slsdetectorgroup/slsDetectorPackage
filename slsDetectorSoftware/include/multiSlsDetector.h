@@ -16,7 +16,7 @@ class detectorData;
 #include <thread>
 #include <vector>
 
-#define MULTI_SHMVERSION 0x190724
+#define MULTI_SHMVERSION 0x190726
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
@@ -49,10 +49,6 @@ struct sharedMultiSlsDetector {
 
     /** Number of detectors operated at once */
     int numberOfDetector[2];
-
-    /** online flag - is set if the detector is connected, unset if socket
-         * connection is not possible  */
-    int onlineFlag;
 
     /** stopped flag - is set if an acquisition error occurs or the detector
          * is stopped manually. Is reset to 0 at the start of the acquisition */
@@ -199,17 +195,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * (if hostname/rx_hostname has been set/ sockets created)
      * @param p port type control port or receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns FAIL for incompatibility, OK for compatibility
      */
-    int checkDetectorVersionCompatibility(int detPos = -1);
+    void checkDetectorVersionCompatibility(int detPos = -1);
+
     /**
      * Check version compatibility with receiver software
      * (if hostname/rx_hostname has been set/ sockets created)
      * @param p port type control port or receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns FAIL for incompatibility, OK for compatibility
      */
-    int checkReceiverVersionCompatibility(int detPos = -1);
+    void checkReceiverVersionCompatibility(int detPos = -1);
 
     /**
      * Get ID or version numbers
@@ -261,7 +256,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Sets the hostname of all sls detectors in shared memory
-     * Connects to them to set up online flag
+     * Connects to them
      * @param name concatenated hostname of all the sls detectors
      * @param detPos -1 for all detectors in  list or specific detector position
      */
@@ -278,7 +273,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Appends detectors to the end of the list in shared memory
-     * Connects to them to set up online flag
+     * Connects to them 
      * @param name concatenated hostname of the sls detectors to be appended to
      * the list
      */
@@ -407,25 +402,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void updateOffsets();
 
     /**
-     * Checks if the multi detectors are online and sets the online flag
-     * @param online if GET_ONLINE_FLAG, only returns shared memory online flag,
-     * else sets the detector in online/offline state
-     * if OFFLINE_FLAG, (i.e. no communication to the detector - using only
-     * local structure - no data acquisition possible!); if ONLINE_FLAG,
-     * detector in online state (i.e. communication to the detector updating the
-     * local structure)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns online/offline status
-     */
-    int setOnline(int value = GET_ONLINE_FLAG, int detPos = -1);
-
-    /**
-     * Get detector online status
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    int getOnlineFlag(int detPos = -1);
-
-    /**
      * Checks if each of the detectors are online/offline
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns empty string if they are all online,
@@ -482,17 +458,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Exit detector server
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int exitServer(int detPos = -1);
+    void exitServer(int detPos = -1);
 
     /**
      * Execute a command on the detector server
      * @param cmd command
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int execCommand(const std::string &cmd, int detPos);
+    void execCommand(const std::string &cmd, int detPos);
 
     /**
      * Load configuration from a configuration File
@@ -562,18 +536,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * file name extension is automatically generated.
      * @param fname specific settings/trimbits file
      * @param detPos -1 for all detectors in  list or specific detector position
-     * returns OK or FAIL
      */
-    int loadSettingsFile(const std::string &fname, int detPos = -1);
+    void loadSettingsFile(const std::string &fname, int detPos = -1);
 
     /**
      * Saves the modules settings/trimbits to a specific file
      * file name extension is automatically generated.
      * @param fname specific settings/trimbits file
      * @param detPos -1 for all detectors in  list or specific detector position
-     * returns OK or FAIL
      */
-    int saveSettingsFile(const std::string &fname, int detPos = -1);
+    void saveSettingsFile(const std::string &fname, int detPos = -1);
 
     /**
      * Get Detector run status
@@ -585,60 +557,52 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Prepares detector for acquisition (Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK if all detectors are ready for acquisition, FAIL otherwise
      */
-    int prepareAcquisition(int detPos = -1);
+    void prepareAcquisition(int detPos = -1);
 
     /**
      * Start detector acquisition (Non blocking)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL if even one does not start properly
      */
-    int startAcquisition(int detPos = -1);
+    void startAcquisition(int detPos = -1);
 
     /**
      * Stop detector acquisition
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int stopAcquisition(int detPos = -1);
+    void stopAcquisition(int detPos = -1);
 
     /**
      * Give an internal software trigger to the detector (Eiger only)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @return OK or FAIL
      */
-    int sendSoftwareTrigger(int detPos = -1);
+    void sendSoftwareTrigger(int detPos = -1);
 
     /**
      * Start detector acquisition and read all data (Blocking until end of
      * acquisition)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int startAndReadAll(int detPos = -1);
+    void startAndReadAll(int detPos = -1);
 
     /**
      * Start readout (without exposure or interrupting exposure) (Eiger store in
      * ram)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int startReadOut(int detPos = -1);
+    void startReadOut(int detPos = -1);
 
     /**
      * Requests and  receives all data from the detector (Eiger store in ram)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int readAll(int detPos = -1);
+    void readAll(int detPos = -1);
 
     /**
      * Configures in detector the destination for UDP packets
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int configureMAC(int detPos = -1);
+    void configureMAC(int detPos = -1);
     
      /**
      * Set starting frame number for the next acquisition
@@ -1275,9 +1239,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param index image type
      * @param fname file name from which to load image
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int loadImageToDetector(imageType index, const std::string &fname,
+    void loadImageToDetector(imageType index, const std::string &fname,
                             int detPos = -1);
 
     /**
@@ -1285,18 +1248,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param fname file name to load data from
      * @param startACQ is 1 to start acquisition after reading counter
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int writeCounterBlockFile(const std::string &fname, int startACQ = 0,
+    void writeCounterBlockFile(const std::string &fname, int startACQ = 0,
                               int detPos = -1);
 
     /**
      * Resets counter in detector (Gotthard)
      * @param startACQ is 1 to start acquisition after resetting counter
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int resetCounterBlock(int startACQ = 0, int detPos = -1);
+    void resetCounterBlock(int startACQ = 0, int detPos = -1);
 
     /**
      * Set/get counter bit in detector (Gotthard)
@@ -1320,9 +1281,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param n number of rois
      * @param roiLimits array of roi
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int setROI(int n = -1, ROI roiLimits[] = nullptr, int detPos = -1);
+    void setROI(int n = -1, ROI roiLimits[] = nullptr, int detPos = -1);
 
     /**
      * Get ROI from each detector and convert it to the multi detector scale
@@ -1423,9 +1383,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param addr address of adc register
      * @param val value
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns return value  (mostly -1 as it can't read adc register)
      */
-    int writeAdcRegister(uint32_t addr, uint32_t val, int detPos = -1);
+    void writeAdcRegister(uint32_t addr, uint32_t val, int detPos = -1);
 
     /**
      * Activates/Deactivates the detector (Eiger only)
@@ -1503,9 +1462,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param x is x coordinate
      * @param y is y coordinate
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int pulsePixel(int n = 0, int x = 0, int y = 0, int detPos = -1);
+    void pulsePixel(int n = 0, int x = 0, int y = 0, int detPos = -1);
 
     /**
      * Pulse Pixel and move by a relative value (Eiger)
@@ -1513,17 +1471,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param x is relative x value
      * @param y is relative y value
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int pulsePixelNMove(int n = 0, int x = 0, int y = 0, int detPos = -1);
+    void pulsePixelNMove(int n = 0, int x = 0, int y = 0, int detPos = -1);
 
     /**
      * Pulse Chip (Eiger)
      * @param n is number of times to pulse
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int pulseChip(int n = 0, int detPos = -1);
+    void pulseChip(int n = 0, int detPos = -1);
 
     /**
      * Set/gets threshold temperature (Jungfrau)
@@ -1561,32 +1517,28 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Programs FPGA with pof file (Not Eiger)
      * @param fname file name
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int programFPGA(const std::string &fname, int detPos = -1);
+    void programFPGA(const std::string &fname, int detPos = -1);
 
     /**
      * Resets FPGA (Not Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int resetFPGA(int detPos = -1);
+    void resetFPGA(int detPos = -1);
 
     /**
      * Copies detector server from tftp and changes respawn server (Not Eiger)
      * @param fname name of detector server binary
      * @param hostname name of pc to tftp from
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int copyDetectorServer(const std::string &fname, const std::string &hostname, int detPos = -1);
+    void copyDetectorServer(const std::string &fname, const std::string &hostname, int detPos = -1);
 
     /**
      * Reboot detector controller (Not Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int rebootController(int detPos = -1);
+    void rebootController(int detPos = -1);
 
     /**
      * Updates the firmware, detector server and then reboots detector controller blackfin. (Not Eiger)
@@ -1594,9 +1546,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param hostname name of pc to tftp from
      * @param fname programming file name
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int update(const std::string &sname, const std::string &hostname, const std::string &fname, int detPos = -1);
+    void update(const std::string &sname, const std::string &hostname, const std::string &fname, int detPos = -1);
 
     /**
      * Power on/off Chip (Jungfrau)
@@ -1621,9 +1572,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
 	 * for current settings
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns 0 if rate correction disabled, >0 otherwise
 	 */
-    int setRateCorrection(int64_t t = 0, int detPos = -1);
+    void setRateCorrection(int64_t t = 0, int detPos = -1);
 
     /**
 	 * Get rate correction ( Eiger)
@@ -1640,18 +1590,11 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void printReceiverConfiguration(TLogLevel level = logINFO, int detPos = -1);
 
     /**
-     * Sets up receiver socket if online and sets the flag
-     * @param online online/offline flag (-1 gets)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns online/offline flag
-     */
-    int setReceiverOnline(int value = GET_ONLINE_FLAG, int detPos = -1);
-
-    /**
      * Get receiver online status
      * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns use receiver flag
      */
-    int getReceiverOnlineFlag(int detPos = -1);
+    bool getUseReceiverFlag(int detPos = -1);
 
     /**
      * Checks if the receiver is really online
@@ -1679,18 +1622,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Turns off the receiver server!
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int exitReceiver(int detPos = -1);
+    void exitReceiver(int detPos = -1);
 
     /**
      * Executes a system command on the receiver server
      * e.g. mount an nfs disk, reboot and returns answer etc.
      * @param cmd command to be executed
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int execReceiverCommand(const std::string &cmd, int detPos = -1);
+    void execReceiverCommand(const std::string &cmd, int detPos = -1);
 
     /**
      * Returns output file directory
@@ -1796,16 +1737,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Receiver starts listening to packets
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int startReceiver(int detPos = -1);
+    void startReceiver(int detPos = -1);
 
     /**
      * Stops the listening mode of receiver
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int stopReceiver(int detPos = -1);
+    void stopReceiver(int detPos = -1);
 
     /**
      * Gets the status of the listening mode of receiver
@@ -1832,9 +1771,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Resets framescaught in receiver
      * Use this when using startAcquisition instead of acquire
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int resetFramesCaught(int detPos = -1);
+    void resetFramesCaught(int detPos = -1);
 
     /**
      * Create Receiving Data Sockets
@@ -2026,9 +1964,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Sets the mask applied to every pattern (CTB/ Moench)
      * @param mask mask to be applied
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int setPatternMask(uint64_t mask, int detPos = -1);
+    void setPatternMask(uint64_t mask, int detPos = -1);
 
     /**
      * Gets the mask applied to every pattern (CTB/ Moench)
@@ -2041,9 +1978,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Selects the bits that the mask will be applied to for every pattern (CTB/ Moench)
      * @param mask mask to select bits
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int setPatternBitMask(uint64_t mask, int detPos = -1);
+    void setPatternBitMask(uint64_t mask, int detPos = -1);
 
     /**
      * Gets the bits that the mask will be applied to for every pattern (CTB/ Moench)
@@ -2065,9 +2001,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param digital IO mask to select the pins
      * @param delay delay in ps(1 bit=25ps, max of 775 ps)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
      */
-    int setDigitalIODelay(uint64_t pinMask, int delay, int detPos = -1);
+    void setDigitalIODelay(uint64_t pinMask, int delay, int detPos = -1);
 
     /**
      * Loads the detector setup from file

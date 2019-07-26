@@ -24,14 +24,6 @@ qTabAdvanced::~qTabAdvanced() {
 }
 
 void qTabAdvanced::SetupWidgetWindow() {
-    // palette
-    red = QPalette();
-    red.setColor(QPalette::Active, QPalette::WindowText, Qt::red);
-    detOnlineTip = dispOnline->toolTip();
-    rxrOnlineTip = dispRxrOnline->toolTip();
-    errOnlineTip = QString(
-        "<nobr><br><br><font color=\"red\"><nobr>It is offline!</nobr></font>");
-
     // enabling according to det type
     switch (myDet->getDetectorTypeAsEnum()) {
     case slsDetectorDefs::EIGER:
@@ -140,44 +132,6 @@ void qTabAdvanced::PopulateDetectors() {
             SLOT(SetDetector(int)));
 }
 
-void qTabAdvanced::GetOnline() {
-    FILE_LOG(logDEBUG) << "Getting detector online status";
-
-    int moduleId = comboDetector->currentIndex();
-    try {
-        myDet->checkOnline(moduleId);
-
-        int ret = myDet->getOnlineFlag(moduleId);
-        switch (ret) {
-        case 1:
-            dispOnline->setText("Online");
-            lblOnline->setText("Detector Online Status: ");
-            dispOnline->setToolTip(detOnlineTip);
-            lblOnline->setToolTip(detOnlineTip);
-            dispOnline->setPalette(lblHostname->palette());
-            lblOnline->setPalette(lblHostname->palette());
-            break;
-        default:
-            dispOnline->setText("Offline");
-            lblOnline->setText("Detector Online Status:* ");
-            dispOnline->setToolTip(detOnlineTip + errOnlineTip);
-            lblOnline->setToolTip(detOnlineTip + errOnlineTip);
-            dispOnline->setPalette(red);
-            lblOnline->setPalette(red);
-            break;
-        }
-    }
-    // ignore if checkonline throws socket exception, else display it
-    catch (const sls::SocketError &e) {
-        ; // do nothing as it might just be offline
-    }
-    // display any other exception
-    catch (const std::exception &e) {
-        qDefs::ExceptionMessage("Could not get detector online status",
-                                e.what(), "qTabAdvanced::GetOnline");
-    }
-}
-
 void qTabAdvanced::GetControlPort() {
     FILE_LOG(logDEBUG) << "Getting control port ";
     disconnect(spinControlPort, SIGNAL(valueChanged(int)), this,
@@ -276,44 +230,6 @@ void qTabAdvanced::GetRxrHostname() {
             SLOT(SetRxrHostname()));
 }
 
-void qTabAdvanced::GetReceiverOnline() {
-    FILE_LOG(logDEBUG) << "Getting Receiver online status";
-
-    int moduleId = comboDetector->currentIndex();
-    try {
-        myDet->checkReceiverOnline(moduleId);
-
-        int ret = myDet->getReceiverOnlineFlag(moduleId);
-        switch (ret) {
-        case 1:
-            dispRxrOnline->setText("Online");
-            lblRxrOnline->setText("Receiver Online Status: ");
-            dispRxrOnline->setToolTip(rxrOnlineTip);
-            lblRxrOnline->setToolTip(rxrOnlineTip);
-            dispRxrOnline->setPalette(lblHostname->palette());
-            lblRxrOnline->setPalette(lblHostname->palette());
-            break;
-        default:
-            dispRxrOnline->setText("Offline");
-            lblRxrOnline->setText("Receiver Online Status:* ");
-            dispRxrOnline->setToolTip(rxrOnlineTip + errOnlineTip);
-            lblRxrOnline->setToolTip(rxrOnlineTip + errOnlineTip);
-            dispRxrOnline->setPalette(red);
-            lblRxrOnline->setPalette(red);
-            break;
-        }
-    }
-    // ignore if checkReceiverOnline throws socket exception
-    catch (const sls::SocketError &e) {
-        ;
-    }
-    // display any other exception
-    catch (const std::exception &e) {
-        qDefs::ExceptionMessage("Could not check receiver online status",
-                                e.what(), "qTabAdvanced::GetReceiverOnline");
-    }
-}
-
 void qTabAdvanced::GetRxrTCPPort() {
     FILE_LOG(logDEBUG) << "Getting Receiver TCP port";
     disconnect(spinRxrTCPPort, SIGNAL(valueChanged(int)), this,
@@ -402,7 +318,6 @@ void qTabAdvanced::SetDetector(int index) {
     FILE_LOG(logDEBUG) << "Set Detector: "
                        << comboDetector->currentText().toAscii().data();
 
-    GetOnline();
     GetControlPort();
     GetStopPort();
     GetDetectorUDPIP();
@@ -410,7 +325,6 @@ void qTabAdvanced::SetDetector(int index) {
     GetCltZMQPort();
     GetCltZMQIP();
     GetRxrHostname();
-    GetReceiverOnline();
     GetRxrTCPPort();
     GetRxrUDPPort();
     GetRxrUDPIP();

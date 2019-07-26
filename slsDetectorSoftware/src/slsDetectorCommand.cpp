@@ -302,13 +302,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page config
-    - <b>online [i]</b> sets the detector in online (1) or offline (0) mode. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "online";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
-    ++i;
-
-    /*! \page config
     - <b>checkonline</b> returns the hostnames of all detectors without connecting to them. \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
 	 */
     descrToFuncMap[i].m_pFuncName = "checkonline";
@@ -1805,13 +1798,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-   - <b>rx_online [i]</b> sets/gets the receiver in online/offline mode. 1 is online, 0 is offline. Get is from shared memory. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_online";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
-    ++i;
-
-    /*! \page receiver
    - <b>rx_checkonline</b> Checks the receiver if it is online/offline mode. Only get! \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_checkonline";
@@ -2219,13 +2205,9 @@ std::string slsDetectorCommand::cmdAcquire(int narg, const char * const args[], 
         return std::string("acquire failed");
     }
 
-    int rx_online = myDet->setReceiverOnline(-1, detPos);
-
-
-
     if (myDet->acquire() == FAIL)
         return std::string("acquire failed");
-    if (rx_online) {
+    if (myDet->getUseReceiverFlag(detPos)) {
         char answer[100];
         sprintf(answer, "\nAcquired %d", myDet->getFramesCaughtByReceiver(detPos));
         return std::string(answer);
@@ -2261,7 +2243,7 @@ std::string slsDetectorCommand::cmdData(int narg, const char * const args[], int
         // myDet->setThreadedProcessing(0);
         // myDet->readAll(detPos);
         // //processdata in receiver is useful only for gui purposes
-        // if(myDet->setReceiverOnline(detPos)==OFFLINE_FLAG)
+        // if(myDet->getUseReceiverFlag(detPos)==OFFLINE_FLAG)
         // 	myDet->processData();
         // myDet->setThreadedProcessing(b);
         return std::string("");
@@ -2489,28 +2471,20 @@ std::string slsDetectorCommand::cmdExitServer(int narg, const char * const args[
 
     if (action == PUT_ACTION) {
         if (cmd == "exitserver") {
-            if (myDet->exitServer(detPos) == OK)
-                return std::string("Server shut down.");
-            else
-                return std::string("Error closing server\n");
+            myDet->exitServer(detPos);
+            return std::string("Server shut down.");
         } else if (cmd == "rx_exit") {
 
-            if (myDet->exitReceiver(detPos) == OK)
-                return std::string("Receiver shut down\n");
-            else
-                return std::string("Error closing receiver\n");
+            myDet->exitReceiver(detPos);
+            return std::string("Receiver shut down\n");
         } else if (cmd == "execcommand") {
-            if (myDet->execCommand(std::string(args[1]), detPos) == OK)
-                return std::string("Command executed successfully\n");
-            else
-                return std::string("Command failed\n");
+            myDet->execCommand(std::string(args[1]), detPos);
+            return std::string("Command executed successfully\n");
         } else if (cmd == "rx_execcommand") {
 
-            if (myDet->execReceiverCommand(std::string(args[1]), detPos) == OK)
-                return std::string("Command executed successfully\n");
-            else
-                return std::string("Command failed\n");
-        } else
+            myDet->execReceiverCommand(std::string(args[1]), detPos);
+            return std::string("Command executed successfully\n");
+         } else
             return ("cannot decode command\n");
     } else
         return ("cannot get");
@@ -2781,7 +2755,6 @@ std::string slsDetectorCommand::helpThreaded(int action) {
 
 std::string slsDetectorCommand::cmdImage(int narg, const char * const args[], int action, int detPos) {
     std::string sval;
-    int retval = FAIL;
     if (action == HELP_ACTION)
         return helpImage(HELP_ACTION);
     else if (action == GET_ACTION)
@@ -2790,14 +2763,11 @@ std::string slsDetectorCommand::cmdImage(int narg, const char * const args[], in
     sval = std::string(args[1]);
 
     if (std::string(args[0]) == std::string("darkimage"))
-        retval = myDet->loadImageToDetector(DARK_IMAGE, sval, detPos);
+        myDet->loadImageToDetector(DARK_IMAGE, sval, detPos);
     else if (std::string(args[0]) == std::string("gainimage"))
-        retval = myDet->loadImageToDetector(GAIN_IMAGE, sval, detPos);
+        myDet->loadImageToDetector(GAIN_IMAGE, sval, detPos);
 
-    if (retval == OK)
-        return std::string("Image loaded succesfully");
-    else
-        return std::string("Image load failed");
+    return std::string("Image loaded succesfully");
 }
 
 std::string slsDetectorCommand::helpImage(int action) {
@@ -2831,13 +2801,16 @@ std::string slsDetectorCommand::cmdCounter(int narg, const char * const args[], 
             if (narg < 3)
                 return std::string("should specify I/O file");
             sval = std::string(args[2]);
-            retval = myDet->writeCounterBlockFile(sval, ival, detPos);
+            myDet->writeCounterBlockFile(sval, ival, detPos);
+            return std::string("Counter read succesfully");
         }
     } else if (std::string(args[0]) == std::string("resetctr")) {
         if (action == GET_ACTION)
             return std::string("Cannot get");
-        else
-            retval = myDet->resetCounterBlock(ival, detPos);
+        else {
+            myDet->resetCounterBlock(ival, detPos);
+            return std::string("successful");
+        }
     }
 
     else if (std::string(args[0]) == std::string("resmat")) {
@@ -2852,7 +2825,7 @@ std::string slsDetectorCommand::cmdCounter(int narg, const char * const args[], 
     }
 
     if (retval == OK)
-        return std::string("Counter read/reset succesfully");
+        return std::string("Counter set/reset succesfully");
     else
         return std::string("Counter read/reset failed");
 }
@@ -3254,15 +3227,7 @@ std::string slsDetectorCommand::cmdOnline(int narg, const char * const args[], i
     int ival;
     char ans[1000];
 
-    if (cmd == "online") {
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%d", &ival))
-                myDet->setOnline(ival, detPos);
-            else
-                return std::string("Could not scan online mode ") + std::string(args[1]);
-        }
-        sprintf(ans, "%d", myDet->setOnline(-1, detPos));
-    } else if (cmd == "checkonline") {
+    if (cmd == "checkonline") {
         if (action == PUT_ACTION)
             return std::string("cannot set");
         strcpy(ans, myDet->checkOnline(detPos).c_str());
@@ -3289,14 +3254,6 @@ std::string slsDetectorCommand::cmdOnline(int narg, const char * const args[], i
         }
         int ret = myDet->setDeactivatedRxrPaddingMode(-1, detPos);
         sprintf(ans, "%d %s", myDet->activate(-1, detPos), ret == 1 ? "padding" : (ret == 0 ? "nopadding" : "unknown"));
-    } else if (cmd == "rx_online") {
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%d", &ival))
-                myDet->setReceiverOnline(ival, detPos);
-            else
-                return std::string("Could not scan online mode ") + std::string(args[1]);
-        }
-        sprintf(ans, "%d", myDet->setReceiverOnline(-1, detPos));
     } else {
         if (action == PUT_ACTION)
             return std::string("cannot set");
@@ -3314,14 +3271,10 @@ std::string slsDetectorCommand::helpOnline(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "online i \n sets the detector in online (1) or offline (0) mode" << std::endl;
-        os << "rx_online i \n sets the receiver in online (1) or offline (0) mode" << std::endl;
         os << "activate i [p]\n sets the detector in  activated (1) or deactivated (0) mode (does not send data).  p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Only for Eiger." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "online \n gets the detector online (1) or offline (0) mode" << std::endl;
         os << "checkonline \n returns the hostnames of all detectors in offline mode" << std::endl;
-        os << "rx_online \n gets the receiver online (1) or offline (0) mode" << std::endl;
         os << "rx_checkonline \n returns the hostnames of all receiver in offline mode" << std::endl;
         os << "activate \n gets the detector activated (1) or deactivated (0) mode. And padding or nonpadding for the deactivated receiver. Only for Eiger." << std::endl;
     }
@@ -3333,17 +3286,12 @@ std::string slsDetectorCommand::cmdConfigureMac(int narg, const char * const arg
     if (action == HELP_ACTION) {
         return helpConfigureMac(action);
     }
-    int ret;
-    char ans[1000];
-
     if (action == PUT_ACTION) {
-
-        ret = myDet->configureMAC(detPos);
+        myDet->configureMAC(detPos);
     } else
         return std::string("Cannot get ") + cmd;
 
-    sprintf(ans, "%d", ret);
-    return ans;
+    return std::string("successful");
 }
 
 std::string slsDetectorCommand::helpConfigureMac(int action) {
@@ -3547,17 +3495,13 @@ std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[],
 #ifdef VERBOSE
             std::cout << " trimfile " << sval << std::endl;
 #endif
-            int ret = OK;
             if (action == GET_ACTION) {
                 //create file names
-                ret = myDet->saveSettingsFile(sval, detPos);
+                myDet->saveSettingsFile(sval, detPos);
             } else if (action == PUT_ACTION) {
-                ret = myDet->loadSettingsFile(sval, detPos);
+                myDet->loadSettingsFile(sval, detPos);
             }
-            if (ret == OK)
-                return sval;
-            else
-                return std::string("failed");
+            return sval;
         }
         return std::string("Specify file name for geting settings file");
     } else if (cmd == "trimval") {
@@ -3652,19 +3596,13 @@ std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int a
     }
 
     if (cmd == "checkdetversion") {
-        int retval = myDet->checkDetectorVersionCompatibility(detPos);
-        if (retval < 0)
-            sprintf(answer, "%d", -1);
-        sprintf(answer, "%s", retval == OK ? "compatible" : "incompatible");
-        return std::string(answer);
+        myDet->checkDetectorVersionCompatibility(detPos);
+        return std::string("compatible");
     }
 
     if (cmd == "rx_checkversion") {
-        int retval = myDet->checkReceiverVersionCompatibility(detPos);
-        if (retval < 0)
-            sprintf(answer, "%d", -1);
-        sprintf(answer, "%s", retval == OK ? "compatible" : "incompatible");
-        return std::string(answer);
+        myDet->checkReceiverVersionCompatibility(detPos);
+        return std::string("compatible");
     }
 
     return std::string("unknown id mode ") + cmd;
@@ -3779,7 +3717,8 @@ std::string slsDetectorCommand::cmdRegister(int narg, const char * const args[],
                 ;
             else
                 return std::string("Could not scan value  (hexadecimal fomat) ") + std::string(args[2]);
-            sprintf(answer, "%s", (myDet->writeAdcRegister(addr, val, detPos) == OK) ? "successful" : "failed");
+            myDet->writeAdcRegister(addr, val, detPos);
+            sprintf(answer, "%s","successful");
         } else {
 
             if (sscanf(args[2], "%d", &n))
@@ -4815,17 +4754,15 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         if (strstr(args[1], ".pof") == nullptr)
             return std::string("wrong usage: programming file should have .pof extension");
         std::string sval = std::string(args[1]);
-        if (myDet->programFPGA(sval, detPos) == OK)
-            return std::string("successful");
-        return std::string("failed");
+        myDet->programFPGA(sval, detPos);
+        return std::string("successful");
     }
 
     else if (cmd == "resetfpga") {
         if (action == GET_ACTION)
             return std::string("cannot get");
-        if (myDet->resetFPGA(detPos) == OK)
-            return std::string("successful");
-        return std::string("failed");
+        myDet->resetFPGA(detPos);
+        return std::string("successful");
     }
 
     else if (cmd == "copydetectorserver") {
@@ -4835,17 +4772,15 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         	return ("wrong usage." + helpAdvanced(PUT_ACTION));
         std::string sval = std::string(args[1]);
         std::string pval = std::string(args[2]);
-        if (myDet->copyDetectorServer(sval, pval, detPos) == OK)
-            return std::string("successful");
-        return std::string("failed");
+        myDet->copyDetectorServer(sval, pval, detPos);
+        return std::string("successful");
     }
 
     else if (cmd == "rebootcontroller") {
         if (action == GET_ACTION)
             return std::string("cannot get");
-        if (myDet->rebootController(detPos) == OK)
-            return std::string("successful");
-        return std::string("failed");
+        myDet->rebootController(detPos);
+        return std::string("successful");
     }
 
     else if (cmd == "update") {
@@ -4859,9 +4794,8 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         std::string sval = std::string(args[1]);
         std::string pval = std::string(args[2]);
         std::string fval = std::string(args[3]);
-        if (myDet->update(sval, pval, fval, detPos) == OK)
-            return std::string("successful");
-        return std::string("failed");
+        myDet->update(sval, pval, fval, detPos);
+        return std::string("successful");
     }
 
     else if (cmd == "powerchip") {
@@ -4899,10 +4833,8 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
     	if (!sscanf(args[2], "%d", &delay))
     		return std::string("could not scan diodelay delay " + std::string(args[2]));
 
-    	int retval = myDet->setDigitalIODelay(pinMask, delay, detPos);
-    	if (retval == -1)
-    		return std::to_string(-1);
-      	return std::string((retval == OK) ? "successful" :  "failed");
+    	myDet->setDigitalIODelay(pinMask, delay, detPos);
+      	return std::string("successful");
     }
 
     else if (cmd == "auto_comp_disable") {
@@ -5048,11 +4980,8 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
         if (action == GET_ACTION)
             return std::string("cannot get");
         else {
-            if (myDet->resetFramesCaught(detPos) == OK)
-                strcpy(answer, "successful");
-            else
-                strcpy(answer, "failed");
-            return std::string(answer);
+            myDet->resetFramesCaught(detPos);
+            return std::string("successful");
         }
     }
 
@@ -5102,7 +5031,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
     else if (cmd == "rx_silent") {
         if (action == PUT_ACTION) {
             if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan rx_online input ") + std::string(args[1]);
+                return std::string("Could not scan rx_silent input ") + std::string(args[1]);
             if (ival >= 0)
                 sprintf(answer, "%d", myDet->setReceiverSilentMode(ival, detPos));
         } else
@@ -5729,7 +5658,6 @@ std::string slsDetectorCommand::helpPulse(int action) {
 }
 
 std::string slsDetectorCommand::cmdPulse(int narg, const char * const args[], int action, int detPos) {
-    int retval = FAIL;
 
     if (action == HELP_ACTION)
         return helpPulse(action);
@@ -5742,7 +5670,7 @@ std::string slsDetectorCommand::cmdPulse(int narg, const char * const args[], in
         return std::string("Could not scan 1st argument ") + std::string(args[1]);
 
     if (std::string(args[0]) == std::string("pulsechip"))
-        retval = myDet->pulseChip(ival1, detPos);
+        myDet->pulseChip(ival1, detPos);
 
     else {
         //next commands requires 3 addnl. arguments
@@ -5755,19 +5683,16 @@ std::string slsDetectorCommand::cmdPulse(int narg, const char * const args[], in
             return std::string("Could not scan 3rd argument ") + std::string(args[3]);
 
         if (std::string(args[0]) == std::string("pulse"))
-            retval = myDet->pulsePixel(ival1, ival2, ival3, detPos);
+            myDet->pulsePixel(ival1, ival2, ival3, detPos);
 
         else if (std::string(args[0]) == std::string("pulsenmove"))
-            retval = myDet->pulsePixelNMove(ival1, ival2, ival3, detPos);
+            myDet->pulsePixelNMove(ival1, ival2, ival3, detPos);
 
         else
-            return std::string("could not decode command") + cmd;
+            std::string("could not decode command") + cmd;
     }
 
-    if (retval == OK)
-        return std::string(" successful");
-    else
-        return std::string(" failed");
+    return std::string(" successful");
 }
 
 

@@ -262,17 +262,6 @@ format
     */
     enum { GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION };
 
-    /** online flags enum \sa setOnline*/
-    enum {
-        GET_ONLINE_FLAG = -1, /**< returns wether the detector is in online or
-                                 offline state */
-        OFFLINE_FLAG = 0, /**< detector in offline state (i.e. no communication
-                             to the detector - using only local structure - no
-                             data acquisition possible!) */
-        ONLINE_FLAG = 1 /**< detector in online state (i.e. communication to the
-                           detector updating the local structure) */
-    };
-
     /**
          flags to get (or set) the size of the detector
     */

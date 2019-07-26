@@ -30,13 +30,6 @@ int slsDetectorUsers::getDetectorSize(int &x, int &y, int &nx, int &ny, int detP
 std::string slsDetectorUsers::getDetectorType(int detPos){
 	return detector.getDetectorTypeAsString(detPos);
 }
-int slsDetectorUsers::setOnline(int const online, int detPos){
-	return detector.setOnline(online, detPos);
-}
-
-int slsDetectorUsers::setReceiverOnline(int const online, int detPos){
-	return detector.setReceiverOnline(online, detPos);
-}
 
 int slsDetectorUsers::readConfigurationFile(const std::string& fname){
 	try{
@@ -79,36 +72,36 @@ int64_t slsDetectorUsers::getReceiverSoftwareVersion(int detPos){
 	return detector.getId(slsDetectorDefs::RECEIVER_VERSION, detPos);
 }
 
-bool slsDetectorUsers::isDetectorVersionCompatible(int detPos) {
-	return (detector.checkDetectorVersionCompatibility(detPos) == slsDetectorDefs::OK);
+void slsDetectorUsers::isDetectorVersionCompatible(int detPos) {
+	detector.checkDetectorVersionCompatibility(detPos);
 }
 
-bool slsDetectorUsers::isReceiverVersionCompatible(int detPos) {
-	return (detector.checkReceiverVersionCompatibility(detPos) == slsDetectorDefs::OK);
+void slsDetectorUsers::isReceiverVersionCompatible(int detPos) {
+	detector.checkReceiverVersionCompatibility(detPos);
 }
 
 int slsDetectorUsers::startMeasurement(){
 	return detector.acquire();
 }
 
-int slsDetectorUsers::stopMeasurement(int detPos){
-	return detector.stopAcquisition(detPos);
+void slsDetectorUsers::stopMeasurement(int detPos){
+	detector.stopAcquisition(detPos);
 }
 
 int slsDetectorUsers::getDetectorStatus(int detPos){
 	return (int)detector.getRunStatus(detPos);
 }
 
-int slsDetectorUsers::startAcquisition(int detPos) {
-	return detector.startAcquisition(detPos);
+void slsDetectorUsers::startAcquisition(int detPos) {
+	detector.startAcquisition(detPos);
 }
 
-int slsDetectorUsers::stopAcquisition(int detPos) {
-	return detector.stopAcquisition(detPos);
+void slsDetectorUsers::stopAcquisition(int detPos) {
+	detector.stopAcquisition(detPos);
 }
 
-int slsDetectorUsers::sendSoftwareTrigger(int detPos) {
-	return detector.sendSoftwareTrigger(detPos);
+void slsDetectorUsers::sendSoftwareTrigger(int detPos) {
+	detector.sendSoftwareTrigger(detPos);
 }
 
 int slsDetectorUsers::enableCountRateCorrection(int i, int detPos){
@@ -237,8 +230,8 @@ int slsDetectorUsers::setFlowControl10G(int i, int detPos) {
 	return detector.setFlowControl10G(i, detPos);
 }
 
-int slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int detPos) {
-    return detector.setROI(n, roiLimits, detPos);
+void slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int detPos) {
+    detector.setROI(n, roiLimits, detPos);
 }
 
 const slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int detPos) {
@@ -252,20 +245,20 @@ const slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int detPos) {
  *********************************************************************/
 
 
-int slsDetectorUsers::startReceiver(int detPos) {
-	return detector.startReceiver(detPos);
+void slsDetectorUsers::startReceiver(int detPos) {
+	detector.startReceiver(detPos);
 }
 
-int slsDetectorUsers::stopReceiver(int detPos) {
-	return detector.stopReceiver(detPos);
+void slsDetectorUsers::stopReceiver(int detPos) {
+	detector.stopReceiver(detPos);
 }
 
 int slsDetectorUsers::setReceiverSilentMode(int i, int detPos) {
 	return detector.setReceiverSilentMode(i, detPos);
 }
 
-int slsDetectorUsers::resetFramesCaughtInReceiver(int detPos) {
-	return detector.resetFramesCaught(detPos);
+void slsDetectorUsers::resetFramesCaughtInReceiver(int detPos) {
+	detector.resetFramesCaught(detPos);
 }
 
 int slsDetectorUsers::setReceiverFifoDepth(int i, int detPos) {

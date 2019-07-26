@@ -36,7 +36,7 @@ slsDetector::slsDetector(detectorType type, int multi_id, int det_id,
         FILE_LOG(logWARNING) << "This shared memory should have been "
                                 "deleted before! "
                              << shm.GetName() << ". Freeing it again";
-       shm.RemoveSharedMemory();
+        shm.RemoveSharedMemory();
     }
 
     initSharedMemory(type, multi_id, verify);
@@ -111,8 +111,8 @@ int64_t slsDetector::getId(idMode mode) {
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting id type " << mode;
     sendToDetector(F_GET_ID, arg, retval);
-    FILE_LOG(logDEBUG1)
-        << "Id (" << mode << "): 0x" << std::hex << retval << std::dec;
+    FILE_LOG(logDEBUG1) << "Id (" << mode << "): 0x" << std::hex << retval
+                        << std::dec;
     return retval;
 }
 
@@ -126,7 +126,7 @@ int64_t slsDetector::getReceiverSoftwareVersion() {
 }
 
 void slsDetector::sendToDetector(int fnum, const void *args, size_t args_size,
-                                void *retval, size_t retval_size) {
+                                 void *retval, size_t retval_size) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     auto ret =
         client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
@@ -156,8 +156,8 @@ void slsDetector::sendToDetector(int fnum) {
 }
 
 void slsDetector::sendToDetectorStop(int fnum, const void *args,
-                                    size_t args_size, void *retval,
-                                    size_t retval_size) {
+                                     size_t args_size, void *retval,
+                                     size_t retval_size) {
     auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
     stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     stop.close();
@@ -165,12 +165,12 @@ void slsDetector::sendToDetectorStop(int fnum, const void *args,
 
 template <typename Arg, typename Ret>
 void slsDetector::sendToDetectorStop(int fnum, const Arg &args, Ret &retval) {
-    sendToDetectorStop(fnum, &args, sizeof(args), &retval,
-                              sizeof(retval));
+    sendToDetectorStop(fnum, &args, sizeof(args), &retval, sizeof(retval));
 }
 
 template <typename Arg>
-void slsDetector::sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t) {
+void slsDetector::sendToDetectorStop(int fnum, const Arg &args,
+                                     std::nullptr_t) {
     sendToDetectorStop(fnum, &args, sizeof(args), nullptr, 0);
 }
 
@@ -184,7 +184,7 @@ void slsDetector::sendToDetectorStop(int fnum) {
 }
 
 void slsDetector::sendToReceiver(int fnum, const void *args, size_t args_size,
-                                void *retval, size_t retval_size) {
+                                 void *retval, size_t retval_size) {
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
 
     auto ret = receiver.sendCommandThenRead(fnum, args, args_size, retval,
@@ -505,10 +505,10 @@ int slsDetector::setDetectorType(detectorType const type) {
 
     // if unspecified, then get from detector
     if (type == GET_DETECTOR_TYPE) {
-            sendToDetector(fnum, nullptr, retval);
-            shm()->myDetectorType = static_cast<detectorType>(retval);
-            FILE_LOG(logDEBUG1) << "Detector Type: " << retval;
-    } 
+        sendToDetector(fnum, nullptr, retval);
+        shm()->myDetectorType = static_cast<detectorType>(retval);
+        FILE_LOG(logDEBUG1) << "Detector Type: " << retval;
+    }
     if (shm()->useReceiverFlag) {
         auto arg = static_cast<int>(shm()->myDetectorType);
         retval = GENERIC;
@@ -592,19 +592,19 @@ int slsDetector::getNChips(dimension d) const { return shm()->nChip[d]; }
 int slsDetector::getQuad() {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Quad Type";
-        sendToDetector(F_GET_QUAD, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Quad Type :" << retval;
+    sendToDetector(F_GET_QUAD, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Quad Type :" << retval;
     return retval;
 }
 
 void slsDetector::setQuad(const bool enable) {
     int value = enable ? 1 : 0;
     FILE_LOG(logDEBUG1) << "Setting Quad type to " << value;
-        sendToDetector(F_SET_QUAD, value, nullptr);
+    sendToDetector(F_SET_QUAD, value, nullptr);
     FILE_LOG(logDEBUG1) << "Setting Quad type to " << value << " in Receiver";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_QUAD, value, nullptr);
-    }   
+    }
 }
 
 int slsDetector::getDetectorOffset(dimension d) const {
@@ -638,9 +638,9 @@ int slsDetector::setControlPort(int port_number) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting control port to " << port_number;
     if (port_number >= 0 && port_number != shm()->controlPort) {
-            sendToDetector(F_SET_PORT, port_number, retval);
-            shm()->controlPort = retval;
-            FILE_LOG(logDEBUG1) << "Control port: " << retval;
+        sendToDetector(F_SET_PORT, port_number, retval);
+        shm()->controlPort = retval;
+        FILE_LOG(logDEBUG1) << "Control port: " << retval;
     }
     return shm()->controlPort;
 }
@@ -649,9 +649,9 @@ int slsDetector::setStopPort(int port_number) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting stop port to " << port_number;
     if (port_number >= 0 && port_number != shm()->stopPort) {
-            sendToDetectorStop(F_SET_PORT, port_number, retval);
-            shm()->stopPort = retval;
-            FILE_LOG(logDEBUG1) << "Stop port: " << retval;
+        sendToDetectorStop(F_SET_PORT, port_number, retval);
+        shm()->stopPort = retval;
+        FILE_LOG(logDEBUG1) << "Stop port: " << retval;
     }
     return shm()->stopPort;
 }
@@ -681,23 +681,23 @@ int slsDetector::getStopPort() const { return shm()->stopPort; }
 int slsDetector::lockServer(int lock) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting detector server lock to " << lock;
-        sendToDetector(F_LOCK_SERVER, lock, retval);
-        FILE_LOG(logDEBUG1) << "Lock: " << retval;
+    sendToDetector(F_LOCK_SERVER, lock, retval);
+    FILE_LOG(logDEBUG1) << "Lock: " << retval;
     return retval;
 }
 
 std::string slsDetector::getLastClientIP() {
     char retval[INET_ADDRSTRLEN]{};
     FILE_LOG(logDEBUG1) << "Getting last client ip to detector server";
-        sendToDetector(F_GET_LAST_CLIENT_IP, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Last client IP to detector: " << retval;
+    sendToDetector(F_GET_LAST_CLIENT_IP, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Last client IP to detector: " << retval;
     return retval;
 }
 
 void slsDetector::exitServer() {
     FILE_LOG(logDEBUG1) << "Sending exit command to detector server";
-        sendToDetector(F_EXIT_SERVER);
-        FILE_LOG(logINFO) << "Shutting down the Detector server";
+    sendToDetector(F_EXIT_SERVER);
+    FILE_LOG(logINFO) << "Shutting down the Detector server";
 }
 
 void slsDetector::execCommand(const std::string &cmd) {
@@ -705,24 +705,24 @@ void slsDetector::execCommand(const std::string &cmd) {
     char retval[MAX_STR_LENGTH]{};
     sls::strcpy_safe(arg, cmd.c_str());
     FILE_LOG(logDEBUG1) << "Sending command to detector " << arg;
-        sendToDetector(F_EXEC_COMMAND, arg, retval);
-        if (strlen(retval) != 0u) {
-            FILE_LOG(logINFO) << "Detector " << detId << " returned:\n"
-                              << retval;
-        }
+    sendToDetector(F_EXEC_COMMAND, arg, retval);
+    if (strlen(retval) != 0u) {
+        FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
+    }
 }
 
 void slsDetector::updateCachedDetectorVariables() {
     int fnum = F_UPDATE_CLIENT;
     FILE_LOG(logDEBUG1) << "Sending update client to detector server";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    if (client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0) == FORCE_UPDATE) {
+    if (client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0) ==
+        FORCE_UPDATE) {
         int n = 0, i32 = 0;
         int64_t i64 = 0;
         char lastClientIP[INET_ADDRSTRLEN] = {0};
         n += client.Receive(lastClientIP, sizeof(lastClientIP));
-        FILE_LOG(logDEBUG1) << "Updating detector last modified by "
-                            << lastClientIP;
+        FILE_LOG(logDEBUG1)
+            << "Updating detector last modified by " << lastClientIP;
 
         // dr
         n += client.Receive(&i32, sizeof(i32));
@@ -841,12 +841,11 @@ void slsDetector::updateCachedDetectorVariables() {
     }
 }
 
-
 std::vector<std::string> slsDetector::getConfigFileCommands() {
     std::vector<std::string> base{"hostname",    "port",       "stopport",
-                                    "settingsdir", "fpath",      "lock",
-                                    "zmqport",     "rx_zmqport", "zmqip",
-                                    "rx_zmqip",    "rx_tcpport"};
+                                  "settingsdir", "fpath",      "lock",
+                                  "zmqport",     "rx_zmqport", "zmqip",
+                                  "rx_zmqip",    "rx_tcpport"};
 
     switch (shm()->myDetectorType) {
     case GOTTHARD:
@@ -893,7 +892,7 @@ std::vector<std::string> slsDetector::getConfigFileCommands() {
         base.emplace_back("detectorip");
         base.emplace_back("rx_udpport");
         base.emplace_back("rx_udpip");
-        base.emplace_back("rx_udpmac");        
+        base.emplace_back("rx_udpmac");
         break;
     default:
         throw RuntimeError(
@@ -906,7 +905,7 @@ std::vector<std::string> slsDetector::getConfigFileCommands() {
     base.emplace_back("r_readfreq");
     base.emplace_back("rx_udpsocksize");
     base.emplace_back("rx_realudpsocksize");
-    
+
     std::vector<std::string> commands;
     for (const auto &cmd : base) {
         std::ostringstream os;
@@ -956,9 +955,9 @@ slsDetector::sendSettingsOnly(detectorSettings isettings) {
     int arg = static_cast<int>(isettings);
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting settings to " << arg;
-        sendToDetector(F_SET_SETTINGS, arg, retval);
-        FILE_LOG(logDEBUG1) << "Settings: " << retval;
-        shm()->currentSettings = static_cast<detectorSettings>(retval);
+    sendToDetector(F_SET_SETTINGS, arg, retval);
+    FILE_LOG(logDEBUG1) << "Settings: " << retval;
+    shm()->currentSettings = static_cast<detectorSettings>(retval);
     return shm()->currentSettings;
 }
 
@@ -982,10 +981,10 @@ int slsDetector::getThresholdEnergy() {
     }
 
     FILE_LOG(logDEBUG1) << "Getting threshold energy";
-        int retval = -1;
-        sendToDetector(F_GET_THRESHOLD_ENERGY, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Threshold: " << retval;
-        shm()->currentThresholdEV = retval;
+    int retval = -1;
+    sendToDetector(F_GET_THRESHOLD_ENERGY, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Threshold: " << retval;
+    shm()->currentThresholdEV = retval;
     return shm()->currentThresholdEV;
 }
 
@@ -1014,8 +1013,8 @@ int slsDetector::setThresholdEnergy(int e_eV, detectorSettings isettings,
 }
 
 void slsDetector::setThresholdEnergyAndSettings(int e_eV,
-                                               detectorSettings isettings,
-                                               int tb) {
+                                                detectorSettings isettings,
+                                                int tb) {
 
     // if settings provided, use that, else use the shared memory variable
     detectorSettings is =
@@ -1151,21 +1150,21 @@ void slsDetector::saveSettingsFile(const std::string &fname) {
 slsDetectorDefs::runStatus slsDetector::getRunStatus() {
     runStatus retval = ERROR;
     FILE_LOG(logDEBUG1) << "Getting status";
-        sendToDetectorStop(F_GET_RUN_STATUS, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Detector status: " << runStatusType(retval);
+    sendToDetectorStop(F_GET_RUN_STATUS, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Detector status: " << runStatusType(retval);
     return retval;
 }
 
 void slsDetector::prepareAcquisition() {
     FILE_LOG(logDEBUG1) << "Preparing Detector for Acquisition";
-        sendToDetector(F_PREPARE_ACQUISITION);
-        FILE_LOG(logDEBUG1) << "Prepare Acquisition successful";
+    sendToDetector(F_PREPARE_ACQUISITION);
+    FILE_LOG(logDEBUG1) << "Prepare Acquisition successful";
 }
 
 void slsDetector::startAcquisition() {
     FILE_LOG(logDEBUG1) << "Starting Acquisition";
-        sendToDetector(F_START_ACQUISITION);
-        FILE_LOG(logDEBUG1) << "Starting Acquisition successful";
+    sendToDetector(F_START_ACQUISITION);
+    FILE_LOG(logDEBUG1) << "Starting Acquisition successful";
 }
 
 void slsDetector::stopAcquisition() {
@@ -1176,8 +1175,8 @@ void slsDetector::stopAcquisition() {
         r = getReceiverStatus();
     }
     FILE_LOG(logDEBUG1) << "Stopping Acquisition";
-        sendToDetectorStop(F_STOP_ACQUISITION);
-        FILE_LOG(logDEBUG1) << "Stopping Acquisition successful";
+    sendToDetectorStop(F_STOP_ACQUISITION);
+    FILE_LOG(logDEBUG1) << "Stopping Acquisition successful";
     // if rxr streaming and acquisition finished, restream dummy stop packet
     if ((shm()->rxUpstream) && (s == IDLE) && (r == IDLE)) {
         restreamStopFromReceiver();
@@ -1186,27 +1185,26 @@ void slsDetector::stopAcquisition() {
 
 void slsDetector::sendSoftwareTrigger() {
     FILE_LOG(logDEBUG1) << "Sending software trigger";
-        sendToDetector(F_SOFTWARE_TRIGGER);
-        FILE_LOG(logDEBUG1) << "Sending software trigger successful";
+    sendToDetector(F_SOFTWARE_TRIGGER);
+    FILE_LOG(logDEBUG1) << "Sending software trigger successful";
 }
 
 void slsDetector::startAndReadAll() {
     FILE_LOG(logDEBUG1) << "Starting and reading all frames";
-        sendToDetector(F_START_AND_READ_ALL);
-        FILE_LOG(logDEBUG1) << "Detector successfully finished acquisition";
+    sendToDetector(F_START_AND_READ_ALL);
+    FILE_LOG(logDEBUG1) << "Detector successfully finished acquisition";
 }
 
 void slsDetector::startReadOut() {
     FILE_LOG(logDEBUG1) << "Starting readout";
-        sendToDetector(F_START_READOUT);
-        FILE_LOG(logDEBUG1) << "Starting detector readout successful";
+    sendToDetector(F_START_READOUT);
+    FILE_LOG(logDEBUG1) << "Starting detector readout successful";
 }
 
 void slsDetector::readAll() {
     FILE_LOG(logDEBUG1) << "Reading all frames";
-        sendToDetector(F_READ_ALL);
-        FILE_LOG(logDEBUG1)
-            << "Detector successfully finished reading all frames";
+    sendToDetector(F_READ_ALL);
+    FILE_LOG(logDEBUG1) << "Detector successfully finished reading all frames";
 }
 
 void slsDetector::configureMAC() {
@@ -1267,7 +1265,7 @@ void slsDetector::configureMAC() {
         pos[1] = (detId / max) * ((shm()->myDetectorType == EIGER) ? 2 : 1);
         // pos[2] (z is reserved)
         FILE_LOG(logDEBUG) << "Detector [" << detId << "] - (" << pos[0] << ","
-                            << pos[1] << ")";
+                           << pos[1] << ")";
         snprintf(args[12], array_size, "%x", pos[0]);
         snprintf(args[13], array_size, "%x", pos[1]);
     }
@@ -1290,28 +1288,28 @@ void slsDetector::configureMAC() {
     FILE_LOG(logDEBUG1) << "col:" << args[13] << "-";
 
     // send to server
-        auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        int ret = client.sendCommandThenRead(fnum, args, sizeof(args), retvals,
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    int ret = client.sendCommandThenRead(fnum, args, sizeof(args), retvals,
                                          sizeof(retvals));
 
-        // TODO!(Erik) Send as int already from detector
-        uint64_t detector_mac = 0;
-        uint32_t detector_ip = 0;
-        sscanf(retvals[0], "%lx", &detector_mac);
-        sscanf(retvals[1], "%x", &detector_ip);
-        detector_ip = __builtin_bswap32(detector_ip);
+    // TODO!(Erik) Send as int already from detector
+    uint64_t detector_mac = 0;
+    uint32_t detector_ip = 0;
+    sscanf(retvals[0], "%lx", &detector_mac);
+    sscanf(retvals[1], "%x", &detector_ip);
+    detector_ip = __builtin_bswap32(detector_ip);
 
-        if (shm()->detectorMAC != detector_mac) {
-            shm()->detectorMAC = detector_mac;
-            FILE_LOG(logINFO)
-                << detId << ": Detector MAC updated to " << getDetectorMAC();
-        }
+    if (shm()->detectorMAC != detector_mac) {
+        shm()->detectorMAC = detector_mac;
+        FILE_LOG(logINFO) << detId << ": Detector MAC updated to "
+                          << getDetectorMAC();
+    }
 
-        if (shm()->detectorIP != detector_ip) {
-            shm()->detectorIP = detector_ip;
-            FILE_LOG(logINFO)
-                << detId << ": Detector IP updated to " << getDetectorIP();
-        }
+    if (shm()->detectorIP != detector_ip) {
+        shm()->detectorIP = detector_ip;
+        FILE_LOG(logINFO) << detId << ": Detector IP updated to "
+                          << getDetectorIP();
+    }
     if (ret == FORCE_UPDATE) {
         updateCachedDetectorVariables();
     }
@@ -1319,14 +1317,14 @@ void slsDetector::configureMAC() {
 
 void slsDetector::setStartingFrameNumber(const uint64_t value) {
     FILE_LOG(logDEBUG1) << "Setting starting frame number to " << value;
-        sendToDetector(F_SET_STARTING_FRAME_NUMBER, value, nullptr);
+    sendToDetector(F_SET_STARTING_FRAME_NUMBER, value, nullptr);
 }
 
 uint64_t slsDetector::getStartingFrameNumber() {
     uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting starting frame number";
-        sendToDetector(F_GET_STARTING_FRAME_NUMBER, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Starting frame number :" << retval;
+    sendToDetector(F_GET_STARTING_FRAME_NUMBER, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Starting frame number :" << retval;
     return retval;
 }
 
@@ -1338,14 +1336,14 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 
     // send to detector
     int64_t oldtimer = shm()->timerValue[index];
-        sendToDetector(F_SET_TIMER, args, retval);
-        FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
-        shm()->timerValue[index] = retval;
-        // update #nchans and databytes, as it depends on #samples, adcmask,
-        // readoutflags
-        if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
-            updateTotalNumberOfChannels();
-        }
+    sendToDetector(F_SET_TIMER, args, retval);
+    FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
+    shm()->timerValue[index] = retval;
+    // update #nchans and databytes, as it depends on #samples, adcmask,
+    // readoutflags
+    if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
+        updateTotalNumberOfChannels();
+    }
 
     // setting timers consequences (eiger (ratecorr) )
     // (a get can also change timer value, hence check difference)
@@ -1409,8 +1407,8 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 int64_t slsDetector::getTimeLeft(timerIndex index) {
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting " << getTimerType(index) << " left";
-        sendToDetectorStop(F_GET_TIME_LEFT, index, retval);
-        FILE_LOG(logDEBUG1) << getTimerType(index) << " left: " << retval;
+    sendToDetectorStop(F_GET_TIME_LEFT, index, retval);
+    FILE_LOG(logDEBUG1) << getTimerType(index) << " left: " << retval;
     return retval;
 }
 
@@ -1419,8 +1417,8 @@ int slsDetector::setSpeed(speedVariable sp, int value, int mode) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting speed index " << sp << " to " << value
                         << " mode: " << mode;
-        sendToDetector(F_SET_SPEED, args, retval);
-        FILE_LOG(logDEBUG1) << "Speed index " << sp << ": " << retval;
+    sendToDetector(F_SET_SPEED, args, retval);
+    FILE_LOG(logDEBUG1) << "Speed index " << sp << ": " << retval;
     return retval;
 }
 
@@ -1429,9 +1427,9 @@ int slsDetector::setDynamicRange(int n) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting dynamic range to " << n;
     int olddr = shm()->dynamicRange;
-        sendToDetector(F_SET_DYNAMIC_RANGE, n, retval);
-        FILE_LOG(logDEBUG1) << "Dynamic Range: " << retval;
-        shm()->dynamicRange = retval;
+    sendToDetector(F_SET_DYNAMIC_RANGE, n, retval);
+    FILE_LOG(logDEBUG1) << "Dynamic Range: " << retval;
+    shm()->dynamicRange = retval;
 
     // only for eiger
     // setting dr consequences on databytes shm
@@ -1470,17 +1468,17 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting DAC " << index << " to " << val
                         << (mV != 0 ? "mV" : "dac units");
-        sendToDetector(F_SET_DAC, args, retval);
-        FILE_LOG(logDEBUG1) << "Dac index " << index << ": " << retval
-                            << (mV != 0 ? "mV" : "dac units");
+    sendToDetector(F_SET_DAC, args, retval);
+    FILE_LOG(logDEBUG1) << "Dac index " << index << ": " << retval
+                        << (mV != 0 ? "mV" : "dac units");
     return retval;
 }
 
 int slsDetector::getADC(dacIndex index) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC " << index;
-        sendToDetector(F_GET_ADC, static_cast<int>(index), retval);
-        FILE_LOG(logDEBUG1) << "ADC (" << index << "): " << retval;
+    sendToDetector(F_GET_ADC, static_cast<int>(index), retval);
+    FILE_LOG(logDEBUG1) << "ADC (" << index << "): " << retval;
     return retval;
 }
 
@@ -1490,8 +1488,8 @@ slsDetector::setExternalCommunicationMode(externalCommunicationMode pol) {
     auto arg = static_cast<int>(pol);
     externalCommunicationMode retval = GET_EXTERNAL_COMMUNICATION_MODE;
     FILE_LOG(logDEBUG1) << "Setting communication to mode " << pol;
-        sendToDetector(fnum, arg, retval);
-        FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
+    sendToDetector(fnum, arg, retval);
+    FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
     return retval;
 }
 
@@ -1500,8 +1498,8 @@ slsDetector::setExternalSignalFlags(externalSignalFlag pol) {
     int fnum = F_SET_EXTERNAL_SIGNAL_FLAG;
     auto retval = GET_EXTERNAL_SIGNAL_FLAG;
     FILE_LOG(logDEBUG1) << "Setting signal flag to " << pol;
-        sendToDetector(fnum, pol, retval);
-        FILE_LOG(logDEBUG1) << "Ext Signal: " << retval;
+    sendToDetector(fnum, pol, retval);
+    FILE_LOG(logDEBUG1) << "Ext Signal: " << retval;
     return retval;
 }
 
@@ -1509,22 +1507,22 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
     auto arg = static_cast<int>(flag);
     readOutFlags retval = GET_READOUT_FLAGS;
     FILE_LOG(logDEBUG1) << "Setting readout flags to " << flag;
-        sendToDetector(F_SET_READOUT_FLAGS, arg, retval);
-        FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
-        shm()->roFlags = retval;
-        // update #nchans and databytes, as it depends on #samples, adcmask,
-        // readoutflags
-        if (shm()->myDetectorType == CHIPTESTBOARD) {
-            updateTotalNumberOfChannels();
-        }
-        FILE_LOG(logDEBUG1) << "Setting receiver readout flags to " << arg;
-        if (shm()->useReceiverFlag) {
-            int fnum = F_RECEIVER_SET_READOUT_FLAGS;
-            arg = shm()->roFlags;
-            retval = static_cast<readOutFlags>(-1);
-            sendToReceiver(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-            FILE_LOG(logDEBUG1) << "Receiver readout flag: " << retval;
-        }
+    sendToDetector(F_SET_READOUT_FLAGS, arg, retval);
+    FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
+    shm()->roFlags = retval;
+    // update #nchans and databytes, as it depends on #samples, adcmask,
+    // readoutflags
+    if (shm()->myDetectorType == CHIPTESTBOARD) {
+        updateTotalNumberOfChannels();
+    }
+    FILE_LOG(logDEBUG1) << "Setting receiver readout flags to " << arg;
+    if (shm()->useReceiverFlag) {
+        int fnum = F_RECEIVER_SET_READOUT_FLAGS;
+        arg = shm()->roFlags;
+        retval = static_cast<readOutFlags>(-1);
+        sendToReceiver(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
+        FILE_LOG(logDEBUG1) << "Receiver readout flag: " << retval;
+    }
     return shm()->roFlags;
 }
 
@@ -1533,18 +1531,18 @@ uint32_t slsDetector::writeRegister(uint32_t addr, uint32_t val) {
     uint32_t retval = -1;
     FILE_LOG(logDEBUG1) << "Writing to reg 0x" << std::hex << addr << "data: 0x"
                         << std::hex << val << std::dec;
-        sendToDetector(F_WRITE_REGISTER, args, retval);
-        FILE_LOG(logDEBUG1) << "Reg 0x" << std::hex << addr << ": 0x"
-                            << std::hex << retval << std::dec;
+    sendToDetector(F_WRITE_REGISTER, args, retval);
+    FILE_LOG(logDEBUG1) << "Reg 0x" << std::hex << addr << ": 0x" << std::hex
+                        << retval << std::dec;
     return retval;
 }
 
 uint32_t slsDetector::readRegister(uint32_t addr) {
     uint32_t retval = -1;
     FILE_LOG(logDEBUG1) << "Reading reg 0x" << std::hex << addr << std::dec;
-        sendToDetector(F_READ_REGISTER, addr, retval);
-        FILE_LOG(logDEBUG1) << "Reg 0x" << std::hex << addr << ": 0x"
-                            << std::hex << retval << std::dec;
+    sendToDetector(F_READ_REGISTER, addr, retval);
+    FILE_LOG(logDEBUG1) << "Reg 0x" << std::hex << addr << ": 0x" << std::hex
+                        << retval << std::dec;
     return retval;
 }
 
@@ -1658,125 +1656,120 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
     shm()->useReceiverFlag = true;
     checkReceiverVersionCompatibility();
 
+    FILE_LOG(logDEBUG)
+        << "detector type:"
+        << (slsDetectorDefs::detectorTypeToString(shm()->myDetectorType))
+        << "\ndetector id:" << detId
+        << "\ndetector hostname:" << shm()->hostname
+        << "\nfile path:" << shm()->rxFilePath
+        << "\nfile name:" << shm()->rxFileName
+        << "\nfile index:" << shm()->rxFileIndex
+        << "\nfile format:" << shm()->rxFileFormat
+        << "\nr_framesperfile:" << shm()->rxFramesPerFile
+        << "\nr_discardpolicy:" << shm()->rxFrameDiscardMode
+        << "\nr_padding:" << shm()->rxFramePadding
+        << "\nwrite enable:" << shm()->rxFileWrite
+        << "\nmaster write enable:" << shm()->rxMasterFileWrite
+        << "\noverwrite enable:" << shm()->rxFileOverWrite
+        << "\nframe index needed:"
+        << ((shm()->timerValue[FRAME_NUMBER] *
+             shm()->timerValue[CYCLES_NUMBER]) > 1)
+        << "\nframe period:" << (shm()->timerValue[FRAME_PERIOD])
+        << "\nframe number:" << (shm()->timerValue[FRAME_NUMBER])
+        << "\nsub exp time:" << (shm()->timerValue[SUBFRAME_ACQUISITION_TIME])
+        << "\nsub dead time:" << (shm()->timerValue[SUBFRAME_DEADTIME])
+        << "\nasamples:" << (shm()->timerValue[ANALOG_SAMPLES])
+        << "\ndsamples:" << (shm()->timerValue[DIGITAL_SAMPLES])
+        << "\ndynamic range:" << shm()->dynamicRange
+        << "\nflippeddatax:" << (shm()->flippedData[X])
+        << "\nactivated: " << shm()->activated
+        << "\nreceiver deactivated padding: " << shm()->rxPadDeactivatedModules
+        << "\nsilent Mode:" << shm()->rxSilentMode
+        << "\n10GbE:" << shm()->tenGigaEnable
+        << "\nGap pixels: " << shm()->gappixels
+        << "\nr_readfreq:" << shm()->rxReadFreq
+        << "\nrx streaming port:" << shm()->rxZmqport
+        << "\nrx streaming source ip:" << shm()->rxZmqip
+        << "\nrx additional json header:" << shm()->rxAdditionalJsonHeader
+        << "\nrx_datastream:" << enableDataStreamingFromReceiver(-1)
+        << "\nrx_dbitlistsize:" << shm()->rxDbitList.size()
+        << "\nrx_DbitOffset:" << shm()->rxDbitOffset << std::endl;
 
+    if (setDetectorType(shm()->myDetectorType) != GENERIC) {
+        sendMultiDetectorSize();
+        setDetectorId();
+        setDetectorHostname();
+        setUDPConnection();
+        setReceiverUDPSocketBufferSize(0);
+        setFilePath(shm()->rxFilePath);
+        setFileName(shm()->rxFileName);
+        setFileIndex(shm()->rxFileIndex);
+        setFileFormat(shm()->rxFileFormat);
+        setFramesPerFile(shm()->rxFramesPerFile);
+        setReceiverFramesDiscardPolicy(shm()->rxFrameDiscardMode);
+        setPartialFramesPadding(shm()->rxFramePadding);
+        setFileWrite(shm()->rxFileWrite);
+        setMasterFileWrite(shm()->rxMasterFileWrite);
+        setFileOverWrite(shm()->rxFileOverWrite);
+        setTimer(FRAME_PERIOD, shm()->timerValue[FRAME_PERIOD]);
+        setTimer(FRAME_NUMBER, shm()->timerValue[FRAME_NUMBER]);
+        setTimer(ACQUISITION_TIME, shm()->timerValue[ACQUISITION_TIME]);
 
-        FILE_LOG(logDEBUG)
-            << "detector type:"
-            << (slsDetectorDefs::detectorTypeToString(shm()->myDetectorType))
-            << "\ndetector id:" << detId
-            << "\ndetector hostname:" << shm()->hostname
-            << "\nfile path:" << shm()->rxFilePath
-            << "\nfile name:" << shm()->rxFileName
-            << "\nfile index:" << shm()->rxFileIndex
-            << "\nfile format:" << shm()->rxFileFormat
-            << "\nr_framesperfile:" << shm()->rxFramesPerFile
-            << "\nr_discardpolicy:" << shm()->rxFrameDiscardMode
-            << "\nr_padding:" << shm()->rxFramePadding
-            << "\nwrite enable:" << shm()->rxFileWrite
-            << "\nmaster write enable:" << shm()->rxMasterFileWrite
-            << "\noverwrite enable:" << shm()->rxFileOverWrite
-            << "\nframe index needed:"
-            << ((shm()->timerValue[FRAME_NUMBER] *
-                 shm()->timerValue[CYCLES_NUMBER]) > 1)
-            << "\nframe period:" << (shm()->timerValue[FRAME_PERIOD])
-            << "\nframe number:" << (shm()->timerValue[FRAME_NUMBER])
-            << "\nsub exp time:"
-            << (shm()->timerValue[SUBFRAME_ACQUISITION_TIME])
-            << "\nsub dead time:" << (shm()->timerValue[SUBFRAME_DEADTIME])
-            << "\nasamples:" << (shm()->timerValue[ANALOG_SAMPLES])
-            << "\ndsamples:" << (shm()->timerValue[DIGITAL_SAMPLES])
-            << "\ndynamic range:" << shm()->dynamicRange
-            << "\nflippeddatax:" << (shm()->flippedData[X])
-            << "\nactivated: " << shm()->activated
-            << "\nreceiver deactivated padding: "
-            << shm()->rxPadDeactivatedModules
-            << "\nsilent Mode:" << shm()->rxSilentMode
-            << "\n10GbE:" << shm()->tenGigaEnable
-            << "\nGap pixels: " << shm()->gappixels
-            << "\nr_readfreq:" << shm()->rxReadFreq
-            << "\nrx streaming port:" << shm()->rxZmqport
-            << "\nrx streaming source ip:" << shm()->rxZmqip
-            << "\nrx additional json header:" << shm()->rxAdditionalJsonHeader
-            << "\nrx_datastream:" << enableDataStreamingFromReceiver(-1)
-            << "\nrx_dbitlistsize:" << shm()->rxDbitList.size()
-            << "\nrx_DbitOffset:" << shm()->rxDbitOffset << std::endl;
+        // detector specific
+        switch (shm()->myDetectorType) {
 
-        if (setDetectorType(shm()->myDetectorType) != GENERIC) {
-            sendMultiDetectorSize();
-            setDetectorId();
-            setDetectorHostname();
-            setUDPConnection();
-            setReceiverUDPSocketBufferSize(0);
-            setFilePath(shm()->rxFilePath);
-            setFileName(shm()->rxFileName);
-            setFileIndex(shm()->rxFileIndex);
-            setFileFormat(shm()->rxFileFormat);
-            setFramesPerFile(shm()->rxFramesPerFile);
-            setReceiverFramesDiscardPolicy(shm()->rxFrameDiscardMode);
-            setPartialFramesPadding(shm()->rxFramePadding);
-            setFileWrite(shm()->rxFileWrite);
-            setMasterFileWrite(shm()->rxMasterFileWrite);
-            setFileOverWrite(shm()->rxFileOverWrite);
-            setTimer(FRAME_PERIOD, shm()->timerValue[FRAME_PERIOD]);
-            setTimer(FRAME_NUMBER, shm()->timerValue[FRAME_NUMBER]);
-            setTimer(ACQUISITION_TIME, shm()->timerValue[ACQUISITION_TIME]);
+        case EIGER:
+            setTimer(SUBFRAME_ACQUISITION_TIME,
+                     shm()->timerValue[SUBFRAME_ACQUISITION_TIME]);
+            setTimer(SUBFRAME_DEADTIME, shm()->timerValue[SUBFRAME_DEADTIME]);
+            setDynamicRange(shm()->dynamicRange);
+            setFlippedData(X, -1);
+            activate(-1);
+            setDeactivatedRxrPaddingMode(
+                static_cast<int>(shm()->rxPadDeactivatedModules));
+            enableGapPixels(shm()->gappixels);
+            enableTenGigabitEthernet(shm()->tenGigaEnable);
+            setReadOutFlags(GET_READOUT_FLAGS);
+            break;
 
-            // detector specific
-            switch (shm()->myDetectorType) {
+        case CHIPTESTBOARD:
+            setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
+            setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
+            enableTenGigabitEthernet(shm()->tenGigaEnable);
+            setReadOutFlags(GET_READOUT_FLAGS);
+            setADCEnableMask(shm()->adcEnableMask);
+            setReceiverDbitOffset(shm()->rxDbitOffset);
+            break;
 
-            case EIGER:
-                setTimer(SUBFRAME_ACQUISITION_TIME,
-                         shm()->timerValue[SUBFRAME_ACQUISITION_TIME]);
-                setTimer(SUBFRAME_DEADTIME,
-                         shm()->timerValue[SUBFRAME_DEADTIME]);
-                setDynamicRange(shm()->dynamicRange);
-                setFlippedData(X, -1);
-                activate(-1);
-                setDeactivatedRxrPaddingMode(
-                    static_cast<int>(shm()->rxPadDeactivatedModules));
-                enableGapPixels(shm()->gappixels);
-                enableTenGigabitEthernet(shm()->tenGigaEnable);
-                setReadOutFlags(GET_READOUT_FLAGS);
-                break;
+        case MOENCH:
+            setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
+            setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
+            enableTenGigabitEthernet(shm()->tenGigaEnable);
+            setADCEnableMask(shm()->adcEnableMask);
+            break;
 
-            case CHIPTESTBOARD:
-                setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
-                setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
-                enableTenGigabitEthernet(shm()->tenGigaEnable);
-                setReadOutFlags(GET_READOUT_FLAGS);
-                setADCEnableMask(shm()->adcEnableMask);
-                setReceiverDbitOffset(shm()->rxDbitOffset);
-                break;
+        case GOTTHARD:
+            sendROI(-1, nullptr);
+            break;
 
-            case MOENCH:
-                setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
-                setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
-                enableTenGigabitEthernet(shm()->tenGigaEnable);
-                setADCEnableMask(shm()->adcEnableMask);
-                break;
-
-            case GOTTHARD:
-                sendROI(-1, nullptr);
-                break;
-
-            default:
-                break;
-            }
-
-            if (shm()->myDetectorType == CHIPTESTBOARD) {
-                setReceiverDbitList(shm()->rxDbitList);
-            }
-
-            setReceiverSilentMode(static_cast<int>(shm()->rxSilentMode));
-            // data streaming
-            setReceiverStreamingFrequency(shm()->rxReadFreq);
-            setReceiverStreamingPort(getReceiverStreamingPort());
-            setReceiverStreamingIP(getReceiverStreamingIP());
-            setAdditionalJsonHeader(shm()->rxAdditionalJsonHeader);
-            enableDataStreamingFromReceiver(
-                static_cast<int>(enableDataStreamingFromReceiver(-1)));
+        default:
+            break;
         }
-    
+
+        if (shm()->myDetectorType == CHIPTESTBOARD) {
+            setReceiverDbitList(shm()->rxDbitList);
+        }
+
+        setReceiverSilentMode(static_cast<int>(shm()->rxSilentMode));
+        // data streaming
+        setReceiverStreamingFrequency(shm()->rxReadFreq);
+        setReceiverStreamingPort(getReceiverStreamingPort());
+        setReceiverStreamingIP(getReceiverStreamingIP());
+        setAdditionalJsonHeader(shm()->rxAdditionalJsonHeader);
+        enableDataStreamingFromReceiver(
+            static_cast<int>(enableDataStreamingFromReceiver(-1)));
+    }
+
     return std::string(shm()->rxHostname);
 }
 
@@ -1953,7 +1946,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
     if (shm()->useReceiverFlag) {
         char retvals[MAX_STR_LENGTH]{};
         char args[MAX_STR_LENGTH]{};
-        sls::strcpy_safe(args, shm()->rxZmqip.str()); //TODO send int
+        sls::strcpy_safe(args, shm()->rxZmqip.str()); // TODO send int
         FILE_LOG(logDEBUG1)
             << "Sending receiver streaming IP to receiver: " << args;
         sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, args, retvals);
@@ -1972,9 +1965,8 @@ int slsDetector::setDetectorNetworkParameter(networkParameter index,
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting network parameter index " << index << " to "
                         << delay;
-        sendToDetector(F_SET_NETWORK_PARAMETER, args, retval);
-        FILE_LOG(logDEBUG1)
-            << "Network Parameter (" << index << "): " << retval;
+    sendToDetector(F_SET_NETWORK_PARAMETER, args, retval);
+    FILE_LOG(logDEBUG1) << "Network Parameter (" << index << "): " << retval;
     return retval;
 }
 
@@ -2126,7 +2118,8 @@ void slsDetector::setUDPConnection() {
 
     // called before set up
     if (strcmp(shm()->rxHostname, "none") == 0) {
-        throw RuntimeError("Cannot set udp connection. Receiver hostname not set yet.");
+        throw RuntimeError(
+            "Cannot set udp connection. Receiver hostname not set yet.");
     }
 
     if (shm()->rxUDPIP == 0) {
@@ -2179,13 +2172,13 @@ int slsDetector::digitalTest(digitalTestMode mode, int ival) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending digital test of mode " << mode << ", ival "
                         << ival;
-        sendToDetector(F_DIGITAL_TEST, args, retval);
-        FILE_LOG(logDEBUG1) << "Digital Test returned: " << retval;
+    sendToDetector(F_DIGITAL_TEST, args, retval);
+    FILE_LOG(logDEBUG1) << "Digital Test returned: " << retval;
     return retval;
 }
 
 void slsDetector::loadImageToDetector(imageType index,
-                                     const std::string &fname) {
+                                      const std::string &fname) {
     int nChan = getTotalNumberOfChannels();
     int16_t args[nChan];
     FILE_LOG(logDEBUG1) << "Loading " << (index == 0u ? "Dark" : "Gain")
@@ -2204,22 +2197,23 @@ void slsDetector::sendImageToDetector(imageType index, int16_t imageVals[]) {
     int nChan = getTotalNumberOfChannels();
     int args[]{static_cast<int>(index), nChan};
     FILE_LOG(logDEBUG1) << "Sending image to detector";
-        auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.Send(&fnum, sizeof(fnum));
-        client.Send(args, sizeof(args));
-        client.Send(imageVals, nChan * sizeof(int16_t));
-        int ret = FAIL;
-        client.Receive(&ret, sizeof(ret));
-            char mess[MAX_STR_LENGTH]{};
-            client.Receive(mess, MAX_STR_LENGTH);
-            throw DetectorError("Detector " + std::to_string(detId) +
-                                " returned error: " + std::string(mess));
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(args, sizeof(args));
+    client.Send(imageVals, nChan * sizeof(int16_t));
+    int ret = FAIL;
+    client.Receive(&ret, sizeof(ret));
+    char mess[MAX_STR_LENGTH]{};
+    client.Receive(mess, MAX_STR_LENGTH);
+    throw DetectorError("Detector " + std::to_string(detId) +
+                        " returned error: " + std::string(mess));
     if (ret == FORCE_UPDATE) {
         updateCachedDetectorVariables();
     }
 }
 
-void slsDetector::writeCounterBlockFile(const std::string &fname, int startACQ) {
+void slsDetector::writeCounterBlockFile(const std::string &fname,
+                                        int startACQ) {
     int nChan = getTotalNumberOfChannels();
     int16_t retvals[nChan];
     FILE_LOG(logDEBUG1) << "Reading Counter to " << fname
@@ -2234,8 +2228,7 @@ void slsDetector::getCounterBlock(int16_t image[], int startACQ) {
     int nChan = getTotalNumberOfChannels();
     int args[] = {startACQ, nChan};
     FILE_LOG(logDEBUG1) << "Reading Counter block with startacq: " << startACQ;
-        sendToDetector(fnum, args, sizeof(args), image,
-                             nChan * sizeof(int16_t));
+    sendToDetector(fnum, args, sizeof(args), image, nChan * sizeof(int16_t));
 }
 
 void slsDetector::resetCounterBlock(int startACQ) {
@@ -2246,8 +2239,8 @@ void slsDetector::resetCounterBlock(int startACQ) {
 int slsDetector::setCounterBit(int cb) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending counter bit " << cb;
-        sendToDetector(F_SET_COUNTER_BIT, cb, retval);
-        FILE_LOG(logDEBUG1) << "Counter bit: " << retval;
+    sendToDetector(F_SET_COUNTER_BIT, cb, retval);
+    FILE_LOG(logDEBUG1) << "Counter bit: " << retval;
     return retval;
 }
 
@@ -2276,45 +2269,44 @@ void slsDetector::sendROI(int n, ROI roiLimits[]) {
     ROI retval[MAX_ROIS];
     FILE_LOG(logDEBUG1) << "Sending ROI to detector" << narg;
 
-        auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.Send(&fnum, sizeof(fnum));
-        client.Send(&narg, sizeof(narg));
-        if (narg != -1) {
-            for (int i = 0; i < narg; ++i) {
-                client.Send(&arg[i].xmin, sizeof(int));
-                client.Send(&arg[i].xmax, sizeof(int));
-                client.Send(&arg[i].ymin, sizeof(int));
-                client.Send(&arg[i].ymax, sizeof(int));
-            }
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&narg, sizeof(narg));
+    if (narg != -1) {
+        for (int i = 0; i < narg; ++i) {
+            client.Send(&arg[i].xmin, sizeof(int));
+            client.Send(&arg[i].xmax, sizeof(int));
+            client.Send(&arg[i].ymin, sizeof(int));
+            client.Send(&arg[i].ymax, sizeof(int));
         }
-        client.Receive(&ret, sizeof(ret));
+    }
+    client.Receive(&ret, sizeof(ret));
 
-        // handle ret
-        if (ret == FAIL) {
-            char mess[MAX_STR_LENGTH]{};
-            client.Receive(mess, MAX_STR_LENGTH);
-            throw RuntimeError("Detector " + std::to_string(detId) +
-                               " returned error: " + std::string(mess));
-        } else {
-            client.Receive(&nretval, sizeof(nretval));
-            int nrec = 0;
-            for (int i = 0; i < nretval; ++i) {
-                nrec += client.Receive(&retval[i].xmin, sizeof(int));
-                nrec += client.Receive(&retval[i].xmax, sizeof(int));
-                nrec += client.Receive(&retval[i].ymin, sizeof(int));
-                nrec += client.Receive(&retval[i].ymax, sizeof(int));
-            }
-            shm()->nROI = nretval;
-            FILE_LOG(logDEBUG1) << "nRoi: " << nretval;
-            for (int i = 0; i < nretval; ++i) {
-                shm()->roiLimits[i] = retval[i];
-                FILE_LOG(logDEBUG1)
-                    << "ROI [" << i << "] (" << shm()->roiLimits[i].xmin << ","
-                    << shm()->roiLimits[i].xmax << ","
-                    << shm()->roiLimits[i].ymin << ","
-                    << shm()->roiLimits[i].ymax << ")";
-            }
+    // handle ret
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(detId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        client.Receive(&nretval, sizeof(nretval));
+        int nrec = 0;
+        for (int i = 0; i < nretval; ++i) {
+            nrec += client.Receive(&retval[i].xmin, sizeof(int));
+            nrec += client.Receive(&retval[i].xmax, sizeof(int));
+            nrec += client.Receive(&retval[i].ymin, sizeof(int));
+            nrec += client.Receive(&retval[i].ymax, sizeof(int));
         }
+        shm()->nROI = nretval;
+        FILE_LOG(logDEBUG1) << "nRoi: " << nretval;
+        for (int i = 0; i < nretval; ++i) {
+            shm()->roiLimits[i] = retval[i];
+            FILE_LOG(logDEBUG1)
+                << "ROI [" << i << "] (" << shm()->roiLimits[i].xmin << ","
+                << shm()->roiLimits[i].xmax << "," << shm()->roiLimits[i].ymin
+                << "," << shm()->roiLimits[i].ymax << ")";
+        }
+    }
     if (ret == FORCE_UPDATE) {
         updateCachedDetectorVariables();
     }
@@ -2360,8 +2352,8 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
     uint32_t arg = mask;
     FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex << arg
                         << std::dec;
-        sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
-        shm()->adcEnableMask = mask;
+    sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
+    shm()->adcEnableMask = mask;
 
     // update #nchans and databytes, as it depends on #samples, adcmask,
     // readoutflags
@@ -2385,26 +2377,24 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
 uint32_t slsDetector::getADCEnableMask() {
     uint32_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC Enable mask";
-        sendToDetector(F_GET_ADC_ENABLE_MASK, nullptr, 0, &retval,
-                       sizeof(retval));
-        shm()->adcEnableMask = retval;
-        FILE_LOG(logDEBUG1)
-            << "ADC Enable Mask: 0x" << std::hex << retval << std::dec;
+    sendToDetector(F_GET_ADC_ENABLE_MASK, nullptr, 0, &retval, sizeof(retval));
+    shm()->adcEnableMask = retval;
+    FILE_LOG(logDEBUG1) << "ADC Enable Mask: 0x" << std::hex << retval
+                        << std::dec;
     return shm()->adcEnableMask;
 }
 
 void slsDetector::setADCInvert(uint32_t value) {
     FILE_LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << value
                         << std::dec;
-        sendToDetector(F_SET_ADC_INVERT, value, nullptr);
+    sendToDetector(F_SET_ADC_INVERT, value, nullptr);
 }
 
 uint32_t slsDetector::getADCInvert() {
     uint32_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC Invert";
-        sendToDetector(F_GET_ADC_INVERT, nullptr, retval);
-        FILE_LOG(logDEBUG1)
-            << "ADC Invert: 0x" << std::hex << retval << std::dec;
+    sendToDetector(F_GET_ADC_INVERT, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "ADC Invert: 0x" << std::hex << retval << std::dec;
     return retval;
 }
 
@@ -2412,8 +2402,8 @@ int slsDetector::setExternalSamplingSource(int value) {
     int arg = value;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting External Sampling Source to " << arg;
-        sendToDetector(F_EXTERNAL_SAMPLING_SOURCE, arg, retval);
-        FILE_LOG(logDEBUG1) << "External Sampling source: " << retval;
+    sendToDetector(F_EXTERNAL_SAMPLING_SOURCE, arg, retval);
+    FILE_LOG(logDEBUG1) << "External Sampling source: " << retval;
     return retval;
 }
 
@@ -2425,8 +2415,8 @@ int slsDetector::setExternalSampling(int value) {
     int arg = value;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting External Sampling to " << arg;
-        sendToDetector(F_EXTERNAL_SAMPLING, arg, retval);
-        FILE_LOG(logDEBUG1) << "External Sampling: " << retval;
+    sendToDetector(F_EXTERNAL_SAMPLING, arg, retval);
+    FILE_LOG(logDEBUG1) << "External Sampling: " << retval;
     return retval;
 }
 
@@ -2485,9 +2475,9 @@ void slsDetector::writeAdcRegister(uint32_t addr, uint32_t val) {
 int slsDetector::activate(int enable) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting activate flag to " << enable;
-        sendToDetector(F_ACTIVATE, enable, retval);
-        FILE_LOG(logDEBUG1) << "Activate: " << retval;
-        shm()->activated = static_cast<bool>(retval);
+    sendToDetector(F_ACTIVATE, enable, retval);
+    FILE_LOG(logDEBUG1) << "Activate: " << retval;
+    shm()->activated = static_cast<bool>(retval);
     if (shm()->useReceiverFlag) {
         int fnum = F_RECEIVER_ACTIVATE;
         enable = static_cast<int>(shm()->activated);
@@ -2540,8 +2530,8 @@ int slsDetector::setFlippedData(dimension d, int value) {
 int slsDetector::setAllTrimbits(int val) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting all trimbits to " << val;
-        sendToDetector(F_SET_ALL_TRIMBITS, val, retval);
-        FILE_LOG(logDEBUG1) << "All trimbit value: " << retval;
+    sendToDetector(F_SET_ALL_TRIMBITS, val, retval);
+    FILE_LOG(logDEBUG1) << "All trimbit value: " << retval;
     return retval;
 }
 
@@ -2590,7 +2580,7 @@ void slsDetector::pulsePixel(int n, int x, int y) {
     int args[]{n, x, y};
     FILE_LOG(logDEBUG1) << "Pulsing pixel " << n << " number of times at (" << x
                         << "," << y << ")";
-        sendToDetector(F_PULSE_PIXEL, args, nullptr);
+    sendToDetector(F_PULSE_PIXEL, args, nullptr);
 }
 
 void slsDetector::pulsePixelNMove(int n, int x, int y) {
@@ -2598,43 +2588,43 @@ void slsDetector::pulsePixelNMove(int n, int x, int y) {
     FILE_LOG(logDEBUG1) << "Pulsing pixel " << n
                         << " number of times and move by delta (" << x << ","
                         << y << ")";
-        sendToDetector(F_PULSE_PIXEL_AND_MOVE, args, nullptr);
+    sendToDetector(F_PULSE_PIXEL_AND_MOVE, args, nullptr);
 }
 
 void slsDetector::pulseChip(int n_pulses) {
     FILE_LOG(logDEBUG1) << "Pulsing chip " << n_pulses << " number of times";
-        sendToDetector(F_PULSE_CHIP, n_pulses, nullptr);
+    sendToDetector(F_PULSE_CHIP, n_pulses, nullptr);
 }
 
 int slsDetector::setThresholdTemperature(int val) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting threshold temperature to " << val;
-        sendToDetectorStop(F_THRESHOLD_TEMP, val, retval);
-        FILE_LOG(logDEBUG1) << "Threshold temperature: " << retval;
+    sendToDetectorStop(F_THRESHOLD_TEMP, val, retval);
+    FILE_LOG(logDEBUG1) << "Threshold temperature: " << retval;
     return retval;
 }
 
 int slsDetector::setTemperatureControl(int val) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting temperature control to " << val;
-        sendToDetectorStop(F_TEMP_CONTROL, val, retval);
-        FILE_LOG(logDEBUG1) << "Temperature control: " << retval;
+    sendToDetectorStop(F_TEMP_CONTROL, val, retval);
+    FILE_LOG(logDEBUG1) << "Temperature control: " << retval;
     return retval;
 }
 
 int slsDetector::setTemperatureEvent(int val) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting temperature event to " << val;
-        sendToDetectorStop(F_TEMP_EVENT, val, retval);
-        FILE_LOG(logDEBUG1) << "Temperature event: " << retval;
+    sendToDetectorStop(F_TEMP_EVENT, val, retval);
+    FILE_LOG(logDEBUG1) << "Temperature event: " << retval;
     return retval;
 }
 
 int slsDetector::setStoragecellStart(int pos) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting storage cell start to " << pos;
-        sendToDetector(F_STORAGE_CELL_START, pos, retval);
-        FILE_LOG(logDEBUG1) << "Storage cell start: " << retval;
+    sendToDetector(F_STORAGE_CELL_START, pos, retval);
+    FILE_LOG(logDEBUG1) << "Storage cell start: " << retval;
     return retval;
 }
 
@@ -2658,80 +2648,80 @@ void slsDetector::programFPGA(std::vector<char> buffer) {
     FILE_LOG(logINFO) << "Sending programming binary to detector " << detId
                       << " (" << shm()->hostname << ")";
 
-        auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.Send(&fnum, sizeof(fnum));
-        client.Send(&filesize, sizeof(filesize));
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&filesize, sizeof(filesize));
+    client.Receive(&ret, sizeof(ret));
+    // error in detector at opening file pointer to flash
+    if (ret == FAIL) {
+        client.Receive(mess, sizeof(mess));
+        std::ostringstream os;
+        os << "Detector " << detId << " (" << shm()->hostname << ")"
+           << " returned error: " << mess;
+        throw RuntimeError(os.str());
+    }
+
+    // erasing flash
+    if (ret != FAIL) {
+        FILE_LOG(logINFO) << "Erasing Flash for detector " << detId << " ("
+                          << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // erasing takes 65 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 65;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            usleep(1 * 1000 * 1000);
+            --count;
+            printf("%d%%\r",
+                   static_cast<int>(
+                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
+                       100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+        FILE_LOG(logINFO) << "Writing to Flash to detector " << detId << " ("
+                          << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+    }
+
+    // sending program in parts of 2mb each
+    size_t unitprogramsize = 0;
+    int currentPointer = 0;
+    size_t totalsize = filesize;
+    while (filesize > 0) {
+        unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
+        if (unitprogramsize > filesize) {      // less than 2mb
+            unitprogramsize = filesize;
+        }
+        FILE_LOG(logDEBUG1) << "unitprogramsize:" << unitprogramsize
+                            << "\t filesize:" << filesize;
+
+        client.Send(&buffer[currentPointer], unitprogramsize);
         client.Receive(&ret, sizeof(ret));
-        // error in detector at opening file pointer to flash
         if (ret == FAIL) {
+            printf("\n");
             client.Receive(mess, sizeof(mess));
             std::ostringstream os;
             os << "Detector " << detId << " (" << shm()->hostname << ")"
                << " returned error: " << mess;
             throw RuntimeError(os.str());
-        }
+        } else {
+            filesize -= unitprogramsize;
+            currentPointer += unitprogramsize;
 
-        // erasing flash
-        if (ret != FAIL) {
-            FILE_LOG(logINFO) << "Erasing Flash for detector " << detId << " ("
-                              << shm()->hostname << ")";
-            printf("%d%%\r", 0);
-            std::cout << std::flush;
-            // erasing takes 65 seconds, printing here (otherwise need threads
-            // in server-unnecessary)
-            const int ERASE_TIME = 65;
-            int count = ERASE_TIME + 1;
-            while (count > 0) {
-                usleep(1 * 1000 * 1000);
-                --count;
-                printf("%d%%\r", static_cast<int>(
-                                     (static_cast<double>(ERASE_TIME - count) /
-                                      ERASE_TIME) *
-                                     100));
-                std::cout << std::flush;
-            }
-            printf("\n");
-            FILE_LOG(logINFO) << "Writing to Flash to detector " << detId
-                              << " (" << shm()->hostname << ")";
-            printf("%d%%\r", 0);
+            // print progress
+            printf("%d%%\r",
+                   static_cast<int>(
+                       (static_cast<double>(totalsize - filesize) / totalsize) *
+                       100));
             std::cout << std::flush;
         }
-
-        // sending program in parts of 2mb each
-        size_t unitprogramsize = 0;
-        int currentPointer = 0;
-        size_t totalsize = filesize;
-        while (filesize > 0) {
-            unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
-            if (unitprogramsize > filesize) {      // less than 2mb
-                unitprogramsize = filesize;
-            }
-            FILE_LOG(logDEBUG1) << "unitprogramsize:" << unitprogramsize
-                                << "\t filesize:" << filesize;
-
-            client.Send(&buffer[currentPointer], unitprogramsize);
-            client.Receive(&ret, sizeof(ret));
-            if (ret == FAIL) {
-                printf("\n");
-                client.Receive(mess, sizeof(mess));
-                std::ostringstream os;
-                os << "Detector " << detId << " (" << shm()->hostname << ")"
-                   << " returned error: " << mess;
-                throw RuntimeError(os.str());
-            } else {
-                filesize -= unitprogramsize;
-                currentPointer += unitprogramsize;
-
-                // print progress
-                printf("%d%%\r", static_cast<int>((static_cast<double>(
-                                                       totalsize - filesize) /
-                                                   totalsize) *
-                                                  100));
-                std::cout << std::flush;
-            } 
-        }
-        printf("\n");
-        rebootController();
+    }
+    printf("\n");
+    rebootController();
 }
 
 void slsDetector::resetFPGA() {
@@ -2740,7 +2730,7 @@ void slsDetector::resetFPGA() {
 }
 
 void slsDetector::copyDetectorServer(const std::string &fname,
-                                    const std::string &hostname) {
+                                     const std::string &hostname) {
     char args[2][MAX_STR_LENGTH]{};
     sls::strcpy_safe(args[0], fname.c_str());
     sls::strcpy_safe(args[1], hostname.c_str());
@@ -2757,23 +2747,23 @@ void slsDetector::rebootController() {
     int fnum = F_REBOOT_CONTROLLER;
     FILE_LOG(logINFO) << "Sending reboot controller to detector " << detId
                       << " (" << shm()->hostname << ")";
-        auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.Send(&fnum, sizeof(fnum));
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
 }
 
 int slsDetector::powerChip(int ival) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting power chip to " << ival;
-        sendToDetector(F_POWER_CHIP, ival, retval);
-        FILE_LOG(logDEBUG1) << "Power chip: " << retval;
+    sendToDetector(F_POWER_CHIP, ival, retval);
+    FILE_LOG(logDEBUG1) << "Power chip: " << retval;
     return retval;
 }
 
 int slsDetector::setAutoComparatorDisableMode(int ival) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting auto comp disable mode to " << ival;
-        sendToDetector(F_AUTO_COMP_DISABLE, ival, retval);
-        FILE_LOG(logDEBUG1) << "Auto comp disable: " << retval;
+    sendToDetector(F_AUTO_COMP_DISABLE, ival, retval);
+    FILE_LOG(logDEBUG1) << "Auto comp disable: " << retval;
     return retval;
 }
 
@@ -2787,25 +2777,25 @@ void slsDetector::setModule(sls_detector_module &module, int tb) {
         module.nchan = 0;
         module.nchip = 0;
     }
-        auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        client.Send(&fnum, sizeof(fnum));
-        sendModule(&module, client);
-        client.Receive(&ret, sizeof(ret));
-        if (ret == FAIL) {
-            char mess[MAX_STR_LENGTH] = {0};
-            client.Receive(mess, sizeof(mess));
-            throw RuntimeError("Detector " + std::to_string(detId) +
-                               " returned error: " + mess);
-        }
-        client.Receive(&retval, sizeof(retval));
-        FILE_LOG(logDEBUG1) << "Set Module returned: " << retval;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    sendModule(&module, client);
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH] = {0};
+        client.Receive(mess, sizeof(mess));
+        throw RuntimeError("Detector " + std::to_string(detId) +
+                           " returned error: " + mess);
+    }
+    client.Receive(&retval, sizeof(retval));
+    FILE_LOG(logDEBUG1) << "Set Module returned: " << retval;
     if (ret == FORCE_UPDATE) {
         updateCachedDetectorVariables();
     }
     // update client structure
-        if (module.eV != -1) {
-            shm()->currentThresholdEV = module.eV;
-        }
+    if (module.eV != -1) {
+        shm()->currentThresholdEV = module.eV;
+    }
 }
 
 sls_detector_module slsDetector::getModule() {
@@ -2813,30 +2803,30 @@ sls_detector_module slsDetector::getModule() {
     int ret = FAIL;
     FILE_LOG(logDEBUG1) << "Getting module";
     sls_detector_module myMod{shm()->myDetectorType};
-        auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        ret = client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
-        receiveModule(&myMod, client);
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    ret = client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
+    receiveModule(&myMod, client);
     if (ret == FORCE_UPDATE) {
         updateCachedDetectorVariables();
     }
-        if (myMod.eV != -1) {
-            shm()->currentThresholdEV = myMod.eV;
-        }
+    if (myMod.eV != -1) {
+        shm()->currentThresholdEV = myMod.eV;
+    }
     return myMod;
 }
 
 void slsDetector::setRateCorrection(int64_t t) {
     FILE_LOG(logDEBUG1) << "Setting Rate Correction to " << t;
-        sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
-        shm()->deadTime = t;
+    sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
+    shm()->deadTime = t;
 }
 
 int64_t slsDetector::getRateCorrection() {
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting rate correction";
-        sendToDetector(F_GET_RATE_CORRECT, nullptr, retval);
-        shm()->deadTime = retval;
-        FILE_LOG(logDEBUG1) << "Rate correction: " << retval;
+    sendToDetector(F_GET_RATE_CORRECT, nullptr, retval);
+    shm()->deadTime = retval;
+    FILE_LOG(logDEBUG1) << "Rate correction: " << retval;
     return retval;
 }
 
@@ -2869,7 +2859,6 @@ void slsDetector::printReceiverConfiguration(TLogLevel level) {
                     << "\nReceiver UDP Port:\t" << getReceiverUDPPort()
                     << "\nReceiver UDP Port2:\t" << getReceiverUDPPort2();
 }
-
 
 bool slsDetector::getUseReceiverFlag() const { return shm()->useReceiverFlag; }
 
@@ -2928,106 +2917,106 @@ void slsDetector::updateCachedReceiverVariables() const {
         auto receiver =
             sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
         receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
-            int n = 0, i32 = 0;
-            char cstring[MAX_STR_LENGTH]{};
-            char lastClientIP[INET_ADDRSTRLEN]{};
+        int n = 0, i32 = 0;
+        char cstring[MAX_STR_LENGTH]{};
+        char lastClientIP[INET_ADDRSTRLEN]{};
 
-            n += receiver.Receive(lastClientIP, sizeof(lastClientIP));
-            FILE_LOG(logDEBUG1)
-                << "Updating receiver last modified by " << lastClientIP;
+        n += receiver.Receive(lastClientIP, sizeof(lastClientIP));
+        FILE_LOG(logDEBUG1)
+            << "Updating receiver last modified by " << lastClientIP;
 
-            // filepath
-            n += receiver.Receive(cstring, sizeof(cstring));
-            sls::strcpy_safe(shm()->rxFilePath, cstring);
+        // filepath
+        n += receiver.Receive(cstring, sizeof(cstring));
+        sls::strcpy_safe(shm()->rxFilePath, cstring);
 
-            // filename
-            n += receiver.Receive(cstring, sizeof(cstring));
-            sls::strcpy_safe(shm()->rxFileName, cstring);
+        // filename
+        n += receiver.Receive(cstring, sizeof(cstring));
+        sls::strcpy_safe(shm()->rxFileName, cstring);
 
-            // index
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxFileIndex = i32;
+        // index
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxFileIndex = i32;
 
-            // file format
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxFileFormat = static_cast<fileFormat>(i32);
+        // file format
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxFileFormat = static_cast<fileFormat>(i32);
 
-            // frames per file
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxFramesPerFile = i32;
+        // frames per file
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxFramesPerFile = i32;
 
-            // frame discard policy
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxFrameDiscardMode = static_cast<frameDiscardPolicy>(i32);
+        // frame discard policy
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxFrameDiscardMode = static_cast<frameDiscardPolicy>(i32);
 
-            // frame padding
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxFramePadding = static_cast<bool>(i32);
+        // frame padding
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxFramePadding = static_cast<bool>(i32);
 
-            // file write enable
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxFileWrite = static_cast<bool>(i32);
+        // file write enable
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxFileWrite = static_cast<bool>(i32);
 
-            // master file write enable
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxMasterFileWrite = static_cast<bool>(i32);
+        // master file write enable
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxMasterFileWrite = static_cast<bool>(i32);
 
-            // file overwrite enable
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxFileOverWrite = static_cast<bool>(i32);
+        // file overwrite enable
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxFileOverWrite = static_cast<bool>(i32);
 
-            // gap pixels
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->gappixels = i32;
+        // gap pixels
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->gappixels = i32;
 
-            // receiver read frequency
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxReadFreq = i32;
+        // receiver read frequency
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxReadFreq = i32;
 
-            // receiver streaming port
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxZmqport = i32;
+        // receiver streaming port
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxZmqport = i32;
 
-            // streaming source ip
-            n += receiver.Receive(cstring, sizeof(cstring));
-            shm()->rxZmqip = cstring;
+        // streaming source ip
+        n += receiver.Receive(cstring, sizeof(cstring));
+        shm()->rxZmqip = cstring;
 
-            // additional json header
-            n += receiver.Receive(cstring, sizeof(cstring));
-            sls::strcpy_safe(shm()->rxAdditionalJsonHeader, cstring);
+        // additional json header
+        n += receiver.Receive(cstring, sizeof(cstring));
+        sls::strcpy_safe(shm()->rxAdditionalJsonHeader, cstring);
 
-            // receiver streaming enable
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxUpstream = static_cast<bool>(i32);
+        // receiver streaming enable
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxUpstream = static_cast<bool>(i32);
 
-            // activate
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->activated = static_cast<bool>(i32);
+        // activate
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->activated = static_cast<bool>(i32);
 
-            // deactivated padding enable
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxPadDeactivatedModules = static_cast<bool>(i32);
+        // deactivated padding enable
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxPadDeactivatedModules = static_cast<bool>(i32);
 
-            // silent mode
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxSilentMode = static_cast<bool>(i32);
+        // silent mode
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxSilentMode = static_cast<bool>(i32);
 
-            // dbit list
-            {
-                sls::FixedCapacityContainer<int, MAX_RX_DBIT> temp;
-                n += receiver.Receive(&temp, sizeof(temp));
-                shm()->rxDbitList = temp;
-            }
+        // dbit list
+        {
+            sls::FixedCapacityContainer<int, MAX_RX_DBIT> temp;
+            n += receiver.Receive(&temp, sizeof(temp));
+            shm()->rxDbitList = temp;
+        }
 
-            // dbit offset
-            n += receiver.Receive(&i32, sizeof(i32));
-            shm()->rxDbitOffset = i32;
+        // dbit offset
+        n += receiver.Receive(&i32, sizeof(i32));
+        shm()->rxDbitOffset = i32;
 
-            if (n == 0) {
-                throw RuntimeError("Could not update receiver: " +
-                                   std::string(shm()->rxHostname) +
-                                   ", received 0 bytes\n");
-            }
+        if (n == 0) {
+            throw RuntimeError(
+                "Could not update receiver: " + std::string(shm()->rxHostname) +
+                ", received 0 bytes\n");
+        }
     }
 }
 
@@ -3317,10 +3306,10 @@ bool slsDetector::enableDataStreamingFromReceiver(int enable) {
 int slsDetector::enableTenGigabitEthernet(int value) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Enabling / Disabling 10Gbe: " << value;
-        sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
-        FILE_LOG(logDEBUG1) << "10Gbe: " << retval;
-        shm()->tenGigaEnable = retval;
-        configureMAC();
+    sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
+    FILE_LOG(logDEBUG1) << "10Gbe: " << retval;
+    shm()->tenGigaEnable = retval;
+    configureMAC();
     if (shm()->useReceiverFlag) {
         retval = -1;
         value = shm()->tenGigaEnable;
@@ -3389,8 +3378,8 @@ uint64_t slsDetector::setPatternClockControl(uint64_t word) {
     uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Setting Pattern Clock Control, word: 0x" << std::hex
                         << word << std::dec;
-        sendToDetector(F_SET_PATTERN_CLOCK_CONTROL, word, retval);
-        FILE_LOG(logDEBUG1) << "Set Pattern Clock Control: " << retval;
+    sendToDetector(F_SET_PATTERN_CLOCK_CONTROL, word, retval);
+    FILE_LOG(logDEBUG1) << "Set Pattern Clock Control: " << retval;
     return retval;
 }
 
@@ -3399,8 +3388,8 @@ uint64_t slsDetector::setPatternWord(int addr, uint64_t word) {
     uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Setting Pattern word, addr: 0x" << std::hex << addr
                         << ", word: 0x" << word << std::dec;
-        sendToDetector(F_SET_PATTERN_WORD, args, retval);
-        FILE_LOG(logDEBUG1) << "Set Pattern word: " << retval;
+    sendToDetector(F_SET_PATTERN_WORD, args, retval);
+    FILE_LOG(logDEBUG1) << "Set Pattern word: " << retval;
     return retval;
 }
 
@@ -3411,9 +3400,9 @@ std::array<int, 3> slsDetector::setPatternLoops(int level, int start, int stop,
     FILE_LOG(logDEBUG1) << "Setting Pat Loops, level: " << level
                         << ", start: " << start << ", stop: " << stop
                         << ", nloops: " << n;
-        sendToDetector(F_SET_PATTERN_LOOP, args, retvals);
-        FILE_LOG(logDEBUG1) << "Set Pat Loops: " << retvals[0] << ", "
-                            << retvals[1] << ", " << retvals[2];
+    sendToDetector(F_SET_PATTERN_LOOP, args, retvals);
+    FILE_LOG(logDEBUG1) << "Set Pat Loops: " << retvals[0] << ", " << retvals[1]
+                        << ", " << retvals[2];
     return retvals;
 }
 
@@ -3422,8 +3411,8 @@ int slsDetector::setPatternWaitAddr(int level, int addr) {
     int args[]{level, addr};
     FILE_LOG(logDEBUG1) << "Setting Pat Wait Addr, level: " << level
                         << ", addr: 0x" << std::hex << addr << std::dec;
-        sendToDetector(F_SET_PATTERN_WAIT_ADDR, args, retval);
-        FILE_LOG(logDEBUG1) << "Set Pat Wait Addr: " << retval;
+    sendToDetector(F_SET_PATTERN_WAIT_ADDR, args, retval);
+    FILE_LOG(logDEBUG1) << "Set Pat Wait Addr: " << retval;
     return retval;
 }
 
@@ -3432,47 +3421,47 @@ uint64_t slsDetector::setPatternWaitTime(int level, uint64_t t) {
     uint64_t args[]{static_cast<uint64_t>(level), t};
     FILE_LOG(logDEBUG1) << "Setting Pat Wait Time, level: " << level
                         << ", t: " << t;
-        sendToDetector(F_SET_PATTERN_WAIT_TIME, args, retval);
-        FILE_LOG(logDEBUG1) << "Set Pat Wait Time: " << retval;
+    sendToDetector(F_SET_PATTERN_WAIT_TIME, args, retval);
+    FILE_LOG(logDEBUG1) << "Set Pat Wait Time: " << retval;
     return retval;
 }
 
 void slsDetector::setPatternMask(uint64_t mask) {
     FILE_LOG(logDEBUG1) << "Setting Pattern Mask " << std::hex << mask
                         << std::dec;
-        sendToDetector(F_SET_PATTERN_MASK, mask, nullptr);
-        FILE_LOG(logDEBUG1) << "Pattern Mask successful";
+    sendToDetector(F_SET_PATTERN_MASK, mask, nullptr);
+    FILE_LOG(logDEBUG1) << "Pattern Mask successful";
 }
 
 uint64_t slsDetector::getPatternMask() {
     uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Pattern Mask ";
 
-        sendToDetector(F_GET_PATTERN_MASK, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Pattern Mask:" << retval;
+    sendToDetector(F_GET_PATTERN_MASK, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Pattern Mask:" << retval;
     return retval;
 }
 
 void slsDetector::setPatternBitMask(uint64_t mask) {
     FILE_LOG(logDEBUG1) << "Setting Pattern Bit Mask " << std::hex << mask
                         << std::dec;
-        sendToDetector(F_SET_PATTERN_BIT_MASK, mask, nullptr);
-        FILE_LOG(logDEBUG1) << "Pattern Bit Mask successful";
+    sendToDetector(F_SET_PATTERN_BIT_MASK, mask, nullptr);
+    FILE_LOG(logDEBUG1) << "Pattern Bit Mask successful";
 }
 
 uint64_t slsDetector::getPatternBitMask() {
     uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Pattern Bit Mask ";
-        sendToDetector(F_GET_PATTERN_BIT_MASK, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Pattern Bit Mask:" << retval;
+    sendToDetector(F_GET_PATTERN_BIT_MASK, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Pattern Bit Mask:" << retval;
     return retval;
 }
 
 int slsDetector::setLEDEnable(int enable) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending LED Enable: " << enable;
-        sendToDetector(F_LED, enable, retval);
-        FILE_LOG(logDEBUG1) << "LED Enable: " << retval;
+    sendToDetector(F_LED, enable, retval);
+    FILE_LOG(logDEBUG1) << "LED Enable: " << retval;
     return retval;
 }
 
@@ -3481,8 +3470,8 @@ void slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
     FILE_LOG(logDEBUG1) << "Sending Digital IO Delay, pin mask: " << std::hex
                         << args[0] << ", delay: " << std::dec << args[1]
                         << " ps";
-        sendToDetector(F_DIGITAL_IO_DELAY, args, nullptr);
-        FILE_LOG(logDEBUG1) << "Digital IO Delay successful";
+    sendToDetector(F_DIGITAL_IO_DELAY, args, nullptr);
+    FILE_LOG(logDEBUG1) << "Digital IO Delay successful";
 }
 
 sls_detector_module slsDetector::interpolateTrim(sls_detector_module *a,
@@ -3651,7 +3640,7 @@ sls_detector_module slsDetector::readSettingsFile(const std::string &fname,
 }
 
 void slsDetector::writeSettingsFile(const std::string &fname,
-                                   sls_detector_module &mod) {
+                                    sls_detector_module &mod) {
     FILE_LOG(logDEBUG1) << "Write settings file " << fname;
     auto names = getSettingsFileDacNames();
     std::ofstream outfile;

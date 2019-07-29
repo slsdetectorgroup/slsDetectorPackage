@@ -1,8 +1,8 @@
-SLS Detector Package 4.0.3 released on xx.07.2019 (Bug Fix Release)
-===================================================================
+SLS Detector Package 4.1.0 released on xx.07.2019 (Minor Release)
+=================================================================
 
 
-This document describes the differences between 4.0.3 and 4.0.2 releases.   
+This document describes the differences between 4.1.0 and 4.0.2 releases.   
     
     CONTENTS
     --------
@@ -63,7 +63,7 @@ This document describes the differences between 4.0.3 and 4.0.2 releases.
         Eiger
         =====  
         Minimum compatible version  : 23
-        Latest compatible version   : 23
+        Latest compatible version   : 24
         
         Jungfrau
         ========       

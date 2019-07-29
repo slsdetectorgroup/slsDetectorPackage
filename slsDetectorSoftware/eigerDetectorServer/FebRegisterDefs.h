@@ -21,7 +21,7 @@
 #define DAQ_REG_SUBFRAME_PERIOD       	7 //also pg and fifo status register
 
 
-#define DAQ_REG_RO_OFFSET				12
+#define DAQ_REG_RO_OFFSET				20
 #define DAQ_REG_STATUS					(DAQ_REG_RO_OFFSET + 0) //also pg and fifo status register
 #define FEB_REG_STATUS              	(DAQ_REG_RO_OFFSET + 3)
 #define MEAS_SUBPERIOD_REG 	 			(DAQ_REG_RO_OFFSET + 4)

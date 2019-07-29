@@ -12,6 +12,7 @@
 
 class ServerInterface;
 
+#define SLS_SHMAPIVERSION 0x190726
 #define SLS_SHMVERSION 0x190726
 
 /**
@@ -23,13 +24,6 @@ struct sharedSlsDetector {
 
     /** shared memory version */
     int shmversion;
-
-     /** is the port used for control functions */
-    int controlPort;
-
-    /** stopped flag - is set if an acquisition error occurs or the detector
-		 * is stopped manually. Is reset to 0 at the start of the acquisition */
-    int stoppedFlag;
 
     /** is the hostname (or IP address) of the detector. needs to be set
 		 * before starting the communication */
@@ -46,6 +40,9 @@ struct sharedSlsDetector {
 
     /** Number of detectors in multi list in x dir and y dir */
     int multiSize[2];
+
+	/** is the port used for control functions */
+    int controlPort;
 
     /** is the port used to stop the acquisition */
     int stopPort;
@@ -258,6 +255,11 @@ class slsDetector : public virtual slsDetectorDefs{
 	 * Destructor
 	 */
     virtual ~slsDetector();
+
+	/**
+	 * Returns false if it cannot get fixed pattern from an old version of shm (hostname, type), else true
+	 */
+	bool isFixedPatternSharedMemoryCompatible();
 
     /**
 	 * Check version compatibility with receiver software

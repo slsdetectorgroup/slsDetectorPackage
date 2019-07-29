@@ -274,10 +274,13 @@ std::string multiSlsDetector::getUserDetails() {
     }
 
     std::ostringstream sstream;
-    sstream << "\nHostname: " << getHostname();
+    sstream << "\nHostname: ";
+    for (auto &d : detectors) {
+        sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getHostname() : "Unknown") << "+";
+    }
     sstream << "\nType: ";
     for (auto &d : detectors) {
-        sstream << d->getDetectorTypeAsString() << "+";
+        sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getDetectorTypeAsString() : "Unknown") << "+";
     }
 
     sstream << "\nPID: " << multi_shm()->lastPID
@@ -310,7 +313,6 @@ void multiSlsDetector::initializeDetectorStructure() {
     multi_shm()->numberOfDetectors = 0;
     multi_shm()->numberOfDetector[X] = 0;
     multi_shm()->numberOfDetector[Y] = 0;
-    multi_shm()->stoppedFlag = 0;
     multi_shm()->dataBytes = 0;
     multi_shm()->dataBytesInclGapPixels = 0;
     multi_shm()->numberOfChannels = 0;
@@ -992,14 +994,8 @@ void multiSlsDetector::stopAcquisition(int detPos) {
     // thread)
     std::lock_guard<std::mutex> lock(mg);
     if (detPos >= 0) {
-        // if only 1 detector, set flag to stop current acquisition
-        if (detectors.size() == 1) {
-            multi_shm()->stoppedFlag = 1;
-        }
-
         detectors[detPos]->stopAcquisition();
     } else {
-        multi_shm()->stoppedFlag = 1;
         parallelCall(&slsDetector::stopAcquisition);
     }
 }
@@ -4188,7 +4184,6 @@ int multiSlsDetector::acquire() {
 
     bool receiver = getUseReceiverFlag();
     progressIndex = 0;
-    multi_shm()->stoppedFlag = 0;
     setJoinThreadFlag(false);
 
     // verify receiver is idle
@@ -4202,22 +4197,20 @@ int multiSlsDetector::acquire() {
     startProcessingThread();
 
     // resets frames caught in receiver
-    if (receiver && multi_shm()->stoppedFlag == 0) {
+    if (receiver) {
         std::lock_guard<std::mutex> lock(mg);
         resetFramesCaught();
     }
 
     // start receiver
-    if (receiver && multi_shm()->stoppedFlag == 0) {
+    if (receiver) {
         std::lock_guard<std::mutex> lock(mg);
         startReceiver();
         // let processing thread listen to these packets
-        if (multi_shm()->stoppedFlag == 0)
-            sem_post(&sem_newRTAcquisition);
+        sem_post(&sem_newRTAcquisition);
     }
 
-    if (multi_shm()->stoppedFlag == 0)
-        startAndReadAll();
+    startAndReadAll();
 
     // stop receiver
     if (receiver) {

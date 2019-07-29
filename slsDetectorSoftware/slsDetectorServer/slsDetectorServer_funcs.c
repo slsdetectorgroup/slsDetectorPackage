@@ -212,6 +212,7 @@ const char* getFunctionName(enum detFuncs func) {
     case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
 	case F_QUAD:              				return "F_QUAD";
+	case F_INTERRUPT_SUBFRAME:				return "F_INTERRUPT_SUBFRAME";
 
 	default:								return "Unknown Function";
 	}
@@ -299,6 +300,7 @@ void function_table() {
     flist[F_CHECK_VERSION]                 		= &check_version;
     flist[F_SOFTWARE_TRIGGER]                 	= &software_trigger;
 	flist[F_QUAD]                 				= &set_quad;
+	flist[F_INTERRUPT_SUBFRAME]					= &set_interrupt_subframe;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= TOO_MANY_FUNCTIONS_DEFINED) {
@@ -5961,6 +5963,68 @@ int set_quad(int file_des) {
 	printf("Setting Quad :%d \n",arg);
 #endif
 		retval=setQuad(arg);
+		if((arg != -1) && (retval != arg)) {
+			ret=FAIL;
+			cprintf(RED, "Warning: %s", mess);
+		}
+	}
+#endif
+	if (ret==OK && differentClients)
+		ret=FORCE_UPDATE;
+
+#endif
+
+	// ret could be swapped during sendData
+	ret1 = ret;
+	// send ok / fail
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	// send return argument
+	if (ret==FAIL) {
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	}
+	n += sendData(file_des,&retval,sizeof(retval),INT32);
+
+	// return ok / fail
+	return ret;
+}
+
+
+int set_interrupt_subframe(int file_des) {
+	int ret=OK,ret1=OK;
+	int n=0;
+	int retval=-1;
+	sprintf(mess,"Setting interrupt subframe failed\n");
+
+	// execute action
+#ifndef EIGERD
+	//to receive any arguments
+	while (n > 0)
+		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
+	ret = FAIL;
+	sprintf(mess,"Function (set_interrupt_subframe) is not implemented for this detector\n");
+	cprintf(RED, "Warning: %s", mess);
+#else
+
+	// receive arguments
+	int arg=-1;
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// execute action
+	if (differentClients && lockStatus && arg!=-1) {
+		ret = FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		cprintf(RED, "Warning: %s", mess);
+	}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	else {
+#ifdef VERBOSE
+	printf("Setting Interrupt subframe :%d \n",arg);
+#endif
+		retval=setInterruptSubframe(arg);
+#ifdef VERBOSE
+		printf("retval Interrupt subframe :%d \n",retval);
+#endif
 		if((arg != -1) && (retval != arg)) {
 			ret=FAIL;
 			cprintf(RED, "Warning: %s", mess);

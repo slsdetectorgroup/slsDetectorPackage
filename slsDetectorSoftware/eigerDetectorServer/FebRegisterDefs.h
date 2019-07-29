@@ -20,12 +20,21 @@
 #define DAQ_REG_SUBFRAME_EXPOSURES   	6
 #define DAQ_REG_SUBFRAME_PERIOD       	7 //also pg and fifo status register
 
+#define DAQ_REG_HRDWRE                  12
+
+#define DAQ_REG_HRDWRE_OW_OFST          (0)
+#define DAQ_REG_HRDWRE_OW_MSK           (0x00000001 << DAQ_REG_HRDWRE_OW_OFST)
+#define DAQ_REG_HRDWRE_TOP_OFST         (1)
+#define DAQ_REG_HRDWRE_TOP_MSK          (0x00000001 << DAQ_REG_HRDWRE_TOP_OFST)
+#define DAQ_REG_HRDWRE_INTRRPT_SF_OFST  (3)
+#define DAQ_REG_HRDWRE_INTRRPT_SF_MSK   (0x00000001 << DAQ_REG_HRDWRE_INTRRPT_SF_OFST)
 
 #define DAQ_REG_RO_OFFSET				20
 #define DAQ_REG_STATUS					(DAQ_REG_RO_OFFSET + 0) //also pg and fifo status register
 #define FEB_REG_STATUS              	(DAQ_REG_RO_OFFSET + 3)
 #define MEAS_SUBPERIOD_REG 	 			(DAQ_REG_RO_OFFSET + 4)
 #define MEAS_PERIOD_REG   				(DAQ_REG_RO_OFFSET + 5)
+
 
 
 

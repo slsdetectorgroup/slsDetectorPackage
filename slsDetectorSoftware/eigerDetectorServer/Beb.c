@@ -1214,6 +1214,7 @@ void Beb_SetDetectorNumber(uint32_t detid) {
 
 int Beb_SetQuad(int val) {
 	if (val >= 0) {
+		printf("Setting Quad to %d in Beb\n", val);
 		Beb_quadEnable = (val == 0 ?  0 : 1);
 		Beb_SetDetectorPosition(Beb_positions);
 	}

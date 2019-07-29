@@ -1220,7 +1220,14 @@ int	setDetectorPosition(int pos[]) {
 
 
 int setQuad(int val) {
-	return Beb_SetQuad(val);
+	int ret = Beb_SetQuad(val);
+	if (Feb_Control_SetQuad(val) == -1)
+		return -1;
+	return ret;
+}
+
+int setInterruptSubframe(int val) {
+	return Feb_Control_InterruptSubframe(val);
 }
 
 

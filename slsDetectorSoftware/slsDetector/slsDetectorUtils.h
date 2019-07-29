@@ -1028,10 +1028,14 @@ virtual int setReceiverSilentMode(int i = -1)=0;
 	 */
 	virtual int setQuad(int val = -1) = 0;
 
+   /**
+	 * Set or Get Interrupt last sub frame(Only for Eiger)
+	 * @param val 1 if interrupt last subframe set, else 0, -1 gets
+	 * @returns  1 if interrupt last subframe set, else 0, -1 different values
+	 */
+	virtual int setInterruptSubframe(int val = -1) = 0;
+
  protected:
-
-
-  static const int64_t thisSoftwareVersion=0x20141013;
 
  
  

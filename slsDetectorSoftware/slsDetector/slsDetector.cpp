@@ -9761,6 +9761,9 @@ int slsDetector::setQuad(int val) {
 	int ret = FAIL;
 	int retval = -1;
 
+#ifdef VERBOSE
+	std::cout<<"Setting Quad to " <<val << std::endl;
+#endif
 	// set row column header in detector
 	if (val >= 0) {
 		if (thisDetector->onlineFlag==ONLINE_FLAG) {
@@ -9801,5 +9804,34 @@ int slsDetector::setQuad(int val) {
 				setErrorMask((getErrorMask())|(RECEIVER_PARAMETER_NOT_SET));
 		}
 	}
+	return retval;
+}
+
+int slsDetector::setInterruptSubframe(int val) {
+	int fnum = F_INTERRUPT_SUBFRAME;
+	int ret = FAIL;
+	int retval = -1;
+
+#ifdef VERBOSE
+	std::cout<<"Setting Interrupt Sub frame to " <<val << std::endl;
+#endif
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&val,sizeof(val));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL){
+				char mess[MAX_STR_LENGTH] = {};
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(SOME_ERROR));
+			}
+			controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			disconnectControl();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+
 	return retval;
 }

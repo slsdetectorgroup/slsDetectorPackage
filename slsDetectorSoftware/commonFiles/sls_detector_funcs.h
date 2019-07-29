@@ -124,6 +124,7 @@ enum detFuncs{
 
   F_SOFTWARE_TRIGGER,		/** < software trigger */
   F_QUAD,
+  F_INTERRUPT_SUBFRAME,
   /* Always append functions hereafter!!! */
 
   /* Always append functions before!!! */

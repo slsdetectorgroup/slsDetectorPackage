@@ -429,6 +429,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 	++i;
 
 	/*! \page config
+   - <b>interruptsubframe [i]</b> sets/gets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER  in 32 bit mode only. \c Returns \c (int).
+	 */
+	descrToFuncMap[i].m_pFuncName="interruptsubframe";
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
+	++i;
+
+
+	/*! \page config
    - <b>extsig:[i] [flag]</b> sets/gets the mode of the external signal i. Options: \c off, \c gate_in_active_high, \c gate_in_active_low, \c trigger_in_rising_edge, \c trigger_in_falling_edge,
    \c ro_trigger_in_rising_edge, \c ro_trigger_in_falling_edge, \c gate_out_active_high, \c gate_out_active_low, \c trigger_out_rising_edge, \c trigger_out_falling_edge, \c ro_trigger_out_rising_edge,
    \c ro_trigger_out_falling_edge. \n Used in MYTHEN, GOTTHARD, PROPIX only. \c Returns \c (string)
@@ -6062,7 +6070,18 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 
 		return string("unknown");
 
-	}  else if (cmd=="extsig") {
+	} else if (cmd=="interruptsubframe") {
+		myDet->setOnline(ONLINE_FLAG);
+		if (action==PUT_ACTION) {
+			int ival = -1;
+			if (!sscanf(args[1],"%d",&ival))
+				return string("could not scan interrupt sub frame parameter " + string(args[1]));
+			myDet->setInterruptSubframe(ival);
+		}
+		char ans[100];
+		sprintf(ans,"%d",myDet->setInterruptSubframe(-1));
+		return std::string(ans);
+	} else if (cmd=="extsig") {
 		externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
 		int is=-1;
 		if (sscanf(args[0],"extsig:%d",&is))
@@ -6162,6 +6181,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 
 		os << "extsig:i mode \t sets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
 		os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overlow, nooverflow, unknown." << std::endl;
+		os << "interruptsubframe flag \t sets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER  in 32 bit mode only." << std::endl;
 
 		os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
 		os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
@@ -6175,6 +6195,7 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
 		os << "extsig:i \t gets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
 
 		os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, digital, analog_digital, overflow, nooverflow, unknown" << std::endl;
+		os << "interruptsubframe \t gets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER in 32 bit mode only." << std::endl;
 		os << "led \t returns led status (0 off, 1 on)" << std::endl;
 		os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
         os << "auto_comp_disable \t Currently not implemented. gets if the automatic comparator diable mode is enabled/disabled" << std::endl;

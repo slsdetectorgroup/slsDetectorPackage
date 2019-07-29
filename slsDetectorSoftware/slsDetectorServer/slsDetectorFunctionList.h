@@ -196,6 +196,7 @@ int 		setDetectorPosition(int pos[]);
 #endif
 #ifdef EIGERD
 int         setQuad(int val);
+int         setInterruptSubframe(int val);
 #endif
 
 

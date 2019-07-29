@@ -19,6 +19,8 @@ This document describes the differences between 4.1.0 and 4.0.2 releases.
 
     - software for eiger quad hardware integrated
     - command line framesl, cyclesl was printing in float
+    - eiger interrupt subframe flag
+    - eiger server reg command (+0x100 for left and +0x200 for right)
 
 
 
@@ -38,6 +40,13 @@ This document describes the differences between 4.1.0 and 4.0.2 releases.
     -----------------------
 
     1.  Command line quad integrates Eiger quad hardware
+
+    2.  Control flag to set last subframe to be interrupted depending on subexptime.
+        By default, it is disabled and will wait till the last sub frame has finished
+        exposing.
+
+    3.  Left and Right FEB registers accessed independently using addr (+0x100 and +0x200)
+        respectively.
 
 
     Receiver

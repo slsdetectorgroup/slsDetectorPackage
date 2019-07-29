@@ -1876,6 +1876,13 @@ public:
 	 */
 	int setQuad(int val = -1);
 
+	/**
+	 * Set or Get Interrupt last sub frame(Only for Eiger)
+	 * @param val 1 if interrupt last subframe set, else 0, -1 gets
+	 * @returns  1 if interrupt last subframe set, else 0, -1 different values
+	 */
+	int setInterruptSubframe(int val = -1);
+
 
 private:
 	/**

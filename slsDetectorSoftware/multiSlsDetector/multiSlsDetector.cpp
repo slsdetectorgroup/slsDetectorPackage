@@ -5440,3 +5440,7 @@ int multiSlsDetector::setQuad(int val) {
 		val = 0;
 	return callDetectorMember(&slsDetector::setQuad, val);
 }
+
+int multiSlsDetector::setInterruptSubframe(int val) {
+	return callDetectorMember(&slsDetector::setInterruptSubframe, val);
+}

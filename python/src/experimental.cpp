@@ -20,6 +20,8 @@ void init_experimental(py::module &m) {
         .def("acquire", &Detector::acquire)
         .def("startReceiver", &Detector::startReceiver, py::arg() = Positions{})
         .def("stopReceiver", &Detector::stopReceiver, py::arg() = Positions{})
+        .def("getAcquiringFlag", &Detector::getAcquiringFlag)
+        .def("setAcquiringFlag", &Detector::setAcquiringFlag)
         .def("getReceiverStatus", &Detector::getReceiverStatus,
              py::arg() = Positions{})
 
@@ -42,13 +44,13 @@ void init_experimental(py::module &m) {
              py::arg(), py::arg() = Positions{})
 
         // File
-        .def("getFname", &Detector::getFname)
-        .def("setFname", &Detector::setFname, py::arg())
-        .def("getFpath", &Detector::getFpath)
-        .def("setPath", &Detector::setFpath, py::arg())
-        .def("setFwrite", &Detector::setFwrite, py::arg(),
+        .def("getFileName", &Detector::getFileName)
+        .def("setFileName", &Detector::setFileName, py::arg())
+        .def("getFilePath", &Detector::getFilePath)
+        .def("setFilePath", &Detector::setFilePath, py::arg())
+        .def("setFileWrite", &Detector::setFileWrite, py::arg(),
              py::arg() = Positions{})
-        .def("getFwrite", &Detector::getFwrite, py::arg() = Positions{})
+        .def("getFileWrite", &Detector::getFileWrite, py::arg() = Positions{})
         .def("setFileOverWrite", &Detector::setFileOverWrite, py::arg(),
              py::arg() = Positions{})
         .def("getFileOverWrite", &Detector::getFileOverWrite,

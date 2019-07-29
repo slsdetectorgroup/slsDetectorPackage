@@ -21,6 +21,8 @@ class Detector {
     void acquire();
     void startReceiver(Positions pos = {});
     void stopReceiver(Positions pos = {});
+    bool getAcquiringFlag() const;
+    void setAcquiringFlag(bool value);
     Result<defs::runStatus> getReceiverStatus(Positions pos = {});
 
     // Configuration
@@ -38,12 +40,12 @@ class Detector {
     Result<uint32_t> getRegister(uint32_t addr, Positions pos = {});
 
     // File
-    Result<std::string> getFname() const;
-    void setFname(const std::string &fname);
-    Result<std::string> getFpath() const;
-    void setFpath(const std::string &fname);
-    Result<bool> getFwrite(Positions pos = {}) const;
-    void setFwrite(bool value, Positions pos = {});
+    Result<std::string> getFileName() const;
+    void setFileName(const std::string &fname);
+    Result<std::string> getFilePath() const;
+    void setFilePath(const std::string &fname);
+    Result<bool> getFileWrite(Positions pos = {}) const;
+    void setFileWrite(bool value, Positions pos = {});
     Result<bool> getFileOverWrite(Positions pos = {}) const;
     void setFileOverWrite(bool value, Positions pos = {});
 

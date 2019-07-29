@@ -54,6 +54,14 @@ class ExperimentalDetector(multiDetectorApi):
         else:
             raise NotImplementedError("Unknown argument to rx_status")
 
+    @property
+    def busy(self):
+        return self.getAcquiringFlag()
+    
+    @busy.setter
+    def busy(self, value):
+        self.setAcquiringFlag(value)
+
     # Configuration
     @property
     def startingfnum(self):
@@ -74,19 +82,27 @@ class ExperimentalDetector(multiDetectorApi):
     # File
     @property
     def fname(self):
-        return element_if_equal(self.getFname())
+        return element_if_equal(self.getFileName())
 
     @fname.setter
     def fname(self, file_name):
-        self.setFname(file_name)
+        self.setFileName(file_name)
+
+    @property
+    def fpath(self):
+        return element_if_equal(self.getFilePath())
+    
+    @fpath.setter
+    def fpath(self, path):
+        self.setFilePath(path)
 
     @property
     def fwrite(self):
-        return element_if_equal(self.getFwrite())
+        return element_if_equal(self.getFileWrite())
 
     @fwrite.setter
     def fwrite(self, value):
-        self.setFwrite(value)
+        self.setFileWrite(value)
 
     @property
     def foverwrite(self):

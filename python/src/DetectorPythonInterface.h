@@ -352,7 +352,7 @@ class DetectorPythonInterface {
     void checkDetectorVersionCompatibility() {
         det.checkDetectorVersionCompatibility();
     }
-    bool checkReceiverVersionCompatibility() {
+    void checkReceiverVersionCompatibility() {
         det.checkReceiverVersionCompatibility();
     }
 

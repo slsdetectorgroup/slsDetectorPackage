@@ -19,6 +19,9 @@ class detectorData;
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
+
+#include <future>
+#include <numeric>
 /**
  * @short structure allocated in shared memory to store detector settings
  * for IPC and cache

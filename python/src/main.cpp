@@ -119,11 +119,6 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getHostname", &DetectorPythonInterface::getHostname)
         .def("setHostname", &DetectorPythonInterface::setHostname)
 
-        .def("getOnline", &DetectorPythonInterface::getOnline)
-        .def("setOnline", &DetectorPythonInterface::setOnline)
-        .def("getReceiverOnline", &DetectorPythonInterface::getReceiverOnline)
-        .def("setReceiverOnline", &DetectorPythonInterface::setReceiverOnline)
-
         .def("getReceiverPort", &DetectorPythonInterface::getReceiverPort)
         .def("setReceiverPort", &DetectorPythonInterface::setReceiverPort)
 
@@ -257,10 +252,10 @@ PYBIND11_MODULE(_sls_detector, m) {
              &DetectorPythonInterface::getPartialFramesPadding)
 
         .def("getUserDetails", &DetectorPythonInterface::getUserDetails)
-        .def("isClientAndDetectorCompatible",
-             &DetectorPythonInterface::isClientAndDetectorCompatible)
-        .def("isClientAndReceiverCompatible",
-             &DetectorPythonInterface::isClientAndReceiverCompatible)
+        .def("checkDetectorVersionCompatibility",
+             &DetectorPythonInterface::checkDetectorVersionCompatibility)
+        .def("checkReceiverVersionCompatibility",
+             &DetectorPythonInterface::checkReceiverVersionCompatibility)
         .def("getMeasuredPeriod", &DetectorPythonInterface::getMeasuredPeriod)
         .def("getMeasuredSubPeriod",
              &DetectorPythonInterface::getMeasuredSubPeriod)

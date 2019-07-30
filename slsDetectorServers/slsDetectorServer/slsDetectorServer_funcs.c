@@ -2012,7 +2012,7 @@ int set_speed(int file_des) {
     }
 #endif
 #ifdef JUNGFRAUD
-	if (ret == OK && ind == CLOCK_DIVIDER && val == FULL_SPEED && getHardwareVersionNumber() != BOARD_VERSION_2_VAL) {
+	if (ret == OK && ind == CLOCK_DIVIDER && val == FULL_SPEED && isHardwareVersion2()) {
 		ret = FAIL;
 		strcpy(mess, "Full speed not implemented for this board version.\n");
 		FILE_LOG(logERROR,(mess));

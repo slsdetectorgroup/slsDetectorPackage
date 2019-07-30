@@ -6,8 +6,8 @@
 /* FPGA Version register */
 #define FPGA_VERSION_REG      			(0x00 << MEM_MAP_SHIFT)
 
-#define BOARD_REVISION_OFST				(0)
-#define BOARD_REVISION_MSK				(0x00FFFFFF << BOARD_REVISION_OFST)
+#define FPGA_COMPILATION_DATE_OFST		(0)
+#define FPGA_COMPILATION_DATE_MSK		(0x00FFFFFF << FPGA_COMPILATION_DATE_OFST)
 #define DETECTOR_TYPE_OFST   			(24)
 #define DETECTOR_TYPE_MSK   			(0x000000FF << DETECTOR_TYPE_OFST)
 
@@ -56,12 +56,13 @@
 
 
 /* Module Control Board Serial Number Register */
-#define MOD_SERIAL_NUM_REG				(0x0A << MEM_MAP_SHIFT)								//Not used in software
+#define MOD_SERIAL_NUM_REG				(0x0A << MEM_MAP_SHIFT)								
 
-#define HARDWARE_SERIAL_NUM_OFST		(0)											//Not used in software
-#define HARDWARE_SERIAL_NUM_MSK			(0x000000FF << HARDWARE_SERIAL_NUM_OFST)	//Not used in software
-#define HARDWARE_VERSION_NUM_OFST		(16)										//Not used in software
-#define HARDWARE_VERSION_NUM_MSK		(0x0000003F << HARDWARE_VERSION_NUM_OFST)	//Not used in software
+#define HARDWARE_SERIAL_NUM_OFST		(0)											
+#define HARDWARE_SERIAL_NUM_MSK			(0x000000FF << HARDWARE_SERIAL_NUM_OFST)	
+#define HARDWARE_VERSION_NUM_OFST		(16)										
+#define HARDWARE_VERSION_NUM_MSK		(0x0000003F << HARDWARE_VERSION_NUM_OFST)	
+#define HARDWARE_VERSION_2_VAL          ((0x2 << HARDWARE_VERSION_NUM_OFST) & HARDWARE_VERSION_NUM_MSK)
 
 
 /* API Version Register */

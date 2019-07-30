@@ -39,6 +39,9 @@ u_int64_t   getFirmwareAPIVersion();
 u_int16_t 	getHardwareVersionNumber();
 u_int16_t 	getHardwareSerialNumber();
 #endif
+#ifdef JUNGFRAUD
+int			isHardwareVersion2();
+#endif
 u_int32_t	getDetectorNumber();
 u_int64_t  	getDetectorMAC();
 u_int32_t  	getDetectorIP();

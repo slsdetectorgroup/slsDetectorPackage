@@ -91,6 +91,7 @@ void basictests() {
 	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
 	int64_t sw_fw_apiversion    = 0;
 	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+	uint32_t requiredFirmwareVersion = (isHardwareVersion2() ? REQRD_FRMWRE_VRSN_BOARD2 : REQRD_FRMWRE_VRSN);
 
 
 	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
@@ -114,7 +115,7 @@ void basictests() {
 			(long  long int)fwversion,
 			(long  long int)swversion,
 			(long  long int)sw_fw_apiversion,
-			REQRD_FRMWR_VRSN,
+			requiredFirmwareVersion,
 			(long long int)client_sw_apiversion
 	));
 
@@ -137,12 +138,12 @@ void basictests() {
 	}
 
 	//check for API compatibility - old server
-	if(sw_fw_apiversion > REQRD_FRMWR_VRSN){
+	if(sw_fw_apiversion > requiredFirmwareVersion){
 		sprintf(firmware_message,
 				"This detector software software version (0x%llx) is incompatible.\n"
 				"Please update detector software (min. 0x%llx) to be compatible with this firmware.\n",
 				(long long int)sw_fw_apiversion,
-				(long long int)REQRD_FRMWR_VRSN);
+				(long long int)requiredFirmwareVersion);
 		FILE_LOG(logERROR, (firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
@@ -150,12 +151,12 @@ void basictests() {
 	}
 
 	//check for firmware compatibility - old firmware
-	if( REQRD_FRMWR_VRSN > fwversion) {
+	if( requiredFirmwareVersion > fwversion) {
 		sprintf(firmware_message,
 				"This firmware version (0x%llx) is incompatible.\n"
 				"Please update firmware (min. 0x%llx) to be compatible with this server.\n",
 				(long long int)fwversion,
-				(long long int)REQRD_FRMWR_VRSN);
+				(long long int)requiredFirmwareVersion);
 		FILE_LOG(logERROR, (firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
@@ -275,7 +276,7 @@ u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL
     return 0;
 #endif
-	return ((bus_r(FPGA_VERSION_REG) & BOARD_REVISION_MSK) >> BOARD_REVISION_OFST);
+	return ((bus_r(FPGA_VERSION_REG) & FPGA_COMPILATION_DATE_MSK) >> FPGA_COMPILATION_DATE_OFST);
 }
 
 u_int64_t getFirmwareAPIVersion() {
@@ -297,6 +298,10 @@ u_int16_t getHardwareSerialNumber() {
     return 0;
 #endif
 	return ((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_SERIAL_NUM_MSK) >> HARDWARE_SERIAL_NUM_OFST);
+}
+
+int	isHardwareVersion2() {
+	return (((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_VERSION_NUM_MSK) == HARDWARE_VERSION_2_VAL) ? 1 : 0 );
 }
 
 u_int32_t getDetectorNumber(){
@@ -424,7 +429,7 @@ void setupDetector() {
 
 	alignDeserializer();
 	configureASICTimer();
-	bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
+	bus_w(ADC_PORT_INVERT_REG, (isHardwareVersion2() ? ADC_PORT_INVERT_BOARD2_VAL : ADC_PORT_INVERT_VAL));
 
 	initReadoutConfiguration();
 
@@ -1357,60 +1362,60 @@ void setClockDivider(int val) {
     if(val >= 0) {
 
         // stop state machine if running
-        if(runBusy())
+        if(runBusy()) {
             stopStateMachine();
+		}
+
+		uint32_t adcOfst = 0;
+		uint32_t sampleAdcSpeed = 0;
+		uint32_t adcPhase = 0;
+		uint32_t config = CONFIG_FULL_SPEED_40MHZ_VAL;
 
         switch(val) {
 
         case FULL_SPEED:
-            FILE_LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
-
-            bus_w(SAMPLE_REG, SAMPLE_ADC_FULL_SPEED);
-			FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
-
-            bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | CONFIG_FULL_SPEED_40MHZ_VAL);
- 			FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
-
-            bus_w(ADC_OFST_REG, ADC_OFST_FULL_SPEED_VAL);
-			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
-
-            setAdcPhase(ADC_PHASE_FULL_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_FULL_SPEED));
-            break;
-
-        case HALF_SPEED:
+			if(isHardwareVersion2()) {
+				FILE_LOG(logERROR, ("Cannot set full speed. Should not be here\n"));
+				return;
+			}
+			FILE_LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
+			adcOfst = ADC_OFST_FULL_SPEED_VAL;
+			sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
+			adcPhase = ADC_PHASE_FULL_SPEED;
+			config = CONFIG_FULL_SPEED_40MHZ_VAL;
+			break;
+		
+		case HALF_SPEED:
             FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
-
-            bus_w(SAMPLE_REG, SAMPLE_ADC_HALF_SPEED);
-			FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
-
-            bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | CONFIG_HALF_SPEED_20MHZ_VAL);
- 			FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
-
-            bus_w(ADC_OFST_REG, ADC_OFST_HALF_SPEED_VAL);
-			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
-
-            setAdcPhase(ADC_PHASE_HALF_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_HALF_SPEED));
-            break;
-
-        case QUARTER_SPEED:
+			adcOfst = isHardwareVersion2() ? ADC_OFST_HALF_SPEED_BOARD2_VAL : ADC_OFST_HALF_SPEED_VAL;
+			sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_HALF_SPEED_BOARD2 : SAMPLE_ADC_HALF_SPEED;
+			adcPhase = isHardwareVersion2() ? ADC_PHASE_HALF_SPEED_BOARD2 : ADC_PHASE_HALF_SPEED;
+			config = CONFIG_HALF_SPEED_20MHZ_VAL;
+			break;
+		
+		case QUARTER_SPEED:
             FILE_LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
+			adcOfst = isHardwareVersion2() ? ADC_OFST_QUARTER_SPEED_BOARD2_VAL : ADC_OFST_QUARTER_SPEED_VAL;
+			sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_QUARTER_SPEED_BOARD2 : SAMPLE_ADC_QUARTER_SPEED;
+			adcPhase = isHardwareVersion2() ? ADC_PHASE_QUARTER_SPEED_BOARD2 : ADC_PHASE_QUARTER_SPEED;
+			config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
+			break;
+		
+		default:
+			break;
+		}
 
-            bus_w(SAMPLE_REG, SAMPLE_ADC_QUARTER_SPEED);
-			FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
+		bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | config);
+ 		FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-            bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | CONFIG_QUARTER_SPEED_10MHZ_VAL);
- 			FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
+		bus_w(ADC_OFST_REG, adcOfst);
+		FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
-            bus_w(ADC_OFST_REG, ADC_OFST_QUARTER_SPEED_VAL);
-			FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
+		bus_w(SAMPLE_REG, sampleAdcSpeed);
+		FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-            setAdcPhase(ADC_PHASE_QUARTER_SPEED, 0);
-			FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", ADC_PHASE_QUARTER_SPEED));
-            break;
-
-        }
+        setAdcPhase(adcPhase, 0);
+		FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", adcPhase));
     }
 }
 

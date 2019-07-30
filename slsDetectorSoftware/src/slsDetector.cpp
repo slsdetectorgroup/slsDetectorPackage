@@ -1925,7 +1925,7 @@ std::string slsDetector::getClientStreamingIP() { return shm()->zmqip.str(); }
 
 void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
     // if empty, give rx_hostname
-    if (sourceIP.empty()) {
+    if (sourceIP.empty() || sourceIP == "0.0.0.0") {
         if (strcmp(shm()->rxHostname, "none") == 0) {
             throw RuntimeError("Receiver hostname not set yet. Cannot create "
                                "rx_zmqip from none");
@@ -1947,7 +1947,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
         char retvals[MAX_STR_LENGTH]{};
         char args[MAX_STR_LENGTH]{};
         sls::strcpy_safe(args, shm()->rxZmqip.str()); // TODO send int
-        FILE_LOG(logDEBUG1)
+        FILE_LOG(logINFORED)
             << "Sending receiver streaming IP to receiver: " << args;
         sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, args, retvals);
         FILE_LOG(logDEBUG1) << "Receiver streaming ip: " << retvals;

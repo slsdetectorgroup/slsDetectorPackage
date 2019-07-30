@@ -18,13 +18,13 @@
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 
-#define TIME_COMMAND(get, set)                                                 \
+#define TIME_COMMAND(GETFCN, SETFCN, HLPSTR)                                   \
     std::ostringstream os;                                                     \
     os << cmd << ' ';                                                          \
     if (action == slsDetectorDefs::HELP_ACTION)                                \
-        os << "[duration] [(optional) unit]\n";                                \
+        os << HLPSTR << '\n';                                                          \
     else if (action == slsDetectorDefs::GET_ACTION) {                          \
-        auto t = det->get({det_id});                                           \
+        auto t = det->GETFCN({det_id});                                        \
         if (args.size() == 0) {                                                \
             os << OutString(t) << '\n';                                        \
         } else if (args.size() == 1) {                                         \
@@ -37,10 +37,10 @@
             std::string time_str(args[0]);                                     \
             std::string unit = RemoveUnit(time_str);                           \
             auto t = StringTo<time::ns>(time_str, unit);                       \
-            det->set(t, {det_id});                                             \
+            det->SETFCN(t, {det_id});                                          \
         } else if (args.size() == 2) {                                         \
             auto t = StringTo<time::ns>(args[0], args[1]);                     \
-            det->set(t, {det_id});                                             \
+            det->SETFCN(t, {det_id});                                          \
         } else {                                                               \
             WrongNumberOfParameters(2);                                        \
         }                                                                      \
@@ -58,8 +58,7 @@ template <typename T> class CmdProxy {
 
     std::string Call(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
-                     int action = -1,
-                     std::ostream &os = std::cout) {
+                     int action = -1, std::ostream &os = std::cout) {
         cmd = command;
         args = arguments;
         det_id = detector_id;
@@ -90,8 +89,15 @@ template <typename T> class CmdProxy {
 
     size_t GetFunctionMapSize() const noexcept { return functions.size(); };
 
-    std::vector<std::string> GetAllCommands(){
+    std::vector<std::string> GetAllCommands() {
         auto commands = slsDetectorCommand(nullptr).getAllCommands();
+        for (const auto &it : functions)
+            commands.emplace_back(it.first);
+        std::sort(begin(commands), end(commands));
+        return commands;
+    }
+    std::vector<std::string> GetProxyCommands() {
+        std::vector<std::string> commands;
         for (const auto &it : functions)
             commands.emplace_back(it.first);
         std::sort(begin(commands), end(commands));
@@ -154,7 +160,7 @@ template <typename T> class CmdProxy {
     // Mapped functions
     std::string ListCommands(int action) {
         if (action == slsDetectorDefs::HELP_ACTION)
-            return "list - lists all available commands, list deprecated - "
+            return "list\n\tlists all available commands, list deprecated - "
                    "list deprecated commands\n";
 
         if (args.size() == 0) {
@@ -188,9 +194,21 @@ template <typename T> class CmdProxy {
         }
     }
 
-    std::string Period(int action) { TIME_COMMAND(getPeriod, setPeriod); }
-    std::string Exptime(int action) { TIME_COMMAND(getExptime, setExptime); }
-    std::string SubExptime(int action) { TIME_COMMAND(getSubExptime, setSubExptime); }
+    std::string Period(int action) {
+        TIME_COMMAND(
+            getPeriod, setPeriod,
+            "[duration] [(optional unit) ns|us|ms|s]\n\tSet the period");
+    }
+    std::string Exptime(int action) {
+        TIME_COMMAND(
+            getExptime, setExptime,
+            "[duration] [(optional unit) ns|us|ms|s]\n\tSet the exposure time");
+    }
+    std::string SubExptime(int action) {
+        TIME_COMMAND(getSubExptime, setSubExptime,
+                     "[duration] [(optional unit) ns|us|ms|s]\n\tSet the "
+                     "exposure time of EIGER subframes");
+    }
 };
 
 } // namespace sls

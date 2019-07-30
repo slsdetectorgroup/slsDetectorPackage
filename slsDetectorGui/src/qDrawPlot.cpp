@@ -550,7 +550,6 @@ void qDrawPlot::StartAcquisition() {
     // refixing all the zooming
     {
         std::lock_guard<std::mutex> lock(mPlots);
-        pedestalCount = 0;
         xyRangeChanged = true; 
     }
 

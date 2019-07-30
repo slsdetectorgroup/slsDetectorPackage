@@ -1374,6 +1374,27 @@ int multiSlsDetector::setReadOutFlags(readOutFlags flag, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+void multiSlsDetector::setInterruptSubframe(const bool enable, int detPos) {
+    // single
+    if (detPos >= 0) {
+        detectors[detPos]->setInterruptSubframe(enable);
+    }
+
+    // multi
+    parallelCall(&slsDetector::setInterruptSubframe, enable);
+}
+
+int multiSlsDetector::getInterruptSubframe(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return static_cast<int>(detectors[detPos]->getInterruptSubframe());
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getInterruptSubframe);
+    return sls::minusOneIfDifferent(r);
+}
+
 uint32_t multiSlsDetector::writeRegister(uint32_t addr, uint32_t val,
                                          int detPos) {
     // single

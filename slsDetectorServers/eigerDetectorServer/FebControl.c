@@ -2014,61 +2014,171 @@ int Feb_Control_SoftwareTrigger() {
 	return 1;
 }
 
+int Feb_Control_SetInterruptSubframe(int val) {
+	FILE_LOG(logINFO, ("Setting Interrupt Subframe to %d\n", val));
 
-uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
-	uint32_t value=0;
-	if (Module_TopAddressIsValid(&modules[1])) {
-		if (!Feb_Interface_WriteRegister(Module_GetTopRightAddress (&modules[1]),offset, data,0, 0)) {
-			FILE_LOG(logERROR, ("Could not read tr value. Value read:%d\n", value));
-			value = 0;
+	// they need to be written separately because the left and right registers have different values for this particular register
+	uint32_t offset = DAQ_REG_HRDWRE;
+	uint32_t regVal = 0;
+	char side[2][10] = {"right", "left"};
+	char isTop[10]; strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
+	unsigned int addr[2];
+	addr[0] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
+	addr[1] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
+
+	int iloop = 0;
+	for(iloop = 0; iloop < 2; ++iloop) {
+		// get previous value to keep it
+		if(!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
+			FILE_LOG(logERROR, ("Could not read %s %s interrupt subframe\n", isTop, side[iloop]));
+			return 0;
 		}
-        if(!Feb_Interface_WriteRegister(Module_GetTopLeftAddress (&modules[1]),offset, data,0, 0)) {
-            FILE_LOG(logERROR, ("Could not read tl value. Value read:%d\n", value));
-            value = 0;
-        }
-	} else {
-		if (!Feb_Interface_WriteRegister(Module_GetBottomRightAddress (&modules[1]),offset, data,0, 0)) {
-			FILE_LOG(logERROR, ("Could not read br value. Value read:%d\n", value));
-			value = 0;
+		uint32_t data = ((val == 0) ? (regVal &~ DAQ_REG_HRDWRE_INTRRPT_SF_MSK) : (regVal | DAQ_REG_HRDWRE_INTRRPT_SF_MSK));
+		if(!Feb_Interface_WriteRegister(addr[iloop], offset, data, 0, 0)) {
+			FILE_LOG(logERROR, ("Could not write 0x%x to %s %s interrupt subframe addr 0x%x\n", data, isTop, side[iloop], offset));
+			return 0;
 		}
-        if(!Feb_Interface_WriteRegister(Module_GetBottomLeftAddress (&modules[1]),offset, data,0, 0)) {
-            FILE_LOG(logERROR, ("Could not read bl value. Value read:%d\n", value));
-            value = 0;
-        }
 	}
-	return Feb_Control_ReadRegister(offset);
+	return 1;
+}
+
+int Feb_Control_GetInterruptSubframe() {
+	// they need to be written separately because the left and right registers have different values for this particular register
+	uint32_t offset = DAQ_REG_HRDWRE;
+	uint32_t regVal = 0;
+
+	char side[2][10] = {"right", "left"};
+	char isTop[10]; strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
+	unsigned int addr[2];
+	addr[0] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
+	addr[1] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
+	uint32_t value[2] = {0, 0};
+
+	int iloop = 0;
+	for(iloop = 0; iloop < 2; ++iloop) {
+		if(!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
+			FILE_LOG(logERROR, ("Could not read back %s %s interrupt subframe\n", isTop, side[iloop]));
+			return -1;
+		}
+		value[iloop] = (regVal & DAQ_REG_HRDWRE_INTRRPT_SF_MSK) >> DAQ_REG_HRDWRE_INTRRPT_SF_OFST;
+	}
+
+	// inconsistent
+	if (value[0] != value[1]) {
+		FILE_LOG(logERROR, ("Inconsistent values of interrupt subframe betweeen left %d and right %d\n", value[0], value[1]));
+		return -1;
+	}
+	return value[0];
+}
+
+int Feb_Control_SetQuad(int val) {
+	// no bottom for quad
+	if (!Module_TopAddressIsValid(&modules[1])) {
+		return 1;
+	}
+	uint32_t offset = DAQ_REG_HRDWRE;
+	FILE_LOG(logINFO, ("Setting Quad to %d in Feb\n", val));
+	unsigned int addr = Module_GetTopRightAddress (&modules[1]);
+	uint32_t regVal = 0;
+	if(!Feb_Interface_ReadRegister(addr, offset, &regVal)) {
+		FILE_LOG(logERROR, ("Could not read top right quad reg\n"));
+		return 0;
+	}
+	uint32_t data = ((val == 0) ? (regVal &~ DAQ_REG_HRDWRE_OW_MSK) : ((regVal | DAQ_REG_HRDWRE_OW_MSK) &~ DAQ_REG_HRDWRE_TOP_MSK));
+	if(!Feb_Interface_WriteRegister(addr, offset, data, 0, 0)) {
+		FILE_LOG(logERROR, ("Could not write 0x%x to top right quad addr 0x%x\n", data, offset));
+		return 0;
+	}		
+	return 1;
 }
 
 
-uint32_t Feb_Control_ReadRegister(uint32_t offset) {
-	uint32_t value=0;
-	uint32_t value1=0;
-	if (Module_TopAddressIsValid(&modules[1])) {
-		if (!Feb_Interface_ReadRegister(Module_GetTopRightAddress (&modules[1]),offset, &value)) {
-			FILE_LOG(logERROR, ("Could not read value. Value read:%d\n", value));
-			value = 0;
-		}
-        printf("Read top right addr: 0x%08x\n", value);
-        if(!Feb_Interface_ReadRegister(Module_GetTopLeftAddress (&modules[1]),offset, &value1)) {
-            FILE_LOG(logERROR, (RED,"Could not read value. Value read:%d\n", value1));
-            value1 = 0;
-        }
-        printf("Read top left addr: 0x%08x\n", value1);
-        if (value != value1)
-            value = -1;
-	} else {
-		if (!Feb_Interface_ReadRegister(Module_GetBottomRightAddress (&modules[1]),offset, &value)) {
-			FILE_LOG(logERROR, ("Could not read value. Value read:%d\n", value));
-			value = 0;
-		}
-        printf("Read bottom right addr: 0x%08x\n", value);
-        if(!Feb_Interface_ReadRegister(Module_GetBottomLeftAddress (&modules[1]),offset, &value1)) {
-            FILE_LOG(logERROR, (RED,"Could not read value. Value read:%d\n", value1));
-            value1 = 0;
-        }
-        printf("Read bottom left addr: 0x%08x\n", value1);
-        if (value != value1)
-            value = -1;
+int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
+	uint32_t actualOffset = offset;
+	char side[2][10] = {"right", "left"};
+	char isTop[10]; strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
+	unsigned int addr[2];
+	addr[0] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
+	addr[1] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
+	
+	int run[2] = {0, 0}; 
+	// both registers
+	if (offset < 0x100) {
+		run[0] = 1;
+		run[1] = 1;
+	}	
+	// right registers only
+	else if (offset >= 0x200) {
+		run[0] = 1;
+		actualOffset = offset - 0x200;
+	} 
+	// left registers only
+	else {
+		run[1] = 1;
+		actualOffset = offset - 0x100;
 	}
-	return value;
+
+	int iloop = 0;
+	for(iloop = 0; iloop < 2; ++iloop) {
+		if(run[iloop]) {
+			FILE_LOG(logINFO, ("Writing 0x%x to %s %s 0x%x\n", data, isTop, side[iloop], actualOffset));
+			if(!Feb_Interface_WriteRegister(addr[iloop],actualOffset, data, 0, 0)) {
+				FILE_LOG(logERROR, ("Could not write 0x%x to %s %s addr 0x%x\n", data, isTop, side[iloop], actualOffset));
+				return 0;
+			}
+		}
+	}
+
+	return 1;
+}
+
+
+int Feb_Control_ReadRegister(uint32_t offset, uint32_t* retval) {
+	uint32_t actualOffset = offset;
+	char side[2][10] = {"right", "left"};
+	char isTop[10]; strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
+	unsigned int addr[2];
+	addr[0] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
+	addr[1] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
+	uint32_t value[2] = {0, 0};
+
+	int run[2] = {0, 0}; 
+	// both registers
+	if (offset < 0x100) {
+		run[0] = 1;
+		run[1] = 1;
+	}	
+	// right registers only
+	else if (offset >= 0x200) {
+		run[0] = 1;
+		actualOffset = offset - 0x200;
+	} 
+	// left registers only
+	else {
+		run[1] = 1;
+		actualOffset = offset - 0x100;
+	}
+
+	int iloop = 0;
+	for(iloop = 0; iloop < 2; ++iloop) {
+		if(run[iloop]) {
+			if(!Feb_Interface_ReadRegister(addr[iloop],actualOffset, &value[iloop])) {
+				FILE_LOG(logERROR, ("Could not read from %s %s addr 0x%x\n", isTop, side[iloop], actualOffset));
+				return 0;
+			}
+			FILE_LOG(logINFO, ("Read 0x%x from %s %s 0x%x\n", value[iloop], isTop, side[iloop], actualOffset));
+			*retval = value[iloop];
+			// if not the other (left, not right OR right, not left), return the value
+			if (!run[iloop ? 0 : 1]) {
+				return 1;
+			}
+		}
+	}
+
+	// Inconsistent values
+	if (value[0] != value[1]) {
+		FILE_LOG(logERROR, ("Inconsistent values read from left 0x%x and right 0x%x\n", value[0], value[1]));
+		return 0; 
+	}
+	return 1;
 }

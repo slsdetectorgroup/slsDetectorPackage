@@ -246,6 +246,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_STARTING_FRAME_NUMBER:		return "F_GET_STARTING_FRAME_NUMBER";
 	case F_SET_QUAD:						return "F_SET_QUAD";
 	case F_GET_QUAD:						return "F_GET_QUAD";
+	case F_SET_INTERRUPT_SUBFRAME:			return "F_SET_INTERRUPT_SUBFRAME";
+	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
 	default:								return "Unknown Function";
 	}
 }
@@ -332,6 +334,8 @@ void function_table() {
 	flist[F_GET_STARTING_FRAME_NUMBER] 			= &get_starting_frame_number;
 	flist[F_SET_QUAD]							= &set_quad;
 	flist[F_GET_QUAD]							= &get_quad;
+	flist[F_SET_INTERRUPT_SUBFRAME]				= &set_interrupt_subframe;
+	flist[F_GET_INTERRUPT_SUBFRAME]				= &get_interrupt_subframe;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -1116,11 +1120,23 @@ int write_register(int file_des) {
     if (Server_VerifyLock() == OK) {
 #ifdef GOTTHARDD
         retval = writeRegister16And32(addr, val);
+#elif EIGERD
+		if(writeRegister(addr, val) == FAIL) {
+		    ret = FAIL;
+            sprintf(mess,"Could not write to register 0x%x.\n", addr);
+            FILE_LOG(logERROR,(mess));	
+		} else {
+			if(readRegister(addr, &retval) == FAIL) {
+				ret = FAIL;
+				sprintf(mess,"Could not read register 0x%x.\n", addr);
+				FILE_LOG(logERROR,(mess));	
+			}
+		}
 #else
         retval = writeRegister(addr, val);
 #endif
         // validate
-        if (retval != val) {
+        if (ret == OK && retval != val) {
             ret = FAIL;
             sprintf(mess,"Could not write to register 0x%x. Wrote 0x%x but read 0x%x\n", addr, val, retval);
             FILE_LOG(logERROR,(mess));
@@ -1148,6 +1164,12 @@ int read_register(int file_des) {
 	// get
 #ifdef GOTTHARDD
 	retval = readRegister16And32(addr);
+#elif EIGERD
+	if(readRegister(addr, &retval) == FAIL) {
+		ret = FAIL;
+        sprintf(mess,"Could not read register 0x%x.\n", addr);
+        FILE_LOG(logERROR,(mess));
+	}
 #else
 	retval = readRegister(addr);
 #endif
@@ -4103,13 +4125,18 @@ int set_quad(int file_des) {
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-		setQuad(arg);
-		int retval = getQuad();
-		if (arg != retval) {
+		if (setQuad(arg) == FAIL) {
 			ret = FAIL;
-			sprintf(mess, "Could not set quad. Set %d, but read %d\n", retval, arg);
+			sprintf(mess, "Could not set quad in FEB.\n");
 			FILE_LOG(logERROR,(mess));
-		}		
+		} else {
+			int retval = getQuad();
+			if (arg != retval) {
+				ret = FAIL;
+				sprintf(mess, "Could not set quad. Set %d, but read %d\n", retval, arg);
+				FILE_LOG(logERROR,(mess));
+			}		
+		}
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
@@ -4128,6 +4155,60 @@ int get_quad(int file_des) {
 	// get only
 	retval = getQuad();
 	FILE_LOG(logDEBUG1, ("Quad retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+int set_interrupt_subframe(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting interrupt subframe: %u\n", arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if(setInterruptSubframe(arg) == FAIL) {
+			ret = FAIL;
+			sprintf(mess, "Could not set Intertupt Subframe in FEB.\n");
+			FILE_LOG(logERROR,(mess));
+		} else {
+			int retval = getInterruptSubframe();
+			if (arg != retval) {
+				ret = FAIL;
+				sprintf(mess, "Could not set Intertupt Subframe. Set %d, but read %d\n", retval, arg);
+				FILE_LOG(logERROR,(mess));
+			}		
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_interrupt_subframe(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting interrupt subframe\n"));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getInterruptSubframe();
+	if (retval == -1) {
+		ret = FAIL;
+		sprintf(mess, "Could not get Intertupt Subframe or inconsistent values between left and right. \n");
+		FILE_LOG(logERROR,(mess));	
+	} else {
+		FILE_LOG(logDEBUG1, ("Interrupt subframe retval: %u\n", retval));
+	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

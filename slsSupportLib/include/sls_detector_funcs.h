@@ -91,6 +91,8 @@ enum detFuncs{
 	F_GET_STARTING_FRAME_NUMBER,
 	F_SET_QUAD,
 	F_GET_QUAD,
+	F_SET_INTERRUPT_SUBFRAME,
+	F_GET_INTERRUPT_SUBFRAME,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -236,6 +238,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_STARTING_FRAME_NUMBER:		return "F_GET_STARTING_FRAME_NUMBER";
 	case F_SET_QUAD:						return "F_SET_QUAD";
 	case F_GET_QUAD:						return "F_GET_QUAD";
+	case F_SET_INTERRUPT_SUBFRAME:			return "F_SET_INTERRUPT_SUBFRAME";
+	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 

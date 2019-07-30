@@ -820,6 +820,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setReadOutFlags(readOutFlags flag = GET_READOUT_FLAGS, int detPos = -1);
 
     /**
+     * Set Interrupt last sub frame (Only for Eiger)
+     * @param enable true if interrupt last subframe set, else false
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setInterruptSubframe(const bool enable, int detPos = -1);
+
+    /**
+     * Get Interrupt last sub frame (Only for Eiger)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns 1 if interrupt last subframe set, else 0, -1 different values
+     */
+    int getInterruptSubframe(int detPos = -1);
+
+    /**
      * Write in a register. For Advanced users
      * @param addr address of register
      * @param val value to write into register

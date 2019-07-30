@@ -58,7 +58,8 @@ template <typename T> class CmdProxy {
 
     std::string Call(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id,
-                     int action = -1) {
+                     int action = -1,
+                     std::ostream &os = std::cout) {
         cmd = command;
         args = arguments;
         det_id = detector_id;
@@ -67,7 +68,7 @@ template <typename T> class CmdProxy {
 
         auto it = functions.find(cmd);
         if (it != functions.end()) {
-            std::cout << ((*this).*(it->second))(action);
+            os << ((*this).*(it->second))(action);
             return {};
         } else {
             return cmd;
@@ -88,6 +89,14 @@ template <typename T> class CmdProxy {
     }
 
     size_t GetFunctionMapSize() const noexcept { return functions.size(); };
+
+    std::vector<std::string> GetAllCommands(){
+        auto commands = slsDetectorCommand(nullptr).getAllCommands();
+        for (const auto &it : functions)
+            commands.emplace_back(it.first);
+        std::sort(begin(commands), end(commands));
+        return commands;
+    }
 
   private:
     T *det;
@@ -143,7 +152,6 @@ template <typename T> class CmdProxy {
     }
 
     // Mapped functions
-
     std::string ListCommands(int action) {
         if (action == slsDetectorDefs::HELP_ACTION)
             return "list - lists all available commands, list deprecated - "

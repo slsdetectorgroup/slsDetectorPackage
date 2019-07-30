@@ -56,6 +56,32 @@ class ExperimentalDetector(multiDetectorApi):
 
     @property
     def busy(self):
+        """
+        Checks if the detector is acquiring. Can also be set but should only be used if the acquire fails and
+        leaves the detector with busy == True
+
+        .. note ::
+
+            Only works when the measurement is launched using acquire, not with status start!
+
+        Returns
+        --------
+        bool
+            :py:obj:`True` if the detector is acquiring otherwise :py:obj:`False`
+
+        Examples
+        ----------
+
+        ::
+
+            d.busy
+            >> True
+
+            #If the detector is stuck reset by:
+            d.busy = False
+
+
+        """
         return self.getAcquiringFlag()
     
     @busy.setter

@@ -10,14 +10,24 @@ namespace sls {
 using ns = std::chrono::nanoseconds;
 using Positions = const std::vector<int> &;
 using defs = slsDetectorDefs;
+
+/**
+ * \class Detector
+ *
+ * This class is the public API for our detectors
+ */
 class Detector {
     std::unique_ptr<multiSlsDetector> pimpl;
 
   public:
+    /**
+     * @param multi_id multi detector shared memory id
+     */
     Detector(int multi_id = 0);
     ~Detector();
 
     // Acquisition
+
     void acquire();
     void startReceiver(Positions pos = {});
     void stopReceiver(Positions pos = {});
@@ -48,7 +58,6 @@ class Detector {
     void setFileWrite(bool value, Positions pos = {});
     Result<bool> getFileOverWrite(Positions pos = {}) const;
     void setFileOverWrite(bool value, Positions pos = {});
-
 
     // Time
     Result<ns> getExptime(Positions pos = {}) const;

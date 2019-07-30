@@ -679,7 +679,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
         resetPedestal = false;
     }
     
-    if (isPedestal) {
+    if (isPedestal && pedestalCount <= NUM_PEDESTAL_FRAMES) {
         // add pedestals frames
         if (pedestalCount < NUM_PEDESTAL_FRAMES) {
             for (unsigned int px = 0; px < nPixels; ++px)
@@ -692,6 +692,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
             for (unsigned int px = 0; px < nPixels; ++px)
                 tempPedestalVals[px] = tempPedestalVals[px] / (double)NUM_PEDESTAL_FRAMES;
             memcpy(pedestalVals, tempPedestalVals, nPixels * sizeof(double));
+            pedestalCount++;
         }
     }
 
@@ -725,7 +726,7 @@ void qDrawPlot::Get1dData(double* rawData) {
     // pedestal
     if (isPedestal) {
         for (unsigned int px = 0; px < nPixelsX; ++px) {
-            rawData[px] =- (pedestalVals[px]);
+            rawData[px] -= (pedestalVals[px]);
         }
     }
     // accumulate
@@ -757,7 +758,7 @@ void qDrawPlot::Get2dData(double* rawData) {
     // pedestal
     if (isPedestal) {
         for (unsigned int px = 0; px < nPixels; ++px) {
-            rawData[px] =- (pedestalVals[px]);
+            rawData[px] -= (pedestalVals[px]);
         }
     }
     // accumulate

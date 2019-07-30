@@ -1947,7 +1947,7 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
         char retvals[MAX_STR_LENGTH]{};
         char args[MAX_STR_LENGTH]{};
         sls::strcpy_safe(args, shm()->rxZmqip.str()); // TODO send int
-        FILE_LOG(logINFORED)
+        FILE_LOG(logDEBUG1)
             << "Sending receiver streaming IP to receiver: " << args;
         sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, args, retvals);
         FILE_LOG(logDEBUG1) << "Receiver streaming ip: " << retvals;

@@ -164,7 +164,7 @@ int UDPStandardImplementation::setGapPixelsEnable(const bool b) {
 		gapPixelsEnable = b;
 
 		// side effects
-		generalData->SetGapPixelsEnable(b, dynamicRange);
+		generalData->SetGapPixelsEnable(b, dynamicRange, quadEnable);
 		// to update npixelsx, npixelsy in file writer
 		for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
 			(*it)->SetPixelDimension();
@@ -177,9 +177,17 @@ int UDPStandardImplementation::setGapPixelsEnable(const bool b) {
 	return OK;
 }
 
-void UDPStandardImplementation::setQuad(const bool b) {
+int UDPStandardImplementation::setQuad(const bool b) {
 	if (quadEnable != b) {
 		quadEnable = b;
+
+		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, b);
+		// to update npixelsx, npixelsy in file writer
+		for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
+			(*it)->SetPixelDimension();
+		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
+		if (SetupFifoStructure() == FAIL)
+			return FAIL;	
 
 		if (!quadEnable) {
 			for (std::vector<DataStreamer*>::const_iterator it = dataStreamer.begin(); it != dataStreamer.end(); ++it){
@@ -198,6 +206,7 @@ void UDPStandardImplementation::setQuad(const bool b) {
 		}
 	}
 	FILE_LOG(logINFO)  << "Quad Enable: " << quadEnable;
+	return OK;
 }
 
 
@@ -372,7 +381,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
 
 		//side effects
 		generalData->SetDynamicRange(i,tengigaEnable);
-		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange);
+		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
 		// to update npixelsx, npixelsy in file writer
 		for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
 			(*it)->SetPixelDimension();
@@ -391,6 +400,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b) {
 		tengigaEnable = b;
 		//side effects
 		generalData->SetTenGigaEnable(b,dynamicRange);
+		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
 
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
@@ -473,7 +483,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d) {
 	        DataProcessor* p = new DataProcessor(i, myDetectorType, fifo[i], &fileFormatType,
 	                fileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
 	                &dynamicRange, &frameToGuiFrequency, &frameToGuiTimerinMS,
-					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode,
+					&framePadding, &activated, &deactivatedPaddingEnable, &silentMode, &quadEnable,
 	                rawDataReadyCallBack, rawDataModifyReadyCallBack, pRawDataReady);
 	        dataProcessor.push_back(p);
 	    }

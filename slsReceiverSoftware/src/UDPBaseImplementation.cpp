@@ -426,12 +426,13 @@ int UDPBaseImplementation::setGapPixelsEnable(const bool b) {
 	return OK;
 }
 
-void UDPBaseImplementation::setQuad(const bool b) {
+int UDPBaseImplementation::setQuad(const bool b) {
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 	quadEnable = b;
 	FILE_LOG(logINFO)  << "Quad Enable: " << quadEnable;
 
 	// overridden
+	return OK;
 }
 
 /***file parameters***/

@@ -248,7 +248,6 @@ void DataStreamer::ProcessAnImage(char* buf) {
 
 	//normal
 	else {
-
 		if (!SendHeader(header, (uint32_t)(*((uint32_t*)buf)),
 				generalData->nPixelsX, generalData->nPixelsY, false)) // new size possibly from callback
 			cprintf(RED,"Error: Could not send zmq header for fnum %lld and streamer %d\n",

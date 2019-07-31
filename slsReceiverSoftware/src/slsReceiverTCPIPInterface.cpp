@@ -3008,7 +3008,11 @@ int slsReceiverTCPIPInterface::set_quad_type() {
 			else if (receiverBase->getStatus() != IDLE)
 				receiverNotIdle();
 			else {
-				receiverBase->setQuad(value); // no check required
+				ret = receiverBase->setQuad(value);
+				if (ret == FAIL) {
+					strcpy(mess, "Could not set Quad due to fifo structure.\n");
+					FILE_LOG(logERROR) << mess;
+				}
 			}
 		}
 		//get

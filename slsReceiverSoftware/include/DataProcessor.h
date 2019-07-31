@@ -38,6 +38,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param act pointer to activated
 	 * @param depaden pointer to deactivated padding enable
 	 * @param sm pointer to silent mode
+	 * @param qe pointer to quad Enable
 	 * @param dataReadycb pointer to data ready call back function
 	 * @param dataModifyReadycb pointer to data ready call back function with modified
 	 * @param pDataReadycb pointer to arguments of data ready call back function. To write/stream a smaller size of processed data, change this value (only smaller value is allowed).
@@ -45,7 +46,7 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 	DataProcessor(int ind, detectorType dtype, Fifo*& f, fileFormat* ftype,
 			bool fwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
-						bool* fp, bool* act, bool* depaden, bool* sm,
+						bool* fp, bool* act, bool* depaden, bool* sm, bool* qe,
 						void (*dataReadycb)(char*, char*, uint32_t, void*),
 				        void (*dataModifyReadycb)(char*, char*, uint32_t &, void*),
 						void *pDataReadycb);
@@ -340,6 +341,9 @@ class DataProcessor : private virtual slsReceiverDefs, public ThreadObject {
 
     /** Silent Mode */
     bool* silentMode;
+
+	/** quad enable */
+	bool* quadEnable;
 
 	/** frame padding */
 	bool* framePadding;

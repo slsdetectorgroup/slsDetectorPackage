@@ -453,8 +453,9 @@ class UDPInterface {
 	/**
 	 * Set Quad type Enable (eiger and hardware specific)
 	 * @param true if quad enabled, else false
+	 * @return OK or FAIL
 	 */
-	virtual void setQuad(const bool b) = 0;
+	virtual int setQuad(const bool b) = 0;
 
 
 	//***file parameters***

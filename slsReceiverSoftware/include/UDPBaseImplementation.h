@@ -362,8 +362,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/**
 	 * Set Quad type Enable (eiger and hardware specific)
 	 * @param true if quad enabled, else false
+	 * @return OK or FAIL
 	 */
-	void setQuad(const bool b);
+	int setQuad(const bool b);
 
 
 	//***file parameters***

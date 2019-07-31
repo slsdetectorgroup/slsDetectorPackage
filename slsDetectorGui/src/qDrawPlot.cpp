@@ -129,7 +129,7 @@ void qDrawPlot::SetupWidgetWindow(){
 			break;
 		case slsDetectorDefs::EIGER:
 			if (myDet->setQuad()) {
-				nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2;
+				nPixelsX = (myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2) - 1;
 				nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y) * 2;
 			}
 			break;
@@ -603,7 +603,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 			break;
 		case slsDetectorDefs::EIGER:
 			if (myDet->setQuad()) {
-				nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2;
+				nPixelsX = (myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2) - 1;
 				nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y) * 2;
 			}
 			break;

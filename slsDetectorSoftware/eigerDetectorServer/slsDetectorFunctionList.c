@@ -1227,11 +1227,13 @@ int	setDetectorPosition(int pos[]) {
 
 
 int setQuad(int value) {
-	if(value < 0)
-		return FAIL;
+	if (value < 0)
+		return OK;
 #ifndef VIRTUAL
-	Beb_SetQuad(value);
-	if(!Feb_Control_SetQuad(value)) {
+	if (Beb_SetQuad(value) == FAIL) {
+		return FAIL;
+	}
+	if (!Feb_Control_SetQuad(value)) {
 		return FAIL;
 	}
 #endif

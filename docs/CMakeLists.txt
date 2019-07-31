@@ -32,6 +32,8 @@ if (DOXYGEN_FOUND AND SPHINX_FOUND)
       src/index.rst
       src/installation.rst
       src/pydetector.rst
+      src/pyenums.rst
+      src/pyexamples.rst
       src/receiver.rst
       src/result.rst
       

@@ -26,6 +26,8 @@ Welcome to slsDetectorPackage's documentation!
     :maxdepth: 2
 
     pydetector
+    pyenums
+    pyexamples
 
 .. toctree::
     :caption: Command line

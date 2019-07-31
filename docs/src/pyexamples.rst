@@ -18,7 +18,7 @@ file writing etc.
     threshold = range(0, 2000, 200)
     for th in threshold:
         d.vthreshold = th
-        d.acq()
+        d.acquire()
     
 
 If we want to control the shutter of for example, the big X-ray box we can add
@@ -30,7 +30,7 @@ and closes is afterwards.
     with xrf_shutter_open(box, 'Fe'):
         for th in threshold:
             d.vthreshold = th
-            d.acq()
+            d.acquire()
         
         
 -----------------------

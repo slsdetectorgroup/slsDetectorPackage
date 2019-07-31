@@ -13,8 +13,6 @@ using defs = slsDetectorDefs;
 
 /**
  * \class Detector
- *
- * This class is the public API for our detectors
  */
 class Detector {
     std::unique_ptr<multiSlsDetector> pimpl;
@@ -28,14 +26,35 @@ class Detector {
 
     // Acquisition
 
+    /**
+     * Blocking call, starts the receiver and detector. Acquired
+     * the number of frames set.
+     */
     void acquire();
     void startReceiver(Positions pos = {});
     void stopReceiver(Positions pos = {});
+
+    /**
+     * Get the acquiring flag. When true the detector blocks
+     * any attempt to start a new acquisition. 
+     */
     bool getAcquiringFlag() const;
+
+    /**
+     * Set the acquiring flag. This might have to done manually 
+     * after an acquisition was aborted. 
+     */
     void setAcquiringFlag(bool value);
+
+    /** Read back the run status of the receiver */
     Result<defs::runStatus> getReceiverStatus(Positions pos = {});
 
     // Configuration
+
+    /**
+     * Frees the shared memory of this detector and all modules
+     * belonging to it.
+     */
     void freeSharedMemory();
     void setConfig(const std::string &fname);
     Result<std::string> getHostname(Positions pos = {}) const;
@@ -45,12 +64,49 @@ class Detector {
     void setStartingFrameNumber(uint64_t value, Positions pos);
 
     // Bits and registers
-    void clearBit(uint32_t addr, int bit, Positions pos = {});
-    void setBit(uint32_t addr, int bit, Positions pos = {});
+
+    /**
+     * Clears (sets to 0) bit number bitnr in register at addr. 
+     * @param addr address of the register
+     * @param bitnr bit number to clear
+     * @param pos detector position
+     */
+    void clearBit(uint32_t addr, int bitnr, Positions pos = {});
+
+    /**
+     * Sets bit number bitnr in register at addr to 1
+     * @param addr address of the register
+     * @param bitnr bit number to clear
+     * @param pos detector position
+     */
+    void setBit(uint32_t addr, int bitnr, Positions pos = {});
+
+    /**
+     * Reads 32 bit register from detector
+     * @param addr address of the register
+     * @returns value read from register
+     */
     Result<uint32_t> getRegister(uint32_t addr, Positions pos = {});
 
-    // File
+    /**************************************************
+     *                                                *
+     *    FILE, anything concerning file writing or   *
+     *    reading goes here                           *
+     *                                                *
+     * ************************************************/
+
+    /**
+     * Returns receiver file name prefix. The actual file name
+     * contains module id and file index as well.
+     * @param pos detector positions
+     * @returns file name prefix
+     */
     Result<std::string> getFileName() const;
+
+    /**
+     * Sets the receiver file name prefix
+     * @param fname file name prefix
+     */
     void setFileName(const std::string &fname);
     Result<std::string> getFilePath() const;
     void setFilePath(const std::string &fname);

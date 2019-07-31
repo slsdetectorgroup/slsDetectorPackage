@@ -46,11 +46,11 @@ void Detector::setConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
 }
 
-void Detector::clearBit(uint32_t addr, int bit, Positions pos) {
-    pimpl->Parallel(&slsDetector::clearBit, pos, addr, bit);
+void Detector::clearBit(uint32_t addr, int bitnr, Positions pos) {
+    pimpl->Parallel(&slsDetector::clearBit, pos, addr, bitnr);
 }
-void Detector::setBit(uint32_t addr, int bit, Positions pos) {
-    pimpl->Parallel(&slsDetector::setBit, pos, addr, bit);
+void Detector::setBit(uint32_t addr, int bitnr, Positions pos) {
+    pimpl->Parallel(&slsDetector::setBit, pos, addr, bitnr);
 }
 Result<uint32_t> Detector::getRegister(uint32_t addr, Positions pos) {
     return pimpl->Parallel(&slsDetector::readRegister, pos, addr);

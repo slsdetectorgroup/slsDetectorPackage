@@ -4,3 +4,6 @@ from .experimental import ExperimentalDetector
 from .jungfrau import Jungfrau
 from .jungfrau_ctb import JungfrauCTB
 from _sls_detector import DetectorApi
+
+import _sls_detector
+runStatus = _sls_detector.slsDetectorDefs.runStatus

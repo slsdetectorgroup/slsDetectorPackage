@@ -1,6 +1,9 @@
 #pragma once
 #include <algorithm>
 #include <vector>
+#include <iostream>
+
+#include "ToString.h"
 namespace sls {
 
 template <typename Container>
@@ -48,10 +51,21 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     auto empty() const -> decltype(vec.empty()) { return vec.empty(); }
     auto front() const -> decltype(vec.front()) { return vec.front(); }
     auto front() -> decltype(vec.front()) { return vec.front(); }
-    T squash() { return Squash(vec); }
+    
+    T squash() const { return Squash(vec); }
+    T squash(T default_value) const { return Squash(vec, default_value); }
 
     bool equal() { return Equal(vec); }
     bool equal() const { return Equal(vec); }
+
+    //Conversion operator
+    operator std::vector<T>() { return vec;}
+    operator T() { return squash();}
 };
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const Result<T>& res){
+    return os << ToString(res);
+}
 
 } // namespace sls

@@ -36,13 +36,25 @@ def freeze(cls):
 
 @freeze
 class ExperimentalDetector(multiDetectorApi):
-    def __init__(self):
-        super().__init__(0)
-        self.online = True
+    """
+    This class is the base for detector specific 
+    interfaces. Most functions exists in two versions
+    like the getExptime() function that uses the 
+    C++ API directly and the simplified exptime property. 
+    """
+    def __init__(self, multi_id = 0):
+        """
+        multi_id refers to the shared memory id of the 
+        slsDetectorPackage. Default value is 0. 
+        """
+        super().__init__(multi_id)
 
     # Acq
     @property
     def rx_status(self):
+        """
+        Read the status of the receiver
+        """
         return element_if_equal(self.getReceiverStatus())
 
     @rx_status.setter

@@ -5,6 +5,17 @@ target_link_libraries(a
     pthread
     rt
 )  
+
 set_target_properties(a PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+
+add_executable(result useResult.cpp)
+target_link_libraries(result 
+    slsDetectorShared
+)  
+
+set_target_properties(result PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )

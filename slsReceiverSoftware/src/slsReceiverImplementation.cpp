@@ -501,7 +501,7 @@ int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
         gapPixelsEnable = b;
 
         // side effects
-        generalData->SetGapPixelsEnable(b, dynamicRange);
+        generalData->SetGapPixelsEnable(b, dynamicRange, quadEnable);
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         if (SetupFifoStructure() == FAIL)
@@ -512,9 +512,16 @@ int slsReceiverImplementation::setGapPixelsEnable(const bool b) {
 }
 
 
-void slsReceiverImplementation::setQuad(const bool b) {
+int slsReceiverImplementation::setQuad(const bool b) {
 	if (quadEnable != b) {
 		quadEnable = b;
+
+		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, b);
+		// to update npixelsx, npixelsy in file writer
+        for (const auto &it : dataProcessor)
+		    it->SetPixelDimension();
+		if (SetupFifoStructure() == FAIL)
+			return FAIL;	
 
 		if (!quadEnable) {
 			for (const auto &it : dataStreamer) {
@@ -533,6 +540,7 @@ void slsReceiverImplementation::setQuad(const bool b) {
 		}
 	}
 	FILE_LOG(logINFO)  << "Quad Enable: " << quadEnable;
+    return OK;
 }
 
 int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
@@ -750,7 +758,7 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
                     fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
                     &gapPixelsEnable, &dynamicRange, &streamingFrequency,
                     &streamingTimerInMs, &framePadding, &activated,
-                    &deactivatedPaddingEnable, &silentMode, &ctbDbitList,
+                    &deactivatedPaddingEnable, &silentMode, &quadEnable, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
@@ -1085,7 +1093,7 @@ int slsReceiverImplementation::setDynamicRange(const uint32_t i) {
     if (dynamicRange != i) {
         dynamicRange = i;
         generalData->SetDynamicRange(i, tengigaEnable);
-        generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange);
+        generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
         // to update npixelsx, npixelsy in file writer
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
@@ -1103,6 +1111,7 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
         switch (myDetectorType) {
         case EIGER:
             generalData->SetTenGigaEnable(b, dynamicRange);
+            generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
             break;
         case MOENCH:
             generalData->setImageSize(adcEnableMask, numberOfAnalogSamples,
@@ -1240,7 +1249,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
                 &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
                 &dynamicRange, &streamingFrequency, &streamingTimerInMs,
                 &framePadding, &activated, &deactivatedPaddingEnable,
-                &silentMode, &ctbDbitList, &ctbDbitOffset,
+                &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
                 &ctbAnalogDataBytes));
         } catch (...) {
             FILE_LOG(logERROR)

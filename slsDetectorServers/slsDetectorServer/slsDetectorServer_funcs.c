@@ -4127,7 +4127,7 @@ int set_quad(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		if (setQuad(arg) == FAIL) {
 			ret = FAIL;
-			sprintf(mess, "Could not set quad in FEB.\n");
+			sprintf(mess, "Could not set quad.\n");
 			FILE_LOG(logERROR,(mess));
 		} else {
 			int retval = getQuad();

@@ -1190,12 +1190,12 @@ void Beb_SetDetectorNumber(uint32_t detid) {
 	FILE_LOG(logINFO, ("Detector id %d set in UDP Header\n\n", detid));
 }
 
-void Beb_SetQuad(int value) {
-	if (value >= 0) {
-		FILE_LOG(logINFO, ("Setting Quad to %d in Beb\n", value));
-		Beb_quadEnable = (value == 0 ?  0 : 1);
-		Beb_SetDetectorPosition(Beb_positions);	
-	}
+int Beb_SetQuad(int value) {
+	if (value < 0)
+		return OK;
+	FILE_LOG(logINFO, ("Setting Quad to %d in Beb\n", value));
+	Beb_quadEnable = (value == 0 ?  0 : 1);
+	return Beb_SetDetectorPosition(Beb_positions);	
 }
 
 int Beb_GetQuad() {

@@ -486,19 +486,25 @@ void setupDetector() {
 
 
 /* advanced read/write reg */
-uint32_t writeRegister(uint32_t offset, uint32_t data) {
+int writeRegister(uint32_t offset, uint32_t data) {
 #ifdef VIRTUAL
-	return 0;
+	return OK;
 #else
-	return Feb_Control_WriteRegister(offset, data);
+	if(!Feb_Control_WriteRegister(offset, data)) {
+		return FAIL;
+	}
+	return OK;
 #endif
 }
 
-uint32_t readRegister(uint32_t offset) {
+int readRegister(uint32_t offset, uint32_t* retval) {
 #ifdef VIRTUAL
-	return 0;
+	return OK;
 #else
-	return Feb_Control_ReadRegister(offset);
+	if(!Feb_Control_ReadRegister(offset, retval)) {
+		return FAIL;
+	}
+	return OK;
 #endif
 }
 
@@ -1219,17 +1225,45 @@ int	setDetectorPosition(int pos[]) {
 }
 
 
-int setQuad(int val) {
-	int ret = Beb_SetQuad(val);
-	if (Feb_Control_SetQuad(val) == -1)
-		return -1;
-	return ret;
+
+int setQuad(int value) {
+	if(value < 0)
+		return FAIL;
+#ifndef VIRTUAL
+	Beb_SetQuad(value);
+	if(!Feb_Control_SetQuad(value)) {
+		return FAIL;
+	}
+#endif
+	return OK;
 }
 
-int setInterruptSubframe(int val) {
-	return Feb_Control_InterruptSubframe(val);
+int	getQuad() {
+#ifdef VIRTUAL
+	return 0;
+#else
+	return Beb_GetQuad();
+#endif
 }
 
+int setInterruptSubframe(int value) {
+	if(value < 0)
+		return FAIL;
+#ifndef VIRTUAL
+	if(!Feb_Control_SetInterruptSubframe(value)) {
+		return FAIL;
+	}
+	return OK;
+#endif
+}
+
+int	getInterruptSubframe() {
+#ifdef VIRTUAL
+	return 0;
+#else
+	return Feb_Control_GetInterruptSubframe();
+#endif
+}
 
 
 

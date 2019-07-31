@@ -1458,8 +1458,22 @@ int write_register(int file_des) {
 #ifdef VERBOSE
 		printf("writing to register 0x%x data 0x%x\n", addr, val);
 #endif
+#ifdef EIGERD
+	if(writeRegister(addr, val) == FAIL) {
+		ret = FAIL;
+		sprintf(mess,"Could not write to register 0x%x.\n", addr);
+		cprintf(RED, "Warning: %s", mess);
+	} else {
+		if(readRegister(addr, &retval) == FAIL) {
+			ret = FAIL;
+			sprintf(mess,"Could not read register 0x%x.\n", addr);
+			cprintf(RED, "Warning: %s", mess);
+		}
+	}
+#else
 		retval=writeRegister(addr,val);
-		if (retval!=val) {
+#endif
+		if (ret == OK && retval!=val) {
 			ret = FAIL;
 			sprintf(mess,"Writing to register 0x%x failed: wrote 0x%x but read 0x%x\n", addr, val, retval);
 			cprintf(RED, "Warning: %s", mess);
@@ -1509,7 +1523,15 @@ int read_register(int file_des) {
 	printf("reading  register 0x%x\n", addr);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
+#ifdef EIGERD
+	if(readRegister(addr, &retval) == FAIL) {
+		ret = FAIL;
+		sprintf(mess,"Could not read register 0x%x.\n", addr);
+		cprintf(RED, "Warning: %s", mess);
+	}
+#else
 	retval=readRegister(addr);
+#endif
 #endif
 #ifdef VERBOSE
 	printf("Returned value 0x%x\n",  retval);
@@ -5962,11 +5984,16 @@ int set_quad(int file_des) {
 #ifdef VERBOSE
 	printf("Setting Quad :%d \n",arg);
 #endif
-		retval=setQuad(arg);
-		if((arg != -1) && (retval != arg)) {
+		if(arg != -1 && setQuad(arg) == FAIL) {
 			ret=FAIL;
+			strcpy(mess, "setting quad failed\n");
 			cprintf(RED, "Warning: %s", mess);
 		}
+		retval = getQuad();
+		if(ret == OK && (arg != -1) && (retval != arg)) {
+			ret=FAIL;
+			cprintf(RED, "Warning: %s", mess);
+		}	
 	}
 #endif
 	if (ret==OK && differentClients)
@@ -6021,12 +6048,18 @@ int set_interrupt_subframe(int file_des) {
 #ifdef VERBOSE
 	printf("Setting Interrupt subframe :%d \n",arg);
 #endif
-		retval=setInterruptSubframe(arg);
+		if (arg != -1 && setInterruptSubframe(arg) == FAIL) {
+			ret=FAIL;
+			strcpy(mess, "setting interrupt subframe failed\n");
+			cprintf(RED, "Warning: %s", mess);
+		}
+		retval = getInterruptSubframe();
 #ifdef VERBOSE
 		printf("retval Interrupt subframe :%d \n",retval);
 #endif
-		if((arg != -1) && (retval != arg)) {
+		if(ret == OK && (arg != -1) && (retval != arg)) {
 			ret=FAIL;
+			sprintf(mess, "setting interrupt subframe failed. Set %d, got %d\n", arg, retval);
 			cprintf(RED, "Warning: %s", mess);
 		}
 	}

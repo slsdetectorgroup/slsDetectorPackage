@@ -204,9 +204,10 @@ int Feb_Control_GetModuleNumber();
   int64_t Feb_Control_GetSubMeasuredPeriod();
 
   int Feb_Control_SoftwareTrigger();
-  int Feb_Control_InterruptSubframe(int val);
+  int Feb_Control_SetInterruptSubframe(int val);
+  int Feb_Control_GetInterruptSubframe();
   int Feb_Control_SetQuad(int val);
 
-  uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data);
-  uint32_t Feb_Control_ReadRegister(uint32_t offset);
+  int Feb_Control_WriteRegister(uint32_t offset, uint32_t data);
+  int Feb_Control_ReadRegister(uint32_t offset, uint32_t* retval);
 #endif

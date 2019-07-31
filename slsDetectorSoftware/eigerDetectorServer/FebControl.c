@@ -2009,165 +2009,172 @@ int Feb_Control_SoftwareTrigger() {
 	return 1;
 }
 
-int Feb_Control_InterruptSubframe(int val) {
-	if (val >= 0) {
-		printf("Setting Interrupt Subframe to %d\n", val);
-	}
+int Feb_Control_SetInterruptSubframe(int val) {
+	printf("Setting Interrupt Subframe to %d\n", val);
+
 	// they need to be written separately because the left and right registers have different values for this particular register
 	uint32_t offset = DAQ_REG_HRDWRE;
-	int top = Module_TopAddressIsValid(&modules[1]) ? 1 : 0;
-	uint32_t lvalue = 0;
-	uint32_t rvalue = 0;
-	// right
-	unsigned int addr = top ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
-	if (val >= 0) {
-		if(!Feb_Interface_ReadRegister(addr, offset, &rvalue)) {
-			cprintf(RED,"Could not read %s right interrupt subframe\n", top ? "top" : "bottom");
-			return -1;
+	uint32_t regVal = 0;
+	char side[2][10] = {"right", "left"};
+	char isTop[10]; strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
+	unsigned int addr[2];
+	addr[0] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
+	addr[1] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
+
+	int iloop = 0;
+	for(iloop = 0; iloop < 2; ++iloop) {
+		// get previous value to keep it
+		if(!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
+			cprintf(RED, "Could not read %s %s interrupt subframe\n", isTop, side[iloop]);
+			return 0;
 		}
-		uint32_t data = ((val == 0) ? (rvalue &~ DAQ_REG_HRDWRE_INTRRPT_SF_MSK) : (rvalue | DAQ_REG_HRDWRE_INTRRPT_SF_MSK));
-		if(!Feb_Interface_WriteRegister(addr, offset, data, 0, 0)) {
-			cprintf(RED,"Could not write 0x%x to %s right interrupt subframe addr 0x%x\n", data, top ? "top" : "bottom", offset);
-			return -1;
+		uint32_t data = ((val == 0) ? (regVal &~ DAQ_REG_HRDWRE_INTRRPT_SF_MSK) : (regVal | DAQ_REG_HRDWRE_INTRRPT_SF_MSK));
+		if(!Feb_Interface_WriteRegister(addr[iloop], offset, data, 0, 0)) {
+			cprintf(RED, "Could not write 0x%x to %s %s interrupt subframe addr 0x%x\n", data, isTop, side[iloop], offset);
+			return 0;
 		}
 	}
-	if(!Feb_Interface_ReadRegister(addr, offset, &rvalue)) {
-		cprintf(RED,"Could not read back %s right interrupt subframe\n", top ? "top" : "bottom");
-		return -1;
+	return 1;
+}
+
+int Feb_Control_GetInterruptSubframe() {
+	// they need to be written separately because the left and right registers have different values for this particular register
+	uint32_t offset = DAQ_REG_HRDWRE;
+	uint32_t regVal = 0;
+
+	char side[2][10] = {"right", "left"};
+	char isTop[10]; strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
+	unsigned int addr[2];
+	addr[0] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
+	addr[1] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
+	uint32_t value[2] = {0, 0};
+
+	int iloop = 0;
+	for(iloop = 0; iloop < 2; ++iloop) {
+		if(!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
+			cprintf(RED, "Could not read back %s %s interrupt subframe\n", isTop, side[iloop]);
+			return -1;
+		}
+		value[iloop] = (regVal & DAQ_REG_HRDWRE_INTRRPT_SF_MSK) >> DAQ_REG_HRDWRE_INTRRPT_SF_OFST;
 	}
 
-	// left
-	addr = top ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
-	if (val >= 0) {
-		if(!Feb_Interface_ReadRegister(addr, offset, &lvalue)) {
-			cprintf(RED,"Could not read %s left interrupt subframe\n", top ? "top" : "bottom");
-			return -1;
-		}
-		uint32_t data = ((val == 0) ? (lvalue &~ DAQ_REG_HRDWRE_INTRRPT_SF_MSK) : (lvalue | DAQ_REG_HRDWRE_INTRRPT_SF_MSK));
-		if(!Feb_Interface_WriteRegister(addr, offset, data, 0, 0)) {
-			cprintf(RED,"Could not write 0x%x to %s left interrupt subframe addr 0x%x\n", data, top ? "top" : "bottom", offset);
-			return -1;
-		}	
-	}
-	if(!Feb_Interface_ReadRegister(addr, offset, &lvalue)) {
-		cprintf(RED,"Could not read back %s left interrupt subframe\n", top ? "top" : "bottom");
-		return -1;
-	}
 	// inconsistent
-	if (lvalue != rvalue) {
-		cprintf(RED, "Inconsistent values of interrupt subframe betweeen left and right\n");
+	if (value[0] != value[1]) {
+		cprintf(RED, "Inconsistent values of interrupt subframe betweeen left %d and right %d\n", value[0], value[1]);
 		return -1;
 	}
-	return (lvalue & DAQ_REG_HRDWRE_INTRRPT_SF_MSK) >> DAQ_REG_HRDWRE_INTRRPT_SF_OFST;
+	return value[0];
 }
 
 int Feb_Control_SetQuad(int val) {
 	// no bottom for quad
 	if (!Module_TopAddressIsValid(&modules[1])) {
-		return 0;
+		return 1;
 	}
 	uint32_t offset = DAQ_REG_HRDWRE;
-	if (val >= 0) {
-		printf("Setting Quad to %d in Feb\n", val);
-		unsigned int addr = Module_GetTopRightAddress (&modules[1]);
-		uint32_t rvalue = 0;
-		if(!Feb_Interface_ReadRegister(addr, offset, &rvalue)) {
-			cprintf(RED,"Could not read top right quad reg\n");
-			return -1;
-		}
-		uint32_t data = ((val == 0) ? (rvalue &~ DAQ_REG_HRDWRE_OW_MSK) : ((rvalue | DAQ_REG_HRDWRE_OW_MSK) &~ DAQ_REG_HRDWRE_TOP_MSK));
-		if(!Feb_Interface_WriteRegister(addr, offset, data, 0, 0)) {
-			cprintf(RED,"Could not write 0x%x to top right quad addr 0x%x\n", data, offset);
-			return -1;
-		}		
+	printf("Setting Quad to %d in Feb\n", val);
+	unsigned int addr = Module_GetTopRightAddress (&modules[1]);
+	uint32_t regVal = 0;
+	if(!Feb_Interface_ReadRegister(addr, offset, &regVal)) {
+		cprintf(RED, "Could not read top right quad reg\n");
+		return 0;
 	}
-	return 0;
+	uint32_t data = ((val == 0) ? (regVal &~ DAQ_REG_HRDWRE_OW_MSK) : ((regVal | DAQ_REG_HRDWRE_OW_MSK) &~ DAQ_REG_HRDWRE_TOP_MSK));
+	if(!Feb_Interface_WriteRegister(addr, offset, data, 0, 0)) {
+		cprintf(RED, "Could not write 0x%x to top right quad addr 0x%x\n", data, offset);
+		return 0;
+	}		
+	return 1;
 }
 
 
-uint32_t Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
+int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 	uint32_t actualOffset = offset;
-	int left = 0;
-	int right = 0;
+	char side[2][10] = {"right", "left"};
+	char isTop[10]; strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
+	unsigned int addr[2];
+	addr[0] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
+	addr[1] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
+	
+	int run[2] = {0, 0}; 
 	// both registers
 	if (offset < 0x100) {
-		left = 1;
-		right = 1;
+		run[0] = 1;
+		run[1] = 1;
 	}	
 	// right registers only
 	else if (offset >= 0x200) {
-		right = 1;
+		run[0] = 1;
 		actualOffset = offset - 0x200;
-	} else {
-		left = 1;
+	} 
+	// left registers only
+	else {
+		run[1] = 1;
 		actualOffset = offset - 0x100;
 	}
-	
-	int top = Module_TopAddressIsValid(&modules[1]) ? 1 : 0;
-	unsigned int addr = top ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
-	if (right) {	
-		if(!Feb_Interface_WriteRegister(addr,actualOffset, data,0, 0)) {
-			cprintf(RED,"Could not write 0x%x to %s right addr 0x%x\n", data, top ? "top" : "bottom", actualOffset);
-		}
-	}
-	addr = top ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
-	if (left) {
-		if(!Feb_Interface_WriteRegister(addr,actualOffset, data,0, 0)) {
-			cprintf(RED,"Could not write 0x%x to %s left addr 0x%x\n", data, top ? "top" : "bottom", actualOffset);
+
+	int iloop = 0;
+	for(iloop = 0; iloop < 2; ++iloop) {
+		if(run[iloop]) {
+			printf("Writing 0x%x to %s %s 0x%x\n", data, isTop, side[iloop], actualOffset);
+			if(!Feb_Interface_WriteRegister(addr[iloop],actualOffset, data, 0, 0)) {
+				cprintf(RED, "Could not write 0x%x to %s %s addr 0x%x\n", data, isTop, side[iloop], actualOffset);
+				return 0;
+			}
 		}
 	}
 
-	return Feb_Control_ReadRegister(offset);
+	return 1;
 }
 
 
-uint32_t Feb_Control_ReadRegister(uint32_t offset) {
+int Feb_Control_ReadRegister(uint32_t offset, uint32_t* retval) {
 	uint32_t actualOffset = offset;
-	int left = 0;
-	int right = 0;
+	char side[2][10] = {"right", "left"};
+	char isTop[10]; strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
+	unsigned int addr[2];
+	addr[0] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
+	addr[1] = Module_TopAddressIsValid(&modules[1]) ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
+	uint32_t value[2] = {0, 0};
+
+	int run[2] = {0, 0}; 
 	// both registers
 	if (offset < 0x100) {
-		left = 1;
-		right = 1;
+		run[0] = 1;
+		run[1] = 1;
 	}	
 	// right registers only
 	else if (offset >= 0x200) {
-		right = 1;
+		run[0] = 1;
 		actualOffset = offset - 0x200;
-	} else {
-		left = 1;
+	} 
+	// left registers only
+	else {
+		run[1] = 1;
 		actualOffset = offset - 0x100;
 	}
-	uint32_t lvalue=0;
-	uint32_t rvalue=0;
-	int top = Module_TopAddressIsValid(&modules[1]) ? 1 : 0;
-	
-	unsigned int addr = top ? Module_GetTopRightAddress (&modules[1]) : Module_GetBottomRightAddress (&modules[1]);
-	if (right) {
-		if(!Feb_Interface_ReadRegister(addr, actualOffset, &rvalue)) {
-			cprintf(RED,"Could not read %s right addr 0x%x\n", top ? "top" : "bottom", actualOffset);
-			return -1;
-		}
-		printf("Read %s right addr: 0x%08x\n", top ? "top" : "bottom", rvalue);
-		if (!left) {
-			return rvalue;
+
+	int iloop = 0;
+	for(iloop = 0; iloop < 2; ++iloop) {
+		if(run[iloop]) {
+			if(!Feb_Interface_ReadRegister(addr[iloop],actualOffset, &value[iloop])) {
+				cprintf(RED, "Could not read from %s %s addr 0x%x\n", isTop, side[iloop], actualOffset);
+				return 0;
+			}
+			printf("Read 0x%x from %s %s 0x%x\n", value[iloop], isTop, side[iloop], actualOffset);
+			*retval = value[iloop];
+			// if not the other (left, not right OR right, not left), return the value
+			if (!run[iloop ? 0 : 1]) {
+				return 1;
+			}
 		}
 	}
 
-	addr = top ? Module_GetTopLeftAddress (&modules[1]) : Module_GetBottomLeftAddress (&modules[1]);
-	if(left) {
-		if(!Feb_Interface_ReadRegister(addr, actualOffset, &lvalue)) {
-			cprintf(RED,"Could not read %s left addr 0x%x\n", top ? "top" : "bottom", actualOffset);
-			return -1;
-		}
-		printf("Read %s left addr: 0x%08x\n", top ? "top" : "bottom", lvalue);
-		if (!right) {
-			return lvalue;
-		}
+	// Inconsistent values
+	if (value[0] != value[1]) {
+		cprintf(RED, "Inconsistent values read from left 0x%x and right 0x%x\n", value[0], value[1]);
+		return 0; 
 	}
-	if (lvalue != rvalue) {
-		cprintf(RED, "Inconsistent values betweeen left and right\n");
-		return -1;
-	}
-	return lvalue;
+	return 1;
 }
+

@@ -92,6 +92,7 @@ struct BebInfo{
 
   void Beb_SetDetectorNumber(uint32_t detid);
   int Beb_SetQuad(int val);
+  int Beb_GetQuad();
   int Beb_SetDetectorPosition(int pos[]);
 
   uint16_t Beb_swap_uint16( uint16_t val);

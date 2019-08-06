@@ -40,6 +40,7 @@ Welcome to slsDetectorPackage's documentation!
 
     container_utils
     type_traits
+    ToString
 
 .. Indices and tables
 .. ==================

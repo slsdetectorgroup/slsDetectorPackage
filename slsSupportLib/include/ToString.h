@@ -1,27 +1,28 @@
 #pragma once
 
+/**
+ * \file ToString.h
+ * 
+ * Conversion from various types to std::string
+ * 
+ */
+
 #include "TimeHelper.h"
 #include "TypeTraits.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include <chrono>
+#include <iomanip>
 #include <sstream>
 #include <type_traits>
 #include <vector>
-#include <iomanip>
 
 namespace sls {
-
-// /** Base conversion for integer and floating point values */
-// template <typename T>
-// typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type
-// ToString(const T &value) {
-//     return std::to_string(value);
-// }
 
 std::string ToString(const std::vector<std::string> &vec,
                      const char delimiter = ' ');
 
+/** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>
 typename std::enable_if<is_duration<T>::value, std::string>::type
 ToString(T t, const std::string &unit) {
@@ -41,6 +42,7 @@ ToString(T t, const std::string &unit) {
     return os.str();
 }
 
+/** Convert std::chrono::duration automatically selecting the unit */
 template <typename From>
 typename std::enable_if<is_duration<From>::value, std::string>::type
 ToString(From t) {
@@ -56,11 +58,26 @@ ToString(From t) {
     }
 }
 
-/** Not an arithmetical type we have to call our ToString */
+/** Conversion of floating point values, removes trailing zeros*/
 template <typename T>
-typename std::enable_if<is_container<T>::value &&
-                            !std::is_arithmetic<typename T::value_type>::value,
-                        std::string>::type
+typename std::enable_if<std::is_floating_point<T>::value, std::string>::type
+ToString(const T &value) {
+    auto s = std::to_string(value);
+    s.erase(s.find_last_not_of('0') + 1u, std::string::npos);
+    s.erase(s.find_last_not_of('.') + 1u, std::string::npos);
+    return s;
+}
+
+/** Conversion of integer types, do not remove trailing zeros */
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, std::string>::type
+ToString(const T &value) {
+    return std::to_string(value);
+}
+
+/** For a container loop over all elements and call ToString */
+template <typename T>
+typename std::enable_if<is_container<T>::value, std::string>::type
 ToString(const T &container) {
     std::ostringstream os;
     os << '[';
@@ -74,24 +91,7 @@ ToString(const T &container) {
     return os.str();
 }
 
-/** For integers and float we fall back to std::cout formatting */
-template <typename T>
-typename std::enable_if<is_container<T>::value &&
-                            std::is_arithmetic<typename T::value_type>::value,
-                        std::string>::type
-ToString(const T &container) {
-    std::ostringstream os;
-    os << '[';
-    if (!container.empty()) {
-        auto it = container.cbegin();
-        os << *it++;
-        while (it != container.cend()) 
-            os << ", " << std::fixed << *it++;
-    }
-    os << ']';
-    return os.str();
-}
-
+/** Container and specified unit, call ToString(value, unit) */
 template <typename T>
 typename std::enable_if<is_container<T>::value, std::string>::type
 ToString(const T &container, const std::string &unit) {

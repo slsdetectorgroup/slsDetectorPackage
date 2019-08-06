@@ -1,4 +1,14 @@
 #pragma once
+
+/**
+ * \file Result.h
+ * Result is a thin wrapper around std::vector and used for returning values
+ * from the detector. Since every module could have a different value, we need
+ * to return a vector instead of just a single value.
+ *
+ * Easy conversions to single values are provided using the squash method.
+ */
+
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -8,6 +18,10 @@
 
 namespace sls {
 
+/**
+ * @tparam T type to store in the result
+ * @tparam Allocator for the underlying vector, default
+ */
 template <class T, class Allocator = std::allocator<T>> class Result {
     /** wrapped vector */
     std::vector<T, Allocator> vec;
@@ -16,7 +30,10 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     Result() = default;
     Result(std::initializer_list<T> list) : vec(list){};
 
-    /** Forward arguments to the constructor of std::vector */
+    /**
+     * Forward arguments to the constructor of std::vector
+     * @tparam Args template paramter pack to forward
+     */
     template <typename... Args>
     Result(Args &&... args) : vec(std::forward<Args>(args)...) {}
 
@@ -65,7 +82,10 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     operator T() { return squash(); }
 };
 
-/** operator << overload to enable simple printing of Result<T> */
+/**
+ * operator << overload to print Result, uses ToString for the conversion
+ * @tparam T type stored in the Result
+ */
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const Result<T> &res) {
     return os << ToString(res);

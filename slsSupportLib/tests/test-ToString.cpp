@@ -4,6 +4,30 @@
 #include <vector>
 using namespace sls;
 
+
+TEST_CASE("Integer conversions", "[support][now]"){
+    REQUIRE(ToString(0) == "0");
+    REQUIRE(ToString(1) == "1");
+    REQUIRE(ToString(-1) == "-1");
+    REQUIRE(ToString(100) == "100");
+    REQUIRE(ToString(589633100) == "589633100");
+
+}
+
+TEST_CASE("floating point conversions", "[support][now]"){
+    REQUIRE(ToString(0.) == "0");
+    REQUIRE(ToString(1.) == "1");
+    REQUIRE(ToString(-1.) == "-1");
+    REQUIRE(ToString(100.) == "100");
+    REQUIRE(ToString(589633100.) == "589633100");
+    REQUIRE(ToString(2.35) == "2.35");
+    REQUIRE(ToString(2.3500) == "2.35");
+    REQUIRE(ToString(2.35010) == "2.3501");
+    REQUIRE(ToString(5000) == "5000");
+    REQUIRE(ToString(5E15) == "5000000000000000");
+
+}
+
 TEST_CASE("conversion from duration to string", "[support][now]") {
     REQUIRE(ToString(time::ns(150)) == "150ns");
     REQUIRE(ToString(time::ms(783)) == "0.783s");
@@ -40,6 +64,9 @@ TEST_CASE("Vector of int", "[support][now]"){
     vec.push_back(172);
     REQUIRE(ToString(vec) == "[1, 172]");
 
+    vec.push_back(5000);
+    REQUIRE(ToString(vec) == "[1, 172, 5000]");
+
 }
 
 TEST_CASE("Vector of double", "[support][now]"){
@@ -49,10 +76,10 @@ TEST_CASE("Vector of double", "[support][now]"){
     vec.push_back(1.3);
     REQUIRE(ToString(vec) == "[1.3]");
 
-    // vec.push_back(5669.325005);
-    // REQUIRE(ToString(vec) == "[1.3, 5669.325]");
-
-    vec.push_back(5.3e23);
+    vec.push_back(5669.325);
     REQUIRE(ToString(vec) == "[1.3, 5669.325]");
+
+    vec.push_back(-5669.325005);
+    REQUIRE(ToString(vec) == "[1.3, 5669.325, -5669.325005]");
 
 }

@@ -55,6 +55,11 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     auto front() const -> decltype(vec.front()) { return vec.front(); }
     auto front() -> decltype(vec.front()) { return vec.front(); }
 
+    template<typename V>
+    auto push_back(V value) -> decltype(vec.push_back(value)){
+      vec.push_back(std::forward<V>(value));
+    }
+
     reference operator[](size_type pos) { return vec[pos]; }
     const_reference operator[](size_type pos) const { return vec[pos]; }
 

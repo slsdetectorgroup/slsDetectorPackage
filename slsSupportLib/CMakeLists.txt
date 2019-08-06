@@ -31,6 +31,7 @@ set(PUBLICHEADERS
     include/network_utils.h
     include/FixedCapacityContainer.h
     include/ToString.h
+    include/TimeHelper.h
 )
 
 add_library(slsSupportLib SHARED

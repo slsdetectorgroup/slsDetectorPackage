@@ -1255,8 +1255,8 @@ int setInterruptSubframe(int value) {
 	if(!Feb_Control_SetInterruptSubframe(value)) {
 		return FAIL;
 	}
-	return OK;
 #endif
+	return OK;
 }
 
 int	getInterruptSubframe() {

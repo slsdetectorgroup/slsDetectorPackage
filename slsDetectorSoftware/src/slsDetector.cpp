@@ -116,7 +116,7 @@ int64_t slsDetector::getId(idMode mode) {
     return retval;
 }
 
-int64_t slsDetector::getReceiverSoftwareVersion() {
+int64_t slsDetector::getReceiverSoftwareVersion() const {
     FILE_LOG(logDEBUG1) << "Getting receiver software version";
     int64_t retval = -1;
     if (shm()->useReceiverFlag) {
@@ -158,6 +158,13 @@ void slsDetector::sendToDetector(int fnum) {
 void slsDetector::sendToDetectorStop(int fnum, const void *args,
                                      size_t args_size, void *retval,
                                      size_t retval_size) {
+    static_cast<const slsDetector &>(*this).sendToDetectorStop(
+        fnum, args, args_size, retval, retval_size);
+}
+
+void slsDetector::sendToDetectorStop(int fnum, const void *args,
+                                     size_t args_size, void *retval,
+                                     size_t retval_size) const {
     auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
     stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     stop.close();
@@ -168,9 +175,21 @@ void slsDetector::sendToDetectorStop(int fnum, const Arg &args, Ret &retval) {
     sendToDetectorStop(fnum, &args, sizeof(args), &retval, sizeof(retval));
 }
 
+template <typename Arg, typename Ret>
+void slsDetector::sendToDetectorStop(int fnum, const Arg &args,
+                                     Ret &retval) const {
+    sendToDetectorStop(fnum, &args, sizeof(args), &retval, sizeof(retval));
+}
+
 template <typename Arg>
 void slsDetector::sendToDetectorStop(int fnum, const Arg &args,
                                      std::nullptr_t) {
+    sendToDetectorStop(fnum, &args, sizeof(args), nullptr, 0);
+}
+
+template <typename Arg>
+void slsDetector::sendToDetectorStop(int fnum, const Arg &args,
+                                     std::nullptr_t) const {
     sendToDetectorStop(fnum, &args, sizeof(args), nullptr, 0);
 }
 
@@ -179,24 +198,40 @@ void slsDetector::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) {
     sendToDetectorStop(fnum, nullptr, 0, &retval, sizeof(retval));
 }
 
+template <typename Ret>
+void slsDetector::sendToDetectorStop(int fnum, std::nullptr_t,
+                                     Ret &retval) const {
+    sendToDetectorStop(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
 void slsDetector::sendToDetectorStop(int fnum) {
+    sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
+}
+
+void slsDetector::sendToDetectorStop(int fnum) const {
     sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
 }
 
 void slsDetector::sendToReceiver(int fnum, const void *args, size_t args_size,
                                  void *retval, size_t retval_size) {
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    static_cast<const slsDetector &>(*this).sendToReceiver(
+        fnum, args, args_size, retval, retval_size);
+}
 
-    auto ret = receiver.sendCommandThenRead(fnum, args, args_size, retval,
-                                            retval_size);
+void slsDetector::sendToReceiver(int fnum, const void *args, size_t args_size,
+                                 void *retval, size_t retval_size) const {
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();
-    if (ret == FORCE_UPDATE) {
-        updateCachedReceiverVariables();
-    }
 }
 
 template <typename Arg, typename Ret>
 void slsDetector::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+}
+
+template <typename Arg, typename Ret>
+void slsDetector::sendToReceiver(int fnum, const Arg &args, Ret &retval) const {
     sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
 }
 
@@ -205,12 +240,27 @@ void slsDetector::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
     sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
 }
 
+template <typename Arg>
+void slsDetector::sendToReceiver(int fnum, const Arg &args,
+                                 std::nullptr_t) const {
+    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
+}
+
 template <typename Ret>
 void slsDetector::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
     sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
 }
 
+template <typename Ret>
+void slsDetector::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
 void slsDetector::sendToReceiver(int fnum) {
+    sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+}
+
+void slsDetector::sendToReceiver(int fnum) const {
     sendToReceiver(fnum, nullptr, 0, nullptr, 0);
 }
 
@@ -1147,7 +1197,7 @@ void slsDetector::saveSettingsFile(const std::string &fname) {
     writeSettingsFile(fn, myMod);
 }
 
-slsDetectorDefs::runStatus slsDetector::getRunStatus() {
+slsDetectorDefs::runStatus slsDetector::getRunStatus() const {
     runStatus retval = ERROR;
     FILE_LOG(logDEBUG1) << "Getting status";
     sendToDetectorStop(F_GET_RUN_STATUS, nullptr, retval);
@@ -1404,7 +1454,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     return shm()->timerValue[index];
 }
 
-int64_t slsDetector::getTimeLeft(timerIndex index) {
+int64_t slsDetector::getTimeLeft(timerIndex index) const {
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting " << getTimerType(index) << " left";
     sendToDetectorStop(F_GET_TIME_LEFT, index, retval);
@@ -1539,7 +1589,6 @@ bool slsDetector::getInterruptSubframe() {
     FILE_LOG(logDEBUG1) << "Interrupt subframe: " << retval;
     return static_cast<bool>(retval);
 }
-
 
 uint32_t slsDetector::writeRegister(uint32_t addr, uint32_t val) {
     uint32_t args[]{addr, val};
@@ -2115,7 +2164,7 @@ int64_t slsDetector::getReceiverUDPSocketBufferSize() {
     return setReceiverUDPSocketBufferSize();
 }
 
-int64_t slsDetector::getReceiverRealUDPSocketBufferSize() {
+int64_t slsDetector::getReceiverRealUDPSocketBufferSize() const {
     int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting real UDP Socket Buffer size from receiver";
     if (shm()->useReceiverFlag) {
@@ -2455,7 +2504,7 @@ void slsDetector::setReceiverDbitList(std::vector<int> list) {
     }
 }
 
-std::vector<int> slsDetector::getReceiverDbitList() {
+std::vector<int> slsDetector::getReceiverDbitList() const {
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
     FILE_LOG(logDEBUG1) << "Getting Receiver Dbit List";
     if (shm()->useReceiverFlag) {
@@ -2896,7 +2945,7 @@ int slsDetector::lockReceiver(int lock) {
     return retval;
 }
 
-std::string slsDetector::getReceiverLastClientIP() {
+std::string slsDetector::getReceiverLastClientIP() const {
     char retval[INET_ADDRSTRLEN]{};
     FILE_LOG(logDEBUG1) << "Getting last client ip to receiver server";
     if (shm()->useReceiverFlag) {
@@ -3200,7 +3249,7 @@ void slsDetector::stopReceiver() {
     }
 }
 
-slsDetectorDefs::runStatus slsDetector::getReceiverStatus() {
+slsDetectorDefs::runStatus slsDetector::getReceiverStatus() const {
     runStatus retval = ERROR;
     FILE_LOG(logDEBUG1) << "Getting Receiver Status";
     if (shm()->useReceiverFlag) {
@@ -3210,7 +3259,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() {
     return retval;
 }
 
-int slsDetector::getFramesCaughtByReceiver() {
+int slsDetector::getFramesCaughtByReceiver() const {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Frames Caught by Receiver";
     if (shm()->useReceiverFlag) {
@@ -3220,7 +3269,7 @@ int slsDetector::getFramesCaughtByReceiver() {
     return retval;
 }
 
-uint64_t slsDetector::getReceiverCurrentFrameIndex() {
+uint64_t slsDetector::getReceiverCurrentFrameIndex() const {
     uint64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Current Frame Index of Receiver";
     if (shm()->useReceiverFlag) {

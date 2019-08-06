@@ -27,6 +27,7 @@ if (DOXYGEN_FOUND AND SPHINX_FOUND)
 
     set(SPHINX_SOURCE_FILES
       src/commandline.rst
+      src/container_utils.rst
       src/dependencies.rst
       src/detector.rst
       src/index.rst
@@ -36,6 +37,7 @@ if (DOXYGEN_FOUND AND SPHINX_FOUND)
       src/pyexamples.rst
       src/receiver.rst
       src/result.rst
+      src/type_traits.rst
       
     )
 

@@ -4,7 +4,7 @@
 namespace sls {
 
 /**
- * Type trait to check if template parameter is a std::chrono::duration
+ * Type trait to check if atemplate parameter is a std::chrono::duration
  */
 
 template <typename T, typename _ = void>

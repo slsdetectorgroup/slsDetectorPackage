@@ -35,6 +35,11 @@ Welcome to slsDetectorPackage's documentation!
 
     commandline  
 
+.. toctree::
+    :caption: Developer
+
+    container_utils
+    type_traits
 
 .. Indices and tables
 .. ==================

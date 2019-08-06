@@ -28,24 +28,21 @@ make_unique(std::size_t n) {
     return std::unique_ptr<T>(new RT[n]);
 }
 
-template <typename T> bool allEqual(const std::vector<T> &container) {
-    if (container.empty())
-        return false;
-    const auto &first = container[0];
-    return std::all_of(container.cbegin(), container.cend(),
-                       [first](const T &element) { return element == first; });
+/** Compare elements in a Container to see if they are all equal */
+template <typename Container> bool allEqual(const Container &c) {
+    if (!c.empty() &&
+        std::all_of(begin(c), end(c),
+                    [c](const typename Container::value_type &element) {
+                        return element == c.front();
+                    }))
+        return true;
+    return false;
 }
 
-// template <typename T> 
-// typename std::enable_if<is_container<T>::value, bool>::type
-// allEqual(const T &container) {
-//     if (container.empty())
-//         return false;
-//     const auto &first = container[0];
-//     return std::all_of(container.cbegin(), container.cend(),
-//                        [first](const T &element) { return element == first; });
-// }
-
+/** 
+ * Compare elements but with specified tolerance, useful
+ * for floating point values.
+ */
 template <typename T>
 typename std::enable_if<std::is_arithmetic<T>::value, bool>::type
 allEqualWithTol(const std::vector<T> &container, const T tol) {
@@ -123,15 +120,31 @@ minusOneIfDifferent(const std::vector<std::vector<T>> &container) {
 
 template <typename T, size_t size>
 std::array<T, size>
-minusOneIfDifferent(const std::vector<std::array<T,size>> &container) {
+minusOneIfDifferent(const std::vector<std::array<T, size>> &container) {
     if (allEqual(container))
         return container.front();
-    
-    std::array<T,size> arr;
+
+    std::array<T, size> arr;
     arr.fill(static_cast<T>(-1));
     return arr;
 }
 
+/** 
+ * Return the first value if all values are equal
+ * otherwise return default_value. If no default
+ * value is supplied it will be default constructed
+ */
+template <typename Container>
+typename Container::value_type
+Squash(const Container &c, typename Container::value_type default_value = {}) {
+    if (!c.empty() &&
+        std::all_of(begin(c), end(c),
+                    [c](const typename Container::value_type &element) {
+                        return element == c.front();
+                    }))
+        return c.front();
+    return default_value;
+}
 
 
 } // namespace sls

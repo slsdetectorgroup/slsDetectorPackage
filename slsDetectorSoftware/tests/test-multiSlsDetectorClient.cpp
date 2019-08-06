@@ -382,23 +382,6 @@ TEST_CASE("rx_lastclient", "[.cmd]") {
     REQUIRE(oss.str() == "rx_lastclient " + test::my_ip + "\n");
 }
 
-TEST_CASE("rx_online", "[.cmd]") {
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("rx_online 0", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "rx_online 0\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("rx_online", GET, nullptr, oss);
-        REQUIRE(oss.str() == "rx_online 0\n");
-    }
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("rx_online 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "rx_online 1\n");
-    }
-}
 
 TEST_CASE("rx_checkonline", "[.cmd]") {
 

@@ -252,8 +252,10 @@ int 		setDetectorPosition(int pos[]);
 #ifdef EIGERD
 int			setQuad(int value);
 int			getQuad();
-int		setInterruptSubframe(int value);
+int			setInterruptSubframe(int value);
 int			getInterruptSubframe();
+int 		setReadNLines(int value);
+int			getReadNLines();
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD)
 int 		enableTenGigabitEthernet(int val);

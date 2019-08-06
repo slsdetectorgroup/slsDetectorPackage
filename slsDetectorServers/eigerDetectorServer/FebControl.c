@@ -2092,6 +2092,26 @@ int Feb_Control_SetQuad(int val) {
 	return 1;
 }
 
+int Feb_Control_SetReadNLines(int value) {
+	FILE_LOG(logINFO, ("Setting Read N Lines to %d\n", value));
+	if(!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(), DAQ_REG_PARTIAL_READOUT, value, 0, 0)) {
+		FILE_LOG(logERROR, ("Could not write %d to read n lines reg\n", value));
+		return 0;
+	}
+
+	return 1;
+}
+
+int Feb_Control_GetReadNLines() {
+	uint32_t regVal = 0;
+	if(!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(), DAQ_REG_PARTIAL_READOUT, &regVal)) {
+		FILE_LOG(logERROR, ("Could not read back read n lines reg\n"));
+		return -1;
+	}
+	FILE_LOG(logDEBUG1, ("Retval read n lines: %d\n", regVal));
+	return regVal;
+}
+
 
 int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 	uint32_t actualOffset = offset;

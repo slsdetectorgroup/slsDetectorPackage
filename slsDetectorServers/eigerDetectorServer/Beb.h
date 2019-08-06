@@ -80,6 +80,8 @@ int Beb_SetDetectorPosition(int pos[]);
 int Beb_SetStartingFrameNumber(uint64_t value);
 int Beb_GetStartingFrameNumber(uint64_t* retval, int tengigaEnable);
 
+void Beb_SetReadNLines(int value);
+
 uint16_t Beb_swap_uint16( uint16_t val);
 int Beb_open(u_int32_t** csp0base, u_int32_t offset);
 u_int32_t Beb_Read32 (u_int32_t* baseaddr, u_int32_t offset);

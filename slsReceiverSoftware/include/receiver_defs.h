@@ -36,7 +36,7 @@
 
 //parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS				100000000//100ms
-
+#define MAX_EIGER_ROWS_PER_READOUT		(256)
 
 //to differentiate between gotthard and short gotthard
 #define GOTTHARD_PACKET_SIZE			1286

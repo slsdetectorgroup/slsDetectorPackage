@@ -201,7 +201,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_GET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::get_dbit_list;
 	flist[F_RECEIVER_DBIT_OFFSET]			= 	&slsReceiverTCPIPInterface::set_dbit_offset;
     flist[F_SET_RECEIVER_QUAD]			    = 	&slsReceiverTCPIPInterface::set_quad_type;
-
+    flist[F_SET_RECEIVER_READ_N_LINES]      =   &slsReceiverTCPIPInterface::set_read_n_lines;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1322,5 +1322,18 @@ int slsReceiverTCPIPInterface::set_quad_type(Interface &socket) {
     int retval = impl()->getQuad() ? 1 : 0;
     validate(quadEnable, retval, "set quad", DEC);
     FILE_LOG(logDEBUG1) << "quad retval:" << retval;
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_read_n_lines(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    if (arg >= 0) {
+        VerifyIdle(socket);
+        FILE_LOG(logDEBUG1) << "Setting Read N Lines:" << arg;
+        impl()->setReadNLines(arg);
+    }
+    int retval = impl()->getReadNLines();
+    validate(arg, retval, "set read n lines", DEC);
+    FILE_LOG(logDEBUG1) << "read n lines retval:" << retval;
     return socket.Send(OK);
 }

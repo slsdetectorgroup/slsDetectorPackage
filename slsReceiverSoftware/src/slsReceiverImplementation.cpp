@@ -70,6 +70,7 @@ void slsReceiverImplementation::InitializeMembers() {
     flippedDataX = 0;
     gapPixelsEnable = false;
     quadEnable = false;
+    numLinesReadout = MAX_EIGER_ROWS_PER_READOUT;
     readoutFlags = GET_READOUT_FLAGS;
 
     //*** receiver parameters ***
@@ -166,6 +167,11 @@ bool slsReceiverImplementation::getGapPixelsEnable() const {
 bool slsReceiverImplementation::getQuad() const {
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 	return quadEnable;
+}
+
+int slsReceiverImplementation::getReadNLines() const {
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	return numLinesReadout;
 }
 
 slsDetectorDefs::readOutFlags
@@ -541,6 +547,11 @@ int slsReceiverImplementation::setQuad(const bool b) {
 	}
 	FILE_LOG(logINFO)  << "Quad Enable: " << quadEnable;
     return OK;
+}
+
+void slsReceiverImplementation::setReadNLines(const int value) {
+    numLinesReadout = value;
+	FILE_LOG(logINFO)  << "Number of Lines to readout: " << numLinesReadout;
 }
 
 int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
@@ -1405,10 +1416,17 @@ void slsReceiverImplementation::stopReceiver() {
         uint64_t tot = 0;
         for (int i = 0; i < numThreads; i++) {
             tot += dataProcessor[i]->GetNumFramesCaught();
-
             int64_t missingpackets =
                 numberOfFrames * generalData->packetsPerFrame -
                 listener[i]->GetPacketsCaught();
+
+            // partial readout
+            if (numLinesReadout != MAX_EIGER_ROWS_PER_READOUT) {
+                int maxnp = generalData->packetsPerFrame;
+                int np = ((numLinesReadout * maxnp) / MAX_EIGER_ROWS_PER_READOUT);
+                missingpackets = numberOfFrames * np - listener[i]->GetPacketsCaught();
+            }
+
             TLogLevel lev =
                 (((int64_t)missingpackets) > 0) ? logINFORED : logINFOGREEN;
             FILE_LOG(lev) <<

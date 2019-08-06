@@ -50,6 +50,9 @@
        <height>25</height>
       </size>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Up arrow key picks up the previous command.&lt;/p&gt;&lt;p&gt;Down arrow key clears the current command.&lt;/p&gt;&lt;p&gt;Return or Enter key executes the current command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
     </widget>
    </item>
    <item row="0" column="3">

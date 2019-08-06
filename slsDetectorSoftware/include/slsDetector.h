@@ -452,6 +452,18 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
 	void setQuad(const bool enable);
 
+	/**
+     * Set number of rows to read out (Only for Eiger)
+     * @param value number of lines
+     */
+    void setReadNLines(const int value);
+
+    /**
+     * Get number of rows to read out (Only for Eiger)
+     * @returns  number of lines
+     */
+    int getReadNLines();
+
     /**
 	 * Get Detector offset from shared memory in dimension d
 	 * @param d dimension d

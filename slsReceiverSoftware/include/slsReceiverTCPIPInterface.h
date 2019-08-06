@@ -297,6 +297,9 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** quad type */
     int set_quad_type(sls::ServerInterface2 &socket);
 
+    /** read n lines */
+    int set_read_n_lines(sls::ServerInterface2 &socket);
+
     /** detector type */
     detectorType myDetectorType;
 

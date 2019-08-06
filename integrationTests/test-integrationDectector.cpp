@@ -33,9 +33,6 @@ TEST_CASE("Single detector no receiver", "[.integration][.single]") {
     d.setHostname(test::hostname);
     CHECK(d.getHostname() == test::hostname);
 
-    d.setOnline(true);
-    CHECK(d.getOnlineFlag() == true);
-
     CHECK(d.setDetectorType() == test::type);
 
     d.freeSharedMemory();
@@ -56,7 +53,6 @@ TEST_CASE("Set control port then create a new object with this control port",
     {
         slsDetector d(test::type);
         d.setHostname(test::hostname);
-        d.setOnline(true);
         CHECK(d.getControlPort() == old_cport);
         d.setControlPort(new_cport);
         CHECK(d.getStopPort() == old_sport);
@@ -71,8 +67,6 @@ TEST_CASE("Set control port then create a new object with this control port",
         CHECK(d.getControlPort() == new_cport);
         CHECK(d.getStopPort() == new_sport);
 
-        d.setOnline(true);
-
         // Reset standard ports
         d.setControlPort(old_cport);
         d.setStopPort(old_sport);
@@ -81,7 +75,6 @@ TEST_CASE("Set control port then create a new object with this control port",
 
     slsDetector d(test::type);
     d.setHostname(test::hostname);
-    d.setOnline(true);
     CHECK(d.getStopPort() == DEFAULT_PORTNO + 1);
     d.freeSharedMemory();
 }
@@ -104,11 +97,8 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
     d.setHostname(c.hostname);
     CHECK(d.getHostname() == c.hostname);
 
-    d.setOnline(true);
-    CHECK(d.getOnlineFlag() == true);
-
-    CHECK(d.getReceiverOnlineFlag() == false);
-    CHECK(d.checkDetectorVersionCompatibility() == slsDetectorDefs::OK);
+    CHECK(d.getUseReceiverFlag() == false);
+    CHECK_NOTHROW(d.checkDetectorVersionCompatibility());
 
     // Setting and reading exposure time
     auto t = 1000000000;
@@ -145,7 +135,6 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
 TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
     slsDetector d(test::type);
     d.setHostname(test::hostname);
-    d.setOnline(true);
 
     // Check that detector server is unlocked then lock
     CHECK(d.lockServer() == 0);
@@ -168,7 +157,6 @@ TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
 TEST_CASE("Set settings", "[.integration][.single]"){
     slsDetector d(test::type);
     d.setHostname(test::hostname);
-    d.setOnline(true);
     CHECK(d.setSettings(defs::STANDARD) == defs::STANDARD);
 }
 
@@ -199,7 +187,6 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
 
     slsDetector d(test::type);
     d.setHostname(test::hostname);
-    d.setOnline(true);
 
     // Number of frames
     auto frames = 5;
@@ -253,7 +240,6 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
 //     auto type = slsDetector::getTypeFromDetector(c.hostname);
 //     slsDetector d(type);
 //     d.setHostname(c.hostname);
-//     d.setOnline(true);
 
 //     auto period = 1000000000;
 //     auto exptime = 100000000;
@@ -282,10 +268,9 @@ TEST_CASE(
     // ensure eiger detector type, hostname and online
     REQUIRE(m.getDetectorTypeAsEnum() == c.type_enum);
     REQUIRE(m.getHostname() == c.hostname);
-    REQUIRE(m.setOnline(true) == slsDetectorDefs::ONLINE_FLAG);
 
     // starting state with rate correction off
-    CHECK(m.setRateCorrection(0) == 0);
+    m.setRateCorrection(0);
 
     // dr 16: clk divider, no change for ratecorr
     CHECK(m.setDynamicRange(16) == 16);
@@ -333,7 +318,6 @@ TEST_CASE("Chiptestboard Loading Patterns", "[.ctbintegration]") {
     // ensure ctb detector type, hostname and online
     REQUIRE(m.getDetectorTypeAsEnum() == c.type_enum);
     REQUIRE(m.getHostname() == c.hostname);
-    REQUIRE(m.setOnline(true) == slsDetectorDefs::ONLINE_FLAG);
 
     uint64_t word = 0;
     int addr = 0;
@@ -419,7 +403,6 @@ TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert", "[.ctbintegrat
     // ensure ctb detector type, hostname and online
     REQUIRE(m.getDetectorTypeAsEnum() == c.type_enum);
     REQUIRE(m.getHostname() == c.hostname);
-    REQUIRE(m.setOnline(true) == slsDetectorDefs::ONLINE_FLAG);
 
     // dbit offset
     m.setReceiverDbitOffset(0);
@@ -490,7 +473,6 @@ TEST_CASE("Eiger or Jungfrau startingfnum", "[.eigerintegration][.jungfrauintegr
     // ensure ctb detector type, hostname and online
     REQUIRE(((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER) || (m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::JUNGFRAU)));
     REQUIRE(m.getHostname() == c.hostname);
-    REQUIRE(m.setOnline(true) == slsDetectorDefs::ONLINE_FLAG);
 
      CHECK(m.setTimer(slsDetectorDefs::FRAME_NUMBER, 1) == 1);
 
@@ -518,4 +500,30 @@ TEST_CASE("Eiger or Jungfrau startingfnum", "[.eigerintegration][.jungfrauintegr
     CHECK(m.acquire() == slsDetectorDefs::OK);
     CHECK(m.getReceiverCurrentFrameIndex() == val);
     CHECK(m.getStartingFrameNumber() == (val + 1));
+}
+
+TEST_CASE("Eiger readnlines", "[.eigerintegration][readnlines]") {
+    SingleDetectorConfig c;
+
+    // pick up multi detector from shm id 0
+    multiSlsDetector m(0);
+
+    // ensure detector type, hostname
+    REQUIRE((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER));
+    REQUIRE(m.getHostname() == c.hostname);
+
+    m.setDynamicRange(16);
+    m.enableTenGigabitEthernet(0);
+    m.setReadNLines(256);
+    CHECK(m.getReadNLines() == 256);
+    m.setReadNLines(1);
+    CHECK(m.getReadNLines() == 1);
+        
+    m.setDynamicRange(8);
+    m.setReadNLines(256);
+    CHECK(m.getReadNLines() == 256);
+    CHECK_THROWS_AS(m.setReadNLines(1), sls::RuntimeError);
+    CHECK(m.getReadNLines() == 256);
+    CHECK_THROWS_AS(m.setReadNLines(0), sls::RuntimeError);
+    m.setReadNLines(256);
 }

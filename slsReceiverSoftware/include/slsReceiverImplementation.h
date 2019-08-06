@@ -81,6 +81,12 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     bool getQuad() const;
 
     /**
+     * Get number of lines readout (eiger)
+     * @returns number of lines readout
+     */
+    int getReadNLines() const;
+
+    /**
      * Get readout flags (Eiger, chiptestboard, moench)
      * @return readout flags
      */
@@ -402,6 +408,12 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * @return OK or FAIL
      */
     int setQuad(const bool b);
+
+    /**
+     * Set number of lines readout (eiger)
+     * @param value number of lines readout
+     */
+    void setReadNLines(const int value);
 
     /**
      * Set readout flags (eiger, chiptestboard, moench)
@@ -887,6 +899,8 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     bool gapPixelsEnable;
     /** quad type enable */
     bool quadEnable;   
+    /** num lines readout */
+    int numLinesReadout;
     /** readout flags*/
     readOutFlags readoutFlags;
 

@@ -39,6 +39,7 @@ int Beb_top =0;
 uint64_t Beb_deactivatedStartFrameNumber = 0;
 int Beb_quadEnable = 0;
 int Beb_positions[2] = {0, 0};
+int Beb_readNLines = MAX_ROWS_PER_READOUT;
 
 
 void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num) {
@@ -988,58 +989,31 @@ int Beb_StopAcquisition()
 }
 
 int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait) {
-
 	if (!Beb_activated)
 		return 1;
 
 	if (dst_number>64) return 0;
 
-	unsigned int     header_size  = 4; //4*64 bits
-	unsigned int     packet_size  = ten_gig ? 0x200 : 0x80; // 4k or  1k packets
-	unsigned int         npackets = ten_gig ?  Beb_bit_mode*4 : Beb_bit_mode*16;
-	int          in_two_requests = (!ten_gig&&Beb_bit_mode==32);
-
-	// volatile u_int32_t* ptrl;
-	// volatile u_int32_t* ptrr;
-	u_int32_t send_header_command;
-	u_int32_t send_frame_command;
-
-	if (in_two_requests) npackets/=2;
+	unsigned int maxnl = MAX_ROWS_PER_READOUT;
+	unsigned int maxnp = (ten_gig ? 4 : 16) * Beb_bit_mode;
+	unsigned int nl = Beb_readNLines;
+	unsigned int npackets = (nl * maxnp) / maxnl;
+	if ((nl * maxnp) % maxnl) {
+		FILE_LOG(logERROR, ("Read N Lines is incorrect. Switching to Full Image Readout\n"));
+		npackets = maxnp;
+	}
+	int in_two_requests = (npackets > MAX_PACKETS_PER_REQUEST) ? 1 : 0;
+	if (in_two_requests) {
+		npackets /= 2;
+	}
+	unsigned int header_size  = 4; //4*64 bits
+	unsigned int packet_size  = ten_gig ? 0x200 : 0x80; // 4k or  1k packets
 
 	FILE_LOG(logDEBUG1, ("----Beb_RequestNImages Start----\n"));
 	FILE_LOG(logDEBUG1, ("beb_number:%X, ten_gig:%X,dst_number:%X, npackets:%X, "
 			"Beb_bit_mode:%X, header_size:%X, nimages:%d, test_just_send_out_packets_no_wait:%X\n",
 			beb_number, ten_gig, dst_number, npackets, Beb_bit_mode, header_size,
 			nimages, test_just_send_out_packets_no_wait));
-
-	// CMD_GEN core registers
-	//
-	// base for left feb fpga  + 0x000
-	// base for right feb fpga + 0x100 Bytes
-	//
-	// OFFSETs given in Bytes
-	// base+00 0xC0DE0001 (static r/o)
-	// base+04 0x636D6467 (static r/o, ASCII for "CMDG")
-	//
-	// base+08 1st 32bits of 1st command
-	// base+0c 2nd 32bits of 1st command
-	//
-	// base+10 1st 32bits of 2nd command
-	// base+14 2nd 32bits of 2nd command
-	//
-	// base+18 command counter (sends n commands)
-	//         <32 Bit mode : 2 commands for 1 frame neccessary (header + frame) (10 frames = 20 commands)
-	//          32 Bit mode : 3 commands for 1 frame neccessary (header + 1st halfframe + 2nd halfframe) (10 frames = 30 commands)
-	//         if > 0 core starts operation
-	//
-	// base+1c command mode (for 32 bit mode)
-	//         0            for 2 command mode (send 1st command and 2nd command) (header + frame)
-	//         1 on bit 31  for 3 command mode (send 1st command, 2nd command, and 2nd command) (header + 1st halfframe + 2nd halfframe)
-	//
-	//
-	// Warning: Hard coded base address 0xc5000000 (TBD)
-	//
-
 
 	u_int32_t right_port_value = 0x2000;
 	u_int32_t* csp0base=0;
@@ -1056,8 +1030,8 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 				FILE_LOG(logDEBUG1, ("%X\n",Beb_Read32(csp0base, (LEFT_OFFSET + i*4))));
 		}
 		// Generating commands
-		send_header_command = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | header_size << 14 |            0;
-		send_frame_command  = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | packet_size << 14 | (npackets-1);
+		u_int32_t send_header_command = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | header_size << 14 |            0;
+		u_int32_t send_frame_command  = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | packet_size << 14 | (npackets-1);
 		{
 			int i;
 			for (i=0; i < 10; i++)
@@ -1375,6 +1349,10 @@ int Beb_GetStartingFrameNumber(uint64_t* retval, int tengigaEnable) {
 		*retval = left10g;
 	}
 	return OK;
+}
+
+void Beb_SetReadNLines(int value) {
+	Beb_readNLines = value;
 }
 
 

@@ -607,6 +607,23 @@ void slsDetector::setQuad(const bool enable) {
     }
 }
 
+void slsDetector::setReadNLines(const int value) {
+    FILE_LOG(logDEBUG1) << "Setting read n lines to " << value;
+    sendToDetector(F_SET_READ_N_LINES, value, nullptr);
+    FILE_LOG(logDEBUG1) << "Setting read n lines to " << value << " in Receiver";
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
+}
+}
+
+int slsDetector::getReadNLines() {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting read n lines";
+    sendToDetector(F_GET_READ_N_LINES, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Read n lines: " << retval;
+    return retval;
+}
+
 int slsDetector::getDetectorOffset(dimension d) const {
     return shm()->offset[d];
 }

@@ -399,8 +399,9 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     /**
      * Set Quad type Enable (eiger and hardware specific)
      * @param true if quad enabled, else false
+     * @return OK or FAIL
      */
-    void setQuad(const bool b);
+    int setQuad(const bool b);
 
     /**
      * Set readout flags (eiger, chiptestboard, moench)

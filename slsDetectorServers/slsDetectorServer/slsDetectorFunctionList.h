@@ -74,8 +74,8 @@ int			setDefaultDacs();
 
 // advanced read/write reg
 #ifdef EIGERD
-uint32_t	writeRegister(uint32_t offset, uint32_t data);
-uint32_t  	readRegister(uint32_t offset);
+int			writeRegister(uint32_t offset, uint32_t data);
+int  		readRegister(uint32_t offset, uint32_t* retval);
 #elif GOTTHARDD
 uint32_t    writeRegister16And32(uint32_t offset, uint32_t data); //FIXME its not there in ctb or moench?
 uint32_t    readRegister16And32(uint32_t offset);
@@ -250,8 +250,10 @@ int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32
 int 		setDetectorPosition(int pos[]);
 #endif
 #ifdef EIGERD
-void		setQuad(int value);
+int			setQuad(int value);
 int			getQuad();
+int		setInterruptSubframe(int value);
+int			getInterruptSubframe();
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD)
 int 		enableTenGigabitEthernet(int val);

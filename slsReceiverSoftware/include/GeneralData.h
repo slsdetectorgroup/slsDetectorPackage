@@ -178,8 +178,10 @@ public:
 	/**
 	 * Enable Gap Pixels changes member variables
 	 * @param enable true if gap pixels enable, else false
+	 * @param dr dynamic range
+	 * @param q quad enable 
 	 */
-	virtual void SetGapPixelsEnable(bool b, int dr) {
+	virtual void SetGapPixelsEnable(bool b, int dr, bool q) {
 		FILE_LOG(logERROR) << "SetGapPixelsEnable is a generic function that should be overloaded by a derived class";
 	};
 
@@ -463,13 +465,17 @@ class EigerData : public GeneralData {
 	 * Enable Gap Pixels changes member variables
 	 * @param enable true if gap pixels enable, else false
 	 * @param dr dynamic range
+	 * @param q quad enable 
 	 */
-	void SetGapPixelsEnable(bool b, int dr) {
+	void SetGapPixelsEnable(bool b, int dr, bool q) {
 		if (dr == 4)
 			b = 0;
 		switch((int)b) {
 		case 1:
 			nPixelsX	= (256 * 2) + 3;
+			if (q) {
+				nPixelsX	= (256 * 2) + 2;
+			}
 			nPixelsY 	= 256 + 1;
 			imageSize	= nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
 												((dr > 8)  ? 2 : // 16 bit

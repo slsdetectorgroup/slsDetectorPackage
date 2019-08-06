@@ -107,3 +107,5 @@ int set_starting_frame_number(int);
 int get_starting_frame_number(int);
 int set_quad(int);
 int get_quad(int);
+int set_interrupt_subframe(int);
+int get_interrupt_subframe(int);

@@ -1314,7 +1314,10 @@ int slsReceiverTCPIPInterface::set_quad_type(Interface &socket) {
     if (quadEnable >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting quad:" << quadEnable;
-        impl()->setQuad(quadEnable == 0 ? false : true);
+        ret = impl()->setQuad(quadEnable == 0 ? false : true);
+        if (ret == FAIL) {
+            throw RuntimeError("Could not set Quad due to fifo structure");
+        } 
     }
     int retval = impl()->getQuad() ? 1 : 0;
     validate(quadEnable, retval, "set quad", DEC);

@@ -1526,6 +1526,21 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
     return shm()->roFlags;
 }
 
+void slsDetector::setInterruptSubframe(const bool enable) {
+    int arg = static_cast<int>(enable);
+    FILE_LOG(logDEBUG1) << "Setting Interrupt subframe to " << arg;
+    sendToDetector(F_SET_INTERRUPT_SUBFRAME, arg, nullptr);
+}
+
+bool slsDetector::getInterruptSubframe() {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting Interrupt subframe";
+    sendToDetector(F_GET_INTERRUPT_SUBFRAME, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Interrupt subframe: " << retval;
+    return static_cast<bool>(retval);
+}
+
+
 uint32_t slsDetector::writeRegister(uint32_t addr, uint32_t val) {
     uint32_t args[]{addr, val};
     uint32_t retval = -1;

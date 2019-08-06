@@ -758,6 +758,18 @@ class slsDetector : public virtual slsDetectorDefs{
 	 */
     int setReadOutFlags(readOutFlags flag = GET_READOUT_FLAGS);
 
+	/**
+     * Set Interrupt last sub frame (Only for Eiger)
+     * @param enable true if interrupt last subframe set, else false
+     */
+    void setInterruptSubframe(const bool enable);
+
+    /**
+     * Get Interrupt last sub frame (Only for Eiger)
+     * @returns true if interrupt last subframe set, else false
+     */
+    bool getInterruptSubframe();
+
     /**
 	 * Write in a register. For Advanced users
 	 * @param addr address of register

@@ -109,3 +109,5 @@ int set_quad(int);
 int get_quad(int);
 int set_interrupt_subframe(int);
 int get_interrupt_subframe(int);
+int set_read_n_lines(int);
+int get_read_n_lines(int);

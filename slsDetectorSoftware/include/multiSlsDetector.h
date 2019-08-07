@@ -375,6 +375,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 	void setQuad(const bool enable, int detPos = -1);
 
     /**
+     * Set number of rows to read out (Only for Eiger)
+     * @param value number of lines
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setReadNLines(const int value, int detPos = -1);
+
+    /**
+     * Get number of rows to read out (Only for Eiger)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns  number of lines
+     */
+    int getReadNLines(int detPos = -1);
+
+    /**
      * Get Detector offset from shared memory in dimension d
      * @param d dimension d
      * @param detPos -1 for all detectors in  list or specific detector position

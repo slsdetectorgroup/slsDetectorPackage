@@ -75,6 +75,9 @@ enum										{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
 #define DEFAULT_TEST_MODE					(0)
 #define DEFAULT_HIGH_VOLTAGE				(0)
 
+#define MAX_ROWS_PER_READOUT				(256)
+#define MAX_PACKETS_PER_REQUEST				(256)
+
 #define UDP_HEADER_MAX_FRAME_VALUE          (0xFFFFFFFFFFFF)
 
 #define DAC_MIN_MV                          (0)

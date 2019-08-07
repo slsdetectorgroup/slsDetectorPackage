@@ -93,6 +93,8 @@ enum detFuncs{
 	F_GET_QUAD,
 	F_SET_INTERRUPT_SUBFRAME,
 	F_GET_INTERRUPT_SUBFRAME,
+	F_SET_READ_N_LINES,
+	F_GET_READ_N_LINES,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -151,6 +153,7 @@ enum detFuncs{
 	F_GET_RECEIVER_DBIT_LIST, /** < get receiver digital bit list */
 	F_RECEIVER_DBIT_OFFSET, /** < set/get reciever digital bit offset */
 	F_SET_RECEIVER_QUAD,
+	F_SET_RECEIVER_READ_N_LINES,
 	NUM_REC_FUNCTIONS
 };
 
@@ -240,6 +243,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_QUAD:						return "F_GET_QUAD";
 	case F_SET_INTERRUPT_SUBFRAME:			return "F_SET_INTERRUPT_SUBFRAME";
 	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
+	case F_SET_READ_N_LINES:				return "F_SET_READ_N_LINES";
+	case F_GET_READ_N_LINES:				return "F_GET_READ_N_LINES";
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 
@@ -298,6 +303,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_RECEIVER_DBIT_LIST:			return "F_GET_RECEIVER_DBIT_LIST";		
 	case F_RECEIVER_DBIT_OFFSET:			return "F_RECEIVER_DBIT_OFFSET";
 	case F_SET_RECEIVER_QUAD:				return "F_SET_RECEIVER_QUAD";
+	case F_SET_RECEIVER_READ_N_LINES:		return "F_SET_RECEIVER_READ_N_LINES";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

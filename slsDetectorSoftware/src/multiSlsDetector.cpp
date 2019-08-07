@@ -553,6 +553,27 @@ void multiSlsDetector::setQuad(const bool enable, int detPos) {
     detectors[0]->setQuad(enable);
 }
 
+void multiSlsDetector::setReadNLines(const int value, int detPos) {
+    // single
+    if (detPos >= 0) {
+        detectors[detPos]->setReadNLines(value);
+    }
+
+    // multi
+    parallelCall(&slsDetector::setReadNLines, value);
+}
+
+int multiSlsDetector::getReadNLines(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return detectors[detPos]->getReadNLines();
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getReadNLines);
+    return sls::minusOneIfDifferent(r);
+}
+
 int multiSlsDetector::getDetectorOffset(dimension d, int detPos) {
     return detectors[detPos]->getDetectorOffset(d);
 }

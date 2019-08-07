@@ -391,6 +391,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	++i;
 
     /*! \page config
+   - <b>readnlines [i]</b> sets/gets the number of rows to read out per half module. Options: 1 - 256 (Not all values as it depends on dynamic range and 10GbE enabled). Used for EIGER only. \c Returns \c (int) 
+	 */
+    descrToFuncMap[i].m_pFuncName = "readnlines";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
+    ++i;
+
+    /*! \page config
    - <b>extsig [flag]</b> sets/gets the mode of the external signal. Options: \c off, \c gate_in_active_high, \c gate_in_active_low, \c trigger_in_rising_edge, \c trigger_in_falling_edge,
    \c ro_trigger_in_rising_edge, \c ro_trigger_in_falling_edge, \c gate_out_active_high, \c gate_out_active_low, \c trigger_out_rising_edge, \c trigger_out_falling_edge, \c ro_trigger_out_rising_edge,
    \c ro_trigger_out_falling_edge. \n Used in GOTTHARDonly. \c Returns \c (string)
@@ -4752,7 +4759,17 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
 			myDet->setInterruptSubframe(ival > 0 ? true : false);
 		}
 		return std::to_string(myDet->getInterruptSubframe());
-	} else if (cmd == "extsig") {
+        
+	}  else if (cmd == "readnlines") {
+        if (action == PUT_ACTION) {
+                int ival = -1;
+                if (!sscanf(args[1],"%d",&ival))
+                    return std::string("could not scan readnlines parameter ") + std::string(args[1]);
+                myDet->setReadNLines(ival);
+            }
+            return std::to_string(myDet->getReadNLines());
+
+    } else if (cmd == "extsig") {
         externalSignalFlag flag = GET_EXTERNAL_SIGNAL_FLAG;
 
         if (action == PUT_ACTION) {
@@ -4874,6 +4891,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "extsig mode \t sets the mode of the external signal. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
         os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overlow, nooverflow, unknown." << std::endl;
         os << "interruptsubframe flag \t sets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER  in 32 bit mode only." << std::endl;
+        os << "readnlines f \t sets the number of rows to read out per half module. Options: 1 - 256 (Not all values as it depends on dynamic range and 10GbE enabled). Used for EIGER only. " << std::endl;
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
         os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
         os << "copydetectorserver s p \t copies the detector server s via tftp from pc with hostname p and changes respawn server. Not for Eiger. " << std::endl;
@@ -4887,9 +4905,9 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     if (action == GET_ACTION || action == HELP_ACTION) {
 
         os << "extsig \t gets the mode of the external signal. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-
         os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overflow, nooverflow, unknown" << std::endl;
         os << "interruptsubframe \t gets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER in 32 bit mode only." << std::endl;
+        os << "readnlines \t gets the number of rows to read out per half module. Used for EIGER only. " << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;
         os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
         os << "auto_comp_disable \t Currently not implemented. gets if the automatic comparator diable mode is enabled/disabled" << std::endl;

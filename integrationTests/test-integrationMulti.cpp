@@ -11,7 +11,6 @@ TEST_CASE("Initialize a multi detector", "[.integration][.multi]") {
 
     multiSlsDetector d(0, true, true);
     d.setHostname(test::hostname.c_str());
-    REQUIRE(d.setOnline() == true); // get!
 
     CHECK(d.getHostname() == test::hostname);
     for (size_t i = 0; i != hostnames.size(); ++i) {

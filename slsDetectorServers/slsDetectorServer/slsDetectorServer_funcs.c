@@ -248,6 +248,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_QUAD:						return "F_GET_QUAD";
 	case F_SET_INTERRUPT_SUBFRAME:			return "F_SET_INTERRUPT_SUBFRAME";
 	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
+	case F_SET_READ_N_LINES:				return "F_SET_READ_N_LINES";
+	case F_GET_READ_N_LINES:				return "F_GET_READ_N_LINES";
 	default:								return "Unknown Function";
 	}
 }
@@ -336,6 +338,8 @@ void function_table() {
 	flist[F_GET_QUAD]							= &get_quad;
 	flist[F_SET_INTERRUPT_SUBFRAME]				= &set_interrupt_subframe;
 	flist[F_GET_INTERRUPT_SUBFRAME]				= &get_interrupt_subframe;
+	flist[F_SET_READ_N_LINES]					= &set_read_n_lines;
+	flist[F_GET_READ_N_LINES]					= &get_read_n_lines;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -4212,3 +4216,79 @@ int get_interrupt_subframe(int file_des) {
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
+
+
+
+int set_read_n_lines(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting read n lines: %u\n", arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (arg <= 0 || arg > MAX_ROWS_PER_READOUT) {
+			ret = FAIL;
+			sprintf(mess, "Could not set number of lines readout. Must be between 1 and %d\n", MAX_ROWS_PER_READOUT);
+			FILE_LOG(logERROR,(mess));
+		} else {
+			int dr = setDynamicRange(-1);
+			int isTenGiga = enableTenGigabitEthernet(-1);
+			unsigned int maxnl = MAX_ROWS_PER_READOUT;
+			unsigned int maxnp = (isTenGiga ? 4 : 16) * dr;
+			if ((arg * maxnp) % maxnl) {
+				ret = FAIL;
+				sprintf(mess,
+						"Could not set %d number of lines readout. For %d bit mode and 10 giga %s, (%d (num "
+						"lines) x %d (max num packets for this mode)) must be divisible by %d\n",
+						arg, dr, isTenGiga ? "enabled" : "disabled", arg, maxnp, maxnl);
+				FILE_LOG(logERROR, (mess));
+            } else {
+				if(setReadNLines(arg) == FAIL) {
+					ret = FAIL;
+					sprintf(mess, "Could not set read n lines.\n");
+					FILE_LOG(logERROR,(mess));
+				} else {
+					int retval = getReadNLines();
+					if (arg != retval) {
+						ret = FAIL;
+						sprintf(mess, "Could not set read n lines. Set %d, but read %d\n", retval, arg);
+						FILE_LOG(logERROR,(mess));
+					}		
+				}
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_read_n_lines(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting read n lines\n"));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getReadNLines();
+	if (retval == -1) {
+		ret = FAIL;
+		sprintf(mess, "Could not get read n lines. \n");
+		FILE_LOG(logERROR,(mess));	
+	} else {
+		FILE_LOG(logDEBUG1, ("Read N Lines retval: %u\n", retval));
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+} 
+

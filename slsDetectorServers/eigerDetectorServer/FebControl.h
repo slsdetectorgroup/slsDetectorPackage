@@ -154,7 +154,8 @@ int Feb_Control_SoftwareTrigger();
 int Feb_Control_SetInterruptSubframe(int val);
 int Feb_Control_GetInterruptSubframe();
 int Feb_Control_SetQuad(int val);
-
+int Feb_Control_SetReadNLines(int value);
+int Feb_Control_GetReadNLines();
 
 int Feb_Control_WriteRegister(uint32_t offset, uint32_t data);
 int Feb_Control_ReadRegister(uint32_t offset, uint32_t* retval);

@@ -446,6 +446,7 @@ void setupDetector() {
 	setIODelay(DEFAULT_IO_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
 	setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
+	setReadNLines(MAX_ROWS_PER_READOUT);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
 	setRateCorrection(DEFAULT_RATE_CORRECTION);
 	int enable[2] = {DEFAULT_EXT_GATING_ENABLE, DEFAULT_EXT_GATING_POLARITY};
@@ -1355,6 +1356,26 @@ int	getInterruptSubframe() {
 	return 0;
 #else
 	return Feb_Control_GetInterruptSubframe();
+#endif
+}
+
+int setReadNLines(int value) {
+	if(value < 0)
+		return FAIL;
+#ifndef VIRTUAL
+	if(!Feb_Control_SetReadNLines(value)) {
+		return FAIL;
+	}
+	Beb_SetReadNLines(value);
+	return OK;
+#endif
+}
+
+int	getReadNLines() {
+#ifdef VIRTUAL
+	return 0;
+#else
+	return Feb_Control_GetReadNLines();
 #endif
 }
 

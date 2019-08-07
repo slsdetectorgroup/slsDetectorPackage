@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QProcess>
+#include <QKeyEvent>
 
 #include <iostream>
 #include <string>
@@ -26,6 +27,7 @@ void qTabMessages::SetupWidgetWindow() {
     process = new QProcess;
     process->setWorkingDirectory(QDir::cleanPath(QDir::currentPath()));
     PrintNextLine();
+    lastCommand.clear();
 
     Initialization();
 }
@@ -36,8 +38,37 @@ void qTabMessages::Initialization() {
     connect(dispCommand, SIGNAL(returnPressed()), this, SLOT(ExecuteCommand()));
 }
 
+void qTabMessages::keyPressEvent(QKeyEvent* event) {
+	//cout<<"inside KeyPressEvent()\n";
+	if (event->key() == Qt::Key_Up) {
+        GetLastCommand();
+    }
+ 	else if (event->key() == Qt::Key_Down) {
+        ClearCommand();
+    }   
+     /* else if((event->key() == Qt::Key_Return) ||(event->key() == Qt::Key_Enter)) {
+        ExecuteCommand();
+    }*/ else {
+		event->ignore();
+    }
+}
+
+void qTabMessages::PrintNextLine() {
+    dispLog->append(QString("<font color = \"DarkGrey\">") + QDir::current().dirName() + QString("$ ") + QString("</font>"));
+}
+
+void qTabMessages::GetLastCommand() {
+   dispCommand->setText(lastCommand.join(" "));  
+}
+
+void qTabMessages::ClearCommand() {
+   dispCommand->setText("");  
+}
+
 void qTabMessages::ExecuteCommand() {
     QStringList param = dispCommand->text().split(" ");
+    lastCommand.clear();
+    lastCommand += param;
     dispCommand->clear();
     // appending command to log without newline
     dispLog->moveCursor (QTextCursor::End);
@@ -54,10 +85,6 @@ void qTabMessages::ExecuteCommand() {
     } else {
         AppendOutput();
     }
-}
-
-void qTabMessages::PrintNextLine() {
-    dispLog->append(QString("<font color = \"DarkGrey\">") + QDir::current().dirName() + QString("$ ") + QString("</font>"));
 }
 
 void qTabMessages::AppendOutput() {

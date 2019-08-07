@@ -38,29 +38,31 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     Result(Args &&... args) : vec(std::forward<Args>(args)...) {}
 
     using value_type = typename std::vector<T>::value_type;
-    using iterator = decltype(vec.begin());
-    using const_iterator = decltype(vec.cbegin());
-    using size_type = decltype(vec.size());
+    using iterator = typename std::vector<T>::iterator;
+    using const_iterator = typename std::vector<T>::const_iterator;
+    using size_type = typename std::vector<T>::size_type;
     using reference = typename std::vector<T>::reference;
     using const_reference = typename std::vector<T>::const_reference;
 
-    auto begin() -> decltype(vec.begin()) { return vec.begin(); }
-    auto end() -> decltype(vec.end()) { return vec.end(); }
-    auto begin() const -> decltype(vec.begin()) { return vec.begin(); }
-    auto end() const -> decltype(vec.end()) { return vec.end(); }
-    auto cbegin() const -> decltype(vec.cbegin()) { return vec.cbegin(); }
-    auto cend() const -> decltype(vec.cend()) { return vec.cend(); }
-    auto size() const -> decltype(vec.size()) { return vec.size(); }
-    auto empty() const -> decltype(vec.empty()) { return vec.empty(); }
-    auto front() const -> decltype(vec.front()) { return vec.front(); }
+    auto begin() noexcept -> decltype(vec.begin()) { return vec.begin(); }
+    auto begin() const noexcept -> decltype(vec.begin()) { return vec.begin(); }
+    auto cbegin() const noexcept -> decltype(vec.cbegin()) {
+        return vec.cbegin();
+    }
+    auto end() noexcept -> decltype(vec.end()) { return vec.end(); }
+    auto end() const noexcept -> decltype(vec.end()) { return vec.end(); }
+    auto cend() const noexcept -> decltype(vec.cend()) { return vec.cend(); }
+    auto size() const noexcept -> decltype(vec.size()) { return vec.size(); }
+    auto empty() const noexcept -> decltype(vec.empty()) { return vec.empty(); }
     auto front() -> decltype(vec.front()) { return vec.front(); }
+    auto front() const -> decltype(vec.front()) { return vec.front(); }
 
-    template<typename V>
-    auto push_back(V value) -> decltype(vec.push_back(value)){
-      vec.push_back(std::forward<V>(value));
+    template <typename V>
+    auto push_back(V value) -> decltype(vec.push_back(value)) {
+        vec.push_back(std::forward<V>(value));
     }
 
-    reference operator[](size_type pos) { return vec[pos]; }
+    auto operator[](size_type pos) -> decltype(vec[pos]) { return vec[pos]; }
     const_reference operator[](size_type pos) const { return vec[pos]; }
 
     /**
@@ -74,8 +76,6 @@ template <class T, class Allocator = std::allocator<T>> class Result {
      * return the supplied default value
      */
     T squash(T default_value) const { return Squash(vec, default_value); }
-
-    // bool equal() { return Equal(vec); }
 
     /** Test whether all elements of the result are equal */
     bool equal() const noexcept { return allEqual(vec); }

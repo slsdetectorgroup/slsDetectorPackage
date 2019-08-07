@@ -118,7 +118,7 @@ Result<bool> Detector::getFileOverWrite(Positions pos) const {
 
 // dhanya
 int Detector::getMultiId() const {
-    pimpl->getMultiId());
+    return pimpl->getMultiId();
 }
 
 void Detector::checkDetectorVersionCompatibility(Positions pos) const {
@@ -130,18 +130,20 @@ void Detector::checkReceiverVersionCompatibility(Positions pos) const {
 }
 
 Result<int64_t> Detector::getDetectorFirmwareVersion(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, DETECTOR_FIRMWARE_VERSION, pos);
+    return pimpl->Parallel(&slsDetector::getId, pos, defs::DETECTOR_FIRMWARE_VERSION);
 }
 
 Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, DETECTOR_SOFTWARE_VERSION, pos);
+    return pimpl->Parallel(&slsDetector::getId, pos, defs::DETECTOR_SOFTWARE_VERSION);
 }
 
 Result<int64_t> Detector::getDetectorSerialNumber(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, DETECTOR_SERIAL_NUMBER, pos);
+    return pimpl->Parallel(&slsDetector::getId, pos, defs::DETECTOR_SERIAL_NUMBER);
 }
 
-Result<int64_t> Detector::getClientSoftwareVersion() const { return APILIB; }
+Result<int64_t> Detector::getClientSoftwareVersion() const { 
+    return pimpl->getClientSoftwareVersion(); 
+}
 
 Result<int64_t> Detector::getReceiverSoftwareVersion(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverSoftwareVersion, pos);
@@ -151,16 +153,15 @@ std::string Detector::getUserDetails() const {
     return pimpl->getUserDetails();
 }
 
-void Detector::setHostname(const std::vector<std::string> &name,
-                           Positions pos) {                       
+void Detector::setHostname(const std::vector<std::string> &name) {                       
     pimpl->setHostname(name);
 }
 
-detectorType Detector::getDetectorTypeAsEnum() const {
+defs::detectorType Detector::getDetectorTypeAsEnum() const {
     return pimpl->getDetectorTypeAsEnum(); 
 }
 
-Result<detectorType> Detector::getDetectorTypeAsEnum(Positions pos) const {
+Result<defs::detectorType> Detector::getDetectorTypeAsEnum(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsEnum, pos); 
 }
 

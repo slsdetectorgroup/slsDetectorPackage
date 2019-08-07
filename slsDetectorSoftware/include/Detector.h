@@ -193,21 +193,21 @@ class Detector {
      * Get Detector type as an enum
      * @returns detector type
      */
-    detectorType Detector::getDetectorTypeAsEnum() const;
+    defs::detectorType getDetectorTypeAsEnum() const;
 
     /**
      * Get Detector type as an enum
      * @param pos detector position
      * @returns detector type
      */
-    Result<detectorType> getDetectorTypeAsEnum(Positions pos = {}) const;
+    Result<defs::detectorType> getDetectorTypeAsEnum(Positions pos = {}) const;
 
     /**
      * Returns detector type as a string
      * @param pos detector position
      * @returns detector type as string
      */
-    Result<std::string> getDetectorTypeAsString(Positions pos = {});
+    Result<std::string> getDetectorTypeAsString(Positions pos = {}) const;
 };
 
 } // namespace sls

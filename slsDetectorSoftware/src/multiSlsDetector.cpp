@@ -332,11 +332,6 @@ void multiSlsDetector::initializeDetectorStructure() {
 
 void multiSlsDetector::initializeMembers(bool verify) {
     // multiSlsDetector
-    if (multi_shm()->numberOfDetectors == 0) {
-        multiDetType = GENERIC;
-    } else {
-        multiDetType = getDetectorTypeAsEnum();
-    }
     zmqSocket.clear();
 
     // get objects from single det shared memory (open)
@@ -470,6 +465,7 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     multi_shm()->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
 
     detectors[pos]->setHostname(hostname);
+    multiDetType = getDetectorTypeAsEnum();
 }
 
 void multiSlsDetector::addSlsDetector(std::unique_ptr<slsDetector> det) {
@@ -867,12 +863,6 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
         }
     }
     input_file.close();
-
-    if (multi_shm()->numberOfDetectors == 0) {
-        multiDetType = GENERIC;
-    } else {
-        multiDetType = getDetectorTypeAsEnum();
-    }
 }
 
 int multiSlsDetector::writeConfigurationFile(const std::string &fname) {

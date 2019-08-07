@@ -30,7 +30,7 @@
 using namespace sls;
 
 multiSlsDetector::multiSlsDetector(int multi_id, bool verify, bool update)
-    : multiId(multi_id), multiDetType(GENERIC), multi_shm(multi_id, -1) {
+    : multiId(multi_id), multi_shm(multi_id, -1) {
     setupMultiDetector(verify, update);
 }
 
@@ -236,8 +236,15 @@ std::string multiSlsDetector::getUserDetails() {
         sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getHostname() : "Unknown") << "+";
     }
     sstream << "\nType: ";
-    for (auto &d : detectors) {
-        sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getDetectorTypeAsString() : "Unknown") << "+";
+    // get type from multi shm
+    if (multi_shm()->shmversion >= MULTI_SHMAPIVERSION) {
+        sstream << slsDetectorDefs::detectorTypeToString(getDetectorTypeAsEnum());
+    } 
+    // get type from slsdet shm
+    else {
+        for (auto &d : detectors) {
+            sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getDetectorTypeAsString() : "Unknown") << "+";
+        }
     }
 
     sstream << "\nPID: " << multi_shm()->lastPID
@@ -268,6 +275,7 @@ void multiSlsDetector::initSharedMemory(bool verify) {
 void multiSlsDetector::initializeDetectorStructure() {
     multi_shm()->shmversion = MULTI_SHMVERSION;
     multi_shm()->numberOfDetectors = 0;
+    multi_shm()->multiDetectorType = GENERIC;
     multi_shm()->numberOfDetector[X] = 0;
     multi_shm()->numberOfDetector[Y] = 0;
     multi_shm()->dataBytes = 0;
@@ -465,7 +473,7 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     multi_shm()->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
 
     detectors[pos]->setHostname(hostname);
-    multiDetType = getDetectorTypeAsEnum();
+    multi_shm()->multiDetectorType = getDetectorTypeAsEnum(-1);// -1 needed here
 }
 
 void multiSlsDetector::addSlsDetector(std::unique_ptr<slsDetector> det) {
@@ -476,10 +484,11 @@ void multiSlsDetector::addSlsDetector(std::unique_ptr<slsDetector> det) {
         detectors.back()->getDataBytesInclGapPixels();
     multi_shm()->numberOfChannels +=
         detectors.back()->getTotalNumberOfChannels();
+    multi_shm()->multiDetectorType = getDetectorTypeAsEnum(-1);// -1 needed here    
 }
 
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum() const {
-    return multiDetType;
+    return multi_shm()->multiDetectorType;
 }
 
 slsDetectorDefs::detectorType

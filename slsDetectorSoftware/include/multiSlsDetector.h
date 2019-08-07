@@ -15,7 +15,8 @@ class detectorData;
 #include <thread>
 #include <vector>
 
-#define MULTI_SHMVERSION 0x190726
+#define MULTI_SHMAPIVERSION 0x190807
+#define MULTI_SHMVERSION 0x190807
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
@@ -46,9 +47,12 @@ struct sharedMultiSlsDetector {
     /** number of sls detectors in shared memory */
     int numberOfDetectors;
 
+    /** multi detector type */
+    slsDetectorDefs::detectorType multiDetectorType;
+    
     /** END OF FIXED PATTERN
      * -----------------------------------------------*/
-
+    
     /** Number of detectors operated at once */
     int numberOfDetector[2];
 
@@ -2346,9 +2350,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /** Multi detector Id */
     const int multiId{0};
-
-    /** multi detector type */
-    detectorType multiDetType;
 
     /** Shared Memory object */
     sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};

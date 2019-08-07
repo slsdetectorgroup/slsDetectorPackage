@@ -36,13 +36,13 @@ class Detector {
 
     /**
      * Get the acquiring flag. When true the detector blocks
-     * any attempt to start a new acquisition. 
+     * any attempt to start a new acquisition.
      */
     bool getAcquiringFlag() const;
 
     /**
-     * Set the acquiring flag. This might have to done manually 
-     * after an acquisition was aborted. 
+     * Set the acquiring flag. This might have to done manually
+     * after an acquisition was aborted.
      */
     void setAcquiringFlag(bool value);
 
@@ -66,7 +66,7 @@ class Detector {
     // Bits and registers
 
     /**
-     * Clears (sets to 0) bit number bitnr in register at addr. 
+     * Clears (sets to 0) bit number bitnr in register at addr.
      * @param addr address of the register
      * @param bitnr bit number to clear
      * @param pos detector position
@@ -124,14 +124,52 @@ class Detector {
     void setPeriod(ns t, Positions pos = {});
 
     // dhanya
+
     /**
      * Check version compatibility with detector software
-     * (if hostname/rx_hostname has been set/ sockets created)
-     * @param p port type control port or receiver port
-     * @param detPos -1 for all detectors in  list or specific detector position
+     * @param pos detector position
      */
-    void checkDetectorVersionCompatibility(Positions pos = {});
-    
+    void checkDetectorVersionCompatibility(Positions pos = {}) const;
+
+    /**
+     * Check version compatibility with receiver software
+     * @param pos detector position
+     */
+    void checkReceiverVersionCompatibility(Positions pos = {}) const;
+
+    /**
+     * Get detector firmware version
+     * @param pos detector position
+     * @returns detector firmware version
+     */
+    int64_t getDetectorFirmwareVersion(Positions pos = {}) const;
+
+    /**
+     * Get detector server version
+     * @param pos detector position
+     * @returns detector server version
+     */
+    int64_t getDetectorServerVersion(Positions pos = {}) const;
+
+    /**
+     * Get detector serial number
+     * @param pos detector position
+     * @returns detector serial number
+     */
+    int64_t getDetectorSerialNumber(Positions pos = {}) const;
+
+    /**
+     * Get Client Software version
+     * @returns client software version
+     */
+    int64_t getClientSoftwareVersion() const;
+
+    /**
+     * Get Receiver software version
+     * @param pos detector position
+     * @return receiver software version
+     */
+    int64_t getReceiverSoftwareVersion(Positions pos = {}) const;
 };
 
 } // namespace sls

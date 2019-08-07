@@ -11,7 +11,6 @@ Detector::Detector(int multi_id)
     : pimpl(sls::make_unique<multiSlsDetector>(multi_id)) {}
 Detector::~Detector() = default;
 
-
 // Acquisition
 void Detector::acquire() { pimpl->acquire(); }
 
@@ -26,13 +25,9 @@ Result<defs::runStatus> Detector::getReceiverStatus(Positions pos) {
     return pimpl->Parallel(&slsDetector::getReceiverStatus, pos);
 }
 
-bool Detector::getAcquiringFlag() const{
-    return pimpl->getAcquiringFlag();
-}
+bool Detector::getAcquiringFlag() const { return pimpl->getAcquiringFlag(); }
 
-void Detector::setAcquiringFlag(bool value){
-    pimpl->setAcquiringFlag(value);
-}
+void Detector::setAcquiringFlag(bool value) { pimpl->setAcquiringFlag(value); }
 
 // Configuration
 Result<std::string> Detector::getHostname(Positions pos) const {
@@ -40,7 +35,6 @@ Result<std::string> Detector::getHostname(Positions pos) const {
 }
 
 void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
-
 
 void Detector::setConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
@@ -126,12 +120,33 @@ Result<bool> Detector::getFileOverWrite(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFileOverWrite, pos);
 }
 
-
 // dhanya
-Result<bool> Detector::checkDetectorVersionCompatibility(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::checkDetectorVersionCompatibility, pos);
+Result<void> Detector::checkDetectorVersionCompatibility(Positions pos) const {
+    pimpl->Parallel(&slsDetector::checkDetectorVersionCompatibility, pos);
 }
 
+Result<void> Detector::checkReceiverVersionCompatibility(Positions pos) const {
+    pimpl->Parallel(&slsDetector::checkReceiverVersionCompatibility, pos);
+}
 
+Result<int64_t> Detector::getDetectorFirmwareVersion(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getId, DETECTOR_FIRMWARE_VERSION, pos);
+}
+
+Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getId, DETECTOR_SOFTWARE_VERSION, pos);
+}
+
+Result<int64_t> Detector::getDetectorSerialNumber(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getId, DETECTOR_SERIAL_NUMBER, pos);
+}
+
+Result<int64_t> Detector::getClientSoftwareVersion() const {
+    return APILIB;
+}
+
+Result<int64_t> Detector::getReceiverSoftwareVersion(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverSoftwareVersion, pos);
+}
 
 } // namespace sls

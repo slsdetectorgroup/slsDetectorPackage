@@ -294,7 +294,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param p port type control port or receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void checkReceiverVersionCompatibility(int detPos = -1);
+    void checkReceiverVersionCompatibility(int detPos = -1);//
 
     /**
      * Get ID or version numbers
@@ -302,27 +302,27 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns Id or version number of that type
      */
-    int64_t getId(idMode mode, int detPos = -1);
+    int64_t getId(idMode mode, int detPos = -1);//not needed anymore (later remove this_software_version from enum)
 
-    int getMultiId()const{return multiId;}
+    int getMultiId()const{return multiId;} //public but part of multi
 
     /**
      * Get Client Software version
      * @returns client software version
      */
-    int64_t getClientSoftwareVersion() const;
+    int64_t getClientSoftwareVersion() const;//
 
     /**
      * Get Receiver software version
      * @return receiver software version
      */
-    int64_t getReceiverSoftwareVersion(int detPos = -1);
+    int64_t getReceiverSoftwareVersion(int detPos = -1);//
 
     /**
      * Get Detector Number
      * @returns vector of detector number
      */
-    std::vector<int64_t> getDetectorNumber();
+    std::vector<int64_t> getDetectorNumber(); // renamed to getDetectorSerialNumber
     /**
      * Free shared memory from the command line
      * avoiding creating the constructor classes and mapping

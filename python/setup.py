@@ -36,7 +36,9 @@ class get_pybind_include(object):
 ext_modules = [
     Extension(
         '_sls_detector',
-        ['src/main.cpp'],
+        ['src/main.cpp',
+        'src/enums.cpp',
+        'src/experimental.cpp'],
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),

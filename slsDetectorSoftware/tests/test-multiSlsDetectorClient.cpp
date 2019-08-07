@@ -1,4 +1,5 @@
 #include "catch.hpp"
+#include "multiSlsDetector.h"
 #include "multiSlsDetectorClient.h"
 #include "sls_detector_defs.h"
 #include <sstream>
@@ -108,7 +109,7 @@ TEST_CASE("enablefoverwrite", "[.cmd]") {
     }
 }
 
-//EIGER ONLY
+// EIGER ONLY
 // TEST_CASE("activatecmd", "[.cmd]") {
 
 //     {
@@ -396,3 +397,39 @@ TEST_CASE("rx_checkversion", "[.cmd]") {
     multiSlsDetectorClient("rx_checkversion", GET, nullptr, oss);
     REQUIRE(oss.str() == "rx_checkversion compatible\n");
 }
+
+TEST_CASE("exptime", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("exptime 0.05", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "exptime 0.050000000\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("exptime", GET, nullptr, oss);
+        REQUIRE(oss.str() == "exptime 0.050000000\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("exptime 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "exptime 1.000000000\n");
+    }
+}
+
+// TEST_CASE("exptime2", "[.cmd]") {
+//     {
+//         std::ostringstream oss;
+//         multiSlsDetectorClient("exptime2 0.05", PUT, nullptr, oss);
+//         REQUIRE(oss.str() == "exptime2 0.05s\n");
+//     }
+//     {
+//         std::ostringstream oss;
+//         multiSlsDetectorClient("exptime2", GET, nullptr, oss);
+//         REQUIRE(oss.str() == "exptime2 0.05s\n");
+//     }
+//     {
+//         std::ostringstream oss;
+//         multiSlsDetectorClient("exptime2 1", PUT, nullptr, oss);
+//         REQUIRE(oss.str() == "exptime2 1s\n");
+//     }
+// }

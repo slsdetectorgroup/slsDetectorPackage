@@ -1,0 +1,67 @@
+find_package(Doxygen)
+find_package(Sphinx)
+
+
+if (DOXYGEN_FOUND AND SPHINX_FOUND)
+
+    # #Utility to generate command line documentation
+    add_executable(gendoc src/gendoc.cpp)
+    target_link_libraries(gendoc PRIVATE
+      slsDetectorShared
+    )
+    set_target_properties(gendoc PROPERTIES 
+      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+
+    
+    
+
+    #Doxygen
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+    #Sphinx
+    set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR})
+
+    set(SPHINX_SOURCE_FILES
+      src/commandline.rst
+      src/container_utils.rst
+      src/dependencies.rst
+      src/detector.rst
+      src/index.rst
+      src/installation.rst
+      src/pydetector.rst
+      src/pyenums.rst
+      src/pyexamples.rst
+      src/receiver.rst
+      src/result.rst
+      src/type_traits.rst
+      src/ToString.rst
+      
+    )
+
+    foreach(filename ${SPHINX_SOURCE_FILES})
+      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${filename} 
+                    "${SPHINX_BUILD}/${filename}")
+    endforeach(filename ${SPHINX_SOURCE_FILES})
+
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
+        "${SPHINX_BUILD}/conf.py"
+        @ONLY)
+
+    add_custom_target(docs
+                    gendoc
+                    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+                    COMMAND ${SPHINX_EXECUTABLE} -a -b html
+                    -Dbreathe_projects.slsDetectorPackage=${CMAKE_CURRENT_BINARY_DIR}/xml
+                    -c "${SPHINX_BUILD}"
+                    ${SPHINX_BUILD}/src 
+                    ${SPHINX_BUILD}/html
+                    COMMENT "Generating documentation with Sphinx")
+
+else (DOXYGEN_FOUND AND SPHINX_FOUND)
+  message("Doxygen and Sphinx are needed to build documentation")
+endif (DOXYGEN_FOUND AND SPHINX_FOUND)

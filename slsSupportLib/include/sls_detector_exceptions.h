@@ -1,14 +1,6 @@
 #pragma once
-/************************************************
- * @file sls_detector_exceptions.h
- * @short exceptions defined
- ***********************************************/
-/**
- *@short exceptions defined
- */
 
 #include "logger.h"
-
 #include <iostream>
 #include <stdexcept>
 

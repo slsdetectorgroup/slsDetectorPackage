@@ -4457,3 +4457,9 @@ std::vector<char> multiSlsDetector::readPofFile(const std::string &fname) {
     FILE_LOG(logINFO) << "Read file into memory";
     return buffer;
 }
+
+
+
+
+
+

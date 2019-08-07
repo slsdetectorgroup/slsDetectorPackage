@@ -204,15 +204,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     }
 
     /**
-     * Creates/open shared memory, initializes detector structure and members
-     * Called by constructor/ set hostname / read config file
-     * @param verify true to verify if shared memory version matches existing
-     * one
-     * @param update true to update last user pid, date etc
-     */
-    void setupMultiDetector(bool verify = true, bool update = true); // private
-
-    /**
      * Loop through the detectors serially and return the result as a vector
      */
     
@@ -252,17 +243,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
                       typename NonDeduced<CT>::type... Args) const;
 
     /**
-     * Decodes which detector and the corresponding channel numbers for it
-     * Mainly useful in a multi detector setROI (Gotthard)
-     * @param offsetX channel number or total channel offset in x direction
-     * @param offsetY channel number or total channel offset in y direction
-     * @param channelX channel number from detector offset in x direction
-     * @param channelY channel number from detector offset in x direction
-     * @returns detector id or -1 if channel number out of range
-     */
-    int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);// private
-
-    /**
      * Set acquiring flag in shared memory
      * @param b acquiring flag
      */
@@ -273,12 +253,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns acquiring flag
      */
     bool getAcquiringFlag() const;//
-
-    /**
-     * Check if acquiring flag is set, set error if set
-     * @returns FAIL if not ready, OK if ready
-     */
-    bool isAcquireReady(); // private
 
     /**
      * Check version compatibility with detector software
@@ -2236,6 +2210,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
   private:
     /**
+     * Creates/open shared memory, initializes detector structure and members
+     * Called by constructor/ set hostname / read config file
+     * @param verify true to verify if shared memory version matches existing
+     * one
+     * @param update true to update last user pid, date etc
+     */
+    void setupMultiDetector(bool verify = true, bool update = true); 
+    
+    /**
      * Initialize (open/create) shared memory for the sharedMultiDetector
      * structure
      * @param verify true to verify if shm size matches existing one
@@ -2259,6 +2242,23 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Update user details in detector structure
      */
     void updateUserdetails();
+
+    /**
+     * Check if acquiring flag is set, set error if set
+     * @returns FAIL if not ready, OK if ready
+     */
+    bool isAcquireReady();
+
+    /**
+     * Decodes which detector and the corresponding channel numbers for it
+     * Mainly useful in a multi detector setROI (Gotthard)
+     * @param offsetX channel number or total channel offset in x direction
+     * @param offsetY channel number or total channel offset in y direction
+     * @param channelX channel number from detector offset in x direction
+     * @param channelY channel number from detector offset in x direction
+     * @returns detector id or -1 if channel number out of range
+     */
+    int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);
 
     /**
      * Execute in command line and return result

@@ -131,55 +131,12 @@ void multiSlsDetector::parallelCall(
     return;
 }
 
-int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int &channelX,
-                                     int &channelY) {
-    channelX = -1;
-    channelY = -1;
-    // loop over
-    for (size_t i = 0; i < detectors.size(); ++i) {
-        int x = detectors[i]->getDetectorOffset(X);
-        int y = detectors[i]->getDetectorOffset(Y);
-        // check x offset range
-        if ((offsetX >= x) &&
-            (offsetX <
-             (x + detectors[i]->getTotalNumberOfChannelsInclGapPixels(X)))) {
-            if (offsetY == -1) {
-                channelX = offsetX - x;
-                return i;
-            } else {
-                // check y offset range
-                if ((offsetY >= y) &&
-                    (offsetY <
-                     (y + detectors[i]->getTotalNumberOfChannelsInclGapPixels(
-                              Y)))) {
-                    channelX = offsetX - x;
-                    channelY = offsetY - y;
-                    return i;
-                }
-            }
-        }
-    }
-    return -1;
-}
-
 void multiSlsDetector::setAcquiringFlag(bool flag) {
     multi_shm()->acquiringFlag = flag;
 }
 
 bool multiSlsDetector::getAcquiringFlag() const {
     return multi_shm()->acquiringFlag;
-}
-
-bool multiSlsDetector::isAcquireReady() {
-    if (multi_shm()->acquiringFlag) {
-        FILE_LOG(logWARNING)
-            << "Acquire has already started. "
-               "If previous acquisition terminated unexpectedly, "
-               "reset busy flag to restart.(sls_detector_put busy 0)";
-        return FAIL != 0u;
-    }
-    multi_shm()->acquiringFlag = true;
-    return OK != 0u;
 }
 
 void multiSlsDetector::checkDetectorVersionCompatibility(int detPos) {
@@ -360,6 +317,49 @@ void multiSlsDetector::updateUserdetails() {
         sls::strcpy_safe(multi_shm()->lastUser, "errorreading");
         sls::strcpy_safe(multi_shm()->lastDate, "errorreading");
     }
+}
+
+bool multiSlsDetector::isAcquireReady() {
+    if (multi_shm()->acquiringFlag) {
+        FILE_LOG(logWARNING)
+            << "Acquire has already started. "
+               "If previous acquisition terminated unexpectedly, "
+               "reset busy flag to restart.(sls_detector_put busy 0)";
+        return FAIL != 0u;
+    }
+    multi_shm()->acquiringFlag = true;
+    return OK != 0u;
+}
+
+int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int &channelX,
+                                     int &channelY) {
+    channelX = -1;
+    channelY = -1;
+    // loop over
+    for (size_t i = 0; i < detectors.size(); ++i) {
+        int x = detectors[i]->getDetectorOffset(X);
+        int y = detectors[i]->getDetectorOffset(Y);
+        // check x offset range
+        if ((offsetX >= x) &&
+            (offsetX <
+             (x + detectors[i]->getTotalNumberOfChannelsInclGapPixels(X)))) {
+            if (offsetY == -1) {
+                channelX = offsetX - x;
+                return i;
+            } else {
+                // check y offset range
+                if ((offsetY >= y) &&
+                    (offsetY <
+                     (y + detectors[i]->getTotalNumberOfChannelsInclGapPixels(
+                              Y)))) {
+                    channelX = offsetX - x;
+                    channelY = offsetY - y;
+                    return i;
+                }
+            }
+        }
+    }
+    return -1;
 }
 
 std::string multiSlsDetector::exec(const char *cmd) {

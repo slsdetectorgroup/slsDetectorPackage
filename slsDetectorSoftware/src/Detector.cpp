@@ -96,34 +96,37 @@ void Detector::setPeriod(ns t, Positions pos) {
 }
 
 // File
-void Detector::setFileName(const std::string &fname) {
-    pimpl->Parallel(&slsDetector::setFileName, Positions{}, fname);
+void Detector::setFileName(const std::string &fname, Positions pos) {
+    pimpl->Parallel(&slsDetector::setFileName, pos, fname);
 }
-Result<std::string> Detector::getFileName() const {
-    return pimpl->Parallel(&slsDetector::setFileName, Positions{}, "");
+Result<std::string> Detector::getFileName(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setFileName, pos, "");
 }
 
-void Detector::setFilePath(const std::string &fpath) {
-    pimpl->Parallel(&slsDetector::setFilePath, Positions{}, fpath);
+void Detector::setFilePath(const std::string &fpath, Positions pos) {
+    pimpl->Parallel(&slsDetector::setFilePath, pos, fpath);
 }
-Result<std::string> Detector::getFilePath() const {
-    return pimpl->Parallel(&slsDetector::getFilePath, Positions{});
+Result<std::string> Detector::getFilePath(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getFilePath, pos);
 }
 
 void Detector::setFileWrite(bool value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setFileWrite, Positions{}, value);
+    pimpl->Parallel(&slsDetector::setFileWrite, pos, value);
 }
 
 Result<bool> Detector::getFileWrite(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getFileWrite, Positions{});
+    return pimpl->Parallel(&slsDetector::getFileWrite, pos);
 }
 
 void Detector::setFileOverWrite(bool value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setFileOverWrite, Positions{}, value);
+    pimpl->Parallel(&slsDetector::setFileOverWrite, pos, value);
 }
 
 Result<bool> Detector::getFileOverWrite(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getFileOverWrite, Positions{});
+    return pimpl->Parallel(&slsDetector::getFileOverWrite, pos);
 }
+
+// dhanya
+
 
 } // namespace sls

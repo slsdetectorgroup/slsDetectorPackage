@@ -101,15 +101,15 @@ class Detector {
      * @param pos detector positions
      * @returns file name prefix
      */
-    Result<std::string> getFileName() const;
+    Result<std::string> getFileName(Positions pos = {}) const;
 
     /**
      * Sets the receiver file name prefix
      * @param fname file name prefix
      */
-    void setFileName(const std::string &fname);
-    Result<std::string> getFilePath() const;
-    void setFilePath(const std::string &fname);
+    void setFileName(const std::string &fname, Positions pos = {});
+    Result<std::string> getFilePath(Positions pos = {}) const;
+    void setFilePath(const std::string &fname, Positions pos = {});
     Result<bool> getFileWrite(Positions pos = {}) const;
     void setFileWrite(bool value, Positions pos = {});
     Result<bool> getFileOverWrite(Positions pos = {}) const;
@@ -122,6 +122,10 @@ class Detector {
     void setSubExptime(ns t, Positions pos = {});
     Result<ns> getPeriod(Positions pos = {}) const;
     void setPeriod(ns t, Positions pos = {});
+
+    // dhanya
+
+    
 };
 
 } // namespace sls

@@ -208,6 +208,30 @@ class Detector {
      * @returns detector type as string
      */
     Result<std::string> getDetectorTypeAsString(Positions pos = {}) const;
+
+
+    // Erik
+
+    /**
+     * Set LED Enable for CTB
+     * @param enable true to switch on, false to switch off
+     */
+    void setLEDEnable(bool enable, Positions pos = {});
+
+
+    /**
+     * Get LED enable for CTB 
+     */
+    Result<bool> getLEDEnable(Positions pos = {}) const;
+
+
+    /**
+     * Set Digital IO Delay CTB
+     * @param digital IO mask to select the pins
+     * @param delay delay in ps(1 bit=25ps, max of 775 ps)
+     */
+    void setDigitalIODelay(uint64_t pinMask, int delay, Positions pos = {});
+
 };
 
 } // namespace sls

@@ -117,9 +117,7 @@ Result<bool> Detector::getFileOverWrite(Positions pos) const {
 }
 
 // dhanya
-int Detector::getMultiId() const {
-    return pimpl->getMultiId();
-}
+int Detector::getMultiId() const { return pimpl->getMultiId(); }
 
 void Detector::checkDetectorVersionCompatibility(Positions pos) const {
     pimpl->Parallel(&slsDetector::checkDetectorVersionCompatibility, pos);
@@ -130,43 +128,59 @@ void Detector::checkReceiverVersionCompatibility(Positions pos) const {
 }
 
 Result<int64_t> Detector::getDetectorFirmwareVersion(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, pos, defs::DETECTOR_FIRMWARE_VERSION);
+    return pimpl->Parallel(&slsDetector::getId, pos,
+                           defs::DETECTOR_FIRMWARE_VERSION);
 }
 
 Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, pos, defs::DETECTOR_SOFTWARE_VERSION);
+    return pimpl->Parallel(&slsDetector::getId, pos,
+                           defs::DETECTOR_SOFTWARE_VERSION);
 }
 
 Result<int64_t> Detector::getDetectorSerialNumber(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, pos, defs::DETECTOR_SERIAL_NUMBER);
+    return pimpl->Parallel(&slsDetector::getId, pos,
+                           defs::DETECTOR_SERIAL_NUMBER);
 }
 
-Result<int64_t> Detector::getClientSoftwareVersion() const { 
-    return pimpl->getClientSoftwareVersion(); 
+Result<int64_t> Detector::getClientSoftwareVersion() const {
+    return pimpl->getClientSoftwareVersion();
 }
 
 Result<int64_t> Detector::getReceiverSoftwareVersion(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverSoftwareVersion, pos);
 }
 
-std::string Detector::getUserDetails() const {
-    return pimpl->getUserDetails();
-}
+std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
-void Detector::setHostname(const std::vector<std::string> &name) {                       
+void Detector::setHostname(const std::vector<std::string> &name) {
     pimpl->setHostname(name);
 }
 
 defs::detectorType Detector::getDetectorTypeAsEnum() const {
-    return pimpl->getDetectorTypeAsEnum(); 
+    return pimpl->getDetectorTypeAsEnum();
 }
 
-Result<defs::detectorType> Detector::getDetectorTypeAsEnum(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getDetectorTypeAsEnum, pos); 
+Result<defs::detectorType>
+Detector::getDetectorTypeAsEnum(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getDetectorTypeAsEnum, pos);
 }
 
 Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getDetectorTypeAsString, pos); 
+    return pimpl->Parallel(&slsDetector::getDetectorTypeAsString, pos);
+}
+
+// Erik
+
+void Detector::setLEDEnable(bool enable, Positions pos) {
+    pimpl->Parallel(&slsDetector::setLEDEnable, pos, static_cast<int>(enable));
+}
+
+Result<bool> Detector::getLEDEnable(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setLEDEnable, pos, -1);
+}
+
+void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos){
+    pimpl->Parallel(&slsDetector::setDigitalIODelay, pos, pinMask, delay);
 }
 
 } // namespace sls

@@ -45,9 +45,9 @@ void init_experimental(py::module &m) {
 
         // File
         .def("getFileName", &Detector::getFileName)
-        .def("setFileName", &Detector::setFileName, py::arg())
+        .def("setFileName", &Detector::setFileName, py::arg(),py::arg() = Positions{})
         .def("getFilePath", &Detector::getFilePath)
-        .def("setFilePath", &Detector::setFilePath, py::arg())
+        .def("setFilePath", &Detector::setFilePath, py::arg(),py::arg() = Positions{})
         .def("setFileWrite", &Detector::setFileWrite, py::arg(),
              py::arg() = Positions{})
         .def("getFileWrite", &Detector::getFileWrite, py::arg() = Positions{})

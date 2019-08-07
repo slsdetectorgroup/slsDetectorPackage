@@ -30,7 +30,7 @@
 using namespace sls;
 
 multiSlsDetector::multiSlsDetector(int multi_id, bool verify, bool update)
-    : multiId(multi_id), multi_shm(multi_id, -1) {
+    : multiId(multi_id), multiDetType(GENERIC), multi_shm(multi_id, -1) {
     setupMultiDetector(verify, update);
 }
 
@@ -332,6 +332,11 @@ void multiSlsDetector::initializeDetectorStructure() {
 
 void multiSlsDetector::initializeMembers(bool verify) {
     // multiSlsDetector
+    if (multi_shm()->numberOfDetectors == 0) {
+        multiDetType = GENERIC;
+    } else {
+        multiDetType = getDetectorTypeAsEnum();
+    }
     zmqSocket.clear();
 
     // get objects from single det shared memory (open)
@@ -383,6 +388,22 @@ std::string multiSlsDetector::exec(const char *cmd) {
     pclose(pipe);
     result.erase(result.find_last_not_of(" \t\n\r") + 1);
     return result;
+}
+
+void multiSlsDetector::setHostname(const std::vector<std::string> &name) {
+    // this check is there only to allow the previous detsizechan command
+    if (multi_shm()->numberOfDetectors != 0) {
+        FILE_LOG(logWARNING)
+            << "There are already detector(s) in shared memory."
+               "Freeing Shared memory now.";
+        freeSharedMemory();
+        setupMultiDetector();
+    } 
+    for (const auto &hostname : name) {
+        addSlsDetector(hostname);
+    }
+
+    updateOffsets();
 }
 
 void multiSlsDetector::setHostname(const char *name, int detPos) {
@@ -459,6 +480,10 @@ void multiSlsDetector::addSlsDetector(std::unique_ptr<slsDetector> det) {
         detectors.back()->getDataBytesInclGapPixels();
     multi_shm()->numberOfChannels +=
         detectors.back()->getTotalNumberOfChannels();
+}
+
+slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum() const {
+    return multiDetType;
 }
 
 slsDetectorDefs::detectorType
@@ -842,6 +867,12 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
         }
     }
     input_file.close();
+
+    if (multi_shm()->numberOfDetectors == 0) {
+        multiDetType = GENERIC;
+    } else {
+        multiDetType = getDetectorTypeAsEnum();
+    }
 }
 
 int multiSlsDetector::writeConfigurationFile(const std::string &fname) {

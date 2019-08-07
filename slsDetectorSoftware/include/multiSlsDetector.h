@@ -304,7 +304,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int64_t getId(idMode mode, int detPos = -1);//not needed anymore (later remove this_software_version from enum)
 
-    int getMultiId()const{return multiId;} //public but part of multi
+    int getMultiId()const{return multiId;} //part of multi also
 
     /**
      * Get Client Software version
@@ -329,7 +329,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param multiId multi detector Id
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    static void freeSharedMemory(int multiId, int detPos = -1);//
+    static void freeSharedMemory(int multiId, int detPos = -1);// private or not needed
 
     /**
      * Free shared memory and delete shared memory structure
@@ -338,21 +338,27 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * object back to state before object creation amap
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void freeSharedMemory(int detPos = -1);
+    void freeSharedMemory(int detPos = -1);//
 
     /**
      * Get user details of shared memory
      * @returns string with user details
      */
-    std::string getUserDetails();
+    std::string getUserDetails();// part of multi
 
+    /**
+     * Sets the hostname of all sls detectors in shared memory and updates local cache
+     * @param name hostname of all the sls detectors
+     */
+    void setHostname(const std::vector<std::string> &name);//cannot set individually
+    
     /**
      * Sets the hostname of all sls detectors in shared memory
      * Connects to them
      * @param name concatenated hostname of all the sls detectors
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setHostname(const char *name, int detPos = -1);
+    void setHostname(const char *name, int detPos = -1);// not needed
 
     /**
      * Gets the hostname of detector at particular position
@@ -369,7 +375,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param name concatenated hostname of the sls detectors to be appended to
      * the list
      */
-    void addMultipleDetectors(const char *name);
+    void addMultipleDetectors(const char *name);// ????
+
+    /**
+     * Get Detector type as an enum
+     * @returns detector type
+     */
+    detectorType getDetectorTypeAsEnum() const;
 
     /**
      * Get Detector type for a particular sls detector or get the first one
@@ -377,7 +389,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns detector type of sls detector in position pos, if -1, returns
      * the first det type
      */
-    detectorType getDetectorTypeAsEnum(int detPos = -1);
+    detectorType getDetectorTypeAsEnum(int detPos);//??
 
     /**
      * Concatenates string types of all sls detectors or
@@ -2334,6 +2346,9 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /** Multi detector Id */
     const int multiId{0};
+
+    /** multi detector type */
+    detectorType multiDetType;
 
     /** Shared Memory object */
     sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};

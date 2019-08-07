@@ -124,6 +124,11 @@ class Detector {
     void setPeriod(ns t, Positions pos = {});
 
     // dhanya
+    /**
+     * Get multidetector Id
+     * @returns multidetector Id
+     */
+    int getMultiId() const;
 
     /**
      * Check version compatibility with detector software
@@ -142,34 +147,67 @@ class Detector {
      * @param pos detector position
      * @returns detector firmware version
      */
-    int64_t getDetectorFirmwareVersion(Positions pos = {}) const;
+    Result<int64_t> getDetectorFirmwareVersion(Positions pos = {}) const;
 
     /**
      * Get detector server version
      * @param pos detector position
      * @returns detector server version
      */
-    int64_t getDetectorServerVersion(Positions pos = {}) const;
+    Result<int64_t> getDetectorServerVersion(Positions pos = {}) const;
 
     /**
      * Get detector serial number
      * @param pos detector position
      * @returns detector serial number
      */
-    int64_t getDetectorSerialNumber(Positions pos = {}) const;
+    Result<int64_t> getDetectorSerialNumber(Positions pos = {}) const;
 
     /**
      * Get Client Software version
      * @returns client software version
      */
-    int64_t getClientSoftwareVersion() const;
+    Result<int64_t> getClientSoftwareVersion() const;
 
     /**
      * Get Receiver software version
      * @param pos detector position
      * @return receiver software version
      */
-    int64_t getReceiverSoftwareVersion(Positions pos = {}) const;
+    Result<int64_t> getReceiverSoftwareVersion(Positions pos = {}) const;
+
+    /**
+     * Get user details of shared memory
+     * @returns string with user details
+     */
+    std::string getUserDetails() const;
+
+    /**
+     * Frees shared memory and adds detectors to the list
+     * Also updates local detector cache
+     * @param name hostnames for the positions given
+     */
+    void setHostname(const std::vector<std::string> &name);
+
+    /**
+     * Get Detector type as an enum
+     * @returns detector type
+     */
+    detectorType Detector::getDetectorTypeAsEnum() const;
+
+    /**
+     * Get Detector type as an enum
+     * @param pos detector position
+     * @returns detector type
+     */
+    Result<detectorType> getDetectorTypeAsEnum(Positions pos = {}) const;
+
+    /**
+     * Returns detector type as a string
+     * @param pos detector position
+     * @returns detector type as string
+     */
+    Result<std::string> getDetectorTypeAsString(Positions pos = {});
 };
 
 } // namespace sls

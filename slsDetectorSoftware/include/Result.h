@@ -31,6 +31,8 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     Result() = default;
     Result(std::initializer_list<T> list) : vec(list){};
 
+
+    /** Custom constructor from integer type to Result<ns> */
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
                               std::is_same<T, time::ns>::value>::type>
@@ -41,6 +43,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
             vec.push_back(T(item));
     }
 
+    /** Custom constructor from integer type to Result<ns> */
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
                               std::is_same<T, time::ns>::value>::type>
@@ -50,6 +53,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
             vec.push_back(T(item));
     }
 
+    /** Custom constructor from integer type to Result<ns> */
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
                               std::is_same<T, time::ns>::value>::type>

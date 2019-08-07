@@ -51,9 +51,8 @@ Result<uint32_t> Detector::getRegister(uint32_t addr, Positions pos) {
 }
 
 Result<ns> Detector::getExptime(Positions pos) const {
-    auto r = pimpl->Parallel(&slsDetector::setTimer, pos,
-                             defs::ACQUISITION_TIME, -1);
-    return Result<ns>(begin(r), end(r));
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
+                           -1);
 }
 
 Result<uint64_t> Detector::getStartingFrameNumber(Positions pos) const {
@@ -69,9 +68,8 @@ void Detector::setExptime(ns t, Positions pos) {
 }
 
 Result<ns> Detector::getSubExptime(Positions pos) const {
-    auto r = pimpl->Parallel(&slsDetector::setTimer, pos,
-                             defs::SUBFRAME_ACQUISITION_TIME, -1);
-    return Result<ns>(begin(r), end(r));
+    return pimpl->Parallel(&slsDetector::setTimer, pos,
+                           defs::SUBFRAME_ACQUISITION_TIME, -1);
 }
 
 void Detector::setSubExptime(ns t, Positions pos) {
@@ -80,9 +78,7 @@ void Detector::setSubExptime(ns t, Positions pos) {
 }
 
 Result<ns> Detector::getPeriod(Positions pos) const {
-    auto r =
-        pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, -1);
-    return Result<ns>(begin(r), end(r));
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, -1);
 }
 
 void Detector::setPeriod(ns t, Positions pos) {

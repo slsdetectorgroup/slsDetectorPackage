@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 
+#include "TimeHelper.h"
 #include "ToString.h"
 #include "container_utils.h"
 
@@ -29,6 +30,38 @@ template <class T, class Allocator = std::allocator<T>> class Result {
   public:
     Result() = default;
     Result(std::initializer_list<T> list) : vec(list){};
+
+
+    /** Custom constructor from integer type to Result<ns> */
+    template <typename V, typename = typename std::enable_if<
+                              std::is_integral<V>::value &&
+                              std::is_same<T, time::ns>::value>::type>
+    Result(const std::vector<V> &from) {
+
+        vec.reserve(from.size());
+        for (const auto &item : from)
+            vec.push_back(T(item));
+    }
+
+    /** Custom constructor from integer type to Result<ns> */
+    template <typename V, typename = typename std::enable_if<
+                              std::is_integral<V>::value &&
+                              std::is_same<T, time::ns>::value>::type>
+    Result(std::vector<V> &from) {
+        vec.reserve(from.size());
+        for (const auto &item : from)
+            vec.push_back(T(item));
+    }
+
+    /** Custom constructor from integer type to Result<ns> */
+    template <typename V, typename = typename std::enable_if<
+                              std::is_integral<V>::value &&
+                              std::is_same<T, time::ns>::value>::type>
+    Result(std::vector<V> &&from) {
+        vec.reserve(from.size());
+        for (const auto &item : from)
+            vec.push_back(T(item));
+    }
 
     /**
      * Forward arguments to the constructor of std::vector
@@ -82,9 +115,6 @@ template <class T, class Allocator = std::allocator<T>> class Result {
 
     /** Convert Result<T> to std::vector<T> */
     operator std::vector<T>() { return vec; }
-
-    /** Convert Result<T> to T using squash() */
-    operator T() { return squash(); }
 };
 
 /**

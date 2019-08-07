@@ -1,6 +1,7 @@
-#include <iostream>
 #include "Result.h"
 #include "ToString.h"
+#include <algorithm>
+#include <iostream>
 
 auto main() -> int {
 
@@ -31,25 +32,19 @@ auto main() -> int {
     std::cout << "vec2: " << ToString(vec2) << "\n";
 
 
-    // WARNING this feature is still not decied, its convenient 
-    // but might turn out to be a source of bugs...
-    // it is also possible to convert from Result<T> to T
-    int r = res3;
-    std::cout << "r: " << r << '\n';
-    std::cout << "static_cast<int>: " << static_cast<int>(res3) << '\n';
-    std::cout << "static_cast<double>: " << static_cast<double>(res3) << '\n';
-
-    int r2 = res;
-    std::cout << "res: " << res << " converted to int: " << r2 << "\n";
-
-    //Using squash we can also convert to a single value
+    // Using squash we can also convert to a single value
     std::cout << "res.squash(): " << res.squash() << '\n';
     std::cout << "res3.squash(): " << res3.squash() << '\n';
-
 
     //.squash also takes a default value
     std::cout << "res.squash(-1): " << res.squash(-1) << '\n';
     std::cout << "res3.squash(-1): " << res3.squash(-1) << '\n';
 
+    std::vector<int> ivec{1, 3, 5};
+
+    Result<sls::time::ns> nres(ivec);
+    // for (const auto& i : ivec)
+    //     nres.push_back(sls::time::ns(i));
+    std::cout << "nres: " << sls::ToString(nres) << '\n';
     //
 }

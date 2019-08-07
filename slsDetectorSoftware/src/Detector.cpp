@@ -126,7 +126,12 @@ Result<bool> Detector::getFileOverWrite(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFileOverWrite, pos);
 }
 
+
 // dhanya
+Result<bool> Detector::checkDetectorVersionCompatibility(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::checkDetectorVersionCompatibility, pos);
+}
+
 
 
 } // namespace sls

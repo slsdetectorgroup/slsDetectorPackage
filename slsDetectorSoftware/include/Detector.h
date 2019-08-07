@@ -124,7 +124,13 @@ class Detector {
     void setPeriod(ns t, Positions pos = {});
 
     // dhanya
-
+    /**
+     * Check version compatibility with detector software
+     * (if hostname/rx_hostname has been set/ sockets created)
+     * @param p port type control port or receiver port
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void checkDetectorVersionCompatibility(Positions pos = {});
     
 };
 

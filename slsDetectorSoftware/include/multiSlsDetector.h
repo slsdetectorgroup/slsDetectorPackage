@@ -210,7 +210,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    void setupMultiDetector(bool verify = true, bool update = true);
+    void setupMultiDetector(bool verify = true, bool update = true); // private
 
     /**
      * Loop through the detectors serially and return the result as a vector
@@ -260,7 +260,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param channelY channel number from detector offset in x direction
      * @returns detector id or -1 if channel number out of range
      */
-    int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);
+    int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);// private
 
     /**
      * Set acquiring flag in shared memory
@@ -278,7 +278,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Check if acquiring flag is set, set error if set
      * @returns FAIL if not ready, OK if ready
      */
-    bool isAcquireReady();
+    bool isAcquireReady(); // private
 
     /**
      * Check version compatibility with detector software
@@ -286,7 +286,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param p port type control port or receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void checkDetectorVersionCompatibility(int detPos = -1);
+    void checkDetectorVersionCompatibility(int detPos = -1);//
 
     /**
      * Check version compatibility with receiver software

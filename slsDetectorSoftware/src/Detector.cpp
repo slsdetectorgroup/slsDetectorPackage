@@ -1,5 +1,6 @@
 #include "Detector.h"
 #include "container_utils.h"
+#include "logger.h"
 #include "multiSlsDetector.h"
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
@@ -402,8 +403,33 @@ Result<int> Detector::getFramesPerFile(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFramesPerFile, pos);
 }
 
-Result<std::string> Detector::getReceiverLastClientIP(Positions pos) const{
+Result<std::string> Detector::getReceiverLastClientIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverLastClientIP, pos);
+}
+
+void Detector::setReceiverLock(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::lockReceiver, pos, static_cast<int>(value));
+}
+
+Result<bool> Detector::getReceiverLock(Positions pos) {
+    return pimpl->Parallel(&slsDetector::lockReceiver, pos, -1);
+}
+
+Result<bool> Detector::getUseReceiverFlag(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getUseReceiverFlag, pos);
+}
+
+void Detector::printReceiverConfiguration(Positions pos) const {
+    pimpl->Parallel(&slsDetector::printReceiverConfiguration, pos,
+                    TLogLevel::logINFO);
+}
+
+Result<int64_t> Detector::getRateCorrection(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getRateCorrection, pos);
+}
+
+void Detector::setRateCorrection(int64_t dead_time_ns, Positions pos) {
+    pimpl->Parallel(&slsDetector::setRateCorrection, pos, dead_time_ns);
 }
 
 } // namespace sls

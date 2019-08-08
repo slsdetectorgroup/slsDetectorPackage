@@ -1752,14 +1752,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param level print level
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void printReceiverConfiguration(TLogLevel level = logINFO, int detPos = -1);
+    void printReceiverConfiguration(TLogLevel level = logINFO, int detPos = -1); //
 
     /**
      * Get receiver online status
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns use receiver flag
      */
-    bool getUseReceiverFlag(int detPos = -1);
+    bool getUseReceiverFlag(int detPos = -1); //
 
     /**
      * Checks if the receiver is really online
@@ -1767,7 +1767,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns empty string if all online, else concatenates hostnames of all
      * detectors that are offline
      */
-    std::string checkReceiverOnline(int detPos = -1);
+    std::string checkReceiverOnline(int detPos = -1); //not needed
 
     /**
      * Locks/Unlocks the connection to the receiver
@@ -1775,7 +1775,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns lock status of the receiver
      */
-    int lockReceiver(int lock = -1, int detPos = -1);
+    int lockReceiver(int lock = -1, int detPos = -1); //
 
     /**
      * Returns the IP of the last client connecting to the receiver

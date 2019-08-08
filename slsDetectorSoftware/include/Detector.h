@@ -515,6 +515,27 @@ class Detector {
     // void exitReceiver(int detPos = -1);
 
     Result<std::string> getReceiverLastClientIP(Positions pos = {}) const;
+
+    void setReceiverLock(bool value, Positions pos = {});
+
+    Result<bool> getReceiverLock(Positions pos = {});
+
+    /** true when receiver is used otherwise false */
+    Result<bool> getUseReceiverFlag(Positions pos = {}) const;
+
+    void printReceiverConfiguration(Positions pos = {}) const;
+
+
+    /** [Eiger]
+     * @returns deadtime in ns, 0 = disabled
+     */
+    Result<int64_t> getRateCorrection(Positions pos = {}) const;
+
+    /**
+     * [Eiger] Set Rate correction 
+     * 0 disable correction, <0 set to default, >0 deadtime in ns
+     */
+    void setRateCorrection(int64_t dead_time_ns, Positions pos = {});
 };
 
 } // namespace sls

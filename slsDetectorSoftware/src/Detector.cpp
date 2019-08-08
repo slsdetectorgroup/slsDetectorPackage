@@ -157,7 +157,7 @@ void Detector::setHostname(const std::vector<std::string> &value) {
     pimpl->setHostname(value);
 }
 
-defs::detectorType Detector::getDetectorTypeAsEnum() const {
+defs::detectorType Detector::getDetectorType() const {
     return pimpl->getDetectorTypeAsEnum();
 }
 
@@ -290,7 +290,8 @@ Result<int> Detector::getThresholdEnergy(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getThresholdEnergy, pos);
 }
 
-void Detector::setThresholdEnergy(int value, defs::detectorSettings sett, int tb, Positions pos) {
+void Detector::setThresholdEnergy(int value, defs::detectorSettings sett,
+                                  int tb, Positions pos) {
     pimpl->Parallel(&slsDetector::setThresholdEnergy, pos, value, sett, tb);
 }
 
@@ -308,6 +309,48 @@ void Detector::loadSettingsFile(const std::string &value, Positions pos) {
 
 void Detector::saveSettingsFile(const std::string &value, Positions pos) {
     pimpl->Parallel(&slsDetector::saveSettingsFile, pos, value);
+}
+
+Result<defs::runStatus> Detector::getRunStatus(Positions pos) {
+    return pimpl->Parallel(&slsDetector::getRunStatus, pos);
+}
+
+void Detector::prepareAcquisition() {
+    pimpl->Parallel(&slsDetector::prepareAcquisition, {});
+}
+
+void Detector::startAcquisition() {
+    if (getDetectorType() == defs::EIGER) {
+        prepareAcquisition();
+    }
+    pimpl->Parallel(&slsDetector::startAcquisition, {});
+}
+
+void Detector::stopAcquisition() {
+    pimpl->Parallel(&slsDetector::stopAcquisition, {});
+}
+
+void Detector::sendSoftwareTrigger(Positions pos) {
+    pimpl->Parallel(&slsDetector::sendSoftwareTrigger, pos);
+}
+
+void Detector::startAndReadAll() {
+    if (getDetectorType() == defs::EIGER) {
+        prepareAcquisition();
+    }
+    pimpl->Parallel(&slsDetector::startAndReadAll, {});
+}
+
+void Detector::startReadOut() {
+    pimpl->Parallel(&slsDetector::startReadOut, {});
+}
+
+void Detector::readAll() {
+    pimpl->Parallel(&slsDetector::readAll, {});
+}
+
+void Detector::configureMAC(Positions pos) {
+    pimpl->Parallel(&slsDetector::configureMAC, pos);
 }
 
 // Erik

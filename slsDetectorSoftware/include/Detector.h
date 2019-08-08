@@ -193,7 +193,7 @@ class Detector {
      * Get Detector type as an enum
      * @returns detector type
      */
-    defs::detectorType getDetectorTypeAsEnum() const;
+    defs::detectorType getDetectorType() const;
 
     /**
      * Get Detector type as an enum
@@ -411,7 +411,8 @@ class Detector {
      * @param tb 1 to include trimbits, 0 to exclude
      * @param pos detector position
      */
-    void setThresholdEnergy(int value, defs::detectorSettings sett = defs::GET_SETTINGS,
+    void setThresholdEnergy(int value,
+                            defs::detectorSettings sett = defs::GET_SETTINGS,
                             int tb = 1, Positions pos = {});
 
     /**
@@ -444,6 +445,57 @@ class Detector {
      */
     void saveSettingsFile(const std::string &value, Positions pos = {});
 
+    /**
+     * Get Detector run status
+     * @param pos detector position
+     * @returns status
+     */
+    Result<defs::runStatus> getRunStatus(Positions pos = {});
+
+    /**
+     * Prepares detector for acquisition (Eiger)
+     */
+    void prepareAcquisition();
+
+    /**
+     * Start detector acquisition (Non blocking)
+     */
+    void startAcquisition();
+
+    /**
+     * Stop detector acquisition
+     */
+    void stopAcquisition();
+
+    /**
+     * Give an internal software trigger to the detector (Eiger only)
+     * @param pos detector position
+     */
+    void sendSoftwareTrigger(Positions pos = {});
+
+    /**
+     * Start detector acquisition and read all data (Blocking until end of
+     * acquisition)
+     */
+    void startAndReadAll();
+
+    /**
+     * Start readout (without exposure or interrupting exposure) (Eiger store in
+     * ram)
+     */
+    void startReadOut();
+
+    /**
+     * Requests and  receives all data from the detector (Eiger store in ram)
+     */
+    void readAll();
+
+    /**
+     * Configures in detector the destination for UDP packets
+     * @param pos detector position
+     */
+    void configureMAC(Positions pos = {});
+    
     // Erik
 
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;

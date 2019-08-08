@@ -253,6 +253,7 @@ void Detector::setReceiverPort(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverPort, pos, value);
 }
 
+
 // Erik
 Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFramesCaughtByReceiver, pos);

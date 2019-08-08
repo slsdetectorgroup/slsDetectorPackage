@@ -456,12 +456,6 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void updateMultiSize(int detx, int dety);
 
-    /**
-     * Checks if each of the detector is online/offline
-     * @returns empty string if it is online
-     * else returns hostname if it is offline
-     */
-    std::string checkOnline();
 
     int setControlPort(int port_number);
 
@@ -1473,12 +1467,6 @@ class slsDetector : public virtual slsDetectorDefs {
      * Gets the use receiver flag from shared memory
      */
     bool getUseReceiverFlag() const;
-
-    /**
-     * Checks if the receiver is really online
-     * @returns empty string if online, else returns receiver hostname
-     */
-    std::string checkReceiverOnline();
 
     /**
      * Locks/Unlocks the connection to the receiver

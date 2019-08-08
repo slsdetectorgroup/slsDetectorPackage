@@ -337,7 +337,6 @@ class Detector {
     void setReceiverPort(int value, Positions pos = {});
 
 
-
     // Erik
 
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;

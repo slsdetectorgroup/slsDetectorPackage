@@ -716,17 +716,6 @@ void slsDetector::updateMultiSize(int detx, int dety) {
     shm()->multiSize[1] = dety;
 }
 
-std::string slsDetector::checkOnline() {
-    std::string retval;
-    try {
-        // Need both control and stop socket to work!
-        auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-        auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
-    } catch (...) {
-        retval = shm()->hostname;
-    }
-    return retval;
-}
 
 int slsDetector::setControlPort(int port_number) {
     int retval = -1;
@@ -2969,15 +2958,6 @@ void slsDetector::printReceiverConfiguration(TLogLevel level) {
 }
 
 bool slsDetector::getUseReceiverFlag() const { return shm()->useReceiverFlag; }
-
-std::string slsDetector::checkReceiverOnline() {
-    try {
-        getReceiverSoftwareVersion();
-    } catch (...) {
-        return shm()->rxHostname;
-    }
-    return std::string();
-}
 
 int slsDetector::lockReceiver(int lock) {
     FILE_LOG(logDEBUG1) << "Setting receiver server lock to " << lock;

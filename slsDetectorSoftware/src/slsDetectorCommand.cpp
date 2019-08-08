@@ -288,12 +288,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page config
-    - <b>checkonline</b> returns the hostnames of all detectors without connecting to them. \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
-	 */
-    descrToFuncMap[i].m_pFuncName = "checkonline";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
-    ++i;
-    /*! \page config
     - <b>activate [b] [p]</b> Activates/Deactivates the detector. \c b is 1 for activate, 0 for deactivate. Deactivated detector does not send data. \c p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Used for EIGER only. \c Returns \c (int) (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "activate";
@@ -1798,13 +1792,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-   - <b>rx_checkonline</b> Checks the receiver if it is online/offline mode. Only get! \c Returns (string) "All online" or "[list of offline hostnames] : Not online".
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_checkonline";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
-    ++i;
-
-    /*! \page receiver
    - <b>framescaught</b> gets the number of frames caught by receiver. Average of all for multi-detector command. Only get! \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "framescaught";
@@ -3207,15 +3194,7 @@ std::string slsDetectorCommand::cmdOnline(int narg, const char * const args[], i
     int ival;
     char ans[1000];
 
-    if (cmd == "checkonline") {
-        if (action == PUT_ACTION)
-            return std::string("cannot set");
-        strcpy(ans, myDet->checkOnline(detPos).c_str());
-        if (!strlen(ans))
-            strcpy(ans, "All online");
-        else
-            strcat(ans, " :Not online");
-    } else if (cmd == "activate") {
+    if (cmd == "activate") {
 
         if (action == PUT_ACTION) {
             if (!sscanf(args[1], "%d", &ival))
@@ -3235,13 +3214,7 @@ std::string slsDetectorCommand::cmdOnline(int narg, const char * const args[], i
         int ret = myDet->setDeactivatedRxrPaddingMode(-1, detPos);
         sprintf(ans, "%d %s", myDet->activate(-1, detPos), ret == 1 ? "padding" : (ret == 0 ? "nopadding" : "unknown"));
     } else {
-        if (action == PUT_ACTION)
-            return std::string("cannot set");
-        strcpy(ans, myDet->checkReceiverOnline(detPos).c_str());
-        if (!strlen(ans))
-            strcpy(ans, "All receiver online");
-        else
-            strcat(ans, " :Not all receiver online");
+        return std::string("unknown command");
     }
 
     return ans;
@@ -3254,8 +3227,6 @@ std::string slsDetectorCommand::helpOnline(int action) {
         os << "activate i [p]\n sets the detector in  activated (1) or deactivated (0) mode (does not send data).  p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Only for Eiger." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "checkonline \n returns the hostnames of all detectors in offline mode" << std::endl;
-        os << "rx_checkonline \n returns the hostnames of all receiver in offline mode" << std::endl;
         os << "activate \n gets the detector activated (1) or deactivated (0) mode. And padding or nonpadding for the deactivated receiver. Only for Eiger." << std::endl;
     }
     return os.str();

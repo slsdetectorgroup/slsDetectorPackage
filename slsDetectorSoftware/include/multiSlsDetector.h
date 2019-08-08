@@ -521,14 +521,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int getReadNLines(int detPos = -1);//
 
     /**
-     * Checks if each of the detectors are online/offline
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns empty string if they are all online,
-     * else returns concatenation of strings of all detectors that are offline
-     */
-    std::string checkOnline(int detPos = -1);
-
-    /**
      * Set/Gets TCP Port of the detector
      * @param port_number (-1 gets)
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -1760,14 +1752,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns use receiver flag
      */
     bool getUseReceiverFlag(int detPos = -1); //
-
-    /**
-     * Checks if the receiver is really online
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns empty string if all online, else concatenates hostnames of all
-     * detectors that are offline
-     */
-    std::string checkReceiverOnline(int detPos = -1); //not needed
 
     /**
      * Locks/Unlocks the connection to the receiver

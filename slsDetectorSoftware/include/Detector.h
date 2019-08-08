@@ -295,28 +295,32 @@ class Detector {
     void setReadNLines(const int value, Positions pos = {});
 
     /**
-     * Get Detector Control TCP port (for client communication with Detector control server)
+     * Get Detector Control TCP port (for client communication with Detector
+     * control server)
      * @param pos detector position
      * @returns control TCP port
      */
     Result<int> getControlPort(Positions pos = {}) const;
 
     /**
-     * Set Detector Control TCP port (for client communication with Detector control server)
+     * Set Detector Control TCP port (for client communication with Detector
+     * control server)
      * @param value port number
      * @param pos detector position
      */
     void setControlPort(int value, Positions pos = {});
 
     /**
-     * Get Detector Stop TCP port (for client communication with Detector Stop server)
+     * Get Detector Stop TCP port (for client communication with Detector Stop
+     * server)
      * @param pos detector position
      * @returns Stop TCP port
      */
     Result<int> getStopPort(Positions pos = {}) const;
 
     /**
-     * Set Detector Stop TCP port (for client communication with Detector Stop server)
+     * Set Detector Stop TCP port (for client communication with Detector Stop
+     * server)
      * @param value port number
      * @param pos detector position
      */
@@ -335,7 +339,6 @@ class Detector {
      * @param pos detector position
      */
     void setReceiverPort(int value, Positions pos = {});
-
 
     // Erik
 
@@ -563,7 +566,6 @@ class Detector {
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
 
-
     /** [not Eiger] */
     void resetFPGA(Positions pos = {});
 
@@ -578,7 +580,59 @@ class Detector {
 
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
+    /** [Jungfrau] 1 there was an temperature event */
+    void setTemperatureEvent(int val, Positions pos = {});
 
+    /** [Jungfrau] */
+    Result<int> getTemperatureEvent(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setTemperatureControl(bool enable, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<bool> getTemperatureControl(Positions pos = {}) const;
+
+    /**
+     * [Jungfrau]Set threshold temperature
+     * @param val value in millidegrees TODO! Verify
+     */
+    void setThresholdTemperature(int temp, Positions pos = {});
+
+    Result<int> getThresholdTemperature(Positions pos = {}) const;
+
+    /** [Eiger] */
+    void pulseChip(int n, Positions pos = {});
+
+    /** 
+     * [Eiger] Pulse Pixel and move by a relative value
+     * @param n is number of times to pulse
+     * @param x is relative x value
+     * @param y is relative y value
+     */
+    void pulsePixelNMove(int n, int x, int y, Positions pos = {});
+
+    /**
+     * [Eiger] Pulse Pixel
+     * @param n is number of times to pulse
+     * @param x is x coordinate
+     * @param y is y coordinate
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void pulsePixel(int n, int x, int y, Positions pos = {});
+
+    /**[Eiger] Returns energies in eV where the module is trimmed */
+    Result<std::vector<int>> getTrimEn(Positions pos = {}) const;
+
+    /** [Eiger] Set the energies where the detector is trimmed */
+    void setTrimEn(std::vector<int> energies, Positions pos = {});
+
+    /** 
+     * [Eiger] not 4 bit mode 
+     * Fills in gap pixels in data
+    */
+    void setGapPixelsEnable(bool enable, Positions pos = {});
+
+    Result<bool> getGapPixelEnable(Positions pos = {}) const;
 };
 
 } // namespace sls

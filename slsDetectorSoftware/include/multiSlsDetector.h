@@ -1601,7 +1601,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of trim energies
      */
-    int setTrimEn(std::vector<int> energies, int detPos = -1);
+    int setTrimEn(std::vector<int> energies, int detPos = -1); //
 
     /**
      * Returns the number of trim energies and their value  (Eiger)
@@ -1609,7 +1609,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns vector of trim energies
      */
-    std::vector<int> getTrimEn(int detPos = -1);
+    std::vector<int> getTrimEn(int detPos = -1); //
 
     /**
      * Pulse Pixel (Eiger)
@@ -1618,7 +1618,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param y is y coordinate
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void pulsePixel(int n = 0, int x = 0, int y = 0, int detPos = -1);
+    void pulsePixel(int n = 0, int x = 0, int y = 0, int detPos = -1); //
 
     /**
      * Pulse Pixel and move by a relative value (Eiger)
@@ -1627,14 +1627,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param y is relative y value
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void pulsePixelNMove(int n = 0, int x = 0, int y = 0, int detPos = -1);
+    void pulsePixelNMove(int n = 0, int x = 0, int y = 0, int detPos = -1);//
 
     /**
      * Pulse Chip (Eiger)
      * @param n is number of times to pulse
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void pulseChip(int n = 0, int detPos = -1);
+    void pulseChip(int n = 0, int detPos = -1);//
 
     /**
      * Set/gets threshold temperature (Jungfrau)
@@ -1642,7 +1642,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns threshold temperature in millidegrees
      */
-    int setThresholdTemperature(int val = -1, int detPos = -1);
+    int setThresholdTemperature(int val = -1, int detPos = -1); //
 
     /**
      * Enables/disables temperature control (Jungfrau)
@@ -1650,7 +1650,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns temperature control enable
      */
-    int setTemperatureControl(int val = -1, int detPos = -1);
+    int setTemperatureControl(int val = -1, int detPos = -1); //
 
     /**
      * Resets/ gets over-temperature event (Jungfrau)
@@ -1658,7 +1658,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns over-temperature event
      */
-    int setTemperatureEvent(int val = -1, int detPos = -1);
+    int setTemperatureEvent(int val = -1, int detPos = -1); //
 
     /**
      * Set storage cell that stores first acquisition of the series (Jungfrau)
@@ -1666,7 +1666,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the storage cell that stores the first acquisition of the series
      */
-    int setStoragecellStart(int pos = -1, int detPos = -1);
+    int setStoragecellStart(int pos = -1, int detPos = -1);//
 
     /**
      * Programs FPGA with pof file (Not Eiger)

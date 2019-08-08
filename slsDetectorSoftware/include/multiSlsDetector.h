@@ -357,14 +357,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     std::string getHostname(int detPos = -1) const; //
 
     /**
-     * Appends detectors to the end of the list in shared memory
-     * Connects to them
-     * @param name concatenated hostname of the sls detectors to be appended to
-     * the list
-     */
-    void addMultipleDetectors(const char *name); // ????
-
-    /**
      * Get Detector type as an enum
      * @returns detector type
      */

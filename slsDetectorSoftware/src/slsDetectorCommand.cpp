@@ -276,13 +276,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>replace</b> \c Sets the hostname (or IP adress) for a single detector. Only allowed at single detector level.  Cannot get. \c Returns the hostnames for that detector \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "replace";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHostname;
-    ++i;
-
-    /*! \page config
    - <b>user</b> \c Returns user details from shared memory. Only allowed at multi detector level.  Cannot put. \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "user";
@@ -2371,20 +2364,11 @@ std::string slsDetectorCommand::cmdHostname(int narg, const char * const args[],
     if (action == HELP_ACTION) {
         return helpHostname(HELP_ACTION);
     }
-    if (action == GET_ACTION) {
-        if (cmd == "replace")
-            return std::string("cannot get");
-    }
 
     if (action == PUT_ACTION) {
-        if ((cmd == "hostname") &&
-            (detPos >= 0)) {
+        if (detPos >= 0) {
             return std::string("Wrong usage - setting hostname/add only from "
                                "multiDetector level");
-        }
-        if ((cmd == "replace") && (detPos < 0)) {
-            return std::string("Wrong usage - replace only from "
-                               "single detector level");
         }
 
         char hostname[1000];
@@ -2406,14 +2390,10 @@ std::string slsDetectorCommand::helpHostname(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << std::string("hostname \t returns the hostname(s) of the multi detector structure.\n");
-        os << std::string("replace \t cannot get\n");
     }
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << std::string("hostname name [name name]\t frees shared memory and "
                           "sets the hostname (or IP adress). Only allowed at multi detector level.\n");
-        os << std::string("replace det \t Sets the hostname (or IP adress) for a "
-                          "single detector. Only allowed at single detector level. "
-                          "Returns the hostnames for that detector\n");
     }
     return os.str();
 }

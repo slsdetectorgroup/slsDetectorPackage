@@ -202,6 +202,10 @@ defs::coordinates Detector::getMaxNumberOfChannels() const {
 void Detector::setMaxNumberOfChannels(const defs::coordinates value) {
     pimpl->setMaxNumberOfChannels(value);
 }
+
+//
+//
+//
 // Erik
 Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const{
     return pimpl->Parallel(&slsDetector::getFramesCaughtByReceiver, pos);

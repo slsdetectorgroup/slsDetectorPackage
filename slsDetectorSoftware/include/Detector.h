@@ -209,29 +209,44 @@ class Detector {
      */
     Result<std::string> getDetectorTypeAsString(Positions pos = {}) const;
 
-
     // Erik
 
+    /** CTB only.Sets the mask applied to every pattern. */
+    void setPatternMask(uint64_t mask, Positions pos = {});
+
+    /** CTB only. Gets the mask applied to every pattern. */
+    Result<uint64_t> getPatternMask(Positions pos = {});
+
     /**
-     * Set LED Enable for CTB
+     * CTB only. Sets the bitmask that the mask will be applied to for every
+     * pattern.
+     * @param mask mask to select bits
+     */
+    void setPatternBitMask(uint64_t mask, Positions pos = {});
+
+    /**
+     * CTB only. Gets the bits that the mask will be applied to for every
+     * pattern
+     */
+    Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
+
+    /**
+     * CTB only. Enable or disable the LED
      * @param enable true to switch on, false to switch off
      */
     void setLEDEnable(bool enable, Positions pos = {});
 
-
     /**
-     * Get LED enable for CTB 
+     * CTB only. Get LED enable.
      */
     Result<bool> getLEDEnable(Positions pos = {}) const;
 
-
     /**
-     * Set Digital IO Delay CTB
+     * CTB only. Set Digital IO Delay
      * @param digital IO mask to select the pins
      * @param delay delay in ps(1 bit=25ps, max of 775 ps)
      */
     void setDigitalIODelay(uint64_t pinMask, int delay, Positions pos = {});
-
 };
 
 } // namespace sls

@@ -2106,14 +2106,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param mask mask to be applied
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setPatternMask(uint64_t mask, int detPos = -1);
+    void setPatternMask(uint64_t mask, int detPos = -1); //
 
     /**
      * Gets the mask applied to every pattern (CTB/ Moench)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns mask set
      */
-    uint64_t getPatternMask(int detPos = -1);
+    uint64_t getPatternMask(int detPos = -1); //
 
     /**
      * Selects the bits that the mask will be applied to for every pattern (CTB/
@@ -2121,7 +2121,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param mask mask to select bits
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setPatternBitMask(uint64_t mask, int detPos = -1);
+    void setPatternBitMask(uint64_t mask, int detPos = -1);//
 
     /**
      * Gets the bits that the mask will be applied to for every pattern (CTB/
@@ -2129,7 +2129,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns mask  of bits selected
      */
-    uint64_t getPatternBitMask(int detPos = -1);
+    uint64_t getPatternBitMask(int detPos = -1);//
 
     /**
      * Set LED Enable (Moench, CTB only)
@@ -2137,7 +2137,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns LED enable
      */
-    int setLEDEnable(int enable = -1, int detPos = -1);
+    int setLEDEnable(int enable = -1, int detPos = -1); //
 
     /**
      * Set Digital IO Delay (Moench, CTB only)
@@ -2145,7 +2145,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param delay delay in ps(1 bit=25ps, max of 775 ps)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setDigitalIODelay(uint64_t pinMask, int delay, int detPos = -1);
+    void setDigitalIODelay(uint64_t pinMask, int delay, int detPos = -1); //
 
     /**
      * Loads the detector setup from file
@@ -2209,8 +2209,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * or just gives progress of acquisition by polling receivers
      */
     void processData();
-
-    void addSlsDetector(std::unique_ptr<slsDetector> det);
+ 
 
   private:
     /**

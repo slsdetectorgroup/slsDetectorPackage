@@ -171,6 +171,19 @@ Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
 
 // Erik
 
+
+Result<uint64_t> Detector::getPatternMask(Positions pos){
+    return pimpl->Parallel(&slsDetector::getPatternMask, pos);
+}
+
+void Detector::setPatternBitMask(uint64_t mask, Positions pos){
+    pimpl->Parallel(&slsDetector::setPatternBitMask, pos, mask);
+}
+
+Result<uint64_t> Detector::getPatternBitMask(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getPatternBitMask, pos);
+}
+
 void Detector::setLEDEnable(bool enable, Positions pos) {
     pimpl->Parallel(&slsDetector::setLEDEnable, pos, static_cast<int>(enable));
 }

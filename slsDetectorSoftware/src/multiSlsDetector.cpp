@@ -476,17 +476,6 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     multi_shm()->multiDetectorType = getDetectorTypeAsEnum(-1);// -1 needed here
 }
 
-void multiSlsDetector::addSlsDetector(std::unique_ptr<slsDetector> det) {
-    detectors.push_back(std::move(det));
-    multi_shm()->numberOfDetectors = detectors.size();
-    multi_shm()->dataBytes += detectors.back()->getDataBytes();
-    multi_shm()->dataBytesInclGapPixels +=
-        detectors.back()->getDataBytesInclGapPixels();
-    multi_shm()->numberOfChannels +=
-        detectors.back()->getTotalNumberOfChannels();
-    multi_shm()->multiDetectorType = getDetectorTypeAsEnum(-1);// -1 needed here    
-}
-
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum() const {
     return multi_shm()->multiDetectorType;
 }

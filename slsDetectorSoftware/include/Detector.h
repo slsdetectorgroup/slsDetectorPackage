@@ -210,6 +210,18 @@ class Detector {
     Result<std::string> getDetectorTypeAsString(Positions pos = {}) const;
 
     // Erik
+    Result<bool> getReceiverSilentMode(Positions pos = {}) const;
+
+    void setReceiverSilentMode(bool value, Positions pos = {});
+
+    /** [CTB] */
+    void setPattern(const std::string &fname, Positions pos = {});
+
+    /** [CTB] */
+    void setPatternIOControl(uint64_t word, Positions pos = {});
+
+    /** [CTB] */
+    Result<uint64_t> getPatternIOControl(Positions pos = {}) const;
 
     /** [CTB] */
     void setPatternClockControl(uint64_t word, Positions pos = {});

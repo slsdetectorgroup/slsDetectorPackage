@@ -2028,7 +2028,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver silent mode enable
      */
-    int setReceiverSilentMode(int i = -1, int detPos = -1);
+    int setReceiverSilentMode(int i = -1, int detPos = -1); //
 
     /**
      * Opens pattern file and sends pattern (CTB/ Moench)
@@ -2036,7 +2036,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK/FAIL
      */
-    int setPattern(const std::string &fname, int detPos = -1);
+    int setPattern(const std::string &fname, int detPos = -1); //
 
     /**
      * Sets pattern IO control (CTB/ Moench)
@@ -2044,7 +2044,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    uint64_t setPatternIOControl(uint64_t word = -1, int detPos = -1);
+    uint64_t setPatternIOControl(uint64_t word = -1, int detPos = -1);//
 
     /**
      * Sets pattern clock control (CTB/ Moench)

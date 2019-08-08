@@ -171,24 +171,42 @@ Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
 
 // Erik
 
+Result<bool> Detector::getReceiverSilentMode(Positions pos){
+    return pimpl->Parallel(&slsDetector::setReceiverSilentMode, pos, -1);
+}
 
-void Detector::setPatternClockControl(uint64_t word, Positions pos){
+void Detector::setReceiverSilentMode(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverSilentMode, pos,
+                    static_cast<int>(value));
+}
+
+void Detector::setPattern(const std::string &fname, Positions pos) {
+    pimpl->Parallel(&slsDetector::setPattern, pos, fname);
+}
+
+void Detector::setPatternIOControl(uint64_t word, Positions pos) {
+    pimpl->Parallel(&slsDetector::setPatternIOControl, pos, word);
+}
+
+Result<uint64_t> Detector::getPatternIOControl(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setPatternIOControl, pos, -1);
+}
+
+void Detector::setPatternClockControl(uint64_t word, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternClockControl, pos, word);
 }
 
-Result<uint64_t> Detector::getPatternClockControl(Positions pos) const{
+Result<uint64_t> Detector::getPatternClockControl(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setPatternClockControl, pos, -1);
 }
 
-void Detector::setPatternWord(int addr, uint64_t word, Positions pos){
+void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternWord, pos, addr, word);
 }
 
-
-
-void Detector::setPatternLoops(int level, int start, int stop, int n, Positions pos){
+void Detector::setPatternLoops(int level, int start, int stop, int n,
+                               Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternLoops, pos, level, start, stop, n);
-
 }
 
 Result<std::array<int, 3>> Detector::getPatternLoops(int level,

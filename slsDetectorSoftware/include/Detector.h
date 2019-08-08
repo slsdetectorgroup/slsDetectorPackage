@@ -254,38 +254,151 @@ class Detector {
 
     // Erik
 
-    /** CTB only.Sets the mask applied to every pattern. */
+
+    Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;
+
+    Result<uint64_t> getReceiverCurrentFrameIndex(Positions pos = {}) const;
+
+    void resetFramesCaught(Positions pos = {});
+
+    //TODO!
+    // int createReceivingDataSockets(const bool destroy = false);
+    // void readFrameFromReceiver();
+
+    void setMasterFileWrite(bool value, Positions pos = {});
+
+    Result<bool> getMasterFileWrite(Positions pos = {}) const;
+
+    void setReceiverStreamingFrequency(int freq = -1, int detPos = -1);
+    /**
+     * [All] If receiver streaming frequency is 0, then this timer between each
+     * data stream is set. Default is 500 ms.
+     */
+    void setReceiverStreamingTimer(int time_in_ms = 500, Positions pos = {});
+
+    /** [All] */
+    Result<int> getReceiverStreamingTimer(Positions pos = {}) const;
+
+    // TODO!
+    // int enableDataStreamingToClient(int enable = -1);
+    // int enableDataStreamingFromReceiver(int enable = -1, int detPos = -1)
+
+    /** [TODO! All?] */
+    void setTenGigaEnabled(bool value, Positions pos = {});
+
+    /** [TODO! All?] */
+    Result<bool> getTenGigaEnabled(Positions pos = {}) const;
+
+    /** [All] */
+    void setReceiverFifoDepth(int nframes, Positions pos = {});
+
+    /** [All] */
+    Result<int> getReceiverFifoDepth(Positions pos = {}) const;
+
+    /** [All] */
+    void setReceiverSilentMode(bool value, Positions pos = {});
+
+    /** [All] */
+    Result<bool> getReceiverSilentMode(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setPattern(const std::string &fname, Positions pos = {});
+
+    /** [CTB] */
+    void setPatternIOControl(uint64_t word, Positions pos = {});
+
+    /** [CTB] */
+    Result<uint64_t> getPatternIOControl(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setPatternClockControl(uint64_t word, Positions pos = {});
+
+    /** [CTB] */
+    Result<uint64_t> getPatternClockControl(Positions pos = {}) const;
+
+    /**
+     * [CTB] Writes a pattern word
+     * @param addr address of the word
+     * @param word word to be written, -1  reads the addr (same as
+     * executing the pattern)
+     * @param pos detector position
+     * @returns actual value
+     */
+    void setPatternWord(int addr, uint64_t word, Positions pos = {});
+
+    // TODO! Does this have side effects?
+    // uint64_t getPatternWord()...
+
+    /**
+     * [CTB] Sets the pattern or loop limits.
+     * @param level -1 complete pattern, 0,1,2, loop level
+     * @param start start address for level 0-2
+     * @param stop stop address for level 0-2
+     * @param n number of loops for level 0-2
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setPatternLoops(int level, int start, int stop, int n,
+                         Positions pos = {});
+
+    /**
+     * [CTB] Gets the pattern loop limits
+     * @param level  -1 complete pattern, 0,1,2, loop level
+     * @param pos detector positions
+     * @returns array of start address, stop address and number of loops
+     */
+    Result<std::array<int, 3>> getPatternLoops(int level,
+                                               Positions pos = {}) const;
+
+    /**
+     * [CTB] Sets the wait address
+     * @param level  0,1,2, wait level
+     * @param addr wait address
+     * @param pos detector position
+     * @returns actual value
+     */
+    void setPatternWaitAddr(int level, int addr, Positions pos = {});
+
+    /* [CTB] */
+    Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;
+
+    /**
+     * [CTB] Sets the wait time
+     * @param level  0,1,2, wait level
+     * @param t wait time
+     * @param pos detector position
+     */
+    void setPatternWaitTime(int level, uint64_t t, Positions pos = {});
+
+    /** [CTB]  */
+    Result<uint64_t> getPatternWaitTime(int level, Positions pos = {}) const;
+
+    /** [CTB] Sets the mask applied to every pattern. */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
-    /** CTB only. Gets the mask applied to every pattern. */
+    /** [CTB] Gets the mask applied to every pattern. */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
     /**
-     * CTB only. Sets the bitmask that the mask will be applied to for every
+     * [CTB] Sets the bitmask that the mask will be applied to for every
      * pattern.
      * @param mask mask to select bits
      */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
     /**
-     * CTB only. Gets the bits that the mask will be applied to for every
+     * [CTB] Gets the bits that the mask will be applied to for every
      * pattern
      */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /**
-     * CTB only. Enable or disable the LED
-     * @param enable true to switch on, false to switch off
-     */
+    /** [CTB] Enable or disable the LED */
     void setLEDEnable(bool enable, Positions pos = {});
 
-    /**
-     * CTB only. Get LED enable.
-     */
+    /** [CTB] Get LED enable. */
     Result<bool> getLEDEnable(Positions pos = {}) const;
 
     /**
-     * CTB only. Set Digital IO Delay
+     * [CTB] Set Digital IO Delay
      * @param digital IO mask to select the pins
      * @param delay delay in ps(1 bit=25ps, max of 775 ps)
      */

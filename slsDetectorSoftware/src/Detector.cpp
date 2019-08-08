@@ -172,15 +172,56 @@ Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
 // Erik
 
 
-Result<uint64_t> Detector::getPatternMask(Positions pos){
+void Detector::setPatternClockControl(uint64_t word, Positions pos){
+    pimpl->Parallel(&slsDetector::setPatternClockControl, pos, word);
+}
+
+Result<uint64_t> Detector::getPatternClockControl(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::setPatternClockControl, pos, -1);
+}
+
+void Detector::setPatternWord(int addr, uint64_t word, Positions pos){
+    pimpl->Parallel(&slsDetector::setPatternWord, pos, addr, word);
+}
+
+
+
+void Detector::setPatternLoops(int level, int start, int stop, int n, Positions pos){
+    pimpl->Parallel(&slsDetector::setPatternLoops, pos, level, start, stop, n);
+
+}
+
+Result<std::array<int, 3>> Detector::getPatternLoops(int level,
+                                                     Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setPatternLoops, pos, level, -1, -1,
+                           -1);
+}
+
+void Detector::setPatternWaitAddr(int level, int addr, Positions pos) {
+    pimpl->Parallel(&slsDetector::setPatternWaitAddr, pos, level, addr);
+}
+
+Result<int> Detector::getPatternWaitAddr(int level, Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setPatternWaitAddr, pos, level, -1);
+}
+
+void Detector::setPatternWaitTime(int level, uint64_t t, Positions pos) {
+    pimpl->Parallel(&slsDetector::setPatternWaitTime, pos, level, t);
+}
+
+Result<uint64_t> Detector::getPatternWaitTime(int level, Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setPatternWaitTime, pos, level, -1);
+}
+
+Result<uint64_t> Detector::getPatternMask(Positions pos) {
     return pimpl->Parallel(&slsDetector::getPatternMask, pos);
 }
 
-void Detector::setPatternBitMask(uint64_t mask, Positions pos){
+void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternBitMask, pos, mask);
 }
 
-Result<uint64_t> Detector::getPatternBitMask(Positions pos) const{
+Result<uint64_t> Detector::getPatternBitMask(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getPatternBitMask, pos);
 }
 
@@ -192,7 +233,7 @@ Result<bool> Detector::getLEDEnable(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setLEDEnable, pos, -1);
 }
 
-void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos){
+void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos) {
     pimpl->Parallel(&slsDetector::setDigitalIODelay, pos, pinMask, delay);
 }
 

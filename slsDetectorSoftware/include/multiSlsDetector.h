@@ -2052,7 +2052,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    uint64_t setPatternClockControl(uint64_t word = -1, int detPos = -1);
+    uint64_t setPatternClockControl(uint64_t word = -1, int detPos = -1); //
 
     /**
      * Writes a pattern word (CTB/ Moench)
@@ -2062,7 +2062,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    uint64_t setPatternWord(int addr, uint64_t word, int detPos = -1);
+    uint64_t setPatternWord(int addr, uint64_t word, int detPos = -1); //
 
     /**
      * Sets the pattern or loop limits (CTB/ Moench)
@@ -2073,7 +2073,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setPatternLoops(int level, int start = -1, int stop = -1, int n = -1,
-                         int detPos = -1);
+                         int detPos = -1); //
 
     /**
      * Gets the pattern loop limits (CTB/ Moench)
@@ -2081,7 +2081,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns array of start address, stop address and number of loops
      */
-    std::array<int, 3> getPatternLoops(int level, int detPos = -1);
+    std::array<int, 3> getPatternLoops(int level, int detPos = -1); //
 
     /**
      * Sets the wait address (CTB/ Moench)
@@ -2090,7 +2090,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    int setPatternWaitAddr(int level, int addr = -1, int detPos = -1);
+    int setPatternWaitAddr(int level, int addr = -1, int detPos = -1); //
 
     /**
      * Sets the wait time (CTB/ Moench)
@@ -2099,7 +2099,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    uint64_t setPatternWaitTime(int level, uint64_t t = -1, int detPos = -1);
+    uint64_t setPatternWaitTime(int level, uint64_t t = -1, int detPos = -1); //
 
     /**
      * Sets the mask applied to every pattern (CTB/ Moench)

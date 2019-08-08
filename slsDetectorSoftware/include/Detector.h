@@ -211,6 +211,15 @@ class Detector {
 
     // Erik
 
+    /**
+     * CTB only. Sets the wait time
+     * @param level  0,1,2, wait level
+     * @param t wait time, -1 gets
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns actual value
+     */
+    uint64_t setPatternWaitTime(int level, uint64_t t = -1, int detPos = -1);
+
     /** CTB only.Sets the mask applied to every pattern. */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
@@ -230,15 +239,10 @@ class Detector {
      */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /**
-     * CTB only. Enable or disable the LED
-     * @param enable true to switch on, false to switch off
-     */
+    /** CTB only. Enable or disable the LED */
     void setLEDEnable(bool enable, Positions pos = {});
 
-    /**
-     * CTB only. Get LED enable.
-     */
+    /** CTB only. Get LED enable. */
     Result<bool> getLEDEnable(Positions pos = {}) const;
 
     /**

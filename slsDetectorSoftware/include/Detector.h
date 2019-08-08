@@ -210,9 +210,53 @@ class Detector {
     Result<std::string> getDetectorTypeAsString(Positions pos = {}) const;
 
     // Erik
-    Result<bool> getReceiverSilentMode(Positions pos = {}) const;
 
+
+    Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;
+
+    Result<uint64_t> getReceiverCurrentFrameIndex(Positions pos = {}) const;
+
+    void resetFramesCaught(Positions pos = {});
+
+    //TODO!
+    // int createReceivingDataSockets(const bool destroy = false);
+    // void readFrameFromReceiver();
+
+    void setMasterFileWrite(bool value, Positions pos = {});
+
+    Result<bool> getMasterFileWrite(Positions pos = {}) const;
+
+    void setReceiverStreamingFrequency(int freq = -1, int detPos = -1);
+    /**
+     * [All] If receiver streaming frequency is 0, then this timer between each
+     * data stream is set. Default is 500 ms.
+     */
+    void setReceiverStreamingTimer(int time_in_ms = 500, Positions pos = {});
+
+    /** [All] */
+    Result<int> getReceiverStreamingTimer(Positions pos = {}) const;
+
+    // TODO!
+    // int enableDataStreamingToClient(int enable = -1);
+    // int enableDataStreamingFromReceiver(int enable = -1, int detPos = -1)
+
+    /** [TODO! All?] */
+    void setTenGigaEnabled(bool value, Positions pos = {});
+
+    /** [TODO! All?] */
+    Result<bool> getTenGigaEnabled(Positions pos = {}) const;
+
+    /** [All] */
+    void setReceiverFifoDepth(int nframes, Positions pos = {});
+
+    /** [All] */
+    Result<int> getReceiverFifoDepth(Positions pos = {}) const;
+
+    /** [All] */
     void setReceiverSilentMode(bool value, Positions pos = {});
+
+    /** [All] */
+    Result<bool> getReceiverSilentMode(Positions pos = {}) const;
 
     /** [CTB] */
     void setPattern(const std::string &fname, Positions pos = {});

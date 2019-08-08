@@ -20,7 +20,6 @@ class detectorData;
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
-
 #include <future>
 #include <numeric>
 /**
@@ -49,10 +48,10 @@ struct sharedMultiSlsDetector {
 
     /** multi detector type */
     slsDetectorDefs::detectorType multiDetectorType;
-    
+
     /** END OF FIXED PATTERN
      * -----------------------------------------------*/
-    
+
     /** Number of detectors operated at once */
     int numberOfDetector[2];
 
@@ -118,7 +117,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) {
 
-        if (positions.empty() || (positions.size() == 1 && positions[0] == -1 )) {
+        if (positions.empty() ||
+            (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
             std::iota(begin(positions), end(positions), 0);
         }
@@ -141,9 +141,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     template <typename RT, typename... CT>
     std::vector<RT> Parallel(RT (slsDetector::*somefunc)(CT...) const,
                              std::vector<int> positions,
-                             typename NonDeduced<CT>::type... Args) const{
+                             typename NonDeduced<CT>::type... Args) const {
 
-        if (positions.empty() || (positions.size() == 1 && positions[0] == -1 )) {
+        if (positions.empty() ||
+            (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
             std::iota(begin(positions), end(positions), 0);
         }
@@ -165,10 +166,11 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     template <typename... CT>
     void Parallel(void (slsDetector::*somefunc)(CT...),
-                             std::vector<int> positions,
-                             typename NonDeduced<CT>::type... Args) {
+                  std::vector<int> positions,
+                  typename NonDeduced<CT>::type... Args) {
 
-        if (positions.empty() || (positions.size() == 1 && positions[0] == -1 )) {
+        if (positions.empty() ||
+            (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
             std::iota(begin(positions), end(positions), 0);
         }
@@ -187,10 +189,11 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     template <typename... CT>
     void Parallel(void (slsDetector::*somefunc)(CT...) const,
-                             std::vector<int> positions,
-                             typename NonDeduced<CT>::type... Args) const{
+                  std::vector<int> positions,
+                  typename NonDeduced<CT>::type... Args) const {
 
-        if (positions.empty() || (positions.size() == 1 && positions[0] == -1 )) {
+        if (positions.empty() ||
+            (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
             std::iota(begin(positions), end(positions), 0);
         }
@@ -210,7 +213,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Loop through the detectors serially and return the result as a vector
      */
-    
+
     template <typename RT, typename... CT>
     std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...),
                                typename NonDeduced<CT>::type... Args);
@@ -250,13 +253,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Set acquiring flag in shared memory
      * @param b acquiring flag
      */
-    void setAcquiringFlag(bool flag);//
+    void setAcquiringFlag(bool flag); //
 
     /**
      * Get acquiring flag from shared memory
      * @returns acquiring flag
      */
-    bool getAcquiringFlag() const;//
+    bool getAcquiringFlag() const; //
 
     /**
      * Check version compatibility with detector software
@@ -264,7 +267,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param p port type control port or receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void checkDetectorVersionCompatibility(int detPos = -1);//
+    void checkDetectorVersionCompatibility(int detPos = -1); //
 
     /**
      * Check version compatibility with receiver software
@@ -272,7 +275,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param p port type control port or receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void checkReceiverVersionCompatibility(int detPos = -1);//
+    void checkReceiverVersionCompatibility(int detPos = -1); //
 
     /**
      * Get ID or version numbers
@@ -280,34 +283,38 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns Id or version number of that type
      */
-    int64_t getId(idMode mode, int detPos = -1);//not needed anymore (later remove this_software_version from enum)
+    int64_t getId(idMode mode,
+                  int detPos = -1); // not needed anymore (later remove
+                                    // this_software_version from enum)
 
-    int getMultiId()const{return multiId;} //part of multi also
+    int getMultiId() const { return multiId; } // part of multi also
 
     /**
      * Get Client Software version
      * @returns client software version
      */
-    int64_t getClientSoftwareVersion() const;//
+    int64_t getClientSoftwareVersion() const; //
 
     /**
      * Get Receiver software version
      * @return receiver software version
      */
-    int64_t getReceiverSoftwareVersion(int detPos = -1);//
+    int64_t getReceiverSoftwareVersion(int detPos = -1); //
 
     /**
      * Get Detector Number
      * @returns vector of detector number
      */
-    std::vector<int64_t> getDetectorNumber(); // renamed to getDetectorSerialNumber
+    std::vector<int64_t>
+    getDetectorNumber(); // renamed to getDetectorSerialNumber
     /**
      * Free shared memory from the command line
      * avoiding creating the constructor classes and mapping
      * @param multiId multi detector Id
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    static void freeSharedMemory(int multiId, int detPos = -1);// private or not needed
+    static void freeSharedMemory(int multiId,
+                                 int detPos = -1); // private or not needed
 
     /**
      * Free shared memory and delete shared memory structure
@@ -316,27 +323,29 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * object back to state before object creation amap
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void freeSharedMemory(int detPos = -1);//
+    void freeSharedMemory(int detPos = -1); //
 
     /**
      * Get user details of shared memory
      * @returns string with user details
      */
-    std::string getUserDetails();// part of multi
+    std::string getUserDetails(); // part of multi
 
     /**
-     * Sets the hostname of all sls detectors in shared memory and updates local cache
+     * Sets the hostname of all sls detectors in shared memory and updates local
+     * cache
      * @param name hostname of all the sls detectors
      */
-    void setHostname(const std::vector<std::string> &name);//cannot set individually
-    
+    void setHostname(
+        const std::vector<std::string> &name); // cannot set individually
+
     /**
      * Sets the hostname of all sls detectors in shared memory
      * Connects to them
      * @param name concatenated hostname of all the sls detectors
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setHostname(const char *name, int detPos = -1);// not needed
+    void setHostname(const char *name, int detPos = -1); // not needed
 
     /**
      * Gets the hostname of detector at particular position
@@ -345,15 +354,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns concatenated hostnames of all detectors or hostname of specific
      * one
      */
-    std::string getHostname(int detPos = -1) const;//
+    std::string getHostname(int detPos = -1) const; //
 
     /**
      * Appends detectors to the end of the list in shared memory
-     * Connects to them 
+     * Connects to them
      * @param name concatenated hostname of the sls detectors to be appended to
      * the list
      */
-    void addMultipleDetectors(const char *name);// ????
+    void addMultipleDetectors(const char *name); // ????
 
     /**
      * Get Detector type as an enum
@@ -367,7 +376,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns detector type of sls detector in position pos, if -1, returns
      * the first det type
      */
-    detectorType getDetectorTypeAsEnum(int detPos);//??
+    detectorType getDetectorTypeAsEnum(int detPos); //??
 
     /**
      * Concatenates string types of all sls detectors or
@@ -453,12 +462,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int getQuad(int detPos = -1);
 
-    	/**
-	 * Set Quad Type (Only for Eiger Quad detector hardware)
-	 * @param enable true if quad type set, else false
-      * @param detPos -1 for all detectors in  list or specific detector position
-	 */
-	void setQuad(const bool enable, int detPos = -1);
+    /**
+     * Set Quad Type (Only for Eiger Quad detector hardware)
+     * @param enable true if quad type set, else false
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setQuad(const bool enable, int detPos = -1);
 
     /**
      * Set number of rows to read out (Only for Eiger)
@@ -529,11 +538,11 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int setReceiverPort(int port_number = -1, int detPos = -1);
 
-     /**
-      * Get Receiver port
-      * @param detPos -1 for all detectors in  list or specific detector position
-      * @returns vector of receiver port
-      */
+    /**
+     * Get Receiver port
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns vector of receiver port
+     */
     int getReceiverPort(int detPos = -1) const;
 
     /**
@@ -568,7 +577,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Load configuration from a configuration File
      * @param fname configuration file name
      */
-    void readConfigurationFile(const std::string &fname);//
+    void readConfigurationFile(const std::string &fname); //
 
     /**
      * Write current configuration to a file
@@ -699,20 +708,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void configureMAC(int detPos = -1);
-    
-     /**
+
+    /**
      * Set starting frame number for the next acquisition
      * @param val starting frame number
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setStartingFrameNumber(const uint64_t value, int detPos = -1);//
+    void setStartingFrameNumber(const uint64_t value, int detPos = -1); //
 
     /**
      * Get starting frame number for the next acquisition
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns starting frame number
      */
-    uint64_t getStartingFrameNumber(int detPos = -1);//
+    uint64_t getStartingFrameNumber(int detPos = -1); //
 
     /**
      * Set/get timer value (not all implemented for all detectors)
@@ -732,7 +741,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns exposure time in ns, or s if specified
      */
     double setExposureTime(double t = -1, bool inseconds = false,
-                           int detPos = -1);//
+                           int detPos = -1); //
 
     /**
      * Set/get exposure period
@@ -742,7 +751,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns exposure period in ns, or s if specified
      */
     double setExposurePeriod(double t = -1, bool inseconds = false,
-                             int detPos = -1);//
+                             int detPos = -1); //
 
     /**
      * Set/get delay after trigger (Gotthard, Jungfrau(not for this release))
@@ -763,7 +772,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns sub frame exposure time in ns, or s if specified
      */
     double setSubFrameExposureTime(double t = -1, bool inseconds = false,
-                                   int detPos = -1);//
+                                   int detPos = -1); //
 
     /**
      *  (Advanced users)
@@ -843,7 +852,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * adcphase for Gotthard, others for CTB & Moench)
      * @param value (clkdivider 0,1,2 for full, half and quarter speed). Other
      * values check manual
-     * @param mode 0 for shift, 1 for degrees. relevant only for speed type adcphase and dbit phase
+     * @param mode 0 for shift, 1 for degrees. relevant only for speed type
+     * adcphase and dbit phase
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value of speed set
      */
@@ -949,7 +959,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value read from register
      */
-    uint32_t readRegister(uint32_t addr, int detPos = -1);//
+    uint32_t readRegister(uint32_t addr, int detPos = -1); //
 
     /**
      * Set bit in a register. For Advanced users
@@ -958,7 +968,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value read from register
      */
-    uint32_t setBit(uint32_t addr, int n, int detPos = -1);//
+    uint32_t setBit(uint32_t addr, int n, int detPos = -1); //
 
     /**
      * Clear bit in a register. For Advanced users
@@ -967,7 +977,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value read from register
      */
-    uint32_t clearBit(uint32_t addr, int n, int detPos = -1);//
+    uint32_t clearBit(uint32_t addr, int n, int detPos = -1); //
 
     /**
      * Validates the format of the detector MAC address and sets it
@@ -1380,7 +1390,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void loadImageToDetector(imageType index, const std::string &fname,
-                            int detPos = -1);
+                             int detPos = -1);
 
     /**
      * Writes the counter memory block from the detector (Gotthard)
@@ -1389,7 +1399,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void writeCounterBlockFile(const std::string &fname, int startACQ = 0,
-                              int detPos = -1);
+                               int detPos = -1);
 
     /**
      * Resets counter in detector (Gotthard)
@@ -1671,7 +1681,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param hostname name of pc to tftp from
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void copyDetectorServer(const std::string &fname, const std::string &hostname, int detPos = -1);
+    void copyDetectorServer(const std::string &fname,
+                            const std::string &hostname, int detPos = -1);
 
     /**
      * Reboot detector controller (Not Eiger)
@@ -1687,7 +1698,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param fname programming file name
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void update(const std::string &sname, const std::string &hostname, const std::string &fname, int detPos = -1);
+    void update(const std::string &sname, const std::string &hostname,
+                const std::string &fname, int detPos = -1);
 
     /**
      * Power on/off Chip (Jungfrau)
@@ -1706,12 +1718,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setAutoComparatorDisableMode(int ival = -1, int detPos = -1);
 
     /**
-	 * Set Rate correction ( Eiger)
-	 * @param t dead time in ns - if 0 disable correction,
-	 * if >0 set dead time to t, if < 0 set deadtime to default dead time
-	 * for current settings
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 */
+     * Set Rate correction ( Eiger)
+     * @param t dead time in ns - if 0 disable correction,
+     * if >0 set dead time to t, if < 0 set deadtime to default dead time
+     * for current settings
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
     void setRateCorrection(int64_t t = 0, int detPos = -1);
 
     /**
@@ -1777,7 +1789,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns output file directory
      */
-    std::string getFilePath(int detPos = -1);//
+    std::string getFilePath(int detPos = -1); //
 
     /**
      * Sets up the file directory
@@ -1785,14 +1797,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param s file directory
      * @returns file dir
      */
-    std::string setFilePath(const std::string &path, int detPos = -1);//
+    std::string setFilePath(const std::string &path, int detPos = -1); //
 
     /**
      * Returns file name prefix
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file name prefix
      */
-    std::string getFileName(int detPos = -1);//
+    std::string getFileName(int detPos = -1); //
 
     /**
      * Sets up the file name prefix
@@ -1800,7 +1812,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param s file name prefix
      * @returns file name prefix
      */
-    std::string setFileName(const std::string &fname, int detPos = -1);//
+    std::string setFileName(const std::string &fname, int detPos = -1); //
 
     /**
      * Sets the max frames per file in receiver
@@ -1861,57 +1873,51 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Get File index
-     * @param  detPos -1 for all detectors in  list or specific detector position
+     * @param  detPos -1 for all detectors in  list or specific detector
+     * position
      * @returns file index
      */
     int getFileIndex(int detPos = -1) const;
 
     /**
-     * increments file index
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the file index
-     */
-    int incrementFileIndex(int detPos = -1);
-
-    /**
      * Receiver starts listening to packets
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void startReceiver(int detPos = -1);//
+    void startReceiver(int detPos = -1); //
 
     /**
      * Stops the listening mode of receiver
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void stopReceiver(int detPos = -1);//
+    void stopReceiver(int detPos = -1); //
 
     /**
      * Gets the status of the listening mode of receiver
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns status
      */
-    runStatus getReceiverStatus(int detPos = -1);//
+    runStatus getReceiverStatus(int detPos = -1); //
 
     /**
      * Gets the number of frames caught by receiver
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of frames caught by receiver
      */
-    int getFramesCaughtByReceiver(int detPos = -1);
+    int getFramesCaughtByReceiver(int detPos = -1); //
 
     /**
      * Gets the current frame index of receiver
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns average of all current frame index of receiver
      */
-    uint64_t getReceiverCurrentFrameIndex(int detPos = -1);
+    uint64_t getReceiverCurrentFrameIndex(int detPos = -1); //
 
     /**
      * Resets framescaught in receiver
      * Use this when using startAcquisition instead of acquire
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void resetFramesCaught(int detPos = -1);
+    void resetFramesCaught(int detPos = -1); //
 
     /**
      * Create Receiving Data Sockets
@@ -1932,13 +1938,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file write enable
      */
-    int setFileWrite(bool value, int detPos = -1);//
+    int setFileWrite(bool value, int detPos = -1); //
 
     /**
      * Gets file write enable
      * @returns file write enable
      */
-    int getFileWrite(int detPos = -1) const;//
+    int getFileWrite(int detPos = -1) const; //
 
     /**
      * Sets/Gets receiver master file write enable
@@ -1946,14 +1952,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns master file write enable
      */
-    int setMasterFileWrite(bool value, int detPos = -1);
+    int setMasterFileWrite(bool value, int detPos = -1); //
 
     /**
      * Gets master file write enable
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns master file write enable
      */
-    int getMasterFileWrite(int detPos = -1) const;
+    int getMasterFileWrite(int detPos = -1) const; //
 
     /**
      * Sets/Gets file overwrite enable
@@ -1961,14 +1967,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file overwrite enable
      */
-    int setFileOverWrite(bool enable, int detPos = -1);//
+    int setFileOverWrite(bool enable, int detPos = -1); //
 
     /**
      * Gets file over write enable
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file over write enable
      */
-    int getFileOverWrite(int detPos = -1) const;//
+    int getFileOverWrite(int detPos = -1) const; //
 
     /**
      * (previously setReadReceiverFrequency)
@@ -1989,7 +1995,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns receiver streaming timer in ms
      */
-    int setReceiverStreamingTimer(int time_in_ms = 500, int detPos = -1);
+    int setReceiverStreamingTimer(int time_in_ms = 500, int detPos = -1); //
 
     /**
      * Enable data streaming to client
@@ -2012,7 +2018,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns if 10Gbe is enabled
      */
-    int enableTenGigabitEthernet(int i = -1, int detPos = -1);
+    int enableTenGigabitEthernet(int i = -1, int detPos = -1); //
 
     /**
      * Set/get receiver fifo depth
@@ -2020,7 +2026,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver fifo depth
      */
-    int setReceiverFifoDepth(int i = -1, int detPos = -1);
+    int setReceiverFifoDepth(int i = -1, int detPos = -1); //
 
     /**
      * Set/get receiver silent mode
@@ -2044,7 +2050,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns actual value
      */
-    uint64_t setPatternIOControl(uint64_t word = -1, int detPos = -1);//
+    uint64_t setPatternIOControl(uint64_t word = -1, int detPos = -1); //
 
     /**
      * Sets pattern clock control (CTB/ Moench)
@@ -2121,7 +2127,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param mask mask to select bits
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setPatternBitMask(uint64_t mask, int detPos = -1);//
+    void setPatternBitMask(uint64_t mask, int detPos = -1); //
 
     /**
      * Gets the bits that the mask will be applied to for every pattern (CTB/
@@ -2129,7 +2135,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns mask  of bits selected
      */
-    uint64_t getPatternBitMask(int detPos = -1);//
+    uint64_t getPatternBitMask(int detPos = -1); //
 
     /**
      * Set LED Enable (Moench, CTB only)
@@ -2191,8 +2197,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * s is for subframe number for eiger for 32 bit mode
      * @param pArg argument
      */
-    void registerDataCallback(void (*userCallback)(detectorData *, uint64_t, uint32_t,
-                                                  void *),
+    void registerDataCallback(void (*userCallback)(detectorData *, uint64_t,
+                                                   uint32_t, void *),
                               void *pArg);
 
     /**
@@ -2202,16 +2208,21 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * index, loops for measurements, calls required call backs.
      * @returns OK or FAIL depending on if it already started
      */
-    int acquire();//
+    int acquire(); //
 
     /**
      * Combines data from all readouts and gives it to the gui
      * or just gives progress of acquisition by polling receivers
      */
     void processData();
- 
 
   private:
+    /**
+     * increments file index
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the file index
+     */
+    int incrementFileIndex(int detPos = -1);
     /**
      * Creates/open shared memory, initializes detector structure and members
      * Called by constructor/ set hostname / read config file
@@ -2219,8 +2230,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    void setupMultiDetector(bool verify = true, bool update = true); 
-    
+    void setupMultiDetector(bool verify = true, bool update = true);
+
     /**
      * Initialize (open/create) shared memory for the sharedMultiDetector
      * structure

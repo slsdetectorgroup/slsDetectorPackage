@@ -171,7 +171,52 @@ Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
 
 // Erik
 
-Result<bool> Detector::getReceiverSilentMode(Positions pos){
+Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getFramesCaughtByReceiver, pos);
+}
+
+Result<uint64_t> Detector::getReceiverCurrentFrameIndex(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverCurrentFrameIndex, pos);
+}
+
+void Detector::resetFramesCaught(Positions pos) {
+    pimpl->Parallel(&slsDetector::resetFramesCaught, pos);
+}
+
+void Detector::setMasterFileWrite(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setMasterFileWrite, pos, value);
+}
+
+Result<bool> Detector::getMasterFileWrite(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getMasterFileWrite, pos);
+}
+
+void Detector::setReceiverStreamingTimer(int time_in_ms, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverStreamingTimer, pos, time_in_ms);
+}
+
+Result<int> Detector::getReceiverStreamingTimer(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setReceiverStreamingTimer, pos, -1);
+}
+
+void Detector::setTenGigaEnabled(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::enableTenGigabitEthernet, pos,
+                    static_cast<int>(value));
+}
+
+Result<bool> Detector::getTenGigaEnabled(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::enableTenGigabitEthernet, pos, -1);
+}
+
+Result<int> Detector::getReceiverFifoDepth(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setReceiverFifoDepth, pos, -1);
+}
+
+void Detector::setReceiverFifoDepth(int nframes, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverFifoDepth, pos, nframes);
+}
+
+Result<bool> Detector::getReceiverSilentMode(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setReceiverSilentMode, pos, -1);
 }
 

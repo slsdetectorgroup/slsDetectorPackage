@@ -230,7 +230,7 @@ void Detector::setReadNLines(const int value, Positions pos) {
 
 
 // Erik
-Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const{
+Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFramesCaughtByReceiver, pos);
 }
 
@@ -357,6 +357,53 @@ Result<bool> Detector::getLEDEnable(Positions pos) const {
 
 void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos) {
     pimpl->Parallel(&slsDetector::setDigitalIODelay, pos, pinMask, delay);
+}
+
+Result<int> Detector::getFileIndex(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getFileIndex, pos);
+}
+
+void Detector::setFileIndex(int i, Positions pos) {
+    pimpl->Parallel(&slsDetector::setFileIndex, pos, i);
+}
+
+Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getFileFormat, pos);
+}
+
+void Detector::setFileFormat(defs::fileFormat f, Positions pos) {
+    pimpl->Parallel(&slsDetector::setFileFormat, pos, f);
+}
+
+Result<bool> Detector::getPartialFramesPadding(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getPartialFramesPadding, pos);
+}
+
+void Detector::setPartialFramesPadding(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setPartialFramesPadding, pos, value);
+}
+
+void Detector::setReceiverFrameDiscardPolicy(defs::frameDiscardPolicy f,
+                                             Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverFramesDiscardPolicy, pos, f);
+}
+
+Result<defs::frameDiscardPolicy>
+Detector::getReceiverFrameDiscardPolicy(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setReceiverFramesDiscardPolicy, pos,
+                           defs::GET_FRAME_DISCARD_POLICY);
+}
+
+void Detector::setFramesPerFile(int n, Positions pos) {
+    pimpl->Parallel(&slsDetector::setFramesPerFile, pos, n);
+}
+
+Result<int> Detector::getFramesPerFile(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getFramesPerFile, pos);
+}
+
+Result<std::string> Detector::getReceiverLastClientIP(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getReceiverLastClientIP, pos);
 }
 
 } // namespace sls

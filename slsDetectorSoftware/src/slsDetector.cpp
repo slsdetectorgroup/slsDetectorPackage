@@ -654,12 +654,12 @@ int slsDetector::getNChips() const { return shm()->nChips; }
 
 int slsDetector::getNChips(dimension d) const { return shm()->nChip[d]; }
 
-int slsDetector::getQuad() {
+bool slsDetector::getQuad() {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Quad Type";
     sendToDetector(F_GET_QUAD, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Quad Type :" << retval;
-    return retval;
+    return (retval == 0 ? false : true);
 }
 
 void slsDetector::setQuad(const bool enable) {
@@ -693,10 +693,22 @@ int slsDetector::getDetectorOffset(dimension d) const {
     return shm()->offset[d];
 }
 
+slsDetectorDefs::coordinates slsDetector::getDetectorOffsets() const {
+    slsDetectorDefs::coordinates coord;
+    coord.x = shm()->offset[X];
+    coord.y = shm()->offset[Y]; 
+    return coord;
+}
+
 void slsDetector::setDetectorOffset(dimension d, int off) {
     if (off >= 0) {
         shm()->offset[d] = off;
     }
+}
+
+void slsDetector::setDetectorOffsets(slsDetectorDefs::coordinates value) {
+    shm()->offset[X] = value.x;
+    shm()->offset[Y] = value.y; 
 }
 
 void slsDetector::updateMultiSize(int detx, int dety) {

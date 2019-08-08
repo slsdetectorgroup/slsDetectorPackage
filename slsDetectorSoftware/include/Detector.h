@@ -252,6 +252,51 @@ class Detector {
      */
     void setMaxNumberOfChannels(const defs::coordinates value);
 
+    /**
+     * Get Detector offset from shared memory (Gotthard only)
+     * @param pos detector position
+     * @returns offset in both dimensions
+     */
+    Result<defs::coordinates> getDetectorOffsets(Positions pos = {}) const;
+
+    /**
+     * Set Detector offset in shared memory for each module
+     * @param value offset for detector in both dimensions
+     * @param pos detector position
+     */
+    void setDetectorOffsets(defs::coordinates value, Positions pos = {});
+
+    /**
+     * Get Quad Type (Only for Eiger Quad detector hardware)
+     * @param pos detector position
+     * @returns quad type
+     */
+    Result<bool> getQuad(Positions pos = {}) const;
+
+    /**
+     * Set Quad Type (Only for Eiger Quad detector hardware)
+     * @param enable true if quad type set, else false
+     * @param pos detector position
+     */
+    void setQuad(const bool enable, Positions pos = {});
+
+    /**
+     * Get number of rows to read out (Only for Eiger)
+     * @param pos detector position
+     * @returns number of lines
+     */
+    Result<int> getReadNLines(Positions pos = {}) const;
+
+    /**
+     * Set number of rows to read out (Only for Eiger)
+     * @param value number of lines
+     * @param pos detector position
+     */
+    void setReadNLines(const int value, Positions pos = {});
+
+
+
+
     // Erik
 
 
@@ -335,7 +380,7 @@ class Detector {
      * @param start start address for level 0-2
      * @param stop stop address for level 0-2
      * @param n number of loops for level 0-2
-     * @param detPos -1 for all detectors in  list or specific detector position
+     * @param pos detector position
      */
     void setPatternLoops(int level, int start, int stop, int n,
                          Positions pos = {});

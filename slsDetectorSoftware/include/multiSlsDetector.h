@@ -476,41 +476,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void setMaxNumberOfChannels(const slsDetectorDefs::coordinates c);  //
 
     /**
-     * Get Quad Type (Only for Eiger Quad detector hardware)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns quad type
-     */
-    int getQuad(int detPos = -1);
-
-    /**
-     * Set Quad Type (Only for Eiger Quad detector hardware)
-     * @param enable true if quad type set, else false
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setQuad(const bool enable, int detPos = -1);
-
-    /**
-     * Set number of rows to read out (Only for Eiger)
-     * @param value number of lines
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setReadNLines(const int value, int detPos = -1);
-
-    /**
-     * Get number of rows to read out (Only for Eiger)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns  number of lines
-     */
-    int getReadNLines(int detPos = -1);
-
-    /**
      * Get Detector offset from shared memory in dimension d
      * @param d dimension d
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns offset in dimension d, -1 if pos is not an actual position in
      * list
      */
-    int getDetectorOffset(dimension d, int detPos = -1);
+    int getDetectorOffset(dimension d, int detPos = -1); //
 
     /**
      * Set Detector offset in shared memory in dimension d
@@ -518,13 +490,35 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param off offset for detector
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setDetectorOffset(dimension d, int off, int detPos = -1);
+    void setDetectorOffset(dimension d, int off, int detPos = -1);//
 
     /**
-     * Updates the channel offsets in X and Y dimension for all the sls
-     * detectors It is required for decodeNMod and setting ROI
+     * Get Quad Type (Only for Eiger Quad detector hardware)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns quad type
      */
-    void updateOffsets();
+    int getQuad(int detPos = -1);//
+
+    /**
+     * Set Quad Type (Only for Eiger Quad detector hardware)
+     * @param enable true if quad type set, else false
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setQuad(const bool enable, int detPos = -1);//
+
+    /**
+     * Set number of rows to read out (Only for Eiger)
+     * @param value number of lines
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setReadNLines(const int value, int detPos = -1);//
+
+    /**
+     * Get number of rows to read out (Only for Eiger)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns  number of lines
+     */
+    int getReadNLines(int detPos = -1);//
 
     /**
      * Checks if each of the detectors are online/offline
@@ -2301,6 +2295,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns detector id or -1 if channel number out of range
      */
     int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);
+
+    /**
+     * Updates the channel offsets in X and Y dimension for all the sls
+     * detectors It is required for decodeNMod and setting ROI
+     */
+    void updateOffsets();
 
     /**
      * Execute in command line and return result

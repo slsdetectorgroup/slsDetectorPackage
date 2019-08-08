@@ -209,7 +209,8 @@ Result<defs::coordinates> Detector::getDetectorOffsets(Positions pos) const {
 }
 
 void Detector::setDetectorOffsets(defs::coordinates value, Positions pos) {
-    return pimpl->Parallel(&slsDetector::setDetectorOffsets, pos, value);
+    pimpl->Parallel(&slsDetector::setDetectorOffsets, pos, value);
+    //pimpl->Parallel<defs::coordinates>(&slsDetector::setDetectorOffset, pos, value);
 }
 
 Result<bool> Detector::getQuad(Positions pos) const {

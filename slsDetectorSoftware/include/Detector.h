@@ -295,28 +295,32 @@ class Detector {
     void setReadNLines(const int value, Positions pos = {});
 
     /**
-     * Get Detector Control TCP port (for client communication with Detector control server)
+     * Get Detector Control TCP port (for client communication with Detector
+     * control server)
      * @param pos detector position
      * @returns control TCP port
      */
     Result<int> getControlPort(Positions pos = {}) const;
 
     /**
-     * Set Detector Control TCP port (for client communication with Detector control server)
+     * Set Detector Control TCP port (for client communication with Detector
+     * control server)
      * @param value port number
      * @param pos detector position
      */
     void setControlPort(int value, Positions pos = {});
 
     /**
-     * Get Detector Stop TCP port (for client communication with Detector Stop server)
+     * Get Detector Stop TCP port (for client communication with Detector Stop
+     * server)
      * @param pos detector position
      * @returns Stop TCP port
      */
     Result<int> getStopPort(Positions pos = {}) const;
 
     /**
-     * Set Detector Stop TCP port (for client communication with Detector Stop server)
+     * Set Detector Stop TCP port (for client communication with Detector Stop
+     * server)
      * @param value port number
      * @param pos detector position
      */
@@ -336,6 +340,39 @@ class Detector {
      */
     void setReceiverPort(int value, Positions pos = {});
 
+    /**
+     * Gets Lock for detector control server to this client IP
+     * @param pos detector position
+     * @returns lock
+     */
+    Result<bool> getLockServer(Positions pos = {});
+
+    /**
+     * Sets Lock for detector control server to this client IP
+     * @param value lock
+     * @param pos detector position
+     */
+    void setLockServer(bool value, Positions pos = {});
+
+    /**
+     * Get last client IP saved on detector server
+     * @param pos detector position
+     * @returns last client IP saved on detector server
+     */
+    Result<std::string> getLastClientIP(Positions pos = {});
+
+    /**
+     * Exit detector server
+     * @param pos detector position
+     */
+    void exitServer(Positions pos = {});
+
+    /**
+     * Execute a command on the detector server
+     * @param value command
+     * @param pos detector position
+     */
+    void execCommand(const std::string &value, Positions pos = {});
 
     // Erik
 
@@ -524,14 +561,13 @@ class Detector {
 
     void printReceiverConfiguration(Positions pos = {}) const;
 
-
     /** [Eiger]
      * @returns deadtime in ns, 0 = disabled
      */
     Result<int64_t> getRateCorrection(Positions pos = {}) const;
 
     /**
-     * [Eiger] Set Rate correction 
+     * [Eiger] Set Rate correction
      * 0 disable correction, <0 set to default, >0 deadtime in ns
      */
     void setRateCorrection(int64_t dead_time_ns, Positions pos = {});

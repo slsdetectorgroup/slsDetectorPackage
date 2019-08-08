@@ -484,9 +484,9 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Lock server for this client IP
      * @param p 0 to unlock, 1 to lock (-1 gets)
-     * @returns 1 for locked or 0 for unlocked
+     * @returns true for locked or false for unlocked
      */
-    int lockServer(int lock = -1);
+    bool lockServer(int lock = -1);
 
     /**
      * Get last client IP saved on detector server

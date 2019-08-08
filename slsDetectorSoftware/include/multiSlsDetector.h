@@ -557,27 +557,27 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns 1 for locked or 0 for unlocked
      */
-    int lockServer(int p = -1, int detPos = -1);
+    int lockServer(int p = -1, int detPos = -1);//
 
     /**
      * Get last client IP saved on detector server
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns last client IP saved on detector server
      */
-    std::string getLastClientIP(int detPos = -1);
+    std::string getLastClientIP(int detPos = -1);//
 
     /**
      * Exit detector server
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void exitServer(int detPos = -1);
+    void exitServer(int detPos = -1);//
 
     /**
      * Execute a command on the detector server
      * @param cmd command
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void execCommand(const std::string &cmd, int detPos);
+    void execCommand(const std::string &cmd, int detPos);//
 
     /**
      * Load configuration from a configuration File

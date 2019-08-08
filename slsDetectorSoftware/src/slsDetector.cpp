@@ -761,12 +761,12 @@ int slsDetector::getControlPort() const { return shm()->controlPort; }
 
 int slsDetector::getStopPort() const { return shm()->stopPort; }
 
-int slsDetector::lockServer(int lock) {
+bool slsDetector::lockServer(int lock) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting detector server lock to " << lock;
     sendToDetector(F_LOCK_SERVER, lock, retval);
     FILE_LOG(logDEBUG1) << "Lock: " << retval;
-    return retval;
+    return (retval == 1 ? true : false);
 }
 
 std::string slsDetector::getLastClientIP() {

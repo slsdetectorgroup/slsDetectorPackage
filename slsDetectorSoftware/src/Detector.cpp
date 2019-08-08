@@ -254,6 +254,26 @@ void Detector::setReceiverPort(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverPort, pos, value);
 }
 
+Result<bool> Detector::getLockServer(Positions pos) {
+    return pimpl->Parallel(&slsDetector::lockServer, pos, -1);
+}
+
+void Detector::setLockServer(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::lockServer, pos, static_cast<int>(value));
+}
+
+Result<std::string> Detector::getLastClientIP(Positions pos) {
+    return pimpl->Parallel(&slsDetector::getLastClientIP, pos);
+}
+
+void Detector::exitServer(Positions pos) {
+    pimpl->Parallel(&slsDetector::exitServer, pos);
+}
+
+void Detector::execCommand(const std::string &value, Positions pos) {
+    pimpl->Parallel(&slsDetector::execCommand, pos, value);
+}
+
 // Erik
 Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFramesCaughtByReceiver, pos);

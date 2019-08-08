@@ -340,6 +340,40 @@ class Detector {
      */
     void setReceiverPort(int value, Positions pos = {});
 
+    /**
+     * Gets Lock for detector control server to this client IP
+     * @param pos detector position
+     * @returns lock
+     */
+    Result<bool> getLockServer(Positions pos = {});
+
+    /**
+     * Sets Lock for detector control server to this client IP
+     * @param value lock
+     * @param pos detector position
+     */
+    void setLockServer(bool value, Positions pos = {});
+
+    /**
+     * Get last client IP saved on detector server
+     * @param pos detector position
+     * @returns last client IP saved on detector server
+     */
+    Result<std::string> getLastClientIP(Positions pos = {});
+
+    /**
+     * Exit detector server
+     * @param pos detector position
+     */
+    void exitServer(Positions pos = {});
+
+    /**
+     * Execute a command on the detector server
+     * @param value command
+     * @param pos detector position
+     */
+    void execCommand(const std::string &value, Positions pos = {});
+
     // Erik
 
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;

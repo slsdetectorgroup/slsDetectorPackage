@@ -299,44 +299,42 @@ class Detector {
      * @param pos detector position
      * @returns receiver port
      */
-    //int getControlort(Positions pos = {}) const;
+    // int getControlort(Positions pos = {}) const;
 
     /**
      * Set TCP Port of the detector (for client communication with Receiver)
      * @param value port number
      * @param pos detector position
      */
-    //void setControlPort(int port_number, Positions pos = {});
+    // void setControlPort(int port_number, Positions pos = {});
 
     /**
      * Get Receiver TCP port (for client communication with Receiver)
      * @param pos detector position
      * @returns receiver port
      */
-    //int getStopPort(Positions pos = {}) const;
+    // int getStopPort(Positions pos = {}) const;
 
     /**
      * Set TCP Port of the detector (for client communication with Receiver)
      * @param value port number
      * @param pos detector position
      */
-    //void setStopPort(int port_number, Positions pos = {});
+    // void setStopPort(int port_number, Positions pos = {});
 
-        /**
+    /**
      * Get Receiver TCP port (for client communication with Receiver)
      * @param pos detector position
      * @returns receiver port
      */
-    //int getReceiverPort(Positions pos = {}) const;
+    // int getReceiverPort(Positions pos = {}) const;
 
     /**
      * Set TCP Port of the detector (for client communication with Receiver)
      * @param value port number
      * @param pos detector position
      */
-    //void setReceiverPort(int port_number, Positions pos = {});
-
-
+    // void setReceiverPort(int port_number, Positions pos = {});
 
     // Erik
 
@@ -525,17 +523,61 @@ class Detector {
 
     void printReceiverConfiguration(Positions pos = {}) const;
 
-
     /** [Eiger]
      * @returns deadtime in ns, 0 = disabled
      */
     Result<int64_t> getRateCorrection(Positions pos = {}) const;
 
     /**
-     * [Eiger] Set Rate correction 
+     * [Eiger] Set Rate correction
      * 0 disable correction, <0 set to default, >0 deadtime in ns
      */
     void setRateCorrection(int64_t dead_time_ns, Positions pos = {});
+
+    /** [Jungfrau] TODO??? fix docs */
+    void setAutoCompDisable(bool value, Positions pos = {});
+
+    Result<bool> getAutoCompDisable(Positions pos = {}) const;
+
+    void setPowerChip(bool on, Positions pos = {});
+
+    Result<bool> getPowerChip(Positions pos = {}) const;
+
+    /**
+     * Updates the firmware, detector server and then reboots detector
+     * controller blackfin. (Not Eiger)
+     * @param sname name of detector server binary
+     * @param hostname name of pc to tftp from
+     * @param fname programming file name
+     * @param pos detector positions
+     */
+    void updateFirmwareAndServer(const std::string &sname,
+                                 const std::string &hostname,
+                                 const std::string &fname, Positions pos = {});
+
+    /** [not Eiger] TODO! is this needed?*/
+    void rebootController(Positions pos = {});
+
+    /** Copy detector server to detector */
+    void copyDetectorServer(const std::string &fname,
+                            const std::string &hostname, Positions pos = {});
+
+
+    /** [not Eiger] */
+    void resetFPGA(Positions pos = {});
+
+    /** [not Eiger] */
+    void programFPGA(const std::string &fname, Positions pos = {});
+
+    /**
+     * [Jungfrau] Set first storage cell of the series (Jungfrau)
+     * @param value storage cell index. Value can be 0 to 15.
+     */
+    void setStoragecellStart(int cell, Positions pos = {});
+
+    Result<int> getStorageCellStart(Positions pos = {}) const;
+
+
 };
 
 } // namespace sls

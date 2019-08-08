@@ -209,7 +209,8 @@ Result<defs::coordinates> Detector::getDetectorOffsets(Positions pos) const {
 }
 
 void Detector::setDetectorOffsets(defs::coordinates value, Positions pos) {
-    pimpl->Parallel<defs::coordinates>(&slsDetector::setDetectorOffset, pos, value);
+    pimpl->Parallel<defs::coordinates>(&slsDetector::setDetectorOffset, pos,
+                                       value);
 }
 
 Result<bool> Detector::getQuad(Positions pos) const {
@@ -227,8 +228,6 @@ Result<int> Detector::getReadNLines(Positions pos) const {
 void Detector::setReadNLines(const int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setReadNLines, pos, value);
 }
-
-
 
 // Erik
 Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const {
@@ -430,6 +429,58 @@ Result<int64_t> Detector::getRateCorrection(Positions pos) const {
 
 void Detector::setRateCorrection(int64_t dead_time_ns, Positions pos) {
     pimpl->Parallel(&slsDetector::setRateCorrection, pos, dead_time_ns);
+}
+
+void Detector::setAutoCompDisable(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setAutoComparatorDisableMode, pos,
+                    static_cast<int>(value));
+}
+
+Result<bool> Detector::getAutoCompDisable(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setAutoComparatorDisableMode, pos, -1);
+}
+
+void Detector::setPowerChip(bool on, Positions pos) {
+    pimpl->Parallel(&slsDetector::powerChip, pos, static_cast<int>(on));
+}
+
+Result<bool> Detector::getPowerChip(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::powerChip, pos, -1);
+}
+
+void Detector::updateFirmwareAndServer(const std::string &sname,
+                                       const std::string &hostname,
+                                       const std::string &fname,
+                                       Positions pos) {
+    copyDetectorServer(fname, hostname, pos);
+    programFPGA(fname, pos);
+}
+
+void Detector::rebootController(Positions pos) {
+    pimpl->Parallel(&slsDetector::rebootController, pos);
+}
+
+void Detector::copyDetectorServer(const std::string &fname,
+                                  const std::string &hostname, Positions pos) {
+    pimpl->Parallel(&slsDetector::copyDetectorServer, pos, fname, hostname);
+}
+
+void Detector::resetFPGA(Positions pos) {
+    pimpl->Parallel(&slsDetector::resetFPGA, pos);
+}
+
+void Detector::programFPGA(const std::string &fname, Positions pos) {
+    FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
+    std::vector<char> buffer = pimpl->readPofFile(fname);
+    pimpl->Parallel(&slsDetector::programFPGA, pos, buffer);
+}
+
+void Detector::setStoragecellStart(int cell, Positions pos) {
+    pimpl->Parallel(&slsDetector::setStoragecellStart, pos, cell);
+}
+
+Result<int> Detector::getStorageCellStart(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setStoragecellStart, pos, -1);
 }
 
 } // namespace sls

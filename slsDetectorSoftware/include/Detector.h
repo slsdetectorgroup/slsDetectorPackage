@@ -735,6 +735,85 @@ class Detector {
     void setStoragecellStart(int cell, Positions pos = {});
 
     Result<int> getStorageCellStart(Positions pos = {}) const;
+
+    /** [Jungfrau] 1 there was an temperature event */
+    void setTemperatureEvent(int val, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<int> getTemperatureEvent(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setTemperatureControl(bool enable, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<bool> getTemperatureControl(Positions pos = {}) const;
+
+    /**
+     * [Jungfrau]Set threshold temperature
+     * @param val value in millidegrees TODO! Verify
+     */
+    void setThresholdTemperature(int temp, Positions pos = {});
+
+    Result<int> getThresholdTemperature(Positions pos = {}) const;
+
+    /** [Eiger] */
+    void pulseChip(int n, Positions pos = {});
+
+    /**
+     * [Eiger] Pulse Pixel and move by a relative value
+     * @param n is number of times to pulse
+     * @param x is relative x value
+     * @param y is relative y value
+     */
+    void pulsePixelNMove(int n, int x, int y, Positions pos = {});
+
+    /**
+     * [Eiger] Pulse Pixel
+     * @param n is number of times to pulse
+     * @param x is x coordinate
+     * @param y is y coordinate
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void pulsePixel(int n, int x, int y, Positions pos = {});
+
+    /**[Eiger] Returns energies in eV where the module is trimmed */
+    Result<std::vector<int>> getTrimEn(Positions pos = {}) const;
+
+    /** [Eiger] Set the energies where the detector is trimmed */
+    void setTrimEn(std::vector<int> energies, Positions pos = {});
+
+    /**
+     * [Eiger] not 4 bit mode
+     * Fills in gap pixels in data
+     */
+    void setGapPixelsEnable(bool enable, Positions pos = {});
+
+    Result<bool> getGapPixelEnable(Positions pos = {}) const;
+
+    /**[Eiger] */
+    void setAllTrimbits(int value, Positions pos = {});
+
+    /** [Eiger] TODO! only Eiger? */
+    void setFlippedData(defs::dimension d, bool flipped, Positions pos = {});
+
+    Result<bool> getFlippedData(defs::dimension d, Positions pos = {}) const;
+
+    /**
+     * [Eiger] Set deactivated Receiver padding mode
+     * @param padding padding option for deactivated receiver. Can be true
+     * (padding), false (no padding)
+     */
+    void setRxPadDeactivatedMod(bool pad, Positions pos = {});
+
+    Result<bool> getRxPadDeactivatedMod(Positions pos = {}) const;
+
+    /**
+     * [Eiger] Activates/Deactivates the detector
+     * @param true = active or false inactive
+     */
+    void setActive(bool active, Positions pos = {});
+
+    Result<bool> getActive(Positions pos = {}) const;
 };
 
 } // namespace sls

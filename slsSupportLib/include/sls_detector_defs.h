@@ -284,6 +284,12 @@ format
         Y = 1  /**< Y dimension */
     };
 
+#ifdef __cplusplus
+    struct coordinates {
+        int x{0};
+        int y{0};
+    };
+#endif
     /**
        enable/disable flags
     */

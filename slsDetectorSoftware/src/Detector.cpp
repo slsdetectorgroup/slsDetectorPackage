@@ -142,7 +142,7 @@ Result<int64_t> Detector::getDetectorSerialNumber(Positions pos) const {
                            defs::DETECTOR_SERIAL_NUMBER);
 }
 
-Result<int64_t> Detector::getClientSoftwareVersion() const {
+int64_t Detector::getClientSoftwareVersion() const {
     return pimpl->getClientSoftwareVersion();
 }
 
@@ -152,8 +152,8 @@ Result<int64_t> Detector::getReceiverSoftwareVersion(Positions pos) const {
 
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
-void Detector::setHostname(const std::vector<std::string> &name) {
-    pimpl->setHostname(name);
+void Detector::setHostname(const std::vector<std::string> &value) {
+    pimpl->setHostname(value);
 }
 
 defs::detectorType Detector::getDetectorTypeAsEnum() const {
@@ -169,18 +169,39 @@ Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsString, pos);
 }
 
-int Detector::getNumberOfDetectors() const {
+int Detector::getTotalNumberOfDetectors() const {
     return pimpl->getNumberOfDetectors();
 }
 
-int Detector::getNumberOfDetectors(defs::dimension d) const {
-    return pimpl->getNumberOfDetectors(d);
+defs::coordinates Detector::getNumberOfDetectors() const {
+    defs::coordinates coord;
+    coord.x = pimpl->getNumberOfDetectors(defs::X);
+    coord.y = pimpl->getNumberOfDetectors(defs::Y);
+    return coord;
 }
 
-void Detector::getNumberOfDetectors(int &nx, int &ny) const {
-    pimpl->getNumberOfDetectors(nx, ny);
+Result<defs::coordinates> Detector::getNumberOfChannels(Positions pos) const {
+    if (pos.empty() || (pos.size() == 1 && pos[0] == -1)) {
+        return {pimpl->getNumberOfChannels()};
+    }
+    return pimpl->Parallel(&slsDetector::getNumberOfChannels, pos);
 }
 
+Result<defs::coordinates>
+Detector::getNumberOfChannelsInclGapPixels(Positions pos) const {
+    if (pos.empty() || (pos.size() == 1 && pos[0] == -1)) {
+        return {pimpl->getTotalNumberOfChannelsInclGapPixels()};
+    }
+    return pimpl->Parallel(&slsDetector::getNumberOfChannelsInclGapPixels, pos);
+}
+
+defs::coordinates Detector::getMaxNumberOfChannels() const {
+    return pimpl->getMaxNumberOfChannels();
+}
+
+void Detector::setMaxNumberOfChannels(const defs::coordinates value) {
+    pimpl->setMaxNumberOfChannels(value);
+}
 // Erik
 
 Result<uint64_t> Detector::getPatternMask(Positions pos) {

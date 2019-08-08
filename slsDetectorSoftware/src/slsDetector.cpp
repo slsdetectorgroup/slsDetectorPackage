@@ -626,10 +626,25 @@ int slsDetector::getTotalNumberOfChannels(dimension d) const {
     return shm()->nChan[d] * shm()->nChip[d];
 }
 
+slsDetectorDefs::coordinates slsDetector::getNumberOfChannels() const {
+    slsDetectorDefs::coordinates coord;
+    coord.x = shm()->nChan[X] * shm()->nChip[X];
+    coord.y = shm()->nChan[Y] * shm()->nChip[Y]; 
+    return coord;
+}
+
 int slsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d) const {
     return (shm()->nChan[d] * shm()->nChip[d] +
             shm()->gappixels * shm()->nGappixels[d]);
 }
+
+slsDetectorDefs::coordinates slsDetector::getNumberOfChannelsInclGapPixels() const {
+    slsDetectorDefs::coordinates coord;
+    coord.x = (shm()->nChan[X] * shm()->nChip[X] + shm()->gappixels * shm()->nGappixels[X]);
+    coord.y = (shm()->nChan[Y] * shm()->nChip[Y] + shm()->gappixels * shm()->nGappixels[Y]);
+    return coord;
+}
+
 
 int slsDetector::getNChans() const { return shm()->nChans; }
 

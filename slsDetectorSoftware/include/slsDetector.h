@@ -351,6 +351,12 @@ class slsDetector : public virtual slsDetectorDefs {
     int getTotalNumberOfChannels(dimension d) const;
 
     /**
+     * Returns the total number of channels from shared memory in each dimension
+     * @returns the total number of channels in each dimension
+     */
+    slsDetectorDefs::coordinates getNumberOfChannels() const;
+
+    /**
      * Returns the total number of channels of in dimension d including gap
      * pixels from shared memory
      * @param d dimension d
@@ -358,6 +364,12 @@ class slsDetector : public virtual slsDetectorDefs {
      * including gap pixels
      */
     int getTotalNumberOfChannelsInclGapPixels(dimension d) const;
+
+    /**
+     * Returns the total number of channels including gap pixels
+     * @returns the total number of channels including gap pixels
+     */
+    slsDetectorDefs::coordinates getNumberOfChannelsInclGapPixels() const;  
 
     /**
      * returns the number of channels per chip from shared memory (Mythen)

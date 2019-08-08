@@ -396,7 +396,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the total number of channels of all sls detectors
      */
-    int getTotalNumberOfChannels(int detPos = -1);
+    int getTotalNumberOfChannels(int detPos = -1);//
 
     /**
      * Returns the total number of channels of all sls detectors in dimension d
@@ -405,7 +405,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the total number of channels of all sls detectors in dimension d
      */
-    int getTotalNumberOfChannels(dimension d, int detPos = -1);
+    int getTotalNumberOfChannels(dimension d, int detPos = -1);//
+
+    /**
+     * Returns the total number of channels from shared memory in each dimension
+     * @returns the total number of channels in each dimension
+     */
+    slsDetectorDefs::coordinates getNumberOfChannels() const; //
 
     /**
      * Returns the total number of channels of all sls detectors in dimension d
@@ -415,7 +421,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the total number of channels of all sls detectors in dimension d
      * including gap pixels
      */
-    int getTotalNumberOfChannelsInclGapPixels(dimension d, int detPos = -1);
+    int getTotalNumberOfChannelsInclGapPixels(dimension d, int detPos = -1);//
+
+    /**
+     * Returns the total number of channels including gap pixels
+     * @returns the total number of channels including gap pixels
+     */
+    slsDetectorDefs::coordinates getTotalNumberOfChannelsInclGapPixels() const;  //
 
     /**
      * Returns the maximum number of channels of all sls detectors in each
@@ -425,7 +437,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the maximum number of channels of all sls detectors in dimension
      * d
      */
-    int getMaxNumberOfChannelsPerDetector(dimension d);
+    int getMaxNumberOfChannelsPerDetector(dimension d);//
 
     /**
      * Sets the maximum number of channels of all sls detectors in each
@@ -436,7 +448,23 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the maximum number of channels of all sls detectors in dimension
      * d
      */
-    int setMaxNumberOfChannelsPerDetector(dimension d, int i);
+    int setMaxNumberOfChannelsPerDetector(dimension d, int i);//
+       
+    /**
+     * Returns maximum number of channels of all sls detectors in each
+     * dimension d from shared memory, multi detector shared memory variable to
+     * calculate offsets for each sls detector
+     * @returns  maximum number of channels of all sls detectors
+     */
+    slsDetectorDefs::coordinates getMaxNumberOfChannels() const;  //
+
+    /**
+     * Sets maximum number of channels of all sls detectors in each
+     * dimension d from shared memory, multi detector shared memory variable to
+     * calculate offsets for each sls detector
+     * @param c maximum number of channels of all sls detectors
+     */
+    void setMaxNumberOfChannels(const slsDetectorDefs::coordinates c);  //
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)

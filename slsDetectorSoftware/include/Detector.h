@@ -167,7 +167,7 @@ class Detector {
      * Get Client Software version
      * @returns client software version
      */
-    Result<int64_t> getClientSoftwareVersion() const;
+    int64_t getClientSoftwareVersion() const;
 
     /**
      * Get Receiver software version
@@ -187,7 +187,7 @@ class Detector {
      * Also updates local detector cache
      * @param name hostnames for the positions given
      */
-    void setHostname(const std::vector<std::string> &name);
+    void setHostname(const std::vector<std::string> &value);
 
     /**
      * Get Detector type as an enum
@@ -210,24 +210,47 @@ class Detector {
     Result<std::string> getDetectorTypeAsString(Positions pos = {}) const;
 
     /**
+     * Returns the total number of detectors in the multidetector structure
+     * @returns total number of detectors in the multidetector structure
+     */
+    int getTotalNumberOfDetectors() const;
+
+    /**
      * Returns the number of detectors in the multidetector structure
-     * @returns number of detectors
+     * @returns number of detectors in the multidetector structure
      */
-    int getNumberOfDetectors() const;
+    defs::coordinates getNumberOfDetectors() const;
 
     /**
-     * Returns number of detectors in dimension d
-     * @param d dimension d
-     * @returns number of detectors in dimension d
+     * Returns the number of channels
+     * @param pos detector position
+     * @returns the number of channels
      */
-    int getNumberOfDetectors(defs::dimension d) const;
+    Result<defs::coordinates> getNumberOfChannels(Positions pos = {}) const;
 
     /**
-     * Returns the number of detectors in each direction
-       @param nx number of detectors in x direction
-       @param ny number of detectors in y direction
+     * Returns the number of channels including gap pixels
+     * @param pos detector position
+     * @returns the number of channels including gap pixels
      */
-    void getNumberOfDetectors(int &nx, int &ny) const;
+    Result<defs::coordinates>
+    getNumberOfChannelsInclGapPixels(Positions pos = {}) const;
+
+    /**
+     * Returns the maximum number of channels of complete detector in both
+     * dimensions. -1 means no limit in this dimension. This value is used to
+     * calculate row and column offsets for each module.
+     * @returns the maximum number of channels of complete detector
+     */
+    defs::coordinates getMaxNumberOfChannels() const;
+
+    /**
+     * Sets the maximum number of channels of complete detector in both
+     * dimensions. -1 means no limit in this dimension. This value is used to
+     * calculate row and column offsets for each module.
+     * @param value the maximum number of channels of complete detector
+     */
+    void setMaxNumberOfChannels(const defs::coordinates value);
 
     // Erik
 

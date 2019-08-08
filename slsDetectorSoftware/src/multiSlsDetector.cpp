@@ -534,6 +534,13 @@ int multiSlsDetector::getTotalNumberOfChannels(dimension d, int detPos) {
     return multi_shm()->numberOfChannel[d];
 }
 
+slsDetectorDefs::coordinates multiSlsDetector::getNumberOfChannels() const {
+    slsDetectorDefs::coordinates coord;
+    coord.x = multi_shm()->numberOfChannel[X];
+    coord.y = multi_shm()->numberOfChannel[Y]; 
+    return coord;
+}
+
 int multiSlsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d,
                                                             int detPos) {
     // single
@@ -545,6 +552,13 @@ int multiSlsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d,
     return multi_shm()->numberOfChannelInclGapPixels[d];
 }
 
+slsDetectorDefs::coordinates multiSlsDetector::getTotalNumberOfChannelsInclGapPixels() const {
+    slsDetectorDefs::coordinates coord;
+    coord.x = multi_shm()->numberOfChannelInclGapPixels[X];
+    coord.y = multi_shm()->numberOfChannelInclGapPixels[Y]; 
+    return coord;
+}
+
 int multiSlsDetector::getMaxNumberOfChannelsPerDetector(dimension d) {
     return multi_shm()->maxNumberOfChannelsPerDetector[d];
 }
@@ -552,6 +566,18 @@ int multiSlsDetector::getMaxNumberOfChannelsPerDetector(dimension d) {
 int multiSlsDetector::setMaxNumberOfChannelsPerDetector(dimension d, int i) {
     multi_shm()->maxNumberOfChannelsPerDetector[d] = i;
     return multi_shm()->maxNumberOfChannelsPerDetector[d];
+}
+
+slsDetectorDefs::coordinates multiSlsDetector::getMaxNumberOfChannels() const {
+    slsDetectorDefs::coordinates coord;
+    coord.x = multi_shm()->maxNumberOfChannelsPerDetector[X];
+    coord.y = multi_shm()->maxNumberOfChannelsPerDetector[Y]; 
+    return coord;
+}
+
+void multiSlsDetector::setMaxNumberOfChannels(const slsDetectorDefs::coordinates c) {
+    multi_shm()->maxNumberOfChannelsPerDetector[X] = c.x;
+    multi_shm()->maxNumberOfChannelsPerDetector[Y] = c.y; 
 }
 
 int multiSlsDetector::getQuad(int detPos) {

@@ -662,51 +662,51 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns status
      */
-    runStatus getRunStatus(int detPos = -1);
+    runStatus getRunStatus(int detPos = -1);//
 
     /**
      * Prepares detector for acquisition (Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void prepareAcquisition(int detPos = -1);
+    void prepareAcquisition(int detPos = -1);//
 
     /**
      * Start detector acquisition (Non blocking)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void startAcquisition(int detPos = -1);
+    void startAcquisition(int detPos = -1);//
 
     /**
      * Stop detector acquisition
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void stopAcquisition(int detPos = -1);
+    void stopAcquisition(int detPos = -1);//
 
     /**
      * Give an internal software trigger to the detector (Eiger only)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void sendSoftwareTrigger(int detPos = -1);
+    void sendSoftwareTrigger(int detPos = -1);//
 
     /**
      * Start detector acquisition and read all data (Blocking until end of
      * acquisition)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void startAndReadAll(int detPos = -1);
+    void startAndReadAll(int detPos = -1);//
 
     /**
      * Start readout (without exposure or interrupting exposure) (Eiger store in
      * ram)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void startReadOut(int detPos = -1);
+    void startReadOut(int detPos = -1);//
 
     /**
      * Requests and  receives all data from the detector (Eiger store in ram)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void readAll(int detPos = -1);
+    void readAll(int detPos = -1);//
 
     /**
      * Configures in detector the destination for UDP packets

@@ -1788,7 +1788,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns IP of last client connecting to receiver
      */
-    std::string getReceiverLastClientIP(int detPos = -1);
+    std::string getReceiverLastClientIP(int detPos = -1); //
 
     /**
      * Turns off the receiver server!
@@ -1840,14 +1840,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns max frames per file in receiver
      */
-    int setFramesPerFile(int f = -1, int detPos = -1);
+    int setFramesPerFile(int f = -1, int detPos = -1); //
 
     /**
      * Gets the max frames per file in receiver
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns max frames per file in receiver
      */
-    int getFramesPerFile(int detPos = -1) const;
+    int getFramesPerFile(int detPos = -1) const; //
 
     /**
      * Sets the frames discard policy in receiver
@@ -1856,7 +1856,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns frames discard policy set in receiver
      */
     frameDiscardPolicy setReceiverFramesDiscardPolicy(
-        frameDiscardPolicy f = GET_FRAME_DISCARD_POLICY, int detPos = -1);
+        frameDiscardPolicy f = GET_FRAME_DISCARD_POLICY, int detPos = -1); //
 
     /**
      * Sets the partial frames padding enable in receiver
@@ -1864,16 +1864,16 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns partial frames padding enable in receiver
      */
-    int setPartialFramesPadding(bool padding, int detPos = -1);
+    int setPartialFramesPadding(bool padding, int detPos = -1); //
 
-    int getPartialFramesPadding(int detPos = -1) const;
+    int getPartialFramesPadding(int detPos = -1) const; //
 
     /**
      * Returns file format
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file name
      */
-    fileFormat getFileFormat(int detPos = -1);
+    fileFormat getFileFormat(int detPos = -1); //
 
     /**
      * Sets up the file format
@@ -1881,7 +1881,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file format
      */
-    fileFormat setFileFormat(fileFormat f, int detPos = -1);
+    fileFormat setFileFormat(fileFormat f, int detPos = -1); //
 
     /**
      * Sets up the file index
@@ -1889,7 +1889,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file index
      */
-    int setFileIndex(int i, int detPos = -1);
+    int setFileIndex(int i, int detPos = -1); //
 
     /**
      * Get File index
@@ -1897,7 +1897,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * position
      * @returns file index
      */
-    int getFileIndex(int detPos = -1) const;
+    int getFileIndex(int detPos = -1) const; //
 
     /**
      * Receiver starts listening to packets

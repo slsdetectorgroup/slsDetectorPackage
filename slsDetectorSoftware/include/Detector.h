@@ -254,14 +254,13 @@ class Detector {
 
     // Erik
 
-
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;
 
     Result<uint64_t> getReceiverCurrentFrameIndex(Positions pos = {}) const;
 
     void resetFramesCaught(Positions pos = {});
 
-    //TODO!
+    // TODO!
     // int createReceivingDataSockets(const bool destroy = false);
     // void readFrameFromReceiver();
 
@@ -403,6 +402,33 @@ class Detector {
      * @param delay delay in ps(1 bit=25ps, max of 775 ps)
      */
     void setDigitalIODelay(uint64_t pinMask, int delay, Positions pos = {});
+
+    Result<int> getFileIndex(Positions pos = {}) const;
+
+    void setFileIndex(int i, Positions pos = {});
+
+    Result<defs::fileFormat> getFileFormat(Positions pos = {}) const;
+
+    void setFileFormat(defs::fileFormat f, Positions pos = {});
+
+    Result<bool> getPartialFramesPadding(Positions pos = {}) const;
+
+    void setPartialFramesPadding(bool value, Positions pos = {});
+
+    void setReceiverFrameDiscardPolicy(defs::frameDiscardPolicy f,
+                                       Positions pos = {});
+
+    Result<defs::frameDiscardPolicy>
+    getReceiverFrameDiscardPolicy(Positions pos = {}) const;
+
+    void setFramesPerFile(int n, Positions pos = {});
+
+    Result<int> getFramesPerFile(Positions pos = {}) const;
+
+    // void execReceiverCommand(const std::string &cmd, int detPos = -1);
+    // void exitReceiver(int detPos = -1);
+
+    Result<std::string> getReceiverLastClientIP(Positions pos = {}) const;
 };
 
 } // namespace sls

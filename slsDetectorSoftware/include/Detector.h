@@ -295,46 +295,46 @@ class Detector {
     void setReadNLines(const int value, Positions pos = {});
 
     /**
-     * Get Receiver TCP port (for client communication with Receiver)
+     * Get Detector Control TCP port (for client communication with Detector control server)
      * @param pos detector position
-     * @returns receiver port
+     * @returns control TCP port
      */
-    //int getControlort(Positions pos = {}) const;
+    Result<int> getControlPort(Positions pos = {}) const;
 
     /**
-     * Set TCP Port of the detector (for client communication with Receiver)
+     * Set Detector Control TCP port (for client communication with Detector control server)
      * @param value port number
      * @param pos detector position
      */
-    //void setControlPort(int port_number, Positions pos = {});
+    void setControlPort(int value, Positions pos = {});
+
+    /**
+     * Get Detector Stop TCP port (for client communication with Detector Stop server)
+     * @param pos detector position
+     * @returns Stop TCP port
+     */
+    Result<int> getStopPort(Positions pos = {}) const;
+
+    /**
+     * Set Detector Stop TCP port (for client communication with Detector Stop server)
+     * @param value port number
+     * @param pos detector position
+     */
+    void setStopPort(int value, Positions pos = {});
 
     /**
      * Get Receiver TCP port (for client communication with Receiver)
      * @param pos detector position
-     * @returns receiver port
+     * @returns Receiver TCP port
      */
-    //int getStopPort(Positions pos = {}) const;
+    Result<int> getReceiverPort(Positions pos = {}) const;
 
     /**
-     * Set TCP Port of the detector (for client communication with Receiver)
+     * Set Receiver TCP port (for client communication with Receiver)
      * @param value port number
      * @param pos detector position
      */
-    //void setStopPort(int port_number, Positions pos = {});
-
-        /**
-     * Get Receiver TCP port (for client communication with Receiver)
-     * @param pos detector position
-     * @returns receiver port
-     */
-    //int getReceiverPort(Positions pos = {}) const;
-
-    /**
-     * Set TCP Port of the detector (for client communication with Receiver)
-     * @param value port number
-     * @param pos detector position
-     */
-    //void setReceiverPort(int port_number, Positions pos = {});
+    void setReceiverPort(int value, Positions pos = {});
 
 
 

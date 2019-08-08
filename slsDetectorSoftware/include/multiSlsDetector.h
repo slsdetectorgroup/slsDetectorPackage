@@ -534,7 +534,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns port number
      */
-    int setControlPort(int port_number = -1, int detPos = -1);
+    int setControlPort(int port_number = -1, int detPos = -1);//
 
     /**
      * Set/Gets TCP STOP Port of the detector
@@ -542,7 +542,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns port number
      */
-    int setStopPort(int port_number = -1, int detPos = -1);
+    int setStopPort(int port_number = -1, int detPos = -1);//
 
     /**
      * Set/Gets TCP Port of the receiver
@@ -550,14 +550,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns port number
      */
-    int setReceiverPort(int port_number = -1, int detPos = -1);
+    int setReceiverPort(int port_number = -1, int detPos = -1);//
 
     /**
      * Get Receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns vector of receiver port
      */
-    int getReceiverPort(int detPos = -1) const;
+    int getReceiverPort(int detPos = -1) const;//
 
     /**
      * Lock server for this client IP

@@ -706,7 +706,7 @@ void slsDetector::setDetectorOffset(dimension d, int off) {
     }
 }
 
-void slsDetector::setDetectorOffset(slsDetectorDefs::coordinates value) {
+void slsDetector::setDetectorOffsets(slsDetectorDefs::coordinates value) {
     shm()->offset[X] = value.x;
     shm()->offset[Y] = value.y; 
 }

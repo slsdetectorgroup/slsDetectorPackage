@@ -747,9 +747,22 @@ class Detector {
 
     Result<bool> getFlippedData(defs::dimension d, Positions pos = {}) const;
 
+    /**
+     * [Eiger] Set deactivated Receiver padding mode
+     * @param padding padding option for deactivated receiver. Can be true
+     * (padding), false (no padding)
+     */
     void setRxPadDeactivatedMod(bool pad, Positions pos = {});
 
     Result<bool> getRxPadDeactivatedMod(Positions pos = {}) const;
+
+    /**
+     * [Eiger] Activates/Deactivates the detector
+     * @param true = active or false inactive
+     */
+    void setActive(bool active, Positions pos = {});
+
+    Result<bool> getActive(Positions pos = {}) const;
 };
 
 } // namespace sls

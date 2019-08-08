@@ -641,4 +641,12 @@ Result<bool> Detector::getRxPadDeactivatedMod(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setDeactivatedRxrPaddingMode, pos, -1);
 }
 
+void Detector::setActive(bool active, Positions pos){
+    pimpl->Parallel(&slsDetector::activate, pos, static_cast<int>(active));
+}
+
+Result<bool> Detector::getActive(Positions pos) const{
+    pimpl->Parallel(&slsDetector::activate, pos, -1);
+}
+
 } // namespace sls

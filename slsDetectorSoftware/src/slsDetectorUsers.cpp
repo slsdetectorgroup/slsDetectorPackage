@@ -40,8 +40,8 @@ int slsDetectorUsers::readConfigurationFile(const std::string& fname){
 	}
 }
 
-int slsDetectorUsers::writeConfigurationFile(const std::string& fname){
-	return detector.writeConfigurationFile(fname);
+void slsDetectorUsers::writeConfigurationFile(const std::string& fname){
+	detector.writeConfigurationFile(fname);
 }
 
 int slsDetectorUsers::retrieveDetectorSetup(const std::string& fname){

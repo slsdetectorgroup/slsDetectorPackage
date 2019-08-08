@@ -254,7 +254,7 @@ void Detector::setReceiverPort(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverPort, pos, value);
 }
 
-Result<bool> Detector::getLockServer(Positions pos) {
+Result<bool> Detector::getLockServer(Positions pos) const {
     return pimpl->Parallel(&slsDetector::lockServer, pos, -1);
 }
 
@@ -262,7 +262,7 @@ void Detector::setLockServer(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::lockServer, pos, static_cast<int>(value));
 }
 
-Result<std::string> Detector::getLastClientIP(Positions pos) {
+Result<std::string> Detector::getLastClientIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getLastClientIP, pos);
 }
 
@@ -272,6 +272,42 @@ void Detector::exitServer(Positions pos) {
 
 void Detector::execCommand(const std::string &value, Positions pos) {
     pimpl->Parallel(&slsDetector::execCommand, pos, value);
+}
+
+void Detector::writeConfigurationFile(const std::string &value) {
+    pimpl->writeConfigurationFile(value);
+}
+
+Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getSettings, pos);
+}
+
+void Detector::setSettings(defs::detectorSettings value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setSettings, pos, value);
+}
+
+Result<int> Detector::getThresholdEnergy(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getThresholdEnergy, pos);
+}
+
+void Detector::setThresholdEnergy(int value, defs::detectorSettings sett, int tb, Positions pos) {
+    pimpl->Parallel(&slsDetector::setThresholdEnergy, pos, value, sett, tb);
+}
+
+Result<std::string> Detector::getSettingsDir(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getSettingsDir, pos);
+}
+
+void Detector::setSettingsDir(const std::string &value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setSettingsDir, pos, value);
+}
+
+void Detector::loadSettingsFile(const std::string &value, Positions pos) {
+    pimpl->Parallel(&slsDetector::loadSettingsFile, pos, value);
+}
+
+void Detector::saveSettingsFile(const std::string &value, Positions pos) {
+    pimpl->Parallel(&slsDetector::saveSettingsFile, pos, value);
 }
 
 // Erik

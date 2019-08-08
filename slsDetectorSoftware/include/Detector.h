@@ -345,7 +345,7 @@ class Detector {
      * @param pos detector position
      * @returns lock
      */
-    Result<bool> getLockServer(Positions pos = {});
+    Result<bool> getLockServer(Positions pos = {}) const;
 
     /**
      * Sets Lock for detector control server to this client IP
@@ -359,7 +359,7 @@ class Detector {
      * @param pos detector position
      * @returns last client IP saved on detector server
      */
-    Result<std::string> getLastClientIP(Positions pos = {});
+    Result<std::string> getLastClientIP(Positions pos = {}) const;
 
     /**
      * Exit detector server
@@ -373,6 +373,76 @@ class Detector {
      * @param pos detector position
      */
     void execCommand(const std::string &value, Positions pos = {});
+
+    /**
+     * Write current configuration to a file
+     * @param value configuration file name
+     */
+    void writeConfigurationFile(const std::string &value);
+
+    /**
+     * Get detector settings
+     * @param pos detector position
+     * @returns current settings
+     */
+    Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
+
+    /**
+     * Load detector settings from the settings file picked from the
+     * trimdir/settingsdir
+     * Eiger only stores in shared memory ( a get will
+     * overwrite this) For Eiger, one must use threshold
+     * @param value settings
+     * @param pos detector position
+     */
+    void setSettings(defs::detectorSettings value, Positions pos = {});
+
+    /**
+     * Get threshold energy (Eiger)
+     * @param pos detector position
+     * @returns current threshold value for imod in ev (-1 failed)
+     */
+    Result<int> getThresholdEnergy(Positions pos = {}) const;
+
+    /**
+     * Set threshold energy (Eiger)
+     * @param value threshold in eV
+     * @param sett ev. change settings
+     * @param tb 1 to include trimbits, 0 to exclude
+     * @param pos detector position
+     */
+    void setThresholdEnergy(int value, defs::detectorSettings sett = defs::GET_SETTINGS,
+                            int tb = 1, Positions pos = {});
+
+    /**
+     * Returns the detector trimbit/settings directory
+     * @param pos detector position
+     * @returns the trimbit/settings directory
+     */
+    Result<std::string> getSettingsDir(Positions pos = {}) const;
+
+    /**
+     * Sets the detector trimbit/settings directory
+     * @param value trimbits/settings directory
+     * @param pos detector position
+     */
+    void setSettingsDir(const std::string &value, Positions pos = {});
+
+    /**
+     * Loads the modules settings/trimbits reading from a specific file
+     * file name extension is automatically generated.
+     * @param value specific settings/trimbits file
+     * @param pos detector position
+     */
+    void loadSettingsFile(const std::string &value, Positions pos = {});
+
+    /**
+     * Saves the modules settings/trimbits to a specific file
+     * file name extension is automatically generated.
+     * @param value specific settings/trimbits file
+     * @param pos detector position
+     */
+    void saveSettingsFile(const std::string &value, Positions pos = {});
 
     // Erik
 
@@ -600,7 +670,6 @@ class Detector {
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
 
-
     /** [not Eiger] */
     void resetFPGA(Positions pos = {});
 
@@ -614,8 +683,6 @@ class Detector {
     void setStoragecellStart(int cell, Positions pos = {});
 
     Result<int> getStorageCellStart(Positions pos = {}) const;
-
-
 };
 
 } // namespace sls

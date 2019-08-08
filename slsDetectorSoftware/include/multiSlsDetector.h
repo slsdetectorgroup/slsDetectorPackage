@@ -588,16 +588,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Write current configuration to a file
      * @param fname configuration file name
-     * @returns OK or FAIL
      */
-    int writeConfigurationFile(const std::string &fname);
+    void writeConfigurationFile(const std::string &fname);//
 
     /**
      * Get detector settings
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current settings
      */
-    detectorSettings getSettings(int detPos = -1);
+    detectorSettings getSettings(int detPos = -1);//
 
     /**
      * Load detector settings from the settings file picked from the
@@ -607,14 +606,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current settings
      */
-    detectorSettings setSettings(detectorSettings isettings, int detPos = -1);
+    detectorSettings setSettings(detectorSettings isettings, int detPos = -1);//
 
     /**
      * Get threshold energy (Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current threshold value for imod in ev (-1 failed)
      */
-    int getThresholdEnergy(int detPos = -1);
+    int getThresholdEnergy(int detPos = -1);//
 
     /**
      * Set threshold energy (Eiger)
@@ -625,14 +624,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns current threshold value for imod in ev (-1 failed)
      */
     int setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
-                           int tb = 1, int detPos = -1);
+                           int tb = 1, int detPos = -1);//
 
     /**
      * Returns the detector trimbit/settings directory
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the trimbit/settings directory
      */
-    std::string getSettingsDir(int detPos = -1);
+    std::string getSettingsDir(int detPos = -1);//
 
     /**
      * Sets the detector trimbit/settings directory
@@ -640,7 +639,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the trimbit/settings directory
      */
-    std::string setSettingsDir(const std::string &directory, int detPos = -1);
+    std::string setSettingsDir(const std::string &directory, int detPos = -1);//
 
     /**
      * Loads the modules settings/trimbits reading from a specific file
@@ -648,7 +647,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param fname specific settings/trimbits file
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void loadSettingsFile(const std::string &fname, int detPos = -1);
+    void loadSettingsFile(const std::string &fname, int detPos = -1);//
 
     /**
      * Saves the modules settings/trimbits to a specific file
@@ -656,7 +655,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param fname specific settings/trimbits file
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void saveSettingsFile(const std::string &fname, int detPos = -1);
+    void saveSettingsFile(const std::string &fname, int detPos = -1);//
 
     /**
      * Get Detector run status

@@ -209,6 +209,26 @@ class Detector {
      */
     Result<std::string> getDetectorTypeAsString(Positions pos = {}) const;
 
+    /**
+     * Returns the number of detectors in the multidetector structure
+     * @returns number of detectors
+     */
+    int getNumberOfDetectors() const;
+
+    /**
+     * Returns number of detectors in dimension d
+     * @param d dimension d
+     * @returns number of detectors in dimension d
+     */
+    int getNumberOfDetectors(defs::dimension d) const;
+
+    /**
+     * Returns the number of detectors in each direction
+       @param nx number of detectors in x direction
+       @param ny number of detectors in y direction
+     */
+    void getNumberOfDetectors(int &nx, int &ny) const;
+
     // Erik
 
     /** CTB only.Sets the mask applied to every pattern. */

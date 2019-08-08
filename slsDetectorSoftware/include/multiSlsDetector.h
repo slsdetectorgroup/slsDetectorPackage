@@ -348,18 +348,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     std::string getHostname(int detPos = -1) const;//
 
     /**
-     * Appends detectors to the end of the list in shared memory
-     * Connects to them 
-     * @param name concatenated hostname of the sls detectors to be appended to
-     * the list
-     */
-    void addMultipleDetectors(const char *name);// ????
-
-    /**
      * Get Detector type as an enum
      * @returns detector type
      */
-    detectorType getDetectorTypeAsEnum() const;
+    detectorType getDetectorTypeAsEnum() const; //
 
     /**
      * Get Detector type for a particular sls detector or get the first one
@@ -367,7 +359,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns detector type of sls detector in position pos, if -1, returns
      * the first det type
      */
-    detectorType getDetectorTypeAsEnum(int detPos);//??
+    detectorType getDetectorTypeAsEnum(int detPos);//
 
     /**
      * Concatenates string types of all sls detectors or
@@ -376,27 +368,27 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns detector type of sls detector in position pos, if -1,
      * concatenates
      */
-    std::string getDetectorTypeAsString(int detPos = -1);
+    std::string getDetectorTypeAsString(int detPos = -1);//
 
     /**
      * Returns the number of detectors in the multidetector structure
      * @returns number of detectors
      */
-    int getNumberOfDetectors() const;
+    int getNumberOfDetectors() const;//
 
     /**
      * Returns number of detectors in dimension d
      * @param d dimension d
      * @returns number of detectors in dimension d
      */
-    int getNumberOfDetectors(dimension d) const;
+    int getNumberOfDetectors(dimension d) const;//
 
     /**
      * Returns the number of detectors in each direction
        @param nx number of detectors in x direction
        @param ny number of detectors in y direction
      */
-    void getNumberOfDetectors(int &nx, int &ny) const;
+    void getNumberOfDetectors(int &nx, int &ny) const;//
 
     /**
      * Returns the total number of channels of all sls detectors from shared
@@ -2240,6 +2232,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param verify true to verify if shm size matches existing one
      */
     void initializeMembers(bool verify = true);
+
+    /**
+     * Appends detectors to the end of the list in shared memory
+     * Connects to them 
+     * @param name concatenated hostname of the sls detectors to be appended to
+     * the list
+     */
+    void addMultipleDetectors(const char *name);//
 
     /**
      * Update user details in detector structure

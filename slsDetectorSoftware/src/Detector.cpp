@@ -169,18 +169,29 @@ Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsString, pos);
 }
 
+int Detector::getNumberOfDetectors() const {
+    return pimpl->getNumberOfDetectors();
+}
+
+int Detector::getNumberOfDetectors(defs::dimension d) const {
+    return pimpl->getNumberOfDetectors(d);
+}
+
+void Detector::getNumberOfDetectors(int &nx, int &ny) const {
+    pimpl->getNumberOfDetectors(nx, ny);
+}
+
 // Erik
 
-
-Result<uint64_t> Detector::getPatternMask(Positions pos){
+Result<uint64_t> Detector::getPatternMask(Positions pos) {
     return pimpl->Parallel(&slsDetector::getPatternMask, pos);
 }
 
-void Detector::setPatternBitMask(uint64_t mask, Positions pos){
+void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternBitMask, pos, mask);
 }
 
-Result<uint64_t> Detector::getPatternBitMask(Positions pos) const{
+Result<uint64_t> Detector::getPatternBitMask(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getPatternBitMask, pos);
 }
 
@@ -192,7 +203,7 @@ Result<bool> Detector::getLEDEnable(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setLEDEnable, pos, -1);
 }
 
-void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos){
+void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos) {
     pimpl->Parallel(&slsDetector::setDigitalIODelay, pos, pinMask, delay);
 }
 

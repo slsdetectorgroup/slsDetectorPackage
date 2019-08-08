@@ -113,7 +113,7 @@ class DetectorPythonInterface {
     void setFileFormat(const std::string &format);
     std::string getFileFormat();
 
-    std::string checkOnline() { return det.checkOnline(); }
+    // std::string checkOnline() { return det.checkOnline(); }
 
     bool isChipPowered() { return det.powerChip(); }
     void powerChip(const bool value) { det.powerChip(value); }

@@ -1673,13 +1673,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param fname file name
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void programFPGA(const std::string &fname, int detPos = -1);
+    void programFPGA(const std::string &fname, int detPos = -1); //
 
     /**
      * Resets FPGA (Not Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void resetFPGA(int detPos = -1);
+    void resetFPGA(int detPos = -1); //
 
     /**
      * Copies detector server from tftp and changes respawn server (Not Eiger)
@@ -1688,13 +1688,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void copyDetectorServer(const std::string &fname,
-                            const std::string &hostname, int detPos = -1);
+                            const std::string &hostname, int detPos = -1); //
 
     /**
      * Reboot detector controller (Not Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void rebootController(int detPos = -1);
+    void rebootController(int detPos = -1); //
 
     /**
      * Updates the firmware, detector server and then reboots detector
@@ -1705,7 +1705,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void update(const std::string &sname, const std::string &hostname,
-                const std::string &fname, int detPos = -1);
+                const std::string &fname, int detPos = -1); //
 
     /**
      * Power on/off Chip (Jungfrau)
@@ -1713,7 +1713,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int powerChip(int ival = -1, int detPos = -1);
+    int powerChip(int ival = -1, int detPos = -1); //
 
     /**
      * Automatic comparator disable (Jungfrau)
@@ -1721,7 +1721,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int setAutoComparatorDisableMode(int ival = -1, int detPos = -1);
+    int setAutoComparatorDisableMode(int ival = -1, int detPos = -1); //
 
     /**
      * Set Rate correction ( Eiger)
@@ -1730,14 +1730,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * for current settings
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setRateCorrection(int64_t t = 0, int detPos = -1);
+    void setRateCorrection(int64_t t = 0, int detPos = -1); //
 
     /**
      * Get rate correction ( Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns 0 if rate correction disabled, > 0 otherwise (ns)
      */
-    int64_t getRateCorrection(int detPos = -1);
+    int64_t getRateCorrection(int detPos = -1); //
 
     /**
      * Prints receiver configuration
@@ -2214,6 +2214,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void processData();
 
+    /**
+     * Convert raw file
+     * @param fname name of pof file
+     * @param fpgasrc pointer in memory to read pof to
+     * @returns file size
+     */
+    std::vector<char> readPofFile(const std::string &fname);
+
   private:
     /**
      * increments file index
@@ -2354,13 +2362,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int kbhit();
 
-    /**
-     * Convert raw file
-     * @param fname name of pof file
-     * @param fpgasrc pointer in memory to read pof to
-     * @returns file size
-     */
-    std::vector<char> readPofFile(const std::string &fname);
+    
 
     /**
      * Convert a double holding time in seconds to an int64_t with nano seconds

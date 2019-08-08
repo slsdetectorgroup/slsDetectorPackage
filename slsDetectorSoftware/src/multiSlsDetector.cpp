@@ -370,6 +370,167 @@ int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int &channelX,
     return -1;
 }
 
+void multiSlsDetector::updateOffsets() {
+    FILE_LOG(logDEBUG1) << "Updating Multi-Detector Offsets";
+
+    int offsetX = 0, offsetY = 0, numX = 0, numY = 0;
+    int maxChanX = multi_shm()->maxNumberOfChannelsPerDetector[X];
+    int maxChanY = multi_shm()->maxNumberOfChannelsPerDetector[Y];
+    int prevChanX = 0;
+    int prevChanY = 0;
+    bool firstTime = true;
+
+    multi_shm()->numberOfChannel[X] = 0;
+    multi_shm()->numberOfChannel[Y] = 0;
+    multi_shm()->numberOfDetector[X] = 0;
+    multi_shm()->numberOfDetector[Y] = 0;
+
+    // gap pixels
+    int offsetX_gp = 0, offsetY_gp = 0, numX_gp = 0, numY_gp = 0;
+    int prevChanX_gp = 0, prevChanY_gp = 0;
+    multi_shm()->numberOfChannelInclGapPixels[X] = 0;
+    multi_shm()->numberOfChannelInclGapPixels[Y] = 0;
+
+    for (size_t idet = 0; idet < detectors.size(); ++idet) {
+        FILE_LOG(logDEBUG1)
+            << "offsetX:" << offsetX << " prevChanX:" << prevChanX
+            << " offsetY:" << offsetY << " prevChanY:" << prevChanY
+            << " offsetX_gp:" << offsetX_gp << " prevChanX_gp:" << prevChanX_gp
+            << " offsetY_gp:" << offsetY_gp << " prevChanY_gp:" << prevChanY_gp;
+
+        // incrementing in both direction
+        if (firstTime) {
+            // incrementing in both directions
+            firstTime = false;
+            if ((maxChanX > 0) &&
+                ((offsetX + detectors[idet]->getTotalNumberOfChannels(X)) >
+                 maxChanX)) {
+                FILE_LOG(logWARNING)
+                    << "\nDetector[" << idet
+                    << "] exceeds maximum channels "
+                       "allowed for complete detector set in X dimension!";
+            }
+            if ((maxChanY > 0) &&
+                ((offsetY + detectors[idet]->getTotalNumberOfChannels(Y)) >
+                 maxChanY)) {
+                FILE_LOG(logERROR)
+                    << "\nDetector[" << idet
+                    << "] exceeds maximum channels "
+                       "allowed for complete detector set in Y dimension!";
+            }
+            prevChanX = detectors[idet]->getTotalNumberOfChannels(X);
+            prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
+            prevChanX_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
+            prevChanY_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            numX += detectors[idet]->getTotalNumberOfChannels(X);
+            numY += detectors[idet]->getTotalNumberOfChannels(Y);
+            numX_gp +=
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
+            numY_gp +=
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            ++multi_shm()->numberOfDetector[X];
+            ++multi_shm()->numberOfDetector[Y];
+            FILE_LOG(logDEBUG1) << "incrementing in both direction";
+        }
+
+        // incrementing in y direction
+        else if ((maxChanY == -1) ||
+                 ((maxChanY > 0) && ((offsetY + prevChanY +
+                                      detectors[idet]->getTotalNumberOfChannels(
+                                          Y)) <= maxChanY))) {
+            offsetY += prevChanY;
+            offsetY_gp += prevChanY_gp;
+            prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
+            prevChanY_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            numY += detectors[idet]->getTotalNumberOfChannels(Y);
+            numY_gp +=
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            // increment in y again only in the first column (else you double
+            // increment)
+            if (multi_shm()->numberOfDetector[X] == 1)
+                ++multi_shm()->numberOfDetector[Y];
+            FILE_LOG(logDEBUG1) << "incrementing in y direction";
+        }
+
+        // incrementing in x direction
+        else {
+            if ((maxChanX > 0) &&
+                ((offsetX + prevChanX +
+                  detectors[idet]->getTotalNumberOfChannels(X)) > maxChanX)) {
+                FILE_LOG(logDEBUG1)
+                    << "\nDetector[" << idet
+                    << "] exceeds maximum channels "
+                       "allowed for complete detector set in X dimension!";
+            }
+            offsetY = 0;
+            offsetY_gp = 0;
+            prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
+            prevChanY_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
+            numY = 0; // assuming symmetry with this statement.
+            // whats on 1st column should be on 2nd column
+            numY_gp = 0;
+            offsetX += prevChanX;
+            offsetX_gp += prevChanX_gp;
+            prevChanX = detectors[idet]->getTotalNumberOfChannels(X);
+            prevChanX_gp =
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
+            numX += detectors[idet]->getTotalNumberOfChannels(X);
+            numX_gp +=
+                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
+            ++multi_shm()->numberOfDetector[X];
+            FILE_LOG(logDEBUG1) << "incrementing in x direction";
+        }
+
+        double bytesperchannel =
+            (double)detectors[idet]->getDataBytes() /
+            (double)(detectors[idet]->getTotalNumberOfChannels(X) *
+                     detectors[idet]->getTotalNumberOfChannels(Y));
+        detectors[idet]->setDetectorOffset(
+            X, (bytesperchannel >= 1.0) ? offsetX_gp : offsetX);
+        detectors[idet]->setDetectorOffset(
+            Y, (bytesperchannel >= 1.0) ? offsetY_gp : offsetY);
+
+        FILE_LOG(logDEBUG1) << "Detector[" << idet << "] has offsets ("
+                            << detectors[idet]->getDetectorOffset(X) << ", "
+                            << detectors[idet]->getDetectorOffset(Y) << ")";
+        // offsetY has been reset sometimes and offsetX the first time,
+        // but remember the highest values
+        if (numX > multi_shm()->numberOfChannel[X]) {
+            multi_shm()->numberOfChannel[X] = numX;
+        }
+        if (numY > multi_shm()->numberOfChannel[Y]) {
+            multi_shm()->numberOfChannel[Y] = numY;
+        }
+        if (numX_gp > multi_shm()->numberOfChannelInclGapPixels[X]) {
+            multi_shm()->numberOfChannelInclGapPixels[X] = numX_gp;
+        }
+        if (numY_gp > multi_shm()->numberOfChannelInclGapPixels[Y]) {
+            multi_shm()->numberOfChannelInclGapPixels[Y] = numY_gp;
+        }
+    }
+    FILE_LOG(logDEBUG1)
+        << "\n\tNumber of Channels in X direction:"
+        << multi_shm()->numberOfChannel[X]
+        << "\n\tNumber of Channels in Y direction:"
+        << multi_shm()->numberOfChannel[Y]
+        << "\n\tNumber of Channels in X direction with Gap Pixels:"
+        << multi_shm()->numberOfChannelInclGapPixels[X]
+        << "\n\tNumber of Channels in Y direction with Gap Pixels:"
+        << multi_shm()->numberOfChannelInclGapPixels[Y];
+
+    multi_shm()->numberOfChannels =
+        multi_shm()->numberOfChannel[0] * multi_shm()->numberOfChannel[1];
+
+    for (auto &d : detectors) {
+        d->updateMultiSize(multi_shm()->numberOfDetector[0],
+                           multi_shm()->numberOfDetector[1]);
+    }
+}
+
 std::string multiSlsDetector::exec(const char *cmd) {
     int bufsize = 128;
     char buffer[bufsize];
@@ -580,6 +741,14 @@ void multiSlsDetector::setMaxNumberOfChannels(const slsDetectorDefs::coordinates
     multi_shm()->maxNumberOfChannelsPerDetector[Y] = c.y; 
 }
 
+int multiSlsDetector::getDetectorOffset(dimension d, int detPos) {
+    return detectors[detPos]->getDetectorOffset(d);
+}
+
+void multiSlsDetector::setDetectorOffset(dimension d, int off, int detPos) {
+    detectors[detPos]->setDetectorOffset(d, off);
+}
+
 int multiSlsDetector::getQuad(int detPos) {
     int retval = detectors[0]->getQuad();
     if (retval && getNumberOfDetectors() > 1) {
@@ -617,175 +786,6 @@ int multiSlsDetector::getReadNLines(int detPos) {
     // multi
     auto r = parallelCall(&slsDetector::getReadNLines);
     return sls::minusOneIfDifferent(r);
-}
-
-int multiSlsDetector::getDetectorOffset(dimension d, int detPos) {
-    return detectors[detPos]->getDetectorOffset(d);
-}
-
-void multiSlsDetector::setDetectorOffset(dimension d, int off, int detPos) {
-    detectors[detPos]->setDetectorOffset(d, off);
-}
-
-void multiSlsDetector::updateOffsets() {
-    FILE_LOG(logDEBUG1) << "Updating Multi-Detector Offsets";
-
-    int offsetX = 0, offsetY = 0, numX = 0, numY = 0;
-    int maxChanX = multi_shm()->maxNumberOfChannelsPerDetector[X];
-    int maxChanY = multi_shm()->maxNumberOfChannelsPerDetector[Y];
-    int prevChanX = 0;
-    int prevChanY = 0;
-    bool firstTime = true;
-
-    multi_shm()->numberOfChannel[X] = 0;
-    multi_shm()->numberOfChannel[Y] = 0;
-    multi_shm()->numberOfDetector[X] = 0;
-    multi_shm()->numberOfDetector[Y] = 0;
-
-    // gap pixels
-    int offsetX_gp = 0, offsetY_gp = 0, numX_gp = 0, numY_gp = 0;
-    int prevChanX_gp = 0, prevChanY_gp = 0;
-    multi_shm()->numberOfChannelInclGapPixels[X] = 0;
-    multi_shm()->numberOfChannelInclGapPixels[Y] = 0;
-
-    for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        FILE_LOG(logDEBUG1)
-            << "offsetX:" << offsetX << " prevChanX:" << prevChanX
-            << " offsetY:" << offsetY << " prevChanY:" << prevChanY
-            << " offsetX_gp:" << offsetX_gp << " prevChanX_gp:" << prevChanX_gp
-            << " offsetY_gp:" << offsetY_gp << " prevChanY_gp:" << prevChanY_gp;
-
-        // incrementing in both direction
-        if (firstTime) {
-            // incrementing in both directions
-            firstTime = false;
-            if ((maxChanX > 0) &&
-                ((offsetX + detectors[idet]->getTotalNumberOfChannels(X)) >
-                 maxChanX)) {
-                FILE_LOG(logWARNING)
-                    << "\nDetector[" << idet
-                    << "] exceeds maximum channels "
-                       "allowed for complete detector set in X dimension!";
-            }
-            if ((maxChanY > 0) &&
-                ((offsetY + detectors[idet]->getTotalNumberOfChannels(Y)) >
-                 maxChanY)) {
-                FILE_LOG(logERROR)
-                    << "\nDetector[" << idet
-                    << "] exceeds maximum channels "
-                       "allowed for complete detector set in Y dimension!";
-            }
-            prevChanX = detectors[idet]->getTotalNumberOfChannels(X);
-            prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
-            prevChanX_gp =
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
-            prevChanY_gp =
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
-            numX += detectors[idet]->getTotalNumberOfChannels(X);
-            numY += detectors[idet]->getTotalNumberOfChannels(Y);
-            numX_gp +=
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
-            numY_gp +=
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
-            ++multi_shm()->numberOfDetector[X];
-            ++multi_shm()->numberOfDetector[Y];
-            FILE_LOG(logDEBUG1) << "incrementing in both direction";
-        }
-
-        // incrementing in y direction
-        else if ((maxChanY == -1) ||
-                 ((maxChanY > 0) && ((offsetY + prevChanY +
-                                      detectors[idet]->getTotalNumberOfChannels(
-                                          Y)) <= maxChanY))) {
-            offsetY += prevChanY;
-            offsetY_gp += prevChanY_gp;
-            prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
-            prevChanY_gp =
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
-            numY += detectors[idet]->getTotalNumberOfChannels(Y);
-            numY_gp +=
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
-            // increment in y again only in the first column (else you double
-            // increment)
-            if (multi_shm()->numberOfDetector[X] == 1)
-                ++multi_shm()->numberOfDetector[Y];
-            FILE_LOG(logDEBUG1) << "incrementing in y direction";
-        }
-
-        // incrementing in x direction
-        else {
-            if ((maxChanX > 0) &&
-                ((offsetX + prevChanX +
-                  detectors[idet]->getTotalNumberOfChannels(X)) > maxChanX)) {
-                FILE_LOG(logDEBUG1)
-                    << "\nDetector[" << idet
-                    << "] exceeds maximum channels "
-                       "allowed for complete detector set in X dimension!";
-            }
-            offsetY = 0;
-            offsetY_gp = 0;
-            prevChanY = detectors[idet]->getTotalNumberOfChannels(Y);
-            prevChanY_gp =
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(Y);
-            numY = 0; // assuming symmetry with this statement.
-            // whats on 1st column should be on 2nd column
-            numY_gp = 0;
-            offsetX += prevChanX;
-            offsetX_gp += prevChanX_gp;
-            prevChanX = detectors[idet]->getTotalNumberOfChannels(X);
-            prevChanX_gp =
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
-            numX += detectors[idet]->getTotalNumberOfChannels(X);
-            numX_gp +=
-                detectors[idet]->getTotalNumberOfChannelsInclGapPixels(X);
-            ++multi_shm()->numberOfDetector[X];
-            FILE_LOG(logDEBUG1) << "incrementing in x direction";
-        }
-
-        double bytesperchannel =
-            (double)detectors[idet]->getDataBytes() /
-            (double)(detectors[idet]->getTotalNumberOfChannels(X) *
-                     detectors[idet]->getTotalNumberOfChannels(Y));
-        detectors[idet]->setDetectorOffset(
-            X, (bytesperchannel >= 1.0) ? offsetX_gp : offsetX);
-        detectors[idet]->setDetectorOffset(
-            Y, (bytesperchannel >= 1.0) ? offsetY_gp : offsetY);
-
-        FILE_LOG(logDEBUG1) << "Detector[" << idet << "] has offsets ("
-                            << detectors[idet]->getDetectorOffset(X) << ", "
-                            << detectors[idet]->getDetectorOffset(Y) << ")";
-        // offsetY has been reset sometimes and offsetX the first time,
-        // but remember the highest values
-        if (numX > multi_shm()->numberOfChannel[X]) {
-            multi_shm()->numberOfChannel[X] = numX;
-        }
-        if (numY > multi_shm()->numberOfChannel[Y]) {
-            multi_shm()->numberOfChannel[Y] = numY;
-        }
-        if (numX_gp > multi_shm()->numberOfChannelInclGapPixels[X]) {
-            multi_shm()->numberOfChannelInclGapPixels[X] = numX_gp;
-        }
-        if (numY_gp > multi_shm()->numberOfChannelInclGapPixels[Y]) {
-            multi_shm()->numberOfChannelInclGapPixels[Y] = numY_gp;
-        }
-    }
-    FILE_LOG(logDEBUG1)
-        << "\n\tNumber of Channels in X direction:"
-        << multi_shm()->numberOfChannel[X]
-        << "\n\tNumber of Channels in Y direction:"
-        << multi_shm()->numberOfChannel[Y]
-        << "\n\tNumber of Channels in X direction with Gap Pixels:"
-        << multi_shm()->numberOfChannelInclGapPixels[X]
-        << "\n\tNumber of Channels in Y direction with Gap Pixels:"
-        << multi_shm()->numberOfChannelInclGapPixels[Y];
-
-    multi_shm()->numberOfChannels =
-        multi_shm()->numberOfChannel[0] * multi_shm()->numberOfChannel[1];
-
-    for (auto &d : detectors) {
-        d->updateMultiSize(multi_shm()->numberOfDetector[0],
-                           multi_shm()->numberOfDetector[1]);
-    }
 }
 
 std::string multiSlsDetector::checkOnline(int detPos) {

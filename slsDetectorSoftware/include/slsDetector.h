@@ -403,7 +403,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * Get Quad Type (Only for Eiger Quad detector hardware)
      * @returns quad type
      */
-    int getQuad();
+    bool getQuad();
 
     /**
      * Set Quad Type (Only for Eiger Quad detector hardware)
@@ -431,11 +431,23 @@ class slsDetector : public virtual slsDetectorDefs {
     int getDetectorOffset(dimension d) const;
 
     /**
+     * Get Detector offset from shared memory in dimension d
+     * @returns offset
+     */
+    slsDetectorDefs::coordinates getDetectorOffsets() const; 
+
+    /**
      * Set Detector offset in shared memory in dimension d
      * @param d dimension d
      * @param off offset for detector
      */
     void setDetectorOffset(dimension d, int off);
+    
+    /**
+     * Set Detector offset in shared memory 
+     * @param value offset for detector
+     */
+    void setDetectorOffsets(slsDetectorDefs::coordinates value);
 
     /**
      * Set Detector offset in shared memory in dimension d

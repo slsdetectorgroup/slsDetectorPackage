@@ -204,9 +204,32 @@ void Detector::setMaxNumberOfChannels(const defs::coordinates value) {
     pimpl->setMaxNumberOfChannels(value);
 }
 
-//
-//
-//
+Result<defs::coordinates> Detector::getDetectorOffsets(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getDetectorOffsets, pos);
+}
+
+void Detector::setDetectorOffsets(defs::coordinates value, Positions pos) {
+    return pimpl->Parallel(&slsDetector::setDetectorOffsets, pos, value);
+}
+
+Result<bool> Detector::getQuad(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getQuad, pos);
+}
+
+void Detector::setQuad(const bool value, Positions pos) {
+    pimpl->setQuad(value, 0);
+}
+
+Result<int> Detector::getReadNLines(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReadNLines, pos);
+}
+
+void Detector::setReadNLines(const int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReadNLines, pos, value);
+}
+
+
+
 // Erik
 Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFramesCaughtByReceiver, pos);

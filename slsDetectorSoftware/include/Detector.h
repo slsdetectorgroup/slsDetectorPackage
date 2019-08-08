@@ -411,7 +411,8 @@ class Detector {
      * @param tb 1 to include trimbits, 0 to exclude
      * @param pos detector position
      */
-    void setThresholdEnergy(int value, defs::detectorSettings sett = defs::GET_SETTINGS,
+    void setThresholdEnergy(int value,
+                            defs::detectorSettings sett = defs::GET_SETTINGS,
                             int tb = 1, Positions pos = {});
 
     /**
@@ -707,7 +708,7 @@ class Detector {
     /** [Eiger] */
     void pulseChip(int n, Positions pos = {});
 
-    /** 
+    /**
      * [Eiger] Pulse Pixel and move by a relative value
      * @param n is number of times to pulse
      * @param x is relative x value
@@ -730,13 +731,25 @@ class Detector {
     /** [Eiger] Set the energies where the detector is trimmed */
     void setTrimEn(std::vector<int> energies, Positions pos = {});
 
-    /** 
-     * [Eiger] not 4 bit mode 
+    /**
+     * [Eiger] not 4 bit mode
      * Fills in gap pixels in data
-    */
+     */
     void setGapPixelsEnable(bool enable, Positions pos = {});
 
     Result<bool> getGapPixelEnable(Positions pos = {}) const;
+
+    /**[Eiger] */
+    void setAllTrimbits(int value, Positions pos = {});
+
+    /** [Eiger] TODO! only Eiger? */
+    void setFlippedData(defs::dimension d, bool flipped, Positions pos = {});
+
+    Result<bool> getFlippedData(defs::dimension d, Positions pos = {}) const;
+
+    void setRxPadDeactivatedMod(bool pad, Positions pos = {});
+
+    Result<bool> getRxPadDeactivatedMod(Positions pos = {}) const;
 };
 
 } // namespace sls

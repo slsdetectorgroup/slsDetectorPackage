@@ -1564,7 +1564,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns 1 for flipped, else 0
      */
-    int getFlippedData(dimension d = X, int detPos = -1);
+    int getFlippedData(dimension d = X, int detPos = -1); //
 
     /**
      * Sets the enable which determines if
@@ -1574,7 +1574,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns enable flipped data across x or y axis
      */
-    int setFlippedData(dimension d = X, int value = -1, int detPos = -1);
+    int setFlippedData(dimension d = X, int value = -1, int detPos = -1); //
 
     /**
      * Sets all the trimbits to a particular value (Eiger)
@@ -1582,7 +1582,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns OK or FAIL
      */
-    int setAllTrimbits(int val, int detPos = -1);
+    int setAllTrimbits(int val, int detPos = -1); //
 
     /**
      * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
@@ -1590,7 +1590,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param val 1 sets, 0 unsets, -1 gets
      * @returns gap pixel enable or -1 for error
      */
-    int enableGapPixels(int val = -1, int detPos = -1);
+    int enableGapPixels(int val = -1, int detPos = -1); //
 
     /**
      * Sets the number of trim energies and their value  (Eiger)

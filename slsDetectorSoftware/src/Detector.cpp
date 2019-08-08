@@ -290,7 +290,8 @@ Result<int> Detector::getThresholdEnergy(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getThresholdEnergy, pos);
 }
 
-void Detector::setThresholdEnergy(int value, defs::detectorSettings sett, int tb, Positions pos) {
+void Detector::setThresholdEnergy(int value, defs::detectorSettings sett,
+                                  int tb, Positions pos) {
     pimpl->Parallel(&slsDetector::setThresholdEnergy, pos, value, sett, tb);
 }
 
@@ -589,32 +590,55 @@ Result<int> Detector::getThresholdTemperature(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setThresholdTemperature, pos, -1);
 }
 
-void Detector::pulseChip(int n, Positions pos){
+void Detector::pulseChip(int n, Positions pos) {
     pimpl->Parallel(&slsDetector::pulseChip, pos, n);
 }
 
-void Detector::pulsePixelNMove(int n, int x, int y, Positions pos){
+void Detector::pulsePixelNMove(int n, int x, int y, Positions pos) {
     pimpl->Parallel(&slsDetector::pulsePixelNMove, pos, n, x, y);
 }
 
-void Detector::pulsePixel(int n, int x, int y, Positions pos){
+void Detector::pulsePixel(int n, int x, int y, Positions pos) {
     pimpl->Parallel(&slsDetector::pulsePixel, pos, n, x, y);
 }
 
-Result<std::vector<int>> Detector::getTrimEn(Positions pos) const{
+Result<std::vector<int>> Detector::getTrimEn(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getTrimEn, pos);
 }
 
-void Detector::setTrimEn(std::vector<int> energies, Positions pos){
+void Detector::setTrimEn(std::vector<int> energies, Positions pos) {
     pimpl->Parallel(&slsDetector::setTrimEn, pos, energies);
 }
 
-void Detector::setGapPixelsEnable(bool enable, Positions pos){
-    pimpl->Parallel(&slsDetector::enableGapPixels, pos, static_cast<int>(enable));
+void Detector::setGapPixelsEnable(bool enable, Positions pos) {
+    pimpl->Parallel(&slsDetector::enableGapPixels, pos,
+                    static_cast<int>(enable));
 }
 
-Result<bool> Detector::getGapPixelEnable(Positions pos) const{
+Result<bool> Detector::getGapPixelEnable(Positions pos) const {
     return pimpl->Parallel(&slsDetector::enableGapPixels, pos, -1);
+}
+
+void Detector::setAllTrimbits(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setAllTrimbits, pos, value);
+}
+
+void Detector::setFlippedData(defs::dimension d, bool flipped, Positions pos) {
+    pimpl->Parallel(&slsDetector::setFlippedData, pos, d,
+                    static_cast<int>(flipped));
+}
+
+Result<bool> Detector::getFlippedData(defs::dimension d, Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getFlippedData, pos, d);
+}
+
+void Detector::setRxPadDeactivatedMod(bool pad, Positions pos) {
+    pimpl->Parallel(&slsDetector::setDeactivatedRxrPaddingMode, pos,
+                    static_cast<int>(pad));
+}
+
+Result<bool> Detector::getRxPadDeactivatedMod(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setDeactivatedRxrPaddingMode, pos, -1);
 }
 
 } // namespace sls

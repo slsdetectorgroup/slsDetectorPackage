@@ -788,15 +788,6 @@ int multiSlsDetector::getReadNLines(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::checkOnline(int detPos) {
-    if (detPos >= 0) {
-        return detectors[detPos]->checkOnline();
-    }
-
-    auto r = parallelCall(&slsDetector::checkOnline);
-    return sls::concatenateNonEmptyStrings(r);
-}
-
 int multiSlsDetector::setControlPort(int port_number, int detPos) {
     if (detPos >= 0) {
         return detectors[detPos]->setControlPort(port_number);
@@ -2993,17 +2984,6 @@ bool multiSlsDetector::getUseReceiverFlag(int detPos) {
     } else {
         throw RuntimeError("Inconsistent Use receiver flags");
     }
-}
-
-std::string multiSlsDetector::checkReceiverOnline(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->checkReceiverOnline();
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::checkReceiverOnline);
-    return sls::concatenateNonEmptyStrings(r);
 }
 
 int multiSlsDetector::lockReceiver(int lock, int detPos) {

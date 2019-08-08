@@ -110,7 +110,7 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("readConfigurationFile",
              &DetectorPythonInterface::readConfigurationFile)
         .def("readParametersFile", &DetectorPythonInterface::readParametersFile)
-        .def("checkOnline", &DetectorPythonInterface::checkOnline)
+     //    .def("checkOnline", &DetectorPythonInterface::checkOnline)
         .def("setReadoutClockSpeed",
              &DetectorPythonInterface::setReadoutClockSpeed)
         .def("getReadoutClockSpeed",

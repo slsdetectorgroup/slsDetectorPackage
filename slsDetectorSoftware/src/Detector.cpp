@@ -209,8 +209,8 @@ Result<defs::coordinates> Detector::getDetectorOffsets(Positions pos) const {
 }
 
 void Detector::setDetectorOffsets(defs::coordinates value, Positions pos) {
-    pimpl->Parallel<defs::coordinates>(&slsDetector::setDetectorOffset, pos,
-                                       value);
+    pimpl->Parallel(&slsDetector::setDetectorOffsets, pos, value);
+    //pimpl->Parallel<defs::coordinates>(&slsDetector::setDetectorOffset, pos, value);
 }
 
 Result<bool> Detector::getQuad(Positions pos) const {
@@ -228,6 +228,31 @@ Result<int> Detector::getReadNLines(Positions pos) const {
 void Detector::setReadNLines(const int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setReadNLines, pos, value);
 }
+
+Result<int> Detector::getControlPort(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getControlPort, pos);
+}
+
+void Detector::setControlPort(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setControlPort, pos, value);
+}
+
+Result<int> Detector::getStopPort(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getStopPort, pos);
+}
+
+void Detector::setStopPort(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setStopPort, pos, value);
+}
+
+Result<int> Detector::getReceiverPort(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverPort, pos);
+}
+
+void Detector::setReceiverPort(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverPort, pos, value);
+}
+
 
 // Erik
 Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const {

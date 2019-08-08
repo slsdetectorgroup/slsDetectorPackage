@@ -294,6 +294,47 @@ class Detector {
      */
     void setReadNLines(const int value, Positions pos = {});
 
+    /**
+     * Get Receiver TCP port (for client communication with Receiver)
+     * @param pos detector position
+     * @returns receiver port
+     */
+    //int getControlort(Positions pos = {}) const;
+
+    /**
+     * Set TCP Port of the detector (for client communication with Receiver)
+     * @param value port number
+     * @param pos detector position
+     */
+    //void setControlPort(int port_number, Positions pos = {});
+
+    /**
+     * Get Receiver TCP port (for client communication with Receiver)
+     * @param pos detector position
+     * @returns receiver port
+     */
+    //int getStopPort(Positions pos = {}) const;
+
+    /**
+     * Set TCP Port of the detector (for client communication with Receiver)
+     * @param value port number
+     * @param pos detector position
+     */
+    //void setStopPort(int port_number, Positions pos = {});
+
+        /**
+     * Get Receiver TCP port (for client communication with Receiver)
+     * @param pos detector position
+     * @returns receiver port
+     */
+    //int getReceiverPort(Positions pos = {}) const;
+
+    /**
+     * Set TCP Port of the detector (for client communication with Receiver)
+     * @param value port number
+     * @param pos detector position
+     */
+    //void setReceiverPort(int port_number, Positions pos = {});
 
 
 

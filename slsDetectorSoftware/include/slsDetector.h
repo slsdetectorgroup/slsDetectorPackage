@@ -447,7 +447,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * Set Detector offset in shared memory 
      * @param value offset for detector
      */
-    void setDetectorOffsets(slsDetectorDefs::coordinates value);
+    void setDetectorOffset(slsDetectorDefs::coordinates value);
 
     /**
      * Set Detector offset in shared memory in dimension d

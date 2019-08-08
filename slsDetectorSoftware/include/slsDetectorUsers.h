@@ -139,9 +139,8 @@ public:
 	/**
 	 * Write current configuration to a file (for one time detector setup)
 	 * @param fname configuration file name
-	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(const std::string& fname);
+	void writeConfigurationFile(const std::string& fname);
 
 	/**
 	 * Loads the detector setup from file (current measurement setup)

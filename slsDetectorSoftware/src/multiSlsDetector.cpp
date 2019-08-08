@@ -880,7 +880,7 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
     input_file.close();
 }
 
-int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
+void multiSlsDetector::writeConfigurationFile(const std::string &fname) {
     // TODO! make exception safe!
     const std::vector<std::string> header{"detsizechan", "hostname"};
     std::ofstream outfile;
@@ -901,7 +901,6 @@ int multiSlsDetector::writeConfigurationFile(const std::string &fname) {
         throw RuntimeError("Could not open configuration file " + fname +
                            " for writing");
     }
-    return OK;
 }
 
 slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int detPos) {

@@ -56,12 +56,6 @@ struct sharedMultiSlsDetector {
     /** Number of detectors operated at once */
     int numberOfDetector[2];
 
-    /**  size of the data that are transfered from all detectors */
-    int dataBytes;
-
-    /** data bytes including gap pixels transferred from all detectors */
-    int dataBytesInclGapPixels;
-
     /**  total number of channels for all detectors */
     int numberOfChannels;
 
@@ -863,14 +857,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current dynamic range
      */
-    int setDynamicRange(int dr = -1, int detPos = -1);
-
-    /**
-     * Recalculated number of data bytes for multi detector
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns tota number of data bytes for multi detector
-     */
-    int getDataBytes(int detPos = -1);
+    int setDynamicRange(int dr = -1, int detPos = -1);//
 
     /**
      * Set/get dacs value
@@ -880,7 +867,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current DAC value
      */
-    int setDAC(int val, dacIndex index, int mV, int detPos = -1);
+    int setDAC(int val, dacIndex index, int mV, int detPos = -1);//
 
     /**
      * Get adc value
@@ -889,7 +876,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns current adc value (temperature for eiger and jungfrau in
      * millidegrees)
      */
-    int getADC(dacIndex index, int detPos = -1);
+    int getADC(dacIndex index, int detPos = -1);//
 
     /**
      * Set/get timing mode

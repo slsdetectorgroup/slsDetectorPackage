@@ -278,8 +278,6 @@ void multiSlsDetector::initializeDetectorStructure() {
     multi_shm()->multiDetectorType = GENERIC;
     multi_shm()->numberOfDetector[X] = 0;
     multi_shm()->numberOfDetector[Y] = 0;
-    multi_shm()->dataBytes = 0;
-    multi_shm()->dataBytesInclGapPixels = 0;
     multi_shm()->numberOfChannels = 0;
     multi_shm()->numberOfChannel[X] = 0;
     multi_shm()->numberOfChannel[Y] = 0;
@@ -624,9 +622,6 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     detectors.push_back(
         sls::make_unique<slsDetector>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
-    multi_shm()->dataBytes += detectors[pos]->getDataBytes();
-    multi_shm()->dataBytesInclGapPixels +=
-        detectors[pos]->getDataBytesInclGapPixels();
     multi_shm()->numberOfChannels += detectors[pos]->getTotalNumberOfChannels();
 
     detectors[pos]->setHostname(hostname);
@@ -1264,22 +1259,18 @@ int multiSlsDetector::setDynamicRange(int dr, int detPos) {
     }
 
     // multi
+    int prevValue = -1;
+    auto temp = Parallel(&slsDetector::getDynamicRangeFromShm, {});
+    if (temp.equal()) {
+        prevValue = temp.squash();
+    }
+
     auto r = parallelCall(&slsDetector::setDynamicRange, dr);
     int ret = sls::minusOneIfDifferent(r);
 
-    // update shm
-    int prevValue = multi_shm()->dataBytes;
-    int prevGValue = multi_shm()->dataBytesInclGapPixels;
-    multi_shm()->dataBytes = 0;
-    multi_shm()->dataBytesInclGapPixels = 0;
-    for (auto &d : detectors) {
-        multi_shm()->dataBytes += d->getDataBytes();
-        multi_shm()->dataBytesInclGapPixels += d->getDataBytesInclGapPixels();
-    }
-
-    // if there was a change FIXME:add dr to sls shm and check that instead
-    if ((prevValue != multi_shm()->dataBytes) ||
-        (prevGValue != multi_shm()->dataBytesInclGapPixels)) {
+  
+    // change in dr
+    if (dr != -1 && dr != prevValue) {
 
         updateOffsets();
 
@@ -1310,17 +1301,6 @@ int multiSlsDetector::setDynamicRange(int dr, int detPos) {
     }
 
     return ret;
-}
-
-int multiSlsDetector::getDataBytes(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getDataBytes();
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::getDataBytes);
-    return sls::sum(r);
 }
 
 int multiSlsDetector::setDAC(int val, dacIndex index, int mV, int detPos) {
@@ -2699,12 +2679,7 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
     auto r = parallelCall(&slsDetector::enableGapPixels, val);
     int ret = sls::minusOneIfDifferent(r);
 
-    // update data bytes incl gap pixels
     if (val != -1) {
-        auto r2 = serialCall(&slsDetector::getDataBytesInclGapPixels);
-        multi_shm()->dataBytesInclGapPixels = sls::sum(r2);
-
-        // update
         updateOffsets();
     }
     return ret;
@@ -2713,11 +2688,7 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
 void multiSlsDetector::setGapPixelsEnable(bool enable, Positions pos){
     Parallel(&slsDetector::enableGapPixels, pos, static_cast<int>(enable));
 
-    // update data bytes incl gap pixels
-    auto r2 = serialCall(&slsDetector::getDataBytesInclGapPixels);
-    multi_shm()->dataBytesInclGapPixels = sls::sum(r2);
     updateOffsets();
-    
 }
 
 int multiSlsDetector::setTrimEn(std::vector<int> energies, int detPos) {

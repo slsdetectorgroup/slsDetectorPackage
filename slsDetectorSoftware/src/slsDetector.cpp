@@ -1539,6 +1539,10 @@ int slsDetector::setDynamicRange(int n) {
     return shm()->dynamicRange;
 }
 
+int slsDetector::getDynamicRangeFromShm() {
+    return shm()->dynamicRange;
+}
+
 int slsDetector::getDataBytes() { return shm()->dataBytes; }
 
 int slsDetector::getDataBytesInclGapPixels() {

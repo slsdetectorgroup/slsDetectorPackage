@@ -510,24 +510,24 @@ ctbPattern::ctbPattern(TGVerticalFrame *page, multiSlsDetector *det)
    e->Connect("ReturnPressed()","ctbPattern",this,"setCycles()");
 
 
-   sprintf(tit, "Number of measurements: ");
+   // sprintf(tit, "Number of measurements: ");
 
-   label= new TGLabel(hframe, tit);
-   hframe->AddFrame(label,new TGLayoutHints(kLHintsTop | kLHintsLeft| kLHintsExpandX, 1, 1, 1, 1));
-   label->MapWindow();
-   label->SetTextJustify(kTextLeft);
+   // label= new TGLabel(hframe, tit);
+   // hframe->AddFrame(label,new TGLayoutHints(kLHintsTop | kLHintsLeft| kLHintsExpandX, 1, 1, 1, 1));
+   // label->MapWindow();
+   // label->SetTextJustify(kTextLeft);
 
 
 
   
-   eMeasurements = new TGNumberEntry(hframe, 0, 9,999, TGNumberFormat::kNESInteger,
-                                               TGNumberFormat::kNEANonNegative, 
-                                               TGNumberFormat::kNELNoLimits);
-   hframe->AddFrame( eMeasurements,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
-   eMeasurements->MapWindow();
-   eMeasurements->Resize(150,30);
-   e= eMeasurements->TGNumberEntry::GetNumberEntry();
-   e->Connect("ReturnPressed()","ctbPattern",this,"setMeasurements()");
+   // eMeasurements = new TGNumberEntry(hframe, 0, 9,999, TGNumberFormat::kNESInteger,
+   //                                             TGNumberFormat::kNEANonNegative, 
+   //                                             TGNumberFormat::kNELNoLimits);
+   // hframe->AddFrame( eMeasurements,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
+   // eMeasurements->MapWindow();
+   // eMeasurements->Resize(150,30);
+   // e= eMeasurements->TGNumberEntry::GetNumberEntry();
+   // e->Connect("ReturnPressed()","ctbPattern",this,"setMeasurements()");
 
 
   hframe=new TGHorizontalFrame(this, 800,800);
@@ -910,14 +910,14 @@ try {
   eCycles->SetNumber(n);
 
 
- try {
-   myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1);
-      } catch (...) {
+ // try {
+ //   myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1);
+ //      } catch (...) {
     
-      cout << "Do nothing for this error" << endl;
-  }
+ //      cout << "Do nothing for this error" << endl;
+ //  }
    
-  eMeasurements->SetNumber(n);
+ //  eMeasurements->SetNumber(n);
 
   start=-1;
   stop=-1;
@@ -1049,14 +1049,14 @@ void ctbPattern::setCycles() {
   }
 }
 
-void ctbPattern::setMeasurements() {
-  try {
-  myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,eFrames->GetNumber());
-      } catch (...) {
+// void ctbPattern::setMeasurements() {
+//   try {
+//   myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,eFrames->GetNumber());
+//       } catch (...) {
     
-      cout << "Do nothing for this error" << endl;
-  }
-}
+//       cout << "Do nothing for this error" << endl;
+//   }
+// }
 
 
 

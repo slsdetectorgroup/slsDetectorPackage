@@ -100,7 +100,7 @@ private:
    TGNumberEntry *eFrames;
    TGNumberEntry *ePeriod;
    TGNumberEntry *eCycles;
-   TGNumberEntry *eMeasurements;
+   // TGNumberEntry *eMeasurements;
    TGNumberEntry *eAdcPipeline;
    TGNumberEntry *eDBitPipeline;
    
@@ -139,7 +139,7 @@ public:
    void setDBitPipeline();
    void setFrames();
    void setCycles();
-   void setMeasurements();
+   // void setMeasurements();
    void setPeriod();
 
    

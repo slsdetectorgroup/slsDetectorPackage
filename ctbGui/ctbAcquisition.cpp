@@ -1133,13 +1133,12 @@ void ctbAcquisition::changePlot(){
       if (rb2D->IsOn()) {
 	if (h2DMapDig)
 	  h2DMapDig->Draw("colz");
+	else if (h1DMap)
+	  h1DMap->Draw();
       } else if (bitStack)
 	bitStack->Draw("NOSTACK");
       else
 	cout << "bitStack is NULL" << endl;
-      
-      
-      
     }
     
     

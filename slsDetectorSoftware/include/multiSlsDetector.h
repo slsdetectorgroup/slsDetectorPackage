@@ -818,7 +818,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns sub frame dead time in ns, or s if specified
      */
-    double getMeasuredPeriod(bool inseconds = false, int detPos = -1);
+    double getMeasuredPeriod(bool inseconds = false, int detPos = -1);//
 
     /**
      * Get sub period between previous two sub frames in 32 bit mode (EIGER)
@@ -827,7 +827,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns sub frame dead time in ns, or s if specified
      */
-    double getMeasuredSubFramePeriod(bool inseconds = false, int detPos = -1);
+    double getMeasuredSubFramePeriod(bool inseconds = false, int detPos = -1);//
 
     /**
      * Set/get timer value left in acquisition (not all implemented for all
@@ -838,7 +838,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns timer set value in ns or number of...(e.g. frames, 
      * probes)
      */
-    int64_t getTimeLeft(timerIndex index, int detPos = -1);
+    int64_t getTimeLeft(timerIndex index, int detPos = -1);//
 
     /**
      * Set speed

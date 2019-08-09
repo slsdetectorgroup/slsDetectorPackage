@@ -51,39 +51,11 @@ Result<uint32_t> Detector::getRegister(uint32_t addr, Positions pos) {
     return pimpl->Parallel(&slsDetector::readRegister, pos, addr);
 }
 
-Result<ns> Detector::getExptime(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
-                           -1);
-}
-
 Result<uint64_t> Detector::getStartingFrameNumber(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getStartingFrameNumber, pos);
 }
 void Detector::setStartingFrameNumber(uint64_t value, Positions pos) {
     pimpl->Parallel(&slsDetector::setStartingFrameNumber, pos, value);
-}
-
-void Detector::setExptime(ns t, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
-                    t.count());
-}
-
-Result<ns> Detector::getSubExptime(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos,
-                           defs::SUBFRAME_ACQUISITION_TIME, -1);
-}
-
-void Detector::setSubExptime(ns t, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimer, pos,
-                    defs::SUBFRAME_ACQUISITION_TIME, t.count());
-}
-
-Result<ns> Detector::getPeriod(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, -1);
-}
-
-void Detector::setPeriod(ns t, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, t.count());
 }
 
 // File
@@ -366,15 +338,18 @@ void Detector::setNumberOfCycles(int64_t value) {
 }
 
 Result<int64_t> Detector::getNumberOfStorageCells() const {
-    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::STORAGE_CELL_NUMBER, -1);
+    return pimpl->Parallel(&slsDetector::setTimer, {},
+                           defs::STORAGE_CELL_NUMBER, -1);
 }
 
 void Detector::setNumberOfStorageCells(int64_t value) {
-    pimpl->Parallel(&slsDetector::setTimer, {}, defs::STORAGE_CELL_NUMBER, value);
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::STORAGE_CELL_NUMBER,
+                    value);
 }
 
 Result<int64_t> Detector::getNumberOfAnalogSamples(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ANALOG_SAMPLES, -1);
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ANALOG_SAMPLES,
+                           -1);
 }
 
 void Detector::setNumberOfAnalogSamples(int64_t value, Positions pos) {
@@ -382,11 +357,30 @@ void Detector::setNumberOfAnalogSamples(int64_t value, Positions pos) {
 }
 
 Result<int64_t> Detector::getNumberOfDigitalSamples(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES, -1);
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES,
+                           -1);
 }
 
 void Detector::setNumberOfDigitalSamples(int64_t value, Positions pos) {
     pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES, value);
+}
+
+Result<ns> Detector::getExptime(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
+                           -1);
+}
+
+void Detector::setExptime(ns t, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
+                    t.count());
+}
+
+Result<ns> Detector::getPeriod(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, -1);
+}
+
+void Detector::setPeriod(ns t, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, t.count());
 }
 
 Result<ns> Detector::getDelayAfterTrigger(Positions pos) const {
@@ -399,12 +393,22 @@ void Detector::setDelayAfterTrigger(ns value, Positions pos) {
                     value.count());
 }
 
-Result<ns> Detector::getSubFrameDeadTime(Positions pos) const {
+Result<ns> Detector::getSubExptime(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos,
+                           defs::SUBFRAME_ACQUISITION_TIME, -1);
+}
+
+void Detector::setSubExptime(ns t, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos,
+                    defs::SUBFRAME_ACQUISITION_TIME, t.count());
+}
+
+Result<ns> Detector::getSubDeadTime(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setTimer, pos, defs::SUBFRAME_DEADTIME,
                            -1);
 }
 
-void Detector::setSubFrameDeadTime(ns value, Positions pos) {
+void Detector::setSubDeadTime(ns value, Positions pos) {
     pimpl->Parallel(&slsDetector::setTimer, pos, defs::SUBFRAME_DEADTIME,
                     value.count());
 }
@@ -418,6 +422,46 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
     pimpl->Parallel(&slsDetector::setTimer, pos, defs::STORAGE_CELL_DELAY,
                     value.count());
 }
+
+Result<int64_t> Detector::getNumberOfFramesLeft(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::FRAME_NUMBER);
+}
+
+Result<int64_t> Detector::getNumberOfCyclesLeft(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::CYCLES_NUMBER);
+}
+
+Result<ns> Detector::getExptimeLeft(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::ACQUISITION_TIME);
+}
+
+Result<ns> Detector::getPeriodLeft(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::FRAME_PERIOD);
+}
+
+Result<ns> Detector::getDelayAfterTriggerLeft(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::DELAY_AFTER_TRIGGER);
+}
+
+Result<int64_t> Detector::getNumberOfFramesFromStart(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::FRAMES_FROM_START);
+}
+
+Result<ns> Detector::getActualTime(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::ACTUAL_TIME);
+}
+
+Result<ns> Detector::getMeasurementTime(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::MEASUREMENT_TIME);
+}
+
+Result<ns> Detector::getMeasuredPeriod(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::MEASURED_PERIOD);
+};
+
+Result<ns> Detector::getMeasuredSubFramePeriod(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::MEASURED_SUBPERIOD);
+};
 
 // Erik
 Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const {

@@ -115,14 +115,6 @@ class Detector {
     Result<bool> getFileOverWrite(Positions pos = {}) const;
     void setFileOverWrite(bool value, Positions pos = {});
 
-    // Time
-    Result<ns> getExptime(Positions pos = {}) const;
-    void setExptime(ns t, Positions pos = {});
-    Result<ns> getSubExptime(Positions pos = {}) const;
-    void setSubExptime(ns t, Positions pos = {});
-    Result<ns> getPeriod(Positions pos = {}) const;
-    void setPeriod(ns t, Positions pos = {});
-
     // dhanya
     /**
      * Get multidetector Id
@@ -561,6 +553,33 @@ class Detector {
     void setNumberOfDigitalSamples(int64_t value, Positions pos = {});
 
     /**
+     * Get exposure time in ns
+     * @param pos detector position
+     * @returns exposure time in ns
+     */
+    Result<ns> getExptime(Positions pos = {}) const;
+
+    /**
+     * Set exposure time in ns
+     * @param value exposure time in ns
+     * @param pos detector position
+     */
+    void setExptime(ns t, Positions pos = {});
+
+    /**
+     * Get period in ns
+     * @param pos detector position
+     * @returns period in ns
+     */
+    Result<ns> getPeriod(Positions pos = {}) const;
+
+    /**
+     * Set period in ns
+     * @param value period in ns
+     * @param pos detector position
+     */
+    void setPeriod(ns t, Positions pos = {});
+    /**
      * Get delay after trigger in ns(Gotthard, Jungfrau)
      * @param pos detector position
      * @returns delay after trigger in ns
@@ -575,18 +594,31 @@ class Detector {
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
     /**
+     * Get sub frame exposure time in ns (Eiger in 32 bit mode)
+     * @param pos detector position
+     * @returns sub frame exposure time in ns
+     */
+    Result<ns> getSubExptime(Positions pos = {}) const;
+
+    /**
+     * Set sub frame exposure time after trigger (Eiger in 32 bit mode)
+     * @param value sub frame exposure time in ns
+     * @param pos detector position
+     */
+    void setSubExptime(ns t, Positions pos = {});
+    /**
      * Get sub frame dead time in ns (Eiger in 32 bit mode)
      * @param pos detector position
-     * @returns delay after trigger in ns
+     * @returns sub frame dead time in ns
      */
-    Result<ns> getSubFrameDeadTime(Positions pos = {}) const;
+    Result<ns> getSubDeadTime(Positions pos = {}) const;
 
     /**
      * Set sub frame dead time after trigger (Eiger in 32 bit mode)
-     * @param value delay after trigger in ns
+     * @param value sub frame dead time in ns
      * @param pos detector position
      */
-    void setSubFrameDeadTime(ns value, Positions pos = {});
+    void setSubDeadTime(ns value, Positions pos = {});
 
     /**
      * Get storage cell delay (Jungfrau)
@@ -603,6 +635,76 @@ class Detector {
      * @param pos detector position
      */
     void setStorageCellDelay(ns value, Positions pos = {});
+
+    /**
+     * Get number of Frames left (Gotthard, Jungfrau, CTB)
+     * @param pos detector position
+     * @returns number of Frames left
+     */
+    Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
+
+    /**
+     * Get number of Cycles left (Gotthard, Jungfrau, CTB)
+     * @param pos detector position
+     * @returns number of Cycles left
+     */
+    Result<int64_t> getNumberOfCyclesLeft(Positions pos = {}) const;
+    /**
+     * Get exposure time left in ns (Gotthard)
+     * @param pos detector position
+     * @returns exposure time left in ns
+     */
+    Result<ns> getExptimeLeft(Positions pos = {}) const;
+
+    /**
+     * Get period left in ns (Gotthard, Jungfrau, CTB)
+     * @param pos detector position
+     * @returns period left in ns
+     */
+    Result<ns> getPeriodLeft(Positions pos = {}) const;
+
+    /**
+     * Get delay after trigger left in ns(Gotthard, Jungfrau, CTB)
+     * @param pos detector position
+     * @returns delay after trigger left in ns
+     */
+    Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
+
+    /**
+     * Get number of frames from start up of detector (Jungfrau, CTB)
+     * @param pos detector position
+     * @returns number of frames from start up of detector
+     */
+    Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
+
+    /**
+     * Get time from detector start in ns (Jungfrau, CTB)
+     * @param pos detector position
+     * @returns time from detector start in ns
+     */
+    Result<ns> getActualTime(Positions pos = {}) const;
+
+    /**
+     * Get timestamp at a frame start in ns(Jungfrau, CTB)
+     * @param pos detector position
+     * @returns timestamp at a frame start in ns
+     */
+    Result<ns> getMeasurementTime(Positions pos = {}) const;
+
+    /**
+     * Get measured period between previous two frames in ns (Eiger)
+     * @param pos detector position
+     * @returns measured period between previous two frames in ns
+     */
+    Result<ns> getMeasuredPeriod(Positions pos = {}) const;
+
+    /**
+     * Get measured sub frame period between previous two frames in ns (Eiger in
+     * 32 bit mode)
+     * @param pos detector position
+     * @returns measured sub frame period between previous two frames in ns
+     */
+    Result<ns> getMeasuredSubFramePeriod(Positions pos = {}) const;
 
     // Erik
 

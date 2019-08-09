@@ -359,14 +359,6 @@ public:
 	int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1);
 
 	/**
-	 * Set/get number of gates (none of the detectors at the moment)
-	 * @param t number of gates (-1 gets)
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns number of gates
-	 */
-	int64_t setNumberOfGates(int64_t t = -1, int detPos = -1);
-
-	/**
 	 * Set/get number of additional storage cells  (Jungfrau)
 	 * @param t number of additional storage cells. Default is 0.  (-1 gets)
 	 * @param detPos -1 for all detectors in  list or specific detector position
@@ -396,7 +388,7 @@ public:
 	 * Set/get timing mode
 	 * @param pol timing mode (-1 gets)
 	 * Options (slsDetectorDefs::externalCommunicationMode)
-	 * (Eiger: AUTO_TIMING, TRIGGER_EXPOSURE, BURST_TRIGGER, GATE_FIX_NUMBER)
+	 * (Eiger: AUTO_TIMING, TRIGGER_EXPOSURE, BURST_TRIGGER, GATED)
 	 * (Jungfrau: AUTO_TIMING, TRIGGER_EXPOSURE)
 	 * (Gotthard: AUTO_TIMING, TRIGGER_EXPOSURE)
 	 * @param detPos -1 for all detectors in  list or specific detector position

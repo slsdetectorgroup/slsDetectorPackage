@@ -287,10 +287,6 @@ void multiSlsDetector::initializeDetectorStructure() {
     multi_shm()->numberOfChannelInclGapPixels[Y] = 0;
     multi_shm()->maxNumberOfChannelsPerDetector[X] = 0;
     multi_shm()->maxNumberOfChannelsPerDetector[Y] = 0;
-    for (int64_t &i : multi_shm()->timerValue) {
-        i = 0;
-    }
-
     multi_shm()->acquiringFlag = false;
     multi_shm()->receiver_upstream = false;
 }
@@ -1144,41 +1140,12 @@ uint64_t multiSlsDetector::getStartingFrameNumber(int detPos) {
 int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t, int detPos) {
     // single
     if (detPos >= 0) {
-        // error for setting values individually
-        // FIXME: what else? and error code
-        if (t != -1) {
-            switch (index) {
-            case FRAME_NUMBER:
-            case CYCLES_NUMBER:
-            case STORAGE_CELL_NUMBER:
-                throw RuntimeError("Cannot set number of frames, cycles or "
-                                   "storage cells individually.");
-            default:
-                break;
-            }
-        }
         return detectors[detPos]->setTimer(index, t);
     }
 
     // multi
     auto r = parallelCall(&slsDetector::setTimer, index, t);
-    int64_t ret = sls::minusOneIfDifferent(r);
-
-    // set progress
-    if (t != -1) {
-        switch (index) {
-        case FRAME_NUMBER:
-        case CYCLES_NUMBER:
-        case STORAGE_CELL_NUMBER:
-            setTotalProgress();
-            break;
-        default:
-            break;
-        }
-    }
-
-    multi_shm()->timerValue[index] = ret;
-    return ret;
+    return sls::minusOneIfDifferent(r);
 }
 
 int64_t multiSlsDetector::secondsToNanoSeconds(double t) {
@@ -1237,10 +1204,6 @@ int64_t multiSlsDetector::setNumberOfFrames(int64_t t, int detPos) {
 
 int64_t multiSlsDetector::setNumberOfCycles(int64_t t, int detPos) {
     return setTimer(CYCLES_NUMBER, t, detPos);
-}
-
-int64_t multiSlsDetector::setNumberOfGates(int64_t t, int detPos) {
-    return setTimer(GATES_NUMBER, t, detPos);
 }
 
 int64_t multiSlsDetector::setNumberOfStorageCells(int64_t t, int detPos) {
@@ -4199,16 +4162,28 @@ void multiSlsDetector::registerDataCallback(
 int multiSlsDetector::setTotalProgress() {
     int nf = 1, nc = 1, ns = 1;
 
-    if (multi_shm()->timerValue[FRAME_NUMBER] != 0) {
-        nf = multi_shm()->timerValue[FRAME_NUMBER];
+    Result<int64_t> temp = Parallel(&slsDetector::setTimer, {}, FRAME_NUMBER, -1);
+    if (!temp.equal()) {
+        throw RuntimeError("Inconsistent number of frames");
+    }
+    nf = temp.squash();
+
+    temp = Parallel(&slsDetector::setTimer, {}, CYCLES_NUMBER, -1);
+    if (!temp.equal()) {
+        throw RuntimeError("Inconsistent number of cycles");
+    }
+    nc = temp.squash();
+
+    if (getDetectorTypeAsEnum() == JUNGFRAU) {
+        temp = Parallel(&slsDetector::setTimer, {}, STORAGE_CELL_NUMBER, -1);
+        if (!temp.equal()) {
+            throw RuntimeError("Inconsistent number of additional storage cells");
+        }
+        ns = temp.squash() + 1;
     }
 
-    if (multi_shm()->timerValue[CYCLES_NUMBER] > 0) {
-        nc = multi_shm()->timerValue[CYCLES_NUMBER];
-    }
-
-    if (multi_shm()->timerValue[STORAGE_CELL_NUMBER] > 0) {
-        ns = multi_shm()->timerValue[STORAGE_CELL_NUMBER] + 1;
+    if (nf == 0 || nc == 0) {
+        throw RuntimeError("Number of frames or cycles is 0");
     }
 
     totalProgress = nf * nc * ns;
@@ -4269,6 +4244,7 @@ int multiSlsDetector::acquire() {
             stopReceiver();
         }
     }
+    setTotalProgress();
 
     startProcessingThread();
 

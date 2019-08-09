@@ -108,7 +108,6 @@ class slsDetectorDefs {
         FRAME_PERIOD,        /**< period between exposures */
         DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or
                                 readout (in triggered mode) */
-        GATES_NUMBER,        /**< number of gates per frame (in gated mode) */
         CYCLES_NUMBER,    /**< number of cycles: total number of acquisitions is
                              number or frames*number of cycles */
         ACTUAL_TIME,      /**< Actual time of the detector's internal timer */
@@ -920,12 +919,12 @@ format
 
     /** returns std::string from timer index
         \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD,
-       DELAY_AFTER_TRIGGER,GATES_NUMBER, CYCLES_NUMBER,
+       DELAY_AFTER_TRIGGER, CYCLES_NUMBER,
        ACTUAL_TIME,MEASUREMENT_TIME,
        PROGRESS,FRAMES_FROM_START,FRAMES_FROM_START_PG,ANALOG_SAMPLES,DIGITAL_SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
        SUBFRAME_DEADTIME \returns std::string
        frame_number,acquisition_time,frame_period,
-       delay_after_trigger,gates_number, cycles_number,
+       delay_after_trigger, cycles_number,
        actual_time,measurement_time,
        progress,frames_from_start,frames_from_start_pg,analog_samples, digital_samples,subframe_acquisition_time,storage_cell_number,
        SUBFRAME_DEADTIME
@@ -940,8 +939,6 @@ format
             return std::string("frame_period");
         case DELAY_AFTER_TRIGGER:
             return std::string("delay_after_trigger");
-        case GATES_NUMBER:
-            return std::string("gates_number");
         case CYCLES_NUMBER:
             return std::string("cycles_number");
         case ACTUAL_TIME:

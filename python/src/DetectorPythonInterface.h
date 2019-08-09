@@ -505,12 +505,12 @@ class DetectorPythonInterface {
     }
 
 
-    int getNumberOfGates() {
-        return det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, -1);
-    }
-    void setNumberOfGates(const int t) {
-        det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, t);
-    }
+    // int getNumberOfGates() {
+    //     return det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, -1);
+    // }
+    // void setNumberOfGates(const int t) {
+    //     det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, t);
+    // }
 
     // time in ns
     int64_t getDelay() {

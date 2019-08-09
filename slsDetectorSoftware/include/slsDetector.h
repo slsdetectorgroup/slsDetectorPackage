@@ -658,8 +658,8 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Set/get timer value (not all implemented for all detectors)
      * @param index timer index
-     * @param t time in ns or number of...(e.g. frames, gates, probes)
-     * @returns timer set value in ns or number of...(e.g. frames, gates,
+     * @param t time in ns or number of...(e.g. frames, probes)
+     * @returns timer set value in ns or number of...(e.g. frames, 
      * probes)
      */
     int64_t setTimer(timerIndex index, int64_t t = -1);
@@ -668,8 +668,8 @@ class slsDetector : public virtual slsDetectorDefs {
      * Set/get timer value left in acquisition (not all implemented for all
      * detectors)
      * @param index timer index
-     * @param t time in ns or number of...(e.g. frames, gates, probes)
-     * @returns timer set value in ns or number of...(e.g. frames, gates,
+     * @param t time in ns or number of...(e.g. frames, probes)
+     * @returns timer set value in ns or number of...(e.g. frames,      
      * probes)
      */
     int64_t getTimeLeft(timerIndex index) const;

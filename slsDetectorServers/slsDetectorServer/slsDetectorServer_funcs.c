@@ -116,7 +116,6 @@ const char* getTimerName(enum timerIndex ind) {
     case ACQUISITION_TIME:          return "acquisition_time";
     case FRAME_PERIOD:              return "frame_period";
     case DELAY_AFTER_TRIGGER:       return "delay_after_trigger";
-    case GATES_NUMBER:              return "gates_number";
     case CYCLES_NUMBER:             return "cycles_number";
     case ACTUAL_TIME:               return "actual_time";
     case MEASUREMENT_TIME:          return "measurement_time";

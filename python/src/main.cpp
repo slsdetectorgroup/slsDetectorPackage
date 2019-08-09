@@ -173,8 +173,8 @@ PYBIND11_MODULE(_sls_detector, m) {
 
         .def("getCycles", &DetectorPythonInterface::getCycles)
         .def("setCycles", &DetectorPythonInterface::setCycles)
-        .def("getNumberOfGates", &DetectorPythonInterface::getNumberOfGates)
-        .def("setNumberOfGates", &DetectorPythonInterface::setNumberOfGates)
+     //    .def("getNumberOfGates", &DetectorPythonInterface::getNumberOfGates)
+     //    .def("setNumberOfGates", &DetectorPythonInterface::setNumberOfGates)
         .def("getDelay", &DetectorPythonInterface::getDelay)
         .def("setDelay", &DetectorPythonInterface::setDelay)
 

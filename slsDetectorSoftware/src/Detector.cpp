@@ -326,9 +326,7 @@ void Detector::startAcquisition() {
     pimpl->Parallel(&slsDetector::startAcquisition, {});
 }
 
-void Detector::stopAcquisition() {
-    pimpl->Parallel(&slsDetector::stopAcquisition, {});
-}
+void Detector::stopAcquisition() { pimpl->stopAcquisition(); }
 
 void Detector::sendSoftwareTrigger(Positions pos) {
     pimpl->Parallel(&slsDetector::sendSoftwareTrigger, pos);
@@ -349,6 +347,76 @@ void Detector::readAll() { pimpl->Parallel(&slsDetector::readAll, {}); }
 
 void Detector::configureMAC(Positions pos) {
     pimpl->Parallel(&slsDetector::configureMAC, pos);
+}
+
+Result<int64_t> Detector::getNumberOfFrames() const {
+    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::FRAME_NUMBER, -1);
+}
+
+void Detector::setNumberOfFrames(int64_t value) {
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::FRAME_NUMBER, value);
+}
+
+Result<int64_t> Detector::getNumberOfCycles() const {
+    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, -1);
+}
+
+void Detector::setNumberOfCycles(int64_t value) {
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, value);
+}
+
+Result<int64_t> Detector::getNumberOfStorageCells() const {
+    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::STORAGE_CELL_NUMBER, -1);
+}
+
+void Detector::setNumberOfStorageCells(int64_t value) {
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::STORAGE_CELL_NUMBER, value);
+}
+
+Result<int64_t> Detector::getNumberOfAnalogSamples(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ANALOG_SAMPLES, -1);
+}
+
+void Detector::setNumberOfAnalogSamples(int64_t value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::ANALOG_SAMPLES, value);
+}
+
+Result<int64_t> Detector::getNumberOfDigitalSamples(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES, -1);
+}
+
+void Detector::setNumberOfDigitalSamples(int64_t value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES, value);
+}
+
+Result<ns> Detector::getDelayAfterTrigger(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos,
+                           defs::DELAY_AFTER_TRIGGER, -1);
+}
+
+void Detector::setDelayAfterTrigger(ns value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::DELAY_AFTER_TRIGGER,
+                    value.count());
+}
+
+Result<ns> Detector::getSubFrameDeadTime(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::SUBFRAME_DEADTIME,
+                           -1);
+}
+
+void Detector::setSubFrameDeadTime(ns value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::SUBFRAME_DEADTIME,
+                    value.count());
+}
+
+Result<ns> Detector::getStorageCellDelay(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos,
+                           defs::STORAGE_CELL_DELAY, -1);
+}
+
+void Detector::setStorageCellDelay(ns value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::STORAGE_CELL_DELAY,
+                    value.count());
 }
 
 // Erik

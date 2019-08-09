@@ -16,7 +16,7 @@ class detectorData;
 #include <thread>
 #include <vector>
 
-#define MULTI_SHMAPIVERSION 0x190807
+#define MULTI_SHMAPIVERSION 0x190809
 #define MULTI_SHMVERSION 0x190807
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
@@ -84,9 +84,6 @@ struct sharedMultiSlsDetector {
     /** max number of channels allowed for the complete set of detectors in
      * one dimension */
     int maxNumberOfChannelsPerDetector[2];
-
-    /** timer values */
-    int64_t timerValue[slsDetectorDefs::timerIndex::MAX_TIMERS];
 
     /** flag for acquiring */
     bool acquiringFlag;
@@ -713,7 +710,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Configures in detector the destination for UDP packets
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void configureMAC(int detPos = -1);
+    void configureMAC(int detPos = -1); //
 
     /**
      * Set starting frame number for the next acquisition
@@ -732,12 +729,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Set/get timer value (not all implemented for all detectors)
      * @param index timer index
-     * @param t time in ns or number of...(e.g. frames, gates, probes)
+     * @param t time in ns or number of...(e.g. frames, probes)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns timer set value in ns or number of...(e.g. frames, gates,
+     * @returns timer set value in ns or number of...(e.g. frames, 
      * probes)
      */
-    int64_t setTimer(timerIndex index, int64_t t = -1, int detPos = -1);
+    int64_t setTimer(timerIndex index, int64_t t = -1, int detPos = -1); //
 
     /**
      * Set/get exposure time
@@ -767,7 +764,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns delay after trigger in ns, or s if specified
      */
     double setDelayAfterTrigger(double t = -1, bool inseconds = false,
-                                int detPos = -1);
+                                int detPos = -1);//
 
     /**
      * (Advanced users)
@@ -789,7 +786,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns sub frame dead time in ns, or s if specified
      */
     double setSubFrameExposureDeadTime(double t = -1, bool inseconds = false,
-                                       int detPos = -1);
+                                       int detPos = -1);//
 
     /**
      * Set/get number of frames
@@ -797,7 +794,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of frames
      */
-    int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1);
+    int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1);//
 
     /**
      * Set/get number of cycles
@@ -805,15 +802,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of cycles
      */
-    int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1);
-
-    /**
-     * Set/get number of gates (none of the detectors at the moment)
-     * @param t number of gates (-1 gets)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns number of gates
-     */
-    int64_t setNumberOfGates(int64_t t = -1, int detPos = -1);
+    int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1);//
 
     /**
      * Set/get number of additional storage cells  (Jungfrau)
@@ -821,7 +810,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of additional storage cells
      */
-    int64_t setNumberOfStorageCells(int64_t t = -1, int detPos = -1);
+    int64_t setNumberOfStorageCells(int64_t t = -1, int detPos = -1);//
 
     /**
      * Get measured period between previous two frames (EIGER)
@@ -845,9 +834,9 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Set/get timer value left in acquisition (not all implemented for all
      * detectors)
      * @param index timer index
-     * @param t time in ns or number of...(e.g. frames, gates, probes)
+     * @param t time in ns or number of...(e.g. frames, probes)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns timer set value in ns or number of...(e.g. frames, gates,
+     * @returns timer set value in ns or number of...(e.g. frames, 
      * probes)
      */
     int64_t getTimeLeft(timerIndex index, int detPos = -1);

@@ -142,9 +142,7 @@ Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsString, pos);
 }
 
-int Detector::size() const {
-    return pimpl->size();
-}
+int Detector::size() const { return pimpl->size(); }
 
 defs::coordinates Detector::getNumberOfDetectors() const {
     defs::coordinates coord;
@@ -432,7 +430,8 @@ Result<int64_t> Detector::getNumberOfCyclesLeft(Positions pos) const {
 }
 
 Result<ns> Detector::getExptimeLeft(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::ACQUISITION_TIME);
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
+                           defs::ACQUISITION_TIME);
 }
 
 Result<ns> Detector::getPeriodLeft(Positions pos) const {
@@ -440,11 +439,13 @@ Result<ns> Detector::getPeriodLeft(Positions pos) const {
 }
 
 Result<ns> Detector::getDelayAfterTriggerLeft(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::DELAY_AFTER_TRIGGER);
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
+                           defs::DELAY_AFTER_TRIGGER);
 }
 
 Result<int64_t> Detector::getNumberOfFramesFromStart(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::FRAMES_FROM_START);
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
+                           defs::FRAMES_FROM_START);
 }
 
 Result<ns> Detector::getActualTime(Positions pos) const {
@@ -452,15 +453,18 @@ Result<ns> Detector::getActualTime(Positions pos) const {
 }
 
 Result<ns> Detector::getMeasurementTime(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::MEASUREMENT_TIME);
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
+                           defs::MEASUREMENT_TIME);
 }
 
 Result<ns> Detector::getMeasuredPeriod(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::MEASURED_PERIOD);
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
+                           defs::MEASURED_PERIOD);
 };
 
 Result<ns> Detector::getMeasuredSubFramePeriod(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::MEASURED_SUBPERIOD);
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
+                           defs::MEASURED_SUBPERIOD);
 };
 
 // Erik
@@ -927,6 +931,45 @@ void Detector::setAdditionalJsonHeader(const std::string &jsonheader,
 
 Result<std::string> Detector::getAdditionalJsonHeader(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getAdditionalJsonHeader, pos);
+}
+
+Result<std::string> Detector::getAdditionalJsonParameter(const std::string &key,
+                                                         Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getAdditionalJsonParameter, pos, key);
+}
+
+void Detector::setAdditionalJsonParameter(const std::string &key,
+                                          const std::string &value,
+                                          Positions pos) {
+    pimpl->Parallel(&slsDetector::setAdditionalJsonParameter, pos, key, value);
+}
+
+Result<std::string> Detector::getReceiverStreamingIP(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverStreamingIP, pos);
+}
+
+void Detector::setReceiverDataStreamingOutIP(const std::string &ip,
+                                             Positions pos) {
+    // TODO! probably in one call
+    pimpl->Parallel(&slsDetector::setReceiverStreamingIP, pos, ip);
+    pimpl->Parallel(&slsDetector::enableDataStreamingFromReceiver, pos, 0);
+    pimpl->Parallel(&slsDetector::enableDataStreamingFromReceiver, pos, 1);
+}
+
+Result<std::string> Detector::getClientStreamingIP(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getClientStreamingIP, pos);
+}
+
+void Detector::setClientDataStreamingInIP(const std::string &ip,
+                                          Positions pos) {
+    // TODO! probably in one call
+    pimpl->Parallel(&slsDetector::setClientStreamingIP, pos, ip);
+    pimpl->enableDataStreamingToClient(0);
+    pimpl->enableDataStreamingToClient(1);
+}
+
+Result<int> Detector::getReceiverStreamingPort(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getReceiverStreamingPort, pos);
 }
 
 } // namespace sls

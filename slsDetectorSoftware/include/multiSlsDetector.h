@@ -381,7 +381,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Returns the number of detectors in the multidetector structure
      * @returns number of detectors
      */
-    int size() const;//
+    size_t size() const;//
 
     /**
      * Returns number of detectors in dimension d
@@ -1225,7 +1225,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setClientDataStreamingInIP(const std::string &ip = "",
-                                    int detPos = -1);
+                                    int detPos = -1); //
 
     /**
      * Returns the client zmq ip
@@ -1234,7 +1234,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the client zmq ip
      */
-    std::string getClientStreamingIP(int detPos = -1);
+    std::string getClientStreamingIP(int detPos = -1); //
 
     /**
      * (advanced users)
@@ -1244,7 +1244,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setReceiverDataStreamingOutIP(const std::string &ip = "",
-                                       int detPos = -1);
+                                       int detPos = -1); //
 
     /**
      * Returns the receiver zmq ip
@@ -1253,7 +1253,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver zmq ip
      */
-    std::string getReceiverStreamingIP(int detPos = -1);
+    std::string getReceiverStreamingIP(int detPos = -1); //
 
     /**
      * Sets the transmission delay for left, right or entire frame
@@ -1264,7 +1264,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns transmission delay
      */
     int setDetectorNetworkParameter(networkParameter index, int delay,
-                                    int detPos = -1);
+                                    int detPos = -1); //maybe not needed in API
 
     /**
      * Sets the additional json header
@@ -1273,14 +1273,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns additional json header, default is empty
      */
     std::string setAdditionalJsonHeader(const std::string &jsonheader,
-                                        int detPos = -1);
+                                        int detPos = -1); //
 
     /**
      * Returns the additional json header
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the additional json header, default is empty
      */
-    std::string getAdditionalJsonHeader(int detPos = -1);
+    std::string getAdditionalJsonHeader(int detPos = -1); //
 
     /**
      * Sets the value for the additional json header parameter if found, else

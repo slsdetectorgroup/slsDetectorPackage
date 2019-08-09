@@ -1113,9 +1113,31 @@ class Detector {
     int setDetectorMinMaxEnergyThreshold(const int index, int value);
 
     void setAdditionalJsonHeader(const std::string &jsonheader,
-                                        Positions pos = {});
+                                 Positions pos = {});
 
     Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
+
+    Result<std::string> getAdditionalJsonParameter(const std::string &key,
+                                                   Positions pos = {}) const;
+
+    void setAdditionalJsonParameter(const std::string &key,
+                                    const std::string &value,
+                                    Positions pos = {});
+
+    // TODO these should probably be the same
+    Result<std::string> getReceiverStreamingIP(Positions pos = {}) const;
+
+    void setReceiverDataStreamingOutIP(const std::string &ip,
+                                       Positions pos = {});
+
+    Result<std::string> getClientStreamingIP(Positions pos = {}) const;
+
+    // TODO these should probably be the same
+    void setClientDataStreamingInIP(const std::string &ip, Positions pos = {});
+
+    Result<int> getReceiverStreamingPort(Positions pos = {}) const;
+
+    // void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
 };
 
 } // namespace sls

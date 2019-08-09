@@ -1297,7 +1297,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     std::string setAdditionalJsonParameter(const std::string &key,
                                            const std::string &value,
-                                           int detPos = -1);
+                                           int detPos = -1); //
 
     /**
      * Returns the additional json header parameter value
@@ -1307,7 +1307,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * empty if no parameter found in additional json header
      */
     std::string getAdditionalJsonParameter(const std::string &key,
-                                           int detPos = -1);
+                                           int detPos = -1); //
 
     /**
      * Sets the detector minimum/maximum energy threshold in processor (for
@@ -1318,7 +1318,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * error in computing json parameter value)
      */
     int setDetectorMinMaxEnergyThreshold(const int index, int value,
-                                         int detPos = -1);
+                                         int detPos = -1); //
 
     /**
      * Sets the frame mode in processor (Moench only)
@@ -1345,21 +1345,21 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns receiver udp socket buffer size
      */
     int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1,
-                                           int detPos = -1);
+                                           int detPos = -1); //
 
     /**
      * Returns the receiver UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP socket buffer size
      */
-    int64_t getReceiverUDPSocketBufferSize(int detPos = -1);
+    int64_t getReceiverUDPSocketBufferSize(int detPos = -1); //
 
     /**
      * Returns the receiver real UDP socket buffer size
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver real UDP socket buffer size
      */
-    int64_t getReceiverRealUDPSocketBufferSize(int detPos = -1);
+    int64_t getReceiverRealUDPSocketBufferSize(int detPos = -1); //
 
     /** (users only)
      * Set 10GbE Flow Control (Eiger)
@@ -1367,7 +1367,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns 10GbE flow Control
      */
-    int setFlowControl10G(int enable = -1, int detPos = -1);
+    int setFlowControl10G(int enable = -1, int detPos = -1); //
 
     /**
      * Execute a digital test (Gotthard)
@@ -1385,7 +1385,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void loadImageToDetector(imageType index, const std::string &fname,
-                             int detPos = -1);
+                             int detPos = -1); //
 
     /**
      * Writes the counter memory block from the detector (Gotthard)
@@ -1401,7 +1401,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param startACQ is 1 to start acquisition after resetting counter
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void resetCounterBlock(int startACQ = 0, int detPos = -1);
+    void resetCounterBlock(int startACQ = 0, int detPos = -1); //
 
     /**
      * Set/get counter bit in detector (Gotthard)
@@ -1410,7 +1410,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the counter bit in detector
      */
-    int setCounterBit(int i = -1, int detPos = -1);
+    int setCounterBit(int i = -1, int detPos = -1); //
 
     /**
      * Ensures that min is less than max in both dimensions (Gotthard)

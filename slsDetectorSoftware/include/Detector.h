@@ -950,6 +950,7 @@ class Detector {
     /** [CTB] Value between 0-63 */
     void setExternalSamplingSource(int value, Positions pos = {});
 
+    // TODO! does any of them need the option to take positions
     /** [CTB] */
     uint32_t getADCInvert() const;
 
@@ -957,13 +958,62 @@ class Detector {
     void setADCInvert(uint32_t value);
 
     /** [CTB]*/
-    uint32_t getADCEnableMask(int detPos = -1);
+    uint32_t getADCEnableMask() const;
 
     /** [CTB]*/
     void setADCEnableMask(uint32_t mask);
 
-    /** [CTB]*/
-    uint32_t getADCEnableMask() const;
+    /** [Gotthard] */
+    Result<int> getCounterBit(Positions pos = {}) const;
+
+    /** [Gotthard] possible values? */
+    void setCounterBit(int i, Positions pos = {});
+
+    /**
+     * [Gotthard] startACQ = 1 to start acq after resetting counter
+     * TODO! does it make sense to call one detector?
+     *
+     */
+    void resetCounterBlock(int startACQ = 0, Positions pos = {});
+
+    // TODO getROI, setROI, verifyMinMaxROI
+
+    // writeCounterBlockFile
+
+    void loadImageToDetector(defs::imageType index, const std::string &fname,
+                             Positions pos = {});
+
+    /** [Gotthard]
+     * @param value 1 to set or 0 to clear the digital test bit -1?
+     */
+    Result<int> digitalTest(defs::digitalTestMode mode, int ival = -1,
+                            Positions pos = {});
+
+    /** [Eiger] */
+    void setFlowControl10G(bool enable, Positions pos = {});
+
+    /** [Eiger] */
+    Result<bool> getFlowControl10G(Positions pos = {}) const;
+
+    Result<int64_t>
+    getReceiverRealUDPSocketBufferSize(Positions pos = {}) const;
+
+    Result<int64_t> getReceiverUDPSocketBufferSize(Positions pos = {}) const;
+
+    void setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,
+                                        Positions pos = {});
+
+    /** [Moench] TODO! How do we do this best??? Can be refactored to something
+     * else? Use a generic zmq message passing system...
+     * For now limiting to all detectors working the same*/
+    int setDetectorMode(defs::detectorModeType value);
+    int setFrameMode(defs::frameModeType value);
+    int setDetectorMinMaxEnergyThreshold(const int index, int value);
+
+    void setAdditionalJsonHeader(const std::string &jsonheader,
+                                        Positions pos = {});
+
+    Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
 };
 
 } // namespace sls

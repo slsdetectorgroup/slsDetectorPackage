@@ -366,15 +366,18 @@ void Detector::setNumberOfCycles(int64_t value) {
 }
 
 Result<int64_t> Detector::getNumberOfStorageCells() const {
-    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::STORAGE_CELL_NUMBER, -1);
+    return pimpl->Parallel(&slsDetector::setTimer, {},
+                           defs::STORAGE_CELL_NUMBER, -1);
 }
 
 void Detector::setNumberOfStorageCells(int64_t value) {
-    pimpl->Parallel(&slsDetector::setTimer, {}, defs::STORAGE_CELL_NUMBER, value);
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::STORAGE_CELL_NUMBER,
+                    value);
 }
 
 Result<int64_t> Detector::getNumberOfAnalogSamples(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ANALOG_SAMPLES, -1);
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ANALOG_SAMPLES,
+                           -1);
 }
 
 void Detector::setNumberOfAnalogSamples(int64_t value, Positions pos) {
@@ -382,7 +385,8 @@ void Detector::setNumberOfAnalogSamples(int64_t value, Positions pos) {
 }
 
 Result<int64_t> Detector::getNumberOfDigitalSamples(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES, -1);
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES,
+                           -1);
 }
 
 void Detector::setNumberOfDigitalSamples(int64_t value, Positions pos) {
@@ -800,8 +804,8 @@ void Detector::setExternalSamplingSource(int value, Positions pos) {
 }
 
 uint32_t Detector::getADCInvert() const {
-    auto res = pimpl->Parallel(&slsDetector::getADCInvert, {});
-    return res.tsquash("Different Values for function getADCInvert");
+    return pimpl->Parallel(&slsDetector::getADCInvert, {})
+        .tsquash("Different Values for function getADCInvert");
 }
 
 void Detector::setADCInvert(uint32_t value) {
@@ -815,6 +819,74 @@ uint32_t Detector::getADCEnableMask() const {
 
 void Detector::setADCEnableMask(uint32_t mask) {
     pimpl->Parallel(&slsDetector::setADCEnableMask, {}, mask);
+}
+
+Result<int> Detector::getCounterBit(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setCounterBit, pos, -1);
+}
+
+void Detector::setCounterBit(int i, Positions pos) {
+    pimpl->Parallel(&slsDetector::setCounterBit, pos, i);
+}
+
+void Detector::resetCounterBlock(int startACQ, Positions pos) {
+    pimpl->Parallel(&slsDetector::resetCounterBlock, pos, startACQ);
+}
+
+void Detector::loadImageToDetector(defs::imageType index,
+                                   const std::string &fname, Positions pos) {
+    // TODO! optimize away multiple loads
+    pimpl->Parallel(&slsDetector::loadImageToDetector, pos, index, fname);
+}
+
+Result<int> Detector::digitalTest(defs::digitalTestMode mode, int ival,
+                                  Positions pos) {
+    return pimpl->Parallel(&slsDetector::digitalTest, pos, mode, ival);
+}
+
+void Detector::setFlowControl10G(bool enable, Positions pos) {
+    pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
+                    defs::FLOW_CONTROL_10G, static_cast<int>(enable));
+}
+
+Result<bool> Detector::getFlowControl10G(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
+                           defs::FLOW_CONTROL_10G, -1);
+}
+
+Result<int64_t>
+Detector::getReceiverRealUDPSocketBufferSize(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverRealUDPSocketBufferSize,
+                           pos);
+}
+
+Result<int64_t> Detector::getReceiverUDPSocketBufferSize(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverUDPSocketBufferSize, pos);
+}
+
+void Detector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,
+                                              Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverUDPSocketBufferSize, pos,
+                    udpsockbufsize);
+}
+
+int Detector::setDetectorMode(defs::detectorModeType value) {
+    return pimpl->setDetectorMode(value);
+}
+int Detector::setFrameMode(defs::frameModeType value) {
+    return pimpl->setFrameMode(value);
+}
+int Detector::setDetectorMinMaxEnergyThreshold(const int index, int value) {
+    return pimpl->setDetectorMinMaxEnergyThreshold(index, value);
+}
+
+void Detector::setAdditionalJsonHeader(const std::string &jsonheader,
+                                       Positions pos) {
+    pimpl->Parallel(&slsDetector::setAdditionalJsonHeader, pos, jsonheader);
+}
+
+Result<std::string> Detector::getAdditionalJsonHeader(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getAdditionalJsonHeader, pos);
 }
 
 } // namespace sls

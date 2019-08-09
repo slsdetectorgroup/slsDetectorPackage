@@ -706,6 +706,126 @@ class Detector {
      */
     Result<ns> getMeasuredSubFramePeriod(Positions pos = {}) const;
 
+    /**
+     * Get speed (Eiger, Jungfrau)
+     * @param pos detector position
+     * @returns speed (0 full speed, 1 half speed, 2 quarter speed)
+     */
+    Result<int> getSpeed(Positions pos = {}) const;
+
+    /**
+     * Set speed (Eiger, Jungfrau)
+     * @param value speed (0 full speed, 1 half speed, 2 quarter speed)
+     * @param pos detector position
+     */
+    void setSpeed(int value, Positions pos = {});
+
+    /**
+     * Get ADC Phase (Gotthard, Jungfrau, CTB)
+     * @param inDeg in degrees (Jungfrau, CTB)
+     * @returns ADC Phase
+     */
+    Result<int> getADCPhase(bool inDeg, Positions pos = {}) const;
+
+    /**
+     * Set sADC Phase (Gotthard, Jungfrau, CTB)
+     * @param value ADC Phase
+     * @param inDeg in degrees (Jungfrau, CTB)
+     */
+    void setADCPhase(int value, bool inDeg, Positions pos = {});
+
+    /**
+     * Get Max ADC Phase Shift (Jungfrau, CTB)
+     * @returns Max ADC Phase Shift
+     */
+    Result<int> getMaxADCPhaseShift(Positions pos = {}) const;
+
+    /**
+     * Get DBIT Phase (Jungfrau, CTB)
+     * @param inDeg in degrees
+     * @returns DBIT Phase
+     */
+    Result<int> getDBITPhase(bool inDeg, Positions pos = {}) const;
+
+    /**
+     * Set DBIT Phase (CTB)
+     * @param value DBIT Phase
+     * @param inDeg in degrees
+     */
+    void setDBITPhase(int value, bool inDeg, Positions pos = {});
+
+    /**
+     * Get Max DBIT Phase Shift  (CTB)
+     * @returns Max DBIT Phase Shift
+     */
+    Result<int> getMaxDBITPhaseShift(Positions pos = {}) const;
+
+    /**
+     * Get ADC Clock in MHz (CTB)
+     * @returns ADC Clock in MHz
+     */
+    Result<int> getADCClock(Positions pos = {}) const;
+
+    /**
+     * Set ADC Clock in MHz (CTB)
+     * @param value ADC Clock in MHz
+     */
+    void setADCClock(int value, Positions pos = {});
+
+    /**
+     * Get DBIT Clock in MHz (CTB)
+     * @returns DBIT Clock in MHz
+     */
+    Result<int> getDBITClock(Positions pos = {}) const;
+
+    /**
+     * Set DBIT Clock in MHz (CTB)
+     * @param value DBIT Clock in MHz
+     */
+    void setDBITClock(int value, Positions pos = {});
+
+    /**
+     * Get RUN Clock in MHz (CTB)
+     * @returns RUN Clock in MHz
+     */
+    Result<int> getRUNClock(Positions pos = {}) const;
+
+    /**
+     * Set RUN Clock in MHz (CTB)
+     * @param value RUN Clock in MHz
+     */
+    void setRUNClock(int value, Positions pos = {});
+
+    /**
+     * Get SYNC Clock in MHz (CTB)
+     * @returns SYNC Clock in MHz
+     */
+    Result<int> getSYNCClock(Positions pos = {}) const;
+
+    /**
+     * Get ADC Pipeline (CTB)
+     * @returns ADC Pipeline
+     */
+    Result<int> getADCPipeline(Positions pos = {}) const;
+
+    /**
+     * Set ADC Pipeline (CTB)
+     * @param value ADC Pipeline
+     */
+    void setADCPipeline(int value, Positions pos = {});
+
+    /**
+     * Get DBIT Pipeline (CTB)
+     * @returns DBIT Pipeline
+     */
+    Result<int> getDBITPipeline(Positions pos = {}) const;
+
+    /**
+     * Set  DBIT Pipeline (CTB)
+     * @param value  DBIT Pipeline
+     */
+    void setDBITPipeline(int value, Positions pos = {});
+
     // Erik
 
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;

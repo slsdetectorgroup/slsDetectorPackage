@@ -696,6 +696,8 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     int setDynamicRange(int n = -1);
 
+    int getDynamicRangeFromShm();
+
     /**
      * Recalculated number of data bytes
      * @returns tota number of data bytes

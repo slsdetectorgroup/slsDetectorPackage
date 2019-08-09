@@ -823,6 +823,88 @@ class Detector {
      */
     void setDBITPipeline(int value, Positions pos = {});
 
+    Result<int> getDynamicRange(Positions pos = {}) const;
+
+    /**
+     * (Eiger:
+     * Options: 4, 8, 16, 32
+     * If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to 1)
+     */
+    void setDynamicRange(int value);
+
+    Result<int> getHighVoltage(Positions pos = {}) const;
+
+    /**
+     * (Gotthard Options: 0, 90, 110, 120, 150, 180, 200)
+     * (Jungfrau, CTB Options: 0, 60 - 200)
+     * (Eiger Options: 0 - 200)
+     */
+    void setHighVoltage(int value, Positions pos = {});
+
+    /**
+     * (Eiger)
+     */
+    Result<int> getIODelay(Positions pos = {}) const;
+
+    /**
+     * (Eiger)
+     */
+    void setIODelay(int value, Positions pos = {});
+
+    /**
+     * (Degrees)
+     * (Gotthard Options: TEMPERATURE_ADC, TEMPERATURE_FPGA)
+     * (Jungfrau Options: TEMPERATURE_ADC, TEMPERATURE_FPGA)
+     * (Eiger Options: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE,
+     * TEMPERATURE_DCDC, TEMPERATURE_SODL, TEMPERATURE_SODR, TEMPERATURE_FPGA2,
+     * TEMPERATURE_FPGA3) (CTB Options: SLOW_ADC_TEMP)
+     */
+    Result<int> getTemp(defs::dacIndex index, Positions pos = {}) const;
+
+    /**
+     * (CTB mV)
+     */
+    Result<int> getVrefVoltage(bool mV, Positions pos = {}) const;
+
+    /**
+     * (CTB mV)
+     */
+    void setVrefVoltage(int value, bool mV, Positions pos = {});
+
+    /**
+     * (CTB mV Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO, V_POWER_CHIP))
+     */
+    Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
+
+    /**
+     * (CTB mV Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO, V_POWER_CHIP)
+     */
+    void setVoltage(int value, defs::dacIndex index, Positions pos = {});
+
+    /**
+     * (CTB mV Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO,
+     * V_POWER_CHIP)
+     */
+    Result<int> getMeasuredVoltage(defs::dacIndex index,
+                                   Positions pos = {}) const;
+
+    /**
+     * (CTB mA Options: I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, I_POWER_IO)
+     */
+    Result<int> getMeasuredCurrent(defs::dacIndex index,
+                                   Positions pos = {}) const;
+
+    /**
+     * (CTB Options: SLOW_ADC0 - SLOW_ADC7)
+     */
+    Result<int> getSlowADC(defs::dacIndex index, Positions pos = {}) const;
+
+    Result<int> getDAC(defs::dacIndex index, bool mV, Positions pos = {}) const;
+
+    void setDAC(int value, defs::dacIndex index, bool mV, Positions pos = {});
+
     // Erik
 
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;

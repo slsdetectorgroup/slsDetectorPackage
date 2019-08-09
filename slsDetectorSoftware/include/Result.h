@@ -107,6 +107,10 @@ template <class T, class Allocator = std::allocator<T>> class Result {
      */
     T squash() const { return Squash(vec); }
 
+    /**
+     * If all elements are equal it returns the front value
+     * otherwise throws an exception with custom message provided
+     */
     T tsquash(const std::string &error_msg) {
         if (equal())
             return vec.front();

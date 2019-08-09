@@ -4160,34 +4160,19 @@ void multiSlsDetector::registerDataCallback(
 }
 
 int multiSlsDetector::setTotalProgress() {
-    int nf = 1, nc = 1, ns = 1;
-
-    Result<int64_t> temp = Parallel(&slsDetector::setTimer, {}, FRAME_NUMBER, -1);
-    if (!temp.equal()) {
-        throw RuntimeError("Inconsistent number of frames");
-    }
-    nf = temp.squash();
-
-    temp = Parallel(&slsDetector::setTimer, {}, CYCLES_NUMBER, -1);
-    if (!temp.equal()) {
-        throw RuntimeError("Inconsistent number of cycles");
-    }
-    nc = temp.squash();
-
-    if (getDetectorTypeAsEnum() == JUNGFRAU) {
-        temp = Parallel(&slsDetector::setTimer, {}, STORAGE_CELL_NUMBER, -1);
-        if (!temp.equal()) {
-            throw RuntimeError("Inconsistent number of additional storage cells");
-        }
-        ns = temp.squash() + 1;
-    }
-
+    int nf = Parallel(&slsDetector::setTimer, {}, FRAME_NUMBER, -1).tsquash("Inconsistent number of frames");
+    int nc  = Parallel(&slsDetector::setTimer, {}, CYCLES_NUMBER, -1).tsquash("Inconsistent number of cycles");
     if (nf == 0 || nc == 0) {
         throw RuntimeError("Number of frames or cycles is 0");
     }
 
-    totalProgress = nf * nc * ns;
+    int ns = 1;
+    if (getDetectorTypeAsEnum() == JUNGFRAU) {
+        ns = Parallel(&slsDetector::setTimer, {}, STORAGE_CELL_NUMBER, -1).tsquash("Inconsistent number of additional storage cells");
+        ++ns;
+    }
 
+    totalProgress = nf * nc * ns;
     FILE_LOG(logDEBUG1) << "nf " << nf << " nc " << nc << " ns " << ns;
     FILE_LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
     return totalProgress;

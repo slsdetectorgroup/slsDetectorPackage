@@ -814,6 +814,33 @@ class Detector {
     void setActive(bool active, Positions pos = {});
 
     Result<bool> getActive(Positions pos = {}) const;
+
+    /** [Gotthard][Jungfrau][CTB] not possible to read back*/
+    void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
+
+    /** [CTB] How much digital data in bytes is skipped */
+    Result<int> getReceiverDbitOffset(Positions pos = {}) const;
+
+    /** [CTB] Set how many bytes of digital data to skip */
+    void setReceiverDbitOffset(int value, Positions pos = {});
+
+    /** [CTB] Which of the bits 0-63 to save*/
+    Result<std::vector<int>> getReceiverDbitList(Positions pos = {}) const;
+
+    /** [CTB] Which of the bits 0-63 to save*/
+    void setReceiverDbitList(std::vector<int> list, Positions pos = {});
+
+    /** [CTB] */
+    Result<int> getExternalSampling(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setExternalSampling(bool value, Positions pos = {});
+
+    /** [CTB] */
+    Result<int> getExternalSamplingSource(Positions pos = {}) const;
+
+    /** [CTB] Value between 0-63 */
+    void setExternalSamplingSource(int value, Positions pos = {});
 };
 
 } // namespace sls

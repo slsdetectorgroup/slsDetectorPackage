@@ -1494,42 +1494,42 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param value external sampling source (Option: 0-63)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setExternalSampling(bool value, int detPos = -1);
+    void setExternalSampling(bool value, int detPos = -1); //
 
     /**
      * Get external sampling source (CTB only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns external sampling enable
      */
-    int getExternalSampling(int detPos = -1);
+    int getExternalSampling(int detPos = -1); //
 
     /**
      * Set external sampling enable (CTB only)
      * @param list external sampling source (Option: 0-63)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReceiverDbitList(std::vector<int> list, int detPos = -1);
+    void setReceiverDbitList(std::vector<int> list, int detPos = -1); //
 
     /**
      * Get external sampling source (CTB only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns external sampling enable
      */
-    std::vector<int> getReceiverDbitList(int detPos = -1);
+    std::vector<int> getReceiverDbitList(int detPos = -1); //
 
     /**
      * Set digital data offset in bytes (CTB only)
      * @param value digital data offset in bytes
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReceiverDbitOffset(int value, int detPos = -1);
+    void setReceiverDbitOffset(int value, int detPos = -1); //
 
     /**
      * Get digital data offset in bytes (CTB only)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns digital data offset in bytes
      */
-    int getReceiverDbitOffset(int detPos = -1);
+    int getReceiverDbitOffset(int detPos = -1); //
 
     /**
      * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert
@@ -1538,7 +1538,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param val value
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void writeAdcRegister(uint32_t addr, uint32_t val, int detPos = -1);
+    void writeAdcRegister(uint32_t addr, uint32_t val, int detPos = -1); //
 
     /**
      * Activates/Deactivates the detector (Eiger only)
@@ -1546,7 +1546,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns 0 (inactive) or 1 (active)for activate mode
      */
-    int activate(int const enable = -1, int detPos = -1);
+    int activate(int const enable = -1, int detPos = -1); //
 
     /**
      * Set deactivated Receiver padding mode (Eiger only)

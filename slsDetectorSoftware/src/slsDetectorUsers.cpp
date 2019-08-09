@@ -159,10 +159,6 @@ int64_t slsDetectorUsers::setNumberOfCycles(int64_t t, int detPos){
 	return detector.setNumberOfCycles(t, detPos);
 }
 
-int64_t slsDetectorUsers::setNumberOfGates(int64_t t, int detPos){
-	return detector.setNumberOfGates(t, detPos);
-} 
-
 int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int detPos) {
 	return detector.setNumberOfStorageCells(t, detPos);
 }

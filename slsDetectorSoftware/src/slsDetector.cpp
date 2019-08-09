@@ -325,7 +325,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->timerValue[ACQUISITION_TIME] = 0;
     shm()->timerValue[FRAME_PERIOD] = 0;
     shm()->timerValue[DELAY_AFTER_TRIGGER] = 0;
-    shm()->timerValue[GATES_NUMBER] = 0;
     shm()->timerValue[CYCLES_NUMBER] = 1;
     shm()->timerValue[ACTUAL_TIME] = 0;
     shm()->timerValue[MEASUREMENT_TIME] = 0;

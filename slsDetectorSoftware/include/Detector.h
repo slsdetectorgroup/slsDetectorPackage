@@ -495,7 +495,115 @@ class Detector {
      * @param pos detector position
      */
     void configureMAC(Positions pos = {});
-    
+
+    /**
+     * Get number of Frames
+     * @returns number of Frames
+     */
+    Result<int64_t> getNumberOfFrames() const;
+
+    /**
+     * Set number of Frames
+     * @param value number of Frames
+     */
+    void setNumberOfFrames(int64_t value);
+
+    /**
+     * Get number of Cycles
+     * @returns number of Cycles
+     */
+    Result<int64_t> getNumberOfCycles() const;
+
+    /**
+     * Set number of Cycles
+     * @param value number of Cycles
+     */
+    void setNumberOfCycles(int64_t value);
+
+    /**
+     * Get number of additional storage cells (Jungfrau)
+     * @returns number of additional storage cells
+     */
+    Result<int64_t> getNumberOfStorageCells() const;
+
+    /**
+     * Set number of additional storage cells (Jungfrau)
+     * @param value number of additional storage cells
+     */
+    void setNumberOfStorageCells(int64_t value);
+
+    /**
+     * Get number of analog samples (CTB)
+     * @param pos detector position
+     * @returns number of analog samples
+     */
+    Result<int64_t> getNumberOfAnalogSamples(Positions pos = {}) const;
+
+    /**
+     * Set number of analog samples (CTB)
+     * @param value number of analog samples (CTB)
+     * @param pos detector position
+     */
+    void setNumberOfAnalogSamples(int64_t value, Positions pos = {});
+
+    /**
+     * Get number of digital samples (CTB)
+     * @param pos detector position
+     * @returns number of digital samples
+     */
+    Result<int64_t> getNumberOfDigitalSamples(Positions pos = {}) const;
+
+    /**
+     * Set number of digital samples (CTB)
+     * @param value number of digital samples (CTB)
+     * @param pos detector position
+     */
+    void setNumberOfDigitalSamples(int64_t value, Positions pos = {});
+
+    /**
+     * Get delay after trigger in ns(Gotthard, Jungfrau)
+     * @param pos detector position
+     * @returns delay after trigger in ns
+     */
+    Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
+
+    /**
+     * Set delay after trigger (Gotthard, Jungfrau)
+     * @param value delay after trigger in ns
+     * @param pos detector position
+     */
+    void setDelayAfterTrigger(ns value, Positions pos = {});
+
+    /**
+     * Get sub frame dead time in ns (Eiger in 32 bit mode)
+     * @param pos detector position
+     * @returns delay after trigger in ns
+     */
+    Result<ns> getSubFrameDeadTime(Positions pos = {}) const;
+
+    /**
+     * Set sub frame dead time after trigger (Eiger in 32 bit mode)
+     * @param value delay after trigger in ns
+     * @param pos detector position
+     */
+    void setSubFrameDeadTime(ns value, Positions pos = {});
+
+    /**
+     * Get storage cell delay (Jungfrau)
+     * @param pos detector position
+     * @returns storage cell delay in ns. Range: (0-1638375 ns (resolution of
+     * 25ns)
+     */
+    Result<ns> getStorageCellDelay(Positions pos = {}) const;
+
+    /**
+     * Set storage cell delay (Jungfrau)
+     * @param value storage cell delay in ns. Range: (0-1638375 ns (resolution
+     * of 25ns)
+     * @param pos detector position
+     */
+    void setStorageCellDelay(ns value, Positions pos = {});
+
     // Erik
 
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;

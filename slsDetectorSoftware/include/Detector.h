@@ -81,12 +81,9 @@ class Detector {
      */
     void setBit(uint32_t addr, int bitnr, Positions pos = {});
 
-    /**
-     * Reads 32 bit register from detector
-     * @param addr address of the register
-     * @returns value read from register
-     */
-    Result<uint32_t> getRegister(uint32_t addr, Positions pos = {});
+
+    Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
+    void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -1454,9 +1451,11 @@ class Detector {
     void setDetectorIP2(const std::string &detectorIP, Positions pos = {});
 
     Result<IpAddr> getDetectorIP(Positions pos = {}) const;
+
     void setDetectorIP(const std::string &detectorIP, Positions pos = {});
 
     Result<MacAddr> getDetectorMAC(Positions pos = {}) const;
+
     void setDetectorMAC(const std::string &detectorMAC, Positions pos = {});
 
     /** [Jungfrau] */
@@ -1464,6 +1463,12 @@ class Detector {
 
     /** [Jungfrau] */
     void setDetectorMAC2(const std::string &detectorMAC, Positions pos = {});
+
+    /** [Eiger] */
+    Result<bool> getInterruptSubframe(Positions pos = {}) const;
+
+    /** [Eiger] when set the last subframe is interrupted at end of acq*/
+    void setInterruptSubframe(const bool enable, Positions pos = {});
 };
 
 } // namespace sls

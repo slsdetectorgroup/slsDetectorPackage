@@ -660,7 +660,7 @@ std::string multiSlsDetector::getDetectorTypeAsString(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::getNumberOfDetectors() const { return detectors.size(); }
+int multiSlsDetector::size() const { return detectors.size(); }
 
 int multiSlsDetector::getNumberOfDetectors(dimension d) const {
     return multi_shm()->numberOfDetector[d];
@@ -747,7 +747,7 @@ void multiSlsDetector::setDetectorOffset(dimension d, int off, int detPos) {
 
 int multiSlsDetector::getQuad(int detPos) {
     int retval = detectors[0]->getQuad();
-    if (retval && getNumberOfDetectors() > 1) {
+    if (retval && size() > 1) {
         throw RuntimeError("Quad type is available only for 1 Eiger Quad Half "
                            "module, but it Quad is enabled for 1st readout");
     }
@@ -755,7 +755,7 @@ int multiSlsDetector::getQuad(int detPos) {
 }
 
 void multiSlsDetector::setQuad(const bool enable, int detPos) {
-    if (enable && getNumberOfDetectors() > 1) {
+    if (enable && size() > 1) {
         throw RuntimeError("Cannot set Quad type as it is available only for 1 "
                            "Eiger Quad Half module.");
     }
@@ -2238,7 +2238,7 @@ void multiSlsDetector::setROI(int n, ROI roiLimits[], int detPos) {
         ymin = roiLimits[i].ymin;
         ymax = roiLimits[i].ymax;
 
-        if (getNumberOfDetectors() > 1) {
+        if (size() > 1) {
             // check roi max values
             idet = decodeNChannel(xmax, ymax, channelX, channelY);
             FILE_LOG(logDEBUG1) << "Decoded Channel max vals: " << std::endl
@@ -2885,7 +2885,7 @@ int multiSlsDetector::powerChip(int ival, int detPos) {
     }
 
     // multi delayed call for safety
-    if (ival >= 0 && getNumberOfDetectors() > 3) {
+    if (ival >= 0 && size() > 3) {
         std::vector<int> r;
         r.reserve(detectors.size());
         for (auto &d : detectors) {

@@ -4,8 +4,8 @@
 
 
 
-int slsDetectorUsers::getNumberOfDetectors() const {
-	return detector.getNumberOfDetectors();
+int slsDetectorUsers::size() const {
+	return detector.size();
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){

@@ -142,8 +142,8 @@ Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsString, pos);
 }
 
-int Detector::getTotalNumberOfDetectors() const {
-    return pimpl->getNumberOfDetectors();
+int Detector::size() const {
+    return pimpl->size();
 }
 
 defs::coordinates Detector::getNumberOfDetectors() const {
@@ -675,8 +675,8 @@ Result<bool> Detector::getAutoCompDisable(Positions pos) const {
 }
 
 void Detector::setPowerChip(bool on, Positions pos) {
-    if (on && pimpl->getNumberOfDetectors() > 3) {
-        for (int i = 0; i != pimpl->getNumberOfDetectors(); ++i) {
+    if (on && pimpl->size() > 3) {
+        for (int i = 0; i != pimpl->size(); ++i) {
             pimpl->powerChip(static_cast<int>(on), i);
             usleep(1000 * 1000);
         }

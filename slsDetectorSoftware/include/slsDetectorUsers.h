@@ -99,7 +99,7 @@ public:
 	 * Returns the number of detectors in the multidetector structure
 	 * @returns number of detectors
 	 */
-	int getNumberOfDetectors() const;
+	int size() const;
 
 	/**
 	 * Returns the maximum number of channels of all detectors

@@ -205,7 +205,7 @@ class Detector {
      * Returns the total number of detectors in the multidetector structure
      * @returns total number of detectors in the multidetector structure
      */
-    int getTotalNumberOfDetectors() const;
+    int size() const;
 
     /**
      * Returns the number of detectors in the multidetector structure

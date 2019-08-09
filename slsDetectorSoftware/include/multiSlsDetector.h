@@ -381,7 +381,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Returns the number of detectors in the multidetector structure
      * @returns number of detectors
      */
-    int getNumberOfDetectors() const;//
+    int size() const;//
 
     /**
      * Returns number of detectors in dimension d
@@ -871,10 +871,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns tota number of data bytes for multi detector
      */
     int getDataBytes(int detPos = -1);
-
-    /**
-     * Returns the number of detectors in the multi structure*/
-    size_t size() const { return detectors.size(); }
 
     /**
      * Set/get dacs value

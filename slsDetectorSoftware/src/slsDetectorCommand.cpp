@@ -2175,7 +2175,7 @@ std::string slsDetectorCommand::cmdAcquire(int narg, const char * const args[], 
     if (action == HELP_ACTION) {
         return helpAcquire(HELP_ACTION);
     }
-    if (!myDet->getNumberOfDetectors()) {
+    if (!myDet->size()) {
         FILE_LOG(logERROR) << "This shared memory has no detectors added. Aborting.";
         return std::string("acquire failed");
     }

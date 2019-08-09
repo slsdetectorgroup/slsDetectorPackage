@@ -68,6 +68,8 @@
 
 // typedef char mystring[MAX_STR_LENGTH];
 
+
+
 #ifdef __cplusplus
 class slsDetectorDefs {
   public:
@@ -1296,4 +1298,14 @@ typedef struct {
 };
 #else
 } sls_detector_module;
+#endif
+
+
+#ifdef __cplusplus
+//TODO! discuss this
+#include <vector> //hmm... but currently no way around
+namespace sls{
+using Positions = const std::vector<int> &;
+using defs = slsDetectorDefs;
+}
 #endif

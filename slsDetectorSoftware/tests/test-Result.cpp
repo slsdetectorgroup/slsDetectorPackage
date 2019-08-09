@@ -2,6 +2,7 @@
 #include "catch.hpp"
 
 #include <type_traits>
+#include <string>
 
 using sls::Result;
 
@@ -72,4 +73,14 @@ TEST_CASE("equal", "[n2]"){
 
     res.push_back(1.3);
     REQUIRE(res.equal() == false);
+}
+
+TEST_CASE("throws for tsquash", "[n2]"){
+    Result<int> res{1,2,3};
+    REQUIRE_THROWS(res.tsquash("something is wrong"));
+}
+
+TEST_CASE("", "[n2]"){
+    Result<std::string> res{"hej", "hej", "hej"};
+    REQUIRE(res.squash() == "hej");
 }

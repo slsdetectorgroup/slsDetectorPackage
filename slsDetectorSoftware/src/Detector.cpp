@@ -631,7 +631,14 @@ Result<bool> Detector::getAutoCompDisable(Positions pos) const {
 }
 
 void Detector::setPowerChip(bool on, Positions pos) {
-    pimpl->Parallel(&slsDetector::powerChip, pos, static_cast<int>(on));
+    if (on && pimpl->getNumberOfDetectors() > 3) {
+        for (int i = 0; i != pimpl->getNumberOfDetectors(); ++i) {
+            pimpl->powerChip(static_cast<int>(on), i);
+            usleep(1000 * 1000);
+        }
+    } else {
+        pimpl->Parallel(&slsDetector::powerChip, pos, static_cast<int>(on));
+    }
 }
 
 Result<bool> Detector::getPowerChip(Positions pos) const {
@@ -719,8 +726,7 @@ void Detector::setTrimEn(std::vector<int> energies, Positions pos) {
 }
 
 void Detector::setGapPixelsEnable(bool enable, Positions pos) {
-    pimpl->Parallel(&slsDetector::enableGapPixels, pos,
-                    static_cast<int>(enable));
+    pimpl->setGapPixelsEnable(enable, pos);
 }
 
 Result<bool> Detector::getGapPixelEnable(Positions pos) const {
@@ -755,6 +761,42 @@ void Detector::setActive(bool active, Positions pos) {
 
 Result<bool> Detector::getActive(Positions pos) const {
     return pimpl->Parallel(&slsDetector::activate, pos, -1);
+}
+
+void Detector::writeAdcRegister(uint32_t addr, uint32_t value, Positions pos) {
+    pimpl->Parallel(&slsDetector::writeAdcRegister, pos, addr, value);
+}
+
+Result<int> Detector::getReceiverDbitOffset(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverDbitOffset, pos);
+}
+
+void Detector::setReceiverDbitOffset(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverDbitOffset, pos, value);
+}
+
+Result<std::vector<int>> Detector::getReceiverDbitList(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverDbitList, pos);
+}
+
+void Detector::setReceiverDbitList(std::vector<int> list, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverDbitList, pos, list);
+}
+
+Result<int> Detector::getExternalSampling(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getExternalSampling, pos);
+}
+
+void Detector::setExternalSampling(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setExternalSampling, pos, value);
+}
+
+Result<int> Detector::getExternalSamplingSource(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getExternalSamplingSource, pos);
+}
+
+void Detector::setExternalSamplingSource(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setExternalSamplingSource, pos, value);
 }
 
 } // namespace sls

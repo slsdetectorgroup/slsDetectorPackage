@@ -105,11 +105,19 @@ template <class T, class Allocator = std::allocator<T>> class Result {
      */
     T squash() const { return Squash(vec); }
 
+    T tsquash(const std::string &error_msg) {
+        if (equal())
+            return vec.front();
+        else
+            throw RuntimeError(error_msg);
+    }
     /**
      * If all elements are equal return the front value, otherwise
      * return the supplied default value
      */
-    T squash(T default_value) const { return Squash(vec, default_value); }
+    T squash(const T &default_value) const {
+        return Squash(vec, default_value);
+    }
 
     /** Test whether all elements of the result are equal */
     bool equal() const noexcept { return allEqual(vec); }

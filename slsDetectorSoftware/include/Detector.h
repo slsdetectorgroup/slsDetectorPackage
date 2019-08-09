@@ -908,6 +908,54 @@ class Detector {
 
     void setDAC(int value, defs::dacIndex index, bool mV, Positions pos = {});
 
+    Result<defs::externalCommunicationMode> getTimingMode(Positions pos = {}) const;
+
+    /**
+     * (Gotthard, Jungfrau, CTB Options: AUTO_TIMING, TRIGGER_EXPOSURE)
+     * (Eiger Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER)
+     */
+    void setTimingMode(defs::externalCommunicationMode value, Positions pos = {});
+
+    /**
+     * (Gotthard)
+     */
+    Result<defs::externalSignalFlag> getExternalSignalFlags(Positions pos = {}) const;
+
+    /**
+     * (Gotthard Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE)
+     */
+    void setExternalSignalFlags(defs::externalSignalFlag value, Positions pos = {});
+
+    /**
+     * (Eiger)
+     */
+    Result<bool> getParallelMode(Positions pos = {}) const;
+
+    /**
+     * (Eiger)
+     */
+    void setParallelMode(bool value, Positions pos = {});
+
+    /**
+     * (Eiger)
+     */
+    Result<bool> getOverFlowMode(Positions pos = {}) const;
+
+    /**
+     * (Eiger)
+     */
+    void setOverFlowMode(bool value, Positions pos = {});
+
+    /**
+     * (CTB Options: NORMAL_READOUT = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL = 2)
+     */
+    Result<int> getSignalType(Positions pos = {}) const;
+
+    /**
+     * (CTB Options: NORMAL_READOUT = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL = 2)
+     */
+    void setSignalType(int value, Positions pos = {});
+
     // Erik
 
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;

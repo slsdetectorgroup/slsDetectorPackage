@@ -101,7 +101,7 @@ class multiSlsDetectorClient {
                 return;
             }
         }
-        if (parser.detector_id() >= detPtr->size()) {
+        if (parser.detector_id() >= static_cast<int>(detPtr->size())) {
             os << "position is out of bounds.\n";
             return;
         }

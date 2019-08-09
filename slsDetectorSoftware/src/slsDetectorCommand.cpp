@@ -378,8 +378,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>extsig [flag]</b> sets/gets the mode of the external signal. Options: \c off, \c trigger_in_rising_edge, \c trigger_in_falling_edge,
-   \c trigger_out_rising_edge, \c trigger_out_falling_edge\n Used in GOTTHARDonly. \c Returns \c (string)
+   - <b>extsig [flag]</b> sets/gets the mode of the external signal. Options: \c trigger_in_rising_edge, \c trigger_in_falling_edge. Used in GOTTHARDonly. \c Returns \c (string)
 	*/
     descrToFuncMap[i].m_pFuncName = "extsig"; /* find command! */
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
@@ -4815,7 +4814,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
 
-        os << "extsig mode \t sets the mode of the external signal. can be  \n \t \t \t off, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge" << std::endl;
+        os << "extsig mode \t sets the mode of the external signal. can be trigger_out_rising_edge, trigger_out_falling_edge. Gotthard only" << std::endl;
         os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overlow, nooverflow, unknown." << std::endl;
         os << "interruptsubframe flag \t sets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER  in 32 bit mode only." << std::endl;
         os << "readnlines f \t sets the number of rows to read out per half module. Options: 1 - 256 (Not all values as it depends on dynamic range and 10GbE enabled). Used for EIGER only. " << std::endl;
@@ -4831,7 +4830,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
 
-        os << "extsig \t gets the mode of the external signal. can be  \n \t \t \t off, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge" << std::endl;
+        os << "extsig \t gets the mode of the external signal. can be trigger_in_rising_edge, trigger_in_falling_edge. Gotthard only" << std::endl;
         os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overflow, nooverflow, unknown" << std::endl;
         os << "interruptsubframe \t gets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER in 32 bit mode only." << std::endl;
         os << "readnlines \t gets the number of rows to read out per half module. Used for EIGER only. " << std::endl;

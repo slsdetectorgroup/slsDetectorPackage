@@ -597,7 +597,7 @@ Result<int> Detector::getTemp(defs::dacIndex index, Positions pos) const {
     switch (getDetectorType()) {
     case defs::EIGER:
     case defs::JUNGFRAU:
-        for (auto it : pos) {
+        for (auto &it : res) {
             it /= 1000;
         }
         break;
@@ -693,6 +693,82 @@ Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
 void Detector::setDAC(int value, defs::dacIndex index, bool mV, Positions pos) {
     pimpl->Parallel(&slsDetector::setDAC, pos, value, index, mV);
 }
+
+    Result<defs::externalCommunicationMode> Detector::getTimingMode(Positions pos) const {
+        return pimpl->Parallel(&slsDetector::setExternalCommunicationMode, pos, defs::GET_EXTERNAL_COMMUNICATION_MODE);
+    }
+
+    void Detector::setTimingMode(defs::externalCommunicationMode value, Positions pos) {
+        pimpl->Parallel(&slsDetector::setExternalCommunicationMode, pos, value);
+    }
+
+    Result<defs::externalSignalFlag> Detector::getExternalSignalFlags(Positions pos) const {
+        return pimpl->Parallel(&slsDetector::setExternalSignalFlags, pos, defs::GET_EXTERNAL_SIGNAL_FLAG);
+    }
+
+    void Detector::setExternalSignalFlags(defs::externalSignalFlag value, Positions pos) {
+        pimpl->Parallel(&slsDetector::setExternalSignalFlags, pos, value);
+    }
+
+    Result<bool> Detector::getParallelMode(Positions pos) const {
+        auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos, defs::GET_READOUT_FLAGS);
+        Result <bool> booleanRes; 
+        for (unsigned int i = 0; i < res.size(); ++i) {
+            booleanRes[i] = (res[i] & defs::PARALLEL) ? true : false;
+        }
+        return booleanRes;
+    }
+
+    void Detector::setParallelMode(bool value, Positions pos) {
+        pimpl->Parallel(&slsDetector::setReadOutFlags, pos, value ? defs::PARALLEL : defs::NONPARALLEL);
+    }
+
+    Result<bool> Detector::getOverFlowMode(Positions pos) const {
+        auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos, defs::GET_READOUT_FLAGS);
+        Result <bool> booleanRes; 
+        for (unsigned int i = 0; i < res.size(); ++i) {
+            booleanRes[i] = (res[i] & defs::SHOW_OVERFLOW) ? true : false;
+        }
+        return booleanRes;
+    }
+
+    void Detector::setOverFlowMode(bool value, Positions pos) {
+        pimpl->Parallel(&slsDetector::setReadOutFlags, pos, value ? defs::SHOW_OVERFLOW : defs::NOOVERFLOW);
+    }
+
+    Result<int> Detector::getSignalType(Positions pos) const {
+        auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos, defs::GET_READOUT_FLAGS);
+        for (auto &it : res) {
+            if (it & defs::ANALOG_AND_DIGITAL) {
+                it = 2;
+            } else if (it & defs::DIGITAL_ONLY) {
+                it = 1;
+            } else if (it == defs::NORMAL_READOUT) {
+                it = 0;
+            } else {
+                 throw RuntimeError("Unknown Signal Type");
+            }
+        }
+        return res;
+    }
+
+    void Detector::setSignalType(int value, Positions pos) {
+        defs::readOutFlags flag;
+        switch (value) {
+            case 0:
+                flag = defs::NORMAL_READOUT;
+                break;
+            case 1:
+                flag = defs::DIGITAL_ONLY;
+                break;
+            case 2:
+                flag = defs::ANALOG_AND_DIGITAL;
+                break;
+            default:
+                 throw RuntimeError("Unknown Signal Type");
+        }
+        pimpl->Parallel(&slsDetector::setReadOutFlags, pos, flag);
+    }
 
 // Erik
 Result<int> Detector::getFramesCaughtByReceiver(Positions pos) const {
@@ -912,7 +988,7 @@ Result<bool> Detector::getAutoCompDisable(Positions pos) const {
 
 void Detector::setPowerChip(bool on, Positions pos) {
     if (on && pimpl->size() > 3) {
-        for (int i = 0; i != pimpl->size(); ++i) {
+        for (unsigned int i = 0; i != pimpl->size(); ++i) {
             pimpl->powerChip(static_cast<int>(on), i);
             usleep(1000 * 1000);
         }

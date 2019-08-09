@@ -124,7 +124,7 @@ void qTabAdvanced::PopulateDetectors() {
                SLOT(SetDetector(int)));
 
     comboDetector->clear();
-    for (int i = 0; i < myDet->size(); ++i)
+    for (unsigned int i = 0; i < myDet->size(); ++i)
         comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
     comboDetector->setCurrentIndex(0);
 

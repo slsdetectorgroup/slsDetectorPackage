@@ -673,108 +673,31 @@ format
     };
 
     /** returns std::string from external signal type index
-        \param f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,
-       TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
-       RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE,
-       GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE,
-       TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,
-       RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH,
-       MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG \returns
-       std::string  off, gate_in_active_high, gate_in_active_low,
-       trigger_in_rising_edge, trigger_in_falling_edge,
-       ro_trigger_in_rising_edge, ro_trigger_in_falling_edge,
-       gate_out_active_high, gate_out_active_low, trigger_out_rising_edge,
-       trigger_out_falling_edge, ro_trigger_out_rising_edge,
-       ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
+        \param f can be TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
+        \returns std::string  trigger_in_rising_edge, trigger_in_falling_edge, unknown
     */
     static std::string externalSignalType(externalSignalFlag f) {
         switch (f) {
-        case SIGNAL_OFF:
-            return std::string("off");
-        case GATE_IN_ACTIVE_HIGH:
-            return std::string("gate_in_active_high");
-        case GATE_IN_ACTIVE_LOW:
-            return std::string("gate_in_active_low");
         case TRIGGER_IN_RISING_EDGE:
             return std::string("trigger_in_rising_edge");
         case TRIGGER_IN_FALLING_EDGE:
             return std::string("trigger_in_falling_edge");
-        case RO_TRIGGER_IN_RISING_EDGE:
-            return std::string("ro_trigger_in_rising_edge");
-        case RO_TRIGGER_IN_FALLING_EDGE:
-            return std::string("ro_trigger_in_falling_edge");
-        case GATE_OUT_ACTIVE_HIGH:
-            return std::string("gate_out_active_high");
-        case GATE_OUT_ACTIVE_LOW:
-            return std::string("gate_out_active_low");
-        case TRIGGER_OUT_RISING_EDGE:
-            return std::string("trigger_out_rising_edge");
-        case TRIGGER_OUT_FALLING_EDGE:
-            return std::string("trigger_out_falling_edge");
-        case RO_TRIGGER_OUT_RISING_EDGE:
-            return std::string("ro_trigger_out_rising_edge");
-        case RO_TRIGGER_OUT_FALLING_EDGE:
-            return std::string("ro_trigger_out_falling_edge");
-        case MASTER_SLAVE_SYNCHRONIZATION:
-            return std::string("sync");
-        case OUTPUT_LOW:
-            return std::string("gnd");
-        case OUTPUT_HIGH:
-            return std::string("vcc");
         default:
             return std::string("unknown");
         }
     };
 
     /** returns external signal type index from std::string
-        \param sval  off, gate_in_active_high, gate_in_active_low,
-       trigger_in_rising_edge, trigger_in_falling_edge,
-       ro_trigger_in_rising_edge, ro_trigger_in_falling_edge,
-       gate_out_active_high, gate_out_active_low, trigger_out_rising_edge,
-       trigger_out_falling_edge, ro_trigger_out_rising_edge,
-       ro_trigger_out_falling_edge, gnd, vcc, sync, unknown \returns can be
-       SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,
-       TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
-       RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE,
-       GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE,
-       TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,
-       RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH,
-       MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG (if unknown)
+        \param sval  trigger_in_rising_edge, trigger_in_falling_edge, unknown 
+        \returns can be TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
+       GET_EXTERNAL_SIGNAL_FLAG (if unknown)
     */
 
     static externalSignalFlag externalSignalType(std::string sval) {
-        if (sval == "off")
-            return SIGNAL_OFF;
-        if (sval == "gate_in_active_high")
-            return GATE_IN_ACTIVE_HIGH;
-        if (sval == "gate_in_active_low")
-            return GATE_IN_ACTIVE_LOW;
         if (sval == "trigger_in_rising_edge")
             return TRIGGER_IN_RISING_EDGE;
         if (sval == "trigger_in_falling_edge")
             return TRIGGER_IN_FALLING_EDGE;
-        if (sval == "ro_trigger_in_rising_edge")
-            return RO_TRIGGER_IN_RISING_EDGE;
-        if (sval == "ro_trigger_in_falling_edge")
-            return RO_TRIGGER_IN_FALLING_EDGE;
-        if (sval == "gate_out_active_high")
-            return GATE_OUT_ACTIVE_HIGH;
-        if (sval == "gate_out_active_low")
-            return GATE_OUT_ACTIVE_LOW;
-        if (sval == "trigger_out_rising_edge")
-            return TRIGGER_OUT_RISING_EDGE;
-        if (sval == "trigger_out_falling_edge")
-            return TRIGGER_OUT_FALLING_EDGE;
-        if (sval == "ro_trigger_out_rising_edge")
-            return RO_TRIGGER_OUT_RISING_EDGE;
-        if (sval == "ro_trigger_out_falling_edge")
-            return RO_TRIGGER_OUT_FALLING_EDGE;
-        if (sval == "sync")
-            return MASTER_SLAVE_SYNCHRONIZATION;
-        if (sval == "gnd")
-            return OUTPUT_LOW;
-        if (sval == "vcc")
-            return OUTPUT_HIGH;
         return GET_EXTERNAL_SIGNAL_FLAG;
     };
 

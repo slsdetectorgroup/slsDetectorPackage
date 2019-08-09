@@ -81,7 +81,7 @@ void qTabDataOutput::PopulateDetectors() {
 	comboDetector->clear();
 	comboDetector->addItem("All");
 	if (myDet->size() > 1) {
-		for (int i = 0; i < myDet->size(); ++i)
+		for (unsigned int i = 0; i < myDet->size(); ++i)
 			comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
 	}
 }

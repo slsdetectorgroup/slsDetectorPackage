@@ -886,7 +886,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     externalCommunicationMode setExternalCommunicationMode(
         externalCommunicationMode pol = GET_EXTERNAL_COMMUNICATION_MODE,
-        int detPos = -1);
+        int detPos = -1);//
 
     /**
      * Set/get external signal flags (to specify triggerinrising edge etc)
@@ -897,7 +897,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     externalSignalFlag
     setExternalSignalFlags(externalSignalFlag pol = GET_EXTERNAL_SIGNAL_FLAG,
-                           int detPos = -1);
+                           int detPos = -1);//
 
     /**
      * Set/get readout flags (Eiger, Mythen)
@@ -906,7 +906,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns readout flag
      */
-    int setReadOutFlags(readOutFlags flag = GET_READOUT_FLAGS, int detPos = -1);
+    int setReadOutFlags(readOutFlags flag = GET_READOUT_FLAGS, int detPos = -1);//
 
     /**
      * Set Interrupt last sub frame (Only for Eiger)

@@ -35,7 +35,7 @@ void init_experimental(py::module &m) {
              py::arg() = Positions{})
         .def("clearBit", &Detector::clearBit, py::arg(), py::arg(),
              py::arg() = Positions{})
-        .def("getRegister", &Detector::getRegister, py::arg(),
+        .def("readRegister", &Detector::readRegister, py::arg(),
              py::arg() = Positions{})
 
         .def("getStartingFrameNumber", &Detector::getStartingFrameNumber,

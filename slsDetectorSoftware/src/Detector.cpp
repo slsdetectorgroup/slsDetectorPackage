@@ -47,7 +47,11 @@ void Detector::clearBit(uint32_t addr, int bitnr, Positions pos) {
 void Detector::setBit(uint32_t addr, int bitnr, Positions pos) {
     pimpl->Parallel(&slsDetector::setBit, pos, addr, bitnr);
 }
-Result<uint32_t> Detector::getRegister(uint32_t addr, Positions pos) {
+void Detector::writeRegister(uint32_t addr, uint32_t val, Positions pos) {
+    pimpl->Parallel(&slsDetector::writeRegister, pos, addr, val);
+}
+
+Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
     return pimpl->Parallel(&slsDetector::readRegister, pos, addr);
 }
 
@@ -1153,34 +1157,42 @@ void Detector::setReceiverHostname(const std::string &receiver, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverHostname, pos, receiver);
 }
 
-Result<IpAddr> Detector::getDetectorIP2(Positions pos) const{
+Result<IpAddr> Detector::getDetectorIP2(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorIP2, pos);
 }
 
-void Detector::setDetectorIP2(const std::string &detectorIP, Positions pos){
+void Detector::setDetectorIP2(const std::string &detectorIP, Positions pos) {
     pimpl->Parallel(&slsDetector::setDetectorIP2, pos, detectorIP);
 }
 
-Result<IpAddr> Detector::getDetectorIP(Positions pos) const{
+Result<IpAddr> Detector::getDetectorIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorIP, pos);
 }
 
-void Detector::setDetectorIP(const std::string &detectorIP, Positions pos){
+void Detector::setDetectorIP(const std::string &detectorIP, Positions pos) {
     pimpl->Parallel(&slsDetector::setDetectorIP, pos, detectorIP);
 }
 
-Result<MacAddr> Detector::getDetectorMAC(Positions pos) const{
+Result<MacAddr> Detector::getDetectorMAC(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorMAC, pos);
 }
-void Detector::setDetectorMAC(const std::string &detectorMAC, Positions pos){
+void Detector::setDetectorMAC(const std::string &detectorMAC, Positions pos) {
     pimpl->Parallel(&slsDetector::setDetectorMAC, pos, detectorMAC);
 }
 
-Result<MacAddr> Detector::getDetectorMAC2(Positions pos) const{
+Result<MacAddr> Detector::getDetectorMAC2(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorMAC2, pos);
 }
-void Detector::setDetectorMAC2(const std::string &detectorMAC, Positions pos){
+void Detector::setDetectorMAC2(const std::string &detectorMAC, Positions pos) {
     pimpl->Parallel(&slsDetector::setDetectorMAC2, pos, detectorMAC);
+}
+
+Result<bool> Detector::getInterruptSubframe(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getInterruptSubframe, pos);
+}
+
+void Detector::setInterruptSubframe(const bool enable, Positions pos){
+    pimpl->Parallel(&slsDetector::setInterruptSubframe, pos, enable);
 }
 
 } // namespace sls

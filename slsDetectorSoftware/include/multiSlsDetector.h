@@ -942,7 +942,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns value read after writing
      */
-    uint32_t writeRegister(uint32_t addr, uint32_t val, int detPos = -1);
+    uint32_t writeRegister(uint32_t addr, uint32_t val, int detPos = -1); //
 
     /**
      * Read from a register. For Advanced users

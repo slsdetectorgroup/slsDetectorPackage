@@ -8,8 +8,7 @@
 class multiSlsDetector;
 namespace sls {
 using ns = std::chrono::nanoseconds;
-using Positions = const std::vector<int> &;
-using defs = slsDetectorDefs;
+class MacAddr;
 
 /**
  * \class Detector
@@ -1289,6 +1288,12 @@ class Detector {
 
     /** [Eiger][Jungfrau] */
     void setReceiverUDPPort(int udpport, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<MacAddr> getReceiverUDPMAC2(Positions pos = {}) const;
+
+     /** [Jungfrau] */
+    void setReceiverUDPMAC2(const std::string &udpmac, Positions pos = {});
 };
 
 } // namespace sls

@@ -1113,4 +1113,11 @@ void Detector::setReceiverUDPPort(int udpport, Positions pos){
     pimpl->Parallel(&slsDetector::setReceiverUDPPort2, pos, udpport);
 }
 
+Result<MacAddr> Detector::getReceiverUDPMAC2(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getReceiverUDPMAC2, pos);
+}
+
+void Detector::setReceiverUDPMAC2(const std::string &udpmac, Positions pos){
+    pimpl->Parallel(&slsDetector::setReceiverUDPMAC2, pos, udpmac);
+}
 } // namespace sls

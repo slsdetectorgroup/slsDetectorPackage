@@ -191,8 +191,8 @@ class ctbAcquisition : public TGGroupFrame {
    void setGraph (int i ,int en, Pixel_t col);
    void setBitGraph (int i ,int en, Pixel_t col);
    void startAcquisition();
-   static   int progressCallback(double,void*);
-   static int dataCallback(detectorData*, int,int,  void*);
+   static   void progressCallback(double,void*);
+   static void dataCallback(detectorData*, long unsigned int, unsigned int,  void*);
    int StopFlag;
    
    int plotData(detectorData*, int);

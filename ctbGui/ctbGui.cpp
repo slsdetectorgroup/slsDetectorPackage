@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
   
   /****** Create detector ****************/
   multiSlsDetector *myDet=new multiSlsDetector(id);
-  myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
+  // myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
 
   //cout << id << " " << myDet << " " << myDet->setOnline() << endl;
   if (cf) {

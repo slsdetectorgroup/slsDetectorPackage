@@ -854,7 +854,7 @@ class Detector {
 
     // TODO!
     // int enableDataStreamingToClient(int enable = -1);
-    // int enableDataStreamingFromReceiver(int enable = -1, int detPos = -1)
+    void enableDataStreamingFromReceiver(bool enable, Positions pos = {});
 
     /** [TODO! All?] */
     void setTenGigaEnabled(bool value, Positions pos = {});
@@ -1257,7 +1257,38 @@ class Detector {
 
     Result<int> getReceiverStreamingPort(Positions pos = {}) const;
 
-    // void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
+    /** Single detector or all since ports are calculated*/
+    void setReceiverDataStreamingOutPort(int port, int module_id = -1);
+
+    Result<int> getClientStreamingPort(Positions pos = {}) const;
+
+    /** Single detector or all since ports are calculated*/
+    void setClientDataStreamingInPort(int port, int module_id = -1);
+
+    /** [Jungfrau] */
+    Result<int> getSelectedUDPInterface(Positions pos = {}) const;
+
+    /**
+     * [Jungfrau]
+     * @param interface interface to select, either 1 or 2
+     * */
+    void selectUDPInterface(int interface, Positions pos = {});
+
+    Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
+
+    void setNumberofUDPInterfaces(int n, Positions pos = {});
+
+    /** [Eiger][Jungfrau] */
+    Result<int> getReceiverUDPPort2(Positions pos = {}) const;
+
+    /** [Eiger][Jungfrau] */
+    void setReceiverUDPPort2(int udpport, Positions pos = {});
+
+    /** [Eiger][Jungfrau] */
+    Result<int> getReceiverUDPPort(Positions pos = {}) const;
+
+    /** [Eiger][Jungfrau] */
+    void setReceiverUDPPort(int udpport, Positions pos = {});
 };
 
 } // namespace sls

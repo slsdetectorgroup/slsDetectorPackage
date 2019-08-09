@@ -1120,14 +1120,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port
      */
-    int setReceiverUDPPort(int udpport, int detPos = -1);
+    int setReceiverUDPPort(int udpport, int detPos = -1); //
 
     /**
      * Returns the receiver UDP port
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port
      */
-    int getReceiverUDPPort(int detPos = -1) const;
+    int getReceiverUDPPort(int detPos = -1) const; //
 
     /**
      * Sets the receiver UDP port 2 (Eiger and Jungfrau only)
@@ -1135,7 +1135,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2
      */
-    int setReceiverUDPPort2(int udpport, int detPos = -1);
+    int setReceiverUDPPort2(int udpport, int detPos = -1); //
 
     /**
      * Returns the receiver UDP port 2 of same interface (Eiger and Jungfrau
@@ -1143,7 +1143,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2 of same interface
      */
-    int getReceiverUDPPort2(int detPos = -1) const;
+    int getReceiverUDPPort2(int detPos = -1) const; //
 
     /**
      * Sets the number of UDP interfaces to stream data from detector (Jungfrau
@@ -1152,7 +1152,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      *  @returns the number of interfaces
      */
-    int setNumberofUDPInterfaces(int n, int detPos = -1);
+    int setNumberofUDPInterfaces(int n, int detPos = -1); //
 
     /**
      * Returns the number of UDP interfaces to stream data from detector
@@ -1160,7 +1160,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the number of interfaces
      */
-    int getNumberofUDPInterfaces(int detPos = -1) const;
+    int getNumberofUDPInterfaces(int detPos = -1) const; //
 
     /**
      * Selects the UDP interfaces to stream data from detector. Effective only
@@ -1177,7 +1177,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the interface selected
      */
-    int getSelectedUDPInterface(int detPos = -1) const;
+    int getSelectedUDPInterface(int detPos = -1) const; //
 
     /**
      * (advanced users)
@@ -1196,7 +1196,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the client zmq port
      */
-    int getClientStreamingPort(int detPos = -1);
+    int getClientStreamingPort(int detPos = -1); //
 
     /**
      * (advanced users)
@@ -1206,7 +1206,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * individual detectors using i
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
+    void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1); //
 
     /**
      * Returns the receiver zmq port
@@ -1215,7 +1215,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver zmq port
      */
-    int getReceiverStreamingPort(int detPos = -1);
+    int getReceiverStreamingPort(int detPos = -1); //
 
     /**
      * (advanced users)

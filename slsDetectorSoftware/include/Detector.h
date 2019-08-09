@@ -9,6 +9,7 @@ class multiSlsDetector;
 namespace sls {
 using ns = std::chrono::nanoseconds;
 class MacAddr;
+class IpAddr;
 
 /**
  * \class Detector
@@ -1274,7 +1275,6 @@ class Detector {
     void selectUDPInterface(int interface, Positions pos = {});
 
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
-
     void setNumberofUDPInterfaces(int n, Positions pos = {});
 
     /** [Eiger][Jungfrau] */
@@ -1292,8 +1292,48 @@ class Detector {
     /** [Jungfrau] */
     Result<MacAddr> getReceiverUDPMAC2(Positions pos = {}) const;
 
-     /** [Jungfrau] */
+    /** [Jungfrau] */
     void setReceiverUDPMAC2(const std::string &udpmac, Positions pos = {});
+
+    Result<MacAddr> getReceiverUDPMAC(Positions pos = {}) const;
+    void setReceiverUDPMAC(const std::string &udpmac, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<IpAddr> getReceiverUDPIP2(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setReceiverUDPIP2(const std::string &udpip, Positions pos = {});
+
+    Result<IpAddr> getReceiverUDPIP(Positions pos = {}) const;
+    void setReceiverUDPIP(const std::string &udpip, Positions pos = {});
+
+    Result<std::string> getReceiverHostname(Positions pos = {}) const;
+
+    /**
+     * Validates and sets the receiver.
+     * Also updates the receiver with all the shared memory parameters
+     * significant for the receiver Also configures the detector to the receiver
+     * as UDP destination
+     * @param receiver receiver hostname or IP address */
+    void setReceiverHostname(const std::string &receiver, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<IpAddr> getDetectorIP2(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setDetectorIP2(const std::string &detectorIP, Positions pos = {});
+
+    Result<IpAddr> getDetectorIP(Positions pos = {}) const;
+    void setDetectorIP(const std::string &detectorIP, Positions pos = {});
+
+    Result<MacAddr> getDetectorMAC(Positions pos = {}) const;
+    void setDetectorMAC(const std::string &detectorMAC, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<MacAddr> getDetectorMAC2(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setDetectorMAC2(const std::string &detectorMAC, Positions pos = {});
 };
 
 } // namespace sls

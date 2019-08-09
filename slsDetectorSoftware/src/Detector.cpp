@@ -1097,27 +1097,90 @@ void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
     enableDataStreamingFromReceiver(true, pos);
 }
 
-Result<int> Detector::getReceiverUDPPort2(Positions pos) const{
-    pimpl->Parallel(&slsDetector::getReceiverUDPPort2, pos);
+Result<int> Detector::getReceiverUDPPort2(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverUDPPort2, pos);
 }
 
-void Detector::setReceiverUDPPort2(int udpport, Positions pos){
+void Detector::setReceiverUDPPort2(int udpport, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverUDPPort2, pos, udpport);
 }
 
-Result<int> Detector::getReceiverUDPPort(Positions pos) const{
-    pimpl->Parallel(&slsDetector::getReceiverUDPPort2, pos);
+Result<int> Detector::getReceiverUDPPort(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverUDPPort, pos);
 }
 
-void Detector::setReceiverUDPPort(int udpport, Positions pos){
-    pimpl->Parallel(&slsDetector::setReceiverUDPPort2, pos, udpport);
+void Detector::setReceiverUDPPort(int udpport, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverUDPPort, pos, udpport);
 }
 
-Result<MacAddr> Detector::getReceiverUDPMAC2(Positions pos) const{
+Result<MacAddr> Detector::getReceiverUDPMAC2(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverUDPMAC2, pos);
 }
 
-void Detector::setReceiverUDPMAC2(const std::string &udpmac, Positions pos){
+void Detector::setReceiverUDPMAC2(const std::string &udpmac, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverUDPMAC2, pos, udpmac);
 }
+
+Result<MacAddr> Detector::getReceiverUDPMAC(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverUDPMAC, pos);
+}
+
+void Detector::setReceiverUDPMAC(const std::string &udpmac, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverUDPMAC, pos, udpmac);
+}
+
+Result<IpAddr> Detector::getReceiverUDPIP2(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverUDPIP2, pos);
+}
+
+void Detector::setReceiverUDPIP2(const std::string &udpip, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverUDPIP2, pos, udpip);
+}
+
+Result<IpAddr> Detector::getReceiverUDPIP(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverUDPIP, pos);
+}
+
+void Detector::setReceiverUDPIP(const std::string &udpip, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverUDPIP, pos, udpip);
+}
+
+Result<std::string> Detector::getReceiverHostname(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReceiverHostname, pos);
+}
+
+void Detector::setReceiverHostname(const std::string &receiver, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReceiverHostname, pos, receiver);
+}
+
+Result<IpAddr> Detector::getDetectorIP2(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getDetectorIP2, pos);
+}
+
+void Detector::setDetectorIP2(const std::string &detectorIP, Positions pos){
+    pimpl->Parallel(&slsDetector::setDetectorIP2, pos, detectorIP);
+}
+
+Result<IpAddr> Detector::getDetectorIP(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getDetectorIP, pos);
+}
+
+void Detector::setDetectorIP(const std::string &detectorIP, Positions pos){
+    pimpl->Parallel(&slsDetector::setDetectorIP, pos, detectorIP);
+}
+
+Result<MacAddr> Detector::getDetectorMAC(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getDetectorMAC, pos);
+}
+void Detector::setDetectorMAC(const std::string &detectorMAC, Positions pos){
+    pimpl->Parallel(&slsDetector::setDetectorMAC, pos, detectorMAC);
+}
+
+Result<MacAddr> Detector::getDetectorMAC2(Positions pos) const{
+    return pimpl->Parallel(&slsDetector::getDetectorMAC2, pos);
+}
+void Detector::setDetectorMAC2(const std::string &detectorMAC, Positions pos){
+    pimpl->Parallel(&slsDetector::setDetectorMAC2, pos, detectorMAC);
+}
+
 } // namespace sls

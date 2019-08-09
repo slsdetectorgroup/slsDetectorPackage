@@ -976,14 +976,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address
      */
-    std::string setDetectorMAC(const std::string &detectorMAC, int detPos = -1);
+    std::string setDetectorMAC(const std::string &detectorMAC, int detPos = -1); //
 
     /**
      * Returns the detector MAC address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address
      */
-    std::string getDetectorMAC(int detPos = -1);
+    std::string getDetectorMAC(int detPos = -1); //
 
     /**
      * Validates the format of the detector MAC address (bottom half) and sets
@@ -993,14 +993,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the detector MAC address (bottom half)
      */
     std::string setDetectorMAC2(const std::string &detectorMAC,
-                                int detPos = -1);
+                                int detPos = -1); //
 
     /**
      * Returns the detector MAC address (bottom half) Jungfrau only
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address (bottom half)
      */
-    std::string getDetectorMAC2(int detPos = -1);
+    std::string getDetectorMAC2(int detPos = -1); //
 
     /**
      * Validates the format of the detector IP address and sets it
@@ -1008,14 +1008,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address
      */
-    std::string setDetectorIP(const std::string &detectorIP, int detPos = -1);
+    std::string setDetectorIP(const std::string &detectorIP, int detPos = -1); //
 
     /**
      * Returns the detector IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address
      */
-    std::string getDetectorIP(int detPos = -1) const;
+    std::string getDetectorIP(int detPos = -1) const; //
 
     /**
      * Validates the format of the detector IP address (bottom half) and sets it
@@ -1024,14 +1024,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address (bottom half)
      */
-    std::string setDetectorIP2(const std::string &detectorIP, int detPos = -1);
+    std::string setDetectorIP2(const std::string &detectorIP, int detPos = -1); //
 
     /**
      * Returns the detector IP address (bottom half) Jungfrau only
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address (bottom half)
      */
-    std::string getDetectorIP2(int detPos = -1) const;
+    std::string getDetectorIP2(int detPos = -1) const; //
 
     /**
      * Validates and sets the receiver.
@@ -1043,14 +1043,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the receiver IP address from shared memory
      */
     std::string setReceiverHostname(const std::string &receiver,
-                                    int detPos = -1);
+                                    int detPos = -1); //
 
     /**
      * Returns the receiver IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address
      */
-    std::string getReceiverHostname(int detPos = -1) const;
+    std::string getReceiverHostname(int detPos = -1) const; //
 
     /**
      * Validates the format of the receiver UDP IP address and sets it
@@ -1058,14 +1058,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address
      */
-    std::string setReceiverUDPIP(const std::string &udpip, int detPos = -1);
+    std::string setReceiverUDPIP(const std::string &udpip, int detPos = -1); //
 
     /**
      * Returns the receiver UDP IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address
      */
-    std::string getReceiverUDPIP(int detPos = -1) const;
+    std::string getReceiverUDPIP(int detPos = -1) const; //
 
     /**
      * Validates the format of the receiver UDP IP address (bottom half) and
@@ -1074,14 +1074,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address (bottom half)
      */
-    std::string setReceiverUDPIP2(const std::string &udpip, int detPos = -1);
+    std::string setReceiverUDPIP2(const std::string &udpip, int detPos = -1); //
 
     /**
      * Returns the receiver UDP IP address (bottom half) Jungfrau only
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address (bottom half)
      */
-    std::string getReceiverUDPIP2(int detPos = -1) const;
+    std::string getReceiverUDPIP2(int detPos = -1) const; //
 
     /**
      * Validates the format of the receiver UDP MAC address and sets it
@@ -1089,14 +1089,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string setReceiverUDPMAC(const std::string &udpmac, int detPos = -1);
+    std::string setReceiverUDPMAC(const std::string &udpmac, int detPos = -1);// 
 
     /**
      * Returns the receiver UDP MAC address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string getReceiverUDPMAC(int detPos = -1) const;
+    std::string getReceiverUDPMAC(int detPos = -1) const; // 
 
     /**
      * Validates the format of the receiver UDP MAC address  (bottom half) and

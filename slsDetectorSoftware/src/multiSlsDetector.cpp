@@ -2747,6 +2747,16 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
     return ret;
 }
 
+void multiSlsDetector::setGapPixelsEnable(bool enable, Positions pos){
+    Parallel(&slsDetector::enableGapPixels, pos, static_cast<int>(enable));
+
+    // update data bytes incl gap pixels
+    auto r2 = serialCall(&slsDetector::getDataBytesInclGapPixels);
+    multi_shm()->dataBytesInclGapPixels = sls::sum(r2);
+    updateOffsets();
+    
+}
+
 int multiSlsDetector::setTrimEn(std::vector<int> energies, int detPos) {
     if (detPos >= 0) {
         return detectors[detPos]->setTrimEn(energies);

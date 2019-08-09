@@ -1487,7 +1487,9 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns external sampling source
      */
-    int getExternalSamplingSource(int detPos = -1);
+    int getExternalSamplingSource(int detPos = -1); //
+
+
 
     /**
      * Set external sampling enable (CTB only)
@@ -1592,6 +1594,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int enableGapPixels(int val = -1, int detPos = -1); //
 
+
+    void setGapPixelsEnable(bool enable, sls::Positions pos = {});
     /**
      * Sets the number of trim energies and their value  (Eiger)
      *

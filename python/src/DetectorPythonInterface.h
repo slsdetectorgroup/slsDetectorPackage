@@ -156,7 +156,7 @@ class DetectorPythonInterface {
         return g;
     }
 
-    int getNumberOfDetectors() { return det.getNumberOfDetectors(); }
+    int getNumberOfDetectors() { return det.size(); }
 
     std::string getRunStatus() {
         auto s = det.getRunStatus();
@@ -234,7 +234,7 @@ class DetectorPythonInterface {
     }
 
     void setRateCorrection(std::vector<double> tau) {
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i)
+        for (size_t i = 0; i < det.size(); ++i)
             det.setRateCorrection(tau[i], i);
     }
 
@@ -334,7 +334,7 @@ class DetectorPythonInterface {
 
     std::vector<double> getMeasuredPeriod() {
         std::vector<double> mp;
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        for (size_t i = 0; i < det.size(); ++i) {
             auto t = det.getTimeLeft(slsDetectorDefs::MEASURED_PERIOD, i);
             mp.push_back(static_cast<double>(t) * 1E-9);
         }
@@ -342,7 +342,7 @@ class DetectorPythonInterface {
     }
     std::vector<double> getMeasuredSubPeriod() {
         std::vector<double> mp;
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        for (size_t i = 0; i < det.size(); ++i) {
             auto t = det.getTimeLeft(slsDetectorDefs::MEASURED_SUBPERIOD, i);
             mp.push_back(static_cast<double>(t) * 1E-9);
         }
@@ -550,7 +550,7 @@ class DetectorPythonInterface {
 
     std::vector<std::string> getDetectorType() {
         std::vector<std::string> detector_type;
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        for (size_t i = 0; i < det.size(); ++i) {
             detector_type.push_back(det.getDetectorTypeAsString(i));
         }
         return detector_type;
@@ -577,8 +577,8 @@ class DetectorPythonInterface {
     // detectors return a vector of strings
     std::vector<int> getReceiverStreamingPort() {
         std::vector<int> vec;
-        vec.reserve(det.getNumberOfDetectors());
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        vec.reserve(det.size());
+        for (size_t i = 0; i < det.size(); ++i) {
             vec.push_back(det.getReceiverStreamingPort(i));
         }
         return vec;
@@ -590,8 +590,8 @@ class DetectorPythonInterface {
 
     std::vector<int> getReceiverUDPPort() {
         std::vector<int> vec;
-        vec.reserve(det.getNumberOfDetectors());
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        vec.reserve(det.size());
+        for (size_t i = 0; i < det.size(); ++i) {
             vec.push_back(det.getReceiverUDPPort(i));
         }
         return vec;
@@ -599,8 +599,8 @@ class DetectorPythonInterface {
 
     std::vector<int> getReceiverUDPPort2() {
         std::vector<int> vec;
-        vec.reserve(det.getNumberOfDetectors());
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        vec.reserve(det.size());
+        for (size_t i = 0; i < det.size(); ++i) {
             vec.push_back(det.getReceiverUDPPort2(i));
         }
         return vec;
@@ -990,7 +990,7 @@ void DetectorPythonInterface::setReadoutFlag(const std::string flag_name) {
 
 std::vector<double> DetectorPythonInterface::getRateCorrection() {
     std::vector<double> rate_corr;
-    for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+    for (size_t i = 0; i < det.size(); ++i) {
         rate_corr.push_back(det.getRateCorrection(i));
     }
     return rate_corr;

@@ -8,8 +8,8 @@
 class multiSlsDetector;
 namespace sls {
 using ns = std::chrono::nanoseconds;
-using Positions = const std::vector<int> &;
-using defs = slsDetectorDefs;
+class MacAddr;
+class IpAddr;
 
 /**
  * \class Detector
@@ -936,7 +936,7 @@ class Detector {
 
     // TODO!
     // int enableDataStreamingToClient(int enable = -1);
-    // int enableDataStreamingFromReceiver(int enable = -1, int detPos = -1)
+    void enableDataStreamingFromReceiver(bool enable, Positions pos = {});
 
     /** [TODO! All?] */
     void setTenGigaEnabled(bool value, Positions pos = {});
@@ -1318,6 +1318,104 @@ class Detector {
                                  Positions pos = {});
 
     Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
+
+    Result<std::string> getAdditionalJsonParameter(const std::string &key,
+                                                   Positions pos = {}) const;
+
+    void setAdditionalJsonParameter(const std::string &key,
+                                    const std::string &value,
+                                    Positions pos = {});
+
+    // TODO these should probably be the same
+    Result<std::string> getReceiverStreamingIP(Positions pos = {}) const;
+
+    void setReceiverDataStreamingOutIP(const std::string &ip,
+                                       Positions pos = {});
+
+    Result<std::string> getClientStreamingIP(Positions pos = {}) const;
+
+    // TODO these should probably be the same
+    void setClientDataStreamingInIP(const std::string &ip, Positions pos = {});
+
+    Result<int> getReceiverStreamingPort(Positions pos = {}) const;
+
+    /** Single detector or all since ports are calculated*/
+    void setReceiverDataStreamingOutPort(int port, int module_id = -1);
+
+    Result<int> getClientStreamingPort(Positions pos = {}) const;
+
+    /** Single detector or all since ports are calculated*/
+    void setClientDataStreamingInPort(int port, int module_id = -1);
+
+    /** [Jungfrau] */
+    Result<int> getSelectedUDPInterface(Positions pos = {}) const;
+
+    /**
+     * [Jungfrau]
+     * @param interface interface to select, either 1 or 2
+     * */
+    void selectUDPInterface(int interface, Positions pos = {});
+
+    Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
+    void setNumberofUDPInterfaces(int n, Positions pos = {});
+
+    /** [Eiger][Jungfrau] */
+    Result<int> getReceiverUDPPort2(Positions pos = {}) const;
+
+    /** [Eiger][Jungfrau] */
+    void setReceiverUDPPort2(int udpport, Positions pos = {});
+
+    /** [Eiger][Jungfrau] */
+    Result<int> getReceiverUDPPort(Positions pos = {}) const;
+
+    /** [Eiger][Jungfrau] */
+    void setReceiverUDPPort(int udpport, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<MacAddr> getReceiverUDPMAC2(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setReceiverUDPMAC2(const std::string &udpmac, Positions pos = {});
+
+    Result<MacAddr> getReceiverUDPMAC(Positions pos = {}) const;
+    void setReceiverUDPMAC(const std::string &udpmac, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<IpAddr> getReceiverUDPIP2(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setReceiverUDPIP2(const std::string &udpip, Positions pos = {});
+
+    Result<IpAddr> getReceiverUDPIP(Positions pos = {}) const;
+    void setReceiverUDPIP(const std::string &udpip, Positions pos = {});
+
+    Result<std::string> getReceiverHostname(Positions pos = {}) const;
+
+    /**
+     * Validates and sets the receiver.
+     * Also updates the receiver with all the shared memory parameters
+     * significant for the receiver Also configures the detector to the receiver
+     * as UDP destination
+     * @param receiver receiver hostname or IP address */
+    void setReceiverHostname(const std::string &receiver, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<IpAddr> getDetectorIP2(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setDetectorIP2(const std::string &detectorIP, Positions pos = {});
+
+    Result<IpAddr> getDetectorIP(Positions pos = {}) const;
+    void setDetectorIP(const std::string &detectorIP, Positions pos = {});
+
+    Result<MacAddr> getDetectorMAC(Positions pos = {}) const;
+    void setDetectorMAC(const std::string &detectorMAC, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<MacAddr> getDetectorMAC2(Positions pos = {}) const;
+
+    /** [Jungfrau] */
+    void setDetectorMAC2(const std::string &detectorMAC, Positions pos = {});
 };
 
 } // namespace sls

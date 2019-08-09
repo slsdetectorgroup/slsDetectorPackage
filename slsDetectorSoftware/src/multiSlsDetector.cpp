@@ -655,7 +655,7 @@ std::string multiSlsDetector::getDetectorTypeAsString(int detPos) {
     return sls::concatenateIfDifferent(r);
 }
 
-int multiSlsDetector::size() const { return detectors.size(); }
+size_t multiSlsDetector::size() const { return detectors.size(); }
 
 int multiSlsDetector::getNumberOfDetectors(dimension d) const {
     return multi_shm()->numberOfDetector[d];
@@ -1925,6 +1925,7 @@ void multiSlsDetector::setReceiverDataStreamingOutIP(const std::string &ip,
         }
     }
 }
+
 
 std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
     // single

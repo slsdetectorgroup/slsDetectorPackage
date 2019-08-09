@@ -375,7 +375,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Returns the number of detectors in the multidetector structure
      * @returns number of detectors
      */
-    int size() const;//
+    size_t size() const;//
 
     /**
      * Returns number of detectors in dimension d
@@ -963,14 +963,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address
      */
-    std::string setDetectorMAC(const std::string &detectorMAC, int detPos = -1);
+    std::string setDetectorMAC(const std::string &detectorMAC, int detPos = -1); //
 
     /**
      * Returns the detector MAC address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address
      */
-    std::string getDetectorMAC(int detPos = -1);
+    std::string getDetectorMAC(int detPos = -1); //
 
     /**
      * Validates the format of the detector MAC address (bottom half) and sets
@@ -980,14 +980,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the detector MAC address (bottom half)
      */
     std::string setDetectorMAC2(const std::string &detectorMAC,
-                                int detPos = -1);
+                                int detPos = -1); //
 
     /**
      * Returns the detector MAC address (bottom half) Jungfrau only
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address (bottom half)
      */
-    std::string getDetectorMAC2(int detPos = -1);
+    std::string getDetectorMAC2(int detPos = -1); //
 
     /**
      * Validates the format of the detector IP address and sets it
@@ -995,14 +995,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address
      */
-    std::string setDetectorIP(const std::string &detectorIP, int detPos = -1);
+    std::string setDetectorIP(const std::string &detectorIP, int detPos = -1); //
 
     /**
      * Returns the detector IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address
      */
-    std::string getDetectorIP(int detPos = -1) const;
+    std::string getDetectorIP(int detPos = -1) const; //
 
     /**
      * Validates the format of the detector IP address (bottom half) and sets it
@@ -1011,14 +1011,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address (bottom half)
      */
-    std::string setDetectorIP2(const std::string &detectorIP, int detPos = -1);
+    std::string setDetectorIP2(const std::string &detectorIP, int detPos = -1); //
 
     /**
      * Returns the detector IP address (bottom half) Jungfrau only
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address (bottom half)
      */
-    std::string getDetectorIP2(int detPos = -1) const;
+    std::string getDetectorIP2(int detPos = -1) const; //
 
     /**
      * Validates and sets the receiver.
@@ -1030,14 +1030,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the receiver IP address from shared memory
      */
     std::string setReceiverHostname(const std::string &receiver,
-                                    int detPos = -1);
+                                    int detPos = -1); //
 
     /**
      * Returns the receiver IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver IP address
      */
-    std::string getReceiverHostname(int detPos = -1) const;
+    std::string getReceiverHostname(int detPos = -1) const; //
 
     /**
      * Validates the format of the receiver UDP IP address and sets it
@@ -1045,14 +1045,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address
      */
-    std::string setReceiverUDPIP(const std::string &udpip, int detPos = -1);
+    std::string setReceiverUDPIP(const std::string &udpip, int detPos = -1); //
 
     /**
      * Returns the receiver UDP IP address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address
      */
-    std::string getReceiverUDPIP(int detPos = -1) const;
+    std::string getReceiverUDPIP(int detPos = -1) const; //
 
     /**
      * Validates the format of the receiver UDP IP address (bottom half) and
@@ -1061,14 +1061,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address (bottom half)
      */
-    std::string setReceiverUDPIP2(const std::string &udpip, int detPos = -1);
+    std::string setReceiverUDPIP2(const std::string &udpip, int detPos = -1); //
 
     /**
      * Returns the receiver UDP IP address (bottom half) Jungfrau only
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP IP address (bottom half)
      */
-    std::string getReceiverUDPIP2(int detPos = -1) const;
+    std::string getReceiverUDPIP2(int detPos = -1) const; //
 
     /**
      * Validates the format of the receiver UDP MAC address and sets it
@@ -1076,14 +1076,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string setReceiverUDPMAC(const std::string &udpmac, int detPos = -1);
+    std::string setReceiverUDPMAC(const std::string &udpmac, int detPos = -1);// 
 
     /**
      * Returns the receiver UDP MAC address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string getReceiverUDPMAC(int detPos = -1) const;
+    std::string getReceiverUDPMAC(int detPos = -1) const; // 
 
     /**
      * Validates the format of the receiver UDP MAC address  (bottom half) and
@@ -1107,14 +1107,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port
      */
-    int setReceiverUDPPort(int udpport, int detPos = -1);
+    int setReceiverUDPPort(int udpport, int detPos = -1); //
 
     /**
      * Returns the receiver UDP port
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port
      */
-    int getReceiverUDPPort(int detPos = -1) const;
+    int getReceiverUDPPort(int detPos = -1) const; //
 
     /**
      * Sets the receiver UDP port 2 (Eiger and Jungfrau only)
@@ -1122,7 +1122,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2
      */
-    int setReceiverUDPPort2(int udpport, int detPos = -1);
+    int setReceiverUDPPort2(int udpport, int detPos = -1); //
 
     /**
      * Returns the receiver UDP port 2 of same interface (Eiger and Jungfrau
@@ -1130,7 +1130,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP port 2 of same interface
      */
-    int getReceiverUDPPort2(int detPos = -1) const;
+    int getReceiverUDPPort2(int detPos = -1) const; //
 
     /**
      * Sets the number of UDP interfaces to stream data from detector (Jungfrau
@@ -1139,7 +1139,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      *  @returns the number of interfaces
      */
-    int setNumberofUDPInterfaces(int n, int detPos = -1);
+    int setNumberofUDPInterfaces(int n, int detPos = -1); //
 
     /**
      * Returns the number of UDP interfaces to stream data from detector
@@ -1147,7 +1147,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the number of interfaces
      */
-    int getNumberofUDPInterfaces(int detPos = -1) const;
+    int getNumberofUDPInterfaces(int detPos = -1) const; //
 
     /**
      * Selects the UDP interfaces to stream data from detector. Effective only
@@ -1164,7 +1164,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the interface selected
      */
-    int getSelectedUDPInterface(int detPos = -1) const;
+    int getSelectedUDPInterface(int detPos = -1) const; //
 
     /**
      * (advanced users)
@@ -1183,7 +1183,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the client zmq port
      */
-    int getClientStreamingPort(int detPos = -1);
+    int getClientStreamingPort(int detPos = -1); //
 
     /**
      * (advanced users)
@@ -1193,7 +1193,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * individual detectors using i
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
+    void setReceiverDataStreamingOutPort(int i = -1, int detPos = -1); //
 
     /**
      * Returns the receiver zmq port
@@ -1202,7 +1202,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver zmq port
      */
-    int getReceiverStreamingPort(int detPos = -1);
+    int getReceiverStreamingPort(int detPos = -1); //
 
     /**
      * (advanced users)
@@ -1212,7 +1212,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setClientDataStreamingInIP(const std::string &ip = "",
-                                    int detPos = -1);
+                                    int detPos = -1); //
 
     /**
      * Returns the client zmq ip
@@ -1221,7 +1221,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the client zmq ip
      */
-    std::string getClientStreamingIP(int detPos = -1);
+    std::string getClientStreamingIP(int detPos = -1); //
 
     /**
      * (advanced users)
@@ -1231,7 +1231,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setReceiverDataStreamingOutIP(const std::string &ip = "",
-                                       int detPos = -1);
+                                       int detPos = -1); //
 
     /**
      * Returns the receiver zmq ip
@@ -1240,7 +1240,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver zmq ip
      */
-    std::string getReceiverStreamingIP(int detPos = -1);
+    std::string getReceiverStreamingIP(int detPos = -1); //
 
     /**
      * Sets the transmission delay for left, right or entire frame
@@ -1251,7 +1251,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns transmission delay
      */
     int setDetectorNetworkParameter(networkParameter index, int delay,
-                                    int detPos = -1);
+                                    int detPos = -1); //maybe not needed in API
 
     /**
      * Sets the additional json header
@@ -1260,14 +1260,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns additional json header, default is empty
      */
     std::string setAdditionalJsonHeader(const std::string &jsonheader,
-                                        int detPos = -1);
+                                        int detPos = -1); //
 
     /**
      * Returns the additional json header
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the additional json header, default is empty
      */
-    std::string getAdditionalJsonHeader(int detPos = -1);
+    std::string getAdditionalJsonHeader(int detPos = -1); //
 
     /**
      * Sets the value for the additional json header parameter if found, else

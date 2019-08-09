@@ -843,4 +843,22 @@ void Detector::setExternalSamplingSource(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setExternalSamplingSource, pos, value);
 }
 
+uint32_t Detector::getADCInvert() const {
+    auto res = pimpl->Parallel(&slsDetector::getADCInvert, {});
+    return res.tsquash("Different Values for function getADCInvert");
+}
+
+void Detector::setADCInvert(uint32_t value) {
+    pimpl->Parallel(&slsDetector::setADCInvert, {}, value);
+}
+
+uint32_t Detector::getADCEnableMask() const {
+    return pimpl->Parallel(&slsDetector::getADCEnableMask, {})
+        .tsquash("Values of ADC enable mask cannot be different");
+}
+
+void Detector::setADCEnableMask(uint32_t mask) {
+    pimpl->Parallel(&slsDetector::setADCEnableMask, {}, mask);
+}
+
 } // namespace sls

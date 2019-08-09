@@ -1051,6 +1051,21 @@ class Detector {
 
     /** [CTB] Value between 0-63 */
     void setExternalSamplingSource(int value, Positions pos = {});
+
+    /** [CTB] */
+    uint32_t getADCInvert() const;
+
+    /** [CTB]*/
+    void setADCInvert(uint32_t value);
+
+    /** [CTB]*/
+    uint32_t getADCEnableMask(int detPos = -1);
+
+    /** [CTB]*/
+    void setADCEnableMask(uint32_t mask);
+
+    /** [CTB]*/
+    uint32_t getADCEnableMask() const;
 };
 
 } // namespace sls

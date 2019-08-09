@@ -3,6 +3,7 @@
 #include "SharedMemory.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
+#include "Result.h"
 
 class slsDetector;
 class ZmqSocket;
@@ -110,7 +111,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    std::vector<RT> Parallel(RT (slsDetector::*somefunc)(CT...),
+    sls::Result<RT> Parallel(RT (slsDetector::*somefunc)(CT...),
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) {
 
@@ -127,7 +128,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
             futures.push_back(std::async(std::launch::async, somefunc,
                                          detectors[i].get(), Args...));
         }
-        std::vector<RT> result;
+        sls::Result<RT> result;
         result.reserve(positions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
@@ -136,7 +137,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     }
 
     template <typename RT, typename... CT>
-    std::vector<RT> Parallel(RT (slsDetector::*somefunc)(CT...) const,
+    sls::Result<RT> Parallel(RT (slsDetector::*somefunc)(CT...) const,
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) const {
 
@@ -153,7 +154,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
             futures.push_back(std::async(std::launch::async, somefunc,
                                          detectors[i].get(), Args...));
         }
-        std::vector<RT> result;
+        sls::Result<RT> result;
         result.reserve(positions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
@@ -1441,35 +1442,35 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param mask ADC Enable mask
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setADCEnableMask(uint32_t mask, int detPos = -1);
+    void setADCEnableMask(uint32_t mask, int detPos = -1); //
 
     /**
      * Get ADC Enable Mask (CTB, Moench)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns ADC Enable mask
      */
-    uint32_t getADCEnableMask(int detPos = -1);
+    uint32_t getADCEnableMask(int detPos = -1); //
 
     /**
      * Set ADC invert register (CTB, Moench)
      * @param value ADC invert value
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setADCInvert(uint32_t value, int detPos = -1);
+    void setADCInvert(uint32_t value, int detPos = -1); //
 
     /**
      * Get ADC invert register (CTB, Moench)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns ADC invert value
      */
-    uint32_t getADCInvert(int detPos = -1);
+    uint32_t getADCInvert(int detPos = -1); //
 
     /**
      * Set external sampling source (CTB only)
      * @param value external sampling source (Option: 0-63)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setExternalSamplingSource(int value, int detPos = -1);
+    void setExternalSamplingSource(int value, int detPos = -1); //
 
     /**
      * Get external sampling source (CTB only)

@@ -853,7 +853,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns value of speed set
      */
     int setSpeed(speedVariable index, int value = -1, int mode = 0,
-                 int detPos = -1);
+                 int detPos = -1);//
 
     /**
      * Set/get dynamic range and updates the number of dataBytes

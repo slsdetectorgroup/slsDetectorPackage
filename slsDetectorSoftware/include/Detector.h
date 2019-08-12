@@ -1141,13 +1141,13 @@ class Detector {
     void setCounterBit(bool value, Positions pos = {});
 
     /** [Gotthard, CTB] subset modules not allowed */
-    Result<std::vector<defs::ROI>> getROI(Positions pos = {}) const;
+    //Result<std::vector<defs::ROI>> getROI(Positions pos = {}) const;
     /** 
      * [Gotthard Options: Only a single chip or all chips, only 1 ROI allowed]
      * [CTB: multiple ROIs allowed] 
      * subset modules not allowed 
      */
-    void setROI(std::vector<defs::ROI> value, Positions pos = {});
+    //void setROI(std::vector<defs::ROI> value, Positions pos = {});
 
     /** [CTB]*/
     Result<uint32_t> getADCEnableMask(Positions pos = {}) const;
@@ -1188,13 +1188,65 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB] not possible to read back*/
     void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
 
+    /** [Eiger] */
+    Result<bool> getActive(Positions pos = {}) const;
+
+    /** [Eiger] */
+    void setActive(bool active, Positions pos = {});
+
+    /** [Eiger] */
+    Result<bool> getBottom(Positions pos = {}) const;
+
+    /** [Eiger] for gui purposes */
+    void setBottom(bool value, Positions pos = {});   
+
+    /** [Eiger] 
+     * @returns -1 if they are all different
+    */
+    Result<int> getAllTrimbits(Positions pos = {}) const;
+
+    /**[Eiger] */
+    void setAllTrimbits(int value, Positions pos = {});
+
+    /**[Eiger] */
+    Result<bool> getGapPixelsEnable(Positions pos = {}) const;
+
+    /**
+     * [Eiger] 
+     * 4 bit mode not implemented in Receiver, but in client data call back
+     * Fills in gap pixels in data
+     */
+    void setGapPixelsEnable(bool enable);
+
+    /**[Eiger] Returns energies in eV where the module is trimmed */
+    Result<std::vector<int>> getTrimEnergies(Positions pos = {}) const;
+
+    /** [Eiger] Set the energies where the detector is trimmed */
+    void setTrimEnergies(std::vector<int> energies, Positions pos = {});
+
+    /**
+     * [Eiger] Pulse Pixel n times at x and y coordinates
+     */
+    void pulsePixel(int n, int x, int y, Positions pos = {});
+
+    /** [Eiger] Pulse Pixel n times and move by a relative value of x and y coordinates */
+    void pulsePixelNMove(int n, int x, int y, Positions pos = {});
+
+    /** [Eiger] Pulse chip n times */
+    void pulseChip(int n, Positions pos = {});
 
 
+    /** [Eiger] */
+    Result<bool> getRxPadDeactivatedMod(Positions pos = {}) const;
 
-
+    /**
+     * [Eiger] Set deactivated Receiver padding mode
+     */
+    void setRxPadDeactivatedMod(bool pad, Positions pos = {});
 
 
     Result<int64_t> getReceiverUDPSocketBufferSize(Positions pos = {}) const;
+
     void setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,
                                         Positions pos = {});
     Result<int64_t>
@@ -1466,67 +1518,22 @@ class Detector {
 
     Result<int> getThresholdTemperature(Positions pos = {}) const;
 
-    /** [Eiger] */
-    void pulseChip(int n, Positions pos = {});
-
-    /**
-     * [Eiger] Pulse Pixel and move by a relative value
-     * @param n is number of times to pulse
-     * @param x is relative x value
-     * @param y is relative y value
-     */
-    void pulsePixelNMove(int n, int x, int y, Positions pos = {});
-
-    /**
-     * [Eiger] Pulse Pixel
-     * @param n is number of times to pulse
-     * @param x is x coordinate
-     * @param y is y coordinate
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void pulsePixel(int n, int x, int y, Positions pos = {});
-
-    /**[Eiger] Returns energies in eV where the module is trimmed */
-    Result<std::vector<int>> getTrimEn(Positions pos = {}) const;
-
-    /** [Eiger] Set the energies where the detector is trimmed */
-    void setTrimEn(std::vector<int> energies, Positions pos = {});
-
-    /**
-     * [Eiger] not 4 bit mode
-     * Fills in gap pixels in data
-     */
-    void setGapPixelsEnable(bool enable, Positions pos = {});
-
-    Result<bool> getGapPixelEnable(Positions pos = {}) const;
-
-    /**[Eiger] */
-    void setAllTrimbits(int value, Positions pos = {});
-
-    /** [Eiger] TODO! only Eiger? */
-    void setFlippedData(defs::dimension d, bool flipped, Positions pos = {});
-
-    Result<bool> getFlippedData(defs::dimension d, Positions pos = {}) const;
-
-    /**
-     * [Eiger] Set deactivated Receiver padding mode
-     * @param padding padding option for deactivated receiver. Can be true
-     * (padding), false (no padding)
-     */
-    void setRxPadDeactivatedMod(bool pad, Positions pos = {});
-
-    Result<bool> getRxPadDeactivatedMod(Positions pos = {}) const;
-
-    /**
-     * [Eiger] Activates/Deactivates the detector
-     * @param true = active or false inactive
-     */
-    void setActive(bool active, Positions pos = {});
-
-    Result<bool> getActive(Positions pos = {}) const;
 
 
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
 };
 
 } // namespace sls

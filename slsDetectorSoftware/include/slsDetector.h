@@ -1461,9 +1461,9 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Prints receiver configuration
-     * @param level print level
+     * @returns receiver configuration
      */
-    void printReceiverConfiguration(TLogLevel level = logINFO);
+    std::string printReceiverConfiguration();
 
     /**
      * Gets the use receiver flag from shared memory
@@ -1693,7 +1693,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param time_in_ms timer between frames
      * @returns receiver streaming timer in ms
      */
-    int setReceiverStreamingTimer(int time_in_ms = 500);
+    int setReceiverStreamingTimer(int time_in_ms = 200);
 
     /**
      * Enable or disable streaming data from receiver to client
@@ -1734,9 +1734,8 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Opens pattern file and sends pattern to CTB
      * @param fname pattern file to open
-     * @returns OK/FAIL
      */
-    int setPattern(const std::string &fname);
+    void setPattern(const std::string &fname);
 
     /**
      * Sets pattern IO control (CTB/ Moench)

@@ -2264,7 +2264,7 @@ void slsDetector::setUDPConnection() {
     } else {
         throw ReceiverError("setUDPConnection: Receiver is OFFLINE");
     }
-    printReceiverConfiguration(logDEBUG1);
+    FILE_LOG(logDEBUG1) << printReceiverConfiguration();
 }
 
 int slsDetector::digitalTest(digitalTestMode mode, int ival) {
@@ -2945,19 +2945,20 @@ void slsDetector::updateRateCorrection() {
     }
 }
 
-void slsDetector::printReceiverConfiguration(TLogLevel level) {
-    FILE_LOG(level) << "#Detector " << detId << ":\n Receiver Hostname:\t"
-                    << getReceiverHostname()
-                    << "\nDetector UDP IP (Source):\t\t" << getDetectorIP()
-                    << "\nDetector UDP IP2 (Source):\t\t" << getDetectorIP2()
-                    << "\nDetector UDP MAC:\t\t" << getDetectorMAC()
-                    << "\nDetector UDP MAC2:\t\t" << getDetectorMAC2()
-                    << "\nReceiver UDP IP:\t" << getReceiverUDPIP()
-                    << "\nReceiver UDP IP2:\t" << getReceiverUDPIP2()
-                    << "\nReceiver UDP MAC:\t" << getReceiverUDPMAC()
-                    << "\nReceiver UDP MAC2:\t" << getReceiverUDPMAC2()
-                    << "\nReceiver UDP Port:\t" << getReceiverUDPPort()
-                    << "\nReceiver UDP Port2:\t" << getReceiverUDPPort2();
+std::string slsDetector::printReceiverConfiguration() {
+    std::ostringstream os;
+    os << "#Detector " << detId << ":\n Receiver Hostname:\t"
+       << getReceiverHostname() << "\nDetector UDP IP (Source):\t\t"
+       << getDetectorIP() << "\nDetector UDP IP2 (Source):\t\t"
+       << getDetectorIP2() << "\nDetector UDP MAC:\t\t" << getDetectorMAC()
+       << "\nDetector UDP MAC2:\t\t" << getDetectorMAC2()
+       << "\nReceiver UDP IP:\t" << getReceiverUDPIP()
+       << "\nReceiver UDP IP2:\t" << getReceiverUDPIP2()
+       << "\nReceiver UDP MAC:\t" << getReceiverUDPMAC()
+       << "\nReceiver UDP MAC2:\t" << getReceiverUDPMAC2()
+       << "\nReceiver UDP Port:\t" << getReceiverUDPPort()
+       << "\nReceiver UDP Port2:\t" << getReceiverUDPPort2();
+    return os.str();
 }
 
 bool slsDetector::getUseReceiverFlag() const { return shm()->useReceiverFlag; }
@@ -3439,7 +3440,7 @@ void slsDetector::restreamStopFromReceiver() {
     }
 }
 
-int slsDetector::setPattern(const std::string &fname) {
+void slsDetector::setPattern(const std::string &fname) {
     uint64_t word;
     uint64_t addr = 0;
     FILE *fd = fopen(fname.c_str(), "r");
@@ -3451,9 +3452,8 @@ int slsDetector::setPattern(const std::string &fname) {
         }
         fclose(fd);
     } else {
-        return -1;
+        throw RuntimeError("Could not open file to set pattern");
     }
-    return addr;
 }
 
 uint64_t slsDetector::setPatternIOControl(uint64_t word) {

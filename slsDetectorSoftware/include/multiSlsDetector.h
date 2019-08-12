@@ -1638,14 +1638,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setStoragecellStart(int pos = -1, int detPos = -1);//
 
     /**
-     * Programs FPGA with pof file (Not Eiger)
+     * Programs FPGA with pof file (Jungfrau, CTB, Moench)
      * @param fname file name
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void programFPGA(const std::string &fname, int detPos = -1); //
 
     /**
-     * Resets FPGA (Not Eiger)
+     * Resets FPGA (Jungfrau, CTB, Moench)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void resetFPGA(int detPos = -1); //
@@ -1710,10 +1710,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Prints receiver configuration
-     * @param level print level
      * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns receiver configuration
      */
-    void printReceiverConfiguration(TLogLevel level = logINFO, int detPos = -1); //
+    std::string printReceiverConfiguration(int detPos = -1); //
 
     /**
      * Get receiver online status
@@ -1887,19 +1887,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void resetFramesCaught(int detPos = -1); //
 
     /**
-     * Create Receiving Data Sockets
-     * @param destroy is true to destroy all the sockets
-     * @returns OK or FAIL
-     */
-    int createReceivingDataSockets(const bool destroy = false);
-
-    /**
-     * Reads frames from receiver through a constant socket
-     * Called during acquire() when call back registered or when using gui
-     */
-    void readFrameFromReceiver();
-
-    /**
      * Sets/Gets receiver file write enable
      * @param value 1 or 0 to set/reset file write enable
      * @param detPos -1 for all detectors in  list or specific detector position
@@ -1962,7 +1949,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns receiver streaming timer in ms
      */
-    int setReceiverStreamingTimer(int time_in_ms = 500, int detPos = -1); //
+    int setReceiverStreamingTimer(int time_in_ms = 200, int detPos = -1); //
 
     /**
      * Enable data streaming to client
@@ -2007,9 +1994,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Opens pattern file and sends pattern (CTB/ Moench)
      * @param fname pattern file to open
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK/FAIL
      */
-    int setPattern(const std::string &fname, int detPos = -1); //
+    void setPattern(const std::string &fname, int detPos = -1); //
 
     /**
      * Sets pattern IO control (CTB/ Moench)
@@ -2193,12 +2179,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
   private:
     /**
-     * increments file index
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the file index
-     */
-    int incrementFileIndex(int detPos = -1);
-    /**
      * Creates/open shared memory, initializes detector structure and members
      * Called by constructor/ set hostname / read config file
      * @param verify true to verify if shared memory version matches existing
@@ -2276,6 +2256,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void addSlsDetector(const std::string &hostname);
 
+        /**
+     * increments file index
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns the file index
+     */
+    int incrementFileIndex(int detPos = -1);
+
     /**
      * Ensures that min is less than max in both dimensions (Gotthard)
      * @param n number of rois
@@ -2291,6 +2278,19 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns number of data bytes of image with gap pixels
      */
     int processImageWithGapPixels(char *image, char *&gpImage);
+
+    /**
+     * Create Receiving Data Sockets
+     * @param destroy is true to destroy all the sockets
+     * @returns OK or FAIL
+     */
+    int createReceivingDataSockets(const bool destroy = false);
+
+    /**
+     * Reads frames from receiver through a constant socket
+     * Called during acquire() when call back registered or when using gui
+     */
+    void readFrameFromReceiver();
 
     /**
      * Set total progress (total number of frames/images in an acquisition)

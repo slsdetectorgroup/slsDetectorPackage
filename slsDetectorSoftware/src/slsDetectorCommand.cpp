@@ -4864,7 +4864,7 @@ std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const ar
     } else if (cmd == "rx_printconfig") {
         if (action == PUT_ACTION)
             return std::string("cannot put");
-        myDet->printReceiverConfiguration(logINFO, detPos);
+        FILE_LOG(logINFO) << myDet->printReceiverConfiguration(detPos);
         return std::string("");
     } else if (cmd == "parameters") {
         if (action == PUT_ACTION) {
@@ -5171,7 +5171,8 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
 
         if (action == PUT_ACTION) {
             fname = std::string(args[1]);
-            os << myDet->setPattern(fname, detPos);
+            myDet->setPattern(fname, detPos);
+            os << "successful";
         } else if (action == GET_ACTION)
             os << "Cannot get";
     } else if (cmd == "patword") {

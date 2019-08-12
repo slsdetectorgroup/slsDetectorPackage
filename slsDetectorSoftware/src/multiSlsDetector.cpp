@@ -2910,16 +2910,15 @@ int64_t multiSlsDetector::getRateCorrection(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-void multiSlsDetector::printReceiverConfiguration(TLogLevel level, int detPos) {
+std::string multiSlsDetector::printReceiverConfiguration(int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->printReceiverConfiguration(level);
+        return detectors[detPos]->printReceiverConfiguration();
     }
 
     // multi
-    for (auto &d : detectors) {
-        d->printReceiverConfiguration(level);
-    }
+    auto r = parallelCall(&slsDetector::printReceiverConfiguration);
+    return sls::concatenateIfDifferent(r);
 }
 
 bool multiSlsDetector::getUseReceiverFlag(int detPos) {
@@ -3761,24 +3760,14 @@ int multiSlsDetector::setReceiverSilentMode(int i, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setPattern(const std::string &fname, int detPos) {
+void multiSlsDetector::setPattern(const std::string &fname, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setPattern(fname);
+        detectors[detPos]->setPattern(fname);
     }
-    FILE *fd = fopen(fname.c_str(), "r");
-    if (fd == nullptr) {
-        throw RuntimeError("multiSlsDetector::setPattern: Could not open file");
-    } else {
-        int addr{0};
-        uint64_t word{0};
-        while (fread(&word, sizeof(word), 1, fd) != 0u) {
-            serialCall(&slsDetector::setPatternWord, addr, word);
-            ++addr;
-        }
-        fclose(fd);
-        return addr;
-    }
+
+    // multi
+    parallelCall(&slsDetector::setPattern, fname);
 }
 
 uint64_t multiSlsDetector::setPatternIOControl(uint64_t word, int detPos) {

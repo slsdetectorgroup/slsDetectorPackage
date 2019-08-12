@@ -332,7 +332,7 @@ void qTabAdvanced::SetDetector(int index) {
     GetRxrZMQPort();
     GetRxrZMQIP();
 
-    myDet->printReceiverConfiguration(logDEBUG);
+    FILE_LOG(logDEBUG) << myDet->printReceiverConfiguration();
 }
 
 void qTabAdvanced::SetControlPort(int port) {

@@ -681,26 +681,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void sendSoftwareTrigger(int detPos = -1);//
 
     /**
-     * Start detector acquisition and read all data (Blocking until end of
-     * acquisition)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startAndReadAll(int detPos = -1);//
-
-    /**
-     * Start readout (without exposure or interrupting exposure) (Eiger store in
-     * ram)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startReadOut(int detPos = -1);//
-
-    /**
-     * Requests and  receives all data from the detector (Eiger store in ram)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void readAll(int detPos = -1);//
-
-    /**
      * Configures in detector the destination for UDP packets
      * @param detPos -1 for all detectors in  list or specific detector position
      */
@@ -2319,6 +2299,26 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Start data processing thread
      */
     void startProcessingThread();
+
+    /**
+     * Start detector acquisition and read all data (Blocking until end of
+     * acquisition)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void startAndReadAll(int detPos = -1);//
+
+        /**
+     * Start readout (without exposure or interrupting exposure) (Eiger store in
+     * ram)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void startReadOut(int detPos = -1);//
+
+    /**
+     * Requests and  receives all data from the detector (Eiger store in ram)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void readAll(int detPos = -1);//
 
     /**
      * Check if processing thread is ready to join main thread

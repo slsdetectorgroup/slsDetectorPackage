@@ -17,9 +17,36 @@ TEST_CASE("Construct from vector"){
     REQUIRE(fcc == vec);
 }
 
+TEST_CASE("Copy construct from vector"){
+    std::vector<int> vec{1,2,3};
+    FixedCapacityContainer<int, 5> fcc = vec;
+    REQUIRE(fcc == vec);
+}
+
+TEST_CASE("Copy assignment from vector"){
+    std::vector<int> vec{1,2,3};
+    FixedCapacityContainer<int, 5> fcc;
+    fcc = vec;
+    REQUIRE(fcc == vec);
+}
+
+
 TEST_CASE("Construct from array"){
     std::array<int,3> arr{1,2,3};
     FixedCapacityContainer<int, 5> fcc{arr};
+    REQUIRE(fcc == arr);
+}
+
+TEST_CASE("Copy assign from array"){
+    std::array<int,3> arr{1,2,3};
+    FixedCapacityContainer<int, 5> fcc;
+    fcc = arr;
+    REQUIRE(fcc == arr);
+}
+
+TEST_CASE("Copy construct from array"){
+    std::array<int,3> arr{1,2,3};
+    FixedCapacityContainer<int, 5> fcc = arr;
     REQUIRE(fcc == arr);
 }
 

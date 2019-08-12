@@ -1,7 +1,27 @@
 #include "FixedCapacityContainer.h"
 #include "catch.hpp"
+#include "TypeTraits.h"
 
+#include <vector>
+#include <array>
 using sls::FixedCapacityContainer;
+
+TEST_CASE("FixedCapacityContainer is a container"){
+    REQUIRE(sls::is_container<FixedCapacityContainer<int,7>>::value == true);
+}
+
+
+TEST_CASE("Construct from vector"){
+    std::vector<int> vec{1,2,3};
+    FixedCapacityContainer<int, 5> fcc{vec};
+    REQUIRE(fcc == vec);
+}
+
+TEST_CASE("Construct from array"){
+    std::array<int,3> arr{1,2,3};
+    FixedCapacityContainer<int, 5> fcc{arr};
+    REQUIRE(fcc == arr);
+}
 
 SCENARIO("FixedCapacityContainers can be sized and resized", "[support]") {
 

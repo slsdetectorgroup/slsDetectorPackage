@@ -2,9 +2,9 @@
 
 /**
  * \file ToString.h
- * 
+ *
  * Conversion from various types to std::string
- * 
+ *
  */
 
 #include "TimeHelper.h"
@@ -135,6 +135,13 @@ T StringTo(const std::string &t, const std::string &unit) {
 template <typename T> T StringTo(std::string t) {
     auto unit = RemoveUnit(t);
     return StringTo<T>(t, unit);
+}
+
+/** For types with a .str() method use this for conversion */
+template <typename T>
+typename std::enable_if<has_str<T>::value, std::string>::type
+ToString(const T &obj) {
+    return obj.str();
 }
 
 } // namespace sls

@@ -4,6 +4,7 @@
 #include <vector>
 #include <sstream>
 #include <chrono>
+#include <initializer_list>
 
 //Dummy classes only used here for testing
 class DummyWithStr {
@@ -38,4 +39,8 @@ TEST_CASE("sls::is_duration"){
 
     REQUIRE(sls::is_duration<int>::value == false);
     REQUIRE(sls::is_duration<std::vector<int>>::value == false);
+}
+
+TEST_CASE("initializer list"){
+    REQUIRE(sls::is_light_container<std::initializer_list<int>>::value == true);
 }

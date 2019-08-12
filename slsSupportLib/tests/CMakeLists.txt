@@ -8,4 +8,5 @@ target_sources(tests PRIVATE
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-Sockets.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-FixedCapacityContainer.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-ToString.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/test-TypeTraits.cpp
                 )

@@ -4,7 +4,7 @@
 namespace sls {
 
 /**
- * Type trait to check if atemplate parameter is a std::chrono::duration
+ * Type trait to check if a template parameter is a std::chrono::duration
  */
 
 template <typename T, typename _ = void>
@@ -21,6 +21,19 @@ struct is_duration<T,
                                           decltype(std::declval<T>().max()),
                                           decltype(std::declval<T>().zero())>,
                        void>::type> : public std::true_type {};
+
+/**
+ * Has str method
+ */
+template <typename T, typename _ = void> struct has_str : std::false_type {};
+
+template <typename... Ts> struct has_str_helper {};
+
+template <typename T>
+struct has_str<T, typename std::conditional<
+                      false,
+                      has_str_helper<decltype(std::declval<T>().str())>,
+                      void>::type> : public std::true_type {};
 
 /**
  * Type trait to evaluate if template parameter is

@@ -34,6 +34,15 @@ TEST_CASE("Like vector it can be constructed from size and value") {
     REQUIRE(res[4] == 7);
 }
 
+TEST_CASE("Result can be iterated using modern syntax"){
+    Result<int> res{0,1,2,3,4,5};
+
+    int i = 0;
+    for (const auto& r:res)
+        REQUIRE(r == i++);
+
+}
+
 TEST_CASE("Calling squash on an empty Result produces default value") {
     Result<double> res;
     REQUIRE(res.squash() == 0.);

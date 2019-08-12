@@ -1089,14 +1089,14 @@ class Detector {
     /** [Eiger] If it is set, it resets chips completely (else partially) before an acquisition TODO: if it makes sense */
     void setCounterBit(bool value, Positions pos = {});
 
-    /** [Gotthard, CTB] subset modules not allowed */
-    //Result<std::vector<defs::ROI>> getROI(Positions pos = {}) const;
+    /** [Gotthard, CTB]*/
+    Result<std::vector<defs::ROI>> getROI(Positions pos = {}) const;
     /** 
      * [Gotthard Options: Only a single chip or all chips, only 1 ROI allowed]
      * [CTB: multiple ROIs allowed] 
      * subset modules not allowed 
      */
-    //void setROI(std::vector<defs::ROI> value, Positions pos = {});
+    void setROI(std::vector<defs::ROI> value, Positions pos = {});
 
     /** [CTB]*/
     Result<uint32_t> getADCEnableMask(Positions pos = {}) const;

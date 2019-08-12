@@ -134,3 +134,34 @@ TEST_CASE("Convert from Result<int> to Result<ns>") {
     REQUIRE(res2[1] == ns(50));
     REQUIRE(res2[2] == ns(236));
 }
+
+
+TEST_CASE("Result of vectors"){
+    using VecVec = std::vector<std::vector<int>>;
+    VecVec vecvec{{1,2,3}, {4,5,6}};
+    Result<VecVec> res{vecvec};
+}
+
+TEST_CASE("emplace back"){
+    std::vector<int> vec{1,2,3,4,5};
+    Result<std::vector<int>> res;
+    res.emplace_back(vec.begin(), vec.end());
+    REQUIRE(res.size() == 1);
+    REQUIRE(res[0].size() == 5);
+    REQUIRE(res[0] == vec);
+}
+
+TEST_CASE("Free function begin end"){
+    Result<std::string> res{"ett", "nio", "sjutton"};
+    REQUIRE(begin(res) == res.begin());
+    REQUIRE(end(res) == res.end());
+}
+
+TEST_CASE("Sorting a Result"){
+    Result<int> res{4,5,1,3};
+    std::sort(res.begin(), res.end());
+    REQUIRE(res[0] == 1);
+    REQUIRE(res[1] == 3);
+    REQUIRE(res[2] == 4);
+    REQUIRE(res[3] == 5);
+}

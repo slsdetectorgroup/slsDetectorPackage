@@ -1109,52 +1109,6 @@ class Detector {
      */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
-
-
-
-
-
-  
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 };
 
 } // namespace sls

@@ -1387,20 +1387,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void resetCounterBlock(int startACQ = 0, int detPos = -1); //
 
     /**
-     * Set/get counter bit in detector (Gotthard)
+     * Set/get counter bit in detector (Eiger)
      * @param i is -1 to get, 0 to reset and any other value to set the counter
      * bit
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the counter bit in detector
      */
     int setCounterBit(int i = -1, int detPos = -1); //
-
-    /**
-     * Ensures that min is less than max in both dimensions (Gotthard)
-     * @param n number of rois
-     * @param r array of rois
-     */
-    void verifyMinMaxROI(int n, ROI r[]);
 
     /**
      * Set ROI (Gotthard)
@@ -1976,7 +1969,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param enable 0 to disable, 1 to enable, -1 to get the value
      * @returns data streaming to client enable
      */
-    int enableDataStreamingToClient(int enable = -1);
+    bool enableDataStreamingToClient(int enable = -1);
 
     /**
      * Enable or disable streaming data from receiver to client
@@ -2282,6 +2275,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param s hostname of the single detector
      */
     void addSlsDetector(const std::string &hostname);
+
+    /**
+     * Ensures that min is less than max in both dimensions (Gotthard)
+     * @param n number of rois
+     * @param r array of rois
+     */
+    void verifyMinMaxROI(int n, ROI r[]);
 
     /**
      * add gap pixels to the image (only for Eiger in 4 bit mode)

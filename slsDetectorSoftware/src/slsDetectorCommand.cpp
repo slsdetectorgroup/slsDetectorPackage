@@ -235,7 +235,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page acquisition
-   - <b>resmat i </b> sets/resets counter bit in detector.gets the counter bit in detector ????
+   - <b>resmat i </b> sets/resets counter bit in detector.gets the counter bit in Eiger
 	 */
     descrToFuncMap[i].m_pFuncName = "resmat";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdCounter;

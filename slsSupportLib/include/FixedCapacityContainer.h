@@ -1,10 +1,10 @@
 #pragma once
+#include "TypeTraits.h"
 #include <array>
 #include <cassert>
+#include <iostream>
 #include <stdexcept>
 #include <vector>
-
-#include "TypeTraits.h"
 
 namespace sls {
 template <typename T, size_t Capacity> class FixedCapacityContainer {
@@ -15,6 +15,11 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
     using iterator = typename std::array<T, Capacity>::iterator;
     using const_iterator = typename std::array<T, Capacity>::const_iterator;
 
+  private:
+    size_type current_size{};
+    std::array<T, Capacity> data_;
+
+  public:
     FixedCapacityContainer() = default;
 
     explicit FixedCapacityContainer(std::initializer_list<T> l)
@@ -28,14 +33,15 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
               typename = typename std::enable_if<
                   is_container<V>::value &&
                   std::is_same<T, typename V::value_type>::value>::type>
-     FixedCapacityContainer(const V &v) : current_size(v.size()) {
+    FixedCapacityContainer(const V &v) : current_size(v.size()) {
         size_check(v.size());
         std::copy(v.begin(), v.end(), data_.begin());
     }
 
     /** copy assignment from another container */
     template <typename V>
-    typename std::enable_if<is_container<V>::value, FixedCapacityContainer &>::type
+    typename std::enable_if<is_container<V>::value,
+                            FixedCapacityContainer &>::type
     operator=(const V &other) {
         size_check(other.size());
         std::copy(other.begin(), other.end(), data_.begin());
@@ -104,15 +110,13 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
 
     // iterators
     iterator begin() noexcept { return data_.begin(); }
+    // auto begin() noexcept -> decltype(data_.begin()) { return data_.begin();
+    // }
     const_iterator begin() const noexcept { return data_.begin(); }
     iterator end() noexcept { return &data_[current_size]; }
     const_iterator end() const noexcept { return &data_[current_size]; }
     const_iterator cbegin() const noexcept { return data_.cbegin(); }
     const_iterator cend() const noexcept { return &data_[current_size]; }
-
-  private:
-    size_type current_size{};
-    std::array<T, Capacity> data_;
 
     void size_check(size_type s) const {
         if (s > Capacity) {
@@ -120,33 +124,23 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
                 "Capacity needs to be same size or larger than vector");
         }
     }
+
 } __attribute__((packed));
 
-/* Free function concerning FixedCapacityContainer */
-template <typename T, size_t Capacity>
-typename FixedCapacityContainer<T, Capacity>::iterator
-begin(FixedCapacityContainer<T, Capacity> &container) noexcept {
-    return container.begin();
-}
-
-template <typename T, size_t Capacity>
-typename FixedCapacityContainer<T, Capacity>::iterator
-end(FixedCapacityContainer<T, Capacity> &container) noexcept {
-    return container.end();
-}
-
-template <typename T, size_t Capacity>
-bool operator==(
-    const std::vector<T> &vec,
+/** support flipped order compare */
+template <typename T, size_t Capacity, typename C>
+typename std::enable_if<is_container<C>::value, bool>::type operator==(
+    const C &container,
     const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
-    return fixed_container == vec;
+    return fixed_container.operator==(container);
 }
 
-template <typename T, size_t Capacity>
-bool operator!=(
-    const std::vector<T> &vec,
+/** support flipped order compare */
+template <typename T, size_t Capacity, typename C>
+typename std::enable_if<is_container<C>::value, bool>::type operator!=(
+    const C &container,
     const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
-    return fixed_container != vec;
+    return fixed_container.operator!=(container);
 }
 
 } // namespace sls

@@ -2,10 +2,16 @@
 #include "ToString.h"
 #include "catch.hpp"
 #include <vector>
-using namespace sls;
+#include <array>
 
 
-TEST_CASE("Integer conversions", "[support][now]"){
+// using namespace sls;
+using sls::ToString;
+using sls::StringTo;
+using namespace sls::time;
+
+
+TEST_CASE("Integer conversions", "[support]"){
     REQUIRE(ToString(0) == "0");
     REQUIRE(ToString(1) == "1");
     REQUIRE(ToString(-1) == "-1");
@@ -14,7 +20,8 @@ TEST_CASE("Integer conversions", "[support][now]"){
 
 }
 
-TEST_CASE("floating point conversions", "[support][now]"){
+TEST_CASE("floating point conversions", "[support]"){
+    //Should strip trailing zeros
     REQUIRE(ToString(0.) == "0");
     REQUIRE(ToString(1.) == "1");
     REQUIRE(ToString(-1.) == "-1");
@@ -28,33 +35,33 @@ TEST_CASE("floating point conversions", "[support][now]"){
 
 }
 
-TEST_CASE("conversion from duration to string", "[support][now]") {
-    REQUIRE(ToString(time::ns(150)) == "150ns");
-    REQUIRE(ToString(time::ms(783)) == "0.783s");
-    REQUIRE(ToString(time::ms(783), "ms") == "783ms");
-    REQUIRE(ToString(time::us(0)) == "0ns"); // Defaults to the lowest unit
-    REQUIRE(ToString(time::us(0), "s") == "0s");
-    REQUIRE(ToString(time::s(-1)) == "-1s");
-    REQUIRE(ToString(time::us(-100)) == "-100us");
+TEST_CASE("conversion from duration to string", "[support]") {
+    REQUIRE(ToString(ns(150)) == "150ns");
+    REQUIRE(ToString(ms(783)) == "0.783s");
+    REQUIRE(ToString(ms(783), "ms") == "783ms");
+    REQUIRE(ToString(us(0)) == "0ns"); // Defaults to the lowest unit
+    REQUIRE(ToString(us(0), "s") == "0s");
+    REQUIRE(ToString(s(-1)) == "-1s");
+    REQUIRE(ToString(us(-100)) == "-100us");
 }
 
-TEST_CASE("string to std::chrono::duration", "[support][now]") {
-    REQUIRE(StringTo<time::ns>("150", "ns") == time::ns(150));
-    REQUIRE(StringTo<time::ns>("150ns") == time::ns(150));
-    REQUIRE(StringTo<time::ns>("150s") == time::s(150));
-    REQUIRE(StringTo<time::s>("3 s") == time::s(3));
+TEST_CASE("string to std::chrono::duration", "[support]") {
+    REQUIRE(StringTo<ns>("150", "ns") == ns(150));
+    REQUIRE(StringTo<ns>("150ns") == ns(150));
+    REQUIRE(StringTo<ns>("150s") == s(150));
+    REQUIRE(StringTo<s>("3 s") == s(3));
 
-    REQUIRE_THROWS(StringTo<time::ns>("5xs"));
-    REQUIRE_THROWS(StringTo<time::ns>("asvn"));
+    REQUIRE_THROWS(StringTo<ns>("5xs"));
+    REQUIRE_THROWS(StringTo<ns>("asvn"));
 }
 
-TEST_CASE("Convert vector of time", "[support][now]"){
-    std::vector<time::ns> vec{time::ns(150), time::us(10), time::ns(600)};
+TEST_CASE("Convert vector of time", "[support]"){
+    std::vector<ns> vec{ns(150), us(10), ns(600)};
     REQUIRE(ToString(vec) == "[150ns, 10us, 600ns]");
     REQUIRE(ToString(vec, "ns") == "[150ns, 10000ns, 600ns]");
 }
 
-TEST_CASE("Vector of int", "[support][now]"){
+TEST_CASE("Vector of int", "[support]"){
     std::vector<int> vec;
     REQUIRE(ToString(vec) == "[]");
 
@@ -69,7 +76,7 @@ TEST_CASE("Vector of int", "[support][now]"){
 
 }
 
-TEST_CASE("Vector of double", "[support][now]"){
+TEST_CASE("Vector of double", "[support]"){
     std::vector<double> vec;
     REQUIRE(ToString(vec) == "[]");
 
@@ -81,5 +88,10 @@ TEST_CASE("Vector of double", "[support][now]"){
 
     vec.push_back(-5669.325005);
     REQUIRE(ToString(vec) == "[1.3, 5669.325, -5669.325005]");
+}
+
+TEST_CASE("Array"){
+    std::array<int, 3> arr{1,2,3};
+    REQUIRE(ToString(arr) == "[1, 2, 3]");
 
 }

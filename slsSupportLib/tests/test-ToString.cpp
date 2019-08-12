@@ -1,27 +1,25 @@
 #include "TimeHelper.h"
 #include "ToString.h"
+#include "network_utils.h"
 #include "catch.hpp"
-#include <vector>
 #include <array>
-
+#include <vector>
 
 // using namespace sls;
-using sls::ToString;
 using sls::StringTo;
+using sls::ToString;
 using namespace sls::time;
 
-
-TEST_CASE("Integer conversions", "[support]"){
+TEST_CASE("Integer conversions", "[support]") {
     REQUIRE(ToString(0) == "0");
     REQUIRE(ToString(1) == "1");
     REQUIRE(ToString(-1) == "-1");
     REQUIRE(ToString(100) == "100");
     REQUIRE(ToString(589633100) == "589633100");
-
 }
 
-TEST_CASE("floating point conversions", "[support]"){
-    //Should strip trailing zeros
+TEST_CASE("floating point conversions", "[support]") {
+    // Should strip trailing zeros
     REQUIRE(ToString(0.) == "0");
     REQUIRE(ToString(1.) == "1");
     REQUIRE(ToString(-1.) == "-1");
@@ -32,7 +30,6 @@ TEST_CASE("floating point conversions", "[support]"){
     REQUIRE(ToString(2.35010) == "2.3501");
     REQUIRE(ToString(5000) == "5000");
     REQUIRE(ToString(5E15) == "5000000000000000");
-
 }
 
 TEST_CASE("conversion from duration to string", "[support]") {
@@ -55,13 +52,13 @@ TEST_CASE("string to std::chrono::duration", "[support]") {
     REQUIRE_THROWS(StringTo<ns>("asvn"));
 }
 
-TEST_CASE("Convert vector of time", "[support]"){
+TEST_CASE("Convert vector of time", "[support]") {
     std::vector<ns> vec{ns(150), us(10), ns(600)};
     REQUIRE(ToString(vec) == "[150ns, 10us, 600ns]");
     REQUIRE(ToString(vec, "ns") == "[150ns, 10000ns, 600ns]");
 }
 
-TEST_CASE("Vector of int", "[support]"){
+TEST_CASE("Vector of int", "[support]") {
     std::vector<int> vec;
     REQUIRE(ToString(vec) == "[]");
 
@@ -73,10 +70,9 @@ TEST_CASE("Vector of int", "[support]"){
 
     vec.push_back(5000);
     REQUIRE(ToString(vec) == "[1, 172, 5000]");
-
 }
 
-TEST_CASE("Vector of double", "[support]"){
+TEST_CASE("Vector of double", "[support]") {
     std::vector<double> vec;
     REQUIRE(ToString(vec) == "[]");
 
@@ -90,8 +86,13 @@ TEST_CASE("Vector of double", "[support]"){
     REQUIRE(ToString(vec) == "[1.3, 5669.325, -5669.325005]");
 }
 
-TEST_CASE("Array"){
-    std::array<int, 3> arr{1,2,3};
+TEST_CASE("Array") {
+    std::array<int, 3> arr{1, 2, 3};
     REQUIRE(ToString(arr) == "[1, 2, 3]");
+}
 
+TEST_CASE("Convert types with str method"){
+    sls::IpAddr addr;
+    REQUIRE(ToString(addr) == "0.0.0.0");
+    REQUIRE(ToString(sls::IpAddr{}) == "0.0.0.0");
 }

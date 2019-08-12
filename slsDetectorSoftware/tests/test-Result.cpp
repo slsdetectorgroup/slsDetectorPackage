@@ -134,3 +134,19 @@ TEST_CASE("Convert from Result<int> to Result<ns>") {
     REQUIRE(res2[1] == ns(50));
     REQUIRE(res2[2] == ns(236));
 }
+
+
+TEST_CASE("Result of vectors"){
+    using VecVec = std::vector<std::vector<int>>;
+    VecVec vecvec{{1,2,3}, {4,5,6}};
+    Result<VecVec> res{vecvec};
+}
+
+TEST_CASE("emplace back"){
+    std::vector<int> vec{1,2,3,4,5};
+    Result<std::vector<int>> res;
+    res.emplace_back(vec.begin(), vec.end());
+    REQUIRE(res.size() == 1);
+    REQUIRE(res[0].size() == 5);
+    REQUIRE(res[0] == vec);
+}

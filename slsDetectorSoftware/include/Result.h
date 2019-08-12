@@ -98,6 +98,11 @@ template <class T, class Allocator = std::allocator<T>> class Result {
         vec.push_back(std::forward<V>(value));
     }
 
+    template <typename... Args>
+    auto emplace_back(Args &&... args) -> decltype(vec.emplace_back(args...)){
+        vec.emplace_back(std::forward<Args>(args)...);
+    }
+
     auto operator[](size_type pos) -> decltype(vec[pos]) { return vec[pos]; }
     const_reference operator[](size_type pos) const { return vec[pos]; }
 

@@ -65,25 +65,9 @@ class Detector {
 
     // Bits and registers
 
-    /**
-     * Clears (sets to 0) bit number bitnr in register at addr.
-     * @param addr address of the register
-     * @param bitnr bit number to clear
-     * @param pos detector position
-     */
-    void clearBit(uint32_t addr, int bitnr, Positions pos = {});
-
-    /**
-     * Sets bit number bitnr in register at addr to 1
-     * @param addr address of the register
-     * @param bitnr bit number to clear
-     * @param pos detector position
-     */
-    void setBit(uint32_t addr, int bitnr, Positions pos = {});
 
 
-    Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
-    void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
+
 
     /**************************************************
      *                                                *
@@ -955,6 +939,273 @@ class Detector {
 
     // Erik
 
+    /** [Eiger] */
+    Result<bool> getInterruptSubframe(Positions pos = {}) const;
+
+    /** [Eiger] when set,  the last subframe is interrupted at end of acq */
+    void setInterruptSubframe(const bool enable, Positions pos = {});
+
+    Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
+
+    void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
+
+    void setBit(uint32_t addr, int bitnr, Positions pos = {});
+
+    void clearBit(uint32_t addr, int bitnr, Positions pos = {});
+
+    Result<MacAddr> getDetectorMAC(Positions pos = {}) const;
+
+    void setDetectorMAC(const std::string &detectorMAC, Positions pos = {});
+
+    /** [Jungfrau] bottom half */
+    Result<MacAddr> getDetectorMAC2(Positions pos = {}) const;
+
+    /** [Jungfrau] bottom half */
+    void setDetectorMAC2(const std::string &detectorMAC, Positions pos = {});
+
+    Result<IpAddr> getDetectorIP(Positions pos = {}) const;
+
+    void setDetectorIP(const std::string &detectorIP, Positions pos = {});
+
+    /** [Jungfrau] bottom half */
+    Result<IpAddr> getDetectorIP2(Positions pos = {}) const;
+
+    /** [Jungfrau] bottom half */
+    void setDetectorIP2(const std::string &detectorIP, Positions pos = {});
+
+    Result<std::string> getReceiverHostname(Positions pos = {}) const;
+
+    /**
+     * Validates and sets the receiver.
+     * Updates local receiver cache parameters
+     * Configures the detector to the receiver as UDP destination
+     * @param receiver receiver hostname or IP address 
+     */
+    void setReceiverHostname(const std::string &receiver, Positions pos = {});
+
+    Result<IpAddr> getReceiverUDPIP(Positions pos = {}) const;
+    void setReceiverUDPIP(const std::string &udpip, Positions pos = {});
+
+    /** [Jungfrau bottom half] */
+    Result<IpAddr> getReceiverUDPIP2(Positions pos = {}) const;
+
+    /** [Jungfrau bottom half] */
+    void setReceiverUDPIP2(const std::string &udpip, Positions pos = {});
+
+    Result<MacAddr> getReceiverUDPMAC(Positions pos = {}) const;
+    void setReceiverUDPMAC(const std::string &udpmac, Positions pos = {});
+
+    /** [Jungfrau bottom half] */
+    Result<MacAddr> getReceiverUDPMAC2(Positions pos = {}) const;
+    /** [Jungfrau bottom half] */
+    void setReceiverUDPMAC2(const std::string &udpmac, Positions pos = {});
+
+    Result<int> getReceiverUDPPort(Positions pos = {}) const;
+    void setReceiverUDPPort(int udpport, Positions pos = {});
+
+    /** [Eiger right port][Jungfrau bottom half] */
+    Result<int> getReceiverUDPPort2(Positions pos = {}) const;
+    /** [Eiger right port][Jungfrau bottom half] */
+    void setReceiverUDPPort2(int udpport, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
+    /** [Jungfrau] Also restarts client and receiver sockets */
+    void setNumberofUDPInterfaces(int n, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<int> getSelectedUDPInterface(Positions pos = {}) const;
+    /** 
+     * [Jungfrau:
+     * Effective only when number of interfaces is 1.
+     * Options: 0 (outer, default), 1(inner)] 
+     */
+    void selectUDPInterface(int interface, Positions pos = {});
+
+    Result<int> getClientStreamingPort(Positions pos = {}) const;
+    /** 
+     * pos can be for a single module or all modules, not a subset
+     * If pos for all modules, ports for each module is calculated (increments)
+     * Restarts client zmq sockets
+     */
+    void setClientDataStreamingInPort(int port, Positions pos = {});
+ 
+    Result<int> getReceiverStreamingPort(Positions pos = {}) const;
+    /** 
+     * pos can be for a single module or all modules, not a subset
+     * If pos for all modules, ports for each module is calculated (increments)
+     * Restarts receiver zmq sockets
+     */
+    void setReceiverDataStreamingOutPort(int port, Positions pos = {});
+
+    Result<std::string> getClientStreamingIP(Positions pos = {}) const;
+    // TODO these should probably be the same ?? same as what?
+    void setClientDataStreamingInIP(const std::string &ip, Positions pos = {});
+
+    Result<std::string> getReceiverStreamingIP(Positions pos = {}) const;
+    void setReceiverDataStreamingOutIP(const std::string &ip,
+                                       Positions pos = {});
+
+    /** [Eiger, Jungfrau] */
+    Result<bool> getFlowControl10G(Positions pos = {}) const;
+    /** [Eiger, Jungfrau] */
+    void setFlowControl10G(bool enable, Positions pos = {});
+
+    /** [Eiger, Jungfrau] */
+    Result<int> getTransmissionDelayFrame(Positions pos = {}) const;
+    /** 
+     * [Jungfrau: Sets the transmission delay of the first UDP packet being streamed out of the module
+     * Options: 0 - 31, each value represenets 1 ms ] 
+     * [Eiger: Sets the transmission delay of entire frame streamed out for both left and right UDP ports]
+     */
+    void setTransmissionDelayFrame(int value, Positions pos = {});
+
+    /** [Eiger] */
+    Result<int> getTransmissionDelayLeft(Positions pos = {}) const;
+    /** 
+     * [Eiger]
+     * Sets the transmission delay of first packet streamed ut of the left UDP port
+     */
+    void setTransmissionDelayLeft(int value, Positions pos = {});
+
+    /** [Eiger] */
+    Result<int> getTransmissionDelayRight(Positions pos = {}) const;
+    /** 
+     * [Eiger]
+     * Sets the transmission delay of first packet streamed ut of the right UDP port
+     */
+    void setTransmissionDelayRight(int value, Positions pos = {});
+    
+    /** [Moench] */
+    Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
+    /** [Moench] */
+    void setAdditionalJsonHeader(const std::string &jsonheader,
+                                 Positions pos = {});
+
+    /** [Moench] */
+    Result<std::string> getAdditionalJsonParameter(const std::string &key,
+                                                   Positions pos = {}) const;
+    /** 
+     * [Moench]
+     * Sets the value for additional json header parameter if found, 
+     * else appends the parameter key and value 
+     * The value cannot be empty
+     */
+    void setAdditionalJsonParameter(const std::string &key,
+                                    const std::string &value,
+                                    Positions pos = {});
+
+    /** [Moench] TODO! How do we do this best??? Can be refactored to something
+     * else? Use a generic zmq message passing system...
+     * For now limiting to all detectors working the same*/
+    /** [Moench: -1 if not found or cannot convert to int] */
+    Result<int> getDetectorMinMaxEnergyThreshold(const bool isEmax, Positions pos = {}) const;
+    /** [Moench] */
+    void setDetectorMinMaxEnergyThreshold(const bool isEmax, const int value, Positions pos = {});
+    /** [Moench: -1 if unknown mode] */
+    Result<int> getFrameMode(Positions pos = {}) const;
+    /** [Moench] */    
+    void setFrameMode(defs::frameModeType value, Positions pos = {});
+    /** [Moench: -1 if unknown mode] */
+    Result<int> getDetectorMode(Positions pos = {}) const;    
+    /** [Moench] */
+    void setDetectorMode(defs::detectorModeType value, Positions pos = {});
+
+    /** [Gotthard] */
+    Result<int> getDigitalTestBit(Positions pos = {});
+    /** [Gotthard] */
+    Result<int> setDigitalTestBit(const int value, Positions pos = {});
+    /** [Gotthard, Jungfrau, CTB] */
+    Result<int> executeFirmwareTest(Positions pos = {});
+    /** [Gotthard, Jungfrau, CTB] */
+    Result<int> executeBusTest(Positions pos = {});
+    /** [Gotthard] subset modules not allowed */
+    void loadDarkImage(const std::string &fname, Positions pos = {});
+    /** [Gotthard] subset modules not allowed */
+    void loadGainImage(const std::string &fname, Positions pos = {});
+    /**
+     * [Gotthard] subset modules not allowed 
+     * @param startACQ if start acq after reading counter
+     */
+    void getCounterMemoryBlock(const std::string &fname, bool startACQ, Positions pos = {});
+    /**
+     * [Gotthard] 
+     * @param startACQ if start acq after resetting counter
+     * TODO! does it make sense to call one detector?
+     */
+    void resetCounterBlock(bool startACQ, Positions pos = {});
+
+    /** [Eiger] */
+    Result<bool> getCounterBit(Positions pos = {}) const;
+    /** [Eiger] If it is set, it resets chips completely (else partially) before an acquisition TODO: if it makes sense */
+    void setCounterBit(bool value, Positions pos = {});
+
+    /** [Gotthard, CTB] subset modules not allowed */
+    Result<std::vector<defs::ROI>> getROI(Positions pos = {}) const;
+    /** 
+     * [Gotthard Options: Only a single chip or all chips, only 1 ROI allowed]
+     * [CTB: multiple ROIs allowed] 
+     * subset modules not allowed 
+     */
+    void setROI(std::vector<defs::ROI> value, Positions pos = {});
+
+    /** [CTB]*/
+    Result<uint32_t> getADCEnableMask(Positions pos = {}) const;
+
+    /** [CTB]*/
+    void setADCEnableMask(uint32_t mask, Positions pos = {});
+
+    /** [CTB] */
+    Result<uint32_t> getADCInvert(Positions pos = {}) const;
+
+    /** [CTB]*/
+    void setADCInvert(uint32_t value, Positions pos = {});
+
+    /** [CTB] */
+    Result<int> getExternalSamplingSource(Positions pos = {}) const;
+
+    /** [CTB] Value between 0-63 */
+    void setExternalSamplingSource(int value, Positions pos = {});
+
+    /** [CTB] */
+    Result<int> getExternalSampling(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setExternalSampling(bool value, Positions pos = {});
+
+    /** [CTB] */
+    Result<std::vector<int>> getReceiverDbitList(Positions pos = {}) const;
+
+    /** [CTB] list contains the set of bits (0-63) to save */
+    void setReceiverDbitList(std::vector<int> list, Positions pos = {});
+
+    /** [CTB] */
+    Result<int> getReceiverDbitOffset(Positions pos = {}) const;
+
+    /** [CTB] Set number of bytes of digital data to skip in the Receiver */
+    void setReceiverDbitOffset(int value, Positions pos = {});
+
+    /** [Gotthard][Jungfrau][CTB] not possible to read back*/
+    void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
+
+
+
+
+
+
+
+    Result<int64_t> getReceiverUDPSocketBufferSize(Positions pos = {}) const;
+    void setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,
+                                        Positions pos = {});
+    Result<int64_t>
+    getReceiverRealUDPSocketBufferSize(Positions pos = {}) const;
+
+
+
+
+
+
+
     Result<int> getFramesCaughtByReceiver(Positions pos = {}) const;
 
     Result<uint64_t> getReceiverCurrentFrameIndex(Positions pos = {}) const;
@@ -979,9 +1230,11 @@ class Detector {
     /** [All] */
     Result<int> getReceiverStreamingTimer(Positions pos = {}) const;
 
-    // TODO!
-    // int enableDataStreamingToClient(int enable = -1);
-    void enableDataStreamingFromReceiver(bool enable, Positions pos = {});
+    bool getDataStreamingToClient() const;
+    void setDataStreamingToClient(bool value);
+
+    Result<bool> getDataStreamingFromReceiver(Positions pos = {}) const;
+    void setDataStreamingFromReceiver(bool value, Positions pos = {});
 
     /** [TODO! All?] */
     void setTenGigaEnabled(bool value, Positions pos = {});
@@ -1272,203 +1525,8 @@ class Detector {
 
     Result<bool> getActive(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB] not possible to read back*/
-    void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
 
-    /** [CTB] How much digital data in bytes is skipped */
-    Result<int> getReceiverDbitOffset(Positions pos = {}) const;
-
-    /** [CTB] Set how many bytes of digital data to skip */
-    void setReceiverDbitOffset(int value, Positions pos = {});
-
-    /** [CTB] Which of the bits 0-63 to save*/
-    Result<std::vector<int>> getReceiverDbitList(Positions pos = {}) const;
-
-    /** [CTB] Which of the bits 0-63 to save*/
-    void setReceiverDbitList(std::vector<int> list, Positions pos = {});
-
-    /** [CTB] */
-    Result<int> getExternalSampling(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setExternalSampling(bool value, Positions pos = {});
-
-    /** [CTB] */
-    Result<int> getExternalSamplingSource(Positions pos = {}) const;
-
-    /** [CTB] Value between 0-63 */
-    void setExternalSamplingSource(int value, Positions pos = {});
-
-    // TODO! does any of them need the option to take positions
-    /** [CTB] */
-    uint32_t getADCInvert() const;
-
-    /** [CTB]*/
-    void setADCInvert(uint32_t value);
-
-    /** [CTB]*/
-    uint32_t getADCEnableMask() const;
-
-    /** [CTB]*/
-    void setADCEnableMask(uint32_t mask);
-
-    /** [Gotthard] */
-    Result<int> getCounterBit(Positions pos = {}) const;
-
-    /** [Gotthard] possible values? */
-    void setCounterBit(int i, Positions pos = {});
-
-    /**
-     * [Gotthard] startACQ = 1 to start acq after resetting counter
-     * TODO! does it make sense to call one detector?
-     *
-     */
-    void resetCounterBlock(int startACQ = 0, Positions pos = {});
-
-    // TODO getROI, setROI, verifyMinMaxROI
-
-    // writeCounterBlockFile
-
-    void loadImageToDetector(defs::imageType index, const std::string &fname,
-                             Positions pos = {});
-
-    /** [Gotthard]
-     * @param value 1 to set or 0 to clear the digital test bit -1?
-     */
-    Result<int> digitalTest(defs::digitalTestMode mode, int ival = -1,
-                            Positions pos = {});
-
-    /** [Eiger] */
-    void setFlowControl10G(bool enable, Positions pos = {});
-
-    /** [Eiger] */
-    Result<bool> getFlowControl10G(Positions pos = {}) const;
-
-    Result<int64_t>
-    getReceiverRealUDPSocketBufferSize(Positions pos = {}) const;
-
-    Result<int64_t> getReceiverUDPSocketBufferSize(Positions pos = {}) const;
-
-    void setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,
-                                        Positions pos = {});
-
-    /** [Moench] TODO! How do we do this best??? Can be refactored to something
-     * else? Use a generic zmq message passing system...
-     * For now limiting to all detectors working the same*/
-    int setDetectorMode(defs::detectorModeType value);
-    int setFrameMode(defs::frameModeType value);
-    int setDetectorMinMaxEnergyThreshold(const int index, int value);
-
-    void setAdditionalJsonHeader(const std::string &jsonheader,
-                                 Positions pos = {});
-
-    Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
-
-    Result<std::string> getAdditionalJsonParameter(const std::string &key,
-                                                   Positions pos = {}) const;
-
-    void setAdditionalJsonParameter(const std::string &key,
-                                    const std::string &value,
-                                    Positions pos = {});
-
-    // TODO these should probably be the same
-    Result<std::string> getReceiverStreamingIP(Positions pos = {}) const;
-
-    void setReceiverDataStreamingOutIP(const std::string &ip,
-                                       Positions pos = {});
-
-    Result<std::string> getClientStreamingIP(Positions pos = {}) const;
-
-    // TODO these should probably be the same
-    void setClientDataStreamingInIP(const std::string &ip, Positions pos = {});
-
-    Result<int> getReceiverStreamingPort(Positions pos = {}) const;
-
-    /** Single detector or all since ports are calculated*/
-    void setReceiverDataStreamingOutPort(int port, int module_id = -1);
-
-    Result<int> getClientStreamingPort(Positions pos = {}) const;
-
-    /** Single detector or all since ports are calculated*/
-    void setClientDataStreamingInPort(int port, int module_id = -1);
-
-    /** [Jungfrau] */
-    Result<int> getSelectedUDPInterface(Positions pos = {}) const;
-
-    /**
-     * [Jungfrau]
-     * @param interface interface to select, either 1 or 2
-     * */
-    void selectUDPInterface(int interface, Positions pos = {});
-
-    Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
-    void setNumberofUDPInterfaces(int n, Positions pos = {});
-
-    /** [Eiger][Jungfrau] */
-    Result<int> getReceiverUDPPort2(Positions pos = {}) const;
-
-    /** [Eiger][Jungfrau] */
-    void setReceiverUDPPort2(int udpport, Positions pos = {});
-
-    /** [Eiger][Jungfrau] */
-    Result<int> getReceiverUDPPort(Positions pos = {}) const;
-
-    /** [Eiger][Jungfrau] */
-    void setReceiverUDPPort(int udpport, Positions pos = {});
-
-    /** [Jungfrau] */
-    Result<MacAddr> getReceiverUDPMAC2(Positions pos = {}) const;
-
-    /** [Jungfrau] */
-    void setReceiverUDPMAC2(const std::string &udpmac, Positions pos = {});
-
-    Result<MacAddr> getReceiverUDPMAC(Positions pos = {}) const;
-    void setReceiverUDPMAC(const std::string &udpmac, Positions pos = {});
-
-    /** [Jungfrau] */
-    Result<IpAddr> getReceiverUDPIP2(Positions pos = {}) const;
-
-    /** [Jungfrau] */
-    void setReceiverUDPIP2(const std::string &udpip, Positions pos = {});
-
-    Result<IpAddr> getReceiverUDPIP(Positions pos = {}) const;
-    void setReceiverUDPIP(const std::string &udpip, Positions pos = {});
-
-    Result<std::string> getReceiverHostname(Positions pos = {}) const;
-
-    /**
-     * Validates and sets the receiver.
-     * Also updates the receiver with all the shared memory parameters
-     * significant for the receiver Also configures the detector to the receiver
-     * as UDP destination
-     * @param receiver receiver hostname or IP address */
-    void setReceiverHostname(const std::string &receiver, Positions pos = {});
-
-    /** [Jungfrau] */
-    Result<IpAddr> getDetectorIP2(Positions pos = {}) const;
-
-    /** [Jungfrau] */
-    void setDetectorIP2(const std::string &detectorIP, Positions pos = {});
-
-    Result<IpAddr> getDetectorIP(Positions pos = {}) const;
-
-    void setDetectorIP(const std::string &detectorIP, Positions pos = {});
-
-    Result<MacAddr> getDetectorMAC(Positions pos = {}) const;
-
-    void setDetectorMAC(const std::string &detectorMAC, Positions pos = {});
-
-    /** [Jungfrau] */
-    Result<MacAddr> getDetectorMAC2(Positions pos = {}) const;
-
-    /** [Jungfrau] */
-    void setDetectorMAC2(const std::string &detectorMAC, Positions pos = {});
-
-    /** [Eiger] */
-    Result<bool> getInterruptSubframe(Positions pos = {}) const;
-
-    /** [Eiger] when set the last subframe is interrupted at end of acq*/
-    void setInterruptSubframe(const bool enable, Positions pos = {});
+  
 };
 
 } // namespace sls

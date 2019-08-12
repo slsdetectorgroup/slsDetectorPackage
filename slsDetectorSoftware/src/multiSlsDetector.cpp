@@ -1726,7 +1726,7 @@ int multiSlsDetector::getReceiverUDPPort2(int detPos) const {
 
 int multiSlsDetector::setNumberofUDPInterfaces(int n, int detPos) {
 
-    int previouslyClientStreaming = enableDataStreamingToClient();
+    bool previouslyClientStreaming = enableDataStreamingToClient();
     int previouslyReceiverStreaming = enableDataStreamingFromReceiver();
 
     // single
@@ -1739,7 +1739,7 @@ int multiSlsDetector::setNumberofUDPInterfaces(int n, int detPos) {
     auto r = parallelCall(&slsDetector::setNumberofUDPInterfaces, n);
 
     // redo the zmq sockets
-    if (previouslyClientStreaming != 0) {
+    if (previouslyClientStreaming) {
         enableDataStreamingToClient(0);
         enableDataStreamingToClient(1);
     }
@@ -1791,7 +1791,7 @@ int multiSlsDetector::getSelectedUDPInterface(int detPos) const {
 
 void multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
     if (i >= 0) {
-        int prev_streaming = enableDataStreamingToClient();
+        bool prev_streaming = enableDataStreamingToClient();
 
         // single
         if (detPos >= 0) {
@@ -1811,7 +1811,7 @@ void multiSlsDetector::setClientDataStreamingInPort(int i, int detPos) {
             }
         }
 
-        if (prev_streaming != 0) {
+        if (prev_streaming) {
             enableDataStreamingToClient(0);
             enableDataStreamingToClient(1);
         }
@@ -1872,7 +1872,7 @@ int multiSlsDetector::getReceiverStreamingPort(int detPos) {
 void multiSlsDetector::setClientDataStreamingInIP(const std::string &ip,
                                                   int detPos) {
     if (ip.length() != 0u) {
-        int prev_streaming = enableDataStreamingToClient(-1);
+        bool prev_streaming = enableDataStreamingToClient(-1);
 
         // single
         if (detPos >= 0) {
@@ -1885,7 +1885,7 @@ void multiSlsDetector::setClientDataStreamingInIP(const std::string &ip,
             }
         }
 
-        if (prev_streaming != 0) {
+        if (prev_streaming) {
             enableDataStreamingToClient(0);
             enableDataStreamingToClient(1);
         }
@@ -2142,6 +2142,13 @@ void multiSlsDetector::writeCounterBlockFile(const std::string &fname,
             imageVals + idet * detectors[idet]->getTotalNumberOfChannels(),
             startACQ);
     }
+
+    if (writeDataFile(fname, nch, imageVals) < nch * (int)sizeof(short int)) {
+        throw RuntimeError(
+            "Could not open file to write or did not write enough data"
+            " in file to write counter block file from detector.");
+    }
+
 }
 
 void multiSlsDetector::resetCounterBlock(int startACQ, int detPos) {
@@ -3693,7 +3700,7 @@ int multiSlsDetector::setReceiverStreamingTimer(int time_in_ms, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::enableDataStreamingToClient(int enable) {
+bool multiSlsDetector::enableDataStreamingToClient(int enable) {
     if (enable >= 0) {
         // destroy data threads
         if (enable == 0) {
@@ -3705,7 +3712,7 @@ int multiSlsDetector::enableDataStreamingToClient(int enable) {
             }
         }
     }
-    return static_cast<int>(client_downstream);
+    return client_downstream;
 }
 
 int multiSlsDetector::enableDataStreamingFromReceiver(int enable, int detPos) {

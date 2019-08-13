@@ -398,17 +398,20 @@ int main(int argc, char *argv[]) {
 	    }
 
 
+	    //// int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
+	      // 		uint32_t ndetx = 0, uint32_t ndety = 0, uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
+	      // 		uint64_t acqIndex = 0, uint64_t fIndex = 0, const char* fname = NULL,
+	      // 		uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
+	      // 		uint64_t bunchId = 0, uint64_t timestamp = 0,
+	      // 		uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
+	      // 		uint32_t debug = 0, uint16_t roundRNumber = 0,
+	      // 		uint8_t detType = 0, uint8_t version = 0, int gapPixelsEnable = 0, int flippedDataX = 0,
+	      // 		char* additionalJsonHeader = 0) {
 
-#ifdef NEWZMQ	
-	    cout << "Sending image size " << nnx << " " << nny << endl;
-	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
-					   				   
-#endif
 
-#ifndef NEWZMQ
-	        zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
-#endif
-		
+	    //  cout << "Sending image size " << nnx << " " << nny << endl;
+	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
+
 		zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
 		cprintf(GREEN, "Sent Data\n");
 		

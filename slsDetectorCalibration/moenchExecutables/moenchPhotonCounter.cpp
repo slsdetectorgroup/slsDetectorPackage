@@ -1,6 +1,6 @@
 //#include "ansi.h"
 #include <iostream>
-
+#define CORR
 
 //#define VERSION_V1
 
@@ -28,8 +28,11 @@
 //#include "etaInterpolationPosXY.h"
 // #include "linearInterpolation.h"
 // #include "noInterpolation.h"
-#include "multiThreadedAnalogDetector.h"
+#include "multiThreadedCountingDetector.h"
+//#include "multiThreadedAnalogDetector.h"
 #include "singlePhotonDetector.h"
+#include "moench03GhostSummation.h"
+#include "moench03CommonMode.h"
 //#include "interpolatingDetector.h"
 
 #include <stdio.h>
@@ -89,7 +92,18 @@ int main(int argc, char *argv[]) {
 
   decoder->getDetectorSize(nx,ny);
 
-  singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, 0, nped, 200);
+  int ncol_cm=20;
+  double xt_ghost=0.00045;
+  moench03CommonMode *cm=NULL;
+  moench03GhostSummation *gs;
+  double *gainmap=NULL;
+#ifdef CORR
+  cout << "Applying common mode and ghost correction " << endl;
+  cm=new moench03CommonMode(ncol_cm);
+ gs=new moench03GhostSummation(decoder, xt_ghost);
+#endif
+  
+  singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, cm, nped, 200, -1, -1, gainmap, gs);
 
   int size = 327680;////atoi(argv[3]);
   
@@ -171,9 +185,10 @@ int main(int argc, char *argv[]) {
   if (thr>0) {
     cout << "threshold is " << thr << endl;
     
-    //#ifndef ANALOG
+#ifndef ANALOG
     filter->setThreshold(thr);
-    //#endif
+#endif
+      cf=0;
 
   } else
     cf=1;
@@ -181,17 +196,13 @@ int main(int argc, char *argv[]) {
 
 
   filter->setROI(xmin,xmax,ymin,ymax);
-#ifdef SOLEIL
-  filter->setROI(150,210,170,230);
-  nframes=-1;
-#endif
   std::time(&end_time);
   cout << std::ctime(&end_time) <<   endl;
 
   char* buff;
 
-  multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
-
+  // multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
+ multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
 #ifndef ANALOG
     mt->setDetectorMode(ePhotonCounting);
     cout << "Counting!" << endl;
@@ -204,7 +215,7 @@ int main(int argc, char *argv[]) {
       mt->setDetectorMode(eAnalog);
       cout << "Analog!" << endl;
       cf=0;
-      // thr1=thr;
+      thr1=thr;
 #endif  
       //  }
   
@@ -240,7 +251,7 @@ int main(int argc, char *argv[]) {
 	  mt->nextThread();
 	  mt->popFree(buff);
 	  ifr++;
-	  if (ifr%10000==0) 
+	  if (ifr%100==0) 
 	    cout << ifr << " " << ff << " " << np << endl;
 	} else
 	  cout << ifr << " " << ff << " " << np << endl;
@@ -308,7 +319,7 @@ int main(int argc, char *argv[]) {
 	  // // 		//	cout << " " << (void*)buff;
 	  mt->popFree(buff);
 	  ifr++;
-	  if (ifr%1000==0) cout << ifr << " " << ff << endl;
+	  if (ifr%100==0) cout << ifr << " " << ff << endl;
 	  if (nframes>0) {
 	    if (ifr%nframes==0) {
 	      //The name has an additional "_fXXXXX" at the end, where "XXXXX" is the initial frame number of the image (0,1000,2000...)
@@ -334,9 +345,10 @@ int main(int argc, char *argv[]) {
 	if (nframes>0) {
 	    sprintf(ffname,"%s/%s_f%05d.tiff",outdir,fformat,ifile);
 	    sprintf(imgfname,ffname,irun);
+	} else {
+	  sprintf(ffname,"%s/%s.tiff",outdir,fformat);
+	  sprintf(imgfname,ffname,irun);
 	}
-	sprintf(ffname,"%s/%s.tiff",outdir,fformat);
-	sprintf(imgfname,ffname,irun);
 	cout << "Writing tiff to " << imgfname << " " << thr1 <<endl;
 	mt->writeImage(imgfname, thr1);
 	mt->clearImage();
@@ -351,6 +363,13 @@ int main(int argc, char *argv[]) {
     } else 
       cout << "Could not open "<< fname << " for reading " << endl;
   }
+  if (nframes<0){
+    sprintf(ffname,"%s/%s.tiff",outdir,fformat);
+    strcpy(imgfname,ffname);
+    cout << "Writing tiff to " << imgfname << " " << thr1 <<endl;
+    mt->writeImage(imgfname, thr1);
+  }
+    
 
 
   return 0;

@@ -52,6 +52,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
   int sc_height;
   const int nSamples;
 
+  double ghost[200][25];
 
  public:
 
@@ -64,7 +65,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
-    moench03T1ReceiverDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*2*32+sizeof(sls_detector_header)), nSamples(ns) {
+ moench03T1ReceiverDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*2*32+sizeof(sls_detector_header)),  nSamples(ns) {
 
     int nadc=32;
     int sc_width=25;
@@ -106,6 +107,11 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 	}
       }
     }
+    // double ghost[200][25];
+
+    for (int ix=0; ix<25; ix++)
+      for (int iy=0; iy<200; iy++)
+	ghost[iy][ix]=0.;
 
     int ipacket;
     int ibyte;
@@ -142,6 +148,73 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
   };
     
 
+ 
+  /**
+     Returns the value of the selected channel for the given dataset as double.
+     \param data pointer to the dataset (including headers etc)
+     \param ix pixel number in the x direction
+     \param iy pixel number in the y direction
+     \returns data for the selected channel, with inversion if required as double
+
+  */
+  virtual double getValue(char *data, int ix, int iy=0) {
+    /* cout << " x "<< ix << " y"<< iy << " val " << getChannel(data, ix, iy)<< endl;*/
+    /* double val=0, vout=getChannel(data, ix, iy); */
+    /* int x1=ix%25; */
+    /* for (int ix=0; ix<16; ix++) { */
+    /*   for (int ii=0; ii<2; ii++) { */
+    /* 	val+=getChannel(data,x1+25*ix,iy); */
+    /* 	val+=getChannel(data,x1+25*ix,399-iy); */
+    /*   } */
+    /* } */
+    /* vout+=0.0008*val-6224; */
+    /* return vout; //(double)getChannel(data, ix, iy);
+     */
+    uint16_t val=getChannel(data, ix, iy)&0x3fff;
+    return val;
+  };
+
+   
+
+  virtual void calcGhost(char *data, int ix, int iy) {
+    double val=0;
+    /* for (int ix=0; ix<25; ix++){ */
+    /*   for (int iy=0; iy<200; iy++) { */
+	val=0;
+	//	cout << "** "; 
+	for (int isc=0; isc<16; isc++) {
+	  //  for (int ii=0; ii<2; ii++) {
+	   val+=getChannel(data,ix+25*isc,iy);
+	   //  cout << "(" << isc << "," << val << " " ;
+	    val+=getChannel(data,ix+25*isc,399-iy);
+	    // cout << val << " " ;
+	    // }
+	}
+	ghost[iy][ix]=val;//-6224;
+	//	cout << " --"<< endl;
+    /*   }  */
+    /* } */
+    // cout << "*" << endl;
+    
+  }
+
+
+
+  virtual void calcGhost(char *data) {
+    for (int ix=0; ix<25; ix++){
+      for (int iy=0; iy<200; iy++) {
+	calcGhost(data, ix,iy);
+      } 
+    }
+    // cout << "*" << endl;
+  }
+
+
+  double getGhost(int ix, int iy) {
+    if (iy<200) return ghost[iy][ix%25]; 
+    if (iy<400) return ghost[399-iy][ix%25];
+    return 0;
+  };
 
      /**
 
@@ -277,8 +350,6 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
     return data;
 
   }
-
-
 
   //int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
 

@@ -3,13 +3,15 @@
 #include "sls_detector_defs.h"
 #include "ZmqSocket.h"
 #include "moench03T1ZmqDataNew.h"
+#include "moench03GhostSummation.h"
+#include "moench03CommonMode.h"
 #include <vector> 
 #include <string> 
 #include <sstream> 
 #include <iomanip> 
 #include <fstream> 
 #include "tiffIO.h"
-//#include <zmq.h>
+
 #include <rapidjson/document.h> //json header in zmq stream
 
 #include<iostream>
@@ -110,12 +112,16 @@ int main(int argc, char *argv[]) {
   int dataSize=size;
 
   char dummybuff[size];
-
-
-
+  
+  int ncol_cm=20;
+  double xt_ghost=0.00045;
+  moench03CommonMode *cm=new moench03CommonMode(ncol_cm);
+  moench03GhostSummation *gs=new moench03GhostSummation(det, xt_ghost);
+  double *gainmap=NULL;
+   
   //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
 #ifndef INTERP
-  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
+  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, cm, 1000, 10, -1, -1, gainmap, gs);
 
     multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
 
@@ -126,7 +132,7 @@ int main(int argc, char *argv[]) {
 
   if (etafname) interp->readFlatField(etafname);
 
-  interpolatingDetector *filter=new interpolatingDetector(det,interp, 5, 1, 0, 1000, 10);
+  interpolatingDetector *filter=new interpolatingDetector(det,interp, 5, 1, cm,  1000, 10, -1, -1, gainmap, gs);
   multiThreadedInterpolatingDetector *mt=new multiThreadedInterpolatingDetector(filter,nthreads,fifosize);
 #endif
 
@@ -654,7 +660,12 @@ int main(int argc, char *argv[]) {
 	    // cout << "file" << endl;
 	    //  cout << "data " << endl;
 	  if (of==NULL) {
+#ifdef WRITE_QUAD
+	    sprintf(ofname,"%s_%d.clust2",filename.c_str(),fileindex);
+#endif
+#ifndef WRITE_QUAD
 	    sprintf(ofname,"%s_%d.clust",filename.c_str(),fileindex);
+#endif
 	    of=fopen(ofname,"w");
 	    if (of) {
 	      mt->setFilePointer(of);

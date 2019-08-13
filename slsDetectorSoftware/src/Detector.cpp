@@ -1072,7 +1072,7 @@ void Detector::setCounterBit(bool value, Positions pos) {
 }
 
 Result<std::vector<defs::ROI>> Detector::getROI(Positions pos) const {
-    //vector holding module_id for the modules that should be read
+   //vector holding module_id for the modules that should be read
     const std::vector<int> id_vec = [&]() {
         if (pos.empty() || (pos.size() == 1 && pos[0] == -1)){
             std::vector<int> tmp;
@@ -1084,6 +1084,7 @@ Result<std::vector<defs::ROI>> Detector::getROI(Positions pos) const {
         }
     }();
 
+
     //values to return
     Result<std::vector<defs::ROI>> res;
 
@@ -1091,7 +1092,7 @@ Result<std::vector<defs::ROI>> Detector::getROI(Positions pos) const {
     for (const auto& i :id_vec){
         int n = 0;
         auto ptr = pimpl->getROI(n, i);
-        res.emplace_back(ptr, ptr+n);
+       // res.emplace_back(ptr, ptr+n);
     }
     return res;
 }

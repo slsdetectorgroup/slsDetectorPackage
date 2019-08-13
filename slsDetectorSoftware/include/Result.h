@@ -97,16 +97,6 @@ template <class T, class Allocator = std::allocator<T>> class Result {
         vec.push_back(std::forward<V>(value));
     }
 
-    /** Disable emplace_back if the underlying vector does not support it
-     * vector<bool> gcc 4.8
-     */
-    template <typename... Args>
-    auto emplace_back(Args &&... args) ->
-        typename std::enable_if<has_emplace_back<std::vector<T>>::value,
-                                decltype(vec.emplace_back(args...))>::type {
-        return vec.emplace_back(std::forward<Args>(args)...);
-    }
-
     auto operator[](size_type pos) -> decltype(vec[pos]) { return vec[pos]; }
     const_reference operator[](size_type pos) const { return vec[pos]; }
 

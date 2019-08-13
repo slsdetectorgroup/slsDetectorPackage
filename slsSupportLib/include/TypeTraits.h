@@ -36,6 +36,19 @@ struct has_str<T, typename std::conditional<
                       void>::type> : public std::true_type {};
 
 /**
+ * Has emplace_back method
+ */
+template <typename T, typename _ = void> struct has_emplace_back : std::false_type {};
+
+template <typename... Ts> struct has_emplace_back_helper {};
+
+template <typename T>
+struct has_emplace_back<T, typename std::conditional<
+                      false,
+                      has_emplace_back_helper<decltype(std::declval<T>().emplace_back())>,
+                      void>::type> : public std::true_type {};
+
+/**
  * Type trait to evaluate if template parameter is
  * complying with a standard container
  */

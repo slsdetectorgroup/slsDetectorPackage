@@ -44,3 +44,8 @@ TEST_CASE("sls::is_duration"){
 TEST_CASE("initializer list"){
     REQUIRE(sls::is_light_container<std::initializer_list<int>>::value == true);
 }
+
+TEST_CASE("Check for emplace back"){
+    //we know vector should have this its the type trait that is tested
+    REQUIRE(sls::has_emplace_back<std::vector<int>>::value == true);
+}

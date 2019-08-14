@@ -876,9 +876,23 @@ int UDPStandardImplementation::CreateUDPSockets() {
 
 int UDPStandardImplementation::SetupWriter() {
 	bool error = false;
+	masterAttributes attr;
+	attr.detectorType = myDetectorType;
+	attr.dynamicRange = dynamicRange;
+	attr.tenGiga = tengigaEnable;
+	attr.imageSize = generalData->imageSize;
+	attr.nPixelsX = generalData->nPixelsX;
+	attr.nPixelsY = generalData->nPixelsY;
+	attr.maxFramesPerFile = framesPerFile;
+	attr.totalFrames = numberOfFrames;
+	attr.exptimeNs = acquisitionTime;
+	attr.subExptimeNs = subExpTime;
+	attr.subPeriodNs = subPeriod;
+	attr.periodNs = acquisitionPeriod;
+	attr.gapPixelsEnable = gapPixelsEnable;
+    attr.quadEnable = quadEnable;
 	for (unsigned int i = 0; i < dataProcessor.size(); ++i)
-		if (dataProcessor[i]->CreateNewFile(tengigaEnable,
-				numberOfFrames, acquisitionTime, subExpTime, subPeriod, acquisitionPeriod) == FAIL) {
+		if (dataProcessor[i]->CreateNewFile(attr) == FAIL) {
 			error = true;
 			break;
 		}

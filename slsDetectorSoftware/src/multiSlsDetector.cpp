@@ -3012,7 +3012,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                 }
             }
         }
-        FILE_LOG(logINFOBLUE)
+        FILE_LOG(logDEBUG)
             << "Call Back Info:"
             << "\n\t nDetPixelsX: "  << nDetPixelsX
             << "\n\t nDetPixelsY: "  << nDetPixelsY
@@ -3032,7 +3032,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 					nDetPixelsY = nY * (nPixelsY + 1);
 				}
                 int n = processImageWithGapPixels(multiframe, multigappixels, quadEnable);
-                FILE_LOG(logINFORED)
+                FILE_LOG(logDEBUG)
                     << "Call Back Info Recalculated:"
                     << "\n\t nDetPixelsX: "  << nDetPixelsX
                     << "\n\t nDetPixelsY: "  << nDetPixelsY

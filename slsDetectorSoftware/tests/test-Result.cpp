@@ -142,15 +142,6 @@ TEST_CASE("Result of vectors"){
     Result<VecVec> res{vecvec};
 }
 
-TEST_CASE("emplace back"){
-    std::vector<int> vec{1,2,3,4,5};
-    Result<std::vector<int>> res;
-    res.emplace_back(vec.begin(), vec.end());
-    REQUIRE(res.size() == 1);
-    REQUIRE(res[0].size() == 5);
-    REQUIRE(res[0] == vec);
-}
-
 TEST_CASE("Free function begin end"){
     Result<std::string> res{"ett", "nio", "sjutton"};
     REQUIRE(begin(res) == res.begin());

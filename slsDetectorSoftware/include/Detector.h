@@ -900,7 +900,6 @@ class Detector {
     Result<bool> getFileWrite(Positions pos = {}) const;
 
     /** default writes */
-
     void setFileWrite(bool value, Positions pos = {});
 
     Result<bool> getMasterFileWrite(Positions pos = {}) const;
@@ -984,6 +983,7 @@ class Detector {
      */
     void setReceiverFrameDiscardPolicy(defs::frameDiscardPolicy f,
                                        Positions pos = {});
+                                       
     Result<bool> getPartialFramesPadding(Positions pos = {}) const;
 
     /** padding enabled */

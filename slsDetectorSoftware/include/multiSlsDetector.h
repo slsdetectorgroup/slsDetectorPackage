@@ -625,11 +625,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     runStatus getRunStatus(int detPos = -1);//
 
-    /**
-     * Prepares detector for acquisition (Eiger)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void prepareAcquisition(int detPos = -1);//
+   
 
     /**
      * Start detector acquisition (Non blocking)
@@ -2165,6 +2161,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Update user details in detector structure
      */
     void updateUserdetails();
+
+     /**
+     * Prepares detector for acquisition (Eiger)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void prepareAcquisition(int detPos = -1);//
 
     /**
      * Check if acquiring flag is set, set error if set

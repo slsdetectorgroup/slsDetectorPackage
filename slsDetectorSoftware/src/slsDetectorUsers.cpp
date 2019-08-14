@@ -14,14 +14,7 @@ int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
 	return nx*ny;
 }
 
-int slsDetectorUsers::getDetectorSize(int &x, int &y, int &nx, int &ny, int detPos){
-	if (detPos < 0) {
-		x = 0;
-		y = 0;
-	} else {
-		x = detector.getDetectorOffset(slsDetectorDefs::X, detPos);
-		y = detector.getDetectorOffset(slsDetectorDefs::Y, detPos);
-	}
+int slsDetectorUsers::getDetectorSize(int &nx, int &ny, int detPos){
 	nx=detector.getTotalNumberOfChannels(slsDetectorDefs::X, detPos);
 	ny=detector.getTotalNumberOfChannels(slsDetectorDefs::Y, detPos);
 	return nx*ny;
@@ -226,12 +219,12 @@ int slsDetectorUsers::setFlowControl10G(int i, int detPos) {
 	return detector.setFlowControl10G(i, detPos);
 }
 
-void slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int detPos) {
-    detector.setROI(n, roiLimits, detPos);
+void slsDetectorUsers::setROI(slsDetectorDefs::ROI arg, int detPos) {
+    detector.setROI(arg, detPos);
 }
 
-const slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int detPos) {
-    return detector.getROI(n, detPos);
+slsDetectorDefs::ROI slsDetectorUsers::getROI(int detPos) {
+    return detector.getROI(detPos);
 }
 
 /************************************************************************

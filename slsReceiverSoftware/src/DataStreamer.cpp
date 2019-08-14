@@ -16,7 +16,7 @@
 const std::string DataStreamer::TypeName = "DataStreamer";
 
 
-DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, std::vector<ROI>* r,
+DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 		uint64_t* fi, int fd, char* ajh, int* nd, bool* gpEnable) :
 		ThreadObject(ind),
 		runningFlag(0),
@@ -93,9 +93,9 @@ void DataStreamer::ResetParametersforNewMeasurement(const std::string& fname){
             delete[] completeBuffer;
             completeBuffer = nullptr;
 	}
-	if (roi->size()) {
+	if (roi->xmin != -1) {
 		if (generalData->myDetectorType == GOTTHARD) {
-			adcConfigured = generalData->GetAdcConfigured(index, roi);
+			adcConfigured = generalData->GetAdcConfigured(index, *roi);
 		}
 		completeBuffer = new char[generalData->imageSizeComplete];
 		memset(completeBuffer, 0, generalData->imageSizeComplete);

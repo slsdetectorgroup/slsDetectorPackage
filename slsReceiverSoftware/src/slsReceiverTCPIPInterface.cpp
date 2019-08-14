@@ -510,22 +510,12 @@ int slsReceiverTCPIPInterface::set_detector_hostname(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
-    static_assert(sizeof(ROI) == 4 * sizeof(int), "ROI not packed");
-    auto narg = socket.Receive<int>();
-    std::vector<ROI> arg;
-    for (int iloop = 0; iloop < narg; ++iloop) {
-        ROI temp{};
-        socket.Receive(temp);
-        arg.push_back(temp);
-    }
-    FILE_LOG(logDEBUG1) << "Set ROI narg: " << narg;
-    for (int iloop = 0; iloop < narg; ++iloop) {
-        FILE_LOG(logDEBUG1)
-            << "(" << arg[iloop].xmin << ", " << arg[iloop].xmax << ", "
-            << arg[iloop].ymin << ", " << arg[iloop].ymax << ")";
-    }
+    static_assert(sizeof(ROI) == 2 * sizeof(int), "ROI not packed");
+    ROI arg;
+    socket.Receive(arg);
+    FILE_LOG(logDEBUG1) << "Set ROI: [" << arg.xmin << ", " << arg.xmax << "]";
 
-    if (myDetectorType == EIGER || myDetectorType == JUNGFRAU)
+    if (myDetectorType != GOTTHARD)
         functionNotImplemented();
 
     VerifyIdle(socket);

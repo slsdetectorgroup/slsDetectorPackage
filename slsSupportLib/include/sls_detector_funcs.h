@@ -35,6 +35,7 @@ enum detFuncs{
 	F_SET_DYNAMIC_RANGE, /**< set/get detector dynamic range */
 	F_SET_READOUT_FLAGS, /**< set/get readout flags */
 	F_SET_ROI, /**< set/get region of interest */
+	F_GET_ROI,
 	F_SET_SPEED, /**< set/get readout speed parameters */
 	F_EXIT_SERVER, /**< turn off detector server */
 	F_LOCK_SERVER, /**< Locks/Unlocks server communication to the given client */
@@ -185,6 +186,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_READOUT_FLAGS:				return "F_SET_READOUT_FLAGS";
 	case F_SET_ROI:							return "F_SET_ROI";
+	case F_GET_ROI:							return "F_GET_ROI";
 	case F_SET_SPEED:						return "F_SET_SPEED";
 	case F_EXIT_SERVER:						return "F_EXIT_SERVER";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";

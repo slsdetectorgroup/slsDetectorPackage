@@ -65,16 +65,6 @@ struct sharedMultiSlsDetector {
     /** total number of channels including gap pixels in one dimension */
     int numberOfChannelInclGapPixels[2];
 
-    /**  total number of channels for all detectors */
-    int maxNumberOfChannels;
-
-    /**  max number of channels for all detectors  in one dimension*/
-    int maxNumberOfChannel[2];
-
-    /**  max number of channels including gap pixels for all detectors  in
-     * one dimension*/
-    int maxNumberOfChannelInclGapPixels[2];
-
     /** max number of channels allowed for the complete set of detectors in
      * one dimension */
     int maxNumberOfChannelsPerDetector[2];
@@ -432,8 +422,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Returns the maximum number of channels of all sls detectors in each
-     * dimension d from shared memory. multi detector shared memory variable to
-     * calculate offsets for each sls detector
+     * dimension d from shared memory. 
      * @param d dimension d
      * @returns the maximum number of channels of all sls detectors in dimension
      * d
@@ -442,8 +431,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Sets the maximum number of channels of all sls detectors in each
-     * dimension d from shared memory, multi detector shared memory variable to
-     * calculate offsets for each sls detector
+     * dimension d from shared memory
      * @param d dimension d
      * @param i maximum number of channels for multi structure in dimension d
      * @returns the maximum number of channels of all sls detectors in dimension
@@ -453,36 +441,17 @@ class multiSlsDetector : public virtual slsDetectorDefs {
        
     /**
      * Returns maximum number of channels of all sls detectors in each
-     * dimension d from shared memory, multi detector shared memory variable to
-     * calculate offsets for each sls detector
+     * dimension d from shared memory
      * @returns  maximum number of channels of all sls detectors
      */
     slsDetectorDefs::coordinates getMaxNumberOfChannels() const;  //
 
     /**
      * Sets maximum number of channels of all sls detectors in each
-     * dimension d from shared memory, multi detector shared memory variable to
-     * calculate offsets for each sls detector
+     * dimension d from shared memory
      * @param c maximum number of channels of all sls detectors
      */
     void setMaxNumberOfChannels(const slsDetectorDefs::coordinates c);  //
-
-    /**
-     * Get Detector offset from shared memory in dimension d
-     * @param d dimension d
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns offset in dimension d, -1 if pos is not an actual position in
-     * list
-     */
-    int getDetectorOffset(dimension d, int detPos = -1); //
-
-    /**
-     * Set Detector offset in shared memory in dimension d
-     * @param d dimension d
-     * @param off offset for detector
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setDetectorOffset(dimension d, int off, int detPos = -1);//
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)
@@ -1376,22 +1345,27 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setCounterBit(int i = -1, int detPos = -1); //
 
     /**
-     * Set ROI (Gotthard)
-     * At the moment only one set allowed
-     * @param n number of rois
-     * @param roiLimits array of roi
+     * Clear ROI (Gotthard)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setROI(int n = -1, ROI roiLimits[] = nullptr, int detPos = -1);
+    void clearROI(int detPos = -1);
 
     /**
-     * Get ROI from each detector and convert it to the multi detector scale
-     * (Gotthard)
-     * @param n number of rois
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns OK or FAIL
+     * Set ROI (Gotthard)
+     * At the moment only one set allowed per module
+     * Only allowed to set one ROI per module
+     * @param arg  roi
+     * @param detPos specific detector position
      */
-    const ROI *getROI(int &n, int detPos = -1);
+    void setROI(slsDetectorDefs::ROI arg, int detPos = -1);
+
+    /**
+     * Get ROI  (Gotthard)
+     * Only allowed to set one ROI per module
+     * @param detPos specific detector position
+     * @returns roi
+     */
+    slsDetectorDefs::ROI getROI(int detPos) const;
 
     /**
      * Set ADC Enable Mask (CTB, Moench)
@@ -2188,14 +2162,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void initializeMembers(bool verify = true);
 
     /**
-     * Appends detectors to the end of the list in shared memory
-     * Connects to them 
-     * @param name concatenated hostname of the sls detectors to be appended to
-     * the list
-     */
-    void addMultipleDetectors(const char *name);//
-
-    /**
      * Update user details in detector structure
      */
     void updateUserdetails();
@@ -2207,23 +2173,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     bool isAcquireReady();
 
     /**
-     * Decodes which detector and the corresponding channel numbers for it
-     * Mainly useful in a multi detector setROI (Gotthard)
-     * @param offsetX channel number or total channel offset in x direction
-     * @param offsetY channel number or total channel offset in y direction
-     * @param channelX channel number from detector offset in x direction
-     * @param channelY channel number from detector offset in x direction
-     * @returns detector id or -1 if channel number out of range
-     */
-    int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);
-
-    /**
-     * Updates the channel offsets in X and Y dimension for all the sls
-     * detectors It is required for decodeNMod and setting ROI
-     */
-    void updateOffsets();
-
-    /**
      * Execute in command line and return result
      * @param cmd command
      * @returns result
@@ -2231,10 +2180,24 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     std::string exec(const char *cmd);
 
     /**
+     * Appends detectors to the end of the list in shared memory
+     * Connects to them 
+     * @param name concatenated hostname of the sls detectors to be appended to
+     * the list
+     */
+    void addMultipleDetectors(const char *name);//
+
+    /**
      * Add sls detector
      * @param s hostname of the single detector
      */
     void addSlsDetector(const std::string &hostname);
+
+    /**
+     * Updates the channel size in X and Y dimension for all the sls
+     * detectors 
+     */
+    void updateDetectorSize();
 
         /**
      * increments file index
@@ -2242,13 +2205,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns the file index
      */
     int incrementFileIndex(int detPos = -1);
-
-    /**
-     * Ensures that min is less than max in both dimensions (Gotthard)
-     * @param n number of rois
-     * @param r array of rois
-     */
-    void verifyMinMaxROI(int n, ROI r[]);
 
     /**
      * add gap pixels to the image (only for Eiger in 4 bit mode)

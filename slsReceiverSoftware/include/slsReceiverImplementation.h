@@ -207,9 +207,9 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     //***acquisition parameters***
     /**
      * Get ROI
-     * @return index of adc enabled, else -1 if all enabled
+     * @return roi
      */
-    std::vector<ROI> getROI() const;
+    ROI getROI() const;
 
     /**
      * Get ADC Enable Mask
@@ -529,10 +529,10 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     //***acquisition parameters***
     /**
      * Set ROI
-     * @param i ROI
+     * @param arg ROI
      * @return OK or FAIL
      */
-    int setROI(const std::vector<ROI> new_roi);
+    int setROI(ROI arg);
 
     /**
      * Set ADC Enable Mask
@@ -961,7 +961,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
 
     //***acquisition parameters***
     /* ROI */
-    std::vector<ROI> roi;
+    ROI roi;
     /** ADC Enable Mask */
     uint32_t adcEnableMask;
     /** streaming frequency */

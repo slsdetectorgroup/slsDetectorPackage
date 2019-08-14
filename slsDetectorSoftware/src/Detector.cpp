@@ -110,16 +110,6 @@ void Detector::setMaxNumberOfChannels(const defs::coordinates value) {
     pimpl->setMaxNumberOfChannels(value);
 }
 
-Result<defs::coordinates> Detector::getDetectorOffsets(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getDetectorOffsets, pos);
-}
-
-void Detector::setDetectorOffsets(defs::coordinates value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDetectorOffsets, pos, value);
-    // pimpl->Parallel<defs::coordinates>(&slsDetector::setDetectorOffset, pos,
-    // value);
-}
-
 Result<bool> Detector::getQuad(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getQuad, pos);
 }
@@ -1071,41 +1061,15 @@ void Detector::setCounterBit(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::setCounterBit, pos, value);
 }
 
-Result<std::vector<defs::ROI>> Detector::getROI(Positions pos) const {
-   //vector holding module_id for the modules that should be read
-    const std::vector<int> id_vec = [&]() {
-        if (pos.empty() || (pos.size() == 1 && pos[0] == -1)){
-            std::vector<int> tmp;
-            for(size_t i=0; i!= pimpl->size(); ++i)
-                tmp.push_back(i);
-            return tmp;
-        }else{
-            return pos;
-        }
-    }();
-
-
-    //values to return
-    Result<std::vector<defs::ROI>> res;
-
-    //for each detector id get the ROI
-    for (const auto& i :id_vec){
-        int n = 0;
-        auto ptr = pimpl->getROI(n, i);
-       // res.emplace_back(ptr, ptr+n);
-    }
-    return res;
+Result<defs::ROI> Detector::getROI(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getROI, pos);
 }
 
-void Detector::setROI(std::vector<defs::ROI> value, Positions pos) {
-    if (pos.empty() || (pos.size() == 1 && pos[0] == -1)) {
-        pimpl->setROI(static_cast<int>(value.size()), value.data(), -1);
-    } else if (pos.size() > 1) {
-        throw RuntimeError("Cannot set roi to a subset of modules");
-    } else {
-        pimpl->Parallel(&slsDetector::setROI, pos,
-                        static_cast<int>(value.size()), value.data());
+void Detector::setROI(defs::ROI value, int moduleId) {
+    if (moduleId < 0 && size() > 1) {
+        throw RuntimeError("Cannot set ROI for all modules simultaneously");
     }
+    pimpl->Parallel(&slsDetector::setROI, {moduleId}, value);
 }
 
 Result<uint32_t> Detector::getADCEnableMask(Positions pos) const {

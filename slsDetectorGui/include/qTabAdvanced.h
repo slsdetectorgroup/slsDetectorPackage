@@ -29,7 +29,6 @@ private slots:
 	void SetRxrUDPMAC();
 	void SetRxrZMQPort(int port);
 	void SetRxrZMQIP();
-	void AddROISlot();
 	void GetROI();
 	void ClearROI();
 	void SetROI();
@@ -56,22 +55,12 @@ private:
 	void GetRxrUDPMAC();
 	void GetRxrZMQPort();
 	void GetRxrZMQIP();
-	void ClearROIWidgets();
 	void GetAllTrimbits();
 	void GetNumStoragecells();
 	void GetSubExposureTime();
 	void GetSubDeadTime();
 
 	multiSlsDetector *myDet;
-	/** ROI */
-	std::vector <QLabel*> lblFromX;
-	std::vector <QSpinBox*> spinFromX;
-	std::vector <QLabel*> lblFromY;
-	std::vector <QSpinBox*> spinFromY;
-	std::vector <QLabel*> lblToX;
-	std::vector <QSpinBox*> spinToX;
-	std::vector <QLabel*> lblToY;
-	std::vector <QSpinBox*> spinToY;
 };
 
 

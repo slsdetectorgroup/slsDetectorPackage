@@ -189,6 +189,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_READOUT_FLAGS:				return "F_SET_READOUT_FLAGS";
 	case F_SET_ROI:							return "F_SET_ROI";
+	case F_GET_ROI:							return "F_GET_ROI";
 	case F_SET_SPEED:						return "F_SET_SPEED";
 	case F_EXIT_SERVER:						return "F_EXIT_SERVER";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
@@ -279,6 +280,7 @@ void function_table() {
 	flist[F_SET_DYNAMIC_RANGE]					= &set_dynamic_range;
 	flist[F_SET_READOUT_FLAGS]					= &set_readout_flags;
 	flist[F_SET_ROI]							= &set_roi;
+	flist[F_GET_ROI]							= &get_roi;
 	flist[F_SET_SPEED]							= &set_speed;
 	flist[F_EXIT_SERVER]						= &exit_server;
 	flist[F_LOCK_SERVER]						= &lock_server;
@@ -1896,80 +1898,52 @@ int set_readout_flags(int file_des) {
 int set_roi(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int narg = -1;
-	ROI arg[MAX_ROIS];
-	int nretval = -1;
-	ROI* retval = NULL;
+	ROI arg;
 
-	// receive number of ROIs
-	if (receiveData(file_des, &narg, sizeof(narg), INT32) < 0)
+	// receive ROI
+	if (receiveData(file_des, &arg.xmin, sizeof(int), INT32) < 0)
 		return printSocketReadError();
-	// receive ROIs
-	{
-		int iloop = 0;
-		for (iloop = 0; iloop < narg; ++iloop) {
-			if (receiveData(file_des, &arg[iloop].xmin, sizeof(int), INT32) < 0)
-				return printSocketReadError();
-			if (receiveData(file_des, &arg[iloop].xmax, sizeof(int), INT32) < 0)
-				return printSocketReadError();
-			if (receiveData(file_des, &arg[iloop].ymin, sizeof(int), INT32) < 0)
-				return printSocketReadError();
-			if (receiveData(file_des, &arg[iloop].ymax, sizeof(int), INT32) < 0)
-				return printSocketReadError();
-		}
-	}
-	FILE_LOG(logDEBUG1, ("Set ROI (narg:%d)\n", narg));
-	{
-		int iloop = 0;
-		for (iloop = 0; iloop < narg; ++iloop) {
-			FILE_LOG(logDEBUG1, ("%d: %d\t%d\t%d\t%d\n",
-					arg[iloop].xmin, arg[iloop].xmax, arg[iloop].ymin, arg[iloop].ymax));
-		}
-	}
+	if (receiveData(file_des, &arg.xmax, sizeof(int), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Set ROI: [%d, %d]\n", arg.xmin, arg.xmax));
 
 #ifndef GOTTHARDD
 	functionNotImplemented();
 #else
-	// set & get
-	if ((narg == GET_READOUT_FLAGS) || (Server_VerifyLock() == OK)) {
-	    if (myDetectorType == GOTTHARD && narg > 1) {
-	        ret = FAIL;
-            strcpy(mess,"Can not set more than one ROI per module.\n");
-            FILE_LOG(logERROR,(mess));
-	    } else {
-	        retval = setROI(narg, arg, &nretval, &ret);
-	        if (ret == FAIL) {
-	            if (nretval == -1) // chip test board
-	                sprintf(mess,"Could not set ROI. Max ROI level (100) reached!\n");
-	            else if (nretval == -2)
-	                sprintf(mess, "Could not set ROI. Could not allocate RAM\n");
-	            else
-	                sprintf(mess,"Could not set all roi. "
-	                        "Set %d rois, but read %d rois\n", narg, nretval);
-	            FILE_LOG(logERROR,(mess));
-	        }
-	        FILE_LOG(logDEBUG1, ("nRois: %d\n", nretval));
-	    }
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setROI(arg);
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set ROI. Invalid xmin or xmax\n");
+			FILE_LOG(logERROR,(mess));
+		}
 	}
 #endif
 
-	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
 
+
+int get_roi(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	ROI retval;
+
+#ifndef GOTTHARDD
+	functionNotImplemented();
+#else
+	// only get
+	retval = getROI();
+	FILE_LOG(logDEBUG1, ("nRois: (%d, %d)\n", retval.xmin, retval.xmax));
+#endif
+
+	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 	if (ret != FAIL) {
-		//retvalsize could be swapped during sendData
-		int nretval1 = nretval;
-		sendData(file_des, &nretval1, sizeof(nretval1), INT32);
-		int iloop = 0;
-		for(iloop = 0; iloop < nretval; ++iloop) {
-			sendData(file_des, &retval[iloop].xmin, sizeof(int), INT32);
-			sendData(file_des, &retval[iloop].xmax, sizeof(int), INT32);
-			sendData(file_des, &retval[iloop].ymin, sizeof(int), INT32);
-			sendData(file_des, &retval[iloop].ymax, sizeof(int), INT32);
-		}
+		sendData(file_des, &retval.xmin, sizeof(int), INT32);
+		sendData(file_des, &retval.xmax, sizeof(int), INT32);
 	}
 	return ret;
 }
-
 
 
 
@@ -2284,20 +2258,9 @@ int send_update(int file_des) {
 
     // roi
 #if defined(GOTTHARDD)
-    ROI* retval = NULL;
-    ROI arg[1];
-    int ret = OK, nretval = 0;
-    retval = setROI(-1, arg, &nretval, &ret);
-	//retvalsize could be swapped during sendData
-	int nretval1 = nretval;
-	sendData(file_des, &nretval1, sizeof(nretval1), INT32);
-	int iloop = 0;
-	for(iloop = 0; iloop < nretval; ++iloop) {
-		sendData(file_des, &retval[iloop].xmin, sizeof(int), INT32);
-		sendData(file_des, &retval[iloop].xmax, sizeof(int), INT32);
-		sendData(file_des, &retval[iloop].ymin, sizeof(int), INT32);
-		sendData(file_des, &retval[iloop].ymax, sizeof(int), INT32);
-	}
+    ROI retval = getROI();
+	sendData(file_des, &retval.xmin, sizeof(int), INT32);
+	sendData(file_des, &retval.xmax, sizeof(int), INT32);
 #endif
 	
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)

@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x190726
+#define SLS_SHMVERSION 0x190813
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -34,10 +34,6 @@ struct sharedSlsDetector {
     slsDetectorDefs::detectorType myDetectorType;
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
-
-    /** Detector offset in the X & Y direction in the multi detector structure
-     */
-    int offset[2];
 
     /** Number of detectors in multi list in x dir and y dir */
     int multiSize[2];
@@ -75,11 +71,8 @@ struct sharedSlsDetector {
     /**  size of the data that are transfered from the detector */
     int dataBytes;
 
-    /** number of rois defined */
-    int nROI;
-
-    /** list of rois */
-    slsDetectorDefs::ROI roiLimits[MAX_ROIS];
+    /** roi */
+    slsDetectorDefs::ROI roi;
 
     /** adc enable mask */
     uint32_t adcEnableMask;
@@ -339,7 +332,7 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Update total number of channels (chiptestboard or moench)
-     * depending on the number of samples, roi, readout flags(ctb)
+     * depending on the number of samples, adenablemask, readout flags(ctb)
      */
     void updateTotalNumberOfChannels();
 
@@ -422,32 +415,6 @@ class slsDetector : public virtual slsDetectorDefs {
      * @returns  number of lines
      */
     int getReadNLines();
-
-    /**
-     * Get Detector offset from shared memory in dimension d
-     * @param d dimension d
-     * @returns offset in dimension d
-     */
-    int getDetectorOffset(dimension d) const;
-
-    /**
-     * Get Detector offset from shared memory in dimension d
-     * @returns offset
-     */
-    slsDetectorDefs::coordinates getDetectorOffsets() const; 
-
-    /**
-     * Set Detector offset in shared memory in dimension d
-     * @param d dimension d
-     * @param off offset for detector
-     */
-    void setDetectorOffset(dimension d, int off);
-    
-    /**
-     * Set Detector offset in shared memory 
-     * @param value offset for detector
-     */
-    void setDetectorOffsets(slsDetectorDefs::coordinates value);
 
     /**
      * Set Detector offset in shared memory in dimension d
@@ -1144,34 +1111,28 @@ class slsDetector : public virtual slsDetectorDefs {
     int setCounterBit(int cb = -1);
 
     /**
+     * Clear ROI (Gotthard)
+     */
+    void clearROI();
+
+    /**
      * Set ROI (Gotthard)
-     * At the moment only one set allowed
-     * @param n number of rois
-     * @param roiLimits array of roi
+     * Also calls configuremac
+     * @param arg roi
      */
-    void setROI(int n = -1, ROI roiLimits[] = nullptr);
+    void setROI(slsDetectorDefs::ROI arg);
 
     /**
-     * Get ROI from each detector and convert it to the multi detector scale
-     * (Gotthard)
-     * @param n number of rois
-     * @returns OK or FAIL
+     *  Send ROI from shared memory to Receiver (Gotthard) 
      */
-    const slsDetectorDefs::ROI *getROI(int &n);
+    void sendROItoReceiver();
 
     /**
-     * Returns number of rois
-     * @returns number of ROIs
+     * Get ROI (Gotthard)
+     * Update receiver if different from shm
+     * @returns roi
      */
-    int getNRoi();
-
-    /**
-     * Send ROI to the detector after calculating
-     * from setROI
-     * @param n number of ROIs (-1 to get)
-     * @param roiLimits ROI
-     */
-    void sendROI(int n = -1, ROI roiLimits[] = nullptr);
+    slsDetectorDefs::ROI getROI();
 
     /**
      * Set ADC Enable Mask (CTB, Moench)

@@ -114,7 +114,8 @@ void        resetPeripheral();
 // parameters - dr, roi
 int 		setDynamicRange(int dr);
 #ifdef GOTTHARDD
-ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
+int 		setROI(ROI arg);
+ROI			getROI();
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		setADCEnableMask(uint32_t mask);

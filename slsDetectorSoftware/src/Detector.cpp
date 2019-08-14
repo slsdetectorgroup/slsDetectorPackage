@@ -62,12 +62,8 @@ Result<int64_t> Detector::getReceiverSoftwareVersion(Positions pos) const {
 
 std::string Detector::getUserDetailsFromSharedMemory() const { return pimpl->getUserDetails(); }
 
-defs::detectorType Detector::getDetectorType() const {
-    return pimpl->getDetectorTypeAsEnum();
-}
-
 Result<defs::detectorType>
-Detector::getDetectorTypeAsEnum(Positions pos) const {
+Detector::getDetectorType(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsEnum, pos);
 }
 
@@ -487,7 +483,7 @@ Result<int> Detector::getTemp(defs::dacIndex index, Positions pos) const {
         throw RuntimeError("Unknown Temperature Index");
     }
     auto res = pimpl->Parallel(&slsDetector::getADC, pos, index);
-    switch (getDetectorType()) {
+    switch (getDetectorType().squash()) {
     case defs::EIGER:
     case defs::JUNGFRAU:
         for (auto &it : res) {

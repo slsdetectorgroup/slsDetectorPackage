@@ -120,11 +120,11 @@ class ExperimentalDetector(multiDetectorApi):
     # File
     @property
     def fname(self):
-        return element_if_equal(self.getFileName())
+        return element_if_equal(self.getFileNamePrefix())
 
     @fname.setter
     def fname(self, file_name):
-        self.setFileName(file_name)
+        self.setFileNamePrefix(file_name)
 
     @property
     def fpath(self):

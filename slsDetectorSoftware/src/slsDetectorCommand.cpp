@@ -308,7 +308,14 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>roi [i] [xmin] [xmax] [ymin] [ymax]  </b> sets region of interest of the detector, where i is number of rois;i=0 to clear rois. Used for GOTTHARD only. \c Returns \c (int)
+   - <b>clearroi </b> resets region of interest of the detector. Used for GOTTHARD only. \c Returns \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "clearroi";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
+    ++i;
+
+    /*! \page config
+   - <b>roi [xmin] [xmax] </b> sets region of interest of the detector. Used for GOTTHARD only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "roi";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
@@ -3252,28 +3259,28 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
 
     if (action == HELP_ACTION)
         return helpDetectorSize(action);
-    int ret, val = -1, pos = -1, i;
+    int ret, val = -1;
     char ans[1000];
 
 
     if (action == PUT_ACTION) {
-        if (!sscanf(args[1], "%d", &val))
+        if (cmd != "roi" && !sscanf(args[1], "%d", &val))
             return std::string("could not scan ") + std::string(args[0]) + std::string(" ") + std::string(args[1]);
+
+        if (cmd == "clearroi") {             
+            myDet->clearROI(detPos);
+        }
 
         if (cmd == "roi") {
             //debug number of arguments
-            if ((val < 0) || (narg != ((val * 4) + 2)))
+            if (narg != 3)
                 return helpDetectorSize(action);
-            ROI allroi[val];
-            pos = 2;
-            for (i = 0; i < val; ++i) {
-                if ((!sscanf(args[pos++], "%d", &allroi[i].xmin)) ||
-                    (!sscanf(args[pos++], "%d", &allroi[i].xmax)) ||
-                    (!sscanf(args[pos++], "%d", &allroi[i].ymin)) ||
-                    (!sscanf(args[pos++], "%d", &allroi[i].ymax)))
-                    return std::string("cannot parse arguments for roi");
-            }
-            myDet->setROI(val, allroi, detPos);
+            ROI roi;
+            if (!sscanf(args[1], "%d", &roi.xmin))
+                return std::string("cannot parse arguments for roi xmin");
+            if (!sscanf(args[2], "%d", &roi.xmax))
+                return std::string("cannot parse arguments for roi xmax");                   
+            myDet->setROI(roi, detPos);
         }
 
         if (cmd == "detsizechan") {
@@ -3308,17 +3315,21 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
             if ((!sscanf(args[1], "%d", &val)) || (val != 0 && val != 1))
                 return std::string("cannot scan gappixels mode: must be 0 or 1");
 
-            if (detPos < 0) // only in multi detector level to update offsets etc.
+            if (detPos < 0) // only in multi detector level to update number of channels etc.
                 myDet->enableGapPixels(val, detPos);
         }
     }
 
     if (cmd == "dr") {
         ret = myDet->setDynamicRange(val, detPos);
+    } else if (cmd == "clearroi") {
+        if (action == GET_ACTION) {
+            return std::string("Cannot get");
+        }
+        return std::string("successful");
     } else if (cmd == "roi") {
-        const ROI* r = myDet->getROI(ret, detPos);
-        
-            delete [] r;
+        ROI roi = myDet->getROI(detPos);
+        return (std::string("[") + std::to_string(roi.xmin) + std::string(",") + std::to_string(roi.xmax) + std::string("]")); 
     } else if (cmd == "detsizechan") {
         sprintf(ans, "%d %d", myDet->getMaxNumberOfChannelsPerDetector(X), myDet->getMaxNumberOfChannelsPerDetector(Y));
         return std::string(ans);
@@ -3330,7 +3341,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
         return std::string("Not required for this detector\n");
         ret = myDet->getFlippedData(Y, detPos);
     } else if (cmd == "gappixels") {
-        if (detPos >= 0) // only in multi detector level to update offsets etc.
+        if (detPos >= 0) // only in multi detector level to update number of channels etc.
             return std::string("Cannot execute this command from slsDetector level. Please use multiSlsDetector level.\n");
         ret = myDet->enableGapPixels(-1, detPos);
     }
@@ -3349,7 +3360,8 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "dr i \n sets the dynamic range of the detector" << std::endl;
-        os << "roi i xmin xmax ymin ymax \n sets region of interest where i is number of rois;i=0 to clear rois" << std::endl;
+        os << "clearroi \n resets region of interest" << std::endl;
+        os << "roi xmin xmax \n sets region of interest " << std::endl;
         os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; -1 is no limit" << std::endl;
  		os << "quad i \n if i = 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;       
         os << "flippeddatax x \n sets if the data should be flipped on the x axis" << std::endl;

@@ -104,7 +104,8 @@ void slsReceiverImplementation::InitializeMembers() {
     overwriteEnable = true;
 
     //***acquisition parameters***
-    roi.clear();
+    roi.xmin = -1;
+    roi.xmax = -1;
     adcEnableMask = BIT32_MASK;
     streamingFrequency = 0;
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
@@ -305,7 +306,7 @@ int slsReceiverImplementation::getNumberofUDPInterfaces() const {
 }
 
 /***acquisition parameters***/
-std::vector<slsDetectorDefs::ROI> slsReceiverImplementation::getROI() const {
+slsDetectorDefs::ROI slsReceiverImplementation::getROI() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return roi;
 }
@@ -858,51 +859,21 @@ int slsReceiverImplementation::setUDPSocketBufferSize(const int64_t s) {
 }
 
 /***acquisition parameters***/
-int slsReceiverImplementation::setROI(
-    const std::vector<slsDetectorDefs::ROI> new_roi) {
-    bool change = false;
-    if (roi.size() != new_roi.size())
-        change = true;
-    else {
-        for (size_t i = 0; i != new_roi.size(); ++i) {
-            if ((roi[i].xmin != new_roi[i].xmin) ||
-                (roi[i].xmax != new_roi[i].xmax) ||
-                (roi[i].ymin != new_roi[i].ymin) ||
-                (roi[i].xmax != new_roi[i].xmax)) {
-                change = true;
-                break;
-            }
-        }
-    }
+int slsReceiverImplementation::setROI(slsDetectorDefs::ROI arg) {
+    if (roi.xmin != arg.xmin || roi.xmax != arg.xmax) {
+        roi.xmin = arg.xmin;
+        roi.xmax = arg.xmax;
 
-    if (change) {
-        roi = new_roi;
-        switch (myDetectorType) {
-        case GOTTHARD:
-            generalData->SetROI(new_roi);
-            framesPerFile = generalData->maxFramesPerFile;
-            break;
-        default:
-            break;
-        }
+        // only for gotthard
+        generalData->SetROI(arg);
+        framesPerFile = generalData->maxFramesPerFile;
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         if (SetupFifoStructure() == FAIL)
             return FAIL;
     }
 
-    std::stringstream sstm;
-    sstm << "ROI: ";
-    if (!roi.size())
-        sstm << "0";
-    else {
-        for (size_t i = 0; i < roi.size(); ++i) {
-            sstm << "( " << roi[i].xmin << ", " << roi[i].xmax << ", "
-                 << roi[i].ymin << ", " << roi[i].ymax << " )";
-        }
-    }
-    std::string message = sstm.str();
-    FILE_LOG(logINFO) << message;
+    FILE_LOG(logINFO) << "ROI: [" << roi.xmin << ", " << roi.xmax << "]";;
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
     return OK;

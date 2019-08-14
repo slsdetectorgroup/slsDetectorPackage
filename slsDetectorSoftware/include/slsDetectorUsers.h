@@ -104,7 +104,7 @@ public:
 	/**
 	 * Returns the maximum number of channels of all detectors
 	 * (provided by user in config file using detsizechan command)
-	 * Offsets are calculated according to these dimensions
+	 * number of channels in x and y are calculated according to these dimensions
 	 * @param nx number of channels in horizontal
 	 * @param ny number of channels in vertical
 	 * @returns the maximum number of channels of all detectors
@@ -112,15 +112,13 @@ public:
 	int getMaximumDetectorSize(int &nx, int &ny);
 
 	/**
-	 * Returns the size and offsets of detector/multi detector
-	 * @param x horizontal position origin in channel number
-	 * @param y vertical position origin in channel number
+	 * Returns the size  of detector/multi detector
 	 * @param nx number of channels in horiziontal
 	 * @param ny number of channels in vertical
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns the total number of channels of all sls detectors
 	 */
-	int getDetectorSize(int &x, int &y, int &nx, int &ny, int detPos = -1);
+	int getDetectorSize(int &nx, int &ny, int detPos);
 
 	/**
 	 * Gets detector type
@@ -496,22 +494,22 @@ public:
 	int setFlowControl10G(int enable = -1, int detPos = -1);
 
     /**
-     * Set ROI (Gotthard) (>= 1 roi, but max 1 roi per module)
-     * At the moment only one set allowed
-     * @param n number of rois
-     * @param roiLimits array of roi
-     * @param detPos -1 for all detectors in  list or specific detector position
+     * Set ROI (Gotthard)
+     * At the moment only one set allowed per module
+     * Only allowed to set one ROI per module
+     * @param arg  roi
+     * @param detPos specific detector position
      */
-    void setROI(int n=-1, slsDetectorDefs::ROI roiLimits[]=NULL, int detPos = -1);
+    void setROI(slsDetectorDefs::ROI arg, int detPos = -1);
+
 
     /**
-     * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
-     * >= 1 roi, but max 1 roi per module
-     * @param n number of rois
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns pointer to array of ROI structure
+     * Get ROI  (Gotthard)
+     * Only allowed to set one ROI per module
+     * @param detPos specific detector position
+     * @returns roi
      */
-    const slsDetectorDefs::ROI* getROI(int &n, int detPos = -1);
+    slsDetectorDefs::ROI getROI(int detPos = -1);
 
 
 

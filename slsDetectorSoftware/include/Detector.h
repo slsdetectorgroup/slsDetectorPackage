@@ -82,15 +82,9 @@ class Detector {
     /**
      * Sets the maximum number of channels of complete detector in both
      * dimensions. -1 means no limit in this dimension. This value is used to
-     * calculate row and column offsets for each module.
+     * calculate row and column channels for each module.
      */
     void setMaxNumberOfChannels(const defs::coordinates value);
-
-    /** [Gotthard] */
-    Result<defs::coordinates> getDetectorOffsets(Positions pos = {}) const;
-
-    /** [Gotthard] */
-    void setDetectorOffsets(defs::coordinates value, Positions pos = {});
 
     /** [Eiger with specific quad hardware] */
     Result<bool> getQuad(Positions pos = {}) const;
@@ -664,15 +658,16 @@ class Detector {
     /** [Eiger] If it is set, it resets chips completely (else partially) before an acquisition TODO: if it makes sense */
     void setCounterBit(bool value, Positions pos = {});
 
-    /** [Gotthard, CTB]*/
-    Result<std::vector<defs::ROI>> getROI(Positions pos = {}) const;
+    /** [Gotthard]*/
+    Result<defs::ROI> getROI(Positions pos = {}) const;
     
     /** 
-     * [Gotthard Options: Only a single chip or all chips, only 1 ROI allowed]
-     * [CTB: multiple ROIs allowed] 
-     * subset modules not allowed 
+     * [Gotthard] 
+     * Options: Only a single ROI per module
+     * Can set only a single ROI at a time
+     * @param module position index 
      */
-    void setROI(std::vector<defs::ROI> value, Positions pos = {});
+    void setROI(defs::ROI value, int moduleId);
 
     /** [CTB]*/
     Result<uint32_t> getADCEnableMask(Positions pos = {}) const;

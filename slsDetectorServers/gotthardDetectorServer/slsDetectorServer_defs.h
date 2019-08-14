@@ -24,6 +24,7 @@ enum DACINDEX				        {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN
 #define NCHIP 						(10)
 #define NDAC 						(8)
 #define NCHIPS_PER_ADC              (2)
+#define NCHAN_PER_ADC               (256)
 #define DYNAMIC_RANGE				(16)
 #define NUM_BITS_PER_PIXEL			(DYNAMIC_RANGE / 8)
 #define DATA_BYTES					(NCHIP * NCHAN * NUM_BITS_PER_PIXEL)

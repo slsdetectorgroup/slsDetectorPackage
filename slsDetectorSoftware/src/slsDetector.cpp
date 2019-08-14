@@ -308,15 +308,13 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->controlPort = DEFAULT_PORTNO;
     sls::strcpy_safe(shm()->hostname, DEFAULT_HOSTNAME);
     shm()->myDetectorType = type;
-    shm()->offset[X] = 0;
-    shm()->offset[Y] = 0;
     shm()->multiSize[X] = 0;
     shm()->multiSize[Y] = 0;
-
+    shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
-    shm()->nROI = 0;
-    memset(shm()->roiLimits, 0, MAX_ROIS * sizeof(ROI));
+    shm()->roi.xmin = -1;
+    shm()->roi.xmax = -1;
     shm()->adcEnableMask = BIT32_MASK;
     shm()->roFlags = NORMAL_READOUT;
     shm()->currentSettings = UNINITIALIZED;
@@ -688,28 +686,6 @@ int slsDetector::getReadNLines() {
     return retval;
 }
 
-int slsDetector::getDetectorOffset(dimension d) const {
-    return shm()->offset[d];
-}
-
-slsDetectorDefs::coordinates slsDetector::getDetectorOffsets() const {
-    slsDetectorDefs::coordinates coord;
-    coord.x = shm()->offset[X];
-    coord.y = shm()->offset[Y]; 
-    return coord;
-}
-
-void slsDetector::setDetectorOffset(dimension d, int off) {
-    if (off >= 0) {
-        shm()->offset[d] = off;
-    }
-}
-
-void slsDetector::setDetectorOffsets(slsDetectorDefs::coordinates value) {
-    shm()->offset[X] = value.x;
-    shm()->offset[Y] = value.y; 
-}
-
 void slsDetector::updateMultiSize(int detx, int dety) {
     shm()->multiSize[0] = detx;
     shm()->multiSize[1] = dety;
@@ -878,17 +854,9 @@ void slsDetector::updateCachedDetectorVariables() {
         // roi
         if (shm()->myDetectorType == GOTTHARD) {
             n += client.Receive(&i32, sizeof(i32));
-            shm()->nROI = i32;
-            for (int i = 0; i < shm()->nROI; ++i) {
-                n += client.Receive(&i32, sizeof(i32));
-                shm()->roiLimits[i].xmin = i32;
-                n += client.Receive(&i32, sizeof(i32));
-                shm()->roiLimits[i].xmax = i32;
-                n += client.Receive(&i32, sizeof(i32));
-                shm()->roiLimits[i].ymin = i32;
-                n += client.Receive(&i32, sizeof(i32));
-                shm()->roiLimits[i].xmax = i32;
-            }
+            shm()->roi.xmin = i32;
+            n += client.Receive(&i32, sizeof(i32));
+            shm()->roi.xmax = i32;
         }
 
         if (shm()->myDetectorType == CHIPTESTBOARD ||
@@ -1849,7 +1817,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             break;
 
         case GOTTHARD:
-            sendROI(-1, nullptr);
+            sendROItoReceiver();
             break;
 
         default:
@@ -2344,44 +2312,27 @@ int slsDetector::setCounterBit(int cb) {
     return retval;
 }
 
-void slsDetector::setROI(int n, ROI roiLimits[]) {
-    std::sort(roiLimits, roiLimits + n,
-              [](ROI a, ROI b) { return a.xmin < b.xmin; });
-
-    sendROI(n, roiLimits);
+void slsDetector::clearROI() {
+    FILE_LOG(logDEBUG1) << "Clearing ROI";
+    slsDetectorDefs::ROI arg;
+    arg.xmin = -1;
+    arg.xmax = -1;
+    setROI(arg);
 }
 
-const slsDetectorDefs::ROI *slsDetector::getROI(int &n) {
-    sendROI(-1, nullptr);
-    n = shm()->nROI;
-    return shm()->roiLimits;
-}
-
-int slsDetector::getNRoi() { return shm()->nROI; }
-
-void slsDetector::sendROI(int n, ROI roiLimits[]) {
+void slsDetector::setROI(slsDetectorDefs::ROI arg) {
     int fnum = F_SET_ROI;
     int ret = FAIL;
-    int narg = n;
-    // send roiLimits if given, else from shm
-    ROI *arg = (roiLimits != nullptr) ? roiLimits : shm()->roiLimits;
-    int nretval = 0;
-    ROI retval[MAX_ROIS];
-    FILE_LOG(logDEBUG1) << "Sending ROI to detector" << narg;
-
+    if (arg.xmin < 0 || arg.xmax >= getTotalNumberOfChannels()) {
+        arg.xmin = -1;
+        arg.xmax = -1;
+    }
+    FILE_LOG(logDEBUG) << "Sending ROI to detector [" << arg.xmin << ", " << arg.xmax << "]";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
-    client.Send(&narg, sizeof(narg));
-    if (narg != -1) {
-        for (int i = 0; i < narg; ++i) {
-            client.Send(&arg[i].xmin, sizeof(int));
-            client.Send(&arg[i].xmax, sizeof(int));
-            client.Send(&arg[i].ymin, sizeof(int));
-            client.Send(&arg[i].ymax, sizeof(int));
-        }
-    }
+    client.Send(&arg.xmin, sizeof(int));
+    client.Send(&arg.xmax, sizeof(int));
     client.Receive(&ret, sizeof(ret));
-
     // handle ret
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
@@ -2389,64 +2340,62 @@ void slsDetector::sendROI(int n, ROI roiLimits[]) {
         throw RuntimeError("Detector " + std::to_string(detId) +
                            " returned error: " + std::string(mess));
     } else {
-        client.Receive(&nretval, sizeof(nretval));
-        int nrec = 0;
-        for (int i = 0; i < nretval; ++i) {
-            nrec += client.Receive(&retval[i].xmin, sizeof(int));
-            nrec += client.Receive(&retval[i].xmax, sizeof(int));
-            nrec += client.Receive(&retval[i].ymin, sizeof(int));
-            nrec += client.Receive(&retval[i].ymax, sizeof(int));
-        }
-        shm()->nROI = nretval;
-        FILE_LOG(logDEBUG1) << "nRoi: " << nretval;
-        for (int i = 0; i < nretval; ++i) {
-            shm()->roiLimits[i] = retval[i];
-            FILE_LOG(logDEBUG1)
-                << "ROI [" << i << "] (" << shm()->roiLimits[i].xmin << ","
-                << shm()->roiLimits[i].xmax << "," << shm()->roiLimits[i].ymin
-                << "," << shm()->roiLimits[i].ymax << ")";
+        memcpy(&shm()->roi, &arg, sizeof(ROI)); 
+        if (ret == FORCE_UPDATE) {
+            updateCachedDetectorVariables();
         }
     }
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
+
     // old firmware requires configuremac after setting roi
-    if (shm()->myDetectorType == GOTTHARD && n != -1) {
+    if (shm()->myDetectorType == GOTTHARD) {
         configureMAC();
     }
 
+    sendROItoReceiver();
+}
+
+void slsDetector::sendROItoReceiver() {
     // update roi in receiver
     if (shm()->useReceiverFlag) {
-        fnum = F_RECEIVER_SET_ROI;
-        ret = FAIL;
-        narg = shm()->nROI;
-        arg = shm()->roiLimits;
-        FILE_LOG(logDEBUG1) << "Sending ROI to receiver: " << shm()->nROI;
-
-        auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        receiver.Send(&fnum, sizeof(fnum));
-        receiver.Send(&narg, sizeof(narg));
-        if (narg != -1) {
-            for (int i = 0; i < narg; ++i) {
-                receiver.Send(&arg[i].xmin, sizeof(int));
-                receiver.Send(&arg[i].xmax, sizeof(int));
-                receiver.Send(&arg[i].ymin, sizeof(int));
-                receiver.Send(&arg[i].ymax, sizeof(int));
-            }
-        }
-        receiver.Receive(&ret, sizeof(ret));
-
-        if (ret == FAIL) {
-            char mess[MAX_STR_LENGTH]{};
-            receiver.Receive(mess, MAX_STR_LENGTH);
-            throw ReceiverError("Receiver " + std::to_string(detId) +
-                                " returned error: " + std::string(mess));
-        }
-        if (ret == FORCE_UPDATE) {
-            updateCachedReceiverVariables();
-        }
+        FILE_LOG(logDEBUG1) << "Sending ROI to receiver";
+        sendToReceiver(F_RECEIVER_SET_ROI, shm()->roi, nullptr);
     }
 }
+
+slsDetectorDefs::ROI slsDetector::getROI() {
+    int fnum = F_GET_ROI;
+    int ret = FAIL;
+    FILE_LOG(logDEBUG1) << "Getting ROI from detector";
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Receive(&ret, sizeof(ret));
+    // handle ret
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(detId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        ROI retval;
+        client.Receive(&retval.xmin, sizeof(int));
+        client.Receive(&retval.xmax, sizeof(int));
+        FILE_LOG(logDEBUG1)
+            << "ROI retval [" << retval.xmin << ","
+            << retval.xmax << "]";
+        if (ret == FORCE_UPDATE) {
+            updateCachedDetectorVariables();
+        }
+        // if different from shm, update and send to receiver
+        if (shm()->roi.xmin != retval.xmin || shm()->roi.xmax != retval.xmax) {
+            memcpy(&shm()->roi, &retval, sizeof(ROI));  
+            sendROItoReceiver();
+        }
+    }
+
+    return shm()->roi;
+}
+
+
 
 void slsDetector::setADCEnableMask(uint32_t mask) {
     uint32_t arg = mask;

@@ -37,8 +37,7 @@ int digitalTestBit = 0;
 
 // roi configuration
 int adcConfigured = -1;
-ROI rois[MAX_ROIS];
-int nROI = 0;
+ROI rois;
 int ipPacketSize = 0;
 int udpPacketSize = 0;
 
@@ -397,7 +396,9 @@ void setupDetector() {
     bus_w(TEMP_SPI_OUT_REG, 0x0);
 
     // roi, gbit readout
-    setROIADC(-1); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
+    rois.xmin = -1; 
+    rois.xmax = -1;
+    setROI(rois);// set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
 
     // master, slave (25um)
@@ -726,95 +727,49 @@ int setDynamicRange(int dr){
 	return DYNAMIC_RANGE;
 }
 
-ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
+int setROI(ROI arg) {
 
-    // set ROI
-    if(n >= 0){
-        // print
-        if (!n) {
-            FILE_LOG(logINFO, ("Clearing ROI\n"));
-        } else {
-            FILE_LOG(logINFO, ("Setting ROI:\n"));
-            int i = 0;
-            for (i = 0; i < n; ++i) {
-                FILE_LOG(logINFO, ("\t(%d, %d)\n", arg[i].xmin, arg[i].xmax));
-            }
+    int adc = -1;
+    if (arg.xmin == -1) {
+        FILE_LOG(logINFO, ("Clearing ROI\n"));
+        rois.xmin = -1;
+        rois.xmax = -1;
+    } else {
+        FILE_LOG(logINFO, ("Setting ROI:(%d, %d)\n", arg.xmin, arg.xmax));
+        // validation
+        // xmin divisible by 256 and less than 1280
+        if (((arg.xmin % NCHAN_PER_ADC) != 0) || (arg.xmin >= (NCHAN * NCHIP))) {
+            FILE_LOG(logERROR, ("Could not set roi. xmin is invalid\n"));
+            return FAIL;
         }
-        // only one ROI allowed per module
-        if (n > 1) {
-            FILE_LOG(logERROR, ("\tCannot set more than 1 ROI per module\n"));
-            *ret = FAIL;
-            *retvalsize = nROI;
-            return rois;
+        // xmax must be 255 more than xmin
+        if (arg.xmax != (arg.xmin + NCHAN_PER_ADC - 1)) {
+            FILE_LOG(logERROR, ("Could not set roi. xmax is invalid\n"));         
+            return FAIL;   
         }
+        rois.xmin = arg.xmin;
+        rois.xmax = arg.xmax;
+        adc = arg.xmin / NCHAN_PER_ADC;
+    }
+    FILE_LOG(logINFO, ("\tAdc to be configured: %d\n", adc));
+    FILE_LOG(logINFO, ("\tROI to be configured: (%d, %d)\n",
+            (adc == -1) ? 0 :  (rois.xmin),
+                    (adc == -1) ? (NCHIP * NCHAN - 1) :  (rois.xmax)));
 
-        //clear all rois
-        nROI = 0;
+    //set adc of interest
+    setROIADC(adc);
+    return OK;
+}
 
-        // find adc number and recorrect channel limits
-        int adc = -1;
-        if (n) {
-            // all channels
-            if ((arg[0].xmin <= 0) && (arg[0].xmax >= NCHIP * NCHAN))
-                adc = -1;
-            // single adc
-            else {
-                //adc = mid value/numchans
-                adc = ((((arg[0].xmax) + (arg[0].xmin))/2) / (NCHAN * NCHIPS_PER_ADC));
-                // incorrect adc
-                if((adc < 0) || (adc > 4)) {
-                    FILE_LOG(logERROR, ("\tadc value greater than 5. deleting roi\n"));
-                    adc = -1;
-                }
-                // recorrect roi values
-                else {
-                    rois[0].xmin = adc * (NCHAN * NCHIPS_PER_ADC);
-                    rois[0].xmax = (adc + 1) * (NCHAN * NCHIPS_PER_ADC) - 1;
-                    rois[0].ymin = -1;
-                    rois[0].ymax = -1;
-                    nROI = 1;
-                }
-            }
-        }
-
-        if (adc == -1)
-            nROI = 0;
-
-        FILE_LOG(logINFO, ("\tAdc to be configured: %d\n", adc));
-        FILE_LOG(logINFO, ("\tROI to be configured: (%d, %d)\n",
-                (adc == -1) ? 0 :  (rois[0].xmin),
-                        (adc == -1) ? (NCHIP * NCHAN - 1) :  (rois[0].xmax)));
-
-        // could not set roi
-        if((n != 0) && ((arg[0].xmin != rois[0].xmin)||
-                (arg[0].xmax != rois[0].xmax)||
-                (arg[0].ymin != rois[0].ymin)||
-                (arg[0].ymax != rois[0].ymax))) {
-            *ret = FAIL;
-            FILE_LOG(logERROR, ("\tCould not set given ROI\n"));
-        }
-        if(n != nROI) {
-            *ret = FAIL;
-            FILE_LOG(logERROR, ("\tCould not set or clear ROIs\n"));
-        }
-
-        //set adc of interest
-        setROIADC(adc);
-    } else FILE_LOG(logINFO, ("Getting ROI:\n"));
+ROI getROI() {    
+    FILE_LOG(logINFO, ("Getting ROI:\n"));
 
     // print
-    if (!nROI) {
+    if (rois.xmin == -1) {
         FILE_LOG(logINFO, ("\tROI: None\n"));
     } else {
-        FILE_LOG(logINFO, ("ROI:\n"));
-        int i = 0;
-        for (i = 0; i < nROI; ++i) {
-            FILE_LOG(logINFO, ("\t(%d, %d)\n", rois[i].xmin, rois[i].xmax));
-
-        }
+        FILE_LOG(logINFO, ("ROI: (%d,%d)\n", rois.xmin, rois.xmax));
     }
-
-    *retvalsize = nROI;
     return rois;
 }
 

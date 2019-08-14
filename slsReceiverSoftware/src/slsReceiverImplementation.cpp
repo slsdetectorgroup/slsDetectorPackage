@@ -793,7 +793,7 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable));
+                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -945,7 +945,7 @@ int slsReceiverImplementation::setDataStreamEnable(const bool enable) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable));
+                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -1370,7 +1370,7 @@ void slsReceiverImplementation::stopReceiver() {
         dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
     }
 
-    // wait for the processes (DataStreamer) to be done
+    // wait for the processes (dataStreamer) to be done
     running = true;
     while (running) {
         running = false;

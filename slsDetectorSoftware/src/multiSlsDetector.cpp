@@ -2839,6 +2839,7 @@ void multiSlsDetector::readFrameFromReceiver() {
     int nDetPixelsX = 0;
     int nDetPixelsY = 0;
     bool gappixelsenable = false;
+    bool quadEnable = false;
     bool eiger = false;
     bool numInterfaces = getNumberofUDPInterfaces(); // cannot pick up from zmq
 
@@ -2932,10 +2933,9 @@ void multiSlsDetector::readFrameFromReceiver() {
                                 ? true
                                 : false; // to be changed to EIGER when firmware
                                          // updates its header data
-                        // gap pixels enable
                         gappixelsenable =
                             (doc["gappixels"].GetUint() == 0) ? false : true;
-
+                        quadEnable = (doc["quad"].GetUint() == 0) ? false : true;
                         FILE_LOG(logDEBUG1)
                             << "One Time Header Info:"
                                "\n\tsize: "
@@ -2945,7 +2945,8 @@ void multiSlsDetector::readFrameFromReceiver() {
                             << "\n\tnPixelsX: " << nPixelsX
                             << "\n\tnPixelsY: " << nPixelsY << "\n\tnX: " << nX
                             << "\n\tnY: " << nY << "\n\teiger: " << eiger
-                            << "\n\tgappixelsenable: " << gappixelsenable;
+                            << "\n\tgappixelsenable: " << gappixelsenable
+                            << "\n\tquadEnable: " << quadEnable;
                     }
                     // each time, parse rest of header
                     currentFileName = doc["fname"].GetString();
@@ -3011,13 +3012,31 @@ void multiSlsDetector::readFrameFromReceiver() {
                 }
             }
         }
+        FILE_LOG(logINFOBLUE)
+            << "Call Back Info:"
+            << "\n\t nDetPixelsX: "  << nDetPixelsX
+            << "\n\t nDetPixelsY: "  << nDetPixelsY
+            << "\n\t databytes: "  << multisize
+            << "\n\t dynamicRange: "  << dynamicRange; 
 
         // send data to callback
         if (data) {
             setCurrentProgress(currentAcquisitionIndex + 1);
             // 4bit gap pixels
             if (dynamicRange == 4 && gappixelsenable) {
-                int n = processImageWithGapPixels(multiframe, multigappixels);
+                if (quadEnable) {
+					nDetPixelsX += 2;
+					nDetPixelsY += 2;
+				} else {
+					nDetPixelsX = nX * (nPixelsX + 3);
+					nDetPixelsY = nY * (nPixelsY + 1);
+				}
+                int n = processImageWithGapPixels(multiframe, multigappixels, quadEnable);
+                FILE_LOG(logINFORED)
+                    << "Call Back Info Recalculated:"
+                    << "\n\t nDetPixelsX: "  << nDetPixelsX
+                    << "\n\t nDetPixelsY: "  << nDetPixelsY
+                    << "\n\t databytes: "  << n; 
                 thisData = new detectorData(
                     getCurrentProgress(), currentFileName.c_str(), nDetPixelsX,
                     nDetPixelsY, multigappixels, n, dynamicRange,
@@ -3073,14 +3092,23 @@ void multiSlsDetector::readFrameFromReceiver() {
         delete[] multigappixels;
 }
 
-int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {
-    // eiger 4 bit mode
-    int nxb = multi_shm()->numberOfDetector[X] * (512 + 3);
+int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable) {
+    // eiger 4 bit mode 
+    int nxb = multi_shm()->numberOfDetector[X] * (512 + 3); //(divided by 2 already)
     int nyb = multi_shm()->numberOfDetector[Y] * (256 + 1);
-    int gapdatabytes = nxb * nyb;
-
+    int nchipInRow = 4;
     int nxchip = multi_shm()->numberOfDetector[X] * 4;
     int nychip = multi_shm()->numberOfDetector[Y] * 1;
+    if (quadEnable) {
+        nxb = multi_shm()->numberOfDetector[X] * (256 + 1); //(divided by 2 already)
+        nyb = multi_shm()->numberOfDetector[Y] * (512 + 2);
+        nxchip /= 2;
+        nychip *= 2;
+        nchipInRow /= 2;
+    }
+    int gapdatabytes = nxb * nyb;
+
+
 
     // allocate
     if (gpImage == nullptr) {
@@ -3097,14 +3125,14 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {
     // copying line by line
     src = image;
     dst = gpImage;
-    for (int row = 0; row < nychip; ++row) { // for each chip in a row
+    for (int row = 0; row < nychip; ++row) { // for each chip row
         for (int ichipy = 0; ichipy < b1chipy;
              ++ichipy) { // for each row in a chip
-            for (int col = 0; col < nxchip; ++col) {
+            for (int col = 0; col < nxchip; ++col) {// for each chip in a row
                 memcpy(dst, src, b1chipx);
                 src += b1chipx;
                 dst += b1chipx;
-                if (((col + 1) % 4) != 0) {
+                if (((col + 1) % nchipInRow) != 0) { // skip gap pixels
                     ++dst;
                 }
             }
@@ -3118,12 +3146,12 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {
         uint8_t temp, g1, g2;
         int mod;
         dst = gpImage;
-        for (int row = 0; row < nychip; ++row) { // for each chip in a row
+        for (int row = 0; row < nychip; ++row) { // for each chip row
             for (int ichipy = 0; ichipy < b1chipy;
                  ++ichipy) { // for each row in a chip
-                for (int col = 0; col < nxchip; ++col) {
+                for (int col = 0; col < nxchip; ++col) {// for each chip in a row
                     dst += b1chipx;
-                    mod = (col + 1) % 4;
+                    mod = (col + 1) % nchipInRow; // get gap pixels
                     // copy gap pixel(chip 0, 1, 2)
                     if (mod != 0) {
                         // neighbouring gap pixels to left
@@ -3155,7 +3183,7 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage) {
         uint8_t temp, g1, g2;
         char *dst_prevline = nullptr;
         dst = gpImage;
-        for (int row = 0; row < nychip; ++row) { // for each chip in a row
+        for (int row = 0; row < nychip; ++row) { // for each chip row
             dst += (b1chipy * nxb);
             // horizontal copying of gap pixels from neighboring past line
             // (bottom parts)

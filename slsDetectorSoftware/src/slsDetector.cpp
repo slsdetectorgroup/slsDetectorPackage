@@ -657,6 +657,7 @@ bool slsDetector::getQuad() {
     sendToDetector(F_GET_QUAD, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Quad Type :" << retval;
     return (retval == 0 ? false : true);
+    
 }
 
 void slsDetector::setQuad(const bool enable) {
@@ -1798,6 +1799,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             enableGapPixels(shm()->gappixels);
             enableTenGigabitEthernet(shm()->tenGigaEnable);
             setReadOutFlags(GET_READOUT_FLAGS);
+            setQuad(getQuad());
             break;
 
         case CHIPTESTBOARD:
@@ -1807,6 +1809,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setReadOutFlags(GET_READOUT_FLAGS);
             setADCEnableMask(shm()->adcEnableMask);
             setReceiverDbitOffset(shm()->rxDbitOffset);
+            setReceiverDbitList(shm()->rxDbitList);
             break;
 
         case MOENCH:
@@ -1822,10 +1825,6 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
 
         default:
             break;
-        }
-
-        if (shm()->myDetectorType == CHIPTESTBOARD) {
-            setReceiverDbitList(shm()->rxDbitList);
         }
 
         setReceiverSilentMode(static_cast<int>(shm()->rxSilentMode));

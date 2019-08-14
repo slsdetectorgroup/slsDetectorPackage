@@ -2213,9 +2213,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param image pointer to image without gap pixels
      * @param gpImage poiner to image with gap pixels, if NULL, allocated
      * inside function
+     * quadEnable quad enabled
      * @returns number of data bytes of image with gap pixels
      */
-    int processImageWithGapPixels(char *image, char *&gpImage);
+    int processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable);
 
     /**
      * Create Receiving Data Sockets

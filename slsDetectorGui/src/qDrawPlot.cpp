@@ -90,8 +90,11 @@ void qDrawPlot::SetupPlots() {
         break;
     case slsDetectorDefs::EIGER:
         if (myDet->getQuad()) {
-            nPixelsX = (myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2) - 1;
-            nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y) * 2;
+            nPixelsX /= 2;
+            nPixelsY *= 2;
+            if (nPixelsX != nPixelsY) {
+                --nPixelsX;
+            }
         }
         break;
     default:

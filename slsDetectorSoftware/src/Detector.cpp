@@ -1532,15 +1532,8 @@ Result<defs::runStatus> Detector::getRunStatus(Positions pos) {
     return pimpl->Parallel(&slsDetector::getRunStatus, pos);
 }
 
-void Detector::prepareAcquisition() {
-    pimpl->Parallel(&slsDetector::prepareAcquisition, {});
-}
-
 void Detector::startAcquisition() {
-    if (getDetectorType() == defs::EIGER) {
-        prepareAcquisition();
-    }
-    pimpl->Parallel(&slsDetector::startAcquisition, {});
+    pimpl->startAcquisition();
 }
 
 void Detector::stopAcquisition() { pimpl->stopAcquisition(); }

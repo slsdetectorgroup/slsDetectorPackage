@@ -1021,9 +1021,6 @@ class Detector {
 
     Result<defs::runStatus> getRunStatus(Positions pos = {});
 
-    /** [Eiger] */
-    void prepareAcquisition();
-
     /** Start detector acquisition (Non blocking) */
     void startAcquisition();
 

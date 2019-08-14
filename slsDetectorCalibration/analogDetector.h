@@ -823,7 +823,6 @@ template <class dataType> class analogDetector {
 	else
 	  val=((double*)data)[iy*nx+ix];
 	//	cout << val << endl;
-	val+=getGhost(ix,iy);
 	 /* if (ix==10 && iy==10)  */
 	 /*     cout << ix << " " << iy << " " << val ;  */
 	  /* if (ix==100 && iy==100) */

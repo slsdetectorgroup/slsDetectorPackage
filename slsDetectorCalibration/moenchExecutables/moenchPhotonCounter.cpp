@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
   decoder->getDetectorSize(nx,ny);
 
   int ncol_cm=20;
-  double xt_ghost=0.00045;
+  double xt_ghost=0.0004;
   moench03CommonMode *cm=NULL;
   moench03GhostSummation *gs;
   double *gainmap=NULL;

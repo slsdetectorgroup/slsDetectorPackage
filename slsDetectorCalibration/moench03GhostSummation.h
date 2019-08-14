@@ -12,7 +12,7 @@ class moench03GhostSummation : public ghostSummation<uint16_t> {
   /** constructor
       \param xt crosstalk
   */
- moench03GhostSummation(slsDetectorData<uint16_t> *d, double xt) : ghostSummation<uint16_t>(d, xt)  {}
+ moench03GhostSummation(slsDetectorData<uint16_t> *d, double xt=0.0004) : ghostSummation<uint16_t>(d, xt)  {}
   
   virtual void calcGhost(char *data){
     for (int iy=0; iy<200; iy++){

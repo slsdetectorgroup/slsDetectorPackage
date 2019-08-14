@@ -1647,10 +1647,32 @@ int slsReceiverImplementation::CreateUDPSockets() {
 int slsReceiverImplementation::SetupWriter() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     bool error = false;
+	masterAttributes attr;
+	attr.detectorType = myDetectorType;
+	attr.dynamicRange = dynamicRange;
+	attr.tenGiga = tengigaEnable;
+	attr.imageSize = generalData->imageSize;
+	attr.nPixelsX = generalData->nPixelsX;
+	attr.nPixelsY = generalData->nPixelsY;
+	attr.maxFramesPerFile = framesPerFile;
+	attr.totalFrames = numberOfFrames;
+	attr.exptimeNs = acquisitionTime;
+	attr.subExptimeNs = subExpTime;
+	attr.subPeriodNs = subPeriod;
+	attr.periodNs = acquisitionPeriod;
+	attr.gapPixelsEnable = gapPixelsEnable;
+    attr.quadEnable = quadEnable;
+    attr.parallelFlag = (readoutFlags & PARALLEL) ? 1 : 0;
+    attr.analogFlag = (readoutFlags == NORMAL_READOUT || readoutFlags & ANALOG_AND_DIGITAL) ? 1 : 0;
+    attr.digitalFlag = (readoutFlags & DIGITAL_ONLY || readoutFlags & ANALOG_AND_DIGITAL) ? 1 : 0;
+    attr.adcmask = adcEnableMask;
+    attr.dbitoffset = ctbDbitOffset;
+    attr.dbitlist = 0;
+    for (auto &i : ctbDbitList) {
+        attr.dbitlist |= (1 << i);
+    }
     for (unsigned int i = 0; i < dataProcessor.size(); ++i)
-        if (dataProcessor[i]->CreateNewFile(
-                tengigaEnable, numberOfFrames, acquisitionTime, subExpTime,
-                subPeriod, acquisitionPeriod) == FAIL) {
+        if (dataProcessor[i]->CreateNewFile(attr) == FAIL) {
             error = true;
             break;
         }

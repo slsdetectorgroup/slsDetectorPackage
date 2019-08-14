@@ -97,26 +97,11 @@ class BinaryFileStatic {
 	 * @param fd pointer to file handle
 	 * @param fname master file name
 	 * @param owenable overwrite enable
-	 * @param dr dynamic range
-	 * @param tenE ten giga enable
-	 * @param size image size
-	 * @param nPixelsX number of pixels in x direction
-	 * @param nPixelsY number of pixels in y direction
-	 * @param nf number of images
-	 * @param maxf maximum frames per file
-	 * @param acquisitionTime acquisition time
-	 * @param acquisitionPeriod acquisition period
-	 * @param subexposuretime sub exposure time
-	 * @param subperiod sub period
-	 * @param version version of software for binary writing
+	 * @param attr master file attributes
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateMasterDataFile(FILE*& fd, std::string fname, bool owenable,
-					uint32_t dr, bool tenE,	uint32_t size,
-					uint32_t nPixelsX, uint32_t nPixelsY, uint64_t nf,
-					uint32_t maxf,
-					uint64_t acquisitionTime, uint64_t subexposuretime,
-					uint64_t subperiod, uint64_t acquisitionPeriod, double version)
+					masterAttributes& attr)
 	{
 		if(!owenable){
 			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
@@ -135,17 +120,26 @@ class BinaryFileStatic {
 		char message[MAX_MASTER_FILE_LENGTH];
 		sprintf(message,
 				"Version                    : %.1f\n"
+				"Detector Type              : %d\n"				
 				"Dynamic Range              : %d\n"
 				"Ten Giga                   : %d\n"
 				"Image Size                 : %d bytes\n"
-				"row                        : %d pixels\n"
-				"col                        : %d pixels\n"
-				"Max. Frames Per File       : %u\n"
+				"nPixelsX                   : %d pixels\n"
+				"nPixelsY                   : %d pixels\n"
+				"Max Frames Per File        : %u\n"
 				"Total Frames               : %lld\n"
 				"Exptime (ns)               : %lld\n"
 				"SubExptime (ns)            : %lld\n"
 				"SubPeriod(ns)              : %lld\n"
 				"Period (ns)                : %lld\n"
+				"Gap Pixels Enable          : %d\n"
+				"Quad Enable                : %d\n"
+				"Parallel Flag              : %d\n"
+				"Analog Flag                : %d\n"
+				"Digital Flag               : %d\n"
+				"ADC Mask                   : %d\n"
+				"Dbit Offset                : %d\n"
+				"Dbit Bitset                : %lld\n"
 				"Timestamp                  : %s\n\n"
 
 				"#Frame Header\n"
@@ -164,18 +158,27 @@ class BinaryFileStatic {
 				"Header Version             : 1 byte\n"
 				"Packets Caught Mask        : 64 bytes\n"
 				,
-				version,
-				dr,
-				tenE,
-				size,
-				nPixelsX,
-				nPixelsY,
-				maxf,
-				(long long int)nf,
-				(long long int)acquisitionTime,
-				(long long int)subexposuretime,
-				(long long int)subperiod,
-				(long long int)acquisitionPeriod,
+				attr.version,
+				attr.detectorType,
+				attr.dynamicRange,
+				attr.tenGiga,
+				attr.imageSize,
+				attr.nPixelsX,
+				attr.nPixelsY,
+				attr.maxFramesPerFile,
+				(long long int)attr.totalFrames,
+				(long long int)attr.exptimeNs,
+				(long long int)attr.subExptimeNs,
+				(long long int)attr.subPeriodNs,
+				(long long int)attr.periodNs,
+				attr.gapPixelsEnable,
+				attr.quadEnable,
+				attr.parallelFlag,
+    			attr.analogFlag,
+   	 			attr.digitalFlag,
+    			attr.adcmask,
+    			attr.dbitoffset,
+    			(long long int)attr.dbitlist,
 				ctime(&t));
 		if (strlen(message) > MAX_MASTER_FILE_LENGTH) {
 			FILE_LOG(logERROR) << "Master File Size " << strlen(message) <<

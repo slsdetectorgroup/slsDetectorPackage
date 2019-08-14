@@ -1926,9 +1926,10 @@ private:
 	 * add gap pixels to the image (only for Eiger in 4 bit mode)
 	 * @param image pointer to image without gap pixels
 	 * @param gpImage poiner to image with gap pixels, if NULL, allocated inside function
+	 * @param quadEnable quad enabled
 	 * @returns number of data bytes of image with gap pixels
 	 */
-	int processImageWithGapPixels(char* image, char*& gpImage);
+	int processImageWithGapPixels(char* image, char*& gpImage, bool quadEnable);
 
 
 	/** Multi detector Id */

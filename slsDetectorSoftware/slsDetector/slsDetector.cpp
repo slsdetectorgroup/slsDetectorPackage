@@ -752,6 +752,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 	thisDetector->activated = true;
 	thisDetector->receiver_deactivatedPaddingEnable = true;
 	thisDetector->receiver_silentMode = false;
+	thisDetector->quadEnable = false;
 
 	// get the detector parameters based on type
 	detParameterList detlist;
@@ -2365,6 +2366,12 @@ int slsDetector::updateDetectorNoWait() {
 		thisDetector->roFlags=ro;
 
 		getTotalNumberOfChannels();
+	}
+
+	if(thisDetector->myDetectorType == EIGER){
+		n += controlSocket->ReceiveDataOnly( &nm,sizeof(int32_t));
+		thisDetector->quadEnable = nm;
+
 	}
 
 
@@ -5306,6 +5313,9 @@ string slsDetector::setReceiver(string receiverIP) {
 
 			if(thisDetector->myDetectorType == GOTTHARD)
 				sendROI(-1, NULL);
+			if (thisDetector->myDetectorType == EIGER) {
+				setQuad(-1);
+			}
 		}
 	}
 
@@ -9778,6 +9788,7 @@ int slsDetector::setQuad(int val) {
 					setErrorMask((getErrorMask())|(SOME_ERROR));
 				}
 				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				thisDetector->quadEnable = retval;
 				disconnectControl();
 				if (ret==FORCE_UPDATE)
 					updateDetector();
@@ -9790,11 +9801,11 @@ int slsDetector::setQuad(int val) {
 	if (ret != FAIL) {
 		ret = FAIL;
 		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+			if(val ==-1) {
+				val = thisDetector->quadEnable;
+			}
 #ifdef VERBOSE
-			if(val ==-1)
-				std::cout<< "Getting Receiver Quad mode" << endl;
-			else
-				std::cout<< "Setting Receiver Quad Mode to " << val << endl;
+			std::cout<< "Setting Receiver Quad Mode to " << val << endl;
 #endif
 			if (connectData() == OK){
 				ret=thisReceiver->sendInt(fnum2,retval,val);

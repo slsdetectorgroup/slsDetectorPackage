@@ -19,7 +19,7 @@ class multiSlsDetector;
 class SharedMemory;
 class receiverInterface;
 
-#define SLS_SHMVERSION	0x180629
+#define SLS_SHMVERSION	0x180630
 #define NMODMAXX 24
 #define NMODMAXY 24
 #define NCHIPSMAX 10
@@ -383,6 +383,9 @@ private:
 
 		/** silent receiver */
 		bool receiver_silentMode;
+
+		/** quad enable */
+		bool quadEnable;
 
 	} sharedSlsDetector;
 

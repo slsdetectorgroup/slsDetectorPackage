@@ -338,7 +338,7 @@ int UDPStandardImplementation::setDataStreamEnable(const bool enable) {
                         nd[1] = 2;
                     }
 		            DataStreamer* s = new DataStreamer(i, fifo[i], &dynamicRange,
-		                  &roi, &fileIndex, fd, additionalJsonHeader, &silentMode, (int*)nd, &gapPixelsEnable);
+		                  &roi, &fileIndex, fd, additionalJsonHeader, &silentMode, (int*)nd, &gapPixelsEnable, &quadEnable);
 		            dataStreamer.push_back(s);
 		            dataStreamer[i]->SetGeneralData(generalData);
 		            dataStreamer[i]->CreateZmqSockets(&numThreads, streamingPort, streamingSrcIP);

@@ -4988,6 +4988,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 	int nDetPixelsX = 0;
 	int nDetPixelsY = 0;
 	bool gappixelsenable = false;
+	bool quadEnable = false;
 	bool eiger = false;
 	bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
 	int numRunning = 0;
@@ -5072,6 +5073,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 						eiger = (doc["detType"].GetUint() == (int)EIGER) ? true : false;
 						// gap pixels enable
 						gappixelsenable = (doc["gappixels"].GetUint() == 0) ? false : true;
+						quadEnable = (doc["quad"].GetUint() == 0) ? false : true;
 
 #ifdef VERBOSE
 						cprintf(BLUE, "(Debug) One Time Header Info:\n"
@@ -5084,9 +5086,10 @@ void multiSlsDetector::readFrameFromReceiver() {
 								"nX: %u\n"
 								"nY: %u\n"
 								"eiger: %d\n"
-								"gappixelsenable: %d\n",
+								"gappixelsenable: %d\n"
+								"quadEnable: %d\n",
 								size, multisize, dynamicRange, bytesPerPixel,
-								nPixelsX, nPixelsY, nX, nY, eiger, gappixelsenable);
+								nPixelsX, nPixelsY, nX, nY, eiger, gappixelsenable, quadEnable);
 #endif
 					}
 					// each time, parse rest of header
@@ -5154,12 +5157,24 @@ void multiSlsDetector::readFrameFromReceiver() {
 				}
 			}
 		}
-
+#ifdef VERBOSE
+		cprintf(BLUE,"nPixelsX:%d, nPixelsY:%d nx:%d ny:%d quadEnable:%d\n", nDetPixelsX, nDetPixelsY, nX, nY, quadEnable);
+#endif
 		//send data to callback
 		if (data) {		
 			// 4bit gap pixels
 			if (dynamicRange == 4 && gappixelsenable) {
-				int n    = processImageWithGapPixels(multiframe, multigappixels);
+				if (quadEnable) {
+					nDetPixelsX += 2;
+					nDetPixelsY += 2;
+				} else {
+					nDetPixelsX = nX * (nPixelsX + 3);
+					nDetPixelsY = nY * (nPixelsY + 1);
+				}
+#ifdef VERBOSE			
+				cprintf(RED,"Corrected nPixelsX:%d, nPixelsY:%d quadEnable:%d\n", nDetPixelsX, nDetPixelsY, quadEnable);
+#endif
+				int n    = processImageWithGapPixels(multiframe, multigappixels, quadEnable);
 				thisData = new detectorData(NULL, NULL, NULL, getCurrentProgress(),
 						currentFileName.c_str(), nDetPixelsX, nDetPixelsY,
 						multigappixels, n, dynamicRange, currentFileIndex);
@@ -5211,14 +5226,23 @@ void multiSlsDetector::readFrameFromReceiver() {
 		delete[] multigappixels;
 }
 
-int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage) {
-	// eiger 4 bit mode
-	int nxb          = thisMultiDetector->numberOfDetector[X] * (512 + 3);
-	int nyb          = thisMultiDetector->numberOfDetector[Y] * (256 + 1);
-	int gapdatabytes = nxb * nyb;
-
+int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage, bool quadEnable) {
+	// eiger 4 bit mode (divided by 2 already)
+	int nxb = thisMultiDetector->numberOfDetector[X] * (512 + 3);
+	int nyb = thisMultiDetector->numberOfDetector[Y] * (256 + 1);
+	int nchipInRow = 4;
 	int nxchip = thisMultiDetector->numberOfDetector[X] * 4;
 	int nychip = thisMultiDetector->numberOfDetector[Y] * 1;
+	if (quadEnable) {
+		nxb = thisMultiDetector->numberOfDetector[X] * (256 + 1);
+		nyb = thisMultiDetector->numberOfDetector[Y] * (512 + 2);
+		nxchip /= 2;
+		nychip *= 2;
+		nchipInRow /= 2;
+	}
+	int gapdatabytes = nxb * nyb;
+
+
 
 	// allocate
 	if (gpImage == NULL)
@@ -5234,13 +5258,13 @@ int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage) {
 	// copying line by line
 	src = image;
 	dst = gpImage;
-	for (int row = 0; row < nychip; ++row) { // for each chip in a row
+	for (int row = 0; row < nychip; ++row) { // for each chip row
 		for (int ichipy = 0; ichipy < b1chipy; ++ichipy) { //for each row in a chip
-			for (int col = 0; col < nxchip; ++col) {
+			for (int col = 0; col < nxchip; ++col) { // for each chip in a row
 				memcpy(dst, src, b1chipx);
 				src += b1chipx;
 				dst += b1chipx;
-				if ((col + 1) % 4)
+				if ((col + 1) % nchipInRow) // 1, 2, and 3rd chip, skip gap pixels
 					++dst;
 			}
 		}
@@ -5253,11 +5277,11 @@ int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage) {
 		uint8_t temp, g1, g2;
 		int mod;
 		dst = gpImage;
-		for (int row = 0; row < nychip; ++row) { // for each chip in a row
+		for (int row = 0; row < nychip; ++row) { // for each chip row
 			for (int ichipy = 0; ichipy < b1chipy; ++ichipy) { //for each row in a chip
-				for (int col = 0; col < nxchip; ++col) {
+				for (int col = 0; col < nxchip; ++col) { // for each chip in a row
 					dst += b1chipx;
-					mod = (col + 1) % 4;
+					mod = (col + 1) % nchipInRow; // 1, 2, and 3rd chip, get gap pixels
 					// copy gap pixel(chip 0, 1, 2)
 					if (mod) {
 						// neighbouring gap pixels to left
@@ -5288,8 +5312,8 @@ int multiSlsDetector::processImageWithGapPixels(char* image, char*& gpImage) {
 	{
 		uint8_t temp, g1, g2;
 		char* dst_prevline = 0;
-		dst                = gpImage;
-		for (int row = 0; row < nychip; ++row) { // for each chip in a row
+		dst = gpImage;
+		for (int row = 0; row < nychip; ++row) { // for each chip row
 			dst += (b1chipy * nxb);
 			// horizontal copying of gap pixels from neighboring past line (bottom parts)
 			if (row < nychip - 1) {

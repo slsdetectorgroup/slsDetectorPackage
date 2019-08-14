@@ -3734,6 +3734,14 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 
 
+#ifdef EIGERD
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
+	nm=getQuad();
+#endif
+	n = sendData(file_des,&nm,sizeof(int32_t),INT32);
+	if (n < 0) return printSocketReadError();
+#endif
+
 	if (lockStatus==0) {
 		strcpy(lastClientIP,thisClientIP);
 	}

@@ -32,9 +32,10 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	 * @param sm pointer to silent mode
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param gpEnable pointer to gap pixels enable
+	 * @param qe pointer to quad Enable
 	 */
 	DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
-			uint64_t* fi, int fd, char* ajh, bool* sm, int* nd, bool* gpEnable);
+			uint64_t* fi, int fd, char* ajh, bool* sm, int* nd, bool* gpEnable, bool* qe);
 
 	/**
 	 * Destructor
@@ -227,5 +228,7 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	/** Gap Pixels Enable */
 	bool* gapPixelsEnable;
 
+	/** quad enable */
+	bool* quadEnable;
 };
 

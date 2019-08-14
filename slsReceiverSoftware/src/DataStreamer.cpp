@@ -16,7 +16,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 
 DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
-		uint64_t* fi, int fd, char* ajh, bool* sm, int* nd, bool* gpEnable) :
+		uint64_t* fi, int fd, char* ajh, bool* sm, int* nd, bool* gpEnable, bool* qe) :
 		ThreadObject(ind),
 		runningFlag(0),
 		generalData(0),
@@ -33,7 +33,8 @@ DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
 		firstAcquisitionIndex(0),
 		firstMeasurementIndex(0),
 		completeBuffer(0),
-		gapPixelsEnable(gpEnable)
+		gapPixelsEnable(gpEnable),
+		quadEnable(qe)
 {
 	numDet[0] = nd[0];
 	numDet[1] = nd[1];
@@ -279,7 +280,7 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,
 			header.detType, header.version,
-			*gapPixelsEnable ? 1 : 0, flippedDataX,
+			*gapPixelsEnable ? 1 : 0, flippedDataX, *quadEnable,
 			additionJsonHeader
 			);
 }

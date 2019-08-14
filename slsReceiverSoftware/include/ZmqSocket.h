@@ -274,7 +274,7 @@ public:
 			uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
 			uint8_t detType = 0, uint8_t version = 0, uint32_t gapPixelsEnable = 0, uint32_t flippedDataX = 0, 
-			char* additionalJsonHeader = 0) {
+			uint32_t quadEnable = 0, char* additionalJsonHeader = 0) {
 
 
 		char buf[MAX_STR_LENGTH] = "";
@@ -308,7 +308,8 @@ public:
 
 		        //additional stuff
 				"\"gappixels\":%u, "
-		        "\"flippedDataX\":%u"
+		        "\"flippedDataX\":%u, "
+				"\"quad\":%u"
 
 				;//"}\n";
 		int length = sprintf(buf, jsonHeaderFormat,
@@ -321,7 +322,8 @@ public:
 
 						//additional stuff
 						gapPixelsEnable,
-						flippedDataX
+						flippedDataX,
+						quadEnable
 		);
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
 		    length = sprintf(buf, "%s, %s}\n", buf, additionalJsonHeader);

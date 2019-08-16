@@ -308,8 +308,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->controlPort = DEFAULT_PORTNO;
     sls::strcpy_safe(shm()->hostname, DEFAULT_HOSTNAME);
     shm()->myDetectorType = type;
-    shm()->multiSize[X] = 0;
-    shm()->multiSize[Y] = 0;
+    shm()->multiSize.x = 0;
+    shm()->multiSize.y = 0;
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
@@ -354,8 +354,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->selectedUDPInterface = 0;
     shm()->useReceiverFlag = false;
     shm()->tenGigaEnable = 0;
-    shm()->flippedData[X] = 0;
-    shm()->flippedData[Y] = 0;
+    shm()->flippedDataX = 0;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxZmqport = DEFAULT_ZMQ_RX_PORTNO +
@@ -401,20 +400,16 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
 
     // get the detector parameters based on type
     detParameters parameters{type};
-    shm()->nChan[X] = parameters.nChanX;
-    shm()->nChan[Y] = parameters.nChanY;
-    shm()->nChip[X] = parameters.nChipX;
-    shm()->nChip[Y] = parameters.nChipY;
+    shm()->nChan.x = parameters.nChanX;
+    shm()->nChan.y = parameters.nChanY;
+    shm()->nChip.x = parameters.nChipX;
+    shm()->nChip.y = parameters.nChipY;
     shm()->nDacs = parameters.nDacs;
     shm()->dynamicRange = parameters.dynamicRange;
-    shm()->nGappixels[X] = parameters.nGappixelsX;
-    shm()->nGappixels[Y] = parameters.nGappixelsY;
+    shm()->nGappixels.x = parameters.nGappixelsX;
+    shm()->nGappixels.y = parameters.nGappixelsY;
 
-    // derived parameters
-    shm()->nChans = shm()->nChan[X] * shm()->nChan[Y];
-    shm()->nChips = shm()->nChip[X] * shm()->nChip[Y];
-
-    // update #nchans, as it depends on #samples, adcmask,
+    // update #nchan, as it depends on #samples, adcmask,
     // readoutflags (ctb only)
     updateNumberOfChannels();
 }
@@ -491,8 +486,7 @@ int slsDetector::receiveModule(sls_detector_module *myMod,
     if (shm()->myDetectorType == EIGER) {
         ts += client.Receive(myMod->chanregs, sizeof(int) * (myMod->nchan));
         FILE_LOG(logDEBUG1)
-            << "nchans= " << shm()->nChans << " nchips= " << shm()->nChips
-            << "mod - nchans= " << myMod->nchan << " nchips= " << myMod->nchip
+            << " nchan= " << myMod->nchan << " nchip= " << myMod->nchip
             << "received chans of size " << ts;
     }
     FILE_LOG(logDEBUG1) << "received module of size " << ts << " register "
@@ -593,15 +587,15 @@ void slsDetector::updateNumberOfChannels() {
             ndchans = 64;
             FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans;
         }
-        shm()->nChans = nachans + ndchans;
-        FILE_LOG(logDEBUG1) << "# Total #Channels:" << shm()->nChans;
+        shm()->nChan.x = nachans + ndchans;
+        FILE_LOG(logDEBUG1) << "# Total #Channels:" << shm()->nChan.x;
     }
 }
 
 slsDetectorDefs::xy slsDetector::getNumberOfChannels() const {
     slsDetectorDefs::xy coord;
-    coord.x = (shm()->nChan[X] * shm()->nChip[X] + shm()->gappixels * shm()->nGappixels[X]);
-    coord.y = (shm()->nChan[Y] * shm()->nChip[Y] + shm()->gappixels * shm()->nGappixels[Y]);
+    coord.x = (shm()->nChan.x * shm()->nChip.x + shm()->gappixels * shm()->nGappixels.x);
+    coord.y = (shm()->nChan.y * shm()->nChip.y + shm()->gappixels * shm()->nGappixels.y);
     return coord;
 }
 
@@ -641,9 +635,8 @@ int slsDetector::getReadNLines() {
     return retval;
 }
 
-void slsDetector::updateMultiSize(int detx, int dety) {
-    shm()->multiSize[0] = detx;
-    shm()->multiSize[1] = dety;
+void slsDetector::updateMultiSize(slsDetectorDefs::xy det) {
+    shm()->multiSize = det;
 }
 
 
@@ -831,7 +824,7 @@ void slsDetector::updateCachedDetectorVariables() {
             if (shm()->myDetectorType == MOENCH)
                 setAdditionalJsonParameter("adcmask", std::to_string(u32));
 
-            // update #nchans, as it depends on #samples, adcmask,
+            // update #nchan, as it depends on #samples, adcmask,
             // readoutflags
             updateNumberOfChannels();
         }
@@ -1259,7 +1252,7 @@ void slsDetector::configureMAC() {
     // 2d positions to detector to put into udp header
     {
         int pos[2] = {0, 0};
-        int max = shm()->multiSize[Y] * (shm()->numUDPInterfaces);
+        int max = shm()->multiSize.y * (shm()->numUDPInterfaces);
         // row
         pos[0] = (detId % max);
         // col for horiz. udp ports
@@ -1340,7 +1333,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     sendToDetector(F_SET_TIMER, args, retval);
     FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
     shm()->timerValue[index] = retval;
-    // update #nchans, as it depends on #samples, adcmask,
+    // update #nchan, as it depends on #samples, adcmask,
     // readoutflags
     if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
         updateNumberOfChannels();
@@ -1492,7 +1485,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
     sendToDetector(F_SET_READOUT_FLAGS, arg, retval);
     FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
     shm()->roFlags = retval;
-    // update #nchans, as it depends on #samples, adcmask,
+    // update #nchan, as it depends on #samples, adcmask,
     // readoutflags
     if (shm()->myDetectorType == CHIPTESTBOARD) {
         updateNumberOfChannels();
@@ -1677,7 +1670,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         << "\nasamples:" << (shm()->timerValue[ANALOG_SAMPLES])
         << "\ndsamples:" << (shm()->timerValue[DIGITAL_SAMPLES])
         << "\ndynamic range:" << shm()->dynamicRange
-        << "\nflippeddatax:" << (shm()->flippedData[X])
+        << "\nflippeddatax:" << (shm()->flippedDataX)
         << "\nactivated: " << shm()->activated
         << "\nreceiver deactivated padding: " << shm()->rxPadDeactivatedModules
         << "\nsilent Mode:" << shm()->rxSilentMode
@@ -1719,7 +1712,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                      shm()->timerValue[SUBFRAME_ACQUISITION_TIME]);
             setTimer(SUBFRAME_DEADTIME, shm()->timerValue[SUBFRAME_DEADTIME]);
             setDynamicRange(shm()->dynamicRange);
-            setFlippedData(X, -1);
+            setFlippedDataX(-1);
             activate(-1);
             setDeactivatedRxrPaddingMode(
                 static_cast<int>(shm()->rxPadDeactivatedModules));
@@ -2330,7 +2323,7 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
     sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
     shm()->adcEnableMask = mask;
 
-    // update #nchans, as it depends on #samples, adcmask,
+    // update #nchan, as it depends on #samples, adcmask,
     // readoutflags
     updateNumberOfChannels();
 
@@ -2477,29 +2470,24 @@ bool slsDetector::setDeactivatedRxrPaddingMode(int padding) {
     return shm()->rxPadDeactivatedModules;
 }
 
-int slsDetector::getFlippedData(dimension d) const {
-    return shm()->flippedData[d];
+int slsDetector::getFlippedDataX() const {
+    return shm()->flippedDataX;
 }
 
-int slsDetector::setFlippedData(dimension d, int value) {
-    if (d == Y) {
-        throw RuntimeError("Flipped across Y axis is not implemented");
-    }
+int slsDetector::setFlippedDataX(int value) {
     // replace get with shm value (write to shm right away as it is a det value,
     // not rx value)
     if (value > -1) {
-        shm()->flippedData[d] = (value > 0) ? 1 : 0;
+        shm()->flippedDataX = (value > 0) ? 1 : 0;
     }
-    int args[]{static_cast<int>(d), value};
     int retval = -1;
-    args[1] = shm()->flippedData[d];
-    FILE_LOG(logDEBUG1) << "Setting flipped data across axis " << d
-                        << " with value: " << value;
+    int arg = shm()->flippedDataX;
+    FILE_LOG(logDEBUG1) << "Setting flipped data across x axis with value: " << arg;
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, args, retval);
+        sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, arg, retval);
         FILE_LOG(logDEBUG1) << "Flipped data:" << retval;
     }
-    return shm()->flippedData[d];
+    return shm()->flippedDataX;
 }
 
 int slsDetector::setAllTrimbits(int val) {
@@ -2978,10 +2966,10 @@ void slsDetector::updateCachedReceiverVariables() const {
 }
 
 void slsDetector::sendMultiDetectorSize() {
-    int args[]{shm()->multiSize[0], shm()->multiSize[1]};
+    int args[]{shm()->multiSize.x, shm()->multiSize.y};
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending multi detector size to receiver: ("
-                        << shm()->multiSize[0] << "," << shm()->multiSize[1]
+                        << shm()->multiSize.x << "," << shm()->multiSize.y
                         << ")";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SEND_RECEIVER_MULTIDETSIZE, args, retval);

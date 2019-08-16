@@ -1094,11 +1094,11 @@ void Detector::setActive(bool active, Positions pos) {
 }
 
 Result<bool> Detector::getBottom(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getFlippedData, pos, defs::X);
+    return pimpl->Parallel(&slsDetector::getFlippedDataX, pos);
 }
 
 void Detector::setBottom(bool value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setFlippedData, pos, defs::X, static_cast<int>(value));
+    pimpl->Parallel(&slsDetector::setFlippedDataX, pos, static_cast<int>(value));
 }
 
 Result<int> Detector::getAllTrimbits(Positions pos) const {

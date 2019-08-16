@@ -276,12 +276,12 @@ void multiSlsDetector::initializeDetectorStructure() {
     multi_shm()->shmversion = MULTI_SHMVERSION;
     multi_shm()->numberOfDetectors = 0;
     multi_shm()->multiDetectorType = GENERIC;
-    multi_shm()->numberOfDetector[X] = 0;
-    multi_shm()->numberOfDetector[Y] = 0;
-    multi_shm()->numberOfChannels[X] = 0;
-    multi_shm()->numberOfChannels[Y] = 0;
-    multi_shm()->maxNumberOfChannels[X] = 0;
-    multi_shm()->maxNumberOfChannels[Y] = 0;
+    multi_shm()->numberOfDetector.x = 0;
+    multi_shm()->numberOfDetector.y = 0;
+    multi_shm()->numberOfChannels.x = 0;
+    multi_shm()->numberOfChannels.y = 0;
+    multi_shm()->maxNumberOfChannels.x = 0;
+    multi_shm()->maxNumberOfChannels.y = 0;
     multi_shm()->acquiringFlag = false;
     multi_shm()->receiver_upstream = false;
 }
@@ -431,7 +431,7 @@ void multiSlsDetector::updateDetectorSize() {
     
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
     
-    int maxy = multi_shm()->maxNumberOfChannels[Y];
+    int maxy = multi_shm()->maxNumberOfChannels.y;
     if (maxy == 0) {
         maxy = det_size.y * size();
     }
@@ -442,29 +442,26 @@ void multiSlsDetector::updateDetectorSize() {
         ++ndetx;
     }
 
-    multi_shm()->numberOfDetector[X] = ndetx;
-    multi_shm()->numberOfDetector[Y] = ndety;
-    multi_shm()->numberOfChannels[X] = det_size.x * ndetx;
-    multi_shm()->numberOfChannels[Y] = det_size.y * ndety; 
+    multi_shm()->numberOfDetector.x = ndetx;
+    multi_shm()->numberOfDetector.y = ndety;
+    multi_shm()->numberOfChannels.x = det_size.x * ndetx;
+    multi_shm()->numberOfChannels.y = det_size.y * ndety; 
 
     FILE_LOG(logDEBUG)
         << "\n\tNumber of Detectors in X direction:"
-        << multi_shm()->numberOfDetector[X]
+        << multi_shm()->numberOfDetector.x
         << "\n\tNumber of Detectors in Y direction:"
-        << multi_shm()->numberOfDetector[Y]    
+        << multi_shm()->numberOfDetector.y    
         << "\n\tNumber of Channels in X direction:"
-        << multi_shm()->numberOfChannels[X]
+        << multi_shm()->numberOfChannels.x
         << "\n\tNumber of Channels in Y direction:"
-        << multi_shm()->numberOfChannels[Y];
+        << multi_shm()->numberOfChannels.y;
 
 
     for (auto &d : detectors) {
-        d->updateMultiSize(multi_shm()->numberOfDetector[0],
-                           multi_shm()->numberOfDetector[1]);
+        d->updateMultiSize(multi_shm()->numberOfDetector);
     }
-    
-    multi_shm()->maxNumberOfChannels[X] = multi_shm()->numberOfChannels[X];
-    multi_shm()->maxNumberOfChannels[Y] = multi_shm()->numberOfChannels[Y];
+    multi_shm()->maxNumberOfChannels = multi_shm()->numberOfChannels;
  }
 
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum() const {
@@ -497,10 +494,7 @@ std::string multiSlsDetector::getDetectorTypeAsString(int detPos) {
 size_t multiSlsDetector::size() const { return detectors.size(); }
 
 slsDetectorDefs::xy multiSlsDetector::getNumberOfDetectors() const {
-    slsDetectorDefs::xy res;
-    res.x = multi_shm()->numberOfDetector[X];
-    res.y = multi_shm()->numberOfDetector[Y];
-    return res;
+    return multi_shm()->numberOfDetector;
 }
 
 slsDetectorDefs::xy multiSlsDetector::getNumberOfChannels(int detPos) {
@@ -510,22 +504,15 @@ slsDetectorDefs::xy multiSlsDetector::getNumberOfChannels(int detPos) {
     }
 
     // multi
-    slsDetectorDefs::xy coord;
-    coord.x = multi_shm()->numberOfChannels[X];
-    coord.y = multi_shm()->numberOfChannels[Y]; 
-    return coord;
+    return multi_shm()->numberOfChannels;
 }
 
 slsDetectorDefs::xy multiSlsDetector::getMaxNumberOfChannels() const {
-    slsDetectorDefs::xy coord;
-    coord.x = multi_shm()->maxNumberOfChannels[X];
-    coord.y = multi_shm()->maxNumberOfChannels[Y]; 
-    return coord;
+    return multi_shm()->maxNumberOfChannels;
 }
 
 void multiSlsDetector::setMaxNumberOfChannels(const slsDetectorDefs::xy c) {
-    multi_shm()->maxNumberOfChannels[X] = c.x;
-    multi_shm()->maxNumberOfChannels[Y] = c.y; 
+    multi_shm()->maxNumberOfChannels = c;
 }
 
 int multiSlsDetector::getQuad(int detPos) {
@@ -2140,25 +2127,25 @@ int multiSlsDetector::setDeactivatedRxrPaddingMode(int padding, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getFlippedData(dimension d, int detPos) {
+int multiSlsDetector::getFlippedDataX(int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->getFlippedData(d);
+        return detectors[detPos]->getFlippedDataX();
     }
 
     // multi
-    auto r = serialCall(&slsDetector::getFlippedData, d);
+    auto r = serialCall(&slsDetector::getFlippedDataX);
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setFlippedData(dimension d, int value, int detPos) {
+int multiSlsDetector::setFlippedDataX(int value, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setFlippedData(d, value);
+        return detectors[detPos]->setFlippedDataX(value);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setFlippedData, d, value);
+    auto r = parallelCall(&slsDetector::setFlippedDataX, value);
     return sls::minusOneIfDifferent(r);
 }
 
@@ -2198,11 +2185,11 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
     if (val != -1) {
         Parallel(&slsDetector::enableGapPixels, {}, val);
         Result<slsDetectorDefs::xy> res = Parallel(&slsDetector::getNumberOfChannels, {});
-        multi_shm()->numberOfChannels[X] = 0;
-        multi_shm()->numberOfChannels[Y] = 0;
+        multi_shm()->numberOfChannels.x = 0;
+        multi_shm()->numberOfChannels.y = 0;
         for (auto &it : res) {
-            multi_shm()->numberOfChannels[X] += it.x;
-            multi_shm()->numberOfChannels[Y] += it.y;
+            multi_shm()->numberOfChannels.x += it.x;
+            multi_shm()->numberOfChannels.y += it.y;
         }
     }
     return ret;
@@ -2211,11 +2198,11 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
 void multiSlsDetector::setGapPixelsEnable(bool enable, Positions pos){
     Parallel(&slsDetector::enableGapPixels, pos, static_cast<int>(enable));
     Result<slsDetectorDefs::xy> res = Parallel(&slsDetector::getNumberOfChannels, {});
-    multi_shm()->numberOfChannels[X] = 0;
-    multi_shm()->numberOfChannels[Y] = 0;
+    multi_shm()->numberOfChannels.x = 0;
+    multi_shm()->numberOfChannels.y = 0;
     for (auto &it : res) {
-        multi_shm()->numberOfChannels[X] += it.x;
-        multi_shm()->numberOfChannels[Y] += it.y;
+        multi_shm()->numberOfChannels.x += it.x;
+        multi_shm()->numberOfChannels.y += it.y;
     }
 }
 
@@ -3046,14 +3033,14 @@ void multiSlsDetector::readFrameFromReceiver() {
 
 int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable) {
     // eiger 4 bit mode 
-    int nxb = multi_shm()->numberOfDetector[X] * (512 + 3); //(divided by 2 already)
-    int nyb = multi_shm()->numberOfDetector[Y] * (256 + 1);
+    int nxb = multi_shm()->numberOfDetector.x * (512 + 3); //(divided by 2 already)
+    int nyb = multi_shm()->numberOfDetector.y * (256 + 1);
     int nchipInRow = 4;
-    int nxchip = multi_shm()->numberOfDetector[X] * 4;
-    int nychip = multi_shm()->numberOfDetector[Y] * 1;
+    int nxchip = multi_shm()->numberOfDetector.x * 4;
+    int nychip = multi_shm()->numberOfDetector.y * 1;
     if (quadEnable) {
-        nxb = multi_shm()->numberOfDetector[X] * (256 + 1); //(divided by 2 already)
-        nyb = multi_shm()->numberOfDetector[Y] * (512 + 2);
+        nxb = multi_shm()->numberOfDetector.x * (256 + 1); //(divided by 2 already)
+        nyb = multi_shm()->numberOfDetector.y * (512 + 2);
         nxchip /= 2;
         nychip *= 2;
         nchipInRow /= 2;

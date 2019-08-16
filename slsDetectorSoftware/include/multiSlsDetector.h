@@ -54,13 +54,13 @@ struct sharedMultiSlsDetector {
      * -----------------------------------------------*/
 
     /** Number of detectors operated at once */
-    int numberOfDetector[2];
+    slsDetectorDefs::xy numberOfDetector;
 
     /**  total number of channels for all detectors */
-    int numberOfChannels[2];
+    slsDetectorDefs::xy numberOfChannels;
 
       /**  max number of channels for complete detector*/
-    int maxNumberOfChannels[2];  
+    slsDetectorDefs::xy maxNumberOfChannels;  
 
     /** flag for acquiring */
     bool acquiringFlag;
@@ -1413,22 +1413,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setDeactivatedRxrPaddingMode(int padding = -1, int detPos = -1);
 
     /**
-     * Returns the enable if data will be flipped across x or y axis (Eiger)
-     * @param d axis across which data is flipped
+     * Returns the enable if data will be flipped across x axis (Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns 1 for flipped, else 0
      */
-    int getFlippedData(dimension d = X, int detPos = -1); //
+    int getFlippedDataX(int detPos = -1); //
 
     /**
      * Sets the enable which determines if
-     * data will be flipped across x or y axis (Eiger)
-     * @param d axis across which data is flipped
+     * data will be flipped across x axis (Eiger)
      * @param value 0 or 1 to reset/set or -1 to get value
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns enable flipped data across x or y axis
      */
-    int setFlippedData(dimension d = X, int value = -1, int detPos = -1); //
+    int setFlippedDataX(int value = -1, int detPos = -1); //
 
     /**
      * Sets all the trimbits to a particular value (Eiger)

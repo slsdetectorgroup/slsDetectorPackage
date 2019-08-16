@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x190815
+#define SLS_SHMVERSION 0x190816
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -36,7 +36,7 @@ struct sharedSlsDetector {
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
     /** Number of detectors in multi list in x dir and y dir */
-    int multiSize[2];
+    slsDetectorDefs::xy multiSize;
 
     /** is the port used for control functions */
     int controlPort;
@@ -50,17 +50,11 @@ struct sharedSlsDetector {
     /** list of the energies at which the detector has been trimmed  */
     sls::FixedCapacityContainer<int, MAX_TRIMEN> trimEnergies;
 
-    /**  number of channels per chip */
-    int nChans;
-
     /**  number of channels per chip in one direction */
-    int nChan[2];
-
-    /**  number of chips per module*/
-    int nChips;
+    slsDetectorDefs::xy nChan;
 
     /**  number of chips per module in one direction */
-    int nChip[2];
+    slsDetectorDefs::xy nChip;
 
     /**  number of dacs per module*/
     int nDacs;
@@ -142,7 +136,7 @@ struct sharedSlsDetector {
     int tenGigaEnable;
 
     /** flipped data across x or y axis */
-    int flippedData[2];
+    int flippedDataX;
 
     /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
@@ -166,7 +160,7 @@ struct sharedSlsDetector {
     int gappixels;
 
     /** gap pixels in each direction */
-    int nGappixels[2];
+    slsDetectorDefs::xy nGappixels;
 
     /** additional json header */
     char rxAdditionalJsonHeader[MAX_STR_LENGTH];
@@ -356,10 +350,9 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Set Detector offset in shared memory in dimension d
-     * @param detx number of detectors in X dir in multi list
-     * @param dety number of detectors in Y dir in multi list
+     * @param det detector size
      */
-    void updateMultiSize(int detx, int dety);
+    void updateMultiSize(slsDetectorDefs::xy det);
 
 
     int setControlPort(int port_number);
@@ -1168,20 +1161,18 @@ class slsDetector : public virtual slsDetectorDefs {
     bool setDeactivatedRxrPaddingMode(int padding = -1);
 
     /**
-     * Returns the enable if data will be flipped across x or y axis (Eiger)
-     * @param d axis across which data is flipped
+     * Returns the enable if data will be flipped across x axis (Eiger)
      * @returns 1 for flipped, else 0
      */
-    int getFlippedData(dimension d = X) const;
+    int getFlippedDataX() const;
 
     /**
      * Sets the enable which determines if
-     * data will be flipped across x or y axis (Eiger)
-     * @param d axis across which data is flipped
+     * data will be flipped across x axis (Eiger)
      * @param value 0 or 1 to reset/set or -1 to get value
-     * @returns enable flipped data across x or y axis
+     * @returns enable flipped data across x axis
      */
-    int setFlippedData(dimension d = X, int value = -1);
+    int setFlippedDataX(int value = -1);
 
     /**
      * Sets all the trimbits to a particular value (Eiger)

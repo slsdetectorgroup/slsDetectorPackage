@@ -148,16 +148,9 @@ std::string slsReceiverImplementation::getDetectorHostname() const {
     return std::string(detHostname);
 }
 
-int slsReceiverImplementation::getFlippedData(int axis) const {
+int slsReceiverImplementation::getFlippedDataX() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    switch(axis) {
-        case 0:
-            return flippedDataX;
-        case 1:
-            return 0;
-        default:
-            return -1;
-    }
+    return flippedDataX;
 }
 
 bool slsReceiverImplementation::getGapPixelsEnable() const {
@@ -482,10 +475,8 @@ void slsReceiverImplementation::setMultiDetectorSize(const int *size) {
     FILE_LOG(logINFO) << log_message;
 }
 
-void slsReceiverImplementation::setFlippedData(int axis, int enable) {
+void slsReceiverImplementation::setFlippedDataX(int enable) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    if (axis != 0)
-        return;
     flippedDataX = (enable == 0) ? 0 : 1;
 
 	if (!quadEnable) {

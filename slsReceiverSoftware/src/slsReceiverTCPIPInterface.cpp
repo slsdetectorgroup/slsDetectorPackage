@@ -976,19 +976,18 @@ int slsReceiverTCPIPInterface::set_streaming_timer(Interface &socket) {
 int slsReceiverTCPIPInterface::set_flipped_data(Interface &socket) {
     // TODO! Why 2 args?
     memset(mess, 0, sizeof(mess));
-    int args[2]{0, -1};
-    socket.Receive(args);
+    auto arg = socket.Receive<int>();
 
     if (myDetectorType != EIGER)
         functionNotImplemented();
 
-    if (args[1] >= 0) {
+    if (arg >= 0) {
         VerifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting flipped data:" << args[1];
-        impl()->setFlippedData(args[0], args[1]);
+        FILE_LOG(logDEBUG1) << "Setting flipped data:" << arg;
+        impl()->setFlippedDataX(arg);
     }
-    int retval = impl()->getFlippedData(args[0]);
-    validate(args[1], retval, std::string("set flipped data"), DEC);
+    int retval = impl()->getFlippedDataX();
+    validate(arg, retval, std::string("set flipped data"), DEC);
     FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
     return socket.sendResult(retval);
 }

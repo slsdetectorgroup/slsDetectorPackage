@@ -63,10 +63,10 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     std::string getDetectorHostname() const;
 
     /*
-     * Get flipped data across 'axis'
-     * @return if data is flipped across 'axis'
+     * Get flipped data across x axis
+     * @return if data is flipped across x axis
      */
-    int getFlippedData(int axis = 0) const;
+    int getFlippedDataX() const;
 
     /**
      * Get Gap Pixels Enable (eiger specific)
@@ -390,10 +390,10 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     void setMultiDetectorSize(const int *size);
 
     /*
-     * Get flipped data across 'axis'
-     * @return if data is flipped across 'axis'
+     * Get flipped data across x axis
+     * @return if data is flipped across x axis
      */
-    void setFlippedData(int axis = 0, int enable = -1);
+    void setFlippedDataX(int enable = -1);
 
     /**
      * Set Gap Pixels Enable (eiger specific)

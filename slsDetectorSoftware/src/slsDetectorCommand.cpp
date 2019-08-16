@@ -122,13 +122,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
     ++i;
 
-    /*! \page test
-   - <b>flippeddatay [i]</b> enables/disables data being flipped across y axis. 1 enables, 0 disables. Not implemented.
-	 */
-    descrToFuncMap[i].m_pFuncName = "flippeddatay";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
-    ++i;
-
     /* digital test and debugging */
 
     /*! \page test
@@ -3304,15 +3297,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
             if ((!sscanf(args[1], "%d", &val)) || (val != 0 && val != 1))
                 return std::string("cannot scan flippeddata x mode: must be 0 or 1");
 
-            myDet->setFlippedData(X, val, detPos);
-        }
-
-        if (cmd == "flippeddatay") {
-            return std::string("Not required for this detector\n");
-            if ((!sscanf(args[1], "%d", &val)) || (val != 0 && val != 1))
-                return std::string("cannot scan flippeddata y mode: must be 0 or 1");
-
-            myDet->setFlippedData(Y, val, detPos);
+            myDet->setFlippedDataX(val, detPos);
         }
 
         if (cmd == "gappixels") {
@@ -3341,10 +3326,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
     } 	else if (cmd=="quad") {
 		return std::to_string(myDet->getQuad());
     } else if (cmd == "flippeddatax") {
-        ret = myDet->getFlippedData(X, detPos);
-    } else if (cmd == "flippeddatay") {
-        return std::string("Not required for this detector\n");
-        ret = myDet->getFlippedData(Y, detPos);
+        ret = myDet->getFlippedDataX(detPos);
     } else if (cmd == "gappixels") {
         if (detPos >= 0) // only in multi detector level to update number of channels etc.
             return std::string("Cannot execute this command from slsDetector level. Please use multiSlsDetector level.\n");
@@ -3370,7 +3352,6 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
         os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; 0 is no limit" << std::endl;
  		os << "quad i \n if i = 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;       
         os << "flippeddatax x \n sets if the data should be flipped on the x axis" << std::endl;
-        os << "flippeddatay y \n sets if the data should be flipped on the y axis" << std::endl;
         os << "gappixels i \n enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and multidetector level." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
@@ -3379,7 +3360,6 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
         os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; 0 is no limit" << std::endl;
         os << "quad \n returns 1 if the detector size is a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
         os << "flippeddatax\n gets if the data will be flipped on the x axis" << std::endl;
-        os << "flippeddatay\n gets if the data will be flipped on the y axis" << std::endl;
         os << "gappixels\n gets if gap pixels is enabled in system. Used in EIGER only and multidetector level." << std::endl;
     }
     return os.str();

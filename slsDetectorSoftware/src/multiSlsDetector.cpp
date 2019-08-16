@@ -404,25 +404,37 @@ void multiSlsDetector::addMultipleDetectors(const char *name) {
 
 void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     FILE_LOG(logDEBUG1) << "Adding detector " << hostname;
+  
+    int port = DEFAULT_PORTNO;
+    std::string host = hostname;
+    auto res = sls::split(hostname, ':');
+    if (res.size() > 1) {
+        host = res[0];
+        port = std::stoi(res[1]);
+    }
 
-    for (auto &d : detectors) {
-        if (d->getHostname() == hostname) {
-            FILE_LOG(logWARNING)
-                << "Detector " << hostname
-                << "already part of the multiDetector!" << std::endl
-                << "Remove it before adding it back in a new position!";
-            return;
+    if (host != "localhost") {
+        for (auto &d : detectors) {
+            if (d->getHostname() == host) {
+                FILE_LOG(logWARNING)
+                    << "Detector " << host
+                    << "already part of the multiDetector!" << std::endl
+                    << "Remove it before adding it back in a new position!";
+                return;
+            }
         }
     }
 
     // get type by connecting
     detectorType type =
-        slsDetector::getTypeFromDetector(hostname, DEFAULT_PORTNO);
+        slsDetector::getTypeFromDetector(host, port);
     int pos = (int)detectors.size();
     detectors.push_back(
         sls::make_unique<slsDetector>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
-    detectors[pos]->setHostname(hostname);
+    detectors[pos]->setControlPort(port);
+    detectors[pos]->setStopPort(port + 1);
+    detectors[pos]->setHostname(host);
     multi_shm()->multiDetectorType = getDetectorTypeAsEnum(-1);// -1 needed here
 }
 

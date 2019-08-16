@@ -23,13 +23,11 @@
 
 using namespace sls;
 
-#define DEFAULT_HOSTNAME "localhost"
 
+// create shm
 slsDetector::slsDetector(detectorType type, int multi_id, int det_id,
                          bool verify)
     : detId(det_id), shm(multi_id, det_id) {
-    /* called from put hostname command,
-     * so sls shared memory will be created */
 
     // ensure shared memory was not created before
     if (shm.IsExisting()) {
@@ -42,10 +40,9 @@ slsDetector::slsDetector(detectorType type, int multi_id, int det_id,
     initSharedMemory(type, multi_id, verify);
 }
 
+// pick up from shm
 slsDetector::slsDetector(int multi_id, int det_id, bool verify)
     : detId(det_id), shm(multi_id, det_id) {
-    /* called from multi constructor to populate structure,
-     * so sls shared memory will be opened, not created */
 
     // getDetectorType From shm will check if it was already existing
     detectorType type = getDetectorTypeFromShm(multi_id, verify);
@@ -305,8 +302,7 @@ void slsDetector::initSharedMemory(detectorType type, int multi_id,
 
 void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->shmversion = SLS_SHMVERSION;
-    shm()->controlPort = DEFAULT_PORTNO;
-    sls::strcpy_safe(shm()->hostname, DEFAULT_HOSTNAME);
+    memset(shm()->hostname, 0, MAX_STR_LENGTH);
     shm()->myDetectorType = type;
     shm()->multiSize.x = 0;
     shm()->multiSize.y = 0;
@@ -644,9 +640,13 @@ int slsDetector::setControlPort(int port_number) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting control port to " << port_number;
     if (port_number >= 0 && port_number != shm()->controlPort) {
-        sendToDetector(F_SET_PORT, port_number, retval);
-        shm()->controlPort = retval;
-        FILE_LOG(logDEBUG1) << "Control port: " << retval;
+        if (strlen(shm()->hostname) > 0) {
+            sendToDetector(F_SET_PORT, port_number, retval);
+            shm()->controlPort = retval;
+            FILE_LOG(logDEBUG1) << "Control port: " << retval;
+        } else {
+            shm()->controlPort = port_number;
+        }
     }
     return shm()->controlPort;
 }
@@ -655,9 +655,13 @@ int slsDetector::setStopPort(int port_number) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting stop port to " << port_number;
     if (port_number >= 0 && port_number != shm()->stopPort) {
-        sendToDetectorStop(F_SET_PORT, port_number, retval);
-        shm()->stopPort = retval;
-        FILE_LOG(logDEBUG1) << "Stop port: " << retval;
+        if (strlen(shm()->hostname) > 0) {
+            sendToDetectorStop(F_SET_PORT, port_number, retval);
+            shm()->stopPort = retval;
+            FILE_LOG(logDEBUG1) << "Stop port: " << retval;
+        } else {
+            shm()->stopPort = port_number;
+        }
     }
     return shm()->stopPort;
 }

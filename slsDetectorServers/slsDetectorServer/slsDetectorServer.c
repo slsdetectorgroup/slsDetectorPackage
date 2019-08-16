@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
 		FILE_LOG(logINFO, ("SLS Detector Server %s (0x%x)\n", GITBRANCH, version));
 	}
 
-        int  portno = DEFAULT_PORTNO;
+    int portno = DEFAULT_PORTNO;
 	int retval = OK;
 	int fd = 0;
 
@@ -66,6 +66,17 @@ int main(int argc, char *argv[]){
             else if(!strcasecmp(argv[i],"-devel")){
                 FILE_LOG(logINFO, ("Detected developer mode\n"));
                 debugflag = 1;
+            }
+			else if(!strcasecmp(argv[i],"--port")){
+			    if ((i + 1) >= argc) {
+			        FILE_LOG(logERROR, ("no port value given. Exiting.\n"));
+			        return -1;
+			    }
+			    if (sscanf(argv[i + 1], "%d", &portno) == 0) {
+			        FILE_LOG(logERROR, ("cannot decode port value %s. Exiting.\n", argv[i + 1]));
+			        return -1;
+			    }
+				FILE_LOG(logINFO, ("Detected port: %d\n", portno));
             }
 #ifdef GOTTHARDD
 			else if(!strcasecmp(argv[i],"-phaseshift")){
@@ -88,20 +99,18 @@ int main(int argc, char *argv[]){
 	memset(cmd, 0, 100);
 #endif
 	if (isControlServer) {
-		portno = DEFAULT_PORTNO;
 		FILE_LOG(logINFO, ("Opening control server on port %d \n", portno));
 #ifdef STOP_SERVER
 		{
 			int i;
 			for (i = 0; i < argc; ++i)
 				sprintf(cmd, "%s %s", cmd, argv[i]);
-			sprintf(cmd,"%s -stopserver&", cmd);
+			sprintf(cmd,"%s -stopserver --port %d &", cmd, portno + 1);
 			FILE_LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
 			system(cmd);
 		}
 #endif
 	} else {
-		portno = DEFAULT_PORTNO + 1;
 		FILE_LOG(logINFO,("Opening stop server on port %d \n", portno));
 	}
 

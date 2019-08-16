@@ -13,7 +13,7 @@ enum detFuncs{
 	F_EXEC_COMMAND=0, /**< command is executed */
 	F_GET_DETECTOR_TYPE, /**< return detector type */
 	F_SET_EXTERNAL_SIGNAL_FLAG, /**< set/get flag for external signal */
-	F_SET_EXTERNAL_COMMUNICATION_MODE, /**< set/get  external communication mode (obsolete) */
+	F_SET_TIMING_MODE, /**< set/get  external communication mode (obsolete) */
 	F_GET_ID, /**< get detector id of version */
 	F_DIGITAL_TEST, /**< digital test of the detector */
 	F_SET_DAC, /**< set DAC value */
@@ -164,7 +164,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
 	case F_SET_EXTERNAL_SIGNAL_FLAG:		return "F_SET_EXTERNAL_SIGNAL_FLAG";
-	case F_SET_EXTERNAL_COMMUNICATION_MODE:	return "F_SET_EXTERNAL_COMMUNICATION_MODE";
+	case F_SET_TIMING_MODE:					return "F_SET_TIMING_MODE";
 	case F_GET_ID:							return "F_GET_ID";
 	case F_DIGITAL_TEST:					return "F_DIGITAL_TEST";
 	case F_SET_DAC:							return "F_SET_DAC";

@@ -212,8 +212,8 @@ int 		setHighVoltage(int val);
 
 
 // parameters - timing, extsig
-void 		setTiming( enum externalCommunicationMode arg);
-enum 		externalCommunicationMode getTiming();
+void 		setTiming( enum timingMode arg);
+enum 		timingMode getTiming();
 #ifdef GOTTHARDD
 void        setExtSignal(enum externalSignalFlag  mode);
 int         getExtSignal();

@@ -162,15 +162,13 @@ class Detector {
 
     void setDAC(int value, defs::dacIndex index, bool mV, Positions pos = {});
 
-    //TODO: rename externalCommunicationMode: timingMode
-    Result<defs::externalCommunicationMode>
-    getTimingMode(Positions pos = {}) const;
+    Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
      * [Gotthard, Jungfrau, CTB Options: AUTO_TIMING, TRIGGER_EXPOSURE]
      * [Eiger Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER]
      */
-    void setTimingMode(defs::externalCommunicationMode value,
+    void setTimingMode(defs::timingMode value,
                        Positions pos = {});
 
 

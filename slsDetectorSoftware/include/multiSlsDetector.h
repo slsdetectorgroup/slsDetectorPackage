@@ -763,9 +763,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current timing mode
      */
-    externalCommunicationMode setExternalCommunicationMode(
-        externalCommunicationMode pol = GET_EXTERNAL_COMMUNICATION_MODE,
-        int detPos = -1);//
+    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE, int detPos = -1);//
 
     /**
      * Set/get external signal flags (to specify triggerinrising edge etc)

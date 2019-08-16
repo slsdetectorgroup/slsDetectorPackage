@@ -337,9 +337,8 @@ format
     /**
       communication mode using external signals
     */
-    enum externalCommunicationMode {
-        GET_EXTERNAL_COMMUNICATION_MODE =
-            -1,           /**<return flag for communication mode */
+    enum timingMode {
+        GET_TIMING_MODE = -1, /**<return flag for communication mode */
         AUTO_TIMING,      /**< internal timing */
         TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
         GATED,            /**< gated  */
@@ -792,11 +791,11 @@ format
     /**
        returns external communication mode std::string from index
        \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER,
-       GET_EXTERNAL_COMMUNICATION_MODE \returns  auto, trigger, gating,
+       GET_TIMING_MODE \returns  auto, trigger, gating,
        burst_trigger, unknown
     */
 
-    static std::string externalCommunicationType(externalCommunicationMode f) {
+    static std::string timingModeType(timingMode f) {
         switch (f) {
         case AUTO_TIMING:
             return std::string("auto");
@@ -815,11 +814,10 @@ format
        returns external communication mode index from std::string
        \param sval can be auto, trigger,  gating, burst_trigger
        \returns AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER,
-       GET_EXTERNAL_COMMUNICATION_MODE
+       GET_TIMING_MODE
     */
 
-    static externalCommunicationMode
-    externalCommunicationType(std::string sval) {
+    static timingMode timingModeType(std::string sval) {
         if (sval == "auto")
             return AUTO_TIMING;
         if (sval == "trigger")
@@ -828,7 +826,7 @@ format
             return GATED;
         if (sval == "burst_trigger")
             return BURST_TRIGGER;
-        return GET_EXTERNAL_COMMUNICATION_MODE;
+        return GET_TIMING_MODE;
     };
 
     /** returns std::string from file format index

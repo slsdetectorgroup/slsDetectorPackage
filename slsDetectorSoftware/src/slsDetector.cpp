@@ -1457,11 +1457,10 @@ int slsDetector::getADC(dacIndex index) {
     return retval;
 }
 
-slsDetectorDefs::externalCommunicationMode
-slsDetector::setExternalCommunicationMode(externalCommunicationMode pol) {
-    int fnum = F_SET_EXTERNAL_COMMUNICATION_MODE;
+slsDetectorDefs::timingMode slsDetector::setTimingMode(timingMode pol) {
+    int fnum = F_SET_TIMING_MODE;
     auto arg = static_cast<int>(pol);
-    externalCommunicationMode retval = GET_EXTERNAL_COMMUNICATION_MODE;
+    timingMode retval = GET_TIMING_MODE;
     FILE_LOG(logDEBUG1) << "Setting communication to mode " << pol;
     sendToDetector(fnum, arg, retval);
     FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;

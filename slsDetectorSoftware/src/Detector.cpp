@@ -548,15 +548,13 @@ void Detector::setDAC(int value, defs::dacIndex index, bool mV, Positions pos) {
     pimpl->Parallel(&slsDetector::setDAC, pos, value, index, mV);
 }
 
-Result<defs::externalCommunicationMode>
-Detector::getTimingMode(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setExternalCommunicationMode, pos,
-                           defs::GET_EXTERNAL_COMMUNICATION_MODE);
+Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimingMode, pos,
+                           defs::GET_TIMING_MODE);
 }
 
-void Detector::setTimingMode(defs::externalCommunicationMode value,
-                             Positions pos) {
-    pimpl->Parallel(&slsDetector::setExternalCommunicationMode, pos, value);
+void Detector::setTimingMode(defs::timingMode value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimingMode, pos, value);
 }
 
 Result<defs::externalSignalFlag>

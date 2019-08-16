@@ -618,8 +618,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param pol timing mode (-1 gets)
      * @returns current timing mode
      */
-    externalCommunicationMode setExternalCommunicationMode(
-        externalCommunicationMode pol = GET_EXTERNAL_COMMUNICATION_MODE);
+    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE);
 
     /**
      * Set/get external signal flags (to specify triggerinrising edge etc)

@@ -385,7 +385,7 @@ public:
 	/**
 	 * Set/get timing mode
 	 * @param pol timing mode (-1 gets)
-	 * Options (slsDetectorDefs::externalCommunicationMode)
+	 * Options (slsDetectorDefs::timingMode)
 	 * (Eiger: AUTO_TIMING, TRIGGER_EXPOSURE, BURST_TRIGGER, GATED)
 	 * (Jungfrau: AUTO_TIMING, TRIGGER_EXPOSURE)
 	 * (Gotthard: AUTO_TIMING, TRIGGER_EXPOSURE)

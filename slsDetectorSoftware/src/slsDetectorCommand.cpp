@@ -4285,11 +4285,11 @@ std::string slsDetectorCommand::cmdTiming(int narg, const char * const args[], i
         return helpTiming(HELP_ACTION);
     }
     if (action == PUT_ACTION) {
-        if (myDet->externalCommunicationType(std::string(args[1])) == GET_EXTERNAL_COMMUNICATION_MODE)
+        if (myDet->timingModeType(std::string(args[1])) == GET_TIMING_MODE)
             return helpTiming(action);
-        myDet->setExternalCommunicationMode(myDet->externalCommunicationType(std::string(args[1])), detPos);
+        myDet->setTimingMode(myDet->timingModeType(std::string(args[1])), detPos);
     }
-    return myDet->externalCommunicationType(myDet->setExternalCommunicationMode(GET_EXTERNAL_COMMUNICATION_MODE, detPos));
+    return myDet->timingModeType(myDet->setTimingMode(GET_TIMING_MODE, detPos));
 }
 std::string slsDetectorCommand::helpTiming(int action) {
 

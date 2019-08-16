@@ -1226,10 +1226,10 @@ int setHighVoltage(int val){
 /* parameters - timing, extsig */
 
 
-void setTiming( enum externalCommunicationMode arg){
+void setTiming( enum timingMode arg){
     u_int32_t addr = EXT_SIGNAL_REG;
 
-	if (arg != GET_EXTERNAL_COMMUNICATION_MODE){
+	if (arg != GET_TIMING_MODE){
 		switch((int)arg){
 		case AUTO_TIMING:
 		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
@@ -1251,7 +1251,7 @@ void setTiming( enum externalCommunicationMode arg){
 	}
 }
 
-enum externalCommunicationMode getTiming() {
+enum timingMode getTiming() {
     u_int32_t regval = bus_r(EXT_SIGNAL_REG);
     switch (regval) {
     case EXT_SIGNAL_TRGGR_IN_RSNG_VAL:
@@ -1456,7 +1456,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
          */
         FILE_LOG(logINFOBLUE, ("Sending an image to counter the packet numbers\n"));
         // remember old parameters
-        enum externalCommunicationMode oldtiming = getTiming();
+        enum timingMode oldtiming = getTiming();
         uint64_t oldframes = setTimer(FRAME_NUMBER, -1);
         uint64_t oldcycles = setTimer(CYCLES_NUMBER, -1);
         uint64_t oldPeriod = setTimer(FRAME_PERIOD, -1);

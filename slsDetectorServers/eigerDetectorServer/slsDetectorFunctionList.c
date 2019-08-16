@@ -1193,9 +1193,9 @@ int setHighVoltage(int val) {
 
 /* parameters - timing, extsig */
 
-void setTiming( enum externalCommunicationMode arg) {
-	enum externalCommunicationMode ret=GET_EXTERNAL_COMMUNICATION_MODE;
-	if (arg != GET_EXTERNAL_COMMUNICATION_MODE) {
+void setTiming( enum timingMode arg) {
+	enum timingMode ret=GET_TIMING_MODE;
+	if (arg != GET_TIMING_MODE) {
 		switch((int)arg) {
 		case AUTO_TIMING:			ret = 0;	break;
 		case TRIGGER_EXPOSURE:		ret = 2;	break;
@@ -1211,8 +1211,8 @@ void setTiming( enum externalCommunicationMode arg) {
 }
 
 
-enum externalCommunicationMode getTiming() {
-	enum externalCommunicationMode ret = GET_EXTERNAL_COMMUNICATION_MODE;
+enum timingMode getTiming() {
+	enum timingMode ret = GET_TIMING_MODE;
 	ret = eiger_triggermode;
 	switch((int)ret) {
 	case 0:		ret = AUTO_TIMING;		break;

@@ -1110,16 +1110,14 @@ int multiSlsDetector::getADC(dacIndex index, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-slsDetectorDefs::externalCommunicationMode
-multiSlsDetector::setExternalCommunicationMode(externalCommunicationMode pol,
-                                               int detPos) {
+slsDetectorDefs::timingMode multiSlsDetector::setTimingMode(timingMode pol, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setExternalCommunicationMode(pol);
+        return detectors[detPos]->setTimingMode(pol);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setExternalCommunicationMode, pol);
+    auto r = parallelCall(&slsDetector::setTimingMode, pol);
     return sls::minusOneIfDifferent(r);
 }
 

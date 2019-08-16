@@ -167,7 +167,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
 	case F_SET_EXTERNAL_SIGNAL_FLAG:		return "F_SET_EXTERNAL_SIGNAL_FLAG";
-	case F_SET_EXTERNAL_COMMUNICATION_MODE:	return "F_SET_EXTERNAL_COMMUNICATION_MODE";
+	case F_SET_TIMING_MODE:					return "F_SET_TIMING_MODE";
 	case F_GET_ID:							return "F_GET_ID";
 	case F_DIGITAL_TEST:					return "F_DIGITAL_TEST";
 	case F_SET_DAC:							return "F_SET_DAC";
@@ -258,7 +258,7 @@ void function_table() {
 	flist[F_EXEC_COMMAND]						= &exec_command;
 	flist[F_GET_DETECTOR_TYPE]					= &get_detector_type;
 	flist[F_SET_EXTERNAL_SIGNAL_FLAG]			= &set_external_signal_flag;
-	flist[F_SET_EXTERNAL_COMMUNICATION_MODE]	= &set_external_communication_mode;
+	flist[F_SET_TIMING_MODE]					= &set_timing_mode;
 	flist[F_GET_ID]								= &get_id;
 	flist[F_DIGITAL_TEST]						= &digital_test;
 	flist[F_SET_DAC]							= &set_dac;
@@ -525,18 +525,18 @@ int set_external_signal_flag(int file_des) {
 
 
 
-int set_external_communication_mode(int file_des) {
+int set_timing_mode(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	enum externalCommunicationMode arg = GET_EXTERNAL_COMMUNICATION_MODE;
-	enum externalCommunicationMode retval = GET_EXTERNAL_COMMUNICATION_MODE;
+	enum timingMode arg = GET_TIMING_MODE;
+	enum timingMode retval = GET_TIMING_MODE;
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
 	// set
-	if ((arg != GET_EXTERNAL_COMMUNICATION_MODE) && (Server_VerifyLock() == OK)) {
+	if ((arg != GET_TIMING_MODE) && (Server_VerifyLock() == OK)) {
 		switch (arg) {
 		case AUTO_TIMING:
 		case TRIGGER_EXPOSURE:

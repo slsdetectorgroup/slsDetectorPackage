@@ -167,7 +167,7 @@ double slsDetectorUsers::getMeasuredSubFramePeriod(bool inseconds, int detPos) {
 }
 
 int slsDetectorUsers::setTimingMode(int pol, int detPos){
-	return detector.setExternalCommunicationMode(slsDetectorDefs::externalCommunicationMode(pol), detPos);
+	return detector.setTimingMode(slsDetectorDefs::timingMode(pol), detPos);
 }
 
 int slsDetectorUsers::setClockDivider(int value, int detPos) {

@@ -27,7 +27,7 @@ int M_nofuncMode(int);
 int exec_command(int);
 int get_detector_type(int);
 int set_external_signal_flag(int);
-int set_external_communication_mode(int);
+int set_timing_mode(int);
 int get_id(int);
 int digital_test(int);
 int set_dac(int);

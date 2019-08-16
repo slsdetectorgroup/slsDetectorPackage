@@ -351,6 +351,15 @@ std::string multiSlsDetector::exec(const char *cmd) {
     return result;
 }
 
+void multiSlsDetector::setVirtualDetectorServers(const int numdet, const int port) {
+    std::vector <std::string> hostnames;
+    for (int i = 0; i < numdet; ++i) {
+        // * 2 is for control and stop port
+        hostnames.push_back(std::string("localhost:") + std::to_string(port + i * 2));
+    }
+    setHostname(hostnames);
+}
+
 void multiSlsDetector::setHostname(const std::vector<std::string> &name) {
     // this check is there only to allow the previous detsizechan command
     if (multi_shm()->numberOfDetectors != 0) {
@@ -363,6 +372,7 @@ void multiSlsDetector::setHostname(const std::vector<std::string> &name) {
     for (const auto &hostname : name) {
         addSlsDetector(hostname);
     }
+    updateDetectorSize();
 }
 
 void multiSlsDetector::setHostname(const char *name, int detPos) {
@@ -392,7 +402,7 @@ std::string multiSlsDetector::getHostname(int detPos) const {
 
     // multi
     auto r = serialCall(&slsDetector::getHostname);
-    return sls::concatenateIfDifferent(r);
+    return sls::concatenateNonEmptyStrings(r);
 }
 
 void multiSlsDetector::addMultipleDetectors(const char *name) {

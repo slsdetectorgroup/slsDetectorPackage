@@ -307,6 +307,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     std::string getUserDetails(); // part of multi
 
     /**
+     * Connect to Virtual Detector Servers at local host
+     * @param ndet number of detectors
+     * @param port starting port number
+     */
+    void setVirtualDetectorServers(const int numdet, const int port);
+    
+    /**
      * Sets the hostname of all sls detectors in shared memory and updates local
      * cache
      * @param name hostname of all the sls detectors

@@ -269,6 +269,14 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
+   - <b>virtual [n] [p]</b> \c connects to n virtual detector servers at local host starting at port p \c Returns the list of the hostnames of the multi-detector structure. \c (string)
+	 */
+    descrToFuncMap[i].m_pFuncName = "virtual";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHostname;
+    ++i;
+
+
+    /*! \page config
    - <b>user</b> \c Returns user details from shared memory. Only allowed at multi detector level.  Cannot put. \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "user";
@@ -2345,7 +2353,7 @@ std::string slsDetectorCommand::cmdHostname(int narg, const char * const args[],
 
     if (action == PUT_ACTION) {
         if (detPos >= 0) {
-            return std::string("Wrong usage - setting hostname/add only from "
+            return std::string("Wrong usage - setting hostname/virtual only from "
                                "multiDetector level");
         }
 
@@ -2357,10 +2365,23 @@ std::string slsDetectorCommand::cmdHostname(int narg, const char * const args[],
             if (narg > 2)
                 strcat(hostname, "+");
         }
-
-        myDet->setHostname(hostname, detPos);
+        if (cmd == "hostname") {
+            myDet->setHostname(hostname, detPos);
+        } 
+        else if (cmd == "virtual") {
+            int port = -1;
+            int numDetectors = 0;
+            if (!sscanf(args[1], "%d", &numDetectors)) {
+                throw sls::RuntimeError("Cannot scan number of detector servers from virtual command\n");
+            }
+            if (!sscanf(args[2], "%d", &port)) {
+                throw sls::RuntimeError("Cannot scan port from virtual command\n");
+            }
+            myDet->setVirtualDetectorServers(numDetectors, port);
+        } else {
+            throw sls::RuntimeError("unknown command\n");
+        }
     }
-
     return myDet->getHostname(detPos);
 }
 
@@ -2372,6 +2393,7 @@ std::string slsDetectorCommand::helpHostname(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << std::string("hostname name [name name]\t frees shared memory and "
                           "sets the hostname (or IP adress). Only allowed at multi detector level.\n");
+        os << std::string("virtual [n] [p]\t connects to n virtual detector servers at local host starting at port p \n");
     }
     return os.str();
 }

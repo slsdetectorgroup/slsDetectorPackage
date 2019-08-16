@@ -332,14 +332,10 @@ PYBIND11_MODULE(_sls_detector, m) {
              py::arg("level"), py::arg("duration"), py::arg("det_id") = -1)
 
         .def("getPatternWaitTime", &DetectorPythonInterface::getPatternWaitTime,
-             py::arg("level"), py::arg("det_id") = -1)
+             py::arg("level"), py::arg("det_id") = -1);
 
-        .def("getImageSize", &DetectorPythonInterface::getImageSize)
-        .def("setImageSize", &DetectorPythonInterface::setImageSize)
-        .def("getNumberOfDetectors",
-             &DetectorPythonInterface::getNumberOfDetectors)
-        .def("getDetectorGeometry",
-             &DetectorPythonInterface::getDetectorGeometry);
+
+
 
     
 

@@ -20,22 +20,8 @@ class DetectorPythonInterface {
 
     int getMultiDetectorId() { return multi_detector_id; }
 
-    // get image size as [nrow, ncols] return as a pair of ints
-    std::pair<int, int> getImageSize() {
-        std::pair<int, int> image_size{0, 0};
-        image_size.first = det.getMaxNumberOfChannelsPerDetector(
-            slsDetectorDefs::dimension::Y);
-        image_size.second = det.getMaxNumberOfChannelsPerDetector(
-            slsDetectorDefs::dimension::X);
-        return image_size;
-    }
 
-    void setImageSize(const int rows, const int cols) {
-        det.setMaxNumberOfChannelsPerDetector(slsDetectorDefs::dimension::Y,
-                                              rows);
-        det.setMaxNumberOfChannelsPerDetector(slsDetectorDefs::dimension::X,
-                                              cols);
-    }
+
 
     // blocking command, acquire set number of frames
     void acquire() { det.acquire(); }
@@ -150,11 +136,7 @@ class DetectorPythonInterface {
 
     slsDetectorDefs::dacIndex dacNameToEnum(std::string dac_name);
 
-    std::pair<int, int> getDetectorGeometry() {
-        std::pair<int, int> g;
-        det.getNumberOfDetectors(g.first, g.second);
-        return g;
-    }
+
 
     int getNumberOfDetectors() { return det.size(); }
 

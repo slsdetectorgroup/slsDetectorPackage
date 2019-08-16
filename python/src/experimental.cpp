@@ -18,16 +18,13 @@ void init_experimental(py::module &m) {
 
         // Acq related
         .def("acquire", &Detector::acquire)
-        .def("startReceiver", &Detector::startReceiver, py::arg() = Positions{})
-        .def("stopReceiver", &Detector::stopReceiver, py::arg() = Positions{})
-        .def("getAcquiringFlag", &Detector::getAcquiringFlag)
-        .def("setAcquiringFlag", &Detector::setAcquiringFlag)
+        .def("clearAcquiringFlag", &Detector::clearAcquiringFlag)
         .def("getReceiverStatus", &Detector::getReceiverStatus,
              py::arg() = Positions{})
 
         // Configuration
         .def("free", &Detector::freeSharedMemory)
-        .def("setConfig", &Detector::setConfig)
+        .def("loadConfig", &Detector::loadConfig)
         .def("getHostname", &Detector::getHostname, py::arg() = Positions{})
 
         // Bits and registers

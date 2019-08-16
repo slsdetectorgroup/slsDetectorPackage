@@ -429,25 +429,23 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
 void multiSlsDetector::updateDetectorSize() {
     FILE_LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
     
-    slsDetectorDefs::xy res = detectors[0]->getNumberOfChannels();
-    int my = res.x;
-    int mx = res.y;
-
+    const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
+    
     int maxy = multi_shm()->maxNumberOfChannels[Y];
     if (maxy == 0) {
-        maxy = my * size();
+        maxy = det_size.y * size();
     }
 
-    int ndety = maxy / my;
+    int ndety = maxy / det_size.y;
     int ndetx = size() / ndety;
-    if ((maxy % my) > 0) {
+    if ((maxy % det_size.y) > 0) {
         ++ndetx;
     }
 
     multi_shm()->numberOfDetector[X] = ndetx;
     multi_shm()->numberOfDetector[Y] = ndety;
-    multi_shm()->numberOfChannels[X] = mx * ndetx;
-    multi_shm()->numberOfChannels[Y] = my * ndety; 
+    multi_shm()->numberOfChannels[X] = det_size.x * ndetx;
+    multi_shm()->numberOfChannels[Y] = det_size.y * ndety; 
 
     FILE_LOG(logDEBUG)
         << "\n\tNumber of Detectors in X direction:"

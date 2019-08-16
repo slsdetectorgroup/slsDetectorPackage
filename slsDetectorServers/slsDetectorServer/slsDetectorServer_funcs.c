@@ -2181,11 +2181,6 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
-	// databytes
-	i32 = calculateDataBytes();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
 	// settings
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
 	i32 = (int)getSettings();

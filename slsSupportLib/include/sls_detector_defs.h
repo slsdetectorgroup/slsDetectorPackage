@@ -292,7 +292,7 @@ format
     };
 
 #ifdef __cplusplus
-    struct coordinates {
+    struct xy {
         int x{0};
         int y{0};
     };

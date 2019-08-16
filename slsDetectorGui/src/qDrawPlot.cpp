@@ -80,8 +80,9 @@ void qDrawPlot::SetupPlots() {
     setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
  
     // default image size
-    nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
-    nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
+    slsDetectorDefs::xy res = myDet->getNumberOfChannels();
+    nPixelsX = res.x;
+    nPixelsY = res.y;
     switch(detType) {
     case slsDetectorDefs::MOENCH:
         npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES, -1) * 2)/25;// for moench 03

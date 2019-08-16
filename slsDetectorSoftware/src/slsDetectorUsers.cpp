@@ -9,14 +9,16 @@ int slsDetectorUsers::size() const {
 }
 
 int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
-	nx=detector.getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
-	ny=detector.getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
+	slsDetectorDefs::xy res = detector.getMaxNumberOfChannels();
+	nx=res.x;
+	ny=res.y;
 	return nx*ny;
 }
 
 int slsDetectorUsers::getDetectorSize(int &nx, int &ny, int detPos){
-	nx=detector.getTotalNumberOfChannels(slsDetectorDefs::X, detPos);
-	ny=detector.getTotalNumberOfChannels(slsDetectorDefs::Y, detPos);
+	slsDetectorDefs::xy res = detector.getNumberOfChannels();
+	nx=res.x;
+	ny=res.y;
 	return nx*ny;
 }
 

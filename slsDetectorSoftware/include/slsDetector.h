@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x190813
+#define SLS_SHMVERSION 0x190815
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -67,9 +67,6 @@ struct sharedSlsDetector {
 
     /** dynamic range of the detector data */
     int dynamicRange;
-
-    /**  size of the data that are transfered from the detector */
-    int dataBytes;
 
     /** roi */
     slsDetectorDefs::ROI roi;
@@ -170,9 +167,6 @@ struct sharedSlsDetector {
 
     /** gap pixels in each direction */
     int nGappixels[2];
-
-    /** data bytes including gap pixels */
-    int dataBytesInclGapPixels;
 
     /** additional json header */
     char rxAdditionalJsonHeader[MAX_STR_LENGTH];
@@ -325,72 +319,16 @@ class slsDetector : public virtual slsDetectorDefs {
     int setDetectorType(detectorType type = GET_DETECTOR_TYPE);
 
     /**
-     * Returns the total number of channels from shared memory
-     * @returns the total number of channels
-     */
-    int getTotalNumberOfChannels() const;
-
-    /**
      * Update total number of channels (chiptestboard or moench)
      * depending on the number of samples, adenablemask, readout flags(ctb)
      */
-    void updateTotalNumberOfChannels();
-
-    /**
-     * Returns the total number of channels in dimension d from shared memory
-     * @param d dimension d
-     * @returns the total number of channels  in dimension d
-     */
-    int getTotalNumberOfChannels(dimension d) const;
-
-    /**
-     * Returns the total number of channels from shared memory in each dimension
-     * @returns the total number of channels in each dimension
-     */
-    slsDetectorDefs::coordinates getNumberOfChannels() const;
-
-    /**
-     * Returns the total number of channels of in dimension d including gap
-     * pixels from shared memory
-     * @param d dimension d
-     * @returns the total number of channels including gap pixels in dimension d
-     * including gap pixels
-     */
-    int getTotalNumberOfChannelsInclGapPixels(dimension d) const;
+    void updateNumberOfChannels();
 
     /**
      * Returns the total number of channels including gap pixels
      * @returns the total number of channels including gap pixels
      */
-    slsDetectorDefs::coordinates getNumberOfChannelsInclGapPixels() const;  
-
-    /**
-     * returns the number of channels per chip from shared memory (Mythen)
-     * @returns number of channels per chip
-     */
-    int getNChans() const;
-
-    /**
-     * returns the number of channels per chip in dimension d from shared memory
-     * (Mythen)
-     * @param d dimension d
-     * @returns number of channels per chip in dimension d
-     */
-    int getNChans(dimension d) const;
-
-    /**
-     * returns the number of chips per module from shared memory (Mythen)
-     * @returns number of chips per module
-     */
-    int getNChips() const;
-
-    /**
-     * returns the number of chips per module in dimension d from shared memory
-     * (Mythen)
-     * @param d dimension d
-     * @returns number of chips per module in dimension d
-     */
-    int getNChips(dimension d) const;
+    slsDetectorDefs::xy getNumberOfChannels() const;  
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)
@@ -654,7 +592,7 @@ class slsDetector : public virtual slsDetectorDefs {
     int setSpeed(speedVariable sp, int value = -1, int mode = 0);
 
     /**
-     * Set/get dynamic range and updates the number of dataBytes
+     * Set/get dynamic range 
      * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
      * 1)
      * @param i dynamic range (-1 get)
@@ -664,18 +602,6 @@ class slsDetector : public virtual slsDetectorDefs {
     int setDynamicRange(int n = -1);
 
     int getDynamicRangeFromShm();
-
-    /**
-     * Recalculated number of data bytes
-     * @returns tota number of data bytes
-     */
-    int getDataBytes();
-
-    /**
-     * Recalculated number of data bytes including gap pixels
-     * @returns tota number of data bytes including gap pixels
-     */
-    int getDataBytesInclGapPixels();
 
     /**
      * Set/get dacs value

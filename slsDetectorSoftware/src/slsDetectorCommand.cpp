@@ -322,7 +322,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; -1 is no limit. Use for multi-detector system as first command in config file. \c Returns \c ("int int")
+   - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; 0 is no limit. Use for multi-detector system as first command in config file. \c Returns \c ("int int")
 	 */
     descrToFuncMap[i].m_pFuncName = "detsizechan";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
@@ -3284,10 +3284,14 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
         }
 
         if (cmd == "detsizechan") {
-            if ((sscanf(args[1], "%d", &val)) && (val > 0))
-                myDet->setMaxNumberOfChannelsPerDetector(X, val);
-            if ((narg > 2) && (sscanf(args[2], "%d", &val)) && (val > 0))
-                myDet->setMaxNumberOfChannelsPerDetector(Y, val);
+            int val2 = 0;
+            if ((!sscanf(args[1], "%d", &val)) || (narg <= 2) || (!sscanf(args[2], "%d", &val2))) {
+                return std::string("Could not scan det size chan values");
+            }
+            slsDetectorDefs::xy res;
+            res.x = val;
+            res.y = val2;
+            myDet->setMaxNumberOfChannels(res);
         }
 
 		if(cmd=="quad"){
@@ -3331,7 +3335,8 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
         ROI roi = myDet->getROI(detPos);
         return (std::string("[") + std::to_string(roi.xmin) + std::string(",") + std::to_string(roi.xmax) + std::string("]")); 
     } else if (cmd == "detsizechan") {
-        sprintf(ans, "%d %d", myDet->getMaxNumberOfChannelsPerDetector(X), myDet->getMaxNumberOfChannelsPerDetector(Y));
+        slsDetectorDefs::xy res = myDet->getMaxNumberOfChannels();
+        sprintf(ans, "%d %d", res.x, res.y);
         return std::string(ans);
     } 	else if (cmd=="quad") {
 		return std::to_string(myDet->getQuad());
@@ -3362,7 +3367,7 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
         os << "dr i \n sets the dynamic range of the detector" << std::endl;
         os << "clearroi \n resets region of interest" << std::endl;
         os << "roi xmin xmax \n sets region of interest " << std::endl;
-        os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; -1 is no limit" << std::endl;
+        os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; 0 is no limit" << std::endl;
  		os << "quad i \n if i = 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;       
         os << "flippeddatax x \n sets if the data should be flipped on the x axis" << std::endl;
         os << "flippeddatay y \n sets if the data should be flipped on the y axis" << std::endl;
@@ -3371,7 +3376,7 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "dr \n gets the dynamic range of the detector" << std::endl;
         os << "roi \n gets region of interest" << std::endl;
-        os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; -1 is no limit" << std::endl;
+        os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; 0 is no limit" << std::endl;
         os << "quad \n returns 1 if the detector size is a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
         os << "flippeddatax\n gets if the data will be flipped on the x axis" << std::endl;
         os << "flippeddatay\n gets if the data will be flipped on the y axis" << std::endl;

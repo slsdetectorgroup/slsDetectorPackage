@@ -414,17 +414,9 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->nChans = shm()->nChan[X] * shm()->nChan[Y];
     shm()->nChips = shm()->nChip[X] * shm()->nChip[Y];
 
-    // calculating databytes
-    shm()->dataBytes = shm()->nChips * shm()->nChans * shm()->dynamicRange / 8;
-    shm()->dataBytesInclGapPixels = (shm()->nChip[X] * shm()->nChan[X] +
-                                     shm()->gappixels * shm()->nGappixels[X]) *
-                                    (shm()->nChip[Y] * shm()->nChan[Y] +
-                                     shm()->gappixels * shm()->nGappixels[Y]) *
-                                    shm()->dynamicRange / 8;
-
-    // update #nchans and databytes, as it depends on #samples, adcmask,
+    // update #nchans, as it depends on #samples, adcmask,
     // readoutflags (ctb only)
-    updateTotalNumberOfChannels();
+    updateNumberOfChannels();
 }
 
 int slsDetector::sendModule(sls_detector_module *myMod,
@@ -574,16 +566,11 @@ std::string slsDetector::getDetectorTypeAsString() const {
     return slsDetectorDefs::detectorTypeToString(getDetectorTypeAsEnum());
 }
 
-int slsDetector::getTotalNumberOfChannels() const {
-    return shm()->nChans * shm()->nChips;
-}
-
-void slsDetector::updateTotalNumberOfChannels() {
+void slsDetector::updateNumberOfChannels() {
     if (shm()->myDetectorType == CHIPTESTBOARD ||
         shm()->myDetectorType == MOENCH) {
 
         int nachans = 0, ndchans = 0;
-        int adatabytes = 0, ddatabytes = 0;
         // analog channels (normal, analog/digital readout)
         if (shm()->roFlags == slsDetectorDefs::NORMAL_READOUT ||
             ((shm()->roFlags & slsDetectorDefs::ANALOG_AND_DIGITAL) != 0)) {
@@ -596,10 +583,7 @@ void slsDetector::updateTotalNumberOfChannels() {
                         ++nachans;
                 }
             }
-            adatabytes = nachans * (shm()->dynamicRange / 8) *
-                         shm()->timerValue[ANALOG_SAMPLES];
-            FILE_LOG(logDEBUG1) << "#Analog Channels:" << nachans
-                                << " Databytes: " << adatabytes;
+            FILE_LOG(logDEBUG1) << "#Analog Channels:" << nachans;
         }
 
         // digital channels (ctb only, digital, analog/digital readout)
@@ -607,49 +591,19 @@ void slsDetector::updateTotalNumberOfChannels() {
             (((shm()->roFlags & DIGITAL_ONLY) != 0) ||
              ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
             ndchans = 64;
-            ddatabytes =
-                (sizeof(uint64_t) * shm()->timerValue[DIGITAL_SAMPLES]);
-            FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans
-                                << " Databytes: " << ddatabytes;
+            FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans;
         }
         shm()->nChans = nachans + ndchans;
-        shm()->dataBytes = adatabytes + ddatabytes;
-        FILE_LOG(logDEBUG1) << "# Total #Channels:" << shm()->nChans
-                            << " Databytes: " << shm()->dataBytes;
+        FILE_LOG(logDEBUG1) << "# Total #Channels:" << shm()->nChans;
     }
 }
 
-int slsDetector::getTotalNumberOfChannels(dimension d) const {
-    return shm()->nChan[d] * shm()->nChip[d];
-}
-
-slsDetectorDefs::coordinates slsDetector::getNumberOfChannels() const {
-    slsDetectorDefs::coordinates coord;
-    coord.x = shm()->nChan[X] * shm()->nChip[X];
-    coord.y = shm()->nChan[Y] * shm()->nChip[Y]; 
-    return coord;
-}
-
-int slsDetector::getTotalNumberOfChannelsInclGapPixels(dimension d) const {
-    return (shm()->nChan[d] * shm()->nChip[d] +
-            shm()->gappixels * shm()->nGappixels[d]);
-}
-
-slsDetectorDefs::coordinates slsDetector::getNumberOfChannelsInclGapPixels() const {
-    slsDetectorDefs::coordinates coord;
+slsDetectorDefs::xy slsDetector::getNumberOfChannels() const {
+    slsDetectorDefs::xy coord;
     coord.x = (shm()->nChan[X] * shm()->nChip[X] + shm()->gappixels * shm()->nGappixels[X]);
     coord.y = (shm()->nChan[Y] * shm()->nChip[Y] + shm()->gappixels * shm()->nGappixels[Y]);
     return coord;
 }
-
-
-int slsDetector::getNChans() const { return shm()->nChans; }
-
-int slsDetector::getNChans(dimension d) const { return shm()->nChan[d]; }
-
-int slsDetector::getNChips() const { return shm()->nChips; }
-
-int slsDetector::getNChips(dimension d) const { return shm()->nChip[d]; }
 
 bool slsDetector::getQuad() {
     int retval = -1;
@@ -785,11 +739,7 @@ void slsDetector::updateCachedDetectorVariables() {
 
         // dr
         n += client.Receive(&i32, sizeof(i32));
-        shm()->dynamicRange = i32;
-
-        // databytes
-        n += client.Receive(&i32, sizeof(i32));
-        shm()->dataBytes = i32;
+        shm()->dynamicRange = i32;      
 
         // settings
         if ((shm()->myDetectorType != CHIPTESTBOARD) &&
@@ -881,9 +831,9 @@ void slsDetector::updateCachedDetectorVariables() {
             if (shm()->myDetectorType == MOENCH)
                 setAdditionalJsonParameter("adcmask", std::to_string(u32));
 
-            // update #nchans and databytes, as it depends on #samples, adcmask,
+            // update #nchans, as it depends on #samples, adcmask,
             // readoutflags
-            updateTotalNumberOfChannels();
+            updateNumberOfChannels();
         }
 
         if (n == 0) {
@@ -1390,10 +1340,10 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     sendToDetector(F_SET_TIMER, args, retval);
     FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
     shm()->timerValue[index] = retval;
-    // update #nchans and databytes, as it depends on #samples, adcmask,
+    // update #nchans, as it depends on #samples, adcmask,
     // readoutflags
     if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
-        updateTotalNumberOfChannels();
+        updateNumberOfChannels();
     }
 
     // setting timers consequences (eiger (ratecorr) )
@@ -1477,26 +1427,9 @@ int slsDetector::setDynamicRange(int n) {
     // TODO! Properly handle fail
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting dynamic range to " << n;
-    int olddr = shm()->dynamicRange;
     sendToDetector(F_SET_DYNAMIC_RANGE, n, retval);
     FILE_LOG(logDEBUG1) << "Dynamic Range: " << retval;
     shm()->dynamicRange = retval;
-
-    // only for eiger
-    // setting dr consequences on databytes shm
-    // (a get can also change timer value, hence check difference)
-    if (olddr != shm()->dynamicRange) {
-        shm()->dataBytes = shm()->nChips * shm()->nChans * retval / 8;
-        shm()->dataBytesInclGapPixels =
-            (shm()->nChip[X] * shm()->nChan[X] +
-             shm()->gappixels * shm()->nGappixels[X]) *
-            (shm()->nChip[Y] * shm()->nChan[Y] +
-             shm()->gappixels * shm()->nGappixels[Y]) *
-            retval / 8;
-        FILE_LOG(logDEBUG1) << "Data bytes " << shm()->dataBytes;
-        FILE_LOG(logDEBUG1) << "Data bytes including gap pixels"
-                            << shm()->dataBytesInclGapPixels;
-    }
 
     if (shm()->useReceiverFlag) {
         n = shm()->dynamicRange;
@@ -1510,12 +1443,6 @@ int slsDetector::setDynamicRange(int n) {
 
 int slsDetector::getDynamicRangeFromShm() {
     return shm()->dynamicRange;
-}
-
-int slsDetector::getDataBytes() { return shm()->dataBytes; }
-
-int slsDetector::getDataBytesInclGapPixels() {
-    return shm()->dataBytesInclGapPixels;
 }
 
 int slsDetector::setDAC(int val, dacIndex index, int mV) {
@@ -1565,10 +1492,10 @@ int slsDetector::setReadOutFlags(readOutFlags flag) {
     sendToDetector(F_SET_READOUT_FLAGS, arg, retval);
     FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
     shm()->roFlags = retval;
-    // update #nchans and databytes, as it depends on #samples, adcmask,
+    // update #nchans, as it depends on #samples, adcmask,
     // readoutflags
     if (shm()->myDetectorType == CHIPTESTBOARD) {
-        updateTotalNumberOfChannels();
+        updateNumberOfChannels();
     }
     FILE_LOG(logDEBUG1) << "Setting receiver readout flags to " << arg;
     if (shm()->useReceiverFlag) {
@@ -2246,7 +2173,7 @@ int slsDetector::digitalTest(digitalTestMode mode, int ival) {
 
 void slsDetector::loadImageToDetector(imageType index,
                                       const std::string &fname) {
-    int nChan = getTotalNumberOfChannels();
+    int nChan = getNumberOfChannels().x;
     int16_t args[nChan];
     FILE_LOG(logDEBUG1) << "Loading " << (index == 0u ? "Dark" : "Gain")
                         << "image from file " << fname;
@@ -2261,7 +2188,7 @@ void slsDetector::loadImageToDetector(imageType index,
 
 void slsDetector::sendImageToDetector(imageType index, int16_t imageVals[]) {
     int fnum = F_LOAD_IMAGE;
-    int nChan = getTotalNumberOfChannels();
+    int nChan = getNumberOfChannels().x;
     int args[]{static_cast<int>(index), nChan};
     FILE_LOG(logDEBUG1) << "Sending image to detector";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
@@ -2281,7 +2208,7 @@ void slsDetector::sendImageToDetector(imageType index, int16_t imageVals[]) {
 
 void slsDetector::writeCounterBlockFile(const std::string &fname,
                                         int startACQ) {
-    int nChan = getTotalNumberOfChannels();
+    int nChan = getNumberOfChannels().x;
     int16_t retvals[nChan];
     FILE_LOG(logDEBUG1) << "Reading Counter to " << fname
                         << (startACQ != 0 ? " and Restarting Acquisition"
@@ -2292,7 +2219,7 @@ void slsDetector::writeCounterBlockFile(const std::string &fname,
 
 void slsDetector::getCounterBlock(int16_t image[], int startACQ) {
     int fnum = F_READ_COUNTER_BLOCK;
-    int nChan = getTotalNumberOfChannels();
+    int nChan = getNumberOfChannels().x;
     int args[] = {startACQ, nChan};
     FILE_LOG(logDEBUG1) << "Reading Counter block with startacq: " << startACQ;
     sendToDetector(fnum, args, sizeof(args), image, nChan * sizeof(int16_t));
@@ -2322,7 +2249,7 @@ void slsDetector::clearROI() {
 void slsDetector::setROI(slsDetectorDefs::ROI arg) {
     int fnum = F_SET_ROI;
     int ret = FAIL;
-    if (arg.xmin < 0 || arg.xmax >= getTotalNumberOfChannels()) {
+    if (arg.xmin < 0 || arg.xmax >= getNumberOfChannels().x) {
         arg.xmin = -1;
         arg.xmax = -1;
     }
@@ -2403,9 +2330,9 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
     sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
     shm()->adcEnableMask = mask;
 
-    // update #nchans and databytes, as it depends on #samples, adcmask,
+    // update #nchans, as it depends on #samples, adcmask,
     // readoutflags
-    updateTotalNumberOfChannels();
+    updateNumberOfChannels();
 
     // send to processor
     if (shm()->myDetectorType == MOENCH)
@@ -2592,16 +2519,6 @@ int slsDetector::enableGapPixels(int val) {
             sendToReceiver(fnum, &val, sizeof(val), &retval, sizeof(retval));
             FILE_LOG(logDEBUG1) << "Gap pixels enable to receiver:" << retval;
             shm()->gappixels = retval;
-            // update databytes
-            shm()->dataBytesInclGapPixels = 0;
-            if (shm()->dynamicRange != 4) {
-                shm()->dataBytesInclGapPixels =
-                    (shm()->nChip[X] * shm()->nChan[X] +
-                     shm()->gappixels * shm()->nGappixels[X]) *
-                    (shm()->nChip[Y] * shm()->nChan[Y] +
-                     shm()->gappixels * shm()->nGappixels[Y]) *
-                    shm()->dynamicRange / 8;
-            }
         }
     }
     return shm()->gappixels;

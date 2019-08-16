@@ -10,6 +10,7 @@
 
 #include "sls_receiver_defs.h"
 #include "logger.h"
+#include "receiver_defs.h"
 
 #include <string>
 
@@ -121,19 +122,10 @@ class File : private virtual slsReceiverDefs {
 
 	 /**
 	  * Create master file
-	  * @param en ten giga enable
-	  * @param size image size
-	  * @param nx number of pixels in x direction
-	  * @param ny number of pixels in y direction
-	  * @param at acquisition time
-	  * @param st sub exposure time
-	  * @param sp sub period
-	  * @param ap acquisition period
+	  * @param attr master file attributes
 	  * @returns OK or FAIL
 	  */
-	virtual int CreateMasterFile(bool en, uint32_t size,
-				uint32_t nx, uint32_t ny, uint64_t at, uint64_t st,
-				uint64_t sp, uint64_t ap) {
+	virtual int CreateMasterFile(masterAttributes& attr) {
 		cprintf(RED,"This is a generic function CreateMasterFile that "
 				"should be overloaded by a derived class\n");
 		return OK;

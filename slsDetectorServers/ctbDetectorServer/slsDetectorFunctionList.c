@@ -2163,8 +2163,9 @@ int startStateMachine(){
 	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
 	return OK;
 #endif
+    int send_to_10g = enableTenGigabitEthernet(-1);
 	// 1 giga udp
-	if (!enableTenGigabitEthernet(-1)) {
+	if (send_to_10g == 0) {
 		// create udp socket
 		if(createUDPSocket(0) != OK) {
 			return FAIL;
@@ -2175,7 +2176,9 @@ int startStateMachine(){
 
 	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
 	cleanFifos();
-	unsetFifoReadStrobes(); // FIXME: unnecessary to write bus_w(dumm, 0) as it is 0 in the beginnig and the strobes are always unset if set
+	if (send_to_10g == 0) {
+        unsetFifoReadStrobes(); // FIXME: unnecessary to write bus_w(dumm, 0) as it is 0 in the beginnig and the strobes are always unset if set
+    }
 
 	//start state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK | CONTROL_STRT_EXPSR_MSK);
@@ -2332,14 +2335,13 @@ void readFrame(int *ret, char *mess) {
 		// frames left to give status
 		int64_t retval = getTimeLeft(FRAME_NUMBER) + 2;
 		if ( retval > 1) {
-			*ret = (int)FAIL;
 			sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
 			FILE_LOG(logERROR, (mess));
 		} else {
-			*ret = (int)OK;
 			FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 		}
 	}
+    *ret = (int)OK;
 }
 
 void unsetFifoReadStrobes() {

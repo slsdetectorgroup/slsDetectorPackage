@@ -1,16 +1,18 @@
-CC			=	powerpc-4xx-softfloat-gcc
-BLACKFIN_CC = 	bfin-uclinux-gcc
-CFLAGS		+=  -Wall   -DEIGERD   -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE -DPCCOMPILE -DMARTIN
-LDLIBS		+= 	-lm  -lstdc++ 
+current_dir = $(shell pwd)
+main_server = ../slsDetectorServer/
+support_lib = ../../slsSupportLib/include/
 
+CROSS  		= powerpc-4xx-softfloat-
+BLACKFIN_CC = bfin-uclinux-gcc
+CC    		= $(CROSS)gcc
+CFLAGS		+=  -Wall -DEIGERD  -DSTOP_SERVER -I$(main_server) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+LDLIBS		+= 	-lm 
 PROGS		= 	eigerDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-
-SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c  HardwareIO.c LocalLinkInterface.c  FebInterface.c FebControl.c Beb.c 
-OBJS 		= 	$(SRC_CLNT:.c=.o) 
- 
+SRCS 		= 	$(main_server)communication_funcs.c $(main_server)slsDetectorServer.c $(main_server)slsDetectorServer_funcs.c  slsDetectorFunctionList.c HardwareIO.c LocalLinkInterface.c  FebInterface.c FebControl.c Beb.c 
+OBJS 		= 	$(SRCS:.c=.o) 
 
 all: clean versioning $(PROGS) #hv9m_blackfin_server 
 
@@ -26,16 +28,16 @@ versioning:
 $(PROGS):  $(OBJS)
 #	echo $(OBJS) 
 	mkdir -p $(DESTDIR) 
-	$(CC)  	-o $@  $(SRC_CLNT) $(CFLAGS) $(LDLIBS) 
+	$(CC)  	-o $@  $^ $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)
 	
 
 hv9m_blackfin_server:9mhvserial_bf.c
 	$(BLACKFIN_CC) -o hv9m_blackfin_server 9mhvserial_bf.c -Wall #-DVERBOSE
 	mv hv9m_blackfin_server $(DESTDIR)	
-	rm hv9m_blackfin_server.gdb
+	rm hv9m_blackfin_server.gdb  $(main_server)*.o
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o $(DESTDIR)/hv9m_blackfin_server 
+	rm -rf $(DESTDIR)/$(PROGS)  *.o $(DESTDIR)/hv9m_blackfin_server  $(main_server)*.o
 	
 	

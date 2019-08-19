@@ -1,13 +1,16 @@
+current_dir = $(shell pwd)
+main_server = ../slsDetectorServer/
+support_lib = ../../slsSupportLib/include/
+
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DJUNGFRAUD  -DSTOP_SERVER #-DVERBOSEI #-DVERBOSE
-LDLIBS		+= 	-lm  -lstdc++ 
-
+CFLAGS		+=  -Wall -DJUNGFRAUD  -DSTOP_SERVER -I$(main_server) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+LDLIBS		+= 	-lm
 PROGS		= 	jungfrauDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+SRC_CLNT	=	$(main_server)communication_funcs.c $(main_server)slsDetectorServer.c $(main_server)slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
  
 all: clean versioning $(PROGS)
@@ -23,7 +26,7 @@ versioning:
 $(PROGS): $(OBJS)
 #	echo $(OBJS) 
 	mkdir -p $(DESTDIR) 
-	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS) 
+	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
 	rm *.gdb
 

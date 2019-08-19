@@ -56,11 +56,8 @@ struct sharedMultiSlsDetector {
     /** Number of detectors operated at once */
     slsDetectorDefs::xy numberOfDetector;
 
-    /**  total number of channels for all detectors */
-    slsDetectorDefs::xy numberOfChannels;
-
-      /**  max number of channels for complete detector*/
-    slsDetectorDefs::xy maxNumberOfChannels;  
+    /**  max number of channels for complete detector*/
+    slsDetectorDefs::xy numberOfChannels;  
 
     /** flag for acquiring */
     bool acquiringFlag;
@@ -374,25 +371,18 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Returns the total number of channels of all sls detectors  including gap pixels
-     * @param d dimension d
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the total number of channels of all sls detectors including gap pixels
      */
-    slsDetectorDefs::xy getNumberOfChannels(int detPos = -1);//
+    slsDetectorDefs::xy getNumberOfChannels(int detPos = -1) const;//
 
     /**
-     * Returns maximum number of channels of all sls detectors in each
-     * dimension d from shared memory
-     * @returns  maximum number of channels of all sls detectors
-     */
-    slsDetectorDefs::xy getMaxNumberOfChannels() const;  //
-
-    /**
+     * Must be set before setting hostname
      * Sets maximum number of channels of all sls detectors in each
      * dimension d from shared memory
      * @param c maximum number of channels of all sls detectors
      */
-    void setMaxNumberOfChannels(const slsDetectorDefs::xy c);  //
+    void setNumberOfChannels(const slsDetectorDefs::xy c);  //
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)

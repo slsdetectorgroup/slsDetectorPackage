@@ -66,21 +66,15 @@ defs::xy Detector::getModuleGeometry() const {
 }
 
 Result<defs::xy> Detector::getModuleSize(Positions pos) const {
-    if (pos.empty() ||
-        (pos.size() == 1 &&
-         pos[0] == -1)) { // TODO: also check condition that pos.size ==
-                          // pimpl->size()?? for other occurences as well
-        return {pimpl->getNumberOfChannels()};
-    }
     return pimpl->Parallel(&slsDetector::getNumberOfChannels, pos);
 }
 
 defs::xy Detector::getDetectorSize() const {
-    return pimpl->getMaxNumberOfChannels();
+    return pimpl->getNumberOfChannels();
 }
 
 void Detector::setDetectorSize(const defs::xy value) {
-    pimpl->setMaxNumberOfChannels(value);
+    pimpl->setNumberOfChannels(value);
 }
 
 Result<bool> Detector::getQuad(Positions pos) const {

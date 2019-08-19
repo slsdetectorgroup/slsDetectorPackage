@@ -3306,7 +3306,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
             slsDetectorDefs::xy res;
             res.x = val;
             res.y = val2;
-            myDet->setMaxNumberOfChannels(res);
+            myDet->setNumberOfChannels(res);
         }
 
 		if(cmd=="quad"){
@@ -3342,7 +3342,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
         ROI roi = myDet->getROI(detPos);
         return (std::string("[") + std::to_string(roi.xmin) + std::string(",") + std::to_string(roi.xmax) + std::string("]")); 
     } else if (cmd == "detsizechan") {
-        slsDetectorDefs::xy res = myDet->getMaxNumberOfChannels();
+        slsDetectorDefs::xy res = myDet->getNumberOfChannels();
         sprintf(ans, "%d %d", res.x, res.y);
         return std::string(ans);
     } 	else if (cmd=="quad") {

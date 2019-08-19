@@ -280,8 +280,6 @@ void multiSlsDetector::initializeDetectorStructure() {
     multi_shm()->numberOfDetector.y = 0;
     multi_shm()->numberOfChannels.x = 0;
     multi_shm()->numberOfChannels.y = 0;
-    multi_shm()->maxNumberOfChannels.x = 0;
-    multi_shm()->maxNumberOfChannels.y = 0;
     multi_shm()->acquiringFlag = false;
     multi_shm()->receiver_upstream = false;
 }
@@ -453,7 +451,7 @@ void multiSlsDetector::updateDetectorSize() {
     
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
     
-    int maxy = multi_shm()->maxNumberOfChannels.y;
+    int maxy = multi_shm()->numberOfChannels.y;
     if (maxy == 0) {
         maxy = det_size.y * size();
     }
@@ -483,7 +481,6 @@ void multiSlsDetector::updateDetectorSize() {
     for (auto &d : detectors) {
         d->updateMultiSize(multi_shm()->numberOfDetector);
     }
-    multi_shm()->maxNumberOfChannels = multi_shm()->numberOfChannels;
  }
 
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum() const {
@@ -519,7 +516,7 @@ slsDetectorDefs::xy multiSlsDetector::getNumberOfDetectors() const {
     return multi_shm()->numberOfDetector;
 }
 
-slsDetectorDefs::xy multiSlsDetector::getNumberOfChannels(int detPos) {
+slsDetectorDefs::xy multiSlsDetector::getNumberOfChannels(int detPos) const {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getNumberOfChannels();
@@ -529,12 +526,11 @@ slsDetectorDefs::xy multiSlsDetector::getNumberOfChannels(int detPos) {
     return multi_shm()->numberOfChannels;
 }
 
-slsDetectorDefs::xy multiSlsDetector::getMaxNumberOfChannels() const {
-    return multi_shm()->maxNumberOfChannels;
-}
-
-void multiSlsDetector::setMaxNumberOfChannels(const slsDetectorDefs::xy c) {
-    multi_shm()->maxNumberOfChannels = c;
+void multiSlsDetector::setNumberOfChannels(const slsDetectorDefs::xy c) {
+    if (size() > 1) {
+        throw RuntimeError("Set the number of channels before setting hostname.");
+    }
+    multi_shm()->numberOfChannels = c;
 }
 
 int multiSlsDetector::getQuad(int detPos) {

@@ -101,15 +101,6 @@ public:
 	 */
 	int size() const;
 
-	/**
-	 * Returns the maximum number of channels of all detectors
-	 * (provided by user in config file using detsizechan command)
-	 * number of channels in x and y are calculated according to these dimensions
-	 * @param nx number of channels in horizontal
-	 * @param ny number of channels in vertical
-	 * @returns the maximum number of channels of all detectors
-	 */
-	int getMaximumDetectorSize(int &nx, int &ny);
 
 	/**
 	 * Returns the size  of detector/multi detector

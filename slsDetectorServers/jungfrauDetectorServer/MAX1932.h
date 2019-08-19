@@ -1,1 +1,0 @@
-../slsDetectorServer/MAX1932.h

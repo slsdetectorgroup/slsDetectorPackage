@@ -88,11 +88,29 @@ target_link_libraries(slsReceiver PUBLIC
     rt
 )
 
+add_executable(slsMultiReceiver
+    src/multiReceiver.cpp)
+
+
+set_target_properties(slsMultiReceiver PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+target_link_libraries(slsMultiReceiver PUBLIC
+    slsProjectOptions
+    slsProjectWarnings
+    slsSupportLib
+    slsReceiverShared
+    pthread
+    ${ZeroMQ_LIBRARIES}
+    rt
+)
+
 if (SLS_USE_TESTS)
     add_subdirectory(tests)
 endif(SLS_USE_TESTS)
 
-install(TARGETS slsReceiverShared slsReceiver
+install(TARGETS slsReceiverShared slsReceiver slsMultiReceiver
         EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

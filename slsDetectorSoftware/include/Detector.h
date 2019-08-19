@@ -156,7 +156,7 @@ class Detector {
      * TEMPERATURE_FPGA3
      * [CTB] Options: SLOW_ADC_TEMP
      */
-    Result<int> getTemp(defs::dacIndex index, Positions pos = {}) const;
+    Result<int> getTemperature(defs::dacIndex index, Positions pos = {}) const;
 
     Result<int> getDAC(defs::dacIndex index, bool mV, Positions pos = {}) const;
 
@@ -215,6 +215,9 @@ class Detector {
     /** [Eiger][Jungfrau] */
     void setStartingFrameNumber(uint64_t value, Positions pos);
 
+    /** [Eiger] Sends an internal software trigger to the detector */
+    void sendSoftwareTrigger(Positions pos = {});
+
 //TODO: remove resetframescaught in receiver
 
 
@@ -224,7 +227,10 @@ class Detector {
      *                                                 *
      * ************************************************/
     
-    /** Configures the destination for UDP packets in the detector */
+    /** Configures the destination for UDP packets in the detector 
+     * Needed only if you use a custm receiver (not slsReceiver)
+     * as it is already included in setReceiverHostname.
+    */
     void configureMAC(Positions pos = {});//TODO: find a reasonable name
 
     Result<MacAddr> getSourceUDPMAC(Positions pos = {}) const;
@@ -253,81 +259,47 @@ class Detector {
 
     /** MAC of the interface in receiver that the detector sends data to 
      * Only needed if you use a custom receiver (not slsReceiver)
+     * Must be followed by configuremac.
     */
     void setDestinationUDPMAC(const std::string &udpmac, Positions pos = {});
 
+    Result<int> getDestinationUDPPort(Positions pos = {}) const;
 
-    Result<int> getReceiverUDPPort(Positions pos = {}) const;
-
-    void setReceiverUDPPort(int udpport, Positions pos = {});
+    /**
+     * module_id is -1 for all detectors, ports for each module is calculated (increments)
+     */
+    void setDestinationUDPPort(int udpport, int module_id = -1);
 
     /** [Eiger right port][Jungfrau bottom half] */
-    Result<int> getReceiverUDPPort2(Positions pos = {}) const;
+    Result<int> getDestinationUDPPort2(Positions pos = {}) const;
 
-    /** [Eiger right port][Jungfrau bottom half] */
-    void setReceiverUDPPort2(int udpport, Positions pos = {});
+    /** [Eiger right port][Jungfrau bottom half]
+     * module_id is -1 for all detectors, ports for each module is calculated (increments)
+     */
+    void setDestinationUDPPort2(int udpport, int module_id = -1);
 
-    Result<std::string> printReceiverConfiguration(Positions pos = {}) const;
+    Result<std::string> printRxConfiguration(Positions pos = {}) const;
 
     /** [Eiger, Jungfrau] */
-    Result<bool> getFlowControl10G(Positions pos = {}) const;
+    Result<bool> getTenGigaGFlowControl(Positions pos = {}) const;
 
     /** [Eiger, Jungfrau] */
-    void setFlowControl10G(bool enable, Positions pos = {});
+    void setTenGigaGFlowControl(bool enable, Positions pos = {});
 
     /** [Eiger, Jungfrau] */
     Result<int> getTransmissionDelayFrame(Positions pos = {}) const;
 
     /**
      * [Jungfrau]: Sets the transmission delay of the first UDP packet being
-     * streamed out of the module Options: 0 - 31, each value represenets 1 ms 
+     * streamed out of the module. Options: 0 - 31, each value represenets 1 ms 
      * [Eiger]: Sets the transmission delay of entire frame streamed out for both
-     * left and right UDP ports
+     * left and right UDP ports. Options: //TODO possible values
      */
     void setTransmissionDelayFrame(int value, Positions pos = {});
 
-    /** [Jungfrau] */
-    Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
-
-    /** [Jungfrau] Also restarts client and receiver sockets */
-    void setNumberofUDPInterfaces(int n, Positions pos = {});
-
-    /** [Jungfrau] */
-    Result<int> getSelectedUDPInterface(Positions pos = {}) const;
-
-    /**
-     * [Jungfrau:
-     * Effective only when number of interfaces is 1.
-     * Options: 0 (outer, default), 1(inner)]
-     */
-    void selectUDPInterface(int interface, Positions pos = {});
-
-    /** [Jungfrau] bottom half */
-    Result<MacAddr> getDetectorMAC2(Positions pos = {}) const;
-
-    /** [Jungfrau] bottom half */
-    void setDetectorMAC2(const std::string &detectorMAC, Positions pos = {});
-
-    /** [Jungfrau] bottom half */
-    Result<IpAddr> getDetectorIP2(Positions pos = {}) const;
-
-    /** [Jungfrau] bottom half */
-    void setDetectorIP2(const std::string &detectorIP, Positions pos = {});
-
-    /** [Jungfrau bottom half] */
-    Result<IpAddr> getReceiverUDPIP2(Positions pos = {}) const;
-
-    /** [Jungfrau bottom half] */
-    void setReceiverUDPIP2(const std::string &udpip, Positions pos = {});
-    
-    /** [Jungfrau bottom half] */
-    Result<MacAddr> getReceiverUDPMAC2(Positions pos = {}) const;
-
-    /** [Jungfrau bottom half] */
-    void setReceiverUDPMAC2(const std::string &udpmac, Positions pos = {});
-
     /** [Eiger] */
     Result<int> getTransmissionDelayLeft(Positions pos = {}) const;
+
     /**
      * [Eiger]
      * Sets the transmission delay of first packet streamed out of the left UDP
@@ -345,6 +317,47 @@ class Detector {
      */
     void setTransmissionDelayRight(int value, Positions pos = {});
 
+    /** [Jungfrau] */
+    Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
+
+    /** [Jungfrau] Also restarts client and receiver sockets */
+    void setNumberofUDPInterfaces(int n, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<int> getSelectedUDPInterface(Positions pos = {}) const;
+
+    /**
+     * [Jungfrau:
+     * Effective only when number of interfaces is 1.
+     * Options: 0 (outer, default), 1(inner)] //TODO: enum?
+     */
+    void selectUDPInterface(int interface, Positions pos = {});
+
+    /** [Jungfrau] bottom half */
+    Result<MacAddr> getDetectorMAC2(Positions pos = {}) const;
+
+    /** [Jungfrau] bottom half */
+    void setDetectorMAC2(const std::string &detectorMAC, Positions pos = {});
+
+    /** [Jungfrau] bottom half */
+    Result<IpAddr> getDetectorIP2(Positions pos = {}) const;
+
+    /** [Jungfrau] bottom half */
+    void setDetectorIP2(const std::string &detectorIP, Positions pos = {});
+
+    /** [Jungfrau bottom half] */
+    Result<IpAddr> getDestinationUDPIP2(Positions pos = {}) const;
+
+    /** [Jungfrau bottom half] */
+    void setDestinationUDPIP2(const std::string &udpip, Positions pos = {});
+    
+    /** [Jungfrau bottom half] */
+    Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
+
+    /** [Jungfrau bottom half] */
+    void setDestinationUDPMAC2(const std::string &udpmac, Positions pos = {});
+
+
 
 
     /**************************************************
@@ -356,7 +369,7 @@ class Detector {
     /** true when slsReceiver is used */
     Result<bool> getUseReceiverFlag(Positions pos = {}) const;
 
-    Result<std::string> getReceiverHostname(Positions pos = {}) const;
+    Result<std::string> getRxHostname(Positions pos = {}) const;
 
     /**
      * Validates and sets the receiver.
@@ -364,49 +377,54 @@ class Detector {
      * Configures the detector to the receiver as UDP destination
      * @param receiver receiver hostname or IP address
      */
-    void setReceiverHostname(const std::string &receiver, Positions pos = {});
+    void setRxHostname(const std::string &receiver, Positions pos = {});
 
-    Result<int> getReceiverPort(Positions pos = {}) const;
+    Result<int> getRxPort(Positions pos = {}) const;
 
     /** Receiver TCP port (for client communication with Receiver)  */
-    void setReceiverPort(int value, Positions pos = {});
+    void setRxPort(int value, Positions pos = {});
 
-    Result<int> getReceiverFifoDepth(Positions pos = {}) const;
+    Result<int> getRxFifoDepth(Positions pos = {}) const;
 
-    void setReceiverFifoDepth(int nframes, Positions pos = {});
+    /** fifo between udp listening and processing threads */
+    void setRxFifoDepth(int nframes, Positions pos = {});
 
-    Result<bool> getReceiverSilentMode(Positions pos = {}) const;
+    Result<bool> getRxSilentMode(Positions pos = {}) const;
 
-    void setReceiverSilentMode(bool value, Positions pos = {});
+    /** receiver prints hardly any information while acquiring */
+    void setRxSilentMode(bool value, Positions pos = {});
 
     Result<defs::frameDiscardPolicy>
-    getReceiverFrameDiscardPolicy(Positions pos = {}) const;
+    getRxFrameDiscardPolicy(Positions pos = {}) const;
 
     /**
      * default NO_DISCARD
      * Options: NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
+     * discard partial frames is the fastest
      */
-    void setReceiverFrameDiscardPolicy(defs::frameDiscardPolicy f,
+    void setRxFrameDiscardPolicy(defs::frameDiscardPolicy f,
                                        Positions pos = {});
                                        
     Result<bool> getPartialFramesPadding(Positions pos = {}) const;
 
-    /** padding enabled */
+    /** padding enabled. Disabling padding is the fastest */
     void setPartialFramesPadding(bool value, Positions pos = {});
 
-    Result<int64_t> getReceiverUDPSocketBufferSize(Positions pos = {}) const;
+    Result<int64_t> getRxUDPSocketBufferSize(Positions pos = {}) const;
 
-    void setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,
+    void setRxUDPSocketBufferSize(int64_t udpsockbufsize,
                                         Positions pos = {});
+    /** TODO: 
+     * Linux kernel allocates twice the amount you set for bookkeeping purposes */
     Result<int64_t>
-    getReceiverRealUDPSocketBufferSize(Positions pos = {}) const;
+    getRxRealUDPSocketBufferSize(Positions pos = {}) const;
 
-    Result<bool> getReceiverLock(Positions pos = {});
+    Result<bool> getRxLock(Positions pos = {});
 
     /** locks receiver server to client IP */
-    void setReceiverLock(bool value, Positions pos = {});
+    void setRxLock(bool value, Positions pos = {});
 
-    Result<std::string> getReceiverLastClientIP(Positions pos = {}) const;
+    Result<std::string> getRxLastClientIP(Positions pos = {}) const;
 
     /**************************************************
      *                                                *
@@ -426,12 +444,15 @@ class Detector {
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
 
-    /** default run */
+    /** default run 
+     * File Name: [file name prefix]_d[module index]_f[file index]_[acquisition index].[file format]
+     * eg. run_d0_f0_5.raw
+    */
     void setFileNamePrefix(const std::string &fname, Positions pos = {});
 
-    Result<int> getFileIndex(Positions pos = {}) const;
+    Result<int> getAcquisitonIndex(Positions pos = {}) const;
 
-    void setFileIndex(int i, Positions pos = {});
+    void setAcquisitionIndex(int i, Positions pos = {});
 
     Result<bool> getFileWrite(Positions pos = {}) const;
 
@@ -440,6 +461,7 @@ class Detector {
 
     Result<bool> getMasterFileWrite(Positions pos = {}) const;
 
+    /* default writes */
     void setMasterFileWrite(bool value, Positions pos = {});
 
     Result<bool> getFileOverWrite(Positions pos = {}) const;
@@ -449,108 +471,64 @@ class Detector {
 
     Result<int> getFramesPerFile(Positions pos = {}) const;
 
+    /** -1 will set frames per file to unlimited //TODO check if it is -1 or 0 */
     void setFramesPerFile(int n, Positions pos = {});
 
 
     /**************************************************
      *                                                *
-     *    ZMQ Streaming Parameters                    *
+     *    ZMQ Streaming Parameters (Receiver<->Client)*
      *                                                *
      * ************************************************/
+    //TODO callback functions
 
-    Result<bool> getDataStreamingFromReceiver(Positions pos = {}) const;
+    Result<bool> getRxZmqDataStream(Positions pos = {}) const;
 
-    void setDataStreamingFromReceiver(bool value, Positions pos = {});
+    void setRxZmqDataStream(bool value, Positions pos = {});
 
-    bool getDataStreamingToClient() const;
-
-    void setDataStreamingToClient(bool value);
-
-    Result<int> getReceiverStreamingFrequency(Positions pos = {}) const;
+    Result<int> getRxZmqFrequency(Positions pos = {}) const;
 
     /** @param freq nth frame streamed out of receiver.
      * If 0, streaming timer is the timeout,
      * after which current frame sent out. Default is 0 at 200 ms.
-     * For every frame, set freq to 1.
+     * Default is 0. This is more for gui purposes to not send every frame.
+     * If you want every frame, set freq to 1.
      */
-    void setReceiverStreamingFrequency(int freq, Positions pos = {});
+    void setRxZmqFrequency(int freq, Positions pos = {});
 
-    Result<int> getReceiverStreamingTimer(Positions pos = {}) const;
+    Result<int> getRxZmqTimer(Positions pos = {}) const;
 
     /**
      * If receiver streaming frequency is 0 (default), then this timer between
      * each data stream is set. Default is 200 ms.
      */
-    void setReceiverStreamingTimer(int time_in_ms, Positions pos = {});
+    void setRxZmqTimer(int time_in_ms, Positions pos = {});
 
-    Result<int> getClientStreamingPort(Positions pos = {}) const;
+    Result<int> getRxZmqPort(Positions pos = {}) const;
+
     /**
-     * pos can be for a single module or all modules, not a subset
-     * If pos for all modules, ports for each module is calculated (increments)
-     * Restarts client zmq sockets
+     * module_id is -1 for all detectors, ports for each module is calculated (increments)
+     * Restarts receiver zmq sockets only if it was already enabled
      */
-    void setClientDataStreamingInPort(int port, Positions pos = {});
+    void setRxZmqPort(int port, int module_id = -1);
 
-    Result<int> getReceiverStreamingPort(Positions pos = {}) const;
-    /**
-     * pos can be for a single module or all modules, not a subset
-     * If pos for all modules, ports for each module is calculated (increments)
-     * Restarts receiver zmq sockets
-     */
-    void setReceiverDataStreamingOutPort(int port, Positions pos = {});
+    Result<std::string> getRxZmqIP(Positions pos = {}) const;
 
-    Result<std::string> getClientStreamingIP(Positions pos = {}) const;
-
-    // TODO these should probably be the same ?? same as what?
-    void setClientDataStreamingInIP(const std::string &ip, Positions pos = {});
-
-    Result<std::string> getReceiverStreamingIP(Positions pos = {}) const;
-
-    void setReceiverDataStreamingOutIP(const std::string &ip,
+    void setRxZmqIP(const std::string &ip,
                                        Positions pos = {});
 
-    /** [Moench] */
-    Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
-
-    /** [Moench] */
-    void setAdditionalJsonHeader(const std::string &jsonheader,
-                                 Positions pos = {});
-
-    /** [Moench] */
-    Result<std::string> getAdditionalJsonParameter(const std::string &key,
-                                                   Positions pos = {}) const;
+    Result<int> getClientZmqPort(Positions pos = {}) const;
+    
     /**
-     * [Moench]
-     * Sets the value for additional json header parameter if found,
-     * else appends the parameter key and value
-     * The value cannot be empty
+     * Needed only when using the client call back to get reconstructed data from multi modules
+     * module_id is -1 for all detectors, ports for each module is calculated (increments)
+     * Restarts client zmq sockets oonly if it was already enabled
      */
-    void setAdditionalJsonParameter(const std::string &key,
-                                    const std::string &value,
-                                    Positions pos = {});
+    void setClientZmqPort(int port, int module_id = -1);
 
-        /** [Moench] TODO! How do we do this best??? Can be refactored to something
-     * else? Use a generic zmq message passing system...
-     * For now limiting to all detectors working the same*/
-    /** [Moench: -1 if not found or cannot convert to int] */
-    Result<int> getDetectorMinMaxEnergyThreshold(const bool isEmax,
-                                                 Positions pos = {}) const;
+    Result<std::string> getClientZmqIp(Positions pos = {}) const;
 
-    /** [Moench] */
-    void setDetectorMinMaxEnergyThreshold(const bool isEmax, const int value,
-                                          Positions pos = {});
-
-    /** [Moench: -1 if unknown mode] */
-    Result<int> getFrameMode(Positions pos = {}) const;
-
-    /** [Moench] */
-    void setFrameMode(defs::frameModeType value, Positions pos = {});
-
-    /** [Moench: -1 if unknown mode] */
-    Result<int> getDetectorMode(Positions pos = {}) const;
-
-    /** [Moench] */
-    void setDetectorMode(defs::detectorModeType value, Positions pos = {});
+    void setClientZmqIp(const std::string &ip, Positions pos = {});
 
 
     /**************************************************
@@ -561,12 +539,6 @@ class Detector {
 
     Result<int> getDynamicRange(Positions pos = {}) const;
 
-    /** [Eiger] */
-    Result<bool> getTenGigaEnabled(Positions pos = {}) const;
-
-    /** [Eiger] */
-    void setTenGigaEnabled(bool value, Positions pos = {});
-
     /**
      * [Eiger]
      * Options: 4, 8, 16, 32
@@ -574,7 +546,13 @@ class Detector {
      */
     void setDynamicRange(int value);
 
-        /** [Eiger] in 32 bit mode */
+    /** [Eiger] */
+    Result<bool> getTenGiga(Positions pos = {}) const;
+
+    /** [Eiger] */
+    void setTenGiga(bool enable, Positions pos = {});
+
+    /** [Eiger] in 32 bit mode */
     Result<ns> getSubExptime(Positions pos = {}) const;
 
     /** [Eiger] in 32 bit mode */
@@ -603,15 +581,15 @@ class Detector {
     /** [Eiger] */
     void loadTrimbits(const std::string &fname, Positions pos = {});
 
-        /**[Eiger] */
-    Result<bool> getGapPixelsEnable(Positions pos = {}) const;
+    /**[Eiger] */
+    Result<bool> getRxAddGapPixels(Positions pos = {}) const;
 
     /**
      * [Eiger]
      * 4 bit mode not implemented in Receiver, but in client data call back
      * Fills in gap pixels in data
      */
-    void setGapPixelsEnable(bool enable);
+    void setRxAddGapPixels(bool enable);
 
     /** [Eiger] */
     Result<bool> getParallelMode(Positions pos = {}) const;
@@ -625,15 +603,13 @@ class Detector {
     /** [Eiger] */
     void setOverFlowMode(bool value, Positions pos = {});
 
-        /** [Eiger] */
+    /** [Eiger] */
     Result<bool> getBottom(Positions pos = {}) const;
 
-    /** [Eiger] for gui purposes */
+    /** [Eiger] for client call back (gui) purposes */
     void setBottom(bool value, Positions pos = {});
 
-    /** [Eiger]
-     * @returns -1 if they are all different
-     */
+    /** [Eiger] -1 if they are all different */
     Result<int> getAllTrimbits(Positions pos = {}) const;
 
     /**[Eiger] */
@@ -645,19 +621,14 @@ class Detector {
     /** [Eiger] Set the energies where the detector is trimmed */
     void setTrimEnergies(std::vector<int> energies, Positions pos = {});
 
-    /** [Eiger]
-     * @returns deadtime in ns, 0 = disabled
-     */
-    Result<int64_t> getRateCorrection(Positions pos = {}) const;
+    /** [Eiger] deadtime in ns, 0 = disabled */
+    Result<ns> getRateCorrection(Positions pos = {}) const;
 
-    /**
+    /** //TODO: default, get, set
      * [Eiger] Set Rate correction
-     * 0 disable correction, <0 set to default, >0 deadtime in ns
+     * 0 disable correction, < 0: default dead time from trimbit file, > 0 custom deadtime (advanced)
      */
-    void setRateCorrection(int64_t dead_time_ns, Positions pos = {});
-
-    /** [Eiger] Sends an internal software trigger to the detector */
-    void sendSoftwareTrigger(Positions pos = {});
+    void setRateCorrection(ns dead_time, Positions pos = {});
 
     /** [Eiger] */
     Result<int> getPartialReadout(Positions pos = {}) const;
@@ -669,35 +640,16 @@ class Detector {
     void setPartialReadout(const int lines, Positions pos = {});
 
     /** [Eiger] */
-    Result<int> getIODelay(Positions pos = {}) const;
-
-    /** [Eiger] */
-    void setIODelay(int value, Positions pos = {});
-
-    /** [Eiger] */
     Result<bool> getInterruptSubframe(Positions pos = {}) const;
 
-    /** [Eiger] when set,  the last subframe is interrupted at end of acq */
+    /** [Eiger] when set, the last subframe is interrupted at end of acq */
     void setInterruptSubframe(const bool enable, Positions pos = {});
 
+    /** [Eiger] minimum two frames */
+    Result<ns> getMeasuredPeriod(Positions pos = {}) const;
+
     /** [Eiger] */
-    Result<bool> getCounterBit(Positions pos = {}) const;
-
-    /** [Eiger] If it is set, it resets chips completely (else partially) before
-     * an acquisition TODO: if it makes sense */
-    void setCounterBit(bool value, Positions pos = {});
-
-    /**
-     * [Eiger] Pulse Pixel n times at x and y coordinates
-     */
-    void pulsePixel(int n, int x, int y, Positions pos = {});
-
-    /** [Eiger] Pulse Pixel n times and move by a relative value of x and y
-     * coordinates */
-    void pulsePixelNMove(int n, int x, int y, Positions pos = {});
-
-    /** [Eiger] Pulse chip n times */
-    void pulseChip(int n, Positions pos = {});
+    Result<ns> getMeasuredSubFramePeriod(Positions pos = {}) const;
 
     /** [Eiger] */
     Result<bool> getActive(Positions pos = {}) const;
@@ -706,12 +658,30 @@ class Detector {
     void setActive(bool active, Positions pos = {});
 
     /** [Eiger] */
-    Result<bool> getRxPadDeactivatedMod(Positions pos = {}) const;
+    Result<bool> getRxPadDeactivatedMode(Positions pos = {}) const;
 
-    /**
-     * [Eiger] Set deactivated Receiver padding mode
-     */
-    void setRxPadDeactivatedMod(bool pad, Positions pos = {});
+    /** [Eiger] Advanced */
+    Result<bool> getPartialReset(Positions pos = {}) const;
+
+    /** [Eiger] Advanced 
+     * used for pulsing chips */
+    void setPartialReset(bool enable, Positions pos = {});
+
+    /** [Eiger] Advanced 
+     * Pulse Pixel n times at x and y coordinates */
+    void pulsePixel(int n, defs::<xy> pixel, Positions pos = {});
+
+    /** [Eiger] Advanced 
+     * Pulse Pixel n times and move by a relative value of x and y
+     * coordinates */
+    void pulsePixelNMove(int n, defs::<xy> pixel, Positions pos = {});
+
+    /** [Eiger] Advanced
+     * Pulse chip n times */
+    void pulseChip(int n, Positions pos = {});
+
+    /** [Eiger] Pad deactivated modules in receiver */
+    void setRxPadDeactivatedMode(bool pad, Positions pos = {});
 
     /** [Eiger] with specific quad hardware */
     Result<bool> getQuad(Positions pos = {}) const;
@@ -719,11 +689,6 @@ class Detector {
     /** [Eiger] with specific quad hardware */
     void setQuad(const bool enable);
 
-    /** [Eiger] minimum two frames */
-    Result<ns> getMeasuredPeriod(Positions pos = {}) const;
-
-    /** [Eiger] */
-    Result<ns> getMeasuredSubFramePeriod(Positions pos = {}) const;
 
     /**************************************************
      *                                                *
@@ -740,7 +705,7 @@ class Detector {
      * and temperature control is enabled,
      * power to chip will be switched off and
      * temperature event will be set
-     * @param val value in millidegrees TODO! Verify
+     * @param val value in degrees
      */
     void setThresholdTemperature(int temp, Positions pos = {});
 
@@ -754,7 +719,7 @@ class Detector {
     Result<int> getTemperatureEvent(Positions pos = {}) const;
 
     /** [Jungfrau] */
-    void ResetTemperatureEvent(Positions pos = {});
+    void resetTemperatureEvent(Positions pos = {});
 
     /** [Jungfrau] */
     Result<bool> getPowerChip(Positions pos = {}) const;
@@ -765,10 +730,13 @@ class Detector {
     /** [Jungfrau] */
     Result<bool> getAutoCompDisable(Positions pos = {}) const;
 
-    /** [Jungfrau] TODO??? fix docs ? */
+    /** [Jungfrau] Advanced
+     * //TODO naming
+     * By default, the on-chip gain switching is active during the entire exposure.
+     * This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). */
     void setAutoCompDisable(bool value, Positions pos = {});
     
-    /** [Jungfrau] Advanced */
+    /** [Jungfrau] Advanced TODO naming */
     Result<int64_t> getNumberOfAdditionalStorageCells() const;
 
     /** [Jungfrau] Advanced */
@@ -807,7 +775,7 @@ class Detector {
      */
     void setROI(defs::ROI value, int moduleId);
 
-    /** [Gotthard] */
+    /** [Gotthard] TODO: check with jiaguo if he needs any of these functions */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
 
     /** [Gotthard] */
@@ -821,11 +789,11 @@ class Detector {
     void setExternalSignalFlags(defs::externalSignalFlag value,
                                 Positions pos = {});
 
-    /** [Gotthard] subset modules not allowed */
-    void loadDarkImage(const std::string &fname, Positions pos = {});
+    /** [Gotthard] */
+    void loadDarkImage(const std::string &fname, int module_id = -1);
 
-    /** [Gotthard] subset modules not allowed */
-    void loadGainImage(const std::string &fname, Positions pos = {});
+    /** [Gotthard] */
+    void loadGainImage(const std::string &fname, int module_id = -1);
 
     /**
      * [Gotthard] subset modules not allowed
@@ -1060,6 +1028,56 @@ class Detector {
      * pattern
      */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
+
+    /**************************************************
+     *                                                *
+     *    Moench                                      *
+     *                                                *
+     * ************************************************/
+
+
+    /** [Moench] */
+    Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
+
+    /** [Moench] */
+    void setAdditionalJsonHeader(const std::string &jsonheader,
+                                 Positions pos = {});
+
+    /** [Moench] */
+    Result<std::string> getAdditionalJsonParameter(const std::string &key,
+                                                   Positions pos = {}) const;
+    /**
+     * [Moench]
+     * Sets the value for additional json header parameter if found,
+     * else appends the parameter key and value
+     * The value cannot be empty
+     */
+    void setAdditionalJsonParameter(const std::string &key,
+                                    const std::string &value,
+                                    Positions pos = {});
+
+        /** [Moench] TODO! How do we do this best??? Can be refactored to something
+     * else? Use a generic zmq message passing system...
+     * For now limiting to all detectors working the same*/
+    /** [Moench: -1 if not found or cannot convert to int] */
+    Result<int> getDetectorMinMaxEnergyThreshold(const bool isEmax,
+                                                 Positions pos = {}) const;
+
+    /** [Moench] */
+    void setDetectorMinMaxEnergyThreshold(const bool isEmax, const int value,
+                                          Positions pos = {});
+
+    /** [Moench: -1 if unknown mode] */
+    Result<int> getFrameMode(Positions pos = {}) const;
+
+    /** [Moench] */
+    void setFrameMode(defs::frameModeType value, Positions pos = {});
+
+    /** [Moench: -1 if unknown mode] */
+    Result<int> getDetectorMode(Positions pos = {}) const;
+
+    /** [Moench] */
+    void setDetectorMode(defs::detectorModeType value, Positions pos = {});
 
     /**************************************************
      *                                                *

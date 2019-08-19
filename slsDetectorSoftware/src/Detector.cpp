@@ -682,11 +682,11 @@ void Detector::setDetectorIP2(const std::string &detectorIP, Positions pos) {
     pimpl->Parallel(&slsDetector::setDetectorIP2, pos, detectorIP);
 }
 
-Result<std::string> Detector::getReceiverHostname(Positions pos) const {
+Result<std::string> Detector::getRxHostname(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverHostname, pos);
 }
 
-void Detector::setReceiverHostname(const std::string &receiver, Positions pos) {
+void Detector::setRxHostname(const std::string &receiver, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverHostname, pos, receiver);
 }
 
@@ -698,7 +698,7 @@ void Detector::setDestinationUDPIP(const std::string &udpip, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverUDPIP, pos, udpip);
 }
 
-Result<IpAddr> Detector::getReceiverUDPIP2(Positions pos) const {
+Result<IpAddr> Detector::getRxUDPIP2(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverUDPIP2, pos);
 }
 
@@ -778,11 +778,11 @@ void Detector::setClientDataStreamingInPort(int port, Positions pos) {
     pimpl->setClientDataStreamingInPort(port, pos.empty() ? -1 : pos[0]);
 }
 
-Result<int> Detector::getReceiverStreamingPort(Positions pos) const {
+Result<int> Detector::getRxStreamingPort(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverStreamingPort, pos);
 }
 
-void Detector::setReceiverDataStreamingOutPort(int port, Positions pos) {
+void Detector::setRxDataStreamingOutPort(int port, Positions pos) {
     if (pos.size() > 1 && pos.size() < pimpl->size()) {
         throw RuntimeError(
             "Cannot set receiver streaming port to a subset of modules");
@@ -805,11 +805,11 @@ void Detector::setClientDataStreamingInIP(const std::string &ip,
     }
 }
 
-Result<std::string> Detector::getReceiverStreamingIP(Positions pos) const {
+Result<std::string> Detector::getRxStreamingIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverStreamingIP, pos);
 }
 
-void Detector::setReceiverDataStreamingOutIP(const std::string &ip,
+void Detector::setRxDataStreamingOutIP(const std::string &ip,
                                              Positions pos) {
     bool previouslyReceiverStreaming =
         getDataStreamingFromReceiver(pos).squash(false);
@@ -1011,7 +1011,7 @@ Result<bool> Detector::getCounterBit(Positions pos) const {
 }
 
 void Detector::setCounterBit(bool value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setCounterBit, pos, value);
+    pimpl->Parallel(&slsDetector::setCounterBit, pos, !value);
 }
 
 Result<defs::ROI> Detector::getROI(Positions pos) const {
@@ -1057,19 +1057,19 @@ void Detector::setExternalSampling(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::setExternalSampling, pos, value);
 }
 
-Result<std::vector<int>> Detector::getReceiverDbitList(Positions pos) const {
+Result<std::vector<int>> Detector::getRxDbitList(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverDbitList, pos);
 }
 
-void Detector::setReceiverDbitList(std::vector<int> list, Positions pos) {
+void Detector::setRxDbitList(std::vector<int> list, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverDbitList, pos, list);
 }
 
-Result<int> Detector::getReceiverDbitOffset(Positions pos) const {
+Result<int> Detector::getRxDbitOffset(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverDbitOffset, pos);
 }
 
-void Detector::setReceiverDbitOffset(int value, Positions pos) {
+void Detector::setRxDbitOffset(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverDbitOffset, pos, value);
 }
 
@@ -1130,11 +1130,15 @@ void Detector::pulseChip(int n, Positions pos) {
 }
 
 Result<int> Detector::getThresholdTemperature(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setThresholdTemperature, pos, -1);
+    auto res = pimpl->Parallel(&slsDetector::setThresholdTemperature, pos, -1);
+    for (auto &it : res) {
+        it /= 1000;
+    }
+    return res;
 }
 
 void Detector::setThresholdTemperature(int temp, Positions pos) {
-    pimpl->Parallel(&slsDetector::setThresholdTemperature, pos, temp);
+    pimpl->Parallel(&slsDetector::setThresholdTemperature, pos, temp * 1000);
 }
 
 Result<bool> Detector::getTemperatureControl(Positions pos) const {
@@ -1207,7 +1211,7 @@ void Detector::setAutoCompDisable(bool value, Positions pos) {
                     static_cast<int>(value));
 }
 
-Result<int64_t> Detector::getRateCorrection(Positions pos) const {
+Result<ns> Detector::getRateCorrection(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getRateCorrection, pos);
 }
 
@@ -1312,43 +1316,43 @@ Result<bool> Detector::getUseReceiverFlag(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getUseReceiverFlag, pos);
 }
 
-Result<std::string> Detector::printReceiverConfiguration(Positions pos) const {
+Result<std::string> Detector::printRxConfiguration(Positions pos) const {
     return pimpl->Parallel(&slsDetector::printReceiverConfiguration, pos);
 }
 
-Result<int> Detector::getReceiverPort(Positions pos) const {
+Result<int> Detector::getRxPort(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverPort, pos);
 }
 
-void Detector::setReceiverPort(int value, Positions pos) {
+void Detector::setRxPort(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverPort, pos, value);
 }
 
-Result<bool> Detector::getReceiverLock(Positions pos) {
+Result<bool> Detector::getRxLock(Positions pos) {
     return pimpl->Parallel(&slsDetector::lockReceiver, pos, -1);
 }
 
-void Detector::setReceiverLock(bool value, Positions pos) {
+void Detector::setRxLock(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::lockReceiver, pos, static_cast<int>(value));
 }
 
-Result<std::string> Detector::getReceiverLastClientIP(Positions pos) const {
+Result<std::string> Detector::getRxLastClientIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverLastClientIP, pos);
 }
 
-Result<int> Detector::getReceiverStreamingFrequency(Positions pos) const {
+Result<int> Detector::getRxStreamingFrequency(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setReceiverStreamingTimer, pos, -1);
 }
 
-void Detector::setReceiverStreamingFrequency(int freq, Positions pos) {
+void Detector::setRxStreamingFrequency(int freq, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverStreamingFrequency, pos, freq);
 }
 
-Result<int> Detector::getReceiverStreamingTimer(Positions pos) const {
+Result<int> Detector::getRxStreamingTimer(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setReceiverStreamingTimer, pos, -1);
 }
 
-void Detector::setReceiverStreamingTimer(int time_in_ms, Positions pos) {
+void Detector::setRxStreamingTimer(int time_in_ms, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverStreamingTimer, pos, time_in_ms);
 }
 
@@ -1360,39 +1364,39 @@ void Detector::setDataStreamingToClient(bool enable) {
     pimpl->enableDataStreamingToClient(static_cast<int>(enable));
 }
 
-Result<bool> Detector::getDataStreamingFromReceiver(Positions pos) const {
+Result<bool> Detector::getDataStreamingFromRx(Positions pos) const {
     return pimpl->Parallel(&slsDetector::enableDataStreamingFromReceiver, pos, -1);
 }
 
-void Detector::setDataStreamingFromReceiver(bool enable, Positions pos) {
+void Detector::setDataStreamingFromRx(bool enable, Positions pos) {
     pimpl->Parallel(&slsDetector::enableDataStreamingFromReceiver, pos,
                     static_cast<int>(enable));
 }
 
-Result<int> Detector::getReceiverFifoDepth(Positions pos) const {
+Result<int> Detector::getRxFifoDepth(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setReceiverFifoDepth, pos, -1);
 }
 
-void Detector::setReceiverFifoDepth(int nframes, Positions pos) {
+void Detector::setRxFifoDepth(int nframes, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverFifoDepth, pos, nframes);
 }
 
-Result<bool> Detector::getReceiverSilentMode(Positions pos) const {
+Result<bool> Detector::getRxSilentMode(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setReceiverSilentMode, pos, -1);
 }
 
-void Detector::setReceiverSilentMode(bool value, Positions pos) {
+void Detector::setRxSilentMode(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverSilentMode, pos,
                     static_cast<int>(value));
 }
 
 Result<defs::frameDiscardPolicy>
-Detector::getReceiverFrameDiscardPolicy(Positions pos) const {
+Detector::getRxFrameDiscardPolicy(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setReceiverFramesDiscardPolicy, pos,
                            defs::GET_FRAME_DISCARD_POLICY);
 }
 
-void Detector::setReceiverFrameDiscardPolicy(defs::frameDiscardPolicy f,
+void Detector::setRxFrameDiscardPolicy(defs::frameDiscardPolicy f,
                                              Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverFramesDiscardPolicy, pos, f);
 }
@@ -1414,18 +1418,18 @@ void Detector::setRxPadDeactivatedMod(bool pad, Positions pos) {
                     static_cast<int>(pad));
 }
 
-Result<int64_t> Detector::getReceiverUDPSocketBufferSize(Positions pos) const {
+Result<int64_t> Detector::getRxUDPSocketBufferSize(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverUDPSocketBufferSize, pos);
 }
 
-void Detector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,
+void Detector::setRxUDPSocketBufferSize(int64_t udpsockbufsize,
                                               Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverUDPSocketBufferSize, pos,
                     udpsockbufsize);
 }
 
 Result<int64_t>
-Detector::getReceiverRealUDPSocketBufferSize(Positions pos) const {
+Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverRealUDPSocketBufferSize,
                            pos);
 }
@@ -1455,7 +1459,7 @@ void Detector::sendSoftwareTrigger(Positions pos) {
     pimpl->Parallel(&slsDetector::sendSoftwareTrigger, pos);
 }
 
-Result<defs::runStatus> Detector::getReceiverStatus(Positions pos) const {
+Result<defs::runStatus> Detector::getRxStatus(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverStatus, pos);
 }
 
@@ -1463,7 +1467,7 @@ Result<int> Detector::getFramesCaught(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFramesCaughtByReceiver, pos);
 }
 
-Result<uint64_t> Detector::getReceiverCurrentFrameIndex(Positions pos) const {
+Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverCurrentFrameIndex, pos);
 }
 

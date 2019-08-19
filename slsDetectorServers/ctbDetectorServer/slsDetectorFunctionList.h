@@ -1,1 +1,0 @@
-../slsDetectorServer/slsDetectorFunctionList.h

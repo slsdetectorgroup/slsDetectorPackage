@@ -1,1 +1,0 @@
-../slsDetectorServer/AD9257.h

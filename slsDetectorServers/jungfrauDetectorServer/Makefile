@@ -10,8 +10,8 @@ PROGS		= 	jungfrauDetectorServer
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRC_CLNT	=	$(main_server)communication_funcs.c $(main_server)slsDetectorServer.c $(main_server)slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
-OBJS 		= 	$(SRC_CLNT:.c=.o) 
+SRCS	=	$(main_server)communication_funcs.c $(main_server)slsDetectorServer.c $(main_server)slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+OBJS 	= 	$(SRCS:.c=.o) 
  
 all: clean versioning $(PROGS)
 
@@ -31,7 +31,7 @@ $(PROGS): $(OBJS)
 	rm *.gdb
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb
+	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_server)*.o
 	
 
 	

@@ -196,6 +196,7 @@ class Detector {
      * If no receiver enabled, you can skip this for normal acquisition (no abort)
      */
     void stopAcquisition();//TODO: cannot do this. for acquire, to stop acquisition, must not also do stop receiver(mutex)
+    // TODO: stopAcquire??
 
     /**
      * Clears the acquiring flag. This has to be done manually
@@ -218,7 +219,7 @@ class Detector {
     /** [Eiger] Sends an internal software trigger to the detector */
     void sendSoftwareTrigger(Positions pos = {});
 
-//TODO: remove resetframescaught in receiver
+    //TODO: remove resetframescaught in receiver
 
 
     /**************************************************
@@ -228,10 +229,40 @@ class Detector {
      * ************************************************/
     
     /** Configures the destination for UDP packets in the detector 
-     * Needed only if you use a custm receiver (not slsReceiver)
+     * Needed only if you use a custom receiver (not slsReceiver)
      * as it is already included in setReceiverHostname.
     */
     void configureMAC(Positions pos = {});//TODO: find a reasonable name
+
+    /** [Jungfrau] */
+    Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
+
+    /** [Jungfrau] Also restarts client and receiver sockets */
+    void setNumberofUDPInterfaces(int n, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<int> getSelectedUDPInterface(Positions pos = {}) const;
+
+    /**
+     * [Jungfrau:
+     * Effective only when number of interfaces is 1.
+     * Options: 0 (outer, default), 1(inner)] //TODO: enum?
+     */
+    void selectUDPInterface(int interface, Positions pos = {});
+
+    Result<IpAddr> getSourceUDPIP(Positions pos = {}) const;
+
+    /* For Eiger 1G, the detector will replace with its own DHCP IP
+     * 10G Eiger and other detectors, the source UDP IP must be in the 
+     * same subnet of the destination UDP IP
+     */
+    void setSourceUDPIP(const std::string &ip, Positions pos = {});
+
+   /** [Jungfrau] bottom half */
+    Result<IpAddr> getSourceUDPIP2(Positions pos = {}) const;
+
+    /** [Jungfrau] bottom half */
+    void setSourceUDPIP2(const std::string &ip, Positions pos = {});
 
     Result<MacAddr> getSourceUDPMAC(Positions pos = {}) const;
 
@@ -240,35 +271,44 @@ class Detector {
      * Others can be anything (beware of certain bits)
      */
     
-    void setSourceUDPMAC(const std::string &detectorMAC, Positions pos = {});
+    void setSourceUDPMAC(const std::string &mac, Positions pos = {});
 
-    Result<IpAddr> getSourceUDPIP(Positions pos = {}) const;
+    /** [Jungfrau] bottom half */
+    Result<MacAddr> getSourceUDPMAC2(Positions pos = {}) const;
 
-    /* For Eiger 1G, the detector will replace with its own DHCP IP
-     * 10G Eiger and other detectors, the source UDP IP must be in the 
-     * same subnet of the destination UDP IP
-     */
-    void setSourceUDPIP(const std::string &detectorIP, Positions pos = {});
+    /** [Jungfrau] bottom half */
+    void setSourceUDPMAC2(const std::string &mac, Positions pos = {});
 
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
 
     /** IP of the interface in receiver that the detector sends data to */
-    void setDestinationUDPIP(const std::string &udpip, Positions pos = {});
+    void setDestinationUDPIP(const std::string &ip, Positions pos = {});
 
+    /** [Jungfrau bottom half] */
+    Result<IpAddr> getDestinationUDPIP2(Positions pos = {}) const;
+
+    /** [Jungfrau bottom half] */
+    void setDestinationUDPIP2(const std::string &ip, Positions pos = {});
+    
     Result<MacAddr> getDestinationUDPMAC(Positions pos = {}) const;
 
     /** MAC of the interface in receiver that the detector sends data to 
      * Only needed if you use a custom receiver (not slsReceiver)
      * Must be followed by configuremac.
     */
-    void setDestinationUDPMAC(const std::string &udpmac, Positions pos = {});
+    void setDestinationUDPMAC(const std::string &mac, Positions pos = {});
+
+    /** [Jungfrau bottom half] */
+    Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
+
+    /** [Jungfrau bottom half] */
+    void setDestinationUDPMAC2(const std::string &mac, Positions pos = {});
 
     Result<int> getDestinationUDPPort(Positions pos = {}) const;
 
-    /**
-     * module_id is -1 for all detectors, ports for each module is calculated (increments)
-     */
-    void setDestinationUDPPort(int udpport, int module_id = -1);
+    /** module_id is -1 for all detectors, ports for each module is calculated (increments) */
+    //TODO if Parallel takes a vector, can send multiple vaues to set in slsdetector.cp
+    void setDestinationUDPPort(int port, int module_id = -1);
 
     /** [Eiger right port][Jungfrau bottom half] */
     Result<int> getDestinationUDPPort2(Positions pos = {}) const;
@@ -276,9 +316,15 @@ class Detector {
     /** [Eiger right port][Jungfrau bottom half]
      * module_id is -1 for all detectors, ports for each module is calculated (increments)
      */
-    void setDestinationUDPPort2(int udpport, int module_id = -1);
+    void setDestinationUDPPort2(int port, int module_id = -1);
 
     Result<std::string> printRxConfiguration(Positions pos = {}) const;
+
+    /** [Eiger][CTB] */
+    Result<bool> getTenGiga(Positions pos = {}) const;
+
+    /** [Eiger][CTB] */
+    void setTenGiga(bool enable, Positions pos = {});
 
     /** [Eiger, Jungfrau] */
     Result<bool> getTenGigaGFlowControl(Positions pos = {}) const;
@@ -316,48 +362,6 @@ class Detector {
      * port
      */
     void setTransmissionDelayRight(int value, Positions pos = {});
-
-    /** [Jungfrau] */
-    Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
-
-    /** [Jungfrau] Also restarts client and receiver sockets */
-    void setNumberofUDPInterfaces(int n, Positions pos = {});
-
-    /** [Jungfrau] */
-    Result<int> getSelectedUDPInterface(Positions pos = {}) const;
-
-    /**
-     * [Jungfrau:
-     * Effective only when number of interfaces is 1.
-     * Options: 0 (outer, default), 1(inner)] //TODO: enum?
-     */
-    void selectUDPInterface(int interface, Positions pos = {});
-
-    /** [Jungfrau] bottom half */
-    Result<MacAddr> getDetectorMAC2(Positions pos = {}) const;
-
-    /** [Jungfrau] bottom half */
-    void setDetectorMAC2(const std::string &detectorMAC, Positions pos = {});
-
-    /** [Jungfrau] bottom half */
-    Result<IpAddr> getDetectorIP2(Positions pos = {}) const;
-
-    /** [Jungfrau] bottom half */
-    void setDetectorIP2(const std::string &detectorIP, Positions pos = {});
-
-    /** [Jungfrau bottom half] */
-    Result<IpAddr> getDestinationUDPIP2(Positions pos = {}) const;
-
-    /** [Jungfrau bottom half] */
-    void setDestinationUDPIP2(const std::string &udpip, Positions pos = {});
-    
-    /** [Jungfrau bottom half] */
-    Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
-
-    /** [Jungfrau bottom half] */
-    void setDestinationUDPMAC2(const std::string &udpmac, Positions pos = {});
-
-
 
 
     /**************************************************
@@ -426,10 +430,10 @@ class Detector {
 
     Result<std::string> getRxLastClientIP(Positions pos = {}) const;
 
+
     /**************************************************
      *                                                *
-     *    FILE, anything concerning file writing or   *
-     *    reading goes here                           *
+     *    FILE                                        *
      *                                                *
      * ************************************************/
     Result<defs::fileFormat> getFileFormat(Positions pos = {}) const;
@@ -546,12 +550,6 @@ class Detector {
      */
     void setDynamicRange(int value);
 
-    /** [Eiger] */
-    Result<bool> getTenGiga(Positions pos = {}) const;
-
-    /** [Eiger] */
-    void setTenGiga(bool enable, Positions pos = {});
-
     /** [Eiger] in 32 bit mode */
     Result<ns> getSubExptime(Positions pos = {}) const;
 
@@ -660,6 +658,9 @@ class Detector {
     /** [Eiger] */
     Result<bool> getRxPadDeactivatedMode(Positions pos = {}) const;
 
+    /** [Eiger] Pad deactivated modules in receiver */
+    void setRxPadDeactivatedMode(bool pad, Positions pos = {});
+
     /** [Eiger] Advanced */
     Result<bool> getPartialReset(Positions pos = {}) const;
 
@@ -669,19 +670,16 @@ class Detector {
 
     /** [Eiger] Advanced 
      * Pulse Pixel n times at x and y coordinates */
-    void pulsePixel(int n, defs::<xy> pixel, Positions pos = {});
+    void pulsePixel(int n, defs::xy pixel, Positions pos = {});
 
     /** [Eiger] Advanced 
      * Pulse Pixel n times and move by a relative value of x and y
      * coordinates */
-    void pulsePixelNMove(int n, defs::<xy> pixel, Positions pos = {});
+    void pulsePixelNMove(int n, defs::xy pixel, Positions pos = {});
 
     /** [Eiger] Advanced
      * Pulse chip n times */
     void pulseChip(int n, Positions pos = {});
-
-    /** [Eiger] Pad deactivated modules in receiver */
-    void setRxPadDeactivatedMode(bool pad, Positions pos = {});
 
     /** [Eiger] with specific quad hardware */
     Result<bool> getQuad(Positions pos = {}) const;
@@ -941,16 +939,16 @@ class Detector {
     void setExternalSampling(bool value, Positions pos = {});
 
     /** [CTB] */
-    Result<std::vector<int>> getReceiverDbitList(Positions pos = {}) const;
+    Result<std::vector<int>> getRxDbitList(Positions pos = {}) const;
 
     /** [CTB] list contains the set of bits (0-63) to save */
-    void setReceiverDbitList(std::vector<int> list, Positions pos = {});
+    void setRxDbitList(std::vector<int> list, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getReceiverDbitOffset(Positions pos = {}) const;
+    Result<int> getRxDbitOffset(Positions pos = {}) const;
 
     /** [CTB] Set number of bytes of digital data to skip in the Receiver */
-    void setReceiverDbitOffset(int value, Positions pos = {});
+    void setRxDbitOffset(int value, Positions pos = {});
 
     /**
      * [CTB] Set Digital IO Delay
@@ -1174,8 +1172,10 @@ class Detector {
 
     std::string getUserDetails() const;
 
-   Result<uint64_t> getReceiverCurrentFrameIndex(Positions pos = {}) const;
+   Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
 
+private:
+std::vector<int> getPortNumbers(int start_port);
 
 };
 

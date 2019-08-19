@@ -116,7 +116,7 @@ class Detector {
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][CTB] */
-    Result<int64_t> getNumberOfCyclesLeft(Positions pos = {}) const;
+    Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][CTB] */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;

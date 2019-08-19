@@ -75,6 +75,174 @@ void Detector::setDetectorSize(const defs::xy value) {
     pimpl->setNumberOfChannels(value);
 }
 
+Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getSettings, pos);
+}
+
+void Detector::setSettings(defs::detectorSettings value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setSettings, pos, value);
+}
+
+
+
+// Acquisition Parameters
+
+Result<int64_t> Detector::getNumberOfFrames() const {
+    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::FRAME_NUMBER, -1);
+}
+
+void Detector::setNumberOfFrames(int64_t value) {
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::FRAME_NUMBER, value);
+}
+
+Result<int64_t> Detector::getNumberOfTriggers() const {
+    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, -1);
+}
+
+void Detector::setNumberOfTriggers(int64_t value) {
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, value);
+}
+
+
+Result<ns> Detector::getExptime(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
+                           -1);
+}
+
+void Detector::setExptime(ns t, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
+                    t.count());
+}
+
+Result<ns> Detector::getPeriod(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, -1);
+}
+
+void Detector::setPeriod(ns t, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, t.count());
+}
+
+Result<ns> Detector::getDelayAfterTrigger(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimer, pos,
+                           defs::DELAY_AFTER_TRIGGER, -1);
+}
+
+void Detector::setDelayAfterTrigger(ns value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimer, pos, defs::DELAY_AFTER_TRIGGER,
+                    value.count());
+}
+
+Result<int64_t> Detector::getNumberOfFramesLeft(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::FRAME_NUMBER);
+}
+
+Result<int64_t> Detector::getNumberOfTriggersLeft(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::CYCLES_NUMBER);
+}
+
+Result<ns> Detector::getDelayAfterTriggerLeft(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
+                           defs::DELAY_AFTER_TRIGGER);
+}
+
+Result<int> Detector::getSpeed(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER, -1,
+                           0);
+}
+
+void Detector::setSpeed(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER, value, 0);
+}
+
+Result<int> Detector::getADCPhase(bool inDeg, Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setSpeed, pos, defs::ADC_PHASE, -1,
+                           inDeg);
+}
+
+void Detector::setADCPhase(int value, bool inDeg, Positions pos) {
+    pimpl->Parallel(&slsDetector::setSpeed, pos, defs::ADC_PHASE, value, inDeg);
+}
+
+Result<int> Detector::getMaxADCPhaseShift(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setSpeed, pos,
+                           defs::MAX_ADC_PHASE_SHIFT, -1, 0);
+}
+
+Result<int> Detector::getHighVoltage(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setDAC, pos, -1, defs::HIGH_VOLTAGE,
+                           0);
+}
+
+void Detector::setHighVoltage(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setDAC, pos, value, defs::HIGH_VOLTAGE, 0);
+}
+
+Result<int> Detector::getTemperature(defs::dacIndex index, Positions pos) const {
+    switch (index) {
+    case defs::TEMPERATURE_ADC:
+    case defs::TEMPERATURE_FPGA:
+    case defs::TEMPERATURE_FPGAEXT:
+    case defs::TEMPERATURE_10GE:
+    case defs::TEMPERATURE_DCDC:
+    case defs::TEMPERATURE_SODL:
+    case defs::TEMPERATURE_SODR:
+    case defs::TEMPERATURE_FPGA2:
+    case defs::TEMPERATURE_FPGA3:
+    case defs::SLOW_ADC_TEMP:
+        break;
+    default:
+        throw RuntimeError("Unknown Temperature Index");
+    }
+    auto res = pimpl->Parallel(&slsDetector::getADC, pos, index);
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+    case defs::JUNGFRAU:
+        for (auto &it : res) {
+            it /= 1000;
+        }
+        break;
+    default:
+        break;
+    }
+    return res;
+}
+
+Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
+                             Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setDAC, pos, -1, index, mV);
+}
+
+void Detector::setDAC(int value, defs::dacIndex index, bool mV, Positions pos) {
+    pimpl->Parallel(&slsDetector::setDAC, pos, value, index, mV);
+}
+
+Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimingMode, pos,
+                           defs::GET_TIMING_MODE);
+}
+
+void Detector::setTimingMode(defs::timingMode value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimingMode, pos, value);
+}
+
+
+
+// Acquisition
+
+void Detector::acquire() { pimpl->acquire(); }
+
+
+
+
+
+
+
+
+
+
+
+
+
 Result<bool> Detector::getQuad(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getQuad, pos);
 }
@@ -123,13 +291,7 @@ void Detector::execCommand(const std::string &value, Positions pos) {
     pimpl->Parallel(&slsDetector::execCommand, pos, value);
 }
 
-Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getSettings, pos);
-}
 
-void Detector::setSettings(defs::detectorSettings value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setSettings, pos, value);
-}
 
 Result<int> Detector::getThresholdEnergy(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getThresholdEnergy, pos);
@@ -156,21 +318,6 @@ void Detector::configureMAC(Positions pos) {
     pimpl->Parallel(&slsDetector::configureMAC, pos);
 }
 
-Result<int64_t> Detector::getNumberOfFrames() const {
-    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::FRAME_NUMBER, -1);
-}
-
-void Detector::setNumberOfFrames(int64_t value) {
-    pimpl->Parallel(&slsDetector::setTimer, {}, defs::FRAME_NUMBER, value);
-}
-
-Result<int64_t> Detector::getNumberOfTriggers() const {
-    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, -1);
-}
-
-void Detector::setNumberOfTriggers(int64_t value) {
-    pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, value);
-}
 
 Result<int64_t> Detector::getNumberOfAdditionalStorageCells() const {
     return pimpl->Parallel(&slsDetector::setTimer, {},
@@ -209,33 +356,6 @@ void Detector::setNumberOfDigitalSamples(int64_t value, Positions pos) {
     pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES, value);
 }
 
-Result<ns> Detector::getExptime(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
-                           -1);
-}
-
-void Detector::setExptime(ns t, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimer, pos, defs::ACQUISITION_TIME,
-                    t.count());
-}
-
-Result<ns> Detector::getPeriod(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, -1);
-}
-
-void Detector::setPeriod(ns t, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimer, pos, defs::FRAME_PERIOD, t.count());
-}
-
-Result<ns> Detector::getDelayAfterTrigger(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimer, pos,
-                           defs::DELAY_AFTER_TRIGGER, -1);
-}
-
-void Detector::setDelayAfterTrigger(ns value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimer, pos, defs::DELAY_AFTER_TRIGGER,
-                    value.count());
-}
 
 Result<ns> Detector::getSubExptime(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setTimer, pos,
@@ -267,14 +387,6 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
                     value.count());
 }
 
-Result<int64_t> Detector::getNumberOfFramesLeft(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::FRAME_NUMBER);
-}
-
-Result<int64_t> Detector::getNumberOfCyclesLeft(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::CYCLES_NUMBER);
-}
-
 Result<ns> Detector::getExptimeLeft(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
                            defs::ACQUISITION_TIME);
@@ -284,10 +396,7 @@ Result<ns> Detector::getPeriodLeft(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::FRAME_PERIOD);
 }
 
-Result<ns> Detector::getDelayAfterTriggerLeft(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
-                           defs::DELAY_AFTER_TRIGGER);
-}
+
 
 Result<int64_t> Detector::getNumberOfFramesFromStart(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getTimeLeft, pos,
@@ -313,28 +422,10 @@ Result<ns> Detector::getMeasuredSubFramePeriod(Positions pos) const {
                            defs::MEASURED_SUBPERIOD);
 }
 
-Result<int> Detector::getSpeed(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER, -1,
-                           0);
-}
 
-void Detector::setSpeed(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER, value, 0);
-}
 
-Result<int> Detector::getADCPhase(bool inDeg, Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setSpeed, pos, defs::ADC_PHASE, -1,
-                           inDeg);
-}
 
-void Detector::setADCPhase(int value, bool inDeg, Positions pos) {
-    pimpl->Parallel(&slsDetector::setSpeed, pos, defs::ADC_PHASE, value, inDeg);
-}
 
-Result<int> Detector::getMaxADCPhaseShift(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setSpeed, pos,
-                           defs::MAX_ADC_PHASE_SHIFT, -1, 0);
-}
 
 Result<int> Detector::getDBITPhase(bool inDeg, Positions pos) const {
     return pimpl->Parallel(&slsDetector::setSpeed, pos, defs::DBIT_PHASE, -1,
@@ -406,15 +497,6 @@ Result<int> Detector::getDynamicRange(Positions pos) const {
 
 void Detector::setDynamicRange(int value) { pimpl->setDynamicRange(value); }
 
-Result<int> Detector::getHighVoltage(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setDAC, pos, -1, defs::HIGH_VOLTAGE,
-                           0);
-}
-
-void Detector::setHighVoltage(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDAC, pos, value, defs::HIGH_VOLTAGE, 0);
-}
-
 Result<int> Detector::getIODelay(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setDAC, pos, -1, defs::IO_DELAY, 0);
 }
@@ -423,35 +505,6 @@ void Detector::setIODelay(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setDAC, pos, value, defs::IO_DELAY, 0);
 }
 
-Result<int> Detector::getTemp(defs::dacIndex index, Positions pos) const {
-    switch (index) {
-    case defs::TEMPERATURE_ADC:
-    case defs::TEMPERATURE_FPGA:
-    case defs::TEMPERATURE_FPGAEXT:
-    case defs::TEMPERATURE_10GE:
-    case defs::TEMPERATURE_DCDC:
-    case defs::TEMPERATURE_SODL:
-    case defs::TEMPERATURE_SODR:
-    case defs::TEMPERATURE_FPGA2:
-    case defs::TEMPERATURE_FPGA3:
-    case defs::SLOW_ADC_TEMP:
-        break;
-    default:
-        throw RuntimeError("Unknown Temperature Index");
-    }
-    auto res = pimpl->Parallel(&slsDetector::getADC, pos, index);
-    switch (getDetectorType().squash()) {
-    case defs::EIGER:
-    case defs::JUNGFRAU:
-        for (auto &it : res) {
-            it /= 1000;
-        }
-        break;
-    default:
-        break;
-    }
-    return res;
-}
 
 Result<int> Detector::getVrefVoltage(bool mV, Positions pos) const {
     return pimpl->Parallel(&slsDetector::setDAC, pos, -1, defs::ADC_VPP, mV);
@@ -531,23 +584,9 @@ Result<int> Detector::getSlowADC(defs::dacIndex index, Positions pos) const {
     return pimpl->Parallel(&slsDetector::getADC, pos, index);
 }
 
-Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
-                             Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setDAC, pos, -1, index, mV);
-}
 
-void Detector::setDAC(int value, defs::dacIndex index, bool mV, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDAC, pos, value, index, mV);
-}
 
-Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimingMode, pos,
-                           defs::GET_TIMING_MODE);
-}
 
-void Detector::setTimingMode(defs::timingMode value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimingMode, pos, value);
-}
 
 Result<defs::externalSignalFlag>
 Detector::getExternalSignalFlags(Positions pos) const {
@@ -1433,7 +1472,6 @@ Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
 }
 
 // Acquisition
-void Detector::acquire() { pimpl->acquire(); }
 
 void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
 

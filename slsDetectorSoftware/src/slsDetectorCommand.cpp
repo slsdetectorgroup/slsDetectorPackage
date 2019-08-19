@@ -4845,7 +4845,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "led s \t sets led status (0 off, 1 on)" << std::endl;
         os << "diodelay m v \tsets the delay for the digital IO pins selected by mask m and delay set by v. mask is upto 64 bits in hex, delay max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only." << std::endl;
         os << "powerchip i \t powers on or off the chip. i = 1 for on, i = 0 for off" << std::endl;
-        os << "auto_comp_disable i \t Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). " << std::endl;
+        os << "auto_comp_disable i \t this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). " << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
 
@@ -4855,7 +4855,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "readnlines \t gets the number of rows to read out per half module. Used for EIGER only. " << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;
         os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
-        os << "auto_comp_disable \t Currently not implemented. gets if the automatic comparator diable mode is enabled/disabled" << std::endl;
+        os << "auto_comp_disable \t  gets if the automatic comparator diable mode is enabled/disabled" << std::endl;
     }
     return os.str();
 }

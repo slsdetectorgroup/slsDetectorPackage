@@ -52,8 +52,6 @@ Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverSoftwareVersion, pos);
 }
 
-std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
-
 Result<defs::detectorType>
 Detector::getDetectorType(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsEnum, pos);
@@ -1539,5 +1537,8 @@ Result<uint64_t> Detector::getPatternBitMask(Positions pos) const {
 void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternBitMask, pos, mask);
 }
+
+
+std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
 } // namespace sls

@@ -1,6 +1,6 @@
 package:
   name: sls_detector_software
-  version: 4.0.2
+  version: 4.1.0rc
 
 source:
   - path: ..
@@ -50,14 +50,14 @@ requirements:
 
 outputs:
   - name: sls_detector_lib
-    version: 4.0.2
+    version: 4.1.0rc
     script: copy_lib.sh
     requirements:
       build:
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
   - name: sls_detector_gui
-    version: 4.0.2
+    version: 4.1.0rc
     script: copy_gui.sh
     requirements:
       build:

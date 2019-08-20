@@ -19,8 +19,17 @@
 
 namespace sls {
 
-// std::string ToString(const std::vector<std::string> &vec,
-//                      const char delimiter = ' ');
+inline std::string ToString(const std::vector<std::string> &vec,
+                            const char delimiter = ' ') {
+    std::ostringstream os;
+    if(!vec.empty()){
+        auto it = vec.begin();
+        os << *it++;
+        while(it != vec.end())
+            os << delimiter << *it++;
+    }
+    return os.str();
+}
 
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>

@@ -71,4 +71,6 @@ struct masterAttributes {
     uint32_t adcmask;
     uint32_t dbitoffset;
     uint64_t dbitlist;
+    uint32_t roiXmin;
+    uint32_t roiXmax;
  };

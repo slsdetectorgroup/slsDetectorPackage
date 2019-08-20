@@ -431,6 +431,14 @@ public:
 			dataset = group5.createDataSet ( "dbit bitset list", PredType::STD_U64LE, dataspace );
 			dataset.write ( &(attr.periodNs), PredType::STD_U64LE);
 
+			// Roi xmin
+			dataset = group5.createDataSet ( "roi xmin", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.roiXmin), PredType::NATIVE_INT);
+
+			// Roi xmax
+			dataset = group5.createDataSet ( "roi xmax", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.roiXmax), PredType::NATIVE_INT);
+
 			//Timestamp
 			time_t t = time(0);
 			dataset = group5.createDataSet ( "timestamp", strdatatype, dataspace );

@@ -140,6 +140,7 @@ class BinaryFileStatic {
 				"ADC Mask                   : %d\n"
 				"Dbit Offset                : %d\n"
 				"Dbit Bitset                : %lld\n"
+				"Roi (xmin, xmax)           : %d %d\n"
 				"Timestamp                  : %s\n\n"
 
 				"#Frame Header\n"
@@ -179,6 +180,8 @@ class BinaryFileStatic {
     			attr.adcmask,
     			attr.dbitoffset,
     			(long long int)attr.dbitlist,
+				attr.roiXmin,
+				attr.roiXmax,
 				ctime(&t));
 		if (strlen(message) > MAX_MASTER_FILE_LENGTH) {
 			FILE_LOG(logERROR) << "Master File Size " << strlen(message) <<

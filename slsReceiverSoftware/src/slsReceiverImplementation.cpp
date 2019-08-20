@@ -1659,6 +1659,8 @@ int slsReceiverImplementation::SetupWriter() {
     attr.adcmask = adcEnableMask;
     attr.dbitoffset = ctbDbitOffset;
     attr.dbitlist = 0;
+    attr.roiXmin = roi.xmin;
+    attr.roiXmax = roi.xmax;
     for (auto &i : ctbDbitList) {
         attr.dbitlist |= (1 << i);
     }

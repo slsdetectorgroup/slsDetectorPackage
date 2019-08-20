@@ -201,8 +201,7 @@ class Detector {
      * Stops detector acquisition and then receiver (if enabled)
      * If no receiver enabled, you can skip this for normal acquisition (no abort)
      */
-    void stopAcquisition();//TODO: cannot do this. for acquire, to stop acquisition, must not also do stop receiver(mutex)
-    // TODO: stopAcquire??
+    void stopAcquisition();
 
     /**
      * Clears the acquiring flag. This has to be done manually

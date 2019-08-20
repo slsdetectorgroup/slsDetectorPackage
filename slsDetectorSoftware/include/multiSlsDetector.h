@@ -2268,9 +2268,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;
 
-    /** mutex to synchronizedata processing and plotting threads */
-    mutable std::mutex mg;
-
     /** sets when the acquisition is finished */
     bool jointhread{false};
 

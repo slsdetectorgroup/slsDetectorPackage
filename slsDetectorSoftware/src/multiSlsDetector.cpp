@@ -830,9 +830,6 @@ void multiSlsDetector::startAcquisition(int detPos) {
 }
 
 void multiSlsDetector::stopAcquisition(int detPos) {
-    // locks to synchronize using client->receiver simultaneously (processing
-    // thread)
-    std::lock_guard<std::mutex> lock(mg);
     if (detPos >= 0) {
         detectors[detPos]->stopAcquisition();
     } else {
@@ -3743,7 +3740,6 @@ int multiSlsDetector::acquire() {
 
     // verify receiver is idle
     if (receiver) {
-        std::lock_guard<std::mutex> lock(mg);
         if (getReceiverStatus() != IDLE) {
             stopReceiver();
         }
@@ -3754,13 +3750,11 @@ int multiSlsDetector::acquire() {
 
     // resets frames caught in receiver
     if (receiver) {
-        std::lock_guard<std::mutex> lock(mg);
         resetFramesCaught();
     }
 
     // start receiver
     if (receiver) {
-        std::lock_guard<std::mutex> lock(mg);
         startReceiver();
         // let processing thread listen to these packets
         sem_post(&sem_newRTAcquisition);
@@ -3770,7 +3764,6 @@ int multiSlsDetector::acquire() {
 
     // stop receiver
     if (receiver) {
-        std::lock_guard<std::mutex> lock(mg);
         stopReceiver();
             if (dataReady != nullptr) {
                 sem_wait(&sem_endRTAcquisition); // waits for receiver's
@@ -3832,10 +3825,8 @@ void multiSlsDetector::processData() {
                     }
                 }
                 // get progress
-                {
-                    std::lock_guard<std::mutex> lock(mg);
-                    caught = getFramesCaughtByReceiver(0);
-                }
+                caught = getFramesCaughtByReceiver(0);
+
                 // updating progress
                 if (caught != -1) {
                     setCurrentProgress(caught);

@@ -665,7 +665,6 @@ void Detector::setRxZmqIP(const std::string &ip,
                                              Positions pos) {
     bool previouslyReceiverStreaming =
         getRxZmqDataStream(pos).squash(false);
-    // TODO! probably in one call
     pimpl->Parallel(&slsDetector::setReceiverStreamingIP, pos, ip);
     if (previouslyReceiverStreaming) {
         setRxZmqDataStream(false, pos);
@@ -695,7 +694,6 @@ Result<std::string> Detector::getClientZmqIp(Positions pos) const {
 void Detector::setClientZmqIp(const std::string &ip,
                                           Positions pos) {
     int previouslyClientStreaming = pimpl->enableDataStreamingToClient(-1);
-    // TODO! probably in one call ??
     pimpl->Parallel(&slsDetector::setClientStreamingIP, pos, ip);
     if (previouslyClientStreaming != 0) {
         pimpl->enableDataStreamingToClient(0);

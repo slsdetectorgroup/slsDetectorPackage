@@ -130,13 +130,19 @@ class Detector {
     void setSpeed(int value, Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB] */
-    Result<int> getADCPhase(bool inDeg, Positions pos = {}) const;
+    Result<int> getADCPhase(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][CTB] */
-    void setADCPhase(int value, bool inDeg, Positions pos = {});
+    void setADCPhase(int value, Positions pos = {});
 
     /** [Jungfrau][CTB] */
     Result<int> getMaxADCPhaseShift(Positions pos = {}) const;
+
+    /** [Gotthard][Jungfrau][CTB] */
+    Result<int> getADCPhaseInDegrees(Positions pos = {}) const;
+
+    /** [Gotthard][Jungfrau][CTB] */
+    void setADCPhaseInDegrees(int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;
 
@@ -832,20 +838,26 @@ class Detector {
     void setNumberOfDigitalSamples(int64_t value, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getSignalType(Positions pos = {}) const;
+    Result<int> getReadoutMode(Positions pos = {}) const;
 
-    /** [CTB] Options: NORMAL_READOUT = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL
+    /** [CTB] Options: NORMAL_READOUT = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL //TODO ANALOG_ONLY, make enum
      * = 2 */
-    void setSignalType(int value, Positions pos = {});
+    void setReadoutMode(int value, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getDBITPhase(bool inDeg, Positions pos = {}) const;
+    Result<int> getDBITPhase(Positions pos = {}) const;
 
     /** [CTB] */
-    void setDBITPhase(int value, bool inDeg, Positions pos = {});
+    void setDBITPhase(int value, Positions pos = {});
 
     /** [CTB] */
     Result<int> getMaxDBITPhaseShift(Positions pos = {}) const;
+
+    /** [CTB] */
+    Result<int> getDBITPhaseInDegrees(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setDBITPhaseInDegrees(int value, Positions pos = {});
 
     /** [CTB] */
     Result<int> getADCClock(Positions pos = {}) const;
@@ -1137,8 +1149,6 @@ class Detector {
      *                                                *
      * ************************************************/
 
-
-
     Result<int> getControlPort(Positions pos = {}) const;
 
     /** Detector Control TCP port (for client communication with Detector
@@ -1158,8 +1168,8 @@ class Detector {
     /** Get last client IP saved on detector server */
     Result<std::string> getLastClientIP(Positions pos = {}) const;
 
-    /** Execute a command on the detector server */
-    void execCommand(const std::string &value, Positions pos = {});
+    /** Execute a command on the detector server console */
+    void executeCommand(const std::string &value, Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB] */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;

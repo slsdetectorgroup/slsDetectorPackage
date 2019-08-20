@@ -1,6 +1,6 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
-#include "logger.h"
+#include "clogger.h"
 #include "common.h"
 
 #ifndef VIRTUAL

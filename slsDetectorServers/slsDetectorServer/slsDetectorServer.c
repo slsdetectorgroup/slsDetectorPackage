@@ -2,7 +2,7 @@
    The port number is passed as an argument */
 
 #include "sls_detector_defs.h"
-#include "logger.h"
+#include "clogger.h"
 #include "communication_funcs.h"
 #include "slsDetectorServer_funcs.h"
 #include "slsDetectorServer_defs.h"

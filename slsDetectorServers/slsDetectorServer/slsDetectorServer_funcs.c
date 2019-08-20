@@ -1,7 +1,7 @@
 #include "slsDetectorServer_funcs.h"
 #include "slsDetectorFunctionList.h"
 #include "communication_funcs.h"
-#include "logger.h"
+#include "clogger.h"
 
 #include <string.h>
 #include <arpa/inet.h>

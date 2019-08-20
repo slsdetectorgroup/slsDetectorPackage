@@ -1,6 +1,6 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
-#include "logger.h"
+#include "clogger.h"
 #include <sys/select.h>
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs

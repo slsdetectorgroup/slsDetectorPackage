@@ -1,7 +1,7 @@
 #include "sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 #ifdef GOTTHARDD
-#include "logger.h"                 // runState(enum TLogLevel)
+#include "clogger.h"                 // runState(enum TLogLevel)
 #endif
 #include <stdlib.h>
 #include <stdio.h>					// FILE

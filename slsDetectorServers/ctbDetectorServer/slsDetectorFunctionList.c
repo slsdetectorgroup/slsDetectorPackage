@@ -1,6 +1,6 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
-#include "logger.h"
+#include "clogger.h"
 
 #include "communication_funcs_UDP.h"
 #include "UDPPacketHeaderGenerator.h"

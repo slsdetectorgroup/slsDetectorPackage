@@ -1,6 +1,6 @@
 #include "LocalLinkInterface.h"
 #include "HardwareMMappingDefs.h"
-#include "logger.h"
+#include "clogger.h"
 
 #include <unistd.h>
 #include <sys/mman.h>

@@ -32,7 +32,6 @@ int detectorFirstServer = 1;
 int dacValues[NDAC] = {0};
 enum detectorSettings thisSettings = UNINITIALIZED;
 enum externalSignalFlag signalMode = 0;
-int digitalTestBit = 0;
 
 // roi configuration
 int adcConfigured = -1;
@@ -245,12 +244,7 @@ int detectorTest( enum digitalTestMode arg, int ival) {
     return OK;
 #endif
 	switch(arg){
-	case DIGITAL_BIT_TEST:
-	    if (ival > -1) {
-	        digitalTestBit = (ival == 0) ? 0 : 1;
-	        FILE_LOG(logINFO, ("Digital Test bit set: %d\n", digitalTestBit));
-	    }
-	    return digitalTestBit;
+	case IMAGE_TEST:                return testImage(ival);
 	case DETECTOR_FIRMWARE_TEST:	return testFpga();
 	case DETECTOR_BUS_TEST: 		return testBus();
 	default:
@@ -260,6 +254,19 @@ int detectorTest( enum digitalTestMode arg, int ival) {
 	return OK;
 }
 
+int testImage(int ival) {
+    uint32_t addr = MULTI_PURPOSE_REG;
+    if (ival >= 0) {
+        if (ival == 0) {
+            FILE_LOG(logINFO, ("Switching on Image Test\n"));
+            bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
+        } else {
+            FILE_LOG(logINFO, ("Switching off Image Test\n"));
+            bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
+        }
+    }
+    return ((bus_r(addr) & DGTL_TST_MSK) >> DGTL_TST_OFST);
+}
 
 /* Ids */
 
@@ -1351,13 +1358,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(long  long unsigned int)destmac));
 	FILE_LOG(logINFO, ("\tDest. Port  : %d (0x%08x)\n",udpport, udpport));
 
-	// set/ unset the digital test bit
-	if (digitalTestBit)
-	    bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
-	else
-	    bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
-    FILE_LOG(logDEBUG1, ("\tDigital Test Bit. MultiPurpose reg: 0x%x\n", bus_r(addr)));
-
 	//reset mac
 	bus_w (addr, bus_r(addr) | RST_MSK);
 	FILE_LOG(logDEBUG1, ("\tReset Mac. MultiPurpose reg: 0x%x\n", bus_r(addr)));
@@ -1515,107 +1515,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 int getAdcConfigured(){
     return adcConfigured;
-}
-
-
-/* gotthard specific - loadimage, read/reset counter block */
-
-void loadImage(enum imageType index, short int imageVals[]){
-    u_int32_t addr = DARK_IMAGE_REG;
-    if (index == GAIN_IMAGE)
-        addr = GAIN_IMAGE_REG;
-    int dataBytes = calculateDataBytes();
-
-    volatile u_int16_t *ptr = (u_int16_t*)(CSP0BASE + addr * 2);
-    memcpy((char*)ptr, (char*)imageVals, dataBytes);
-
-    FILE_LOG(logINFO, ("Loaded %s image at 0x%p\n",
-            (index == GAIN_IMAGE) ? "Gain" : "Dark", (void*) ptr));
-}
-
-int readCounterBlock(int startACQ, short int counterVals[]){
-    FILE_LOG(logINFO, ("Reading Counter Block with start Acq :%d\n", startACQ));
-
-    // stop any current acquisition
-    if (runBusy()) {
-        if (stopStateMachine() == FAIL)
-            return FAIL;
-        // waiting for the last frame read to be done
-        while(runBusy())
-            usleep(500);
-        FILE_LOG(logDEBUG1, ("State machine stopped\n"));
-    }
-
-    // copy memory
-    u_int32_t addr = COUNTER_MEMORY_REG;
-    volatile u_int16_t *ptr = (u_int16_t*)(CSP0BASE + addr * 2);
-    int dataBytes = calculateDataBytes();
-    memcpy((char*)counterVals, (char*)ptr, dataBytes);
-
-    // unreset counter
-    addr = MULTI_PURPOSE_REG;
-    bus_w(addr, (bus_r(addr) &~ RST_CNTR_MSK));
-    FILE_LOG(logDEBUG1, ("\tUnsetting reset Counter. Multi Purpose Reg: 0x%x\n", bus_r(addr)));
-
-    // start state machine
-    if (startACQ == 1){
-        startStateMachine();
-        if (runBusy()) {
-            FILE_LOG(logINFO, ("State machine RUNNING\n"));
-        } else {
-            FILE_LOG(logINFO, ("State machine IDLE\n"));
-        }
-    }
-    return OK;
-}
-
-int resetCounterBlock(int startACQ){
-    FILE_LOG(logINFO, ("Resetting Counter Block with start Acq :%d\n", startACQ));
-
-    // stop any current acquisition
-    if (runBusy()) {
-        if (stopStateMachine() == FAIL)
-            return FAIL;
-        // waiting for the last frame read to be done
-        while(runBusy())
-            usleep(500);
-        FILE_LOG(logDEBUG1, ("State machine stopped\n"));
-    }
-
-    // reset counter
-    u_int32_t addr = MULTI_PURPOSE_REG;
-    bus_w(addr, (bus_r(addr) | RST_CNTR_MSK));
-    FILE_LOG(logDEBUG1, ("\tResetting Counter. Multi Purpose Reg: 0x%x\n", bus_r(addr)));
-
-    // copy memory
-    addr = COUNTER_MEMORY_REG;
-    volatile u_int16_t *ptr = (u_int16_t*)(CSP0BASE + addr * 2);
-    int dataBytes = calculateDataBytes();
-    char *counterVals = NULL;
-    counterVals = realloc(counterVals, dataBytes);
-    memcpy((char*)counterVals, (char*)ptr, dataBytes);
-
-    // unreset counter
-    addr = MULTI_PURPOSE_REG;
-    bus_w(addr, (bus_r(addr) &~ RST_CNTR_MSK));
-    FILE_LOG(logDEBUG1, ("\tUnsetting reset Counter. Multi Purpose Reg: 0x%x\n", bus_r(addr)));
-
-    // start state machine
-    if (startACQ == 1){
-        startStateMachine();
-        if (runBusy()) {
-            FILE_LOG(logINFO, ("State machine RUNNING\n"));
-        } else {
-            FILE_LOG(logINFO, ("State machine IDLE\n"));
-        }
-    }
-
-    if (sizeof(counterVals) <= 0){
-        FILE_LOG(logERROR, ("\tSize of counterVals: %d\n", (int)sizeof(counterVals)));
-        return FAIL;
-    }
-
-    return OK;
 }
 
 

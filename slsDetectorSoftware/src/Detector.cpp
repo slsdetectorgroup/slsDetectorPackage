@@ -1015,48 +1015,14 @@ void Detector::setExternalSignalFlags(defs::externalSignalFlag value,
     pimpl->Parallel(&slsDetector::setExternalSignalFlags, pos, value);
 }
 
-void Detector::loadDarkImage(const std::string &fname, int module_id) {
-    if (module_id == -1) {
-        pimpl->loadImageToDetector(defs::DARK_IMAGE, fname, -1);
-    }
-    pimpl->Parallel(&slsDetector::loadImageToDetector, {module_id}, defs::DARK_IMAGE,
-                    fname);
-}
-
-void Detector::loadGainImage(const std::string &fname, int module_id) {
-    if (module_id == -1) {
-        pimpl->loadImageToDetector(defs::GAIN_IMAGE, fname, -1);
-    }
-    pimpl->Parallel(&slsDetector::loadImageToDetector, {module_id}, defs::GAIN_IMAGE,
-                    fname);
-}
-
-void Detector::getCounterMemoryBlock(const std::string &fname, bool startACQ,
-                                     Positions pos) {
-    if (pos.empty() || (pos.size() == 1 && pos[0] == -1)) {
-        pimpl->writeCounterBlockFile(fname, static_cast<int>(startACQ), -1);
-    }
-    if (pos.size() > 1) {
-        throw RuntimeError(
-            "Cannot load get counter memory block on a subset of modules");
-    }
-    pimpl->Parallel(&slsDetector::writeCounterBlockFile, pos, fname,
-                    static_cast<int>(startACQ));
-}
-
-void Detector::resetCounterBlock(bool startACQ, Positions pos) {
-    pimpl->Parallel(&slsDetector::resetCounterBlock, pos,
-                    static_cast<int>(startACQ));
-}
-
-Result<int> Detector::getDigitalTestBit(Positions pos) {
+Result<int> Detector::getImageTestMode(Positions pos) {
     return pimpl->Parallel(&slsDetector::digitalTest, pos,
-                           defs::DIGITAL_BIT_TEST, -1);
+                           defs::IMAGE_TEST, -1);
 }
 
-Result<int> Detector::setDigitalTestBit(int value, Positions pos) {
+Result<int> Detector::setImageTestMode(int value, Positions pos) {
     return pimpl->Parallel(&slsDetector::digitalTest, pos,
-                           defs::DIGITAL_BIT_TEST, value);
+                           defs::IMAGE_TEST, value);
 }
 
 

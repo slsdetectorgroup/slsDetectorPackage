@@ -2167,65 +2167,6 @@ int slsDetector::digitalTest(digitalTestMode mode, int ival) {
     return retval;
 }
 
-void slsDetector::loadImageToDetector(imageType index,
-                                      const std::string &fname) {
-    int nChan = getNumberOfChannels().x;
-    int16_t args[nChan];
-    FILE_LOG(logDEBUG1) << "Loading " << (index == 0u ? "Dark" : "Gain")
-                        << "image from file " << fname;
-
-    if (readDataFile(fname, args, nChan) != 0) {
-        sendImageToDetector(index, args);
-    } else {
-        throw RuntimeError(
-            "slsDetector::loadImageToDetector: Could not open file: " + fname);
-    }
-}
-
-void slsDetector::sendImageToDetector(imageType index, int16_t imageVals[]) {
-    int fnum = F_LOAD_IMAGE;
-    int nChan = getNumberOfChannels().x;
-    int args[]{static_cast<int>(index), nChan};
-    FILE_LOG(logDEBUG1) << "Sending image to detector";
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(args, sizeof(args));
-    client.Send(imageVals, nChan * sizeof(int16_t));
-    int ret = FAIL;
-    client.Receive(&ret, sizeof(ret));
-    char mess[MAX_STR_LENGTH]{};
-    client.Receive(mess, MAX_STR_LENGTH);
-    throw DetectorError("Detector " + std::to_string(detId) +
-                        " returned error: " + std::string(mess));
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
-}
-
-void slsDetector::writeCounterBlockFile(const std::string &fname,
-                                        int startACQ) {
-    int nChan = getNumberOfChannels().x;
-    int16_t retvals[nChan];
-    FILE_LOG(logDEBUG1) << "Reading Counter to " << fname
-                        << (startACQ != 0 ? " and Restarting Acquisition"
-                                          : "\n");
-    getCounterBlock(retvals, startACQ);
-    writeDataFile(fname, nChan, retvals);
-}
-
-void slsDetector::getCounterBlock(int16_t image[], int startACQ) {
-    int fnum = F_READ_COUNTER_BLOCK;
-    int nChan = getNumberOfChannels().x;
-    int args[] = {startACQ, nChan};
-    FILE_LOG(logDEBUG1) << "Reading Counter block with startacq: " << startACQ;
-    sendToDetector(fnum, args, sizeof(args), image, nChan * sizeof(int16_t));
-}
-
-void slsDetector::resetCounterBlock(int startACQ) {
-    FILE_LOG(logDEBUG1) << "Resetting Counter with startacq: " << startACQ;
-    sendToDetector(F_RESET_COUNTER_BLOCK, startACQ, nullptr);
-}
-
 int slsDetector::setCounterBit(int cb) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending counter bit " << cb;

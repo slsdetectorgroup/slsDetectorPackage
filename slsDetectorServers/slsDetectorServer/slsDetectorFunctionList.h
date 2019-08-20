@@ -27,6 +27,7 @@ int 		testBus();
 
 #ifdef GOTTHARDD
 int         detectorTest(enum digitalTestMode arg,  int ival);
+int 		testImage(int ival);
 #elif defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		detectorTest(enum digitalTestMode arg);
 #endif
@@ -301,14 +302,8 @@ void 		setPatternBitMask(uint64_t mask);
 uint64_t	getPatternBitMask();
 #endif
 
-// gotthard specific - image, pedestal
-#ifdef GOTTHARDD
-void 		loadImage(enum imageType index, short int imageVals[]);
-int 		readCounterBlock(int startACQ, short int counterVals[]);
-int			resetCounterBlock(int startACQ);
-
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware
-#elif JUNGFRAUD
+#ifdef JUNGFRAUD
 void 		initReadoutConfiguration();
 int         powerChip (int on);
 int         autoCompDisable(int on);

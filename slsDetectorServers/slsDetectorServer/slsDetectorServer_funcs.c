@@ -197,9 +197,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_PORT:						return "F_SET_PORT";
 	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
 	case F_CONFIGURE_MAC:					return "F_CONFIGURE_MAC";
-	case F_LOAD_IMAGE:						return "F_LOAD_IMAGE";
-	case F_READ_COUNTER_BLOCK:				return "F_READ_COUNTER_BLOCK";
-	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
@@ -288,9 +285,6 @@ void function_table() {
 	flist[F_SET_PORT]							= &set_port;
 	flist[F_UPDATE_CLIENT]						= &update_client;
 	flist[F_CONFIGURE_MAC]						= &configure_mac;
-	flist[F_LOAD_IMAGE]							= &load_image;
-	flist[F_READ_COUNTER_BLOCK]					= &read_counter_block;
-	flist[F_RESET_COUNTER_BLOCK]				= &reset_counter_block;
 	flist[F_ENABLE_TEN_GIGA]					= &enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]					= &set_all_trimbits;
 	flist[F_SET_PATTERN_IO_CONTROL]				= &set_pattern_io_control;
@@ -619,7 +613,7 @@ int digital_test(int file_des) {
 		case DETECTOR_FIRMWARE_TEST:
 		case DETECTOR_BUS_TEST:
 #ifdef GOTTHARDD
-        case DIGITAL_BIT_TEST:
+        case IMAGE_TEST:
             retval = detectorTest(mode, ival);
             break;
 #else
@@ -2495,131 +2489,6 @@ int configure_mac(int file_des) {
 
 	return Server_SendResult(file_des, OTHER, UPDATE, retvals, sizeof(retvals));
 }
-
-
-
-
-
-int load_image(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1, -1};
-
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-		return printSocketReadError();
-
-	enum imageType index = args[0];
-	int numChannels = args[1];
-	short int imageVals[numChannels];
-	memset(imageVals, 0, numChannels * sizeof(short int));
-	if (numChannels > 0) {
-		if (receiveData(file_des, imageVals, numChannels * sizeof(short int), OTHER) < 0) {
-			return printSocketReadError();
-		}
-	}
-	FILE_LOG(logDEBUG1, ("Loading %s image (ind:%d)\n", (index == DARK_IMAGE) ? "dark" :
-			((index == GAIN_IMAGE) ? "gain" : "unknown"), index));
-
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
-
-	// set only
-	if (Server_VerifyLock() == OK) {
-		switch (index) {
-		case DARK_IMAGE :
-		case GAIN_IMAGE :
-		    // size of image does not match expected size
-		    if (numChannels != (calculateDataBytes()/sizeof(short int))) {
-		        ret = FAIL;
-                sprintf(mess, "Could not load image. "
-                        "Number of Channels do not match. Expected %d, got %d\n",
-                        calculateDataBytes(), numChannels);
-                FILE_LOG(logERROR,(mess));
-		    } else
-		        loadImage(index, imageVals);
-			break;
-		default:
-			modeNotImplemented("Image index", (int)index);
-			break;
-		}
-	}
-#endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
-}
-
-
-
-
-
-
-int read_counter_block(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1, -1};
-
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-		return printSocketReadError();
-	int startACQ = args[0];
-    int numChannels = args[1];
-    short int retval[numChannels];
-    memset(retval, 0, numChannels * sizeof(short int));
-	FILE_LOG(logDEBUG1, ("Read counter block with start acq bit: %d\n", startACQ));
-
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
-
-	// only set
-	if (Server_VerifyLock() == OK) {
-	    // size of image does not match expected size
-	    if (numChannels != (calculateDataBytes()/sizeof(short int))) {
-	        ret = FAIL;
-	        sprintf(mess, "Could not load image. "
-	                "Number of Channels do not match. Expected %d, got %d\n",
-	                calculateDataBytes(), numChannels);
-	        FILE_LOG(logERROR,(mess));
-	    } else {
-	        ret = readCounterBlock(startACQ, retval);
-	        if (ret == FAIL) {
-	            strcpy(mess, "Could not read counter block\n");
-	            FILE_LOG(logERROR,(mess));
-	        }
-	    }
-	}
-#endif
-	return Server_SendResult(file_des, OTHER, UPDATE, retval, numChannels * sizeof(short int));
-}
-
-
-
-
-
-int reset_counter_block(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int startACQ = -1;
-
-	if (receiveData(file_des, &startACQ, sizeof(startACQ), INT32) < 0)
-		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Reset counter block with start acq bit: %d\n", startACQ));
-
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
-	// only set
-	if (Server_VerifyLock() == OK) {
-		ret = resetCounterBlock(startACQ);
-		if (ret == FAIL) {
-			strcpy(mess, "Could not reset counter block\n");
-			FILE_LOG(logERROR, (mess));
-		}
-	}
-#endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
-}
-
-
 
 
 

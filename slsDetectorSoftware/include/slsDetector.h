@@ -979,46 +979,12 @@ class slsDetector : public virtual slsDetectorDefs {
     int64_t getReceiverRealUDPSocketBufferSize() const;
 
     /**
-     * Execute a digital test (Gotthard, Mythen)
+     * Execute a digital test (Gotthard, Jungfrau, CTB)
      * @param mode testmode type
      * @param value 1 to set or 0 to clear the digital test bit
      * @returns result of test
      */
     int digitalTest(digitalTestMode mode, int ival = -1);
-
-    /**
-     * Load dark or gain image to detector (Gotthard)
-     * @param index image type, 0 for dark image and 1 for gain image
-     * @param fname file name from which to load image
-     */
-    void loadImageToDetector(imageType index, const std::string &fname);
-
-    /**
-     * Called from loadImageToDetector to send the image to detector
-     * @param index image type, 0 for dark image and 1 for gain image
-     * @param imageVals image
-     */
-    void sendImageToDetector(imageType index, int16_t imageVals[]);
-
-    /**
-     * Writes the counter memory block from the detector (Gotthard)
-     * @param fname file name to load data from
-     * @param startACQ is 1 to start acquisition after reading counter
-     */
-    void writeCounterBlockFile(const std::string &fname, int startACQ = 0);
-
-    /**
-     * Gets counter memory block in detector (Gotthard)
-     * @param image counter memory block from detector
-     * @param startACQ 1 to start acquisition afterwards, else 0
-     */
-    void getCounterBlock(int16_t image[], int startACQ = 0);
-
-    /**
-     * Resets counter in detector
-     * @param startACQ is 1 to start acquisition after resetting counter
-     */
-    void resetCounterBlock(int startACQ = 0);
 
     /**
      * Set/get counter bit in detector (Gotthard)

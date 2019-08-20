@@ -1889,64 +1889,6 @@ int multiSlsDetector::digitalTest(digitalTestMode mode, int ival, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-void multiSlsDetector::loadImageToDetector(imageType index,
-                                          const std::string &fname,
-                                          int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->loadImageToDetector(index, fname);
-    }
-
-    // multi
-
-    // read image for all
-    int nch = getNumberOfChannels().x;
-    short int imageVals[nch];
-    if (readDataFile(fname, imageVals, nch) < nch * (int)sizeof(short int)) {
-        throw RuntimeError("Could not open file or not enough data in file to "
-                           "load image to detector.");
-    }
-
-    // send image to all
-    for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        detectors[idet]->sendImageToDetector(index, imageVals + idet * detectors[idet]->getNumberOfChannels().x);
-    }
-}
-
-void multiSlsDetector::writeCounterBlockFile(const std::string &fname,
-                                            int startACQ, int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->writeCounterBlockFile(fname, startACQ);
-    }
-
-    // multi
-    int nch = getNumberOfChannels().x;
-    short int imageVals[nch];
-    for (size_t idet = 0; idet < detectors.size(); ++idet) {
-        detectors[idet]->getCounterBlock(
-            imageVals + idet * detectors[idet]->getNumberOfChannels().x,
-            startACQ);
-    }
-
-    if (writeDataFile(fname, nch, imageVals) < nch * (int)sizeof(short int)) {
-        throw RuntimeError(
-            "Could not open file to write or did not write enough data"
-            " in file to write counter block file from detector.");
-    }
-
-}
-
-void multiSlsDetector::resetCounterBlock(int startACQ, int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->resetCounterBlock(startACQ);
-    }
-
-    // multi
-    parallelCall(&slsDetector::resetCounterBlock, startACQ);
-}
-
 int multiSlsDetector::setCounterBit(int i, int detPos) {
     // single
     if (detPos >= 0) {

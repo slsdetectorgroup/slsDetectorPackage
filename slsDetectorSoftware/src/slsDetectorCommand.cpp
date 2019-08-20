@@ -125,9 +125,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /* digital test and debugging */
 
     /*! \page test
-   - <b>digibittest:[i]</b> performs digital test of the module i. Returns 0 if succeeded, otherwise error mask. Gotthard only. Only put!
+   - <b>imagetest [i]</b> If 1, adds channel intensity with precalculated values. Default is 0. Gotthard only.
 	 */
-    descrToFuncMap[i].m_pFuncName = "digibittest";
+    descrToFuncMap[i].m_pFuncName = "imagetest";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDigiTest;
     ++i;
 
@@ -211,20 +211,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
     descrToFuncMap[i].m_pFuncName = "data";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdData;
-    ++i;
-
-    /*! \page acquisition
-   - <b>readctr </b> Reads the counters from the detector memory (analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.
-	 */
-    descrToFuncMap[i].m_pFuncName = "readctr";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdCounter;
-    ++i;
-
-    /*! \page acquisition
-   - <b>resetctr i </b> Resets counter in detector, restarts acquisition if i=1(analog detector returning values translated into number of photons - only GOTTHARD). Cannot put.
-	 */
-    descrToFuncMap[i].m_pFuncName = "resetctr";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdCounter;
     ++i;
 
     /*! \page acquisition
@@ -856,19 +842,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     // 	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdThreaded;
     // 	++i;
 
-    /*! \page data
-   - <b>darkimage fn</b> Loads the dark image to the detector from file fn (pedestal image). Cannot get. For Gotthard only.
-	 */
-    descrToFuncMap[i].m_pFuncName = "darkimage";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdImage;
-    ++i;
-
-    /*! \page data
-   - <b>gainimage fn</b> Loads the gain image to the detector from file fn (gain map for translation into number of photons of an analog detector). Cannot get. For Gotthard only.
-	 */
-    descrToFuncMap[i].m_pFuncName = "gainimage";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdImage;
-    ++i;
 
     /*! \page settings Detector settings commands
    Commands to setup the settings of the detector
@@ -2733,36 +2706,6 @@ std::string slsDetectorCommand::helpThreaded(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdImage(int narg, const char * const args[], int action, int detPos) {
-    std::string sval;
-    if (action == HELP_ACTION)
-        return helpImage(HELP_ACTION);
-    else if (action == GET_ACTION)
-        return std::string("Cannot get");
-
-    sval = std::string(args[1]);
-
-    if (std::string(args[0]) == std::string("darkimage"))
-        myDet->loadImageToDetector(DARK_IMAGE, sval, detPos);
-    else if (std::string(args[0]) == std::string("gainimage"))
-        myDet->loadImageToDetector(GAIN_IMAGE, sval, detPos);
-
-    return std::string("Image loaded succesfully");
-}
-
-std::string slsDetectorCommand::helpImage(int action) {
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "darkimage f \t  loads the image to detector from file f" << std::endl;
-        os << "gainimage f \t  loads the image to detector from file f" << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "darkimage \t  Cannot get" << std::endl;
-        os << "gainimage \t  Cannot get" << std::endl;
-    }
-    return os.str();
-}
-
 std::string slsDetectorCommand::cmdCounter(int narg, const char * const args[], int action, int detPos) {
     int ival;
     char answer[100];
@@ -2773,27 +2716,7 @@ std::string slsDetectorCommand::cmdCounter(int narg, const char * const args[], 
     else if (action == PUT_ACTION)
         ival = atoi(args[1]);
 
-
-    if (std::string(args[0]) == std::string("readctr")) {
-        if (action == PUT_ACTION)
-            return std::string("Cannot put");
-        else {
-            if (narg < 3)
-                return std::string("should specify I/O file");
-            sval = std::string(args[2]);
-            myDet->writeCounterBlockFile(sval, ival, detPos);
-            return std::string("Counter read succesfully");
-        }
-    } else if (std::string(args[0]) == std::string("resetctr")) {
-        if (action == GET_ACTION)
-            return std::string("Cannot get");
-        else {
-            myDet->resetCounterBlock(ival, detPos);
-            return std::string("successful");
-        }
-    }
-
-    else if (std::string(args[0]) == std::string("resmat")) {
+    if (std::string(args[0]) == std::string("resmat")) {
         if (action == PUT_ACTION) {
             if (!sscanf(args[1], "%d", &ival))
                 return std::string("Could not scan resmat input ") + std::string(args[1]);
@@ -2814,13 +2737,9 @@ std::string slsDetectorCommand::helpCounter(int action) {
     std::ostringstream os;
     os << std::endl;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "readctr \t  Cannot put" << std::endl;
-        os << "resetctr i \t  resets counter in detector, restarts acquisition if i=1" << std::endl;
         os << "resmat i \t  sets/resets counter bit in detector" << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "readctr i fname\t  reads counter in detector to file fname, restarts acquisition if i=1" << std::endl;
-        os << "resetctr \t  Cannot get" << std::endl;
         os << "resmat i \t  gets the counter bit in detector" << std::endl;
     }
     return os.str();
@@ -3606,18 +3525,17 @@ std::string slsDetectorCommand::cmdDigiTest(int narg, const char * const args[],
         return std::string(answer);
     }
 
-    else if (cmd == "digibittest") {
-        if (action == GET_ACTION)
-            return std::string("cannot get ") + cmd;
-        int ival = -1;
-        if (sscanf(args[1], "%d", &ival)) {
-            if ((ival == 0) || (ival == 1)) {
-                sprintf(answer, "%d", myDet->digitalTest(DIGITAL_BIT_TEST, ival, detPos));
-                return std::string(answer);
-            } else
-                return std::string("Use only 0 or 1 to set/clear digital test bit\n");
-        } else
-            return std::string("undefined number");
+    else if (cmd == "imagetest") {
+        if (action == PUT_ACTION) {
+            int ival = -1;
+            if (!sscanf(args[1], "%d", &ival)) {
+                return std::string("could not scan parameter for imagetest\n");
+            }
+            ival = (ival == 0) ? 0 : 1;
+            myDet->digitalTest(IMAGE_TEST, ival, detPos);
+        }
+        
+        return std::to_string(myDet->digitalTest(IMAGE_TEST, -1, detPos));
     }
 
     return std::string("unknown test mode ") + cmd;
@@ -3627,7 +3545,12 @@ std::string slsDetectorCommand::helpDigiTest(int action) {
 
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "digibittest:i \t performs digital test of the module i. Returns 0 if succeeded, otherwise error mask.Gotthard only." << std::endl;
+        os << "imagetest i \t If 1, adds channel intensity with precalculated values. Default is 0. Gotthard only." << std::endl;
+        os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Jungfrau only." << std::endl;
+        os << "firmwaretest \t performs the firmware test. Jungfrau only." << std::endl;
+    }
+    if (action == PUT_ACTION || action == HELP_ACTION) {
+        os << "imagetest i \t If 1, adds channel intensity with precalculated values. Default is 0. Gotthard only." << std::endl;
         os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Jungfrau only." << std::endl;
         os << "firmwaretest \t performs the firmware test. Jungfrau only." << std::endl;
     }

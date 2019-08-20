@@ -42,10 +42,7 @@ enum detFuncs{
 	F_GET_LAST_CLIENT_IP, /**< returns the IP of the client last connected to the detector */
 	F_SET_PORT, /**< Changes communication port of the server */
 	F_UPDATE_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
-	F_CONFIGURE_MAC, /**< Configures MAC for Gotthard readout */
-	F_LOAD_IMAGE, /**< Loads Dark/Gain image to the Gotthard detector */
-	F_READ_COUNTER_BLOCK, /**< reads the counter block memory for gotthard */
-	F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
+	F_CONFIGURE_MAC, /**< Configures MAC */
 	F_ENABLE_TEN_GIGA, /**< enable 10Gbe */
 	F_SET_ALL_TRIMBITS, /** < set all trimbits to this value */
 	F_SET_PATTERN_IO_CONTROL, /** < set pattern i/o control */
@@ -194,9 +191,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_PORT:						return "F_SET_PORT";
 	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
 	case F_CONFIGURE_MAC:					return "F_CONFIGURE_MAC";
-	case F_LOAD_IMAGE:						return "F_LOAD_IMAGE";
-	case F_READ_COUNTER_BLOCK:				return "F_READ_COUNTER_BLOCK";
-	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";

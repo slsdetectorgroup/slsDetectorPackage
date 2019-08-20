@@ -1229,38 +1229,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setFlowControl10G(int enable = -1, int detPos = -1); //
 
     /**
-     * Execute a digital test (Gotthard)
+     * Execute a digital test (Gotthard, Jungfrau, CTB)
      * @param mode testmode type
-     * @param value 1 to set or 0 to clear the digital test bit
+     * @param value 1 to set or 0 to clear the image test bit (Gotthard)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns result of test
      */
     int digitalTest(digitalTestMode mode, int ival = -1, int detPos = -1);
-
-    /**
-     * Load dark or gain image to detector (Gotthard)
-     * @param index image type
-     * @param fname file name from which to load image
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void loadImageToDetector(imageType index, const std::string &fname,
-                             int detPos = -1); //
-
-    /**
-     * Writes the counter memory block from the detector (Gotthard)
-     * @param fname file name to load data from
-     * @param startACQ is 1 to start acquisition after reading counter
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void writeCounterBlockFile(const std::string &fname, int startACQ = 0,
-                               int detPos = -1);
-
-    /**
-     * Resets counter in detector (Gotthard)
-     * @param startACQ is 1 to start acquisition after resetting counter
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void resetCounterBlock(int startACQ = 0, int detPos = -1); //
 
     /**
      * Set/get counter bit in detector (Eiger)

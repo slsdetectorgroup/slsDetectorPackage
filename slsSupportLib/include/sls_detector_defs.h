@@ -368,7 +368,7 @@ format
     enum digitalTestMode {
         DETECTOR_FIRMWARE_TEST, /**< test detector system firmware */
         DETECTOR_BUS_TEST,      /**< test detector system CPU-FPGA bus */
-        DIGITAL_BIT_TEST        /**< gotthard digital bit test */
+        IMAGE_TEST              /**< gotthard digital bit test */
     };
 
     /**
@@ -540,11 +540,6 @@ format
         NO_MASTER,       /**< no master/slave hierarchy defined */
         IS_MASTER,       /**<is master */
         IS_SLAVE         /**< is slave */
-    };
-
-    enum imageType {
-        DARK_IMAGE, /**< dark image */
-        GAIN_IMAGE  /**< gain image */
     };
 
     /**

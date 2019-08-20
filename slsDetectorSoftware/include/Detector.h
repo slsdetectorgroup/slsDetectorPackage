@@ -778,10 +778,10 @@ class Detector {
      */
     void setROI(defs::ROI value, int moduleId);
 
-    /** [Gotthard] TODO: check with jiaguo if he needs any of these functions */
+    /** [Gotthard] TODO: check with jiaguo if he needs any of these functions // TODO remove */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
 
-    /** [Gotthard] */
+    /** [Gotthard] TODO remove */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
     /** [Gotthard] */
@@ -793,30 +793,10 @@ class Detector {
                                 Positions pos = {});
 
     /** [Gotthard] */
-    void loadDarkImage(const std::string &fname, int module_id = -1);
+    Result<int> getImageTestMode(Positions pos = {});
 
-    /** [Gotthard] */
-    void loadGainImage(const std::string &fname, int module_id = -1);
-
-    /**
-     * [Gotthard] subset modules not allowed
-     * @param startACQ if start acq after reading counter
-     */
-    void getCounterMemoryBlock(const std::string &fname, bool startACQ,
-                               Positions pos = {});
-
-    /**
-     * [Gotthard]
-     * @param startACQ if start acq after resetting counter
-     * TODO! does it make sense to call one detector?
-     */
-    void resetCounterBlock(bool startACQ, Positions pos = {});
-
-    /** [Gotthard] */
-    Result<int> getDigitalTestBit(Positions pos = {});
-
-    /** [Gotthard] */
-    Result<int> setDigitalTestBit(const int value, Positions pos = {});
+    /** [Gotthard] If 1, adds channel intensity with precalculated values. Default is 0 */
+    Result<int> setImageTestMode(const int value, Positions pos = {});
 
     /**************************************************
      *                                                *

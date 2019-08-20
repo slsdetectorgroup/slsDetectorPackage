@@ -264,21 +264,21 @@ class DetectorPythonInterface {
         return det.setPatternWaitTime(level, -1, detPos);
     }
 
-    bool getFlippedDataX(int i) {
-        return det.getFlippedData(slsDetectorDefs::dimension::X, i);
-    }
+    // bool getFlippedDataX(int i) {
+    //     return det.getFlippedData(slsDetectorDefs::dimension::X, i);
+    // }
 
-    bool getFlippedDataY(int i) {
-        return det.getFlippedData(slsDetectorDefs::dimension::Y, i);
-    }
+    // bool getFlippedDataY(int i) {
+    //     return det.getFlippedData(slsDetectorDefs::dimension::Y, i);
+    // }
 
-    void setFlippedDataX(int i, bool value) {
-        det.setFlippedData(slsDetectorDefs::dimension::X, value, i);
-    }
+    // void setFlippedDataX(int i, bool value) {
+    //     det.setFlippedData(slsDetectorDefs::dimension::X, value, i);
+    // }
 
-    void setFlippedDataY(int i, bool value) {
-        det.setFlippedData(slsDetectorDefs::dimension::Y, value, i);
-    }
+    // void setFlippedDataY(int i, bool value) {
+    //     det.setFlippedData(slsDetectorDefs::dimension::Y, value, i);
+    // }
 
     /*** Frame and file settings ***/
     void setFileName(std::string fname) { det.setFileName(fname); }
@@ -520,13 +520,13 @@ class DetectorPythonInterface {
         det.setTimer(slsDetectorDefs::timerIndex::FRAME_NUMBER, nframes);
     }
 
-    std::string getTimingMode() {
-        return det.externalCommunicationType(
-            det.setExternalCommunicationMode());
-    }
-    void setTimingMode(const std::string mode) {
-        det.setExternalCommunicationMode(det.externalCommunicationType(mode));
-    }
+    // std::string getTimingMode() {
+    //     return det.externalCommunicationType(
+    //         det.setExternalCommunicationMode());
+    // }
+    // void setTimingMode(const std::string mode) {
+    //     det.setExternalCommunicationMode(det.externalCommunicationType(mode));
+    // }
 
     void freeSharedMemory() { det.freeSharedMemory(); }
 

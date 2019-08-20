@@ -183,8 +183,8 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("setNumberOfStorageCells", &DetectorPythonInterface::setNumberOfStorageCells)
         .def("getNumberOfStorageCells", &DetectorPythonInterface::getNumberOfStorageCells)
 
-        .def("getTimingMode", &DetectorPythonInterface::getTimingMode)
-        .def("setTimingMode", &DetectorPythonInterface::setTimingMode)
+     //    .def("getTimingMode", &DetectorPythonInterface::getTimingMode)
+     //    .def("setTimingMode", &DetectorPythonInterface::setTimingMode)
 
         .def("getDetectorType", &DetectorPythonInterface::getDetectorType)
 
@@ -282,10 +282,10 @@ PYBIND11_MODULE(_sls_detector, m) {
              &DetectorPythonInterface::getReceiverCurrentFrameIndex)
         .def("getGapPixels", &DetectorPythonInterface::getGapPixels)
         .def("setGapPixels", &DetectorPythonInterface::setGapPixels)
-        .def("getFlippedDataX", &DetectorPythonInterface::getFlippedDataX)
-        .def("getFlippedDataY", &DetectorPythonInterface::getFlippedDataY)
-        .def("setFlippedDataX", &DetectorPythonInterface::setFlippedDataX)
-        .def("setFlippedDataY", &DetectorPythonInterface::setFlippedDataY)
+     //    .def("getFlippedDataX", &DetectorPythonInterface::getFlippedDataX)
+     //    .def("getFlippedDataY", &DetectorPythonInterface::getFlippedDataY)
+     //    .def("setFlippedDataX", &DetectorPythonInterface::setFlippedDataX)
+     //    .def("setFlippedDataY", &DetectorPythonInterface::setFlippedDataY)
 
         .def("getServerLock", &DetectorPythonInterface::getServerLock)
         .def("setServerLock", &DetectorPythonInterface::setServerLock)

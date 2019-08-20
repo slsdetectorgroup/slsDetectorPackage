@@ -480,7 +480,7 @@ class Detector {
 
     Result<int> getFramesPerFile(Positions pos = {}) const;
 
-    /** -1 will set frames per file to unlimited //TODO check if it is -1 or 0 */
+    /** 0 will set frames per file to unlimited */
     void setFramesPerFile(int n, Positions pos = {});
 
 
@@ -500,8 +500,8 @@ class Detector {
     /** @param freq nth frame streamed out of receiver.
      * If 0, streaming timer is the timeout,
      * after which current frame sent out. Default is 0 at 200 ms.
-     * Default is 0. This is more for gui purposes to not send every frame.
-     * If you want every frame, set freq to 1.
+     * Default is 1: send every frame.
+     * If you want just to see some frames for gui purposes, set to 0 (200ms default timer).
      */
     void setRxZmqFrequency(int freq, Positions pos = {});
 

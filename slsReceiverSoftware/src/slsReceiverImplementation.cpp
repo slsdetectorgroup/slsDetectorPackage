@@ -107,7 +107,7 @@ void slsReceiverImplementation::InitializeMembers() {
     roi.xmin = -1;
     roi.xmax = -1;
     adcEnableMask = BIT32_MASK;
-    streamingFrequency = 0;
+    streamingFrequency = 1;
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
     dataStreamEnable = false;
     streamingPort = 0;

@@ -1826,7 +1826,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-   - <b>rx_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms). \c Returns \c (int)
+   - <b>rx_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms). Default: sends every frame \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_readfreq";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
@@ -5076,7 +5076,7 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start, stop." << std::endl;
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
-        os << "rx_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
+        os << "rx_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui. Default : 1" << std::endl;
         os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
         os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
         os << "rx_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
@@ -5093,7 +5093,7 @@ std::string slsDetectorCommand::helpReceiver(int action) {
         os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
         os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
-        os << "rx_readfreq \t returns the gui read frequency of the receiver" << std::endl;
+        os << "rx_readfreq \t returns the gui read frequency of the receiver. DEfault: 1" << std::endl;
         os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
         os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
         os << "rx_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;

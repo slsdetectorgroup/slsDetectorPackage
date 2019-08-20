@@ -356,7 +356,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->rxZmqport = DEFAULT_ZMQ_RX_PORTNO +
                        (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxUpstream = false;
-    shm()->rxReadFreq = 0;
+    shm()->rxReadFreq = 1;
     shm()->zmqip = 0u;
     shm()->rxZmqip = 0u;
     shm()->gappixels = 0u;

@@ -3,11 +3,10 @@
 #include "clogger.h"
 #include "RegisterDefs.h"
 
-#ifndef VIRTUAL
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "AD9252.h"     // old board compatibility
 #include "LTC2620.h"    // dacs
-#else
+#ifdef VIRTUAL
 #include "blackfin.h"
 #include <pthread.h>
 #include <time.h>

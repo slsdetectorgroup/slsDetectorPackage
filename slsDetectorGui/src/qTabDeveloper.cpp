@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-qTabDeveloper::qTabDeveloper(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector) {
+qTabDeveloper::qTabDeveloper(QWidget *parent, sls::Detector *detector) : QWidget(parent), det(detector) {
 	setupUi(this);
 	SetupWidgetWindow();
 	FILE_LOG(logDEBUG) << "Developer ready";
@@ -21,74 +21,74 @@ void qTabDeveloper::SetupWidgetWindow() {
 	spinHV->hide();
 
 	try{
-		slsDetectorDefs::detectorType detType = myDet->getDetectorTypeAsEnum();
+		slsDetectorDefs::detectorType detType = det->getDetectorTypeAsEnum();
 		switch (detType) {
 		case slsDetectorDefs::EIGER:
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v SvP: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v SvN ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vrf: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vrs: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vtr: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vtgstv: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v cal: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vcp ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vcn: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vis: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v rxb_lb: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v rxb_rb: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vcmp_ll: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vcmp_lr: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vcmp_rl: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Vcmp_rr: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v threshold: ", getSLSIndex(detType, tempid++), false));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature FPGA Ext: ", getSLSIndex(detType, tempid++), true));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature 10GE: ", getSLSIndex(detType, tempid++), true));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature DCDC: ", getSLSIndex(detType, tempid++), true));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature SODL: ", getSLSIndex(detType, tempid++), true));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature SODR: ", getSLSIndex(detType, tempid++), true));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature FPGA: ", getSLSIndex(detType, tempid++), true));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v SvP: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v SvN ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vrf: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vrs: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vtr: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vtgstv: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v cal: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vcp ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vcn: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vis: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v rxb_lb: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v rxb_rb: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vcmp_ll: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vcmp_lr: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vcmp_rl: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Vcmp_rr: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v threshold: ", getSLSIndex(detType, tempid++), false));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature FPGA Ext: ", getSLSIndex(detType, tempid++), true));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature 10GE: ", getSLSIndex(detType, tempid++), true));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature DCDC: ", getSLSIndex(detType, tempid++), true));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature SODL: ", getSLSIndex(detType, tempid++), true));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature SODR: ", getSLSIndex(detType, tempid++), true));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature FPGA: ", getSLSIndex(detType, tempid++), true));
 			break;
 
 		case slsDetectorDefs::GOTTHARD:
 			comboHV->show();
 			lblComboHV->show();
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Reference: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Cascode n: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Cascode p: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Comp. Output: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Cascode out ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Comp. Input: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Comp. Ref: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "i Base Test: ", getSLSIndex(detType, tempid++), false));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature ADC: ", getSLSIndex(detType, tempid++), false));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature FPGA: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Reference: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Cascode n: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Cascode p: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Comp. Output: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Cascode out ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Comp. Input: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Comp. Ref: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "i Base Test: ", getSLSIndex(detType, tempid++), false));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature ADC: ", getSLSIndex(detType, tempid++), false));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature FPGA: ", getSLSIndex(detType, tempid++), false));
 			break;
 
 		case slsDetectorDefs::JUNGFRAU:
 			lblSpinHV->show();
 			spinHV->show();
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v vb comp: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v vdd prot: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v vin com: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v vref prech: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v vb pixbuf: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v vb ds: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v vref ds: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "i vref comp: ", getSLSIndex(detType, tempid++), false));
-			adcWidgets.push_back(new qDacWidget(this, myDet, false, "Temperature ADC/FPGA: ", getSLSIndex(detType, tempid++), true));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v vb comp: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v vdd prot: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v vin com: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v vref prech: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v vb pixbuf: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v vb ds: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v vref ds: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "i vref comp: ", getSLSIndex(detType, tempid++), false));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature ADC/FPGA: ", getSLSIndex(detType, tempid++), true));
 			break;
 
 		case slsDetectorDefs::MOENCH:
 			lblSpinHV->show();
 			spinHV->show();
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Dac 0: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Dac 1: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Dac 2: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Dac 3: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Dac 4: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Dac 5: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "v Dac 6: ", getSLSIndex(detType, tempid++), false));
-			dacWidgets.push_back(new qDacWidget(this, myDet, true, "i Dac 7: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 0: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 1: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 2: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 3: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 4: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 5: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 6: ", getSLSIndex(detType, tempid++), false));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "i Dac 7: ", getSLSIndex(detType, tempid++), false));
 			break;
 
 		default:
@@ -124,9 +124,9 @@ void qTabDeveloper::PopulateDetectors() {
 
 	comboDetector->clear();
 	comboDetector->addItem("All");
-	if (myDet->size() > 1) {
-		for (unsigned int i = 0; i < myDet->size(); ++i)
-			comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
+	if (det->size() > 1) {
+		for (unsigned int i = 0; i < det->size(); ++i)
+			comboDetector->addItem(QString(det->getHostname(i).c_str()));
 	}
 	comboDetector->setCurrentIndex(0);
 }
@@ -142,7 +142,7 @@ void qTabDeveloper::GetHighVoltage() {
 
 	try {
 		// dac units
-		auto retval = myDet->setDAC(-1, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
+		auto retval = det->setDAC(-1, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
 		if (spinHV->isVisible()) {
 			if (retval != 0 && retval != -1 && retval < HV_MIN &&  retval > HV_MAX) {
 				qDefs::Message(qDefs::WARNING, std::string("Unknown High Voltage: ") + std::to_string(retval), "qTabDeveloper::GetHighVoltage");
@@ -192,7 +192,7 @@ void qTabDeveloper::SetHighVoltage() {
 	FILE_LOG(logINFO) << "Setting high voltage:" << val;
 	
 	try {
-        myDet->setDAC(val, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
+        det->setDAC(val, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
     } CATCH_HANDLE ("Could not set high voltage.", "qTabDeveloper::SetHighVoltage", 
 					this, &qTabDeveloper::GetHighVoltage)
 }

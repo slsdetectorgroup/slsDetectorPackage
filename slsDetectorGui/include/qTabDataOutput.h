@@ -2,13 +2,13 @@
 
 #include "ui_form_tab_dataoutput.h"
 
-class multiSlsDetector;
+#include "Detector.h"
 
 class qTabDataOutput:public QWidget, private Ui::TabDataOutputObject{
 	Q_OBJECT
 
 public:
-	qTabDataOutput(QWidget *parent, multiSlsDetector* detector);
+	qTabDataOutput(QWidget *parent, sls::Detector* detector);
 	~qTabDataOutput();
 	void Refresh();
 
@@ -38,7 +38,7 @@ public:
 	void GetSpeed();
 	void GetFlags();
 
-	multiSlsDetector *myDet;
+	sls::Detector *det;
 	// Button group for radiobuttons for rate
 	QButtonGroup *btnGroupRate;
 	// enum for the Eiger clock divider

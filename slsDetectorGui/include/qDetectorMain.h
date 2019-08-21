@@ -13,7 +13,7 @@ class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
 
-class multiSlsDetector;
+#include "Detector.h"
 
 #include <QTabWidget>
 class QResizeEvent;
@@ -70,8 +70,8 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
         NumberOfTabs
     };
     slsDetectorDefs::detectorType detType;
-    multiSlsDetector* myDet;
-    qDrawPlot* myPlot;
+    sls::Detector* det;
+    qDrawPlot* plot;
     MyTabWidget* tabs;
     qTabMeasurement* tabMeasurement;
     qTabDataOutput* tabDataOutput;

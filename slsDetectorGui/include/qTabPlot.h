@@ -4,7 +4,7 @@
 
 class qDrawPlot;
 
-class multiSlsDetector;
+#include "Detector.h"
 
 class QButtonGroup;
 
@@ -12,7 +12,7 @@ class qTabPlot:public QWidget, private Ui::TabPlotObject{
 	Q_OBJECT
 
 public:
-	qTabPlot(QWidget *parent,multiSlsDetector* detector, qDrawPlot* plot);
+	qTabPlot(QWidget *parent, sls::Detector* detector, qDrawPlot* p);
 	~qTabPlot();
 	void SetScanArgument();
 	void Refresh();
@@ -45,8 +45,8 @@ private:
 	void SetXYRange();
 	void MaintainAspectRatio(int dimension);
 
-	multiSlsDetector *myDet;
-	qDrawPlot *myPlot;
+	sls::Detector *det;
+	qDrawPlot *plot;
 	bool is1d;
 
 	QButtonGroup	*btnGroupPlotType{nullptr};

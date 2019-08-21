@@ -1,6 +1,5 @@
 #pragma once
 
-#include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
 
 #include <QAbstractButton>

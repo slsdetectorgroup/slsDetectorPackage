@@ -2,7 +2,7 @@
 
 #include "ui_form_dac.h"
 
-class multiSlsDetector;
+#include "Detector.h"
 #include "sls_detector_defs.h"
 
 #include <string>
@@ -11,7 +11,7 @@ class qDacWidget:public QWidget, private Ui::WidgetDacObject {
 	Q_OBJECT
 
 public:
-	qDacWidget(QWidget *parent, multiSlsDetector* detector, bool d, std::string n, slsDetectorDefs::dacIndex i, bool t);
+	qDacWidget(QWidget *parent, sls::Detector* detector, bool d, std::string n, slsDetectorDefs::dacIndex i, bool t);
 	~qDacWidget();
 	void SetDetectorIndex(int id);
 
@@ -25,7 +25,7 @@ private:
 	void GetAdc();
 	void Refresh();
 
-	multiSlsDetector *myDet;
+	sls::Detector *det;
 	bool isDac{true};
 	slsDetectorDefs::dacIndex index;
 	bool isMillideg{false};

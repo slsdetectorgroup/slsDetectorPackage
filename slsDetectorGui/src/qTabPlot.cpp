@@ -19,8 +19,8 @@ QString qTabPlot::defaultImageYAxisTitle("Pixel");
 QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 
-qTabPlot::qTabPlot(QWidget *parent, multiSlsDetector *detector, qDrawPlot *plot) : 
-    QWidget(parent), myDet(detector), myPlot(plot), is1d(false) {
+qTabPlot::qTabPlot(QWidget *parent, sls::Detector *detector, qDrawPlot *p) : 
+    QWidget(parent), det(detector), plot(p), is1d(false) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Plot ready";
@@ -57,7 +57,7 @@ void qTabPlot::SetupWidgetWindow() {
 
     // enabling according to det type
     is1d = false;
-    switch(myDet->getDetectorTypeAsEnum()) {
+    switch(det->getDetectorTypeAsEnum()) {
         case slsDetectorDefs::GOTTHARD:
             is1d = true;
             break;
@@ -95,27 +95,27 @@ void qTabPlot::Initialization() {
     
     // 1D options
     connect(chkSuperimpose, SIGNAL(toggled(bool)), this, SLOT(EnablePersistency(bool)));
-    connect(spinPersistency, SIGNAL(valueChanged(int)), myPlot, SLOT(SetPersistency(int)));
-    connect(chkPoints, SIGNAL(toggled(bool)), myPlot, SLOT(SetMarkers(bool)));
-    connect(chkLines, SIGNAL(toggled(bool)), myPlot, SLOT(SetLines(bool)));
-    connect(chk1DLog, SIGNAL(toggled(bool)), myPlot, SLOT(Set1dLogY(bool)));
-    connect(chkStatistics, SIGNAL(toggled(bool)), myPlot, SLOT(DisplayStatistics(bool)));
+    connect(spinPersistency, SIGNAL(valueChanged(int)), plot, SLOT(SetPersistency(int)));
+    connect(chkPoints, SIGNAL(toggled(bool)), plot, SLOT(SetMarkers(bool)));
+    connect(chkLines, SIGNAL(toggled(bool)), plot, SLOT(SetLines(bool)));
+    connect(chk1DLog, SIGNAL(toggled(bool)), plot, SLOT(Set1dLogY(bool)));
+    connect(chkStatistics, SIGNAL(toggled(bool)), plot, SLOT(DisplayStatistics(bool)));
 
     // 2D Plot box
-    connect(chkInterpolate, SIGNAL(toggled(bool)), myPlot, SLOT(SetInterpolate(bool)));
-    connect(chkContour, SIGNAL(toggled(bool)), myPlot, SLOT(SetContour(bool)));
-    connect(chkLogz, SIGNAL(toggled(bool)), myPlot, SLOT(SetLogz(bool)));
-    connect(chkStatistics_2, SIGNAL(toggled(bool)), myPlot, SLOT(DisplayStatistics(bool)));
+    connect(chkInterpolate, SIGNAL(toggled(bool)), plot, SLOT(SetInterpolate(bool)));
+    connect(chkContour, SIGNAL(toggled(bool)), plot, SLOT(SetContour(bool)));
+    connect(chkLogz, SIGNAL(toggled(bool)), plot, SLOT(SetLogz(bool)));
+    connect(chkStatistics_2, SIGNAL(toggled(bool)), plot, SLOT(DisplayStatistics(bool)));
     //pedstal
-    connect(chkPedestal, SIGNAL(toggled(bool)), myPlot, SLOT(SetPedestal(bool)));
-    connect(btnRecalPedestal, SIGNAL(clicked()), myPlot, SLOT(RecalculatePedestal()));
-    connect(chkPedestal_2, SIGNAL(toggled(bool)), myPlot, SLOT(SetPedestal(bool)));
-    connect(btnRecalPedestal_2, SIGNAL(clicked()), myPlot, SLOT(RecalculatePedestal()));
+    connect(chkPedestal, SIGNAL(toggled(bool)), plot, SLOT(SetPedestal(bool)));
+    connect(btnRecalPedestal, SIGNAL(clicked()), plot, SLOT(RecalculatePedestal()));
+    connect(chkPedestal_2, SIGNAL(toggled(bool)), plot, SLOT(SetPedestal(bool)));
+    connect(btnRecalPedestal_2, SIGNAL(clicked()), plot, SLOT(RecalculatePedestal()));
     //accumulate
-    connect(chkAccumulate, SIGNAL(toggled(bool)), myPlot, SLOT(SetAccumulate(bool)));
-    connect(btnResetAccumulate, SIGNAL(clicked()), myPlot, SLOT(ResetAccumulate()));
-    connect(chkAccumulate_2, SIGNAL(toggled(bool)), myPlot, SLOT(SetAccumulate(bool)));
-    connect(btnResetAccumulate_2, SIGNAL(clicked()), myPlot, SLOT(ResetAccumulate()));
+    connect(chkAccumulate, SIGNAL(toggled(bool)), plot, SLOT(SetAccumulate(bool)));
+    connect(btnResetAccumulate, SIGNAL(clicked()), plot, SLOT(ResetAccumulate()));
+    connect(chkAccumulate_2, SIGNAL(toggled(bool)), plot, SLOT(SetAccumulate(bool)));
+    connect(btnResetAccumulate_2, SIGNAL(clicked()), plot, SLOT(ResetAccumulate()));
     //binary
     connect(chkBinary, SIGNAL(toggled(bool)), this, SLOT(SetBinary()));
     connect(chkBinary_2, SIGNAL(toggled(bool)), this, SLOT(SetBinary()));
@@ -125,14 +125,14 @@ void qTabPlot::Initialization() {
     connect(spinTo_2, SIGNAL(valueChanged(int)), this, SLOT(SetBinary()));
     //gainplot
     if (chkGainPlot->isEnabled())
-        connect(chkGainPlot, SIGNAL(toggled(bool)), myPlot, SLOT(EnableGainPlot(bool)));
+        connect(chkGainPlot, SIGNAL(toggled(bool)), plot, SLOT(EnableGainPlot(bool)));
     // gap pixels
     if (chkGapPixels->isEnabled())
         connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
 
     // Save, clone
-    connect(btnSave, SIGNAL(clicked()), myPlot, SLOT(SavePlot()));
-    connect(btnClone, SIGNAL(clicked()), myPlot, SLOT(ClonePlot()));
+    connect(btnSave, SIGNAL(clicked()), plot, SLOT(SavePlot()));
+    connect(btnClone, SIGNAL(clicked()), plot, SLOT(ClonePlot()));
 
     // Plot Axis
     connect(chkTitle, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
@@ -171,7 +171,7 @@ void qTabPlot::Select1DPlot(bool enable) {
     chkZMax->setEnabled(!enable);
     dispZMin->setEnabled(!enable);
     dispZMax->setEnabled(!enable);
-    myPlot->Select1dPlot(enable);
+    plot->Select1dPlot(enable);
     SetTitles();
     SetXYRange();
     if (!is1d) {
@@ -201,7 +201,7 @@ void qTabPlot::SetPlot() {
         }
     }
     
-    myPlot->SetDataCallBack(plotEnable);
+    plot->SetDataCallBack(plotEnable);
 }
 
 void qTabPlot::Set1DPlotOptionsRight() {
@@ -249,9 +249,9 @@ void qTabPlot::EnablePersistency(bool enable) {
     lblPersistency->setEnabled(enable);
     spinPersistency->setEnabled(enable);
     if (enable)
-        myPlot->SetPersistency(spinPersistency->value());
+        plot->SetPersistency(spinPersistency->value());
     else
-        myPlot->SetPersistency(0);
+        plot->SetPersistency(0);
 }
 
 void qTabPlot::SetBinary() {
@@ -263,14 +263,14 @@ void qTabPlot::SetBinary() {
         lblTo->setEnabled(binary1D);
         spinFrom->setEnabled(binary1D);
         spinTo->setEnabled(binary1D);
-        myPlot->SetBinary(binary1D, spinFrom->value(), spinTo->value());
+        plot->SetBinary(binary1D, spinFrom->value(), spinTo->value());
     } else {
         FILE_LOG(logINFO) << "Binary Plot " << (binary2D ? "enabled" : "disabled");
         lblFrom_2->setEnabled(binary2D);
         lblTo_2->setEnabled(binary2D);
         spinFrom_2->setEnabled(binary2D);
         spinTo_2->setEnabled(binary2D);
-        myPlot->SetBinary(binary2D, spinFrom_2->value(), spinTo_2->value());
+        plot->SetBinary(binary2D, spinFrom_2->value(), spinTo_2->value());
     }
 }
 
@@ -279,7 +279,7 @@ void qTabPlot::GetGapPixels() {
     disconnect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
 
 	try {
-        auto retval = myDet->enableGapPixels(-1);
+        auto retval = det->enableGapPixels(-1);
 		if (retval == -1) {
 			qDefs::Message(qDefs::WARNING, "Gap pixels enable is inconsistent for all detectors.", "qTabPlot::GetGapPixels");
 		} else {
@@ -294,7 +294,7 @@ void qTabPlot::SetGapPixels(bool enable) {
 	FILE_LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
 
 	try {
-        myDet->enableGapPixels(enable);
+        det->enableGapPixels(enable);
     } CATCH_HANDLE("Could not set gap pixels enable.", "qTabPlot::SetGapPixels", this, &qTabPlot::GetGapPixels)
 }
 
@@ -311,31 +311,31 @@ void qTabPlot::SetTitles() {
 
     // title
     if (!chkTitle->isChecked() || dispTitle->text().isEmpty()) {
-        myPlot->SetPlotTitlePrefix("");
+        plot->SetPlotTitlePrefix("");
         dispTitle->setText("");   
     } else {
-        myPlot->SetPlotTitlePrefix(dispTitle->text());
+        plot->SetPlotTitlePrefix(dispTitle->text());
     }
     // x
     if (!chkXAxis->isChecked() || dispXAxis->text().isEmpty()) {
         dispXAxis->setText(is1d ? defaultHistXAxisTitle : defaultImageXAxisTitle);
-        myPlot->SetXAxisTitle(is1d ? defaultHistXAxisTitle : defaultImageXAxisTitle);
+        plot->SetXAxisTitle(is1d ? defaultHistXAxisTitle : defaultImageXAxisTitle);
     } else {
-        myPlot->SetXAxisTitle(dispXAxis->text());
+        plot->SetXAxisTitle(dispXAxis->text());
     } 
     // y
     if (!chkYAxis->isChecked() || dispYAxis->text().isEmpty()) {
         dispYAxis->setText(is1d ? defaultHistYAxisTitle : defaultImageYAxisTitle);
-        myPlot->SetYAxisTitle(is1d ? defaultHistYAxisTitle : defaultImageYAxisTitle);
+        plot->SetYAxisTitle(is1d ? defaultHistYAxisTitle : defaultImageYAxisTitle);
     } else {
-        myPlot->SetYAxisTitle(dispYAxis->text());
+        plot->SetYAxisTitle(dispYAxis->text());
     }  
     // z
     if (!chkZAxis->isChecked() || dispZAxis->text().isEmpty()) {
-        myPlot->SetZAxisTitle(defaultImageZAxisTitle);
+        plot->SetZAxisTitle(defaultImageZAxisTitle);
         dispZAxis->setText(defaultImageZAxisTitle);
     } else {
-        myPlot->SetZAxisTitle(dispZAxis->text());
+        plot->SetZAxisTitle(dispZAxis->text());
     }
 
     connect(chkTitle, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
@@ -395,7 +395,7 @@ void qTabPlot::SetXYRange() {
         }
     }
 
-    myPlot->SetXYRangeChanged(disablezoom, xyRange, isRange);
+    plot->SetXYRangeChanged(disablezoom, xyRange, isRange);
     emit DisableZoomSignal(disablezoom);
 }
 
@@ -417,20 +417,20 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     chkYMin->setChecked(true);
     chkYMax->setChecked(true);
 	if (dispXMin->text().isEmpty()) 
-        dispXMin->setText(QString::number(myPlot->GetXMinimum()));
+        dispXMin->setText(QString::number(plot->GetXMinimum()));
 	if (dispXMax->text().isEmpty()) 
-        dispXMax->setText(QString::number(myPlot->GetXMaximum()));
+        dispXMax->setText(QString::number(plot->GetXMaximum()));
 	if (dispYMin->text().isEmpty()) 
-        dispYMin->setText(QString::number(myPlot->GetYMinimum()));
+        dispYMin->setText(QString::number(plot->GetYMinimum()));
 	if (dispYMax->text().isEmpty()) 
-        dispYMax->setText(QString::number(myPlot->GetYMaximum()));
+        dispYMax->setText(QString::number(plot->GetYMaximum()));
 
     // calculate ideal aspect ratio with previous limits
     double ranges[4];
-    ranges[qDefs::XMIN] = myPlot->GetXMinimum();
-    ranges[qDefs::XMAX] = myPlot->GetXMaximum();
-    ranges[qDefs::YMIN] = myPlot->GetYMinimum();
-    ranges[qDefs::YMAX] = myPlot->GetYMaximum();
+    ranges[qDefs::XMIN] = plot->GetXMinimum();
+    ranges[qDefs::XMAX] = plot->GetXMaximum();
+    ranges[qDefs::YMIN] = plot->GetYMinimum();
+    ranges[qDefs::YMAX] = plot->GetYMaximum();
     double idealAspectratio = (ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) / (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]);
     FILE_LOG(logDEBUG) << "Ideal Aspect ratio: " << idealAspectratio << " for x(" << ranges[qDefs::XMIN] << " - " << ranges[qDefs::XMAX] << "), y(" << ranges[qDefs::YMIN] << " - " << ranges[qDefs::YMAX] << ")";
   
@@ -454,7 +454,7 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
         double newval = 0;
         if (dimension == static_cast<int>(slsDetectorDefs::X)) {
             newval = idealAspectratio * (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]) + ranges[qDefs::XMIN];
-            if (newval <= myPlot->GetXMaximum()) {
+            if (newval <= plot->GetXMaximum()) {
                 ranges[qDefs::XMAX] = newval;
                 dispXMax->setText(QString::number(newval));
                 FILE_LOG(logDEBUG) << "New XMax: " << newval;
@@ -468,7 +468,7 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
         // adjust y
         else  {
             newval = ((ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) / idealAspectratio) + ranges[qDefs::YMIN];
-            if (newval <= myPlot->GetYMaximum()) {
+            if (newval <= plot->GetYMaximum()) {
                 ranges[qDefs::YMAX] = newval;
                 dispYMax->setText(QString::number(newval));
                 FILE_LOG(logDEBUG) << "New YMax: " << newval;
@@ -491,7 +491,7 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
 
     bool isRange[4] {true, true, true, true};
-    myPlot->SetXYRangeChanged(true, ranges, isRange);
+    plot->SetXYRangeChanged(true, ranges, isRange);
     emit DisableZoomSignal(true);
 }
 
@@ -509,7 +509,7 @@ void qTabPlot::SetZRange() {
         FILE_LOG(logDEBUG) << "Setting zmax to " << val;
         zRange[1] = val;
     }
-    myPlot->SetZRange(zRange, isZRange);
+    plot->SetZRange(zRange, isZRange);
 }
 
 void qTabPlot::GetStreamingFrequency() {
@@ -520,7 +520,7 @@ void qTabPlot::GetStreamingFrequency() {
     disconnect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
 
 	try {
-		int freq = myDet->setReceiverStreamingFrequency(-1);
+		int freq = det->setReceiverStreamingFrequency(-1);
         if (freq < 0) {
             qDefs::Message(qDefs::WARNING, "Streaming frequency is inconsistent for all detectors.", "qTabPlot::GetStreamingFrequency");
         } 
@@ -529,7 +529,7 @@ void qTabPlot::GetStreamingFrequency() {
             comboFrequency->setCurrentIndex(0);
             stackedTimeInterval->setCurrentIndex(0);
             try {
-                int timeMs = myDet->setReceiverStreamingTimer(-1);
+                int timeMs = det->setReceiverStreamingTimer(-1);
                 if (freq < 0) {
                     qDefs::Message(qDefs::WARNING, "Streaming timer is inconsistent for all detectors.", "qTabPlot::GetStreamingFrequency");
                 } else {
@@ -564,11 +564,11 @@ void qTabPlot::SetStreamingFrequency() {
 	try {
         if (frequency) {
             FILE_LOG(logINFO) << "Setting Streaming Frequency to " << freqVal;
-            myDet->setReceiverStreamingFrequency(freqVal);
+            det->setReceiverStreamingFrequency(freqVal);
         } else {
             FILE_LOG(logINFO) << "Setting Streaming Timer to " << timeVal << " " << qDefs::getUnitString(timeUnit);
             double timeMS = qDefs::getMSTime(timeUnit, timeVal);
-            myDet->setReceiverStreamingTimer(timeMS);
+            det->setReceiverStreamingTimer(timeMS);
         }
     } CATCH_HANDLE("Could not set streaming frequency/ timer.", "qTabPlot::SetStreamingFrequency", this, &qTabPlot::GetStreamingFrequency)
 }
@@ -576,7 +576,7 @@ void qTabPlot::SetStreamingFrequency() {
 void qTabPlot::Refresh() {
     FILE_LOG(logDEBUG) << "**Updating Plot Tab";
 
-    if (!myPlot->GetIsRunning()) {
+    if (!plot->GetIsRunning()) {
         boxPlotType->setEnabled(true);
 
         // streaming frequency
@@ -585,7 +585,7 @@ void qTabPlot::Refresh() {
         }
         GetStreamingFrequency();
         // gain plot, gap pixels enable
-        switch(myDet->getDetectorTypeAsEnum()) {
+        switch(det->getDetectorTypeAsEnum()) {
             case slsDetectorDefs::EIGER:
                 chkGapPixels->setEnabled(true);
                 GetGapPixels();

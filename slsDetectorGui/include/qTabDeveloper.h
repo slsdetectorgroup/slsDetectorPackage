@@ -3,7 +3,7 @@
 #include "ui_form_tab_developer.h"
 class qDacWidget;
 
-class multiSlsDetector;
+#include "Detector.h"
 #include "sls_detector_defs.h"
 
 #include <string>
@@ -13,7 +13,7 @@ class qTabDeveloper:public QWidget, private Ui::TabDeveloperObject {
 	Q_OBJECT
 
 public:
-	qTabDeveloper(QWidget *parent, multiSlsDetector* detector);
+	qTabDeveloper(QWidget *parent, sls::Detector* detector);
 	~qTabDeveloper();
 
 public slots:
@@ -29,7 +29,7 @@ private:
 	void GetHighVoltage();
 	slsDetectorDefs::dacIndex getSLSIndex(slsDetectorDefs::detectorType detType, int index);
 
-	multiSlsDetector *myDet;
+	sls::Detector *det;
 	std::vector<qDacWidget*> dacWidgets;
 	std::vector<qDacWidget*> adcWidgets;
 	

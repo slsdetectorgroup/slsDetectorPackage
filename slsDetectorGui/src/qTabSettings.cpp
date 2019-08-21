@@ -6,7 +6,7 @@
 #include <cmath>
 #include <iostream>
 
-qTabSettings::qTabSettings(QWidget *parent, multiSlsDetector *detector): QWidget(parent), myDet(detector) {
+qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector): QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Settings ready";
@@ -17,7 +17,7 @@ qTabSettings::~qTabSettings() {}
 void qTabSettings::SetupWidgetWindow() {
 
 	// enabling according to det type
-    switch(myDet->getDetectorTypeAsEnum()) {
+    switch(det->getDetectorTypeAsEnum()) {
         case slsDetectorDefs::MOENCH:
             lblSettings->setEnabled(false);
             comboSettings->setEnabled(false);
@@ -57,7 +57,7 @@ void qTabSettings::SetupDetectorSettings() {
             item[i] = model->itemFromIndex(index[i]);
             item[i]->setEnabled(false); 
         }
-        switch (myDet->getDetectorTypeAsEnum()) {
+        switch (det->getDetectorTypeAsEnum()) {
         case slsDetectorDefs::EIGER:
             item[(int)STANDARD]->setEnabled(true);
             item[(int)HIGHGAIN]->setEnabled(true);
@@ -108,7 +108,7 @@ void qTabSettings::GetSettings() {
     disconnect(comboSettings, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSettings(int)));
 
     try{
-        auto retval = myDet->getSettings(-1);
+        auto retval = det->getSettings(-1);
         switch (retval) {
             case -1:
                 qDefs::Message(qDefs::WARNING, "Settings are inconsistent for all detectors.", "qTabSettings::GetSettings");
@@ -135,10 +135,10 @@ void qTabSettings::GetSettings() {
 void qTabSettings::SetSettings(int index) {
     // settings
     auto val = static_cast<slsDetectorDefs::detectorSettings>(index);
-    FILE_LOG(logINFO) << "Setting Settings to " << myDet->slsDetectorDefs::getDetectorSettings(val);
+    FILE_LOG(logINFO) << "Setting Settings to " << det->slsDetectorDefs::getDetectorSettings(val);
 
     try {
-        myDet->setSettings(val);
+        det->setSettings(val);
     } CATCH_HANDLE ("Could not set settings.", "qTabSettings::SetSettings", this, &qTabSettings::GetSettings)
 
     // threshold
@@ -152,7 +152,7 @@ void qTabSettings::GetDynamicRange() {
     disconnect(comboDynamicRange, SIGNAL(activated(int)), this, SLOT(SetDynamicRange(int)));
  
     try {
-        auto retval = myDet->setDynamicRange(-1);
+        auto retval = det->setDynamicRange(-1);
 
         // set the final value on gui
         switch (retval) {
@@ -185,16 +185,16 @@ void qTabSettings::SetDynamicRange(int index) {
     try {
         switch (index) {
         case DYNAMICRANGE_32:
-            myDet->setDynamicRange(32);
+            det->setDynamicRange(32);
             break;
         case DYNAMICRANGE_16:
-            myDet->setDynamicRange(16);
+            det->setDynamicRange(16);
             break;
         case DYNAMICRANGE_8:
-            myDet->setDynamicRange(8);
+            det->setDynamicRange(8);
             break;
         case DYNAMICRANGE_4:
-            myDet->setDynamicRange(4);
+            det->setDynamicRange(4);
             break;
         default:
             qDefs::Message(qDefs::WARNING, std::string("Unknown dynamic range: ") + std::to_string(index), "qTabSettings::SetDynamicRange");
@@ -208,7 +208,7 @@ void qTabSettings::GetThresholdEnergy() {
     disconnect(spinThreshold, SIGNAL(valueChanged(int)), this, SLOT(SetThresholdEnergy(int)));
 
     try {
-        auto retval = myDet->getThresholdEnergy();
+        auto retval = det->getThresholdEnergy();
 		/*if (retval == -1) { commenting out as default is -1, handle this when API changes
 			qDefs::Message(qDefs::WARNING, "Threshold Energy is inconsistent for all detectors.", "qTabDataOutput::GetThresholdEnergy");
             spinThreshold->setValue(-1);
@@ -224,7 +224,7 @@ void qTabSettings::GetThresholdEnergy() {
 void qTabSettings::SetThresholdEnergy(int index) {
     FILE_LOG(logINFO) << "Setting Threshold Energy to " << index << " eV";
     try {
-        myDet->setThresholdEnergy(index);
+        det->setThresholdEnergy(index);
     } CATCH_DISPLAY ("Could not get threshold energy.", "qTabSettings::SetThresholdEnergy")
 
     // set the right value anyway (due to tolerance)

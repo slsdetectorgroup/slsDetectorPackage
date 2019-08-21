@@ -3,11 +3,14 @@
 #include "ui_form_plot.h"
 
 #include "qDefs.h"
-class detectorData;
 class SlsQt1DPlot;
 class SlsQtH1D;
 class SlsQt2DPlot;
 class qCloneWidget;
+
+class detectorData;
+#include "Detector.h"
+
 class QResizeEvent;
 
 #include <QFutureWatcher>
@@ -16,7 +19,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     Q_OBJECT
 
   public:
-     qDrawPlot(QWidget *parent, multiSlsDetector *detector);
+     qDrawPlot(QWidget *parent, sls::Detector *detector);
     ~qDrawPlot();
     bool GetIsRunning();
     void SetRunning(bool enable);
@@ -88,7 +91,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void Update2dXYRange();
     
   	static const int NUM_PEDESTAL_FRAMES = 20;
-    multiSlsDetector *myDet;
+    sls::Detector *det;
     slsDetectorDefs::detectorType detType;
 
     SlsQt1DPlot *plot1d{nullptr};

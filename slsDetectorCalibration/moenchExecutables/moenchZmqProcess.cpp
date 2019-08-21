@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
   char dummybuff[size];
   
   int ncol_cm=20;
-  double xt_ghost=0.00045;
+  double xt_ghost=0.0004;
   moench03CommonMode *cm=new moench03CommonMode(ncol_cm);
   moench03GhostSummation *gs=new moench03GhostSummation(det, xt_ghost);
   double *gainmap=NULL;

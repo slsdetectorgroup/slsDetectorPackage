@@ -120,18 +120,13 @@ public:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
 	 * @param oddStartingPacket odd starting packet (gotthard)
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
-	 * @param subFrameNumber sub frame number if applicable
-	 * @param bunchId bunch id
 	 */
-	virtual void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
+	virtual void GetHeaderInfo(int index, char* packetData, bool oddStartingPacket,
+			uint64_t& frameNumber, uint32_t& packetNumber) const
 	{
-		subFrameNumber = -1;
-		bunchId = -1;
 		frameNumber = ((uint32_t)(*((uint32_t*)(packetData))));
 		frameNumber++;
 		packetNumber = frameNumber&packetIndexMask;
@@ -280,27 +275,20 @@ private:
 	 * Get Header Infomation (frame number, packet number)
 	 * @param index thread index for debugging purposes
 	 * @param packetData pointer to data
-	 * @param dynamicRange dynamic range to assign subframenumber if 32 bit mode
 	 * @param oddStartingPacket odd starting packet (gotthard)
 	 * @param frameNumber frame number
 	 * @param packetNumber packet number
-	 * @param subFrameNumber sub frame number if applicable
-	 * @param bunchId bunch id
 	 */
-	void GetHeaderInfo(int index, char* packetData, uint32_t dynamicRange, bool oddStartingPacket,
-			uint64_t& frameNumber, uint32_t& packetNumber, uint32_t& subFrameNumber, uint64_t& bunchId) const
+	void GetHeaderInfo(int index, char* packetData, bool oddStartingPacket,
+			uint64_t& frameNumber, uint32_t& packetNumber) const
 	{
 		if (nPixelsX == 1280) {
-			subFrameNumber = -1;
-			bunchId = -1;
 			frameNumber = *reinterpret_cast<uint32_t*>(packetData);
 			if (oddStartingPacket)
 			    frameNumber++;
 			packetNumber = frameNumber&packetIndexMask;
 			frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
 		} else  {
-			subFrameNumber = -1;
-			bunchId = -1;
             frameNumber = *reinterpret_cast<uint32_t *>(packetData);
             packetNumber = 0;
 		}
@@ -555,6 +543,9 @@ private:
 	const int NCHAN_DIGITAL = 64;
 	/** Number of bytes per analog channel */
 	const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
+
+	const int FRAME_NUMBER_OFFSET = 6;
+	const int PACKET_NUMBER_OFFSET = 6 + 8;
 public:
 
 
@@ -619,12 +610,20 @@ public:
         nPixelsY = 1;
         // 10G
         if (t) {
+			/*
             headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
             dataSize = UDP_PACKET_DATA_BYTES;
 			packetSize = headerSizeinPacket + dataSize;
             imageSize = adatabytes + ddatabytes;
             packetsPerFrame = ceil((double)imageSize / (double)dataSize);
             standardheader = true;	    
+			*/
+			headerSizeinPacket = 22;
+			dataSize = 8192;
+			packetSize = headerSizeinPacket + dataSize;
+			imageSize = adatabytes + ddatabytes;
+			packetsPerFrame	= ceil((double)imageSize / (double)dataSize);
+			standardheader = false;
 		}
 	    // 1g udp (via fifo readout)
 	    else {
@@ -636,6 +635,21 @@ public:
 			standardheader		= true;
 	    }
 		return adatabytes;
+	}
+
+	/**
+	 * Get Header Infomation (frame number, packet number)
+	 * @param index thread index for debugging purposes
+	 * @param packetData pointer to data
+	 * @param oddStartingPacket odd starting packet (gotthard)
+	 * @param frameNumber frame number
+	 * @param packetNumber packet number
+	 */
+	void GetHeaderInfo(int index, char* packetData, bool oddStartingPacket,
+			uint64_t& frameNumber, uint32_t& packetNumber) const
+	{
+		frameNumber = *reinterpret_cast<uint64_t*>(packetData + FRAME_NUMBER_OFFSET);
+		packetNumber = *reinterpret_cast<uint64_t*>(packetData + PACKET_NUMBER_OFFSET);
 	}
 
 };

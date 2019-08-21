@@ -59,9 +59,9 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define DEFAULT_VLIMIT              (-100)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
-#define DEFAULT_RUN_CLK             (40)
-#define DEFAULT_ADC_CLK             (20)
-#define DEFAULT_SYNC_CLK            (20)
+#define DEFAULT_RUN_CLK             (200) // 40
+#define DEFAULT_ADC_CLK             (40) // 20
+#define DEFAULT_SYNC_CLK            (40) // 20
 #define DEFAULT_DBIT_CLK            (200)
 
 #define HIGHVOLTAGE_MIN             (60)

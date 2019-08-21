@@ -14,7 +14,7 @@ qTabAdvanced::~qTabAdvanced() {}
 
 void qTabAdvanced::SetupWidgetWindow() {
     // enabling according to det type
-    switch (det->getDetectorTypeAsEnum()) {
+    switch (det->getDetectorType().squash()) {
     case slsDetectorDefs::EIGER:
         tab_trimming->setEnabled(true);
         lblSubExpTime->setEnabled(true);
@@ -55,7 +55,7 @@ void qTabAdvanced::Initialization() {
 
     // network
     connect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
-            SLOT(SetDetector(int)));
+            SLOT(SetDetector()));
     connect(spinControlPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetControlPort(int)));
     connect(spinStopPort, SIGNAL(valueChanged(int)), this,
@@ -109,20 +109,20 @@ void qTabAdvanced::Initialization() {
 void qTabAdvanced::PopulateDetectors() {
     FILE_LOG(logDEBUG) << "Populating detectors";
     disconnect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
-               SLOT(SetDetector(int)));
+               SLOT(SetDetector()));
     disconnect(comboReadout, SIGNAL(currentIndexChanged(int)), this, SLOT(GetROI()));          
 
     comboDetector->clear();
     comboReadout->clear();
     for (unsigned int i = 0; i < det->size(); ++i) {
-        comboDetector->addItem(QString(det->getHostname(i).c_str()));
-        comboReadout->addItem(QString(det->getHostname(i).c_str()));
+        comboDetector->addItem(QString(det->getHostname({i})[0].c_str()));
+        comboReadout->addItem(QString(det->getHostname({i})[0].c_str()));
     }
     comboDetector->setCurrentIndex(0);
     comboReadout->setCurrentIndex(0);    
 
     connect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
-            SLOT(SetDetector(int)));
+            SLOT(SetDetector()));
     connect(comboReadout, SIGNAL(currentIndexChanged(int)), this, SLOT(GetROI()));        
 }
 
@@ -132,7 +132,7 @@ void qTabAdvanced::GetControlPort() {
                SLOT(SetControlPort(int)));
 
     try {
-        int retval = det->setControlPort(-1, comboDetector->currentIndex());
+        int retval = det->getControlPort({comboDetector->currentIndex()})[0];
         spinControlPort->setValue(retval);
     } CATCH_DISPLAY ("Could not get detector control port.", "qTabAdvanced::GetControlPort")
 
@@ -146,7 +146,7 @@ void qTabAdvanced::GetStopPort() {
                SLOT(SetStopPort(int)));
 
     try {
-        int retval = det->setStopPort(-1, comboDetector->currentIndex());
+        int retval = det->getStopPort({comboDetector->currentIndex()})[0];
         spinStopPort->setValue(retval);
     } CATCH_DISPLAY ("Could not get detector stop port.", "qTabAdvanced::GetStopPort")
 
@@ -160,7 +160,7 @@ void qTabAdvanced::GetDetectorUDPIP() {
                SLOT(SetDetectorUDPIP()));
 
     try {
-        auto retval = det->getDetectorIP(comboDetector->currentIndex());
+        auto retval = det->getSourceUDPIP({comboDetector->currentIndex()})[0];
         dispDetectorUDPIP->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get detector UDP IP.", "qTabAdvanced::GetDetectorUDPIP")
 
@@ -174,7 +174,7 @@ void qTabAdvanced::GetDetectorUDPMAC() {
                SLOT(SetDetectorUDPMAC()));
 
     try {
-        auto retval = det->getDetectorMAC(comboDetector->currentIndex());
+        auto retval = det->getSourceUDPMAC({comboDetector->currentIndex()})[0];
         dispDetectorUDPMAC->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get detector UDP MAC.", "qTabAdvanced::GetDetectorUDPMAC")
 
@@ -189,7 +189,7 @@ void qTabAdvanced::GetCltZMQPort() {
 
     try {
         int retval =
-            det->getClientStreamingPort(comboDetector->currentIndex());
+            det->getClientZmqPort({comboDetector->currentIndex()})[0];
         spinZMQPort->setValue(retval);
     } CATCH_DISPLAY ("Could not get client zmq port.", "qTabAdvanced::GetCltZMQPort")
 
@@ -203,7 +203,7 @@ void qTabAdvanced::GetCltZMQIP() {
 
     try {
         auto retval =
-            det->getClientStreamingIP(comboDetector->currentIndex());
+            det->getClientZmqIp({comboDetector->currentIndex()})[0];
         dispZMQIP->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get client zmq ip.", "qTabAdvanced::GetCltZMQIP")
 
@@ -216,7 +216,7 @@ void qTabAdvanced::GetRxrHostname() {
                SLOT(SetRxrHostname()));
 
     try {
-        auto retval = det->getReceiverHostname(comboDetector->currentIndex());
+        auto retval = det->getRxHostname({comboDetector->currentIndex()})[0];
         dispRxrHostname->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get receiver hostname.", "qTabAdvanced::GetRxrHostname")
 
@@ -230,7 +230,7 @@ void qTabAdvanced::GetRxrTCPPort() {
                SLOT(SetRxrTCPPort(int)));
 
     try {
-        int retval = det->getReceiverPort(comboDetector->currentIndex());
+        int retval = det->getRxPort({comboDetector->currentIndex()})[0];
         spinRxrTCPPort->setValue(retval);
     } CATCH_DISPLAY ("Could not get receiver tcp port.", "qTabAdvanced::GetRxrTCPPort")
 
@@ -244,7 +244,7 @@ void qTabAdvanced::GetRxrUDPPort() {
                SLOT(SetRxrUDPPort(int)));
 
     try {
-        int retval = det->getReceiverUDPPort(comboDetector->currentIndex());
+        int retval = det->getDestinationUDPPort({comboDetector->currentIndex()})[0];
         spinRxrUDPPort->setValue(retval);
     } CATCH_DISPLAY ("Could not get receiver udp port.", "qTabAdvanced::GetRxrUDPPort")
 
@@ -258,7 +258,7 @@ void qTabAdvanced::GetRxrUDPIP() {
                SLOT(SetRxrUDPIP()));
 
     try {
-        auto retval = det->getReceiverUDPIP(comboDetector->currentIndex());
+        auto retval = det->getDestinationUDPIP({comboDetector->currentIndex()})[0];
         dispRxrUDPIP->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get receiver udp ip.", "qTabAdvanced::GetRxrUDPIP")
 
@@ -271,7 +271,7 @@ void qTabAdvanced::GetRxrUDPMAC() {
                SLOT(SetRxrUDPMAC()));
 
     try {
-        auto retval = det->getReceiverUDPMAC(comboDetector->currentIndex());
+        auto retval = det->getDestinationUDPMAC({comboDetector->currentIndex()})[0];
         dispRxrUDPMAC->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get receiver udp mac.", "qTabAdvanced::GetRxrUDPMAC")
 
@@ -286,7 +286,7 @@ void qTabAdvanced::GetRxrZMQPort() {
 
     try {
         int retval =
-            det->getReceiverStreamingPort(comboDetector->currentIndex());
+            det->getRxZmqPort({comboDetector->currentIndex()})[0];
         spinRxrZMQPort->setValue(retval);
     } CATCH_DISPLAY ("Could not get receiver zmq port.", "qTabAdvanced::GetRxrZMQPort")
 
@@ -301,14 +301,14 @@ void qTabAdvanced::GetRxrZMQIP() {
 
     try {
         auto retval =
-            det->getReceiverStreamingIP(comboDetector->currentIndex());
+            det->getRxZmqIP({comboDetector->currentIndex()})[0];
         dispRxrZMQIP->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get receiver zmq ip.", "qTabAdvanced::GetRxrZMQIP")
 
     connect(dispRxrZMQIP, SIGNAL(editingFinished()), this, SLOT(SetRxrZMQIP()));
 }
 
-void qTabAdvanced::SetDetector(int index) {
+void qTabAdvanced::SetDetector() {
     FILE_LOG(logDEBUG) << "Set Detector: "
                        << comboDetector->currentText().toAscii().data();
 
@@ -332,7 +332,7 @@ void qTabAdvanced::SetDetector(int index) {
 void qTabAdvanced::SetControlPort(int port) {
     FILE_LOG(logINFO) << "Setting Control Port:" << port;
     try {
-        det->setControlPort(port, comboDetector->currentIndex());
+        det->setControlPort(port, {comboDetector->currentIndex()});
     } CATCH_HANDLE("Could not set control port.", "qTabAdvanced::SetControlPort",
                  this, &qTabAdvanced::GetControlPort)
 }
@@ -340,7 +340,7 @@ void qTabAdvanced::SetControlPort(int port) {
 void qTabAdvanced::SetStopPort(int port) {
     FILE_LOG(logINFO) << "Setting Stop Port:" << port;
     try {
-        det->setStopPort(port, comboDetector->currentIndex());
+        det->setStopPort(port, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set stop port.", "qTabAdvanced::SetStopPort", this,
                                 &qTabAdvanced::GetStopPort)
 }
@@ -349,7 +349,7 @@ void qTabAdvanced::SetDetectorUDPIP() {
     std::string s = dispDetectorUDPIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Detector UDP IP:" << s;
     try {
-        det->setDetectorIP(s, comboDetector->currentIndex());
+        det->setSourceUDPIP(s, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Detector UDP IP.",
                                 "qTabAdvanced::SetDetectorUDPIP", this,
                                 &qTabAdvanced::GetDetectorUDPIP)
@@ -359,7 +359,7 @@ void qTabAdvanced::SetDetectorUDPMAC() {
     std::string s = dispDetectorUDPMAC->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Detector UDP MAC:" << s;
     try {
-        det->setDetectorMAC(s, comboDetector->currentIndex());
+        det->setSourceUDPMAC(s, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Detector UDP MAC.",
                                 "qTabAdvanced::SetDetectorUDPMAC", this,
                                 &qTabAdvanced::GetDetectorUDPMAC)
@@ -368,8 +368,7 @@ void qTabAdvanced::SetDetectorUDPMAC() {
 void qTabAdvanced::SetCltZMQPort(int port) {
     FILE_LOG(logINFO) << "Setting Client ZMQ Port:" << port;
     try {
-        det->setClientDataStreamingInPort(port,
-                                            comboDetector->currentIndex());
+        det->setClientZmqPort(port, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Client ZMQ port.",
                                 "qTabAdvanced::SetCltZMQPort", this,
                                 &qTabAdvanced::GetCltZMQPort)
@@ -379,7 +378,7 @@ void qTabAdvanced::SetCltZMQIP() {
     std::string s = dispZMQIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Client ZMQ IP:" << s;
     try {
-        det->setClientDataStreamingInIP(s, comboDetector->currentIndex());
+        det->setClientZmqIp(s, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Client ZMQ IP.",
                                 "qTabAdvanced::SetCltZMQIP", this,
                                 &qTabAdvanced::GetCltZMQIP)
@@ -389,19 +388,19 @@ void qTabAdvanced::SetRxrHostname() {
     std::string s = dispZMQIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Receiver Hostname:" << s;
     try {
-        det->setReceiverHostname(s, comboDetector->currentIndex());
+        det->setRxHostname(s, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Client ZMQ IP.",
                                 "qTabAdvanced::SetRxrHostname", this,
                                 &qTabAdvanced::GetRxrHostname)
 
     // update all network widgets (receiver mainly)
-    SetDetector(comboDetector->currentIndex());
+    SetDetector();
 }
 
 void qTabAdvanced::SetRxrTCPPort(int port) {
     FILE_LOG(logINFO) << "Setting Receiver TCP Port:" << port;
     try {
-        det->setReceiverPort(port, comboDetector->currentIndex());
+        det->setReceiverPort(port, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver TCP port.",
                                 "qTabAdvanced::SetRxrTCPPort", this,
                                 &qTabAdvanced::GetRxrTCPPort)
@@ -410,7 +409,7 @@ void qTabAdvanced::SetRxrTCPPort(int port) {
 void qTabAdvanced::SetRxrUDPPort(int port) {
     FILE_LOG(logINFO) << "Setting Receiver UDP Port:" << port;
     try {
-        det->setReceiverUDPPort(port, comboDetector->currentIndex());
+        det->setRxPort(port, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver UDP port.",
                                 "qTabAdvanced::SetRxrUDPPort", this,
                                 &qTabAdvanced::GetRxrUDPPort)
@@ -420,7 +419,7 @@ void qTabAdvanced::SetRxrUDPIP() {
     std::string s = dispRxrUDPIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Receiver UDP IP:" << s;
     try {
-        det->setReceiverUDPIP(s, comboDetector->currentIndex());
+        det->setDestinationUDPIP(s, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver UDP IP.",
                                 "qTabAdvanced::SetRxrUDPIP", this,
                                 &qTabAdvanced::GetRxrUDPIP)
@@ -430,7 +429,7 @@ void qTabAdvanced::SetRxrUDPMAC() {
     std::string s = dispRxrUDPMAC->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
     try {
-        det->setReceiverUDPMAC(s, comboDetector->currentIndex());
+        det->setDestinationUDPMAC(s, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver UDP MAC.",
                                 "qTabAdvanced::SetRxrUDPMAC", this,
                                 &qTabAdvanced::GetRxrUDPMAC)
@@ -439,8 +438,7 @@ void qTabAdvanced::SetRxrUDPMAC() {
 void qTabAdvanced::SetRxrZMQPort(int port) {
     FILE_LOG(logINFO) << "Setting Receiver ZMQ Port:" << port;
     try {
-        det->setReceiverDataStreamingOutPort(port,
-                                               comboDetector->currentIndex());
+        det->setRxZmqPort(port, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver ZMQ port.",
                                 "qTabAdvanced::SetRxrZMQPort", this,
                                 &qTabAdvanced::GetRxrZMQPort)
@@ -450,7 +448,7 @@ void qTabAdvanced::SetRxrZMQIP() {
     std::string s = dispRxrZMQIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
     try {
-        det->setReceiverDataStreamingOutIP(s, comboDetector->currentIndex());
+        det->setRxZmqIP(s, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver ZMQ IP.",
                                 "qTabAdvanced::SetRxrZMQIP", this,
                                 &qTabAdvanced::GetRxrZMQIP)
@@ -459,7 +457,7 @@ void qTabAdvanced::SetRxrZMQIP() {
 void qTabAdvanced::GetROI() {
     FILE_LOG(logDEBUG) << "Getting ROI";
     try {
-        slsDetectorDefs::ROI roi = det->getROI(comboReadout->currentIndex());
+        slsDetectorDefs::ROI roi = det->getROI({comboReadout->currentIndex()})[0];
         spinXmin->setValue(roi.xmin);
         spinXmax->setValue(roi.xmax);     
     } CATCH_DISPLAY ("Could not get ROI.", "qTabAdvanced::GetROI")
@@ -482,7 +480,7 @@ void qTabAdvanced::SetROI() {
     // set roi
     FILE_LOG(logINFO) << "Setting ROI: [" << roi.xmin << ", " << roi.xmax << "]";
     try {
-        det->setROI(roi, comboReadout->currentIndex());
+        det->setROI(roi, {comboReadout->currentIndex()});
     } CATCH_DISPLAY ("Could not set these ROIs.",
                                 "qTabAdvanced::SetROI")
 
@@ -496,7 +494,7 @@ void qTabAdvanced::GetAllTrimbits() {
                SLOT(SetAllTrimbits()));
 
     try {
-        int retval = det->setAllTrimbits(-1);
+        int retval = det->getAllTrimbits({});
         spinSetAllTrimbits->setValue(retval);
     } CATCH_DISPLAY ("Could not get all trimbits.", "qTabAdvanced::GetAllTrimbits")
 
@@ -509,7 +507,7 @@ void qTabAdvanced::SetAllTrimbits() {
     FILE_LOG(logINFO) << "Setting all trimbits:" << value;
 
     try {
-        det->setAllTrimbits(value);
+        det->setAllTrimbits(value, {});
     } CATCH_HANDLE("Could not set all trimbits.", "qTabAdvanced::SetAllTrimbits",
                  this, &qTabAdvanced::GetAllTrimbits)
 }
@@ -520,7 +518,7 @@ void qTabAdvanced::GetNumStoragecells() {
                SLOT(SetNumStoragecells(int)));
 
     try {
-        auto retval = det->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER);
+        auto retval = det->getNumberOfAdditionalStorageCells({}).squash(-1);
         spinNumStoragecells->setValue(retval);
     } CATCH_DISPLAY (
             "Could not get number of additional storage cells.",
@@ -534,7 +532,7 @@ void qTabAdvanced::SetNumStoragecells(int value) {
     FILE_LOG(logINFO) << "Setting number of additional stoarge cells: "
                       << value;
     try {
-        det->setTimer(slsDetectorDefs::STORAGE_CELL_NUMBER, value, -1);
+        det->setNumberOfAdditionalStorageCells(value, {});
     } CATCH_HANDLE (
             "Could not set number of additional storage cells.",
             "qTabAdvanced::SetNumStoragecells", this,
@@ -550,7 +548,7 @@ void qTabAdvanced::GetSubExposureTime() {
 
     try {
         int64_t retval =
-            det->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME);
+            det->getSubExptime({}).squash(-1);
         if (retval == -1) {
             qDefs::Message(qDefs::WARNING,
                            "Subexptime is inconsistent for all detectors.",
@@ -581,8 +579,7 @@ void qTabAdvanced::SetSubExposureTime() {
         << qDefs::getUnitString(
                (qDefs::timeUnit)comboSubExpTimeUnit->currentIndex());
     try {
-        det->setTimer(slsDetectorDefs::SUBFRAME_ACQUISITION_TIME,
-                        (int64_t)timeNS, -1);
+        det->setSubExptime((int64_t)timeNS, {});
     } CATCH_DISPLAY ("Could not set sub exposure time.",
                                 "qTabAdvanced::SetSubExposureTime")
 
@@ -597,7 +594,7 @@ void qTabAdvanced::GetSubDeadTime() {
                SLOT(SetSubDeadTime()));
 
     try {
-        int64_t retval = det->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME);
+        int64_t retval = det->getSubDeadTime({}).squash(-1);
         if (retval == -1) {
             qDefs::Message(qDefs::WARNING,
                            "Sub dead time is inconsistent for all detectors.",
@@ -629,8 +626,7 @@ void qTabAdvanced::SetSubDeadTime() {
         << qDefs::getUnitString(
                (qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex());
     try {
-        det->setTimer(slsDetectorDefs::SUBFRAME_DEADTIME, (int64_t)timeNS,
-                        -1);
+        det->setSubDeadTime((int64_t)timeNS, {});
     } CATCH_DISPLAY ("Could not set sub dead time.",
                                 "qTabAdvanced::SetSubDeadTime")
 								
@@ -646,7 +642,7 @@ void qTabAdvanced::Refresh() {
     }
 
     // update all network widgets
-    SetDetector(comboDetector->currentIndex());
+    SetDetector();
 
     // roi
     if (tab_roi->isEnabled()) {

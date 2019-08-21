@@ -12,8 +12,9 @@ class detectorData;
 #include "Detector.h"
 
 class QResizeEvent;
-
 #include <QFutureWatcher>
+
+#include <mutex>
 
 class qDrawPlot : public QWidget, private Ui::PlotObject {
     Q_OBJECT

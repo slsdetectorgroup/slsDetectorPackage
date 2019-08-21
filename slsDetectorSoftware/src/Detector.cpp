@@ -254,14 +254,14 @@ void Detector::setTimingMode(defs::timingMode value, Positions pos) {
 void Detector::acquire() { pimpl->acquire(); }
 
 void Detector::startAcquisition() {
-    if (getUseReceiverFlag({}).squash())
+    if (getUseReceiverFlag({}).squash(true))
         pimpl->Parallel(&slsDetector::startReceiver, {});
     pimpl->Parallel(&slsDetector::startAcquisition, {});
 }
 
 void Detector::stopAcquisition() {
     pimpl->Parallel(&slsDetector::stopAcquisition, {});
-    if (getUseReceiverFlag({}).squash()) // TODO: problem for acquire()
+    if (getUseReceiverFlag({}).squash(true)) 
         pimpl->Parallel(&slsDetector::stopReceiver, {});
 }
 

@@ -15,7 +15,7 @@ public slots:
 	void Refresh();
 
 private slots:
-	void SetDetector(int index);
+	void SetDetector();
 	void SetControlPort(int port);
 	void SetStopPort(int port);
 	void SetDetectorUDPIP();

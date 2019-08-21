@@ -50,12 +50,12 @@ qDrawPlot::~qDrawPlot() {
 }
 
 void qDrawPlot::SetupWidgetWindow() {
-    detType = det->getDetectorTypeAsEnum();
+    detType = det->getDetectorType().squash();
     // save
     try {
-        std::string temp = det->getFilePath();
+        std::string temp = det->getFilePath().squash("/tmp/");
         fileSavePath = QString(temp.c_str());
-        temp = det->getFileName();
+        temp = det->getFileNamePrefix().squash("xxx");
         fileSaveName = QString(temp.c_str());
     } catch (const std::exception &e) {
         qDefs::ExceptionMessage("Could not get file path or file name.", e.what(), "qDrawPlot::SetupWidgetWindow");
@@ -81,7 +81,7 @@ void qDrawPlot::SetupPlots() {
     setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
  
     // default image size
-    slsDetectorDefs::xy res = det->getNumberOfChannels();
+    slsDetectorDefs::xy res = det->getDetectorSize();
     nPixelsX = res.x;
     nPixelsY = res.y;
     switch(detType) {
@@ -91,12 +91,16 @@ void qDrawPlot::SetupPlots() {
         nPixelsY = npixelsy_jctb;
         break;
     case slsDetectorDefs::EIGER:
-        if (det->getQuad()) {
-            nPixelsX /= 2;
-            nPixelsY *= 2;
-            if (nPixelsX != nPixelsY) {
-                --nPixelsX;
+        try{
+            if (det->getQuad().tsquash("Inconsistent values for quad type")) {
+                nPixelsX /= 2;
+                nPixelsY *= 2;
+                if (nPixelsX != nPixelsY) {
+                    --nPixelsX;
+                }
             }
+        } catch (const std::exception &e) {
+            qDefs::ExceptionMessage("Could not get quad.", e.what(), "qDrawPlot::SetupPlots");
         }
         break;
     default:
@@ -529,25 +533,13 @@ void qDrawPlot::StartAcquisition() {
     progress = 0;
     currentFrame = 0;
     boxPlot->setTitle("Old Plot");
-    // check acquiring flag (from previous exit) or if running
-    try{
-        if (det->getAcquiringFlag()) {
-            if (det->getRunStatus() != slsDetectorDefs::IDLE) {
-                qDefs::Message(qDefs::WARNING, "Could not start acquisition as it is already in progress.\nClick start when finished.", "qDrawPlot::StartAcquisition");
-                emit AbortSignal();
-                return;
-            } else {
-                det->setAcquiringFlag(false);
-            }
+    det->clearAcquiringFlag(); // (from previous exit) or if running
 
-        }
-    } CATCH_DISPLAY("Could not get detector stats.", "qDrawPlot::StartAcquisition");
-   
     // ensure data streaming in receiver (if plot enabled)
     if (isPlot) {
         try {
-           if (det->enableDataStreamingFromReceiver() != 1) {
-               det->enableDataStreamingFromReceiver(1);
+           if (!det->getRxZmqDataStream().squash(false)) {
+               det->setRxZmqDataStream(true);
            }
         } CATCH_DISPLAY("Could not enable data streaming in Receiver.", "qDrawPlot::StartAcquisition");
     }
@@ -574,7 +566,6 @@ void qDrawPlot::AcquireFinished() {
         qDefs::ExceptionMessage("Acquire unsuccessful.", mess, "qDrawPlot::AcquireFinished");
         try{
             det->stopAcquisition();
-            det->stopReceiver();
         } CATCH_DISPLAY("Could not stop acquisition and receiver.", "qDrawPlot::AcquireFinished");
         emit AbortSignal();
     }

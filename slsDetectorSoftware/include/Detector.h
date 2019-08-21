@@ -236,7 +236,7 @@ class Detector {
      */
     void stopAcquisition();
 
-    /**
+    /** TODO: initially was getting acq flag, if set, check if detctor idle, then set, else exception & abort
      * Clears the acquiring flag. This has to be done manually
      * after an acquisition was aborted.
      */

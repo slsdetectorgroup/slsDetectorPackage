@@ -10,7 +10,7 @@
  */
 
 #include <memory>
-
+#include <atomic>
 #include "ThreadObject.h"
 
 class GeneralData;
@@ -39,7 +39,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param depaden pointer to deactivated padding enable
 	 * @param sm pointer to silent mode
 	 */
-	Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
+	Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>* s,
 	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
 	        int64_t* us, int64_t* as, uint32_t* fpf,
 			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
@@ -151,7 +151,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetHardCodedPosition(uint16_t r, uint16_t c);
 
 
-
  private:
 
 	/**
@@ -201,7 +200,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	static const std::string TypeName;
 
 	/** Object running status */
-	bool runningFlag;
+	std::atomic<bool> runningFlag;
 
 	/** GeneralData (Detector Data) object */
 	GeneralData* generalData;
@@ -214,7 +213,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	detectorType myDetectorType;
 
 	/** Receiver Status */
-	runStatus* status;
+	std::atomic<runStatus>* status;
 
 	/** UDP Socket - Detector to Receiver */
 	std::unique_ptr<genericSocket> udpSocket;
@@ -264,10 +263,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
 	// acquisition start
 	/** Aquisition Started flag */
-	bool acquisitionStartedFlag;
+	std::atomic<bool> acquisitionStartedFlag;
 
 	/** Measurement Started flag */
-	bool measurementStartedFlag;
+	std::atomic<bool> measurementStartedFlag;
 
 	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
 	uint64_t firstAcquisitionIndex;
@@ -278,10 +277,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
 	// for acquisition summary
 	/** Number of complete Packets caught for each real time acquisition (eg. for each scan (start& stop of receiver)) */
-	volatile uint64_t numPacketsCaught;
+	std::atomic<uint64_t> numPacketsCaught;
 
 	/** Last Frame Index caught  from udp network */
-	uint64_t lastCaughtFrameIndex;
+	std::atomic<uint64_t> lastCaughtFrameIndex;
 
 
 	// parameters to acquire image
@@ -300,11 +299,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	std::unique_ptr<char []> listeningPacket;
 
 	/** if the udp socket is connected */
-	bool udpSocketAlive;
+	std::atomic<bool> udpSocketAlive;
 
     /** Semaphore to synchonize deleting udp socket */
     sem_t semaphore_socket;
-
 
 	// for print progress during acqusition
 	/** number of packets for statistic */

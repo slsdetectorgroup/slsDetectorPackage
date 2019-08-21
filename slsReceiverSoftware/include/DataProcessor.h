@@ -17,6 +17,7 @@ class File;
 class DataStreamer;
 
 #include <vector>
+#include <atomic>
 
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	
@@ -310,7 +311,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	static const std::string TypeName;
 
     /** Object running status */
-    bool runningFlag;
+    std::atomic<bool> runningFlag;
 
 	/** GeneralData (Detector Data) object */
 	const GeneralData* generalData;

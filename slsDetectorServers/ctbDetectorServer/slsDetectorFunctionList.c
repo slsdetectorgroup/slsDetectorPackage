@@ -2432,12 +2432,12 @@ uint32_t checkDataInFifo() {
 	uint32_t dataPresent = 0;
 	if (analogEnable) {
 		uint32_t analogFifoEmpty = bus_r(FIFO_EMPTY_REG);
-		FILE_LOG(logDEBUG2, ("Analog Fifo Empty (32 channels): 0x%x\n", analogFifoEmpty));
+		FILE_LOG(logINFO, ("Analog Fifo Empty (32 channels): 0x%08x\n", analogFifoEmpty));
 		dataPresent = (~analogFifoEmpty);
 	}
 	if (!dataPresent && digitalEnable) {
 		int digitalFifoEmpty = ((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
-		FILE_LOG(logDEBUG2, ("Digital Fifo Empty: %d\n",digitalFifoEmpty));
+		FILE_LOG(logINFO, ("Digital Fifo Empty: %d\n",digitalFifoEmpty));
 		dataPresent = (digitalFifoEmpty ? 0 : 1);
 	}
     FILE_LOG(logDEBUG2, ("Data in Fifo :0x%x\n", dataPresent));

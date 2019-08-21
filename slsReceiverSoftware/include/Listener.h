@@ -11,7 +11,6 @@
 
 #include <memory>
 #include <atomic>
-#include <mutex>
 #include "ThreadObject.h"
 
 class GeneralData;
@@ -317,7 +316,5 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * to get first packet number as 0
      * (pecific to gotthard, can vary between modules, hence defined here) */
     bool oddStartingPacket;
-
-	std::mutex socket_access;
 };
 

@@ -353,19 +353,19 @@ In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from
 \begin{table} 
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-\tiny{GbE} & \tiny{dynamic range} & \tiny{continuos maximum frame rate(Hz)} & \tiny{minimum period ($\mu$s)}& \tiny{time to send out data ($\mu$s)}\\
+\tiny{GbE} & \tiny{dynamic range} & \tiny{continuos maximum frame rate(Hz)} & \tiny{minimum period ($\mu$s)}& \tiny{calculated/measered time to send out data ($\mu$s)}\\
 \hline
 1 & 16 &  \textbf{256} & 3901 & \\ 
 \hline 
 1 &  32 &  \textbf{128} & 7820 & \\
 \hline 
-10 & 4 & \textbf{10240} & 98 & 100\\
+10 & 4 & \textbf{10240} & 98 & 105/128\\
 \hline 
-10 & 8 & \textbf{5120} & 196 & 200\\
+10 & 8 & \textbf{5120} & 196 & 210/250\\
 \hline
-10 & 16 & \textbf{2560} & 391 & 400\\  
+10 & 16 & \textbf{2560} & 391 & 420/490\\  
 \hline 
-10 & 32 & \textbf{1280} & 782 & 800\\  
+10 & 32 & \textbf{1280} & 782 & 840/977\\  
 \hline 
 \end{tabular}
 \caption{Frame rate limits for the CONTINUOS streaming out of images, i.e. the data rate out is just below 1Gb/s or 10Gb/s. 1280~Hz for 32-bit, 10GbE is obtained from the 10GbE limitation. The maximum achievable frame rate is 977~Hz.} 
@@ -794,9 +794,23 @@ Transmission delays should be chosen only to accomodate the writing speed of the
 Table~\ref{tcont} gives the times that are needed to transfer 1 images out of the 10~Gb Ethernet connection. This reflects the CONTINUOS frame rate achieavable. The disk speed can be monitored with {\tt{dstat}}. One you have worked out this, you can calculated the {\tt{txndelay\_frame}} delay as:
 
 \begin{equation}
- {\tt{txndelay\_frame}}=-tsending+dr \cdot \frac{4*256*256*N\_half\_modules}{1024 \cdot 1000 \cdot disk\_speed [MB/s]}
+ {\tt{txndelay\_frame}}=-t_sending+dr \cdot \frac{4*256*256*N\_half\_modules}{1024 \cdot 1000 \cdot disk\_speed [MB/s] \cdot 8}
 \end{equation}
-In 4-bit mode, for a disk seed of 320MB/s, the  {\tt{txndelay\_frame}} is 300~$\mu$s (30000 to be set up to the detector). The sending time is 100~$\mu$s, such that an total ackievable writing sped of 1/400~$\mu$s (2.5~kHz) in achieved.  
+In 4-bit mode, for a disk seed of 320MB/s, the  {\tt{txndelay\_frame}} is 300~$\mu$s (30000 to be set up to the detector). The sending time is 100~$\mu$s, such that an total ackievable writing speed of 1/400~$\mu$s (2.5~kHz) in achieved.  
+
+Note that:
+\begin{enumerate}
+\item The continuos frame rate goes down when transmission delays are introduced:
+\begin{equation}
+continuos\_frame\_rate= \frac{1}{\tt{txndelay\_frame}+t\_sending}
+\end{equation}
+\item If your transmission delays reduce the continuos frame rate, you will saturate the memory on board at some point and you will corrupt images.  Conservatively, we say that the number of maximum images in buffered mode is the one listed in table~\ref{timgs}, call N\_images. However, one can approximately say that (and here we need to test more, so do not believe to these numbers yet), 
+\begin{equation}
+N\_tot\_images= N\_images+\frac{ N\_images}{frame\_rate \cdot (t\_delay\_frame + t\_sending) } 
+\end{equation}
+
+\end{enumerate}
+
 
 \section{Setting up the PC settings for 10Gb}\label{10g}
 
@@ -818,12 +832,8 @@ ethtool -G xth1 rx 4096 #or wheterver is the max number for your pc
 ethtool -C xth1 rx-usecs 100 
 ethtool -A xth1 rx on
 \end{verbatim}
-where {\tt{xth1}} can be replaced with the correct 10Gb device. To minimise loosing packets, priorities are set better as root user, so have the receiver as root.
-To try to bypass being root, we trued something like this:
-\begin{verbatim}
-/etc/security/limits.conf  username – rtprio 99
-\end{verbatim}
-but somehow it did  not fully worked  so we kept the trick of being root.
+where {\tt{xth1}} can be replaced with the correct 10Gb device.
+NOTE THAT THIS SETTINGS WILL BE LOST IF YOU REBOOT THE COMPUTER.
 
 Very important is to activate the flow control in 10Gb (in 1Gb it is on by default and not configurable)
 \begin{verbatim}
@@ -857,9 +867,17 @@ to make the settings permanent, edit /etc/sysctl.conf:
  \begin{verbatim}
 # 100MiB
 net.core.rmem_max = 104857600
+net.core.rmem_default= 104857600
 net.core.netdev_max_backlog = 250000
 \end{verbatim}
 and run \textbf{sysctl -p}.
+
+To minimise loosing packets, priorities are set better as root user, so have the receiver as root.
+To try to bypass being root, we trued something like this:
+\begin{verbatim}
+/etc/security/limits.conf  username – rtprio 99
+\end{verbatim}
+but somehow it did  not fully worked  so we kept the trick of being root.
 
 Last, you can disable power saving in the CPU frequency (chose the appropriate command for your system):
 \begin{verbatim}
@@ -894,9 +912,6 @@ or
 mount -t tmpfs none /mnt/ramdisk -o size=10G
 \end{verbatim}
 check how many GB memory you can allocate, to avoid swapping otherwise
-
-
-
 
 \section{Offline processing and monitoring}
 
@@ -935,19 +950,22 @@ If you use the option of writing raw files, you will have a raw file for each UD
 The master file is named: {\tt{filename\_master\_0.raw}} and for version ``4.0.0'' of the slsDetectorSoftware looks like:
  
 \begin{verbatim}
-Version                    : 2.0
+Version                    : 4.0
+Detector Type              : 3
 Dynamic Range              : 32
 Ten Giga                   : 1
 Image Size                 : 524288 bytes
-x                          : 512 pixels
-y                          : 256 pixels
-Max. Frames Per File       : 10000
-Total Frames               : 1
-Exptime (ns)               : 1000000000
+nPixelsX                   : 512 pixels
+nPixelsY                   : 256 pixels
+Max Frames Per File        : 10000
+Total Frames               : 3
+Exptime (ns)               : 10000000
 SubExptime (ns)            : 2621440
 SubPeriod(ns)              : 2621440
-Period (ns)                : 1000000000
-Timestamp                  : Mon Sep  3 09:07:05 2018
+Period (ns)                : 0
+Gap Pixels Enable          : 0
+Quad Enable                : 0
+Timestamp                  : Wed Aug 21 16:30:20 2019
 
 
 #Frame Header
@@ -957,9 +975,9 @@ Packet Number              : 4 bytes
 Bunch ID                   : 8 bytes
 Timestamp                  : 8 bytes
 Module Id                  : 2 bytes
-X Coordinate               : 2 bytes
-Y Coordinate               : 2 bytes
-Z Coordinate               : 2 bytes
+Row                        : 2 bytes
+Column                     : 2 bytes
+Reserved                   : 2 bytes
 Debug                      : 4 bytes
 Round Robin Number         : 2 bytes
 Detector Type              : 1 byte
@@ -972,15 +990,15 @@ Note that if one wants to  reconstruct the real time the detector was acquiring 
 \subsection{Offline image reconstruction}
 The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. The code is still available doing \\
 {\tt{git clone git@git.psi.ch:sls\_detectors\_software/sls\_image\_reconstruction.git slsImageReconstruction}}.
-Checkout the {\tt{developer}} branch if in a 3.1.X release or the {\tt{v4.0.0}} branch if in 4.0.X release of the {\tt{slsDetector}} code.
+Checkout the {\tt{developer}} branch if in a 3.1.X release, the {\tt{v4.0.0}} branch if in 4.0.X release, or the {\tt{v4.1}} branch if in 4.1.X release of the {\tt{slsDetector}} code.
 
 Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5} and \textbf{root} format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 
-Note that the number of images per file is hardcoded and needs to match whatever you are using in {\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}:
+Note that the number of images per file in the 3.1.X release is hardcoded and needs to match whatever you are using in {\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}:
 \begin{verbatim}
 #define EIGER_MAX_FRAMES_PER_FILE	2000
 \end{verbatim}
-The default is 2000.
+The default is 2000 in the 3.1.X release. The default has been changed to 10000 frm realease 4.0.X and now this is picked up automatically without doing anything. 
 
 \subsubsection{cbf}
 The cbf executable executable uses the CBFlib-0.9.5 library (downloaded from the web as it downloads architecture dependent packages at installation).Edit the Makefile to correclty point at it.\\

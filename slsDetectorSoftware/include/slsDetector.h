@@ -322,7 +322,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * Returns the total number of channels including gap pixels
      * @returns the total number of channels including gap pixels
      */
-    slsDetectorDefs::xy getNumberOfChannels() const;  
+    slsDetectorDefs::xy getNumberOfChannels() const;
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)
@@ -336,7 +336,7 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void setQuad(const bool enable);
 
-	/**
+    /**
      * Set number of rows to read out (Only for Eiger)
      * @param value number of lines
      */
@@ -353,7 +353,6 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param det detector size
      */
     void updateMultiSize(slsDetectorDefs::xy det);
-
 
     int setControlPort(int port_number);
 
@@ -557,7 +556,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * Set/get timer value (not all implemented for all detectors)
      * @param index timer index
      * @param t time in ns or number of...(e.g. frames, probes)
-     * @returns timer set value in ns or number of...(e.g. frames, 
+     * @returns timer set value in ns or number of...(e.g. frames,
      * probes)
      */
     int64_t setTimer(timerIndex index, int64_t t = -1);
@@ -567,7 +566,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * detectors)
      * @param index timer index
      * @param t time in ns or number of...(e.g. frames, probes)
-     * @returns timer set value in ns or number of...(e.g. frames,      
+     * @returns timer set value in ns or number of...(e.g. frames,
      * probes)
      */
     int64_t getTimeLeft(timerIndex index) const;
@@ -585,7 +584,7 @@ class slsDetector : public virtual slsDetectorDefs {
     int setSpeed(speedVariable sp, int value = -1, int mode = 0);
 
     /**
-     * Set/get dynamic range 
+     * Set/get dynamic range
      * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
      * 1)
      * @param i dynamic range (-1 get)
@@ -1007,7 +1006,7 @@ class slsDetector : public virtual slsDetectorDefs {
     void setROI(slsDetectorDefs::ROI arg);
 
     /**
-     *  Send ROI from shared memory to Receiver (Gotthard) 
+     *  Send ROI from shared memory to Receiver (Gotthard)
      */
     void sendROItoReceiver();
 
@@ -1701,31 +1700,30 @@ class slsDetector : public virtual slsDetectorDefs {
     void sendToDetectorStop(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size);
 
-	void sendToDetectorStop(int fnum, const void *args, size_t args_size,
+    void sendToDetectorStop(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) const;
 
     template <typename Arg, typename Ret>
     void sendToDetectorStop(int fnum, const Arg &args, Ret &retval);
 
-	template <typename Arg, typename Ret>
+    template <typename Arg, typename Ret>
     void sendToDetectorStop(int fnum, const Arg &args, Ret &retval) const;
 
     template <typename Arg>
     void sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t);
 
-	template <typename Arg>
+    template <typename Arg>
     void sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t) const;
 
     template <typename Ret>
     void sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval);
 
-	template <typename Ret>
+    template <typename Ret>
     void sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) const;
 
     void sendToDetectorStop(int fnum);
 
-	void sendToDetectorStop(int fnum) const;
-	
+    void sendToDetectorStop(int fnum) const;
 
     /**
      * Send function parameters to receiver
@@ -1738,30 +1736,30 @@ class slsDetector : public virtual slsDetectorDefs {
     void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size);
 
-	void sendToReceiver(int fnum, const void *args, size_t args_size,
+    void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size) const;
 
     template <typename Arg, typename Ret>
     void sendToReceiver(int fnum, const Arg &args, Ret &retval);
 
-	template <typename Arg, typename Ret>
+    template <typename Arg, typename Ret>
     void sendToReceiver(int fnum, const Arg &args, Ret &retval) const;
 
     template <typename Arg>
     void sendToReceiver(int fnum, const Arg &args, std::nullptr_t);
 
-	template <typename Arg>
+    template <typename Arg>
     void sendToReceiver(int fnum, const Arg &args, std::nullptr_t) const;
 
     template <typename Ret>
     void sendToReceiver(int fnum, std::nullptr_t, Ret &retval);
 
-	template <typename Ret>
+    template <typename Ret>
     void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
 
     void sendToReceiver(int fnum);
 
-	void sendToReceiver(int fnum) const;
+    void sendToReceiver(int fnum) const;
 
     /**
      * Get Detector Type from Shared Memory (opening shm without verifying size)

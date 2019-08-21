@@ -20,8 +20,8 @@ class Detector {
   public:
     /**
      * @param shm_id detector shared memory id
-     * Default value is 0. Can be set to more values for 
-     * multiple detectors.It is important only if you 
+     * Default value is 0. Can be set to more values for
+     * multiple detectors.It is important only if you
      * are controlling multiple detectors from the same pc.
      */
     Detector(int shm_id = 0);
@@ -67,7 +67,8 @@ class Detector {
 
     Result<defs::xy> getModuleSize(Positions pos = {}) const;
 
-    /** Gets the actual full detector size. It is the same even if ROI changes */
+    /** Gets the actual full detector size. It is the same even if ROI changes
+     */
     defs::xy getDetectorSize() const;
 
     /**
@@ -81,8 +82,6 @@ class Detector {
 
     /** [Jungfrau][Gotthard] */
     void setSettings(defs::detectorSettings value, Positions pos = {});
-
-
 
     /**************************************************
      *                                                *
@@ -174,9 +173,7 @@ class Detector {
      * [Gotthard, Jungfrau, CTB Options: AUTO_TIMING, TRIGGER_EXPOSURE]
      * [Eiger Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER]
      */
-    void setTimingMode(defs::timingMode value,
-                       Positions pos = {});
-
+    void setTimingMode(defs::timingMode value, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -190,16 +187,18 @@ class Detector {
      */
     void acquire();
 
-    /** Non blocking 
+    /** Non blocking
      * Starts the reciever (if enabled) and then the detector
-     * You have to check detector status until it is idle before you call stopACquisition
-     * 
-    */
+     * You have to check detector status until it is idle before you call
+     * stopACquisition
+     *
+     */
     void startAcquisition();
 
     /**
      * Stops detector acquisition and then receiver (if enabled)
-     * If no receiver enabled, you can skip this for normal acquisition (no abort)
+     * If no receiver enabled, you can skip this for normal acquisition (no
+     * abort)
      */
     void stopAcquisition();
 
@@ -224,20 +223,19 @@ class Detector {
     /** [Eiger] Sends an internal software trigger to the detector */
     void sendSoftwareTrigger(Positions pos = {});
 
-    //TODO: remove resetframescaught in receiver
-
+    // TODO: remove resetframescaught in receiver
 
     /**************************************************
      *                                                 *
      *    Network Configuration (Detector<->Receiver)  *
      *                                                 *
      * ************************************************/
-    
-    /** Configures the destination for UDP packets in the detector 
+
+    /** Configures the destination for UDP packets in the detector
      * Needed only if you use a custom receiver (not slsReceiver)
      * as it is already included in setReceiverHostname.
-    */
-    void configureMAC(Positions pos = {});//TODO: find a reasonable name
+     */
+    void configureMAC(Positions pos = {}); // TODO: find a reasonable name
 
     /** [Jungfrau] */
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
@@ -258,12 +256,12 @@ class Detector {
     Result<IpAddr> getSourceUDPIP(Positions pos = {}) const;
 
     /* For Eiger 1G, the detector will replace with its own DHCP IP
-     * 10G Eiger and other detectors, the source UDP IP must be in the 
+     * 10G Eiger and other detectors, the source UDP IP must be in the
      * same subnet of the destination UDP IP
      */
     void setSourceUDPIP(const std::string &ip, Positions pos = {});
 
-   /** [Jungfrau] bottom half */
+    /** [Jungfrau] bottom half */
     Result<IpAddr> getSourceUDPIP2(Positions pos = {}) const;
 
     /** [Jungfrau] bottom half */
@@ -275,7 +273,7 @@ class Detector {
      * For Eiger 10G, the detector will replace with its own DHCP MAC + 1
      * Others can be anything (beware of certain bits)
      */
-    
+
     void setSourceUDPMAC(const std::string &mac, Positions pos = {});
 
     /** [Jungfrau] bottom half */
@@ -294,13 +292,13 @@ class Detector {
 
     /** [Jungfrau bottom half] */
     void setDestinationUDPIP2(const std::string &ip, Positions pos = {});
-    
+
     Result<MacAddr> getDestinationUDPMAC(Positions pos = {}) const;
 
-    /** MAC of the interface in receiver that the detector sends data to 
+    /** MAC of the interface in receiver that the detector sends data to
      * Only needed if you use a custom receiver (not slsReceiver)
      * Must be followed by configuremac.
-    */
+     */
     void setDestinationUDPMAC(const std::string &mac, Positions pos = {});
 
     /** [Jungfrau bottom half] */
@@ -311,15 +309,18 @@ class Detector {
 
     Result<int> getDestinationUDPPort(Positions pos = {}) const;
 
-    /** module_id is -1 for all detectors, ports for each module is calculated (increments) */
-    //TODO if Parallel takes a vector, can send multiple vaues to set in slsdetector.cp
+    /** module_id is -1 for all detectors, ports for each module is calculated
+     * (increments) */
+    // TODO if Parallel takes a vector, can send multiple vaues to set in
+    // slsdetector.cp
     void setDestinationUDPPort(int port, int module_id = -1);
 
     /** [Eiger right port][Jungfrau bottom half] */
     Result<int> getDestinationUDPPort2(Positions pos = {}) const;
 
     /** [Eiger right port][Jungfrau bottom half]
-     * module_id is -1 for all detectors, ports for each module is calculated (increments)
+     * module_id is -1 for all detectors, ports for each module is calculated
+     * (increments)
      */
     void setDestinationUDPPort2(int port, int module_id = -1);
 
@@ -342,9 +343,9 @@ class Detector {
 
     /**
      * [Jungfrau]: Sets the transmission delay of the first UDP packet being
-     * streamed out of the module. Options: 0 - 31, each value represenets 1 ms 
-     * [Eiger]: Sets the transmission delay of entire frame streamed out for both
-     * left and right UDP ports. Options: //TODO possible values
+     * streamed out of the module. Options: 0 - 31, each value represenets 1 ms
+     * [Eiger]: Sets the transmission delay of entire frame streamed out for
+     * both left and right UDP ports. Options: //TODO possible values
      */
     void setTransmissionDelayFrame(int value, Positions pos = {});
 
@@ -367,7 +368,6 @@ class Detector {
      * port
      */
     void setTransmissionDelayRight(int value, Positions pos = {});
-
 
     /**************************************************
      *                                                *
@@ -412,8 +412,8 @@ class Detector {
      * discard partial frames is the fastest
      */
     void setRxFrameDiscardPolicy(defs::frameDiscardPolicy f,
-                                       Positions pos = {});
-                                       
+                                 Positions pos = {});
+
     Result<bool> getPartialFramesPadding(Positions pos = {}) const;
 
     /** padding enabled. Disabling padding is the fastest */
@@ -421,12 +421,11 @@ class Detector {
 
     Result<int64_t> getRxUDPSocketBufferSize(Positions pos = {}) const;
 
-    void setRxUDPSocketBufferSize(int64_t udpsockbufsize,
-                                        Positions pos = {});
-    /** TODO: 
-     * Linux kernel allocates twice the amount you set for bookkeeping purposes */
-    Result<int64_t>
-    getRxRealUDPSocketBufferSize(Positions pos = {}) const;
+    void setRxUDPSocketBufferSize(int64_t udpsockbufsize, Positions pos = {});
+    /** TODO:
+     * Linux kernel allocates twice the amount you set for bookkeeping purposes
+     */
+    Result<int64_t> getRxRealUDPSocketBufferSize(Positions pos = {}) const;
 
     Result<bool> getRxLock(Positions pos = {});
 
@@ -434,7 +433,6 @@ class Detector {
     void setRxLock(bool value, Positions pos = {});
 
     Result<std::string> getRxLastClientIP(Positions pos = {}) const;
-
 
     /**************************************************
      *                                                *
@@ -453,10 +451,10 @@ class Detector {
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
 
-    /** default run 
-     * File Name: [file name prefix]_d[module index]_f[file index]_[acquisition index].[file format]
-     * eg. run_d0_f0_5.raw
-    */
+    /** default run
+     * File Name: [file name prefix]_d[module index]_f[file index]_[acquisition
+     * index].[file format] eg. run_d0_f0_5.raw
+     */
     void setFileNamePrefix(const std::string &fname, Positions pos = {});
 
     Result<int> getAcquisitonIndex(Positions pos = {}) const;
@@ -483,13 +481,12 @@ class Detector {
     /** 0 will set frames per file to unlimited */
     void setFramesPerFile(int n, Positions pos = {});
 
-
     /**************************************************
      *                                                *
      *    ZMQ Streaming Parameters (Receiver<->Client)*
      *                                                *
      * ************************************************/
-    //TODO callback functions
+    // TODO callback functions
 
     Result<bool> getRxZmqDataStream(Positions pos = {}) const;
 
@@ -501,7 +498,8 @@ class Detector {
      * If 0, streaming timer is the timeout,
      * after which current frame sent out. Default is 0 at 200 ms.
      * Default is 1: send every frame.
-     * If you want just to see some frames for gui purposes, set to 0 (200ms default timer).
+     * If you want just to see some frames for gui purposes, set to 0 (200ms
+     * default timer).
      */
     void setRxZmqFrequency(int freq, Positions pos = {});
 
@@ -516,29 +514,28 @@ class Detector {
     Result<int> getRxZmqPort(Positions pos = {}) const;
 
     /**
-     * module_id is -1 for all detectors, ports for each module is calculated (increments)
-     * Restarts receiver zmq sockets only if it was already enabled
+     * module_id is -1 for all detectors, ports for each module is calculated
+     * (increments) Restarts receiver zmq sockets only if it was already enabled
      */
     void setRxZmqPort(int port, int module_id = -1);
 
     Result<std::string> getRxZmqIP(Positions pos = {}) const;
 
-    void setRxZmqIP(const std::string &ip,
-                                       Positions pos = {});
+    void setRxZmqIP(const std::string &ip, Positions pos = {});
 
     Result<int> getClientZmqPort(Positions pos = {}) const;
-    
+
     /**
-     * Needed only when using the client call back to get reconstructed data from multi modules
-     * module_id is -1 for all detectors, ports for each module is calculated (increments)
-     * Restarts client zmq sockets oonly if it was already enabled
+     * Needed only when using the client call back to get reconstructed data
+     * from multi modules module_id is -1 for all detectors, ports for each
+     * module is calculated (increments) Restarts client zmq sockets oonly if it
+     * was already enabled
      */
     void setClientZmqPort(int port, int module_id = -1);
 
     Result<std::string> getClientZmqIp(Positions pos = {}) const;
 
     void setClientZmqIp(const std::string &ip, Positions pos = {});
-
 
     /**************************************************
      *                                                *
@@ -629,7 +626,8 @@ class Detector {
 
     /** //TODO: default, get, set
      * [Eiger] Set Rate correction
-     * 0 disable correction, < 0: default dead time from trimbit file, > 0 custom deadtime (advanced)
+     * 0 disable correction, < 0: default dead time from trimbit file, > 0
+     * custom deadtime (advanced)
      */
     void setRateCorrection(ns dead_time, Positions pos = {});
 
@@ -669,15 +667,15 @@ class Detector {
     /** [Eiger] Advanced */
     Result<bool> getPartialReset(Positions pos = {}) const;
 
-    /** [Eiger] Advanced 
+    /** [Eiger] Advanced
      * used for pulsing chips */
     void setPartialReset(bool enable, Positions pos = {});
 
-    /** [Eiger] Advanced 
+    /** [Eiger] Advanced
      * Pulse Pixel n times at x and y coordinates */
     void pulsePixel(int n, defs::xy pixel, Positions pos = {});
 
-    /** [Eiger] Advanced 
+    /** [Eiger] Advanced
      * Pulse Pixel n times and move by a relative value of x and y
      * coordinates */
     void pulsePixelNMove(int n, defs::xy pixel, Positions pos = {});
@@ -691,7 +689,6 @@ class Detector {
 
     /** [Eiger] with specific quad hardware */
     void setQuad(const bool enable);
-
 
     /**************************************************
      *                                                *
@@ -735,10 +732,12 @@ class Detector {
 
     /** [Jungfrau] Advanced
      * //TODO naming
-     * By default, the on-chip gain switching is active during the entire exposure.
-     * This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). */
+     * By default, the on-chip gain switching is active during the entire
+     * exposure. This mode disables the on-chip gain switching comparator
+     * automatically after 93.75% of exposure time (only for longer than 100us).
+     */
     void setAutoCompDisable(bool value, Positions pos = {});
-    
+
     /** [Jungfrau] Advanced TODO naming */
     Result<int64_t> getNumberOfAdditionalStorageCells() const;
 
@@ -748,8 +747,8 @@ class Detector {
     /** [Jungfrau] Advanced */
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
-    /** [Jungfrau] Advanced. Sets the storage cell storing the first acquisition of the
-     * series. Options: 0-15
+    /** [Jungfrau] Advanced. Sets the storage cell storing the first acquisition
+     * of the series. Options: 0-15
      */
     void setStoragecellStart(int cell, Positions pos = {});
 
@@ -759,7 +758,6 @@ class Detector {
     /** [Jungfrau] Advanced
      * Options: (0-1638375 ns (resolution of 25ns) */
     void setStorageCellDelay(ns value, Positions pos = {});
-
 
     /**************************************************
      *                                                *
@@ -778,7 +776,8 @@ class Detector {
      */
     void setROI(defs::ROI value, int moduleId);
 
-    /** [Gotthard] TODO: check with jiaguo if he needs any of these functions // TODO remove */
+    /** [Gotthard] TODO: check with jiaguo if he needs any of these functions //
+     * TODO remove */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
 
     /** [Gotthard] TODO remove */
@@ -795,7 +794,8 @@ class Detector {
     /** [Gotthard] */
     Result<int> getImageTestMode(Positions pos = {});
 
-    /** [Gotthard] If 1, adds channel intensity with precalculated values. Default is 0 */
+    /** [Gotthard] If 1, adds channel intensity with precalculated values.
+     * Default is 0 */
     Result<int> setImageTestMode(const int value, Positions pos = {});
 
     /**************************************************
@@ -819,8 +819,8 @@ class Detector {
     /** [CTB] */
     Result<int> getReadoutMode(Positions pos = {}) const;
 
-    /** [CTB] Options: NORMAL_READOUT = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL //TODO ANALOG_ONLY, make enum
-     * = 2 */
+    /** [CTB] Options: NORMAL_READOUT = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL
+     * //TODO ANALOG_ONLY, make enum = 2 */
     void setReadoutMode(int value, Positions pos = {});
 
     /** [CTB] */
@@ -955,7 +955,6 @@ class Detector {
     /** [CTB] */
     void setLEDEnable(bool enable, Positions pos = {});
 
-
     /**************************************************
      *                                                *
      *    PATTERN                                     *
@@ -1024,7 +1023,6 @@ class Detector {
      *                                                *
      * ************************************************/
 
-
     /** [Moench] */
     Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
 
@@ -1045,7 +1043,7 @@ class Detector {
                                     const std::string &value,
                                     Positions pos = {});
 
-        /** [Moench] TODO! How do we do this best??? Can be refactored to something
+    /** [Moench] TODO! How do we do this best??? Can be refactored to something
      * else? Use a generic zmq message passing system...
      * For now limiting to all detectors working the same*/
     /** [Moench: -1 if not found or cannot convert to int] */
@@ -1080,7 +1078,7 @@ class Detector {
     /** [Jungfrau][CTB] */
     void resetFPGA(Positions pos = {});
 
-        /** [Jungfrau][Gotthard][CTB]
+    /** [Jungfrau][Gotthard][CTB]
      * Copy detector server fname from tftp folder of hostname to detector
      * Also changes respawn server, which is effective after a reboot.
      */
@@ -1121,7 +1119,6 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB] not possible to read back*/
     void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
 
-
     /**************************************************
      *                                                *
      *    Insignificant                               *
@@ -1161,11 +1158,10 @@ class Detector {
 
     std::string getUserDetails() const;
 
-   Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
+    Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
 
-private:
-std::vector<int> getPortNumbers(int start_port);
-
+  private:
+    std::vector<int> getPortNumbers(int start_port);
 };
 
 } // namespace sls

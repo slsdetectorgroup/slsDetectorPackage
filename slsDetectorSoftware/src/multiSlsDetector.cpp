@@ -233,17 +233,23 @@ std::string multiSlsDetector::getUserDetails() {
     std::ostringstream sstream;
     sstream << "\nHostname: ";
     for (auto &d : detectors) {
-        sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getHostname() : "Unknown") << "+";
+        sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getHostname()
+                                                              : "Unknown")
+                << "+";
     }
     sstream << "\nType: ";
     // get type from multi shm
     if (multi_shm()->shmversion >= MULTI_SHMAPIVERSION) {
-        sstream << slsDetectorDefs::detectorTypeToString(getDetectorTypeAsEnum());
-    } 
+        sstream << slsDetectorDefs::detectorTypeToString(
+            getDetectorTypeAsEnum());
+    }
     // get type from slsdet shm
     else {
         for (auto &d : detectors) {
-            sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getDetectorTypeAsString() : "Unknown") << "+";
+            sstream << (d->isFixedPatternSharedMemoryCompatible()
+                            ? d->getDetectorTypeAsString()
+                            : "Unknown")
+                    << "+";
         }
     }
 
@@ -325,7 +331,6 @@ bool multiSlsDetector::isAcquireReady() {
     return OK != 0u;
 }
 
-
 std::string multiSlsDetector::exec(const char *cmd) {
     int bufsize = 128;
     char buffer[bufsize];
@@ -349,11 +354,13 @@ std::string multiSlsDetector::exec(const char *cmd) {
     return result;
 }
 
-void multiSlsDetector::setVirtualDetectorServers(const int numdet, const int port) {
-    std::vector <std::string> hostnames;
+void multiSlsDetector::setVirtualDetectorServers(const int numdet,
+                                                 const int port) {
+    std::vector<std::string> hostnames;
     for (int i = 0; i < numdet; ++i) {
         // * 2 is for control and stop port
-        hostnames.push_back(std::string("localhost:") + std::to_string(port + i * 2));
+        hostnames.push_back(std::string("localhost:") +
+                            std::to_string(port + i * 2));
     }
     setHostname(hostnames);
 }
@@ -366,7 +373,7 @@ void multiSlsDetector::setHostname(const std::vector<std::string> &name) {
                "Freeing Shared memory now.";
         freeSharedMemory();
         setupMultiDetector();
-    } 
+    }
     for (const auto &hostname : name) {
         addSlsDetector(hostname);
     }
@@ -412,7 +419,7 @@ void multiSlsDetector::addMultipleDetectors(const char *name) {
 
 void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     FILE_LOG(logDEBUG1) << "Adding detector " << hostname;
-  
+
     int port = DEFAULT_PORTNO;
     std::string host = hostname;
     auto res = sls::split(hostname, ':');
@@ -434,8 +441,7 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     }
 
     // get type by connecting
-    detectorType type =
-        slsDetector::getTypeFromDetector(host, port);
+    detectorType type = slsDetector::getTypeFromDetector(host, port);
     int pos = (int)detectors.size();
     detectors.push_back(
         sls::make_unique<slsDetector>(type, multiId, pos, false));
@@ -443,14 +449,15 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     detectors[pos]->setControlPort(port);
     detectors[pos]->setStopPort(port + 1);
     detectors[pos]->setHostname(host);
-    multi_shm()->multiDetectorType = getDetectorTypeAsEnum(-1);// -1 needed here
+    multi_shm()->multiDetectorType =
+        getDetectorTypeAsEnum(-1); // -1 needed here
 }
 
 void multiSlsDetector::updateDetectorSize() {
     FILE_LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
-    
+
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
-    
+
     int maxy = multi_shm()->numberOfChannels.y;
     if (maxy == 0) {
         maxy = det_size.y * size();
@@ -465,23 +472,21 @@ void multiSlsDetector::updateDetectorSize() {
     multi_shm()->numberOfDetector.x = ndetx;
     multi_shm()->numberOfDetector.y = ndety;
     multi_shm()->numberOfChannels.x = det_size.x * ndetx;
-    multi_shm()->numberOfChannels.y = det_size.y * ndety; 
+    multi_shm()->numberOfChannels.y = det_size.y * ndety;
 
-    FILE_LOG(logDEBUG)
-        << "\n\tNumber of Detectors in X direction:"
-        << multi_shm()->numberOfDetector.x
-        << "\n\tNumber of Detectors in Y direction:"
-        << multi_shm()->numberOfDetector.y    
-        << "\n\tNumber of Channels in X direction:"
-        << multi_shm()->numberOfChannels.x
-        << "\n\tNumber of Channels in Y direction:"
-        << multi_shm()->numberOfChannels.y;
-
+    FILE_LOG(logDEBUG) << "\n\tNumber of Detectors in X direction:"
+                       << multi_shm()->numberOfDetector.x
+                       << "\n\tNumber of Detectors in Y direction:"
+                       << multi_shm()->numberOfDetector.y
+                       << "\n\tNumber of Channels in X direction:"
+                       << multi_shm()->numberOfChannels.x
+                       << "\n\tNumber of Channels in Y direction:"
+                       << multi_shm()->numberOfChannels.y;
 
     for (auto &d : detectors) {
         d->updateMultiSize(multi_shm()->numberOfDetector);
     }
- }
+}
 
 slsDetectorDefs::detectorType multiSlsDetector::getDetectorTypeAsEnum() const {
     return multi_shm()->multiDetectorType;
@@ -528,7 +533,8 @@ slsDetectorDefs::xy multiSlsDetector::getNumberOfChannels(int detPos) const {
 
 void multiSlsDetector::setNumberOfChannels(const slsDetectorDefs::xy c) {
     if (size() > 1) {
-        throw RuntimeError("Set the number of channels before setting hostname.");
+        throw RuntimeError(
+            "Set the number of channels before setting hostname.");
     }
     multi_shm()->numberOfChannels = c;
 }
@@ -880,7 +886,7 @@ void multiSlsDetector::readAll(int detPos) {
     }
 
     // multi
-   parallelCall(&slsDetector::readAll);
+    parallelCall(&slsDetector::readAll);
 }
 
 void multiSlsDetector::configureMAC(int detPos) {
@@ -1058,7 +1064,6 @@ int multiSlsDetector::setDynamicRange(int dr, int detPos) {
     auto r = parallelCall(&slsDetector::setDynamicRange, dr);
     int ret = sls::minusOneIfDifferent(r);
 
-  
     // change in dr
     if (dr != -1 && dr != prevValue) {
 
@@ -1125,7 +1130,8 @@ int multiSlsDetector::getADC(dacIndex index, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-slsDetectorDefs::timingMode multiSlsDetector::setTimingMode(timingMode pol, int detPos) {
+slsDetectorDefs::timingMode multiSlsDetector::setTimingMode(timingMode pol,
+                                                            int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setTimingMode(pol);
@@ -1712,7 +1718,6 @@ void multiSlsDetector::setReceiverDataStreamingOutIP(const std::string &ip,
     }
 }
 
-
 std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
     // single
     if (detPos >= 0) {
@@ -2049,7 +2054,7 @@ int multiSlsDetector::getReceiverDbitOffset(int detPos) {
 }
 
 void multiSlsDetector::writeAdcRegister(uint32_t addr, uint32_t val,
-                                       int detPos) {
+                                        int detPos) {
     // single
     if (detPos >= 0) {
         detectors[detPos]->writeAdcRegister(addr, val);
@@ -2139,7 +2144,8 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
 
     if (val != -1) {
         Parallel(&slsDetector::enableGapPixels, {}, val);
-        Result<slsDetectorDefs::xy> res = Parallel(&slsDetector::getNumberOfChannels, {});
+        Result<slsDetectorDefs::xy> res =
+            Parallel(&slsDetector::getNumberOfChannels, {});
         multi_shm()->numberOfChannels.x = 0;
         multi_shm()->numberOfChannels.y = 0;
         for (auto &it : res) {
@@ -2150,9 +2156,10 @@ int multiSlsDetector::enableGapPixels(int val, int detPos) {
     return ret;
 }
 
-void multiSlsDetector::setGapPixelsEnable(bool enable, Positions pos){
+void multiSlsDetector::setGapPixelsEnable(bool enable, Positions pos) {
     Parallel(&slsDetector::enableGapPixels, pos, static_cast<int>(enable));
-    Result<slsDetectorDefs::xy> res = Parallel(&slsDetector::getNumberOfChannels, {});
+    Result<slsDetectorDefs::xy> res =
+        Parallel(&slsDetector::getNumberOfChannels, {});
     multi_shm()->numberOfChannels.x = 0;
     multi_shm()->numberOfChannels.y = 0;
     for (auto &it : res) {
@@ -2276,14 +2283,14 @@ void multiSlsDetector::resetFPGA(int detPos) {
 }
 
 void multiSlsDetector::copyDetectorServer(const std::string &fname,
-                                         const std::string &hostname,
-                                         int detPos) {
+                                          const std::string &hostname,
+                                          int detPos) {
     // single
     if (detPos >= 0) {
         detectors[detPos]->copyDetectorServer(fname, hostname);
-        detectors[detPos]->rebootController(); 
+        detectors[detPos]->rebootController();
         // reboot and copy should be independant for
-                                  // update command
+        // update command
     }
 
     // multi
@@ -2302,8 +2309,8 @@ void multiSlsDetector::rebootController(int detPos) {
 }
 
 void multiSlsDetector::update(const std::string &sname,
-                             const std::string &hostname,
-                             const std::string &fname, int detPos) {
+                              const std::string &hostname,
+                              const std::string &fname, int detPos) {
     FILE_LOG(logINFO) << "This can take awhile. Please be patient...";
     // read pof file
     std::vector<char> buffer = readPofFile(fname);
@@ -2829,7 +2836,8 @@ void multiSlsDetector::readFrameFromReceiver() {
                                          // updates its header data
                         gappixelsenable =
                             (doc["gappixels"].GetUint() == 0) ? false : true;
-                        quadEnable = (doc["quad"].GetUint() == 0) ? false : true;
+                        quadEnable =
+                            (doc["quad"].GetUint() == 0) ? false : true;
                         FILE_LOG(logDEBUG1)
                             << "One Time Header Info:"
                                "\n\tsize: "
@@ -2906,12 +2914,11 @@ void multiSlsDetector::readFrameFromReceiver() {
                 }
             }
         }
-        FILE_LOG(logDEBUG)
-            << "Call Back Info:"
-            << "\n\t nDetPixelsX: "  << nDetPixelsX
-            << "\n\t nDetPixelsY: "  << nDetPixelsY
-            << "\n\t databytes: "  << multisize
-            << "\n\t dynamicRange: "  << dynamicRange; 
+        FILE_LOG(logDEBUG) << "Call Back Info:"
+                           << "\n\t nDetPixelsX: " << nDetPixelsX
+                           << "\n\t nDetPixelsY: " << nDetPixelsY
+                           << "\n\t databytes: " << multisize
+                           << "\n\t dynamicRange: " << dynamicRange;
 
         // send data to callback
         if (data) {
@@ -2919,18 +2926,18 @@ void multiSlsDetector::readFrameFromReceiver() {
             // 4bit gap pixels
             if (dynamicRange == 4 && gappixelsenable) {
                 if (quadEnable) {
-					nDetPixelsX += 2;
-					nDetPixelsY += 2;
-				} else {
-					nDetPixelsX = nX * (nPixelsX + 3);
-					nDetPixelsY = nY * (nPixelsY + 1);
-				}
-                int n = processImageWithGapPixels(multiframe, multigappixels, quadEnable);
-                FILE_LOG(logDEBUG)
-                    << "Call Back Info Recalculated:"
-                    << "\n\t nDetPixelsX: "  << nDetPixelsX
-                    << "\n\t nDetPixelsY: "  << nDetPixelsY
-                    << "\n\t databytes: "  << n; 
+                    nDetPixelsX += 2;
+                    nDetPixelsY += 2;
+                } else {
+                    nDetPixelsX = nX * (nPixelsX + 3);
+                    nDetPixelsY = nY * (nPixelsY + 1);
+                }
+                int n = processImageWithGapPixels(multiframe, multigappixels,
+                                                  quadEnable);
+                FILE_LOG(logDEBUG) << "Call Back Info Recalculated:"
+                                   << "\n\t nDetPixelsX: " << nDetPixelsX
+                                   << "\n\t nDetPixelsY: " << nDetPixelsY
+                                   << "\n\t databytes: " << n;
                 thisData = new detectorData(
                     getCurrentProgress(), currentFileName.c_str(), nDetPixelsX,
                     nDetPixelsY, multigappixels, n, dynamicRange,
@@ -2986,23 +2993,24 @@ void multiSlsDetector::readFrameFromReceiver() {
         delete[] multigappixels;
 }
 
-int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable) {
-    // eiger 4 bit mode 
-    int nxb = multi_shm()->numberOfDetector.x * (512 + 3); //(divided by 2 already)
+int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage,
+                                                bool quadEnable) {
+    // eiger 4 bit mode
+    int nxb =
+        multi_shm()->numberOfDetector.x * (512 + 3); //(divided by 2 already)
     int nyb = multi_shm()->numberOfDetector.y * (256 + 1);
     int nchipInRow = 4;
     int nxchip = multi_shm()->numberOfDetector.x * 4;
     int nychip = multi_shm()->numberOfDetector.y * 1;
     if (quadEnable) {
-        nxb = multi_shm()->numberOfDetector.x * (256 + 1); //(divided by 2 already)
+        nxb = multi_shm()->numberOfDetector.x *
+              (256 + 1); //(divided by 2 already)
         nyb = multi_shm()->numberOfDetector.y * (512 + 2);
         nxchip /= 2;
         nychip *= 2;
         nchipInRow /= 2;
     }
     int gapdatabytes = nxb * nyb;
-
-
 
     // allocate
     if (gpImage == nullptr) {
@@ -3021,8 +3029,8 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage, boo
     dst = gpImage;
     for (int row = 0; row < nychip; ++row) { // for each chip row
         for (int ichipy = 0; ichipy < b1chipy;
-             ++ichipy) { // for each row in a chip
-            for (int col = 0; col < nxchip; ++col) {// for each chip in a row
+             ++ichipy) {                             // for each row in a chip
+            for (int col = 0; col < nxchip; ++col) { // for each chip in a row
                 memcpy(dst, src, b1chipx);
                 src += b1chipx;
                 dst += b1chipx;
@@ -3043,7 +3051,8 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage, boo
         for (int row = 0; row < nychip; ++row) { // for each chip row
             for (int ichipy = 0; ichipy < b1chipy;
                  ++ichipy) { // for each row in a chip
-                for (int col = 0; col < nxchip; ++col) {// for each chip in a row
+                for (int col = 0; col < nxchip;
+                     ++col) { // for each chip in a row
                     dst += b1chipx;
                     mod = (col + 1) % nchipInRow; // get gap pixels
                     // copy gap pixel(chip 0, 1, 2)
@@ -3394,7 +3403,7 @@ int multiSlsDetector::setLEDEnable(int enable, int detPos) {
 }
 
 void multiSlsDetector::setDigitalIODelay(uint64_t pinMask, int delay,
-                                        int detPos) {
+                                         int detPos) {
     // single
     if (detPos >= 0) {
         detectors[detPos]->setDigitalIODelay(pinMask, delay);
@@ -3618,15 +3627,18 @@ void multiSlsDetector::registerDataCallback(
 }
 
 int multiSlsDetector::setTotalProgress() {
-    int nf = Parallel(&slsDetector::setTimer, {}, FRAME_NUMBER, -1).tsquash("Inconsistent number of frames");
-    int nc  = Parallel(&slsDetector::setTimer, {}, CYCLES_NUMBER, -1).tsquash("Inconsistent number of cycles");
+    int nf = Parallel(&slsDetector::setTimer, {}, FRAME_NUMBER, -1)
+                 .tsquash("Inconsistent number of frames");
+    int nc = Parallel(&slsDetector::setTimer, {}, CYCLES_NUMBER, -1)
+                 .tsquash("Inconsistent number of cycles");
     if (nf == 0 || nc == 0) {
         throw RuntimeError("Number of frames or cycles is 0");
     }
 
     int ns = 1;
     if (getDetectorTypeAsEnum() == JUNGFRAU) {
-        ns = Parallel(&slsDetector::setTimer, {}, STORAGE_CELL_NUMBER, -1).tsquash("Inconsistent number of additional storage cells");
+        ns = Parallel(&slsDetector::setTimer, {}, STORAGE_CELL_NUMBER, -1)
+                 .tsquash("Inconsistent number of additional storage cells");
         ++ns;
     }
 
@@ -3707,12 +3719,12 @@ int multiSlsDetector::acquire() {
     // stop receiver
     if (receiver) {
         stopReceiver();
-            if (dataReady != nullptr) {
-                sem_wait(&sem_endRTAcquisition); // waits for receiver's
-            }
-            // external process to be
-            // done sending data to gui
-        
+        if (dataReady != nullptr) {
+            sem_wait(&sem_endRTAcquisition); // waits for receiver's
+        }
+        // external process to be
+        // done sending data to gui
+
         incrementFileIndex();
     }
 
@@ -3904,9 +3916,3 @@ std::vector<char> multiSlsDetector::readPofFile(const std::string &fname) {
     FILE_LOG(logINFO) << "Read file into memory";
     return buffer;
 }
-
-
-
-
-
-

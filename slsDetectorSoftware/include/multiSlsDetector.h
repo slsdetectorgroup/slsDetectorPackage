@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Result.h"
 #include "SharedMemory.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
-#include "Result.h"
 
 class slsDetector;
 class ZmqSocket;
@@ -57,7 +57,7 @@ struct sharedMultiSlsDetector {
     slsDetectorDefs::xy numberOfDetector;
 
     /**  max number of channels for complete detector*/
-    slsDetectorDefs::xy numberOfChannels;  
+    slsDetectorDefs::xy numberOfChannels;
 
     /** flag for acquiring */
     bool acquiringFlag;
@@ -309,7 +309,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param port starting port number
      */
     void setVirtualDetectorServers(const int numdet, const int port);
-    
+
     /**
      * Sets the hostname of all sls detectors in shared memory and updates local
      * cache
@@ -347,7 +347,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns detector type of sls detector in position pos, if -1, returns
      * the first det type
      */
-    detectorType getDetectorTypeAsEnum(int detPos);//
+    detectorType getDetectorTypeAsEnum(int detPos); //
 
     /**
      * Concatenates string types of all sls detectors or
@@ -356,25 +356,27 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns detector type of sls detector in position pos, if -1,
      * concatenates
      */
-    std::string getDetectorTypeAsString(int detPos = -1);//
+    std::string getDetectorTypeAsString(int detPos = -1); //
 
     /**
      * Returns the number of detectors in the multidetector structure
      * @returns number of detectors
      */
-    size_t size() const;//
+    size_t size() const; //
 
     /**
      * Returns the number of detectors in each direction
      */
-    slsDetectorDefs::xy getNumberOfDetectors() const;//
+    slsDetectorDefs::xy getNumberOfDetectors() const; //
 
     /**
-     * Returns the total number of channels of all sls detectors  including gap pixels
+     * Returns the total number of channels of all sls detectors  including gap
+     * pixels
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the total number of channels of all sls detectors including gap pixels
+     * @returns the total number of channels of all sls detectors including gap
+     * pixels
      */
-    slsDetectorDefs::xy getNumberOfChannels(int detPos = -1) const;//
+    slsDetectorDefs::xy getNumberOfChannels(int detPos = -1) const; //
 
     /**
      * Must be set before setting hostname
@@ -382,35 +384,35 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * dimension d from shared memory
      * @param c maximum number of channels of all sls detectors
      */
-    void setNumberOfChannels(const slsDetectorDefs::xy c);  //
+    void setNumberOfChannels(const slsDetectorDefs::xy c); //
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns quad type
      */
-    int getQuad(int detPos = -1);//
+    int getQuad(int detPos = -1); //
 
     /**
      * Set Quad Type (Only for Eiger Quad detector hardware)
      * @param enable true if quad type set, else false
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setQuad(const bool enable, int detPos = -1);//
+    void setQuad(const bool enable, int detPos = -1); //
 
     /**
      * Set number of rows to read out (Only for Eiger)
      * @param value number of lines
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReadNLines(const int value, int detPos = -1);//
+    void setReadNLines(const int value, int detPos = -1); //
 
     /**
      * Get number of rows to read out (Only for Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns  number of lines
      */
-    int getReadNLines(int detPos = -1);//
+    int getReadNLines(int detPos = -1); //
 
     /**
      * Set/Gets TCP Port of the detector
@@ -418,7 +420,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns port number
      */
-    int setControlPort(int port_number = -1, int detPos = -1);//
+    int setControlPort(int port_number = -1, int detPos = -1); //
 
     /**
      * Set/Gets TCP STOP Port of the detector
@@ -426,7 +428,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns port number
      */
-    int setStopPort(int port_number = -1, int detPos = -1);//
+    int setStopPort(int port_number = -1, int detPos = -1); //
 
     /**
      * Set/Gets TCP Port of the receiver
@@ -434,14 +436,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns port number
      */
-    int setReceiverPort(int port_number = -1, int detPos = -1);//
+    int setReceiverPort(int port_number = -1, int detPos = -1); //
 
     /**
      * Get Receiver port
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns vector of receiver port
      */
-    int getReceiverPort(int detPos = -1) const;//
+    int getReceiverPort(int detPos = -1) const; //
 
     /**
      * Lock server for this client IP
@@ -449,27 +451,27 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns 1 for locked or 0 for unlocked
      */
-    int lockServer(int p = -1, int detPos = -1);//
+    int lockServer(int p = -1, int detPos = -1); //
 
     /**
      * Get last client IP saved on detector server
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns last client IP saved on detector server
      */
-    std::string getLastClientIP(int detPos = -1);//
+    std::string getLastClientIP(int detPos = -1); //
 
     /**
      * Exit detector server
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void exitServer(int detPos = -1);//
+    void exitServer(int detPos = -1); //
 
     /**
      * Execute a command on the detector server
      * @param cmd command
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void execCommand(const std::string &cmd, int detPos);//
+    void execCommand(const std::string &cmd, int detPos); //
 
     /**
      * Load configuration from a configuration File
@@ -481,14 +483,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Write current configuration to a file
      * @param fname configuration file name
      */
-    void writeConfigurationFile(const std::string &fname);//
+    void writeConfigurationFile(const std::string &fname); //
 
     /**
      * Get detector settings
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current settings
      */
-    detectorSettings getSettings(int detPos = -1);//
+    detectorSettings getSettings(int detPos = -1); //
 
     /**
      * Load detector settings from the settings file picked from the
@@ -498,14 +500,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current settings
      */
-    detectorSettings setSettings(detectorSettings isettings, int detPos = -1);//
+    detectorSettings setSettings(detectorSettings isettings,
+                                 int detPos = -1); //
 
     /**
      * Get threshold energy (Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current threshold value for imod in ev (-1 failed)
      */
-    int getThresholdEnergy(int detPos = -1);//
+    int getThresholdEnergy(int detPos = -1); //
 
     /**
      * Set threshold energy (Eiger)
@@ -516,14 +519,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns current threshold value for imod in ev (-1 failed)
      */
     int setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
-                           int tb = 1, int detPos = -1);//
+                           int tb = 1, int detPos = -1); //
 
     /**
      * Returns the detector trimbit/settings directory
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the trimbit/settings directory
      */
-    std::string getSettingsDir(int detPos = -1);//
+    std::string getSettingsDir(int detPos = -1); //
 
     /**
      * Sets the detector trimbit/settings directory
@@ -531,7 +534,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the trimbit/settings directory
      */
-    std::string setSettingsDir(const std::string &directory, int detPos = -1);//
+    std::string setSettingsDir(const std::string &directory,
+                               int detPos = -1); //
 
     /**
      * Loads the modules settings/trimbits reading from a specific file
@@ -539,7 +543,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param fname specific settings/trimbits file
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void loadSettingsFile(const std::string &fname, int detPos = -1);//
+    void loadSettingsFile(const std::string &fname, int detPos = -1); //
 
     /**
      * Saves the modules settings/trimbits to a specific file
@@ -547,34 +551,32 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param fname specific settings/trimbits file
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void saveSettingsFile(const std::string &fname, int detPos = -1);//
+    void saveSettingsFile(const std::string &fname, int detPos = -1); //
 
     /**
      * Get Detector run status
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns status
      */
-    runStatus getRunStatus(int detPos = -1);//
-
-   
+    runStatus getRunStatus(int detPos = -1); //
 
     /**
      * Start detector acquisition (Non blocking)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void startAcquisition(int detPos = -1);//
+    void startAcquisition(int detPos = -1); //
 
     /**
      * Stop detector acquisition
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void stopAcquisition(int detPos = -1);//
+    void stopAcquisition(int detPos = -1); //
 
     /**
      * Give an internal software trigger to the detector (Eiger only)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void sendSoftwareTrigger(int detPos = -1);//
+    void sendSoftwareTrigger(int detPos = -1); //
 
     /**
      * Configures in detector the destination for UDP packets
@@ -601,7 +603,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param index timer index
      * @param t time in ns or number of...(e.g. frames, probes)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns timer set value in ns or number of...(e.g. frames, 
+     * @returns timer set value in ns or number of...(e.g. frames,
      * probes)
      */
     int64_t setTimer(timerIndex index, int64_t t = -1, int detPos = -1); //
@@ -634,7 +636,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns delay after trigger in ns, or s if specified
      */
     double setDelayAfterTrigger(double t = -1, bool inseconds = false,
-                                int detPos = -1);//
+                                int detPos = -1); //
 
     /**
      * (Advanced users)
@@ -656,7 +658,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns sub frame dead time in ns, or s if specified
      */
     double setSubFrameExposureDeadTime(double t = -1, bool inseconds = false,
-                                       int detPos = -1);//
+                                       int detPos = -1); //
 
     /**
      * Set/get number of frames
@@ -664,7 +666,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of frames
      */
-    int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1);//
+    int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1); //
 
     /**
      * Set/get number of cycles
@@ -672,7 +674,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of cycles
      */
-    int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1);//
+    int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1); //
 
     /**
      * Set/get number of additional storage cells  (Jungfrau)
@@ -680,7 +682,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of additional storage cells
      */
-    int64_t setNumberOfStorageCells(int64_t t = -1, int detPos = -1);//
+    int64_t setNumberOfStorageCells(int64_t t = -1, int detPos = -1); //
 
     /**
      * Get measured period between previous two frames (EIGER)
@@ -689,7 +691,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns sub frame dead time in ns, or s if specified
      */
-    double getMeasuredPeriod(bool inseconds = false, int detPos = -1);//
+    double getMeasuredPeriod(bool inseconds = false, int detPos = -1); //
 
     /**
      * Get sub period between previous two sub frames in 32 bit mode (EIGER)
@@ -698,7 +700,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns sub frame dead time in ns, or s if specified
      */
-    double getMeasuredSubFramePeriod(bool inseconds = false, int detPos = -1);//
+    double getMeasuredSubFramePeriod(bool inseconds = false,
+                                     int detPos = -1); //
 
     /**
      * Set/get timer value left in acquisition (not all implemented for all
@@ -706,10 +709,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param index timer index
      * @param t time in ns or number of...(e.g. frames, probes)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns timer set value in ns or number of...(e.g. frames, 
+     * @returns timer set value in ns or number of...(e.g. frames,
      * probes)
      */
-    int64_t getTimeLeft(timerIndex index, int detPos = -1);//
+    int64_t getTimeLeft(timerIndex index, int detPos = -1); //
 
     /**
      * Set speed
@@ -723,7 +726,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns value of speed set
      */
     int setSpeed(speedVariable index, int value = -1, int mode = 0,
-                 int detPos = -1);//
+                 int detPos = -1); //
 
     /**
      * Set/get dynamic range and updates the number of dataBytes
@@ -733,7 +736,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current dynamic range
      */
-    int setDynamicRange(int dr = -1, int detPos = -1);//
+    int setDynamicRange(int dr = -1, int detPos = -1); //
 
     /**
      * Set/get dacs value
@@ -743,7 +746,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current DAC value
      */
-    int setDAC(int val, dacIndex index, int mV, int detPos = -1);//
+    int setDAC(int val, dacIndex index, int mV, int detPos = -1); //
 
     /**
      * Get adc value
@@ -752,7 +755,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns current adc value (temperature for eiger and jungfrau in
      * millidegrees)
      */
-    int getADC(dacIndex index, int detPos = -1);//
+    int getADC(dacIndex index, int detPos = -1); //
 
     /**
      * Set/get timing mode
@@ -760,7 +763,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns current timing mode
      */
-    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE, int detPos = -1);//
+    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE,
+                             int detPos = -1); //
 
     /**
      * Set/get external signal flags (to specify triggerinrising edge etc)
@@ -771,7 +775,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     externalSignalFlag
     setExternalSignalFlags(externalSignalFlag pol = GET_EXTERNAL_SIGNAL_FLAG,
-                           int detPos = -1);//
+                           int detPos = -1); //
 
     /**
      * Set/get readout flags (Eiger, Mythen)
@@ -780,7 +784,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns readout flag
      */
-    int setReadOutFlags(readOutFlags flag = GET_READOUT_FLAGS, int detPos = -1);//
+    int setReadOutFlags(readOutFlags flag = GET_READOUT_FLAGS,
+                        int detPos = -1); //
 
     /**
      * Set Interrupt last sub frame (Only for Eiger)
@@ -837,7 +842,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector MAC address
      */
-    std::string setDetectorMAC(const std::string &detectorMAC, int detPos = -1); //
+    std::string setDetectorMAC(const std::string &detectorMAC,
+                               int detPos = -1); //
 
     /**
      * Returns the detector MAC address
@@ -870,7 +876,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address
      */
-    std::string setDetectorIP(const std::string &detectorIP, int detPos = -1); //
+    std::string setDetectorIP(const std::string &detectorIP,
+                              int detPos = -1); //
 
     /**
      * Returns the detector IP address
@@ -886,7 +893,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the detector IP address (bottom half)
      */
-    std::string setDetectorIP2(const std::string &detectorIP, int detPos = -1); //
+    std::string setDetectorIP2(const std::string &detectorIP,
+                               int detPos = -1); //
 
     /**
      * Returns the detector IP address (bottom half) Jungfrau only
@@ -952,14 +960,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string setReceiverUDPMAC(const std::string &udpmac, int detPos = -1);// 
+    std::string setReceiverUDPMAC(const std::string &udpmac,
+                                  int detPos = -1); //
 
     /**
      * Returns the receiver UDP MAC address
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the receiver UDP MAC address
      */
-    std::string getReceiverUDPMAC(int detPos = -1) const; // 
+    std::string getReceiverUDPMAC(int detPos = -1) const; //
 
     /**
      * Validates the format of the receiver UDP MAC address  (bottom half) and
@@ -1127,7 +1136,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns transmission delay
      */
     int setDetectorNetworkParameter(networkParameter index, int delay,
-                                    int detPos = -1); //maybe not needed in API
+                                    int detPos = -1); // maybe not needed in API
 
     /**
      * Sets the additional json header
@@ -1311,8 +1320,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int getExternalSamplingSource(int detPos = -1); //
 
-
-
     /**
      * Set external sampling enable (CTB only)
      * @param value external sampling source (Option: 0-63)
@@ -1414,7 +1421,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int enableGapPixels(int val = -1, int detPos = -1); //
 
-
     void setGapPixelsEnable(bool enable, sls::Positions pos = {});
     /**
      * Sets the number of trim energies and their value  (Eiger)
@@ -1450,14 +1456,14 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param y is relative y value
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void pulsePixelNMove(int n = 0, int x = 0, int y = 0, int detPos = -1);//
+    void pulsePixelNMove(int n = 0, int x = 0, int y = 0, int detPos = -1); //
 
     /**
      * Pulse Chip (Eiger)
      * @param n is number of times to pulse
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void pulseChip(int n = 0, int detPos = -1);//
+    void pulseChip(int n = 0, int detPos = -1); //
 
     /**
      * Set/gets threshold temperature (Jungfrau)
@@ -1489,7 +1495,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the storage cell that stores the first acquisition of the series
      */
-    int setStoragecellStart(int pos = -1, int detPos = -1);//
+    int setStoragecellStart(int pos = -1, int detPos = -1); //
 
     /**
      * Programs FPGA with pof file (Jungfrau, CTB, Moench)
@@ -2066,11 +2072,11 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     void updateUserdetails();
 
-     /**
+    /**
      * Prepares detector for acquisition (Eiger)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void prepareAcquisition(int detPos = -1);//
+    void prepareAcquisition(int detPos = -1); //
 
     /**
      * Check if acquiring flag is set, set error if set
@@ -2087,11 +2093,11 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Appends detectors to the end of the list in shared memory
-     * Connects to them 
+     * Connects to them
      * @param name concatenated hostname of the sls detectors to be appended to
      * the list
      */
-    void addMultipleDetectors(const char *name);//
+    void addMultipleDetectors(const char *name); //
 
     /**
      * Add sls detector
@@ -2101,11 +2107,11 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Updates the channel size in X and Y dimension for all the sls
-     * detectors 
+     * detectors
      */
     void updateDetectorSize();
 
-        /**
+    /**
      * increments file index
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the file index
@@ -2168,20 +2174,20 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * acquisition)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void startAndReadAll(int detPos = -1);//
+    void startAndReadAll(int detPos = -1); //
 
-        /**
+    /**
      * Start readout (without exposure or interrupting exposure) (Eiger store in
      * ram)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void startReadOut(int detPos = -1);//
+    void startReadOut(int detPos = -1); //
 
     /**
      * Requests and  receives all data from the detector (Eiger store in ram)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void readAll(int detPos = -1);//
+    void readAll(int detPos = -1); //
 
     /**
      * Check if processing thread is ready to join main thread
@@ -2200,8 +2206,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * when using acquire command
      */
     int kbhit();
-
-    
 
     /**
      * Convert a double holding time in seconds to an int64_t with nano seconds

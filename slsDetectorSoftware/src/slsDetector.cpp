@@ -23,7 +23,6 @@
 
 using namespace sls;
 
-
 // create shm
 slsDetector::slsDetector(detectorType type, int multi_id, int det_id,
                          bool verify)
@@ -590,8 +589,10 @@ void slsDetector::updateNumberOfChannels() {
 
 slsDetectorDefs::xy slsDetector::getNumberOfChannels() const {
     slsDetectorDefs::xy coord;
-    coord.x = (shm()->nChan.x * shm()->nChip.x + shm()->gappixels * shm()->nGappixels.x);
-    coord.y = (shm()->nChan.y * shm()->nChip.y + shm()->gappixels * shm()->nGappixels.y);
+    coord.x = (shm()->nChan.x * shm()->nChip.x +
+               shm()->gappixels * shm()->nGappixels.x);
+    coord.y = (shm()->nChan.y * shm()->nChip.y +
+               shm()->gappixels * shm()->nGappixels.y);
     return coord;
 }
 
@@ -601,7 +602,6 @@ bool slsDetector::getQuad() {
     sendToDetector(F_GET_QUAD, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Quad Type :" << retval;
     return (retval == 0 ? false : true);
-    
 }
 
 void slsDetector::setQuad(const bool enable) {
@@ -617,10 +617,11 @@ void slsDetector::setQuad(const bool enable) {
 void slsDetector::setReadNLines(const int value) {
     FILE_LOG(logDEBUG1) << "Setting read n lines to " << value;
     sendToDetector(F_SET_READ_N_LINES, value, nullptr);
-    FILE_LOG(logDEBUG1) << "Setting read n lines to " << value << " in Receiver";
+    FILE_LOG(logDEBUG1) << "Setting read n lines to " << value
+                        << " in Receiver";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
-}
+    }
 }
 
 int slsDetector::getReadNLines() {
@@ -634,7 +635,6 @@ int slsDetector::getReadNLines() {
 void slsDetector::updateMultiSize(slsDetectorDefs::xy det) {
     shm()->multiSize = det;
 }
-
 
 int slsDetector::setControlPort(int port_number) {
     int retval = -1;
@@ -736,7 +736,7 @@ void slsDetector::updateCachedDetectorVariables() {
 
         // dr
         n += client.Receive(&i32, sizeof(i32));
-        shm()->dynamicRange = i32;      
+        shm()->dynamicRange = i32;
 
         // settings
         if ((shm()->myDetectorType != CHIPTESTBOARD) &&
@@ -1438,9 +1438,7 @@ int slsDetector::setDynamicRange(int n) {
     return shm()->dynamicRange;
 }
 
-int slsDetector::getDynamicRangeFromShm() {
-    return shm()->dynamicRange;
-}
+int slsDetector::getDynamicRangeFromShm() { return shm()->dynamicRange; }
 
 int slsDetector::setDAC(int val, dacIndex index, int mV) {
     int args[]{static_cast<int>(index), mV, val};
@@ -2190,7 +2188,8 @@ void slsDetector::setROI(slsDetectorDefs::ROI arg) {
         arg.xmin = -1;
         arg.xmax = -1;
     }
-    FILE_LOG(logDEBUG) << "Sending ROI to detector [" << arg.xmin << ", " << arg.xmax << "]";
+    FILE_LOG(logDEBUG) << "Sending ROI to detector [" << arg.xmin << ", "
+                       << arg.xmax << "]";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(&arg.xmin, sizeof(int));
@@ -2203,7 +2202,7 @@ void slsDetector::setROI(slsDetectorDefs::ROI arg) {
         throw RuntimeError("Detector " + std::to_string(detId) +
                            " returned error: " + std::string(mess));
     } else {
-        memcpy(&shm()->roi, &arg, sizeof(ROI)); 
+        memcpy(&shm()->roi, &arg, sizeof(ROI));
         if (ret == FORCE_UPDATE) {
             updateCachedDetectorVariables();
         }
@@ -2243,22 +2242,19 @@ slsDetectorDefs::ROI slsDetector::getROI() {
         client.Receive(&retval.xmin, sizeof(int));
         client.Receive(&retval.xmax, sizeof(int));
         FILE_LOG(logDEBUG1)
-            << "ROI retval [" << retval.xmin << ","
-            << retval.xmax << "]";
+            << "ROI retval [" << retval.xmin << "," << retval.xmax << "]";
         if (ret == FORCE_UPDATE) {
             updateCachedDetectorVariables();
         }
         // if different from shm, update and send to receiver
         if (shm()->roi.xmin != retval.xmin || shm()->roi.xmax != retval.xmax) {
-            memcpy(&shm()->roi, &retval, sizeof(ROI));  
+            memcpy(&shm()->roi, &retval, sizeof(ROI));
             sendROItoReceiver();
         }
     }
 
     return shm()->roi;
 }
-
-
 
 void slsDetector::setADCEnableMask(uint32_t mask) {
     uint32_t arg = mask;
@@ -2414,9 +2410,7 @@ bool slsDetector::setDeactivatedRxrPaddingMode(int padding) {
     return shm()->rxPadDeactivatedModules;
 }
 
-int slsDetector::getFlippedDataX() const {
-    return shm()->flippedDataX;
-}
+int slsDetector::getFlippedDataX() const { return shm()->flippedDataX; }
 
 int slsDetector::setFlippedDataX(int value) {
     // replace get with shm value (write to shm right away as it is a det value,
@@ -2426,7 +2420,8 @@ int slsDetector::setFlippedDataX(int value) {
     }
     int retval = -1;
     int arg = shm()->flippedDataX;
-    FILE_LOG(logDEBUG1) << "Setting flipped data across x axis with value: " << arg;
+    FILE_LOG(logDEBUG1) << "Setting flipped data across x axis with value: "
+                        << arg;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, arg, retval);
         FILE_LOG(logDEBUG1) << "Flipped data:" << retval;

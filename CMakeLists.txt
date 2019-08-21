@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.11)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 5.0.0)
 
@@ -42,6 +42,7 @@ option (SLS_USE_TESTS "TESTS" OFF)
 option (SLS_USE_INTEGRATION_TESTS "Integration Tests" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
+option(SLS_USE_CTBGUI "ctb GUI" OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -175,6 +176,10 @@ if (SLS_USE_PYTHON)
     add_subdirectory(libs/pybind11)
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)
+
+if (SLS_USE_CTBGUI)
+    add_subdirectory(ctbGui)
+endif(SLS_USE_CTBGUI)
 
 configure_file( .clang-tidy  
     ${CMAKE_BINARY_DIR}/.clang-tidy  

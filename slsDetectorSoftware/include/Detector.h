@@ -6,6 +6,8 @@
 #include <vector>
 
 class multiSlsDetector;
+class detectorData;
+
 namespace sls {
 using ns = std::chrono::nanoseconds;
 class MacAddr;
@@ -82,6 +84,35 @@ class Detector {
 
     /** [Jungfrau][Gotthard] */
     void setSettings(defs::detectorSettings value, Positions pos = {});
+
+    /**************************************************
+     *                                                *
+     *    Callbacks                                   *
+     *                                                *
+     * ************************************************/
+
+    /**
+     * register callback for end of acquisition
+     * @param func function to be called with parameters:
+     * current progress in percentage, detector status, pArg pointer
+     * @param pArg pointer that is returned in call back
+     */
+    void registerAcquisitionFinishedCallback(void (*func)(double, int, void *),
+                                             void *pArg);
+
+    /**
+     * register callback for accessing reconstructed complete images
+     * Receiver sends out images via zmq, the client reconstructs them into
+     * complete images. Therefore, it also enables zmq streaming from receiver
+     * and the client.
+     * @param func function to be called for each image with parameters:
+     * detector data structure, frame number, sub frame number (for eiger in 32
+     * bit mode), pArg pointer
+     * @param pArg pointer that is returned in call back
+     */
+    void registerDataCallback(void (*func)(detectorData *, uint64_t, uint32_t,
+                                           void *),
+                              void *pArg);
 
     /**************************************************
      *                                                *

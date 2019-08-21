@@ -3604,12 +3604,6 @@ void multiSlsDetector::registerAcquisitionFinishedCallback(
     acqFinished_p = pArg;
 }
 
-void multiSlsDetector::registerProgressCallback(void (*func)(double, void *),
-                                                void *pArg) {
-    progress_call = func;
-    pProgressCallArg = pArg;
-}
-
 void multiSlsDetector::registerDataCallback(
     void (*userCallback)(detectorData *, uint64_t, uint32_t, void *),
     void *pArg) {
@@ -3732,10 +3726,6 @@ int multiSlsDetector::acquire() {
     setJoinThreadFlag(true);
     sem_post(&sem_newRTAcquisition);
     dataProcessingThread.join();
-
-    if (progress_call != nullptr) {
-        progress_call(getCurrentProgress(), pProgressCallArg);
-    }
 
     if (acquisition_finished != nullptr) {
         acquisition_finished(getCurrentProgress(), getRunStatus(),

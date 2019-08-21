@@ -4,6 +4,8 @@
 #include "multiSlsDetector.h"
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
+#include "detectorData.h"
+
 namespace sls {
 
 using defs = slsDetectorDefs;
@@ -80,6 +82,20 @@ Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
 
 void Detector::setSettings(defs::detectorSettings value, Positions pos) {
     pimpl->Parallel(&slsDetector::setSettings, pos, value);
+}
+
+// Callback
+
+void Detector::registerAcquisitionFinishedCallback(void (*func)(double, int,
+                                                                void *),
+                                                   void *pArg) {
+    pimpl->registerAcquisitionFinishedCallback(func, pArg);
+}
+
+void Detector::registerDataCallback(void (*func)(detectorData *, uint64_t,
+                                                 uint32_t, void *),
+                                    void *pArg) {
+    pimpl->registerDataCallback(func, pArg);
 }
 
 // Acquisition Parameters

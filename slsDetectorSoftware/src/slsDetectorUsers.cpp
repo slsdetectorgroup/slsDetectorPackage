@@ -383,10 +383,6 @@ void slsDetectorUsers::registerAcquisitionFinishedCallback(void( *func)(double,i
 	detector.registerAcquisitionFinishedCallback(func,pArg);
 }
 
-void slsDetectorUsers::registerProgressCallback(void( *func)(double,void*), void *pArg) {
-	detector.registerProgressCallback(func,pArg);
-}
-
 void slsDetectorUsers::putCommand(const std::string& command){
 	multiSlsDetectorClient(command, slsDetectorDefs::PUT_ACTION, &detector);
 }

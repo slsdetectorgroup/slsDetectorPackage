@@ -776,14 +776,6 @@ public:
 	void registerAcquisitionFinishedCallback(void( *func)(double,int, void*), void *pArg);
 
 	/**
-	 * register callback for accessing detector progress in client,
-	 * @param func function to be called at the end of the acquisition.
-	 * gets detector status and progress index as arguments
-	 * @param pArg argument
-	 */
-	void registerProgressCallback(void( *func)(double,void*), void *pArg);
-
-	/**
      @short [usage strongly discouraged] sets parameters trough command line interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
      \param command string as it would be written on the command line
      \returns void

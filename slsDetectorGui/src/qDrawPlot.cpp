@@ -64,7 +64,6 @@ void qDrawPlot::SetupWidgetWindow() {
     SetupPlots();
     SetDataCallBack(true);
     myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack), this);
-    myDet->registerProgressCallback(&(GetProgressCallBack), this);
     // future watcher to watch result of AcquireThread only because it uses signals/slots to handle acquire exception
     acqResultWatcher = new QFutureWatcher<std::string>();
 
@@ -590,11 +589,6 @@ std::string qDrawPlot::AcquireThread() {
     return std::string("");
 }
 
-void qDrawPlot::GetProgressCallBack(double currentProgress, void *this_pointer) {
-    ((qDrawPlot *)this_pointer)->progress = currentProgress;
-    FILE_LOG(logDEBUG) << "Progress Call back successful";
-}
-
 void qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer) {
     ((qDrawPlot *)this_pointer)->AcquisitionFinished(currentProgress, detectorStatus);
     FILE_LOG(logDEBUG) << "Acquisition Finished Call back successful";
@@ -606,6 +600,7 @@ void qDrawPlot::GetDataCallBack(detectorData *data, uint64_t frameIndex, uint32_
 }
 
 void qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
+    progress = currentProgress;
     std::string status = slsDetectorDefs::runStatusType(static_cast<slsDetectorDefs::runStatus>(detectorStatus));
     
     if (detectorStatus == slsDetectorDefs::ERROR) {

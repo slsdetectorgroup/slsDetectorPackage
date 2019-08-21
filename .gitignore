@@ -12,6 +12,10 @@ build
 RELEASE.txt
 Testing/
 
+ctbDict.cpp
+ctbDict.h
+
+
 
 *.pyc
 */__pycache__/*

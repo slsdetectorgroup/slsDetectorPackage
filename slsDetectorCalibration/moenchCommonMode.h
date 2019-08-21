@@ -9,6 +9,7 @@ class moenchCommonMode : public commonModeSubtraction {
   /** constructor -  initalizes a commonModeSubtraction with 4 different regions of interest 
       \param nn number of samples for the moving average
   */
+
   moenchCommonMode(int nn=0) : commonModeSubtraction(0){} ;
     
 

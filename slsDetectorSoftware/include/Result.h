@@ -31,33 +31,34 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     Result() = default;
     Result(std::initializer_list<T> list) : vec(list){};
 
-
-    /** Custom constructor from integer type to Result<ns> */
+    /** Custom constructor from integer type to Result<ns> or Result<bool> */
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
-                              std::is_same<T, time::ns>::value>::type>
-    Result(const std::vector<V> &from) {
-
+                              (std::is_same<T, time::ns>::value ||
+                               std::is_same<T, bool>::value)>::type>
+    Result(const Result<V> &from) {
         vec.reserve(from.size());
         for (const auto &item : from)
             vec.push_back(T(item));
     }
 
-    /** Custom constructor from integer type to Result<ns> */
+    /** Custom constructor from integer type to Result<ns> or Result<bool> */
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
-                              std::is_same<T, time::ns>::value>::type>
-    Result(std::vector<V> &from) {
+                              (std::is_same<T, time::ns>::value ||
+                               std::is_same<T, bool>::value)>::type>
+    Result(Result<V> &from) {
         vec.reserve(from.size());
         for (const auto &item : from)
             vec.push_back(T(item));
     }
 
-    /** Custom constructor from integer type to Result<ns> */
+    /** Custom constructor from integer type to Result<ns> or Result<bool> */
     template <typename V, typename = typename std::enable_if<
                               std::is_integral<V>::value &&
-                              std::is_same<T, time::ns>::value>::type>
-    Result(std::vector<V> &&from) {
+                              (std::is_same<T, time::ns>::value ||
+                               std::is_same<T, bool>::value)>::type>
+    Result(Result<V> &&from) {
         vec.reserve(from.size());
         for (const auto &item : from)
             vec.push_back(T(item));
@@ -89,6 +90,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     auto empty() const noexcept -> decltype(vec.empty()) { return vec.empty(); }
     auto front() -> decltype(vec.front()) { return vec.front(); }
     auto front() const -> decltype(vec.front()) { return vec.front(); }
+    void reserve(size_type new_cap) { vec.reserve(new_cap); }
 
     template <typename V>
     auto push_back(V value) -> decltype(vec.push_back(value)) {
@@ -105,10 +107,22 @@ template <class T, class Allocator = std::allocator<T>> class Result {
     T squash() const { return Squash(vec); }
 
     /**
+     * If all elements are equal it returns the front value
+     * otherwise throws an exception with custom message provided
+     */
+    T tsquash(const std::string &error_msg) {
+        if (equal())
+            return vec.front();
+        else
+            throw RuntimeError(error_msg);
+    }
+    /**
      * If all elements are equal return the front value, otherwise
      * return the supplied default value
      */
-    T squash(T default_value) const { return Squash(vec, default_value); }
+    T squash(const T &default_value) const {
+        return Squash(vec, default_value);
+    }
 
     /** Test whether all elements of the result are equal */
     bool equal() const noexcept { return allEqual(vec); }

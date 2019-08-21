@@ -1,6 +1,6 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
-#include "logger.h"
+#include "clogger.h"
 #include <sys/select.h>
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs
@@ -976,9 +976,9 @@ int setHighVoltage(int val){
 /* parameters - timing, extsig */
 
 
-void setTiming( enum externalCommunicationMode arg){
+void setTiming( enum timingMode arg){
 
-	if(arg != GET_EXTERNAL_COMMUNICATION_MODE){
+	if(arg != GET_TIMING_MODE){
 		switch((int)arg){
 		case AUTO_TIMING:
 		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
@@ -996,7 +996,7 @@ void setTiming( enum externalCommunicationMode arg){
 }
 
 
-enum externalCommunicationMode getTiming() {
+enum timingMode getTiming() {
     if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
         return TRIGGER_EXPOSURE;
     return AUTO_TIMING;

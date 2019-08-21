@@ -64,7 +64,6 @@ void qDrawPlot::SetupWidgetWindow() {
     SetupPlots();
     SetDataCallBack(true);
     myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack), this);
-    myDet->registerProgressCallback(&(GetProgressCallBack), this);
     // future watcher to watch result of AcquireThread only because it uses signals/slots to handle acquire exception
     acqResultWatcher = new QFutureWatcher<std::string>();
 
@@ -80,8 +79,9 @@ void qDrawPlot::SetupPlots() {
     setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
  
     // default image size
-    nPixelsX = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X);
-    nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y);
+    slsDetectorDefs::xy res = myDet->getNumberOfChannels();
+    nPixelsX = res.x;
+    nPixelsY = res.y;
     switch(detType) {
     case slsDetectorDefs::MOENCH:
         npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES, -1) * 2)/25;// for moench 03
@@ -90,8 +90,11 @@ void qDrawPlot::SetupPlots() {
         break;
     case slsDetectorDefs::EIGER:
         if (myDet->getQuad()) {
-            nPixelsX = (myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::X) / 2) - 1;
-            nPixelsY = myDet->getTotalNumberOfChannelsInclGapPixels(slsDetectorDefs::Y) * 2;
+            nPixelsX /= 2;
+            nPixelsY *= 2;
+            if (nPixelsX != nPixelsY) {
+                --nPixelsX;
+            }
         }
         break;
     default:
@@ -586,11 +589,6 @@ std::string qDrawPlot::AcquireThread() {
     return std::string("");
 }
 
-void qDrawPlot::GetProgressCallBack(double currentProgress, void *this_pointer) {
-    ((qDrawPlot *)this_pointer)->progress = currentProgress;
-    FILE_LOG(logDEBUG) << "Progress Call back successful";
-}
-
 void qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer) {
     ((qDrawPlot *)this_pointer)->AcquisitionFinished(currentProgress, detectorStatus);
     FILE_LOG(logDEBUG) << "Acquisition Finished Call back successful";
@@ -602,6 +600,7 @@ void qDrawPlot::GetDataCallBack(detectorData *data, uint64_t frameIndex, uint32_
 }
 
 void qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
+    progress = currentProgress;
     std::string status = slsDetectorDefs::runStatusType(static_cast<slsDetectorDefs::runStatus>(detectorStatus));
     
     if (detectorStatus == slsDetectorDefs::ERROR) {

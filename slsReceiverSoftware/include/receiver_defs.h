@@ -30,8 +30,8 @@
 #define MAX_CHUNKED_IMAGES 				(1)
 
 //versions
-#define HDF5_WRITER_VERSION 				(3.0) //1 decimal places
-#define BINARY_WRITER_VERSION 				(3.0) //1 decimal places
+#define HDF5_WRITER_VERSION 				(5.0) //1 decimal places
+#define BINARY_WRITER_VERSION 				(5.0) //1 decimal places
 
 
 //parameters to calculate fifo depth
@@ -49,3 +49,28 @@
 #define STREAMER_PRIORITY				(10)
 #define TCP_PRIORITY					(10)
 
+struct masterAttributes {
+    double version;
+    uint32_t detectorType;
+    uint32_t dynamicRange;
+    uint32_t tenGiga;
+    uint32_t imageSize;
+    uint32_t nPixelsX;
+    uint32_t nPixelsY;
+    uint32_t maxFramesPerFile;
+    uint64_t totalFrames;
+    uint64_t exptimeNs;
+    uint64_t subExptimeNs;
+    uint64_t subPeriodNs;
+    uint64_t periodNs;
+    uint32_t gapPixelsEnable;
+    uint32_t quadEnable;
+    uint32_t parallelFlag;
+    uint32_t analogFlag;
+    uint32_t digitalFlag;
+    uint32_t adcmask;
+    uint32_t dbitoffset;
+    uint64_t dbitlist;
+    uint32_t roiXmin;
+    uint32_t roiXmax;
+ };

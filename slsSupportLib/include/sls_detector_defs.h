@@ -68,6 +68,8 @@
 
 // typedef char mystring[MAX_STR_LENGTH];
 
+
+
 #ifdef __cplusplus
 class slsDetectorDefs {
   public:
@@ -106,7 +108,6 @@ class slsDetectorDefs {
         FRAME_PERIOD,        /**< period between exposures */
         DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or
                                 readout (in triggered mode) */
-        GATES_NUMBER,        /**< number of gates per frame (in gated mode) */
         CYCLES_NUMBER,    /**< number of cycles: total number of acquisitions is
                              number or frames*number of cycles */
         ACTUAL_TIME,      /**< Actual time of the detector's internal timer */
@@ -219,12 +220,18 @@ format
         @short structure for a region of interest
         xmin,xmax,ymin,ymax define the limits of the region
     */
+
+   #ifdef __cplusplus
+    struct ROI {
+        int xmin{-1}; /**< is the roi xmin (in channel number) */
+        int xmax{-1}; /**< is the roi xmax  (in channel number)*/
+    };
+    #else
     typedef struct {
         int xmin; /**< is the roi xmin (in channel number) */
         int xmax; /**< is the roi xmax  (in channel number)*/
-        int ymin; /**< is the roi ymin  (in channel number)*/
-        int ymax; /**< is the roi ymax  (in channel number)*/
-    } ROI;
+     } ROI;
+    #endif
 
     /**
          network parameters
@@ -284,6 +291,12 @@ format
         Y = 1  /**< Y dimension */
     };
 
+#ifdef __cplusplus
+    struct xy {
+        int x{0};
+        int y{0};
+    };
+#endif
     /**
        enable/disable flags
     */
@@ -324,9 +337,8 @@ format
     /**
       communication mode using external signals
     */
-    enum externalCommunicationMode {
-        GET_EXTERNAL_COMMUNICATION_MODE =
-            -1,           /**<return flag for communication mode */
+    enum timingMode {
+        GET_TIMING_MODE = -1, /**<return flag for communication mode */
         AUTO_TIMING,      /**< internal timing */
         TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
         GATED,            /**< gated  */
@@ -356,7 +368,7 @@ format
     enum digitalTestMode {
         DETECTOR_FIRMWARE_TEST, /**< test detector system firmware */
         DETECTOR_BUS_TEST,      /**< test detector system CPU-FPGA bus */
-        DIGITAL_BIT_TEST        /**< gotthard digital bit test */
+        IMAGE_TEST              /**< gotthard digital bit test */
     };
 
     /**
@@ -530,11 +542,6 @@ format
         IS_SLAVE         /**< is slave */
     };
 
-    enum imageType {
-        DARK_IMAGE, /**< dark image */
-        GAIN_IMAGE  /**< gain image */
-    };
-
     /**
      * frame mode for processor
      */
@@ -666,108 +673,31 @@ format
     };
 
     /** returns std::string from external signal type index
-        \param f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,
-       TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
-       RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE,
-       GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE,
-       TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,
-       RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH,
-       MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG \returns
-       std::string  off, gate_in_active_high, gate_in_active_low,
-       trigger_in_rising_edge, trigger_in_falling_edge,
-       ro_trigger_in_rising_edge, ro_trigger_in_falling_edge,
-       gate_out_active_high, gate_out_active_low, trigger_out_rising_edge,
-       trigger_out_falling_edge, ro_trigger_out_rising_edge,
-       ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
+        \param f can be TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
+        \returns std::string  trigger_in_rising_edge, trigger_in_falling_edge, unknown
     */
     static std::string externalSignalType(externalSignalFlag f) {
         switch (f) {
-        case SIGNAL_OFF:
-            return std::string("off");
-        case GATE_IN_ACTIVE_HIGH:
-            return std::string("gate_in_active_high");
-        case GATE_IN_ACTIVE_LOW:
-            return std::string("gate_in_active_low");
         case TRIGGER_IN_RISING_EDGE:
             return std::string("trigger_in_rising_edge");
         case TRIGGER_IN_FALLING_EDGE:
             return std::string("trigger_in_falling_edge");
-        case RO_TRIGGER_IN_RISING_EDGE:
-            return std::string("ro_trigger_in_rising_edge");
-        case RO_TRIGGER_IN_FALLING_EDGE:
-            return std::string("ro_trigger_in_falling_edge");
-        case GATE_OUT_ACTIVE_HIGH:
-            return std::string("gate_out_active_high");
-        case GATE_OUT_ACTIVE_LOW:
-            return std::string("gate_out_active_low");
-        case TRIGGER_OUT_RISING_EDGE:
-            return std::string("trigger_out_rising_edge");
-        case TRIGGER_OUT_FALLING_EDGE:
-            return std::string("trigger_out_falling_edge");
-        case RO_TRIGGER_OUT_RISING_EDGE:
-            return std::string("ro_trigger_out_rising_edge");
-        case RO_TRIGGER_OUT_FALLING_EDGE:
-            return std::string("ro_trigger_out_falling_edge");
-        case MASTER_SLAVE_SYNCHRONIZATION:
-            return std::string("sync");
-        case OUTPUT_LOW:
-            return std::string("gnd");
-        case OUTPUT_HIGH:
-            return std::string("vcc");
         default:
             return std::string("unknown");
         }
     };
 
     /** returns external signal type index from std::string
-        \param sval  off, gate_in_active_high, gate_in_active_low,
-       trigger_in_rising_edge, trigger_in_falling_edge,
-       ro_trigger_in_rising_edge, ro_trigger_in_falling_edge,
-       gate_out_active_high, gate_out_active_low, trigger_out_rising_edge,
-       trigger_out_falling_edge, ro_trigger_out_rising_edge,
-       ro_trigger_out_falling_edge, gnd, vcc, sync, unknown \returns can be
-       SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,
-       TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
-       RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE,
-       GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE,
-       TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,
-       RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH,
-       MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG (if unknown)
+        \param sval  trigger_in_rising_edge, trigger_in_falling_edge, unknown 
+        \returns can be TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
+       GET_EXTERNAL_SIGNAL_FLAG (if unknown)
     */
 
     static externalSignalFlag externalSignalType(std::string sval) {
-        if (sval == "off")
-            return SIGNAL_OFF;
-        if (sval == "gate_in_active_high")
-            return GATE_IN_ACTIVE_HIGH;
-        if (sval == "gate_in_active_low")
-            return GATE_IN_ACTIVE_LOW;
         if (sval == "trigger_in_rising_edge")
             return TRIGGER_IN_RISING_EDGE;
         if (sval == "trigger_in_falling_edge")
             return TRIGGER_IN_FALLING_EDGE;
-        if (sval == "ro_trigger_in_rising_edge")
-            return RO_TRIGGER_IN_RISING_EDGE;
-        if (sval == "ro_trigger_in_falling_edge")
-            return RO_TRIGGER_IN_FALLING_EDGE;
-        if (sval == "gate_out_active_high")
-            return GATE_OUT_ACTIVE_HIGH;
-        if (sval == "gate_out_active_low")
-            return GATE_OUT_ACTIVE_LOW;
-        if (sval == "trigger_out_rising_edge")
-            return TRIGGER_OUT_RISING_EDGE;
-        if (sval == "trigger_out_falling_edge")
-            return TRIGGER_OUT_FALLING_EDGE;
-        if (sval == "ro_trigger_out_rising_edge")
-            return RO_TRIGGER_OUT_RISING_EDGE;
-        if (sval == "ro_trigger_out_falling_edge")
-            return RO_TRIGGER_OUT_FALLING_EDGE;
-        if (sval == "sync")
-            return MASTER_SLAVE_SYNCHRONIZATION;
-        if (sval == "gnd")
-            return OUTPUT_LOW;
-        if (sval == "vcc")
-            return OUTPUT_HIGH;
         return GET_EXTERNAL_SIGNAL_FLAG;
     };
 
@@ -856,11 +786,11 @@ format
     /**
        returns external communication mode std::string from index
        \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER,
-       GET_EXTERNAL_COMMUNICATION_MODE \returns  auto, trigger, gating,
+       GET_TIMING_MODE \returns  auto, trigger, gating,
        burst_trigger, unknown
     */
 
-    static std::string externalCommunicationType(externalCommunicationMode f) {
+    static std::string timingModeType(timingMode f) {
         switch (f) {
         case AUTO_TIMING:
             return std::string("auto");
@@ -879,11 +809,10 @@ format
        returns external communication mode index from std::string
        \param sval can be auto, trigger,  gating, burst_trigger
        \returns AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER,
-       GET_EXTERNAL_COMMUNICATION_MODE
+       GET_TIMING_MODE
     */
 
-    static externalCommunicationMode
-    externalCommunicationType(std::string sval) {
+    static timingMode timingModeType(std::string sval) {
         if (sval == "auto")
             return AUTO_TIMING;
         if (sval == "trigger")
@@ -892,7 +821,7 @@ format
             return GATED;
         if (sval == "burst_trigger")
             return BURST_TRIGGER;
-        return GET_EXTERNAL_COMMUNICATION_MODE;
+        return GET_TIMING_MODE;
     };
 
     /** returns std::string from file format index
@@ -912,12 +841,12 @@ format
 
     /** returns std::string from timer index
         \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD,
-       DELAY_AFTER_TRIGGER,GATES_NUMBER, CYCLES_NUMBER,
+       DELAY_AFTER_TRIGGER, CYCLES_NUMBER,
        ACTUAL_TIME,MEASUREMENT_TIME,
        PROGRESS,FRAMES_FROM_START,FRAMES_FROM_START_PG,ANALOG_SAMPLES,DIGITAL_SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
        SUBFRAME_DEADTIME \returns std::string
        frame_number,acquisition_time,frame_period,
-       delay_after_trigger,gates_number, cycles_number,
+       delay_after_trigger, cycles_number,
        actual_time,measurement_time,
        progress,frames_from_start,frames_from_start_pg,analog_samples, digital_samples,subframe_acquisition_time,storage_cell_number,
        SUBFRAME_DEADTIME
@@ -932,8 +861,6 @@ format
             return std::string("frame_period");
         case DELAY_AFTER_TRIGGER:
             return std::string("delay_after_trigger");
-        case GATES_NUMBER:
-            return std::string("gates_number");
         case CYCLES_NUMBER:
             return std::string("cycles_number");
         case ACTUAL_TIME:
@@ -1293,4 +1220,14 @@ typedef struct {
 };
 #else
 } sls_detector_module;
+#endif
+
+
+#ifdef __cplusplus
+//TODO! discuss this
+#include <vector> //hmm... but currently no way around
+namespace sls{
+using Positions = const std::vector<int> &;
+using defs = slsDetectorDefs;
+}
 #endif

@@ -110,7 +110,7 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("readConfigurationFile",
              &DetectorPythonInterface::readConfigurationFile)
         .def("readParametersFile", &DetectorPythonInterface::readParametersFile)
-        .def("checkOnline", &DetectorPythonInterface::checkOnline)
+     //    .def("checkOnline", &DetectorPythonInterface::checkOnline)
         .def("setReadoutClockSpeed",
              &DetectorPythonInterface::setReadoutClockSpeed)
         .def("getReadoutClockSpeed",
@@ -173,8 +173,8 @@ PYBIND11_MODULE(_sls_detector, m) {
 
         .def("getCycles", &DetectorPythonInterface::getCycles)
         .def("setCycles", &DetectorPythonInterface::setCycles)
-        .def("getNumberOfGates", &DetectorPythonInterface::getNumberOfGates)
-        .def("setNumberOfGates", &DetectorPythonInterface::setNumberOfGates)
+     //    .def("getNumberOfGates", &DetectorPythonInterface::getNumberOfGates)
+     //    .def("setNumberOfGates", &DetectorPythonInterface::setNumberOfGates)
         .def("getDelay", &DetectorPythonInterface::getDelay)
         .def("setDelay", &DetectorPythonInterface::setDelay)
 
@@ -183,8 +183,8 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("setNumberOfStorageCells", &DetectorPythonInterface::setNumberOfStorageCells)
         .def("getNumberOfStorageCells", &DetectorPythonInterface::getNumberOfStorageCells)
 
-        .def("getTimingMode", &DetectorPythonInterface::getTimingMode)
-        .def("setTimingMode", &DetectorPythonInterface::setTimingMode)
+     //    .def("getTimingMode", &DetectorPythonInterface::getTimingMode)
+     //    .def("setTimingMode", &DetectorPythonInterface::setTimingMode)
 
         .def("getDetectorType", &DetectorPythonInterface::getDetectorType)
 
@@ -282,10 +282,10 @@ PYBIND11_MODULE(_sls_detector, m) {
              &DetectorPythonInterface::getReceiverCurrentFrameIndex)
         .def("getGapPixels", &DetectorPythonInterface::getGapPixels)
         .def("setGapPixels", &DetectorPythonInterface::setGapPixels)
-        .def("getFlippedDataX", &DetectorPythonInterface::getFlippedDataX)
-        .def("getFlippedDataY", &DetectorPythonInterface::getFlippedDataY)
-        .def("setFlippedDataX", &DetectorPythonInterface::setFlippedDataX)
-        .def("setFlippedDataY", &DetectorPythonInterface::setFlippedDataY)
+     //    .def("getFlippedDataX", &DetectorPythonInterface::getFlippedDataX)
+     //    .def("getFlippedDataY", &DetectorPythonInterface::getFlippedDataY)
+     //    .def("setFlippedDataX", &DetectorPythonInterface::setFlippedDataX)
+     //    .def("setFlippedDataY", &DetectorPythonInterface::setFlippedDataY)
 
         .def("getServerLock", &DetectorPythonInterface::getServerLock)
         .def("setServerLock", &DetectorPythonInterface::setServerLock)
@@ -332,14 +332,10 @@ PYBIND11_MODULE(_sls_detector, m) {
              py::arg("level"), py::arg("duration"), py::arg("det_id") = -1)
 
         .def("getPatternWaitTime", &DetectorPythonInterface::getPatternWaitTime,
-             py::arg("level"), py::arg("det_id") = -1)
+             py::arg("level"), py::arg("det_id") = -1);
 
-        .def("getImageSize", &DetectorPythonInterface::getImageSize)
-        .def("setImageSize", &DetectorPythonInterface::setImageSize)
-        .def("getNumberOfDetectors",
-             &DetectorPythonInterface::getNumberOfDetectors)
-        .def("getDetectorGeometry",
-             &DetectorPythonInterface::getDetectorGeometry);
+
+
 
     
 

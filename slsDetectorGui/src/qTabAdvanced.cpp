@@ -10,18 +10,7 @@ qTabAdvanced::qTabAdvanced(QWidget *parent, multiSlsDetector *detector)
     FILE_LOG(logDEBUG) << "Advanced ready";
 }
 
-qTabAdvanced::~qTabAdvanced() {
-    for (size_t i = 0; i < lblFromX.size(); ++i) {
-        delete lblFromX[i];
-        delete lblFromY[i];
-        delete lblToX[i];
-        delete lblToY[i];
-        delete spinFromX[i];
-        delete spinFromY[i];
-        delete spinToX[i];
-        delete spinToY[i];
-    }
-}
+qTabAdvanced::~qTabAdvanced() {}
 
 void qTabAdvanced::SetupWidgetWindow() {
     // enabling according to det type
@@ -93,9 +82,8 @@ void qTabAdvanced::Initialization() {
 
     // roi
     if (tab_roi->isEnabled()) {
-        connect(btnAddRoi, SIGNAL(clicked()), this, SLOT(AddROISlot()));
+        connect(comboReadout, SIGNAL(currentIndexChanged(int)), this, SLOT(GetROI()));
         connect(btnSetRoi, SIGNAL(clicked()), this, SLOT(SetROI()));
-        connect(btnGetRoi, SIGNAL(clicked()), this, SLOT(GetROI()));
         connect(btnClearRoi, SIGNAL(clicked()), this, SLOT(ClearROI()));
     }
 
@@ -122,14 +110,20 @@ void qTabAdvanced::PopulateDetectors() {
     FILE_LOG(logDEBUG) << "Populating detectors";
     disconnect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetDetector(int)));
+    disconnect(comboReadout, SIGNAL(currentIndexChanged(int)), this, SLOT(GetROI()));          
 
     comboDetector->clear();
-    for (int i = 0; i < myDet->getNumberOfDetectors(); ++i)
+    comboReadout->clear();
+    for (unsigned int i = 0; i < myDet->size(); ++i) {
         comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
+        comboReadout->addItem(QString(myDet->getHostname(i).c_str()));
+    }
     comboDetector->setCurrentIndex(0);
+    comboReadout->setCurrentIndex(0);    
 
     connect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetDetector(int)));
+    connect(comboReadout, SIGNAL(currentIndexChanged(int)), this, SLOT(GetROI()));        
 }
 
 void qTabAdvanced::GetControlPort() {
@@ -332,7 +326,7 @@ void qTabAdvanced::SetDetector(int index) {
     GetRxrZMQPort();
     GetRxrZMQIP();
 
-    myDet->printReceiverConfiguration(logDEBUG);
+    FILE_LOG(logDEBUG) << myDet->printReceiverConfiguration();
 }
 
 void qTabAdvanced::SetControlPort(int port) {
@@ -462,173 +456,33 @@ void qTabAdvanced::SetRxrZMQIP() {
                                 &qTabAdvanced::GetRxrZMQIP)
 }
 
-void qTabAdvanced::AddROISlot() {
-    FILE_LOG(logDEBUG) << "Add ROI Slot";
-
-    QLabel *lFromX = new QLabel("x min:");
-    QLabel *lFromY = new QLabel("y min:");
-    QLabel *lToX = new QLabel("x max:");
-    QLabel *lToY = new QLabel("y max:");
-    QSpinBox *sFromX = new QSpinBox();
-    QSpinBox *sFromY = new QSpinBox();
-    QSpinBox *sToX = new QSpinBox();
-    QSpinBox *sToY = new QSpinBox();
-    lFromX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    lFromY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    lToX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    lToY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    sFromX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    sFromY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    sToX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    sToY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    lFromX->setFixedWidth(50);
-    lFromY->setFixedWidth(50);
-    lToX->setFixedWidth(50);
-    lToY->setFixedWidth(50);
-    sFromX->setFixedWidth(80);
-    sFromY->setFixedWidth(80);
-    sToX->setFixedWidth(80);
-    sToY->setFixedWidth(80);
-    sFromX->setFixedHeight(19);
-    sFromY->setFixedHeight(19);
-    sToX->setFixedHeight(19);
-    sToY->setFixedHeight(19);
-    sFromX->setMaximum(myDet->getTotalNumberOfChannels(slsDetectorDefs::X) - 1);
-    sToX->setMaximum(myDet->getTotalNumberOfChannels(slsDetectorDefs::X) - 1);
-    sFromY->setMaximum(myDet->getTotalNumberOfChannels(slsDetectorDefs::Y) - 1);
-    sToY->setMaximum(myDet->getTotalNumberOfChannels(slsDetectorDefs::Y) - 1);
-    sFromX->setMinimum(-1);
-    sToX->setMinimum(-1);
-    sFromY->setMinimum(-1);
-    sToY->setMinimum(-1);
-    sFromX->setValue(-1);
-    sFromY->setValue(-1);
-    sToX->setValue(-1);
-    sToY->setValue(-1);
-
-    lblFromX.push_back(lFromX);
-    lblFromY.push_back(lFromY);
-    lblToX.push_back(lToX);
-    lblToY.push_back(lToY);
-    spinFromX.push_back(sFromX);
-    spinFromY.push_back(sFromY);
-    spinToX.push_back(sToX);
-    spinToY.push_back(sToY);
-
-    int nroi = (int)lblFromX.size();
-    gridRoi->addWidget(lblFromX[nroi], nroi, 0, Qt::AlignTop);
-    gridRoi->addWidget(spinFromX[nroi], nroi, 1, Qt::AlignTop);
-    // FIXME: gridRoi->addItem(new
-    // QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),
-    // nroi,2,Qt::AlignTop);
-    gridRoi->addWidget(lblToX[nroi], nroi, 3, Qt::AlignTop);
-    gridRoi->addWidget(spinToX[nroi], nroi, 4, Qt::AlignTop);
-    // FIXME: gridRoi->addItem(new
-    // QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),
-    // nroi,5,Qt::AlignTop);
-    gridRoi->addWidget(lblFromY[nroi], nroi, 6, Qt::AlignTop);
-    gridRoi->addWidget(spinFromY[nroi], nroi, 7, Qt::AlignTop);
-    // FIXME: gridRoi->addItem(new
-    // QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),
-    // nroi,8,Qt::AlignTop);
-    gridRoi->addWidget(lblToY[nroi], nroi, 9, Qt::AlignTop);
-    gridRoi->addWidget(spinToY[nroi], nroi, 10, Qt::AlignTop);
-
-    lblFromX[nroi]->show();
-    spinFromX[nroi]->show();
-    lblToX[nroi]->show();
-    spinToX[nroi]->show();
-    lblFromY[nroi]->show();
-    spinFromY[nroi]->show();
-    lblToY[nroi]->show();
-    spinToY[nroi]->show();
-
-    FILE_LOG(logDEBUG) << "ROI Inputs added";
-}
-
 void qTabAdvanced::GetROI() {
     FILE_LOG(logDEBUG) << "Getting ROI";
-    ClearROIWidgets();
-
     try {
-        int nroi = 0;
-        const slsDetectorDefs::ROI *roi = myDet->getROI(nroi);
-        if (roi != nullptr) {
-            for (int i = 0; i < nroi; ++i) {
-                AddROISlot();
-                spinFromX[i]->setValue(roi[i].xmin);
-                spinFromY[i]->setValue(roi[i].ymin);
-                spinToX[i]->setValue(roi[i].xmax);
-                spinToY[i]->setValue(roi[i].ymax);
-            }
-            FILE_LOG(logDEBUG) << "ROIs populated: " << nroi;
-        }
-
+        slsDetectorDefs::ROI roi = myDet->getROI(comboReadout->currentIndex());
+        spinXmin->setValue(roi.xmin);
+        spinXmax->setValue(roi.xmax);     
     } CATCH_DISPLAY ("Could not get ROI.", "qTabAdvanced::GetROI")
-}
-
-void qTabAdvanced::ClearROIWidgets() {
-    FILE_LOG(logDEBUG) << "Clear ROI Widgets";
-
-    // hide widgets
-    QLayoutItem *item;
-    while ((item = gridRoi->takeAt(0))) {
-        if (item->widget()) {
-            item->widget()->hide();
-            gridRoi->removeWidget(item->widget());
-        }
-    }
-
-    // delete widgets
-    for (size_t i = 0; i < lblFromX.size(); ++i) {
-        delete lblFromX[i];
-        delete spinFromX[i];
-        delete lblToX[i];
-        delete spinToY[i];
-        delete lblFromY[i];
-        delete spinFromY[i];
-        delete lblToY[i];
-        delete spinToY[i];
-    }
-    lblFromX.clear();
-    spinFromX.clear();
-    lblToX.clear();
-    spinToY.clear();
-    lblFromY.clear();
-    spinFromY.clear();
-    lblToY.clear();
-    spinToY.clear();
 }
 
 void qTabAdvanced::ClearROI() {
     FILE_LOG(logINFO) << "Clearing ROI";
-    if (QMessageBox::warning(
-            this, "Clear ROI",
-            "Are you sure you want to clear all the ROI in detector?",
-            QMessageBox::Yes | QMessageBox::No,
-            QMessageBox::No) == QMessageBox::Yes) {
-
-        ClearROIWidgets();
-        SetROI();
-        FILE_LOG(logDEBUG) << "ROIs cleared";
-    }
+    spinXmin->setValue(-1);
+    spinXmax->setValue(-1);  
+    SetROI();
+    FILE_LOG(logDEBUG) << "ROIs cleared";
 }
 
 void qTabAdvanced::SetROI() {
-    // get roi from widgets
-    int nroi = (int)lblFromX.size();
-    slsDetectorDefs::ROI roi[nroi];
-    for (int i = 0; i < nroi; ++i) {
-        roi[i].xmin = spinFromX[i]->value();
-        roi[i].ymin = spinFromY[i]->value();
-        roi[i].xmax = spinToX[i]->value();
-        roi[i].ymax = spinToY[i]->value();
-    }
+
+    slsDetectorDefs::ROI roi;
+    roi.xmin = spinXmin->value();
+    roi.xmax = spinXmax->value();
 
     // set roi
-    FILE_LOG(logINFO) << "Setting ROI:" << nroi;
+    FILE_LOG(logINFO) << "Setting ROI: [" << roi.xmin << ", " << roi.xmax << "]";
     try {
-        myDet->setROI(nroi, roi, -1);
+        myDet->setROI(roi, comboReadout->currentIndex());
     } CATCH_DISPLAY ("Could not set these ROIs.",
                                 "qTabAdvanced::SetROI")
 

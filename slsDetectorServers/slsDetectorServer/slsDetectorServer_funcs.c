@@ -1,7 +1,7 @@
 #include "slsDetectorServer_funcs.h"
 #include "slsDetectorFunctionList.h"
 #include "communication_funcs.h"
-#include "logger.h"
+#include "clogger.h"
 
 #include <string.h>
 #include <arpa/inet.h>
@@ -116,7 +116,6 @@ const char* getTimerName(enum timerIndex ind) {
     case ACQUISITION_TIME:          return "acquisition_time";
     case FRAME_PERIOD:              return "frame_period";
     case DELAY_AFTER_TRIGGER:       return "delay_after_trigger";
-    case GATES_NUMBER:              return "gates_number";
     case CYCLES_NUMBER:             return "cycles_number";
     case ACTUAL_TIME:               return "actual_time";
     case MEASUREMENT_TIME:          return "measurement_time";
@@ -168,7 +167,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
 	case F_SET_EXTERNAL_SIGNAL_FLAG:		return "F_SET_EXTERNAL_SIGNAL_FLAG";
-	case F_SET_EXTERNAL_COMMUNICATION_MODE:	return "F_SET_EXTERNAL_COMMUNICATION_MODE";
+	case F_SET_TIMING_MODE:					return "F_SET_TIMING_MODE";
 	case F_GET_ID:							return "F_GET_ID";
 	case F_DIGITAL_TEST:					return "F_DIGITAL_TEST";
 	case F_SET_DAC:							return "F_SET_DAC";
@@ -190,6 +189,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_READOUT_FLAGS:				return "F_SET_READOUT_FLAGS";
 	case F_SET_ROI:							return "F_SET_ROI";
+	case F_GET_ROI:							return "F_GET_ROI";
 	case F_SET_SPEED:						return "F_SET_SPEED";
 	case F_EXIT_SERVER:						return "F_EXIT_SERVER";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
@@ -197,9 +197,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_PORT:						return "F_SET_PORT";
 	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
 	case F_CONFIGURE_MAC:					return "F_CONFIGURE_MAC";
-	case F_LOAD_IMAGE:						return "F_LOAD_IMAGE";
-	case F_READ_COUNTER_BLOCK:				return "F_READ_COUNTER_BLOCK";
-	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
@@ -258,7 +255,7 @@ void function_table() {
 	flist[F_EXEC_COMMAND]						= &exec_command;
 	flist[F_GET_DETECTOR_TYPE]					= &get_detector_type;
 	flist[F_SET_EXTERNAL_SIGNAL_FLAG]			= &set_external_signal_flag;
-	flist[F_SET_EXTERNAL_COMMUNICATION_MODE]	= &set_external_communication_mode;
+	flist[F_SET_TIMING_MODE]					= &set_timing_mode;
 	flist[F_GET_ID]								= &get_id;
 	flist[F_DIGITAL_TEST]						= &digital_test;
 	flist[F_SET_DAC]							= &set_dac;
@@ -280,6 +277,7 @@ void function_table() {
 	flist[F_SET_DYNAMIC_RANGE]					= &set_dynamic_range;
 	flist[F_SET_READOUT_FLAGS]					= &set_readout_flags;
 	flist[F_SET_ROI]							= &set_roi;
+	flist[F_GET_ROI]							= &get_roi;
 	flist[F_SET_SPEED]							= &set_speed;
 	flist[F_EXIT_SERVER]						= &exit_server;
 	flist[F_LOCK_SERVER]						= &lock_server;
@@ -287,9 +285,6 @@ void function_table() {
 	flist[F_SET_PORT]							= &set_port;
 	flist[F_UPDATE_CLIENT]						= &update_client;
 	flist[F_CONFIGURE_MAC]						= &configure_mac;
-	flist[F_LOAD_IMAGE]							= &load_image;
-	flist[F_READ_COUNTER_BLOCK]					= &read_counter_block;
-	flist[F_RESET_COUNTER_BLOCK]				= &reset_counter_block;
 	flist[F_ENABLE_TEN_GIGA]					= &enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]					= &set_all_trimbits;
 	flist[F_SET_PATTERN_IO_CONTROL]				= &set_pattern_io_control;
@@ -524,18 +519,18 @@ int set_external_signal_flag(int file_des) {
 
 
 
-int set_external_communication_mode(int file_des) {
+int set_timing_mode(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	enum externalCommunicationMode arg = GET_EXTERNAL_COMMUNICATION_MODE;
-	enum externalCommunicationMode retval = GET_EXTERNAL_COMMUNICATION_MODE;
+	enum timingMode arg = GET_TIMING_MODE;
+	enum timingMode retval = GET_TIMING_MODE;
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
 	// set
-	if ((arg != GET_EXTERNAL_COMMUNICATION_MODE) && (Server_VerifyLock() == OK)) {
+	if ((arg != GET_TIMING_MODE) && (Server_VerifyLock() == OK)) {
 		switch (arg) {
 		case AUTO_TIMING:
 		case TRIGGER_EXPOSURE:
@@ -618,7 +613,7 @@ int digital_test(int file_des) {
 		case DETECTOR_FIRMWARE_TEST:
 		case DETECTOR_BUS_TEST:
 #ifdef GOTTHARDD
-        case DIGITAL_BIT_TEST:
+        case IMAGE_TEST:
             retval = detectorTest(mode, ival);
             break;
 #else
@@ -1897,80 +1892,52 @@ int set_readout_flags(int file_des) {
 int set_roi(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int narg = -1;
-	ROI arg[MAX_ROIS];
-	int nretval = -1;
-	ROI* retval = NULL;
+	ROI arg;
 
-	// receive number of ROIs
-	if (receiveData(file_des, &narg, sizeof(narg), INT32) < 0)
+	// receive ROI
+	if (receiveData(file_des, &arg.xmin, sizeof(int), INT32) < 0)
 		return printSocketReadError();
-	// receive ROIs
-	{
-		int iloop = 0;
-		for (iloop = 0; iloop < narg; ++iloop) {
-			if (receiveData(file_des, &arg[iloop].xmin, sizeof(int), INT32) < 0)
-				return printSocketReadError();
-			if (receiveData(file_des, &arg[iloop].xmax, sizeof(int), INT32) < 0)
-				return printSocketReadError();
-			if (receiveData(file_des, &arg[iloop].ymin, sizeof(int), INT32) < 0)
-				return printSocketReadError();
-			if (receiveData(file_des, &arg[iloop].ymax, sizeof(int), INT32) < 0)
-				return printSocketReadError();
-		}
-	}
-	FILE_LOG(logDEBUG1, ("Set ROI (narg:%d)\n", narg));
-	{
-		int iloop = 0;
-		for (iloop = 0; iloop < narg; ++iloop) {
-			FILE_LOG(logDEBUG1, ("%d: %d\t%d\t%d\t%d\n",
-					arg[iloop].xmin, arg[iloop].xmax, arg[iloop].ymin, arg[iloop].ymax));
-		}
-	}
+	if (receiveData(file_des, &arg.xmax, sizeof(int), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Set ROI: [%d, %d]\n", arg.xmin, arg.xmax));
 
 #ifndef GOTTHARDD
 	functionNotImplemented();
 #else
-	// set & get
-	if ((narg == GET_READOUT_FLAGS) || (Server_VerifyLock() == OK)) {
-	    if (myDetectorType == GOTTHARD && narg > 1) {
-	        ret = FAIL;
-            strcpy(mess,"Can not set more than one ROI per module.\n");
-            FILE_LOG(logERROR,(mess));
-	    } else {
-	        retval = setROI(narg, arg, &nretval, &ret);
-	        if (ret == FAIL) {
-	            if (nretval == -1) // chip test board
-	                sprintf(mess,"Could not set ROI. Max ROI level (100) reached!\n");
-	            else if (nretval == -2)
-	                sprintf(mess, "Could not set ROI. Could not allocate RAM\n");
-	            else
-	                sprintf(mess,"Could not set all roi. "
-	                        "Set %d rois, but read %d rois\n", narg, nretval);
-	            FILE_LOG(logERROR,(mess));
-	        }
-	        FILE_LOG(logDEBUG1, ("nRois: %d\n", nretval));
-	    }
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setROI(arg);
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set ROI. Invalid xmin or xmax\n");
+			FILE_LOG(logERROR,(mess));
+		}
 	}
 #endif
 
-	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
 
+
+int get_roi(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	ROI retval;
+
+#ifndef GOTTHARDD
+	functionNotImplemented();
+#else
+	// only get
+	retval = getROI();
+	FILE_LOG(logDEBUG1, ("nRois: (%d, %d)\n", retval.xmin, retval.xmax));
+#endif
+
+	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 	if (ret != FAIL) {
-		//retvalsize could be swapped during sendData
-		int nretval1 = nretval;
-		sendData(file_des, &nretval1, sizeof(nretval1), INT32);
-		int iloop = 0;
-		for(iloop = 0; iloop < nretval; ++iloop) {
-			sendData(file_des, &retval[iloop].xmin, sizeof(int), INT32);
-			sendData(file_des, &retval[iloop].xmax, sizeof(int), INT32);
-			sendData(file_des, &retval[iloop].ymin, sizeof(int), INT32);
-			sendData(file_des, &retval[iloop].ymax, sizeof(int), INT32);
-		}
+		sendData(file_des, &retval.xmin, sizeof(int), INT32);
+		sendData(file_des, &retval.xmax, sizeof(int), INT32);
 	}
 	return ret;
 }
-
 
 
 
@@ -2208,11 +2175,6 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
-	// databytes
-	i32 = calculateDataBytes();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
 	// settings
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
 	i32 = (int)getSettings();
@@ -2285,20 +2247,9 @@ int send_update(int file_des) {
 
     // roi
 #if defined(GOTTHARDD)
-    ROI* retval = NULL;
-    ROI arg[1];
-    int ret = OK, nretval = 0;
-    retval = setROI(-1, arg, &nretval, &ret);
-	//retvalsize could be swapped during sendData
-	int nretval1 = nretval;
-	sendData(file_des, &nretval1, sizeof(nretval1), INT32);
-	int iloop = 0;
-	for(iloop = 0; iloop < nretval; ++iloop) {
-		sendData(file_des, &retval[iloop].xmin, sizeof(int), INT32);
-		sendData(file_des, &retval[iloop].xmax, sizeof(int), INT32);
-		sendData(file_des, &retval[iloop].ymin, sizeof(int), INT32);
-		sendData(file_des, &retval[iloop].ymax, sizeof(int), INT32);
-	}
+    ROI retval = getROI();
+	sendData(file_des, &retval.xmin, sizeof(int), INT32);
+	sendData(file_des, &retval.xmax, sizeof(int), INT32);
 #endif
 	
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
@@ -2538,131 +2489,6 @@ int configure_mac(int file_des) {
 
 	return Server_SendResult(file_des, OTHER, UPDATE, retvals, sizeof(retvals));
 }
-
-
-
-
-
-int load_image(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1, -1};
-
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-		return printSocketReadError();
-
-	enum imageType index = args[0];
-	int numChannels = args[1];
-	short int imageVals[numChannels];
-	memset(imageVals, 0, numChannels * sizeof(short int));
-	if (numChannels > 0) {
-		if (receiveData(file_des, imageVals, numChannels * sizeof(short int), OTHER) < 0) {
-			return printSocketReadError();
-		}
-	}
-	FILE_LOG(logDEBUG1, ("Loading %s image (ind:%d)\n", (index == DARK_IMAGE) ? "dark" :
-			((index == GAIN_IMAGE) ? "gain" : "unknown"), index));
-
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
-
-	// set only
-	if (Server_VerifyLock() == OK) {
-		switch (index) {
-		case DARK_IMAGE :
-		case GAIN_IMAGE :
-		    // size of image does not match expected size
-		    if (numChannels != (calculateDataBytes()/sizeof(short int))) {
-		        ret = FAIL;
-                sprintf(mess, "Could not load image. "
-                        "Number of Channels do not match. Expected %d, got %d\n",
-                        calculateDataBytes(), numChannels);
-                FILE_LOG(logERROR,(mess));
-		    } else
-		        loadImage(index, imageVals);
-			break;
-		default:
-			modeNotImplemented("Image index", (int)index);
-			break;
-		}
-	}
-#endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
-}
-
-
-
-
-
-
-int read_counter_block(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1, -1};
-
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-		return printSocketReadError();
-	int startACQ = args[0];
-    int numChannels = args[1];
-    short int retval[numChannels];
-    memset(retval, 0, numChannels * sizeof(short int));
-	FILE_LOG(logDEBUG1, ("Read counter block with start acq bit: %d\n", startACQ));
-
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
-
-	// only set
-	if (Server_VerifyLock() == OK) {
-	    // size of image does not match expected size
-	    if (numChannels != (calculateDataBytes()/sizeof(short int))) {
-	        ret = FAIL;
-	        sprintf(mess, "Could not load image. "
-	                "Number of Channels do not match. Expected %d, got %d\n",
-	                calculateDataBytes(), numChannels);
-	        FILE_LOG(logERROR,(mess));
-	    } else {
-	        ret = readCounterBlock(startACQ, retval);
-	        if (ret == FAIL) {
-	            strcpy(mess, "Could not read counter block\n");
-	            FILE_LOG(logERROR,(mess));
-	        }
-	    }
-	}
-#endif
-	return Server_SendResult(file_des, OTHER, UPDATE, retval, numChannels * sizeof(short int));
-}
-
-
-
-
-
-int reset_counter_block(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int startACQ = -1;
-
-	if (receiveData(file_des, &startACQ, sizeof(startACQ), INT32) < 0)
-		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Reset counter block with start acq bit: %d\n", startACQ));
-
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
-	// only set
-	if (Server_VerifyLock() == OK) {
-		ret = resetCounterBlock(startACQ);
-		if (ret == FAIL) {
-			strcpy(mess, "Could not reset counter block\n");
-			FILE_LOG(logERROR, (mess));
-		}
-	}
-#endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
-}
-
-
 
 
 

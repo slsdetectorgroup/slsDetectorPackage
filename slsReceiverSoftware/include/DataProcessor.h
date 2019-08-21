@@ -10,6 +10,7 @@
  */
 
 #include "ThreadObject.h"
+#include "receiver_defs.h"
 
 class GeneralData;
 class Fifo;
@@ -176,16 +177,10 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
 	/**
 	 * Create New File
-	 * @param en ten giga enable
-	 * @param nf number of frames
-	 * @param at acquisition time
-	 * @param st sub exposure time
-	 * @param sp sub period
-	 * @param ap acquisition period
+	 * @param attr master file attributes
 	 * @returns OK or FAIL
 	 */
-	int CreateNewFile(bool en, uint64_t nf, uint64_t at, uint64_t st,
-			uint64_t sp, uint64_t ap);
+	int CreateNewFile(masterAttributes& attr);
 
 	/**
 	 * Closes files

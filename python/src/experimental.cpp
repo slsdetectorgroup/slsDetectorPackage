@@ -18,16 +18,13 @@ void init_experimental(py::module &m) {
 
         // Acq related
         .def("acquire", &Detector::acquire)
-        .def("startReceiver", &Detector::startReceiver, py::arg() = Positions{})
-        .def("stopReceiver", &Detector::stopReceiver, py::arg() = Positions{})
-        .def("getAcquiringFlag", &Detector::getAcquiringFlag)
-        .def("setAcquiringFlag", &Detector::setAcquiringFlag)
+        .def("clearAcquiringFlag", &Detector::clearAcquiringFlag)
         .def("getReceiverStatus", &Detector::getReceiverStatus,
              py::arg() = Positions{})
 
         // Configuration
         .def("free", &Detector::freeSharedMemory)
-        .def("setConfig", &Detector::setConfig)
+        .def("loadConfig", &Detector::loadConfig)
         .def("getHostname", &Detector::getHostname, py::arg() = Positions{})
 
         // Bits and registers
@@ -35,7 +32,7 @@ void init_experimental(py::module &m) {
              py::arg() = Positions{})
         .def("clearBit", &Detector::clearBit, py::arg(), py::arg(),
              py::arg() = Positions{})
-        .def("getRegister", &Detector::getRegister, py::arg(),
+        .def("readRegister", &Detector::readRegister, py::arg(),
              py::arg() = Positions{})
 
         .def("getStartingFrameNumber", &Detector::getStartingFrameNumber,
@@ -44,10 +41,10 @@ void init_experimental(py::module &m) {
              py::arg(), py::arg() = Positions{})
 
         // File
-        .def("getFileName", &Detector::getFileName)
-        .def("setFileName", &Detector::setFileName, py::arg())
+        .def("getFileNamePrefix", &Detector::getFileNamePrefix)
+        .def("setFileNamePrefix", &Detector::setFileNamePrefix, py::arg(),py::arg() = Positions{})
         .def("getFilePath", &Detector::getFilePath)
-        .def("setFilePath", &Detector::setFilePath, py::arg())
+        .def("setFilePath", &Detector::setFilePath, py::arg(),py::arg() = Positions{})
         .def("setFileWrite", &Detector::setFileWrite, py::arg(),
              py::arg() = Positions{})
         .def("getFileWrite", &Detector::getFileWrite, py::arg() = Positions{})

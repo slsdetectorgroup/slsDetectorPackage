@@ -1,7 +1,7 @@
 #include "FebControl.h"
 #include "FebRegisterDefs.h"
 #include "slsDetectorServer_defs.h"
-#include "logger.h"
+#include "clogger.h"
 #include "Beb.h"
 
 #include <unistd.h>

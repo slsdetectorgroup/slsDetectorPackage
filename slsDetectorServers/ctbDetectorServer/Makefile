@@ -1,14 +1,17 @@
+current_dir = $(shell pwd)
+main_server = ../slsDetectorServer/
+support_lib = ../../slsSupportLib/include/
+
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DCHIPTESTBOARDD  -DSTOP_SERVER #-DDEBUG1 #-DJCTB -DVERBOSEI #-DVERBOSE
-LDLIBS		+= 	-lm  -lstdc++
-
+CFLAGS		+=  -Wall -DCHIPTESTBOARDD  -DSTOP_SERVER -I$(main_server) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+LDLIBS		+= 	-lm  
 PROGS		= 	ctbDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
-OBJS 		= 	$(SRC_CLNT:.c=.o) 
+SRCS 		= 	$(main_server)communication_funcs.c $(main_server)slsDetectorServer.c $(main_server)slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+OBJS 		= 	$(SRCS:.c=.o) 
  
 all: clean versioning $(PROGS)
 #all: clean $(PROGS)
@@ -29,7 +32,7 @@ $(PROGS): $(OBJS)
 	rm *.gdb
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb
+	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_server)*.o
 	
 
 	

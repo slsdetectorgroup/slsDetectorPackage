@@ -597,12 +597,12 @@ hframe=new TGHorizontalFrame(this, 800,50);
   acqThread = new TThread("acqThread",
 			  ctbAcquisition::ThreadHandle,(void*)this);
   // acqThread->Run();
-  cout <<"Registering progress callback" << endl;
-  try {
-    myDet->registerProgressCallback(&progressCallback,(void*)this);
-  }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
+  // cout <<"Registering progress callback" << endl;
+  // try {
+  //   myDet->registerProgressCallback(&progressCallback,(void*)this);
+  // }  catch (...) {
+  //   cout << "Do nothing for this error" << endl;
+  // }
   
   cout <<"Registering data callback" << endl;
   try{

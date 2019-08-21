@@ -1,4 +1,4 @@
-add_executable(jungfrauDetectorServer
+add_executable(gotthardDetectorServer
     slsDetectorFunctionList.c
     ../slsDetectorServer/slsDetectorServer.c
     ../slsDetectorServer/slsDetectorServer_funcs.c
@@ -10,22 +10,22 @@ include_directories(
     ../../slsSupportLib/include
 )
 
-target_include_directories(jungfrauDetectorServer
+target_include_directories(gotthardDetectorServer
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_compile_definitions(jungfrauDetectorServer
-    PUBLIC JUNGFRAUD VIRTUAL STOP_SERVER
+target_compile_definitions(gotthardDetectorServer
+    PUBLIC GOTTHARDD VIRTUAL STOP_SERVER
 )
 
-target_link_libraries(jungfrauDetectorServer
+target_link_libraries(gotthardDetectorServer
     PUBLIC pthread rt
 )
 
-set_target_properties(jungfrauDetectorServer PROPERTIES
+set_target_properties(gotthardDetectorServer PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS jungfrauDetectorServer
+install(TARGETS gotthardDetectorServer
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

@@ -1,7 +1,7 @@
 #include "FebInterface.h"
 #include "LocalLinkInterface.h"
 #include "xparameters.h"
-#include "logger.h"
+#include "clogger.h"
 
 #include <unistd.h>
 

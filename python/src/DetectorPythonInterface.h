@@ -20,22 +20,8 @@ class DetectorPythonInterface {
 
     int getMultiDetectorId() { return multi_detector_id; }
 
-    // get image size as [nrow, ncols] return as a pair of ints
-    std::pair<int, int> getImageSize() {
-        std::pair<int, int> image_size{0, 0};
-        image_size.first = det.getMaxNumberOfChannelsPerDetector(
-            slsDetectorDefs::dimension::Y);
-        image_size.second = det.getMaxNumberOfChannelsPerDetector(
-            slsDetectorDefs::dimension::X);
-        return image_size;
-    }
 
-    void setImageSize(const int rows, const int cols) {
-        det.setMaxNumberOfChannelsPerDetector(slsDetectorDefs::dimension::Y,
-                                              rows);
-        det.setMaxNumberOfChannelsPerDetector(slsDetectorDefs::dimension::X,
-                                              cols);
-    }
+
 
     // blocking command, acquire set number of frames
     void acquire() { det.acquire(); }
@@ -113,7 +99,7 @@ class DetectorPythonInterface {
     void setFileFormat(const std::string &format);
     std::string getFileFormat();
 
-    std::string checkOnline() { return det.checkOnline(); }
+    // std::string checkOnline() { return det.checkOnline(); }
 
     bool isChipPowered() { return det.powerChip(); }
     void powerChip(const bool value) { det.powerChip(value); }
@@ -150,13 +136,9 @@ class DetectorPythonInterface {
 
     slsDetectorDefs::dacIndex dacNameToEnum(std::string dac_name);
 
-    std::pair<int, int> getDetectorGeometry() {
-        std::pair<int, int> g;
-        det.getNumberOfDetectors(g.first, g.second);
-        return g;
-    }
 
-    int getNumberOfDetectors() { return det.getNumberOfDetectors(); }
+
+    int getNumberOfDetectors() { return det.size(); }
 
     std::string getRunStatus() {
         auto s = det.getRunStatus();
@@ -234,7 +216,7 @@ class DetectorPythonInterface {
     }
 
     void setRateCorrection(std::vector<double> tau) {
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i)
+        for (size_t i = 0; i < det.size(); ++i)
             det.setRateCorrection(tau[i], i);
     }
 
@@ -282,21 +264,21 @@ class DetectorPythonInterface {
         return det.setPatternWaitTime(level, -1, detPos);
     }
 
-    bool getFlippedDataX(int i) {
-        return det.getFlippedData(slsDetectorDefs::dimension::X, i);
-    }
+    // bool getFlippedDataX(int i) {
+    //     return det.getFlippedData(slsDetectorDefs::dimension::X, i);
+    // }
 
-    bool getFlippedDataY(int i) {
-        return det.getFlippedData(slsDetectorDefs::dimension::Y, i);
-    }
+    // bool getFlippedDataY(int i) {
+    //     return det.getFlippedData(slsDetectorDefs::dimension::Y, i);
+    // }
 
-    void setFlippedDataX(int i, bool value) {
-        det.setFlippedData(slsDetectorDefs::dimension::X, value, i);
-    }
+    // void setFlippedDataX(int i, bool value) {
+    //     det.setFlippedData(slsDetectorDefs::dimension::X, value, i);
+    // }
 
-    void setFlippedDataY(int i, bool value) {
-        det.setFlippedData(slsDetectorDefs::dimension::Y, value, i);
-    }
+    // void setFlippedDataY(int i, bool value) {
+    //     det.setFlippedData(slsDetectorDefs::dimension::Y, value, i);
+    // }
 
     /*** Frame and file settings ***/
     void setFileName(std::string fname) { det.setFileName(fname); }
@@ -334,7 +316,7 @@ class DetectorPythonInterface {
 
     std::vector<double> getMeasuredPeriod() {
         std::vector<double> mp;
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        for (size_t i = 0; i < det.size(); ++i) {
             auto t = det.getTimeLeft(slsDetectorDefs::MEASURED_PERIOD, i);
             mp.push_back(static_cast<double>(t) * 1E-9);
         }
@@ -342,7 +324,7 @@ class DetectorPythonInterface {
     }
     std::vector<double> getMeasuredSubPeriod() {
         std::vector<double> mp;
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        for (size_t i = 0; i < det.size(); ++i) {
             auto t = det.getTimeLeft(slsDetectorDefs::MEASURED_SUBPERIOD, i);
             mp.push_back(static_cast<double>(t) * 1E-9);
         }
@@ -505,12 +487,12 @@ class DetectorPythonInterface {
     }
 
 
-    int getNumberOfGates() {
-        return det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, -1);
-    }
-    void setNumberOfGates(const int t) {
-        det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, t);
-    }
+    // int getNumberOfGates() {
+    //     return det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, -1);
+    // }
+    // void setNumberOfGates(const int t) {
+    //     det.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, t);
+    // }
 
     // time in ns
     int64_t getDelay() {
@@ -538,19 +520,19 @@ class DetectorPythonInterface {
         det.setTimer(slsDetectorDefs::timerIndex::FRAME_NUMBER, nframes);
     }
 
-    std::string getTimingMode() {
-        return det.externalCommunicationType(
-            det.setExternalCommunicationMode());
-    }
-    void setTimingMode(const std::string mode) {
-        det.setExternalCommunicationMode(det.externalCommunicationType(mode));
-    }
+    // std::string getTimingMode() {
+    //     return det.externalCommunicationType(
+    //         det.setExternalCommunicationMode());
+    // }
+    // void setTimingMode(const std::string mode) {
+    //     det.setExternalCommunicationMode(det.externalCommunicationType(mode));
+    // }
 
     void freeSharedMemory() { det.freeSharedMemory(); }
 
     std::vector<std::string> getDetectorType() {
         std::vector<std::string> detector_type;
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        for (size_t i = 0; i < det.size(); ++i) {
             detector_type.push_back(det.getDetectorTypeAsString(i));
         }
         return detector_type;
@@ -577,8 +559,8 @@ class DetectorPythonInterface {
     // detectors return a vector of strings
     std::vector<int> getReceiverStreamingPort() {
         std::vector<int> vec;
-        vec.reserve(det.getNumberOfDetectors());
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        vec.reserve(det.size());
+        for (size_t i = 0; i < det.size(); ++i) {
             vec.push_back(det.getReceiverStreamingPort(i));
         }
         return vec;
@@ -590,8 +572,8 @@ class DetectorPythonInterface {
 
     std::vector<int> getReceiverUDPPort() {
         std::vector<int> vec;
-        vec.reserve(det.getNumberOfDetectors());
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        vec.reserve(det.size());
+        for (size_t i = 0; i < det.size(); ++i) {
             vec.push_back(det.getReceiverUDPPort(i));
         }
         return vec;
@@ -599,8 +581,8 @@ class DetectorPythonInterface {
 
     std::vector<int> getReceiverUDPPort2() {
         std::vector<int> vec;
-        vec.reserve(det.getNumberOfDetectors());
-        for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+        vec.reserve(det.size());
+        for (size_t i = 0; i < det.size(); ++i) {
             vec.push_back(det.getReceiverUDPPort2(i));
         }
         return vec;
@@ -990,7 +972,7 @@ void DetectorPythonInterface::setReadoutFlag(const std::string flag_name) {
 
 std::vector<double> DetectorPythonInterface::getRateCorrection() {
     std::vector<double> rate_corr;
-    for (int i = 0; i < det.getNumberOfDetectors(); ++i) {
+    for (size_t i = 0; i < det.size(); ++i) {
         rate_corr.push_back(det.getRateCorrection(i));
     }
     return rate_corr;

@@ -99,28 +99,17 @@ public:
 	 * Returns the number of detectors in the multidetector structure
 	 * @returns number of detectors
 	 */
-	int getNumberOfDetectors() const;
+	int size() const;
+
 
 	/**
-	 * Returns the maximum number of channels of all detectors
-	 * (provided by user in config file using detsizechan command)
-	 * Offsets are calculated according to these dimensions
-	 * @param nx number of channels in horizontal
-	 * @param ny number of channels in vertical
-	 * @returns the maximum number of channels of all detectors
-	 */
-	int getMaximumDetectorSize(int &nx, int &ny);
-
-	/**
-	 * Returns the size and offsets of detector/multi detector
-	 * @param x horizontal position origin in channel number
-	 * @param y vertical position origin in channel number
+	 * Returns the size  of detector/multi detector
 	 * @param nx number of channels in horiziontal
 	 * @param ny number of channels in vertical
 	 * @param detPos -1 for all detectors in  list or specific detector position
 	 * @returns the total number of channels of all sls detectors
 	 */
-	int getDetectorSize(int &x, int &y, int &nx, int &ny, int detPos = -1);
+	int getDetectorSize(int &nx, int &ny, int detPos);
 
 	/**
 	 * Gets detector type
@@ -139,9 +128,8 @@ public:
 	/**
 	 * Write current configuration to a file (for one time detector setup)
 	 * @param fname configuration file name
-	 * @returns OK or FAIL
 	 */
-	int writeConfigurationFile(const std::string& fname);
+	void writeConfigurationFile(const std::string& fname);
 
 	/**
 	 * Loads the detector setup from file (current measurement setup)
@@ -360,14 +348,6 @@ public:
 	int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1);
 
 	/**
-	 * Set/get number of gates (none of the detectors at the moment)
-	 * @param t number of gates (-1 gets)
-	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns number of gates
-	 */
-	int64_t setNumberOfGates(int64_t t = -1, int detPos = -1);
-
-	/**
 	 * Set/get number of additional storage cells  (Jungfrau)
 	 * @param t number of additional storage cells. Default is 0.  (-1 gets)
 	 * @param detPos -1 for all detectors in  list or specific detector position
@@ -396,8 +376,8 @@ public:
 	/**
 	 * Set/get timing mode
 	 * @param pol timing mode (-1 gets)
-	 * Options (slsDetectorDefs::externalCommunicationMode)
-	 * (Eiger: AUTO_TIMING, TRIGGER_EXPOSURE, BURST_TRIGGER, GATE_FIX_NUMBER)
+	 * Options (slsDetectorDefs::timingMode)
+	 * (Eiger: AUTO_TIMING, TRIGGER_EXPOSURE, BURST_TRIGGER, GATED)
 	 * (Jungfrau: AUTO_TIMING, TRIGGER_EXPOSURE)
 	 * (Gotthard: AUTO_TIMING, TRIGGER_EXPOSURE)
 	 * @param detPos -1 for all detectors in  list or specific detector position
@@ -505,22 +485,22 @@ public:
 	int setFlowControl10G(int enable = -1, int detPos = -1);
 
     /**
-     * Set ROI (Gotthard) (>= 1 roi, but max 1 roi per module)
-     * At the moment only one set allowed
-     * @param n number of rois
-     * @param roiLimits array of roi
-     * @param detPos -1 for all detectors in  list or specific detector position
+     * Set ROI (Gotthard)
+     * At the moment only one set allowed per module
+     * Only allowed to set one ROI per module
+     * @param arg  roi
+     * @param detPos specific detector position
      */
-    void setROI(int n=-1, slsDetectorDefs::ROI roiLimits[]=NULL, int detPos = -1);
+    void setROI(slsDetectorDefs::ROI arg, int detPos = -1);
+
 
     /**
-     * Get ROI from each detector and convert it to the multi detector scale (Gotthard)
-     * >= 1 roi, but max 1 roi per module
-     * @param n number of rois
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns pointer to array of ROI structure
+     * Get ROI  (Gotthard)
+     * Only allowed to set one ROI per module
+     * @param detPos specific detector position
+     * @returns roi
      */
-    const slsDetectorDefs::ROI* getROI(int &n, int detPos = -1);
+    slsDetectorDefs::ROI getROI(int detPos = -1);
 
 
 
@@ -794,14 +774,6 @@ public:
 	 * @param pArg argument
 	 */
 	void registerAcquisitionFinishedCallback(void( *func)(double,int, void*), void *pArg);
-
-	/**
-	 * register callback for accessing detector progress in client,
-	 * @param func function to be called at the end of the acquisition.
-	 * gets detector status and progress index as arguments
-	 * @param pArg argument
-	 */
-	void registerProgressCallback(void( *func)(double,void*), void *pArg);
 
 	/**
      @short [usage strongly discouraged] sets parameters trough command line interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf

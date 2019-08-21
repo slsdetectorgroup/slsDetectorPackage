@@ -2,9 +2,9 @@
 
 /**
  * \file ToString.h
- * 
+ *
  * Conversion from various types to std::string
- * 
+ *
  */
 
 #include "TimeHelper.h"
@@ -19,8 +19,17 @@
 
 namespace sls {
 
-std::string ToString(const std::vector<std::string> &vec,
-                     const char delimiter = ' ');
+inline std::string ToString(const std::vector<std::string> &vec,
+                            const char delimiter = ' ') {
+    std::ostringstream os;
+    if(!vec.empty()){
+        auto it = vec.begin();
+        os << *it++;
+        while(it != vec.end())
+            os << delimiter << *it++;
+    }
+    return os.str();
+}
 
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>
@@ -135,6 +144,13 @@ T StringTo(const std::string &t, const std::string &unit) {
 template <typename T> T StringTo(std::string t) {
     auto unit = RemoveUnit(t);
     return StringTo<T>(t, unit);
+}
+
+/** For types with a .str() method use this for conversion */
+template <typename T>
+typename std::enable_if<has_str<T>::value, std::string>::type
+ToString(const T &obj) {
+    return obj.str();
 }
 
 } // namespace sls

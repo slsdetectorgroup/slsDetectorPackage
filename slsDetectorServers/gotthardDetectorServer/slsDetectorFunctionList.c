@@ -1,13 +1,12 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
-#include "logger.h"
+#include "clogger.h"
 #include "RegisterDefs.h"
 
-#ifndef VIRTUAL
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "AD9252.h"     // old board compatibility
 #include "LTC2620.h"    // dacs
-#else
+#ifdef VIRTUAL
 #include "blackfin.h"
 #include <pthread.h>
 #include <time.h>
@@ -33,12 +32,10 @@ int detectorFirstServer = 1;
 int dacValues[NDAC] = {0};
 enum detectorSettings thisSettings = UNINITIALIZED;
 enum externalSignalFlag signalMode = 0;
-int digitalTestBit = 0;
 
 // roi configuration
 int adcConfigured = -1;
-ROI rois[MAX_ROIS];
-int nROI = 0;
+ROI rois;
 int ipPacketSize = 0;
 int udpPacketSize = 0;
 
@@ -247,12 +244,7 @@ int detectorTest( enum digitalTestMode arg, int ival) {
     return OK;
 #endif
 	switch(arg){
-	case DIGITAL_BIT_TEST:
-	    if (ival > -1) {
-	        digitalTestBit = (ival == 0) ? 0 : 1;
-	        FILE_LOG(logINFO, ("Digital Test bit set: %d\n", digitalTestBit));
-	    }
-	    return digitalTestBit;
+	case IMAGE_TEST:                return testImage(ival);
 	case DETECTOR_FIRMWARE_TEST:	return testFpga();
 	case DETECTOR_BUS_TEST: 		return testBus();
 	default:
@@ -262,6 +254,19 @@ int detectorTest( enum digitalTestMode arg, int ival) {
 	return OK;
 }
 
+int testImage(int ival) {
+    uint32_t addr = MULTI_PURPOSE_REG;
+    if (ival >= 0) {
+        if (ival == 0) {
+            FILE_LOG(logINFO, ("Switching on Image Test\n"));
+            bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
+        } else {
+            FILE_LOG(logINFO, ("Switching off Image Test\n"));
+            bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
+        }
+    }
+    return ((bus_r(addr) & DGTL_TST_MSK) >> DGTL_TST_OFST);
+}
 
 /* Ids */
 
@@ -397,7 +402,9 @@ void setupDetector() {
     bus_w(TEMP_SPI_OUT_REG, 0x0);
 
     // roi, gbit readout
-    setROIADC(-1); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
+    rois.xmin = -1; 
+    rois.xmax = -1;
+    setROI(rois);// set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
 
     // master, slave (25um)
@@ -726,95 +733,49 @@ int setDynamicRange(int dr){
 	return DYNAMIC_RANGE;
 }
 
-ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret) {
+int setROI(ROI arg) {
 
-    // set ROI
-    if(n >= 0){
-        // print
-        if (!n) {
-            FILE_LOG(logINFO, ("Clearing ROI\n"));
-        } else {
-            FILE_LOG(logINFO, ("Setting ROI:\n"));
-            int i = 0;
-            for (i = 0; i < n; ++i) {
-                FILE_LOG(logINFO, ("\t(%d, %d)\n", arg[i].xmin, arg[i].xmax));
-            }
+    int adc = -1;
+    if (arg.xmin == -1) {
+        FILE_LOG(logINFO, ("Clearing ROI\n"));
+        rois.xmin = -1;
+        rois.xmax = -1;
+    } else {
+        FILE_LOG(logINFO, ("Setting ROI:(%d, %d)\n", arg.xmin, arg.xmax));
+        // validation
+        // xmin divisible by 256 and less than 1280
+        if (((arg.xmin % NCHAN_PER_ADC) != 0) || (arg.xmin >= (NCHAN * NCHIP))) {
+            FILE_LOG(logERROR, ("Could not set roi. xmin is invalid\n"));
+            return FAIL;
         }
-        // only one ROI allowed per module
-        if (n > 1) {
-            FILE_LOG(logERROR, ("\tCannot set more than 1 ROI per module\n"));
-            *ret = FAIL;
-            *retvalsize = nROI;
-            return rois;
+        // xmax must be 255 more than xmin
+        if (arg.xmax != (arg.xmin + NCHAN_PER_ADC - 1)) {
+            FILE_LOG(logERROR, ("Could not set roi. xmax is invalid\n"));         
+            return FAIL;   
         }
+        rois.xmin = arg.xmin;
+        rois.xmax = arg.xmax;
+        adc = arg.xmin / NCHAN_PER_ADC;
+    }
+    FILE_LOG(logINFO, ("\tAdc to be configured: %d\n", adc));
+    FILE_LOG(logINFO, ("\tROI to be configured: (%d, %d)\n",
+            (adc == -1) ? 0 :  (rois.xmin),
+                    (adc == -1) ? (NCHIP * NCHAN - 1) :  (rois.xmax)));
 
-        //clear all rois
-        nROI = 0;
+    //set adc of interest
+    setROIADC(adc);
+    return OK;
+}
 
-        // find adc number and recorrect channel limits
-        int adc = -1;
-        if (n) {
-            // all channels
-            if ((arg[0].xmin <= 0) && (arg[0].xmax >= NCHIP * NCHAN))
-                adc = -1;
-            // single adc
-            else {
-                //adc = mid value/numchans
-                adc = ((((arg[0].xmax) + (arg[0].xmin))/2) / (NCHAN * NCHIPS_PER_ADC));
-                // incorrect adc
-                if((adc < 0) || (adc > 4)) {
-                    FILE_LOG(logERROR, ("\tadc value greater than 5. deleting roi\n"));
-                    adc = -1;
-                }
-                // recorrect roi values
-                else {
-                    rois[0].xmin = adc * (NCHAN * NCHIPS_PER_ADC);
-                    rois[0].xmax = (adc + 1) * (NCHAN * NCHIPS_PER_ADC) - 1;
-                    rois[0].ymin = -1;
-                    rois[0].ymax = -1;
-                    nROI = 1;
-                }
-            }
-        }
-
-        if (adc == -1)
-            nROI = 0;
-
-        FILE_LOG(logINFO, ("\tAdc to be configured: %d\n", adc));
-        FILE_LOG(logINFO, ("\tROI to be configured: (%d, %d)\n",
-                (adc == -1) ? 0 :  (rois[0].xmin),
-                        (adc == -1) ? (NCHIP * NCHAN - 1) :  (rois[0].xmax)));
-
-        // could not set roi
-        if((n != 0) && ((arg[0].xmin != rois[0].xmin)||
-                (arg[0].xmax != rois[0].xmax)||
-                (arg[0].ymin != rois[0].ymin)||
-                (arg[0].ymax != rois[0].ymax))) {
-            *ret = FAIL;
-            FILE_LOG(logERROR, ("\tCould not set given ROI\n"));
-        }
-        if(n != nROI) {
-            *ret = FAIL;
-            FILE_LOG(logERROR, ("\tCould not set or clear ROIs\n"));
-        }
-
-        //set adc of interest
-        setROIADC(adc);
-    } else FILE_LOG(logINFO, ("Getting ROI:\n"));
+ROI getROI() {    
+    FILE_LOG(logINFO, ("Getting ROI:\n"));
 
     // print
-    if (!nROI) {
+    if (rois.xmin == -1) {
         FILE_LOG(logINFO, ("\tROI: None\n"));
     } else {
-        FILE_LOG(logINFO, ("ROI:\n"));
-        int i = 0;
-        for (i = 0; i < nROI; ++i) {
-            FILE_LOG(logINFO, ("\t(%d, %d)\n", rois[i].xmin, rois[i].xmax));
-
-        }
+        FILE_LOG(logINFO, ("ROI: (%d,%d)\n", rois.xmin, rois.xmax));
     }
-
-    *retvalsize = nROI;
     return rois;
 }
 
@@ -1271,10 +1232,10 @@ int setHighVoltage(int val){
 /* parameters - timing, extsig */
 
 
-void setTiming( enum externalCommunicationMode arg){
+void setTiming( enum timingMode arg){
     u_int32_t addr = EXT_SIGNAL_REG;
 
-	if (arg != GET_EXTERNAL_COMMUNICATION_MODE){
+	if (arg != GET_TIMING_MODE){
 		switch((int)arg){
 		case AUTO_TIMING:
 		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
@@ -1296,7 +1257,7 @@ void setTiming( enum externalCommunicationMode arg){
 	}
 }
 
-enum externalCommunicationMode getTiming() {
+enum timingMode getTiming() {
     u_int32_t regval = bus_r(EXT_SIGNAL_REG);
     switch (regval) {
     case EXT_SIGNAL_TRGGR_IN_RSNG_VAL:
@@ -1397,13 +1358,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(long  long unsigned int)destmac));
 	FILE_LOG(logINFO, ("\tDest. Port  : %d (0x%08x)\n",udpport, udpport));
 
-	// set/ unset the digital test bit
-	if (digitalTestBit)
-	    bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
-	else
-	    bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
-    FILE_LOG(logDEBUG1, ("\tDigital Test Bit. MultiPurpose reg: 0x%x\n", bus_r(addr)));
-
 	//reset mac
 	bus_w (addr, bus_r(addr) | RST_MSK);
 	FILE_LOG(logDEBUG1, ("\tReset Mac. MultiPurpose reg: 0x%x\n", bus_r(addr)));
@@ -1501,7 +1455,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
          */
         FILE_LOG(logINFOBLUE, ("Sending an image to counter the packet numbers\n"));
         // remember old parameters
-        enum externalCommunicationMode oldtiming = getTiming();
+        enum timingMode oldtiming = getTiming();
         uint64_t oldframes = setTimer(FRAME_NUMBER, -1);
         uint64_t oldcycles = setTimer(CYCLES_NUMBER, -1);
         uint64_t oldPeriod = setTimer(FRAME_PERIOD, -1);
@@ -1561,107 +1515,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 int getAdcConfigured(){
     return adcConfigured;
-}
-
-
-/* gotthard specific - loadimage, read/reset counter block */
-
-void loadImage(enum imageType index, short int imageVals[]){
-    u_int32_t addr = DARK_IMAGE_REG;
-    if (index == GAIN_IMAGE)
-        addr = GAIN_IMAGE_REG;
-    int dataBytes = calculateDataBytes();
-
-    volatile u_int16_t *ptr = (u_int16_t*)(CSP0BASE + addr * 2);
-    memcpy((char*)ptr, (char*)imageVals, dataBytes);
-
-    FILE_LOG(logINFO, ("Loaded %s image at 0x%p\n",
-            (index == GAIN_IMAGE) ? "Gain" : "Dark", (void*) ptr));
-}
-
-int readCounterBlock(int startACQ, short int counterVals[]){
-    FILE_LOG(logINFO, ("Reading Counter Block with start Acq :%d\n", startACQ));
-
-    // stop any current acquisition
-    if (runBusy()) {
-        if (stopStateMachine() == FAIL)
-            return FAIL;
-        // waiting for the last frame read to be done
-        while(runBusy())
-            usleep(500);
-        FILE_LOG(logDEBUG1, ("State machine stopped\n"));
-    }
-
-    // copy memory
-    u_int32_t addr = COUNTER_MEMORY_REG;
-    volatile u_int16_t *ptr = (u_int16_t*)(CSP0BASE + addr * 2);
-    int dataBytes = calculateDataBytes();
-    memcpy((char*)counterVals, (char*)ptr, dataBytes);
-
-    // unreset counter
-    addr = MULTI_PURPOSE_REG;
-    bus_w(addr, (bus_r(addr) &~ RST_CNTR_MSK));
-    FILE_LOG(logDEBUG1, ("\tUnsetting reset Counter. Multi Purpose Reg: 0x%x\n", bus_r(addr)));
-
-    // start state machine
-    if (startACQ == 1){
-        startStateMachine();
-        if (runBusy()) {
-            FILE_LOG(logINFO, ("State machine RUNNING\n"));
-        } else {
-            FILE_LOG(logINFO, ("State machine IDLE\n"));
-        }
-    }
-    return OK;
-}
-
-int resetCounterBlock(int startACQ){
-    FILE_LOG(logINFO, ("Resetting Counter Block with start Acq :%d\n", startACQ));
-
-    // stop any current acquisition
-    if (runBusy()) {
-        if (stopStateMachine() == FAIL)
-            return FAIL;
-        // waiting for the last frame read to be done
-        while(runBusy())
-            usleep(500);
-        FILE_LOG(logDEBUG1, ("State machine stopped\n"));
-    }
-
-    // reset counter
-    u_int32_t addr = MULTI_PURPOSE_REG;
-    bus_w(addr, (bus_r(addr) | RST_CNTR_MSK));
-    FILE_LOG(logDEBUG1, ("\tResetting Counter. Multi Purpose Reg: 0x%x\n", bus_r(addr)));
-
-    // copy memory
-    addr = COUNTER_MEMORY_REG;
-    volatile u_int16_t *ptr = (u_int16_t*)(CSP0BASE + addr * 2);
-    int dataBytes = calculateDataBytes();
-    char *counterVals = NULL;
-    counterVals = realloc(counterVals, dataBytes);
-    memcpy((char*)counterVals, (char*)ptr, dataBytes);
-
-    // unreset counter
-    addr = MULTI_PURPOSE_REG;
-    bus_w(addr, (bus_r(addr) &~ RST_CNTR_MSK));
-    FILE_LOG(logDEBUG1, ("\tUnsetting reset Counter. Multi Purpose Reg: 0x%x\n", bus_r(addr)));
-
-    // start state machine
-    if (startACQ == 1){
-        startStateMachine();
-        if (runBusy()) {
-            FILE_LOG(logINFO, ("State machine RUNNING\n"));
-        } else {
-            FILE_LOG(logINFO, ("State machine IDLE\n"));
-        }
-    }
-
-    if (sizeof(counterVals) <= 0){
-        FILE_LOG(logERROR, ("\tSize of counterVals: %d\n", (int)sizeof(counterVals)));
-        return FAIL;
-    }
-
-    return OK;
 }
 
 

@@ -137,17 +137,17 @@ public:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	virtual void SetROI(std::vector<slsDetectorDefs::ROI> i) {
+	virtual void SetROI(slsDetectorDefs::ROI i) {
 		FILE_LOG(logERROR) << "SetROI is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
 	 * Get Adc configured
 	 * @param index thread index for debugging purposes
-	 * @param i pointer to a vector of ROI pointers
+	 * @param ROI 
 	 * @returns adc configured
 	 */
-	virtual int GetAdcConfigured(int index, std::vector<slsDetectorDefs::ROI>* i)  const{
+	virtual int GetAdcConfigured(int index, slsDetectorDefs::ROI i)  const{
 		FILE_LOG(logERROR) << "GetAdcConfigured is a generic function that should be overloaded by a derived class";
 		return 0;
 	};
@@ -299,9 +299,9 @@ private:
 	 * Set ROI
 	 * @param i ROI
 	 */
-	void SetROI(std::vector<slsDetectorDefs::ROI> i) {
+	void SetROI(slsDetectorDefs::ROI i) {
 		// all adcs
-		if(!i.size()) {
+		if(i.xmin == -1) {
 			nPixelsX 			= 1280;
 			dataSize 			= 1280;
 			packetSize 			= GOTTHARD_PACKET_SIZE;
@@ -340,28 +340,21 @@ private:
 	/**
 	 * Get Adc configured
 	 * @param index thread index for debugging purposes
-	 * @param i pointer to a vector of ROI
+	 * @param i ROI
 	 * @returns adc configured
 	 */
-	int GetAdcConfigured(int index, std::vector<slsDetectorDefs::ROI>* i)  const{
+	int GetAdcConfigured(int index, slsDetectorDefs::ROI i)  const{
 		int adc = -1;
 		// single adc
-		if(i->size())  {
+		if(i.xmin != -1)  {
 			// gotthard can have only one adc per detector enabled (or all)
-			// so just looking at the first roi is enough (more not possible at the moment)
-
-			//if its for 1 adc or general
-			if ((i->at(0).xmin == 0) && (i->at(0).xmax == nChip * nChan))
+			//adc = mid value/numchans also for only 1 roi
+			adc = ((((i.xmax) + (i.xmin))/2)/
+					(nChan * nChipsPerAdc));
+			if((adc < 0) || (adc > 4)) {
+				FILE_LOG(logWARNING) << index << ": Deleting ROI. "
+						"Adc value should be between 0 and 4";
 				adc = -1;
-			else {
-				//adc = mid value/numchans also for only 1 roi
-				adc = ((((i->at(0).xmax) + (i->at(0).xmin))/2)/
-						(nChan * nChipsPerAdc));
-				if((adc < 0) || (adc > 4)) {
-					FILE_LOG(logWARNING) << index << ": Deleting ROI. "
-							"Adc value should be between 0 and 4";
-					adc = -1;
-				}
 			}
 		}
 		FILE_LOG(logINFO) << "Adc Configured: " << adc;

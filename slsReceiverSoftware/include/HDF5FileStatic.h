@@ -291,26 +291,11 @@ public:
 	 * Create master file
 	 * @param fname master file name
 	 * @param owenable overwrite enable
-	 * @param dr dynamic range
-	 * @param tenE ten giga enable
-	 * @param size image size
-	 * @param nx number of pixels in x direction
-	 * @param ny number of pixels in y direction
-	 * @param nf number of images
-	 * @param maxf maximum frames per file
-	 * @param acquisitionTime acquisition time
-	 * @param subexposuretime sub exposure time
-	 * @param subperiod sub period
-	 * @param acquisitionPeriod acquisition period
-	 * @param version version of software for hdf5 writing
+	 * @param attr master file attributes
 	 * @returns 0 for success and 1 for fail
 	 */
 	static int CreateMasterDataFile(H5File*& fd, std::string fname, bool owenable,
-			uint32_t dr, bool tenE,	uint32_t size,
-			uint32_t nPixelsx, uint32_t nPixelsy, uint64_t nf,
-			uint32_t maxf,
-			uint64_t acquisitionTime, uint64_t subexposuretime,
-			uint64_t subperiod, uint64_t acquisitionPeriod, double version)
+			masterAttributes& attr)
 	{
 		try {
 			Exception::dontPrint(); //to handle errors
@@ -337,7 +322,7 @@ public:
 
 			//create attributes
 			//version
-			dValue=version;
+			dValue = attr.version;
 			attribute = fd->createAttribute("version",PredType::NATIVE_DOUBLE, dataspace);
 			attribute.write(PredType::NATIVE_DOUBLE, &dValue);
 
@@ -351,60 +336,108 @@ public:
 
 			//Dynamic Range
 			dataset = group5.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &dr, PredType::NATIVE_INT);
+			dataset.write ( &(attr.dynamicRange), PredType::NATIVE_INT);
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, std::string("bits"));
 
 			//Ten Giga
-			iValue = tenE;
+			iValue = attr.tenGiga;
 			dataset = group5.createDataSet ( "ten giga enable", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &iValue, PredType::NATIVE_INT);
 
 			//Image Size
 			dataset = group5.createDataSet ( "image size", PredType::NATIVE_INT, dataspace );
-			dataset.write (  &size, PredType::NATIVE_INT);
+			dataset.write (  &(attr.imageSize), PredType::NATIVE_INT);
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, std::string("bytes"));
 
 			//x
 			dataset = group5.createDataSet ( "number of pixels in x axis", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &nPixelsx, PredType::NATIVE_INT);
+			dataset.write ( &(attr.nPixelsX), PredType::NATIVE_INT);
 
 			//y
 			dataset = group5.createDataSet ( "number of pixels in y axis", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &nPixelsy, PredType::NATIVE_INT);
+			dataset.write ( &(attr.nPixelsY), PredType::NATIVE_INT);
 
 			//Maximum frames per file
 			dataset = group5.createDataSet ( "maximum frames per file", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &maxf, PredType::NATIVE_INT);
+			dataset.write ( &(attr.maxFramesPerFile), PredType::NATIVE_INT);
 
 			//Total Frames
 			dataset = group5.createDataSet ( "total frames", PredType::STD_U64LE, dataspace );
-			dataset.write ( &nf, PredType::STD_U64LE);
+			dataset.write ( &(attr.totalFrames), PredType::STD_U64LE);
 
 			//Exptime
 			dataset = group5.createDataSet ( "exposure time", PredType::STD_U64LE, dataspace );
-			dataset.write ( &acquisitionTime, PredType::STD_U64LE);
+			dataset.write ( &(attr.exptimeNs), PredType::STD_U64LE);
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, std::string("ns"));
 
 			//SubExptime
 			dataset = group5.createDataSet ( "sub exposure time", PredType::STD_U64LE, dataspace );
-			dataset.write ( &subexposuretime, PredType::STD_U64LE);
+			dataset.write ( &(attr.subExptimeNs), PredType::STD_U64LE);
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, std::string("ns"));
 
 			//SubPeriod
 			dataset = group5.createDataSet ( "sub period", PredType::STD_U64LE, dataspace );
-			dataset.write ( &subperiod, PredType::STD_U64LE);
+			dataset.write ( &(attr.subPeriodNs), PredType::STD_U64LE);
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, std::string("ns"));
 
 			//Period
 			dataset = group5.createDataSet ( "acquisition period", PredType::STD_U64LE, dataspace );
-			dataset.write ( &acquisitionPeriod, PredType::STD_U64LE);
+			dataset.write ( &(attr.periodNs), PredType::STD_U64LE);
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, std::string("ns"));
+
+			//Gap Pixels Enable
+			dataset = group5.createDataSet ( "gap pixels enable", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
+
+			//Quad Enable
+			dataset = group5.createDataSet ( "quad enable", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
+
+			//Gap Pixels Enable
+			dataset = group5.createDataSet ( "gap pixels enable", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
+
+			//Quad Enable
+			dataset = group5.createDataSet ( "quad enable", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
+
+			//Parallel Flag
+			dataset = group5.createDataSet ( "parallel flag", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
+
+			//Analog Flag
+			dataset = group5.createDataSet ( "analog flag", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
+
+			//Digital Flag
+			dataset = group5.createDataSet ( "digital flag", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
+
+			//ADC Mask
+			dataset = group5.createDataSet ( "adc mask", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
+
+			//Dbit Offset
+			dataset = group5.createDataSet ( "dbit offset", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
+
+			// Dbit List
+			dataset = group5.createDataSet ( "dbit bitset list", PredType::STD_U64LE, dataspace );
+			dataset.write ( &(attr.periodNs), PredType::STD_U64LE);
+
+			// Roi xmin
+			dataset = group5.createDataSet ( "roi xmin", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.roiXmin), PredType::NATIVE_INT);
+
+			// Roi xmax
+			dataset = group5.createDataSet ( "roi xmax", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(attr.roiXmax), PredType::NATIVE_INT);
 
 			//Timestamp
 			time_t t = time(0);

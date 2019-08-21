@@ -74,7 +74,6 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
 	  void SetupPlots();
     void GetStatistics(double &min, double &max, double &sum);
     void DetachHists();
-    static void GetProgressCallBack(double currentProgress, void *this_pointer);
     static void GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer);
     static void GetDataCallBack(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex, void *this_pointer);
     std::string AcquireThread();

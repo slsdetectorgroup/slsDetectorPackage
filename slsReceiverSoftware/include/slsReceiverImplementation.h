@@ -64,10 +64,10 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     std::string getDetectorHostname() const;
 
     /*
-     * Get flipped data across 'axis'
-     * @return if data is flipped across 'axis'
+     * Get flipped data across x axis
+     * @return if data is flipped across x axis
      */
-    int getFlippedData(int axis = 0) const;
+    int getFlippedDataX() const;
 
     /**
      * Get Gap Pixels Enable (eiger specific)
@@ -208,9 +208,9 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     //***acquisition parameters***
     /**
      * Get ROI
-     * @return index of adc enabled, else -1 if all enabled
+     * @return roi
      */
-    std::vector<ROI> getROI() const;
+    ROI getROI() const;
 
     /**
      * Get ADC Enable Mask
@@ -391,10 +391,10 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     void setMultiDetectorSize(const int *size);
 
     /*
-     * Get flipped data across 'axis'
-     * @return if data is flipped across 'axis'
+     * Get flipped data across x axis
+     * @return if data is flipped across x axis
      */
-    void setFlippedData(int axis = 0, int enable = -1);
+    void setFlippedDataX(int enable = -1);
 
     /**
      * Set Gap Pixels Enable (eiger specific)
@@ -530,10 +530,10 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     //***acquisition parameters***
     /**
      * Set ROI
-     * @param i ROI
+     * @param arg ROI
      * @return OK or FAIL
      */
-    int setROI(const std::vector<ROI> new_roi);
+    int setROI(ROI arg);
 
     /**
      * Set ADC Enable Mask
@@ -962,7 +962,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
 
     //***acquisition parameters***
     /* ROI */
-    std::vector<ROI> roi;
+    ROI roi;
     /** ADC Enable Mask */
     uint32_t adcEnableMask;
     /** streaming frequency */

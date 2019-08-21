@@ -1,6 +1,6 @@
 #pragma once
 
-#include "logger.h"
+#include "clogger.h"
 #include "sls_detector_defs.h"
 
 

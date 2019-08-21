@@ -2000,16 +2000,10 @@ Displays minimum, maximum and sum of values for each plot.
       </size>
      </property>
      <property name="toolTip">
-      <string>&lt;nobr&gt;
-Streaming Interval between 2 plots. Default is time interval with 200 ms.
-&lt;/nobr&gt;&lt;br&gt;&lt;br&gt;&lt;nobr&gt;
-&lt;b&gt;Time Interval&lt;/b&gt;: Streaming time interval when an image should be streamed. 
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
-&lt;b&gt;Every nth Image&lt;/b&gt;: Only every nth image is streamed. 
-&lt;/nobr&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the pace at which the receiver streams out images. Images in between the timeout or frequency are not sent out.&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Time Interval&lt;/span&gt;: Streaming time interval when an image should be streamed. &lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Every nth Image&lt;/span&gt;: Only every nth image is streamed. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="title">
-      <string>Interval between Plots</string>
+      <string>Receiver Streaming Frequency / Timer</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

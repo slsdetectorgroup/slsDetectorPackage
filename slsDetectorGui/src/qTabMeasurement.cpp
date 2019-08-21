@@ -201,9 +201,9 @@ void qTabMeasurement::GetTimingMode() {
 
 	try {
 		auto oldMode = comboTimingMode->currentIndex();
-        auto retval = myDet->setExternalCommunicationMode();
+        auto retval = myDet->setTimingMode();
 		switch(retval) {
-			case slsDetectorDefs::GET_EXTERNAL_COMMUNICATION_MODE:
+			case slsDetectorDefs::GET_TIMING_MODE:
 				qDefs::Message(qDefs::WARNING, "Timing Mode is inconsistent for all detectors.", "qTabMeasurement::GetTimingMode");
 				break;
 			case slsDetectorDefs::AUTO_TIMING:
@@ -229,7 +229,7 @@ void qTabMeasurement::SetTimingMode(int val) {
 	FILE_LOG(logINFO) << "Setting timing mode:" << comboTimingMode->currentText().toAscii().data();
 	
 	try {
-        myDet->setExternalCommunicationMode(static_cast<slsDetectorDefs::externalCommunicationMode>(val));
+        myDet->setTimingMode(static_cast<slsDetectorDefs::timingMode>(val));
 		EnableWidgetsforTimingMode();
     } CATCH_HANDLE("Could not set timing mode.", "qTabMeasurement::SetTimingMode", this, &qTabMeasurement::GetTimingMode)
 }

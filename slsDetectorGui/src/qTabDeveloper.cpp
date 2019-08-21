@@ -124,8 +124,8 @@ void qTabDeveloper::PopulateDetectors() {
 
 	comboDetector->clear();
 	comboDetector->addItem("All");
-	if (myDet->getNumberOfDetectors() > 1) {
-		for (int i = 0; i < myDet->getNumberOfDetectors(); ++i)
+	if (myDet->size() > 1) {
+		for (unsigned int i = 0; i < myDet->size(); ++i)
 			comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
 	}
 	comboDetector->setCurrentIndex(0);

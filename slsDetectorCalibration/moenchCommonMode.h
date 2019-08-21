@@ -9,7 +9,8 @@ class moenchCommonMode : public commonModeSubtraction {
   /** constructor -  initalizes a commonModeSubtraction with 4 different regions of interest 
       \param nn number of samples for the moving average
   */
-  moenchCommonMode(int nn=1000) : commonModeSubtraction(0){} ;
+
+  moenchCommonMode(int nn=0) : commonModeSubtraction(0){} ;
     
 
     /* /\** add value to common mode as a function of the pixel value, subdividing the region of interest in the 4 supercolumns of 40 columns each; */

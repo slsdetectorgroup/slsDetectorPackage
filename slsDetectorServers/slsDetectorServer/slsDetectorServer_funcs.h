@@ -1,6 +1,6 @@
 #pragma once
 #include "sls_detector_defs.h"
-#include "logger.h"
+#include "clogger.h"
 
 enum numberMode {DEC, HEX};
 #define GOODBYE 					(-200)
@@ -27,7 +27,7 @@ int M_nofuncMode(int);
 int exec_command(int);
 int get_detector_type(int);
 int set_external_signal_flag(int);
-int set_external_communication_mode(int);
+int set_timing_mode(int);
 int get_id(int);
 int digital_test(int);
 int set_dac(int);
@@ -49,6 +49,7 @@ int get_time_left(int);
 int set_dynamic_range(int);
 int set_readout_flags(int);
 int set_roi(int);
+int get_roi(int);
 int set_speed(int);
 int exit_server(int);
 int lock_server(int);
@@ -57,9 +58,6 @@ int set_port(int);
 int update_client(int);
 int send_update(int);
 int configure_mac(int);
-int load_image(int);
-int read_counter_block(int);
-int reset_counter_block(int);
 int calibrate_pedestal(int);
 int enable_ten_giga(int);
 int set_all_trimbits(int);

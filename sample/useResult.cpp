@@ -40,7 +40,7 @@ auto main() -> int {
     std::cout << "res.squash(-1): " << res.squash(-1) << '\n';
     std::cout << "res3.squash(-1): " << res3.squash(-1) << '\n';
 
-    std::vector<int> ivec{1, 3, 5};
+    Result<int> ivec{1, 3, 5};
 
     Result<sls::time::ns> nres(ivec);
     // for (const auto& i : ivec)

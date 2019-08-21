@@ -13,7 +13,7 @@ enum detFuncs{
 	F_EXEC_COMMAND=0, /**< command is executed */
 	F_GET_DETECTOR_TYPE, /**< return detector type */
 	F_SET_EXTERNAL_SIGNAL_FLAG, /**< set/get flag for external signal */
-	F_SET_EXTERNAL_COMMUNICATION_MODE, /**< set/get  external communication mode (obsolete) */
+	F_SET_TIMING_MODE, /**< set/get  external communication mode (obsolete) */
 	F_GET_ID, /**< get detector id of version */
 	F_DIGITAL_TEST, /**< digital test of the detector */
 	F_SET_DAC, /**< set DAC value */
@@ -35,16 +35,14 @@ enum detFuncs{
 	F_SET_DYNAMIC_RANGE, /**< set/get detector dynamic range */
 	F_SET_READOUT_FLAGS, /**< set/get readout flags */
 	F_SET_ROI, /**< set/get region of interest */
+	F_GET_ROI,
 	F_SET_SPEED, /**< set/get readout speed parameters */
 	F_EXIT_SERVER, /**< turn off detector server */
 	F_LOCK_SERVER, /**< Locks/Unlocks server communication to the given client */
 	F_GET_LAST_CLIENT_IP, /**< returns the IP of the client last connected to the detector */
 	F_SET_PORT, /**< Changes communication port of the server */
 	F_UPDATE_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
-	F_CONFIGURE_MAC, /**< Configures MAC for Gotthard readout */
-	F_LOAD_IMAGE, /**< Loads Dark/Gain image to the Gotthard detector */
-	F_READ_COUNTER_BLOCK, /**< reads the counter block memory for gotthard */
-	F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
+	F_CONFIGURE_MAC, /**< Configures MAC */
 	F_ENABLE_TEN_GIGA, /**< enable 10Gbe */
 	F_SET_ALL_TRIMBITS, /** < set all trimbits to this value */
 	F_SET_PATTERN_IO_CONTROL, /** < set pattern i/o control */
@@ -163,7 +161,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
 	case F_SET_EXTERNAL_SIGNAL_FLAG:		return "F_SET_EXTERNAL_SIGNAL_FLAG";
-	case F_SET_EXTERNAL_COMMUNICATION_MODE:	return "F_SET_EXTERNAL_COMMUNICATION_MODE";
+	case F_SET_TIMING_MODE:					return "F_SET_TIMING_MODE";
 	case F_GET_ID:							return "F_GET_ID";
 	case F_DIGITAL_TEST:					return "F_DIGITAL_TEST";
 	case F_SET_DAC:							return "F_SET_DAC";
@@ -185,6 +183,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_READOUT_FLAGS:				return "F_SET_READOUT_FLAGS";
 	case F_SET_ROI:							return "F_SET_ROI";
+	case F_GET_ROI:							return "F_GET_ROI";
 	case F_SET_SPEED:						return "F_SET_SPEED";
 	case F_EXIT_SERVER:						return "F_EXIT_SERVER";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
@@ -192,9 +191,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_PORT:						return "F_SET_PORT";
 	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
 	case F_CONFIGURE_MAC:					return "F_CONFIGURE_MAC";
-	case F_LOAD_IMAGE:						return "F_LOAD_IMAGE";
-	case F_READ_COUNTER_BLOCK:				return "F_READ_COUNTER_BLOCK";
-	case F_RESET_COUNTER_BLOCK:				return "F_RESET_COUNTER_BLOCK";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";

@@ -265,6 +265,7 @@ public:
 	 * @param version detector header version
 	 * @param gapPixelsEnable gap pixels enable (exception: if gap pixels enable for 4 bit mode, data is not yet gap pixel enabled in receiver)
 	 * @param flippedDataX if it is flipped across x axis
+	 * @param quadEnable if quad is enabled
 	 * @param additionalJsonHeader additional json header
 	 * @returns 0 if error, else 1
 	 */
@@ -276,6 +277,7 @@ public:
 			uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
 			uint8_t detType = 0, uint8_t version = 0, int gapPixelsEnable = 0, int flippedDataX = 0,
+			uint32_t quadEnable = 0, 
 			char* additionalJsonHeader = 0) {
 
 
@@ -310,7 +312,8 @@ public:
 
 		        //additional stuff
 		        "\"gappixels\":%u, "
-				"\"flippedDataX\":%u"
+				"\"flippedDataX\":%u, "
+				"\"quad\":%u"
 
 				;//"}\n";
 		char buf[MAX_STR_LENGTH] = "";
@@ -324,7 +327,8 @@ public:
 
 						//additional stuff
 						gapPixelsEnable,
-						flippedDataX
+						flippedDataX,
+						quadEnable
 		);
 		
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {

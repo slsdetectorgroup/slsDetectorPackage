@@ -104,9 +104,10 @@ void slsReceiverImplementation::InitializeMembers() {
     overwriteEnable = true;
 
     //***acquisition parameters***
-    roi.clear();
+    roi.xmin = -1;
+    roi.xmax = -1;
     adcEnableMask = BIT32_MASK;
-    streamingFrequency = 0;
+    streamingFrequency = 1;
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
     dataStreamEnable = false;
     streamingPort = 0;
@@ -147,16 +148,9 @@ std::string slsReceiverImplementation::getDetectorHostname() const {
     return std::string(detHostname);
 }
 
-int slsReceiverImplementation::getFlippedData(int axis) const {
+int slsReceiverImplementation::getFlippedDataX() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    switch(axis) {
-        case 0:
-            return flippedDataX;
-        case 1:
-            return 0;
-        default:
-            return -1;
-    }
+    return flippedDataX;
 }
 
 bool slsReceiverImplementation::getGapPixelsEnable() const {
@@ -305,7 +299,7 @@ int slsReceiverImplementation::getNumberofUDPInterfaces() const {
 }
 
 /***acquisition parameters***/
-std::vector<slsDetectorDefs::ROI> slsReceiverImplementation::getROI() const {
+slsDetectorDefs::ROI slsReceiverImplementation::getROI() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return roi;
 }
@@ -481,10 +475,8 @@ void slsReceiverImplementation::setMultiDetectorSize(const int *size) {
     FILE_LOG(logINFO) << log_message;
 }
 
-void slsReceiverImplementation::setFlippedData(int axis, int enable) {
+void slsReceiverImplementation::setFlippedDataX(int enable) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    if (axis != 0)
-        return;
     flippedDataX = (enable == 0) ? 0 : 1;
 
 	if (!quadEnable) {
@@ -792,7 +784,7 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable));
+                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -858,51 +850,21 @@ int slsReceiverImplementation::setUDPSocketBufferSize(const int64_t s) {
 }
 
 /***acquisition parameters***/
-int slsReceiverImplementation::setROI(
-    const std::vector<slsDetectorDefs::ROI> new_roi) {
-    bool change = false;
-    if (roi.size() != new_roi.size())
-        change = true;
-    else {
-        for (size_t i = 0; i != new_roi.size(); ++i) {
-            if ((roi[i].xmin != new_roi[i].xmin) ||
-                (roi[i].xmax != new_roi[i].xmax) ||
-                (roi[i].ymin != new_roi[i].ymin) ||
-                (roi[i].xmax != new_roi[i].xmax)) {
-                change = true;
-                break;
-            }
-        }
-    }
+int slsReceiverImplementation::setROI(slsDetectorDefs::ROI arg) {
+    if (roi.xmin != arg.xmin || roi.xmax != arg.xmax) {
+        roi.xmin = arg.xmin;
+        roi.xmax = arg.xmax;
 
-    if (change) {
-        roi = new_roi;
-        switch (myDetectorType) {
-        case GOTTHARD:
-            generalData->SetROI(new_roi);
-            framesPerFile = generalData->maxFramesPerFile;
-            break;
-        default:
-            break;
-        }
+        // only for gotthard
+        generalData->SetROI(arg);
+        framesPerFile = generalData->maxFramesPerFile;
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         if (SetupFifoStructure() == FAIL)
             return FAIL;
     }
 
-    std::stringstream sstm;
-    sstm << "ROI: ";
-    if (!roi.size())
-        sstm << "0";
-    else {
-        for (size_t i = 0; i < roi.size(); ++i) {
-            sstm << "( " << roi[i].xmin << ", " << roi[i].xmax << ", "
-                 << roi[i].ymin << ", " << roi[i].ymax << " )";
-        }
-    }
-    std::string message = sstm.str();
-    FILE_LOG(logINFO) << message;
+    FILE_LOG(logINFO) << "ROI: [" << roi.xmin << ", " << roi.xmax << "]";;
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
     return OK;
@@ -974,7 +936,7 @@ int slsReceiverImplementation::setDataStreamEnable(const bool enable) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable));
+                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -1399,7 +1361,7 @@ void slsReceiverImplementation::stopReceiver() {
         dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
     }
 
-    // wait for the processes (DataStreamer) to be done
+    // wait for the processes (dataStreamer) to be done
     running = true;
     while (running) {
         running = false;
@@ -1676,10 +1638,34 @@ int slsReceiverImplementation::CreateUDPSockets() {
 int slsReceiverImplementation::SetupWriter() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     bool error = false;
+	masterAttributes attr;
+	attr.detectorType = myDetectorType;
+	attr.dynamicRange = dynamicRange;
+	attr.tenGiga = tengigaEnable;
+	attr.imageSize = generalData->imageSize;
+	attr.nPixelsX = generalData->nPixelsX;
+	attr.nPixelsY = generalData->nPixelsY;
+	attr.maxFramesPerFile = framesPerFile;
+	attr.totalFrames = numberOfFrames;
+	attr.exptimeNs = acquisitionTime;
+	attr.subExptimeNs = subExpTime;
+	attr.subPeriodNs = subPeriod;
+	attr.periodNs = acquisitionPeriod;
+	attr.gapPixelsEnable = gapPixelsEnable;
+    attr.quadEnable = quadEnable;
+    attr.parallelFlag = (readoutFlags & PARALLEL) ? 1 : 0;
+    attr.analogFlag = (readoutFlags == NORMAL_READOUT || readoutFlags & ANALOG_AND_DIGITAL) ? 1 : 0;
+    attr.digitalFlag = (readoutFlags & DIGITAL_ONLY || readoutFlags & ANALOG_AND_DIGITAL) ? 1 : 0;
+    attr.adcmask = adcEnableMask;
+    attr.dbitoffset = ctbDbitOffset;
+    attr.dbitlist = 0;
+    attr.roiXmin = roi.xmin;
+    attr.roiXmax = roi.xmax;
+    for (auto &i : ctbDbitList) {
+        attr.dbitlist |= (1 << i);
+    }
     for (unsigned int i = 0; i < dataProcessor.size(); ++i)
-        if (dataProcessor[i]->CreateNewFile(
-                tengigaEnable, numberOfFrames, acquisitionTime, subExpTime,
-                subPeriod, acquisitionPeriod) == FAIL) {
+        if (dataProcessor[i]->CreateNewFile(attr) == FAIL) {
             error = true;
             break;
         }

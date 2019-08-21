@@ -1,8 +1,13 @@
 set(src 
     slsDetectorFunctionList.c
-    slsDetectorServer.c
-    slsDetectorServer_funcs.c
-    communication_funcs.c
+    ../slsDetectorServer/slsDetectorServer.c
+    ../slsDetectorServer/slsDetectorServer_funcs.c
+    ../slsDetectorServer/communication_funcs.c
+)
+
+include_directories(
+    ../slsDetectorServer
+    ../../slsSupportLib/include
 )
 
 add_executable(eigerDetectorServerMaster 

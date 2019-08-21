@@ -1,4 +1,4 @@
-#include "logger.h"
+#include "clogger.h"
 #include "Beb.h"
 #include "FebRegisterDefs.h"
 #include "xparameters.h"
@@ -1010,8 +1010,8 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 	unsigned int packet_size  = ten_gig ? 0x200 : 0x80; // 4k or  1k packets
 
 	FILE_LOG(logDEBUG1, ("----Beb_RequestNImages Start----\n"));
-	FILE_LOG(logDEBUG1, ("beb_number:%X, ten_gig:%X,dst_number:%X, npackets:%X, "
-			"Beb_bit_mode:%X, header_size:%X, nimages:%d, test_just_send_out_packets_no_wait:%X\n",
+	FILE_LOG(logINFO, ("beb_number:%d, ten_gig:%d,dst_number:%d, npackets:%d, "
+			"Beb_bit_mode:%d, header_size:%d, nimages:%d, test_just_send_out_packets_no_wait:%d\n",
 			beb_number, ten_gig, dst_number, npackets, Beb_bit_mode, header_size,
 			nimages, test_just_send_out_packets_no_wait));
 

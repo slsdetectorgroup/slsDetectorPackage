@@ -42,6 +42,7 @@ option (SLS_USE_TESTS "TESTS" OFF)
 option (SLS_USE_INTEGRATION_TESTS "Integration Tests" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
+option(SLS_BUILD_DOCS "Documentations" OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -151,8 +152,7 @@ if (SLS_USE_RECEIVER)
     if (SLS_USE_HDF5)
         find_package(HDF5 1.10 COMPONENTS CXX REQUIRED)
     endif (SLS_USE_HDF5)
-    add_subdirectory(slsReceiverSoftware)
-    add_subdirectory(manual/manual-api)    
+    add_subdirectory(slsReceiverSoftware) 
 endif (SLS_USE_RECEIVER)
 
 if (SLS_USE_GUI)   
@@ -181,10 +181,11 @@ configure_file( .clang-tidy
 )
 
 
-add_subdirectory(sample)
+#add_subdirectory(sample)
 
-add_subdirectory(docs)
-
+if(SLS_BUILD_DOCS)
+    add_subdirectory(docs)
+endif(SLS_BUILD_DOCS)
 
 
 

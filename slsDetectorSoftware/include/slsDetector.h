@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x190726
+#define SLS_SHMVERSION 0x190816
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -35,12 +35,8 @@ struct sharedSlsDetector {
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
-    /** Detector offset in the X & Y direction in the multi detector structure
-     */
-    int offset[2];
-
     /** Number of detectors in multi list in x dir and y dir */
-    int multiSize[2];
+    slsDetectorDefs::xy multiSize;
 
     /** is the port used for control functions */
     int controlPort;
@@ -54,17 +50,11 @@ struct sharedSlsDetector {
     /** list of the energies at which the detector has been trimmed  */
     sls::FixedCapacityContainer<int, MAX_TRIMEN> trimEnergies;
 
-    /**  number of channels per chip */
-    int nChans;
-
     /**  number of channels per chip in one direction */
-    int nChan[2];
-
-    /**  number of chips per module*/
-    int nChips;
+    slsDetectorDefs::xy nChan;
 
     /**  number of chips per module in one direction */
-    int nChip[2];
+    slsDetectorDefs::xy nChip;
 
     /**  number of dacs per module*/
     int nDacs;
@@ -72,14 +62,8 @@ struct sharedSlsDetector {
     /** dynamic range of the detector data */
     int dynamicRange;
 
-    /**  size of the data that are transfered from the detector */
-    int dataBytes;
-
-    /** number of rois defined */
-    int nROI;
-
-    /** list of rois */
-    slsDetectorDefs::ROI roiLimits[MAX_ROIS];
+    /** roi */
+    slsDetectorDefs::ROI roi;
 
     /** adc enable mask */
     uint32_t adcEnableMask;
@@ -152,7 +136,7 @@ struct sharedSlsDetector {
     int tenGigaEnable;
 
     /** flipped data across x or y axis */
-    int flippedData[2];
+    int flippedDataX;
 
     /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
@@ -176,10 +160,7 @@ struct sharedSlsDetector {
     int gappixels;
 
     /** gap pixels in each direction */
-    int nGappixels[2];
-
-    /** data bytes including gap pixels */
-    int dataBytesInclGapPixels;
+    slsDetectorDefs::xy nGappixels;
 
     /** additional json header */
     char rxAdditionalJsonHeader[MAX_STR_LENGTH];
@@ -332,66 +313,22 @@ class slsDetector : public virtual slsDetectorDefs {
     int setDetectorType(detectorType type = GET_DETECTOR_TYPE);
 
     /**
-     * Returns the total number of channels from shared memory
-     * @returns the total number of channels
-     */
-    int getTotalNumberOfChannels() const;
-
-    /**
      * Update total number of channels (chiptestboard or moench)
-     * depending on the number of samples, roi, readout flags(ctb)
+     * depending on the number of samples, adenablemask, readout flags(ctb)
      */
-    void updateTotalNumberOfChannels();
+    void updateNumberOfChannels();
 
     /**
-     * Returns the total number of channels in dimension d from shared memory
-     * @param d dimension d
-     * @returns the total number of channels  in dimension d
+     * Returns the total number of channels including gap pixels
+     * @returns the total number of channels including gap pixels
      */
-    int getTotalNumberOfChannels(dimension d) const;
-
-    /**
-     * Returns the total number of channels of in dimension d including gap
-     * pixels from shared memory
-     * @param d dimension d
-     * @returns the total number of channels including gap pixels in dimension d
-     * including gap pixels
-     */
-    int getTotalNumberOfChannelsInclGapPixels(dimension d) const;
-
-    /**
-     * returns the number of channels per chip from shared memory (Mythen)
-     * @returns number of channels per chip
-     */
-    int getNChans() const;
-
-    /**
-     * returns the number of channels per chip in dimension d from shared memory
-     * (Mythen)
-     * @param d dimension d
-     * @returns number of channels per chip in dimension d
-     */
-    int getNChans(dimension d) const;
-
-    /**
-     * returns the number of chips per module from shared memory (Mythen)
-     * @returns number of chips per module
-     */
-    int getNChips() const;
-
-    /**
-     * returns the number of chips per module in dimension d from shared memory
-     * (Mythen)
-     * @param d dimension d
-     * @returns number of chips per module in dimension d
-     */
-    int getNChips(dimension d) const;
+    slsDetectorDefs::xy getNumberOfChannels() const;
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)
      * @returns quad type
      */
-    int getQuad();
+    bool getQuad();
 
     /**
      * Set Quad Type (Only for Eiger Quad detector hardware)
@@ -399,7 +336,7 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void setQuad(const bool enable);
 
-	/**
+    /**
      * Set number of rows to read out (Only for Eiger)
      * @param value number of lines
      */
@@ -412,32 +349,10 @@ class slsDetector : public virtual slsDetectorDefs {
     int getReadNLines();
 
     /**
-     * Get Detector offset from shared memory in dimension d
-     * @param d dimension d
-     * @returns offset in dimension d
-     */
-    int getDetectorOffset(dimension d) const;
-
-    /**
      * Set Detector offset in shared memory in dimension d
-     * @param d dimension d
-     * @param off offset for detector
+     * @param det detector size
      */
-    void setDetectorOffset(dimension d, int off);
-
-    /**
-     * Set Detector offset in shared memory in dimension d
-     * @param detx number of detectors in X dir in multi list
-     * @param dety number of detectors in Y dir in multi list
-     */
-    void updateMultiSize(int detx, int dety);
-
-    /**
-     * Checks if each of the detector is online/offline
-     * @returns empty string if it is online
-     * else returns hostname if it is offline
-     */
-    std::string checkOnline();
+    void updateMultiSize(slsDetectorDefs::xy det);
 
     int setControlPort(int port_number);
 
@@ -466,9 +381,9 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Lock server for this client IP
      * @param p 0 to unlock, 1 to lock (-1 gets)
-     * @returns 1 for locked or 0 for unlocked
+     * @returns true for locked or false for unlocked
      */
-    int lockServer(int lock = -1);
+    bool lockServer(int lock = -1);
 
     /**
      * Get last client IP saved on detector server
@@ -640,8 +555,8 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Set/get timer value (not all implemented for all detectors)
      * @param index timer index
-     * @param t time in ns or number of...(e.g. frames, gates, probes)
-     * @returns timer set value in ns or number of...(e.g. frames, gates,
+     * @param t time in ns or number of...(e.g. frames, probes)
+     * @returns timer set value in ns or number of...(e.g. frames,
      * probes)
      */
     int64_t setTimer(timerIndex index, int64_t t = -1);
@@ -650,8 +565,8 @@ class slsDetector : public virtual slsDetectorDefs {
      * Set/get timer value left in acquisition (not all implemented for all
      * detectors)
      * @param index timer index
-     * @param t time in ns or number of...(e.g. frames, gates, probes)
-     * @returns timer set value in ns or number of...(e.g. frames, gates,
+     * @param t time in ns or number of...(e.g. frames, probes)
+     * @returns timer set value in ns or number of...(e.g. frames,
      * probes)
      */
     int64_t getTimeLeft(timerIndex index) const;
@@ -669,7 +584,7 @@ class slsDetector : public virtual slsDetectorDefs {
     int setSpeed(speedVariable sp, int value = -1, int mode = 0);
 
     /**
-     * Set/get dynamic range and updates the number of dataBytes
+     * Set/get dynamic range
      * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
      * 1)
      * @param i dynamic range (-1 get)
@@ -678,17 +593,7 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     int setDynamicRange(int n = -1);
 
-    /**
-     * Recalculated number of data bytes
-     * @returns tota number of data bytes
-     */
-    int getDataBytes();
-
-    /**
-     * Recalculated number of data bytes including gap pixels
-     * @returns tota number of data bytes including gap pixels
-     */
-    int getDataBytesInclGapPixels();
+    int getDynamicRangeFromShm();
 
     /**
      * Set/get dacs value
@@ -712,8 +617,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param pol timing mode (-1 gets)
      * @returns current timing mode
      */
-    externalCommunicationMode setExternalCommunicationMode(
-        externalCommunicationMode pol = GET_EXTERNAL_COMMUNICATION_MODE);
+    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE);
 
     /**
      * Set/get external signal flags (to specify triggerinrising edge etc)
@@ -1074,46 +978,12 @@ class slsDetector : public virtual slsDetectorDefs {
     int64_t getReceiverRealUDPSocketBufferSize() const;
 
     /**
-     * Execute a digital test (Gotthard, Mythen)
+     * Execute a digital test (Gotthard, Jungfrau, CTB)
      * @param mode testmode type
      * @param value 1 to set or 0 to clear the digital test bit
      * @returns result of test
      */
     int digitalTest(digitalTestMode mode, int ival = -1);
-
-    /**
-     * Load dark or gain image to detector (Gotthard)
-     * @param index image type, 0 for dark image and 1 for gain image
-     * @param fname file name from which to load image
-     */
-    void loadImageToDetector(imageType index, const std::string &fname);
-
-    /**
-     * Called from loadImageToDetector to send the image to detector
-     * @param index image type, 0 for dark image and 1 for gain image
-     * @param imageVals image
-     */
-    void sendImageToDetector(imageType index, int16_t imageVals[]);
-
-    /**
-     * Writes the counter memory block from the detector (Gotthard)
-     * @param fname file name to load data from
-     * @param startACQ is 1 to start acquisition after reading counter
-     */
-    void writeCounterBlockFile(const std::string &fname, int startACQ = 0);
-
-    /**
-     * Gets counter memory block in detector (Gotthard)
-     * @param image counter memory block from detector
-     * @param startACQ 1 to start acquisition afterwards, else 0
-     */
-    void getCounterBlock(int16_t image[], int startACQ = 0);
-
-    /**
-     * Resets counter in detector
-     * @param startACQ is 1 to start acquisition after resetting counter
-     */
-    void resetCounterBlock(int startACQ = 0);
 
     /**
      * Set/get counter bit in detector (Gotthard)
@@ -1124,34 +994,28 @@ class slsDetector : public virtual slsDetectorDefs {
     int setCounterBit(int cb = -1);
 
     /**
+     * Clear ROI (Gotthard)
+     */
+    void clearROI();
+
+    /**
      * Set ROI (Gotthard)
-     * At the moment only one set allowed
-     * @param n number of rois
-     * @param roiLimits array of roi
+     * Also calls configuremac
+     * @param arg roi
      */
-    void setROI(int n = -1, ROI roiLimits[] = nullptr);
+    void setROI(slsDetectorDefs::ROI arg);
 
     /**
-     * Get ROI from each detector and convert it to the multi detector scale
-     * (Gotthard)
-     * @param n number of rois
-     * @returns OK or FAIL
+     *  Send ROI from shared memory to Receiver (Gotthard)
      */
-    const slsDetectorDefs::ROI *getROI(int &n);
+    void sendROItoReceiver();
 
     /**
-     * Returns number of rois
-     * @returns number of ROIs
+     * Get ROI (Gotthard)
+     * Update receiver if different from shm
+     * @returns roi
      */
-    int getNRoi();
-
-    /**
-     * Send ROI to the detector after calculating
-     * from setROI
-     * @param n number of ROIs (-1 to get)
-     * @param roiLimits ROI
-     */
-    void sendROI(int n = -1, ROI roiLimits[] = nullptr);
+    slsDetectorDefs::ROI getROI();
 
     /**
      * Set ADC Enable Mask (CTB, Moench)
@@ -1261,20 +1125,18 @@ class slsDetector : public virtual slsDetectorDefs {
     bool setDeactivatedRxrPaddingMode(int padding = -1);
 
     /**
-     * Returns the enable if data will be flipped across x or y axis (Eiger)
-     * @param d axis across which data is flipped
+     * Returns the enable if data will be flipped across x axis (Eiger)
      * @returns 1 for flipped, else 0
      */
-    int getFlippedData(dimension d = X) const;
+    int getFlippedDataX() const;
 
     /**
      * Sets the enable which determines if
-     * data will be flipped across x or y axis (Eiger)
-     * @param d axis across which data is flipped
+     * data will be flipped across x axis (Eiger)
      * @param value 0 or 1 to reset/set or -1 to get value
-     * @returns enable flipped data across x or y axis
+     * @returns enable flipped data across x axis
      */
-    int setFlippedData(dimension d = X, int value = -1);
+    int setFlippedDataX(int value = -1);
 
     /**
      * Sets all the trimbits to a particular value (Eiger)
@@ -1441,20 +1303,14 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Prints receiver configuration
-     * @param level print level
+     * @returns receiver configuration
      */
-    void printReceiverConfiguration(TLogLevel level = logINFO);
+    std::string printReceiverConfiguration();
 
     /**
      * Gets the use receiver flag from shared memory
      */
     bool getUseReceiverFlag() const;
-
-    /**
-     * Checks if the receiver is really online
-     * @returns empty string if online, else returns receiver hostname
-     */
-    std::string checkReceiverOnline();
 
     /**
      * Locks/Unlocks the connection to the receiver
@@ -1679,7 +1535,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param time_in_ms timer between frames
      * @returns receiver streaming timer in ms
      */
-    int setReceiverStreamingTimer(int time_in_ms = 500);
+    int setReceiverStreamingTimer(int time_in_ms = 200);
 
     /**
      * Enable or disable streaming data from receiver to client
@@ -1720,9 +1576,8 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Opens pattern file and sends pattern to CTB
      * @param fname pattern file to open
-     * @returns OK/FAIL
      */
-    int setPattern(const std::string &fname);
+    void setPattern(const std::string &fname);
 
     /**
      * Sets pattern IO control (CTB/ Moench)
@@ -1845,31 +1700,30 @@ class slsDetector : public virtual slsDetectorDefs {
     void sendToDetectorStop(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size);
 
-	void sendToDetectorStop(int fnum, const void *args, size_t args_size,
+    void sendToDetectorStop(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) const;
 
     template <typename Arg, typename Ret>
     void sendToDetectorStop(int fnum, const Arg &args, Ret &retval);
 
-	template <typename Arg, typename Ret>
+    template <typename Arg, typename Ret>
     void sendToDetectorStop(int fnum, const Arg &args, Ret &retval) const;
 
     template <typename Arg>
     void sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t);
 
-	template <typename Arg>
+    template <typename Arg>
     void sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t) const;
 
     template <typename Ret>
     void sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval);
 
-	template <typename Ret>
+    template <typename Ret>
     void sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) const;
 
     void sendToDetectorStop(int fnum);
 
-	void sendToDetectorStop(int fnum) const;
-	
+    void sendToDetectorStop(int fnum) const;
 
     /**
      * Send function parameters to receiver
@@ -1882,30 +1736,30 @@ class slsDetector : public virtual slsDetectorDefs {
     void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size);
 
-	void sendToReceiver(int fnum, const void *args, size_t args_size,
+    void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size) const;
 
     template <typename Arg, typename Ret>
     void sendToReceiver(int fnum, const Arg &args, Ret &retval);
 
-	template <typename Arg, typename Ret>
+    template <typename Arg, typename Ret>
     void sendToReceiver(int fnum, const Arg &args, Ret &retval) const;
 
     template <typename Arg>
     void sendToReceiver(int fnum, const Arg &args, std::nullptr_t);
 
-	template <typename Arg>
+    template <typename Arg>
     void sendToReceiver(int fnum, const Arg &args, std::nullptr_t) const;
 
     template <typename Ret>
     void sendToReceiver(int fnum, std::nullptr_t, Ret &retval);
 
-	template <typename Ret>
+    template <typename Ret>
     void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
 
     void sendToReceiver(int fnum);
 
-	void sendToReceiver(int fnum) const;
+    void sendToReceiver(int fnum) const;
 
     /**
      * Get Detector Type from Shared Memory (opening shm without verifying size)

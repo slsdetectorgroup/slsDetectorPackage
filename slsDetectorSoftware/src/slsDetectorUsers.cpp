@@ -4,26 +4,14 @@
 
 
 
-int slsDetectorUsers::getNumberOfDetectors() const {
-	return detector.getNumberOfDetectors();
+int slsDetectorUsers::size() const {
+	return detector.size();
 }
 
-int slsDetectorUsers::getMaximumDetectorSize(int &nx, int &ny){
-	nx=detector.getMaxNumberOfChannelsPerDetector(slsDetectorDefs::X);
-	ny=detector.getMaxNumberOfChannelsPerDetector(slsDetectorDefs::Y);
-	return nx*ny;
-}
-
-int slsDetectorUsers::getDetectorSize(int &x, int &y, int &nx, int &ny, int detPos){
-	if (detPos < 0) {
-		x = 0;
-		y = 0;
-	} else {
-		x = detector.getDetectorOffset(slsDetectorDefs::X, detPos);
-		y = detector.getDetectorOffset(slsDetectorDefs::Y, detPos);
-	}
-	nx=detector.getTotalNumberOfChannels(slsDetectorDefs::X, detPos);
-	ny=detector.getTotalNumberOfChannels(slsDetectorDefs::Y, detPos);
+int slsDetectorUsers::getDetectorSize(int &nx, int &ny, int detPos){
+	slsDetectorDefs::xy res = detector.getNumberOfChannels();
+	nx=res.x;
+	ny=res.y;
 	return nx*ny;
 }
 
@@ -40,8 +28,8 @@ int slsDetectorUsers::readConfigurationFile(const std::string& fname){
 	}
 }
 
-int slsDetectorUsers::writeConfigurationFile(const std::string& fname){
-	return detector.writeConfigurationFile(fname);
+void slsDetectorUsers::writeConfigurationFile(const std::string& fname){
+	detector.writeConfigurationFile(fname);
 }
 
 int slsDetectorUsers::retrieveDetectorSetup(const std::string& fname){
@@ -159,10 +147,6 @@ int64_t slsDetectorUsers::setNumberOfCycles(int64_t t, int detPos){
 	return detector.setNumberOfCycles(t, detPos);
 }
 
-int64_t slsDetectorUsers::setNumberOfGates(int64_t t, int detPos){
-	return detector.setNumberOfGates(t, detPos);
-} 
-
 int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int detPos) {
 	return detector.setNumberOfStorageCells(t, detPos);
 }
@@ -176,7 +160,7 @@ double slsDetectorUsers::getMeasuredSubFramePeriod(bool inseconds, int detPos) {
 }
 
 int slsDetectorUsers::setTimingMode(int pol, int detPos){
-	return detector.setExternalCommunicationMode(slsDetectorDefs::externalCommunicationMode(pol), detPos);
+	return detector.setTimingMode(slsDetectorDefs::timingMode(pol), detPos);
 }
 
 int slsDetectorUsers::setClockDivider(int value, int detPos) {
@@ -230,12 +214,12 @@ int slsDetectorUsers::setFlowControl10G(int i, int detPos) {
 	return detector.setFlowControl10G(i, detPos);
 }
 
-void slsDetectorUsers::setROI(int n, slsDetectorDefs::ROI roiLimits[], int detPos) {
-    detector.setROI(n, roiLimits, detPos);
+void slsDetectorUsers::setROI(slsDetectorDefs::ROI arg, int detPos) {
+    detector.setROI(arg, detPos);
 }
 
-const slsDetectorDefs::ROI* slsDetectorUsers::getROI(int &n, int detPos) {
-    return detector.getROI(n, detPos);
+slsDetectorDefs::ROI slsDetectorUsers::getROI(int detPos) {
+    return detector.getROI(detPos);
 }
 
 /************************************************************************
@@ -397,10 +381,6 @@ void slsDetectorUsers::registerDataCallback(void( *userCallback)(detectorData*, 
 
 void slsDetectorUsers::registerAcquisitionFinishedCallback(void( *func)(double,int, void*), void *pArg) {
 	detector.registerAcquisitionFinishedCallback(func,pArg);
-}
-
-void slsDetectorUsers::registerProgressCallback(void( *func)(double,void*), void *pArg) {
-	detector.registerProgressCallback(func,pArg);
 }
 
 void slsDetectorUsers::putCommand(const std::string& command){

@@ -1,7 +1,7 @@
 #include "sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 #ifdef GOTTHARDD
-#include "logger.h"                 // runState(enum TLogLevel)
+#include "clogger.h"                 // runState(enum TLogLevel)
 #endif
 #include <stdlib.h>
 #include <stdio.h>					// FILE
@@ -27,6 +27,7 @@ int 		testBus();
 
 #ifdef GOTTHARDD
 int         detectorTest(enum digitalTestMode arg,  int ival);
+int 		testImage(int ival);
 #elif defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		detectorTest(enum digitalTestMode arg);
 #endif
@@ -114,7 +115,8 @@ void        resetPeripheral();
 // parameters - dr, roi
 int 		setDynamicRange(int dr);
 #ifdef GOTTHARDD
-ROI* 		setROI(int n, ROI arg[], int *retvalsize, int *ret);
+int 		setROI(ROI arg);
+ROI			getROI();
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		setADCEnableMask(uint32_t mask);
@@ -211,8 +213,8 @@ int 		setHighVoltage(int val);
 
 
 // parameters - timing, extsig
-void 		setTiming( enum externalCommunicationMode arg);
-enum 		externalCommunicationMode getTiming();
+void 		setTiming( enum timingMode arg);
+enum 		timingMode getTiming();
 #ifdef GOTTHARDD
 void        setExtSignal(enum externalSignalFlag  mode);
 int         getExtSignal();
@@ -300,14 +302,8 @@ void 		setPatternBitMask(uint64_t mask);
 uint64_t	getPatternBitMask();
 #endif
 
-// gotthard specific - image, pedestal
-#ifdef GOTTHARDD
-void 		loadImage(enum imageType index, short int imageVals[]);
-int 		readCounterBlock(int startACQ, short int counterVals[]);
-int			resetCounterBlock(int startACQ);
-
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware
-#elif JUNGFRAUD
+#ifdef JUNGFRAUD
 void 		initReadoutConfiguration();
 int         powerChip (int on);
 int         autoCompDisable(int on);

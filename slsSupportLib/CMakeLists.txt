@@ -7,7 +7,6 @@ set(SOURCES
     src/ServerSocket.cpp
     src/ServerInterface2.cpp
     src/network_utils.cpp
-    src/ToString.cpp
 )
 
 set(HEADERS

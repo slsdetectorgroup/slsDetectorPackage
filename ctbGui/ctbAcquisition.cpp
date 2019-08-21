@@ -39,6 +39,7 @@
 #include "Mythen3_02_jctbData.h"
 #include "adcSar2_jctbData.h"
 #include "moench04CtbZmqData.h"
+#include "moench04CtbZmq10GbData.h"
 #include "deserializer.h"
 #include "detectorData.h"
 
@@ -1197,7 +1198,10 @@ void ctbAcquisition::changeDetector(){
       // commonMode=new moench03CommonMode();
       break;
      case MOENCH04:
-       dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
+       if (myDet->enableTenGigabitEthernet(-1))
+	 dataStructure=new moench04CtbZmq10GbData(nAnalogSamples, nDigitalSamples); 
+       else
+	 dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
        cout << "MOENCH 0.4!" << endl;
        commonMode=new moench03CommonMode();
       break;

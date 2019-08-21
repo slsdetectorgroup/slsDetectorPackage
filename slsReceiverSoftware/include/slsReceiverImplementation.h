@@ -21,6 +21,7 @@ class DataStreamer;
 class Fifo;
 class slsDetectorDefs;
 
+#include <atomic>
 #include <exception>
 #include <memory>
 #include <vector>
@@ -910,7 +911,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     /** Maximum Number of Listening Threads/ UDP Ports */
     const static int MAX_NUMBER_OF_LISTENING_THREADS = 2;
     /** Receiver Status */
-    runStatus status;
+    std::atomic<runStatus> status;
     /** Activated/Deactivated */
     bool activated;
     /** Deactivated padding enable */

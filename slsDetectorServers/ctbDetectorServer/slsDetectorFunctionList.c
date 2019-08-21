@@ -2163,8 +2163,9 @@ int startStateMachine(){
 	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
 	return OK;
 #endif
+    int send_to_10g = enableTenGigabitEthernet(-1);
 	// 1 giga udp
-	if (!enableTenGigabitEthernet(-1)) {
+	if (send_to_10g == 0) {
 		// create udp socket
 		if(createUDPSocket(0) != OK) {
 			return FAIL;
@@ -2175,7 +2176,9 @@ int startStateMachine(){
 
 	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
 	cleanFifos();
-	unsetFifoReadStrobes(); // FIXME: unnecessary to write bus_w(dumm, 0) as it is 0 in the beginnig and the strobes are always unset if set
+	if (send_to_10g == 0) {
+        unsetFifoReadStrobes(); // FIXME: unnecessary to write bus_w(dumm, 0) as it is 0 in the beginnig and the strobes are always unset if set
+    }
 
 	//start state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK | CONTROL_STRT_EXPSR_MSK);
@@ -2332,14 +2335,13 @@ void readFrame(int *ret, char *mess) {
 		// frames left to give status
 		int64_t retval = getTimeLeft(FRAME_NUMBER) + 2;
 		if ( retval > 1) {
-			*ret = (int)FAIL;
 			sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
 			FILE_LOG(logERROR, (mess));
 		} else {
-			*ret = (int)OK;
 			FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 		}
 	}
+    *ret = (int)OK;
 }
 
 void unsetFifoReadStrobes() {
@@ -2430,12 +2432,12 @@ uint32_t checkDataInFifo() {
 	uint32_t dataPresent = 0;
 	if (analogEnable) {
 		uint32_t analogFifoEmpty = bus_r(FIFO_EMPTY_REG);
-		FILE_LOG(logDEBUG2, ("Analog Fifo Empty (32 channels): 0x%x\n", analogFifoEmpty));
+		FILE_LOG(logINFO, ("Analog Fifo Empty (32 channels): 0x%08x\n", analogFifoEmpty));
 		dataPresent = (~analogFifoEmpty);
 	}
 	if (!dataPresent && digitalEnable) {
 		int digitalFifoEmpty = ((bus_r(FIFO_DIN_STATUS_REG) & FIFO_DIN_STATUS_FIFO_EMPTY_MSK) >> FIFO_DIN_STATUS_FIFO_EMPTY_OFST);
-		FILE_LOG(logDEBUG2, ("Digital Fifo Empty: %d\n",digitalFifoEmpty));
+		FILE_LOG(logINFO, ("Digital Fifo Empty: %d\n",digitalFifoEmpty));
 		dataPresent = (digitalFifoEmpty ? 0 : 1);
 	}
     FILE_LOG(logDEBUG2, ("Data in Fifo :0x%x\n", dataPresent));

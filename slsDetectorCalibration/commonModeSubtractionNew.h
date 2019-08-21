@@ -23,6 +23,13 @@ class commonModeSubtraction {
     /** destructor - deletes the moving average(s) and the sum of pedestals calculator(s) */
     virtual ~commonModeSubtraction() {delete [] mean; delete [] mean2; delete [] nCm;};
     
+    /* commonModeSubtraction(commonModeSubtraction *cs) { */
+    /*   if (cs) new commonModeSubtraction(cs->getNRoi(), cs->nsigma); */
+    /* } */
+    
+    virtual commonModeSubtraction *Clone() {
+      new commonModeSubtraction(this->nROI, this->nsigma);
+    }
 
     /** clears the moving average and the sum of pedestals calculation - virtual func*/
     virtual void  Clear(){
@@ -52,7 +59,9 @@ class commonModeSubtraction {
       // if (iroi==0) val=100;
       // else val=-100;
       // if (isc>=0 && isc<nROI) {
+      //	cout << ix << " " << iy << " " << iroi << endl;
       if (iroi>=0 && iroi<nROI) {
+	//	cout << ix << " " << iy << " " << iroi << endl;
 	mean[iroi]+=val; 
 	mean2[iroi]+=val*val; 
 	nCm[iroi]++;
@@ -70,9 +79,9 @@ class commonModeSubtraction {
       /* 	return 100; */
       /* else */
       /* 	return -100; */
-
+      // cout << "*" << ix << " " << iy << " " << iroi << " " << mean[iroi] << " " << nCm[iroi]<< endl;
       if (iroi>=0 && iroi<nROI) {
-	if (nCm[iroi]>0) 
+	if (nCm[iroi]>0)  
 	  return mean[iroi]/nCm[iroi]; 
       }
       return 0;
@@ -96,8 +105,7 @@ class commonModeSubtraction {
 	gets the common mode ROI for pixel ix, iy -should be overloaded!
      */
     virtual int getROI(int ix, int iy){ (void) ix; (void) iy; return 0;};
-
-
+    int getNRoi(){return nROI;};
 
  protected:
   double *mean; /**<array of moving average of the pedestal average per region of interest */

@@ -4,7 +4,7 @@
 
 
 #define MIN_REQRD_VRSN_T_RD_API     0x181130
-#define REQRD_FRMWR_VRSN            0x190402
+#define REQRD_FRMWR_VRSN            0x190821
 
 #define CTRL_SRVR_INIT_TIME_US      (2 * 1000 * 1000)
 
@@ -59,9 +59,9 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define DEFAULT_VLIMIT              (-100)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
-#define DEFAULT_RUN_CLK             (40)
-#define DEFAULT_ADC_CLK             (20)
-#define DEFAULT_SYNC_CLK            (20)
+#define DEFAULT_RUN_CLK             (200) // 40
+#define DEFAULT_ADC_CLK             (40) // 20
+#define DEFAULT_SYNC_CLK            (40) // 20
 #define DEFAULT_DBIT_CLK            (200)
 
 #define HIGHVOLTAGE_MIN             (60)
@@ -76,7 +76,7 @@ enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
 #define VIO_MIN_MV                  (1200) // for fpga to function
 
 /* Defines in the Firmware */
-#define MAX_PATTERN_LENGTH  		(0x7FFF)
+#define MAX_PATTERN_LENGTH  		(0x2000)
 #define DIGITAL_IO_DELAY_MAXIMUM_PS	((OUTPUT_DELAY_0_OTPT_STTNG_MSK >> OUTPUT_DELAY_0_OTPT_STTNG_OFST) * OUTPUT_DELAY_0_OTPT_STTNG_STEPS)
 #define MAX_PHASE_SHIFTS_STEPS		(8)
 

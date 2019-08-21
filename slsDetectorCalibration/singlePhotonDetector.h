@@ -58,7 +58,7 @@ public analogDetector<uint16_t> {
 		      int sign=1,
 		      commonModeSubtraction *cm=NULL,
 		      int nped=1000,
-		      int nd=100, int nnx=-1, int nny=-1, double *gm=NULL) : analogDetector<uint16_t>(d, sign, cm, nped, nnx, nny, gm),   nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), clusters(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0), eMin(-1), eMax(-1) {
+		      int nd=100, int nnx=-1, int nny=-1, double *gm=NULL, ghostSummation<uint16_t> *gs=NULL) : analogDetector<uint16_t>(d, sign, cm, nped, nnx, nny, gm, gs),   nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), clusters(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0), eMin(-1), eMax(-1) {
     
     
     
@@ -213,7 +213,7 @@ public analogDetector<uint16_t> {
 	return nph;
       }	else {
 	if (thr>0) {
-	  newFrame();
+	  newFrame(data);
 	  if (cmSub) {
 	    cout << "add to common mode?"<< endl;
 	    addToCommonMode(data);
@@ -362,7 +362,7 @@ int *getClusters(char *data,  int *ph=NULL) {
     addToPedestal(data);
     return 0;
   }
-  newFrame();
+  newFrame(data);
 
 
   

@@ -3,13 +3,15 @@
 #include "sls_detector_defs.h"
 #include "ZmqSocket.h"
 #include "moench03T1ZmqDataNew.h"
+#include "moench03GhostSummation.h"
+#include "moench03CommonMode.h"
 #include <vector> 
 #include <string> 
 #include <sstream> 
 #include <iomanip> 
 #include <fstream> 
 #include "tiffIO.h"
-//#include <zmq.h>
+
 #include <rapidjson/document.h> //json header in zmq stream
 
 #include<iostream>
@@ -110,12 +112,16 @@ int main(int argc, char *argv[]) {
   int dataSize=size;
 
   char dummybuff[size];
-
-
-
+  
+  int ncol_cm=20;
+  double xt_ghost=0.00045;
+  moench03CommonMode *cm=new moench03CommonMode(ncol_cm);
+  moench03GhostSummation *gs=new moench03GhostSummation(det, xt_ghost);
+  double *gainmap=NULL;
+   
   //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
 #ifndef INTERP
-  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, 0, 1000, 10);
+  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, cm, 1000, 10, -1, -1, gainmap, gs);
 
     multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
 
@@ -126,7 +132,7 @@ int main(int argc, char *argv[]) {
 
   if (etafname) interp->readFlatField(etafname);
 
-  interpolatingDetector *filter=new interpolatingDetector(det,interp, 5, 1, 0, 1000, 10);
+  interpolatingDetector *filter=new interpolatingDetector(det,interp, 5, 1, cm,  1000, 10, -1, -1, gainmap, gs);
   multiThreadedInterpolatingDetector *mt=new multiThreadedInterpolatingDetector(filter,nthreads,fifosize);
 #endif
 
@@ -392,17 +398,20 @@ int main(int argc, char *argv[]) {
 	    }
 
 
+	    //// int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
+	      // 		uint32_t ndetx = 0, uint32_t ndety = 0, uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
+	      // 		uint64_t acqIndex = 0, uint64_t fIndex = 0, const char* fname = NULL,
+	      // 		uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
+	      // 		uint64_t bunchId = 0, uint64_t timestamp = 0,
+	      // 		uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
+	      // 		uint32_t debug = 0, uint16_t roundRNumber = 0,
+	      // 		uint8_t detType = 0, uint8_t version = 0, int gapPixelsEnable = 0, int flippedDataX = 0,
+	      // 		char* additionalJsonHeader = 0) {
 
-#ifdef NEWZMQ	
-	    cout << "Sending image size " << nnx << " " << nny << endl;
-	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
-					   				   
-#endif
 
-#ifndef NEWZMQ
-	        zmqsocket2->SendHeaderData(0, false, SLS_DETECTOR_JSON_HEADER_VERSION,0,0,0,0,0, 0,0,fname, 0, 0,0,0,0,0,0,0,0,0,0,0,1);
-#endif
-		
+	    //  cout << "Sending image size " << nnx << " " << nny << endl;
+	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
+
 		zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
 		cprintf(GREEN, "Sent Data\n");
 		
@@ -654,7 +663,12 @@ int main(int argc, char *argv[]) {
 	    // cout << "file" << endl;
 	    //  cout << "data " << endl;
 	  if (of==NULL) {
+#ifdef WRITE_QUAD
+	    sprintf(ofname,"%s_%d.clust2",filename.c_str(),fileindex);
+#endif
+#ifndef WRITE_QUAD
 	    sprintf(ofname,"%s_%d.clust",filename.c_str(),fileindex);
+#endif
 	    of=fopen(ofname,"w");
 	    if (of) {
 	      mt->setFilePointer(of);

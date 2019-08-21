@@ -13,7 +13,8 @@ INSTMODE	= 	0777
 SRCS 		= 	$(main_server)communication_funcs.c $(main_server)slsDetectorServer.c $(main_server)slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
 OBJS 		= 	$(SRCS:.c=.o) 
  
-all: clean versioning $(PROGS) 
+all: clean versioning $(PROGS)
+#all: clean $(PROGS)
 
 boot: $(OBJS) 
 

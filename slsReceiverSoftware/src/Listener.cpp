@@ -20,7 +20,7 @@
 const std::string Listener::TypeName = "Listener";
 
 
-Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
+Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
         int64_t* us, int64_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
@@ -348,8 +348,8 @@ void Listener::StopListening(char* buf) {
 uint32_t Listener::ListenToAnImage(char* buf) {
 
 	int rc = 0;
-	uint64_t fnum = 0, bid = 0;
-	uint32_t pnum = 0, snum = 0;
+	uint64_t fnum = 0;
+	uint32_t pnum = 0;
 	uint32_t numpackets = 0;
 	uint32_t dsize = generalData->dataSize;
 	uint32_t hsize = generalData->headerSizeinPacket; //(includes empty header)
@@ -402,8 +402,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		}
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
-			generalData->GetHeaderInfo(index, &carryOverPacket[0],
-					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
+			generalData->GetHeaderInfo(index, &carryOverPacket[0], oddStartingPacket, fnum, pnum);
 		}
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
@@ -476,9 +475,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 	}
 
-
-
-
 	//until last packet isHeaderEmpty to account for gotthard short frame, else never entering this loop)
 	while ( numpackets < pperFrame) {
 		//listen to new packet
@@ -525,8 +521,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
                 oddStartingPacket = generalData->SetOddStartingPacket(index, &listeningPacket[0]);
             }
 
-			generalData->GetHeaderInfo(index, &listeningPacket[0],
-					*dynamicRange, oddStartingPacket, fnum, pnum, snum, bid);
+			generalData->GetHeaderInfo(index, &listeningPacket[0], oddStartingPacket, fnum, pnum);
 		}
 		//------------------------------------------------------------------------------------------------------------
 

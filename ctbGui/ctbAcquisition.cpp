@@ -773,9 +773,10 @@ void ctbAcquisition::setCanvas(TCanvas* c) {
   myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)0x%x)->canvasClicked()",this));
   // myCanvas->AddExec("ex","canvasClicked()");
 }
-int ctbAcquisition::dataCallback(detectorData *data, int index, int dum, void* pArgs) {
+void ctbAcquisition::dataCallback(detectorData *data, long unsigned int index, unsigned int dum, void* pArgs) {
 
-  return ((ctbAcquisition*)pArgs)->plotData(data,index);
+  // return 
+  ((ctbAcquisition*)pArgs)->plotData(data,index);
 }
 
 
@@ -836,8 +837,8 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 
 
   //  cout <<"global plot is " << globalPlot << endl;
-  cout << "*******************************************" <<endl;
-  cout <<"------Plot: "<<  index << " prog:" << data->progressIndex << " npoints:" << data->npoints << " npy: " << data->npy << " " << data->fileName << " bytes: " << data->databytes << " dr:"<< data->dynamicRange << " fi: " << data ->fileIndex <<  endl;
+  // cout << "*******************************************" <<endl;
+  // cout <<"------Plot: "<<  index << " prog:" << data->progressIndex << " npoints:" << data->npoints << " npy: " << data->npy << " " << data->fileName << " bytes: " << data->databytes << " dr:"<< data->dynamicRange << " fi: " << data ->fileIndex <<  endl;
   if (globalPlot || cbGetPedestal->IsOn()) {
     //#ifdef TESTADC
     //  cout <<"------"<<  index << " " << ip << " " << data->npoints << endl;
@@ -904,7 +905,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
   i=0;
 
 
-  char *d_data=	data->cvalues+2*nadc*nAnalogSamples;
+  char *d_data=	data->data+2*nadc*nAnalogSamples;
   char dval;
 
 
@@ -914,7 +915,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
     for (int x=0; x<nx; x++) {
       for (int y=0; y<ny; y++) {
 	ped=0;
-	aval=dataStructure->getValue(data->cvalues,x,y);
+	aval=dataStructure->getValue(data->data,x,y);
       
 	if (cbGetPedestal->IsOn()) {
 	  if (photonFinder) {
@@ -934,7 +935,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
       
       
       if (h2DMapDig)
-	h2DMapDig->SetBinContent(x+1,y+1,dataStructure->getGain(data->cvalues,x,y));
+	h2DMapDig->SetBinContent(x+1,y+1,dataStructure->getGain(data->data,x,y));
       
       
       }
@@ -1133,13 +1134,12 @@ void ctbAcquisition::changePlot(){
       if (rb2D->IsOn()) {
 	if (h2DMapDig)
 	  h2DMapDig->Draw("colz");
+	else if (h1DMap)
+	  h1DMap->Draw();
       } else if (bitStack)
 	bitStack->Draw("NOSTACK");
       else
 	cout << "bitStack is NULL" << endl;
-      
-      
-      
     }
     
     
@@ -1685,7 +1685,7 @@ void* ctbAcquisition::ThreadHandle(void *arg)
 
 }
  
- int ctbAcquisition::progressCallback(double f,void* arg) {
+ void ctbAcquisition::progressCallback(double f,void* arg) {
 
 
    // ctbAcquisition *acq = static_cast<ctbAcquisition*>(arg);

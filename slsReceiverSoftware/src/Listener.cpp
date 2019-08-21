@@ -20,7 +20,7 @@
 const std::string Listener::TypeName = "Listener";
 
 
-Listener::Listener(int ind, detectorType dtype, Fifo* f, runStatus* s,
+Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>* s,
         uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
         int64_t* us, int64_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
@@ -475,9 +475,6 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		}
 
 	}
-
-
-
 
 	//until last packet isHeaderEmpty to account for gotthard short frame, else never entering this loop)
 	while ( numpackets < pperFrame) {

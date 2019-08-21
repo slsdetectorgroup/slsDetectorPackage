@@ -544,8 +544,13 @@ private:
 	/** Number of bytes per analog channel */
 	const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
 
-	const int FRAME_NUMBER_OFFSET = 6;
-	const int PACKET_NUMBER_OFFSET = 6 + 8;
+	struct ctb_10g_packet_header {
+		unsigned char emptyHeader[6];
+		unsigned char reserved[4];
+		uint32_t packetFrameNumber;
+		uint64_t bunchid;
+	} __attribute__((packed));
+
 public:
 
 
@@ -559,6 +564,9 @@ public:
 		packetSize 			= headerSizeinPacket + dataSize;
 		//packetsPerFrame 	= 1;
 		imageSize 			= nPixelsX * nPixelsY * 2;
+		frameIndexMask 		= 0xFFFFFF; // 10g
+		frameIndexOffset	= 8; // 10g
+		packetIndexMask 	= 0xFF; //10g
 		packetsPerFrame		= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
 		maxFramesPerFile 	= CTB_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
@@ -648,8 +656,9 @@ public:
 	void GetHeaderInfo(int index, char* packetData, bool oddStartingPacket,
 			uint64_t& frameNumber, uint32_t& packetNumber) const
 	{
-		frameNumber = *reinterpret_cast<uint64_t*>(packetData + FRAME_NUMBER_OFFSET);
-		packetNumber = *reinterpret_cast<uint64_t*>(packetData + PACKET_NUMBER_OFFSET);
+		auto header = reinterpret_cast<ctb_10g_packet_header*>(packetData);
+		frameNumber = (header->packetFrameNumber >> frameIndexOffset) & frameIndexMask;
+		packetNumber = header->packetFrameNumber & packetIndexMask;
 	}
 
 };

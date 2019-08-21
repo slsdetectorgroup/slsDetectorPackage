@@ -58,6 +58,10 @@ Result<defs::detectorType> Detector::getDetectorType(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsEnum, pos);
 }
 
+Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getDetectorTypeAsString, pos);
+}
+
 int Detector::size() const { return pimpl->size(); }
 
 defs::xy Detector::getModuleGeometry() const {

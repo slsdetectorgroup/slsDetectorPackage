@@ -29,18 +29,18 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
   */
   //moench04CtbZmq10GbData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+nds*8), aSamples(nas), dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
- moench04CtbZmq10GbData(int nas=5000, int nds=0):  aSamples(nas), dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
+ moench04CtbZmq10GbData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, (nas > 0) && (nds>0) ? max(nas,nds)*(32*2+8) : nas*32*2+nds*8), aSamples(nas), dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
 
-    int ds;
-    if (nas && nds)
-      if (nds>nas)
-	ds=nds*(32*2+8);
-      else
-	ds=nas*(32*2+8);
-    else
-      ds=nas*32*2+nds*8;
+    /* int ds; */
+    /* if (nas && nds) */
+    /*   if (nds>nas) */
+    /* 	ds=nds*(32*2+8); */
+    /*   else */
+    /* 	ds=nas*(32*2+8); */
+    /* else */
+    /*   ds=nas*32*2+nds*8; */
 
-    slsDetectorData<uint16_t>(400, 400, ds);
+    /* new slsDetectorData<uint16_t>(400, 400, ds); */
 
     int adc_nr[32]={9, 8,11,10,13,12,15,14,1,0,3,2,5,4,7,6,23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24 };
 

@@ -54,10 +54,13 @@ set( HEADERS
     ctbSlowAdcs.h
 )
 
+#set(ROOT_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+
 # ROOT dictionary generation 
 include("${ROOT_DIR}/modules/RootNewMacros.cmake")
 root_generate_dictionary(ctbDict ${HEADERS} LINKDEF ctbLinkDef.h)
 add_library(ctbRootLib SHARED ctbDict.cxx)
+target_include_directories(ctbRootLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ctbRootLib PUBLIC 
     ROOT::Core 
     ${ROOT_LIBRARIES} 

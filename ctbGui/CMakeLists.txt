@@ -2,36 +2,6 @@
 
 find_package(ROOT CONFIG REQUIRED  COMPONENTS Core Gui)
 find_package(TIFF REQUIRED)
-set( HEADERS
-    ctbMain.h 
-    ctbDacs.h   
-    ctbPattern.h  
-    ctbSignals.h  
-    ctbAdcs.h 
-    ctbAcquisition.h 
-    ctbPowers.h   
-    ctbSlowAdcs.h
-)
-
-include("${ROOT_DIR}/modules/RootNewMacros.cmake")
-root_generate_dictionary(ctbDict ${HEADERS} LINKDEF ctbLinkDef.h)
-add_library(ctbshared SHARED ctbDict.cxx)
-# root_generate_dictionary(G__Example Example.h LINKDEF ctbLinkDef.h)
-# ROOT_GENERATE_DICTIONARY( dictionary headerfiles ... [STAGE1] 
-#                          LINKDEF linkdeffiles ...
-#                          [MODULE module] [DEPENDENCIES dep1 dep2 ...]
-#                          [OPTIONS opt1 opt2 ...] )
-
-# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-# ROOT_GENERATE_DICTIONARY(G__Event Event.h LINKDEF EventLinkDef.h)
-
-# #---Create a shared library with geneated dictionary
-# add_library(Event SHARED Event.cxx G__Event.cxx)
-# target_link_libraries(Event ${ROOT_LIBRARIES})
-
-# #---Create  a main program using the library
-# add_executable(Main MainEvent.cxx)
-# target_link_libraries(Main Event)
 
 target_include_directories(ROOT::Core INTERFACE "${ROOT_INCLUDE_DIRS}")
 add_library(ROOT::Flags_CXX IMPORTED INTERFACE)
@@ -72,18 +42,33 @@ target_include_directories(ctbGui PRIVATE
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/
 )
 
-
-target_link_libraries(ctbshared PUBLIC ROOT::Core )
-
-target_link_libraries(ctbGui PUBLIC 
-    ROOT::Core
-    ${ROOT_LIBRARIES} 
-    ${ROOT_EXE_LINKER_FLAGS}
-    slsDetectorShared
-    ctbshared
-    ${TIFF_LIBRARIES}
+# Headders needed for ROOT dictionary generation
+set( HEADERS
+    ctbMain.h 
+    ctbDacs.h   
+    ctbPattern.h  
+    ctbSignals.h  
+    ctbAdcs.h 
+    ctbAcquisition.h 
+    ctbPowers.h   
+    ctbSlowAdcs.h
 )
 
+# ROOT dictionary generation 
+include("${ROOT_DIR}/modules/RootNewMacros.cmake")
+root_generate_dictionary(ctbDict ${HEADERS} LINKDEF ctbLinkDef.h)
+add_library(ctbRootLib SHARED ctbDict.cxx)
+target_link_libraries(ctbRootLib PUBLIC 
+    ROOT::Core 
+    ${ROOT_LIBRARIES} 
+    ${ROOT_EXE_LINKER_FLAGS}
+)
+
+target_link_libraries(ctbGui PUBLIC 
+    slsDetectorShared
+    ctbRootLib
+    ${TIFF_LIBRARIES}
+)
 
 set_target_properties(ctbGui PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

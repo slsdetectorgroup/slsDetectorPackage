@@ -43,6 +43,7 @@ option (SLS_USE_INTEGRATION_TESTS "Integration Tests" OFF)
 option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
 option(SLS_USE_CTBGUI "ctb GUI" OFF)
+option(SLS_BUILD_DOCS "docs" OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

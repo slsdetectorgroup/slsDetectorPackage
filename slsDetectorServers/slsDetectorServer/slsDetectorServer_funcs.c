@@ -529,6 +529,10 @@ int set_timing_mode(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
+#ifdef MYTHEN3D
+    functionNotImplemented();
+#else
+
 	// set
 	if ((arg != GET_TIMING_MODE) && (Server_VerifyLock() == OK)) {
 		switch (arg) {
@@ -549,6 +553,8 @@ int set_timing_mode(int file_des) {
 	retval = getTiming();
 	validate((int)arg, (int)retval, "set timing mode", DEC);
 	FILE_LOG(logDEBUG1, ("Timing Mode: %d\n",retval));
+#endif
+
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
@@ -603,7 +609,7 @@ int digital_test(int file_des) {
 	FILE_LOG(logDEBUG1, ("Digital test, mode = %d\n", mode));
 #endif
 
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only set
@@ -643,6 +649,11 @@ int set_dac(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
+
+#ifdef MYTHEN3D
+    functionNotImplemented();
+#else
+
 	enum dacIndex ind = args[0];
 	int mV = args[1];
 	int val = args[2];
@@ -989,6 +1000,7 @@ int set_dac(int file_des) {
     		}
     	}
     }
+#endif
     return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
@@ -1006,7 +1018,7 @@ int get_adc(int file_des) {
 	if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
 		return printSocketReadError();
 
-#ifdef MOENCHD
+#if defined(MOENCHD) || defined(MYTHEN3D)
     functionNotImplemented();
 #else
 	enum ADCINDEX serverAdcIndex = 0;
@@ -1185,7 +1197,7 @@ int set_module(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	enum detectorSettings retval = -1;
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
     functionNotImplemented();
 #else
 
@@ -1315,7 +1327,7 @@ int get_module(int file_des) {
 	} else
 		module.dacs = myDac;
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
     functionNotImplemented();
 #endif
 
@@ -1340,7 +1352,7 @@ int get_module(int file_des) {
 
 		// only get
 		FILE_LOG(logDEBUG1, ("Getting module\n"));
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
 		getModule(&module);
 #endif
 		FILE_LOG(logDEBUG1, ("Getting module. Settings:%d\n", module.reg));
@@ -1371,7 +1383,7 @@ int set_settings(int file_des) {
 	if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
 		return printSocketReadError();
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1844,7 +1856,7 @@ int set_readout_flags(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting readout flags to %d\n", arg));
 
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// set & get
@@ -2293,8 +2305,11 @@ int configure_mac(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("\n Configuring MAC\n"));
 
+#if defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+	FILE_LOG(logDEBUG1, ("\n Configuring MAC\n"));
 	// dest port
 	uint32_t dstPort = 0;
 	sscanf(args[0], "%x", 	&dstPort);
@@ -2486,7 +2501,7 @@ int configure_mac(int file_des) {
 			}
 		}
 	}
-
+#endif
 	return Server_SendResult(file_des, OTHER, UPDATE, retvals, sizeof(retvals));
 }
 
@@ -2502,7 +2517,7 @@ int enable_ten_giga(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Enable/ Disable 10GbE : %d\n", arg));
 
-#if defined(JUNGFRAUD) || defined(GOTTHARDD)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// set & get
@@ -3074,7 +3089,7 @@ int set_network_parameter(int file_des) {
 	int value = args[1];
 	FILE_LOG(logDEBUG1, ("Set network parameter index %d to %d\n", mode, value));
 
-#if defined(GOTTHARDD) || defined (CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(GOTTHARDD) || defined (CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 	functionNotImplemented();
 #else
     enum NETWORKINDEX serverIndex = 0;
@@ -3131,7 +3146,7 @@ int program_fpga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-#if defined(EIGERD) || defined(GOTTHARDD)
+#if defined(EIGERD) || defined(GOTTHARDD) || defined(MYTHEN3D)
 	//to receive any arguments
 	int n = 1;
 	while (n > 0)

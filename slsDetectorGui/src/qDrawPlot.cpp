@@ -99,9 +99,7 @@ void qDrawPlot::SetupPlots() {
                     --nPixelsX;
                 }
             }
-        } catch (const std::exception &e) {
-            qDefs::ExceptionMessage("Could not get quad.", e.what(), "qDrawPlot::SetupPlots");
-        }
+        } CATCH_DISPLAY ("Could not get quad.", "qDrawPlot::SetupPlots")
         break;
     default:
         break;

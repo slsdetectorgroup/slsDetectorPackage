@@ -114,9 +114,10 @@ void qTabAdvanced::PopulateDetectors() {
 
     comboDetector->clear();
     comboReadout->clear();
-    for (unsigned int i = 0; i < det->size(); ++i) {
-        comboDetector->addItem(QString(det->getHostname({i})[0].c_str()));
-        comboReadout->addItem(QString(det->getHostname({i})[0].c_str()));
+    auto res = det->getHostname();
+    for (auto &it : res) {
+        comboDetector->addItem(QString(it.c_str()));
+        comboReadout->addItem(QString(it.c_str()));
     }
     comboDetector->setCurrentIndex(0);
     comboReadout->setCurrentIndex(0);    
@@ -326,7 +327,7 @@ void qTabAdvanced::SetDetector() {
     GetRxrZMQPort();
     GetRxrZMQIP();
 
-    FILE_LOG(logDEBUG) << det->printReceiverConfiguration();
+    FILE_LOG(logDEBUG) << det->printRxConfiguration();
 }
 
 void qTabAdvanced::SetControlPort(int port) {
@@ -400,7 +401,7 @@ void qTabAdvanced::SetRxrHostname() {
 void qTabAdvanced::SetRxrTCPPort(int port) {
     FILE_LOG(logINFO) << "Setting Receiver TCP Port:" << port;
     try {
-        det->setReceiverPort(port, {comboDetector->currentIndex()});
+        det->setRxPort(port, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver TCP port.",
                                 "qTabAdvanced::SetRxrTCPPort", this,
                                 &qTabAdvanced::GetRxrTCPPort)
@@ -518,7 +519,7 @@ void qTabAdvanced::GetNumStoragecells() {
                SLOT(SetNumStoragecells(int)));
 
     try {
-        auto retval = det->getNumberOfAdditionalStorageCells({}).squash(-1);
+        auto retval = det->getNumberOfAdditionalStorageCells().squash(-1);
         spinNumStoragecells->setValue(retval);
     } CATCH_DISPLAY (
             "Could not get number of additional storage cells.",
@@ -532,7 +533,7 @@ void qTabAdvanced::SetNumStoragecells(int value) {
     FILE_LOG(logINFO) << "Setting number of additional stoarge cells: "
                       << value;
     try {
-        det->setNumberOfAdditionalStorageCells(value, {});
+        det->setNumberOfAdditionalStorageCells(value);
     } CATCH_HANDLE (
             "Could not set number of additional storage cells.",
             "qTabAdvanced::SetNumStoragecells", this,
@@ -579,7 +580,7 @@ void qTabAdvanced::SetSubExposureTime() {
         << qDefs::getUnitString(
                (qDefs::timeUnit)comboSubExpTimeUnit->currentIndex());
     try {
-        det->setSubExptime((int64_t)timeNS, {});
+        det->setSubExptime(static_cast<int64_t>(timeNS), {});
     } CATCH_DISPLAY ("Could not set sub exposure time.",
                                 "qTabAdvanced::SetSubExposureTime")
 
@@ -594,19 +595,13 @@ void qTabAdvanced::GetSubDeadTime() {
                SLOT(SetSubDeadTime()));
 
     try {
-        int64_t retval = det->getSubDeadTime({}).squash(-1);
-        if (retval == -1) {
-            qDefs::Message(qDefs::WARNING,
-                           "Sub dead time is inconsistent for all detectors.",
+        int64_t retval = det->getSubDeadTime({}).tsquash("Sub dead time is inconsistent for all detectors.",
                            "qTabAdvanced::GetSubDeadTime");
-            spinSubDeadTime->setValue(-1);
-        } else {
-            double value = (double)(retval * (1E-9));
-            auto time = qDefs::getCorrectTime(value);
-            spinSubDeadTime->setValue(time.first);
-            comboSubDeadTimeUnit->setCurrentIndex(
-                static_cast<int>(time.second));
-        }
+        double value = (double)(retval * (1E-9));
+        auto time = qDefs::getCorrectTime(value);
+        spinSubDeadTime->setValue(time.first);
+        comboSubDeadTimeUnit->setCurrentIndex(
+            static_cast<int>(time.second));
     } CATCH_DISPLAY ("Could not get sub dead time.",
                                 "qTabSettings::GetSubDeadTime")
 
@@ -626,7 +621,7 @@ void qTabAdvanced::SetSubDeadTime() {
         << qDefs::getUnitString(
                (qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex());
     try {
-        det->setSubDeadTime((int64_t)timeNS, {});
+        det->setSubDeadTime(static_cast<int64_t>(timeNS), {});
     } CATCH_DISPLAY ("Could not set sub dead time.",
                                 "qTabAdvanced::SetSubDeadTime")
 								

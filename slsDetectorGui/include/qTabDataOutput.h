@@ -48,12 +48,7 @@ public:
 		QUARTERSPEED,
 		NUMBEROFSPEEDS
 	};
-	// enum for the Eiger readout flags1
-	enum { 
-		CONTINUOUS, 
-		STOREINRAM 
-	};
-	// enum for the Eiger readout flags2
+	// enum for the Eiger Parallel flag
 	enum { 
 		PARALLEL, 
 		NONPARALLEL

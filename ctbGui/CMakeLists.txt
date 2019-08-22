@@ -21,7 +21,25 @@ set_property(TARGET ROOT::Core PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES "${ROOT_INCLUDE_DIRS}")
 
 
-add_executable(ctbGui ctbGui.cpp)
+add_executable(ctbGui 
+    ctbGui.cpp 
+    ctbMain.cpp
+    ctbDacs.cpp
+    ctbPowers.cpp
+    ctbSlowAdcs.cpp
+    ctbSignals.cpp
+    ctbAdcs.cpp
+    ctbPattern.cpp
+    ctbAcquisition.cpp
+)
+
+#TODO! Replace with target
+target_include_directories(ctbGui PRIVATE 
+    ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/dataStructures
+    ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/interpolations
+    ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/
+)
+
 target_link_libraries(ctbGui PUBLIC 
     ROOT::Core
     ${ROOT_LIBRARIES} 

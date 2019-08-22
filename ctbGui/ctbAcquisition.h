@@ -151,6 +151,7 @@ class ctbAcquisition : public TGGroupFrame {
   int globalPlot;
   int adcPlot;
   int dbitPlot;
+  int tenG;
 
   int nAnalogSamples, nDigitalSamples;
   // int iScanStep;

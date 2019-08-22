@@ -39,6 +39,7 @@
 #include "Mythen3_02_jctbData.h"
 #include "adcSar2_jctbData.h"
 #include "moench04CtbZmqData.h"
+#include "moench04CtbZmq10GbData.h"
 #include "deserializer.h"
 #include "detectorData.h"
 
@@ -47,7 +48,7 @@ using namespace std;
 
 
 
-ctbAcquisition::ctbAcquisition(TGVerticalFrame *page, multiSlsDetector *det) : TGGroupFrame(page,"Acquisition",kVerticalFrame),  myDet(det), myCanvas(NULL), globalPlot(0), nAnalogSamples(1), nDigitalSamples(1), dataStructure(NULL), photonFinder(NULL), cmSub(0), dBitMask(0xffffffffffffffff), deserializer(0) {
+ctbAcquisition::ctbAcquisition(TGVerticalFrame *page, multiSlsDetector *det) : TGGroupFrame(page,"Acquisition",kVerticalFrame),  myDet(det), myCanvas(NULL), globalPlot(0), nAnalogSamples(1), nDigitalSamples(1), dataStructure(NULL), photonFinder(NULL), cmSub(0), tenG(0), dBitMask(0xffffffffffffffff), deserializer(0) {
 
   adcFit=NULL;
   bitPlot=NULL;
@@ -893,8 +894,18 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
     }
   } else  
     ndbit=dbitlist.size();
-
-  dsize=nadc*2*nAnalogSamples+ndbit*(nDigitalSamples-dBitOffset/8)/8;
+  if (tenG){
+   
+    if (nDigitalSamples && nAnalogSamples){
+      if (nDigitalSamples>nAnalogSamples)
+	dsize=nDigitalSamples*(32*2+8);
+      else
+	dsize=nAnalogSamples*(32*2+8);
+    } else
+      dsize=32*2*nAnalogSamples+8*nDigitalSamples;
+    
+  } else
+    dsize=nadc*2*nAnalogSamples+ndbit*(nDigitalSamples-dBitOffset/8)/8;
   
   cout << "dataBytes is " << data->databytes << " expected " << dsize << endl;
 
@@ -905,7 +916,11 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
   i=0;
 
 
-  char *d_data=	data->data+2*nadc*nAnalogSamples;
+  char *d_data;
+  if (tenG)
+    d_data=	data->data;
+  else
+    d_data =	data->data+2*nadc*nAnalogSamples;
   char dval;
 
 
@@ -967,7 +982,11 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 	  ig=ii;
 	else
 	  ig=adclist.at(ii);
-	aval=data->getChannel(i);//*((uint16_t*)(data->cvalues+i*2));//
+
+	// if (tenG)
+	//   aval=data->getChannel(i);
+	// else
+	  aval=data->getChannel(i);//*((uint16_t*)(data->cvalues+i*2));//
       
 	if (plotFlag[ig]) {
 	  
@@ -979,10 +998,11 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 	//	cout << data->getChannel(i) << endl;
 	  h->SetBinContent(ip+1,aval);	
 	  h1->Fill(aval);
-      } 
+	} 
 	
 	i++;
-    }
+      }
+      if (tenG) i+=4;
       
     }
     
@@ -992,8 +1012,10 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
     if (dbitlist.empty())  {
       for (ip=0; ip<nDigitalSamples; ip++) {
 	for (ig=0; ig<8; ig++) { 
-	  
-	  dval=*(d_data+ip*8+ig);
+	  if (tenG)
+	    dval=*(d_data+ip*(8+32*2)+32*2+ig);
+	  else
+	    dval=*(d_data+ip*8+ig);
 	  
 	  for (ib=(ig)*8; ib<(ig+1)*8; ib++) {
 	    if (bitPlotFlag[ib]) {
@@ -1197,7 +1219,10 @@ void ctbAcquisition::changeDetector(){
       // commonMode=new moench03CommonMode();
       break;
      case MOENCH04:
-       dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
+       if (myDet->enableTenGigabitEthernet(-1))
+	 dataStructure=new moench04CtbZmq10GbData(nAnalogSamples, nDigitalSamples); 
+       else
+	 dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
        cout << "MOENCH 0.4!" << endl;
        commonMode=new moench03CommonMode();
       break;
@@ -1507,8 +1532,17 @@ void ctbAcquisition::update() {
     }
     
    }
-   dBitOffset=myDet->getReceiverDbitOffset();
 
+   try{
+     dBitOffset=myDet->getReceiverDbitOffset(); 
+   }  catch (...) {
+     cout << "Do nothing for this error" << endl;
+   } 
+   try{
+     tenG=myDet->enableTenGigabitEthernet(-1);
+   }  catch (...) {
+      cout << "Do nothing for this error" << endl;
+    }
   // char aargs[10][100];
   // char *args[10];
   // for (int i=0; i<10; i++)
@@ -1662,6 +1696,11 @@ void ctbAcquisition::acquisitionFinished() {
 void ctbAcquisition::startAcquisition(){
   cout << "Detector started " <<eMeasurements->GetNumber()<< endl;
   stop=0;
+  try {
+    tenG=myDet->enableTenGigabitEthernet(-1); 
+  }  catch (...) {
+    cout << "Do nothing for this error" << endl;
+    }
   for (int im=0; im<eMeasurements->GetNumber(); im++) {
     try {
       myDet->acquire(); 

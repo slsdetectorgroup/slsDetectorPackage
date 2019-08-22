@@ -86,7 +86,8 @@ class slsDetectorDefs {
         GOTTHARD,               /**< gotthard */
         JUNGFRAU,               /**< jungfrau */
         CHIPTESTBOARD,          /**< CTB */
-        MOENCH                  /**< moench */
+        MOENCH,                  /**< moench */
+        MYTHEN3                 /** mythen3 */
     };
 
     /**
@@ -576,8 +577,8 @@ format
     };
 
     /** returns detector type string from detector type index
-        \param t string can be EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD
-        \returns Eiger, Gotthard, Jungfrau, JungfrauCTB, Unknown
+        \param t string can be EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3
+        \returns Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3, Unknown
     */
     static std::string detectorTypeToString(detectorType t) {
         switch (t) {
@@ -591,14 +592,16 @@ format
             return std::string("JungfrauCTB");
         case MOENCH:
             return std::string("Moench");
+        case MYTHEN3:
+            return std::string("Mythen3");
         default:
             return std::string("Unknown");
         }
     };
 
     /** returns detector type index from detector type string
-        \param type can be Eiger, Gotthard, Jungfrau, JungfrauCTB
-        \returns  EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, GENERIC
+        \param type can be Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3
+        \returns  EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3, GENERIC
     */
     static detectorType detectorTypeToEnum(const std::string &type) {
         if (type == "Eiger")
@@ -611,6 +614,8 @@ format
             return CHIPTESTBOARD;
         if (type == "Moench")
             return MOENCH;
+        if (type == "Mythen3")
+            return MYTHEN3;
         return GENERIC;
     };
 

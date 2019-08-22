@@ -52,8 +52,6 @@ set_property(TARGET ROOT::Core PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES "${ROOT_INCLUDE_DIRS}")
 
 
-    
-
 add_executable(ctbGui 
     ctbGui.cpp 
     ctbMain.cpp
@@ -86,7 +84,6 @@ target_link_libraries(ctbGui PUBLIC
     ${TIFF_LIBRARIES}
 )
 
-message(${TIFF_LIBRARIES})
 
 set_target_properties(ctbGui PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

@@ -9,3 +9,4 @@
 #define NCHAN 						(128)
 #define NCHIP 						(10)
 #define NDAC 						(16)
+#define TEMP_CLK					(20)	/* MHz */

@@ -190,32 +190,64 @@ int getSpeed(enum speedVariable ind) {
 
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
+	int64_t retval = -1;
 	switch(ind){
 
-	case FRAME_NUMBER:
-		
+	case FRAME_NUMBER: // defined in sls_detector_defs.h (general)
+		if(val >= 0) {
+			FILE_LOG(logINFO, ("Setting #frames: %lld\n",(long long int)val));
+		}
+		retval = set64BitReg(val,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG); // defined in my RegisterDefs.h
+		FILE_LOG(logDEBUG1, ("Getting #frames: %lld\n", (long long int)retval));
+		break;
+
 	case ACQUISITION_TIME:
-		
+		if(val >= 0){
+			FILE_LOG(logINFO, ("Setting exptime: %lldns\n", (long long int)val));
+			val *= (1E-3 * TEMP_CLK);
+		}
+		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-3 * TEMP_CLK); // CLK defined in slsDetectorServer_defs.h
+		FILE_LOG(logDEBUG1, ("Getting exptime: %lldns\n", (long long int)retval));
+		break;
+
 	case FRAME_PERIOD:
-		
+		if(val >= 0){
+			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
+			val *= (1E-3 * TEMP_CLK);
+		}
+		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * TEMP_CLK);
+		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
+		break;
 	case CYCLES_NUMBER:
-        return -1;
+		if(val >= 0) {
+			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
+		}
+		retval = set64BitReg(val,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+		FILE_LOG(logDEBUG1, ("Getting #cycles: %lld\n", (long long int)retval));
+		break;
 
 	default:
+		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
 		break;
 	}
 
-	return -1;
+	return retval;
 
 }
 
 int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
-
+    if (val < 0)
+        return OK;
     switch(ind) {
     case ACQUISITION_TIME:
-  
     case FRAME_PERIOD:
-
+		// convert to freq
+        val *= (1E-3 * TEMP_CLK);
+        // convert back to timer
+        val = (val) / (1E-3 * TEMP_CLK);
+        if (val != retval)
+            return FAIL;
+        break;
     default:
         break;
     }
@@ -227,6 +259,23 @@ int64_t getTimeLeft(enum timerIndex ind){
 #ifdef VIRTUAL
     return 0;
 #endif
+	int64_t retval = -1;
+	switch(ind){
+
+	case FRAME_NUMBER:
+		retval = get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
+		break;
+
+	case CYCLES_NUMBER:
+		retval = get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
+		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
+		break;
+
+	default:
+		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
+		break;
+	}
 
 	return -1;
 }
@@ -238,6 +287,7 @@ int startStateMachine(){
 		return FAIL;
 	}
 	FILE_LOG(logINFOBLUE, ("starting state machine\n"));
+	// set status to running
 	virtual_status = 1;
 	virtual_stop = 0;
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
@@ -261,23 +311,30 @@ void* start_timer(void* arg) {
 
 
     int frameNr = 0;
+	// loop over number of frames
     for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
-        int srcOffset = 0;
-    
+
+		//check if virtual_stop is high, then break
+
+		// sleep for exposure time
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
-
         usleep(exp_ns / 1000);
-
         clock_gettime(CLOCK_REALTIME, &end);
+
+		// calculate time left in period
         int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
                 (end.tv_nsec - begin.tv_nsec));
 
+		// sleep for (period - exptime)
         if (periodns > time_ns) {
             usleep((periodns - time_ns)/ 1000);
         }
+
+		// set register frames left
     }
 
+	// set status to idle
 	virtual_status = 0;
 	return NULL;
 }

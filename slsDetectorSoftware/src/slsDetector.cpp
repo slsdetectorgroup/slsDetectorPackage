@@ -75,6 +75,9 @@ void slsDetector::checkDetectorVersionCompatibility() {
     case MOENCH:
         arg = APIMOENCH;
         break;
+    case MYTHEN3:
+        arg = APIMYTHEN3;
+        break;
     default:
         throw NotImplementedError(
             "Check version compatibility is not implemented for this detector");
@@ -384,6 +387,9 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
         break;
     case MOENCH:
         shm()->rxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
+        break;
+    case MYTHEN3:
+        shm()->rxFramesPerFile = MYTHEN3_MAX_FRAMES_PER_FILE;
         break;
     default:
         break;
@@ -739,8 +745,8 @@ void slsDetector::updateCachedDetectorVariables() {
         shm()->dynamicRange = i32;
 
         // settings
-        if ((shm()->myDetectorType != CHIPTESTBOARD) &&
-            (shm()->myDetectorType != MOENCH)) {
+        if (shm()->myDetectorType == EIGER ||
+            shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == GOTTHARD) {
             n += client.Receive(&i32, sizeof(i32));
             shm()->currentSettings = static_cast<detectorSettings>(i32);
         }
@@ -773,7 +779,7 @@ void slsDetector::updateCachedDetectorVariables() {
         shm()->timerValue[FRAME_PERIOD] = i64;
 
         // delay
-        if (shm()->myDetectorType != EIGER) {
+        if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3 ) {
             n += client.Receive(&i64, sizeof(i64));
             shm()->timerValue[DELAY_AFTER_TRIGGER] = i64;
         }

@@ -18,6 +18,8 @@ const enum detectorType myDetectorType = JUNGFRAU;
 const enum detectorType myDetectorType = CHIPTESTBOARD;
 #elif MOENCHD
 const enum detectorType myDetectorType = MOENCH;
+#elif MYTHEN3D
+const enum detectorType myDetectorType = MYTHEN3;
 #else
 const enum detectorType myDetectorType = GENERIC;
 #endif
@@ -1793,6 +1795,9 @@ int get_time_left(int file_des) {
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
         case CYCLES_NUMBER:
+#elif MYTHEN3D
+		case FRAME_NUMBER:
+		case CYCLES_NUMBER:
 #endif
             retval = getTimeLeft(ind);
             FILE_LOG(logDEBUG1, ("Timer left index %d: %lld\n", ind, retval));
@@ -2228,7 +2233,7 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 
 	// delay
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(MYTHEN3D)
 	i64 = setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();

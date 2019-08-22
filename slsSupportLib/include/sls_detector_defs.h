@@ -63,6 +63,7 @@
 #define EIGER_MAX_FRAMES_PER_FILE 10000
 #define JFRAU_MAX_FRAMES_PER_FILE 10000
 #define CTB_MAX_FRAMES_PER_FILE 20000
+#define MYTHEN3_MAX_FRAMES_PER_FILE 10000
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
@@ -1137,6 +1138,16 @@ struct detParameters {
             dynamicRange = 16;
             nGappixelsX = 6;
             nGappixelsY = 1;
+            break;
+        case slsDetectorDefs::detectorType::MYTHEN3:
+            nChanX = 128;
+            nChanY = 1;
+            nChipX = 10;
+            nChipY = 1;
+            nDacs = 16;
+            dynamicRange = 16;
+            nGappixelsX = 0;
+            nGappixelsY = 0;
             break;
         default:
             throw sls::RuntimeError(

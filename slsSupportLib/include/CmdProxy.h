@@ -22,7 +22,7 @@
     std::ostringstream os;                                                     \
     os << cmd << ' ';                                                          \
     if (action == slsDetectorDefs::HELP_ACTION)                                \
-        os << HLPSTR << '\n';                                                          \
+        os << HLPSTR << '\n';                                                  \
     else if (action == slsDetectorDefs::GET_ACTION) {                          \
         auto t = det->GETFCN({det_id});                                        \
         if (args.size() == 0) {                                                \
@@ -43,6 +43,31 @@
             det->SETFCN(t, {det_id});                                          \
         } else {                                                               \
             WrongNumberOfParameters(2);                                        \
+        }                                                                      \
+        os << ToString(args) << '\n';                                          \
+    } else {                                                                   \
+        throw sls::RuntimeError("Unknown action");                             \
+    }                                                                          \
+    return os.str();
+
+#define INTEGER_COMMAND(GETFCN, SETFCN, HLPSTR)                                \
+    std::ostringstream os;                                                     \
+    os << cmd << ' ';                                                          \
+    if (action == slsDetectorDefs::HELP_ACTION)                                \
+        os << HLPSTR << '\n';                                                  \
+    else if (action == slsDetectorDefs::GET_ACTION) {                          \
+        auto t = det->GETFCN({det_id});                                        \
+        if (args.size() == 0) {                                                \
+            os << OutString(t) << '\n';                                        \
+        } else {                                                               \
+            WrongNumberOfParameters(2);                                        \
+        }                                                                      \
+    } else if (action == slsDetectorDefs::PUT_ACTION) {                        \
+        if (args.size() == 1) {                                                \
+            auto val = std::stoi(args[0]);                                     \
+            det->SETFCN(val, {det_id});                                        \
+        } else {                                                               \
+            WrongNumberOfParameters(1);                                        \
         }                                                                      \
         os << ToString(args) << '\n';                                          \
     } else {                                                                   \
@@ -129,7 +154,8 @@ template <typename T> class CmdProxy {
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
                           {"exptime2", &CmdProxy::Exptime},
                           {"period2", &CmdProxy::Period},
-                          {"subexptime2", &CmdProxy::SubExptime}};
+                          {"subexptime2", &CmdProxy::SubExptime},
+                          {"rx_fifodepth", &CmdProxy::RxFifoDepth}};
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
@@ -184,6 +210,13 @@ template <typename T> class CmdProxy {
                               << it.first << " -> " << it.second << '\n';
                 }
                 return "";
+            } else if (args[0] == "migrated") {
+                std::cout << "The following " << functions.size()
+                          << " commands have been migrated to the new API\n";
+                for (const auto &it : functions) {
+                    std::cout << it.first << '\n';
+                }
+                return "";
             } else {
                 throw RuntimeError(
                     "Could not decode argument. Possible options: deprecated");
@@ -208,6 +241,10 @@ template <typename T> class CmdProxy {
         TIME_COMMAND(getSubExptime, setSubExptime,
                      "[duration] [(optional unit) ns|us|ms|s]\n\tSet the "
                      "exposure time of EIGER subframes");
+    }
+
+    std::string RxFifoDepth(const int action) {
+        INTEGER_COMMAND(getRxFifoDepth, setRxFifoDepth, "[fifo depth]");
     }
 };
 

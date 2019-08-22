@@ -1806,13 +1806,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-   - <b>rx_fifodepth [i]</b> sets/gets receiver fifo (between Listener and Writer Threads) depth to i number of frames. Can improve listener packet loss (loss due to packet processing time in Listener threads), not if limited by writing. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_fifodepth";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
-    /*! \page receiver
    - <b>rx_silent [i]</b> sets/gets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_silent";
@@ -4914,18 +4907,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
                 sprintf(answer, "%d", myDet->enableTenGigabitEthernet(ival, detPos));
         } else
             sprintf(answer, "%d", myDet->enableTenGigabitEthernet(-1, detPos));
-        return std::string(answer);
-
-    }
-
-    else if (cmd == "rx_fifodepth") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan rx_fifodepth input ") + std::string(args[1]);
-            if (ival >= 0)
-                sprintf(answer, "%d", myDet->setReceiverFifoDepth(ival, detPos));
-        } else
-            sprintf(answer, "%d", myDet->setReceiverFifoDepth(-1, detPos));
         return std::string(answer);
 
     }

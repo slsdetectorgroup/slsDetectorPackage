@@ -100,4 +100,13 @@ std::vector<const char *> CmdLineParser::argv() const {
     return vec;
 }
 
+
+std::string CmdLineParser::cli_line() const{
+    std::ostringstream os;
+    os << command_;
+    for (const auto & arg : arguments_)
+        os << " " << arg;
+    return os.str();
+}
+
 } // namespace sls

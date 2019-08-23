@@ -8,8 +8,8 @@
 #include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 
 #define TIME_COMMAND(GETFCN, SETFCN, HLPSTR)                                   \
     std::ostringstream os;                                                     \
@@ -157,7 +157,15 @@ std::string CmdProxy::SubExptime(int action) {
 }
 
 std::string CmdProxy::RxFifoDepth(const int action) {
-    INTEGER_COMMAND(getRxFifoDepth, setRxFifoDepth, "[fifo depth]");
+    INTEGER_COMMAND(
+        getRxFifoDepth, setRxFifoDepth,
+        "[n_frames]\n\tSet the number of frames in the receiver fifo");
+}
+
+std::string CmdProxy::RxSilent(const int action){
+     INTEGER_COMMAND(
+        getRxSilentMode, setRxSilentMode,
+        "[0, 1]\n\tSwitch on or off receiver text output");
 }
 
 std::string CmdProxy::ListCommands(int action) {

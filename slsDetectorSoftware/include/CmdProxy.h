@@ -39,7 +39,8 @@ class CmdProxy {
                           {"exptime2", &CmdProxy::Exptime},
                           {"period2", &CmdProxy::Period},
                           {"subexptime2", &CmdProxy::SubExptime},
-                          {"rx_fifodepth", &CmdProxy::RxFifoDepth}};
+                          {"rx_fifodepth", &CmdProxy::RxFifoDepth},
+                          {"rx_silent", &CmdProxy::RxSilent}};
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
@@ -69,6 +70,7 @@ class CmdProxy {
     std::string Exptime(int action);
     std::string SubExptime(int action);
     std::string RxFifoDepth(const int action);
+    std::string RxSilent(const int action);
 };
 
 } // namespace sls

@@ -1805,12 +1805,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
-    /*! \page receiver
-   - <b>rx_silent [i]</b> sets/gets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_silent";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
 
     /*! \page receiver
     - <b>rx_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
@@ -4907,18 +4901,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
                 sprintf(answer, "%d", myDet->enableTenGigabitEthernet(ival, detPos));
         } else
             sprintf(answer, "%d", myDet->enableTenGigabitEthernet(-1, detPos));
-        return std::string(answer);
-
-    }
-
-    else if (cmd == "rx_silent") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan rx_silent input ") + std::string(args[1]);
-            if (ival >= 0)
-                sprintf(answer, "%d", myDet->setReceiverSilentMode(ival, detPos));
-        } else
-            sprintf(answer, "%d", myDet->setReceiverSilentMode(-1, detPos));
         return std::string(answer);
 
     }

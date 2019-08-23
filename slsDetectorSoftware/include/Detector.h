@@ -658,10 +658,12 @@ class Detector {
     /** [Eiger] deadtime in ns, 0 = disabled */
     Result<ns> getRateCorrection(Positions pos = {}) const;
 
+    /** [Eiger] Sets default rate correction from trimbit file */
+    void setDefaultRateCorrection(Positions pos = {});
+
     /** //TODO: default, get, set
      * [Eiger] Set Rate correction
-     * 0 disable correction, < 0: default dead time from trimbit file, > 0
-     * custom deadtime (advanced)
+     * 0 disable correction, > 0 custom deadtime, cannot be -1
      */
     void setRateCorrection(ns dead_time, Positions pos = {});
 

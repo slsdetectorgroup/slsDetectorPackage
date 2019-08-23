@@ -2707,6 +2707,13 @@ sls_detector_module slsDetector::getModule() {
     return myMod;
 }
 
+void slsDetector::setDefaultRateCorrection() {
+    FILE_LOG(logDEBUG1) << "Setting Default Rate Correction";
+    int64_t arg = -1;
+    sendToDetector(F_SET_RATE_CORRECT, arg, nullptr);
+    shm()->deadTime = -1;
+}
+
 void slsDetector::setRateCorrection(int64_t t) {
     FILE_LOG(logDEBUG1) << "Setting Rate Correction to " << t;
     sendToDetector(F_SET_RATE_CORRECT, t, nullptr);

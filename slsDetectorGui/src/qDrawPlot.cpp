@@ -86,9 +86,11 @@ void qDrawPlot::SetupPlots() {
     nPixelsY = res.y;
     switch(detType) {
     case slsDetectorDefs::MOENCH:
-        npixelsy_jctb = (det->setTimer(slsDetectorDefs::ANALOG_SAMPLES, -1) * 2)/25;// for moench 03
-        nPixelsX = npixelsx_jctb;
-        nPixelsY = npixelsy_jctb;
+        try{
+            npixelsy_jctb = (det->getNumberOfAnalogSamples().tsquash("Inconsistent values for number of analog samples") * 2)/25;// for moench 03
+            nPixelsX = npixelsx_jctb;
+            nPixelsY = npixelsy_jctb;
+        } CATCH_DISPLAY ("Could not get number of analog samples.", "qDrawPlot::SetupPlots")
         break;
     case slsDetectorDefs::EIGER:
         try{

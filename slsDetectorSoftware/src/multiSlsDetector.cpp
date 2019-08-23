@@ -2358,7 +2358,20 @@ int multiSlsDetector::setAutoComparatorDisableMode(int ival, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+void multiSlsDetector::setDefaultRateCorrection(int detPos) {
+    // single
+    if (detPos >= 0) {
+        detectors[detPos]->setDefaultRateCorrection();
+    }
+
+    // multi
+    parallelCall(&slsDetector::setDefaultRateCorrection);
+}
+
 void multiSlsDetector::setRateCorrection(int64_t t, int detPos) {
+    if (t < 0) {
+        throw sls::RuntimeError("Dead time has to be greater or equal to 0");
+    }
     // single
     if (detPos >= 0) {
         detectors[detPos]->setRateCorrection(t);

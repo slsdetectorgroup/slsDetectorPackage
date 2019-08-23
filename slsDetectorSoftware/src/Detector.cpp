@@ -828,6 +828,10 @@ Result<ns> Detector::getRateCorrection(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getRateCorrection, pos);
 }
 
+void Detector::setDefaultRateCorrection(Positions pos) {
+    pimpl->Parallel(&slsDetector::setDefaultRateCorrection, pos);
+}
+
 void Detector::setRateCorrection(ns dead_time, Positions pos) {
     pimpl->Parallel(&slsDetector::setRateCorrection, pos, dead_time.count());
 }

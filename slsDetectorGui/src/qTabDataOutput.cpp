@@ -264,14 +264,18 @@ void qTabDataOutput::SetRateCorrection() {
 	if (!chkRate->isChecked()) {
 		return;
 	}
-	// get default or custom value
-	int64_t deadtime = -1;
-	if (radioCustomDeadtime->isChecked()) {
-		deadtime = spinCustomDeadTime->value();
-	}
-	FILE_LOG(logINFO) << "Setting Rate Correction with dead time: " << deadtime;
 	try {
-		det->setRateCorrection(sls::ns(deadtime)); -1??
+		// custom dead time
+		if (radioCustomDeadtime->isChecked()) {
+			int64_t deadtime = spinCustomDeadTime->value();
+			FILE_LOG(logINFO) << "Setting Rate Correction with custom dead time: " << deadtime;
+			det->setRateCorrection(sls::ns(deadtime));
+		}
+		// default dead time
+		else {
+			FILE_LOG(logINFO) << "Setting Rate Correction with default dead time";
+			det->setDefaultRateCorrection();
+		}
     } CATCH_HANDLE ("Could not set rate correction.", "qTabDataOutput::SetRateCorrection", this, &qTabDataOutput::GetRateCorrection)
 }
 

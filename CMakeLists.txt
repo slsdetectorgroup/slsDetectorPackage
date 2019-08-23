@@ -44,6 +44,7 @@ option(SLS_USE_SANITIZER "Sanitizers for debugging" OFF)
 option(SLS_USE_PYTHON "Python bindings" OFF)
 option(SLS_USE_CTBGUI "ctb GUI" OFF)
 option(SLS_BUILD_DOCS "docs" OFF)
+option(SLS_BUILD_EXAMPLES "examples" OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -185,8 +186,9 @@ configure_file( .clang-tidy
     ${CMAKE_BINARY_DIR}/.clang-tidy  
 )
 
-
-#add_subdirectory(sample)
+if (SLS_BUILD_EXAMPLES)
+    add_subdirectory(sample)
+endif(SLS_BUILD_EXAMPLES)
 
 if(SLS_BUILD_DOCS)
     add_subdirectory(docs)

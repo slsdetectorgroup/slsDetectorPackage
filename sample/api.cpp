@@ -47,7 +47,7 @@ using std::chrono::seconds;
 
 int main() {
     Detector d;
-    d.setConfig("/home/l_frojdh/virtual.config");
+    // d.setConfig("/home/l_frojdh/virtual.config");
 
     // d.setExptime(nanoseconds(500)); // set exptime of all modules
     // auto t0 = d.getExptime();

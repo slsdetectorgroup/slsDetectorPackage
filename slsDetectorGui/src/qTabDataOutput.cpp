@@ -117,7 +117,7 @@ void qTabDataOutput::GetFileWrite() {
 		FILE_LOG(logDEBUG) << "Getting file write enable";
 	try {
 		boxFileWriteEnabled->setEnabled(true); // exception default
-		auto retval = det->getFileWrite({}).tsquash("File write is inconsistent for all detectors.");
+		auto retval = det->getFileWrite().tsquash("File write is inconsistent for all detectors.");
 		boxFileWriteEnabled->setEnabled(retval);
 	} CATCH_DISPLAY("Could not get file enable.", "qTabDataOutput::GetFileWrite")
 }
@@ -125,7 +125,7 @@ void qTabDataOutput::GetFileWrite() {
 void qTabDataOutput::GetFileName() {
 	FILE_LOG(logDEBUG) << "Getting file name";
 	try {
-        auto retval = det->getFileNamePrefix({}).tsquash("File name is inconsistent for all detectors.");
+        auto retval = det->getFileNamePrefix().tsquash("File name is inconsistent for all detectors.");
 		dispFileName->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get file name prefix.", "qTabDataOutput::GetFileName")	
 }
@@ -174,7 +174,7 @@ void qTabDataOutput::GetFileFormat() {
 	FILE_LOG(logDEBUG) << "Getting File Format";
 	disconnect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFileFormat(int)));
 	try {
-		auto retval = det->getFileFormat({}).tsquash("File format is inconsistent for all detectors.");
+		auto retval = det->getFileFormat().tsquash("File format is inconsistent for all detectors.");
 		switch(retval) {
 			case slsDetectorDefs::BINARY:
 			case slsDetectorDefs::HDF5:
@@ -190,7 +190,7 @@ void qTabDataOutput::GetFileFormat() {
 void qTabDataOutput::SetFileFormat(int format) {
 	FILE_LOG(logINFO) << "Setting File Format to " << comboFileFormat->currentText().toAscii().data();
 	try {
-        det->setFileFormat(static_cast<slsDetectorDefs::fileFormat>(comboFileFormat->currentIndex()), {});
+        det->setFileFormat(static_cast<slsDetectorDefs::fileFormat>(comboFileFormat->currentIndex()));
     } CATCH_HANDLE ("Could not set file format.", "qTabDataOutput::SetFileFormat", this, &qTabDataOutput::GetFileFormat)
 }
 
@@ -198,7 +198,7 @@ void qTabDataOutput::GetFileOverwrite() {
 	FILE_LOG(logDEBUG) << "Getting File Over Write Enable";
 	disconnect(chkOverwriteEnable, SIGNAL(toggled(bool)), this, SLOT(SetOverwriteEnable(bool)));
 	try {
-        auto retval = det->getFileOverWrite({}).tsquash("File over write is inconsistent for all detectors.");
+        auto retval = det->getFileOverWrite().tsquash("File over write is inconsistent for all detectors.");
 		chkOverwriteEnable->setChecked(retval);
     } CATCH_DISPLAY ("Could not get file over write enable.", "qTabDataOutput::GetFileOverwrite")
 
@@ -208,7 +208,7 @@ void qTabDataOutput::GetFileOverwrite() {
 void qTabDataOutput::SetOverwriteEnable(bool enable) {
 	FILE_LOG(logINFO) << "Setting File Over Write Enable to " << enable;
 	try {
-        det->setFileOverWrite({enable});
+        det->setFileOverWrite(enable);
     } CATCH_HANDLE ("Could not set file over write enable.", "qTabDataOutput::SetOverwriteEnable", this, &qTabDataOutput::GetFileOverwrite)
 }
 
@@ -216,7 +216,7 @@ void qTabDataOutput::GetTenGigaEnable() {
 	FILE_LOG(logDEBUG) << "Getting 10GbE enable";
 	disconnect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(SetTenGigaEnable(bool)));
 	try {
-		auto retval = det->getTenGiga({}).tsquash("10GbE enable is inconsistent for all detectors.");
+		auto retval = det->getTenGiga().tsquash("10GbE enable is inconsistent for all detectors.");
 		chkTenGiga->setChecked(retval);
     } CATCH_DISPLAY ("Could not get 10GbE enable.", "qTabDataOutput::GetTenGigaEnable")
 	connect(chkTenGiga, SIGNAL(toggled(bool)), this, SLOT(SetTenGigaEnable(bool)));
@@ -225,7 +225,7 @@ void qTabDataOutput::GetTenGigaEnable() {
 void qTabDataOutput::SetTenGigaEnable(bool enable) {
 	FILE_LOG(logINFO) << "Setting 10GbE to " << enable;
 	try {
-        det->setTenGiga(enable, {});
+        det->setTenGiga(enable);
     } CATCH_HANDLE ("Could not set 10GbE enable.", "qTabDataOutput::SetTenGigaEnable", this, &qTabDataOutput::GetTenGigaEnable)
 }
 
@@ -236,7 +236,7 @@ void qTabDataOutput::GetRateCorrection() {
 	disconnect(spinCustomDeadTime, SIGNAL(editingFinished()), this, SLOT(SetRateCorrection()));
 	try {
 		spinCustomDeadTime->setValue(-1);
-		int64_t retval = det->getRateCorrection({}).tsquash("Rate correction (enable/tau) is inconsistent for all detectors.");
+		int64_t retval = det->getRateCorrection().tsquash("Rate correction (enable/tau) is inconsistent for all detectors.").count();
 		chkRate->setChecked(retval == 0 ? false : true);
 		if (retval != 0)
 			spinCustomDeadTime->setValue(retval);
@@ -255,7 +255,7 @@ void qTabDataOutput::EnableRateCorrection() {
 	FILE_LOG(logINFO) << "Disabling Rate correction";
 	// disable
 	try {
-		det->setRateCorrection(0, {});
+		det->setRateCorrection(sls::ns(0);
     } CATCH_HANDLE ("Could not switch off rate correction.", "qTabDataOutput::EnableRateCorrection", this, &qTabDataOutput::GetRateCorrection)
 }
 
@@ -271,7 +271,7 @@ void qTabDataOutput::SetRateCorrection() {
 	}
 	FILE_LOG(logINFO) << "Setting Rate Correction with dead time: " << deadtime;
 	try {
-		det->setRateCorrection(deadtime, {});
+		det->setRateCorrection(sls::ns(deadtime)); -1??
     } CATCH_HANDLE ("Could not set rate correction.", "qTabDataOutput::SetRateCorrection", this, &qTabDataOutput::GetRateCorrection)
 }
 
@@ -279,7 +279,7 @@ void qTabDataOutput::GetSpeed() {
 	FILE_LOG(logDEBUG) << "Getting Speed";	
 	disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed(int)));
 	try {
-		int retval = det->getSpeed({}).tsquash("Speed is inconsistent for all detectors.");
+		int retval = det->getSpeed().tsquash("Speed is inconsistent for all detectors.");
 		switch(retval) {
 			case FULLSPEED:
 			case HALFSPEED:
@@ -296,7 +296,7 @@ void qTabDataOutput::GetSpeed() {
 void qTabDataOutput::SetSpeed(int speed) {
 	FILE_LOG(logINFO) << "Setting Speed to " << comboEigerClkDivider->currentText().toAscii().data();;
 	try {
-        det->setSpeed(speed, {});
+        det->setSpeed(speed);
     } CATCH_HANDLE ("Could not set speed.", "qTabDataOutput::SetSpeed", this, &qTabDataOutput::GetSpeed)
 }
 
@@ -304,7 +304,7 @@ void qTabDataOutput::GetFlags() {
 	FILE_LOG(logDEBUG) << "Getting readout flags";	
 	disconnect(comboEigerParallelFlag, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 	try {
-		auto retval = det->getParallelMode({}).tsquash("Parallel Flag is inconsistent for all detectors.");
+		auto retval = det->getParallelMode().tsquash("Parallel Flag is inconsistent for all detectors.");
 		// parallel or non parallel
 		if (retval)
 			comboEigerParallelFlag->setCurrentIndex(PARALLEL);
@@ -319,7 +319,7 @@ void qTabDataOutput::SetFlags() {
 	auto mode = comboEigerParallelFlag->currentIndex() == PARALLEL ? true : false;
 	try {
 		FILE_LOG(logINFO) << "Setting Readout Flags to " << comboEigerParallelFlag->currentText().toAscii().data();
-		det->setParallelMode(mode, {});
+		det->setParallelMode(mode);
     } CATCH_HANDLE ("Could not set readout flags.", "qTabDataOutput::SetFlags", this, &qTabDataOutput::GetFlags)
 }
 

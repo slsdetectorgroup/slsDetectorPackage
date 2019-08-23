@@ -1,5 +1,6 @@
 #include "qTabAdvanced.h"
 #include "qDefs.h"
+#include "network_utils.h"
 
 #include <iostream>
 
@@ -161,7 +162,7 @@ void qTabAdvanced::GetDetectorUDPIP() {
                SLOT(SetDetectorUDPIP()));
 
     try {
-        auto retval = det->getSourceUDPIP({comboDetector->currentIndex()})[0];
+        auto retval = det->getSourceUDPIP({comboDetector->currentIndex()})[0].str();
         dispDetectorUDPIP->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get detector UDP IP.", "qTabAdvanced::GetDetectorUDPIP")
 
@@ -175,7 +176,7 @@ void qTabAdvanced::GetDetectorUDPMAC() {
                SLOT(SetDetectorUDPMAC()));
 
     try {
-        auto retval = det->getSourceUDPMAC({comboDetector->currentIndex()})[0];
+        auto retval = det->getSourceUDPMAC({comboDetector->currentIndex()})[0].str();
         dispDetectorUDPMAC->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get detector UDP MAC.", "qTabAdvanced::GetDetectorUDPMAC")
 
@@ -259,7 +260,7 @@ void qTabAdvanced::GetRxrUDPIP() {
                SLOT(SetRxrUDPIP()));
 
     try {
-        auto retval = det->getDestinationUDPIP({comboDetector->currentIndex()})[0];
+        auto retval = det->getDestinationUDPIP({comboDetector->currentIndex()})[0].str();
         dispRxrUDPIP->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get receiver udp ip.", "qTabAdvanced::GetRxrUDPIP")
 
@@ -272,7 +273,7 @@ void qTabAdvanced::GetRxrUDPMAC() {
                SLOT(SetRxrUDPMAC()));
 
     try {
-        auto retval = det->getDestinationUDPMAC({comboDetector->currentIndex()})[0];
+        auto retval = det->getDestinationUDPMAC({comboDetector->currentIndex()})[0].str();
         dispRxrUDPMAC->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get receiver udp mac.", "qTabAdvanced::GetRxrUDPMAC")
 
@@ -495,7 +496,7 @@ void qTabAdvanced::GetAllTrimbits() {
                SLOT(SetAllTrimbits()));
 
     try {
-        int retval = det->getAllTrimbits({});
+        int retval = det->getAllTrimbits().squash(-1);
         spinSetAllTrimbits->setValue(retval);
     } CATCH_DISPLAY ("Could not get all trimbits.", "qTabAdvanced::GetAllTrimbits")
 
@@ -508,7 +509,7 @@ void qTabAdvanced::SetAllTrimbits() {
     FILE_LOG(logINFO) << "Setting all trimbits:" << value;
 
     try {
-        det->setAllTrimbits(value, {});
+        det->setAllTrimbits(value);
     } CATCH_HANDLE("Could not set all trimbits.", "qTabAdvanced::SetAllTrimbits",
                  this, &qTabAdvanced::GetAllTrimbits)
 }
@@ -519,7 +520,7 @@ void qTabAdvanced::GetNumStoragecells() {
                SLOT(SetNumStoragecells(int)));
 
     try {
-        auto retval = det->getNumberOfAdditionalStorageCells().squash(-1);
+        auto retval = det->getNumberOfAdditionalStorageCells().tsquash("Inconsistent values for number of addditional storage cells.");
         spinNumStoragecells->setValue(retval);
     } CATCH_DISPLAY (
             "Could not get number of additional storage cells.",
@@ -546,24 +547,15 @@ void qTabAdvanced::GetSubExposureTime() {
                SLOT(SetSubExposureTime()));
     disconnect(comboSubExpTimeUnit, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSubExposureTime()));
-
     try {
         int64_t retval =
-            det->getSubExptime({}).squash(-1);
-        if (retval == -1) {
-            qDefs::Message(qDefs::WARNING,
-                           "Subexptime is inconsistent for all detectors.",
-                           "qTabAdvanced::GetSubExposureTime");
-            spinSubExpTime->setValue(-1);
-        } else {
-            double value = (double)(retval * (1E-9));
-            auto time = qDefs::getCorrectTime(value);
-            spinSubExpTime->setValue(time.first);
-            comboSubExpTimeUnit->setCurrentIndex(static_cast<int>(time.second));
-        }
+            det->getSubExptime().tsquash("Subexptime is inconsistent for all detectors.").count();
+        double value = static_cast<double>(retval * (1E-9));
+        auto time = qDefs::getCorrectTime(value);
+        spinSubExpTime->setValue(time.first);
+        comboSubExpTimeUnit->setCurrentIndex(static_cast<int>(time.second));
     } CATCH_DISPLAY ("Could not get sub exposure time.",
                                 "qTabSettings::GetSubExposureTime")
-
     connect(spinSubExpTime, SIGNAL(valueChanged(double)), this,
             SLOT(SetSubExposureTime()));
     connect(comboSubExpTimeUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -571,7 +563,7 @@ void qTabAdvanced::GetSubExposureTime() {
 }
 
 void qTabAdvanced::SetSubExposureTime() {
-    double timeNS =
+    int64_t timeNS =
         qDefs::getNSTime((qDefs::timeUnit)comboSubExpTimeUnit->currentIndex(),
                          spinSubExpTime->value());
     FILE_LOG(logINFO)
@@ -580,7 +572,7 @@ void qTabAdvanced::SetSubExposureTime() {
         << qDefs::getUnitString(
                (qDefs::timeUnit)comboSubExpTimeUnit->currentIndex());
     try {
-        det->setSubExptime(static_cast<int64_t>(timeNS), {});
+        det->setSubExptime(sls::ns(timeNS));
     } CATCH_DISPLAY ("Could not set sub exposure time.",
                                 "qTabAdvanced::SetSubExposureTime")
 
@@ -593,18 +585,15 @@ void qTabAdvanced::GetSubDeadTime() {
                SLOT(SetSubDeadTime()));
     disconnect(comboSubDeadTimeUnit, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSubDeadTime()));
-
     try {
-        int64_t retval = det->getSubDeadTime({}).tsquash("Sub dead time is inconsistent for all detectors.",
-                           "qTabAdvanced::GetSubDeadTime");
-        double value = (double)(retval * (1E-9));
+        int64_t retval = det->getSubDeadTime().tsquash("Sub dead time is inconsistent for all detectors.").count();
+        double value = static_cast<double>(retval * (1E-9));
         auto time = qDefs::getCorrectTime(value);
         spinSubDeadTime->setValue(time.first);
         comboSubDeadTimeUnit->setCurrentIndex(
             static_cast<int>(time.second));
     } CATCH_DISPLAY ("Could not get sub dead time.",
                                 "qTabSettings::GetSubDeadTime")
-
     connect(spinSubDeadTime, SIGNAL(valueChanged(double)), this,
             SLOT(SetSubDeadTime()));
     connect(comboSubDeadTimeUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -612,7 +601,7 @@ void qTabAdvanced::GetSubDeadTime() {
 }
 
 void qTabAdvanced::SetSubDeadTime() {
-    double timeNS =
+    int64_t timeNS =
         qDefs::getNSTime((qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex(),
                          spinSubDeadTime->value());
     FILE_LOG(logINFO)
@@ -621,10 +610,9 @@ void qTabAdvanced::SetSubDeadTime() {
         << qDefs::getUnitString(
                (qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex());
     try {
-        det->setSubDeadTime(static_cast<int64_t>(timeNS), {});
+        det->setSubDeadTime(sls::ns(timeNS));
     } CATCH_DISPLAY ("Could not set sub dead time.",
                                 "qTabAdvanced::SetSubDeadTime")
-								
     GetSubDeadTime();
 }
 

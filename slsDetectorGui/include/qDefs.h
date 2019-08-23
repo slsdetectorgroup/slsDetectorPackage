@@ -151,7 +151,7 @@ class qDefs : public QWidget {
      * @param value time
      * returns time value in ns
      */
-    static double getNSTime(timeUnit unit, double value) {
+    static int64_t getNSTime(timeUnit unit, double value) {
         double valueNS = value;
         switch (unit) {
         case HOURS:

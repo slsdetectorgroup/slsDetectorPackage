@@ -1,5 +1,6 @@
 set(SOURCES
     src/multiSlsDetector.cpp 
+    src/multiSlsDetectorClient.cpp
     src/slsDetectorUsers.cpp 
     src/slsDetectorCommand.cpp
     src/slsDetector.cpp 

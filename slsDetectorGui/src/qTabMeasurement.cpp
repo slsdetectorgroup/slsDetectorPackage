@@ -43,7 +43,7 @@ void qTabMeasurement::SetupWidgetWindow() {
 	spinDelay->setEnabled(true);
 	comboDelayUnit->setEnabled(true);
 	// enabling according to det type
-	switch(det->getDetectorTypeAsEnum()) {
+	switch(det->getDetectorType().squash()) {
 		case slsDetectorDefs::MOENCH:
 			lblNumSamples->setEnabled(true);
 			spinNumSamples->setEnabled(true);
@@ -111,7 +111,7 @@ void qTabMeasurement::SetupTimingMode() {
 			item[i] = model->itemFromIndex(index[i]);
 		}
 
-		if (det->getDetectorTypeAsEnum() != slsDetectorDefs::EIGER) {
+		if (det->getDetectorType().squash() != slsDetectorDefs::EIGER) {
 			item[(int)GATED]->setEnabled(false);
 			item[(int)BURST_TRIGGER]->setEnabled(false);
 		}
@@ -156,7 +156,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
 			lblExpTime->setEnabled(true);
 			spinExpTime->setEnabled(true);
 			comboExpUnit->setEnabled(true);
-			if (det->getDetectorTypeAsEnum() == slsDetectorDefs::EIGER) {
+			if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
 				spinNumFrames->setValue(1);
 			} else {
 				// #frames, period, delay

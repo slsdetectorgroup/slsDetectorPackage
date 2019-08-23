@@ -21,7 +21,7 @@ void qTabDeveloper::SetupWidgetWindow() {
 	spinHV->hide();
 
 	try{
-		slsDetectorDefs::detectorType detType = det->getDetectorTypeAsEnum();
+		slsDetectorDefs::detectorType detType = det->getDetectorType().squash();
 		switch (detType) {
 		case slsDetectorDefs::EIGER:
 			dacWidgets.push_back(new qDacWidget(this, det, true, "v SvP: ", getSLSIndex(detType, tempid++), false));
@@ -124,9 +124,11 @@ void qTabDeveloper::PopulateDetectors() {
 
 	comboDetector->clear();
 	comboDetector->addItem("All");
+	auto res = det->getHostname();
 	if (det->size() > 1) {
-		for (unsigned int i = 0; i < det->size(); ++i)
-			comboDetector->addItem(QString(det->getHostname(i).c_str()));
+		for (auto &it : res) {
+			comboDetector->addItem(QString(it.c_str()));
+		}
 	}
 	comboDetector->setCurrentIndex(0);
 }
@@ -135,25 +137,22 @@ void qTabDeveloper::GetHighVoltage() {
 	// not enabled for eiger
 	if (!comboHV->isVisible() && !spinHV->isVisible())
 		return;
-
 	FILE_LOG(logDEBUG) << "Getting High Voltage";
 	disconnect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));	
 	disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
-
 	try {
 		// dac units
-		auto retval = det->setDAC(-1, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
+		auto retval = det->getHighVoltage({comboDetector->currentIndex() - 1}).tsquash("Inconsistent values for high voltage.");
+		//spinHV
 		if (spinHV->isVisible()) {
-			if (retval != 0 && retval != -1 && retval < HV_MIN &&  retval > HV_MAX) {
-				qDefs::Message(qDefs::WARNING, std::string("Unknown High Voltage: ") + std::to_string(retval), "qTabDeveloper::GetHighVoltage");
-			} else{
-				spinHV->setValue(retval);	
-			}
-		} else {
+			if (retval != 0 && retval < HV_MIN &&  retval > HV_MAX) {
+				throw sls::RuntimeError(std::string("Unknown High Voltage: ") + std::to_string(retval));
+			} 
+			spinHV->setValue(retval);	
+		} 
+		// combo HV
+		else {
 			switch (retval) {
-			case -1:
-				qDefs::Message(qDefs::WARNING, "Different values for high voltage.", "qTabDeveloper::GetHighVoltage");
-				break;
 			case 0:
 				comboHV->setCurrentIndex(HV_0);
 				break;
@@ -176,13 +175,10 @@ void qTabDeveloper::GetHighVoltage() {
 				comboHV->setCurrentIndex(HV_200);
 				break;
 			default:
-				qDefs::Message(qDefs::WARNING, std::string("Unknown High Voltage: ") + std::to_string(retval), "qTabDeveloper::GetHighVoltage");
-				break;
+				throw sls::RuntimeError(std::string("Unknown High Voltage: ") + std::to_string(retval));
 			}
 		}
-
     } CATCH_DISPLAY ("Could not get high voltage.", "qTabDeveloper::GetHighVoltage")
-
 	connect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));	
 	connect(comboHV, SIGNAL(currentIndexChanged(int)), this, SLOT(SetHighVoltage()));
 }
@@ -192,7 +188,7 @@ void qTabDeveloper::SetHighVoltage() {
 	FILE_LOG(logINFO) << "Setting high voltage:" << val;
 	
 	try {
-        det->setDAC(val, slsDetectorDefs::HIGH_VOLTAGE, 0, comboDetector->currentIndex() - 1);
+        det->setHighVoltage({comboDetector->currentIndex() - 1});
     } CATCH_HANDLE ("Could not set high voltage.", "qTabDeveloper::SetHighVoltage", 
 					this, &qTabDeveloper::GetHighVoltage)
 }

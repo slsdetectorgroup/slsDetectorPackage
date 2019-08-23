@@ -5,6 +5,7 @@ set(SOURCES
     src/slsDetectorCommand.cpp
     src/slsDetector.cpp 
     src/Detector.cpp
+    src/CmdProxy.cpp
 )
 
 set(HEADERS

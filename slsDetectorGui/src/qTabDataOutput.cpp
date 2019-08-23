@@ -255,7 +255,7 @@ void qTabDataOutput::EnableRateCorrection() {
 	FILE_LOG(logINFO) << "Disabling Rate correction";
 	// disable
 	try {
-		det->setRateCorrection(sls::ns(0);
+		det->setRateCorrection(sls::ns(0));
     } CATCH_HANDLE ("Could not switch off rate correction.", "qTabDataOutput::EnableRateCorrection", this, &qTabDataOutput::GetRateCorrection)
 }
 

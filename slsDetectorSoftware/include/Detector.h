@@ -252,7 +252,7 @@ class Detector {
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
-    void setStartingFrameNumber(uint64_t value, Positions pos);
+    void setStartingFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger] Sends an internal software trigger to the detector */
     void sendSoftwareTrigger(Positions pos = {});

@@ -57,7 +57,7 @@ void qTabPlot::SetupWidgetWindow() {
 
     // enabling according to det type
     is1d = false;
-    switch(det->getDetectorTypeAsEnum()) {
+    switch(det->getDetectorType().squash()) {
         case slsDetectorDefs::GOTTHARD:
             is1d = true;
             break;
@@ -277,24 +277,17 @@ void qTabPlot::SetBinary() {
 void qTabPlot::GetGapPixels() {
     FILE_LOG(logDEBUG) << "Getting gap pixels";
     disconnect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
-
 	try {
-        auto retval = det->enableGapPixels(-1);
-		if (retval == -1) {
-			qDefs::Message(qDefs::WARNING, "Gap pixels enable is inconsistent for all detectors.", "qTabPlot::GetGapPixels");
-		} else {
-			chkGapPixels->setChecked(retval == 0 ? false : true);
-		}
+        auto retval = det->getRxAddGapPixels().tsquash("Inconsistent gap pixels enabled for all detectors.");
+		chkGapPixels->setChecked(retval);
     } CATCH_DISPLAY ("Could not get gap pixels enable.", "qTabPlot::GetGapPixels")
-
     connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
 }
 
 void qTabPlot::SetGapPixels(bool enable) {
 	FILE_LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
-
 	try {
-        det->enableGapPixels(enable);
+        det->setRxAddGapPixels(enable);
     } CATCH_HANDLE("Could not set gap pixels enable.", "qTabPlot::SetGapPixels", this, &qTabPlot::GetGapPixels)
 }
 
@@ -518,26 +511,18 @@ void qTabPlot::GetStreamingFrequency() {
     disconnect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
     disconnect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
     disconnect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
-
 	try {
-		int freq = det->setReceiverStreamingFrequency(-1);
-        if (freq < 0) {
-            qDefs::Message(qDefs::WARNING, "Streaming frequency is inconsistent for all detectors.", "qTabPlot::GetStreamingFrequency");
-        } 
+		int freq = det->getRxZmqFrequency().tsquash("Inconsistent receiver zmq streaming frequency for all detectors.");
         // time interval
-        else if (freq == 0) {
+        if (freq == 0) {
             comboFrequency->setCurrentIndex(0);
             stackedTimeInterval->setCurrentIndex(0);
             try {
-                int timeMs = det->setReceiverStreamingTimer(-1);
-                if (freq < 0) {
-                    qDefs::Message(qDefs::WARNING, "Streaming timer is inconsistent for all detectors.", "qTabPlot::GetStreamingFrequency");
-                } else {
-                    double timeS = static_cast<double>(timeMs) / 1000.00;
-                    auto time = qDefs::getCorrectTime(timeS);
-                    spinTimeGap->setValue(time.first);
-                    comboTimeGapUnit->setCurrentIndex(static_cast<int>(time.second));
-                }
+                int timeMs = det->getRxZmqTimer().tsquash("Inconsistent receiver zmq streaming timer for all detectors.");
+                double timeS = static_cast<double>(timeMs) / 1000.00;
+                auto time = qDefs::getCorrectTime(timeS);
+                spinTimeGap->setValue(time.first);
+                comboTimeGapUnit->setCurrentIndex(static_cast<int>(time.second));
             } CATCH_DISPLAY ("Could not get streaming timer.", "qTabPlot::GetStreamingFrequency")
         }
         // every nth frame
@@ -547,12 +532,10 @@ void qTabPlot::GetStreamingFrequency() {
             spinNthFrame->setValue(freq);
         }
     } CATCH_DISPLAY ("Could not get streaming frequency.", "qTabPlot::GetStreamingFrequency")
-
 	connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
     connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetStreamingFrequency()));
     connect(spinTimeGap, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
     connect(spinNthFrame, SIGNAL(editingFinished()), this, SLOT(SetStreamingFrequency()));
-
 }
 
 void qTabPlot::SetStreamingFrequency() {
@@ -564,11 +547,11 @@ void qTabPlot::SetStreamingFrequency() {
 	try {
         if (frequency) {
             FILE_LOG(logINFO) << "Setting Streaming Frequency to " << freqVal;
-            det->setReceiverStreamingFrequency(freqVal);
+            det->setRxZmqFrequency(freqVal);
         } else {
             FILE_LOG(logINFO) << "Setting Streaming Timer to " << timeVal << " " << qDefs::getUnitString(timeUnit);
-            double timeMS = qDefs::getMSTime(timeUnit, timeVal);
-            det->setReceiverStreamingTimer(timeMS);
+            int64_t timeMS = qDefs::getMSTime(timeUnit, timeVal);
+            det->setRxZmqTimer(static_cast<int>(timeMS));
         }
     } CATCH_HANDLE("Could not set streaming frequency/ timer.", "qTabPlot::SetStreamingFrequency", this, &qTabPlot::GetStreamingFrequency)
 }
@@ -585,7 +568,7 @@ void qTabPlot::Refresh() {
         }
         GetStreamingFrequency();
         // gain plot, gap pixels enable
-        switch(det->getDetectorTypeAsEnum()) {
+        switch(det->getDetectorType().squash()) {
             case slsDetectorDefs::EIGER:
                 chkGapPixels->setEnabled(true);
                 GetGapPixels();

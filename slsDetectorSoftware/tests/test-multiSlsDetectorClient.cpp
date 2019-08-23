@@ -376,6 +376,25 @@ TEST_CASE("rx_lock", "[.cmd]") {
     }
 }
 
+TEST_CASE("lock", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("lock 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "lock 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("lock", GET, nullptr, oss);
+        REQUIRE(oss.str() == "lock 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("lock 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "lock 0\n");
+    }
+}
+
+
 TEST_CASE("rx_lastclient", "[.cmd]") {
 
     std::ostringstream oss;

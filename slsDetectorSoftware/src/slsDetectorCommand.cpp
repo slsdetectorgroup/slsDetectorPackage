@@ -548,12 +548,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
-    /*! \page timing
-   - <b>frames [i]</b> sets/gets number of frames. If \c timing is not \c auto, then it is the number of frames per cycle/trigger. \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "frames";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
 
     /*! \page timing
    - <b>startingfnum [i]</b> sets/gets starting frame number for the next acquisition. Only for Jungfrau and Eiger. \c Returns \c (long long int)
@@ -1482,39 +1476,11 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page output
-   - <b>findex [i]</b> Sets/gets the current file index. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "findex";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileIndex;
-    ++i;
-
-    /*! \page output
-   - <b>fwrite [i]</b> Enables/disables file writing. 1 enables, 0 disables. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "fwrite";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdEnablefwrite;
-    ++i;
-
-    /*! \page output
-    - <b>foverwrite [i]</b> enables(1) /disables(0) file overwriting. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "foverwrite";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOverwrite;
-    ++i;
-
-    /*! \page output
     - <b>fformat [i]</b> sets/gets the file format for data in receiver. Options: [binary, hdf5]. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "fformat";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
     ++i;
-
-     /*! \page output
-    - <b>fmaster [i]</b> sets/gets the master file write enable in receiver. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "fmaster";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdEnablefwrite;
-    ++i;   
 
     /* communication configuration */
 
@@ -1716,13 +1682,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>lock [i]</b> Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "lock";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLock;
-    ++i;
-
-    /*! \page network
    - <b>lastclient </b> Gets the last client communicating with the detector. Cannot put!. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "lastclient";
@@ -1764,26 +1723,11 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-   - <b>rx_lock [i]</b> locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_lock";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLock;
-    ++i;
-
-    /*! \page receiver
    - <b>rx_lastclient</b> gets the last client communicating with the receiver. Only get! \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_lastclient";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLastClient;
     ++i;
-
-    /*! \page receiver
-   - <b>rx_readfreq [i]</b> sets/gets the stream frequency of data from receiver to client. i > 0 is the nth frame being streamed. 0 sets frequency to a default timer (200ms). Default: sends every frame \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_readfreq";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
 
     /*! \page receiver
     - <b>rx_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
@@ -1796,13 +1740,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     - <b>rx_discardpolicy</b> sets/gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_discardpolicy";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
-    /*! \page receiver
-    - <b>rx_padding</b> sets/gets the frame padding in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_padding";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
@@ -2531,94 +2468,6 @@ std::string slsDetectorCommand::helpFileName(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdEnablefwrite(int narg, const char * const args[], int action, int detPos) {
-
-    int i;
-    char ans[100];
-    if (action == HELP_ACTION) {
-        return helpEnablefwrite(action);
-    }
-    if (cmd == "fwrite") {
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%d", &i))
-                myDet->setFileWrite(i, detPos);
-            else
-                return std::string("could not decode enable file write");
-        }
-        sprintf(ans, "%d", myDet->getFileWrite(detPos));
-        return std::string(ans);
-    }
-
-    else if (cmd == "fmaster") {
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%d", &i))
-                myDet->setMasterFileWrite(i, detPos);
-            else
-                return std::string("could not decode master file enable");
-        }
-        sprintf(ans, "%d", myDet->getMasterFileWrite(detPos));
-        return std::string(ans);
-    }
-
-    else return std::string("unknown command " + cmd);
-}
-
-std::string slsDetectorCommand::helpEnablefwrite(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << std::string("fwrite \t When Enabled writes the data into the file\n");
-        os << std::string("fmaster \t When Enabled writes the master file\n");
-    }
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << std::string("fwrite i \t  should be 1 or 0\n");
-        os << std::string("fmaster i \t  sets the master file write enable. should be 1 or 0\n");
-    }
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdOverwrite(int narg, const char * const args[], int action, int detPos) {
-    int i;
-    char ans[100];
-    if (action == HELP_ACTION) {
-        return helpOverwrite(action);
-    }
-    if (action == PUT_ACTION) {
-        if (sscanf(args[1], "%d", &i))
-            myDet->setFileOverWrite(i, detPos);
-        else
-            return std::string("could not decode foverwrite");
-    }
-    sprintf(ans, "%d", myDet->getFileOverWrite(detPos));
-    return std::string(ans);
-}
-
-std::string slsDetectorCommand::helpOverwrite(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("foverwrite \t When Enabled overwrites files\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("foverwrite i \t  should be 1 or 0 or -1\n");
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdFileIndex(int narg, const char * const args[], int action, int detPos) {
-    if (action == HELP_ACTION) {
-        return helpFileName(action);
-    } else if (action == PUT_ACTION) {
-        int i = std::stoi(args[1]);
-        myDet->setFileIndex(i, detPos);
-    }
-    return std::to_string(myDet->getFileIndex(detPos));
-}
-
-std::string slsDetectorCommand::helpFileIndex(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("findex \t  gets the file index for the next the data file\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("findex i \t  sets the fileindex for the next data file\n");
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdRateCorr(int narg, const char * const args[], int action, int detPos) {
 
@@ -3002,55 +2851,6 @@ std::string slsDetectorCommand::helpPort(int action) {
         os << "port  \n gets the communication control port" << std::endl;
         os << "rx_tcpport  \n gets the communication receiver port" << std::endl;
         os << "stopport \n gets the communication stop port " << std::endl;
-    }
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdLock(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpLock(action);
-
-    int val; //, ret;
-    char ans[1000];
-
-    if (cmd == "lock") {
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%d", &val))
-                myDet->lockServer(val, detPos);
-            else
-                return std::string("could not lock status") + std::string(args[1]);
-        }
-
-        sprintf(ans, "%d", myDet->lockServer(-1, detPos));
-    }
-
-    else if (cmd == "rx_lock") {
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%d", &val))
-                myDet->lockReceiver(val, detPos);
-            else
-                return std::string("could not decode lock status") + std::string(args[1]);
-        }
-        sprintf(ans, "%d", myDet->lockReceiver(-1, detPos));
-    }
-
-    else
-        return std::string("could not decode command");
-
-    return std::string(ans);
-}
-
-std::string slsDetectorCommand::helpLock(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "lock i \n locks (1) or unlocks (0) the detector to communicate to this client" << std::endl;
-        os << "rx_lock i \n locks (1) or unlocks (0) the receiver to communicate to this client" << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "lock \n returns the detector lock status" << std::endl;
-        os << "rx_lock \n returns the receiver lock status" << std::endl;
     }
     return os.str();
 }
@@ -4232,8 +4032,6 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
         index = SUBFRAME_DEADTIME;
     else if (cmd == "delay")
         index = DELAY_AFTER_TRIGGER;
-    else if (cmd == "frames")
-        index = FRAME_NUMBER;
     else if (cmd == "cycles")
         index = CYCLES_NUMBER;
     // also does digital sample
@@ -4860,18 +4658,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
             sprintf(answer, "%lu", myDet->getReceiverCurrentFrameIndex(detPos));
             return std::string(answer);
         }
-    } else if (cmd == "rx_readfreq") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan read frequency mode ") + std::string(args[1]);
-            if (ival >= 0)
-                myDet->setReceiverStreamingFrequency(ival, detPos);
-        }
-        sprintf(answer, "%d", myDet->setReceiverStreamingFrequency(-1, detPos));
-        return std::string(answer);
-
     }
-
     else if (cmd == "tengiga") {
         if (action == PUT_ACTION) {
             if (!sscanf(args[1], "%d", &ival))
@@ -4904,18 +4691,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
             myDet->setReceiverFramesDiscardPolicy(f);
         }
         return myDet->getReceiverFrameDiscardPolicy(myDet->setReceiverFramesDiscardPolicy(GET_FRAME_DISCARD_POLICY, detPos));
-    }
-
-    else if (cmd == "rx_padding") {
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%d", &ival)) {
-                myDet->setPartialFramesPadding(ival, detPos);
-            } else
-                return std::string("could not scan receiver padding enable\n");
-        }
-        memset(answer, 0, 100);
-        sprintf(answer, "%d", myDet->getPartialFramesPadding(detPos));
-        return std::string(answer);
     }
 
     else if (cmd == "rx_jsonaddheader") {

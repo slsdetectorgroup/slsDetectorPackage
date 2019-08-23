@@ -578,7 +578,7 @@ void Detector::setFileNamePrefix(const std::string &fname, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileName, pos, fname);
 }
 
-Result<int> Detector::getAcquisitonIndex(Positions pos) const {
+Result<int> Detector::getAcquisitionIndex(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFileIndex, pos);
 }
 
@@ -631,7 +631,7 @@ void Detector::setRxZmqDataStream(bool enable, Positions pos) {
 }
 
 Result<int> Detector::getRxZmqFrequency(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setReceiverStreamingTimer, pos, -1);
+    return pimpl->Parallel(&slsDetector::setReceiverStreamingFrequency, pos, -1);
 }
 
 void Detector::setRxZmqFrequency(int freq, Positions pos) {

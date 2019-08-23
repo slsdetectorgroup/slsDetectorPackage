@@ -1,19 +1,17 @@
 #include "CmdProxy.h"
-#include "Detector.h"
-#include "Result.h"
+
+
 #include "TimeHelper.h"
 #include "ToString.h"
 #include "logger.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_defs.h"
-#include "sls_detector_exceptions.h"
+
 
 #include <iomanip>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
-
-
 
 #define TIME_COMMAND(GETFCN, SETFCN, HLPSTR)                                   \
     std::ostringstream os;                                                     \
@@ -47,31 +45,7 @@
     }                                                                          \
     return os.str();
 
-#define INTEGER_COMMAND(GETFCN, SETFCN, CONV, HLPSTR)                          \
-    std::ostringstream os;                                                     \
-    os << cmd << ' ';                                                          \
-    if (action == slsDetectorDefs::HELP_ACTION)                                \
-        os << HLPSTR << '\n';                                                  \
-    else if (action == slsDetectorDefs::GET_ACTION) {                          \
-        auto t = det->GETFCN({det_id});                                        \
-        if (args.size() == 0) {                                                \
-            os << OutString(t) << '\n';                                        \
-        } else {                                                               \
-            WrongNumberOfParameters(2);                                        \
-        }                                                                      \
-    } else if (action == slsDetectorDefs::PUT_ACTION) {                        \
-        if (args.size() == 1) {                                                \
-            auto val = CONV(args[0]);                                          \
-            det->SETFCN(val, {det_id});                                        \
-            os << args.front() << '\n';                                        \
-        } else {                                                               \
-            WrongNumberOfParameters(1);                                        \
-        }                                                                      \
-                                                                               \
-    } else {                                                                   \
-        throw sls::RuntimeError("Unknown action");                             \
-    }                                                                          \
-    return os.str();
+
 
 namespace sls {
 
@@ -139,17 +113,7 @@ void CmdProxy::WrongNumberOfParameters(size_t expected) {
         " parameter/s but got " + std::to_string(args.size()) + "\n");
 }
 
-template <typename V> std::string CmdProxy::OutString(const V &value) {
-    if (value.equal())
-        return ToString(value.front());
-    return ToString(value);
-}
-template <typename V>
-std::string CmdProxy::OutString(const V &value, const std::string &unit) {
-    if (value.equal())
-        return ToString(value.front(), unit);
-    return ToString(value, unit);
-}
+
 
 /************************************************
  *                                              *
@@ -172,16 +136,8 @@ std::string CmdProxy::SubExptime(int action) {
                  "exposure time of EIGER subframes");
 }
 
-std::string CmdProxy::RxFifoDepth(const int action) {
-    INTEGER_COMMAND(
-        getRxFifoDepth, setRxFifoDepth, std::stoi,
-        "[n_frames]\n\tSet the number of frames in the receiver fifo");
-}
 
-std::string CmdProxy::RxSilent(const int action) {
-    INTEGER_COMMAND(getRxSilentMode, setRxSilentMode, std::stoi,
-                    "[0, 1]\n\tSwitch on or off receiver text output");
-}
+
 
 std::string CmdProxy::ListCommands(int action) {
     if (action == slsDetectorDefs::HELP_ACTION)

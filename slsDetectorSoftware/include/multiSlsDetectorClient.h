@@ -15,7 +15,7 @@ class multiSlsDetectorClient {
 
   private:
     int action_;
-    CmdLineParser parser;
+    sls::CmdLineParser parser;
     multiSlsDetector *detPtr = nullptr;
     std::ostream &os;
 

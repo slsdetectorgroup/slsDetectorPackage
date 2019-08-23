@@ -7,6 +7,8 @@
 #include <iterator>
 #include <sstream>
 
+namespace sls {
+
 void CmdLineParser::Print() {
     std::cout << "\nCmdLineParser::Print()\n";
     std::cout << "\tmulti_id: " << multi_id_
@@ -40,15 +42,15 @@ void CmdLineParser::Parse(const std::string &s) {
         std::vector<std::string>(it, std::istream_iterator<std::string>());
     auto old_size = arguments_.size();
     arguments_.erase(std::remove_if(begin(arguments_), end(arguments_),
-                                     [](const std::string &item) {
-                                         if (item == "-h" || item == "--help")
-                                             return true;
-                                         return false;
-                                     }),
-                      end(arguments_));
+                                    [](const std::string &item) {
+                                        if (item == "-h" || item == "--help")
+                                            return true;
+                                        return false;
+                                    }),
+                     end(arguments_));
     if (old_size - arguments_.size() > 0)
         help_ = true;
-    if(!arguments_.empty()){
+    if (!arguments_.empty()) {
         command_ = arguments_[0];
         arguments_.erase(begin(arguments_));
     }
@@ -97,3 +99,5 @@ std::vector<const char *> CmdLineParser::argv() const {
     }
     return vec;
 }
+
+} // namespace sls

@@ -3199,7 +3199,9 @@ int slsDetector::enableTenGigabitEthernet(int value) {
     sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
     FILE_LOG(logDEBUG1) << "10Gbe: " << retval;
     shm()->tenGigaEnable = retval;
-    configureMAC();
+    if (value >= 0) {
+        configureMAC();
+    }
     if (shm()->useReceiverFlag) {
         retval = -1;
         value = shm()->tenGigaEnable;

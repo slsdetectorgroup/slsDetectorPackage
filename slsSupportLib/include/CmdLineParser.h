@@ -1,6 +1,5 @@
 #ifndef CMD_LINE_PARSER_H
 #define CMD_LINE_PARSER_H
-#include <stdexcept>
 #include <string>
 #include <vector>
 

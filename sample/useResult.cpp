@@ -53,4 +53,7 @@ auto main() -> int {
     Result<int> int_result{0,1,0,3,-5};
     Result<bool> bool_result{int_result};
     std::cout << bool_result << '\n';
+
+    Result<std::string> string_res{"ein", "zwei", "drei"};
+    std::cout << string_res << '\n';
 }

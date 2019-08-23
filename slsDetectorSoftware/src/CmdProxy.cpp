@@ -10,6 +10,10 @@
 
 #include <iomanip>
 #include <sstream>
+#include <iostream>
+#include <vector>
+
+
 
 #define TIME_COMMAND(GETFCN, SETFCN, HLPSTR)                                   \
     std::ostringstream os;                                                     \
@@ -37,13 +41,13 @@
         } else {                                                               \
             WrongNumberOfParameters(2);                                        \
         }                                                                      \
-        os << ToString(args) << '\n';                                          \
+        os << args << '\n';                                                    \
     } else {                                                                   \
         throw sls::RuntimeError("Unknown action");                             \
     }                                                                          \
     return os.str();
 
-#define INTEGER_COMMAND(GETFCN, SETFCN, HLPSTR)                                \
+#define INTEGER_COMMAND(GETFCN, SETFCN, CONV, HLPSTR)                          \
     std::ostringstream os;                                                     \
     os << cmd << ' ';                                                          \
     if (action == slsDetectorDefs::HELP_ACTION)                                \
@@ -57,18 +61,30 @@
         }                                                                      \
     } else if (action == slsDetectorDefs::PUT_ACTION) {                        \
         if (args.size() == 1) {                                                \
-            auto val = std::stoi(args[0]);                                     \
+            auto val = CONV(args[0]);                                          \
             det->SETFCN(val, {det_id});                                        \
+            os << args.front() << '\n';                                        \
         } else {                                                               \
             WrongNumberOfParameters(1);                                        \
         }                                                                      \
-        os << ToString(args) << '\n';                                          \
+                                                                               \
     } else {                                                                   \
         throw sls::RuntimeError("Unknown action");                             \
     }                                                                          \
     return os.str();
 
 namespace sls {
+
+std::ostream &operator<<(std::ostream &os,
+                         const std::vector<std::string> &vec) {
+    if (!vec.empty()) {
+        auto it = vec.begin();
+        os << *it++;
+        while (it != vec.end())
+            os << ' ' << *it++;
+    }
+    return os;
+}
 
 std::string CmdProxy::Call(const std::string &command,
                            const std::vector<std::string> &arguments,
@@ -158,14 +174,13 @@ std::string CmdProxy::SubExptime(int action) {
 
 std::string CmdProxy::RxFifoDepth(const int action) {
     INTEGER_COMMAND(
-        getRxFifoDepth, setRxFifoDepth,
+        getRxFifoDepth, setRxFifoDepth, std::stoi,
         "[n_frames]\n\tSet the number of frames in the receiver fifo");
 }
 
-std::string CmdProxy::RxSilent(const int action){
-     INTEGER_COMMAND(
-        getRxSilentMode, setRxSilentMode,
-        "[0, 1]\n\tSwitch on or off receiver text output");
+std::string CmdProxy::RxSilent(const int action) {
+    INTEGER_COMMAND(getRxSilentMode, setRxSilentMode, std::stoi,
+                    "[0, 1]\n\tSwitch on or off receiver text output");
 }
 
 std::string CmdProxy::ListCommands(int action) {

@@ -52,7 +52,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpTrimEn(int action);
   static std::string helpOutDir(int action);
   static std::string helpFileName(int action);
-  static std::string helpFileIndex(int action);
   static std::string helpRateCorr(int action);
   static std::string helpThreaded(int action);
   static std::string helpNetworkParameter(int action);
@@ -75,25 +74,12 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpCounter(int action);
   static std::string helpADC(int action);
   static std::string helpTempControl(int action);
-  static std::string helpOverwrite(int action);
   static std::string helpReceiver(int action);
   static std::string helpPattern(int action);
   static std::string helpPulse(int action);
   static std::string helpProcessor(int action);
 
-
-
-
-
-
-
-
-
-
-
  private:
-
-
   multiSlsDetector *myDet;
    
   std::string cmdUnderDevelopment(int narg, const char * const args[], int action, int detPos = -1);
@@ -111,7 +97,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdTrimEn(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdOutDir(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdFileName(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdFileIndex(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdRateCorr(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdNetworkParameter(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdPort(int narg, const char * const args[], int action, int detPos = -1);
@@ -133,7 +118,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdCounter(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdADC(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdTempControl(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdOverwrite(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdReceiver(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdPattern(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdPulse(int narg, const char * const args[], int action, int detPos = -1);

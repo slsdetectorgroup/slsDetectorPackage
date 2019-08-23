@@ -1476,20 +1476,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page output
-   - <b>findex [i]</b> Sets/gets the current file index. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "findex";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileIndex;
-    ++i;
-
-    /*! \page output
-    - <b>foverwrite [i]</b> enables(1) /disables(0) file overwriting. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "foverwrite";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOverwrite;
-    ++i;
-
-    /*! \page output
     - <b>fformat [i]</b> sets/gets the file format for data in receiver. Options: [binary, hdf5]. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "fformat";
@@ -2482,49 +2468,6 @@ std::string slsDetectorCommand::helpFileName(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdOverwrite(int narg, const char * const args[], int action, int detPos) {
-    int i;
-    char ans[100];
-    if (action == HELP_ACTION) {
-        return helpOverwrite(action);
-    }
-    if (action == PUT_ACTION) {
-        if (sscanf(args[1], "%d", &i))
-            myDet->setFileOverWrite(i, detPos);
-        else
-            return std::string("could not decode foverwrite");
-    }
-    sprintf(ans, "%d", myDet->getFileOverWrite(detPos));
-    return std::string(ans);
-}
-
-std::string slsDetectorCommand::helpOverwrite(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("foverwrite \t When Enabled overwrites files\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("foverwrite i \t  should be 1 or 0 or -1\n");
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdFileIndex(int narg, const char * const args[], int action, int detPos) {
-    if (action == HELP_ACTION) {
-        return helpFileName(action);
-    } else if (action == PUT_ACTION) {
-        int i = std::stoi(args[1]);
-        myDet->setFileIndex(i, detPos);
-    }
-    return std::to_string(myDet->getFileIndex(detPos));
-}
-
-std::string slsDetectorCommand::helpFileIndex(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("findex \t  gets the file index for the next the data file\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("findex i \t  sets the fileindex for the next data file\n");
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdRateCorr(int narg, const char * const args[], int action, int detPos) {
 

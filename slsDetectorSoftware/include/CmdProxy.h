@@ -116,6 +116,8 @@ class CmdProxy {
                           {"frames", &CmdProxy::frames},
                           {"fwrite", &CmdProxy::fwrite},
                           {"fmaster", &CmdProxy::fmaster},
+                          {"foverwrite", &CmdProxy::foverwrite},
+                          {"findex", &CmdProxy::findex},
                           {"rx_fifodepth", &CmdProxy::rx_fifodepth},
                           {"rx_silent", &CmdProxy::rx_silent},
                           {"rx_lock", &CmdProxy::rx_lock},
@@ -185,6 +187,12 @@ class CmdProxy {
 
     INTEGER_COMMAND(fmaster, getMasterFileWrite, setMasterFileWrite, std::stoi,
                     "[0, 1]\n\tEnable or disable receiver master file");
+
+    INTEGER_COMMAND(foverwrite, getFileOverWrite, setFileOverWrite, std::stoi,
+                    "[0, 1]\n\tEnable or disable file overwriting");
+
+    INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stoi,
+                    "[0, 1]\n\tFile index");
 };
 
 } // namespace sls

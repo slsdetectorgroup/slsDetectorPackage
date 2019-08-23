@@ -150,17 +150,19 @@ int			getStartingFrameNumber(uint64_t* value);
 #endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 int64_t 	getTimeLeft(enum timerIndex ind);
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 int         validateTimer(enum timerIndex ind, int64_t val, int64_t retval);
 #endif
 
 // parameters - module, settings
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD))
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D))
 int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 enum 		detectorSettings setSettings(enum detectorSettings sett);
 #endif
+#ifndef MYTHEN3D
 enum 		detectorSettings getSettings();
+#endif
 
 // parameters - threshold
 #ifdef EIGERD
@@ -180,9 +182,11 @@ extern int AD9257_GetVrefVoltage(int mV);                  // AD9257.h
 extern int AD9257_SetVrefVoltage(int val, int mV);   // AD9257.h
 #endif
 
+#ifndef MYTHEN3D
 void 		setDAC(enum DACINDEX ind, int val, int mV);
 int         getDAC(enum DACINDEX ind, int mV);
 int         getMaxDacSteps();
+#endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int         dacToVoltage(int dac);
 int         checkVLimitCompliant(int mV);
@@ -205,16 +209,20 @@ void        powerOff();
 #endif
 
 #ifndef MOENCHD
+#ifndef MYTHEN3D
 int 		getADC(enum ADCINDEX ind);
 #endif
-
+#endif
+#ifndef MYTHEN3D
 int 		setHighVoltage(int val);
-
+#endif
 
 
 // parameters - timing, extsig
+#ifndef MYTHEN3D
 void 		setTiming( enum timingMode arg);
 enum 		timingMode getTiming();
+#endif
 #ifdef GOTTHARDD
 void        setExtSignal(enum externalSignalFlag  mode);
 int         getExtSignal();
@@ -245,7 +253,9 @@ int 		configureMAC(int numInterfaces, int selInterface,
 				uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
 				uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2);
 #else
+#ifndef MYTHEN3D
 int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport);
+#endif
 #endif
 
 #if defined(JUNGFRAUD) || defined(EIGERD)

@@ -57,7 +57,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpThreaded(int action);
   static std::string helpNetworkParameter(int action);
   static std::string helpPort(int action);
-  static std::string helpLock(int action);
   static std::string helpLastClient(int action);
   static std::string helpOnline(int action);
   static std::string helpConfigureMac(int action);
@@ -76,7 +75,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpCounter(int action);
   static std::string helpADC(int action);
   static std::string helpTempControl(int action);
-  static std::string helpEnablefwrite(int action);
   static std::string helpOverwrite(int action);
   static std::string helpReceiver(int action);
   static std::string helpPattern(int action);
@@ -117,7 +115,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdRateCorr(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdNetworkParameter(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdPort(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdLock(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdLastClient(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdOnline(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdConfigureMac(int narg, const char * const args[], int action, int detPos = -1);
@@ -136,7 +133,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdCounter(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdADC(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdTempControl(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdEnablefwrite(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdOverwrite(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdReceiver(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdPattern(int narg, const char * const args[], int action, int detPos = -1);

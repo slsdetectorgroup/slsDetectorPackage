@@ -535,27 +535,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>exptime [i]</b> sets/gets exposure time in s. \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "exptime";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "subexptime";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>period [i]</b> sets/gets frame period in s. \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "period";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
    - <b>subdeadtime [i]</b> sets/gets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
      */
     descrToFuncMap[i].m_pFuncName = "subdeadtime";

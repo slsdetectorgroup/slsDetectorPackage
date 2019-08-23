@@ -36,9 +36,9 @@ class CmdProxy {
 
     // Initialize maps for translating name and function
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
-                          {"exptime2", &CmdProxy::Exptime},
-                          {"period2", &CmdProxy::Period},
-                          {"subexptime2", &CmdProxy::SubExptime},
+                          {"exptime", &CmdProxy::Exptime},
+                          {"period", &CmdProxy::Period},
+                          {"subexptime", &CmdProxy::SubExptime},
                           {"rx_fifodepth", &CmdProxy::RxFifoDepth},
                           {"rx_silent", &CmdProxy::RxSilent}};
 

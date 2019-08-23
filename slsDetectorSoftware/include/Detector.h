@@ -62,9 +62,6 @@ class Detector {
 
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
     
-    /* TODO remove this for ToString */
-    Result<std::string> getDetectorTypeAsString(Positions pos = {}) const;
-
     /** Gets the total number of detectors */
     int size() const;
 

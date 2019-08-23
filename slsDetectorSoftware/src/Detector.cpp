@@ -58,10 +58,6 @@ Result<defs::detectorType> Detector::getDetectorType(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getDetectorTypeAsEnum, pos);
 }
 
-Result<std::string> Detector::getDetectorTypeAsString(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getDetectorTypeAsString, pos);
-}
-
 int Detector::size() const { return pimpl->size(); }
 
 defs::xy Detector::getModuleGeometry() const {
@@ -772,7 +768,7 @@ void Detector::setRxAddGapPixels(bool enable) {
 Result<bool> Detector::getParallelMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
                                defs::GET_READOUT_FLAGS);
-    Result<bool> booleanRes;
+    Result<bool> booleanRes(res.size());
     for (unsigned int i = 0; i < res.size(); ++i) {
         booleanRes[i] = (res[i] & defs::PARALLEL) ? true : false;
     }
@@ -787,7 +783,7 @@ void Detector::setParallelMode(bool value, Positions pos) {
 Result<bool> Detector::getOverFlowMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
                                defs::GET_READOUT_FLAGS);
-    Result<bool> booleanRes;
+    Result<bool> booleanRes(res.size());
     for (unsigned int i = 0; i < res.size(); ++i) {
         booleanRes[i] = (res[i] & defs::SHOW_OVERFLOW) ? true : false;
     }

@@ -476,16 +476,25 @@ p, li { white-space: pre-wrap; }
    </property>
   </action>
   <action name="actionDebug">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Debug</string>
    </property>
   </action>
   <action name="actionExpert">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Expert</string>
    </property>
   </action>
   <action name="actionDockable">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Dockable Windows</string>
    </property>

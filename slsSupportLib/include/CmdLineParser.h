@@ -21,6 +21,7 @@ class CmdLineParser {
     const std::string &executable() const { return executable_; }
     const std::vector<std::string> &arguments() const { return arguments_; };
     std::vector<const char *> argv() const;
+    std::string cli_line() const;
 
   private:
     void DecodeIdAndPosition(const char *c);

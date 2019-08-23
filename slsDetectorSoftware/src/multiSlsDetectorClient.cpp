@@ -90,10 +90,9 @@ void multiSlsDetectorClient::runCommand() {
         if (detPtr != nullptr)
             multi_id = detPtr->getMultiId();
         sls::Detector d(multi_id);
-        sls::CmdProxy<sls::Detector> proxy(&d);
-        // sls::CmdProxy<multiSlsDetector> proxy(detPtr);
+        sls::CmdProxy proxy(&d);
         auto cmd = proxy.Call(parser.command(), parser.arguments(),
-                              parser.detector_id(), action_);
+                              parser.detector_id(), action_, os);
         if (cmd.empty()) {
             return;
         } else {

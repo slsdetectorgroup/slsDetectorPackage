@@ -535,27 +535,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>exptime [i]</b> sets/gets exposure time in s. \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "exptime";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>subexptime [i]</b> sets/gets sub exposure time in s. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "subexptime";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>period [i]</b> sets/gets frame period in s. \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "period";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
    - <b>subdeadtime [i]</b> sets/gets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
      */
     descrToFuncMap[i].m_pFuncName = "subdeadtime";
@@ -1805,19 +1784,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
-    /*! \page receiver
-   - <b>rx_fifodepth [i]</b> sets/gets receiver fifo (between Listener and Writer Threads) depth to i number of frames. Can improve listener packet loss (loss due to packet processing time in Listener threads), not if limited by writing. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_fifodepth";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
-    /*! \page receiver
-   - <b>rx_silent [i]</b> sets/gets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_silent";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
 
     /*! \page receiver
     - <b>rx_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
@@ -4914,30 +4880,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
                 sprintf(answer, "%d", myDet->enableTenGigabitEthernet(ival, detPos));
         } else
             sprintf(answer, "%d", myDet->enableTenGigabitEthernet(-1, detPos));
-        return std::string(answer);
-
-    }
-
-    else if (cmd == "rx_fifodepth") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan rx_fifodepth input ") + std::string(args[1]);
-            if (ival >= 0)
-                sprintf(answer, "%d", myDet->setReceiverFifoDepth(ival, detPos));
-        } else
-            sprintf(answer, "%d", myDet->setReceiverFifoDepth(-1, detPos));
-        return std::string(answer);
-
-    }
-
-    else if (cmd == "rx_silent") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan rx_silent input ") + std::string(args[1]);
-            if (ival >= 0)
-                sprintf(answer, "%d", myDet->setReceiverSilentMode(ival, detPos));
-        } else
-            sprintf(answer, "%d", myDet->setReceiverSilentMode(-1, detPos));
         return std::string(answer);
 
     }

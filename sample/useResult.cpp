@@ -47,4 +47,13 @@ auto main() -> int {
     //     nres.push_back(sls::time::ns(i));
     std::cout << "nres: " << sls::ToString(nres) << '\n';
     //
+
+
+    /* Convert from Result<int> to Result<bool> */
+    Result<int> int_result{0,1,0,3,-5};
+    Result<bool> bool_result{int_result};
+    std::cout << bool_result << '\n';
+
+    Result<std::string> string_res{"ein", "zwei", "drei"};
+    std::cout << string_res << '\n';
 }

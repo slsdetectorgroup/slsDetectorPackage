@@ -70,17 +70,17 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
         NumberOfTabs
     };
     slsDetectorDefs::detectorType detType;
-    sls::Detector* det;
-    qDrawPlot* plot;
-    MyTabWidget* tabs;
-    qTabMeasurement* tabMeasurement;
-    qTabDataOutput* tabDataOutput;
-    qTabPlot* tabPlot;
-    qTabSettings* tabSettings;
-    qTabAdvanced* tabAdvanced;
-    qTabDebugging* tabDebugging;
-    qTabDeveloper* tabDeveloper;
-    qTabMessages* tabMessages;
+    std::unique_ptr<sls::Detector> det;
+    std::unique_ptr<qDrawPlot> plot;
+    std::unique_ptr<MyTabWidget> tabs;
+    std::unique_ptr<qTabMeasurement> tabMeasurement;
+    std::unique_ptr<qTabDataOutput> tabDataOutput;
+    std::unique_ptr<qTabPlot> tabPlot;
+    std::unique_ptr<qTabSettings> tabSettings;
+    std::unique_ptr<qTabAdvanced> tabAdvanced;
+    std::unique_ptr<qTabDebugging> tabDebugging;
+    std::unique_ptr<qTabDeveloper> tabDeveloper;
+    std::unique_ptr<qTabMessages> tabMessages;
     int isDeveloper;
     int heightPlotWindow;
     int heightCentralWidget;

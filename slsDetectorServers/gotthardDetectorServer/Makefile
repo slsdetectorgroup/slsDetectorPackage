@@ -15,8 +15,7 @@ SRCS 		= 	slsDetectorFunctionList.c
 SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)AD9252.c $(main_src)AD9257.c $(main_src)LTC2620.c $(main_src)common.c $(main_src)commonServerFunctions.c 
 OBJS 		= 	$(SRCS:.c=.o) 
 
-all: clean $(PROGS) 
-#all: clean versioning $(PROGS) 
+all: clean versioning $(PROGS) 
 
 boot: $(OBJS)
 

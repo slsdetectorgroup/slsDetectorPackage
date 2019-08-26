@@ -36,7 +36,7 @@ int main() {
 
     std::cout << "Generating command line documentation!\n";
 
-    sls::CmdProxy<sls::Detector> proxy(nullptr);
+    sls::CmdProxy proxy(nullptr);
     auto commands = proxy.GetProxyCommands();
 
     std::ofstream fs("commands.rst");

@@ -376,6 +376,25 @@ TEST_CASE("rx_lock", "[.cmd]") {
     }
 }
 
+TEST_CASE("lock", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("lock 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "lock 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("lock", GET, nullptr, oss);
+        REQUIRE(oss.str() == "lock 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("lock 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "lock 0\n");
+    }
+}
+
+
 TEST_CASE("rx_lastclient", "[.cmd]") {
 
     std::ostringstream oss;
@@ -384,12 +403,6 @@ TEST_CASE("rx_lastclient", "[.cmd]") {
 }
 
 
-TEST_CASE("rx_checkonline", "[.cmd]") {
-
-    std::ostringstream oss;
-    multiSlsDetectorClient("rx_checkonline", GET, nullptr, oss);
-    REQUIRE(oss.str() == "rx_checkonline All receiver online\n");
-}
 
 TEST_CASE("rx_checkversion", "[.cmd]") {
 
@@ -402,34 +415,35 @@ TEST_CASE("exptime", "[.cmd]") {
     {
         std::ostringstream oss;
         multiSlsDetectorClient("exptime 0.05", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "exptime 0.050000000\n");
+        REQUIRE(oss.str() == "exptime 0.05\n");
     }
     {
         std::ostringstream oss;
         multiSlsDetectorClient("exptime", GET, nullptr, oss);
-        REQUIRE(oss.str() == "exptime 0.050000000\n");
+        REQUIRE(oss.str() == "exptime 50ms\n");
     }
     {
         std::ostringstream oss;
         multiSlsDetectorClient("exptime 1", PUT, nullptr, oss);
-        REQUIRE(oss.str() == "exptime 1.000000000\n");
+        REQUIRE(oss.str() == "exptime 1\n");
     }
 }
 
-// TEST_CASE("exptime2", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         multiSlsDetectorClient("exptime2 0.05", PUT, nullptr, oss);
-//         REQUIRE(oss.str() == "exptime2 0.05s\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         multiSlsDetectorClient("exptime2", GET, nullptr, oss);
-//         REQUIRE(oss.str() == "exptime2 0.05s\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         multiSlsDetectorClient("exptime2 1", PUT, nullptr, oss);
-//         REQUIRE(oss.str() == "exptime2 1s\n");
-//     }
-// }
+
+TEST_CASE("period", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("period 1.25s", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "period 1.25s\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("period", GET, nullptr, oss);
+        REQUIRE(oss.str() == "period 1.25s\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("period 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "period 0\n");
+    }
+}

@@ -156,3 +156,19 @@ TEST_CASE("Sorting a Result"){
     REQUIRE(res[2] == 4);
     REQUIRE(res[3] == 5);
 }
+
+TEST_CASE("Printing Result<std::string>"){
+    Result<std::string> res{"ein", "zwei", "drei"};
+    std::ostringstream os;
+    os << res;
+    REQUIRE(os.str() == "[ein, zwei, drei]");
+
+}
+
+TEST_CASE("Printing Result<int>"){
+    Result<int> res{1, 2, 3};
+    std::ostringstream os;
+    os << res;
+    REQUIRE(os.str() == "[1, 2, 3]");
+
+}

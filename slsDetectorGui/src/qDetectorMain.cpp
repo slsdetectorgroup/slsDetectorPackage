@@ -253,9 +253,9 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
          break;
     default:
         std::string errorMess =
-            sls::ToString(det->getHostname(), ',') + std::string(" has ") +
-            slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) + std::string(" detector type (") +
-            std::to_string(detType) + std::string("). Exiting GUI.");
+            sls::ToString(det->getHostname(), ',') + " has " +
+            slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) + " detector type (" +
+            std::to_string(detType) + "). Exiting GUI.";
         throw sls::RuntimeError(errorMess.c_str());
     }
 

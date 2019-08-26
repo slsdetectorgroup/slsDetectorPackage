@@ -250,14 +250,14 @@ void Detector::setTimingMode(defs::timingMode value, Positions pos) {
 void Detector::acquire() { pimpl->acquire(); }
 
 void Detector::startAcquisition() {
-    if (getUseReceiverFlag({}).squash(true))
+    if (getUseReceiverFlag().squash(true))
         pimpl->Parallel(&slsDetector::startReceiver, {});
     pimpl->Parallel(&slsDetector::startAcquisition, {});
 }
 
 void Detector::stopAcquisition() {
     pimpl->Parallel(&slsDetector::stopAcquisition, {});
-    if (getUseReceiverFlag({}).squash(true)) 
+    if (getUseReceiverFlag().squash(true)) 
         pimpl->Parallel(&slsDetector::stopReceiver, {});
 }
 
@@ -769,8 +769,8 @@ Result<bool> Detector::getParallelMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
                                defs::GET_READOUT_FLAGS);
     Result<bool> booleanRes(res.size());
-    for (unsigned int i = 0; i < res.size(); ++i) {
-        booleanRes[i] = (res[i] & defs::PARALLEL) ? true : false;
+    for (size_t i = 0; i < res.size(); ++i) {
+        booleanRes[i] = res[i] & defs::PARALLEL;
     }
     return booleanRes;
 }
@@ -784,8 +784,8 @@ Result<bool> Detector::getOverFlowMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
                                defs::GET_READOUT_FLAGS);
     Result<bool> booleanRes(res.size());
-    for (unsigned int i = 0; i < res.size(); ++i) {
-        booleanRes[i] = (res[i] & defs::SHOW_OVERFLOW) ? true : false;
+    for (size_t i = 0; i < res.size(); ++i) {
+        booleanRes[i] = res[i] & defs::SHOW_OVERFLOW;
     }
     return booleanRes;
 }

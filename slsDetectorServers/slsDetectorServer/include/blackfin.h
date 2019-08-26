@@ -95,7 +95,10 @@ u_int32_t readRegister16(u_int32_t offset);
  */
 u_int32_t writeRegister16(u_int32_t offset, u_int32_t data);
 
-
+/**
+ * Get base address for memory copy
+ */
+uint64_t Blackfin_getBaseAddress();
 /**
  * Map FPGA
  */

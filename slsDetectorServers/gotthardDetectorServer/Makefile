@@ -1,20 +1,22 @@
 current_dir = $(shell pwd)
-main_server = ../slsDetectorServer/
+main_inc = ../slsDetectorServer/include/
+main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DGOTTHARDD  -DSTOP_SERVER -I$(main_server) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -DGOTTHARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm  
 PROGS		= 	gotthardDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRCS 		= 	$(main_server)communication_funcs.c $(main_server)slsDetectorServer.c $(main_server)slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+SRCS 		= 	slsDetectorFunctionList.c  
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)AD9252.c $(main_src)AD9257.c $(main_src)LTC2620.c $(main_src)common.c $(main_src)commonServerFunctions.c 
 OBJS 		= 	$(SRCS:.c=.o) 
 
-
-all: clean versioning $(PROGS) 
+all: clean $(PROGS) 
+#all: clean versioning $(PROGS) 
 
 boot: $(OBJS)
 

@@ -124,3 +124,8 @@ int mapCSP0(void) {
 	    FILE_LOG(logINFO, ("Memory already mapped before\n"));
 	return OK;
 }
+
+
+uint64_t Blackfin_getBaseAddress() {
+	return CSP0BASE;
+}

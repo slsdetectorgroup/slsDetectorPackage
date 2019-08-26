@@ -1,8 +1,7 @@
 #include "AD9252.h"
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
-#ifdef GOTTHARDD
-#include <unistd.h>
-#endif
+#include "blackfin.h"
+#include "clogger.h"
 
 /* AD9252 ADC DEFINES */
 #define AD9252_ADC_NUMBITS			(24)

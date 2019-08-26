@@ -1,8 +1,6 @@
-#pragma once
-
+#include "UDPPacketHeaderGenerator.h"
 #include "clogger.h"
 #include "sls_detector_defs.h"
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,11 +36,6 @@ uint64_t getUDPFrameNumber() {
 	return udpFrameNumber;
 }
 
-
-/**
- * Called for each UDP packet header creation
- *
- */
 void createUDPPacketHeader(char* buffer, uint16_t id) {
 	memset(buffer, 0, sizeof(sls_detector_header));
 	sls_detector_header* header = (sls_detector_header*)(buffer);
@@ -59,7 +52,6 @@ void createUDPPacketHeader(char* buffer, uint16_t id) {
 	// reset frame number
 	udpFrameNumber = 0;
 }
-
 
 int fillUDPPacket(char* buffer) {
 	FILE_LOG(logDEBUG2, ("Analog (databytes:%d, offset:%d)\n Digital (databytes:%d offset:%d)\n", 

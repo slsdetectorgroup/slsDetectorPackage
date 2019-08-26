@@ -1,7 +1,9 @@
-#pragma once
-
+#include "LTC2620.h"
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
 #include "common.h"
+#include "blackfin.h"
+#include "clogger.h"
+#include "sls_detector_defs.h"
 
 #include <string.h>
 
@@ -29,6 +31,11 @@
 #define LTC2620_MAX_VAL                     (4095) // 12 bits
 #define LTC2620_MAX_STEPS                   (LTC2620_MAX_VAL + 1)
 
+#ifdef CHIPTESTBOARDD
+#include "slsDetectorServer_defs.h"
+#endif
+
+// defines from the fpga
 uint32_t LTC2620_Reg = 0x0;
 uint32_t LTC2620_CsMask = 0x0;
 uint32_t LTC2620_ClkMask = 0x0;
@@ -38,17 +45,6 @@ int LTC2620_Ndac = 0;
 int LTC2620_MinVoltage = 0;
 int LTC2620_MaxVoltage = 0;
 
-/**
- * Set Defines
- * @param reg spi register
- * @param cmsk chip select mask
- * @param clkmsk clock output mask
- * @param dmsk digital output mask
- * @param dofst digital output offset
- * @param nd total number of dacs for this board (for dac channel and daisy chain chip id)
- * @param minMV minimum voltage determined by hardware
- * @param maxMV maximum voltage determined by hardware
- */
 void LTC2620_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst, int nd, int minMV, int maxMV) {
     LTC2620_Reg = reg;
     LTC2620_CsMask = cmsk;
@@ -60,10 +56,6 @@ void LTC2620_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t d
     LTC2620_MaxVoltage = maxMV;
 }
 
-
-/**
- * Disable SPI
- */
 void LTC2620_Disable() {
     bus_w(LTC2620_Reg, (bus_r(LTC2620_Reg)
             | LTC2620_CsMask
@@ -71,40 +63,34 @@ void LTC2620_Disable() {
             & ~(LTC2620_DigMask));
 }
 
+int LTC2620_GetPowerDownValue() {
+    return LTC2620_PWR_DOWN_VAL;
+}
 
-/**
- * Convert voltage to dac units
- * @param voltage value in mv
- * @param dacval pointer to value converted to dac units
- * @returns FAIL when voltage outside limits, OK if conversion successful
- */
+int LTC2620_GetMinInput() {
+    return LTC2620_MIN_VAL;
+}
+
+int LTC2620_GetMaxInput() {
+    return LTC2620_MAX_VAL;
+}
+
+int LTC2620_GetMaxNumSteps() {
+    return LTC2620_MAX_STEPS;
+}
+
 int LTC2620_VoltageToDac(int voltage, int* dacval) {
     return ConvertToDifferentRange(LTC2620_MinVoltage, LTC2620_MaxVoltage,
             LTC2620_MIN_VAL, LTC2620_MAX_VAL,
             voltage, dacval);
 }
 
-
-/**
- * Convert dac units to voltage
- * @param dacval dac units
- * @param voltage pointer to value converted to mV
- * @returns FAIL when voltage outside limits, OK if conversion successful
- */
 int LTC2620_DacToVoltage(int dacval, int* voltage) {
     return ConvertToDifferentRange(  LTC2620_MIN_VAL, LTC2620_MAX_VAL,
             LTC2620_MinVoltage, LTC2620_MaxVoltage,
             dacval, voltage);
 }
 
-
-/**
- * Set a single chip (all non ctb detectors use this)
- * when max dac is 8
- * @param cmd command
- * @param data dac value to be set
- * @param dacaddr dac channel number in chip
- */
 void LTC2620_SetSingle(int cmd, int data, int dacaddr)  {
     FILE_LOG(logDEBUG2, ("(Single) dac addr:%d, dac value:%d, cmd:%d\n", dacaddr, data, cmd));
 
@@ -117,26 +103,11 @@ void LTC2620_SetSingle(int cmd, int data, int dacaddr)  {
             LTC2620_ClkMask, LTC2620_DigMask, LTC2620_DigOffset, 0);
 }
 
-
-/**
- * bit bang the data into all the chips daisy fashion
- * @param valw current value of register while bit banging
- * @param val data to be sent (data, dac addr and command)
- */
 void LTC2620_SendDaisyData(uint32_t* valw, uint32_t val) {
     sendDataToSPI(valw, LTC2620_Reg, val, LTC2620_DAISY_CHAIN_NUMBITS,
             LTC2620_ClkMask, LTC2620_DigMask, LTC2620_DigOffset);
 }
 
-
-/**
- * Set a single chip (all non ctb detectors use this)
- * when max dac is 8
- * @param cmd command
- * @param data dac value to be set
- * @param dacaddr dac channel number in chip
- * @param chipIndex index of the chip
- */
 void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex)  {
 
     int nchip = LTC2620_Ndac / LTC2620_NUMCHANNELS;
@@ -189,15 +160,6 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex)  {
     SPIChipDeselect(&valw, LTC2620_Reg, LTC2620_CsMask, LTC2620_ClkMask, LTC2620_DigMask, 0);
 }
 
-
-/**
- * Sets a single chip (LTC2620_SetSingle) or multiple chip (LTC2620_SetDaisy)
- * multiple chip is only for ctb where the multiple chips are connected in daisy fashion
- * @param cmd command to send
- * @param data dac value to be set
- * @param dacaddr dac channel number for the chip
- * @param chipIndex the chip to be set
- */
 void LTC2620_Set(int cmd, int data, int dacaddr, int chipIndex)  {
     FILE_LOG(logDEBUG1, ("cmd:0x%x, data:%d, dacaddr:%d, chipIndex:%d\n", cmd, data, dacaddr, chipIndex));
     FILE_LOG(logDEBUG2, (" ================================================\n"));
@@ -210,10 +172,6 @@ void LTC2620_Set(int cmd, int data, int dacaddr, int chipIndex)  {
     FILE_LOG(logDEBUG2, (" ================================================\n"));
 }
 
-
-/**
- * Configure (obtains dacaddr, command and ichip and calls LTC2620_Set)
- */
 void LTC2620_Configure(){
     FILE_LOG(logINFOBLUE, ("Configuring LTC2620\n"));
 
@@ -230,12 +188,6 @@ void LTC2620_Configure(){
     LTC2620_Set(cmd, data, addr, -1);
 }
 
-
-/**
- * Set Dac (obtains dacaddr, command and ichip and calls LTC2620_Set)
- * @param dacnum dac number
- * @param data dac value to set
- */
 void LTC2620_SetDAC (int dacnum, int data) {
     FILE_LOG(logDEBUG1, ("Setting dac %d to %d\n", dacnum, data));
     // LTC2620 index
@@ -258,14 +210,6 @@ void LTC2620_SetDAC (int dacnum, int data) {
     LTC2620_Set(cmd, data, addr, ichip);
 }
 
-/**
- * Set dac in dac units or mV
- * @param dacnum dac index
- * @param val value in dac units or mV
- * @param mV 0 for dac units and 1 for mV unit
- * @param dacval pointer to value in dac units
- * @returns OK or FAIL for success of operation
- */
 int LTC2620_SetDACValue (int dacnum, int val, int mV, int* dacval) {
     FILE_LOG(logDEBUG1, ("dacnum:%d, val:%d, ismV:%d\n", dacnum, val, mV));
     // validate index

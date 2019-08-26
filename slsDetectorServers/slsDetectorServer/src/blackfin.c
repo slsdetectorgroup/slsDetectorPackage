@@ -1,10 +1,11 @@
-#pragma once
-
+#include "blackfin.h"
+#include "RegisterDefs.h"
+#include "sls_detector_defs.h"
 #include "ansi.h"
+#include "clogger.h"
 
 #include <fcntl.h>		// open
 #include <sys/mman.h>	// mmap
-
 
 /* global variables */
 u_int64_t CSP0BASE = 0;
@@ -12,59 +13,30 @@ u_int64_t CSP0BASE = 0;
 #define MEM_SIZE 0x100000
 
 
-/** I2C defines */
-#define I2C_CLOCK_MHZ   (131.25)
-
-/**
- * Write into a 16 bit register
- * @param offset address offset
- * @param data 16 bit data
- */
 void bus_w16(u_int32_t offset, u_int16_t data) {
 	volatile u_int16_t  *ptr1;
 	ptr1=(u_int16_t*)(CSP0BASE+offset*2);
 	*ptr1=data;
 }
 
-/**
- * Read from a 16 bit register
- * @param offset address offset
- * @retuns 16 bit data read
- */
 u_int16_t bus_r16(u_int32_t offset){
 	volatile u_int16_t *ptr1;
 	ptr1=(u_int16_t*)(CSP0BASE+offset*2);
 	return *ptr1;
 }
 
-/**
- * Write into a 32 bit register
- * @param offset address offset
- * @param data 32 bit data
- */
 void bus_w(u_int32_t offset, u_int32_t data) {
 	volatile  u_int32_t  *ptr1;
 	ptr1=(u_int32_t*)(CSP0BASE+offset*2);
 	*ptr1=data;
 }
 
-/**
- * Read from a 32 bit register
- * @param offset address offset
- * @retuns 32 bit data read
- */
 u_int32_t bus_r(u_int32_t offset) {
 	volatile u_int32_t  *ptr1;
 	ptr1=(u_int32_t*)(CSP0BASE+offset*2);
 	return *ptr1;
 }
 
-/**
- * Read from a 64 bit register
- * @param aLSB LSB offset address
- * @param aMSB MSB offset address
- * @returns 64 bit data read
- */
 int64_t get64BitReg(int aLSB, int aMSB){
 	int64_t v64;
 	u_int32_t vLSB,vMSB;
@@ -76,13 +48,6 @@ int64_t get64BitReg(int aLSB, int aMSB){
 	return v64;
 }
 
-/**
- * Write into a 64 bit register
- * @param value 64 bit data
- * @param aLSB LSB offset address
- * @param aMSB MSB offset address
- * @returns 64 bit data read
- */
 int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
 	int64_t v64;
 	u_int32_t vLSB,vMSB;
@@ -97,71 +62,35 @@ int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
 
 }
 
-/**
- * Read unsigned 64 bit from a 64 bit register
- * @param aLSB LSB offset address
- * @param aMSB MSB offset address
- * @returns unsigned 64 bit data read
- */
 uint64_t getU64BitReg(int aLSB, int aMSB){
 	uint64_t retval = bus_r(aMSB);
 	retval = (retval << 32) | bus_r(aLSB);
 	return retval;
 }
 
-/**
- * Write unsigned 64 bit into a 64 bit register
- * @param value unsigned 64 bit data
- * @param aLSB LSB offset address
- * @param aMSB MSB offset address
- */
 void setU64BitReg(uint64_t value, int aLSB, int aMSB){
 	bus_w(aLSB, value & (0xffffffff));
 	bus_w(aMSB, (value >> 32) & (0xffffffff));
 }
 
-/**
- * Read from a 32 bit register (literal register value provided by client)
- * @param offset address offset
- * @retuns 32 bit data read
- */
 u_int32_t readRegister(u_int32_t offset) {
 	return bus_r(offset << MEM_MAP_SHIFT);
 }
 
-/**
- * Write into a 32 bit register (literal register value provided by client)
- * @param offset address offset
- * @param data 32 bit data
- */
 u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
 	bus_w(offset << MEM_MAP_SHIFT, data);
 	return readRegister(offset);
 }
 
-/**
- * Read from a 16 bit register (literal register value provided by client)
- * @param offset address offset
- * @retuns 16 bit data read
- */
 u_int32_t readRegister16(u_int32_t offset) {
     return (u_int32_t)bus_r16(offset << MEM_MAP_SHIFT);
 }
 
-/**
- * Write into a 16 bit register (literal register value provided by client)
- * @param offset address offset
- * @param data 16 bit data
- */
 u_int32_t writeRegister16(u_int32_t offset, u_int32_t data) {
     bus_w16(offset << MEM_MAP_SHIFT, (u_int16_t)data);
     return readRegister16(offset);
 }
 
-
-/**
- * Map FPGA
- */
 int mapCSP0(void) {
 	// if not mapped
 	if (CSP0BASE == 0) {

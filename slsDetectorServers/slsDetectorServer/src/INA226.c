@@ -1,6 +1,8 @@
-#pragma once
-
+#include "INA226.h"
 #include "I2C.h"
+#include "clogger.h"
+#include "common.h"
+
 #include "math.h"
 
 /**
@@ -52,24 +54,12 @@
 /** get current unit */
 #define INA226_getConvertedCurrentUnits(shuntV, calibReg) ((double)shuntV * (double)calibReg / (double)2048)
 
+// defines from the fpga
 double INA226_Shunt_Resistor_Ohm = 0.0;
 int INA226_Calibration_Register_Value = 0;
 
 #define INA226_CALIBRATION_CURRENT_TOLERANCE (1.2268)
 
-
-/**
- * Configure the I2C core and Enable core
- * @param rOhm shunt resister value in Ohms (defined in slsDetectorServer_defs.h)
- * @param creg control register (defined in RegisterDefs.h)
- * @param sreg status register (defined in RegisterDefs.h)
- * @param rreg rx data fifo register (defined in RegisterDefs.h)
- * @param rlvlreg rx data fifo level register (defined in RegisterDefs.h)
- * @param slreg scl low count register (defined in RegisterDefs.h)
- * @param shreg scl high count register (defined in RegisterDefs.h)
- * @param sdreg sda hold register (defined in RegisterDefs.h)
- * @param treg transfer command fifo register (defined in RegisterDefs.h)
- */
 void INA226_ConfigureI2CCore(double rOhm, uint32_t creg, uint32_t sreg,
         uint32_t rreg, uint32_t rlvlreg,
         uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg) {
@@ -80,10 +70,6 @@ void INA226_ConfigureI2CCore(double rOhm, uint32_t creg, uint32_t sreg,
     I2C_ConfigureI2CCore(creg, sreg, rreg, rlvlreg, slreg, shreg, sdreg, treg);
 }
 
-/**
- * Calibrate resolution of current register
- * @param deviceId device Id (defined in slsDetectorServer_defs.h)
- */
 void INA226_CalibrateCurrentRegister(uint32_t deviceId) {
     FILE_LOG(logINFO, ("Calibrating Current Register for Device ID: 0x%x\n", deviceId));
     // get calibration value based on shunt resistor
@@ -104,11 +90,6 @@ void INA226_CalibrateCurrentRegister(uint32_t deviceId) {
     }
 }
 
-/**
- * Read voltage of device
- * @param deviceId device Id
- * @returns voltage in mV
- */
 int INA226_ReadVoltage(uint32_t deviceId) {
     FILE_LOG(logDEBUG1, (" Reading voltage\n"));
     uint32_t regval = I2C_Read(deviceId, INA226_BUS_VOLTAGE_REG);
@@ -129,11 +110,6 @@ int INA226_ReadVoltage(uint32_t deviceId) {
     return voltagemV;
 }
 
-/**
- * Read current
- * @param deviceId device Id
- * @returns current in mA
- */
 int INA226_ReadCurrent(uint32_t deviceId) {
     FILE_LOG(logDEBUG1, (" Reading current\n"));
 

@@ -1,6 +1,7 @@
-#pragma once
-
+#include "commonServerFunctions.h"
 #include "blackfin.h"
+#include "clogger.h"
+
 #include <unistd.h>     // usleep
 
 void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t clkmask, uint32_t digoutmask, int convBit) {

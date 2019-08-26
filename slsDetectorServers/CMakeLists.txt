@@ -1,5 +1,5 @@
 add_subdirectory(ctbDetectorServer)
-#add_subdirectory(eigerDetectorServer)
+add_subdirectory(eigerDetectorServer)
 #add_subdirectory(gotthardDetectorServer)
 #add_subdirectory(jungfrauDetectorServer)
 #add_subdirectory(moenchDetectorServer)

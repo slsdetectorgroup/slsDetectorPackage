@@ -132,8 +132,10 @@ int			setExternalSampling(int val);
 void 		setSpeed(enum speedVariable ind, int val, int mode);
 int         getSpeed(enum speedVariable ind, int mode);
 #else
+#ifndef GOTTHARD2D
 void 		setSpeed(enum speedVariable ind, int val);
 int         getSpeed(enum speedVariable ind);
+#endif
 #endif
 
 #if defined(EIGERD) || defined(CHIPTESTBOARDD)
@@ -150,17 +152,17 @@ int			getStartingFrameNumber(uint64_t* value);
 #endif
 int64_t 	setTimer(enum timerIndex ind, int64_t val);
 int64_t 	getTimeLeft(enum timerIndex ind);
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int         validateTimer(enum timerIndex ind, int64_t val, int64_t retval);
 #endif
 
 // parameters - module, settings
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D))
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D)) && (!defined(GOTTHARD2D))
 int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 enum 		detectorSettings setSettings(enum detectorSettings sett);
 #endif
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 enum 		detectorSettings getSettings();
 #endif
 
@@ -182,7 +184,7 @@ extern int AD9257_GetVrefVoltage(int mV);                  // AD9257.h
 extern int AD9257_SetVrefVoltage(int val, int mV);   // AD9257.h
 #endif
 
-#ifndef MYTHEN3D
+#if (!defined(MYTHEN3D)) && (!defined(GOTTHARD2D))
 void 		setDAC(enum DACINDEX ind, int val, int mV);
 int         getDAC(enum DACINDEX ind, int mV);
 int         getMaxDacSteps();
@@ -209,17 +211,17 @@ void        powerOff();
 #endif
 
 #ifndef MOENCHD
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 int 		getADC(enum ADCINDEX ind);
 #endif
 #endif
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 int 		setHighVoltage(int val);
 #endif
 
 
 // parameters - timing, extsig
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 void 		setTiming( enum timingMode arg);
 enum 		timingMode getTiming();
 #endif

@@ -78,6 +78,9 @@ void slsDetector::checkDetectorVersionCompatibility() {
     case MYTHEN3:
         arg = APIMYTHEN3;
         break;
+    case GOTTHARD2:
+        arg = APIGOTTHARD2;
+        break;        
     default:
         throw NotImplementedError(
             "Check version compatibility is not implemented for this detector");
@@ -391,6 +394,9 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     case MYTHEN3:
         shm()->rxFramesPerFile = MYTHEN3_MAX_FRAMES_PER_FILE;
         break;
+    case GOTTHARD2:
+        shm()->rxFramesPerFile = GOTTHARD2_MAX_FRAMES_PER_FILE;
+        break;       
     default:
         break;
     }
@@ -779,7 +785,7 @@ void slsDetector::updateCachedDetectorVariables() {
         shm()->timerValue[FRAME_PERIOD] = i64;
 
         // delay
-        if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3 ) {
+        if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3 && shm()->myDetectorType != GOTTHARD2) {
             n += client.Receive(&i64, sizeof(i64));
             shm()->timerValue[DELAY_AFTER_TRIGGER] = i64;
         }
@@ -3199,7 +3205,9 @@ int slsDetector::enableTenGigabitEthernet(int value) {
     sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
     FILE_LOG(logDEBUG1) << "10Gbe: " << retval;
     shm()->tenGigaEnable = retval;
-    configureMAC();
+    if (value >= 0) {
+        configureMAC();
+    }
     if (shm()->useReceiverFlag) {
         retval = -1;
         value = shm()->tenGigaEnable;

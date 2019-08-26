@@ -10,6 +10,7 @@ DEBUG=0
 PYTHON=0
 TESTS=0
 SIMULATOR=0
+CTBGUI=0
 
 
 CLEAN=0
@@ -18,7 +19,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [i] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
@@ -29,6 +30,7 @@ Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [i] [-h] [-d <HDF5 directory>] [-j]
  -r: Build/Rebuilds only receiver
  -g: Build/Rebuilds only gui
  -s: Simulator
+ -u: Chip Test Gui
  -j: Number of threads to compile through
  -e: Debug mode
  -i: Builds tests
@@ -67,7 +69,7 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:j:trgeis" opt ; do
+while getopts ":bpchd:j:trgeisu" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -122,6 +124,10 @@ while getopts ":bpchd:j:trgeis" opt ; do
 		echo "Compiling Options: Simulator" 
 		SIMULATOR=1
 		;; 
+	u)
+		echo "Compiling Options: Chip Test Gui"
+		CTBGUI=1
+		;;
   \?)
     echo "Invalid option: -$OPTARG" 
 		usage
@@ -188,14 +194,19 @@ fi
 
 #Simulator
 if [ $SIMULATOR -eq 1 ]; then
-	CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_SIMULATOR=ON "
+	CMAKE_POST+=" -DSLS_USE_SIMULATOR=ON "
 	echo "Simulator Option enabled"
 fi 
 
+#Chip Test Gui
+if [ $CTBGUI -eq 1 ]; then
+	CMAKE_POST+=" -DSLS_USE_CTBGUI=ON "
+	echo "CTB Gui Option enabled"
+fi 
 
 #Tests
 if [ $TESTS -eq 1 ]; then
-	CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_TESTS=ON -DSLS_USE_INTEGRATION_TESTS=ON"
+	CMAKE_POST+=" -DSLS_USE_TESTS=ON -DSLS_USE_INTEGRATION_TESTS=ON"
 	echo "Tests Option enabled"
 fi 
 

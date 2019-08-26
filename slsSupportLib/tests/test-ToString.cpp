@@ -99,9 +99,9 @@ TEST_CASE("Convert types with str method"){
 
 TEST_CASE("vector of strings"){
     std::vector<std::string> vec{"5", "s"};
-    REQUIRE(ToString(vec) == "5 s");
+    REQUIRE(ToString(vec) == "[5, s]");
     
     std::vector<std::string> vec2{"some", "strange", "words", "75"};
-    REQUIRE(ToString(vec2) == "some strange words 75");
+    REQUIRE(ToString(vec2) == "[some, strange, words, 75]");
 
 }

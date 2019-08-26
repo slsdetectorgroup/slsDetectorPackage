@@ -19,18 +19,6 @@
 
 namespace sls {
 
-inline std::string ToString(const std::vector<std::string> &vec,
-                            const char delimiter = ' ') {
-    std::ostringstream os;
-    if(!vec.empty()){
-        auto it = vec.begin();
-        os << *it++;
-        while(it != vec.end())
-            os << delimiter << *it++;
-    }
-    return os.str();
-}
-
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>
 typename std::enable_if<is_duration<T>::value, std::string>::type
@@ -84,9 +72,15 @@ ToString(const T &value) {
     return std::to_string(value);
 }
 
-/** For a container loop over all elements and call ToString */
+/**
+ * For a container loop over all elements and call ToString on the element
+ * Container<std::string> is excluded
+ */
 template <typename T>
-typename std::enable_if<is_container<T>::value, std::string>::type
+typename std::enable_if<
+    is_container<T>::value &&
+        !std::is_same<typename T::value_type, std::string>::value,
+    std::string>::type
 ToString(const T &container) {
     std::ostringstream os;
     os << '[';
@@ -95,6 +89,29 @@ ToString(const T &container) {
         os << ToString(*it++);
         while (it != container.cend())
             os << ", " << ToString(*it++);
+    }
+    os << ']';
+    return os.str();
+}
+
+/**
+ * Special case when container holds a string, don't call ToString again but
+ * print directly to stream
+ */
+
+template <typename T>
+typename std::enable_if<
+    is_container<T>::value &&
+        std::is_same<typename T::value_type, std::string>::value,
+    std::string>::type
+ToString(const T &vec) {
+    std::ostringstream os;
+    os << '[';
+    if (!vec.empty()) {
+        auto it = vec.begin();
+        os << *it++;
+        while (it != vec.end())
+            os << ", " << *it++;
     }
     os << ']';
     return os.str();

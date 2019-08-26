@@ -32,9 +32,10 @@ $(PROGS): $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)   $(LDLIBS)
 	mv $(PROGS) $(DESTDIR)
 	rm *.gdb
+	rm $(main_src)*.o
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS) *.o *.gdb $(main_server)*.o
+	rm -rf $(DESTDIR)/$(PROGS) *.o *.gdb $(main_src)*.o
 
 
 

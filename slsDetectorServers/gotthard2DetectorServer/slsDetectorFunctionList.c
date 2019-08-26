@@ -1,15 +1,19 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
 #include "clogger.h"
-
+#include "blackfin.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
+#endif
+
+#include <string.h>
+#include <unistd.h>     // usleep
+#ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
 #endif
-#include <string.h>
-#include <unistd.h>     // usleep
-#include "blackfin.h"
+
+
 
 
 // Global variable from slsDetectorServer_funcs

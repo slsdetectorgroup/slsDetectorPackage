@@ -168,6 +168,12 @@ void initStopServer() {
 
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Mythen3 module \n")); 
+
+	//Initialization of acquistion parameters
+	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
+	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
+	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
+	
 }
 
 
@@ -280,6 +286,23 @@ int64_t getTimeLeft(enum timerIndex ind){
 	return -1;
 }
 
+
+int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport) {
+#ifdef VIRTUAL
+	char cDestIp[MAX_STR_LENGTH];
+	memset(cDestIp, 0, MAX_STR_LENGTH);
+	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
+	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
+		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
+		return FAIL;
+	}
+    return OK;
+#endif
+	return OK;
+}
+
+
 int startStateMachine(){
 #ifdef VIRTUAL
 	// create udp socket
@@ -314,8 +337,10 @@ void* start_timer(void* arg) {
 	// loop over number of frames
     for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
 
-		//check if virtual_stop is high, then break
-
+		//check if virtual_stop is high
+		if(virtual_stop == 1){
+			break;
+		}
 		// sleep for exposure time
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
@@ -334,6 +359,7 @@ void* start_timer(void* arg) {
 		// set register frames left
     }
 
+	closeUDPSocket(0);
 	// set status to idle
 	virtual_status = 0;
 	return NULL;
@@ -364,10 +390,23 @@ enum runStatus getRunStatus(){
 }
 
 void readFrame(int *ret, char *mess){
+	// wait for status to be done
+	while(runBusy()){
+		usleep(500);
+	}
 #ifdef VIRTUAL
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif
+}
+
+u_int32_t runBusy() {
+#ifdef VIRTUAL
+    return virtual_status;
+#endif
+	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);
+	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+	return s;
 }
 
 /* common */

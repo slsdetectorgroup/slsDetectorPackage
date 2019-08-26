@@ -255,7 +255,7 @@ int 		configureMAC(int numInterfaces, int selInterface,
 				uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
 				uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2);
 #else
-#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#ifndef MYTHEN3D
 int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport);
 #endif
 #endif

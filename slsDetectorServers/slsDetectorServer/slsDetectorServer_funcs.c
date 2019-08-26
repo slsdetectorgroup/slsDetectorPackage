@@ -2321,7 +2321,7 @@ int configure_mac(int file_des) {
 	if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
 		return printSocketReadError();
 
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(MYTHEN3D)
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("\n Configuring MAC\n"));
@@ -2442,7 +2442,7 @@ int configure_mac(int file_des) {
 		if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
 			if (status == RUNNING)
 				stopStateMachine();
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(GOTTHARD2D)
 		    cleanFifos();
 #endif
 		    status = getRunStatus();

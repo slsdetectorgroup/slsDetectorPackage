@@ -2311,9 +2311,7 @@ int configure_mac(int file_des) {
 	if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
 		return printSocketReadError();
 
-#if defined(MYTHEN3D)
-    functionNotImplemented();
-#else
+
 	FILE_LOG(logDEBUG1, ("\n Configuring MAC\n"));
 	// dest port
 	uint32_t dstPort = 0;
@@ -2432,7 +2430,7 @@ int configure_mac(int file_des) {
 		if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
 			if (status == RUNNING)
 				stopStateMachine();
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(MYTHEN3D)
 		    cleanFifos();
 #endif
 		    status = getRunStatus();
@@ -2506,7 +2504,6 @@ int configure_mac(int file_des) {
 			}
 		}
 	}
-#endif
 	return Server_SendResult(file_des, OTHER, UPDATE, retvals, sizeof(retvals));
 }
 

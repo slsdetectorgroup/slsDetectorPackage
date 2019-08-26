@@ -41,7 +41,7 @@ void basictests() {
     firmware_check_done = 0;
     memset(firmware_message, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    FILE_LOG(logINFOBLUE, ("******** Mythen3 Virtual Server *****************\n"));
+    FILE_LOG(logINFOBLUE, ("******** Gotthard2 Virtual Server *****************\n"));
     if (mapCSP0() == FAIL) {
     	strcpy(firmware_message,
 				"Could not map to memory. Dangerous to continue.\n");
@@ -72,7 +72,7 @@ int64_t getDetectorId(enum idMode arg){
 	    return getFirmwareAPIVersion();
 	case DETECTOR_SOFTWARE_VERSION:
 	case CLIENT_SOFTWARE_API_VERSION:
-		return APIMYTHEN3;
+		return APIGOTTHARD2;
 	default:
 		return retval;
 	}
@@ -167,13 +167,13 @@ void initStopServer() {
 /* set up detector */
 
 void setupDetector() {
-    FILE_LOG(logINFO, ("This Server is for 1 Mythen3 module \n")); 
+    FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
 	//Initialization of acquistion parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
-	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
+	setTimer(ACQUISITION_TIME, DEFAULT_PERIOD);
 }
 
 
@@ -184,15 +184,8 @@ int setDynamicRange(int dr){
 }
 
 
-/* parameters - speed, readout */
+/* parameters  */
 
-void setSpeed(enum speedVariable ind, int val) {
-
-}
-
-int getSpeed(enum speedVariable ind) {
-    return -1;
-}
 
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
@@ -341,6 +334,7 @@ void* start_timer(void* arg) {
 		if(virtual_stop == 1){
 			break;
 		}
+
 		// sleep for exposure time
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
@@ -359,7 +353,6 @@ void* start_timer(void* arg) {
 		// set register frames left
     }
 
-	closeUDPSocket(0);
 	// set status to idle
 	virtual_status = 0;
 	return NULL;
@@ -408,6 +401,8 @@ u_int32_t runBusy() {
 	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
 }
+
+
 
 /* common */
 

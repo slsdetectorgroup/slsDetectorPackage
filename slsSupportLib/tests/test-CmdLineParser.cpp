@@ -9,6 +9,7 @@
 // command for all depreciated commands
 
 using vs = std::vector<std::string>;
+using sls::CmdLineParser;
 
 SCENARIO("Construction", "[support]") {
     GIVEN("A default constructed CmdLineParser") {

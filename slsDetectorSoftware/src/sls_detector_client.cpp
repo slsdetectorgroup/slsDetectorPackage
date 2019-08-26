@@ -1,6 +1,8 @@
 #include "multiSlsDetectorClient.h"
+#include "sls_detector_defs.h"
 #include "versionAPI.h"
-#include <cstdlib>
+
+#include <cstring> //strcmp
 
 int main(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {

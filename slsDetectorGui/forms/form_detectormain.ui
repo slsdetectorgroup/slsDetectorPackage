@@ -219,38 +219,26 @@
    <property name="nativeMenuBar">
     <bool>true</bool>
    </property>
-   <widget class="QMenu" name="menuUtilities">
-    <property name="font">
-     <font>
-      <pointsize>9</pointsize>
-     </font>
-    </property>
-    <property name="title">
-     <string>&amp;Utilities</string>
-    </property>
-    <addaction name="actionOpenSetup"/>
-    <addaction name="actionSaveSetup"/>
-    <addaction name="separator"/>
-    <addaction name="actionOpenConfiguration"/>
-    <addaction name="actionSaveConfiguration"/>
-    <addaction name="separator"/>
-    <addaction name="actionLoadTrimbits"/>
-    <addaction name="actionSaveTrimbits"/>
-    <addaction name="separator"/>
-   </widget>
-   <widget class="QMenu" name="menuModes">
-    <property name="title">
-     <string>&amp;Modes</string>
-    </property>
-    <addaction name="actionDebug"/>
-    <addaction name="actionExpert"/>
-    <addaction name="actionDockable"/>
-   </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuUtilities">
+    <property name="title">
+     <string>Utilities</string>
+    </property>
+    <addaction name="actionConfigurationLoad"/>
+    <addaction name="actionTrimbitsLoad"/>
+   </widget>
+   <widget class="QMenu" name="menuModes">
+    <property name="title">
+     <string>Modes</string>
+    </property>
+    <addaction name="actionDebug"/>
+    <addaction name="actionExpert"/>
+    <addaction name="actionDockable"/>
    </widget>
    <addaction name="menuUtilities"/>
    <addaction name="menuModes"/>
@@ -477,40 +465,38 @@ p, li { white-space: pre-wrap; }
     <string>&amp;About</string>
    </property>
   </action>
+  <action name="actionConfigurationLoad">
+   <property name="text">
+    <string>Load Configuration</string>
+   </property>
+  </action>
+  <action name="actionTrimbitsLoad">
+   <property name="text">
+    <string>Load Trimbits</string>
+   </property>
+  </action>
+  <action name="actionDebug">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Debug</string>
+   </property>
+  </action>
+  <action name="actionExpert">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Expert</string>
+   </property>
+  </action>
   <action name="actionDockable">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>D&amp;ockable Windows</string>
-   </property>
-  </action>
-  <action name="actionLoadTrimbits">
-   <property name="text">
-    <string>&amp;Load &amp;Trimbits</string>
-   </property>
-  </action>
-  <action name="actionSaveTrimbits">
-   <property name="text">
-    <string>&amp;Save &amp;Trimbits</string>
-   </property>
-  </action>
-  <action name="actionLoadCalibration">
-   <property name="text">
-    <string>&amp;Load C&amp;alibration</string>
-   </property>
-  </action>
-  <action name="actionSaveCalibration">
-   <property name="text">
-    <string>&amp;Save C&amp;alibration</string>
-   </property>
-  </action>
-  <action name="actionListenGuiClient">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Listen to Gui Client</string>
+    <string>Dockable Windows</string>
    </property>
   </action>
  </widget>

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
 
 #include <QAbstractButton>
@@ -10,6 +9,15 @@
 #include <ostream>
 #include <stdint.h>
 #include <string>
+#include <chrono>
+using std::chrono::duration;
+using std::chrono::duration_cast;
+using std::chrono::nanoseconds;
+using std::chrono::microseconds;
+using std::chrono::milliseconds;
+using std::chrono::seconds;
+using std::chrono::minutes;
+using std::chrono::hours; 
 
 #define CATCH_DISPLAY(m, s) catch(...) { qDefs::DisplayExceptions(m, s); }
 #define CATCH_HANDLE(...) catch(...) { qDefs::HandleExceptions(__VA_ARGS__); }
@@ -145,98 +153,81 @@ class qDefs : public QWidget {
         }
     };
 
-    /**
-     * returns the value in ns to send to server as the
-     * server class slsdetector accepts in ns.
-     * @param unit unit of time
-     * @param value time
-     * returns time value in ns
-     */
-    static double getNSTime(timeUnit unit, double value) {
-        double valueNS = value;
-        switch (unit) {
+    /** returns the time in a user friendly time unit */
+    static std::pair<double, timeUnit> getUserFriendlyTime(nanoseconds tns) {
+        if (tns < microseconds(1)) {
+            return std::make_pair(tns.count(), NANOSECONDS);
+        }
+        if (tns < milliseconds(1)) {
+            return std::make_pair(
+                duration_cast<duration<double, std::micro>>(tns).count(),
+                MICROSECONDS);
+        }
+        if (tns < seconds(1)) {
+            return std::make_pair(
+                duration_cast<duration<double, std::milli>>(tns).count(),
+                MILLISECONDS);
+        }
+        if (tns < minutes(1)) {
+            return std::make_pair(duration_cast<duration<double>>(tns).count(),
+                                  SECONDS);
+        }
+        if (tns < hours(1)) {
+            return std::make_pair(
+                duration_cast<duration<double, std::ratio<60>>>(tns).count(),
+                MINUTES);
+        }
+        return std::make_pair(
+            duration_cast<duration<double, std::ratio<3600>>>(tns).count(), HOURS);
+    }
+
+    /** returns the value in ns */
+    static nanoseconds getNSTime(std::pair<double, timeUnit> time) {
+        switch (time.second) {
         case HOURS:
-            valueNS *= 60;
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::duration<double, std::ratio<3600>>(time.first));
         case MINUTES:
-            valueNS *= 60;
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::duration<double, std::ratio<60>>(time.first));
         case SECONDS:
-            valueNS *= 1000;
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::duration<double>(time.first));
         case MILLISECONDS:
-            valueNS *= 1000;
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::duration<double, std::milli>(time.first));
         case MICROSECONDS:
-            valueNS *= 1000;
-        case NANOSECONDS:
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::duration<double, std::micro>(time.first));
         default:
-            break;
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::duration<double, std::nano>(time.first));
         }
-        return valueNS;
-    };
+    }
 
-    /**
-     * returns the value in ms
-     * @param unit unit of time
-     * @param value time
-     * returns time value in ms
-     */
-    static double getMSTime(timeUnit unit, double value) {
-        double valueMS = value;
-        switch (unit) {
-        case NANOSECONDS:  
-            valueMS /= 1000;
-        case MICROSECONDS:
-            valueMS /= 1000;
-            return valueMS;
-
+    /** returns the value in ms */
+    static milliseconds getMSTime(std::pair<double, timeUnit> time) {
+        switch (time.second) {
         case HOURS:
-            valueMS *= 60;
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::duration<double, std::ratio<3600>>(time.first));
         case MINUTES:
-            valueMS *= 60;
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::duration<double, std::ratio<60>>(time.first));
         case SECONDS:
-            valueMS *= 1000;
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::duration<double>(time.first));
+        case MILLISECONDS:
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::duration<double, std::milli>(time.first));
+        case MICROSECONDS:
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::duration<double, std::micro>(time.first));
         default:
-            break;
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::duration<double, std::nano>(time.first));
         }
-        return valueMS;
-    };
-
-    /**
-     * returns the time in the appropriate time unit
-     * @param value time in seconds
-     * returns the time in an appropriate time and unit
-     */
-    static std::pair<double, timeUnit> getCorrectTime(double value) {
-        timeUnit unit;
-        int intUnit = (int)SECONDS;
-
-        /**0 ms*/
-        if (!value) {
-            unit = MILLISECONDS;
-            return std::make_pair(value, unit);
-        }
-
-        /** hr, min, sec */
-        if (value >= 1) {
-            double newVal = value;
-            while ((newVal >= 1) && (intUnit >= (int)HOURS)) {
-                /** value retains the old value */
-                value = newVal;
-                newVal = value / (double)60;
-                intUnit--;
-            }
-            /** returning the previous value*/
-            unit = (timeUnit)(intUnit + 1);
-            return std::make_pair(value, unit);
-        }
-        /** ms, us, ns */
-        else {
-            while ((value < 1) && (intUnit < (int)NANOSECONDS)) {
-                value = value * (double)1000;
-                intUnit++;
-            }
-            unit = (timeUnit)(intUnit);
-            return std::make_pair(value, unit);
-        }
-    };
+    }
 
     /**
      * displays an warning,error,info message

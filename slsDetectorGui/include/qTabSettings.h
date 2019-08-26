@@ -2,13 +2,13 @@
 
 #include "ui_form_tab_settings.h"
 
-class multiSlsDetector;
+#include "Detector.h"
 
 class qTabSettings: public QWidget, private Ui::TabSettingsObject{
 	Q_OBJECT
 
 public:
-	qTabSettings(QWidget *parent, multiSlsDetector* detector);
+	qTabSettings(QWidget *parent, sls::Detector* detector);
 	~qTabSettings();
 	void Refresh();
 
@@ -26,7 +26,7 @@ private:
 	void GetDynamicRange();
 	void GetThresholdEnergy();
 
-	multiSlsDetector *myDet;
+	sls::Detector *det;
 	enum {
 		STANDARD, 
 		FAST, 

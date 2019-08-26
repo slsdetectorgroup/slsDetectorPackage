@@ -5,13 +5,15 @@
 #include "detectorData.h"
 #include "qCloneWidget.h"
 
+#include "detectorData.h"
+
 #include <QFileDialog>
 #include <QPainter>
 #include <QtConcurrentRun>
 #include <QResizeEvent>
 
 
-qDrawPlot::qDrawPlot(QWidget *parent, multiSlsDetector *detector) : QWidget(parent), myDet(detector) {
+qDrawPlot::qDrawPlot(QWidget *parent, sls::Detector *detector) : QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logINFO) << "Plots ready";
@@ -48,12 +50,12 @@ qDrawPlot::~qDrawPlot() {
 }
 
 void qDrawPlot::SetupWidgetWindow() {
-    detType = myDet->getDetectorTypeAsEnum();
+    detType = det->getDetectorType().squash();
     // save
     try {
-        std::string temp = myDet->getFilePath();
+        std::string temp = det->getFilePath().squash("/tmp/");
         fileSavePath = QString(temp.c_str());
-        temp = myDet->getFileName();
+        temp = det->getFileNamePrefix().squash("xxx");
         fileSaveName = QString(temp.c_str());
     } catch (const std::exception &e) {
         qDefs::ExceptionMessage("Could not get file path or file name.", e.what(), "qDrawPlot::SetupWidgetWindow");
@@ -63,7 +65,7 @@ void qDrawPlot::SetupWidgetWindow() {
 
     SetupPlots();
     SetDataCallBack(true);
-    myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack), this);
+    det->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack), this);
     // future watcher to watch result of AcquireThread only because it uses signals/slots to handle acquire exception
     acqResultWatcher = new QFutureWatcher<std::string>();
 
@@ -79,23 +81,27 @@ void qDrawPlot::SetupPlots() {
     setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
  
     // default image size
-    slsDetectorDefs::xy res = myDet->getNumberOfChannels();
+    slsDetectorDefs::xy res = det->getDetectorSize();
     nPixelsX = res.x;
     nPixelsY = res.y;
     switch(detType) {
     case slsDetectorDefs::MOENCH:
-        npixelsy_jctb = (myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES, -1) * 2)/25;// for moench 03
-        nPixelsX = npixelsx_jctb;
-        nPixelsY = npixelsy_jctb;
+        try{
+            npixelsy_jctb = (det->getNumberOfAnalogSamples().tsquash("Inconsistent values for number of analog samples") * 2)/25;// for moench 03
+            nPixelsX = npixelsx_jctb;
+            nPixelsY = npixelsy_jctb;
+        } CATCH_DISPLAY ("Could not get number of analog samples.", "qDrawPlot::SetupPlots")
         break;
     case slsDetectorDefs::EIGER:
-        if (myDet->getQuad()) {
-            nPixelsX /= 2;
-            nPixelsY *= 2;
-            if (nPixelsX != nPixelsY) {
-                --nPixelsX;
+        try{
+            if (det->getQuad().tsquash("Inconsistent values for quad type")) {
+                nPixelsX /= 2;
+                nPixelsY *= 2;
+                if (nPixelsX != nPixelsY) {
+                    --nPixelsX;
+                }
             }
-        }
+        } CATCH_DISPLAY ("Could not get quad.", "qDrawPlot::SetupPlots")
         break;
     default:
         break;
@@ -310,10 +316,10 @@ void qDrawPlot::SetDataCallBack(bool enable) {
     FILE_LOG(logINFO) << "Setting data call back to " << std::boolalpha << enable << std::noboolalpha;
     if (enable) {
         isPlot = true;
-        myDet->registerDataCallback(&(GetDataCallBack), this); 
+        det->registerDataCallback(&(GetDataCallBack), this); 
     } else {
         isPlot = false;
-        myDet->registerDataCallback(nullptr, this);
+        det->registerDataCallback(nullptr, this);
     }
   
 }
@@ -527,25 +533,13 @@ void qDrawPlot::StartAcquisition() {
     progress = 0;
     currentFrame = 0;
     boxPlot->setTitle("Old Plot");
-    // check acquiring flag (from previous exit) or if running
-    try{
-        if (myDet->getAcquiringFlag()) {
-            if (myDet->getRunStatus() != slsDetectorDefs::IDLE) {
-                qDefs::Message(qDefs::WARNING, "Could not start acquisition as it is already in progress.\nClick start when finished.", "qDrawPlot::StartAcquisition");
-                emit AbortSignal();
-                return;
-            } else {
-                myDet->setAcquiringFlag(false);
-            }
+    det->clearAcquiringFlag(); // (from previous exit) or if running
 
-        }
-    } CATCH_DISPLAY("Could not get detector stats.", "qDrawPlot::StartAcquisition");
-   
     // ensure data streaming in receiver (if plot enabled)
     if (isPlot) {
         try {
-           if (myDet->enableDataStreamingFromReceiver() != 1) {
-               myDet->enableDataStreamingFromReceiver(1);
+           if (!det->getRxZmqDataStream().squash(false)) {
+               det->setRxZmqDataStream(true);
            }
         } CATCH_DISPLAY("Could not enable data streaming in Receiver.", "qDrawPlot::StartAcquisition");
     }
@@ -571,8 +565,7 @@ void qDrawPlot::AcquireFinished() {
         FILE_LOG(logERROR) << "Acquisition Finished with an exception: " << mess;
         qDefs::ExceptionMessage("Acquire unsuccessful.", mess, "qDrawPlot::AcquireFinished");
         try{
-            myDet->stopAcquisition();
-            myDet->stopReceiver();
+            det->stopAcquisition();
         } CATCH_DISPLAY("Could not stop acquisition and receiver.", "qDrawPlot::AcquireFinished");
         emit AbortSignal();
     }
@@ -582,7 +575,7 @@ void qDrawPlot::AcquireFinished() {
 std::string qDrawPlot::AcquireThread() {
     FILE_LOG(logDEBUG) << "Acquire Thread";
     try {
-        myDet->acquire();
+        det->acquire();
     } catch (const std::exception &e) {
         return std::string(e.what());
     }

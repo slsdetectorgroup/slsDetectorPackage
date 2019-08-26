@@ -1553,10 +1553,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int setAutoComparatorDisableMode(int ival = -1, int detPos = -1); //
 
     /**
+     * Set Default Rate correction from trimbit file ( Eiger)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     */
+    void setDefaultRateCorrection(int detPos = -1); //
+
+    /**
      * Set Rate correction ( Eiger)
      * @param t dead time in ns - if 0 disable correction,
-     * if >0 set dead time to t, if < 0 set deadtime to default dead time
-     * for current settings
+     * if >0 set dead time to t, cannot be < 0
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setRateCorrection(int64_t t = 0, int detPos = -1); //

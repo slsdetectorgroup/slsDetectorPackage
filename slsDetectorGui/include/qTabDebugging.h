@@ -2,7 +2,7 @@
 
 #include "ui_form_tab_debugging.h"
 
-class multiSlsDetector;
+#include "Detector.h"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -11,7 +11,7 @@ class qTabDebugging:public QWidget, private Ui::TabDebuggingObject{
 	Q_OBJECT
 
 public:
-	qTabDebugging(QWidget *parent, multiSlsDetector* detector);
+	qTabDebugging(QWidget *parent, sls::Detector* detector);
 	~qTabDebugging();
 	void Refresh();
 
@@ -26,7 +26,7 @@ private:
 	void Initialization();
 	void PopulateDetectors();
 
-	multiSlsDetector *myDet;
+	sls::Detector *det;
 	/** Tree Widget displaying the detectors, modules */
 	QTreeWidget *treeDet;
 	QLabel *lblDetectorHostname;

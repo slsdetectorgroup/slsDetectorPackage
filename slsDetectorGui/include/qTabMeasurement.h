@@ -4,7 +4,7 @@
 
 class qDrawPlot;
 
-class multiSlsDetector;
+#include "Detector.h"
 
 class QStandardItemModel;
 
@@ -12,7 +12,7 @@ class qTabMeasurement:public QWidget, private Ui::TabMeasurementObject{
 	Q_OBJECT
 
 public:
-	qTabMeasurement(QWidget *parent, multiSlsDetector* detector, qDrawPlot* plot);
+	qTabMeasurement(QWidget *parent, sls::Detector* detector, qDrawPlot* p);
 	~qTabMeasurement();
 
 	void Refresh();
@@ -66,8 +66,8 @@ signals:
 	void EnableTabsSignal(bool);
 	void FileNameChangedSignal(QString);
 private:
-	multiSlsDetector *myDet;
-	qDrawPlot *myPlot;
+	sls::Detector *det;
+	qDrawPlot *plot;
 	// enum for the timing mode
 	enum{
 		AUTO, 

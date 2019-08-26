@@ -386,7 +386,7 @@ int         checkFifoForEndOfAcquisition();
 int         readFrameFromFifo();
 #endif
 
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 u_int32_t 	runBusy();
 #endif
 

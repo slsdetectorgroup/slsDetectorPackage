@@ -168,6 +168,12 @@ void initStopServer() {
 
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
+
+	//Initialization of acquistion parameters
+	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
+	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
+	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
+	setTimer(ACQUISITION_TIME, DEFAULT_PERIOD);
 }
 
 
@@ -324,7 +330,10 @@ void* start_timer(void* arg) {
 	// loop over number of frames
     for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
 
-		//check if virtual_stop is high, then break
+		//check if virtual_stop is high
+		if(virtual_stop == 1){
+			break;
+		}
 
 		// sleep for exposure time
         struct timespec begin, end;
@@ -374,11 +383,26 @@ enum runStatus getRunStatus(){
 }
 
 void readFrame(int *ret, char *mess){
+	// wait for status to be done
+	while(runBusy()){
+		usleep(500);
+	}
 #ifdef VIRTUAL
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif
 }
+
+u_int32_t runBusy() {
+#ifdef VIRTUAL
+    return virtual_status;
+#endif
+	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);
+	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+	return s;
+}
+
+
 
 /* common */
 

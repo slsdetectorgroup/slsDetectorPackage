@@ -255,9 +255,7 @@ int 		configureMAC(int numInterfaces, int selInterface,
 				uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
 				uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2);
 #else
-#ifndef MYTHEN3D
 int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport);
-#endif
 #endif
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
@@ -388,7 +386,7 @@ int         checkFifoForEndOfAcquisition();
 int         readFrameFromFifo();
 #endif
 
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 u_int32_t 	runBusy();
 #endif
 

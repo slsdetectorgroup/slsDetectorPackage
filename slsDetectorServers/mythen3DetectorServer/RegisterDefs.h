@@ -8,6 +8,9 @@
 /* Status register */
 #define STATUS_REG            			(0x01 << MEM_MAP_SHIFT)
 
+#define RUN_BUSY_OFST					(0)
+#define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_OFST)
+
 /* Set Cycles 64 bit register */
 #define SET_CYCLES_LSB_REG    			(0x02 << MEM_MAP_SHIFT)
 #define SET_CYCLES_MSB_REG    			(0x03 << MEM_MAP_SHIFT)

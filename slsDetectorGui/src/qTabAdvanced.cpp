@@ -548,10 +548,9 @@ void qTabAdvanced::GetSubExposureTime() {
     disconnect(comboSubExpTimeUnit, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSubExposureTime()));
     try {
-        int64_t retval =
-            det->getSubExptime().tsquash("Subexptime is inconsistent for all detectors.").count();
-        double value = static_cast<double>(retval * (1E-9));
-        auto time = qDefs::getCorrectTime(value);
+        auto retval =
+            det->getSubExptime().tsquash("Subexptime is inconsistent for all detectors.");
+        auto time = qDefs::getUserFriendlyTime(retval);
         spinSubExpTime->setValue(time.first);
         comboSubExpTimeUnit->setCurrentIndex(static_cast<int>(time.second));
     } CATCH_DISPLAY ("Could not get sub exposure time.",
@@ -563,16 +562,14 @@ void qTabAdvanced::GetSubExposureTime() {
 }
 
 void qTabAdvanced::SetSubExposureTime() {
-    int64_t timeNS =
-        qDefs::getNSTime((qDefs::timeUnit)comboSubExpTimeUnit->currentIndex(),
-                         spinSubExpTime->value());
+    auto timeNS = qDefs::getNSTime(std::make_pair(spinSubExpTime->value(), static_cast<qDefs::timeUnit>(comboSubExpTimeUnit->currentIndex())));
     FILE_LOG(logINFO)
-        << "Setting sub frame acquisition time to " << timeNS << " ns"
+        << "Setting sub frame acquisition time to " << timeNS.count() << " ns"
         << "/" << spinSubExpTime->value()
         << qDefs::getUnitString(
                (qDefs::timeUnit)comboSubExpTimeUnit->currentIndex());
     try {
-        det->setSubExptime(sls::ns(timeNS));
+        det->setSubExptime(timeNS);
     } CATCH_DISPLAY ("Could not set sub exposure time.",
                                 "qTabAdvanced::SetSubExposureTime")
 
@@ -586,9 +583,8 @@ void qTabAdvanced::GetSubDeadTime() {
     disconnect(comboSubDeadTimeUnit, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSubDeadTime()));
     try {
-        int64_t retval = det->getSubDeadTime().tsquash("Sub dead time is inconsistent for all detectors.").count();
-        double value = static_cast<double>(retval * (1E-9));
-        auto time = qDefs::getCorrectTime(value);
+        auto retval = det->getSubDeadTime().tsquash("Sub dead time is inconsistent for all detectors.");
+        auto time = qDefs::getUserFriendlyTime(retval);
         spinSubDeadTime->setValue(time.first);
         comboSubDeadTimeUnit->setCurrentIndex(
             static_cast<int>(time.second));
@@ -601,16 +597,15 @@ void qTabAdvanced::GetSubDeadTime() {
 }
 
 void qTabAdvanced::SetSubDeadTime() {
-    int64_t timeNS =
-        qDefs::getNSTime((qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex(),
-                         spinSubDeadTime->value());
+    auto timeNS = qDefs::getNSTime(std::make_pair(spinSubDeadTime->value(), static_cast<qDefs::timeUnit>(comboSubDeadTimeUnit->currentIndex())));
+
     FILE_LOG(logINFO)
-        << "Setting sub frame dead time to " << timeNS << " ns"
+        << "Setting sub frame dead time to " << timeNS.count() << " ns"
         << "/" << spinSubDeadTime->value()
         << qDefs::getUnitString(
                (qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex());
     try {
-        det->setSubDeadTime(sls::ns(timeNS));
+        det->setSubDeadTime(timeNS);
     } CATCH_DISPLAY ("Could not set sub dead time.",
                                 "qTabAdvanced::SetSubDeadTime")
     GetSubDeadTime();

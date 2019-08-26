@@ -519,8 +519,8 @@ void qTabPlot::GetStreamingFrequency() {
             stackedTimeInterval->setCurrentIndex(0);
             try {
                 int timeMs = det->getRxZmqTimer().tsquash("Inconsistent receiver zmq streaming timer for all detectors.");
-                double timeS = static_cast<double>(timeMs) / 1000.00;
-                auto time = qDefs::getCorrectTime(timeS);
+                auto timeNS = qDefs::getNSTime(std::make_pair(static_cast<double>(timeMs), qDefs::MILLISECONDS));
+                auto time = qDefs::getUserFriendlyTime(timeNS);
                 spinTimeGap->setValue(time.first);
                 comboTimeGapUnit->setCurrentIndex(static_cast<int>(time.second));
             } CATCH_DISPLAY ("Could not get streaming timer.", "qTabPlot::GetStreamingFrequency")
@@ -550,8 +550,8 @@ void qTabPlot::SetStreamingFrequency() {
             det->setRxZmqFrequency(freqVal);
         } else {
             FILE_LOG(logINFO) << "Setting Streaming Timer to " << timeVal << " " << qDefs::getUnitString(timeUnit);
-            int64_t timeMS = qDefs::getMSTime(timeUnit, timeVal);
-            det->setRxZmqTimer(static_cast<int>(timeMS));
+            auto timeMS = qDefs::getMSTime(std::make_pair(timeVal, timeUnit));
+            det->setRxZmqTimer(timeMS.count());
         }
     } CATCH_HANDLE("Could not set streaming frequency/ timer.", "qTabPlot::SetStreamingFrequency", this, &qTabPlot::GetStreamingFrequency)
 }

@@ -289,8 +289,8 @@ void qTabMeasurement::GetExposureTime() {
 	disconnect(comboExpUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetExposureTime()));
 	try {
 		spinExpTime->setValue(-1);
-        auto retval = det->getExptime().tsquash("Inconsistent exposure time for all detectors.").count();
-		auto time = qDefs::getCorrectTime(static_cast<double>(retval) * (1E-9));
+        auto retval = det->getExptime().tsquash("Inconsistent exposure time for all detectors.");
+		auto time = qDefs::getUserFriendlyTime(retval);
 		spinExpTime->setValue(time.first);
 		comboExpUnit->setCurrentIndex(static_cast<int>(time.second));
 		CheckAcqPeriodGreaterThanExp();
@@ -304,8 +304,8 @@ void qTabMeasurement::SetExposureTime() {
 	auto unit = static_cast<qDefs::timeUnit>(comboExpUnit->currentIndex());
 	FILE_LOG(logINFO) << "Setting exposure time to " << val << " " << qDefs::getUnitString(unit);
 	try {
-		int64_t timeNS = qDefs::getNSTime(unit, val);
-		det->setExptime(sls::ns(timeNS));
+		auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
+		det->setExptime(timeNS);
 		CheckAcqPeriodGreaterThanExp();
     } CATCH_HANDLE("Could not set exposure time.", "qTabMeasurement::SetExposureTime", this, &qTabMeasurement::GetExposureTime)
 }
@@ -316,8 +316,8 @@ void qTabMeasurement::GetAcquisitionPeriod() {
 	disconnect(comboPeriodUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetAcquisitionPeriod()));
 	try {
 		spinPeriod->setValue(-1);
-        auto retval = det->getPeriod().tsquash("Inconsistent acquisition period for all detectors.").count();
-		auto time = qDefs::getCorrectTime(static_cast<double>(retval) * (1E-9));
+        auto retval = det->getPeriod().tsquash("Inconsistent acquisition period for all detectors.");
+		auto time = qDefs::getUserFriendlyTime(retval);
 		spinPeriod->setValue(time.first);
 		comboPeriodUnit->setCurrentIndex(static_cast<int>(time.second));
 		CheckAcqPeriodGreaterThanExp();
@@ -331,8 +331,8 @@ void qTabMeasurement::SetAcquisitionPeriod() {
 	auto unit = static_cast<qDefs::timeUnit>(comboPeriodUnit->currentIndex());
 	FILE_LOG(logINFO) << "Setting acquisition period to " << val << " " << qDefs::getUnitString(unit);
 	try {
-		int64_t timeNS = qDefs::getNSTime(unit, val);
-		det->setPeriod(sls::ns(timeNS));
+		auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
+		det->setPeriod(timeNS);
 		CheckAcqPeriodGreaterThanExp();
     } CATCH_HANDLE("Could not set acquisition period.", "qTabMeasurement::SetAcquisitionPeriod", this, &qTabMeasurement::GetAcquisitionPeriod)
 }
@@ -341,8 +341,8 @@ void qTabMeasurement::CheckAcqPeriodGreaterThanExp() {
 	FILE_LOG(logDEBUG) << "Checking period >= exptime";
 	bool error = false;
 	if (lblPeriod->isEnabled()) {
-		int64_t exptimeNS = qDefs::getNSTime(static_cast<qDefs::timeUnit>(comboExpUnit->currentIndex()), spinExpTime->value());
-		int64_t acqtimeNS = qDefs::getNSTime(static_cast<qDefs::timeUnit>(comboPeriodUnit->currentIndex()), spinPeriod->value());
+		auto exptimeNS = qDefs::getNSTime(std::make_pair(spinExpTime->value(), static_cast<qDefs::timeUnit>(comboExpUnit->currentIndex())));
+		auto acqtimeNS = qDefs::getNSTime(std::make_pair(spinPeriod->value(), static_cast<qDefs::timeUnit>(comboPeriodUnit->currentIndex())));
 		if (exptimeNS > acqtimeNS) {
 			error = true;
 			spinPeriod->setToolTip(errPeriodTip);
@@ -366,8 +366,8 @@ void qTabMeasurement::GetDelay() {
 	disconnect(comboDelayUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetDelay()));
 	try {
 		spinDelay->setValue(-1);
-        auto retval = det->getDelayAfterTrigger().tsquash("Inconsistent delay for all detectors.").count();
-		auto time = qDefs::getCorrectTime(static_cast<double>(retval) * (1E-9));
+        auto retval = det->getDelayAfterTrigger().tsquash("Inconsistent delay for all detectors.");
+		auto time = qDefs::getUserFriendlyTime(retval);
 		spinDelay->setValue(time.first);
 		comboDelayUnit->setCurrentIndex(static_cast<int>(time.second));
     } CATCH_DISPLAY ("Could not get delay.", "qTabMeasurement::GetDelay")
@@ -380,8 +380,8 @@ void qTabMeasurement::SetDelay() {
 	auto unit = static_cast<qDefs::timeUnit>(comboDelayUnit->currentIndex());
 	FILE_LOG(logINFO) << "Setting delay to " << val << " " << qDefs::getUnitString(unit);
 	try {
-		int64_t timeNS = qDefs::getNSTime(unit, val);
-		det->setDelayAfterTrigger(sls::ns(timeNS));
+		auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
+		det->setDelayAfterTrigger(timeNS);
     } CATCH_HANDLE("Could not set delay.", "qTabMeasurement::SetDelay", this, &qTabMeasurement::GetDelay)
 }
 

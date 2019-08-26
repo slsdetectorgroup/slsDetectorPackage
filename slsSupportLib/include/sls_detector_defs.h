@@ -64,6 +64,7 @@
 #define JFRAU_MAX_FRAMES_PER_FILE 10000
 #define CTB_MAX_FRAMES_PER_FILE 20000
 #define MYTHEN3_MAX_FRAMES_PER_FILE 10000
+#define GOTTHARD2_MAX_FRAMES_PER_FILE 20000
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
@@ -88,7 +89,8 @@ class slsDetectorDefs {
         JUNGFRAU,               /**< jungfrau */
         CHIPTESTBOARD,          /**< CTB */
         MOENCH,                  /**< moench */
-        MYTHEN3                 /** mythen3 */
+        MYTHEN3,                 /**< mythen3 */
+        GOTTHARD2,              /** < gotthard2 */
     };
 
     /**
@@ -578,8 +580,8 @@ format
     };
 
     /** returns detector type string from detector type index
-        \param t string can be EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3
-        \returns Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3, Unknown
+        \param t string can be EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3, GOTTHARD2
+        \returns Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3, Gotthard2, Unknown
     */
     static std::string detectorTypeToString(detectorType t) {
         switch (t) {
@@ -595,14 +597,16 @@ format
             return std::string("Moench");
         case MYTHEN3:
             return std::string("Mythen3");
+        case GOTTHARD2:
+            return std::string("Gotthard2");            
         default:
             return std::string("Unknown");
         }
     };
 
     /** returns detector type index from detector type string
-        \param type can be Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3
-        \returns  EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3, GENERIC
+        \param type can be Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3, Gotthard2
+        \returns  EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3, GOTTHARD2, GENERIC
     */
     static detectorType detectorTypeToEnum(const std::string &type) {
         if (type == "Eiger")
@@ -617,6 +621,8 @@ format
             return MOENCH;
         if (type == "Mythen3")
             return MYTHEN3;
+        if (type == "Gotthard2")
+            return GOTTHARD2;            
         return GENERIC;
     };
 
@@ -1149,6 +1155,16 @@ struct detParameters {
             nGappixelsX = 0;
             nGappixelsY = 0;
             break;
+        case slsDetectorDefs::detectorType::GOTTHARD2:
+            nChanX = 128;
+            nChanY = 1;
+            nChipX = 10;
+            nChipY = 1;
+            nDacs = 16;
+            dynamicRange = 16;
+            nGappixelsX = 0;
+            nGappixelsY = 0;
+            break;    
         default:
             throw sls::RuntimeError(
                 "Unknown detector type! " +

@@ -33,7 +33,7 @@ class   ctbPowers;
  
 class  ctbSignals;
 
-#include "Detector.h"
+class Detector;
 
 class  ctbPattern;
 class  ctbAdcs;

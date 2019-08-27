@@ -52,7 +52,6 @@ set( HEADERS
     ctbAcquisition.h 
     ctbPowers.h   
     ctbSlowAdcs.h
-    ../slsDetectorSoftware/include/Detector.h
 )
 
 #set(ROOT_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR})

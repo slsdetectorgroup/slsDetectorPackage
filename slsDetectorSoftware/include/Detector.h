@@ -41,6 +41,8 @@ class Detector {
 
     void loadConfig(const std::string &fname);
 
+    void loadParameters(const std::string &fname);
+
     Result<std::string> getHostname(Positions pos = {}) const;
 
     /* Frees shared memory, adds detectors to the list
@@ -996,6 +998,9 @@ class Detector {
 
     /** [CTB] */
     void setPattern(const std::string &fname, Positions pos = {});
+
+    /** [CTB] */
+    void savePattern(const std::string &fname); 
 
     /** [CTB] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;

@@ -1863,6 +1863,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void setPattern(const std::string &fname, int detPos = -1); //
 
     /**
+     * Executes and saves pattern to file (CTB/ Moench)
+     * @param fname pattern file to save to
+     */
+    void savePattern(const std::string &fname); // 
+
+    /**
      * Sets pattern IO control (CTB/ Moench)
      * @param word 64bit word to be written, -1 gets
      * @param detPos -1 for all detectors in  list or specific detector position

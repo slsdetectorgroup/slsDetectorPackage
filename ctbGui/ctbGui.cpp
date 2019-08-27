@@ -19,10 +19,10 @@ using namespace std;
 int main(int argc, char **argv) {
 
 
-  string afname, cfname;
+  string afname, cfname, pfname;
   int id=0;
 
-  int af=0, cf=0;
+  int af=0, cf=0, pf=0;
 
 
   cout << " *** " << argc << endl;
@@ -44,8 +44,9 @@ int main(int argc, char **argv) {
 
     } else if  (strcmp(argv[ia],"-par")==0) {
       if (ia+1<argc) {
-  cout << "Ignoring parameter file" << endl;
+  pfname=argv[ia+1];
 	ia++;
+  pf=1;
       }
 
 
@@ -74,7 +75,10 @@ int main(int argc, char **argv) {
 
   
   cout << "bb" << endl;
-
+  if (pf) {
+    myDet->loadParameters(pfname);
+  } else
+    cout << "No parameter file specified" << endl;
 
 
   /***********Create GUI stuff *******************/

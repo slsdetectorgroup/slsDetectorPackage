@@ -325,8 +325,23 @@ void ctbMain::HandleMenu(Int_t id)
 	       saveAlias(fi.fFilename);
           }
          break;
+   case 2: //fMenuFile->AddEntry("Open Parameters", im++);
+     cout << "Open Parameters" << endl;
+         {
+             static TString dir(".");
+             TGFileInfo fi;
+             //fi.fFileTypes = filetypes;
+             fi.fIniDir    = StrDup(dir);
+             printf("fIniDir = %s\n", fi.fIniDir);
+             new TGFileDialog(gClient->GetRoot(), this, kFDOpen, &fi);
+             printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
+	     // dir = fi.fIniDir;
+	     if (fi.fFilename)
+	       loadParameters(fi.fFilename);
+          }
+         break;
 
-   case 2: // fMenuFile->AddEntry("Open Configuration", im++);
+   case 3: // fMenuFile->AddEntry("Open Configuration", im++);
      cout << "Open configuration" << endl;
          {
              static TString dir(".");
@@ -342,7 +357,7 @@ void ctbMain::HandleMenu(Int_t id)
           }
          break;
  
-   case 3: //fMenuFile->AddEntry("Open Pattern", im++);
+   case 4: //fMenuFile->AddEntry("Open Pattern", im++);
      cout << "Open pattern" << endl;
          {
              static TString dir(".");
@@ -358,7 +373,7 @@ void ctbMain::HandleMenu(Int_t id)
           }
      break;
 
-   case 4:   //fMenuFile->AddEntry("Save Pattern", im++);
+   case 5:   //fMenuFile->AddEntry("Save Pattern", im++);
      cout << "Save pattern" << endl;
          {
              static TString dir(".");
@@ -370,11 +385,11 @@ void ctbMain::HandleMenu(Int_t id)
              printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
 	     // dir = fi.fIniDir;
 	     if (fi.fFilename)
-	       saveParameters(fi.fFilename);
+	       savePattern(fi.fFilename);
           }
          break;
 
-   case 5: //  fMenuFile->AddEntry("Exit", im++);
+   case 6: //  fMenuFile->AddEntry("Exit", im++);
      CloseWindow();
 
       default:
@@ -405,32 +420,19 @@ int  ctbMain::setSignalPlot(Int_t i) {
 
 
 int  ctbMain::loadConfiguration(string fname) {
-
-    myDet->loadConfig(fname);
-
-//   string line;
-//   int i;
-//   ifstream myfile (fname.c_str());
-//   if (myfile.is_open())
-//   {
-//     while ( getline (myfile,line) )
-//     {
-
-	
-      
-//     }
-//     myfile.close();
-//   }
-
-//   else cout << "Unable to open file"; 
-
-  return 0;
-
+  myDet->loadConfig(fname);
+   return 0;
 }
 
+int  ctbMain::loadParameters(string fname) {
+  myDet->retrieveDetectorSetup(fname);
+  return 0;
+}
 
-
-
+int  ctbMain::savePAttern(string fname) {
+  myDet->savePattern(fname);
+  return 0;
+}
 
 
 

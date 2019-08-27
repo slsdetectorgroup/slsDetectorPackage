@@ -1000,6 +1000,9 @@ class Detector {
     void setPattern(const std::string &fname, Positions pos = {});
 
     /** [CTB] */
+    void savePattern(const std::string &fname); 
+
+    /** [CTB] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;
 
     /** [CTB] */

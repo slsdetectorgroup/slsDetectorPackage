@@ -1847,6 +1847,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page prototype
+   - <b>savepattern fn</b> save pattern to file (ascii). This also executes the pattern.
+	 */
+    descrToFuncMap[i].m_pFuncName = "savepattern";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
+    ++i;
+
+    /*! \page prototype
    - <b>patword addr [word]</b> sets/gets 64 bit word at address addr of pattern memory. Both address and word in hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patword";
@@ -4834,6 +4841,13 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             os << "successful";
         } else if (action == GET_ACTION)
             os << "Cannot get";
+    } else if (cmd == "savepattern") {
+        if (narg < 2) {
+            return helpPattern(action);
+        }
+        fname = std::string(args[1]);
+        myDet->savePattern(args[1]);
+        os << "Pattern executed and saved to " << fname;
     } else if (cmd == "patword") {
 
         if (action == PUT_ACTION) {
@@ -4852,10 +4866,14 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             else
                 return std::string("Could not scan value  (hexadecimal fomat) ") + std::string(args[2]);
 
-            os << std::hex << myDet->setPatternWord(addr, word, detPos) << std::dec;
-        } else if (action == GET_ACTION)
-            os << "Cannot get";
-
+            os << "0x" << std::setw(4) << std::setfill('0') << std::hex  << addr << " 0x" << std::setw(16)  << myDet->setPatternWord(addr, word, detPos) << std::dec;
+        } else if (action == GET_ACTION) {
+            if (narg < 2)
+                return std::string("wrong usage: should specify address (hexadecimal fomat) ");
+            if (!sscanf(args[1], "%x", &addr))
+                return std::string("Could not scan address (hexadecimal fomat) ") + std::string(args[1]);
+            os << "0x" << std::setw(4) << std::setfill('0') << std::hex  << addr << " 0x" << std::setw(16)  << myDet->setPatternWord(addr, -1, detPos) << std::dec;
+        }
     } else if (cmd == "patioctrl") {
         //get word from stdin
 
@@ -4869,7 +4887,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             myDet->setPatternIOControl(word, detPos);
         }
 
-        os << std::hex << myDet->setPatternIOControl(-1, detPos) << std::dec;
+        os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->setPatternIOControl(-1, detPos) << std::dec;
     } else if (cmd == "patclkctrl") {
         //get word from stdin
 
@@ -4883,7 +4901,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             myDet->setPatternClockControl(word, detPos);
         }
 
-        os << std::hex << myDet->setPatternClockControl(-1, detPos) << std::dec;
+        os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->setPatternClockControl(-1, detPos) << std::dec;
 
     } else if (cmd == "patlimits") {
         //get start, stop from stdin
@@ -4905,7 +4923,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
         }
 
         auto r = myDet->getPatternLoops(-1, detPos);
-        os << std::hex << r[0] << " " << r[1];
+        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << r[0] << " 0x" << std::setw(4) << std::setfill('0') << r[1];
     } else if (cmd == "patloop0") {
         //get start, stop from stdin
 
@@ -4928,7 +4946,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
         }
 
         auto r = myDet->getPatternLoops(0, detPos);
-        os << std::hex << r[0] << " " << r[1];
+        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << r[0] << " 0x" << std::setw(4) << std::setfill('0') << r[1];
 
     } else if (cmd == "patloop1") {
 
@@ -4951,7 +4969,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
         }
 
         auto r = myDet->getPatternLoops(1, detPos);
-        os << std::hex << r[0] << " " << r[1];
+        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << r[0] << " 0x" << std::setw(4) << std::setfill('0') << r[1];
 
     } else if (cmd == "patloop2") {
 
@@ -4974,7 +4992,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
         }
 
         auto r = myDet->getPatternLoops(2, detPos);
-        os << std::hex << r[0] << " " << r[1];
+        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << r[0] << " 0x" << std::setw(4) << std::setfill('0') << r[1];
     } else if (cmd == "patnloop0") {
         start = -1;
         stop = -1;
@@ -5039,7 +5057,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             myDet->setPatternWaitAddr(0, addr, detPos);
         }
 
-        os << std::hex << myDet->setPatternWaitAddr(0, -1, detPos) << std::dec ;
+        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << myDet->setPatternWaitAddr(0, -1, detPos) << std::dec;
 
     } else if (cmd == "patwait1") {
 
@@ -5053,7 +5071,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             myDet->setPatternWaitAddr(1, addr, detPos);
         }
 
-        os << std::hex << myDet->setPatternWaitAddr(1, -1, detPos) << std::dec ;
+        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << myDet->setPatternWaitAddr(1, -1, detPos) << std::dec;
 
     } else if (cmd == "patwait2") {
 
@@ -5067,7 +5085,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             myDet->setPatternWaitAddr(2, addr, detPos);
         }
 
-        os << std::hex << myDet->setPatternWaitAddr(2, -1, detPos) << std::dec ;
+        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << myDet->setPatternWaitAddr(2, -1, detPos) << std::dec;
 
     } else if (cmd == "patwaittime0") {
 
@@ -5121,7 +5139,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             myDet->setPatternMask(word, detPos);
         }
 
-        os << "0x" << std::hex << myDet->getPatternMask(detPos) << std::dec;
+        os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->getPatternMask(detPos) << std::dec;
 
     } else if (cmd == "patsetbit") {
         if (action == PUT_ACTION) {
@@ -5134,7 +5152,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             myDet->setPatternBitMask(word, detPos);
         }
 
-        os << "0x" << std::hex << myDet->getPatternBitMask(detPos) << std::dec;
+        os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->getPatternBitMask(detPos) << std::dec;
 
     }  else if (cmd == "adcenable") {
 

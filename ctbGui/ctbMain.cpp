@@ -29,14 +29,12 @@
 
 
 
-
-
-
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 
+#include "Detector.h"
 #include "ctbMain.h"
 #include "ctbDacs.h"
 #include "ctbSlowAdcs.h"
@@ -138,7 +136,7 @@ ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
   TGCompositeFrame *tf = mtab->AddTab("DACs");
   TGVerticalFrame *page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-  dacs=new ctbDacs(page, myDet);
+  //dhanya dacs=new ctbDacs(page, myDet);
   i_dacs=i_page++;
   
 
@@ -146,7 +144,7 @@ ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
   tf = mtab->AddTab("Power Supplies");
   page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-   pwrs=new ctbPowers(page, myDet);
+   //dhanya pwrs=new ctbPowers(page, myDet);
 
   i_pwrs=i_page++;
 
@@ -154,7 +152,7 @@ ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
   tf = mtab->AddTab("Sense");
   page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-   senses=new ctbSlowAdcs(page, myDet);
+   //dhanya senses=new ctbSlowAdcs(page, myDet);
 
   i_senses=i_page++;
 
@@ -164,7 +162,7 @@ ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
   tf = mtab->AddTab("Signals");
   page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-  sig=new ctbSignals(page, myDet);
+  //dhanya sig=new ctbSignals(page, myDet);
   sig->Connect("ToggledSignalPlot(Int_t)","ctbMain",this,"setSignalPlot(Int_t)");
 
   i_sig=i_page++;
@@ -173,7 +171,7 @@ ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
   tf = mtab->AddTab("ADCs");
   page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-  adcs=new ctbAdcs(page, myDet);
+  //dhanya adcs=new ctbAdcs(page, myDet);
   adcs->Connect("ToggledAdcPlot(Int_t)","ctbMain",this,"setADCPlot(Int_t)");
   adcs->Connect("AdcEnable(Int_t)","ctbMain",this,"setADCEnable(Int_t)");
   i_adcs=i_page++;
@@ -184,7 +182,7 @@ ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
   tf = mtab->AddTab("Pattern");
   page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-  pat=new ctbPattern(page, myDet);
+  //dhanya pat=new ctbPattern(page, myDet);
   pat->Connect("patternFileChanged(const char*)","ctbMain",this,"setPatternFile(const char*)");
   pat->Connect("patternCompilerChanged(const char*)","ctbMain",this,"setPatternCompiler(const char*)");
   pat->Connect("analogSamplesChanged(const int)","ctbMain",this,"setAnalogSamples(int)");
@@ -198,7 +196,7 @@ ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
   tf = mtab->AddTab("Acquisition");
   page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-  acq=new ctbAcquisition(page, myDet);
+  //dhanya acq=new ctbAcquisition(page, myDet);
 
 
   i_acq=i_page++;
@@ -425,11 +423,11 @@ int  ctbMain::loadConfiguration(string fname) {
 }
 
 int  ctbMain::loadParameters(string fname) {
-  myDet->retrieveDetectorSetup(fname);
+  myDet->loadParameters(fname);
   return 0;
 }
 
-int  ctbMain::savePAttern(string fname) {
+int  ctbMain::savePattern(string fname) {
   myDet->savePattern(fname);
   return 0;
 }

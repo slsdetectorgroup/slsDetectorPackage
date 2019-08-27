@@ -229,16 +229,17 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     case slsDetectorDefs::MOENCH:
          break;
     default:
-        std::string errorMess =
-            sls::ToString(det->getHostname(), ',') + " has " +
-            slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) + " detector type (" +
-            std::to_string(detType) + "). Exiting GUI.";
+        std::ostringstream os;
+        os << det->getHostname() << " has " <<
+            slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) << " detector type (" <<
+            std::to_string(detType) << "). Exiting GUI.";
+        std::string errorMess = os.str();
         throw sls::RuntimeError(errorMess.c_str());
     }
-
-    std::string title =
-        "SLS Detector GUI : " + slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) + " - " +
-        sls::ToString(det->getHostname(), ',');
+    std::ostringstream os;
+    os << "SLS Detector GUI : " << slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) 
+        << " - " << det->getHostname();
+    std::string title = os.str();
     FILE_LOG(logINFO) << title;
     setWindowTitle(QString(title.c_str()));
 }

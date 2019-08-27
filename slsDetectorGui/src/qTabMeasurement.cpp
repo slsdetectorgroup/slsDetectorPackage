@@ -435,7 +435,7 @@ void qTabMeasurement::GetRunIndex() {
 	FILE_LOG(logDEBUG) << "Getting Acquisition File index";
 	disconnect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));
 	try {
-        auto retval = det->getAcquisitonIndex().tsquash("Inconsistent file index for all detectors.");
+        auto retval = det->getAcquisitionIndex().tsquash("Inconsistent file index for all detectors.");
 		spinIndex->setValue(retval);
     } CATCH_DISPLAY ("Could not get acquisition file index.", "qTabMeasurement::GetRunIndex")
 	connect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));

@@ -52,6 +52,7 @@ set( HEADERS
     ctbAcquisition.h 
     ctbPowers.h   
     ctbSlowAdcs.h
+    ../slsDetectorSoftware/include/Detector.h
 )
 
 #set(ROOT_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
@@ -63,6 +64,7 @@ add_library(ctbRootLib SHARED ctbDict.cxx)
 target_include_directories(ctbRootLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ctbRootLib PUBLIC 
     ROOT::Core 
+    slsDetectorShared
     ${ROOT_LIBRARIES} 
     ${ROOT_EXE_LINKER_FLAGS}
 )

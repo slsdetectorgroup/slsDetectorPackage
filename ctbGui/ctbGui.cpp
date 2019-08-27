@@ -9,8 +9,7 @@
 #include <fstream>
 #include <string>
 
-
-#include "multiSlsDetector.h"
+#include "Detector.h"
 #include "sls_detector_defs.h"
 //#include "sls_receiver_defs.h"
 #include "ctbMain.h"
@@ -20,10 +19,10 @@ using namespace std;
 int main(int argc, char **argv) {
 
 
-  string afname, cfname, pfname;
+  string afname, cfname;
   int id=0;
 
-  int af=0, cf=0, pf=0;
+  int af=0, cf=0;
 
 
   cout << " *** " << argc << endl;
@@ -45,9 +44,8 @@ int main(int argc, char **argv) {
 
     } else if  (strcmp(argv[ia],"-par")==0) {
       if (ia+1<argc) {
-	pfname=argv[ia+1];
+  cout << "Ignoring parameter file" << endl;
 	ia++;
-	pf=1;
       }
 
 
@@ -63,12 +61,10 @@ int main(int argc, char **argv) {
   cout << " *** "  << endl;
   
   /****** Create detector ****************/
-  multiSlsDetector *myDet=new multiSlsDetector(id);
-  // myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
+  sls::Detector *myDet=new sls::Detector(id);
 
-  //cout << id << " " << myDet << " " << myDet->setOnline() << endl;
   if (cf) {
-    myDet->readConfigurationFile(cfname);
+    myDet->loadConfig(cfname);
   } else
     cout << "No config file specified" << endl;
 
@@ -78,12 +74,6 @@ int main(int argc, char **argv) {
 
   
   cout << "bb" << endl;
-  if (pf) {
-    myDet->retrieveDetectorSetup(pfname);
-  } else
-    cout << "No parameter file specified" << endl;
-  
-
 
 
 

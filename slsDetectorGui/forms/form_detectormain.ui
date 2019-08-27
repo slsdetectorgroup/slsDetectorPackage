@@ -229,8 +229,9 @@
     <property name="title">
      <string>Utilities</string>
     </property>
-    <addaction name="actionConfigurationLoad"/>
-    <addaction name="actionTrimbitsLoad"/>
+    <addaction name="actionLoadConfiguration"/>
+    <addaction name="actionLoadTrimbits"/>
+    <addaction name="actionLoadParameters"/>
    </widget>
    <widget class="QMenu" name="menuModes">
     <property name="title">
@@ -465,12 +466,12 @@ p, li { white-space: pre-wrap; }
     <string>&amp;About</string>
    </property>
   </action>
-  <action name="actionConfigurationLoad">
+  <action name="actionLoadConfiguration">
    <property name="text">
     <string>Load Configuration</string>
    </property>
   </action>
-  <action name="actionTrimbitsLoad">
+  <action name="actionLoadTrimbits">
    <property name="text">
     <string>Load Trimbits</string>
    </property>
@@ -497,6 +498,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Dockable Windows</string>
+   </property>
+  </action>
+  <action name="actionLoadParameters">
+   <property name="text">
+    <string>Load Parameters</string>
    </property>
   </action>
  </widget>

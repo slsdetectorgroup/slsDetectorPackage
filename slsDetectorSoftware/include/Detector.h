@@ -41,6 +41,8 @@ class Detector {
 
     void loadConfig(const std::string &fname);
 
+    void loadParameters(const std::string &fname);
+
     Result<std::string> getHostname(Positions pos = {}) const;
 
     /* Frees shared memory, adds detectors to the list

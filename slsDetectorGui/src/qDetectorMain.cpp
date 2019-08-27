@@ -190,7 +190,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->setTabEnabled(DEBUGGING, false);
     tabs->setTabEnabled(ADVANCED, false);
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
-    actionTrimbitsLoad->setVisible(false);
+    actionLoadTrimbits->setVisible(false);
 
     dockWidgetPlot->setFloating(false);
     dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -219,10 +219,10 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
 
     // validate detector type (for GUI) and update menu
     detType = det->getDetectorType().tsquash("Different detector type for all modules.");
-    actionTrimbitsLoad->setEnabled(false);
+    actionLoadTrimbits->setEnabled(false);
     switch (detType) {
     case slsDetectorDefs::EIGER:
-        actionTrimbitsLoad->setEnabled(true);
+        actionLoadTrimbits->setEnabled(true);
         break;
     case slsDetectorDefs::GOTTHARD:
     case slsDetectorDefs::JUNGFRAU:
@@ -320,7 +320,7 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(ADVANCED, enable);
-        actionTrimbitsLoad->setVisible(enable && detType == slsDetectorDefs::EIGER);
+        actionLoadTrimbits->setVisible(enable && detType == slsDetectorDefs::EIGER);
         FILE_LOG(logINFO) << "Expert Mode: "
                           << slsDetectorDefs::stringEnable(enable);
     }
@@ -343,7 +343,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
     bool refreshTabs = false;
     try {
 
-        if (action == actionConfigurationLoad) {
+        if (action == actionLoadConfiguration) {
             FILE_LOG(logDEBUG) << "Loading Configuration";
             QString fName = QString(det->getFilePath().squash("/tmp/").c_str());
             fName = QFileDialog::getOpenFileName(
@@ -363,7 +363,27 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             }
         }
 
-        else if (action == actionTrimbitsLoad) {
+        else if (action == actionLoadParameters) {
+            FILE_LOG(logDEBUG) << "Loading Parameters";
+            QString fName = QString(det->getFilePath().squash("/tmp/").c_str());
+            fName = QFileDialog::getOpenFileName(
+                this, tr("Load Measurement Setup"), fName,
+                tr("Parameter files (*.det);;All Files(*)"));
+            // Gets called when cancelled as well
+            if (!fName.isEmpty()) {
+                refreshTabs = true;
+                det->loadParameters(
+                    std::string(fName.toAscii().constData()));
+                qDefs::Message(qDefs::INFORMATION,
+                               "The Detector Parameters have been "
+                               "configured successfully.",
+                               "qDetectorMain::ExecuteUtilities");
+                FILE_LOG(logINFO)
+                    << "Parameters loaded successfully";
+            }
+        }
+
+        else if (action == actionLoadTrimbits) {
             QString fName = QString((det->getSettingsDir().squash("/tmp/")).c_str());
             FILE_LOG(logDEBUG) << "Loading Trimbits";
             // so that even nonexisting files can be selected
@@ -520,7 +540,8 @@ void qDetectorMain::EnableTabs(bool enable) {
     tabs->setTabEnabled(MESSAGES, enable);
 
     // actions check
-    actionConfigurationLoad->setEnabled(enable);
+    actionLoadConfiguration->setEnabled(enable);
+    actionLoadParameters->setEnabled(enable);
     actionDebug->setEnabled(enable);
     actionExpert->setEnabled(enable);
 
@@ -530,7 +551,7 @@ void qDetectorMain::EnableTabs(bool enable) {
     // expert
     bool expertTab = enable && (actionExpert->isChecked());
     tabs->setTabEnabled(ADVANCED, expertTab);
-    actionTrimbitsLoad->setVisible(expertTab && detType == slsDetectorDefs::EIGER);
+    actionLoadTrimbits->setVisible(expertTab && detType == slsDetectorDefs::EIGER);
 
     // moved to here, so that its all in order, instead of signals and different
     // threads

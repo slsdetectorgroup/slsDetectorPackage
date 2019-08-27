@@ -21,6 +21,10 @@ void Detector::loadConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
 }
 
+void Detector::loadParameters(const std::string &fname) {
+    pimpl->retrieveDetectorSetup(fname, 0);
+}
+
 Result<std::string> Detector::getHostname(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getHostname, pos);
 }

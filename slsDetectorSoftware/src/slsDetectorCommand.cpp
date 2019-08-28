@@ -1688,6 +1688,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLastClient;
     ++i;
 
+    /*! \page network
+   - <b>lock [i]</b> Locks/Unlocks the detector to communicate with this client. 1 locks, 0 unlocks. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="lock"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLock;
+    ++i;
+
     /* receiver functions */
 
     /*! \page receiver Receiver commands
@@ -1757,6 +1764,12 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     i++;
 
+	/*! \page receiver
+   - <b>rx_lock [i]</b> locks/unlocks the receiver to communicate with only this client. 1 locks, 0 unlocks. \c Returns \c (int)
+	 */
+	descrToFuncMap[i].m_pFuncName="rx_lock"; //
+	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLock;
+    ++i;
 
     /* pattern generator */
 
@@ -2860,6 +2873,55 @@ std::string slsDetectorCommand::helpPort(int action) {
         os << "stopport \n gets the communication stop port " << std::endl;
     }
     return os.str();
+}
+
+std::string slsDetectorCommand::cmdLock(int narg, const char * const args[], int action, int detPos) {
+
+	if (action==HELP_ACTION)
+		return helpLock(action);
+
+	if(cmd=="lock"){
+		if (action==PUT_ACTION) {
+            int val = -1;
+			if (sscanf(args[1],"%d",&val))
+				myDet->lockServer(val, detPos);
+			else
+				return std::string("could not lock status")+std::string(args[1]);
+		}
+
+		return std::to_string(myDet->lockServer(detPos));
+	}
+
+	else  if(cmd=="rx_lock"){
+		if (action==PUT_ACTION) {
+            int val = -1;
+			if (sscanf(args[1],"%d",&val))
+				myDet->lockReceiver(val, detPos);
+			else
+				return std::string("could not decode lock status")+std::string(args[1]);
+		}
+		return std::to_string(myDet->lockReceiver(detPos));
+	}
+
+	return std::string("could not decode command");
+}
+
+
+
+std::string slsDetectorCommand::helpLock(int action) {
+
+	std::ostringstream os;
+	if (action==PUT_ACTION || action==HELP_ACTION) {
+		os << "lock i \n locks (1) or unlocks (0) the detector to communicate to this client"<< std::endl;
+		os << "rx_lock i \n locks (1) or unlocks (0) the receiver to communicate to this client"<< std::endl;
+	}
+	if (action==GET_ACTION || action==HELP_ACTION) {
+		os << "lock \n returns the detector lock status"<< std::endl;
+		os << "rx_lock \n returns the receiver lock status"<< std::endl;
+	}
+	return os.str();
+
+
 }
 
 std::string slsDetectorCommand::cmdLastClient(int narg, const char * const args[], int action, int detPos) {

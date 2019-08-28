@@ -865,7 +865,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
   int nadc;
   int ndbit;
 
-  
+  tenG = 0;
   
 
 

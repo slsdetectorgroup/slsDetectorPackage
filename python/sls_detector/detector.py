@@ -36,10 +36,7 @@ class Detector:
                                               self._api.setFlippedDataX,
                                               self._api.getNumberOfDetectors,
                                               'flippeddatax')
-        self._flippeddatay = DetectorProperty(self._api.getFlippedDataY,
-                                              self._api.setFlippedDataY,
-                                              self._api.getNumberOfDetectors,
-                                              'flippeddatay')
+
 
     def __len__(self):
         return self._api.getNumberOfDetectors()
@@ -429,10 +426,6 @@ class Detector:
         """Flips data on x axis. Set for eiger bottom modules"""
         return self._flippeddatax
 
-    @property
-    def flipped_data_y(self):
-        """Flips data on y axis."""
-        return self._flippeddatax
 
     @property
     def high_voltage(self):

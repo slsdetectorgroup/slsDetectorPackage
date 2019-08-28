@@ -872,7 +872,7 @@ void ctbPattern::update() {
 
   eDBitClkPhase->SetNumber(n);
 try {
-  myDet->setSpeed(slsDetectorDefs::DBIT_PIPELINE,0,-1);
+  n=myDet->setSpeed(slsDetectorDefs::DBIT_PIPELINE,-1,0);
       } catch (...) {
     
       cout << "Do nothing for this error" << endl;

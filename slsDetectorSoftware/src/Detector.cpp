@@ -580,8 +580,9 @@ void Detector::setFilePath(const std::string &fpath, Positions pos) {
 }
 
 Result<std::string> Detector::getFileNamePrefix(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setFileName, pos, "");
+    return pimpl->Parallel(&slsDetector::getFileName, pos);
 }
+
 void Detector::setFileNamePrefix(const std::string &fname, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileName, pos, fname);
 }

@@ -104,9 +104,9 @@ public:
 
    int  loadAlias(string fname);
    int  saveAlias(string fname);
-   int  loadParameters(string fname);
-   int  savePattern(string fname);
-   int  loadConfiguration(string fname);
+   void  loadParameters(string fname);
+   void  savePattern(string fname);
+   void  loadConfiguration(string fname);
    void tabSelected(Int_t);
    int setADCPlot(Int_t);
    int setSignalPlot(Int_t);

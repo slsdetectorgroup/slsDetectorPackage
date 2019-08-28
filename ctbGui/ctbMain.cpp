@@ -35,6 +35,7 @@
 #include <string>
 
 #include "Detector.h"
+#include "ctbDefs.h"
 #include "ctbMain.h"
 #include "ctbDacs.h"
 #include "ctbSlowAdcs.h"
@@ -301,7 +302,7 @@ void ctbMain::HandleMenu(Int_t id)
              fi.fIniDir    = StrDup(dir);
              printf("fIniDir = %s\n", fi.fIniDir);
              new TGFileDialog(gClient->GetRoot(), this, kFDOpen, &fi);
-             printf("Open file: %s (dir: %s)\n", fi.fFilename);
+             printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
 	     // dir = fi.fIniDir;
 	     if (fi.fFilename)
 	       loadAlias(fi.fFilename);
@@ -317,7 +318,7 @@ void ctbMain::HandleMenu(Int_t id)
              fi.fIniDir    = StrDup(dir);
              printf("fIniDir = %s\n", fi.fIniDir);
              new TGFileDialog(gClient->GetRoot(), this, kFDSave, &fi);
-             printf("Save file: %s (dir: %s)\n", fi.fFilename);
+             printf("Save file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
 	     // dir = fi.fIniDir;
 	     if (fi.fFilename)
 	       saveAlias(fi.fFilename);
@@ -403,7 +404,7 @@ int  ctbMain::setADCPlot(Int_t i) {
   //  cout << "ADC " << i << " plot or color toggled" << endl;
   //  acq->setGraph(i,adcs->getGraph(i));
   acq->setGraph(i,adcs->getEnabled(i),adcs->getColor(i));
-
+  return -1;
 }
 
 
@@ -412,24 +413,27 @@ int  ctbMain::setSignalPlot(Int_t i) {
   //  cout << "ADC " << i << " plot or color toggled" << endl;
   //  acq->setGraph(i,adcs->getGraph(i));
   acq->setBitGraph(i,sig->getPlot(i),sig->getColor(i));
-
+  return -1;
 }
 
 
 
-int  ctbMain::loadConfiguration(string fname) {
-  myDet->loadConfig(fname);
-   return 0;
+void  ctbMain::loadConfiguration(string fname) {
+  try{
+    myDet->loadConfig(fname);
+  } CATCH_DISPLAY ("Could not load config.", "ctbMain::loadConfiguration")
 }
 
-int  ctbMain::loadParameters(string fname) {
-  myDet->loadParameters(fname);
-  return 0;
+void  ctbMain::loadParameters(string fname) {
+  try{
+    myDet->loadParameters(fname);
+  } CATCH_DISPLAY ("Could not load parameters.", "ctbMain::loadParameters")
 }
 
-int  ctbMain::savePattern(string fname) {
-  myDet->savePattern(fname);
-  return 0;
+void  ctbMain::savePattern(string fname) {
+  try{
+    myDet->savePattern(fname);
+  } CATCH_DISPLAY ("Could not save pattern.", "ctbMain::savePattern")
 }
 
 
@@ -461,7 +465,7 @@ int  ctbMain::loadAlias(string fname) {
       else if (sscanf(line.c_str(),"PAT%s",aaaa)>0) {
 	pat->setPatternAlias(line);
 	//	cout << "---------" << line<< endl;
-      }	else if (sscanf(line.c_str(),"V%s",&i)>0) {
+      }	else if (sscanf(line.c_str(),"V%s",aaaa)>0) {
 	    if (pwrs)	pwrs->setPwrAlias(line);
 	//	cout << "+++++++++" << line<< endl;
       } else if (sscanf(line.c_str(),"SENSE%d",&i)>0) {
@@ -487,7 +491,6 @@ int  ctbMain::saveAlias(string fname) {
 
 
   string line;
-  int i;
   ofstream myfile (fname.c_str());
   if (myfile.is_open())
   {

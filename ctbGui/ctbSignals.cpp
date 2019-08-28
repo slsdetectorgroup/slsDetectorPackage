@@ -34,7 +34,8 @@
 
 
 #include "ctbSignals.h"
-#include "multiSlsDetector.h"
+#include "ctbDefs.h"
+#include "Detector.h"
 
 using namespace std;
 
@@ -43,7 +44,7 @@ using namespace std;
 //#define DEFAULTFN "run_0.encal"
 
 
-ctbSignal::ctbSignal(TGFrame *page, int i,  multiSlsDetector *det)
+ctbSignal::ctbSignal(TGFrame *page, int i,  sls::Detector *det)
   : TGHorizontalFrame(page, 800,50), myDet(det), id(i), hsig(NULL) {
 
 
@@ -178,10 +179,6 @@ int ctbSignal::fixOutput(int i) {
 
 int ctbSignal::setDbitList(Long64_t r) {
 
-  Long64_t mask=((Long64_t)1<<id);
-
-  // cout << hex << r << dec <<endl;
-
   if (r)
       sDbitList->SetOn(kTRUE,kFALSE);
   else 
@@ -197,7 +194,6 @@ int ctbSignal::isPlot() { return sPlot->IsOn();}
 Pixel_t ctbSignal::getColor(){return fColorSel->GetColor();}
 
 void ctbSignal::ToggledOutput(Bool_t b) {
-  Long_t mask=b<<id;
   ToggledSignalOutput(id);
   if (b) {
     // sClock->SetEnabled(kTRUE);
@@ -249,7 +245,7 @@ void ctbSignal::ToggledSignalPlot(Int_t b){
 }
 
 
-ctbSignals::ctbSignals(TGVerticalFrame *page, multiSlsDetector *det)
+ctbSignals::ctbSignals(TGVerticalFrame *page, sls::Detector *det)
   : TGGroupFrame(page,"IO Signals",kVerticalFrame), myDet(det) {
 
 
@@ -259,7 +255,6 @@ ctbSignals::ctbSignals(TGVerticalFrame *page, multiSlsDetector *det)
   
 
   TGHorizontalFrame *hframe;
-  char tit[100];
  
   TGHorizontalFrame* hhframe=new TGHorizontalFrame(this, 800,800);
   AddFrame(hhframe,new TGLayoutHints(kLHintsTop | kLHintsExpandX , 1,1,1,1));
@@ -289,36 +284,6 @@ ctbSignals::ctbSignals(TGVerticalFrame *page, multiSlsDetector *det)
 
 
   }
-
-// #ifdef CTB
-//   idac=62;
-//   signals[idac]=new ctbSignal(vframe,idac,myDet);
-//   vframe->AddFrame(signals[idac],new TGLayoutHints(kLHintsTop | kLHintsExpandX , 1,1,1,1));
-//   signals[idac]->MapWindow();
-//   sprintf(tit,"DBIT Latch");
-
-//   signals[idac]->setSignalAlias(tit,-1,-1);
-
-//   signals[idac]->Connect("ToggledSignalOutput(Int_t)","ctbSignals",this,"ToggledOutReg(Int_t)");
-//   signals[idac]->Connect("ToggledSignalDbitList(Int_t)","ctbSignals",this,"ToggledDbitList(Int_t)");
-//   signals[idac]->Connect("ToggledSignalPlot(Int_t)","ctbSignals",this,"ToggledPlot(Int_t)");
-
-
-// #endif
-
-
-  // idac=63;
-  // signals[idac]=new ctbSignal(vframe,idac,myDet);
-  // vframe->AddFrame(signals[idac],new TGLayoutHints(kLHintsTop | kLHintsExpandX , 1,1,1,1));
-  // signals[idac]->MapWindow();
-  // sprintf(tit,"ADC Latch");
-
-  // signals[idac]->setSignalAlias(tit,-1,-1);
-
-  // signals[idac]->Connect("ToggledSignalOutput(Int_t)","ctbSignals",this,"ToggledOutReg(Int_t)");
-  // signals[idac]->Connect("ToggledSignalDbitList(Int_t)","ctbSignals",this,"ToggledDbitList(Int_t)");
-  // signals[idac]->Connect("ToggledSignalPlot(Int_t)","ctbSignals",this,"ToggledPlot(Int_t)");
-
 
   hframe=new TGHorizontalFrame(vframe, 800,50);
   vframe->AddFrame(hframe,new TGLayoutHints(kLHintsTop | kLHintsExpandX , 1,1,1,1));
@@ -398,121 +363,132 @@ string ctbSignals::getSignalAlias() {
 
 
 void ctbSignals::update() {
-  Long64_t oreg=myDet->setPatternIOControl();//setCTBWord(-1,-1);
-  // Long64_t creg=myDet->setPatternClockControl();//setCTBWord(-2,-1);
+  try {
 
+    Long64_t oreg = static_cast<Long64_t>(myDet->getPatternIOControl().tsquash("Different values"));
+    cout << hex << oreg << dec << endl;
 
-  char val[1000];
-  cout << hex << oreg << dec << endl;
-  //  cout << hex << creg << dec << endl;
-
-  sprintf(val,"%llX",oreg);
-  //  eIOCntrlRegister->SetHexNumber(oreg);
- 
-
-  for (int idac=0; idac<NIOSIGNALS; idac++) {
-    signals[idac]->setOutput(oreg);
-   
-  }
-
-  Long64_t mask;
-  std::vector <int> dbitlist=myDet->getReceiverDbitList();
-  if (dbitlist.empty())
-    for (int is=0; is<64; is++) {
-      signals[is]->setDbitList(1);
-    } 
-  else {
-    for (int is=0; is<64; is++) signals[is]->setDbitList(0);
-    for (const auto &value : dbitlist)  {
-      signals[value]->setDbitList(1);
+    for (int idac=0; idac<NIOSIGNALS; idac++) {
+      signals[idac]->setOutput(oreg);
     }
-  }
 
+  } CATCH_DISPLAY ("Could not get patternIOcontrol.", "ctbSignals::update")
 
-  eDbitOffset->SetNumber(myDet->getReceiverDbitOffset());
+  try {
+
+    auto dbitlist = myDet->getRxDbitList().tsquash("Different values");
+    // enable all
+    if (dbitlist.empty()) {
+      for (int is=0; is<64; is++) {
+        signals[is]->setDbitList(1);
+      } 
+    }
+    else {
+      // disable all
+      for (int is=0; is<64; is++) {
+        signals[is]->setDbitList(0);
+      }
+      // enable selected
+      for (const auto &value : dbitlist)  {
+        signals[value]->setDbitList(1);
+      }
+    }
+
+  } CATCH_DISPLAY ("Could not get receiver dbit list.", "ctbSignals::update")
+
+  try {
+    auto val = myDet->getRxDbitOffset().tsquash("Different values");
+    eDbitOffset->SetNumber(val);
+  } CATCH_DISPLAY ("Could not get receiver dbit offset.", "ctbSignals::update")
 
 }
 
 
 string ctbSignals::getSignalParameters() {
 
+  try {
 
-  ostringstream line;
-  line <<  "patioctrl " << hex << myDet->setPatternIOControl() << dec << endl;//setCTBWord(-1,-1)
-  return line.str();
+    auto val = myDet->getPatternIOControl().tsquash("Different values");
+    ostringstream line;
+    line <<  "patioctrl " << hex << val << dec << endl;
+    return line.str();
 
+  } CATCH_DISPLAY ("Could not get patternIOcontrol.", "ctbSignals::getSignalParameters")
 
+  return ("");
 }
 
 void ctbSignals::ToggledOutReg(Int_t mask) {
-  
-  char val[1000];
-  Long64_t oreg=myDet->setPatternIOControl();//setCTBWord(-1,-1);
-  Long64_t m=((Long64_t)1)<<mask;
-  
+  try {
 
-  cout << dec << sizeof(Long64_t) << " " << mask << " " << hex << m << " ioreg " << oreg;
+    Long64_t oreg = static_cast<Long64_t>(myDet->getPatternIOControl().tsquash("Different values"));
+    Long64_t m=((Long64_t)1)<<mask;
+    cout << dec << sizeof(Long64_t) << " " << mask << " " << hex << m << " ioreg " << oreg;
 
- 
+    if (signals[mask]->isOutput()) {
+      cout <<  " or " << m ;
+      oreg|=m;
+    } else {
+      cout <<  " not " << ~m ;
+      oreg&=~m;
+    }
+    cout <<  " after " << oreg << endl;
 
-  if (signals[mask]->isOutput()) {
-    cout <<  " or " << m ;
-    oreg|=m;
-  }  else {
-    cout <<  " not " << ~m ;
-    oreg&=~m;
-  }
-  cout <<  " after " << oreg << endl;
+    myDet->setPatternIOControl(static_cast<uint64_t>(oreg));
+    oreg = static_cast<Long64_t>(myDet->getPatternIOControl().tsquash("Different values"));
+    cout << dec << sizeof(Long64_t) << " " << mask << " " << hex << m << " ioreg " << oreg << endl;
 
-  myDet->setPatternIOControl(oreg);//setCTBWord(-1,oreg);
-  oreg=myDet->setPatternIOControl();//myDet->setCTBWord(-1,-1);
+    eIOCntrlRegister->SetText(to_string(oreg).c_str());
 
-  cout << dec << sizeof(Long64_t) << " " << mask << " " << hex << m << " ioreg " << oreg << endl;
-
-  sprintf(val,"%llX",oreg);
-  //  eIOCntrlRegister->SetHexNumber(oreg);
-  eIOCntrlRegister->SetText(val);
-  //  eIOCntrlRegister->SetNumber(oreg);
+  } CATCH_DISPLAY ("Could not get/set patternIOcontrol.", "ctbSignals::ToggledOutReg")
 
 }
 
 
 
 void ctbSignals::ToggledDbitList(Int_t mask){
-  
+  try {
 
+    auto dbitlist = myDet->getRxDbitList().tsquash("Different values");
 
-  cout << "************* Here" << endl;
-
-
-
-  std::vector <int> new_dbitlist;
-  std::vector <int> old_dbitlist=myDet->getReceiverDbitList();
-
-  char val[1000];
-  Long64_t m=((Long64_t)1)<<mask;
-
-  if (old_dbitlist.empty() &&  signals[mask]->isDbitList()) 
-    ;
-  else {
-    int ns=0;
-    for (int is=0; is<64; is++) {
-      if (signals[is]->isDbitList()){ 
-	new_dbitlist.push_back(is);
-	ns++;
-	cout << is << " " << ns << endl;
+    // anyway all enabled
+    if ((dbitlist.empty()) && (signals[mask]->isDbitList())) {
+      ;
+    } 
+    // set the dbitlist
+    else  {
+      std::vector <int> new_dbitlist;
+      for (int is=0; is<64; is++) {
+        if (signals[is]->isDbitList()){ 
+          new_dbitlist.push_back(is);
+          cout << is << " " << new_dbitlist.size() - 1 << endl;
+        }
+      }
+      if (new_dbitlist.size() > 64) 
+        new_dbitlist.clear();
+      myDet->setRxDbitList(new_dbitlist);
+      // get list again
+      dbitlist = myDet->getRxDbitList().tsquash("Different values");
+    }
+    
+    // enable all
+    if (dbitlist.empty()) {
+      for (int is=0; is<64; is++) {
+        signals[is]->setDbitList(1);
+      } 
+    }
+    else {
+      // disable all
+      for (int is=0; is<64; is++) {
+        signals[is]->setDbitList(0);
+      }
+      // enable selected
+      for (const auto &value : dbitlist)  {
+        signals[value]->setDbitList(1);
       }
     }
-    if (ns>63) new_dbitlist.clear();
-    myDet->setReceiverDbitList(new_dbitlist);
-  }
-  std::vector <int> dbitlist=myDet->getReceiverDbitList();
-  if (dbitlist.empty())
-    for (int is=0; is<64; is++) signals[is]->setDbitList(1);
-  else
-    for (int is=0; is<64; is++) signals[is]->setDbitList(0);
-    for (const auto &value : dbitlist)  signals[value]->setDbitList(1);
 
+  } CATCH_DISPLAY ("Could not get/set receiver dbit list.", "ctbSignals::ToggledDbitList")
 }
 
 
@@ -533,16 +509,23 @@ void ctbSignals::ToggledSignalPlot(Int_t b) {
 
 
 Pixel_t ctbSignals::getColor(int i){
-  if (i>=0 && i<NSIGNALS) return signals[i]->getColor();
+  if (i>=0 && i<NSIGNALS) 
+    return signals[i]->getColor();
+  return static_cast<Pixel_t>(-1);
 }
 
 int ctbSignals::getPlot(int i){
-  if (i>=0 && i<NSIGNALS) return signals[i]->isPlot();
+  if (i>=0 && i<NSIGNALS) 
+    return signals[i]->isPlot();
+  return -1;
 };
 
 void ctbSignals::setDbitOffset(Long_t) {
   setDbitOffset();
 }
+
 void ctbSignals::setDbitOffset(){
-  myDet->setReceiverDbitOffset(eDbitOffset->GetNumber());
+  try {
+    myDet->setRxDbitOffset(eDbitOffset->GetNumber());
+  } CATCH_DISPLAY ("Could not set receiver dbit offset.", "ctbSignals::setDbitOffset")
 }

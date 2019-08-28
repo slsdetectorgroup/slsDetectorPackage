@@ -13,6 +13,7 @@
 #include "sls_detector_defs.h"
 //#include "sls_receiver_defs.h"
 #include "ctbMain.h"
+#include "ctbDefs.h"
 using namespace std;
 
 
@@ -60,26 +61,27 @@ int main(int argc, char **argv) {
   
 
   cout << " *** "  << endl;
-  
-  /****** Create detector ****************/
-  sls::Detector *myDet=new sls::Detector(id);
+  sls::Detector *myDet = nullptr;
+  try {
+    /****** Create detector ****************/
+    myDet=new sls::Detector(id);
+    cout << "Created multi detector id " << id << endl;
 
-  if (cf) {
-    myDet->loadConfig(cfname);
-  } else
-    cout << "No config file specified" << endl;
-
-  cout << "aa" << endl;
-
-    cout << "Created multi detector id " << id << " hostname " << myDet->getHostname() << endl;
-
-  
-  cout << "bb" << endl;
-  if (pf) {
-    myDet->loadParameters(pfname);
-  } else
-    cout << "No parameter file specified" << endl;
-
+    if (cf) {
+      myDet->loadConfig(cfname);
+      cout << "Config file loaded successfully" << endl;
+    } else {
+      cout << "No config file specified" << endl;
+    }
+    cout << "hostname " << myDet->getHostname() << endl;
+    
+    if (pf) {
+      myDet->loadParameters(pfname);
+      cout << "Loaded parameter file successfully" << endl;
+    } else{
+      cout  << "No parameter file specified" << endl;
+    }
+  } CATCH_DISPLAY ("Could not create detector/ load config/parameters.", "ctbGui::main")
 
   /***********Create GUI stuff *******************/
    TApplication theApp("App",&argc,argv);
@@ -135,7 +137,7 @@ int main(int argc, char **argv) {
 
 
   gROOT->ForceStyle();
-  ctbMain *mf=new ctbMain(gClient->GetRoot(),myDet);
+  ctbMain *mf=new ctbMain(gClient->GetRoot(), myDet);
 
   cout << " *** " << argc << endl;
   for (int ia=0; ia<argc; ia++)

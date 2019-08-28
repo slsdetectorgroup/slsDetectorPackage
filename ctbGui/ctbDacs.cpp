@@ -9,17 +9,14 @@
 #include <TGButton.h>
 
 #include "ctbDacs.h"
-#include "multiSlsDetector.h"
+#include "ctbDefs.h"
+#include "Detector.h"
 #include "sls_detector_defs.h"
 
 using namespace std;
 
 
-
-
-
-ctbDac::ctbDac(TGGroupFrame *page, int idac, multiSlsDetector *det) : TGHorizontalFrame(page, 800,50) , id(idac), myDet(det) {
-
+ctbDac::ctbDac(TGGroupFrame *page, int idac, sls::Detector *det) : TGHorizontalFrame(page, 800,50) , id(idac), myDet(det) {
 
     TGHorizontalFrame *hframe=this;
 
@@ -104,12 +101,9 @@ int ctbDac::setLabel(char *tit, int mv) {
 }
 
 string ctbDac::getLabel() {
-
   ostringstream line;
   line << dacsLabel->GetText() << " " <<  dacsUnit->IsOn() << endl;
-
    //  line << "DAC" << dec << id << " " <<  dacsUnit->IsOn() << endl;
-
   return line.str();
 
 }
@@ -119,65 +113,45 @@ void ctbDac::setValue(Long_t a) {setValue();}
 
 void ctbDac::setValue() {
 
-
-
   cout << "setting dac! "<< id << " value " << dacsEntry->GetIntNumber() << " units " << dacsUnit->IsOn() << endl;
+
   try {
-    myDet->setDAC(dacsEntry->GetIntNumber(), (slsDetectorDefs::dacIndex)id, dacsUnit->IsOn()); }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
+    myDet->setDAC(dacsEntry->GetIntNumber(), static_cast<slsDetectorDefs::dacIndex>(id), dacsUnit->IsOn()); 
+  } CATCH_DISPLAY ("Could not set dac " + to_string(id) + ".", "ctbDac::setValue")
 
   getValue();
-
 }
 
 void ctbDac::setOn(Bool_t b) {
-
-
-
   //  cout << "setting dac! "<< id << endl;
-
   if ( dacsLabel->IsOn()) {
     setValue();
   } else {
     try {
-      myDet->setDAC(-100, (slsDetectorDefs::dacIndex)id, 0); 
-    }  catch (...) {
-      cout << "Do nothing for this error" << endl;
-    }
+      myDet->setDAC(-100, static_cast<slsDetectorDefs::dacIndex>(id), false);
+    } CATCH_DISPLAY ("Could not power off dac " + to_string(id) + ".", "ctbDac::setOn")
   }
   getValue();
-
 }
 
 int ctbDac::getValue() { 
-  int val;
   try {
-    val=myDet->setDAC(-1,(slsDetectorDefs::dacIndex)id, dacsUnit->IsOn()); 
-  }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
-  char s[100];
-  cout << "dac " << id << " " << val << endl;
-    sprintf(s,"%d",val);
-    dacsValue->SetText(s);
-  if (val>=0) {
-    dacsLabel->SetOn(kTRUE);
-  } else {
-    dacsLabel->SetOn(kFALSE);
-  }
+    int val = myDet->getDAC(static_cast<slsDetectorDefs::dacIndex>(id), dacsUnit->IsOn()).tsquash("Different values"); 
+    cout << "dac " << id << " " << val << endl;
+    dacsValue->SetText(to_string(val).c_str());
+    if (val >= 0) {
+      dacsLabel->SetOn(kTRUE);
+    } else {
+      dacsLabel->SetOn(kFALSE);
+    }
+    return val;
+  } CATCH_DISPLAY ("Could not get dac " + to_string(id) + ".", "ctbDac::getValue")
   
-
-  return val;
-
+  return -1;
 }
 
 
-
-
-
-ctbDacs::ctbDacs(TGVerticalFrame *page, multiSlsDetector *det)   : TGGroupFrame(page,"DACs",kVerticalFrame) , myDet(det){
-
+ctbDacs::ctbDacs(TGVerticalFrame *page, sls::Detector *det)   : TGGroupFrame(page,"DACs",kVerticalFrame) , myDet(det){
 
   SetTitlePos(TGGroupFrame::kLeft);
   page->AddFrame(this,new TGLayoutHints( kLHintsTop | kLHintsExpandX , 10,10,10,10));
@@ -192,14 +166,12 @@ ctbDacs::ctbDacs(TGVerticalFrame *page, multiSlsDetector *det)   : TGGroupFrame(
   }
   dacs[NDACS]=new ctbDac(this, slsDetectorDefs::ADC_VPP, myDet);
   dacs[NDACS+1]=new ctbDac(this, slsDetectorDefs::HIGH_VOLTAGE, myDet);
-  dacs[NDACS]->setLabel("ADC Vpp",2); 
-  dacs[NDACS+1]->setLabel("High Voltage",3); 
-
+  dacs[NDACS]->setLabel((char*)"ADC Vpp",2); 
+  dacs[NDACS+1]->setLabel((char*)"High Voltage",3); 
 }
 
 
 int ctbDacs::setDacAlias(string line) {
-
   int is=-1, mv=0;
   char tit[100];
   int narg=sscanf(line.c_str(),"DAC%d %s %d",&is,tit,&mv);
@@ -217,7 +189,6 @@ string ctbDacs::getDacAlias() {
   for (int i=0; i<NDACS; i++)
     line << dacs[i]->getLabel() << endl;
   return line.str();
-
 }
 
 
@@ -225,8 +196,6 @@ string ctbDacs::getDacAlias() {
 
 
 string ctbDacs::getDacParameters() {
-
-
   ostringstream line;
 
   for (int i=0; i<NDACS; i++) {
@@ -234,18 +203,12 @@ string ctbDacs::getDacParameters() {
     line << "dac:" << i << " " << dacs[i]->getValue() << endl;
   } 
   return line.str();
-
-
 }
 
 
 
 void  ctbDacs::update() {
-
   for (int idac=0; idac<NDACS+1; idac++) {
     dacs[idac]->getValue();
   }
-
-
-
 }

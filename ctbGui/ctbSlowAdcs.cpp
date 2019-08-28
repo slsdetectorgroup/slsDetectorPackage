@@ -9,7 +9,8 @@
 #include <TGButton.h>
 
 #include "ctbSlowAdcs.h"
-#include "multiSlsDetector.h"
+#include "ctbDefs.h"
+#include "Detector.h"
 #include "sls_detector_defs.h"
 
 using namespace std;
@@ -17,7 +18,7 @@ using namespace std;
 
 
 
-ctbSlowAdc::ctbSlowAdc(TGGroupFrame *page, int idac, multiSlsDetector *det) : TGHorizontalFrame(page, 800,50) , id(idac), myDet(det) {
+ctbSlowAdc::ctbSlowAdc(TGGroupFrame *page, int idac, sls::Detector *det) : TGHorizontalFrame(page, 800,50) , id(idac), myDet(det) {
 
 
     TGHorizontalFrame *hframe=this;
@@ -55,9 +56,6 @@ ctbSlowAdc::ctbSlowAdc(TGGroupFrame *page, int idac, multiSlsDetector *det) : TG
    b->SetTextJustify(kTextLeft);
 
    b->Connect("Clicked()","ctbSlowAdc",this,"getValue()");
-
-
-
 }
 
 
@@ -66,38 +64,50 @@ int ctbSlowAdc::setLabel(char *tit) {
   if(tit)
     dacsLabel->SetText(tit);
 
-      
   return id;
 
 }
 
 string ctbSlowAdc::getLabel() {
-
   ostringstream line;
   line << dacsLabel->GetText() <<  endl;
 
    //  line << "DAC" << dec << id << " " <<  dacsUnit->IsOn() << endl;
 
   return line.str();
-
 }
 
 
 
 int ctbSlowAdc::getValue() {
-  
-  int val=myDet->getADC((slsDetectorDefs::dacIndex)id);
-  char s[100];
-  cout << "adc " << id << " " << val << endl;
-  sprintf(s,"%d mV",val);
-  if (id==999)
-    sprintf(s,"%d °C",val);
-  dacsValue->SetText(s);
- 
-  
+  try {
+    std::string s;
 
-  return val;
+    // temp
+    if (id == static_cast<int>(slsDetectorDefs::SLOW_ADC_TEMP)) {
 
+      int val = myDet->getTemperature(static_cast<slsDetectorDefs::dacIndex>(id)).tsquash("Different values");
+      cout << "slow adc temp" << " " << val << endl;
+
+      s = to_string(val) + " " + to_string(0x00b0) + "C";//ï¿½C
+      dacsValue->SetText(s.c_str());
+      return val;
+    } 
+    
+    // mv
+    else {
+
+      int val = myDet->getSlowADC(static_cast<slsDetectorDefs::dacIndex>(id)).tsquash("Different values");
+      cout << "slow adc " << id << " " << val << endl;
+      
+      s = to_string(val) + " mV"; 
+      dacsValue->SetText(s.c_str());
+      return val;
+    }
+
+  } CATCH_DISPLAY ("Could not get slow dac " + to_string(id) + ".", "ctbSlowAdc::getValue")
+
+  return -1;
 }
 
 
@@ -106,8 +116,7 @@ int ctbSlowAdc::getValue() {
 
 
 
-ctbSlowAdcs::ctbSlowAdcs(TGVerticalFrame *page, multiSlsDetector *det)   : TGGroupFrame(page,"Sense",kVerticalFrame) , myDet(det){
-
+ctbSlowAdcs::ctbSlowAdcs(TGVerticalFrame *page, sls::Detector *det)   : TGGroupFrame(page,"Sense",kVerticalFrame) , myDet(det){
 
   SetTitlePos(TGGroupFrame::kLeft);
   page->AddFrame(this,new TGLayoutHints( kLHintsTop | kLHintsExpandX , 10,10,10,10));
@@ -116,14 +125,12 @@ ctbSlowAdcs::ctbSlowAdcs(TGVerticalFrame *page, multiSlsDetector *det)   : TGGro
   // cout << "window mapped " << endl;
 
  
-  for (int idac=0; idac<NSLOWADCS; idac++) {
+  for (int idac=0; idac<NSLOWADCS + 1; idac++) {
 
      adcs[idac]=new ctbSlowAdc(this, idac+1000, myDet);
 
   }
-  adcs[NSLOWADCS]=new ctbSlowAdc(this, 999, myDet);
-  adcs[NSLOWADCS]->setLabel("Temperature"); 
-
+  adcs[NSLOWADCS]->setLabel((char*)"Temperature"); 
 }
 
 
@@ -133,7 +140,7 @@ int ctbSlowAdcs::setSlowAdcAlias(string line) {
 
   int is=-1, mv=0;
   char tit[100];
-  int narg=sscanf(line.c_str(),"SENSE%d %s",&is,tit,&mv);
+  int narg=sscanf(line.c_str(),"SENSE%d %s %d",&is,tit,&mv);
   if (narg<2)
     return -1;
   if (is>=0 && is<NSLOWADCS) 
@@ -149,14 +156,12 @@ string ctbSlowAdcs::getSlowAdcAlias() {
   for (int i=0; i<NSLOWADCS; i++)
     line << adcs[i]->getLabel() << endl;
   return line.str();
-
 }
 
 
 
 
 string ctbSlowAdcs::getAdcParameters() {
-
 
   ostringstream line;
 
@@ -166,20 +171,12 @@ string ctbSlowAdcs::getAdcParameters() {
   }    
   line << "adc:-1" << adcs[NSLOWADCS]->getValue() << endl;
   return line.str();
-
-
 }
 
 
 
 void  ctbSlowAdcs::update() {
-
-
   for (int idac=0; idac<NSLOWADCS+1; idac++) {
-
     adcs[idac]->getValue();
-
   }
-
-
 }

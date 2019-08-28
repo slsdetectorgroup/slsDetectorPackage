@@ -55,6 +55,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void ResetAccumulate();
     void DisplayStatistics(bool enable);
     void EnableGainPlot(bool enable);
+    void EnableADCInvert(bool enable);
     void ClonePlot();
 	  void SavePlot();
 
@@ -147,6 +148,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     QString fileSaveName{"Image"};
     bool hasGainData{false};
     bool isGainDataExtracted{false};
+    bool isADCInvert{false};
     bool disableZoom{false};
 
     int progress{0};

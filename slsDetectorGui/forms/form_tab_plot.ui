@@ -164,7 +164,7 @@
       <item row="0" column="2">
        <widget class="QStackedWidget" name="stackedWidget2D">
         <property name="currentIndex">
-         <number>0</number>
+         <number>5</number>
         </property>
         <widget class="QWidget" name="pageInterpolate">
          <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -640,6 +640,27 @@ Displays minimum, maximum and sum of values for each plot.
             </property>
             <property name="text">
              <string>Gap Pixels</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkADCInvert">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>&lt;nobr&gt;
+Displays minimum, maximum and sum of values for each plot.
+&lt;nobr&gt;</string>
+            </property>
+            <property name="text">
+             <string>ADC Invert</string>
             </property>
            </widget>
           </item>

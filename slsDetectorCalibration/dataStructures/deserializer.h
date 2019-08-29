@@ -67,7 +67,7 @@ class deserializer : public slsDetectorData<int> {
    }
    wp=(int64_t*)ptr;
    
-   for (iw=0; iw<nch/nb; ++iw) {
+   for (iw=0; iw<nch/nb; iw) {
      word=*wp;;
      if (ioff<off) {
        ioff++;

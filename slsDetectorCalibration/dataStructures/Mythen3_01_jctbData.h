@@ -63,7 +63,7 @@ class mythen3_01_jctbData : public slsDetectorData<short unsigned int> {
     }
     wp=(int64_t*)ptr;
     
-    for (iw=0; iw<nch/nb; ++iw) {
+    for (iw=0; iw<nch/nb; iw) {
       word=*wp;;
       if (ioff<off) {
 	ioff++;

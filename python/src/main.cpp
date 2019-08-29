@@ -161,6 +161,7 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getFileName", &DetectorPythonInterface::getFileName)
         .def("setFileIndex", &DetectorPythonInterface::setFileIndex)
         .def("getFileIndex", &DetectorPythonInterface::getFileIndex)
+        .def("getNumberOfDetectors", &DetectorPythonInterface::getNumberOfDetectors)
 
         .def("setExposureTime", &DetectorPythonInterface::setExposureTime)
         .def("getExposureTime", &DetectorPythonInterface::getExposureTime)
@@ -282,9 +283,9 @@ PYBIND11_MODULE(_sls_detector, m) {
              &DetectorPythonInterface::getReceiverCurrentFrameIndex)
         .def("getGapPixels", &DetectorPythonInterface::getGapPixels)
         .def("setGapPixels", &DetectorPythonInterface::setGapPixels)
-     //    .def("getFlippedDataX", &DetectorPythonInterface::getFlippedDataX)
+        .def("getFlippedDataX", &DetectorPythonInterface::getFlippedDataX)
      //    .def("getFlippedDataY", &DetectorPythonInterface::getFlippedDataY)
-     //    .def("setFlippedDataX", &DetectorPythonInterface::setFlippedDataX)
+        .def("setFlippedDataX", &DetectorPythonInterface::setFlippedDataX)
      //    .def("setFlippedDataY", &DetectorPythonInterface::setFlippedDataY)
 
         .def("getServerLock", &DetectorPythonInterface::getServerLock)

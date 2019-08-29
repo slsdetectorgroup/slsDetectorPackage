@@ -499,36 +499,16 @@ format
         DBIT_PIPELINE,        /**< adc pipeline */
         MAX_ADC_PHASE_SHIFT,  /** max adc phase shift */
         MAX_DBIT_PHASE_SHIFT, /** max adc phase shift */
-        SYNC_CLOCK,
+        SYNC_CLOCK
     };
 
     /**
-       readout flags
-    */
-    enum readOutFlags {
-        GET_READOUT_FLAGS = -1, /**< return readout flags */
-        NORMAL_READOUT = 0,     /**< no flag */
-        STORE_IN_RAM = 0x1, /**< data are stored in ram and sent only after end
-                               of acquisition for faster frame rate */
-        READ_HITS = 0x2,    /**< return only the number of the channel which
-                               counted ate least one */
-        ZERO_COMPRESSION = 0x4,          /**< returned data are 0-compressed */
-        PUMP_PROBE_MODE = 0x8,           /**<pump-probe mode */
-        BACKGROUND_CORRECTIONS = 0x1000, /**<background corrections */
-        TOT_MODE = 0x2000,               /**< pump-probe mode */
-        CONTINOUS_RO = 0x4000,           /**< pump-probe mode */
-        PARALLEL = 0x10000,              /**< eiger parallel mode */
-        NONPARALLEL = 0x20000,           /**< eiger serial mode */
-        DIGITAL_ONLY = 0x80000, /** chiptest board read only digital bits (not
-                                   adc values)*/
-        ANALOG_AND_DIGITAL = 0x100000, /** chiptest board read adc values and
-                                          digital bits digital bits */
-        DUT_CLK = 0x200000, /** chiptest board fifo clock comes from device
-                               under test */
-        SHOW_OVERFLOW = 0x400000, /** eiger 32 bit mode, show saturated for
-                                     overflow of single subframes */
-        NOOVERFLOW = 0x800000 /** eiger 32 bit mode, do not show saturated for
-                                 overflow of single subframes */
+     * read out mode (ctb, moench)
+     */
+    enum readoutMode {
+        ANALOG_ONLY,
+        DIGITAL_ONLY,
+        ANALOG_AND_DIGITAL
     };
 
     /** port type */
@@ -899,6 +879,32 @@ format
             return std::string("unknown");
         }
     };
+
+    /** returns string from readoutMode */
+    static std::string getReadoutModeType(readoutMode mode) {
+        switch(mode) {      
+        case ANALOG_ONLY:       
+            return "analog";   
+        case DIGITAL_ONLY:      
+            return "digital";
+        case ANALOG_AND_DIGITAL: 
+            return "analog_digital";
+        default:                
+            throw sls::RuntimeError("Unknown readout mode type enum" + std::to_string(static_cast<int>(mode)));
+        }
+    };
+
+   /** returns mdoe from string */
+    static readoutMode getReadoutModeType(std::string smode) {
+        if (smode == "analog")          
+            return ANALOG_ONLY;
+        if (smode == "digital")         
+            return DIGITAL_ONLY;
+        if (smode == "analog_digital")  
+            return ANALOG_AND_DIGITAL;
+        throw sls::RuntimeError("Unknown readout mode " + smode);
+    }
+; 
 
     /**
        @short returns adc index from std::string

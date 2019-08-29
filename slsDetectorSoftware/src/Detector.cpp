@@ -775,33 +775,27 @@ void Detector::setRxAddGapPixels(bool enable) {
 }
 
 Result<bool> Detector::getParallelMode(Positions pos) const {
-    auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
-                               defs::GET_READOUT_FLAGS);
-    Result<bool> booleanRes(res.size());
-    for (size_t i = 0; i < res.size(); ++i) {
-        booleanRes[i] = res[i] & defs::PARALLEL;
-    }
-    return booleanRes;
+   return pimpl->Parallel(&slsDetector::getParallelMode, pos);
 }
 
 void Detector::setParallelMode(bool value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
-                    value ? defs::PARALLEL : defs::NONPARALLEL);
+    pimpl->Parallel(&slsDetector::setParallelMode, pos, value);
 }
 
 Result<bool> Detector::getOverFlowMode(Positions pos) const {
-    auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
-                               defs::GET_READOUT_FLAGS);
-    Result<bool> booleanRes(res.size());
-    for (size_t i = 0; i < res.size(); ++i) {
-        booleanRes[i] = res[i] & defs::SHOW_OVERFLOW;
-    }
-    return booleanRes;
+   return pimpl->Parallel(&slsDetector::getOverFlowMode, pos);
 }
 
 void Detector::setOverFlowMode(bool value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
-                    value ? defs::SHOW_OVERFLOW : defs::NOOVERFLOW);
+    pimpl->Parallel(&slsDetector::setOverFlowMode, pos, value);
+}
+
+Result<bool> Detector::getStoreInRamMode(Positions pos) const {
+   return pimpl->Parallel(&slsDetector::getStoreInRamMode, pos);
+}
+
+void Detector::setStoreInRamMode(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setStoreInRamMode, pos, value);
 }
 
 Result<bool> Detector::getBottom(Positions pos) const {
@@ -1056,39 +1050,12 @@ void Detector::setNumberOfDigitalSamples(int64_t value, Positions pos) {
     pimpl->Parallel(&slsDetector::setTimer, pos, defs::DIGITAL_SAMPLES, value);
 }
 
-Result<int> Detector::getReadoutMode(Positions pos) const {
-    auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
-                               defs::GET_READOUT_FLAGS);
-    for (auto &it : res) {
-        if (it & defs::ANALOG_AND_DIGITAL) {
-            it = 2;
-        } else if (it & defs::DIGITAL_ONLY) {
-            it = 1;
-        } else if (it == defs::NORMAL_READOUT) {
-            it = 0;
-        } else {
-            throw RuntimeError("Unknown Signal Type");
-        }
-    }
-    return res;
+Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReadoutMode, pos);
 }
 
-void Detector::setReadoutMode(int value, Positions pos) {
-    defs::readOutFlags flag;
-    switch (value) {
-    case 0:
-        flag = defs::NORMAL_READOUT;
-        break;
-    case 1:
-        flag = defs::DIGITAL_ONLY;
-        break;
-    case 2:
-        flag = defs::ANALOG_AND_DIGITAL;
-        break;
-    default:
-        throw RuntimeError("Unknown Signal Type");
-    }
-    pimpl->Parallel(&slsDetector::setReadOutFlags, pos, flag);
+void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReadoutMode, pos, value);
 }
 
 Result<int> Detector::getDBITPhase(Positions pos) const {

@@ -351,9 +351,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page config
-   - <b>flags [flag]</b> sets/gets the readout flags to mode. Options: none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overflow, nooverflow, unknown. Used for EIGER only. \c Returns \c (string). put takes one string and \c returns concatenation of all active flags separated by spaces.
+   - <b>readout [b]</b> sets/gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only. \c Returns \c (int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "flags";
+    descrToFuncMap[i].m_pFuncName = "readout";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
     ++i;
 
@@ -4330,67 +4330,14 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
     if (action == HELP_ACTION)
         return helpAdvanced(action);
 
-    if (cmd == "flags") {
-
-        readOutFlags flag = GET_READOUT_FLAGS;
-
+    if (cmd == "readout") {
         if (action == PUT_ACTION) {
-            std::string sval = std::string(args[1]);
-            if (sval == "none")
-                flag = NORMAL_READOUT;
-            else if (sval == "storeinram")
-                flag = STORE_IN_RAM;
-            else if (sval == "tot")
-                flag = TOT_MODE;
-            else if (sval == "continous")
-                flag = CONTINOUS_RO;
-            else if (sval == "parallel")
-                flag = PARALLEL;
-            else if (sval == "nonparallel")
-                flag = NONPARALLEL;
-            else if (sval == "digital")
-                flag = DIGITAL_ONLY;
-            else if (sval == "analog_digital")
-                flag = ANALOG_AND_DIGITAL;
-            else if (sval == "overflow")
-                flag = SHOW_OVERFLOW;
-            else if (sval == "nooverflow")
-                flag = NOOVERFLOW;
-            else
-                return std::string("could not scan flag ") + std::string(args[1]);
+            myDet->setReadoutMode(getReadoutModeType(std::string(args[1])), detPos);
         }
+        return getReadoutModeType(myDet->getReadoutMode());
+    }
 
-        int retval = myDet->setReadOutFlags(flag, detPos);
-
-        // std::cout << std::hex << flag << " " << retval << std::endl;
-
-        if (retval == NORMAL_READOUT)
-            return std::string("none");
-
-        if (retval & STORE_IN_RAM)
-            strcat(answer, "storeinram ");
-        if (retval & TOT_MODE)
-            strcat(answer, "tot ");
-        if (retval & CONTINOUS_RO)
-            strcat(answer, "continous ");
-        if (retval & PARALLEL)
-            strcat(answer, "parallel ");
-        if (retval & NONPARALLEL)
-            strcat(answer, "nonparallel ");
-        if (retval & DIGITAL_ONLY)
-            strcat(answer, "digital ");
-        if (retval & ANALOG_AND_DIGITAL)
-            strcat(answer, "analog_digital ");
-        if (retval & SHOW_OVERFLOW)
-            strcat(answer, "overflow ");
-        if (retval & NOOVERFLOW)
-            strcat(answer, "nooverflow ");
-        if (strlen(answer))
-            return std::string(answer);
-
-        return std::string("unknown");
-
-    }  else if (cmd=="interruptsubframe") {
+    else if (cmd=="interruptsubframe") {
 		if (action==PUT_ACTION) {
 			int ival = -1;
 			if (!sscanf(args[1],"%d",&ival))
@@ -4399,7 +4346,9 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
 		}
 		return std::to_string(myDet->getInterruptSubframe());
         
-	}  else if (cmd == "readnlines") {
+	}  
+    
+    else if (cmd == "readnlines") {
         if (action == PUT_ACTION) {
                 int ival = -1;
                 if (!sscanf(args[1],"%d",&ival))
@@ -4408,7 +4357,9 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
             }
             return std::to_string(myDet->getReadNLines());
 
-    } else if (cmd == "extsig") {
+    } 
+    
+    else if (cmd == "extsig") {
         externalSignalFlag flag = GET_EXTERNAL_SIGNAL_FLAG;
 
         if (action == PUT_ACTION) {
@@ -4419,7 +4370,9 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
     
         return myDet->externalSignalType(myDet->setExternalSignalFlags(flag, detPos));
 
-    } else if (cmd == "programfpga") {
+    } 
+    
+    else if (cmd == "programfpga") {
         if (action == GET_ACTION)
             return std::string("cannot get");
         if (strstr(args[1], ".pof") == nullptr)
@@ -4528,7 +4481,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
 
         os << "extsig mode \t sets the mode of the external signal. can be trigger_out_rising_edge, trigger_out_falling_edge. Gotthard only" << std::endl;
-        os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overlow, nooverflow, unknown." << std::endl;
+        os << "readout m \t sets the readout flag to m. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "interruptsubframe flag \t sets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER  in 32 bit mode only." << std::endl;
         os << "readnlines f \t sets the number of rows to read out per half module. Options: 1 - 256 (Not all values as it depends on dynamic range and 10GbE enabled). Used for EIGER only. " << std::endl;
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
@@ -4544,7 +4497,7 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     if (action == GET_ACTION || action == HELP_ACTION) {
 
         os << "extsig \t gets the mode of the external signal. can be trigger_in_rising_edge, trigger_in_falling_edge. Gotthard only" << std::endl;
-        os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, digital, analog_digital, overflow, nooverflow, unknown" << std::endl;
+        os << "readout \t gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "interruptsubframe \t gets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER in 32 bit mode only." << std::endl;
         os << "readnlines \t gets the number of rows to read out per half module. Used for EIGER only. " << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;

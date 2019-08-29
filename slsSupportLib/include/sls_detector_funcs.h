@@ -33,7 +33,6 @@ enum detFuncs{
 	F_SET_TIMER, /**< set/get timer value */
 	F_GET_TIME_LEFT, /**< get current value of the timer (time left) */
 	F_SET_DYNAMIC_RANGE, /**< set/get detector dynamic range */
-	F_SET_READOUT_FLAGS, /**< set/get readout flags */
 	F_SET_ROI, /**< set/get region of interest */
 	F_GET_ROI,
 	F_SET_SPEED, /**< set/get readout speed parameters */
@@ -93,6 +92,14 @@ enum detFuncs{
 	F_GET_INTERRUPT_SUBFRAME,
 	F_SET_READ_N_LINES,
 	F_GET_READ_N_LINES,
+	F_SET_PARALLEL_MODE,
+	F_GET_PARALLEL_MODE,
+	F_SET_OVERFLOW_MODE,
+	F_GET_OVERFLOW_MODE,
+	F_SET_STOREINRAM_MODE,
+	F_GET_STOREINRAM_MODE,	
+	F_SET_READOUT_MODE,
+	F_GET_READOUT_MODE,	
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -145,7 +152,7 @@ enum detFuncs{
 	F_RECEIVER_DISCARD_POLICY, /** < frames discard policy */
 	F_RECEIVER_PADDING_ENABLE, /** < partial frames padding enable */
 	F_RECEIVER_DEACTIVATED_PADDING_ENABLE, /** < deactivated receiver padding enable */
-	F_RECEIVER_SET_READOUT_FLAGS, /**< set/get receiver readout flags */
+	F_RECEIVER_SET_READOUT_MODE, /**< set/get receiver readout mode */
 	F_RECEIVER_SET_ADC_MASK, /**< set adc mask */
 	F_SET_RECEIVER_DBIT_LIST, /** < set receiver digital bit list */
 	F_GET_RECEIVER_DBIT_LIST, /** < get receiver digital bit list */
@@ -181,7 +188,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_TIMER:						return "F_SET_TIMER";
 	case F_GET_TIME_LEFT:					return "F_GET_TIME_LEFT";
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
-	case F_SET_READOUT_FLAGS:				return "F_SET_READOUT_FLAGS";
 	case F_SET_ROI:							return "F_SET_ROI";
 	case F_GET_ROI:							return "F_GET_ROI";
 	case F_SET_SPEED:						return "F_SET_SPEED";
@@ -241,6 +247,14 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
 	case F_SET_READ_N_LINES:				return "F_SET_READ_N_LINES";
 	case F_GET_READ_N_LINES:				return "F_GET_READ_N_LINES";
+	case F_SET_PARALLEL_MODE:				return "F_SET_PARALLEL_MODE";	
+	case F_GET_PARALLEL_MODE:				return "F_GET_PARALLEL_MODE";	
+	case F_SET_OVERFLOW_MODE:				return "F_SET_OVERFLOW_MODE";	
+	case F_GET_OVERFLOW_MODE:				return "F_GET_OVERFLOW_MODE";	
+	case F_SET_STOREINRAM_MODE:				return "F_SET_STOREINRAM_MODE";	
+	case F_GET_STOREINRAM_MODE:				return "F_GET_STOREINRAM_MODE";
+	case F_SET_READOUT_MODE:				return "F_SET_READOUT_MODE";	
+	case F_GET_READOUT_MODE:				return "F_GET_READOUT_MODE";
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 
@@ -293,7 +307,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_DISCARD_POLICY:			return "F_RECEIVER_DISCARD_POLICY";
     case F_RECEIVER_PADDING_ENABLE:			return "F_RECEIVER_PADDING_ENABLE";
     case F_RECEIVER_DEACTIVATED_PADDING_ENABLE: return "F_RECEIVER_DEACTIVATED_PADDING_ENABLE";
-    case F_RECEIVER_SET_READOUT_FLAGS: 		return "F_RECEIVER_SET_READOUT_FLAGS";
+    case F_RECEIVER_SET_READOUT_MODE: 		return "F_RECEIVER_SET_READOUT_MODE";
 	case F_RECEIVER_SET_ADC_MASK:			return "F_RECEIVER_SET_ADC_MASK";
 	case F_SET_RECEIVER_DBIT_LIST:			return "F_SET_RECEIVER_DBIT_LIST";		
 	case F_GET_RECEIVER_DBIT_LIST:			return "F_GET_RECEIVER_DBIT_LIST";		

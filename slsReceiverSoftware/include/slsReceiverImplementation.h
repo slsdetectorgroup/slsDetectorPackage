@@ -88,10 +88,10 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     int getReadNLines() const;
 
     /**
-     * Get readout flags (Eiger, chiptestboard, moench)
-     * @return readout flags
+     * Get readout mode (chiptestboard)
+     * @return readout mode
      */
-    readOutFlags getReadOutFlags() const;
+    readoutMode getReadoutMode() const;
 
     //***file parameters***
     /**
@@ -417,11 +417,11 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     void setReadNLines(const int value);
 
     /**
-     * Set readout flags (eiger, chiptestboard, moench)
-     * @param f readout flag
+     * Set readout mode (chiptestboard)
+     * @param f readout mode
      * @return OK or FAIL
      */
-    int setReadOutFlags(const readOutFlags f);
+    int setReadoutMode(const readoutMode f);
 
     //***file parameters***
     /**
@@ -902,8 +902,8 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     bool quadEnable;   
     /** num lines readout */
     int numLinesReadout;
-    /** readout flags*/
-    readOutFlags readoutFlags;
+    /** readout mode*/
+    readoutMode readoutType;
 
     //*** receiver parameters ***
     /** Number of Threads */

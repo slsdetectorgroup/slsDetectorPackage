@@ -279,8 +279,8 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** set deactivated receiver padding enable */
     int set_deactivated_padding_enable(sls::ServerInterface2 &socket);
 
-    /** set readout flags */
-    int set_readout_flags(sls::ServerInterface2 &socket);
+    /** set readout mode */
+    int set_readout_mode(sls::ServerInterface2 &socket);
 
     /** set adc mask */
     int set_adc_mask(sls::ServerInterface2 &socket);

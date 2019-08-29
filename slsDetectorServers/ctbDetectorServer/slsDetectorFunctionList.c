@@ -561,7 +561,7 @@ void setupDetector() {
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
-	setReadOutFlags(NORMAL_READOUT);
+	setReadoutMode(ANALOG_ONLY);
 
     // enable all ADC channels
     setADCEnableMask(BIT_32_MSK);
@@ -812,61 +812,57 @@ int getSpeed(enum speedVariable ind, int mode) {
     }
 }
 
-enum  readOutFlags setReadOutFlags(enum readOutFlags val) {
-    enum readOutFlags retval = GET_READOUT_FLAGS;
+int setReadoutMode(enum readoutMode mode) {
     uint32_t addr = CONFIG_REG;
-
-    // set
-    if (val != GET_READOUT_FLAGS) {
-        switch(val) {
-        case NORMAL_READOUT:
-            FILE_LOG(logINFO, ("Setting Normal Readout\n"));
-            bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
-            break;
-        case DIGITAL_ONLY:
-            FILE_LOG(logINFO, ("Setting Digital Only Readout\n"));
-            bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
-            break;
-        case ANALOG_AND_DIGITAL:
-            FILE_LOG(logINFO, ("Setting Analog & Digital Readout\n"));
-            bus_w(addr, (bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK)) | CONFIG_ENBLE_DGTL_OTPT_MSK);
-            break;
-        default:
-            FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
-            return retval;
-        }
+    switch(mode) {
+    case ANALOG_ONLY:
+        FILE_LOG(logINFO, ("Setting Analog Only Readout\n"));
+        bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
+        break;
+    case DIGITAL_ONLY:
+        FILE_LOG(logINFO, ("Setting Digital Only Readout\n"));
+        bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
+        break;
+    case ANALOG_AND_DIGITAL:
+        FILE_LOG(logINFO, ("Setting Analog & Digital Readout\n"));
+        bus_w(addr, (bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK)) | CONFIG_ENBLE_DGTL_OTPT_MSK);
+        break;
+    default:
+        FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", mode));
+        return FAIL;
     }
 
-    // get
+    // update databytes and allocate ram
+    if (allocateRAM() == FAIL) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int getReadoutMode() {
+    uint32_t addr = CONFIG_REG;
     uint32_t regval = bus_r(addr);
     FILE_LOG(logDEBUG1, ("Config Reg: 0x%08x\n", regval));
     // this bit reads analog disable, so inverse
     analogEnable = (((regval & CONFIG_DSBL_ANLG_OTPT_MSK) >> CONFIG_DSBL_ANLG_OTPT_OFST) ? 0 : 1);
     digitalEnable = ((regval & CONFIG_ENBLE_DGTL_OTPT_MSK) >> CONFIG_ENBLE_DGTL_OTPT_OFST);
 
+    int retval = -1;
     if (analogEnable && digitalEnable) {
-        retval = ANALOG_AND_DIGITAL;
         FILE_LOG(logDEBUG1, ("Getting readout: Analog & Digital 0x%x\n", retval));
+        return ANALOG_AND_DIGITAL;
     } else if (analogEnable && !digitalEnable) {
-        retval = NORMAL_READOUT;
-        FILE_LOG(logDEBUG1, ("Getting readout: Normal 0x%x\n", retval));
+        FILE_LOG(logDEBUG1, ("Getting readout: Analog Only 0x%x\n", retval));
+        return ANALOG_ONLY;
     } else if (!analogEnable && digitalEnable) {
-        retval = DIGITAL_ONLY;
         FILE_LOG(logDEBUG1, ("Getting readout: Digital Only 0x%x\n", retval));
+        return  DIGITAL_ONLY;
     } else {
         FILE_LOG(logERROR, ("Read unknown readout (Both digital and analog are disabled). "
                 "Config reg: 0x%x\n", regval));
-        return retval;
-    }
-
-    // update databytes and allocate ram
-    if (allocateRAM() == FAIL) {
-        return -2;
-    }
-
-    return retval;
+        return -1;
+    }   
 }
-
 
 
 /* parameters - timer */

@@ -24,7 +24,8 @@
 #include <fstream>
 
 #include "ctbAcquisition.h"
-#include "multiSlsDetector.h"
+#include "ctbDefs.h"
+#include "Detector.h"
 #include "sls_detector_defs.h"
 #include "ctbMain.h"
 #include "moench03CtbData.h" 
@@ -48,7 +49,7 @@ using namespace std;
 
 
 
-ctbAcquisition::ctbAcquisition(TGVerticalFrame *page, multiSlsDetector *det) : TGGroupFrame(page,"Acquisition",kVerticalFrame),  myDet(det), myCanvas(NULL), globalPlot(0), nAnalogSamples(1), nDigitalSamples(1), dataStructure(NULL), photonFinder(NULL), cmSub(0), tenG(0), dBitMask(0xffffffffffffffff), deserializer(0) {
+ctbAcquisition::ctbAcquisition(TGVerticalFrame *page, sls::Detector *det) : TGGroupFrame(page,"Acquisition",kVerticalFrame),  myDet(det), myCanvas(NULL), globalPlot(0), tenG(0), nAnalogSamples(1), nDigitalSamples(1), dataStructure(NULL), photonFinder(NULL), cmSub(0), dBitMask(0xffffffffffffffff), deserializer(0) {
 
   adcFit=NULL;
   bitPlot=NULL;
@@ -71,8 +72,11 @@ ctbAcquisition::ctbAcquisition(TGVerticalFrame *page, multiSlsDetector *det) : T
    cFileSave->SetTextJustify(kTextRight);
    cFileSave->Connect("Toggled(Bool_t)","ctbAcquisition",this,"setFsave(Bool_t)");
 
-  
-   eFname = new TGTextEntry(hframe, (myDet->getFileName()).c_str());
+  std::string temp = "run";
+  try {
+    temp = myDet->getFileNamePrefix().tsquash("Different values");
+  } CATCH_DISPLAY ("Could not get file name prefix.", "ctbAcquisition::ctbAcquisition")
+  eFname = new TGTextEntry(hframe, temp.c_str());
 
    hframe->AddFrame(eFname,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 5, 5, 5, 5));
    eFname->MapWindow();
@@ -113,7 +117,11 @@ ctbAcquisition::ctbAcquisition(TGVerticalFrame *page, multiSlsDetector *det) : T
 
 
 
-   eOutdir = new TGTextEntry(hframe, (myDet->getFilePath()).c_str());
+  temp = "/tmp/";
+  try {
+    temp = myDet->getFilePath().tsquash("Different values");
+  } CATCH_DISPLAY ("Could not get file path.", "ctbAcquisition::ctbAcquisition")
+   eOutdir = new TGTextEntry(hframe, temp.c_str());
 
    hframe->AddFrame(eOutdir,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 5, 5, 5, 5));
    eOutdir->MapWindow();
@@ -597,21 +605,12 @@ hframe=new TGHorizontalFrame(this, 800,50);
 
   acqThread = new TThread("acqThread",
 			  ctbAcquisition::ThreadHandle,(void*)this);
-  // acqThread->Run();
-  // cout <<"Registering progress callback" << endl;
-  // try {
-  //   myDet->registerProgressCallback(&progressCallback,(void*)this);
-  // }  catch (...) {
-  //   cout << "Do nothing for this error" << endl;
-  // }
   
   cout <<"Registering data callback" << endl;
-  try{
+  try {
     myDet->registerDataCallback(&dataCallback, (void*)this);
-  }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
-  
+  } CATCH_DISPLAY ("Could not get register call back.", "ctbAcquisition::ctbAcquisition")
+
   cout <<"Done" << endl;
   
     //  mgAdcs=new TMultiGraph();
@@ -663,10 +662,6 @@ hframe=new TGHorizontalFrame(this, 800,50);
       countsStack->Add(h1);
       countsHisto[i]=h1;
     }
-
-    int nx,ny;
-    int csize=3;
-    int nsigma=5;
 
     dataStructure=NULL;
     commonMode=NULL;
@@ -771,7 +766,7 @@ void ctbAcquisition::canvasClicked() {
 void ctbAcquisition::setCanvas(TCanvas* c) {
   myCanvas=c;  
   myCanvas->cd();
-  myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)0x%x)->canvasClicked()",this));
+  myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)0x%p)->canvasClicked()",this));
   // myCanvas->AddExec("ex","canvasClicked()");
 }
 void ctbAcquisition::dataCallback(detectorData *data, long unsigned int index, unsigned int dum, void* pArgs) {
@@ -805,8 +800,6 @@ sample1 (adc0 + adc1 +...)
 digital:
 sample0 (dbit0 + dbit1 +...)
 sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
-
-        myDet->setReceiverOnline(ONLINE_FLAG, detPos);
 
         if (action == PUT_ACTION) {
             std::vector <int> dbitlist;
@@ -845,19 +838,18 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
     //  cout <<"------"<<  index << " " << ip << " " << data->npoints << endl;
     //#endif
   int ig=0;
-  int i, ii, ich=0, ib, vv;
+  int i, ii, ib;
   // TList *l= adcStack->GetHists();
   // TList *l1= countsStack->GetHists();
   TH1F *h;
   TH1F *h1;
   TH1F *hb;
-  int nb, x,y;
+  int x;
   double ped=0;
-  int vv1,vv2;
   int dsize=-1;
   int  *val=NULL;
-  int nx=1, ny=1, jj;
-  short unsigned int *va;
+  int nx=1, ny=1;
+
   if (dataStructure) { 
     dataStructure->getDetectorSize(nx,ny);
     cout << "Data structure: " << dataStructure << " size " << nx << " " << ny <<  endl;
@@ -873,7 +865,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
   int nadc;
   int ndbit;
 
-  
+  tenG = 0;
   
 
 
@@ -1032,7 +1024,6 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
     } else {
       ii=0;
       int iii=0;
-      int nb=dbitlist.size();
       for (const auto &value : dbitlist) {
 	ib=value;
 	hb=bitHisto[ib];  
@@ -1198,10 +1189,10 @@ void ctbAcquisition::changeDetector(){
   photonFinder=NULL;
   dataStructure=NULL;
   commonMode=NULL;
-  TH2F *h2DMapOld=h2DMapAn;
+
   // TH2F *h2ScanOld=h2Scan;
-  TH1F *h1DMapOld=h1DMap;
-  int dim=2;
+
+
   int nx,ny;
   int csize=3;
   int nsigma=5;
@@ -1219,10 +1210,16 @@ void ctbAcquisition::changeDetector(){
       // commonMode=new moench03CommonMode();
       break;
      case MOENCH04:
-       if (myDet->enableTenGigabitEthernet(-1))
-	 dataStructure=new moench04CtbZmq10GbData(nAnalogSamples, nDigitalSamples); 
-       else
-	 dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
+
+      try {
+        auto retval = myDet->getTenGiga().tsquash("Different values");
+        if (retval) {
+          dataStructure=new moench04CtbZmq10GbData(nAnalogSamples, nDigitalSamples); 
+        } else {
+          dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
+        }
+      } CATCH_DISPLAY ("Could not get ten giga enable.", "ctbAcquisition::changeDetector")
+
        cout << "MOENCH 0.4!" << endl;
        commonMode=new moench03CommonMode();
       break;
@@ -1436,7 +1433,7 @@ void ctbAcquisition::setBitGraph(int i ,int en, Pixel_t col) {
   float off=0;
   for (int ii=0; ii<NSIGNALS; ii++) {
     if (bitPlotFlag[ii]) {bitOffset[ii]=off;
-      off+=1.5;
+      off+=static_cast<float>(1.5);
       cout << "bit " << ii << " offset " << bitOffset[ii] << endl;
     }
   }
@@ -1451,74 +1448,65 @@ void ctbAcquisition::setBitGraph(int i ,int en, Pixel_t col) {
 
 void ctbAcquisition::setOutdir() {
   try {
-  myDet->setFilePath(eOutdir->GetText());
- }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
-//   //  cout << "setting dac! "<< id << endl;
-
-//   myDet->setDAC(dacsEntry->GetIntNumber(), (slsDetectorDefs::dacIndex)id, dacsUnit->IsOn());
-
-//   getValue();
-
+    myDet->setFilePath(eOutdir->GetText());
+  } CATCH_DISPLAY ("Could not set file path", "ctbAcquisition::setOutdir")
 }
 
 void ctbAcquisition::setFname() {
   try {
-  myDet->setFileName(eFname->GetText());
- }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
-//   int val=myDet->setDAC(-1, (slsDetectorDefs::dacIndex)id, dacsUnit->IsOn());
-//   char s[100];
-
-//   sprintf(s,"%d",val);
-
-//   dacsValue->SetText(s);
-  
-
-//   return val;
-
+    myDet->setFileNamePrefix(eFname->GetText());
+  } CATCH_DISPLAY ("Could not set file name prefix", "ctbAcquisition::setFname")
 }
 
 void ctbAcquisition::setFindex() {
-
   try {
-  myDet->setFileIndex(eFindex->GetNumber()); 
-}  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
-
+    myDet->setAcquisitionIndex(eFindex->GetNumber());
+  } CATCH_DISPLAY ("Could not set acquisition index", "ctbAcquisition::setFindex")
 }
-
 
 void ctbAcquisition::setFsave(Bool_t b) {
   try {
-  myDet->setFileWrite(b);
- }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
-  eFname->SetState(b);
-  eOutdir->SetState(b);
-  
+    myDet->setFileWrite(b);
+    eFname->SetState(b);
+    eOutdir->SetState(b);
+  } CATCH_DISPLAY ("Could not set file write", "ctbAcquisition::setFsave")
 }
 
 void ctbAcquisition::update() {
-
+  try {
+    auto retval = myDet->getFileNamePrefix().tsquash("Different values");
+    eFname->SetText(retval.c_str());
+  } CATCH_DISPLAY ("Could not get file name prefix", "ctbAcquisition::update")
   
-  eFname->SetText((myDet->getFileName()).c_str());
-  eOutdir->SetText((myDet->getFilePath()).c_str());
-  eFindex->SetNumber(myDet->getFileIndex()); 
-  cFileSave->SetOn(myDet->getFileWrite());
+  try {
+    auto retval = myDet->getAcquisitionIndex().tsquash("Different values");
+    eFindex->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get acquisition index", "ctbAcquisition::update")
+  
+  try {
+    auto retval = myDet->getFileWrite().tsquash("Different values");
+    cFileSave->SetOn(retval);
+  } CATCH_DISPLAY ("Could not get file write", "ctbAcquisition::update")
+  
   eFname->SetState(cFileSave->IsOn());
   eOutdir->SetState(cFileSave->IsOn());
   eFindex->SetState(cFileSave->IsOn());
-  // eMeasurements->SetNumber(myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1));
-  setAnalogSamples(myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES,-1));
-  setDigitalSamples(myDet->setTimer(slsDetectorDefs::DIGITAL_SAMPLES,-1));
-  roMode=myDet->setReadOutFlags();
-  setReadoutMode(roMode);
- //nChannels=myDet->getTotalNumberOfChannels();
+  
+  try {
+    auto retval = myDet->getNumberOfAnalogSamples().tsquash("Different values");
+    setAnalogSamples(retval);
+  } CATCH_DISPLAY ("Could not get number of analog samples", "ctbAcquisition::update")
+  
+  try {
+    auto retval = myDet->getNumberOfDigitalSamples().tsquash("Different values");
+    setDigitalSamples(retval);
+  } CATCH_DISPLAY ("Could not get number of digital samples", "ctbAcquisition::update")
+  
+  try {
+    roMode = myDet->getReadoutMode().tsquash("Different values");
+    setReadoutMode(roMode);
+  } CATCH_DISPLAY ("Could not get readout mode", "ctbAcquisition::update")
+
   updateChans();
 
    if (dataStructure) {
@@ -1533,16 +1521,14 @@ void ctbAcquisition::update() {
     
    }
 
-   try{
-     dBitOffset=myDet->getReceiverDbitOffset(); 
-   }  catch (...) {
-     cout << "Do nothing for this error" << endl;
-   } 
-   try{
-     tenG=myDet->enableTenGigabitEthernet(-1);
-   }  catch (...) {
-      cout << "Do nothing for this error" << endl;
-    }
+  try {
+    dBitOffset = myDet->getRxDbitOffset().tsquash("Different values");
+  } CATCH_DISPLAY ("Could not get receiver dbit offset", "ctbAcquisition::update")
+
+  try {
+    tenG = myDet->getTenGiga().tsquash("Different values");
+  } CATCH_DISPLAY ("Could not get ten giga enable", "ctbAcquisition::update")
+
   // char aargs[10][100];
   // char *args[10];
   // for (int i=0; i<10; i++)
@@ -1602,10 +1588,8 @@ void ctbAcquisition::loadPattern() {
 
     cout << "Load: " << fname << endl;
     try {
-      myDet->retrieveDetectorSetup(fname); 
-    }  catch (...) {
-      cout << "Do nothing for this error" << endl;
-    }
+      myDet->loadParameters(fname);
+    } CATCH_DISPLAY ("Could not load parameters", "ctbAcquisition::loadPattern")
   }
 }
 
@@ -1616,15 +1600,25 @@ void ctbAcquisition::toggleAcquisition() {
   if (acqThread->GetState()==1 || acqThread->GetState()==6) {
     /** update all infos useful for the acquisition! */
 
-    setAnalogSamples(myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES,-1));
-    setDigitalSamples(myDet->setTimer(slsDetectorDefs::DIGITAL_SAMPLES,-1));
-    dBitOffset=myDet->getReceiverDbitOffset();
-    roMode=myDet->setReadOutFlags();
+  try {
+    auto retval = myDet->getNumberOfAnalogSamples().tsquash("Different values");
+    setAnalogSamples(retval);
+  } CATCH_DISPLAY ("Could not get number of analog samples", "ctbAcquisition::toggleAcquisition")
+  
+  try {
+    auto retval = myDet->getNumberOfDigitalSamples().tsquash("Different values");
+    setDigitalSamples(retval);
+  } CATCH_DISPLAY ("Could not get number of digital samples", "ctbAcquisition::toggleAcquisition")
+  
+  try {
+    dBitOffset = myDet->getRxDbitOffset().tsquash("Different values");
+  } CATCH_DISPLAY ("Could not get receiver dbit offset", "ctbAcquisition::toggleAcquisition")
+
+  try {
+    roMode = myDet->getReadoutMode().tsquash("Different values");
     setReadoutMode(roMode);
+  } CATCH_DISPLAY ("Could not get readout mode", "ctbAcquisition::toggleAcquisition")
 
-
-
-    //  iScanStep=0;
   
       cout << "Run" << endl;
       bStatus->SetText("Stop");
@@ -1675,11 +1669,9 @@ void ctbAcquisition::toggleAcquisition() {
 
   } else {
     StopFlag=1; 
-    try {
+    try{
       myDet->stopAcquisition();
-    }  catch (...) {
-      cout << "Do nothing for this error" << endl;
-    }
+    } CATCH_DISPLAY ("Could not stop acquisition", "ctbAcquisition::toggleAcquisition")
     stop=1;
     bStatus->SetText("Start");
     //  acqThread->Kill();
@@ -1696,32 +1688,30 @@ void ctbAcquisition::acquisitionFinished() {
 void ctbAcquisition::startAcquisition(){
   cout << "Detector started " <<eMeasurements->GetNumber()<< endl;
   stop=0;
+
   try {
-    tenG=myDet->enableTenGigabitEthernet(-1); 
-  }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-    }
+    tenG = myDet->getTenGiga().tsquash("Different values");
+  } CATCH_DISPLAY ("Could not get ten giga enable", "ctbAcquisition::startAcquisition")
+
   for (int im=0; im<eMeasurements->GetNumber(); im++) {
     try {
-      myDet->acquire(); 
-    }  catch (...) {
-      cout << "Do nothing for this error" << endl;
-    }
+      myDet->acquire();
+    } CATCH_DISPLAY ("Could not acquire", "ctbAcquisition::startAcquisition")
+    
     cout << im << endl;
-    if (stop) break;
+    if (stop) 
+      break;
   }
-
 }
 
 void* ctbAcquisition::ThreadHandle(void *arg)
 {
    ctbAcquisition *acq = static_cast<ctbAcquisition*>(arg);
-   int i=0;
 
    acq->startAcquisition();
    acq->acquisitionFinished();
 
-
+  return nullptr;
 }
  
  void ctbAcquisition::progressCallback(double f,void* arg) {
@@ -1753,12 +1743,6 @@ void ctbAcquisition::setPatternCompiler(const char* t) {
 
  }
 void ctbAcquisition::setMeasurements() {
-
-  
-
-  // myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,eMeasurements->GetNumber());
-  
-
 
 }
 
@@ -1864,43 +1848,29 @@ void ctbAcquisition::setDbitEnable(Int_t reg){
 
 void ctbAcquisition::updateChans() {
 
-  /** dbitlist updated */ 
-  std::vector <int>  dbl;
-  try {
-    dbl = myDet->getReceiverDbitList();  
-  }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
-  dbitlist.clear();
-  if (dbl.empty()) 
-    ;
-  else {
-    for (const auto &value : dbl) 
-      dbitlist.push_back(value);
-  }
-  uint32_t reg;
-  try {
-    reg=myDet->getADCEnableMask();
-  }  catch (...) {
-    cout << "Do nothing for this error" << endl;
-  }
-  /* adc updated */
-  adclist.clear();
-  // //  updateChans();
-  if (reg!=0xffffffff) {
-    for (int i=0; i<NADCS; i++) {
-      if (reg&(1<<i)) 
-	adclist.push_back(i);
-      //   // else enableFlag[i]=1;
+  // dbit list
+  try { 
+    auto retval = myDet->getRxDbitList().tsquash("Different values");
+    dbitlist.clear();
+    if (!retval.empty()) {
+      for (const auto &value : retval) 
+        dbitlist.push_back(value);
     }
-  }
+  } CATCH_DISPLAY ("Could not get receiver dbit list.", "ctbAcquisition::updateChans")
 
-
+  // adc mask
+  try { 
+    auto retval = myDet->getADCEnableMask().tsquash("Different values");
+    adclist.clear();
+    if (retval!=0xffffffff) {
+      for (int i=0; i<NADCS; i++) {
+        if (retval&(1<<i)) {
+	        adclist.push_back(i);
+        }
+      }
+    }
+  } CATCH_DISPLAY ("Could not get adc enable mask.", "ctbAcquisition::updateChans")
 }
-
-
-
-
 
 
 

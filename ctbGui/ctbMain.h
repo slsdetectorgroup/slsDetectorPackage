@@ -33,7 +33,10 @@ class   ctbPowers;
  
 class  ctbSignals;
 
-class multiSlsDetector;
+namespace sls
+{
+   class Detector;
+};
 
 class  ctbPattern;
 class  ctbAdcs;
@@ -47,7 +50,7 @@ class ctbMain : public TGMainFrame {
 private:
 
 
-  multiSlsDetector *myDet;
+  sls::Detector *myDet;
 
 
 
@@ -96,15 +99,14 @@ private:
 
 
 public:
-   ctbMain(const TGWindow *p, multiSlsDetector *det);
+   ctbMain(const TGWindow *p, sls::Detector *det);
 
 
    int  loadAlias(string fname);
    int  saveAlias(string fname);
-   int  loadParameters(string fname);
-   int  saveParameters(string fname);
-   int  loadConfiguration(string fname);
-   int  saveConfiguration(string fname);
+   void  loadParameters(string fname);
+   void  savePattern(string fname);
+   void  loadConfiguration(string fname);
    void tabSelected(Int_t);
    int setADCPlot(Int_t);
    int setSignalPlot(Int_t);

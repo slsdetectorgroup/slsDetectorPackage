@@ -25,7 +25,10 @@ class TGColorSelect;
 
 
 class TGNumberEntry;
-class multiSlsDetector;
+namespace sls
+{
+   class Detector;
+};
 class ctbSignal;
 
 #include <string>
@@ -45,14 +48,14 @@ private:
    TGNumberEntry *sEntry;
    TGColorSelect *fColorSel;
 
-   multiSlsDetector *myDet;
+   sls::Detector *myDet;
    Int_t id;
 
    TH1I *hsig;
 
 public:
 
-   ctbSignal(TGFrame *page, int i, multiSlsDetector *det);
+   ctbSignal(TGFrame *page, int i, sls::Detector *det);
    int setSignalAlias(char *tit, int plot, int col);
    string getSignalAlias();
 
@@ -89,10 +92,10 @@ private:
   TGNumberEntry *eIOCntrlRegister;
   TGNumberEntry *eDbitOffset;
 
-  multiSlsDetector *myDet;
+  sls::Detector *myDet;
 
 public:
-  ctbSignals(TGVerticalFrame *page, multiSlsDetector *det);
+  ctbSignals(TGVerticalFrame *page, sls::Detector *det);
    int setSignalAlias(string line);
    string getSignalAlias();
 

@@ -24,14 +24,15 @@
 #include <fstream>
 
 #include "ctbAdcs.h"
-#include "multiSlsDetector.h"
+#include "ctbDefs.h"
+#include "Detector.h"
 #include "slsDetectorCommand.h"
 
 using namespace std;
 
 
 
-ctbAdc::ctbAdc(TGVerticalFrame *page, int i, multiSlsDetector *det)
+ctbAdc::ctbAdc(TGVerticalFrame *page, int i, sls::Detector *det)
   : TGHorizontalFrame(page, 800,800), id(i), myDet(det) {
 
   TGHorizontalFrame *hframe=this;
@@ -155,7 +156,7 @@ void ctbAdc::setAdcAlias(char *tit, int plot, int color) {
 string ctbAdc::getAdcAlias() {
 
   char line[1000];
-  sprintf(line,"ADC%d %s %d %x\n",id,sAdcLabel->GetText()->Data(),sAdcPlot->IsOn(),fColorSel->GetColor());
+  sprintf(line,"ADC%d %s %d %lx\n",id,sAdcLabel->GetText()->Data(),sAdcPlot->IsOn(),fColorSel->GetColor());
   return string(line);
 }
 
@@ -264,7 +265,7 @@ void ctbAdc::setPlot(Bool_t b){
 
 
 
-ctbAdcs::ctbAdcs(TGVerticalFrame *page, multiSlsDetector *det)
+ctbAdcs::ctbAdcs(TGVerticalFrame *page, sls::Detector *det)
   : TGGroupFrame(page,"Adcs",kVerticalFrame), myDet(det) {
 
 
@@ -272,7 +273,6 @@ ctbAdcs::ctbAdcs(TGVerticalFrame *page, multiSlsDetector *det)
   page->AddFrame(this,new TGLayoutHints( kLHintsTop | kLHintsExpandX , 10,10,10,10));
   MapWindow();
   
-  char tit[100];
 
  
   TGHorizontalFrame* hframe=new TGHorizontalFrame(this, 800,800);
@@ -415,108 +415,41 @@ ctbAdcs::ctbAdcs(TGVerticalFrame *page, multiSlsDetector *det)
 
 int ctbAdcs::setEnable(int reg) {
 
-  // char aargs[10][100];
-  // char *args[10];
-  string retval;
-  int retreg;
-
-  // for (int i=0; i<10; i++) args[i]=aargs[i];
-
-  // sprintf(args[0],"adcenable");
-  // sprintf(args[1],"%x",reg);
-  // slsDetectorCommand *cmd=new slsDetectorCommand(myDet);
-  // if (reg>-1) {
-  //   retval=cmd->executeLine(1,args,slsDetectorDefs::PUT_ACTION);
-  // } 
-  if (reg>-1) {
-    try {
-    myDet->setADCEnableMask(reg);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-   
-  }
-  // retval=cmd->executeLine(1,args,slsDetectorDefs::GET_ACTION);
-  // cout <<"enable: " << retval << endl;;
-  // delete cmd;
-
-  // sscanf(retval.c_str(),"%x",&retreg);
   try {
-  retreg=myDet->getADCEnableMask();
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-   
-  eEnableMask->SetHexNumber(retreg);
+    if (reg > -1) {
+      myDet->setADCEnableMask(reg);
+    }
+    auto retval = myDet->getADCEnableMask().tsquash("Different values");
+    eEnableMask->SetHexNumber(retval);
+    return retval;
+  } CATCH_DISPLAY ("Could not set/get adc enablemask.", "ctbAdcs::setEnable")
   
-  return retreg;
+  return -1;
 }
 
 int ctbAdcs::setInvert(int reg) {
-  
-  // char aargs[10][100];
-  // char *args[10];
-  string retval;
-  int retreg;
 
-  // for (int i=0; i<10; i++) args[i]=aargs[i];
-
-  //sprint// f(args[0],"adcinvert");
-  // sprintf(args[1],"%x",reg);
-  // slsDetectorCommand *cmd=new slsDetectorCommand(myDet);
-    
-  if (reg>-1) {  
-    try {
-    myDet->setADCInvert(reg);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-   
-    //retval=cmd->executeLine(1,args,slsDetectorDefs::PUT_ACTION);
-  } 
   try {
-  retreg=myDet->getADCInvert();
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-   
-  // retval=cmd->executeLine(1,args,slsDetectorDefs::GET_ACTION);
-  // cout <<"invert: " << retval << endl;;
-  // delete cmd;
-
-  // sscanf(retval.c_str(),"%x",&retreg);
-  eInversionMask->SetHexNumber(retreg);
-  return retreg;
+    if (reg > -1) {
+      myDet->setADCInvert(reg);
+    }
+    auto retval = myDet->getADCInvert().tsquash("Different values");
+    eInversionMask->SetHexNumber(retval);
+    return retval;
+  } CATCH_DISPLAY ("Could not set/get adc enablemask.", "ctbAdcs::setEnable")
+  
+  return -1;
 }
 
 
 
 void ctbAdcs::update() {
-  Int_t invreg;//=myDet->readRegister(67);//(120);
-  Int_t disreg;//=myDet->readRegister(120);//(94);
-  // for (int i=0; i<10; i++)
-  //   args[i]=aargs[i];
-
-  // string retval;
-  // sprintf(args[0],"adcenable");
-  // slsDetectorCommand *cmd=new slsDetectorCommand(myDet);
-  // retval=cmd->executeLine(1,args,slsDetectorDefs::GET_ACTION);
-  // delete cmd;
-  // // cout << retval << endl;
-
-  // sscanf(retval.c_str(),"adcenable %x",&disreg);
-
-  // eInversionMask->SetHexNumber(invreg);
-  // eEnableMask->SetHexNumber(disreg);
+  Int_t invreg;
+  Int_t disreg;
 
   disreg=setEnable();
   invreg=setInvert();
   
-
   for (int is=0; is<NADCS; is++) {
     sAdc[is]->setAdcAlias(NULL,-1,-1);
     if (invreg & (1<<is) )
@@ -528,42 +461,29 @@ void ctbAdcs::update() {
       sAdc[is]->setEnable(kTRUE);
     else
       sAdc[is]->setEnable(kFALSE);
-      
-
   }
   
    Emit("AdcEnable(Int_t)", disreg);
 
 }
 string ctbAdcs::getAdcParameters() {
-  
-  ostringstream line;
-
+    ostringstream line;
   line << "reg "<< hex  << setInvert() << "# ADC invert reg" << dec << endl;
   line << "reg "<< hex  << setEnable() << " # ADC enable reg"<< dec <<  endl;
-  // line << "reg "<< hex <<  67 << " " << myDet->readRegister(67) << "# ADC invert reg" << dec << endl;
-  // line << "reg "<< hex << 120 << " " << myDet->readRegister(120) << " # ADC enable reg"<< dec <<  endl;
-  // // line << "reg "<< hex << 94 << " " << myDet->readRegister(94) << " # ADC enable reg"<< dec <<  endl;
   return line.str();
 
 }
 
 
 void ctbAdcs::CheckAll() {
-
-
   for (int is=0; is<NADCS; is++){
     sAdc[is]->setPlot(kTRUE);
-    // sAdc[is]->setEnabled(kTRUE);
   }
 }
 
 
 void ctbAdcs::RemoveAll() {
-
-
   for (int is=0; is<NADCS; is++) {
-    //  sAdc[is]->setEnabled(kFALSE);
     sAdc[is]->setPlot(kFALSE);
   }
 }
@@ -571,50 +491,31 @@ void ctbAdcs::RemoveAll() {
 
 
 void ctbAdcs::CheckHalf0() {
-
-
   for (int is=0; is<NADCS/2; is++) {
     sAdc[is]->setPlot(kTRUE);
-    // sAdc[is]->setEnabled(kTRUE)
   }
 }
 
 
 void ctbAdcs::RemoveHalf0() {
-
-
   for (int is=0; is<NADCS/2; is++){
-    //  sAdc[is]->setEnabled(kFALSE);
     sAdc[is]->setPlot(kFALSE);
   }
 }
 
 void ctbAdcs::CheckHalf1() {
-
-
   for (int is=NADCS/2; is<NADCS; is++){
     sAdc[is]->setPlot(kTRUE);
-    // sAdc[is]->setEnabled(kTRUE)
   }
 }
 
 
 void ctbAdcs::RemoveHalf1() {
-
-
   for (int is=NADCS/2; is<NADCS; is++){
-    //  sAdc[is]->setEnabled(kFALSE);
     sAdc[is]->setPlot(kFALSE);
   }
 }
 
-
-// TGraph* ctbAdcs::getGraph(int i) {
-
-//   if (i>=0 &&  i<NADCS)
-//     return sAdc[i]->getGraph();
-//   return NULL;
-// }
 
 int ctbAdcs::setAdcAlias(string line) {
 
@@ -657,33 +558,23 @@ void ctbAdcs::AdcEnable(Int_t b){
 
 void ctbAdcs::ToggledAdcEnable(Int_t b){
 
-
-   Int_t oreg=setEnable();//myDet->readRegister(67);
+   Int_t oreg=setEnable();
    Int_t m=1<<b;
   
-
    if (sAdc[b]->getEnable())
      oreg|=m;
    else
      oreg&=~m;
-  
-//   cout << dec << sizeof(Long64_t) << " " << mask << " " << hex << m << " ioreg " << oreg << endl;
 
-   setEnable(oreg);//)writeRegister(67, oreg);
-   //oreg=setEnable();//myDet->readRegister(67);
-
+   setEnable(oreg);
   
    Emit("AdcEnable(Int_t)", oreg);
-   //cout << "enable!" << endl;
-  //  Emit("ToggledAdcPlot(Int_t)", b);
-
 }
 
 
 void ctbAdcs::ToggledAdcInvert(Int_t b){
 
-  // char val[1000];
-   Int_t oreg=setInvert();//myDet->readRegister(67);
+   Int_t oreg=setInvert();
    Int_t m=1<<b;
   
 
@@ -692,15 +583,7 @@ void ctbAdcs::ToggledAdcInvert(Int_t b){
    else
      oreg&=~m;
   
-//   cout << dec << sizeof(Long64_t) << " " << mask << " " << hex << m << " ioreg " << oreg << endl;
-
-   setInvert(oreg);//)writeRegister(67, oreg);
-   // oreg=setInvert();//myDet->readRegister(67);
-
-//   cout << dec << sizeof(Long64_t) << " " << mask << " " << hex << m << " ioreg " << oreg << endl;
-
-   //sprintf(val,"%X",oreg);
-   //eInversionMask->SetHexNumber(oreg);
+   setInvert(oreg);
 }
 
 
@@ -710,22 +593,23 @@ void ctbAdcs::ToggledAdcInvert(Int_t b){
 Pixel_t ctbAdcs::getColor(int i){
   if (i>=0 && i<NADCS)
     return sAdc[i]->getColor();
+  return static_cast<Pixel_t>(-1);
 }
 
 Bool_t ctbAdcs::getEnabled(int i){
   if (i>=0 && i<NADCS)
     return sAdc[i]->getEnabled();
-  
+  return static_cast<Bool_t>(-1);
 }
 
 Bool_t ctbAdcs::getEnable(int i){
   if (i>=0 && i<NADCS)
     return sAdc[i]->getEnable();
-  
+  return static_cast<Bool_t>(-1);
 }
 
 Bool_t ctbAdcs::getPlot(int i){
   if (i>=0 && i<NADCS)
     return sAdc[i]->getPlot();
-  
+  return static_cast<Bool_t>(-1);
 }

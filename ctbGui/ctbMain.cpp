@@ -29,15 +29,13 @@
 
 
 
-
-
-
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 
-#include "multiSlsDetector.h"
+#include "Detector.h"
+#include "ctbDefs.h"
 #include "ctbMain.h"
 #include "ctbDacs.h"
 #include "ctbSlowAdcs.h"
@@ -52,7 +50,7 @@ using namespace std;
 
 
 
-ctbMain::ctbMain(const TGWindow *p, multiSlsDetector *det)
+ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
   : TGMainFrame(p,800,800), pwrs(NULL), senses(NULL) {
 
   myDet=det;
@@ -147,7 +145,7 @@ ctbMain::ctbMain(const TGWindow *p, multiSlsDetector *det)
   tf = mtab->AddTab("Power Supplies");
   page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-   pwrs=new ctbPowers(page, myDet);
+  pwrs=new ctbPowers(page, myDet);
 
   i_pwrs=i_page++;
 
@@ -155,7 +153,7 @@ ctbMain::ctbMain(const TGWindow *p, multiSlsDetector *det)
   tf = mtab->AddTab("Sense");
   page=new TGVerticalFrame(tf, 1500,1200);
   tf->AddFrame(page, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
-   senses=new ctbSlowAdcs(page, myDet);
+  senses=new ctbSlowAdcs(page, myDet);
 
   i_senses=i_page++;
 
@@ -304,7 +302,7 @@ void ctbMain::HandleMenu(Int_t id)
              fi.fIniDir    = StrDup(dir);
              printf("fIniDir = %s\n", fi.fIniDir);
              new TGFileDialog(gClient->GetRoot(), this, kFDOpen, &fi);
-             printf("Open file: %s (dir: %s)\n", fi.fFilename);
+             printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
 	     // dir = fi.fIniDir;
 	     if (fi.fFilename)
 	       loadAlias(fi.fFilename);
@@ -320,13 +318,12 @@ void ctbMain::HandleMenu(Int_t id)
              fi.fIniDir    = StrDup(dir);
              printf("fIniDir = %s\n", fi.fIniDir);
              new TGFileDialog(gClient->GetRoot(), this, kFDSave, &fi);
-             printf("Save file: %s (dir: %s)\n", fi.fFilename);
+             printf("Save file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
 	     // dir = fi.fIniDir;
 	     if (fi.fFilename)
 	       saveAlias(fi.fFilename);
           }
          break;
-
    case 2: //fMenuFile->AddEntry("Open Parameters", im++);
      cout << "Open Parameters" << endl;
          {
@@ -343,23 +340,7 @@ void ctbMain::HandleMenu(Int_t id)
           }
          break;
 
-   case 3: //fMenuFile->AddEntry("Save Parameters", im++);
-     cout << "Save Parameters" << endl;
-         {
-             static TString dir(".");
-             TGFileInfo fi;
-             //fi.fFileTypes = filetypes;
-             fi.fIniDir    = StrDup(dir);
-             printf("fIniDir = %s\n", fi.fIniDir);
-             new TGFileDialog(gClient->GetRoot(), this, kFDSave, &fi);
-             printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
-	     // dir = fi.fIniDir;
-	     if (fi.fFilename)
-	       saveParameters(fi.fFilename);
-          }
-         break;
-
-   case 4: // fMenuFile->AddEntry("Open Configuration", im++);
+   case 3: // fMenuFile->AddEntry("Open Configuration", im++);
      cout << "Open configuration" << endl;
          {
              static TString dir(".");
@@ -375,23 +356,7 @@ void ctbMain::HandleMenu(Int_t id)
           }
          break;
  
-   case 5: //  fMenuFile->AddEntry("Save Configuration", im++);
-     cout << "Save configuration" << endl;
-         {
-             static TString dir(".");
-             TGFileInfo fi;
-             //fi.fFileTypes = filetypes;
-             fi.fIniDir    = StrDup(dir);
-             printf("fIniDir = %s\n", fi.fIniDir);
-             new TGFileDialog(gClient->GetRoot(), this, kFDSave, &fi);
-             printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
-	     // dir = fi.fIniDir;
-	     if (fi.fFilename)
-	       saveConfiguration(fi.fFilename);
-          }
-         break;
-
-   case 6: //fMenuFile->AddEntry("Open Pattern", im++);
+   case 4: //fMenuFile->AddEntry("Open Pattern", im++);
      cout << "Open pattern" << endl;
          {
              static TString dir(".");
@@ -407,7 +372,7 @@ void ctbMain::HandleMenu(Int_t id)
           }
      break;
 
-   case 7:   //fMenuFile->AddEntry("Save Pattern", im++);
+   case 5:   //fMenuFile->AddEntry("Save Pattern", im++);
      cout << "Save pattern" << endl;
          {
              static TString dir(".");
@@ -419,11 +384,11 @@ void ctbMain::HandleMenu(Int_t id)
              printf("Open file: %s (dir: %s)\n", fi.fFilename, fi.fIniDir);
 	     // dir = fi.fIniDir;
 	     if (fi.fFilename)
-	       saveParameters(fi.fFilename);
+	       savePattern(fi.fFilename);
           }
          break;
 
-   case 8: //  fMenuFile->AddEntry("Exit", im++);
+   case 6: //  fMenuFile->AddEntry("Exit", im++);
      CloseWindow();
 
       default:
@@ -439,7 +404,7 @@ int  ctbMain::setADCPlot(Int_t i) {
   //  cout << "ADC " << i << " plot or color toggled" << endl;
   //  acq->setGraph(i,adcs->getGraph(i));
   acq->setGraph(i,adcs->getEnabled(i),adcs->getColor(i));
-
+  return -1;
 }
 
 
@@ -448,117 +413,28 @@ int  ctbMain::setSignalPlot(Int_t i) {
   //  cout << "ADC " << i << " plot or color toggled" << endl;
   //  acq->setGraph(i,adcs->getGraph(i));
   acq->setBitGraph(i,sig->getPlot(i),sig->getColor(i));
-
+  return -1;
 }
 
 
 
-int  ctbMain::loadConfiguration(string fname) {
-
-    myDet->readConfigurationFile(fname);
-
-//   string line;
-//   int i;
-//   ifstream myfile (fname.c_str());
-//   if (myfile.is_open())
-//   {
-//     while ( getline (myfile,line) )
-//     {
-
-	
-      
-//     }
-//     myfile.close();
-//   }
-
-//   else cout << "Unable to open file"; 
-
-  return 0;
-
+void  ctbMain::loadConfiguration(string fname) {
+  try{
+    myDet->loadConfig(fname);
+  } CATCH_DISPLAY ("Could not load config.", "ctbMain::loadConfiguration")
 }
 
-
-
-
-
-int  ctbMain::saveConfiguration(string fname) {
-
-
-    myDet->writeConfigurationFile(fname);
- //  string line;
-//   int i;
-//   ofstream myfile (fname.c_str());
-//   if (myfile.is_open())
-//   {
-    
-
-//    myfile.close();
-//   }
-
-//   else cout << "Unable to open file"; 
-
-  return 0;
-
+void  ctbMain::loadParameters(string fname) {
+  try{
+    myDet->loadParameters(fname);
+  } CATCH_DISPLAY ("Could not load parameters.", "ctbMain::loadParameters")
 }
 
-
-
-
-
-
-
-int  ctbMain::loadParameters(string fname) {
-
-    myDet->retrieveDetectorSetup(fname);
-
-//   string line;
-//   int i;
-//   ifstream myfile (fname.c_str());
-//   if (myfile.is_open())
-//   {
-//     while ( getline (myfile,line) )
-//     {
-
-	
-      
-//     }
-//     myfile.close();
-//   }
-
-//   else cout << "Unable to open file"; 
-
-  return 0;
-
+void  ctbMain::savePattern(string fname) {
+  try{
+    myDet->savePattern(fname);
+  } CATCH_DISPLAY ("Could not save pattern.", "ctbMain::savePattern")
 }
-
-
-
-
-
-int  ctbMain::saveParameters(string fname) {
-
-
-  string line;
-  int i;
-   myDet->dumpDetectorSetup(fname);
-//   ofstream myfile (fname.c_str());
-//   if (myfile.is_open())
-//   {
-
-//    myfile << dacs->getDacParameters();
-//    myfile << sig->getSignalParameters();
-//    myfile << adcs->getAdcParameters();
-
-//    myfile.close();
-//   }
-
-//   else cout << "Unable to open file"; 
-
-  return 0;
-
-}
-
-
 
 
 
@@ -589,7 +465,7 @@ int  ctbMain::loadAlias(string fname) {
       else if (sscanf(line.c_str(),"PAT%s",aaaa)>0) {
 	pat->setPatternAlias(line);
 	//	cout << "---------" << line<< endl;
-      }	else if (sscanf(line.c_str(),"V%s",&i)>0) {
+      }	else if (sscanf(line.c_str(),"V%s",aaaa)>0) {
 	    if (pwrs)	pwrs->setPwrAlias(line);
 	//	cout << "+++++++++" << line<< endl;
       } else if (sscanf(line.c_str(),"SENSE%d",&i)>0) {
@@ -615,7 +491,6 @@ int  ctbMain::saveAlias(string fname) {
 
 
   string line;
-  int i;
   ofstream myfile (fname.c_str());
   if (myfile.is_open())
   {

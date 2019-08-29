@@ -29,7 +29,7 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
   */
   //moench04CtbZmq10GbData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+nds*8), aSamples(nas), dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
- moench04CtbZmq10GbData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, (nas > 0) && (nds>0) ? max(nas,nds)*(32*2+8) : nas*32*2+nds*8), aSamples(nas), dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
+ moench04CtbZmq10GbData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, (nas > 0) && (nds>0) ? max(nas,nds)*(32*2+8) : nas*32*2+nds*8), nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
 
     /* int ds; */
     /* if (nas && nds) */
@@ -46,13 +46,13 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
     int row, col;
 
-    int isample;
+    //int isample;
     int iadc;
-    int ix, iy;
+   // int ix, iy;
     
-     int npackets=40;
+    // int npackets=40;
     int i;
-    int adc4(0);
+    //int adc4(0);
 
       for (int is=0; is<aSamples; is++) {
 	
@@ -115,7 +115,7 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
   }
     
   int getGain(char *data, int x, int y) {
-    int aoff=aSamples*2*32;
+   // int aoff=aSamples*2*32;
     int irow;
     int isc=x/sc_width;
     int icol=x%sc_width;
@@ -237,15 +237,15 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
-	  char *retval=0;
-	  int  nd;
-	  int fnum = -1;
+	 // char *retval=0;
+	 // int  nd;
+	 // int fnum = -1;
 	  np=0;
-	  int  pn;
+	  //int  pn;
 	  
 	  //  cout << dataSize << endl;
 	  if (ff>=0)
-	    fnum=ff;
+	   // fnum=ff;
 
 	  if (filebin.is_open()) {
 	    if (filebin.read(data, dataSize) ){

@@ -23,7 +23,10 @@ class TH1F;
 class TGLabel;
 class TGTextButton;
 
-class multiSlsDetector;
+namespace sls
+{
+   class Detector;
+};
 class detectorData;
 
 template <class dataType> class slsDetectorData;
@@ -112,7 +115,7 @@ class ctbAcquisition : public TGGroupFrame {
   // TH1I *plotAdc[NADCS];
 
 
-  multiSlsDetector* myDet;
+  sls::Detector* myDet;
   
   int plotFlag[NADCS];
   int bitPlotFlag[NSIGNALS];
@@ -169,7 +172,7 @@ class ctbAcquisition : public TGGroupFrame {
   int deserializer;
 
  public:
-   ctbAcquisition(TGVerticalFrame*,  multiSlsDetector*);
+   ctbAcquisition(TGVerticalFrame*,  sls::Detector*);
    void setOutdir();
    void setFname();
    void setMeasurements();

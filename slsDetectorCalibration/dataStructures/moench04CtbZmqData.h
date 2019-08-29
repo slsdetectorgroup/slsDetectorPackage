@@ -28,20 +28,20 @@ class moench04CtbZmqData : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
- moench04CtbZmqData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+nds*8), aSamples(nas), dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
+ moench04CtbZmqData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+nds*8), nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
     
 
     int adc_nr[32]={9, 8,11,10,13,12,15,14,1,0,3,2,5,4,7,6,23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24 };
 
     int row, col;
 
-    int isample;
+    //int isample;
     int iadc;
-    int ix, iy;
+    //int ix, iy;
     
-     int npackets=40;
+    // int npackets=40;
     int i;
-    int adc4(0);
+    //int adc4(0);
 
       for (int is=0; is<aSamples; is++) {
 	
@@ -223,15 +223,15 @@ class moench04CtbZmqData : public slsDetectorData<uint16_t> {
 
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
-	  char *retval=0;
-	  int  nd;
-	  int fnum = -1;
+	 // char *retval=0;
+	  //int  nd;
+	  //int fnum = -1;
 	  np=0;
-	  int  pn;
+	  //int  pn;
 	  
 	  //  cout << dataSize << endl;
 	  if (ff>=0)
-	    fnum=ff;
+	   // fnum=ff;
 
 	  if (filebin.is_open()) {
 	    if (filebin.read(data, dataSize) ){

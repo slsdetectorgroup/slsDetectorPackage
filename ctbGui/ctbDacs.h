@@ -15,7 +15,10 @@ class TGNumberEntry;
 class TGCheckButton;
 
 
-class multiSlsDetector;
+namespace sls
+{
+   class Detector;
+};
 
 #include <string>
 using namespace std;
@@ -32,9 +35,9 @@ class ctbDac : public TGHorizontalFrame {
    TGLabel *dacsValue;
    int id;
 
-   multiSlsDetector* myDet;
+   sls::Detector* myDet;
  public:
-   ctbDac(TGGroupFrame*, int , multiSlsDetector*);
+   ctbDac(TGGroupFrame*, int , sls::Detector*);
    void setValue();
    void setValue(Long_t);
    int getValue();
@@ -55,10 +58,10 @@ private:
 
    ctbDac *dacs[NDACS+2];
 
-   multiSlsDetector* myDet;
+   sls::Detector* myDet;
 
 public:
-   ctbDacs(TGVerticalFrame *page, multiSlsDetector*);
+   ctbDacs(TGVerticalFrame *page, sls::Detector*);
 
    int setDacAlias(string line);
    // int setDacAlias(string line);

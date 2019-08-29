@@ -27,7 +27,10 @@ class energyCalibration;
 class  TGTextButton;
 class  TGTab;
 
-class multiSlsDetector;
+namespace sls
+{
+   class Detector;
+};
 
 
 #include <string>
@@ -46,10 +49,10 @@ class ctbLoop : public TGHorizontalFrame {
 
    int id;
 
-   multiSlsDetector *myDet;
+   sls::Detector *myDet;
 
  public:
-   ctbLoop(TGGroupFrame *page, int i,multiSlsDetector *det);
+   ctbLoop(TGGroupFrame *page, int i,sls::Detector *det);
    
    void setNLoops();
    void update();
@@ -67,10 +70,10 @@ class ctbWait : public TGHorizontalFrame {
 
    int id;
 
-   multiSlsDetector *myDet;
+   sls::Detector *myDet;
 
  public:
-   ctbWait(TGGroupFrame *page, int i,multiSlsDetector *det);
+   ctbWait(TGGroupFrame *page, int i,sls::Detector *det);
    
    void setWaitTime();
    void update();
@@ -122,11 +125,11 @@ private:
   
    char pat[PATLEN*8];
 
-   multiSlsDetector *myDet;
+   sls::Detector *myDet;
 
 public:
 
-   ctbPattern(TGVerticalFrame *page, multiSlsDetector *det);
+   ctbPattern(TGVerticalFrame *page, sls::Detector *det);
 
    void update();
    void setAdcFreq();

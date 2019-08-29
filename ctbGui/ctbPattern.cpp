@@ -24,15 +24,16 @@
 #include <fstream>
 
 #include "ctbPattern.h"
-#include "multiSlsDetector.h"
-
+#include "ctbDefs.h"
+#include "Detector.h"
+#include <chrono>
 using namespace std;
 
 
 
 
 
-ctbLoop::ctbLoop(TGGroupFrame *page, int i, multiSlsDetector *det) : TGHorizontalFrame(page, 800,800), id(i), myDet(det) {
+ctbLoop::ctbLoop(TGGroupFrame *page, int i, sls::Detector *det) : TGHorizontalFrame(page, 800,800), id(i), myDet(det) {
 
   TGHorizontalFrame *hframe=this;
   
@@ -116,47 +117,27 @@ ctbLoop::ctbLoop(TGGroupFrame *page, int i, multiSlsDetector *det) : TGHorizonta
 }
 
 void ctbLoop::setNLoops() {
-
-  int start, stop, n;
-  
-
-    start=-1;
-    stop=-1;
-    n=eLoopNumber->GetNumber();
-    try{
-      myDet->setPatternLoops(id,start, stop,n);
-    } catch (...) {
-
-      cout << "Do nothing for this error" << endl;
-    }
-
-
+  try{
+    myDet->setPatternLoops(id, -1, -1, eLoopNumber->GetNumber());
+  } CATCH_DISPLAY ("Could not set number of pattern loops for level " + to_string(id) + ".", "ctbLoop::setNLoops")
 }
 
 
 
 void ctbLoop::update() {
+  try{
 
-  int start, stop, n;
-  
-  std::array<int, 3> loop;
-
- try {
-   loop=myDet->getPatternLoops(id);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-   
-
+    auto loop = myDet->getPatternLoops(id).tsquash("Different values");
     eLoopStartAddr->SetHexNumber(loop[0]);
     eLoopStopAddr->SetHexNumber(loop[1]);
     eLoopNumber->SetNumber(loop[2]);
+
+  } CATCH_DISPLAY ("Could not get pattern loops for level " + to_string(id) + ".", "ctbLoop::update")
 }
 
 
 
-ctbWait::ctbWait(TGGroupFrame *page, int i, multiSlsDetector *det) : TGHorizontalFrame(page, 800,800), id(i), myDet(det) {
+ctbWait::ctbWait(TGGroupFrame *page, int i, sls::Detector *det) : TGHorizontalFrame(page, 800,800), id(i), myDet(det) {
 
   char tit[100];
   TGHorizontalFrame *hframe=this;
@@ -211,41 +192,25 @@ ctbWait::ctbWait(TGGroupFrame *page, int i, multiSlsDetector *det) : TGHorizonta
 
 
 void ctbWait::setWaitTime() {
-
-
-  Long64_t t=eWaitTime->GetNumber();
   try{
-    t=myDet->setPatternWaitTime(id,t);
-  } catch (...) {
-    
-    cout << "Do nothing for this error" << endl;
-  }
+
+    myDet->setPatternWaitTime(id, eWaitTime->GetNumber());
+
+  } CATCH_DISPLAY ("Could not set pattern wait time for level " + to_string(id) + ".", "ctbWait::setWaitTime")
 }
 
 
 
 void ctbWait::update() {
+  try{
 
-  int start, stop, n, addr;
-  
-  Long64_t t=-1;
-  try{
-    
-    t=myDet->setPatternWaitTime(id,t);
-  } catch (...) {
-    
-    cout << "Do nothing for this error" << endl;
-  }
-  try{
-    addr=myDet->setPatternWaitAddr(id,-1);
-  
-  } catch (...) {
-    
-    cout << "Do nothing for this error" << endl;
-  }
+    auto time = myDet->getPatternWaitTime(id).tsquash("Different values");
+    auto addr = myDet->getPatternWaitAddr(id).tsquash("Different values");
+
     eWaitAddr->SetHexNumber(addr);
-    eWaitTime->SetNumber(t);
+    eWaitTime->SetNumber(time);
 
+  } CATCH_DISPLAY ("Could not get pattern loops for level " + to_string(id) + ".", "ctbWait::update")
 }
 
 
@@ -256,7 +221,7 @@ void ctbWait::update() {
 
 
 
-ctbPattern::ctbPattern(TGVerticalFrame *page, multiSlsDetector *det)
+ctbPattern::ctbPattern(TGVerticalFrame *page, sls::Detector *det)
   : TGGroupFrame(page,"Pattern",kVerticalFrame), myDet(det) {
 
 
@@ -809,134 +774,64 @@ ctbPattern::ctbPattern(TGVerticalFrame *page, multiSlsDetector *det)
 }
 
 void ctbPattern::update() {
+  try{
+    auto retval = myDet->getRUNClock().tsquash("Different values");
+    eRunClkFreq->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get run clock.", "ctbPattern::update")
 
-  int start, stop, n, addr;
-  
-  Long_t t;
+  try{
+    auto retval = myDet->getADCClock().tsquash("Different values");
+    eAdcClkFreq->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get adc clock.", "ctbPattern::update")
 
-  
-  try {
-    n=myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER,-1,0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    auto retval = myDet->getADCPhase().tsquash("Different values");
+    eAdcClkPhase->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get adc phase shift.", "ctbPattern::update")
 
-  eRunClkFreq->SetNumber(n);
+  try{
+    auto retval = myDet->getADCPipeline().tsquash("Different values");
+    eAdcPipeline->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get adc pipeline.", "ctbPattern::update")
 
-  try {
-    n=myDet->setSpeed(slsDetectorDefs::ADC_CLOCK,-1,0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    auto retval = myDet->getDBITClock().tsquash("Different values");
+    eDBitClkFreq->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get dbit clock.", "ctbPattern::update")
 
-  eAdcClkFreq->SetNumber(n);
+  try{
+    auto retval = myDet->getDBITPhase().tsquash("Different values");
+    eDBitClkPhase->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get dbit phase shift.", "ctbPattern::update")
 
-  try {
-    n=myDet->setSpeed(slsDetectorDefs::ADC_PHASE,-1,0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    auto retval = myDet->getDBITPipeline().tsquash("Different values");
+    eDBitPipeline->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get dbit pipeline.", "ctbPattern::update")
 
-  eAdcClkPhase->SetNumber(n);
+  try{
+    auto retval = myDet->getNumberOfFrames().tsquash("Different values");
+    eFrames->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get number of frames.", "ctbPattern::update")
 
-  try {
-    n=myDet->setSpeed(slsDetectorDefs::ADC_PIPELINE,-1,0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    auto timeNs = myDet->getPeriod().tsquash("Different values");
+    ePeriod->SetNumber(ctbDefs::ConvertChronoNStoDoubleS(timeNs));
+  } CATCH_DISPLAY ("Could not get period.", "ctbPattern::update")
 
+  try{
+    auto retval = myDet->getNumberOfTriggers().tsquash("Different values");
+    eCycles->SetNumber(retval);
+  } CATCH_DISPLAY ("Could not get number of triggers.", "ctbPattern::update")
 
-  eAdcPipeline->SetNumber(n);
+  try{
+    auto retval = myDet->getPatternLoops(-1).tsquash("Different values");
+    eStartAddr->SetHexNumber(retval[0]);
+    eStopAddr->SetHexNumber(retval[1]);
+  } CATCH_DISPLAY ("Could not get dbit phase shift.", "ctbPattern::update")
 
-  try {
-    n=myDet->setSpeed(slsDetectorDefs::DBIT_CLOCK,-1,0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
-
-  eDBitClkFreq->SetNumber(n);
-
-  try {
-    n=myDet->setSpeed(slsDetectorDefs::DBIT_PHASE,-1,0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
-
-  eDBitClkPhase->SetNumber(n);
-try {
-  n=myDet->setSpeed(slsDetectorDefs::DBIT_PIPELINE,-1,0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-  eDBitPipeline->SetNumber(n);
-
-try {
-  n=myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
-  eFrames->SetNumber(n);
-
-  
-try {
-  n=myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
-
-
- ePeriod->SetNumber(((Double_t)n)*1E-9);
-
- try {
-   n=myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
-  eCycles->SetNumber(n);
-
-
- // try {
- //   myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1);
- //      } catch (...) {
-    
- //      cout << "Do nothing for this error" << endl;
- //  }
-   
- //  eMeasurements->SetNumber(n);
-
-  start=-1;
-  stop=-1;
-  n=-1;
-  std::array<int, 3> loop;
-
- try {
-   loop=myDet->getPatternLoops(-1);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-   
-  eStartAddr->SetHexNumber(loop[0]);
-  eStopAddr->SetHexNumber(loop[1]);
- 
   for (int iloop=0; iloop<NLOOPS; iloop++) {
-    eLoop[iloop]->update();
-    
+    eLoop[iloop]->update();  
   }
 
   for (int iwait=0; iwait<NWAITS; iwait++) {
@@ -946,8 +841,9 @@ try {
   getAnalogSamples();
   getDigitalSamples();
   getReadoutMode();
-
 }
+
+
 void ctbPattern::setFile() {
   patternFileChanged(patternFile->GetText());
 
@@ -984,7 +880,8 @@ void ctbPattern::setPatternAlias(string line){
 
 string ctbPattern::getPatternAlias() {
     char line[100000];
-    sprintf("PATCOMPILER %s\nPATFILE %s\n",patternCompiler->GetText(),patternFile->GetText());
+    sprintf(line, "PATCOMPILER %s\nPATFILE %s\n",patternCompiler->GetText(),patternFile->GetText());
+    return line;
 }
 
 
@@ -1032,154 +929,103 @@ string ctbPattern::getPatternFile() {
 }
 
 void ctbPattern::setFrames() {
-  try {
-  myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,eFrames->GetNumber());
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    myDet->setNumberOfFrames(eFrames->GetNumber());
+  } CATCH_DISPLAY ("Could not set number of frames", "ctbPattern::setFrames")
 }
 
 void ctbPattern::setCycles() {
-  try {
-  myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,eFrames->GetNumber());
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    myDet->setNumberOfTriggers(eCycles->GetNumber());
+  } CATCH_DISPLAY ("Could not set number of triggers", "ctbPattern::setCycles")
 }
-
-// void ctbPattern::setMeasurements() {
-//   try {
-//   myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,eFrames->GetNumber());
-//       } catch (...) {
-    
-//       cout << "Do nothing for this error" << endl;
-//   }
-// }
-
-
-
 
 void ctbPattern::setPeriod() {
-  try {
-  myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,ePeriod->GetNumber()*1E9);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  using std::chrono::duration;
+  using std::chrono::duration_cast;
+  using std::chrono::nanoseconds; 
+  try{
+    auto timeNs = ctbDefs::ConvertDoubleStoChronoNS(ePeriod->GetNumber());
+    myDet->setPeriod(timeNs);
+  } CATCH_DISPLAY ("Could not set period", "ctbPattern::setPeriod")
 }
-
-
-
 
 void ctbPattern::setAdcFreq() {
-  try {
-  myDet->setSpeed(slsDetectorDefs::ADC_CLOCK,eAdcClkFreq->GetNumber(),0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    myDet->setADCClock(eAdcClkFreq->GetNumber());
+  } CATCH_DISPLAY ("Could not set adc clock", "ctbPattern::setAdcFreq")
 }
+
 void ctbPattern::setRunFreq() {
   try{
-    myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER,eRunClkFreq->GetNumber(),0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
+    myDet->setRUNClock(eRunClkFreq->GetNumber());
+  } CATCH_DISPLAY ("Could not set run clock", "ctbPattern::setRunFreq")
 }
+
 void ctbPattern::setDBitFreq() {
-  // cout <<"Not setting dbit frequency to " << eDBitClkFreq->GetNumber()<< endl;
-  try {
-  myDet->setSpeed(slsDetectorDefs::DBIT_CLOCK,eDBitClkFreq->GetNumber(),0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
+  try{
+    myDet->setDBITClock(eDBitClkFreq->GetNumber());
+  } CATCH_DISPLAY ("Could not set dbit clock", "ctbPattern::setDBitFreq")
 }
-void ctbPattern::setAdcPhase() {
-  try {
-    myDet->setSpeed(slsDetectorDefs::ADC_PHASE,eAdcClkPhase->GetNumber(),0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
 
+void ctbPattern::setAdcPhase() {
+  try{
+    myDet->setADCPhase(eAdcClkPhase->GetNumber());
+  } CATCH_DISPLAY ("Could not set adc phase shift", "ctbPattern::setAdcPhase")
 }
 
 void ctbPattern::setDBitPhase() {
-  // cout <<"Not setting dbit phase to " << eDBitClkPhase->GetNumber()<< endl;
-  try {
-    myDet->setSpeed(slsDetectorDefs::DBIT_PHASE,eDBitClkPhase->GetNumber(),0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
+  try{
+    myDet->setDBITPhase(eDBitClkPhase->GetNumber());
+  } CATCH_DISPLAY ("Could not set dbit phase shift", "ctbPattern::setDBitPhase")
 }
-
 
 void ctbPattern::setAdcPipeline() {
-  try {
-    myDet->setSpeed(slsDetectorDefs::ADC_PIPELINE,eAdcPipeline->GetNumber(),0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    myDet->setADCPipeline(eAdcPipeline->GetNumber());
+  } CATCH_DISPLAY ("Could not set adc pipeline", "ctbPattern::setAdcPipeline")
 }
 
-
 void ctbPattern::setDBitPipeline() {
-  // cout <<"Not setting dbit pipeline to " << eDBitPipeline->GetNumber() << endl;
-  try {
-    myDet->setSpeed(slsDetectorDefs::DBIT_PIPELINE,eDBitPipeline->GetNumber(),0);
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    myDet->setDBITPipeline(eDBitPipeline->GetNumber());
+  } CATCH_DISPLAY ("Could not set dbit pipeline", "ctbPattern::setDBitPipeline")
 }
 
 
 void ctbPattern::setAnalogSamples() {
-  try {
-  myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES,eAnalogSamples->GetNumber());
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  } 
+  try{
+    myDet->setNumberOfAnalogSamples(eAnalogSamples->GetNumber());
+  } CATCH_DISPLAY ("Could not set number of analog sampels", "ctbPattern::setAnalogSamples")
+
   analogSamplesChanged(eAnalogSamples->GetNumber());
 }
 
 void ctbPattern::setDigitalSamples() {
-  try {
-  myDet->setTimer(slsDetectorDefs::DIGITAL_SAMPLES,eDigitalSamples->GetNumber()); 
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    myDet->setNumberOfDigitalSamples(eDigitalSamples->GetNumber());
+  } CATCH_DISPLAY ("Could not set number of digital samples", "ctbPattern::setDigitalSamples")
+
   digitalSamplesChanged(eDigitalSamples->GetNumber());
 }
 
 void ctbPattern::setReadoutMode(Bool_t) {
-  // cout << "Set readout mode to be implemented" << endl;
-  slsDetectorDefs::readOutFlags flags;
-  if (cbAnalog->IsOn() && cbDigital->IsOn()) flags=slsDetectorDefs::ANALOG_AND_DIGITAL;
-  else  if (~cbAnalog->IsOn() && cbDigital->IsOn()) flags=slsDetectorDefs::DIGITAL_ONLY;
-  else  if (cbAnalog->IsOn() && ~cbDigital->IsOn()) flags=slsDetectorDefs::NORMAL_READOUT;
-  else flags=slsDetectorDefs::GET_READOUT_FLAGS;
   try {
-    myDet->setReadOutFlags(flags);
-  } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-  cout << "Set readout flags " << hex << flags << dec << endl;
+    int flags = 0;
+    if (cbAnalog->IsOn() && cbDigital->IsOn()) 
+      flags=2;
+    else  if (~cbAnalog->IsOn() && cbDigital->IsOn()) 
+      flags=1;
+    else  if (cbAnalog->IsOn() && ~cbDigital->IsOn())       
+      flags=0;
+    else {
+      throw runtime_error("unkown readout flag");
+    }
+    myDet->setReadoutMode(flags);
+    cout << "Set readout flags: " << flags << endl;
+  } CATCH_DISPLAY ("Could not set readout flags", "ctbPattern::setReadoutMode")
+
   getReadoutMode();
-  // myDet->setTimer(slsDetectorDefs::SAMPLES_CTB,eSamples->GetNumber()); 
-  //samplesChanged(eSamples->GetNumber());
 }
 
 void ctbPattern::readoutModeChanged(int flags) {
@@ -1188,71 +1034,56 @@ void ctbPattern::readoutModeChanged(int flags) {
 }
 
 int ctbPattern::getReadoutMode() {
-  // cout << "Get readout mode to be implemented" << endl; 
-  slsDetectorDefs::readOutFlags flags;
-  try {
-  flags=(slsDetectorDefs::readOutFlags) myDet->setReadOutFlags();
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
+  try{
+    auto retval = myDet->getReadoutMode().tsquash("Different values");
+    switch(retval) {
+      case 2:
+        cout << "analog and digital" << endl;
+        cbAnalog->SetOn(kTRUE);
+        cbDigital->SetOn(kTRUE);
+        break;
+      case 1:
+        cout << "digital only" << endl;
+        cbAnalog->SetOn(kFALSE);
+        cbDigital->SetOn(kTRUE);
+        break;
+      case 0:
+        cout << "analog only" << endl;
+        cbAnalog->SetOn(kTRUE);
+        cbDigital->SetOn(kFALSE);    
+        break;
+      default:
+        throw("unknown readout flag");
+    }
+    Emit("readoutModeChanged(int)",retval);
+    return retval;
+  } CATCH_DISPLAY ("Could not get readout flags", "ctbPattern::getReadoutMode")
 
-  cout << "++++++++++++++++++++"<< hex << flags << dec << endl;
-  if (flags&slsDetectorDefs::ANALOG_AND_DIGITAL) {
-    cout << "analog and digital" << hex << slsDetectorDefs::ANALOG_AND_DIGITAL << dec<< endl;
-    cbAnalog->SetOn(kTRUE);
-    cbDigital->SetOn(kTRUE);
-  } else if  (flags&slsDetectorDefs::DIGITAL_ONLY) {
-    cout << "digital only"  << hex << slsDetectorDefs::DIGITAL_ONLY << dec << endl;
-    cbAnalog->SetOn(kFALSE);
-    cbDigital->SetOn(kTRUE);
-  }// else if  (flags==slsDetectorDefs::NORMAL_READOUT) {
-  //   cbAnalog->SetOn(kTRUE);
-  //   cbDigital->SetOn(kFALSE);
-  // }
-  else {
-    cout << "analog only" << endl;
-    flags=slsDetectorDefs::NORMAL_READOUT;
-    cbAnalog->SetOn(kTRUE);
-    cbDigital->SetOn(kFALSE);
-  }
-
-  Emit("readoutModeChanged(int)",(int)flags);
-  return (int)flags;
-
-  // myDet->setTimer(slsDetectorDefs::SAMPLES_CTB,eSamples->GetNumber()); 
-  //samplesChanged(eSamples->GetNumber());
+  return -1;
 }
 
 int ctbPattern::getAnalogSamples() {
-  int n;
-  try {
-    n=(myDet->setTimer(slsDetectorDefs::ANALOG_SAMPLES,-1));
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-  eAnalogSamples->SetNumber((Double_t)n);
-  Emit("analogSamplesChanged(const int)", eAnalogSamples->GetNumber());
-  return eAnalogSamples->GetNumber();
+  try{
+    auto retval = myDet->getNumberOfAnalogSamples().tsquash("Different values");
+    eAnalogSamples->SetNumber((Double_t)retval);
+    Emit("analogSamplesChanged(const int)", eAnalogSamples->GetNumber());
+    return eAnalogSamples->GetNumber();
+  } CATCH_DISPLAY ("Could not get number of triggers.", "ctbPattern::update")
+
+  return -1;
 }
    
 int ctbPattern::getDigitalSamples() {
-  int n;
-  try {
+  try{
+    auto retval = myDet->getNumberOfDigitalSamples().tsquash("Different values");
+    eDigitalSamples->SetNumber((Double_t)retval);
+    Emit("digitalSamplesChanged(const int)", eDigitalSamples->GetNumber());
+    return eDigitalSamples->GetNumber();
+  } CATCH_DISPLAY ("Could not get number of triggers.", "ctbPattern::update")
 
-    n=(myDet->setTimer(slsDetectorDefs::DIGITAL_SAMPLES,-1));
-      } catch (...) {
-    
-      cout << "Do nothing for this error" << endl;
-  }
-
-  eDigitalSamples->SetNumber(((Double_t)n));
-  Emit("digitalSamplesChanged(const int)", eDigitalSamples->GetNumber());
-  return eDigitalSamples->GetNumber();
+  return -1;
 }
    
-
 
 void ctbPattern::analogSamplesChanged(const int t){
   Emit("analogSamplesChanged(const int)", t);

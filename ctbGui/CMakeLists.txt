@@ -35,6 +35,7 @@ add_executable(ctbGui
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/tiffIO.cpp
 )
 
+
 #TODO! Replace with target
 target_include_directories(ctbGui PRIVATE 
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/dataStructures
@@ -44,6 +45,7 @@ target_include_directories(ctbGui PRIVATE
 
 # Headders needed for ROOT dictionary generation
 set( HEADERS
+    ctbDefs.h
     ctbMain.h 
     ctbDacs.h   
     ctbPattern.h  
@@ -63,12 +65,15 @@ add_library(ctbRootLib SHARED ctbDict.cxx)
 target_include_directories(ctbRootLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ctbRootLib PUBLIC 
     ROOT::Core 
+    slsDetectorShared
+    slsSupportLib
     ${ROOT_LIBRARIES} 
     ${ROOT_EXE_LINKER_FLAGS}
 )
 
 target_link_libraries(ctbGui PUBLIC 
     slsDetectorShared
+    slsSupportLib
     ctbRootLib
     ${TIFF_LIBRARIES}
 )

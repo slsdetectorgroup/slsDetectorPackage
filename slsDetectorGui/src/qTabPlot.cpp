@@ -580,7 +580,6 @@ void qTabPlot::Refresh() {
             case slsDetectorDefs::JUNGFRAU:
             case slsDetectorDefs::MOENCH:
                 chkGainPlot->setEnabled(true);  
-                chkADCInvert->setEnabled(true);  
                 break;
             default:
                 break;             
@@ -590,7 +589,6 @@ void qTabPlot::Refresh() {
         boxFrequency->setEnabled(false);
         chkGainPlot->setEnabled(false);
         chkGapPixels->setEnabled(false);
-        chkADCInvert->setEnabled(false); 
     }
 
     FILE_LOG(logDEBUG) << "**Updated Plot Tab";

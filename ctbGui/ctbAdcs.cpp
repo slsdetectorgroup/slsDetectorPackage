@@ -593,22 +593,23 @@ void ctbAdcs::ToggledAdcInvert(Int_t b){
 Pixel_t ctbAdcs::getColor(int i){
   if (i>=0 && i<NADCS)
     return sAdc[i]->getColor();
+  return static_cast<Pixel_t>(-1);
 }
 
 Bool_t ctbAdcs::getEnabled(int i){
   if (i>=0 && i<NADCS)
     return sAdc[i]->getEnabled();
-  
+  return static_cast<Bool_t>(-1);
 }
 
 Bool_t ctbAdcs::getEnable(int i){
   if (i>=0 && i<NADCS)
     return sAdc[i]->getEnable();
-  
+  return static_cast<Bool_t>(-1);
 }
 
 Bool_t ctbAdcs::getPlot(int i){
   if (i>=0 && i<NADCS)
     return sAdc[i]->getPlot();
-  
+  return static_cast<Bool_t>(-1);
 }

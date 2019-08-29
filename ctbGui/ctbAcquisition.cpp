@@ -766,7 +766,7 @@ void ctbAcquisition::canvasClicked() {
 void ctbAcquisition::setCanvas(TCanvas* c) {
   myCanvas=c;  
   myCanvas->cd();
-  myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)0x%x)->canvasClicked()",this));
+  myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)0x%p)->canvasClicked()",this));
   // myCanvas->AddExec("ex","canvasClicked()");
 }
 void ctbAcquisition::dataCallback(detectorData *data, long unsigned int index, unsigned int dum, void* pArgs) {

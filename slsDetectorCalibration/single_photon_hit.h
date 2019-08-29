@@ -211,7 +211,7 @@ class single_photon_hit {
 
   void print() {
 
-    int ix, iy;
+   // int ix, iy;
     
     for (int iy=0; iy<dy; iy++) {
       for (int ix=0; ix<dx; ix++) {

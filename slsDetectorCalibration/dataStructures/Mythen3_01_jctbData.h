@@ -45,7 +45,7 @@ class mythen3_01_jctbData : public slsDetectorData<short unsigned int> {
 
  virtual short unsigned int* mythen03_frame(char *ptr, int dr=24,  int nch=64*3, int off=5) {
    // off=0;
-    int iarg;
+    //int iarg;
     int64_t word, *wp;
     short unsigned int* val=new short unsigned int[nch];
     int bit[64];
@@ -63,7 +63,7 @@ class mythen3_01_jctbData : public slsDetectorData<short unsigned int> {
     }
     wp=(int64_t*)ptr;
     
-    for (iw=0; iw<nch/nb; iw) {
+    for (iw=0; iw<nch/nb; ++iw) {
       word=*wp;;
       if (ioff<off) {
 	ioff++;

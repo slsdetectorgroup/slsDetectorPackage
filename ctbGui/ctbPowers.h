@@ -3,14 +3,7 @@
 
 #include  <TGFrame.h>
 
-#ifndef CTB
-#define NPOWERS 0
-#else
-
 #define NPOWERS 6
-#endif
-
-
 
 
 

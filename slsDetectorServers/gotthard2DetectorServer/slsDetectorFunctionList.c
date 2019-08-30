@@ -194,6 +194,7 @@ int setDynamicRange(int dr){
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	int64_t retval = -1;
+#ifdef VIRTUAL
 	switch(ind){
 
 	case FRAME_NUMBER: // defined in sls_detector_defs.h (general)
@@ -233,7 +234,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
 		break;
 	}
-
+#endif
 	return retval;
 
 }
@@ -262,6 +263,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 #ifdef VIRTUAL
     return 0;
 #endif
+#ifdef VIRTUAL
 	int64_t retval = -1;
 	switch(ind){
 
@@ -279,7 +281,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
 		break;
 	}
-
+#endif
 	return -1;
 }
 
@@ -401,9 +403,12 @@ u_int32_t runBusy() {
 #ifdef VIRTUAL
     return virtual_status;
 #endif
+#ifdef VIRTUAL
 	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);
 	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
+#endif
+	return -1;
 }
 
 

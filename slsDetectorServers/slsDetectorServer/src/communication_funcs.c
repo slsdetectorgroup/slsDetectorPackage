@@ -398,28 +398,60 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 int sendModule(int file_des, sls_detector_module *myMod) {
 	int ts = 0, n = 0;
 	n = sendData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
-	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->nchan), sizeof(myMod->nchan), INT32);
-	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->nchip), sizeof(myMod->nchip), INT32);
-	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->ndac), sizeof(myMod->ndac), INT32);
-	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->reg), sizeof(myMod->reg), INT32);
-	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->iodelay), sizeof(myMod->iodelay), INT32);
-	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->tau), sizeof(myMod->tau), INT32);
-	if (!n)	return -1; ts += n;
-	n = sendData(file_des,&(myMod->eV), sizeof(myMod->eV), INT32);
-	if (!n)	return -1; ts += n;
-	// dacs
+	if (!n)	{ 
+		return -1;
+	}
+	ts += n;
+	n = sendData(file_des, &(myMod->nchan), sizeof(myMod->nchan), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	n = sendData(file_des, &(myMod->nchip), sizeof(myMod->nchip), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	n = sendData(file_des, &(myMod->ndac), sizeof(myMod->ndac), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	n = sendData(file_des, &(myMod->reg), sizeof(myMod->reg), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	n = sendData(file_des, &(myMod->iodelay), sizeof(myMod->iodelay),
+					INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	n = sendData(file_des, &(myMod->tau), sizeof(myMod->tau), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	n = sendData(file_des, &(myMod->eV), sizeof(myMod->eV), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+        // dacs
 	n = sendData(file_des,myMod->dacs, sizeof(int)*(myMod->ndac), INT32);
-	if (!n)	return -1; ts += n;
+	if (!n) {
+		return -1;
+	}
+	ts += n;
 	// channels
 #ifdef EIGERD
-	n = sendData(file_des,myMod->chanregs, sizeof(int) * (myMod->nchan), INT32);
-	if (!n)	return -1; ts += n;
+	n = sendData(file_des, myMod->chanregs, sizeof(int) * (myMod->nchan),
+					INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
 #endif
 	FILE_LOG(logDEBUG1, ("module of size %d sent register %x\n", ts, myMod->reg));
 	return ts;
@@ -437,37 +469,71 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 	FILE_LOG(level, ("nChans: %d\n",nChans));
 #endif
 	n = receiveData(file_des,&(myMod->serialnumber), sizeof(myMod->serialnumber), INT32);
-	if (!n)	return -1; ts += n;
-	FILE_LOG(level, ("serialno received. %d bytes. serialno: %d\n", n, myMod->serialnumber));
-	n = receiveData(file_des,&(myMod->nchan), sizeof(myMod->nchan), INT32);
-	if (!n)	return -1; ts += n;
-    FILE_LOG(level, ("nchan received. %d bytes. nchan: %d\n", n, myMod->nchan));
-	n = receiveData(file_des,&(myMod->nchip), sizeof(myMod->nchip), INT32);
-	if (!n)	return -1; ts += n;
-    FILE_LOG(level, ("nchip received. %d bytes. nchip: %d\n", n, myMod->nchip));
-	n = receiveData(file_des,&(myMod->ndac), sizeof(myMod->ndac), INT32);
-	if (!n)	return -1; ts += n;
-    FILE_LOG(level, ("ndac received. %d bytes. ndac: %d\n", n, myMod->ndac));
-	n = receiveData(file_des,&(myMod->reg), sizeof(myMod->reg), INT32);
-	if (!n)	return -1; ts += n;
-    FILE_LOG(level, ("reg received. %d bytes. reg: %d\n", n, myMod->reg));
-	n = receiveData(file_des,&(myMod->iodelay), sizeof(myMod->iodelay), INT32);
-	if (!n)	return -1; ts += n;
-    FILE_LOG(level, ("iodelay received. %d bytes. iodelay: %d\n", n, myMod->iodelay));
-	n = receiveData(file_des,&(myMod->tau), sizeof(myMod->tau), INT32);
-	if (!n)	return -1; ts += n;
-    FILE_LOG(level, ("tau received. %d bytes. tau: %d\n", n, myMod->tau));
-	n = receiveData(file_des,&(myMod->eV), sizeof(myMod->eV), INT32);
-	if (!n)	return -1; ts += n;
-    FILE_LOG(level, ("eV received. %d bytes. eV: %d\n", n, myMod->eV));
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	FILE_LOG(level, ("serialno received. %d bytes. serialno: %d\n", n,
+						myMod->serialnumber));
+	n = receiveData(file_des, &(myMod->nchan), sizeof(myMod->nchan), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	FILE_LOG(level,
+				("nchan received. %d bytes. nchan: %d\n", n, myMod->nchan));
+	n = receiveData(file_des, &(myMod->nchip), sizeof(myMod->nchip), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	FILE_LOG(level,
+				("nchip received. %d bytes. nchip: %d\n", n, myMod->nchip));
+	n = receiveData(file_des, &(myMod->ndac), sizeof(myMod->ndac), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	FILE_LOG(level,
+				("ndac received. %d bytes. ndac: %d\n", n, myMod->ndac));
+	n = receiveData(file_des, &(myMod->reg), sizeof(myMod->reg), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	FILE_LOG(level, ("reg received. %d bytes. reg: %d\n", n, myMod->reg));
+	n = receiveData(file_des, &(myMod->iodelay), sizeof(myMod->iodelay),
+					INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	FILE_LOG(level, ("iodelay received. %d bytes. iodelay: %d\n", n,
+						myMod->iodelay));
+	n = receiveData(file_des, &(myMod->tau), sizeof(myMod->tau), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	FILE_LOG(level, ("tau received. %d bytes. tau: %d\n", n, myMod->tau));
+	n = receiveData(file_des, &(myMod->eV), sizeof(myMod->eV), INT32);
+	if (!n) {
+		return -1;
+	}
+	ts += n;
+	FILE_LOG(level, ("eV received. %d bytes. eV: %d\n", n, myMod->eV));
 	// dacs
 	if (nDacs != (myMod->ndac)) {
 		FILE_LOG(logERROR, ("received wrong number of dacs. "
-				"Expected %d, got %d\n", nDacs, myMod->ndac));
+							"Expected %d, got %d\n",
+							nDacs, myMod->ndac));
 		return 0;
 	}
-	n = receiveData(file_des, myMod->dacs, sizeof(int) * (myMod->ndac), INT32);
-	if (!n)	return -1; ts += n;
+        n = receiveData(file_des, myMod->dacs, sizeof(int) * (myMod->ndac), INT32);
+	if (!n)	{ 
+		return -1;
+	} 
+	ts += n;
     FILE_LOG(level, ("dacs received. %d bytes.\n", n));
 	// channels
 #ifdef EIGERD
@@ -479,7 +545,10 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 	}
 	n = receiveData(file_des, myMod->chanregs, sizeof(int) * (myMod->nchan), INT32);
     FILE_LOG(level, ("chanregs received. %d bytes.\n", n));
-    if (!n) return -1; ts += n;
+    if (!n){
+		return -1;
+	} 
+	ts += n;
 #endif
 	FILE_LOG(level, ("received module of size %d register %x\n",ts,myMod->reg));
 	return ts;

@@ -6,7 +6,7 @@ support_lib = ../../slsSupportLib/include/
 CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -DGOTTHARD2D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
-LDLIBS		+= 	-lm
+LDLIBS		+= 	-lm 
 PROGS		= 	gotthard2DetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
@@ -31,7 +31,6 @@ $(PROGS): $(OBJS)
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
-	rm *.gdb
 	rm $(main_src)*.o	
 
 clean:

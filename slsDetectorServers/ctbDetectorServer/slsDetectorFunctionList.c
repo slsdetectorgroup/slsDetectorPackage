@@ -1508,6 +1508,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
 	// 1 giga udp
 	if (!enableTenGigabitEthernet(-1)) {
+        FILE_LOG(logINFOBLUE, ("Configuring 1G MAC\n"));
 		// if it was in 10G mode, it was not allocating RAM
 		if (allocateRAM() == FAIL)
 			return -1;
@@ -1523,67 +1524,67 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	}
 
 	// 10 G
-	else {
-		uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
+    FILE_LOG(logINFOBLUE, ("Configuring 10G MAC\n"));
+    uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 
-		FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
-				(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
-		FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-				(unsigned int)((sourcemac>>40)&0xFF),
-				(unsigned int)((sourcemac>>32)&0xFF),
-				(unsigned int)((sourcemac>>24)&0xFF),
-				(unsigned int)((sourcemac>>16)&0xFF),
-				(unsigned int)((sourcemac>>8)&0xFF),
-				(unsigned int)((sourcemac>>0)&0xFF),
-				(long  long unsigned int)sourcemac));
-		FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
+    FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
+            (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
+    FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+            (unsigned int)((sourcemac>>40)&0xFF),
+            (unsigned int)((sourcemac>>32)&0xFF),
+            (unsigned int)((sourcemac>>24)&0xFF),
+            (unsigned int)((sourcemac>>16)&0xFF),
+            (unsigned int)((sourcemac>>8)&0xFF),
+            (unsigned int)((sourcemac>>0)&0xFF),
+            (long  long unsigned int)sourcemac));
+    FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
 
-		FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
-				(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
-		FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-				(unsigned int)((destmac>>40)&0xFF),
-				(unsigned int)((destmac>>32)&0xFF),
-				(unsigned int)((destmac>>24)&0xFF),
-				(unsigned int)((destmac>>16)&0xFF),
-				(unsigned int)((destmac>>8)&0xFF),
-				(unsigned int)((destmac>>0)&0xFF),
-				(long  long unsigned int)destmac));
-		FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
+    FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+            (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
+    FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+            (unsigned int)((destmac>>40)&0xFF),
+            (unsigned int)((destmac>>32)&0xFF),
+            (unsigned int)((destmac>>24)&0xFF),
+            (unsigned int)((destmac>>16)&0xFF),
+            (unsigned int)((destmac>>8)&0xFF),
+            (unsigned int)((destmac>>0)&0xFF),
+            (long  long unsigned int)destmac));
+    FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
 
-		long int checksum=calcChecksum(sourceip, destip);
-		bus_w(TX_IP_REG, sourceip);
-		bus_w(RX_IP_REG, destip);
+    long int checksum=calcChecksum(sourceip, destip);
+    bus_w(TX_IP_REG, sourceip);
+    bus_w(RX_IP_REG, destip);
 
-		uint32_t val = 0;
+    uint32_t val = 0;
 
-		val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-		bus_w(TX_MAC_LSB_REG, val);
-		FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
+    val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+    bus_w(TX_MAC_LSB_REG, val);
+    FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
 
-		val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-		bus_w(TX_MAC_MSB_REG,val);
-		FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
+    val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+    bus_w(TX_MAC_MSB_REG,val);
+    FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
 
-		val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-		bus_w(RX_MAC_LSB_REG, val);
-		FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
+    val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+    bus_w(RX_MAC_LSB_REG, val);
+    FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
 
-		val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-		bus_w(RX_MAC_MSB_REG, val);
-		FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
+    val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+    bus_w(RX_MAC_MSB_REG, val);
+    FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
 
-		val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
-				((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
-		bus_w(UDP_PORT_REG, val);
-		FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
+    val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
+            ((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
+    bus_w(UDP_PORT_REG, val);
+    FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
 
-		bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
-		FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
+    bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
+    FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
 
-		cleanFifos();//FIXME: resetPerpheral() for ctb?
-		resetPeripheral();
-		usleep(WAIT_TIME_CONFIGURE_MAC); // todo maybe without
-	}
+    cleanFifos();//FIXME: resetPerpheral() for ctb?
+    resetPeripheral();
+    FILE_LOG(logINFO, ("Waiting for %d s for mac to be up\n", WAIT_TIME_CONFIGURE_MAC / (1000 * 1000)));
+    usleep(WAIT_TIME_CONFIGURE_MAC); // todo maybe without
 
 	return OK;
 }

@@ -1,0 +1,57 @@
+#include "DAC6571.h"
+#include "clogger.h"
+#include "common.h"
+#include "sls_detector_defs.h"
+
+/* DAC6571 HV DEFINES */
+#define DAC6571_MIN_DAC_VAL         (0x0)
+#define DAC6571_MAX_DAC_VAL         (0x3FF)
+
+
+// defines from the hardware
+int DAC6571_SoftMaxVoltage = 0;
+int DAC6571_HardMaxVoltage = 0;
+char DAC6571_DriverFileName[MAX_STR_LENGTH];
+
+void DAC6571_SetDefines(int softMaxV, int hardMaxV, char* driverfname) {
+    FILE_LOG(logINFOBLUE, ("Configuring High Voltage\n"));
+    DAC6571_SoftMaxVoltage = softMaxV;
+    DAC6571_HardMaxVoltage = hardMaxV;
+    memset(DAC6571_DriverFileName, 0, MAX_STR_LENGTH);
+    strcpy(DAC6571_DriverFileName, driverfname);
+}
+
+int DAC6571_Set (int val) {
+    FILE_LOG(logDEBUG1, ("Setting high voltage to %d\n", val));
+    if (val < 0)
+        return FAIL;
+
+    int dacvalue = 0;
+
+      // limit values 
+     if (val > DAC6571_SoftMaxVoltage) {
+        val = DAC6571_SoftMaxVoltage;
+    }
+    // convert value
+    ConvertToDifferentRange(0, DAC6571_HardMaxVoltage,
+            DAC6571_MIN_DAC_VAL, DAC6571_MAX_DAC_VAL,
+            val, &dacvalue);
+
+    FILE_LOG(logINFO, ("\t%dV (dacval %d)\n", val, dacvalue));
+
+    //open file
+    FILE* fd=fopen(DAC6571_DriverFileName,"w");
+    if (fd==NULL) {
+        FILE_LOG(logERROR, ("Could not open file for writing to set high voltage\n"));
+        return FAIL;
+    }
+    //convert to string, add 0 and write to file
+    fprintf(fd, "%d0\n", dacvalue);
+    fclose(fd);
+
+    return OK;
+}
+
+
+
+

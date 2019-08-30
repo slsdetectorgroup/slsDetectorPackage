@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-qDacWidget::qDacWidget(QWidget *parent, multiSlsDetector *detector, bool d, std::string n, slsDetectorDefs::dacIndex i, bool t) : 
-	QWidget(parent), myDet(detector), isDac(d), index(i), isMillideg(t) {
+qDacWidget::qDacWidget(QWidget *parent, sls::Detector *detector, bool d, std::string n, slsDetectorDefs::dacIndex i, bool t) : 
+	QWidget(parent), det(detector), isDac(d), index(i), isMillideg(t) {
 	setupUi(this);
 	SetupWidgetWindow(n);
 }
@@ -43,10 +43,10 @@ void qDacWidget::GetDac() {
 	disconnect(spinDac, SIGNAL(editingFinished()), this, SLOT(SetDac()));
 	try {
 		// dac units
-		auto retval = myDet->setDAC(-1, index, 0, detectorIndex);
+		auto retval = det->getDAC(index, 0, {detectorIndex}).squash(-1);
 		spinDac->setValue(retval);
 		// mv
-		retval = myDet->setDAC(-1, index, 1, detectorIndex);
+		retval = det->getDAC(index, 1, {detectorIndex}).squash(-1);
 		lblDacmV->setText(QString("%1mV").arg(retval -10));
     } CATCH_DISPLAY(std::string("Could not get dac ") + std::to_string(index), "qDacWidget::GetDac")
 
@@ -59,7 +59,7 @@ void qDacWidget::SetDac() {
 	FILE_LOG(logINFO) << "Setting dac:" << lblDac->text().toAscii().data() << " : " << val;
 
 	try {
-		myDet->setDAC(val, index, 0, detectorIndex);
+		det->setDAC(val, index, 0, {detectorIndex});
     } CATCH_DISPLAY (std::string("Could not set dac ") + std::to_string(index), "qDacWidget::SetDac")
 	
 	// update mV anyway
@@ -70,7 +70,7 @@ void qDacWidget::GetAdc() {
 	FILE_LOG(logDEBUG) << "Getting ADC " << index;
 
 	try {
-		auto retval = myDet->getADC(index, detectorIndex);
+		auto retval = det->getTemperature(index, {detectorIndex}).squash(-1);
 		if (retval == -1 && detectorIndex == -1) {
 			spinDac->setValue(-1);
 		} else {

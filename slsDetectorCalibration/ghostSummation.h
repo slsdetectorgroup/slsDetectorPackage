@@ -28,13 +28,13 @@ template <class dataType> class ghostSummation {
   ~ghostSummation() {delete [] ghost;};
 
   virtual ghostSummation *Clone() {
-    new ghostSummation(this);
+    return new ghostSummation(this);
   }
 
   double getXTalk(){return xtalk;};
   void setXTalk(double g) {xtalk=g;};
 
-  virtual double calcGhost(char *data, int ix, int iy=1){ghost[iy*nx+ix]=0;};
+  virtual double calcGhost(char *data, int ix, int iy=1){ghost[iy*nx+ix]=0; return 0;};
 
   virtual void calcGhost(char *data){
     for (int iy=0; iy<ny; iy++)

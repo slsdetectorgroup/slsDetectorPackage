@@ -14,7 +14,7 @@ class commonModeSubtraction {
       \param iroi number of regions on which one can calculate the common mode separately. Defaults to 1 i.e. whole detector
 
   */
- commonModeSubtraction(int iroi=1, int ns=3) : nROI(iroi), nsigma(ns)  {
+ commonModeSubtraction(int iroi=1, int ns=3) : nsigma(ns), nROI(iroi)  {
     mean=new double[nROI];  
     mean2=new double[nROI]; 
     nCm=new double[nROI];
@@ -28,7 +28,7 @@ class commonModeSubtraction {
     /* } */
     
     virtual commonModeSubtraction *Clone() {
-      new commonModeSubtraction(this->nROI, this->nsigma);
+      return new commonModeSubtraction(this->nROI, this->nsigma);
     }
 
     /** clears the moving average and the sum of pedestals calculation - virtual func*/

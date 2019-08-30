@@ -28,7 +28,10 @@ class  TGTab;
 
 class TGraph;
 
-class multiSlsDetector;
+namespace sls
+{
+   class Detector;
+};
 
 #include <string>
 using namespace std;
@@ -49,10 +52,10 @@ class ctbAdc : public TGHorizontalFrame {
    //  TGraph *gADC;
 
    int id;
-   multiSlsDetector *myDet;
+   sls::Detector *myDet;
    
  public:
-   ctbAdc(TGVerticalFrame *page, int i, multiSlsDetector *det);
+   ctbAdc(TGVerticalFrame *page, int i, sls::Detector *det);
 
 
    void setAdcAlias(char *tit, int plot, int color);
@@ -89,7 +92,7 @@ class ctbAdcs : public TGGroupFrame {
 private:
   
   ctbAdc *sAdc[NADCS];
-   multiSlsDetector *myDet;
+   sls::Detector *myDet;
 
    
   TGTextButton *bCheckAll;
@@ -115,7 +118,7 @@ private:
 
 public:
 
-   ctbAdcs(TGVerticalFrame *page, multiSlsDetector *det);
+   ctbAdcs(TGVerticalFrame *page, sls::Detector *det);
    int setAdcAlias(string line);
    string getAdcAlias();
    string getAdcParameters();

@@ -7,8 +7,8 @@
 
 #include <iostream>
 
-qTabDebugging::qTabDebugging(QWidget *parent, multiSlsDetector *detector) : 
-    QWidget(parent), myDet(detector), treeDet(nullptr), lblDetectorHostname(nullptr), lblDetectorFirmware(nullptr), lblDetectorSoftware(nullptr) {
+qTabDebugging::qTabDebugging(QWidget *parent, sls::Detector *detector) : 
+    QWidget(parent), det(detector), treeDet(nullptr), lblDetectorHostname(nullptr), lblDetectorFirmware(nullptr), lblDetectorSoftware(nullptr) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Debugging ready";
@@ -28,7 +28,7 @@ qTabDebugging::~qTabDebugging() {
 
 void qTabDebugging::SetupWidgetWindow() {
 	// enabling according to det type
-    if (myDet->getDetectorTypeAsEnum() == slsDetectorDefs::EIGER) {
+    if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
         lblDetector->setText("Half Module:");
         chkDetectorFirmware->setEnabled(false);
         chkDetectorBus->setEnabled(false);
@@ -55,8 +55,9 @@ void qTabDebugging::PopulateDetectors() {
 	FILE_LOG(logDEBUG) << "Populating detectors";
 
 	comboDetector->clear();
-    for (unsigned int i = 0; i < myDet->size(); ++i) {
-        comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
+    auto res = det->getHostname();
+    for (auto &it : res) {
+        comboDetector->addItem(QString(it.c_str()));
     }
 }
 
@@ -64,7 +65,7 @@ void qTabDebugging::GetDetectorStatus() {
     FILE_LOG(logDEBUG) << "Getting Status";
 
 	try {
-        std::string status = slsDetectorDefs::runStatusType(myDet->getRunStatus(comboDetector->currentIndex()));
+        std::string status = slsDetectorDefs::runStatusType(det->getDetectorStatus({comboDetector->currentIndex()})[0]);
         lblStatus->setText(QString(status.c_str()).toUpper());
     } CATCH_DISPLAY ("Could not get detector status.", "qTabDebugging::GetDetectorStatus")
 }
@@ -87,9 +88,9 @@ void qTabDebugging::GetInfo() {
     //to make sure the size is constant
     lblDetectorFirmware->setFixedWidth(100);
     layout->addWidget(dispFrame, 0, 1);
-    QString detName = QString(myDet->getDetectorTypeAsString().c_str());
+    QString detName = QString(slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()).c_str());
 
-    switch (myDet->getDetectorTypeAsEnum()) {
+    switch (det->getDetectorType().squash()) {
 
     case slsDetectorDefs::EIGER:
         formLayout->addWidget(new QLabel("Half Module:"), 0, 0);
@@ -148,7 +149,7 @@ void qTabDebugging::GetInfo() {
 void qTabDebugging::SetParameters(QTreeWidgetItem *item) {
     // eiger: if half module clicked, others: true always
     bool ignoreOrHalfModuleClicked = true;
-    if (myDet->getDetectorTypeAsEnum() == slsDetectorDefs::EIGER) {
+    if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
         if (!(item->text(0).contains("Half Module"))) {
             ignoreOrHalfModuleClicked = false;
         }
@@ -161,9 +162,9 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item) {
                 break;
         }
         try {
-            auto retval = std::string("0x") + std::to_string((unsigned long)myDet->getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION, comboDetector->currentIndex()));
+            auto retval = std::string("0x") + std::to_string((unsigned long)det->getFirmwareVersion({comboDetector->currentIndex()})[0]);
             lblDetectorFirmware->setText(QString(retval.c_str()));
-            retval = std::string("0x") + std::to_string((unsigned long)myDet->getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, comboDetector->currentIndex()));
+            retval = std::string("0x") + std::to_string((unsigned long)det->getDetectorServerVersion({comboDetector->currentIndex()})[0]);
             lblDetectorSoftware->setText(QString(retval.c_str()));
         } CATCH_DISPLAY ("Could not get versions.", "qTabDebugging::SetParameters")
     }
@@ -174,7 +175,7 @@ void qTabDebugging::TestDetector() {
 
     try {
         QString moduleName = "Module";
-        if (myDet->getDetectorTypeAsEnum() == slsDetectorDefs::EIGER) {
+        if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
             moduleName = "Half Module";
         }
 
@@ -183,7 +184,7 @@ void qTabDebugging::TestDetector() {
 
         //detector firmware
         if (chkDetectorFirmware->isChecked()) {
-            auto retval = myDet->digitalTest(slsDetectorDefs::DETECTOR_FIRMWARE_TEST, comboDetector->currentIndex());
+            auto retval = det->executeFirmwareTest({comboDetector->currentIndex()})[0];
             if (retval == slsDetectorDefs::FAIL) {
                 message.append(QString("<nobr>%1 Firmware: FAIL</nobr><br>").arg(moduleName));
                 FILE_LOG(logERROR) << "Firmware fail";
@@ -195,7 +196,7 @@ void qTabDebugging::TestDetector() {
 
         //detector CPU-FPGA bus
         if (chkDetectorBus->isChecked()) {
-            auto retval = myDet->digitalTest(slsDetectorDefs::DETECTOR_BUS_TEST, comboDetector->currentIndex());
+            auto retval = det->executeBusTest({comboDetector->currentIndex()})[0];
             if (retval == slsDetectorDefs::FAIL) {
                 message.append(QString("<nobr>%1 Bus: &nbsp;&nbsp;&nbsp;&nbsp;FAIL</nobr><br>").arg(moduleName));
                 FILE_LOG(logERROR) << "Bus Test fail";

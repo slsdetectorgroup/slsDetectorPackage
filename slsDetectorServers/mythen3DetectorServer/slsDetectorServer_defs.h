@@ -16,5 +16,5 @@
 #define DEFAULT_NUM_FRAMES			(1)
 #define DEFAULT_NUM_CYCLES			(1)
 #define DEFAULT_EXPTIME				(100*1000*1000)		//ns
-
+#define DEFAULT_PERIOD              (2*1000*1000)	    //ns 
 

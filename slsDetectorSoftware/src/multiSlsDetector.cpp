@@ -2358,7 +2358,20 @@ int multiSlsDetector::setAutoComparatorDisableMode(int ival, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+void multiSlsDetector::setDefaultRateCorrection(int detPos) {
+    // single
+    if (detPos >= 0) {
+        detectors[detPos]->setDefaultRateCorrection();
+    }
+
+    // multi
+    parallelCall(&slsDetector::setDefaultRateCorrection);
+}
+
 void multiSlsDetector::setRateCorrection(int64_t t, int detPos) {
+    if (t < 0) {
+        throw sls::RuntimeError("Dead time has to be greater or equal to 0");
+    }
     // single
     if (detPos >= 0) {
         detectors[detPos]->setRateCorrection(t);
@@ -3267,6 +3280,45 @@ void multiSlsDetector::setPattern(const std::string &fname, int detPos) {
 
     // multi
     parallelCall(&slsDetector::setPattern, fname);
+}
+
+void multiSlsDetector::savePattern(const std::string &fname) {
+    std::ofstream outfile;
+    outfile.open(fname.c_str(), std::ios_base::out);
+    if (!outfile.is_open()) {
+        throw RuntimeError("Could not create file to save pattern");
+    }
+    // get pattern limits
+    auto r = getPatternLoops(-1);
+    // pattern words
+    for (int i = r[0]; i <= r[1]; ++i) {
+        std::ostringstream os;
+        os << "patword 0x" << std::hex << i;
+        std::string cmd = os.str();
+        multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
+    }
+    // rest of pattern file
+    const std::vector<std::string> commands{
+        "patioctrl", 
+        "patclkctrl",
+        "patlimits",
+        "patloop0",
+        "patnloop0",
+        "patloop1",
+        "patnloop1",
+        "patloop2",
+        "patnloop2",
+        "patwait0",
+        "patwaittime0",
+        "patwait1",
+        "patwaittime1",
+        "patwait2",
+        "patwaittime2",
+        "patmask",
+        "patsetbit",
+    };
+    for (const auto &cmd : commands)
+        multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
 }
 
 uint64_t multiSlsDetector::setPatternIOControl(uint64_t word, int detPos) {

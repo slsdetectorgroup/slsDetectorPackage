@@ -19,7 +19,10 @@ class TGTextButton;
 
 
 
-class multiSlsDetector;
+namespace sls
+{
+   class Detector;
+};
 
 #include <string>
 using namespace std;
@@ -35,9 +38,9 @@ class ctbSlowAdc : public TGHorizontalFrame {
    TGLabel *dacsValue;
    int id;
 
-   multiSlsDetector* myDet;
+   sls::Detector* myDet;
  public:
-   ctbSlowAdc(TGGroupFrame*, int , multiSlsDetector*);
+   ctbSlowAdc(TGGroupFrame*, int , sls::Detector*);
    int getValue();
    
    int setLabel(char *tit);
@@ -56,10 +59,10 @@ private:
 
    ctbSlowAdc *adcs[NSLOWADCS+1];
 
-   multiSlsDetector* myDet;
+   sls::Detector* myDet;
 
 public:
-   ctbSlowAdcs(TGVerticalFrame *page, multiSlsDetector*);
+   ctbSlowAdcs(TGVerticalFrame *page, sls::Detector*);
 
    int setSlowAdcAlias(string line);
    // int setDacAlias(string line);

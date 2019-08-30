@@ -3,14 +3,7 @@
 
 #include  <TGFrame.h>
 
-#ifndef CTB
-#define NPOWERS 0
-#else
-
 #define NPOWERS 6
-#endif
-
-
 
 
 
@@ -22,8 +15,10 @@ class TGCheckButton;
 
 
 
-class multiSlsDetector;
-
+namespace sls
+{
+   class Detector;
+};
 
 #include <string>
 using namespace std;
@@ -36,7 +31,7 @@ class ctbPower : public ctbDac {
 
  public:
 
-  ctbPower(TGGroupFrame* f, int i, multiSlsDetector* d);
+  ctbPower(TGGroupFrame* f, int i, sls::Detector* d);
 
     string getLabel();
 
@@ -54,11 +49,11 @@ class ctbPowers : public TGGroupFrame
   
    ctbPower *dacs[NPOWERS]; 
 
-   multiSlsDetector* myDet; 
+   sls::Detector* myDet; 
 
 public:
    //ctbPowers();
-    ctbPowers(TGVerticalFrame*, multiSlsDetector*);
+    ctbPowers(TGVerticalFrame*, sls::Detector*);
 
     int setPwrAlias(string); 
     string getPwrAlias(); 

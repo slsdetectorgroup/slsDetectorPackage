@@ -115,51 +115,28 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
     SetUpWidgetWindow();
 }
 
-qDetectorMain::~qDetectorMain() {
-    if (myDet)
-        delete myDet;
-    if (myPlot)
-        delete myPlot;
-    if (tabs)
-        delete tabs;
-    if (tabMeasurement)
-        delete tabMeasurement;
-    if (tabDataOutput)
-        delete tabDataOutput;
-    if (tabPlot)
-        delete tabPlot;
-    if (tabSettings)
-        delete tabSettings;
-    if (tabAdvanced)
-        delete tabAdvanced;
-    if (tabDebugging)
-        delete tabDebugging;
-    if (tabDeveloper)
-        delete tabDeveloper;
-    if (tabMessages)
-        delete tabMessages;
-}
+qDetectorMain::~qDetectorMain() {}
 
 void qDetectorMain::SetUpWidgetWindow() {
     setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
 
     // plot setup
-    myPlot = new qDrawPlot(dockWidgetPlot, myDet);
+    plot = sls::make_unique<qDrawPlot>(dockWidgetPlot, det.get());
     FILE_LOG(logDEBUG) << "DockPlot ready";
-    dockWidgetPlot->setWidget(myPlot);
+    dockWidgetPlot->setWidget(plot.get());
 
     // tabs setup
-    tabs = new MyTabWidget(this);
-    layoutTabs->addWidget(tabs);
+    tabs = sls::make_unique<MyTabWidget>(this);
+    layoutTabs->addWidget(tabs.get());
 
     // creating all the other tab widgets
-    tabMeasurement = new qTabMeasurement(this, myDet, myPlot);
-    tabDataOutput = new qTabDataOutput(this, myDet);
-    tabPlot = new qTabPlot(this, myDet, myPlot);
-    tabSettings = new qTabSettings(this, myDet);
-    tabAdvanced = new qTabAdvanced(this, myDet);
-    tabDebugging = new qTabDebugging(this, myDet);
-    tabDeveloper = new qTabDeveloper(this, myDet);
+    tabMeasurement = sls::make_unique<qTabMeasurement>(this, det.get(), plot.get());
+    tabDataOutput = sls::make_unique<qTabDataOutput>(this, det.get());
+    tabPlot = sls::make_unique<qTabPlot>(this, det.get(), plot.get());
+    tabSettings = sls::make_unique<qTabSettings>(this, det.get());
+    tabAdvanced = sls::make_unique<qTabAdvanced>(this, det.get());
+    tabDebugging = sls::make_unique<qTabDebugging>(this, det.get());
+    tabDeveloper = sls::make_unique<qTabDeveloper>(this, det.get());
 
     //	creating the scroll area widgets for the tabs
     QScrollArea *scroll[NumberOfTabs];
@@ -168,13 +145,13 @@ void qDetectorMain::SetUpWidgetWindow() {
         scroll[i]->setFrameShape(QFrame::NoFrame);
     }
     // setting the tab widgets to the scrollareas
-    scroll[MEASUREMENT]->setWidget(tabMeasurement);
-    scroll[DATAOUTPUT]->setWidget(tabDataOutput);
-    scroll[PLOT]->setWidget(tabPlot);
-    scroll[SETTINGS]->setWidget(tabSettings);
-    scroll[ADVANCED]->setWidget(tabAdvanced);
-    scroll[DEBUGGING]->setWidget(tabDebugging);
-    scroll[DEVELOPER]->setWidget(tabDeveloper);
+    scroll[MEASUREMENT]->setWidget(tabMeasurement.get());
+    scroll[DATAOUTPUT]->setWidget(tabDataOutput.get());
+    scroll[PLOT]->setWidget(tabPlot.get());
+    scroll[SETTINGS]->setWidget(tabSettings.get());
+    scroll[ADVANCED]->setWidget(tabAdvanced.get());
+    scroll[DEBUGGING]->setWidget(tabDebugging.get());
+    scroll[DEVELOPER]->setWidget(tabDeveloper.get());
     // inserting all the tabs
     tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT], "Measurement");
     tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT], "Data Output");
@@ -184,17 +161,17 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->insertTab(DEBUGGING, scroll[DEBUGGING], "Debugging");
     tabs->insertTab(DEVELOPER, scroll[DEVELOPER], "Developer");
     // no scroll buttons this way
-    tabs->insertTab(MESSAGES, tabMessages, "Terminal");
+    tabs->insertTab(MESSAGES, tabMessages.get(), "Terminal");
 
     // swap tabs so that messages is last tab
-    tabs->tabBar()->moveTab(tabs->indexOf(tabMeasurement), MEASUREMENT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabSettings), SETTINGS);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDataOutput), DATAOUTPUT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabPlot), PLOT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabAdvanced), ADVANCED);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDebugging), DEBUGGING);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDeveloper), DEVELOPER);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabMessages), MESSAGES);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabMeasurement.get()), MEASUREMENT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabSettings.get()), SETTINGS);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabDataOutput.get()), DATAOUTPUT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabPlot.get()), PLOT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabAdvanced.get()), ADVANCED);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabDebugging.get()), DEBUGGING);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabDeveloper.get()), DEVELOPER);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabMessages.get()), MESSAGES);
     tabs->setCurrentIndex(MEASUREMENT);
 
     // other tab properties
@@ -214,7 +191,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->setTabEnabled(ADVANCED, false);
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
     actionLoadTrimbits->setVisible(false);
-    actionSaveTrimbits->setVisible(false);
 
     dockWidgetPlot->setFloating(false);
     dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -232,40 +208,38 @@ void qDetectorMain::SetUpWidgetWindow() {
 void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
 
     // instantiate detector and set window title
-    myDet = new multiSlsDetector(multiID);
+    det = sls::make_unique<sls::Detector>(multiID);
 
     // create messages tab to capture config file loading logs
-    tabMessages = new qTabMessages(this);
+    tabMessages = sls::make_unique<qTabMessages>(this);
 
     // loads the config file at startup
     if (!fName.empty())
         LoadConfigFile(fName);
 
     // validate detector type (for GUI) and update menu
-    detType = myDet->getDetectorTypeAsEnum();
+    detType = det->getDetectorType().tsquash("Different detector type for all modules.");
+    actionLoadTrimbits->setEnabled(false);
     switch (detType) {
     case slsDetectorDefs::EIGER:
+        actionLoadTrimbits->setEnabled(true);
         break;
     case slsDetectorDefs::GOTTHARD:
     case slsDetectorDefs::JUNGFRAU:
-        actionLoadTrimbits->setText("Load Settings");
-        actionSaveTrimbits->setText("Save Settings");
-        break;
     case slsDetectorDefs::MOENCH:
-        actionLoadTrimbits->setEnabled(false);
-        actionSaveTrimbits->setEnabled(false);
-        break;
+         break;
     default:
-        std::string errorMess =
-            myDet->getHostname() + std::string(" has ") +
-            myDet->getDetectorTypeAsString() + std::string(" detector type (") +
-            std::to_string(detType) + std::string("). Exiting GUI.");
+        std::ostringstream os;
+        os << det->getHostname() << " has " <<
+            slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) << " detector type (" <<
+            std::to_string(detType) << "). Exiting GUI.";
+        std::string errorMess = os.str();
         throw sls::RuntimeError(errorMess.c_str());
     }
-
-    std::string title =
-        "SLS Detector GUI : " + myDet->getDetectorTypeAsString() + " - " +
-        myDet->getHostname();
+    std::ostringstream os;
+    os << "SLS Detector GUI : " << slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) 
+        << " - " << det->getHostname();
+    std::string title = os.str();
     FILE_LOG(logINFO) << title;
     setWindowTitle(QString(title.c_str()));
 }
@@ -274,16 +248,16 @@ void qDetectorMain::Initialization() {
     // Dockable Plot
 	connect(dockWidgetPlot, SIGNAL(topLevelChanged(bool)), this, SLOT(ResizeMainWindow(bool)));
     // tabs
-	connect(tabs,SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));//( QWidget*)));
+	connect(tabs.get(),SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));//( QWidget*)));
     //	Measurement tab
-    connect(tabMeasurement, SIGNAL(EnableTabsSignal(bool)), this, SLOT(EnableTabs(bool)));
-    connect(tabMeasurement, SIGNAL(FileNameChangedSignal(QString)), myPlot, SLOT(SetSaveFileName(QString)));
+    connect(tabMeasurement.get(), SIGNAL(EnableTabsSignal(bool)), this, SLOT(EnableTabs(bool)));
+    connect(tabMeasurement.get(), SIGNAL(FileNameChangedSignal(QString)), plot.get(), SLOT(SetSaveFileName(QString)));
     // Plot tab
-    connect(tabPlot, SIGNAL(DisableZoomSignal(bool)), this, SLOT(SetZoomToolTip(bool)));
+    connect(tabPlot.get(), SIGNAL(DisableZoomSignal(bool)), this, SLOT(SetZoomToolTip(bool)));
 
     // Plotting
-    connect(myPlot, SIGNAL(AcquireFinishedSignal()), tabMeasurement, SLOT(AcquireFinished()));
-    connect(myPlot, SIGNAL(AbortSignal()), tabMeasurement, SLOT(AbortAcquire()));
+    connect(plot.get(), SIGNAL(AcquireFinishedSignal()), tabMeasurement.get(), SLOT(AcquireFinished()));
+    connect(plot.get(), SIGNAL(AbortSignal()), tabMeasurement.get(), SLOT(AbortAcquire()));
 
     // menubar
     // Modes Menu
@@ -324,7 +298,7 @@ void qDetectorMain::LoadConfigFile(const std::string fName) {
         FILE_LOG(logWARNING) << "File not recognized";
     } else {
         try {
-            myDet->readConfigurationFile(fName);
+            det->loadConfig(fName);
         } CATCH_DISPLAY ("Could not load config file.", "qDetectorMain::LoadConfigFile")
     }
 }
@@ -346,8 +320,7 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(ADVANCED, enable);
-        actionLoadTrimbits->setVisible(enable && detType != slsDetectorDefs::MOENCH);
-        actionSaveTrimbits->setVisible(enable && detType != slsDetectorDefs::MOENCH);
+        actionLoadTrimbits->setVisible(enable && detType == slsDetectorDefs::EIGER);
         FILE_LOG(logINFO) << "Expert Mode: "
                           << slsDetectorDefs::stringEnable(enable);
     }
@@ -369,53 +342,17 @@ void qDetectorMain::EnableModes(QAction *action) {
 void qDetectorMain::ExecuteUtilities(QAction *action) {
     bool refreshTabs = false;
     try {
-        if (action == actionOpenSetup) {
-            FILE_LOG(logDEBUG) << "Loading Setup";
-            QString fName = QString(myDet->getFilePath().c_str());
-            fName = QFileDialog::getOpenFileName(
-                this, tr("Load Detector Setup"), fName,
-                tr("Detector Setup files (*.det);;All Files(*)"));
-            // Gets called when cancelled as well
-            if (!fName.isEmpty()) {
-                refreshTabs = true;
-                myDet->retrieveDetectorSetup(
-                    std::string(fName.toAscii().constData()));
-                qDefs::Message(
-                    qDefs::INFORMATION,
-                    "The Setup Parameters have been loaded successfully.",
-                    "qDetectorMain::ExecuteUtilities");
-                FILE_LOG(logINFO) << "Setup Parameters loaded successfully";
-            }
-        }
 
-        else if (action == actionSaveSetup) {
-            FILE_LOG(logDEBUG) << "Saving Setup";
-            QString fName = QString(myDet->getFilePath().c_str());
-            fName = QFileDialog::getSaveFileName(
-                this, tr("Save Current Detector Setup"), fName,
-                tr("Detector Setup files (*.det);;All Files(*) "));
-            // Gets called when cancelled as well
-            if (!fName.isEmpty()) {
-                myDet->dumpDetectorSetup(
-                    std::string(fName.toAscii().constData()));
-                qDefs::Message(
-                    qDefs::INFORMATION,
-                    "The Setup Parameters have been saved successfully.",
-                    "qDetectorMain::ExecuteUtilities");
-                FILE_LOG(logINFO) << "Setup Parameters saved successfully";
-            }
-        }
-
-        else if (action == actionOpenConfiguration) {
+        if (action == actionLoadConfiguration) {
             FILE_LOG(logDEBUG) << "Loading Configuration";
-            QString fName = QString(myDet->getFilePath().c_str());
+            QString fName = QString(det->getFilePath().squash("/tmp/").c_str());
             fName = QFileDialog::getOpenFileName(
                 this, tr("Load Detector Configuration"), fName,
                 tr("Configuration files (*.config);;All Files(*)"));
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
                 refreshTabs = true;
-                myDet->readConfigurationFile(
+                det->loadConfig(
                     std::string(fName.toAscii().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Configuration Parameters have been "
@@ -426,107 +363,50 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             }
         }
 
-        else if (action == actionSaveConfiguration) {
-            FILE_LOG(logDEBUG) << "Saving Configuration";
-            QString fName = QString(myDet->getFilePath().c_str());
-            fName = QFileDialog::getSaveFileName(
-                this, tr("Save Current Detector Configuration"), fName,
-                tr("Configuration files (*.config) ;;All Files(*)"));
+        else if (action == actionLoadParameters) {
+            FILE_LOG(logDEBUG) << "Loading Parameters";
+            QString fName = QString(det->getFilePath().squash("/tmp/").c_str());
+            fName = QFileDialog::getOpenFileName(
+                this, tr("Load Measurement Setup"), fName,
+                tr("Parameter files (*.det);;All Files(*)"));
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
-                myDet->writeConfigurationFile(
+                refreshTabs = true;
+                det->loadParameters(
                     std::string(fName.toAscii().constData()));
                 qDefs::Message(qDefs::INFORMATION,
-                               "The Configuration Parameters have been saved "
-                               "successfully.",
+                               "The Detector Parameters have been "
+                               "configured successfully.",
                                "qDetectorMain::ExecuteUtilities");
                 FILE_LOG(logINFO)
-                    << "Configuration Parameters saved successfully";
+                    << "Parameters loaded successfully";
             }
         }
 
         else if (action == actionLoadTrimbits) {
-            QString fName = QString((myDet->getSettingsDir()).c_str());
-            // gotthard
-            if (actionLoadTrimbits->text().contains("Settings")) {
-                FILE_LOG(logDEBUG) << "Loading Settings";
-                fName = QFileDialog::getOpenFileName(
-                    this, tr("Load Detector Settings"), fName,
-                    tr("Settings files (*.settings settings.sn*);;All "
-                       "Files(*)"));
-                // Gets called when cancelled as well
-                if (!fName.isEmpty()) {
-                    myDet->loadSettingsFile(
-                        std::string(fName.toAscii().constData()), -1);
-                    qDefs::Message(
-                        qDefs::INFORMATION,
-                        "The Settings have been loaded successfully.",
-                        "qDetectorMain::ExecuteUtilities");
-                    FILE_LOG(logINFO) << "Settings loaded successfully";
-                }
+            QString fName = QString((det->getSettingsDir().squash("/tmp/")).c_str());
+            FILE_LOG(logDEBUG) << "Loading Trimbits";
+            // so that even nonexisting files can be selected
+            QFileDialog *fileDialog = new QFileDialog(
+                this, tr("Load Detector Trimbits"), fName,
+                tr("Trimbit files (*.trim noise.sn*);;All Files(*)"));
+            fileDialog->setFileMode(QFileDialog::AnyFile);
+            if (fileDialog->exec() == QDialog::Accepted)
+                fName = fileDialog->selectedFiles()[0];
 
-            } // mythen and eiger
-            else {
-                FILE_LOG(logDEBUG) << "Loading Trimbits";
-                // so that even nonexisting files can be selected
-                QFileDialog *fileDialog = new QFileDialog(
-                    this, tr("Load Detector Trimbits"), fName,
-                    tr("Trimbit files (*.trim noise.sn*);;All Files(*)"));
-                fileDialog->setFileMode(QFileDialog::AnyFile);
-                if (fileDialog->exec() == QDialog::Accepted)
-                    fName = fileDialog->selectedFiles()[0];
-
-                // Gets called when cancelled as well
-                if (!fName.isEmpty()) {
-                    myDet->loadSettingsFile(
-                        std::string(fName.toAscii().constData()), -1);
-                    qDefs::Message(
-                        qDefs::INFORMATION,
-                        "The Trimbits have been loaded successfully.",
-                        "qDetectorMain::ExecuteUtilities");
-                    FILE_LOG(logINFO) << "Trimbits loaded successfully";
-                }
+            // Gets called when cancelled as well
+            if (!fName.isEmpty()) {
+                det->loadTrimbits(
+                    std::string(fName.toAscii().constData()));
+                qDefs::Message(
+                    qDefs::INFORMATION,
+                    "The Trimbits have been loaded successfully.",
+                    "qDetectorMain::ExecuteUtilities");
+                FILE_LOG(logINFO) << "Trimbits loaded successfully";
             }
+            
         }
 
-        else if (action == actionSaveTrimbits) {
-            // gotthard
-            if (actionLoadTrimbits->text().contains("Settings")) {
-                FILE_LOG(logDEBUG) << "Saving Settings";
-                // different output directory so as not to overwrite
-                QString fName = QString((myDet->getSettingsDir()).c_str());
-                fName = QFileDialog::getSaveFileName(
-                    this, tr("Save Current Detector Settings"), fName,
-                    tr("Settings files (*.settings settings.sn*);;All "
-                       "Files(*) "));
-                // Gets called when cancelled as well
-                if (!fName.isEmpty()) {
-                    myDet->saveSettingsFile(
-                        std::string(fName.toAscii().constData()), -1);
-                    qDefs::Message(qDefs::INFORMATION,
-                                   "The Settings have been saved successfully.",
-                                   "qDetectorMain::ExecuteUtilities");
-                    FILE_LOG(logINFO) << "Settings saved successfully";
-                }
-            } // mythen and eiger
-            else {
-                FILE_LOG(logDEBUG) << "Saving Trimbits";
-                // different output directory so as not to overwrite
-                QString fName = QString((myDet->getSettingsDir()).c_str());
-                fName = QFileDialog::getSaveFileName(
-                    this, tr("Save Current Detector Trimbits"), fName,
-                    tr("Trimbit files (*.trim noise.sn*) ;;All Files(*)"));
-                // Gets called when cancelled as well
-                if (!fName.isEmpty()) {
-                    myDet->saveSettingsFile(
-                        std::string(fName.toAscii().constData()), -1);
-                    qDefs::Message(qDefs::INFORMATION,
-                                   "The Trimbits have been saved successfully.",
-                                   "qDetectorMain::ExecuteUtilities");
-                    FILE_LOG(logINFO) << "Trimbits saved successfully";
-                }
-            }
-        }
     } CATCH_DISPLAY ("Could not execute utilities.", "qDetectorMain::ExecuteUtilities")
 
     Refresh(tabs->currentIndex());
@@ -552,7 +432,7 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
         std::string guiVersion = std::to_string(APIGUI);
         std::string clientVersion = "unknown";
         try {
-            clientVersion = std::to_string(myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
+            clientVersion = std::to_string(det->getClientVersion());
         } CATCH_DISPLAY ("Could not get client version.", "qDetectorMain::ExecuteHelp")
 
         qDefs::Message(qDefs::INFORMATION,
@@ -660,10 +540,8 @@ void qDetectorMain::EnableTabs(bool enable) {
     tabs->setTabEnabled(MESSAGES, enable);
 
     // actions check
-    actionOpenSetup->setEnabled(enable);
-    actionSaveSetup->setEnabled(enable);
-    actionOpenConfiguration->setEnabled(enable);
-    actionSaveConfiguration->setEnabled(enable);
+    actionLoadConfiguration->setEnabled(enable);
+    actionLoadParameters->setEnabled(enable);
     actionDebug->setEnabled(enable);
     actionExpert->setEnabled(enable);
 
@@ -673,8 +551,7 @@ void qDetectorMain::EnableTabs(bool enable) {
     // expert
     bool expertTab = enable && (actionExpert->isChecked());
     tabs->setTabEnabled(ADVANCED, expertTab);
-    actionLoadTrimbits->setVisible(expertTab && detType != slsDetectorDefs::MOENCH);
-    actionSaveTrimbits->setVisible(expertTab && detType != slsDetectorDefs::MOENCH);
+    actionLoadTrimbits->setVisible(expertTab && detType == slsDetectorDefs::EIGER);
 
     // moved to here, so that its all in order, instead of signals and different
     // threads
@@ -690,7 +567,7 @@ void qDetectorMain::EnableTabs(bool enable) {
             tabDeveloper->Refresh();
 
         tabPlot->Refresh();
-        myPlot->StartAcquisition();
+        plot->StartAcquisition();
     } else { // to enable scan box
         tabPlot->Refresh();
         // to start adc timer

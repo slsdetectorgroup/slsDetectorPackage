@@ -1281,9 +1281,14 @@ class slsDetector : public virtual slsDetectorDefs {
     sls_detector_module getModule();
 
     /**
+     * Set Default Rate correction from trimbit file(Eiger)
+     */
+    void setDefaultRateCorrection();
+
+    /**
      * Set Rate correction (Eiger)
      * @param t dead time in ns - if 0 disable correction,
-     * if >0 set dead time to t, if < 0 set deadtime to default dead time
+     * if >0 set dead time to t, cannot be < 0
      * for current settings
      */
     void setRateCorrection(int64_t t = 0);

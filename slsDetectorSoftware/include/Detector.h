@@ -41,6 +41,8 @@ class Detector {
 
     void loadConfig(const std::string &fname);
 
+    void loadParameters(const std::string &fname);
+
     Result<std::string> getHostname(Positions pos = {}) const;
 
     /* Frees shared memory, adds detectors to the list
@@ -61,7 +63,7 @@ class Detector {
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
 
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
-
+    
     /** Gets the total number of detectors */
     int size() const;
 
@@ -233,7 +235,7 @@ class Detector {
      */
     void stopAcquisition();
 
-    /**
+    /** TODO: initially was getting acq flag, if set, check if detctor idle, then set, else exception & abort
      * Clears the acquiring flag. This has to be done manually
      * after an acquisition was aborted.
      */
@@ -249,7 +251,7 @@ class Detector {
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
-    void setStartingFrameNumber(uint64_t value, Positions pos);
+    void setStartingFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger] Sends an internal software trigger to the detector */
     void sendSoftwareTrigger(Positions pos = {});
@@ -655,10 +657,12 @@ class Detector {
     /** [Eiger] deadtime in ns, 0 = disabled */
     Result<ns> getRateCorrection(Positions pos = {}) const;
 
+    /** [Eiger] Sets default rate correction from trimbit file */
+    void setDefaultRateCorrection(Positions pos = {});
+
     /** //TODO: default, get, set
      * [Eiger] Set Rate correction
-     * 0 disable correction, < 0: default dead time from trimbit file, > 0
-     * custom deadtime (advanced)
+     * 0 disable correction, > 0 custom deadtime, cannot be -1
      */
     void setRateCorrection(ns dead_time, Positions pos = {});
 
@@ -994,6 +998,9 @@ class Detector {
 
     /** [CTB] */
     void setPattern(const std::string &fname, Positions pos = {});
+
+    /** [CTB] */
+    void savePattern(const std::string &fname); 
 
     /** [CTB] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;

@@ -2,20 +2,20 @@
 
 #include "ui_form_tab_advanced.h"
 
-class multiSlsDetector;
+#include "Detector.h"
 
 class qTabAdvanced:public QWidget, private Ui::TabAdvancedObject{
 	Q_OBJECT
 
 public:
-	qTabAdvanced(QWidget *parent, multiSlsDetector* detector);
+	qTabAdvanced(QWidget *parent, sls::Detector* detector);
 	~qTabAdvanced();
 
 public slots:
 	void Refresh();
 
 private slots:
-	void SetDetector(int index);
+	void SetDetector();
 	void SetControlPort(int port);
 	void SetStopPort(int port);
 	void SetDetectorUDPIP();
@@ -60,7 +60,7 @@ private:
 	void GetSubExposureTime();
 	void GetSubDeadTime();
 
-	multiSlsDetector *myDet;
+	sls::Detector *det;
 };
 
 

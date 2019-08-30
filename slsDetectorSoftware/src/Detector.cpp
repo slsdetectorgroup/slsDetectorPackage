@@ -21,6 +21,14 @@ void Detector::loadConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
 }
 
+void Detector::loadParameters(const std::string &fname) {
+    pimpl->retrieveDetectorSetup(fname, 0);
+}
+
+void Detector::savePattern(const std::string &fname) {
+    pimpl->savePattern(fname);
+}
+
 Result<std::string> Detector::getHostname(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getHostname, pos);
 }
@@ -250,14 +258,14 @@ void Detector::setTimingMode(defs::timingMode value, Positions pos) {
 void Detector::acquire() { pimpl->acquire(); }
 
 void Detector::startAcquisition() {
-    if (getUseReceiverFlag({}).squash())
+    if (getUseReceiverFlag().squash(true))
         pimpl->Parallel(&slsDetector::startReceiver, {});
     pimpl->Parallel(&slsDetector::startAcquisition, {});
 }
 
 void Detector::stopAcquisition() {
     pimpl->Parallel(&slsDetector::stopAcquisition, {});
-    if (getUseReceiverFlag({}).squash()) // TODO: problem for acquire()
+    if (getUseReceiverFlag().squash(true)) 
         pimpl->Parallel(&slsDetector::stopReceiver, {});
 }
 
@@ -572,8 +580,9 @@ void Detector::setFilePath(const std::string &fpath, Positions pos) {
 }
 
 Result<std::string> Detector::getFileNamePrefix(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setFileName, pos, "");
+    return pimpl->Parallel(&slsDetector::getFileName, pos);
 }
+
 void Detector::setFileNamePrefix(const std::string &fname, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileName, pos, fname);
 }
@@ -768,9 +777,9 @@ void Detector::setRxAddGapPixels(bool enable) {
 Result<bool> Detector::getParallelMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
                                defs::GET_READOUT_FLAGS);
-    Result<bool> booleanRes;
-    for (unsigned int i = 0; i < res.size(); ++i) {
-        booleanRes[i] = (res[i] & defs::PARALLEL) ? true : false;
+    Result<bool> booleanRes(res.size());
+    for (size_t i = 0; i < res.size(); ++i) {
+        booleanRes[i] = res[i] & defs::PARALLEL;
     }
     return booleanRes;
 }
@@ -783,9 +792,9 @@ void Detector::setParallelMode(bool value, Positions pos) {
 Result<bool> Detector::getOverFlowMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::setReadOutFlags, pos,
                                defs::GET_READOUT_FLAGS);
-    Result<bool> booleanRes;
-    for (unsigned int i = 0; i < res.size(); ++i) {
-        booleanRes[i] = (res[i] & defs::SHOW_OVERFLOW) ? true : false;
+    Result<bool> booleanRes(res.size());
+    for (size_t i = 0; i < res.size(); ++i) {
+        booleanRes[i] = res[i] & defs::SHOW_OVERFLOW;
     }
     return booleanRes;
 }
@@ -822,6 +831,10 @@ void Detector::setTrimEnergies(std::vector<int> energies, Positions pos) {
 
 Result<ns> Detector::getRateCorrection(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getRateCorrection, pos);
+}
+
+void Detector::setDefaultRateCorrection(Positions pos) {
+    pimpl->Parallel(&slsDetector::setDefaultRateCorrection, pos);
 }
 
 void Detector::setRateCorrection(ns dead_time, Positions pos) {

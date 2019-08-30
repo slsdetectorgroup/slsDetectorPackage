@@ -8,9 +8,9 @@ class deserializer : public slsDetectorData<int> {
  public:
 
 
- deserializer( std::vector <int> dbl, int nch=64*3,int dr=24, int off=2): slsDetectorData<int>(nch,1,nch*dr*8+off*8,NULL,NULL,NULL), dbitlist(dbl), dynamicRange(dr), serialOffset(off), frameNumber(0), numberOfCounters(nch) {};
+ deserializer( std::vector <int> dbl, int nch=64*3,int dr=24, int off=2): slsDetectorData<int>(nch,1,nch*dr*8+off*8,NULL,NULL,NULL), dynamicRange(dr), serialOffset(off), frameNumber(0), numberOfCounters(nch), dbitlist(dbl) {};
 
- deserializer( std::vector <int> dbl, int nch,int dr, int off, int ds): slsDetectorData<int>(nch,1,ds,NULL,NULL,NULL), dbitlist(dbl), dynamicRange(dr), serialOffset(off), frameNumber(0), numberOfCounters(nch) {};
+ deserializer( std::vector <int> dbl, int nch,int dr, int off, int ds): slsDetectorData<int>(nch,1,ds,NULL,NULL,NULL), dynamicRange(dr), serialOffset(off), frameNumber(0), numberOfCounters(nch),  dbitlist(dbl) {};
 
   virtual void getPixel(int ip, int &x, int &y) {x=-1; y=-1;};
   
@@ -51,7 +51,7 @@ class deserializer : public slsDetectorData<int> {
 
  static int* deserializeAll(char *ptr, std::vector <int> dbl, int dr=24,  int nch=64*3, int off=5) {
    // off=0;
-   int iarg;
+   //int iarg;
    int64_t word, *wp;
    int* val=new int[nch];
    int ioff=0;
@@ -107,10 +107,10 @@ class deserializer : public slsDetectorData<int> {
 
  static int* deserializeList(char *ptr, std::vector <int> dbl, int dr=24,  int nch=64*3, int off=5) {
    // off=0;
-   int iarg;
-   int64_t word;
+   //int iarg;
+  // int64_t word;
    int* val=new int[nch];
-   int ioff=0;
+   //int ioff=0;
    int idr=0;
    int ib=0;
    int iw=0;
@@ -129,7 +129,7 @@ class deserializer : public slsDetectorData<int> {
    ib=0;
    ich=0;
    for (const auto &bit : dbl) {
-     ioff=off;
+     //ioff=off;
      idr=0;
      for (iw=0; iw<(nch*dr/nb)/8; iw++) {
        val[ich]|=(*dval)<<idr;

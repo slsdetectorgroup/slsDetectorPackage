@@ -54,7 +54,7 @@
       <enum>QTabWidget::North</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <property name="elideMode">
       <enum>Qt::ElideLeft</enum>
@@ -418,7 +418,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Receiver UDP IP:</string>
+          <string>Destination UDP IP:</string>
          </property>
         </widget>
        </item>
@@ -799,7 +799,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Receiver UDP Port:</string>
+          <string>Destination UDP Port:</string>
          </property>
         </widget>
        </item>
@@ -942,7 +942,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Readout UDP MAC:</string>
+          <string>Sourceadout UDP MAC:</string>
          </property>
         </widget>
        </item>
@@ -987,7 +987,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Receiver UDP MAC:</string>
+          <string>Destination UDP MAC:</string>
          </property>
         </widget>
        </item>
@@ -1000,7 +1000,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Readout UDP IP:</string>
+          <string>Source UDP IP:</string>
          </property>
         </widget>
        </item>

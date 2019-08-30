@@ -62,7 +62,7 @@ template <class dataType> class analogDetector {
   
 
  analogDetector(slsDetectorData<dataType> *d, int sign=1, 
-		commonModeSubtraction *cm=NULL, int nped=1000, int nnx=-1, int nny=-1, double *gm=NULL, ghostSummation<dataType> *gs=NULL) : det(d), nx(nnx), ny(nny), stat(NULL), cmSub(cm),  iframe(-1), dataSign(sign), gmap(gm), ghSum(gs), id(0) {
+		commonModeSubtraction *cm=NULL, int nped=1000, int nnx=-1, int nny=-1, double *gm=NULL, ghostSummation<dataType> *gs=NULL) : det(d), nx(nnx), ny(nny), stat(NULL), cmSub(cm), dataSign(sign), iframe(-1), gmap(gm), ghSum(gs), id(0) {
     
     if (det)
       det->getDetectorSize(nx,ny);
@@ -880,7 +880,7 @@ template <class dataType> class analogDetector {
 
    virtual  double subtractPedestal(char *data, int ix, int iy=0, int cm=0) {
      double g=1.;
-     double val;
+     double val =0;
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
 	if (gmap) {
 	  g=gmap[iy*nx+ix];
@@ -927,6 +927,7 @@ template <class dataType> class analogDetector {
 #endif
 	return val;
       }	  
+      return val;
    };
       
 
@@ -981,7 +982,7 @@ template <class dataType> class analogDetector {
    */
      int *getNPhotons(char *data,  int *nph=NULL) {
        
-       double val;
+       //double val;
        if (nph==NULL)
 	 nph=image;
        newFrame(data);

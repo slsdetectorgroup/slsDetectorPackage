@@ -49,7 +49,7 @@ class mythen3_02_jctbData : public mythen3_01_jctbData {
 
  virtual short unsigned int* mythen03_frame(char *ptr, int dr=24,  int nch=64*3, int off=5) {
    // off=0;
-    int iarg;
+    //int iarg;
     int64_t word, *wp;
     short unsigned int* val=new short unsigned int[nch];
     int bit[64];
@@ -57,7 +57,7 @@ class mythen3_02_jctbData : public mythen3_01_jctbData {
     int ioff=0;
     int idr=0;
     int ib=0;
-    int ich=0;
+    //int ich=0;
     int ii=0;
     int iw=0;
     bit[0]=17;//19;

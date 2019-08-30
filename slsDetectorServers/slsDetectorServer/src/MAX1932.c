@@ -1,6 +1,9 @@
-#pragma once
-
+#include "MAX1932.h"
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
+#include "blackfin.h"
+#include "clogger.h"
+#include "common.h"
+#include "sls_detector_defs.h"
 
 /* MAX1932 HV DEFINES */
 
@@ -12,6 +15,7 @@
 #define MAX1932_MAX_DAC_VAL         (0x1)
 #define MAX1932_POWER_OFF_DAC_VAL   (0x0)
 
+// defines from the fpga
 uint32_t MAX1932_Reg = 0x0;
 uint32_t MAX1932_CsMask = 0x0;
 uint32_t MAX1932_ClkMask = 0x0;
@@ -20,17 +24,6 @@ int MAX1932_DigOffset = 0x0;
 int MAX1932_MinVoltage = 0;
 int MAX1932_MaxVoltage = 0;
 
-
-/**
- * Set Defines
- * @param reg spi register
- * @param cmsk chip select mask
- * @param clkmsk clock output mask
- * @param dmsk digital output mask
- * @param dofst digital output offset
- * @param minMV minimum voltage determined by hardware
- * @param maxMV maximum voltage determined by hardware
- */
 void MAX1932_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst,
         int minMV, int maxMV) {
     FILE_LOG(logINFOBLUE, ("Configuring High Voltage\n"));
@@ -43,10 +36,6 @@ void MAX1932_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t d
     MAX1932_MaxVoltage = maxMV;
 }
 
-
-/**
- * Disable SPI
- */
 void MAX1932_Disable() {
     bus_w(MAX1932_Reg, (bus_r(MAX1932_Reg)
             | MAX1932_CsMask
@@ -54,12 +43,6 @@ void MAX1932_Disable() {
             & ~(MAX1932_DigMask));
 }
 
-
-/**
- * Set value
- * @param val value to set
- * @return OK or FAIL
- */
 int MAX1932_Set (int val) {
     FILE_LOG(logDEBUG1, ("Setting high voltage to %d\n", val));
     if (val < 0)

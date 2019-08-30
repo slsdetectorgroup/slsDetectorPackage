@@ -1,6 +1,7 @@
-#pragma once
-
+#include "programfpga.h"
 #include "ansi.h"
+#include "clogger.h"
+#include "slsDetectorServer_defs.h"
 
 #include <unistd.h> 	// usleep
 #include <string.h>
@@ -12,10 +13,6 @@
 int gpioDefined = 0;
 char mtdvalue[MTDSIZE] = {0};
 
-
-/**
- * Define GPIO pins if not defined
- */
 void defineGPIOpins(){
 	if (!gpioDefined) {
 		//define the gpio pins
@@ -29,27 +26,17 @@ void defineGPIOpins(){
 	}else FILE_LOG(logDEBUG1, ("gpio pins already defined earlier\n"));
 }
 
-/**
- * Notify FPGA to not touch flash
- */
 void FPGAdontTouchFlash(){
 	//tell FPGA to not touch flash
 	system("echo 0 > /sys/class/gpio/gpio9/value");
 	//usleep(100*1000);
 }
 
-
-/**
- * Notify FPGA to program from flash
- */
 void FPGATouchFlash(){
 	//tell FPGA to touch flash to program itself
 	system("echo 1 > /sys/class/gpio/gpio9/value");
 }
 
-/**
- * Reset FPGA
- */
 void resetFPGA(){
     FILE_LOG(logINFOBLUE, ("Reseting FPGA\n"));
 	FPGAdontTouchFlash();
@@ -57,9 +44,6 @@ void resetFPGA(){
 	usleep(CTRL_SRVR_INIT_TIME_US);
 }
 
-/**
- * Erasing flash
- */
 void eraseFlash(){
     FILE_LOG(logDEBUG1, ("Erasing Flash\n"));
 	char command[255];
@@ -69,12 +53,6 @@ void eraseFlash(){
 	FILE_LOG(logINFO, ("Flash erased\n"));
 }
 
-/**
- * Open the drive to copy program and
- * notify FPGA not to touch the program
- * @param filefp pointer to flash
- * @return 0 for success, 1 for fail (cannot open file for writing program)
- */
 int startWritingFPGAprogram(FILE** filefp){
     FILE_LOG(logDEBUG1, ("Start Writing of FPGA program\n"));
 
@@ -114,11 +92,6 @@ int startWritingFPGAprogram(FILE** filefp){
 	return 0;
 }
 
-/**
- * When done writing the program, close file pointer and
- * notify FPGA to pick up the program from flash
- * @param filefp pointer to flash
- */
 void stopWritingFPGAprogram(FILE* filefp){
     FILE_LOG(logDEBUG1, ("Stopping of writing FPGA program\n"));
 
@@ -147,14 +120,6 @@ void stopWritingFPGAprogram(FILE* filefp){
 	FILE_LOG(logINFO, ("FPGA has picked up the program from flash\n"));
 }
 
-
-/**
- * Write FPGA Program to flash
- * @param fpgasrc source program
- * @param fsize size of program
- * @param filefp pointer to flash
- * @return 0 for success, 1 for fail (cannot write)
- */
 int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp){
     FILE_LOG(logDEBUG1, ("Writing of FPGA Program\n"
             "\taddress of fpgasrc:%p\n"

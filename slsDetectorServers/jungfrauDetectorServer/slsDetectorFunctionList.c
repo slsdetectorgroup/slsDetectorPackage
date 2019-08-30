@@ -6,13 +6,17 @@
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "ALTERA_PLL.h" // pll
+#include "blackfin.h"
+#include "common.h"
 #ifndef VIRTUAL
 #include "programfpga.h"
 #else
 #include "communication_funcs_UDP.h"
-#include "blackfin.h"
+#endif
+
 #include <string.h>
 #include <unistd.h>     // usleep
+#ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
 #endif
@@ -921,7 +925,7 @@ int getDAC(enum DACINDEX ind, int mV) {
 }
 
 int getMaxDacSteps() {
-    return LTC2620_MAX_STEPS;
+    return LTC2620_GetMaxNumSteps();
 }
 
 int getADC(enum ADCINDEX ind){
@@ -1057,7 +1061,7 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_
 	// calculate rxr endpoint offset
 	addr += (iRxEntry * RXR_ENDPOINT_OFST);
 	// get struct memory
-	udp_header *udp = (udp_header*) (CSP0BASE + addr * 2);
+	udp_header *udp = (udp_header*) (Blackfin_getBaseAddress() + addr * 2);
 	memset(udp, 0, sizeof(udp_header));
 
 	//  mac addresses	

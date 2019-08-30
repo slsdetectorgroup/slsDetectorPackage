@@ -1,6 +1,7 @@
-#pragma once
-
+#include "I2C.h"
 #include "blackfin.h"
+#include "clogger.h"
+
 #include <unistd.h>     // usleep
 
 /**
@@ -86,6 +87,7 @@
 //#define I2C_RX_DATA_FIFO_LVL_OFST           (0)
 //#define I2C_RX_DATA_FIFO_LVL_MSK            (0x000000FF << I2C_RX_DATA_FIFO_LVL_OFST)
 
+// defines in the fpga
 uint32_t I2C_Control_Reg = 0x0;
 uint32_t I2C_Status_Reg = 0x0;
 uint32_t I2C_Rx_Data_Fifo_Reg = 0x0;
@@ -95,19 +97,7 @@ uint32_t I2C_Scl_High_Count_Reg = 0x0;
 uint32_t I2C_Sda_Hold_Reg = 0x0;
 uint32_t I2C_Transfer_Command_Fifo_Reg = 0x0;
 
-/**
- * Configure the I2C core,
- * Enable core and
- * Calibrate the calibration register for current readout
- * @param creg control register (defined in RegisterDefs.h)
- * @param sreg status register (defined in RegisterDefs.h)
- * @param rreg rx data fifo register (defined in RegisterDefs.h)
- * @param rlvlreg rx data fifo level register (defined in RegisterDefs.h)
- * @param slreg scl low count register (defined in RegisterDefs.h)
- * @param shreg scl high count register (defined in RegisterDefs.h)
- * @param sdreg sda hold register (defined in RegisterDefs.h)
- * @param treg transfer command fifo register (defined in RegisterDefs.h)
- */
+
 void I2C_ConfigureI2CCore(uint32_t creg, uint32_t sreg,
         uint32_t rreg, uint32_t rlvlreg,
         uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg) {
@@ -160,12 +150,6 @@ void I2C_ConfigureI2CCore(uint32_t creg, uint32_t sreg,
     //The INA226 supports the transmission protocol for fast mode (1 kHz to 400 kHz) and high-speed mode (1 kHz to 2.94 MHz).
 }
 
-/**
- * Read register
- * @param deviceId device Id
- * @param addr register address
- * @returns value read from register
- */
 uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
     FILE_LOG(logDEBUG2, (" ================================================\n"));
     FILE_LOG(logDEBUG2, (" Reading from I2C device 0x%x and reg 0x%x\n", devId, addr));
@@ -222,12 +206,6 @@ uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
     return retval;
 }
 
-/**
- * Write register (16 bit value)
- * @param deviceId device Id
- * @param addr register address
- * @param data data to be written (16 bit)
- */
 void I2C_Write(uint32_t devId, uint32_t addr, uint16_t data) {
     FILE_LOG(logDEBUG2, (" ================================================\n"));
     FILE_LOG(logDEBUG2, (" Writing to I2C (Device:0x%x, reg:0x%x, data:%d)\n", devId, addr, data));

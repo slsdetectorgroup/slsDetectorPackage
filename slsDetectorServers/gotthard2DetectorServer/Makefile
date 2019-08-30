@@ -1,16 +1,19 @@
 current_dir = $(shell pwd)
-main_server = ../slsDetectorServer/
+main_inc = ../slsDetectorServer/include/
+main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DGOTTHARD2D  -DSTOP_SERVER -I$(main_server) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -DGOTTHARD2D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm
 PROGS		= 	gotthard2DetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRCS	=	$(main_server)communication_funcs.c $(main_server)slsDetectorServer.c $(main_server)slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
+SRCS	=	slsDetectorFunctionList.c 
+SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c 
+
 OBJS 	= 	$(SRCS:.c=.o) 
  
 all: clean versioning $(PROGS)
@@ -29,9 +32,10 @@ $(PROGS): $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
 	rm *.gdb
+	rm $(main_src)*.o	
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_server)*.o
+	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o
 	
 
 	

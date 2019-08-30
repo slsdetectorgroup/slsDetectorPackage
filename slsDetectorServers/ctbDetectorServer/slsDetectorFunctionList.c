@@ -4,19 +4,21 @@
 
 #include "communication_funcs_UDP.h"
 #include "UDPPacketHeaderGenerator.h"
+#include "common.h"
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "AD7689.h"     // slow adcs
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "INA226.h"     // i2c
 #include "ALTERA_PLL.h" // pll
-#include <time.h>
+#include "blackfin.h"
 #ifndef VIRTUAL
 #include "programfpga.h"
-#else
-#include "blackfin.h"
+#endif
+
 #include <string.h>
 #include <unistd.h>     // usleep
+#ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
 #endif
@@ -526,7 +528,7 @@ void setupDetector() {
 	{
 	    int idac = 0;
 	    for (idac = 0; idac < NDAC; ++idac) {
-	        setDAC(idac, LTC2620_PWR_DOWN_VAL, 0); //has to be before setvchip
+	        setDAC(idac, LTC2620_GetPowerDownValue(), 0); //has to be before setvchip
 	    }
 	}
 
@@ -1050,7 +1052,7 @@ enum detectorSettings getSettings() {
 
 
 void setDAC(enum DACINDEX ind, int val, int mV) {
-    if (val < 0 && val != LTC2620_PWR_DOWN_VAL)
+    if (val < 0 && val != LTC2620_GetPowerDownValue())
         return;
 
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
@@ -1081,7 +1083,7 @@ int getDAC(enum DACINDEX ind, int mV) {
 }
 
 int getMaxDacSteps() {
-    return LTC2620_MAX_STEPS;
+    return LTC2620_GetMaxNumSteps();
 }
 
 int dacToVoltage(int dac) {
@@ -1126,11 +1128,11 @@ int isVchipValid(int val) {
 
 int getVchip() {
     // not set yet
-    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_PWR_DOWN_VAL)
+    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_GetPowerDownValue())
         return dacValues[D_PWR_CHIP];
     int voltage = -1;
     // dac to voltage
-    ConvertToDifferentRange(LTC2620_MAX_VAL, LTC2620_MIN_VAL, VCHIP_MIN_MV, VCHIP_MAX_MV,
+    ConvertToDifferentRange(LTC2620_GetMaxInput(), LTC2620_GetMinInput(), VCHIP_MIN_MV, VCHIP_MAX_MV,
             dacValues[D_PWR_CHIP], &voltage);
     return voltage;
 }
@@ -1140,12 +1142,12 @@ void setVchip(int val) {
     if (val != -1) {
         FILE_LOG(logINFOBLUE, ("Setting Vchip to %d mV\n", val));
 
-        int dacval = LTC2620_PWR_DOWN_VAL;
+        int dacval = LTC2620_GetPowerDownValue();
 
         // validate & convert it to dac
-        if (val != LTC2620_PWR_DOWN_VAL) {
+        if (val != LTC2620_GetPowerDownValue()) {
             // convert voltage to dac
-            if (ConvertToDifferentRange(VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_MAX_VAL, LTC2620_MIN_VAL, //min val is max V
+            if (ConvertToDifferentRange(VCHIP_MIN_MV, VCHIP_MAX_MV, LTC2620_GetMaxInput(), LTC2620_GetMinInput(), //min val is max V
                     val, &dacval) == FAIL) {
                 FILE_LOG(logERROR, ("\tVChip %d mV invalid. Is not between %d and %d mV\n", val, VCHIP_MIN_MV, VCHIP_MAX_MV));
                 return;
@@ -1238,7 +1240,7 @@ int isPowerValid(enum DACINDEX ind, int val) {
     int min = (ind == D_PWR_IO) ? VIO_MIN_MV : POWER_RGLTR_MIN;
 
     // not power_rgltr_max because it is allowed only upto vchip max - 200
-    if (val != 0 && (val != LTC2620_PWR_DOWN_VAL) && (val < min || val > (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT))) {
+    if (val != 0 && (val != LTC2620_GetPowerDownValue()) && (val < min || val > (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT))) {
         return 0;
     }
     return 1;
@@ -1267,14 +1269,14 @@ int getPower(enum DACINDEX ind) {
     }
 
     // dac powered off
-    if (dacValues[ind] == LTC2620_PWR_DOWN_VAL) {
-        FILE_LOG(logWARNING, ("Power %d enabled, dac value %d, voltage at minimum or 0\n", ind, LTC2620_PWR_DOWN_VAL));
-        return LTC2620_PWR_DOWN_VAL;
+    if (dacValues[ind] == LTC2620_GetPowerDownValue()) {
+        FILE_LOG(logWARNING, ("Power %d enabled, dac value %d, voltage at minimum or 0\n", ind, LTC2620_GetPowerDownValue()));
+        return LTC2620_GetPowerDownValue();
     }
 
     // vchip not set, weird error, should not happen (as vchip set to max in the beginning)
-    // unless user set vchip to LTC2620_PWR_DOWN_VAL  and then tried to get a power regulator value
-    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_PWR_DOWN_VAL) {
+    // unless user set vchip to LTC2620_GetPowerDownValue()  and then tried to get a power regulator value
+    if (dacValues[D_PWR_CHIP] == -1 || dacValues[D_PWR_CHIP] == LTC2620_GetPowerDownValue()) {
         FILE_LOG(logERROR, ("Cannot read power regulator %d (vchip not set)."
                 "Set a power regulator, which will also set vchip.\n"));
         return -1;
@@ -1282,7 +1284,7 @@ int getPower(enum DACINDEX ind) {
 
     // convert dac to voltage
     int retval = -1;
-    ConvertToDifferentRange(LTC2620_MAX_VAL, LTC2620_MIN_VAL, POWER_RGLTR_MIN, POWER_RGLTR_MAX,
+    ConvertToDifferentRange(LTC2620_GetMaxInput(), LTC2620_GetMinInput(), POWER_RGLTR_MIN, POWER_RGLTR_MAX,
             dacValues[ind], &retval);
     return retval;
 }
@@ -1322,7 +1324,7 @@ void setPower(enum DACINDEX ind, int val) {
 
         // power down dac
         FILE_LOG(logDEBUG1, ("Powering off P%d (DAC %d)\n", adcIndex, ind));
-        setDAC(ind, LTC2620_PWR_DOWN_VAL, 0);
+        setDAC(ind, LTC2620_GetPowerDownValue(), 0);
 
         // set vchip
         setVchip(vchip);
@@ -1333,15 +1335,15 @@ void setPower(enum DACINDEX ind, int val) {
 
         //(power off is anyway done with power enable)
         if (val == 0)
-            val = LTC2620_PWR_DOWN_VAL;
+            val = LTC2620_GetPowerDownValue();
 
         // convert it to dac (power off is anyway done with power enable)
-        if (val != LTC2620_PWR_DOWN_VAL) {
+        if (val != LTC2620_GetPowerDownValue()) {
             FILE_LOG(logDEBUG1, ("Convert Power of %d mV to dac units\n", val));
 
             int dacval = -1;
             // convert voltage to dac
-            if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_MAX_VAL, LTC2620_MIN_VAL,
+            if (ConvertToDifferentRange(POWER_RGLTR_MIN, POWER_RGLTR_MAX, LTC2620_GetMaxInput(), LTC2620_GetMinInput(),
                     val, &dacval) == FAIL) {
                 FILE_LOG(logERROR, ("\tPower index %d of value %d mV invalid. Is not between %d and %d mV\n",
                         ind, val, POWER_RGLTR_MIN, vchip - VCHIP_POWER_INCRMNT));

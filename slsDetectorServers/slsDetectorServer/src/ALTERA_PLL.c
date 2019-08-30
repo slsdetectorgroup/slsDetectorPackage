@@ -1,4 +1,6 @@
-#pragma once
+#include "ALTERA_PLL.h"
+#include "clogger.h"
+#include "blackfin.h"
 
 #include <unistd.h>     // usleep
 
@@ -72,6 +74,7 @@
 #define ALTERA_PLL_WAIT_TIME_US                 (10 * 1000)
 
 
+// defines from the fpga
 uint32_t ALTERA_PLL_Cntrl_Reg = 0x0;
 uint32_t ALTERA_PLL_Param_Reg = 0x0;
 uint32_t ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask = 0x0;
@@ -81,16 +84,6 @@ uint32_t ALTERA_PLL_Cntrl_AddrMask = 0x0;
 int ALTERA_PLL_Cntrl_AddrOfst = 0;
 
 
-/**
- * Set Defines
- * @param creg control register
- * @param preg parameter register
- * @param rprmsk reconfig parameter reset mask
- * @param wpmsk write parameter mask
- * @param prmsk pll reset mask
- * @param amsk address mask
- * @param aofst address offset
- */
 void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk, uint32_t wpmsk, uint32_t prmsk, uint32_t amsk, int aofst) {
     ALTERA_PLL_Cntrl_Reg = creg;
     ALTERA_PLL_Param_Reg = preg;
@@ -101,9 +94,6 @@ void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk, uint32
     ALTERA_PLL_Cntrl_AddrOfst = aofst;
 }
 
-/**
- * Reset only PLL
- */
 void ALTERA_PLL_ResetPLL () {
     FILE_LOG(logINFO, ("Resetting only PLL\n"));
 
@@ -119,9 +109,6 @@ void ALTERA_PLL_ResetPLL () {
 
 }
 
-/**
- * Reset PLL Reconfiguration and PLL
- */
 void ALTERA_PLL_ResetPLLAndReconfiguration () {
     FILE_LOG(logINFO, ("Resetting PLL and Reconfiguration\n"));
 
@@ -130,12 +117,6 @@ void ALTERA_PLL_ResetPLLAndReconfiguration () {
     bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) & ~ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask & ~ALTERA_PLL_Cntrl_PLLRstMask);
 }
 
-
-/**
- * Set PLL Reconfig register
- * @param reg register
- * @param val value
- */
 void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val) {
     FILE_LOG(logDEBUG1, ("Setting PLL Reconfig Reg, reg:0x%x, val:0x%x)\n", reg, val));
 
@@ -164,12 +145,6 @@ void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val) {
     usleep(ALTERA_PLL_WAIT_TIME_US);
 }
 
-/**
- * Write Phase Shift
- * @param phase phase shift
- * @param clkIndex clock index
- * @param pos 1 if up down direction of shift is positive, else 0
- */
 void ALTERA_PLL_SetPhaseShift(int32_t phase, int clkIndex, int pos) {
     FILE_LOG(logINFO, ("\tWriting PLL Phase Shift\n"));
     uint32_t value = (((phase << ALTERA_PLL_SHIFT_NUM_SHIFTS_OFST) & ALTERA_PLL_SHIFT_NUM_SHIFTS_MSK) |
@@ -182,21 +157,11 @@ void ALTERA_PLL_SetPhaseShift(int32_t phase, int clkIndex, int pos) {
     ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_PHASE_SHIFT_REG, value);
 }
 
-/**
- * Set PLL mode register to polling mode
- */
 void ALTERA_PLL_SetModePolling() {
     FILE_LOG(logINFO, ("\tSetting Polling Mode\n"));
     ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_MODE_REG, ALTERA_PLL_MODE_PLLNG_MD_VAL);
 }
 
-/**
- * Calculate and write output frequency
- * @param clkIndex clock index
- * @param pllVCOFreqMhz PLL VCO Frequency in Mhz
- * @param value frequency to set to
- * @param frequency set
- */
 int ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value) {
     FILE_LOG(logDEBUG1, ("C%d: Setting output frequency to %d (pllvcofreq: %dMhz)\n", clkIndex, value, pllVCOFreqMhz));
 

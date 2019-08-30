@@ -831,6 +831,9 @@ int setReadoutMode(enum readoutMode mode) {
         FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", mode));
         return FAIL;
     }
+    uint32_t regval = bus_r(addr);
+    analogEnable = (((regval & CONFIG_DSBL_ANLG_OTPT_MSK) >> CONFIG_DSBL_ANLG_OTPT_OFST) ? 0 : 1);
+    digitalEnable = ((regval & CONFIG_ENBLE_DGTL_OTPT_MSK) >> CONFIG_ENBLE_DGTL_OTPT_OFST);
 
     // update databytes and allocate ram
     if (allocateRAM() == FAIL) {
@@ -840,26 +843,17 @@ int setReadoutMode(enum readoutMode mode) {
 }
 
 int getReadoutMode() {
-    uint32_t addr = CONFIG_REG;
-    uint32_t regval = bus_r(addr);
-    FILE_LOG(logDEBUG1, ("Config Reg: 0x%08x\n", regval));
-    // this bit reads analog disable, so inverse
-    analogEnable = (((regval & CONFIG_DSBL_ANLG_OTPT_MSK) >> CONFIG_DSBL_ANLG_OTPT_OFST) ? 0 : 1);
-    digitalEnable = ((regval & CONFIG_ENBLE_DGTL_OTPT_MSK) >> CONFIG_ENBLE_DGTL_OTPT_OFST);
-
-    int retval = -1;
     if (analogEnable && digitalEnable) {
-        FILE_LOG(logDEBUG1, ("Getting readout: Analog & Digital 0x%x\n", retval));
+        FILE_LOG(logDEBUG1, ("Getting readout: Analog & Digita\n"));
         return ANALOG_AND_DIGITAL;
     } else if (analogEnable && !digitalEnable) {
-        FILE_LOG(logDEBUG1, ("Getting readout: Analog Only 0x%x\n", retval));
+        FILE_LOG(logDEBUG1, ("Getting readout: Analog Only\n"));
         return ANALOG_ONLY;
     } else if (!analogEnable && digitalEnable) {
-        FILE_LOG(logDEBUG1, ("Getting readout: Digital Only 0x%x\n", retval));
+        FILE_LOG(logDEBUG1, ("Getting readout: Digital Only\n"));
         return  DIGITAL_ONLY;
     } else {
-        FILE_LOG(logERROR, ("Read unknown readout (Both digital and analog are disabled). "
-                "Config reg: 0x%x\n", regval));
+        FILE_LOG(logERROR, ("Read unknown readout (Both digital and analog are disabled)\n"));
         return -1;
     }   
 }

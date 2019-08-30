@@ -691,7 +691,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page config
-   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard. \c Returns \c (int)
+   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau also overwrites adcphase to recommended default. For CTB, it is the run clock in MHz. Not for Gotthard. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "clkdivider";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
@@ -4282,8 +4282,14 @@ std::string slsDetectorCommand::cmdSpeed(int narg, const char * const args[], in
     if (action == PUT_ACTION) {
         if (sscanf(args[1], "%d", &t))
             ;
-        else
+        else {
+            // if parameer is a string (unknown speed will throw)
+            if (cmd == "clkdivider") {
+                speedLevel lev = getSpeedLevelType(std::string(args[1]));
+                t = static_cast<int>(lev);
+            } 
             return std::string("cannot scan speed value ") + std::string(args[1]);
+        }
     }
 
 

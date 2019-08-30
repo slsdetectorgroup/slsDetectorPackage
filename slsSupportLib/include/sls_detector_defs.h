@@ -511,6 +511,13 @@ format
         ANALOG_AND_DIGITAL
     };
 
+    /** chip speed */
+    enum speedLevel {
+        FULL_SPEED,
+        HALF_SPEED,
+        QUARTER_SPEED
+    };
+
     /** port type */
     enum portType {
         CONTROL_PORT, /**< control port */
@@ -890,11 +897,11 @@ format
         case ANALOG_AND_DIGITAL: 
             return "analog_digital";
         default:                
-            throw sls::RuntimeError("Unknown readout mode type enum" + std::to_string(static_cast<int>(mode)));
+            return "Unknown";
         }
     };
 
-   /** returns mdoe from string */
+   /** returns readoutMode from string */
     static readoutMode getReadoutModeType(std::string smode) {
         if (smode == "analog")          
             return ANALOG_ONLY;
@@ -903,8 +910,32 @@ format
         if (smode == "analog_digital")  
             return ANALOG_AND_DIGITAL;
         throw sls::RuntimeError("Unknown readout mode " + smode);
-    }
-; 
+    }; 
+
+    /** returns string from speedLevel */
+    static std::string getSpeedLevelType(speedLevel mode) {
+        switch(mode) {      
+        case FULL_SPEED:       
+            return "full_speed";   
+        case HALF_SPEED:      
+            return "half_speed";
+        case QUARTER_SPEED: 
+            return "quarter_speed";
+        default:                
+            return "Unknown";
+        }
+    };
+
+   /** returns speedLevel from string */
+    static speedLevel getSpeedLevelType(std::string smode) {
+        if (smode == "full_speed")          
+            return FULL_SPEED;
+        if (smode == "half_speed")         
+            return HALF_SPEED;
+        if (smode == "quarter_speed")  
+            return QUARTER_SPEED;
+        throw sls::RuntimeError("Unknown speed level mode " + smode);
+    }; 
 
     /**
        @short returns adc index from std::string

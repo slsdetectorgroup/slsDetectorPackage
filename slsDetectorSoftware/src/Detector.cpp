@@ -1,10 +1,10 @@
 #include "Detector.h"
 #include "container_utils.h"
+#include "detectorData.h"
 #include "logger.h"
 #include "multiSlsDetector.h"
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
-#include "detectorData.h"
 
 namespace sls {
 
@@ -165,13 +165,19 @@ Result<ns> Detector::getDelayAfterTriggerLeft(Positions pos) const {
                            defs::DELAY_AFTER_TRIGGER);
 }
 
-Result<int> Detector::getSpeed(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER, -1,
+Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {
+    auto res = pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER, -1,
                            0);
+    Result<defs::speedLevel> speedResult(res.size());
+    for (size_t i = 0; i < res.size(); ++i) {
+        speedResult[i] = static_cast<defs::speedLevel>(res[i]);
+    }
+    return speedResult;
 }
 
-void Detector::setSpeed(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER, value, 0);
+void Detector::setSpeed(defs::speedLevel value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER,
+                    static_cast<int>(value), 0);
 }
 
 Result<int> Detector::getADCPhase(Positions pos) const {
@@ -265,7 +271,7 @@ void Detector::startAcquisition() {
 
 void Detector::stopAcquisition() {
     pimpl->Parallel(&slsDetector::stopAcquisition, {});
-    if (getUseReceiverFlag().squash(true)) 
+    if (getUseReceiverFlag().squash(true))
         pimpl->Parallel(&slsDetector::stopReceiver, {});
 }
 
@@ -640,7 +646,8 @@ void Detector::setRxZmqDataStream(bool enable, Positions pos) {
 }
 
 Result<int> Detector::getRxZmqFrequency(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setReceiverStreamingFrequency, pos, -1);
+    return pimpl->Parallel(&slsDetector::setReceiverStreamingFrequency, pos,
+                           -1);
 }
 
 void Detector::setRxZmqFrequency(int freq, Positions pos) {
@@ -775,7 +782,7 @@ void Detector::setRxAddGapPixels(bool enable) {
 }
 
 Result<bool> Detector::getParallelMode(Positions pos) const {
-   return pimpl->Parallel(&slsDetector::getParallelMode, pos);
+    return pimpl->Parallel(&slsDetector::getParallelMode, pos);
 }
 
 void Detector::setParallelMode(bool value, Positions pos) {
@@ -783,7 +790,7 @@ void Detector::setParallelMode(bool value, Positions pos) {
 }
 
 Result<bool> Detector::getOverFlowMode(Positions pos) const {
-   return pimpl->Parallel(&slsDetector::getOverFlowMode, pos);
+    return pimpl->Parallel(&slsDetector::getOverFlowMode, pos);
 }
 
 void Detector::setOverFlowMode(bool value, Positions pos) {
@@ -791,7 +798,7 @@ void Detector::setOverFlowMode(bool value, Positions pos) {
 }
 
 Result<bool> Detector::getStoreInRamMode(Positions pos) const {
-   return pimpl->Parallel(&slsDetector::getStoreInRamMode, pos);
+    return pimpl->Parallel(&slsDetector::getStoreInRamMode, pos);
 }
 
 void Detector::setStoreInRamMode(bool value, Positions pos) {

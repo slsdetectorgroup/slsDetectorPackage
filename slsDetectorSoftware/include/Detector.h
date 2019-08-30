@@ -154,12 +154,11 @@ class Detector {
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
-    Result<int> getSpeed(Positions pos = {}) const;
+    Result<defs::speedLevel> getSpeed(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau] // TODO: create enum for speed
-     * Options: (0 full speed, 1 half speed, 2 quarter speed)
-     */
-    void setSpeed(int value, Positions pos = {});
+    /** [Eiger][Jungfrau]
+     * Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED */
+    void setSpeed(defs::speedLevel value, Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB] */
     Result<int> getADCPhase(Positions pos = {}) const;

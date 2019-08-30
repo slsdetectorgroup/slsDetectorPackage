@@ -124,7 +124,17 @@ class CmdProxy {
                           {"lock", &CmdProxy::lock},
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
                           {"rx_padding", &CmdProxy::rx_padding},
-                          {"rx_framesperfile", &CmdProxy::rx_framesperfile}};
+                          {"rx_framesperfile", &CmdProxy::rx_framesperfile},
+                          {"detectormac", &CmdProxy::detectormac},
+                          {"detectormac2", &CmdProxy::detectormac2},
+                          {"rx_udpmac", &CmdProxy::rx_udpmac},
+                          {"rx_udpmac2", &CmdProxy::rx_udpmac2},
+                          {"detectorip", &CmdProxy::detectorip},
+                          {"detectorip2", &CmdProxy::detectorip2},
+                          {"rx_udpip", &CmdProxy::rx_udpip},
+                          {"rx_udpip2", &CmdProxy::rx_udpip2},
+                          {"rx_udpport", &CmdProxy::rx_udpport},
+                          {"rx_udpport2", &CmdProxy::rx_udpport2}};
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
@@ -193,6 +203,33 @@ class CmdProxy {
 
     INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stoi,
                     "[0, 1]\n\tFile index");
+
+    INTEGER_COMMAND(detectormac, getSourceUDPMAC, setSourceUDPMAC, sls:MacAddr,
+                    "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp interface. Normally unused.");
+
+    INTEGER_COMMAND(detectormac2, getSourceUDPMAC2, setSourceUDPMAC2, sls:MacAddr,
+                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom half of detector (source) udp interface. Normally unused.");     
+
+    INTEGER_COMMAND(rx_udpmac, getDestinationUDPMAC, setDestinationUDPMAC, sls:MacAddr,
+                    "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as rx_hostname/rx_udpip retrieves it.");                   
+    INTEGER_COMMAND(rx_udpmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, sls:MacAddr,
+                    "[x:x:x:x:x:x]\n\t[Jungfrau]Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/rx_udpip2 retrieves it.")
+
+    INTEGER_COMMAND(detectorip, getSourceUDPIP, setSourceUDPIP, sls:IpAddr,
+                    "[x.x.x.x]\n\tIp address of the detector (source) udp interface. Must be same subnet as destination udp ip.");               
+    
+    INTEGER_COMMAND(detectorip2, getSourceUDPIP2, setSourceUDPIP2, sls:IpAddr,
+                    "[x.x.x.x]\n\t[Jungfrau]Ip address of the bottom half of detector (source) udp interface. Must be same subnet as destination udp ip2.");     
+    INTEGER_COMMAND(rx_udpip, getDestinationUDPIP, setDestinationUDPIP, sls:IpAddr,
+                    "[x.x.x.x]\n\tIp address of the receiver (destination) udp interface.");               
+    INTEGER_COMMAND(rx_udpip2, getDestinationUDPIP2, setDestinationUDPIP2, sls:IpAddr,
+                    "[x.x.x.x]\n\t[Jungfrau]Ip address of the receiver (destination) udp interface where the second half of detector data is sent to.");     
+ 
+    INTEGER_COMMAND(rx_udpport, getDestinationUDPPort, setDestinationUDPPort, sls:IpAddr,
+                    "[n]\n\tPort number of the receiver (destination) udp interface.");               
+    INTEGER_COMMAND(rx_udpport2, getDestinationUDPPort2, setDestinationUDPPort2, sls:IpAddr,
+                    "[n]\n\t[Jungfrau]Port number of the receiver (destination) udp interface where the second half of detector data is sent to.\n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to.");     
+                
 };
 
 } // namespace sls

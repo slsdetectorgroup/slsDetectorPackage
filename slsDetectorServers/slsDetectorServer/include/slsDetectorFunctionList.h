@@ -138,9 +138,20 @@ int         getSpeed(enum speedVariable ind);
 #endif
 #endif
 
-#if defined(EIGERD) || defined(CHIPTESTBOARDD)
-enum 		readOutFlags setReadOutFlags(enum readOutFlags val);
+#ifdef EIGERD
+int			setParallelMode(int mode);
+int 		getParallelMode();
+int			setOverFlowMode(int mode);
+int 		getOverFlowMode();
+void		setStoreInRamMode(int mode);
+int 		getStoreInRamMode();
 #endif
+#ifdef CHIPTESTBOARDD
+int 		setReadoutMode(enum readoutMode mode);
+int 		getReadoutMode();
+#endif
+
+
 
 // parameters - timer
 #ifdef JUNGFRAUD
@@ -215,7 +226,7 @@ void        powerOff();
 int 		getADC(enum ADCINDEX ind);
 #endif
 #endif
-#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(MYTHEN3D) 
 int 		setHighVoltage(int val);
 #endif
 

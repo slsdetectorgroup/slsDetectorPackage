@@ -407,10 +407,6 @@ public:
 			dataset = group5.createDataSet ( "quad enable", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
 
-			//Parallel Flag
-			dataset = group5.createDataSet ( "parallel flag", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
-
 			//Analog Flag
 			dataset = group5.createDataSet ( "analog flag", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);

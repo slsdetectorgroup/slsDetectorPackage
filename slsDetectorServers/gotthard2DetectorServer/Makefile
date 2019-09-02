@@ -3,16 +3,16 @@ main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 
-CROSS  		= bfin-uclinux-
+CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -DGOTTHARD2D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
-LDLIBS		+= 	-lm
+LDLIBS		+= 	-lm 
 PROGS		= 	gotthard2DetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS	=	slsDetectorFunctionList.c 
-SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c 
+SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)nios.c $(main_src)common.c $(main_src)DAC6571.c
 
 OBJS 	= 	$(SRCS:.c=.o) 
  
@@ -31,7 +31,6 @@ $(PROGS): $(OBJS)
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
-	rm *.gdb
 	rm $(main_src)*.o	
 
 clean:

@@ -1,7 +1,9 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
 #include "clogger.h"
-#include "blackfin.h"
+#include "nios.h"
+#include "DAC6571.h"
+#include "common.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
@@ -29,6 +31,7 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
+int highvoltage = 0;
 
 
 int isFirmwareCheckDone() {
@@ -57,6 +60,8 @@ void basictests() {
     firmware_check_done = 1;
     return;
 #else
+	// faking it
+    firmware_check_done = 1;
 
 	
 #endif
@@ -173,6 +178,10 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
+	// hv
+    DAC6571_SetDefines(HV_SOFT_MAX_VOLTAGE, HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
+    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+
 	//Initialization of acquistion parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
@@ -194,6 +203,7 @@ int setDynamicRange(int dr){
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	int64_t retval = -1;
+#ifdef VIRTUAL
 	switch(ind){
 
 	case FRAME_NUMBER: // defined in sls_detector_defs.h (general)
@@ -233,7 +243,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
 		break;
 	}
-
+#endif
 	return retval;
 
 }
@@ -262,6 +272,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 #ifdef VIRTUAL
     return 0;
 #endif
+#ifdef VIRTUAL
 	int64_t retval = -1;
 	switch(ind){
 
@@ -279,8 +290,26 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
 		break;
 	}
-
+#endif
 	return -1;
+}
+
+
+
+int setHighVoltage(int val){
+#ifdef VIRTUAL
+    if (val >= 0)
+        highvoltage = val;
+    return highvoltage;
+#endif
+
+	// setting hv
+	if (val >= 0) {
+	    FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+	    DAC6571_Set(val);
+	    highvoltage = val;
+	}
+	return highvoltage;
 }
 
 
@@ -401,9 +430,12 @@ u_int32_t runBusy() {
 #ifdef VIRTUAL
     return virtual_status;
 #endif
+#ifdef VIRTUAL
 	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);
 	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
+#endif
+	return -1;
 }
 
 

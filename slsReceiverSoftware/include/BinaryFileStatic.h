@@ -134,7 +134,6 @@ class BinaryFileStatic {
 				"Period (ns)                : %lld\n"
 				"Gap Pixels Enable          : %d\n"
 				"Quad Enable                : %d\n"
-				"Parallel Flag              : %d\n"
 				"Analog Flag                : %d\n"
 				"Digital Flag               : %d\n"
 				"ADC Mask                   : %d\n"
@@ -174,7 +173,6 @@ class BinaryFileStatic {
 				(long long int)attr.periodNs,
 				attr.gapPixelsEnable,
 				attr.quadEnable,
-				attr.parallelFlag,
     			attr.analogFlag,
    	 			attr.digitalFlag,
     			attr.adcmask,

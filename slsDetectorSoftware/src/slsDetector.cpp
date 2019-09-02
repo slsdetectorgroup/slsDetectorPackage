@@ -317,7 +317,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->roi.xmin = -1;
     shm()->roi.xmax = -1;
     shm()->adcEnableMask = BIT32_MASK;
-    shm()->roFlags = NORMAL_READOUT;
+    shm()->roMode = ANALOG_ONLY;
     shm()->currentSettings = UNINITIALIZED;
     shm()->currentThresholdEV = -1;
     shm()->timerValue[FRAME_NUMBER] = 1;
@@ -402,7 +402,6 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->nGappixels.y = parameters.nGappixelsY;
 
     // update #nchan, as it depends on #samples, adcmask,
-    // readoutflags (ctb only)
     updateNumberOfChannels();
 }
 
@@ -558,8 +557,8 @@ void slsDetector::updateNumberOfChannels() {
 
         int nachans = 0, ndchans = 0;
         // analog channels (normal, analog/digital readout)
-        if (shm()->roFlags == slsDetectorDefs::NORMAL_READOUT ||
-            ((shm()->roFlags & slsDetectorDefs::ANALOG_AND_DIGITAL) != 0)) {
+        if (shm()->roMode == slsDetectorDefs::ANALOG_ONLY ||
+            shm()->roMode == slsDetectorDefs::ANALOG_AND_DIGITAL) {
             uint32_t mask = shm()->adcEnableMask;
             if (mask == BIT32_MASK) {
                 nachans = 32;
@@ -574,8 +573,8 @@ void slsDetector::updateNumberOfChannels() {
 
         // digital channels (ctb only, digital, analog/digital readout)
         if (shm()->myDetectorType == CHIPTESTBOARD &&
-            (((shm()->roFlags & DIGITAL_ONLY) != 0) ||
-             ((shm()->roFlags & ANALOG_AND_DIGITAL) != 0))) {
+            (shm()->roMode == DIGITAL_ONLY ||
+             shm()->roMode == ANALOG_AND_DIGITAL)) {
             ndchans = 64;
             FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans;
         }
@@ -789,11 +788,10 @@ void slsDetector::updateCachedDetectorVariables() {
         n += client.Receive(&i64, sizeof(i64));
         shm()->timerValue[CYCLES_NUMBER] = i64;
 
-        // readout flags
-        if (shm()->myDetectorType == EIGER ||
-            shm()->myDetectorType == CHIPTESTBOARD) {
+        // readout mode
+        if (shm()->myDetectorType == CHIPTESTBOARD) {
             n += client.Receive(&i32, sizeof(i32));
-            shm()->roFlags = static_cast<readOutFlags>(i32);
+            shm()->roMode = static_cast<readoutMode>(i32);
         }
 
         // roi
@@ -826,7 +824,6 @@ void slsDetector::updateCachedDetectorVariables() {
                 setAdditionalJsonParameter("adcmask", std::to_string(u32));
 
             // update #nchan, as it depends on #samples, adcmask,
-            // readoutflags
             updateNumberOfChannels();
         }
 
@@ -1337,7 +1334,6 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
     shm()->timerValue[index] = retval;
     // update #nchan, as it depends on #samples, adcmask,
-    // readoutflags
     if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
         updateNumberOfChannels();
     }
@@ -1478,27 +1474,80 @@ slsDetector::setExternalSignalFlags(externalSignalFlag pol) {
     return retval;
 }
 
-int slsDetector::setReadOutFlags(readOutFlags flag) {
-    auto arg = static_cast<int>(flag);
-    readOutFlags retval = GET_READOUT_FLAGS;
-    FILE_LOG(logDEBUG1) << "Setting readout flags to " << flag;
-    sendToDetector(F_SET_READOUT_FLAGS, arg, retval);
-    FILE_LOG(logDEBUG1) << "Readout flag: " << retval;
-    shm()->roFlags = retval;
+void slsDetector::setParallelMode(const bool enable) {
+    int arg = static_cast<int>(enable);
+    FILE_LOG(logDEBUG1) << "Setting parallel mode to " << arg;
+    sendToDetector(F_SET_PARALLEL_MODE, arg, nullptr);
+}
+
+bool slsDetector::getParallelMode() {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting parallel mode";
+    sendToDetector(F_GET_PARALLEL_MODE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Parallel mode: " << retval;
+    return static_cast<bool>(retval);
+}
+
+void slsDetector::setOverFlowMode(const bool enable) {
+    int arg = static_cast<int>(enable);
+    FILE_LOG(logDEBUG1) << "Setting overflow mode to " << arg;
+    sendToDetector(F_SET_OVERFLOW_MODE, arg, nullptr);
+}
+   
+bool slsDetector::getOverFlowMode() {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting overflow mode";
+    sendToDetector(F_GET_OVERFLOW_MODE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "overflow mode: " << retval;
+    return static_cast<bool>(retval);
+}
+
+void slsDetector::setStoreInRamMode(const bool enable) {
+    int arg = static_cast<int>(enable);
+    FILE_LOG(logDEBUG1) << "Setting store in ram mode to " << arg;
+    sendToDetector(F_SET_STOREINRAM_MODE, arg, nullptr);
+}
+
+bool slsDetector::getStoreInRamMode() {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting store in ram mode";
+    sendToDetector(F_GET_STOREINRAM_MODE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "store in ram mode: " << retval;
+    return static_cast<bool>(retval);
+}
+
+void slsDetector::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
+    uint32_t arg = static_cast<uint32_t>(mode);
+    FILE_LOG(logDEBUG1) << "Setting readout mode to " << arg;
+    sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
+    shm()->roMode = mode;
     // update #nchan, as it depends on #samples, adcmask,
-    // readoutflags
     if (shm()->myDetectorType == CHIPTESTBOARD) {
         updateNumberOfChannels();
     }
-    FILE_LOG(logDEBUG1) << "Setting receiver readout flags to " << arg;
     if (shm()->useReceiverFlag) {
-        int fnum = F_RECEIVER_SET_READOUT_FLAGS;
-        arg = shm()->roFlags;
-        retval = static_cast<readOutFlags>(-1);
-        sendToReceiver(fnum, &arg, sizeof(arg), &retval, sizeof(retval));
-        FILE_LOG(logDEBUG1) << "Receiver readout flag: " << retval;
+        sendToReceiver(F_RECEIVER_SET_READOUT_MODE, mode, nullptr);
     }
-    return shm()->roFlags;
+}
+
+slsDetectorDefs::readoutMode slsDetector::getReadoutMode() {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting readout mode";
+    sendToDetector(F_GET_READOUT_MODE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Readout mode: " << retval;
+    readoutMode oldmode = shm()->roMode;
+    shm()->roMode = static_cast<readoutMode>(retval);
+
+    if (oldmode != shm()->roMode) {
+        // update #nchan, as it depends on #samples, adcmask,
+        if (shm()->myDetectorType == CHIPTESTBOARD) {
+            updateNumberOfChannels();
+        }
+        if (shm()->useReceiverFlag) {
+            sendToReceiver(F_RECEIVER_SET_READOUT_MODE, shm()->roMode, nullptr);
+        }
+    }
+    return shm()->roMode;
 }
 
 void slsDetector::setInterruptSubframe(const bool enable) {
@@ -1657,7 +1706,6 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
                 static_cast<int>(shm()->rxPadDeactivatedModules));
             enableGapPixels(shm()->gappixels);
             enableTenGigabitEthernet(shm()->tenGigaEnable);
-            setReadOutFlags(GET_READOUT_FLAGS);
             setQuad(getQuad());
             break;
 
@@ -1665,7 +1713,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
             setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
             enableTenGigabitEthernet(shm()->tenGigaEnable);
-            setReadOutFlags(GET_READOUT_FLAGS);
+            setReadoutMode(shm()->roMode);
             setADCEnableMask(shm()->adcEnableMask);
             setReceiverDbitOffset(shm()->rxDbitOffset);
             setReceiverDbitList(shm()->rxDbitList);
@@ -2260,7 +2308,6 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
     shm()->adcEnableMask = mask;
 
     // update #nchan, as it depends on #samples, adcmask,
-    // readoutflags
     updateNumberOfChannels();
 
     // send to processor

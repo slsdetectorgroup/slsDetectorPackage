@@ -563,7 +563,7 @@ void setupDetector() {
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
-	setReadOutFlags(NORMAL_READOUT);
+	setReadoutMode(ANALOG_ONLY);
 
     // enable all ADC channels
     setADCEnableMask(BIT_32_MSK);
@@ -814,61 +814,51 @@ int getSpeed(enum speedVariable ind, int mode) {
     }
 }
 
-enum  readOutFlags setReadOutFlags(enum readOutFlags val) {
-    enum readOutFlags retval = GET_READOUT_FLAGS;
+int setReadoutMode(enum readoutMode mode) {
     uint32_t addr = CONFIG_REG;
-
-    // set
-    if (val != GET_READOUT_FLAGS) {
-        switch(val) {
-        case NORMAL_READOUT:
-            FILE_LOG(logINFO, ("Setting Normal Readout\n"));
-            bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
-            break;
-        case DIGITAL_ONLY:
-            FILE_LOG(logINFO, ("Setting Digital Only Readout\n"));
-            bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
-            break;
-        case ANALOG_AND_DIGITAL:
-            FILE_LOG(logINFO, ("Setting Analog & Digital Readout\n"));
-            bus_w(addr, (bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK)) | CONFIG_ENBLE_DGTL_OTPT_MSK);
-            break;
-        default:
-            FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
-            return retval;
-        }
+    switch(mode) {
+    case ANALOG_ONLY:
+        FILE_LOG(logINFO, ("Setting Analog Only Readout\n"));
+        bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
+        break;
+    case DIGITAL_ONLY:
+        FILE_LOG(logINFO, ("Setting Digital Only Readout\n"));
+        bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
+        break;
+    case ANALOG_AND_DIGITAL:
+        FILE_LOG(logINFO, ("Setting Analog & Digital Readout\n"));
+        bus_w(addr, (bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK)) | CONFIG_ENBLE_DGTL_OTPT_MSK);
+        break;
+    default:
+        FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", mode));
+        return FAIL;
     }
-
-    // get
     uint32_t regval = bus_r(addr);
-    FILE_LOG(logDEBUG1, ("Config Reg: 0x%08x\n", regval));
-    // this bit reads analog disable, so inverse
     analogEnable = (((regval & CONFIG_DSBL_ANLG_OTPT_MSK) >> CONFIG_DSBL_ANLG_OTPT_OFST) ? 0 : 1);
     digitalEnable = ((regval & CONFIG_ENBLE_DGTL_OTPT_MSK) >> CONFIG_ENBLE_DGTL_OTPT_OFST);
 
-    if (analogEnable && digitalEnable) {
-        retval = ANALOG_AND_DIGITAL;
-        FILE_LOG(logDEBUG1, ("Getting readout: Analog & Digital 0x%x\n", retval));
-    } else if (analogEnable && !digitalEnable) {
-        retval = NORMAL_READOUT;
-        FILE_LOG(logDEBUG1, ("Getting readout: Normal 0x%x\n", retval));
-    } else if (!analogEnable && digitalEnable) {
-        retval = DIGITAL_ONLY;
-        FILE_LOG(logDEBUG1, ("Getting readout: Digital Only 0x%x\n", retval));
-    } else {
-        FILE_LOG(logERROR, ("Read unknown readout (Both digital and analog are disabled). "
-                "Config reg: 0x%x\n", regval));
-        return retval;
-    }
-
     // update databytes and allocate ram
     if (allocateRAM() == FAIL) {
-        return -2;
+        return FAIL;
     }
-
-    return retval;
+    return OK;
 }
 
+int getReadoutMode() {
+    if (analogEnable && digitalEnable) {
+        FILE_LOG(logDEBUG1, ("Getting readout: Analog & Digita\n"));
+        return ANALOG_AND_DIGITAL;
+    } else if (analogEnable && !digitalEnable) {
+        FILE_LOG(logDEBUG1, ("Getting readout: Analog Only\n"));
+        return ANALOG_ONLY;
+    } else if (!analogEnable && digitalEnable) {
+        FILE_LOG(logDEBUG1, ("Getting readout: Digital Only\n"));
+        return  DIGITAL_ONLY;
+    } else {
+        FILE_LOG(logERROR, ("Read unknown readout (Both digital and analog are disabled)\n"));
+        return -1;
+    }   
+}
 
 
 /* parameters - timer */
@@ -1520,6 +1510,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
 	// 1 giga udp
 	if (!enableTenGigabitEthernet(-1)) {
+        FILE_LOG(logINFOBLUE, ("Configuring 1G MAC\n"));
 		// if it was in 10G mode, it was not allocating RAM
 		if (allocateRAM() == FAIL)
 			return -1;
@@ -1535,67 +1526,67 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	}
 
 	// 10 G
-	else {
-		uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
+    FILE_LOG(logINFOBLUE, ("Configuring 10G MAC\n"));
+    uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 
-		FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
-				(sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
-		FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-				(unsigned int)((sourcemac>>40)&0xFF),
-				(unsigned int)((sourcemac>>32)&0xFF),
-				(unsigned int)((sourcemac>>24)&0xFF),
-				(unsigned int)((sourcemac>>16)&0xFF),
-				(unsigned int)((sourcemac>>8)&0xFF),
-				(unsigned int)((sourcemac>>0)&0xFF),
-				(long  long unsigned int)sourcemac));
-		FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
+    FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
+            (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
+    FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+            (unsigned int)((sourcemac>>40)&0xFF),
+            (unsigned int)((sourcemac>>32)&0xFF),
+            (unsigned int)((sourcemac>>24)&0xFF),
+            (unsigned int)((sourcemac>>16)&0xFF),
+            (unsigned int)((sourcemac>>8)&0xFF),
+            (unsigned int)((sourcemac>>0)&0xFF),
+            (long  long unsigned int)sourcemac));
+    FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
 
-		FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
-				(destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
-		FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-				(unsigned int)((destmac>>40)&0xFF),
-				(unsigned int)((destmac>>32)&0xFF),
-				(unsigned int)((destmac>>24)&0xFF),
-				(unsigned int)((destmac>>16)&0xFF),
-				(unsigned int)((destmac>>8)&0xFF),
-				(unsigned int)((destmac>>0)&0xFF),
-				(long  long unsigned int)destmac));
-		FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
+    FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+            (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
+    FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+            (unsigned int)((destmac>>40)&0xFF),
+            (unsigned int)((destmac>>32)&0xFF),
+            (unsigned int)((destmac>>24)&0xFF),
+            (unsigned int)((destmac>>16)&0xFF),
+            (unsigned int)((destmac>>8)&0xFF),
+            (unsigned int)((destmac>>0)&0xFF),
+            (long  long unsigned int)destmac));
+    FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
 
-		long int checksum=calcChecksum(sourceip, destip);
-		bus_w(TX_IP_REG, sourceip);
-		bus_w(RX_IP_REG, destip);
+    long int checksum=calcChecksum(sourceip, destip);
+    bus_w(TX_IP_REG, sourceip);
+    bus_w(RX_IP_REG, destip);
 
-		uint32_t val = 0;
+    uint32_t val = 0;
 
-		val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-		bus_w(TX_MAC_LSB_REG, val);
-		FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
+    val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+    bus_w(TX_MAC_LSB_REG, val);
+    FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
 
-		val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-		bus_w(TX_MAC_MSB_REG,val);
-		FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
+    val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+    bus_w(TX_MAC_MSB_REG,val);
+    FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
 
-		val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-		bus_w(RX_MAC_LSB_REG, val);
-		FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
+    val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+    bus_w(RX_MAC_LSB_REG, val);
+    FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
 
-		val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-		bus_w(RX_MAC_MSB_REG, val);
-		FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
+    val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
+    bus_w(RX_MAC_MSB_REG, val);
+    FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
 
-		val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
-				((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
-		bus_w(UDP_PORT_REG, val);
-		FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
+    val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
+            ((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
+    bus_w(UDP_PORT_REG, val);
+    FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
 
-		bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
-		FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
+    bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
+    FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
 
-		cleanFifos();//FIXME: resetPerpheral() for ctb?
-		resetPeripheral();
-		usleep(WAIT_TIME_CONFIGURE_MAC); // todo maybe without
-	}
+    cleanFifos();//FIXME: resetPerpheral() for ctb?
+    resetPeripheral();
+    FILE_LOG(logINFO, ("Waiting for %d s for mac to be up\n", WAIT_TIME_CONFIGURE_MAC / (1000 * 1000)));
+    usleep(WAIT_TIME_CONFIGURE_MAC); // todo maybe without
 
 	return OK;
 }

@@ -17,18 +17,24 @@ cd $API_DIR
 NUM=$(sed -n '/'$API_NAME' /=' $API_FILE)
 #echo $NUM
 
+
 if [ "$NUM" -gt 0 ]; then
     sed -i ${NUM}d $API_FILE
 fi
 
 #find new API date
-API_DATE="find .  -printf \"%T@ %CY-%Cm-%CdT%CH:%CM:%CS %p\n\"| sort -nr | cut -d' ' -f2- | egrep -v build | egrep -v '(\.)o'| egrep -v 'versionAPI.h' | head -n 1"
+API_DATE="find .  -printf \"%T@ %CY-%Cm-%Cd\n\"| sort -nr | cut -d' ' -f2- | egrep -v '(\.)o' | head -n 1"
+
 API_DATE=`eval $API_DATE`
+
 API_DATE=$(sed "s/-//g" <<< $API_DATE | awk '{print $1;}' ) 
+
 #extracting only date
 API_DATE=${API_DATE:2:6}
+
 #prefix of 0x
 API_DATE=${API_DATE/#/0x}
+echo "date="$API_DATE
 
 #copy it to versionAPI.h
 echo "#define "$API_NAME $API_DATE >> $API_FILE

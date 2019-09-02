@@ -71,7 +71,7 @@ void slsReceiverImplementation::InitializeMembers() {
     gapPixelsEnable = false;
     quadEnable = false;
     numLinesReadout = MAX_EIGER_ROWS_PER_READOUT;
-    readoutFlags = GET_READOUT_FLAGS;
+    readoutType = ANALOG_ONLY;
 
     //*** receiver parameters ***
     numThreads = 1;
@@ -168,10 +168,10 @@ int slsReceiverImplementation::getReadNLines() const {
 	return numLinesReadout;
 }
 
-slsDetectorDefs::readOutFlags
-slsReceiverImplementation::getReadOutFlags() const {
+slsDetectorDefs::readoutMode
+slsReceiverImplementation::getReadoutMode() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return readoutFlags;
+    return readoutType;
 }
 
 /***file parameters***/
@@ -546,48 +546,23 @@ void slsReceiverImplementation::setReadNLines(const int value) {
 	FILE_LOG(logINFO)  << "Number of Lines to readout: " << numLinesReadout;
 }
 
-int slsReceiverImplementation::setReadOutFlags(const readOutFlags f) {
-    if (readoutFlags != f) {
-        readoutFlags = f;
+int slsReceiverImplementation::setReadoutMode(const readoutMode f) {
+    if (readoutType != f) {
+        readoutType = f;
 
         // side effects
-        if (myDetectorType == CHIPTESTBOARD) {
-            ctbAnalogDataBytes = generalData->setImageSize(
-                adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
-                tengigaEnable, readoutFlags);
-            for (const auto &it : dataProcessor)
-                it->SetPixelDimension();
-            if (SetupFifoStructure() == FAIL)
-                return FAIL;
-        }
+        ctbAnalogDataBytes = generalData->setImageSize(
+            adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable, readoutType);
+        for (const auto &it : dataProcessor)
+            it->SetPixelDimension();
+        if (SetupFifoStructure() == FAIL)
+            return FAIL;
     }
-    std::string flag;
-    if (f == NORMAL_READOUT)
-        flag = "normal(analog, no digital)";
-    else if (f & STORE_IN_RAM)
-        flag.append("storeinram ");
-    if (f & TOT_MODE)
-        flag.append("tot ");
-    if (f & CONTINOUS_RO)
-        flag.append("continous ");
-    if (f & PARALLEL)
-        flag.append("parallel ");
-    if (f & NONPARALLEL)
-        flag.append("nonparallel ");
-    if (f & DIGITAL_ONLY)
-        flag.append("digital ");
-    if (f & ANALOG_AND_DIGITAL)
-        flag.append("analog_digital ");
-    if (f & SHOW_OVERFLOW)
-        flag.append("overflow ");
-    if (f & NOOVERFLOW)
-        flag.append("nooverflow ");
 
-    FILE_LOG(logINFO) << "ReadoutFlags: " << flag;
-    if (myDetectorType == CHIPTESTBOARD) {
-        FILE_LOG(logINFO) << "Packets per Frame: "
+    FILE_LOG(logINFO) << "Readout Mode: " << getReadoutModeType(f);
+    FILE_LOG(logINFO) << "Packets per Frame: "
                           << (generalData->packetsPerFrame);
-    }
     return OK;
 }
 
@@ -874,19 +849,9 @@ int slsReceiverImplementation::setADCEnableMask(uint32_t mask) {
     if (adcEnableMask != mask) {
         adcEnableMask = mask;
 
-        switch (myDetectorType) {
-        case MOENCH:
-            generalData->setImageSize(mask, numberOfAnalogSamples,
-                                      numberOfDigitalSamples, tengigaEnable);
-            break;
-        case CHIPTESTBOARD:
-            ctbAnalogDataBytes = generalData->setImageSize(
-                mask, numberOfAnalogSamples, numberOfDigitalSamples,
-                tengigaEnable, readoutFlags);
-            break;
-        default:
-            break;
-        }
+        ctbAnalogDataBytes = generalData->setImageSize(
+            mask, numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable, readoutType);
 
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
@@ -1018,14 +983,10 @@ int slsReceiverImplementation::setNumberofAnalogSamples(const uint64_t i) {
     if (numberOfAnalogSamples != i) {
         numberOfAnalogSamples = i;
 
-        if (myDetectorType == MOENCH) {
-            generalData->setImageSize(adcEnableMask, numberOfAnalogSamples,
-                                      numberOfDigitalSamples, tengigaEnable);
-        } else if (myDetectorType == CHIPTESTBOARD) {
-            ctbAnalogDataBytes = generalData->setImageSize(
-                adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
-                tengigaEnable, readoutFlags);
-        }
+        ctbAnalogDataBytes = generalData->setImageSize(
+            adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable, readoutType);
+        
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         if (SetupFifoStructure() == FAIL)
@@ -1041,14 +1002,10 @@ int slsReceiverImplementation::setNumberofDigitalSamples(const uint64_t i) {
     if (numberOfDigitalSamples != i) {
         numberOfDigitalSamples = i;
 
-        if (myDetectorType == MOENCH) {
-            generalData->setImageSize(adcEnableMask, numberOfAnalogSamples,
-                                      numberOfDigitalSamples, tengigaEnable);
-        } else if (myDetectorType == CHIPTESTBOARD) {
-            ctbAnalogDataBytes = generalData->setImageSize(
-                adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
-                tengigaEnable, readoutFlags);
-        }
+        ctbAnalogDataBytes = generalData->setImageSize(
+            adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable, readoutType);
+        
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         if (SetupFifoStructure() == FAIL)
@@ -1087,13 +1044,10 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
             generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
             break;
         case MOENCH:
-            generalData->setImageSize(adcEnableMask, numberOfAnalogSamples,
-                                      numberOfDigitalSamples, tengigaEnable);
-            break;
         case CHIPTESTBOARD:
             ctbAnalogDataBytes = generalData->setImageSize(
                 adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
-                tengigaEnable, readoutFlags);
+                tengigaEnable, readoutType);
             break;
         default:
             break;
@@ -1653,9 +1607,8 @@ int slsReceiverImplementation::SetupWriter() {
 	attr.periodNs = acquisitionPeriod;
 	attr.gapPixelsEnable = gapPixelsEnable;
     attr.quadEnable = quadEnable;
-    attr.parallelFlag = (readoutFlags & PARALLEL) ? 1 : 0;
-    attr.analogFlag = (readoutFlags == NORMAL_READOUT || readoutFlags & ANALOG_AND_DIGITAL) ? 1 : 0;
-    attr.digitalFlag = (readoutFlags & DIGITAL_ONLY || readoutFlags & ANALOG_AND_DIGITAL) ? 1 : 0;
+    attr.analogFlag = (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
+    attr.digitalFlag = (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
     attr.adcmask = adcEnableMask;
     attr.dbitoffset = ctbDbitOffset;
     attr.dbitlist = 0;

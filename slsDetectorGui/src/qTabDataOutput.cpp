@@ -283,16 +283,8 @@ void qTabDataOutput::GetSpeed() {
 	FILE_LOG(logDEBUG) << "Getting Speed";	
 	disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed(int)));
 	try {
-		int retval = det->getSpeed().tsquash("Speed is inconsistent for all detectors.");
-		switch(retval) {
-			case FULLSPEED:
-			case HALFSPEED:
-			case QUARTERSPEED:
-				comboEigerClkDivider->setCurrentIndex(retval);
-				break;
-			default:
-				throw sls::RuntimeError(std::string("Unknown speed: ") + std::to_string(retval));
-        }
+		auto retval = det->getSpeed().tsquash("Speed is inconsistent for all detectors.");
+		comboEigerClkDivider->setCurrentIndex(static_cast<int>(retval));
     } CATCH_DISPLAY ("Could not get speed.", "qTabDataOutput::GetSpeed")
 	connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this, SLOT(SetSpeed(int)));
 }
@@ -300,7 +292,7 @@ void qTabDataOutput::GetSpeed() {
 void qTabDataOutput::SetSpeed(int speed) {
 	FILE_LOG(logINFO) << "Setting Speed to " << comboEigerClkDivider->currentText().toAscii().data();;
 	try {
-        det->setSpeed(speed);
+        det->setSpeed(static_cast<slsDetectorDefs::speedLevel>(speed));
     } CATCH_HANDLE ("Could not set speed.", "qTabDataOutput::SetSpeed", this, &qTabDataOutput::GetSpeed)
 }
 
@@ -314,7 +306,7 @@ void qTabDataOutput::GetFlags() {
 			comboEigerParallelFlag->setCurrentIndex(PARALLEL);
 		else 
 			comboEigerParallelFlag->setCurrentIndex(NONPARALLEL);
-    } CATCH_DISPLAY ("Could not get speed.", "qTabDataOutput::GetSpeed")
+    } CATCH_DISPLAY ("Could not get flags.", "qTabDataOutput::GetFlags")
 	connect(comboEigerParallelFlag, SIGNAL(currentIndexChanged(int)), this, SLOT(SetFlags()));
 }
 

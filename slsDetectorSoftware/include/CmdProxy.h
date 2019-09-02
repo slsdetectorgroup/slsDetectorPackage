@@ -116,6 +116,9 @@ class CmdProxy {
                           {"period", &CmdProxy::Period},
                           {"subexptime", &CmdProxy::SubExptime},
                           {"frames", &CmdProxy::frames},
+                          {"parallel", &CmdProxy::parallel},
+                          {"overflow", &CmdProxy::overflow},
+                          {"storeinram", &CmdProxy::storeinram},
                           {"fwrite", &CmdProxy::fwrite},
                           {"fmaster", &CmdProxy::fmaster},
                           {"foverwrite", &CmdProxy::foverwrite},
@@ -156,7 +159,8 @@ class CmdProxy {
                                     {"masterfile", "fmaster"},
                                     {"outdir", "fpath"},
                                     {"fileformat", "fformat"},
-                                    {"overwrite", "foverwrite"}};
+                                    {"overwrite", "foverwrite"},
+                                    {"flags", "readout"}};
 
     void WrongNumberOfParameters(size_t expected);
 
@@ -237,7 +241,15 @@ class CmdProxy {
 
     INTEGER_COMMAND(selinterface, getSelectedUDPInterface, selectUDPInterface, std::stoi,
                     "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)");       
-         
+    
+    INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
+                    "[0, 1]\n\tEnable or disable parallel mode. [Eiger]");
+
+    INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, std::stoi,
+                    "[0, 1]\n\tEnable or disable show overflow flag in 32 bit mode. [Eiger]");    
+
+    INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode, std::stoi,
+                    "[0, 1]\n\tEnable or disable store in ram mode. [Eiger]");              
 };
 
 } // namespace sls

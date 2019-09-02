@@ -1155,14 +1155,24 @@ multiSlsDetector::setExternalSignalFlags(externalSignalFlag pol, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setReadOutFlags(readOutFlags flag, int detPos) {
+void multiSlsDetector::setReadoutMode(const slsDetectorDefs::readoutMode mode, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->setReadOutFlags(flag);
+        detectors[detPos]->setReadoutMode(mode);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::setReadOutFlags, flag);
+    parallelCall(&slsDetector::setReadoutMode, mode);
+}
+
+slsDetectorDefs::readoutMode multiSlsDetector::getReadoutMode(int detPos) {
+    // single
+    if (detPos >= 0) {
+        return (detectors[detPos]->getReadoutMode());
+    }
+
+    // multi
+    auto r = parallelCall(&slsDetector::getReadoutMode);
     return sls::minusOneIfDifferent(r);
 }
 

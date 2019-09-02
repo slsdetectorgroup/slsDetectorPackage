@@ -200,7 +200,7 @@ public:
 	 * @param f readout flags
 	 * @returns analog data bytes
      */
-    virtual int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+    virtual int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readoutMode) {
         FILE_LOG(logERROR) << "setImageSize is a generic function that should be overloaded by a derived class";
 		return 0;
     };
@@ -576,37 +576,36 @@ public:
 	 * @param f readout flags
 	 * @returns analog data bytes
      */
-	int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+	int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readoutMode f) {
         int nachans = 0, ndchans = 0;
         int adatabytes = 0, ddatabytes = 0;
 
-        if (f != slsDetectorDefs::GET_READOUT_FLAGS) {
-            // analog channels (normal, analog/digital readout)
-            if (f == slsDetectorDefs::NORMAL_READOUT ||
-                f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
-                if (a == BIT32_MASK) {
-                    nachans = 32;
-                } else {
-                    for (int ich = 0; ich < 32; ++ich) {
-                        if (a & (1 << ich))
-                            ++nachans;
-                    }
-                }
-                adatabytes = nachans * NUM_BYTES_PER_ANALOG_CHANNEL * as;
-                FILE_LOG(logDEBUG1) << " Number of Analog Channels:" << nachans
-                                    << " Databytes: " << adatabytes;
-            }
-            // digital channels
-            if (f & slsDetectorDefs::DIGITAL_ONLY ||
-                f & slsDetectorDefs::ANALOG_AND_DIGITAL) {
-                ndchans = NCHAN_DIGITAL;
-                ddatabytes = (sizeof(uint64_t) * ds);
-                FILE_LOG(logDEBUG1) << "Number of Digital Channels:" << ndchans
-                                    << " Databytes: " << ddatabytes;
-            }
-            FILE_LOG(logDEBUG1) << "Total Number of Channels:" << nachans + ndchans
-                                << " Databytes: " << adatabytes + ddatabytes;
-        }
+		// analog channels (normal, analog/digital readout)
+		if (f == slsDetectorDefs::ANALOG_ONLY ||
+			f == slsDetectorDefs::ANALOG_AND_DIGITAL) {
+			if (a == BIT32_MASK) {
+				nachans = 32;
+			} else {
+				for (int ich = 0; ich < 32; ++ich) {
+					if (a & (1 << ich))
+						++nachans;
+				}
+			}
+			adatabytes = nachans * NUM_BYTES_PER_ANALOG_CHANNEL * as;
+			FILE_LOG(logDEBUG1) << " Number of Analog Channels:" << nachans
+								<< " Databytes: " << adatabytes;
+		}
+		// digital channels
+		if (f == slsDetectorDefs::DIGITAL_ONLY ||
+			f == slsDetectorDefs::ANALOG_AND_DIGITAL) {
+			ndchans = NCHAN_DIGITAL;
+			ddatabytes = (sizeof(uint64_t) * ds);
+			FILE_LOG(logDEBUG1) << "Number of Digital Channels:" << ndchans
+								<< " Databytes: " << ddatabytes;
+		}
+		FILE_LOG(logDEBUG1) << "Total Number of Channels:" << nachans + ndchans
+							<< " Databytes: " << adatabytes + ddatabytes;
+
         nPixelsX = nachans + ndchans;
         nPixelsY = 1;
         // 10G
@@ -692,7 +691,7 @@ public:
 	 * @param f readout flags
 	 * @returns analog data bytes
      */
-	int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readOutFlags f = slsDetectorDefs::GET_READOUT_FLAGS) {
+	int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readoutMode) {
         int nachans = 0;
         int adatabytes = 0;
 

@@ -778,14 +778,18 @@ class multiSlsDetector : public virtual slsDetectorDefs {
                            int detPos = -1); //
 
     /**
-     * Set/get readout flags (Eiger, Mythen)
-     * @param flag readout flag (Eiger options: parallel, nonparallel, safe
-     * etc.) (-1 gets)
+     * Set readout mode (Only for CTB and Moench)
+     * @param mode readout mode Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns readout flag
      */
-    int setReadOutFlags(readOutFlags flag = GET_READOUT_FLAGS,
-                        int detPos = -1); //
+    void setReadoutMode(const readoutMode mode, int detPos = -1);
+
+    /**
+     * Get readout mode(Only for CTB and Moench)
+     * @param detPos -1 for all detectors in  list or specific detector position
+     * @returns readout mode
+     */
+    readoutMode getReadoutMode(int detPos = -1);
 
     /**
      * Set Interrupt last sub frame (Only for Eiger)

@@ -582,7 +582,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Configures in detector the destination for UDP packets
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void configureMAC(int detPos = -1); //
+    //void configureMAC(int detPos = -1); //TODO
 
     /**
      * Set starting frame number for the next acquisition
@@ -869,16 +869,15 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the number of interfaces
      */
-    int getNumberofUDPInterfaces(int detPos = -1) const; //
+    int getNumberofUDPInterfaces(int detPos = -1) ; //
 
     /**
      * Selects the UDP interfaces to stream data from detector. Effective only
      * when number of interfaces is 1. (Jungfrau only)
      * @param n selected interface. Options 1 or 2.
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the interface selected
      */
-    int selectUDPInterface(int n, int detPos = -1);
+    void selectUDPInterface(int n, int detPos = -1);
 
     /**
      * Returns the UDP interfaces to stream data from detector. Effective only
@@ -886,7 +885,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the interface selected
      */
-    int getSelectedUDPInterface(int detPos = -1) const; //
+    int getSelectedUDPInterface(int detPos = -1) ; //
 
     /**
      * (advanced users)

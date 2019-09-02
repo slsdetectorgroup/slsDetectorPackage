@@ -888,7 +888,7 @@ void multiSlsDetector::readAll(int detPos) {
     // multi
     parallelCall(&slsDetector::readAll);
 }
-
+/*
 void multiSlsDetector::configureMAC(int detPos) {
     // single
     if (detPos >= 0) {
@@ -898,6 +898,7 @@ void multiSlsDetector::configureMAC(int detPos) {
     // multi
     parallelCall(&slsDetector::configureMAC);
 }
+*/
 
 void multiSlsDetector::setStartingFrameNumber(const uint64_t value,
                                               int detPos) {
@@ -1313,36 +1314,35 @@ void multiSlsDetector::setNumberofUDPInterfaces(int n, int detPos) {
     }
 }
 
-int multiSlsDetector::getNumberofUDPInterfaces(int detPos) const {
+int multiSlsDetector::getNumberofUDPInterfaces(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getNumberofUDPInterfaces();
     }
 
     // multi
-    auto r = serialCall(&slsDetector::getNumberofUDPInterfaces);
+    auto r = parallelCall(&slsDetector::getNumberofUDPInterfaces);
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::selectUDPInterface(int n, int detPos) {
+void multiSlsDetector::selectUDPInterface(int n, int detPos) {
     // single
     if (detPos >= 0) {
-        return detectors[detPos]->selectUDPInterface(n);
+        detectors[detPos]->selectUDPInterface(n);
     }
 
     // multi
-    auto r = parallelCall(&slsDetector::selectUDPInterface, n);
-    return sls::minusOneIfDifferent(r);
+    parallelCall(&slsDetector::selectUDPInterface, n);
 }
 
-int multiSlsDetector::getSelectedUDPInterface(int detPos) const {
+int multiSlsDetector::getSelectedUDPInterface(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->getSelectedUDPInterface();
     }
 
     // multi
-    auto r = serialCall(&slsDetector::getSelectedUDPInterface);
+    auto r = parallelCall(&slsDetector::getSelectedUDPInterface);
     return sls::minusOneIfDifferent(r);
 }
 

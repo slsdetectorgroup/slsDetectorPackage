@@ -1570,13 +1570,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     i++;
 
     /*! \page network
-   - <b>configuremac [i]</b> configures the MAC of the detector with these parameters: detectorip, detectormac, rx_udpip, rx_udpmac, rx_udpport, rx_udpport2 (if applicable). This command is already included in \c rx_hsotname. Only put!. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "configuremac";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfigureMac;
-    ++i;
-
-    /*! \page network
    - <b>rx_tcpport [port]</b> sets/gets the port of the client-receiver TCP interface. Use single-detector command. Is different for each detector if same \c rx_hostname used. Must be first command to communicate with receiver. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_tcpport";
@@ -2754,30 +2747,6 @@ std::string slsDetectorCommand::helpOnline(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdConfigureMac(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION) {
-        return helpConfigureMac(action);
-    }
-    if (action == PUT_ACTION) {
-        myDet->configureMAC(detPos);
-    } else
-        return std::string("Cannot get ") + cmd;
-
-    return std::string("successful");
-}
-
-std::string slsDetectorCommand::helpConfigureMac(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << "configuremac i \n configures the MAC of the detector." << std::endl;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << "configuremac "
-           << "Cannot get " << std::endl;
-
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const args[], int action, int detPos) {
 

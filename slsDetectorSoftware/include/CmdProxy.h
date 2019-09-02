@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "network_utils.h"
 
 /** Macro to make an integer command.
  * CMDNAME name of the function that does the command
@@ -71,6 +72,7 @@
         }                                                                      \
         return os.str();                                                       \
     }
+
 
 namespace sls {
 
@@ -204,25 +206,25 @@ class CmdProxy {
     INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stoi,
                     "[0, 1]\n\tFile index");
 
-    INTEGER_COMMAND(detectormac, getSourceUDPMAC, setSourceUDPMAC, sls:MacAddr,
+    INTEGER_COMMAND(detectormac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
                     "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp interface. Normally unused.");
 
-    INTEGER_COMMAND(detectormac2, getSourceUDPMAC2, setSourceUDPMAC2, sls:MacAddr,
+    INTEGER_COMMAND(detectormac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
                     "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom half of detector (source) udp interface. Normally unused.");     
 
-    INTEGER_COMMAND(rx_udpmac, getDestinationUDPMAC, setDestinationUDPMAC, sls:MacAddr,
+    INTEGER_COMMAND(rx_udpmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
                     "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as rx_hostname/rx_udpip retrieves it.");                   
-    INTEGER_COMMAND(rx_udpmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, sls:MacAddr,
+    INTEGER_COMMAND(rx_udpmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
                     "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/rx_udpip2 retrieves it.")
 
-    INTEGER_COMMAND(detectorip, getSourceUDPIP, setSourceUDPIP, sls:IpAddr,
+    INTEGER_COMMAND(detectorip, getSourceUDPIP, setSourceUDPIP, IpAddr,
                     "[x.x.x.x]\n\tIp address of the detector (source) udp interface. Must be same subnet as destination udp ip.");               
     
-    INTEGER_COMMAND(detectorip2, getSourceUDPIP2, setSourceUDPIP2, sls:IpAddr,
+    INTEGER_COMMAND(detectorip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
                     "[x.x.x.x]\n\t[Jungfrau] Ip address of the bottom half of detector (source) udp interface. Must be same subnet as destination udp ip2.");     
-    INTEGER_COMMAND(rx_udpip, getDestinationUDPIP, setDestinationUDPIP, sls:IpAddr,
+    INTEGER_COMMAND(rx_udpip, getDestinationUDPIP, setDestinationUDPIP, IpAddr,
                     "[x.x.x.x]\n\tIp address of the receiver (destination) udp interface.");               
-    INTEGER_COMMAND(rx_udpip2, getDestinationUDPIP2, setDestinationUDPIP2, sls:IpAddr,
+    INTEGER_COMMAND(rx_udpip2, getDestinationUDPIP2, setDestinationUDPIP2, IpAddr,
                     "[x.x.x.x]\n\t[Jungfrau] Ip address of the receiver (destination) udp interface where the second half of detector data is sent to.");     
  
     INTEGER_COMMAND(rx_udpport, getDestinationUDPPort, setDestinationUDPPort, std::stoi,

@@ -951,7 +951,7 @@ int set_dac(int file_des) {
 #ifdef GOTTHARD2D
 				default:
 					break;
-#elif
+#else
                 // dacs
     			default:
     			    if (mV && val > DAC_MAX_MV) {

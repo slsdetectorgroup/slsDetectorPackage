@@ -41,13 +41,6 @@ public:
 	sls::Detector *det;
 	// Button group for radiobuttons for rate
 	QButtonGroup *btnGroupRate;
-	// enum for the Eiger clock divider
-	enum {
-		FULLSPEED,
-		HALFSPEED,
-		QUARTERSPEED,
-		NUMBEROFSPEEDS
-	};
 	// enum for the Eiger Parallel flag
 	enum { 
 		PARALLEL, 

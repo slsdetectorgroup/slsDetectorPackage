@@ -1011,19 +1011,19 @@ void ctbPattern::setDigitalSamples() {
 
 void ctbPattern::setReadoutMode(Bool_t) {
   try {
-    int flags = 0;
+    slsDetectorDefs::readoutMode flag = slsDetectorDefs::ANALOG_ONLY;
     if (cbAnalog->IsOn() && cbDigital->IsOn()) 
-      flags=2;
+      flag=slsDetectorDefs::ANALOG_AND_DIGITAL;
     else  if (~cbAnalog->IsOn() && cbDigital->IsOn()) 
-      flags=1;
+      flag=slsDetectorDefs::DIGITAL_ONLY;
     else  if (cbAnalog->IsOn() && ~cbDigital->IsOn())       
-      flags=0;
+      flag=slsDetectorDefs::ANALOG_ONLY;
     else {
       throw runtime_error("unkown readout flag");
     }
-    myDet->setReadoutMode(flags);
-    cout << "Set readout flags: " << flags << endl;
-  } CATCH_DISPLAY ("Could not set readout flags", "ctbPattern::setReadoutMode")
+    myDet->setReadoutMode(flag);
+    cout << "Set readout flag: " << flag << endl;
+  } CATCH_DISPLAY ("Could not set readout flag", "ctbPattern::setReadoutMode")
 
   getReadoutMode();
 }
@@ -1037,17 +1037,17 @@ int ctbPattern::getReadoutMode() {
   try{
     auto retval = myDet->getReadoutMode().tsquash("Different values");
     switch(retval) {
-      case 2:
+      case slsDetectorDefs::ANALOG_AND_DIGITAL:
         cout << "analog and digital" << endl;
         cbAnalog->SetOn(kTRUE);
         cbDigital->SetOn(kTRUE);
         break;
-      case 1:
+      case slsDetectorDefs::DIGITAL_ONLY:
         cout << "digital only" << endl;
         cbAnalog->SetOn(kFALSE);
         cbDigital->SetOn(kTRUE);
         break;
-      case 0:
+      case slsDetectorDefs::ANALOG_ONLY:
         cout << "analog only" << endl;
         cbAnalog->SetOn(kTRUE);
         cbDigital->SetOn(kFALSE);    
@@ -1055,7 +1055,7 @@ int ctbPattern::getReadoutMode() {
       default:
         throw("unknown readout flag");
     }
-    Emit("readoutModeChanged(int)",retval);
+    Emit("readoutModeChanged(int)",static_cast<int>(retval));
     return retval;
   } CATCH_DISPLAY ("Could not get readout flags", "ctbPattern::getReadoutMode")
 

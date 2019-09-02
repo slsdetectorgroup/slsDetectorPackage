@@ -154,12 +154,11 @@ class Detector {
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
-    Result<int> getSpeed(Positions pos = {}) const;
+    Result<defs::speedLevel> getSpeed(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau] // TODO: create enum for speed
-     * Options: (0 full speed, 1 half speed, 2 quarter speed)
-     */
-    void setSpeed(int value, Positions pos = {});
+    /** [Eiger][Jungfrau]
+     * Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED */
+    void setSpeed(defs::speedLevel value, Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB] */
     Result<int> getADCPhase(Positions pos = {}) const;
@@ -637,6 +636,12 @@ class Detector {
     void setOverFlowMode(bool value, Positions pos = {});
 
     /** [Eiger] */
+    Result<bool> getStoreInRamMode(Positions pos = {}) const;
+
+    /** [Eiger] */
+    void setStoreInRamMode(bool value, Positions pos = {});
+
+    /** [Eiger] */
     Result<bool> getBottom(Positions pos = {}) const;
 
     /** [Eiger] for client call back (gui) purposes */
@@ -852,11 +857,10 @@ class Detector {
     void setNumberOfDigitalSamples(int64_t value, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getReadoutMode(Positions pos = {}) const;
+    Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
-    /** [CTB] Options: NORMAL_READOUT = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL
-     * //TODO ANALOG_ONLY, make enum = 2 */
-    void setReadoutMode(int value, Positions pos = {});
+    /** [CTB] Options: ANALOG_ONLY = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL */
+    void setReadoutMode(defs::readoutMode value, Positions pos = {});
 
     /** [CTB] */
     Result<int> getDBITPhase(Positions pos = {}) const;

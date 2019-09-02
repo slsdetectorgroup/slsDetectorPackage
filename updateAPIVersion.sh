@@ -14,7 +14,7 @@ CURR_DIR=$PWD
 cd $API_DIR
 
 #deleting line from file
-NUM=$(sed -n '/'$API_NAME'/=' $API_FILE)
+NUM=$(sed -n '/'$API_NAME' /=' $API_FILE)
 #echo $NUM
 
 

@@ -1,12 +1,16 @@
 add_executable(gotthard2DetectorServer_virtual
     slsDetectorFunctionList.c
-    ../slsDetectorServer/slsDetectorServer.c
-    ../slsDetectorServer/slsDetectorServer_funcs.c
-    ../slsDetectorServer/communication_funcs.c
+    ../slsDetectorServer/src/slsDetectorServer.c
+    ../slsDetectorServer/src/slsDetectorServer_funcs.c
+    ../slsDetectorServer/src/communication_funcs.c
+    ../slsDetectorServer/src/nios.c    
+    ../slsDetectorServer/src/communication_funcs_UDP.c  
+    ../slsDetectorServer/src/DAC6571.c  
+    ../slsDetectorServer/src/common.c 
 )
 
 include_directories(
-    ../slsDetectorServer/
+    ../slsDetectorServer/include
     ../../slsSupportLib/include
 )
 

@@ -1,9 +1,7 @@
-#pragma once
-
+#include "AD9252.h"
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
-#ifdef GOTTHARDD
-#include <unistd.h>
-#endif
+#include "blackfin.h"
+#include "clogger.h"
 
 /* AD9252 ADC DEFINES */
 #define AD9252_ADC_NUMBITS			(24)
@@ -100,20 +98,13 @@
 #define AD9252_OUT_CLK_600_VAL      ((0xa << AD9252_OUT_CLK_OFST) & AD9252_OUT_CLK_MSK)
 #define AD9252_OUT_CLK_660_VAL      ((0xb << AD9252_OUT_CLK_OFST) & AD9252_OUT_CLK_MSK) // 0xb - 0xf is 660
 
+// defines from the fpga
 uint32_t AD9252_Reg = 0x0;
 uint32_t AD9252_CsMask = 0x0;
 uint32_t AD9252_ClkMask = 0x0;
 uint32_t AD9252_DigMask = 0x0;
 int AD9252_DigOffset = 0x0;
 
-/**
- * Set Defines
- * @param reg spi register
- * @param cmsk chip select mask
- * @param clkmsk clock output mask
- * @param dmsk digital output mask
- * @param dofst digital output offset
- */
 void AD9252_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst) {
     AD9252_Reg = reg;
     AD9252_CsMask = cmsk;
@@ -122,9 +113,6 @@ void AD9252_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dm
     AD9252_DigOffset = dofst;
 }
 
-/**
- * Disable SPI
- */
 void AD9252_Disable() {
     bus_w(AD9252_Reg, (bus_r(AD9252_Reg)
             | AD9252_CsMask
@@ -132,10 +120,6 @@ void AD9252_Disable() {
             &~(AD9252_DigMask));
 }
 
-/**
- * Set SPI reg value
- * @param codata value to be set
- */
 void AD9252_Set(int addr, int val) {
 
     u_int32_t codata;
@@ -145,9 +129,6 @@ void AD9252_Set(int addr, int val) {
             AD9252_ClkMask, AD9252_DigMask, AD9252_DigOffset, 0);
 }
 
-/**
- * Configure
- */
 void AD9252_Configure(){
     FILE_LOG(logINFOBLUE, ("Configuring ADC9252:\n"));
 

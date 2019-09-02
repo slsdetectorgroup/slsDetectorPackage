@@ -1,7 +1,9 @@
-#pragma once
-
+#include "AD7689.h"
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
 #include "common.h"
+#include "blackfin.h"
+#include "clogger.h"
+
 
 /* AD7689 ADC DEFINES */
 
@@ -69,7 +71,7 @@
 #define AD7689_INT_MAX_STEPS                (0xFFFF + 1)
 #define AD7689_TMP_C_FOR_1_MV               (25.00 / 283.00)
 
-
+// Definitions from the fpga
 uint32_t AD7689_Reg = 0x0;
 uint32_t AD7689_ROReg = 0x0;
 uint32_t AD7689_CnvMask = 0x0;
@@ -77,15 +79,6 @@ uint32_t AD7689_ClkMask = 0x0;
 uint32_t AD7689_DigMask = 0x0;
 int AD7689_DigOffset = 0x0;
 
-/**
- * Set Defines
- * @param reg spi register
- * @param roreg spi readout register
- * @param cmsk conversion mask
- * @param clkmsk clock output mask
- * @param dmsk digital output mask
- * @param dofst digital output offset
- */
 void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst) {
 	FILE_LOG(logDEBUG, ("AD7689: reg:0x%x roreg:0x%x cmsk:0x%x  clkmsk:0x%x  dmsk:0x%x  dofst:%d\n",
 			reg, roreg, cmsk, clkmsk, dmsk, dofst));
@@ -97,9 +90,6 @@ void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk, uint32_t clk
     AD7689_DigOffset = dofst;
 }
 
-/**
- * Disable SPI
- */
 void AD7689_Disable() {
     bus_w(AD7689_Reg, (bus_r(AD7689_Reg)
             &~(AD7689_CnvMask)
@@ -107,30 +97,18 @@ void AD7689_Disable() {
             &~(AD7689_DigMask)));
 }
 
-/**
- * Set SPI reg value
- * @param codata value to be set
- */
-void AD7689_Set(u_int32_t codata) {
+void AD7689_Set(uint32_t codata) {
     FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Writing 0x%08x to Config Reg\n", codata));
     serializeToSPI(AD7689_Reg, codata, AD7689_CnvMask, AD7689_ADC_CFG_NUMBITS,
             AD7689_ClkMask, AD7689_DigMask, AD7689_DigOffset, 1);
 }
 
-/**
- * Get SPI reg value
- * @returns SPI reg value
- */
 uint16_t AD7689_Get() {
     FILE_LOG(logINFO, ("\tGetting ADC SPI Register.\n"));
     return (uint16_t)serializeFromSPI(AD7689_Reg, AD7689_CnvMask, AD7689_ADC_DATA_NUMBITS,
             AD7689_ClkMask, AD7689_DigMask, AD7689_ROReg, 1);
 }
 
-/**
- * Get temperature
- * @returns temperature in °C
- */
 int AD7689_GetTemperature() {
     AD7689_Set(
             // read back
@@ -167,11 +145,6 @@ int AD7689_GetTemperature() {
 
 }
 
-/**
- * Reads channels voltage
- * @param ichan channel number from 0 to 7
- * @returns channel voltage in mV
- */
 int AD7689_GetChannel(int ichan) {
    // filter channels val
    if (ichan < 0 || ichan >= AD7689_NUM_CHANNELS) {
@@ -209,9 +182,6 @@ int AD7689_GetChannel(int ichan) {
    return retval;
 }
 
-/**
- * Configure
- */
 void AD7689_Configure(){
     FILE_LOG(logINFOBLUE, ("Configuring AD7689 (Slow ADCs): \n"));
 

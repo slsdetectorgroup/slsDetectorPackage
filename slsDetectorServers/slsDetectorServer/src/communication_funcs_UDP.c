@@ -1,8 +1,6 @@
-#pragma once
-
+#include "communication_funcs_UDP.h"
 #include "clogger.h"
 #include "sls_detector_defs.h"
-
 
 #include <stdio.h>
 #include <stdlib.h>

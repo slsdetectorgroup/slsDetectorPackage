@@ -1,9 +1,8 @@
-#pragma once
-
+#include "AD9257.h"
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
-#ifdef GOTTHARDD
-#include <unistd.h>
-#endif
+#include "blackfin.h"
+#include "clogger.h"
+#include "sls_detector_defs.h"
 
 /* AD9257 ADC DEFINES */
 #define AD9257_ADC_NUMBITS			(24)
@@ -126,6 +125,7 @@
 #define AD9257_VREF_1_6_VAL         ((0x3 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
 #define AD9257_VREF_2_0_VAL         ((0x4 << AD9257_VREF_OFST) & AD9257_VREF_MSK)
 
+// defines from the fpga
 uint32_t AD9257_Reg = 0x0;
 uint32_t AD9257_CsMask = 0x0;
 uint32_t AD9257_ClkMask = 0x0;
@@ -133,14 +133,6 @@ uint32_t AD9257_DigMask = 0x0;
 int AD9257_DigOffset = 0x0;
 int AD9257_VrefVoltage = 0;
 
-/**
- * Set Defines
- * @param reg spi register
- * @param cmsk chip select mask
- * @param clkmsk clock output mask
- * @param dmsk digital output mask
- * @param dofst digital output offset
- */
 void AD9257_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst) {
     AD9257_Reg = reg;
     AD9257_CsMask = cmsk;
@@ -149,9 +141,6 @@ void AD9257_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dm
     AD9257_DigOffset = dofst;
 }
 
-/**
- * Disable SPI
- */
 void AD9257_Disable() {
     bus_w(AD9257_Reg, (bus_r(AD9257_Reg)
             | AD9257_CsMask
@@ -159,9 +148,6 @@ void AD9257_Disable() {
             & ~(AD9257_DigMask));
 }
 
-/**
- * Get vref voltage
- */
 int AD9257_GetVrefVoltage(int mV) {
 	if (mV == 0) 
 		return AD9257_VrefVoltage;
@@ -182,11 +168,6 @@ int AD9257_GetVrefVoltage(int mV) {
 	}
 }
 
-/**
- * Set vref voltage
- * @param val voltage to be set (0 for 1.0V, 1 for 1.14V, 2 for 1.33V, 3 for 1.6V, 4 for 2.0V
- * @returns ok or fail
- */
 int AD9257_SetVrefVoltage(int val, int mV) {
 	int mode = val;
 	// convert to mode
@@ -240,10 +221,6 @@ int AD9257_SetVrefVoltage(int val, int mV) {
 	return OK;
 }
 
-/**
- * Set SPI reg value
- * @param codata value to be set
- */
 void AD9257_Set(int addr, int val) {
 
 	u_int32_t codata;
@@ -253,9 +230,6 @@ void AD9257_Set(int addr, int val) {
 	        AD9257_ClkMask, AD9257_DigMask, AD9257_DigOffset, 0);
 }
 
-/**
- * Configure
- */
 void AD9257_Configure(){
     FILE_LOG(logINFOBLUE, ("Configuring ADC9257:\n"));
 

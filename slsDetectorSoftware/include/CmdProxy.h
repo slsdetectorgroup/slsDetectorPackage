@@ -234,7 +234,8 @@ class CmdProxy {
                     "[1, 2]\n\t[Jungfrau] Number of udp interfaces to stream data from detector. Default: 1.");     
 
     INTEGER_COMMAND(selinterface, getSelectedUDPInterface, selectUDPInterface, std::stoi,
-                    "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)");                 
+                    "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)");       
+         
 };
 
 } // namespace sls

@@ -746,6 +746,13 @@ class slsDetector : public virtual slsDetectorDefs {
     sls::IpAddr getDestinationUDPIP() const;
 
     /**
+     * Gets destination udp ip from detector,
+     * if 0, it converts rx_hostname to ip and 
+     * updates both detector and receiver
+     */
+    void slsDetector::updateRxDestinationUDPIP();
+
+    /**
      * Validates the format of the receiver UDP IP address (bottom half) and
      * sets it(Jungfrau only)
      * If slsReceiver used, Gets receiver udp mac address2 and sends it to the detector
@@ -759,6 +766,13 @@ class slsDetector : public virtual slsDetectorDefs {
      * @returns the receiver UDP IP address (bottom half)
      */
     sls::IpAddr getDestinationUDPIP2() const;
+  
+    /**
+     * Gets destination udp ip2 from detector,
+     * if 0, it converts rx_hostname to ip and 
+     * updates both detector and receiver
+     */
+    void slsDetector::updateRxDestinationUDPIP2();
 
     /**
      * Sets the receiver UDP port\sa sharedSlsDetector

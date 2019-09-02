@@ -1617,7 +1617,14 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         sendMultiDetectorSize();
         setDetectorId();
         setDetectorHostname();
-        setDestinationDefaultUDPIP();
+        
+        setDestinationDefaultUDPIPs();
+        getDestinationUDPPort();
+        getDestinationUDPPort2();
+        getNumberofUDPInterfaces();
+        getSelectedUDPInterface();
+        FILE_LOG(logDEBUG1) << printReceiverConfiguration();
+
         setReceiverUDPSocketBufferSize(0);
         setFilePath(shm()->rxFilePath);
         setFileName(shm()->rxFileName);
@@ -2154,52 +2161,50 @@ int64_t slsDetector::getReceiverRealUDPSocketBufferSize() const {
     return retval;
 }
 
-void slsDetector::setDestinationDefaultUDPIP() {
-    FILE_LOG(logDEBUG1) << "Setting destination default udp ip to " << shm()->rxHostname;
-    // Hostname could be ip try to decode otherwise look up the hostname
-    sls::IpAddr ip = shm()->rxHostname;
+void slsDetector::setDestinationDefaultUDPIPs() {
+    // first get dest udp ip in detector
+    uint32_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting destination udp ip";
+    sendToDetector(F_GET_DEST_UDP_IP, nullptr, retval);
+    auto ip = IpAddr(retval);
+    FILE_LOG(logDEBUG1) << "Destination udp ip: " << ip.str();
     if (ip == 0) {
-        ip = HostnameToIp(shm()->rxHostname);
-    } 
-    uint32_t arg = static_cast<uint32_t>(ip);
-    sendToDetector(F_SET_DEST_DEFAULT_UDP_IP, arg, nullptr); 
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SET_RECEIVER_DEFAULT_UDP_IP, arg, nullptr);
-    }
-
-
-
-
-
-    // copy arguments to args[][]
-    snprintf(args[0], sizeof(args[0]), "%d", shm()->numUDPInterfaces);
-    sls::strcpy_safe(args[1], getReceiverUDPIP().str());
-    sls::strcpy_safe(args[2], getReceiverUDPIP2().str());
-    snprintf(args[3], sizeof(args[3]), "%d", shm()->rxUDPPort);
-    snprintf(args[4], sizeof(args[4]), "%d", shm()->rxUDPPort2);
-    FILE_LOG(logDEBUG1) << "Receiver Number of UDP Interfaces: "
-                        << shm()->numUDPInterfaces;
-    FILE_LOG(logDEBUG1) << "Receiver udp ip address: " << shm()->rxUDPIP;
-    FILE_LOG(logDEBUG1) << "Receiver udp ip address2: " << shm()->rxUDPIP2;
-    FILE_LOG(logDEBUG1) << "Receiver udp port: " << shm()->rxUDPPort;
-    FILE_LOG(logDEBUG1) << "Receiver udp port2: " << shm()->rxUDPPort2;
-
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SETUP_RECEIVER_UDP, args, retvals);
-        if (strlen(retvals[0]) != 0u) {
-            FILE_LOG(logDEBUG1) << "Receiver UDP MAC returned : " << retvals[0];
-            shm()->rxUDPMAC = retvals[0];
+        FILE_LOG(logDEBUG1) << "Setting destination default udp ip to " << shm()->rxHostname;
+        // Hostname could be ip try to decode otherwise look up the hostname
+        sls::IpAddr ip = shm()->rxHostname;
+        if (ip == 0) {
+            ip = HostnameToIp(shm()->rxHostname);
+        } 
+        uint32_t arg = static_cast<uint32_t>(ip);
+        sendToDetector(F_GET_DEST_UDP_IP, arg, nullptr); 
+        if (shm()->useReceiverFlag) {
+            uint64_t retval = -1;
+            sendToReceiver(F_SET_RECEIVER_UDP_IP, arg, retval);
+            sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr); 
         }
-        if (strlen(retvals[1]) != 0u) {
-            FILE_LOG(logDEBUG1)
-                << "Receiver UDP MAC2 returned : " << retvals[1];
-            shm()->rxUDPMAC2 = retvals[1];
-        }
-        configureMAC();
-    } else {
-        throw ReceiverError("setUDPConnection: Receiver is OFFLINE");
-    }
-    FILE_LOG(logDEBUG1) << printReceiverConfiguration();
+    } else {send udp ip to receiver};
+    if (getDetectorType == JUNGFRAU) {
+        uint32_t retval = -1;
+        FILE_LOG(logDEBUG1) << "Getting destination udp ip2";
+        sendToDetector(F_GET_DEST_UDP_IP2, nullptr, retval);
+        auto ip = IpAddr(retval);
+        FILE_LOG(logDEBUG1) << "Destination udp ip2: " << ip.str();
+        if (ip == 0) {
+            FILE_LOG(logDEBUG1) << "Setting destination default udp ip2 to " << shm()->rxHostname;
+            // Hostname could be ip try to decode otherwise look up the hostname
+            sls::IpAddr ip = shm()->rxHostname;
+            if (ip == 0) {
+                ip = HostnameToIp(shm()->rxHostname);
+            } 
+            uint32_t arg = static_cast<uint32_t>(ip);
+            sendToDetector(F_SET_DEST_UDP_IP2, arg, nullptr); 
+            if (shm()->useReceiverFlag) {
+                uint64_t retval = -1;
+                sendToReceiver(F_SET_RECEIVER_UDP_IP2, arg, retval);
+                sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr); 
+            }          
+        } else send udpip2 to receiver
+    }   
 }
 
 int slsDetector::digitalTest(digitalTestMode mode, int ival) {

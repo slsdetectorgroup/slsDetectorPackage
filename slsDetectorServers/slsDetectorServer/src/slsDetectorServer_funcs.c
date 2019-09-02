@@ -654,7 +654,7 @@ int set_dac(int file_des) {
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
 
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(MYTHEN3D) 
     functionNotImplemented();
 #else
 
@@ -779,6 +779,9 @@ int set_dac(int file_des) {
     case HIGH_VOLTAGE:
     case V_LIMIT:
         break;
+#elif GOTTHARD2D
+    case HIGH_VOLTAGE:
+		break;
 #endif
     default:
 #ifdef JUNGFRAUD
@@ -841,7 +844,7 @@ int set_dac(int file_des) {
     		case HIGH_VOLTAGE:
     			retval = setHighVoltage(val);
     			FILE_LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-#if defined(JUNGFRAUD) || defined (CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined (CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D) 
     			validate(val, retval, "set high voltage", DEC);
 #endif
 #ifdef GOTTHARDD
@@ -945,7 +948,10 @@ int set_dac(int file_des) {
                 validate(val, retval, "set vlimit", DEC);
                 break;
 #endif
-
+#ifdef GOTTHARD2D
+				default:
+					break;
+#elif
                 // dacs
     			default:
     			    if (mV && val > DAC_MAX_MV) {
@@ -1001,6 +1007,7 @@ int set_dac(int file_des) {
                     }
                     FILE_LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval, (mV ? "mV" : "dac units")));
     				break;
+#endif
     		}
     	}
     }

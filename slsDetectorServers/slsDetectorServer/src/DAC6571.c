@@ -3,6 +3,8 @@
 #include "common.h"
 #include "sls_detector_defs.h"
 
+#include "string.h"
+
 /* DAC6571 HV DEFINES */
 #define DAC6571_MIN_DAC_VAL         (0x0)
 #define DAC6571_MAX_DAC_VAL         (0x3FF)
@@ -42,7 +44,7 @@ int DAC6571_Set (int val) {
     //open file
     FILE* fd=fopen(DAC6571_DriverFileName,"w");
     if (fd==NULL) {
-        FILE_LOG(logERROR, ("Could not open file for writing to set high voltage\n"));
+        FILE_LOG(logERROR, ("Could not open file %s for writing to set high voltage\n", DAC6571_DriverFileName));
         return FAIL;
     }
     //convert to string, add 0 and write to file

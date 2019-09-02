@@ -2,6 +2,8 @@
 #include "versionAPI.h"
 #include "clogger.h"
 #include "blackfin.h"
+#include "DAC6571.h"
+#include "common.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
@@ -29,6 +31,7 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
+int highvoltage = 0;
 
 
 int isFirmwareCheckDone() {
@@ -57,6 +60,8 @@ void basictests() {
     firmware_check_done = 1;
     return;
 #else
+	// faking it
+    firmware_check_done = 1;
 
 	
 #endif
@@ -173,6 +178,10 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
+	// hv
+    DAC6571_SetDefines(HV_SOFT_MAX_VOLTAGE, HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
+    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+
 	//Initialization of acquistion parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
@@ -283,6 +292,24 @@ int64_t getTimeLeft(enum timerIndex ind){
 	}
 #endif
 	return -1;
+}
+
+
+
+int setHighVoltage(int val){
+#ifdef VIRTUAL
+    if (val >= 0)
+        highvoltage = val;
+    return highvoltage;
+#endif
+
+	// setting hv
+	if (val >= 0) {
+	    FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+	    DAC6571_Set(val);
+	    highvoltage = val;
+	}
+	return highvoltage;
 }
 
 

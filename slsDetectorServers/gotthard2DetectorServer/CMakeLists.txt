@@ -4,7 +4,8 @@ add_executable(gotthard2DetectorServer_virtual
     ../slsDetectorServer/src/slsDetectorServer_funcs.c
     ../slsDetectorServer/src/communication_funcs.c
     ../slsDetectorServer/src/blackfin.c    
-    ../slsDetectorServer/src/communication_funcs_UDP.c    
+    ../slsDetectorServer/src/communication_funcs_UDP.c  
+    ../slsDetectorServer/src/DAC6571.c  
 )
 
 include_directories(

@@ -8,5 +8,9 @@
 #define APIGOTTHARD 0x190830
 #define APIJUNGFRAU 0x190830
 #define APIEIGER 0x190830
+<<<<<<< Updated upstream
 #define APIGOTTHARD2 0x190902
+=======
+#define APIGOTTHARD2 0x190830
+>>>>>>> Stashed changes
 #define APIMYTHEN3 0x190902

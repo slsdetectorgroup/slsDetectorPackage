@@ -1202,6 +1202,7 @@ void slsDetector::readAll() {
     FILE_LOG(logDEBUG1) << "Detector successfully finished reading all frames";
 }
 
+/*
 void slsDetector::configureMAC() {
     int fnum = F_CONFIGURE_MAC;
     const size_t array_size = 50;
@@ -1309,6 +1310,7 @@ void slsDetector::configureMAC() {
         updateCachedDetectorVariables();
     }
 }
+*/
 
 void slsDetector::setStartingFrameNumber(uint64_t value) {
     FILE_LOG(logDEBUG1) << "Setting starting frame number to " << value;

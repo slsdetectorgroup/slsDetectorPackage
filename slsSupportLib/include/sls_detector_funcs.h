@@ -129,7 +129,6 @@ enum detFuncs{
 	F_GET_RECEIVER_TYPE, /**< return receiver type */
 	F_SEND_RECEIVER_DETHOSTNAME, /**< set detector hostname to receiver */
 	F_RECEIVER_SET_ROI, /**< Sets receiver ROI */
-	F_SETUP_RECEIVER_UDP, /**< sets the receiver udp connection and returns receiver mac address */
 	F_SET_RECEIVER_TIMER, /**< set/get timer value */
 	F_SET_RECEIVER_DYNAMIC_RANGE, /**< set/get detector dynamic range */
 	F_RECEIVER_STREAMING_FREQUENCY, /**< sets the frequency of receiver sending frames to gui */
@@ -219,7 +218,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
 	case F_SET_PORT:						return "F_SET_PORT";
 	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
-	case F_CONFIGURE_MAC:					return "F_CONFIGURE_MAC";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
@@ -283,7 +281,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_RECEIVER_TYPE: 				return "F_GET_RECEIVER_TYPE";
 	case F_SEND_RECEIVER_DETHOSTNAME:		return "F_SEND_RECEIVER_DETHOSTNAME";
 	case F_RECEIVER_SET_ROI: 				return "F_RECEIVER_SET_ROI";
-	case F_SETUP_RECEIVER_UDP:				return "F_SETUP_RECEIVER_UDP";
 	case F_SET_RECEIVER_TIMER:  			return "F_SET_RECEIVER_TIMER";
 	case F_SET_RECEIVER_DYNAMIC_RANGE:  	return "F_SET_RECEIVER_DYNAMIC_RANGE";
 	case F_RECEIVER_STREAMING_FREQUENCY:	return "F_RECEIVER_STREAMING_FREQUENCY";

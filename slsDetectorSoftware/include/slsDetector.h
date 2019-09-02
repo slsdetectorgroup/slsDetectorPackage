@@ -750,7 +750,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * if 0, it converts rx_hostname to ip and 
      * updates both detector and receiver
      */
-    void slsDetector::updateRxDestinationUDPIP();
+    void updateRxDestinationUDPIP();
 
     /**
      * Validates the format of the receiver UDP IP address (bottom half) and
@@ -772,7 +772,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * if 0, it converts rx_hostname to ip and 
      * updates both detector and receiver
      */
-    void slsDetector::updateRxDestinationUDPIP2();
+    void updateRxDestinationUDPIP2();
 
     /**
      * Sets the receiver UDP port\sa sharedSlsDetector

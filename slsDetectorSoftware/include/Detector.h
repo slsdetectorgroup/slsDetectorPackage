@@ -264,12 +264,6 @@ class Detector {
      *                                                 *
      * ************************************************/
 
-    /** Configures the destination for UDP packets in the detector
-     * Needed only if you use a custom receiver (not slsReceiver)
-     * as it is already included in setReceiverHostname.
-     */
-    void configureMAC(Positions pos = {}); // TODO: find a reasonable name
-
     /** [Jungfrau] */
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
 

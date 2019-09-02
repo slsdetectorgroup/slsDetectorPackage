@@ -1,7 +1,7 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
 #include "clogger.h"
-#include "blackfin.h"
+#include "nios.h"
 #include "DAC6571.h"
 #include "common.h"
 #ifdef VIRTUAL

@@ -215,9 +215,9 @@ void        powerOff();
 int 		getADC(enum ADCINDEX ind);
 #endif
 #endif
-#if !defined(MYTHEN3D) 
+
 int 		setHighVoltage(int val);
-#endif
+
 
 
 // parameters - timing, extsig
@@ -234,12 +234,12 @@ int         getExtSignal();
 #ifdef GOTTHARDD
 void        calcChecksum(mac_conf* mac, int sourceip, int destip);
 #elif JUNGFRAUD
-void setNumberofUDPInterfaces(int val);
-int getNumberofUDPInterfaces();
-void selectPrimaryInterface(int val);
-int getPrimaryInterface();
-void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport);
-void calcChecksum(udp_header* udp);
+void 	setNumberofUDPInterfaces(int val);
+int 	getNumberofUDPInterfaces();
+void 	selectPrimaryInterface(int val);
+int 	getPrimaryInterface();
+void 	setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport);
+void 	calcChecksum(udp_header* udp);
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 long int 	calcChecksum(int sourceip, int destip);

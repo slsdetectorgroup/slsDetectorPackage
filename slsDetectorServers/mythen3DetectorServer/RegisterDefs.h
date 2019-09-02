@@ -5,6 +5,8 @@
 #define MEM_MAP_SHIFT 1
 
 
+
+
 /* Status register */
 #define STATUS_REG            			(0x01 << MEM_MAP_SHIFT)
 

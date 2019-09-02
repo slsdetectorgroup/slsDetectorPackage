@@ -1,7 +1,8 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
 #include "clogger.h"
-#include "blackfin.h"
+#include "nios.h"
+#include "DAC6571.h" // HV
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
@@ -20,6 +21,8 @@ extern int debugflag;
 int firmware_compatibility = OK;
 int firmware_check_done = 0;
 char firmware_message[MAX_STR_LENGTH];
+
+int highvoltage = 0;
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -176,6 +179,10 @@ void setupDetector() {
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
+
+	// HV
+	DAC6571_SetDefines(HIGHVOLTAGE_SOFT_MAX, HIGHVOLTAGE_HARD_MAX, char* driverfname)
+	setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 }
 
 
@@ -199,6 +206,7 @@ int getSpeed(enum speedVariable ind) {
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	int64_t retval = -1;
+#ifdef VIRTUAL // until Firmware is ready
 	switch(ind){
 
 	case FRAME_NUMBER: // defined in sls_detector_defs.h (general)
@@ -238,7 +246,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
 		break;
 	}
-
+#endif
 	return retval;
 
 }
@@ -268,6 +276,7 @@ int64_t getTimeLeft(enum timerIndex ind){
     return 0;
 #endif
 	int64_t retval = -1;
+#ifdef VIRTUAL // until Firmware is ready
 	switch(ind){
 
 	case FRAME_NUMBER:
@@ -284,9 +293,27 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
 		break;
 	}
-
+#endif
 	return -1;
 }
+
+/* parameters - dac, adc, hv */
+int setHighVoltage(int val){
+#ifdef VIRTUAL
+    if (val >= 0)
+        highvoltage = val;
+    return highvoltage;
+#endif
+
+	// setting hv
+	if (val >= 0) {
+	    FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+	    DAC6571_Set(val);
+	    highvoltage = val;
+	}
+	return highvoltage;
+}
+
 
 
 int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport) {
@@ -406,9 +433,12 @@ u_int32_t runBusy() {
 #ifdef VIRTUAL
     return virtual_status;
 #endif
+#ifdef VIRTUAL // until Firmware is ready
 	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);
 	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
+#endif
+	return 0;
 }
 
 /* common */

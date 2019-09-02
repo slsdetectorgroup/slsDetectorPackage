@@ -215,7 +215,7 @@ void        powerOff();
 int 		getADC(enum ADCINDEX ind);
 #endif
 #endif
-#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(GOTTHARD2D)
 int 		setHighVoltage(int val);
 #endif
 

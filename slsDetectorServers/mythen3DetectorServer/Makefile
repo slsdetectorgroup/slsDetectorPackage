@@ -3,7 +3,7 @@ main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 
-CROSS  		= bfin-uclinux-
+CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -DMYTHEN3D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm

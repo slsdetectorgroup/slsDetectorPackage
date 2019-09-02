@@ -4,7 +4,7 @@
 /* Definitions for FPGA*/
 #define MEM_MAP_SHIFT 1
 
-
+#ifdef VIRTUAL // until firmware is ready ----------------------------------
 /* Status register */
 #define STATUS_REG            			(0x01 << MEM_MAP_SHIFT)
 
@@ -34,3 +34,5 @@
 /* Get Frames 64 bit register */
 #define GET_FRAMES_LSB_REG   			(0x0C << MEM_MAP_SHIFT)
 #define GET_FRAMES_MSB_REG    			(0x0D << MEM_MAP_SHIFT)
+
+#endif // until firmware is ready ----------------------------------

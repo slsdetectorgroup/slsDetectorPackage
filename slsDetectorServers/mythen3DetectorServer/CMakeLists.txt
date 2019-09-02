@@ -3,7 +3,7 @@ add_executable(mythen3DetectorServer_virtual
     ../slsDetectorServer/src/slsDetectorServer.c
     ../slsDetectorServer/src/slsDetectorServer_funcs.c
     ../slsDetectorServer/src/communication_funcs.c
-    ../slsDetectorServer/src/blackfin.c    
+    ../slsDetectorServer/src/nios.c    
     ../slsDetectorServer/src/communication_funcs_UDP.c        
 )
 

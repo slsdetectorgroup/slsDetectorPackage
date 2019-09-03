@@ -11,13 +11,11 @@
 
 
 // defines from the hardware
-int DAC6571_SoftMaxVoltage = 0;
 int DAC6571_HardMaxVoltage = 0;
 char DAC6571_DriverFileName[MAX_STR_LENGTH];
 
-void DAC6571_SetDefines(int softMaxV, int hardMaxV, char* driverfname) {
+void DAC6571_SetDefines(int hardMaxV, char* driverfname) {
     FILE_LOG(logINFOBLUE, ("Configuring High Voltage\n"));
-    DAC6571_SoftMaxVoltage = softMaxV;
     DAC6571_HardMaxVoltage = hardMaxV;
     memset(DAC6571_DriverFileName, 0, MAX_STR_LENGTH);
     strcpy(DAC6571_DriverFileName, driverfname);
@@ -30,10 +28,7 @@ int DAC6571_Set (int val) {
 
     int dacvalue = 0;
 
-      // limit values 
-     if (val > DAC6571_SoftMaxVoltage) {
-        val = DAC6571_SoftMaxVoltage;
-    }
+
     // convert value
     ConvertToDifferentRange(0, DAC6571_HardMaxVoltage,
             DAC6571_MIN_DAC_VAL, DAC6571_MAX_DAC_VAL,
@@ -48,7 +43,7 @@ int DAC6571_Set (int val) {
         return FAIL;
     }
     //convert to string, add 0 and write to file
-    fprintf(fd, "%d0\n", dacvalue);
+    fprintf(fd, "%d\n", dacvalue);
     fclose(fd);
 
     return OK;

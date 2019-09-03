@@ -148,7 +148,7 @@ class CmdProxy {
                                     {"outdir", "fpath"},
                                     {"fileformat", "fformat"},
                                     {"overwrite", "foverwrite"},
-                                    {"flags", "readout"}};
+                                    {"flags", "romode"}};
 
     void WrongNumberOfParameters(size_t expected);
 

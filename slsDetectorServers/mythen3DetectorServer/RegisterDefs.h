@@ -37,3 +37,4 @@
 /* Get Frames 64 bit register */
 #define GET_FRAMES_LSB_REG   			(0x0C << MEM_MAP_SHIFT)
 #define GET_FRAMES_MSB_REG    			(0x0D << MEM_MAP_SHIFT)
+#endif

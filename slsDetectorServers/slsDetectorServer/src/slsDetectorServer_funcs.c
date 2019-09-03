@@ -191,7 +191,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_TIMER:						return "F_SET_TIMER";
 	case F_GET_TIME_LEFT:					return "F_GET_TIME_LEFT";
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
-	case F_SET_READOUT_FLAGS:				return "F_SET_READOUT_FLAGS";
 	case F_SET_ROI:							return "F_SET_ROI";
 	case F_GET_ROI:							return "F_GET_ROI";
 	case F_SET_SPEED:						return "F_SET_SPEED";
@@ -251,6 +250,14 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
 	case F_SET_READ_N_LINES:				return "F_SET_READ_N_LINES";
 	case F_GET_READ_N_LINES:				return "F_GET_READ_N_LINES";
+	case F_SET_PARALLEL_MODE:				return "F_SET_PARALLEL_MODE";	
+	case F_GET_PARALLEL_MODE:				return "F_GET_PARALLEL_MODE";	
+	case F_SET_OVERFLOW_MODE:				return "F_SET_OVERFLOW_MODE";	
+	case F_GET_OVERFLOW_MODE:				return "F_GET_OVERFLOW_MODE";	
+	case F_SET_STOREINRAM_MODE:				return "F_SET_STOREINRAM_MODE";	
+	case F_GET_STOREINRAM_MODE:				return "F_GET_STOREINRAM_MODE";
+	case F_SET_READOUT_MODE:				return "F_SET_READOUT_MODE";	
+	case F_GET_READOUT_MODE:				return "F_GET_READOUT_MODE";
 	default:								return "Unknown Function";
 	}
 }
@@ -279,7 +286,6 @@ void function_table() {
 	flist[F_SET_TIMER]							= &set_timer;
 	flist[F_GET_TIME_LEFT]						= &get_time_left;
 	flist[F_SET_DYNAMIC_RANGE]					= &set_dynamic_range;
-	flist[F_SET_READOUT_FLAGS]					= &set_readout_flags;
 	flist[F_SET_ROI]							= &set_roi;
 	flist[F_GET_ROI]							= &get_roi;
 	flist[F_SET_SPEED]							= &set_speed;
@@ -339,6 +345,14 @@ void function_table() {
 	flist[F_GET_INTERRUPT_SUBFRAME]				= &get_interrupt_subframe;
 	flist[F_SET_READ_N_LINES]					= &set_read_n_lines;
 	flist[F_GET_READ_N_LINES]					= &get_read_n_lines;
+	flist[F_SET_PARALLEL_MODE]					= &set_parallel_mode;
+	flist[F_GET_PARALLEL_MODE]					= &get_parallel_mode;
+	flist[F_SET_OVERFLOW_MODE]					= &set_overflow_mode;
+	flist[F_GET_OVERFLOW_MODE]					= &get_overflow_mode;
+	flist[F_SET_STOREINRAM_MODE]				= &set_storeinram;
+	flist[F_GET_STOREINRAM_MODE]				= &get_storeinram;
+	flist[F_SET_READOUT_MODE]					= &set_readout_mode;
+	flist[F_GET_READOUT_MODE]					= &get_readout_mode;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -1867,60 +1881,6 @@ int set_dynamic_range(int file_des) {
 
 
 
-int set_readout_flags(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	enum readOutFlags arg = GET_READOUT_FLAGS;
-	enum readOutFlags retval = GET_READOUT_FLAGS;
-
-	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Setting readout flags to %d\n", arg));
-
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
-	functionNotImplemented();
-#else
-	// set & get
-	if ((arg == GET_READOUT_FLAGS) || (Server_VerifyLock() == OK)) {
-
-		switch(arg) {
-		case GET_READOUT_FLAGS:
-#ifdef EIGERD
-		case STORE_IN_RAM:
-		case CONTINOUS_RO:
-		case PARALLEL:
-		case NONPARALLEL:
-		case SHOW_OVERFLOW:
-		case NOOVERFLOW:
-#elif CHIPTESTBOARDD
-		case NORMAL_READOUT:
-		case DIGITAL_ONLY:
-		case ANALOG_AND_DIGITAL:
-#endif
-			retval = setReadOutFlags(arg);
-			FILE_LOG(logDEBUG1, ("Read out flags: 0x%x\n", retval));
-			validate((int)arg, (int)(retval & arg), "set readout flag", HEX);
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            if (retval == -2) {
-                ret = FAIL;
-                sprintf(mess, "Readout Flags failed. Cannot allocate RAM\n");
-                FILE_LOG(logERROR,(mess));
-            }
-#endif
-			break;
-		default:
-			modeNotImplemented("Read out flag index", (int)arg);
-			break;
-		}
-	}
-#endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
-}
-
-
-
-
-
 
 int set_roi(int file_des) {
 	ret = OK;
@@ -2277,8 +2237,8 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 
 	// readout flags
-#if defined(EIGERD) || defined(CHIPTESTBOARDD)
-    i32 = setReadOutFlags(GET_READOUT_FLAGS);
+#ifdef CHIPTESTBOARDD
+    i32 = getReadoutMode();
     n = sendData(file_des,&i32,sizeof(i32),INT32);
     if (n < 0) return printSocketReadError();
 #endif
@@ -4155,3 +4115,211 @@ int get_read_n_lines(int file_des) {
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 } 
 
+
+int set_parallel_mode(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting parallel mode: %u\n", arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if(setParallelMode(arg) == FAIL) {
+			ret = FAIL;
+			sprintf(mess, "Could not set parallel mode\n");
+			FILE_LOG(logERROR,(mess));
+		} else {
+			int retval = getParallelMode();
+			if (arg != retval) {
+				ret = FAIL;
+				sprintf(mess, "Could not set parallel mode. Set %d, but read %d\n", retval, arg);
+				FILE_LOG(logERROR,(mess));
+			}		
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_parallel_mode(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting parallel mode\n"));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getParallelMode();
+	FILE_LOG(logDEBUG1, ("parallel mode retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_overflow_mode(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting overflow mode: %u\n", arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if(setOverFlowMode(arg) == FAIL) {
+			ret = FAIL;
+			sprintf(mess, "Could not set overflow mode\n");
+			FILE_LOG(logERROR,(mess));
+		} else {
+			int retval = getOverFlowMode();
+			if (arg != retval) {
+				ret = FAIL;
+				sprintf(mess, "Could not set overflow mode. Set %d, but read %d\n", retval, arg);
+				FILE_LOG(logERROR,(mess));
+			}		
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_overflow_mode(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting overflow mode\n"));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getOverFlowMode();
+	FILE_LOG(logDEBUG1, ("overflow mode retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_storeinram(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting store in ram mode: %u\n", arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setStoreInRamMode(arg); 
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_storeinram(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting store in ram mode\n"));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getStoreInRamMode();
+	FILE_LOG(logDEBUG1, ("store in ram mode retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_readout_mode(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting readout mode: %u\n", arg));
+
+#ifndef CHIPTESTBOARDD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		switch(arg){
+		case ANALOG_ONLY:
+		case DIGITAL_ONLY:
+		case ANALOG_AND_DIGITAL:
+			break;
+		default:
+			modeNotImplemented("Readout mode", (int)arg);
+			break;
+		}
+		if (ret == OK) {
+			if (setReadoutMode(arg) == FAIL) {
+				ret = FAIL;
+				sprintf(mess, "Could not set allocate RAM to set readout mode\n");
+				FILE_LOG(logERROR,(mess));
+			} else {
+				int retval = getReadoutMode();
+				if (retval == -1) {
+					ret = FAIL;
+					sprintf(mess, "Could not get readout mode\n");
+					FILE_LOG(logERROR,(mess));	
+				} else {
+					FILE_LOG(logDEBUG1, ("readout mode retval: %u\n", retval));
+				}
+				validate(arg, retval, "set readout mode", DEC);
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_readout_mode(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting readout mode\n"));
+
+#ifndef CHIPTESTBOARDD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getReadoutMode();
+	if (retval == -1) {
+		ret = FAIL;
+		sprintf(mess, "Could not get readout mode\n");
+		FILE_LOG(logERROR,(mess));	
+	} else {
+		FILE_LOG(logDEBUG1, ("readout mode retval: %u\n", retval));
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}

@@ -3,13 +3,13 @@ main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 
-CROSS  		= powerpc-4xx-softfloat-
 BLACKFIN_CC = bfin-uclinux-gcc
+CROSS		= powerpc-4xx-softfloat-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -DEIGERD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm 
 PROGS		= 	eigerDetectorServer 
-DESTDIR		?= 	bin
+DESTDIR		= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c HardwareIO.c LocalLinkInterface.c  FebInterface.c FebControl.c Beb.c 
@@ -17,7 +17,7 @@ SRCS		+=	$(main_src)communication_funcs.c $(main_src)slsDetectorServer.c $(main_
 
 OBJS 		= 	$(SRCS:.c=.o) 
 
-all: clean versioning $(PROGS) #hv9m_blackfin_server 
+all: clean  versioning  $(PROGS) #hv9m_blackfin_server 
 
 	
 boot: $(OBJS) 

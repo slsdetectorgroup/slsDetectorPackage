@@ -398,22 +398,20 @@ public:
 	/**
 	 * Set parallel readout mode (Eiger)
 	 * @param value readout mode (-1 gets)
-	 * Options: slsDetectorDefs::readOutFlags
-	 * (PARALLEL, NONPARALLEL (Default), SAFE)
+	 * false for NonParallel (Default), true for Parallel
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns mode register,
-	 * result must be ANDED with PARALLEL/NONPARALLEL/SAFE to get mode
+	 * @returns 1 for parallel, 0 for non parallel, -1 if different
 	 */
-	int setParallelMode(int value, int detPos = -1);
+	int setParallelMode(bool value, int detPos = -1);
 
 	/**
 	 * Set overflow readout mode (Eiger in 32 bit)
 	 * @param value readout mode (-1 gets)
-	 * Options: 1(SHOW_OVERFLOW), 0(NOOVERFLOW) (Default)
+	 * Options: true to Show overflow, false to not show overflow
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns 1 if overflow mode else 0
+	 * @returns 1 for overflow, 0 for no overflow, -1 if different
 	 */
-	int setOverflowMode(int value, int detPos = -1);
+	int setOverflowMode(bool value, int detPos = -1);
 
 	/**
 	 * (Advanced user)

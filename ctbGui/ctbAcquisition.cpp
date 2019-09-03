@@ -766,7 +766,7 @@ void ctbAcquisition::canvasClicked() {
 void ctbAcquisition::setCanvas(TCanvas* c) {
   myCanvas=c;  
   myCanvas->cd();
-  myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)0x%p)->canvasClicked()",this));
+  myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)%p)->canvasClicked()",this));
   // myCanvas->AddExec("ex","canvasClicked()");
 }
 void ctbAcquisition::dataCallback(detectorData *data, long unsigned int index, unsigned int dum, void* pArgs) {
@@ -1503,7 +1503,7 @@ void ctbAcquisition::update() {
   } CATCH_DISPLAY ("Could not get number of digital samples", "ctbAcquisition::update")
   
   try {
-    roMode = myDet->getReadoutMode().tsquash("Different values");
+    roMode = static_cast<int>(myDet->getReadoutMode().tsquash("Different values"));
     setReadoutMode(roMode);
   } CATCH_DISPLAY ("Could not get readout mode", "ctbAcquisition::update")
 
@@ -1615,7 +1615,7 @@ void ctbAcquisition::toggleAcquisition() {
   } CATCH_DISPLAY ("Could not get receiver dbit offset", "ctbAcquisition::toggleAcquisition")
 
   try {
-    roMode = myDet->getReadoutMode().tsquash("Different values");
+    roMode = static_cast<int>(myDet->getReadoutMode().tsquash("Different values"));
     setReadoutMode(roMode);
   } CATCH_DISPLAY ("Could not get readout mode", "ctbAcquisition::toggleAcquisition")
 
@@ -1798,11 +1798,11 @@ void ctbAcquisition::setDigitalSamples(int n) {
 void ctbAcquisition::setReadoutMode(int f) {
   
   roMode=f;
-  slsDetectorDefs::readOutFlags flags=(slsDetectorDefs::readOutFlags)f;
-  if (flags&slsDetectorDefs::DIGITAL_ONLY) {
+  slsDetectorDefs::readoutMode flag=(slsDetectorDefs::readoutMode)f;
+  if (flag == slsDetectorDefs::DIGITAL_ONLY) {
     nAnalogSamples=0;
     adclist.clear();
-  }  else if (flags&slsDetectorDefs::ANALOG_AND_DIGITAL) {
+  }  else if (flag ==slsDetectorDefs::ANALOG_AND_DIGITAL) {
     ;
   }
   else {

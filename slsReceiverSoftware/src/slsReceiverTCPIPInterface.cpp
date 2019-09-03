@@ -195,7 +195,7 @@ int slsReceiverTCPIPInterface::function_table(){
     flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
 	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
 	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_padding_enable;
-	flist[F_RECEIVER_SET_READOUT_FLAGS] 	= 	&slsReceiverTCPIPInterface::set_readout_flags;
+	flist[F_RECEIVER_SET_READOUT_MODE] 	    = 	&slsReceiverTCPIPInterface::set_readout_mode;
 	flist[F_RECEIVER_SET_ADC_MASK]			=	&slsReceiverTCPIPInterface::set_adc_mask;
 	flist[F_SET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::set_dbit_list;
 	flist[F_GET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::get_dbit_list;
@@ -1230,22 +1230,21 @@ int slsReceiverTCPIPInterface::set_deactivated_padding_enable(
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_readout_flags(Interface &socket) {
-    auto arg = socket.Receive<readOutFlags>();
+int slsReceiverTCPIPInterface::set_readout_mode(Interface &socket) {
+    auto arg = socket.Receive<readoutMode>();
 
-    if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD ||
-        myDetectorType == MOENCH)
+    if (myDetectorType != CHIPTESTBOARD)
         functionNotImplemented();
 
     if (arg >= 0) {
         VerifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting readout flag: " << arg;
-        impl()->setReadOutFlags(arg);
+        FILE_LOG(logDEBUG1) << "Setting readout mode: " << arg;
+        impl()->setReadoutMode(arg);
     }
-    auto retval = impl()->getReadOutFlags();
-    validate(static_cast<int>(arg), static_cast<int>(retval & arg),
-             "set readout flags", HEX);
-    FILE_LOG(logDEBUG1) << "Readout flags: " << retval;
+    auto retval = impl()->getReadoutMode();
+    validate(static_cast<int>(arg), static_cast<int>(retval),
+             "set readout mode", DEC);
+    FILE_LOG(logDEBUG1) << "Readout mode: " << retval;
     return socket.sendResult(retval);
 }
 

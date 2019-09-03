@@ -68,8 +68,8 @@ struct sharedSlsDetector {
     /** adc enable mask */
     uint32_t adcEnableMask;
 
-    /** readout flags */
-    slsDetectorDefs::readOutFlags roFlags;
+    /** readout mode */
+    slsDetectorDefs::readoutMode roMode;
 
     /** detector settings (standard, fast, etc.) */
     slsDetectorDefs::detectorSettings currentSettings;
@@ -629,12 +629,52 @@ class slsDetector : public virtual slsDetectorDefs {
     setExternalSignalFlags(externalSignalFlag pol = GET_EXTERNAL_SIGNAL_FLAG);
 
     /**
-     * Set/get readout flags (Eiger, Mythen)
-     * @param flag readout flag (Eiger options: parallel, nonparallel, safe
-     * etc.) (-1 gets)
-     * @returns readout flag
+     * Set Parallel readout mode (Only for Eiger)
+     * @param enable true if parallel, else false for non parallel
      */
-    int setReadOutFlags(readOutFlags flag = GET_READOUT_FLAGS);
+    void setParallelMode(const bool enable);
+
+    /**
+     * Get parallel mode (Only for Eiger)
+     * @returns parallel mode
+     */
+    bool getParallelMode();
+
+    /**
+     * Set overflow readout mode in 32 bit mode (Only for Eiger)
+     * @param enable true if overflow, else false
+     */
+    void setOverFlowMode(const bool enable);
+    
+    /**
+     * Get overflow mode in 32 bit mode (Only for Eiger)
+     * @returns overflow mode
+     */
+    bool getOverFlowMode();
+
+    /**
+     * Set store in ram readout mode (Only for Eiger)
+     * @param enable true if store in ram, else false
+     */
+    void setStoreInRamMode(const bool enable);
+
+    /**
+     * Get store in ram mode (Only for Eiger)
+     * @returns store in ram mode
+     */
+    bool getStoreInRamMode();
+
+    /**
+     * Set readout mode (Only for CTB and Moench)
+     * @param mode readout mode Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL
+     */
+    void setReadoutMode(const readoutMode mode);
+
+    /**
+     * Get readout mode(Only for CTB and Moench)
+     * @returns readout mode
+     */
+    readoutMode getReadoutMode();
 
     /**
      * Set Interrupt last sub frame (Only for Eiger)

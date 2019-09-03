@@ -56,7 +56,7 @@ int eiger_theo_highvoltage = 0;
 int eiger_iodelay = 0;
 int eiger_photonenergy = 0;
 int eiger_dynamicrange = 0;
-int eiger_readoutmode = 0;
+int eiger_parallelmode = 0;
 int eiger_storeinmem = 0;
 int eiger_overflow32 = 0;
 int eiger_readoutspeed = 0;
@@ -439,9 +439,9 @@ void setupDetector() {
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
-	setReadOutFlags(DEFAULT_READOUT_MODE);
-	setReadOutFlags(DEFAULT_READOUT_STOREINRAM_MODE);
-	setReadOutFlags(DEFAULT_READOUT_OVERFLOW32_MODE);
+	setParallelMode(DEFAULT_PARALLEL_MODE);
+	setOverFlowMode(DEFAULT_READOUT_STOREINRAM_MODE);
+	setStoreInRamMode(DEFAULT_READOUT_OVERFLOW32_MODE);
 	setSpeed(CLOCK_DIVIDER, DEFAULT_CLK_SPEED);//clk_devider,half speed
 	setIODelay(DEFAULT_IO_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
@@ -543,118 +543,45 @@ int getSpeed(enum speedVariable ind) {
     return  eiger_readoutspeed;
 }
 
-
-enum readOutFlags setReadOutFlags(enum readOutFlags val) {
-
-	enum readOutFlags retval = GET_READOUT_FLAGS;
-	if (val!=GET_READOUT_FLAGS) {
-
-
-		if (val&0xF0000) {
-			switch(val) {
-			case PARALLEL:
-				val=E_PARALLEL;
-				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Parallel\n"));
-				break;
-			case NONPARALLEL:
-				val=E_NON_PARALLEL;
-				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Non Parallel\n"));
-				break;
-			default:
-				FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
-				return -1;
-			}
+int	setParallelMode(int mode) {
+	mode = (mode == 0 ? E_NON_PARALLEL : E_PARALLEL);
 #ifndef VIRTUAL
-			if (Feb_Control_SetReadoutMode(val))
-#endif
-				eiger_readoutmode = val;
-#ifndef VIRTUAL
-			else return -1;
-#endif
-
-		}
-
-		else if (val&0xF00000) {
-			switch(val) {
-			case SHOW_OVERFLOW:
-				val=1;
-				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Overflow in 32 bit mode\n"));
-				break;
-			case NOOVERFLOW:
-				val=0;
-				FILE_LOG(logDEBUG1, ("Setting Read out Flag: No overflow in 32 bit mode\n"));
-				break;
-			default:
-				FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
-				return -1;
-			}
-#ifndef VIRTUAL
-			if (Beb_Set32bitOverflow(val) != -1)
-#endif
-				eiger_overflow32 = val;
-#ifndef VIRTUAL
-			else return -1;
-#endif
-		}
-
-
-		else {
-			switch(val) {
-			case STORE_IN_RAM:
-				val=1;
-				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Store in Ram\n"));
-				break;
-			case CONTINOUS_RO:
-				val=0;
-				FILE_LOG(logDEBUG1, ("Setting Read out Flag: Continuous Readout\n"));
-				break;
-
-			default:
-				FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", val));
-				return -1;
-			}
-			eiger_storeinmem = val;
-
-		}
+	if (!Feb_Control_SetReadoutMode(mode)) {
+		return FAIL;
 	}
-
-	switch(eiger_readoutmode) {
-	case E_PARALLEL:
-		retval=PARALLEL;
-		break;
-	case E_NON_PARALLEL:
-		retval=NONPARALLEL;
-		break;
-	}
-
-	switch(eiger_overflow32) {
-	case 1:
-		retval|=SHOW_OVERFLOW;
-		break;
-	case 0:
-		retval|=NOOVERFLOW;
-		break;
-	}
-
-
-	switch(eiger_storeinmem) {
-	case 0:
-		retval|=CONTINOUS_RO;
-		break;
-	case 1:
-		retval|=STORE_IN_RAM;
-		break;
-	}
-
-	FILE_LOG(logDEBUG1, ("Read out Flag: 0x%x\n", retval));
-	return retval;
+#endif
+	eiger_parallelmode = mode;
+	return OK;
 }
 
+int getParallelMode() {
+	return (eiger_parallelmode == E_PARALLEL ? 1 : 0);
+}
 
+int	setOverFlowMode(int mode) {
+	mode = (mode == 0 ? 0 : 1);
+#ifndef VIRTUAL
+	if (Beb_Set32bitOverflow(mode == 0 ? 0 : 1) == -1) {
+		return FAIL;
+	}
+#endif
+	eiger_overflow32 = mode;
+	return OK;
+}
 
+int getOverFlowMode() {
+	return eiger_overflow32;
+}
 
+void setStoreInRamMode(int mode) {
+	mode = (mode == 0 ? 0 : 1);
+	FILE_LOG(logINFO, ("Setting Store in Ram mode to %d\n", mode));
+	eiger_storeinmem = mode;
+}
 
-
+int getStoreInRamMode() {
+	return eiger_storeinmem;
+}
 
 
 /* parameters - timer */

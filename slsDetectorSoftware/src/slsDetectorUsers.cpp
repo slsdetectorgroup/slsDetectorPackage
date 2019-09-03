@@ -167,23 +167,22 @@ int slsDetectorUsers::setClockDivider(int value, int detPos) {
 	return detector.setSpeed(slsDetectorDefs::CLOCK_DIVIDER, value, detPos);
 }
 
-int slsDetectorUsers::setParallelMode(int value, int detPos) {
-	if(value >= 0)
-		detector.setReadOutFlags(slsDetectorDefs::readOutFlags(value), detPos);
-	return detector.setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS, detPos);
+int slsDetectorUsers::setParallelMode(bool value, int detPos) {
+	/* to be uncommented when moving to Detector.h
+	detector.setParallelMode(value, {detPos});
+	auto res = detector.getParallelMode({detPos});
+	if (res.equal())
+		return res.front();*/
+	return -1;
 }
 
-int slsDetectorUsers::setOverflowMode(int value, int detPos) {
-	if(value >= 0) {
-		if (value == 1)
-			detector.setReadOutFlags(slsDetectorDefs::SHOW_OVERFLOW, detPos);
-		else
-			detector.setReadOutFlags(slsDetectorDefs::NOOVERFLOW, detPos);
-	}
-	int ret = detector.setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS, detPos);
-	if (ret == -1)
-		return -1;
-	return ((ret & slsDetectorDefs::SHOW_OVERFLOW) ? 1 : 0);
+int slsDetectorUsers::setOverflowMode(bool value, int detPos) {
+	/* to be uncommented when moving to Detector.h
+	detector.setOverFlowMode(value, {detPos});
+	auto res = detector.getOverFlowMode({detPos});
+	if (res.equal())
+		return res.front();*/
+	return -1;	
 }
 
 int slsDetectorUsers::setAllTrimbits(int val, int detPos) {

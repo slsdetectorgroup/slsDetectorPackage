@@ -47,6 +47,7 @@ static inline void FILELOG_PrintLog(enum TLogLevel level, char* m) {
 	case logDEBUG4: 	cprintf(MAGENTA, "DEBUG4: %s", m);		break;
 	case logDEBUG5: 	cprintf(MAGENTA, "DEBUG5: %s", m);		break;
 	}
+	fflush(stdout);
 }
 
 static inline char* FILELOG_BuildLog(const char* fmt, ...) {

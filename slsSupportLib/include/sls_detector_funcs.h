@@ -186,7 +186,6 @@ enum detFuncs{
 	F_SET_RECEIVER_UDP_PORT,
 	F_SET_RECEIVER_UDP_PORT2,
 	F_SET_RECEIVER_NUM_INTERFACES,
-	F_SET_RECEIVER_INTERFACE_SEL,
 	NUM_REC_FUNCTIONS
 };
 
@@ -369,7 +368,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_RECEIVER_UDP_PORT:			return "F_SET_RECEIVER_UDP_PORT";
 	case F_SET_RECEIVER_UDP_PORT2:			return "F_SET_RECEIVER_UDP_PORT2";
 	case F_SET_RECEIVER_NUM_INTERFACES:		return "F_SET_RECEIVER_NUM_INTERFACES";
-	case F_SET_RECEIVER_INTERFACE_SEL:		return "F_SET_RECEIVER_INTERFACE_SEL";	
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

@@ -40,7 +40,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param sm pointer to silent mode
 	 */
 	Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>* s,
-	        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
+	        uint32_t* portno, std::string* e, uint64_t* nf, uint32_t* dr,
 	        int64_t* us, int64_t* as, uint32_t* fpf,
 			frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm);
 
@@ -222,7 +222,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	uint32_t* udpPortNumber;
 
 	/** ethernet interface */
-	char* eth;
+	std::string* eth;
 
 	/** Number of Images to catch */
 	uint64_t* numImages;

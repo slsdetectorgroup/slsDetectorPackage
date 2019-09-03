@@ -156,7 +156,6 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_GET_RECEIVER_TYPE]				=	&slsReceiverTCPIPInterface::set_detector_type;
 	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&slsReceiverTCPIPInterface::set_detector_hostname;
 	flist[F_RECEIVER_SET_ROI]				=	&slsReceiverTCPIPInterface::set_roi;
-	flist[F_SETUP_RECEIVER_UDP]				=	&slsReceiverTCPIPInterface::setup_udp;
 	flist[F_SET_RECEIVER_TIMER]				= 	&slsReceiverTCPIPInterface::set_timer;
 	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&slsReceiverTCPIPInterface::set_dynamic_range;
 	flist[F_RECEIVER_STREAMING_FREQUENCY]	= 	&slsReceiverTCPIPInterface::set_streaming_frequency;
@@ -202,6 +201,11 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_RECEIVER_DBIT_OFFSET]			= 	&slsReceiverTCPIPInterface::set_dbit_offset;
     flist[F_SET_RECEIVER_QUAD]			    = 	&slsReceiverTCPIPInterface::set_quad_type;
     flist[F_SET_RECEIVER_READ_N_LINES]      =   &slsReceiverTCPIPInterface::set_read_n_lines;
+    flist[F_SET_RECEIVER_UDP_IP]            =   &slsReceiverTCPIPInterface::set_udp_ip;
+	flist[F_SET_RECEIVER_UDP_IP2]           =   &slsReceiverTCPIPInterface::set_udp_ip2;
+	flist[F_SET_RECEIVER_UDP_PORT]          =   &slsReceiverTCPIPInterface::set_udp_port;
+	flist[F_SET_RECEIVER_UDP_PORT2]         =   &slsReceiverTCPIPInterface::set_udp_port2;
+	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &slsReceiverTCPIPInterface::set_num_interfaces;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -522,102 +526,6 @@ int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
     if (impl()->setROI(arg) == FAIL)
         throw RuntimeError("Could not set ROI");
     return socket.Send(OK);
-}
-
-int slsReceiverTCPIPInterface::setup_udp(Interface &socket) {
-    ret = OK;
-    char args[5][MAX_STR_LENGTH]{};
-    char retvals[2][MAX_STR_LENGTH]{};
-    socket.Receive(args);
-    VerifyIdle(socket);
-
-    // setup interfaces count
-    int numInterfaces = atoi(args[0]) > 1 ? 2 : 1;
-    char *ip1 = args[1];
-    char *ip2 = args[2];
-    uint32_t port1 = atoi(args[3]);
-    uint32_t port2 = atoi(args[4]);
-
-    // 1st interface
-    impl()->setUDPPortNumber(port1);
-    if (myDetectorType == EIGER) {
-        impl()->setUDPPortNumber2(port2);
-    }
-    FILE_LOG(logINFO) << "Receiver UDP IP: " << ip1;
-    // get eth
-    std::string temp = sls::IpToInterfaceName(ip1);
-    if (temp == "none") {
-        throw RuntimeError("Failed to get ethernet interface or IP");
-    } else {
-        char eth[MAX_STR_LENGTH]{};
-        sls::strcpy_safe(eth, temp.c_str());
-        // if there is a dot in eth name
-        if (strchr(eth, '.') != nullptr) {
-            sls::strcpy_safe(eth, "");
-            FILE_LOG(logERROR)
-                << "Failed to get ethernet interface from IP. Got " << temp
-                << '\n';
-        }
-        impl()->setEthernetInterface(eth);
-        if (myDetectorType == EIGER) {
-            impl()->setEthernetInterface2(eth);
-        }
-        // get mac address
-        if (ret != FAIL) {
-            temp = sls::InterfaceNameToMac(eth).str();
-            if (temp == "00:00:00:00:00:00") {
-                throw RuntimeError("failed to get mac adddress to listen to\n");
-            } else {
-                sls::strcpy_safe(retvals[0], temp.c_str());
-                FILE_LOG(logINFO) << "Receiver MAC Address: " << retvals[0];
-            }
-        }
-    }
-
-    // 2nd interface
-    if (myDetectorType == JUNGFRAU && numInterfaces == 2) {
-        impl()->setUDPPortNumber2(port2);
-        FILE_LOG(logINFO) << "Receiver UDP IP 2: " << ip2;
-        // get eth
-        temp = sls::IpToInterfaceName(ip2);
-        if (temp == "none") {
-            throw RuntimeError("Failed to get 2nd ethernet interface or IP");
-        } else {
-            char eth[MAX_STR_LENGTH]{};
-            memset(eth, 0, MAX_STR_LENGTH);
-            sls::strcpy_safe(eth, temp.c_str());
-            // if there is a dot in eth name
-            if (strchr(eth, '.') != nullptr) {
-                sls::strcpy_safe(eth, "");
-                FILE_LOG(logERROR)
-                    << "Failed to get 2nd ethernet interface from IP. Got "
-                    << temp << '\n';
-            }
-            impl()->setEthernetInterface2(eth);
-
-            // get mac address
-            if (ret != FAIL) {
-                temp = sls::InterfaceNameToMac(eth).str();
-                if (temp == "00:00:00:00:00:00") {
-                    throw RuntimeError(
-                        "failed to get 2nd mac adddress to listen to");
-                    FILE_LOG(logERROR) << mess;
-                } else {
-                    sls::strcpy_safe(retvals[1], temp.c_str());
-                    FILE_LOG(logINFO)
-                        << "Receiver MAC Address 2: " << retvals[1];
-                }
-            }
-        }
-    }
-
-    // set the number of udp interfaces (changes number of threads and many
-    // others)
-    if (myDetectorType == JUNGFRAU &&
-        impl()->setNumberofUDPInterfaces(numInterfaces) == FAIL) {
-        throw RuntimeError("Failed to set number of interfaces");
-    }
-    return socket.sendResult(ret, retvals, sizeof(retvals), mess);
 }
 
 int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
@@ -1323,5 +1231,93 @@ int slsReceiverTCPIPInterface::set_read_n_lines(Interface &socket) {
     int retval = impl()->getReadNLines();
     validate(arg, retval, "set read n lines", DEC);
     FILE_LOG(logDEBUG1) << "read n lines retval:" << retval;
+    return socket.Send(OK);
+}
+
+
+int slsReceiverTCPIPInterface::set_udp_ip(Interface &socket) {
+    auto arg = socket.Receive<sls::IpAddr>();
+    VerifyIdle(socket);
+    FILE_LOG(logINFO) << "Received UDP IP: " << arg;
+    // getting eth
+    std::string eth = sls::IpToInterfaceName(arg.str());
+    if (eth == "none") {
+        throw RuntimeError("Failed to get udp ethernet interface from IP " + arg.str());
+    }   
+    if (eth.find('.') == std::string::npos) {
+        eth = "";
+        FILE_LOG(logERROR) << "Failed to get udp ethernet interface from IP " << arg << ". Got " << eth;
+    }   
+    impl()->setEthernetInterface(eth);
+    if (myDetectorType == EIGER) {
+        impl()->setEthernetInterface2(eth);
+    }
+    // get mac address
+    auto retval = sls::InterfaceNameToMac(eth);
+    if (retval == 0) {
+        throw RuntimeError("Failed to get udp mac adddress to listen to\n");
+    }
+    FILE_LOG(logINFO) << "Receiver MAC Address: " << retval;
+    return socket.sendResult(retval);
+}
+
+
+int slsReceiverTCPIPInterface::set_udp_ip2(Interface &socket) {
+    auto arg = socket.Receive<sls::IpAddr>();
+    VerifyIdle(socket);
+    if (myDetectorType != JUNGFRAU) {
+        throw RuntimeError("UDP Destination IP2 not implemented for this detector");
+    }
+    FILE_LOG(logINFO) << "Received UDP IP2: " << arg;
+    // getting eth
+    std::string eth = sls::IpToInterfaceName(arg.str());
+    if (eth == "none") {
+        throw RuntimeError("Failed to get udp ethernet interface2 from IP " + arg.str());
+    }   
+    if (eth.find('.') == std::string::npos) {
+        eth = "";
+        FILE_LOG(logERROR) << "Failed to get udp ethernet interface2 from IP " << arg << ". Got " << eth;
+    }   
+    impl()->setEthernetInterface2(eth);
+
+    // get mac address
+    auto retval = sls::InterfaceNameToMac(eth);
+    if (retval == 0) {
+        throw RuntimeError("Failed to get udp mac adddress2 to listen to\n");
+    }
+    FILE_LOG(logINFO) << "Receiver MAC Address2: " << retval;
+    return socket.sendResult(retval);
+}
+
+int slsReceiverTCPIPInterface::set_udp_port(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    VerifyIdle(socket);
+    FILE_LOG(logDEBUG1) << "Setting UDP Port:" << arg;
+    impl()->setUDPPortNumber(arg);
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_udp_port2(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    VerifyIdle(socket);
+    if (myDetectorType != JUNGFRAU && myDetectorType != EIGER) {
+        throw RuntimeError("UDP Destination Port2 not implemented for this detector");
+    }    
+    FILE_LOG(logDEBUG1) << "Setting UDP Port:" << arg;
+    impl()->setUDPPortNumber2(arg);
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_num_interfaces(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    arg = (arg > 1 ? 2 : 1);
+    VerifyIdle(socket);
+    if (myDetectorType != JUNGFRAU) {
+        throw RuntimeError("Number of interfaces not implemented for this detector");
+    }    
+    FILE_LOG(logDEBUG1) << "Setting Number of UDP Interfaces:" << arg;
+    if (impl()->setNumberofUDPInterfaces(arg) == FAIL) {
+        throw RuntimeError("Failed to set number of interfaces");
+    }
     return socket.Send(OK);
 }

@@ -1669,12 +1669,16 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         setDetectorId();
         setDetectorHostname();
         
+        // setup udp
         updateRxDestinationUDPIP();
-        updateRxDestinationUDPIP2();        
         setDestinationUDPPort(getDestinationUDPPort());
-        setDestinationUDPPort2(getDestinationUDPPort2());
-        setNumberofUDPInterfaces(getNumberofUDPInterfaces());
-        selectUDPInterface(getSelectedUDPInterface());
+        if (shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == EIGER ) {        
+            setDestinationUDPPort2(getDestinationUDPPort2());
+        }
+        if (shm()->myDetectorType == JUNGFRAU) {
+            updateRxDestinationUDPIP2();   
+            setNumberofUDPInterfaces(getNumberofUDPInterfaces());
+        }
         FILE_LOG(logDEBUG1) << printReceiverConfiguration();
 
         setReceiverUDPSocketBufferSize(0);
@@ -1967,9 +1971,6 @@ int slsDetector::getNumberofUDPInterfaces() {
 void slsDetector::selectUDPInterface(int n) {
     FILE_LOG(logDEBUG1) << "Setting selected udp interface to " << n;
     sendToDetector(F_SET_INTERFACE_SEL, n, nullptr); 
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SET_RECEIVER_NUM_INTERFACES, n, nullptr); 
-    }
 }
 
 int slsDetector::getSelectedUDPInterface() {
@@ -2790,6 +2791,7 @@ void slsDetector::updateRateCorrection() {
 std::string slsDetector::printReceiverConfiguration() {
     std::ostringstream os;
     os << "#Detector " << detId << ":\n Receiver Hostname:\t"
+       << getReceiverHostname() << "\n Num Interfaces (Jungfrau):\t" << getNumberofUDPInterfaces()
        << getReceiverHostname() << "\nDetector UDP IP (Source):\t\t"
        << getSourceUDPIP() << "\nDetector UDP IP2 (Source):\t\t"
        << getSourceUDPIP2() << "\nDetector UDP MAC:\t\t" << getSourceUDPMAC()

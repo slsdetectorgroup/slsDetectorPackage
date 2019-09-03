@@ -21,7 +21,7 @@ const std::string Listener::TypeName = "Listener";
 
 
 Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>* s,
-        uint32_t* portno, char* e, uint64_t* nf, uint32_t* dr,
+        uint32_t* portno, std::string* e, uint64_t* nf, uint32_t* dr,
         int64_t* us, int64_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
 		ThreadObject(ind),
@@ -187,10 +187,10 @@ int Listener::CreateUDPSockets() {
     }
 
 	//if eth is mistaken with ip address
-	if (strchr(eth,'.') != nullptr){
-	    memset(eth, 0, MAX_STR_LENGTH);
+	if ((*eth).find('.') == std::string::npos) {
+	    (*eth) = "";
 	}
-	if(!strlen(eth)){
+	if (!(*eth).length()) {
 		FILE_LOG(logWARNING) << "eth is empty. Listening to all";
 	}
 
@@ -198,7 +198,7 @@ int Listener::CreateUDPSockets() {
 
 	try{
 	    udpSocket = sls::make_unique<genericSocket>(*udpPortNumber, genericSocket::UDP,
-				generalData->packetSize, (strlen(eth)?eth:nullptr), generalData->headerPacketSize,
+				generalData->packetSize, ((*eth).length() ? (*eth).c_str() : nullptr), generalData->headerPacketSize,
 				*udpSocketBufferSize);
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
 	} catch (...) {
@@ -244,14 +244,14 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
     *udpSocketBufferSize = s;
 
     //if eth is mistaken with ip address
-    if (strchr(eth,'.') != nullptr){
-        memset(eth, 0, MAX_STR_LENGTH);
-    }
+	if ((*eth).find('.') == std::string::npos) {
+	    (*eth) = "";
+	}
 
     //create dummy socket
     try {
     	genericSocket g(*udpPortNumber, genericSocket::UDP,
-            generalData->packetSize, (strlen(eth)?eth:nullptr), generalData->headerPacketSize,
+            generalData->packetSize, ((*eth).length() ? (*eth).c_str() : nullptr), generalData->headerPacketSize,
             *udpSocketBufferSize);
 
         // doubled due to kernel bookkeeping (could also be less due to permissions)

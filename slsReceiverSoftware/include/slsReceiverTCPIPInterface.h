@@ -159,9 +159,6 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** set roi */
     int set_roi(sls::ServerInterface2 &socket);
 
-    /** Set up UDP Details */
-    int setup_udp(sls::ServerInterface2 &socket);
-
     /** set acquisition period, frame number etc */
     int set_timer(sls::ServerInterface2 &socket);
 
@@ -299,6 +296,22 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 
     /** read n lines */
     int set_read_n_lines(sls::ServerInterface2 &socket);
+
+    /** set udp ip */
+    int set_udp_ip(sls::ServerInterface2 &socket);
+    
+    /** set udp ip2 */
+    int set_udp_ip2(sls::ServerInterface2 &socket);
+    
+    /** set udp port */
+    int set_udp_port(sls::ServerInterface2 &socket);
+    
+    /** set udp port2 */
+    int set_udp_port2(sls::ServerInterface2 &socket);
+    
+    /** set number of udp interfaces */
+    int set_num_interfaces(sls::ServerInterface2 &socket);
+
 
     /** detector type */
     detectorType myDetectorType;

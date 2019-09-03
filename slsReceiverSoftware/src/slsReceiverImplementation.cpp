@@ -86,8 +86,8 @@ void slsReceiverImplementation::InitializeMembers() {
 
     //***connection parameters***
     numUDPInterfaces = 1;
+    eth.resize(MAX_NUMBER_OF_LISTENING_THREADS);
     for (int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; i++) {
-        strcpy(eth[i], "");
         udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
     }
     udpSocketBufferSize = 0;
@@ -285,12 +285,12 @@ uint32_t slsReceiverImplementation::getUDPPortNumber2() const {
 
 std::string slsReceiverImplementation::getEthernetInterface() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return std::string(eth[0]);
+    return eth[0];
 }
 
 std::string slsReceiverImplementation::getEthernetInterface2() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return std::string(eth[1]);
+    return eth[1];
 }
 
 int slsReceiverImplementation::getNumberofUDPInterfaces() const {
@@ -677,17 +677,17 @@ void slsReceiverImplementation::setUDPPortNumber2(const uint32_t i) {
     FILE_LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
 
-void slsReceiverImplementation::setEthernetInterface(const char *c) {
+void slsReceiverImplementation::setEthernetInterface(const std::string &c) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
-    strcpy(eth[0], c);
+    eth[0] = c;
     FILE_LOG(logINFO) << "Ethernet Interface: " << eth[0];
 }
 
-void slsReceiverImplementation::setEthernetInterface2(const char *c) {
+void slsReceiverImplementation::setEthernetInterface2(const std::string &c) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
-    strcpy(eth[1], c);
+    eth[1] = c;
     FILE_LOG(logINFO) << "Ethernet Interface 2: " << eth[1];
 }
 
@@ -725,7 +725,7 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
                 auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
                     i, myDetectorType, fifo_ptr, &status, &udpPortNum[i],
-                    eth[i], &numberOfFrames, &dynamicRange,
+                    &eth[i], &numberOfFrames, &dynamicRange,
                     &udpSocketBufferSize, &actualUDPSocketBufferSize,
                     &framesPerFile, &frameDiscardMode, &activated,
                     &deactivatedPaddingEnable, &silentMode));
@@ -1167,7 +1167,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
         try {
             auto fifo_ptr = fifo[i].get();
             listener.push_back(sls::make_unique<Listener>(
-                i, myDetectorType, fifo_ptr, &status, &udpPortNum[i], eth[i],
+                i, myDetectorType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                 &numberOfFrames, &dynamicRange, &udpSocketBufferSize,
                 &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
                 &activated, &deactivatedPaddingEnable, &silentMode));

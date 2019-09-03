@@ -179,7 +179,7 @@ void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
 	// hv
-    DAC6571_SetDefines(HV_SOFT_MAX_VOLTAGE, HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
+    DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
 	//Initialization of acquistion parameters
@@ -297,6 +297,10 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 
 int setHighVoltage(int val){
+	if (val > HV_SOFT_MAX_VOLTAGE) {
+		val = HV_SOFT_MAX_VOLTAGE;
+	}
+	
 #ifdef VIRTUAL
     if (val >= 0)
         highvoltage = val;

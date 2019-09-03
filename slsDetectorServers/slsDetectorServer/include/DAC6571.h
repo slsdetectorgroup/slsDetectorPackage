@@ -5,11 +5,10 @@
 /**
  * Set Defines
  * @param dofst digital output offset
- * @param softMaxV maximum software limit (permissible for this detector)
  * @param hardMaxV maximum hardware limit 
  * @param driverfname driver file name
  */
-void DAC6571_SetDefines(int softMaxV, int hardMaxV, char* driverfname);
+void DAC6571_SetDefines(int hardMaxV, char* driverfname);
 
 /**
  * Set value

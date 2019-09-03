@@ -4,22 +4,10 @@
 /* Definitions for FPGA*/
 #define MEM_MAP_SHIFT 1
 
-<<<<<<< Updated upstream
 
-
-
-=======
-/* FPGA Version register */
-#define FPGA_VERSION_REG      			(0x00 << MEM_MAP_SHIFT)
-
-#define FPGA_COMPILATION_DATE_OFST		(0)
-#define FPGA_COMPILATION_DATE_MSK		(0x00FFFFFF << FPGA_COMPILATION_DATE_OFST)
-#define DETECTOR_TYPE_OFST   			(24)
-#define DETECTOR_TYPE_MSK   			(0x000000FF << DETECTOR_TYPE_OFST)
 
 
 #ifdef VIRTUAL // until firmware is ready ----------------------------------
->>>>>>> Stashed changes
 /* Status register */
 #define STATUS_REG            			(0x01 << MEM_MAP_SHIFT)
 

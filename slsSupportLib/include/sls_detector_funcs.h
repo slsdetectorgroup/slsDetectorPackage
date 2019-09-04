@@ -91,6 +91,7 @@ enum detFuncs{
 	F_GET_INTERRUPT_SUBFRAME,
 	F_SET_READ_N_LINES,
 	F_GET_READ_N_LINES,
+	F_SET_POSITION,
 	F_SET_SOURCE_UDP_MAC,
 	F_GET_SOURCE_UDP_MAC,
 	F_SET_SOURCE_UDP_MAC2,
@@ -273,6 +274,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
 	case F_SET_READ_N_LINES:				return "F_SET_READ_N_LINES";
 	case F_GET_READ_N_LINES:				return "F_GET_READ_N_LINES";
+	case F_SET_POSITION:					return "F_SET_POSITION";
 	case F_SET_SOURCE_UDP_MAC:				return "F_SET_SOURCE_UDP_MAC";
 	case F_GET_SOURCE_UDP_MAC:				return "F_GET_SOURCE_UDP_MAC";
 	case F_SET_SOURCE_UDP_MAC2:				return "F_SET_SOURCE_UDP_MAC2";

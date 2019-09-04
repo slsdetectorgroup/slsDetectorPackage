@@ -20,6 +20,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern udpStruct udpDetails;
 
 int firmware_compatibility = OK;
 int firmware_check_done = 0;
@@ -32,7 +33,7 @@ int virtual_stop = 0;
 #endif
 
 int highvoltage = 0;
-
+int detPos[2] = {0, 0};
 
 int isFirmwareCheckDone() {
 	return firmware_check_done;
@@ -317,13 +318,16 @@ int setHighVoltage(int val){
 }
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport) {
+int configureMAC() {
 #ifdef VIRTUAL
+	uint32_t dstip = udpDetails.dstip;
+	int dstport = udpDetails.dstport;	
+
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
-	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
-	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
+	sprintf(cDestIp, "%d.%d.%d.%d", (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff);
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, dstport));
+	if (setUDPDestinationDetails(0, cDestIp, dstport) == FAIL) {
 		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
@@ -332,6 +336,15 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	return OK;
 }
 
+
+int setDetectorPosition(int pos[]) {
+    memcpy(detPos, pos, sizeof(detPos));
+	return OK;
+}
+
+int* getDetectorPosition() {
+    return detPos;
+}
 
 int startStateMachine(){
 #ifdef VIRTUAL

@@ -1244,7 +1244,7 @@ int slsReceiverTCPIPInterface::set_udp_ip(Interface &socket) {
     if (eth == "none") {
         throw RuntimeError("Failed to get udp ethernet interface from IP " + arg.str());
     }   
-    if (eth.find('.') == std::string::npos) {
+    if (eth.find('.') != std::string::npos) {
         eth = "";
         FILE_LOG(logERROR) << "Failed to get udp ethernet interface from IP " << arg << ". Got " << eth;
     }   
@@ -1274,7 +1274,7 @@ int slsReceiverTCPIPInterface::set_udp_ip2(Interface &socket) {
     if (eth == "none") {
         throw RuntimeError("Failed to get udp ethernet interface2 from IP " + arg.str());
     }   
-    if (eth.find('.') == std::string::npos) {
+    if (eth.find('.') != std::string::npos) {
         eth = "";
         FILE_LOG(logERROR) << "Failed to get udp ethernet interface2 from IP " << arg << ". Got " << eth;
     }   

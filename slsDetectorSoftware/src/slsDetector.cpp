@@ -630,7 +630,10 @@ int slsDetector::getReadNLines() {
 
 void slsDetector::updateMultiSize(slsDetectorDefs::xy det) {
     shm()->multiSize = det;
+    int args[2] = {shm()->multiSize.y, detId};
+    sendToDetector(F_SET_POSITION, args, nullptr);
 }
+
 
 int slsDetector::setControlPort(int port_number) {
     int retval = -1;
@@ -1855,11 +1858,12 @@ void slsDetector::setDestinationUDPIP(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
     }
-    FILE_LOG(logDEBUG1) << "Setting destination udp ip to " << ip;
+    FILE_LOG(logINFO) << "Setting destination udp ip to " << ip;
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0lu);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
+        FILE_LOG(logINFO) << "Setting destination udp mac to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr); 
     }   
 }
@@ -1879,21 +1883,23 @@ void slsDetector::updateRxDestinationUDPIP() {
         sls::IpAddr ip = shm()->rxHostname;
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
-        }       
-        FILE_LOG(logDEBUG1) << "Setting destination default udp ip to " << ip;
-        setDestinationUDPIP(ip);    
-    }
+        }  
+    }     
+    FILE_LOG(logDEBUG1) << "Setting destination default udp ip to " << ip;
+    setDestinationUDPIP(ip);    
+    
 }
 
 void slsDetector::setDestinationUDPIP2(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address2");
     }
-    FILE_LOG(logDEBUG1) << "Setting destination udp ip2 to " << ip;
+    FILE_LOG(logINFO) << "Setting destination udp ip2 to " << ip;
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr); 
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0lu);
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
+        FILE_LOG(logINFO) << "Setting destination udp mac2 to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr); 
     }   
 }
@@ -1913,10 +1919,10 @@ void slsDetector::updateRxDestinationUDPIP2() {
         sls::IpAddr ip = shm()->rxHostname;
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
-        }       
-        FILE_LOG(logDEBUG1) << "Setting destination default udp ip2 to " << ip;
-        setDestinationUDPIP2(ip);    
-    }
+        }  
+    }     
+    FILE_LOG(logDEBUG1) << "Setting destination default udp ip2 to " << ip;
+    setDestinationUDPIP2(ip);       
 }
 
 void slsDetector::setDestinationUDPPort(const int port) {
@@ -2252,11 +2258,6 @@ void slsDetector::setROI(slsDetectorDefs::ROI arg) {
             updateCachedDetectorVariables();
         }
     }
-
-    // old firmware requires configuremac after setting roi
-   /* if (shm()->myDetectorType == GOTTHARD) {
-        configureMAC(); TODO: in server
-   }*/
 
     sendROItoReceiver();
 }
@@ -3245,9 +3246,6 @@ int slsDetector::enableTenGigabitEthernet(int value) {
     sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
     FILE_LOG(logDEBUG1) << "10Gbe: " << retval;
     shm()->tenGigaEnable = retval;
-   /*  if (value >= 0) { todo in server
-        configureMAC();
-   }*/
     if (shm()->useReceiverFlag) {
         retval = -1;
         value = shm()->tenGigaEnable;

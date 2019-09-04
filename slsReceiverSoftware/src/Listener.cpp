@@ -187,7 +187,7 @@ int Listener::CreateUDPSockets() {
     }
 
 	//if eth is mistaken with ip address
-	if ((*eth).find('.') == std::string::npos) {
+	if ((*eth).find('.') != std::string::npos) {
 	    (*eth) = "";
 	}
 	if (!(*eth).length()) {
@@ -244,7 +244,7 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
     *udpSocketBufferSize = s;
 
     //if eth is mistaken with ip address
-	if ((*eth).find('.') == std::string::npos) {
+	if ((*eth).find('.') != std::string::npos) {
 	    (*eth) = "";
 	}
 

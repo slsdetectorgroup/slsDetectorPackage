@@ -2583,8 +2583,11 @@ int enable_ten_giga(int file_des) {
 #else
 	// set & get
 	if ((arg == -1) || (Server_VerifyLock() == OK)) {
-		retval = enableTenGigabitEthernet(arg);
-		configure_mac();
+		if (arg > 0 && enableTenGigabitEthernet(-1) != arg) {
+			enableTenGigabitEthernet(arg);
+			configure_mac();
+		}
+		retval = enableTenGigabitEthernet(-1);
 		FILE_LOG(logDEBUG1, ("10GbE: %d\n", retval));
 		validate(arg, retval, "enable/disable 10GbE", DEC);
 	}
@@ -4365,83 +4368,6 @@ void configure_mac() {
 	FILE_LOG(logWARNING, ("Configure FAIL, not all parameters configured yet\n"));
 }
 
-int set_source_udp_mac(int file_des) {
-  	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint64_t arg = 0;
-
-	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting udp source mac: %lu\n", arg));
-
-	// only set
-	if (Server_VerifyLock() == OK) {
-		if (check_detector_idle() == OK) {
-			if (udpDetails.srcmac != arg) {
-				udpDetails.srcmac = arg;
-				configure_mac();	
-			}
-		}
-	}
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
-}
-
-
-int get_source_udp_mac(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
-	FILE_LOG(logDEBUG1, ("Getting udp source mac\n"));
-
-	// get only
-	retval = udpDetails.srcmac;
-	FILE_LOG(logDEBUG1, ("udp soure mac retval: %u\n", retval));
-
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
-}
-
-
-
-int set_source_udp_mac2(int file_des) {
-  	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint64_t arg = 0;
-
-	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting udp source mac2: %lu\n", arg));
-
-#ifndef JUNGFRAUD
-	functionNotImplemented();
-#else
-	// only set
-	if (Server_VerifyLock() == OK) {
-		if (check_detector_idle() == OK) {
-			if (udpDetails.srcmac2 != arg) {
-				udpDetails.srcmac2 = arg;
-				configure_mac();	
-			}
-		}
-	}
-#endif
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
-}
-
-int get_source_udp_mac2(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
-	FILE_LOG(logDEBUG1, ("Getting udp source mac2\n"));
-
-#ifndef JUNGFRAUD
-	functionNotImplemented();
-#else
-	// get only
-	retval = udpDetails.srcmac2;
-	FILE_LOG(logDEBUG1, ("udp soure mac2 retval: %u\n", retval));
-#endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
-}
 
 
 
@@ -4452,7 +4378,8 @@ int set_source_udp_ip(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting udp source ip: %u\n", arg));
+	arg = __builtin_bswap32(arg);
+	FILE_LOG(logINFO, ("Setting udp source ip: 0x%x\n", arg));
 
 	// only set
 	if (Server_VerifyLock() == OK) {
@@ -4474,7 +4401,8 @@ int get_source_udp_ip(int file_des) {
 
 	// get only
 	retval = udpDetails.srcip;
-	FILE_LOG(logDEBUG1, ("udp soure ip retval: %u\n", retval));
+	retval = __builtin_bswap32(retval);
+	FILE_LOG(logDEBUG1, ("udp soure ip retval: 0x%x\n", retval));
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -4489,7 +4417,8 @@ int set_source_udp_ip2(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting udp source ip2: %u\n", arg));
+	arg = __builtin_bswap32(arg);
+	FILE_LOG(logINFO, ("Setting udp source ip2: 0x%x\n", arg));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -4518,94 +4447,11 @@ int get_source_udp_ip2(int file_des) {
 #else
 	// get only
 	retval = udpDetails.srcip2;
-	FILE_LOG(logDEBUG1, ("udp soure ip2 retval: %u\n", retval));
+	retval = __builtin_bswap32(retval);
+	FILE_LOG(logDEBUG1, ("udp soure ip2 retval: 0x%x\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
-
-
-
-
-
-int set_dest_udp_mac(int file_des) {
-  	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint64_t arg = 0;
-
-	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting udp destination mac: %lu\n", arg));
-
-	// only set
-	if (Server_VerifyLock() == OK) {
-		if (check_detector_idle() == OK) {
-			if (udpDetails.dstmac != arg) {
-				udpDetails.dstmac = arg;
-				configure_mac();	
-			}
-		}
-	}
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
-}
-
-int get_dest_udp_mac(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
-	FILE_LOG(logDEBUG1, ("Getting udp destination mac\n"));
-
-	// get only
-	retval = udpDetails.dstmac;
-	FILE_LOG(logDEBUG1, ("udp destination mac retval: %u\n", retval));
-
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
-}
-
-
-
-
-int set_dest_udp_mac2(int file_des) {
-  	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint64_t arg = 0;
-
-	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting udp destination mac2: %lu\n", arg));
-
-#ifndef JUNGFRAUD
-	functionNotImplemented();
-#else
-	// only set
-	if (Server_VerifyLock() == OK) {
-		if (check_detector_idle() == OK) {
-			if (udpDetails.dstmac2 != arg) {
-				udpDetails.dstmac2 = arg;
-				configure_mac();	
-			}
-		}
-	}
-#endif
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
-}
-
-int get_dest_udp_mac2(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
-	FILE_LOG(logDEBUG1, ("Getting udp destination mac2\n"));
-	
-#ifndef JUNGFRAUD
-	functionNotImplemented();
-#else
-	// get only
-	retval = udpDetails.dstmac2;
-	FILE_LOG(logDEBUG1, ("udp destination mac2 retval: %u\n", retval));
-#endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
-}
-
-
 
 
 int set_dest_udp_ip(int file_des) {
@@ -4615,7 +4461,8 @@ int set_dest_udp_ip(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting udp destination ip: %u\n", arg));
+	arg = __builtin_bswap32(arg);
+	FILE_LOG(logINFO, ("Setting udp destination ip: 0x%x\n", arg));
 
 	// only set
 	if (Server_VerifyLock() == OK) {
@@ -4637,7 +4484,8 @@ int get_dest_udp_ip(int file_des) {
 
 	// get only
 	retval = udpDetails.dstip;
-	FILE_LOG(logDEBUG1, ("udp destination ip retval: %u\n", retval));
+	retval = __builtin_bswap32(retval);
+	FILE_LOG(logDEBUG1, ("udp destination ip retval: 0x%x\n", retval));
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -4652,7 +4500,8 @@ int set_dest_udp_ip2(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting udp destination ip2: %u\n", arg));
+	arg = __builtin_bswap32(arg);
+	FILE_LOG(logINFO, ("Setting udp destination ip2: 0x%x\n", arg));
 
 #ifndef JUNGFRAUD
 	functionNotImplemented();
@@ -4681,11 +4530,172 @@ int get_dest_udp_ip2(int file_des) {
 #else
 	// get only
 	retval = udpDetails.dstip2;
-	FILE_LOG(logDEBUG1, ("udp destination ip2 retval: %u\n", retval));
+	retval = __builtin_bswap32(retval);
+	FILE_LOG(logDEBUG1, ("udp destination ip2 retval: 0x%x\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
+
+
+
+int set_source_udp_mac(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp source mac: 0x%lx\n", arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.srcmac != arg) {
+				udpDetails.srcmac = arg;
+				configure_mac();	
+			}
+		}
+	}
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+
+int get_source_udp_mac(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp source mac\n"));
+
+	// get only
+	retval = udpDetails.srcmac;
+	FILE_LOG(logDEBUG1, ("udp soure mac retval: 0x%lx\n", retval));
+
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_source_udp_mac2(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp source mac2: 0x%lx\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.srcmac2 != arg) {
+				udpDetails.srcmac2 = arg;
+				configure_mac();	
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_source_udp_mac2(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp source mac2\n"));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// get only
+	retval = udpDetails.srcmac2;
+	FILE_LOG(logDEBUG1, ("udp soure mac2 retval: 0x%lx\n", retval));
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_dest_udp_mac(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp destination mac: 0x%lx\n", arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.dstmac != arg) {
+				udpDetails.dstmac = arg;
+				configure_mac();	
+			}
+		}
+	}
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_dest_udp_mac(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp destination mac\n"));
+
+	// get only
+	retval = udpDetails.dstmac;
+	FILE_LOG(logDEBUG1, ("udp destination mac retval: 0x%lx\n", retval));
+
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_dest_udp_mac2(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp destination mac2: 0x%lx\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.dstmac2 != arg) {
+				udpDetails.dstmac2 = arg;
+				configure_mac();	
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_dest_udp_mac2(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp destination mac2\n"));
+	
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// get only
+	retval = udpDetails.dstmac2;
+	FILE_LOG(logDEBUG1, ("udp destination mac2 retval: 0x%lx\n", retval));
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
 
 
 
@@ -4788,8 +4798,10 @@ int set_num_interfaces(int file_des) {
 	// only set
 	if (Server_VerifyLock() == OK) {
 		if (check_detector_idle() == OK) {
-			setNumberofUDPInterfaces(arg);
-			calculate_and_set_position(); // aleady configures mac
+			if (getNumberofUDPInterfaces() != arg) {
+				setNumberofUDPInterfaces(arg);
+				calculate_and_set_position(); // aleady configures mac
+			}
 		}
 	}
 #endif

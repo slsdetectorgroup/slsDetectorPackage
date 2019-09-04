@@ -747,31 +747,6 @@ class slsDetector : public virtual slsDetectorDefs {
     sls::IpAddr getSourceUDPIP2();
 
     /**
-     * Validates the format of the receiver UDP MAC address and sets it 
-     * @param mac receiver UDP MAC address
-     */
-    void setDestinationUDPMAC(const sls::MacAddr mac);
-
-    /**
-     * Returns the receiver UDP MAC address
-     * @returns the receiver UDP MAC address
-     */
-    sls::MacAddr getDestinationUDPMAC();
-
-    /**
-     * Validates the format of the receiver UDP MAC address  (bottom half) and
-     * sets it (Jungfrau only)
-     * @param mac receiver UDP MAC address (bottom half)
-     */
-    void setDestinationUDPMAC2(const sls::MacAddr mac);
-
-    /**
-     * Returns the receiver UDP MAC address (bottom half) Jungfrau only
-     * @returns the receiver UDP MAC address (bottom half)
-     */
-    sls::MacAddr getDestinationUDPMAC2();
-
-    /**
      * Validates the format of the receiver UDP IP address and sets it
      * If slsReceiver used, Gets receiver udp mac address and sends it to the detector
      * @param ip receiver UDP IP address
@@ -813,6 +788,31 @@ class slsDetector : public virtual slsDetectorDefs {
      * updates both detector and receiver
      */
     void updateRxDestinationUDPIP2();
+    
+    /**
+     * Validates the format of the receiver UDP MAC address and sets it 
+     * @param mac receiver UDP MAC address
+     */
+    void setDestinationUDPMAC(const sls::MacAddr mac);
+
+    /**
+     * Returns the receiver UDP MAC address
+     * @returns the receiver UDP MAC address
+     */
+    sls::MacAddr getDestinationUDPMAC();
+
+    /**
+     * Validates the format of the receiver UDP MAC address  (bottom half) and
+     * sets it (Jungfrau only)
+     * @param mac receiver UDP MAC address (bottom half)
+     */
+    void setDestinationUDPMAC2(const sls::MacAddr mac);
+
+    /**
+     * Returns the receiver UDP MAC address (bottom half) Jungfrau only
+     * @returns the receiver UDP MAC address (bottom half)
+     */
+    sls::MacAddr getDestinationUDPMAC2();
 
     /**
      * Sets the receiver UDP port\sa sharedSlsDetector

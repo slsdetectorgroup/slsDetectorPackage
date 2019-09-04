@@ -1759,10 +1759,10 @@ std::string slsDetector::getReceiverHostname() const {
 }
 
 void slsDetector::setSourceUDPMAC(const sls::MacAddr mac) {
+    FILE_LOG(logDEBUG1) << "Setting source udp mac to " << mac;
     if (mac == 0) {
         throw RuntimeError("Invalid source udp mac address");
     }
-    FILE_LOG(logDEBUG1) << "Setting source udp mac to " << mac;
     sendToDetector(F_SET_SOURCE_UDP_MAC, mac, nullptr); 
 }
 
@@ -1775,10 +1775,10 @@ sls::MacAddr slsDetector::getSourceUDPMAC() {
 }
 
 void slsDetector::setSourceUDPMAC2(const sls::MacAddr mac) {
+    FILE_LOG(logDEBUG1) << "Setting source udp mac2 to " << mac;
     if (mac == 0) {
         throw RuntimeError("Invalid source udp mac address2");
     }
-    FILE_LOG(logDEBUG1) << "Setting source udp mac2 to " << mac;
     sendToDetector(F_SET_SOURCE_UDP_MAC2, mac, nullptr); 
 }
 
@@ -1791,10 +1791,11 @@ sls::MacAddr slsDetector::getSourceUDPMAC2() {
 }
 
 void slsDetector::setSourceUDPIP(const IpAddr ip) {
+    FILE_LOG(logDEBUG1) << "Setting source udp ip to " << ip;
     if (ip == 0) {
         throw RuntimeError("Invalid source udp ip address");
     }
-    FILE_LOG(logDEBUG1) << "Setting source udp ip to " << ip;
+
     sendToDetector(F_SET_SOURCE_UDP_IP, ip, nullptr); 
 }
 
@@ -1807,10 +1808,11 @@ sls::IpAddr slsDetector::getSourceUDPIP() {
 }
 
 void slsDetector::setSourceUDPIP2(const IpAddr ip) {
+    FILE_LOG(logDEBUG1) << "Setting source udp ip2 to " << ip;
     if (ip == 0) {
         throw RuntimeError("Invalid source udp ip address2");
     }
-    FILE_LOG(logDEBUG1) << "Setting source udp ip2 to " << ip;
+
     sendToDetector(F_SET_SOURCE_UDP_IP2, ip, nullptr); 
 }
 
@@ -1823,15 +1825,15 @@ sls::IpAddr slsDetector::getSourceUDPIP2() {
 }
 
 void slsDetector::setDestinationUDPIP(const IpAddr ip) {
+    FILE_LOG(logDEBUG1) << "Setting destination udp ip to " << ip;
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
     }
-    FILE_LOG(logINFO) << "Setting destination udp ip to " << ip;
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0lu);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
-        FILE_LOG(logINFO) << "Setting destination udp mac to " << retval;
+        FILE_LOG(logDEBUG1) << "Setting destination udp mac to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr); 
     }   
 }
@@ -1848,25 +1850,26 @@ void slsDetector::updateRxDestinationUDPIP() {
     auto ip = getDestinationUDPIP();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
-        sls::IpAddr ip = shm()->rxHostname;
+        ip = shm()->rxHostname;
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  
+        FILE_LOG(logDEBUG1) << "Setting destination default udp ip to " << ip;
     }     
-    FILE_LOG(logDEBUG1) << "Setting destination default udp ip to " << ip;
     setDestinationUDPIP(ip);    
 }
 
 void slsDetector::setDestinationUDPIP2(const IpAddr ip) {
+    FILE_LOG(logDEBUG1) << "Setting destination udp ip2 to " << ip;
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address2");
     }
-    FILE_LOG(logINFO) << "Setting destination udp ip2 to " << ip;
+
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr); 
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0lu);
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
-        FILE_LOG(logINFO) << "Setting destination udp mac2 to " << retval;
+        FILE_LOG(logDEBUG1) << "Setting destination udp mac2 to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr); 
     }   
 }
@@ -1883,20 +1886,21 @@ void slsDetector::updateRxDestinationUDPIP2() {
     auto ip = getDestinationUDPIP2();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
-        sls::IpAddr ip = shm()->rxHostname;
+        ip = shm()->rxHostname;
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  
+        FILE_LOG(logDEBUG1) << "Setting destination default udp ip2 to " << ip;    
     }     
-    FILE_LOG(logDEBUG1) << "Setting destination default udp ip2 to " << ip;
     setDestinationUDPIP2(ip);       
 }
 
 void slsDetector::setDestinationUDPMAC(const MacAddr mac) {
+    FILE_LOG(logDEBUG1) << "Setting destination udp mac to " << mac;
     if (mac == 0) {
         throw RuntimeError("Invalid destination udp mac address");
     }
-    FILE_LOG(logDEBUG1) << "Setting destination udp mac to " << mac;
+
     sendToDetector(F_SET_DEST_UDP_MAC, mac, nullptr); 
 }
 
@@ -1909,10 +1913,11 @@ sls::MacAddr slsDetector::getDestinationUDPMAC() {
 }
 
 void slsDetector::setDestinationUDPMAC2(const MacAddr mac) {
+    FILE_LOG(logDEBUG1) << "Setting destination udp mac2 to " << mac;
     if (mac == 0) {
         throw RuntimeError("Invalid desinaion udp mac address2");
     }
-    FILE_LOG(logDEBUG1) << "Setting destination udp mac2 to " << mac;
+
     sendToDetector(F_SET_DEST_UDP_MAC2, mac, nullptr); 
 }
 
@@ -1936,7 +1941,7 @@ int slsDetector::getDestinationUDPPort() {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting destination udp port";
     sendToDetector(F_GET_DEST_UDP_PORT, nullptr, retval);
-    FILE_LOG(logDEBUG1) << "Destination udp ip: " << retval;
+    FILE_LOG(logDEBUG1) << "Destination udp port: " << retval;
 
     return retval;
 }
@@ -1953,7 +1958,7 @@ int slsDetector::getDestinationUDPPort2() {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting destination udp port2";
     sendToDetector(F_GET_DEST_UDP_PORT2, nullptr, retval);
-    FILE_LOG(logDEBUG1) << "Destination udp ip2: " << retval;
+    FILE_LOG(logDEBUG1) << "Destination udp port2: " << retval;
     return retval;
 }
 

@@ -4396,7 +4396,7 @@ int set_source_udp_ip(int file_des) {
 int get_source_udp_ip(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	uint32_t retval = -1;
 	FILE_LOG(logDEBUG1, ("Getting udp source ip\n"));
 
 	// get only
@@ -4439,7 +4439,7 @@ int set_source_udp_ip2(int file_des) {
 int get_source_udp_ip2(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	uint32_t retval = -1;
 	FILE_LOG(logDEBUG1, ("Getting udp source ip2\n"));
 	
 #ifndef JUNGFRAUD
@@ -4479,7 +4479,7 @@ int set_dest_udp_ip(int file_des) {
 int get_dest_udp_ip(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	uint32_t retval = -1;
 	FILE_LOG(logDEBUG1, ("Getting destination ip\n"));
 
 	// get only
@@ -4522,7 +4522,7 @@ int set_dest_udp_ip2(int file_des) {
 int get_dest_udp_ip2(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	uint32_t retval = -1;
 	FILE_LOG(logDEBUG1, ("Getting udp destination ip2\n"));
 	
 #ifndef JUNGFRAUD
@@ -4724,12 +4724,12 @@ int set_dest_udp_port(int file_des) {
 int get_dest_udp_port(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	int retval = -1;
 	FILE_LOG(logDEBUG1, ("Getting destination port\n"));
 
 	// get only
 	retval = udpDetails.dstport;
-	FILE_LOG(logDEBUG1, ("udp destination port retval: %u\n", retval));
+	FILE_LOG(logDEBUG, ("udp destination port retval: %u\n", retval));
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -4746,7 +4746,7 @@ int set_dest_udp_port2(int file_des) {
 	return printSocketReadError();
 	FILE_LOG(logINFO, ("Setting udp destination port2: %u\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(EIGERD)
 	functionNotImplemented();
 #else
 	// only set
@@ -4765,10 +4765,10 @@ int set_dest_udp_port2(int file_des) {
 int get_dest_udp_port2(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	int retval = -1;
 	FILE_LOG(logDEBUG1, ("Getting destination port2\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(EIGERD)
 	functionNotImplemented();
 #else
 	// get only
@@ -4812,16 +4812,16 @@ int set_num_interfaces(int file_des) {
 int get_num_interfaces(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	int retval = -1;
 	FILE_LOG(logDEBUG1, ("Getting number of udp interfaces\n"));
 
 #ifndef JUNGFRAUD
-	functionNotImplemented();
+	retval = 1;
 #else
 	// get only
 	retval = getNumberofUDPInterfaces();
-	FILE_LOG(logDEBUG1, ("Number of udp interfaces retval: %u\n", retval));
 #endif
+	FILE_LOG(logDEBUG1, ("Number of udp interfaces retval: %u\n", retval));
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
@@ -4853,7 +4853,7 @@ int set_interface_sel(int file_des) {
 int get_interface_sel(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	uint64_t retval = -1;
+	int retval = -1;
 	FILE_LOG(logDEBUG1, ("Getting selected interface\n"));
 
 #ifndef JUNGFRAUD

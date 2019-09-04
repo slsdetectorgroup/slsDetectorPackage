@@ -934,7 +934,7 @@ enum detectorSettings getSettings() {
 /* parameters - threshold */
 
 int getThresholdEnergy() {
-	FILE_LOG(logINFO, ("Getting Threshold energy\n"));
+	FILE_LOG(logDEBUG1, ("Getting Threshold energy\n"));
 	return eiger_photonenergy;
 }
 

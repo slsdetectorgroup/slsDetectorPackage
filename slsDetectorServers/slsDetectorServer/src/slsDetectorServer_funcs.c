@@ -1659,6 +1659,20 @@ int start_and_read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
+#ifdef EIGERD
+		// check for hardware mac and hardware ip
+		if (udpDetails.srcmac != getDetectorMAC()) {
+			ret = FAIL;
+			sprintf(mess, "Invalid udp source mac address for this detector. Must be same as hardware detector mac address \n");
+			FILE_LOG(logERROR,(mess));
+		}
+		else if (!enableTenGigabitEthernet(-1) && (udpDetails.srcip != getDetectorIP())) {
+			ret = FAIL;
+			sprintf(mess, "Invalid udp source ip address for this detector. Must be same as hardware detector ip address in 1G readout mode \n");
+			FILE_LOG(logERROR,(mess));			
+		}
+		else
+#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -2583,8 +2597,17 @@ int enable_ten_giga(int file_des) {
 #else
 	// set & get
 	if ((arg == -1) || (Server_VerifyLock() == OK)) {
-		if (arg > 0 && enableTenGigabitEthernet(-1) != arg) {
+		if (arg >= 0 && enableTenGigabitEthernet(-1) != arg) {
+			uint64_t oldhardwaremac = getDetectorMAC();
 			enableTenGigabitEthernet(arg);
+			if (udpDetails.srcmac == oldhardwaremac) {
+				FILE_LOG(logINFOBLUE, ("Updating udp source mac\n"));
+				udpDetails.srcmac = getDetectorMAC();
+			}
+			if (arg == 0) {
+				FILE_LOG(logINFOBLUE, ("Updating udp source ip\n"));
+				udpDetails.srcip = getDetectorIP();
+			}
 			configure_mac();
 		}
 		retval = enableTenGigabitEthernet(-1);

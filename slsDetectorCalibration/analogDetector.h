@@ -390,15 +390,21 @@ template <class dataType> class analogDetector {
        \returns pedestal rms
     */
     virtual double getPedestalRMS(int ix, int iy){
-      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
-	return stat[iy][ix].getPedestalRMS();
-      else return -1;
+      double g=1;
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
+	if (gmap) {
+	  g=gmap[iy*nx+ix];
+	  if (g==0) g=-1.;
+	}
+	return stat[iy][ix].getPedestalRMS()/g;//divide by gain?
+      }
+      return -1;
     };
 
      virtual int getNumpedestals(int ix, int iy){
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
 	return stat[iy][ix].getNumpedestals();
-      else return -1;
+      return -1;
     };
     /**
        gets  pedestal (and common mode)
@@ -410,10 +416,10 @@ template <class dataType> class analogDetector {
     virtual double* getPedestal(double *ped){
       if (ped==NULL)
 	ped=new double[nx*ny];
-	for (int iy=0; iy<ny; iy++) {
-      for (int ix=0; ix<nx; ix++) {
+      for (int iy=0; iy<ny; iy++) {
+	for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
-	  //cout << ped[iy*nx+ix] << " " ;
+	    //cout << ped[iy*nx+ix] << " " ;
 	}
       }
       return ped;

@@ -19,9 +19,11 @@ enum interfaceType {OUTER, INNER};
 int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
 void 		basictests();
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 int 		checkType();
 int 		testFpga();
+#endif
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		testBus();
 #endif
 

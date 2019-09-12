@@ -58,11 +58,59 @@ void basictests() {
     return;
 #else
 	// faking it
-    firmware_check_done = 1;
+    //firmware_check_done = 1;
+	FILE_LOG(logINFOBLUE, ("******** Mythen3 Server: do the checks *****************\n"));
+	if (mapCSP0() == FAIL) {
+    	strcpy(firmware_message,
+				"Could not map to memory. Dangerous to continue.\n");
+		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+    }
+	// does check only if flag is 0 (by default), set by command line
+	if ((!debugflag) && ((testFpga() == FAIL))) {
+		strcpy(firmware_message,
+				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
+		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+	}
+
 #endif
 }
 
+int checkType() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	if (type != MYTHEN3){
+			FILE_LOG(logERROR, ("This is not a Mythen3 Server (read %d, expected %d)\n", type, MYTHEN3));
+			return FAIL;
+		}
 
+	return OK;
+}
+
+int testFpga() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+	FILE_LOG(logINFO, ("Testing FPGA:\n"));
+
+	//fixed pattern
+	int ret = OK;
+	volatile u_int32_t val = bus_r(FIX_PATT_REG);
+	if (val == FIX_PATT_VAL) {
+		FILE_LOG(logINFO, ("Fixed pattern: successful match 0x%08x\n",val));
+	} else {
+		FILE_LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
+		ret = FAIL;
+	}
+	return ret;
+}
 
 /* Ids */
 
@@ -174,15 +222,19 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Mythen3 module \n")); 
 
+#ifndef VIRTUAL
 	// hv
-   DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
+   	DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
+#endif
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 	
 	// Initialization of acquistion parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
+#ifdef VIRTUAL
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
+#endif
 }
 
 
@@ -206,7 +258,7 @@ int getSpeed(enum speedVariable ind) {
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	int64_t retval = -1;
-#ifdef VIRTUAL
+
 	switch(ind){
 
 	case FRAME_NUMBER: // defined in sls_detector_defs.h (general)
@@ -216,7 +268,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		retval = set64BitReg(val,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG); // defined in my RegisterDefs.h
 		FILE_LOG(logDEBUG1, ("Getting #frames: %lld\n", (long long int)retval));
 		break;
-
+#ifdef VIRTUAL
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting exptime: %lldns\n", (long long int)val));
@@ -234,6 +286,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * TEMP_CLK);
 		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
 		break;
+#endif
 	case CYCLES_NUMBER:
 		if(val >= 0) {
 			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
@@ -246,7 +299,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
 		break;
 	}
-#endif
+
 	return retval;
 
 }

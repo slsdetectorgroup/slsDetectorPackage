@@ -23,6 +23,7 @@
 
 
 /* Enums */
+enum CLKINDEX   {RUN_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
 enum DACINDEX   {VIBIASSH, VTRIM, VIPRE, VRFSHNPOL, VTH1, VIPREOUT, VRF, VTH2, CAS, CASSH, VPL, VDCSH, VICIN, VICINSH, VICBIAS, VPH, VTH3, VRFSH};
 #define DEFAULT_DAC_VALS    {1200,  /* vIbiasSh */  \
                             2300,   /* vTrim */     \
@@ -45,3 +46,5 @@ enum DACINDEX   {VIBIASSH, VTRIM, VIPRE, VRFSHNPOL, VTH1, VIPREOUT, VRF, VTH2, C
                             };
 
 
+/* Defines in the Firmware */
+#define MAX_PATTERN_LENGTH  		(0x8192) // maximum number of words (64bit)

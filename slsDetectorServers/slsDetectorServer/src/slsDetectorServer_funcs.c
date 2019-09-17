@@ -2608,7 +2608,7 @@ int set_pattern_word(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT64) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
 	int addr = (int)args[0];
@@ -2644,7 +2644,7 @@ int set_pattern_loop(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -2695,7 +2695,7 @@ int set_pattern_wait_addr(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -2737,7 +2737,7 @@ int set_pattern_wait_time(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = (int)args[0];

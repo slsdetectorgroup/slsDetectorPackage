@@ -428,10 +428,10 @@ class DetectorPythonInterface {
         return det.getADC(adc, mod_id);
     }
 
-    std::vector<std::string> getReadoutFlags();
+    // std::vector<std::string> getReadoutFlags();
 
-    // note singular
-    void setReadoutFlag(const std::string flag_name);
+    // // note singular
+    // void setReadoutFlag(const std::string flag_name);
 
     // name to enum transltion of dac
     int getDacVthreshold() {
@@ -900,75 +900,75 @@ slsDetectorDefs::dacIndex DetectorPythonInterface::dacNameToEnum(std::string dac
     //                              overflow of single subframes */
     // };
 
-std::vector<std::string> DetectorPythonInterface::getReadoutFlags() {
-    std::vector<std::string> flags;
-    auto r = det.setReadOutFlags();
-    if (r & slsDetectorDefs::readOutFlags::STORE_IN_RAM)
-        flags.push_back("storeinram");
-    if (r & slsDetectorDefs::readOutFlags::READ_HITS)
-        flags.push_back("readhits");  
-    if (r & slsDetectorDefs::readOutFlags::ZERO_COMPRESSION)
-        flags.push_back("zerocompression");     
-    if (r & slsDetectorDefs::readOutFlags::PUMP_PROBE_MODE)
-        flags.push_back("pumpprobe");  
-    if (r & slsDetectorDefs::readOutFlags::BACKGROUND_CORRECTIONS)
-        flags.push_back("backgroundcorrections");  
-    if (r & slsDetectorDefs::readOutFlags::TOT_MODE)
-        flags.push_back("tot");
-    if (r & slsDetectorDefs::readOutFlags::CONTINOUS_RO)
-        flags.push_back("continous");
-    if (r & slsDetectorDefs::readOutFlags::PARALLEL)
-        flags.push_back("parallel");
-    if (r & slsDetectorDefs::readOutFlags::NONPARALLEL)
-        flags.push_back("nonparallel");
-    if (r & slsDetectorDefs::readOutFlags::DIGITAL_ONLY)
-        flags.push_back("digital");
-    if (r & slsDetectorDefs::readOutFlags::ANALOG_AND_DIGITAL)
-        flags.push_back("analog_digital");
-    if (r & slsDetectorDefs::readOutFlags::DUT_CLK)
-        flags.push_back("dutclk");
-    if (r & slsDetectorDefs::readOutFlags::NOOVERFLOW)
-        flags.push_back("nooverflow");
-    if (r & slsDetectorDefs::readOutFlags::SHOW_OVERFLOW)
-        flags.push_back("overflow");
-    return flags;
-}
+// std::vector<std::string> DetectorPythonInterface::getReadoutFlags() {
+//     std::vector<std::string> flags;
+//     auto r = det.setReadOutFlags();
+//     if (r & slsDetectorDefs::readOutFlags::STORE_IN_RAM)
+//         flags.push_back("storeinram");
+//     if (r & slsDetectorDefs::readOutFlags::READ_HITS)
+//         flags.push_back("readhits");  
+//     if (r & slsDetectorDefs::readOutFlags::ZERO_COMPRESSION)
+//         flags.push_back("zerocompression");     
+//     if (r & slsDetectorDefs::readOutFlags::PUMP_PROBE_MODE)
+//         flags.push_back("pumpprobe");  
+//     if (r & slsDetectorDefs::readOutFlags::BACKGROUND_CORRECTIONS)
+//         flags.push_back("backgroundcorrections");  
+//     if (r & slsDetectorDefs::readOutFlags::TOT_MODE)
+//         flags.push_back("tot");
+//     if (r & slsDetectorDefs::readOutFlags::CONTINOUS_RO)
+//         flags.push_back("continous");
+//     if (r & slsDetectorDefs::readOutFlags::PARALLEL)
+//         flags.push_back("parallel");
+//     if (r & slsDetectorDefs::readOutFlags::NONPARALLEL)
+//         flags.push_back("nonparallel");
+//     if (r & slsDetectorDefs::readOutFlags::DIGITAL_ONLY)
+//         flags.push_back("digital");
+//     if (r & slsDetectorDefs::readOutFlags::ANALOG_AND_DIGITAL)
+//         flags.push_back("analog_digital");
+//     if (r & slsDetectorDefs::readOutFlags::DUT_CLK)
+//         flags.push_back("dutclk");
+//     if (r & slsDetectorDefs::readOutFlags::NOOVERFLOW)
+//         flags.push_back("nooverflow");
+//     if (r & slsDetectorDefs::readOutFlags::SHOW_OVERFLOW)
+//         flags.push_back("overflow");
+//     return flags;
+// }
 
-// note singular
-void DetectorPythonInterface::setReadoutFlag(const std::string flag_name) {
-    if (flag_name == "none")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::NORMAL_READOUT);
-    else if (flag_name == "storeinram")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::STORE_IN_RAM);
-    else if (flag_name == "readhits")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::READ_HITS);
-    else if (flag_name == "zerocompression")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::ZERO_COMPRESSION);
-    else if (flag_name == "pumpprobe")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::PUMP_PROBE_MODE);
-    else if (flag_name == "backgroundcorrections")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::BACKGROUND_CORRECTIONS);
-    else if (flag_name == "tot")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::TOT_MODE);
-    else if (flag_name == "continous")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::CONTINOUS_RO);
-    else if (flag_name == "parallel")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::PARALLEL);
-    else if (flag_name == "nonparallel")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::NONPARALLEL);
-    else if (flag_name == "digital")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::DIGITAL_ONLY);
-    else if (flag_name == "analog_digital")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::ANALOG_AND_DIGITAL);
-    else if (flag_name == "dutclk")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::DUT_CLK);
-    else if (flag_name == "nooverflow")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::NOOVERFLOW);
-    else if (flag_name == "overflow")
-        det.setReadOutFlags(slsDetectorDefs::readOutFlags::SHOW_OVERFLOW);
-    else
-        throw std::runtime_error("Flag name not recognized");
-}
+// // note singular
+// void DetectorPythonInterface::setReadoutFlag(const std::string flag_name) {
+//     if (flag_name == "none")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::NORMAL_READOUT);
+//     else if (flag_name == "storeinram")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::STORE_IN_RAM);
+//     else if (flag_name == "readhits")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::READ_HITS);
+//     else if (flag_name == "zerocompression")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::ZERO_COMPRESSION);
+//     else if (flag_name == "pumpprobe")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::PUMP_PROBE_MODE);
+//     else if (flag_name == "backgroundcorrections")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::BACKGROUND_CORRECTIONS);
+//     else if (flag_name == "tot")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::TOT_MODE);
+//     else if (flag_name == "continous")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::CONTINOUS_RO);
+//     else if (flag_name == "parallel")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::PARALLEL);
+//     else if (flag_name == "nonparallel")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::NONPARALLEL);
+//     else if (flag_name == "digital")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::DIGITAL_ONLY);
+//     else if (flag_name == "analog_digital")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::ANALOG_AND_DIGITAL);
+//     else if (flag_name == "dutclk")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::DUT_CLK);
+//     else if (flag_name == "nooverflow")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::NOOVERFLOW);
+//     else if (flag_name == "overflow")
+//         det.setReadOutFlags(slsDetectorDefs::readOutFlags::SHOW_OVERFLOW);
+//     else
+//         throw std::runtime_error("Flag name not recognized");
+// }
 
 std::vector<double> DetectorPythonInterface::getRateCorrection() {
     std::vector<double> rate_corr;

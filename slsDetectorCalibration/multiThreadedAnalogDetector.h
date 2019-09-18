@@ -100,7 +100,10 @@ public:
 
    /** Returns true if the thread was successfully started, false if there was an error starting the thread */
    virtual bool StartThread()
-   { stop=0; 
+   { stop=0;  
+     cout << "Detector number " << det->getId() << endl; 
+     cout << "common mode is " << det->getCommonModeSubtraction()<< endl;
+     cout << "ghos summation is " << det->getGhostSummation()<< endl;
      return (pthread_create(&_thread, NULL, processData, this) == 0);
    }
 

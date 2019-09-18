@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   double etamin=-1, etamax=2;
 	// help
   if (argc < 3 ) {
-    cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number] [nthreads] [nsubpix] [etafile]\n");
+    cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number] [nthreads] [nsubpix] [gainmap]  [etafile]\n");
     return EXIT_FAILURE;  
   }
   
@@ -90,12 +90,18 @@ int main(int argc, char *argv[]) {
     nSubPixels=atoi(argv[6]);
   cout << "Number of subpixels is: " << nSubPixels << endl;
   
-  char *etafname=NULL;
+
+  char *gainfname=NULL;
   if (argc>7) {
-    etafname=argv[7];
-    cout << "Eta file name is: " << etafname << endl;
+    gainfname=argv[7];
+    cout << "Gain map file name is: " << gainfname << endl;
   }
 
+  char *etafname=NULL;
+  if (argc>8) {
+    etafname=argv[8];
+    cout << "Eta file name is: " << etafname << endl;
+  }
 
   //slsDetectorData *det=new moench03T1ZmqDataNew(); 
   moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
@@ -118,7 +124,29 @@ int main(int argc, char *argv[]) {
   moench03CommonMode *cm=new moench03CommonMode(ncol_cm);
   moench03GhostSummation *gs=new moench03GhostSummation(det, xt_ghost);
   double *gainmap=NULL;
-   
+  float *gm;
+
+
+  if (gainfname) {
+    gm=ReadFromTiff(gainfname, npy, npx);
+    if (gm) {
+      gmap=new double[npx*npy];
+      for (int i=0; i<npx*npy; i++) {
+	gmap[i]=gm[i];
+      }
+      delete [] gm;
+    } else
+      cout << "Could not open gain map " << gainfname << endl;
+  }
+
+
+
+
+
+
+
+
+
   //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
 #ifndef INTERP
   singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, cm, 1000, 10, -1, -1, gainmap, gs);

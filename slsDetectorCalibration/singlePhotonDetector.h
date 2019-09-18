@@ -592,7 +592,7 @@ int *getClusters(char *data,  int *ph=NULL) {
       switch(fMode) {
       case ePedestal:
 	//cout <<"spc add to ped " << endl;
-	addToPedestal(data);
+	addToPedestal(data,1);
 	break;
       default:
 	switch (dMode) {

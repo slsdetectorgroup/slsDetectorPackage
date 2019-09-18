@@ -2,6 +2,10 @@
 #include <iostream>
 #define CORR
 
+#define C_GHOST 0.0004
+
+#define CM_ROWS 50
+
 //#define VERSION_V1
 
 //#include "moench03T1ZmqData.h"
@@ -48,7 +52,7 @@ int main(int argc, char *argv[]) {
 
 
   if (argc<4) {
-    cout << "Usage is " << argv[0] << "indir outdir fname [runmin] [runmax] [pedfile] [threshold] [nframes] [xmin xmax ymin ymax]" << endl;
+    cout << "Usage is " << argv[0] << "indir outdir fname [runmin] [runmax] [pedfile] [threshold] [nframes] [xmin xmax ymin ymax] [gainmap]" << endl;
     cout << "threshold <0 means analog; threshold=0 means cluster finder; threshold>0 means photon counting" << endl;
     cout << "nframes <0 means sum everything; nframes=0 means one file per run; nframes>0 means one file every nframes" << endl;
     return 1;
@@ -56,7 +60,7 @@ int main(int argc, char *argv[]) {
 
   int p=10000;
   int fifosize=1000;
-  int nthreads=1;
+  int nthreads=10;
   int nsubpix=25;
   int etabins=nsubpix*10;
   double etamin=-1, etamax=2;
@@ -92,32 +96,24 @@ int main(int argc, char *argv[]) {
 
   decoder->getDetectorSize(nx,ny);
 
-  int ncol_cm=20;
-  double xt_ghost=0.0004;
+  int ncol_cm=CM_ROWS;
+  double xt_ghost=C_GHOST;
   moench03CommonMode *cm=NULL;
   moench03GhostSummation *gs;
   double *gainmap=NULL;
-#ifdef CORR
-  cout << "Applying common mode and ghost correction " << endl;
-  cm=new moench03CommonMode(ncol_cm);
- gs=new moench03GhostSummation(decoder, xt_ghost);
-#endif
-  
-  singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, cm, nped, 200, -1, -1, gainmap, gs);
+  float *gm;
+
+
 
   int size = 327680;////atoi(argv[3]);
   
   int* image;
 	//int* image =new int[327680/sizeof(int)];
-  filter->newDataSet();
-
 
   int ff, np;
-  int dsize=decoder->getDataSize();
   //cout << " data size is " << dsize;
   
 
-  char data[dsize];
 
   ifstream filebin;
   char *indir=argv[1];
@@ -144,7 +140,7 @@ int main(int argc, char *argv[]) {
   double thr1=1;
 
   if (argc>=8) {
-    thr=atoi(argv[7]);
+    thr=atof(argv[7]);
   }
   
 
@@ -162,6 +158,12 @@ int main(int argc, char *argv[]) {
   }
 
   
+  char *gainfname=NULL;
+  if (argc>13) {
+    gainfname=argv[13];
+    cout << "Gain map file name is: " << gainfname << endl;
+  }
+
   
 
 
@@ -181,13 +183,59 @@ int main(int argc, char *argv[]) {
   cout << "runmax is " << runmax << endl;
   if (pedfile)
     cout << "pedestal file is " << pedfile << endl;
+ if (thr>0) 
+    cout << "threshold is " << thr << endl;
+ 
+ uint32 nnx, nny;
+ double *gmap;
+
+  // if (gainfname) {
+  //   gm=ReadFromTiff(gainfname, nny, nnx);
+  //   if (gm && nnx==nx && nny==ny) {
+  //     gmap=new double[nx*ny];
+  //     for (int i=0; i<nx*ny; i++) {
+  // 	gmap[i]=gm[i];
+  //     }
+  //     delete gm;
+  //   } else
+  //     cout << "Could not open gain map " << gainfname << endl;
+  // }
+
+#ifdef CORR
+ cout << "Applying common mode  " << ncol_cm << endl;
+  cm=new moench03CommonMode(ncol_cm);
+  
+
+  cout << "Applying ghost corrections " << xt_ghost << endl;
+  gs=new moench03GhostSummation(decoder, xt_ghost);
+#endif
+
+  singlePhotonDetector *filter=new singlePhotonDetector(decoder,csize, nsigma, 1, cm, nped, 200, -1, -1, gainmap, gs);
+
+  if (gainfname) {
+
+    if (filter->readGainMap(gainfname))
+      cout << "using gain map " << gainfname << endl;
+    else
+      cout << "Could not open gain map " << gainfname << endl;
+  } else
+    thr=0.15*thr;
+  filter->newDataSet();
+  int dsize=decoder->getDataSize();
+
+
+  char data[dsize];
+
+
+
+
+
   //#ifndef ANALOG
   if (thr>0) {
     cout << "threshold is " << thr << endl;
-    
-#ifndef ANALOG
+    //#ifndef ANALOG
     filter->setThreshold(thr);
-#endif
+    //#endif
       cf=0;
 
   } else
@@ -215,7 +263,7 @@ int main(int argc, char *argv[]) {
       mt->setDetectorMode(eAnalog);
       cout << "Analog!" << endl;
       cf=0;
-      thr1=thr;
+      //thr1=thr;
 #endif  
       //  }
   
@@ -226,45 +274,67 @@ int main(int argc, char *argv[]) {
   //  cout << "mt " << endl;
 
   int ifr=0;
- 
 
+  double ped[nx*ny], *ped1;
 
 
   if (pedfile) {
-    cout << "PEDESTAL " ;
-    sprintf(fname,"%s.raw",pedfile);
-    cout << fname << endl ;
-    sprintf(imgfname,"%s/pedestals.tiff",outdir,fformat);
-    std::time(&end_time);
-    cout << "aaa" << std::ctime(&end_time) <<   endl;
 
+    cout << "PEDESTAL " << endl;
+    sprintf(imgfname,"%s/pedestals.tiff",outdir);
 
-    mt->setFrameMode(ePedestal);
-      // sprintf(fn,fformat,irun);
-    filebin.open((const char *)(fname), ios::in | ios::binary);
-    //      //open file
-    if (filebin.is_open()){
-      ff=-1;
-      while (decoder->readNextFrame(filebin, ff, np,buff)) {
-	if (np==40) {
-	  mt->pushData(buff);
-	  mt->nextThread();
-	  mt->popFree(buff);
-	  ifr++;
-	  if (ifr%100==0) 
-	    cout << ifr << " " << ff << " " << np << endl;
-	} else
-	  cout << ifr << " " << ff << " " << np << endl;
-	ff=-1;
-      }
-      filebin.close();	 
-      while (mt->isBusy()) {;}
-      mt->writePedestal(imgfname);
+    if (string(pedfile).find(".tif")==std::string::npos){
+      sprintf(fname,"%s.raw",pedfile);
+      cout << fname << endl ;
       std::time(&end_time);
-      cout << std::ctime(&end_time) <<   endl;
+      cout << "aaa" << std::ctime(&end_time) <<   endl;
       
+      
+      mt->setFrameMode(ePedestal);
+      // sprintf(fn,fformat,irun);
+      filebin.open((const char *)(fname), ios::in | ios::binary);
+      //      //open file
+      if (filebin.is_open()){
+	ff=-1;
+	while (decoder->readNextFrame(filebin, ff, np,buff)) {
+	  if (np==40) {
+	    mt->pushData(buff);
+	    mt->nextThread();
+	    mt->popFree(buff);
+	    ifr++;
+	    if (ifr%100==0) 
+	      cout << ifr << " " << ff << " " << np << endl;
+	  } else
+	    cout << ifr << " " << ff << " " << np << endl;
+	  ff=-1;
+	}
+	filebin.close();	 
+	while (mt->isBusy()) {;}
+	
       } else 
 	cout << "Could not open pedestal file "<< fname << " for reading " << endl;
+    } else {
+      float *pp=ReadFromTiff(pedfile, nny, nnx);
+      if (pp && nnx==nx && nny==ny) {
+	for (int i=0; i<nx*ny; i++) {
+	  ped[i]=pp[i];
+	}
+	delete [] pp;
+	mt->setPedestal(ped);
+	// ped1=mt->getPedestal();
+	
+	// for (int i=0; i<nx*ny; i++) {
+
+	//   cout << ped[i]<<"/"<<ped1[i] << " " ;
+	// }
+	cout << "Pedestal set from tiff file " << pedfile << endl;
+      } else {
+	cout << "Could not open pedestal tiff file "<< pedfile << " for reading " << endl;
+      }
+    }
+    mt->writePedestal(imgfname);
+    std::time(&end_time);
+    cout << std::ctime(&end_time) <<   endl;
   }
   
 
@@ -318,6 +388,10 @@ int main(int argc, char *argv[]) {
 	  mt->nextThread();
 	  // // 		//	cout << " " << (void*)buff;
 	  mt->popFree(buff);
+
+	  while (mt->isBusy()) {;}
+
+
 	  ifr++;
 	  if (ifr%100==0) cout << ifr << " " << ff << endl;
 	  if (nframes>0) {

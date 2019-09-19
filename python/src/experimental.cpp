@@ -8,24 +8,39 @@
 #include "typecaster.h"
 namespace py = pybind11;
 void init_experimental(py::module &m) {
-    // Experimental API to use the multi directly and inherit from to reduce
-    // code duplication need to investigate how to handle documentation
     using sls::Detector;
     using sls::Positions;
-    py::class_<Detector> multiDetectorApi(m, "multiDetectorApi");
-    multiDetectorApi
+    py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
+    CppDetectorApi
         .def(py::init<int>())
+
+        // Configuration
+        .def("free", &Detector::freeSharedMemory)
+        .def("freeSharedMemory", &Detector::freeSharedMemory)
+        .def("loadConfig", &Detector::loadConfig)
+        .def("loadParameters", &Detector::loadParameters)
+        .def("getHostname", &Detector::getHostname, py::arg() = Positions{})
+        .def("setHostname", &Detector::setHostname)
+        .def("getShmId", &Detector::getShmId)
+        .def("getFirmwareVersion", &Detector::getFirmwareVersion,
+             py::arg() = Positions{})
+        .def("getDetectorServerVersion", &Detector::getDetectorServerVersion,
+             py::arg() = Positions{})
+        .def("getSerialNumber", &Detector::getSerialNumber,
+             py::arg() = Positions{})
+        .def("getClientVersion", &Detector::getClientVersion)
+        .def("getReceiverVersion", &Detector::getReceiverVersion,
+             py::arg() = Positions{})
+        .def("getDetectorType", &Detector::getDetectorType,
+             py::arg() = Positions{})
+        .def("size", &Detector::size)
+
 
         // Acq related
         .def("acquire", &Detector::acquire)
         .def("clearAcquiringFlag", &Detector::clearAcquiringFlag)
         .def("getReceiverStatus", &Detector::getReceiverStatus,
              py::arg() = Positions{})
-
-        // Configuration
-        .def("free", &Detector::freeSharedMemory)
-        .def("loadConfig", &Detector::loadConfig)
-        .def("getHostname", &Detector::getHostname, py::arg() = Positions{})
 
         // Bits and registers
         .def("setBit", &Detector::setBit, py::arg(), py::arg(),
@@ -42,9 +57,11 @@ void init_experimental(py::module &m) {
 
         // File
         .def("getFileNamePrefix", &Detector::getFileNamePrefix)
-        .def("setFileNamePrefix", &Detector::setFileNamePrefix, py::arg(),py::arg() = Positions{})
+        .def("setFileNamePrefix", &Detector::setFileNamePrefix, py::arg(),
+             py::arg() = Positions{})
         .def("getFilePath", &Detector::getFilePath)
-        .def("setFilePath", &Detector::setFilePath, py::arg(),py::arg() = Positions{})
+        .def("setFilePath", &Detector::setFilePath, py::arg(),
+             py::arg() = Positions{})
         .def("setFileWrite", &Detector::setFileWrite, py::arg(),
              py::arg() = Positions{})
         .def("getFileWrite", &Detector::getFileWrite, py::arg() = Positions{})

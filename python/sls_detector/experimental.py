@@ -1,4 +1,4 @@
-from _sls_detector import multiDetectorApi
+from _sls_detector import CppDetectorApi
 from _sls_detector import slsDetectorDefs
 
 runStatus = slsDetectorDefs.runStatus
@@ -35,19 +35,39 @@ def freeze(cls):
 
 
 @freeze
-class ExperimentalDetector(multiDetectorApi):
+class ExperimentalDetector(CppDetectorApi):
     """
     This class is the base for detector specific 
     interfaces. Most functions exists in two versions
     like the getExptime() function that uses the 
     C++ API directly and the simplified exptime property. 
     """
-    def __init__(self, multi_id = 0):
+
+    def __init__(self, multi_id=0):
         """
         multi_id refers to the shared memory id of the 
         slsDetectorPackage. Default value is 0. 
         """
         super().__init__(multi_id)
+
+    # CONFIGURATION
+
+    @property
+    def hostname(self):
+        return element_if_equal(self.getHostname())
+
+    @hostname.setter
+    def hostname(self, hostnames):
+        if isinstance(hostnames, str):
+            hostnames = [hostnames]
+        if isinstance(hostnames, list):
+            self.setHostname(hostnames)
+        else:
+            raise ValueError("hostname needs to be string or list of strings")
+
+    @property
+    def detectorversion(self):
+        return element_if_equal(self.getFirmwareVersion())
 
     # Acq
     @property
@@ -95,7 +115,7 @@ class ExperimentalDetector(multiDetectorApi):
 
         """
         return self.getAcquiringFlag()
-    
+
     @busy.setter
     def busy(self, value):
         self.setAcquiringFlag(value)
@@ -129,7 +149,7 @@ class ExperimentalDetector(multiDetectorApi):
     @property
     def fpath(self):
         return element_if_equal(self.getFilePath())
-    
+
     @fpath.setter
     def fpath(self, path):
         self.setFilePath(path)

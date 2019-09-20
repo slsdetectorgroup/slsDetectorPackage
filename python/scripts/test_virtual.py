@@ -147,4 +147,18 @@ def test_exptime(virtual_jf_detectors):
     d.exptime  = t
     assert d.exptime == 10e-6
 
+def test_period(virtual_jf_detectors):
+    d = ExperimentalDetector()
+
+    #default value
+    d.period = 0
+    assert d.period == 0
+
+    d.period = 1.5
+    assert d.period == 1.5
+
+    t = dt.timedelta(microseconds=10)
+    d.period  = t
+    assert d.period == 10e-6
+
     

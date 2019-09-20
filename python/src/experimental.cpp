@@ -55,7 +55,34 @@ void init_experimental(py::module &m) {
         .def("setPeriod", &Detector::setPeriod, py::arg(),
              py::arg() = Positions{})
         .def("getPeriod", &Detector::getPeriod, py::arg() = Positions{})
+        .def("getDelayAfterTrigger", &Detector::getDelayAfterTrigger,
+             py::arg() = Positions{})
+        .def("setDelayAfterTrigger", &Detector::setDelayAfterTrigger, py::arg(),
+             py::arg() = Positions{})
+        .def("getNumberOfFramesLeft", &Detector::getNumberOfFramesLeft,
+             py::arg() = Positions{})
+        .def("getNumberOfTriggersLeft", &Detector::getNumberOfTriggersLeft,
+             py::arg() = Positions{})
+        .def("getDelayAfterTriggerLeft", &Detector::getDelayAfterTriggerLeft,
+             py::arg() = Positions{})
+        .def("getSpeed", &Detector::getSpeed, py::arg() = Positions{})
+        .def("setSpeed", &Detector::setSpeed, py::arg(),
+             py::arg() = Positions{})
+        .def("getADCPhase", &Detector::getADCPhase, py::arg() = Positions{})
 
+        .def("setADCPhase", &Detector::setADCPhase, py::arg(),
+             py::arg() = Positions{})
+        .def("getADCPhaseInDegrees", &Detector::getADCPhaseInDegrees,
+             py::arg() = Positions{})
+        .def("setADCPhaseInDegrees", &Detector::setADCPhaseInDegrees, py::arg(),
+             py::arg() = Positions{})
+        .def("getHighVoltage", &Detector::getHighVoltage,
+             py::arg() = Positions{})
+        .def("setHighVoltage", &Detector::setHighVoltage, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getTemperature", &Detector::getTemperature, py::arg(),
+             py::arg() = Positions{})
         // Acq related
         .def("acquire", &Detector::acquire)
         .def("clearAcquiringFlag", &Detector::clearAcquiringFlag)

@@ -200,6 +200,52 @@ void init_experimental(py::module &m) {
         .def("setDestinationUDPMAC", &Detector::setDestinationUDPMAC, py::arg(),
              py::arg() = Positions{})
 
+        .def("getDestinationUDPMAC2",
+             [](const Detector &d) {
+                 std::vector<std::string> res;
+                 for (const auto &s : d.getDestinationUDPMAC2())
+                     res.push_back(s.str());
+                 return res;
+             })
+        .def("setDestinationUDPMAC2", &Detector::setDestinationUDPMAC2,
+             py::arg(), py::arg() = Positions{})
+
+        .def("getDestinationUDPPort", &Detector::getDestinationUDPPort,
+             py::arg() = Positions{})
+        .def("setDestinationUDPPort", &Detector::setDestinationUDPPort,
+             py::arg(), py::arg() = Positions{})
+        .def("getDestinationUDPPort2", &Detector::getDestinationUDPPort2,
+             py::arg() = Positions{})
+        .def("setDestinationUDPPort2", &Detector::setDestinationUDPPort2,
+             py::arg(), py::arg() = Positions{})
+
+        .def("printRxConfiguration", &Detector::printRxConfiguration,
+             py::arg() = Positions{})
+
+        .def("getTenGiga", &Detector::getTenGiga, py::arg() = Positions{})
+        .def("setTenGiga", &Detector::setTenGiga, py::arg(),
+             py::arg() = Positions{})
+        .def("getTenGigaFlowControl", &Detector::getTenGigaFlowControl,
+             py::arg() = Positions{})
+        .def("setTenGigaFlowControl", &Detector::setTenGigaFlowControl,
+             py::arg(), py::arg() = Positions{})
+        .def("getTransmissionDelayFrame", &Detector::getTransmissionDelayFrame,
+             py::arg() = Positions{})
+        .def("setTransmissionDelayFrame", &Detector::setTransmissionDelayFrame,
+             py::arg(), py::arg() = Positions{})
+
+        .def("getTransmissionDelayLeft", &Detector::getTransmissionDelayLeft,
+             py::arg() = Positions{})
+        .def("setTransmissionDelayLeft", &Detector::setTransmissionDelayLeft,
+             py::arg(), py::arg() = Positions{})
+        .def("getTransmissionDelayRight", &Detector::getTransmissionDelayRight,
+             py::arg() = Positions{})
+        .def("setTransmissionDelayRight", &Detector::setTransmissionDelayRight,
+             py::arg(), py::arg() = Positions{})
+
+
+
+
         // Bits and registers
         .def("setBit", &Detector::setBit, py::arg(), py::arg(),
              py::arg() = Positions{})

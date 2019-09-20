@@ -4,6 +4,8 @@
 #include <pybind11/stl.h>
 
 #include "Detector.h"
+#include "ToString.h"
+#include "network_utils.h"
 #include "sls_detector_defs.h"
 #include "typecaster.h"
 namespace py = pybind11;
@@ -83,10 +85,119 @@ void init_experimental(py::module &m) {
 
         .def("getTemperature", &Detector::getTemperature, py::arg(),
              py::arg() = Positions{})
-        // Acq related
+
+        .def("getDAC", &Detector::getDAC, py::arg(), py::arg(),
+             py::arg() = Positions{})
+        .def("setDAC", &Detector::setDAC, py::arg(), py::arg(), py::arg(),
+             py::arg() = Positions{})
+
+        .def("getTimingMode", &Detector::getTimingMode, py::arg() = Positions{})
+
+        .def("setTimingMode", &Detector::setTimingMode, py::arg(),
+             py::arg() = Positions{})
+
+        // ACQUISITION
         .def("acquire", &Detector::acquire)
+        .def("startAcquisition", &Detector::startAcquisition)
+        .def("stopAcquisition", &Detector::stopAcquisition)
         .def("clearAcquiringFlag", &Detector::clearAcquiringFlag)
+        .def("getDetectorStatus", &Detector::getDetectorStatus,
+             py::arg() = Positions{})
         .def("getReceiverStatus", &Detector::getReceiverStatus,
+             py::arg() = Positions{})
+
+        .def("getFramesCaught", &Detector::getFramesCaught,
+             py::arg() = Positions{})
+
+        .def("getStartingFrameNumber", &Detector::getStartingFrameNumber,
+             py::arg() = Positions{})
+        .def("setStartingFrameNumber", &Detector::setStartingFrameNumber,
+             py::arg(), py::arg() = Positions{})
+
+        .def("sendSoftwareTrigger", &Detector::sendSoftwareTrigger,
+             py::arg() = Positions{})
+
+        // Network Configuration (Detector<->Receiver)
+        .def("configureMAC", &Detector::configureMAC, py::arg() = Positions{})
+        .def("getNumberofUDPInterfaces", &Detector::getNumberofUDPInterfaces,
+             py::arg() = Positions{})
+
+        .def("setNumberofUDPInterfaces", &Detector::setNumberofUDPInterfaces,
+             py::arg(), py::arg() = Positions{})
+        .def("getSelectedUDPInterface", &Detector::getSelectedUDPInterface,
+             py::arg() = Positions{})
+
+        .def("selectUDPInterface", &Detector::selectUDPInterface, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getSourceUDPIP",
+             [](const Detector &d) {
+                 std::vector<std::string> res;
+                 for (const auto &s : d.getSourceUDPIP())
+                     res.push_back(s.str());
+                 return res;
+             })
+        .def("setSourceUDPIP", &Detector::setSourceUDPIP, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getSourceUDPIP2",
+             [](const Detector &d) {
+                 std::vector<std::string> res;
+                 for (const auto &s : d.getSourceUDPIP2())
+                     res.push_back(s.str());
+                 return res;
+             })
+        .def("setSourceUDPIP2", &Detector::setSourceUDPIP2, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getSourceUDPMAC",
+             [](const Detector &d) {
+                 std::vector<std::string> res;
+                 for (const auto &s : d.getSourceUDPMAC())
+                     res.push_back(s.str());
+                 return res;
+             })
+        .def("setSourceUDPMAC", &Detector::setSourceUDPMAC, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getSourceUDPMAC2",
+             [](const Detector &d) {
+                 std::vector<std::string> res;
+                 for (const auto &s : d.getSourceUDPMAC2())
+                     res.push_back(s.str());
+                 return res;
+             })
+        .def("setSourceUDPMAC2", &Detector::setSourceUDPMAC2, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getDestinationUDPIP",
+             [](const Detector &d) {
+                 std::vector<std::string> res;
+                 for (const auto &s : d.getDestinationUDPIP())
+                     res.push_back(s.str());
+                 return res;
+             })
+        .def("setDestinationUDPIP", &Detector::setDestinationUDPIP, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getDestinationUDPIP2",
+             [](const Detector &d) {
+                 std::vector<std::string> res;
+                 for (const auto &s : d.getDestinationUDPIP2())
+                     res.push_back(s.str());
+                 return res;
+             })
+        .def("setDestinationUDPIP2", &Detector::setDestinationUDPIP2, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getDestinationUDPMAC",
+             [](const Detector &d) {
+                 std::vector<std::string> res;
+                 for (const auto &s : d.getDestinationUDPMAC())
+                     res.push_back(s.str());
+                 return res;
+             })
+        .def("setDestinationUDPMAC", &Detector::setDestinationUDPMAC, py::arg(),
              py::arg() = Positions{})
 
         // Bits and registers

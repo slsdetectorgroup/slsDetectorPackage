@@ -10,17 +10,17 @@ namespace py = pybind11;
 void init_experimental(py::module &m) {
     using sls::Detector;
     using sls::Positions;
+
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
     CppDetectorApi
         .def(py::init<int>())
 
         // Configuration
-        .def("free", &Detector::freeSharedMemory)
         .def("freeSharedMemory", &Detector::freeSharedMemory)
         .def("loadConfig", &Detector::loadConfig)
         .def("loadParameters", &Detector::loadParameters)
-        .def("getHostname", &Detector::getHostname, py::arg() = Positions{})
         .def("setHostname", &Detector::setHostname)
+        .def("getHostname", &Detector::getHostname, py::arg() = Positions{})
         .def("getShmId", &Detector::getShmId)
         .def("getFirmwareVersion", &Detector::getFirmwareVersion,
              py::arg() = Positions{})
@@ -34,7 +34,27 @@ void init_experimental(py::module &m) {
         .def("getDetectorType", &Detector::getDetectorType,
              py::arg() = Positions{})
         .def("size", &Detector::size)
+        .def("getModuleGeometry", &Detector::getModuleGeometry)
+        .def("getModuleSize", &Detector::getModuleSize, py::arg() = Positions{})
+        .def("getDetectorSize", &Detector::getDetectorSize)
+        .def("setDetectorSize", &Detector::setDetectorSize)
+        .def("getSettings", &Detector::getSettings, py::arg() = Positions{})
+        .def("setSettings", &Detector::setSettings, py::arg(),
+             py::arg() = Positions{})
 
+        // TODO! Python funcs for callbacks?
+
+        // Acquisition Parameters
+        .def("getNumberOfFrames", &Detector::getNumberOfFrames)
+        .def("setNumberOfFrames", &Detector::setNumberOfFrames)
+        .def("getNumberOfTriggers", &Detector::getNumberOfTriggers)
+        .def("setNumberOfTriggers", &Detector::setNumberOfTriggers)
+        .def("setExptime", &Detector::setExptime, py::arg(),
+             py::arg() = Positions{})
+        .def("getExptime", &Detector::getExptime, py::arg() = Positions{})
+        .def("setPeriod", &Detector::setPeriod, py::arg(),
+             py::arg() = Positions{})
+        .def("getPeriod", &Detector::getPeriod, py::arg() = Positions{})
 
         // Acq related
         .def("acquire", &Detector::acquire)
@@ -71,12 +91,7 @@ void init_experimental(py::module &m) {
              py::arg() = Positions{})
 
         // Time
-        .def("setExptime", &Detector::setExptime, py::arg(),
-             py::arg() = Positions{})
-        .def("getExptime", &Detector::getExptime, py::arg() = Positions{})
-        .def("setPeriod", &Detector::setPeriod, py::arg(),
-             py::arg() = Positions{})
-        .def("getPeriod", &Detector::getPeriod, py::arg() = Positions{})
+
         .def("setSubExptime", &Detector::setSubExptime, py::arg(),
              py::arg() = Positions{})
         .def("getSubExptime", &Detector::getSubExptime,

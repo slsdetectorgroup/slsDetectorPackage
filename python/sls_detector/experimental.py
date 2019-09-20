@@ -3,9 +3,11 @@ from _sls_detector import slsDetectorDefs
 
 runStatus = slsDetectorDefs.runStatus
 from .utils import element_if_equal, all_equal
+from .utils import Geometry, to_geo
 import datetime as dt
 
 from functools import wraps
+from collections import namedtuple
 
 
 def freeze(cls):
@@ -52,9 +54,15 @@ class ExperimentalDetector(CppDetectorApi):
 
     # CONFIGURATION
 
+    def __len__(self):
+        return self.size()
+
+    def free(self):
+        self.freeSharedMemory()
+
     @property
     def hostname(self):
-        return element_if_equal(self.getHostname())
+        return self.getHostname()
 
     @hostname.setter
     def hostname(self, hostnames):
@@ -68,6 +76,39 @@ class ExperimentalDetector(CppDetectorApi):
     @property
     def detectorversion(self):
         return element_if_equal(self.getFirmwareVersion())
+
+    @property
+    def detector_type(self):
+        return element_if_equal(self.getDetectorType())
+
+    @property
+    def module_geometry(self):
+        return to_geo(self.getModuleGeometry())
+
+    @property
+    def module_size(self):
+        ms = [to_geo(item) for item in self.getModuleSize()]
+        return element_if_equal(ms)
+
+    @property
+    def detector_size(self):
+        return to_geo(self.getDetectorSize())
+
+    @property
+    def settings(self):
+        return element_if_equal(self.getSettings())
+
+    @settings.setter
+    def settings(self, value):
+        self.setSettings(value)
+
+    @property
+    def frames(self):
+        return element_if_equal(self.getNumberOfFrames())
+
+    @frames.setter
+    def frames(self, n_frames):
+        self.setNumberOfFrames(n_frames)
 
     # Acq
     @property
@@ -178,7 +219,10 @@ class ExperimentalDetector(CppDetectorApi):
 
     @exptime.setter
     def exptime(self, t):
-        self.setExptime(dt.timedelta(seconds=t))
+        if isinstance(t, dt.timedelta):
+            self.setExptime(t)
+        else:
+            self.setExptime(dt.timedelta(seconds=t))
 
     @property
     def subexptime(self):
@@ -187,7 +231,10 @@ class ExperimentalDetector(CppDetectorApi):
 
     @subexptime.setter
     def subexptime(self, t):
-        self.setSubExptime(dt.timedelta(seconds=t))
+        if isinstance(t, dt.timedelta):
+            self.setSubExptime(t)
+        else:
+            self.setSubExptime(dt.timedelta(seconds=t))
 
     @property
     def period(self):
@@ -196,5 +243,8 @@ class ExperimentalDetector(CppDetectorApi):
 
     @period.setter
     def period(self, t):
-        self.setPeriod(dt.timedelta(seconds=t))
+        if isinstance(t, dt.timedelta):
+            self.setPeriod(t)
+        else:
+            self.setPeriod(dt.timedelta(seconds=t))
 

@@ -190,7 +190,7 @@ float *gethhx()
 
 
   void debugSaveAll(int ind=0) {
-    int ib, ibx, iby;
+    int  ibx, iby;
    char tit[10000];
    
    float tot_eta=0;
@@ -204,7 +204,7 @@ float *gethhx()
       etah[ii]=heta[ii];
       tot_eta+=heta[ii];
   }
-  sprintf(tit,"/scratch/eta.tiff",ind);
+  sprintf(tit,"/scratch/eta_%d.tiff",ind);
   WriteToTiff(etah, tit, etabins, etabins);
 
 
@@ -284,7 +284,7 @@ float *gethhx()
   double calcDiff(double avg, float *hx, float *hy) {
     //double p_tot=0;
     double diff=0, d;
-    double bsize=1./nSubPixels;
+    //double bsize=1./nSubPixels;
     int nbad=0;
     double p_tot_x[nSubPixels], p_tot_y[nSubPixels], p_tot[nSubPixels*nSubPixels];
     double maxdiff=0, mindiff=avg*nSubPixels*nSubPixels;
@@ -351,9 +351,9 @@ float *gethhx()
     return sqrt(diff);
   }
   
-  int *heta;
   float *hhx;
   float *hhy;
+  int *heta;
   int nbeta;
   double etamin, etamax, etastep;
   double rangeMin, rangeMax;

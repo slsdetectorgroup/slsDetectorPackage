@@ -32,11 +32,11 @@ class threadedAnalogDetector
 {
 public:
   threadedAnalogDetector(analogDetector<uint16_t> *d, int fs=10000) {
-    char *mem, *mm;
+    char *mm;//*mem, 
     det=d;
     fifoFree=new CircularFifo<char>(fs);
     fifoData=new CircularFifo<char>(fs);
-   
+    // mem==NULL;
     /* mem=(char*)calloc(fs, det->getDataSize()); */
     /* if (mem) */
     /*   memset(mem,0, fs*det->getDataSize()); */
@@ -46,6 +46,7 @@ public:
       //  mm=mem+i*det->getDataSize();
       // cout << i << endl;
       mm=(char*)calloc(1, det->getDataSize());
+     
       if (mm) { 
 	//memset(mm,0, det->getDataSize());
 	fifoFree->push(mm);
@@ -60,7 +61,8 @@ public:
     fMode=eFrame;
     ff=NULL;
   }
-  
+
+
 
   virtual int setFrameMode(int fm) {
     if (fm>=0) {
@@ -96,7 +98,7 @@ public:
   virtual int getImageSize(int &nnx, int &nny, int &ns) {return det->getImageSize(nnx, nny, ns);};
   virtual int getDetectorSize(int &nnx, int &nny) {return det->getDetectorSize(nnx, nny);};
 
-  ~threadedAnalogDetector() {StopThread(); free(mem); delete fifoFree; delete fifoData;}
+  virtual ~threadedAnalogDetector() {StopThread();  delete fifoFree; delete fifoData;}
 
    /** Returns true if the thread was successfully started, false if there was an error starting the thread */
    virtual bool StartThread()
@@ -114,11 +116,11 @@ public:
    
 
    virtual bool pushData(char* &ptr) {
-     fifoData->push(ptr);
+     return fifoData->push(ptr);
    }
 
    virtual bool popFree(char* &ptr) {
-     fifoFree->pop(ptr);
+     return fifoFree->pop(ptr);
    }
 
    virtual int isBusy() {return busy;}
@@ -185,16 +187,19 @@ FILE *getFilePointer(){return det->getFilePointer();};
 
    void *writeFlatField(const char * imgname) {
      slsInterpolation *interp=(det)->getInterpolation();
-     cout << "interp " << interp << endl;
+     //cout << "interp " << interp << endl;
      if (interp)  {
        cout << imgname << endl;
-       interp->writeFlatField(imgname);
+       return interp->writeFlatField(imgname);
      }
+     return NULL;
    }
+
    void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){
      slsInterpolation *interp=(det)->getInterpolation();
      if (interp)  
-       interp->readFlatField(imgname, nb, emin, emax);
+       return interp->readFlatField(imgname, nb, emin, emax);
+     return NULL;
    }
 
    virtual int *getFlatField(int &nb, double emi, double ema){
@@ -231,7 +236,6 @@ protected:
    int dMode;
    int *dataSize;
    pthread_t _thread;
-   char *mem;
    CircularFifo<char> *fifoFree;
    CircularFifo<char> *fifoData;
    int stop;
@@ -295,15 +299,15 @@ public:
     StopThreads();
     for (int i=0; i<nThreads; i++) 
       delete dets[i]; 
-    for (int i=1; i<nThreads; i++) 
-      delete dd[i];
+    /* for (int i=1; i<nThreads; i++)  */
+    /*   delete dd[i]; */
     //delete [] image;
   }
 
 
-  virtual int setFrameMode(int fm) { int ret; for (int i=0; i<nThreads; i++) {  ret=dets[i]->setFrameMode(fm);} return ret;};
-  virtual double setThreshold(int fm) { double ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setThreshold(fm); return ret;};
-  virtual int setDetectorMode(int dm) { int ret; for (int i=0; i<nThreads; i++) ret=dets[i]->setDetectorMode(dm); return ret;};
+  virtual int setFrameMode(int fm) { int ret=dets[0]->setFrameMode(fm); for (int i=1; i<nThreads; i++) { dets[i]->setFrameMode(fm);} return ret;};
+  virtual double setThreshold(int fm) { double ret=dets[0]->setThreshold(fm); for (int i=1; i<nThreads; i++) dets[i]->setThreshold(fm); return ret;};
+  virtual int setDetectorMode(int dm) { int ret=dets[0]->setDetectorMode(dm);; for (int i=1; i<nThreads; i++) dets[i]->setDetectorMode(dm); return ret;};
   virtual void setROI(int xmin, int xmax, int ymin, int ymax) { for (int i=0; i<nThreads; i++) dets[i]->setROI(xmin, xmax,ymin,ymax);};
   
    
@@ -411,12 +415,12 @@ public:
   
    
    virtual bool pushData(char* &ptr) {
-     dets[ithread]->pushData(ptr);
+     return dets[ithread]->pushData(ptr);
    }
 
    virtual bool popFree(char* &ptr) {
      //  cout << ithread << endl;
-     dets[ithread]->popFree(ptr);
+     return dets[ithread]->popFree(ptr);
    }
    
    virtual int nextThread() {
@@ -496,20 +500,21 @@ public:
 
   virtual void *readPedestal(const char * imgname, int nb=-1, double emin=1, double emax=0){
     
-     int nx, ny;
-     dets[0]->getDetectorSize(nx,ny);
+    int nx, ny;
+    dets[0]->getDetectorSize(nx,ny);
     uint32 nnx;
     uint32 nny;
     float *gm=ReadFromTiff(imgname, nnx, nny);
     if (ped) delete [] ped;
-    if (nnx>nx) nx=nnx;
-    if (nny>ny) ny=nny;
+    if (nnx>(uint)nx) nx=nnx;
+    if (nny>(uint)ny) ny=nny;
     ped=new double[nx*ny];
     
     for (int ix=0; ix<nx*ny; ix++) {
       ped[ix]=gm[ix];
     }
     delete [] gm;
+    
     return setPedestal();
     
   };

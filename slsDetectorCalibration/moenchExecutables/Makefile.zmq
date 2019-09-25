@@ -1,6 +1,6 @@
 
 INCDIR=   -I. -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/ -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/
-LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3 -g -std=c++11
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3 -g -std=c++11 -Wall
 #-L../../bin -lhdf5  -L.
 
 #DESTDIR?=../bin

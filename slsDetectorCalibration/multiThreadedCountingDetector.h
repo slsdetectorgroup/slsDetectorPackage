@@ -25,7 +25,7 @@ class multiThreadedCountingDetector : public multiThreadedAnalogDetector
 public:
  multiThreadedCountingDetector(singlePhotonDetector *d, int n, int fs=1000) : multiThreadedAnalogDetector(d,n,fs) { };
 
-  virtual double setNSigma(double n) {double ret; for (int i=0; i<nThreads; i++) ret=(dets[i])->setNSigma(n); return ret;};
+  virtual double setNSigma(double n) {double ret=(dets[0])->setNSigma(n); for (int i=1; i<nThreads; i++) (dets[i])->setNSigma(n); return ret;};
   virtual void setEnergyRange(double emi, double ema) {for (int i=0; i<nThreads; i++) (dets[i])->setEnergyRange(emi,ema);};
   
 };

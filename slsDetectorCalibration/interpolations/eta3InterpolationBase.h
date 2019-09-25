@@ -59,10 +59,10 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
   //////////// /*It return position hit for the event in input */ //////////////
   virtual void getInterpolatedPosition(int x, int y, int *data, double &int_x, double &int_y)
   {
-   double tot, totquad;
+   double tot;
     double etax,etay;
     
-    int corner=calcEta3(data,etax,etay, totquad);
+    int corner=calcEta3(data,etax,etay, tot);
     
     getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
 
@@ -72,11 +72,11 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
 
   virtual void getInterpolatedPosition(int x, int y, double *data, double &int_x, double &int_y)
   {
-    double sDum[2][2];
-    double tot, totquad;
+    //double sDum[2][2];
+    double tot;
     double etax,etay;
     
-    int corner=calcEta3(data,etax,etay, totquad);
+    int corner=calcEta3(data,etax,etay, tot);
     
     getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
 

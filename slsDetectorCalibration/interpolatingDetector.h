@@ -139,8 +139,8 @@ class interpolatingDetector : public singlePhotonDetector {
     nph=addFrame(data,val,0); 
     if (interp)
       return interp->getInterpolatedImage();
-    else
-      singlePhotonDetector::getImage();
+    //else
+    return singlePhotonDetector::getImage();
       //return NULL;
   };
   
@@ -233,7 +233,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
     };
     
     virtual slsInterpolation *setInterpolation(slsInterpolation *ii){
-      int ok; 
+      // int ok; 
       interp=ii; 
       /*  pthread_mutex_lock(fi);
       if (interp)

@@ -2,8 +2,6 @@
 #pragma once
 
 /* Definitions for FPGA*/
-#define MEM_MAP_SHIFT 0
-
 
 #define BASE_CONTROL                    (0x0)
 #define BASE_PATTERN_CONTROL            (0x200 )
@@ -162,13 +160,8 @@
 #define RUN_BUSY_OFST					(0)
 #define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_OFST)
 
-
-/* Set Period 64 bit register tT = T x 50 ns */
-#define SET_PERIOD_LSB_REG    			(0x06 << MEM_MAP_SHIFT)
-#define SET_PERIOD_MSB_REG    			(0x07 << MEM_MAP_SHIFT)
-
 /* Set Exptime 64 bit register eEXP = Exp x 25 ns */
-#define SET_EXPTIME_LSB_REG    			(0x08 << MEM_MAP_SHIFT)
-#define SET_EXPTIME_MSB_REG    			(0x09 << MEM_MAP_SHIFT)
+#define SET_EXPTIME_LSB_REG    			(0x08)
+#define SET_EXPTIME_MSB_REG    			(0x09)
 
 #endif

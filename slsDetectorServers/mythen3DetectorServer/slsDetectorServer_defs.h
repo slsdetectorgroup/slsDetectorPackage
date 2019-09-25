@@ -20,10 +20,12 @@
 #define DEFAULT_EXPTIME				(100*1000*1000)		//ns
 #define DEFAULT_PERIOD              (2*1000*1000)	    //ns 
 #define DEFAULT_HIGH_VOLTAGE        (0)
-
+#define DEFAULT_RUN_CLK             (125) 
+#define DEFAULT_TICK_CLK            (20) // will be fixed later. Not configurable
+#define DEFAULT_SAMPLING_CLK        (80)
 
 /* Enums */
-enum CLKINDEX   {RUN_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
+enum CLKINDEX   {RUN_CLK, TICK_CLK, SAMPLING_CLK, NUM_CLOCKS};
 enum DACINDEX   {VIBIASSH, VTRIM, VIPRE, VRFSHNPOL, VTH1, VIPREOUT, VRF, VTH2, CAS, CASSH, VPL, VDCSH, VICIN, VICINSH, VICBIAS, VPH, VTH3, VRFSH};
 #define DEFAULT_DAC_VALS    {1200,  /* vIbiasSh */  \
                             2300,   /* vTrim */     \

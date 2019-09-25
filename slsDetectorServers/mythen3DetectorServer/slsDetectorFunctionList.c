@@ -30,7 +30,7 @@ int virtual_stop = 0;
 #endif
 
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0};
-uint32_t clkDivider[NUM_CLOCKS] = {40, 20, 20};
+uint32_t clkDivider[NUM_CLOCKS] = {125, 20, 80};
 
 int highvoltage = 0;
 
@@ -60,8 +60,6 @@ void basictests() {
     firmware_check_done = 1;
     return;
 #else
-	// faking it
-    //firmware_check_done = 1;
 	FILE_LOG(logINFOBLUE, ("******** Mythen3 Server: do the checks *****************\n"));
 	if (mapCSP0() == FAIL) {
     	strcpy(firmware_message,
@@ -225,6 +223,12 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Mythen3 module \n")); 
 
+	clkDivider[RUN_CLK] = DEFAULT_RUN_CLK;
+	clkDivider[TICK_CLK] = DEFAULT_TICK_CLK;
+	clkDivider[SAMPLING_CLK] = DEFAULT_SAMPLING_CLK;
+
+	highvoltage = 0;
+
 #ifndef VIRTUAL
 	// hv
    	DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
@@ -234,10 +238,10 @@ void setupDetector() {
 	// Initialization of acquistion parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
-#ifdef VIRTUAL
+
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
-#endif
+
 }
 
 
@@ -280,15 +284,18 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		}
 		retval = setPatternWaitTime(0, -1) / (1E-3 * clkDivider[RUN_CLK]);
 		FILE_LOG(logINFO, ("\tGetting exptime (pattern wait time level 0): %lldns\n", (long long int)retval));
+		FILE_LOG(logDEBUG1, ("Getting exptime (pattern wait time level 0): %lldns\n", (long long int)retval));
 		break;
+
 	case FRAME_PERIOD:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
-			val *= (1E-3 * TEMP_CLK);
+			val *= (1E-3 * TICK_CLK);
 		}
-		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * TEMP_CLK);
+		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * TICK_CLK);
 		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
 		break;
+		
 	case CYCLES_NUMBER:
 		if(val >= 0) {
 			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
@@ -313,9 +320,9 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
     case ACQUISITION_TIME:
     case FRAME_PERIOD:
 		// convert to freq
-        val *= (1E-3 * TEMP_CLK);
+        val *= (1E-3 * TICK_CLK);
         // convert back to timer
-        val = (val) / (1E-3 * TEMP_CLK);
+        val = (val) / (1E-3 * TICK_CLK);
         if (val != retval)
             return FAIL;
         break;
@@ -429,7 +436,7 @@ uint64_t writePatternWord(int addr, uint64_t word) {
     set64BitReg(word, reg_lsb, reg_msb);
     FILE_LOG(logDEBUG1, ("  Wrote word. PatternIn Reg: 0x%llx\n", get64BitReg(reg_lsb, reg_msb)));
 
-    return word;
+    return readPatternWord(addr);
 }
 
 int setPatternWaitAddress(int level, int addr) {

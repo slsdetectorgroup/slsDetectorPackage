@@ -1,11 +1,13 @@
-from _sls_detector import multiDetectorApi
+from _sls_detector import CppDetectorApi
 from _sls_detector import slsDetectorDefs
 
 runStatus = slsDetectorDefs.runStatus
 from .utils import element_if_equal, all_equal
+from .utils import Geometry, to_geo
 import datetime as dt
 
 from functools import wraps
+from collections import namedtuple
 
 
 def freeze(cls):
@@ -35,19 +37,78 @@ def freeze(cls):
 
 
 @freeze
-class ExperimentalDetector(multiDetectorApi):
+class ExperimentalDetector(CppDetectorApi):
     """
     This class is the base for detector specific 
     interfaces. Most functions exists in two versions
     like the getExptime() function that uses the 
     C++ API directly and the simplified exptime property. 
     """
-    def __init__(self, multi_id = 0):
+
+    def __init__(self, multi_id=0):
         """
         multi_id refers to the shared memory id of the 
         slsDetectorPackage. Default value is 0. 
         """
         super().__init__(multi_id)
+
+    # CONFIGURATION
+
+    def __len__(self):
+        return self.size()
+
+    def free(self):
+        self.freeSharedMemory()
+
+    @property
+    def hostname(self):
+        return self.getHostname()
+
+    @hostname.setter
+    def hostname(self, hostnames):
+        if isinstance(hostnames, str):
+            hostnames = [hostnames]
+        if isinstance(hostnames, list):
+            self.setHostname(hostnames)
+        else:
+            raise ValueError("hostname needs to be string or list of strings")
+
+    @property
+    def detectorversion(self):
+        return element_if_equal(self.getFirmwareVersion())
+
+    @property
+    def detector_type(self):
+        return element_if_equal(self.getDetectorType())
+
+    @property
+    def module_geometry(self):
+        return to_geo(self.getModuleGeometry())
+
+    @property
+    def module_size(self):
+        ms = [to_geo(item) for item in self.getModuleSize()]
+        return element_if_equal(ms)
+
+    @property
+    def detector_size(self):
+        return to_geo(self.getDetectorSize())
+
+    @property
+    def settings(self):
+        return element_if_equal(self.getSettings())
+
+    @settings.setter
+    def settings(self, value):
+        self.setSettings(value)
+
+    @property
+    def frames(self):
+        return element_if_equal(self.getNumberOfFrames())
+
+    @frames.setter
+    def frames(self, n_frames):
+        self.setNumberOfFrames(n_frames)
 
     # Acq
     @property
@@ -95,7 +156,7 @@ class ExperimentalDetector(multiDetectorApi):
 
         """
         return self.getAcquiringFlag()
-    
+
     @busy.setter
     def busy(self, value):
         self.setAcquiringFlag(value)
@@ -129,7 +190,7 @@ class ExperimentalDetector(multiDetectorApi):
     @property
     def fpath(self):
         return element_if_equal(self.getFilePath())
-    
+
     @fpath.setter
     def fpath(self, path):
         self.setFilePath(path)
@@ -158,7 +219,10 @@ class ExperimentalDetector(multiDetectorApi):
 
     @exptime.setter
     def exptime(self, t):
-        self.setExptime(dt.timedelta(seconds=t))
+        if isinstance(t, dt.timedelta):
+            self.setExptime(t)
+        else:
+            self.setExptime(dt.timedelta(seconds=t))
 
     @property
     def subexptime(self):
@@ -167,7 +231,10 @@ class ExperimentalDetector(multiDetectorApi):
 
     @subexptime.setter
     def subexptime(self, t):
-        self.setSubExptime(dt.timedelta(seconds=t))
+        if isinstance(t, dt.timedelta):
+            self.setSubExptime(t)
+        else:
+            self.setSubExptime(dt.timedelta(seconds=t))
 
     @property
     def period(self):
@@ -176,5 +243,8 @@ class ExperimentalDetector(multiDetectorApi):
 
     @period.setter
     def period(self, t):
-        self.setPeriod(dt.timedelta(seconds=t))
+        if isinstance(t, dt.timedelta):
+            self.setPeriod(t)
+        else:
+            self.setPeriod(dt.timedelta(seconds=t))
 

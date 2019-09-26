@@ -2175,7 +2175,12 @@ std::string multiSlsDetector::printReceiverConfiguration(int detPos) {
 
     // multi
     auto r = parallelCall(&slsDetector::printReceiverConfiguration);
-    return sls::concatenateIfDifferent(r);
+    // concatenate without '+'
+    std::string ret;
+    for (const auto &s : r)
+        if (!s.empty())
+            ret += s;
+    return ret;
 }
 
 bool multiSlsDetector::getUseReceiverFlag(int detPos) {

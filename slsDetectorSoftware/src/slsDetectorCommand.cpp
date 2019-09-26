@@ -4320,8 +4320,7 @@ std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const ar
     } else if (cmd == "rx_printconfig") {
         if (action == PUT_ACTION)
             return std::string("cannot put");
-        FILE_LOG(logINFO) << myDet->printReceiverConfiguration(detPos);
-        return std::string("");
+        return myDet->printReceiverConfiguration(detPos);
     } else if (cmd == "parameters") {
         if (action == PUT_ACTION) {
             sval = std::string(args[1]);

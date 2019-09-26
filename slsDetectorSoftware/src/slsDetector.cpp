@@ -1826,11 +1826,11 @@ sls::IpAddr slsDetector::getSourceUDPIP2() {
 
 void slsDetector::setDestinationUDPIP(const IpAddr ip) {
     FILE_LOG(logDEBUG1) << "Setting destination udp ip to " << ip;
-    if (ip == 0) {
+    /* if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
-    }
+    }*/
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiverFlag && ip != 0) { //ip can be 0 to reset to default rx_hostname ip
         sls::MacAddr retval(0lu);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
         FILE_LOG(logDEBUG1) << "Setting destination udp mac to " << retval;
@@ -2795,18 +2795,30 @@ void slsDetector::updateRateCorrection() {
 
 std::string slsDetector::printReceiverConfiguration() {
     std::ostringstream os;
-    os << "#Detector " << detId << ":\n Receiver Hostname:\t"
-       << getReceiverHostname() << "\n Num Interfaces (Jungfrau):\t" << getNumberofUDPInterfaces()
-       << getReceiverHostname() << "\nDetector UDP IP (Source):\t\t"
-       << getSourceUDPIP() << "\nDetector UDP IP2 (Source):\t\t"
-       << getSourceUDPIP2() << "\nDetector UDP MAC:\t\t" << getSourceUDPMAC()
+    os << "\n\nDetector " << detId << "\nReceiver Hostname:\t"
+       << getReceiverHostname();
+    
+    if (shm()->myDetectorType == JUNGFRAU) {  
+        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces() 
+        << "\nSelected Interface:\t" << getSelectedUDPInterface();
+    }
+        
+    os << "\nDetector UDP IP:\t"
+       << getSourceUDPIP() << "\nDetector UDP MAC:\t" 
+       << getSourceUDPMAC() << "\nReceiver UDP IP:\t" 
+       << getDestinationUDPIP() << "\nReceiver UDP MAC:\t" << getDestinationUDPMAC();
+
+    if (shm()->myDetectorType == JUNGFRAU) {
+        os << "\nDetector UDP IP2 (Source):\t\t" << getSourceUDPIP2() 
        << "\nDetector UDP MAC2:\t\t" << getSourceUDPMAC2()
-       << "\nReceiver UDP IP:\t" << getDestinationUDPIP()
-       << "\nReceiver UDP IP2:\t" << getDestinationUDPIP2()
-       << "\nReceiver UDP MAC:\t" << getDestinationUDPMAC()
-       << "\nReceiver UDP MAC2:\t" << getDestinationUDPMAC2()
-       << "\nReceiver UDP Port:\t" << getDestinationUDPPort()
-       << "\nReceiver UDP Port2:\t" << getDestinationUDPPort2();
+       << "\nReceiver UDP IP2:\t" << getDestinationUDPIP2()      
+       << "\nReceiver UDP MAC2:\t" << getDestinationUDPMAC2();
+    }
+    os << "\nReceiver UDP Port:\t" << getDestinationUDPPort();
+    if (shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == EIGER) {
+       os << "\nReceiver UDP Port2:\t" << getDestinationUDPPort2();
+    }
+    os << "\n";
     return os.str();
 }
 

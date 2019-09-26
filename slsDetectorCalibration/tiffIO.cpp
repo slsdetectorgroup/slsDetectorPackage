@@ -4,20 +4,20 @@
 #include<iostream>
 using namespace std;
 // #undef cbf_failnez 
-// #define cbf_failnez(x)				\
-//   {						\
-//   int err;	        			\
-//   err = (x);					\
-//   if (err) {						\
-//   fprintf(stderr,"\nCBFlib fatal error %x \n",err);	\
-//   exit(-1);						\
-//   }							\
+// #define cbf_failnez(x)				
+//   {						
+//   int err;	        			
+//   err = (x);					
+//   if (err) {						
+//   fprintf(stderr,"\nCBFlib fatal error %x \n",err);	
+//   exit(-1);						
+//   }							
 //   }
 
 void *WriteToTiff(float * imgData, const char * imgname, int nrow, int ncol){
   int sampleperpixel=1;
   // unsigned char * buff=NULL;
-  tsize_t linebytes;
+  //tsize_t linebytes;
   // cout << "--" <<endl;
   TIFF * tif = TIFFOpen(imgname,"w");
   if (tif) {
@@ -30,7 +30,7 @@ void *WriteToTiff(float * imgData, const char * imgname, int nrow, int ncol){
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
     TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
     
-    linebytes = sampleperpixel*ncol;
+    //linebytes = sampleperpixel*ncol;
     TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, ncol*sampleperpixel));
     for(int irow=0; irow<nrow; irow++){
       TIFFWriteScanline(tif,&imgData[irow*ncol],irow,0);
@@ -50,7 +50,7 @@ float *ReadFromTiff( const char * imgname, uint32 &nrow, uint32 &ncol){
   if (tif){
         uint32 bps;
 	uint32 sampleperpixel=1;
-  tsize_t linebytes;
+  //tsize_t linebytes;
 
  uint32 imagelength;
 
@@ -61,9 +61,9 @@ float *ReadFromTiff( const char * imgname, uint32 &nrow, uint32 &ncol){
     TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
 
     float * imgData=new float[ncol*nrow];
-    linebytes = sampleperpixel*ncol;
+    //linebytes = sampleperpixel*ncol;
     //  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, ncol*sampleperpixel));
-    for(int irow=0; irow<nrow; irow++){
+    for(uint32 irow=0; irow<nrow; irow++){
       //tiffreadscanline(tif, buf, row);
       TIFFReadScanline(tif,&imgData[irow*ncol],irow);
     }

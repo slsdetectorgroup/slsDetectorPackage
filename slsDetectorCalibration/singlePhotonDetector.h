@@ -58,7 +58,7 @@ public analogDetector<uint16_t> {
 		      int sign=1,
 		      commonModeSubtraction *cm=NULL,
 		      int nped=1000,
-		      int nd=100, int nnx=-1, int nny=-1, double *gm=NULL) : analogDetector<uint16_t>(d, sign, cm, nped, nnx, nny, gm),   nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), clusters(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0), eMin(-1), eMax(-1) {
+		      int nd=100, int nnx=-1, int nny=-1, double *gm=NULL, ghostSummation<uint16_t> *gs=NULL) : analogDetector<uint16_t>(d, sign, cm, nped, nnx, nny, gm, gs),   nDark(nd), eventMask(NULL),nSigma (nsigma), eMin(-1), eMax(-1), clusterSize(csize), clusterSizeY(csize), clusters(NULL),   quad(UNDEFINED_QUADRANT), tot(0), quadTot(0)  {
     
     
     
@@ -183,13 +183,13 @@ public analogDetector<uint16_t> {
       //nph=new int[nx*ny];
       
       double rest[ny][nx];
-      int cy=(clusterSizeY+1)/2; //quad size
-      int cs=(clusterSize+1)/2; //quad size
+      //int cy=(clusterSizeY+1)/2; //quad size
+      //int cs=(clusterSize+1)/2; //quad size
       
-      int ccs=clusterSize; //cluster size
-      int ccy=clusterSizeY; //cluster size
+      //int ccs=clusterSize; //cluster size
+      //int ccy=clusterSizeY; //cluster size
       
-      double g=1.;
+      //double g=1.;
 
       
       double tthr=thr, tthr1, tthr2;
@@ -201,10 +201,10 @@ public analogDetector<uint16_t> {
       if (cmSub) cm=1;
 
       if (thr>0) {
-	cy=1;
-	cs=1;
-	ccs=1;
-	ccy=1;
+	//cy=1;
+	//cs=1;
+	//ccs=1;
+	//ccy=1;
       }
       if (iframe<nDark) { 
 	//	cout << "ped " << iframe << endl;
@@ -213,7 +213,7 @@ public analogDetector<uint16_t> {
 	return nph;
       }	else {
 	if (thr>0) {
-	  newFrame();
+	  newFrame(data);
 	  if (cmSub) {
 	    cout << "add to common mode?"<< endl;
 	    addToCommonMode(data);
@@ -349,9 +349,9 @@ int *getClusters(char *data,  int *ph=NULL) {
   double val[ny][nx];
   int cy=(clusterSizeY+1)/2;
   int cs=(clusterSize+1)/2;
-  int ir, ic;
+  //int ir, ic;
   
-  double max=0, tl=0, tr=0, bl=0,br=0, *v, vv;
+  double max=0, tl=0, tr=0, bl=0,br=0, *v;
   int cm=0;
   int good=1;
   if (cmSub) cm=1;
@@ -362,7 +362,7 @@ int *getClusters(char *data,  int *ph=NULL) {
     addToPedestal(data);
     return 0;
   }
-  newFrame();
+  newFrame(data);
 
 
   
@@ -592,7 +592,7 @@ int *getClusters(char *data,  int *ph=NULL) {
       switch(fMode) {
       case ePedestal:
 	//cout <<"spc add to ped " << endl;
-	addToPedestal(data);
+	addToPedestal(data,1);
 	break;
       default:
 	switch (dMode) {

@@ -119,44 +119,44 @@ class single_photon_hit {
       if (fread((void*)qq, 1, 4*sizeof(int), myFile)) {
 
 	quad=TOP_RIGHT;
-	int mm=qq[0];
-	for (int i=1; i<4; i++) {
-	  if (qq[i]<mm) {
-	    switch (i) {
-	    case 1: 
-	      quad=TOP_LEFT;
-	      break;
-	    case 2:
-	      quad=BOTTOM_RIGHT;
-	      break;
-	    case 3:
-	      quad=BOTTOM_LEFT;
-	      break;
-	    default:
-	      ;
-	    }
+	/*	int mm=qq[0]; */
+	/* for (int i=1; i<4; i++) { */
+	/*   if (qq[i]>mm) { */
+	/*     switch (i) { */
+	/*     case 1:  */
+	/*       quad=TOP_LEFT; */
+	/*       break; */
+	/*     case 2: */
+	/*       quad=BOTTOM_RIGHT; */
+	/*       break; */
+	/*     case 3: */
+	/*       quad=BOTTOM_LEFT; */
+	/*       break; */
+	/*     default: */
+	/*       ; */
+	/*     } */
 
-	  }
+	/*   } */
 
-	}
+	/* } */
 
 
-    switch(quad) {
-    case TOP_LEFT:
-      data[0]=0;
-      data[1]=0;
-      data[2]=0;
-      data[3]=qq[0];
-      data[4]=qq[1];
-      data[5]=0;
-      data[6]=qq[2];
-      data[7]=qq[3];
-      data[8]=0;
-      x=x+1;
-      y=y;
-      break;
+    /* switch(quad) { */
+    /* case TOP_LEFT: */
+    /*   data[0]=0; */
+    /*   data[1]=0; */
+    /*   data[2]=0; */
+    /*   data[3]=qq[0]; */
+    /*   data[4]=qq[1]; */
+    /*   data[5]=0; */
+    /*   data[6]=qq[2]; */
+    /*   data[7]=qq[3]; */
+    /*   data[8]=0; */
+    /*   x=x+1; */
+    /*   y=y; */
+    /*   break; */
       
-    case TOP_RIGHT:
+    /* case TOP_RIGHT: */
       data[0]=0;
       data[1]=0;
       data[2]=0;
@@ -168,40 +168,40 @@ class single_photon_hit {
       data[8]=qq[3];
       x=x;
       y=y;
-      break;
+     /*  break; */
 
 
-    case BOTTOM_LEFT:
-      data[0]=qq[0];
-      data[1]=qq[1];
-      data[2]=0;
-      data[3]=qq[2];
-      data[4]=qq[3];
-      data[5]=0;
-      data[6]=0;
-      data[7]=0;
-      data[8]=0;
-      x=x+1;
-      y=y+1;
-      break;
-    case BOTTOM_RIGHT:
-      data[0]=0;
-      data[1]=qq[0];
-      data[2]=qq[1];
-      data[3]=0;
-      data[4]=qq[2];
-      data[5]=qq[3];
-      data[6]=0;
-      data[7]=0;
-      data[8]=0;
-      x=x;
-      y=y+1;
-      break;
+    /* case BOTTOM_LEFT: */
+    /*   data[0]=qq[0]; */
+    /*   data[1]=qq[1]; */
+    /*   data[2]=0; */
+    /*   data[3]=qq[2]; */
+    /*   data[4]=qq[3]; */
+    /*   data[5]=0; */
+    /*   data[6]=0; */
+    /*   data[7]=0; */
+    /*   data[8]=0; */
+    /*   x=x+1; */
+    /*   y=y+1; */
+    /*   break; */
+    /* case BOTTOM_RIGHT: */
+    /*   data[0]=0; */
+    /*   data[1]=qq[0]; */
+    /*   data[2]=qq[1]; */
+    /*   data[3]=0; */
+    /*   data[4]=qq[2]; */
+    /*   data[5]=qq[3]; */
+    /*   data[6]=0; */
+    /*   data[7]=0; */
+    /*   data[8]=0; */
+    /*   x=x; */
+    /*   y=y+1; */
+    /*   break; */
 
 
-    default:
-      ;
-    }
+    /* default: */
+    /*   ; */
+    /* } */
     return 1;
       }
 #endif
@@ -211,7 +211,7 @@ class single_photon_hit {
 
   void print() {
 
-    int ix, iy;
+   // int ix, iy;
     
     for (int iy=0; iy<dy; iy++) {
       for (int ix=0; ix<dx; ix++) {

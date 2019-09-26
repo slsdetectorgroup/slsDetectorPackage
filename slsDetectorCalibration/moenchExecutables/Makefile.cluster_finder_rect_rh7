@@ -1,0 +1,40 @@
+
+#CBFLIBDIR= /afs/psi.ch/project/sls_det_software/CBFlib-0.9.5/
+#ZMQLIB=../slsReceiverSoftware/include
+#LIBRARYCBF=$(CBFLIBDIR)/lib/*.o
+INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures -I../../slsReceiverSoftware/include 
+#-I$(CBFLIBDIR)/include/ 
+#LIBHDF5=
+LDFLAG= ../tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++ -L.  -pthread -lrt   -ltiff 
+#-L$(ZMQLIB) -lzmq -L$(CBFLIBDIR)/lib/ 
+#-L../../bin 
+MAIN=moench03ClusterFinder.cpp
+#-lhdf5
+#DESTDIR?=../bin
+
+all: moenchClusterFinderRect moenchMakeEtaRect moenchInterpolationRect moenchNoInterpolationRect moenchPhotonCounterRect moenchAnalogRect
+
+
+
+moenchClusterFinderRect:  moench03ClusterFinder.cpp  $(INCS) clean
+			 g++ -o moenchClusterFinderRect  moench03ClusterFinder.cpp $(LDFLAG) $(INCDIR) -DSAVE_ALL  -DNEWRECEIVER -DRECT
+
+moenchMakeEtaRect:  moench03Interpolation.cpp  $(INCS) clean
+			 g++ -o moenchMakeEtaRect moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF -DRECT
+
+moenchInterpolationRect:  moench03Interpolation.cpp  $(INCS) clean
+			 g++ -o moenchInterpolationRect moench03Interpolation.cpp    $(LDFLAG) $(INCDIR)   -DRECT
+
+moenchNoInterpolationRect:  moench03NoInterpolation.cpp  $(INCS) clean
+			 g++ -o moenchNoInterpolationRect moench03NoInterpolation.cpp    $(LDFLAG) $(INCDIR)  -DRECT
+
+moenchPhotonCounterRect: moenchPhotonCounter.cpp   $(INCS) clean
+			 g++ -o moenchPhotonCounterRect  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $  -DNEWRECEIVER -DRECT
+
+moenchAnalogRect: moenchPhotonCounter.cpp  $(INCS) clean
+			 g++ -o moenchAnalogRect  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR)   -DNEWRECEIVER -DANALOG -DRECT
+
+clean: 	
+	rm -f  moenchClusterFinderRect moenchMakeEtaRect moenchInterpolationRect moenchNoInterpolationRect moenchPhotonCounterRect moenchAnalogRect
+
+

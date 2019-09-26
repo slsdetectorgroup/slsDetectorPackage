@@ -1,7 +1,8 @@
-#ifndef MOENCH03T1ZMQDATA_H
-#define  MOENCH03T1ZMQDATA_H
+#ifndef MOENCH04RECDATA_H
+#define  MOENCH04RECDATA_H
 #include "slsDetectorData.h"
 
+//#define VERSION_V2
     /**
         @short  structure for a Detector Packet or Image Header
         @li frameNumber is the frame number
@@ -32,12 +33,14 @@
         uint16_t roundRNumber;    /**< is the round robin set number */
         uint8_t detType;        /**< is the detector type see :: detectorType */
         uint8_t version;        /**< is the version number of this structure format */
+      uint64_t packetCaught[8];        /**< is the version number of this structure format */
+
     } sls_detector_header;
 
 
 
 
-class moench03T1ReceiverData : public slsDetectorData<uint16_t> {
+class moench04CtbReceiverData : public slsDetectorData<uint16_t> {
  
  private:
   
@@ -45,8 +48,8 @@ class moench03T1ReceiverData : public slsDetectorData<uint16_t> {
   int nadc;
   int sc_width;
   int sc_height;
-  const int nPackets; /**<number of UDP packets constituting one frame */
-  const int packetSize; /**< size of a udp packet */
+  const int aSamples;
+  const int dSamples;
 
 
  public:
@@ -60,16 +63,13 @@ class moench03T1ReceiverData : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
-    moench03T1ReceiverData(int npackets=40, int ps=8192): slsDetectorData<uint16_t>(400, 400, ps*npackets+sizeof(sls_detector_header)), packetSize(ps), nPackets(npackets) {
+ moench04CtbReceiverData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+sizeof(sls_detector_header)+nds*8), aSamples(nas), dSamples(nds) {
 
     int nadc=32;
     int sc_width=25;
     int sc_height=200;
 
-    int adc_nr[32]={300,325,350,375,300,325,350,375,		\
-    		    200,225,250,275,200,225,250,275,\
-    		    100,125,150,175,100,125,150,175,\
-    		    0,25,50,75,0,25,50,75};
+    int adc_nr[32]={9, 8,11,10,13,12,15,14,1,0,3,2,5,4,7,6,23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24 };
 
     int row, col;
 
@@ -77,7 +77,7 @@ class moench03T1ReceiverData : public slsDetectorData<uint16_t> {
     int iadc;
     int ix, iy;
     
-    // int npackets=40;
+     int npackets=40;
     int i;
     int adc4(0);
 
@@ -89,14 +89,15 @@ class moench03T1ReceiverData : public slsDetectorData<uint16_t> {
 	  adc4=(int)iadc/4;
 	  if (i<sc_width*sc_height) {
 	    //  for (int i=0; i<sc_width*sc_height; i++) {
-	    col=adc_nr[iadc]+(i%sc_width);
-	    if (adc4%2==0) {
+	    col=(adc_nr[iadc]%16)*sc_width+(i%sc_width);
+	    // if (adc4%2==0) {
+	    if (iadc/16>0) {
 	      row=199-i/sc_width;
 	    } else {
 	      row=200+i/sc_width;
 	    }
 	    dataMap[row][col]=sizeof(sls_detector_header)+(nadc*i+iadc)*2;//+16*(ip+1);
-	    if (dataMap[row][col]<0 || dataMap[row][col]>=8192*40)
+	    if (dataMap[row][col]<0 || dataMap[row][col]>=aSamples*2*32)
 	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  }
 	}
@@ -110,27 +111,32 @@ class moench03T1ReceiverData : public slsDetectorData<uint16_t> {
       xmap[ibyte]=-1;
       ymap[ibyte]=-1;
     }
-    int off=sizeof(sls_detector_header)/2;
-    for (ipacket=0; ipacket<npackets; ipacket++) {
-      for (ibyte=0;  ibyte< 8192/2; ibyte++) {
-	i=ipacket*8208/2+ibyte;
-	  isample=ii/nadc;
-	  iadc=ii%nadc;
-	  adc4 = (int)iadc/4;
-	  ix=isample%sc_width;
-	  iy=isample/sc_width;
-	  if (adc4%2==0) {
-	    xmap[i+off]=adc_nr[iadc]+ix;
-	    ymap[i+off]=ny/2-1-iy;
-	  } else {
-	    xmap[i+off]=adc_nr[iadc]+ix;
-	    ymap[i+off]=ny/2+iy;
-	  }
-	  
-	ii++;
-	//	}
-      }
-    }
+    /* int off=sizeof(sls_detector_header)/2; */
+    
+    /*   for (ibyte=0;  ibyte<dataSize; ibyte++) { */
+
+
+    /* for (ipacket=0; ipacket<npackets; ipacket++) { */
+    /*   for (ibyte=0;  ibyte< 8192/2; ibyte++) { */
+    /* 	i=ipacket*8208/2+ibyte; */
+    /* 	  isample=ii/nadc; */
+    /* 	  if (isample<nSamples) { */
+    /* 	  iadc=ii%nadc; */
+    /* 	  adc4 = (int)iadc/4; */
+    /* 	  ix=isample%sc_width; */
+    /* 	  iy=isample/sc_width; */
+    /* 	  if (adc4%2==0) { */
+    /* 	    xmap[i+off]=adc_nr[iadc]+ix; */
+    /* 	    ymap[i+off]=ny/2-1-iy; */
+    /* 	  } else { */
+    /* 	    xmap[i+off]=adc_nr[iadc]+ix; */
+    /* 	    ymap[i+off]=ny/2+iy; */
+    /* 	  } */
+    /* 	  } */
+    /* 	ii++; */
+    /* 	//	} */
+    /*   } */
+    /* } */
     
     iframe=0;
     //  cout << "data struct created" << endl;
@@ -167,7 +173,7 @@ class moench03T1ReceiverData : public slsDetectorData<uint16_t> {
 
 
   */
-  int getPacketNumber(char *buff){((sls_detector_header*)buff)->packetNumber;}//((*(((int*)(buff+4))))&0xff)+1;};   
+  int getPacketNumber(char *buff){return ((sls_detector_header*)buff)->packetNumber;}//((*(((int*)(buff+4))))&0xff)+1;};   
 
 /*    /\** */
 
@@ -275,7 +281,7 @@ class moench03T1ReceiverData : public slsDetectorData<uint16_t> {
 
 
 
-int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
+  //int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
 
 };
 

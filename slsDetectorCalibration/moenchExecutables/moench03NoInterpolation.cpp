@@ -2,7 +2,6 @@
 #include "ansi.h"
 #include <iostream>
 
-#include "moench03T1ZmqData.h"
 #include "single_photon_hit.h"
 
 #include "noInterpolation.h"

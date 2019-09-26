@@ -1,21 +1,21 @@
-#ifndef MOENCH03T1ZMQDATANEW_H
-#define  MOENCH03T1ZMQDATANEW_H
+#ifndef MOENCH04ZMQDATA_H
+#define  MOENCH04ZMQDATA_H
 #include "slsDetectorData.h"
 
 
-class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
+
+
+class moench04CtbZmqData : public slsDetectorData<uint16_t> {
  
  private:
   
-  // int iframe;
+  int iframe;
   int nadc;
   int sc_width;
   int sc_height;
-  const int nSamples;
-  const int offset;
+  const int aSamples;
+  const int dSamples;
 
-  double ghost[200][25];
-  double xtalk;
 
  public:
 
@@ -28,159 +28,106 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
- moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(sizeof(int)), xtalk(0.00021) {
+ moench04CtbZmqData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+nds*8), nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
+    
 
-    int nadc=32;
-    int sc_width=25;
-    int sc_height=200;
-
-    int adc_nr[32]={300,325,350,375,300,325,350,375,		\
-    		    200,225,250,275,200,225,250,275,\
-    		    100,125,150,175,100,125,150,175,\
-    		    0,25,50,75,0,25,50,75};
+    int adc_nr[32]={9, 8,11,10,13,12,15,14,1,0,3,2,5,4,7,6,23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24 };
 
     int row, col;
-    
-    int isample;
-    int iadc;
-    int ix, iy;
-    
-     int npackets=40;
-    int i;
-    int adc4(0);
-  
-    for (int ip=0; ip<npackets; ip++) {
-      for (int is=0; is<128; is++) {
 
+    //int isample;
+    int iadc;
+    //int ix, iy;
+    
+    // int npackets=40;
+    int i;
+    //int adc4(0);
+
+      for (int is=0; is<aSamples; is++) {
+	
 	for (iadc=0; iadc<nadc; iadc++) {
-	  i=128*ip+is;
-	  adc4=(int)iadc/4;
+	  i=is;
+	  //	  adc4=(int)iadc/4;
 	  if (i<sc_width*sc_height) {
 	    //  for (int i=0; i<sc_width*sc_height; i++) {
-	    col=adc_nr[iadc]+(i%sc_width);
-	    if (adc4%2==0) {
+	    col=(adc_nr[iadc]%16)*sc_width+(i%sc_width);
+	    // if (adc4%2==0) {
+	    if (iadc<16) {
 	      row=199-i/sc_width;
 	    } else {
 	      row=200+i/sc_width;
 	    }
-	    dataMap[row][col]=(nadc*i+iadc)*2+offset;//+16*(ip+1);
-	    if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize)
+	    dataMap[row][col]=(nadc*i+iadc)*2;//+16*(ip+1);
+	    if (dataMap[row][col]<0 || dataMap[row][col]>=aSamples*2*32)
 	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  }
 	}
       }
-    }
-
-    
-    int ii=0;
-    
-    for (i=0; i<  dataSize; i++) {
-      if (i<offset) {
-    	//header! */
-    	xmap[i]=-1;
-    	ymap[i]=-1;
-      } else {
-    	  // ii=ibyte+128*32*ipacket;
-    	isample=ii/nadc;
-    	if (isample<nSamples) {
-    	  iadc=ii%nadc;
-    	  adc4 = (int)iadc/4;
-    	  ix=isample%sc_width;
-    	  iy=isample/sc_width;
-    	  if (adc4%2==0) {
-    	    xmap[i]=adc_nr[iadc]+ix;
-    	    ymap[i]=ny/2-1-iy;
-    	  } else {
-    	    xmap[i]=adc_nr[iadc]+ix;
-    	    ymap[i]=ny/2+iy;
-    	  }
-    	}
-	  
-    	ii++;
-      }
   
-    }
-    
 
+    /* for (ibyte=0; ibyte<sizeof(sls_detector_header)/2; ibyte++){ */
+    /*   xmap[ibyte]=-1; */
+    /*   ymap[ibyte]=-1; */
+    /* } */
+    /* int off=sizeof(sls_detector_header)/2; */
     
-    for (int ix=0; ix<25; ix++)
-      for (int iy=0; iy<200; iy++)
-	ghost[iy][ix]=0.;
-    
-    
-    // iframe=0;
-    //  cout << "data struct created" << endl;
-  };
-    
+    /*   for (ibyte=0;  ibyte<dataSize; ibyte++) { */
 
-  double getXTalk(){return xtalk;};
-  void setXTalk(double g) {xtalk=g;};
-  
-  /**
-     Returns the value of the selected channel for the given dataset as double.
-     \param data pointer to the dataset (including headers etc)
-     \param ix pixel number in the x direction
-     \param iy pixel number in the y direction
-     \returns data for the selected channel, with inversion if required as double
 
-  */
-  virtual double getValue(char *data, int ix, int iy=0) {
-    /* cout << " x "<< ix << " y"<< iy << " val " << getChannel(data, ix, iy)<< endl;*/
-    /* double val=0, vout=getChannel(data, ix, iy); */
-    /* int x1=ix%25; */
-    /* for (int ix=0; ix<16; ix++) { */
-    /*   for (int ii=0; ii<2; ii++) { */
-    /* 	val+=getChannel(data,x1+25*ix,iy); */
-    /* 	val+=getChannel(data,x1+25*ix,399-iy); */
+    /* for (ipacket=0; ipacket<npackets; ipacket++) { */
+    /*   for (ibyte=0;  ibyte< 8192/2; ibyte++) { */
+    /* 	i=ipacket*8208/2+ibyte; */
+    /* 	  isample=ii/nadc; */
+    /* 	  if (isample<nSamples) { */
+    /* 	  iadc=ii%nadc; */
+    /* 	  adc4 = (int)iadc/4; */
+    /* 	  ix=isample%sc_width; */
+    /* 	  iy=isample/sc_width; */
+    /* 	  if (adc4%2==0) { */
+    /* 	    xmap[i+off]=adc_nr[iadc]+ix; */
+    /* 	    ymap[i+off]=ny/2-1-iy; */
+    /* 	  } else { */
+    /* 	    xmap[i+off]=adc_nr[iadc]+ix; */
+    /* 	    ymap[i+off]=ny/2+iy; */
+    /* 	  } */
+    /* 	  } */
+    /* 	ii++; */
+    /* 	//	} */
     /*   } */
     /* } */
-    /* vout+=0.0008*val-6224; */
-    /* return vout; //(double)getChannel(data, ix, iy);
-     */
-    return ((double)getChannel(data, ix, iy))+xtalk*getGhost(iy,iy);
-  };
-
-
-
-  virtual void calcGhost(char *data, int ix, int iy) {
-    double val=0;
-    /* for (int ix=0; ix<25; ix++){ */
-    /*   for (int iy=0; iy<200; iy++) { */
-	val=0;
-	for (int isc=0; isc<16; isc++) {
-	  for (int ii=0; ii<2; ii++) {
-	   val+=getChannel(data,ix+25*isc,iy);
-	   //  cout << val << " " ;
-	    val+=getChannel(data,ix+25*isc,399-iy);
-	    //  cout << val << " " ;
-	  }
-	}
-	ghost[iy][ix]=val;//-6224;
-	//	cout << endl;
-    /*   }  */
-    /* } */
-    // cout << "*" << endl;
     
+    iframe=0;
+    //  cout << "data struct created" << endl;
   }
-
-
-
-  virtual void calcGhost(char *data) {
-    for (int ix=0; ix<25; ix++){
-      for (int iy=0; iy<200; iy++) {
-	calcGhost(data, ix,iy);
-      } 
+    
+  int getGain(char *data, int x, int y) {
+    int aoff=aSamples*2*32;
+    int irow;
+    int isc=x/sc_width;
+    int icol=x%sc_width;
+    if (y<200) irow=sc_height-1-y;
+    else {
+      irow=y-sc_height;
+      isc++;
     }
-    // cout << "*" << endl;
+    int ibit[32]={-1,-1,-1,-1,-1,-1,1,3,5,7,-1,-1,-1,-1,-1,-1,62,60,58,56,54,52,50,48,63,61,59,57,55,53,51,49};
+    int isample=irow*sc_width+icol;
+   
+    uint64_t sample;
+    char *ptr;
+    if (isc<0 || isc>=32) return 0;
+    if (ibit[isc]<0 || ibit[isc]>=64) return 0;
+    if (dSamples>isample) {
+      ptr=data+aoff+8*isample;
+      sample=*((uint64_t*)ptr);
+    cout << isc << " " << ibit[isc] << " " << isample << hex << sample << dec << endl;
+    if (sample & (1<<ibit[isc]))
+      return 1;
+    else
+      return 0;
+    } else
+      return 0;
   }
-
-
-  double getGhost(int ix, int iy) {
-    if (iy<200) return ghost[iy][ix%25]; 
-    if (iy<400) return ghost[399-iy][ix%25];
-    return 0;
-  };
-
 
      /**
 
@@ -200,7 +147,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
 
-  int getFrameNumber(char *buff){return *((int*)buff);};//*((int*)(buff+5))&0xffffff;};   
+  int getFrameNumber(char *buff){return iframe;};//((sls_detector_header*)buff)->frameNumber;};//*((int*)(buff+5))&0xffffff;};   
 
   /**
 
@@ -211,7 +158,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
   */
-  int getPacketNumber(char *buff){return 0;}//((*(((int*)(buff+4))))&0xff)+1;};   
+  //int getPacketNumber(char *buff){return ((sls_detector_header*)buff)->packetNumber;}//((*(((int*)(buff+4))))&0xff)+1;};   
 
 /*    /\** */
 
@@ -266,7 +213,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
   };
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np) {
-	  char *data=new char[32*2*nSamples];
+	  char *data=new char[dataSize];
 	  char *d=readNextFrame(filebin, ff, np, data);
 	  if (d==NULL) {delete [] data; data=NULL;}
 	  return data;
@@ -276,20 +223,20 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
-    //char *retval=0;
-    //	  int  nd;
-    //int fnum = -1;
+	 // char *retval=0;
+	  //int  nd;
+	  //int fnum = -1;
 	  np=0;
-	  //	  int  pn;
+	  //int  pn;
 	  
-
-	  //  if (ff>=0)
-	  //  fnum=ff;
+	  //  cout << dataSize << endl;
+	  if (ff>=0)
+	   // fnum=ff;
 
 	  if (filebin.is_open()) {
-	    if (filebin.read(data, 32*2*nSamples) ){
-	      // iframe++;
-	      //ff=iframe;
+	    if (filebin.read(data, dataSize) ){
+	      ff=getFrameNumber(data);
+	      //     np=getPacketNumber(data);
 	      return data;
 	    }
 	  }
@@ -311,29 +258,15 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
      
   */
   virtual  char *findNextFrame(char *data, int &ndata, int dsize){
-    if (dsize<32*2*nSamples) ndata=dsize;
-    else ndata=32*2*nSamples;
+    if (dsize<dataSize) ndata=dsize;
+    else ndata=dataSize;
     return data;
 
   }
-  
 
 
 
-
-
-  // virtual int setFrameNumber(int ff){iframe=ff};
-
-
-
-
-
-
-
-
-
-
-int getPacketNumber(int x, int y) {return 0;};
+  //int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
 
 };
 

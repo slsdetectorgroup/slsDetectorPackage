@@ -46,8 +46,8 @@ class interpolatingDetector : public singlePhotonDetector {
 		       int sign=1, 
 		       commonModeSubtraction *cm=NULL,
 		       int nped=1000, 
-		       int nd=100, int nnx=-1, int nny=-1) : 
-  singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny) , interp(inte), id(0)  {
+		       int nd=100, int nnx=-1, int nny=-1, double *gm=NULL, ghostSummation<uint16_t> *gs=NULL) : 
+  singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny, gm, gs) , interp(inte), id(0)  {
     //cout << "**"<< xmin << " " << xmax << " " << ymin << " " << ymax << endl;
     fi=new pthread_mutex_t ;
 
@@ -139,8 +139,8 @@ class interpolatingDetector : public singlePhotonDetector {
     nph=addFrame(data,val,0); 
     if (interp)
       return interp->getInterpolatedImage();
-    else
-      singlePhotonDetector::getImage();
+    //else
+    return singlePhotonDetector::getImage();
       //return NULL;
   };
   
@@ -233,7 +233,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
     };
     
     virtual slsInterpolation *setInterpolation(slsInterpolation *ii){
-      int ok; 
+      // int ok; 
       interp=ii; 
       /*  pthread_mutex_lock(fi);
       if (interp)

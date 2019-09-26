@@ -35,7 +35,7 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase{
 
 
    ///*Eta Distribution Rebinning*///
-   double bsize=1./nSubPixels; //precision
+   // double bsize=1./nSubPixels; //precision
    // cout<<"nPixelsX = "<<nPixelsX<<" nPixelsY = "<<nPixelsY<<" nSubPixels = "<<nSubPixels<<endl;
    double tot_eta=0;
    double tot_eta_x=0;
@@ -50,8 +50,8 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase{
    double hy[nbeta]; //profile y
    double hix[nbeta]; //integral of projection x
    double hiy[nbeta]; //integral of projection y
-   int ii=0;
-   double etax, etay;
+   //  int ii=0;
+   double etax;//, etay;
    for (int ib=0; ib<nbeta; ib++) {
 
      tot_eta_x=0;
@@ -81,7 +81,7 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase{
        hiy[iby]=hiy[iby-1]+hy[iby];
      }
 
-     ii=0;
+     // ii=0;
      tot_eta_x=hix[nbeta-1]+1;
      tot_eta_y=hiy[nbeta-1]+1;
      
@@ -98,7 +98,7 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase{
      /* if (ii!=(nSubPixels-1)) */
      /*   cout << ib << " x " <<  tot_eta_x << " " << (ii+1)*tot_eta_x*bsize << " " << ii << " " << hix[nbeta-1]<< endl; */
      
-     ii=0;
+     //ii=0;
      
      for (int ibx=0; ibx<nbeta; ibx++) {
        if (tot_eta_y<=0) {

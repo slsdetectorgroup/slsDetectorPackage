@@ -6,7 +6,8 @@
 #include <pthread.h>
 #include "slsDetectorData.h"
 #include "pedestalSubtraction.h"
-#include "commonModeSubtraction.h"
+#include "commonModeSubtractionNew.h"
+#include "ghostSummation.h"
 #include "tiffIO.h"
 #include "slsInterpolation.h"
 
@@ -61,7 +62,7 @@ template <class dataType> class analogDetector {
   
 
  analogDetector(slsDetectorData<dataType> *d, int sign=1, 
-		commonModeSubtraction *cm=NULL, int nped=1000, int nnx=-1, int nny=-1, double *gm=NULL) : det(d), nx(nnx), ny(nny), stat(NULL), cmSub(cm),  iframe(-1), dataSign(sign), gmap(gm), id(0) {
+		commonModeSubtraction *cm=NULL, int nped=1000, int nnx=-1, int nny=-1, double *gm=NULL, ghostSummation<dataType> *gs=NULL) : det(d), nx(nnx), ny(nny), stat(NULL), cmSub(cm), dataSign(sign), iframe(-1), gmap(gm), ghSum(gs), id(0) {
     
     if (det)
       det->getDetectorSize(nx,ny);
@@ -118,7 +119,7 @@ template <class dataType> class analogDetector {
     dataSign=orig->dataSign;
     iframe=orig->iframe;
     gmap=orig->gmap;
-    cmSub=orig->cmSub;
+    //  cmSub=orig->cmSub;
     id=orig->id;
     xmin=orig->xmin;
     xmax=orig->xmax;
@@ -153,7 +154,16 @@ template <class dataType> class analogDetector {
      hs9=(TH2F*)(orig->hs9)->Clone();//new TH2F("hs","hs",(orig->hs)-getNbins,-500,9500,nx*ny,-0.5,nx*ny-0.5); 
 #endif
 #endif
-
+     if (orig->cmSub) {
+       cmSub=(orig->cmSub)->Clone();
+       cout <<"cloning cm" << endl;
+     }
+     else cmSub=NULL;
+     if (orig->ghSum) {
+       ghSum=(orig->ghSum)->Clone();
+       cout <<"cloning gs" << endl;
+     }
+     else ghSum=NULL;
   }
 
 
@@ -221,9 +231,10 @@ template <class dataType> class analogDetector {
     if (gm) {
       if (gmap) delete [] gmap; 
       gmap=new double[nnx*nny];
-	for (int iy=0; iy<nny; iy++) {
-      for (int ix=0; ix<nnx; ix++) {
+      for (int iy=0; iy<nny; iy++) {
+	for (int ix=0; ix<nnx; ix++) {
 	  gmap[iy*nnx+ix]=gm[iy*nnx+ix];
+	  // cout << gmap[iy*nnx+ix] << " " ;
 	}
       }
       return gmap;
@@ -275,6 +286,14 @@ template <class dataType> class analogDetector {
   
   /** resets the commonModeSubtraction and increases the frame index */
   virtual void newFrame(){iframe++; if (cmSub) cmSub->newFrame();};
+
+  /** resets the commonModeSubtraction and increases the frame index */
+  virtual void newFrame(char *data){
+    iframe++; 
+    if (cmSub) cmSub->newFrame(); 
+    calcGhost(data); 
+    //    cout << getId() << " Calc ghost " <<  getGhost(15,15) << endl;
+      };
   
 
     /** sets the commonModeSubtraction algorithm to be used 
@@ -287,6 +306,11 @@ template <class dataType> class analogDetector {
 	\returns pointer to the actual common mode subtraction algorithm
     */
     commonModeSubtraction *getCommonModeSubtraction() {return cmSub;};
+
+
+    ghostSummation<dataType> *getGhostSummation(){return ghSum;};
+    ghostSummation<dataType> *setGhostSummation(ghostSummation<dataType> *gs){ghSum=gs; return ghSum;}; 
+
 
 
     /**
@@ -304,11 +328,17 @@ template <class dataType> class analogDetector {
        \param iy pixel y coordinate
        \param cm 1 adds the value to common mod, 0 skips it. Defaults to 0. - not properly implemented
     */
-    virtual void addToPedestal(double val, int ix, int iy=0, int cm=0){ 
+    virtual void addToPedestal(double val, int ix, int iy, int cm=0){ 
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) { 
+	
+	//	cout << val << " " ;
 	if (cmSub && cm>0)  { 
 	  val-=	getCommonMode(ix, iy);
 	}
+	//	cout << val << " " ;
+	val+=getGhost(ix,iy);
+	//	cout << val ;
+	//	cout << endl;
 	stat[iy][ix].addToPedestal(val); 
 	/* if (cmSub && cm>0)  { */
 	/*   if (det) if (det->isGood(ix, iy)==0) return; */
@@ -318,29 +348,47 @@ template <class dataType> class analogDetector {
     }
     
     double getCommonMode(int ix, int iy) {
-      if (cmSub) return cmSub->getCommonMode(ix, iy);
-      else return 0;
+      if (cmSub) {
+	return cmSub->getCommonMode(ix, iy);
+      }
+      return 0;
     }
 
 
     virtual void addToCommonMode(char *data){ 
+      // cout << "+"<< getId() << endl;
       if (cmSub) {
+	//cout << "*" << endl;
 	  for (int iy=ymin; iy<ymax; iy++) { 
 	for (int ix=xmin; ix<xmax; ix++) {
 	    // if (getNumpedestals(ix,iy)>0) 
-	    if (det->isGood(ix,iy))
+	  //  if (det->isGood(ix,iy)) {
 	      addToCommonMode(data, ix, iy);
-	  }
+	      //  cout << ":";
+	      // }
 	}
+	  }
 	//cout << "cm " << getCommonMode(0,0) << " " << getCommonMode(1,0) << endl;
       }
     }      
+
     virtual void addToCommonMode(char *data, int ix, int iy=0){ 
+      //  cout <<".";
       if (cmSub) {
+	//cout <<":";
 	if (det) if (det->isGood(ix, iy)==0) return;
 	if (getNumpedestals(ix,iy)>0){
-	    cmSub->addToCommonMode(subtractPedestal(data,ix,iy,0), ix, iy);
-	    // cout << ix << " " <<subtractPedestal(data,ix,iy,0)  << endl;
+	  double val;
+	  if (det) {
+	  /* if (det->getChannel(data, ix, iy)>=0x3fff) */
+	  /*   cout << ix << " " << iy << " " << det->getChannel(data, ix, iy) <<endl; */
+	    val= (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy,0));
+	  }	else
+	    val= (((double*)data)[iy*nx+ix]-getPedestal(ix,iy));
+	  	val+=getGhost(ix,iy);
+	
+	  cmSub->addToCommonMode(val, ix, iy);
+	  //cout << ":";
 	}
       }
     }      
@@ -351,12 +399,13 @@ template <class dataType> class analogDetector {
        \param cm 0 (default) without common mode subtraction, 1 with common mode subtraction (if defined)
        \returns pedestal value
     */
-    virtual double getPedestal(int ix, int iy, int cm=0){
-      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
-	if (cmSub && cm>0) 
+    virtual double getPedestal (int ix, int iy, int cm=0){
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
+	if (cmSub && cm>0) {
 	  return stat[iy][ix].getPedestal()+getCommonMode(ix,iy); 
-	else return stat[iy][ix].getPedestal(); 
-      else return -1;
+	  
+	}     	else return stat[iy][ix].getPedestal(); 
+      } else return -1;
     };
 
 
@@ -367,15 +416,22 @@ template <class dataType> class analogDetector {
        \returns pedestal rms
     */
     virtual double getPedestalRMS(int ix, int iy){
-      if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
-	return stat[iy][ix].getPedestalRMS();
-      else return -1;
+      double g=1;
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
+	if (gmap) {
+	  g=gmap[iy*nx+ix];
+	  if (g==0) g=-1.;
+	}
+      
+	return stat[iy][ix].getPedestalRMS()/g;//divide by gain?
+      }
+      return -1;
     };
 
      virtual int getNumpedestals(int ix, int iy){
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
 	return stat[iy][ix].getNumpedestals();
-      else return -1;
+      return -1;
     };
     /**
        gets  pedestal (and common mode)
@@ -387,10 +443,10 @@ template <class dataType> class analogDetector {
     virtual double* getPedestal(double *ped){
       if (ped==NULL)
 	ped=new double[nx*ny];
-	for (int iy=0; iy<ny; iy++) {
-      for (int ix=0; ix<nx; ix++) {
+      for (int iy=0; iy<ny; iy++) {
+	for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
-	  //cout << ped[iy*nx+ix] << " " ;
+	    //cout << ped[iy*nx+ix] << " " ;
 	}
       }
       return ped;
@@ -445,13 +501,14 @@ template <class dataType> class analogDetector {
     */
     virtual void setPedestal(double *ped, double *rms=NULL, int m=-1){
       double rr=0;
-	for (int iy=ymin; iy<ymax; iy++) {
-      for (int ix=xmin; ix<xmax; ix++) {
+      for (int iy=ymin; iy<ymax; iy++) {
+	for (int ix=xmin; ix<xmax; ix++) {
 	  if (rms) rr=rms[iy*nx+ix];
 	  stat[iy][ix].setPedestal(ped[iy*nx+ix],rr, m);
+	  //  cout << ix << " " << iy << " " << ped[iy*nx+ix] << " " << stat[iy][ix].getPedestal() << endl;
 	};
       };
-
+      
     }
     
 
@@ -482,7 +539,24 @@ template <class dataType> class analogDetector {
 
     }
     
+ virtual void calcGhost(char *data, int ix, int iy=1) {
+   if (ghSum) {
+     ghSum->calcGhost(data, ix, iy);
+   }
+     
+};
 
+ virtual void calcGhost(char *data){if (ghSum) {
+     ghSum->calcGhost(data);
+     
+     //  cout << getId() << " @ " << ghSum->getXTalk() << " " <<  ghSum->getGhost(15,15) << endl;
+   }
+     
+
+};
+
+
+ virtual double getGhost(int ix, int iy) {if (ghSum) return ghSum->getGhost(ix, iy); return 0;};
 
      /**
        write 32bit tiff file with detector image data
@@ -690,19 +764,24 @@ template <class dataType> class analogDetector {
     
     virtual void addToPedestal(char *data, int cm=0) {
       
-      //    cout << "add to pedestal " << endl;
-      newFrame();
+      // cout << "add to pedestal " << endl;
+      newFrame(data);
       
-      if (cmSub) {
+      //calcGhost(data);
+
+
+      if (cmSub && cm) {
+	//	cout <<",";
 	addToCommonMode(data);
-      }
+      } 
             
       //cout << xmin << " " << xmax << endl;
       // cout << ymin << " " << ymax << endl;
-	for (int iy=ymin; iy<ymax; iy++) {
-      for (int ix=xmin; ix<xmax; ix++) {
+      for (int iy=ymin; iy<ymax; iy++) {
+	for (int ix=xmin; ix<xmax; ix++) {
 	  if (det->isGood(ix,iy)) {
-	    addToPedestal(data,ix,iy,1);
+	    // addToPedestal(data,ix,iy,1);
+	    addToPedestal(data,ix,iy,cm);
 	  //if (ix==10 && iy==10) 
 	  // cout <<ix << " " << iy << " " << getPedestal(ix,iy)<< endl;
 #ifdef ROOTSPECTRUM 
@@ -782,7 +861,7 @@ template <class dataType> class analogDetector {
     */
 
 
-    virtual void addToPedestal(char *data, int ix, int iy=0, int cm=0) {
+    virtual void addToPedestal(char *data, int ix, int iy, int cm=0) {
       
       
       double val;
@@ -792,12 +871,13 @@ template <class dataType> class analogDetector {
 	  val=dataSign*det->getValue(data, ix, iy);
 	else
 	  val=((double*)data)[iy*nx+ix];
-	
+	//	cout << val << endl;
 	 /* if (ix==10 && iy==10)  */
 	 /*     cout << ix << " " << iy << " " << val ;  */
 	  /* if (ix==100 && iy==100) */
 	  /*   cout << ix << " " << iy << " " << val; */
 	addToPedestal(val,ix,iy);
+	//	cout << val << endl;
 	  /* if (ix==10 && iy==10)  */
 	  /*   cout <<" " << getPedestal(ix,iy)<< endl; */
 	  /* if (ix==100 && iy==100) */
@@ -818,15 +898,17 @@ template <class dataType> class analogDetector {
       
     virtual  int *subtractPedestal(char *data, int *val=NULL, int cm=0) {
       
-      newFrame();
+      newFrame(data);
       
       if (val==NULL)
 	val=image;//new double[nx*ny];
       
-	for (int iy=ymin; iy<ymax; iy++) {
-      for (int ix=xmin; ix<xmax; ix++) {
-	    if (det->isGood(ix,iy))
-	      val[iy*nx+ix]+=subtractPedestal(data, ix, iy,cm);
+      //calcGhost(data);
+
+      for (int iy=ymin; iy<ymax; iy++) {
+	for (int ix=xmin; ix<xmax; ix++) {
+	  if (det->isGood(ix,iy))
+	    val[iy*nx+ix]+=subtractPedestal(data, ix, iy,cm);
 	}
       }
       return  val;
@@ -847,7 +929,7 @@ template <class dataType> class analogDetector {
 
    virtual  double subtractPedestal(char *data, int ix, int iy=0, int cm=0) {
      double g=1.;
-     double val;
+     double val =0;
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
 	if (gmap) {
 	  g=gmap[iy*nx+ix];
@@ -860,7 +942,12 @@ template <class dataType> class analogDetector {
 	  val= (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy,cm))/g;
 	}	else
 	  val= (((double*)data)[iy*nx+ix]-getPedestal(ix,iy))/g;
-    
+	
+	//if (val>=0.5*thr)
+	// cout << val << " " << (dataSign*det->getValue(data, ix, iy)-getPedestal(ix,iy,cm)) << " " << g << " ";
+
+	val+=getGhost(ix,iy)/g;
+
 #ifdef ROOTSPECTRUM
 	hs->Fill(val,(iy-ymin)*(xmax-xmin)+(ix-xmin));
 #ifdef ROOTCLUST
@@ -892,6 +979,7 @@ template <class dataType> class analogDetector {
 #endif
 	return val;
       }	  
+      return val;
    };
       
 
@@ -919,8 +1007,7 @@ template <class dataType> class analogDetector {
      int nph=0;
      double v;
      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
-       v=subtractPedestal(data,ix,iy);
-
+       v=subtractPedestal(data,ix,iy,1);
 /*        // cout << v << " " ; */
 /* #ifdef ROOTSPECTRUM */
 /*        // cout << (iy-ymin)*(xmax-xmin)+(ix-xmin) << endl; */
@@ -929,8 +1016,14 @@ template <class dataType> class analogDetector {
        if (thr>0) {
 	 v+=0.5*thr;
 	 nph=v/thr;
-	 if (nph>0)
+	 
+	 /* if (ix ==10 && iy<20) */
+	 /*   cout << det->getValue(data,ix,iy) << " " << stat[iy][ix].getPedestal() << " " << getCommonMode(ix,iy) << " " << getPedestal(ix,iy,0)<< " "  << getPedestal(ix,iy,1) << endl; */
+	 // cout << subtractPedestal(data,ix,iy,0) << " " << subtractPedestal(data,ix,iy,1) << " " << nph << endl;
+	 if (nph>0) {
+	   //cout << " " << nph << endl;
 	   return nph;
+	 }
 	 return 0;
        } 
        return v;
@@ -946,15 +1039,16 @@ template <class dataType> class analogDetector {
    */
      int *getNPhotons(char *data,  int *nph=NULL) {
        
-       double val;
+       //double val;
        if (nph==NULL)
 	 nph=image;
-       newFrame();
+       
+       newFrame(data);
 
+       //calcGhost(data);
        addToCommonMode(data);
-
-	 for (int iy=ymin; iy<ymax; iy++) {
-       for (int ix=xmin; ix<xmax; ix++) {
+       for (int iy=ymin; iy<ymax; iy++) {
+	 for (int ix=xmin; ix<xmax; ix++) {
 	   if (det->isGood(ix,iy))
 	     nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
 	 }
@@ -1032,13 +1126,16 @@ template <class dataType> class analogDetector {
       if (ymi<0) ymi=ymin;
       if (yma<0) yma=ymax;
       
-	for (int iy=ymi; iy<yma; iy++)
-      for (int ix=xmi; ix<xma; ix++)
+      newFrame(data);
+      //calcGhost(data);
+      addToCommonMode(data);
+      for (int iy=ymi; iy<yma; iy++)
+	for (int ix=xmi; ix<xma; ix++)
 	  if (det->isGood(ix,iy)) {
 	    if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
 	      val+=getNPhotons(data, ix, iy);
 	  }
-
+      
       return val;
       
     };
@@ -1056,7 +1153,7 @@ template <class dataType> class analogDetector {
       switch(fMode) {
       case ePedestal:
 	//cout << "analog ped " << endl;
-	addToPedestal(data);
+	addToPedestal(data,1);
 	break;
       default:
 	//	cout << "analog " << endl;
@@ -1140,6 +1237,7 @@ FILE *getFilePointer(){return myFile;};
     int dataSign; /**< sign of the data i.e. 1 if photon is positive, -1 if negative */
     int iframe;  /**< frame number (not from file but incremented within the dataset every time newFrame is called */
     double *gmap;
+    ghostSummation<dataType> *ghSum;/**< ghostSummation class */
     int *image;
     int id;
     //int xmin, xmax, ymin, ymax;  int xmin; /**< minimum x of the region of interest */

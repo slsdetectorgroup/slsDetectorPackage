@@ -19,7 +19,7 @@ enum interfaceType {OUTER, INNER};
 int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
 void 		basictests();
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
 int 		checkType();
 int 		testFpga();
 int 		testBus();
@@ -250,6 +250,8 @@ int 	getNumberofUDPInterfaces();
 void 	selectPrimaryInterface(int val);
 int 	getPrimaryInterface();
 void 	setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport);
+#endif
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
 void 	calcChecksum(udp_header* udp);
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)

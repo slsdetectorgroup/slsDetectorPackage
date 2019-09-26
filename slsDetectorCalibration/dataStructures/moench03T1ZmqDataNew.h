@@ -14,9 +14,6 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
   const int nSamples;
   const int offset;
 
-  double ghost[200][25];
-  double xtalk;
-
  public:
 
 
@@ -28,7 +25,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
- moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(sizeof(int)), xtalk(0.00021) {
+ moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(sizeof(int)) {
 
     int nadc=32;
     int sc_width=25;
@@ -64,6 +61,9 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 	      row=200+i/sc_width;
 	    }
 	    dataMap[row][col]=(nadc*i+iadc)*2+offset;//+16*(ip+1);
+#ifdef HIGHZ
+	    dataMask[row][col]=0x3fff;
+#endif
 	    if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize)
 	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  }
@@ -103,83 +103,11 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     
 
     
-    for (int ix=0; ix<25; ix++)
-      for (int iy=0; iy<200; iy++)
-	ghost[iy][ix]=0.;
-    
     
     // iframe=0;
     //  cout << "data struct created" << endl;
   };
     
-
-  double getXTalk(){return xtalk;};
-  void setXTalk(double g) {xtalk=g;};
-  
-  /**
-     Returns the value of the selected channel for the given dataset as double.
-     \param data pointer to the dataset (including headers etc)
-     \param ix pixel number in the x direction
-     \param iy pixel number in the y direction
-     \returns data for the selected channel, with inversion if required as double
-
-  */
-  virtual double getValue(char *data, int ix, int iy=0) {
-    /* cout << " x "<< ix << " y"<< iy << " val " << getChannel(data, ix, iy)<< endl;*/
-    /* double val=0, vout=getChannel(data, ix, iy); */
-    /* int x1=ix%25; */
-    /* for (int ix=0; ix<16; ix++) { */
-    /*   for (int ii=0; ii<2; ii++) { */
-    /* 	val+=getChannel(data,x1+25*ix,iy); */
-    /* 	val+=getChannel(data,x1+25*ix,399-iy); */
-    /*   } */
-    /* } */
-    /* vout+=0.0008*val-6224; */
-    /* return vout; //(double)getChannel(data, ix, iy);
-     */
-    return ((double)getChannel(data, ix, iy))+xtalk*getGhost(iy,iy);
-  };
-
-
-
-  virtual void calcGhost(char *data, int ix, int iy) {
-    double val=0;
-    /* for (int ix=0; ix<25; ix++){ */
-    /*   for (int iy=0; iy<200; iy++) { */
-	val=0;
-	for (int isc=0; isc<16; isc++) {
-	  for (int ii=0; ii<2; ii++) {
-	   val+=getChannel(data,ix+25*isc,iy);
-	   //  cout << val << " " ;
-	    val+=getChannel(data,ix+25*isc,399-iy);
-	    //  cout << val << " " ;
-	  }
-	}
-	ghost[iy][ix]=val;//-6224;
-	//	cout << endl;
-    /*   }  */
-    /* } */
-    // cout << "*" << endl;
-    
-  }
-
-
-
-  virtual void calcGhost(char *data) {
-    for (int ix=0; ix<25; ix++){
-      for (int iy=0; iy<200; iy++) {
-	calcGhost(data, ix,iy);
-      } 
-    }
-    // cout << "*" << endl;
-  }
-
-
-  double getGhost(int ix, int iy) {
-    if (iy<200) return ghost[iy][ix%25]; 
-    if (iy<400) return ghost[399-iy][ix%25];
-    return 0;
-  };
 
 
      /**
@@ -276,15 +204,15 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
-    //char *retval=0;
-    //	  int  nd;
-    //int fnum = -1;
+	  char *retval=0;
+	  int  nd;
+	  int fnum = -1;
 	  np=0;
-	  //	  int  pn;
+	  int  pn;
 	  
 
-	  //  if (ff>=0)
-	  //  fnum=ff;
+	  if (ff>=0)
+	    fnum=ff;
 
 	  if (filebin.is_open()) {
 	    if (filebin.read(data, 32*2*nSamples) ){

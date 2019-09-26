@@ -1,5 +1,5 @@
 #define WRITE_QUAD
-#define DEVELOPER
+#define MOENCH_BRANCH
 
 #define C_GHOST 0.0004
 
@@ -260,7 +260,10 @@ int main(int argc, char *argv[]) {
 	// header variables
 	uint64_t acqIndex = -1;
 	uint64_t frameIndex = -1;
-	//uint32_t subFrameIndex = -1;
+#ifdef MOENCH_BRANCH
+ 	uint32_t subFrameIndex = -1;
+	int* flippedData = 0;
+#endif
 	uint64_t fileindex = -1;
 	string filename = "";
 	//	char* image = new char[size];
@@ -292,7 +295,6 @@ int main(int argc, char *argv[]) {
 	uint16_t roundRNumber = 0;
 	uint8_t detType = 0;
 	uint8_t version = 0;
-	//	int* flippedData = 0;
 	char* additionalJsonHeader = 0;
 
 	int32_t threshold=0;

@@ -119,7 +119,7 @@ class single_photon_hit {
       if (fread((void*)qq, 1, 4*sizeof(int), myFile)) {
 
 	quad=TOP_RIGHT;
-	int mm=qq[0];
+	/*	int mm=qq[0]; */
 	/* for (int i=1; i<4; i++) { */
 	/*   if (qq[i]>mm) { */
 	/*     switch (i) { */

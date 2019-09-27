@@ -69,3 +69,8 @@ u_int32_t writeRegister(u_int32_t offset, u_int32_t data);
  * Map FPGA
  */
 int mapCSP0(void);
+
+/**
+ * Get Nios base address
+ */
+u_int32_t* Nios_getBaseAddress();

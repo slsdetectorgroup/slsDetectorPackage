@@ -359,10 +359,10 @@ class Detector {
     void setTenGiga(bool enable, Positions pos = {});
 
     /** [Eiger, Jungfrau] */
-    Result<bool> getTenGigaGFlowControl(Positions pos = {}) const;
+    Result<bool> getTenGigaFlowControl(Positions pos = {}) const;
 
     /** [Eiger, Jungfrau] */
-    void setTenGigaGFlowControl(bool enable, Positions pos = {});
+    void setTenGigaFlowControl(bool enable, Positions pos = {});
 
     /** [Eiger, Jungfrau] */
     Result<int> getTransmissionDelayFrame(Positions pos = {}) const;

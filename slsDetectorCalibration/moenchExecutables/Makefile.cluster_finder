@@ -13,6 +13,13 @@ all: moenchClusterFinder moenchMakeEta moenchInterpolation moenchNoInterpolation
 moenchClusterFinder:  moench03ClusterFinder.cpp  $(INCS) clean
 			 g++ -o moenchClusterFinder  moench03ClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DNEWRECEIVER 
 
+
+moenchClusterFinderHighZ:  moench03ClusterFinder.cpp  $(INCS) clean
+			 g++ -o moenchClusterFinderHighZ  moench03ClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DNEWRECEIVER -DHIGHZ 
+
+
+
+
 moenchMakeEta:  moench03Interpolation.cpp  $(INCS) clean
 			 g++ -o moenchMakeEta moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF
 
@@ -27,6 +34,12 @@ moenchPhotonCounter: moenchPhotonCounter.cpp   $(INCS) clean
 
 moenchAnalog: moenchPhotonCounter.cpp  $(INCS) clean
 			 g++ -o moenchAnalog  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER -DANALOG
+
+moenchPhotonCounterHighZ: moenchPhotonCounter.cpp   $(INCS) clean
+			 g++ -o moenchPhotonCounterHighZ  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER -DHIGHZ
+
+moenchAnalogHighZ: moenchPhotonCounter.cpp  $(INCS) clean
+			 g++ -o moenchAnalogHighZ  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER -DANALOG -DHIGHZ
 
 clean: 	
 	rm -f  moenchClusterFinder moenchMakeEta moenchInterpolation moenchNoInterpolation moenchPhotonCounter moenchAnalog

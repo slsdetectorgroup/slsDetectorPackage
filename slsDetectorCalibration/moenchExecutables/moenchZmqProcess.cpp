@@ -1,4 +1,9 @@
 #define WRITE_QUAD
+#define DEVELOPER
+
+#define C_GHOST 0.0004
+
+#define CM_ROWS 20
 
 #include "sls_detector_defs.h"
 #include "ZmqSocket.h"
@@ -46,9 +51,11 @@ int main(int argc, char *argv[]) {
   int fifosize=5000;
   int etabins=1000;//nsubpix*2*100;
   double etamin=-1, etamax=2;
+  int nSubPixels=2;
+  //	int emin, emax;
 	// help
   if (argc < 3 ) {
-    cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number] [nthreads] [nsubpix] [etafile]\n");
+    cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number] [nthreads] [nsubpix] [gainmap]  [etafile]\n");
     return EXIT_FAILURE;  
   }
   
@@ -60,6 +67,7 @@ int main(int argc, char *argv[]) {
   char* socketip2 = 0;
   uint32_t portnum2 = 0;
 
+  uint32_t nSigma=5;
 
   int ok;
 
@@ -85,17 +93,22 @@ int main(int argc, char *argv[]) {
     nthreads=atoi(argv[5]);
 
   cout << "Number of threads is: " << nthreads << endl;
-  int nSubPixels=2;
   if (argc>6)
     nSubPixels=atoi(argv[6]);
   cout << "Number of subpixels is: " << nSubPixels << endl;
   
-  char *etafname=NULL;
+
+  char *gainfname=NULL;
   if (argc>7) {
-    etafname=argv[7];
-    cout << "Eta file name is: " << etafname << endl;
+    gainfname=argv[7];
+    cout << "Gain map file name is: " << gainfname << endl;
   }
 
+  char *etafname=NULL;
+  if (argc>8) {
+    etafname=argv[8];
+    cout << "Eta file name is: " << etafname << endl;
+  }
 
   //slsDetectorData *det=new moench03T1ZmqDataNew(); 
   moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
@@ -108,20 +121,44 @@ int main(int argc, char *argv[]) {
 
   int maxSize = npx*npy*2;//32*2*8192;//5000;//atoi(argv[3]);
   int size= maxSize;//32*2*5000;
-  int multisize=size;
-  int dataSize=size;
+  //int multisize=size;
+  //int dataSize=size;
 
   char dummybuff[size];
   
-  int ncol_cm=20;
-  double xt_ghost=0.0004;
+
+  int ncol_cm=CM_ROWS;
+  double xt_ghost=C_GHOST;
   moench03CommonMode *cm=new moench03CommonMode(ncol_cm);
   moench03GhostSummation *gs=new moench03GhostSummation(det, xt_ghost);
   double *gainmap=NULL;
-   
+  float *gm;
+  double *gmap=NULL;
+
+  uint32_t nnnx, nnny;
+  if (gainfname) {
+    gm=ReadFromTiff(gainfname, nnny, nnnx);
+    if (gm && nnnx==(uint)npx && nnny==(uint)npy) {
+      gmap=new double[npx*npy];
+      for (int i=0; i<npx*npy; i++) {
+	gmap[i]=gm[i];
+      }
+      delete [] gm;
+    } else
+      cout << "Could not open gain map " << gainfname << endl;
+  }
+
+
+
+
+
+
+
+
+
   //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
 #ifndef INTERP
-  singlePhotonDetector *filter=new singlePhotonDetector(det,3, 5, 1, cm, 1000, 10, -1, -1, gainmap, gs);
+  singlePhotonDetector *filter=new singlePhotonDetector(det,3, nSigma, 1, cm, 1000, 10, -1, -1, gainmap, gs);
 
     multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
 
@@ -132,7 +169,7 @@ int main(int argc, char *argv[]) {
 
   if (etafname) interp->readFlatField(etafname);
 
-  interpolatingDetector *filter=new interpolatingDetector(det,interp, 5, 1, cm,  1000, 10, -1, -1, gainmap, gs);
+  interpolatingDetector *filter=new interpolatingDetector(det,interp, nSigma, 1, cm,  1000, 10, -1, -1, gainmap, gs);
   multiThreadedInterpolatingDetector *mt=new multiThreadedInterpolatingDetector(filter,nthreads,fifosize);
 #endif
 
@@ -223,21 +260,22 @@ int main(int argc, char *argv[]) {
 	// header variables
 	uint64_t acqIndex = -1;
 	uint64_t frameIndex = -1;
-	uint32_t subFrameIndex = -1;
+	//uint32_t subFrameIndex = -1;
 	uint64_t fileindex = -1;
 	string filename = "";
 	//	char* image = new char[size];
 	//int* image = new int[(size/sizeof(int))]();
-	uint32_t flippedDataX = -1;
-	int *nph;
+	//uint32_t flippedDataX = -1;
+	//int *nph;
 	int iframe=0;
 	char ofname[10000];
 		    
 	char fname[10000];
-	int length;
+	//	int length;
 	int *detimage;
 	int nnx, nny,nns;
-	uint32_t imageSize = 0, nPixelsX = 0, nPixelsY = 0, dynamicRange = 0;
+	//uint32_t imageSize = 0, nPixelsX = 0, nPixelsY = 0, 
+	//uint32_t  dynamicRange = 0;
 	// infinite loop
 	uint32_t packetNumber = 0;
 	uint64_t bunchId = 0;
@@ -251,11 +289,10 @@ int main(int argc, char *argv[]) {
 	//int16_t *dout;//=new int16_t [nnx*nny];
 	uint32_t dr = 32;
 	int32_t *dout=NULL;//=new int32_t [nnx*nny];
-	uint32_t nSigma=5;
 	uint16_t roundRNumber = 0;
 	uint8_t detType = 0;
 	uint8_t version = 0;
-	int* flippedData = 0;
+	//	int* flippedData = 0;
 	char* additionalJsonHeader = 0;
 
 	int32_t threshold=0;
@@ -264,15 +301,14 @@ int main(int argc, char *argv[]) {
 	
 	string frameMode_s, detectorMode_s, intMode_s;
 
-	int emin, emax;
-	int resetFlat=0;
-	int resetPed=0;
-	int nsubPixels=1;
-	int isPedestal;
-	int isFlat=0;
+	//	int resetFlat=0;
+	//int resetPed=0;
+	//	int nsubPixels=1;
+	//int isPedestal=0;
+	//int isFlat=0;
 	int newFrame=1;
-	detectorMode dMode;
-	frameMode fMode;
+	detectorMode dMode=eAnalog;
+	frameMode fMode=eFrame;
 	double *ped;
 
 	filter->getImageSize(nnx, nny,nns);
@@ -317,20 +353,20 @@ int main(int argc, char *argv[]) {
 	    }
 	    } else {
 	    if (fMode==ePedestal) {
-	      sprintf(ofname,"%s_%d_ped.tiff",fname,fileindex);
+	      sprintf(ofname,"%s_%ld_ped.tiff",fname,fileindex);
 	      mt->writePedestal(ofname);
 	       cout << "Writing pedestal to " << ofname << endl;
 	    }
 #ifdef INTERP
 	    else if  (fMode==eFlat) {
 	      mt->prepareInterpolation(ok);
-	      sprintf(ofname,"%s_%d_eta.tiff",fname,fileindex);
+	      sprintf(ofname,"%s_%ld_eta.tiff",fname,fileindex);
 	      mt->writeFlatField(ofname);
 	       cout << "Writing eta to " << ofname << endl;
 	    }
 #endif
 	    else {
-	      sprintf(ofname,"%s_%d.tiff",fname,fileindex);
+	      sprintf(ofname,"%s_%ld.tiff",fname,fileindex);
 	      mt->writeImage(ofname);
 	       cout << "Writing image to " << ofname << endl;
 	    }
@@ -359,7 +395,7 @@ int main(int argc, char *argv[]) {
 #ifdef INTERP
 	    else if  (fMode==eFlat) {
 	       int nb;
-	      double emi, ema;
+	       double emi=0, ema=1;
 	       int *ff=mt->getFlatField(nb, emi, ema);
 	       nnx=nb;
 	       nny=nb;
@@ -409,8 +445,47 @@ int main(int argc, char *argv[]) {
 	      // 		char* additionalJsonHeader = 0) {
 
 
+
 	    //  cout << "Sending image size " << nnx << " " << nny << endl;
+
+#ifndef DEVELOPER
+#ifndef MOENCH_BRANCH
 	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
+#endif
+#endif
+
+#ifdef DEVELOPER
+	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
+#endif	
+#ifdef MOENCH_BRANCH
+	    /*
+ int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
+                        uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
+                        uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
+                        uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
+                        uint64_t bunchId = 0, uint64_t timestamp = 0,
+                        uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
+                        uint32_t debug = 0, uint16_t roundRNumber = 0,
+                        uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0,
+                        char* additionalJsonHeader = 0) {
+int ZmqSocket::SendHeaderData(int 0, bool false, uint32_t SLS_DETECTOR_JSON_HEADER_VERSION , uint32_t dr, uint64_t fileindex, uint32_t 0, uint32_t 0, uint32_t, uint64_t, uint64_t, char*, uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t, int*, char*)
+
+	     */
+	    //zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version);//, 0,additionalJsonHeader);
+	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
+
+	    /* old 
+	       zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
+	    */
+	    /*
+
+
+	      new
+	      zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,additionalJsonHeader);
+	     */
+#endif		
+	       
+			
 
 		zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
 		cprintf(GREEN, "Sent Data\n");
@@ -449,7 +524,7 @@ int main(int argc, char *argv[]) {
 	      //  acqIndex, frameIndex, subframeIndex, filename, fileindex
 	      size       = doc["size"].GetUint();
 	      // multisize  = size;// * zmqsocket->size();
-	      dynamicRange  = doc["bitmode"].GetUint();
+	      // dynamicRange  = doc["bitmode"].GetUint();
 	      //  nPixelsX = doc["shape"][0].GetUint();
 	      // nPixelsY = doc["shape"][1].GetUint();
 	      filename        = doc["fname"].GetString();
@@ -466,7 +541,7 @@ int main(int argc, char *argv[]) {
 	      //detType=doc["detType"].GetUint();
 	      //version=doc["version"].GetUint();
 
-	      dataSize=size;
+	      //dataSize=size;
 
 	      strcpy(fname,filename.c_str());
 
@@ -500,8 +575,8 @@ int main(int argc, char *argv[]) {
 	      // 	      flippedDataX, packetNumber, bunchId, timestamp, modId, debug, roundRNumber, detType, version);
 	      
 	      /* Analog detector commands */
-	      isPedestal=0;
-	      isFlat=0;
+	      //isPedestal=0;
+	      //isFlat=0;
 	      fMode=eFrame;
 	      frameMode_s="frame";
 	      cprintf(MAGENTA, "Frame mode: ");
@@ -510,28 +585,28 @@ int main(int argc, char *argv[]) {
 		  frameMode_s=doc["frameMode"].GetString();
 		  if (frameMode_s == "pedestal"){
 		    fMode=ePedestal;
-		    isPedestal=1;
+		    //isPedestal=1;
 		  } else if (frameMode_s == "newPedestal"){
 		    mt->newDataSet(); //resets pedestal  
 		    // cprintf(MAGENTA, "Resetting pedestal\n");
 		    fMode=ePedestal;
-		    isPedestal=1;
+		    //isPedestal=1;
 		  }
 #ifdef INTERP 
 		  else if (frameMode_s == "flatfield") {
 		     fMode=eFlat;
-		     isFlat=1;
+		     //isFlat=1;
 		   } else if (frameMode_s == "newFlatfield") {
 		     mt->resetFlatField();
-		     isFlat=1;
+		     //isFlat=1;
 		     cprintf(MAGENTA, "Resetting flatfield\n");
 		     fMode=eFlat;
 		   }
 #endif
 		  else {
 		    fMode=eFrame;
-		    isPedestal=0;
-		    isFlat=0;
+		    //isPedestal=0;
+		    //isFlat=0;
 		    fMode=eFrame;
 		    frameMode_s="frame";
 		  }
@@ -664,10 +739,10 @@ int main(int argc, char *argv[]) {
 	    //  cout << "data " << endl;
 	  if (of==NULL) {
 #ifdef WRITE_QUAD
-	    sprintf(ofname,"%s_%d.clust2",filename.c_str(),fileindex);
+	    sprintf(ofname,"%s_%ld.clust2",filename.c_str(),fileindex);
 #endif
 #ifndef WRITE_QUAD
-	    sprintf(ofname,"%s_%d.clust",filename.c_str(),fileindex);
+	    sprintf(ofname,"%s_%ld.clust",filename.c_str(),fileindex);
 #endif
 	    of=fopen(ofname,"w");
 	    if (of) {
@@ -692,13 +767,15 @@ int main(int argc, char *argv[]) {
 	      if (packetNumber>=40) {
 		//*((int*)buff)=frameIndex;
 		memcpy(buff,&frameIndex,sizeof(int));
-		length = zmqsocket->ReceiveData(0, buff+sizeof(int), size);
+		//length = 
+		zmqsocket->ReceiveData(0, buff+sizeof(int), size);
 		mt->pushData(buff);
 		mt->nextThread();
 		mt->popFree(buff);
 	      } else {
 		cprintf(RED, "Incomplete frame: received only %d packet\n", packetNumber);
-		length = zmqsocket->ReceiveData(0, dummybuff, size);
+		//length = 
+		  zmqsocket->ReceiveData(0, dummybuff, size);
 
 	      }
 	

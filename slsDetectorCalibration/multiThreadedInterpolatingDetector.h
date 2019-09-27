@@ -37,12 +37,12 @@ public:
    }; 
 
    void *writeFlatField(const char * imgname){
-     dets[0]->writeFlatField(imgname);
+     return dets[0]->writeFlatField(imgname);
    };
 
 
   void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){
-    (dets[0])->readFlatField(imgname, nb, emin, emax);
+    return (dets[0])->readFlatField(imgname, nb, emin, emax);
   };
   
 
@@ -56,7 +56,7 @@ public:
     \returns current file pointer
 */
    virtual slsInterpolation *setInterpolation(slsInterpolation *f){
-     int ok;
+     //int ok;
      for (int i=0; i<nThreads; i++)  
        (dets[i])->setInterpolation(f);
      return  (dets[0])->getInterpolation();

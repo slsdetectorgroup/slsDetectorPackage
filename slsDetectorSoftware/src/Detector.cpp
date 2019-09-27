@@ -439,12 +439,12 @@ void Detector::setTenGiga(bool value, Positions pos) {
                     static_cast<int>(value));
 }
 
-Result<bool> Detector::getTenGigaGFlowControl(Positions pos) const {
+Result<bool> Detector::getTenGigaFlowControl(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
                            defs::FLOW_CONTROL_10G, -1);
 }
 
-void Detector::setTenGigaGFlowControl(bool enable, Positions pos) {
+void Detector::setTenGigaFlowControl(bool enable, Positions pos) {
     pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
                     defs::FLOW_CONTROL_10G, static_cast<int>(enable));
 }

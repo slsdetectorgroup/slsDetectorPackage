@@ -33,7 +33,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
   {
     double sDum[2][2];
     double tot, totquad;
-    double etax,etay;
+    double etax=0,etay=0;
     
     int corner;
     corner=calcQuad(data, tot, totquad, sDum); 
@@ -49,7 +49,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
   {
     double sDum[2][2];
     double tot, totquad;
-    double etax,etay;
+    double etax=0,etay=0;
     
     int corner;
     corner=calcQuad(data, tot, totquad, sDum); 
@@ -71,7 +71,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
   virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &int_x, double &int_y) {
     
      double cc[2][2];
-     int xoff, yoff;
+     int xoff=0, yoff=0;
      switch (quad) {
      case BOTTOM_LEFT:
        xoff=0;
@@ -92,7 +92,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
      default:
        ;
      } 
-     double etax, etay;
+     double etax=0, etay=0;
      if (nSubPixels>2) { 
        cc[0][0]=cl[xoff+3*yoff];
        cc[1][0]=cl[xoff+3*(yoff+1)];
@@ -100,6 +100,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
        cc[1][1]=cl[xoff+1+3*(yoff+1)];
        calcEta(totquad,cc,etax,etay);
      }
+     
      return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
 
   }
@@ -109,7 +110,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
   virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,int *cl,double &int_x, double &int_y) {
     
      double cc[2][2];
-     int xoff, yoff;
+     int xoff=0, yoff=0;
      
      switch (quad) {
      case BOTTOM_LEFT:
@@ -131,7 +132,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
      default:
        ;
      } 
-     double etax, etay;
+     double etax=0, etay=0;
      if (nSubPixels>2) { 
        cc[0][0]=cl[xoff+3*yoff];
        cc[1][0]=cl[xoff+3*(yoff+1)];
@@ -222,7 +223,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
   
   virtual int addToFlatField(double totquad,int quad,int *cl,double &etax, double &etay) {
      double cc[2][2];
-     int xoff, yoff;
+     int xoff=0, yoff=0;
      
      switch (quad) {
      case BOTTOM_LEFT:
@@ -260,7 +261,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
 
    virtual int addToFlatField(double totquad,int quad,double *cl,double &etax, double &etay) {
      double cc[2][2];
-     int xoff, yoff;
+     int xoff=0, yoff=0;
      
      switch (quad) {
      case BOTTOM_LEFT:
@@ -308,11 +309,12 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
   virtual int addToFlatField(double *cluster, double &etax, double &etay){
     double sDum[2][2];
     double tot, totquad;
-    int corner;
-    corner=calcQuad(cluster, tot, totquad, sDum); 
+    // int corner;
+    //corner=
+    calcQuad(cluster, tot, totquad, sDum); 
     
-    double xpos_eta,ypos_eta;
-    double dX,dY;
+    //double xpos_eta,ypos_eta;
+    //double dX,dY;
   
     
     calcEta(totquad, sDum, etax, etay); 
@@ -324,11 +326,12 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
   virtual int addToFlatField(int *cluster, double &etax, double &etay){
     double sDum[2][2];
     double tot, totquad;
-    int corner;
-    corner=calcQuad(cluster, tot, totquad, sDum); 
+    //int corner;
+    //corner=
+    calcQuad(cluster, tot, totquad, sDum); 
     
-    double xpos_eta,ypos_eta;
-    double dX,dY;
+    // double xpos_eta,ypos_eta;
+    //double dX,dY;
   
     
     calcEta(totquad, sDum, etax, etay); 

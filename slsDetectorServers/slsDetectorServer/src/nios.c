@@ -21,7 +21,7 @@ void bus_w(u_int32_t offset, u_int32_t data) {
 
 u_int32_t bus_r(u_int32_t offset) {
 	volatile u_int32_t  *ptr1;
-	ptr1=(u_int32_t*)(csp0base+ offset/(sizeof(u_int32_t)));
+	ptr1=(u_int32_t*)(csp0base + offset/(sizeof(u_int32_t)));
 	return *ptr1;
 }
 
@@ -62,11 +62,11 @@ void setU64BitReg(uint64_t value, int aLSB, int aMSB){
 }
 
 u_int32_t readRegister(u_int32_t offset) {
-	return bus_r(offset << MEM_MAP_SHIFT);
+	return bus_r(offset);
 }
 
 u_int32_t writeRegister(u_int32_t offset, u_int32_t data) {
-	bus_w(offset << MEM_MAP_SHIFT, data);
+	bus_w(offset, data);
 	return readRegister(offset);
 }
 
@@ -104,3 +104,6 @@ int mapCSP0(void) {
 }
 
 
+u_int32_t* Nios_getBaseAddress() {
+	return csp0base;
+}

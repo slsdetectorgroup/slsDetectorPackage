@@ -204,15 +204,15 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
-	  char *retval=0;
-	  int  nd;
-	  int fnum = -1;
+	  /* char *retval=0; */
+	  /* int  nd; */
+	  /* int fnum = -1; */
 	  np=0;
-	  int  pn;
+	  /* int  pn; */
 	  
 
-	  if (ff>=0)
-	    fnum=ff;
+	  /* if (ff>=0) */
+	  /*   fnum=ff; */
 
 	  if (filebin.is_open()) {
 	    if (filebin.read(data, 32*2*nSamples) ){
@@ -221,7 +221,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 	      return data;
 	    }
 	  }
-	    return NULL;
+	  return NULL;
 	    
 	    
 	  

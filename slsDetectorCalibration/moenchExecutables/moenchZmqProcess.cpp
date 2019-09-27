@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
   int npx, npy;
   det->getDetectorSize(npx, npy);
 
-
+  int send_something=0;
 
 
   int maxSize = npx*npy*2;//32*2*8192;//5000;//atoi(argv[3]);
@@ -264,6 +264,13 @@ int main(int argc, char *argv[]) {
  	uint32_t subFrameIndex = -1;
 	int* flippedData = 0;
 #endif
+	
+	uint64_t subframes=0;
+	//uint64_t  isubframe=0;
+	uint64_t  insubframe=0;
+	double subnorm=1;
+	uint64_t  f0=-1, nsubframes=0;
+
 	uint64_t fileindex = -1;
 	string filename = "";
 	//	char* image = new char[size];
@@ -275,7 +282,7 @@ int main(int argc, char *argv[]) {
 		    
 	char fname[10000];
 	//	int length;
-	int *detimage;
+	int *detimage=NULL;
 	int nnx, nny,nns;
 	//uint32_t imageSize = 0, nPixelsX = 0, nPixelsY = 0, 
 	//uint32_t  dynamicRange = 0;
@@ -292,6 +299,7 @@ int main(int argc, char *argv[]) {
 	//int16_t *dout;//=new int16_t [nnx*nny];
 	uint32_t dr = 32;
 	int32_t *dout=NULL;//=new int32_t [nnx*nny];
+	float *doutf=NULL;//=new int32_t [nnx*nny];
 	uint16_t roundRNumber = 0;
 	uint8_t detType = 0;
 	uint8_t version = 0;
@@ -354,28 +362,59 @@ int main(int argc, char *argv[]) {
 	      cprintf(RED, "Sent Dummy\n");
 	    }
 	    } else {
-	    if (fMode==ePedestal) {
-	      sprintf(ofname,"%s_%ld_ped.tiff",fname,fileindex);
-	      mt->writePedestal(ofname);
-	       cout << "Writing pedestal to " << ofname << endl;
-	    }
+	      send_something=0;
+	      if (fMode==ePedestal) {
+		sprintf(ofname,"%s_%ld_ped.tiff",fname,fileindex);
+		mt->writePedestal(ofname);
+		cout << "Writing pedestal to " << ofname << endl;
+		send_something=1;
+	      }
 #ifdef INTERP
-	    else if  (fMode==eFlat) {
-	      mt->prepareInterpolation(ok);
-	      sprintf(ofname,"%s_%ld_eta.tiff",fname,fileindex);
-	      mt->writeFlatField(ofname);
-	       cout << "Writing eta to " << ofname << endl;
-	    }
+	      else if  (fMode==eFlat) {
+		mt->prepareInterpolation(ok);
+		sprintf(ofname,"%s_%ld_eta.tiff",fname,fileindex);
+		mt->writeFlatField(ofname);
+		cout << "Writing eta to " << ofname << endl;
+		send_something=1;
+	      }
 #endif
-	    else {
-	      sprintf(ofname,"%s_%ld.tiff",fname,fileindex);
-	      mt->writeImage(ofname);
-	       cout << "Writing image to " << ofname << endl;
-	    }
-	    //  cout << nns*nnx*nny*nns*dr/8 << " " << length << endl;
+	      else {
+		if (subframes>0  && insubframe>0) {
+		  sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nsubframes,fileindex);
+		  //		  mt->writeImage(ofname);
+		  doutf= new float[nnx*nny];
+		  if (subframes>0 && insubframe!=subframes && insubframe>0)
+		    subnorm=((double)subframes)/((double)insubframe);
+		  else
+		    subnorm=1.;
+		  for (int ix=0; ix<nnx*nny; ix++) {
+		    doutf[ix]=detimage[ix]*subnorm;
+		    if (doutf[ix]<0) doutf[ix]=0;
+		  }
+	    
+		  cout << "Writing image to " << ofname << endl;
+		  
+		  WriteToTiff(doutf,ofname ,nnx, nny); 
+
+		  if (doutf)
+		    delete [] doutf;
+		  doutf=NULL;
+		  
+		  nsubframes++;
+		  insubframe=0;
+		  send_something=1;
+		} else {
+		  sprintf(ofname,"%s_%ld.tiff",fname,fileindex);
+		  mt->writeImage(ofname);
+		  send_something=1;
+		}
+		
+		cout << "Writing image to " << ofname << endl;
+	      }
+	      //  cout << nns*nnx*nny*nns*dr/8 << " " << length << endl;
 
 	    if (send) {
-
+	      
 	    if (fMode==ePedestal) {   
 	      cprintf(MAGENTA,"Get pedestal!\n");
 	      nns=1;
@@ -417,6 +456,10 @@ int main(int argc, char *argv[]) {
 	      // nnx=nnx*nns;
 	      //nny=nny*nns;
 	      dout= new int32_t[nnx*nny];
+	      if (subframes>0 && insubframe!=subframes && insubframe>0)
+		subnorm=((double)subframes)/((double)insubframe);
+	      else
+		subnorm=1.;
 	      for (int ix=0; ix<nnx*nny; ix++) {
 		// for (int iy=0; iy<nny*nns; iy++) {
 		 //  for (int isx=0; isx<nns; isx++) {
@@ -428,76 +471,41 @@ int main(int argc, char *argv[]) {
 		    
 		//   }
 		// }
-		  dout[ix]=detimage[ix];
+		  dout[ix]=detimage[ix]*subnorm;
 		  if (dout[ix]<0) dout[ix]=0;
 		  //   cout << ix << " " << dout[ix] << endl;
 		  // }
 	      }
 	    }
+	    //if ((insubframe>0 && subframes>0) || (subframes<=0) ){
 
-
-	    //// int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
-	      // 		uint32_t ndetx = 0, uint32_t ndety = 0, uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
-	      // 		uint64_t acqIndex = 0, uint64_t fIndex = 0, const char* fname = NULL,
-	      // 		uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
-	      // 		uint64_t bunchId = 0, uint64_t timestamp = 0,
-	      // 		uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
-	      // 		uint32_t debug = 0, uint16_t roundRNumber = 0,
-	      // 		uint8_t detType = 0, uint8_t version = 0, int gapPixelsEnable = 0, int flippedDataX = 0,
-	      // 		char* additionalJsonHeader = 0) {
-
-
-
-	    //  cout << "Sending image size " << nnx << " " << nny << endl;
-
+	    if(send_something) {
 #ifndef DEVELOPER
 #ifndef MOENCH_BRANCH
-	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
+	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
 #endif
 #endif
-
+	      
 #ifdef DEVELOPER
-	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
+	      zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
 #endif	
 #ifdef MOENCH_BRANCH
-	    /*
- int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
-                        uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
-                        uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
-                        uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
-                        uint64_t bunchId = 0, uint64_t timestamp = 0,
-                        uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
-                        uint32_t debug = 0, uint16_t roundRNumber = 0,
-                        uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0,
-                        char* additionalJsonHeader = 0) {
-int ZmqSocket::SendHeaderData(int 0, bool false, uint32_t SLS_DETECTOR_JSON_HEADER_VERSION , uint32_t dr, uint64_t fileindex, uint32_t 0, uint32_t 0, uint32_t, uint64_t, uint64_t, char*, uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t, int*, char*)
-
-	     */
-	    //zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version);//, 0,additionalJsonHeader);
-	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
-
-	    /* old 
-	       zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
-	    */
-	    /*
-
-
-	      new
-	      zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,additionalJsonHeader);
-	     */
+	   
+	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
 #endif		
-	       
+	      
 			
-
-		zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
-		cprintf(GREEN, "Sent Data\n");
-		
-		zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
-		cprintf(RED, "Sent Dummy\n");
-		if (dout)
-		  delete [] dout;
-		dout=NULL;
-
+	      
+	      zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
+	      cprintf(GREEN, "Sent Data\n");
+	    }
+	    
+	    zmqsocket2->SendHeaderData(0, true, SLS_DETECTOR_JSON_HEADER_VERSION);
+	    cprintf(RED, "Sent Dummy\n");
+	    if (dout)
+	      delete [] dout;
+	    dout=NULL;
+	    
 	    }
 	    }
 
@@ -731,6 +739,20 @@ int ZmqSocket::SendHeaderData(int 0, bool false, uint32_t SLS_DETECTOR_JSON_HEAD
 	      // 	mt->setNSubPixels(nSubPixels);
 	      // }
 	      
+	      // threshold=0;
+	      cprintf(MAGENTA, "Subframes: ");
+	      subframes=0;
+	      //isubframe=0;
+	      insubframe=0;
+	      subnorm=1;
+	      f0=0;
+	      if (doc.HasMember("subframes")) {	
+		if (doc["subframes"].IsInt()) {
+		  subframes=doc["subframes"].GetInt();
+		}
+	      }	
+	      cprintf(MAGENTA, "%ld\n", subframes);
+
 	      
 	      newFrame=0;
 	      /* zmqsocket->CloseHeaderMessage();*/
@@ -754,33 +776,109 @@ int ZmqSocket::SendHeaderData(int 0, bool false, uint32_t SLS_DETECTOR_JSON_HEAD
 	      mt->setFilePointer(NULL);
 	    }
 	  }
+
 	  
 
 	  // cout << "data" << endl;
 	  // get data
 	  // acqIndex = doc["acqIndex"].GetUint64();
+
 	  frameIndex       = doc["fIndex"].GetUint64();
+
 	  // subFrameIndex    = doc["expLength"].GetUint();
 
 	  //  bunchId=doc["bunchId"].GetUint();
 	  //  timestamp=doc["timestamp"].GetUint();
-	      packetNumber=doc["packetNumber"].GetUint();
-	      // cout << acqIndex << " " << frameIndex << " " << subFrameIndex << " "<< bunchId << " " << timestamp << " " << packetNumber << endl;
-	      if (packetNumber>=40) {
-		//*((int*)buff)=frameIndex;
-		memcpy(buff,&frameIndex,sizeof(int));
-		//length = 
-		zmqsocket->ReceiveData(0, buff+sizeof(int), size);
-		mt->pushData(buff);
-		mt->nextThread();
-		mt->popFree(buff);
-	      } else {
-		cprintf(RED, "Incomplete frame: received only %d packet\n", packetNumber);
-		//length = 
-		  zmqsocket->ReceiveData(0, dummybuff, size);
+	  packetNumber=doc["packetNumber"].GetUint();
+	  // cout << acqIndex << " " << frameIndex << " " << subFrameIndex << " "<< bunchId << " " << timestamp << " " << packetNumber << endl;
+	  if (packetNumber>=40) {
+	    //*((int*)buff)=frameIndex;
+	    if (insubframe==0) f0=frameIndex;
+	    memcpy(buff,&frameIndex,sizeof(int));
+	    //length = 
+	    zmqsocket->ReceiveData(0, buff+sizeof(int), size);
+	    mt->pushData(buff);
+	    mt->nextThread();
+	    mt->popFree(buff);
+	    insubframe++;
+	    nsubframes=frameIndex+1-f0;
+	  } else {
+	    cprintf(RED, "Incomplete frame: received only %d packet\n", packetNumber);
+	    //length = 
+	    zmqsocket->ReceiveData(0, dummybuff, size);
+	  }
+	  
 
-	      }
+
+
+	  if (subframes>0 && insubframe>=subframes && fMode==eFrame) {
+	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
+	    detimage=mt->getImage(nnx,nny,nns);
+	    cprintf(MAGENTA,"Get image!\n");
+	    dout= new int32_t[nnx*nny];
+	    doutf= new float[nnx*nny];
+	    if (subframes>0 && insubframe!=subframes && insubframe>0)
+	      subnorm=((double)subframes)/((double)insubframe);
+	    else
+	      subnorm=1.;
+	    for (int ix=0; ix<nnx*nny; ix++) {
+	      dout[ix]=detimage[ix]*subnorm;
+	      if (dout[ix]<0) dout[ix]=0;
+	      doutf[ix]=dout[ix];
+	    }
+	    sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nsubframes,fileindex);
+	    
+	    cout << "Writing image to " << ofname << endl;
+
+	    WriteToTiff(doutf,ofname ,nnx, nny); 
+	    nsubframes++;
+	    insubframe=0;
+	    
+
+
+#ifndef DEVELOPER
+#ifndef MOENCH_BRANCH
+	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
+#endif
+#endif
+
+#ifdef DEVELOPER
+	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
+#endif	
+#ifdef MOENCH_BRANCH
+	   
+	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
+#endif		
+	       
+	    
+
+	    zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
+	    cprintf(GREEN, "Sent subdata\n");
+		
+
+	    if (dout)
+	      delete [] dout;
+	    dout=NULL;
+
+	    if (doutf)
+	      delete [] doutf;
+	    doutf=NULL;
+	    
+	    mt->clearImage();
+	    
+	  }
+
+		 
+
+
+
+
+
+
 	
+	      
+
+
 	  
 	  
 	  iframe++;

@@ -63,8 +63,6 @@ void basictests() {
     firmware_check_done = 1;
     return;
 #else
-
-	FILE_LOG(logINFOBLUE, ("******** Gotthard2 Server *****************\n"));
 	if (mapCSP0() == FAIL) {
     	strcpy(firmware_message,
 				"Could not map to memory. Dangerous to continue.\n");
@@ -75,8 +73,8 @@ void basictests() {
     }
 	// does check only if flag is 0 (by default), set by command line
 	if ((!debugflag) && ((testFpga() == FAIL))) {
-		strcpy(firmware_message,
-				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
+		sprintf(firmware_message,
+				"Could not pass basic tests of FPGA and bus. Dangerous to continue. (Firmware version:0x%llx) \n", getDetectorId(DETECTOR_FIRMWARE_VERSION));
 		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;

@@ -482,9 +482,6 @@ int configureMAC() {
 	int dstport = udpDetails.dstport;		
 
 #ifdef VIRTUAL
-	uint32_t dstip = udpDetails.dstip;
-	int dstport = udpDetails.dstport;	
-
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
 	sprintf(cDestIp, "%d.%d.%d.%d", (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff);

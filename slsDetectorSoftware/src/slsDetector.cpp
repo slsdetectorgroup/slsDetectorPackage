@@ -1830,10 +1830,10 @@ void slsDetector::setDestinationUDPIP(const IpAddr ip) {
         throw RuntimeError("Invalid destination udp ip address");
     }*/
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
-    if (shm()->useReceiverFlag && ip != 0) { //ip can be 0 to reset to default rx_hostname ip
+    if (shm()->useReceiverFlag && ip != 0) { //ip can be 0 to reset to default rx_hostname ip (eiger only)
         sls::MacAddr retval(0lu);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
-        FILE_LOG(logDEBUG1) << "Setting destination udp mac to " << retval;
+        FILE_LOG(logINFO) << "Setting destination udp mac to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr); 
     }   
 }
@@ -1854,7 +1854,7 @@ void slsDetector::updateRxDestinationUDPIP() {
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  
-        FILE_LOG(logDEBUG1) << "Setting destination default udp ip to " << ip;
+        FILE_LOG(logINFO) << "Setting destination default udp ip to " << ip;
     }     
     setDestinationUDPIP(ip);    
 }
@@ -1869,7 +1869,7 @@ void slsDetector::setDestinationUDPIP2(const IpAddr ip) {
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0lu);
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
-        FILE_LOG(logDEBUG1) << "Setting destination udp mac2 to " << retval;
+        FILE_LOG(logINFO) << "Setting destination udp mac2 to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr); 
     }   
 }
@@ -1890,7 +1890,7 @@ void slsDetector::updateRxDestinationUDPIP2() {
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  
-        FILE_LOG(logDEBUG1) << "Setting destination default udp ip2 to " << ip;    
+        FILE_LOG(logINFO) << "Setting destination default udp ip2 to " << ip;    
     }     
     setDestinationUDPIP2(ip);       
 }
@@ -1964,7 +1964,7 @@ int slsDetector::getDestinationUDPPort2() {
 
 void slsDetector::setNumberofUDPInterfaces(int n) {
     FILE_LOG(logDEBUG1) << "Setting number of udp interfaces to " << n;
-    sendToDetector(F_SET_NUM_INTERFACES, n, nullptr); 
+    sendToDetector(F_SET_NUM_INTERFACES, n, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_NUM_INTERFACES, n, nullptr); 
     }  
@@ -2809,8 +2809,8 @@ std::string slsDetector::printReceiverConfiguration() {
        << getDestinationUDPIP() << "\nReceiver UDP MAC:\t" << getDestinationUDPMAC();
 
     if (shm()->myDetectorType == JUNGFRAU) {
-        os << "\nDetector UDP IP2 (Source):\t\t" << getSourceUDPIP2() 
-       << "\nDetector UDP MAC2:\t\t" << getSourceUDPMAC2()
+        os << "\nDetector UDP IP2:\t" << getSourceUDPIP2() 
+       << "\nDetector UDP MAC2:\t" << getSourceUDPMAC2()
        << "\nReceiver UDP IP2:\t" << getDestinationUDPIP2()      
        << "\nReceiver UDP MAC2:\t" << getDestinationUDPMAC2();
     }

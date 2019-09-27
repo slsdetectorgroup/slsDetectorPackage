@@ -4254,12 +4254,12 @@ void calculate_and_set_position() {
 	else {
 		// create detector mac from x and y 
 		if (udpDetails.srcmac == 0) {
-			char temp[50];
-			memset(temp, 0, 50);
-			sprintf(temp, "aa:bb:cc:dd:%02x:%02x", pos[0]&0xFF, pos[1]&0xFF);
-			FILE_LOG(logINFO, ("Udp source mac address created: %s\n", temp));
+			char dmac[50];
+			memset(dmac, 0, 50);
+			sprintf(dmac, "aa:bb:cc:dd:%02x:%02x", pos[0]&0xFF, pos[1]&0xFF);
+			FILE_LOG(logINFO, ("Udp source mac address created: %s\n", dmac));
 			unsigned char a[6];
-			sscanf(temp, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]);
+			sscanf(dmac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]);
 			udpDetails.srcmac = 0;
 			int i;
 			for (i = 0; i < 6; ++i) {
@@ -4269,12 +4269,12 @@ void calculate_and_set_position() {
 #ifdef JUNGFRAUD
 		if (getNumberofUDPInterfaces() > 1) {
 			if (udpDetails.srcmac2 == 0) {
-				char temp[50];
-				memset(temp, 0, 50);
-				sprintf(temp, "aa:bb:cc:dd:%02x:%02x", pos[2]&0xFF, pos[3]&0xFF);	
-				FILE_LOG(logINFO, ("Udp source mac address2 created: %s\n", temp));
+				char dmac2[50];
+				memset(dmac2, 0, 50);
+				sprintf(dmac2, "aa:bb:cc:dd:%02x:%02x", (pos[0] + 1 )&0xFF, pos[1]&0xFF);	
+				FILE_LOG(logINFO, ("Udp source mac address2 created: %s\n", dmac2));
 				unsigned char a[6];
-				sscanf(temp, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]);
+				sscanf(dmac2, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]);
 				udpDetails.srcmac2 = 0;
 				int i;
 				for (i = 0; i < 6; ++i) {
@@ -4321,44 +4321,44 @@ int check_detector_idle() {
 
 int is_configurable() {
 	if (udpDetails.srcip == 0) {
-		strcpy(configureMessage, "Udp source ip not configured\n");
+		strcpy(configureMessage, "udp source ip not configured\n");
 		FILE_LOG(logWARNING, ("%s", configureMessage));
 		return FAIL;
 	}
 	if (udpDetails.dstip == 0) {
-		strcpy(configureMessage, "Udp destination ip not configured\n");
+		strcpy(configureMessage, "udp destination ip not configured\n");
 		FILE_LOG(logWARNING, ("%s", configureMessage));
 		return FAIL;
 	}
 	if (udpDetails.srcmac == 0) {
-		strcpy(configureMessage, "Udp source mac not configured\n");
+		strcpy(configureMessage, "udp source mac not configured\n");
 		FILE_LOG(logWARNING, ("%s", configureMessage));
 		return FAIL;
 	}
 	if (udpDetails.dstmac == 0) {
-		strcpy(configureMessage, "Udp destination mac not configured\n");
+		strcpy(configureMessage, "udp destination mac not configured\n");
 		FILE_LOG(logWARNING, ("%s", configureMessage));
 		return FAIL;
 	}			
 #ifdef JUNGFRAUD
 	if (getNumberofUDPInterfaces() == 2) {
 		if (udpDetails.srcip2 == 0) {
-			strcpy(configureMessage, "Udp source ip2 not configured\n");
+			strcpy(configureMessage, "udp source ip2 not configured\n");
 			FILE_LOG(logWARNING, ("%s", configureMessage));
 			return FAIL;
 		}
 		if (udpDetails.dstip2 == 0) {
-			strcpy(configureMessage, "Udp destination ip2 not configured\n");
+			strcpy(configureMessage, "udp destination ip2 not configured\n");
 			FILE_LOG(logWARNING, ("%s", configureMessage));
 			return FAIL;
 		}
 		if (udpDetails.srcmac2 == 0) {
-			strcpy(configureMessage, "Udp source mac2 not configured\n");
+			strcpy(configureMessage, "udp source mac2 not configured\n");
 			FILE_LOG(logWARNING, ("%s", configureMessage));
 			return FAIL;
 		}
 		if (udpDetails.dstmac2 == 0) {
-			strcpy(configureMessage, "Udp destination mac2 not configured\n");
+			strcpy(configureMessage, "udp destination mac2 not configured\n");
 			FILE_LOG(logWARNING, ("%s", configureMessage));
 			return FAIL;
 		}	
@@ -4867,7 +4867,10 @@ int set_interface_sel(int file_des) {
 	// only set
 	if (Server_VerifyLock() == OK) {
 		if (check_detector_idle() == OK) {
-			selectPrimaryInterface(arg);
+			if (getPrimaryInterface() != arg) {
+				selectPrimaryInterface(arg);
+				configure_mac();	
+			}
 		}
 	}
 #endif

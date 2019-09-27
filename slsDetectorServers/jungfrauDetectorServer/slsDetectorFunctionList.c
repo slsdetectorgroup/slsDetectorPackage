@@ -1173,7 +1173,7 @@ int configureMAC() {
 			(long  long unsigned int)srcmac));
 	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n", srcport, srcport));
 
-	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t\t(0x%08x)\n",
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff, dstip));
 	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((dstmac>>40)&0xFF),
@@ -1198,7 +1198,7 @@ int configureMAC() {
 			(long  long unsigned int)srcmac2));
 	FILE_LOG(logINFO, ("\tSource Port2: %d \t\t\t(0x%08x)\n", srcport2, srcport2));
 
-	FILE_LOG(logINFO, ("\tDest. IP2   : %d.%d.%d.%d \t\t\t(0x%08x)\n",
+	FILE_LOG(logINFO, ("\tDest. IP2   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (dstip2>>24)&0xff,(dstip2>>16)&0xff,(dstip2>>8)&0xff,(dstip2)&0xff, dstip2));
 	FILE_LOG(logINFO, ("\tDest. MAC2  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((dstmac2>>40)&0xFF),

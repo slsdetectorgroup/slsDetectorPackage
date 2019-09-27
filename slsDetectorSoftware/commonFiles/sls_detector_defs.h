@@ -195,7 +195,7 @@ enum networkParameter {
 /**
     type of action performed (for text client)
 */
-enum {GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION};
+ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION, PROCESS_ACTION};
 
 /** online flags enum \sa setOnline*/
 enum {GET_ONLINE_FLAG=-1, /**< returns wether the detector is in online or offline state */

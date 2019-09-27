@@ -54,6 +54,21 @@ set_target_properties(sls_detector_acquire PROPERTIES
     COMPILE_DEFINITIONS READOUT=1
 )
 
+add_executable(sls_detector_process
+    ${SOURCES}
+)
+target_link_libraries(sls_detector_process
+   slsDetectorShared
+   pthread
+   zmq
+   rt
+)
+set_target_properties(sls_detector_process PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    COMPILE_DEFINITIONS READOUT=1 
+    COMPILE_DEFINITIONS PROCESS=1
+)
+
 add_executable(sls_detector_help
     ${SOURCES}
 )

@@ -4,6 +4,10 @@
 
 #include <stdlib.h>
 using namespace std;
+#ifdef PROCESS
+
+#endif
+
 
 int main(int argc, char *argv[])
   
@@ -28,6 +32,10 @@ int main(int argc, char *argv[])
 #ifdef READOUT
   int action=slsDetectorDefs::READOUT_ACTION;
 #endif
+  
+#ifdef PROCESS
+  int action=slsDetectorDefs::PROCESS_ACTION;
+#endif
     
 
 #ifdef HELP
@@ -37,9 +45,11 @@ int main(int argc, char *argv[])
   multiSlsDetectorClient *cl;
   if (argc>1)
     cl=new multiSlsDetectorClient(argc-1, argv+1, action);
-  else
+  else {
     cl=new multiSlsDetectorClient(argc-1, argv, action);
 
+
+  }
   delete cl;
 }
 

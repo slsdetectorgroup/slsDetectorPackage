@@ -8,10 +8,14 @@
 
 
 #include <stdlib.h>
+int progressCallback(double f,void* arg) { cout << f << "%"<< endl;  return 0;};
+int dummyAcquisitionFinished(double prog,int status,void* p){cout <<"Acquisition finished callback! " << prog << " " << status << endl; return 0;};
+int dummyMeasurementFinished(int im,int findex,void* p){cout <<"Measurement finished callback! " << im << " " << findex << endl; return 0;};
 
-
-int dummyCallback(detectorData* d, int p,void*) {
-	cout << "got data "	<< p <<  endl;
+//int (*)(detectorData*, int, int, void*)
+int dummyCallback(detectorData*, int p , int p1, void*) {
+	cout << p 	 <<  endl;
+	
 	return 0;
 };
 
@@ -25,7 +29,8 @@ public:
 		bool verify = true, update = true;										\
 		int del = 0;					      									\
 		char cmd[100] = "";														\
-
+	       
+		
 		if (action==slsDetectorDefs::PUT_ACTION && argc<2) {					\
 			cout << "Wrong usage - should be: "<< argv[0] <<					\
 			"[id-][pos:]channel arg" << endl;									\
@@ -41,7 +46,9 @@ public:
 			return;																\
 		};																		\
 
-		if (action==slsDetectorDefs::READOUT_ACTION)  {							\
+		
+		
+		if (action==slsDetectorDefs::READOUT_ACTION || action==slsDetectorDefs::PROCESS_ACTION)  {							\
 			id = 0;																\
 			pos = -1;															\
 			if (argc) {															\
@@ -125,6 +132,18 @@ public:
 			del=1;																\
 		}																		\
 
+
+		if (action==slsDetectorDefs::PROCESS_ACTION) {
+	
+
+		  /* myDetector->registerAcquisitionFinishedCallback(&dummyAcquisitionFinished,NULL); */
+		  /* myDetector->registerMeasurementFinishedCallback(&dummyMeasurementFinished,NULL); */
+		  action=slsDetectorDefs::READOUT_ACTION;
+		  myDetector->registerDataCallback(&dummyCallback, NULL);
+		 
+		  // myDetector->registerProgressCallback(&progressCallback, NULL);
+		}
+
 		// call multi detector command line
 		myCmd=new multiSlsDetectorCommand(myDetector);							\
 		try {																	\
@@ -142,9 +161,9 @@ public:
 		}																		\
 		if (action!=slsDetectorDefs::READOUT_ACTION) { 							\
 			cout << argv[0] << " " ;											\
-		}																		\
+		}						\
 		cout << answer<< endl;													\
-		delete myCmd;															\
+		delete myCmd;						\
 		if (del) delete myDetector;												\
 	};
 

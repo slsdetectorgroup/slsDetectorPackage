@@ -24,7 +24,7 @@ all: clients
 
 nonstatic: clients
 
-clients: builddir lib $(DESTDIR)/sls_detector_put $(DESTDIR)/sls_detector_get $(DESTDIR)/sls_detector_acquire $(DESTDIR)/sls_detector_help
+clients: builddir lib $(DESTDIR)/sls_detector_put $(DESTDIR)/sls_detector_get $(DESTDIR)/sls_detector_acquire $(DESTDIR)/sls_detector_help $(DESTDIR)/sls_detector_process
 
 static_clients: builddir lib $(DESTDIR)/ssls_detector_put $(DESTDIR)/ssls_detector_get $(DESTDIR)/ssls_detector_acquire $(DESTDIR)/ssls_detector_help
 
@@ -87,6 +87,13 @@ $(DESTDIR)/sls_detector_acquire: $(SRC_CLNT) $(DESTDIR)/libSlsDetector.so $(DEST
 	$(call colorecho,"#    Compiling sls_detector_acquire   #")
 	$(call colorecho,"#######################################")
 	$(CXX) -o $(BIN)/sls_detector_acquire $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
+
+$(DESTDIR)/sls_detector_process: $(SRC_CLNT) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a
+	$(call colorecho,"#######################################")
+	$(call colorecho,"#    Compiling sls_detector_process   #")
+	$(call colorecho,"#######################################")
+	$(CXX) -o $(BIN)/sls_detector_process $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG) -DPROCESS
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 
 $(DESTDIR)/sls_detector_help: $(SRC_CLNT) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a

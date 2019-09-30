@@ -30,6 +30,11 @@
 /* Status register */
 #define STATUS_REG                      (0x10 + BASE_CONTROL)
 
+#ifdef VIRTUAL // until firmware is ready ----------------------------------
+#define RUN_BUSY_OFST					(0)
+#define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_OFST)
+#endif
+
 /* Look at me register */
 #define LOOK_AT_ME_REG          		(0x14 + BASE_CONTROL)	//Not used in firmware or software, good to play with
 
@@ -153,15 +158,3 @@
 /* Register of first word */
 #define PATTERN_STEP0_LSB_REG           (0x0 + BASE_PATTERN_RAM)
 #define PATTERN_STEP0_MSB_REG           (0x4 + BASE_PATTERN_RAM)
-
-
-#ifdef VIRTUAL // until firmware is ready ----------------------------------
-
-#define RUN_BUSY_OFST					(0)
-#define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_OFST)
-
-/* Set Exptime 64 bit register eEXP = Exp x 25 ns */
-#define SET_EXPTIME_LSB_REG    			(0x08)
-#define SET_EXPTIME_MSB_REG    			(0x09)
-
-#endif

@@ -1,6 +1,5 @@
 #pragma once
 #include "sls_detector_defs.h"
-#include "RegisterDefs.h"
 
 
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
@@ -9,10 +8,9 @@
 #define NCHAN 						(128)
 #define NCHIP 						(10)
 #define NDAC 						(16)
-#define TEMP_CLK					(20)	/* MHz */
 #define HV_SOFT_MAX_VOLTAGE         (200)
 #define HV_HARD_MAX_VOLTAGE         (530)
-#define HV_DRIVER_FILE_NAME         ("/root/devlinks/hvdac")
+#define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES			(1)

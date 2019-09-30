@@ -4,6 +4,8 @@
 #include "nios.h"
 #include "DAC6571.h"
 #include "common.h"
+#include "RegisterDefs.h"
+
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
@@ -295,7 +297,16 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * TICK_CLK);
 		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
 		break;
-		
+
+	case DELAY_AFTER_TRIGGER:
+		if(val >= 0){
+			FILE_LOG(logINFO, ("Setting delay: %lldns\n", (long long int)val));
+			val *= (1E-3 * clkDivider[TICK_CLK]);
+		}
+		retval = set64BitReg(val, GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-3 * clkDivider[TICK_CLK]);
+		FILE_LOG(logINFO, ("\tGetting delay: %lldns\n", (long long int)retval));
+		break;
+
 	case CYCLES_NUMBER:
 		if(val >= 0) {
 			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
@@ -318,6 +329,13 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         return OK;
     switch(ind) {
     case ACQUISITION_TIME:
+		// convert to freq
+        val *= (1E-3 * RUN_CLK);
+        // convert back to timer
+        val = (val) / (1E-3 * RUN_CLK);
+        if (val != retval)
+            return FAIL;
+        break;
     case FRAME_PERIOD:
 		// convert to freq
         val *= (1E-3 * TICK_CLK);

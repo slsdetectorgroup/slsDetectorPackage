@@ -1660,7 +1660,7 @@ int set_timer(int file_des) {
 	    case ANALOG_SAMPLES:
 		case DIGITAL_SAMPLES:
 #endif
-#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(EIGERD) && !defined(GOTTHARD2D)
 	    case DELAY_AFTER_TRIGGER:
 #endif
 	        retval = setTimer(ind, tns);

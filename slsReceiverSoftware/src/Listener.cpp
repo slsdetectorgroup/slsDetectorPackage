@@ -557,11 +557,11 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		lastCaughtFrameIndex = fnum;
 
 
-		//#ifdef VERBOSE
+#ifdef VERBOSE
 		//if (!index)
 		cprintf(GREEN,"Listening %d: currentfindex:%lu, fnum:%lu,   pnum:%u numpackets:%u\n",
 				index,currentFrameIndex, fnum, pnum, numpackets);
-		//#endif
+#endif
 		if (!measurementStartedFlag)
 			RecordFirstIndices(fnum);
 

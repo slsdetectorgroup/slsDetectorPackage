@@ -1826,11 +1826,11 @@ sls::IpAddr slsDetector::getSourceUDPIP2() {
 
 void slsDetector::setDestinationUDPIP(const IpAddr ip) {
     FILE_LOG(logDEBUG1) << "Setting destination udp ip to " << ip;
-    /* if (ip == 0) {
+     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
-    }*/
+    }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
-    if (shm()->useReceiverFlag && ip != 0) { //ip can be 0 to reset to default rx_hostname ip (eiger only)
+    if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0lu);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
         FILE_LOG(logINFO) << "Setting destination udp mac to " << retval;

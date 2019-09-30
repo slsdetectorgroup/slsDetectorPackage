@@ -17,6 +17,7 @@
 #define DEFAULT_NUM_CYCLES			(1)
 #define DEFAULT_EXPTIME				(100*1000*1000)		//ns
 #define DEFAULT_PERIOD              (2*1000*1000)	    //ns 
+#define DEFAULT_DELAY_AFTER_TRIGGER (0)
 #define DEFAULT_HIGH_VOLTAGE        (0)
 #define DEFAULT_RUN_CLK             (125) 
 #define DEFAULT_TICK_CLK            (20) // will be fixed later. Not configurable

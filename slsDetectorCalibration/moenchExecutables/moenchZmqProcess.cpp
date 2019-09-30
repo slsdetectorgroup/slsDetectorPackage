@@ -269,7 +269,7 @@ int main(int argc, char *argv[]) {
 	//uint64_t  isubframe=0;
 	uint64_t  insubframe=0;
 	double subnorm=1;
-	uint64_t  f0=-1, nsubframes=0;
+	uint64_t  f0=-1, nsubframes=0, nnsubframe=0;
 
 	uint64_t fileindex = -1;
 	string filename = "";
@@ -380,7 +380,7 @@ int main(int argc, char *argv[]) {
 #endif
 	      else {
 		if (subframes>0  && insubframe>0) {
-		  sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nsubframes,fileindex);
+		  sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nnsubframe,fileindex);
 		  //		  mt->writeImage(ofname);
 		  doutf= new float[nnx*nny];
 		  if (subframes>0 && insubframe!=subframes && insubframe>0)
@@ -746,6 +746,7 @@ int main(int argc, char *argv[]) {
 	      insubframe=0;
 	      subnorm=1;
 	      f0=0;
+	      nnsubframe=0;
 	      if (doc.HasMember("subframes")) {	
 		if (doc["subframes"].IsInt()) {
 		  subframes=doc["subframes"].GetInt();
@@ -826,14 +827,14 @@ int main(int argc, char *argv[]) {
 	      if (dout[ix]<0) dout[ix]=0;
 	      doutf[ix]=dout[ix];
 	    }
-	    sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nsubframes,fileindex);
+	    sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nnsubframe,fileindex);
 	    
 	    cout << "Writing image to " << ofname << endl;
 
 	    WriteToTiff(doutf,ofname ,nnx, nny); 
 	    nsubframes++;
 	    insubframe=0;
-	    
+	    nnsubframe++;
 
 
 #ifndef DEVELOPER

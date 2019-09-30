@@ -379,30 +379,32 @@ int main(int argc, char *argv[]) {
 	      }
 #endif
 	      else {
-		if (subframes>0  && insubframe>0) {
-		  sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nnsubframe,fileindex);
-		  //		  mt->writeImage(ofname);
-		  doutf= new float[nnx*nny];
-		  if (subframes>0 && insubframe!=subframes && insubframe>0)
-		    subnorm=((double)subframes)/((double)insubframe);
-		  else
-		    subnorm=1.;
-		  for (int ix=0; ix<nnx*nny; ix++) {
+		if (subframes>0 ) { 
+		  if (insubframe>0) {
+		    sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nnsubframe,fileindex);
+		    //		  mt->writeImage(ofname);
+		    doutf= new float[nnx*nny];
+		    if (subframes>0 && insubframe!=subframes && insubframe>0)
+		      subnorm=((double)subframes)/((double)insubframe);
+		    else
+		      subnorm=1.;
+		    for (int ix=0; ix<nnx*nny; ix++) {
 		    doutf[ix]=detimage[ix]*subnorm;
 		    if (doutf[ix]<0) doutf[ix]=0;
-		  }
+		    }
 	    
-		  cout << "Writing image to " << ofname << endl;
-		  
-		  WriteToTiff(doutf,ofname ,nnx, nny); 
-
-		  if (doutf)
-		    delete [] doutf;
-		  doutf=NULL;
-		  
-		  nsubframes++;
-		  insubframe=0;
-		  send_something=1;
+		    cout << "Writing image to " << ofname << endl;
+		    
+		    WriteToTiff(doutf,ofname ,nnx, nny); 
+		    
+		    if (doutf)
+		      delete [] doutf;
+		    doutf=NULL;
+		    
+		    nsubframes++;
+		    insubframe=0;
+		    send_something=1;
+		  }
 		} else {
 		  sprintf(ofname,"%s_%ld.tiff",fname,fileindex);
 		  mt->writeImage(ofname);

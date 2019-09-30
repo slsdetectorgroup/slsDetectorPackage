@@ -21,6 +21,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern udpStruct udpDetails;
 
 int firmware_compatibility = OK;
 int firmware_check_done = 0;
@@ -35,7 +36,7 @@ int virtual_stop = 0;
 
 uint32_t clkDivider[NUM_CLOCKS] = {125, 20, 80};
 int highvoltage = 0;
-
+int detPos[2] = {0, 0};
 
 int isFirmwareCheckDone() {
 	return firmware_check_done;
@@ -471,13 +472,21 @@ int setHighVoltage(int val){
 }
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport) {
+int configureMAC() {
+
+	uint32_t srcip = udpDetails.srcip;
+	uint32_t dstip = udpDetails.dstip;
+	uint64_t srcmac = udpDetails.srcmac;
+	uint64_t dstmac = udpDetails.dstmac;
+	int srcport = udpDetails.srcport;
+	int dstport = udpDetails.dstport;		
+
 #ifdef VIRTUAL
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
-	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
-	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
+	sprintf(cDestIp, "%d.%d.%d.%d", (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff);
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, dstport));
+	if (setUDPDestinationDetails(0, cDestIp, dstport) == FAIL) {
 		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
@@ -485,30 +494,29 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
 	
-	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
+	        (srcip>>24)&0xff,(srcip>>16)&0xff,(srcip>>8)&0xff,(srcip)&0xff, srcip));
 	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((sourcemac>>40)&0xFF),
-			(unsigned int)((sourcemac>>32)&0xFF),
-			(unsigned int)((sourcemac>>24)&0xFF),
-			(unsigned int)((sourcemac>>16)&0xFF),
-			(unsigned int)((sourcemac>>8)&0xFF),
-			(unsigned int)((sourcemac>>0)&0xFF),
-			(long  long unsigned int)sourcemac));
-	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
+			(unsigned int)((srcmac>>40)&0xFF),
+			(unsigned int)((srcmac>>32)&0xFF),
+			(unsigned int)((srcmac>>24)&0xFF),
+			(unsigned int)((srcmac>>16)&0xFF),
+			(unsigned int)((srcmac>>8)&0xFF),
+			(unsigned int)((srcmac>>0)&0xFF),
+			(long  long unsigned int)srcmac));
+	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n", srcport, srcport));
 
-	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t\t(0x%08x)\n",
-	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff, dstip));
 	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((destmac>>40)&0xFF),
-			(unsigned int)((destmac>>32)&0xFF),
-			(unsigned int)((destmac>>24)&0xFF),
-			(unsigned int)((destmac>>16)&0xFF),
-			(unsigned int)((destmac>>8)&0xFF),
-			(unsigned int)((destmac>>0)&0xFF),
-			(long  long unsigned int)destmac));
-	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
+			(unsigned int)((dstmac>>40)&0xFF),
+			(unsigned int)((dstmac>>32)&0xFF),
+			(unsigned int)((dstmac>>24)&0xFF),
+			(unsigned int)((dstmac>>16)&0xFF),
+			(unsigned int)((dstmac>>8)&0xFF),
+			(unsigned int)((dstmac>>0)&0xFF),
+			(long  long unsigned int)dstmac));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",dstport, dstport));
 
 	// start addr
 	uint32_t addr = BASE_PATTERN_RAM;
@@ -520,21 +528,21 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 	//  mac addresses	
 	// msb (32) + lsb (16)
-	udp->udp_destmac_msb	= ((destmac >> 16) & BIT32_MASK);
-	udp->udp_destmac_lsb	= ((destmac >> 0) & BIT16_MASK);
+	udp->udp_destmac_msb	= ((dstmac >> 16) & BIT32_MASK);
+	udp->udp_destmac_lsb	= ((dstmac >> 0) & BIT16_MASK);
 	// msb (16) + lsb (32)
-	udp->udp_srcmac_msb		= ((sourcemac >> 32) & BIT16_MASK);
-	udp->udp_srcmac_lsb		= ((sourcemac >> 0) & BIT32_MASK);
+	udp->udp_srcmac_msb		= ((srcmac >> 32) & BIT16_MASK);
+	udp->udp_srcmac_lsb		= ((srcmac >> 0) & BIT32_MASK);
 
 	// ip addresses
-	udp->ip_srcip_msb		= ((sourceip >> 16) & BIT16_MASK);
-	udp->ip_srcip_lsb		= ((sourceip >> 0) & BIT16_MASK);	
-	udp->ip_destip_msb		= ((destip >> 16) & BIT16_MASK);
-	udp->ip_destip_lsb		= ((destip >> 0) & BIT16_MASK);	
+	udp->ip_srcip_msb		= ((srcip >> 16) & BIT16_MASK);
+	udp->ip_srcip_lsb		= ((srcip >> 0) & BIT16_MASK);	
+	udp->ip_destip_msb		= ((dstip >> 16) & BIT16_MASK);
+	udp->ip_destip_lsb		= ((dstip >> 0) & BIT16_MASK);	
 
 	// source port
-	udp->udp_srcport 		= sourceport;
-	udp->udp_destport		= udpport;
+	udp->udp_srcport 		= srcport;
+	udp->udp_destport		= dstport;
 
 	// other defines
 	udp->udp_ethertype		= 0x800;
@@ -589,6 +597,15 @@ void calcChecksum(udp_header* udp) {
 
 
 /* aquisition */
+
+int setDetectorPosition(int pos[]) {
+    memcpy(detPos, pos, sizeof(detPos));
+	return OK;
+}
+
+int* getDetectorPosition() {
+    return detPos;
+}
 
 int startStateMachine(){
 #ifdef VIRTUAL

@@ -58,7 +58,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpPort(int action);
   static std::string helpLastClient(int action);
   static std::string helpOnline(int action);
-  static std::string helpConfigureMac(int action);
   static std::string helpDetectorSize(int action);
   static std::string helpSettings(int action);
   static std::string helpSN(int action);
@@ -102,7 +101,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdPort(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdLastClient(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdOnline(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdConfigureMac(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdDetectorSize(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdSettings(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdSN(int narg, const char * const args[], int action, int detPos = -1);

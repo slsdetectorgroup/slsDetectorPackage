@@ -18,7 +18,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
-
+extern udpStruct udpDetails;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -86,6 +86,7 @@ int eiger_virtual_activate=1;
 pthread_t eiger_virtual_tid;
 int eiger_virtual_stop = 0;
 uint64_t eiger_virtual_startingframenumber = 0;
+int eiger_virtual_detPos[2] = {0, 0};
 #endif
 
 
@@ -134,6 +135,10 @@ void basictests() {
 			(long long int)sw_fw_apiversion,
 			REQUIRED_FIRMWARE_VERSION,
 			(long long int)client_sw_apiversion));
+	
+	// update default udpdstip and udpdstmac (1g is hardware ip and hardware mac)
+	udpDetails.srcip = ipadd;
+	udpDetails.srcmac = macadd;
 
 	// return if debugflag is not zero, debug mode
 	if (debugflag) {
@@ -929,7 +934,7 @@ enum detectorSettings getSettings() {
 /* parameters - threshold */
 
 int getThresholdEnergy() {
-	FILE_LOG(logINFO, ("Getting Threshold energy\n"));
+	FILE_LOG(logDEBUG1, ("Getting Threshold energy\n"));
 	return eiger_photonenergy;
 }
 
@@ -1157,17 +1162,25 @@ enum timingMode getTiming() {
 
 /* configure mac */
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2) {
+int configureMAC() {
+    uint32_t sourceip = udpDetails.srcip;
+	uint32_t destip = udpDetails.dstip;
+	uint64_t sourcemac = udpDetails.srcmac;
+	uint64_t destmac = udpDetails.dstmac;
+	int src_port = udpDetails.srcport;
+	int destport = udpDetails.dstport;		
+	int destport2 = udpDetails.dstport2;			
+
 #ifdef VIRTUAL
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
 	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d, port2:%d)\n", cDestIp, udpport, udpport2));
-	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d, port2:%d)\n", cDestIp, destport, destport2));
+	if (setUDPDestinationDetails(0, cDestIp, destport) == FAIL) {
 		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
-	if (setUDPDestinationDetails(1, cDestIp, udpport2) == FAIL) {
+	if (setUDPDestinationDetails(1, cDestIp, destport2) == FAIL) {
 		FILE_LOG(logERROR, ("could not set udp destination IP and port2\n"));
 		return FAIL;
 	}
@@ -1175,8 +1188,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 #else
     FILE_LOG(logINFO, ("Configuring MAC\n"));
 	
-	int src_port = DEFAULT_UDP_SOURCE_PORT;
-
 	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
 	getMacAddressinString(src_mac, 50, sourcemac);
 	getMacAddressinString(dst_mac, 50, destmac);
@@ -1195,9 +1206,9 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 	int beb_num =  detid;
 	int header_number = 0;
-	int dst_port = udpport;
+	int dst_port = destport;
 	if (!top)
-		dst_port = udpport2;
+		dst_port = destport2;
 
 	FILE_LOG(logINFO, ("\tDest Port   : %d\n", dst_port));
 
@@ -1212,9 +1223,9 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	/*}*/
 
 	header_number = 32;
-	dst_port = udpport2;
+	dst_port = destport2;
 	if (!top)
-		dst_port = udpport;
+		dst_port = destport;
 	FILE_LOG(logINFO, ("\tDest Port   : %d\n",dst_port));
 
 	/*for(i=0;i<32;i++) {*//** modified for Aldo*/
@@ -1235,13 +1246,21 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 }
 
 
-
 int	setDetectorPosition(int pos[]) {
 #ifdef VIRTUAL
+	memcpy(eiger_virtual_detPos, pos, sizeof(eiger_virtual_detPos));
 	return OK;
 #else
 	return Beb_SetDetectorPosition(pos);
 #endif
+}
+
+int* getDetectorPosition() {
+#ifdef VIRTUAL
+	return eiger_virtual_detPos;
+#else
+	return Beb_GetDetectorPosition();
+#endif	
 }
 
 int setQuad(int value) {

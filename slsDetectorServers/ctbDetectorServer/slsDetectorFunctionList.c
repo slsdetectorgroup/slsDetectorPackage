@@ -25,6 +25,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern udpStruct udpDetails;
 
 // Global variable from UDPPacketHeaderGenerator
 extern uint64_t udpFrameNumber;
@@ -63,7 +64,7 @@ int analogEnable = 1;
 int digitalEnable = 0;
 int naSamples = 1;
 int ndSamples = 1;
-
+int detPos[2] = {0, 0};
 
 int isFirmwareCheckDone() {
 	return firmware_check_done;
@@ -1503,7 +1504,13 @@ long int calcChecksum(int sourceip, int destip) {
 
 
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport){
+int configureMAC(){
+    uint32_t sourceip = udpDetails.srcip;
+	uint32_t destip = udpDetails.dstip;
+	uint64_t sourcemac = udpDetails.srcmac;
+	uint64_t destmac = udpDetails.dstmac;
+	int sourceport = udpDetails.srcport;
+	int destport = udpDetails.dstport;		
 #ifdef VIRTUAL
 	return OK;
 #endif
@@ -1517,8 +1524,8 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 		char cDestIp[MAX_STR_LENGTH];
 		memset(cDestIp, 0, MAX_STR_LENGTH);
 		sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-		FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
-		if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
+		FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, destport));
+		if (setUDPDestinationDetails(0, cDestIp, destport) == FAIL) {
 			FILE_LOG(logERROR, ("could not set udp 1G destination IP and port\n"));
 			return FAIL;
 		}
@@ -1527,7 +1534,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
 	// 10 G
     FILE_LOG(logINFOBLUE, ("Configuring 10G MAC\n"));
-    uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 
     FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
             (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
@@ -1551,7 +1557,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
             (unsigned int)((destmac>>8)&0xFF),
             (unsigned int)((destmac>>0)&0xFF),
             (long  long unsigned int)destmac));
-    FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",udpport, udpport));
+    FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",destport, destport));
 
     long int checksum=calcChecksum(sourceip, destip);
     bus_w(TX_IP_REG, sourceip);
@@ -1576,7 +1582,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
 
     val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
-            ((udpport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
+            ((destport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
     bus_w(UDP_PORT_REG, val);
     FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
 
@@ -1589,6 +1595,15 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     usleep(WAIT_TIME_CONFIGURE_MAC); // todo maybe without
 
 	return OK;
+}
+
+int setDetectorPosition(int pos[]) {
+    memcpy(detPos, pos, sizeof(detPos));
+    return OK;
+}
+
+int* getDetectorPosition() {
+    return detPos;
 }
 
 int enableTenGigabitEthernet(int val) {

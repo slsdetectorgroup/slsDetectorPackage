@@ -14,6 +14,21 @@ Here are the definitions, but the actual implementation should be done for each 
 ****************************************************/
 
 enum interfaceType {OUTER, INNER};
+typedef struct udpStruct_s {
+	int srcport; 
+	int srcport2; 
+	int dstport;
+	int dstport2;	
+	uint64_t srcmac;
+	uint64_t srcmac2;
+	uint64_t dstmac;
+	uint64_t dstmac2;
+	uint32_t srcip;
+	uint32_t srcip2;
+	uint32_t dstip;
+	uint32_t dstip2;	
+}udpStruct;
+
 
 // basic tests
 int			isFirmwareCheckDone();
@@ -263,19 +278,14 @@ long int 	calcChecksum(int sourceip, int destip);
 int         getAdcConfigured();
 #endif
 
-#ifdef EIGERD
-int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport, uint32_t udpport2);
-#elif JUNGFRAUD
-int 		configureMAC(int numInterfaces, int selInterface,
-				uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
-				uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2);
-#else
-int 		configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport);
-#endif
 
-#if defined(JUNGFRAUD) || defined(EIGERD)
+
+int 		configureMAC();
 int 		setDetectorPosition(int pos[]);
-#endif
+int*		getDetectorPosition();
+int			isConfigurable();
+
+
 #ifdef EIGERD
 int			setQuad(int value);
 int			getQuad();

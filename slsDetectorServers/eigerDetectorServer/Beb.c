@@ -1176,6 +1176,9 @@ int Beb_GetQuad() {
 	return Beb_quadEnable;
 }
 
+int* Beb_GetDetectorPosition() {
+	return Beb_positions;
+}
 
 int Beb_SetDetectorPosition(int pos[]) {
 	if (!Beb_activated)

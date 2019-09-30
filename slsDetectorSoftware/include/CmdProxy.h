@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "network_utils.h"
 
 /** Macro to make an integer command.
  * CMDNAME name of the function that does the command
@@ -72,6 +73,7 @@
         return os.str();                                                       \
     }
 
+
 namespace sls {
 
 class CmdProxy {
@@ -127,7 +129,19 @@ class CmdProxy {
                           {"lock", &CmdProxy::lock},
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
                           {"rx_padding", &CmdProxy::rx_padding},
-                          {"rx_framesperfile", &CmdProxy::rx_framesperfile}};
+                          {"rx_framesperfile", &CmdProxy::rx_framesperfile},
+                          {"detectormac", &CmdProxy::detectormac},
+                          {"detectormac2", &CmdProxy::detectormac2},
+                          {"rx_udpmac", &CmdProxy::rx_udpmac},
+                          {"rx_udpmac2", &CmdProxy::rx_udpmac2},
+                          {"detectorip", &CmdProxy::detectorip},
+                          {"detectorip2", &CmdProxy::detectorip2},
+                          {"rx_udpip", &CmdProxy::rx_udpip},
+                          {"rx_udpip2", &CmdProxy::rx_udpip2},
+                          {"rx_udpport", &CmdProxy::rx_udpport},
+                          {"rx_udpport2", &CmdProxy::rx_udpport2},
+                          {"numinterfaces", &CmdProxy::numinterfaces},
+                          {"selinterface", &CmdProxy::selinterface}};
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
@@ -179,6 +193,7 @@ class CmdProxy {
                     "[0, 1]\n\tgets partial frames padding enable in the "
                     "receiver. 0 does not pad partial frames(fastest), 1 "
                     "(default) pads partial frames");
+
     INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile,
                     std::stoi, "[n_frames]\n\tNumber of frames per file");
 
@@ -197,6 +212,42 @@ class CmdProxy {
 
     INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stoi,
                     "[0, 1]\n\tFile index");
+
+    INTEGER_COMMAND(detectormac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
+                    "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp interface. ");
+
+    INTEGER_COMMAND(detectormac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
+                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom half of detector (source) udp interface. ");     
+
+    INTEGER_COMMAND(rx_udpmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
+                    "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as rx_hostname/rx_udpip retrieves it.");                   
+
+    INTEGER_COMMAND(rx_udpmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
+                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/rx_udpip2 retrieves it.")
+
+    INTEGER_COMMAND(detectorip, getSourceUDPIP, setSourceUDPIP, IpAddr,
+                    "[x.x.x.x]\n\tIp address of the detector (source) udp interface. Must be same subnet as destination udp ip.");               
+    
+    INTEGER_COMMAND(detectorip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
+                    "[x.x.x.x]\n\t[Jungfrau] Ip address of the bottom half of detector (source) udp interface. Must be same subnet as destination udp ip2.");     
+    
+    INTEGER_COMMAND(rx_udpip, getDestinationUDPIP, setDestinationUDPIP, IpAddr,
+                    "[x.x.x.x]\n\tIp address of the receiver (destination) udp interface.");               
+    
+    INTEGER_COMMAND(rx_udpip2, getDestinationUDPIP2, setDestinationUDPIP2, IpAddr,
+                    "[x.x.x.x]\n\t[Jungfrau] Ip address of the receiver (destination) udp interface where the second half of detector data is sent to.");     
+ 
+    INTEGER_COMMAND(rx_udpport, getDestinationUDPPort, setDestinationUDPPort, std::stoi,
+                    "[n]\n\tPort number of the receiver (destination) udp interface.");               
+    
+    INTEGER_COMMAND(rx_udpport2, getDestinationUDPPort2, setDestinationUDPPort2, std::stoi,
+                    "[n]\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to.\n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to.");     
+
+    INTEGER_COMMAND(numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces, std::stoi,
+                    "[1, 2]\n\t[Jungfrau] Number of udp interfaces to stream data from detector. Default: 1.");     
+
+    INTEGER_COMMAND(selinterface, getSelectedUDPInterface, selectUDPInterface, std::stoi,
+                    "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)");       
     
     INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
                     "[0, 1]\n\tEnable or disable parallel mode. [Eiger]");

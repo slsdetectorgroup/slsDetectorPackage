@@ -155,7 +155,7 @@ if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
     echo "Enabling Compile Option: TextClient, Receiver and GUI"
 else 
     if [ $TEXTCLIENT -eq 1 ]; then
-        CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON "
+        CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=OFF "
         echo "Enabling Compile Option: TextClient"
     fi
     if [ $RECEIVER -eq 1 ]; then

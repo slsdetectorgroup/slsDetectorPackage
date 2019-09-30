@@ -41,7 +41,6 @@ enum detFuncs{
 	F_GET_LAST_CLIENT_IP, /**< returns the IP of the client last connected to the detector */
 	F_SET_PORT, /**< Changes communication port of the server */
 	F_UPDATE_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
-	F_CONFIGURE_MAC, /**< Configures MAC */
 	F_ENABLE_TEN_GIGA, /**< enable 10Gbe */
 	F_SET_ALL_TRIMBITS, /** < set all trimbits to this value */
 	F_SET_PATTERN_IO_CONTROL, /** < set pattern i/o control */
@@ -92,6 +91,31 @@ enum detFuncs{
 	F_GET_INTERRUPT_SUBFRAME,
 	F_SET_READ_N_LINES,
 	F_GET_READ_N_LINES,
+	F_SET_POSITION,
+	F_SET_SOURCE_UDP_MAC,
+	F_GET_SOURCE_UDP_MAC,
+	F_SET_SOURCE_UDP_MAC2,
+	F_GET_SOURCE_UDP_MAC2,
+	F_SET_SOURCE_UDP_IP,
+	F_GET_SOURCE_UDP_IP,
+	F_SET_SOURCE_UDP_IP2,
+	F_GET_SOURCE_UDP_IP2,
+	F_SET_DEST_UDP_MAC,
+	F_GET_DEST_UDP_MAC,
+	F_SET_DEST_UDP_MAC2,
+	F_GET_DEST_UDP_MAC2,
+	F_SET_DEST_UDP_IP,
+	F_GET_DEST_UDP_IP,	
+	F_SET_DEST_UDP_IP2,
+	F_GET_DEST_UDP_IP2,
+	F_SET_DEST_UDP_PORT,
+	F_GET_DEST_UDP_PORT,
+	F_SET_DEST_UDP_PORT2,
+	F_GET_DEST_UDP_PORT2,
+	F_SET_NUM_INTERFACES,
+	F_GET_NUM_INTERFACES,
+	F_SET_INTERFACE_SEL,
+	F_GET_INTERFACE_SEL,	
 	F_SET_PARALLEL_MODE,
 	F_GET_PARALLEL_MODE,
 	F_SET_OVERFLOW_MODE,
@@ -113,7 +137,6 @@ enum detFuncs{
 	F_GET_RECEIVER_TYPE, /**< return receiver type */
 	F_SEND_RECEIVER_DETHOSTNAME, /**< set detector hostname to receiver */
 	F_RECEIVER_SET_ROI, /**< Sets receiver ROI */
-	F_SETUP_RECEIVER_UDP, /**< sets the receiver udp connection and returns receiver mac address */
 	F_SET_RECEIVER_TIMER, /**< set/get timer value */
 	F_SET_RECEIVER_DYNAMIC_RANGE, /**< set/get detector dynamic range */
 	F_RECEIVER_STREAMING_FREQUENCY, /**< sets the frequency of receiver sending frames to gui */
@@ -159,6 +182,11 @@ enum detFuncs{
 	F_RECEIVER_DBIT_OFFSET, /** < set/get reciever digital bit offset */
 	F_SET_RECEIVER_QUAD,
 	F_SET_RECEIVER_READ_N_LINES,
+	F_SET_RECEIVER_UDP_IP,
+	F_SET_RECEIVER_UDP_IP2,
+	F_SET_RECEIVER_UDP_PORT,
+	F_SET_RECEIVER_UDP_PORT2,
+	F_SET_RECEIVER_NUM_INTERFACES,
 	NUM_REC_FUNCTIONS
 };
 
@@ -196,7 +224,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
 	case F_SET_PORT:						return "F_SET_PORT";
 	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
-	case F_CONFIGURE_MAC:					return "F_CONFIGURE_MAC";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
@@ -247,6 +274,31 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
 	case F_SET_READ_N_LINES:				return "F_SET_READ_N_LINES";
 	case F_GET_READ_N_LINES:				return "F_GET_READ_N_LINES";
+	case F_SET_POSITION:					return "F_SET_POSITION";
+	case F_SET_SOURCE_UDP_MAC:				return "F_SET_SOURCE_UDP_MAC";
+	case F_GET_SOURCE_UDP_MAC:				return "F_GET_SOURCE_UDP_MAC";
+	case F_SET_SOURCE_UDP_MAC2:				return "F_SET_SOURCE_UDP_MAC2";
+	case F_GET_SOURCE_UDP_MAC2:				return "F_GET_SOURCE_UDP_MAC2";
+	case F_SET_SOURCE_UDP_IP:				return "F_SET_SOURCE_UDP_IP";
+	case F_GET_SOURCE_UDP_IP:				return "F_GET_SOURCE_UDP_IP";
+	case F_SET_SOURCE_UDP_IP2:				return "F_SET_SOURCE_UDP_IP2";
+	case F_GET_SOURCE_UDP_IP2:				return "F_GET_SOURCE_UDP_IP2";
+	case F_SET_DEST_UDP_MAC:				return "F_SET_DEST_UDP_MAC";
+	case F_GET_DEST_UDP_MAC:				return "F_GET_DEST_UDP_MAC";
+	case F_SET_DEST_UDP_MAC2:				return "F_SET_DEST_UDP_MAC2";
+	case F_GET_DEST_UDP_MAC2:				return "F_GET_DEST_UDP_MAC2";
+	case F_SET_DEST_UDP_IP:					return "F_SET_DEST_UDP_IP";
+	case F_GET_DEST_UDP_IP:					return "F_GET_DEST_UDP_IP";	
+	case F_SET_DEST_UDP_IP2:				return "F_SET_DEST_UDP_IP2";
+	case F_GET_DEST_UDP_IP2:				return "F_GET_DEST_UDP_IP2";
+	case F_SET_DEST_UDP_PORT:				return "F_SET_DEST_UDP_PORT";
+	case F_GET_DEST_UDP_PORT:				return "F_GET_DEST_UDP_PORT";
+	case F_SET_DEST_UDP_PORT2:				return "F_SET_DEST_UDP_PORT2";
+	case F_GET_DEST_UDP_PORT2:				return "F_GET_DEST_UDP_PORT2";
+	case F_SET_NUM_INTERFACES:				return "F_SET_NUM_INTERFACES";
+	case F_GET_NUM_INTERFACES:				return "F_GET_NUM_INTERFACES";
+	case F_SET_INTERFACE_SEL:				return "F_SET_INTERFACE_SEL";
+	case F_GET_INTERFACE_SEL:				return "F_GET_INTERFACE_SEL";	
 	case F_SET_PARALLEL_MODE:				return "F_SET_PARALLEL_MODE";	
 	case F_GET_PARALLEL_MODE:				return "F_GET_PARALLEL_MODE";	
 	case F_SET_OVERFLOW_MODE:				return "F_SET_OVERFLOW_MODE";	
@@ -268,7 +320,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_RECEIVER_TYPE: 				return "F_GET_RECEIVER_TYPE";
 	case F_SEND_RECEIVER_DETHOSTNAME:		return "F_SEND_RECEIVER_DETHOSTNAME";
 	case F_RECEIVER_SET_ROI: 				return "F_RECEIVER_SET_ROI";
-	case F_SETUP_RECEIVER_UDP:				return "F_SETUP_RECEIVER_UDP";
 	case F_SET_RECEIVER_TIMER:  			return "F_SET_RECEIVER_TIMER";
 	case F_SET_RECEIVER_DYNAMIC_RANGE:  	return "F_SET_RECEIVER_DYNAMIC_RANGE";
 	case F_RECEIVER_STREAMING_FREQUENCY:	return "F_RECEIVER_STREAMING_FREQUENCY";
@@ -314,6 +365,11 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_RECEIVER_DBIT_OFFSET:			return "F_RECEIVER_DBIT_OFFSET";
 	case F_SET_RECEIVER_QUAD:				return "F_SET_RECEIVER_QUAD";
 	case F_SET_RECEIVER_READ_N_LINES:		return "F_SET_RECEIVER_READ_N_LINES";
+	case F_SET_RECEIVER_UDP_IP:				return "F_SET_RECEIVER_UDP_IP";
+	case F_SET_RECEIVER_UDP_IP2:			return "F_SET_RECEIVER_UDP_IP2";
+	case F_SET_RECEIVER_UDP_PORT:			return "F_SET_RECEIVER_UDP_PORT";
+	case F_SET_RECEIVER_UDP_PORT2:			return "F_SET_RECEIVER_UDP_PORT2";
+	case F_SET_RECEIVER_NUM_INTERFACES:		return "F_SET_RECEIVER_NUM_INTERFACES";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

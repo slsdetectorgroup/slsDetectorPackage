@@ -263,12 +263,6 @@ class Detector {
      *                                                 *
      * ************************************************/
 
-    /** Configures the destination for UDP packets in the detector
-     * Needed only if you use a custom receiver (not slsReceiver)
-     * as it is already included in setReceiverHostname.
-     */
-    void configureMAC(Positions pos = {}); // TODO: find a reasonable name
-
     /** [Jungfrau] */
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
 
@@ -291,13 +285,13 @@ class Detector {
      * 10G Eiger and other detectors, the source UDP IP must be in the
      * same subnet of the destination UDP IP
      */
-    void setSourceUDPIP(const std::string &ip, Positions pos = {});
+    void setSourceUDPIP(const IpAddr ip, Positions pos = {});
 
     /** [Jungfrau] bottom half */
     Result<IpAddr> getSourceUDPIP2(Positions pos = {}) const;
 
     /** [Jungfrau] bottom half */
-    void setSourceUDPIP2(const std::string &ip, Positions pos = {});
+    void setSourceUDPIP2(const IpAddr ip, Positions pos = {});
 
     Result<MacAddr> getSourceUDPMAC(Positions pos = {}) const;
 
@@ -306,24 +300,24 @@ class Detector {
      * Others can be anything (beware of certain bits)
      */
 
-    void setSourceUDPMAC(const std::string &mac, Positions pos = {});
+    void setSourceUDPMAC(const MacAddr mac, Positions pos = {});
 
     /** [Jungfrau] bottom half */
     Result<MacAddr> getSourceUDPMAC2(Positions pos = {}) const;
 
     /** [Jungfrau] bottom half */
-    void setSourceUDPMAC2(const std::string &mac, Positions pos = {});
+    void setSourceUDPMAC2(const MacAddr mac, Positions pos = {});
 
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
 
     /** IP of the interface in receiver that the detector sends data to */
-    void setDestinationUDPIP(const std::string &ip, Positions pos = {});
+    void setDestinationUDPIP(const IpAddr ip, Positions pos = {});
 
     /** [Jungfrau bottom half] */
     Result<IpAddr> getDestinationUDPIP2(Positions pos = {}) const;
 
     /** [Jungfrau bottom half] */
-    void setDestinationUDPIP2(const std::string &ip, Positions pos = {});
+    void setDestinationUDPIP2(const IpAddr ip, Positions pos = {});
 
     Result<MacAddr> getDestinationUDPMAC(Positions pos = {}) const;
 
@@ -331,13 +325,13 @@ class Detector {
      * Only needed if you use a custom receiver (not slsReceiver)
      * Must be followed by configuremac.
      */
-    void setDestinationUDPMAC(const std::string &mac, Positions pos = {});
+    void setDestinationUDPMAC(const MacAddr mac, Positions pos = {});
 
     /** [Jungfrau bottom half] */
     Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
 
     /** [Jungfrau bottom half] */
-    void setDestinationUDPMAC2(const std::string &mac, Positions pos = {});
+    void setDestinationUDPMAC2(const MacAddr mac, Positions pos = {});
 
     Result<int> getDestinationUDPPort(Positions pos = {}) const;
 

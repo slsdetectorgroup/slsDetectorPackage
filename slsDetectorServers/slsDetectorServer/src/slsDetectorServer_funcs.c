@@ -39,12 +39,17 @@ extern char mess[MAX_STR_LENGTH];
 // Variables that will be exported
 int sockfd = 0;
 int debugflag = 0;
+udpStruct udpDetails = {32410, 32411, 50001, 50002, 0, 0, 0, 0, 0, 0, 0, 0};
+int configured = FAIL;
+char configureMessage[MAX_STR_LENGTH]="";
+int maxydet = -1;
+int detectorId = -1;
+
+
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
-#ifdef EIGERD
-uint32_t dhcpipad = 0;
-#endif
+
 
 enum updateRet {NO_UPDATE, UPDATE};
 
@@ -63,9 +68,6 @@ void init_detector() {
 	if (isControlServer) {
 	    basictests();
 	    initControlServer();
-#ifdef EIGERD
-	    dhcpipad = getDetectorIP();
-#endif
 	}
 	else initStopServer();
 	strcpy(mess,"dummy message");
@@ -199,7 +201,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
 	case F_SET_PORT:						return "F_SET_PORT";
 	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
-	case F_CONFIGURE_MAC:					return "F_CONFIGURE_MAC";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
@@ -250,6 +251,31 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_INTERRUPT_SUBFRAME:			return "F_GET_INTERRUPT_SUBFRAME";
 	case F_SET_READ_N_LINES:				return "F_SET_READ_N_LINES";
 	case F_GET_READ_N_LINES:				return "F_GET_READ_N_LINES";
+	case F_SET_POSITION:					return "F_SET_POSITION";
+	case F_SET_SOURCE_UDP_MAC:				return "F_SET_SOURCE_UDP_MAC";
+	case F_GET_SOURCE_UDP_MAC:				return "F_GET_SOURCE_UDP_MAC";
+	case F_SET_SOURCE_UDP_MAC2:				return "F_SET_SOURCE_UDP_MAC2";
+	case F_GET_SOURCE_UDP_MAC2:				return "F_GET_SOURCE_UDP_MAC2";
+	case F_SET_SOURCE_UDP_IP:				return "F_SET_SOURCE_UDP_IP";
+	case F_GET_SOURCE_UDP_IP:				return "F_GET_SOURCE_UDP_IP";
+	case F_SET_SOURCE_UDP_IP2:				return "F_SET_SOURCE_UDP_IP2";
+	case F_GET_SOURCE_UDP_IP2:				return "F_GET_SOURCE_UDP_IP2";
+	case F_SET_DEST_UDP_MAC:				return "F_SET_DEST_UDP_MAC";
+	case F_GET_DEST_UDP_MAC:				return "F_GET_DEST_UDP_MAC";
+	case F_SET_DEST_UDP_MAC2:				return "F_SET_DEST_UDP_MAC2";
+	case F_GET_DEST_UDP_MAC2:				return "F_GET_DEST_UDP_MAC2";
+	case F_SET_DEST_UDP_IP:					return "F_SET_DEST_UDP_IP";
+	case F_GET_DEST_UDP_IP:					return "F_GET_DEST_UDP_IP";	
+	case F_SET_DEST_UDP_IP2:				return "F_SET_DEST_UDP_IP2";
+	case F_GET_DEST_UDP_IP2:				return "F_GET_DEST_UDP_IP2";
+	case F_SET_DEST_UDP_PORT:				return "F_SET_DEST_UDP_PORT";
+	case F_GET_DEST_UDP_PORT:				return "F_GET_DEST_UDP_PORT";
+	case F_SET_DEST_UDP_PORT2:				return "F_SET_DEST_UDP_PORT2";
+	case F_GET_DEST_UDP_PORT2:				return "F_GET_DEST_UDP_PORT2";
+	case F_SET_NUM_INTERFACES:				return "F_SET_NUM_INTERFACES";
+	case F_GET_NUM_INTERFACES:				return "F_GET_NUM_INTERFACES";
+	case F_SET_INTERFACE_SEL:				return "F_SET_INTERFACE_SEL";
+	case F_GET_INTERFACE_SEL:				return "F_GET_INTERFACE_SEL";	
 	case F_SET_PARALLEL_MODE:				return "F_SET_PARALLEL_MODE";	
 	case F_GET_PARALLEL_MODE:				return "F_GET_PARALLEL_MODE";	
 	case F_SET_OVERFLOW_MODE:				return "F_SET_OVERFLOW_MODE";	
@@ -294,7 +320,6 @@ void function_table() {
 	flist[F_GET_LAST_CLIENT_IP]					= &get_last_client_ip;
 	flist[F_SET_PORT]							= &set_port;
 	flist[F_UPDATE_CLIENT]						= &update_client;
-	flist[F_CONFIGURE_MAC]						= &configure_mac;
 	flist[F_ENABLE_TEN_GIGA]					= &enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]					= &set_all_trimbits;
 	flist[F_SET_PATTERN_IO_CONTROL]				= &set_pattern_io_control;
@@ -345,6 +370,31 @@ void function_table() {
 	flist[F_GET_INTERRUPT_SUBFRAME]				= &get_interrupt_subframe;
 	flist[F_SET_READ_N_LINES]					= &set_read_n_lines;
 	flist[F_GET_READ_N_LINES]					= &get_read_n_lines;
+	flist[F_SET_POSITION]						= &set_detector_position;
+	flist[F_SET_SOURCE_UDP_MAC]					= &set_source_udp_mac;
+	flist[F_GET_SOURCE_UDP_MAC]					= &get_source_udp_mac;
+	flist[F_SET_SOURCE_UDP_MAC2]				= &set_source_udp_mac2;
+	flist[F_GET_SOURCE_UDP_MAC2]				= &get_source_udp_mac2;
+	flist[F_SET_SOURCE_UDP_IP]					= &set_source_udp_ip;
+	flist[F_GET_SOURCE_UDP_IP]					= &get_source_udp_ip;
+	flist[F_SET_SOURCE_UDP_IP2]					= &set_source_udp_ip2;
+	flist[F_GET_SOURCE_UDP_IP2]					= &get_source_udp_ip2;
+	flist[F_SET_DEST_UDP_MAC]					= &set_dest_udp_mac;
+	flist[F_GET_DEST_UDP_MAC]					= &get_dest_udp_mac;
+	flist[F_SET_DEST_UDP_MAC2]					= &set_dest_udp_mac2;
+	flist[F_GET_DEST_UDP_MAC2]					= &get_dest_udp_mac2;
+	flist[F_SET_DEST_UDP_IP]					= &set_dest_udp_ip;
+	flist[F_GET_DEST_UDP_IP]					= &get_dest_udp_ip;	
+	flist[F_SET_DEST_UDP_IP2]					= &set_dest_udp_ip2;
+	flist[F_GET_DEST_UDP_IP2]					= &get_dest_udp_ip2;
+	flist[F_SET_DEST_UDP_PORT]					= &set_dest_udp_port;
+	flist[F_GET_DEST_UDP_PORT]					= &get_dest_udp_port;
+	flist[F_SET_DEST_UDP_PORT2]					= &set_dest_udp_port2;
+	flist[F_GET_DEST_UDP_PORT2]					= &get_dest_udp_port2;
+	flist[F_SET_NUM_INTERFACES]					= &set_num_interfaces;
+	flist[F_GET_NUM_INTERFACES]					= &get_num_interfaces;
+	flist[F_SET_INTERFACE_SEL]					= &set_interface_sel;
+	flist[F_GET_INTERFACE_SEL]					= &get_interface_sel;		
 	flist[F_SET_PARALLEL_MODE]					= &set_parallel_mode;
 	flist[F_GET_PARALLEL_MODE]					= &get_parallel_mode;
 	flist[F_SET_OVERFLOW_MODE]					= &set_overflow_mode;
@@ -1501,14 +1551,34 @@ int start_acquisition(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-		ret = startStateMachine();
-		if (ret == FAIL) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-			sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
-#else
-			sprintf(mess, "Could not start acquisition\n");
-#endif
+#ifdef EIGERD
+		// check for hardware mac and hardware ip
+		if (udpDetails.srcmac != getDetectorMAC()) {
+			ret = FAIL;
+			sprintf(mess, "Invalid udp source mac address for this detector. Must be same as hardware detector mac address \n");
 			FILE_LOG(logERROR,(mess));
+		}
+		else if (!enableTenGigabitEthernet(-1) && (udpDetails.srcip != getDetectorIP())) {
+			ret = FAIL;
+			sprintf(mess, "Invalid udp source ip address for this detector. Must be same as hardware detector ip address in 1G readout mode \n");
+			FILE_LOG(logERROR,(mess));			
+		}
+		else
+#endif
+		if (configured == FAIL) {
+			ret = FAIL;
+			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
+			FILE_LOG(logERROR,(mess));					
+		} else {
+			ret = startStateMachine();
+			if (ret == FAIL) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
+#else
+				sprintf(mess, "Could not start acquisition\n");
+#endif
+				FILE_LOG(logERROR,(mess));
+			}
 		}
 		FILE_LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
 	}
@@ -1589,17 +1659,36 @@ int start_and_read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-		ret = startStateMachine();
-		if (ret == FAIL) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-			sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
-#else
-			sprintf(mess, "Could not start acquisition\n");
-#endif
+#ifdef EIGERD
+		// check for hardware mac and hardware ip
+		if (udpDetails.srcmac != getDetectorMAC()) {
+			ret = FAIL;
+			sprintf(mess, "Invalid udp source mac address for this detector. Must be same as hardware detector mac address \n");
 			FILE_LOG(logERROR,(mess));
 		}
+		else if (!enableTenGigabitEthernet(-1) && (udpDetails.srcip != getDetectorIP())) {
+			ret = FAIL;
+			sprintf(mess, "Invalid udp source ip address for this detector. Must be same as hardware detector ip address in 1G readout mode \n");
+			FILE_LOG(logERROR,(mess));			
+		}
+		else
+#endif
+		if (configured == FAIL) {
+			ret = FAIL;
+			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
+			FILE_LOG(logERROR,(mess));					
+		} else {
+			ret = startStateMachine();
+			if (ret == FAIL) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
+#else
+				sprintf(mess, "Could not start acquisition\n");
+#endif
+				FILE_LOG(logERROR,(mess));
+			}
+		}
 		FILE_LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
-
 	}
 
 	// lock or acquisition start error
@@ -1903,6 +1992,10 @@ int set_roi(int file_des) {
 		if (ret == FAIL) {
 			sprintf(mess, "Could not set ROI. Invalid xmin or xmax\n");
 			FILE_LOG(logERROR,(mess));
+		}
+		// old firmware requires a redo configure mac
+		else {
+			configure_mac();
 		}
 	}
 #endif
@@ -2276,7 +2369,7 @@ int send_update(int file_des) {
 
 
 
-
+/*
 int configure_mac(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -2435,7 +2528,7 @@ int configure_mac(int file_des) {
 
 			// always remember the ip sent from the client (could be for 10g(if not dhcp))
 			if (srcIp != getDetectorIP())
-				dhcpipad = srcIp;
+				custom10gIp = srcIp;
 
 			//only for 1Gbe, change ip to hardware ip
 			if (!enableTenGigabitEthernet(-1)) {
@@ -2444,7 +2537,7 @@ int configure_mac(int file_des) {
 			}
 			// 10 gbe (use ip given from client)
 			else
-				srcIp = dhcpipad;
+				srcIp = custom10gIp;
 			ret = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2);
 #elif JUNGFRAUD
 			ret = configureMAC(numInterfaces, selInterface, dstIp, dstMac, srcMac, srcIp, dstPort, dstIp2, dstMac2, srcMac2, srcIp2, dstPort2);
@@ -2486,7 +2579,7 @@ int configure_mac(int file_des) {
 	}
 	return Server_SendResult(file_des, OTHER, UPDATE, retvals, sizeof(retvals));
 }
-
+*/
 
 
 int enable_ten_giga(int file_des) {
@@ -2497,14 +2590,28 @@ int enable_ten_giga(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Enable/ Disable 10GbE : %d\n", arg));
+	FILE_LOG(logINFOBLUE, ("Setting 10GbE: %d\n", arg));
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 	functionNotImplemented();
 #else
 	// set & get
 	if ((arg == -1) || (Server_VerifyLock() == OK)) {
-		retval = enableTenGigabitEthernet(arg);
+		if (arg >= 0 && enableTenGigabitEthernet(-1) != arg) {
+			enableTenGigabitEthernet(arg);
+			uint64_t hardwaremac = getDetectorMAC();
+			if (udpDetails.srcmac != hardwaremac) {
+				FILE_LOG(logINFOBLUE, ("Updating udp source mac\n"));
+				udpDetails.srcmac = hardwaremac;
+			}
+			uint32_t hardwareip = getDetectorIP();
+			if (arg == 0 && udpDetails.srcip != hardwareip) {
+				FILE_LOG(logINFOBLUE, ("Updating udp source ip\n"));
+				udpDetails.srcip = hardwareip;
+			}
+			configure_mac();
+		}
+		retval = enableTenGigabitEthernet(-1);
 		FILE_LOG(logDEBUG1, ("10GbE: %d\n", retval));
 		validate(arg, retval, "enable/disable 10GbE", DEC);
 	}
@@ -4116,6 +4223,678 @@ int get_read_n_lines(int file_des) {
 } 
 
 
+
+
+void calculate_and_set_position() {
+	if (maxydet == -1 || detectorId == -1) {
+		ret = FAIL;
+		sprintf(mess, "Could not set detector position (did not get multi size).\n");
+		FILE_LOG(logERROR,(mess));
+		return;
+	}
+	int maxy = maxydet;
+#ifdef JUNGFRAUD
+	maxy *= getNumberofUDPInterfaces();
+#endif
+	int pos[2] = {0, 0};
+	// row
+    pos[0] = (detectorId % maxy);
+    // col for horiz. udp ports
+    pos[1] = (detectorId / maxy);
+#ifdef EIGERD
+	pos[1] *= 2;
+#endif
+    FILE_LOG(logDEBUG, ("Setting Positions (%d,%d)\n", pos[0], pos[1]));
+	if(setDetectorPosition(pos) == FAIL) {
+		ret = FAIL;
+		sprintf(mess, "Could not set detector position.\n");
+		FILE_LOG(logERROR,(mess));
+	}
+	// to redo the detector mac (depends on positions)
+	else {
+		// create detector mac from x and y 
+		if (udpDetails.srcmac == 0) {
+			char dmac[50];
+			memset(dmac, 0, 50);
+			sprintf(dmac, "aa:bb:cc:dd:%02x:%02x", pos[0]&0xFF, pos[1]&0xFF);
+			FILE_LOG(logINFO, ("Udp source mac address created: %s\n", dmac));
+			unsigned char a[6];
+			sscanf(dmac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]);
+			udpDetails.srcmac = 0;
+			int i;
+			for (i = 0; i < 6; ++i) {
+				udpDetails.srcmac = (udpDetails.srcmac << 8) + a[i];
+			}
+		}
+#ifdef JUNGFRAUD
+		if (getNumberofUDPInterfaces() > 1) {
+			if (udpDetails.srcmac2 == 0) {
+				char dmac2[50];
+				memset(dmac2, 0, 50);
+				sprintf(dmac2, "aa:bb:cc:dd:%02x:%02x", (pos[0] + 1 )&0xFF, pos[1]&0xFF);	
+				FILE_LOG(logINFO, ("Udp source mac address2 created: %s\n", dmac2));
+				unsigned char a[6];
+				sscanf(dmac2, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]);
+				udpDetails.srcmac2 = 0;
+				int i;
+				for (i = 0; i < 6; ++i) {
+					udpDetails.srcmac2 = (udpDetails.srcmac2 << 8) + a[i];
+				}
+			}
+		}
+#endif
+		configure_mac();
+	}
+	// no need to do a get (also jungfrau gives bigger set for second)
+}
+
+
+int set_detector_position(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = { 0, 0};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting detector positions: [%u, %u]\n", args[0], args[1]));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			maxydet = args[0];
+			detectorId = args[1];
+			calculate_and_set_position();
+		}
+	}
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int check_detector_idle() {
+	enum runStatus status = getRunStatus();
+	if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
+		ret = FAIL;
+		sprintf(mess, "Cannot configure mac when detector is not idle. Detector at %s state\n", getRunStateName(status));
+		FILE_LOG(logERROR,(mess));
+	} 
+	return ret;
+}
+
+int is_configurable() {
+	if (udpDetails.srcip == 0) {
+		strcpy(configureMessage, "udp source ip not configured\n");
+		FILE_LOG(logWARNING, ("%s", configureMessage));
+		return FAIL;
+	}
+	if (udpDetails.dstip == 0) {
+		strcpy(configureMessage, "udp destination ip not configured\n");
+		FILE_LOG(logWARNING, ("%s", configureMessage));
+		return FAIL;
+	}
+	if (udpDetails.srcmac == 0) {
+		strcpy(configureMessage, "udp source mac not configured\n");
+		FILE_LOG(logWARNING, ("%s", configureMessage));
+		return FAIL;
+	}
+	if (udpDetails.dstmac == 0) {
+		strcpy(configureMessage, "udp destination mac not configured\n");
+		FILE_LOG(logWARNING, ("%s", configureMessage));
+		return FAIL;
+	}			
+#ifdef JUNGFRAUD
+	if (getNumberofUDPInterfaces() == 2) {
+		if (udpDetails.srcip2 == 0) {
+			strcpy(configureMessage, "udp source ip2 not configured\n");
+			FILE_LOG(logWARNING, ("%s", configureMessage));
+			return FAIL;
+		}
+		if (udpDetails.dstip2 == 0) {
+			strcpy(configureMessage, "udp destination ip2 not configured\n");
+			FILE_LOG(logWARNING, ("%s", configureMessage));
+			return FAIL;
+		}
+		if (udpDetails.srcmac2 == 0) {
+			strcpy(configureMessage, "udp source mac2 not configured\n");
+			FILE_LOG(logWARNING, ("%s", configureMessage));
+			return FAIL;
+		}
+		if (udpDetails.dstmac2 == 0) {
+			strcpy(configureMessage, "udp destination mac2 not configured\n");
+			FILE_LOG(logWARNING, ("%s", configureMessage));
+			return FAIL;
+		}	
+    }
+#endif
+    return OK;
+}
+
+void configure_mac() {
+	if (is_configurable() == OK) {
+		ret = configureMAC();
+		if (ret != OK) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+			if (ret == -1) {
+				sprintf(mess, "Could not allocate RAM\n");
+			} else {
+				sprintf(mess,"Could not configure mac because of incorrect udp 1G destination IP and port\n");
+			}
+#else
+			sprintf(mess,"Configure Mac failed\n");
+#endif
+			strcpy(configureMessage, mess);
+			FILE_LOG(logERROR,(mess));
+		} else {
+			FILE_LOG(logINFOGREEN, ("\tConfigure MAC successful\n"));
+			configured = OK;
+			return;
+		}
+	}
+	configured = FAIL;
+	FILE_LOG(logWARNING, ("Configure FAIL, not all parameters configured yet\n"));
+}
+
+
+
+
+int set_source_udp_ip(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	arg = __builtin_bswap32(arg);
+	FILE_LOG(logINFO, ("Setting udp source ip: 0x%x\n", arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.srcip != arg) {
+				udpDetails.srcip = arg;
+				configure_mac();	
+			}
+		}
+	}
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_source_udp_ip(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp source ip\n"));
+
+	// get only
+	retval = udpDetails.srcip;
+	retval = __builtin_bswap32(retval);
+	FILE_LOG(logDEBUG1, ("udp soure ip retval: 0x%x\n", retval));
+
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_source_udp_ip2(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	arg = __builtin_bswap32(arg);
+	FILE_LOG(logINFO, ("Setting udp source ip2: 0x%x\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.srcip2 != arg) {
+				udpDetails.srcip2 = arg;
+				configure_mac();	
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_source_udp_ip2(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp source ip2\n"));
+	
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// get only
+	retval = udpDetails.srcip2;
+	retval = __builtin_bswap32(retval);
+	FILE_LOG(logDEBUG1, ("udp soure ip2 retval: 0x%x\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_dest_udp_ip(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	arg = __builtin_bswap32(arg);
+	FILE_LOG(logINFO, ("Setting udp destination ip: 0x%x\n", arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.dstip != arg) {
+				udpDetails.dstip = arg;
+				configure_mac();	
+			}
+		}
+	}
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_dest_udp_ip(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting destination ip\n"));
+
+	// get only
+	retval = udpDetails.dstip;
+	retval = __builtin_bswap32(retval);
+	FILE_LOG(logDEBUG1, ("udp destination ip retval: 0x%x\n", retval));
+
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_dest_udp_ip2(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	arg = __builtin_bswap32(arg);
+	FILE_LOG(logINFO, ("Setting udp destination ip2: 0x%x\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.dstip2 != arg) {
+				udpDetails.dstip2 = arg;
+				configure_mac();	
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_dest_udp_ip2(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp destination ip2\n"));
+	
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// get only
+	retval = udpDetails.dstip2;
+	retval = __builtin_bswap32(retval);
+	FILE_LOG(logDEBUG1, ("udp destination ip2 retval: 0x%x\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_source_udp_mac(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp source mac: 0x%lx\n", arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.srcmac != arg) {
+				udpDetails.srcmac = arg;
+				configure_mac();	
+			}
+		}
+	}
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+
+int get_source_udp_mac(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp source mac\n"));
+
+	// get only
+	retval = udpDetails.srcmac;
+	FILE_LOG(logDEBUG1, ("udp soure mac retval: 0x%lx\n", retval));
+
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_source_udp_mac2(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp source mac2: 0x%lx\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.srcmac2 != arg) {
+				udpDetails.srcmac2 = arg;
+				configure_mac();	
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_source_udp_mac2(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp source mac2\n"));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// get only
+	retval = udpDetails.srcmac2;
+	FILE_LOG(logDEBUG1, ("udp soure mac2 retval: 0x%lx\n", retval));
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_dest_udp_mac(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp destination mac: 0x%lx\n", arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.dstmac != arg) {
+				udpDetails.dstmac = arg;
+				configure_mac();	
+			}
+		}
+	}
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_dest_udp_mac(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp destination mac\n"));
+
+	// get only
+	retval = udpDetails.dstmac;
+	FILE_LOG(logDEBUG1, ("udp destination mac retval: 0x%lx\n", retval));
+
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_dest_udp_mac2(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp destination mac2: 0x%lx\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.dstmac2 != arg) {
+				udpDetails.dstmac2 = arg;
+				configure_mac();	
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_dest_udp_mac2(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint64_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting udp destination mac2\n"));
+	
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// get only
+	retval = udpDetails.dstmac2;
+	FILE_LOG(logDEBUG1, ("udp destination mac2 retval: 0x%lx\n", retval));
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_dest_udp_port(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp destination port: %u\n", arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.dstport != arg) {
+				udpDetails.dstport = arg;
+				configure_mac();	
+			}
+		}
+	}
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_dest_udp_port(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting destination port\n"));
+
+	// get only
+	retval = udpDetails.dstport;
+	FILE_LOG(logDEBUG, ("udp destination port retval: %u\n", retval));
+
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_dest_udp_port2(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting udp destination port2: %u\n", arg));
+
+#if !defined(JUNGFRAUD) && !defined(EIGERD)
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (udpDetails.dstport2 != arg) {
+				udpDetails.dstport2 = arg;
+				configure_mac();	
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_dest_udp_port2(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting destination port2\n"));
+
+#if !defined(JUNGFRAUD) && !defined(EIGERD)
+	functionNotImplemented();
+#else
+	// get only
+	retval = udpDetails.dstport2;
+	FILE_LOG(logDEBUG1, ("udp destination port2 retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+
+
+int set_num_interfaces(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting number of interfaces: %d\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (getNumberofUDPInterfaces() != arg) {
+				setNumberofUDPInterfaces(arg);
+				calculate_and_set_position(); // aleady configures mac
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_num_interfaces(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting number of udp interfaces\n"));
+
+#ifndef JUNGFRAUD
+	retval = 1;
+#else
+	// get only
+	retval = getNumberofUDPInterfaces();
+#endif
+	FILE_LOG(logDEBUG1, ("Number of udp interfaces retval: %u\n", retval));
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_interface_sel(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting selected interface: %d\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (check_detector_idle() == OK) {
+			if (getPrimaryInterface() != arg) {
+				selectPrimaryInterface(arg);
+				configure_mac();	
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_interface_sel(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting selected interface\n"));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else
+	// get only
+	retval = getPrimaryInterface();
+	FILE_LOG(logDEBUG1, ("Selected interface retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
 int set_parallel_mode(int file_des) {
   	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -4323,3 +5102,4 @@ int get_readout_mode(int file_des) {
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
+

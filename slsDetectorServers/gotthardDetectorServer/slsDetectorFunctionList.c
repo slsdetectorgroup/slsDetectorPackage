@@ -15,7 +15,7 @@
 #include <time.h>
 #endif
 
-
+extern udpStruct udpDetails;
 
 // Variables that will be exported
 int phaseShift = DEFAULT_PHASE_SHIFT;
@@ -30,6 +30,7 @@ int virtual_status = 0;
 int virtual_stop = 0;
 int highvoltage = 0;
 #endif
+int detPos[2] = {0, 0};
 
 int detectorFirstServer = 1;
 int dacValues[NDAC] = {0};
@@ -1327,7 +1328,13 @@ void calcChecksum(mac_conf* mac, int sourceip, int destip) {
 	mac->ip.ip_chksum   =  checksum;
 }
 
-int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport) {
+int configureMAC() {
+    uint32_t sourceip = udpDetails.srcip;
+	uint32_t destip = udpDetails.dstip;
+	uint64_t sourcemac = udpDetails.srcmac;
+	uint64_t destmac = udpDetails.dstmac;
+	int sourceport = udpDetails.srcport;
+	int destport = udpDetails.dstport;	
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -1337,7 +1344,6 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	FILE_LOG(logDEBUG1, ("\tRoi: %d, Ip Packet size: %d UDP Packet size: %d\n",
 	        adcConfigured, ipPacketSize, udpPacketSize));
 
-	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d (0x%08x)\n",
 	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
 	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x (0x%010llx)\n",
@@ -1359,7 +1365,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 			(unsigned int)((destmac>>8)&0xFF),
 			(unsigned int)((destmac>>0)&0xFF),
 			(long  long unsigned int)destmac));
-	FILE_LOG(logINFO, ("\tDest. Port  : %d (0x%08x)\n",udpport, udpport));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d (0x%08x)\n",destport, destport));
 
 	//reset mac
 	bus_w (addr, bus_r(addr) | RST_MSK);
@@ -1413,7 +1419,7 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 
     calcChecksum(mac_conf_regs, sourceip, destip);
     mac_conf_regs->udp.udp_srcport      = sourceport;
-    mac_conf_regs->udp.udp_destport     = udpport;
+    mac_conf_regs->udp.udp_destport     = destport;
     mac_conf_regs->udp.udp_len          = udpPacketSize;
     mac_conf_regs->udp.udp_chksum       = 0x0000;
 
@@ -1516,8 +1522,18 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
     return OK;
 }
 
+
 int getAdcConfigured(){
     return adcConfigured;
+}
+
+int setDetectorPosition(int pos[]) {
+    memcpy(detPos, pos, sizeof(detPos));
+    return OK;
+}
+
+int* getDetectorPosition() {
+    return detPos;
 }
 
 

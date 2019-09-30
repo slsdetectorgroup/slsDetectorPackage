@@ -76,6 +76,7 @@ int Beb_GetBebFPGATemp();
 void Beb_SetDetectorNumber(uint32_t detid);
 int Beb_SetQuad(int value);
 int Beb_GetQuad();
+int* Beb_GetDetectorPosition();
 int Beb_SetDetectorPosition(int pos[]);
 int Beb_SetStartingFrameNumber(uint64_t value);
 int Beb_GetStartingFrameNumber(uint64_t* retval, int tengigaEnable);

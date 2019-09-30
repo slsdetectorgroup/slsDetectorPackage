@@ -23,6 +23,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern udpStruct udpDetails;
 
 int firmware_compatibility = OK;
 int firmware_check_done = 0;
@@ -38,6 +39,9 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
 int adcPhase = 0;
+int detPos[4] = {0, 0, 0, 0};
+int numUDPInterfaces = 1;
+
 
 int isFirmwareCheckDone() {
 	return firmware_check_done;
@@ -1022,16 +1026,12 @@ void setNumberofUDPInterfaces(int val) {
 		FILE_LOG(logINFOBLUE, ("Setting #Interfaces: 1\n"));
 		bus_w(addr, bus_r(addr) &~ CONFIG_OPRTN_MDE_2_X_10GbE_MSK);
 	}
-	FILE_LOG(logINFO, ("config reg:0x%x\n", bus_r(addr)));
+	FILE_LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
 }
 
 int getNumberofUDPInterfaces() {
-		FILE_LOG(logINFO, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
-		FILE_LOG(logINFO, ("config reg 2x10 :0x%x %d\n", 
-		CONFIG_OPRTN_MDE_2_X_10GbE_MSK, 
-		bus_r(CONFIG_REG)|CONFIG_OPRTN_MDE_2_X_10GbE_MSK));
+	FILE_LOG(logDEBUG, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
 	// return 2 if enabled, else 1
-
 	return ((bus_r(CONFIG_REG) & CONFIG_OPRTN_MDE_2_X_10GbE_MSK) ? 2 : 1);
 }
 
@@ -1128,94 +1128,104 @@ void calcChecksum(udp_header* udp) {
 
 
 
-int configureMAC(int numInterfaces, int selInterface,
-		uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t sourceip, uint32_t udpport,
-		uint32_t destip2, uint64_t destmac2, uint64_t sourcemac2, uint32_t sourceip2, uint32_t udpport2) {
+int configureMAC() {
+
+	uint32_t srcip = udpDetails.srcip;
+	uint32_t srcip2 = udpDetails.srcip2;	
+	uint32_t dstip = udpDetails.dstip;
+	uint32_t dstip2 = udpDetails.dstip2;
+	uint64_t srcmac = udpDetails.srcmac;
+	uint64_t srcmac2 = udpDetails.srcmac2;	
+	uint64_t dstmac = udpDetails.dstmac;
+	uint64_t dstmac2 = udpDetails.dstmac2;	
+	int srcport = udpDetails.srcport;
+	int srcport2 = udpDetails.srcport2;
+	int dstport = udpDetails.dstport;		
+	int dstport2 = udpDetails.dstport2;
+
 #ifdef VIRTUAL
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
-	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, udpport));
-	if (setUDPDestinationDetails(0, cDestIp, udpport) == FAIL) {
+	sprintf(cDestIp, "%d.%d.%d.%d", (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff);
+	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, dstport));
+	if (setUDPDestinationDetails(0, cDestIp, dstport) == FAIL) {
 		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
     return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
-
-	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
-
+	int numInterfaces = getNumberofUDPInterfaces();
+	int selInterface = getPrimaryInterface();
 	FILE_LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
 	FILE_LOG(logINFO, ("\tInterface   : %d %s\n\n", selInterface, (selInterface ? "Inner" : "Outer")));
 
 	FILE_LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2) ? "(Bottom)": (selInterface ? "Not Used" : "Used")));
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
+	        (srcip>>24)&0xff,(srcip>>16)&0xff,(srcip>>8)&0xff,(srcip)&0xff, srcip));
 	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((sourcemac>>40)&0xFF),
-			(unsigned int)((sourcemac>>32)&0xFF),
-			(unsigned int)((sourcemac>>24)&0xFF),
-			(unsigned int)((sourcemac>>16)&0xFF),
-			(unsigned int)((sourcemac>>8)&0xFF),
-			(unsigned int)((sourcemac>>0)&0xFF),
-			(long  long unsigned int)sourcemac));
-	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
+			(unsigned int)((srcmac>>40)&0xFF),
+			(unsigned int)((srcmac>>32)&0xFF),
+			(unsigned int)((srcmac>>24)&0xFF),
+			(unsigned int)((srcmac>>16)&0xFF),
+			(unsigned int)((srcmac>>8)&0xFF),
+			(unsigned int)((srcmac>>0)&0xFF),
+			(long  long unsigned int)srcmac));
+	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n", srcport, srcport));
 
-	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t\t(0x%08x)\n",
-	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff, dstip));
 	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((destmac>>40)&0xFF),
-			(unsigned int)((destmac>>32)&0xFF),
-			(unsigned int)((destmac>>24)&0xFF),
-			(unsigned int)((destmac>>16)&0xFF),
-			(unsigned int)((destmac>>8)&0xFF),
-			(unsigned int)((destmac>>0)&0xFF),
-			(long  long unsigned int)destmac));
-	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
+			(unsigned int)((dstmac>>40)&0xFF),
+			(unsigned int)((dstmac>>32)&0xFF),
+			(unsigned int)((dstmac>>24)&0xFF),
+			(unsigned int)((dstmac>>16)&0xFF),
+			(unsigned int)((dstmac>>8)&0xFF),
+			(unsigned int)((dstmac>>0)&0xFF),
+			(long  long unsigned int)dstmac));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",dstport, dstport));
 
-	uint32_t sourceport2  =  DEFAULT_TX_UDP_PORT + 1;
 	FILE_LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2) ? "(Top)": (selInterface ? "Used" : "Not Used")));
 	FILE_LOG(logINFO, ("\tSource IP2  : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (sourceip2>>24)&0xff,(sourceip2>>16)&0xff,(sourceip2>>8)&0xff,(sourceip2)&0xff, sourceip2));
+	        (srcip2>>24)&0xff,(srcip2>>16)&0xff,(srcip2>>8)&0xff,(srcip2)&0xff, srcip2));
 	FILE_LOG(logINFO, ("\tSource MAC2 : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((sourcemac2>>40)&0xFF),
-			(unsigned int)((sourcemac2>>32)&0xFF),
-			(unsigned int)((sourcemac2>>24)&0xFF),
-			(unsigned int)((sourcemac2>>16)&0xFF),
-			(unsigned int)((sourcemac2>>8)&0xFF),
-			(unsigned int)((sourcemac2>>0)&0xFF),
-			(long  long unsigned int)sourcemac2));
-	FILE_LOG(logINFO, ("\tSource Port2: %d \t\t\t(0x%08x)\n",sourceport2, sourceport2));
+			(unsigned int)((srcmac2>>40)&0xFF),
+			(unsigned int)((srcmac2>>32)&0xFF),
+			(unsigned int)((srcmac2>>24)&0xFF),
+			(unsigned int)((srcmac2>>16)&0xFF),
+			(unsigned int)((srcmac2>>8)&0xFF),
+			(unsigned int)((srcmac2>>0)&0xFF),
+			(long  long unsigned int)srcmac2));
+	FILE_LOG(logINFO, ("\tSource Port2: %d \t\t\t(0x%08x)\n", srcport2, srcport2));
 
-	FILE_LOG(logINFO, ("\tDest. IP2   : %d.%d.%d.%d \t\t\t(0x%08x)\n",
-	        (destip2>>24)&0xff,(destip2>>16)&0xff,(destip2>>8)&0xff,(destip2)&0xff, destip2));
+	FILE_LOG(logINFO, ("\tDest. IP2   : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (dstip2>>24)&0xff,(dstip2>>16)&0xff,(dstip2>>8)&0xff,(dstip2)&0xff, dstip2));
 	FILE_LOG(logINFO, ("\tDest. MAC2  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((destmac2>>40)&0xFF),
-			(unsigned int)((destmac2>>32)&0xFF),
-			(unsigned int)((destmac2>>24)&0xFF),
-			(unsigned int)((destmac2>>16)&0xFF),
-			(unsigned int)((destmac2>>8)&0xFF),
-			(unsigned int)((destmac2>>0)&0xFF),
-			(long  long unsigned int)destmac2));
-	FILE_LOG(logINFO, ("\tDest. Port2 : %d \t\t\t(0x%08x)\n",udpport2, udpport2));
+			(unsigned int)((dstmac2>>40)&0xFF),
+			(unsigned int)((dstmac2>>32)&0xFF),
+			(unsigned int)((dstmac2>>24)&0xFF),
+			(unsigned int)((dstmac2>>16)&0xFF),
+			(unsigned int)((dstmac2>>8)&0xFF),
+			(unsigned int)((dstmac2>>0)&0xFF),
+			(long  long unsigned int)dstmac2));
+	FILE_LOG(logINFO, ("\tDest. Port2 : %d \t\t\t(0x%08x)\n", dstport2, dstport2));
 
 	// default one rxr entry (others not yet implemented in client yet)
 	int iRxEntry = 0;
 
 	if (numInterfaces == 2) {
 		// bottom
-		setupHeader(iRxEntry, OUTER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+		setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip, srcport);
 		// top
-		setupHeader(iRxEntry, INNER, destip2, destmac2, udpport2, sourcemac2, sourceip2, sourceport2);
+		setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2, srcip2, srcport2);
 	} 
 	// single interface
 	else {
 		// default
 		if (selInterface == 0) {
-			setupHeader(iRxEntry, OUTER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+			setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip, srcport);
 		} else  {
-			setupHeader(iRxEntry, INNER, destip, destmac, udpport, sourcemac, sourceip, sourceport);
+			setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac, srcip, srcport2);
 		}
 	}
 
@@ -1228,15 +1238,13 @@ int configureMAC(int numInterfaces, int selInterface,
 	return OK;
 }
 
-
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
 	int innerPos[2] = {pos[X], pos[Y]};
 	int outerPos[2] = {pos[X], pos[Y]};
 	int selInterface = getPrimaryInterface();
-	int numInterfaces = getNumberofUDPInterfaces();
 
-	if (numInterfaces == 1) {
+	if (getNumberofUDPInterfaces() == 1) {
 		FILE_LOG(logDEBUG, ("Setting detector position: 1 Interface %s \n(%d, %d)\n", 
 			(selInterface ? "Inner" : "Outer"), innerPos[X], innerPos[Y]));
 	} 
@@ -1246,6 +1254,10 @@ int setDetectorPosition(int pos[]) {
 						"  inner top(%d, %d), outer bottom(%d, %d)\n"
 						, innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
 	} 
+	detPos[0] = innerPos[0];
+	detPos[1] = innerPos[1];
+	detPos[2] = outerPos[0];
+	detPos[3] = outerPos[1];
 
 	// row
 	//outer
@@ -1270,7 +1282,7 @@ int setDetectorPosition(int pos[]) {
 		ret = FAIL;
 
 	if (ret == OK) {
-		if (numInterfaces == 1) {
+		if (getNumberofUDPInterfaces() == 1) {
 			FILE_LOG(logINFOBLUE, ("Position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
 		} 
 		else {
@@ -1281,6 +1293,10 @@ int setDetectorPosition(int pos[]) {
 	return ret;
 }
 
+
+int* getDetectorPosition() {
+	return detPos;
+}
 
 
 /* jungfrau specific - powerchip, autocompdisable, asictimer, clockdiv, pll, flashing fpga */

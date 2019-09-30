@@ -503,15 +503,15 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
 
     /**
      * Set Ethernet Interface to listen to
-     * @param c ethernet inerface eg. eth0 (max of 1000 characters)
+     * @param c ethernet inerface eg. eth0
      */
-    void setEthernetInterface(const char *c);
+    void setEthernetInterface(const std::string &c);
 
     /**
      * Set second Ethernet Interface to listen to (jungfrau specific)
-     * @param c second ethernet inerface eg. eth0 (max of 1000 characters)
+     * @param c second ethernet inerface eg. eth0
      */
-    void setEthernetInterface2(const char *c);
+    void setEthernetInterface2(const std::string &c);
 
     /**
      * Set number of UDP Interfaces (jungfrau specific)
@@ -933,7 +933,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     /** Number of UDP Interfaces */
     int numUDPInterfaces;
     /** Ethernet Interface */
-    char eth[MAX_NUMBER_OF_LISTENING_THREADS][MAX_STR_LENGTH];
+    std::vector <std::string> eth;
     /** Server UDP Port Number*/
     uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
     /** udp socket buffer size */

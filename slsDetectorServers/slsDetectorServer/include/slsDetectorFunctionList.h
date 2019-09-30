@@ -34,9 +34,11 @@ typedef struct udpStruct_s {
 int			isFirmwareCheckDone();
 int			getFirmwareCheckResult(char** mess);
 void 		basictests();
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int 		checkType();
 int 		testFpga();
+#endif
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		testBus();
 #endif
 
@@ -373,6 +375,13 @@ int 		setAllTrimbits(int val);
 int 		getAllTrimbits();
 int 		getBebFPGATemp();
 int 		activate(int enable);
+
+#elif MYTHEN3D
+uint64_t    readPatternWord(int addr);
+uint64_t    writePatternWord(int addr, uint64_t word);
+int         setPatternWaitAddress(int level, int addr);
+uint64_t    setPatternWaitTime(int level, uint64_t t);
+void        setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
 #endif
 
 #if defined(JUNGFRAUD) || defined(EIGERD)

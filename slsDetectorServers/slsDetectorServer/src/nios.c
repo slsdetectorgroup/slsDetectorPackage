@@ -9,7 +9,7 @@
 
 /* global variables */
 u_int32_t* csp0base = 0;
-#define CSP0 0x18000000
+#define CSP0 0x18060000
 #define MEM_SIZE 0x100000
 
 
@@ -21,7 +21,7 @@ void bus_w(u_int32_t offset, u_int32_t data) {
 
 u_int32_t bus_r(u_int32_t offset) {
 	volatile u_int32_t  *ptr1;
-	ptr1=(u_int32_t*)(csp0base + offset/(sizeof(u_int32_t)));
+	ptr1=(u_int32_t*)(csp0base + offset/(sizeof(u_int32_t))); 
 	return *ptr1;
 }
 

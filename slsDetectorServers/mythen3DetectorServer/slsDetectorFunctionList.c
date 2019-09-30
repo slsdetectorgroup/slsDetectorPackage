@@ -243,6 +243,7 @@ void setupDetector() {
 
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
+	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY_AFTER_TRIGGER);
 
 }
 
@@ -337,6 +338,7 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
             return FAIL;
         break;
     case FRAME_PERIOD:
+	    case DELAY_AFTER_TRIGGER:
 		// convert to freq
         val *= (1E-3 * TICK_CLK);
         // convert back to timer

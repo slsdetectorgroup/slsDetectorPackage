@@ -374,7 +374,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 		break;
 	}
 #endif
-	return -1;
+	return retval;
 }
 
 int setHighVoltage(int val){

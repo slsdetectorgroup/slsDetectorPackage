@@ -41,6 +41,7 @@ class commonModeSubtraction {
     
     /** adds the average of pedestals to the moving average and reinitializes the calculation of the sum of pedestals for all ROIs. - virtual func*/
     virtual void  newFrame(){
+      //cout << "Reset CM" << endl;
       for (int i=0; i<nROI; i++) {
 	//	if (nCm[i]>0) cmStat[i].Calc(cmPed[i]/nCm[i]); 
 	nCm[i]=0; 
@@ -60,6 +61,7 @@ class commonModeSubtraction {
       // else val=-100;
       // if (isc>=0 && isc<nROI) {
       //	cout << ix << " " << iy << " " << iroi << endl;
+      //if (ix==15 && iy==15) cout << "=" << val << endl;
       if (iroi>=0 && iroi<nROI) {
 	//	cout << ix << " " << iy << " " << iroi << endl;
 	mean[iroi]+=val; 
@@ -80,6 +82,7 @@ class commonModeSubtraction {
       /* else */
       /* 	return -100; */
       // cout << "*" << ix << " " << iy << " " << iroi << " " << mean[iroi] << " " << nCm[iroi]<< endl;
+      // if (ix==15 && iy==15) cout << "-" << mean[iroi]/nCm[iroi] << endl;
       if (iroi>=0 && iroi<nROI) {
 	if (nCm[iroi]>0)  
 	  return mean[iroi]/nCm[iroi]; 

@@ -104,3 +104,6 @@ int mapCSP0(void) {
 }
 
 
+u_int32_t* Nios_getBaseAddress() {
+	return csp0base;
+}

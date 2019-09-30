@@ -31,18 +31,19 @@ class MovingStat
 	*/
         void Set(double val, double rms=0, int m=-1)
         {
-	  if (m>=0) m_n = m;  else m_n = n; 
+	  if (m>0) m_n = m;  else m_n = n; 
 	  m_newM=val*m_n; 
+	  // cout << "set " << val << " " << m << " " << m_n << " " << m_newM << endl;
 	  SetRMS(rms);
         }
-		/**
+	/**
 	   clears the moving average number of samples parameter, mean and standard deviation
 	*/
         void SetRMS(double rms)
         {
 	  if (rms<=0) {
 	    m_newM2=m_newM*m_newM/n;
-	    m_n=0;
+	    //m_n=0;
 	  } else {
 	    if (m_n>0)
 	      m_newM2=(m_n*rms*rms+m_newM*m_newM/m_n);
@@ -120,6 +121,7 @@ class MovingStat
 	 */
         inline double Mean() const
         {
+	  //  cout << "get " <<  m_n << " " << m_newM << " " << m_newM/m_n << endl;
             return (m_n > 0) ? m_newM/m_n : 0.0;
         }
 

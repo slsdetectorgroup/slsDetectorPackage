@@ -2,7 +2,16 @@
 Utility functions that are useful for testing and troubleshooting
 but not directly used in controlling the detector
 """
+from collections import namedtuple
+import _sls_detector #C++ lib
 
+Geometry = namedtuple('Geometry', ['x', 'y'])
+
+def to_geo(value):
+    if isinstance(value, _sls_detector.xy):
+        return Geometry(x = value.x, y = value.y)
+    else:
+        raise ValueError("Can only convert sls_detector.xy")
 
 def all_equal(mylist):
     """If all elements are equal return true otherwise false"""

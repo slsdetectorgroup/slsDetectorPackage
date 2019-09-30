@@ -360,7 +360,7 @@ format
         THIS_SOFTWARE_VERSION,     /**<return this software version */
         RECEIVER_VERSION,          /**<return receiver software version */
         SOFTWARE_FIRMWARE_API_VERSION, /** return software firmware API version
-                                          **/
+                                          */
         CLIENT_SOFTWARE_API_VERSION, /** return detector software and client api
                                         version */
         CLIENT_RECEIVER_API_VERSION  /** return client and  receiver api version

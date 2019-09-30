@@ -41,6 +41,7 @@ template <class dataType> class ghostSummation {
       for (int ix=0; ix<nx; ix++)
 	ghost[iy*nx+ix]=calcGhost(data, ix, iy);
   }
+
   virtual double getGhost(int ix, int iy) {
     if (ix<0 || ix>=nx || iy<0 || iy>=ny) return 0;
     return ghost[iy*nx+ix];

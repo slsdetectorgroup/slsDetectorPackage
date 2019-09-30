@@ -332,43 +332,43 @@ class Detector:
         """
         return self._api.getFirmwareVersion()
 
-    @property
-    def flags(self):
-        """Read and set flags. Accepts both single flag as
-        string or list of flags.
+    # @property
+    # def flags(self):
+    #     """Read and set flags. Accepts both single flag as
+    #     string or list of flags.
 
-        Raises
-        --------
-        RuntimeError
-            If flag not recognized
-
-
-        Examples
-        ----------
-
-        ::
-
-            #Eiger
-            detector.flags
-            >> ['storeinram', 'parallel']
-
-            detector.flags = 'nonparallel'
-            detector.flags
-            >> ['storeinram', 'nonparallel']
-
-            detector.flags = ['continous', 'parallel']
+    #     Raises
+    #     --------
+    #     RuntimeError
+    #         If flag not recognized
 
 
-        """
-        return self._api.getReadoutFlags()
+    #     Examples
+    #     ----------
 
-    @flags.setter
-    def flags(self, flags):
-        if isinstance(flags, str):
-            self._api.setReadoutFlag(flags)
-        elif isinstance(flags, Iterable):
-            for f in flags:
-                self._api.setReadoutFlag(f)
+    #     ::
+
+    #         #Eiger
+    #         detector.flags
+    #         >> ['storeinram', 'parallel']
+
+    #         detector.flags = 'nonparallel'
+    #         detector.flags
+    #         >> ['storeinram', 'nonparallel']
+
+    #         detector.flags = ['continous', 'parallel']
+
+
+    #     """
+    #     return self._api.getReadoutFlags()
+
+    # @flags.setter
+    # def flags(self, flags):
+    #     if isinstance(flags, str):
+    #         self._api.setReadoutFlag(flags)
+    #     elif isinstance(flags, Iterable):
+    #         for f in flags:
+    #             self._api.setReadoutFlag(f)
 
     @property
     def frames_caught(self):

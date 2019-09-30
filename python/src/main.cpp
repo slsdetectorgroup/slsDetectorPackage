@@ -293,8 +293,8 @@ PYBIND11_MODULE(_sls_detector, m) {
         .def("getReceiverLock", &DetectorPythonInterface::getReceiverLock)
         .def("setReceiverLock", &DetectorPythonInterface::setReceiverLock)
 
-        .def("getReadoutFlags", &DetectorPythonInterface::getReadoutFlags)
-        .def("setReadoutFlag", &DetectorPythonInterface::setReadoutFlag)
+     //    .def("getReadoutFlags", &DetectorPythonInterface::getReadoutFlags)
+     //    .def("setReadoutFlag", &DetectorPythonInterface::setReadoutFlag)
 
         .def("setFileFormat", &DetectorPythonInterface::setFileFormat)
         .def("getFileFormat", &DetectorPythonInterface::getFileFormat)

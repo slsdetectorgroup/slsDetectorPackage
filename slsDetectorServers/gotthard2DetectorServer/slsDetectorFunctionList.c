@@ -1,4 +1,5 @@
 #include "slsDetectorFunctionList.h"
+#include "RegisterDefs.h"
 #include "versionAPI.h"
 #include "clogger.h"
 #include "nios.h"
@@ -31,6 +32,8 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
+
+uint32_t clkDivider[NUM_CLOCKS] = {125, 20, 80};
 int highvoltage = 0;
 
 
@@ -60,11 +63,154 @@ void basictests() {
     firmware_check_done = 1;
     return;
 #else
-	// faking it
-    firmware_check_done = 1;
+	if (mapCSP0() == FAIL) {
+    	strcpy(firmware_message,
+				"Could not map to memory. Dangerous to continue.\n");
+		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+    }
+	// does check only if flag is 0 (by default), set by command line
+	if ((!debugflag) && ((testFpga() == FAIL))) {
+		sprintf(firmware_message,
+				"Could not pass basic tests of FPGA and bus. Dangerous to continue. (Firmware version:0x%llx) \n", getDetectorId(DETECTOR_FIRMWARE_VERSION));
+		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+	}
 
-	
+	uint32_t ipadd				= getDetectorIP();
+	uint64_t macadd				= getDetectorMAC();
+	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
+	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
+	int64_t sw_fw_apiversion    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
+
+	FILE_LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"
+			"Detector IP Addr:\t\t 0x%x\n"
+			"Detector MAC Addr:\t\t 0x%llx\n\n"
+
+			"Firmware Version:\t\t 0x%llx\n"
+			"Software Version:\t\t 0x%llx\n"
+			"F/w-S/w API Version:\t\t 0x%llx\n"
+			"Required Firmware Version:\t 0x%x\n"
+			"Client-Software API Version:\t 0x%llx\n"
+			"********************************************************\n",
+			ipadd,
+			(long  long unsigned int)macadd,
+			(long  long int)fwversion,
+			(long  long int)swversion,
+			(long  long int)sw_fw_apiversion,
+			requiredFirmwareVersion,
+			(long long int)client_sw_apiversion
+	));
+
+	// return if flag is not zero, debug mode
+	if (debugflag) {
+		firmware_check_done = 1;
+		return;
+	}
+
+	//cant read versions
+    FILE_LOG(logINFO, ("Testing Firmware-software compatibility:\n"));
+	if(!fwversion || !sw_fw_apiversion){
+		strcpy(firmware_message,
+				"Cant read versions from FPGA. Please update firmware.\n");
+		FILE_LOG(logERROR, (firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+	}
+
+	//check for API compatibility - old server
+	if(sw_fw_apiversion > requiredFirmwareVersion){
+		sprintf(firmware_message,
+				"This detector software software version (0x%llx) is incompatible.\n"
+				"Please update detector software (min. 0x%llx) to be compatible with this firmware.\n",
+				(long long int)sw_fw_apiversion,
+				(long long int)requiredFirmwareVersion);
+		FILE_LOG(logERROR, (firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+	}
+
+	//check for firmware compatibility - old firmware
+	if( requiredFirmwareVersion > fwversion) {
+		sprintf(firmware_message,
+				"This firmware version (0x%llx) is incompatible.\n"
+				"Please update firmware (min. 0x%llx) to be compatible with this server.\n",
+				(long long int)fwversion,
+				(long long int)requiredFirmwareVersion);
+		FILE_LOG(logERROR, (firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+	}
+	FILE_LOG(logINFO, ("Compatibility - success\n"));
+	firmware_check_done = 1;		
 #endif
+}
+
+int checkType() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	if (type != GOTTHARD2){
+			FILE_LOG(logERROR, ("This is not a Gotthard2 Server (read %d, expected %d)\n", type, GOTTHARD2));
+			return FAIL;
+		}
+	return OK;
+}
+
+int testFpga() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+	FILE_LOG(logINFO, ("Testing FPGA:\n"));
+
+	//fixed pattern
+	int ret = OK;
+	volatile u_int32_t val = bus_r(FIX_PATT_REG);
+	if (val == FIX_PATT_VAL) {
+		FILE_LOG(logINFO, ("Fixed pattern: successful match 0x%08x\n",val));
+	} else {
+		FILE_LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
+		ret = FAIL;
+	}
+	return ret;
+}
+
+int testBus() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+	FILE_LOG(logINFO, ("Testing Bus:\n"));
+
+	int ret = OK;
+	u_int32_t addr = LOOK_AT_ME_REG; //TODO: is this a RW register?
+	int times = 1000 * 1000;
+	int i = 0;
+
+	for (i = 0; i < times; ++i) {
+		bus_w(addr, i * 100);
+		if (i * 100 != bus_r(addr)) {
+			FILE_LOG(logERROR, ("Mismatch! Wrote 0x%x, read 0x%x\n",
+					i * 100, bus_r(addr)));
+			ret = FAIL;
+		}
+	}
+
+	bus_w(addr, 0);
+
+	if (ret == OK) {
+		FILE_LOG(logINFO, ("Successfully tested bus %d times\n", times));
+	}
+	return ret;
 }
 
 /* Ids */
@@ -91,21 +237,21 @@ u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL
     return 0;
 #endif
-	return 0;
+	return ((bus_r(FPGA_VERSION_REG) & FPGA_COMPILATION_DATE_MSK) >> FPGA_COMPILATION_DATE_OFST);
 }
 
 u_int64_t getFirmwareAPIVersion() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    return 0;
+    return ((bus_r(API_VERSION_REG)));//TODO: & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
 u_int32_t getDetectorNumber(){
 #ifdef VIRTUAL
     return 0;
 #endif
-	return 0;
+	return bus_r(MCB_SERIAL_NO_REG);
 }
 
 
@@ -178,11 +324,18 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
-	// hv
-    DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
-    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+	clkDivider[RUN_CLK] = DEFAULT_RUN_CLK;
+	clkDivider[TICK_CLK] = DEFAULT_TICK_CLK;
+	clkDivider[SAMPLING_CLK] = DEFAULT_SAMPLING_CLK;
+	highvoltage = 0;
 
-	//Initialization of acquistion parameters
+	// hv
+#ifndef VIRTUAL
+    DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
+#endif
+
+	// Default values
+    setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
@@ -193,7 +346,7 @@ void setupDetector() {
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr){
-	return -1;
+	return DYNAMIC_RANGE;
 }
 
 
@@ -203,7 +356,7 @@ int setDynamicRange(int dr){
 int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	int64_t retval = -1;
-#ifdef VIRTUAL
+
 	switch(ind){
 
 	case FRAME_NUMBER: // defined in sls_detector_defs.h (general)
@@ -217,18 +370,18 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting exptime: %lldns\n", (long long int)val));
-			val *= (1E-3 * TEMP_CLK);
+			val *= (1E-3 * RUN_CLK);
 		}
-		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-3 * TEMP_CLK); // CLK defined in slsDetectorServer_defs.h
+		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-3 * RUN_CLK); // CLK defined in slsDetectorServer_defs.h
 		FILE_LOG(logDEBUG1, ("Getting exptime: %lldns\n", (long long int)retval));
 		break;
 
 	case FRAME_PERIOD:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
-			val *= (1E-3 * TEMP_CLK);
+			val *= (1E-3 * TICK_CLK);
 		}
-		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * TEMP_CLK);
+		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * TICK_CLK);
 		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
 		break;
 	case CYCLES_NUMBER:
@@ -243,9 +396,8 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
 		break;
 	}
-#endif
-	return retval;
 
+	return retval;
 }
 
 int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
@@ -253,11 +405,18 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
         return OK;
     switch(ind) {
     case ACQUISITION_TIME:
+		// convert to freq
+        val *= (1E-3 * RUN_CLK);
+        // convert back to timer
+        val = (val) / (1E-3 * RUN_CLK);
+        if (val != retval)
+            return FAIL;
+        break;
     case FRAME_PERIOD:
 		// convert to freq
-        val *= (1E-3 * TEMP_CLK);
+        val *= (1E-3 * TICK_CLK);
         // convert back to timer
-        val = (val) / (1E-3 * TEMP_CLK);
+        val = (val) / (1E-3 * TICK_CLK);
         if (val != retval)
             return FAIL;
         break;
@@ -269,10 +428,6 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
 
 
 int64_t getTimeLeft(enum timerIndex ind){
-#ifdef VIRTUAL
-    return 0;
-#endif
-#ifdef VIRTUAL
 	int64_t retval = -1;
 	switch(ind){
 
@@ -290,8 +445,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
 		break;
 	}
-#endif
-	return -1;
+	return retval;
 }
 
 
@@ -329,9 +483,112 @@ int configureMAC(uint32_t destip, uint64_t destmac, uint64_t sourcemac, uint32_t
 	}
     return OK;
 #endif
+	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
+	
+	uint32_t sourceport  =  DEFAULT_TX_UDP_PORT;
+	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
+	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+			(unsigned int)((sourcemac>>40)&0xFF),
+			(unsigned int)((sourcemac>>32)&0xFF),
+			(unsigned int)((sourcemac>>24)&0xFF),
+			(unsigned int)((sourcemac>>16)&0xFF),
+			(unsigned int)((sourcemac>>8)&0xFF),
+			(unsigned int)((sourcemac>>0)&0xFF),
+			(long  long unsigned int)sourcemac));
+	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
+
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t\t(0x%08x)\n",
+	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
+	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+			(unsigned int)((destmac>>40)&0xFF),
+			(unsigned int)((destmac>>32)&0xFF),
+			(unsigned int)((destmac>>24)&0xFF),
+			(unsigned int)((destmac>>16)&0xFF),
+			(unsigned int)((destmac>>8)&0xFF),
+			(unsigned int)((destmac>>0)&0xFF),
+			(long  long unsigned int)destmac));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",udpport, udpport));
+
+	// start addr
+	uint32_t addr = BASE_PATTERN_RAM;
+	// calculate rxr endpoint offset
+	//addr += (iRxEntry * RXR_ENDPOINT_OFST);//TODO: is there round robin already implemented?
+	// get struct memory
+	udp_header *udp = (udp_header*) (Nios_getBaseAddress() + addr/(sizeof(u_int32_t)));
+	memset(udp, 0, sizeof(udp_header));
+
+	//  mac addresses	
+	// msb (32) + lsb (16)
+	udp->udp_destmac_msb	= ((destmac >> 16) & BIT32_MASK);
+	udp->udp_destmac_lsb	= ((destmac >> 0) & BIT16_MASK);
+	// msb (16) + lsb (32)
+	udp->udp_srcmac_msb		= ((sourcemac >> 32) & BIT16_MASK);
+	udp->udp_srcmac_lsb		= ((sourcemac >> 0) & BIT32_MASK);
+
+	// ip addresses
+	udp->ip_srcip_msb		= ((sourceip >> 16) & BIT16_MASK);
+	udp->ip_srcip_lsb		= ((sourceip >> 0) & BIT16_MASK);	
+	udp->ip_destip_msb		= ((destip >> 16) & BIT16_MASK);
+	udp->ip_destip_lsb		= ((destip >> 0) & BIT16_MASK);	
+
+	// source port
+	udp->udp_srcport 		= sourceport;
+	udp->udp_destport		= udpport;
+
+	// other defines
+	udp->udp_ethertype		= 0x800;
+	udp->ip_ver				= 0x4;
+	udp->ip_ihl				= 0x5;
+	udp->ip_flags			= 0x2; //FIXME
+	udp->ip_ttl           	= 0x40;
+	udp->ip_protocol      	= 0x11;
+	// total length is redefined in firmware
+
+	calcChecksum(udp);
+
+	//TODO?
+	//cleanFifos();
+	//resetCore();
+	//alignDeserializer();
+
 	return OK;
 }
 
+void calcChecksum(udp_header* udp) {
+	int count = IP_HEADER_SIZE;
+	long int sum = 0;
+	
+	// start at ip_tos as the memory is not continous for ip header
+	uint16_t *addr = (uint16_t*) (&(udp->ip_tos)); 
+
+	sum += *addr++;
+	count -= 2;
+
+	// ignore ethertype (from udp header)
+	addr++;
+
+	// from identification to srcip_lsb
+    while( count > 2 )  {
+		sum += *addr++;
+		count -= 2;
+	}
+
+	// ignore src udp port (from udp header)
+	addr++;
+	
+	if (count > 0)
+	    sum += *addr;                     // Add left-over byte, if any
+	while (sum >> 16)
+	    sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
+	long int checksum = sum & 0xffff;
+	checksum += UDP_IP_HEADER_LENGTH_BYTES;
+	FILE_LOG(logINFO, ("\tIP checksum is 0x%lx\n",checksum));
+	udp->ip_checksum = checksum;
+}
+
+
+/* aquisition */
 
 int startStateMachine(){
 #ifdef VIRTUAL
@@ -447,7 +704,7 @@ u_int32_t runBusy() {
 /* common */
 
 int calculateDataBytes(){
-	return 0;
+	return getTotalNumberOfChannels() * DYNAMIC_RANGE;
 }
 
 int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}

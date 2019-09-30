@@ -22,22 +22,29 @@ class moench03GhostSummation : public ghostSummation<uint16_t> {
     }
   };
 
- 
+ moench03GhostSummation(moench03GhostSummation *orig) : ghostSummation(orig) {
+  }
+
+  virtual  moench03GhostSummation *Clone() {
+    return new  moench03GhostSummation(this);
+  }
+
   virtual double calcGhost(char *data, int x, int y=0){
     int ix=x%25;
     int iy=y;
     if (y>=200) iy=399-y;
     if (iy<0 || ix<0) return 0;
     double val=0;
-     val=0;
-     for (int isc=0; isc<16; isc++) {
-	 val+=det->getChannel(data,ix+25*isc,iy);
-	 //  cout << val << " " ;
-	 val+=det->getChannel(data,ix+25*isc,399-iy);
-	    //  cout << val << " " ;
-	}
-	ghost[iy*nx+ix]=xtalk*val;
-	return ghost[iy*nx+ix];
+    val=0;
+    for (int isc=0; isc<16; isc++) {
+      val+=det->getChannel(data,ix+25*isc,iy);
+      //  cout << val << " " ;
+      val+=det->getChannel(data,ix+25*isc,399-iy);
+      //  cout << val << " " ;
+    }
+    ghost[iy*nx+ix]=xtalk*val;
+    // if (ix==15 && iy==15) cout << ":" << ghost[iy*nx+ix] << " " << val << endl; 
+    return ghost[iy*nx+ix];
   };
 
 

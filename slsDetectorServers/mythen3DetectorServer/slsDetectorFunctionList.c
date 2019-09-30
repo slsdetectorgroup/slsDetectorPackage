@@ -359,7 +359,6 @@ int64_t getTimeLeft(enum timerIndex ind){
 #ifdef VIRTUAL
     return 0;
 #endif
-#ifdef VIRTUAL // until Firmware is there
 	int64_t retval = -1;
 	switch(ind){
 
@@ -377,7 +376,6 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
 		break;
 	}
-#endif
 	return retval;
 }
 

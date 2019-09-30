@@ -1,7 +1,7 @@
 
 package:
   name: sls_detector_software
-  version: "developer"
+  version: "filip1"
 
 source:
   - path: ..
@@ -76,7 +76,7 @@ outputs:
       run:
         - python
         - numpy
-        - sls_detector_lib=developer
+        - sls_detector_lib=filip1
         - pyzmq
         - libstdcxx-ng
         - libgcc-ng

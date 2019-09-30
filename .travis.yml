@@ -46,5 +46,5 @@ deploy:
   provider: script
   script: find $HOME/miniconda/conda-bld/${TRAVIS_OS_NAME}-64 -name "*.tar.bz2" -exec anaconda -t $CONDA_TOKEN upload --force {} \;
   on:
-    branch: developer
+    branch: filip1
 

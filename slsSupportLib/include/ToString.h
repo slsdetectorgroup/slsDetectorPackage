@@ -11,6 +11,7 @@
 #include "TypeTraits.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
+#include "sls_detector_defs.h"
 #include <chrono>
 #include <iomanip>
 #include <sstream>
@@ -174,9 +175,13 @@ ToString(const T &obj) {
  * Call ToString with a string, causes copy but might be needed
  * in generic code. 
  */
-template <>
-inline std::string ToString<std::string>(const std::string& s){
+inline std::string ToString(const std::string& s){
     return s;
 }
+
+inline std::string ToString(slsDetectorDefs::runStatus s){
+    return slsDetectorDefs::runStatusType(s);
+}
+
 
 } // namespace sls

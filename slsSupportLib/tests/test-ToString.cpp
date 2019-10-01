@@ -1,6 +1,7 @@
 #include "TimeHelper.h"
 #include "ToString.h"
 #include "network_utils.h"
+#include "sls_detector_defs.h"
 #include "catch.hpp"
 #include <array>
 #include <vector>
@@ -109,6 +110,16 @@ TEST_CASE("vector of strings"){
     std::vector<std::string> vec2{"some", "strange", "words", "75"};
     REQUIRE(ToString(vec2) == "[some, strange, words, 75]");
 
+}
+
+TEST_CASE("run status"){
+    using defs = slsDetectorDefs;
+    REQUIRE(ToString(defs::runStatus::ERROR) == "error");
+    REQUIRE(ToString(defs::runStatus::WAITING) == "waiting");
+    REQUIRE(ToString(defs::runStatus::TRANSMITTING) == "data"); //??
+    REQUIRE(ToString(defs::runStatus::RUN_FINISHED) == "finished");
+    REQUIRE(ToString(defs::runStatus::STOPPED) == "stopped");
+    REQUIRE(ToString(defs::runStatus::IDLE) == "idle");
 }
 
 

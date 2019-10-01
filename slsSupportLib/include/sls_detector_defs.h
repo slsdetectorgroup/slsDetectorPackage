@@ -921,8 +921,8 @@ format
             return "half_speed";
         case QUARTER_SPEED: 
             return "quarter_speed";
-        default:                
-            return "Unknown";
+        // default:                
+        //     return "Unknown";
         }
     };
 

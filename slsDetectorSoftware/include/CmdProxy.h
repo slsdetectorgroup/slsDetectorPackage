@@ -49,6 +49,9 @@
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
+        if (det_id != -1) {                                                    \
+            throw sls::RuntimeError("Cannot execute this at module level");    \
+        }                                                                      \
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
@@ -67,6 +70,87 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
                                                                                \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+#define EXECUTE_SET_COMMAND_NOID(CMDNAME, SETFCN, HLPSTR)                      \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (det_id != -1) {                                                    \
+            throw sls::RuntimeError("Cannot execute this at module level");    \
+        }                                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            throw sls::RuntimeError("Cannot get");                             \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            det->SETFCN();                                                     \
+            os << "successful\n";                                              \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+#define EXECUTE_SET_COMMAND(CMDNAME, SETFCN, HLPSTR)                           \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            throw sls::RuntimeError("Cannot get");                             \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            det->SETFCN({det_id});                                             \
+            os << "successful\n";                                              \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+#define EXECUTE_GET_COMMAND(CMDNAME, GETFCN, HLPSTR)                           \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(2);                                    \
+            }                                                                  \
+            auto t = det->GETFCN({det_id});                                    \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            throw sls::RuntimeError("Cannot put");                             \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+#define EXECUTE_GET_COMMAND_CONV(CMDNAME, GETFCN, CONV, HLPSTR)                \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(2);                                    \
+            }                                                                  \
+            auto res = det->GETFCN({det_id});                                  \
+            Result<std::string> t(res.size());                                 \
+            for (size_t i = 0; i < res.size(); ++i) {                          \
+                t[i] = CONV(res[i]);                                           \
+            }                                                                  \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            throw sls::RuntimeError("Cannot put");                             \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -110,6 +194,27 @@ class CmdProxy {
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
 
+    StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
+                                    {"r_padding", "rx_padding"},
+                                    {"r_silent", "rx_silent"},
+                                    {"r_lastclient", "rx_lastclient"},
+                                    {"r_lock", "rx_lock"},
+                                    {"r_online", "rx_online"},
+                                    {"r_checkonline", "rx_checkonline"},
+                                    {"r_framesperfile", "rx_framesperfile"},
+                                    {"r_discardpolicy", "rx_discardpolicy"},
+                                    {"receiverversion", "rx_version"},
+                                    {"receiver", "rx_status"},
+                                    {"index", "findex"},
+                                    {"exitreceiver", "rx_exit"},
+                                    {"enablefwrite", "fwrite"},
+                                    {"checkrecversion", "rx_checkversion"},
+                                    {"masterfile", "fmaster"},
+                                    {"outdir", "fpath"},
+                                    {"fileformat", "fformat"},
+                                    {"overwrite", "foverwrite"},
+                                    {"flags", "romode"}};
+
     // Initialize maps for translating name and function
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
                           {"exptime", &CmdProxy::Exptime},
@@ -141,28 +246,18 @@ class CmdProxy {
                           {"rx_udpport", &CmdProxy::rx_udpport},
                           {"rx_udpport2", &CmdProxy::rx_udpport2},
                           {"numinterfaces", &CmdProxy::numinterfaces},
-                          {"selinterface", &CmdProxy::selinterface}};
+                          {"selinterface", &CmdProxy::selinterface},
+                          
+                          {"start", &CmdProxy::start},
+                          {"stop", &CmdProxy::stop},
+                          {"trigger", &CmdProxy::trigger},
+                          {"status", &CmdProxy::status},
+                          {"rx_start", &CmdProxy::rx_start},
+                          {"rx_stop", &CmdProxy::rx_stop},
+                          {"rx_status", &CmdProxy::rx_status},                          
+                          
+                          };
 
-    StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
-                                    {"r_padding", "rx_padding"},
-                                    {"r_silent", "rx_silent"},
-                                    {"r_lastclient", "rx_lastclient"},
-                                    {"r_lock", "rx_lock"},
-                                    {"r_online", "rx_online"},
-                                    {"r_checkonline", "rx_checkonline"},
-                                    {"r_framesperfile", "rx_framesperfile"},
-                                    {"r_discardpolicy", "rx_discardpolicy"},
-                                    {"receiverversion", "rx_version"},
-                                    {"receiver", "rx_status"},
-                                    {"index", "findex"},
-                                    {"exitreceiver", "rx_exit"},
-                                    {"enablefwrite", "fwrite"},
-                                    {"checkrecversion", "rx_checkversion"},
-                                    {"masterfile", "fmaster"},
-                                    {"outdir", "fpath"},
-                                    {"fileformat", "fformat"},
-                                    {"overwrite", "foverwrite"},
-                                    {"flags", "romode"}};
 
     void WrongNumberOfParameters(size_t expected);
 
@@ -190,7 +285,7 @@ class CmdProxy {
 
     INTEGER_COMMAND(rx_padding, getPartialFramesPadding,
                     setPartialFramesPadding, std::stoi,
-                    "[0, 1]\n\tgets partial frames padding enable in the "
+                    "[0, 1]\n\tPartial frames padding enable in the "
                     "receiver. 0 does not pad partial frames(fastest), 1 "
                     "(default) pads partial frames");
 
@@ -256,7 +351,35 @@ class CmdProxy {
                     "[0, 1]\n\tEnable or disable show overflow flag in 32 bit mode. [Eiger]");    
 
     INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode, std::stoi,
-                    "[0, 1]\n\tEnable or disable store in ram mode. [Eiger]");              
+                    "[0, 1]\n\tEnable or disable store in ram mode. [Eiger]");      
+
+    EXECUTE_SET_COMMAND_NOID(start, startDetector, 
+                "Starts detector state machine.");  
+
+    EXECUTE_SET_COMMAND_NOID(stop, stopDetector, 
+                "Stops detector state machine.");  
+
+    EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
+                "Sends software trigger signal to detector. [Eiger]");   
+
+    EXECUTE_GET_COMMAND_CONV(status, getDetectorStatus, slsDetectorDefs::runStatusType,
+                "Returns detector status[running|error|transmitting|finished|waiting|idle].");
+
+    /* EXECUTE_GET_COMMAND(status, getDetectorStatus, 
+                "Returns detector status[running|error|transmitting|finished|waiting|idle].");   */              
+
+    EXECUTE_SET_COMMAND_NOID(rx_start, startReceiver, 
+                "Starts receiver listener for detector data packets and create a data file (if file write enabled).");  
+
+    EXECUTE_SET_COMMAND_NOID(rx_stop, stopReceiver, 
+                "Stops receiver listener for detector data packets and closes current data file (if file write enabled).");                      
+    
+    /* EXECUTE_GET_COMMAND(rx_status, getReceiverStatus, 
+                "Returns receiver listener status [running|idle]."); */                 
+    EXECUTE_GET_COMMAND_CONV(rx_status, getReceiverStatus, slsDetectorDefs::runStatusType,
+                "Returns receiver listener status [running|idle].");
+
+
 };
 
 } // namespace sls

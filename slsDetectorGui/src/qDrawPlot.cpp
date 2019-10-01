@@ -570,8 +570,11 @@ void qDrawPlot::AcquireFinished() {
         FILE_LOG(logERROR) << "Acquisition Finished with an exception: " << mess;
         qDefs::ExceptionMessage("Acquire unsuccessful.", mess, "qDrawPlot::AcquireFinished");
         try{
-            det->stopAcquisition();
-        } CATCH_DISPLAY("Could not stop acquisition and receiver.", "qDrawPlot::AcquireFinished");
+            det->stopDetector();
+        } CATCH_DISPLAY("Could not stop detector acquisition.", "qDrawPlot::AcquireFinished");
+        try{
+            det->stopReceiver();
+        } CATCH_DISPLAY("Could not stop receiver.", "qDrawPlot::AcquireFinished");
         emit AbortSignal();
     }
     FILE_LOG(logDEBUG) << "End of Acquisition Finished";

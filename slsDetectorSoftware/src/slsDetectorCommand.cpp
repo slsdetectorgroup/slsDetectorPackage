@@ -200,13 +200,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page acquisition
-   - <b> status [s] </b> starts or stops acquisition in detector in non blocking mode. When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). Eiger can also provide an internal software trigger. \c s: [\c start, \c stop, \c trigger(EIGER only)]. \c Returns the detector status: [\c running, \c error, \c transmitting, \c finished, \c waiting, \c idle]. \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "status";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdStatus;
-    ++i;
-
-    /*! \page acquisition
    - \b data gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup (Eigerr store in ram only). Only get!
 	 */
     descrToFuncMap[i].m_pFuncName = "data";
@@ -1604,13 +1597,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page receiver
-   - <b>rx_status [s]</b> starts/stops the receiver to listen to detector packets. Options: [ \c start, \c stop]. \c Returns \c (string) status of receiver[ \c idle, \c running].
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_status";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
-    /*! \page receiver
    - <b>framescaught</b> gets the number of frames caught by receiver. Average of all for multi-detector command. Only get! \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "framescaught";
@@ -2045,21 +2031,7 @@ std::string slsDetectorCommand::cmdStatus(int narg, const char * const args[], i
     if (action == HELP_ACTION)
         return helpStatus(action);
 
-    if (cmd == "status") {
-        if (action == PUT_ACTION) {
-            //myDet->setThreadedProcessing(0);
-            if (std::string(args[1]) == "start")
-                myDet->startAcquisition(detPos);
-            else if (std::string(args[1]) == "stop") {
-                myDet->stopAcquisition(detPos);
-            } else if (std::string(args[1]) == "trigger") {
-                myDet->sendSoftwareTrigger(detPos);
-            } else
-                return std::string("unknown action");
-        }
-        runStatus s = myDet->getRunStatus(detPos);
-        return myDet->runStatusType(s);
-    } else if (cmd == "busy") {
+    if (cmd == "busy") {
         if (action == PUT_ACTION) {
             int i;
             if (!sscanf(args[1], "%d", &i))
@@ -2077,11 +2049,9 @@ std::string slsDetectorCommand::helpStatus(int action) {
 
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << std::string("status \t gets the detector status - can be: running, error, transmitting, finished, waiting or idle\n");
         os << std::string("busy \t gets the status of acquire- can be: 0 or 1. 0 for idle, 1 for running\n");
     }
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << std::string("status \t controls the detector acquisition - can be start or stop or trigger(EIGER only).  When using stop acquisition and if acquisition is done, it will restream the stop packet from receiver (if data streaming in receiver is on). Eiger can also provide an internal software trigger\n");
         os << std::string("busy i\t sets the status of acquire- can be: 0(idle) or 1(running).Command Acquire sets it to 1 at beignning of acquire and back to 0 at the end. Clear Flag for unexpected acquire terminations. \n");
     }
     return os.str();
@@ -4369,20 +4339,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
     if (action == HELP_ACTION)
         return helpReceiver(action);
 
-
-    if (cmd == "rx_status") {
-        if (action == PUT_ACTION) {
-            if (!strcasecmp(args[1], "start"))
-                myDet->startReceiver(detPos);
-            else if (!strcasecmp(args[1], "stop"))
-                myDet->stopReceiver(detPos);
-            else
-                return helpReceiver(action);
-        }
-        return myDet->runStatusType(myDet->getReceiverStatus(detPos));
-    }
-
-    else if (cmd == "framescaught") {
+    if (cmd == "framescaught") {
         if (action == PUT_ACTION)
             return std::string("cannot put");
         else {
@@ -4463,7 +4420,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start, stop." << std::endl;
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
         os << "rx_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui. Default : 1" << std::endl;
         os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
@@ -4479,7 +4435,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
 
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
         os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
         os << "rx_readfreq \t returns the gui read frequency of the receiver. DEfault: 1" << std::endl;

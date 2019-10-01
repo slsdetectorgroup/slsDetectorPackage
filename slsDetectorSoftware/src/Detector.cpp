@@ -263,19 +263,23 @@ void Detector::setTimingMode(defs::timingMode value, Positions pos) {
 
 void Detector::acquire() { pimpl->acquire(); }
 
-void Detector::startAcquisition() {
-    if (getUseReceiverFlag().squash(true))
-        pimpl->Parallel(&slsDetector::startReceiver, {});
+void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
+
+void Detector::startReceiver() {
+    pimpl->Parallel(&slsDetector::startReceiver, {});
+}
+
+void Detector::stopReceiver() {
+    pimpl->Parallel(&slsDetector::stopReceiver, {});
+}
+
+void Detector::startDetector() {
     pimpl->Parallel(&slsDetector::startAcquisition, {});
 }
 
-void Detector::stopAcquisition() {
+void Detector::stopDetector() {
     pimpl->Parallel(&slsDetector::stopAcquisition, {});
-    if (getUseReceiverFlag().squash(true))
-        pimpl->Parallel(&slsDetector::stopReceiver, {});
 }
-
-void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getRunStatus, pos);

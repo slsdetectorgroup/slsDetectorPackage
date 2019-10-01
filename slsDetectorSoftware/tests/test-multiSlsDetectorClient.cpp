@@ -9,6 +9,78 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("status", "[.cmd]") {
+    //auto
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("timing auto", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "timing auto\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("start", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "start successful\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("status", GET, nullptr, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("stop", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "stop successful\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("status", GET, nullptr, oss);
+        REQUIRE(oss.str() == "status idle\n");
+    }
+}
+
+TEST_CASE("trigger", "[.cmd]") {
+    // trigger
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("timing trigger", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "timing trigger\n");
+    }
+    int startingfnum = 0;
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("startingfnum", GET, nullptr, oss);
+        startingfnum = std::stoi(oss.str());
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("start", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "start successful\n");
+    } 
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("status", GET, nullptr, oss);
+        REQUIRE(oss.str() == "status waiting\n");
+    }   
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("trigger", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "trigger successful\n");
+    }
+    multiSlsDetectorClient("stop", PUT);
+    int currentfnum = 0;
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("startingfnum", GET, nullptr, oss);
+        currentfnum = std::stoi(oss.str());
+    } 
+    REQUIRE((startingfnum + 1) == currentfnum);
+
+
+     multiSlsDetectorClient("timing auto", PUT);
+}
+
+
+
 TEST_CASE("rx_fifodepth", "[.cmd]") {
 
     {
@@ -53,7 +125,7 @@ TEST_CASE("frames", "[.cmd]") {
 TEST_CASE("rx_status", "[.cmd]") {
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("rx_status start", PUT, nullptr, oss);
+        multiSlsDetectorClient("rx_start", PUT, nullptr, oss);
         REQUIRE(oss.str() == "rx_status running\n");
     }
     {
@@ -63,7 +135,7 @@ TEST_CASE("rx_status", "[.cmd]") {
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("rx_status stop", PUT, nullptr, oss);
+        multiSlsDetectorClient("rx_stop", PUT, nullptr, oss);
         REQUIRE(oss.str() == "rx_status idle\n");
     }
     {

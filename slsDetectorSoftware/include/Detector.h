@@ -213,32 +213,32 @@ class Detector {
      *                                                *
      * ************************************************/
     /**
-     * Blocking call, starts the receiver and detector.
-     * Increments file index if file write enabled.
-     * Acquired the number of frames set.
+     * Blocking call: Acquire the number of frames set
+     * - sets acquiring flag
+     * - starts the receiver listener
+     * - starts detector acquisition for number of frames set
+     * - monitors detector status from running to idle
+     * - stops the receiver listener
+     * - increments file index if file write enabled
+     * - resets acquiring flag
      */
     void acquire();
-
-    /** Non blocking
-     * Starts the reciever (if enabled) and then the detector
-     * You have to check detector status until it is idle before you call
-     * stopACquisition
-     *
-     */
-    void startAcquisition();
-
-    /**
-     * Stops detector acquisition and then receiver (if enabled)
-     * If no receiver enabled, you can skip this for normal acquisition (no
-     * abort)
-     */
-    void stopAcquisition();
-
-    /** TODO: initially was getting acq flag, if set, check if detctor idle, then set, else exception & abort
-     * Clears the acquiring flag. This has to be done manually
-     * after an acquisition was aborted.
-     */
+        
+    /** If acquisition aborted, use this to clear before starting next acquisition */
     void clearAcquiringFlag();
+
+    /** Non Blocking: Start receiver listener*/
+    void startReceiver();
+
+    /** Non Blocking: Stop receiver listener */
+    void stopReceiver();   
+
+    /** Non blocking: start detector acquisition 
+     * detector status changes from RUNNING to IDLE when finished */
+    void startDetector();
+
+    /** Non blocking: abort detector acquisition */
+    void stopDetector();
 
     Result<defs::runStatus> getDetectorStatus(Positions pos = {}) const;
 

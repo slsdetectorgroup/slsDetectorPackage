@@ -10,6 +10,7 @@
 #include "TimeHelper.h"
 #include "TypeTraits.h"
 #include "sls_detector_exceptions.h"
+#include "sls_detector_defs.h"
 #include "string_utils.h"
 #include <chrono>
 #include <iomanip>
@@ -18,6 +19,25 @@
 #include <vector>
 
 namespace sls {
+
+// std::string ToString(slsDetectorDefs::runStatus s) {
+//     switch (s) {
+//     case slsDetectorDefs::ERROR:
+//         return std::string("error");
+//     case slsDetectorDefs::WAITING:
+//         return std::string("waiting");
+//     case slsDetectorDefs::RUNNING:
+//         return std::string("running");
+//     case slsDetectorDefs::TRANSMITTING:
+//         return std::string("data");
+//     case slsDetectorDefs::RUN_FINISHED:
+//         return std::string("finished");
+//     case slsDetectorDefs::STOPPED:
+//         return std::string("stopped");
+//     default:
+//         return std::string("idle");
+//     }
+// }
 
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>

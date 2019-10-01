@@ -133,29 +133,6 @@
         return os.str();                                                       \
     }
 
-#define EXECUTE_GET_COMMAND_CONV(CMDNAME, GETFCN, CONV, HLPSTR)                \
-    std::string CMDNAME(const int action) {                                    \
-        std::ostringstream os;                                                 \
-        os << cmd << ' ';                                                      \
-        if (action == slsDetectorDefs::HELP_ACTION)                            \
-            os << HLPSTR << '\n';                                              \
-        else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
-                WrongNumberOfParameters(2);                                    \
-            }                                                                  \
-            auto res = det->GETFCN({det_id});                                  \
-            Result<std::string> t(res.size());                                 \
-            for (size_t i = 0; i < res.size(); ++i) {                          \
-                t[i] = CONV(res[i]);                                           \
-            }                                                                  \
-            os << OutString(t) << '\n';                                        \
-        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            throw sls::RuntimeError("Cannot put");                             \
-        } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
-        }                                                                      \
-        return os.str();                                                       \
-    }
 
 
 namespace sls {
@@ -251,10 +228,10 @@ class CmdProxy {
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
                           {"trigger", &CmdProxy::trigger},
-                          {"status", &CmdProxy::status},
+                          //{"status", &CmdProxy::status},
                           {"rx_start", &CmdProxy::rx_start},
                           {"rx_stop", &CmdProxy::rx_stop},
-                          {"rx_status", &CmdProxy::rx_status},                          
+                          //{"rx_status", &CmdProxy::rx_status},                          
                           
                           };
 
@@ -362,11 +339,8 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
                 "Sends software trigger signal to detector. [Eiger]");   
 
-    EXECUTE_GET_COMMAND_CONV(status, getDetectorStatus, slsDetectorDefs::runStatusType,
-                "Returns detector status[running|error|transmitting|finished|waiting|idle].");
-
-    /* EXECUTE_GET_COMMAND(status, getDetectorStatus, 
-                "Returns detector status[running|error|transmitting|finished|waiting|idle].");   */              
+    // EXECUTE_GET_COMMAND(status, getDetectorStatus, 
+    //             "Returns detector status[running|error|transmitting|finished|waiting|idle].");                 
 
     EXECUTE_SET_COMMAND_NOID(rx_start, startReceiver, 
                 "Starts receiver listener for detector data packets and create a data file (if file write enabled).");  
@@ -374,10 +348,8 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID(rx_stop, stopReceiver, 
                 "Stops receiver listener for detector data packets and closes current data file (if file write enabled).");                      
     
-    /* EXECUTE_GET_COMMAND(rx_status, getReceiverStatus, 
-                "Returns receiver listener status [running|idle]."); */                 
-    EXECUTE_GET_COMMAND_CONV(rx_status, getReceiverStatus, slsDetectorDefs::runStatusType,
-                "Returns receiver listener status [running|idle].");
+    // EXECUTE_GET_COMMAND(rx_status, getReceiverStatus, 
+    //             "Returns receiver listener status [running|idle].");                  
 
 
 };

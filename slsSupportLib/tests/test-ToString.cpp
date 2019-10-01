@@ -135,3 +135,9 @@ TEST_CASE("string to detectorType"){
     REQUIRE(StringTo<dt>("Gotthard2") == dt::GOTTHARD2);
 }
 
+TEST_CASE("vec"){
+    using rs = slsDetectorDefs::runStatus;
+    std::vector<rs> vec{rs::ERROR, rs::IDLE};
+    REQUIRE(ToString(vec) == "[error, idle]");
+}
+

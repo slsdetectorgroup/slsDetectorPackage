@@ -1,7 +1,7 @@
 #pragma once
 #include "sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN     		(0x190000)//TODO
+#define REQRD_FRMWRE_VRSN     		(0x190000)
 
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
@@ -9,7 +9,7 @@
 #define NCHAN 						(128)
 #define NCHIP 						(10)
 #define NDAC 						(16)
-#define DYNAMIC_RANGE               (16) //TODO: correct?
+#define DYNAMIC_RANGE               (16) 
 
 #define HV_SOFT_MAX_VOLTAGE         (200)
 #define HV_HARD_MAX_VOLTAGE         (530)

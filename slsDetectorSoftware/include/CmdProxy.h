@@ -356,9 +356,11 @@ class CmdProxy {
                 "\n\tStarts receiver listener for detector data packets and create a data file (if file write enabled).");  
 
     EXECUTE_SET_COMMAND_NOID(rx_stop, stopReceiver, 
-                "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled).");                      
+                "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled).");      
+                                
     EXECUTE_GET_COMMAND(rx_status, getReceiverStatus, 
-                "\n\tReturns receiver listener status [running|idle].");                  
+                "\n\tReturns receiver listener status [running|idle].");   
+
     EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
                 "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  
 

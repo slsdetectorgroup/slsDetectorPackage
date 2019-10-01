@@ -120,7 +120,6 @@ TEST_CASE("string to std::chrono::duration", "[support]") {
     REQUIRE(StringTo<ns>("150ns") == ns(150));
     REQUIRE(StringTo<ns>("150s") == s(150));
     REQUIRE(StringTo<s>("3 s") == s(3));
-
     REQUIRE_THROWS(StringTo<ns>("5xs"));
     REQUIRE_THROWS(StringTo<ns>("asvn"));
 }

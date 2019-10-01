@@ -159,13 +159,14 @@ T StringTo(const std::string &t, const std::string &unit) {
     }
 }
 
-template <typename T> T StringTo(std::string t) {
-    auto unit = RemoveUnit(t);
-    return StringTo<T>(t, unit);
+template <typename T> T StringTo(const std::string& t) {
+    std::string tmp{t};
+    auto unit = RemoveUnit(tmp);
+    return StringTo<T>(tmp, unit);
 }
 
 template <>
-inline slsDetectorDefs::detectorType StringTo(std::string s){
+inline slsDetectorDefs::detectorType StringTo(const std::string& s){
     return slsDetectorDefs::detectorTypeToEnum(s);
 }
 

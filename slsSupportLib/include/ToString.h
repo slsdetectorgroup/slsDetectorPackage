@@ -20,6 +20,32 @@
 
 namespace sls {
 
+
+inline std::string ToString(const slsDetectorDefs::runStatus s){
+    switch (s) {
+    case slsDetectorDefs::ERROR:
+        return std::string("error");
+    case slsDetectorDefs::WAITING:
+        return std::string("waiting");
+    case slsDetectorDefs::RUNNING:
+        return std::string("running");
+    case slsDetectorDefs::TRANSMITTING:
+        return std::string("data");
+    case slsDetectorDefs::RUN_FINISHED:
+        return std::string("finished");
+    case slsDetectorDefs::STOPPED:
+        return std::string("stopped");
+    default:
+        return std::string("idle");
+    }
+}
+
+// in case we already have a string 
+// causes a copy but might be needed in generic code
+inline std::string ToString(const std::string& s){
+    return s;
+}
+
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>
 typename std::enable_if<is_duration<T>::value, std::string>::type
@@ -72,6 +98,9 @@ typename std::enable_if<std::is_integral<T>::value, std::string>::type
 ToString(const T &value) {
     return std::to_string(value);
 }
+
+
+
 
 /**
  * For a container loop over all elements and call ToString on the element
@@ -177,33 +206,6 @@ ToString(const T &obj) {
     return obj.str();
 }
 
-/** 
- * Call ToString with a string, causes copy but might be needed
- * in generic code. 
- */
-inline std::string ToString(const std::string& s){
-    return s;
-}
 
-inline std::string ToString(slsDetectorDefs::runStatus s){
-    return slsDetectorDefs::runStatusType(s);
-    /*
-    switch (s) {
-    case slsDetectorDefs::ERROR:
-        return std::string("error");
-    case slsDetectorDefs::WAITING:
-        return std::string("waiting");
-    case slsDetectorDefs::RUNNING:
-        return std::string("running");
-    case slsDetectorDefs::TRANSMITTING:
-        return std::string("data");
-    case slsDetectorDefs::RUN_FINISHED:
-        return std::string("finished");
-    case slsDetectorDefs::STOPPED:
-        return std::string("stopped");
-    default:
-        return std::string("idle");
-    }*/
-}
 
 } // namespace sls

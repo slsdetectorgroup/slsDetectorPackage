@@ -138,11 +138,6 @@ std::string CmdProxy::SubExptime(int action) {
 
 
 std::string CmdProxy::ListCommands(int action) {
-
-    auto t = det->getDetectorStatus({});
-    std::cout << OutString(t) << '\n';   
-    exit(-1);
-
     if (action == slsDetectorDefs::HELP_ACTION)
         return "list\n\tlists all available commands, list deprecated - "
                "list deprecated commands\n";

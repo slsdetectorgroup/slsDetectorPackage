@@ -274,6 +274,9 @@ void Detector::stopReceiver() {
 }
 
 void Detector::startDetector() {
+    if (getDetectorType({}).squash() == defs::EIGER) {
+        pimpl->Parallel(&slsDetector::prepareAcquisition, {});
+    }
     pimpl->Parallel(&slsDetector::startAcquisition, {});
 }
 

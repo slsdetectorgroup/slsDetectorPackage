@@ -1,15 +1,16 @@
 #pragma once
 
 /* Definitions for FPGA*/
+#define REG_OFFSET                      (4)
 #define BASE_CONTROL                    (0x000)
 #define BASE_ACQUISITION                (0x200)
 #define BASE_UDP_RAM                    (0x1000)
 
 /* Module Control Board Serial Number register */
-#define MCB_SERIAL_NO_REG               (0x00 + BASE_CONTROL)
+#define MCB_SERIAL_NO_REG               (0x000 * REG_OFFSET + BASE_CONTROL)
 
 /* FPGA Version register */
-#define FPGA_VERSION_REG                (0x04 + BASE_CONTROL)
+#define FPGA_VERSION_REG                (0x001 * REG_OFFSET + BASE_CONTROL)
 
 #define FPGA_COMPILATION_DATE_OFST		(0)
 #define FPGA_COMPILATION_DATE_MSK		(0x00FFFFFF << FPGA_COMPILATION_DATE_OFST)
@@ -17,7 +18,7 @@
 #define DETECTOR_TYPE_MSK   			(0x000000FF << DETECTOR_TYPE_OFST)
 
 /* API Version register */
-#define API_VERSION_REG                 (0x08 + BASE_CONTROL)
+#define API_VERSION_REG                 (0x002 * REG_OFFSET + BASE_CONTROL)
 
 #define API_VERSION_OFST                (0)
 #define API_VERSION_MSK                 (0x00FFFFFF << API_VERSION_OFST)
@@ -25,20 +26,22 @@
 #define API_VERSION_DETECTOR_TYPE_MSK   (0x000000FF << API_VERSION_DETECTOR_TYPE_OFST)  //Not used in software
 
 /* Fix pattern register */
-#define FIX_PATT_REG             	    (0x0D + BASE_CONTROL)
+#define FIX_PATT_REG             	    (0x003 * REG_OFFSET + BASE_CONTROL)
 #define FIX_PATT_VAL                    (0xACDC2019)
 
 /* Status register */
-#define STATUS_REG                      (0x12 + BASE_CONTROL)
+#define STATUS_REG                      (0x004 * REG_OFFSET + BASE_CONTROL)
 
 #ifdef VIRTUAL
 #define RUN_BUSY_OFST					(0)
 #define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_OFST)
 #endif
 
-/* Look at me register */
-#define LOOK_AT_ME_REG          		(0x16 + BASE_CONTROL)	
+/* Look at me read only register */
+#define LOOK_AT_ME_REG          		(0x005 * REG_OFFSET + BASE_CONTROL)	
 
+/** DTA Offset Register */
+#define DTA_OFFSET_REG                  (0x104 * REG_OFFSET + BASE_CONTROL)
 
 
 /* Pattern Control FPGA registers TODO --------------------------------------------------*/

@@ -674,11 +674,7 @@ int slsReceiverTCPIPInterface::get_status(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::start_receiver(Interface &socket) {
-    runStatus status = impl()->getStatus();
-    if (status != IDLE) {
-        throw RuntimeError("Cannot start Receiver as it is: " +
-                           runStatusType(status));
-    } else {
+    if (impl()->getStatus() == IDLE) {
         FILE_LOG(logDEBUG1) << "Starting Receiver";
         ret = impl()->startReceiver(mess);
         if (ret == FAIL) {
@@ -689,7 +685,7 @@ int slsReceiverTCPIPInterface::start_receiver(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::stop_receiver(Interface &socket) {
-    if (impl()->getStatus() != IDLE) {
+    if (impl()->getStatus() == RUNNING) {
         FILE_LOG(logDEBUG1) << "Stopping Receiver";
         impl()->stopReceiver();
     }

@@ -37,8 +37,6 @@ void 		basictests();
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int 		checkType();
 int 		testFpga();
-#endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		testBus();
 #endif
 

@@ -43,15 +43,6 @@ TEST_CASE("conversion from duration to string", "[support]") {
     REQUIRE(ToString(us(-100)) == "-100us");
 }
 
-TEST_CASE("string to std::chrono::duration", "[support]") {
-    REQUIRE(StringTo<ns>("150", "ns") == ns(150));
-    REQUIRE(StringTo<ns>("150ns") == ns(150));
-    REQUIRE(StringTo<ns>("150s") == s(150));
-    REQUIRE(StringTo<s>("3 s") == s(3));
-
-    REQUIRE_THROWS(StringTo<ns>("5xs"));
-    REQUIRE_THROWS(StringTo<ns>("asvn"));
-}
 
 TEST_CASE("Convert vector of time", "[support]") {
     std::vector<ns> vec{ns(150), us(10), ns(600)};
@@ -122,5 +113,26 @@ TEST_CASE("run status"){
     REQUIRE(ToString(defs::runStatus::IDLE) == "idle");
 }
 
+/** Conversion from string (break out in it's own file?) */
 
+TEST_CASE("string to std::chrono::duration", "[support]") {
+    REQUIRE(StringTo<ns>("150", "ns") == ns(150));
+    REQUIRE(StringTo<ns>("150ns") == ns(150));
+    REQUIRE(StringTo<ns>("150s") == s(150));
+    REQUIRE(StringTo<s>("3 s") == s(3));
+
+    REQUIRE_THROWS(StringTo<ns>("5xs"));
+    REQUIRE_THROWS(StringTo<ns>("asvn"));
+}
+
+TEST_CASE("string to detectorType"){
+    using dt = slsDetectorDefs::detectorType;
+    REQUIRE(StringTo<dt>("Eiger") == dt::EIGER);
+    REQUIRE(StringTo<dt>("Gotthard") == dt::GOTTHARD);
+    REQUIRE(StringTo<dt>("Jungfrau") == dt::JUNGFRAU);
+    REQUIRE(StringTo<dt>("JungfrauCTB") == dt::CHIPTESTBOARD);
+    REQUIRE(StringTo<dt>("Moench") == dt::MOENCH);
+    REQUIRE(StringTo<dt>("Mythen3") == dt::MYTHEN3);
+    REQUIRE(StringTo<dt>("Gotthard2") == dt::GOTTHARD2);
+}
 

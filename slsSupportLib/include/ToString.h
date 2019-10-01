@@ -164,6 +164,11 @@ template <typename T> T StringTo(std::string t) {
     return StringTo<T>(t, unit);
 }
 
+template <>
+inline slsDetectorDefs::detectorType StringTo(std::string s){
+    return slsDetectorDefs::detectorTypeToEnum(s);
+}
+
 /** For types with a .str() method use this for conversion */
 template <typename T>
 typename std::enable_if<has_str<T>::value, std::string>::type

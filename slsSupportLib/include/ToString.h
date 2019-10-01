@@ -12,6 +12,7 @@
 #include "sls_detector_exceptions.h"
 #include "sls_detector_defs.h"
 #include "string_utils.h"
+#include "sls_detector_defs.h"
 #include <chrono>
 #include <iomanip>
 #include <sstream>
@@ -178,9 +179,15 @@ T StringTo(const std::string &t, const std::string &unit) {
     }
 }
 
-template <typename T> T StringTo(std::string t) {
-    auto unit = RemoveUnit(t);
-    return StringTo<T>(t, unit);
+template <typename T> T StringTo(const std::string& t) {
+    std::string tmp{t};
+    auto unit = RemoveUnit(tmp);
+    return StringTo<T>(tmp, unit);
+}
+
+template <>
+inline slsDetectorDefs::detectorType StringTo(const std::string& s){
+    return slsDetectorDefs::detectorTypeToEnum(s);
 }
 
 /** For types with a .str() method use this for conversion */
@@ -189,5 +196,18 @@ typename std::enable_if<has_str<T>::value, std::string>::type
 ToString(const T &obj) {
     return obj.str();
 }
+
+/** 
+ * Call ToString with a string, causes copy but might be needed
+ * in generic code. 
+ */
+inline std::string ToString(const std::string& s){
+    return s;
+}
+
+inline std::string ToString(slsDetectorDefs::runStatus s){
+    return slsDetectorDefs::runStatusType(s);
+}
+
 
 } // namespace sls

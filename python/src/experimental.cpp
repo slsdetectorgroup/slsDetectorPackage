@@ -118,7 +118,6 @@ void init_experimental(py::module &m) {
              py::arg() = Positions{})
 
         // Network Configuration (Detector<->Receiver)
-        .def("configureMAC", &Detector::configureMAC, py::arg() = Positions{})
         .def("getNumberofUDPInterfaces", &Detector::getNumberofUDPInterfaces,
              py::arg() = Positions{})
 

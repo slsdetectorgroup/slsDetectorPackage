@@ -17,6 +17,7 @@
  * HLPSTR Help string for --help and docs
  */
 
+/** get, int argument for set, id */
 #define INTEGER_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)                 \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -45,6 +46,7 @@
         return os.str();                                                       \
     }
 
+/** get, int argument for set, no id */
 #define INTEGER_COMMAND_NOID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)            \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -76,6 +78,7 @@
         return os.str();                                                       \
     }
 
+/** no arguments, no id, set only */
 #define EXECUTE_SET_COMMAND_NOID(CMDNAME, SETFCN, HLPSTR)                      \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -96,6 +99,7 @@
         return os.str();                                                       \
     }
 
+/** no arguments, id, set only */
 #define EXECUTE_SET_COMMAND(CMDNAME, SETFCN, HLPSTR)                           \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -190,7 +194,11 @@ class CmdProxy {
                                     {"outdir", "fpath"},
                                     {"fileformat", "fformat"},
                                     {"overwrite", "foverwrite"},
-                                    {"flags", "romode"}};
+                                    {"flags", "romode"},
+                                    
+                                    {"busy", "clearbusy"}
+                                    
+                                    };
 
     // Initialize maps for translating name and function
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
@@ -231,7 +239,8 @@ class CmdProxy {
                           {"status", &CmdProxy::status},
                           {"rx_start", &CmdProxy::rx_start},
                           {"rx_stop", &CmdProxy::rx_stop},
-                          {"rx_status", &CmdProxy::rx_status},                          
+                          {"rx_status", &CmdProxy::rx_status}, 
+                          {"clearbusy", &CmdProxy::clearbusy}                         
                           
                           };
 
@@ -243,6 +252,7 @@ class CmdProxy {
     std::string Period(int action);
     std::string Exptime(int action);
     std::string SubExptime(int action);
+
 
     INTEGER_COMMAND(
         rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
@@ -331,26 +341,26 @@ class CmdProxy {
                     "[0, 1]\n\tEnable or disable store in ram mode. [Eiger]");      
 
     EXECUTE_SET_COMMAND_NOID(start, startDetector, 
-                "Starts detector state machine.");  
+                "\n\tStarts detector state machine.");  
 
     EXECUTE_SET_COMMAND_NOID(stop, stopDetector, 
-                "Stops detector state machine.");  
+                "\n\tStops detector state machine.");  
 
     EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
-                "Sends software trigger signal to detector. [Eiger]");   
+                "\n\tSends software trigger signal to detector. [Eiger]");   
 
     EXECUTE_GET_COMMAND(status, getDetectorStatus, 
-                "Returns detector status[running|error|transmitting|finished|waiting|idle].");                 
+                "\n\tReturns detector status[running|error|transmitting|finished|waiting|idle].");                 
 
     EXECUTE_SET_COMMAND_NOID(rx_start, startReceiver, 
-                "Starts receiver listener for detector data packets and create a data file (if file write enabled).");  
+                "\n\tStarts receiver listener for detector data packets and create a data file (if file write enabled).");  
 
     EXECUTE_SET_COMMAND_NOID(rx_stop, stopReceiver, 
-                "Stops receiver listener for detector data packets and closes current data file (if file write enabled).");                      
-    
+                "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled).");                      
     EXECUTE_GET_COMMAND(rx_status, getReceiverStatus, 
-                "Returns receiver listener status [running|idle].");                  
-
+                "\n\tReturns receiver listener status [running|idle].");                  
+    EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
+                "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  
 
 };
 

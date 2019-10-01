@@ -136,7 +136,6 @@ std::string CmdProxy::SubExptime(int action) {
                  "exposure time of EIGER subframes");
 }
 
-
 std::string CmdProxy::ListCommands(int action) {
     if (action == slsDetectorDefs::HELP_ACTION)
         return "list\n\tlists all available commands, list deprecated - "

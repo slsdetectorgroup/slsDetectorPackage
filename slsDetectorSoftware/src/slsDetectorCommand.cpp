@@ -193,13 +193,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page acquisition
-   - <b>  busy i</b> sets/gets acquiring flag. \c 1 the acquisition is active, \c 0 otherwise. Acquire command will set this flag to 1 at the beginning and to 0 at the end. Use this to clear flag if acquisition terminated unexpectedly. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "busy";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdStatus;
-    ++i;
-
-    /*! \page acquisition
    - \b data gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup (Eigerr store in ram only). Only get!
 	 */
     descrToFuncMap[i].m_pFuncName = "data";
@@ -2022,40 +2015,6 @@ std::string slsDetectorCommand::helpData(int action) {
         return std::string("data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup\n");
 }
 
-std::string slsDetectorCommand::cmdStatus(int narg, const char * const args[], int action, int detPos) {
-
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-
-    if (action == HELP_ACTION)
-        return helpStatus(action);
-
-    if (cmd == "busy") {
-        if (action == PUT_ACTION) {
-            int i;
-            if (!sscanf(args[1], "%d", &i))
-                return std::string("cannot parse busy mode");
-            myDet->setAcquiringFlag(i);
-        }
-        char answer[100];
-        sprintf(answer, "%d", myDet->getAcquiringFlag());
-        return std::string(answer);
-    } else
-        return std::string("cannot scan command ") + std::string(cmd);
-}
-
-std::string slsDetectorCommand::helpStatus(int action) {
-
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << std::string("busy \t gets the status of acquire- can be: 0 or 1. 0 for idle, 1 for running\n");
-    }
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << std::string("busy i\t sets the status of acquire- can be: 0(idle) or 1(running).Command Acquire sets it to 1 at beignning of acquire and back to 0 at the end. Clear Flag for unexpected acquire terminations. \n");
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdDataStream(int narg, const char * const args[], int action, int detPos) {
 

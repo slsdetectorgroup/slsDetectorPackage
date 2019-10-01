@@ -9,6 +9,7 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
 TEST_CASE("status", "[.cmd]") {
 
     multiSlsDetectorClient("timing auto", PUT);
@@ -48,7 +49,7 @@ TEST_CASE("trigger", "[.cmd][.eiger]") {
     {
         std::ostringstream oss;
         multiSlsDetectorClient("startingfnum", GET, nullptr, oss);
-        std::string s = (oss.str()).erase (0, 13);
+        std::string s = (oss.str()).erase (0, strlen("startingfnum "));
         startingfnum = std::stoi(s);
     }
     {
@@ -71,7 +72,7 @@ TEST_CASE("trigger", "[.cmd][.eiger]") {
     {
         std::ostringstream oss;
         multiSlsDetectorClient("startingfnum", GET, nullptr, oss);
-        std::string s = (oss.str()).erase (0, 13);
+        std::string s = (oss.str()).erase (0, strlen("startingfnum "));
         currentfnum = std::stoi(s);
     } 
     REQUIRE((startingfnum + 1) == currentfnum);

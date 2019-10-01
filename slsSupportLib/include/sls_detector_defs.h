@@ -613,29 +613,6 @@ format
         return GENERIC;
     };
 
-    /** returns string from run status index
-        \param s can be ERROR, WAITING, RUNNING, TRANSMITTING, RUN_FINISHED,
-       STOPPED \returns string error, waiting, running, data, finished, stopped,
-       idle
-    */
-    static std::string runStatusType(runStatus s) {
-        switch (s) {
-        case ERROR:
-            return std::string("error");
-        case WAITING:
-            return std::string("waiting");
-        case RUNNING:
-            return std::string("running");
-        case TRANSMITTING:
-            return std::string("data");
-        case RUN_FINISHED:
-            return std::string("finished");
-        case STOPPED:
-            return std::string("stopped");
-        default:
-            return std::string("idle");
-        }
-    };
 
     /** returns string from file format index
         \param s can be BINARY, HDF5

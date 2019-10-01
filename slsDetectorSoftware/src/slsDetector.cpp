@@ -7,6 +7,8 @@
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"
+#include "ToString.h"
+
 #include <arpa/inet.h>
 #include <array>
 #include <bitset>
@@ -1146,7 +1148,7 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus() const {
     runStatus retval = ERROR;
     FILE_LOG(logDEBUG1) << "Getting status";
     sendToDetectorStop(F_GET_RUN_STATUS, nullptr, retval);
-    FILE_LOG(logDEBUG1) << "Detector status: " << runStatusType(retval);
+    FILE_LOG(logDEBUG1) << "Detector status: " << sls::ToString(retval);
     return retval;
 }
 
@@ -3143,7 +3145,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() const {
     FILE_LOG(logDEBUG1) << "Getting Receiver Status";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_RECEIVER_STATUS, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Receiver Status: " << runStatusType(retval);
+        FILE_LOG(logDEBUG1) << "Receiver Status: " << sls::ToString(retval);
     }
     return retval;
 }

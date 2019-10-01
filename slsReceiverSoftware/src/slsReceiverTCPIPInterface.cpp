@@ -14,6 +14,7 @@
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"
+#include "ToString.h"
 
 #include <array>
 #include <cstdlib>
@@ -669,7 +670,7 @@ int slsReceiverTCPIPInterface::set_streaming_frequency(Interface &socket) {
 
 int slsReceiverTCPIPInterface::get_status(Interface &socket) {
     auto retval = impl()->getStatus();
-    FILE_LOG(logDEBUG1) << "Status:" << runStatusType(retval);
+    FILE_LOG(logDEBUG1) << "Status:" << sls::ToString(retval);
     return socket.sendResult(retval);
 }
 
@@ -692,7 +693,7 @@ int slsReceiverTCPIPInterface::stop_receiver(Interface &socket) {
     auto s = impl()->getStatus();
     if (s != IDLE)
         throw RuntimeError("Could not stop receiver. It as it is: " +
-                           runStatusType(s));
+                           sls::ToString(s));
 
     return socket.Send(OK);
 }

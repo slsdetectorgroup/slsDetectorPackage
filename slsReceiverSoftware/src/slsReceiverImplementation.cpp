@@ -14,6 +14,7 @@
 #include "Listener.h"
 #include "ZmqSocket.h" //just for the zmq port define
 #include "file_utils.h"
+#include "ToString.h"
 
 #include <cerrno>  //eperm
 #include <cstdlib> //system
@@ -1275,7 +1276,7 @@ int slsReceiverImplementation::startReceiver(char *c) {
     StartRunning();
 
     FILE_LOG(logINFO) << "Receiver Started";
-    FILE_LOG(logINFO) << "Status: " << runStatusType(status);
+    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
     return OK;
 }
 
@@ -1326,7 +1327,7 @@ void slsReceiverImplementation::stopReceiver() {
     }
 
     status = RUN_FINISHED;
-    FILE_LOG(logINFO) << "Status: " << runStatusType(status);
+    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
 
     { // statistics
         uint64_t tot = 0;
@@ -1368,7 +1369,7 @@ void slsReceiverImplementation::stopReceiver() {
     status = IDLE;
 
     FILE_LOG(logINFO) << "Receiver Stopped";
-    FILE_LOG(logINFO) << "Status: " << runStatusType(status);
+    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
 }
 
 void slsReceiverImplementation::startReadout() {

@@ -97,6 +97,11 @@ TEST_CASE("Convert types with str method"){
     REQUIRE(ToString(sls::IpAddr{}) == "0.0.0.0");
 }
 
+TEST_CASE("String to string", "[support]"){
+    std::string s = "hej";
+    REQUIRE(ToString(s) == "hej");
+}
+
 TEST_CASE("vector of strings"){
     std::vector<std::string> vec{"5", "s"};
     REQUIRE(ToString(vec) == "[5, s]");
@@ -105,3 +110,6 @@ TEST_CASE("vector of strings"){
     REQUIRE(ToString(vec2) == "[some, strange, words, 75]");
 
 }
+
+
+

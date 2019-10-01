@@ -170,4 +170,13 @@ ToString(const T &obj) {
     return obj.str();
 }
 
+/** 
+ * Call ToString with a string, causes copy but might be needed
+ * in generic code. 
+ */
+template <>
+inline std::string ToString<std::string>(const std::string& s){
+    return s;
+}
+
 } // namespace sls

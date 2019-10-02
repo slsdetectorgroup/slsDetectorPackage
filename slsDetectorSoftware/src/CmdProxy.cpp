@@ -142,7 +142,7 @@ std::string CmdProxy::Hostname(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "Frees shared memory and sets hostname (or IP address) of all modules concatenated by +." << '\n';   
+        os << "\n\tFrees shared memory and sets hostname (or IP address) of all modules concatenated by +." << '\n';   
     } else if (action == slsDetectorDefs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
@@ -173,6 +173,28 @@ std::string CmdProxy::Hostname(int action) {
     return os.str();
 }
 
+std::string CmdProxy::FirmwareVersion(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "\n\tFimware version of detector in format [0xYYMMDD] or integer for Eiger." << '\n';   
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getFirmwareVersion({det_id});
+        if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
+            os << OutString(t) << '\n';
+        } else {
+            os << OutStringHex(t) << '\n';
+        }
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        throw sls::RuntimeError("cannot put");
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 std::string CmdProxy::ListCommands(int action) {
     if (action == slsDetectorDefs::HELP_ACTION)

@@ -185,8 +185,14 @@ class CmdProxy {
     std::vector<std::string> args;
     int det_id{-1};
 
+    template <typename V> std::string OutStringHex(const V &value) {
+        if (value.equal()) 
+            return ToStringHex(value.front());
+        return ToStringHex(value);
+    }
+
     template <typename V> std::string OutString(const V &value) {
-        if (value.equal())
+        if (value.equal()) 
             return ToString(value.front());
         return ToString(value);
     }
@@ -221,7 +227,8 @@ class CmdProxy {
                                     {"overwrite", "foverwrite"},
                                     {"flags", "romode"},
                                     
-                                    {"busy", "clearbusy"}
+                                    {"busy", "clearbusy"},
+                                    {"detectorversion", "firmwareversion"},
                                     
                                     };
 
@@ -262,6 +269,7 @@ class CmdProxy {
                           {"parameters", &CmdProxy::parameters},
                           {"savepattern", &CmdProxy::savepattern},
                           {"hostname", &CmdProxy::Hostname},
+                          {"firmwareversion", &CmdProxy::FirmwareVersion},
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
                           {"trigger", &CmdProxy::trigger},
@@ -282,6 +290,7 @@ class CmdProxy {
     std::string Exptime(int action);
     std::string SubExptime(int action);
     std::string Hostname(int action); 
+    std::string FirmwareVersion(int action);     
 
 
     INTEGER_COMMAND(
@@ -362,13 +371,13 @@ class CmdProxy {
                     "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)");       
     
     INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
-                    "[0, 1]\n\tEnable or disable parallel mode. [Eiger]");
+                    "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
 
     INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, std::stoi,
-                    "[0, 1]\n\tEnable or disable show overflow flag in 32 bit mode. [Eiger]");    
+                    "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in 32 bit mode.");    
 
     INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode, std::stoi,
-                    "[0, 1]\n\tEnable or disable store in ram mode. [Eiger]");      
+                    "[0, 1]\n\t[Eiger] Enable or disable store in ram mode.");      
 
 
 
@@ -379,7 +388,7 @@ class CmdProxy {
                 "[fname]\n\tSets detector measurement parameters to those contained in fname. Set up per measurement.");  
 
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
-                "[fname]\n\tSaves pattern to file (ascii). Also executes pattern.[ctb]");  
+                "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern.");  
 
     EXECUTE_SET_COMMAND_NOID(start, startDetector, 
                 "\n\tStarts detector state machine.");  
@@ -391,7 +400,7 @@ class CmdProxy {
                 "\n\tSends software trigger signal to detector. [Eiger]");   
 
     EXECUTE_GET_COMMAND(status, getDetectorStatus, 
-                "\n\tReturns detector status[running|error|transmitting|finished|waiting|idle].");                 
+                "\n\tDetector status[running|error|transmitting|finished|waiting|idle].");                 
 
     EXECUTE_SET_COMMAND_NOID(rx_start, startReceiver, 
                 "\n\tStarts receiver listener for detector data packets and create a data file (if file write enabled).");  
@@ -400,7 +409,7 @@ class CmdProxy {
                 "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled).");      
                                 
     EXECUTE_GET_COMMAND(rx_status, getReceiverStatus, 
-                "\n\tReturns receiver listener status [running|idle].");   
+                "\n\tTeceiver listener status [running|idle].");   
 
     EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
                 "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  

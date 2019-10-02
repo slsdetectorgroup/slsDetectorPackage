@@ -99,8 +99,37 @@ ToString(const T &value) {
     return std::to_string(value);
 }
 
+/** Conversion of integer types, do not remove trailing zeros */
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, std::string>::type
+ToStringHex(const T &value) {
+    std::ostringstream os;
+    os << "0x" << std::hex << value << std::dec;
+    return os.str();
+}
 
-
+/** 
+ * hex
+ * For a container loop over all elements and call ToString on the element
+ * Container<std::string> is excluded
+ */
+template <typename T>
+typename std::enable_if<
+    is_container<T>::value &&
+        !std::is_same<typename T::value_type, std::string>::value,
+    std::string>::type
+ToStringHex(const T &container) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToStringHex(*it++);
+        while (it != container.cend())
+            os << ", " << ToStringHex(*it++);
+    }
+    os << ']';
+    return os.str();   
+}
 
 /**
  * For a container loop over all elements and call ToString on the element

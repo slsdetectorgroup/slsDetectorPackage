@@ -9,6 +9,13 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("firmwareversion", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        CHECK_NOTHROW(multiSlsDetectorClient("firmwareversion", GET, nullptr, oss));
+    }
+}
 TEST_CASE("status", "[.cmd]") {
 
     multiSlsDetectorClient("timing auto", PUT);

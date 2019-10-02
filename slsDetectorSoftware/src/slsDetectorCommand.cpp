@@ -477,13 +477,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>detectorversion</b> Gets the firmware version of detector. Only get! \c Returns \c (long int) in hexadecimal
-	 */
-    descrToFuncMap[i].m_pFuncName = "detectorversion";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
-    ++i;
-
-    /*! \page config
    - <b>softwareversion</b> Gets the software version of detector server. Only get! \c Returns \c (long int) in hexadecimal
 	 */
     descrToFuncMap[i].m_pFuncName = "softwareversion";
@@ -2878,15 +2871,6 @@ std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int a
 
     if (cmd == "detectornumber") {
         int64_t retval = myDet->getId(DETECTOR_SERIAL_NUMBER, detPos);
-        if (retval < 0)
-            sprintf(answer, "%d", -1);
-        else
-            sprintf(answer, "0x%lx", retval);
-        return std::string(answer);
-    }
-
-    if (cmd == "detectorversion") {
-        int64_t retval = myDet->getId(DETECTOR_FIRMWARE_VERSION, detPos);
         if (retval < 0)
             sprintf(answer, "%d", -1);
         else

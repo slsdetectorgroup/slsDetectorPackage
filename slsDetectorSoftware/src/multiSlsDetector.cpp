@@ -787,118 +787,6 @@ void multiSlsDetector::saveSettingsFile(const std::string &fname, int detPos) {
     parallelCall(&slsDetector::saveSettingsFile, fname);
 }
 
-slsDetectorDefs::runStatus multiSlsDetector::getRunStatus(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getRunStatus();
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::getRunStatus);
-    if (sls::allEqual(r)) {
-        return r.front();
-    }
-    if (sls::anyEqualTo(r, ERROR)) {
-        return ERROR;
-    }
-    for (const auto &value : r) {
-        if (value != IDLE) {
-            return value;
-        }
-    }
-    return IDLE;
-}
-
-void multiSlsDetector::prepareAcquisition(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->prepareAcquisition();
-    }
-
-    // multi
-    parallelCall(&slsDetector::prepareAcquisition);
-}
-
-void multiSlsDetector::startAcquisition(int detPos) {
-    // single
-    if (detPos >= 0) {
-        if (detectors[detPos]->getDetectorTypeAsEnum() == EIGER) {
-            detectors[detPos]->prepareAcquisition();
-        }
-        detectors[detPos]->startAcquisition();
-    }
-
-    // multi
-    if (getDetectorTypeAsEnum() == EIGER) {
-        prepareAcquisition();
-    }
-    parallelCall(&slsDetector::startAcquisition);
-}
-
-void multiSlsDetector::stopAcquisition(int detPos) {
-    if (detPos >= 0) {
-        detectors[detPos]->stopAcquisition();
-    } else {
-        parallelCall(&slsDetector::stopAcquisition);
-    }
-}
-
-void multiSlsDetector::sendSoftwareTrigger(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->sendSoftwareTrigger();
-    }
-
-    // multi
-    parallelCall(&slsDetector::sendSoftwareTrigger);
-}
-
-void multiSlsDetector::startAndReadAll(int detPos) {
-    // single
-    if (detPos >= 0) {
-        if (detectors[detPos]->getDetectorTypeAsEnum() == EIGER) {
-            detectors[detPos]->prepareAcquisition();
-        }
-        detectors[detPos]->startAndReadAll();
-    }
-
-    // multi
-    if (getDetectorTypeAsEnum() == EIGER) {
-        prepareAcquisition();
-    }
-    parallelCall(&slsDetector::startAndReadAll);
-}
-
-void multiSlsDetector::startReadOut(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->startReadOut();
-    }
-
-    // multi
-    parallelCall(&slsDetector::startReadOut);
-}
-
-void multiSlsDetector::readAll(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->readAll();
-    }
-
-    // multi
-    parallelCall(&slsDetector::readAll);
-}
-/*
-void multiSlsDetector::configureMAC(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->configureMAC();
-    }
-
-    // multi
-    parallelCall(&slsDetector::configureMAC);
-}
-*/
 
 void multiSlsDetector::setStartingFrameNumber(const uint64_t value,
                                               int detPos) {
@@ -2389,47 +2277,6 @@ int multiSlsDetector::getFileIndex(int detPos) const {
     return sls::minusOneIfDifferent(r);
 }
 
-void multiSlsDetector::startReceiver(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->startReceiver();
-    }
-
-    // multi
-    parallelCall(&slsDetector::startReceiver);
-}
-
-void multiSlsDetector::stopReceiver(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->stopReceiver();
-    }
-
-    // multi
-    parallelCall(&slsDetector::stopReceiver);
-}
-
-slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getReceiverStatus();
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::getReceiverStatus);
-    if (sls::allEqual(r)) {
-        return r.front();
-    }
-    if (sls::anyEqualTo(r, ERROR)) {
-        return ERROR;
-    }
-    for (const auto &value : r) {
-        if (value != IDLE) {
-            return value;
-        }
-    }
-    return IDLE;
-}
 
 int multiSlsDetector::getFramesCaughtByReceiver(int detPos) {
     // single
@@ -3520,8 +3367,8 @@ int multiSlsDetector::acquire() {
 
     // verify receiver is idle
     if (receiver) {
-        if (getReceiverStatus() != IDLE) {
-            stopReceiver();
+        if (Parallel(&slsDetector::getReceiverStatus, {}).squash(ERROR) != IDLE) {
+            Parallel(&slsDetector::stopReceiver, {});
         }
     }
     setTotalProgress();
@@ -3535,16 +3382,20 @@ int multiSlsDetector::acquire() {
 
     // start receiver
     if (receiver) {
-        startReceiver();
+        Parallel(&slsDetector::startReceiver, {});
         // let processing thread listen to these packets
         sem_post(&sem_newRTAcquisition);
     }
 
-    startAndReadAll();
+    // start and read all
+    if (getDetectorTypeAsEnum() == EIGER) {
+        Parallel(&slsDetector::prepareAcquisition, {});
+    }
+    Parallel(&slsDetector::startAndReadAll, {});
 
     // stop receiver
     if (receiver) {
-        stopReceiver();
+        Parallel(&slsDetector::stopReceiver, {});
         if (dataReady != nullptr) {
             sem_wait(&sem_endRTAcquisition); // waits for receiver's
         }
@@ -3560,7 +3411,12 @@ int multiSlsDetector::acquire() {
     dataProcessingThread.join();
 
     if (acquisition_finished != nullptr) {
-        acquisition_finished(getCurrentProgress(), getRunStatus(),
+        // same status for all, else error
+        int status = static_cast<int>(ERROR);
+        auto t = Parallel(&slsDetector::getRunStatus, {});
+        if (t.equal())
+            status = t.front();
+        acquisition_finished(getCurrentProgress(), status,
                              acqFinished_p);
     }
 
@@ -3597,7 +3453,7 @@ void multiSlsDetector::processData() {
                     if (fgetc(stdin) == 'q') {
                         FILE_LOG(logINFO)
                             << "Caught the command to stop acquisition";
-                        stopAcquisition();
+                        Parallel(&slsDetector::stopAcquisition, {});
                     }
                 }
                 // get progress

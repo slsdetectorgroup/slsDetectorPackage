@@ -6,6 +6,7 @@
 #include "qCloneWidget.h"
 
 #include "detectorData.h"
+#include "ToString.h"
 
 #include <QFileDialog>
 #include <QPainter>
@@ -602,7 +603,7 @@ void qDrawPlot::GetDataCallBack(detectorData *data, uint64_t frameIndex, uint32_
 
 void qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
     progress = currentProgress;
-    std::string status = slsDetectorDefs::runStatusType(static_cast<slsDetectorDefs::runStatus>(detectorStatus));
+    std::string status = sls::ToString(static_cast<slsDetectorDefs::runStatus>(detectorStatus));
     
     if (detectorStatus == slsDetectorDefs::ERROR) {
         qDefs::Message(qDefs::WARNING, std::string("<nobr>The acquisiton has ended abruptly. Current Detector Status: ") + status + std::string(".</nobr>"), "qDrawPlot::AcquisitionFinished");

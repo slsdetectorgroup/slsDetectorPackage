@@ -554,31 +554,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void saveSettingsFile(const std::string &fname, int detPos = -1); //
 
     /**
-     * Get Detector run status
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns status
-     */
-    runStatus getRunStatus(int detPos = -1); //
-
-    /**
-     * Start detector acquisition (Non blocking)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startAcquisition(int detPos = -1); //
-
-    /**
-     * Stop detector acquisition
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void stopAcquisition(int detPos = -1); //
-
-    /**
-     * Give an internal software trigger to the detector (Eiger only)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void sendSoftwareTrigger(int detPos = -1); //
-
-    /**
      * Configures in detector the destination for UDP packets
      * @param detPos -1 for all detectors in  list or specific detector position
      */
@@ -1552,25 +1527,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int getFileIndex(int detPos = -1) const; //
 
     /**
-     * Receiver starts listening to packets
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startReceiver(int detPos = -1); //
-
-    /**
-     * Stops the listening mode of receiver
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void stopReceiver(int detPos = -1); //
-
-    /**
-     * Gets the status of the listening mode of receiver
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns status
-     */
-    runStatus getReceiverStatus(int detPos = -1); //
-
-    /**
      * Gets the number of frames caught by receiver
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns number of frames caught by receiver
@@ -1917,12 +1873,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void updateUserdetails();
 
     /**
-     * Prepares detector for acquisition (Eiger)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void prepareAcquisition(int detPos = -1); //
-
-    /**
      * Check if acquiring flag is set, set error if set
      * @returns FAIL if not ready, OK if ready
      */
@@ -2012,26 +1962,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Start data processing thread
      */
     void startProcessingThread();
-
-    /**
-     * Start detector acquisition and read all data (Blocking until end of
-     * acquisition)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startAndReadAll(int detPos = -1); //
-
-    /**
-     * Start readout (without exposure or interrupting exposure) (Eiger store in
-     * ram)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startReadOut(int detPos = -1); //
-
-    /**
-     * Requests and  receives all data from the detector (Eiger store in ram)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void readAll(int detPos = -1); //
 
     /**
      * Check if processing thread is ready to join main thread

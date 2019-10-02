@@ -37,6 +37,7 @@ int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0};
 uint32_t clkDivider[NUM_CLOCKS] = {125, 20, 80};
 
 int highvoltage = 0;
+int dacValues[NDAC] = {0};
 int detPos[2] = {0, 0};
 
 int isFirmwareCheckDone() {
@@ -75,7 +76,7 @@ void basictests() {
 		return;
     }
 	// does check only if flag is 0 (by default), set by command line
-	if ((!debugflag) && ((testFpga() == FAIL))) {
+	if ((!debugflag) && ((checkType() == FAIL) ||(testFpga() == FAIL)|| (testBus() == FAIL))) {
 		strcpy(firmware_message,
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
 		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
@@ -83,9 +84,88 @@ void basictests() {
 		firmware_check_done = 1;
 		return;
 	}
+	uint16_t hversion			= getHardwareVersionNumber();
+	uint32_t ipadd				= getDetectorIP();
+	uint64_t macadd				= getDetectorMAC();
+	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
+	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
+	int64_t sw_fw_apiversion    = 0;
+	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
+
+	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
+	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	FILE_LOG(logINFOBLUE, ("************ Mythen3 Server *********************\n"
+			"Hardware Version:\t\t 0x%x\n"
+
+			"Detector IP Addr:\t\t 0x%x\n"
+			"Detector MAC Addr:\t\t 0x%llx\n\n"
+
+			"Firmware Version:\t\t 0x%llx\n"
+			"Software Version:\t\t 0x%llx\n"
+			"F/w-S/w API Version:\t\t 0x%llx\n"
+			"Required Firmware Version:\t 0x%x\n"
+			"Client-Software API Version:\t 0x%llx\n"
+			"********************************************************\n",
+			hversion, 
+			ipadd,
+			(long  long unsigned int)macadd,
+			(long  long int)fwversion,
+			(long  long int)swversion,
+			(long  long int)sw_fw_apiversion,
+			requiredFirmwareVersion,
+			(long long int)client_sw_apiversion
+	));
+
+	// return if flag is not zero, debug mode
+	if (debugflag) {
+		firmware_check_done = 1;
+		return;
+	}
+
+
+	//cant read versions
+    FILE_LOG(logINFO, ("Testing Firmware-software compatibility:\n"));
+	if(!fwversion || !sw_fw_apiversion){
+		strcpy(firmware_message,
+				"Cant read versions from FPGA. Please update firmware.\n");
+		FILE_LOG(logERROR, (firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+	}
+
+	//check for API compatibility - old server
+	if(sw_fw_apiversion > requiredFirmwareVersion){
+		sprintf(firmware_message,
+				"This detector software software version (0x%llx) is incompatible.\n"
+				"Please update detector software (min. 0x%llx) to be compatible with this firmware.\n",
+				(long long int)sw_fw_apiversion,
+				(long long int)requiredFirmwareVersion);
+		FILE_LOG(logERROR, (firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+	}
+
+	//check for firmware compatibility - old firmware
+	if( requiredFirmwareVersion > fwversion) {
+		sprintf(firmware_message,
+				"This firmware version (0x%llx) is incompatible.\n"
+				"Please update firmware (min. 0x%llx) to be compatible with this server.\n",
+				(long long int)fwversion,
+				(long long int)requiredFirmwareVersion);
+		FILE_LOG(logERROR, (firmware_message));
+		firmware_compatibility = FAIL;
+		firmware_check_done = 1;
+		return;
+	}
+	FILE_LOG(logINFO, ("Compatibility - success\n"));
+	firmware_check_done = 1;
 #endif
 }
+
 
 int checkType() {
 #ifdef VIRTUAL
@@ -93,9 +173,9 @@ int checkType() {
 #endif
 	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != MYTHEN3){
-			FILE_LOG(logERROR, ("This is not a Mythen3 Server (read %d, expected %d)\n", type, MYTHEN3));
-			return FAIL;
-		}
+		FILE_LOG(logERROR, ("This is not a Mythen3 Server (read %d, expected %d)\n", type, MYTHEN3));
+		return FAIL;
+	}
 
 	return OK;
 }
@@ -114,6 +194,34 @@ int testFpga() {
 	} else {
 		FILE_LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
 		ret = FAIL;
+	}
+	return ret;
+}
+
+int testBus() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+	FILE_LOG(logINFO, ("Testing Bus:\n"));
+
+	int ret = OK;
+	u_int32_t addr = DTA_OFFSET_REG;
+	int times = 1000 * 1000;
+	int i = 0;
+
+	for (i = 0; i < times; ++i) {
+		bus_w(addr, i * 100);
+		if (i * 100 != bus_r(addr)) {
+			FILE_LOG(logERROR, ("Mismatch! Wrote 0x%x, read 0x%x\n",
+					i * 100, bus_r(addr)));
+			ret = FAIL;
+		}
+	}
+
+	bus_w(addr, 0);
+
+	if (ret == OK) {
+		FILE_LOG(logINFO, ("Successfully tested bus %d times\n", times));
 	}
 	return ret;
 }
@@ -142,21 +250,28 @@ u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL
     return 0;
 #endif
-	return 0;
+	return ((bus_r(FPGA_VERSION_REG) & FPGA_COMPILATION_DATE_MSK) >> FPGA_COMPILATION_DATE_OFST);
 }
 
 u_int64_t getFirmwareAPIVersion() {
 #ifdef VIRTUAL
     return 0;
 #endif
+    return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
+}
+
+u_int16_t getHardwareVersionNumber() {
+#ifdef VIRTUAL
     return 0;
+#endif
+	return bus_r(MCB_SERIAL_NO_REG);
 }
 
 u_int32_t getDetectorNumber(){
 #ifdef VIRTUAL
     return 0;
 #endif
-	return 0;
+	return bus_r(MCB_SERIAL_NO_REG);
 }
 
 
@@ -237,8 +352,11 @@ void setupDetector() {
 #ifndef VIRTUAL
 	// hv
    	DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
+	//dac
+	LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
 #endif
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+	setDefaultDacs();
 	
 	// Initialization of acquistion parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
@@ -247,9 +365,23 @@ void setupDetector() {
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY_AFTER_TRIGGER);
-
 }
 
+int setDefaultDacs() {
+	int ret = OK;
+	FILE_LOG(logINFOBLUE, ("Setting Default Dac values\n"));
+	{
+		int i = 0;
+		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+		for(i = 0; i < NDAC; ++i) {
+			// if not already default, set it to default
+			if (dacValues[i] != defaultvals[i]) {
+				setDAC((enum DACINDEX)i,defaultvals[i],0);
+			}
+		}
+	}
+	return ret;
+}
 
 /* set parameters -  dr, roi */
 
@@ -352,7 +484,8 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
     default:
         break;
     }
-    return OK;
+    return OK; 
+
 }
 
 
@@ -378,6 +511,44 @@ int64_t getTimeLeft(enum timerIndex ind){
 		break;
 	}
 	return retval;
+}
+
+
+/* parameters - dac, hv */
+void setDAC(enum DACINDEX ind, int val, int mV) {
+    if (val < 0)
+        return;
+
+    FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+    int dacval = val;
+#ifdef VIRTUAL
+    if (!mV) {
+        dacValues[ind] = val;
+    }
+    // convert to dac units
+    else if (LTC2620_D_VoltageToDac(val, &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
+#else
+    if (LTC2620_D_SetDACValue((int)ind, val, mV, &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
+#endif
+}
+
+int getDAC(enum DACINDEX ind, int mV) {
+    if (!mV) {
+        FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, dacValues[ind]));
+        return dacValues[ind];
+    }
+    int voltage = -1;
+    LTC2620_D_DacToVoltage(dacValues[ind], &voltage);
+    FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, dacValues[ind], voltage));
+    return voltage;
+}
+
+int getMaxDacSteps() {
+    return LTC2620_D_GetMaxNumSteps();
 }
 
 int setHighVoltage(int val){

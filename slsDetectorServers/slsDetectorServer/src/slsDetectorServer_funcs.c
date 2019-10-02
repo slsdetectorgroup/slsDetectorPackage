@@ -847,6 +847,55 @@ int set_dac(int file_des) {
 #elif MYTHEN3D
     case HIGH_VOLTAGE:
 		break;
+	case M_casSh: // in sls_detector_defs.h
+		serverDacIndex = CASSH; // in mythen3 slsDetectorServer_defs.h
+		break;
+	case M_Vth2:
+		serverDacIndex = VTH2;
+		break;
+	case SHAPER1:
+		serverDacIndex = VRFSH;
+		break;
+	case SHAPER2:
+		serverDacIndex = VRFSHNPOL;
+		break;
+	case M_vIpreOut:
+		serverDacIndex = VIPREOUT;
+		break;
+	case M_Vth3:
+		serverDacIndex = VTH3;
+		break;
+	case THRESHOLD:
+		serverDacIndex = VTH1;
+		break;
+	case M_vIcin:
+		serverDacIndex = VICIN;
+		break;
+	case M_cas:
+		serverDacIndex = CAS;
+		break;
+	case PREAMP:
+		serverDacIndex = VRF;
+		break;
+	case CALIBRATION_PULSE:
+		serverDacIndex = VPH;
+		break;
+	case M_vIpre:
+		serverDacIndex = VIPRE;
+		break;
+	case M_vIinSh:
+		serverDacIndex = VIINSH;
+		break;
+	case M_VPL:
+		serverDacIndex = VPL;
+		break;
+	case TRIMBIT_SIZE:
+		serverDacIndex = VTRIM;
+		break;
+	case M_VdcSh:
+		serverDacIndex = VDCSH;
+		break;
+
 
 #endif
     default:
@@ -1017,9 +1066,7 @@ int set_dac(int file_des) {
 #ifdef GOTTHARD2D
 				default:
 					break;
-#elif MYTHEN3D
-				default:
-					break;
+
 #else
                 // dacs
     			default:

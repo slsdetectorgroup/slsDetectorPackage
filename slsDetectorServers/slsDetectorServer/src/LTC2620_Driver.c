@@ -72,10 +72,14 @@ int LTC2620_D_SetDACValue (int dacnum, int val, int mV, int* dacval) {
     if ( (*dacval >= 0) || (*dacval == LTC2620_D_PWR_DOWN_VAL)) {
         FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",dacnum, *dacval, dacmV));
  
+        char fname[MAX_STR_LENGTH];
+        sprintf(fname, "%s%d", LTC2620_D_DriverFileName, dacnum);
+        FILE_LOG(logDEBUG1, ("fname %s\n",fname));
+        
         //open file
-        FILE* fd=fopen(LTC2620_D_DriverFileName,"w");
+        FILE* fd=fopen(fname,"w");
         if (fd==NULL) {
-            FILE_LOG(logERROR, ("Could not open file %s for writing to set dac %d\n", LTC2620_D_DriverFileName, dacnum));
+            FILE_LOG(logERROR, ("Could not open file %s for writing to set dac %d\n", fname, dacnum));
             return FAIL;
         }
         //convert to string, add 0 and write to file

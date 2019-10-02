@@ -21,6 +21,7 @@ This document describes the differences between 4.1.0 and 4.0.2 releases.
     - command line framesl, cyclesl was printing in float
     - eiger interrupt subframe flag
     - eiger server reg command (+0x100 for left and +0x200 for right)
+    - additional parameters included i master file
 
 
 
@@ -53,6 +54,12 @@ This document describes the differences between 4.1.0 and 4.0.2 releases.
     --------
 
     1.  Command line quad integrates Eiger quad hardware
+    
+    2.  Master file has additional parameters for Eiger (Quad Enable, Gap Pixels Enable).
+        Writer version update to 4.0.
+    
+    
+    3.  Zmq Json Header has additional informaion
 
 
 
@@ -71,7 +78,7 @@ This document describes the differences between 4.1.0 and 4.0.2 releases.
                                       09.02.2018 (25 um Slave) 
         Eiger
         =====  
-        Minimum compatible version  : 23
+        Minimum compatible version  : 24
         Latest compatible version   : 24
         
         Jungfrau

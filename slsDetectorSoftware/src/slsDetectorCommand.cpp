@@ -476,27 +476,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
-    /*! \page config
-   - <b>softwareversion</b> Gets the software version of detector server. Only get! \c Returns \c (long int) in hexadecimal
-	 */
-    descrToFuncMap[i].m_pFuncName = "softwareversion";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
-    ++i;
-
-    /*! \page config
-   - <b>thisversion</b> Gets the software version of this client software. Only get! \c Returns \c (long int) in hexadecimal
-	 */
-    descrToFuncMap[i].m_pFuncName = "thisversion";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
-    ++i;
-
-    /*! \page config
-   - <b>rx_version</b> Gets the software version of receiver. Only get! \c Returns \c (long int) in hexadecimal
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_version";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
-    ++i;
-
+   
     /* r/w timers */
 
     /*! \page timing
@@ -2859,15 +2839,6 @@ std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int a
     if (action == HELP_ACTION)
         return helpSN(action);
 
-    if (cmd == "thisversion") {
-        int64_t retval = myDet->getClientSoftwareVersion();
-        if (retval < 0)
-            sprintf(answer, "%d", -1);
-        else
-            sprintf(answer, "0x%lx", retval);
-        return std::string(answer);
-    }
-
 
     if (cmd == "detectornumber") {
         int64_t retval = myDet->getId(DETECTOR_SERIAL_NUMBER, detPos);
@@ -2878,23 +2849,6 @@ std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int a
         return std::string(answer);
     }
 
-    if (cmd == "softwareversion") {
-        int64_t retval = myDet->getId(DETECTOR_SOFTWARE_VERSION, detPos);
-        if (retval < 0)
-            sprintf(answer, "%d", -1);
-        else
-            sprintf(answer, "0x%lx", retval);
-        return std::string(answer);
-    }
-
-    if (cmd == "rx_version") {
-        int64_t retval = myDet->getReceiverSoftwareVersion(detPos);
-        if (retval < 0)
-            sprintf(answer, "%d", -1);
-        else
-            sprintf(answer, "0x%lx", retval);
-        return std::string(answer);
-    }
 
     if (cmd == "checkdetversion") {
         myDet->checkDetectorVersionCompatibility(detPos);
@@ -2916,10 +2870,6 @@ std::string slsDetectorCommand::helpSN(int action) {
         os << "checkdetversion \n gets the version compatibility with detector server (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
         os << "rx_checkversion \n gets the version compatibility with receiver server (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
         os << "detectornumber \n gets the serial number of the detector (MAC)" << std::endl;
-        os << "detectorversion \n gets the firmware version of the detector" << std::endl;
-        os << "softwareversion \n gets the software version of the detector" << std::endl;
-        os << "thisversion \n gets the version of this software" << std::endl;
-        os << "rx_version \n gets the version of the receiver" << std::endl;
     }
     return os.str();
 }

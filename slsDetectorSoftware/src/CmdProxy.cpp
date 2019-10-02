@@ -196,6 +196,76 @@ std::string CmdProxy::FirmwareVersion(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Versions(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "\n\tPrint all versions and detector type" << '\n';   
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getFirmwareVersion();
+        os << "\nDetector Type: " << OutString(det->getDetectorType())
+            << "\nPackage Version: " << det->getPackageVersion()
+            << std::hex  
+            << "\nClient Version: 0x" << det->getClientVersion();
+            if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
+                os << "\nFirmware Version: " << OutString(t);
+            } else {
+                os << "\nFirmware Version: " << OutStringHex(t);
+            }
+            os << "\nDetector Server Version: " << OutStringHex(det->getDetectorServerVersion());
+        if (det->getUseReceiverFlag().squash(true)) {
+            os << "\nReceiver Version: " << OutStringHex(det->getReceiverVersion());       
+        }
+        os << std::dec << '\n';
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        throw sls::RuntimeError("cannot put");
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::PackageVersion(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "\n\tPackage version (git branch)." << '\n';   
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+         os << det->getPackageVersion() << '\n';
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        throw sls::RuntimeError("cannot put");
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
+std::string CmdProxy::ClientVersion(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "\n\tClient software version in format [0xYYMMDD]." << '\n';   
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        os << ToStringHex(det->getClientVersion()) << '\n';
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        throw sls::RuntimeError("cannot put");
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
 std::string CmdProxy::ListCommands(int action) {
     if (action == slsDetectorDefs::HELP_ACTION)
         return "list\n\tlists all available commands, list deprecated - "

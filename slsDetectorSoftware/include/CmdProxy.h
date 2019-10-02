@@ -162,6 +162,26 @@
         return os.str();                                                       \
     }
 
+/** get only hex*/
+#define EXECUTE_GET_COMMAND_HEX(CMDNAME, GETFCN, HLPSTR)                       \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN({det_id});                                    \
+            os << OutStringHex(t) << '\n';                                     \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            throw sls::RuntimeError("Cannot put");                             \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
 
 
 namespace sls {
@@ -215,7 +235,6 @@ class CmdProxy {
                                     {"r_checkonline", "rx_checkonline"},
                                     {"r_framesperfile", "rx_framesperfile"},
                                     {"r_discardpolicy", "rx_discardpolicy"},
-                                    {"receiverversion", "rx_version"},
                                     {"receiver", "rx_status"},
                                     {"index", "findex"},
                                     {"exitreceiver", "rx_exit"},
@@ -229,6 +248,9 @@ class CmdProxy {
                                     
                                     {"busy", "clearbusy"},
                                     {"detectorversion", "firmwareversion"},
+                                    {"softwareversion", "detectorserverversion"},
+                                    {"receiverversion", "rx_version"},
+                                    {"thisversion", "clientversion"},
                                     
                                     };
 
@@ -267,9 +289,18 @@ class CmdProxy {
                           
                           {"config", &CmdProxy::config},
                           {"parameters", &CmdProxy::parameters},
-                          {"savepattern", &CmdProxy::savepattern},
                           {"hostname", &CmdProxy::Hostname},
+                          {"versions", &CmdProxy::Versions},
+                          {"packageversion", &CmdProxy::PackageVersion},
+                          {"clientversion", &CmdProxy::ClientVersion},
                           {"firmwareversion", &CmdProxy::FirmwareVersion},
+                          {"detectorserverversion", &CmdProxy::detectorserverversion},
+                          {"rx_version", &CmdProxy::rx_version},
+                          {"type", &CmdProxy::type},
+                          
+                          
+                          
+
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
                           {"trigger", &CmdProxy::trigger},
@@ -277,8 +308,10 @@ class CmdProxy {
                           {"rx_start", &CmdProxy::rx_start},
                           {"rx_stop", &CmdProxy::rx_stop},
                           {"rx_status", &CmdProxy::rx_status}, 
-                          {"clearbusy", &CmdProxy::clearbusy}                         
-                          
+                          {"clearbusy", &CmdProxy::clearbusy},   
+
+
+                          {"savepattern", &CmdProxy::savepattern}                         
                           };
 
 
@@ -291,7 +324,9 @@ class CmdProxy {
     std::string SubExptime(int action);
     std::string Hostname(int action); 
     std::string FirmwareVersion(int action);     
-
+    std::string Versions(int action); 
+    std::string PackageVersion(int action);     
+    std::string ClientVersion(int action); 
 
     INTEGER_COMMAND(
         rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
@@ -386,9 +421,17 @@ class CmdProxy {
 
     EXECUTE_SET_COMMAND_NOID_1ARG(parameters, loadParameters, 
                 "[fname]\n\tSets detector measurement parameters to those contained in fname. Set up per measurement.");  
+    
+    EXECUTE_GET_COMMAND_HEX(detectorserverversion, getDetectorServerVersion, 
+                "\n\tOn-board detector server software version in format [0xYYMMDD].");   
 
-    EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
-                "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern.");  
+    EXECUTE_GET_COMMAND_HEX(rx_version, getReceiverVersion, 
+                "\n\tReceiver version in format [0xYYMMDD].");   
+
+    EXECUTE_GET_COMMAND(type, getDetectorType, 
+                "\n\tDetector type[Eiger|Gotthard|Jungfrau|JungfrauCTB|Moench|Mythen3|Gotthard2].");   
+                
+                                        
 
     EXECUTE_SET_COMMAND_NOID(start, startDetector, 
                 "\n\tStarts detector state machine.");  
@@ -413,6 +456,11 @@ class CmdProxy {
 
     EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
                 "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  
+
+    
+    
+    EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
+                "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
 
 };
 

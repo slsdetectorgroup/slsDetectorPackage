@@ -25,10 +25,6 @@ void Detector::loadParameters(const std::string &fname) {
     pimpl->loadParameters(fname);
 }
 
-void Detector::savePattern(const std::string &fname) {
-    pimpl->savePattern(fname);
-}
-
 Result<std::string> Detector::getHostname(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getHostname, pos);
 }
@@ -38,6 +34,14 @@ void Detector::setHostname(const std::vector<std::string> &value) {
 }
 
 int Detector::getShmId() const { return pimpl->getMultiId(); }
+
+std::string Detector::getPackageVersion() const {
+    return pimpl->getPackageVersion();
+}
+
+int64_t Detector::getClientVersion() const {
+    return pimpl->getClientSoftwareVersion();
+}
 
 Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getId, pos,
@@ -52,10 +56,6 @@ Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
 Result<int64_t> Detector::getSerialNumber(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getId, pos,
                            defs::DETECTOR_SERIAL_NUMBER);
-}
-
-int64_t Detector::getClientVersion() const {
-    return pimpl->getClientSoftwareVersion();
 }
 
 Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
@@ -1282,6 +1282,10 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 }
 
 // Pattern
+
+void Detector::savePattern(const std::string &fname) {
+    pimpl->savePattern(fname);
+}
 
 void Detector::setPattern(const std::string &fname, Positions pos) {
     pimpl->Parallel(&slsDetector::setPattern, pos, fname);

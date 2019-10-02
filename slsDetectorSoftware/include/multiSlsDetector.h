@@ -262,6 +262,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int getMultiId() const { return multiId; } // part of multi also
 
     /**
+     * Get package version (git branch)
+     * @returns package version
+     */
+    std::string getPackageVersion() const;
+    
+    /**
      * Get Client Software version
      * @returns client software version
      */

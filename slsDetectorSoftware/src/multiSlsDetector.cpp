@@ -164,6 +164,8 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+std::string multiSlsDetector::getPackageVersion() const { return GITBRANCH; }
+
 int64_t multiSlsDetector::getClientSoftwareVersion() const { return APILIB; }
 
 int64_t multiSlsDetector::getReceiverSoftwareVersion(int detPos) {

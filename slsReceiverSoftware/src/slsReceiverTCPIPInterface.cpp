@@ -448,6 +448,7 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::get_id(Interface &socket) {
+    cprintf(BLUE, "IN EHERHE\n");
     return socket.sendResult(getReceiverVersion());
 }
 

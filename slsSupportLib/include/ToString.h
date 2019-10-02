@@ -40,6 +40,27 @@ inline std::string ToString(const slsDetectorDefs::runStatus s){
     }
 }
 
+inline std::string ToString(const slsDetectorDefs::detectorType s){
+    switch (s) {
+    case slsDetectorDefs::EIGER:
+        return std::string("Eiger");
+    case slsDetectorDefs::GOTTHARD:
+        return std::string("Gotthard");
+    case slsDetectorDefs::JUNGFRAU:
+        return std::string("Jungfrau");
+    case slsDetectorDefs::CHIPTESTBOARD:
+        return std::string("JungfrauCTB");
+    case slsDetectorDefs::MOENCH:
+        return std::string("Moench");
+    case slsDetectorDefs::MYTHEN3:
+        return std::string("Mythen3");
+    case slsDetectorDefs::GOTTHARD2:
+        return std::string("Gotthard2");            
+    default:
+        return std::string("Unknown");
+    }
+}
+
 // in case we already have a string 
 // causes a copy but might be needed in generic code
 inline std::string ToString(const std::string& s){

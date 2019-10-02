@@ -52,13 +52,16 @@ class Detector {
     /** Gets shared memory ID */
     int getShmId() const;
 
+    /** package git branch */
+    std::string getPackageVersion() const;
+
+    int64_t getClientVersion() const;
+
     Result<int64_t> getFirmwareVersion(Positions pos = {}) const;
 
     Result<int64_t> getDetectorServerVersion(Positions pos = {}) const;
 
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
-
-    int64_t getClientVersion() const;
 
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
 

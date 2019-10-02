@@ -26,20 +26,17 @@
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             auto t = det->GETFCN({det_id});                                    \
-            if (args.size() == 0) {                                            \
-                os << OutString(t) << '\n';                                    \
-            } else {                                                           \
-                WrongNumberOfParameters(2);                                    \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
             }                                                                  \
+            os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            if (args.size() == 1) {                                            \
-                auto val = CONV(args[0]);                                      \
-                det->SETFCN(val, {det_id});                                    \
-                os << args.front() << '\n';                                    \
-            } else {                                                           \
+            if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-                                                                               \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val, {det_id});                                        \
+            os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -58,20 +55,17 @@
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             auto t = det->GETFCN();                                            \
-            if (args.size() == 0) {                                            \
-                os << OutString(t) << '\n';                                    \
-            } else {                                                           \
-                WrongNumberOfParameters(2);                                    \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
             }                                                                  \
+            os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            if (args.size() == 1) {                                            \
-                auto val = CONV(args[0]);                                      \
-                det->SETFCN(val);                                              \
-                os << args.front() << '\n';                                    \
-            } else {                                                           \
+            if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-                                                                               \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val);                                                  \
+            os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -91,6 +85,9 @@
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             throw sls::RuntimeError("Cannot get");                             \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
             det->SETFCN();                                                     \
             os << "successful\n";                                              \
         } else {                                                               \
@@ -109,6 +106,9 @@
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             throw sls::RuntimeError("Cannot get");                             \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
             det->SETFCN({det_id});                                             \
             os << "successful\n";                                              \
         } else {                                                               \
@@ -117,6 +117,31 @@
         return os.str();                                                       \
     }
 
+/** 1 argument, no id, set only */
+#define EXECUTE_SET_COMMAND_NOID_1ARG(CMDNAME, SETFCN, HLPSTR)                 \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (det_id != -1) {                                                    \
+            throw sls::RuntimeError("Cannot execute this at module level");    \
+        }                                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            throw sls::RuntimeError("Cannot get");                             \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            det->SETFCN(args[0]);                                              \
+            os << "successful\n";                                              \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+/** get only */
 #define EXECUTE_GET_COMMAND(CMDNAME, GETFCN, HLPSTR)                           \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -125,7 +150,7 @@
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             if (args.size() != 0) {                                            \
-                WrongNumberOfParameters(2);                                    \
+                WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN({det_id});                                    \
             os << OutString(t) << '\n';                                        \
@@ -233,6 +258,10 @@ class CmdProxy {
                           {"numinterfaces", &CmdProxy::numinterfaces},
                           {"selinterface", &CmdProxy::selinterface},
                           
+                          {"config", &CmdProxy::config},
+                          {"parameters", &CmdProxy::parameters},
+                          {"savepattern", &CmdProxy::savepattern},
+                          {"hostname", &CmdProxy::Hostname},
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
                           {"trigger", &CmdProxy::trigger},
@@ -252,6 +281,7 @@ class CmdProxy {
     std::string Period(int action);
     std::string Exptime(int action);
     std::string SubExptime(int action);
+    std::string Hostname(int action); 
 
 
     INTEGER_COMMAND(
@@ -339,6 +369,17 @@ class CmdProxy {
 
     INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode, std::stoi,
                     "[0, 1]\n\tEnable or disable store in ram mode. [Eiger]");      
+
+
+
+    EXECUTE_SET_COMMAND_NOID_1ARG(config, loadConfig, 
+                "[fname]\n\tConfigures detector to configuration contained in fname. Set up once.");  
+
+    EXECUTE_SET_COMMAND_NOID_1ARG(parameters, loadParameters, 
+                "[fname]\n\tSets detector measurement parameters to those contained in fname. Set up per measurement.");  
+
+    EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
+                "[fname]\n\tSaves pattern to file (ascii). Also executes pattern.[ctb]");  
 
     EXECUTE_SET_COMMAND_NOID(start, startDetector, 
                 "\n\tStarts detector state machine.");  

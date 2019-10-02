@@ -234,13 +234,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>hostname</b> \c put frees shared memory and sets the hostname (or IP adress). Only allowed at multi detector level. \c Returns the list of the hostnames of the multi-detector structure. \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "hostname";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHostname;
-    ++i;
-
-    /*! \page config
    - <b>virtual [n] [p]</b> \c connects to n virtual detector servers at local host starting at port p \c Returns the list of the hostnames of the multi-detector structure. \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "virtual";
@@ -752,32 +745,11 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to configure/retrieve configuration of detector
 	 */
 
-    /*! \page config
-   - <b>config [fname]</b> sets/saves detector/receiver to configuration contained in fname. Same as executing sls_detector_put for every line. Normally a one time operation. \c Returns \c (string) fname
-	 */
-    descrToFuncMap[i].m_pFuncName = "config";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfiguration;
-    ++i;
-
     /* settings dump/retrieve */
     /*! \page config
    - <b>rx_printconfig</b> prints the receiver configuration. Only get! \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_printconfig";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfiguration;
-    ++i;
-
-    /*! \page config
-   - <b>parameters [fname]</b> sets/saves detector parameters contained in fname. Normally once per different measurement. \c Returns \c (string) fname
-	 */
-    descrToFuncMap[i].m_pFuncName = "parameters";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfiguration;
-    ++i;
-
-    /*! \page config
-   - <b>setup [fname]</b> sets/saves detector complete setup contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc.  \c Returns \c (string) fname
-	 */
-    descrToFuncMap[i].m_pFuncName = "setup";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfiguration;
     ++i;
 
@@ -1734,14 +1706,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page prototype
-   - <b>savepattern fn</b> save pattern to file (ascii). This also executes the pattern.
-	 */
-    descrToFuncMap[i].m_pFuncName = "savepattern";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
+     /*! \page prototype
    - <b>patword addr [word]</b> sets/gets 64 bit word at address addr of pattern memory. Both address and word in hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patword";
@@ -1882,7 +1847,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 //-----------------------------------------------------------
 
 std::string slsDetectorCommand::executeLine(int narg, const char * const args[], int action, int detPos) {
-
     if (action == READOUT_ACTION)
         return cmdAcquire(narg, args, action, detPos);
 
@@ -2078,18 +2042,7 @@ std::string slsDetectorCommand::cmdHostname(int narg, const char * const args[],
                                "multiDetector level");
         }
 
-        char hostname[1000];
-        strcpy(hostname, "");
-        // if each argument is a hostname
-        for (int id = 1; id < narg; ++id) {
-            strcat(hostname, args[id]);
-            if (narg > 2)
-                strcat(hostname, "+");
-        }
-        if (cmd == "hostname") {
-            myDet->setHostname(hostname, detPos);
-        } 
-        else if (cmd == "virtual") {
+        if (cmd == "virtual") {
             int port = -1;
             int numDetectors = 0;
             if (!sscanf(args[1], "%d", &numDetectors)) {
@@ -2108,12 +2061,8 @@ std::string slsDetectorCommand::cmdHostname(int narg, const char * const args[],
 
 std::string slsDetectorCommand::helpHostname(int action) {
     std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << std::string("hostname \t returns the hostname(s) of the multi detector structure.\n");
-    }
+
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << std::string("hostname name [name name]\t frees shared memory and "
-                          "sets the hostname (or IP adress). Only allowed at multi detector level.\n");
         os << std::string("virtual [n] [p]\t connects to n virtual detector servers at local host starting at port p \n");
     }
     return os.str();
@@ -4231,63 +4180,20 @@ std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const ar
     if (action == HELP_ACTION)
         return helpConfiguration(action);
 
-    std::string sval;
-
-    if (narg < 2 && cmd != "rx_printconfig")
-        return std::string("should specify I/O file");
-
-
-    if (cmd == "config") {
-        if (action == PUT_ACTION) {
-            sval = std::string(args[1]);
-            myDet->readConfigurationFile(sval);
-        } else if (action == GET_ACTION) {
-            sval = std::string(args[1]);
-            myDet->writeConfigurationFile(sval);
-        }
-        return sval;
-    } else if (cmd == "rx_printconfig") {
+    if (cmd == "rx_printconfig") {
         if (action == PUT_ACTION)
             return std::string("cannot put");
         return myDet->printReceiverConfiguration(detPos);
-    } else if (cmd == "parameters") {
-        if (action == PUT_ACTION) {
-            sval = std::string(args[1]);
-            myDet->retrieveDetectorSetup(sval, 0);
-        } else if (action == GET_ACTION) {
-            sval = std::string(args[1]);
-            myDet->dumpDetectorSetup(sval, 0);
-        }
-        return sval;
-    } else if (cmd == "setup") {
-        if (action == PUT_ACTION) {
-            sval = std::string(args[1]);
-            myDet->retrieveDetectorSetup(sval, 2);
-        } else if (action == GET_ACTION) {
-            sval = std::string(args[1]);
-            myDet->dumpDetectorSetup(sval, 2);
-        }
-        return sval;
-    }
+    } 
     return std::string("could not decode conf mode");
 }
 
 std::string slsDetectorCommand::helpConfiguration(int action) {
 
     std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-
-        os << "config fname \t sets the detector to the configuration contained in fname" << std::endl;
-        os << "parameters fname \t sets the detector parameters to those contained in fname" << std::endl;
-        os << "setup fname \t sets the detector complete detector setup to that contained in fname (extensions automatically generated), including trimfiles, ff coefficients etc." << std::endl;
-    }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "rx_printconfig \t prints the receiver configuration" << std::endl;
-        os << "config fname \t saves the detector to the configuration to fname" << std::endl;
-        os << "parameters fname \t saves the detector parameters to  fname" << std::endl;
-        os << "setup fname \t saves the detector complete detector setup to  fname (extensions automatically generated), including trimfiles, ff coefficients etc." << std::endl;
     }
-
     return os.str();
 }
 
@@ -4497,13 +4403,6 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
             os << "successful";
         } else if (action == GET_ACTION)
             os << "Cannot get";
-    } else if (cmd == "savepattern") {
-        if (narg < 2) {
-            return helpPattern(action);
-        }
-        fname = std::string(args[1]);
-        myDet->savePattern(args[1]);
-        os << "Pattern executed and saved to " << fname;
     } else if (cmd == "patword") {
 
         if (action == PUT_ACTION) {

@@ -3092,11 +3092,8 @@ void multiSlsDetector::setDigitalIODelay(uint64_t pinMask, int delay,
     parallelCall(&slsDetector::setDigitalIODelay, pinMask, delay);
 }
 
-int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
-                                            int level) {
+int multiSlsDetector::loadParameters(const std::string &fname) {
 
-    int skip = 0;
-    std::string fname;
     std::string str;
     std::ifstream infile;
     int iargval;
@@ -3107,13 +3104,6 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
 
     std::string sargname, sargval;
     int iline = 0;
-
-    if (level == 2) {
-        FILE_LOG(logDEBUG1) << "config file read";
-        fname = fname1 + std::string(".det");
-    } else {
-        fname = fname1;
-    }
 
     infile.open(fname.c_str(), std::ios_base::in);
     if (infile.is_open()) {
@@ -3132,22 +3122,12 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
                 iargval = 0;
                 while (ssstr.good()) {
                     ssstr >> sargname;
-                    //  if (ssstr.good()) {
                     sls::strcpy_safe(myargs[iargval], sargname.c_str());
                     args[iargval] = myargs[iargval];
                     FILE_LOG(logDEBUG1) << args[iargval];
                     iargval++;
-                    // }
-                    skip = 0;
                 }
-                if (level != 2) {
-                    if (std::string(args[0]) == std::string("trimbits")) {
-                        skip = 1;
-                    }
-                }
-                if (skip == 0) {
-                    cmd.executeLine(iargval, args, PUT_ACTION);
-                }
+                cmd.executeLine(iargval, args, PUT_ACTION);
             }
             iline++;
         }
@@ -3160,122 +3140,6 @@ int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
     return OK;
 }
 
-int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
-    detectorType type = getDetectorTypeAsEnum();
-    std::vector<std::string> names;
-    // common config
-    names.emplace_back("fname");
-    names.emplace_back("index");
-    names.emplace_back("enablefwrite");
-    names.emplace_back("overwrite");
-    names.emplace_back("dr");
-    names.emplace_back("settings");
-    names.emplace_back("exptime");
-    names.emplace_back("period");
-    names.emplace_back("frames");
-    names.emplace_back("cycles");
-    names.emplace_back("timing");
-
-    switch (type) {
-    case EIGER:
-        names.emplace_back("flags");
-        names.emplace_back("clkdivider");
-        names.emplace_back("threshold");
-        names.emplace_back("ratecorr");
-        names.emplace_back("trimbits");
-        break;
-    case GOTTHARD:
-        names.emplace_back("delay");
-        break;
-    case JUNGFRAU:
-        names.emplace_back("delay");
-        names.emplace_back("clkdivider");
-        break;
-    case CHIPTESTBOARD:
-        names.emplace_back("dac:0");
-        names.emplace_back("dac:1");
-        names.emplace_back("dac:2");
-        names.emplace_back("dac:3");
-        names.emplace_back("dac:4");
-        names.emplace_back("dac:5");
-        names.emplace_back("dac:6");
-        names.emplace_back("dac:7");
-        names.emplace_back("dac:8");
-        names.emplace_back("dac:9");
-        names.emplace_back("dac:10");
-        names.emplace_back("dac:11");
-        names.emplace_back("dac:12");
-        names.emplace_back("dac:13");
-        names.emplace_back("dac:14");
-        names.emplace_back("dac:15");
-        names.emplace_back("dac:16");
-        names.emplace_back("dac:17");
-        names.emplace_back("dac:18");
-        names.emplace_back("dac:19");
-        names.emplace_back("dac:20");
-        names.emplace_back("dac:21");
-        names.emplace_back("dac:22");
-        names.emplace_back("dac:23");
-        names.emplace_back("adcvpp");
-        names.emplace_back("adcclk");
-        names.emplace_back("clkdivider");
-        names.emplace_back("adcphase");
-        names.emplace_back("adcpipeline");
-        names.emplace_back("adcinvert"); //
-        names.emplace_back("adcdisable");
-        names.emplace_back("patioctrl");
-        names.emplace_back("patclkctrl");
-        names.emplace_back("patlimits");
-        names.emplace_back("patloop0");
-        names.emplace_back("patnloop0");
-        names.emplace_back("patwait0");
-        names.emplace_back("patwaittime0");
-        names.emplace_back("patloop1");
-        names.emplace_back("patnloop1");
-        names.emplace_back("patwait1");
-        names.emplace_back("patwaittime1");
-        names.emplace_back("patloop2");
-        names.emplace_back("patnloop2");
-        names.emplace_back("patwait2");
-        names.emplace_back("patwaittime2");
-        break;
-    default:
-        break;
-    }
-
-    // Workaround to bo able to suplly ecexuteLine with char**
-    const int n_arguments = 1;
-    char buffer[1000]; // TODO! this should not be hardcoded!
-    char *args[n_arguments] = {buffer};
-
-    std::string outfname;
-    if (level == 2) {
-        writeConfigurationFile(fname + ".config");
-        outfname = fname + ".det";
-    } else {
-        outfname = fname;
-    }
-
-    std::ofstream outfile;
-    outfile.open(outfname.c_str(), std::ios_base::out);
-    if (outfile.is_open()) {
-        auto cmd = slsDetectorCommand(this);
-        for (auto &name : names) {
-            sls::strcpy_safe(buffer, name.c_str()); // this is...
-            outfile << name << " "
-                    << cmd.executeLine(n_arguments, args, GET_ACTION)
-                    << std::endl;
-        }
-        outfile.close();
-    } else {
-        throw RuntimeError("Error opening parameters file " + fname +
-                           " for writing");
-    }
-
-    FILE_LOG(logDEBUG1) << "wrote " << names.size() << " lines to  "
-                        << outfname;
-    return OK;
-}
 
 void multiSlsDetector::registerAcquisitionFinishedCallback(
     void (*func)(double, int, void *), void *pArg) {

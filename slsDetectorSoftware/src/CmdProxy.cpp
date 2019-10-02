@@ -125,16 +125,54 @@ std::string CmdProxy::Period(int action) {
     TIME_COMMAND(getPeriod, setPeriod,
                  "[duration] [(optional unit) ns|us|ms|s]\n\tSet the period");
 }
+
 std::string CmdProxy::Exptime(int action) {
     TIME_COMMAND(
         getExptime, setExptime,
         "[duration] [(optional unit) ns|us|ms|s]\n\tSet the exposure time");
 }
+
 std::string CmdProxy::SubExptime(int action) {
     TIME_COMMAND(getSubExptime, setSubExptime,
                  "[duration] [(optional unit) ns|us|ms|s]\n\tSet the "
                  "exposure time of EIGER subframes");
 }
+
+std::string CmdProxy::Hostname(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "Frees shared memory and sets hostname (or IP address) of all modules concatenated by +." << '\n';   
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getHostname({det_id});
+        os << OutString(t) << '\n';
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() < 1) {
+            WrongNumberOfParameters(1);
+        } 
+        if (det_id != -1) { 
+            throw sls::RuntimeError("Cannot execute this at module level");
+        }
+        // only args[0] with + concatenation
+        if (args[0].find('+') != std::string::npos) {
+            auto t = sls::split(args[0], '+');
+            det->setHostname(t);
+            os << ToString(t) << '\n';           
+        }
+        // args without + 
+        else  {
+            det->setHostname(args);
+            os << ToString(args) << '\n';
+        }
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 
 std::string CmdProxy::ListCommands(int action) {
     if (action == slsDetectorDefs::HELP_ACTION)

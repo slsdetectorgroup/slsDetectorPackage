@@ -22,7 +22,7 @@ void Detector::loadConfig(const std::string &fname) {
 }
 
 void Detector::loadParameters(const std::string &fname) {
-    pimpl->retrieveDetectorSetup(fname, 0);
+    pimpl->loadParameters(fname);
 }
 
 void Detector::savePattern(const std::string &fname) {

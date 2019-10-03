@@ -13,6 +13,7 @@
 #include "container_utils.h"
 #include "network_utils.h"
 #include "string_utils.h"
+#include "ToString.h"
 
 #include <cstring>
 #include <iomanip>
@@ -242,8 +243,7 @@ std::string multiSlsDetector::getUserDetails() {
     sstream << "\nType: ";
     // get type from multi shm
     if (multi_shm()->shmversion >= MULTI_SHMAPIVERSION) {
-        sstream << slsDetectorDefs::detectorTypeToString(
-            getDetectorTypeAsEnum());
+        sstream << ToString(getDetectorTypeAsEnum());
     }
     // get type from slsdet shm
     else {

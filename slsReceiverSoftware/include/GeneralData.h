@@ -12,6 +12,7 @@
 #include "logger.h"
 #include <cmath>			//ceil
 #include <vector>
+#include "ToString.h"
 
 
 class GeneralData {
@@ -218,7 +219,7 @@ public:
 	 */
 	virtual void Print(TLogLevel level = logDEBUG1) const {
 		FILE_LOG(level) << "\n\nDetector Data Variables:";
-		FILE_LOG(level) << "myDetectorType: " << slsDetectorDefs::detectorTypeToString(myDetectorType);
+		FILE_LOG(level) << "myDetectorType: " << sls::ToString(myDetectorType);
 		FILE_LOG(level) << "Pixels X: " << nPixelsX;
 		FILE_LOG(level) << "Pixels Y: " << nPixelsY;
 		FILE_LOG(level) << "Header Size in Packet: " << headerSizeinPacket;

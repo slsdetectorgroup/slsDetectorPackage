@@ -550,7 +550,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeAsEnum() const {
 }
 
 std::string slsDetector::getDetectorTypeAsString() const {
-    return slsDetectorDefs::detectorTypeToString(getDetectorTypeAsEnum());
+    return ToString(getDetectorTypeAsEnum());
 }
 
 void slsDetector::updateNumberOfChannels() {
@@ -1148,7 +1148,7 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus() const {
     runStatus retval = ERROR;
     FILE_LOG(logDEBUG1) << "Getting status";
     sendToDetectorStop(F_GET_RUN_STATUS, nullptr, retval);
-    FILE_LOG(logDEBUG1) << "Detector status: " << sls::ToString(retval);
+    FILE_LOG(logDEBUG1) << "Detector status: " << ToString(retval);
     return retval;
 }
 
@@ -1632,7 +1632,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
 
     FILE_LOG(logDEBUG)
         << "detector type:"
-        << (slsDetectorDefs::detectorTypeToString(shm()->myDetectorType))
+        << (ToString(shm()->myDetectorType))
         << "\ndetector id:" << detId
         << "\ndetector hostname:" << shm()->hostname
         << "\nfile path:" << shm()->rxFilePath
@@ -3145,7 +3145,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() const {
     FILE_LOG(logDEBUG1) << "Getting Receiver Status";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_RECEIVER_STATUS, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Receiver Status: " << sls::ToString(retval);
+        FILE_LOG(logDEBUG1) << "Receiver Status: " << ToString(retval);
     }
     return retval;
 }

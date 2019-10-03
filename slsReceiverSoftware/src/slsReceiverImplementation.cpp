@@ -1123,7 +1123,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
-        FILE_LOG(logINFO) << " ***** " << detectorTypeToString(d)
+        FILE_LOG(logINFO) << " ***** " << sls::ToString(d)
                           << " Receiver *****";
         break;
     default:
@@ -1197,7 +1197,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
         it->SetGeneralData(generalData);
     SetThreadPriorities();
 
-    FILE_LOG(logDEBUG) << " Detector type set to " << detectorTypeToString(d);
+    FILE_LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
     return OK;
 }
 

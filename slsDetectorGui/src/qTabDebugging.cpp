@@ -90,7 +90,7 @@ void qTabDebugging::GetInfo() {
     //to make sure the size is constant
     lblDetectorFirmware->setFixedWidth(100);
     layout->addWidget(dispFrame, 0, 1);
-    QString detName = QString(slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()).c_str());
+    QString detName = QString(sls::ToString(det->getDetectorType().squash()).c_str());
 
     switch (det->getDetectorType().squash()) {
 

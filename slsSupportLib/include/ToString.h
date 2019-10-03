@@ -18,48 +18,52 @@
 #include <type_traits>
 #include <vector>
 
+
 namespace sls {
 
+using defs = slsDetectorDefs;
 
-inline std::string ToString(const slsDetectorDefs::runStatus s){
+inline std::string ToString(const defs::runStatus s){
     switch (s) {
-    case slsDetectorDefs::ERROR:
+    case defs::ERROR:
         return std::string("error");
-    case slsDetectorDefs::WAITING:
+    case defs::WAITING:
         return std::string("waiting");
-    case slsDetectorDefs::RUNNING:
+    case defs::RUNNING:
         return std::string("running");
-    case slsDetectorDefs::TRANSMITTING:
+    case defs::TRANSMITTING:
         return std::string("data");
-    case slsDetectorDefs::RUN_FINISHED:
+    case defs::RUN_FINISHED:
         return std::string("finished");
-    case slsDetectorDefs::STOPPED:
+    case defs::STOPPED:
         return std::string("stopped");
     default:
         return std::string("idle");
     }
 }
 
-inline std::string ToString(const slsDetectorDefs::detectorType s){
+inline std::string ToString(const defs::detectorType s){
     switch (s) {
-    case slsDetectorDefs::EIGER:
+    case defs::EIGER:
         return std::string("Eiger");
-    case slsDetectorDefs::GOTTHARD:
+    case defs::GOTTHARD:
         return std::string("Gotthard");
-    case slsDetectorDefs::JUNGFRAU:
+    case defs::JUNGFRAU:
         return std::string("Jungfrau");
-    case slsDetectorDefs::CHIPTESTBOARD:
+    case defs::CHIPTESTBOARD:
         return std::string("JungfrauCTB");
-    case slsDetectorDefs::MOENCH:
+    case defs::MOENCH:
         return std::string("Moench");
-    case slsDetectorDefs::MYTHEN3:
+    case defs::MYTHEN3:
         return std::string("Mythen3");
-    case slsDetectorDefs::GOTTHARD2:
-        return std::string("Gotthard2");            
+    case defs::GOTTHARD2:
+        return std::string("Gotthard2");  
     default:
-        return std::string("Unknown");
+        return std::string("Unknown"); //TODO: check if generic or get detector type are used anywhere?          
     }
 }
+
+
 
 // in case we already have a string 
 // causes a copy but might be needed in generic code
@@ -244,9 +248,24 @@ template <typename T> T StringTo(const std::string& t) {
     return StringTo<T>(tmp, unit);
 }
 
+//most likely hardly use
 template <>
-inline slsDetectorDefs::detectorType StringTo(const std::string& s){
-    return slsDetectorDefs::detectorTypeToEnum(s);
+inline defs::detectorType StringTo(const std::string& s){
+    if (s == "Eiger")
+        return defs::EIGER;
+    if (s == "Gotthard")
+        return defs::GOTTHARD;
+    if (s == "Jungfrau")
+        return defs::JUNGFRAU;
+    if (s == "JungfrauCTB")
+        return defs::CHIPTESTBOARD;
+    if (s == "Moench")
+        return defs::MOENCH;
+    if (s == "Mythen3")
+        return defs::MYTHEN3;
+    if (s == "Gotthard2")
+        return defs::GOTTHARD2;            
+    return defs::GENERIC;
 }
 
 /** For types with a .str() method use this for conversion */

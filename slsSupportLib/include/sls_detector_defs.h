@@ -566,53 +566,6 @@ format
             return std::string("disabled");
     };
 
-    /** returns detector type string from detector type index
-        \param t string can be EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3, GOTTHARD2
-        \returns Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3, Gotthard2, Unknown
-    */
-    static std::string detectorTypeToString(detectorType t) {
-        switch (t) {
-        case EIGER:
-            return std::string("Eiger");
-        case GOTTHARD:
-            return std::string("Gotthard");
-        case JUNGFRAU:
-            return std::string("Jungfrau");
-        case CHIPTESTBOARD:
-            return std::string("JungfrauCTB");
-        case MOENCH:
-            return std::string("Moench");
-        case MYTHEN3:
-            return std::string("Mythen3");
-        case GOTTHARD2:
-            return std::string("Gotthard2");            
-        default:
-            return std::string("Unknown");
-        }
-    };
-
-    /** returns detector type index from detector type string
-        \param type can be Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3, Gotthard2
-        \returns  EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3, GOTTHARD2, GENERIC
-    */
-    static detectorType detectorTypeToEnum(const std::string &type) {
-        if (type == "Eiger")
-            return EIGER;
-        if (type == "Gotthard")
-            return GOTTHARD;
-        if (type == "Jungfrau")
-            return JUNGFRAU;
-        if (type == "JungfrauCTB")
-            return CHIPTESTBOARD;
-        if (type == "Moench")
-            return MOENCH;
-        if (type == "Mythen3")
-            return MYTHEN3;
-        if (type == "Gotthard2")
-            return GOTTHARD2;            
-        return GENERIC;
-    };
-
 
     /** returns string from file format index
         \param s can be BINARY, HDF5
@@ -1180,9 +1133,7 @@ struct detParameters {
             nGappixelsY = 0;
             break;    
         default:
-            throw sls::RuntimeError(
-                "Unknown detector type! " +
-                slsDetectorDefs::detectorTypeToString(type));
+            throw sls::RuntimeError("Unknown detector type! " + std::to_string(type));
         }
     }
 };

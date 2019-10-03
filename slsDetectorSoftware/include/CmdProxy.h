@@ -17,7 +17,33 @@
  * HLPSTR Help string for --help and docs
  */
 
-/** get, int argument for set, id */
+/** string  */
+#define STRING_COMMAND(CMDNAME, GETFCN, SETFCN, HLPSTR)                        \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            auto t = det->GETFCN({det_id});                                    \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            det->SETFCN(args[0], {det_id});                                    \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+
+/** int */
 #define INTEGER_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)                 \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -43,7 +69,7 @@
         return os.str();                                                       \
     }
 
-/** get, int argument for set, no id */
+/** int, no id */
 #define INTEGER_COMMAND_NOID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)            \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -72,7 +98,7 @@
         return os.str();                                                       \
     }
 
-/** no arguments, no id, set only */
+/** set only, no arguments, no id */
 #define EXECUTE_SET_COMMAND_NOID(CMDNAME, SETFCN, HLPSTR)                      \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -96,7 +122,7 @@
         return os.str();                                                       \
     }
 
-/** no arguments, id, set only */
+/** set only, no arguments */
 #define EXECUTE_SET_COMMAND(CMDNAME, SETFCN, HLPSTR)                           \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -117,7 +143,7 @@
         return os.str();                                                       \
     }
 
-/** 1 argument, no id, set only */
+/** set only, 1 argument, no id */
 #define EXECUTE_SET_COMMAND_NOID_1ARG(CMDNAME, SETFCN, HLPSTR)                 \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -134,7 +160,7 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             det->SETFCN(args[0]);                                              \
-            os << "successful\n";                                              \
+            os << args[0] << '\n';                                             \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -251,6 +277,7 @@ class CmdProxy {
                                     {"softwareversion", "detectorserverversion"},
                                     {"receiverversion", "rx_version"},
                                     {"thisversion", "clientversion"},
+                                    {"detsizechan", "detsize"},
                                     
                                     };
 
@@ -296,7 +323,9 @@ class CmdProxy {
                           {"firmwareversion", &CmdProxy::FirmwareVersion},
                           {"detectorserverversion", &CmdProxy::detectorserverversion},
                           {"rx_version", &CmdProxy::rx_version},
+                          {"detectornumber", &CmdProxy::detectornumber},
                           {"type", &CmdProxy::type},
+                          {"detsize", &CmdProxy::DetectorSize},
                           
                           
                           
@@ -308,7 +337,11 @@ class CmdProxy {
                           {"rx_start", &CmdProxy::rx_start},
                           {"rx_stop", &CmdProxy::rx_stop},
                           {"rx_status", &CmdProxy::rx_status}, 
-                          {"clearbusy", &CmdProxy::clearbusy},   
+                          {"clearbusy", &CmdProxy::clearbusy}, 
+                          
+                          
+                          {"rx_hostname", &CmdProxy::rx_hostname},  
+            
 
 
                           {"savepattern", &CmdProxy::savepattern}                         
@@ -326,7 +359,8 @@ class CmdProxy {
     std::string FirmwareVersion(int action);     
     std::string Versions(int action); 
     std::string PackageVersion(int action);     
-    std::string ClientVersion(int action); 
+    std::string ClientVersion(int action);
+    std::string DetectorSize(int action);
 
     INTEGER_COMMAND(
         rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
@@ -428,10 +462,13 @@ class CmdProxy {
     EXECUTE_GET_COMMAND_HEX(rx_version, getReceiverVersion, 
                 "\n\tReceiver version in format [0xYYMMDD].");   
 
+    EXECUTE_GET_COMMAND_HEX(detectornumber, getSerialNumber, 
+                "\n\tReceiver version in format [0xYYMMDD].");   
+
     EXECUTE_GET_COMMAND(type, getDetectorType, 
-                "\n\tDetector type[Eiger|Gotthard|Jungfrau|JungfrauCTB|Moench|Mythen3|Gotthard2].");   
-                
-                                        
+                "\n\tSerial number or MAC of detector (hex).");   
+
+
 
     EXECUTE_SET_COMMAND_NOID(start, startDetector, 
                 "\n\tStarts detector state machine.");  
@@ -458,6 +495,11 @@ class CmdProxy {
                 "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  
 
     
+
+    STRING_COMMAND(rx_hostname, getRxHostname, setRxHostname, 
+                "\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");
+
+
     
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
                 "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 

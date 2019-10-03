@@ -9,7 +9,17 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("detsize", "[.cmd]") {
+    CHECK_NOTHROW(multiSlsDetectorClient("detize", GET));
+}
 
+TEST_CASE("type", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        CHECK_NOTHROW(multiSlsDetectorClient("type", GET, nullptr, oss));
+        REQUIRE(oss.str() == test::detector_type);
+    }
+}
 TEST_CASE("firmwareversion", "[.cmd]") {
     {
         std::ostringstream oss;

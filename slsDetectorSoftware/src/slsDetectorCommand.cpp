@@ -288,13 +288,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>detsizechan [xmax] [ymax]</b> sets the maximum number of channels in each dimension for complete detector set; 0 is no limit. Use for multi-detector system as first command in config file. \c Returns \c ("int int")
-	 */
-    descrToFuncMap[i].m_pFuncName = "detsizechan";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
-    ++i;
-
-    /*! \page config
    - <b>quad [i] </b> if 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default. \c Returns \c (int)
 	 */
 	descrToFuncMap[i].m_pFuncName="quad"; //
@@ -469,14 +462,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
     ++i;
 
-    /*! \page config
-   - <b>detectornumber</b> Gets the serial number or MAC of detector. Only get! \c Returns \c (long int) in hexadecimal
-	 */
-    descrToFuncMap[i].m_pFuncName = "detectornumber";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
-    ++i;
-
-   
+  
     /* r/w timers */
 
     /*! \page timing
@@ -1415,15 +1401,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /* communication configuration */
 
-    /*! \page network Network
-    Commands to setup the network between client, detector and receiver
-    - <b>rx_hostname [s]</b> sets/gets the receiver hostname or IP address, configures detector mac with all network parameters and updates receiver with acquisition parameters. Normally used for single detectors (Can be multi-detector). \c none disables. If used, use as last network command in configuring detector MAC. \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_hostname";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
-
-    /*! \page network
+   /*! \page network
    - <b>rx_udpsocksize [size]</b> sets/gets the UDP socket buffer size. Already trying to set by default to 100mb, 2gb for Jungfrau. Does not remember in client shared memory, so must be initialized each time after setting receiver hostname in config file.\c Returns \c (int)
      */
     descrToFuncMap[i].m_pFuncName = "rx_udpsocksize";
@@ -2334,12 +2312,7 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const
     if (action == HELP_ACTION)
         return helpNetworkParameter(action);
 
-    if (cmd == "rx_hostname") {
-    	  if (action == PUT_ACTION) {
-    		  myDet->setReceiverHostname(args[1], detPos);
-    	  }
-    	  return myDet->getReceiverHostname(detPos);
-    }  else if (cmd == "rx_udpsocksize") {
+    if (cmd == "rx_udpsocksize") {
         if (action == PUT_ACTION) {
         	int64_t ival = -1;
             if (!(sscanf(args[1], "%ld", &ival))) {
@@ -2432,8 +2405,6 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-
-        os << "rx_hostname name \n sets receiver ip/hostname to name" << std::endl;
         os << "txndelay_left port \n sets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right port \n sets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame port \n sets detector transmission delay of the entire frame" << std::endl;
@@ -2461,7 +2432,6 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
            << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "rx_hostname \n gets receiver ip " << std::endl;
         os << "txndelay_left \n gets detector transmission delay of the left port" << std::endl;
         os << "txndelay_right \n gets detector transmission delay of the right port" << std::endl;
         os << "txndelay_frame \n gets detector transmission delay of the entire frame" << std::endl;
@@ -2627,17 +2597,6 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
             myDet->setROI(roi, detPos);
         }
 
-        if (cmd == "detsizechan") {
-            int val2 = 0;
-            if ((!sscanf(args[1], "%d", &val)) || (narg <= 2) || (!sscanf(args[2], "%d", &val2))) {
-                return std::string("Could not scan det size chan values");
-            }
-            slsDetectorDefs::xy res;
-            res.x = val;
-            res.y = val2;
-            myDet->setNumberOfChannels(res);
-        }
-
 		if(cmd=="quad"){
 			if (val >=0 ) {
 				myDet->setQuad(val);
@@ -2670,11 +2629,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
     } else if (cmd == "roi") {
         ROI roi = myDet->getROI(detPos);
         return (std::string("[") + std::to_string(roi.xmin) + std::string(",") + std::to_string(roi.xmax) + std::string("]")); 
-    } else if (cmd == "detsizechan") {
-        slsDetectorDefs::xy res = myDet->getNumberOfChannels();
-        sprintf(ans, "%d %d", res.x, res.y);
-        return std::string(ans);
-    } 	else if (cmd=="quad") {
+    } else if (cmd=="quad") {
 		return std::to_string(myDet->getQuad());
     } else if (cmd == "flippeddatax") {
         ret = myDet->getFlippedDataX(detPos);
@@ -2700,7 +2655,6 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
         os << "dr i \n sets the dynamic range of the detector" << std::endl;
         os << "clearroi \n resets region of interest" << std::endl;
         os << "roi xmin xmax \n sets region of interest " << std::endl;
-        os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; 0 is no limit" << std::endl;
  		os << "quad i \n if i = 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;       
         os << "flippeddatax x \n sets if the data should be flipped on the x axis" << std::endl;
         os << "gappixels i \n enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and multidetector level." << std::endl;
@@ -2708,8 +2662,7 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "dr \n gets the dynamic range of the detector" << std::endl;
         os << "roi \n gets region of interest" << std::endl;
-        os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; 0 is no limit" << std::endl;
-        os << "quad \n returns 1 if the detector size is a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
+       os << "quad \n returns 1 if the detector size is a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
         os << "flippeddatax\n gets if the data will be flipped on the x axis" << std::endl;
         os << "gappixels\n gets if gap pixels is enabled in system. Used in EIGER only and multidetector level." << std::endl;
     }
@@ -2831,23 +2784,11 @@ std::string slsDetectorCommand::helpSettings(int action) {
 
 std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int action, int detPos) {
 
-    char answer[1000];
-
     if (action == PUT_ACTION)
         return std::string("cannot set");
 
     if (action == HELP_ACTION)
         return helpSN(action);
-
-
-    if (cmd == "detectornumber") {
-        int64_t retval = myDet->getId(DETECTOR_SERIAL_NUMBER, detPos);
-        if (retval < 0)
-            sprintf(answer, "%d", -1);
-        else
-            sprintf(answer, "0x%lx", retval);
-        return std::string(answer);
-    }
 
 
     if (cmd == "checkdetversion") {
@@ -2869,7 +2810,6 @@ std::string slsDetectorCommand::helpSN(int action) {
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "checkdetversion \n gets the version compatibility with detector server (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
         os << "rx_checkversion \n gets the version compatibility with receiver server (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
-        os << "detectornumber \n gets the serial number of the detector (MAC)" << std::endl;
     }
     return os.str();
 }

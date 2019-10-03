@@ -49,6 +49,8 @@
 
 namespace sls {
 
+using defs = slsDetectorDefs;
+
 std::ostream &operator<<(std::ostream &os,
                          const std::vector<std::string> &vec) {
     if (!vec.empty()) {
@@ -141,15 +143,15 @@ std::string CmdProxy::SubExptime(int action) {
 std::string CmdProxy::Hostname(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
+    if (action == defs::HELP_ACTION) {
         os << "\n\tFrees shared memory and sets hostname (or IP address) of all modules concatenated by +." << '\n';   
-    } else if (action == slsDetectorDefs::GET_ACTION) {
+    } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getHostname({det_id});
         os << OutString(t) << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    } else if (action == defs::PUT_ACTION) {
         if (args.size() < 1) {
             WrongNumberOfParameters(1);
         } 
@@ -176,19 +178,19 @@ std::string CmdProxy::Hostname(int action) {
 std::string CmdProxy::FirmwareVersion(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
+    if (action == defs::HELP_ACTION) {
         os << "\n\tFimware version of detector in format [0xYYMMDD] or integer for Eiger." << '\n';   
-    } else if (action == slsDetectorDefs::GET_ACTION) {
+    } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getFirmwareVersion({det_id});
-        if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
+        if (det->getDetectorType().squash() == defs::EIGER) {
             os << OutString(t) << '\n';
         } else {
             os << OutStringHex(t) << '\n';
         }
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("cannot put");
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -199,9 +201,9 @@ std::string CmdProxy::FirmwareVersion(int action) {
 std::string CmdProxy::Versions(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
+    if (action == defs::HELP_ACTION) {
         os << "\n\tPrint all versions and detector type" << '\n';   
-    } else if (action == slsDetectorDefs::GET_ACTION) {
+    } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
@@ -210,7 +212,7 @@ std::string CmdProxy::Versions(int action) {
             << "\nPackage Version: " << det->getPackageVersion()
             << std::hex  
             << "\nClient Version: 0x" << det->getClientVersion();
-            if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
+            if (det->getDetectorType().squash() == defs::EIGER) {
                 os << "\nFirmware Version: " << OutString(t);
             } else {
                 os << "\nFirmware Version: " << OutStringHex(t);
@@ -220,7 +222,7 @@ std::string CmdProxy::Versions(int action) {
             os << "\nReceiver Version: " << OutStringHex(det->getReceiverVersion());       
         }
         os << std::dec << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("cannot put");
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -231,33 +233,32 @@ std::string CmdProxy::Versions(int action) {
 std::string CmdProxy::PackageVersion(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
+    if (action == defs::HELP_ACTION) {
         os << "\n\tPackage version (git branch)." << '\n';   
-    } else if (action == slsDetectorDefs::GET_ACTION) {
+    } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
          os << det->getPackageVersion() << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("cannot put");
     } else { 
         throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
-
 
 std::string CmdProxy::ClientVersion(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION) {
+    if (action == defs::HELP_ACTION) {
         os << "\n\tClient software version in format [0xYYMMDD]." << '\n';   
-    } else if (action == slsDetectorDefs::GET_ACTION) {
+    } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
         os << ToStringHex(det->getClientVersion()) << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
+    } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("cannot put");
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -265,9 +266,37 @@ std::string CmdProxy::ClientVersion(int action) {
     return os.str();
 }
 
+std::string CmdProxy::DetectorSize(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[nx, ny]\n\tDetector size, ie. Number of channels in x and y dim. If 0, then hostname adds all modules in y dim. This is used to calculate module coordinates included in UDP data packet header." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getDetectorSize();
+        os << "[" << t.x << "," << t.y << "]\n";
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }        
+        defs::xy t; 
+        t.x = std::stoi(args[0]);
+        t.y = std::stoi(args[1]);
+        det->setDetectorSize(t);
+        os << ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
+
 
 std::string CmdProxy::ListCommands(int action) {
-    if (action == slsDetectorDefs::HELP_ACTION)
+    if (action == defs::HELP_ACTION)
         return "list\n\tlists all available commands, list deprecated - "
                "list deprecated commands\n";
 

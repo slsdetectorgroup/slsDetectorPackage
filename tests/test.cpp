@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 #include "sls_detector_defs.h"
+#include "ToString.h"
 #include "tests/config.h"
 #include <string>
 
@@ -38,7 +39,7 @@ int main(int argc, char *argv[]) {
         return ret;
     }
 
-    test::type = slsDetectorDefs::detectorTypeToEnum(test::detector_type);
+    //test::type = sls::StringTo(test::detector_type);
 
     return session.run();
 }

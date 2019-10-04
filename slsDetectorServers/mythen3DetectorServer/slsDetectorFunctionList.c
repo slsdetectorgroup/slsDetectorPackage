@@ -76,7 +76,7 @@ void basictests() {
 		return;
     }
 	// does check only if flag is 0 (by default), set by command line
-	if ((!debugflag) && ((checkType() == FAIL) ||(testFpga() == FAIL)|| (testBus() == FAIL))) {
+	if ((!debugflag) && ((testFpga() == FAIL)|| (testBus() == FAIL))) {
 		strcpy(firmware_message,
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
 		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
@@ -573,10 +573,15 @@ int setHighVoltage(int val){
 
 
 int configureMAC() {
-#ifdef VIRTUAL
-	uint32_t dstip = udpDetails.dstip;
-	int dstport = udpDetails.dstport;	
 
+	uint32_t srcip = udpDetails.srcip;
+	uint32_t dstip = udpDetails.dstip;
+	uint64_t srcmac = udpDetails.srcmac;
+	uint64_t dstmac = udpDetails.dstmac;
+	int srcport = udpDetails.srcport;
+	int dstport = udpDetails.dstport;
+
+#ifdef VIRTUAL
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
 	sprintf(cDestIp, "%d.%d.%d.%d", (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff);
@@ -586,7 +591,106 @@ int configureMAC() {
 		return FAIL;
 	}
 #endif
+	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
+	
+	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (srcip>>24)&0xff,(srcip>>16)&0xff,(srcip>>8)&0xff,(srcip)&0xff, srcip));
+	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+			(unsigned int)((srcmac>>40)&0xFF),
+			(unsigned int)((srcmac>>32)&0xFF),
+			(unsigned int)((srcmac>>24)&0xFF),
+			(unsigned int)((srcmac>>16)&0xFF),
+			(unsigned int)((srcmac>>8)&0xFF),
+			(unsigned int)((srcmac>>0)&0xFF),
+			(long  long unsigned int)srcmac));
+	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n", srcport, srcport));
+
+	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+	        (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff, dstip));
+	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+			(unsigned int)((dstmac>>40)&0xFF),
+			(unsigned int)((dstmac>>32)&0xFF),
+			(unsigned int)((dstmac>>24)&0xFF),
+			(unsigned int)((dstmac>>16)&0xFF),
+			(unsigned int)((dstmac>>8)&0xFF),
+			(unsigned int)((dstmac>>0)&0xFF),
+			(long  long unsigned int)dstmac));
+	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",dstport, dstport));
+
+	// start addr
+	uint32_t addr = BASE_UDP_RAM;
+	// calculate rxr endpoint offset
+	//addr += (iRxEntry * RXR_ENDPOINT_OFST);//TODO: is there round robin already implemented?
+	// get struct memory
+	udp_header *udp = (udp_header*) (Nios_getBaseAddress() + addr/(sizeof(u_int32_t)));
+	memset(udp, 0, sizeof(udp_header));
+
+	//  mac addresses	
+	// msb (32) + lsb (16)
+	udp->udp_destmac_msb	= ((dstmac >> 16) & BIT32_MASK);
+	udp->udp_destmac_lsb	= ((dstmac >> 0) & BIT16_MASK);
+	// msb (16) + lsb (32)
+	udp->udp_srcmac_msb		= ((srcmac >> 32) & BIT16_MASK);
+	udp->udp_srcmac_lsb		= ((srcmac >> 0) & BIT32_MASK);
+
+	// ip addresses
+	udp->ip_srcip_msb		= ((srcip >> 16) & BIT16_MASK);
+	udp->ip_srcip_lsb		= ((srcip >> 0) & BIT16_MASK);	
+	udp->ip_destip_msb		= ((dstip >> 16) & BIT16_MASK);
+	udp->ip_destip_lsb		= ((dstip >> 0) & BIT16_MASK);	
+
+	// source port
+	udp->udp_srcport 		= srcport;
+	udp->udp_destport		= dstport;
+
+	// other defines
+	udp->udp_ethertype		= 0x800;
+	udp->ip_ver				= 0x4;
+	udp->ip_ihl				= 0x5;
+	udp->ip_flags			= 0x2; //FIXME
+	udp->ip_ttl           	= 0x40;
+	udp->ip_protocol      	= 0x11;
+	// total length is redefined in firmware
+
+	// calcChecksum(udp);
+
+	//TODO?
+	//cleanFifos();
+	//resetCore();
+	//alignDeserializer();
 	return OK;
+}
+
+void calcChecksum(udp_header* udp) {
+	int count = IP_HEADER_SIZE;
+	long int sum = 0;
+	
+	// start at ip_tos as the memory is not continous for ip header
+	uint16_t *addr = (uint16_t*) (&(udp->ip_tos)); 
+
+	sum += *addr++;
+	count -= 2;
+
+	// ignore ethertype (from udp header)
+	addr++;
+
+	// from identification to srcip_lsb
+    while( count > 2 )  {
+		sum += *addr++;
+		count -= 2;
+	}
+
+	// ignore src udp port (from udp header)
+	addr++;
+	
+	if (count > 0)
+	    sum += *addr;                     // Add left-over byte, if any
+	while (sum >> 16)
+	    sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
+	long int checksum = sum & 0xffff;
+	checksum += UDP_IP_HEADER_LENGTH_BYTES;
+	FILE_LOG(logINFO, ("\tIP checksum is 0x%lx\n",checksum));
+	udp->ip_checksum = checksum;
 }
 
 /* pattern */
@@ -599,9 +703,9 @@ uint64_t readPatternWord(int addr) {
         return -1;
     }
 
-    FILE_LOG(logINFORED, ("  Reading (Executing) Pattern Word (addr:0x%x)\n", addr));
-    uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr; // the first word in RAM as base plus the offset of the word to write (addr)
-	uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr;
+    FILE_LOG(logINFORED, ("  Reading Pattern Word (addr:0x%x)\n", addr));
+    uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset of the word to write (addr)
+	uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
 
     // read value
     uint64_t retval = get64BitReg(reg_lsb, reg_msb);
@@ -623,8 +727,8 @@ uint64_t writePatternWord(int addr, uint64_t word) {
     }
 
     FILE_LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr, (long long int) word));
-    uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr; // the first word in RAM as base plus the offset of the word to write (addr)
-	uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr;
+    uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset of the word to write (addr)
+	uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
 
     // write word
     set64BitReg(word, reg_lsb, reg_msb);
@@ -675,7 +779,7 @@ int setPatternWaitAddress(int level, int addr) {
     }
 
     // get
-    uint32_t regval = bus_r((reg & mask) >> offset);
+    uint32_t regval = ((bus_r(reg) & mask) >> offset);
     FILE_LOG(logDEBUG1, ("  Wait Address retval (level:%d, addr:0x%x)\n", level, regval));
     return regval;
 }

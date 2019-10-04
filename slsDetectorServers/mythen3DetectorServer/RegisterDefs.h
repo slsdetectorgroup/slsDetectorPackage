@@ -7,6 +7,8 @@
 #define BASE_PATTERN_CONTROL            (0x200)
 #define BASE_PATTERN_RAM                (0x10000)
 
+#define BASE_UDP_RAM                    (0x1000) // fix it 
+
 /* Basic detector FPGA registers --------------------------------------------------*/
 /* Module Control Board Serial Number Register */
 #define MCB_SERIAL_NO_REG               (0x000 * REG_OFFSET + BASE_CONTROL)
@@ -164,5 +166,5 @@
 #define PATTERN_LOOP_2_ADDR_STP_MSK     (0x00001FFF << PATTERN_LOOP_2_ADDR_STP_OFST)
 
 /* Register of first word */
-#define PATTERN_STEP0_LSB_REG           (0x0 + BASE_PATTERN_RAM)
-#define PATTERN_STEP0_MSB_REG           (0x4 + BASE_PATTERN_RAM)
+#define PATTERN_STEP0_LSB_REG           (0x0 * REG_OFFSET + BASE_PATTERN_RAM)
+#define PATTERN_STEP0_MSB_REG           (0x1 * REG_OFFSET + BASE_PATTERN_RAM)

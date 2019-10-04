@@ -27,6 +27,12 @@
 #define DEFAULT_TICK_CLK            (20) // will be fixed later. Not configurable
 #define DEFAULT_SAMPLING_CLK        (80)
 
+/* Firmware Definitions */
+#define IP_HEADER_SIZE              (20)
+
+/** Other Definitions */
+#define BIT16_MASK					(0xFFFF)
+
 /* Enums */
 enum CLKINDEX   {RUN_CLK, TICK_CLK, SAMPLING_CLK, NUM_CLOCKS};
 enum DACINDEX   {CASSH, VTH2, VRFSH, VRFSHNPOL, VIPREOUT, VTH3, VTH1, VICIN, CAS, VRF, VPH, VIPRE, VIINSH, VPL, VTRIM, VDCSH};
@@ -50,4 +56,29 @@ enum DACINDEX   {CASSH, VTH2, VRFSH, VRFSHNPOL, VIPREOUT, VTH3, VTH1, VICIN, CAS
 
 
 /* Defines in the Firmware */
-#define MAX_PATTERN_LENGTH  		(0x8192) // maximum number of words (64bit)
+#define MAX_PATTERN_LENGTH  		(0x2000) // maximum number of words (64bit)
+
+/* Struct Definitions */
+typedef struct udp_header_struct {
+	uint32_t	udp_destmac_msb;
+	uint16_t	udp_srcmac_msb;
+	uint16_t	udp_destmac_lsb;
+	uint32_t	udp_srcmac_lsb;
+	uint8_t		ip_tos;
+	uint8_t		ip_ihl: 4, ip_ver: 4;
+	uint16_t	udp_ethertype;
+	uint16_t	ip_identification;
+	uint16_t	ip_totallength;
+	uint8_t		ip_protocol;
+	uint8_t		ip_ttl;
+	uint16_t	ip_fragmentoffset: 13, ip_flags: 3;
+	uint16_t	ip_srcip_msb;
+	uint16_t	ip_checksum;
+	uint16_t	ip_destip_msb;
+	uint16_t	ip_srcip_lsb;
+	uint16_t	udp_srcport;
+	uint16_t	ip_destip_lsb;
+	uint16_t	udp_checksum;
+	uint16_t	udp_destport;
+} udp_header;
+#define UDP_IP_HEADER_LENGTH_BYTES	(28)

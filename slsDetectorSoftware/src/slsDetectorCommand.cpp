@@ -3268,9 +3268,9 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         dac = TRIMBIT_SIZE;
     else if (cmd == "vpreamp")
         dac = PREAMP;
-    else if (cmd == "vshaper1")
+    else if (cmd == "vshaper1" || cmd == "vshaper")
         dac = SHAPER1;
-    else if (cmd == "vshaper2")
+    else if (cmd == "vshaper2" || cmd == "vshaperneg")
         dac = SHAPER2;
     else if (cmd == "vhighvoltage")
         dac = HIGH_VOLTAGE;
@@ -3379,10 +3379,6 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         dac = M_vIcin;
     else if (cmd == "vipreout")
         dac = M_vIpreOut;
-    else if (cmd == "vrfsh")
-        dac = SHAPER1;
-    else if (cmd == "vrfshnpol")
-        dac = SHAPER2;
     else
         return std::string("cannot decode dac ") + cmd;
 

@@ -778,15 +778,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page settings
-   - <b>settings [s]</b> sets/gets the settings of the detector. Options: \c standard, \c fast, \c highgain, \c dynamicgain, \c lowgain, \c mediumgain, \c veryhighgain,
-   \c dynamichg0, \c fixgain1, \c fixgain2, \c forceswitchg1, \c forceswitchg2.
-   \n In Eiger, only sets in client shared memory. Use \c threshold or \c thresholdnotb to pass to detector. Gets from detector.  \c Returns \c (string) s
-	 */
-    descrToFuncMap[i].m_pFuncName = "settings";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
-    ++i;
-
-    /*! \page settings
    - <b>threshold [eV] [sett] </b> sets/gets the detector threshold in eV. sett is optional and if provided also sets the settings. Use this for Eiger instead of \c settings. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "threshold";
@@ -2680,27 +2671,8 @@ std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[],
     int val = -1; //ret,
     char ans[1000];
 
-    //  portType index;
-    //     if (sscanf(args[1],"%d",&val))
-    //       ;
-    //     else
-    //       return std::string("could not scan port number")+std::string (args[1]);
-    //   }
-
-
-    if (cmd == "settings") {
-        detectorSettings sett = GET_SETTINGS;
-        if (action == PUT_ACTION) {
-            sett = myDet->getDetectorSettings(std::string(args[1]));
-            if (sett == -1)
-                return std::string("unknown settings scanned " + std::string(args[1]));
-            sett = myDet->setSettings(sett, detPos);
-            if (myDet->getDetectorTypeAsEnum(detPos) == EIGER) {
-                return myDet->getDetectorSettings(sett);
-            }
-        }
-        return myDet->getDetectorSettings(myDet->getSettings(detPos));
-    } else if (cmd == "threshold") {
+   
+    if (cmd == "threshold") {
         if (action == PUT_ACTION) {
             if (!sscanf(args[1], "%d", &val)) {
                 return std::string("invalid threshold value");
@@ -2709,7 +2681,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[],
             if (type != EIGER || (type == EIGER && narg <= 2)) {
                 myDet->setThresholdEnergy(val, GET_SETTINGS, 1, detPos);
             } else {
-                detectorSettings sett = myDet->getDetectorSettings(std::string(args[2]));
+                detectorSettings sett = sls::StringTo<detectorSettings>(std::string(args[2]));
                 if (sett == -1)
                     return std::string("invalid settings value");
                 myDet->setThresholdEnergy(val, sett, 1, detPos);
@@ -2728,7 +2700,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[],
             if (narg <= 2) {
                 myDet->setThresholdEnergy(val, GET_SETTINGS, 0, detPos);
             } else {
-                detectorSettings sett = myDet->getDetectorSettings(std::string(args[2]));
+                detectorSettings sett = sls::StringTo<detectorSettings>(std::string(args[2]));
                 if (sett == -1)
                     return std::string("invalid settings value");
                 myDet->setThresholdEnergy(val, sett, 0, detPos);
@@ -2768,16 +2740,12 @@ std::string slsDetectorCommand::helpSettings(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "settings s \n sets the settings of the detector - can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain"
-              "dynamichg0,fixgain1,fixgain2,forceswitchg1, forceswitchg2"
-           << std::endl;
-        os << "threshold eV [sett]\n sets the detector threshold in eV. If sett is provided for eiger, uses settings sett" << std::endl;
+         os << "threshold eV [sett]\n sets the detector threshold in eV. If sett is provided for eiger, uses settings sett" << std::endl;
         os << "thresholdnotb eV [sett]\n sets the detector threshold in eV without loading trimbits. If sett is provided for eiger, uses settings sett" << std::endl;
         os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached." << std::endl;
         os << "trimval i \n sets all the trimbits to i" << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "settings \n gets the settings of the detector" << std::endl;
         os << "threshold V\n gets the detector threshold" << std::endl;
         os << "thresholdnotb V\n gets the detector threshold" << std::endl;
         os << "trimbits [fname]\n returns the trimfile loaded on the detector. If fname is specified the trimbits are saved to file. If no extension is specified, the serial number of each module will be attached." << std::endl;

@@ -59,10 +59,46 @@ inline std::string ToString(const defs::detectorType s){
     case defs::GOTTHARD2:
         return std::string("Gotthard2");  
     default:
-        return std::string("Unknown"); //TODO: check if generic or get detector type are used anywhere?          
+        return std::string("Unknown");         
     }
 }
 
+inline std::string ToString(const defs::detectorSettings s){
+    switch (s) {
+    case defs::STANDARD:
+        return std::string("standard");
+    case defs::FAST:
+        return std::string("fast");
+    case defs::HIGHGAIN:
+        return std::string("highgain");
+    case defs::DYNAMICGAIN:
+        return std::string("dynamicgain");
+    case defs::LOWGAIN:
+        return std::string("lowgain");
+    case defs::MEDIUMGAIN:
+        return std::string("mediumgain");
+    case defs::VERYHIGHGAIN:
+        return std::string("veryhighgain");
+    case defs::DYNAMICHG0:
+        return std::string("dynamichg0");
+    case defs::FIXGAIN1:
+        return std::string("fixgain1");
+    case defs::FIXGAIN2:
+        return std::string("fixgain2");
+    case defs::FORCESWITCHG1:
+        return std::string("forceswitchg1");
+    case defs::FORCESWITCHG2:
+        return std::string("forceswitchg2");
+    case defs::VERYLOWGAIN:
+        return std::string("verylowgain");
+    case defs::UNDEFINED:
+        return std::string("undefined");        
+    case defs::UNINITIALIZED:
+        return std::string("uninitialized");
+    default:
+        return std::string("Unknown");
+    }
+}
 
 
 // in case we already have a string 
@@ -248,7 +284,6 @@ template <typename T> T StringTo(const std::string& t) {
     return StringTo<T>(tmp, unit);
 }
 
-//most likely hardly use
 template <>
 inline defs::detectorType StringTo(const std::string& s){
     if (s == "Eiger")
@@ -265,7 +300,38 @@ inline defs::detectorType StringTo(const std::string& s){
         return defs::MYTHEN3;
     if (s == "Gotthard2")
         return defs::GOTTHARD2;            
-    return defs::GENERIC;
+    throw sls::RuntimeError("Unknown detector type " + s);
+}
+
+template <>
+inline defs::detectorSettings StringTo(const std::string& s){
+        if (s == "standard")
+            return defs::STANDARD;
+        if (s == "fast")
+            return defs::FAST;
+        if (s == "highgain")
+            return defs::HIGHGAIN;
+        if (s == "dynamicgain")
+            return defs::DYNAMICGAIN;
+        if (s == "lowgain")
+            return defs::LOWGAIN;
+        if (s == "mediumgain")
+            return defs::MEDIUMGAIN;
+        if (s == "veryhighgain")
+            return defs::VERYHIGHGAIN;
+        if (s == "dynamichg0")
+            return defs::DYNAMICHG0;
+        if (s == "fixgain1")
+            return defs::FIXGAIN1;
+        if (s == "fixgain2")
+            return defs::FIXGAIN2;
+        if (s == "forceswitchg1")
+            return defs::FORCESWITCHG1;
+        if (s == "forceswitchg2")
+            return defs::FORCESWITCHG2;
+        if (s == "verylowgain")
+            return defs::VERYLOWGAIN;
+        throw sls::RuntimeError("Unknown setting " + s);
 }
 
 /** For types with a .str() method use this for conversion */

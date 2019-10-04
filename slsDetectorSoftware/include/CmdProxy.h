@@ -43,7 +43,7 @@
     }
 
 
-/** int */
+/** int or enum */
 #define INTEGER_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)                 \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -327,7 +327,7 @@ class CmdProxy {
                           {"detectornumber", &CmdProxy::detectornumber},
                           {"type", &CmdProxy::type},
                           {"detsize", &CmdProxy::DetectorSize},
-                          
+                          {"settings", &CmdProxy::settings},
                           
                           
 
@@ -343,6 +343,9 @@ class CmdProxy {
                           
                           {"rx_hostname", &CmdProxy::rx_hostname},   
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
+
+                          //{"threshold", &CmdProxy::Threshold},
+                         //{"thresholdnotb", &CmdProxy::ThresholdNoTb},  
 
 
                           {"savepattern", &CmdProxy::savepattern}                         
@@ -469,6 +472,9 @@ class CmdProxy {
     EXECUTE_GET_COMMAND(type, getDetectorType, 
                 "\n\tSerial number or MAC of detector (hex).");   
 
+    INTEGER_COMMAND(settings, getSettings, setSettings, sls::StringTo<slsDetectorDefs::detectorSettings>,
+                    "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\t[Jungfrau][Gotthard] Detector Settings.\n\t[Eiger] Use threshold or thresholdnotb.");      
+
 
 
     EXECUTE_SET_COMMAND_NOID(start, startDetector, 
@@ -481,7 +487,7 @@ class CmdProxy {
                 "\n\t[Eiger] Sends software trigger signal to detector.");   
 
     EXECUTE_GET_COMMAND(status, getDetectorStatus, 
-                "\n\tDetector status[running|error|transmitting|finished|waiting|idle].");                 
+                "[running, error, transmitting, finished, waiting, idle]\n\tDetector status.");                 
 
     EXECUTE_SET_COMMAND_NOID(rx_start, startReceiver, 
                 "\n\tStarts receiver listener for detector data packets and create a data file (if file write enabled).");  
@@ -490,7 +496,7 @@ class CmdProxy {
                 "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled).");      
                                 
     EXECUTE_GET_COMMAND(rx_status, getReceiverStatus, 
-                "\n\tTeceiver listener status [running|idle].");   
+                "running, idle]\n\tReceiver listener status.");   
 
     EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
                 "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  
@@ -498,7 +504,7 @@ class CmdProxy {
     
 
     STRING_COMMAND(rx_hostname, getRxHostname, setRxHostname, 
-                "\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");
+                "[hostname or ip address]\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");
 
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
                     "[port]\n\tTCP port for client-receiver communication. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter.");  

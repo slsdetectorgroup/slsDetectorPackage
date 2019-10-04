@@ -9,17 +9,35 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("settings", "[.cmd]") {
+    switch(test::type) {
+        case slsDetectorDefs::EIGER:
+            REQUIRE_THROWS(multiSlsDetectorClient("settings mediumgain", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("settings standard", PUT));
+            break;
+        case slsDetectorDefs::JUNGFRAU:
+            REQUIRE_THROWS(multiSlsDetectorClient("settings standard", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("settings dynamicgain", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("settings dynamichg0", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("settings fixgain1", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("settings fixgain2", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("settings forceswitchg1", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("settings forceswitchg2", PUT));
+        break;
+        default:
+            break;
+    }
+    REQUIRE_NOTHROW(multiSlsDetectorClient("settings", GET));
+}
+
 TEST_CASE("detsize", "[.cmd]") {
     CHECK_NOTHROW(multiSlsDetectorClient("detize", GET));
 }
 
 TEST_CASE("type", "[.cmd]") {
-    {
-        std::ostringstream oss;
-        CHECK_NOTHROW(multiSlsDetectorClient("type", GET, nullptr, oss));
-        REQUIRE(oss.str() == test::detector_type);
-    }
+    CHECK_NOTHROW(multiSlsDetectorClient("type", GET));
 }
+
 TEST_CASE("firmwareversion", "[.cmd]") {
     {
         std::ostringstream oss;

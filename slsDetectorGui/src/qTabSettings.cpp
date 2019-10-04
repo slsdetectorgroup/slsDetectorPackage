@@ -1,6 +1,8 @@
 #include "qTabSettings.h"
 #include "qDefs.h"
 
+#include "ToString.h"
+
 #include <QStandardItemModel>
 
 #include <cmath>
@@ -129,8 +131,8 @@ void qTabSettings::GetSettings() {
 void qTabSettings::SetSettings(int index) {
     // settings
     auto val = static_cast<slsDetectorDefs::detectorSettings>(index);
-    FILE_LOG(logINFO) << "Setting Settings to " << slsDetectorDefs::getDetectorSettings(val);
     try {
+        FILE_LOG(logINFO) << "Setting Settings to " << sls::ToString(val);
         det->setSettings(val);
     } CATCH_HANDLE ("Could not set settings.", "qTabSettings::SetSettings", this, &qTabSettings::GetSettings)
     // threshold

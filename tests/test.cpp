@@ -39,7 +39,10 @@ int main(int argc, char *argv[]) {
         return ret;
     }
 
-    test::type = sls::StringTo<slsDetectorDefs::detectorType>(test::detector_type);
+    test::type = slsDetectorDefs::GENERIC;
+    if (!test::detector_type.empty()) {
+        test::type = sls::StringTo<slsDetectorDefs::detectorType>(test::detector_type);
+    }
 
     return session.run();
 }

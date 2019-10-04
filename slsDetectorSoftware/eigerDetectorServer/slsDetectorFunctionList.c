@@ -10,11 +10,11 @@
 #endif
 
 #include "slsDetectorFunctionList.h"
-#ifndef VIRTUAL
+#include "versionAPI.h"
 #include "gitInfoEiger.h"
+#ifndef VIRTUAL
 #include "FebControl.h"
 #include "Beb.h"
-#include "versionAPI.h"
 #endif
 
 int default_tau_from_file= -1;
@@ -200,19 +200,18 @@ void checkFirmwareCompatibility(int flag){
 /* Ids */
 
 int64_t getDetectorId(enum idMode arg){
-#ifdef VIRTUAL
-	return 0;
-#else
-	int64_t retval = -1;
+	int64_t retval = 0;
 
 	switch(arg){
 	case DETECTOR_SERIAL_NUMBER:
 		retval =  getDetectorNumber();/** to be implemented with mac? */
 		break;
 	case DETECTOR_FIRMWARE_VERSION:
-		return (int64_t)getFirmwareVersion();
+		return (int64_t)getFirmwareVersion();	
 	case SOFTWARE_FIRMWARE_API_VERSION:
+#ifndef VIRTUAL	
 		return (int64_t)Beb_GetFirmwareSoftwareAPIVersion();
+#endif			
 	case DETECTOR_SOFTWARE_VERSION:
         return  (GITDATE & 0xFFFFFF);
 	case CLIENT_SOFTWARE_API_VERSION:
@@ -220,9 +219,7 @@ int64_t getDetectorId(enum idMode arg){
 	default:
 		break;
 	}
-
-	return retval;
-#endif
+	return retval; 
 }
 
 u_int64_t getFirmwareVersion() {

@@ -315,7 +315,7 @@ class CmdProxy {
                           {"numinterfaces", &CmdProxy::numinterfaces},
                           {"selinterface", &CmdProxy::selinterface},
                           
-                          {"config", &CmdProxy::config},
+                          //{"config", &CmdProxy::config},
                           {"parameters", &CmdProxy::parameters},
                           {"hostname", &CmdProxy::Hostname},
                           {"versions", &CmdProxy::Versions},

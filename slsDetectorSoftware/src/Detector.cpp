@@ -29,10 +29,6 @@ Result<std::string> Detector::getHostname(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getHostname, pos);
 }
 
-void Detector::setHostname( std::string value) {
-    pimpl->setHostname(value.c_str());
-}
-
 void Detector::setHostname(const std::vector<std::string> &value) {
     pimpl->setHostname(value);
 }

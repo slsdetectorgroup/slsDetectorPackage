@@ -663,7 +663,7 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
         FILE_LOG(logDEBUG1)
             << "current_line after removing comments:\n\t" << current_line;
         if (current_line.length() > 1) {
-            multiSlsDetectorClient(current_line, PUT_ACTION, this);
+            multiSlsDetectorClient(current_line, PUT_ACTION, nullptr);
         }
     }
     input_file.close();

@@ -158,19 +158,17 @@ std::string CmdProxy::Hostname(int action) {
         if (det_id != -1) { 
             throw sls::RuntimeError("Cannot execute this at module level");
         }
-        /*// only args[0] with + concatenation
+        // only args[0], but many hostames concatenated with +
         if (args[0].find('+') != std::string::npos) {
             auto t = sls::split(args[0], '+');
             det->setHostname(t);
             os << ToString(t) << '\n';           
         }
-        // args without + 
-        // if narg> 1, then sethosname(args)
-        if narg ==1 , then sethostnaeme(args[0])
-        else  {*/
-            det->setHostname(args[0]);
-            os << ToString(args[0]) << '\n';
-      //  }
+        // either hostnames separated by space, or single hostname
+        else {
+            det->setHostname(args);
+            os << ToString(args) << '\n';
+        }
         auto t = det->getHostname({det_id});
     } else { 
         throw sls::RuntimeError("Unknown action");

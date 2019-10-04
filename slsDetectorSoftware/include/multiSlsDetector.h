@@ -1782,9 +1782,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Loads the detector setup from file
      * @param fname file to read from
-     * @returns OK or FAIL
      */
-    int loadParameters(const std::string &fname);
+    void loadParameters(const std::string &fname);
 
     /**
      * register callback for accessing acquisition final data
@@ -1878,14 +1877,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns result
      */
     std::string exec(const char *cmd);
-
-    /**
-     * Appends detectors to the end of the list in shared memory
-     * Connects to them
-     * @param name concatenated hostname of the sls detectors to be appended to
-     * the list
-     */
-    void addMultipleDetectors(const char *name); //
 
     /**
      * Add sls detector

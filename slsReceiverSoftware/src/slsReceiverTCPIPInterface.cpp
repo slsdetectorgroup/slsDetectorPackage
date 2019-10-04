@@ -328,7 +328,7 @@ int slsReceiverTCPIPInterface::set_port(Interface &socket) {
         throw RuntimeError("Port Number: " + std::to_string(p_number) +
                            " is too low (<1024)");
 
-    FILE_LOG(logINFO) << "set port to " << p_number << std::endl;
+    FILE_LOG(logINFO) << "TCP port set to " << p_number << std::endl;
     auto new_server = sls::make_unique<sls::ServerSocket>(p_number);
     new_server->setLockedBy(server->getLockedBy());
     new_server->setLastClient(server->getThisClient());

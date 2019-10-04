@@ -259,15 +259,16 @@ TEST_CASE("findex", "[.cmd]") {
 
 TEST_CASE("rx_tcpport", "[.cmd]") {
     multiSlsDetector d;
-    int port = 1500;
+    int port = 3500;
     int base = 1954;
     for (size_t i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         std::string cmd =
             std::to_string(i) + ":rx_tcpport " + std::to_string(port + i);
         std::cout << cmd << "\n";
+        std::string cmd2 = cmd.erase(0,2);
         multiSlsDetectorClient(cmd, PUT, nullptr, oss);
-        REQUIRE(oss.str() == cmd + "\n");
+        REQUIRE(oss.str() == cmd2 + "\n");
     }
     {
         std::ostringstream oss;

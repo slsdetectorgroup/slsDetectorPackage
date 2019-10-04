@@ -712,6 +712,10 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfiguration;
     ++i;
 
+    descrToFuncMap[i].m_pFuncName = "hostname";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfiguration;
+    ++i;
+
     /* data processing commands */
 
     /*! \page data Data processing commands
@@ -4058,6 +4062,12 @@ std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const ar
         if (action == PUT_ACTION)
             return std::string("cannot put");
         return myDet->printReceiverConfiguration(detPos);
+    } 
+    if (cmd == "hostname") {
+        if (action == PUT_ACTION) {
+        myDet->setHostname(args[1], detPos);
+        }
+        return myDet->getHostname(detPos);
     } 
     return std::string("could not decode conf mode");
 }

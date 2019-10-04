@@ -77,8 +77,9 @@ void multiSlsDetectorClient::runCommand() {
             return;
         }
     }
+
     if (parser.detector_id() >= static_cast<int>(detPtr->size())) {
-        os << "position is out of bounds.\n";
+        os << "position " << parser.detector_id() << " is out of bounds (max " << detPtr->size() << ").\n";
         return;
     }
 

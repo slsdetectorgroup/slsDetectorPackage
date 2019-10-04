@@ -29,6 +29,10 @@ Result<std::string> Detector::getHostname(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getHostname, pos);
 }
 
+void Detector::setHostname( std::string value) {
+    pimpl->setHostname(value.c_str());
+}
+
 void Detector::setHostname(const std::vector<std::string> &value) {
     pimpl->setHostname(value);
 }
@@ -504,8 +508,19 @@ Result<int> Detector::getRxPort(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverPort, pos);
 }
 
-void Detector::setRxPort(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setReceiverPort, pos, value);
+void Detector::setRxPort(int port, int module_id) {
+    if (module_id == -1) {
+        std::vector<int> port_list(size());
+        for (auto &it: port_list) {
+            it = port++;
+        }
+        for (int idet = 0; idet < size(); ++idet) {
+            pimpl->Parallel(&slsDetector::setReceiverPort, {idet},
+                            port_list[idet]);
+        }
+    } else {
+        pimpl->Parallel(&slsDetector::setReceiverPort, {module_id}, port);
+    }
 }
 
 Result<int> Detector::getRxFifoDepth(Positions pos) const {

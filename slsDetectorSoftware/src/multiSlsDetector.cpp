@@ -398,7 +398,10 @@ void multiSlsDetector::setHostname(const char *name, int detPos) {
         freeSharedMemory();
         setupMultiDetector();
     }
-    addMultipleDetectors(name);
+    for (const auto &hostname : sls::split(name, '+')) {
+        addSlsDetector(hostname);
+    }
+    updateDetectorSize();
 }
 
 std::string multiSlsDetector::getHostname(int detPos) const {
@@ -412,15 +415,9 @@ std::string multiSlsDetector::getHostname(int detPos) const {
     return sls::concatenateNonEmptyStrings(r);
 }
 
-void multiSlsDetector::addMultipleDetectors(const char *name) {
-    for (const auto &hostname : sls::split(name, '+')) {
-        addSlsDetector(hostname);
-    }
-    updateDetectorSize();
-}
 
 void multiSlsDetector::addSlsDetector(const std::string &hostname) {
-    FILE_LOG(logDEBUG1) << "Adding detector " << hostname;
+    FILE_LOG(logINFO) << "Adding detector " << hostname;
 
     int port = DEFAULT_PORTNO;
     std::string host = hostname;
@@ -652,7 +649,7 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
     FILE_LOG(logINFO) << "Loading configuration file: " << fname;
 
     std::ifstream input_file;
-    input_file.open(fname, std::ios_base::in);
+    input_file.open(fname.c_str(), std::ios_base::in);
     if (!input_file.is_open()) {
         throw RuntimeError("Could not open configuration file " + fname +
                            " for reading");
@@ -3094,52 +3091,26 @@ void multiSlsDetector::setDigitalIODelay(uint64_t pinMask, int delay,
     parallelCall(&slsDetector::setDigitalIODelay, pinMask, delay);
 }
 
-int multiSlsDetector::loadParameters(const std::string &fname) {
-
-    std::string str;
-    std::ifstream infile;
-    int iargval;
-    int interrupt = 0;
-    char *args[10];
-
-    char myargs[10][1000];
-
-    std::string sargname, sargval;
-    int iline = 0;
-
-    infile.open(fname.c_str(), std::ios_base::in);
-    if (infile.is_open()) {
-        auto cmd = slsDetectorCommand(this);
-        while (infile.good() and interrupt == 0) {
-            sargname = "none";
-            sargval = "0";
-            getline(infile, str);
-            iline++;
-            FILE_LOG(logDEBUG1) << str;
-            if (str.find('#') != std::string::npos) {
-                FILE_LOG(logDEBUG1) << "Line is a comment \n" << str;
-                continue;
-            } else {
-                std::istringstream ssstr(str);
-                iargval = 0;
-                while (ssstr.good()) {
-                    ssstr >> sargname;
-                    sls::strcpy_safe(myargs[iargval], sargname.c_str());
-                    args[iargval] = myargs[iargval];
-                    FILE_LOG(logDEBUG1) << args[iargval];
-                    iargval++;
-                }
-                cmd.executeLine(iargval, args, PUT_ACTION);
-            }
-            iline++;
-        }
-        infile.close();
-
-    } else {
-        throw RuntimeError("Error opening  " + fname + " for reading");
+void multiSlsDetector::loadParameters(const std::string &fname) {
+    std::ifstream input_file;
+    input_file.open(fname.c_str(), std::ios_base::in);
+    if (!input_file.is_open()) {
+        throw RuntimeError("Could not open parameter file " + fname +
+                           " for reading");
     }
-    FILE_LOG(logDEBUG1) << "Read  " << iline << " lines";
-    return OK;
+    std::string current_line;
+    while (input_file.good()) {
+        getline(input_file, current_line);
+        if (current_line.find('#') != std::string::npos) {
+            current_line.erase(current_line.find('#'));
+        }
+        FILE_LOG(logDEBUG1)
+            << "current_line after removing comments:\n\t" << current_line;
+        if (current_line.length() > 1) {
+            multiSlsDetectorClient(current_line, PUT_ACTION, this);
+        }    
+    }
+    input_file.close();
 }
 
 

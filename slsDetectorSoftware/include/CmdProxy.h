@@ -98,6 +98,7 @@
         return os.str();                                                       \
     }
 
+
 /** set only, no arguments, no id */
 #define EXECUTE_SET_COMMAND_NOID(CMDNAME, SETFCN, HLPSTR)                      \
     std::string CMDNAME(const int action) {                                    \
@@ -160,7 +161,7 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             det->SETFCN(args[0]);                                              \
-            os << args[0] << '\n';                                             \
+            os << args.front() << '\n';                                             \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -340,8 +341,8 @@ class CmdProxy {
                           {"clearbusy", &CmdProxy::clearbusy}, 
                           
                           
-                          {"rx_hostname", &CmdProxy::rx_hostname},  
-            
+                          {"rx_hostname", &CmdProxy::rx_hostname},   
+                          {"rx_tcpport", &CmdProxy::rx_tcpport},  
 
 
                           {"savepattern", &CmdProxy::savepattern}                         
@@ -394,7 +395,7 @@ class CmdProxy {
     INTEGER_COMMAND(fwrite, getFileWrite, setFileWrite, std::stoi,
                     "[0, 1]\n\tEnable or disable receiver file write");
 
-    INTEGER_COMMAND(fmaster, getMasterFileWrite, setMasterFileWrite, std::stoi,
+    INTEGER_COMMAND_NOID(fmaster, getMasterFileWrite, setMasterFileWrite, std::stoi,
                     "[0, 1]\n\tEnable or disable receiver master file");
 
     INTEGER_COMMAND(foverwrite, getFileOverWrite, setFileOverWrite, std::stoi,
@@ -477,7 +478,7 @@ class CmdProxy {
                 "\n\tStops detector state machine.");  
 
     EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
-                "\n\tSends software trigger signal to detector. [Eiger]");   
+                "\n\t[Eiger] Sends software trigger signal to detector.");   
 
     EXECUTE_GET_COMMAND(status, getDetectorStatus, 
                 "\n\tDetector status[running|error|transmitting|finished|waiting|idle].");                 
@@ -499,8 +500,12 @@ class CmdProxy {
     STRING_COMMAND(rx_hostname, getRxHostname, setRxHostname, 
                 "\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");
 
-
+    INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
+                    "[port]\n\tTCP port for client-receiver communication. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter.");  
     
+
+
+
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
                 "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
 

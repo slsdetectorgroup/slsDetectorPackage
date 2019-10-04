@@ -45,6 +45,8 @@ class Detector {
 
     Result<std::string> getHostname(Positions pos = {}) const;
 
+        void setHostname(std::string hostname);
+
     /* Frees shared memory, adds detectors to the list
      * and updates local detector cache */
     void setHostname(const std::vector<std::string> &hostname);
@@ -340,8 +342,6 @@ class Detector {
 
     /** module_id is -1 for all detectors, ports for each module is calculated
      * (increments) */
-    // TODO if Parallel takes a vector, can send multiple vaues to set in
-    // slsdetector.cp
     void setDestinationUDPPort(int port, int module_id = -1);
 
     /** [Eiger right port][Jungfrau bottom half] */
@@ -419,8 +419,10 @@ class Detector {
 
     Result<int> getRxPort(Positions pos = {}) const;
 
-    /** Receiver TCP port (for client communication with Receiver)  */
-    void setRxPort(int value, Positions pos = {});
+    /** Receiver TCP port (for client communication with Receiver)  
+     *  module_id is -1 for all detectors, ports for each module is calculated
+     * (increments) */
+    void setRxPort(int port, int module_id = -1);
 
     Result<int> getRxFifoDepth(Positions pos = {}) const;
 

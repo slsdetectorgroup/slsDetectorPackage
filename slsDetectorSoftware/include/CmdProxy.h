@@ -344,8 +344,8 @@ class CmdProxy {
                           {"rx_hostname", &CmdProxy::rx_hostname},   
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
 
-                          //{"threshold", &CmdProxy::Threshold},
-                         //{"thresholdnotb", &CmdProxy::ThresholdNoTb},  
+                          {"threshold", &CmdProxy::Threshold},
+                          //{"thresholdnotb", &CmdProxy::ThresholdNoTb},  
 
 
                           {"savepattern", &CmdProxy::savepattern}                         
@@ -365,6 +365,8 @@ class CmdProxy {
     std::string PackageVersion(int action);     
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+    std::string Threshold(int action);
+    std::string ThresholdNoTb(int action);       
 
     INTEGER_COMMAND(
         rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,

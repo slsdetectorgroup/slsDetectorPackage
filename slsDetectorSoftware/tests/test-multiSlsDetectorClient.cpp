@@ -30,6 +30,11 @@ TEST_CASE("settings", "[.cmd]") {
     REQUIRE_NOTHROW(multiSlsDetectorClient("settings", GET));
 }
 
+TEST_CASE("threshold", "[.cmd]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("threshold 6400 standard", PUT));
+    REQUIRE_NOTHROW(multiSlsDetectorClient("thresholdnotb 6400 standard", PUT));
+}
+
 TEST_CASE("detsize", "[.cmd]") {
     CHECK_NOTHROW(multiSlsDetectorClient("detize", GET));
 }

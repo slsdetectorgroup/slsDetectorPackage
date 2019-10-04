@@ -271,7 +271,7 @@ std::string CmdProxy::DetectorSize(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[nx, ny]\n\tDetector size, ie. Number of channels in x and y dim. If 0, then hostname adds all modules in y dim. This is used to calculate module coordinates included in UDP data packet header." << '\n';   
+        os << "[nx] [ny]\n\tDetector size, ie. Number of channels in x and y dim. If 0, then hostname adds all modules in y dim. This is used to calculate module coordinates included in UDP data packet header." << '\n';   
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
@@ -293,7 +293,51 @@ std::string CmdProxy::DetectorSize(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Threshold(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[eV] [settings standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\tThreshold in eV" << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getThresholdEnergy();
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }        
+        det->setThresholdEnergy(std::stoi(args[0]), sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]), true, {det_id});
+        os << ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
+std::string CmdProxy::ThresholdNoTb(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[eV] [settings standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\tThreshold in eV set without setting trimbits" << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getThresholdEnergy();
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }        
+        det->setThresholdEnergy(std::stoi(args[0]), sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]), false, {det_id});
+        os << ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 std::string CmdProxy::ListCommands(int action) {

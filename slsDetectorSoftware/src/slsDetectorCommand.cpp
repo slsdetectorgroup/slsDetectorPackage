@@ -1228,13 +1228,16 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    /* MYTHEN 3.0 
-	all values are in DACu */
-
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "vipre";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "vdcsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
@@ -1260,42 +1263,72 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vpl";  //baseline for analog pulsing
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vpl"; 
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "vph";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "vtrim";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "viinsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "cas";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "cassh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "vicin";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "vipreout";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "vrfsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "vrfshnpol";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;

@@ -210,22 +210,20 @@ PYBIND11_MODULE(_sls_detector, m) {
              &DetectorPythonInterface::getReceiverStreamingPort)
         .def("setReceiverStreamingPort",
              &DetectorPythonInterface::setReceiverStreamingPort)
-        .def("getReceiverUDPPort", &DetectorPythonInterface::getReceiverUDPPort)
-        .def("getReceiverUDPPort2",
-             &DetectorPythonInterface::getReceiverUDPPort2)
-        .def("setReceiverUDPPort", &DetectorPythonInterface::setReceiverUDPPort)
-        .def("setReceiverUDPPort2",
-             &DetectorPythonInterface::setReceiverUDPPort2)
-        .def("setReceiverUDPIP", &DetectorPythonInterface::setReceiverUDPIP)
-        .def("getReceiverUDPIP", &DetectorPythonInterface::getReceiverUDPIP)
-        .def("getReceiverUDPMAC", &DetectorPythonInterface::getReceiverUDPMAC)
-        .def("setReceiverUDPMAC", &DetectorPythonInterface::setReceiverUDPMAC)
+     //    .def("getReceiverUDPPort", &DetectorPythonInterface::getReceiverUDPPort)
+     //    .def("getReceiverUDPPort2",
+     //         &DetectorPythonInterface::getReceiverUDPPort2)
+     //    .def("setReceiverUDPPort", &DetectorPythonInterface::setReceiverUDPPort)
+     //    .def("setReceiverUDPPort2",
+     //         &DetectorPythonInterface::setReceiverUDPPort2)
+     //    .def("setReceiverUDPIP", &DetectorPythonInterface::setReceiverUDPIP)
+     //    .def("getReceiverUDPIP", &DetectorPythonInterface::getReceiverUDPIP)
+     //    .def("getReceiverUDPMAC", &DetectorPythonInterface::getReceiverUDPMAC)
+     //    .def("setReceiverUDPMAC", &DetectorPythonInterface::setReceiverUDPMAC)
 
         .def("getReceiverPort", &DetectorPythonInterface::getReceiverPort)
         .def("setReceiverPort", &DetectorPythonInterface::setReceiverPort)
 
-        .def("configureNetworkParameters",
-             &DetectorPythonInterface::configureNetworkParameters)
         .def("getDelayFrame", &DetectorPythonInterface::getDelayFrame)
         .def("setDelayFrame", &DetectorPythonInterface::setDelayFrame)
         .def("getDelayLeft", &DetectorPythonInterface::getDelayLeft)

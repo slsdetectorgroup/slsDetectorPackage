@@ -53,12 +53,27 @@ class ExperimentalDetector(CppDetectorApi):
         super().__init__(multi_id)
 
     # CONFIGURATION
-
     def __len__(self):
         return self.size()
 
     def free(self):
         self.freeSharedMemory()
+
+    @property
+    def config(self):
+        return NotImplementedError("config is set only")
+
+    @config.setter
+    def config(self, fname):
+        self.setConfig(fname)
+
+    @property
+    def parameters(self):
+        return NotImplementedError("parameters is set only")
+
+    @parameters.setter
+    def parameters(self, fname):
+        self.loadParameters(fname)
 
     @property
     def hostname(self):
@@ -74,8 +89,21 @@ class ExperimentalDetector(CppDetectorApi):
             raise ValueError("hostname needs to be string or list of strings")
 
     @property
-    def detectorversion(self):
+    def fw_version(self):
         return element_if_equal(self.getFirmwareVersion())
+
+    @property
+    def server_version(self):
+        #TODO! handle hex print
+        return element_if_equal(self.getDetectorServerVersion())
+
+    @property
+    def client_version(self):
+        return element_if_equal(self.getClientVersion())
+
+    @property
+    def rx_version(self):
+        return element_if_equal(self.getReceiverVersion())
 
     @property
     def detector_type(self):
@@ -110,6 +138,43 @@ class ExperimentalDetector(CppDetectorApi):
     def frames(self, n_frames):
         self.setNumberOfFrames(n_frames)
 
+
+    @property
+    def exptime(self):
+        res = self.getExptime()
+        return element_if_equal([it.total_seconds() for it in res])
+
+    @exptime.setter
+    def exptime(self, t):
+        if isinstance(t, dt.timedelta):
+            self.setExptime(t)
+        else:
+            self.setExptime(dt.timedelta(seconds=t))
+
+    @property
+    def subexptime(self):
+        res = self.getSubExptime()
+        return element_if_equal([it.total_seconds() for it in res])
+
+    @subexptime.setter
+    def subexptime(self, t):
+        if isinstance(t, dt.timedelta):
+            self.setSubExptime(t)
+        else:
+            self.setSubExptime(dt.timedelta(seconds=t))
+
+
+    @property
+    def period(self):
+        res = self.getPeriod()
+        return element_if_equal([it.total_seconds() for it in res])
+
+    @period.setter
+    def period(self, t):
+        if isinstance(t, dt.timedelta):
+            self.setPeriod(t)
+        else:
+            self.setPeriod(dt.timedelta(seconds=t))
     # Acq
     @property
     def rx_status(self):
@@ -162,21 +227,7 @@ class ExperimentalDetector(CppDetectorApi):
         self.setAcquiringFlag(value)
 
     # Configuration
-    @property
-    def startingfnum(self):
-        return element_if_equal(self.getStartingFrameNumber())
-
-    @startingfnum.setter
-    def startingfnum(self, value):
-        self.setStartingFrameNumber(value)
-
-    @property
-    def config(self):
-        return NotImplementedError("config is set only")
-
-    @config.setter
-    def config(self, fname):
-        self.setConfig(fname)
+    
 
     # File
     @property
@@ -212,39 +263,14 @@ class ExperimentalDetector(CppDetectorApi):
         self.setFileOverWrite(value)
 
     # Time
-    @property
-    def exptime(self):
-        res = self.getExptime()
-        return element_if_equal([it.total_seconds() for it in res])
+  
 
-    @exptime.setter
-    def exptime(self, t):
-        if isinstance(t, dt.timedelta):
-            self.setExptime(t)
-        else:
-            self.setExptime(dt.timedelta(seconds=t))
+    
 
     @property
-    def subexptime(self):
-        res = self.getSubExptime()
-        return element_if_equal([it.total_seconds() for it in res])
+    def startingfnum(self):
+        return element_if_equal(self.getStartingFrameNumber())
 
-    @subexptime.setter
-    def subexptime(self, t):
-        if isinstance(t, dt.timedelta):
-            self.setSubExptime(t)
-        else:
-            self.setSubExptime(dt.timedelta(seconds=t))
-
-    @property
-    def period(self):
-        res = self.getPeriod()
-        return element_if_equal([it.total_seconds() for it in res])
-
-    @period.setter
-    def period(self, t):
-        if isinstance(t, dt.timedelta):
-            self.setPeriod(t)
-        else:
-            self.setPeriod(dt.timedelta(seconds=t))
-
+    @startingfnum.setter
+    def startingfnum(self, value):
+        self.setStartingFrameNumber(value)

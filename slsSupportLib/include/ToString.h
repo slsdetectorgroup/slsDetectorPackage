@@ -11,6 +11,7 @@
 #include "TypeTraits.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
+#include "sls_detector_defs.h"
 #include <chrono>
 #include <iomanip>
 #include <sstream>
@@ -18,6 +19,17 @@
 #include <vector>
 
 namespace sls {
+
+
+inline std::string ToString(const slsDetectorDefs::runStatus s){
+    return slsDetectorDefs::runStatusType(s);
+}
+
+// in case we already have a string 
+// causes a copy but might be needed in generic code
+inline std::string ToString(const std::string& s){
+    return s;
+}
 
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>
@@ -71,6 +83,9 @@ typename std::enable_if<std::is_integral<T>::value, std::string>::type
 ToString(const T &value) {
     return std::to_string(value);
 }
+
+
+
 
 /**
  * For a container loop over all elements and call ToString on the element
@@ -158,9 +173,15 @@ T StringTo(const std::string &t, const std::string &unit) {
     }
 }
 
-template <typename T> T StringTo(std::string t) {
-    auto unit = RemoveUnit(t);
-    return StringTo<T>(t, unit);
+template <typename T> T StringTo(const std::string& t) {
+    std::string tmp{t};
+    auto unit = RemoveUnit(tmp);
+    return StringTo<T>(tmp, unit);
+}
+
+template <>
+inline slsDetectorDefs::detectorType StringTo(const std::string& s){
+    return slsDetectorDefs::detectorTypeToEnum(s);
 }
 
 /** For types with a .str() method use this for conversion */
@@ -169,5 +190,9 @@ typename std::enable_if<has_str<T>::value, std::string>::type
 ToString(const T &obj) {
     return obj.str();
 }
+
+
+
+
 
 } // namespace sls

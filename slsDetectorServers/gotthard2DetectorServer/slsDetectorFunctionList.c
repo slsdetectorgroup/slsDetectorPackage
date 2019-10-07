@@ -73,7 +73,7 @@ void basictests() {
 		return;
     }
 	// does check only if flag is 0 (by default), set by command line
-	if ((!debugflag) && ((testFpga() == FAIL))) {
+	if ((!debugflag) && ((testFpga() == FAIL) || (testBus() == FAIL))) {
 		sprintf(firmware_message,
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue. (Firmware version:0x%llx) \n", getDetectorId(DETECTOR_FIRMWARE_VERSION));
 		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
@@ -193,7 +193,7 @@ int testBus() {
 	FILE_LOG(logINFO, ("Testing Bus:\n"));
 
 	int ret = OK;
-	u_int32_t addr = LOOK_AT_ME_REG; //TODO: is this a RW register?
+	u_int32_t addr = DTA_OFFSET_REG; 
 	int times = 1000 * 1000;
 	int i = 0;
 
@@ -245,7 +245,7 @@ u_int64_t getFirmwareAPIVersion() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    return ((bus_r(API_VERSION_REG)));//TODO: & API_VERSION_MSK) >> API_VERSION_OFST);
+    return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
 u_int32_t getDetectorNumber(){
@@ -519,7 +519,7 @@ int configureMAC() {
 	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",dstport, dstport));
 
 	// start addr
-	uint32_t addr = BASE_PATTERN_RAM;
+	uint32_t addr = BASE_UDP_RAM;
 	// calculate rxr endpoint offset
 	//addr += (iRxEntry * RXR_ENDPOINT_OFST);//TODO: is there round robin already implemented?
 	// get struct memory
@@ -558,7 +558,6 @@ int configureMAC() {
 	//TODO?
 	//cleanFifos();
 	//resetCore();
-	//alignDeserializer();
 
 	return OK;
 }

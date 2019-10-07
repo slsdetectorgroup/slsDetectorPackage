@@ -72,21 +72,21 @@ class DetectorPythonInterface {
         det.setReceiverHostname(hostname, det_id);
     }
 
-    std::string getReceiverUDPIP(int det_id = -1) const {
-        return det.getReceiverUDPIP(det_id);
-    }
+    // std::string getReceiverUDPIP(int det_id = -1) const {
+    //     return det.getReceiverUDPIP(det_id);
+    // }
 
-    void setReceiverUDPIP(std::string ip, int det_id = -1) {
-        det.setReceiverUDPIP(ip, det_id);
-    }
+    // void setReceiverUDPIP(std::string ip, int det_id = -1) {
+    //     det.setReceiverUDPIP(ip, det_id);
+    // }
 
-    std::string getReceiverUDPMAC(int det_id = -1) {
-        return det.getReceiverUDPMAC(det_id);
-    }
+    // std::string getReceiverUDPMAC(int det_id = -1) {
+    //     return det.getReceiverUDPMAC(det_id);
+    // }
 
-    void setReceiverUDPMAC(std::string mac, int det_id = -1) {
-        det.setReceiverUDPMAC(mac, det_id);
-    }
+    // void setReceiverUDPMAC(std::string mac, int det_id = -1) {
+    //     det.setReceiverUDPMAC(mac, det_id);
+    // }
 
     void startReceiver() { det.startReceiver(); }
     void stopReceiver() { det.stopReceiver(); }
@@ -570,45 +570,31 @@ class DetectorPythonInterface {
         det.setReceiverDataStreamingOutPort(value, det_id);
     }
 
-    std::vector<int> getReceiverUDPPort() {
-        std::vector<int> vec;
-        vec.reserve(det.size());
-        for (size_t i = 0; i < det.size(); ++i) {
-            vec.push_back(det.getReceiverUDPPort(i));
-        }
-        return vec;
-    }
-
-    std::vector<int> getReceiverUDPPort2() {
-        std::vector<int> vec;
-        vec.reserve(det.size());
-        for (size_t i = 0; i < det.size(); ++i) {
-            vec.push_back(det.getReceiverUDPPort2(i));
-        }
-        return vec;
-    }
-
-    void setReceiverUDPPort(int port, int det_id) {
-        det.setReceiverUDPPort(port, det_id);
-    }
-    void setReceiverUDPPort2(int port, int det_id) {
-        det.setReceiverUDPPort2(port, det_id);
-    }
-
-    // //Set network parameter for all modules if det_id == -1 otherwise the
-    // module
-    // //specified with det_id.
-    // void setDetectorNetworkParameter(std::string par_name, std::string par,
-    // const int det_id) {
-    //     auto p = networkNameToEnum(par_name);
-    //     if (det_id == -1) {
-    //         det.setDetectorNetworkParameter(p, par);
-    //     } else {
-    //         det.setDetectorNetworkParameter(p, par, det_id);
+    // std::vector<int> getReceiverUDPPort() {
+    //     std::vector<int> vec;
+    //     vec.reserve(det.size());
+    //     for (size_t i = 0; i < det.size(); ++i) {
+    //         vec.push_back(det.getReceiverUDPPort(i));
     //     }
+    //     return vec;
     // }
 
-    void configureNetworkParameters() { det.configureMAC(); }
+    // std::vector<int> getReceiverUDPPort2() {
+    //     std::vector<int> vec;
+    //     vec.reserve(det.size());
+    //     for (size_t i = 0; i < det.size(); ++i) {
+    //         vec.push_back(det.getReceiverUDPPort2(i));
+    //     }
+    //     return vec;
+    // }
+
+    // void setReceiverUDPPort(int port, int det_id) {
+    //     det.setReceiverUDPPort(port, det_id);
+    // }
+    // void setReceiverUDPPort2(int port, int det_id) {
+    //     det.setReceiverUDPPort2(port, det_id);
+    // }
+
 
     std::string getLastClientIP() { return det.getLastClientIP(); }
     std::string getReceiverLastClientIP() {

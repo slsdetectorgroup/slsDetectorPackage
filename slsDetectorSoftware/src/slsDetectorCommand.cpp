@@ -935,7 +935,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>vhaper1 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the first shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vhaper [i] [mv]</b> Sets/gets the voltage to define the feedback resistance of the shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vshaper";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
@@ -949,7 +949,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>vhaper1 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the first shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vhaperneg [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the negative-polarity shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vshaperneg";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
@@ -1229,107 +1229,93 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vipre</b> Sets/gets dac for the current in the preamplifier for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vipre";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vdcsh</b> Sets/gets dac for the baseline of the shaper for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vdcsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>Vth1</b> Sets/gets first detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vth1</b> Sets/gets first detector threshold voltage for Mythen 3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vth1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>Vth1</b> Sets/gets second detector threshold voltage for Mythen 3.0. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vth2</b> Sets/gets second detector threshold voltage for Mythen 3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vth2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>Vth1</b> Sets/gets third detector threshold voltage for Mythen 3.0. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vth3</b> Sets/gets third detector threshold voltage for Mythen 3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vth3";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vpl</b> Sets/gets dac for the lower value of the analog pulse for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vpl"; 
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vph</b> Sets/gets dac for the higher value of the analog pulse for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vph";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vtrim</b> Sets/gets dac for the voltage defining the trim bit size for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vtrim";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>viinsh</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "viinsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>cas</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "cas";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>cassh</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "cassh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vicin</b> Sets/gets dac for the bias of the comparator for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vicin";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vipreout</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vipreout";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "vrfsh";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "vrfshnpol";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
@@ -1957,7 +1943,7 @@ std::string slsDetectorCommand::executeLine(int narg, const char * const args[],
 
     if (action == READOUT_ACTION)
         return cmdAcquire(narg, args, action, detPos);
-
+xxx
     size_t s = std::string(args[0]).find(':');
     std::string key = std::string(args[0]).substr(0, s); // truncate at :
 

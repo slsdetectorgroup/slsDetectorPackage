@@ -33,7 +33,17 @@ TEST_CASE("settings", "[.cmd]") {
 TEST_CASE("threshold", "[.cmd]") {
     REQUIRE_NOTHROW(multiSlsDetectorClient("threshold 6400 standard", PUT));
     REQUIRE_NOTHROW(multiSlsDetectorClient("thresholdnotb 6400 standard", PUT));
+    REQUIRE_NOTHROW(multiSlsDetectorClient("threshold 6400", PUT));
+    REQUIRE_NOTHROW(multiSlsDetectorClient("thresholdnotb 6400", PUT));
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("threshold", GET, nullptr, oss);
+        std::string s = (oss.str()).erase (0, strlen("threshold "));
+        REQUIRE(std::stoi(s) == 6400);
+        REQUIRE_THROWS(multiSlsDetectorClient("thresholdnotb", GET));
+    } 
 }
+
 
 TEST_CASE("detsize", "[.cmd]") {
     CHECK_NOTHROW(multiSlsDetectorClient("detize", GET));

@@ -297,18 +297,21 @@ std::string CmdProxy::Threshold(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[eV] [settings standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\tThreshold in eV" << '\n';   
+        os << "[eV] [(optinal settings) standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\tThreshold in eV" << '\n';   
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getThresholdEnergy();
         os << OutString(t) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);
-        }        
-        det->setThresholdEnergy(std::stoi(args[0]), sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]), true, {det_id});
+    } else if (action == defs::PUT_ACTION) {    
+        if (args.size() == 1) {
+            det->setThresholdEnergy(std::stoi(args[0]), slsDetectorDefs::GET_SETTINGS, true, {det_id});  
+        } else if (args.size() == 2) {
+            det->setThresholdEnergy(std::stoi(args[0]), sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]), true, {det_id});
+        } else {
+            WrongNumberOfParameters(1);
+        }  
         os << ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -320,18 +323,17 @@ std::string CmdProxy::ThresholdNoTb(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[eV] [settings standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\tThreshold in eV set without setting trimbits" << '\n';   
+        os << "[eV] [(optional settings) standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\tThreshold in eV set without setting trimbits" << '\n';   
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getThresholdEnergy();
-        os << OutString(t) << '\n';
+        throw sls::RuntimeError("cannot get");
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);
-        }        
-        det->setThresholdEnergy(std::stoi(args[0]), sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]), false, {det_id});
+        if (args.size() == 1) {
+            det->setThresholdEnergy(std::stoi(args[0]), slsDetectorDefs::GET_SETTINGS, false, {det_id});  
+        } else if (args.size() == 2) {
+            det->setThresholdEnergy(std::stoi(args[0]), sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]), false, {det_id});
+        } else {
+            WrongNumberOfParameters(1);
+        }
         os << ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");

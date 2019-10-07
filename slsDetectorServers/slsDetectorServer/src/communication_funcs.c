@@ -545,7 +545,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 	}
 	n = receiveData(file_des, myMod->chanregs, sizeof(int) * (myMod->nchan), INT32);
     FILE_LOG(level, ("chanregs received. %d bytes.\n", n));
-    if (!n){
+    if (!n && myMod->nchan != 0){
 		return -1;
 	} 
 	ts += n;

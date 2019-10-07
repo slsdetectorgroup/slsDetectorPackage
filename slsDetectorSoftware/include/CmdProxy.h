@@ -345,7 +345,7 @@ class CmdProxy {
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
 
                           {"threshold", &CmdProxy::Threshold},
-                          //{"thresholdnotb", &CmdProxy::ThresholdNoTb},  
+                          {"thresholdnotb", &CmdProxy::ThresholdNoTb},  
 
 
                           {"savepattern", &CmdProxy::savepattern}                         

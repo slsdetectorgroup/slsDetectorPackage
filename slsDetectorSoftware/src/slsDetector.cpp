@@ -421,34 +421,34 @@ int slsDetector::sendModule(sls_detector_module *myMod,
     n = client.Send(&(myMod->nchan), sizeof(myMod->nchan));
     ts += n;
     FILE_LOG(level) << "nchan sent. " << n
-                    << " bytes. serialno: " << myMod->nchan;
+                    << " bytes. nchan: " << myMod->nchan;
 
     n = client.Send(&(myMod->nchip), sizeof(myMod->nchip));
     ts += n;
     FILE_LOG(level) << "nchip sent. " << n
-                    << " bytes. serialno: " << myMod->nchip;
+                    << " bytes. nchip: " << myMod->nchip;
 
     n = client.Send(&(myMod->ndac), sizeof(myMod->ndac));
     ts += n;
     FILE_LOG(level) << "ndac sent. " << n
-                    << " bytes. serialno: " << myMod->ndac;
+                    << " bytes. ndac: " << myMod->ndac;
 
     n = client.Send(&(myMod->reg), sizeof(myMod->reg));
     ts += n;
-    FILE_LOG(level) << "reg sent. " << n << " bytes. serialno: " << myMod->reg;
+    FILE_LOG(level) << "reg sent. " << n << " bytes. reg: " << myMod->reg;
 
     n = client.Send(&(myMod->iodelay), sizeof(myMod->iodelay));
     ts += n;
     FILE_LOG(level) << "iodelay sent. " << n
-                    << " bytes. serialno: " << myMod->iodelay;
+                    << " bytes. iodelay: " << myMod->iodelay;
 
     n = client.Send(&(myMod->tau), sizeof(myMod->tau));
     ts += n;
-    FILE_LOG(level) << "tau sent. " << n << " bytes. serialno: " << myMod->tau;
+    FILE_LOG(level) << "tau sent. " << n << " bytes. tau: " << myMod->tau;
 
     n = client.Send(&(myMod->eV), sizeof(myMod->eV));
     ts += n;
-    FILE_LOG(level) << "ev sent. " << n << " bytes. serialno: " << myMod->eV;
+    FILE_LOG(level) << "ev sent. " << n << " bytes. ev: " << myMod->eV;
 
     n = client.Send(myMod->dacs, sizeof(int) * (myMod->ndac));
     ts += n;

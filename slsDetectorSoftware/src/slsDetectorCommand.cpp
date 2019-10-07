@@ -777,19 +777,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to configure settings and threshold of detector
 	 */
 
-    /*! \page settings
-   - <b>threshold [eV] [sett] </b> sets/gets the detector threshold in eV. sett is optional and if provided also sets the settings. Use this for Eiger instead of \c settings. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "threshold";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
-    ++i;
-
-    /*! \page settings
-   - <b>thresholdnotb [eV] [sett] </b> sets/gets the detector threshold in eV without loading trimbits. sett is optional and if provided also sets the settings. Use this for Eiger instead of \c settings. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "thresholdnotb";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
-    ++i;
 
     /*! \page settings
    - <b>trimbits [fname] </b> loads/stores the trimbits to/from the detector. If no extension is specified, the serial number of each module will be attached. \c Returns \c (string) fname
@@ -2672,43 +2659,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[],
     char ans[1000];
 
    
-    if (cmd == "threshold") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &val)) {
-                return std::string("invalid threshold value");
-            }
-            detectorType type = myDet->getDetectorTypeAsEnum(detPos);
-            if (type != EIGER || (type == EIGER && narg <= 2)) {
-                myDet->setThresholdEnergy(val, GET_SETTINGS, 1, detPos);
-            } else {
-                detectorSettings sett = sls::StringTo<detectorSettings>(std::string(args[2]));
-                if (sett == -1)
-                    return std::string("invalid settings value");
-                myDet->setThresholdEnergy(val, sett, 1, detPos);
-            }
-        }
-        sprintf(ans, "%d", myDet->getThresholdEnergy(detPos));
-        return std::string(ans);
-    } else if (cmd == "thresholdnotb") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &val)) {
-                return std::string("invalid threshold value");
-            }
-            detectorType type = myDet->getDetectorTypeAsEnum(detPos);
-            if (type != EIGER)
-                return std::string("not implemented for this detector");
-            if (narg <= 2) {
-                myDet->setThresholdEnergy(val, GET_SETTINGS, 0, detPos);
-            } else {
-                detectorSettings sett = sls::StringTo<detectorSettings>(std::string(args[2]));
-                if (sett == -1)
-                    return std::string("invalid settings value");
-                myDet->setThresholdEnergy(val, sett, 0, detPos);
-            }
-        }
-        sprintf(ans, "%d", myDet->getThresholdEnergy(detPos));
-        return std::string(ans);
-    } else if (cmd == "trimbits") {
+    if (cmd == "trimbits") {
         if (narg >= 2) {
             std::string sval = std::string(args[1]);
 #ifdef VERBOSE
@@ -2740,14 +2691,10 @@ std::string slsDetectorCommand::helpSettings(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-         os << "threshold eV [sett]\n sets the detector threshold in eV. If sett is provided for eiger, uses settings sett" << std::endl;
-        os << "thresholdnotb eV [sett]\n sets the detector threshold in eV without loading trimbits. If sett is provided for eiger, uses settings sett" << std::endl;
         os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached." << std::endl;
         os << "trimval i \n sets all the trimbits to i" << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "threshold V\n gets the detector threshold" << std::endl;
-        os << "thresholdnotb V\n gets the detector threshold" << std::endl;
         os << "trimbits [fname]\n returns the trimfile loaded on the detector. If fname is specified the trimbits are saved to file. If no extension is specified, the serial number of each module will be attached." << std::endl;
         os << "trimval \n returns the value all trimbits are set to. If they are different, returns -1." << std::endl;
     }

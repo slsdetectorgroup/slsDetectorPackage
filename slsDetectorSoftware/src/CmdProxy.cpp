@@ -297,7 +297,7 @@ std::string CmdProxy::Threshold(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[eV] [(optinal settings) standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\tThreshold in eV" << '\n';   
+        os << "[eV] [(optinal settings) standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\t[Eiger] Threshold in eV" << '\n';   
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
@@ -323,7 +323,7 @@ std::string CmdProxy::ThresholdNoTb(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[eV] [(optional settings) standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\tThreshold in eV set without setting trimbits" << '\n';   
+        os << "[eV] [(optional settings) standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\t[Eiger] Threshold in eV set without setting trimbits" << '\n';   
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("cannot get");
     } else if (action == defs::PUT_ACTION) {

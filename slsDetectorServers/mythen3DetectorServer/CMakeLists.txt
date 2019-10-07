@@ -7,6 +7,7 @@ add_executable(mythen3DetectorServer_virtual
     ../slsDetectorServer/src/communication_funcs_UDP.c        
     ../slsDetectorServer/src/DAC6571.c      
     ../slsDetectorServer/src/common.c 
+    ../slsDetectorServer/src/LTC2620_Driver.c
 )
 
 include_directories(

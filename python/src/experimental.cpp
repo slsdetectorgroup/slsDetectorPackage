@@ -278,6 +278,41 @@ void init_experimental(py::module &m) {
         .def("getRxLastClientIP", &Detector::getRxLastClientIP,
              py::arg() = Positions{})
 
+        // FILE
+        .def("getFileFormat", &Detector::getFileFormat, py::arg() = Positions{})
+        .def("setFileFormat", &Detector::setFileFormat, py::arg(),
+             py::arg() = Positions{})
+        .def("getFilePath", &Detector::getFilePath, py::arg() = Positions{})
+        .def("setFilePath", &Detector::setFilePath, py::arg(),
+             py::arg() = Positions{})
+        .def("getFileNamePrefix", &Detector::getFileNamePrefix,
+             py::arg() = Positions{})
+        .def("setFileNamePrefix", &Detector::setFileNamePrefix, py::arg(),
+             py::arg() = Positions{})
+        .def("getFilePath", &Detector::getFilePath)
+        .def("setFilePath", &Detector::setFilePath, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getAcquisitionIndex", &Detector::getAcquisitionIndex,
+             py::arg() = Positions{})
+        .def("setAcquisitionIndex", &Detector::setAcquisitionIndex, py::arg(),
+             py::arg() = Positions{})
+        .def("setFileWrite", &Detector::setFileWrite, py::arg(),
+             py::arg() = Positions{})
+        .def("getFileWrite", &Detector::getFileWrite, py::arg() = Positions{})
+        .def("setFileOverWrite", &Detector::setFileOverWrite, py::arg(),
+             py::arg() = Positions{})
+        .def("getFileOverWrite", &Detector::getFileOverWrite,
+             py::arg() = Positions{})
+        .def("setMasterFileWrite", &Detector::setMasterFileWrite, py::arg(),
+             py::arg() = Positions{})
+        .def("getMasterFileWrite", &Detector::getMasterFileWrite,
+             py::arg() = Positions{})
+        .def("setFramesPerFile", &Detector::setFramesPerFile, py::arg(),
+             py::arg() = Positions{})
+        .def("getFramesPerFile", &Detector::getFramesPerFile,
+             py::arg() = Positions{})
+
         // Bits and registers
         .def("setBit", &Detector::setBit, py::arg(), py::arg(),
              py::arg() = Positions{})
@@ -292,19 +327,6 @@ void init_experimental(py::module &m) {
              py::arg(), py::arg() = Positions{})
 
         // File
-        .def("getFileNamePrefix", &Detector::getFileNamePrefix)
-        .def("setFileNamePrefix", &Detector::setFileNamePrefix, py::arg(),
-             py::arg() = Positions{})
-        .def("getFilePath", &Detector::getFilePath)
-        .def("setFilePath", &Detector::setFilePath, py::arg(),
-             py::arg() = Positions{})
-        .def("setFileWrite", &Detector::setFileWrite, py::arg(),
-             py::arg() = Positions{})
-        .def("getFileWrite", &Detector::getFileWrite, py::arg() = Positions{})
-        .def("setFileOverWrite", &Detector::setFileOverWrite, py::arg(),
-             py::arg() = Positions{})
-        .def("getFileOverWrite", &Detector::getFileOverWrite,
-             py::arg() = Positions{})
 
         // Time
 

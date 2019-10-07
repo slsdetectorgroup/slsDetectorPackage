@@ -214,40 +214,7 @@ class ExperimentalDetector(CppDetectorApi):
 
     # Configuration
     
-
-    # File
-    @property
-    def fname(self):
-        return element_if_equal(self.getFileNamePrefix())
-
-    @fname.setter
-    def fname(self, file_name):
-        self.setFileNamePrefix(file_name)
-
-    @property
-    def fpath(self):
-        return element_if_equal(self.getFilePath())
-
-    @fpath.setter
-    def fpath(self, path):
-        self.setFilePath(path)
-
-    @property
-    def fwrite(self):
-        return element_if_equal(self.getFileWrite())
-
-    @fwrite.setter
-    def fwrite(self, value):
-        self.setFileWrite(value)
-
-    @property
-    def foverwrite(self):
-        return element_if_equal(self.getFileOverWrite())
-
-    @foverwrite.setter
-    def foverwrite(self, value):
-        self.setFileOverWrite(value)
-
+  
     # Time
     @property
     def rx_status(self):
@@ -354,3 +321,70 @@ class ExperimentalDetector(CppDetectorApi):
     @property
     def rx_lastclient(self):
         return element_if_equal(self.getRxLastClientIP())
+
+
+    #FILE
+
+    @property
+    def fformat(self):
+        return element_if_equal(self.getFileFormat())
+    
+    @fformat.setter
+    def fformat(self, format):
+        self.setFileFormat(format)
+
+    @property
+    def findex(self):
+        return element_if_equal(self.getAcquisitionIndex())
+
+    @findex.setter
+    def findex(self, index):
+        self.setAcquisitionIndex(index)
+
+    @property
+    def fname(self):
+        return element_if_equal(self.getFileNamePrefix())
+
+    @fname.setter
+    def fname(self, file_name):
+        self.setFileNamePrefix(file_name)
+
+    @property
+    def fpath(self):
+        return element_if_equal(self.getFilePath())
+
+    @fpath.setter
+    def fpath(self, path):
+        self.setFilePath(path)
+
+    @property
+    def fwrite(self):
+        return element_if_equal(self.getFileWrite())
+
+    @fwrite.setter
+    def fwrite(self, value):
+        self.setFileWrite(value)
+
+    @property
+    def foverwrite(self):
+        return element_if_equal(self.getFileOverWrite())
+
+    @foverwrite.setter
+    def foverwrite(self, value):
+        self.setFileOverWrite(value)
+
+    @property
+    def fmaster(self):
+        return element_if_equal(self.getMasterFileWrite())
+
+    @fmaster.setter
+    def fmaster(self, enable):
+        self.setMasterFileWrite(enable)
+
+    @property
+    def rx_framesperfile(self):
+        return element_if_equal(self.getFramesPerFile())
+
+    @rx_framesperfile.setter
+    def rx_framesperfile(self, n_frames):
+        self.setFramesPerFile(n_frames)

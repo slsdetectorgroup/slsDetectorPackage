@@ -5,14 +5,14 @@ support_lib = ../../slsSupportLib/include/
 
 CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DMYTHEN3D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -DMYTHEN3D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir) -DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm
 PROGS		= 	mythen3DetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS	=	slsDetectorFunctionList.c 
-SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)nios.c $(main_src)DAC6571.c $(main_src)common.c
+SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)nios.c $(main_src)DAC6571.c $(main_src)common.c $(main_src)LTC2620_Driver.c
 
 OBJS 	= 	$(SRCS:.c=.o) 
  

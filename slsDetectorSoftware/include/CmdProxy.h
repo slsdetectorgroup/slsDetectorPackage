@@ -279,6 +279,8 @@ class CmdProxy {
                                     {"receiverversion", "rx_version"},
                                     {"thisversion", "clientversion"},
                                     {"detsizechan", "detsize"},
+
+                                    {"cycles", "triggers"}
                                     
                                     };
 

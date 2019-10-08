@@ -1333,6 +1333,105 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vref_h_adc</b> Sets/gets dac for reference voltage high of ADC for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_h_adc";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vb_comp_fe</b> Sets/gets dac for comparator current of analogue front end for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_comp_fe";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;    
+
+    /*! \page settings
+   - <b>vb_comp_adc</b> Sets/gets dac for comparator current of ADC for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_comp_adc";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vcom_cds</b> Sets/gets dac for common mode voltage of CDS stage for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vcom_cds";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i; 
+
+    /*! \page settings
+   - <b>vref_restore</b> Sets/gets dac for reference charging voltage of temparory storage cell in high gain for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_restore";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vb_opa_1st</b> Sets/gets dac for opa current for driving the other DACs in chip for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_opa_1st";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;    
+
+    /*! \page settings
+   - <b>vref_comp_fe</b> Sets/gets dac for reference voltage of the comparator of analogue front end for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_comp_fe";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vcom_adc1</b> Sets/gets dac for common mode voltage of ADC DAC bank 1 for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vcom_adc1";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;     
+
+    /*! \page settings
+   - <b>vref_prech</b> Sets/gets dac for reference votlage for precharing the preamplifier for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_prech";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vref_l_adc</b> Sets/gets dac for reference voltage low for ADC for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_l_adc";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;    
+
+    /*! \page settings
+   - <b>vref_cds</b> Sets/gets dac for reference voltage of CDS applied to the temporary storage cell in medium and low gain for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_cds";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vb_cs</b> Sets/gets dac for current injection into preamplifier for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_cs";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i; 
+
+    /*! \page settings
+   - <b>vb_opa_fd</b> Sets/gets dac for current for CDS opa stage for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_opa_fd";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vcom_adc2</b> Sets/gets dac for common mode voltage of ADC DAC bank 2 for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vcom_adc2";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;    
+  
+
     /* r/w timers */
     /*! \page settings
 		\section settingsadcs ADCs
@@ -3424,8 +3523,34 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         dac = M_cas;
     else if (cmd == "vicin")
         dac = M_vIcin;
-    else if (cmd == "vipreout")
-        dac = M_vIpreOut;
+    else if (cmd == "vref_h_adc")
+        dac = VREF_H_ADC;
+    else if (cmd == "vb_comp_fe")
+        dac = VB_COMP_FE; 
+    else if (cmd == "vb_comp_adc")
+        dac = VB_COMP_ADC;
+    else if (cmd == "vcom_cds")
+        dac = VCOM_CDS;     
+    else if (cmd == "vref_restore")
+        dac = VREF_RESTORE;
+    else if (cmd == "vb_opa_1st")
+        dac = VB_OPA_1ST; 
+    else if (cmd == "vref_comp_fe")
+        dac = VREF_COMP_FE;
+    else if (cmd == "vcom_adc1")
+        dac = VCOM_ADC1;  
+    else if (cmd == "vref_prech")
+        dac = VREF_PRECH;
+    else if (cmd == "vref_l_adc")
+        dac = VREF_L_ADC; 
+    else if (cmd == "vref_cds")
+        dac = VREF_CDS;
+    else if (cmd == "vb_cs")
+        dac = VB_CS;     
+    else if (cmd == "vb_opa_fd")
+        dac = VB_OPA_FD;
+    else if (cmd == "vcom_adc2")
+        dac = VCOM_ADC2;       
     else
         return std::string("cannot decode dac ") + cmd;
 

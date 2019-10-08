@@ -437,6 +437,20 @@ format
         M_cas,               /**< mythen 3 >*/
         M_vIcin,             /**< mythen 3 >*/
         M_vIpreOut,          /**< mythen 3 >*/
+        VREF_H_ADC,          /**< gotthard 2 >*/ 
+        VB_COMP_FE,          /**< gotthard 2 >*/ 
+        VB_COMP_ADC,         /**< gotthard 2 >*/ 
+        VCOM_CDS,            /**< gotthard 2 >*/ 
+        VREF_RESTORE,        /**< gotthard 2 >*/ 
+        VB_OPA_1ST,          /**< gotthard 2 >*/ 
+        VREF_COMP_FE,        /**< gotthard 2 >*/ 
+        VCOM_ADC1,           /**< gotthard 2 >*/ 
+        VREF_PRECH,          /**< gotthard 2 >*/ 
+        VREF_L_ADC,          /**< gotthard 2 >*/ 
+        VREF_CDS,            /**< gotthard 2 >*/ 
+        VB_CS,               /**< gotthard 2 >*/ 
+        VB_OPA_FD,           /**< gotthard 2 >*/ 
+        VCOM_ADC2,           /**< gotthard 2 >*/ 
         V_POWER_A = 100,     /**new chiptest board */
         V_POWER_B = 101,     /**new chiptest board */
         V_POWER_C = 102,     /**new chiptest board */
@@ -1195,7 +1209,7 @@ struct detParameters {
             nChanY = 1;
             nChipX = 10;
             nChipY = 1;
-            nDacs = 16;
+            nDacs = 14;
             dynamicRange = 16;
             nGappixelsX = 0;
             nGappixelsY = 0;

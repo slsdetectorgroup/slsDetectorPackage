@@ -941,6 +941,14 @@ int startStateMachine(){
 	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
 	return OK;
 #endif
+	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
+	// cleanFifos();
+
+	//start state machine
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK | CONTROL_STRT_EXPSR_MSK);
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STRT_ACQSTN_MSK & ~CONTROL_STRT_EXPSR_MSK);
+
+	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -995,6 +1003,12 @@ int stopStateMachine(){
 	virtual_stop = 0;
 	return OK;
 #endif
+	//stop state machine
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STP_ACQSTN_MSK);
+	usleep(WAIT_TIME_US_STP_ACQ);
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STP_ACQSTN_MSK);
+
+	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
     return OK;
 }
 

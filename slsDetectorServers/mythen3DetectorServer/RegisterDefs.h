@@ -45,6 +45,25 @@
 /* Look at me register, read only */
 #define LOOK_AT_ME_REG          		(0x005 * REG_OFFSET + BASE_CONTROL)	//Not used in firmware or software, good to play with
 
+/* Control RW register */
+#define CONTROL_REG           			(0x021 * REG_OFFSET + BASE_CONTROL)
+
+#define CONTROL_STRT_ACQSTN_OFST       	(0)
+#define CONTROL_STRT_ACQSTN_MSK			(0x00000001 << CONTROL_STRT_ACQSTN_OFST)
+#define CONTROL_STP_ACQSTN_OFST			(1)
+#define CONTROL_STP_ACQSTN_MSK			(0x00000001 << CONTROL_STP_ACQSTN_OFST)
+#define CONTROL_STRT_EXPSR_OFST         (6)
+#define CONTROL_STRT_EXPSR_MSK          (0x00000001 << CONTROL_STRT_EXPSR_OFST)
+#define CONTROL_CRE_RST_OFST			(10)
+#define CONTROL_CRE_RST_MSK			    (0x00000001 << CONTROL_CRE_RST_OFST)
+#define CONTROL_PRPHRL_RST_OFST		    (11)										// Only GBE10?
+#define CONTROL_PRPHRL_RST_MSK		    (0x00000001 << CONTROL_PRPHRL_RST_OFST)
+#define CONTROL_MMRY_RST_OFST		    (12)
+#define CONTROL_MMRY_RST_MSK		    (0x00000001 << CONTROL_MMRY_RST_OFST)
+#define CONTROL_CLR_ACQSTN_FIFO_OFST    (15)
+#define CONTROL_CLR_ACQSTN_FIFO_MSK		(0x00000001 << CONTROL_CLR_ACQSTN_FIFO_OFST)
+
+
 #define DTA_OFFSET_REG                  (0x104 * REG_OFFSET + BASE_CONTROL)
 
 /* Pattern Control FPGA registers --------------------------------------------------*/

@@ -57,6 +57,7 @@ enum DACINDEX   {CASSH, VTH2, VRFSH, VRFSHNPOL, VIPREOUT, VTH3, VTH1, VICIN, CAS
 
 /* Defines in the Firmware */
 #define MAX_PATTERN_LENGTH  		(0x2000) // maximum number of words (64bit)
+#define WAIT_TIME_US_STP_ACQ        (100)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

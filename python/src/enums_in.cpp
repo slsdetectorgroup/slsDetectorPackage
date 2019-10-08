@@ -8,6 +8,8 @@ namespace py = pybind11;
 void init_enums(py::module &m) {
     py::class_<slsDetectorDefs> Defs(m, "slsDetectorDefs");
     py::class_<slsDetectorDefs::xy> xy(m, "xy");
+    xy.def(py::init());
+	xy.def(py::init<int,int>());
     xy.def_readwrite("x", &slsDetectorDefs::xy::x);
     xy.def_readwrite("y", &slsDetectorDefs::xy::y);
 

@@ -544,7 +544,7 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
             ret = impl()->setAcquisitionPeriod(value);
             break;
         case FRAME_NUMBER:
-        case CYCLES_NUMBER:
+        case TRIGGER_NUMBER:
         case STORAGE_CELL_NUMBER:
             impl()->setNumberOfFrames(value);
             break;
@@ -585,7 +585,7 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
         retval = impl()->getAcquisitionPeriod();
         break;
     case FRAME_NUMBER:
-    case CYCLES_NUMBER:
+    case TRIGGER_NUMBER:
     case STORAGE_CELL_NUMBER:
         retval = impl()->getNumberOfFrames();
         break;

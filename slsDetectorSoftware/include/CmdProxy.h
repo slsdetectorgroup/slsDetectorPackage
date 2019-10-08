@@ -289,7 +289,6 @@ class CmdProxy {
                           {"exptime", &CmdProxy::Exptime},
                           {"period", &CmdProxy::Period},
                           {"subexptime", &CmdProxy::SubExptime},
-                          {"frames", &CmdProxy::frames},
                           {"parallel", &CmdProxy::parallel},
                           {"overflow", &CmdProxy::overflow},
                           {"storeinram", &CmdProxy::storeinram},
@@ -330,8 +329,9 @@ class CmdProxy {
                           {"type", &CmdProxy::type},
                           {"detsize", &CmdProxy::DetectorSize},
                           {"settings", &CmdProxy::settings},
-                          
-                          
+                          {"frames", &CmdProxy::frames},                          
+                          {"triggers", &CmdProxy::triggers},
+
 
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
@@ -395,10 +395,6 @@ class CmdProxy {
     INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile,
                     std::stoi, "[n_frames]\n\tNumber of frames per file");
 
-    INTEGER_COMMAND_NOID(frames, getNumberOfFrames, setNumberOfFrames,
-                         std::stol,
-                         "[n_frames]\n\tNumber of frames per aquire");
-
     INTEGER_COMMAND(fwrite, getFileWrite, setFileWrite, std::stoi,
                     "[0, 1]\n\tEnable or disable receiver file write");
 
@@ -458,6 +454,7 @@ class CmdProxy {
 
 
 
+
     EXECUTE_SET_COMMAND_NOID_1ARG(config, loadConfig, 
                 "[fname]\n\tConfigures detector to configuration contained in fname. Set up once.");  
 
@@ -478,6 +475,18 @@ class CmdProxy {
 
     INTEGER_COMMAND(settings, getSettings, setSettings, sls::StringTo<slsDetectorDefs::detectorSettings>,
                     "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\t[Jungfrau][Gotthard] Detector Settings.\n\t[Eiger] Use threshold or thresholdnotb.");      
+
+    INTEGER_COMMAND_NOID(frames, getNumberOfFrames, setNumberOfFrames,
+                         std::stol,
+                         "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of frames per trigger.");
+
+    INTEGER_COMMAND_NOID(triggers, setNumberOfTriggers, setNumberOfTriggers,
+                         std::stol,
+                         "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
+
+
+
+
 
 
 
@@ -506,6 +515,7 @@ class CmdProxy {
                 "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  
 
     
+
 
     STRING_COMMAND(rx_hostname, getRxHostname, setRxHostname, 
                 "[hostname or ip address]\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");

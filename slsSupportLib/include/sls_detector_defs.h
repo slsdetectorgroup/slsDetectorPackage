@@ -112,8 +112,8 @@ class slsDetectorDefs {
         FRAME_PERIOD,        /**< period between exposures */
         DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or
                                 readout (in triggered mode) */
-        CYCLES_NUMBER,    /**< number of cycles: total number of acquisitions is
-                             number or frames*number of cycles */
+        TRIGGER_NUMBER,    /**< number of triggers: total number of acquisitions is
+                             number or frames*number of triggers (* number of storage cells [jungfrau]) */
         ACTUAL_TIME,      /**< Actual time of the detector's internal timer */
         MEASUREMENT_TIME, /**< Time of the measurement from the detector (fifo)
                            */
@@ -686,7 +686,7 @@ format
 
     /** returns std::string from timer index
         \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD,
-       DELAY_AFTER_TRIGGER, CYCLES_NUMBER,
+       DELAY_AFTER_TRIGGER, TRIGGER_NUMBER,
        ACTUAL_TIME,MEASUREMENT_TIME,
        PROGRESS,FRAMES_FROM_START,FRAMES_FROM_START_PG,ANALOG_SAMPLES,DIGITAL_SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
        SUBFRAME_DEADTIME \returns std::string
@@ -706,7 +706,7 @@ format
             return std::string("frame_period");
         case DELAY_AFTER_TRIGGER:
             return std::string("delay_after_trigger");
-        case CYCLES_NUMBER:
+        case TRIGGER_NUMBER:
             return std::string("cycles_number");
         case ACTUAL_TIME:
             return std::string("actual_time");

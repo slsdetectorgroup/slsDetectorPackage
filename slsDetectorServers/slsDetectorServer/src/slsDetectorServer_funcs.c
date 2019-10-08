@@ -122,7 +122,7 @@ const char* getTimerName(enum timerIndex ind) {
     case ACQUISITION_TIME:          return "acquisition_time";
     case FRAME_PERIOD:              return "frame_period";
     case DELAY_AFTER_TRIGGER:       return "delay_after_trigger";
-    case CYCLES_NUMBER:             return "cycles_number";
+    case TRIGGER_NUMBER:             return "cycles_number";
     case ACTUAL_TIME:               return "actual_time";
     case MEASUREMENT_TIME:          return "measurement_time";
     case PROGRESS:                  return "progress";
@@ -1791,7 +1791,7 @@ int set_timer(int file_des) {
 	    case FRAME_NUMBER:
 	    case ACQUISITION_TIME:
 	    case FRAME_PERIOD:
-	    case CYCLES_NUMBER:
+	    case TRIGGER_NUMBER:
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	    case ANALOG_SAMPLES:
 		case DIGITAL_SAMPLES:
@@ -1861,7 +1861,7 @@ int set_timer(int file_des) {
 #else
 	        switch(ind) {
 	        case FRAME_NUMBER:
-	        case CYCLES_NUMBER:
+	        case TRIGGER_NUMBER:
 	        case STORAGE_CELL_NUMBER:
 	            validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
 	            break;
@@ -1933,13 +1933,13 @@ int get_time_left(int file_des) {
         case FRAME_NUMBER:
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
-        case CYCLES_NUMBER:
+        case TRIGGER_NUMBER:
 #elif GOTTHARDD
         case ACQUISITION_TIME:
         case FRAME_NUMBER:
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
-        case CYCLES_NUMBER:
+        case TRIGGER_NUMBER:
 #elif CHIPTESTBOARDD
         case FRAMES_FROM_START:
         case FRAMES_FROM_START_PG:
@@ -1948,7 +1948,7 @@ int get_time_left(int file_des) {
         case FRAME_NUMBER:
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
-        case CYCLES_NUMBER:
+        case TRIGGER_NUMBER:
 #elif MOENCHD
         case FRAMES_FROM_START:
         case FRAMES_FROM_START_PG:
@@ -1957,13 +1957,13 @@ int get_time_left(int file_des) {
         case FRAME_NUMBER:
         case FRAME_PERIOD:
         case DELAY_AFTER_TRIGGER:
-        case CYCLES_NUMBER:
+        case TRIGGER_NUMBER:
 #elif MYTHEN3D
 		case FRAME_NUMBER:
-		case CYCLES_NUMBER:
+		case TRIGGER_NUMBER:
 #elif GOTTHARD2D
 		case FRAME_NUMBER:
-		case CYCLES_NUMBER:		
+		case TRIGGER_NUMBER:		
 #endif
             retval = getTimeLeft(ind);
             FILE_LOG(logDEBUG1, ("Timer left index %d: %lld\n", ind, retval));
@@ -2372,7 +2372,7 @@ int send_update(int file_des) {
 #endif
 
 	// #cycles
-	i64 = setTimer(CYCLES_NUMBER,GET_FLAG);
+	i64 = setTimer(TRIGGER_NUMBER,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 

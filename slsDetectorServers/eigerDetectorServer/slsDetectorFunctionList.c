@@ -441,7 +441,7 @@ void setupDetector() {
 	setTimer(SUBFRAME_ACQUISITION_TIME, DEFAULT_SUBFRAME_EXPOSURE);
 	setTimer(SUBFRAME_DEADTIME, DEFAULT_SUBFRAME_DEADTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
-	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
+	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
 	setParallelMode(DEFAULT_PARALLEL_MODE);
@@ -714,7 +714,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		return eiger_virtual_period*1e9;
 #endif
 
-	case CYCLES_NUMBER:
+	case TRIGGER_NUMBER:
 		if (val >= 0) {
 			FILE_LOG(logDEBUG1, ("Setting number of triggers: %d * %d\n",
 					(unsigned int)val,eiger_nexposures));

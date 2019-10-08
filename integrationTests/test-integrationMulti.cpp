@@ -50,7 +50,7 @@ TEST_CASE("Set and read timers", "[.integration][.multi]") {
 
     // DELAY_AFTER_TRIGGER,
     // GATES_NUMBER,
-    // CYCLES_NUMBER,
+    // TRIGGER_NUMBER,
     // ACTUAL_TIME
     // MEASUREMENT_TIME
 

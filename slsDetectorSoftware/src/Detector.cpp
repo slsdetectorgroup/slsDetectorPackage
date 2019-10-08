@@ -117,11 +117,11 @@ void Detector::setNumberOfFrames(int64_t value) {
 }
 
 Result<int64_t> Detector::getNumberOfTriggers() const {
-    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, -1);
+    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::TRIGGER_NUMBER, -1);
 }
 
 void Detector::setNumberOfTriggers(int64_t value) {
-    pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, value);
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::TRIGGER_NUMBER, value);
 }
 
 Result<ns> Detector::getExptime(Positions pos) const {
@@ -157,7 +157,7 @@ Result<int64_t> Detector::getNumberOfFramesLeft(Positions pos) const {
 }
 
 Result<int64_t> Detector::getNumberOfTriggersLeft(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::CYCLES_NUMBER);
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::TRIGGER_NUMBER);
 }
 
 Result<ns> Detector::getDelayAfterTriggerLeft(Positions pos) const {

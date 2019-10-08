@@ -167,7 +167,7 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
     // /**< exposure time */ FRAME_PERIOD, /**< period between exposures */
     // DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or
     // readout (in triggered mode) */ GATES_NUMBER, /**< number of gates per
-    // frame (in gated mode) */ CYCLES_NUMBER, /**< number of cycles: total
+    // frame (in gated mode) */ TRIGGER_NUMBER, /**< number of cycles: total
     // number of acquisitions is number or frames*number of cycles */
     // ACTUAL_TIME, /**< Actual time of the detector's internal timer */
     // MEASUREMENT_TIME,  /**< Time of the measurement from the detector (fifo)
@@ -215,8 +215,8 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
     }
 
     auto cycles = 2;
-    d.setTimer(slsDetectorDefs::timerIndex::CYCLES_NUMBER, cycles);
-    CHECK(d.setTimer(slsDetectorDefs::timerIndex::CYCLES_NUMBER) == cycles);
+    d.setTimer(slsDetectorDefs::timerIndex::TRIGGER_NUMBER, cycles);
+    CHECK(d.setTimer(slsDetectorDefs::timerIndex::TRIGGER_NUMBER) == cycles);
 
     if (test::type == dt::EIGER) {
         auto subtime = 200;

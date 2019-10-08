@@ -495,13 +495,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>cycles [i]</b> sets/gets number of triggers. Timing mode should be set appropriately. \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "cycles";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
    - <b>samples [i]</b> sets/gets number of samples (both analog and digital) expected from the ctb. Used in CHIP TEST BOARD  and MOENCH only. \c Returns \c (long long int)
 	 */
     descrToFuncMap[i].m_pFuncName = "samples";
@@ -3544,8 +3537,6 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
         index = SUBFRAME_DEADTIME;
     else if (cmd == "delay")
         index = DELAY_AFTER_TRIGGER;
-    else if (cmd == "cycles")
-        index = CYCLES_NUMBER;
     // also does digital sample
     else if (cmd == "samples") 
         index = ANALOG_SAMPLES; 
@@ -3625,7 +3616,6 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "delay t \t sets the delay after trigger in s" << std::endl;
         os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
         os << "startingfnum t \t sets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
-        os << "cycles t \t sets the number of cycles (e.g. number of triggers)" << std::endl;
         os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples t \t sets the number of digital samples expected from the ctb" << std::endl;
@@ -3643,7 +3633,6 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "delay  \t gets the delay after trigger in s" << std::endl;
         os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
         os << "startingfnum \t gets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
-        os << "cycles  \t gets the number of cycles (e.g. number of triggers)" << std::endl;
         os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples \t gets the number of digital samples expected from the ctb" << std::endl;
@@ -3675,7 +3664,7 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[],
     else if (cmd == "framesl")
         index = FRAME_NUMBER;
     else if (cmd == "cyclesl")
-        index = CYCLES_NUMBER;
+        index = TRIGGER_NUMBER;
     else if (cmd == "now")
         index = ACTUAL_TIME;
     else if (cmd == "timestamp")

@@ -882,7 +882,7 @@ int64_t multiSlsDetector::setNumberOfFrames(int64_t t, int detPos) {
 }
 
 int64_t multiSlsDetector::setNumberOfCycles(int64_t t, int detPos) {
-    return setTimer(CYCLES_NUMBER, t, detPos);
+    return setTimer(TRIGGER_NUMBER, t, detPos);
 }
 
 int64_t multiSlsDetector::setNumberOfStorageCells(int64_t t, int detPos) {
@@ -3139,7 +3139,7 @@ void multiSlsDetector::registerDataCallback(
 int multiSlsDetector::setTotalProgress() {
     int nf = Parallel(&slsDetector::setTimer, {}, FRAME_NUMBER, -1)
                  .tsquash("Inconsistent number of frames");
-    int nc = Parallel(&slsDetector::setTimer, {}, CYCLES_NUMBER, -1)
+    int nc = Parallel(&slsDetector::setTimer, {}, TRIGGER_NUMBER, -1)
                  .tsquash("Inconsistent number of cycles");
     if (nf == 0 || nc == 0) {
         throw RuntimeError("Number of frames or cycles is 0");

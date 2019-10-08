@@ -326,7 +326,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->timerValue[ACQUISITION_TIME] = 0;
     shm()->timerValue[FRAME_PERIOD] = 0;
     shm()->timerValue[DELAY_AFTER_TRIGGER] = 0;
-    shm()->timerValue[CYCLES_NUMBER] = 1;
+    shm()->timerValue[TRIGGER_NUMBER] = 1;
     shm()->timerValue[ACTUAL_TIME] = 0;
     shm()->timerValue[MEASUREMENT_TIME] = 0;
     shm()->timerValue[PROGRESS] = 0;
@@ -791,7 +791,7 @@ void slsDetector::updateCachedDetectorVariables() {
 
         // cycles
         n += client.Receive(&i64, sizeof(i64));
-        shm()->timerValue[CYCLES_NUMBER] = i64;
+        shm()->timerValue[TRIGGER_NUMBER] = i64;
 
         // readout mode
         if (shm()->myDetectorType == CHIPTESTBOARD) {
@@ -1253,7 +1253,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     if (shm()->useReceiverFlag) {
         timerIndex rt[]{FRAME_NUMBER,
                         FRAME_PERIOD,
-                        CYCLES_NUMBER,
+                        TRIGGER_NUMBER,
                         ACQUISITION_TIME,
                         SUBFRAME_ACQUISITION_TIME,
                         SUBFRAME_DEADTIME,
@@ -1268,11 +1268,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
             retval = -1;
 
             // rewrite args
-            if ((index == FRAME_NUMBER) || (index == CYCLES_NUMBER) ||
+            if ((index == FRAME_NUMBER) || (index == TRIGGER_NUMBER) ||
                 (index == STORAGE_CELL_NUMBER)) {
                 args[1] = shm()->timerValue[FRAME_NUMBER] *
-                          ((shm()->timerValue[CYCLES_NUMBER] > 0)
-                               ? (shm()->timerValue[CYCLES_NUMBER])
+                          ((shm()->timerValue[TRIGGER_NUMBER] > 0)
+                               ? (shm()->timerValue[TRIGGER_NUMBER])
                                : 1) *
                           ((shm()->timerValue[STORAGE_CELL_NUMBER] > 0)
                                ? (shm()->timerValue[STORAGE_CELL_NUMBER]) + 1
@@ -1280,7 +1280,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
             }
             FILE_LOG(logDEBUG1)
                 << "Sending "
-                << (((index == FRAME_NUMBER) || (index == CYCLES_NUMBER) ||
+                << (((index == FRAME_NUMBER) || (index == TRIGGER_NUMBER) ||
                      (index == STORAGE_CELL_NUMBER))
                         ? "(#Frames) * (#cycles) * (#storage cells)"
                         : getTimerType(index))
@@ -1537,7 +1537,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         << "\noverwrite enable:" << shm()->rxFileOverWrite
         << "\nframe index needed:"
         << ((shm()->timerValue[FRAME_NUMBER] *
-             shm()->timerValue[CYCLES_NUMBER]) > 1)
+             shm()->timerValue[TRIGGER_NUMBER]) > 1)
         << "\nframe period:" << (shm()->timerValue[FRAME_PERIOD])
         << "\nframe number:" << (shm()->timerValue[FRAME_NUMBER])
         << "\nsub exp time:" << (shm()->timerValue[SUBFRAME_ACQUISITION_TIME])

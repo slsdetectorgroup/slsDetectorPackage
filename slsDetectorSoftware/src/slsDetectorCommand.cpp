@@ -834,9 +834,23 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
+   - <b>vhaper1 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the first shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vshaper";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
    - <b>vshaper2 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the second shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vshaper2";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vhaper1 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the first shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vshaperneg";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
@@ -1113,71 +1127,108 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    /* MYTHEN 3.01  
-	all values are in DACu */
-
-    descrToFuncMap[i].m_pFuncName = "vIpre";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vipre";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "VcdSh";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vdcsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
    - <b>Vth1</b> Sets/gets first detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "Vth1";
+    descrToFuncMap[i].m_pFuncName = "vth1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>Vth1</b> Sets/gets second detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>Vth1</b> Sets/gets second detector threshold voltage for Mythen 3.0. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "Vth2";
+    descrToFuncMap[i].m_pFuncName = "vth2";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>Vth1</b> Sets/gets third detector threshold voltage for Mythen 3.01. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>Vth1</b> Sets/gets third detector threshold voltage for Mythen 3.0. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
-    descrToFuncMap[i].m_pFuncName = "Vth3";
+    descrToFuncMap[i].m_pFuncName = "vth3";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "VPL";  //baseline for analog pulsing
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vpl"; 
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "Vtrim";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vph";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIbias";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vtrim";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIinSh";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "viinsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
     descrToFuncMap[i].m_pFuncName = "cas";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "casSh";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "cassh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIbiasSh";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vicin";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIcin";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vipreout";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
-    descrToFuncMap[i].m_pFuncName = "vIpreOut";
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vrfsh";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vrfshnpol";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
@@ -2935,9 +2986,9 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         dac = TRIMBIT_SIZE;
     else if (cmd == "vpreamp")
         dac = PREAMP;
-    else if (cmd == "vshaper1")
+    else if (cmd == "vshaper1" || cmd == "vshaper")
         dac = SHAPER1;
-    else if (cmd == "vshaper2")
+    else if (cmd == "vshaper2" || cmd == "vshaperneg")
         dac = SHAPER2;
     else if (cmd == "vhighvoltage")
         dac = HIGH_VOLTAGE;
@@ -3020,35 +3071,32 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         mode = 1;
     } else if (cmd == "v_limit")
         dac = V_LIMIT;
-    else if (cmd == "vIpre")
+    else if (cmd == "vipre")
         dac = M_vIpre;
-    else if (cmd == "vIbias")
-        dac = M_vIbias;
-    else if (cmd == "vIinSh")
+    else if (cmd == "viinsh")
         dac = M_vIinSh;
-    else if (cmd == "VcdSh")
+    else if (cmd == "vdcsh")
         dac = M_VdcSh;
-    else if (cmd == "Vth1")
+    else if (cmd == "vth1")
         dac = THRESHOLD;
-    else if (cmd == "Vth2")
+    else if (cmd == "vth2")
         dac = M_Vth2;
-    else if (cmd == "Vth3")
+    else if (cmd == "vth3")
         dac = M_Vth3;
-    else if (cmd == "VPL")
+    else if (cmd == "vpl")
         dac = M_VPL;
-    else if (cmd == "Vtrim")
+     else if (cmd == "vph")
+        dac = CALIBRATION_PULSE;   
+    else if (cmd == "vtrim")
         dac = TRIMBIT_SIZE;
-    else if (cmd == "casSh")
+    else if (cmd == "cassh")
         dac = M_casSh;
     else if (cmd == "cas")
         dac = M_cas;
-    else if (cmd == "vIcin")
+    else if (cmd == "vicin")
         dac = M_vIcin;
-    else if (cmd == "vIbiasSh")
-        dac = M_vIbiasSh;
-    else if (cmd == "vIpreOut")
+    else if (cmd == "vipreout")
         dac = M_vIpreOut;
-
     else
         return std::string("cannot decode dac ") + cmd;
 

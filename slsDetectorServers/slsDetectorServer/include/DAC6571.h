@@ -4,7 +4,6 @@
 
 /**
  * Set Defines
- * @param dofst digital output offset
  * @param hardMaxV maximum hardware limit 
  * @param driverfname driver file name
  */

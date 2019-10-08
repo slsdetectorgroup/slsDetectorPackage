@@ -51,8 +51,10 @@ int 		detectorTest(enum digitalTestMode arg);
 int64_t 	getDetectorId(enum idMode arg);
 u_int64_t  	getFirmwareVersion();
 u_int64_t   getFirmwareAPIVersion();
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 u_int16_t 	getHardwareVersionNumber();
+#endif
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 u_int16_t 	getHardwareSerialNumber();
 #endif
 #ifdef JUNGFRAUD
@@ -83,7 +85,7 @@ int         allocateRAM();
 void        updateDataBytes();
 #endif
 
-#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MYTHEN3D)
 int			setDefaultDacs();
 #endif
 
@@ -210,7 +212,7 @@ extern int AD9257_GetVrefVoltage(int mV);                  // AD9257.h
 extern int AD9257_SetVrefVoltage(int val, int mV);   // AD9257.h
 #endif
 
-#if (!defined(MYTHEN3D)) && (!defined(GOTTHARD2D))
+#if (!defined(GOTTHARD2D))
 void 		setDAC(enum DACINDEX ind, int val, int mV);
 int         getDAC(enum DACINDEX ind, int mV);
 int         getMaxDacSteps();

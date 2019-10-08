@@ -50,26 +50,26 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
     }
 
     /** Compare FixedCapacityContainer with any other container*/
-    template <typename V>
-    typename std::enable_if<is_container<V>::value, bool>::type
-    operator==(const V &other) const noexcept {
-        if (current_size != other.size()) {
-            return false;
-        } else {
-            for (size_t i = 0; i != current_size; ++i) {
-                if (data_[i] != other[i]) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+    // template <typename V>
+    // typename std::enable_if<is_container<V>::value, bool>::type
+    // operator==(const V &other) const noexcept {
+    //     if (current_size != other.size()) {
+    //         return false;
+    //     } else {
+    //         for (size_t i = 0; i != current_size; ++i) {
+    //             if (data_[i] != other[i]) {
+    //                 return false;
+    //             }
+    //         }
+    //     }
+    //     return true;
+    // }
 
-    template <typename V>
-    typename std::enable_if<is_container<V>::value, bool>::type
-    operator!=(const V &other) const noexcept {
-        return !(*this == other);
-    }
+    // template <typename V>
+    // typename std::enable_if<is_container<V>::value, bool>::type
+    // operator!=(const V &other) const noexcept {
+    //     return !(*this == other);
+    // }
 
     operator std::vector<T>() { return std::vector<T>(begin(), end()); }
 
@@ -103,6 +103,20 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
             throw std::runtime_error("tried to erase with a ptr outside obj");
         }
     }
+
+    template <typename Container> bool is_equal(const Container &c) const noexcept {
+        if (current_size != c.size()) {
+            return false;
+        } else {
+            for (size_t i = 0; i != current_size; ++i) {
+                if (data_[i] != c[i]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     T &front() noexcept { return data_.front(); }
     T &back() noexcept { return data_[current_size - 1]; }
     constexpr const T &front() const noexcept { return data_.front(); }
@@ -127,20 +141,84 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
 
 } __attribute__((packed));
 
-/** support flipped order compare */
-template <typename T, size_t Capacity, typename C>
-typename std::enable_if<is_container<C>::value, bool>::type operator==(
-    const C &container,
-    const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
-    return fixed_container.operator==(container);
+template <typename T, size_t CapacityLhs, typename V, size_t CapacityRhs>
+bool operator==(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+    return lhs.is_equal(rhs);
+}
+
+template <typename T, size_t CapacityLhs, typename V, size_t CapacityRhs>
+bool operator!=(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+    return !(lhs.is_equal(rhs));
+}
+
+// Compare with array
+
+template <typename T, size_t CapacityLhs, typename V, size_t Size>
+bool operator==(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+                const std::array<V, Size> &rhs) {
+    return lhs.is_equal(rhs);
+}
+
+template <typename T, size_t Size, typename V, size_t CapacityRhs>
+bool operator==(const std::array<T, Size> &lhs,
+                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+    return rhs.is_equal(lhs);
+}
+
+template <typename T, size_t CapacityLhs, typename V, size_t Size>
+bool operator!=(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+                const std::array<V, Size> &rhs) {
+    return !lhs.is_equal(rhs);
+}
+
+template <typename T, size_t Size, typename V, size_t CapacityRhs>
+bool operator!=(const std::array<T, Size> &lhs,
+                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+    return !rhs.is_equal(lhs);
+}
+
+// Compare with vector
+
+template <typename T, size_t CapacityLhs, typename V>
+bool operator==(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+                const std::vector<V> &rhs) {
+    return lhs.is_equal(rhs);
+}
+
+template <typename T, typename V, size_t CapacityRhs>
+bool operator==(const std::vector<T> &lhs,
+                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+    return rhs.is_equal(lhs);
+}
+
+template <typename T, size_t CapacityLhs, typename V>
+bool operator!=(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+                const std::vector<V> &rhs) {
+    return !lhs.is_equal(rhs);
+}
+
+template <typename T, typename V, size_t CapacityRhs>
+bool operator!=(const std::vector<T> &lhs,
+                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+    return !rhs.is_equal(lhs);
 }
 
 /** support flipped order compare */
-template <typename T, size_t Capacity, typename C>
-typename std::enable_if<is_container<C>::value, bool>::type operator!=(
-    const C &container,
-    const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
-    return fixed_container.operator!=(container);
-}
+// template <typename T, size_t Capacity, typename C>
+// typename std::enable_if<is_container<C>::value, bool>::type operator==(
+//     const C &container,
+//     const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
+//     return fixed_container.operator==(container);
+// }
+
+// /** support flipped order compare */
+// template <typename T, size_t Capacity, typename C>
+// typename std::enable_if<is_container<C>::value, bool>::type operator!=(
+//     const C &container,
+//     const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
+//     return fixed_container.operator!=(container);
+// }
 
 } // namespace sls

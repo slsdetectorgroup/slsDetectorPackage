@@ -242,8 +242,41 @@ void init_experimental(py::module &m) {
         .def("setTransmissionDelayRight", &Detector::setTransmissionDelayRight,
              py::arg(), py::arg() = Positions{})
 
-
-
+        .def("getUseReceiverFlag", &Detector::getUseReceiverFlag,
+             py::arg() = Positions{})
+        .def("getRxHostname", &Detector::getRxHostname, py::arg() = Positions{})
+        .def("setRxHostname", &Detector::setRxHostname, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxPort", &Detector::getRxPort, py::arg() = Positions{})
+        .def("setRxPort", &Detector::setRxPort, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxFifoDepth", &Detector::getRxFifoDepth,
+             py::arg() = Positions{})
+        .def("setRxFifoDepth", &Detector::setRxFifoDepth, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxSilentMode", &Detector::getRxSilentMode,
+             py::arg() = Positions{})
+        .def("setRxSilentMode", &Detector::setRxSilentMode, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxFrameDiscardPolicy", &Detector::getRxFrameDiscardPolicy,
+             py::arg() = Positions{})
+        .def("setRxFrameDiscardPolicy", &Detector::setRxFrameDiscardPolicy,
+             py::arg(), py::arg() = Positions{})
+        .def("getPartialFramesPadding", &Detector::getPartialFramesPadding,
+             py::arg() = Positions{})
+        .def("setPartialFramesPadding", &Detector::setPartialFramesPadding,
+             py::arg(), py::arg() = Positions{})
+        .def("getRxUDPSocketBufferSize", &Detector::getRxUDPSocketBufferSize,
+             py::arg() = Positions{})
+        .def("setRxUDPSocketBufferSize", &Detector::setRxUDPSocketBufferSize,
+             py::arg(), py::arg() = Positions{})
+        .def("getRxRealUDPSocketBufferSize",
+             &Detector::getRxRealUDPSocketBufferSize, py::arg() = Positions{})
+        .def("getRxLock", &Detector::getRxLock, py::arg() = Positions{})
+        .def("setRxLock", &Detector::setRxLock, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxLastClientIP", &Detector::getRxLastClientIP,
+             py::arg() = Positions{})
 
         // Bits and registers
         .def("setBit", &Detector::setBit, py::arg(), py::arg(),

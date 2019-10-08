@@ -10,6 +10,21 @@ TEST_CASE("FixedCapacityContainer is a container") {
     REQUIRE(sls::is_container<FixedCapacityContainer<int, 7>>::value == true);
 }
 
+TEST_CASE("Comparing FixedCapacity containers"){
+    FixedCapacityContainer<int, 5> a{0,1,2};
+    FixedCapacityContainer<int, 5> b{0,1,2};
+    FixedCapacityContainer<int, 5> c{0,1,2,4};
+
+    REQUIRE(a==b);
+    REQUIRE_FALSE(a!=b);
+    REQUIRE_FALSE(a==c);
+    REQUIRE(a!=c);
+    REQUIRE(c!=a);
+    REQUIRE_FALSE(c==a);
+    REQUIRE_FALSE(b==c);
+
+}
+
 TEST_CASE("Compare array and fixed capacity container") {
     std::array<int, 3> arr{1, 2, 3};
     std::array<int, 3> arr2{1, 7, 3};

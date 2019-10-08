@@ -388,3 +388,45 @@ class ExperimentalDetector(CppDetectorApi):
     @rx_framesperfile.setter
     def rx_framesperfile(self, n_frames):
         self.setFramesPerFile(n_frames)
+
+    # ZMQ Streaming Parameters (Receiver<->Client)
+
+    @property
+    def rx_zmqdatastream(self):
+        return element_if_equal(self.getRxZmqDataStream())
+
+    @rx_zmqdatastream.setter
+    def rx_zmqdatastream(self, enable):
+        self.setRxZmqDataStream(enable)
+
+    @property
+    def rx_readfreq(self):
+        return element_if_equal(self.getRxZmqFrequency())
+
+    @rx_readfreq.setter
+    def rx_readfreq(self, nth_frame):
+        self.setRxZmqFrequency(nth_frame)
+
+    @property
+    def rx_zmqport(self):
+        return element_if_equal(self.getRxZmqPort())
+
+    @rx_zmqport.setter
+    def rx_zmqport(self, port):
+        self.setRxZmqPort(port)
+
+    @property
+    def zmqport(self):
+        return element_if_equal(self.getClientZmqPort())
+
+    @zmqport.setter
+    def zmqport(self, port):
+        self.setClientZmqPort(port)
+
+    @property
+    def zmqip(self):
+        return element_if_equal(self.getClientZmqIp())
+
+    @zmqip.setter
+    def zmqip(self, ip):
+        self.setClientZmqIp(ip)

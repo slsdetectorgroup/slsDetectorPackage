@@ -12,6 +12,7 @@ namespace py = pybind11;
 void init_experimental(py::module &m) {
     using sls::Detector;
     using sls::Positions;
+    using defs = slsDetectorDefs;
 
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
     CppDetectorApi
@@ -242,6 +243,12 @@ void init_experimental(py::module &m) {
         .def("setTransmissionDelayRight", &Detector::setTransmissionDelayRight,
              py::arg(), py::arg() = Positions{})
 
+        /**************************************************
+         *                                                *
+         *    RECEIVER CONFIG                             *
+         *                                                *
+         * ************************************************/
+
         .def("getUseReceiverFlag", &Detector::getUseReceiverFlag,
              py::arg() = Positions{})
         .def("getRxHostname", &Detector::getRxHostname, py::arg() = Positions{})
@@ -278,7 +285,11 @@ void init_experimental(py::module &m) {
         .def("getRxLastClientIP", &Detector::getRxLastClientIP,
              py::arg() = Positions{})
 
-        // FILE
+        /**************************************************
+         *                                                *
+         *    FILE                                        *
+         *                                                *
+         * ************************************************/
         .def("getFileFormat", &Detector::getFileFormat, py::arg() = Positions{})
         .def("setFileFormat", &Detector::setFileFormat, py::arg(),
              py::arg() = Positions{})
@@ -312,6 +323,141 @@ void init_experimental(py::module &m) {
              py::arg() = Positions{})
         .def("getFramesPerFile", &Detector::getFramesPerFile,
              py::arg() = Positions{})
+
+        /**************************************************
+         *                                                *
+         *    ZMQ Streaming Parameters (Receiver<->Client)*
+         *                                                *
+         * ************************************************/
+
+        .def("getRxZmqDataStream", &Detector::getRxZmqDataStream,
+             py::arg() = Positions{})
+        .def("setRxZmqDataStream", &Detector::setRxZmqDataStream, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxZmqFrequency", &Detector::getRxZmqFrequency,
+             py::arg() = Positions{})
+        .def("setRxZmqFrequency", &Detector::setRxZmqFrequency, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxZmqTimer", &Detector::getRxZmqTimer, py::arg() = Positions{})
+        .def("setRxZmqTimer", &Detector::setRxZmqTimer, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxZmqPort", &Detector::getRxZmqPort, py::arg() = Positions{})
+        .def("setRxZmqPort", &Detector::setRxZmqPort, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxZmqIP", &Detector::getRxZmqIP, py::arg() = Positions{})
+        .def("setRxZmqIP", &Detector::setRxZmqIP, py::arg(),
+             py::arg() = Positions{})
+        .def("getClientZmqPort", &Detector::getClientZmqPort,
+             py::arg() = Positions{})
+        .def("setClientZmqPort", &Detector::setClientZmqPort, py::arg(),
+             py::arg() = -1)
+        .def("getClientZmqIp", &Detector::getClientZmqIp,
+             py::arg() = Positions{})
+        .def("setClientZmqIp", &Detector::setClientZmqIp, py::arg(),
+             py::arg() = Positions{})
+
+        /**************************************************
+         *                                                *
+         *    Eiger Specific                              *
+         *                                                *
+         * ************************************************/
+
+        .def("getDynamicRange", &Detector::getDynamicRange,
+             py::arg() = Positions{})
+        .def("setDynamicRange", &Detector::setDynamicRange)
+        .def("getSubExptime", &Detector::getSubExptime, py::arg() = Positions{})
+        .def("setSubExptime", &Detector::setSubExptime, py::arg(),
+             py::arg() = Positions{})
+        .def("getSubDeadTime", &Detector::getSubDeadTime,
+             py::arg() = Positions{})
+        .def("setSubDeadTime", &Detector::setSubDeadTime, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getThresholdEnergy", &Detector::getThresholdEnergy,
+             py::arg() = Positions{})
+        .def("setThresholdEnergy", &Detector::setThresholdEnergy, py::arg(),
+             py::arg() = defs::STANDARD, py::arg() = true,
+             py::arg() = Positions{})
+        .def("getSettingsDir", &Detector::getSettingsDir,
+             py::arg() = Positions{})
+        .def("setSettingsDir", &Detector::setSettingsDir, py::arg(),
+             py::arg() = Positions{})
+        .def("loadTrimbits", &Detector::setSettingsDir, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxAddGapPixels", &Detector::getRxAddGapPixels,
+             py::arg() = Positions{})
+        .def("setRxAddGapPixels", &Detector::setRxAddGapPixels)
+        .def("getParallelMode", &Detector::getParallelMode,
+             py::arg() = Positions{})
+        .def("setParallelMode", &Detector::setParallelMode, py::arg(),
+             py::arg() = Positions{})
+        .def("getOverFlowMode", &Detector::getOverFlowMode,
+             py::arg() = Positions{})
+        .def("setOverFlowMode", &Detector::setOverFlowMode, py::arg(),
+             py::arg() = Positions{})
+        .def("getStoreInRamMode", &Detector::getStoreInRamMode,
+             py::arg() = Positions{})
+        .def("setStoreInRamMode", &Detector::setStoreInRamMode, py::arg(),
+             py::arg() = Positions{})
+        .def("getBottom", &Detector::getBottom, py::arg() = Positions{})
+        .def("setBottom", &Detector::setBottom, py::arg(),
+             py::arg() = Positions{})
+        .def("getAllTrimbits", &Detector::getAllTrimbits,
+             py::arg() = Positions{})
+        .def("setAllTrimbits", &Detector::setAllTrimbits, py::arg(),
+             py::arg() = Positions{})
+        .def("getTrimEnergies", &Detector::getTrimEnergies,
+             py::arg() = Positions{})
+        .def("setTrimEnergies", &Detector::setTrimEnergies, py::arg(),
+             py::arg() = Positions{})
+        .def("getRateCorrection", &Detector::getRateCorrection,
+             py::arg() = Positions{})
+        .def("setRateCorrection", &Detector::setRateCorrection, py::arg(),
+             py::arg() = Positions{})
+        .def("setDefaultRateCorrection", &Detector::setDefaultRateCorrection,
+             py::arg() = Positions{})
+        .def("getPartialReadout", &Detector::getPartialReadout,
+             py::arg() = Positions{})
+        .def("setPartialReadout", &Detector::setPartialReadout, py::arg(),
+             py::arg() = Positions{})
+        .def("getInterruptSubframe", &Detector::getInterruptSubframe,
+             py::arg() = Positions{})
+        .def("setInterruptSubframe", &Detector::setInterruptSubframe, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getMeasuredPeriod", &Detector::getMeasuredPeriod,
+             py::arg() = Positions{})
+        .def("getMeasuredSubFramePeriod", &Detector::getMeasuredSubFramePeriod,
+             py::arg() = Positions{})
+        .def("getActive", &Detector::getActive, py::arg() = Positions{})
+        .def("setActive", &Detector::setActive, py::arg(),
+             py::arg() = Positions{})
+        .def("getRxPadDeactivatedMode", &Detector::getRxPadDeactivatedMode,
+             py::arg() = Positions{})
+        .def("setRxPadDeactivatedMode", &Detector::setRxPadDeactivatedMode, py::arg(),
+             py::arg() = Positions{})
+        .def("getPartialReset", &Detector::getPartialReset, py::arg() = Positions{})
+        .def("setPartialReset", &Detector::setPartialReset, py::arg(),
+             py::arg() = Positions{})
+
+        .def("pulsePixel", &Detector::pulsePixel, py::arg(), py::arg(),
+             py::arg() = Positions{})
+        .def("pulsePixelNMove", &Detector::pulsePixelNMove, py::arg(),
+             py::arg(), py::arg() = Positions{})
+        .def("pulseChip", &Detector::pulseChip, py::arg(),
+             py::arg() = Positions{})
+        .def("getQuad", &Detector::getQuad, py::arg() = Positions{})
+        .def("setQuad", &Detector::setQuad)
+
+        /**************************************************
+         *                                                *
+         *    Jungfrau Specific                           *
+         *                                                *
+         * ************************************************/
+        .def("getThresholdTemperature", &Detector::getThresholdTemperature, py::arg() = Positions{})
+        .def("setThresholdTemperature", &Detector::setThresholdTemperature, py::arg(),
+             py::arg() = Positions{})
+
 
         // Bits and registers
         .def("setBit", &Detector::setBit, py::arg(), py::arg(),

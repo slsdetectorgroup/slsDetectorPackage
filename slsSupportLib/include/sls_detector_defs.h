@@ -297,8 +297,8 @@ format
 
 #ifdef __cplusplus
     struct xy {
-        int x{0};
-        int y{0};
+        int x;
+        int y;
     };
 #endif
     /**

@@ -374,9 +374,9 @@ int setDefaultDacs() {
 		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
 		for(i = 0; i < NDAC; ++i) {
 			// if not already default, set it to default
-			if (dacValues[i] != defaultvals[i]) {
+			//if (dacValues[i] != defaultvals[i]) {
 				setDAC((enum DACINDEX)i,defaultvals[i],0);
-			}
+			//}
 		}
 	}
 	return ret;
@@ -491,12 +491,15 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 /* parameters - dac, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {
-    if (val < 0)
+    if (val < 0) {
         return;
+	}
 
-    FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+	char* dac_names[] = {DAC_NAMES};
+    FILE_LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
+    FILE_LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
     if (!mV) {
         dacValues[ind] = val;
     }
@@ -505,7 +508,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         dacValues[ind] = dacval;
     }
 #else
-    if (LTC2620_D_SetDACValue((int)ind, val, mV, &dacval) == OK) {
+    if (LTC2620_D_SetDACValue((int)ind, val, mV, dac_names[ind], &dacval) == OK) {
         dacValues[ind] = dacval;
     }
 #endif
@@ -542,7 +545,7 @@ int setHighVoltage(int val){
 
 	// setting hv
 	if (val >= 0) {
-	    FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+	    FILE_LOG(logINFO, ("Setting High voltage: %d V\n", val));
 	    DAC6571_Set(val);
 	    highvoltage = val;
 	}

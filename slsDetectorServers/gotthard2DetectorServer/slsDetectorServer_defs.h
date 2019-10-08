@@ -34,6 +34,7 @@
 
 /** Other Definitions */
 #define BIT16_MASK					(0xFFFF)
+#define  DAC_NAMES					"VREF_H_ADC", "DAC_UNUSED", "VB_COMP_FE", "VB_COMP_ADC", "VCOM_CDS", "VREF_RESTORE", "VB_OPA_1ST", "VREF_COMP_FE", "VCOM_ADC1", "VREF_PRECH", "VREF_L_ADC", "VREF_CDS", "VB_CS", "VB_OPA_FD", "DAC_UNUSED2", "VCOM_ADC2"
 
 /* Enums */
 enum DACINDEX				        {G_VREF_H_ADC, /* 0	*/		\
@@ -53,22 +54,22 @@ enum DACINDEX				        {G_VREF_H_ADC, /* 0	*/		\
 		  							G_DAC_UNUSED2, /* 14 */		\
         							G_VCOM_ADC2    /* 15*/		\
 									};  
-#define DEFAULT_DAC_VALS   			{1723, 		/* 0 (1050 mV) VREF_H_ADC*/ 	\
+#define DEFAULT_DAC_VALS   			{2099, 		/* 0 (1050 mV) VREF_H_ADC*/ 	\
 									0, 			/* 1 (0 mV) DAC_UNUSED*/ 		\
 									0, 			/* 2 (0 mV) VB_COMP_FE*/   		\
         							0,			/* 3 (0 mV) VB_COMP_ADC*/  		\
-        							560, 		/* 4 (700 mV) VCOM_CDS*/   		\
-        							250, 		/* 5 (320 mV) VREF_RESTORE*/	\
+        							1400, 		/* 4 (700 mV) VCOM_CDS*/   		\
+        							640, 		/* 5 (320 mV) VREF_RESTORE*/	\
         							0, 			/* 6 (0 mV) VB_OPA_1ST*/    	\
         							0, 			/* 7 (0 mV) VREF_COMP_FE*/ 		\
-        							560, 		/* 8 (700 mV) VCOM_ADC1*/  		\
-        							700, 		/* 9 (860 mV) VREF_PRECH*/ 		\
-        							576, 		/* 10 (350 mV) VREF_L_ADC*/		\
-        							470, 		/* 11 (600 mV) VREF_CDS*/  		\
-        							2000, 		/* 12 (1400 mV) VB_CS*/   		\
+        							1400, 		/* 8 (700 mV) VCOM_ADC1*/  		\
+        							1720, 		/* 9 (860 mV) VREF_PRECH*/ 		\
+        							700, 		/* 10 (350 mV) VREF_L_ADC*/		\
+        							1200, 		/* 11 (600 mV) VREF_CDS*/  		\
+        							2799, 		/* 12 (1400 mV) VB_CS*/   		\
         							0, 			/* 13 (0 mV) VB_OPA_FD*/  		\
 		  							0,			/* 14 (0 mV) DAC_UNUSED2*/		\
-        							560 		/* 15 (700 mV) VCOM_ADC2*/		\
+        							1400 		/* 15 (700 mV) VCOM_ADC2*/		\
 									};
 enum CLKINDEX                       {RUN_CLK, TICK_CLK, SAMPLING_CLK, NUM_CLOCKS};
 

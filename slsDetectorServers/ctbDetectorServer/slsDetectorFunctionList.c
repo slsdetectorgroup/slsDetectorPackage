@@ -906,10 +906,10 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case TRIGGER_NUMBER:
 		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting #triggers: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  CYCLES_LSB_REG, CYCLES_MSB_REG);
-		FILE_LOG(logINFO, ("\tGetting #cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting #triggers: %lld\n", (long long int)retval));
 		break;
 
 	case ANALOG_SAMPLES:
@@ -976,7 +976,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 	case TRIGGER_NUMBER:
 		retval = get64BitReg(CYCLES_LEFT_LSB_REG, CYCLES_LEFT_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
 		break;
 
 	case ACTUAL_TIME:

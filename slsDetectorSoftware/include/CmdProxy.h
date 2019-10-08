@@ -480,7 +480,7 @@ class CmdProxy {
                          std::stol,
                          "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of frames per trigger.");
 
-    INTEGER_COMMAND_NOID(triggers, setNumberOfTriggers, setNumberOfTriggers,
+    INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
                          std::stol,
                          "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
 

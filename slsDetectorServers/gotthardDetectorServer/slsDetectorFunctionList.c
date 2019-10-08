@@ -854,10 +854,10 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case TRIGGER_NUMBER:
 		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting Cycles: %lld\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting Triggers: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  SET_TRAINS_LSB_REG, SET_TRAINS_MSB_REG);
-		FILE_LOG(logDEBUG1, ("\tGetting Cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logDEBUG1, ("\tGetting Triggers: %lld\n", (long long int)retval));
 		break;
 
 	default:
@@ -907,7 +907,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 	case TRIGGER_NUMBER:
 		retval = get64BitReg(GET_TRAINS_LSB_REG, GET_TRAINS_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
 		break;
 
 	default:
@@ -1466,7 +1466,7 @@ int configureMAC() {
         // remember old parameters
         enum timingMode oldtiming = getTiming();
         uint64_t oldframes = setTimer(FRAME_NUMBER, -1);
-        uint64_t oldcycles = setTimer(TRIGGER_NUMBER, -1);
+        uint64_t oldtriggers = setTimer(TRIGGER_NUMBER, -1);
         uint64_t oldPeriod = setTimer(FRAME_PERIOD, -1);
         uint64_t oldExptime = setTimer(ACQUISITION_TIME, -1);
 
@@ -1474,7 +1474,7 @@ int configureMAC() {
         FILE_LOG(logINFO, ("\tSetting basic parameters\n"
                 "\tTiming: auto\n"
                 "\tframes: 1\n"
-                "\tcycles: 1\n"
+                "\ttriggers: 1\n"
                 "\tperiod: 1s\n"
                 "\texptime: 900ms\n"));
         setTiming(AUTO_TIMING);
@@ -1507,14 +1507,14 @@ int configureMAC() {
         FILE_LOG(logINFO, ("\tSetting previous parameters:\n"
                 "\tTiming: %d\n"
                 "\tframes: %lld\n"
-                "\tcycles: %lld\n"
+                "\ttriggers: %lld\n"
                 "\tperiod: %lld ns\n"
                 "\texptime:%lld ns\n",
-                (int)oldtiming, (long long int)oldframes, (long long int)oldcycles,
+                (int)oldtiming, (long long int)oldframes, (long long int)oldtriggers,
                 (long long int)oldPeriod, (long long int)oldExptime));
         setTiming(oldtiming);
         setTimer(FRAME_NUMBER, oldframes);
-        setTimer(TRIGGER_NUMBER, oldcycles);
+        setTimer(TRIGGER_NUMBER, oldtriggers);
         setTimer(FRAME_PERIOD, oldPeriod);
         setTimer(ACQUISITION_TIME, oldExptime);
         FILE_LOG(logINFOBLUE, ("Done sending a frame at configuration\n"));

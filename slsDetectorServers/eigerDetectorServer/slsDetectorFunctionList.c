@@ -64,7 +64,7 @@ int eiger_triggermode = 0;
 int eiger_extgating = 0;
 int eiger_extgatingpolarity = 0;
 int eiger_nexposures = 1;
-int eiger_ncycles = 1;
+int eiger_ntriggers = 1;
 
 
 #ifdef VIRTUAL
@@ -617,20 +617,20 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	switch(ind) {
 	case FRAME_NUMBER:
 		if (val >= 0) {
-			FILE_LOG(logDEBUG1, ("Setting number of frames: %d * %d\n", (unsigned int)val, eiger_ncycles));
+			FILE_LOG(logDEBUG1, ("Setting number of frames: %d * %d\n", (unsigned int)val, eiger_ntriggers));
 #ifndef VIRTUAL
-			if (Feb_Control_SetNExposures((unsigned int)val*eiger_ncycles)) {
+			if (Feb_Control_SetNExposures((unsigned int)val*eiger_ntriggers)) {
 				eiger_nexposures = val;
-				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfTriggers());
 				on_dst = 0;
 				int i;
 				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
 				ndsts_in_use = 1;
-				nimages_per_request = eiger_nexposures * eiger_ncycles;
+				nimages_per_request = eiger_nexposures * eiger_ntriggers;
 			}
 #else
 			eiger_nexposures = val;
-			nimages_per_request = eiger_nexposures * eiger_ncycles;
+			nimages_per_request = eiger_nexposures * eiger_ntriggers;
 #endif
 		}return eiger_nexposures;
 
@@ -720,19 +720,19 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 					(unsigned int)val,eiger_nexposures));
 #ifndef VIRTUAL
 			if (Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)) {
-				eiger_ncycles = val;
-				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+				eiger_ntriggers = val;
+				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfTriggers());
 				on_dst = 0;
 				int i;
 				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-				nimages_per_request = eiger_nexposures * eiger_ncycles;
+				nimages_per_request = eiger_nexposures * eiger_ntriggers;
 			}
 #else
-			eiger_ncycles = val;
-			nimages_per_request = eiger_nexposures * eiger_ncycles;
+			eiger_ntriggers = val;
+			nimages_per_request = eiger_nexposures * eiger_ntriggers;
 #endif
 		}
-		return eiger_ncycles;
+		return eiger_ntriggers;
 	default:
 		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
 		break;
@@ -1240,7 +1240,7 @@ int configureMAC() {
 	on_dst = 0;
 
 	for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-	nimages_per_request=eiger_nexposures * eiger_ncycles;
+	nimages_per_request=eiger_nexposures * eiger_ntriggers;
 #endif
 	return OK;
 }

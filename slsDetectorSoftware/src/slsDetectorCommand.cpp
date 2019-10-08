@@ -516,7 +516,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>storagecells [i]</b> sets/gets number of additional storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells +1). \c Returns \c (long long int)
+   - <b>storagecells [i]</b> sets/gets number of additional storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #triggers * (#storagecells +1). \c Returns \c (long long int)
      */
     descrToFuncMap[i].m_pFuncName = "storagecells";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
@@ -574,9 +574,9 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page timing
-   - <b>cyclesl</b> gets number of cylces left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (long long int)
+   - <b>triggersl</b> gets number of cylces left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (long long int)
 	 */
-    descrToFuncMap[i].m_pFuncName = "cyclesl";
+    descrToFuncMap[i].m_pFuncName = "triggersl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
@@ -3619,7 +3619,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples t \t sets the number of digital samples expected from the ctb" << std::endl;
-        os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #cycles * (#storagecells+1)." << std::endl;
+        os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #triggers * (#storagecells+1)." << std::endl;
         os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 15(0xf). For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
         os << "storagecell_delay t \t sets additional time to t between 2 storage cells. For very advanced users only! For JUNGFRAU only. Range: 0-1638375 ns (resolution of 25ns).. " << std::endl;
         os << "subdeadtime t \t sets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. " << std::endl;
@@ -3663,7 +3663,7 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[],
         index = DELAY_AFTER_TRIGGER;
     else if (cmd == "framesl")
         index = FRAME_NUMBER;
-    else if (cmd == "cyclesl")
+    else if (cmd == "triggersl")
         index = TRIGGER_NUMBER;
     else if (cmd == "now")
         index = ACTUAL_TIME;
@@ -3705,7 +3705,7 @@ std::string slsDetectorCommand::helpTimeLeft(int action) {
         os << "periodl \t gets the frame period left" << std::endl;
         os << "delayl  \t gets the delay left" << std::endl;
         os << "framesl  \t gets the number of frames left" << std::endl;
-        os << "cyclesl  \t gets the number of cycles left" << std::endl;
+        os << "triggersl  \t gets the number of triggers left" << std::endl;
         os << "measuredperiod \t gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame." << std::endl;
         os << "measuredsubperiod \t gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode." << std::endl;
         os << std::endl;

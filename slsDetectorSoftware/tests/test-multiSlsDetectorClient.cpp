@@ -9,6 +9,16 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("triggers", "[.cmd]") {
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 10", PUT));
+        std::ostringstream oss;
+        multiSlsDetectorClient("triggers", GET, nullptr, oss);
+        REQUIRE(oss.str() == "triggers 10\n");
+    } 
+}
+
 TEST_CASE("settings", "[.cmd]") {
     switch(test::type) {
         case slsDetectorDefs::EIGER:

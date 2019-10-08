@@ -1072,7 +1072,7 @@
           <bool>false</bool>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #cycles * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Number of  Storage cells:</string>
@@ -1129,7 +1129,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #cycles * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>

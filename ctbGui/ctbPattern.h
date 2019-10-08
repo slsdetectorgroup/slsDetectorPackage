@@ -102,7 +102,7 @@ private:
    TGNumberEntry *eStopAddr;
    TGNumberEntry *eFrames;
    TGNumberEntry *ePeriod;
-   TGNumberEntry *eCycles;
+   TGNumberEntry *eTriggers;
    // TGNumberEntry *eMeasurements;
    TGNumberEntry *eAdcPipeline;
    TGNumberEntry *eDBitPipeline;
@@ -141,7 +141,7 @@ public:
    void setAdcPipeline();
    void setDBitPipeline();
    void setFrames();
-   void setCycles();
+   void setTriggers();
    // void setMeasurements();
    void setPeriod();
 

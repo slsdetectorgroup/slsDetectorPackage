@@ -46,7 +46,7 @@
 
 /* Pattern Control FPGA registers TODO --------------------------------------------------*/
 
-/* Cycles left 64bit Register */
+/* Triggers left 64bit Register */
 #define GET_CYCLES_LSB_REG              (0x10 + BASE_ACQUISITION)
 #define GET_CYCLES_MSB_REG              (0x14 + BASE_ACQUISITION)
 

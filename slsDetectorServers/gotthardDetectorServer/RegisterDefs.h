@@ -318,11 +318,11 @@
 #define GET_DELAY_LSB_REG               (0x6a << MEM_MAP_SHIFT)
 #define GET_DELAY_MSB_REG               (0x6b << MEM_MAP_SHIFT)
 
-/* Set Cycles 64 bit register */
+/* Set Triggers 64 bit register */
 #define SET_TRAINS_LSB_REG              (0x6c << MEM_MAP_SHIFT)
 #define SET_TRAINS_MSB_REG              (0x6d << MEM_MAP_SHIFT)
 
-/* Get Cycles 64 bit register */
+/* Get Triggers 64 bit register */
 #define GET_TRAINS_LSB_REG              (0x6e << MEM_MAP_SHIFT)
 #define GET_TRAINS_MSB_REG              (0x6f << MEM_MAP_SHIFT)
 

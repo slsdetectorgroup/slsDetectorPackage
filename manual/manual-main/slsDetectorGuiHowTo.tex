@@ -217,7 +217,7 @@ is used to configure the detector parameter var
 \item[delay t] 	Sets the delay after trigger (in s)
 \item[gates n]  	Sets the number of gates per frame
 \item[frames n]  	Sets the number of frames per cycle (e.g. after each trigger)
-\item[cycles n]  	Sets the number of cycles (e.g. number of triggers)
+\item[triggers n]  	Sets the number of triggers (e.g. number of triggers)
 \item[probes n]  	Sets the number of probes to accumulate (max 3)
 \item[dr n]  		Sets the dynamic range - can be (1,) 4, 8,16 or 24 bits
 \item[flags mode]  	Sets the readout flags - can be none or storeinram
@@ -298,7 +298,7 @@ is used to retrieve the detector parameter var
 \item[delay]  		Gets the delay after trigger (in s)    
 \item[gates]  		Gets the number of gates per frame
 \item[frames] 		Gets the number of frames per cycle (e.g. after each trigger)
-\item[cycles] 		Gets the number of cycles (e.g. number of triggers)
+\item[triggers] 		Gets the number of triggers (e.g. number of triggers)
 \item[probes] 		Gets the number of probes to accumulate (max 3)
 \item[timestamp]        Gets the internal time stamp of the nex frame acquired (i.e. during an acquisition, all timestamps of the frames are stored in a FIFO which can be read after the acquisition - returns -1 if the FIFO is empty) 
 \item[dr] 		Gets the dynamic range

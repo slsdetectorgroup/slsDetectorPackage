@@ -438,8 +438,7 @@
          <bool>false</bool>
         </property>
         <property name="toolTip">
-         <string>Number of Triggers to be expected.
- #cycles#</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of Triggers to be expected.&lt;/p&gt;&lt;p&gt; #triggers#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Number of Triggers:</string>
@@ -534,7 +533,7 @@ Frame period between exposures.
         </property>
         <property name="toolTip">
          <string>Number of Triggers to be expected.
- #cycles#</string>
+ #triggers#</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -620,7 +619,7 @@ Frame period between exposures.
         </property>
         <property name="toolTip">
          <string>Number of Triggers to be expected.
- #cycles#</string>
+ #triggers#</string>
         </property>
         <property name="text">
          <string>Number of Samples:</string>
@@ -700,7 +699,7 @@ Frame period between exposures.
         </property>
         <property name="toolTip">
          <string>Number of Triggers to be expected.
- #cycles#</string>
+ #triggers#</string>
         </property>
         <property name="statusTip">
          <string/>

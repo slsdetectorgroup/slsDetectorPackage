@@ -81,7 +81,7 @@
 #define GET_DELAY_LSB_REG     			(0x12 << MEM_MAP_SHIFT)						// different kind of delay
 #define GET_DELAY_MSB_REG     			(0x13 << MEM_MAP_SHIFT)						// different kind of delay
 
-/* Get Cycles 64 bit register */
+/* Get Triggers 64 bit register */
 #define GET_CYCLES_LSB_REG    			(0x14 << MEM_MAP_SHIFT)
 #define GET_CYCLES_MSB_REG    			(0x15 << MEM_MAP_SHIFT)
 
@@ -375,7 +375,7 @@
 #define SET_DELAY_LSB_REG     			(0x60 << MEM_MAP_SHIFT)					// different kind of delay
 #define SET_DELAY_MSB_REG     			(0x61 << MEM_MAP_SHIFT)					// different kind of delay
 
-/* Set Cycles 64 bit register */
+/* Set Triggers 64 bit register */
 #define SET_CYCLES_LSB_REG    			(0x62 << MEM_MAP_SHIFT)
 #define SET_CYCLES_MSB_REG    			(0x63 << MEM_MAP_SHIFT)
 

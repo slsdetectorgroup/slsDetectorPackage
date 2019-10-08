@@ -107,7 +107,7 @@ class slsDetectorDefs {
      */
     enum timerIndex {
         FRAME_NUMBER,        /**< number of real time frames: total number of
-                                acquisitions is number or frames*number of cycles */
+                                acquisitions is number or frames*number of triggers */
         ACQUISITION_TIME,    /**< exposure time */
         FRAME_PERIOD,        /**< period between exposures */
         DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or
@@ -691,7 +691,7 @@ format
        PROGRESS,FRAMES_FROM_START,FRAMES_FROM_START_PG,ANALOG_SAMPLES,DIGITAL_SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
        SUBFRAME_DEADTIME \returns std::string
        frame_number,acquisition_time,frame_period,
-       delay_after_trigger, cycles_number,
+       delay_after_trigger, triggers_number,
        actual_time,measurement_time,
        progress,frames_from_start,frames_from_start_pg,analog_samples, digital_samples,subframe_acquisition_time,storage_cell_number,
        SUBFRAME_DEADTIME
@@ -707,7 +707,7 @@ format
         case DELAY_AFTER_TRIGGER:
             return std::string("delay_after_trigger");
         case TRIGGER_NUMBER:
-            return std::string("cycles_number");
+            return std::string("triggers_number");
         case ACTUAL_TIME:
             return std::string("actual_time");
         case MEASUREMENT_TIME:

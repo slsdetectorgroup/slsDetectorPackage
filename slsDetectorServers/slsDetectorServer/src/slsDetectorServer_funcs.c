@@ -122,7 +122,7 @@ const char* getTimerName(enum timerIndex ind) {
     case ACQUISITION_TIME:          return "acquisition_time";
     case FRAME_PERIOD:              return "frame_period";
     case DELAY_AFTER_TRIGGER:       return "delay_after_trigger";
-    case TRIGGER_NUMBER:             return "cycles_number";
+    case TRIGGER_NUMBER:             return "triggers_number";
     case ACTUAL_TIME:               return "actual_time";
     case MEASUREMENT_TIME:          return "measurement_time";
     case PROGRESS:                  return "progress";
@@ -2371,7 +2371,7 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 #endif
 
-	// #cycles
+	// #triggers
 	i64 = setTimer(TRIGGER_NUMBER,GET_FLAG);
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();

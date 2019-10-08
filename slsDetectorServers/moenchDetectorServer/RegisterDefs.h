@@ -123,7 +123,7 @@
 #define DELAY_LEFT_LSB_REG     			    (0x12 << MEM_MAP_SHIFT)
 #define DELAY_LEFT_MSB_REG     			    (0x13 << MEM_MAP_SHIFT)
 
-/* Cycles Left 64 bit RO register TODO */
+/* Triggers Left 64 bit RO register TODO */
 #define CYCLES_LEFT_LSB_REG    			    (0x14 << MEM_MAP_SHIFT)
 #define CYCLES_LEFT_MSB_REG    			    (0x15 << MEM_MAP_SHIFT)
 
@@ -446,7 +446,7 @@
 #define DELAY_LSB_REG     			        (0x60 << MEM_MAP_SHIFT)
 #define DELAY_MSB_REG     			        (0x61 << MEM_MAP_SHIFT)
 
-/* Cycles 64 bit RW register */
+/* Triggers 64 bit RW register */
 #define CYCLES_LSB_REG    			        (0x62 << MEM_MAP_SHIFT)
 #define CYCLES_MSB_REG    			        (0x63 << MEM_MAP_SHIFT)
 

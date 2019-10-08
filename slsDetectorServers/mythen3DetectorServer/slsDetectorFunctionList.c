@@ -445,10 +445,10 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	case TRIGGER_NUMBER:
 		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting #triggers: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("Getting #cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logDEBUG1, ("Getting #triggers: %lld\n", (long long int)retval));
 		break;
 
 	default:
@@ -503,7 +503,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 	case TRIGGER_NUMBER:
 		retval = get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
 		break;
 
 	default:

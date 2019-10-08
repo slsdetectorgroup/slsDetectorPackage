@@ -789,7 +789,7 @@ void slsDetector::updateCachedDetectorVariables() {
             shm()->timerValue[STORAGE_CELL_DELAY] = i64;
         }
 
-        // cycles
+        // triggers
         n += client.Receive(&i64, sizeof(i64));
         shm()->timerValue[TRIGGER_NUMBER] = i64;
 
@@ -1282,7 +1282,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
                 << "Sending "
                 << (((index == FRAME_NUMBER) || (index == TRIGGER_NUMBER) ||
                      (index == STORAGE_CELL_NUMBER))
-                        ? "(#Frames) * (#cycles) * (#storage cells)"
+                        ? "(#Frames) * (#triggers) * (#storage cells)"
                         : getTimerType(index))
                 << " to receiver: " << args[1];
 

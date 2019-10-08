@@ -928,14 +928,14 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>vhaper1 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the first shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vshaper1 [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the first shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vshaper1";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vhaper [i] [mv]</b> Sets/gets the voltage to define the feedback resistance of the shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vshaper [i] [mv]</b> Sets/gets the voltage to define the feedback transistor voltage of the shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vshaper";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
@@ -949,7 +949,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>vhaperneg [i] [mv]</b> Sets/gets the voltage to define the  feedback resistance of the negative-polarity shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vhaperneg [i] [mv]</b> Sets/gets the voltage to define the  feedback transistor voltage of the negative-polarity shaper. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vshaperneg";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
@@ -1229,14 +1229,14 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>vipre</b> Sets/gets dac for the current in the preamplifier for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vipre</b> Sets/gets dac for the preamplifier's input transistor current for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vipre";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vdcsh</b> Sets/gets dac for the baseline of the shaper for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vdcsh</b> Sets/gets dac for the reference (DC) voltage for the shaper for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vdcsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
@@ -1264,14 +1264,14 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>vpl</b> Sets/gets dac for the lower value of the analog pulse for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vpl</b> Sets/gets dac for the low voltage for analog pulsing for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vpl"; 
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vph</b> Sets/gets dac for the higher value of the analog pulse for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vph</b> Sets/gets dac for the high voltage for analog pulsing for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vph";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
@@ -3410,8 +3410,34 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         dac = M_cas;
     else if (cmd == "vicin")
         dac = M_vIcin;
-    else if (cmd == "vipreout")
-        dac = M_vIpreOut;
+    else if (cmd == "vref_h_adc")
+        dac = VREF_H_ADC;
+    else if (cmd == "vb_comp_fe")
+        dac = VB_COMP_FE; 
+    else if (cmd == "vb_comp_adc")
+        dac = VB_COMP_ADC;
+    else if (cmd == "vcom_cds")
+        dac = VCOM_CDS;     
+    else if (cmd == "vref_restore")
+        dac = VREF_RESTORE;
+    else if (cmd == "vb_opa_1st")
+        dac = VB_OPA_1ST; 
+    else if (cmd == "vref_comp_fe")
+        dac = VREF_COMP_FE;
+    else if (cmd == "vcom_adc1")
+        dac = VCOM_ADC1;  
+    else if (cmd == "vref_prech")
+        dac = VREF_PRECH;
+    else if (cmd == "vref_l_adc")
+        dac = VREF_L_ADC; 
+    else if (cmd == "vref_cds")
+        dac = VREF_CDS;
+    else if (cmd == "vb_cs")
+        dac = VB_CS;     
+    else if (cmd == "vb_opa_fd")
+        dac = VB_OPA_FD;
+    else if (cmd == "vcom_adc2")
+        dac = VCOM_ADC2;       
     else
         return std::string("cannot decode dac ") + cmd;
 

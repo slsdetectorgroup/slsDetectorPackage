@@ -12,7 +12,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS	=	slsDetectorFunctionList.c 
-SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)nios.c $(main_src)common.c $(main_src)DAC6571.c
+SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)nios.c $(main_src)common.c $(main_src)DAC6571.c $(main_src)LTC2620_Driver.c
 
 OBJS 	= 	$(SRCS:.c=.o) 
  

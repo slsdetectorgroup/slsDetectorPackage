@@ -176,21 +176,7 @@ class ExperimentalDetector(CppDetectorApi):
         else:
             self.setPeriod(dt.timedelta(seconds=t))
     # Acq
-    @property
-    def rx_status(self):
-        """
-        Read the status of the receiver
-        """
-        return element_if_equal(self.getReceiverStatus())
-
-    @rx_status.setter
-    def rx_status(self, status_str):
-        if status_str == "start":
-            self.startReceiver()
-        elif status_str == "stop":
-            self.stopReceiver()
-        else:
-            raise NotImplementedError("Unknown argument to rx_status")
+    
 
     @property
     def busy(self):
@@ -228,8 +214,133 @@ class ExperimentalDetector(CppDetectorApi):
 
     # Configuration
     
+  
+    # Time
+    @property
+    def rx_status(self):
+        """
+        Read the status of the receiver
+        """
+        return element_if_equal(self.getReceiverStatus())
 
-    # File
+    @rx_status.setter
+    def rx_status(self, status_str):
+        if status_str == "start":
+            self.startReceiver()
+        elif status_str == "stop":
+            self.stopReceiver()
+        else:
+            raise NotImplementedError("Unknown argument to rx_status")
+
+    #TODO! Rename to rx_framescaught
+    @property
+    def framescaught(self):
+        return element_if_equal(self.getFramesCaught())
+    
+
+    @property
+    def startingfnum(self):
+        return element_if_equal(self.getStartingFrameNumber())
+
+    @startingfnum.setter
+    def startingfnum(self, value):
+        self.setStartingFrameNumber(value)
+
+   #TODO! testing switches on automatically?
+    @property
+    def flowcontrol_10g(self):
+        return element_if_equal(self.getTenGigaFlowControl())
+
+    @flowcontrol_10g.setter
+    def flowcontrol_10g(self, enable):
+        self.setTenGigaFlowControl(enable)
+
+     #TODO! add txdelay
+
+    @property
+    def use_receiver(self):
+        return element_if_equal(self.getUseReceiverFlag())
+
+    @property
+    def rx_hostname(self):
+        return element_if_equal(self.getRxHostname())
+
+    @rx_hostname.setter
+    def rx_hostname(self, hostname):
+        self.setRxHostname(hostname)
+
+    @property
+    def rx_tcpport(self):
+        return element_if_equal(self.getRxPort())
+
+    @rx_tcpport.setter
+    def rx_tcpport(self, port):
+        self.setRxPort(port)
+
+    @property
+    def rx_fifodepth(self):
+        return element_if_equal(self.getRxFifoDepth())
+
+    @rx_fifodepth.setter
+    def rx_fifodepth(self, frames):
+        self.setRxFifoDepth(frames)
+
+    @property
+    def rx_silent(self):
+        return element_if_equal(self.getRxSilentMode())
+
+    @rx_silent.setter
+    def rx_silent(self, value):
+        self.setRxSilentMode(value)
+
+    @property
+    def rx_discardpolicy(self):
+        return element_if_equal(self.getRxFrameDiscardPolicy())
+
+    @rx_discardpolicy.setter
+    def rx_discardpolicy(self, policy):
+        self.setRxFrameDiscardPolicy()
+
+    @property
+    def rx_padding(self):
+        return element_if_equal(self.getPartialFramesPadding())
+
+    @rx_padding.setter
+    def rx_padding(self, policy):
+        self.setPartialFramesPadding(policy)
+
+    @property
+    def rx_lock(self):
+        """Lock the receiver to a specific IP"""
+        return element_if_equal(self.getRxLock())
+
+    @rx_lock.setter
+    def rx_lock(self, value):
+        self.setRxLock(value)
+
+    @property
+    def rx_lastclient(self):
+        return element_if_equal(self.getRxLastClientIP())
+
+
+    #FILE
+
+    @property
+    def fformat(self):
+        return element_if_equal(self.getFileFormat())
+    
+    @fformat.setter
+    def fformat(self, format):
+        self.setFileFormat(format)
+
+    @property
+    def findex(self):
+        return element_if_equal(self.getAcquisitionIndex())
+
+    @findex.setter
+    def findex(self, index):
+        self.setAcquisitionIndex(index)
+
     @property
     def fname(self):
         return element_if_equal(self.getFileNamePrefix())
@@ -262,15 +373,60 @@ class ExperimentalDetector(CppDetectorApi):
     def foverwrite(self, value):
         self.setFileOverWrite(value)
 
-    # Time
-  
+    @property
+    def fmaster(self):
+        return element_if_equal(self.getMasterFileWrite())
 
-    
+    @fmaster.setter
+    def fmaster(self, enable):
+        self.setMasterFileWrite(enable)
 
     @property
-    def startingfnum(self):
-        return element_if_equal(self.getStartingFrameNumber())
+    def rx_framesperfile(self):
+        return element_if_equal(self.getFramesPerFile())
 
-    @startingfnum.setter
-    def startingfnum(self, value):
-        self.setStartingFrameNumber(value)
+    @rx_framesperfile.setter
+    def rx_framesperfile(self, n_frames):
+        self.setFramesPerFile(n_frames)
+
+    # ZMQ Streaming Parameters (Receiver<->Client)
+
+    @property
+    def rx_zmqdatastream(self):
+        return element_if_equal(self.getRxZmqDataStream())
+
+    @rx_zmqdatastream.setter
+    def rx_zmqdatastream(self, enable):
+        self.setRxZmqDataStream(enable)
+
+    @property
+    def rx_readfreq(self):
+        return element_if_equal(self.getRxZmqFrequency())
+
+    @rx_readfreq.setter
+    def rx_readfreq(self, nth_frame):
+        self.setRxZmqFrequency(nth_frame)
+
+    @property
+    def rx_zmqport(self):
+        return element_if_equal(self.getRxZmqPort())
+
+    @rx_zmqport.setter
+    def rx_zmqport(self, port):
+        self.setRxZmqPort(port)
+
+    @property
+    def zmqport(self):
+        return element_if_equal(self.getClientZmqPort())
+
+    @zmqport.setter
+    def zmqport(self, port):
+        self.setClientZmqPort(port)
+
+    @property
+    def zmqip(self):
+        return element_if_equal(self.getClientZmqIp())
+
+    @zmqip.setter
+    def zmqip(self, ip):
+        self.setClientZmqIp(ip)

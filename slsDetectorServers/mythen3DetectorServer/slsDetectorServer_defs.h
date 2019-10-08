@@ -33,7 +33,7 @@
 /** Other Definitions */
 #define BIT16_MASK					(0xFFFF)
 
-#define  DAC_NAMES					"CASSH", "VTH2", "VRFSH", "VRFSHNPOL", "VIPREOUT", "VTH3", "VTH1", "VICIN", "CAS", "VRF", "VPH", "VIPRE", "VIINSH", "VPL", "VTRIM", "VDCSH"
+#define  DAC_NAMES					"cassh", "vth2", "vshaper", "vshaperneg", "vipreout", "vth3", "vth1", "vicin", "cas", "vpreamp", "vph", "vipre", "viinsh", "vpl", "vtrim", "vdcsh"
 /* Enums */
 enum CLKINDEX   {RUN_CLK, TICK_CLK, SAMPLING_CLK, NUM_CLOCKS};
 enum DACINDEX   {CASSH, VTH2, VRFSH, VRFSHNPOL, VIPREOUT, VTH3, VTH1, VICIN, CAS, VRF, VPH, VIPRE, VIINSH, VPL, VTRIM, VDCSH};

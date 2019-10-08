@@ -1285,35 +1285,35 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>viinsh</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>viinsh</b> Sets/gets dac for the bias current for the shaper for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "viinsh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>cas</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>cas</b> Sets/gets dac for the preamplifier's cascode voltage for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "cas";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>cassh</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>cassh</b> Sets/gets dac for the shaper's cascode voltage for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "cassh";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vicin</b> Sets/gets dac for the bias of the comparator for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vicin</b> Sets/gets dac for the bias current for the comparator for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vicin";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
 
     /*! \page settings
-   - <b>vipreout</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+   - <b>vipreout</b> Sets/gets dac for the preamplifier's output branch current for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vipreout";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
@@ -1943,7 +1943,7 @@ std::string slsDetectorCommand::executeLine(int narg, const char * const args[],
 
     if (action == READOUT_ACTION)
         return cmdAcquire(narg, args, action, detPos);
-xxx
+
     size_t s = std::string(args[0]).find(':');
     std::string key = std::string(args[0]).substr(0, s); // truncate at :
 

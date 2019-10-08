@@ -45,13 +45,15 @@
 /* Look at me register, read only */
 #define LOOK_AT_ME_REG          		(0x005 * REG_OFFSET + BASE_CONTROL)	//Not used in firmware or software, good to play with
 
-/* Control RW register */
+/* Control RW register */ // assumed for MY3
 #define CONTROL_REG           			(0x021 * REG_OFFSET + BASE_CONTROL)
 
 #define CONTROL_STRT_ACQSTN_OFST       	(0)
 #define CONTROL_STRT_ACQSTN_MSK			(0x00000001 << CONTROL_STRT_ACQSTN_OFST)
 #define CONTROL_STP_ACQSTN_OFST			(1)
 #define CONTROL_STP_ACQSTN_MSK			(0x00000001 << CONTROL_STP_ACQSTN_OFST)
+#define CONTROL_RN_BSY_OFST             (2) // assumed for MY3
+#define CONTROL_RN_BSY_MSK              (0x00000001 << CONTROL_RN_BSY_OFST)
 #define CONTROL_STRT_EXPSR_OFST         (6)
 #define CONTROL_STRT_EXPSR_MSK          (0x00000001 << CONTROL_STRT_EXPSR_OFST)
 #define CONTROL_CRE_RST_OFST			(10)

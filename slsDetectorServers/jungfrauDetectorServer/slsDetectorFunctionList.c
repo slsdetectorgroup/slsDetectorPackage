@@ -909,7 +909,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 #else
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK) {
         dacValues[ind] = dacval;
-        if (ind == VREF_COMP && (val >= 0)) {//FIXME: if val == pwr down value, write 0?
+        if (ind == J_VREF_COMP && (val >= 0)) {//FIXME: if val == pwr down value, write 0?
             bus_w (VREF_COMP_MOD_REG, (bus_r(VREF_COMP_MOD_REG) &~ (VREF_COMP_MOD_MSK))   // reset
                     | ((val << VREF_COMP_MOD_OFST) & VREF_COMP_MOD_MSK));   // or it with value
         }

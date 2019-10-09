@@ -9,6 +9,38 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("timing", "[.cmd]") {
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
+        std::ostringstream oss;
+        multiSlsDetectorClient("timing", GET, nullptr, oss);
+        REQUIRE(oss.str() == "timing auto\n");
+    }
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("timing trigger", PUT));
+        std::ostringstream oss;
+        multiSlsDetectorClient("timing", GET, nullptr, oss);
+        REQUIRE(oss.str() == "timing trigger\n");
+    }
+    if (test::type == slsDetectorDefs::EIGER) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("timing gating", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("timing", GET, nullptr, oss);
+            REQUIRE(oss.str() == "timing gating\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("timing burst_trigger", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("timing", GET, nullptr, oss);
+            REQUIRE(oss.str() == "timing burst_trigger\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("timing gating", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("timing burst_trigger", PUT));
+    }
+}
+
 
 TEST_CASE("adc", "[.cmd][.ctb]") {
     if (test::type != slsDetectorDefs::CHIPTESTBOARD) {

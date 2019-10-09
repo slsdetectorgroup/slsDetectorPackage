@@ -413,6 +413,8 @@ class CmdProxy {
                           {"temp_sodr", &CmdProxy::temp_sodr},
                           {"temp_fpgafl", &CmdProxy::temp_fpgafl},
                           {"temp_fpgafr", &CmdProxy::temp_fpgafr},
+                          // dacs
+                          {"timing", &CmdProxy::timing},
 
 
 
@@ -630,6 +632,10 @@ class CmdProxy {
     TEMP_COMMAND(temp_fpgafr, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA3,
                     "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");  
 
+    //dacs
+
+    INTEGER_COMMAND(timing, getTimingMode, setTimingMode, sls::StringTo<slsDetectorDefs::timingMode>,
+                    "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Gotthard][Ctb] [auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");      
 
 
 

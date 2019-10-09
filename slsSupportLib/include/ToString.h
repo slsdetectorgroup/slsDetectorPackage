@@ -113,6 +113,21 @@ inline std::string ToString(const defs::speedLevel s){
     }
 }
 
+inline std::string ToString(const defs::timingMode s){
+    switch (s) {
+    case defs::AUTO_TIMING:
+        return std::string("auto");
+    case defs::TRIGGER_EXPOSURE:
+        return std::string("trigger");
+    case defs::GATED:
+        return std::string("gating");     
+    case defs::BURST_TRIGGER:
+        return std::string("burst_trigger");             
+    default:
+        return std::string("Unknown");       
+    }
+}
+
 // in case we already have a string 
 // causes a copy but might be needed in generic code
 inline std::string ToString(const std::string& s){
@@ -355,6 +370,19 @@ inline defs::speedLevel StringTo(const std::string& s) {
     if (s == "quarter_speed")
         return defs::QUARTER_SPEED;        
     throw sls::RuntimeError("Unknown speed " + s);          
+}
+
+template <>
+inline defs::timingMode StringTo(const std::string& s) {
+    if (s == "auto")
+        return defs::AUTO_TIMING;
+    if (s == "trigger")
+        return defs::TRIGGER_EXPOSURE;
+    if (s == "gating")
+        return defs::GATED; 
+    if (s == "burst_trigger")
+        return defs::BURST_TRIGGER;        
+    throw sls::RuntimeError("Unknown timing mode " + s);          
 }
 
 /** For types with a .str() method use this for conversion */

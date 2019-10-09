@@ -466,13 +466,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /* r/w timers */
 
     /*! \page timing
-   - <b>timing [mode]</b> sets/gets synchronization mode of the detector. Mode: auto, trigger, ro_trigger, gating, triggered_gating (string)
-	*/
-    descrToFuncMap[i].m_pFuncName = "timing";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTiming;
-    ++i;
-
-    /*! \page timing
    - <b>subdeadtime [i]</b> sets/gets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
      */
     descrToFuncMap[i].m_pFuncName = "subdeadtime";
@@ -3291,30 +3284,6 @@ std::string slsDetectorCommand::helpTempControl(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdTiming(int narg, const char * const args[], int action, int detPos) {
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-
-    if (action == HELP_ACTION) {
-        return helpTiming(HELP_ACTION);
-    }
-    if (action == PUT_ACTION) {
-        if (myDet->timingModeType(std::string(args[1])) == GET_TIMING_MODE)
-            return helpTiming(action);
-        myDet->setTimingMode(myDet->timingModeType(std::string(args[1])), detPos);
-    }
-    return myDet->timingModeType(myDet->setTimingMode(GET_TIMING_MODE, detPos));
-}
-std::string slsDetectorCommand::helpTiming(int action) {
-
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("timing \t gets the timing mode of the detector (auto, trigger, ro_trigger, gating, triggered_gating)\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("timing mode \t sets synchronization mode of the detector. Can be auto, trigger, ro_trigger, gating, triggered_gating \n");
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], int action, int detPos) {
     timerIndex index;

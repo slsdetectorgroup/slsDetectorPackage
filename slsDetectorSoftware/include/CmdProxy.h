@@ -323,7 +323,6 @@ class CmdProxy {
                                     {"r_checkonline", "rx_checkonline"},
                                     {"r_framesperfile", "rx_framesperfile"},
                                     {"r_discardpolicy", "rx_discardpolicy"},
-                                    {"receiver", "rx_status"},
                                     {"index", "findex"},
                                     {"exitreceiver", "rx_exit"},
                                     {"enablefwrite", "fwrite"},
@@ -334,16 +333,22 @@ class CmdProxy {
                                     {"overwrite", "foverwrite"},
                                     {"flags", "romode"},
                                     
-                                    {"busy", "clearbusy"},
+                                    /* configuration */
                                     {"detectorversion", "firmwareversion"},
                                     {"softwareversion", "detectorserverversion"},
                                     {"receiverversion", "rx_version"},
                                     {"thisversion", "clientversion"},
                                     {"detsizechan", "detsize"},
+
+                                    /* acquisition parameters */
                                     {"cycles", "triggers"},
                                     {"cyclesl", "triggersl"},
-                                    {"clkdivider", "speed"} // or runclk for ctb (ignore as speed doesnt exist?)
-
+                                    {"clkdivider", "speed"}, // or runclk for ctb (ignore as speed doesnt exist?)
+                                    
+                                    /* acquisition */
+                                    {"busy", "clearbusy"},
+                                    {"receiver", "rx_status"},
+                                    {"framescaught", "rx_framescaught"}
 
                                     
                                     };
@@ -378,6 +383,7 @@ class CmdProxy {
                           {"numinterfaces", &CmdProxy::numinterfaces},
                           {"selinterface", &CmdProxy::selinterface},
                           
+                          /* configuration */
                           //{"config", &CmdProxy::config},
                           {"parameters", &CmdProxy::parameters},
                           {"hostname", &CmdProxy::Hostname},
@@ -391,6 +397,8 @@ class CmdProxy {
                           {"type", &CmdProxy::type},
                           {"detsize", &CmdProxy::DetectorSize},
                           {"settings", &CmdProxy::settings},
+
+                          /* acquisition parameters */
                           {"frames", &CmdProxy::frames},                          
                           {"triggers", &CmdProxy::triggers},
                           {"exptime", &CmdProxy::exptime},
@@ -416,35 +424,26 @@ class CmdProxy {
                           // dacs
                           {"timing", &CmdProxy::timing},
 
-
-
-
-
-
-
-                          {"adc", &CmdProxy::SlowAdc},
-                          {"start", &CmdProxy::start},
-                          {"stop", &CmdProxy::stop},
-                          {"trigger", &CmdProxy::trigger},
-                          {"status", &CmdProxy::status},
+                          /* acquisition */
+                          {"clearbusy", &CmdProxy::clearbusy}, 
                           {"rx_start", &CmdProxy::rx_start},
                           {"rx_stop", &CmdProxy::rx_stop},
+                          {"start", &CmdProxy::start},
+                          {"stop", &CmdProxy::stop},
                           {"rx_status", &CmdProxy::rx_status}, 
-                          {"clearbusy", &CmdProxy::clearbusy}, 
-                          
-                          
+                          {"rx_framescaught", &CmdProxy::rx_framescaught},
+                          {"startingfnum", &CmdProxy::startingfnum},
+                          {"trigger", &CmdProxy::trigger},
+
+
+
+                          {"adc", &CmdProxy::SlowAdc},                          
                           {"rx_hostname", &CmdProxy::rx_hostname},   
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
-
                           {"subexptime", &CmdProxy::subexptime},  
-
-
                           {"threshold", &CmdProxy::Threshold},
                           {"thresholdnotb", &CmdProxy::ThresholdNoTb},  
-
                           {"runclk", &CmdProxy::runclk},  
-
-
                           {"savepattern", &CmdProxy::savepattern}                         
                           };
 
@@ -453,22 +452,25 @@ class CmdProxy {
 
     /* Commands */
     std::string ListCommands(int action);
+    /* configuration */
     std::string Hostname(int action); 
     std::string FirmwareVersion(int action);     
     std::string Versions(int action); 
     std::string PackageVersion(int action);     
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+    /* acquisition parameters */
     std::string DelayLeft(int action);
     std::string Speed(int action);
     std::string Adcphase(int action);
-
+    /* acquisition */
 
 
 
     std::string SlowAdc(int action);
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);       
+
 
     INTEGER_COMMAND(
         rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
@@ -554,7 +556,7 @@ class CmdProxy {
 
 
 
-
+    /* configuration */
     EXECUTE_SET_COMMAND_NOID_1ARG(config, loadConfig, 
                 "[fname]\n\tConfigures detector to configuration contained in fname. Set up once.");  
 
@@ -575,6 +577,8 @@ class CmdProxy {
 
     INTEGER_COMMAND(settings, getSettings, setSettings, sls::StringTo<slsDetectorDefs::detectorSettings>,
                     "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\t[Jungfrau][Gotthard] Detector Settings.\n\t[Eiger] Use threshold or thresholdnotb.");      
+
+    /* acquisition parameters */
 
     INTEGER_COMMAND_NOID(frames, getNumberOfFrames, setNumberOfFrames,
                          std::stol,
@@ -639,21 +643,10 @@ class CmdProxy {
 
 
 
+    /* acquisition */
 
-
-
-
-    EXECUTE_SET_COMMAND_NOID(start, startDetector, 
-                "\n\tStarts detector state machine.");  
-
-    EXECUTE_SET_COMMAND_NOID(stop, stopDetector, 
-                "\n\tStops detector state machine.");  
-
-    EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
-                "\n\t[Eiger] Sends software trigger signal to detector.");   
-
-    GET_COMMAND(status, getDetectorStatus, 
-                "[running, error, transmitting, finished, waiting, idle]\n\tDetector status.");                 
+    EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
+                "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  
 
     EXECUTE_SET_COMMAND_NOID(rx_start, startReceiver, 
                 "\n\tStarts receiver listener for detector data packets and create a data file (if file write enabled).");  
@@ -661,11 +654,30 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID(rx_stop, stopReceiver, 
                 "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled).");      
                                 
+    EXECUTE_SET_COMMAND_NOID(start, startDetector, 
+                "\n\tStarts detector state machine.");  
+
+    EXECUTE_SET_COMMAND_NOID(stop, stopDetector, 
+                "\n\tStops detector state machine.");  
+
     GET_COMMAND(rx_status, getReceiverStatus, 
                 "running, idle]\n\tReceiver listener status.");   
 
-    EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
-                "\n\tClears Acquiring Flag for unexpected acquire command terminations.");  
+    GET_COMMAND(status, getDetectorStatus, 
+                "[running, error, transmitting, finished, waiting, idle]\n\tDetector status.");                 
+
+    GET_COMMAND(rx_framescaught, getFramesCaught, 
+                    "\n\tNumber of frames caught by receiver."); 
+
+    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, std::stol,
+                    "[n_value]\n\t[Eiger[Jungfrau] Starting frame number for next acquisition."); 
+
+    EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
+                "\n\t[Eiger] Sends software trigger signal to detector.");   
+
+
+
+
 
     
 

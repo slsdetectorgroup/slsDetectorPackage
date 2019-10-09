@@ -472,14 +472,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
-
-    /*! \page timing
-   - <b>startingfnum [i]</b> sets/gets starting frame number for the next acquisition. Only for Jungfrau and Eiger. \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "startingfnum";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
     /*! \page timing
    - <b>samples [i]</b> sets/gets number of samples (both analog and digital) expected from the ctb. Used in CHIP TEST BOARD  and MOENCH only. \c Returns \c (long long int)
 	 */
@@ -1392,12 +1384,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    Commands to configure the receiver.
 	 */
 
-    /*! \page receiver
-   - <b>framescaught</b> gets the number of frames caught by receiver. Average of all for multi-detector command. Only get! \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "framescaught";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
 
     /*! \page receiver
    - <b>resetframescaught [i]</b> resets the number of frames caught to 0. i can be any number. Use this if using status start, instead of acquire (this command is included). Only put! \c Returns \c (int)
@@ -3319,15 +3305,6 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
         }
         sprintf(answer, "%d", myDet->setStoragecellStart(-1, detPos));
         return std::string(answer);
-    } else if (cmd == "startingfnum") {
-        if (action == PUT_ACTION) {
-            uint64_t ival = -1;
-            if (!sscanf(args[1], "%lu", &ival))
-                return std::string("cannot scan starting frame number value ") + std::string(args[1]);
-            myDet->setStartingFrameNumber(ival, detPos);
-            return std::string(args[1]);
-        }
-        return std::to_string(myDet->getStartingFrameNumber(detPos));
     } else
         return std::string("could not decode timer ") + cmd;
 
@@ -3373,7 +3350,6 @@ std::string slsDetectorCommand::helpTimer(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "subexptime t \t sets the exposure time of subframe in s" << std::endl;
-        os << "startingfnum t \t sets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
         os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples t \t sets the number of digital samples expected from the ctb" << std::endl;
@@ -3385,7 +3361,6 @@ std::string slsDetectorCommand::helpTimer(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "subexptime  \t gets the exposure time of subframe in s" << std::endl;
-        os << "startingfnum \t gets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
         os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples \t gets the number of digital samples expected from the ctb" << std::endl;
@@ -3758,16 +3733,7 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
     if (action == HELP_ACTION)
         return helpReceiver(action);
 
-    if (cmd == "framescaught") {
-        if (action == PUT_ACTION)
-            return std::string("cannot put");
-        else {
-            sprintf(answer, "%d", myDet->getFramesCaughtByReceiver(detPos));
-            return std::string(answer);
-        }
-    }
-
-    else if (cmd == "resetframescaught") {
+    if (cmd == "resetframescaught") {
         if (action == GET_ACTION)
             return std::string("cannot get");
         else {
@@ -3854,7 +3820,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
 
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
         os << "rx_readfreq \t returns the gui read frequency of the receiver. DEfault: 1" << std::endl;
         os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;

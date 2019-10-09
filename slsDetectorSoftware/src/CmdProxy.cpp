@@ -130,6 +130,8 @@ std::string CmdProxy::ListCommands(int action) {
     }
 }
 
+/* configuration */
+
 std::string CmdProxy::Hostname(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
@@ -283,6 +285,9 @@ std::string CmdProxy::DetectorSize(int action) {
     return os.str();
 }
 
+
+/* acquisition parameters */
+
 std::string CmdProxy::DelayLeft(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
@@ -386,6 +391,8 @@ std::string CmdProxy::Adcphase(int action) {
 }
 
 
+
+/* acquisition */
 
 
 

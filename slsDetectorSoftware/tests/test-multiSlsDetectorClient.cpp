@@ -9,9 +9,52 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("maxadcphaseshift", "[.cmd][.ctb][.jungfrau]") {
+    if (test::type != slsDetectorDefs::CHIPTESTBOARD && test::type != slsDetectorDefs::JUNGFRAU) {
+       REQUIRE_THROWS(multiSlsDetectorClient("maxadcphaseshift", GET));       
+    } else { 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("maxadcphaseshift", GET));              
+    } 
+}
+
+TEST_CASE("adcphase", "[.cmd][.ctb][.jungfrau][.gotthard]") {
+    if (test::type != slsDetectorDefs::CHIPTESTBOARD && test::type != slsDetectorDefs::JUNGFRAU && test::type != slsDetectorDefs::GOTTHARD) {
+       REQUIRE_THROWS(multiSlsDetectorClient("adcphase", GET));       
+    } else { 
+        int prev_val = 0;   
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcphase", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("adcphase "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 20", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcphase", GET, nullptr, oss);
+            REQUIRE(oss.str() == "adcphase 20\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 0", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcphase", GET, nullptr, oss);
+            REQUIRE(oss.str() == "adcphase 0\n");
+        }     
+        if (test::type != slsDetectorDefs::GOTTHARD) {
+            REQUIRE_THROWS(multiSlsDetectorClient("adcphase deg", GET));
+        } else {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 20 deg", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcphase deg", GET, nullptr, oss);
+            REQUIRE(oss.str() == "adcphase 20 deg\n");
+        }          
+        REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase " + std::to_string(prev_val), PUT));                    
+    } 
+}
+
 TEST_CASE("runclk", "[.cmd][.ctb]") {
     if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
-       ;// REQUIRE_THROWS(multiSlsDetectorClient("runclk", GET)); Only once setspeed is split into many        
+       ;// REQUIRE_THROWS(multiSlsDetectorClient("runclk", GET)); Only once setspeed is split into many  (runclk = speed for now)      
     } else { 
         int prev_runclk = 0;   
         {

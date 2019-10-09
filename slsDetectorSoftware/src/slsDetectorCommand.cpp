@@ -616,27 +616,13 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>adcphase [i] [deg]</b> Sets/gets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB, Moench and Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "adcphase";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
-    ++i;
-
-    /*! \page config
    - <b>dbitphase [i] [deg]</b> Sets/gets phase of the clock for latching of the digital bits to i. i is the shift or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only.\c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "dbitphase";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
     ++i;
 
-    /*! \page config
-   - <b>maxadcphaseshift </b> Gets maximum phase shift of the ADC clock. CTB, Moench and Jungfrau only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "maxadcphaseshift";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
-    ++i;
-
-    /*! \page config
+   /*! \page config
    - <b>maxdbitphaseshift </b> Gets the maximum phase shift of the clock for latching of the digital bits.\c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "maxdbitphaseshift";
@@ -3688,25 +3674,12 @@ std::string slsDetectorCommand::cmdSpeed(int narg, const char * const args[], in
     	    return std::string("cannot put");
     	}    
     }
-    else if (cmd == "adcphase") {
-    	index = ADC_PHASE;
-    	if ((action == PUT_ACTION && narg > 2 && std::string(args[2]) == "deg") ||
-    			(action == GET_ACTION && narg > 1 && std::string(args[1]) == "deg")) {
-    		mode = 1;
-    	}
-    }
     else if (cmd == "dbitphase") {
     	index = DBIT_PHASE;
     	if ((action == PUT_ACTION && narg > 2 && std::string(args[2]) == "deg") ||
     			(action == GET_ACTION && narg > 1 && std::string(args[1]) == "deg")) {
     		mode = 1;
     	}
-    }
-    else if (cmd == "maxadcphaseshift") {
-    	index = MAX_ADC_PHASE_SHIFT;
-    	 if (action == PUT_ACTION) {
-    		 return std::string("cannot put");
-    	 }
     }
     else if (cmd == "maxdbitphaseshift") {
     	index = MAX_DBIT_PHASE_SHIFT;
@@ -3744,7 +3717,6 @@ std::string slsDetectorCommand::helpSpeed(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "adcclk c \tSets ADC clock frequency in MHz. CTB & Moench only. " << std::endl;
         os << "dbitclk c \tSets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. " << std::endl;
-        os << "adcphase c [deg]\t Sets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
         os << "dbitphase c [deg]\t Sets the phase of the clock for latching of the digital bits to i. i is the shift or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only." << std::endl;
         os << "adcpipeline c \t Sets the pipeline of the ADC. For CTB & Moench only." << std::endl;
         os << "dbitpipeline c \t Sets the pipeline of the latching of the digital bits. For CTB & Moench only." << std::endl;
@@ -3754,11 +3726,9 @@ std::string slsDetectorCommand::helpSpeed(int action) {
         os << "adcclk \tGets ADC clock frequency in MHz. CTB & Moench only. " << std::endl;
         os << "dbitclk \tGets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. " << std::endl;
         os << "syncclk \t Gets the clock frequency of the sync clock in MHz. CTB & Moench only." << std::endl;
-        os << "adcphase [deg]\t Gets phase of the ADC clock. unit is number of shifts or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
         os << "dbitphase [deg]\t Gets the phase of the clock for  latching of the digital bits. unit is number of shifts or in degrees if deg is used. deg is optional. dbitphase is also reset if dbitclk is changed. These are absolute values with limits. for CTB & Moench only." << std::endl;
         os << "adcpipeline \t Gets the pipeline of the ADC. For CTB & Moench only." << std::endl;
         os << "dbitpipeline \t Gets the pipeline of the latching of the digital bits. For CTB & Moench only." << std::endl;
-        os << "maxadcphaseshift \t Gets maximum phase shift of the ADC clock. CTB,Moench and Jungfrau only." << std::endl;
         os << "maxdbitphaseshift \t Gets maximum phase shift of the clock for latching of the digital bits. CTB & Moench only." << std::endl;
         os << std::endl;
     }

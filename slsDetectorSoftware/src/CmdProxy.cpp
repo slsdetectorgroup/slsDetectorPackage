@@ -347,6 +347,44 @@ std::string CmdProxy::Speed(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Adcphase(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_value] [(optional)deg]\n\t[Jungfrau][Ctb][Gotthard] Phase shift of ADC clock. \n\t[Jungfrau] Absolute phase shift. If deg used, then shift in degrees. Changing Speed also resets adcphase to recommended defaults.\n\t[Ctb] Absolute phase shift. If deg used, then shift in degrees. Changing adcclk also resets adcphase.\n\t[Gotthard] Relative phase shift" << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        Result<int> t;
+        if (args.size() == 0) {   
+            t = det->getADCPhase({det_id});  
+            os << OutString(t) << '\n';  
+        } else if (args.size() == 1) {                                
+            if (args[0] != "deg") {
+                throw sls::RuntimeError("Unknown adcphase argument " + args[0] + ". Did you mean deg?"); 
+            } 
+            t = det->getADCPhaseInDegrees({det_id});   
+            os << OutString(t) << " deg\n";  
+        } else {
+            WrongNumberOfParameters(0);         
+        }        
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() == 1) {                                
+            det->setADCPhase(std::stoi(args[0]), {det_id});  
+            os << args.front() << '\n';
+        } else if (args.size() == 2) {        
+            if (args[1] != "deg") {
+                throw sls::RuntimeError("Unknown adcphase 2nd argument " + args[1] + ". Did you mean deg?"); 
+            } 
+            det->setADCPhaseInDegrees(std::stoi(args[0]), {det_id});  
+            os << args[0] << args[1] << '\n';
+        } else {
+           WrongNumberOfParameters(1);          
+        }
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 
 
 

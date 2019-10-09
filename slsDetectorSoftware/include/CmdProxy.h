@@ -381,6 +381,9 @@ class CmdProxy {
                           {"triggersl", &CmdProxy::triggersl},
                           {"delayl", &CmdProxy::DelayLeft},
                           {"speed", &CmdProxy::Speed},
+                          {"adcphase", &CmdProxy::Adcphase},
+                          {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
+
 
 
 
@@ -422,7 +425,7 @@ class CmdProxy {
     std::string DetectorSize(int action);
     std::string DelayLeft(int action);
     std::string Speed(int action);
-
+    std::string Adcphase(int action);
 
 
 
@@ -558,7 +561,8 @@ class CmdProxy {
     GET_COMMAND(triggersl, getNumberOfTriggersLeft, 
                 "\n\t[Gotthard][Jungfrau][CTB] Number of triggers left in acquisition.");       
 
-
+    GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift, 
+                "\n\t[Jungfrau][CTB] Absolute maximum Phase shift of ADC clock.");  
 
 
 

@@ -9,6 +9,76 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("runclk", "[.cmd][.ctb]") {
+    if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
+       ;// REQUIRE_THROWS(multiSlsDetectorClient("runclk", GET)); Only once setspeed is split into many        
+    } else { 
+        int prev_runclk = 0;   
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("runclk", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("runclk "));
+            prev_runclk = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("runclk 20", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("runclk", GET, nullptr, oss);
+            REQUIRE(oss.str() == "runclk 20\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("runclk 0", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("runclk", GET, nullptr, oss);
+            REQUIRE(oss.str() == "runclk 0\n");
+        }        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("runclk " + std::to_string(prev_runclk), PUT));                    
+    } 
+}
+
+TEST_CASE("speed", "[.cmd][.eiger][.jungfrau]") {
+    if(test::type != slsDetectorDefs::EIGER && test::type != slsDetectorDefs::JUNGFRAU) {
+        REQUIRE_THROWS(multiSlsDetectorClient("speed", GET));         
+    } else {    
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("speed 0", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("speed", GET, nullptr, oss);
+            REQUIRE(oss.str() == "speed full_speed\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("speed full_speed", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("speed", GET, nullptr, oss);
+            REQUIRE(oss.str() == "speed full_speed\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("speed 1", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("speed", GET, nullptr, oss);
+            REQUIRE(oss.str() == "speed half_speed\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("speed half_speed", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("speed", GET, nullptr, oss);
+            REQUIRE(oss.str() == "speed half_speed\n");
+        }  
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("speed 2", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("speed", GET, nullptr, oss);
+            REQUIRE(oss.str() == "speed quarter_speed\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("speed quarter_speed", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("speed", GET, nullptr, oss);
+            REQUIRE(oss.str() == "speed quarter_speed\n");
+        }
+        REQUIRE_THROWS(multiSlsDetectorClient("speed 3", PUT));                         
+    } 
+}
 
 TEST_CASE("triggers", "[.cmd]") {
     {

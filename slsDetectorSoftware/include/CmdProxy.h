@@ -321,7 +321,9 @@ class CmdProxy {
                                     {"thisversion", "clientversion"},
                                     {"detsizechan", "detsize"},
                                     {"cycles", "triggers"},
-                                    {"cyclesl", "triggersl"}
+                                    {"cyclesl", "triggersl"},
+                                    {"clkdivider", "speed"} // or runclk for ctb (ignore as speed doesnt exist?)
+
 
                                     
                                     };
@@ -378,7 +380,7 @@ class CmdProxy {
                           {"framesl", &CmdProxy::framesl},
                           {"triggersl", &CmdProxy::triggersl},
                           {"delayl", &CmdProxy::DelayLeft},
-
+                          {"speed", &CmdProxy::Speed},
 
 
 
@@ -401,6 +403,8 @@ class CmdProxy {
                           {"threshold", &CmdProxy::Threshold},
                           {"thresholdnotb", &CmdProxy::ThresholdNoTb},  
 
+                          {"runclk", &CmdProxy::runclk},  
+
 
                           {"savepattern", &CmdProxy::savepattern}                         
                           };
@@ -417,6 +421,9 @@ class CmdProxy {
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
     std::string DelayLeft(int action);
+    std::string Speed(int action);
+
+
 
 
     std::string Threshold(int action);
@@ -546,10 +553,10 @@ class CmdProxy {
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Ctb] Delay after trigger");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft, 
-                "\n\t[Gotthard][Jungfrau][CTB]Number of frames left in acquisition.");       
+                "\n\t[Gotthard][Jungfrau][CTB] Number of frames left in acquisition.");       
 
     GET_COMMAND(triggersl, getNumberOfTriggersLeft, 
-                "\n\t[Gotthard][Jungfrau][CTB]]Number of triggers left in acquisition.");       
+                "\n\t[Gotthard][Jungfrau][CTB] Number of triggers left in acquisition.");       
 
 
 
@@ -595,7 +602,8 @@ class CmdProxy {
                  "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time of EIGER subframes");
 
 
-
+    INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, std::stoi,
+                    "[n_clk in MHz]\n\t[Ctb] Run clk in MHz.");      
 
 
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 

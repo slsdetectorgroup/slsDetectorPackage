@@ -287,7 +287,7 @@ std::string CmdProxy::DelayLeft(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[(optional unit) ns|us|ms|s]\n\tDelayLeft Delay Left in Acquisition." << '\n';   
+        os << "[(optional unit) ns|us|ms|s]\n\t[Gotthard][Jungfrau][CTB] DelayLeft Delay Left in Acquisition." << '\n';   
     } else if (action == defs::GET_ACTION) {
         auto t = det->getDelayAfterTriggerLeft({det_id});       
         if (args.size() == 0) {  
@@ -305,6 +305,47 @@ std::string CmdProxy::DelayLeft(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Speed(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau] Readout speed of chip.\n\tJungfrau also overwrites adcphase to recommended default. " << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        } 
+        auto t = det->getSpeed({det_id});       
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {                                
+            WrongNumberOfParameters(1);         
+        }        
+        defs::speedLevel t;
+        try{
+            int ival = std::stoi(args[0]);
+            switch (ival) {
+            case 0:
+                t = defs::FULL_SPEED;
+                break;
+            case 1:
+                t = defs::HALF_SPEED;
+                break; 
+            case 2:
+                t = defs::QUARTER_SPEED;
+                break;  
+            default:
+                throw sls::RuntimeError("Unknown speed " + args[0]);  
+            }
+        } catch (...) {
+            t = sls::StringTo<defs::speedLevel>(args[0]);                                   
+        }
+        det->setSpeed(t, {det_id});    
+        os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 

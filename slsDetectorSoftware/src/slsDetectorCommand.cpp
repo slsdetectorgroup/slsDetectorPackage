@@ -593,12 +593,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to configure speed of detector
 	 */
 
-    /*! \page config
-   - <b>clkdivider [i]</b> sets/gets the readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)]. Jungfrau also overwrites adcphase to recommended default. For CTB, it is the run clock in MHz. Not for Gotthard. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "clkdivider";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSpeed;
-    ++i;
 
     /*! \page config
    - <b>adcclk [i]</b> sets/gets the ADC clock frequency in MHz. CTB & Moench only. \c Returns \c (int)
@@ -3682,9 +3676,6 @@ std::string slsDetectorCommand::cmdSpeed(int narg, const char * const args[], in
     if (action == HELP_ACTION)
     	return helpSpeed(action);
 
-    if (cmd == "clkdivider") {
-    	index = CLOCK_DIVIDER;
-    }
     else if (cmd == "adcclk") {
     	index = ADC_CLOCK;
     }
@@ -3736,11 +3727,6 @@ std::string slsDetectorCommand::cmdSpeed(int narg, const char * const args[], in
         if (sscanf(args[1], "%d", &t))
             ;
         else {
-            // if parameer is a string (unknown speed will throw)
-            if (cmd == "clkdivider") {
-                speedLevel lev = getSpeedLevelType(std::string(args[1]));
-                t = static_cast<int>(lev);
-            } 
             return std::string("cannot scan speed value ") + std::string(args[1]);
         }
     }
@@ -3756,7 +3742,6 @@ std::string slsDetectorCommand::helpSpeed(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "clkdivider c  \t sets readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)].  Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard." << std::endl;
         os << "adcclk c \tSets ADC clock frequency in MHz. CTB & Moench only. " << std::endl;
         os << "dbitclk c \tSets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. " << std::endl;
         os << "adcphase c [deg]\t Sets phase of the ADC clock to i. i is the shift or in degrees if deg is used. deg is optional & only for CTB, Moench & Jungfrau. For CTB & Moench, adcphase is reset if adcclk is changed. For Jungfrau, adcphase changed to defaults if clkdivider changed. Jungfrau, CTB & Moench, these are absolute values with limits. Gotthard, relative phase shift. Not for Eiger." << std::endl;
@@ -3766,7 +3751,6 @@ std::string slsDetectorCommand::helpSpeed(int action) {
         os << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "clkdivider \t Gets readout clock divider. EIGER, JUNGFRAU [0(fast speed), 1(half speed), 2(quarter speed)].  Jungfrau, full speed is not implemented and overwrites adcphase to recommended default. Not for Gotthard." << std::endl;
         os << "adcclk \tGets ADC clock frequency in MHz. CTB & Moench only. " << std::endl;
         os << "dbitclk \tGets the clock frequency of the latching of the digital bits in MHz. CTB & Moench only. " << std::endl;
         os << "syncclk \t Gets the clock frequency of the sync clock in MHz. CTB & Moench only." << std::endl;

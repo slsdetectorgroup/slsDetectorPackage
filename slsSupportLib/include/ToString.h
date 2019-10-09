@@ -100,6 +100,18 @@ inline std::string ToString(const defs::detectorSettings s){
     }
 }
 
+inline std::string ToString(const defs::speedLevel s){
+    switch (s) {
+    case defs::FULL_SPEED:
+        return std::string("full_speed");
+    case defs::HALF_SPEED:
+        return std::string("half_speed");
+    case defs::QUARTER_SPEED:
+        return std::string("quarter_speed");                
+    default:
+        return std::string("Unknown");       
+    }
+}
 
 // in case we already have a string 
 // causes a copy but might be needed in generic code
@@ -305,33 +317,44 @@ inline defs::detectorType StringTo(const std::string& s){
 
 template <>
 inline defs::detectorSettings StringTo(const std::string& s){
-        if (s == "standard")
-            return defs::STANDARD;
-        if (s == "fast")
-            return defs::FAST;
-        if (s == "highgain")
-            return defs::HIGHGAIN;
-        if (s == "dynamicgain")
-            return defs::DYNAMICGAIN;
-        if (s == "lowgain")
-            return defs::LOWGAIN;
-        if (s == "mediumgain")
-            return defs::MEDIUMGAIN;
-        if (s == "veryhighgain")
-            return defs::VERYHIGHGAIN;
-        if (s == "dynamichg0")
-            return defs::DYNAMICHG0;
-        if (s == "fixgain1")
-            return defs::FIXGAIN1;
-        if (s == "fixgain2")
-            return defs::FIXGAIN2;
-        if (s == "forceswitchg1")
-            return defs::FORCESWITCHG1;
-        if (s == "forceswitchg2")
-            return defs::FORCESWITCHG2;
-        if (s == "verylowgain")
-            return defs::VERYLOWGAIN;
-        throw sls::RuntimeError("Unknown setting " + s);
+    if (s == "standard")
+        return defs::STANDARD;
+    if (s == "fast")
+        return defs::FAST;
+    if (s == "highgain")
+        return defs::HIGHGAIN;
+    if (s == "dynamicgain")
+        return defs::DYNAMICGAIN;
+    if (s == "lowgain")
+        return defs::LOWGAIN;
+    if (s == "mediumgain")
+        return defs::MEDIUMGAIN;
+    if (s == "veryhighgain")
+        return defs::VERYHIGHGAIN;
+    if (s == "dynamichg0")
+        return defs::DYNAMICHG0;
+    if (s == "fixgain1")
+        return defs::FIXGAIN1;
+    if (s == "fixgain2")
+        return defs::FIXGAIN2;
+    if (s == "forceswitchg1")
+        return defs::FORCESWITCHG1;
+    if (s == "forceswitchg2")
+        return defs::FORCESWITCHG2;
+    if (s == "verylowgain")
+        return defs::VERYLOWGAIN;
+    throw sls::RuntimeError("Unknown setting " + s);
+}
+
+template <>
+inline defs::speedLevel StringTo(const std::string& s) {
+    if (s == "full_speed")
+        return defs::FULL_SPEED;
+    if (s == "half_speed")
+        return defs::HALF_SPEED;
+    if (s == "quarter_speed")
+        return defs::QUARTER_SPEED;        
+    throw sls::RuntimeError("Unknown speed " + s);          
 }
 
 /** For types with a .str() method use this for conversion */

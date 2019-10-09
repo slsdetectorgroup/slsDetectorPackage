@@ -800,13 +800,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>vhighvoltage [i]</b> Sets/gets the high voltage to the sensor in V. \c Returns \c (int ["mV"]).
-	 */
-    descrToFuncMap[i].m_pFuncName = "vhighvoltage";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
    - <b>vapower [i]</b> Sets/gets the analog power supply for the old chiptest board in DAC units. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vapower";
@@ -2920,8 +2913,6 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         dac = SHAPER1;
     else if (cmd == "vshaper2" || cmd == "vshaperneg")
         dac = SHAPER2;
-    else if (cmd == "vhighvoltage")
-        dac = HIGH_VOLTAGE;
     else if (cmd == "vapower")
         dac = VA_POT;
     else if (cmd == "vddpower")
@@ -3103,9 +3094,6 @@ std::string slsDetectorCommand::helpDAC(int action) {
         os << "vshaper2 "
            << "dacu\t sets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
         os << std::endl;
-        os << "vhighvoltage "
-           << "dacu\t CHIPTEST BOARD ONLY - sets the detector HV in dac units (0-1024)." << std::endl;
-        os << std::endl;
         os << "vapower "
            << "dacu\t CHIPTEST BOARD ONLY - sets the analog power supply in dac units (0-1024)." << std::endl;
         os << std::endl;
@@ -3190,9 +3178,6 @@ std::string slsDetectorCommand::helpDAC(int action) {
         os << std::endl;
         os << "vshaper2 "
            << "dacu\t gets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-        os << std::endl;
-        os << "vhighvoltage "
-           << "dacu\t CHIPTEST BOARD ONLY - gets the detector HV in dac units (0-1024)." << std::endl;
         os << std::endl;
         os << "vapower "
            << "dacu\t CHIPTEST BOARD ONLY - gets the analog power supply in dac units (0-1024)." << std::endl;

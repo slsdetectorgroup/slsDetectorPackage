@@ -383,6 +383,7 @@ class CmdProxy {
                           {"speed", &CmdProxy::Speed},
                           {"adcphase", &CmdProxy::Adcphase},
                           {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
+                          {"vhighvoltage", &CmdProxy::vhighvoltage},
 
 
 
@@ -563,6 +564,10 @@ class CmdProxy {
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift, 
                 "\n\t[Jungfrau][CTB] Absolute maximum Phase shift of ADC clock.");  
+
+    INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, std::stoi,
+                    "[n_value]\n\tHigh voltage to the sensor in Voltage.\n\t[Gotthard] [0|90|110|120|150|180|200]\n\t[Eiger] 0-200\n\t[Jungfrau][Ctb] [0|60-200]");      
+
 
 
 

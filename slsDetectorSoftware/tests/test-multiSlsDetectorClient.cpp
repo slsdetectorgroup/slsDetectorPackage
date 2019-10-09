@@ -9,6 +9,59 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("vhighvoltage", "[.cmd]") {
+    int prev_val = 0;
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss);
+        std::string s = (oss.str()).erase (0, strlen("vhighvoltage "));
+        // std::stoi doesnt convert [0,-999] beccause of [
+        if (s.find('[') != std::string::npos) {
+            s.erase(0, 1);
+        }
+        prev_val = std::stoi(s);
+    }
+    if (test::type == slsDetectorDefs::GOTTHARD) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 90", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss);
+            REQUIRE(oss.str() == "vhighvoltage 90\n");
+        }    
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 0", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss);
+            REQUIRE(oss.str() == "vhighvoltage 0\n");
+        } 
+        REQUIRE_THROWS(multiSlsDetectorClient("vhighvoltage 50", PUT));      
+    } else { 
+        if (test::type != slsDetectorDefs::EIGER) {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 50", PUT));            
+        } else {
+            REQUIRE_THROWS(multiSlsDetectorClient("vhighvoltage 50", PUT));   
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 120", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("vhighvoltage "));
+            REQUIRE(s.find("120") != std::string::npos); // due to different values for highvoltage for eiger
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 0", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("vhighvoltage "));
+            REQUIRE(s.find("0") != std::string::npos); // due to different values for highvoltage for eiger
+        }         
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage " + std::to_string(prev_val), PUT));                    
+    } 
+}
+
+
+
 TEST_CASE("maxadcphaseshift", "[.cmd][.ctb][.jungfrau]") {
     if (test::type != slsDetectorDefs::CHIPTESTBOARD && test::type != slsDetectorDefs::JUNGFRAU) {
        REQUIRE_THROWS(multiSlsDetectorClient("maxadcphaseshift", GET));       

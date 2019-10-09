@@ -709,7 +709,7 @@ TEST_CASE("fname", "[.cmd]") {
     }
 }
 
-TEST_CASE("resetframescaught get framescaught", "[.cmd]") {
+TEST_CASE("rx_framescaught", "[.cmd]") {
     {
         std::ostringstream oss;
         multiSlsDetectorClient("resetframescaught 0", PUT, nullptr, oss);
@@ -717,9 +717,20 @@ TEST_CASE("resetframescaught get framescaught", "[.cmd]") {
     }
     {
         std::ostringstream oss;
-        multiSlsDetectorClient("framescaught", GET, nullptr, oss);
-        REQUIRE(oss.str() == "framescaught 0\n");
+        multiSlsDetectorClient("rx_framescaught", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_framescaught 0\n");
     }
+    REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
+    REQUIRE_NOTHROW(multiSlsDetectorClient("exptime 1", PUT));    
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_start", PUT));
+    REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
+    sleep(2);
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_stop", PUT)); 
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_framescaught", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_framescaught 1\n");
+    }      
 }
 
 TEST_CASE("rx_silent", "[.cmd]") {

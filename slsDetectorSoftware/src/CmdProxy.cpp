@@ -393,6 +393,47 @@ std::string CmdProxy::Adcphase(int action) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+std::string CmdProxy::SlowAdc(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_channel (0-7 for channel|8 for temperature)]\n\t[Ctb] Slow ADC channel." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) { 
+            WrongNumberOfParameters(0); 
+        }       
+        int nchan = std::stoi(args[0]);
+        if (nchan < 0 || nchan > defs::SLOW_ADC_TEMP - defs::SLOW_ADC0) {
+            throw sls::RuntimeError("Unknown adc argument " + args[0]); 
+        }
+        if (nchan == 8) {
+            auto t = det->getTemperature(defs::SLOW_ADC_TEMP, {det_id});  
+            os << OutString(t) << " °C\n";
+        } else {
+            auto t = det->getSlowADC(static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0));
+            os << OutString(t) << '\n';
+        }      
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("cannot put");
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::Threshold(int action) {
     std::ostringstream os; 
     os << cmd << ' ';

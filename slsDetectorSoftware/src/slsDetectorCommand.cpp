@@ -1163,69 +1163,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page settings
-   - <b>temp_adc</b> Gets the ADC temperature. \c Returns \c EIGER,JUNGFRAU(double"°C") Others \c (int"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_adc";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>temp_fpgaext</b> Gets the external FPGA temperature. Used in EIGER only. \c Returns \c EIGER(double"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_fpgaext";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>temp_10ge</b> Gets the 10Gbe temperature. Used in EIGER only. \c Returns \c EIGER(double"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_10ge";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>temp_dcdc</b> Gets the temperature of the DC/DC converter. Used in EIGER only. \c Returns \c EIGER(double"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_dcdc";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>temp_sodl</b> Gets the temperature of the left so-dimm memory . Used in EIGER only. \c Returns \c EIGER(double"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_sodl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>temp_sodr</b> Gets the temperature of the right so-dimm memory. Used in EIGER only. \c Returns \c EIGER(double"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_sodr";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>adc:j</b> Gets the values of the slow ADC number j for the new chiptest board. \c Returns \c (int"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "adc";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>temp_fpgal</b> Gets the temperature of the left frontend FPGA. Used in EIGER only. \c Returns \c EIGER(double"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_fpgafl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>temp_fpgar</b> Gets the temperature of the right frontend FPGA. Used in EIGER only. \c Returns \c EIGER(double"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_fpgafr";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
    - <b>i_a</b> Gets the current of the power supply a on the new chiptest board. \c Returns \c (int"mV")
 	 */
     descrToFuncMap[i].m_pFuncName = "i_a";
@@ -3248,34 +3185,7 @@ std::string slsDetectorCommand::cmdADC(int narg, const char * const args[], int 
     else if (action == PUT_ACTION)
         return std::string("cannot set ") + cmd;
 
-    if (cmd == "adc") {
-        int idac = -1;
-        if (sscanf(args[1], "%d", &idac) != 1) {
-            return std::string("Could not scan adc index") + std::string(args[1]);
-        }
-        if (idac < 0 || idac > SLOW_ADC_TEMP - SLOW_ADC0) {
-            return (std::string ("cannot set adc, must be between ") + std::to_string(0) +
-                    std::string (" and ") + std::to_string(SLOW_ADC_TEMP - SLOW_ADC0));
-        }
-        adc = (dacIndex)(idac + SLOW_ADC0);
-    }
-	else if (cmd=="temp_adc")
-		adc=TEMPERATURE_ADC;
-	else if (cmd=="temp_fpgaext")
-		adc=TEMPERATURE_FPGAEXT;
-	else if (cmd=="temp_10ge")
-		adc=TEMPERATURE_10GE;
-	else if (cmd=="temp_dcdc")
-		adc=TEMPERATURE_DCDC;
-	else if (cmd=="temp_sodl")
-		adc=TEMPERATURE_SODL;
-	else if (cmd=="temp_sodr")
-		adc=TEMPERATURE_SODR;
-	else if (cmd=="temp_fpgafl")
-		adc=TEMPERATURE_FPGA2;
-	else if (cmd=="temp_fpgafr")
-		adc=TEMPERATURE_FPGA3;
-	else if (cmd=="i_a")
+    if (cmd=="i_a")
 		adc=I_POWER_A;
 	else if (cmd=="i_b")
 		adc=I_POWER_B;
@@ -3298,19 +3208,9 @@ std::string slsDetectorCommand::cmdADC(int narg, const char * const args[], int 
 	else
 		return std::string("cannot decode adc ")+cmd;
 
-	if (myDet->getDetectorTypeAsEnum(detPos) == EIGER || myDet->getDetectorTypeAsEnum(detPos) == JUNGFRAU){
-		int val = myDet->getADC(adc, detPos);
-		if (val == -1)
-			sprintf(answer,"%d",val);
-		else
-			sprintf(answer,"%.2f", (double)val/1000.000);
-	}
-	else sprintf(answer,"%d",myDet->getADC(adc, detPos));
+	sprintf(answer,"%d",myDet->getADC(adc, detPos));
 
-	//if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
-	if (adc < 100 || adc == SLOW_ADC_TEMP)
-		strcat(answer,"°C");
-	else if (adc == I_POWER_A || adc == I_POWER_B || adc == I_POWER_C || adc == I_POWER_D || adc == I_POWER_IO)
+    if (adc == I_POWER_A || adc == I_POWER_B || adc == I_POWER_C || adc == I_POWER_D || adc == I_POWER_IO)
 	    strcat(answer," mA");
 	else
 		strcat(answer," mV");
@@ -3322,42 +3222,6 @@ std::string slsDetectorCommand::cmdADC(int narg, const char * const args[], int 
 std::string slsDetectorCommand::helpADC(int action) {
 
     std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "temp_adc "
-           << "Cannot be set" << std::endl;
-        os << "temp_fpgaext "
-           << "Cannot be set" << std::endl;
-        os << "temp_10ge "
-           << "Cannot be set" << std::endl;
-        os << "temp_dcdc "
-           << "Cannot be set" << std::endl;
-        os << "temp_sodl "
-           << "Cannot be set" << std::endl;
-        os << "temp_sodr "
-           << "Cannot be set" << std::endl;
-        os << "temp_fpgafl "
-           << "Cannot be set" << std::endl;
-        os << "temp_fpgafr "
-           << "Cannot be set" << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "temp_adc "
-           << "\t gets the temperature of the adc" << std::endl;
-        os << "temp_fpgaext "
-           << "\t gets the temperature close to the fpga" << std::endl;
-        os << "temp_10ge "
-           << "\t gets the temperature close to the 10GE" << std::endl;
-        os << "temp_dcdc "
-           << "\t gets the temperature close to the dc dc converter" << std::endl;
-        os << "temp_sodl "
-           << "\t gets the temperature close to the left so-dimm memory" << std::endl;
-        os << "temp_sodr "
-           << "\t gets the temperature close to the right so-dimm memory" << std::endl;
-        os << "temp_fpgafl "
-           << "\t gets the temperature of the left front end board fpga" << std::endl;
-        os << "temp_fpgafr "
-           << "\t gets the temperature of the left front end board fpga" << std::endl;
-    }
     return os.str();
 }
 

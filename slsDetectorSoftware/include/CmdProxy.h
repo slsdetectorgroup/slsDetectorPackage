@@ -404,11 +404,23 @@ class CmdProxy {
                           {"adcphase", &CmdProxy::Adcphase},
                           {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
                           {"vhighvoltage", &CmdProxy::vhighvoltage},
+                          {"temp_adc", &CmdProxy::temp_adc},
                           {"temp_fpga", &CmdProxy::temp_fpga},
+                          {"temp_fpgaext", &CmdProxy::temp_fpgaext},
+                          {"temp_10ge", &CmdProxy::temp_10ge},
+                          {"temp_dcdc", &CmdProxy::temp_dcdc},
+                          {"temp_sodl", &CmdProxy::temp_sodl},
+                          {"temp_sodr", &CmdProxy::temp_sodr},
+                          {"temp_fpgafl", &CmdProxy::temp_fpgafl},
+                          {"temp_fpgafr", &CmdProxy::temp_fpgafr},
 
 
 
 
+
+
+
+                          {"adc", &CmdProxy::SlowAdc},
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
                           {"trigger", &CmdProxy::trigger},
@@ -451,6 +463,8 @@ class CmdProxy {
 
 
 
+
+    std::string SlowAdc(int action);
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);       
 
@@ -589,8 +603,35 @@ class CmdProxy {
     INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, std::stoi,
                     "[n_value]\n\tHigh voltage to the sensor in Voltage.\n\t[Gotthard] [0|90|110|120|150|180|200]\n\t[Eiger] 0-200\n\t[Jungfrau][Ctb] [0|60-200]");      
 
+    TEMP_COMMAND(temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC,
+                    "[n_value]\n\t[Jungfrau][Gotthard] ADC Temperature");
+
     TEMP_COMMAND(temp_fpga, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA,
                     "[n_value]\n\t[Eiger][Jungfrau][Gotthard] FPGA Temperature");    
+
+    TEMP_COMMAND(temp_fpgaext, getTemperature, slsDetectorDefs::TEMPERATURE_FPGAEXT,
+                    "[n_value]\n\t[Eiger]Temperature close to the FPGA");
+
+    TEMP_COMMAND(temp_10ge, getTemperature, slsDetectorDefs::TEMPERATURE_10GE,
+                    "[n_value]\n\t[Eiger]Temperature close to the 10GbE");    
+
+    TEMP_COMMAND(temp_dcdc, getTemperature, slsDetectorDefs::TEMPERATURE_DCDC,
+                    "[n_value]\n\t[Eiger]Temperature close to the dc dc converter");
+
+    TEMP_COMMAND(temp_sodl, getTemperature, slsDetectorDefs::TEMPERATURE_SODL,
+                    "[n_value]\n\t[Eiger]Temperature close to the left so-dimm memory");    
+
+    TEMP_COMMAND(temp_sodr, getTemperature, slsDetectorDefs::TEMPERATURE_SODR,
+                    "[n_value]\n\t[Eiger]Temperature close to the right so-dimm memory");
+
+    TEMP_COMMAND(temp_fpgafl, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA2,
+                    "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");    
+
+    TEMP_COMMAND(temp_fpgafr, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA3,
+                    "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");  
+
+
+
 
 
 

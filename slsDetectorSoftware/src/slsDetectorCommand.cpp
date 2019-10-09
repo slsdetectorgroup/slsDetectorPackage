@@ -1318,21 +1318,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncName = "vipreout";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
-
-    /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "vrfsh";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>vIpre</b> Sets/gets dac for xxx for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "vrfshnpol";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
+	
     /*! \page settings
    - <b>vref_h_adc</b> Sets/gets dac for reference voltage high of ADC for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */

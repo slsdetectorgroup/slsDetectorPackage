@@ -179,6 +179,24 @@ TEST_CASE("triggersl", "[.cmd][.jungfrau][gotthard][ctb]") {
     }
 }
 
+TEST_CASE("delayl", "[.cmd][.jungfrau][gotthard][ctb]") {
+    if(test::type == slsDetectorDefs::EIGER) {
+        REQUIRE_THROWS(multiSlsDetectorClient("delayl", GET));       
+    } else {
+        multiSlsDetectorClient("timing trigger", PUT);
+        multiSlsDetectorClient("frames 1", PUT);
+        multiSlsDetectorClient("triggers 2", PUT);  
+         multiSlsDetectorClient("delay 1", PUT);          
+        multiSlsDetectorClient("status start", PUT);
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("delayl s", GET, nullptr, oss);
+            REQUIRE(oss.str()  == "delayl 1s\n");
+        }
+        multiSlsDetectorClient("stop", PUT);
+    }
+}
+
 TEST_CASE("rx_fifodepth", "[.cmd]") {
 
     {

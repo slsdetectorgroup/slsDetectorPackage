@@ -45,7 +45,7 @@
             } else {                                                           \
                 WrongNumberOfParameters(2);                                    \
             }                                                                  \
-            /* TODO: os << args << '\n'; (doesnt work for vectors)*/           \
+            /* TODO: os << args << '\n'; (doesnt work for vectors in .h)*/     \
             if (args.size() > 1) {                                             \
                 os << args[0] << args[1] << '\n';                              \
             } else {                                                           \
@@ -377,6 +377,8 @@ class CmdProxy {
                           {"delay", &CmdProxy::delay},
                           {"framesl", &CmdProxy::framesl},
                           {"triggersl", &CmdProxy::triggersl},
+                          {"delayl", &CmdProxy::DelayLeft},
+
 
 
 
@@ -414,7 +416,7 @@ class CmdProxy {
     std::string PackageVersion(int action);     
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
-
+    std::string DelayLeft(int action);
 
 
     std::string Threshold(int action);
@@ -541,7 +543,7 @@ class CmdProxy {
                  "[duration] [(optional unit) ns|us|ms|s]\n\tPeriod between frames");
 
     TIME_COMMAND(delay, getDelayAfterTrigger, setDelayAfterTrigger,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Ctb]Delay after trigger");
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Ctb] Delay after trigger");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft, 
                 "\n\t[Gotthard][Jungfrau][CTB]Number of frames left in acquisition.");       

@@ -552,14 +552,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
-    /*! \page timing
-   - <b>delayl</b> gets delay left. Used in GOTTHARD, JUNGFRAU, MOENCH and CTB only. Only get! \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "delayl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page timing
+   /*! \page timing
    - <b>now</b> Getting actual time of the detector from start. For Jungfrau only. Only get!
 	 */
     descrToFuncMap[i].m_pFuncName = "now";
@@ -3634,8 +3627,6 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[],
         index = ACQUISITION_TIME;
     else if (cmd == "periodl")
         index = FRAME_PERIOD;
-    else if (cmd == "delayl")
-        index = DELAY_AFTER_TRIGGER;
     else if (cmd == "now")
         index = ACTUAL_TIME;
     else if (cmd == "timestamp")
@@ -3674,7 +3665,6 @@ std::string slsDetectorCommand::helpTimeLeft(int action) {
 
         os << "exptimel  \t gets the exposure time left" << std::endl;
         os << "periodl \t gets the frame period left" << std::endl;
-        os << "delayl  \t gets the delay left" << std::endl;
         os << "measuredperiod \t gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame." << std::endl;
         os << "measuredsubperiod \t gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode." << std::endl;
         os << std::endl;

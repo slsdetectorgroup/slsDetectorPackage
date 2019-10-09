@@ -1943,6 +1943,7 @@ std::string slsDetectorCommand::executeLine(int narg, const char * const args[],
 
     if (action == READOUT_ACTION)
         return cmdAcquire(narg, args, action, detPos);
+
     size_t s = std::string(args[0]).find(':');
     std::string key = std::string(args[0]).substr(0, s); // truncate at :
 

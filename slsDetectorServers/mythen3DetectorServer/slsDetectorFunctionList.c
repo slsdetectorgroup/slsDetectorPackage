@@ -942,6 +942,14 @@ int startStateMachine(){
 	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
 	return OK;
 #endif
+	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
+	// cleanFifos();
+
+	//start state machine
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK | CONTROL_STRT_EXPSR_MSK);
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STRT_ACQSTN_MSK & ~CONTROL_STRT_EXPSR_MSK);
+
+	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -996,6 +1004,12 @@ int stopStateMachine(){
 	virtual_stop = 0;
 	return OK;
 #endif
+	//stop state machine
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STP_ACQSTN_MSK);
+	usleep(WAIT_TIME_US_STP_ACQ);
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STP_ACQSTN_MSK);
+
+	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -1009,6 +1023,17 @@ enum runStatus getRunStatus(){
 		return RUNNING;
 	}
 #endif
+	FILE_LOG(logDEBUG1, ("Getting status\n"));
+
+	uint32_t retval = bus_r(STATUS_REG);
+	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
+
+	// running
+	if(retval & CONTROL_RN_BSY_MSK) {
+	    FILE_LOG(logINFOBLUE, ("Status: Running\n"));
+	    return RUNNING;
+
+	}
     return IDLE;
 }
 
@@ -1021,18 +1046,28 @@ void readFrame(int *ret, char *mess){
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif
+
+	*ret = (int)OK;
+	// frames left to give status
+	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
+
+	if ( retval > 0) {
+		FILE_LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));
+	} else {
+		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+	}
+
 }
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
     return virtual_status;
 #endif
-#ifdef VIRTUAL
-	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);
+
+	u_int32_t s = (bus_r(CONTROL_REG) & CONTROL_RN_BSY_OFST);
 	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
-#endif
-	return -1;
+
 }
 
 /* common */

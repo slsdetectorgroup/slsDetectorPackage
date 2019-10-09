@@ -841,14 +841,11 @@ int set_dac(int file_des) {
     case HIGH_VOLTAGE:
     case V_LIMIT:
         break;
-#elif GOTTHARD2D
-    case HIGH_VOLTAGE:
-		break;
 #elif MYTHEN3D
     case HIGH_VOLTAGE:
 		break;
-	case M_casSh: // in sls_detector_defs.h
-		serverDacIndex = CASSH; // in mythen3 slsDetectorServer_defs.h
+	case M_casSh: 
+		serverDacIndex = CASSH; 
 		break;
 	case M_Vth2:
 		serverDacIndex = VTH2;
@@ -895,8 +892,51 @@ int set_dac(int file_des) {
 	case M_VdcSh:
 		serverDacIndex = VDCSH;
 		break;
-
-
+#elif GOTTHARD2D
+    case HIGH_VOLTAGE:
+		break;
+	case VREF_H_ADC:
+		serverDacIndex = G_VREF_H_ADC;
+		break;
+	case VB_COMP_FE:
+		serverDacIndex = G_VB_COMP_FE;
+		break;
+	case VB_COMP_ADC:
+		serverDacIndex = G_VB_COMP_ADC;
+		break;
+	case VCOM_CDS:
+		serverDacIndex = G_VCOM_CDS;
+		break;
+	case VREF_RESTORE:
+		serverDacIndex = G_VREF_RESTORE;
+		break;
+	case VB_OPA_1ST:
+		serverDacIndex = G_VB_OPA_1ST;
+		break;
+	case VREF_COMP_FE:
+		serverDacIndex = G_VREF_COMP_FE;
+		break;
+	case VCOM_ADC1:
+		serverDacIndex = G_VCOM_ADC1;
+		break;	
+	case VREF_PRECH:
+		serverDacIndex = G_VREF_PRECH;
+		break;
+	case VREF_L_ADC:
+		serverDacIndex = G_VREF_L_ADC;
+		break;
+	case VREF_CDS:
+		serverDacIndex = G_VREF_CDS;
+		break;
+	case VB_CS:
+		serverDacIndex = G_VB_CS;
+		break;
+	case VB_OPA_FD:
+		serverDacIndex = G_VB_OPA_FD;
+		break;
+	case VCOM_ADC2:
+		serverDacIndex = G_VCOM_ADC2;
+		break;		
 #endif
     default:
 #ifdef JUNGFRAUD
@@ -1063,11 +1103,6 @@ int set_dac(int file_des) {
                 validate(val, retval, "set vlimit", DEC);
                 break;
 #endif
-#ifdef GOTTHARD2D
-				default:
-					break;
-
-#else
                 // dacs
     			default:
     			    if (mV && val > DAC_MAX_MV) {
@@ -1123,7 +1158,6 @@ int set_dac(int file_des) {
                     }
                     FILE_LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval, (mV ? "mV" : "dac units")));
     				break;
-#endif
     		}
     	}
     }

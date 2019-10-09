@@ -4,6 +4,7 @@
 #include "clogger.h"
 #include "nios.h"
 #include "DAC6571.h"
+#include "LTC2620_Driver.h"
 #include "common.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
@@ -36,6 +37,7 @@ int virtual_stop = 0;
 
 uint32_t clkDivider[NUM_CLOCKS] = {125, 20, 80};
 int highvoltage = 0;
+int dacValues[NDAC] = {0};
 int detPos[2] = {0, 0};
 
 int isFirmwareCheckDone() {
@@ -82,6 +84,7 @@ void basictests() {
 		return;
 	}
 
+	uint16_t hversion			= getHardwareVersionNumber();
 	uint32_t ipadd				= getDetectorIP();
 	uint64_t macadd				= getDetectorMAC();
 	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
@@ -91,6 +94,8 @@ void basictests() {
 	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
 	FILE_LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"
+			"Hardware Version:\t\t 0x%x\n"
+			
 			"Detector IP Addr:\t\t 0x%x\n"
 			"Detector MAC Addr:\t\t 0x%llx\n\n"
 
@@ -100,6 +105,7 @@ void basictests() {
 			"Required Firmware Version:\t 0x%x\n"
 			"Client-Software API Version:\t 0x%llx\n"
 			"********************************************************\n",
+			hversion, 
 			ipadd,
 			(long  long unsigned int)macadd,
 			(long  long int)fwversion,
@@ -248,6 +254,13 @@ u_int64_t getFirmwareAPIVersion() {
     return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
+u_int16_t getHardwareVersionNumber() {
+#ifdef VIRTUAL
+    return 0;
+#endif
+	return ((bus_r(MCB_SERIAL_NO_REG)));// & HARDWARE_VERSION_NUM_MSK) >> HARDWARE_VERSION_NUM_OFST);
+}
+
 u_int32_t getDetectorNumber(){
 #ifdef VIRTUAL
     return 0;
@@ -329,20 +342,45 @@ void setupDetector() {
 	clkDivider[TICK_CLK] = DEFAULT_TICK_CLK;
 	clkDivider[SAMPLING_CLK] = DEFAULT_SAMPLING_CLK;
 	highvoltage = 0;
+	{
+		int i;
+		for (i = 0; i < NDAC; ++i) {
+			dacValues[i] = 0;
+		}
+	}
 
-	// hv
+
 #ifndef VIRTUAL
+	// hv
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
+	// dacs
+	LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
 #endif
 
 	// Default values
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
+	setDefaultDacs();
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(ACQUISITION_TIME, DEFAULT_PERIOD);
 }
 
+int setDefaultDacs() {
+	int ret = OK;
+	FILE_LOG(logINFOBLUE, ("Setting Default Dac values\n"));
+	{
+		int i = 0;
+		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+		for(i = 0; i < NDAC; ++i) {
+			// if not already default, set it to default
+			//if (dacValues[i] != defaultvals[i]) {
+				setDAC((enum DACINDEX)i,defaultvals[i],0);
+			//}
+		}
+	}
+	return ret;
+}
 
 /* set parameters -  dr, roi */
 
@@ -451,6 +489,49 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 
 
+/* parameters - dac, hv */
+void setDAC(enum DACINDEX ind, int val, int mV) {
+    if (val < 0) {
+        return;
+	}
+
+	char* dac_names[] = {DAC_NAMES};
+    FILE_LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
+    int dacval = val;
+#ifdef VIRTUAL
+    FILE_LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
+    if (!mV) {
+        dacValues[ind] = val;
+    }
+    // convert to dac units
+    else if (LTC2620_D_VoltageToDac(val, &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
+#else
+    if (LTC2620_D_SetDACValue((int)ind, val, mV, dac_names[ind], &dacval) == OK) {
+        dacValues[ind] = dacval;
+    }
+#endif
+}
+
+int getDAC(enum DACINDEX ind, int mV) {
+    if (!mV) {
+        FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, dacValues[ind]));
+        return dacValues[ind];
+    }
+    int voltage = -1;
+    LTC2620_D_DacToVoltage(dacValues[ind], &voltage);
+    FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, dacValues[ind], voltage));
+    return voltage;
+}
+
+int getMaxDacSteps() {
+    return LTC2620_D_GetMaxNumSteps();
+}
+
+
+
+
 int setHighVoltage(int val){
 	if (val > HV_SOFT_MAX_VOLTAGE) {
 		val = HV_SOFT_MAX_VOLTAGE;
@@ -464,7 +545,7 @@ int setHighVoltage(int val){
 
 	// setting hv
 	if (val >= 0) {
-	    FILE_LOG(logINFO, ("Setting High voltage: %d V", val));
+	    FILE_LOG(logINFO, ("Setting High voltage: %d V\n", val));
 	    DAC6571_Set(val);
 	    highvoltage = val;
 	}

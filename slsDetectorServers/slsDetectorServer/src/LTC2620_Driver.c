@@ -39,7 +39,7 @@ int LTC2620_D_DacToVoltage(int dacval, int* voltage) {
 }
 
 
-int LTC2620_D_SetDACValue (int dacnum, int val, int mV, int* dacval) {
+int LTC2620_D_SetDACValue (int dacnum, int val, int mV, char* dacname, int* dacval) {
     FILE_LOG(logDEBUG1, ("dacnum:%d, val:%d, ismV:%d\n", dacnum, val, mV));
     // validate index
     if (dacnum < 0 || dacnum >= LTC2620_D_NumDacs) {
@@ -70,7 +70,7 @@ int LTC2620_D_SetDACValue (int dacnum, int val, int mV, int* dacval) {
 
     // set
     if ( (*dacval >= 0) || (*dacval == LTC2620_D_PWR_DOWN_VAL)) {
-        FILE_LOG(logINFO, ("Setting DAC %d: %d dac (%d mV)\n",dacnum, *dacval, dacmV));
+        FILE_LOG(logINFO, ("Setting DAC %2d [%-12s] : %d dac (%d mV)\n",dacnum, dacname, *dacval, dacmV));
  
         char fname[MAX_STR_LENGTH];
         sprintf(fname, "%s%d", LTC2620_D_DriverFileName, dacnum);

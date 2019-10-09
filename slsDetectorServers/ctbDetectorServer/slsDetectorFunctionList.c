@@ -1967,7 +1967,7 @@ int setPatternWaitAddress(int level, int addr) {
     }
 
     // get
-    uint32_t regval = bus_r((reg & mask) >> offset);
+    uint32_t regval = ((bus_r(reg) & mask) >> offset);
     FILE_LOG(logDEBUG1, ("  Wait Address retval (level:%d, addr:0x%x)\n", level, regval));
     return regval;
 }

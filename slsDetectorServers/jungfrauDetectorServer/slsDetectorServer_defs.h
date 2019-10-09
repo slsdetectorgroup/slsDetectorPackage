@@ -38,7 +38,7 @@ typedef struct udp_header_struct {
 
 /* Enums */
 enum ADCINDEX				{TEMP_FPGA, TEMP_ADC};
-enum DACINDEX				{VB_COMP, VDD_PROT, VIN_COM, VREF_PRECH, VB_PIXBUF, VB_DS, VREF_DS, VREF_COMP };
+enum DACINDEX				{J_VB_COMP, J_VDD_PROT, J_VIN_COM, J_VREF_PRECH, J_VB_PIXBUF, J_VB_DS, J_VREF_DS, J_VREF_COMP };
 #define DEFAULT_DAC_VALS   	{ 	1220,	/* VB_COMP */		\
 								3000,	/* VDD_PROT */		\
 								1053,	/* VIN_COM */		\

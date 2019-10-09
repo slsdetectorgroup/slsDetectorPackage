@@ -642,46 +642,6 @@ format
         return GET_EXTERNAL_SIGNAL_FLAG;
     };
 
-    /**
-       returns external communication mode std::string from index
-       \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER,
-       GET_TIMING_MODE \returns  auto, trigger, gating,
-       burst_trigger, unknown
-    */
-
-    static std::string timingModeType(timingMode f) {
-        switch (f) {
-        case AUTO_TIMING:
-            return std::string("auto");
-        case TRIGGER_EXPOSURE:
-            return std::string("trigger");
-        case GATED:
-            return std::string("gating");
-        case BURST_TRIGGER:
-            return std::string("burst_trigger");
-        default:
-            return std::string("unknown");
-        }
-    };
-
-    /**
-       returns external communication mode index from std::string
-       \param sval can be auto, trigger,  gating, burst_trigger
-       \returns AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER,
-       GET_TIMING_MODE
-    */
-
-    static timingMode timingModeType(std::string sval) {
-        if (sval == "auto")
-            return AUTO_TIMING;
-        if (sval == "trigger")
-            return TRIGGER_EXPOSURE;
-        if (sval == "gating")
-            return GATED;
-        if (sval == "burst_trigger")
-            return BURST_TRIGGER;
-        return GET_TIMING_MODE;
-    };
 
     /** returns std::string from file format index
         \param s can be RAW, HDF5
@@ -772,30 +732,6 @@ format
         throw sls::RuntimeError("Unknown readout mode " + smode);
     }; 
 
-    /** returns string from speedLevel */
-    static std::string getSpeedLevelType(speedLevel mode) {
-        switch(mode) {      
-        case FULL_SPEED:       
-            return "full_speed";   
-        case HALF_SPEED:      
-            return "half_speed";
-        case QUARTER_SPEED: 
-            return "quarter_speed";
-        // default:                
-        //     return "Unknown";
-        }
-    };
-
-   /** returns speedLevel from string */
-    static speedLevel getSpeedLevelType(std::string smode) {
-        if (smode == "full_speed")          
-            return FULL_SPEED;
-        if (smode == "half_speed")         
-            return HALF_SPEED;
-        if (smode == "quarter_speed")  
-            return QUARTER_SPEED;
-        throw sls::RuntimeError("Unknown speed level mode " + smode);
-    }; 
 
     /**
        @short returns adc index from std::string

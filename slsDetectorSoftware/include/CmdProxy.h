@@ -3,11 +3,12 @@
 #include "Detector.h"
 #include "Result.h"
 #include "sls_detector_exceptions.h"
+#include "network_utils.h"
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-#include "network_utils.h"
+
 
 /** Macro to make an integer command.
  * CMDNAME name of the function that does the command
@@ -16,6 +17,46 @@
  * CONV Function to convert from string to the correct integer type
  * HLPSTR Help string for --help and docs
  */
+
+#define TIME_COMMAND(CMDNAME, GETFCN, SETFCN, HLPSTR)                          \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            auto t = det->GETFCN({det_id});                                    \
+            if (args.size() == 0) {                                            \
+                os << OutString(t) << '\n';                                    \
+            } else if (args.size() == 1) {                                     \
+                os << OutString(t, args[0]) << '\n';                           \
+            } else {                                                           \
+                WrongNumberOfParameters(2);                                    \
+            }                                                                  \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() == 1) {                                            \
+                std::string time_str(args[0]);                                 \
+                std::string unit = RemoveUnit(time_str);                       \
+                auto t = StringTo<time::ns>(time_str, unit);                   \
+                det->SETFCN(t, {det_id});                                      \
+            } else if (args.size() == 2) {                                     \
+                auto t = StringTo<time::ns>(args[0], args[1]);                 \
+                det->SETFCN(t, {det_id});                                      \
+            } else {                                                           \
+                WrongNumberOfParameters(2);                                    \
+            }                                                                  \
+            /* TODO: os << args << '\n'; (doesnt work for vectors)*/           \
+            if (args.size() > 1) {                                             \
+                os << args[0] << args[1] << '\n';                              \
+            } else {                                                           \
+                os << args[0] << '\n';                                         \
+            }                                                                  \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
 
 /** string  */
 #define STRING_COMMAND(CMDNAME, GETFCN, SETFCN, HLPSTR)                        \
@@ -161,7 +202,7 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             det->SETFCN(args[0]);                                              \
-            os << args.front() << '\n';                                             \
+            os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -169,7 +210,7 @@
     }
 
 /** get only */
-#define EXECUTE_GET_COMMAND(CMDNAME, GETFCN, HLPSTR)                           \
+#define GET_COMMAND(CMDNAME, GETFCN, HLPSTR)                                   \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
@@ -190,7 +231,7 @@
     }
 
 /** get only hex*/
-#define EXECUTE_GET_COMMAND_HEX(CMDNAME, GETFCN, HLPSTR)                       \
+#define GET_COMMAND_HEX(CMDNAME, GETFCN, HLPSTR)                               \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
@@ -279,16 +320,15 @@ class CmdProxy {
                                     {"receiverversion", "rx_version"},
                                     {"thisversion", "clientversion"},
                                     {"detsizechan", "detsize"},
+                                    {"cycles", "triggers"},
+                                    {"cyclesl", "triggersl"}
 
-                                    {"cycles", "triggers"}
                                     
                                     };
 
     // Initialize maps for translating name and function
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
-                          {"exptime", &CmdProxy::Exptime},
-                          {"period", &CmdProxy::Period},
-                          {"subexptime", &CmdProxy::SubExptime},
+
                           {"parallel", &CmdProxy::parallel},
                           {"overflow", &CmdProxy::overflow},
                           {"storeinram", &CmdProxy::storeinram},
@@ -331,6 +371,13 @@ class CmdProxy {
                           {"settings", &CmdProxy::settings},
                           {"frames", &CmdProxy::frames},                          
                           {"triggers", &CmdProxy::triggers},
+                          {"exptime", &CmdProxy::exptime},
+                          {"period", &CmdProxy::period},
+                          {"delay", &CmdProxy::delay},
+                          {"delay", &CmdProxy::delay},
+                          {"framesl", &CmdProxy::framesl},
+                          {"triggersl", &CmdProxy::triggersl},
+
 
 
                           {"start", &CmdProxy::start},
@@ -346,6 +393,9 @@ class CmdProxy {
                           {"rx_hostname", &CmdProxy::rx_hostname},   
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
 
+                          {"subexptime", &CmdProxy::subexptime},  
+
+
                           {"threshold", &CmdProxy::Threshold},
                           {"thresholdnotb", &CmdProxy::ThresholdNoTb},  
 
@@ -358,15 +408,15 @@ class CmdProxy {
 
     /* Commands */
     std::string ListCommands(int action);
-    std::string Period(int action);
-    std::string Exptime(int action);
-    std::string SubExptime(int action);
     std::string Hostname(int action); 
     std::string FirmwareVersion(int action);     
     std::string Versions(int action); 
     std::string PackageVersion(int action);     
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+
+
+
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);       
 
@@ -461,16 +511,16 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID_1ARG(parameters, loadParameters, 
                 "[fname]\n\tSets detector measurement parameters to those contained in fname. Set up per measurement.");  
     
-    EXECUTE_GET_COMMAND_HEX(detectorserverversion, getDetectorServerVersion, 
+    GET_COMMAND_HEX(detectorserverversion, getDetectorServerVersion, 
                 "\n\tOn-board detector server software version in format [0xYYMMDD].");   
 
-    EXECUTE_GET_COMMAND_HEX(rx_version, getReceiverVersion, 
+    GET_COMMAND_HEX(rx_version, getReceiverVersion, 
                 "\n\tReceiver version in format [0xYYMMDD].");   
 
-    EXECUTE_GET_COMMAND_HEX(detectornumber, getSerialNumber, 
+    GET_COMMAND_HEX(detectornumber, getSerialNumber, 
                 "\n\tReceiver version in format [0xYYMMDD].");   
 
-    EXECUTE_GET_COMMAND(type, getDetectorType, 
+    GET_COMMAND(type, getDetectorType, 
                 "\n\tSerial number or MAC of detector (hex).");   
 
     INTEGER_COMMAND(settings, getSettings, setSettings, sls::StringTo<slsDetectorDefs::detectorSettings>,
@@ -483,6 +533,21 @@ class CmdProxy {
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
                          std::stol,
                          "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
+
+    TIME_COMMAND(exptime, getExptime, setExptime,
+        "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time");
+
+    TIME_COMMAND(period, getPeriod, setPeriod,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\tPeriod between frames");
+
+    TIME_COMMAND(delay, getDelayAfterTrigger, setDelayAfterTrigger,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Ctb]Delay after trigger");
+
+    GET_COMMAND(framesl, getNumberOfFramesLeft, 
+                "\n\t[Gotthard][Jungfrau][CTB]Number of frames left in acquisition.");       
+
+    GET_COMMAND(triggersl, getNumberOfTriggersLeft, 
+                "\n\t[Gotthard][Jungfrau][CTB]]Number of triggers left in acquisition.");       
 
 
 
@@ -499,7 +564,7 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
                 "\n\t[Eiger] Sends software trigger signal to detector.");   
 
-    EXECUTE_GET_COMMAND(status, getDetectorStatus, 
+    GET_COMMAND(status, getDetectorStatus, 
                 "[running, error, transmitting, finished, waiting, idle]\n\tDetector status.");                 
 
     EXECUTE_SET_COMMAND_NOID(rx_start, startReceiver, 
@@ -508,7 +573,7 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID(rx_stop, stopReceiver, 
                 "\n\tStops receiver listener for detector data packets and closes current data file (if file write enabled).");      
                                 
-    EXECUTE_GET_COMMAND(rx_status, getReceiverStatus, 
+    GET_COMMAND(rx_status, getReceiverStatus, 
                 "running, idle]\n\tReceiver listener status.");   
 
     EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
@@ -523,6 +588,11 @@ class CmdProxy {
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
                     "[port]\n\tTCP port for client-receiver communication. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter.");  
     
+
+    TIME_COMMAND(subexptime, getSubExptime, setSubExptime,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time of EIGER subframes");
+
+
 
 
 

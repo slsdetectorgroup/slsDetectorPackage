@@ -1,50 +1,15 @@
 #include "CmdProxy.h"
-
-
-#include "TimeHelper.h"
-#include "ToString.h"
 #include "logger.h"
 #include "slsDetectorCommand.h"
 #include "sls_detector_defs.h"
+#include "ToString.h"
+#include "TimeHelper.h"
 
 
-#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-#define TIME_COMMAND(GETFCN, SETFCN, HLPSTR)                                   \
-    std::ostringstream os;                                                     \
-    os << cmd << ' ';                                                          \
-    if (action == slsDetectorDefs::HELP_ACTION)                                \
-        os << HLPSTR << '\n';                                                  \
-    else if (action == slsDetectorDefs::GET_ACTION) {                          \
-        auto t = det->GETFCN({det_id});                                        \
-        if (args.size() == 0) {                                                \
-            os << OutString(t) << '\n';                                        \
-        } else if (args.size() == 1) {                                         \
-            os << OutString(t, args[0]) << '\n';                               \
-        } else {                                                               \
-            WrongNumberOfParameters(2);                                        \
-        }                                                                      \
-    } else if (action == slsDetectorDefs::PUT_ACTION) {                        \
-        if (args.size() == 1) {                                                \
-            std::string time_str(args[0]);                                     \
-            std::string unit = RemoveUnit(time_str);                           \
-            auto t = StringTo<time::ns>(time_str, unit);                       \
-            det->SETFCN(t, {det_id});                                          \
-        } else if (args.size() == 2) {                                         \
-            auto t = StringTo<time::ns>(args[0], args[1]);                     \
-            det->SETFCN(t, {det_id});                                          \
-        } else {                                                               \
-            WrongNumberOfParameters(2);                                        \
-        }                                                                      \
-        os << args << '\n';                                                    \
-    } else {                                                                   \
-        throw sls::RuntimeError("Unknown action");                             \
-    }                                                                          \
-    return os.str();
-
+#include <iomanip>
 
 
 namespace sls {
@@ -123,21 +88,46 @@ void CmdProxy::WrongNumberOfParameters(size_t expected) {
  *                                              *
  ************************************************/
 
-std::string CmdProxy::Period(int action) {
-    TIME_COMMAND(getPeriod, setPeriod,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\tSet the period");
-}
+std::string CmdProxy::ListCommands(int action) {
+    if (action == defs::HELP_ACTION)
+        return "list\n\tlists all available commands, list deprecated - "
+               "list deprecated commands\n";
 
-std::string CmdProxy::Exptime(int action) {
-    TIME_COMMAND(
-        getExptime, setExptime,
-        "[duration] [(optional unit) ns|us|ms|s]\n\tSet the exposure time");
-}
+    if (args.size() == 0) {
+        auto commands = slsDetectorCommand(nullptr).getAllCommands();
+        for (const auto &it : functions)
+            commands.emplace_back(it.first);
+        std::sort(begin(commands), end(commands));
 
-std::string CmdProxy::SubExptime(int action) {
-    TIME_COMMAND(getSubExptime, setSubExptime,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\tSet the "
-                 "exposure time of EIGER subframes");
+        std::cout << "These " << commands.size() << " commands are available\n";
+        for (auto &c : commands)
+            std::cout << c << '\n';
+        return "";
+    } else if (args.size() == 1) {
+        if (args[0] == "deprecated") {
+            std::cout << "The following " << depreciated_functions.size()
+                      << " commands are deprecated\n";
+            size_t field_width = 20;
+            for (const auto &it : depreciated_functions) {
+                std::cout << std::right << std::setw(field_width) << it.first
+                          << " -> " << it.second << '\n';
+            }
+            return "";
+        } else if (args[0] == "migrated") {
+            std::cout << "The following " << functions.size()
+                      << " commands have been migrated to the new API\n";
+            for (const auto &it : functions) {
+                std::cout << it.first << '\n';
+            }
+            return "";
+        } else {
+            throw RuntimeError(
+                "Could not decode argument. Possible options: deprecated");
+        }
+    } else {
+        WrongNumberOfParameters(1);
+        return "";
+    }
 }
 
 std::string CmdProxy::Hostname(int action) {
@@ -293,6 +283,16 @@ std::string CmdProxy::DetectorSize(int action) {
     return os.str();
 }
 
+
+
+
+
+
+
+
+
+
+
 std::string CmdProxy::Threshold(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
@@ -342,46 +342,6 @@ std::string CmdProxy::ThresholdNoTb(int action) {
 }
 
 
-std::string CmdProxy::ListCommands(int action) {
-    if (action == defs::HELP_ACTION)
-        return "list\n\tlists all available commands, list deprecated - "
-               "list deprecated commands\n";
 
-    if (args.size() == 0) {
-        auto commands = slsDetectorCommand(nullptr).getAllCommands();
-        for (const auto &it : functions)
-            commands.emplace_back(it.first);
-        std::sort(begin(commands), end(commands));
-
-        std::cout << "These " << commands.size() << " commands are available\n";
-        for (auto &c : commands)
-            std::cout << c << '\n';
-        return "";
-    } else if (args.size() == 1) {
-        if (args[0] == "deprecated") {
-            std::cout << "The following " << depreciated_functions.size()
-                      << " commands are deprecated\n";
-            size_t field_width = 20;
-            for (const auto &it : depreciated_functions) {
-                std::cout << std::right << std::setw(field_width) << it.first
-                          << " -> " << it.second << '\n';
-            }
-            return "";
-        } else if (args[0] == "migrated") {
-            std::cout << "The following " << functions.size()
-                      << " commands have been migrated to the new API\n";
-            for (const auto &it : functions) {
-                std::cout << it.first << '\n';
-            }
-            return "";
-        } else {
-            throw RuntimeError(
-                "Could not decode argument. Possible options: deprecated");
-        }
-    } else {
-        WrongNumberOfParameters(1);
-        return "";
-    }
-}
 
 } // namespace sls

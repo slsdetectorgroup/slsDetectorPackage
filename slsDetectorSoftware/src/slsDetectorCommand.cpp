@@ -479,13 +479,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
-    /*! \page timing
-   - <b>delay [i]</b> sets/gets delay in s. Used in GOTTHARD only. \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "delay";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
 
     /*! \page timing
    - <b>startingfnum [i]</b> sets/gets starting frame number for the next acquisition. Only for Jungfrau and Eiger. \c Returns \c (long long int)
@@ -563,20 +556,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    - <b>delayl</b> gets delay left. Used in GOTTHARD, JUNGFRAU, MOENCH and CTB only. Only get! \c Returns \c (double with 9 decimal digits)
 	 */
     descrToFuncMap[i].m_pFuncName = "delayl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page config
-   - <b>framesl</b> gets number of frames left. Used in GOTTHARD and Jungfrau only. Only get! \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "framesl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page timing
-   - <b>triggersl</b> gets number of cylces left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "triggersl";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
@@ -3538,16 +3517,10 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
     if (action == HELP_ACTION)
         return helpTimer(action);
 
-    if (cmd == "exptime")
-        index = ACQUISITION_TIME;
-    else if (cmd == "subexptime")
+    if (cmd == "subexptime")
         index = SUBFRAME_ACQUISITION_TIME;
-    else if (cmd == "period")
-        index = FRAME_PERIOD;
     else if (cmd == "subdeadtime")
         index = SUBFRAME_DEADTIME;
-    else if (cmd == "delay")
-        index = DELAY_AFTER_TRIGGER;
     // also does digital sample
     else if (cmd == "samples") 
         index = ANALOG_SAMPLES; 
@@ -3621,11 +3594,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "exptime t \t sets the exposure time in s" << std::endl;
         os << "subexptime t \t sets the exposure time of subframe in s" << std::endl;
-        os << "period t \t sets the frame period in s" << std::endl;
-        os << "delay t \t sets the delay after trigger in s" << std::endl;
-        os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
         os << "startingfnum t \t sets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
         os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
@@ -3637,12 +3606,7 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-
-        os << "exptime  \t gets the exposure time in s" << std::endl;
         os << "subexptime  \t gets the exposure time of subframe in s" << std::endl;
-        os << "period  \t gets the frame period in s" << std::endl;
-        os << "delay  \t gets the delay after trigger in s" << std::endl;
-        os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;
         os << "startingfnum \t gets starting frame number for the next acquisition. Only for Jungfrau and Eiger." << std::endl;
         os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
@@ -3672,10 +3636,6 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[],
         index = FRAME_PERIOD;
     else if (cmd == "delayl")
         index = DELAY_AFTER_TRIGGER;
-    else if (cmd == "framesl")
-        index = FRAME_NUMBER;
-    else if (cmd == "triggersl")
-        index = TRIGGER_NUMBER;
     else if (cmd == "now")
         index = ACTUAL_TIME;
     else if (cmd == "timestamp")
@@ -3715,8 +3675,6 @@ std::string slsDetectorCommand::helpTimeLeft(int action) {
         os << "exptimel  \t gets the exposure time left" << std::endl;
         os << "periodl \t gets the frame period left" << std::endl;
         os << "delayl  \t gets the delay left" << std::endl;
-        os << "framesl  \t gets the number of frames left" << std::endl;
-        os << "triggersl  \t gets the number of triggers left" << std::endl;
         os << "measuredperiod \t gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame." << std::endl;
         os << "measuredsubperiod \t gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode." << std::endl;
         os << std::endl;

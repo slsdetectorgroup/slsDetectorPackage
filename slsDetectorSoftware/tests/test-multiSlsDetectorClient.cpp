@@ -141,6 +141,43 @@ TEST_CASE("trigger", "[.cmd][.eiger]") {
 }
 
 
+TEST_CASE("framesl", "[.cmd][.jungfrau][gotthard][ctb]") {
+    if(test::type == slsDetectorDefs::EIGER) {
+        REQUIRE_THROWS(multiSlsDetectorClient("framesl", GET));         
+    } else {
+        multiSlsDetectorClient("timing auto", PUT);
+        multiSlsDetectorClient("frames 10", PUT);
+        multiSlsDetectorClient("period 1", PUT);
+        multiSlsDetectorClient("status start", PUT);
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("framesl", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("framesl "));
+            int framesl = std::stoi(s);
+            REQUIRE(framesl > 0);
+        }
+        multiSlsDetectorClient("stop", PUT);
+    }
+}
+
+TEST_CASE("triggersl", "[.cmd][.jungfrau][gotthard][ctb]") {
+    if(test::type == slsDetectorDefs::EIGER) {
+        REQUIRE_THROWS(multiSlsDetectorClient("triggersl", GET));       
+    } else {
+        multiSlsDetectorClient("timing trigger", PUT);
+        multiSlsDetectorClient("frames 1", PUT);
+        multiSlsDetectorClient("triggers 10", PUT);   
+        multiSlsDetectorClient("status start", PUT);
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("triggersl", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("framesl "));
+            int triggersl = std::stoi(s);
+            REQUIRE(triggersl  == 10);
+        }
+        multiSlsDetectorClient("stop", PUT);
+    }
+}
 
 TEST_CASE("rx_fifodepth", "[.cmd]") {
 
@@ -579,5 +616,28 @@ TEST_CASE("period", "[.cmd]") {
         std::ostringstream oss;
         multiSlsDetectorClient("period 0", PUT, nullptr, oss);
         REQUIRE(oss.str() == "period 0\n");
+    }
+}
+
+TEST_CASE("delay", "[.cmd][.eiger]") {
+    if(test::type == slsDetectorDefs::EIGER) {
+        REQUIRE_THROWS(multiSlsDetectorClient("delay 1", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("delay", GET));       
+    } else {
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("delay 1.25s", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "delay 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("delay", GET, nullptr, oss);
+            REQUIRE(oss.str() == "delay 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("delay 0", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "delay 0\n");
+        }
     }
 }

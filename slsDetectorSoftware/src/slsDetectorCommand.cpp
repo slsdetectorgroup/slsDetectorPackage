@@ -1170,13 +1170,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>temp_fpga</b> Gets the FPGA temperature. \c Returns \c EIGER,JUNGFRAU(double"°C") Others \c (int"°C")
-	 */
-    descrToFuncMap[i].m_pFuncName = "temp_fpga";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
    - <b>temp_fpgaext</b> Gets the external FPGA temperature. Used in EIGER only. \c Returns \c EIGER(double"°C")
 	 */
     descrToFuncMap[i].m_pFuncName = "temp_fpgaext";
@@ -3268,8 +3261,6 @@ std::string slsDetectorCommand::cmdADC(int narg, const char * const args[], int 
     }
 	else if (cmd=="temp_adc")
 		adc=TEMPERATURE_ADC;
-	else if (cmd=="temp_fpga")
-		adc=TEMPERATURE_FPGA;
 	else if (cmd=="temp_fpgaext")
 		adc=TEMPERATURE_FPGAEXT;
 	else if (cmd=="temp_10ge")
@@ -3334,8 +3325,6 @@ std::string slsDetectorCommand::helpADC(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "temp_adc "
            << "Cannot be set" << std::endl;
-        os << "temp_fpga "
-           << "Cannot be set" << std::endl;
         os << "temp_fpgaext "
            << "Cannot be set" << std::endl;
         os << "temp_10ge "
@@ -3354,8 +3343,6 @@ std::string slsDetectorCommand::helpADC(int action) {
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "temp_adc "
            << "\t gets the temperature of the adc" << std::endl;
-        os << "temp_fpga "
-           << "\t gets the temperature of the fpga" << std::endl;
         os << "temp_fpgaext "
            << "\t gets the temperature close to the fpga" << std::endl;
         os << "temp_10ge "

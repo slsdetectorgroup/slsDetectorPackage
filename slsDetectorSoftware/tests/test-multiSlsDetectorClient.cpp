@@ -9,6 +9,17 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("temp_fpga", "[.cmd][.eiger][.jungfrau][.gotthard]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+        REQUIRE_THROWS(multiSlsDetectorClient("temp_fpga", GET));      
+    } else {
+        std::ostringstream oss;
+        multiSlsDetectorClient("0:temp_fpga", GET, nullptr, oss);
+        std::string s = (oss.str()).erase (0, strlen("temp_fpga "));
+        REQUIRE(std::stoi(s) != -1);
+    }
+}
+
 
 TEST_CASE("vhighvoltage", "[.cmd]") {
     int prev_val = 0;

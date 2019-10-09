@@ -251,6 +251,26 @@
         return os.str();                                                       \
     }
 
+#define TEMP_COMMAND(CMDNAME, GETFCN, VAL, HLPSTR)                             \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(VAL, {det_id});                               \
+            os << OutString(t) << " °C\n";                                     \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            throw sls::RuntimeError("Cannot put");                             \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
 
 namespace sls {
 
@@ -384,6 +404,7 @@ class CmdProxy {
                           {"adcphase", &CmdProxy::Adcphase},
                           {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
                           {"vhighvoltage", &CmdProxy::vhighvoltage},
+                          {"temp_fpga", &CmdProxy::temp_fpga},
 
 
 
@@ -568,6 +589,8 @@ class CmdProxy {
     INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, std::stoi,
                     "[n_value]\n\tHigh voltage to the sensor in Voltage.\n\t[Gotthard] [0|90|110|120|150|180|200]\n\t[Eiger] 0-200\n\t[Jungfrau][Ctb] [0|60-200]");      
 
+    TEMP_COMMAND(temp_fpga, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA,
+                    "[n_value]\n\t[Eiger][Jungfrau][Gotthard] FPGA Temperature");    
 
 
 

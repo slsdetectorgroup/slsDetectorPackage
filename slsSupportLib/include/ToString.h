@@ -141,6 +141,17 @@ inline std::string ToString(const defs::frameDiscardPolicy s){
     }
 }
 
+inline std::string ToString(const defs::fileFormat s){
+    switch (s) {
+    case defs::HDF5:
+        return std::string("hdf5");
+    case defs::BINARY:
+        return std::string("binary");            
+    default:
+        return std::string("Unknown");       
+    }
+}
+
 
 // in case we already have a string 
 // causes a copy but might be needed in generic code
@@ -408,6 +419,15 @@ inline defs::frameDiscardPolicy StringTo(const std::string& s) {
     if (s == "discardpartial")
         return defs::DISCARD_PARTIAL_FRAMES;       
     throw sls::RuntimeError("Unknown frame discard policy " + s);          
+}
+
+template <>
+inline defs::fileFormat StringTo(const std::string& s) {
+    if (s == "hdf5")
+        return defs::HDF5;
+    if (s == "binary")
+        return defs::BINARY;  
+    throw sls::RuntimeError("Unknown file format " + s);          
 }
 
 /** For types with a .str() method use this for conversion */

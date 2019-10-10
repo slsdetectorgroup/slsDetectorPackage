@@ -9,6 +9,15 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("fformat", "[.cmd]") {
+    std::string s;
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("fformat", GET, nullptr, oss));
+         REQUIRE(oss.str() == "fformat binary\n");
+    }
+}
+
 
 TEST_CASE("rx_hostname", "[.cmd]") {
     std::string s;

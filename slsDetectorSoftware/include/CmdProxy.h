@@ -322,7 +322,6 @@ class CmdProxy {
                                     {"checkrecversion", "rx_checkversion"},
                                     {"masterfile", "fmaster"},
                                     {"outdir", "fpath"},
-                                    {"fileformat", "fformat"},
                                     {"overwrite", "foverwrite"},
                                     {"flags", "romode"},
                                     
@@ -360,7 +359,11 @@ class CmdProxy {
                                     {"r_discardpolicy", "rx_discardpolicy"},
                                     {"r_padding", "rx_padding"},      
                                     {"r_lock", "rx_lock"},
-                                    {"r_lastclient", "rx_lastclient"}                                    
+                                    {"r_lastclient", "rx_lastclient"}, 
+
+                                    /* File */                                   
+                                    {"fileformat", "fformat"}
+
                                     };
 
     // Initialize maps for translating name and function
@@ -462,6 +465,10 @@ class CmdProxy {
                           {"rx_lock", &CmdProxy::rx_lock},
                           {"rx_lastclient", &CmdProxy::rx_lastclient},
 
+                          /* File */
+                          {"fformat", &CmdProxy::fformat},
+
+
 
 
                           {"adc", &CmdProxy::SlowAdc},                            
@@ -491,7 +498,7 @@ class CmdProxy {
     /* acquisition */
     /* Network Configuration (Detector<->Receiver) */
     /* Receiver Config */
-
+    /* File */
 
 
     std::string SlowAdc(int action);
@@ -739,6 +746,26 @@ class CmdProxy {
 
     GET_COMMAND(rx_lastclient, getRxLastClientIP, 
                 "\n\tClient IP Address that last communicated with the receiver."); 
+
+
+    /* File */
+
+    INTEGER_COMMAND(fformat, getFileFormat, setFileFormat, sls::StringTo<slsDetectorDefs::fileFormat>,
+                    "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags.");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1251,13 +1251,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
     ++i;
 
-    /*! \page output
-    - <b>fformat [i]</b> sets/gets the file format for data in receiver. Options: [binary, hdf5]. \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "fformat";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
-    ++i;
-
     /* communication configuration */
 
    /*! \page network
@@ -1989,17 +1982,7 @@ std::string slsDetectorCommand::cmdFileName(int narg, const char * const args[],
             myDet->setFileName(std::string(args[1]), detPos);
 
         return std::string(myDet->getFileName(detPos));
-    } else if (cmd == "fformat") {
-        if (action == PUT_ACTION) {
-            if (std::string(args[1]) == "binary")
-                myDet->setFileFormat(BINARY, detPos);
-            else if (std::string(args[1]) == "hdf5")
-                myDet->setFileFormat(HDF5, detPos);
-            else
-                return std::string("could not scan file format mode\n");
-        }
-        return myDet->fileFormats(myDet->getFileFormat(detPos));
-    }
+    } 
     return std::string("unknown command") + cmd;
 }
 
@@ -2007,11 +1990,9 @@ std::string slsDetectorCommand::helpFileName(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << std::string("fname \t  gets the filename for the data without index and extension\n");
-        os << std::string("fformat \t  gets the file format for data\n");
     }
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << std::string("fname s \t  sets the filename for the data (index and extension will be automatically appended)\n");
-        os << std::string("fformat s \t  sets the file format for the data (binary, hdf5)\n");
     }
     return os.str();
 }

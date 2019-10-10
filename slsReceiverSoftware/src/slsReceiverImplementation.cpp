@@ -582,7 +582,7 @@ void slsReceiverImplementation::setFileFormat(const fileFormat f) {
     for (const auto &it : dataProcessor)
         it->SetFileFormat(f);
 
-    FILE_LOG(logINFO) << "File Format: " << getFileFormatType(fileFormatType);
+    FILE_LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
 }
 
 void slsReceiverImplementation::setFileName(const char c[]) {

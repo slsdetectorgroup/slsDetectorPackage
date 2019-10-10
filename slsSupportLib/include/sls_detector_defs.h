@@ -579,21 +579,6 @@ format
     };
 
 
-    /** returns string from file format index
-        \param s can be BINARY, HDF5
-        \returns string binary, hdf5
-    */
-    static std::string getFileFormatType(fileFormat f) {
-        switch (f) {
-        case HDF5:
-            return std::string("hdf5");
-        case BINARY:
-            return std::string("binary");
-        default:
-            return std::string("unknown");
-        }
-    };
-
     /**
      * Returns string of frame discard policy index
      * @param f can be NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
@@ -642,21 +627,6 @@ format
         return GET_EXTERNAL_SIGNAL_FLAG;
     };
 
-
-    /** returns std::string from file format index
-        \param s can be RAW, HDF5
-        \returns std::string raw, hdf5
-    */
-    static std::string fileFormats(fileFormat f) {
-        switch (f) {
-        case BINARY:
-            return std::string("binary");
-        case HDF5:
-            return std::string("hdf5");
-        default:
-            return std::string("unknown");
-        }
-    };
 
     /** returns std::string from timer index
         \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD,

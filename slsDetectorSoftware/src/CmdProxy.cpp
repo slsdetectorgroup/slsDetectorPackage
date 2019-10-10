@@ -393,6 +393,7 @@ std::string CmdProxy::Adcphase(int action) {
 
 
 /* acquisition */
+/* Network Configuration (Detector<->Receiver) */
 
 
 

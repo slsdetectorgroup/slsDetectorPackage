@@ -9,6 +9,105 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+
+TEST_CASE("network", "[.cmd]") {
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip 129.129.202.84", PUT));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip", GET, nullptr, oss));
+        REQUIRE(oss.str() == "udp_srcip 129.129.202.84\n");
+    }
+    std::string udp_dstip;
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip", GET, nullptr, oss));
+        udp_dstip = oss.str();
+    }
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient(udp_dstip, PUT));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip", GET, nullptr, oss));
+        REQUIRE(oss.str() == udp_dstip);
+    }    
+    REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 0.0.0.0", PUT));
+    REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 124586954", PUT));
+    REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 999.999.0.0.0.5", PUT));
+
+    if (test::type == slsDetectorDefs::JUNGFRAU) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip2 129.129.202.84", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip2", GET, nullptr, oss));
+            REQUIRE(oss.str() == "udp_srcip2 129.129.202.84\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip2", GET, nullptr, oss));
+            udp_dstip = oss.str();
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient(udp_dstip, PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip2", GET, nullptr, oss));
+            REQUIRE(oss.str() == udp_dstip);
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip2", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("udp_dstip2", GET));  
+    }
+    if (test::type == slsDetectorDefs::EIGER) {
+        ;
+    } else {
+    ;
+    }
+}
+
+
+TEST_CASE("selinterface", "[.cmd][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("selinterface 0", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:selinterface", GET, nullptr, oss));
+            REQUIRE(oss.str() == "selinterface 0\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("selinterface 1", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:selinterface", GET, nullptr, oss));
+            REQUIRE(oss.str() == "selinterface 1\n");
+        }
+       REQUIRE_THROWS(multiSlsDetectorClient("selinterface 2", PUT)); 
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("selinterface", GET));
+    }
+}
+
+TEST_CASE("numinterfaces", "[.cmd][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET, nullptr, oss));
+            REQUIRE(oss.str() == "numinterfaces 2\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET, nullptr, oss));
+            REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+    } else {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET, nullptr, oss));
+        REQUIRE(oss.str() == "numinterfaces 1\n");
+    }
+    REQUIRE_THROWS(multiSlsDetectorClient("numinterfaces 3", PUT));
+    REQUIRE_THROWS(multiSlsDetectorClient("numinterfaces 0", PUT));
+}
+
 TEST_CASE("timing", "[.cmd]") {
     {
         REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));

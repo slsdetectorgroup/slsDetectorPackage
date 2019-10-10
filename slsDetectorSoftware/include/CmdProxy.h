@@ -348,7 +348,13 @@ class CmdProxy {
                                     /* acquisition */
                                     {"busy", "clearbusy"},
                                     {"receiver", "rx_status"},
-                                    {"framescaught", "rx_framescaught"}
+                                    {"framescaught", "rx_framescaught"},
+
+                                    /* Network Configuration (Detector<->Receiver) */
+                                    {"detectorip", "udp_srcip"},
+                                    {"detectorip2", "udp_srcip2"},
+                                    {"rx_udpip", "udp_dstip"},
+                                    {"rx_udpip2", "udp_dstip2"},
 
                                     
                                     };
@@ -374,14 +380,8 @@ class CmdProxy {
                           {"detectormac2", &CmdProxy::detectormac2},
                           {"rx_udpmac", &CmdProxy::rx_udpmac},
                           {"rx_udpmac2", &CmdProxy::rx_udpmac2},
-                          {"detectorip", &CmdProxy::detectorip},
-                          {"detectorip2", &CmdProxy::detectorip2},
-                          {"rx_udpip", &CmdProxy::rx_udpip},
-                          {"rx_udpip2", &CmdProxy::rx_udpip2},
                           {"rx_udpport", &CmdProxy::rx_udpport},
                           {"rx_udpport2", &CmdProxy::rx_udpport2},
-                          {"numinterfaces", &CmdProxy::numinterfaces},
-                          {"selinterface", &CmdProxy::selinterface},
                           
                           /* configuration */
                           //{"config", &CmdProxy::config},
@@ -435,6 +435,13 @@ class CmdProxy {
                           {"startingfnum", &CmdProxy::startingfnum},
                           {"trigger", &CmdProxy::trigger},
 
+                          /* Network Configuration (Detector<->Receiver) */
+                          {"numinterfaces", &CmdProxy::numinterfaces},
+                          {"selinterface", &CmdProxy::selinterface},
+                          {"udp_srcip", &CmdProxy::udp_srcip},
+                          {"udp_srcip2", &CmdProxy::udp_srcip2},
+                          {"udp_dstip", &CmdProxy::udp_dstip},
+                          {"udp_dstip2", &CmdProxy::udp_dstip2},
 
 
                           {"adc", &CmdProxy::SlowAdc},                          
@@ -464,6 +471,7 @@ class CmdProxy {
     std::string Speed(int action);
     std::string Adcphase(int action);
     /* acquisition */
+    /* Network Configuration (Detector<->Receiver) */
 
 
 
@@ -516,34 +524,22 @@ class CmdProxy {
                     "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom half of detector (source) udp interface. ");     
 
     INTEGER_COMMAND(rx_udpmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
-                    "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as rx_hostname/rx_udpip retrieves it.");                   
+                    "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as rx_hostname/udp_dstip retrieves it.");                   
 
     INTEGER_COMMAND(rx_udpmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
-                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/rx_udpip2 retrieves it.")
-
-    INTEGER_COMMAND(detectorip, getSourceUDPIP, setSourceUDPIP, IpAddr,
-                    "[x.x.x.x]\n\tIp address of the detector (source) udp interface. Must be same subnet as destination udp ip.");               
+                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/udp_dstip2 retrieves it.");
     
-    INTEGER_COMMAND(detectorip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
-                    "[x.x.x.x]\n\t[Jungfrau] Ip address of the bottom half of detector (source) udp interface. Must be same subnet as destination udp ip2.");     
-    
-    INTEGER_COMMAND(rx_udpip, getDestinationUDPIP, setDestinationUDPIP, IpAddr,
+    INTEGER_COMMAND(udp_dstip, getDestinationUDPIP, setDestinationUDPIP, IpAddr,
                     "[x.x.x.x]\n\tIp address of the receiver (destination) udp interface.");               
     
-    INTEGER_COMMAND(rx_udpip2, getDestinationUDPIP2, setDestinationUDPIP2, IpAddr,
+    INTEGER_COMMAND(udp_dstip2, getDestinationUDPIP2, setDestinationUDPIP2, IpAddr,
                     "[x.x.x.x]\n\t[Jungfrau] Ip address of the receiver (destination) udp interface where the second half of detector data is sent to.");     
  
     INTEGER_COMMAND(rx_udpport, getDestinationUDPPort, setDestinationUDPPort, std::stoi,
                     "[n]\n\tPort number of the receiver (destination) udp interface.");               
     
     INTEGER_COMMAND(rx_udpport2, getDestinationUDPPort2, setDestinationUDPPort2, std::stoi,
-                    "[n]\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to.\n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to.");     
-
-    INTEGER_COMMAND(numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces, std::stoi,
-                    "[1, 2]\n\t[Jungfrau] Number of udp interfaces to stream data from detector. Default: 1.");     
-
-    INTEGER_COMMAND(selinterface, getSelectedUDPInterface, selectUDPInterface, std::stoi,
-                    "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)");       
+                    "[n]\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to.\n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to.");          
     
     INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
                     "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
@@ -641,8 +637,6 @@ class CmdProxy {
     INTEGER_COMMAND(timing, getTimingMode, setTimingMode, sls::StringTo<slsDetectorDefs::timingMode>,
                     "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Gotthard][Ctb] [auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");      
 
-
-
     /* acquisition */
 
     EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag, 
@@ -676,7 +670,19 @@ class CmdProxy {
                 "\n\t[Eiger] Sends software trigger signal to detector.");   
 
 
+    /* Network Configuration (Detector<->Receiver) */
 
+    INTEGER_COMMAND(numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces, std::stoi,
+                    "[1, 2]\n\t[Jungfrau] Number of udp interfaces to stream data from detector. Default: 1.");  
+
+    INTEGER_COMMAND(selinterface, getSelectedUDPInterface, selectUDPInterface, std::stoi,
+                    "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)");  
+
+    INTEGER_COMMAND(udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
+                    "[x.x.x.x]\n\tIp address of the detector (source) udp interface. Must be same subnet as destination udp ip.");               
+    
+    INTEGER_COMMAND(udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
+                    "[x.x.x.x]\n\t[Jungfrau] Ip address of the bottom half of detector (source) udp interface. Must be same subnet as destination udp ip2.");   
 
 
     

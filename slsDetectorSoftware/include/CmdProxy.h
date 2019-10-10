@@ -360,8 +360,12 @@ class CmdProxy {
                                     {"rx_udpmac", "udp_dstmac"},
                                     {"rx_udpmac2", "udp_dstmac2"},   
                                     {"rx_udpport", "udp_dstport"},
-                                    {"rx_udpport2", "udp_dstport2"} 
+                                    {"rx_udpport2", "udp_dstport2"}
                                     
+                                    /* Receiver Config */ 
+
+                                    
+
                                     };
 
     // Initialize maps for translating name and function
@@ -448,12 +452,22 @@ class CmdProxy {
                           {"udp_dstmac2", &CmdProxy::udp_dstmac2},
                           {"udp_dstport", &CmdProxy::udp_dstport},
                           {"udp_dstport2", &CmdProxy::udp_dstport2},
-                          {"rx_printconfig", &CmdProxy::rx_printconfig},                          
+                          {"rx_printconfig", &CmdProxy::rx_printconfig}, 
+                          {"tengiga", &CmdProxy::tengiga},                          
+                          {"flowcontrol_10g", &CmdProxy::flowcontrol_10g}, 
+                          {"txndelay_frame", &CmdProxy::txndelay_frame}, 
+                          {"txndelay_left", &CmdProxy::txndelay_left},
+                          {"txndelay_right", &CmdProxy::txndelay_right},
 
-
-                          {"adc", &CmdProxy::SlowAdc},                          
-                          {"rx_hostname", &CmdProxy::rx_hostname},   
+                          /* Receiver Config */ 
+                          {"rx_hostname", &CmdProxy::rx_hostname}, 
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
+
+
+
+
+
+                          {"adc", &CmdProxy::SlowAdc},                            
                           {"subexptime", &CmdProxy::subexptime},  
                           {"threshold", &CmdProxy::Threshold},
                           {"thresholdnotb", &CmdProxy::ThresholdNoTb},  
@@ -479,6 +493,7 @@ class CmdProxy {
     std::string Adcphase(int action);
     /* acquisition */
     /* Network Configuration (Detector<->Receiver) */
+    /* Receiver Config */
 
 
 
@@ -693,10 +708,23 @@ class CmdProxy {
     GET_COMMAND(rx_printconfig, printRxConfiguration, 
                 "\n\tPrints the receiver configuration.");   
     
+    INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, std::stoi,
+                    "[0, 1]\n\t[Eiger][Ctb] 10GbE Enable.");          
+
+    INTEGER_COMMAND(flowcontrol_10g, getTransmissionDelayFrame, setTenGigaFlowControl, std::stoi,
+                    "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");          
+
+    INTEGER_COMMAND(txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame, std::stoi,
+                    "[n_delay]\n\t[Eiger][Jungfrau] Transmission delay of each image being streamed out of the module.\n\t[Jungfrau] [0-31] Each value represents 1 ms\n\t[Eiger] Additional delay to txndelay_left and txndelay_right. Each value represents 10ns. Typical value is 50000.");          
+
+    INTEGER_COMMAND(txndelay_left, getTransmissionDelayLeft, setTransmissionDelayLeft, std::stoi,
+                    "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being streamed out of the module's left UDP port. Each value represents 10ns. Typical value is 50000.");          
+
+    INTEGER_COMMAND(txndelay_right, getTransmissionDelayRight, setTransmissionDelayRight, std::stoi,
+                    "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being streamed out of the module's right UDP port. Each value represents 10ns. Typical value is 50000.");          
 
 
-
-
+    /* Receiver Config */
 
     STRING_COMMAND(rx_hostname, getRxHostname, setRxHostname, 
                 "[hostname or ip address]\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");
@@ -704,6 +732,13 @@ class CmdProxy {
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
                     "[port]\n\tTCP port for client-receiver communication. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter.");  
     
+
+
+
+
+
+
+
 
     TIME_COMMAND(subexptime, getSubExptime, setSubExptime,
                  "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time of EIGER subframes");

@@ -303,13 +303,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page config
-   - <b>tengiga [i]</b> enables/disables 10GbE in system (detector & receiver). 1 enabled 10GbE, 0 enables 1GbE. Used in EIGER, Moench and ChipTestBoard only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "tengiga";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
-    /*! \page config
    - <b>gappixels [i]</b> enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and only in multi detector level command. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "gappixels";
@@ -1281,35 +1274,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     ++i;
 
-    /*! \page network
-   - <b>txndelay_left [delay]</b> sets/gets the transmission delay of first packet in an image being streamed out from the detector's left UDP port. Use single-detector command. Used for EIGER only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "txndelay_left";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
-
-    /*! \page network
-   - <b>txndelay_right [delay]</b> sets/gets the transmission delay of first packet in an image being streamed out from the detector's right UDP port. Use single-detector command. Used for EIGER only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "txndelay_right";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
-
-    /*! \page network
-   - <b>txndelay_frame [delay]</b> sets/gets the transmission frame period of entire frame being streamed out from the detector for both ports. Use single-detector command. Used for EIGER and JUNGFRAU only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "txndelay_frame";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
-
-    /*! \page network
-   - <b>flowcontrol_10g [delay]</b> Enables/disables 10 GbE flow control. 1 enables, 0 disables. Used for EIGER and JUNGFRAU only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "flowcontrol_10g";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
-
-    /*! \page network
+   /*! \page network
    - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. Must restart zmq client streaming in gui/external gui \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "zmqport";
@@ -1343,13 +1308,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncName = "rx_zmqip";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
     i++;
-
-    /*! \page network
-   - <b>rx_tcpport [port]</b> sets/gets the port of the client-receiver TCP interface. Use single-detector command. Is different for each detector if same \c rx_hostname used. Must be first command to communicate with receiver. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_tcpport";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPort;
-    ++i;
 
     /*! \page network
    - <b>port [port]</b> sets/gets the port of the client-detector control server TCP interface. Use single-detector command. Default value is 1952 for all detectors. Normally not changed. \c Returns \c (int)
@@ -2187,46 +2145,6 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const
         }
         sprintf(ans, "%ld", myDet->getReceiverRealUDPSocketBufferSize(detPos));
         return ans;
-    } else if (cmd == "txndelay_left") {
-    	networkParameter t = DETECTOR_TXN_DELAY_LEFT;
-        if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i))) {
-                return ("cannot parse argument") + std::string(args[1]);
-            }
-            myDet->setDetectorNetworkParameter(t, i, detPos);
-        }
-        sprintf(ans, "%d", myDet->setDetectorNetworkParameter(t, -1, detPos));
-        return ans;
-    } else if (cmd == "txndelay_right") {
-    	networkParameter t = DETECTOR_TXN_DELAY_RIGHT;
-        if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i))) {
-                return ("cannot parse argument") + std::string(args[1]);
-            }
-            myDet->setDetectorNetworkParameter(t, i, detPos);
-        }
-        sprintf(ans, "%d", myDet->setDetectorNetworkParameter(t, -1, detPos));
-        return ans;
-    } else if (cmd == "txndelay_frame") {
-    	networkParameter t = DETECTOR_TXN_DELAY_FRAME;
-        if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i))) {
-                return ("cannot parse argument") + std::string(args[1]);
-            }
-            myDet->setDetectorNetworkParameter(t, i, detPos);
-        }
-        sprintf(ans, "%d", myDet->setDetectorNetworkParameter(t, -1, detPos));
-        return ans;
-    } else if (cmd == "flowcontrol_10g") {
-    	networkParameter t = FLOW_CONTROL_10G;
-        if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i))) {
-                return ("cannot parse argument") + std::string(args[1]);
-            }
-            myDet->setDetectorNetworkParameter(t, i, detPos);
-        }
-        sprintf(ans, "%d", myDet->setDetectorNetworkParameter(t, -1, detPos));
-        return ans;
     } else if (cmd == "zmqport") {
         if (action == PUT_ACTION) {
             if (!(sscanf(args[1], "%d", &i))) {
@@ -2264,11 +2182,7 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "txndelay_left port \n sets detector transmission delay of the left port" << std::endl;
-        os << "txndelay_right port \n sets detector transmission delay of the right port" << std::endl;
-        os << "txndelay_frame port \n sets detector transmission delay of the entire frame" << std::endl;
-        os << "flowcontrol_10g port \n sets flow control for 10g for eiger and jungfrau" << std::endl;
-        os << "zmqport port \n sets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. "
+         os << "zmqport port \n sets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. "
               "Use single-detector command to set individually or multi-detector command to calculate based on port for the rest."
               "Must restart streaming in client with new port from gui/external gui"
            << std::endl;
@@ -2291,10 +2205,6 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
            << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "txndelay_left \n gets detector transmission delay of the left port" << std::endl;
-        os << "txndelay_right \n gets detector transmission delay of the right port" << std::endl;
-        os << "txndelay_frame \n gets detector transmission delay of the entire frame" << std::endl;
-        os << "flowcontrol_10g \n gets flow control for 10g for eiger and jungfrau" << std::endl;
         os << "zmqport \n gets the 0MQ (TCP) port of the client to where final data is streamed to" << std::endl;
         os << "rx_zmqport \n gets the 0MQ (TCP) port of the receiver from where data is streamed from" << std::endl;
         os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
@@ -2322,10 +2232,6 @@ std::string slsDetectorCommand::cmdPort(int narg, const char * const args[], int
         if (action == PUT_ACTION)
             myDet->setControlPort(val, detPos);
         sprintf(ans, "%d", myDet->setControlPort(-1, detPos));
-    } else if (cmd == "rx_tcpport") {
-        if (action == PUT_ACTION)
-            myDet->setReceiverPort(val, detPos);
-        sprintf(ans, "%d", myDet->setReceiverPort(-1, detPos));
     } else if (cmd == "stopport") {
         if (action == PUT_ACTION)
             myDet->setStopPort(val, detPos);
@@ -2341,12 +2247,10 @@ std::string slsDetectorCommand::helpPort(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "port i \n sets the communication control port" << std::endl;
-        os << "rx_tcpport i \n sets the communication receiver port" << std::endl;
         os << "stopport i \n sets the communication stop port " << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "port  \n gets the communication control port" << std::endl;
-        os << "rx_tcpport  \n gets the communication receiver port" << std::endl;
         os << "stopport \n gets the communication stop port " << std::endl;
     }
     return os.str();
@@ -3736,17 +3640,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
             return std::string(answer);
         }
     }
-    else if (cmd == "tengiga") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan tengiga input ") + std::string(args[1]);
-            if (ival >= 0)
-                sprintf(answer, "%d", myDet->enableTenGigabitEthernet(ival, detPos));
-        } else
-            sprintf(answer, "%d", myDet->enableTenGigabitEthernet(-1, detPos));
-        return std::string(answer);
-
-    }
 
     else if (cmd == "rx_framesperfile") {
         if (action == PUT_ACTION) {
@@ -3793,7 +3686,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
         os << "rx_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui. Default : 1" << std::endl;
-        os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
         os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
         os << "rx_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
         os << "rx_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
@@ -3808,7 +3700,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
         os << "rx_readfreq \t returns the gui read frequency of the receiver. DEfault: 1" << std::endl;
-        os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
         os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
         os << "rx_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
         os << "rx_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;

@@ -10,6 +10,134 @@ auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
 
+TEST_CASE("rx_hostname", "[.cmd]") {
+    std::string s;
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_hostname", GET, nullptr, oss));
+        s = oss.str();
+    }
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_hostname", GET, nullptr, oss));
+        REQUIRE(oss.str() == s);
+    } 
+    // save rx_hostame's ip somewhere (getent hosts [rx_hostname])
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_hostname 129.129.205.80", PUT));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_hostname", GET, nullptr, oss));
+        REQUIRE(oss.str() == "rx_hostname 129.129.205.80\n");
+    }
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_hostname none", PUT));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_hostname", GET, nullptr, oss));
+        REQUIRE(oss.str() == "rx_hostname none\n");
+    }        
+}
+
+TEST_CASE("txndelay", "[.cmd][.eiger][.jungfrau]") {
+    if (test::type == slsDetectorDefs::EIGER) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame 50000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame", GET, nullptr, oss));
+            REQUIRE(oss.str() == "txndelay_frame 50000\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_frame 0", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame", GET, nullptr, oss));
+            REQUIRE(oss.str() == "txndelay_frame 0\n");
+        } 
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_left 50000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_left", GET, nullptr, oss));
+            REQUIRE(oss.str() == "txndelay_left 50000\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_left 0", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_left", GET, nullptr, oss));
+            REQUIRE(oss.str() == "txndelay_left 0\n");
+        } 
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_right 50000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_right", GET, nullptr, oss));
+            REQUIRE(oss.str() == "txndelay_right 50000\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_right 0", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_right", GET, nullptr, oss));
+            REQUIRE(oss.str() == "txndelay_right 0\n");
+        }     
+    } else if (test::type == slsDetectorDefs::JUNGFRAU) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_frame 5", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame", GET, nullptr, oss));
+            REQUIRE(oss.str() == "txndelay_frame 5\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_frame 0", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame", GET, nullptr, oss));
+            REQUIRE(oss.str() == "txndelay_frame 0\n");
+        } 
+        REQUIRE_THROWS(multiSlsDetectorClient("txndelay_frame 32", PUT));  
+        REQUIRE_THROWS(multiSlsDetectorClient("txndelay_left 32", PUT));  
+        REQUIRE_THROWS(multiSlsDetectorClient("txndelay_right 32", PUT));  
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("txndelay_frame", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("txndelay_left 32", PUT));  
+        REQUIRE_THROWS(multiSlsDetectorClient("txndelay_right 32", PUT));  
+    }
+}
+
+
+TEST_CASE("flowcontrol_10g", "[.cmd][.eiger][.jungfrau]") {
+    if (test::type == slsDetectorDefs::EIGER || test::type == slsDetectorDefs::JUNGFRAU) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("flowcontrol_10g 1", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:flowcontrol_10g", GET, nullptr, oss));
+            REQUIRE(oss.str() == "flowcontrol_10g 1\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("flowcontrol_10g 0", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:flowcontrol_10g", GET, nullptr, oss));
+            REQUIRE(oss.str() == "flowcontrol_10g 0\n");
+        } 
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("flowcontrol_10g", GET));
+    }
+}
+
+TEST_CASE("tengiga", "[.cmd][.eiger][.ctb]") {
+    if (test::type == slsDetectorDefs::EIGER || test::type == slsDetectorDefs::CHIPTESTBOARD) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("tengiga 1", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:tengiga", GET, nullptr, oss));
+            REQUIRE(oss.str() == "tengiga 1\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("tengiga 0", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:tengiga", GET, nullptr, oss));
+            REQUIRE(oss.str() == "tengiga 0\n");
+        } 
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("tengiga", GET));
+    }
+}
+
 TEST_CASE("rx_printconfig", "[.cmd]") {
     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_printconfig", GET));
 }
@@ -789,35 +917,19 @@ TEST_CASE("findex", "[.cmd]") {
 TEST_CASE("rx_tcpport", "[.cmd]") {
     multiSlsDetector d;
     int port = 3500;
-    int base = 1954;
+    multiSlsDetectorClient("rx_tcpport " + std::to_string(port), PUT);
     for (size_t i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
-        std::string cmd =
-            std::to_string(i) + ":rx_tcpport " + std::to_string(port + i);
-        std::cout << cmd << "\n";
-        std::string cmd2 = cmd.erase(0,2);
-        multiSlsDetectorClient(cmd, PUT, nullptr, oss);
-        REQUIRE(oss.str() == cmd2 + "\n");
+        multiSlsDetectorClient(std::to_string(i) + ":rx_tcpport", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');   
     }
-    {
-        std::ostringstream oss;
-        REQUIRE_THROWS(
-            multiSlsDetectorClient("rx_tcpport 15", PUT, nullptr, oss));
-    }
-
+    REQUIRE_THROWS(multiSlsDetectorClient("rx_tcpport 15", PUT));
+    port = 1954;
+    multiSlsDetectorClient("rx_tcpport " + std::to_string(port), PUT);
     for (size_t i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
-        std::string cmd = std::to_string(i) + ":rx_tcpport";
-        multiSlsDetectorClient(cmd, GET, nullptr, oss);
-        REQUIRE(oss.str() == cmd + " " + std::to_string(port + i) + "\n");
-    }
-
-    for (size_t i = 0; i != d.size(); ++i) {
-        std::ostringstream oss;
-        std::string cmd =
-            std::to_string(i) + ":rx_tcpport " + std::to_string(base + i);
-        multiSlsDetectorClient(cmd, PUT, nullptr, oss);
-        REQUIRE(oss.str() == cmd + "\n");
+        multiSlsDetectorClient(std::to_string(i) + ":rx_tcpport", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');   
     }
 }
 

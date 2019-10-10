@@ -324,6 +324,7 @@ int slsReceiverTCPIPInterface::get_last_client_ip(Interface &socket) {
 
 int slsReceiverTCPIPInterface::set_port(Interface &socket) {
     auto p_number = socket.Receive<int>();
+    cprintf(RED, "TCP PORt:%d\n", p_number);
     if (p_number < 1024)
         throw RuntimeError("Port Number: " + std::to_string(p_number) +
                            " is too low (<1024)");

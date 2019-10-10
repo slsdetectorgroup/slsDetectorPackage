@@ -183,7 +183,7 @@ public:
 		if (p == UDP) {
 			uint64_t desired_size = buf_size;
 			uint64_t real_size = desired_size * 2; // kernel doubles this value for bookkeeping overhead
-			uint64_t ret_size = -1;
+			uint64_t ret_size = 0;
 			socklen_t optlen = sizeof(uint64_t);
 
 			// confirm if sufficient
@@ -192,12 +192,13 @@ public:
 						"Could not get rx socket receive buffer size";
 			} else if (ret_size >= real_size) {
 				actual_udp_socket_buffer_size = ret_size;
-				FILE_LOG(logDEBUG1) << "[Port " << port_number << "] "
-						"UDP rx socket buffer size is sufficient (" << ret_size << ")";
+				FILE_LOG(logINFO) << "[Port " << port_number << "] "
+						"UDP rx socket real buffer size is sufficient (" << ret_size << ")";
 			}
 
 			// not sufficient, enhance size
 			else {
+				FILE_LOG(logINFO) << "[Port " << port_number << "] UDP rx socket real buffer size to be modified from " << ret_size << " to " << real_size;
 				// set buffer size (could not set)
 				if (setsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF,
 						&desired_size, optlen) == -1) {
@@ -234,7 +235,7 @@ public:
 								(ret_size/2) << " (Real size:" << ret_size << ").";
 					} else {
 						FILE_LOG(logINFO) << "[Port " << port_number << "] "
-								"UDP rx socket buffer size modified to " << ret_size;
+								"UDP rx socket buffer size (force) modified to " << ret_size;
 					}
 				}
 			}

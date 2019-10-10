@@ -3670,7 +3670,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
         os << "rx_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui. Default : 1" << std::endl;
         os << "rx_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
-        os << "rx_padding s\t enables/disables partial frames to be padded in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
         os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
               "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
               "Use only if it needs to be processed by an intermediate process." << std::endl;
@@ -3681,7 +3680,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
         os << "rx_readfreq \t returns the gui read frequency of the receiver. DEfault: 1" << std::endl;
         os << "rx_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
-        os << "rx_padding \t gets partial frames padding enable in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
         os << "rx_jsonaddheader \n gets additional json header to be streamed "
               "out with the zmq from receiver." << std::endl;
         os << "rx_jsonpara [k] \n gets value of additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found." << std::endl;

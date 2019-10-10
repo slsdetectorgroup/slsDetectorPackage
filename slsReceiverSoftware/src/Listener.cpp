@@ -233,7 +233,7 @@ void Listener::ShutDownUDPSocket() {
 
 
 int Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
-    FILE_LOG(logINFO) << "Testing UDP Socket Buffer size with test port " << *udpPortNumber;
+    FILE_LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port " << *udpPortNumber;
 
     if (!(*activated)) {
     	*actualUDPSocketBufferSize = (s*2);
@@ -256,9 +256,11 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
 
         // doubled due to kernel bookkeeping (could also be less due to permissions)
         *actualUDPSocketBufferSize = g.getActualUDPSocketBufferSize();
-        if (*actualUDPSocketBufferSize != (s*2)) {
-            *udpSocketBufferSize = temp;
-        }
+		if (*actualUDPSocketBufferSize == -1) {
+			*udpSocketBufferSize = temp;
+		} else {
+			*udpSocketBufferSize = (*actualUDPSocketBufferSize) / 2;
+		}
 
     } catch (...) {
         FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber;

@@ -315,7 +315,6 @@ class CmdProxy {
     using StringMap = std::map<std::string, std::string>;
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
-                                    {"r_padding", "rx_padding"},
                                     {"r_lastclient", "rx_lastclient"},
                                     {"r_lock", "rx_lock"},
                                     {"r_online", "rx_online"},
@@ -362,7 +361,8 @@ class CmdProxy {
                                     
                                     /* Receiver Config */ 
                                     {"r_silent", "rx_silent"},
-                                    {"r_discardpolicy", "rx_discardpolicy"}                                   
+                                    {"r_discardpolicy", "rx_discardpolicy"},
+                                    {"r_padding", "rx_padding"}      
 
                                     };
 
@@ -379,7 +379,6 @@ class CmdProxy {
                           {"rx_lock", &CmdProxy::rx_lock},
                           {"lock", &CmdProxy::lock},
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
-                          {"rx_padding", &CmdProxy::rx_padding},
                           {"rx_framesperfile", &CmdProxy::rx_framesperfile},
 
                           
@@ -461,8 +460,9 @@ class CmdProxy {
                           {"rx_fifodepth", &CmdProxy::rx_fifodepth},
                           {"rx_silent", &CmdProxy::rx_silent},
                           {"rx_discardpolicy", &CmdProxy::rx_discardpolicy},
-
-
+                          {"rx_padding", &CmdProxy::rx_padding},
+                          {"rx_udpsocksize", &CmdProxy::rx_udpsocksize},
+                          {"rx_realudpsocksize", &CmdProxy::rx_realudpsocksize},
 
 
 
@@ -513,12 +513,6 @@ class CmdProxy {
 
     INTEGER_COMMAND(rx_readfreq, getRxZmqFrequency, setRxZmqFrequency,
                     std::stoi, "[nth frame]\n\tStream out every nth frame");
-
-    INTEGER_COMMAND(rx_padding, getPartialFramesPadding,
-                    setPartialFramesPadding, std::stoi,
-                    "[0, 1]\n\tPartial frames padding enable in the "
-                    "receiver. 0 does not pad partial frames(fastest), 1 "
-                    "(default) pads partial frames");
 
     INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile,
                     std::stoi, "[n_frames]\n\tNumber of frames per file");
@@ -736,9 +730,18 @@ class CmdProxy {
                     "[0, 1]\n\tSwitch on or off receiver text output during acquisition.");
 
     INTEGER_COMMAND(rx_discardpolicy, getRxFrameDiscardPolicy, setRxFrameDiscardPolicy, sls::StringTo<slsDetectorDefs::frameDiscardPolicy>,
-                    "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame discard policy of receiver (discard none, discard empty frames, discard partial frames).");
+                    "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame discard policy of receiver. nodiscard does not discard frames, discardempty discards empty frames, discardpartial discards partial frames.");
 
+    INTEGER_COMMAND(rx_padding, getPartialFramesPadding, setPartialFramesPadding, std::stoi,
+                    "[0, 1]\n\tPartial frames padding enable in the "
+                    "receiver. 0 does not pad partial frames(fastest), 1 "
+                    "(default) pads partial frames");
 
+    INTEGER_COMMAND(rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize, std::stol,
+                    "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly. rx_hostname sets it to defaults.");
+
+    GET_COMMAND(rx_realudpsocksize, getRxRealUDPSocketBufferSize, 
+                "\n\tActual udp socket buffer size. Double the size of rx_udpsocksize due to kernel bookkeeping."); 
 
 
 

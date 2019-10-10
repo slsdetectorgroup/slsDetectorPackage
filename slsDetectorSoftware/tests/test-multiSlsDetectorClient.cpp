@@ -1010,19 +1010,24 @@ TEST_CASE("rx_silent", "[.cmd]") {
 //     REQUIRE(oss.str() == "rx_jsonaddheader\n");
 // }
 
-// TEST_CASE("rx_udpsocksize", "[.cmd]") {
-//     std::ostringstream oss;
-//     multiSlsDetectorClient("rx_udpsocksize 4857600", PUT, nullptr, oss);
-//     REQUIRE(oss.str() == "rx_udpsocksize 4857600\n");
+TEST_CASE("rx_udpsocksize", "[.cmd]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_udpsocksize 4857600", PUT));
+    uint64_t val = 0;
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_udpsocksize", GET, nullptr, oss));
+        std::string s = (oss.str()).erase (0, strlen("rx_udpsocksize "));
+        val = std::stol(s);
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_realudpsocksize", GET, nullptr, oss));
+        std::string s = (oss.str()).erase (0, strlen("rx_realudpsocksize "));
+        uint64_t rval = std::stol(s);
+        REQUIRE(rval == val * 2);
+    }
+}
 
-//     std::ostringstream oss;
-//     multiSlsDetectorClient("rx_udpsocksize", GET, nullptr, oss);
-//     REQUIRE(oss.str() == "rx_udpsocksize 4857600\n");
-
-//     std::ostringstream oss;
-//     multiSlsDetectorClient("rx_udpsocksize 104857600", PUT, nullptr, oss);
-//     REQUIRE(oss.str() == "rx_udpsocksize 104857600\n");
-// }
 
 TEST_CASE("rx_framesperfile", "[.cmd]") {
     {

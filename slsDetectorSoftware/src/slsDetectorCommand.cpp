@@ -1366,13 +1366,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-    - <b>rx_discardpolicy</b> sets/gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_discardpolicy";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
-    /*! \page receiver
     - <b>rx_jsonaddheader [t]</b> sets/gets additional json header to be streamed out with the zmq from receiver. Default is empty. \c t must be in the format "\"label1\":\"value1\",\"label2\":\"value2\"" etc. Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
      */
     descrToFuncMap[i].m_pFuncName = "rx_jsonaddheader";
@@ -3653,16 +3646,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
         return std::string(answer);
     }
 
-    else if (cmd == "rx_discardpolicy") {
-        if (action == PUT_ACTION) {
-            frameDiscardPolicy f = myDet->getReceiverFrameDiscardPolicy(std::string(args[1]));
-            if (f == GET_FRAME_DISCARD_POLICY)
-                return std::string("could not scan frame discard policy. Options: nodiscard, discardempty, discardpartial\n");
-            myDet->setReceiverFramesDiscardPolicy(f);
-        }
-        return myDet->getReceiverFrameDiscardPolicy(myDet->setReceiverFramesDiscardPolicy(GET_FRAME_DISCARD_POLICY, detPos));
-    }
-
     else if (cmd == "rx_jsonaddheader") {
         if (action == PUT_ACTION) {
             myDet->setAdditionalJsonHeader(args[1], detPos);
@@ -3686,10 +3669,7 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
         os << "rx_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui. Default : 1" << std::endl;
-        os << "rx_fifodepth [val]\t sets receiver fifo depth to val" << std::endl;
-        os << "rx_silent [i]\t sets receiver in silent mode, ie. it will not print anything during real time acquisition. 1 sets, 0 unsets." << std::endl;
         os << "rx_framesperfile s\t sets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
-        os << "rx_discardpolicy s\t sets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
         os << "rx_padding s\t enables/disables partial frames to be padded in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
         os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
               "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
@@ -3700,10 +3680,7 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
         os << "rx_readfreq \t returns the gui read frequency of the receiver. DEfault: 1" << std::endl;
-        os << "rx_fifodepth \t returns receiver fifo depth" << std::endl;
-        os << "rx_silent \t returns receiver silent mode enable. 1 is silent, 0 not silent." << std::endl;
         os << "rx_framesperfile \t gets the number of frames per file in receiver. 0 means infinite or all frames in a single file." << std::endl;
-        os << "rx_discardpolicy \t gets the frame discard policy in the receiver. nodiscard (default) - discards nothing, discardempty - discard only empty frames, discardpartial(fastest) - discards all partial frames." << std::endl;
         os << "rx_padding \t gets partial frames padding enable in the receiver. 0 does not pad partial frames(fastest), 1 (default) pads partial frames." << std::endl;
         os << "rx_jsonaddheader \n gets additional json header to be streamed "
               "out with the zmq from receiver." << std::endl;

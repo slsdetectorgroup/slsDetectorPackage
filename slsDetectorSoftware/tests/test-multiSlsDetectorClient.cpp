@@ -775,6 +775,8 @@ TEST_CASE("rx_fifodepth", "[.cmd]") {
         multiSlsDetectorClient("rx_fifodepth", GET, nullptr, oss);
         REQUIRE(oss.str() == "rx_fifodepth 100\n");
     }
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_fifodepth 0", PUT));
+
 }
 
 TEST_CASE("frames", "[.cmd]") {

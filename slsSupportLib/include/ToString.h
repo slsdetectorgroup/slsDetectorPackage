@@ -128,6 +128,20 @@ inline std::string ToString(const defs::timingMode s){
     }
 }
 
+inline std::string ToString(const defs::frameDiscardPolicy s){
+    switch (s) {
+    case defs::NO_DISCARD:
+        return std::string("nodiscard");
+    case defs::DISCARD_EMPTY_FRAMES:
+        return std::string("discardempty");
+    case defs::DISCARD_PARTIAL_FRAMES:
+        return std::string("discardpartial");               
+    default:
+        return std::string("Unknown");       
+    }
+}
+
+
 // in case we already have a string 
 // causes a copy but might be needed in generic code
 inline std::string ToString(const std::string& s){
@@ -383,6 +397,17 @@ inline defs::timingMode StringTo(const std::string& s) {
     if (s == "burst_trigger")
         return defs::BURST_TRIGGER;        
     throw sls::RuntimeError("Unknown timing mode " + s);          
+}
+
+template <>
+inline defs::frameDiscardPolicy StringTo(const std::string& s) {
+    if (s == "nodiscard")
+        return defs::NO_DISCARD;
+    if (s == "discardempty")
+        return defs::DISCARD_EMPTY_FRAMES;
+    if (s == "discardpartial")
+        return defs::DISCARD_PARTIAL_FRAMES;       
+    throw sls::RuntimeError("Unknown frame discard policy " + s);          
 }
 
 /** For types with a .str() method use this for conversion */

@@ -316,13 +316,11 @@ class CmdProxy {
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
-                                    {"r_silent", "rx_silent"},
                                     {"r_lastclient", "rx_lastclient"},
                                     {"r_lock", "rx_lock"},
                                     {"r_online", "rx_online"},
                                     {"r_checkonline", "rx_checkonline"},
                                     {"r_framesperfile", "rx_framesperfile"},
-                                    {"r_discardpolicy", "rx_discardpolicy"},
                                     {"index", "findex"},
                                     {"exitreceiver", "rx_exit"},
                                     {"enablefwrite", "fwrite"},
@@ -360,11 +358,11 @@ class CmdProxy {
                                     {"rx_udpmac", "udp_dstmac"},
                                     {"rx_udpmac2", "udp_dstmac2"},   
                                     {"rx_udpport", "udp_dstport"},
-                                    {"rx_udpport2", "udp_dstport2"}
+                                    {"rx_udpport2", "udp_dstport2"},
                                     
                                     /* Receiver Config */ 
-
-                                    
+                                    {"r_silent", "rx_silent"},
+                                    {"r_discardpolicy", "rx_discardpolicy"}                                   
 
                                     };
 
@@ -378,8 +376,6 @@ class CmdProxy {
                           {"fmaster", &CmdProxy::fmaster},
                           {"foverwrite", &CmdProxy::foverwrite},
                           {"findex", &CmdProxy::findex},
-                          {"rx_fifodepth", &CmdProxy::rx_fifodepth},
-                          {"rx_silent", &CmdProxy::rx_silent},
                           {"rx_lock", &CmdProxy::rx_lock},
                           {"lock", &CmdProxy::lock},
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
@@ -462,6 +458,11 @@ class CmdProxy {
                           /* Receiver Config */ 
                           {"rx_hostname", &CmdProxy::rx_hostname}, 
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
+                          {"rx_fifodepth", &CmdProxy::rx_fifodepth},
+                          {"rx_silent", &CmdProxy::rx_silent},
+                          {"rx_discardpolicy", &CmdProxy::rx_discardpolicy},
+
+
 
 
 
@@ -502,12 +503,7 @@ class CmdProxy {
     std::string ThresholdNoTb(int action);       
 
 
-    INTEGER_COMMAND(
-        rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
-        "[n_frames]\n\tSet the number of frames in the receiver fifo");
 
-    INTEGER_COMMAND(rx_silent, getRxSilentMode, setRxSilentMode, std::stoi,
-                    "[0, 1]\n\tSwitch on or off receiver text output");
 
     INTEGER_COMMAND(rx_lock, getRxLock, setRxLock, std::stoi,
                     "[0, 1]\n\tLock receiver to one IP, 1: locks");
@@ -730,10 +726,17 @@ class CmdProxy {
                 "[hostname or ip address]\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");
 
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
-                    "[port]\n\tTCP port for client-receiver communication. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter.");  
+                    "[port]\n\tTCP port for client-receiver communication. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  
     
+    INTEGER_COMMAND(
+        rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
+        "[n_frames]\n\tSet the number of frames in the receiver fifo (buffer between listener and writer threads).");
 
+    INTEGER_COMMAND(rx_silent, getRxSilentMode, setRxSilentMode, std::stoi,
+                    "[0, 1]\n\tSwitch on or off receiver text output during acquisition.");
 
+    INTEGER_COMMAND(rx_discardpolicy, getRxFrameDiscardPolicy, setRxFrameDiscardPolicy, sls::StringTo<slsDetectorDefs::frameDiscardPolicy>,
+                    "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame discard policy of receiver (discard none, discard empty frames, discard partial frames).");
 
 
 

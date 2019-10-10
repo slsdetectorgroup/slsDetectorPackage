@@ -10,6 +10,9 @@ auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
 
+TEST_CASE("rx_printconfig", "[.cmd]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_printconfig", GET));
+}
 
 TEST_CASE("network", "[.cmd]") {
     {

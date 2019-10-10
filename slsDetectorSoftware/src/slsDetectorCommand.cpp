@@ -635,12 +635,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /* settings dump/retrieve */
-    /*! \page config
-   - <b>rx_printconfig</b> prints the receiver configuration. Only get! \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_printconfig";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfiguration;
-    ++i;
 
     descrToFuncMap[i].m_pFuncName = "config";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdConfiguration;
@@ -3703,11 +3697,6 @@ std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const ar
     if (action == HELP_ACTION)
         return helpConfiguration(action);
 
-    if (cmd == "rx_printconfig") {
-        if (action == PUT_ACTION)
-            return std::string("cannot put");
-        return myDet->printReceiverConfiguration(detPos);
-    } 
     if (cmd == "config") {
         if (action == PUT_ACTION) {
             myDet->readConfigurationFile(std::string(args[1]));
@@ -3720,9 +3709,6 @@ std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const ar
 std::string slsDetectorCommand::helpConfiguration(int action) {
 
     std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "rx_printconfig \t prints the receiver configuration" << std::endl;
-    }
     return os.str();
 }
 

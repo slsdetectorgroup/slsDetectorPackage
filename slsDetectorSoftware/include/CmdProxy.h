@@ -448,6 +448,7 @@ class CmdProxy {
                           {"udp_dstmac2", &CmdProxy::udp_dstmac2},
                           {"udp_dstport", &CmdProxy::udp_dstport},
                           {"udp_dstport2", &CmdProxy::udp_dstport2},
+                          {"rx_printconfig", &CmdProxy::rx_printconfig},                          
 
 
                           {"adc", &CmdProxy::SlowAdc},                          
@@ -689,8 +690,10 @@ class CmdProxy {
     
     INTEGER_COMMAND(udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2, std::stoi,
                     "[n]\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to.\n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to.");          
+    GET_COMMAND(rx_printconfig, printRxConfiguration, 
+                "\n\tPrints the receiver configuration.");   
     
-    
+
 
 
 

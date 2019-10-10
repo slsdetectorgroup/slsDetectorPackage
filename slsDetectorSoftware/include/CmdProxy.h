@@ -315,10 +315,6 @@ class CmdProxy {
     using StringMap = std::map<std::string, std::string>;
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
-                                    {"r_lastclient", "rx_lastclient"},
-                                    {"r_lock", "rx_lock"},
-                                    {"r_online", "rx_online"},
-                                    {"r_checkonline", "rx_checkonline"},
                                     {"r_framesperfile", "rx_framesperfile"},
                                     {"index", "findex"},
                                     {"exitreceiver", "rx_exit"},
@@ -362,8 +358,9 @@ class CmdProxy {
                                     /* Receiver Config */ 
                                     {"r_silent", "rx_silent"},
                                     {"r_discardpolicy", "rx_discardpolicy"},
-                                    {"r_padding", "rx_padding"}      
-
+                                    {"r_padding", "rx_padding"},      
+                                    {"r_lock", "rx_lock"},
+                                    {"r_lastclient", "rx_lastclient"}                                    
                                     };
 
     // Initialize maps for translating name and function
@@ -376,7 +373,6 @@ class CmdProxy {
                           {"fmaster", &CmdProxy::fmaster},
                           {"foverwrite", &CmdProxy::foverwrite},
                           {"findex", &CmdProxy::findex},
-                          {"rx_lock", &CmdProxy::rx_lock},
                           {"lock", &CmdProxy::lock},
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
                           {"rx_framesperfile", &CmdProxy::rx_framesperfile},
@@ -463,8 +459,8 @@ class CmdProxy {
                           {"rx_padding", &CmdProxy::rx_padding},
                           {"rx_udpsocksize", &CmdProxy::rx_udpsocksize},
                           {"rx_realudpsocksize", &CmdProxy::rx_realudpsocksize},
-
-
+                          {"rx_lock", &CmdProxy::rx_lock},
+                          {"rx_lastclient", &CmdProxy::rx_lastclient},
 
 
 
@@ -502,11 +498,6 @@ class CmdProxy {
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);       
 
-
-
-
-    INTEGER_COMMAND(rx_lock, getRxLock, setRxLock, std::stoi,
-                    "[0, 1]\n\tLock receiver to one IP, 1: locks");
 
     INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, std::stoi,
                     "[0, 1]\n\tLock detector to one IP, 1: locks");
@@ -743,6 +734,11 @@ class CmdProxy {
     GET_COMMAND(rx_realudpsocksize, getRxRealUDPSocketBufferSize, 
                 "\n\tActual udp socket buffer size. Double the size of rx_udpsocksize due to kernel bookkeeping."); 
 
+    INTEGER_COMMAND(rx_lock, getRxLock, setRxLock, std::stoi,
+                    "[0, 1]\n\tLock receiver to one IP, 1: locks");
+
+    GET_COMMAND(rx_lastclient, getRxLastClientIP, 
+                "\n\tClient IP Address that last communicated with the receiver."); 
 
 
 

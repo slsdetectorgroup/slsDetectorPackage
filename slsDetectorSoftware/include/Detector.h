@@ -465,7 +465,7 @@ class Detector {
 
     /**************************************************
      *                                                *
-     *    FILE                                        *
+     *    File                                        *
      *                                                *
      * ************************************************/
     Result<defs::fileFormat> getFileFormat(Positions pos = {}) const;

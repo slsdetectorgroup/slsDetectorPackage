@@ -1352,13 +1352,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-   - <b>rx_lastclient</b> gets the last client communicating with the receiver. Only get! \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_lastclient";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLastClient;
-    ++i;
-
-    /*! \page receiver
     - <b>rx_framesperfile [i]</b> sets/gets the frames per file in receiver to i. 0 means infinite or all frames in a single file. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_framesperfile";
@@ -2261,10 +2254,6 @@ std::string slsDetectorCommand::cmdLastClient(int narg, const char * const args[
         return myDet->getLastClientIP(detPos);
     }
 
-    else if (cmd == "rx_lastclient") {
-        return myDet->getReceiverLastClientIP(detPos);
-    }
-
     return std::string("cannot decode command");
 }
 
@@ -2273,7 +2262,6 @@ std::string slsDetectorCommand::helpLastClient(int action) {
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "lastclient \n returns the last client communicating with the detector" << std::endl;
-        os << "rx_lastclient \n returns the last client communicating with the receiver" << std::endl;
     }
     return os.str();
 }

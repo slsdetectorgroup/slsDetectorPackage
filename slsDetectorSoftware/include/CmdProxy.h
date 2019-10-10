@@ -353,9 +353,14 @@ class CmdProxy {
                                     /* Network Configuration (Detector<->Receiver) */
                                     {"detectorip", "udp_srcip"},
                                     {"detectorip2", "udp_srcip2"},
+                                    {"detectormac", "udp_srcmac"},
+                                    {"detectormac2", "udp_srcmac2"},        
                                     {"rx_udpip", "udp_dstip"},
                                     {"rx_udpip2", "udp_dstip2"},
-
+                                    {"rx_udpmac", "udp_dstmac"},
+                                    {"rx_udpmac2", "udp_dstmac2"},   
+                                    {"rx_udpport", "udp_dstport"},
+                                    {"rx_udpport2", "udp_dstport2"} 
                                     
                                     };
 
@@ -376,12 +381,7 @@ class CmdProxy {
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
                           {"rx_padding", &CmdProxy::rx_padding},
                           {"rx_framesperfile", &CmdProxy::rx_framesperfile},
-                          {"detectormac", &CmdProxy::detectormac},
-                          {"detectormac2", &CmdProxy::detectormac2},
-                          {"rx_udpmac", &CmdProxy::rx_udpmac},
-                          {"rx_udpmac2", &CmdProxy::rx_udpmac2},
-                          {"rx_udpport", &CmdProxy::rx_udpport},
-                          {"rx_udpport2", &CmdProxy::rx_udpport2},
+
                           
                           /* configuration */
                           //{"config", &CmdProxy::config},
@@ -442,6 +442,12 @@ class CmdProxy {
                           {"udp_srcip2", &CmdProxy::udp_srcip2},
                           {"udp_dstip", &CmdProxy::udp_dstip},
                           {"udp_dstip2", &CmdProxy::udp_dstip2},
+                          {"udp_srcmac", &CmdProxy::udp_srcmac},
+                          {"udp_srcmac2", &CmdProxy::udp_srcmac2},
+                          {"udp_dstmac", &CmdProxy::udp_dstmac},
+                          {"udp_dstmac2", &CmdProxy::udp_dstmac2},
+                          {"udp_dstport", &CmdProxy::udp_dstport},
+                          {"udp_dstport2", &CmdProxy::udp_dstport2},
 
 
                           {"adc", &CmdProxy::SlowAdc},                          
@@ -517,30 +523,6 @@ class CmdProxy {
     INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stoi,
                     "[0, 1]\n\tFile index");
 
-    INTEGER_COMMAND(detectormac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
-                    "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp interface. ");
-
-    INTEGER_COMMAND(detectormac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
-                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom half of detector (source) udp interface. ");     
-
-    INTEGER_COMMAND(rx_udpmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
-                    "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as rx_hostname/udp_dstip retrieves it.");                   
-
-    INTEGER_COMMAND(rx_udpmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
-                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/udp_dstip2 retrieves it.");
-    
-    INTEGER_COMMAND(udp_dstip, getDestinationUDPIP, setDestinationUDPIP, IpAddr,
-                    "[x.x.x.x]\n\tIp address of the receiver (destination) udp interface.");               
-    
-    INTEGER_COMMAND(udp_dstip2, getDestinationUDPIP2, setDestinationUDPIP2, IpAddr,
-                    "[x.x.x.x]\n\t[Jungfrau] Ip address of the receiver (destination) udp interface where the second half of detector data is sent to.");     
- 
-    INTEGER_COMMAND(rx_udpport, getDestinationUDPPort, setDestinationUDPPort, std::stoi,
-                    "[n]\n\tPort number of the receiver (destination) udp interface.");               
-    
-    INTEGER_COMMAND(rx_udpport2, getDestinationUDPPort2, setDestinationUDPPort2, std::stoi,
-                    "[n]\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to.\n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to.");          
-    
     INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
                     "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
 
@@ -684,8 +666,33 @@ class CmdProxy {
     INTEGER_COMMAND(udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
                     "[x.x.x.x]\n\t[Jungfrau] Ip address of the bottom half of detector (source) udp interface. Must be same subnet as destination udp ip2.");   
 
-
+    INTEGER_COMMAND(udp_dstip, getDestinationUDPIP, setDestinationUDPIP, IpAddr,
+                    "[x.x.x.x]\n\tIp address of the receiver (destination) udp interface.");               
     
+    INTEGER_COMMAND(udp_dstip2, getDestinationUDPIP2, setDestinationUDPIP2, IpAddr,
+                    "[x.x.x.x]\n\t[Jungfrau] Ip address of the receiver (destination) udp interface where the second half of detector data is sent to.");     
+ 
+    INTEGER_COMMAND(udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
+                    "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp interface. ");
+
+    INTEGER_COMMAND(udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
+                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom half of detector (source) udp interface. ");     
+
+    INTEGER_COMMAND(udp_dstmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
+                    "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as rx_hostname/udp_dstip retrieves it.");                   
+
+    INTEGER_COMMAND(udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
+                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/udp_dstip2 retrieves it.");
+    
+    INTEGER_COMMAND(udp_dstport, getDestinationUDPPort, setDestinationUDPPort, std::stoi,
+                    "[n]\n\tPort number of the receiver (destination) udp interface.");               
+    
+    INTEGER_COMMAND(udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2, std::stoi,
+                    "[n]\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to.\n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to.");          
+    
+    
+
+
 
 
     STRING_COMMAND(rx_hostname, getRxHostname, setRxHostname, 

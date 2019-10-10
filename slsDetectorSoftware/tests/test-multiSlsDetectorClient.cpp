@@ -29,7 +29,19 @@ TEST_CASE("network", "[.cmd]") {
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip", GET, nullptr, oss));
         REQUIRE(oss.str() == udp_dstip);
-    }    
+    }   
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac 10:e7:c6:48:bd:3f", PUT));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac", GET, nullptr, oss));
+        REQUIRE(oss.str() == "udp_dstmac 10:e7:c6:48:bd:3f\n");
+    }      
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport 6200", PUT));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport", GET, nullptr, oss));
+        REQUIRE(oss.str() == "udp_dstport 6200\n");
+    }  
     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 0.0.0.0", PUT));
     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 124586954", PUT));
     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 999.999.0.0.0.5", PUT));
@@ -52,14 +64,31 @@ TEST_CASE("network", "[.cmd]") {
             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip2", GET, nullptr, oss));
             REQUIRE(oss.str() == udp_dstip);
         }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac2 10:e7:c6:48:bd:3f", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac2", GET, nullptr, oss));
+            REQUIRE(oss.str() == "udp_dstmac2 10:e7:c6:48:bd:3f\n");
+        }  
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2 6400", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2", GET, nullptr, oss));
+            REQUIRE(oss.str() == "udp_dstport2 6400\n");
+        }  
+    } else if (test::type == slsDetectorDefs::EIGER) {
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2 6400", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2", GET, nullptr, oss));
+            REQUIRE(oss.str() == "udp_dstport2 6400\n");
+        } 
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip2", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("udp_dstip2", GET));  
-    }
-    if (test::type == slsDetectorDefs::EIGER) {
-        ;
-    } else {
-    ;
+        REQUIRE_THROWS(multiSlsDetectorClient("udp_srcmac2", GET));         
+        REQUIRE_THROWS(multiSlsDetectorClient("udp_dstmac2", GET));      
+        REQUIRE_THROWS(multiSlsDetectorClient("udp_dstport2", GET));              
     }
 }
 
